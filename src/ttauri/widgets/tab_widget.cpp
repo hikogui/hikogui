@@ -146,7 +146,7 @@ void tab_widget::layout(matrix3 const &to_window, extent2 const &new_size, utc_n
 void tab_widget::draw_child(draw_context context, utc_nanoseconds displayTimePoint, widget &child) noexcept
 {
     tt_axiom(is_gui_thread());
-    auto child_context = context.make_child_context(child.parent_to_local(), child.local_to_window(), child.clipping_rectangle());
+    auto child_context = context.make_child_context(child.parent_to_local(), child.clipping_rectangle());
     child.draw(child_context, displayTimePoint);
 }
 

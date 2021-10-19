@@ -187,10 +187,8 @@ void widget::set_layout_parameters(
 
     _parent_to_local = ~local_to_parent;
     if (parent) {
-        _local_to_window = local_to_parent * parent->local_to_window();
         _window_to_local = ~local_to_parent * parent->window_to_local();
     } else {
-        _local_to_window = local_to_parent;
         _window_to_local = ~local_to_parent;
     }
     _clipping_rectangle = clipping_rectangle;
@@ -234,12 +232,6 @@ void widget::set_layout_parameters_from_parent(aarectangle child_rectangle) noex
 {
     tt_axiom(is_gui_thread());
     return _window_to_local;
-}
-
-[[nodiscard]] matrix3 widget::local_to_window() const noexcept
-{
-    tt_axiom(is_gui_thread());
-    return _local_to_window;
 }
 
 [[nodiscard]] extent2 widget::size() const noexcept
@@ -313,7 +305,7 @@ void widget::draw(draw_context context, utc_nanoseconds display_time_point) noex
 
             if (child->visible) {
                 auto child_context =
-                    context.make_child_context(child->parent_to_local(), child->local_to_window(), child->clipping_rectangle());
+                    context.make_child_context(child->parent_to_local(), child->clipping_rectangle());
                 child->draw(child_context, display_time_point);
             }
         }
@@ -564,7 +556,8 @@ void widget::scroll_to_show(tt::aarectangle rectangle) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    ttlet requested_window_rectangle = bounding_rectangle(local_to_window() * requested_rectangle);
+    // Move the request_rectangle to window coordinates.
+    ttlet requested_window_rectangle = translate2{_bounding_rectangle - theme().margin} * requested_rectangle;
     ttlet window_bounds = aarectangle{window.screen_rectangle.size()} - theme().margin;
     ttlet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
     return bounding_rectangle(window_to_local() * response_window_rectangle);

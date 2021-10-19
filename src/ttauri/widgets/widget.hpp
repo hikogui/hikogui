@@ -192,8 +192,6 @@ public:
 
     [[nodiscard]] matrix3 window_to_local() const noexcept;
 
-    [[nodiscard]] matrix3 local_to_window() const noexcept;
-
     [[nodiscard]] extent2 size() const noexcept;
 
     [[nodiscard]] float width() const noexcept;
@@ -414,10 +412,6 @@ protected:
     /** Conversion of coordinates relative to the window to relative to this widget.
      */
     matrix3 _window_to_local;
-
-    /** Conversion of coordinates relative to this widget to relative to the window.
-     */
-    matrix3 _local_to_window;
 
     /** Conversion of coordinates relative to the parent widget to relative to this widget.
      */

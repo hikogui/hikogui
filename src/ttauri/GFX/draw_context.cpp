@@ -32,12 +32,12 @@ draw_context::draw_context(
 }
 
 [[nodiscard]] draw_context
-draw_context::make_child_context(matrix3 parent_to_local, matrix3 local_to_window, aarectangle clipping_rectangle) const noexcept
+draw_context::make_child_context(matrix3 parent_to_local, aarectangle clipping_rectangle) const noexcept
 {
     auto new_context = *this;
     new_context._scissor_rectangle = bounding_rectangle(parent_to_local * this->_scissor_rectangle);
     new_context._clipping_rectangle = clipping_rectangle;
-    new_context._transform = local_to_window;
+    new_context._transform = ~parent_to_local * new_context._transform;
     return new_context;
 }
 

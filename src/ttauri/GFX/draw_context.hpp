@@ -42,7 +42,7 @@ public:
         vspan<pipeline_SDF::vertex> &sdfVertices) noexcept;
 
     [[nodiscard]] draw_context
-    make_child_context(matrix3 parent_to_local, matrix3 local_to_window, aarectangle clipping_rectangle) const noexcept;
+    make_child_context(matrix3 parent_to_local, aarectangle clipping_rectangle) const noexcept;
 
     [[nodiscard]] size_t frame_buffer_index() const noexcept;
 
