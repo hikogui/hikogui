@@ -11,6 +11,7 @@
 #include "../geometry/matrix.hpp"
 #include "../geometry/corner_shapes.hpp"
 #include "../geometry/identity.hpp"
+#include "../geometry/transform.hpp"
 #include "../color/color.hpp"
 #include "../vspan.hpp"
 
@@ -42,7 +43,14 @@ public:
         vspan<pipeline_SDF::vertex> &sdfVertices) noexcept;
 
     [[nodiscard]] draw_context
-    make_child_context(matrix3 parent_to_local, aarectangle clipping_rectangle) const noexcept;
+    make_child_context(geo::transformer auto const &parent_to_local, aarectangle clipping_rectangle) const noexcept
+    {
+        auto new_context = *this;
+        new_context._scissor_rectangle = bounding_rectangle(parent_to_local * this->_scissor_rectangle);
+        new_context._clipping_rectangle = clipping_rectangle;
+        new_context._transform = ~parent_to_local * new_context._transform;
+        return new_context;
+    }
 
     [[nodiscard]] size_t frame_buffer_index() const noexcept;
 
@@ -153,13 +161,13 @@ public:
     draw_text(shaped_text const &text, std::optional<color> text_color = {}, matrix3 transform = geo::identity{}) const noexcept;
 
     /** Draw a glyph.
-    * 
-    * @param glyph The glyphs to draw.
-    * @param glyph_size The scale with which the glyph is being drawn.
-    * @param box The size and position of the glyph. The size must be the size of the bounding box of the glyph
-    *            multiplied by @a glyph_size.
-    * @param text_color The color that the glyph should be drawn in.
-    */
+     *
+     * @param glyph The glyphs to draw.
+     * @param glyph_size The scale with which the glyph is being drawn.
+     * @param box The size and position of the glyph. The size must be the size of the bounding box of the glyph
+     *            multiplied by @a glyph_size.
+     * @param text_color The color that the glyph should be drawn in.
+     */
     void draw_glyph(font_glyph_ids const &glyph, float glyph_size, rectangle box, color text_color) const noexcept;
 
     [[nodiscard]] friend bool overlaps(draw_context const &context, aarectangle const &rectangle) noexcept

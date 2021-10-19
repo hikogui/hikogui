@@ -409,6 +409,11 @@ public:
         return axis_aligned_rectangle{p0, p3};
     }
 
+    [[nodiscard]] friend axis_aligned_rectangle bounding_rectangle(axis_aligned_rectangle const &rhs) noexcept
+    {
+        return rhs;
+    }
+
     /** Return the overlapping part of two rectangles.
      * When the rectangles are not overlapping, the width and height are zero.
      */

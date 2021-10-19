@@ -45,6 +45,16 @@ public:
         return rhs;
     }
 
+    [[nodiscard]] constexpr axis_aligned_rectangle operator*(axis_aligned_rectangle const &rhs) const noexcept
+    {
+        return rhs;
+    }
+
+    [[nodiscard]] constexpr rectangle operator*(rectangle const &rhs) const noexcept
+    {
+        return rhs;
+    }
+
     template<int E>
     [[nodiscard]] constexpr identity operator*(identity const &) const noexcept
     {

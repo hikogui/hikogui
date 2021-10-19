@@ -31,15 +31,6 @@ draw_context::draw_context(
     _sdf_vertices->clear();
 }
 
-[[nodiscard]] draw_context
-draw_context::make_child_context(matrix3 parent_to_local, aarectangle clipping_rectangle) const noexcept
-{
-    auto new_context = *this;
-    new_context._scissor_rectangle = bounding_rectangle(parent_to_local * this->_scissor_rectangle);
-    new_context._clipping_rectangle = clipping_rectangle;
-    new_context._transform = ~parent_to_local * new_context._transform;
-    return new_context;
-}
 
 [[nodiscard]] size_t draw_context::frame_buffer_index() const noexcept
 {
