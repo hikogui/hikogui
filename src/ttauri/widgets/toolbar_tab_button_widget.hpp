@@ -101,7 +101,6 @@ private:
         set_label(std::forward<Label>(label));
     }
 
-    void draw_toolbar_tab_focus_line(draw_context context) noexcept;
     void draw_toolbar_tab_button(draw_context context) noexcept;
 };
 

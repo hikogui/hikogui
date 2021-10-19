@@ -80,7 +80,7 @@ public:
     void draw(draw_context context, utc_nanoseconds display_time_point) noexcept override;
     [[nodiscard]] color background_color() const noexcept override;
     [[nodiscard]] color foreground_color() const noexcept override;
-    void scroll_to_show(tt::rectangle rectangle) noexcept override;
+    void scroll_to_show(tt::aarectangle rectangle) noexcept override;
     /// @endprivatesection
 private:
     std::weak_ptr<delegate_type> _delegate;

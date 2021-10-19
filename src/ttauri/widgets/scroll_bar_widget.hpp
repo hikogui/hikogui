@@ -150,7 +150,7 @@ public:
 
     [[nodiscard]] color foreground_color() const noexcept override
     {
-        if (_hover) {
+        if (hover) {
             return theme().color(theme_color::fill, semantic_layer + 2);
         } else {
             return theme().color(theme_color::fill, semantic_layer + 1);

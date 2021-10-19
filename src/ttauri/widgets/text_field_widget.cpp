@@ -58,7 +58,7 @@ void text_field_widget::layout(matrix3 const &to_window, extent2 const &new_size
 {
     tt_axiom(is_gui_thread());
 
-    if (_focus && display_time_point >= _next_redraw_time_point) {
+    if (focus && display_time_point >= _next_redraw_time_point) {
         request_redraw();
     }
 
@@ -73,7 +73,7 @@ void text_field_widget::layout(matrix3 const &to_window, extent2 const &new_size
 
         ttlet field_str = static_cast<std::string>(_field);
 
-        if (_focus) {
+        if (focus) {
             // Update the optional error value from the string conversion when the
             // field has keyboard focus.
             if (auto delegate = _delegate.lock()) {
@@ -411,7 +411,7 @@ void text_field_widget::draw_caret(draw_context context, utc_nanoseconds display
 
     ttlet blink_is_on = nr_half_blinks % 2 == 0;
     _left_to_right_caret = _field.left_to_right_caret();
-    if (_left_to_right_caret && blink_is_on && _focus && window.active) {
+    if (_left_to_right_caret && blink_is_on && focus && window.active) {
         ttlet box = round(_text_translate) * translate_z(0.1f) * round(_left_to_right_caret);
         context.draw_box_with_border_inside(box, color::transparent(), theme().color(theme_color::cursor));
     }

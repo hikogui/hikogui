@@ -76,6 +76,7 @@ public:
     void layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept override;
     void draw(draw_context context, utc_nanoseconds display_time_point) noexcept override;
     hitbox hitbox_test(point2 position) const noexcept override;
+    [[nodiscard]] color focus_color() const noexcept override;
     /// @endprivatesection
 private:
     std::vector<std::unique_ptr<widget>> _left_children;
@@ -94,6 +95,12 @@ private:
     /** Add a widget directly to this widget.
      */
     widget &add_widget(horizontal_alignment alignment, std::unique_ptr<widget> widget) noexcept;
+
+    /** Check if a child tab-button has focus.
+    * 
+    * @return If true the toolbar should draw a focus bar.
+    */
+    bool tab_button_has_focus() const noexcept;
 };
 
 } // namespace tt

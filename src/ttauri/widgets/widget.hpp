@@ -61,6 +61,14 @@ public:
      */
     observable<bool> visible = true;
 
+    /** Mouse cursor is hovering over the widget.
+     */
+    bool hover = false;
+
+    /** The widget has keyboard focus.
+     */
+    bool focus = false;
+
     /** The draw layer of the widget.
      * Drawing layers start at 0.0 and go up to 100.0.
      *
@@ -181,8 +189,6 @@ public:
     void set_layout_parameters_from_parent(aarectangle child_rectangle) noexcept;
 
     [[nodiscard]] matrix3 parent_to_local() const noexcept;
-
-    [[nodiscard]] matrix3 local_to_parent() const noexcept;
 
     [[nodiscard]] matrix3 window_to_local() const noexcept;
 
@@ -387,8 +393,17 @@ public:
     /** Scroll to show the given rectangle on the window.
      * This will call parents, until all parents have scrolled
      * the rectangle to be shown on the window.
+     * 
+     * @param rectangle The rectangle in window coordinates.
      */
-    virtual void scroll_to_show(tt::rectangle rectangle) noexcept;
+    virtual void scroll_to_show(tt::aarectangle rectangle) noexcept;
+
+    /** Scroll to show the current widget.
+     */
+    void scroll_to_show() noexcept
+    {
+        scroll_to_show(_bounding_rectangle);
+    }
 
     /** Get a list of parents of a given widget.
      * The chain includes the given widget.
@@ -396,14 +411,6 @@ public:
     [[nodiscard]] std::vector<widget const *> parent_chain() const noexcept;
 
 protected:
-    /** Mouse cursor is hovering over the widget.
-     */
-    bool _hover = false;
-
-    /** The widget has keyboard focus.
-     */
-    bool _focus = false;
-
     /** Conversion of coordinates relative to the window to relative to this widget.
      */
     matrix3 _window_to_local;
@@ -416,20 +423,9 @@ protected:
      */
     matrix3 _parent_to_local;
 
-    /** Conversion of coordinates relative to this widget to relative to the parent widget.
-     */
-    matrix3 _local_to_parent;
-
     /** Size of the widget.
      */
     extent2 _size;
-
-    /** Bounding rectangle around the widget, including margin.
-     *
-     * An axis-aligned-bounding-box for requesting redraws.
-     * This bounding box is in the window's coordinate system.
-     */
-    aarectangle _bounding_rectangle;
 
     /** Clipping rectangle of the widget in local coordinates.
      */
@@ -441,6 +437,13 @@ protected:
      * behind the border of a for example a scroll view.
      */
     aarectangle _visible_rectangle;
+
+    /** Bounding rectangle around the widget, including margin.
+     *
+     * An axis-aligned-bounding-box for requesting redraws.
+     * This bounding box is in the window's coordinate system.
+     */
+    aarectangle _bounding_rectangle;
 
     /** When set to true the widget will recalculate the constraints on the next call to `updateConstraints()`
      */
@@ -460,9 +463,9 @@ protected:
     }
 
     /** Set the layout parameters of a widget.
-     * 
+     *
      * Used by the `widget::layout()` function to set it's own parameters.
-     * 
+     *
      * @param to_window The matrix to convert local coordinates to window coordinates.
      * @param new_size The size of the widget.
      * @return True if anything was changed by this function.
@@ -470,7 +473,8 @@ protected:
     bool set_layout(matrix3 const &to_window, extent2 const &new_size) noexcept
     {
         ttlet a = compare_then_assign(_size, new_size);
-        ttlet b = compare_then_assign(_bounding_rectangle, bounding_rectangle(to_window * (tt::aarectangle{new_size} + margin())));
+        ttlet b =
+            compare_then_assign(_bounding_rectangle, bounding_rectangle(to_window * (tt::aarectangle{new_size} + margin())));
         return a or b;
     }
 

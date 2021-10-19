@@ -85,7 +85,7 @@ void overlay_widget::draw(draw_context context, utc_nanoseconds display_time_poi
     return theme().color(theme_color::border, semantic_layer + 1);
 }
 
-void overlay_widget::scroll_to_show(tt::rectangle rectangle) noexcept
+void overlay_widget::scroll_to_show(tt::aarectangle rectangle) noexcept
 {
     // An overlay is in an absolute position on the window,
     // so do not forward the scroll_to_show message to its parent.

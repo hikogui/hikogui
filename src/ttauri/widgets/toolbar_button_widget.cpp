@@ -94,7 +94,7 @@ void toolbar_button_widget::draw_toolbar_button(draw_context const &context) noe
 {
     tt_axiom(is_gui_thread());
 
-    ttlet foreground_color_ = _focus && window.active ? focus_color() : color::transparent();
+    ttlet foreground_color_ = focus && window.active ? focus_color() : color::transparent();
     context.draw_box_with_border_inside(rectangle(), background_color(), foreground_color_, corner_shapes{0.0f});
 }
 

@@ -186,7 +186,7 @@ void gui_window::render(utc_nanoseconds displayTimePoint)
         _redraw_rectangle = aarectangle{};
 
         auto widget_context =
-            draw_context.make_child_context(widget->parent_to_local(), widget->local_to_window(), widget->clipping_rectangle());
+            draw_context.make_child_context(geo::identity(), geo::identity(), aarectangle{widget_size});
 
         widget->draw(widget_context, displayTimePoint);
 

@@ -115,23 +115,23 @@ void window_traffic_lights_widget::drawMacOS(draw_context const &drawContext, ut
 
     auto context = drawContext;
 
-    ttlet close_circle_color = (!window.active && !_hover) ? color(0.246f, 0.246f, 0.246f) :
+    ttlet close_circle_color = (!window.active && !hover) ? color(0.246f, 0.246f, 0.246f) :
         pressedClose                                       ? color(1.0f, 0.242f, 0.212f) :
                                                              color(1.0f, 0.1f, 0.082f);
     context.draw_box(closeRectangle, close_circle_color, corner_shapes{RADIUS});
 
-    ttlet minimize_circle_color = (!window.active && !_hover) ? color(0.246f, 0.246f, 0.246f) :
+    ttlet minimize_circle_color = (!window.active && !hover) ? color(0.246f, 0.246f, 0.246f) :
         pressedMinimize                                       ? color(1.0f, 0.847f, 0.093f) :
                                                                 color(0.784f, 0.521f, 0.021f);
     context.draw_box(minimizeRectangle, minimize_circle_color, corner_shapes{RADIUS});
 
-    ttlet maximize_circle_color = (!window.active && !_hover) ? color(0.246f, 0.246f, 0.246f) :
+    ttlet maximize_circle_color = (!window.active && !hover) ? color(0.246f, 0.246f, 0.246f) :
         pressedMaximize                                       ? color(0.223f, 0.863f, 0.1f) :
                                                                 color(0.082f, 0.533f, 0.024f);
 
     context.draw_box(maximizeRectangle, maximize_circle_color, corner_shapes{RADIUS});
 
-    if (_hover) {
+    if (hover) {
         context.draw_glyph(
             closeWindowGlyph, _glyph_size, translate_z(0.1f) * closeWindowGlyphRectangle, color{0.319f, 0.0f, 0.0f});
         context.draw_glyph(

@@ -58,7 +58,11 @@ toolbar_widget::toolbar_widget(gui_window &window, widget *parent) noexcept : su
     }
 }
 
-void toolbar_widget::layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
+void toolbar_widget::layout(
+    matrix3 const &to_window,
+    extent2 const &new_size,
+    utc_nanoseconds display_time_point,
+    bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -82,12 +86,41 @@ void toolbar_widget::layout(matrix3 const &to_window, extent2 const &new_size, u
     }
 }
 
+bool toolbar_widget::tab_button_has_focus() const noexcept
+{
+    for (ttlet &child : _left_children) {
+        if (auto *c = dynamic_cast<toolbar_tab_button_widget *>(child.get())) {
+            if (c->focus and c->state() == tt::button_state::on) {
+                return true;
+            }
+        }
+    }
+    for (ttlet &child : _right_children) {
+        if (auto *c = dynamic_cast<toolbar_tab_button_widget *>(child.get())) {
+            if (c->focus and c->state() == tt::button_state::on) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 void toolbar_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
 {
     tt_axiom(is_gui_thread());
 
     if (overlaps(context, _clipping_rectangle)) {
         context.draw_box(rectangle(), theme().color(theme_color::fill, semantic_layer + 1));
+
+        if (tab_button_has_focus()) {
+            ttlet line_rectangle =
+                aarectangle{rectangle().left(), rectangle().bottom(), rectangle().width(), theme().border_width};
+
+            // Draw the line at a higher elevation, so that the tab buttons can draw above or below the focus
+            // line depending if that specific button is in focus or not.
+            context.draw_box(translate_z(1.7f) * line_rectangle, focus_color());
+        }
     }
 
     super::draw(std::move(context), display_time_point);
@@ -121,8 +154,12 @@ void toolbar_widget::update_constraints_for_child(widget const &child, ssize_t i
     shared_height = std::max(shared_height, child.preferred_size().height() + child.margin() * 2.0f);
 }
 
-void toolbar_widget::update_layout_for_child(widget &child, ssize_t index, matrix3 const &to_window, utc_nanoseconds display_time_point, bool need_layout)
-    const noexcept
+void toolbar_widget::update_layout_for_child(
+    widget &child,
+    ssize_t index,
+    matrix3 const &to_window,
+    utc_nanoseconds display_time_point,
+    bool need_layout) const noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -151,6 +188,21 @@ widget &toolbar_widget::add_widget(horizontal_alignment alignment, std::unique_p
     }
 
     return ref;
+}
+
+[[nodiscard]] color toolbar_widget::focus_color() const noexcept
+{
+    if (enabled) {
+        if (window.active) {
+            return theme().color(theme_color::accent);
+        } else if (hover) {
+            return theme().color(theme_color::border, semantic_layer + 1);
+        } else {
+            return theme().color(theme_color::border, semantic_layer);
+        }
+    } else {
+        return theme().color(theme_color::border, semantic_layer - 1);
+    }
 }
 
 } // namespace tt

@@ -71,7 +71,7 @@ tt::font_book &widget::font_book() const noexcept
 [[nodiscard]] color widget::background_color() const noexcept
 {
     if (enabled) {
-        if (_hover) {
+        if (hover) {
             return theme().color(theme_color::fill, semantic_layer + 1);
         } else {
             return theme().color(theme_color::fill, semantic_layer);
@@ -84,7 +84,7 @@ tt::font_book &widget::font_book() const noexcept
 [[nodiscard]] color widget::foreground_color() const noexcept
 {
     if (enabled) {
-        if (_hover) {
+        if (hover) {
             return theme().color(theme_color::border, semantic_layer + 1);
         } else {
             return theme().color(theme_color::border, semantic_layer);
@@ -97,9 +97,9 @@ tt::font_book &widget::font_book() const noexcept
 [[nodiscard]] color widget::focus_color() const noexcept
 {
     if (enabled) {
-        if (_focus && window.active) {
+        if (focus && window.active) {
             return theme().color(theme_color::accent);
-        } else if (_hover) {
+        } else if (hover) {
             return theme().color(theme_color::border, semantic_layer + 1);
         } else {
             return theme().color(theme_color::border, semantic_layer);
@@ -185,7 +185,6 @@ void widget::set_layout_parameters(
 {
     tt_axiom(is_gui_thread());
 
-    _local_to_parent = local_to_parent;
     _parent_to_local = ~local_to_parent;
     if (parent) {
         _local_to_window = local_to_parent * parent->local_to_window();
@@ -229,12 +228,6 @@ void widget::set_layout_parameters_from_parent(aarectangle child_rectangle) noex
 {
     tt_axiom(is_gui_thread());
     return _parent_to_local;
-}
-
-[[nodiscard]] matrix3 widget::local_to_parent() const noexcept
-{
-    tt_axiom(is_gui_thread());
-    return _local_to_parent;
 }
 
 [[nodiscard]] matrix3 widget::window_to_local() const noexcept
@@ -329,7 +322,7 @@ void widget::draw(draw_context context, utc_nanoseconds display_time_point) noex
 
 void widget::request_redraw() const noexcept
 {
-    window.request_redraw(bounding_rectangle(_local_to_window * _clipping_rectangle));
+    window.request_redraw(_bounding_rectangle);
 }
 
 void widget::request_relayout() noexcept
@@ -379,25 +372,25 @@ bool widget::handle_event(command command) noexcept
     switch (command) {
         using enum tt::command;
     case gui_keyboard_enter:
-        _focus = true;
+        focus = true;
         // When scrolling, include the margin, so that the widget is clear from the edge of the
         // scroll view's aperture.
-        scroll_to_show(rectangle() + margin());
+        scroll_to_show();
         request_redraw();
         return true;
 
     case gui_keyboard_exit:
-        _focus = false;
+        focus = false;
         request_redraw();
         return true;
 
     case gui_mouse_enter:
-        _hover = true;
+        hover = true;
         request_redraw();
         return true;
 
     case gui_mouse_exit:
-        _hover = false;
+        hover = false;
         request_redraw();
         return true;
 
@@ -539,12 +532,12 @@ widget const *widget::find_next_widget(
     return parent->find_last_widget(group) == this;
 }
 
-void widget::scroll_to_show(tt::rectangle rectangle) noexcept
+void widget::scroll_to_show(tt::aarectangle rectangle) noexcept
 {
     tt_axiom(is_gui_thread());
 
     if (parent) {
-        parent->scroll_to_show(_local_to_parent * rectangle);
+        parent->scroll_to_show(rectangle);
     }
 }
 

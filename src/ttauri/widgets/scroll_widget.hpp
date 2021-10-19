@@ -285,22 +285,20 @@ public:
         return handled;
     }
 
-    void scroll_to_show(tt::rectangle rectangle) noexcept override
+    void scroll_to_show(tt::aarectangle to_show) noexcept override
     {
-        auto rectangle_ = bounding_rectangle(rectangle);
-
         float delta_x = 0.0f;
-        if (rectangle_.right() > _aperture_rectangle.right()) {
-            delta_x = rectangle_.right() - _aperture_rectangle.right();
-        } else if (rectangle_.left() < _aperture_rectangle.left()) {
-            delta_x = rectangle_.left() - _aperture_rectangle.left();
+        if (to_show.right() > _bounding_rectangle.right()) {
+            delta_x = to_show.right() - _bounding_rectangle.right();
+        } else if (to_show.left() < _bounding_rectangle.left()) {
+            delta_x = to_show.left() - _bounding_rectangle.left();
         }
 
         float delta_y = 0.0f;
-        if (rectangle_.top() > _aperture_rectangle.top()) {
-            delta_y = rectangle_.top() - _aperture_rectangle.top();
-        } else if (rectangle_.bottom() < _aperture_rectangle.bottom()) {
-            delta_y = rectangle_.bottom() - _aperture_rectangle.bottom();
+        if (to_show.top() > _bounding_rectangle.top()) {
+            delta_y = to_show.top() - _bounding_rectangle.top();
+        } else if (to_show.bottom() < _bounding_rectangle.bottom()) {
+            delta_y = to_show.bottom() - _bounding_rectangle.bottom();
         }
 
         _scroll_offset_x += delta_x;
@@ -308,7 +306,7 @@ public:
 
         // There may be recursive scroll view, and they all need to move until the rectangle is visible.
         if (parent) {
-            parent->scroll_to_show(_local_to_parent * translate2(delta_x, delta_y) * rectangle);
+            parent->scroll_to_show(translate2(delta_x, delta_y) * to_show);
         }
     }
     // @endprivatesection
