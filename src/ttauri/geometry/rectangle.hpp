@@ -60,6 +60,11 @@ public:
         up = vector3{diagonal._0y00()};
     }
 
+    constexpr explicit rectangle(extent2 size) noexcept :
+        rectangle(point3{}, vector3{size.width(), 0.0f, 0.0f}, vector3{0.0f, size.height(), 0.0f})
+    {
+    }
+
     constexpr rectangle &operator=(aarectangle rhs) noexcept
     {
         ttlet p0 = get<0>(rhs);

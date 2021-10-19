@@ -29,20 +29,24 @@ namespace tt {
     }
 }
 
-void radio_button_widget::layout(extent2 new_size, utc_nanoseconds displayTimePoint, bool need_layout) noexcept
+void radio_button_widget::layout(
+    matrix3 const &to_window,
+    extent2 const &new_size,
+    utc_nanoseconds display_time_point,
+    bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _relayout.exchange(false);
-    if (need_layout) {
+    if (set_layout(to_window, new_size) or need_layout) {
         _button_rectangle = align(rectangle(), _button_size, alignment::top_left);
 
         _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, width(), height()};
 
-        _pip_rectangle =
-            align(_button_rectangle, extent2{theme().icon_size, theme().icon_size}, alignment::middle_center);
+        _pip_rectangle = align(_button_rectangle, extent2{theme().icon_size, theme().icon_size}, alignment::middle_center);
+
+        layout_button(to_window, display_time_point, need_layout);
+        request_redraw();
     }
-    super::layout(new_size, displayTimePoint, need_layout);
 }
 
 void radio_button_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
@@ -77,7 +81,7 @@ void radio_button_widget::draw_radio_pip(draw_context const &context, utc_nanose
     // draw pip
     auto float_value = _animated_value.current_value();
     if (float_value > 0.0) {
-        ttlet scaled_pip_rectangle = scale(_pip_rectangle, float_value);
+        ttlet scaled_pip_rectangle = _pip_rectangle * float_value;
         context.draw_box(scaled_pip_rectangle, accent_color(), corner_shapes{scaled_pip_rectangle.height() * 0.5f});
     }
 }

@@ -72,7 +72,7 @@ public:
     /// @privatesection
     [[nodiscard]] float margin() const noexcept override;
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
-    void layout(extent2 new_size, utc_nanoseconds displayTimePoint, bool need_layout) noexcept override;
+    void layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds displayTimePoint, bool need_layout) noexcept override;
     void draw(draw_context context, utc_nanoseconds display_time_point) noexcept override;
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
     [[nodiscard]] bool handle_event(command command) noexcept override;

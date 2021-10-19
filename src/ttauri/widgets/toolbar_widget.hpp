@@ -73,7 +73,7 @@ public:
 
     [[nodiscard]] float margin() const noexcept override;
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept;
-    void layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept override;
+    void layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept override;
     void draw(draw_context context, utc_nanoseconds display_time_point) noexcept override;
     hitbox hitbox_test(point2 position) const noexcept override;
     /// @endprivatesection
@@ -84,8 +84,12 @@ private:
 
     void update_constraints_for_child(widget const &child, ssize_t index, float &shared_height) noexcept;
 
-    void
-    update_layout_for_child(widget &child, ssize_t index, utc_nanoseconds display_time_point, bool need_layout) const noexcept;
+    void update_layout_for_child(
+        widget &child,
+        ssize_t index,
+        matrix3 const &to_window,
+        utc_nanoseconds display_time_point,
+        bool need_layout) const noexcept;
 
     /** Add a widget directly to this widget.
      */

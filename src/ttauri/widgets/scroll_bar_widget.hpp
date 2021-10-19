@@ -66,12 +66,11 @@ public:
         }
     }
 
-    void layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept override
+    void layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        need_layout |= _relayout.exchange(false);
-        if (need_layout) {
+        if (set_layout(to_window, new_size) or need_layout) {
             tt_axiom(*content != 0.0f);
 
             // Calculate the position of the slider.

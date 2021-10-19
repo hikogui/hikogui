@@ -148,17 +148,16 @@ public:
         }
     }
 
-    void layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept override
+    void layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        need_layout |= _relayout.exchange(false);
-        if (need_layout) {
+        if (set_layout(to_window, new_size) or need_layout) {
             _layout.set_size(axis == axis::row ? rectangle().width() : rectangle().height());
 
             ssize_t index = 0;
             for (ttlet &child : _children) {
-                update_layout_for_child(*child, index++, display_time_point, need_layout);
+                update_layout_for_child(*child, index++, to_window, display_time_point, need_layout);
             }
 
             tt_axiom(index == std::ssize(_children));
@@ -203,7 +202,8 @@ private:
     }
 
     void
-    update_layout_for_child(widget &child, ssize_t index, utc_nanoseconds display_time_point, bool need_layout) const noexcept
+    update_layout_for_child(widget &child, ssize_t index, matrix3 const &to_window, utc_nanoseconds display_time_point, bool need_layout)
+        const noexcept
     {
         tt_axiom(is_gui_thread());
 
@@ -223,7 +223,7 @@ private:
 
         child.set_layout_parameters_from_parent(child_rectangle);
         if (child.visible) {
-            child.layout(child_rectangle.size(), display_time_point, need_layout);
+            child.layout(translate2{child_rectangle} * to_window, child_rectangle.size(), display_time_point, need_layout);
         }
     }
 };

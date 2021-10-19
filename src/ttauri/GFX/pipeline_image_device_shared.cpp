@@ -79,7 +79,7 @@ void device_shared::updateAtlasWithStagingPixelMap(const image &image)
     // Add one pixel of border around the actual image and keep extending
     // until the full border width is finished.
     for (int b = 0; b < Page::border; b++) {
-        rectangle = expand(rectangle, 1);
+        rectangle = rectangle + 1.0f;
 
         auto pixel_map = stagingTexture.pixel_map.submap(rectangle);
         makeTransparentBorder(pixel_map);
@@ -111,7 +111,7 @@ void device_shared::updateAtlasWithStagingPixelMap(const image &image)
 
         // During copying we want to copy extra pixels around each page, this allows for non-nearest-neighbor sampling
         // on the edge of a page.
-        ttlet imageRectToCopy = expand(imageRectInStagingImage, narrow_cast<float>(Page::border));
+        ttlet imageRectToCopy = imageRectInStagingImage + narrow_cast<float>(Page::border);
 
         // We are copying the border into the atlas as well.
         ttlet atlasPositionIncludingBorder = remove_border_translate * getAtlasPositionFromPage(page);

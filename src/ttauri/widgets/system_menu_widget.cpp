@@ -33,18 +33,17 @@ system_menu_widget::constrain(utc_nanoseconds display_time_point, bool need_reco
     }
 }
 
-void system_menu_widget::layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
+void system_menu_widget::layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _relayout.exchange(false);
-    if (need_layout) {
+    if (set_layout(to_window, new_size) or need_layout) {
         ttlet icon_height =
             rectangle().height() < theme().toolbar_height * 1.2f ? rectangle().height() : theme().toolbar_height;
         ttlet icon_rectangle = aarectangle{rectangle().left(), rectangle().top() - icon_height, rectangle().width(), icon_height};
 
         _icon_widget->set_layout_parameters_from_parent(icon_rectangle);
-        _icon_widget->layout(icon_rectangle.size(), display_time_point, need_layout);
+        _icon_widget->layout(translate2{icon_rectangle} * to_window, icon_rectangle.size(), display_time_point, need_layout);
 
         // Leave space for window resize handles on the left and top.
         system_menu_rectangle = aarectangle{

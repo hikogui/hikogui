@@ -80,12 +80,11 @@ label_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrai
     }
 }
 
-void label_widget::layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
+void label_widget::layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _relayout.exchange(false);
-    if (need_layout) {
+    if (set_layout(to_window, new_size) or need_layout) {
         auto text_rect = aarectangle{};
         if (*alignment == horizontal_alignment::left) {
             ttlet text_width = width() - _icon_size - _inner_margin;
@@ -124,11 +123,11 @@ void label_widget::layout(extent2 new_size, utc_nanoseconds display_time_point, 
 
         _icon_widget->set_layout_parameters_from_parent(icon_rect);
         if (_icon_widget->visible) {
-            _icon_widget->layout(icon_rect.size(), display_time_point, need_layout);
+            _icon_widget->layout(translate2{icon_rect} * to_window, icon_rect.size(), display_time_point, need_layout);
         }
         _text_widget->set_layout_parameters_from_parent(text_rect);
         if (_text_widget->visible) {
-            _text_widget->layout(text_rect.size(), display_time_point, need_layout);
+            _text_widget->layout(translate2{text_rect} * to_window, text_rect.size(), display_time_point, need_layout);
         }
         request_redraw();
     }

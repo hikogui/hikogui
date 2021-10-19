@@ -194,7 +194,6 @@ void widget::set_layout_parameters(
         _local_to_window = local_to_parent;
         _window_to_local = ~local_to_parent;
     }
-    _size = size;
     _clipping_rectangle = clipping_rectangle;
     _visible_rectangle = intersect(aarectangle{size}, clipping_rectangle);
 }
@@ -209,7 +208,7 @@ void widget::set_layout_parameters_from_parent(
     ttlet child_translate = translate2{child_rectangle};
     ttlet child_size = child_rectangle.size();
     ttlet rectangle = aarectangle{child_size};
-    ttlet child_clipping_rectangle = intersect(~child_translate * parent_clipping_rectangle, expand(rectangle, margin()));
+    ttlet child_clipping_rectangle = intersect(~child_translate * parent_clipping_rectangle, rectangle + margin());
 
     set_layout_parameters(translate_z(draw_layer_delta) * child_translate, child_size, child_clipping_rectangle);
 }
@@ -335,7 +334,6 @@ void widget::request_redraw() const noexcept
 
 void widget::request_relayout() noexcept
 {
-    _relayout.store(true, std::memory_order::relaxed);
     window.request_relayout();
 }
 
@@ -384,7 +382,7 @@ bool widget::handle_event(command command) noexcept
         _focus = true;
         // When scrolling, include the margin, so that the widget is clear from the edge of the
         // scroll view's aperture.
-        scroll_to_show(expand(rectangle(), margin()));
+        scroll_to_show(rectangle() + margin());
         request_redraw();
         return true;
 
@@ -574,7 +572,7 @@ void widget::scroll_to_show(tt::rectangle rectangle) noexcept
     tt_axiom(is_gui_thread());
 
     ttlet requested_window_rectangle = bounding_rectangle(local_to_window() * requested_rectangle);
-    ttlet window_bounds = shrink(aarectangle{window.screen_rectangle.size()}, theme().margin);
+    ttlet window_bounds = aarectangle{window.screen_rectangle.size()} - theme().margin;
     ttlet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
     return bounding_rectangle(window_to_local() * response_window_rectangle);
 }

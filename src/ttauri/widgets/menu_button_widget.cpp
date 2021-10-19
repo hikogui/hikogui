@@ -24,8 +24,7 @@ namespace tt {
         _short_cut_size = {theme().size, theme().size};
 
         // On left side a check mark, on right side short-cut. Around the label extra margin.
-        ttlet extra_size =
-            extent2{theme().margin * 4.0f + _check_size.width() + _short_cut_size.width(), theme().margin * 2.0f};
+        ttlet extra_size = extent2{theme().margin * 4.0f + _check_size.width() + _short_cut_size.width(), theme().margin * 2.0f};
         _minimum_size += extra_size;
         _preferred_size += extra_size;
         _maximum_size += extra_size;
@@ -37,29 +36,30 @@ namespace tt {
     }
 }
 
-void menu_button_widget::layout(extent2 new_size, utc_nanoseconds displayTimePoint, bool need_layout) noexcept
+void menu_button_widget::layout(
+    matrix3 const &to_window,
+    extent2 const &new_size,
+    utc_nanoseconds display_time_point,
+    bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _relayout.exchange(false);
-    if (need_layout) {
-        ttlet inside_rectangle = shrink(rectangle(), theme().margin);
+    if (set_layout(to_window, new_size) or need_layout) {
+        ttlet inside_rectangle = rectangle() - theme().margin;
 
         _check_rectangle = align(inside_rectangle, _check_size, alignment::middle_left);
         _short_cut_rectangle = align(inside_rectangle, _short_cut_size, alignment::middle_right);
 
-        _label_rectangle = aarectangle{
-            _check_rectangle.right() + theme().margin,
-            0.0f,
-            _short_cut_rectangle.left() - theme().margin,
-            height()};
+        _label_rectangle =
+            aarectangle{_check_rectangle.right() + theme().margin, 0.0f, _short_cut_rectangle.left() - theme().margin, height()};
 
         _check_glyph = font_book().find_glyph(elusive_icon::Ok);
         ttlet check_glyph_bb = _check_glyph.get_bounding_box();
-        _check_glyph_rectangle =
-            align(_check_rectangle, scale(check_glyph_bb, theme().icon_size), alignment::middle_center);
+        _check_glyph_rectangle = align(_check_rectangle, check_glyph_bb * theme().icon_size, alignment::middle_center);
+
+        layout_button(to_window, display_time_point, need_layout);
+        request_redraw();
     }
-    super::layout(new_size, displayTimePoint, need_layout);
 }
 
 void menu_button_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept

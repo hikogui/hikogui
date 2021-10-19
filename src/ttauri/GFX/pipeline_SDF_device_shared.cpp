@@ -171,7 +171,7 @@ std::pair<atlas_rect, bool> device_shared::get_glyph_from_atlas(font_glyph_ids g
 aarectangle device_shared::get_bounding_box(font_glyph_ids const &glyphs) const noexcept
 {
     // Adjust bounding box by adding a border based on 1EM.
-    return expand(glyphs.get_bounding_box(), scaledDrawBorder);
+    return glyphs.get_bounding_box() + scaledDrawBorder;
 }
 
 bool device_shared::_place_vertices(

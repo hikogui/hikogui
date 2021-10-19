@@ -43,12 +43,15 @@ window_traffic_lights_widget::window_traffic_lights_widget(gui_window &window, w
     }
 }
 
-void window_traffic_lights_widget::layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
+void window_traffic_lights_widget::layout(
+    matrix3 const &to_window,
+    extent2 const &new_size,
+    utc_nanoseconds display_time_point,
+    bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _relayout.exchange(false);
-    if (need_layout) {
+    if (set_layout(to_window, new_size) or need_layout) {
         auto extent = rectangle().size();
         if (extent.height() > theme().toolbar_height * 1.2f) {
             extent = extent2{extent.width(), theme().toolbar_height};
@@ -98,13 +101,10 @@ void window_traffic_lights_widget::layout(extent2 new_size, utc_nanoseconds disp
 
         _glyph_size = theme().operating_system == operating_system::macos ? 5.0f : theme().icon_size;
 
-        closeWindowGlyphRectangle = align(closeRectangle, scale(closeWindowGlyphBB, _glyph_size), alignment::middle_center);
-        minimizeWindowGlyphRectangle =
-            align(minimizeRectangle, scale(minimizeWindowGlyphBB, _glyph_size), alignment::middle_center);
-        maximizeWindowGlyphRectangle =
-            align(maximizeRectangle, scale(maximizeWindowGlyphBB, _glyph_size), alignment::middle_center);
-        restoreWindowGlyphRectangle =
-            align(maximizeRectangle, scale(restoreWindowGlyphBB, _glyph_size), alignment::middle_center);
+        closeWindowGlyphRectangle = align(closeRectangle, closeWindowGlyphBB * _glyph_size, alignment::middle_center);
+        minimizeWindowGlyphRectangle = align(minimizeRectangle, minimizeWindowGlyphBB * _glyph_size, alignment::middle_center);
+        maximizeWindowGlyphRectangle = align(maximizeRectangle, maximizeWindowGlyphBB * _glyph_size, alignment::middle_center);
+        restoreWindowGlyphRectangle = align(maximizeRectangle, restoreWindowGlyphBB * _glyph_size, alignment::middle_center);
         request_redraw();
     }
 }

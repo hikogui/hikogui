@@ -58,24 +58,23 @@ toolbar_widget::toolbar_widget(gui_window &window, widget *parent) noexcept : su
     }
 }
 
-void toolbar_widget::layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
+void toolbar_widget::layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _relayout.exchange(false);
-    if (need_layout) {
+    if (set_layout(to_window, new_size) or need_layout) {
         _layout.set_size(rectangle().width());
 
         ssize_t index = 0;
         for (ttlet &child : _left_children) {
-            update_layout_for_child(*child, index++, display_time_point, need_layout);
+            update_layout_for_child(*child, index++, to_window, display_time_point, need_layout);
         }
 
         // Skip over the cell between left and right children.
         index++;
 
         for (ttlet &child : std::views::reverse(_right_children)) {
-            update_layout_for_child(*child, index++, display_time_point, need_layout);
+            update_layout_for_child(*child, index++, to_window, display_time_point, need_layout);
         }
 
         tt_axiom(index == std::ssize(_left_children) + 1 + std::ssize(_right_children));
@@ -122,7 +121,7 @@ void toolbar_widget::update_constraints_for_child(widget const &child, ssize_t i
     shared_height = std::max(shared_height, child.preferred_size().height() + child.margin() * 2.0f);
 }
 
-void toolbar_widget::update_layout_for_child(widget &child, ssize_t index, utc_nanoseconds display_time_point, bool need_layout)
+void toolbar_widget::update_layout_for_child(widget &child, ssize_t index, matrix3 const &to_window, utc_nanoseconds display_time_point, bool need_layout)
     const noexcept
 {
     tt_axiom(is_gui_thread());
@@ -137,7 +136,7 @@ void toolbar_widget::update_layout_for_child(widget &child, ssize_t index, utc_n
 
     if (child.visible) {
         child.set_layout_parameters_from_parent(child_rectangle);
-        child.layout(child_rectangle.size(), display_time_point, need_layout);
+        child.layout(translate2{child_rectangle} * to_window, child_rectangle.size(), display_time_point, need_layout);
     }
 }
 

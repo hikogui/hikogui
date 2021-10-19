@@ -88,7 +88,6 @@ public:
     }
 
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
-    void layout(extent2 new_size, utc_nanoseconds displayTimePoint, bool need_layout) noexcept override;
     [[nodiscard]] color background_color() const noexcept override;
     [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept final;
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
@@ -108,6 +107,8 @@ protected:
 
     ~abstract_button_widget();
     abstract_button_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
+
+    void layout_button(matrix3 const &to_window, utc_nanoseconds displayTimePoint, bool need_layout) noexcept;
 };
 
 } // namespace tt

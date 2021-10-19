@@ -115,12 +115,11 @@ bool grid_widget::constrain(utc_nanoseconds display_time_point, bool need_recons
     }
 }
 
-void grid_widget::layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
+void grid_widget::layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _relayout.exchange(false);
-    if (need_layout) {
+    if (set_layout(to_window, new_size) or need_layout) {
         _columns.set_size(width());
         _rows.set_size(height());
 
@@ -129,7 +128,7 @@ void grid_widget::layout(extent2 new_size, utc_nanoseconds display_time_point, b
             ttlet child_rectangle = cell.rectangle(_columns, _rows, height());
             child->set_layout_parameters_from_parent(child_rectangle);
             if (child->visible) {
-                child->layout(child_rectangle.size(), display_time_point, need_layout);
+                child->layout(translate2{child_rectangle} * to_window, child_rectangle.size(), display_time_point, need_layout);
             }
         }
         request_redraw();

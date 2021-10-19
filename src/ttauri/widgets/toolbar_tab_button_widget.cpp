@@ -25,15 +25,20 @@ namespace tt {
     }
 }
 
-void toolbar_tab_button_widget::layout(extent2 new_size, utc_nanoseconds displayTimePoint, bool need_layout) noexcept
+void toolbar_tab_button_widget::layout(
+    matrix3 const &to_window,
+    extent2 const &new_size,
+    utc_nanoseconds display_time_point,
+    bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _relayout.exchange(false);
-    if (need_layout) {
+    if (set_layout(to_window, new_size) or need_layout) {
         _label_rectangle = aarectangle{theme().margin, 0.0f, width() - theme().margin * 2.0f, height() - theme().margin};
+
+        layout_button(to_window, display_time_point, need_layout);
+        request_redraw();
     }
-    super::layout(new_size, displayTimePoint, need_layout);
 }
 
 void toolbar_tab_button_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept

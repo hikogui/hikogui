@@ -89,12 +89,11 @@ selection_widget::selection_widget(gui_window &window, widget *parent, std::weak
     }
 }
 
-void selection_widget::layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
+void selection_widget::layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _relayout.exchange(false);
-    if (need_layout) {
+    if (set_layout(to_window, new_size) or need_layout) {
         // The overlay itself will make sure the overlay fits the window, so we give the preferred size and position
         // from the point of view of the selection widget.
 
@@ -109,19 +108,19 @@ void selection_widget::layout(extent2 new_size, utc_nanoseconds display_time_poi
         ttlet overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};
 
         ttlet overlay_rectangle = make_overlay_rectangle(overlay_rectangle_request);
-        ttlet overlay_clipping_rectangle = expand(overlay_rectangle, _overlay_widget->margin());
+        ttlet overlay_clipping_rectangle = overlay_rectangle + _overlay_widget->margin();
 
         if (_overlay_widget->visible) {
             _overlay_widget->set_layout_parameters_from_parent(
                 overlay_rectangle, overlay_clipping_rectangle, _overlay_widget->draw_layer - draw_layer);
-            _overlay_widget->layout(overlay_rectangle.size(), display_time_point, need_layout);
+            _overlay_widget->layout(
+                translate2{overlay_rectangle} * to_window, overlay_rectangle.size(), display_time_point, need_layout);
         }
 
         _left_box_rectangle = aarectangle{0.0f, 0.0f, theme().size, rectangle().height()};
         _chevrons_glyph = font_book().find_glyph(elusive_icon::ChevronUp);
         ttlet chevrons_glyph_bbox = _chevrons_glyph.get_bounding_box();
-        _chevrons_rectangle = align(_left_box_rectangle, scale(chevrons_glyph_bbox, theme().icon_size), alignment::middle_center);
-        _chevrons_rectangle = align(_left_box_rectangle, scale(chevrons_glyph_bbox, theme().icon_size), alignment::middle_center);
+        _chevrons_rectangle = align(_left_box_rectangle, chevrons_glyph_bbox * theme().icon_size, alignment::middle_center);
 
         // The unknown_label is located to the right of the selection box icon.
         _option_rectangle = aarectangle{
@@ -132,11 +131,13 @@ void selection_widget::layout(extent2 new_size, utc_nanoseconds display_time_poi
 
         _unknown_label_widget->set_layout_parameters_from_parent(_option_rectangle);
         if (_unknown_label_widget->visible) {
-            _unknown_label_widget->layout(_option_rectangle.size(), display_time_point, need_layout);
+            _unknown_label_widget->layout(
+                translate2{_option_rectangle} * to_window, _option_rectangle.size(), display_time_point, need_layout);
         }
         _current_label_widget->set_layout_parameters_from_parent(_option_rectangle);
         if (_current_label_widget->visible) {
-            _current_label_widget->layout(_option_rectangle.size(), display_time_point, need_layout);
+            _current_label_widget->layout(
+                translate2{_option_rectangle} * to_window, _option_rectangle.size(), display_time_point, need_layout);
         }
         request_redraw();
     }

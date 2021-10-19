@@ -6,8 +6,7 @@
 
 namespace tt {
 
-[[nodiscard]] bool
-momentary_button_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] bool momentary_button_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -25,15 +24,20 @@ momentary_button_widget::constrain(utc_nanoseconds display_time_point, bool need
     }
 }
 
-void momentary_button_widget::layout(extent2 new_size, utc_nanoseconds displayTimePoint, bool need_layout) noexcept
+void momentary_button_widget::layout(
+    matrix3 const &to_window,
+    extent2 const &new_size,
+    utc_nanoseconds display_time_point,
+    bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _relayout.exchange(false);
-    if (need_layout) {
+    if (set_layout(to_window, new_size) or need_layout) {
         _label_rectangle = aarectangle{theme().margin, 0.0f, width() - theme().margin * 2.0f, height()};
+
+        layout_button(to_window, display_time_point, need_layout);
+        request_redraw();
     }
-    super::layout(new_size, displayTimePoint, need_layout);
 }
 
 void momentary_button_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
@@ -52,8 +56,7 @@ void momentary_button_widget::draw_label_button(draw_context const &context) noe
     tt_axiom(is_gui_thread());
 
     // Move the border of the button in the middle of a pixel.
-    context.draw_box_with_border_inside(
-        rectangle(), background_color(), focus_color(), corner_shapes{theme().rounding_radius});
+    context.draw_box_with_border_inside(rectangle(), background_color(), focus_color(), corner_shapes{theme().rounding_radius});
 }
 
 } // namespace tt

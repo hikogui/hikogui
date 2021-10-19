@@ -42,27 +42,30 @@ checkbox_widget::checkbox_widget(gui_window &window, widget *parent, std::weak_p
     }
 }
 
-void checkbox_widget::layout(extent2 new_size, utc_nanoseconds displayTimePoint, bool need_layout) noexcept
+void checkbox_widget::layout(
+    matrix3 const &to_window,
+    extent2 const &new_size,
+    utc_nanoseconds display_time_point,
+    bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _relayout.exchange(false);
-    if (need_layout) {
+    if (set_layout(to_window, new_size) or need_layout) {
         _button_rectangle = align(rectangle(), _button_size, alignment::top_left);
 
         _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, width(), height()};
 
         _check_glyph = font_book().find_glyph(elusive_icon::Ok);
         ttlet check_glyph_bb = _check_glyph.get_bounding_box();
-        _check_glyph_rectangle =
-            align(_button_rectangle, scale(check_glyph_bb, theme().icon_size), alignment::middle_center);
+        _check_glyph_rectangle = align(_button_rectangle, check_glyph_bb * theme().icon_size, alignment::middle_center);
 
         _minus_glyph = font_book().find_glyph(elusive_icon::Minus);
         ttlet minus_glyph_bb = _minus_glyph.get_bounding_box();
-        _minus_glyph_rectangle =
-            align(_button_rectangle, scale(minus_glyph_bb, theme().icon_size), alignment::middle_center);
+        _minus_glyph_rectangle = align(_button_rectangle, minus_glyph_bb * theme().icon_size, alignment::middle_center);
+
+        layout_button(to_window, display_time_point, need_layout);
+        request_redraw();
     }
-    super::layout(new_size, displayTimePoint, need_layout);
 }
 
 void checkbox_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept

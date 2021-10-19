@@ -73,20 +73,19 @@ void window_widget::constructor_implementation() noexcept
     }
 }
 
-void window_widget::layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
+void window_widget::layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _relayout.exchange(false);
-    if (need_layout) {
+    if (set_layout(to_window, new_size) or need_layout) {
         ttlet toolbar_height = _toolbar->preferred_size().height();
         ttlet toolbar_rectangle = aarectangle{0.0f, rectangle().height() - toolbar_height, rectangle().width(), toolbar_height};
         _toolbar->set_layout_parameters_from_parent(toolbar_rectangle);
-        _toolbar->layout(toolbar_rectangle.size(), display_time_point, need_layout);
+        _toolbar->layout(translate2{toolbar_rectangle} * to_window, toolbar_rectangle.size(), display_time_point, need_layout);
 
         ttlet content_rectangle = aarectangle{0.0f, 0.0f, rectangle().width(), rectangle().height() - toolbar_height};
         _content->set_layout_parameters_from_parent(content_rectangle);
-        _content->layout(content_rectangle.size(), display_time_point, need_layout);
+        _content->layout(translate2{content_rectangle} * to_window, content_rectangle.size(), display_time_point, need_layout);
         request_redraw();
     }
 }

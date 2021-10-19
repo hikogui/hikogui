@@ -80,18 +80,17 @@ tab_widget::tab_widget(gui_window &window, widget *parent, std::weak_ptr<delegat
     return has_updated_contraints;
 }
 
-void tab_widget::layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
+void tab_widget::layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _relayout.exchange(false);
-    if (need_layout) {
+    if (set_layout(to_window, new_size) or need_layout) {
         auto buffer = pmr::scoped_buffer<256>{};
         for (auto *child : children(buffer.allocator())) {
             tt_axiom(child);
             if (child->visible) {
                 child->set_layout_parameters_from_parent(rectangle());
-                child->layout(rectangle().size(), display_time_point, need_layout);
+                child->layout(to_window, rectangle().size(), display_time_point, need_layout);
             }
         }
         request_redraw();

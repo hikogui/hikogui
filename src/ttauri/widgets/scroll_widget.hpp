@@ -174,13 +174,12 @@ public:
         return has_updated_contraints;
     }
 
-    void layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept override
+    void layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept override
     {
         tt_axiom(is_gui_thread());
         tt_axiom(_content);
 
-        need_layout |= _relayout.exchange(false);
-        if (need_layout) {
+        if (set_layout(to_window, new_size) or need_layout) {
             ttlet vertical_scroll_bar_width = _vertical_scroll_bar->preferred_size().width();
             ttlet horizontal_scroll_bar_height = _horizontal_scroll_bar->preferred_size().height();
 
@@ -221,20 +220,32 @@ public:
             ttlet content_rectangle = aarectangle{
                 -_scroll_offset_x, -_scroll_offset_y - height_adjustment, content_size.width(), content_size.height()};
 
-            _vertical_scroll_bar->set_layout_parameters_from_parent(vertical_scroll_bar_rectangle);
             if (_vertical_scroll_bar->visible) {
-                _vertical_scroll_bar->layout(vertical_scroll_bar_rectangle.size(), display_time_point, need_layout);
+                _vertical_scroll_bar->set_layout_parameters_from_parent(vertical_scroll_bar_rectangle);
+                _vertical_scroll_bar->layout(
+                    translate2{vertical_scroll_bar_rectangle} * to_window,
+                    vertical_scroll_bar_rectangle.size(),
+                    display_time_point,
+                    need_layout);
             }
-            _horizontal_scroll_bar->set_layout_parameters_from_parent(horizontal_scroll_bar_rectangle);
             if (_horizontal_scroll_bar->visible) {
-                _horizontal_scroll_bar->layout(horizontal_scroll_bar_rectangle.size(), display_time_point, need_layout);
+                _horizontal_scroll_bar->set_layout_parameters_from_parent(horizontal_scroll_bar_rectangle);
+                _horizontal_scroll_bar->layout(
+                    translate2{horizontal_scroll_bar_rectangle} * to_window,
+                    horizontal_scroll_bar_rectangle.size(),
+                    display_time_point,
+                    need_layout);
             }
 
             // Make a clipping rectangle that fits the aperture_rectangle exactly.
             if (_content->visible) {
                 _content->set_layout_parameters_from_parent(
                     content_rectangle, _aperture_rectangle, _content->draw_layer - draw_layer);
-                _content->layout(content_rectangle.size(), display_time_point, need_layout);
+                _content->layout(
+                    translate2{content_rectangle} * to_window,
+                    content_rectangle.size(),
+                    display_time_point,
+                    need_layout);
             }
 
             if constexpr (controls_window) {

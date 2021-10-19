@@ -44,12 +44,11 @@ text_widget::text_widget(gui_window &window, widget *parent) noexcept : super(wi
     }
 }
 
-void text_widget::layout(extent2 new_size, utc_nanoseconds displayTimePoint, bool need_layout) noexcept
+void text_widget::layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds displayTimePoint, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _relayout.exchange(false);
-    if (need_layout) {
+    if (set_layout(to_window, new_size) or need_layout) {
         _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), width(), *alignment};
         _shaped_text_transform = _shaped_text.translate_base_line(point2{0.0f, base_line()});
         request_redraw();

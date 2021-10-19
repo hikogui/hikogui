@@ -17,8 +17,7 @@ toggle_widget::toggle_widget(gui_window &window, widget *parent, std::unique_ptr
 {
 }
 
-[[nodiscard]] bool
-toggle_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] bool toggle_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -41,12 +40,15 @@ toggle_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstra
     }
 }
 
-void toggle_widget::layout(extent2 new_size, utc_nanoseconds displayTimePoint, bool need_layout) noexcept
+void toggle_widget::layout(
+    matrix3 const &to_window,
+    extent2 const &new_size,
+    utc_nanoseconds display_time_point,
+    bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _relayout.exchange(false);
-    if (need_layout) {
+    if (set_layout(to_window, new_size) or need_layout) {
         _button_rectangle = align(rectangle(), _button_size, alignment::top_left);
 
         _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, width(), height()};
@@ -54,13 +56,14 @@ void toggle_widget::layout(extent2 new_size, utc_nanoseconds displayTimePoint, b
         ttlet button_square =
             aarectangle{get<0>(_button_rectangle), extent2{_button_rectangle.height(), _button_rectangle.height()}};
 
-        _pip_rectangle =
-            align(button_square, extent2{theme().icon_size, theme().icon_size}, alignment::middle_center);
+        _pip_rectangle = align(button_square, extent2{theme().icon_size, theme().icon_size}, alignment::middle_center);
 
         ttlet pip_to_button_margin_x2 = _button_rectangle.height() - _pip_rectangle.height();
         _pip_move_range = _button_rectangle.width() - _pip_rectangle.width() - pip_to_button_margin_x2;
+
+        layout_button(to_window, display_time_point, need_layout);
+        request_redraw();
     }
-    super::layout(new_size, displayTimePoint, need_layout);
 }
 
 void toggle_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
@@ -74,7 +77,6 @@ void toggle_widget::draw(draw_context context, utc_nanoseconds display_time_poin
 
     super::draw(std::move(context), display_time_point);
 }
-
 
 void toggle_widget::draw_toggle_button(draw_context context) noexcept
 {
@@ -99,4 +101,4 @@ void toggle_widget::draw_toggle_pip(draw_context draw_context, utc_nanoseconds d
     draw_context.draw_box(positioned_pip_rectangle, forground_color_, corner_shapes{positioned_pip_rectangle.height() * 0.5f});
 }
 
-}
+} // namespace tt

@@ -351,7 +351,7 @@ public:
      * @param rhs How much the width and height should be scaled by.
      * @return A new rectangle expanded on each side.
      */
-    [[nodiscard]] friend axis_aligned_rectangle scale(axis_aligned_rectangle const &lhs, float rhs) noexcept
+    [[nodiscard]] friend axis_aligned_rectangle operator*(axis_aligned_rectangle const &lhs, float rhs) noexcept
     {
         ttlet new_extent = lhs.size() * rhs;
         ttlet diff = vector2{new_extent} - vector2{lhs.size()};
@@ -368,7 +368,7 @@ public:
      *            this value may be zero or negative.
      * @return A new rectangle expanded on each side.
      */
-    [[nodiscard]] friend axis_aligned_rectangle expand(axis_aligned_rectangle const &lhs, float rhs) noexcept
+    [[nodiscard]] friend axis_aligned_rectangle operator+(axis_aligned_rectangle const &lhs, float rhs) noexcept
     {
         return axis_aligned_rectangle{lhs.v + neg<0b0011>(f32x4::broadcast(rhs))};
     }
@@ -379,9 +379,9 @@ public:
      *            this value may be zero or negative.
      * @return A new rectangle shrank on each side.
      */
-    [[nodiscard]] friend axis_aligned_rectangle shrink(axis_aligned_rectangle const &lhs, float rhs) noexcept
+    [[nodiscard]] friend axis_aligned_rectangle operator-(axis_aligned_rectangle const &lhs, float rhs) noexcept
     {
-        return expand(lhs, -rhs);
+        return lhs + -rhs;
     }
 
     [[nodiscard]] friend axis_aligned_rectangle round(axis_aligned_rectangle const &rhs) noexcept

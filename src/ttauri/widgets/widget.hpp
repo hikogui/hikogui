@@ -261,12 +261,14 @@ public:
      * @pre `widget::set_layout_parameters()` should be called.
      * @post This function will change what is returned by `widget::size()` and the transformation
      *       matrices.
+     * @param to_window A matrix to convert local coordinates to window coordinates.
      * @param new_size The new size for the widget to layout against.
      * @param display_time_point The time point when the widget will be shown on the screen.
      * @param need_layout Force the widget to layout
      * @return The new size of the widget, should be a copy of the new_size parameter.
      */
-    [[nodiscard]] virtual void layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept = 0;
+    [[nodiscard]] virtual void
+    layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept = 0;
 
     virtual [[nodiscard]] color background_color() const noexcept;
 
@@ -422,6 +424,13 @@ protected:
      */
     extent2 _size;
 
+    /** Bounding rectangle around the widget, including margin.
+     *
+     * An axis-aligned-bounding-box for requesting redraws.
+     * This bounding box is in the window's coordinate system.
+     */
+    aarectangle _bounding_rectangle;
+
     /** Clipping rectangle of the widget in local coordinates.
      */
     aarectangle _clipping_rectangle;
@@ -432,8 +441,6 @@ protected:
      * behind the border of a for example a scroll view.
      */
     aarectangle _visible_rectangle;
-
-    std::atomic<bool> _relayout = true;
 
     /** When set to true the widget will recalculate the constraints on the next call to `updateConstraints()`
      */
@@ -450,6 +457,21 @@ protected:
     [[nodiscard]] virtual pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept
     {
         co_return;
+    }
+
+    /** Set the layout parameters of a widget.
+     * 
+     * Used by the `widget::layout()` function to set it's own parameters.
+     * 
+     * @param to_window The matrix to convert local coordinates to window coordinates.
+     * @param new_size The size of the widget.
+     * @return True if anything was changed by this function.
+     */
+    bool set_layout(matrix3 const &to_window, extent2 const &new_size) noexcept
+    {
+        ttlet a = compare_then_assign(_size, new_size);
+        ttlet b = compare_then_assign(_bounding_rectangle, bounding_rectangle(to_window * (tt::aarectangle{new_size} + margin())));
+        return a or b;
     }
 
     /** Make an overlay rectangle.

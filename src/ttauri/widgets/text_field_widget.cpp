@@ -54,7 +54,7 @@ text_field_widget::~text_field_widget()
     }
 }
 
-void text_field_widget::layout(extent2 new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
+void text_field_widget::layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -62,15 +62,14 @@ void text_field_widget::layout(extent2 new_size, utc_nanoseconds display_time_po
         request_redraw();
     }
 
-    need_layout |= _relayout.exchange(false);
-    if (need_layout) {
+    if (set_layout(to_window, new_size) or need_layout) {
         _text_field_rectangle = aarectangle{extent2{_text_width + theme().margin * 2.0f, _size.height()}};
 
         // Set the clipping rectangle to within the border of the input field.
         // Add another border width, so glyphs do not touch the border.
         _text_field_clipping_rectangle = intersect(_clipping_rectangle, _text_field_rectangle);
 
-        _text_rectangle = shrink(_text_field_rectangle, theme().margin);
+        _text_rectangle = _text_field_rectangle - theme().margin;
 
         ttlet field_str = static_cast<std::string>(_field);
 
