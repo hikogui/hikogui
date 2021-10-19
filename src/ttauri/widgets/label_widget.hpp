@@ -96,7 +96,9 @@ public:
     }
 
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
-    void layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds displayTimePoint, bool need_layout) noexcept override;
+    void layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds displayTimePoint, bool need_layout) noexcept
+        override;
+    void draw(draw_context context, utc_nanoseconds display_time_point) noexcept;
     /// @endprivatesection
 private:
     float _icon_size;
@@ -104,7 +106,9 @@ private:
 
     decltype(label)::callback_ptr_type _label_callback;
 
+    aarectangle _icon_rectangle;
     std::unique_ptr<icon_widget> _icon_widget;
+    aarectangle _text_rectangle;
     std::unique_ptr<text_widget> _text_widget;
 
     label_widget(gui_window &window, widget *parent) noexcept;

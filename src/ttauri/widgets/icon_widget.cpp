@@ -148,8 +148,6 @@ void icon_widget::draw(draw_context context, utc_nanoseconds display_time_point)
         default: tt_no_default();
         }
     }
-
-    super::draw(std::move(context), display_time_point);
 }
 
 } // namespace tt

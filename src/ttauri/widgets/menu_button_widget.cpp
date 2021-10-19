@@ -70,9 +70,8 @@ void menu_button_widget::draw(draw_context context, utc_nanoseconds display_time
         context.set_clipping_rectangle(_clipping_rectangle);
         draw_menu_button(context);
         draw_check_mark(context);
+        draw_button(context, display_time_point);
     }
-
-    super::draw(std::move(context), display_time_point);
 }
 
 [[nodiscard]] bool menu_button_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept

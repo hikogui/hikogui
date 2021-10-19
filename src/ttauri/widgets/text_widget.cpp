@@ -63,8 +63,6 @@ void text_widget::draw(draw_context context, utc_nanoseconds display_time_point)
         context.set_clipping_rectangle(_clipping_rectangle);
         context.draw_text(_shaped_text, label_color(), _shaped_text_transform);
     }
-
-    super::draw(std::move(context), display_time_point);
 }
 
 } // namespace tt

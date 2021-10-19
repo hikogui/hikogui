@@ -305,7 +305,7 @@ void widget::draw(draw_context context, utc_nanoseconds display_time_point) noex
             tt_axiom(child->parent == this);
 
             if (child->visible) {
-                child->draw(child->parent_to_local() * context, display_time_point);
+                child->draw(~child->parent_to_local() * context, display_time_point);
             }
         }
     }

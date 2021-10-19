@@ -42,10 +42,16 @@ public:
         vspan<pipeline_image::vertex> &imageVertices,
         vspan<pipeline_SDF::vertex> &sdfVertices) noexcept;
 
+    /** Transform the context to the local of the child widget.
+     *
+     * @param lhs The transformation toward the child widget.
+     * @param rhs The current draw context.
+     * @return Transformed context to be used by the child widget.
+     */
     [[nodiscard]] friend draw_context operator*(geo::transformer auto const &lhs, draw_context rhs) noexcept
     {
-        rhs._scissor_rectangle = bounding_rectangle(lhs * rhs._scissor_rectangle);
-        rhs._transform = ~lhs * rhs._transform;
+        rhs._scissor_rectangle = bounding_rectangle(~lhs * rhs._scissor_rectangle);
+        rhs._transform = lhs * rhs._transform;
         return rhs;
     }
 

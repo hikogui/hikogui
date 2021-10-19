@@ -74,9 +74,8 @@ void toggle_widget::draw(draw_context context, utc_nanoseconds display_time_poin
         context.set_clipping_rectangle(_clipping_rectangle);
         draw_toggle_button(context);
         draw_toggle_pip(context, display_time_point);
+        draw_button(context, display_time_point);
     }
-
-    super::draw(std::move(context), display_time_point);
 }
 
 void toggle_widget::draw_toggle_button(draw_context context) noexcept

@@ -76,9 +76,8 @@ void checkbox_widget::draw(draw_context context, utc_nanoseconds display_time_po
         context.set_clipping_rectangle(_clipping_rectangle);
         draw_check_box(context);
         draw_check_mark(context);
+        draw_button(context, display_time_point);
     }
-
-    super::draw(std::move(context), display_time_point);
 }
 
 void checkbox_widget::draw_check_box(draw_context const &context) noexcept

@@ -47,9 +47,8 @@ void momentary_button_widget::draw(draw_context context, utc_nanoseconds display
     if (overlaps(context, _clipping_rectangle)) {
         context.set_clipping_rectangle(_clipping_rectangle);
         draw_label_button(context);
+        draw_button(context, display_time_point);
     }
-
-    super::draw(std::move(context), display_time_point);
 }
 
 void momentary_button_widget::draw_label_button(draw_context const &context) noexcept

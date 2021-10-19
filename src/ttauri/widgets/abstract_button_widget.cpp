@@ -73,6 +73,19 @@ void abstract_button_widget::unsubscribe(callback_ptr_type &callback_ptr) noexce
     }
 }
 
+void abstract_button_widget::draw_button(draw_context const &context, utc_nanoseconds display_time_point) noexcept
+{
+    if (_on_label_widget->visible) {
+        _on_label_widget->draw(translate3{_label_rectangle, 1.0f} * context, display_time_point);
+    }
+    if (_off_label_widget->visible) {
+        _off_label_widget->draw(translate3{_label_rectangle, 1.0f} * context, display_time_point);
+    }
+    if (_other_label_widget->visible) {
+        _other_label_widget->draw(translate3{_label_rectangle, 1.0f} * context, display_time_point);
+    }
+}
+
 void abstract_button_widget::layout_button(matrix3 const &to_window, utc_nanoseconds display_time_point, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());

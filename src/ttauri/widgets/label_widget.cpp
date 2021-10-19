@@ -24,8 +24,7 @@ label_widget::label_widget(gui_window &window, widget *parent) noexcept : super(
     });
 }
 
-[[nodiscard]] bool
-label_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] bool label_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -80,30 +79,34 @@ label_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrai
     }
 }
 
-void label_widget::layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
+void label_widget::layout(
+    matrix3 const &to_window,
+    extent2 const &new_size,
+    utc_nanoseconds display_time_point,
+    bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
     if (set_layout(to_window, new_size) or need_layout) {
-        auto text_rect = aarectangle{};
+        _text_rectangle = aarectangle{};
         if (*alignment == horizontal_alignment::left) {
             ttlet text_width = width() - _icon_size - _inner_margin;
-            text_rect = {_icon_size + _inner_margin, 0.0f, text_width, height()};
+            _text_rectangle = {_icon_size + _inner_margin, 0.0f, text_width, height()};
 
         } else if (*alignment == horizontal_alignment::right) {
             ttlet text_width = width() - _icon_size - _inner_margin;
-            text_rect = {0.0f, 0.0f, text_width, height()};
+            _text_rectangle = {0.0f, 0.0f, text_width, height()};
 
         } else if (*alignment == vertical_alignment::top) {
             ttlet text_height = height() - _icon_size;
-            text_rect = {0.0f, 0.0f, width(), text_height};
+            _text_rectangle = {0.0f, 0.0f, width(), text_height};
 
         } else if (*alignment == vertical_alignment::bottom) {
             ttlet text_height = height() - _icon_size;
-            text_rect = {0.0f, _icon_size, width(), text_height};
+            _text_rectangle = {0.0f, _icon_size, width(), text_height};
 
         } else {
-            text_rect = rectangle();
+            _text_rectangle = rectangle();
         }
 
         auto icon_pos = point2{};
@@ -119,17 +122,33 @@ void label_widget::layout(matrix3 const &to_window, extent2 const &new_size, utc
         case alignment::middle_center: icon_pos = {(width() - _icon_size) / 2.0f, (height() - _icon_size)}; break;
         default: tt_no_default();
         }
-        ttlet icon_rect = aarectangle{icon_pos, extent2{_icon_size, _icon_size}};
+        _icon_rectangle = aarectangle{icon_pos, extent2{_icon_size, _icon_size}};
 
-        _icon_widget->set_layout_parameters_from_parent(icon_rect);
+        _icon_widget->set_layout_parameters_from_parent(_icon_rectangle);
         if (_icon_widget->visible) {
-            _icon_widget->layout(translate2{icon_rect} * to_window, icon_rect.size(), display_time_point, need_layout);
+            _icon_widget->layout(
+                translate2{_icon_rectangle} * to_window, _icon_rectangle.size(), display_time_point, need_layout);
         }
-        _text_widget->set_layout_parameters_from_parent(text_rect);
+        _text_widget->set_layout_parameters_from_parent(_text_rectangle);
         if (_text_widget->visible) {
-            _text_widget->layout(translate2{text_rect} * to_window, text_rect.size(), display_time_point, need_layout);
+            _text_widget->layout(
+                translate2{_text_rectangle} * to_window, _text_rectangle.size(), display_time_point, need_layout);
         }
         request_redraw();
+    }
+}
+
+void label_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
+{
+    if (overlaps(context, _clipping_rectangle)) {
+        context.set_clipping_rectangle(_clipping_rectangle);
+
+        if (_icon_widget->visible) {
+            _icon_widget->draw(translate2{_icon_rectangle} * context, display_time_point);
+        }
+        if (_text_widget->visible) {
+            _text_widget->draw(translate2{_text_rectangle} * context, display_time_point);
+        }
     }
 }
 

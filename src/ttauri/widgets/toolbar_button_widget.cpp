@@ -53,9 +53,8 @@ void toolbar_button_widget::draw(draw_context context, utc_nanoseconds display_t
     if (overlaps(context, _clipping_rectangle)) {
         context.set_clipping_rectangle(_clipping_rectangle);
         draw_toolbar_button(context);
+        draw_button(context, display_time_point);
     }
-
-    super::draw(std::move(context), display_time_point);
 }
 
 [[nodiscard]] bool toolbar_button_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept

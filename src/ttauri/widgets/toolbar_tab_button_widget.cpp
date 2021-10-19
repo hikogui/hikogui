@@ -48,9 +48,9 @@ void toolbar_tab_button_widget::draw(draw_context context, utc_nanoseconds displ
     if (overlaps(context, _clipping_rectangle)) {
         context.set_clipping_rectangle(_clipping_rectangle);
         draw_toolbar_tab_button(context);
+        context.set_clipping_rectangle(_clipping_rectangle);
+        draw_button(context, display_time_point);
     }
-
-    super::draw(std::move(context), display_time_point);
 }
 
 void toolbar_tab_button_widget::request_redraw() const noexcept

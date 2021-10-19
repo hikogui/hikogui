@@ -54,6 +54,13 @@ public:
         tt_axiom(is_valid());
     }
 
+    [[nodiscard]] constexpr explicit translate(aarectangle const &other, float z) noexcept requires(D == 3) :
+        _v(static_cast<f32x4>(get<0>(other)).xy00())
+    {
+        _v.z() = z;
+        tt_axiom(is_valid());
+    }
+
     template<int E>
     requires(E < D) [[nodiscard]] constexpr translate(translate<E> const &other) noexcept : _v(static_cast<f32x4>(other))
     {
