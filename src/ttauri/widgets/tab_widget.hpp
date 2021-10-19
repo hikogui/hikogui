@@ -107,7 +107,6 @@ private:
     [[nodiscard]] auto find_selected_child() const noexcept;
     [[nodiscard]] auto find_selected_child() noexcept;
     [[nodiscard]] widget const &selected_child() const noexcept;
-    void draw_child(draw_context context, utc_nanoseconds displayTimePoint, widget &child) noexcept;
 };
 
 } // namespace tt
