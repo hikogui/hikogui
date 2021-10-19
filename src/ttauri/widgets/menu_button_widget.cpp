@@ -67,6 +67,7 @@ void menu_button_widget::draw(draw_context context, utc_nanoseconds display_time
     tt_axiom(is_gui_thread());
 
     if (overlaps(context, _clipping_rectangle)) {
+        context.set_clipping_rectangle(_clipping_rectangle);
         draw_menu_button(context);
         draw_check_mark(context);
     }

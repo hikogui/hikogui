@@ -148,6 +148,7 @@ void selection_widget::draw(draw_context context, utc_nanoseconds display_time_p
     tt_axiom(is_gui_thread());
 
     if (overlaps(context, this->_clipping_rectangle)) {
+        context.set_clipping_rectangle(_clipping_rectangle);
         draw_outline(context);
         draw_left_box(context);
         draw_chevrons(context);

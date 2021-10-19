@@ -92,6 +92,7 @@ public:
         tt_axiom(is_gui_thread());
 
         if (overlaps(context, this->_clipping_rectangle) and visible) {
+            context.set_clipping_rectangle(_clipping_rectangle);
             draw_rails(context);
             draw_slider(context);
         }

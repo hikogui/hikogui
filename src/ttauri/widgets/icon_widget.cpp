@@ -127,6 +127,7 @@ void icon_widget::draw(draw_context context, utc_nanoseconds display_time_point)
     tt_axiom(is_gui_thread());
 
     if (overlaps(context, _clipping_rectangle)) {
+        context.set_clipping_rectangle(_clipping_rectangle);
         switch (_icon_type) {
         case icon_type::no: break;
 

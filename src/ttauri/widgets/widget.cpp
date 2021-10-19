@@ -298,15 +298,14 @@ void widget::draw(draw_context context, utc_nanoseconds display_time_point) noex
 {
     tt_axiom(is_gui_thread());
 
+    context.set_clipping_rectangle(_clipping_rectangle);
     auto buffer = pmr::scoped_buffer<256>{};
     for (auto *child : children(buffer.allocator())) {
         if (child) {
             tt_axiom(child->parent == this);
 
             if (child->visible) {
-                auto child_context =
-                    context.make_child_context(child->parent_to_local(), child->clipping_rectangle());
-                child->draw(child_context, display_time_point);
+                child->draw(child->parent_to_local() * context, display_time_point);
             }
         }
     }
@@ -444,7 +443,6 @@ widget const *widget::find_next_widget(
         // If current_keyboard_widget is this, then we need to find the first child widget that accepts focus.
         found = true;
     }
-
 
     auto buffer = pmr::scoped_buffer<256>{};
     auto children_copy = make_vector(children(buffer.allocator()));

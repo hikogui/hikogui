@@ -54,6 +54,7 @@ void radio_button_widget::draw(draw_context context, utc_nanoseconds display_tim
     tt_axiom(is_gui_thread());
 
     if (overlaps(context, _clipping_rectangle)) {
+        context.set_clipping_rectangle(_clipping_rectangle);
         draw_radio_button(context);
         draw_radio_pip(context, display_time_point);
     }

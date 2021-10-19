@@ -149,7 +149,7 @@ void gui_window::render(utc_nanoseconds displayTimePoint)
         }
 
     } else {
-        // Check if the window size matches the minimum and maximum size of the widgets, otherwise resize. 
+        // Check if the window size matches the minimum and maximum size of the widgets, otherwise resize.
         ttlet current_size = screen_rectangle.size();
         ttlet new_size = clamp(current_size, widget->minimum_size(), widget->maximum_size());
         if (new_size != current_size and size_state != gui_window_size::minimized) {
@@ -185,11 +185,7 @@ void gui_window::render(utc_nanoseconds displayTimePoint)
 
         _redraw_rectangle = aarectangle{};
 
-        auto widget_context =
-            draw_context.make_child_context(geo::identity(), aarectangle{widget_size});
-
-        widget->draw(widget_context, displayTimePoint);
-
+        widget->draw(draw_context, displayTimePoint);
         surface->render_finish(draw_context, widget->background_color());
     }
 }

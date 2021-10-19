@@ -42,14 +42,11 @@ public:
         vspan<pipeline_image::vertex> &imageVertices,
         vspan<pipeline_SDF::vertex> &sdfVertices) noexcept;
 
-    [[nodiscard]] draw_context
-    make_child_context(geo::transformer auto const &parent_to_local, aarectangle clipping_rectangle) const noexcept
+    [[nodiscard]] friend draw_context operator*(geo::transformer auto const &lhs, draw_context rhs) noexcept
     {
-        auto new_context = *this;
-        new_context._scissor_rectangle = bounding_rectangle(parent_to_local * this->_scissor_rectangle);
-        new_context._clipping_rectangle = clipping_rectangle;
-        new_context._transform = ~parent_to_local * new_context._transform;
-        return new_context;
+        rhs._scissor_rectangle = bounding_rectangle(lhs * rhs._scissor_rectangle);
+        rhs._transform = ~lhs * rhs._transform;
+        return rhs;
     }
 
     [[nodiscard]] size_t frame_buffer_index() const noexcept;

@@ -71,6 +71,7 @@ void toggle_widget::draw(draw_context context, utc_nanoseconds display_time_poin
     tt_axiom(is_gui_thread());
 
     if (overlaps(context, _clipping_rectangle)) {
+        context.set_clipping_rectangle(_clipping_rectangle);
         draw_toggle_button(context);
         draw_toggle_pip(context, display_time_point);
     }
