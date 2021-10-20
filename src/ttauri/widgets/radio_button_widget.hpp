@@ -78,7 +78,7 @@ public:
     /// @privatesection
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
     void layout(layout_context const &context, bool need_layout) noexcept override;
-    void draw(draw_context context, utc_nanoseconds display_time_point) noexcept override;
+    void draw(draw_context const &context) noexcept override;
     /// @endprivatesection
 private:
     static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
@@ -97,7 +97,7 @@ private:
     }
 
     void draw_radio_button(draw_context const &context) noexcept;
-    void draw_radio_pip(draw_context const &context, utc_nanoseconds display_time_point) noexcept;
+    void draw_radio_pip(draw_context const &context) noexcept;
 };
 
 } // namespace tt

@@ -109,7 +109,7 @@ protected:
     abstract_button_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
 
     void layout_button(layout_context const &context, bool need_layout) noexcept;
-    void draw_button(draw_context const &context, utc_nanoseconds display_time_point) noexcept;
+    void draw_button(draw_context const &context) noexcept;
 };
 
 } // namespace tt

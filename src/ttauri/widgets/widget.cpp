@@ -239,23 +239,6 @@ tt::font_book &widget::font_book() const noexcept
     return need_reconstrain;
 }
 
-void widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
-{
-    tt_axiom(is_gui_thread());
-
-    context.set_clipping_rectangle(_layout.clipping_rectangle);
-    auto buffer = pmr::scoped_buffer<256>{};
-    for (auto *child : children(buffer.allocator())) {
-        if (child) {
-            tt_axiom(child->parent == this);
-
-            if (child->visible) {
-                child->draw(~child->parent_to_local() * context, display_time_point);
-            }
-        }
-    }
-}
-
 void widget::request_redraw() const noexcept
 {
     window.request_redraw(_layout.redraw_rectangle);

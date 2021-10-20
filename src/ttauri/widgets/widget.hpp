@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../GUI/theme.hpp"
-#include "../GFX/draw_context.hpp"
+#include "../GUI/draw_context.hpp"
 #include "../GUI/hitbox.hpp"
 #include "../GUI/keyboard_focus_direction.hpp"
 #include "../GUI/keyboard_focus_group.hpp"
@@ -255,7 +255,7 @@ public:
      * @param context The context to where the widget will draw.
      * @param display_time_point The time point when the widget will be shown on the screen.
      */
-    virtual void draw(draw_context context, utc_nanoseconds display_time_point) noexcept;
+    virtual void draw(draw_context const &context) noexcept = 0;
 
     /** Request the widget to be redrawn on the next frame.
      */

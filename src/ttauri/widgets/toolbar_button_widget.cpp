@@ -42,14 +42,13 @@ void toolbar_button_widget::layout(layout_context const &context, bool need_layo
     }
 }
 
-void toolbar_button_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
+void toolbar_button_widget::draw(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (overlaps(context, _layout.clipping_rectangle)) {
-        context.set_clipping_rectangle(_layout.clipping_rectangle);
+    if (visible and overlaps(context, _layout)) {
         draw_toolbar_button(context);
-        draw_button(context, display_time_point);
+        draw_button(context);
     }
 }
 
@@ -91,7 +90,7 @@ void toolbar_button_widget::draw_toolbar_button(draw_context const &context) noe
     tt_axiom(is_gui_thread());
 
     ttlet foreground_color_ = focus && window.active ? focus_color() : color::transparent();
-    context.draw_box_with_border_inside(rectangle(), background_color(), foreground_color_, corner_shapes{0.0f});
+    context.draw_box_with_border_inside(_layout, rectangle(), background_color(), foreground_color_, corner_shapes{0.0f});
 }
 
 } // namespace tt

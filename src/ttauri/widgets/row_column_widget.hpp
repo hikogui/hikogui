@@ -164,6 +164,16 @@ public:
             request_redraw();
         }
     }
+
+    void draw(draw_context const &context) noexcept override
+    {
+        if (visible and overlaps(context, _layout)) {
+            for (ttlet &child : _children) {
+                child->draw(context);
+            }
+        }
+    }
+
     /// @endprivatesection
 private:
     std::vector<std::unique_ptr<widget>> _children;

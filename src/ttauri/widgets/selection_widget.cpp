@@ -135,25 +135,22 @@ void selection_widget::layout(layout_context const &context, bool need_layout) n
     }
 }
 
-void selection_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
+void selection_widget::draw(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (overlaps(context, _layout.clipping_rectangle)) {
-        context.set_clipping_rectangle(_layout.clipping_rectangle);
-        draw_outline(context);
-        draw_left_box(context);
-        draw_chevrons(context);
+    if (visible) {
+        if (overlaps(context, _layout)) {
+            draw_outline(context);
+            draw_left_box(context);
+            draw_chevrons(context);
 
-        if (_overlay_widget->visible) {
-            _overlay_widget->draw(translate3{_overlay_rectangle, 25.0f} * context, display_time_point);
+            _unknown_label_widget->draw(context);
+            _current_label_widget->draw(context);
         }
-        if (_unknown_label_widget->visible) {
-            _unknown_label_widget->draw(translate3{_option_rectangle, 1.0f} * context, display_time_point);
-        }
-        if (_current_label_widget->visible) {
-            _current_label_widget->draw(translate3{_option_rectangle, 1.0f} * context, display_time_point);
-        }
+
+        // Overlay is outside of the overlap of the selection widget.
+        _overlay_widget->draw(context);
     }
 }
 
@@ -331,26 +328,27 @@ void selection_widget::repopulate_options() noexcept
     }
 }
 
-void selection_widget::draw_outline(draw_context context) noexcept
+void selection_widget::draw_outline(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    context.draw_box_with_border_inside(rectangle(), background_color(), focus_color(), corner_shapes{theme().rounding_radius});
+    context.draw_box_with_border_inside(
+        _layout, rectangle(), background_color(), focus_color(), corner_shapes{theme().rounding_radius});
 }
 
-void selection_widget::draw_left_box(draw_context context) noexcept
+void selection_widget::draw_left_box(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
     ttlet corner_shapes = tt::corner_shapes{theme().rounding_radius, 0.0f, theme().rounding_radius, 0.0f};
-    context.draw_box(translate_z(0.1f) * _left_box_rectangle, focus_color(), corner_shapes);
+    context.draw_box(_layout, translate_z(0.1f) * _left_box_rectangle, focus_color(), corner_shapes);
 }
 
-void selection_widget::draw_chevrons(draw_context context) noexcept
+void selection_widget::draw_chevrons(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    context.draw_glyph(_chevrons_glyph, theme().icon_size, translate_z(0.2f) * _chevrons_rectangle, label_color());
+    context.draw_glyph(_layout, _chevrons_glyph, theme().icon_size, translate_z(0.2f) * _chevrons_rectangle, label_color());
 }
 
 } // namespace tt

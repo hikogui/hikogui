@@ -77,7 +77,7 @@ public:
 
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
     void layout(layout_context const &context, bool need_layout) noexcept override;
-    void draw(draw_context context, utc_nanoseconds display_time_point) noexcept override;
+    void draw(draw_context const &context) noexcept override;
     [[nodiscard]] color background_color() const noexcept override;
     [[nodiscard]] color foreground_color() const noexcept override;
     void scroll_to_show(tt::aarectangle rectangle) noexcept override;
@@ -86,7 +86,7 @@ private:
     std::weak_ptr<delegate_type> _delegate;
     std::unique_ptr<widget> _content;
 
-    void draw_background(draw_context context) noexcept;
+    void draw_background(draw_context const &context) noexcept;
 };
 
 } // namespace tt

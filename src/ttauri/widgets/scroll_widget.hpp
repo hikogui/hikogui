@@ -239,6 +239,15 @@ public:
         }
     }
 
+    void draw(draw_context const &context) noexcept
+    {
+        if (visible and overlaps(context, _layout)) {
+            _vertical_scroll_bar->draw(context);
+            _horizontal_scroll_bar->draw(context);
+            _content->draw(context);
+        }
+    }
+
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override
     {
         tt_axiom(is_gui_thread());

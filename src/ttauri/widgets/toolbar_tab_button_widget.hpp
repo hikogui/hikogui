@@ -83,7 +83,7 @@ public:
     /// @privatesection
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
     void layout(layout_context const &context, bool need_layout) noexcept override;
-    void draw(draw_context context, utc_nanoseconds display_time_point) noexcept override;
+    void draw(draw_context const &context) noexcept override;
     void request_redraw() const noexcept override;
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
     [[nodiscard]] bool handle_event(command command) noexcept override;
@@ -101,7 +101,7 @@ private:
         set_label(std::forward<Label>(label));
     }
 
-    void draw_toolbar_tab_button(draw_context context) noexcept;
+    void draw_toolbar_tab_button(draw_context const &context) noexcept;
 };
 
 } // namespace tt

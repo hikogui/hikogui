@@ -62,31 +62,30 @@ void toggle_widget::layout(layout_context const &context, bool need_layout) noex
     }
 }
 
-void toggle_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
+void toggle_widget::draw(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (overlaps(context, _layout.clipping_rectangle)) {
-        context.set_clipping_rectangle(_layout.clipping_rectangle);
+    if (visible and overlaps(context, _layout)) {
         draw_toggle_button(context);
-        draw_toggle_pip(context, display_time_point);
-        draw_button(context, display_time_point);
+        draw_toggle_pip(context);
+        draw_button(context);
     }
 }
 
-void toggle_widget::draw_toggle_button(draw_context context) noexcept
+void toggle_widget::draw_toggle_button(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
     context.draw_box_with_border_inside(
-        _button_rectangle, background_color(), focus_color(), corner_shapes{_button_rectangle.height() * 0.5f});
+        _layout, _button_rectangle, background_color(), focus_color(), corner_shapes{_button_rectangle.height() * 0.5f});
 }
 
-void toggle_widget::draw_toggle_pip(draw_context draw_context, utc_nanoseconds display_time_point) noexcept
+void toggle_widget::draw_toggle_pip(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    _animated_value.update(state() == button_state::on ? 1.0f : 0.0f, display_time_point);
+    _animated_value.update(state() == button_state::on ? 1.0f : 0.0f, context.display_time_point);
     if (_animated_value.is_animating()) {
         request_redraw();
     }
@@ -94,7 +93,8 @@ void toggle_widget::draw_toggle_pip(draw_context draw_context, utc_nanoseconds d
     ttlet positioned_pip_rectangle = translate3{_pip_move_range * _animated_value.current_value(), 0.0f, 0.1f} * _pip_rectangle;
 
     ttlet forground_color_ = state() == button_state::on ? accent_color() : foreground_color();
-    draw_context.draw_box(positioned_pip_rectangle, forground_color_, corner_shapes{positioned_pip_rectangle.height() * 0.5f});
+    context.draw_box(
+        _layout, positioned_pip_rectangle, forground_color_, corner_shapes{positioned_pip_rectangle.height() * 0.5f});
 }
 
 } // namespace tt

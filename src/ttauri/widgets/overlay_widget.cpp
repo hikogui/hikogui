@@ -53,7 +53,7 @@ void overlay_widget::layout(layout_context const &context_, bool need_layout) no
     tt_axiom(is_gui_thread());
 
     // An overlay has full control over the clipping rectangle.
-    ttlet context = context_.override_clip(context_.rectangle);
+    ttlet context = context_.override_clip(context_.rectangle + theme().border_width);
     if (compare_then_assign(_layout, context) or need_layout) {
         tt_axiom(_content);
         _content->layout(rectangle() * context, need_layout);
@@ -61,14 +61,13 @@ void overlay_widget::layout(layout_context const &context_, bool need_layout) no
     }
 }
 
-void overlay_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
+void overlay_widget::draw(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (overlaps(context, _layout.clipping_rectangle)) {
-        context.set_clipping_rectangle(_layout.clipping_rectangle + theme().border_width);
+    if (visible and overlaps(context, _layout)) {
         draw_background(context);
-        _content->draw(translate_z(1.0f) * context, display_time_point);
+        _content->draw(context);
     }
 }
 
@@ -88,9 +87,9 @@ void overlay_widget::scroll_to_show(tt::aarectangle rectangle) noexcept
     // so do not forward the scroll_to_show message to its parent.
 }
 
-void overlay_widget::draw_background(draw_context context) noexcept
+void overlay_widget::draw_background(draw_context const &context) noexcept
 {
-    context.draw_box_with_border_outside(rectangle(), background_color(), foreground_color());
+    context.draw_box_with_border_outside(_layout, rectangle(), background_color(), foreground_color());
 }
 
 } // namespace tt

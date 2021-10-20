@@ -84,14 +84,22 @@ void tab_widget::layout(layout_context const &context, bool need_layout) noexcep
     tt_axiom(is_gui_thread());
 
     if (compare_then_assign(_layout, context) or need_layout) {
-        auto buffer = pmr::scoped_buffer<256>{};
-        for (auto *child : children(buffer.allocator())) {
+        for (ttlet &child : _children) {
             tt_axiom(child);
             if (child->visible) {
                 child->layout(rectangle() * context, need_layout);
             }
         }
         request_redraw();
+    }
+}
+
+void tab_widget::draw(draw_context const &context) noexcept
+{
+    if (visible and overlaps(context, _layout)) {
+        for (ttlet &child : _children) {
+            child->draw(context);
+        }
     }
 }
 

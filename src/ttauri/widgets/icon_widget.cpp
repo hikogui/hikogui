@@ -118,19 +118,18 @@ void icon_widget::layout(layout_context const &context, bool need_layout) noexce
     }
 }
 
-void icon_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
+void icon_widget::draw(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (overlaps(context, _layout.clipping_rectangle)) {
-        context.set_clipping_rectangle(_layout.clipping_rectangle);
+    if (visible and overlaps(context, _layout)) {
         switch (_icon_type) {
         case icon_type::no: break;
 
         case icon_type::pixmap:
             switch (_pixmap_backing.state) {
             case pipeline_image::image::State::Drawing: request_redraw(); break;
-            case pipeline_image::image::State::Uploaded: context.draw_image(_pixmap_backing, _icon_transform); break;
+            case pipeline_image::image::State::Uploaded: context.draw_image(_layout, _pixmap_backing, _icon_transform); break;
             default: break;
             }
             break;
@@ -138,7 +137,7 @@ void icon_widget::draw(draw_context context, utc_nanoseconds display_time_point)
         case icon_type::glyph: {
             ttlet box = _icon_transform * _icon_bounding_box;
             ttlet scale = box.width() / _icon_bounding_box.width();
-            context.draw_glyph(_glyph, scale, box, theme().color(*color));
+            context.draw_glyph(_layout, _glyph, scale, box, theme().color(*color));
         } break;
 
         default: tt_no_default();

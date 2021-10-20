@@ -73,16 +73,16 @@ void abstract_button_widget::unsubscribe(callback_ptr_type &callback_ptr) noexce
     }
 }
 
-void abstract_button_widget::draw_button(draw_context const &context, utc_nanoseconds display_time_point) noexcept
+void abstract_button_widget::draw_button(draw_context const &context) noexcept
 {
     if (_on_label_widget->visible) {
-        _on_label_widget->draw(translate3{_label_rectangle, 1.0f} * context, display_time_point);
+        _on_label_widget->draw(context);
     }
     if (_off_label_widget->visible) {
-        _off_label_widget->draw(translate3{_label_rectangle, 1.0f} * context, display_time_point);
+        _off_label_widget->draw(context);
     }
     if (_other_label_widget->visible) {
-        _other_label_widget->draw(translate3{_label_rectangle, 1.0f} * context, display_time_point);
+        _other_label_widget->draw(context);
     }
 }
 

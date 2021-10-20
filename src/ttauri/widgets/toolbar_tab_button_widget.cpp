@@ -37,14 +37,13 @@ void toolbar_tab_button_widget::layout(layout_context const &context, bool need_
     }
 }
 
-void toolbar_tab_button_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
+void toolbar_tab_button_widget::draw(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (overlaps(context, _layout.clipping_rectangle)) {
-        context.set_clipping_rectangle(_layout.clipping_rectangle);
+    if (visible and overlaps(context, _layout)) {
         draw_toolbar_tab_button(context);
-        draw_button(context, display_time_point);
+        draw_button(context);
     }
 }
 
@@ -89,7 +88,7 @@ void toolbar_tab_button_widget::request_redraw() const noexcept
     return super::handle_event(command);
 }
 
-void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context context) noexcept
+void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -107,6 +106,11 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context context) no
 
     ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme().rounding_radius, theme().rounding_radius};
     context.draw_box_with_border_inside(
-        button_z * outline_rectangle, button_color, (focus && window.active) ? focus_color() : button_color, corner_shapes);
+        _layout,
+        button_z * outline_rectangle,
+        button_color,
+        (focus && window.active) ? focus_color() : button_color,
+        corner_shapes);
 }
+
 } // namespace tt

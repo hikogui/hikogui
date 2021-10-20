@@ -36,14 +36,13 @@ void momentary_button_widget::layout(layout_context const &context, bool need_la
     }
 }
 
-void momentary_button_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
+void momentary_button_widget::draw(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (overlaps(context, _layout.clipping_rectangle)) {
-        context.set_clipping_rectangle(_layout.clipping_rectangle);
+    if (visible and overlaps(context, _layout)) {
         draw_label_button(context);
-        draw_button(context, display_time_point);
+        draw_button(context);
     }
 }
 
@@ -52,7 +51,8 @@ void momentary_button_widget::draw_label_button(draw_context const &context) noe
     tt_axiom(is_gui_thread());
 
     // Move the border of the button in the middle of a pixel.
-    context.draw_box_with_border_inside(rectangle(), background_color(), focus_color(), corner_shapes{theme().rounding_radius});
+    context.draw_box_with_border_inside(
+        _layout, rectangle(), background_color(), focus_color(), corner_shapes{theme().rounding_radius});
 }
 
 } // namespace tt

@@ -88,6 +88,12 @@ void window_widget::layout(layout_context const &context, bool need_layout) noex
     }
 }
 
+void window_widget::draw(draw_context const &context) noexcept
+{
+    _toolbar->draw(context);
+    _content->draw(context);
+}
+
 hitbox window_widget::hitbox_test(point3 position) const noexcept
 {
     tt_axiom(is_gui_thread());

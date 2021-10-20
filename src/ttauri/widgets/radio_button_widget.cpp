@@ -45,15 +45,14 @@ void radio_button_widget::layout(layout_context const &context, bool need_layout
     }
 }
 
-void radio_button_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
+void radio_button_widget::draw(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (overlaps(context, _layout.clipping_rectangle)) {
-        context.set_clipping_rectangle(_layout.clipping_rectangle);
+    if (visible and overlaps(context, _layout)) {
         draw_radio_button(context);
-        draw_radio_pip(context, display_time_point);
-        draw_button(context, display_time_point);
+        draw_radio_pip(context);
+        draw_button(context);
     }
 }
 
@@ -62,14 +61,14 @@ void radio_button_widget::draw_radio_button(draw_context const &context) noexcep
     tt_axiom(is_gui_thread());
 
     context.draw_box_with_border_inside(
-        _button_rectangle, background_color(), focus_color(), corner_shapes{_button_rectangle.height() * 0.5f});
+        _layout, _button_rectangle, background_color(), focus_color(), corner_shapes{_button_rectangle.height() * 0.5f});
 }
 
-void radio_button_widget::draw_radio_pip(draw_context const &context, utc_nanoseconds display_time_point) noexcept
+void radio_button_widget::draw_radio_pip(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    _animated_value.update(state() == button_state::on ? 1.0f : 0.0f, display_time_point);
+    _animated_value.update(state() == button_state::on ? 1.0f : 0.0f, context.display_time_point);
     if (_animated_value.is_animating()) {
         request_redraw();
     }
@@ -78,7 +77,7 @@ void radio_button_widget::draw_radio_pip(draw_context const &context, utc_nanose
     auto float_value = _animated_value.current_value();
     if (float_value > 0.0) {
         ttlet scaled_pip_rectangle = _pip_rectangle * float_value;
-        context.draw_box(scaled_pip_rectangle, accent_color(), corner_shapes{scaled_pip_rectangle.height() * 0.5f});
+        context.draw_box(_layout, scaled_pip_rectangle, accent_color(), corner_shapes{scaled_pip_rectangle.height() * 0.5f});
     }
 }
 

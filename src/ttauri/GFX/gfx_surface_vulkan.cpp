@@ -9,7 +9,7 @@
 #include "pipeline_image.hpp"
 #include "pipeline_SDF.hpp"
 #include "pipeline_tone_mapper.hpp"
-#include "draw_context.hpp"
+#include "../GUI/draw_context.hpp"
 #include "../widgets/window_widget.hpp"
 #include "../trace.hpp"
 #include "../cast.hpp"
@@ -298,7 +298,7 @@ void gfx_surface_vulkan::update(extent2 new_size) noexcept
     build(new_size);
 }
 
-std::optional<draw_context> gfx_surface_vulkan::render_start(aarectangle redraw_rectangle)
+std::optional<draw_context> gfx_surface_vulkan::render_start(aarectangle redraw_rectangle, utc_nanoseconds display_time_point)
 {
     ttlet lock = std::scoped_lock(gfx_system_mutex);
 
@@ -341,23 +341,24 @@ std::optional<draw_context> gfx_surface_vulkan::render_start(aarectangle redraw_
         scissor_rectangle,
         boxPipeline->vertexBufferData,
         imagePipeline->vertexBufferData,
-        SDFPipeline->vertexBufferData};
+        SDFPipeline->vertexBufferData,
+        display_time_point};
 }
 
 void gfx_surface_vulkan::render_finish(draw_context const &context, color background_color)
 {
     ttlet lock = std::scoped_lock(gfx_system_mutex);
 
-    auto &current_image = swapchain_image_infos.at(context.frame_buffer_index());
+    auto &current_image = swapchain_image_infos.at(context.frame_buffer_index);
 
-    fill_command_buffer(current_image, context.scissor_rectangle(), background_color);
+    fill_command_buffer(current_image, context.scissor_rectangle, background_color);
     submitCommandBuffer();
 
     // Signal the fence when all rendering has finished on the graphics queue.
     // When the fence is signaled we can modify/destroy the command buffers.
     [[maybe_unused]] ttlet submit_result = _graphics_queue->queue.submit(0, nullptr, renderFinishedFence);
 
-    presentImageToQueue(narrow_cast<uint32_t>(context.frame_buffer_index()), renderFinishedSemaphore);
+    presentImageToQueue(narrow_cast<uint32_t>(context.frame_buffer_index), renderFinishedSemaphore);
 
     // Do an early tear down of invalid vulkan objects.
     teardown();

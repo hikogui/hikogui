@@ -87,16 +87,14 @@ public:
         }
     }
 
-    void draw(draw_context context, utc_nanoseconds display_time_point) noexcept override
+    void draw(draw_context const &context) noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        if (overlaps(context, _layout.clipping_rectangle) and visible) {
-            context.set_clipping_rectangle(_layout.clipping_rectangle);
+        if (visible and overlaps(context, _layout)) {
             draw_rails(context);
             draw_slider(context);
         }
-        super::draw(std::move(context), display_time_point);
     }
 
     hitbox hitbox_test(point3 position) const noexcept override
@@ -225,23 +223,23 @@ private:
         return _hidden_content != 0.0f ? slider_travel_range() / _hidden_content : 0.0f;
     }
 
-    void draw_rails(draw_context context) noexcept
+    void draw_rails(draw_context const &context) noexcept
     {
         tt_axiom(is_gui_thread());
 
         ttlet corner_shapes =
             axis == axis::vertical ? tt::corner_shapes{rectangle().width() * 0.5f} : tt::corner_shapes{rectangle().height() * 0.5f};
-        context.draw_box(rectangle(), background_color(), corner_shapes);
+        context.draw_box(_layout, rectangle(), background_color(), corner_shapes);
     }
 
-    void draw_slider(draw_context context) noexcept
+    void draw_slider(draw_context const &context) noexcept
     {
         tt_axiom(is_gui_thread());
 
         ttlet corner_shapes = axis == axis::vertical ? tt::corner_shapes{slider_rectangle.width() * 0.5f} :
                                             tt::corner_shapes{slider_rectangle.height() * 0.5f};
 
-        context.draw_box(translate_z(0.1f) * slider_rectangle, foreground_color(), corner_shapes);
+        context.draw_box(_layout, translate_z(0.1f) * slider_rectangle, foreground_color(), corner_shapes);
     }
 };
 

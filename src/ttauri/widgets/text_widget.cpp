@@ -55,13 +55,12 @@ void text_widget::layout(layout_context const &context, bool need_layout) noexce
     }
 }
 
-void text_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
+void text_widget::draw(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (overlaps(context, _layout.clipping_rectangle)) {
-        context.set_clipping_rectangle(_layout.clipping_rectangle);
-        context.draw_text(_shaped_text, label_color(), _shaped_text_transform);
+    if (visible and overlaps(context, _layout)) {
+        context.draw_text(_layout, _shaped_text, label_color(), _shaped_text_transform);
     }
 }
 

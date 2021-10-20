@@ -130,17 +130,11 @@ void label_widget::layout(layout_context const &context, bool need_layout) noexc
     }
 }
 
-void label_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
+void label_widget::draw(draw_context const &context) noexcept
 {
-    if (overlaps(context, _layout.clipping_rectangle)) {
-        context.set_clipping_rectangle(_layout.clipping_rectangle);
-
-        if (_icon_widget->visible) {
-            _icon_widget->draw(translate2{_icon_rectangle} * context, display_time_point);
-        }
-        if (_text_widget->visible) {
-            _text_widget->draw(translate2{_text_rectangle} * context, display_time_point);
-        }
+    if (visible and overlaps(context, _layout)) {
+        _icon_widget->draw(context);
+        _text_widget->draw(context);
     }
 }
 

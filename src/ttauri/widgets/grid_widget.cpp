@@ -8,10 +8,7 @@
 
 namespace tt {
 
-grid_widget::grid_widget(
-    gui_window &window,
-    widget *parent,
-    std::weak_ptr<delegate_type> delegate) noexcept :
+grid_widget::grid_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
     widget(window, parent), _delegate(std::move(delegate))
 {
     tt_axiom(is_gui_thread());
@@ -131,6 +128,15 @@ void grid_widget::layout(layout_context const &context, bool need_layout) noexce
             }
         }
         request_redraw();
+    }
+}
+
+void grid_widget::draw(draw_context const &context) noexcept
+{
+    if (visible and overlaps(context, _layout)) {
+        for (ttlet &cell : _cells) {
+            cell.widget->draw(context);
+        }
     }
 }
 

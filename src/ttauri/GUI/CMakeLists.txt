@@ -3,7 +3,8 @@
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 target_sources(ttauri PRIVATE
-    mouse_cursor.hpp
+    draw_context.cpp
+    draw_context.hpp
     gui_system.cpp
     gui_system.hpp
     gui_system_delegate.hpp
@@ -27,6 +28,7 @@ target_sources(ttauri PRIVATE
     keyboard_focus_direction.hpp
     keyboard_focus_group.hpp
     mouse_buttons.hpp
+    mouse_cursor.hpp
     mouse_event.hpp
     theme.cpp
     theme.hpp

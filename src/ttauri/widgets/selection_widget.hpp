@@ -85,7 +85,7 @@ public:
 
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
     void layout(layout_context const &context, bool need_layout) noexcept override;
-    void draw(draw_context context, utc_nanoseconds display_time_point) noexcept override;
+    void draw(draw_context const &context) noexcept override;
     bool handle_event(mouse_event const &event) noexcept override;
     bool handle_event(command command) noexcept override;
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
@@ -124,9 +124,9 @@ private:
     void start_selecting() noexcept;
     void stop_selecting() noexcept;
     void repopulate_options() noexcept;
-    void draw_outline(draw_context context) noexcept;
-    void draw_left_box(draw_context context) noexcept;
-    void draw_chevrons(draw_context context) noexcept;
+    void draw_outline(draw_context const &context) noexcept;
+    void draw_left_box(draw_context const &context) noexcept;
+    void draw_chevrons(draw_context const &context) noexcept;
 };
 
 } // namespace tt

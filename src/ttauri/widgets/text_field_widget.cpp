@@ -102,13 +102,13 @@ void text_field_widget::layout(layout_context const &context, bool need_layout) 
     }
 }
 
-void text_field_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
+void text_field_widget::draw(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    _next_redraw_time_point = display_time_point + _blink_interval;
+    _next_redraw_time_point = context.display_time_point + _blink_interval;
 
-    if (overlaps(context, _layout.clipping_rectangle)) {
+    if (visible and overlaps(context, _layout)) {
         scroll_text();
 
         draw_background_box(context);
@@ -116,10 +116,9 @@ void text_field_widget::draw(draw_context context, utc_nanoseconds display_time_
         // After drawing the border around the input field make sure any other
         // drawing remains inside this border. And change the transform to account
         // for how much the text has scrolled.
-        context.set_clipping_rectangle(_text_field_clipping_rectangle);
         draw_selection_rectangles(context);
         draw_partial_grapheme_caret(context);
-        draw_caret(context, display_time_point);
+        draw_caret(context);
         draw_text(context);
     }
 }
@@ -375,49 +374,50 @@ void text_field_widget::scroll_text() noexcept
     _text_inv_translate = ~_text_translate;
 }
 
-void text_field_widget::draw_background_box(draw_context context) const noexcept
+void text_field_widget::draw_background_box(draw_context const &context) const noexcept
 {
     ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme().rounding_radius, theme().rounding_radius};
-    context.draw_box(_text_field_rectangle, background_color(), corner_shapes);
+    context.draw_box(_layout, _text_field_rectangle, background_color(), corner_shapes);
 
     ttlet line_rectangle = aarectangle{get<0>(_text_field_rectangle), extent2{_text_field_rectangle.width(), 1.0f}};
-    context.draw_box(translate3{0.0f, 0.0f, 0.1f} * line_rectangle, focus_color());
+    context.draw_box(_layout, translate3{0.0f, 0.0f, 0.1f} * line_rectangle, focus_color());
 }
 
-void text_field_widget::draw_selection_rectangles(draw_context context) const noexcept
+void text_field_widget::draw_selection_rectangles(draw_context const &context) const noexcept
 {
     ttlet selection_rectangles = _field.selection_rectangles();
     for (ttlet selection_rectangle : selection_rectangles) {
-        context.draw_box(_text_translate * translate_z(0.1f) * selection_rectangle, theme().color(theme_color::text_select));
+        context.draw_box(
+            _layout, _text_translate * translate_z(0.1f) * selection_rectangle, theme().color(theme_color::text_select));
     }
 }
 
-void text_field_widget::draw_partial_grapheme_caret(draw_context context) const noexcept
+void text_field_widget::draw_partial_grapheme_caret(draw_context const &context) const noexcept
 {
     ttlet partial_grapheme_caret = _field.partial_grapheme_caret();
     if (partial_grapheme_caret) {
         ttlet box = round(_text_translate) * translate_z(0.1f) * round(partial_grapheme_caret);
-        context.draw_box_with_border_inside(box, color::transparent(), theme().color(theme_color::incomplete_glyph));
+        context.draw_box_with_border_inside(_layout, box, color::transparent(), theme().color(theme_color::incomplete_glyph));
     }
 }
 
-void text_field_widget::draw_caret(draw_context context, utc_nanoseconds display_time_point) noexcept
+void text_field_widget::draw_caret(draw_context const &context) noexcept
 {
     // Display the caret and handle blinking.
-    ttlet duration_since_last_update = display_time_point - _last_update_time_point;
+    ttlet duration_since_last_update = context.display_time_point - _last_update_time_point;
     ttlet nr_half_blinks = static_cast<int64_t>(duration_since_last_update / _blink_interval);
 
     ttlet blink_is_on = nr_half_blinks % 2 == 0;
     _left_to_right_caret = _field.left_to_right_caret();
     if (_left_to_right_caret && blink_is_on && focus && window.active) {
         ttlet box = round(_text_translate) * translate_z(0.1f) * round(_left_to_right_caret);
-        context.draw_box_with_border_inside(box, color::transparent(), theme().color(theme_color::cursor));
+        context.draw_box_with_border_inside(_layout, box, color::transparent(), theme().color(theme_color::cursor));
     }
 }
 
-void text_field_widget::draw_text(draw_context context) const noexcept
+void text_field_widget::draw_text(draw_context const &context) const noexcept
 {
-    context.draw_text(_shaped_text, label_color(), _text_translate * translate_z(0.2f));
+    context.draw_text(_layout, _shaped_text, label_color(), _text_translate * translate_z(0.2f));
 }
 
 } // namespace tt

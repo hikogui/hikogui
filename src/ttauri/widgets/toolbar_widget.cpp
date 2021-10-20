@@ -101,13 +101,12 @@ bool toolbar_widget::tab_button_has_focus() const noexcept
     return false;
 }
 
-void toolbar_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
+void toolbar_widget::draw(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (overlaps(context, _layout.clipping_rectangle)) {
-        context.set_clipping_rectangle(_layout.clipping_rectangle);
-        context.draw_box(rectangle(), theme().color(theme_color::fill, semantic_layer + 1));
+    if (visible and overlaps(context, _layout)) {
+        context.draw_box(_layout, rectangle(), theme().color(theme_color::fill, semantic_layer + 1));
 
         if (tab_button_has_focus()) {
             ttlet line_rectangle =
@@ -115,11 +114,16 @@ void toolbar_widget::draw(draw_context context, utc_nanoseconds display_time_poi
 
             // Draw the line at a higher elevation, so that the tab buttons can draw above or below the focus
             // line depending if that specific button is in focus or not.
-            context.draw_box(translate_z(1.7f) * line_rectangle, focus_color());
+            context.draw_box(_layout, translate_z(1.7f) * line_rectangle, focus_color());
+        }
+
+        for (ttlet &child : _left_children) {
+            child->draw(context);
+        }
+        for (ttlet &child : _right_children) {
+            child->draw(context);
         }
     }
-
-    super::draw(std::move(context), display_time_point);
 }
 
 hitbox toolbar_widget::hitbox_test(point3 position) const noexcept

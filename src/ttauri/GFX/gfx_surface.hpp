@@ -37,7 +37,7 @@ public:
 
     /*! Set GPU device to manage this window.
      * Change of the device may be done at runtime.
-     * 
+     *
      * @param device The device to use for rendering, may be nullptr.
      */
     virtual void set_device(gfx_device *device) noexcept;
@@ -67,12 +67,13 @@ public:
     /** Update the surface.
      * This function will check if the graphic pipeline and swapchain
      * needs to be build, rebuild, or torn down.
-     * 
+     *
      * @param new_size The size of the window.
      */
     virtual void update(extent2 new_size) noexcept = 0;
 
-    [[nodiscard]] virtual std::optional<draw_context> render_start(aarectangle redraw_rectangle) = 0;
+    [[nodiscard]] virtual std::optional<draw_context>
+    render_start(aarectangle redraw_rectangle, utc_nanoseconds display_time_point) = 0;
     virtual void render_finish(draw_context const &context, color background_color) = 0;
 
 protected:
@@ -81,4 +82,4 @@ protected:
     virtual void teardown() = 0;
 };
 
-}
+} // namespace tt

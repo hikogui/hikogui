@@ -6,8 +6,7 @@
 
 namespace tt {
 
-system_menu_widget::system_menu_widget(gui_window &window, widget *parent) noexcept :
-    super(window, parent)
+system_menu_widget::system_menu_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
 {
     _icon_widget = std::make_unique<icon_widget>(window, this, icon);
 }
@@ -17,8 +16,7 @@ system_menu_widget::system_menu_widget(gui_window &window, widget *parent) noexc
     return 0.0f;
 }
 
-[[nodiscard]] bool
-system_menu_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] bool system_menu_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -38,8 +36,7 @@ void system_menu_widget::layout(layout_context const &context, bool need_layout)
     tt_axiom(is_gui_thread());
 
     if (compare_then_assign(_layout, context) or need_layout) {
-        ttlet icon_height =
-            rectangle().height() < theme().toolbar_height * 1.2f ? rectangle().height() : theme().toolbar_height;
+        ttlet icon_height = rectangle().height() < theme().toolbar_height * 1.2f ? rectangle().height() : theme().toolbar_height;
         ttlet icon_rectangle = aarectangle{rectangle().left(), rectangle().top() - icon_height, rectangle().width(), icon_height};
 
         _icon_widget->layout(icon_rectangle * context, need_layout);
@@ -51,6 +48,13 @@ void system_menu_widget::layout(layout_context const &context, bool need_layout)
             rectangle().width() - theme().margin,
             rectangle().height() - theme().margin};
         request_redraw();
+    }
+}
+
+void system_menu_widget::draw(draw_context const &context) noexcept
+{
+    if (visible and overlaps(context, _layout)) {
+        _icon_widget->draw(context);
     }
 }
 

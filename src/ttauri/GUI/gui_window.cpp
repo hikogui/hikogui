@@ -116,7 +116,7 @@ void gui_window::set_device(gfx_device *device) noexcept
     return std::ceil(dpi / 100.0f);
 }
 
-void gui_window::render(utc_nanoseconds displayTimePoint)
+void gui_window::render(utc_nanoseconds display_time_point)
 {
     tt_axiom(is_gui_thread());
     tt_axiom(surface);
@@ -127,7 +127,7 @@ void gui_window::render(utc_nanoseconds displayTimePoint)
     ttlet need_reconstrain = _reconstrain.exchange(false);
 
     // Update the size constraints of the window_widget and it children.
-    ttlet constraints_have_changed = widget->constrain(displayTimePoint, need_reconstrain);
+    ttlet constraints_have_changed = widget->constrain(display_time_point, need_reconstrain);
 
     // Check if the window size matches the preferred size of the window_widget.
     // If not ask the operating system to change the size of the window, which is
@@ -174,16 +174,16 @@ void gui_window::render(utc_nanoseconds displayTimePoint)
     // Make sure the widget's layout is updated before draw, but after window resize.
     if (need_layout or widget_size != screen_rectangle.size()) {
         widget_size = screen_rectangle.size();
-        widget->layout(layout_context{widget_size, displayTimePoint}, need_layout);
+        widget->layout(layout_context{widget_size, display_time_point}, need_layout);
     }
 
-    if (auto optional_draw_context = surface->render_start(_redraw_rectangle)) {
+    if (auto optional_draw_context = surface->render_start(_redraw_rectangle, display_time_point)) {
         auto draw_context = *optional_draw_context;
         auto tr = trace<"window_render">();
 
         _redraw_rectangle = aarectangle{};
 
-        widget->draw(draw_context, displayTimePoint);
+        widget->draw(draw_context);
         surface->render_finish(draw_context, widget->background_color());
     }
 }
