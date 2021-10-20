@@ -73,48 +73,46 @@ void window_widget::constructor_implementation() noexcept
     }
 }
 
-void window_widget::layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
+void window_widget::layout(layout_context const &context, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (set_layout(to_window, new_size) or need_layout) {
+    if (compare_then_assign(_layout, context) or need_layout) {
         ttlet toolbar_height = _toolbar->preferred_size().height();
         ttlet toolbar_rectangle = aarectangle{0.0f, rectangle().height() - toolbar_height, rectangle().width(), toolbar_height};
-        _toolbar->set_layout_parameters_from_parent(toolbar_rectangle);
-        _toolbar->layout(translate2{toolbar_rectangle} * to_window, toolbar_rectangle.size(), display_time_point, need_layout);
+        _toolbar->layout(toolbar_rectangle * context, need_layout);
 
         ttlet content_rectangle = aarectangle{0.0f, 0.0f, rectangle().width(), rectangle().height() - toolbar_height};
-        _content->set_layout_parameters_from_parent(content_rectangle);
-        _content->layout(translate2{content_rectangle} * to_window, content_rectangle.size(), display_time_point, need_layout);
+        _content->layout(content_rectangle * context, need_layout);
         request_redraw();
     }
 }
 
-hitbox window_widget::hitbox_test(point2 position) const noexcept
+hitbox window_widget::hitbox_test(point3 position) const noexcept
 {
     tt_axiom(is_gui_thread());
 
     constexpr float BORDER_WIDTH = 10.0f;
 
     ttlet is_on_left_edge = position.x() <= BORDER_WIDTH;
-    ttlet is_on_right_edge = position.x() >= (_size.width() - BORDER_WIDTH);
+    ttlet is_on_right_edge = position.x() >= (width() - BORDER_WIDTH);
     ttlet is_on_bottom_edge = position.y() <= BORDER_WIDTH;
-    ttlet is_on_top_edge = position.y() >= (_size.height() - BORDER_WIDTH);
+    ttlet is_on_top_edge = position.y() >= (height() - BORDER_WIDTH);
 
     ttlet is_on_bottom_left_corner = is_on_bottom_edge && is_on_left_edge;
     ttlet is_on_bottom_right_corner = is_on_bottom_edge && is_on_right_edge;
     ttlet is_on_top_left_corner = is_on_top_edge && is_on_left_edge;
     ttlet is_on_top_right_corner = is_on_top_edge && is_on_right_edge;
 
-    auto r = hitbox{this, draw_layer};
+    auto r = hitbox{this, position};
     if (is_on_bottom_left_corner) {
-        return {this, draw_layer, hitbox::Type::BottomLeftResizeCorner};
+        return {this, position, hitbox::Type::BottomLeftResizeCorner};
     } else if (is_on_bottom_right_corner) {
-        return {this, draw_layer, hitbox::Type::BottomRightResizeCorner};
+        return {this, position, hitbox::Type::BottomRightResizeCorner};
     } else if (is_on_top_left_corner) {
-        return {this, draw_layer, hitbox::Type::TopLeftResizeCorner};
+        return {this, position, hitbox::Type::TopLeftResizeCorner};
     } else if (is_on_top_right_corner) {
-        return {this, draw_layer, hitbox::Type::TopRightResizeCorner};
+        return {this, position, hitbox::Type::TopRightResizeCorner};
     } else if (is_on_left_edge) {
         r.type = hitbox::Type::LeftResizeBorder;
     } else if (is_on_right_edge) {
@@ -133,7 +131,7 @@ hitbox window_widget::hitbox_test(point2 position) const noexcept
     auto buffer = pmr::scoped_buffer<256>{};
     for (auto *child : children(buffer.allocator())) {
         if (child) {
-            r = std::max(r, child->hitbox_test(point2{child->parent_to_local() * position}));
+            r = std::max(r, child->hitbox_test(child->parent_to_local() * position));
         }
     }
 

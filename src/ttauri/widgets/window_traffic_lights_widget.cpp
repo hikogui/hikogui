@@ -43,15 +43,12 @@ window_traffic_lights_widget::window_traffic_lights_widget(gui_window &window, w
     }
 }
 
-void window_traffic_lights_widget::layout(
-    matrix3 const &to_window,
-    extent2 const &new_size,
-    utc_nanoseconds display_time_point,
+void window_traffic_lights_widget::layout(layout_context const &context,
     bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (set_layout(to_window, new_size) or need_layout) {
+    if (compare_then_assign(_layout, context) or need_layout) {
         auto extent = rectangle().size();
         if (extent.height() > theme().toolbar_height * 1.2f) {
             extent = extent2{extent.width(), theme().toolbar_height};
@@ -192,8 +189,8 @@ void window_traffic_lights_widget::draw(draw_context context, utc_nanoseconds di
 {
     tt_axiom(is_gui_thread());
 
-    if (overlaps(context, _clipping_rectangle)) {
-        context.set_clipping_rectangle(_clipping_rectangle);
+    if (overlaps(context, _layout.clipping_rectangle)) {
+        context.set_clipping_rectangle(_layout.clipping_rectangle);
         if (theme().operating_system == operating_system::macos) {
             drawMacOS(context, display_time_point);
 
@@ -262,13 +259,13 @@ bool window_traffic_lights_widget::handle_event(mouse_event const &event) noexce
     return handled;
 }
 
-hitbox window_traffic_lights_widget::hitbox_test(point2 position) const noexcept
+hitbox window_traffic_lights_widget::hitbox_test(point3 position) const noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (_visible_rectangle.contains(position)) {
+    if (_layout.hit_rectangle.contains(position)) {
         if (closeRectangle.contains(position) || minimizeRectangle.contains(position) || maximizeRectangle.contains(position)) {
-            return hitbox{this, draw_layer, hitbox::Type::Button};
+            return hitbox{this, position, hitbox::Type::Button};
         } else {
             return hitbox{};
         }

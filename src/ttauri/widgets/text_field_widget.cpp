@@ -54,20 +54,20 @@ text_field_widget::~text_field_widget()
     }
 }
 
-void text_field_widget::layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
+void text_field_widget::layout(layout_context const &context, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (focus && display_time_point >= _next_redraw_time_point) {
+    if (focus && context.display_time_point >= _next_redraw_time_point) {
         request_redraw();
     }
 
-    if (set_layout(to_window, new_size) or need_layout) {
-        _text_field_rectangle = aarectangle{extent2{_text_width + theme().margin * 2.0f, _size.height()}};
+    if (compare_then_assign(_layout, context) or need_layout) {
+        _text_field_rectangle = aarectangle{extent2{_text_width + theme().margin * 2.0f, height()}};
 
         // Set the clipping rectangle to within the border of the input field.
         // Add another border width, so glyphs do not touch the border.
-        _text_field_clipping_rectangle = intersect(_clipping_rectangle, _text_field_rectangle);
+        _text_field_clipping_rectangle = intersect(_layout.clipping_rectangle, _text_field_rectangle);
 
         _text_rectangle = _text_field_rectangle - theme().margin;
 
@@ -97,7 +97,7 @@ void text_field_widget::layout(matrix3 const &to_window, extent2 const &new_size
         _shaped_text = _field.shaped_text();
 
         // Record the last time the text is modified, so that the caret remains lit.
-        _last_update_time_point = display_time_point;
+        _last_update_time_point = context.display_time_point;
         request_redraw();
     }
 }
@@ -108,7 +108,7 @@ void text_field_widget::draw(draw_context context, utc_nanoseconds display_time_
 
     _next_redraw_time_point = display_time_point + _blink_interval;
 
-    if (overlaps(context, this->_clipping_rectangle)) {
+    if (overlaps(context, _layout.clipping_rectangle)) {
         scroll_text();
 
         draw_background_box(context);
@@ -270,12 +270,12 @@ bool text_field_widget::handle_event(keyboard_event const &event) noexcept
     return handled;
 }
 
-hitbox text_field_widget::hitbox_test(point2 position) const noexcept
+hitbox text_field_widget::hitbox_test(point3 position) const noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (_visible_rectangle.contains(position)) {
-        return hitbox{this, draw_layer, enabled ? hitbox::Type::TextEdit : hitbox::Type::Default};
+    if (_layout.hit_rectangle.contains(position)) {
+        return hitbox{this, position, enabled ? hitbox::Type::TextEdit : hitbox::Type::Default};
     } else {
         return hitbox{};
     }

@@ -168,15 +168,13 @@ void gui_window::render(utc_nanoseconds displayTimePoint)
     // Update the graphics' surface to the current size of the window.
     surface->update(screen_rectangle.size());
 
-    widget->set_layout_parameters_from_parent(aarectangle{screen_rectangle.size()});
-
     // When a window message was received, such as a resize, redraw, language-change; the request_layout is set to true.
     ttlet need_layout = _relayout.exchange(false, std::memory_order::relaxed) or constraints_have_changed;
 
     // Make sure the widget's layout is updated before draw, but after window resize.
     if (need_layout or widget_size != screen_rectangle.size()) {
         widget_size = screen_rectangle.size();
-        widget->layout(geo::identity{}, widget_size, displayTimePoint, need_layout);
+        widget->layout(layout_context{widget_size, displayTimePoint}, need_layout);
     }
 
     if (auto optional_draw_context = surface->render_start(_redraw_rectangle)) {

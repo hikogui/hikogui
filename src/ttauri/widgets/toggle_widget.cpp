@@ -40,15 +40,11 @@ toggle_widget::toggle_widget(gui_window &window, widget *parent, std::unique_ptr
     }
 }
 
-void toggle_widget::layout(
-    matrix3 const &to_window,
-    extent2 const &new_size,
-    utc_nanoseconds display_time_point,
-    bool need_layout) noexcept
+void toggle_widget::layout(layout_context const &context, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (set_layout(to_window, new_size) or need_layout) {
+    if (compare_then_assign(_layout, context) or need_layout) {
         _button_rectangle = align(rectangle(), _button_size, alignment::top_left);
 
         _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, width(), height()};
@@ -61,7 +57,7 @@ void toggle_widget::layout(
         ttlet pip_to_button_margin_x2 = _button_rectangle.height() - _pip_rectangle.height();
         _pip_move_range = _button_rectangle.width() - _pip_rectangle.width() - pip_to_button_margin_x2;
 
-        layout_button(to_window, display_time_point, need_layout);
+        layout_button(context, need_layout);
         request_redraw();
     }
 }
@@ -70,8 +66,8 @@ void toggle_widget::draw(draw_context context, utc_nanoseconds display_time_poin
 {
     tt_axiom(is_gui_thread());
 
-    if (overlaps(context, _clipping_rectangle)) {
-        context.set_clipping_rectangle(_clipping_rectangle);
+    if (overlaps(context, _layout.clipping_rectangle)) {
+        context.set_clipping_rectangle(_layout.clipping_rectangle);
         draw_toggle_button(context);
         draw_toggle_pip(context, display_time_point);
         draw_button(context, display_time_point);

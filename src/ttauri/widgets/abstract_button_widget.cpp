@@ -86,7 +86,7 @@ void abstract_button_widget::draw_button(draw_context const &context, utc_nanose
     }
 }
 
-void abstract_button_widget::layout_button(matrix3 const &to_window, utc_nanoseconds display_time_point, bool need_layout) noexcept
+void abstract_button_widget::layout_button(layout_context const &context, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -95,22 +95,16 @@ void abstract_button_widget::layout_button(matrix3 const &to_window, utc_nanosec
     _off_label_widget->visible = state_ == button_state::off;
     _other_label_widget->visible = state_ == button_state::other;
 
-    _on_label_widget->set_layout_parameters_from_parent(_label_rectangle);
     if (_on_label_widget->visible) {
-        _on_label_widget->layout(
-            translate2{_label_rectangle} * to_window, _label_rectangle.size(), display_time_point, need_layout);
+        _on_label_widget->layout(_label_rectangle * context, need_layout);
     }
 
-    _off_label_widget->set_layout_parameters_from_parent(_label_rectangle);
     if (_off_label_widget->visible) {
-        _off_label_widget->layout(
-            translate2{_label_rectangle} * to_window, _label_rectangle.size(), display_time_point, need_layout);
+        _off_label_widget->layout(_label_rectangle * context, need_layout);
     }
 
-    _other_label_widget->set_layout_parameters_from_parent(_label_rectangle);
     if (_other_label_widget->visible) {
-        _other_label_widget->layout(
-            translate2{_label_rectangle} * to_window, _label_rectangle.size(), display_time_point, need_layout);
+        _other_label_widget->layout(_label_rectangle * context, need_layout);
     }
 }
 
@@ -124,12 +118,12 @@ void abstract_button_widget::layout_button(matrix3 const &to_window, utc_nanosec
     }
 }
 
-[[nodiscard]] hitbox abstract_button_widget::hitbox_test(point2 position) const noexcept
+[[nodiscard]] hitbox abstract_button_widget::hitbox_test(point3 position) const noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (_visible_rectangle.contains(position)) {
-        return hitbox{this, draw_layer, enabled ? hitbox::Type::Button : hitbox::Type::Default};
+    if (_layout.hit_rectangle.contains(position)) {
+        return hitbox{this, position, enabled ? hitbox::Type::Button : hitbox::Type::Default};
     } else {
         return hitbox{};
     }

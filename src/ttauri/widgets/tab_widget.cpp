@@ -22,7 +22,6 @@ tab_widget::tab_widget(gui_window &window, widget *parent, weak_or_unique_ptr<de
 
     if (parent) {
         // The tab-widget will not draw itself, only its selected child.
-        draw_layer = parent->draw_layer;
         semantic_layer = parent->semantic_layer;
     }
 
@@ -80,17 +79,16 @@ tab_widget::tab_widget(gui_window &window, widget *parent, std::weak_ptr<delegat
     return has_updated_contraints;
 }
 
-void tab_widget::layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
+void tab_widget::layout(layout_context const &context, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (set_layout(to_window, new_size) or need_layout) {
+    if (compare_then_assign(_layout, context) or need_layout) {
         auto buffer = pmr::scoped_buffer<256>{};
         for (auto *child : children(buffer.allocator())) {
             tt_axiom(child);
             if (child->visible) {
-                child->set_layout_parameters_from_parent(rectangle());
-                child->layout(to_window, rectangle().size(), display_time_point, need_layout);
+                child->layout(rectangle() * context, need_layout);
             }
         }
         request_redraw();

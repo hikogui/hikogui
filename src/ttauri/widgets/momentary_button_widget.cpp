@@ -24,18 +24,14 @@ namespace tt {
     }
 }
 
-void momentary_button_widget::layout(
-    matrix3 const &to_window,
-    extent2 const &new_size,
-    utc_nanoseconds display_time_point,
-    bool need_layout) noexcept
+void momentary_button_widget::layout(layout_context const &context, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (set_layout(to_window, new_size) or need_layout) {
+    if (compare_then_assign(_layout, context) or need_layout) {
         _label_rectangle = aarectangle{theme().margin, 0.0f, width() - theme().margin * 2.0f, height()};
 
-        layout_button(to_window, display_time_point, need_layout);
+        layout_button(context, need_layout);
         request_redraw();
     }
 }
@@ -44,8 +40,8 @@ void momentary_button_widget::draw(draw_context context, utc_nanoseconds display
 {
     tt_axiom(is_gui_thread());
 
-    if (overlaps(context, _clipping_rectangle)) {
-        context.set_clipping_rectangle(_clipping_rectangle);
+    if (overlaps(context, _layout.clipping_rectangle)) {
+        context.set_clipping_rectangle(_layout.clipping_rectangle);
         draw_label_button(context);
         draw_button(context, display_time_point);
     }

@@ -79,15 +79,11 @@ label_widget::label_widget(gui_window &window, widget *parent) noexcept : super(
     }
 }
 
-void label_widget::layout(
-    matrix3 const &to_window,
-    extent2 const &new_size,
-    utc_nanoseconds display_time_point,
-    bool need_layout) noexcept
+void label_widget::layout(layout_context const &context, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (set_layout(to_window, new_size) or need_layout) {
+    if (compare_then_assign(_layout, context) or need_layout) {
         _text_rectangle = aarectangle{};
         if (*alignment == horizontal_alignment::left) {
             ttlet text_width = width() - _icon_size - _inner_margin;
@@ -124,15 +120,11 @@ void label_widget::layout(
         }
         _icon_rectangle = aarectangle{icon_pos, extent2{_icon_size, _icon_size}};
 
-        _icon_widget->set_layout_parameters_from_parent(_icon_rectangle);
         if (_icon_widget->visible) {
-            _icon_widget->layout(
-                translate2{_icon_rectangle} * to_window, _icon_rectangle.size(), display_time_point, need_layout);
+            _icon_widget->layout(_icon_rectangle * context, need_layout);
         }
-        _text_widget->set_layout_parameters_from_parent(_text_rectangle);
         if (_text_widget->visible) {
-            _text_widget->layout(
-                translate2{_text_rectangle} * to_window, _text_rectangle.size(), display_time_point, need_layout);
+            _text_widget->layout(_text_rectangle * context, need_layout);
         }
         request_redraw();
     }
@@ -140,8 +132,8 @@ void label_widget::layout(
 
 void label_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
 {
-    if (overlaps(context, _clipping_rectangle)) {
-        context.set_clipping_rectangle(_clipping_rectangle);
+    if (overlaps(context, _layout.clipping_rectangle)) {
+        context.set_clipping_rectangle(_layout.clipping_rectangle);
 
         if (_icon_widget->visible) {
             _icon_widget->draw(translate2{_icon_rectangle} * context, display_time_point);

@@ -12,9 +12,6 @@ toolbar_widget::toolbar_widget(gui_window &window, widget *parent) noexcept : su
     tt_axiom(is_gui_thread());
 
     if (parent) {
-        // The toolbar widget does draw itself.
-        draw_layer = parent->draw_layer + 1.0f;
-
         // The toolbar is a top level widget, which draws its background as the next level.
         semantic_layer = 0;
     }
@@ -32,8 +29,8 @@ toolbar_widget::toolbar_widget(gui_window &window, widget *parent) noexcept : su
     if (super::constrain(display_time_point, need_reconstrain)) {
         auto shared_height = 0.0f;
 
-        _layout.clear();
-        _layout.reserve(std::ssize(_left_children) + 1 + std::ssize(_right_children));
+        _flow_layout.clear();
+        _flow_layout.reserve(std::ssize(_left_children) + 1 + std::ssize(_right_children));
 
         ssize_t index = 0;
         for (ttlet &child : _left_children) {
@@ -41,16 +38,16 @@ toolbar_widget::toolbar_widget(gui_window &window, widget *parent) noexcept : su
         }
 
         // Add a space between the left and right widgets.
-        _layout.update(index++, theme().large_size, theme().large_size, 32767.0f, 0.0f);
+        _flow_layout.update(index++, theme().large_size, theme().large_size, 32767.0f, 0.0f);
 
         for (ttlet &child : std::views::reverse(_right_children)) {
             update_constraints_for_child(*child, index++, shared_height);
         }
 
         tt_axiom(index == std::ssize(_left_children) + 1 + std::ssize(_right_children));
-        _minimum_size = {_layout.minimum_size(), shared_height};
-        _preferred_size = {_layout.preferred_size(), shared_height};
-        _maximum_size = {_layout.maximum_size(), shared_height};
+        _minimum_size = {_flow_layout.minimum_size(), shared_height};
+        _preferred_size = {_flow_layout.preferred_size(), shared_height};
+        _maximum_size = {_flow_layout.maximum_size(), shared_height};
         tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
         return true;
     } else {
@@ -58,27 +55,25 @@ toolbar_widget::toolbar_widget(gui_window &window, widget *parent) noexcept : su
     }
 }
 
-void toolbar_widget::layout(
-    matrix3 const &to_window,
-    extent2 const &new_size,
-    utc_nanoseconds display_time_point,
-    bool need_layout) noexcept
+void toolbar_widget::layout(layout_context const &context_, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (set_layout(to_window, new_size) or need_layout) {
-        _layout.set_size(rectangle().width());
+    // Clip directly around the toolbar, so that tab buttons looks proper.
+    ttlet context = context_.clip(context_.rectangle);
+    if (compare_then_assign(_layout, context) or need_layout) {
+        _flow_layout.set_size(rectangle().width());
 
         ssize_t index = 0;
         for (ttlet &child : _left_children) {
-            update_layout_for_child(*child, index++, to_window, display_time_point, need_layout);
+            update_layout_for_child(*child, index++, context, need_layout);
         }
 
         // Skip over the cell between left and right children.
         index++;
 
         for (ttlet &child : std::views::reverse(_right_children)) {
-            update_layout_for_child(*child, index++, to_window, display_time_point, need_layout);
+            update_layout_for_child(*child, index++, context, need_layout);
         }
 
         tt_axiom(index == std::ssize(_left_children) + 1 + std::ssize(_right_children));
@@ -110,8 +105,8 @@ void toolbar_widget::draw(draw_context context, utc_nanoseconds display_time_poi
 {
     tt_axiom(is_gui_thread());
 
-    if (overlaps(context, _clipping_rectangle)) {
-        context.set_clipping_rectangle(_clipping_rectangle);
+    if (overlaps(context, _layout.clipping_rectangle)) {
+        context.set_clipping_rectangle(_layout.clipping_rectangle);
         context.draw_box(rectangle(), theme().color(theme_color::fill, semantic_layer + 1));
 
         if (tab_button_has_focus()) {
@@ -127,20 +122,20 @@ void toolbar_widget::draw(draw_context context, utc_nanoseconds display_time_poi
     super::draw(std::move(context), display_time_point);
 }
 
-hitbox toolbar_widget::hitbox_test(point2 position) const noexcept
+hitbox toolbar_widget::hitbox_test(point3 position) const noexcept
 {
     tt_axiom(is_gui_thread());
 
     auto r = hitbox{};
 
-    if (_visible_rectangle.contains(position)) {
-        r = hitbox{this, draw_layer, hitbox::Type::MoveArea};
+    if (_layout.hit_rectangle.contains(position)) {
+        r = hitbox{this, position, hitbox::Type::MoveArea};
     }
 
     auto buffer = pmr::scoped_buffer<256>{};
     for (auto *child : children(buffer.allocator())) {
         tt_axiom(child);
-        r = std::max(r, child->hitbox_test(point2{child->parent_to_local() * position}));
+        r = std::max(r, child->hitbox_test(child->parent_to_local() * position));
     }
     return r;
 }
@@ -149,22 +144,18 @@ void toolbar_widget::update_constraints_for_child(widget const &child, ssize_t i
 {
     tt_axiom(is_gui_thread());
 
-    _layout.update(
+    _flow_layout.update(
         index, child.minimum_size().width(), child.preferred_size().width(), child.maximum_size().width(), child.margin());
 
     shared_height = std::max(shared_height, child.preferred_size().height() + child.margin() * 2.0f);
 }
 
-void toolbar_widget::update_layout_for_child(
-    widget &child,
-    ssize_t index,
-    matrix3 const &to_window,
-    utc_nanoseconds display_time_point,
-    bool need_layout) const noexcept
+void toolbar_widget::update_layout_for_child(widget &child, ssize_t index, layout_context const &context, bool need_layout)
+    const noexcept
 {
     tt_axiom(is_gui_thread());
 
-    ttlet[child_x, child_width] = _layout.get_offset_and_size(index++);
+    ttlet[child_x, child_width] = _flow_layout.get_offset_and_size(index++);
 
     ttlet child_rectangle = aarectangle{
         rectangle().left() + child_x,
@@ -173,8 +164,7 @@ void toolbar_widget::update_layout_for_child(
         rectangle().height() - child.margin() * 2.0f};
 
     if (child.visible) {
-        child.set_layout_parameters_from_parent(child_rectangle);
-        child.layout(translate2{child_rectangle} * to_window, child_rectangle.size(), display_time_point, need_layout);
+        child.layout(child_rectangle * context, need_layout);
     }
 }
 

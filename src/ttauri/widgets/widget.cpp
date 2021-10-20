@@ -11,12 +11,11 @@
 namespace tt {
 
 widget::widget(gui_window &_window, widget *parent) noexcept :
-    window(_window), parent(parent), draw_layer(0.0f), logical_layer(0), semantic_layer(0)
+    window(_window), parent(parent), logical_layer(0), semantic_layer(0)
 {
     tt_axiom(is_gui_thread());
 
     if (parent) {
-        draw_layer = parent->draw_layer + 1.0f;
         logical_layer = parent->logical_layer + 1;
         semantic_layer = parent->semantic_layer + 1;
     }
@@ -168,88 +167,34 @@ tt::font_book &widget::font_book() const noexcept
     return _maximum_size;
 }
 
-/** Set the location and size of the widget inside the window.
- *
- * The parent should call this `set_layout_paramters()` before this `updateLayout()`.
- *
- * If the parent's layout did not change, it does not need to call this `set_layout_parameters()`.
- * This way the parent does not need to keep a cache, recalculate or query the client for these
- * layout parameters for each frame.
- *
- * @pre `mutex` must be locked by current thread.
- */
-void widget::set_layout_parameters(
-    geo::transformer auto const &local_to_parent,
-    extent2 size,
-    aarectangle const &clipping_rectangle) noexcept
-{
-    tt_axiom(is_gui_thread());
-
-    _parent_to_local = ~local_to_parent;
-    if (parent) {
-        _window_to_local = ~local_to_parent * parent->window_to_local();
-    } else {
-        _window_to_local = ~local_to_parent;
-    }
-    _clipping_rectangle = clipping_rectangle;
-    _visible_rectangle = intersect(aarectangle{size}, clipping_rectangle);
-}
-
-void widget::set_layout_parameters_from_parent(
-    aarectangle child_rectangle,
-    aarectangle parent_clipping_rectangle,
-    float draw_layer_delta) noexcept
-{
-    tt_axiom(is_gui_thread());
-
-    ttlet child_translate = translate2{child_rectangle};
-    ttlet child_size = child_rectangle.size();
-    ttlet rectangle = aarectangle{child_size};
-    ttlet child_clipping_rectangle = intersect(~child_translate * parent_clipping_rectangle, rectangle + margin());
-
-    set_layout_parameters(translate_z(draw_layer_delta) * child_translate, child_size, child_clipping_rectangle);
-}
-
-void widget::set_layout_parameters_from_parent(aarectangle child_rectangle) noexcept
-{
-    tt_axiom(is_gui_thread());
-
-    if (parent) {
-        ttlet draw_layer_delta = draw_layer - parent->draw_layer;
-        return set_layout_parameters_from_parent(child_rectangle, parent->clipping_rectangle(), draw_layer_delta);
-    } else {
-        return set_layout_parameters_from_parent(child_rectangle, child_rectangle, 0.0f);
-    }
-}
-
 [[nodiscard]] matrix3 widget::parent_to_local() const noexcept
 {
     tt_axiom(is_gui_thread());
-    return _parent_to_local;
+    return _layout.from_parent;
 }
 
 [[nodiscard]] matrix3 widget::window_to_local() const noexcept
 {
     tt_axiom(is_gui_thread());
-    return _window_to_local;
+    return _layout.from_window;
 }
 
 [[nodiscard]] extent2 widget::size() const noexcept
 {
     tt_axiom(is_gui_thread());
-    return _size;
+    return _layout.rectangle.size();
 }
 
 [[nodiscard]] float widget::width() const noexcept
 {
     tt_axiom(is_gui_thread());
-    return _size.width();
+    return _layout.rectangle.width();
 }
 
 [[nodiscard]] float widget::height() const noexcept
 {
     tt_axiom(is_gui_thread());
-    return _size.height();
+    return _layout.rectangle.height();
 }
 
 /** Get the rectangle in local coordinates.
@@ -259,7 +204,7 @@ void widget::set_layout_parameters_from_parent(aarectangle child_rectangle) noex
 [[nodiscard]] aarectangle widget::rectangle() const noexcept
 {
     tt_axiom(is_gui_thread());
-    return aarectangle{_size};
+    return _layout.rectangle;
 }
 
 /** Return the base-line where the text should be located.
@@ -274,7 +219,7 @@ void widget::set_layout_parameters_from_parent(aarectangle child_rectangle) noex
 [[nodiscard]] aarectangle widget::clipping_rectangle() const noexcept
 {
     tt_axiom(is_gui_thread());
-    return _clipping_rectangle;
+    return _layout.clipping_rectangle;
 }
 
 [[nodiscard]] bool widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
@@ -298,7 +243,7 @@ void widget::draw(draw_context context, utc_nanoseconds display_time_point) noex
 {
     tt_axiom(is_gui_thread());
 
-    context.set_clipping_rectangle(_clipping_rectangle);
+    context.set_clipping_rectangle(_layout.clipping_rectangle);
     auto buffer = pmr::scoped_buffer<256>{};
     for (auto *child : children(buffer.allocator())) {
         if (child) {
@@ -313,7 +258,7 @@ void widget::draw(draw_context context, utc_nanoseconds display_time_point) noex
 
 void widget::request_redraw() const noexcept
 {
-    window.request_redraw(_bounding_rectangle);
+    window.request_redraw(_layout.redraw_rectangle);
 }
 
 void widget::request_relayout() noexcept
@@ -338,7 +283,7 @@ void widget::request_reconstrain() noexcept
     return false;
 }
 
-[[nodiscard]] hitbox widget::hitbox_test(point2 position) const noexcept
+[[nodiscard]] hitbox widget::hitbox_test(point3 position) const noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -349,7 +294,7 @@ void widget::request_reconstrain() noexcept
         if (child) {
             tt_axiom(child->parent == this);
             if (child->visible) {
-                r = std::max(r, child->hitbox_test(point2{child->parent_to_local() * position}));
+                r = std::max(r, child->hitbox_test(child->parent_to_local() * position));
             }
         }
     }
@@ -555,7 +500,7 @@ void widget::scroll_to_show(tt::aarectangle rectangle) noexcept
     tt_axiom(is_gui_thread());
 
     // Move the request_rectangle to window coordinates.
-    ttlet requested_window_rectangle = translate2{_bounding_rectangle - theme().margin} * requested_rectangle;
+    ttlet requested_window_rectangle = translate2{_layout.redraw_rectangle - theme().margin} * requested_rectangle;
     ttlet window_bounds = aarectangle{window.screen_rectangle.size()} - theme().margin;
     ttlet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
     return bounding_rectangle(window_to_local() * response_window_rectangle);

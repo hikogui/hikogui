@@ -89,11 +89,11 @@ selection_widget::selection_widget(gui_window &window, widget *parent, std::weak
     }
 }
 
-void selection_widget::layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
+void selection_widget::layout(layout_context const &context, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (set_layout(to_window, new_size) or need_layout) {
+    if (compare_then_assign(_layout, context) or need_layout) {
         // The overlay itself will make sure the overlay fits the window, so we give the preferred size and position
         // from the point of view of the selection widget.
 
@@ -104,17 +104,13 @@ void selection_widget::layout(matrix3 const &to_window, extent2 const &new_size,
             rectangle().width() - theme().size, _overlay_widget->minimum_size().width(), _overlay_widget->maximum_size().width());
         ttlet overlay_height = _overlay_widget->preferred_size().height();
         ttlet overlay_x = theme().size;
-        ttlet overlay_y = std::round(_size.height() * 0.5f - overlay_height * 0.5f);
+        ttlet overlay_y = std::round(height() * 0.5f - overlay_height * 0.5f);
         ttlet overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};
 
         _overlay_rectangle = make_overlay_rectangle(overlay_rectangle_request);
-        ttlet overlay_clipping_rectangle = overlay_rectangle + _overlay_widget->margin();
 
         if (_overlay_widget->visible) {
-            _overlay_widget->set_layout_parameters_from_parent(
-                _overlay_rectangle, overlay_clipping_rectangle, _overlay_widget->draw_layer - draw_layer);
-            _overlay_widget->layout(
-                translate2{_overlay_rectangle} * to_window, _overlay_rectangle.size(), display_time_point, need_layout);
+            _overlay_widget->layout(context.transform(_overlay_rectangle, 20.0f), need_layout);
         }
 
         _left_box_rectangle = aarectangle{0.0f, 0.0f, theme().size, rectangle().height()};
@@ -130,14 +126,10 @@ void selection_widget::layout(matrix3 const &to_window, extent2 const &new_size,
             rectangle().height()};
 
         if (_unknown_label_widget->visible) {
-            _unknown_label_widget->set_layout_parameters_from_parent(_option_rectangle);
-            _unknown_label_widget->layout(
-                translate2{_option_rectangle} * to_window, _option_rectangle.size(), display_time_point, need_layout);
+            _unknown_label_widget->layout(_option_rectangle * context, need_layout);
         }
         if (_current_label_widget->visible) {
-            _current_label_widget->set_layout_parameters_from_parent(_option_rectangle);
-            _current_label_widget->layout(
-                translate2{_option_rectangle} * to_window, _option_rectangle.size(), display_time_point, need_layout);
+            _current_label_widget->layout(_option_rectangle * context, need_layout);
         }
         request_redraw();
     }
@@ -147,8 +139,8 @@ void selection_widget::draw(draw_context context, utc_nanoseconds display_time_p
 {
     tt_axiom(is_gui_thread());
 
-    if (overlaps(context, this->_clipping_rectangle)) {
-        context.set_clipping_rectangle(_clipping_rectangle);
+    if (overlaps(context, _layout.clipping_rectangle)) {
+        context.set_clipping_rectangle(_layout.clipping_rectangle);
         draw_outline(context);
         draw_left_box(context);
         draw_chevrons(context);
@@ -211,13 +203,13 @@ bool selection_widget::handle_event(command command) noexcept
     return super::handle_event(command);
 }
 
-[[nodiscard]] hitbox selection_widget::hitbox_test(point2 position) const noexcept
+[[nodiscard]] hitbox selection_widget::hitbox_test(point3 position) const noexcept
 {
     tt_axiom(is_gui_thread());
 
     auto r = super::hitbox_test(position);
-    if (_visible_rectangle.contains(position)) {
-        r = std::max(r, hitbox{this, draw_layer, (enabled and _has_options) ? hitbox::Type::Button : hitbox::Type::Default});
+    if (_layout.hit_rectangle.contains(position)) {
+        r = std::max(r, hitbox{this, position, (enabled and _has_options) ? hitbox::Type::Button : hitbox::Type::Default});
     }
 
     return r;

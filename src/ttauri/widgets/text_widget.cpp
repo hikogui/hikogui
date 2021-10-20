@@ -44,11 +44,11 @@ text_widget::text_widget(gui_window &window, widget *parent) noexcept : super(wi
     }
 }
 
-void text_widget::layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds displayTimePoint, bool need_layout) noexcept
+void text_widget::layout(layout_context const &context, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (set_layout(to_window, new_size) or need_layout) {
+    if (compare_then_assign(_layout, context) or need_layout) {
         _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), width(), *alignment};
         _shaped_text_transform = _shaped_text.translate_base_line(point2{0.0f, base_line()});
         request_redraw();
@@ -59,8 +59,8 @@ void text_widget::draw(draw_context context, utc_nanoseconds display_time_point)
 {
     tt_axiom(is_gui_thread());
 
-    if (overlaps(context, _clipping_rectangle)) {
-        context.set_clipping_rectangle(_clipping_rectangle);
+    if (overlaps(context, _layout.clipping_rectangle)) {
+        context.set_clipping_rectangle(_layout.clipping_rectangle);
         context.draw_text(_shaped_text, label_color(), _shaped_text_transform);
     }
 }

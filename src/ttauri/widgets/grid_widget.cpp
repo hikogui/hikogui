@@ -115,20 +115,19 @@ bool grid_widget::constrain(utc_nanoseconds display_time_point, bool need_recons
     }
 }
 
-void grid_widget::layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
+void grid_widget::layout(layout_context const &context, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (set_layout(to_window, new_size) or need_layout) {
+    if (compare_then_assign(_layout, context) or need_layout) {
         _columns.set_size(width());
         _rows.set_size(height());
 
         for (auto &&cell : _cells) {
             auto &&child = cell.widget;
             ttlet child_rectangle = cell.rectangle(_columns, _rows, height());
-            child->set_layout_parameters_from_parent(child_rectangle);
             if (child->visible) {
-                child->layout(translate2{child_rectangle} * to_window, child_rectangle.size(), display_time_point, need_layout);
+                child->layout(child_rectangle * context, need_layout);
             }
         }
         request_redraw();

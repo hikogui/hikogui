@@ -73,33 +73,28 @@ public:
 
     [[nodiscard]] float margin() const noexcept override;
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept;
-    void layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept override;
+    void layout(layout_context const &context, bool need_layout) noexcept override;
     void draw(draw_context context, utc_nanoseconds display_time_point) noexcept override;
-    hitbox hitbox_test(point2 position) const noexcept override;
+    hitbox hitbox_test(point3 position) const noexcept override;
     [[nodiscard]] color focus_color() const noexcept override;
     /// @endprivatesection
 private:
     std::vector<std::unique_ptr<widget>> _left_children;
     std::vector<std::unique_ptr<widget>> _right_children;
-    flow_layout _layout;
+    flow_layout _flow_layout;
 
     void update_constraints_for_child(widget const &child, ssize_t index, float &shared_height) noexcept;
 
-    void update_layout_for_child(
-        widget &child,
-        ssize_t index,
-        matrix3 const &to_window,
-        utc_nanoseconds display_time_point,
-        bool need_layout) const noexcept;
+    void update_layout_for_child(widget &child, ssize_t index, layout_context const &context, bool need_layout) const noexcept;
 
     /** Add a widget directly to this widget.
      */
     widget &add_widget(horizontal_alignment alignment, std::unique_ptr<widget> widget) noexcept;
 
     /** Check if a child tab-button has focus.
-    * 
-    * @return If true the toolbar should draw a focus bar.
-    */
+     *
+     * @return If true the toolbar should draw a focus bar.
+     */
     bool tab_button_has_focus() const noexcept;
 };
 

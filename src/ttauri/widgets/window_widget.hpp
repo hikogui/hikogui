@@ -53,8 +53,8 @@ public:
     /// @privatesection
     [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override;
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
-    void layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept;
-    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override;
+    void layout(layout_context const &context, bool need_layout) noexcept;
+    [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
     /// @endprivatesection
 private:
     decltype(title)::callback_ptr_type _title_callback;

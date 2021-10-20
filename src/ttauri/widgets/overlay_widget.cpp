@@ -16,11 +16,10 @@ overlay_widget::overlay_widget(gui_window &window, widget *parent, std::weak_ptr
         // The overlay-widget will reset the semantic_layer as it is the bottom
         // layer of this virtual-window. However the draw-layer should be above
         // any other widget drawn.
-        draw_layer = parent->draw_layer + 20.0f;
         semantic_layer = 0;
     }
 
-        if (auto d = _delegate.lock()) {
+    if (auto d = _delegate.lock()) {
         d->init(*this);
     }
 }
@@ -32,8 +31,7 @@ overlay_widget::~overlay_widget()
     }
 }
 
-[[nodiscard]] bool
-overlay_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] bool overlay_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -50,14 +48,15 @@ overlay_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstr
     return has_updated_contraints;
 }
 
-void overlay_widget::layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept
+void overlay_widget::layout(layout_context const &context_, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (set_layout(to_window, new_size) or need_layout) {
+    // An overlay has full control over the clipping rectangle.
+    ttlet context = context_.override_clip(context_.rectangle);
+    if (compare_then_assign(_layout, context) or need_layout) {
         tt_axiom(_content);
-        _content->set_layout_parameters_from_parent(rectangle(), rectangle(), 1.0f);
-        _content->layout(to_window, rectangle().size(), display_time_point, need_layout);
+        _content->layout(rectangle() * context, need_layout);
         request_redraw();
     }
 }
@@ -66,8 +65,8 @@ void overlay_widget::draw(draw_context context, utc_nanoseconds display_time_poi
 {
     tt_axiom(is_gui_thread());
 
-    if (overlaps(context, _clipping_rectangle)) {
-        context.set_clipping_rectangle(_clipping_rectangle);
+    if (overlaps(context, _layout.clipping_rectangle)) {
+        context.set_clipping_rectangle(_layout.clipping_rectangle + theme().border_width);
         draw_background(context);
         _content->draw(translate_z(1.0f) * context, display_time_point);
     }
@@ -94,4 +93,4 @@ void overlay_widget::draw_background(draw_context context) noexcept
     context.draw_box_with_border_outside(rectangle(), background_color(), foreground_color());
 }
 
-}
+} // namespace tt

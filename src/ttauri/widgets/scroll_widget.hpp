@@ -174,12 +174,12 @@ public:
         return has_updated_contraints;
     }
 
-    void layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept override
+    void layout(layout_context const &context, bool need_layout) noexcept override
     {
         tt_axiom(is_gui_thread());
         tt_axiom(_content);
 
-        if (set_layout(to_window, new_size) or need_layout) {
+        if (compare_then_assign(_layout, context) or need_layout) {
             ttlet vertical_scroll_bar_width = _vertical_scroll_bar->preferred_size().width();
             ttlet horizontal_scroll_bar_height = _horizontal_scroll_bar->preferred_size().height();
 
@@ -221,31 +221,15 @@ public:
                 -_scroll_offset_x, -_scroll_offset_y - height_adjustment, content_size.width(), content_size.height()};
 
             if (_vertical_scroll_bar->visible) {
-                _vertical_scroll_bar->set_layout_parameters_from_parent(vertical_scroll_bar_rectangle);
-                _vertical_scroll_bar->layout(
-                    translate2{vertical_scroll_bar_rectangle} * to_window,
-                    vertical_scroll_bar_rectangle.size(),
-                    display_time_point,
-                    need_layout);
+                _vertical_scroll_bar->layout(vertical_scroll_bar_rectangle * context, need_layout);
             }
             if (_horizontal_scroll_bar->visible) {
-                _horizontal_scroll_bar->set_layout_parameters_from_parent(horizontal_scroll_bar_rectangle);
-                _horizontal_scroll_bar->layout(
-                    translate2{horizontal_scroll_bar_rectangle} * to_window,
-                    horizontal_scroll_bar_rectangle.size(),
-                    display_time_point,
-                    need_layout);
+                _horizontal_scroll_bar->layout(horizontal_scroll_bar_rectangle * context, need_layout);
             }
 
-            // Make a clipping rectangle that fits the aperture_rectangle exactly.
             if (_content->visible) {
-                _content->set_layout_parameters_from_parent(
-                    content_rectangle, _aperture_rectangle, _content->draw_layer - draw_layer);
-                _content->layout(
-                    translate2{content_rectangle} * to_window,
-                    content_rectangle.size(),
-                    display_time_point,
-                    need_layout);
+                ttlet clipped_context = context.clip(_aperture_rectangle);
+                _content->layout(content_rectangle * clipped_context, need_layout);
             }
 
             if constexpr (controls_window) {
@@ -255,16 +239,16 @@ public:
         }
     }
 
-    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
+    [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override
     {
         tt_axiom(is_gui_thread());
         tt_axiom(_content);
 
         auto r = super::hitbox_test(position);
 
-        if (_visible_rectangle.contains(position)) {
+        if (_layout.hit_rectangle.contains(position)) {
             // Claim mouse events for scrolling.
-            r = std::max(r, hitbox{this, draw_layer});
+            r = std::max(r, hitbox{this, position});
         }
 
         return r;
@@ -288,17 +272,17 @@ public:
     void scroll_to_show(tt::aarectangle to_show) noexcept override
     {
         float delta_x = 0.0f;
-        if (to_show.right() > _bounding_rectangle.right()) {
-            delta_x = to_show.right() - _bounding_rectangle.right();
-        } else if (to_show.left() < _bounding_rectangle.left()) {
-            delta_x = to_show.left() - _bounding_rectangle.left();
+        if (to_show.right() > _layout.redraw_rectangle.right()) {
+            delta_x = to_show.right() - _layout.redraw_rectangle.right();
+        } else if (to_show.left() < _layout.redraw_rectangle.left()) {
+            delta_x = to_show.left() - _layout.redraw_rectangle.left();
         }
 
         float delta_y = 0.0f;
-        if (to_show.top() > _bounding_rectangle.top()) {
-            delta_y = to_show.top() - _bounding_rectangle.top();
-        } else if (to_show.bottom() < _bounding_rectangle.bottom()) {
-            delta_y = to_show.bottom() - _bounding_rectangle.bottom();
+        if (to_show.top() > _layout.redraw_rectangle.top()) {
+            delta_y = to_show.top() - _layout.redraw_rectangle.top();
+        } else if (to_show.bottom() < _layout.redraw_rectangle.bottom()) {
+            delta_y = to_show.bottom() - _layout.redraw_rectangle.bottom();
         }
 
         _scroll_offset_x += delta_x;

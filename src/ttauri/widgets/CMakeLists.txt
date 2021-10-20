@@ -21,6 +21,7 @@ target_sources(ttauri PRIVATE
     icon_widget.hpp
     label_widget.cpp
     label_widget.hpp
+    layout_context.hpp
     menu_button_widget.cpp
     menu_button_widget.hpp
     momentary_button_widget.cpp

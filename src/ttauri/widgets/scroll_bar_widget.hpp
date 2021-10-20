@@ -66,11 +66,11 @@ public:
         }
     }
 
-    void layout(matrix3 const &to_window, extent2 const &new_size, utc_nanoseconds display_time_point, bool need_layout) noexcept override
+    void layout(layout_context const &context, bool need_layout) noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        if (set_layout(to_window, new_size) or need_layout) {
+        if (compare_then_assign(_layout, context) or need_layout) {
             tt_axiom(*content != 0.0f);
 
             // Calculate the position of the slider.
@@ -91,20 +91,20 @@ public:
     {
         tt_axiom(is_gui_thread());
 
-        if (overlaps(context, this->_clipping_rectangle) and visible) {
-            context.set_clipping_rectangle(_clipping_rectangle);
+        if (overlaps(context, _layout.clipping_rectangle) and visible) {
+            context.set_clipping_rectangle(_layout.clipping_rectangle);
             draw_rails(context);
             draw_slider(context);
         }
         super::draw(std::move(context), display_time_point);
     }
 
-    hitbox hitbox_test(point2 position) const noexcept override
+    hitbox hitbox_test(point3 position) const noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        if (visible and _visible_rectangle.contains(position) and slider_rectangle.contains(position)) {
-            return hitbox{this, draw_layer};
+        if (visible and _layout.hit_rectangle.contains(position) and slider_rectangle.contains(position)) {
+            return hitbox{this, position};
         } else {
             return hitbox{};
         }

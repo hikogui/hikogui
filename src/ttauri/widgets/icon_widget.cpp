@@ -104,15 +104,11 @@ icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(wi
     }
 }
 
-void icon_widget::layout(
-    matrix3 const &to_window,
-    extent2 const &new_size,
-    utc_nanoseconds displayTimePoint,
-    bool need_layout) noexcept
+void icon_widget::layout(layout_context const &context, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (set_layout(to_window, new_size) or need_layout) {
+    if (compare_then_assign(_layout, context) or need_layout) {
         if (_icon_type == icon_type::no or not _icon_bounding_box) {
             _icon_transform = {};
         } else {
@@ -126,8 +122,8 @@ void icon_widget::draw(draw_context context, utc_nanoseconds display_time_point)
 {
     tt_axiom(is_gui_thread());
 
-    if (overlaps(context, _clipping_rectangle)) {
-        context.set_clipping_rectangle(_clipping_rectangle);
+    if (overlaps(context, _layout.clipping_rectangle)) {
+        context.set_clipping_rectangle(_layout.clipping_rectangle);
         switch (_icon_type) {
         case icon_type::no: break;
 

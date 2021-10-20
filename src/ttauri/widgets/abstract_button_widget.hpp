@@ -89,7 +89,7 @@ public:
 
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
     [[nodiscard]] color background_color() const noexcept override;
-    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept final;
+    [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept final;
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
     void activate() noexcept;
     [[nodiscard]] bool handle_event(command command) noexcept override;
@@ -108,7 +108,7 @@ protected:
     ~abstract_button_widget();
     abstract_button_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
 
-    void layout_button(matrix3 const &to_window, utc_nanoseconds displayTimePoint, bool need_layout) noexcept;
+    void layout_button(layout_context const &context, bool need_layout) noexcept;
     void draw_button(draw_context const &context, utc_nanoseconds display_time_point) noexcept;
 };
 

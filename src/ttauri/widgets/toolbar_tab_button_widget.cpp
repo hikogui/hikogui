@@ -25,18 +25,14 @@ namespace tt {
     }
 }
 
-void toolbar_tab_button_widget::layout(
-    matrix3 const &to_window,
-    extent2 const &new_size,
-    utc_nanoseconds display_time_point,
-    bool need_layout) noexcept
+void toolbar_tab_button_widget::layout(layout_context const &context, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (set_layout(to_window, new_size) or need_layout) {
+    if (compare_then_assign(_layout, context) or need_layout) {
         _label_rectangle = aarectangle{theme().margin, 0.0f, width() - theme().margin * 2.0f, height() - theme().margin};
 
-        layout_button(to_window, display_time_point, need_layout);
+        layout_button(context, need_layout);
         request_redraw();
     }
 }
@@ -45,10 +41,9 @@ void toolbar_tab_button_widget::draw(draw_context context, utc_nanoseconds displ
 {
     tt_axiom(is_gui_thread());
 
-    if (overlaps(context, _clipping_rectangle)) {
-        context.set_clipping_rectangle(_clipping_rectangle);
+    if (overlaps(context, _layout.clipping_rectangle)) {
+        context.set_clipping_rectangle(_layout.clipping_rectangle);
         draw_toolbar_tab_button(context);
-        context.set_clipping_rectangle(_clipping_rectangle);
         draw_button(context, display_time_point);
     }
 }
@@ -108,7 +103,7 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context context) no
     ttlet button_z = (focus && window.active) ? translate_z(0.8f) : translate_z(0.6f);
 
     auto button_color = (hover || state() == button_state::on) ? theme().color(theme_color::fill, semantic_layer - 1) :
-                                                                  theme().color(theme_color::fill, semantic_layer);
+                                                                 theme().color(theme_color::fill, semantic_layer);
 
     ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme().rounding_radius, theme().rounding_radius};
     context.draw_box_with_border_inside(
