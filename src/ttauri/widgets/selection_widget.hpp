@@ -110,6 +110,7 @@ private:
     bool _selecting = false;
     bool _has_options = false;
 
+    aarectangle _overlay_rectangle;
     std::unique_ptr<overlay_widget> _overlay_widget;
     vertical_scroll_widget<> *_scroll_widget = nullptr;
     column_widget *_column_widget = nullptr;

@@ -107,14 +107,14 @@ void selection_widget::layout(matrix3 const &to_window, extent2 const &new_size,
         ttlet overlay_y = std::round(_size.height() * 0.5f - overlay_height * 0.5f);
         ttlet overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};
 
-        ttlet overlay_rectangle = make_overlay_rectangle(overlay_rectangle_request);
+        _overlay_rectangle = make_overlay_rectangle(overlay_rectangle_request);
         ttlet overlay_clipping_rectangle = overlay_rectangle + _overlay_widget->margin();
 
         if (_overlay_widget->visible) {
             _overlay_widget->set_layout_parameters_from_parent(
-                overlay_rectangle, overlay_clipping_rectangle, _overlay_widget->draw_layer - draw_layer);
+                _overlay_rectangle, overlay_clipping_rectangle, _overlay_widget->draw_layer - draw_layer);
             _overlay_widget->layout(
-                translate2{overlay_rectangle} * to_window, overlay_rectangle.size(), display_time_point, need_layout);
+                translate2{_overlay_rectangle} * to_window, _overlay_rectangle.size(), display_time_point, need_layout);
         }
 
         _left_box_rectangle = aarectangle{0.0f, 0.0f, theme().size, rectangle().height()};
@@ -129,13 +129,13 @@ void selection_widget::layout(matrix3 const &to_window, extent2 const &new_size,
             rectangle().width() - _left_box_rectangle.width() - theme().margin * 2.0f,
             rectangle().height()};
 
-        _unknown_label_widget->set_layout_parameters_from_parent(_option_rectangle);
         if (_unknown_label_widget->visible) {
+            _unknown_label_widget->set_layout_parameters_from_parent(_option_rectangle);
             _unknown_label_widget->layout(
                 translate2{_option_rectangle} * to_window, _option_rectangle.size(), display_time_point, need_layout);
         }
-        _current_label_widget->set_layout_parameters_from_parent(_option_rectangle);
         if (_current_label_widget->visible) {
+            _current_label_widget->set_layout_parameters_from_parent(_option_rectangle);
             _current_label_widget->layout(
                 translate2{_option_rectangle} * to_window, _option_rectangle.size(), display_time_point, need_layout);
         }
@@ -152,9 +152,17 @@ void selection_widget::draw(draw_context context, utc_nanoseconds display_time_p
         draw_outline(context);
         draw_left_box(context);
         draw_chevrons(context);
-    }
 
-    super::draw(std::move(context), display_time_point);
+        if (_overlay_widget->visible) {
+            _overlay_widget->draw(translate3{_overlay_rectangle, 25.0f} * context, display_time_point);
+        }
+        if (_unknown_label_widget->visible) {
+            _unknown_label_widget->draw(translate3{_option_rectangle, 1.0f} * context, display_time_point);
+        }
+        if (_current_label_widget->visible) {
+            _current_label_widget->draw(translate3{_option_rectangle, 1.0f} * context, display_time_point);
+        }
+    }
 }
 
 bool selection_widget::handle_event(mouse_event const &event) noexcept

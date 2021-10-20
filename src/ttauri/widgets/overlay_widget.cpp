@@ -57,9 +57,7 @@ void overlay_widget::layout(matrix3 const &to_window, extent2 const &new_size, u
     if (set_layout(to_window, new_size) or need_layout) {
         tt_axiom(_content);
         _content->set_layout_parameters_from_parent(rectangle(), rectangle(), 1.0f);
-        if (_content->visible) {
-            _content->layout(to_window, rectangle().size(), display_time_point, need_layout);
-        }
+        _content->layout(to_window, rectangle().size(), display_time_point, need_layout);
         request_redraw();
     }
 }
@@ -71,9 +69,8 @@ void overlay_widget::draw(draw_context context, utc_nanoseconds display_time_poi
     if (overlaps(context, _clipping_rectangle)) {
         context.set_clipping_rectangle(_clipping_rectangle);
         draw_background(context);
+        _content->draw(translate_z(1.0f) * context, display_time_point);
     }
-
-    super::draw(std::move(context), display_time_point);
 }
 
 [[nodiscard]] color overlay_widget::background_color() const noexcept

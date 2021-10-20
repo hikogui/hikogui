@@ -122,8 +122,6 @@ void text_field_widget::draw(draw_context context, utc_nanoseconds display_time_
         draw_caret(context, display_time_point);
         draw_text(context);
     }
-
-    super::draw(std::move(context), display_time_point);
 }
 
 bool text_field_widget::handle_event(command command) noexcept
