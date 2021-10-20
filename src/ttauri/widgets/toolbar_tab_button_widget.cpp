@@ -7,8 +7,7 @@
 
 namespace tt {
 
-[[nodiscard]] bool
-toolbar_tab_button_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] bool toolbar_tab_button_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -26,29 +25,26 @@ toolbar_tab_button_widget::constrain(utc_nanoseconds display_time_point, bool ne
     }
 }
 
-[[nodiscard]] void
-toolbar_tab_button_widget::layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept
+void toolbar_tab_button_widget::layout(layout_context const &context, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_layout.exchange(false);
-    if (need_layout) {
-        _label_rectangle =
-            aarectangle{theme().margin, 0.0f, width() - theme().margin * 2.0f, height() - theme().margin};
+    if (compare_then_assign(_layout, context) or need_layout) {
+        _label_rectangle = aarectangle{theme().margin, 0.0f, width() - theme().margin * 2.0f, height() - theme().margin};
+
+        layout_button(context, need_layout);
+        request_redraw();
     }
-    super::layout(displayTimePoint, need_layout);
 }
 
-void toolbar_tab_button_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
+void toolbar_tab_button_widget::draw(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (overlaps(context, _clipping_rectangle)) {
+    if (visible and overlaps(context, _layout)) {
         draw_toolbar_tab_button(context);
+        draw_button(context);
     }
-    draw_toolbar_tab_focus_line(context);
-
-    super::draw(std::move(context), display_time_point);
 }
 
 void toolbar_tab_button_widget::request_redraw() const noexcept
@@ -92,46 +88,29 @@ void toolbar_tab_button_widget::request_redraw() const noexcept
     return super::handle_event(command);
 }
 
-void toolbar_tab_button_widget::draw_toolbar_tab_focus_line(draw_context context) noexcept
-{
-    if (_focus and window.active and state() == tt::button_state::on) {
-        ttlet parent_rectangle = bounding_rectangle(_parent_to_local * parent->rectangle());
-
-        // Create a line, on the bottom of the toolbar over the full width.
-        ttlet line_rectangle = aarectangle{
-            parent_rectangle.left(), parent_rectangle.bottom(), parent_rectangle.width(), theme().border_width};
-
-        context.set_clipping_rectangle(line_rectangle);
-
-        if (overlaps(context, line_rectangle)) {
-            // Draw the line above every other direct child of the toolbar, and between
-            // the selected-tab (0.6) and unselected-tabs (0.8).
-            context.draw_box(translate_z(0.7f) * line_rectangle, focus_color());
-        }
-    }
-}
-
-void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context context) noexcept
+void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    // Override the clipping rectangle to match the toolbar rectangle exactly
-    // so that the bottom border of the tab button is not drawn.
-    context.set_clipping_rectangle(bounding_rectangle(_parent_to_local * parent->clipping_rectangle()
-));
-
+    // Draw the outline of the button across the clipping rectangle to clip the
+    // bottom of the outline.
     ttlet offset = theme().margin + theme().border_width;
     ttlet outline_rectangle =
         aarectangle{rectangle().left(), rectangle().bottom() - offset, rectangle().width(), rectangle().height() + offset};
 
     // The focus line will be placed at 0.7.
-    ttlet button_z = (_focus && window.active) ? translate_z(0.8f) : translate_z(0.6f);
+    ttlet button_z = (focus && window.active) ? translate_z(0.8f) : translate_z(0.6f);
 
-    auto button_color = (_hover || state() == button_state::on) ? theme().color(theme_color::fill, semantic_layer - 1) :
-                                                                  theme().color(theme_color::fill, semantic_layer);
+    auto button_color = (hover || state() == button_state::on) ? theme().color(theme_color::fill, semantic_layer - 1) :
+                                                                 theme().color(theme_color::fill, semantic_layer);
 
     ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme().rounding_radius, theme().rounding_radius};
     context.draw_box_with_border_inside(
-        button_z * outline_rectangle, button_color, (_focus && window.active) ? focus_color() : button_color, corner_shapes);
+        _layout,
+        button_z * outline_rectangle,
+        button_color,
+        (focus && window.active) ? focus_color() : button_color,
+        corner_shapes);
 }
-}
+
+} // namespace tt

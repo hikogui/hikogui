@@ -115,7 +115,7 @@ struct attributed_glyph {
      * @param border The 1EM scaled border around the glyph bounding box.
      */
     [[nodiscard]] aarectangle boundingBox(float border) const noexcept {
-        return translate2{position} * expand(metrics.boundingBox, border * style.scaled_size());
+        return translate2{position} * (metrics.boundingBox + border * style.scaled_size());
     }
 
     /** Find the logical index closest to the coordinate.

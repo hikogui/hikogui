@@ -75,7 +75,7 @@ public:
         }
 
         _layout_callback = std::make_shared<std::function<void()>>([this]() {
-            _request_layout = true;
+            request_relayout();
         });
 
         _scroll_content_width.subscribe(_layout_callback);
@@ -174,13 +174,12 @@ public:
         return has_updated_contraints;
     }
 
-    [[nodiscard]] void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept override
+    void layout(layout_context const &context, bool need_layout) noexcept override
     {
         tt_axiom(is_gui_thread());
         tt_axiom(_content);
 
-        need_layout |= _request_layout.exchange(false);
-        if (need_layout) {
+        if (compare_then_assign(_layout, context) or need_layout) {
             ttlet vertical_scroll_bar_width = _vertical_scroll_bar->preferred_size().width();
             ttlet horizontal_scroll_bar_height = _horizontal_scroll_bar->preferred_size().height();
 
@@ -194,9 +193,6 @@ public:
 
             ttlet horizontal_scroll_bar_rectangle =
                 aarectangle{0.0f, 0.0f, width() - width_adjustment, horizontal_scroll_bar_height};
-
-            _vertical_scroll_bar->set_layout_parameters_from_parent(vertical_scroll_bar_rectangle);
-            _horizontal_scroll_bar->set_layout_parameters_from_parent(horizontal_scroll_bar_rectangle);
 
             _aperture_rectangle = aarectangle{0.0f, height_adjustment, width() - width_adjustment, height() - height_adjustment};
 
@@ -224,29 +220,44 @@ public:
             ttlet content_rectangle = aarectangle{
                 -_scroll_offset_x, -_scroll_offset_y - height_adjustment, content_size.width(), content_size.height()};
 
-            // Make a clipping rectangle that fits the aperture_rectangle exactly.
-            _content->set_layout_parameters_from_parent(
-                content_rectangle, _aperture_rectangle, _content->draw_layer - draw_layer);
+            if (_vertical_scroll_bar->visible) {
+                _vertical_scroll_bar->layout(vertical_scroll_bar_rectangle * context, need_layout);
+            }
+            if (_horizontal_scroll_bar->visible) {
+                _horizontal_scroll_bar->layout(horizontal_scroll_bar_rectangle * context, need_layout);
+            }
+
+            if (_content->visible) {
+                ttlet clipped_context = context.clip(_aperture_rectangle);
+                _content->layout(content_rectangle * clipped_context, need_layout);
+            }
 
             if constexpr (controls_window) {
                 window.set_resize_border_priority(
                     true, not _vertical_scroll_bar->visible, not _horizontal_scroll_bar->visible, true);
             }
         }
-
-        super::layout(display_time_point, need_layout);
     }
 
-    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override
+    void draw(draw_context const &context) noexcept
+    {
+        if (visible and overlaps(context, _layout)) {
+            _vertical_scroll_bar->draw(context);
+            _horizontal_scroll_bar->draw(context);
+            _content->draw(context);
+        }
+    }
+
+    [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override
     {
         tt_axiom(is_gui_thread());
         tt_axiom(_content);
 
         auto r = super::hitbox_test(position);
 
-        if (_visible_rectangle.contains(position)) {
+        if (_layout.hit_rectangle.contains(position)) {
             // Claim mouse events for scrolling.
-            r = std::max(r, hitbox{this, draw_layer});
+            r = std::max(r, hitbox{this, position});
         }
 
         return r;
@@ -261,28 +272,26 @@ public:
             handled = true;
             _scroll_offset_x += event.wheelDelta.x();
             _scroll_offset_y += event.wheelDelta.y();
-            _request_layout = true;
+            request_relayout();
             return true;
         }
         return handled;
     }
 
-    void scroll_to_show(tt::rectangle rectangle) noexcept override
+    void scroll_to_show(tt::aarectangle to_show) noexcept override
     {
-        auto rectangle_ = bounding_rectangle(rectangle);
-
         float delta_x = 0.0f;
-        if (rectangle_.right() > _aperture_rectangle.right()) {
-            delta_x = rectangle_.right() - _aperture_rectangle.right();
-        } else if (rectangle_.left() < _aperture_rectangle.left()) {
-            delta_x = rectangle_.left() - _aperture_rectangle.left();
+        if (to_show.right() > _layout.redraw_rectangle.right()) {
+            delta_x = to_show.right() - _layout.redraw_rectangle.right();
+        } else if (to_show.left() < _layout.redraw_rectangle.left()) {
+            delta_x = to_show.left() - _layout.redraw_rectangle.left();
         }
 
         float delta_y = 0.0f;
-        if (rectangle_.top() > _aperture_rectangle.top()) {
-            delta_y = rectangle_.top() - _aperture_rectangle.top();
-        } else if (rectangle_.bottom() < _aperture_rectangle.bottom()) {
-            delta_y = rectangle_.bottom() - _aperture_rectangle.bottom();
+        if (to_show.top() > _layout.redraw_rectangle.top()) {
+            delta_y = to_show.top() - _layout.redraw_rectangle.top();
+        } else if (to_show.bottom() < _layout.redraw_rectangle.bottom()) {
+            delta_y = to_show.bottom() - _layout.redraw_rectangle.bottom();
         }
 
         _scroll_offset_x += delta_x;
@@ -290,7 +299,7 @@ public:
 
         // There may be recursive scroll view, and they all need to move until the rectangle is visible.
         if (parent) {
-            parent->scroll_to_show(_local_to_parent * translate2(delta_x, delta_y) * rectangle);
+            parent->scroll_to_show(translate2(delta_x, delta_y) * to_show);
         }
     }
     // @endprivatesection

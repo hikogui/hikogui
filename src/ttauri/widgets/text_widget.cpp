@@ -9,7 +9,7 @@ namespace tt {
 text_widget::text_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
 {
     _text_callback = text.subscribe([this] {
-        _request_constrain = true;
+        request_reconstrain();
     });
 }
 
@@ -44,27 +44,24 @@ text_widget::text_widget(gui_window &window, widget *parent) noexcept : super(wi
     }
 }
 
-[[nodiscard]] void text_widget::layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept
+void text_widget::layout(layout_context const &context, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_layout.exchange(false);
-    if (need_layout) {
+    if (compare_then_assign(_layout, context) or need_layout) {
         _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), width(), *alignment};
         _shaped_text_transform = _shaped_text.translate_base_line(point2{0.0f, base_line()});
+        request_redraw();
     }
-    super::layout(displayTimePoint, need_layout);
 }
 
-void text_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
+void text_widget::draw(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (overlaps(context, _clipping_rectangle)) {
-        context.draw_text(_shaped_text, label_color(), _shaped_text_transform);
+    if (visible and overlaps(context, _layout)) {
+        context.draw_text(_layout, _shaped_text, label_color(), _shaped_text_transform);
     }
-
-    super::draw(std::move(context), display_time_point);
 }
 
 } // namespace tt

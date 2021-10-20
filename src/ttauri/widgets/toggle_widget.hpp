@@ -80,8 +80,8 @@ public:
 
     /// @privatesection
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
-    [[nodiscard]] void layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept override;
-    void draw(draw_context context, utc_nanoseconds display_time_point) noexcept override;
+    void layout(layout_context const &context, bool need_layout) noexcept override;
+    void draw(draw_context const &context) noexcept override;
     /// @endprivatesection
 private:
     static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
@@ -93,8 +93,8 @@ private:
     float _pip_move_range;
 
     toggle_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
-    void draw_toggle_button(draw_context context) noexcept;
-    void draw_toggle_pip(draw_context draw_context, utc_nanoseconds display_time_point) noexcept;
+    void draw_toggle_button(draw_context const &context) noexcept;
+    void draw_toggle_pip(draw_context const &context) noexcept;
 };
 
 } // namespace tt

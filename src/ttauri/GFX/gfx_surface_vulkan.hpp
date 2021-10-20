@@ -88,9 +88,9 @@ public:
     gfx_device_vulkan &vulkan_device() const noexcept;
     [[nodiscard]] extent2 size() const noexcept override;
 
-    [[nodiscard]] void update(extent2 new_size) noexcept override;
+    void update(extent2 new_size) noexcept override;
 
-    [[nodiscard]] std::optional<draw_context> render_start(aarectangle redraw_rectangle) override;
+    [[nodiscard]] std::optional<draw_context> render_start(aarectangle redraw_rectangle, utc_nanoseconds display_time_point) override;
     void render_finish(draw_context const &context, color background_color) override;
 
 protected:

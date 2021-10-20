@@ -197,7 +197,7 @@ public:
 
     /** Request all windows to constrain.
      */
-    void request_constrain() noexcept;
+    void request_reconstrain() noexcept;
 
 protected:
     gui_system(

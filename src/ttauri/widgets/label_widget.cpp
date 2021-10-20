@@ -24,8 +24,7 @@ label_widget::label_widget(gui_window &window, widget *parent) noexcept : super(
     });
 }
 
-[[nodiscard]] bool
-label_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] bool label_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -80,31 +79,30 @@ label_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrai
     }
 }
 
-[[nodiscard]] void label_widget::layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept
+void label_widget::layout(layout_context const &context, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_layout.exchange(false);
-    if (need_layout) {
-        auto text_rect = aarectangle{};
+    if (compare_then_assign(_layout, context) or need_layout) {
+        _text_rectangle = aarectangle{};
         if (*alignment == horizontal_alignment::left) {
             ttlet text_width = width() - _icon_size - _inner_margin;
-            text_rect = {_icon_size + _inner_margin, 0.0f, text_width, height()};
+            _text_rectangle = {_icon_size + _inner_margin, 0.0f, text_width, height()};
 
         } else if (*alignment == horizontal_alignment::right) {
             ttlet text_width = width() - _icon_size - _inner_margin;
-            text_rect = {0.0f, 0.0f, text_width, height()};
+            _text_rectangle = {0.0f, 0.0f, text_width, height()};
 
         } else if (*alignment == vertical_alignment::top) {
             ttlet text_height = height() - _icon_size;
-            text_rect = {0.0f, 0.0f, width(), text_height};
+            _text_rectangle = {0.0f, 0.0f, width(), text_height};
 
         } else if (*alignment == vertical_alignment::bottom) {
             ttlet text_height = height() - _icon_size;
-            text_rect = {0.0f, _icon_size, width(), text_height};
+            _text_rectangle = {0.0f, _icon_size, width(), text_height};
 
         } else {
-            text_rect = rectangle();
+            _text_rectangle = rectangle();
         }
 
         auto icon_pos = point2{};
@@ -120,12 +118,24 @@ label_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrai
         case alignment::middle_center: icon_pos = {(width() - _icon_size) / 2.0f, (height() - _icon_size)}; break;
         default: tt_no_default();
         }
-        ttlet icon_rect = aarectangle{icon_pos, extent2{_icon_size, _icon_size}};
+        _icon_rectangle = aarectangle{icon_pos, extent2{_icon_size, _icon_size}};
 
-        _icon_widget->set_layout_parameters_from_parent(icon_rect);
-        _text_widget->set_layout_parameters_from_parent(text_rect);
+        if (_icon_widget->visible) {
+            _icon_widget->layout(_icon_rectangle * context, need_layout);
+        }
+        if (_text_widget->visible) {
+            _text_widget->layout(_text_rectangle * context, need_layout);
+        }
+        request_redraw();
     }
-    super::layout(displayTimePoint, need_layout);
+}
+
+void label_widget::draw(draw_context const &context) noexcept
+{
+    if (visible and overlaps(context, _layout)) {
+        _icon_widget->draw(context);
+        _text_widget->draw(context);
+    }
 }
 
 } // namespace tt

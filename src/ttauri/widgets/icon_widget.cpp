@@ -15,7 +15,7 @@ namespace tt {
 icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
 {
     _icon_callback = icon.subscribe([this]() {
-        _request_constrain = true;
+        request_reconstrain();
     });
 }
 
@@ -55,7 +55,7 @@ icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(wi
                 _pixmap_hash = 0;
                 _pixmap_backing = {};
                 _icon_bounding_box = {};
-                _request_constrain = true;
+                request_reconstrain();
 
             } else if (pixmap.hash() != _pixmap_hash) {
                 _pixmap_hash = pixmap.hash();
@@ -72,8 +72,7 @@ icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(wi
             _pixmap_hash = 0;
             _pixmap_backing = {};
 
-            _icon_bounding_box =
-                scale(_glyph.get_bounding_box(), theme().text_style(theme_text_style::label).scaled_size());
+            _icon_bounding_box = _glyph.get_bounding_box() * theme().text_style(theme_text_style::label).scaled_size();
 
         } else if (holds_alternative<elusive_icon>(icon_)) {
             _icon_type = icon_type::glyph;
@@ -81,8 +80,7 @@ icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(wi
             _pixmap_hash = 0;
             _pixmap_backing = {};
 
-            _icon_bounding_box =
-                scale(_glyph.get_bounding_box(), theme().text_style(theme_text_style::label).scaled_size());
+            _icon_bounding_box = _glyph.get_bounding_box() * theme().text_style(theme_text_style::label).scaled_size();
 
         } else if (holds_alternative<ttauri_icon>(icon_)) {
             _icon_type = icon_type::glyph;
@@ -90,8 +88,7 @@ icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(wi
             _pixmap_hash = 0;
             _pixmap_backing = {};
 
-            _icon_bounding_box =
-                scale(_glyph.get_bounding_box(), theme().text_style(theme_text_style::label).scaled_size());
+            _icon_bounding_box = _glyph.get_bounding_box() * theme().text_style(theme_text_style::label).scaled_size();
 
         } else {
             tt_no_default();
@@ -107,49 +104,45 @@ icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(wi
     }
 }
 
-[[nodiscard]] void icon_widget::layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept
+void icon_widget::layout(layout_context const &context, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_layout.exchange(false);
-    if (need_layout) {
+    if (compare_then_assign(_layout, context) or need_layout) {
         if (_icon_type == icon_type::no or not _icon_bounding_box) {
             _icon_transform = {};
         } else {
             _icon_transform = matrix2::uniform(_icon_bounding_box, rectangle(), *alignment);
         }
+        request_redraw();
     }
-    super::layout(displayTimePoint, need_layout);
 }
 
-void icon_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
+void icon_widget::draw(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (overlaps(context, _clipping_rectangle)) {
+    if (visible and overlaps(context, _layout)) {
         switch (_icon_type) {
         case icon_type::no: break;
 
         case icon_type::pixmap:
             switch (_pixmap_backing.state) {
             case pipeline_image::image::State::Drawing: request_redraw(); break;
-            case pipeline_image::image::State::Uploaded: context.draw_image(_pixmap_backing, _icon_transform); break;
+            case pipeline_image::image::State::Uploaded: context.draw_image(_layout, _pixmap_backing, _icon_transform); break;
             default: break;
             }
             break;
 
         case icon_type::glyph: {
             ttlet box = _icon_transform * _icon_bounding_box;
-            ttlet scale = box.width() /
-                _icon_bounding_box.width();
-            context.draw_glyph(_glyph, scale, box, theme().color(*color));
+            ttlet scale = box.width() / _icon_bounding_box.width();
+            context.draw_glyph(_layout, _glyph, scale, box, theme().color(*color));
         } break;
 
         default: tt_no_default();
         }
     }
-
-    super::draw(std::move(context), display_time_point);
 }
 
 } // namespace tt

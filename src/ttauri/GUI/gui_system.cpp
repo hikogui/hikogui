@@ -56,10 +56,10 @@ gui_window &gui_system::add_window(std::unique_ptr<gui_window> window)
     return *window_ptr;
 }
 
-void gui_system::request_constrain() noexcept
+void gui_system::request_reconstrain() noexcept
 {
     for (auto &window : _windows) {
-        window->request_constrain = true;
+        window->request_reconstrain();
     }
 }
 

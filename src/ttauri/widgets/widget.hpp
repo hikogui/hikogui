@@ -5,7 +5,6 @@
 #pragma once
 
 #include "../GUI/theme.hpp"
-#include "../GFX/draw_context.hpp"
 #include "../GUI/hitbox.hpp"
 #include "../GUI/keyboard_focus_direction.hpp"
 #include "../GUI/keyboard_focus_group.hpp"
@@ -16,6 +15,8 @@
 #include "../command.hpp"
 #include "../chrono.hpp"
 #include "../coroutine.hpp"
+#include "draw_context.hpp"
+#include "layout_context.hpp"
 #include <memory>
 #include <vector>
 #include <string>
@@ -29,11 +30,10 @@ class font_book;
 
 /** An interactive graphical object as part of the user-interface.
  *
- * Rendering is done in four distinct phases:
+ * Rendering is done in three distinct phases:
  *  1. Updating Constraints: `widget::constrain()`
- *  2. Update layout parameters `widget::set_layout_parameters()`
- *  3. Updating Layout: `widget::layout()`
- *  4. Drawing: `widget::draw()`
+ *  2. Updating Layout: `widget::layout()`
+ *  3. Drawing: `widget::draw()`
  *
  */
 class widget {
@@ -61,19 +61,13 @@ public:
      */
     observable<bool> visible = true;
 
-    /** The draw layer of the widget.
-     * Drawing layers start at 0.0 and go up to 100.0.
-     *
-     * Each child widget that has drawing to do increases the layer by 1.0.
-     *
-     * The widget should draw within 0.0 and 1.0 of its drawing layer.
-     * The toWindowTransfer and the DrawingContext will already include
-     * the draw_layer.
-     *
-     * An overlay widget such as pop-ups will increase the layer by 25.0,
-     * to make sure the overlay will draw above other widgets in the window.     *
+    /** Mouse cursor is hovering over the widget.
      */
-    float draw_layer;
+    bool hover = false;
+
+    /** The widget has keyboard focus.
+     */
+    bool focus = false;
 
     /** The draw layer of the widget.
      * The semantic layer is used mostly by the `draw()` function
@@ -158,35 +152,9 @@ public:
      */
     [[nodiscard]] extent2 maximum_size() const noexcept;
 
-    /** Set the location and size of the widget inside the window.
-     *
-     * The parent should call this `set_layout_paramters()` before this `updateLayout()`.
-     *
-     * If the parent's layout did not change, it does not need to call this `set_layout_parameters()`.
-     * This way the parent does not need to keep a cache, recalculate or query the client for these
-     * layout parameters for each frame.
-     *
-     * @pre `mutex` must be locked by current thread.
-     */
-    void set_layout_parameters(
-        geo::transformer auto const &local_to_parent,
-        extent2 size,
-        aarectangle const &clipping_rectangle) noexcept;
-
-    void set_layout_parameters_from_parent(
-        aarectangle child_rectangle,
-        aarectangle parent_clipping_rectangle,
-        float draw_layer_delta) noexcept;
-
-    void set_layout_parameters_from_parent(aarectangle child_rectangle) noexcept;
-
     [[nodiscard]] matrix3 parent_to_local() const noexcept;
 
-    [[nodiscard]] matrix3 local_to_parent() const noexcept;
-
     [[nodiscard]] matrix3 window_to_local() const noexcept;
-
-    [[nodiscard]] matrix3 local_to_window() const noexcept;
 
     [[nodiscard]] extent2 size() const noexcept;
 
@@ -214,7 +182,7 @@ public:
      * @param position The coordinate of the mouse local to the widget.
      * @return A hit_box object with the cursor-type and a reference to the widget.
      */
-    [[nodiscard]] virtual hitbox hitbox_test(point2 position) const noexcept;
+    [[nodiscard]] virtual hitbox hitbox_test(point3 position) const noexcept;
 
     /** Check if the widget will accept keyboard focus.
      *
@@ -248,23 +216,19 @@ public:
     [[nodiscard]] virtual bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept;
 
     /** Update the internal layout of the widget.
-     * This function is called on each vertical sync, even if no drawing is to be done.
+     * This function is called when the size of this widget must change, or if any of the
+     * widget request a re-layout.
      *
      * This function may be used for expensive calculations, such as geometry calculations,
-     * which should only be done when the data or sizes change. Because this function is called
-     * on every vertical sync it should cache these calculations.
+     * which should only be done when the data or sizes change; it should cache these calculations.
      *
-     * Subclasses should call `widget::set_layout_parameters()` to position and size each child
-     * relative to this widget. At the end of the function the subclass should call `layout()`
-     * on its base-class to recursively update the layout of the children.
-     *
-     * @pre `widget::set_layout_parameters()` should be called.
      * @post This function will change what is returned by `widget::size()` and the transformation
      *       matrices.
-     * @param display_time_point The time point when the widget will be shown on the screen.
+     * @param context The layout context for this child.
      * @param need_layout Force the widget to layout
+     * @return The new size of the widget, should be a copy of the new_size parameter.
      */
-    [[nodiscard]] virtual void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept;
+    [[nodiscard]] virtual void layout(layout_context const &context, bool need_layout) noexcept = 0;
 
     virtual [[nodiscard]] color background_color() const noexcept;
 
@@ -291,9 +255,24 @@ public:
      * @param context The context to where the widget will draw.
      * @param display_time_point The time point when the widget will be shown on the screen.
      */
-    virtual void draw(draw_context context, utc_nanoseconds display_time_point) noexcept;
+    virtual void draw(draw_context const &context) noexcept = 0;
 
+    /** Request the widget to be redrawn on the next frame.
+     */
     virtual void request_redraw() const noexcept;
+
+    /** Request the widget to be layed-out again.
+     *
+     * This should be done if the change of data needs a recalculation of the layout.
+     */
+    void request_relayout() noexcept;
+
+    /** Request the widget to be constrained again.
+     *
+     * This should be done if the change of data would cause the minimum/maximum/preferred size
+     * of this widget to change.
+     */
+    void request_reconstrain() noexcept;
 
     /** Handle command.
      * If a widget does not fully handle a command it should pass the
@@ -368,8 +347,17 @@ public:
     /** Scroll to show the given rectangle on the window.
      * This will call parents, until all parents have scrolled
      * the rectangle to be shown on the window.
+     *
+     * @param rectangle The rectangle in window coordinates.
      */
-    virtual void scroll_to_show(tt::rectangle rectangle) noexcept;
+    virtual void scroll_to_show(tt::aarectangle rectangle) noexcept;
+
+    /** Scroll to show the current widget.
+     */
+    void scroll_to_show() noexcept
+    {
+        scroll_to_show(_layout.redraw_rectangle);
+    }
 
     /** Get a list of parents of a given widget.
      * The chain includes the given widget.
@@ -377,52 +365,11 @@ public:
     [[nodiscard]] std::vector<widget const *> parent_chain() const noexcept;
 
 protected:
-    /** Mouse cursor is hovering over the widget.
-     */
-    bool _hover = false;
-
-    /** The widget has keyboard focus.
-     */
-    bool _focus = false;
-
-    /** Conversion of coordinates relative to the window to relative to this widget.
-     */
-    matrix3 _window_to_local;
-
-    /** Conversion of coordinates relative to this widget to relative to the window.
-     */
-    matrix3 _local_to_window;
-
-    /** Conversion of coordinates relative to the parent widget to relative to this widget.
-     */
-    matrix3 _parent_to_local;
-
-    /** Conversion of coordinates relative to this widget to relative to the parent widget.
-     */
-    matrix3 _local_to_parent;
-
-    /** Size of the widget.
-     */
-    extent2 _size;
-
-    /** Clipping rectangle of the widget in local coordinates.
-     */
-    aarectangle _clipping_rectangle;
-
-    /** The rectangle of the widget intersecting with the clipping_rectangle.
-     * This visible rectangle is used in the `hitbox_test()` so that mouse events
-     * will only match when that part of the widget is actual visible and not hidden
-     * behind the border of a for example a scroll view.
-     */
-    aarectangle _visible_rectangle;
+    layout_context _layout;
 
     /** When set to true the widget will recalculate the constraints on the next call to `updateConstraints()`
      */
-    std::atomic<bool> _request_constrain = true;
-
-    /** When set to true the widget will recalculate the layout on the next call to `updateLayout()`
-     */
-    std::atomic<bool> _request_layout = true;
+    std::atomic<bool> _reconstrain = true;
 
     extent2 _minimum_size;
     extent2 _preferred_size;

@@ -227,6 +227,16 @@ public:
         return ge(static_cast<f32x4>(rhs).xyxy(), v) == 0b0011;
     }
 
+    /** Check if a 3D coordinate is inside the rectangle.
+     *
+     * @param rhs The coordinate of the point to test. This point is
+     *            converted to 2D by this function.
+     */
+    [[nodiscard]] bool contains(point3 const &rhs) const noexcept
+    {
+        return contains(point2{rhs});
+    }
+
     /** Align a rectangle within another rectangle.
      * @param haystack The outside rectangle
      * @param needle The size of the rectangle to be aligned.
@@ -287,14 +297,9 @@ public:
         return align(outside, inside, alignment);
     }
 
-    [[nodiscard]] friend bool operator==(axis_aligned_rectangle const &lhs, axis_aligned_rectangle const &rhs) noexcept
+    [[nodiscard]] friend constexpr bool operator==(axis_aligned_rectangle const &lhs, axis_aligned_rectangle const &rhs) noexcept
     {
         return lhs.v == rhs.v;
-    }
-
-    [[nodiscard]] friend bool operator!=(axis_aligned_rectangle const &lhs, axis_aligned_rectangle const &rhs) noexcept
-    {
-        return !(lhs == rhs);
     }
 
     [[nodiscard]] friend bool overlaps(axis_aligned_rectangle const &lhs, axis_aligned_rectangle const &rhs) noexcept
@@ -351,7 +356,7 @@ public:
      * @param rhs How much the width and height should be scaled by.
      * @return A new rectangle expanded on each side.
      */
-    [[nodiscard]] friend axis_aligned_rectangle scale(axis_aligned_rectangle const &lhs, float rhs) noexcept
+    [[nodiscard]] friend axis_aligned_rectangle operator*(axis_aligned_rectangle const &lhs, float rhs) noexcept
     {
         ttlet new_extent = lhs.size() * rhs;
         ttlet diff = vector2{new_extent} - vector2{lhs.size()};
@@ -368,7 +373,7 @@ public:
      *            this value may be zero or negative.
      * @return A new rectangle expanded on each side.
      */
-    [[nodiscard]] friend axis_aligned_rectangle expand(axis_aligned_rectangle const &lhs, float rhs) noexcept
+    [[nodiscard]] friend axis_aligned_rectangle operator+(axis_aligned_rectangle const &lhs, float rhs) noexcept
     {
         return axis_aligned_rectangle{lhs.v + neg<0b0011>(f32x4::broadcast(rhs))};
     }
@@ -379,9 +384,9 @@ public:
      *            this value may be zero or negative.
      * @return A new rectangle shrank on each side.
      */
-    [[nodiscard]] friend axis_aligned_rectangle shrink(axis_aligned_rectangle const &lhs, float rhs) noexcept
+    [[nodiscard]] friend axis_aligned_rectangle operator-(axis_aligned_rectangle const &lhs, float rhs) noexcept
     {
-        return expand(lhs, -rhs);
+        return lhs + -rhs;
     }
 
     [[nodiscard]] friend axis_aligned_rectangle round(axis_aligned_rectangle const &rhs) noexcept
@@ -409,10 +414,15 @@ public:
         return axis_aligned_rectangle{p0, p3};
     }
 
+    [[nodiscard]] friend constexpr axis_aligned_rectangle bounding_rectangle(axis_aligned_rectangle const &rhs) noexcept
+    {
+        return rhs;
+    }
+
     /** Return the overlapping part of two rectangles.
      * When the rectangles are not overlapping, the width and height are zero.
      */
-    [[nodiscard]] friend axis_aligned_rectangle
+    [[nodiscard]] friend constexpr axis_aligned_rectangle
     intersect(axis_aligned_rectangle const &lhs, axis_aligned_rectangle const &rhs) noexcept
     {
         ttlet p0 = max(get<0>(lhs), get<0>(rhs));

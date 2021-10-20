@@ -35,13 +35,13 @@ public:
         offset(std::forward<Offset>(offset))
     {
         _content_callback = this->content.subscribe([this](auto...) {
-            _request_layout = true;
+            request_relayout();
         });
         _aperture_callback = this->aperture.subscribe([this](auto...) {
-            _request_layout = true;
+            request_relayout();
         });
         _offset_callback = this->offset.subscribe([this](auto...) {
-            _request_layout = true;
+            request_relayout();
         });
     }
 
@@ -66,12 +66,11 @@ public:
         }
     }
 
-    [[nodiscard]] void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept override
+    void layout(layout_context const &context, bool need_layout) noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        need_layout |= _request_layout.exchange(false);
-        if (need_layout) {
+        if (compare_then_assign(_layout, context) or need_layout) {
             tt_axiom(*content != 0.0f);
 
             // Calculate the position of the slider.
@@ -84,28 +83,26 @@ public:
                 slider_rectangle =
                     aarectangle{rectangle().left() + slider_offset, rectangle().bottom(), slider_length(), rectangle().height()};
             }
+            request_redraw();
         }
-
-        super::layout(display_time_point, need_layout);
     }
 
-    void draw(draw_context context, utc_nanoseconds display_time_point) noexcept override
+    void draw(draw_context const &context) noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        if (overlaps(context, this->_clipping_rectangle) and visible) {
+        if (visible and overlaps(context, _layout)) {
             draw_rails(context);
             draw_slider(context);
         }
-        super::draw(std::move(context), display_time_point);
     }
 
-    hitbox hitbox_test(point2 position) const noexcept override
+    hitbox hitbox_test(point3 position) const noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        if (visible and _visible_rectangle.contains(position) and slider_rectangle.contains(position)) {
-            return hitbox{this, draw_layer};
+        if (visible and _layout.hit_rectangle.contains(position) and slider_rectangle.contains(position)) {
+            return hitbox{this, position};
         } else {
             return hitbox{};
         }
@@ -152,7 +149,7 @@ public:
 
     [[nodiscard]] color foreground_color() const noexcept override
     {
-        if (_hover) {
+        if (hover) {
             return theme().color(theme_color::fill, semantic_layer + 2);
         } else {
             return theme().color(theme_color::fill, semantic_layer + 1);
@@ -226,23 +223,23 @@ private:
         return _hidden_content != 0.0f ? slider_travel_range() / _hidden_content : 0.0f;
     }
 
-    void draw_rails(draw_context context) noexcept
+    void draw_rails(draw_context const &context) noexcept
     {
         tt_axiom(is_gui_thread());
 
         ttlet corner_shapes =
             axis == axis::vertical ? tt::corner_shapes{rectangle().width() * 0.5f} : tt::corner_shapes{rectangle().height() * 0.5f};
-        context.draw_box(rectangle(), background_color(), corner_shapes);
+        context.draw_box(_layout, rectangle(), background_color(), corner_shapes);
     }
 
-    void draw_slider(draw_context context) noexcept
+    void draw_slider(draw_context const &context) noexcept
     {
         tt_axiom(is_gui_thread());
 
         ttlet corner_shapes = axis == axis::vertical ? tt::corner_shapes{slider_rectangle.width() * 0.5f} :
                                             tt::corner_shapes{slider_rectangle.height() * 0.5f};
 
-        context.draw_box(translate_z(0.1f) * slider_rectangle, foreground_color(), corner_shapes);
+        context.draw_box(_layout, translate_z(0.1f) * slider_rectangle, foreground_color(), corner_shapes);
     }
 };
 

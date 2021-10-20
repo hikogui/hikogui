@@ -11,12 +11,11 @@
 namespace tt {
 
 widget::widget(gui_window &_window, widget *parent) noexcept :
-    window(_window), parent(parent), draw_layer(0.0f), logical_layer(0), semantic_layer(0)
+    window(_window), parent(parent), logical_layer(0), semantic_layer(0)
 {
     tt_axiom(is_gui_thread());
 
     if (parent) {
-        draw_layer = parent->draw_layer + 1.0f;
         logical_layer = parent->logical_layer + 1;
         semantic_layer = parent->semantic_layer + 1;
     }
@@ -26,10 +25,10 @@ widget::widget(gui_window &_window, widget *parent) noexcept :
     });
 
     _relayout_callback = std::make_shared<std::function<void()>>([this] {
-        _request_layout = true;
+        request_relayout();
     });
     _reconstrain_callback = std::make_shared<std::function<void()>>([this] {
-        _request_constrain = true;
+        request_reconstrain();
     });
 
     enabled.subscribe(_redraw_callback);
@@ -71,7 +70,7 @@ tt::font_book &widget::font_book() const noexcept
 [[nodiscard]] color widget::background_color() const noexcept
 {
     if (enabled) {
-        if (_hover) {
+        if (hover) {
             return theme().color(theme_color::fill, semantic_layer + 1);
         } else {
             return theme().color(theme_color::fill, semantic_layer);
@@ -84,7 +83,7 @@ tt::font_book &widget::font_book() const noexcept
 [[nodiscard]] color widget::foreground_color() const noexcept
 {
     if (enabled) {
-        if (_hover) {
+        if (hover) {
             return theme().color(theme_color::border, semantic_layer + 1);
         } else {
             return theme().color(theme_color::border, semantic_layer);
@@ -97,9 +96,9 @@ tt::font_book &widget::font_book() const noexcept
 [[nodiscard]] color widget::focus_color() const noexcept
 {
     if (enabled) {
-        if (_focus && window.active) {
+        if (focus && window.active) {
             return theme().color(theme_color::accent);
-        } else if (_hover) {
+        } else if (hover) {
             return theme().color(theme_color::border, semantic_layer + 1);
         } else {
             return theme().color(theme_color::border, semantic_layer);
@@ -168,104 +167,34 @@ tt::font_book &widget::font_book() const noexcept
     return _maximum_size;
 }
 
-/** Set the location and size of the widget inside the window.
- *
- * The parent should call this `set_layout_paramters()` before this `updateLayout()`.
- *
- * If the parent's layout did not change, it does not need to call this `set_layout_parameters()`.
- * This way the parent does not need to keep a cache, recalculate or query the client for these
- * layout parameters for each frame.
- *
- * @pre `mutex` must be locked by current thread.
- */
-void widget::set_layout_parameters(
-    geo::transformer auto const &local_to_parent,
-    extent2 size,
-    aarectangle const &clipping_rectangle) noexcept
-{
-    tt_axiom(is_gui_thread());
-
-    _local_to_parent = local_to_parent;
-    _parent_to_local = ~local_to_parent;
-    if (parent) {
-        _local_to_window = local_to_parent * parent->local_to_window();
-        _window_to_local = ~local_to_parent * parent->window_to_local();
-    } else {
-        _local_to_window = local_to_parent;
-        _window_to_local = ~local_to_parent;
-    }
-    _size = size;
-    _clipping_rectangle = clipping_rectangle;
-    _visible_rectangle = intersect(aarectangle{size}, clipping_rectangle);
-}
-
-void widget::set_layout_parameters_from_parent(
-    aarectangle child_rectangle,
-    aarectangle parent_clipping_rectangle,
-    float draw_layer_delta) noexcept
-{
-    tt_axiom(is_gui_thread());
-
-    ttlet child_translate = translate2{child_rectangle};
-    ttlet child_size = child_rectangle.size();
-    ttlet rectangle = aarectangle{child_size};
-    ttlet child_clipping_rectangle = intersect(~child_translate * parent_clipping_rectangle, expand(rectangle, margin()));
-
-    set_layout_parameters(translate_z(draw_layer_delta) * child_translate, child_size, child_clipping_rectangle);
-}
-
-void widget::set_layout_parameters_from_parent(aarectangle child_rectangle) noexcept
-{
-    tt_axiom(is_gui_thread());
-
-    if (parent) {
-        ttlet draw_layer_delta = draw_layer - parent->draw_layer;
-        return set_layout_parameters_from_parent(child_rectangle, parent->clipping_rectangle(), draw_layer_delta);
-    } else {
-        return set_layout_parameters_from_parent(child_rectangle, child_rectangle, 0.0f);
-    }
-}
-
 [[nodiscard]] matrix3 widget::parent_to_local() const noexcept
 {
     tt_axiom(is_gui_thread());
-    return _parent_to_local;
-}
-
-[[nodiscard]] matrix3 widget::local_to_parent() const noexcept
-{
-    tt_axiom(is_gui_thread());
-    return _local_to_parent;
+    return _layout.from_parent;
 }
 
 [[nodiscard]] matrix3 widget::window_to_local() const noexcept
 {
     tt_axiom(is_gui_thread());
-    return _window_to_local;
-}
-
-[[nodiscard]] matrix3 widget::local_to_window() const noexcept
-{
-    tt_axiom(is_gui_thread());
-    return _local_to_window;
+    return _layout.from_window;
 }
 
 [[nodiscard]] extent2 widget::size() const noexcept
 {
     tt_axiom(is_gui_thread());
-    return _size;
+    return _layout.rectangle.size();
 }
 
 [[nodiscard]] float widget::width() const noexcept
 {
     tt_axiom(is_gui_thread());
-    return _size.width();
+    return _layout.rectangle.width();
 }
 
 [[nodiscard]] float widget::height() const noexcept
 {
     tt_axiom(is_gui_thread());
-    return _size.height();
+    return _layout.rectangle.height();
 }
 
 /** Get the rectangle in local coordinates.
@@ -275,7 +204,7 @@ void widget::set_layout_parameters_from_parent(aarectangle child_rectangle) noex
 [[nodiscard]] aarectangle widget::rectangle() const noexcept
 {
     tt_axiom(is_gui_thread());
-    return aarectangle{_size};
+    return _layout.rectangle;
 }
 
 /** Return the base-line where the text should be located.
@@ -290,14 +219,14 @@ void widget::set_layout_parameters_from_parent(aarectangle child_rectangle) noex
 [[nodiscard]] aarectangle widget::clipping_rectangle() const noexcept
 {
     tt_axiom(is_gui_thread());
-    return _clipping_rectangle;
+    return _layout.clipping_rectangle;
 }
 
 [[nodiscard]] bool widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_reconstrain |= _request_constrain.exchange(false);
+    need_reconstrain |= _reconstrain.exchange(false);
 
     auto buffer = pmr::scoped_buffer<256>{};
     for (auto *child : children(buffer.allocator())) {
@@ -310,48 +239,20 @@ void widget::set_layout_parameters_from_parent(aarectangle child_rectangle) noex
     return need_reconstrain;
 }
 
-void widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
-{
-    tt_axiom(is_gui_thread());
-
-    need_layout |= _request_layout.exchange(false);
-
-    auto buffer = pmr::scoped_buffer<256>{};
-    for (auto *child : children(buffer.allocator())) {
-        if (child) {
-            tt_axiom(child->parent == this);
-            if (child->visible) {
-                child->layout(display_time_point, need_layout);
-            }
-        }
-    }
-
-    if (need_layout) {
-        request_redraw();
-    }
-}
-
-void widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
-{
-    tt_axiom(is_gui_thread());
-
-    auto buffer = pmr::scoped_buffer<256>{};
-    for (auto *child : children(buffer.allocator())) {
-        if (child) {
-            tt_axiom(child->parent == this);
-
-            if (child->visible) {
-                auto child_context =
-                    context.make_child_context(child->parent_to_local(), child->local_to_window(), child->clipping_rectangle());
-                child->draw(child_context, display_time_point);
-            }
-        }
-    }
-}
-
 void widget::request_redraw() const noexcept
 {
-    window.request_redraw(bounding_rectangle(_local_to_window * _clipping_rectangle));
+    window.request_redraw(_layout.redraw_rectangle);
+}
+
+void widget::request_relayout() noexcept
+{
+    window.request_relayout();
+}
+
+void widget::request_reconstrain() noexcept
+{
+    _reconstrain.store(true, std::memory_order::relaxed);
+    window.request_reconstrain();
 }
 
 [[nodiscard]] bool widget::handle_event(std::vector<command> const &commands) noexcept
@@ -365,7 +266,7 @@ void widget::request_redraw() const noexcept
     return false;
 }
 
-[[nodiscard]] hitbox widget::hitbox_test(point2 position) const noexcept
+[[nodiscard]] hitbox widget::hitbox_test(point3 position) const noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -376,7 +277,7 @@ void widget::request_redraw() const noexcept
         if (child) {
             tt_axiom(child->parent == this);
             if (child->visible) {
-                r = std::max(r, child->hitbox_test(point2{child->parent_to_local() * position}));
+                r = std::max(r, child->hitbox_test(child->parent_to_local() * position));
             }
         }
     }
@@ -390,25 +291,25 @@ bool widget::handle_event(command command) noexcept
     switch (command) {
         using enum tt::command;
     case gui_keyboard_enter:
-        _focus = true;
+        focus = true;
         // When scrolling, include the margin, so that the widget is clear from the edge of the
         // scroll view's aperture.
-        scroll_to_show(expand(rectangle(), margin()));
+        scroll_to_show();
         request_redraw();
         return true;
 
     case gui_keyboard_exit:
-        _focus = false;
+        focus = false;
         request_redraw();
         return true;
 
     case gui_mouse_enter:
-        _hover = true;
+        hover = true;
         request_redraw();
         return true;
 
     case gui_mouse_exit:
-        _hover = false;
+        hover = false;
         request_redraw();
         return true;
 
@@ -470,7 +371,6 @@ widget const *widget::find_next_widget(
         // If current_keyboard_widget is this, then we need to find the first child widget that accepts focus.
         found = true;
     }
-
 
     auto buffer = pmr::scoped_buffer<256>{};
     auto children_copy = make_vector(children(buffer.allocator()));
@@ -550,12 +450,12 @@ widget const *widget::find_next_widget(
     return parent->find_last_widget(group) == this;
 }
 
-void widget::scroll_to_show(tt::rectangle rectangle) noexcept
+void widget::scroll_to_show(tt::aarectangle rectangle) noexcept
 {
     tt_axiom(is_gui_thread());
 
     if (parent) {
-        parent->scroll_to_show(_local_to_parent * rectangle);
+        parent->scroll_to_show(rectangle);
     }
 }
 
@@ -582,8 +482,9 @@ void widget::scroll_to_show(tt::rectangle rectangle) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    ttlet requested_window_rectangle = bounding_rectangle(local_to_window() * requested_rectangle);
-    ttlet window_bounds = shrink(aarectangle{window.screen_rectangle.size()}, theme().margin);
+    // Move the request_rectangle to window coordinates.
+    ttlet requested_window_rectangle = translate2{_layout.redraw_rectangle - theme().margin} * requested_rectangle;
+    ttlet window_bounds = aarectangle{window.screen_rectangle.size()} - theme().margin;
     ttlet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
     return bounding_rectangle(window_to_local() * response_window_rectangle);
 }

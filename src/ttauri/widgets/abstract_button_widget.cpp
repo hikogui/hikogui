@@ -49,8 +49,7 @@ void abstract_button_widget::unsubscribe(callback_ptr_type &callback_ptr) noexce
     return _notifier.unsubscribe(callback_ptr);
 }
 
-[[nodiscard]] bool
-abstract_button_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] bool abstract_button_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -74,23 +73,39 @@ abstract_button_widget::constrain(utc_nanoseconds display_time_point, bool need_
     }
 }
 
-[[nodiscard]] void
-abstract_button_widget::layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept
+void abstract_button_widget::draw_button(draw_context const &context) noexcept
+{
+    if (_on_label_widget->visible) {
+        _on_label_widget->draw(context);
+    }
+    if (_off_label_widget->visible) {
+        _off_label_widget->draw(context);
+    }
+    if (_other_label_widget->visible) {
+        _other_label_widget->draw(context);
+    }
+}
+
+void abstract_button_widget::layout_button(layout_context const &context, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_layout.exchange(false);
-    if (need_layout) {
-        auto state_ = state();
-        _on_label_widget->visible = state_ == button_state::on;
-        _off_label_widget->visible = state_ == button_state::off;
-        _other_label_widget->visible = state_ == button_state::other;
+    auto state_ = state();
+    _on_label_widget->visible = state_ == button_state::on;
+    _off_label_widget->visible = state_ == button_state::off;
+    _other_label_widget->visible = state_ == button_state::other;
 
-        _on_label_widget->set_layout_parameters_from_parent(_label_rectangle);
-        _off_label_widget->set_layout_parameters_from_parent(_label_rectangle);
-        _other_label_widget->set_layout_parameters_from_parent(_label_rectangle);
+    if (_on_label_widget->visible) {
+        _on_label_widget->layout(_label_rectangle * context, need_layout);
     }
-    widget::layout(displayTimePoint, need_layout);
+
+    if (_off_label_widget->visible) {
+        _off_label_widget->layout(_label_rectangle * context, need_layout);
+    }
+
+    if (_other_label_widget->visible) {
+        _other_label_widget->layout(_label_rectangle * context, need_layout);
+    }
 }
 
 [[nodiscard]] color abstract_button_widget::background_color() const noexcept
@@ -103,12 +118,12 @@ abstract_button_widget::layout(utc_nanoseconds displayTimePoint, bool need_layou
     }
 }
 
-[[nodiscard]] hitbox abstract_button_widget::hitbox_test(point2 position) const noexcept
+[[nodiscard]] hitbox abstract_button_widget::hitbox_test(point3 position) const noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (_visible_rectangle.contains(position)) {
-        return hitbox{this, draw_layer, enabled ? hitbox::Type::Button : hitbox::Type::Default};
+    if (_layout.hit_rectangle.contains(position)) {
+        return hitbox{this, position, enabled ? hitbox::Type::Button : hitbox::Type::Default};
     } else {
         return hitbox{};
     }
@@ -160,4 +175,4 @@ void activate() noexcept;
     return handled;
 }
 
-}
+} // namespace tt

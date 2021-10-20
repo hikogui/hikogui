@@ -140,7 +140,7 @@ void time_stamp_count::configure_frequency() noexcept
     time_stamp_count::set_frequency(frequency);
 }
 
-[[nodiscard]] void time_stamp_count::start_subsystem() noexcept
+void time_stamp_count::start_subsystem() noexcept
 {
     configure_frequency();
     populate_aux_values();

@@ -8,10 +8,7 @@
 
 namespace tt {
 
-grid_widget::grid_widget(
-    gui_window &window,
-    widget *parent,
-    std::weak_ptr<delegate_type> delegate) noexcept :
+grid_widget::grid_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
     widget(window, parent), _delegate(std::move(delegate))
 {
     tt_axiom(is_gui_thread());
@@ -98,7 +95,7 @@ widget &grid_widget::add_widget(size_t column_nr, size_t row_nr, std::unique_ptr
 
     auto &ref = *widget;
     _cells.emplace_back(column_nr, row_nr, std::move(widget));
-    _request_constrain = true;
+    request_reconstrain();
     return ref;
 }
 
@@ -115,23 +112,32 @@ bool grid_widget::constrain(utc_nanoseconds display_time_point, bool need_recons
     }
 }
 
-void grid_widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
+void grid_widget::layout(layout_context const &context, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_layout.exchange(false);
-    if (need_layout) {
+    if (compare_then_assign(_layout, context) or need_layout) {
         _columns.set_size(width());
         _rows.set_size(height());
 
         for (auto &&cell : _cells) {
             auto &&child = cell.widget;
             ttlet child_rectangle = cell.rectangle(_columns, _rows, height());
-            child->set_layout_parameters_from_parent(child_rectangle);
+            if (child->visible) {
+                child->layout(child_rectangle * context, need_layout);
+            }
+        }
+        request_redraw();
+    }
+}
+
+void grid_widget::draw(draw_context const &context) noexcept
+{
+    if (visible and overlaps(context, _layout)) {
+        for (ttlet &cell : _cells) {
+            cell.widget->draw(context);
         }
     }
-
-    super::layout(display_time_point, need_layout);
 }
 
 } // namespace tt

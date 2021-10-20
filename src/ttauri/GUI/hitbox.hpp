@@ -6,6 +6,7 @@
 
 #include <limits>
 #include <cstdint>
+#include "../geometry/point.hpp"
 
 namespace tt {
 
@@ -38,20 +39,23 @@ public:
     constexpr hitbox &operator=(hitbox const &) noexcept = default;
     constexpr hitbox &operator=(hitbox &&) noexcept = default;
 
-    constexpr hitbox() noexcept : widget(nullptr), _elevation(-std::numeric_limits<float>::max()), type(Type::Outside)
-    {
-    }
+    constexpr hitbox() noexcept : widget(nullptr), _elevation(-std::numeric_limits<float>::max()), type(Type::Outside) {}
 
     constexpr hitbox(
         tt::widget const *widget,
         float elevation = -std::numeric_limits<float>::max(),
-        Type type = Type::Default) noexcept
-        :
+        Type type = Type::Default) noexcept :
         widget(widget), _elevation(elevation), type(type)
     {
     }
 
-    friend bool operator<(hitbox const &lhs, hitbox const &rhs) noexcept {
+    constexpr hitbox(tt::widget const *widget, point3 position, Type type = Type::Default) noexcept :
+        widget(widget), _elevation(-position.z()), type(type)
+    {
+    }
+
+    friend bool operator<(hitbox const &lhs, hitbox const &rhs) noexcept
+    {
         if ((lhs.widget == nullptr) == (rhs.widget == nullptr)) {
             if (lhs._elevation == rhs._elevation) {
                 return static_cast<int>(lhs.type) < static_cast<int>(rhs.type);
@@ -64,8 +68,9 @@ public:
             return lhs.widget == nullptr;
         }
     }
+
 private:
     float _elevation;
 };
 
-}
+} // namespace tt

@@ -78,7 +78,7 @@ public:
             delegate->add_tab(*this, static_cast<size_t>(key), std::size(_children));
         }
         _children.push_back(std::move(tmp));
-        _request_constrain = true;
+        request_reconstrain();
         return ref;
     }
 
@@ -92,7 +92,8 @@ public:
 
     [[nodiscard]] float margin() const noexcept override;
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
-    [[nodiscard]] void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept override;
+    void layout(layout_context const &context, bool need_layout) noexcept override;
+    void draw(draw_context const &context) noexcept override;
     [[nodiscard]] widget const *find_next_widget(
         widget const *current_widget,
         keyboard_focus_group group,
@@ -107,7 +108,6 @@ private:
     [[nodiscard]] auto find_selected_child() const noexcept;
     [[nodiscard]] auto find_selected_child() noexcept;
     [[nodiscard]] widget const &selected_child() const noexcept;
-    void draw_child(draw_context context, utc_nanoseconds displayTimePoint, widget &child) noexcept;
 };
 
 } // namespace tt

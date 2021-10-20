@@ -12,8 +12,7 @@ namespace tt {
     return 0.0f;
 }
 
-[[nodiscard]] bool
-toolbar_button_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] bool toolbar_button_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -31,26 +30,26 @@ toolbar_button_widget::constrain(utc_nanoseconds display_time_point, bool need_r
     }
 }
 
-[[nodiscard]] void toolbar_button_widget::layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept
+void toolbar_button_widget::layout(layout_context const &context, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_layout.exchange(false);
-    if (need_layout) {
+    if (compare_then_assign(_layout, context) or need_layout) {
         _label_rectangle = aarectangle{theme().margin, 0.0f, width() - theme().margin * 2.0f, height()};
+
+        layout_button(context, need_layout);
+        request_redraw();
     }
-    super::layout(displayTimePoint, need_layout);
 }
 
-void toolbar_button_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
+void toolbar_button_widget::draw(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (overlaps(context, _clipping_rectangle)) {
+    if (visible and overlaps(context, _layout)) {
         draw_toolbar_button(context);
+        draw_button(context);
     }
-
-    super::draw(std::move(context), display_time_point);
 }
 
 [[nodiscard]] bool toolbar_button_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
@@ -90,8 +89,8 @@ void toolbar_button_widget::draw_toolbar_button(draw_context const &context) noe
 {
     tt_axiom(is_gui_thread());
 
-    ttlet foreground_color_ = _focus && window.active ? focus_color() : color::transparent();
-    context.draw_box_with_border_inside(rectangle(), background_color(), foreground_color_, corner_shapes{0.0f});
+    ttlet foreground_color_ = focus && window.active ? focus_color() : color::transparent();
+    context.draw_box_with_border_inside(_layout, rectangle(), background_color(), foreground_color_, corner_shapes{0.0f});
 }
 
 } // namespace tt

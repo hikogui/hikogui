@@ -22,13 +22,12 @@ tab_widget::tab_widget(gui_window &window, widget *parent, weak_or_unique_ptr<de
 
     if (parent) {
         // The tab-widget will not draw itself, only its selected child.
-        draw_layer = parent->draw_layer;
         semantic_layer = parent->semantic_layer;
     }
 
     if (auto d = _delegate.lock()) {
         _delegate_callback = d->subscribe(*this, [this](auto...) {
-            this->_request_constrain = true;
+            this->request_reconstrain();
         });
     }
 
@@ -80,21 +79,28 @@ tab_widget::tab_widget(gui_window &window, widget *parent, std::weak_ptr<delegat
     return has_updated_contraints;
 }
 
-[[nodiscard]] void tab_widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
+void tab_widget::layout(layout_context const &context, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_layout.exchange(false);
-    if (need_layout) {
-        auto buffer = pmr::scoped_buffer<256>{};
-        for (auto *child : children(buffer.allocator())) {
+    if (compare_then_assign(_layout, context) or need_layout) {
+        for (ttlet &child : _children) {
             tt_axiom(child);
             if (child->visible) {
-                child->set_layout_parameters_from_parent(rectangle());
+                child->layout(rectangle() * context, need_layout);
             }
         }
+        request_redraw();
     }
-    super::layout(display_time_point, need_layout);
+}
+
+void tab_widget::draw(draw_context const &context) noexcept
+{
+    if (visible and overlaps(context, _layout)) {
+        for (ttlet &child : _children) {
+            child->draw(context);
+        }
+    }
 }
 
 [[nodiscard]] widget const *tab_widget::find_next_widget(
@@ -141,13 +147,6 @@ tab_widget::tab_widget(gui_window &window, widget *parent, std::weak_ptr<delegat
     } else {
         return *_children.front();
     }
-}
-
-void tab_widget::draw_child(draw_context context, utc_nanoseconds displayTimePoint, widget &child) noexcept
-{
-    tt_axiom(is_gui_thread());
-    auto child_context = context.make_child_context(child.parent_to_local(), child.local_to_window(), child.clipping_rectangle());
-    child.draw(child_context, displayTimePoint);
 }
 
 } // namespace tt

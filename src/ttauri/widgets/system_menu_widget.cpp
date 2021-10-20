@@ -6,8 +6,7 @@
 
 namespace tt {
 
-system_menu_widget::system_menu_widget(gui_window &window, widget *parent) noexcept :
-    super(window, parent)
+system_menu_widget::system_menu_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
 {
     _icon_widget = std::make_unique<icon_widget>(window, this, icon);
 }
@@ -17,8 +16,7 @@ system_menu_widget::system_menu_widget(gui_window &window, widget *parent) noexc
     return 0.0f;
 }
 
-[[nodiscard]] bool
-system_menu_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] bool system_menu_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -33,17 +31,15 @@ system_menu_widget::constrain(utc_nanoseconds display_time_point, bool need_reco
     }
 }
 
-[[nodiscard]] void system_menu_widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
+void system_menu_widget::layout(layout_context const &context, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_layout.exchange(false);
-    if (need_layout) {
-        ttlet icon_height =
-            rectangle().height() < theme().toolbar_height * 1.2f ? rectangle().height() : theme().toolbar_height;
+    if (compare_then_assign(_layout, context) or need_layout) {
+        ttlet icon_height = rectangle().height() < theme().toolbar_height * 1.2f ? rectangle().height() : theme().toolbar_height;
         ttlet icon_rectangle = aarectangle{rectangle().left(), rectangle().top() - icon_height, rectangle().width(), icon_height};
 
-        _icon_widget->set_layout_parameters_from_parent(icon_rectangle);
+        _icon_widget->layout(icon_rectangle * context, need_layout);
 
         // Leave space for window resize handles on the left and top.
         system_menu_rectangle = aarectangle{
@@ -51,19 +47,25 @@ system_menu_widget::constrain(utc_nanoseconds display_time_point, bool need_reco
             rectangle().bottom(),
             rectangle().width() - theme().margin,
             rectangle().height() - theme().margin};
+        request_redraw();
     }
-
-    super::layout(display_time_point, need_layout);
 }
 
-hitbox system_menu_widget::hitbox_test(point2 position) const noexcept
+void system_menu_widget::draw(draw_context const &context) noexcept
+{
+    if (visible and overlaps(context, _layout)) {
+        _icon_widget->draw(context);
+    }
+}
+
+hitbox system_menu_widget::hitbox_test(point3 position) const noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (_visible_rectangle.contains(position)) {
+    if (_layout.hit_rectangle.contains(position)) {
         // Only the top-left square should return ApplicationIcon, leave
         // the reset to the toolbar implementation.
-        return hitbox{this, draw_layer, hitbox::Type::ApplicationIcon};
+        return hitbox{this, position, hitbox::Type::ApplicationIcon};
     } else {
         return {};
     }

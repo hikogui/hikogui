@@ -75,12 +75,12 @@ public:
 
     /// @privatesection
     [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
-    void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept override;
-    void draw(draw_context context, utc_nanoseconds display_time_point) noexcept override;
+    void layout(layout_context const &context, bool need_layout) noexcept override;
+    void draw(draw_context const &context) noexcept override;
     bool handle_event(command command) noexcept override;
     bool handle_event(mouse_event const &event) noexcept override;
     bool handle_event(keyboard_event const &event) noexcept override;
-    hitbox hitbox_test(point2 position) const noexcept override;
+    hitbox hitbox_test(point3 position) const noexcept override;
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
     [[nodiscard]] color focus_color() const noexcept override;
     /// @endprivatesection
@@ -131,11 +131,11 @@ private:
     void commit(bool force) noexcept;
     void drag_select() noexcept;
     void scroll_text() noexcept;
-    void draw_background_box(draw_context context) const noexcept;
-    void draw_selection_rectangles(draw_context context) const noexcept;
-    void draw_partial_grapheme_caret(draw_context context) const noexcept;
-    void draw_caret(draw_context context, utc_nanoseconds display_time_point) noexcept;
-    void draw_text(draw_context context) const noexcept;
+    void draw_background_box(draw_context const &context) const noexcept;
+    void draw_selection_rectangles(draw_context const &context) const noexcept;
+    void draw_partial_grapheme_caret(draw_context const &context) const noexcept;
+    void draw_caret(draw_context const &context) noexcept;
+    void draw_text(draw_context const &context) const noexcept;
 };
 
 } // namespace tt

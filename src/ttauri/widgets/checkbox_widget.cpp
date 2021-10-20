@@ -42,48 +42,46 @@ checkbox_widget::checkbox_widget(gui_window &window, widget *parent, std::weak_p
     }
 }
 
-[[nodiscard]] void checkbox_widget::layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept
+void checkbox_widget::layout(layout_context const &context, bool need_layout) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    need_layout |= _request_layout.exchange(false);
-    if (need_layout) {
+    if (compare_then_assign(_layout, context) or need_layout) {
         _button_rectangle = align(rectangle(), _button_size, alignment::top_left);
 
         _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, width(), height()};
 
         _check_glyph = font_book().find_glyph(elusive_icon::Ok);
         ttlet check_glyph_bb = _check_glyph.get_bounding_box();
-        _check_glyph_rectangle =
-            align(_button_rectangle, scale(check_glyph_bb, theme().icon_size), alignment::middle_center);
+        _check_glyph_rectangle = align(_button_rectangle, check_glyph_bb * theme().icon_size, alignment::middle_center);
 
         _minus_glyph = font_book().find_glyph(elusive_icon::Minus);
         ttlet minus_glyph_bb = _minus_glyph.get_bounding_box();
-        _minus_glyph_rectangle =
-            align(_button_rectangle, scale(minus_glyph_bb, theme().icon_size), alignment::middle_center);
+        _minus_glyph_rectangle = align(_button_rectangle, minus_glyph_bb * theme().icon_size, alignment::middle_center);
+
+        layout_button(context, need_layout);
+        request_redraw();
     }
-    super::layout(displayTimePoint, need_layout);
 }
 
-void checkbox_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
+void checkbox_widget::draw(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (overlaps(context, _clipping_rectangle)) {
+    if (visible and overlaps(context, _layout)) {
         draw_check_box(context);
         draw_check_mark(context);
+        draw_button(context);
     }
-
-    super::draw(std::move(context), display_time_point);
 }
 
 void checkbox_widget::draw_check_box(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
-    context.draw_box_with_border_inside(_button_rectangle, background_color(), focus_color());
+    context.draw_box_with_border_inside(_layout, _button_rectangle, background_color(), focus_color());
 }
 
-void checkbox_widget::draw_check_mark(draw_context context) noexcept
+void checkbox_widget::draw_check_mark(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -91,13 +89,13 @@ void checkbox_widget::draw_check_mark(draw_context context) noexcept
 
     // Checkmark or tristate.
     if (state_ == tt::button_state::on) {
-        context.draw_glyph(_check_glyph, theme().icon_size, translate_z(0.1f) * _check_glyph_rectangle, accent_color());
+        context.draw_glyph(_layout, _check_glyph, theme().icon_size, translate_z(0.1f) * _check_glyph_rectangle, accent_color());
 
     } else if (state_ == tt::button_state::off) {
         ;
 
     } else {
-        context.draw_glyph(_minus_glyph, theme().icon_size, translate_z(0.1f) * _minus_glyph_rectangle, accent_color());
+        context.draw_glyph(_layout, _minus_glyph, theme().icon_size, translate_z(0.1f) * _minus_glyph_rectangle, accent_color());
     }
 }
 
