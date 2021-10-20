@@ -3,8 +3,6 @@
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 target_sources(ttauri PRIVATE
-    draw_context.cpp
-    draw_context.hpp
     gui_system.cpp
     gui_system.hpp
     gui_system_delegate.hpp

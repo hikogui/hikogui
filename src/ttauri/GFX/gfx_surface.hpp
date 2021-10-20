@@ -4,8 +4,8 @@
 
 #pragma once
 
+#include "../widgets/draw_context.hpp"
 #include "gfx_surface_state.hpp"
-#include "draw_context.hpp"
 #include "subpixel_orientation.hpp"
 #include "gfx_system_globals.hpp"
 

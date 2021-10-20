@@ -5,7 +5,6 @@
 #pragma once
 
 #include "../GUI/theme.hpp"
-#include "../GUI/draw_context.hpp"
 #include "../GUI/hitbox.hpp"
 #include "../GUI/keyboard_focus_direction.hpp"
 #include "../GUI/keyboard_focus_group.hpp"
@@ -16,6 +15,7 @@
 #include "../command.hpp"
 #include "../chrono.hpp"
 #include "../coroutine.hpp"
+#include "draw_context.hpp"
 #include "layout_context.hpp"
 #include <memory>
 #include <vector>

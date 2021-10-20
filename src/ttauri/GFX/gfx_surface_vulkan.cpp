@@ -9,7 +9,6 @@
 #include "pipeline_image.hpp"
 #include "pipeline_SDF.hpp"
 #include "pipeline_tone_mapper.hpp"
-#include "../GUI/draw_context.hpp"
 #include "../widgets/window_widget.hpp"
 #include "../trace.hpp"
 #include "../cast.hpp"
