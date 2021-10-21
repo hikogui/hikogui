@@ -52,9 +52,7 @@ void overlay_widget::layout(layout_context const &context_) noexcept
     if (visible) {
         // An overlay has full control over the clipping rectangle.
         ttlet context = context_.override_clip(context_.rectangle + theme().border_width);
-        if (compare_then_assign(_layout, context)) {
-            request_redraw();
-        }
+        _layout.store(context);
 
         _content->layout(rectangle() * context);
     }

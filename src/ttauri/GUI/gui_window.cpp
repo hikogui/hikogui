@@ -118,7 +118,7 @@ void gui_window::set_device(gfx_device *device) noexcept
 
 void gui_window::render(utc_nanoseconds display_time_point)
 {
-    ttlet t = trace<"window::render">();
+    ttlet t1 = trace<"window::render">();
 
     tt_axiom(is_gui_thread());
     tt_axiom(surface);
@@ -128,7 +128,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     // has happened all the widgets will be constrain().
     ttlet need_reconstrain = _reconstrain.exchange(false, std::memory_order_relaxed);
     if (need_reconstrain) {
-        ttlet t = trace<"window::constrain">();
+        ttlet t2 = trace<"window::constrain">();
         widget->constrain();
     }
 
@@ -173,9 +173,12 @@ void gui_window::render(utc_nanoseconds display_time_point)
     // Make sure the widget's layout is updated before draw, but after window resize.
     ttlet need_relayout = _relayout.exchange(false, std::memory_order_relaxed);
     if (need_reconstrain or need_relayout or widget_size != screen_rectangle.size()) {
-        ttlet t = trace<"window::layout">();
+        ttlet t2 = trace<"window::layout">();
         widget_size = screen_rectangle.size();
         widget->layout(layout_context{widget_size, display_time_point});
+
+        // After layout do a complete redraw.
+        _redraw_rectangle = aarectangle{widget_size};
     }
 
     // Draw widgets if the _redraw_rectangle was set.
@@ -183,11 +186,11 @@ void gui_window::render(utc_nanoseconds display_time_point)
         _redraw_rectangle = aarectangle{};
 
         {
-            ttlet t = trace<"window::draw">();
+            ttlet t2 = trace<"window::draw">();
             widget->draw(*draw_context);
         }
         {
-            ttlet t = trace<"window::submit">();
+            ttlet t2 = trace<"window::submit">();
             surface->render_finish(*draw_context, widget->background_color());
         }
     }

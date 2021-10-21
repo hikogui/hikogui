@@ -39,7 +39,7 @@ void menu_button_widget::layout(layout_context const &context) noexcept
     tt_axiom(is_gui_thread());
 
     if (visible) {
-        if (compare_then_assign(_layout, context)) {
+        if (_layout.store(context) >= layout_update::transform) {
             ttlet inside_rectangle = rectangle() - theme().margin;
 
             _check_rectangle = align(inside_rectangle, _check_size, alignment::middle_left);
@@ -51,7 +51,6 @@ void menu_button_widget::layout(layout_context const &context) noexcept
             _check_glyph = font_book().find_glyph(elusive_icon::Ok);
             ttlet check_glyph_bb = _check_glyph.get_bounding_box();
             _check_glyph_rectangle = align(_check_rectangle, check_glyph_bb * theme().icon_size, alignment::middle_center);
-            request_redraw();
         }
         layout_button(context);
     }

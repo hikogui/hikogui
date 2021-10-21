@@ -153,9 +153,8 @@ public:
         tt_axiom(is_gui_thread());
 
         if (visible) {
-            if (compare_then_assign(_layout, context)) {
+            if (_layout.store(context) >= layout_update::size) {
                 _flow_layout.set_size(axis == axis::row ? rectangle().width() : rectangle().height());
-                request_redraw();
             }
 
             ssize_t index = 0;

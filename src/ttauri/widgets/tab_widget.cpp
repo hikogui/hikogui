@@ -82,9 +82,7 @@ void tab_widget::layout(layout_context const &context) noexcept
     tt_axiom(is_gui_thread());
 
     if (visible) {
-        if (compare_then_assign(_layout, context)) {
-            request_redraw();
-        }
+        _layout.store(context);
 
         for (ttlet &child : _children) {
             child->layout(rectangle() * context);

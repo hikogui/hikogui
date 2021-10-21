@@ -175,9 +175,7 @@ public:
         tt_axiom(_content);
 
         if (visible) {
-            if (compare_then_assign(_layout, context)) {
-                request_redraw();
-
+            if (_layout.store(context) >= layout_update::transform) {
                 ttlet vertical_scroll_bar_width = _vertical_scroll_bar->preferred_size().width();
                 ttlet horizontal_scroll_bar_height = _horizontal_scroll_bar->preferred_size().height();
 

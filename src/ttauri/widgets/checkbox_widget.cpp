@@ -45,7 +45,7 @@ void checkbox_widget::layout(layout_context const &context) noexcept
     tt_axiom(is_gui_thread());
 
     if (visible) {
-        if (compare_then_assign(_layout, context)) {
+        if (_layout.store(context) >= layout_update::transform) {
             _button_rectangle = align(rectangle(), _button_size, alignment::top_left);
             _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, width(), height()};
 
@@ -56,8 +56,6 @@ void checkbox_widget::layout(layout_context const &context) noexcept
             _minus_glyph = font_book().find_glyph(elusive_icon::Minus);
             ttlet minus_glyph_bb = _minus_glyph.get_bounding_box();
             _minus_glyph_rectangle = align(_button_rectangle, minus_glyph_bb * theme().icon_size, alignment::middle_center);
-
-            request_redraw();
         }
         layout_button(context);
     }

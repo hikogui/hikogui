@@ -117,10 +117,9 @@ void grid_widget::layout(layout_context const &context) noexcept
     tt_axiom(is_gui_thread());
 
     if (visible) {
-        if (compare_then_assign(_layout, context)) {
+        if (_layout.store(context) >= layout_update::transform) {
             _columns.set_size(width());
             _rows.set_size(height());
-            request_redraw();
         }
 
         for (ttlet &cell : _cells) {

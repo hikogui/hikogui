@@ -34,9 +34,7 @@ void system_menu_widget::layout(layout_context const &context) noexcept
     tt_axiom(is_gui_thread());
 
     if (visible) {
-        if (compare_then_assign(_layout, context)) {
-            request_redraw();
-
+        if (_layout.store(context) >= layout_update::transform) {
             ttlet icon_height =
                 rectangle().height() < theme().toolbar_height * 1.2f ? rectangle().height() : theme().toolbar_height;
             _icon_rectangle = aarectangle{rectangle().left(), rectangle().top() - icon_height, rectangle().width(), icon_height};

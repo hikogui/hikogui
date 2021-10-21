@@ -83,7 +83,7 @@ void label_widget::layout(layout_context const &context) noexcept
     tt_axiom(is_gui_thread());
 
     if (visible) {
-        if (compare_then_assign(_layout, context)) {
+        if (_layout.store(context) >= layout_update::transform) {
             _text_rectangle = aarectangle{};
             if (*alignment == horizontal_alignment::left) {
                 ttlet text_width = width() - _icon_size - _inner_margin;
@@ -119,7 +119,6 @@ void label_widget::layout(layout_context const &context) noexcept
             default: tt_no_default();
             }
             _icon_rectangle = aarectangle{icon_pos, extent2{_icon_size, _icon_size}};
-            request_redraw();
         }
 
         _icon_widget->layout(_icon_rectangle * context);

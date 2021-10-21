@@ -44,9 +44,7 @@ void window_traffic_lights_widget::layout(layout_context const &context) noexcep
 {
     tt_axiom(is_gui_thread());
 
-    if (visible and compare_then_assign(_layout, context)) {
-        request_redraw();
-
+    if (visible and _layout.store(context) >= layout_update::transform) {
         auto extent = rectangle().size();
         if (extent.height() > theme().toolbar_height * 1.2f) {
             extent = extent2{extent.width(), theme().toolbar_height};

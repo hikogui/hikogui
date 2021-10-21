@@ -43,9 +43,7 @@ void text_widget::layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (visible and compare_then_assign(_layout, context)) {
-        request_redraw();
-
+    if (visible and _layout.store(context) >= layout_update::size) {
         _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), width(), *alignment};
         _shaped_text_transform = _shaped_text.translate_base_line(point2{0.0f, base_line()});
     }

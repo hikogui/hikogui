@@ -89,9 +89,7 @@ void selection_widget::layout(layout_context const &context) noexcept
     tt_axiom(is_gui_thread());
 
     if (visible) {
-        if (compare_then_assign(_layout, context)) {
-            request_redraw();
-
+        if (_layout.store(context) >= layout_update::transform) {
             // The overlay itself will make sure the overlay fits the window, so we give the preferred size and position
             // from the point of view of the selection widget.
             // The overlay should start on the same left edge as the selection box and the same width.

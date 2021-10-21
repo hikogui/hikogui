@@ -28,8 +28,7 @@ void toolbar_tab_button_widget::layout(layout_context const &context) noexcept
     tt_axiom(is_gui_thread());
 
     if (visible) {
-        if (compare_then_assign(_layout, context)) {
-            request_redraw();
+        if (_layout.store(context) >= layout_update::transform) {
             _label_rectangle = aarectangle{theme().margin, 0.0f, width() - theme().margin * 2.0f, height() - theme().margin};
         }
         layout_button(context);

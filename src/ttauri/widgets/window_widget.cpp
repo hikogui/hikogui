@@ -76,8 +76,7 @@ void window_widget::layout(layout_context const &context) noexcept
     tt_axiom(is_gui_thread());
 
     if (visible) {
-        if (compare_then_assign(_layout, context)) {
-            request_redraw();
+        if (_layout.store(context) >= layout_update::transform) {
             ttlet toolbar_height = _toolbar->preferred_size().height();
             _toolbar_rectangle = aarectangle{0.0f, rectangle().height() - toolbar_height, rectangle().width(), toolbar_height};
             _content_rectangle = aarectangle{0.0f, 0.0f, rectangle().width(), rectangle().height() - toolbar_height};

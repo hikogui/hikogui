@@ -65,8 +65,7 @@ void toolbar_widget::layout(layout_context const &context_) noexcept
     if (visible) {
         // Clip directly around the toolbar, so that tab buttons looks proper.
         ttlet context = context_.clip(context_.rectangle);
-        if (compare_then_assign(_layout, context)) {
-            request_redraw();
+        if (_layout.store(context) >= layout_update::size) {
             _flow_layout.set_size(rectangle().width());
         }
 

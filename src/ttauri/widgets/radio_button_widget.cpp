@@ -32,14 +32,12 @@ void radio_button_widget::layout(layout_context const &context) noexcept
     tt_axiom(is_gui_thread());
 
     if (visible) {
-        if (compare_then_assign(_layout, context)) {
+        if (_layout.store(context) >= layout_update::transform) {
             _button_rectangle = align(rectangle(), _button_size, alignment::top_left);
 
             _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, width(), height()};
 
             _pip_rectangle = align(_button_rectangle, extent2{theme().icon_size, theme().icon_size}, alignment::middle_center);
-
-            request_redraw();
         }
         layout_button(context);
     }

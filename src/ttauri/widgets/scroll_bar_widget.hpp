@@ -62,9 +62,7 @@ public:
         tt_axiom(is_gui_thread());
 
         if (visible) {
-            if (compare_then_assign(_layout, context)) {
-                request_redraw();
-            }
+            _layout.store(context);
 
             // Calculate the position of the slider.
             ttlet slider_offset = *offset * travel_vs_hidden_content_ratio();

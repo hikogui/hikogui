@@ -43,9 +43,7 @@ void toggle_widget::layout(layout_context const &context) noexcept
     tt_axiom(is_gui_thread());
 
     if (visible) {
-        if (compare_then_assign(_layout, context)) {
-            request_redraw();
-
+        if (_layout.store(context) >= layout_update::transform) {
             _button_rectangle = align(rectangle(), _button_size, alignment::top_left);
 
             _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, width(), height()};

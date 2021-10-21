@@ -103,13 +103,12 @@ void icon_widget::layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (visible and compare_then_assign(_layout, context)) {
+    if (visible and _layout.store(context) >= layout_update::transform) {
         if (_icon_type == icon_type::no or not _icon_bounding_box) {
             _icon_transform = {};
         } else {
             _icon_transform = matrix2::uniform(_icon_bounding_box, rectangle(), *alignment);
         }
-        request_redraw();
     }
 }
 

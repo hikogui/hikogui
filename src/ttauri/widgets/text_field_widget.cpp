@@ -54,9 +54,7 @@ void text_field_widget::layout(layout_context const &context) noexcept
     tt_axiom(is_gui_thread());
 
     if (visible) {
-        if (compare_then_assign(_layout, context)) {
-            request_redraw();
-
+        if (_layout.store(context) >= layout_update::transform) {
             _text_field_rectangle = aarectangle{extent2{_text_width + theme().margin * 2.0f, height()}};
 
             // Set the clipping rectangle to within the border of the input field.
