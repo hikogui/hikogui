@@ -22,6 +22,8 @@ toggle_widget::toggle_widget(gui_window &window, widget *parent, std::unique_ptr
     tt_axiom(is_gui_thread());
 
     if (super::constrain(display_time_point, need_reconstrain)) {
+        _layout = {};
+
         // Make room for button and margin.
         _button_size = {theme().size * 2.0f, theme().size};
         ttlet extra_size = extent2{theme().margin + _button_size.width(), 0.0f};
@@ -40,25 +42,27 @@ toggle_widget::toggle_widget(gui_window &window, widget *parent, std::unique_ptr
     }
 }
 
-void toggle_widget::layout(layout_context const &context, bool need_layout) noexcept
+void toggle_widget::layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (compare_then_assign(_layout, context) or need_layout) {
-        _button_rectangle = align(rectangle(), _button_size, alignment::top_left);
+    if (visible) {
+        if (compare_then_assign(_layout, context)) {
+            request_redraw();
 
-        _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, width(), height()};
+            _button_rectangle = align(rectangle(), _button_size, alignment::top_left);
 
-        ttlet button_square =
-            aarectangle{get<0>(_button_rectangle), extent2{_button_rectangle.height(), _button_rectangle.height()}};
+            _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, width(), height()};
 
-        _pip_rectangle = align(button_square, extent2{theme().icon_size, theme().icon_size}, alignment::middle_center);
+            ttlet button_square =
+                aarectangle{get<0>(_button_rectangle), extent2{_button_rectangle.height(), _button_rectangle.height()}};
 
-        ttlet pip_to_button_margin_x2 = _button_rectangle.height() - _pip_rectangle.height();
-        _pip_move_range = _button_rectangle.width() - _pip_rectangle.width() - pip_to_button_margin_x2;
+            _pip_rectangle = align(button_square, extent2{theme().icon_size, theme().icon_size}, alignment::middle_center);
 
-        layout_button(context, need_layout);
-        request_redraw();
+            ttlet pip_to_button_margin_x2 = _button_rectangle.height() - _pip_rectangle.height();
+            _pip_move_range = _button_rectangle.width() - _pip_rectangle.width() - pip_to_button_margin_x2;
+        }
+        layout_button(context);
     }
 }
 

@@ -118,6 +118,8 @@ public:
         tt_axiom(is_gui_thread());
 
         if (super::constrain(display_time_point, need_reconstrain)) {
+            _layout = {};
+
             _flow_layout.clear();
             _flow_layout.reserve(std::ssize(_children));
 
@@ -148,20 +150,22 @@ public:
         }
     }
 
-    void layout(layout_context const &context, bool need_layout) noexcept override
+    void layout(layout_context const &context) noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        if (compare_then_assign(_layout, context) or need_layout) {
-            _flow_layout.set_size(axis == axis::row ? rectangle().width() : rectangle().height());
+        if (visible) {
+            if (compare_then_assign(_layout, context)) {
+                _flow_layout.set_size(axis == axis::row ? rectangle().width() : rectangle().height());
+                request_redraw();
+            }
 
             ssize_t index = 0;
             for (ttlet &child : _children) {
-                update_layout_for_child(*child, index++, context, need_layout);
+                update_layout_for_child(*child, index++, context);
             }
 
             tt_axiom(index == std::ssize(_children));
-            request_redraw();
         }
     }
 
@@ -211,7 +215,7 @@ private:
         }
     }
 
-    void update_layout_for_child(widget &child, ssize_t index, layout_context const &context, bool need_layout) const noexcept
+    void update_layout_for_child(widget &child, ssize_t index, layout_context const &context) const noexcept
     {
         tt_axiom(is_gui_thread());
 
@@ -229,9 +233,7 @@ private:
                 rectangle().width() - child.margin() * 2.0f,
                 child_length};
 
-        if (child.visible) {
-            child.layout(child_rectangle * context, need_layout);
-        }
+        child.layout(child_rectangle * context);
     }
 };
 

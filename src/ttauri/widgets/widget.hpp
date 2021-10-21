@@ -225,10 +225,9 @@ public:
      * @post This function will change what is returned by `widget::size()` and the transformation
      *       matrices.
      * @param context The layout context for this child.
-     * @param need_layout Force the widget to layout
      * @return The new size of the widget, should be a copy of the new_size parameter.
      */
-    [[nodiscard]] virtual void layout(layout_context const &context, bool need_layout) noexcept = 0;
+    [[nodiscard]] virtual void layout(layout_context const &context) noexcept = 0;
 
     virtual [[nodiscard]] color background_color() const noexcept;
 

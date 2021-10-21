@@ -24,6 +24,8 @@ icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(wi
     tt_axiom(is_gui_thread());
 
     if (super::constrain(display_time_point, need_reconstrain)) {
+        _layout = {};
+
         ttlet icon_ = icon.cget();
 
         if (holds_alternative<std::monostate>(icon_)) {
@@ -104,11 +106,11 @@ icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(wi
     }
 }
 
-void icon_widget::layout(layout_context const &context, bool need_layout) noexcept
+void icon_widget::layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (compare_then_assign(_layout, context) or need_layout) {
+    if (visible and compare_then_assign(_layout, context)) {
         if (_icon_type == icon_type::no or not _icon_bounding_box) {
             _icon_transform = {};
         } else {

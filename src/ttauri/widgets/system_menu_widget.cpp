@@ -21,6 +21,8 @@ system_menu_widget::system_menu_widget(gui_window &window, widget *parent) noexc
     tt_axiom(is_gui_thread());
 
     if (super::constrain(display_time_point, need_reconstrain)) {
+        _layout = {};
+
         ttlet width = theme().toolbar_decoration_button_width;
         ttlet height = theme().toolbar_height;
         _minimum_size = _preferred_size = _maximum_size = {width, height};
@@ -31,23 +33,27 @@ system_menu_widget::system_menu_widget(gui_window &window, widget *parent) noexc
     }
 }
 
-void system_menu_widget::layout(layout_context const &context, bool need_layout) noexcept
+void system_menu_widget::layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (compare_then_assign(_layout, context) or need_layout) {
-        ttlet icon_height = rectangle().height() < theme().toolbar_height * 1.2f ? rectangle().height() : theme().toolbar_height;
-        ttlet icon_rectangle = aarectangle{rectangle().left(), rectangle().top() - icon_height, rectangle().width(), icon_height};
+    if (visible) {
+        if (compare_then_assign(_layout, context)) {
+            request_redraw();
 
-        _icon_widget->layout(icon_rectangle * context, need_layout);
+            ttlet icon_height =
+                rectangle().height() < theme().toolbar_height * 1.2f ? rectangle().height() : theme().toolbar_height;
+            _icon_rectangle = aarectangle{rectangle().left(), rectangle().top() - icon_height, rectangle().width(), icon_height};
 
-        // Leave space for window resize handles on the left and top.
-        system_menu_rectangle = aarectangle{
-            rectangle().left() + theme().margin,
-            rectangle().bottom(),
-            rectangle().width() - theme().margin,
-            rectangle().height() - theme().margin};
-        request_redraw();
+            // Leave space for window resize handles on the left and top.
+            _system_menu_rectangle = aarectangle{
+                rectangle().left() + theme().margin,
+                rectangle().bottom(),
+                rectangle().width() - theme().margin,
+                rectangle().height() - theme().margin};
+        }
+
+        _icon_widget->layout(_icon_rectangle * context);
     }
 }
 

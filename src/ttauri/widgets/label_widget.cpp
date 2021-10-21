@@ -29,6 +29,8 @@ label_widget::label_widget(gui_window &window, widget *parent) noexcept : super(
     tt_axiom(is_gui_thread());
 
     if (super::constrain(display_time_point, need_reconstrain)) {
+        _layout = {};
+
         ttlet label_size = _text_widget->preferred_size();
         ttlet icon_size = _icon_widget->preferred_size();
 
@@ -79,54 +81,52 @@ label_widget::label_widget(gui_window &window, widget *parent) noexcept : super(
     }
 }
 
-void label_widget::layout(layout_context const &context, bool need_layout) noexcept
+void label_widget::layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (compare_then_assign(_layout, context) or need_layout) {
-        _text_rectangle = aarectangle{};
-        if (*alignment == horizontal_alignment::left) {
-            ttlet text_width = width() - _icon_size - _inner_margin;
-            _text_rectangle = {_icon_size + _inner_margin, 0.0f, text_width, height()};
+    if (visible) {
+        if (compare_then_assign(_layout, context)) {
+            _text_rectangle = aarectangle{};
+            if (*alignment == horizontal_alignment::left) {
+                ttlet text_width = width() - _icon_size - _inner_margin;
+                _text_rectangle = {_icon_size + _inner_margin, 0.0f, text_width, height()};
 
-        } else if (*alignment == horizontal_alignment::right) {
-            ttlet text_width = width() - _icon_size - _inner_margin;
-            _text_rectangle = {0.0f, 0.0f, text_width, height()};
+            } else if (*alignment == horizontal_alignment::right) {
+                ttlet text_width = width() - _icon_size - _inner_margin;
+                _text_rectangle = {0.0f, 0.0f, text_width, height()};
 
-        } else if (*alignment == vertical_alignment::top) {
-            ttlet text_height = height() - _icon_size;
-            _text_rectangle = {0.0f, 0.0f, width(), text_height};
+            } else if (*alignment == vertical_alignment::top) {
+                ttlet text_height = height() - _icon_size;
+                _text_rectangle = {0.0f, 0.0f, width(), text_height};
 
-        } else if (*alignment == vertical_alignment::bottom) {
-            ttlet text_height = height() - _icon_size;
-            _text_rectangle = {0.0f, _icon_size, width(), text_height};
+            } else if (*alignment == vertical_alignment::bottom) {
+                ttlet text_height = height() - _icon_size;
+                _text_rectangle = {0.0f, _icon_size, width(), text_height};
 
-        } else {
-            _text_rectangle = rectangle();
+            } else {
+                _text_rectangle = rectangle();
+            }
+
+            auto icon_pos = point2{};
+            switch (*alignment) {
+            case alignment::top_left: icon_pos = {0.0f, height() - _icon_size}; break;
+            case alignment::top_right: icon_pos = {width() - _icon_size, height() - _icon_size}; break;
+            case alignment::top_center: icon_pos = {(width() - _icon_size) / 2.0f, height() - _icon_size}; break;
+            case alignment::bottom_left: icon_pos = {0.0f, 0.0f}; break;
+            case alignment::bottom_right: icon_pos = {width() - _icon_size, 0.0f}; break;
+            case alignment::bottom_center: icon_pos = {(width() - _icon_size) / 2.0f, 0.0f}; break;
+            case alignment::middle_left: icon_pos = {0.0f, (height() - _icon_size) / 2.0f}; break;
+            case alignment::middle_right: icon_pos = {width() - _icon_size, (height() - _icon_size)}; break;
+            case alignment::middle_center: icon_pos = {(width() - _icon_size) / 2.0f, (height() - _icon_size)}; break;
+            default: tt_no_default();
+            }
+            _icon_rectangle = aarectangle{icon_pos, extent2{_icon_size, _icon_size}};
+            request_redraw();
         }
 
-        auto icon_pos = point2{};
-        switch (*alignment) {
-        case alignment::top_left: icon_pos = {0.0f, height() - _icon_size}; break;
-        case alignment::top_right: icon_pos = {width() - _icon_size, height() - _icon_size}; break;
-        case alignment::top_center: icon_pos = {(width() - _icon_size) / 2.0f, height() - _icon_size}; break;
-        case alignment::bottom_left: icon_pos = {0.0f, 0.0f}; break;
-        case alignment::bottom_right: icon_pos = {width() - _icon_size, 0.0f}; break;
-        case alignment::bottom_center: icon_pos = {(width() - _icon_size) / 2.0f, 0.0f}; break;
-        case alignment::middle_left: icon_pos = {0.0f, (height() - _icon_size) / 2.0f}; break;
-        case alignment::middle_right: icon_pos = {width() - _icon_size, (height() - _icon_size)}; break;
-        case alignment::middle_center: icon_pos = {(width() - _icon_size) / 2.0f, (height() - _icon_size)}; break;
-        default: tt_no_default();
-        }
-        _icon_rectangle = aarectangle{icon_pos, extent2{_icon_size, _icon_size}};
-
-        if (_icon_widget->visible) {
-            _icon_widget->layout(_icon_rectangle * context, need_layout);
-        }
-        if (_text_widget->visible) {
-            _text_widget->layout(_text_rectangle * context, need_layout);
-        }
-        request_redraw();
+        _icon_widget->layout(_icon_rectangle * context);
+        _text_widget->layout(_text_rectangle * context);
     }
 }
 

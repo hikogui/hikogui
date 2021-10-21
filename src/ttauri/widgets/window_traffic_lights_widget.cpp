@@ -23,6 +23,8 @@ window_traffic_lights_widget::window_traffic_lights_widget(gui_window &window, w
     tt_axiom(is_gui_thread());
 
     if (super::constrain(display_time_point, need_reconstrain)) {
+        _layout = {};
+
         if (theme().operating_system == operating_system::windows) {
             ttlet width = theme().toolbar_decoration_button_width * 3.0f;
             ttlet height = theme().toolbar_height;
@@ -43,12 +45,13 @@ window_traffic_lights_widget::window_traffic_lights_widget(gui_window &window, w
     }
 }
 
-void window_traffic_lights_widget::layout(layout_context const &context,
-    bool need_layout) noexcept
+void window_traffic_lights_widget::layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (compare_then_assign(_layout, context) or need_layout) {
+    if (visible and compare_then_assign(_layout, context)) {
+        request_redraw();
+
         auto extent = rectangle().size();
         if (extent.height() > theme().toolbar_height * 1.2f) {
             extent = extent2{extent.width(), theme().toolbar_height};
@@ -102,7 +105,6 @@ void window_traffic_lights_widget::layout(layout_context const &context,
         minimizeWindowGlyphRectangle = align(minimizeRectangle, minimizeWindowGlyphBB * _glyph_size, alignment::middle_center);
         maximizeWindowGlyphRectangle = align(maximizeRectangle, maximizeWindowGlyphBB * _glyph_size, alignment::middle_center);
         restoreWindowGlyphRectangle = align(maximizeRectangle, restoreWindowGlyphBB * _glyph_size, alignment::middle_center);
-        request_redraw();
     }
 }
 
@@ -113,18 +115,18 @@ void window_traffic_lights_widget::drawMacOS(draw_context const &drawContext) no
     auto context = drawContext;
 
     ttlet close_circle_color = (!window.active && !hover) ? color(0.246f, 0.246f, 0.246f) :
-        pressedClose                                       ? color(1.0f, 0.242f, 0.212f) :
-                                                             color(1.0f, 0.1f, 0.082f);
+        pressedClose                                      ? color(1.0f, 0.242f, 0.212f) :
+                                                            color(1.0f, 0.1f, 0.082f);
     context.draw_box(_layout, closeRectangle, close_circle_color, corner_shapes{RADIUS});
 
     ttlet minimize_circle_color = (!window.active && !hover) ? color(0.246f, 0.246f, 0.246f) :
-        pressedMinimize                                       ? color(1.0f, 0.847f, 0.093f) :
-                                                                color(0.784f, 0.521f, 0.021f);
+        pressedMinimize                                      ? color(1.0f, 0.847f, 0.093f) :
+                                                               color(0.784f, 0.521f, 0.021f);
     context.draw_box(_layout, minimizeRectangle, minimize_circle_color, corner_shapes{RADIUS});
 
     ttlet maximize_circle_color = (!window.active && !hover) ? color(0.246f, 0.246f, 0.246f) :
-        pressedMaximize                                       ? color(0.223f, 0.863f, 0.1f) :
-                                                                color(0.082f, 0.533f, 0.024f);
+        pressedMaximize                                      ? color(0.223f, 0.863f, 0.1f) :
+                                                               color(0.082f, 0.533f, 0.024f);
 
     context.draw_box(_layout, maximizeRectangle, maximize_circle_color, corner_shapes{RADIUS});
 

@@ -104,6 +104,8 @@ bool grid_widget::constrain(utc_nanoseconds display_time_point, bool need_recons
     tt_axiom(is_gui_thread());
 
     if (super::constrain(display_time_point, need_reconstrain)) {
+        _layout = {};
+
         std::tie(_minimum_size, _preferred_size, _maximum_size) = calculate_size(_cells, _rows, _columns);
         tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
         return true;
@@ -112,22 +114,20 @@ bool grid_widget::constrain(utc_nanoseconds display_time_point, bool need_recons
     }
 }
 
-void grid_widget::layout(layout_context const &context, bool need_layout) noexcept
+void grid_widget::layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (compare_then_assign(_layout, context) or need_layout) {
-        _columns.set_size(width());
-        _rows.set_size(height());
-
-        for (auto &&cell : _cells) {
-            auto &&child = cell.widget;
-            ttlet child_rectangle = cell.rectangle(_columns, _rows, height());
-            if (child->visible) {
-                child->layout(child_rectangle * context, need_layout);
-            }
+    if (visible) {
+        if (compare_then_assign(_layout, context)) {
+            _columns.set_size(width());
+            _rows.set_size(height());
+            request_redraw();
         }
-        request_redraw();
+
+        for (ttlet &cell : _cells) {
+            cell.widget->layout(cell.rectangle(_columns, _rows, height()) * context);
+        }
     }
 }
 

@@ -12,6 +12,8 @@ namespace tt {
     tt_axiom(is_gui_thread());
 
     if (super::constrain(display_time_point, need_reconstrain)) {
+        _layout = {};
+
         // On left side a check mark, on right side short-cut. Around the label extra margin.
         ttlet extra_size = extent2{theme().margin * 2.0f, theme().margin};
         _minimum_size += extra_size;
@@ -25,15 +27,16 @@ namespace tt {
     }
 }
 
-void toolbar_tab_button_widget::layout(layout_context const &context, bool need_layout) noexcept
+void toolbar_tab_button_widget::layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (compare_then_assign(_layout, context) or need_layout) {
-        _label_rectangle = aarectangle{theme().margin, 0.0f, width() - theme().margin * 2.0f, height() - theme().margin};
-
-        layout_button(context, need_layout);
-        request_redraw();
+    if (visible) {
+        if (compare_then_assign(_layout, context)) {
+            request_redraw();
+            _label_rectangle = aarectangle{theme().margin, 0.0f, width() - theme().margin * 2.0f, height() - theme().margin};
+        }
+        layout_button(context);
     }
 }
 

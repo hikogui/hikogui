@@ -51,6 +51,8 @@ void window_widget::constructor_implementation() noexcept
     tt_axiom(is_gui_thread());
 
     if (super::constrain(display_time_point, need_reconstrain)) {
+        _layout = {};
+
         _minimum_size = {
             std::max(_toolbar->minimum_size().width(), _content->minimum_size().width()),
             _toolbar->preferred_size().height() + _content->minimum_size().height()};
@@ -73,18 +75,19 @@ void window_widget::constructor_implementation() noexcept
     }
 }
 
-void window_widget::layout(layout_context const &context, bool need_layout) noexcept
+void window_widget::layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (compare_then_assign(_layout, context) or need_layout) {
-        ttlet toolbar_height = _toolbar->preferred_size().height();
-        ttlet toolbar_rectangle = aarectangle{0.0f, rectangle().height() - toolbar_height, rectangle().width(), toolbar_height};
-        _toolbar->layout(toolbar_rectangle * context, need_layout);
-
-        ttlet content_rectangle = aarectangle{0.0f, 0.0f, rectangle().width(), rectangle().height() - toolbar_height};
-        _content->layout(content_rectangle * context, need_layout);
-        request_redraw();
+    if (visible) {
+        if (compare_then_assign(_layout, context)) {
+            request_redraw();
+            ttlet toolbar_height = _toolbar->preferred_size().height();
+            _toolbar_rectangle = aarectangle{0.0f, rectangle().height() - toolbar_height, rectangle().width(), toolbar_height};
+            _content_rectangle = aarectangle{0.0f, 0.0f, rectangle().width(), rectangle().height() - toolbar_height};
+        }
+        _toolbar->layout(_toolbar_rectangle * context);
+        _content->layout(_content_rectangle * context);
     }
 }
 

@@ -38,6 +38,8 @@ overlay_widget::~overlay_widget()
     auto has_updated_contraints = super::constrain(display_time_point, need_reconstrain);
 
     if (has_updated_contraints) {
+        _layout = {};
+
         tt_axiom(_content);
         _minimum_size = _content->minimum_size();
         _preferred_size = _content->preferred_size();
@@ -48,16 +50,18 @@ overlay_widget::~overlay_widget()
     return has_updated_contraints;
 }
 
-void overlay_widget::layout(layout_context const &context_, bool need_layout) noexcept
+void overlay_widget::layout(layout_context const &context_) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    // An overlay has full control over the clipping rectangle.
-    ttlet context = context_.override_clip(context_.rectangle + theme().border_width);
-    if (compare_then_assign(_layout, context) or need_layout) {
-        tt_axiom(_content);
-        _content->layout(rectangle() * context, need_layout);
-        request_redraw();
+    if (visible) {
+        // An overlay has full control over the clipping rectangle.
+        ttlet context = context_.override_clip(context_.rectangle + theme().border_width);
+        if (compare_then_assign(_layout, context)) {
+            request_redraw();
+        }
+
+        _content->layout(rectangle() * context);
     }
 }
 

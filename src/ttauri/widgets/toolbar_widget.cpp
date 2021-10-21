@@ -27,6 +27,8 @@ toolbar_widget::toolbar_widget(gui_window &window, widget *parent) noexcept : su
     tt_axiom(is_gui_thread());
 
     if (super::constrain(display_time_point, need_reconstrain)) {
+        _layout = {};
+
         auto shared_height = 0.0f;
 
         _flow_layout.clear();
@@ -55,29 +57,31 @@ toolbar_widget::toolbar_widget(gui_window &window, widget *parent) noexcept : su
     }
 }
 
-void toolbar_widget::layout(layout_context const &context_, bool need_layout) noexcept
+void toolbar_widget::layout(layout_context const &context_) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    // Clip directly around the toolbar, so that tab buttons looks proper.
-    ttlet context = context_.clip(context_.rectangle);
-    if (compare_then_assign(_layout, context) or need_layout) {
-        _flow_layout.set_size(rectangle().width());
+    if (visible) {
+        // Clip directly around the toolbar, so that tab buttons looks proper.
+        ttlet context = context_.clip(context_.rectangle);
+        if (compare_then_assign(_layout, context)) {
+            request_redraw();
+            _flow_layout.set_size(rectangle().width());
+        }
 
         ssize_t index = 0;
         for (ttlet &child : _left_children) {
-            update_layout_for_child(*child, index++, context, need_layout);
+            update_layout_for_child(*child, index++, context);
         }
 
         // Skip over the cell between left and right children.
         index++;
 
         for (ttlet &child : std::views::reverse(_right_children)) {
-            update_layout_for_child(*child, index++, context, need_layout);
+            update_layout_for_child(*child, index++, context);
         }
 
         tt_axiom(index == std::ssize(_left_children) + 1 + std::ssize(_right_children));
-        request_redraw();
     }
 }
 
@@ -154,8 +158,7 @@ void toolbar_widget::update_constraints_for_child(widget const &child, ssize_t i
     shared_height = std::max(shared_height, child.preferred_size().height() + child.margin() * 2.0f);
 }
 
-void toolbar_widget::update_layout_for_child(widget &child, ssize_t index, layout_context const &context, bool need_layout)
-    const noexcept
+void toolbar_widget::update_layout_for_child(widget &child, ssize_t index, layout_context const &context) const noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -167,9 +170,7 @@ void toolbar_widget::update_layout_for_child(widget &child, ssize_t index, layou
         child_width,
         rectangle().height() - child.margin() * 2.0f};
 
-    if (child.visible) {
-        child.layout(child_rectangle * context, need_layout);
-    }
+    child.layout(child_rectangle * context);
 }
 
 widget &toolbar_widget::add_widget(horizontal_alignment alignment, std::unique_ptr<widget> widget) noexcept

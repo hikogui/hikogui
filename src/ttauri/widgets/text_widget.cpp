@@ -18,6 +18,8 @@ text_widget::text_widget(gui_window &window, widget *parent) noexcept : super(wi
     tt_axiom(is_gui_thread());
 
     if (super::constrain(display_time_point, need_reconstrain)) {
+        _layout = {};
+
         _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), 0.0f, *alignment};
         _minimum_size = ceil(_shaped_text.minimum_size());
         _preferred_size = ceil(_shaped_text.preferred_size());
@@ -44,14 +46,15 @@ text_widget::text_widget(gui_window &window, widget *parent) noexcept : super(wi
     }
 }
 
-void text_widget::layout(layout_context const &context, bool need_layout) noexcept
+void text_widget::layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (compare_then_assign(_layout, context) or need_layout) {
+    if (visible and compare_then_assign(_layout, context)) {
+        request_redraw();
+
         _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), width(), *alignment};
         _shaped_text_transform = _shaped_text.translate_base_line(point2{0.0f, base_line()});
-        request_redraw();
     }
 }
 

@@ -11,6 +11,8 @@ namespace tt {
     tt_axiom(is_gui_thread());
 
     if (super::constrain(display_time_point, need_reconstrain)) {
+        _layout = {};
+
         // Make room for button and margin.
         _button_size = {theme().size, theme().size};
         ttlet extra_size = extent2{theme().margin + _button_size.width(), 0.0f};
@@ -29,19 +31,21 @@ namespace tt {
     }
 }
 
-void radio_button_widget::layout(layout_context const &context, bool need_layout) noexcept
+void radio_button_widget::layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (compare_then_assign(_layout, context) or need_layout) {
-        _button_rectangle = align(rectangle(), _button_size, alignment::top_left);
+    if (visible) {
+        if (compare_then_assign(_layout, context)) {
+            _button_rectangle = align(rectangle(), _button_size, alignment::top_left);
 
-        _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, width(), height()};
+            _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, width(), height()};
 
-        _pip_rectangle = align(_button_rectangle, extent2{theme().icon_size, theme().icon_size}, alignment::middle_center);
+            _pip_rectangle = align(_button_rectangle, extent2{theme().icon_size, theme().icon_size}, alignment::middle_center);
 
-        layout_button(context, need_layout);
-        request_redraw();
+            request_redraw();
+        }
+        layout_button(context);
     }
 }
 

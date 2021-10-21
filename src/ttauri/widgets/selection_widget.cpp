@@ -60,6 +60,8 @@ selection_widget::selection_widget(gui_window &window, widget *parent, std::weak
 
     auto updated = super::constrain(display_time_point, need_reconstrain);
     if (updated) {
+        _layout = {};
+
         ttlet extra_size = extent2{theme().size + theme().margin * 2.0f, theme().margin * 2.0f};
 
         _minimum_size = _unknown_label_widget->minimum_size() + extra_size;
@@ -89,49 +91,44 @@ selection_widget::selection_widget(gui_window &window, widget *parent, std::weak
     }
 }
 
-void selection_widget::layout(layout_context const &context, bool need_layout) noexcept
+void selection_widget::layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (compare_then_assign(_layout, context) or need_layout) {
-        // The overlay itself will make sure the overlay fits the window, so we give the preferred size and position
-        // from the point of view of the selection widget.
+    if (visible) {
+        if (compare_then_assign(_layout, context)) {
+            request_redraw();
 
-        // The overlay should start on the same left edge as the selection box and the same width.
-        // The height of the overlay should be the maximum height, which will show all the options.
+            // The overlay itself will make sure the overlay fits the window, so we give the preferred size and position
+            // from the point of view of the selection widget.
+            // The overlay should start on the same left edge as the selection box and the same width.
+            // The height of the overlay should be the maximum height, which will show all the options.
+            ttlet overlay_width = std::clamp(
+                rectangle().width() - theme().size,
+                _overlay_widget->minimum_size().width(),
+                _overlay_widget->maximum_size().width());
+            ttlet overlay_height = _overlay_widget->preferred_size().height();
+            ttlet overlay_x = theme().size;
+            ttlet overlay_y = std::round(height() * 0.5f - overlay_height * 0.5f);
+            ttlet overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};
+            _overlay_rectangle = make_overlay_rectangle(overlay_rectangle_request);
 
-        ttlet overlay_width = std::clamp(
-            rectangle().width() - theme().size, _overlay_widget->minimum_size().width(), _overlay_widget->maximum_size().width());
-        ttlet overlay_height = _overlay_widget->preferred_size().height();
-        ttlet overlay_x = theme().size;
-        ttlet overlay_y = std::round(height() * 0.5f - overlay_height * 0.5f);
-        ttlet overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};
+            _left_box_rectangle = aarectangle{0.0f, 0.0f, theme().size, rectangle().height()};
+            _chevrons_glyph = font_book().find_glyph(elusive_icon::ChevronUp);
+            ttlet chevrons_glyph_bbox = _chevrons_glyph.get_bounding_box();
+            _chevrons_rectangle = align(_left_box_rectangle, chevrons_glyph_bbox * theme().icon_size, alignment::middle_center);
 
-        _overlay_rectangle = make_overlay_rectangle(overlay_rectangle_request);
-
-        if (_overlay_widget->visible) {
-            _overlay_widget->layout(context.transform(_overlay_rectangle, 20.0f), need_layout);
+            // The unknown_label is located to the right of the selection box icon.
+            _option_rectangle = aarectangle{
+                _left_box_rectangle.right() + theme().margin,
+                0.0f,
+                rectangle().width() - _left_box_rectangle.width() - theme().margin * 2.0f,
+                rectangle().height()};
         }
 
-        _left_box_rectangle = aarectangle{0.0f, 0.0f, theme().size, rectangle().height()};
-        _chevrons_glyph = font_book().find_glyph(elusive_icon::ChevronUp);
-        ttlet chevrons_glyph_bbox = _chevrons_glyph.get_bounding_box();
-        _chevrons_rectangle = align(_left_box_rectangle, chevrons_glyph_bbox * theme().icon_size, alignment::middle_center);
-
-        // The unknown_label is located to the right of the selection box icon.
-        _option_rectangle = aarectangle{
-            _left_box_rectangle.right() + theme().margin,
-            0.0f,
-            rectangle().width() - _left_box_rectangle.width() - theme().margin * 2.0f,
-            rectangle().height()};
-
-        if (_unknown_label_widget->visible) {
-            _unknown_label_widget->layout(_option_rectangle * context, need_layout);
-        }
-        if (_current_label_widget->visible) {
-            _current_label_widget->layout(_option_rectangle * context, need_layout);
-        }
-        request_redraw();
+        _overlay_widget->layout(context.transform(_overlay_rectangle, 20.0f));
+        _unknown_label_widget->layout(_option_rectangle * context);
+        _current_label_widget->layout(_option_rectangle * context);
     }
 }
 

@@ -37,7 +37,7 @@ tab_widget::tab_widget(gui_window &window, widget *parent, weak_or_unique_ptr<de
     _maximum_size = {32767.0f, 32767.0f};
     tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 
-        if (auto d = _delegate.lock()) {
+    if (auto d = _delegate.lock()) {
         d->init(*this);
     }
 }
@@ -58,6 +58,8 @@ tab_widget::tab_widget(gui_window &window, widget *parent, std::weak_ptr<delegat
 
     auto has_updated_contraints = super::constrain(display_time_point, need_reconstrain);
     if (has_updated_contraints) {
+        _layout = {};
+
         ttlet &selected_child_ = selected_child();
 
         auto buffer = pmr::scoped_buffer<256>{};
@@ -79,18 +81,18 @@ tab_widget::tab_widget(gui_window &window, widget *parent, std::weak_ptr<delegat
     return has_updated_contraints;
 }
 
-void tab_widget::layout(layout_context const &context, bool need_layout) noexcept
+void tab_widget::layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (compare_then_assign(_layout, context) or need_layout) {
-        for (ttlet &child : _children) {
-            tt_axiom(child);
-            if (child->visible) {
-                child->layout(rectangle() * context, need_layout);
-            }
+    if (visible) {
+        if (compare_then_assign(_layout, context)) {
+            request_redraw();
         }
-        request_redraw();
+
+        for (ttlet &child : _children) {
+            child->layout(rectangle() * context);
+        }
     }
 }
 

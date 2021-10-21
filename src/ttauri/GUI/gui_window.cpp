@@ -174,7 +174,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     // Make sure the widget's layout is updated before draw, but after window resize.
     if (need_layout or widget_size != screen_rectangle.size()) {
         widget_size = screen_rectangle.size();
-        widget->layout(layout_context{widget_size, display_time_point}, need_layout);
+        widget->layout(layout_context{widget_size, display_time_point});
     }
 
     if (auto optional_draw_context = surface->render_start(_redraw_rectangle, display_time_point)) {
