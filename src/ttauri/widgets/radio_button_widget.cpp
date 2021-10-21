@@ -6,29 +6,25 @@
 
 namespace tt {
 
-[[nodiscard]] bool radio_button_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+void radio_button_widget::constrain() noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (super::constrain(display_time_point, need_reconstrain)) {
-        _layout = {};
+    _layout = {};
+    constrain_button();
 
-        // Make room for button and margin.
-        _button_size = {theme().size, theme().size};
-        ttlet extra_size = extent2{theme().margin + _button_size.width(), 0.0f};
-        _minimum_size += extra_size;
-        _preferred_size += extra_size;
-        _maximum_size += extra_size;
+    // Make room for button and margin.
+    _button_size = {theme().size, theme().size};
+    ttlet extra_size = extent2{theme().margin + _button_size.width(), 0.0f};
+    _minimum_size += extra_size;
+    _preferred_size += extra_size;
+    _maximum_size += extra_size;
 
-        _minimum_size = max(_minimum_size, _button_size);
-        _preferred_size = max(_minimum_size, _button_size);
-        _maximum_size = max(_minimum_size, _button_size);
+    _minimum_size = max(_minimum_size, _button_size);
+    _preferred_size = max(_minimum_size, _button_size);
+    _maximum_size = max(_minimum_size, _button_size);
 
-        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-        return true;
-    } else {
-        return false;
-    }
+    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 }
 
 void radio_button_widget::layout(layout_context const &context) noexcept

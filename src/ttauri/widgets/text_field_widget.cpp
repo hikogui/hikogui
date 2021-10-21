@@ -16,9 +16,7 @@ text_field_widget::text_field_widget(gui_window &window, widget *parent, weak_or
     _shaped_text()
 {
     if (auto d = _delegate.lock()) {
-        _delegate_callback = d->subscribe(*this, [this] {
-            request_relayout();
-        });
+        d->subscribe(*this, _relayout_callback);
         d->init(*this);
     }
 }
@@ -35,25 +33,20 @@ text_field_widget::~text_field_widget()
     }
 }
 
-[[nodiscard]] bool text_field_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+void text_field_widget::constrain() noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (super::constrain(display_time_point, need_reconstrain)) {
-        _layout = {};
+    _layout = {};
 
-        ttlet text_style = theme().text_style(theme_text_style::label);
+    ttlet text_style = theme().text_style(theme_text_style::label);
 
-        _text_width = 100.0;
+    _text_width = 100.0;
 
-        _minimum_size = {_text_width + theme().margin * 2.0f, theme().size + theme().margin * 2.0f};
-        _preferred_size = {_text_width + theme().margin * 2.0f, theme().size + theme().margin * 2.0f};
-        _maximum_size = {_text_width + theme().margin * 2.0f, theme().size + theme().margin * 2.0f};
-        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-        return true;
-    } else {
-        return false;
-    }
+    _minimum_size = {_text_width + theme().margin * 2.0f, theme().size + theme().margin * 2.0f};
+    _preferred_size = {_text_width + theme().margin * 2.0f, theme().size + theme().margin * 2.0f};
+    _maximum_size = {_text_width + theme().margin * 2.0f, theme().size + theme().margin * 2.0f};
+    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 }
 
 void text_field_widget::layout(layout_context const &context) noexcept

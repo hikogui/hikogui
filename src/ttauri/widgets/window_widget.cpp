@@ -46,33 +46,29 @@ void window_widget::constructor_implementation() noexcept
     co_yield _content.get();
 }
 
-[[nodiscard]] bool window_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+void window_widget::constrain() noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (super::constrain(display_time_point, need_reconstrain)) {
-        _layout = {};
+    _layout = {};
+    _toolbar->constrain();
+    _content->constrain();
 
-        _minimum_size = {
-            std::max(_toolbar->minimum_size().width(), _content->minimum_size().width()),
-            _toolbar->preferred_size().height() + _content->minimum_size().height()};
+    _minimum_size = {
+        std::max(_toolbar->minimum_size().width(), _content->minimum_size().width()),
+        _toolbar->preferred_size().height() + _content->minimum_size().height()};
 
-        _preferred_size = {
-            std::max(_toolbar->preferred_size().width(), _content->preferred_size().width()),
-            _toolbar->preferred_size().height() + _content->preferred_size().height()};
+    _preferred_size = {
+        std::max(_toolbar->preferred_size().width(), _content->preferred_size().width()),
+        _toolbar->preferred_size().height() + _content->preferred_size().height()};
 
-        _maximum_size = {
-            _content->maximum_size().width(), _toolbar->preferred_size().height() + _content->maximum_size().height()};
+    _maximum_size = {_content->maximum_size().width(), _toolbar->preferred_size().height() + _content->maximum_size().height()};
 
-        // Override maximum size and preferred size.
-        _maximum_size = max(_maximum_size, _minimum_size);
-        _preferred_size = clamp(_preferred_size, _minimum_size, _maximum_size);
+    // Override maximum size and preferred size.
+    _maximum_size = max(_maximum_size, _minimum_size);
+    _preferred_size = clamp(_preferred_size, _minimum_size, _maximum_size);
 
-        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-        return true;
-    } else {
-        return false;
-    }
+    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 }
 
 void window_widget::layout(layout_context const &context) noexcept

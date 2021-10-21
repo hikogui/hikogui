@@ -49,14 +49,12 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
+    void constrain() noexcept override;
     void layout(layout_context const &context) noexcept override;
     void draw(draw_context const &context) noexcept override;
     /// @endprivatesection
 private:
     enum class icon_type { no, glyph, pixmap };
-
-    decltype(icon)::callback_ptr_type _icon_callback;
 
     icon_type _icon_type;
     font_glyph_ids _glyph;

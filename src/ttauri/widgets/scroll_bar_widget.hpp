@@ -34,38 +34,27 @@ public:
         aperture(std::forward<Aperture>(aperture)),
         offset(std::forward<Offset>(offset))
     {
-        _content_callback = this->content.subscribe([this](auto...) {
-            request_relayout();
-        });
-        _aperture_callback = this->aperture.subscribe([this](auto...) {
-            request_relayout();
-        });
-        _offset_callback = this->offset.subscribe([this](auto...) {
-            request_relayout();
-        });
+        this->content.subscribe(_relayout_callback);
+        this->aperture.subscribe(_relayout_callback);
+        this->offset.subscribe(_relayout_callback);
     }
 
     ~scroll_bar_widget() {}
 
-    [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override
+    void constrain() noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        if (super::constrain(display_time_point, need_reconstrain)) {
-            _layout = {};
+        _layout = {};
 
-            if constexpr (axis == axis::vertical) {
-                _minimum_size = _preferred_size = {theme().icon_size, theme().large_size};
-                _maximum_size = {theme().icon_size, 32767.0f};
-            } else {
-                _minimum_size = _preferred_size = {theme().large_size, theme().icon_size};
-                _maximum_size = {32767.0f, theme().icon_size};
-            }
-            tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-            return true;
+        if constexpr (axis == axis::vertical) {
+            _minimum_size = _preferred_size = {theme().icon_size, theme().large_size};
+            _maximum_size = {theme().icon_size, 32767.0f};
         } else {
-            return false;
+            _minimum_size = _preferred_size = {theme().large_size, theme().icon_size};
+            _maximum_size = {32767.0f, theme().icon_size};
         }
+        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
     }
 
     void layout(layout_context const &context) noexcept override
@@ -159,10 +148,6 @@ public:
     }
 
 private:
-    typename decltype(offset)::callback_ptr_type _offset_callback;
-    typename decltype(aperture)::callback_ptr_type _aperture_callback;
-    typename decltype(content)::callback_ptr_type _content_callback;
-
     aarectangle _slider_rectangle;
 
     float _offset_before_drag;

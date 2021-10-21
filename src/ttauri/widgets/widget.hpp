@@ -213,7 +213,7 @@ public:
      * @param need_reconstrain Force the widget to re-constrain.
      * @return True if its or any children's constraints has changed.
      */
-    [[nodiscard]] virtual bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept;
+    virtual void constrain() noexcept = 0;
 
     /** Update the internal layout of the widget.
      * This function is called when the size of this widget must change, or if any of the
@@ -227,7 +227,7 @@ public:
      * @param context The layout context for this child.
      * @return The new size of the widget, should be a copy of the new_size parameter.
      */
-    [[nodiscard]] virtual void layout(layout_context const &context) noexcept = 0;
+    virtual void layout(layout_context const &context) noexcept = 0;
 
     virtual [[nodiscard]] color background_color() const noexcept;
 
@@ -365,10 +365,6 @@ public:
 
 protected:
     layout_context _layout;
-
-    /** When set to true the widget will recalculate the constraints on the next call to `updateConstraints()`
-     */
-    std::atomic<bool> _reconstrain = true;
 
     extent2 _minimum_size;
     extent2 _preferred_size;

@@ -14,28 +14,24 @@ namespace tt {
     return 0.0f;
 }
 
-[[nodiscard]] bool menu_button_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+void menu_button_widget::constrain() noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (super::constrain(display_time_point, need_reconstrain)) {
-        _layout = {};
+    _layout = {};
+    constrain_button();
 
-        // Make room for button and margin.
-        _check_size = {theme().size, theme().size};
-        _short_cut_size = {theme().size, theme().size};
+    // Make room for button and margin.
+    _check_size = {theme().size, theme().size};
+    _short_cut_size = {theme().size, theme().size};
 
-        // On left side a check mark, on right side short-cut. Around the label extra margin.
-        ttlet extra_size = extent2{theme().margin * 4.0f + _check_size.width() + _short_cut_size.width(), theme().margin * 2.0f};
-        _minimum_size += extra_size;
-        _preferred_size += extra_size;
-        _maximum_size += extra_size;
+    // On left side a check mark, on right side short-cut. Around the label extra margin.
+    ttlet extra_size = extent2{theme().margin * 4.0f + _check_size.width() + _short_cut_size.width(), theme().margin * 2.0f};
+    _minimum_size += extra_size;
+    _preferred_size += extra_size;
+    _maximum_size += extra_size;
 
-        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-        return true;
-    } else {
-        return false;
-    }
+    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 }
 
 void menu_button_widget::layout(layout_context const &context) noexcept

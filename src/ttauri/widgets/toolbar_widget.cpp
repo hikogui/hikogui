@@ -22,39 +22,40 @@ toolbar_widget::toolbar_widget(gui_window &window, widget *parent) noexcept : su
     return 0.0f;
 }
 
-[[nodiscard]] bool toolbar_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+void toolbar_widget::constrain() noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (super::constrain(display_time_point, need_reconstrain)) {
-        _layout = {};
-
-        auto shared_height = 0.0f;
-
-        _flow_layout.clear();
-        _flow_layout.reserve(std::ssize(_left_children) + 1 + std::ssize(_right_children));
-
-        ssize_t index = 0;
-        for (ttlet &child : _left_children) {
-            update_constraints_for_child(*child, index++, shared_height);
-        }
-
-        // Add a space between the left and right widgets.
-        _flow_layout.update(index++, theme().large_size, theme().large_size, 32767.0f, 0.0f);
-
-        for (ttlet &child : std::views::reverse(_right_children)) {
-            update_constraints_for_child(*child, index++, shared_height);
-        }
-
-        tt_axiom(index == std::ssize(_left_children) + 1 + std::ssize(_right_children));
-        _minimum_size = {_flow_layout.minimum_size(), shared_height};
-        _preferred_size = {_flow_layout.preferred_size(), shared_height};
-        _maximum_size = {_flow_layout.maximum_size(), shared_height};
-        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-        return true;
-    } else {
-        return false;
+    _layout = {};
+    for (ttlet &child : _left_children) {
+        child->constrain();
     }
+    for (ttlet &child : _right_children) {
+        child->constrain();
+    }
+
+    auto shared_height = 0.0f;
+
+    _flow_layout.clear();
+    _flow_layout.reserve(std::ssize(_left_children) + 1 + std::ssize(_right_children));
+
+    ssize_t index = 0;
+    for (ttlet &child : _left_children) {
+        update_constraints_for_child(*child, index++, shared_height);
+    }
+
+    // Add a space between the left and right widgets.
+    _flow_layout.update(index++, theme().large_size, theme().large_size, 32767.0f, 0.0f);
+
+    for (ttlet &child : std::views::reverse(_right_children)) {
+        update_constraints_for_child(*child, index++, shared_height);
+    }
+
+    tt_axiom(index == std::ssize(_left_children) + 1 + std::ssize(_right_children));
+    _minimum_size = {_flow_layout.minimum_size(), shared_height};
+    _preferred_size = {_flow_layout.preferred_size(), shared_height};
+    _maximum_size = {_flow_layout.maximum_size(), shared_height};
+    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 }
 
 void toolbar_widget::layout(layout_context const &context_) noexcept

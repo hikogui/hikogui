@@ -16,21 +16,17 @@ system_menu_widget::system_menu_widget(gui_window &window, widget *parent) noexc
     return 0.0f;
 }
 
-[[nodiscard]] bool system_menu_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+void system_menu_widget::constrain() noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (super::constrain(display_time_point, need_reconstrain)) {
-        _layout = {};
+    _layout = {};
+    _icon_widget->constrain();
 
-        ttlet width = theme().toolbar_decoration_button_width;
-        ttlet height = theme().toolbar_height;
-        _minimum_size = _preferred_size = _maximum_size = {width, height};
-        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-        return true;
-    } else {
-        return false;
-    }
+    ttlet width = theme().toolbar_decoration_button_width;
+    ttlet height = theme().toolbar_height;
+    _minimum_size = _preferred_size = _maximum_size = {width, height};
+    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 }
 
 void system_menu_widget::layout(layout_context const &context) noexcept

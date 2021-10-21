@@ -23,7 +23,6 @@ widget::widget(gui_window &_window, widget *parent) noexcept :
     _redraw_callback = std::make_shared<std::function<void()>>([this] {
         request_redraw();
     });
-
     _relayout_callback = std::make_shared<std::function<void()>>([this] {
         request_relayout();
     });
@@ -32,7 +31,7 @@ widget::widget(gui_window &_window, widget *parent) noexcept :
     });
 
     enabled.subscribe(_redraw_callback);
-    visible.subscribe(_redraw_callback);
+    visible.subscribe(_reconstrain_callback);
 
     _minimum_size = extent2::nan();
     _preferred_size = extent2::nan();
@@ -222,23 +221,6 @@ tt::font_book &widget::font_book() const noexcept
     return _layout.clipping_rectangle;
 }
 
-[[nodiscard]] bool widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
-{
-    tt_axiom(is_gui_thread());
-
-    need_reconstrain |= _reconstrain.exchange(false);
-
-    auto buffer = pmr::scoped_buffer<256>{};
-    for (auto *child : children(buffer.allocator())) {
-        if (child) {
-            tt_axiom(child->parent == this);
-            need_reconstrain |= child->constrain(display_time_point, need_reconstrain);
-        }
-    }
-
-    return need_reconstrain;
-}
-
 void widget::request_redraw() const noexcept
 {
     window.request_redraw(_layout.redraw_rectangle);
@@ -251,7 +233,6 @@ void widget::request_relayout() noexcept
 
 void widget::request_reconstrain() noexcept
 {
-    _reconstrain.store(true, std::memory_order::relaxed);
     window.request_reconstrain();
 }
 

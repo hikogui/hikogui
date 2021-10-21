@@ -113,41 +113,39 @@ public:
         return 0.0f;
     }
 
-    [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override
+    void constrain() noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        if (super::constrain(display_time_point, need_reconstrain)) {
-            _layout = {};
-
-            _flow_layout.clear();
-            _flow_layout.reserve(std::ssize(_children));
-
-            ssize_t index = 0;
-
-            auto minimum_thickness = 0.0f;
-            auto preferred_thickness = 0.0f;
-            auto maximum_thickness = 0.0f;
-            for (ttlet &child : _children) {
-                update_constraints_for_child(*child, index++, minimum_thickness, preferred_thickness, maximum_thickness);
-            }
-
-            tt_axiom(index == std::ssize(_children));
-
-            if constexpr (axis == axis::row) {
-                _minimum_size = {_flow_layout.minimum_size(), minimum_thickness};
-                _preferred_size = {_flow_layout.preferred_size(), preferred_thickness};
-                _maximum_size = {_flow_layout.maximum_size(), maximum_thickness};
-            } else {
-                _minimum_size = {minimum_thickness, _flow_layout.minimum_size()};
-                _preferred_size = {preferred_thickness, _flow_layout.preferred_size()};
-                _maximum_size = {maximum_thickness, _flow_layout.maximum_size()};
-            }
-            tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-            return true;
-        } else {
-            return false;
+        _layout = {};
+        for (ttlet &child : _children) {
+            child->constrain();
         }
+
+        _flow_layout.clear();
+        _flow_layout.reserve(std::ssize(_children));
+
+        ssize_t index = 0;
+
+        auto minimum_thickness = 0.0f;
+        auto preferred_thickness = 0.0f;
+        auto maximum_thickness = 0.0f;
+        for (ttlet &child : _children) {
+            update_constraints_for_child(*child, index++, minimum_thickness, preferred_thickness, maximum_thickness);
+        }
+
+        tt_axiom(index == std::ssize(_children));
+
+        if constexpr (axis == axis::row) {
+            _minimum_size = {_flow_layout.minimum_size(), minimum_thickness};
+            _preferred_size = {_flow_layout.preferred_size(), preferred_thickness};
+            _maximum_size = {_flow_layout.maximum_size(), maximum_thickness};
+        } else {
+            _minimum_size = {minimum_thickness, _flow_layout.minimum_size()};
+            _preferred_size = {preferred_thickness, _flow_layout.preferred_size()};
+            _maximum_size = {maximum_thickness, _flow_layout.maximum_size()};
+        }
+        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
     }
 
     void layout(layout_context const &context) noexcept override

@@ -60,13 +60,11 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
+    void constrain() noexcept override;
     void layout(layout_context const &context) noexcept override;
     void draw(draw_context const &context) noexcept override;
     /// @endprivatesection
 private:
-    decltype(text)::callback_ptr_type _text_callback;
-
     shaped_text _shaped_text;
     matrix2 _shaped_text_transform;
 

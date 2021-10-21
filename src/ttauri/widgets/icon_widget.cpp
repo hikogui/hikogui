@@ -14,96 +14,89 @@ namespace tt {
 
 icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
 {
-    _icon_callback = icon.subscribe([this]() {
-        request_reconstrain();
-    });
+    icon.subscribe(_reconstrain_callback);
 }
 
-[[nodiscard]] bool icon_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+void icon_widget::constrain() noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (super::constrain(display_time_point, need_reconstrain)) {
-        _layout = {};
+    _layout = {};
 
-        ttlet icon_ = icon.cget();
+    ttlet icon_ = icon.cget();
 
-        if (holds_alternative<std::monostate>(icon_)) {
-            _icon_type = icon_type::no;
-            _glyph = {};
-            _pixmap_hash = 0;
-            _pixmap_backing = {};
-            // For uniform scaling issues, make sure the size is not zero.
-            _icon_bounding_box = {};
+    if (holds_alternative<std::monostate>(icon_)) {
+        _icon_type = icon_type::no;
+        _glyph = {};
+        _pixmap_hash = 0;
+        _pixmap_backing = {};
+        // For uniform scaling issues, make sure the size is not zero.
+        _icon_bounding_box = {};
 
-        } else if (holds_alternative<pixel_map<sfloat_rgba16>>(icon_)) {
-            // XXX very ugly, please fix.
-            // This requires access to internals of vulkan, wtf.
-            ttlet lock = std::scoped_lock(gfx_system_mutex);
+    } else if (holds_alternative<pixel_map<sfloat_rgba16>>(icon_)) {
+        // XXX very ugly, please fix.
+        // This requires access to internals of vulkan, wtf.
+        ttlet lock = std::scoped_lock(gfx_system_mutex);
 
-            _icon_type = icon_type::pixmap;
-            _glyph = {};
+        _icon_type = icon_type::pixmap;
+        _glyph = {};
 
-            ttlet &pixmap = get<pixel_map<sfloat_rgba16>>(icon_);
+        ttlet &pixmap = get<pixel_map<sfloat_rgba16>>(icon_);
 
-            gfx_device_vulkan *device = nullptr;
-            if (window.surface) {
-                device = narrow_cast<gfx_device_vulkan *>(window.surface->device());
-            }
-
-            if (device == nullptr) {
-                // The window does not have a surface or device assigned.
-                // We need a device to upload the image as texture map, so retry until it does.
-                _pixmap_hash = 0;
-                _pixmap_backing = {};
-                _icon_bounding_box = {};
-                request_reconstrain();
-
-            } else if (pixmap.hash() != _pixmap_hash) {
-                _pixmap_hash = pixmap.hash();
-                _pixmap_backing = device->imagePipeline->makeImage(pixmap.width(), pixmap.height());
-
-                _pixmap_backing.upload(pixmap);
-                _icon_bounding_box = aarectangle{
-                    extent2{narrow_cast<float>(_pixmap_backing.width_in_px), narrow_cast<float>(_pixmap_backing.height_in_px)}};
-            }
-
-        } else if (holds_alternative<font_glyph_ids>(icon_)) {
-            _icon_type = icon_type::glyph;
-            _glyph = get<font_glyph_ids>(icon_);
-            _pixmap_hash = 0;
-            _pixmap_backing = {};
-
-            _icon_bounding_box = _glyph.get_bounding_box() * theme().text_style(theme_text_style::label).scaled_size();
-
-        } else if (holds_alternative<elusive_icon>(icon_)) {
-            _icon_type = icon_type::glyph;
-            _glyph = font_book().find_glyph(get<elusive_icon>(icon_));
-            _pixmap_hash = 0;
-            _pixmap_backing = {};
-
-            _icon_bounding_box = _glyph.get_bounding_box() * theme().text_style(theme_text_style::label).scaled_size();
-
-        } else if (holds_alternative<ttauri_icon>(icon_)) {
-            _icon_type = icon_type::glyph;
-            _glyph = font_book().find_glyph(get<ttauri_icon>(icon_));
-            _pixmap_hash = 0;
-            _pixmap_backing = {};
-
-            _icon_bounding_box = _glyph.get_bounding_box() * theme().text_style(theme_text_style::label).scaled_size();
-
-        } else {
-            tt_no_default();
+        gfx_device_vulkan *device = nullptr;
+        if (window.surface) {
+            device = narrow_cast<gfx_device_vulkan *>(window.surface->device());
         }
 
-        _minimum_size = {0.0f, 0.0f};
-        _preferred_size = _icon_bounding_box.size();
-        _maximum_size = _preferred_size;
-        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-        return true;
+        if (device == nullptr) {
+            // The window does not have a surface or device assigned.
+            // We need a device to upload the image as texture map, so retry until it does.
+            _pixmap_hash = 0;
+            _pixmap_backing = {};
+            _icon_bounding_box = {};
+            request_reconstrain();
+
+        } else if (pixmap.hash() != _pixmap_hash) {
+            _pixmap_hash = pixmap.hash();
+            _pixmap_backing = device->imagePipeline->makeImage(pixmap.width(), pixmap.height());
+
+            _pixmap_backing.upload(pixmap);
+            _icon_bounding_box = aarectangle{
+                extent2{narrow_cast<float>(_pixmap_backing.width_in_px), narrow_cast<float>(_pixmap_backing.height_in_px)}};
+        }
+
+    } else if (holds_alternative<font_glyph_ids>(icon_)) {
+        _icon_type = icon_type::glyph;
+        _glyph = get<font_glyph_ids>(icon_);
+        _pixmap_hash = 0;
+        _pixmap_backing = {};
+
+        _icon_bounding_box = _glyph.get_bounding_box() * theme().text_style(theme_text_style::label).scaled_size();
+
+    } else if (holds_alternative<elusive_icon>(icon_)) {
+        _icon_type = icon_type::glyph;
+        _glyph = font_book().find_glyph(get<elusive_icon>(icon_));
+        _pixmap_hash = 0;
+        _pixmap_backing = {};
+
+        _icon_bounding_box = _glyph.get_bounding_box() * theme().text_style(theme_text_style::label).scaled_size();
+
+    } else if (holds_alternative<ttauri_icon>(icon_)) {
+        _icon_type = icon_type::glyph;
+        _glyph = font_book().find_glyph(get<ttauri_icon>(icon_));
+        _pixmap_hash = 0;
+        _pixmap_backing = {};
+
+        _icon_bounding_box = _glyph.get_bounding_box() * theme().text_style(theme_text_style::label).scaled_size();
+
     } else {
-        return false;
+        tt_no_default();
     }
+
+    _minimum_size = {0.0f, 0.0f};
+    _preferred_size = _icon_bounding_box.size();
+    _maximum_size = _preferred_size;
+    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 }
 
 void icon_widget::layout(layout_context const &context) noexcept

@@ -46,7 +46,7 @@ public:
     void set_text_on_clipboard(std::string str) noexcept override;
 
 private:
-    void setOSWindowRectangleFromRECT(RECT aarectangle) noexcept;
+    static constexpr UINT_PTR move_and_resize_timer_id = 2;
 
     TRACKMOUSEEVENT trackMouseLeaveEventParameters;
     bool trackingMouseLeaveEvent = false;
@@ -54,7 +54,9 @@ private:
     mouse_event mouseButtonEvent;
     utc_nanoseconds doubleClickTimePoint;
     std::chrono::nanoseconds doubleClickMaximumDuration;
-    UINT_PTR move_and_resize_timer_id;
+
+    void setOSWindowRectangleFromRECT(RECT aarectangle) noexcept;
+
     [[nodiscard]] KeyboardState getKeyboardState() noexcept;
     [[nodiscard]] keyboard_modifiers getkeyboard_modifiers() noexcept;
 

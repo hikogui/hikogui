@@ -18,31 +18,26 @@ window_traffic_lights_widget::window_traffic_lights_widget(gui_window &window, w
     return 0.0f;
 }
 
-[[nodiscard]] bool window_traffic_lights_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+void window_traffic_lights_widget::constrain() noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (super::constrain(display_time_point, need_reconstrain)) {
-        _layout = {};
+    _layout = {};
 
-        if (theme().operating_system == operating_system::windows) {
-            ttlet width = theme().toolbar_decoration_button_width * 3.0f;
-            ttlet height = theme().toolbar_height;
-            _minimum_size = _preferred_size = _maximum_size = {width, height};
+    if (theme().operating_system == operating_system::windows) {
+        ttlet width = theme().toolbar_decoration_button_width * 3.0f;
+        ttlet height = theme().toolbar_height;
+        _minimum_size = _preferred_size = _maximum_size = {width, height};
 
-        } else if (theme().operating_system == operating_system::macos) {
-            ttlet width = DIAMETER * 3.0f + 2.0f * MARGIN + 2.0f * SPACING;
-            ttlet height = DIAMETER + 2.0f * MARGIN;
-            _minimum_size = _preferred_size = _maximum_size = {width, height};
+    } else if (theme().operating_system == operating_system::macos) {
+        ttlet width = DIAMETER * 3.0f + 2.0f * MARGIN + 2.0f * SPACING;
+        ttlet height = DIAMETER + 2.0f * MARGIN;
+        _minimum_size = _preferred_size = _maximum_size = {width, height};
 
-        } else {
-            tt_no_default();
-        }
-        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-        return true;
     } else {
-        return false;
+        tt_no_default();
     }
+    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 }
 
 void window_traffic_lights_widget::layout(layout_context const &context) noexcept

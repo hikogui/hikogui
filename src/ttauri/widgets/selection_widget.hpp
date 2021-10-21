@@ -83,7 +83,7 @@ public:
         co_yield _unknown_label_widget.get();
     }
 
-    [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
+    void constrain() noexcept override;
     void layout(layout_context const &context) noexcept override;
     void draw(draw_context const &context) noexcept override;
     bool handle_event(mouse_event const &event) noexcept override;
@@ -93,10 +93,8 @@ public:
     [[nodiscard]] color focus_color() const noexcept override;
     /// @endprivatesection
 private:
+    delegate_type::callback_ptr_type _delegate_callback;
     weak_or_unique_ptr<delegate_type> _delegate;
-
-    typename delegate_type::callback_ptr_type _delegate_callback;
-    typename decltype(unknown_label)::callback_ptr_type _unknown_label_callback;
 
     std::unique_ptr<label_widget> _current_label_widget;
     std::unique_ptr<label_widget> _unknown_label_widget;

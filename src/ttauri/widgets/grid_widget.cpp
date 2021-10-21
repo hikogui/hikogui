@@ -99,19 +99,17 @@ widget &grid_widget::add_widget(size_t column_nr, size_t row_nr, std::unique_ptr
     return ref;
 }
 
-bool grid_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+void grid_widget::constrain() noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (super::constrain(display_time_point, need_reconstrain)) {
-        _layout = {};
-
-        std::tie(_minimum_size, _preferred_size, _maximum_size) = calculate_size(_cells, _rows, _columns);
-        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-        return true;
-    } else {
-        return false;
+    _layout = {};
+    for (ttlet &cell : _cells) {
+        cell.widget->constrain();
     }
+
+    std::tie(_minimum_size, _preferred_size, _maximum_size) = calculate_size(_cells, _rows, _columns);
+    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 }
 
 void grid_widget::layout(layout_context const &context) noexcept

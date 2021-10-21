@@ -49,30 +49,27 @@ void abstract_button_widget::unsubscribe(callback_ptr_type &callback_ptr) noexce
     return _notifier.unsubscribe(callback_ptr);
 }
 
-[[nodiscard]] bool abstract_button_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+void abstract_button_widget::constrain_button() noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (super::constrain(display_time_point, need_reconstrain)) {
-        _layout = {};
+    _on_label_widget->constrain();
+    _off_label_widget->constrain();
+    _other_label_widget->constrain();
 
-        _minimum_size = _on_label_widget->minimum_size();
-        _preferred_size = _on_label_widget->preferred_size();
-        _maximum_size = _on_label_widget->maximum_size();
+    _minimum_size = _on_label_widget->minimum_size();
+    _preferred_size = _on_label_widget->preferred_size();
+    _maximum_size = _on_label_widget->maximum_size();
 
-        _minimum_size = max(_minimum_size, _off_label_widget->minimum_size());
-        _preferred_size = max(_preferred_size, _off_label_widget->preferred_size());
-        _maximum_size = max(_maximum_size, _off_label_widget->maximum_size());
+    _minimum_size = max(_minimum_size, _off_label_widget->minimum_size());
+    _preferred_size = max(_preferred_size, _off_label_widget->preferred_size());
+    _maximum_size = max(_maximum_size, _off_label_widget->maximum_size());
 
-        _minimum_size = max(_minimum_size, _other_label_widget->minimum_size());
-        _preferred_size = max(_preferred_size, _other_label_widget->preferred_size());
-        _maximum_size = max(_maximum_size, _other_label_widget->maximum_size());
+    _minimum_size = max(_minimum_size, _other_label_widget->minimum_size());
+    _preferred_size = max(_preferred_size, _other_label_widget->preferred_size());
+    _maximum_size = max(_maximum_size, _other_label_widget->maximum_size());
 
-        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-        return true;
-    } else {
-        return false;
-    }
+    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 }
 
 void abstract_button_widget::draw_button(draw_context const &context) noexcept

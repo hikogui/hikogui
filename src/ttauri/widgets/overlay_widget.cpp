@@ -31,23 +31,18 @@ overlay_widget::~overlay_widget()
     }
 }
 
-[[nodiscard]] bool overlay_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+void overlay_widget::constrain() noexcept
 {
     tt_axiom(is_gui_thread());
 
-    auto has_updated_contraints = super::constrain(display_time_point, need_reconstrain);
+    _layout = {};
+    _content->constrain();
 
-    if (has_updated_contraints) {
-        _layout = {};
-
-        tt_axiom(_content);
-        _minimum_size = _content->minimum_size();
-        _preferred_size = _content->preferred_size();
-        _maximum_size = _content->maximum_size();
-        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-    }
-
-    return has_updated_contraints;
+    tt_axiom(_content);
+    _minimum_size = _content->minimum_size();
+    _preferred_size = _content->preferred_size();
+    _maximum_size = _content->maximum_size();
+    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 }
 
 void overlay_widget::layout(layout_context const &context_) noexcept

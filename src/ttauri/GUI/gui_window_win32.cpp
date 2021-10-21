@@ -524,7 +524,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
     case WM_ENTERSIZEMOVE: {
         tt_axiom(is_gui_thread());
-        if ((move_and_resize_timer_id = SetTimer(win32Window, 0, 16, NULL)) == 0) {
+        if (SetTimer(win32Window, move_and_resize_timer_id, 16, NULL) != move_and_resize_timer_id) {
             tt_log_error("Could not set timer before move/resize. {}", get_last_error_message());
         }
         resizing = true;

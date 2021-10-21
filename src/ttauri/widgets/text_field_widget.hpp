@@ -74,7 +74,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
+    void constrain() noexcept override;
     void layout(layout_context const &context) noexcept override;
     void draw(draw_context const &context) noexcept override;
     bool handle_event(command command) noexcept override;
@@ -86,7 +86,6 @@ public:
     /// @endprivatesection
 private:
     weak_or_unique_ptr<delegate_type> _delegate;
-    typename delegate_type::callback_ptr_type _delegate_callback;
 
     bool _continues = false;
 

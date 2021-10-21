@@ -74,16 +74,12 @@ public:
             semantic_layer = parent->semantic_layer;
         }
 
-        _layout_callback = std::make_shared<std::function<void()>>([this]() {
-            request_relayout();
-        });
-
-        _scroll_content_width.subscribe(_layout_callback);
-        _scroll_content_height.subscribe(_layout_callback);
-        _scroll_aperture_width.subscribe(_layout_callback);
-        _scroll_aperture_height.subscribe(_layout_callback);
-        _scroll_offset_x.subscribe(_layout_callback);
-        _scroll_offset_y.subscribe(_layout_callback);
+        _scroll_content_width.subscribe(_relayout_callback);
+        _scroll_content_height.subscribe(_relayout_callback);
+        _scroll_aperture_width.subscribe(_relayout_callback);
+        _scroll_aperture_height.subscribe(_relayout_callback);
+        _scroll_offset_x.subscribe(_relayout_callback);
+        _scroll_offset_y.subscribe(_relayout_callback);
 
         _horizontal_scroll_bar = std::make_unique<horizontal_scroll_bar_widget>(
             window, this, _scroll_content_width, _scroll_aperture_width, _scroll_offset_x);
@@ -129,51 +125,48 @@ public:
         return 0.0f;
     }
 
-    [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override
+    void constrain() noexcept override
     {
         tt_axiom(is_gui_thread());
         tt_axiom(_content);
 
-        auto has_updated_contraints = super::constrain(display_time_point, need_reconstrain);
+        _layout = {};
+        _content->constrain();
+        _horizontal_scroll_bar->constrain();
+        _vertical_scroll_bar->constrain();
 
-        // Recurse into the selected widget.
-        if (has_updated_contraints) {
-            _layout = {};
+        // As the widget will always add scrollbars if needed the minimum size is dictated to
+        // the size of the scrollbars.
+        _minimum_size = _content->minimum_size();
+        _preferred_size = _content->preferred_size();
+        _maximum_size = _content->maximum_size();
 
-            // As the widget will always add scrollbars if needed the minimum size is dictated to
-            // the size of the scrollbars.
-            _minimum_size = _content->minimum_size();
-            _preferred_size = _content->preferred_size();
-            _maximum_size = _content->maximum_size();
+        // When there are scrollbars the minimum size is the minimum length of the scrollbar.
+        // The maximum size is the minimum size of the content.
+        if constexpr (any(axis & axis::horizontal)) {
+            // The content could be smaller than the scrollbar.
+            _minimum_size.width() = _horizontal_scroll_bar->minimum_size().width();
+            _preferred_size.width() = std::max(_preferred_size.width(), _horizontal_scroll_bar->minimum_size().width());
+            _maximum_size.width() = std::max(_maximum_size.width(), _horizontal_scroll_bar->minimum_size().width());
+        }
+        if constexpr (any(axis & axis::vertical)) {
+            _minimum_size.height() = _vertical_scroll_bar->minimum_size().height();
+            _preferred_size.height() = std::max(_preferred_size.height(), _vertical_scroll_bar->minimum_size().height());
+            _maximum_size.height() = std::max(_maximum_size.height(), _vertical_scroll_bar->minimum_size().height());
+        }
 
-            // When there are scrollbars the minimum size is the minimum length of the scrollbar.
-            // The maximum size is the minimum size of the content.
-            if constexpr (any(axis & axis::horizontal)) {
-                // The content could be smaller than the scrollbar.
-                _minimum_size.width() = _horizontal_scroll_bar->minimum_size().width();
-                _preferred_size.width() = std::max(_preferred_size.width(), _horizontal_scroll_bar->minimum_size().width());
-                _maximum_size.width() = std::max(_maximum_size.width(), _horizontal_scroll_bar->minimum_size().width());
-            }
-            if constexpr (any(axis & axis::vertical)) {
-                _minimum_size.height() = _vertical_scroll_bar->minimum_size().height();
-                _preferred_size.height() = std::max(_preferred_size.height(), _vertical_scroll_bar->minimum_size().height());
-                _maximum_size.height() = std::max(_maximum_size.height(), _vertical_scroll_bar->minimum_size().height());
-            }
-
-            // Make room for the scroll bars.
-            if constexpr (any(axis & axis::horizontal)) {
-                _minimum_size.height() += _horizontal_scroll_bar->preferred_size().height();
-                _preferred_size.height() += _horizontal_scroll_bar->preferred_size().height();
-                _maximum_size.height() += _horizontal_scroll_bar->preferred_size().height();
-            }
-            if constexpr (any(axis & axis::vertical)) {
-                _minimum_size.width() += _vertical_scroll_bar->preferred_size().width();
-                _preferred_size.width() += _vertical_scroll_bar->preferred_size().width();
-                _maximum_size.width() += _vertical_scroll_bar->preferred_size().width();
-            }
+        // Make room for the scroll bars.
+        if constexpr (any(axis & axis::horizontal)) {
+            _minimum_size.height() += _horizontal_scroll_bar->preferred_size().height();
+            _preferred_size.height() += _horizontal_scroll_bar->preferred_size().height();
+            _maximum_size.height() += _horizontal_scroll_bar->preferred_size().height();
+        }
+        if constexpr (any(axis & axis::vertical)) {
+            _minimum_size.width() += _vertical_scroll_bar->preferred_size().width();
+            _preferred_size.width() += _vertical_scroll_bar->preferred_size().width();
+            _maximum_size.width() += _vertical_scroll_bar->preferred_size().width();
         }
         tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-        return has_updated_contraints;
     }
 
     void layout(layout_context const &context) noexcept override
@@ -212,7 +205,6 @@ public:
                 _scroll_content_height = _content->preferred_size().height();
                 _scroll_aperture_width = _aperture_rectangle.width();
                 _scroll_aperture_height = _aperture_rectangle.height();
-
 
                 if constexpr (controls_window) {
                     window.set_resize_border_priority(
@@ -326,8 +318,6 @@ private:
     observable<float> _scroll_aperture_height;
     observable<float> _scroll_offset_x;
     observable<float> _scroll_offset_y;
-    observable<float>::callback_ptr_type _layout_callback;
-
 
     /** Calculate which scrollbars are needed to display the content.
      * @return has_horizontal_scroll_baar, has_vertical_scroll_bar
