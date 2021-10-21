@@ -25,11 +25,14 @@ public:
     constexpr matrix &operator=(matrix const &) noexcept = default;
     constexpr matrix &operator=(matrix &&) noexcept = default;
 
-    constexpr matrix() noexcept :
-        _col0(1.0f, 0.0f, 0.0f, 0.0f),
-        _col1(0.0f, 1.0f, 0.0f, 0.0f),
-        _col2(0.0f, 0.0f, 1.0f, 0.0f),
-        _col3(0.0f, 0.0f, 0.0f, 1.0f){};
+    constexpr matrix() noexcept
+    {
+        ttlet a = f32x4::broadcast(1.0f);
+        _col0 = a.x000();
+        _col1 = a._0y00();
+        _col2 = a._00z0();
+        _col3 = a._000w();
+    };
 
     constexpr matrix(f32x4 col0, f32x4 col1, f32x4 col2, f32x4 col3 = f32x4{0.0f, 0.0f, 0.0f, 1.0f}) noexcept :
         _col0(col0), _col1(col1), _col2(col2), _col3(col3)

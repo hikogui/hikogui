@@ -208,7 +208,7 @@ bool device_shared::_place_vertices(
     attributed_glyph const &attr_glyph,
     color color) noexcept
 {
-    if (!is_visible(attr_glyph.general_category)) {
+    if (not is_visible(attr_glyph.general_category)) {
         return false;
     }
 

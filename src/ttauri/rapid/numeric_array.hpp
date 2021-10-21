@@ -280,33 +280,26 @@ struct numeric_array {
         }
     }
 
-    [[nodiscard]] constexpr numeric_array(std::initializer_list<T> rhs) noexcept : v()
+    [[nodiscard]] constexpr explicit numeric_array(T const &rhs) noexcept : v()
     {
-        auto src = std::begin(rhs);
-        auto dst = std::begin(v);
+        get<0>(*this) = rhs;
+    }
 
-        // Copy all values from the initializer list.
-        while (src != std::end(rhs) && dst != std::end(v)) {
-            *(dst++) = *(src++);
-        }
-
-        tt_axiom(
-            dst != std::end(v) || src == std::end(rhs),
-            "Expecting the std:initializer_list size to be <= to the size of the numeric array");
-
-        // Set all other elements to zero
-        while (dst != std::end(v)) {
-            *(dst++) = {};
+    template<size_t I, std::convertible_to<T> First, std::convertible_to<T>... Args>
+    constexpr void initialize_elements(First const &first, Args const &...args) noexcept
+    {
+        get<I>(*this) = static_cast<T>(first);
+        if constexpr (sizeof...(Args) > 0) {
+            initialize_elements<I + 1>(args...);
         }
     }
 
-    [[nodiscard]] constexpr numeric_array(T const &first) noexcept requires(N == 1) : numeric_array({first}) {}
-
-    template<arithmetic... Rest>
-    requires(sizeof...(Rest) + 2 <= N)
-        [[nodiscard]] constexpr numeric_array(T const &first, T const &second, Rest const &...rest) noexcept :
-        numeric_array({first, second, narrow_cast<T>(rest)...})
+    template<std::convertible_to<T> First, std::convertible_to<T> Second, std::convertible_to<T>... Args>
+    [[nodiscard]] constexpr numeric_array(First const &first, Second const &second, Args const &...args) noexcept
+        requires(sizeof...(Args) + 2 <= N) :
+        v()
     {
+        initialize_elements<0>(first, second, args...);
     }
 
     [[nodiscard]] static constexpr numeric_array broadcast(T rhs) noexcept
@@ -2063,7 +2056,7 @@ struct numeric_array {
 
         if (!std::is_constant_evaluated()) {
             if constexpr (is_f32x4 && x86_64_v2) {
-                return numeric_array{f32x4_x64v2_swizzle<Elements...>(v)};
+                return numeric_array{m128_x64v2_swizzle<Elements...>(reg())};
             } else if constexpr (is_i32x4 && x86_64_v2) {
                 return numeric_array{i32x4_x64v2_swizzle<Elements...>(v)};
             } else if constexpr (is_u32x4 && x86_64_v2) {
