@@ -46,45 +46,43 @@ void window_widget::constructor_implementation() noexcept
     co_yield _content.get();
 }
 
-[[nodiscard]] bool window_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+void window_widget::constrain() noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (super::constrain(display_time_point, need_reconstrain)) {
-        _minimum_size = {
-            std::max(_toolbar->minimum_size().width(), _content->minimum_size().width()),
-            _toolbar->preferred_size().height() + _content->minimum_size().height()};
+    _layout = {};
+    _toolbar->constrain();
+    _content->constrain();
 
-        _preferred_size = {
-            std::max(_toolbar->preferred_size().width(), _content->preferred_size().width()),
-            _toolbar->preferred_size().height() + _content->preferred_size().height()};
+    _minimum_size = {
+        std::max(_toolbar->minimum_size().width(), _content->minimum_size().width()),
+        _toolbar->preferred_size().height() + _content->minimum_size().height()};
 
-        _maximum_size = {
-            _content->maximum_size().width(), _toolbar->preferred_size().height() + _content->maximum_size().height()};
+    _preferred_size = {
+        std::max(_toolbar->preferred_size().width(), _content->preferred_size().width()),
+        _toolbar->preferred_size().height() + _content->preferred_size().height()};
 
-        // Override maximum size and preferred size.
-        _maximum_size = max(_maximum_size, _minimum_size);
-        _preferred_size = clamp(_preferred_size, _minimum_size, _maximum_size);
+    _maximum_size = {_content->maximum_size().width(), _toolbar->preferred_size().height() + _content->maximum_size().height()};
 
-        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-        return true;
-    } else {
-        return false;
-    }
+    // Override maximum size and preferred size.
+    _maximum_size = max(_maximum_size, _minimum_size);
+    _preferred_size = clamp(_preferred_size, _minimum_size, _maximum_size);
+
+    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 }
 
-void window_widget::layout(layout_context const &context, bool need_layout) noexcept
+void window_widget::layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (compare_then_assign(_layout, context) or need_layout) {
-        ttlet toolbar_height = _toolbar->preferred_size().height();
-        ttlet toolbar_rectangle = aarectangle{0.0f, rectangle().height() - toolbar_height, rectangle().width(), toolbar_height};
-        _toolbar->layout(toolbar_rectangle * context, need_layout);
-
-        ttlet content_rectangle = aarectangle{0.0f, 0.0f, rectangle().width(), rectangle().height() - toolbar_height};
-        _content->layout(content_rectangle * context, need_layout);
-        request_redraw();
+    if (visible) {
+        if (_layout.store(context) >= layout_update::transform) {
+            ttlet toolbar_height = _toolbar->preferred_size().height();
+            _toolbar_rectangle = aarectangle{0.0f, rectangle().height() - toolbar_height, rectangle().width(), toolbar_height};
+            _content_rectangle = aarectangle{0.0f, 0.0f, rectangle().width(), rectangle().height() - toolbar_height};
+        }
+        _toolbar->layout(_toolbar_rectangle * context);
+        _content->layout(_content_rectangle * context);
     }
 }
 

@@ -11,6 +11,24 @@
 
 namespace tt {
 
+/** Result of layout_context::store()
+ */
+enum class layout_update {
+    /** The layout was unmodified.
+     */
+    none,
+
+    /** One or more matrices, clipping, hit and redraw rectangle was modified.
+     */
+    transform,
+
+    /** The size of the widget was modified.
+     *
+     * This state also implies `layout_update::transform`.
+     */
+    size
+};
+
 class layout_context {
 public:
     /** This matrix transforms local coordinates to the coordinates of the parent widget.
@@ -72,18 +90,38 @@ public:
     constexpr layout_context(layout_context &&) noexcept = default;
     constexpr layout_context &operator=(layout_context const &) noexcept = default;
     constexpr layout_context &operator=(layout_context &&) noexcept = default;
+    constexpr layout_context() noexcept = default;
 
-    [[nodiscard]] constexpr layout_context() noexcept :
-        to_parent(),
-        from_parent(),
-        to_window(),
-        from_window(),
-        rectangle(),
-        clipping_rectangle(),
-        hit_rectangle(),
-        redraw_rectangle(),
-        display_time_point()
+    constexpr layout_update compare(layout_context const &other) const noexcept
     {
+        tt_axiom((to_parent == other.to_parent) == (from_parent == other.from_parent));
+        tt_axiom((to_window == other.to_window) == (from_window == other.from_window));
+
+        // clang-format off
+        if (rectangle != other.rectangle) {
+            return layout_update::size;
+
+        } else if (
+            to_parent != other.to_parent or
+            to_window != other.to_window or
+            clipping_rectangle != other.clipping_rectangle or
+            hit_rectangle != other.hit_rectangle or
+            redraw_rectangle != other.redraw_rectangle) {
+            return layout_update::transform;
+
+        } else {
+            return layout_update::none;
+        }
+        // clang-format on
+    }
+
+    constexpr layout_update store(layout_context const &other) noexcept
+    {
+        ttlet r = compare(other);
+        if (r != layout_update::none) {
+            *this = other;
+        }
+        return r;
     }
 
     /** Construct a layout_context from inside the window.
@@ -152,27 +190,6 @@ public:
         r.clipping_rectangle = new_clipping_rectangle;
         r.hit_rectangle = new_clipping_rectangle;
         return r;
-    }
-
-    /** Compare if layouts are the same.
-     *
-     * It should not check the display_time_point because this value does not change
-     * the layout.
-     */
-    [[nodiscard]] friend constexpr bool operator==(layout_context const &lhs, layout_context const &rhs) noexcept
-    {
-        // clang-format off
-        return
-            lhs.rectangle == rhs.rectangle and
-            lhs.to_parent == rhs.to_parent and
-            lhs.from_parent == rhs.from_parent and
-            lhs.to_window == rhs.to_window and
-            lhs.from_window == rhs.from_window and
-            lhs.clipping_rectangle == rhs.clipping_rectangle and
-            lhs.hit_rectangle == rhs.hit_rectangle and
-            lhs.redraw_rectangle == rhs.redraw_rectangle;
-
-        // clang-format on
     }
 
     [[nodiscard]] friend constexpr layout_context operator*(aarectangle const &lhs, layout_context const &rhs) noexcept

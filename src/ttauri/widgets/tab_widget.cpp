@@ -26,9 +26,7 @@ tab_widget::tab_widget(gui_window &window, widget *parent, weak_or_unique_ptr<de
     }
 
     if (auto d = _delegate.lock()) {
-        _delegate_callback = d->subscribe(*this, [this](auto...) {
-            this->request_reconstrain();
-        });
+        d->subscribe(*this, _reconstrain_callback);
     }
 
     // Compare and assign would trigger the signaling NaN that widget sets.
@@ -37,7 +35,7 @@ tab_widget::tab_widget(gui_window &window, widget *parent, weak_or_unique_ptr<de
     _maximum_size = {32767.0f, 32767.0f};
     tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 
-        if (auto d = _delegate.lock()) {
+    if (auto d = _delegate.lock()) {
         d->init(*this);
     }
 }
@@ -52,45 +50,43 @@ tab_widget::tab_widget(gui_window &window, widget *parent, std::weak_ptr<delegat
     return 0.0f;
 }
 
-[[nodiscard]] bool tab_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+void tab_widget::constrain() noexcept
 {
     tt_axiom(is_gui_thread());
 
-    auto has_updated_contraints = super::constrain(display_time_point, need_reconstrain);
-    if (has_updated_contraints) {
-        ttlet &selected_child_ = selected_child();
-
-        auto buffer = pmr::scoped_buffer<256>{};
-        for (auto *child : children(buffer.allocator())) {
-            tt_axiom(child);
-            child->visible = child == &selected_child_;
-        }
-
-        auto size_changed = compare_then_assign(_minimum_size, selected_child_.minimum_size());
-        size_changed |= compare_then_assign(_preferred_size, selected_child_.preferred_size());
-        size_changed |= compare_then_assign(_maximum_size, selected_child_.maximum_size());
-        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-
-        if (size_changed) {
-            window.request_resize = true;
-        }
+    _layout = {};
+    for (ttlet &child : _children) {
+        child->constrain();
     }
 
-    return has_updated_contraints;
+    ttlet &selected_child_ = selected_child();
+
+    auto buffer = pmr::scoped_buffer<256>{};
+    for (auto *child : children(buffer.allocator())) {
+        tt_axiom(child);
+        child->visible = child == &selected_child_;
+    }
+
+    auto size_changed = compare_then_assign(_minimum_size, selected_child_.minimum_size());
+    size_changed |= compare_then_assign(_preferred_size, selected_child_.preferred_size());
+    size_changed |= compare_then_assign(_maximum_size, selected_child_.maximum_size());
+    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
+
+    if (size_changed) {
+        window.request_resize = true;
+    }
 }
 
-void tab_widget::layout(layout_context const &context, bool need_layout) noexcept
+void tab_widget::layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (compare_then_assign(_layout, context) or need_layout) {
+    if (visible) {
+        _layout.store(context);
+
         for (ttlet &child : _children) {
-            tt_axiom(child);
-            if (child->visible) {
-                child->layout(rectangle() * context, need_layout);
-            }
+            child->layout(rectangle() * context);
         }
-        request_redraw();
     }
 }
 

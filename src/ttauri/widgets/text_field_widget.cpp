@@ -16,9 +16,7 @@ text_field_widget::text_field_widget(gui_window &window, widget *parent, weak_or
     _shaped_text()
 {
     if (auto d = _delegate.lock()) {
-        _delegate_callback = d->subscribe(*this, [this] {
-            request_relayout();
-        });
+        d->subscribe(*this, _relayout_callback);
         d->init(*this);
     }
 }
@@ -35,70 +33,64 @@ text_field_widget::~text_field_widget()
     }
 }
 
-[[nodiscard]] bool text_field_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+void text_field_widget::constrain() noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (super::constrain(display_time_point, need_reconstrain)) {
-        ttlet text_style = theme().text_style(theme_text_style::label);
+    _layout = {};
 
-        _text_width = 100.0;
+    ttlet text_style = theme().text_style(theme_text_style::label);
 
-        _minimum_size = {_text_width + theme().margin * 2.0f, theme().size + theme().margin * 2.0f};
-        _preferred_size = {_text_width + theme().margin * 2.0f, theme().size + theme().margin * 2.0f};
-        _maximum_size = {_text_width + theme().margin * 2.0f, theme().size + theme().margin * 2.0f};
-        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-        return true;
-    } else {
-        return false;
-    }
+    _text_width = 100.0;
+
+    _minimum_size = {_text_width + theme().margin * 2.0f, theme().size + theme().margin * 2.0f};
+    _preferred_size = {_text_width + theme().margin * 2.0f, theme().size + theme().margin * 2.0f};
+    _maximum_size = {_text_width + theme().margin * 2.0f, theme().size + theme().margin * 2.0f};
+    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 }
 
-void text_field_widget::layout(layout_context const &context, bool need_layout) noexcept
+void text_field_widget::layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (focus && context.display_time_point >= _next_redraw_time_point) {
-        request_redraw();
-    }
+    if (visible) {
+        if (_layout.store(context) >= layout_update::transform) {
+            _text_field_rectangle = aarectangle{extent2{_text_width + theme().margin * 2.0f, height()}};
 
-    if (compare_then_assign(_layout, context) or need_layout) {
-        _text_field_rectangle = aarectangle{extent2{_text_width + theme().margin * 2.0f, height()}};
+            // Set the clipping rectangle to within the border of the input field.
+            // Add another border width, so glyphs do not touch the border.
+            _text_field_clipping_rectangle = intersect(_layout.clipping_rectangle, _text_field_rectangle);
 
-        // Set the clipping rectangle to within the border of the input field.
-        // Add another border width, so glyphs do not touch the border.
-        _text_field_clipping_rectangle = intersect(_layout.clipping_rectangle, _text_field_rectangle);
+            _text_rectangle = _text_field_rectangle - theme().margin;
 
-        _text_rectangle = _text_field_rectangle - theme().margin;
+            ttlet field_str = static_cast<std::string>(_field);
 
-        ttlet field_str = static_cast<std::string>(_field);
+            if (focus) {
+                // Update the optional error value from the string conversion when the
+                // field has keyboard focus.
+                if (auto delegate = _delegate.lock()) {
+                    _error = delegate->validate(*this, field_str);
+                } else {
+                    _error = {};
+                }
 
-        if (focus) {
-            // Update the optional error value from the string conversion when the
-            // field has keyboard focus.
-            if (auto delegate = _delegate.lock()) {
-                _error = delegate->validate(*this, field_str);
             } else {
+                // When field is not focused, simply follow the observed_value.
+                if (auto delegate = _delegate.lock()) {
+                    _field = delegate->text(*this);
+                } else {
+                    _field = {};
+                }
                 _error = {};
             }
 
-        } else {
-            // When field is not focused, simply follow the observed_value.
-            if (auto delegate = _delegate.lock()) {
-                _field = delegate->text(*this);
-            } else {
-                _field = {};
-            }
-            _error = {};
+            _field.set_style_of_all(theme().text_style(theme_text_style::label));
+            _field.set_width(std::numeric_limits<float>::infinity());
+            _shaped_text = _field.shaped_text();
+
+            // Record the last time the text is modified, so that the caret remains lit.
+            _last_update_time_point = context.display_time_point;
         }
-
-        _field.set_style_of_all(theme().text_style(theme_text_style::label));
-        _field.set_width(std::numeric_limits<float>::infinity());
-        _shaped_text = _field.shaped_text();
-
-        // Record the last time the text is modified, so that the caret remains lit.
-        _last_update_time_point = context.display_time_point;
-        request_redraw();
     }
 }
 

@@ -18,5 +18,5 @@ TEST(color_space, color_primaries_to_RGBtoXYZ)
     ASSERT_NEAR_VEC(get<0>(BT709_to_XYZ), f32x4(0.4124f, 0.2126f, 0.0193f), 0.001);
     ASSERT_NEAR_VEC(get<1>(BT709_to_XYZ), f32x4(0.3576f, 0.7152f, 0.1192f), 0.001);
     ASSERT_NEAR_VEC(get<2>(BT709_to_XYZ), f32x4(0.1805f, 0.0722f, 0.9505f), 0.001);
-    ASSERT_NEAR_VEC(get<3>(BT709_to_XYZ), f32x4(0.0, 0.0, 0.0, 1.0), 0.001);
+    ASSERT_NEAR_VEC(get<3>(BT709_to_XYZ), f32x4(0.0f, 0.0f, 0.0f, 1.0f), 0.001);
 }

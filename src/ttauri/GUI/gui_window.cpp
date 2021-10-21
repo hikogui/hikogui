@@ -71,7 +71,7 @@ void gui_window::init()
     }
 
     // Execute a constraint check to determine initial window size.
-    static_cast<void>(widget->constrain({}, true));
+    widget->constrain();
     ttlet new_size = widget->preferred_size();
 
     // Reset the keyboard target to not focus anything.
@@ -118,16 +118,19 @@ void gui_window::set_device(gfx_device *device) noexcept
 
 void gui_window::render(utc_nanoseconds display_time_point)
 {
+    ttlet t1 = trace<"window::render">();
+
     tt_axiom(is_gui_thread());
     tt_axiom(surface);
     tt_axiom(widget);
 
-    // All widgets need constrains recalculated on these window-wide events.
-    // Like theme or language changes.
-    ttlet need_reconstrain = _reconstrain.exchange(false);
-
-    // Update the size constraints of the window_widget and it children.
-    ttlet constraints_have_changed = widget->constrain(display_time_point, need_reconstrain);
+    // When a widget requests it or a window-wide event like language change
+    // has happened all the widgets will be constrain().
+    ttlet need_reconstrain = _reconstrain.exchange(false, std::memory_order_relaxed);
+    if (need_reconstrain) {
+        ttlet t2 = trace<"window::constrain">();
+        widget->constrain();
+    }
 
     // Check if the window size matches the preferred size of the window_widget.
     // If not ask the operating system to change the size of the window, which is
@@ -138,7 +141,6 @@ void gui_window::render(utc_nanoseconds display_time_point)
     //
     // Make sure the widget does have its window rectangle match the constraints, otherwise
     // the logic for layout and drawing becomes complicated.
-
     if (request_resize.exchange(false)) {
         // If a widget asked for a resize, change the size of the window to the preferred size of the widgets.
         ttlet current_size = screen_rectangle.size();
@@ -168,23 +170,29 @@ void gui_window::render(utc_nanoseconds display_time_point)
     // Update the graphics' surface to the current size of the window.
     surface->update(screen_rectangle.size());
 
-    // When a window message was received, such as a resize, redraw, language-change; the request_layout is set to true.
-    ttlet need_layout = _relayout.exchange(false, std::memory_order::relaxed) or constraints_have_changed;
-
     // Make sure the widget's layout is updated before draw, but after window resize.
-    if (need_layout or widget_size != screen_rectangle.size()) {
+    ttlet need_relayout = _relayout.exchange(false, std::memory_order_relaxed);
+    if (need_reconstrain or need_relayout or widget_size != screen_rectangle.size()) {
+        ttlet t2 = trace<"window::layout">();
         widget_size = screen_rectangle.size();
-        widget->layout(layout_context{widget_size, display_time_point}, need_layout);
+        widget->layout(layout_context{widget_size, display_time_point});
+
+        // After layout do a complete redraw.
+        _redraw_rectangle = aarectangle{widget_size};
     }
 
-    if (auto optional_draw_context = surface->render_start(_redraw_rectangle, display_time_point)) {
-        auto draw_context = *optional_draw_context;
-        auto tr = trace<"window_render">();
-
+    // Draw widgets if the _redraw_rectangle was set.
+    if (auto draw_context = surface->render_start(_redraw_rectangle, display_time_point)) {
         _redraw_rectangle = aarectangle{};
 
-        widget->draw(draw_context);
-        surface->render_finish(draw_context, widget->background_color());
+        {
+            ttlet t2 = trace<"window::draw">();
+            widget->draw(*draw_context);
+        }
+        {
+            ttlet t2 = trace<"window::submit">();
+            surface->render_finish(*draw_context, widget->background_color());
+        }
     }
 }
 

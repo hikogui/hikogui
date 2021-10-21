@@ -8,50 +8,44 @@ namespace tt {
 
 text_widget::text_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
 {
-    _text_callback = text.subscribe([this] {
-        request_reconstrain();
-    });
+    text.subscribe(_reconstrain_callback);
 }
 
-[[nodiscard]] bool text_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+void text_widget::constrain() noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (super::constrain(display_time_point, need_reconstrain)) {
-        _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), 0.0f, *alignment};
-        _minimum_size = ceil(_shaped_text.minimum_size());
-        _preferred_size = ceil(_shaped_text.preferred_size());
-        _maximum_size = ceil(_shaped_text.maximum_size());
+    _layout = {};
 
-        ttlet size_ = theme().size;
-        ttlet margin_ = margin();
+    _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), 0.0f, *alignment};
+    _minimum_size = ceil(_shaped_text.minimum_size());
+    _preferred_size = ceil(_shaped_text.preferred_size());
+    _maximum_size = ceil(_shaped_text.maximum_size());
 
-        // Allow text to overhang into the margin of a small widget.
-        if (_minimum_size.height() > size_ && _minimum_size.height() <= size_ + margin_) {
-            _minimum_size.height() = size_;
-        }
-        if (_preferred_size.height() > size_ && _preferred_size.height() <= size_ + margin_) {
-            _preferred_size.height() = size_;
-        }
-        if (_maximum_size.height() > size_ && _maximum_size.height() <= size_ + margin_) {
-            _maximum_size.height() = size_;
-        }
+    ttlet size_ = theme().size;
+    ttlet margin_ = margin();
 
-        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-        return true;
-    } else {
-        return false;
+    // Allow text to overhang into the margin of a small widget.
+    if (_minimum_size.height() > size_ && _minimum_size.height() <= size_ + margin_) {
+        _minimum_size.height() = size_;
     }
+    if (_preferred_size.height() > size_ && _preferred_size.height() <= size_ + margin_) {
+        _preferred_size.height() = size_;
+    }
+    if (_maximum_size.height() > size_ && _maximum_size.height() <= size_ + margin_) {
+        _maximum_size.height() = size_;
+    }
+
+    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 }
 
-void text_widget::layout(layout_context const &context, bool need_layout) noexcept
+void text_widget::layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (compare_then_assign(_layout, context) or need_layout) {
+    if (visible and _layout.store(context) >= layout_update::size) {
         _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), width(), *alignment};
         _shaped_text_transform = _shaped_text.translate_base_line(point2{0.0f, base_line()});
-        request_redraw();
     }
 }
 

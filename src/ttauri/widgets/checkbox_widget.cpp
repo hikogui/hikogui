@@ -19,48 +19,45 @@ checkbox_widget::checkbox_widget(gui_window &window, widget *parent, std::weak_p
 {
 }
 
-[[nodiscard]] bool checkbox_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+void checkbox_widget::constrain() noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (super::constrain(display_time_point, need_reconstrain)) {
-        // Make room for button and margin.
-        _button_size = {theme().size, theme().size};
-        ttlet extra_size = extent2{theme().margin + _button_size.width(), 0.0f};
-        _minimum_size += extra_size;
-        _preferred_size += extra_size;
-        _maximum_size += extra_size;
+    _layout = {};
+    constrain_button();
 
-        _minimum_size = max(_minimum_size, _button_size);
-        _preferred_size = max(_minimum_size, _button_size);
-        _maximum_size = max(_minimum_size, _button_size);
+    // Make room for button and margin.
+    _button_size = {theme().size, theme().size};
+    ttlet extra_size = extent2{theme().margin + _button_size.width(), 0.0f};
+    _minimum_size += extra_size;
+    _preferred_size += extra_size;
+    _maximum_size += extra_size;
 
-        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-        return true;
-    } else {
-        return false;
-    }
+    _minimum_size = max(_minimum_size, _button_size);
+    _preferred_size = max(_minimum_size, _button_size);
+    _maximum_size = max(_minimum_size, _button_size);
+
+    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 }
 
-void checkbox_widget::layout(layout_context const &context, bool need_layout) noexcept
+void checkbox_widget::layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (compare_then_assign(_layout, context) or need_layout) {
-        _button_rectangle = align(rectangle(), _button_size, alignment::top_left);
+    if (visible) {
+        if (_layout.store(context) >= layout_update::transform) {
+            _button_rectangle = align(rectangle(), _button_size, alignment::top_left);
+            _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, width(), height()};
 
-        _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, width(), height()};
+            _check_glyph = font_book().find_glyph(elusive_icon::Ok);
+            ttlet check_glyph_bb = _check_glyph.get_bounding_box();
+            _check_glyph_rectangle = align(_button_rectangle, check_glyph_bb * theme().icon_size, alignment::middle_center);
 
-        _check_glyph = font_book().find_glyph(elusive_icon::Ok);
-        ttlet check_glyph_bb = _check_glyph.get_bounding_box();
-        _check_glyph_rectangle = align(_button_rectangle, check_glyph_bb * theme().icon_size, alignment::middle_center);
-
-        _minus_glyph = font_book().find_glyph(elusive_icon::Minus);
-        ttlet minus_glyph_bb = _minus_glyph.get_bounding_box();
-        _minus_glyph_rectangle = align(_button_rectangle, minus_glyph_bb * theme().icon_size, alignment::middle_center);
-
-        layout_button(context, need_layout);
-        request_redraw();
+            _minus_glyph = font_book().find_glyph(elusive_icon::Minus);
+            ttlet minus_glyph_bb = _minus_glyph.get_bounding_box();
+            _minus_glyph_rectangle = align(_button_rectangle, minus_glyph_bb * theme().icon_size, alignment::middle_center);
+        }
+        layout_button(context);
     }
 }
 

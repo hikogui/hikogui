@@ -72,8 +72,8 @@ public:
     }
 
     [[nodiscard]] float margin() const noexcept override;
-    [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept;
-    void layout(layout_context const &context, bool need_layout) noexcept override;
+    void constrain() noexcept;
+    void layout(layout_context const &context) noexcept override;
     void draw(draw_context const &context) noexcept override;
     hitbox hitbox_test(point3 position) const noexcept override;
     [[nodiscard]] color focus_color() const noexcept override;
@@ -85,7 +85,7 @@ private:
 
     void update_constraints_for_child(widget const &child, ssize_t index, float &shared_height) noexcept;
 
-    void update_layout_for_child(widget &child, ssize_t index, layout_context const &context, bool need_layout) const noexcept;
+    void update_layout_for_child(widget &child, ssize_t index, layout_context const &context) const noexcept;
 
     /** Add a widget directly to this widget.
      */

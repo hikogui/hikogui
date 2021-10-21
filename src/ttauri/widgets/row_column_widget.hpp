@@ -113,55 +113,56 @@ public:
         return 0.0f;
     }
 
-    [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override
+    void constrain() noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        if (super::constrain(display_time_point, need_reconstrain)) {
-            _flow_layout.clear();
-            _flow_layout.reserve(std::ssize(_children));
-
-            ssize_t index = 0;
-
-            auto minimum_thickness = 0.0f;
-            auto preferred_thickness = 0.0f;
-            auto maximum_thickness = 0.0f;
-            for (ttlet &child : _children) {
-                update_constraints_for_child(*child, index++, minimum_thickness, preferred_thickness, maximum_thickness);
-            }
-
-            tt_axiom(index == std::ssize(_children));
-
-            if constexpr (axis == axis::row) {
-                _minimum_size = {_flow_layout.minimum_size(), minimum_thickness};
-                _preferred_size = {_flow_layout.preferred_size(), preferred_thickness};
-                _maximum_size = {_flow_layout.maximum_size(), maximum_thickness};
-            } else {
-                _minimum_size = {minimum_thickness, _flow_layout.minimum_size()};
-                _preferred_size = {preferred_thickness, _flow_layout.preferred_size()};
-                _maximum_size = {maximum_thickness, _flow_layout.maximum_size()};
-            }
-            tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-            return true;
-        } else {
-            return false;
+        _layout = {};
+        for (ttlet &child : _children) {
+            child->constrain();
         }
+
+        _flow_layout.clear();
+        _flow_layout.reserve(std::ssize(_children));
+
+        ssize_t index = 0;
+
+        auto minimum_thickness = 0.0f;
+        auto preferred_thickness = 0.0f;
+        auto maximum_thickness = 0.0f;
+        for (ttlet &child : _children) {
+            update_constraints_for_child(*child, index++, minimum_thickness, preferred_thickness, maximum_thickness);
+        }
+
+        tt_axiom(index == std::ssize(_children));
+
+        if constexpr (axis == axis::row) {
+            _minimum_size = {_flow_layout.minimum_size(), minimum_thickness};
+            _preferred_size = {_flow_layout.preferred_size(), preferred_thickness};
+            _maximum_size = {_flow_layout.maximum_size(), maximum_thickness};
+        } else {
+            _minimum_size = {minimum_thickness, _flow_layout.minimum_size()};
+            _preferred_size = {preferred_thickness, _flow_layout.preferred_size()};
+            _maximum_size = {maximum_thickness, _flow_layout.maximum_size()};
+        }
+        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
     }
 
-    void layout(layout_context const &context, bool need_layout) noexcept override
+    void layout(layout_context const &context) noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        if (compare_then_assign(_layout, context) or need_layout) {
-            _flow_layout.set_size(axis == axis::row ? rectangle().width() : rectangle().height());
+        if (visible) {
+            if (_layout.store(context) >= layout_update::size) {
+                _flow_layout.set_size(axis == axis::row ? rectangle().width() : rectangle().height());
+            }
 
             ssize_t index = 0;
             for (ttlet &child : _children) {
-                update_layout_for_child(*child, index++, context, need_layout);
+                update_layout_for_child(*child, index++, context);
             }
 
             tt_axiom(index == std::ssize(_children));
-            request_redraw();
         }
     }
 
@@ -211,7 +212,7 @@ private:
         }
     }
 
-    void update_layout_for_child(widget &child, ssize_t index, layout_context const &context, bool need_layout) const noexcept
+    void update_layout_for_child(widget &child, ssize_t index, layout_context const &context) const noexcept
     {
         tt_axiom(is_gui_thread());
 
@@ -229,9 +230,7 @@ private:
                 rectangle().width() - child.margin() * 2.0f,
                 child_length};
 
-        if (child.visible) {
-            child.layout(child_rectangle * context, need_layout);
-        }
+        child.layout(child_rectangle * context);
     }
 };
 

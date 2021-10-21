@@ -25,8 +25,8 @@ public:
 
     /// @privatesection
     [[nodiscard]] float margin() const noexcept override;
-    [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
-    void layout(layout_context const &context, bool need_layout) noexcept override;
+    void constrain() noexcept override;
+    void layout(layout_context const &context) noexcept override;
     void draw(draw_context const &context) noexcept override;
     bool handle_event(mouse_event const &event) noexcept override;
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
