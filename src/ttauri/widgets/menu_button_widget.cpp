@@ -34,19 +34,19 @@ void menu_button_widget::constrain() noexcept
     tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 }
 
-void menu_button_widget::layout(layout_context const &context) noexcept
+void menu_button_widget::set_layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
     if (visible) {
         if (_layout.store(context) >= layout_update::transform) {
-            ttlet inside_rectangle = rectangle() - theme().margin;
+            ttlet inside_rectangle = layout().rectangle() - theme().margin;
 
             _check_rectangle = align(inside_rectangle, _check_size, alignment::middle_left);
             _short_cut_rectangle = align(inside_rectangle, _short_cut_size, alignment::middle_right);
 
             _label_rectangle = aarectangle{
-                _check_rectangle.right() + theme().margin, 0.0f, _short_cut_rectangle.left() - theme().margin, height()};
+                _check_rectangle.right() + theme().margin, 0.0f, _short_cut_rectangle.left() - theme().margin, layout().height()};
 
             _check_glyph = font_book().find_glyph(elusive_icon::Ok);
             ttlet check_glyph_bb = _check_glyph.get_bounding_box();
@@ -60,7 +60,7 @@ void menu_button_widget::draw(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (visible and overlaps(context, _layout)) {
+    if (visible and overlaps(context, layout())) {
         draw_menu_button(context);
         draw_check_mark(context);
         draw_button(context);
@@ -111,7 +111,7 @@ void menu_button_widget::draw_menu_button(draw_context const &context) noexcept
     tt_axiom(is_gui_thread());
 
     ttlet foreground_color_ = focus && window.active ? focus_color() : color::transparent();
-    context.draw_box_with_border_inside(_layout, rectangle(), background_color(), foreground_color_, corner_shapes{0.0f});
+    context.draw_box_with_border_inside(layout(), layout().rectangle(), background_color(), foreground_color_, corner_shapes{0.0f});
 }
 
 void menu_button_widget::draw_check_mark(draw_context const &context) noexcept
@@ -122,7 +122,7 @@ void menu_button_widget::draw_check_mark(draw_context const &context) noexcept
 
     // Checkmark or tristate.
     if (state_ == tt::button_state::on) {
-        context.draw_glyph(_layout, _check_glyph, theme().icon_size, translate_z(0.1f) * _check_glyph_rectangle, accent_color());
+        context.draw_glyph(layout(), _check_glyph, theme().icon_size, translate_z(0.1f) * _check_glyph_rectangle, accent_color());
     }
 }
 

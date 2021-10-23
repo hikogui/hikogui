@@ -39,13 +39,13 @@ void text_widget::constrain() noexcept
     tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 }
 
-void text_widget::layout(layout_context const &context) noexcept
+void text_widget::set_layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
     if (visible and _layout.store(context) >= layout_update::size) {
-        _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), width(), *alignment};
-        _shaped_text_transform = _shaped_text.translate_base_line(point2{0.0f, base_line()});
+        _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), layout().width(), *alignment};
+        _shaped_text_transform = _shaped_text.translate_base_line(point2{0.0f, layout().base_line()});
     }
 }
 
@@ -53,8 +53,8 @@ void text_widget::draw(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (visible and overlaps(context, _layout)) {
-        context.draw_text(_layout, _shaped_text, label_color(), _shaped_text_transform);
+    if (visible and overlaps(context, layout())) {
+        context.draw_text(layout(), _shaped_text, label_color(), _shaped_text_transform);
     }
 }
 

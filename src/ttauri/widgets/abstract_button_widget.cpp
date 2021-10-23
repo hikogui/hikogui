@@ -94,9 +94,9 @@ void abstract_button_widget::layout_button(layout_context const &context) noexce
     _off_label_widget->visible = state_ == button_state::off;
     _other_label_widget->visible = state_ == button_state::other;
 
-    _on_label_widget->layout(_label_rectangle * context);
-    _off_label_widget->layout(_label_rectangle * context);
-    _other_label_widget->layout(_label_rectangle * context);
+    _on_label_widget->set_layout(_label_rectangle * context);
+    _off_label_widget->set_layout(_label_rectangle * context);
+    _other_label_widget->set_layout(_label_rectangle * context);
 }
 
 [[nodiscard]] color abstract_button_widget::background_color() const noexcept
@@ -113,7 +113,7 @@ void abstract_button_widget::layout_button(layout_context const &context) noexce
 {
     tt_axiom(is_gui_thread());
 
-    if (_layout.hit_rectangle.contains(position)) {
+    if (layout().hit_rectangle.contains(position)) {
         return hitbox{this, position, enabled ? hitbox::Type::Button : hitbox::Type::Default};
     } else {
         return hitbox{};
@@ -158,7 +158,7 @@ void activate() noexcept;
                 request_redraw();
             }
 
-            if (event.type == mouse_event::Type::ButtonUp && rectangle().contains(event.position)) {
+            if (event.type == mouse_event::Type::ButtonUp && layout().rectangle().contains(event.position)) {
                 handled |= handle_event(command::gui_activate);
             }
         }

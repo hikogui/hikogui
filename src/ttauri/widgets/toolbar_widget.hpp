@@ -73,7 +73,7 @@ public:
 
     [[nodiscard]] float margin() const noexcept override;
     void constrain() noexcept;
-    void layout(layout_context const &context) noexcept override;
+    void set_layout(layout_context const &context) noexcept override;
     void draw(draw_context const &context) noexcept override;
     hitbox hitbox_test(point3 position) const noexcept override;
     [[nodiscard]] color focus_color() const noexcept override;

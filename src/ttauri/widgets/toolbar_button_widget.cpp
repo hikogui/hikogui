@@ -28,13 +28,13 @@ void toolbar_button_widget::constrain() noexcept
     tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 }
 
-void toolbar_button_widget::layout(layout_context const &context) noexcept
+void toolbar_button_widget::set_layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
     if (visible) {
         if (_layout.store(context) >= layout_update::transform) {
-            _label_rectangle = aarectangle{theme().margin, 0.0f, width() - theme().margin * 2.0f, height()};
+            _label_rectangle = aarectangle{theme().margin, 0.0f, layout().width() - theme().margin * 2.0f, layout().height()};
         }
         layout_button(context);
     }
@@ -44,7 +44,7 @@ void toolbar_button_widget::draw(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (visible and overlaps(context, _layout)) {
+    if (visible and overlaps(context, layout())) {
         draw_toolbar_button(context);
         draw_button(context);
     }
@@ -88,7 +88,7 @@ void toolbar_button_widget::draw_toolbar_button(draw_context const &context) noe
     tt_axiom(is_gui_thread());
 
     ttlet foreground_color_ = focus && window.active ? focus_color() : color::transparent();
-    context.draw_box_with_border_inside(_layout, rectangle(), background_color(), foreground_color_, corner_shapes{0.0f});
+    context.draw_box_with_border_inside(layout(), layout().rectangle(), background_color(), foreground_color_, corner_shapes{0.0f});
 }
 
 } // namespace tt

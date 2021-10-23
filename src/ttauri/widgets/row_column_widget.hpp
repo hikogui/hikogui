@@ -148,13 +148,13 @@ public:
         tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
     }
 
-    void layout(layout_context const &context) noexcept override
+    void set_layout(layout_context const &context) noexcept override
     {
         tt_axiom(is_gui_thread());
 
         if (visible) {
             if (_layout.store(context) >= layout_update::size) {
-                _flow_layout.set_size(axis == axis::row ? rectangle().width() : rectangle().height());
+                _flow_layout.set_size(axis == axis::row ? layout().width() : layout().height());
             }
 
             ssize_t index = 0;
@@ -168,7 +168,7 @@ public:
 
     void draw(draw_context const &context) noexcept override
     {
-        if (visible and overlaps(context, _layout)) {
+        if (visible and overlaps(context, layout())) {
             for (ttlet &child : _children) {
                 child->draw(context);
             }
@@ -220,17 +220,17 @@ private:
 
         ttlet child_rectangle = axis == axis::row ?
             aarectangle{
-                rectangle().left() + child_offset,
-                rectangle().bottom() + child.margin(),
+                child_offset,
+                child.margin(),
                 child_length,
-                rectangle().height() - child.margin() * 2.0f} :
+                layout().height() - child.margin() * 2.0f} :
             aarectangle{
-                rectangle().left() + child.margin(),
-                rectangle().top() - child_offset - child_length,
-                rectangle().width() - child.margin() * 2.0f,
+                child.margin(),
+                layout().height() - child_offset - child_length,
+                layout().width() - child.margin() * 2.0f,
                 child_length};
 
-        child.layout(child_rectangle * context);
+        child.set_layout(child_rectangle * context);
     }
 };
 

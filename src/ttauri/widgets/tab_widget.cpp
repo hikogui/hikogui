@@ -77,7 +77,7 @@ void tab_widget::constrain() noexcept
     }
 }
 
-void tab_widget::layout(layout_context const &context) noexcept
+void tab_widget::set_layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -85,14 +85,14 @@ void tab_widget::layout(layout_context const &context) noexcept
         _layout.store(context);
 
         for (ttlet &child : _children) {
-            child->layout(rectangle() * context);
+            child->set_layout(layout().rectangle() * context);
         }
     }
 }
 
 void tab_widget::draw(draw_context const &context) noexcept
 {
-    if (visible and overlaps(context, _layout)) {
+    if (visible and overlaps(context, layout())) {
         for (ttlet &child : _children) {
             child->draw(context);
         }

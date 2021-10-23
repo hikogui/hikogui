@@ -47,13 +47,9 @@ public:
      */
     matrix3 from_window;
 
-    /** The rectangle of the widget.
-     *
-     * The left-bottom corner of the rectangle is at (0,0)
-     *
-     * @note widget's coordinate system.
+    /** Size of the widget.
      */
-    aarectangle rectangle;
+    extent2 size;
 
     /** The clipping rectangle.
      *
@@ -98,7 +94,7 @@ public:
         tt_axiom((to_window == other.to_window) == (from_window == other.from_window));
 
         // clang-format off
-        if (rectangle != other.rectangle) {
+        if (size != other.size) {
             return layout_update::size;
 
         } else if (
@@ -113,6 +109,26 @@ public:
             return layout_update::none;
         }
         // clang-format on
+    }
+
+    [[nodiscard]] constexpr aarectangle rectangle() const noexcept
+    {
+        return aarectangle{size};
+    }
+
+    [[nodiscard]] constexpr float width() const noexcept
+    {
+        return size.width();
+    }
+
+    [[nodiscard]] constexpr float height() const noexcept
+    {
+        return size.height();
+    }
+
+    [[nodiscard]] constexpr float base_line() const noexcept
+    {
+        return size.height() * 0.5f;
     }
 
     constexpr layout_update store(layout_context const &other) noexcept
@@ -131,7 +147,7 @@ public:
         from_parent(),
         to_window(),
         from_window(),
-        rectangle(window_size),
+        size(window_size),
         clipping_rectangle(window_size),
         hit_rectangle(window_size),
         redraw_rectangle(window_size),
@@ -156,10 +172,10 @@ public:
         r.from_parent = from_parent3;
         r.to_window = to_parent3 * this->to_window;
         r.from_window = from_parent3 * this->from_window;
-        r.rectangle = aarectangle{child_rectangle.size()};
+        r.size = child_rectangle.size();
         r.clipping_rectangle = from_parent2 * this->clipping_rectangle;
-        r.hit_rectangle = intersect(r.rectangle, r.clipping_rectangle);
-        r.redraw_rectangle = bounding_rectangle(r.to_window * (r.rectangle + 10.0f));
+        r.hit_rectangle = intersect(aarectangle{r.size}, r.clipping_rectangle);
+        r.redraw_rectangle = bounding_rectangle(r.to_window * (aarectangle{r.size} + 2.0f));
         r.display_time_point = this->display_time_point;
         return r;
     }

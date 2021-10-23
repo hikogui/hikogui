@@ -32,7 +32,7 @@ class font_book;
  *
  * Rendering is done in three distinct phases:
  *  1. Updating Constraints: `widget::constrain()`
- *  2. Updating Layout: `widget::layout()`
+ *  2. Updating Layout: `widget::set_layout()`
  *  3. Drawing: `widget::draw()`
  *
  */
@@ -155,29 +155,6 @@ public:
      */
     [[nodiscard]] extent2 maximum_size() const noexcept;
 
-    [[nodiscard]] matrix3 parent_to_local() const noexcept;
-
-    [[nodiscard]] matrix3 window_to_local() const noexcept;
-
-    [[nodiscard]] extent2 size() const noexcept;
-
-    [[nodiscard]] float width() const noexcept;
-
-    [[nodiscard]] float height() const noexcept;
-
-    /** Get the rectangle in local coordinates.
-     *
-     * @pre `mutex` must be locked by current thread.
-     */
-    [[nodiscard]] aarectangle rectangle() const noexcept;
-
-    /** Return the base-line where the text should be located.
-     * @return Number of pixels from the bottom of the widget where the base-line is located.
-     */
-    [[nodiscard]] virtual float base_line() const noexcept;
-
-    [[nodiscard]] aarectangle clipping_rectangle() const noexcept;
-
     /** Find the widget that is under the mouse cursor.
      * This function will recursively test with visual child widgets, when
      * widgets overlap on the screen the hitbox object with the highest elevation is returned.
@@ -223,8 +200,14 @@ public:
      * @param context The layout context for this child.
      * @return The new size of the widget, should be a copy of the new_size parameter.
      */
-    virtual void layout(layout_context const &context) noexcept = 0;
+    virtual void set_layout(layout_context const &context) noexcept = 0;
 
+    /** Get the current layout for this widget.
+     */
+    layout_context const &layout() const noexcept
+    {
+        return _layout;
+    }
 
     /** Draw the widget.
      *
@@ -341,7 +324,7 @@ public:
      */
     void scroll_to_show() noexcept
     {
-        scroll_to_show(_layout.redraw_rectangle);
+        scroll_to_show(layout().redraw_rectangle);
     }
 
     /** Get a list of parents of a given widget.

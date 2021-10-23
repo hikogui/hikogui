@@ -19,7 +19,7 @@ bool gui_window::send_event_to_widget(tt::widget const *target_widget, Event con
     while (target_widget) {
         // Send a command in priority order to the widget.
         if constexpr (std::is_same_v<Event, mouse_event>) {
-            if (const_cast<tt::widget *>(target_widget)->handle_event(target_widget->window_to_local() * event)) {
+            if (const_cast<tt::widget *>(target_widget)->handle_event(target_widget->layout().from_window * event)) {
                 return true;
             }
 
@@ -175,7 +175,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     if (need_reconstrain or need_relayout or widget_size != screen_rectangle.size()) {
         ttlet t2 = trace<"window::layout">();
         widget_size = screen_rectangle.size();
-        widget->layout(layout_context{widget_size, display_time_point});
+        widget->set_layout(layout_context{widget_size, display_time_point});
 
         // After layout do a complete redraw.
         _redraw_rectangle = aarectangle{widget_size};

@@ -71,18 +71,18 @@ void window_widget::constrain() noexcept
     tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 }
 
-void window_widget::layout(layout_context const &context) noexcept
+void window_widget::set_layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
     if (visible) {
         if (_layout.store(context) >= layout_update::transform) {
             ttlet toolbar_height = _toolbar->preferred_size().height();
-            _toolbar_rectangle = aarectangle{0.0f, rectangle().height() - toolbar_height, rectangle().width(), toolbar_height};
-            _content_rectangle = aarectangle{0.0f, 0.0f, rectangle().width(), rectangle().height() - toolbar_height};
+            _toolbar_rectangle = aarectangle{0.0f, layout().height() - toolbar_height, layout().width(), toolbar_height};
+            _content_rectangle = aarectangle{0.0f, 0.0f, layout().width(), layout().height() - toolbar_height};
         }
-        _toolbar->layout(_toolbar_rectangle * context);
-        _content->layout(_content_rectangle * context);
+        _toolbar->set_layout(_toolbar_rectangle * context);
+        _content->set_layout(_content_rectangle * context);
     }
 }
 
@@ -99,9 +99,9 @@ hitbox window_widget::hitbox_test(point3 position) const noexcept
     constexpr float BORDER_WIDTH = 10.0f;
 
     ttlet is_on_left_edge = position.x() <= BORDER_WIDTH;
-    ttlet is_on_right_edge = position.x() >= (width() - BORDER_WIDTH);
+    ttlet is_on_right_edge = position.x() >= (layout().width() - BORDER_WIDTH);
     ttlet is_on_bottom_edge = position.y() <= BORDER_WIDTH;
-    ttlet is_on_top_edge = position.y() >= (height() - BORDER_WIDTH);
+    ttlet is_on_top_edge = position.y() >= (layout().height() - BORDER_WIDTH);
 
     ttlet is_on_bottom_left_corner = is_on_bottom_edge && is_on_left_edge;
     ttlet is_on_bottom_right_corner = is_on_bottom_edge && is_on_right_edge;
@@ -135,7 +135,7 @@ hitbox window_widget::hitbox_test(point3 position) const noexcept
     auto buffer = pmr::scoped_buffer<256>{};
     for (auto *child : children(buffer.allocator())) {
         if (child) {
-            r = std::max(r, child->hitbox_test(child->parent_to_local() * position));
+            r = std::max(r, child->hitbox_test(child->layout().from_parent * position));
         }
     }
 

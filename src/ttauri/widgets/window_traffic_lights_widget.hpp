@@ -26,7 +26,7 @@ public:
     /// @privatesection
     [[nodiscard]] float margin() const noexcept override;
     void constrain() noexcept override;
-    void layout(layout_context const &context) noexcept override;
+    void set_layout(layout_context const &context) noexcept override;
     void draw(draw_context const &context) noexcept override;
     bool handle_event(mouse_event const &event) noexcept override;
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;

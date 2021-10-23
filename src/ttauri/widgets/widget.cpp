@@ -166,64 +166,9 @@ tt::font_book &widget::font_book() const noexcept
     return _maximum_size;
 }
 
-[[nodiscard]] matrix3 widget::parent_to_local() const noexcept
-{
-    tt_axiom(is_gui_thread());
-    return _layout.from_parent;
-}
-
-[[nodiscard]] matrix3 widget::window_to_local() const noexcept
-{
-    tt_axiom(is_gui_thread());
-    return _layout.from_window;
-}
-
-[[nodiscard]] extent2 widget::size() const noexcept
-{
-    tt_axiom(is_gui_thread());
-    return _layout.rectangle.size();
-}
-
-[[nodiscard]] float widget::width() const noexcept
-{
-    tt_axiom(is_gui_thread());
-    return _layout.rectangle.width();
-}
-
-[[nodiscard]] float widget::height() const noexcept
-{
-    tt_axiom(is_gui_thread());
-    return _layout.rectangle.height();
-}
-
-/** Get the rectangle in local coordinates.
- *
- * @pre `mutex` must be locked by current thread.
- */
-[[nodiscard]] aarectangle widget::rectangle() const noexcept
-{
-    tt_axiom(is_gui_thread());
-    return _layout.rectangle;
-}
-
-/** Return the base-line where the text should be located.
- * @return Number of pixels from the bottom of the widget where the base-line is located.
- */
-[[nodiscard]] float widget::base_line() const noexcept
-{
-    tt_axiom(is_gui_thread());
-    return rectangle().middle();
-}
-
-[[nodiscard]] aarectangle widget::clipping_rectangle() const noexcept
-{
-    tt_axiom(is_gui_thread());
-    return _layout.clipping_rectangle;
-}
-
 void widget::request_redraw() const noexcept
 {
-    window.request_redraw(_layout.redraw_rectangle);
+    window.request_redraw(layout().redraw_rectangle);
 }
 
 void widget::request_relayout() noexcept
@@ -258,7 +203,7 @@ void widget::request_reconstrain() noexcept
         if (child) {
             tt_axiom(child->parent == this);
             if (child->visible) {
-                r = std::max(r, child->hitbox_test(child->parent_to_local() * position));
+                r = std::max(r, child->hitbox_test(child->layout().from_parent * position));
             }
         }
     }
@@ -464,10 +409,10 @@ void widget::scroll_to_show(tt::aarectangle rectangle) noexcept
     tt_axiom(is_gui_thread());
 
     // Move the request_rectangle to window coordinates.
-    ttlet requested_window_rectangle = translate2{_layout.redraw_rectangle - theme().margin} * requested_rectangle;
+    ttlet requested_window_rectangle = translate2{layout().redraw_rectangle - theme().margin} * requested_rectangle;
     ttlet window_bounds = aarectangle{window.screen_rectangle.size()} - theme().margin;
     ttlet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
-    return bounding_rectangle(window_to_local() * response_window_rectangle);
+    return bounding_rectangle(layout().from_window * response_window_rectangle);
 }
 
 } // namespace tt

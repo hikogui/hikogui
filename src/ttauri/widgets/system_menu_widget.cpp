@@ -29,31 +29,27 @@ void system_menu_widget::constrain() noexcept
     tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 }
 
-void system_menu_widget::layout(layout_context const &context) noexcept
+void system_menu_widget::set_layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
     if (visible) {
         if (_layout.store(context) >= layout_update::transform) {
-            ttlet icon_height =
-                rectangle().height() < theme().toolbar_height * 1.2f ? rectangle().height() : theme().toolbar_height;
-            _icon_rectangle = aarectangle{rectangle().left(), rectangle().top() - icon_height, rectangle().width(), icon_height};
+            ttlet icon_height = layout().height() < theme().toolbar_height * 1.2f ? layout().height() : theme().toolbar_height;
+            _icon_rectangle = aarectangle{0.0f, layout().height() -icon_height, layout().width(), icon_height};
 
             // Leave space for window resize handles on the left and top.
-            _system_menu_rectangle = aarectangle{
-                rectangle().left() + theme().margin,
-                rectangle().bottom(),
-                rectangle().width() - theme().margin,
-                rectangle().height() - theme().margin};
+            _system_menu_rectangle =
+                aarectangle{theme().margin, 0.0f, layout().width() - theme().margin, layout().height() - theme().margin};
         }
 
-        _icon_widget->layout(_icon_rectangle * context);
+        _icon_widget->set_layout(_icon_rectangle * context);
     }
 }
 
 void system_menu_widget::draw(draw_context const &context) noexcept
 {
-    if (visible and overlaps(context, _layout)) {
+    if (visible and overlaps(context, layout())) {
         _icon_widget->draw(context);
     }
 }
@@ -62,7 +58,7 @@ hitbox system_menu_widget::hitbox_test(point3 position) const noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (_layout.hit_rectangle.contains(position)) {
+    if (layout().hit_rectangle.contains(position)) {
         // Only the top-left square should return ApplicationIcon, leave
         // the reset to the toolbar implementation.
         return hitbox{this, position, hitbox::Type::ApplicationIcon};

@@ -49,17 +49,17 @@ void text_field_widget::constrain() noexcept
     tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 }
 
-void text_field_widget::layout(layout_context const &context) noexcept
+void text_field_widget::set_layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
     if (visible) {
         if (_layout.store(context) >= layout_update::transform) {
-            _text_field_rectangle = aarectangle{extent2{_text_width + theme().margin * 2.0f, height()}};
+            _text_field_rectangle = aarectangle{extent2{_text_width + theme().margin * 2.0f, layout().height()}};
 
             // Set the clipping rectangle to within the border of the input field.
             // Add another border width, so glyphs do not touch the border.
-            _text_field_clipping_rectangle = intersect(_layout.clipping_rectangle, _text_field_rectangle);
+            _text_field_clipping_rectangle = intersect(layout().clipping_rectangle, _text_field_rectangle);
 
             _text_rectangle = _text_field_rectangle - theme().margin;
 
@@ -100,7 +100,7 @@ void text_field_widget::draw(draw_context const &context) noexcept
 
     _next_redraw_time_point = context.display_time_point + _blink_interval;
 
-    if (visible and overlaps(context, _layout)) {
+    if (visible and overlaps(context, layout())) {
         scroll_text();
 
         draw_background_box(context);
@@ -265,7 +265,7 @@ hitbox text_field_widget::hitbox_test(point3 position) const noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (_layout.hit_rectangle.contains(position)) {
+    if (layout().hit_rectangle.contains(position)) {
         return hitbox{this, position, enabled ? hitbox::Type::TextEdit : hitbox::Type::Default};
     } else {
         return hitbox{};
@@ -362,17 +362,17 @@ void text_field_widget::scroll_text() noexcept
 
     // Calculate how much we need to translate the text.
     _text_translate = translate2{-_text_scroll_x, 0.0f} *
-        _shaped_text.translate_base_line(point2{_text_rectangle.left(), rectangle().middle()});
+        _shaped_text.translate_base_line(point2{_text_rectangle.left(), layout().base_line()});
     _text_inv_translate = ~_text_translate;
 }
 
 void text_field_widget::draw_background_box(draw_context const &context) const noexcept
 {
     ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme().rounding_radius, theme().rounding_radius};
-    context.draw_box(_layout, _text_field_rectangle, background_color(), corner_shapes);
+    context.draw_box(layout(), _text_field_rectangle, background_color(), corner_shapes);
 
     ttlet line_rectangle = aarectangle{get<0>(_text_field_rectangle), extent2{_text_field_rectangle.width(), 1.0f}};
-    context.draw_box(_layout, translate3{0.0f, 0.0f, 0.1f} * line_rectangle, focus_color());
+    context.draw_box(layout(), translate3{0.0f, 0.0f, 0.1f} * line_rectangle, focus_color());
 }
 
 void text_field_widget::draw_selection_rectangles(draw_context const &context) const noexcept
@@ -380,7 +380,7 @@ void text_field_widget::draw_selection_rectangles(draw_context const &context) c
     ttlet selection_rectangles = _field.selection_rectangles();
     for (ttlet selection_rectangle : selection_rectangles) {
         context.draw_box(
-            _layout, _text_translate * translate_z(0.1f) * selection_rectangle, theme().color(theme_color::text_select));
+            layout(), _text_translate * translate_z(0.1f) * selection_rectangle, theme().color(theme_color::text_select));
     }
 }
 
@@ -389,7 +389,7 @@ void text_field_widget::draw_partial_grapheme_caret(draw_context const &context)
     ttlet partial_grapheme_caret = _field.partial_grapheme_caret();
     if (partial_grapheme_caret) {
         ttlet box = round(_text_translate) * translate_z(0.1f) * round(partial_grapheme_caret);
-        context.draw_box_with_border_inside(_layout, box, color::transparent(), theme().color(theme_color::incomplete_glyph));
+        context.draw_box_with_border_inside(layout(), box, color::transparent(), theme().color(theme_color::incomplete_glyph));
     }
 }
 
@@ -403,13 +403,13 @@ void text_field_widget::draw_caret(draw_context const &context) noexcept
     _left_to_right_caret = _field.left_to_right_caret();
     if (_left_to_right_caret && blink_is_on && focus && window.active) {
         ttlet box = round(_text_translate) * translate_z(0.1f) * round(_left_to_right_caret);
-        context.draw_box_with_border_inside(_layout, box, color::transparent(), theme().color(theme_color::cursor));
+        context.draw_box_with_border_inside(layout(), box, color::transparent(), theme().color(theme_color::cursor));
     }
 }
 
 void text_field_widget::draw_text(draw_context const &context) const noexcept
 {
-    context.draw_text(_layout, _shaped_text, label_color(), _text_translate * translate_z(0.2f));
+    context.draw_text(layout(), _shaped_text, label_color(), _text_translate * translate_z(0.2f));
 }
 
 } // namespace tt

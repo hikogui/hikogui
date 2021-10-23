@@ -112,25 +112,25 @@ void grid_widget::constrain() noexcept
     tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 }
 
-void grid_widget::layout(layout_context const &context) noexcept
+void grid_widget::set_layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
     if (visible) {
         if (_layout.store(context) >= layout_update::transform) {
-            _columns.set_size(width());
-            _rows.set_size(height());
+            _columns.set_size(layout().width());
+            _rows.set_size(layout().height());
         }
 
         for (ttlet &cell : _cells) {
-            cell.widget->layout(cell.rectangle(_columns, _rows, height()) * context);
+            cell.widget->set_layout(cell.rectangle(_columns, _rows, layout().height()) * context);
         }
     }
 }
 
 void grid_widget::draw(draw_context const &context) noexcept
 {
-    if (visible and overlaps(context, _layout)) {
+    if (visible and overlaps(context, layout())) {
         for (ttlet &cell : _cells) {
             cell.widget->draw(context);
         }

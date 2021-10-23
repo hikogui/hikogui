@@ -99,7 +99,7 @@ void icon_widget::constrain() noexcept
     tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 }
 
-void icon_widget::layout(layout_context const &context) noexcept
+void icon_widget::set_layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -107,7 +107,7 @@ void icon_widget::layout(layout_context const &context) noexcept
         if (_icon_type == icon_type::no or not _icon_bounding_box) {
             _icon_transform = {};
         } else {
-            _icon_transform = matrix2::uniform(_icon_bounding_box, rectangle(), *alignment);
+            _icon_transform = matrix2::uniform(_icon_bounding_box, layout().rectangle(), *alignment);
         }
     }
 }
@@ -116,14 +116,14 @@ void icon_widget::draw(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (visible and overlaps(context, _layout)) {
+    if (visible and overlaps(context, layout())) {
         switch (_icon_type) {
         case icon_type::no: break;
 
         case icon_type::pixmap:
             switch (_pixmap_backing.state) {
             case pipeline_image::image::State::Drawing: request_redraw(); break;
-            case pipeline_image::image::State::Uploaded: context.draw_image(_layout, _pixmap_backing, _icon_transform); break;
+            case pipeline_image::image::State::Uploaded: context.draw_image(layout(), _pixmap_backing, _icon_transform); break;
             default: break;
             }
             break;
@@ -131,7 +131,7 @@ void icon_widget::draw(draw_context const &context) noexcept
         case icon_type::glyph: {
             ttlet box = _icon_transform * _icon_bounding_box;
             ttlet scale = box.width() / _icon_bounding_box.width();
-            context.draw_glyph(_layout, _glyph, scale, box, theme().color(*color));
+            context.draw_glyph(layout(), _glyph, scale, box, theme().color(*color));
         } break;
 
         default: tt_no_default();

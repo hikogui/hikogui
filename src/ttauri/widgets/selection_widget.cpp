@@ -84,7 +84,7 @@ void selection_widget::constrain() noexcept
     tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 }
 
-void selection_widget::layout(layout_context const &context) noexcept
+void selection_widget::set_layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -95,16 +95,16 @@ void selection_widget::layout(layout_context const &context) noexcept
             // The overlay should start on the same left edge as the selection box and the same width.
             // The height of the overlay should be the maximum height, which will show all the options.
             ttlet overlay_width = std::clamp(
-                rectangle().width() - theme().size,
+                layout().width() - theme().size,
                 _overlay_widget->minimum_size().width(),
                 _overlay_widget->maximum_size().width());
             ttlet overlay_height = _overlay_widget->preferred_size().height();
             ttlet overlay_x = theme().size;
-            ttlet overlay_y = std::round(height() * 0.5f - overlay_height * 0.5f);
+            ttlet overlay_y = std::round(layout().height() * 0.5f - overlay_height * 0.5f);
             ttlet overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};
             _overlay_rectangle = make_overlay_rectangle(overlay_rectangle_request);
 
-            _left_box_rectangle = aarectangle{0.0f, 0.0f, theme().size, rectangle().height()};
+            _left_box_rectangle = aarectangle{0.0f, 0.0f, theme().size, layout().height()};
             _chevrons_glyph = font_book().find_glyph(elusive_icon::ChevronUp);
             ttlet chevrons_glyph_bbox = _chevrons_glyph.get_bounding_box();
             _chevrons_rectangle = align(_left_box_rectangle, chevrons_glyph_bbox * theme().icon_size, alignment::middle_center);
@@ -113,13 +113,13 @@ void selection_widget::layout(layout_context const &context) noexcept
             _option_rectangle = aarectangle{
                 _left_box_rectangle.right() + theme().margin,
                 0.0f,
-                rectangle().width() - _left_box_rectangle.width() - theme().margin * 2.0f,
-                rectangle().height()};
+                layout().width() - _left_box_rectangle.width() - theme().margin * 2.0f,
+                layout().height()};
         }
 
-        _overlay_widget->layout(context.transform(_overlay_rectangle, 20.0f));
-        _unknown_label_widget->layout(_option_rectangle * context);
-        _current_label_widget->layout(_option_rectangle * context);
+        _overlay_widget->set_layout(context.transform(_overlay_rectangle, 20.0f));
+        _unknown_label_widget->set_layout(_option_rectangle * context);
+        _current_label_widget->set_layout(_option_rectangle * context);
     }
 }
 
@@ -128,7 +128,7 @@ void selection_widget::draw(draw_context const &context) noexcept
     tt_axiom(is_gui_thread());
 
     if (visible) {
-        if (overlaps(context, _layout)) {
+        if (overlaps(context, layout())) {
             draw_outline(context);
             draw_left_box(context);
             draw_chevrons(context);
@@ -150,7 +150,7 @@ bool selection_widget::handle_event(mouse_event const &event) noexcept
     if (event.cause.leftButton) {
         handled = true;
         if (enabled and _has_options) {
-            if (event.type == mouse_event::Type::ButtonUp && rectangle().contains(event.position)) {
+            if (event.type == mouse_event::Type::ButtonUp && layout().rectangle().contains(event.position)) {
                 handle_event(command::gui_activate);
             }
         }
@@ -193,7 +193,7 @@ bool selection_widget::handle_event(command command) noexcept
     tt_axiom(is_gui_thread());
 
     auto r = super::hitbox_test(position);
-    if (_layout.hit_rectangle.contains(position)) {
+    if (layout().hit_rectangle.contains(position)) {
         r = std::max(r, hitbox{this, position, (enabled and _has_options) ? hitbox::Type::Button : hitbox::Type::Default});
     }
 
@@ -321,7 +321,7 @@ void selection_widget::draw_outline(draw_context const &context) noexcept
     tt_axiom(is_gui_thread());
 
     context.draw_box_with_border_inside(
-        _layout, rectangle(), background_color(), focus_color(), corner_shapes{theme().rounding_radius});
+        layout(), layout().rectangle(), background_color(), focus_color(), corner_shapes{theme().rounding_radius});
 }
 
 void selection_widget::draw_left_box(draw_context const &context) noexcept
@@ -329,14 +329,14 @@ void selection_widget::draw_left_box(draw_context const &context) noexcept
     tt_axiom(is_gui_thread());
 
     ttlet corner_shapes = tt::corner_shapes{theme().rounding_radius, 0.0f, theme().rounding_radius, 0.0f};
-    context.draw_box(_layout, translate_z(0.1f) * _left_box_rectangle, focus_color(), corner_shapes);
+    context.draw_box(layout(), translate_z(0.1f) * _left_box_rectangle, focus_color(), corner_shapes);
 }
 
 void selection_widget::draw_chevrons(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    context.draw_glyph(_layout, _chevrons_glyph, theme().icon_size, translate_z(0.2f) * _chevrons_rectangle, label_color());
+    context.draw_glyph(layout(), _chevrons_glyph, theme().icon_size, translate_z(0.2f) * _chevrons_rectangle, label_color());
 }
 
 } // namespace tt

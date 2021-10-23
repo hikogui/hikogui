@@ -38,15 +38,15 @@ void toggle_widget::constrain() noexcept
     tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 }
 
-void toggle_widget::layout(layout_context const &context) noexcept
+void toggle_widget::set_layout(layout_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
     if (visible) {
         if (_layout.store(context) >= layout_update::transform) {
-            _button_rectangle = align(rectangle(), _button_size, alignment::top_left);
+            _button_rectangle = align(layout().rectangle(), _button_size, alignment::top_left);
 
-            _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, width(), height()};
+            _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, layout().width(), layout().height()};
 
             ttlet button_square =
                 aarectangle{get<0>(_button_rectangle), extent2{_button_rectangle.height(), _button_rectangle.height()}};
@@ -64,7 +64,7 @@ void toggle_widget::draw(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (visible and overlaps(context, _layout)) {
+    if (visible and overlaps(context, layout())) {
         draw_toggle_button(context);
         draw_toggle_pip(context);
         draw_button(context);
@@ -76,7 +76,7 @@ void toggle_widget::draw_toggle_button(draw_context const &context) noexcept
     tt_axiom(is_gui_thread());
 
     context.draw_box_with_border_inside(
-        _layout, _button_rectangle, background_color(), focus_color(), corner_shapes{_button_rectangle.height() * 0.5f});
+        layout(), _button_rectangle, background_color(), focus_color(), corner_shapes{_button_rectangle.height() * 0.5f});
 }
 
 void toggle_widget::draw_toggle_pip(draw_context const &context) noexcept
@@ -92,7 +92,7 @@ void toggle_widget::draw_toggle_pip(draw_context const &context) noexcept
 
     ttlet forground_color_ = state() == button_state::on ? accent_color() : foreground_color();
     context.draw_box(
-        _layout, positioned_pip_rectangle, forground_color_, corner_shapes{positioned_pip_rectangle.height() * 0.5f});
+        layout(), positioned_pip_rectangle, forground_color_, corner_shapes{positioned_pip_rectangle.height() * 0.5f});
 }
 
 } // namespace tt
