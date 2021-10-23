@@ -304,6 +304,13 @@ struct numeric_array {
 
     [[nodiscard]] static constexpr numeric_array broadcast(T rhs) noexcept
     {
+        if (not std::is_constant_evaluated()) {
+#if defined(TT_HAS_SSE)
+            if constexpr (is_f32x4) {
+                return numeric_array{_mm_set_ps1(rhs)};
+            }
+#endif
+        }
         auto r = numeric_array{};
         for (size_t i = 0; i != N; ++i) {
             r[i] = rhs;
@@ -1514,9 +1521,16 @@ struct numeric_array {
     [[nodiscard]] friend constexpr numeric_array operator+(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
         if (!std::is_constant_evaluated()) {
-            if constexpr (x86_64_v2_5 and lhs.is_f32x8 and rhs.is_f32x8) {
+#if defined(TT_HAS_AVX)
+            if constexpr (lhs.is_f32x8 and rhs.is_f32x8) {
                 return numeric_array{_mm256_add_ps(lhs.reg(), rhs.reg())};
             }
+#endif
+#if defined(TT_HAS_SSE)
+            if constexpr (lhs.is_f32x4 and rhs.is_f32x4) {
+                return numeric_array{_mm_add_ps(lhs.reg(), rhs.reg())};
+            }
+#endif
         }
 
         auto r = numeric_array{};
@@ -1613,9 +1627,16 @@ struct numeric_array {
     [[nodiscard]] friend constexpr numeric_array operator-(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
         if (!std::is_constant_evaluated()) {
-            if constexpr (x86_64_v2_5 and lhs.is_f32x8 and rhs.is_f32x8) {
+#if defined(TT_HAS_AVX)
+            if constexpr (lhs.is_f32x8 and rhs.is_f32x8) {
                 return numeric_array{_mm256_sub_ps(lhs.reg(), rhs.reg())};
             }
+#endif
+#if defined(TT_HAS_SSE)
+            if constexpr (lhs.is_f32x4 and rhs.is_f32x4) {
+                return numeric_array{_mm_sub_ps(lhs.reg(), rhs.reg())};
+            }
+#endif
         }
 
         auto r = numeric_array{};
@@ -1662,9 +1683,16 @@ struct numeric_array {
     [[nodiscard]] friend constexpr numeric_array operator*(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
         if (!std::is_constant_evaluated()) {
-            if constexpr (x86_64_v2_5 and lhs.is_f32x8 and rhs.is_f32x8) {
+#if defined(TT_HAS_AVX)
+            if constexpr (lhs.is_f32x8 and rhs.is_f32x8) {
                 return numeric_array{_mm256_mul_ps(lhs.reg(), rhs.reg())};
             }
+#endif
+#if defined(TT_HAS_SSE)
+            if constexpr (lhs.is_f32x4 and rhs.is_f32x4) {
+                return numeric_array{_mm_mul_ps(lhs.reg(), rhs.reg())};
+            }
+#endif
         }
 
         auto r = numeric_array{};
