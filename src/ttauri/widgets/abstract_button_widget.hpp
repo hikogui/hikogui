@@ -108,7 +108,7 @@ protected:
     abstract_button_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
 
     void constrain_button() noexcept;
-    void layout_button(layout_context const &context) noexcept;
+    void layout_button(widget_layout const &context) noexcept;
     void draw_button(draw_context const &context) noexcept;
 };
 

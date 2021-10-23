@@ -58,7 +58,7 @@ void toolbar_widget::constrain() noexcept
     tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 }
 
-void toolbar_widget::set_layout(layout_context const &context_) noexcept
+void toolbar_widget::set_layout(widget_layout const &context_) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -157,7 +157,7 @@ void toolbar_widget::update_constraints_for_child(widget const &child, ssize_t i
     shared_height = std::max(shared_height, child.preferred_size().height() + child.margin() * 2.0f);
 }
 
-void toolbar_widget::update_layout_for_child(widget &child, ssize_t index, layout_context const &context) const noexcept
+void toolbar_widget::update_layout_for_child(widget &child, ssize_t index, widget_layout const &context) const noexcept
 {
     tt_axiom(is_gui_thread());
 

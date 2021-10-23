@@ -77,7 +77,7 @@ void tab_widget::constrain() noexcept
     }
 }
 
-void tab_widget::set_layout(layout_context const &context) noexcept
+void tab_widget::set_layout(widget_layout const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 

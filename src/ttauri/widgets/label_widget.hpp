@@ -96,7 +96,7 @@ public:
     }
 
     void constrain() noexcept override;
-    void set_layout(layout_context const &context) noexcept override;
+    void set_layout(widget_layout const &context) noexcept override;
     void draw(draw_context const &context) noexcept;
     /// @endprivatesection
 private:

@@ -16,7 +16,7 @@
 #include "../chrono.hpp"
 #include "../coroutine.hpp"
 #include "draw_context.hpp"
-#include "layout_context.hpp"
+#include "widget_layout.hpp"
 #include <memory>
 #include <vector>
 #include <string>
@@ -200,11 +200,11 @@ public:
      * @param context The layout context for this child.
      * @return The new size of the widget, should be a copy of the new_size parameter.
      */
-    virtual void set_layout(layout_context const &context) noexcept = 0;
+    virtual void set_layout(widget_layout const &context) noexcept = 0;
 
     /** Get the current layout for this widget.
      */
-    layout_context const &layout() const noexcept
+    widget_layout const &layout() const noexcept
     {
         return _layout;
     }
@@ -343,7 +343,7 @@ public:
     virtual [[nodiscard]] color label_color() const noexcept;
 
 protected:
-    layout_context _layout;
+    widget_layout _layout;
 
     extent2 _minimum_size;
     extent2 _preferred_size;

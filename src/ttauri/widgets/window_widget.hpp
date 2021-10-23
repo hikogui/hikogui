@@ -53,7 +53,7 @@ public:
     /// @privatesection
     [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override;
     void constrain() noexcept override;
-    void set_layout(layout_context const &context) noexcept;
+    void set_layout(widget_layout const &context) noexcept;
     void draw(draw_context const &context) noexcept override;
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
     /// @endprivatesection

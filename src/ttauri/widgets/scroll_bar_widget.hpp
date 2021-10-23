@@ -57,7 +57,7 @@ public:
         tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
     }
 
-    void set_layout(layout_context const &context) noexcept override
+    void set_layout(widget_layout const &context) noexcept override
     {
         tt_axiom(is_gui_thread());
 

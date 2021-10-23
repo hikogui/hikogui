@@ -78,7 +78,7 @@ void label_widget::constrain() noexcept
     tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
 }
 
-void label_widget::set_layout(layout_context const &context) noexcept
+void label_widget::set_layout(widget_layout const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 

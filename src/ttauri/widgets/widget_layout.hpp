@@ -11,7 +11,7 @@
 
 namespace tt {
 
-/** Result of layout_context::store()
+/** Result of widget_layout::store()
  */
 enum class layout_update {
     /** The layout was unmodified.
@@ -29,7 +29,7 @@ enum class layout_update {
     size
 };
 
-class layout_context {
+class widget_layout {
 public:
     /** This matrix transforms local coordinates to the coordinates of the parent widget.
      */
@@ -82,13 +82,13 @@ public:
      */
     utc_nanoseconds display_time_point;
 
-    constexpr layout_context(layout_context const &) noexcept = default;
-    constexpr layout_context(layout_context &&) noexcept = default;
-    constexpr layout_context &operator=(layout_context const &) noexcept = default;
-    constexpr layout_context &operator=(layout_context &&) noexcept = default;
-    constexpr layout_context() noexcept = default;
+    constexpr widget_layout(widget_layout const &) noexcept = default;
+    constexpr widget_layout(widget_layout &&) noexcept = default;
+    constexpr widget_layout &operator=(widget_layout const &) noexcept = default;
+    constexpr widget_layout &operator=(widget_layout &&) noexcept = default;
+    constexpr widget_layout() noexcept = default;
 
-    constexpr layout_update compare(layout_context const &other) const noexcept
+    constexpr layout_update compare(widget_layout const &other) const noexcept
     {
         tt_axiom((to_parent == other.to_parent) == (from_parent == other.from_parent));
         tt_axiom((to_window == other.to_window) == (from_window == other.from_window));
@@ -131,7 +131,7 @@ public:
         return size.height() * 0.5f;
     }
 
-    constexpr layout_update store(layout_context const &other) noexcept
+    constexpr layout_update store(widget_layout const &other) noexcept
     {
         ttlet r = compare(other);
         if (r != layout_update::none) {
@@ -140,9 +140,9 @@ public:
         return r;
     }
 
-    /** Construct a layout_context from inside the window.
+    /** Construct a widget_layout from inside the window.
      */
-    constexpr layout_context(extent2 window_size, utc_nanoseconds display_time_point) noexcept :
+    constexpr widget_layout(extent2 window_size, utc_nanoseconds display_time_point) noexcept :
         to_parent(),
         from_parent(),
         to_window(),
@@ -155,19 +155,19 @@ public:
     {
     }
 
-    /** Create a new layout_context for the child widget.
+    /** Create a new widget_layout for the child widget.
      *
      * @param child_rectangle The location and size of the child widget, relative to the current widget.
      * @param elevation The relative elevation of the child widget compared to the current widget.
-     * @return A new layout_context for use by the child widget.
+     * @return A new widget_layout for use by the child widget.
      */
-    [[nodiscard]] constexpr layout_context transform(aarectangle const &child_rectangle, float elevation = 1.0f) const noexcept
+    [[nodiscard]] constexpr widget_layout transform(aarectangle const &child_rectangle, float elevation = 1.0f) const noexcept
     {
         auto from_parent2 = ~translate2{child_rectangle};
         auto to_parent3 = translate3{child_rectangle, elevation};
         auto from_parent3 = ~to_parent3;
 
-        layout_context r;
+        widget_layout r;
         r.to_parent = to_parent3;
         r.from_parent = from_parent3;
         r.to_window = to_parent3 * this->to_window;
@@ -187,7 +187,7 @@ public:
      * @param new_clipping_rectangle The new clipping rectangle.
      * @return A new context that is clipped..
      */
-    [[nodiscard]] constexpr layout_context clip(aarectangle new_clipping_rectangle) const noexcept
+    [[nodiscard]] constexpr widget_layout clip(aarectangle new_clipping_rectangle) const noexcept
     {
         auto r = *this;
         r.clipping_rectangle = intersect(r.clipping_rectangle, new_clipping_rectangle);
@@ -200,7 +200,7 @@ public:
      * @param new_clipping_rectangle The new clipping rectangle.
      * @return A new context that is clipped..
      */
-    [[nodiscard]] constexpr layout_context override_clip(aarectangle new_clipping_rectangle) const noexcept
+    [[nodiscard]] constexpr widget_layout override_clip(aarectangle new_clipping_rectangle) const noexcept
     {
         auto r = *this;
         r.clipping_rectangle = new_clipping_rectangle;
@@ -208,7 +208,7 @@ public:
         return r;
     }
 
-    [[nodiscard]] friend constexpr layout_context operator*(aarectangle const &lhs, layout_context const &rhs) noexcept
+    [[nodiscard]] friend constexpr widget_layout operator*(aarectangle const &lhs, widget_layout const &rhs) noexcept
     {
         return rhs.transform(lhs);
     }

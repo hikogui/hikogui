@@ -85,7 +85,7 @@ void abstract_button_widget::draw_button(draw_context const &context) noexcept
     }
 }
 
-void abstract_button_widget::layout_button(layout_context const &context) noexcept
+void abstract_button_widget::layout_button(widget_layout const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
