@@ -35,25 +35,15 @@ text_field_widget::~text_field_widget()
 
 widget_constraints const &text_field_widget::set_constraints() noexcept
 {
-    tt_axiom(is_gui_thread());
-
     _layout = {};
-
-    ttlet text_style = theme().text_style(theme_text_style::label);
-
     _text_width = 100.0;
 
-    _constraints.min = {_text_width + theme().margin * 2.0f, theme().size + theme().margin * 2.0f};
-    _constraints.pref = {_text_width + theme().margin * 2.0f, theme().size + theme().margin * 2.0f};
-    _constraints.max = {_text_width + theme().margin * 2.0f, theme().size + theme().margin * 2.0f};
-    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
-    return _constraints;
+    auto size = extent2{_text_width + theme().margin * 2.0f, theme().size + theme().margin * 2.0f};
+    return _constraints = {size, size, size};
 }
 
 void text_field_widget::set_layout(widget_layout const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (visible) {
         if (_layout.store(context) >= layout_update::transform) {
             _text_field_rectangle = aarectangle{extent2{_text_width + theme().margin * 2.0f, layout().height()}};

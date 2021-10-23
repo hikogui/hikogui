@@ -16,10 +16,7 @@ namespace tt {
 
 widget_constraints const &menu_button_widget::set_constraints() noexcept
 {
-    tt_axiom(is_gui_thread());
-
     _layout = {};
-    set_constraints_button();
 
     // Make room for button and margin.
     _check_size = {theme().size, theme().size};
@@ -27,12 +24,7 @@ widget_constraints const &menu_button_widget::set_constraints() noexcept
 
     // On left side a check mark, on right side short-cut. Around the label extra margin.
     ttlet extra_size = extent2{theme().margin * 4.0f + _check_size.width() + _short_cut_size.width(), theme().margin * 2.0f};
-    _constraints.min += extra_size;
-    _constraints.pref += extra_size;
-    _constraints.max += extra_size;
-
-    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
-    return _constraints;
+    return _constraints = set_constraints_button() + extra_size;
 }
 
 void menu_button_widget::set_layout(widget_layout const &context) noexcept
@@ -112,7 +104,8 @@ void menu_button_widget::draw_menu_button(draw_context const &context) noexcept
     tt_axiom(is_gui_thread());
 
     ttlet foreground_color_ = focus && window.active ? focus_color() : color::transparent();
-    context.draw_box_with_border_inside(layout(), layout().rectangle(), background_color(), foreground_color_, corner_shapes{0.0f});
+    context.draw_box_with_border_inside(
+        layout(), layout().rectangle(), background_color(), foreground_color_, corner_shapes{0.0f});
 }
 
 void menu_button_widget::draw_check_mark(draw_context const &context) noexcept

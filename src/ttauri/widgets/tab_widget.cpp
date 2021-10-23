@@ -30,10 +30,10 @@ tab_widget::tab_widget(gui_window &window, widget *parent, weak_or_unique_ptr<de
     }
 
     // Compare and assign would trigger the signaling NaN that widget sets.
-    _constraints.min = {};
-    _constraints.pref = {};
-    _constraints.max = {32767.0f, 32767.0f};
-    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
+    _constraints.minimum = {};
+    _constraints.preferred = {};
+    _constraints.maximum = {32767.0f, 32767.0f};
+    tt_axiom(_constraints.minimum <= _constraints.preferred && _constraints.preferred <= _constraints.maximum);
 
     if (auto d = _delegate.lock()) {
         d->init(*this);
@@ -55,26 +55,21 @@ widget_constraints const &tab_widget::set_constraints() noexcept
     tt_axiom(is_gui_thread());
 
     _layout = {};
-    for (ttlet &child : _children) {
-        child->set_constraints();
-    }
 
     ttlet &selected_child_ = selected_child();
+    for (ttlet &child : _children) {
+        ttlet child_contraints = child->set_constraints();
 
-    auto buffer = pmr::scoped_buffer<256>{};
-    for (auto *child : children(buffer.allocator())) {
-        tt_axiom(child);
-        child->visible = child == &selected_child_;
+        ttlet child_is_visible = child.get() == &selected_child_;
+        child->visible = child_is_visible;
+
+        if (child_is_visible) {
+            if (compare_then_assign(_constraints, child_contraints)) {
+                window.request_resize = true;
+            }
+        }
     }
 
-    auto size_changed = compare_then_assign(_constraints.min, selected_child_.constraints().min);
-    size_changed |= compare_then_assign(_constraints.pref, selected_child_.constraints().pref);
-    size_changed |= compare_then_assign(_constraints.max, selected_child_.constraints().max);
-    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
-
-    if (size_changed) {
-        window.request_resize = true;
-    }
     return _constraints;
 }
 

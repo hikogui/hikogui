@@ -8,19 +8,11 @@ namespace tt {
 
 widget_constraints const &momentary_button_widget::set_constraints() noexcept
 {
-    tt_axiom(is_gui_thread());
-
     _layout = {};
-    set_constraints_button();
 
     // On left side a check mark, on right side short-cut. Around the label extra margin.
     ttlet extra_size = extent2{theme().margin * 2.0f, theme().margin * 2.0f};
-    _constraints.min += extra_size;
-    _constraints.pref += extra_size;
-    _constraints.max += extra_size;
-
-    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
-    return _constraints;
+    return _constraints = set_constraints_button() + extra_size;
 }
 
 void momentary_button_widget::set_layout(widget_layout const &context) noexcept

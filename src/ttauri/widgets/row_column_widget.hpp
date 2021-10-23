@@ -115,13 +115,7 @@ public:
 
     widget_constraints const &set_constraints() noexcept override
     {
-        tt_axiom(is_gui_thread());
-
         _layout = {};
-        for (ttlet &child : _children) {
-            child->set_constraints();
-        }
-
         _flow_layout.clear();
         _flow_layout.reserve(std::ssize(_children));
 
@@ -137,22 +131,20 @@ public:
         tt_axiom(index == std::ssize(_children));
 
         if constexpr (axis == axis::row) {
-            _constraints.min = {_flow_layout.constraints().min, minimum_thickness};
-            _constraints.pref = {_flow_layout.constraints().pref, preferred_thickness};
-            _constraints.max = {_flow_layout.constraints().max, maximum_thickness};
+            return _constraints = {
+                       {_flow_layout.minimum_size(), minimum_thickness},
+                       {_flow_layout.preferred_size(), preferred_thickness},
+                       {_flow_layout.maximum_size(), maximum_thickness}};
         } else {
-            _constraints.min = {minimum_thickness, _flow_layout.minimum_size()};
-            _constraints.pref = {preferred_thickness, _flow_layout.preferred_size()};
-            _constraints.max = {maximum_thickness, _flow_layout.maximum_size()};
+            return _constraints = {
+                       {minimum_thickness, _flow_layout.minimum_size()},
+                       {preferred_thickness, _flow_layout.preferred_size()},
+                       {maximum_thickness, _flow_layout.maximum_size()}};
         }
-        tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
-        return _constraints;
     }
 
     void set_layout(widget_layout const &context) noexcept override
     {
-        tt_axiom(is_gui_thread());
-
         if (visible) {
             if (_layout.store(context) >= layout_update::size) {
                 _flow_layout.set_size(axis == axis::row ? layout().width() : layout().height());
@@ -183,7 +175,7 @@ private:
     flow_layout _flow_layout;
 
     void update_constraints_for_child(
-        widget const &child,
+        widget &child,
         ssize_t index,
         float &minimum_thickness,
         float &preferred_thickness,
@@ -191,25 +183,30 @@ private:
     {
         tt_axiom(is_gui_thread());
 
+        ttlet &child_constraints = child.set_constraints();
         if (axis == axis::row) {
-            ttlet minimum_length = child.constraints().min.width();
-            ttlet preferred_length = child.constraints().pref.width();
-            ttlet maximum_length = child.constraints().max.width();
-            _flow_layout.update(index, minimum_length, preferred_length, maximum_length, child.margin());
+            _flow_layout.update(
+                index,
+                child_constraints.minimum.width(),
+                child_constraints.preferred.width(),
+                child_constraints.maximum.width(),
+                child.margin());
 
-            minimum_thickness = std::max(minimum_thickness, child.constraints().min.height() + child.margin() * 2.0f);
-            preferred_thickness = std::max(preferred_thickness, child.constraints().pref.height() + child.margin() * 2.0f);
-            maximum_thickness = std::max(maximum_thickness, child.constraints().max.height() + child.margin() * 2.0f);
+            minimum_thickness = std::max(minimum_thickness, child_constraints.minimum.height() + child.margin() * 2.0f);
+            preferred_thickness = std::max(preferred_thickness, child_constraints.preferred.height() + child.margin() * 2.0f);
+            maximum_thickness = std::max(maximum_thickness, child_constraints.maximum.height() + child.margin() * 2.0f);
 
         } else {
-            ttlet minimum_length = child.constraints().min.height();
-            ttlet preferred_length = child.constraints().pref.height();
-            ttlet maximum_length = child.constraints().max.height();
-            _flow_layout.update(index, minimum_length, preferred_length, maximum_length, child.margin());
+            _flow_layout.update(
+                index,
+                child_constraints.minimum.height(),
+                child_constraints.preferred.height(),
+                child_constraints.maximum.height(),
+                child.margin());
 
-            minimum_thickness = std::max(minimum_thickness, child.constraints().min.width() + child.margin() * 2.0f);
-            preferred_thickness = std::max(preferred_thickness, child.constraints().pref.width() + child.margin() * 2.0f);
-            maximum_thickness = std::max(maximum_thickness, child.constraints().max.width() + child.margin() * 2.0f);
+            minimum_thickness = std::max(minimum_thickness, child_constraints.minimum.width() + child.margin() * 2.0f);
+            preferred_thickness = std::max(preferred_thickness, child_constraints.preferred.width() + child.margin() * 2.0f);
+            maximum_thickness = std::max(maximum_thickness, child_constraints.maximum.width() + child.margin() * 2.0f);
         }
     }
 
@@ -220,11 +217,7 @@ private:
         ttlet[child_offset, child_length] = _flow_layout.get_offset_and_size(index++);
 
         ttlet child_rectangle = axis == axis::row ?
-            aarectangle{
-                child_offset,
-                child.margin(),
-                child_length,
-                layout().height() - child.margin() * 2.0f} :
+            aarectangle{child_offset, child.margin(), child_length, layout().height() - child.margin() * 2.0f} :
             aarectangle{
                 child.margin(),
                 layout().height() - child_offset - child_length,

@@ -33,51 +33,6 @@ grid_widget::~grid_widget()
     return 0.0f;
 }
 
-[[nodiscard]] std::pair<size_t, size_t> grid_widget::calculate_grid_size(std::vector<cell> const &cells) noexcept
-{
-    size_t nr_columns = 0;
-    size_t nr_rows = 0;
-
-    for (auto &&cell : cells) {
-        nr_rows = std::max(nr_rows, cell.row_nr + 1);
-        nr_columns = std::max(nr_columns, cell.column_nr + 1);
-    }
-
-    return {nr_columns, nr_rows};
-}
-
-[[nodiscard]] std::tuple<extent2, extent2, extent2>
-grid_widget::calculate_size(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept
-{
-    rows.clear();
-    columns.clear();
-
-    ttlet[nr_columns, nr_rows] = calculate_grid_size(cells);
-    rows.reserve(nr_rows);
-    columns.reserve(nr_columns);
-
-    for (auto &&cell : cells) {
-        rows.update(
-            cell.row_nr,
-            cell.widget->constraints().min.height(),
-            cell.widget->constraints().pref.height(),
-            cell.widget->constraints().max.height(),
-            cell.widget->margin());
-
-        columns.update(
-            cell.column_nr,
-            cell.widget->constraints().min.width(),
-            cell.widget->constraints().pref.width(),
-            cell.widget->constraints().max.width(),
-            cell.widget->margin());
-    }
-
-    return {
-        extent2{columns.minimum_size(), rows.minimum_size()},
-        extent2{columns.preferred_size(), rows.preferred_size()},
-        extent2{columns.maximum_size(), rows.maximum_size()}};
-}
-
 bool grid_widget::address_in_use(size_t column_nr, size_t row_nr) const noexcept
 {
     for (ttlet &cell : _cells) {
@@ -101,16 +56,31 @@ widget &grid_widget::add_widget(size_t column_nr, size_t row_nr, std::unique_ptr
 
 widget_constraints const &grid_widget::set_constraints() noexcept
 {
-    tt_axiom(is_gui_thread());
-
     _layout = {};
+    _rows.clear();
+    _columns.clear();
+
     for (ttlet &cell : _cells) {
-        cell.widget->set_constraints();
+        ttlet cell_constraints = cell.widget->set_constraints();
+        _rows.update(
+            cell.row_nr,
+            cell_constraints.minimum.height(),
+            cell_constraints.preferred.height(),
+            cell_constraints.maximum.height(),
+            cell.widget->margin());
+
+        _columns.update(
+            cell.column_nr,
+            cell_constraints.minimum.width(),
+            cell_constraints.preferred.width(),
+            cell_constraints.maximum.width(),
+            cell.widget->margin());
     }
 
-    std::tie(_constraints.min, _constraints.pref, _constraints.max) = calculate_size(_cells, _rows, _columns);
-    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
-    return _constraints;
+    return _constraints = {
+               extent2{_columns.minimum_size(), _rows.minimum_size()},
+               extent2{_columns.preferred_size(), _rows.preferred_size()},
+               extent2{_columns.maximum_size(), _rows.maximum_size()}};
 }
 
 void grid_widget::set_layout(widget_layout const &context) noexcept

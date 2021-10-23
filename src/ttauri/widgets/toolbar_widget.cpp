@@ -27,19 +27,9 @@ widget_constraints const &toolbar_widget::set_constraints() noexcept
     tt_axiom(is_gui_thread());
 
     _layout = {};
-    for (ttlet &child : _left_children) {
-        child->set_constraints();
-    }
-    for (ttlet &child : _right_children) {
-        child->set_constraints();
-    }
-
-    auto shared_height = 0.0f;
-
     _flow_layout.clear();
-    _flow_layout.reserve(std::ssize(_left_children) + 1 + std::ssize(_right_children));
-
     ssize_t index = 0;
+    auto shared_height = 0.0f;
     for (ttlet &child : _left_children) {
         update_constraints_for_child(*child, index++, shared_height);
     }
@@ -52,11 +42,11 @@ widget_constraints const &toolbar_widget::set_constraints() noexcept
     }
 
     tt_axiom(index == std::ssize(_left_children) + 1 + std::ssize(_right_children));
-    _constraints.min = {_flow_layout.minimum_size(), shared_height};
-    _constraints.pref = {_flow_layout.preferred_size(), shared_height};
-    _constraints.max = {_flow_layout.maximum_size(), shared_height};
-    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
-    return _constraints;
+
+    return _constraints = {
+        {_flow_layout.minimum_size(), shared_height},
+        {_flow_layout.preferred_size(), shared_height},
+        {_flow_layout.maximum_size(), shared_height}};
 }
 
 void toolbar_widget::set_layout(widget_layout const &context_) noexcept
@@ -148,14 +138,19 @@ hitbox toolbar_widget::hitbox_test(point3 position) const noexcept
     return r;
 }
 
-void toolbar_widget::update_constraints_for_child(widget const &child, ssize_t index, float &shared_height) noexcept
+void toolbar_widget::update_constraints_for_child(widget &child, ssize_t index, float &shared_height) noexcept
 {
     tt_axiom(is_gui_thread());
 
+    ttlet child_constraints = child.set_constraints();
     _flow_layout.update(
-        index, child.constraints().min.width(), child.constraints().pref.width(), child.constraints().max.width(), child.margin());
+        index,
+        child_constraints.minimum.width(),
+        child_constraints.preferred.width(),
+        child_constraints.maximum.width(),
+        child.margin());
 
-    shared_height = std::max(shared_height, child.constraints().pref.height() + child.margin() * 2.0f);
+    shared_height = std::max(shared_height, child_constraints.preferred.height() + child.margin() * 2.0f);
 }
 
 void toolbar_widget::update_layout_for_child(widget &child, ssize_t index, widget_layout const &context) const noexcept

@@ -83,7 +83,7 @@ private:
     std::vector<std::unique_ptr<widget>> _right_children;
     flow_layout _flow_layout;
 
-    void update_constraints_for_child(widget const &child, ssize_t index, float &shared_height) noexcept;
+    void update_constraints_for_child(widget &child, ssize_t index, float &shared_height) noexcept;
 
     void update_layout_for_child(widget &child, ssize_t index, widget_layout const &context) const noexcept;
 

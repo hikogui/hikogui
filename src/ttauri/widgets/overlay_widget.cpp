@@ -39,17 +39,8 @@ void overlay_widget::set_widget(std::unique_ptr<widget> new_widget) noexcept
 
 widget_constraints const &overlay_widget::set_constraints() noexcept
 {
-    tt_axiom(is_gui_thread());
-
     _layout = {};
-    _content->set_constraints();
-
-    tt_axiom(_content);
-    _constraints.min = _content->constraints().min;
-    _constraints.pref = _content->constraints().pref;
-    _constraints.max = _content->constraints().max;
-    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
-    return _constraints;
+    return _constraints = _content->set_constraints();
 }
 
 void overlay_widget::set_layout(widget_layout const &context_) noexcept

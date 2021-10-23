@@ -29,11 +29,11 @@ widget_constraints const &label_widget::set_constraints() noexcept
     tt_axiom(is_gui_thread());
 
     _layout = {};
-    _text_widget->set_constraints();
-    _icon_widget->set_constraints();
+    ttlet &text_constraints = _text_widget->set_constraints();
+    ttlet &icon_constraints = _icon_widget->set_constraints();
 
-    ttlet label_size = _text_widget->constraints().pref;
-    ttlet icon_size = _icon_widget->constraints().pref;
+    ttlet label_size = text_constraints.preferred;
+    ttlet icon_size = icon_constraints.preferred;
 
     ttlet has_text = label_size.width() > 0.0f;
     ttlet has_icon = icon_size.width() > 0.0f;
@@ -72,11 +72,7 @@ widget_constraints const &label_widget::set_constraints() noexcept
         }
     }
 
-    _constraints.min = size;
-    _constraints.pref = _constraints.min;
-    _constraints.max = _constraints.pref;
-    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
-    return _constraints;
+    return _constraints = {size, size, size};
 }
 
 void label_widget::set_layout(widget_layout const &context) noexcept

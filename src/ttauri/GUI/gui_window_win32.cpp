@@ -556,8 +556,8 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     case WM_GETMINMAXINFO: {
         tt_axiom(is_gui_thread());
         tt_axiom(widget);
-        ttlet minimum_widget_size = widget->constraints().min;
-        ttlet maximum_widget_size = widget->constraints().max;
+        ttlet minimum_widget_size = widget->constraints().minimum;
+        ttlet maximum_widget_size = widget->constraints().maximum;
         ttlet minmaxinfo = std::launder(std::bit_cast<MINMAXINFO *>(lParam));
         minmaxinfo->ptMaxSize.x = narrow_cast<LONG>(maximum_widget_size.width());
         minmaxinfo->ptMaxSize.y = narrow_cast<LONG>(maximum_widget_size.height());

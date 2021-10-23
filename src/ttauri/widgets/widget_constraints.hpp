@@ -10,23 +10,52 @@ namespace tt {
 
 class widget_constraints {
 public:
-    extent2 min;
-    extent2 pref;
-    extent2 max;
+    extent2 minimum;
+    extent2 preferred;
+    extent2 maximum;
 
-    constexpr widget_constraints() noexcept : min(), pref(), max() {}
+    constexpr widget_constraints() noexcept : minimum(), preferred(), maximum() {}
     constexpr widget_constraints(widget_constraints const &) noexcept = default;
     constexpr widget_constraints(widget_constraints &&) noexcept = default;
     constexpr widget_constraints &operator=(widget_constraints const &) noexcept = default;
     constexpr widget_constraints &operator=(widget_constraints &&) noexcept = default;
-    constexpr widget_constraints(extent2 min, extent2 pref, extent2 max) noexcept : min(min), pref(pref), max(max)
+    constexpr widget_constraints(extent2 minimum, extent2 preferred, extent2 maximum) noexcept :
+        minimum(minimum), preferred(preferred), maximum(maximum)
     {
         tt_axiom(holds_invariant());
     }
 
     [[nodiscard]] constexpr bool holds_invariant() noexcept
     {
-        return min <= pref and pref <= max;
+        return minimum <= preferred and preferred <= maximum;
+    }
+
+    [[nodiscard]] friend constexpr widget_constraints operator+(widget_constraints const &lhs, extent2 const &rhs) noexcept
+    {
+        return widget_constraints{lhs.minimum + rhs, lhs.preferred + rhs, lhs.maximum + rhs};
+    }
+
+    [[nodiscard]] friend constexpr bool operator==(widget_constraints const &lhs, widget_constraints const &rhs) noexcept
+    {
+        return lhs.minimum == rhs.minimum and lhs.preferred == rhs.preferred and lhs.maximum == rhs.maximum;
+    }
+
+    [[nodiscard]] friend constexpr widget_constraints max(widget_constraints const &lhs, widget_constraints const &rhs) noexcept
+    {
+        return widget_constraints{
+            max(lhs.minimum, rhs.minimum), max(lhs.preferred, rhs.preferred), max(lhs.maximum, rhs.maximum)};
+    }
+
+    [[nodiscard]] friend constexpr widget_constraints max(widget_constraints const &lhs, extent2 const &rhs) noexcept
+    {
+        return widget_constraints{max(lhs.minimum, rhs), max(lhs.preferred, rhs), max(lhs.maximum, rhs)};
+    }
+
+    template<typename... Args>
+    [[nodiscard]] friend constexpr widget_constraints max(widget_constraints const &first, Args const &...args) noexcept
+        requires(sizeof...(Args) >= 2)
+    {
+        return max(first, max(args...));
     }
 };
 

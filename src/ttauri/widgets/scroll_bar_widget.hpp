@@ -43,25 +43,23 @@ public:
 
     widget_constraints const &set_constraints() noexcept override
     {
-        tt_axiom(is_gui_thread());
-
         _layout = {};
 
         if constexpr (axis == axis::vertical) {
-            _constraints.min = _constraints.pref = {theme().icon_size, theme().large_size};
-            _constraints.max = {theme().icon_size, 32767.0f};
+            return _constraints = {
+                       {theme().icon_size, theme().large_size},
+                       {theme().icon_size, theme().large_size},
+                       {theme().icon_size, 32767.0f}};
         } else {
-            _constraints.min = _constraints.pref = {theme().large_size, theme().icon_size};
-            _constraints.max = {32767.0f, theme().icon_size};
+            return _constraints = {
+                       {theme().large_size, theme().icon_size},
+                       {theme().large_size, theme().icon_size},
+                       {32767.0f, theme().icon_size}};
         }
-        tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
-        return _constraints;
     }
 
     void set_layout(widget_layout const &context) noexcept override
     {
-        tt_axiom(is_gui_thread());
-
         if (visible) {
             _layout.store(context);
 

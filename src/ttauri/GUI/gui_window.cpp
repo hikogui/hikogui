@@ -72,7 +72,7 @@ void gui_window::init()
 
     // Execute a constraint check to determine initial window size.
     widget->set_constraints();
-    ttlet new_size = widget->constraints().pref;
+    ttlet new_size = widget->constraints().preferred;
 
     // Reset the keyboard target to not focus anything.
     update_keyboard_target({});
@@ -144,7 +144,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     if (request_resize.exchange(false)) {
         // If a widget asked for a resize, change the size of the window to the preferred size of the widgets.
         ttlet current_size = screen_rectangle.size();
-        ttlet new_size = widget->constraints().pref;
+        ttlet new_size = widget->constraints().preferred;
         if (new_size != current_size) {
             tt_log_info("A new preferred window size {} was requested by one of the widget.", new_size);
             set_window_size(new_size);
@@ -153,14 +153,14 @@ void gui_window::render(utc_nanoseconds display_time_point)
     } else {
         // Check if the window size matches the minimum and maximum size of the widgets, otherwise resize.
         ttlet current_size = screen_rectangle.size();
-        ttlet new_size = clamp(current_size, widget->constraints().min, widget->constraints().max);
+        ttlet new_size = clamp(current_size, widget->constraints().minimum, widget->constraints().maximum);
         if (new_size != current_size and size_state != gui_window_size::minimized) {
             tt_log_info("The current window size {} must grow or shrink to {} to fit the widgets.", current_size, new_size);
             set_window_size(new_size);
         }
     }
 
-    if (screen_rectangle.size() < widget->constraints().min or screen_rectangle.size() > widget->constraints().max) {
+    if (screen_rectangle.size() < widget->constraints().minimum or screen_rectangle.size() > widget->constraints().maximum) {
         // Even after the resize above it is possible to have an incorrect window size.
         // For example when minimizing the window.
         // Stop processing rendering for this window here.

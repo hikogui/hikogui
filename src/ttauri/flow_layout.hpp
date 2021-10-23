@@ -68,11 +68,9 @@ public:
         return items.size();
     }
 
-    void update(ssize_t index, float minimum_size, float preferred_size, float maximum_size, float margin) noexcept
+    void update(size_t index, float minimum_size, float preferred_size, float maximum_size, float margin) noexcept
     {
-        tt_axiom(index >= 0);
-        tt_axiom(index < std::ssize(items));
-        tt_axiom(index + 1 < std::ssize(margins));
+        reserve(index + 1);
 
         items[index].update(minimum_size, preferred_size, maximum_size);
 

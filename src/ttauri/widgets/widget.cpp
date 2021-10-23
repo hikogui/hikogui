@@ -33,9 +33,9 @@ widget::widget(gui_window &_window, widget *parent) noexcept :
     enabled.subscribe(_redraw_callback);
     visible.subscribe(_reconstrain_callback);
 
-    _constraints.min = extent2::nan();
-    _constraints.pref = extent2::nan();
-    _constraints.max = extent2::nan();
+    _constraints.minimum = extent2::nan();
+    _constraints.preferred = extent2::nan();
+    _constraints.maximum = extent2::nan();
 }
 
 widget::~widget()

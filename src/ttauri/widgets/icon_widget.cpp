@@ -93,10 +93,10 @@ widget_constraints const &icon_widget::set_constraints() noexcept
         tt_no_default();
     }
 
-    _constraints.min = {0.0f, 0.0f};
-    _constraints.pref = _icon_bounding_box.size();
-    _constraints.max = _constraints.pref;
-    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
+    _constraints.minimum = {0.0f, 0.0f};
+    _constraints.preferred = _icon_bounding_box.size();
+    _constraints.maximum = _constraints.preferred;
+    tt_axiom(_constraints.minimum <= _constraints.preferred && _constraints.preferred <= _constraints.maximum);
     return _constraints;
 }
 

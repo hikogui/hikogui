@@ -19,24 +19,12 @@ toggle_widget::toggle_widget(gui_window &window, widget *parent, std::unique_ptr
 
 widget_constraints const &toggle_widget::set_constraints() noexcept
 {
-    tt_axiom(is_gui_thread());
-
     _layout = {};
-    set_constraints_button();
 
     // Make room for button and margin.
     _button_size = {theme().size * 2.0f, theme().size};
     ttlet extra_size = extent2{theme().margin + _button_size.width(), 0.0f};
-    _constraints.min += extra_size;
-    _constraints.pref += extra_size;
-    _constraints.max += extra_size;
-
-    _constraints.min = max(_constraints.min, _button_size);
-    _constraints.pref = max(_constraints.min, _button_size);
-    _constraints.max = max(_constraints.min, _button_size);
-
-    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
-    return _constraints;
+    return _constraints = max(set_constraints_button() + extra_size, _button_size);
 }
 
 void toggle_widget::set_layout(widget_layout const &context) noexcept

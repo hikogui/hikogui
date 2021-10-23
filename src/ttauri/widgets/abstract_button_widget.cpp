@@ -49,28 +49,9 @@ void abstract_button_widget::unsubscribe(callback_ptr_type &callback_ptr) noexce
     return _notifier.unsubscribe(callback_ptr);
 }
 
-widget_constraints const &abstract_button_widget::set_constraints_button() noexcept
+widget_constraints abstract_button_widget::set_constraints_button() const noexcept
 {
-    tt_axiom(is_gui_thread());
-
-    _on_label_widget->set_constraints();
-    _off_label_widget->set_constraints();
-    _other_label_widget->set_constraints();
-
-    _constraints.min = _on_label_widget->constraints().min;
-    _constraints.pref = _on_label_widget->constraints().pref;
-    _constraints.max = _on_label_widget->constraints().max;
-
-    _constraints.min = max(_constraints.min, _off_label_widget->constraints().min);
-    _constraints.pref = max(_constraints.pref, _off_label_widget->constraints().pref);
-    _constraints.max = max(_constraints.max, _off_label_widget->constraints().max);
-
-    _constraints.min = max(_constraints.min, _other_label_widget->constraints().min);
-    _constraints.pref = max(_constraints.pref, _other_label_widget->constraints().pref);
-    _constraints.max = max(_constraints.max, _other_label_widget->constraints().max);
-
-    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
-    return _constraints;
+    return max(_on_label_widget->set_constraints(), _off_label_widget->set_constraints(), _other_label_widget->set_constraints());
 }
 
 void abstract_button_widget::draw_button(draw_context const &context) noexcept

@@ -13,37 +13,29 @@ text_widget::text_widget(gui_window &window, widget *parent) noexcept : super(wi
 
 widget_constraints const &text_widget::set_constraints() noexcept
 {
-    tt_axiom(is_gui_thread());
-
     _layout = {};
 
     _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), 0.0f, *alignment};
-    _constraints.min = ceil(_shaped_text.preferred_size());
-    _constraints.pref = ceil(_shaped_text.preferred_size());
-    _constraints.max = ceil(_shaped_text.preferred_size());
-
-    ttlet size_ = theme().size;
-    ttlet margin_ = margin();
+    ttlet shaped_text_size = ceil(_shaped_text.preferred_size());
+    _constraints = {shaped_text_size, shaped_text_size, shaped_text_size};
 
     // Allow text to overhang into the margin of a small widget.
-    if (_constraints.min.height() > size_ && _constraints.min.height() <= size_ + margin_) {
-        _constraints.min.height() = size_;
+    if (_constraints.minimum.height() > theme().size and _constraints.minimum.height() <= theme().size + theme().margin) {
+        _constraints.minimum.height() = theme().size;
     }
-    if (_constraints.pref.height() > size_ && _constraints.pref.height() <= size_ + margin_) {
-        _constraints.pref.height() = size_;
+    if (_constraints.preferred.height() > theme().size and _constraints.preferred.height() <= theme().size + theme().margin) {
+        _constraints.preferred.height() = theme().size;
     }
-    if (_constraints.max.height() > size_ && _constraints.max.height() <= size_ + margin_) {
-        _constraints.max.height() = size_;
+    if (_constraints.maximum.height() > theme().size and _constraints.maximum.height() <= theme().size + theme().margin) {
+        _constraints.maximum.height() = theme().size;
     }
 
-    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
+    tt_axiom(_constraints.holds_invariant());
     return _constraints;
 }
 
 void text_widget::set_layout(widget_layout const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (visible and _layout.store(context) >= layout_update::size) {
         _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), layout().width(), *alignment};
         _shaped_text_transform = _shaped_text.translate_base_line(point2{0.0f, layout().base_line()});

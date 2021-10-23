@@ -48,37 +48,34 @@ void window_widget::constructor_implementation() noexcept
 
 widget_constraints const &window_widget::set_constraints() noexcept
 {
-    tt_axiom(is_gui_thread());
-
     _layout = {};
-    _toolbar->set_constraints();
-    _content->set_constraints();
+    ttlet toolbar_constraints = _toolbar->set_constraints();
+    ttlet content_constraints = _content->set_constraints();
 
-    _constraints.min = {
-        std::max(_toolbar->constraints().min.width(), _content->constraints().min.width()),
-        _toolbar->constraints().pref.height() + _content->constraints().min.height()};
+    _constraints.minimum = {
+        std::max(toolbar_constraints.minimum.width(), content_constraints.minimum.width()),
+        toolbar_constraints.preferred.height() + content_constraints.minimum.height()};
 
-    _constraints.pref = {
-        std::max(_toolbar->constraints().pref.width(), _content->constraints().pref.width()),
-        _toolbar->constraints().pref.height() + _content->constraints().pref.height()};
+    _constraints.preferred = {
+        std::max(toolbar_constraints.preferred.width(), content_constraints.preferred.width()),
+        toolbar_constraints.preferred.height() + content_constraints.preferred.height()};
 
-    _constraints.max = {_content->constraints().max.width(), _toolbar->constraints().pref.height() + _content->constraints().max.height()};
+    _constraints.maximum = {
+        content_constraints.maximum.width(), toolbar_constraints.preferred.height() + content_constraints.maximum.height()};
 
     // Override maximum size and preferred size.
-    _constraints.max = max(_constraints.max, _constraints.min);
-    _constraints.pref = clamp(_constraints.pref, _constraints.min, _constraints.max);
+    _constraints.maximum = max(_constraints.maximum, _constraints.minimum);
+    _constraints.preferred = clamp(_constraints.preferred, _constraints.minimum, _constraints.maximum);
 
-    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
+    tt_axiom(_constraints.holds_invariant());
     return _constraints;
 }
 
 void window_widget::set_layout(widget_layout const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (visible) {
         if (_layout.store(context) >= layout_update::transform) {
-            ttlet toolbar_height = _toolbar->constraints().pref.height();
+            ttlet toolbar_height = _toolbar->constraints().preferred.height();
             _toolbar_rectangle = aarectangle{0.0f, layout().height() - toolbar_height, layout().width(), toolbar_height};
             _content_rectangle = aarectangle{0.0f, 0.0f, layout().width(), layout().height() - toolbar_height};
         }

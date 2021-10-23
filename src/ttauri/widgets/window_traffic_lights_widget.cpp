@@ -20,31 +20,23 @@ window_traffic_lights_widget::window_traffic_lights_widget(gui_window &window, w
 
 widget_constraints const &window_traffic_lights_widget::set_constraints() noexcept
 {
-    tt_axiom(is_gui_thread());
-
     _layout = {};
 
     if (theme().operating_system == operating_system::windows) {
-        ttlet width = theme().toolbar_decoration_button_width * 3.0f;
-        ttlet height = theme().toolbar_height;
-        _constraints.min = _constraints.pref = _constraints.max = {width, height};
+        ttlet size = extent2{theme().toolbar_decoration_button_width * 3.0f, theme().toolbar_height};
+        return _constraints = {size, size, size};
 
     } else if (theme().operating_system == operating_system::macos) {
-        ttlet width = DIAMETER * 3.0f + 2.0f * MARGIN + 2.0f * SPACING;
-        ttlet height = DIAMETER + 2.0f * MARGIN;
-        _constraints.min = _constraints.pref = _constraints.max = {width, height};
+        ttlet size = extent2{DIAMETER * 3.0f + 2.0f * MARGIN + 2.0f * SPACING, DIAMETER + 2.0f * MARGIN};
+        return _constraints = {size, size, size};
 
     } else {
         tt_no_default();
     }
-    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
-    return _constraints;
 }
 
 void window_traffic_lights_widget::set_layout(widget_layout const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (visible and _layout.store(context) >= layout_update::transform) {
         auto extent = layout().size;
         if (extent.height() > theme().toolbar_height * 1.2f) {
@@ -125,26 +117,16 @@ void window_traffic_lights_widget::drawMacOS(draw_context const &drawContext) no
     context.draw_box(layout(), maximizeRectangle, maximize_circle_color, corner_shapes{RADIUS});
 
     if (hover) {
+        context.draw_glyph(layout(), closeWindowGlyph, translate_z(0.1f) * closeWindowGlyphRectangle, color{0.319f, 0.0f, 0.0f});
         context.draw_glyph(
-            layout(), closeWindowGlyph, translate_z(0.1f) * closeWindowGlyphRectangle, color{0.319f, 0.0f, 0.0f});
-        context.draw_glyph(
-            layout(),
-            minimizeWindowGlyph,
-            translate_z(0.1f) * minimizeWindowGlyphRectangle,
-            color{0.212f, 0.1f, 0.0f});
+            layout(), minimizeWindowGlyph, translate_z(0.1f) * minimizeWindowGlyphRectangle, color{0.212f, 0.1f, 0.0f});
 
         if (window.size_state == gui_window_size::maximized) {
             context.draw_glyph(
-                layout(),
-                restoreWindowGlyph,
-                translate_z(0.1f) * restoreWindowGlyphRectangle,
-                color{0.0f, 0.133f, 0.0f});
+                layout(), restoreWindowGlyph, translate_z(0.1f) * restoreWindowGlyphRectangle, color{0.0f, 0.133f, 0.0f});
         } else {
             context.draw_glyph(
-                layout(),
-                maximizeWindowGlyph,
-                translate_z(0.1f) * maximizeWindowGlyphRectangle,
-                color{0.0f, 0.133f, 0.0f});
+                layout(), maximizeWindowGlyph, translate_z(0.1f) * maximizeWindowGlyphRectangle, color{0.0f, 0.133f, 0.0f});
         }
     }
 }
@@ -184,11 +166,9 @@ void window_traffic_lights_widget::drawWindows(draw_context const &drawContext) 
     context.draw_glyph(layout(), closeWindowGlyph, translate_z(0.1f) * closeWindowGlyphRectangle, glyph_color);
     context.draw_glyph(layout(), minimizeWindowGlyph, translate_z(0.1f) * minimizeWindowGlyphRectangle, glyph_color);
     if (window.size_state == gui_window_size::maximized) {
-        context.draw_glyph(
-            layout(), restoreWindowGlyph, translate_z(0.1f) * restoreWindowGlyphRectangle, glyph_color);
+        context.draw_glyph(layout(), restoreWindowGlyph, translate_z(0.1f) * restoreWindowGlyphRectangle, glyph_color);
     } else {
-        context.draw_glyph(
-            layout(), maximizeWindowGlyph, translate_z(0.1f) * maximizeWindowGlyphRectangle, glyph_color);
+        context.draw_glyph(layout(), maximizeWindowGlyph, translate_z(0.1f) * maximizeWindowGlyphRectangle, glyph_color);
     }
 }
 
