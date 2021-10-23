@@ -67,9 +67,9 @@ widget_constraints const &tab_widget::set_constraints() noexcept
         child->visible = child == &selected_child_;
     }
 
-    auto size_changed = compare_then_assign(_constraints.min, selected_child_.minimum_size());
-    size_changed |= compare_then_assign(_constraints.pref, selected_child_.preferred_size());
-    size_changed |= compare_then_assign(_constraints.max, selected_child_.maximum_size());
+    auto size_changed = compare_then_assign(_constraints.min, selected_child_.constraints().min);
+    size_changed |= compare_then_assign(_constraints.pref, selected_child_.constraints().pref);
+    size_changed |= compare_then_assign(_constraints.max, selected_child_.constraints().max);
     tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
 
     if (size_changed) {

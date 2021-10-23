@@ -45,9 +45,9 @@ widget_constraints const &overlay_widget::set_constraints() noexcept
     _content->set_constraints();
 
     tt_axiom(_content);
-    _constraints.min = _content->minimum_size();
-    _constraints.pref = _content->preferred_size();
-    _constraints.max = _content->maximum_size();
+    _constraints.min = _content->constraints().min;
+    _constraints.pref = _content->constraints().pref;
+    _constraints.max = _content->constraints().max;
     tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
     return _constraints;
 }

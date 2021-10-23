@@ -59,16 +59,16 @@ grid_widget::calculate_size(std::vector<cell> const &cells, flow_layout &rows, f
     for (auto &&cell : cells) {
         rows.update(
             cell.row_nr,
-            cell.widget->minimum_size().height(),
-            cell.widget->preferred_size().height(),
-            cell.widget->maximum_size().height(),
+            cell.widget->constraints().min.height(),
+            cell.widget->constraints().pref.height(),
+            cell.widget->constraints().max.height(),
             cell.widget->margin());
 
         columns.update(
             cell.column_nr,
-            cell.widget->minimum_size().width(),
-            cell.widget->preferred_size().width(),
-            cell.widget->maximum_size().width(),
+            cell.widget->constraints().min.width(),
+            cell.widget->constraints().pref.width(),
+            cell.widget->constraints().max.width(),
             cell.widget->margin());
     }
 

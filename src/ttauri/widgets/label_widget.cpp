@@ -32,8 +32,8 @@ widget_constraints const &label_widget::set_constraints() noexcept
     _text_widget->set_constraints();
     _icon_widget->set_constraints();
 
-    ttlet label_size = _text_widget->preferred_size();
-    ttlet icon_size = _icon_widget->preferred_size();
+    ttlet label_size = _text_widget->constraints().pref;
+    ttlet icon_size = _icon_widget->constraints().pref;
 
     ttlet has_text = label_size.width() > 0.0f;
     ttlet has_icon = icon_size.width() > 0.0f;

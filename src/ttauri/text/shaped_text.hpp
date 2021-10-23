@@ -116,17 +116,7 @@ public:
         return narrow_cast<size_t>(count);
     }
 
-    [[nodiscard]] extent2 minimum_size() const noexcept
-    {
-        return _preferred_extent;
-    }
-
     [[nodiscard]] extent2 preferred_size() const noexcept
-    {
-        return _preferred_extent;
-    }
-
-    [[nodiscard]] extent2 maximum_size() const noexcept
     {
         return _preferred_extent;
     }

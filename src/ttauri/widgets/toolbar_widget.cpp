@@ -153,9 +153,9 @@ void toolbar_widget::update_constraints_for_child(widget const &child, ssize_t i
     tt_axiom(is_gui_thread());
 
     _flow_layout.update(
-        index, child.minimum_size().width(), child.preferred_size().width(), child.maximum_size().width(), child.margin());
+        index, child.constraints().min.width(), child.constraints().pref.width(), child.constraints().max.width(), child.margin());
 
-    shared_height = std::max(shared_height, child.preferred_size().height() + child.margin() * 2.0f);
+    shared_height = std::max(shared_height, child.constraints().pref.height() + child.margin() * 2.0f);
 }
 
 void toolbar_widget::update_layout_for_child(widget &child, ssize_t index, widget_layout const &context) const noexcept

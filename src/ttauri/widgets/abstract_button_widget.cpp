@@ -57,17 +57,17 @@ widget_constraints const &abstract_button_widget::set_constraints_button() noexc
     _off_label_widget->set_constraints();
     _other_label_widget->set_constraints();
 
-    _constraints.min = _on_label_widget->minimum_size();
-    _constraints.pref = _on_label_widget->preferred_size();
-    _constraints.max = _on_label_widget->maximum_size();
+    _constraints.min = _on_label_widget->constraints().min;
+    _constraints.pref = _on_label_widget->constraints().pref;
+    _constraints.max = _on_label_widget->constraints().max;
 
-    _constraints.min = max(_constraints.min, _off_label_widget->minimum_size());
-    _constraints.pref = max(_constraints.pref, _off_label_widget->preferred_size());
-    _constraints.max = max(_constraints.max, _off_label_widget->maximum_size());
+    _constraints.min = max(_constraints.min, _off_label_widget->constraints().min);
+    _constraints.pref = max(_constraints.pref, _off_label_widget->constraints().pref);
+    _constraints.max = max(_constraints.max, _off_label_widget->constraints().max);
 
-    _constraints.min = max(_constraints.min, _other_label_widget->minimum_size());
-    _constraints.pref = max(_constraints.pref, _other_label_widget->preferred_size());
-    _constraints.max = max(_constraints.max, _other_label_widget->maximum_size());
+    _constraints.min = max(_constraints.min, _other_label_widget->constraints().min);
+    _constraints.pref = max(_constraints.pref, _other_label_widget->constraints().pref);
+    _constraints.max = max(_constraints.max, _other_label_widget->constraints().max);
 
     tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
     return _constraints;

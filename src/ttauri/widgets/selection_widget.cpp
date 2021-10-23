@@ -63,23 +63,23 @@ widget_constraints const &selection_widget::set_constraints() noexcept
 
     ttlet extra_size = extent2{theme().size + theme().margin * 2.0f, theme().margin * 2.0f};
 
-    _constraints.min = _unknown_label_widget->minimum_size() + extra_size;
-    _constraints.pref = _unknown_label_widget->preferred_size() + extra_size;
-    _constraints.max = _unknown_label_widget->maximum_size() + extra_size;
+    _constraints.min = _unknown_label_widget->constraints().min + extra_size;
+    _constraints.pref = _unknown_label_widget->constraints().pref + extra_size;
+    _constraints.max = _unknown_label_widget->constraints().max + extra_size;
 
-    _constraints.min = max(_constraints.min, _current_label_widget->minimum_size() + extra_size);
-    _constraints.pref = max(_constraints.pref, _current_label_widget->preferred_size() + extra_size);
-    _constraints.max = max(_constraints.max, _current_label_widget->maximum_size() + extra_size);
+    _constraints.min = max(_constraints.min, _current_label_widget->constraints().min + extra_size);
+    _constraints.pref = max(_constraints.pref, _current_label_widget->constraints().pref + extra_size);
+    _constraints.max = max(_constraints.max, _current_label_widget->constraints().max + extra_size);
 
     for (ttlet &child : _menu_button_widgets) {
-        _constraints.min = max(_constraints.min, child->minimum_size());
-        _constraints.pref = max(_constraints.pref, child->preferred_size());
-        _constraints.max = max(_constraints.max, child->maximum_size());
+        _constraints.min = max(_constraints.min, child->constraints().min);
+        _constraints.pref = max(_constraints.pref, child->constraints().pref);
+        _constraints.max = max(_constraints.max, child->constraints().max);
     }
 
-    _constraints.min.width() = std::max(_constraints.min.width(), _overlay_widget->minimum_size().width() + extra_size.width());
-    _constraints.pref.width() = std::max(_constraints.pref.width(), _overlay_widget->preferred_size().width() + extra_size.width());
-    _constraints.max.width() = std::max(_constraints.max.width(), _overlay_widget->maximum_size().width() + extra_size.width());
+    _constraints.min.width() = std::max(_constraints.min.width(), _overlay_widget->constraints().min.width() + extra_size.width());
+    _constraints.pref.width() = std::max(_constraints.pref.width(), _overlay_widget->constraints().pref.width() + extra_size.width());
+    _constraints.max.width() = std::max(_constraints.max.width(), _overlay_widget->constraints().max.width() + extra_size.width());
 
     tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
     return _constraints;
@@ -97,9 +97,9 @@ void selection_widget::set_layout(widget_layout const &context) noexcept
             // The height of the overlay should be the maximum height, which will show all the options.
             ttlet overlay_width = std::clamp(
                 layout().width() - theme().size,
-                _overlay_widget->minimum_size().width(),
-                _overlay_widget->maximum_size().width());
-            ttlet overlay_height = _overlay_widget->preferred_size().height();
+                _overlay_widget->constraints().min.width(),
+                _overlay_widget->constraints().max.width());
+            ttlet overlay_height = _overlay_widget->constraints().pref.height();
             ttlet overlay_x = theme().size;
             ttlet overlay_y = std::round(layout().height() * 0.5f - overlay_height * 0.5f);
             ttlet overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};

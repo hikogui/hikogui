@@ -129,43 +129,6 @@ tt::font_book &widget::font_book() const noexcept
     }
 }
 
-/** Minimum size.
- * The absolute minimum size of the widget.
- * A container will never reserve less space for the widget.
- * For windows this size becomes a hard limit for the minimum window size.
- */
-[[nodiscard]] extent2 widget::minimum_size() const noexcept
-{
-    tt_axiom(is_gui_thread());
-    return constraints().min;
-}
-
-/** Preferred size.
- * The preferred size of a widget.
- * Containers will initialize their layout algorithm at this size
- * before growing or shrinking.
- * For scroll-views this size will be used in the scroll-direction.
- * For tab-views this is propagated.
- * For windows this size is used to set the initial window size.
- */
-[[nodiscard]] extent2 widget::preferred_size() const noexcept
-{
-    tt_axiom(is_gui_thread());
-    return constraints().pref;
-}
-
-/** Maximum size.
- * The maximum size of a widget.
- * Containers will try to not grow a widget beyond the maximum size,
- * but it may do so to satisfy the minimum constraint on a neighboring widget.
- * For windows the maximum size becomes a hard limit for the window size.
- */
-[[nodiscard]] extent2 widget::maximum_size() const noexcept
-{
-    tt_axiom(is_gui_thread());
-    return constraints().max;
-}
-
 void widget::request_redraw() const noexcept
 {
     window.request_redraw(layout().redraw_rectangle);

@@ -55,14 +55,14 @@ widget_constraints const &window_widget::set_constraints() noexcept
     _content->set_constraints();
 
     _constraints.min = {
-        std::max(_toolbar->minimum_size().width(), _content->minimum_size().width()),
-        _toolbar->preferred_size().height() + _content->minimum_size().height()};
+        std::max(_toolbar->constraints().min.width(), _content->constraints().min.width()),
+        _toolbar->constraints().pref.height() + _content->constraints().min.height()};
 
     _constraints.pref = {
-        std::max(_toolbar->preferred_size().width(), _content->preferred_size().width()),
-        _toolbar->preferred_size().height() + _content->preferred_size().height()};
+        std::max(_toolbar->constraints().pref.width(), _content->constraints().pref.width()),
+        _toolbar->constraints().pref.height() + _content->constraints().pref.height()};
 
-    _constraints.max = {_content->maximum_size().width(), _toolbar->preferred_size().height() + _content->maximum_size().height()};
+    _constraints.max = {_content->constraints().max.width(), _toolbar->constraints().pref.height() + _content->constraints().max.height()};
 
     // Override maximum size and preferred size.
     _constraints.max = max(_constraints.max, _constraints.min);
@@ -78,7 +78,7 @@ void window_widget::set_layout(widget_layout const &context) noexcept
 
     if (visible) {
         if (_layout.store(context) >= layout_update::transform) {
-            ttlet toolbar_height = _toolbar->preferred_size().height();
+            ttlet toolbar_height = _toolbar->constraints().pref.height();
             _toolbar_rectangle = aarectangle{0.0f, layout().height() - toolbar_height, layout().width(), toolbar_height};
             _content_rectangle = aarectangle{0.0f, 0.0f, layout().width(), layout().height() - toolbar_height};
         }

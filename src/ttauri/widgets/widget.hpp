@@ -128,34 +128,6 @@ public:
      */
     [[nodiscard]] virtual float margin() const noexcept;
 
-    /** Minimum size.
-     *
-     * The absolute minimum size of the widget.
-     * A container will never reserve less space for the widget.
-     * For windows this size becomes a hard limit for the minimum window size.
-     */
-    [[nodiscard]] extent2 minimum_size() const noexcept;
-
-    /** Preferred size.
-     *
-     * The preferred size of a widget.
-     * Containers will initialize their layout algorithm at this size
-     * before growing or shrinking.
-     * For scroll-views this size will be used in the scroll-direction.
-     * For tab-views this is propagated.
-     * For windows this size is used to set the initial window size.
-     */
-    [[nodiscard]] extent2 preferred_size() const noexcept;
-
-    /** Maximum size.
-     *
-     * The maximum size of a widget.
-     * Containers will try to not grow a widget beyond the maximum size,
-     * but it may do so to satisfy the minimum constraint on a neighboring widget.
-     * For windows the maximum size becomes a hard limit for the window size.
-     */
-    [[nodiscard]] extent2 maximum_size() const noexcept;
-
     /** Find the widget that is under the mouse cursor.
      * This function will recursively test with visual child widgets, when
      * widgets overlap on the screen the hitbox object with the highest elevation is returned.
