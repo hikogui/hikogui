@@ -128,6 +128,7 @@ public:
     [[nodiscard]] virtual float margin() const noexcept;
 
     /** Minimum size.
+     *
      * The absolute minimum size of the widget.
      * A container will never reserve less space for the widget.
      * For windows this size becomes a hard limit for the minimum window size.
@@ -135,6 +136,7 @@ public:
     [[nodiscard]] extent2 minimum_size() const noexcept;
 
     /** Preferred size.
+     *
      * The preferred size of a widget.
      * Containers will initialize their layout algorithm at this size
      * before growing or shrinking.
@@ -145,6 +147,7 @@ public:
     [[nodiscard]] extent2 preferred_size() const noexcept;
 
     /** Maximum size.
+     *
      * The maximum size of a widget.
      * Containers will try to not grow a widget beyond the maximum size,
      * but it may do so to satisfy the minimum constraint on a neighboring widget.
@@ -195,23 +198,16 @@ public:
     }
 
     /** Update the constraints of the widget.
-     * This function is called on each vertical sync, even if no drawing is to be done.
      *
-     * This function may be used for expensive calculations, such as text-shaping, which
-     * should only be done when the data changes. Because this function is called on every
-     * vertical sync it should cache these calculations.
-     *
-     * Subclasses should call `constrain()` on its base-class to check if its or any of
-     * its children's constraints where changed, before doing specific constraining
-     *
+     * Typically the implementation of this function starts with recursively calling constrain()
+     * on its children.
+     * 
+     * 
      * If the container, due to a change in constraints, wants the window to resize to the minimum size
      * it should set `window::request_resize` to `true`.
      *
      * @post This function will change what is returned by `widget::minimum_size()`, `widget::preferred_size()`
      *       and `widget::maximum_size()`.
-     * @param display_time_point The time point when the widget will be shown on the screen.
-     * @param need_reconstrain Force the widget to re-constrain.
-     * @return True if its or any children's constraints has changed.
      */
     virtual void constrain() noexcept = 0;
 
@@ -229,17 +225,9 @@ public:
      */
     virtual void layout(layout_context const &context) noexcept = 0;
 
-    virtual [[nodiscard]] color background_color() const noexcept;
-
-    virtual [[nodiscard]] color foreground_color() const noexcept;
-
-    virtual [[nodiscard]] color focus_color() const noexcept;
-
-    virtual [[nodiscard]] color accent_color() const noexcept;
-
-    virtual [[nodiscard]] color label_color() const noexcept;
 
     /** Draw the widget.
+     *
      * This function is called by the window (optionally) on every frame.
      * It should recursively call this function on every visible child.
      * This function is only called when `updateLayout()` has returned true.
@@ -250,9 +238,7 @@ public:
      * for alpha-compositing. However the pipelines are always drawn in the same
      * order.
      *
-     * @pre `mutex` must be locked by current thread.
      * @param context The context to where the widget will draw.
-     * @param display_time_point The time point when the widget will be shown on the screen.
      */
     virtual void draw(draw_context const &context) noexcept = 0;
 
@@ -362,6 +348,16 @@ public:
      * The chain includes the given widget.
      */
     [[nodiscard]] std::vector<widget const *> parent_chain() const noexcept;
+
+    virtual [[nodiscard]] color background_color() const noexcept;
+
+    virtual [[nodiscard]] color foreground_color() const noexcept;
+
+    virtual [[nodiscard]] color focus_color() const noexcept;
+
+    virtual [[nodiscard]] color accent_color() const noexcept;
+
+    virtual [[nodiscard]] color label_color() const noexcept;
 
 protected:
     layout_context _layout;
