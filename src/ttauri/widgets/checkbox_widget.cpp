@@ -19,25 +19,26 @@ checkbox_widget::checkbox_widget(gui_window &window, widget *parent, std::weak_p
 {
 }
 
-void checkbox_widget::constrain() noexcept
+widget_constraints const &checkbox_widget::set_constraints() noexcept
 {
     tt_axiom(is_gui_thread());
 
     _layout = {};
-    constrain_button();
+    set_constraints_button();
 
     // Make room for button and margin.
     _button_size = {theme().size, theme().size};
     ttlet extra_size = extent2{theme().margin + _button_size.width(), 0.0f};
-    _minimum_size += extra_size;
-    _preferred_size += extra_size;
-    _maximum_size += extra_size;
+    _constraints.min += extra_size;
+    _constraints.pref += extra_size;
+    _constraints.max += extra_size;
 
-    _minimum_size = max(_minimum_size, _button_size);
-    _preferred_size = max(_minimum_size, _button_size);
-    _maximum_size = max(_minimum_size, _button_size);
+    _constraints.min = max(_constraints.min, _button_size);
+    _constraints.pref = max(_constraints.min, _button_size);
+    _constraints.max = max(_constraints.min, _button_size);
 
-    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
+    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
+    return _constraints;
 }
 
 void checkbox_widget::set_layout(widget_layout const &context) noexcept
@@ -57,7 +58,7 @@ void checkbox_widget::set_layout(widget_layout const &context) noexcept
             ttlet minus_glyph_bb = _minus_glyph.get_bounding_box();
             _minus_glyph_rectangle = align(_button_rectangle, minus_glyph_bb * theme().icon_size, alignment::middle_center);
         }
-        layout_button(context);
+        set_layout_button(context);
     }
 }
 

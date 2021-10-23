@@ -31,18 +31,25 @@ overlay_widget::~overlay_widget()
     }
 }
 
-void overlay_widget::constrain() noexcept
+void overlay_widget::set_widget(std::unique_ptr<widget> new_widget) noexcept
+{
+    _content = std::move(new_widget);
+    window.request_reconstrain();
+}
+
+widget_constraints const &overlay_widget::set_constraints() noexcept
 {
     tt_axiom(is_gui_thread());
 
     _layout = {};
-    _content->constrain();
+    _content->set_constraints();
 
     tt_axiom(_content);
-    _minimum_size = _content->minimum_size();
-    _preferred_size = _content->preferred_size();
-    _maximum_size = _content->maximum_size();
-    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
+    _constraints.min = _content->minimum_size();
+    _constraints.pref = _content->preferred_size();
+    _constraints.max = _content->maximum_size();
+    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
+    return _constraints;
 }
 
 void overlay_widget::set_layout(widget_layout const &context_) noexcept

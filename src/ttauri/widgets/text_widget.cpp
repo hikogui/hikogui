@@ -11,32 +11,33 @@ text_widget::text_widget(gui_window &window, widget *parent) noexcept : super(wi
     text.subscribe(_reconstrain_callback);
 }
 
-void text_widget::constrain() noexcept
+widget_constraints const &text_widget::set_constraints() noexcept
 {
     tt_axiom(is_gui_thread());
 
     _layout = {};
 
     _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), 0.0f, *alignment};
-    _minimum_size = ceil(_shaped_text.minimum_size());
-    _preferred_size = ceil(_shaped_text.preferred_size());
-    _maximum_size = ceil(_shaped_text.maximum_size());
+    _constraints.min = ceil(_shaped_text.minimum_size());
+    _constraints.pref = ceil(_shaped_text.preferred_size());
+    _constraints.max = ceil(_shaped_text.maximum_size());
 
     ttlet size_ = theme().size;
     ttlet margin_ = margin();
 
     // Allow text to overhang into the margin of a small widget.
-    if (_minimum_size.height() > size_ && _minimum_size.height() <= size_ + margin_) {
-        _minimum_size.height() = size_;
+    if (_constraints.min.height() > size_ && _constraints.min.height() <= size_ + margin_) {
+        _constraints.min.height() = size_;
     }
-    if (_preferred_size.height() > size_ && _preferred_size.height() <= size_ + margin_) {
-        _preferred_size.height() = size_;
+    if (_constraints.pref.height() > size_ && _constraints.pref.height() <= size_ + margin_) {
+        _constraints.pref.height() = size_;
     }
-    if (_maximum_size.height() > size_ && _maximum_size.height() <= size_ + margin_) {
-        _maximum_size.height() = size_;
+    if (_constraints.max.height() > size_ && _constraints.max.height() <= size_ + margin_) {
+        _constraints.max.height() = size_;
     }
 
-    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
+    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
+    return _constraints;
 }
 
 void text_widget::set_layout(widget_layout const &context) noexcept

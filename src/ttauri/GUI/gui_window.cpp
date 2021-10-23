@@ -71,7 +71,7 @@ void gui_window::init()
     }
 
     // Execute a constraint check to determine initial window size.
-    widget->constrain();
+    widget->set_constraints();
     ttlet new_size = widget->preferred_size();
 
     // Reset the keyboard target to not focus anything.
@@ -125,11 +125,11 @@ void gui_window::render(utc_nanoseconds display_time_point)
     tt_axiom(widget);
 
     // When a widget requests it or a window-wide event like language change
-    // has happened all the widgets will be constrain().
+    // has happened all the widgets will be set_constraints().
     ttlet need_reconstrain = _reconstrain.exchange(false, std::memory_order_relaxed);
     if (need_reconstrain) {
         ttlet t2 = trace<"window::constrain">();
-        widget->constrain();
+        widget->set_constraints();
     }
 
     // Check if the window size matches the preferred size of the window_widget.

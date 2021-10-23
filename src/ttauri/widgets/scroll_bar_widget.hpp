@@ -41,20 +41,21 @@ public:
 
     ~scroll_bar_widget() {}
 
-    void constrain() noexcept override
+    widget_constraints const &set_constraints() noexcept override
     {
         tt_axiom(is_gui_thread());
 
         _layout = {};
 
         if constexpr (axis == axis::vertical) {
-            _minimum_size = _preferred_size = {theme().icon_size, theme().large_size};
-            _maximum_size = {theme().icon_size, 32767.0f};
+            _constraints.min = _constraints.pref = {theme().icon_size, theme().large_size};
+            _constraints.max = {theme().icon_size, 32767.0f};
         } else {
-            _minimum_size = _preferred_size = {theme().large_size, theme().icon_size};
-            _maximum_size = {32767.0f, theme().icon_size};
+            _constraints.min = _constraints.pref = {theme().large_size, theme().icon_size};
+            _constraints.max = {32767.0f, theme().icon_size};
         }
-        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
+        tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
+        return _constraints;
     }
 
     void set_layout(widget_layout const &context) noexcept override

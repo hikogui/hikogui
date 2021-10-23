@@ -47,6 +47,8 @@ public:
      */
     overlay_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate = {}) noexcept;
 
+    void set_widget(std::unique_ptr<widget> new_widget) noexcept;
+
     /** Add a content widget directly to this overlay widget.
      *
      * This widget is added as the content widget.
@@ -64,8 +66,7 @@ public:
 
         auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
         auto &ref = *tmp;
-        _content = std::move(tmp);
-        request_reconstrain();
+        set_widget(std::move(tmp));
         return ref;
     }
 
@@ -75,7 +76,7 @@ public:
         co_yield _content.get();
     }
 
-    void constrain() noexcept override;
+    widget_constraints const &set_constraints() noexcept override;
     void set_layout(widget_layout const &context) noexcept override;
     void draw(draw_context const &context) noexcept override;
     [[nodiscard]] color background_color() const noexcept override;

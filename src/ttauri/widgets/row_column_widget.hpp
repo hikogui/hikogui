@@ -87,7 +87,7 @@ public:
         auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
         auto &ref = *tmp;
         _children.push_back(std::move(tmp));
-        request_reconstrain();
+        window.request_reconstrain();
         return ref;
     }
 
@@ -97,7 +97,7 @@ public:
     {
         tt_axiom(is_gui_thread());
         _children.clear();
-        request_reconstrain();
+        window.request_reconstrain();
     }
 
     /// @privatesection
@@ -113,13 +113,13 @@ public:
         return 0.0f;
     }
 
-    void constrain() noexcept override
+    widget_constraints const &set_constraints() noexcept override
     {
         tt_axiom(is_gui_thread());
 
         _layout = {};
         for (ttlet &child : _children) {
-            child->constrain();
+            child->set_constraints();
         }
 
         _flow_layout.clear();
@@ -137,15 +137,16 @@ public:
         tt_axiom(index == std::ssize(_children));
 
         if constexpr (axis == axis::row) {
-            _minimum_size = {_flow_layout.minimum_size(), minimum_thickness};
-            _preferred_size = {_flow_layout.preferred_size(), preferred_thickness};
-            _maximum_size = {_flow_layout.maximum_size(), maximum_thickness};
+            _constraints.min = {_flow_layout.minimum_size(), minimum_thickness};
+            _constraints.pref = {_flow_layout.preferred_size(), preferred_thickness};
+            _constraints.max = {_flow_layout.maximum_size(), maximum_thickness};
         } else {
-            _minimum_size = {minimum_thickness, _flow_layout.minimum_size()};
-            _preferred_size = {preferred_thickness, _flow_layout.preferred_size()};
-            _maximum_size = {maximum_thickness, _flow_layout.maximum_size()};
+            _constraints.min = {minimum_thickness, _flow_layout.minimum_size()};
+            _constraints.pref = {preferred_thickness, _flow_layout.preferred_size()};
+            _constraints.max = {maximum_thickness, _flow_layout.maximum_size()};
         }
-        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
+        tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
+        return _constraints;
     }
 
     void set_layout(widget_layout const &context) noexcept override

@@ -16,6 +16,7 @@
 #include "../chrono.hpp"
 #include "../coroutine.hpp"
 #include "draw_context.hpp"
+#include "widget_constraints.hpp"
 #include "widget_layout.hpp"
 #include <memory>
 #include <vector>
@@ -31,7 +32,7 @@ class font_book;
 /** An interactive graphical object as part of the user-interface.
  *
  * Rendering is done in three distinct phases:
- *  1. Updating Constraints: `widget::constrain()`
+ *  1. Updating Constraints: `widget::set_constraints()`
  *  2. Updating Layout: `widget::set_layout()`
  *  3. Drawing: `widget::draw()`
  *
@@ -176,7 +177,7 @@ public:
 
     /** Update the constraints of the widget.
      *
-     * Typically the implementation of this function starts with recursively calling constrain()
+     * Typically the implementation of this function starts with recursively calling set_constraints()
      * on its children.
      * 
      * 
@@ -186,7 +187,12 @@ public:
      * @post This function will change what is returned by `widget::minimum_size()`, `widget::preferred_size()`
      *       and `widget::maximum_size()`.
      */
-    virtual void constrain() noexcept = 0;
+    virtual widget_constraints const &set_constraints() noexcept = 0;
+
+    widget_constraints const &constraints() const noexcept
+    {
+        return _constraints;
+    }
 
     /** Update the internal layout of the widget.
      * This function is called when the size of this widget must change, or if any of the
@@ -228,19 +234,6 @@ public:
     /** Request the widget to be redrawn on the next frame.
      */
     virtual void request_redraw() const noexcept;
-
-    /** Request the widget to be layed-out again.
-     *
-     * This should be done if the change of data needs a recalculation of the layout.
-     */
-    void request_relayout() noexcept;
-
-    /** Request the widget to be constrained again.
-     *
-     * This should be done if the change of data would cause the minimum/maximum/preferred size
-     * of this widget to change.
-     */
-    void request_reconstrain() noexcept;
 
     /** Handle command.
      * If a widget does not fully handle a command it should pass the
@@ -343,11 +336,8 @@ public:
     virtual [[nodiscard]] color label_color() const noexcept;
 
 protected:
+    widget_constraints _constraints;
     widget_layout _layout;
-
-    extent2 _minimum_size;
-    extent2 _preferred_size;
-    extent2 _maximum_size;
 
     std::shared_ptr<std::function<void()>> _redraw_callback;
     std::shared_ptr<std::function<void()>> _relayout_callback;

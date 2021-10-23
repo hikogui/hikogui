@@ -37,7 +37,7 @@ selection_widget::selection_widget(gui_window &window, widget *parent, weak_or_u
         _delegate_callback = d->subscribe(*this, [this] {
             this->window.gui.run([this] {
                 repopulate_options();
-                request_reconstrain();
+                this->window.request_reconstrain();
             });
         });
 
@@ -52,36 +52,37 @@ selection_widget::selection_widget(gui_window &window, widget *parent, std::weak
 {
 }
 
-void selection_widget::constrain() noexcept
+widget_constraints const &selection_widget::set_constraints() noexcept
 {
     tt_axiom(is_gui_thread());
 
     _layout = {};
-    _unknown_label_widget->constrain();
-    _current_label_widget->constrain();
-    _overlay_widget->constrain();
+    _unknown_label_widget->set_constraints();
+    _current_label_widget->set_constraints();
+    _overlay_widget->set_constraints();
 
     ttlet extra_size = extent2{theme().size + theme().margin * 2.0f, theme().margin * 2.0f};
 
-    _minimum_size = _unknown_label_widget->minimum_size() + extra_size;
-    _preferred_size = _unknown_label_widget->preferred_size() + extra_size;
-    _maximum_size = _unknown_label_widget->maximum_size() + extra_size;
+    _constraints.min = _unknown_label_widget->minimum_size() + extra_size;
+    _constraints.pref = _unknown_label_widget->preferred_size() + extra_size;
+    _constraints.max = _unknown_label_widget->maximum_size() + extra_size;
 
-    _minimum_size = max(_minimum_size, _current_label_widget->minimum_size() + extra_size);
-    _preferred_size = max(_preferred_size, _current_label_widget->preferred_size() + extra_size);
-    _maximum_size = max(_maximum_size, _current_label_widget->maximum_size() + extra_size);
+    _constraints.min = max(_constraints.min, _current_label_widget->minimum_size() + extra_size);
+    _constraints.pref = max(_constraints.pref, _current_label_widget->preferred_size() + extra_size);
+    _constraints.max = max(_constraints.max, _current_label_widget->maximum_size() + extra_size);
 
     for (ttlet &child : _menu_button_widgets) {
-        _minimum_size = max(_minimum_size, child->minimum_size());
-        _preferred_size = max(_preferred_size, child->preferred_size());
-        _maximum_size = max(_maximum_size, child->maximum_size());
+        _constraints.min = max(_constraints.min, child->minimum_size());
+        _constraints.pref = max(_constraints.pref, child->preferred_size());
+        _constraints.max = max(_constraints.max, child->maximum_size());
     }
 
-    _minimum_size.width() = std::max(_minimum_size.width(), _overlay_widget->minimum_size().width() + extra_size.width());
-    _preferred_size.width() = std::max(_preferred_size.width(), _overlay_widget->preferred_size().width() + extra_size.width());
-    _maximum_size.width() = std::max(_maximum_size.width(), _overlay_widget->maximum_size().width() + extra_size.width());
+    _constraints.min.width() = std::max(_constraints.min.width(), _overlay_widget->minimum_size().width() + extra_size.width());
+    _constraints.pref.width() = std::max(_constraints.pref.width(), _overlay_widget->preferred_size().width() + extra_size.width());
+    _constraints.max.width() = std::max(_constraints.max.width(), _overlay_widget->maximum_size().width() + extra_size.width());
 
-    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
+    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
+    return _constraints;
 }
 
 void selection_widget::set_layout(widget_layout const &context) noexcept
@@ -161,7 +162,7 @@ bool selection_widget::handle_event(mouse_event const &event) noexcept
 bool selection_widget::handle_event(command command) noexcept
 {
     tt_axiom(is_gui_thread());
-    request_relayout();
+    window.request_relayout();
 
     if (enabled and _has_options) {
         switch (command) {

@@ -17,7 +17,7 @@ icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(wi
     icon.subscribe(_reconstrain_callback);
 }
 
-void icon_widget::constrain() noexcept
+widget_constraints const &icon_widget::set_constraints() noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -54,7 +54,7 @@ void icon_widget::constrain() noexcept
             _pixmap_hash = 0;
             _pixmap_backing = {};
             _icon_bounding_box = {};
-            request_reconstrain();
+            window.request_reconstrain();
 
         } else if (pixmap.hash() != _pixmap_hash) {
             _pixmap_hash = pixmap.hash();
@@ -93,10 +93,11 @@ void icon_widget::constrain() noexcept
         tt_no_default();
     }
 
-    _minimum_size = {0.0f, 0.0f};
-    _preferred_size = _icon_bounding_box.size();
-    _maximum_size = _preferred_size;
-    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
+    _constraints.min = {0.0f, 0.0f};
+    _constraints.pref = _icon_bounding_box.size();
+    _constraints.max = _constraints.pref;
+    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
+    return _constraints;
 }
 
 void icon_widget::set_layout(widget_layout const &context) noexcept

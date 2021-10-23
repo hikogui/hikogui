@@ -78,7 +78,7 @@ public:
             delegate->add_tab(*this, static_cast<size_t>(key), std::size(_children));
         }
         _children.push_back(std::move(tmp));
-        request_reconstrain();
+        window.request_reconstrain();
         return ref;
     }
 
@@ -91,7 +91,7 @@ public:
     }
 
     [[nodiscard]] float margin() const noexcept override;
-    void constrain() noexcept override;
+    widget_constraints const &set_constraints() noexcept override;
     void set_layout(widget_layout const &context) noexcept override;
     void draw(draw_context const &context) noexcept override;
     [[nodiscard]] widget const *find_next_widget(

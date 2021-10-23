@@ -7,20 +7,21 @@
 
 namespace tt {
 
-void toolbar_tab_button_widget::constrain() noexcept
+widget_constraints const &toolbar_tab_button_widget::set_constraints() noexcept
 {
     tt_axiom(is_gui_thread());
 
     _layout = {};
-    constrain_button();
+    set_constraints_button();
 
     // On left side a check mark, on right side short-cut. Around the label extra margin.
     ttlet extra_size = extent2{theme().margin * 2.0f, theme().margin};
-    _minimum_size += extra_size;
-    _preferred_size += extra_size;
-    _maximum_size += extra_size;
+    _constraints.min += extra_size;
+    _constraints.pref += extra_size;
+    _constraints.max += extra_size;
 
-    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
+    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
+    return _constraints;
 }
 
 void toolbar_tab_button_widget::set_layout(widget_layout const &context) noexcept
@@ -32,7 +33,7 @@ void toolbar_tab_button_widget::set_layout(widget_layout const &context) noexcep
             _label_rectangle =
                 aarectangle{theme().margin, 0.0f, layout().width() - theme().margin * 2.0f, layout().height() - theme().margin};
         }
-        layout_button(context);
+        set_layout_button(context);
     }
 }
 

@@ -125,48 +125,49 @@ public:
         return 0.0f;
     }
 
-    void constrain() noexcept override
+    widget_constraints const &set_constraints() noexcept override
     {
         tt_axiom(is_gui_thread());
         tt_axiom(_content);
 
         _layout = {};
-        _content->constrain();
-        _horizontal_scroll_bar->constrain();
-        _vertical_scroll_bar->constrain();
+        _content->set_constraints();
+        _horizontal_scroll_bar->set_constraints();
+        _vertical_scroll_bar->set_constraints();
 
         // As the widget will always add scrollbars if needed the minimum size is dictated to
         // the size of the scrollbars.
-        _minimum_size = _content->minimum_size();
-        _preferred_size = _content->preferred_size();
-        _maximum_size = _content->maximum_size();
+        _constraints.min = _content->minimum_size();
+        _constraints.pref = _content->preferred_size();
+        _constraints.max = _content->maximum_size();
 
         // When there are scrollbars the minimum size is the minimum length of the scrollbar.
         // The maximum size is the minimum size of the content.
         if constexpr (any(axis & axis::horizontal)) {
             // The content could be smaller than the scrollbar.
-            _minimum_size.width() = _horizontal_scroll_bar->minimum_size().width();
-            _preferred_size.width() = std::max(_preferred_size.width(), _horizontal_scroll_bar->minimum_size().width());
-            _maximum_size.width() = std::max(_maximum_size.width(), _horizontal_scroll_bar->minimum_size().width());
+            _constraints.min.width() = _horizontal_scroll_bar->minimum_size().width();
+            _constraints.pref.width() = std::max(_constraints.pref.width(), _horizontal_scroll_bar->minimum_size().width());
+            _constraints.max.width() = std::max(_constraints.max.width(), _horizontal_scroll_bar->minimum_size().width());
         }
         if constexpr (any(axis & axis::vertical)) {
-            _minimum_size.height() = _vertical_scroll_bar->minimum_size().height();
-            _preferred_size.height() = std::max(_preferred_size.height(), _vertical_scroll_bar->minimum_size().height());
-            _maximum_size.height() = std::max(_maximum_size.height(), _vertical_scroll_bar->minimum_size().height());
+            _constraints.min.height() = _vertical_scroll_bar->minimum_size().height();
+            _constraints.pref.height() = std::max(_constraints.pref.height(), _vertical_scroll_bar->minimum_size().height());
+            _constraints.max.height() = std::max(_constraints.max.height(), _vertical_scroll_bar->minimum_size().height());
         }
 
         // Make room for the scroll bars.
         if constexpr (any(axis & axis::horizontal)) {
-            _minimum_size.height() += _horizontal_scroll_bar->preferred_size().height();
-            _preferred_size.height() += _horizontal_scroll_bar->preferred_size().height();
-            _maximum_size.height() += _horizontal_scroll_bar->preferred_size().height();
+            _constraints.min.height() += _horizontal_scroll_bar->preferred_size().height();
+            _constraints.pref.height() += _horizontal_scroll_bar->preferred_size().height();
+            _constraints.max.height() += _horizontal_scroll_bar->preferred_size().height();
         }
         if constexpr (any(axis & axis::vertical)) {
-            _minimum_size.width() += _vertical_scroll_bar->preferred_size().width();
-            _preferred_size.width() += _vertical_scroll_bar->preferred_size().width();
-            _maximum_size.width() += _vertical_scroll_bar->preferred_size().width();
+            _constraints.min.width() += _vertical_scroll_bar->preferred_size().width();
+            _constraints.pref.width() += _vertical_scroll_bar->preferred_size().width();
+            _constraints.max.width() += _vertical_scroll_bar->preferred_size().width();
         }
-        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
+        tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
+        return _constraints;
     }
 
     void set_layout(widget_layout const &context) noexcept override
@@ -264,7 +265,7 @@ public:
             handled = true;
             _scroll_offset_x += event.wheelDelta.x();
             _scroll_offset_y += event.wheelDelta.y();
-            request_relayout();
+            window.request_relayout();
             return true;
         }
         return handled;

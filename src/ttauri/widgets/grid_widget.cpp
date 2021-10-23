@@ -95,21 +95,22 @@ widget &grid_widget::add_widget(size_t column_nr, size_t row_nr, std::unique_ptr
 
     auto &ref = *widget;
     _cells.emplace_back(column_nr, row_nr, std::move(widget));
-    request_reconstrain();
+    window.request_reconstrain();
     return ref;
 }
 
-void grid_widget::constrain() noexcept
+widget_constraints const &grid_widget::set_constraints() noexcept
 {
     tt_axiom(is_gui_thread());
 
     _layout = {};
     for (ttlet &cell : _cells) {
-        cell.widget->constrain();
+        cell.widget->set_constraints();
     }
 
-    std::tie(_minimum_size, _preferred_size, _maximum_size) = calculate_size(_cells, _rows, _columns);
-    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
+    std::tie(_constraints.min, _constraints.pref, _constraints.max) = calculate_size(_cells, _rows, _columns);
+    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
+    return _constraints;
 }
 
 void grid_widget::set_layout(widget_layout const &context) noexcept

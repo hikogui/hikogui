@@ -33,7 +33,7 @@ text_field_widget::~text_field_widget()
     }
 }
 
-void text_field_widget::constrain() noexcept
+widget_constraints const &text_field_widget::set_constraints() noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -43,10 +43,11 @@ void text_field_widget::constrain() noexcept
 
     _text_width = 100.0;
 
-    _minimum_size = {_text_width + theme().margin * 2.0f, theme().size + theme().margin * 2.0f};
-    _preferred_size = {_text_width + theme().margin * 2.0f, theme().size + theme().margin * 2.0f};
-    _maximum_size = {_text_width + theme().margin * 2.0f, theme().size + theme().margin * 2.0f};
-    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
+    _constraints.min = {_text_width + theme().margin * 2.0f, theme().size + theme().margin * 2.0f};
+    _constraints.pref = {_text_width + theme().margin * 2.0f, theme().size + theme().margin * 2.0f};
+    _constraints.max = {_text_width + theme().margin * 2.0f, theme().size + theme().margin * 2.0f};
+    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
+    return _constraints;
 }
 
 void text_field_widget::set_layout(widget_layout const &context) noexcept
@@ -118,7 +119,7 @@ void text_field_widget::draw(draw_context const &context) noexcept
 bool text_field_widget::handle_event(command command) noexcept
 {
     tt_axiom(is_gui_thread());
-    request_relayout();
+    window.request_relayout();
 
     if (enabled) {
         switch (command) {
@@ -257,7 +258,7 @@ bool text_field_widget::handle_event(keyboard_event const &event) noexcept
         }
     }
 
-    request_relayout();
+    window.request_relayout();
     return handled;
 }
 

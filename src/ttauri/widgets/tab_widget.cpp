@@ -30,10 +30,10 @@ tab_widget::tab_widget(gui_window &window, widget *parent, weak_or_unique_ptr<de
     }
 
     // Compare and assign would trigger the signaling NaN that widget sets.
-    _minimum_size = {};
-    _preferred_size = {};
-    _maximum_size = {32767.0f, 32767.0f};
-    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
+    _constraints.min = {};
+    _constraints.pref = {};
+    _constraints.max = {32767.0f, 32767.0f};
+    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
 
     if (auto d = _delegate.lock()) {
         d->init(*this);
@@ -50,13 +50,13 @@ tab_widget::tab_widget(gui_window &window, widget *parent, std::weak_ptr<delegat
     return 0.0f;
 }
 
-void tab_widget::constrain() noexcept
+widget_constraints const &tab_widget::set_constraints() noexcept
 {
     tt_axiom(is_gui_thread());
 
     _layout = {};
     for (ttlet &child : _children) {
-        child->constrain();
+        child->set_constraints();
     }
 
     ttlet &selected_child_ = selected_child();
@@ -67,14 +67,15 @@ void tab_widget::constrain() noexcept
         child->visible = child == &selected_child_;
     }
 
-    auto size_changed = compare_then_assign(_minimum_size, selected_child_.minimum_size());
-    size_changed |= compare_then_assign(_preferred_size, selected_child_.preferred_size());
-    size_changed |= compare_then_assign(_maximum_size, selected_child_.maximum_size());
-    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
+    auto size_changed = compare_then_assign(_constraints.min, selected_child_.minimum_size());
+    size_changed |= compare_then_assign(_constraints.pref, selected_child_.preferred_size());
+    size_changed |= compare_then_assign(_constraints.max, selected_child_.maximum_size());
+    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
 
     if (size_changed) {
         window.request_resize = true;
     }
+    return _constraints;
 }
 
 void tab_widget::set_layout(widget_layout const &context) noexcept

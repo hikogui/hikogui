@@ -49,27 +49,28 @@ void abstract_button_widget::unsubscribe(callback_ptr_type &callback_ptr) noexce
     return _notifier.unsubscribe(callback_ptr);
 }
 
-void abstract_button_widget::constrain_button() noexcept
+widget_constraints const &abstract_button_widget::set_constraints_button() noexcept
 {
     tt_axiom(is_gui_thread());
 
-    _on_label_widget->constrain();
-    _off_label_widget->constrain();
-    _other_label_widget->constrain();
+    _on_label_widget->set_constraints();
+    _off_label_widget->set_constraints();
+    _other_label_widget->set_constraints();
 
-    _minimum_size = _on_label_widget->minimum_size();
-    _preferred_size = _on_label_widget->preferred_size();
-    _maximum_size = _on_label_widget->maximum_size();
+    _constraints.min = _on_label_widget->minimum_size();
+    _constraints.pref = _on_label_widget->preferred_size();
+    _constraints.max = _on_label_widget->maximum_size();
 
-    _minimum_size = max(_minimum_size, _off_label_widget->minimum_size());
-    _preferred_size = max(_preferred_size, _off_label_widget->preferred_size());
-    _maximum_size = max(_maximum_size, _off_label_widget->maximum_size());
+    _constraints.min = max(_constraints.min, _off_label_widget->minimum_size());
+    _constraints.pref = max(_constraints.pref, _off_label_widget->preferred_size());
+    _constraints.max = max(_constraints.max, _off_label_widget->maximum_size());
 
-    _minimum_size = max(_minimum_size, _other_label_widget->minimum_size());
-    _preferred_size = max(_preferred_size, _other_label_widget->preferred_size());
-    _maximum_size = max(_maximum_size, _other_label_widget->maximum_size());
+    _constraints.min = max(_constraints.min, _other_label_widget->minimum_size());
+    _constraints.pref = max(_constraints.pref, _other_label_widget->preferred_size());
+    _constraints.max = max(_constraints.max, _other_label_widget->maximum_size());
 
-    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
+    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
+    return _constraints;
 }
 
 void abstract_button_widget::draw_button(draw_context const &context) noexcept
@@ -85,7 +86,7 @@ void abstract_button_widget::draw_button(draw_context const &context) noexcept
     }
 }
 
-void abstract_button_widget::layout_button(widget_layout const &context) noexcept
+void abstract_button_widget::set_layout_button(widget_layout const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 

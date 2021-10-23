@@ -22,16 +22,16 @@ toolbar_widget::toolbar_widget(gui_window &window, widget *parent) noexcept : su
     return 0.0f;
 }
 
-void toolbar_widget::constrain() noexcept
+widget_constraints const &toolbar_widget::set_constraints() noexcept
 {
     tt_axiom(is_gui_thread());
 
     _layout = {};
     for (ttlet &child : _left_children) {
-        child->constrain();
+        child->set_constraints();
     }
     for (ttlet &child : _right_children) {
-        child->constrain();
+        child->set_constraints();
     }
 
     auto shared_height = 0.0f;
@@ -52,10 +52,11 @@ void toolbar_widget::constrain() noexcept
     }
 
     tt_axiom(index == std::ssize(_left_children) + 1 + std::ssize(_right_children));
-    _minimum_size = {_flow_layout.minimum_size(), shared_height};
-    _preferred_size = {_flow_layout.preferred_size(), shared_height};
-    _maximum_size = {_flow_layout.maximum_size(), shared_height};
-    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
+    _constraints.min = {_flow_layout.minimum_size(), shared_height};
+    _constraints.pref = {_flow_layout.preferred_size(), shared_height};
+    _constraints.max = {_flow_layout.maximum_size(), shared_height};
+    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
+    return _constraints;
 }
 
 void toolbar_widget::set_layout(widget_layout const &context_) noexcept

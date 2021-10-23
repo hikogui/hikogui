@@ -23,7 +23,6 @@ target_sources(ttauri PRIVATE
     icon_widget.hpp
     label_widget.cpp
     label_widget.hpp
-    widget_layout.hpp
     menu_button_widget.cpp
     menu_button_widget.hpp
     momentary_button_widget.cpp
@@ -61,6 +60,8 @@ target_sources(ttauri PRIVATE
     toolbar_widget.hpp
     widget.cpp
     widget.hpp
+    widget_constraints.hpp
+    widget_layout.hpp
     window_traffic_lights_widget.cpp
     window_traffic_lights_widget.hpp
     window_widget.cpp

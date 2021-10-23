@@ -46,29 +46,30 @@ void window_widget::constructor_implementation() noexcept
     co_yield _content.get();
 }
 
-void window_widget::constrain() noexcept
+widget_constraints const &window_widget::set_constraints() noexcept
 {
     tt_axiom(is_gui_thread());
 
     _layout = {};
-    _toolbar->constrain();
-    _content->constrain();
+    _toolbar->set_constraints();
+    _content->set_constraints();
 
-    _minimum_size = {
+    _constraints.min = {
         std::max(_toolbar->minimum_size().width(), _content->minimum_size().width()),
         _toolbar->preferred_size().height() + _content->minimum_size().height()};
 
-    _preferred_size = {
+    _constraints.pref = {
         std::max(_toolbar->preferred_size().width(), _content->preferred_size().width()),
         _toolbar->preferred_size().height() + _content->preferred_size().height()};
 
-    _maximum_size = {_content->maximum_size().width(), _toolbar->preferred_size().height() + _content->maximum_size().height()};
+    _constraints.max = {_content->maximum_size().width(), _toolbar->preferred_size().height() + _content->maximum_size().height()};
 
     // Override maximum size and preferred size.
-    _maximum_size = max(_maximum_size, _minimum_size);
-    _preferred_size = clamp(_preferred_size, _minimum_size, _maximum_size);
+    _constraints.max = max(_constraints.max, _constraints.min);
+    _constraints.pref = clamp(_constraints.pref, _constraints.min, _constraints.max);
 
-    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
+    tt_axiom(_constraints.min <= _constraints.pref && _constraints.pref <= _constraints.max);
+    return _constraints;
 }
 
 void window_widget::set_layout(widget_layout const &context) noexcept

@@ -72,7 +72,7 @@ public:
     }
 
     [[nodiscard]] float margin() const noexcept override;
-    void constrain() noexcept;
+    widget_constraints const &set_constraints() noexcept;
     void set_layout(widget_layout const &context) noexcept override;
     void draw(draw_context const &context) noexcept override;
     hitbox hitbox_test(point3 position) const noexcept override;

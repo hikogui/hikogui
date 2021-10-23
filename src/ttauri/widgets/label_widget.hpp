@@ -95,7 +95,7 @@ public:
         co_yield _text_widget.get();
     }
 
-    void constrain() noexcept override;
+    widget_constraints const &set_constraints() noexcept override;
     void set_layout(widget_layout const &context) noexcept override;
     void draw(draw_context const &context) noexcept;
     /// @endprivatesection

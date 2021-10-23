@@ -24,18 +24,18 @@ widget::widget(gui_window &_window, widget *parent) noexcept :
         request_redraw();
     });
     _relayout_callback = std::make_shared<std::function<void()>>([this] {
-        request_relayout();
+        window.request_relayout();
     });
     _reconstrain_callback = std::make_shared<std::function<void()>>([this] {
-        request_reconstrain();
+        window.request_reconstrain();
     });
 
     enabled.subscribe(_redraw_callback);
     visible.subscribe(_reconstrain_callback);
 
-    _minimum_size = extent2::nan();
-    _preferred_size = extent2::nan();
-    _maximum_size = extent2::nan();
+    _constraints.min = extent2::nan();
+    _constraints.pref = extent2::nan();
+    _constraints.max = extent2::nan();
 }
 
 widget::~widget()
@@ -137,7 +137,7 @@ tt::font_book &widget::font_book() const noexcept
 [[nodiscard]] extent2 widget::minimum_size() const noexcept
 {
     tt_axiom(is_gui_thread());
-    return _minimum_size;
+    return constraints().min;
 }
 
 /** Preferred size.
@@ -151,7 +151,7 @@ tt::font_book &widget::font_book() const noexcept
 [[nodiscard]] extent2 widget::preferred_size() const noexcept
 {
     tt_axiom(is_gui_thread());
-    return _preferred_size;
+    return constraints().pref;
 }
 
 /** Maximum size.
@@ -163,22 +163,12 @@ tt::font_book &widget::font_book() const noexcept
 [[nodiscard]] extent2 widget::maximum_size() const noexcept
 {
     tt_axiom(is_gui_thread());
-    return _maximum_size;
+    return constraints().max;
 }
 
 void widget::request_redraw() const noexcept
 {
     window.request_redraw(layout().redraw_rectangle);
-}
-
-void widget::request_relayout() noexcept
-{
-    window.request_relayout();
-}
-
-void widget::request_reconstrain() noexcept
-{
-    window.request_reconstrain();
 }
 
 [[nodiscard]] bool widget::handle_event(std::vector<command> const &commands) noexcept
