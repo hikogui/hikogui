@@ -12,6 +12,8 @@
 #include "../log.hpp"
 #include "../vspan.hpp"
 #include "../geometry/rectangle.hpp"
+#include "../geometry/scale.hpp"
+#include "../geometry/transform.hpp"
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>
@@ -89,7 +91,7 @@ struct device_shared final {
     /** Allocate an glyph in the atlas.
      * This may allocate an atlas texture, up to atlasMaximumNrImages.
      */
-    [[nodiscard]] atlas_rect allocateRect(extent2 drawExtent) noexcept;
+    [[nodiscard]] atlas_rect allocate_rect(extent2 draw_extent, scale2 draw_scale) noexcept;
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
 
@@ -115,47 +117,77 @@ struct device_shared final {
     aarectangle get_bounding_box(font_glyph_ids const &glyphs) const noexcept;
 
     /** Place vertices for a single glyph.
+     *
      * @param vertices The list of vertices to add to.
-     * @param glyphs The font-id, composed-glyphs to render
-     * @param glyph_size The size of the glyph.
+     * @param clipping_rectangle The rectangle to clip the glyph.
      * @param box The rectangle of the glyph in window coordinates. The box's size must be the size
      *            of the glyph's bounding box times @a glyph_size.
+     * @param glyphs The font-id, composed-glyphs to render
      * @param color The color of the glyph.
-     * @param clippingRectangle The rectangle to clip the glyph.
      */
     void place_vertices(
         vspan<vertex> &vertices,
-        aarectangle clipping_rectangle,
-        rectangle box,
+        aarectangle const &clipping_rectangle,
+        quad const &box,
         font_glyph_ids const &glyphs,
-        float glyph_size,
-        color color) noexcept;
+        color color) noexcept
+    {
+        if (_place_vertices(vertices, clipping_rectangle, box, glyphs, color)) {
+            prepareAtlasForRendering();
+        }
+    }
 
     /** Draw the text on the screen.
-     * @param text The box of text to draw
-     * @param transform The 2D transformation to move and rotate the box to the correct position on screen.
-     * @param clippingRectangle The clipping rectangle in screen space where glyphs should be cut off.
+     *
      * @param vertices The vertices to draw the glyphs to.
+     * @param clipping_rectangle The clipping rectangle in screen space where glyphs should be cut off.
+     * @param transform The 2D transformation to move and rotate the box to the correct position on screen.
+     * @param text The box of text to draw
      */
     void place_vertices(
         vspan<vertex> &vertices,
-        aarectangle clipping_rectangle,
-        matrix3 transform,
-        shaped_text const &text) noexcept;
+        aarectangle const &clipping_rectangle,
+        geo::transformer auto const &transform,
+        shaped_text const &text) noexcept
+    {
+        auto atlas_was_updated = false;
+
+        for (ttlet &attr_glyph : text) {
+            ttlet glyph_added = _place_vertices(vertices, clipping_rectangle, transform, attr_glyph);
+            atlas_was_updated = atlas_was_updated or glyph_added;
+        }
+
+        if (atlas_was_updated) {
+            prepareAtlasForRendering();
+        }
+    }
 
     /** Draw the text on the screen.
-     * @param text The box of text to draw
-     * @param transform The 2D transformation to move and rotate the box to the correct position on screen.
-     * @param clippingRectangle The clipping rectangle in screen space where glyphs should be cut off.
+     *
      * @param vertices The vertices to draw the glyphs to.
+     * @param clipping_rectangle The clipping rectangle in screen space where glyphs should be cut off.
+     * @param transform The 2D transformation to move and rotate the box to the correct position on screen.
+     * @param text The box of text to draw
      * @param color Override the color of the text to draw.
      */
     void place_vertices(
         vspan<vertex> &vertices,
-        aarectangle clipping_rectangle,
-        matrix3 transform,
+        aarectangle const &clipping_rectangle,
+        geo::transformer auto const &transform,
         shaped_text const &text,
-        color color) noexcept;
+        color color) noexcept
+    {
+        auto atlas_was_updated = false;
+
+        for (ttlet &attr_glyph : text) {
+            ttlet glyph_added = _place_vertices(vertices, clipping_rectangle, transform, attr_glyph, color);
+            atlas_was_updated = atlas_was_updated or glyph_added;
+        }
+
+        if (atlas_was_updated) {
+            prepareAtlasForRendering();
+        }
+    }
 
 private:
     void buildShaders();
@@ -164,56 +196,36 @@ private:
     void buildAtlas();
     void teardownAtlas(gfx_device_vulkan *vulkanDevice);
 
-    /** Place vertices for a single glyph.
-     * This function will not execute prepareAtlasForRendering().
-     *
-     * @param vertices The list of vertices to add to.
-     * @param glyphs The font-id, composed-glyphs to render
-     * @param box The rectangle of the glyph in window coordinates; including the draw border.
-     * @param color The color of the glyph.
-     * @param clippingRectangle The rectangle to clip the glyph.
-     * @return True if the glyph was added to the atlas.
-     */
-    [[nodiscard]] bool _place_vertices(
+    bool _place_vertices(
+        vspan<vertex> &vertices,
+        aarectangle const &clipping_rectangle,
+        quad const &box,
+        font_glyph_ids const &glyphs,
+        color color) noexcept;
+
+    bool _place_vertices(
         vspan<vertex> &vertices,
         aarectangle clipping_rectangle,
-        rectangle box,
-        font_glyph_ids const &glyphs,
-        color color
-        ) noexcept;
-
-    /** Place an single attributed glyph.
-     * This function will not execute prepareAtlasForRendering().
-     *
-     * @param vertices The list of vertices to add to.
-     * @param attr_glyph The attributed glyph; scaled and positioned.
-     * @param transform Extra transformation on the glyph.
-     * @param clippingRectangle The rectangle to clip the glyph.
-     * @return True if the glyph was added to the atlas.
-     */
-    [[nodiscard]] bool _place_vertices(
-        vspan<vertex> &vertices,
-        aarectangle clippingRectangle,
-        matrix3 transform,
-        attributed_glyph const &attr_glyph
-        ) noexcept;
-
-    /** Place an single attributed glyph.
-     * This function will not execute prepareAtlasForRendering().
-     *
-     * @param vertices The list of vertices to add to.
-     * @param attr_glyph The attributed glyph; scaled and positioned.
-     * @param transform Extra transformation on the glyph.
-     * @param clippingRectangle The rectangle to clip the glyph.
-     * @param color Override the color from the glyph style.
-     * @return True if the glyph was added to the atlas.
-     */
-    [[nodiscard]] bool _place_vertices(
-        vspan<vertex> &vertices,
-        aarectangle clippingRectangle,
-        matrix3 transform,
+        geo::transformer auto const &transform,
         attributed_glyph const &attr_glyph,
-        color color) noexcept;
+        color color) noexcept
+    {
+        if (not is_visible(attr_glyph.general_category)) {
+            return false;
+        }
+
+        ttlet bounding_box = transform * attr_glyph.boundingBox();
+        return _place_vertices(vertices, clipping_rectangle, bounding_box, attr_glyph.glyphs, color);
+    }
+
+    bool _place_vertices(
+        vspan<vertex> &vertices,
+        aarectangle const &clipping_rectangle,
+        geo::transformer auto const &transform,
+        attributed_glyph const &attr_glyph) noexcept
+    {
+        return _place_vertices(vertices, clipping_rectangle, transform, attr_glyph, attr_glyph.style.color);
+    }
 
     atlas_rect add_glyph_to_atlas(font_glyph_ids glyph) noexcept;
 

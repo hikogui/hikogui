@@ -92,12 +92,12 @@ void window_traffic_lights_widget::set_layout(layout_context const &context) noe
         ttlet maximizeWindowGlyphBB = maximizeWindowGlyph.get_bounding_box();
         ttlet restoreWindowGlyphBB = restoreWindowGlyph.get_bounding_box();
 
-        _glyph_size = theme().operating_system == operating_system::macos ? 5.0f : theme().icon_size;
+        ttlet glyph_size = theme().operating_system == operating_system::macos ? 5.0f : theme().icon_size;
 
-        closeWindowGlyphRectangle = align(closeRectangle, closeWindowGlyphBB * _glyph_size, alignment::middle_center);
-        minimizeWindowGlyphRectangle = align(minimizeRectangle, minimizeWindowGlyphBB * _glyph_size, alignment::middle_center);
-        maximizeWindowGlyphRectangle = align(maximizeRectangle, maximizeWindowGlyphBB * _glyph_size, alignment::middle_center);
-        restoreWindowGlyphRectangle = align(maximizeRectangle, restoreWindowGlyphBB * _glyph_size, alignment::middle_center);
+        closeWindowGlyphRectangle = align(closeRectangle, closeWindowGlyphBB * glyph_size, alignment::middle_center);
+        minimizeWindowGlyphRectangle = align(minimizeRectangle, minimizeWindowGlyphBB * glyph_size, alignment::middle_center);
+        maximizeWindowGlyphRectangle = align(maximizeRectangle, maximizeWindowGlyphBB * glyph_size, alignment::middle_center);
+        restoreWindowGlyphRectangle = align(maximizeRectangle, restoreWindowGlyphBB * glyph_size, alignment::middle_center);
     }
 }
 
@@ -125,11 +125,10 @@ void window_traffic_lights_widget::drawMacOS(draw_context const &drawContext) no
 
     if (hover) {
         context.draw_glyph(
-            layout(), closeWindowGlyph, _glyph_size, translate_z(0.1f) * closeWindowGlyphRectangle, color{0.319f, 0.0f, 0.0f});
+            layout(), closeWindowGlyph, translate_z(0.1f) * closeWindowGlyphRectangle, color{0.319f, 0.0f, 0.0f});
         context.draw_glyph(
             layout(),
             minimizeWindowGlyph,
-            _glyph_size,
             translate_z(0.1f) * minimizeWindowGlyphRectangle,
             color{0.212f, 0.1f, 0.0f});
 
@@ -137,14 +136,12 @@ void window_traffic_lights_widget::drawMacOS(draw_context const &drawContext) no
             context.draw_glyph(
                 layout(),
                 restoreWindowGlyph,
-                _glyph_size,
                 translate_z(0.1f) * restoreWindowGlyphRectangle,
                 color{0.0f, 0.133f, 0.0f});
         } else {
             context.draw_glyph(
                 layout(),
                 maximizeWindowGlyph,
-                _glyph_size,
                 translate_z(0.1f) * maximizeWindowGlyphRectangle,
                 color{0.0f, 0.133f, 0.0f});
         }
@@ -183,14 +180,14 @@ void window_traffic_lights_widget::drawWindows(draw_context const &drawContext) 
 
     ttlet glyph_color = window.active ? label_color() : foreground_color();
 
-    context.draw_glyph(layout(), closeWindowGlyph, _glyph_size, translate_z(0.1f) * closeWindowGlyphRectangle, glyph_color);
-    context.draw_glyph(layout(), minimizeWindowGlyph, _glyph_size, translate_z(0.1f) * minimizeWindowGlyphRectangle, glyph_color);
+    context.draw_glyph(layout(), closeWindowGlyph, translate_z(0.1f) * closeWindowGlyphRectangle, glyph_color);
+    context.draw_glyph(layout(), minimizeWindowGlyph, translate_z(0.1f) * minimizeWindowGlyphRectangle, glyph_color);
     if (window.size_state == gui_window_size::maximized) {
         context.draw_glyph(
-            layout(), restoreWindowGlyph, _glyph_size, translate_z(0.1f) * restoreWindowGlyphRectangle, glyph_color);
+            layout(), restoreWindowGlyph, translate_z(0.1f) * restoreWindowGlyphRectangle, glyph_color);
     } else {
         context.draw_glyph(
-            layout(), maximizeWindowGlyph, _glyph_size, translate_z(0.1f) * maximizeWindowGlyphRectangle, glyph_color);
+            layout(), maximizeWindowGlyph, translate_z(0.1f) * maximizeWindowGlyphRectangle, glyph_color);
     }
 }
 

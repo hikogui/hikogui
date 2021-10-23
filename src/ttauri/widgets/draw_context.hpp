@@ -179,7 +179,7 @@ public:
      *            multiplied by @a glyph_size.
      * @param text_color The color that the glyph should be drawn in.
      */
-    void draw_glyph(layout_context const &layout, font_glyph_ids const &glyph, float glyph_size, rectangle box, color text_color)
+    void draw_glyph(layout_context const &layout, font_glyph_ids const &glyph, quad const &box, color text_color)
         const noexcept;
 
     [[nodiscard]] friend bool overlaps(draw_context const &context, layout_context const &layout) noexcept

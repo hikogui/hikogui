@@ -18,9 +18,13 @@ struct atlas_rect {
     point3 atlas_position;
     extent2 size;
 
+    /** The scaling factor used for scaling a quad to include the border.
+     */
+    scale2 scale;
+
     std::array<point3, 4> texture_coordinates;
 
-    atlas_rect(point3 atlas_position, extent2 size) noexcept;
+    atlas_rect(point3 atlas_position, extent2 size, scale2 scale) noexcept;
 };
 
 }

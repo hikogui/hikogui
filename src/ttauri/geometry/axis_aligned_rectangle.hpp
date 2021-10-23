@@ -37,7 +37,7 @@ public:
 
     constexpr explicit axis_aligned_rectangle(f32x4 const &other) noexcept : v(other)
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
 
     /** Create a box from the position and size.
@@ -49,7 +49,7 @@ public:
      */
     constexpr axis_aligned_rectangle(float x, float y, float width, float height) noexcept : v{x, y, x + width, y + height}
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
 
     /** Create a rectangle from the size.
@@ -58,7 +58,7 @@ public:
      */
     constexpr explicit axis_aligned_rectangle(extent2 const &extent) noexcept : v(static_cast<f32x4>(extent)._00xy())
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
 
     /** Create a rectangle from the left-bottom and right-top points.
@@ -68,9 +68,9 @@ public:
     constexpr axis_aligned_rectangle(point2 const &p0, point2 const &p3) noexcept :
         v(static_cast<f32x4>(p0).xy00() + static_cast<f32x4>(p3)._00xy())
     {
-        tt_axiom(p0.is_valid());
-        tt_axiom(p3.is_valid());
-        tt_axiom(is_valid());
+        tt_axiom(p0.holds_invariant());
+        tt_axiom(p3.holds_invariant());
+        tt_axiom(holds_invariant());
     }
 
     /** Create a rectangle from the size.
@@ -80,13 +80,13 @@ public:
     constexpr axis_aligned_rectangle(point2 const &p0, extent2 const &extent) noexcept :
         v(static_cast<f32x4>(p0).xyxy() + static_cast<f32x4>(extent)._00xy())
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
 
     /** Make sure p0 is left/bottom from p3.
      * @return True is p0 is left and below p3.
      */
-    [[nodiscard]] constexpr bool is_valid() const noexcept
+    [[nodiscard]] constexpr bool holds_invariant() const noexcept
     {
         return le(v, v.zwzw()) == 0b1111;
     }

@@ -38,10 +38,6 @@ private:
     static constexpr float MARGIN = 10.0f;
     static constexpr float SPACING = 8.0f;
 
-    /** Size of the glyphs of each icon.
-     */
-    float _glyph_size;
-
     aarectangle closeRectangle;
     aarectangle minimizeRectangle;
     aarectangle maximizeRectangle;

@@ -336,7 +336,7 @@ void selection_widget::draw_chevrons(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    context.draw_glyph(layout(), _chevrons_glyph, theme().icon_size, translate_z(0.2f) * _chevrons_rectangle, label_color());
+    context.draw_glyph(layout(), _chevrons_glyph, translate_z(0.2f) * _chevrons_rectangle, label_color());
 }
 
 } // namespace tt

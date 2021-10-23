@@ -5,6 +5,8 @@
 #include "vector.hpp"
 #include "point.hpp"
 #include "extent.hpp"
+#include "axis_aligned_rectangle.hpp"
+#include "rectangle.hpp"
 
 namespace tt {
 
@@ -23,6 +25,8 @@ public:
     constexpr quad(quad &&) noexcept = default;
     constexpr quad &operator=(quad const &) noexcept = default;
     constexpr quad &operator=(quad &&) noexcept = default;
+
+    constexpr quad(rectangle const &rhs) noexcept : p0(get<0>(rhs)), p1(get<1>(rhs)), p2(get<2>(rhs)), p3(get<3>(rhs)) {}
 
     /** The vector from left-bottom to right-bottom.
      */
@@ -74,36 +78,23 @@ public:
             lhs.p3 + top_extra + right_extra};
     }
 
-    /** scale the quad.
-     *
-     * Each edge of the quad scaled.
-     *
-     * @param lhs A quad.
-     * @param rhs The width and height to scale each edge with.
-     * @return The new quad extended by the size.
-     */
-    [[nodiscard]] friend constexpr quad operator*(quad const &lhs, extent2 const &rhs) noexcept
+    [[nodiscard]] friend constexpr aarectangle bounding_rectangle(quad const &rhs) noexcept
     {
-        ttlet top_extra = (lhs.top() * rhs.width() - lhs.top()) * 0.5f;
-        ttlet bottom_extra = (lhs.bottom() * rhs.width() - lhs.bottom()) * 0.5f;
-        ttlet left_extra = (lhs.left() * rhs.height() - lhs.left()) * 0.5f;
-        ttlet right_extra = (lhs.right() * rhs.height() - lhs.right()) * 0.5f;
+        auto min_p = rhs.p0;
+        auto max_p = rhs.p0;
 
-        return {
-            lhs.p0 - bottom_extra - left_extra,
-            lhs.p1 + bottom_extra - right_extra,
-            lhs.p2 - top_extra + left_extra,
-            lhs.p3 + top_extra + right_extra};
+        min_p = min(min_p, rhs.p1);
+        max_p = max(max_p, rhs.p1);
+        min_p = min(min_p, rhs.p2);
+        max_p = max(max_p, rhs.p2);
+        min_p = min(min_p, rhs.p3);
+        max_p = max(max_p, rhs.p3);
+        return aarectangle{point2{min_p}, point2{max_p}};
     }
 
     constexpr quad &operator+=(extent2 const &rhs) noexcept
     {
         return *this = *this + rhs;
-    }
-
-    constexpr quad &operator*=(extent2 const &rhs) noexcept
-    {
-        return *this = *this * rhs;
     }
 
     [[nodiscard]] friend constexpr bool operator==(quad const &lhs, quad const &rhs) noexcept = default;

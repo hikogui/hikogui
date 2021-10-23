@@ -178,8 +178,7 @@ void draw_context::draw_text(
 void draw_context::draw_glyph(
     layout_context const &layout,
     font_glyph_ids const &glyph,
-    float glyph_size,
-    rectangle box,
+    quad const &box,
     color text_color) const noexcept
 {
     tt_axiom(_sdf_vertices != nullptr);
@@ -189,7 +188,6 @@ void draw_context::draw_glyph(
         bounding_rectangle(layout.to_window * layout.clipping_rectangle),
         layout.to_window * box,
         glyph,
-        glyph_size,
         text_color);
 }
 

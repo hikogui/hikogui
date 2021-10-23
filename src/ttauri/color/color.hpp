@@ -42,7 +42,7 @@ public:
 
     [[nodiscard]] constexpr explicit color(f32x4 other) noexcept : _v(std::move(other))
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
     [[nodiscard]] constexpr explicit operator f32x4() const noexcept
     {
@@ -111,7 +111,7 @@ public:
         return _v.w();
     }
 
-    [[nodiscard]] constexpr bool is_valid() const noexcept
+    [[nodiscard]] constexpr bool holds_invariant() const noexcept
     {
         return _v.w() >= 0.0 && _v.w() <= 1.0;
     }

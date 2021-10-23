@@ -130,8 +130,7 @@ void icon_widget::draw(draw_context const &context) noexcept
 
         case icon_type::glyph: {
             ttlet box = _icon_transform * _icon_bounding_box;
-            ttlet scale = box.width() / _icon_bounding_box.width();
-            context.draw_glyph(layout(), _glyph, scale, box, theme().color(*color));
+            context.draw_glyph(layout(), _glyph, box, theme().color(*color));
         } break;
 
         default: tt_no_default();

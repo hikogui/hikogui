@@ -22,7 +22,7 @@ public:
 
     [[nodiscard]] rotate(float angle, vector<3> axis) noexcept requires(D == 3) : _v()
     {
-        tt_axiom(axis.is_valid());
+        tt_axiom(axis.holds_invariant());
         tt_axiom(std::abs(hypot(axis) - 1.0f) < 0.0001f);
 
         ttlet half_angle = angle * 0.5f;

@@ -122,7 +122,7 @@ void menu_button_widget::draw_check_mark(draw_context const &context) noexcept
 
     // Checkmark or tristate.
     if (state_ == tt::button_state::on) {
-        context.draw_glyph(layout(), _check_glyph, theme().icon_size, translate_z(0.1f) * _check_glyph_rectangle, accent_color());
+        context.draw_glyph(layout(), _check_glyph, translate_z(0.1f) * _check_glyph_rectangle, accent_color());
     }
 }
 
