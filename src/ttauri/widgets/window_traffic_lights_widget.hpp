@@ -25,8 +25,8 @@ public:
 
     /// @privatesection
     [[nodiscard]] float margin() const noexcept override;
-    void constrain() noexcept override;
-    void layout(layout_context const &context) noexcept override;
+    widget_constraints const &set_constraints() noexcept override;
+    void set_layout(widget_layout const &context) noexcept override;
     void draw(draw_context const &context) noexcept override;
     bool handle_event(mouse_event const &event) noexcept override;
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
@@ -37,10 +37,6 @@ private:
     static constexpr float DIAMETER = RADIUS * 2.0f;
     static constexpr float MARGIN = 10.0f;
     static constexpr float SPACING = 8.0f;
-
-    /** Size of the glyphs of each icon.
-     */
-    float _glyph_size;
 
     aarectangle closeRectangle;
     aarectangle minimizeRectangle;

@@ -22,14 +22,14 @@ public:
 
     [[nodiscard]] constexpr operator matrix<2>() const noexcept requires(D == 2)
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
         ttlet ones = f32x4::broadcast(1.0);
         return matrix<2>{ones.x000(), ones._0y00(), ones._00z0(), ones._000w() + _v};
     }
 
     [[nodiscard]] constexpr operator matrix<3>() const noexcept
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
         ttlet ones = f32x4::broadcast(1.0);
         return matrix<3>{ones.x000(), ones._0y00(), ones._00z0(), ones._000w() + _v};
     }
@@ -40,44 +40,44 @@ public:
 
     [[nodiscard]] constexpr explicit operator f32x4() const noexcept
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
         return _v;
     }
 
     [[nodiscard]] constexpr explicit translate(f32x4 const &other) noexcept : _v(other)
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
 
     [[nodiscard]] constexpr explicit translate(aarectangle const &other) noexcept : _v(static_cast<f32x4>(get<0>(other)).xy00())
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
 
     [[nodiscard]] constexpr explicit translate(aarectangle const &other, float z) noexcept requires(D == 3) :
         _v(static_cast<f32x4>(get<0>(other)).xy00())
     {
         _v.z() = z;
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
 
     template<int E>
     requires(E < D) [[nodiscard]] constexpr translate(translate<E> const &other) noexcept : _v(static_cast<f32x4>(other))
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
 
     template<int E>
     requires(E <= D) [[nodiscard]] constexpr explicit translate(vector<E> const &other) noexcept : _v(static_cast<f32x4>(other))
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
 
     template<int E>
     requires(E <= D) [[nodiscard]] constexpr explicit translate(point<E> const &other) noexcept :
         _v(static_cast<f32x4>(other).xyz0())
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
 
     [[nodiscard]] constexpr translate(float x, float y) noexcept requires(D == 2) : _v(x, y, 0.0, 0.0) {}
@@ -128,14 +128,14 @@ public:
     [[nodiscard]] constexpr vector<E> operator*(vector<E> const &rhs) const noexcept
     {
         // Vectors are not translated.
-        tt_axiom(is_valid() && rhs.is_valid());
+        tt_axiom(holds_invariant() && rhs.holds_invariant());
         return rhs;
     }
 
     template<int E>
     [[nodiscard]] constexpr point<std::max(D, E)> operator*(point<E> const &rhs) const noexcept
     {
-        tt_axiom(is_valid() && rhs.is_valid());
+        tt_axiom(holds_invariant() && rhs.holds_invariant());
         return point<std::max(D, E)>{_v + static_cast<f32x4>(rhs)};
     }
 
@@ -156,28 +156,28 @@ public:
 
     [[nodiscard]] constexpr translate operator*(identity const &) const noexcept
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
         return *this;
     }
 
     template<int E>
     [[nodiscard]] constexpr auto operator*(matrix<E> const &rhs) const noexcept
     {
-        tt_axiom(is_valid() && rhs.is_valid());
+        tt_axiom(holds_invariant() && rhs.holds_invariant());
         return matrix<std::max(D, E)>{get<0>(rhs), get<1>(rhs), get<2>(rhs), get<3>(rhs) + _v};
     }
 
     template<int E>
     [[nodiscard]] constexpr auto operator*(translate<E> const &rhs) const noexcept
     {
-        tt_axiom(is_valid() && rhs.is_valid());
+        tt_axiom(holds_invariant() && rhs.holds_invariant());
         return translate<std::max(D, E)>{_v + static_cast<f32x4>(rhs)};
     }
 
     template<int E>
     [[nodiscard]] constexpr bool operator==(translate<E> const &rhs) const noexcept
     {
-        tt_axiom(is_valid() && rhs.is_valid());
+        tt_axiom(holds_invariant() && rhs.holds_invariant());
         return _v == static_cast<f32x4>(rhs);
     }
 
@@ -186,7 +186,7 @@ public:
         return translate{-_v};
     }
 
-    [[nodiscard]] constexpr bool is_valid() const noexcept
+    [[nodiscard]] constexpr bool holds_invariant() const noexcept
     {
         return _v.w() == 0.0f && (D == 3 || _v.z() == 0.0f);
     }

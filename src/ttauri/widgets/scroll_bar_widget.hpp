@@ -41,37 +41,34 @@ public:
 
     ~scroll_bar_widget() {}
 
-    void constrain() noexcept override
+    widget_constraints const &set_constraints() noexcept override
     {
-        tt_axiom(is_gui_thread());
-
         _layout = {};
 
         if constexpr (axis == axis::vertical) {
-            _minimum_size = _preferred_size = {theme().icon_size, theme().large_size};
-            _maximum_size = {theme().icon_size, 32767.0f};
+            return _constraints = {
+                       {theme().icon_size, theme().large_size},
+                       {theme().icon_size, theme().large_size},
+                       {theme().icon_size, 32767.0f}};
         } else {
-            _minimum_size = _preferred_size = {theme().large_size, theme().icon_size};
-            _maximum_size = {32767.0f, theme().icon_size};
+            return _constraints = {
+                       {theme().large_size, theme().icon_size},
+                       {theme().large_size, theme().icon_size},
+                       {32767.0f, theme().icon_size}};
         }
-        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
     }
 
-    void layout(layout_context const &context) noexcept override
+    void set_layout(widget_layout const &context) noexcept override
     {
-        tt_axiom(is_gui_thread());
-
         if (visible) {
             _layout.store(context);
 
             // Calculate the position of the slider.
             ttlet slider_offset = *offset * travel_vs_hidden_content_ratio();
             if constexpr (axis == axis::vertical) {
-                _slider_rectangle =
-                    aarectangle{rectangle().left(), rectangle().bottom() + slider_offset, rectangle().width(), slider_length()};
+                _slider_rectangle = aarectangle{0.0f, slider_offset, layout().width(), slider_length()};
             } else {
-                _slider_rectangle =
-                    aarectangle{rectangle().left() + slider_offset, rectangle().bottom(), slider_length(), rectangle().height()};
+                _slider_rectangle = aarectangle{slider_offset, 0.0f, slider_length(), layout().height()};
             }
         }
     }
@@ -80,7 +77,7 @@ public:
     {
         tt_axiom(is_gui_thread());
 
-        if (visible and overlaps(context, _layout)) {
+        if (visible and overlaps(context, layout())) {
             draw_rails(context);
             draw_slider(context);
         }
@@ -90,7 +87,7 @@ public:
     {
         tt_axiom(is_gui_thread());
 
-        if (visible and _layout.hit_rectangle.contains(position) and _slider_rectangle.contains(position)) {
+        if (visible and layout().hit_rectangle.contains(position) and _slider_rectangle.contains(position)) {
             return hitbox{this, position};
         } else {
             return hitbox{};
@@ -153,7 +150,7 @@ private:
     [[nodiscard]] float rail_length() const noexcept
     {
         tt_axiom(is_gui_thread());
-        return axis == axis::vertical ? rectangle().height() : rectangle().width();
+        return axis == axis::vertical ? layout().height() : layout().width();
     }
 
     [[nodiscard]] float slider_length() const noexcept
@@ -208,9 +205,9 @@ private:
     {
         tt_axiom(is_gui_thread());
 
-        ttlet corner_shapes = axis == axis::vertical ? tt::corner_shapes{rectangle().width() * 0.5f} :
-                                                       tt::corner_shapes{rectangle().height() * 0.5f};
-        context.draw_box(_layout, rectangle(), background_color(), corner_shapes);
+        ttlet corner_shapes =
+            axis == axis::vertical ? tt::corner_shapes{layout().width() * 0.5f} : tt::corner_shapes{layout().height() * 0.5f};
+        context.draw_box(layout(), layout().rectangle(), background_color(), corner_shapes);
     }
 
     void draw_slider(draw_context const &context) noexcept
@@ -220,7 +217,7 @@ private:
         ttlet corner_shapes = axis == axis::vertical ? tt::corner_shapes{_slider_rectangle.width() * 0.5f} :
                                                        tt::corner_shapes{_slider_rectangle.height() * 0.5f};
 
-        context.draw_box(_layout, translate_z(0.1f) * _slider_rectangle, foreground_color(), corner_shapes);
+        context.draw_box(layout(), translate_z(0.1f) * _slider_rectangle, foreground_color(), corner_shapes);
     }
 };
 

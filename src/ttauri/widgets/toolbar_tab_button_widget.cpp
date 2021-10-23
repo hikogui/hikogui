@@ -7,31 +7,23 @@
 
 namespace tt {
 
-void toolbar_tab_button_widget::constrain() noexcept
+widget_constraints const &toolbar_tab_button_widget::set_constraints() noexcept
 {
-    tt_axiom(is_gui_thread());
-
     _layout = {};
-    constrain_button();
 
     // On left side a check mark, on right side short-cut. Around the label extra margin.
     ttlet extra_size = extent2{theme().margin * 2.0f, theme().margin};
-    _minimum_size += extra_size;
-    _preferred_size += extra_size;
-    _maximum_size += extra_size;
-
-    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
+    return _constraints = set_constraints_button() + extra_size;
 }
 
-void toolbar_tab_button_widget::layout(layout_context const &context) noexcept
+void toolbar_tab_button_widget::set_layout(widget_layout const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (visible) {
         if (_layout.store(context) >= layout_update::transform) {
-            _label_rectangle = aarectangle{theme().margin, 0.0f, width() - theme().margin * 2.0f, height() - theme().margin};
+            _label_rectangle =
+                aarectangle{theme().margin, 0.0f, layout().width() - theme().margin * 2.0f, layout().height() - theme().margin};
         }
-        layout_button(context);
+        set_layout_button(context);
     }
 }
 
@@ -39,7 +31,7 @@ void toolbar_tab_button_widget::draw(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (visible and overlaps(context, _layout)) {
+    if (visible and overlaps(context, layout())) {
         draw_toolbar_tab_button(context);
         draw_button(context);
     }
@@ -93,8 +85,7 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const &cont
     // Draw the outline of the button across the clipping rectangle to clip the
     // bottom of the outline.
     ttlet offset = theme().margin + theme().border_width;
-    ttlet outline_rectangle =
-        aarectangle{rectangle().left(), rectangle().bottom() - offset, rectangle().width(), rectangle().height() + offset};
+    ttlet outline_rectangle = aarectangle{0.0f, -offset, layout().width(), layout().height() + offset};
 
     // The focus line will be placed at 0.7.
     ttlet button_z = (focus && window.active) ? translate_z(0.8f) : translate_z(0.6f);
@@ -104,7 +95,7 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const &cont
 
     ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme().rounding_radius, theme().rounding_radius};
     context.draw_box_with_border_inside(
-        _layout,
+        layout(),
         button_z * outline_rectangle,
         button_color,
         (focus && window.active) ? focus_color() : button_color,

@@ -31,7 +31,7 @@ public:
     template<int E>
     requires(E < D) [[nodiscard]] constexpr vector(vector<E> const &other) noexcept : _v(static_cast<f32x4>(other))
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
 
     /** Construct a vector from a higher dimension vector.
@@ -43,7 +43,7 @@ public:
         for (size_t i = D; i != E; ++i) {
             _v[i] = 0.0f;
         }
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
 
     /** Convert a vector to its f32x4-nummeric_array.
@@ -57,7 +57,7 @@ public:
      */
     [[nodiscard]] constexpr explicit vector(f32x4 const &other) noexcept : _v(other)
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
 
     /** Construct a empty vector / zero length.
@@ -130,14 +130,14 @@ public:
      */
     [[nodiscard]] constexpr vector operator-() const noexcept
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
         return vector{-_v};
     }
 
     template<int E> requires (E <= D)
     constexpr vector &operator+=(vector<E> const &rhs) noexcept
     {
-        tt_axiom(is_valid() && rhs.is_valid());
+        tt_axiom(holds_invariant() && rhs.holds_invariant());
         _v = _v + static_cast<f32x4>(rhs);
         return *this;
     }
@@ -149,7 +149,7 @@ public:
      */
     [[nodiscard]] constexpr friend vector operator+(vector const &lhs, vector const &rhs) noexcept
     {
-        tt_axiom(lhs.is_valid() && rhs.is_valid());
+        tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return vector{lhs._v + rhs._v};
     }
 
@@ -160,7 +160,7 @@ public:
      */
     [[nodiscard]] constexpr friend vector operator-(vector const &lhs, vector const &rhs) noexcept
     {
-        tt_axiom(lhs.is_valid() && rhs.is_valid());
+        tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return vector{lhs._v - rhs._v};
     }
 
@@ -171,7 +171,7 @@ public:
      */
     [[nodiscard]] constexpr friend vector operator*(vector const &lhs, float const &rhs) noexcept
     {
-        tt_axiom(lhs.is_valid());
+        tt_axiom(lhs.holds_invariant());
         return vector{lhs._v * rhs};
     }
 
@@ -182,7 +182,7 @@ public:
      */
     [[nodiscard]] constexpr friend vector operator*(float const &lhs, vector const &rhs) noexcept
     {
-        tt_axiom(rhs.is_valid());
+        tt_axiom(rhs.holds_invariant());
         return vector{f32x4::broadcast(lhs) * rhs._v};
     }
 
@@ -193,7 +193,7 @@ public:
      */
     [[nodiscard]] constexpr friend bool operator==(vector const &lhs, vector const &rhs) noexcept
     {
-        tt_axiom(lhs.is_valid() && rhs.is_valid());
+        tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return lhs._v == rhs._v;
     }
 
@@ -203,7 +203,7 @@ public:
      */
     [[nodiscard]] constexpr friend float squared_hypot(vector const &rhs) noexcept
     {
-        tt_axiom(rhs.is_valid());
+        tt_axiom(rhs.holds_invariant());
         return squared_hypot<element_mask>(rhs._v);
     }
 
@@ -213,7 +213,7 @@ public:
      */
     [[nodiscard]] constexpr friend float hypot(vector const &rhs) noexcept
     {
-        tt_axiom(rhs.is_valid());
+        tt_axiom(rhs.holds_invariant());
         return hypot<element_mask>(rhs._v);
     }
 
@@ -223,7 +223,7 @@ public:
      */
     [[nodiscard]] constexpr friend float rcp_hypot(vector const &rhs) noexcept
     {
-        tt_axiom(rhs.is_valid());
+        tt_axiom(rhs.holds_invariant());
         return rcp_hypot<element_mask>(rhs._v);
     }
 
@@ -233,7 +233,7 @@ public:
      */
     [[nodiscard]] constexpr friend vector normalize(vector const &rhs) noexcept
     {
-        tt_axiom(rhs.is_valid());
+        tt_axiom(rhs.holds_invariant());
         return vector{normalize<element_mask>(rhs._v)};
     }
 
@@ -244,7 +244,7 @@ public:
      */
     [[nodiscard]] constexpr friend float dot(vector const &lhs, vector const &rhs) noexcept
     {
-        tt_axiom(lhs.is_valid() && rhs.is_valid());
+        tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return dot<element_mask>(lhs._v, rhs._v);
     }
 
@@ -294,7 +294,7 @@ public:
     /** Check if the vector is valid.
      * This function will check if w is zero, and with 2D vector is z is zero.
      */
-    [[nodiscard]] constexpr bool is_valid() const noexcept
+    [[nodiscard]] constexpr bool holds_invariant() const noexcept
     {
         return _v.w() == 0.0f && (D == 3 || _v.z() == 0.0f);
     }
@@ -327,7 +327,7 @@ private:
  */
 [[nodiscard]] constexpr vector<2> cross(vector<2> const &rhs) noexcept
 {
-    tt_axiom(rhs.is_valid());
+    tt_axiom(rhs.holds_invariant());
     return vector<2>{cross_2D(static_cast<f32x4>(rhs))};
 }
 
@@ -337,7 +337,7 @@ private:
  */
 [[nodiscard]] constexpr vector<2> normal(vector<2> const &rhs) noexcept
 {
-    tt_axiom(rhs.is_valid());
+    tt_axiom(rhs.holds_invariant());
     return normalize(cross(rhs));
 }
 
@@ -351,7 +351,7 @@ private:
  */
 [[nodiscard]] constexpr float cross(vector<2> const &lhs, vector<2> const &rhs) noexcept
 {
-    tt_axiom(lhs.is_valid() && rhs.is_valid());
+    tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
     return cross_2D(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs));
 }
 
@@ -362,7 +362,7 @@ private:
  */
 [[nodiscard]] constexpr vector<3> cross(vector<3> const &lhs, vector<3> const &rhs) noexcept
 {
-    tt_axiom(lhs.is_valid() && rhs.is_valid());
+    tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
     return vector<3>{cross_3D(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs))};
 }
 

@@ -24,18 +24,18 @@ widget::widget(gui_window &_window, widget *parent) noexcept :
         request_redraw();
     });
     _relayout_callback = std::make_shared<std::function<void()>>([this] {
-        request_relayout();
+        window.request_relayout();
     });
     _reconstrain_callback = std::make_shared<std::function<void()>>([this] {
-        request_reconstrain();
+        window.request_reconstrain();
     });
 
     enabled.subscribe(_redraw_callback);
     visible.subscribe(_reconstrain_callback);
 
-    _minimum_size = extent2::nan();
-    _preferred_size = extent2::nan();
-    _maximum_size = extent2::nan();
+    _constraints.minimum = extent2::nan();
+    _constraints.preferred = extent2::nan();
+    _constraints.maximum = extent2::nan();
 }
 
 widget::~widget()
@@ -129,111 +129,9 @@ tt::font_book &widget::font_book() const noexcept
     }
 }
 
-/** Minimum size.
- * The absolute minimum size of the widget.
- * A container will never reserve less space for the widget.
- * For windows this size becomes a hard limit for the minimum window size.
- */
-[[nodiscard]] extent2 widget::minimum_size() const noexcept
-{
-    tt_axiom(is_gui_thread());
-    return _minimum_size;
-}
-
-/** Preferred size.
- * The preferred size of a widget.
- * Containers will initialize their layout algorithm at this size
- * before growing or shrinking.
- * For scroll-views this size will be used in the scroll-direction.
- * For tab-views this is propagated.
- * For windows this size is used to set the initial window size.
- */
-[[nodiscard]] extent2 widget::preferred_size() const noexcept
-{
-    tt_axiom(is_gui_thread());
-    return _preferred_size;
-}
-
-/** Maximum size.
- * The maximum size of a widget.
- * Containers will try to not grow a widget beyond the maximum size,
- * but it may do so to satisfy the minimum constraint on a neighboring widget.
- * For windows the maximum size becomes a hard limit for the window size.
- */
-[[nodiscard]] extent2 widget::maximum_size() const noexcept
-{
-    tt_axiom(is_gui_thread());
-    return _maximum_size;
-}
-
-[[nodiscard]] matrix3 widget::parent_to_local() const noexcept
-{
-    tt_axiom(is_gui_thread());
-    return _layout.from_parent;
-}
-
-[[nodiscard]] matrix3 widget::window_to_local() const noexcept
-{
-    tt_axiom(is_gui_thread());
-    return _layout.from_window;
-}
-
-[[nodiscard]] extent2 widget::size() const noexcept
-{
-    tt_axiom(is_gui_thread());
-    return _layout.rectangle.size();
-}
-
-[[nodiscard]] float widget::width() const noexcept
-{
-    tt_axiom(is_gui_thread());
-    return _layout.rectangle.width();
-}
-
-[[nodiscard]] float widget::height() const noexcept
-{
-    tt_axiom(is_gui_thread());
-    return _layout.rectangle.height();
-}
-
-/** Get the rectangle in local coordinates.
- *
- * @pre `mutex` must be locked by current thread.
- */
-[[nodiscard]] aarectangle widget::rectangle() const noexcept
-{
-    tt_axiom(is_gui_thread());
-    return _layout.rectangle;
-}
-
-/** Return the base-line where the text should be located.
- * @return Number of pixels from the bottom of the widget where the base-line is located.
- */
-[[nodiscard]] float widget::base_line() const noexcept
-{
-    tt_axiom(is_gui_thread());
-    return rectangle().middle();
-}
-
-[[nodiscard]] aarectangle widget::clipping_rectangle() const noexcept
-{
-    tt_axiom(is_gui_thread());
-    return _layout.clipping_rectangle;
-}
-
 void widget::request_redraw() const noexcept
 {
-    window.request_redraw(_layout.redraw_rectangle);
-}
-
-void widget::request_relayout() noexcept
-{
-    window.request_relayout();
-}
-
-void widget::request_reconstrain() noexcept
-{
-    window.request_reconstrain();
+    window.request_redraw(layout().redraw_rectangle);
 }
 
 [[nodiscard]] bool widget::handle_event(std::vector<command> const &commands) noexcept
@@ -258,7 +156,7 @@ void widget::request_reconstrain() noexcept
         if (child) {
             tt_axiom(child->parent == this);
             if (child->visible) {
-                r = std::max(r, child->hitbox_test(child->parent_to_local() * position));
+                r = std::max(r, child->hitbox_test(child->layout().from_parent * position));
             }
         }
     }
@@ -464,10 +362,10 @@ void widget::scroll_to_show(tt::aarectangle rectangle) noexcept
     tt_axiom(is_gui_thread());
 
     // Move the request_rectangle to window coordinates.
-    ttlet requested_window_rectangle = translate2{_layout.redraw_rectangle - theme().margin} * requested_rectangle;
+    ttlet requested_window_rectangle = translate2{layout().redraw_rectangle - theme().margin} * requested_rectangle;
     ttlet window_bounds = aarectangle{window.screen_rectangle.size()} - theme().margin;
     ttlet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
-    return bounding_rectangle(window_to_local() * response_window_rectangle);
+    return bounding_rectangle(layout().from_window * response_window_rectangle);
 }
 
 } // namespace tt

@@ -16,7 +16,8 @@
 #include "../chrono.hpp"
 #include "../coroutine.hpp"
 #include "draw_context.hpp"
-#include "layout_context.hpp"
+#include "widget_constraints.hpp"
+#include "widget_layout.hpp"
 #include <memory>
 #include <vector>
 #include <string>
@@ -31,8 +32,8 @@ class font_book;
 /** An interactive graphical object as part of the user-interface.
  *
  * Rendering is done in three distinct phases:
- *  1. Updating Constraints: `widget::constrain()`
- *  2. Updating Layout: `widget::layout()`
+ *  1. Updating Constraints: `widget::set_constraints()`
+ *  2. Updating Layout: `widget::set_layout()`
  *  3. Drawing: `widget::draw()`
  *
  */
@@ -127,54 +128,6 @@ public:
      */
     [[nodiscard]] virtual float margin() const noexcept;
 
-    /** Minimum size.
-     * The absolute minimum size of the widget.
-     * A container will never reserve less space for the widget.
-     * For windows this size becomes a hard limit for the minimum window size.
-     */
-    [[nodiscard]] extent2 minimum_size() const noexcept;
-
-    /** Preferred size.
-     * The preferred size of a widget.
-     * Containers will initialize their layout algorithm at this size
-     * before growing or shrinking.
-     * For scroll-views this size will be used in the scroll-direction.
-     * For tab-views this is propagated.
-     * For windows this size is used to set the initial window size.
-     */
-    [[nodiscard]] extent2 preferred_size() const noexcept;
-
-    /** Maximum size.
-     * The maximum size of a widget.
-     * Containers will try to not grow a widget beyond the maximum size,
-     * but it may do so to satisfy the minimum constraint on a neighboring widget.
-     * For windows the maximum size becomes a hard limit for the window size.
-     */
-    [[nodiscard]] extent2 maximum_size() const noexcept;
-
-    [[nodiscard]] matrix3 parent_to_local() const noexcept;
-
-    [[nodiscard]] matrix3 window_to_local() const noexcept;
-
-    [[nodiscard]] extent2 size() const noexcept;
-
-    [[nodiscard]] float width() const noexcept;
-
-    [[nodiscard]] float height() const noexcept;
-
-    /** Get the rectangle in local coordinates.
-     *
-     * @pre `mutex` must be locked by current thread.
-     */
-    [[nodiscard]] aarectangle rectangle() const noexcept;
-
-    /** Return the base-line where the text should be located.
-     * @return Number of pixels from the bottom of the widget where the base-line is located.
-     */
-    [[nodiscard]] virtual float base_line() const noexcept;
-
-    [[nodiscard]] aarectangle clipping_rectangle() const noexcept;
-
     /** Find the widget that is under the mouse cursor.
      * This function will recursively test with visual child widgets, when
      * widgets overlap on the screen the hitbox object with the highest elevation is returned.
@@ -195,25 +148,23 @@ public:
     }
 
     /** Update the constraints of the widget.
-     * This function is called on each vertical sync, even if no drawing is to be done.
      *
-     * This function may be used for expensive calculations, such as text-shaping, which
-     * should only be done when the data changes. Because this function is called on every
-     * vertical sync it should cache these calculations.
-     *
-     * Subclasses should call `constrain()` on its base-class to check if its or any of
-     * its children's constraints where changed, before doing specific constraining
-     *
+     * Typically the implementation of this function starts with recursively calling set_constraints()
+     * on its children.
+     * 
+     * 
      * If the container, due to a change in constraints, wants the window to resize to the minimum size
      * it should set `window::request_resize` to `true`.
      *
      * @post This function will change what is returned by `widget::minimum_size()`, `widget::preferred_size()`
      *       and `widget::maximum_size()`.
-     * @param display_time_point The time point when the widget will be shown on the screen.
-     * @param need_reconstrain Force the widget to re-constrain.
-     * @return True if its or any children's constraints has changed.
      */
-    virtual void constrain() noexcept = 0;
+    virtual widget_constraints const &set_constraints() noexcept = 0;
+
+    widget_constraints const &constraints() const noexcept
+    {
+        return _constraints;
+    }
 
     /** Update the internal layout of the widget.
      * This function is called when the size of this widget must change, or if any of the
@@ -227,19 +178,17 @@ public:
      * @param context The layout context for this child.
      * @return The new size of the widget, should be a copy of the new_size parameter.
      */
-    virtual void layout(layout_context const &context) noexcept = 0;
+    virtual void set_layout(widget_layout const &context) noexcept = 0;
 
-    virtual [[nodiscard]] color background_color() const noexcept;
-
-    virtual [[nodiscard]] color foreground_color() const noexcept;
-
-    virtual [[nodiscard]] color focus_color() const noexcept;
-
-    virtual [[nodiscard]] color accent_color() const noexcept;
-
-    virtual [[nodiscard]] color label_color() const noexcept;
+    /** Get the current layout for this widget.
+     */
+    widget_layout const &layout() const noexcept
+    {
+        return _layout;
+    }
 
     /** Draw the widget.
+     *
      * This function is called by the window (optionally) on every frame.
      * It should recursively call this function on every visible child.
      * This function is only called when `updateLayout()` has returned true.
@@ -250,28 +199,13 @@ public:
      * for alpha-compositing. However the pipelines are always drawn in the same
      * order.
      *
-     * @pre `mutex` must be locked by current thread.
      * @param context The context to where the widget will draw.
-     * @param display_time_point The time point when the widget will be shown on the screen.
      */
     virtual void draw(draw_context const &context) noexcept = 0;
 
     /** Request the widget to be redrawn on the next frame.
      */
     virtual void request_redraw() const noexcept;
-
-    /** Request the widget to be layed-out again.
-     *
-     * This should be done if the change of data needs a recalculation of the layout.
-     */
-    void request_relayout() noexcept;
-
-    /** Request the widget to be constrained again.
-     *
-     * This should be done if the change of data would cause the minimum/maximum/preferred size
-     * of this widget to change.
-     */
-    void request_reconstrain() noexcept;
 
     /** Handle command.
      * If a widget does not fully handle a command it should pass the
@@ -355,7 +289,7 @@ public:
      */
     void scroll_to_show() noexcept
     {
-        scroll_to_show(_layout.redraw_rectangle);
+        scroll_to_show(layout().redraw_rectangle);
     }
 
     /** Get a list of parents of a given widget.
@@ -363,12 +297,19 @@ public:
      */
     [[nodiscard]] std::vector<widget const *> parent_chain() const noexcept;
 
-protected:
-    layout_context _layout;
+    virtual [[nodiscard]] color background_color() const noexcept;
 
-    extent2 _minimum_size;
-    extent2 _preferred_size;
-    extent2 _maximum_size;
+    virtual [[nodiscard]] color foreground_color() const noexcept;
+
+    virtual [[nodiscard]] color focus_color() const noexcept;
+
+    virtual [[nodiscard]] color accent_color() const noexcept;
+
+    virtual [[nodiscard]] color label_color() const noexcept;
+
+protected:
+    widget_constraints _constraints;
+    widget_layout _layout;
 
     std::shared_ptr<std::function<void()>> _redraw_callback;
     std::shared_ptr<std::function<void()>> _relayout_callback;

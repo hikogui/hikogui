@@ -8,7 +8,8 @@
 
 namespace tt::pipeline_SDF {
 
-atlas_rect::atlas_rect(point3 atlas_position, extent2 size) noexcept : atlas_position(atlas_position), size(ceil(size))
+atlas_rect::atlas_rect(point3 atlas_position, extent2 size, scale2 scale) noexcept :
+    atlas_position(atlas_position), size(ceil(size)), scale(scale)
 {
     ttlet atlas_px_rect = rectangle{atlas_position, size};
 

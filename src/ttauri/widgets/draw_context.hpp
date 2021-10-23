@@ -14,7 +14,7 @@
 #include "../geometry/transform.hpp"
 #include "../color/color.hpp"
 #include "../vspan.hpp"
-#include "layout_context.hpp"
+#include "widget_layout.hpp"
 
 namespace tt {
 class gfx_device;
@@ -69,7 +69,7 @@ public:
      *  - cornerShapes
      */
     void draw_box(
-        layout_context const &layout,
+        widget_layout const &layout,
         rectangle box,
         color fill_color,
         color line_color,
@@ -77,12 +77,12 @@ public:
         tt::corner_shapes corner_shapes = tt::corner_shapes{}) const noexcept;
 
     void
-    draw_box(layout_context const &layout, rectangle box, color fill_color, color line_color, tt::corner_shapes corner_shapes)
+    draw_box(widget_layout const &layout, rectangle box, color fill_color, color line_color, tt::corner_shapes corner_shapes)
         const noexcept;
 
-    void draw_box(layout_context const &layout, rectangle box, color fill_color, tt::corner_shapes corner_shapes) const noexcept;
+    void draw_box(widget_layout const &layout, rectangle box, color fill_color, tt::corner_shapes corner_shapes) const noexcept;
 
-    void draw_box(layout_context const &layout, rectangle box, color fill_color) const noexcept;
+    void draw_box(widget_layout const &layout, rectangle box, color fill_color) const noexcept;
 
     /** Draw an axis aligned box
      * This function will shrink to include the size of the border inside
@@ -100,7 +100,7 @@ public:
      *  - corner_shapes
      */
     void draw_box_with_border_inside(
-        layout_context const &layout,
+        widget_layout const &layout,
         rectangle rectangle,
         color fill_color,
         color line_color,
@@ -108,7 +108,7 @@ public:
         tt::corner_shapes corner_shapes = tt::corner_shapes{}) const noexcept;
 
     void draw_box_with_border_inside(
-        layout_context const &layout,
+        widget_layout const &layout,
         rectangle rectangle,
         color fill_color,
         color line_color,
@@ -132,7 +132,7 @@ public:
      *  - cornerShapes
      */
     void draw_box_with_border_outside(
-        layout_context const &layout,
+        widget_layout const &layout,
         rectangle rectangle,
         color fill_color,
         color line_color,
@@ -140,7 +140,7 @@ public:
         tt::corner_shapes corner_shapes = tt::corner_shapes{}) const noexcept;
 
     void draw_box_with_border_outside(
-        layout_context const &layout,
+        widget_layout const &layout,
         rectangle rectangle,
         color fill_color,
         color line_color,
@@ -153,7 +153,7 @@ public:
      *  - transform, to transform the image.
      *  - clippingRectangle
      */
-    void draw_image(layout_context const &layout, pipeline_image::image &image, matrix3 image_transform) const noexcept;
+    void draw_image(widget_layout const &layout, pipeline_image::image &image, matrix3 image_transform) const noexcept;
 
     /** Draw shaped text.
      * This function will draw the shaped text.
@@ -166,7 +166,7 @@ public:
      * @param useContextColor When true display the text in the context's color, if false use text style color
      */
     void draw_text(
-        layout_context const &layout,
+        widget_layout const &layout,
         shaped_text const &text,
         std::optional<color> text_color = {},
         matrix3 transform = geo::identity{}) const noexcept;
@@ -179,10 +179,10 @@ public:
      *            multiplied by @a glyph_size.
      * @param text_color The color that the glyph should be drawn in.
      */
-    void draw_glyph(layout_context const &layout, font_glyph_ids const &glyph, float glyph_size, rectangle box, color text_color)
+    void draw_glyph(widget_layout const &layout, font_glyph_ids const &glyph, quad const &box, color text_color)
         const noexcept;
 
-    [[nodiscard]] friend bool overlaps(draw_context const &context, layout_context const &layout) noexcept
+    [[nodiscard]] friend bool overlaps(draw_context const &context, widget_layout const &layout) noexcept
     {
         return overlaps(context.scissor_rectangle, layout.redraw_rectangle);
     }

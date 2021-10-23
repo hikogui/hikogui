@@ -125,7 +125,7 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr bool is_valid() const noexcept
+    [[nodiscard]] constexpr bool holds_invariant() const noexcept
     {
         return true;
     }
@@ -138,7 +138,7 @@ public:
     template<int E>
     [[nodiscard]] constexpr auto operator*(vector<E> const &rhs) const noexcept
     {
-        tt_axiom(rhs.is_valid());
+        tt_axiom(rhs.holds_invariant());
         return vector<std::max(D, E)>{
             _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy() +
             _col2 * static_cast<f32x4>(rhs).zzzz()};
@@ -147,7 +147,7 @@ public:
     template<int E>
     [[nodiscard]] constexpr auto operator*(extent<E> const &rhs) const noexcept
     {
-        tt_axiom(rhs.is_valid());
+        tt_axiom(rhs.holds_invariant());
         return extent<std::max(D, E)>{
             _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy() +
             _col2 * static_cast<f32x4>(rhs).zzzz()};
@@ -156,7 +156,7 @@ public:
     template<int E>
     [[nodiscard]] constexpr auto operator*(point<E> const &rhs) const noexcept
     {
-        tt_axiom(rhs.is_valid());
+        tt_axiom(rhs.holds_invariant());
         return point<std::max(D, E)>{
             _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy() +
             _col2 * static_cast<f32x4>(rhs).zzzz() + _col3 * static_cast<f32x4>(rhs).wwww()};
@@ -178,7 +178,7 @@ public:
      */
     [[nodiscard]] constexpr auto operator*(color const &rhs) const noexcept
     {
-        tt_axiom(rhs.is_valid());
+        tt_axiom(rhs.holds_invariant());
         auto r = color{
             _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy() +
             _col2 * static_cast<f32x4>(rhs).zzzz() + _col3};

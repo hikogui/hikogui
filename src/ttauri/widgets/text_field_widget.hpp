@@ -74,8 +74,8 @@ public:
     }
 
     /// @privatesection
-    void constrain() noexcept override;
-    void layout(layout_context const &context) noexcept override;
+    widget_constraints const &set_constraints() noexcept override;
+    void set_layout(widget_layout const &context) noexcept override;
     void draw(draw_context const &context) noexcept override;
     bool handle_event(command command) noexcept override;
     bool handle_event(mouse_event const &event) noexcept override;

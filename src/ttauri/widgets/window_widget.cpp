@@ -46,43 +46,41 @@ void window_widget::constructor_implementation() noexcept
     co_yield _content.get();
 }
 
-void window_widget::constrain() noexcept
+widget_constraints const &window_widget::set_constraints() noexcept
 {
-    tt_axiom(is_gui_thread());
-
     _layout = {};
-    _toolbar->constrain();
-    _content->constrain();
+    ttlet toolbar_constraints = _toolbar->set_constraints();
+    ttlet content_constraints = _content->set_constraints();
 
-    _minimum_size = {
-        std::max(_toolbar->minimum_size().width(), _content->minimum_size().width()),
-        _toolbar->preferred_size().height() + _content->minimum_size().height()};
+    _constraints.minimum = {
+        std::max(toolbar_constraints.minimum.width(), content_constraints.minimum.width()),
+        toolbar_constraints.preferred.height() + content_constraints.minimum.height()};
 
-    _preferred_size = {
-        std::max(_toolbar->preferred_size().width(), _content->preferred_size().width()),
-        _toolbar->preferred_size().height() + _content->preferred_size().height()};
+    _constraints.preferred = {
+        std::max(toolbar_constraints.preferred.width(), content_constraints.preferred.width()),
+        toolbar_constraints.preferred.height() + content_constraints.preferred.height()};
 
-    _maximum_size = {_content->maximum_size().width(), _toolbar->preferred_size().height() + _content->maximum_size().height()};
+    _constraints.maximum = {
+        content_constraints.maximum.width(), toolbar_constraints.preferred.height() + content_constraints.maximum.height()};
 
     // Override maximum size and preferred size.
-    _maximum_size = max(_maximum_size, _minimum_size);
-    _preferred_size = clamp(_preferred_size, _minimum_size, _maximum_size);
+    _constraints.maximum = max(_constraints.maximum, _constraints.minimum);
+    _constraints.preferred = clamp(_constraints.preferred, _constraints.minimum, _constraints.maximum);
 
-    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
+    tt_axiom(_constraints.holds_invariant());
+    return _constraints;
 }
 
-void window_widget::layout(layout_context const &context) noexcept
+void window_widget::set_layout(widget_layout const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (visible) {
         if (_layout.store(context) >= layout_update::transform) {
-            ttlet toolbar_height = _toolbar->preferred_size().height();
-            _toolbar_rectangle = aarectangle{0.0f, rectangle().height() - toolbar_height, rectangle().width(), toolbar_height};
-            _content_rectangle = aarectangle{0.0f, 0.0f, rectangle().width(), rectangle().height() - toolbar_height};
+            ttlet toolbar_height = _toolbar->constraints().preferred.height();
+            _toolbar_rectangle = aarectangle{0.0f, layout().height() - toolbar_height, layout().width(), toolbar_height};
+            _content_rectangle = aarectangle{0.0f, 0.0f, layout().width(), layout().height() - toolbar_height};
         }
-        _toolbar->layout(_toolbar_rectangle * context);
-        _content->layout(_content_rectangle * context);
+        _toolbar->set_layout(_toolbar_rectangle * context);
+        _content->set_layout(_content_rectangle * context);
     }
 }
 
@@ -99,9 +97,9 @@ hitbox window_widget::hitbox_test(point3 position) const noexcept
     constexpr float BORDER_WIDTH = 10.0f;
 
     ttlet is_on_left_edge = position.x() <= BORDER_WIDTH;
-    ttlet is_on_right_edge = position.x() >= (width() - BORDER_WIDTH);
+    ttlet is_on_right_edge = position.x() >= (layout().width() - BORDER_WIDTH);
     ttlet is_on_bottom_edge = position.y() <= BORDER_WIDTH;
-    ttlet is_on_top_edge = position.y() >= (height() - BORDER_WIDTH);
+    ttlet is_on_top_edge = position.y() >= (layout().height() - BORDER_WIDTH);
 
     ttlet is_on_bottom_left_corner = is_on_bottom_edge && is_on_left_edge;
     ttlet is_on_bottom_right_corner = is_on_bottom_edge && is_on_right_edge;
@@ -135,7 +133,7 @@ hitbox window_widget::hitbox_test(point3 position) const noexcept
     auto buffer = pmr::scoped_buffer<256>{};
     for (auto *child : children(buffer.allocator())) {
         if (child) {
-            r = std::max(r, child->hitbox_test(child->parent_to_local() * position));
+            r = std::max(r, child->hitbox_test(child->layout().from_parent * position));
         }
     }
 

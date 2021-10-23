@@ -31,30 +31,28 @@ overlay_widget::~overlay_widget()
     }
 }
 
-void overlay_widget::constrain() noexcept
+void overlay_widget::set_widget(std::unique_ptr<widget> new_widget) noexcept
 {
-    tt_axiom(is_gui_thread());
-
-    _layout = {};
-    _content->constrain();
-
-    tt_axiom(_content);
-    _minimum_size = _content->minimum_size();
-    _preferred_size = _content->preferred_size();
-    _maximum_size = _content->maximum_size();
-    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
+    _content = std::move(new_widget);
+    window.request_reconstrain();
 }
 
-void overlay_widget::layout(layout_context const &context_) noexcept
+widget_constraints const &overlay_widget::set_constraints() noexcept
+{
+    _layout = {};
+    return _constraints = _content->set_constraints();
+}
+
+void overlay_widget::set_layout(widget_layout const &context_) noexcept
 {
     tt_axiom(is_gui_thread());
 
     if (visible) {
         // An overlay has full control over the clipping rectangle.
-        ttlet context = context_.override_clip(context_.rectangle + theme().border_width);
+        ttlet context = context_.override_clip(context_.rectangle() + theme().border_width);
         _layout.store(context);
 
-        _content->layout(rectangle() * context);
+        _content->set_layout(layout().rectangle() * context);
     }
 }
 
@@ -62,7 +60,7 @@ void overlay_widget::draw(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (visible and overlaps(context, _layout)) {
+    if (visible and overlaps(context, layout())) {
         draw_background(context);
         _content->draw(context);
     }
@@ -86,7 +84,7 @@ void overlay_widget::scroll_to_show(tt::aarectangle rectangle) noexcept
 
 void overlay_widget::draw_background(draw_context const &context) noexcept
 {
-    context.draw_box_with_border_outside(_layout, rectangle(), background_color(), foreground_color());
+    context.draw_box_with_border_outside(layout(), layout().rectangle(), background_color(), foreground_color());
 }
 
 } // namespace tt

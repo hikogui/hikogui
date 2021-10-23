@@ -37,7 +37,7 @@ public:
 
     constexpr explicit axis_aligned_rectangle(f32x4 const &other) noexcept : v(other)
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
 
     /** Create a box from the position and size.
@@ -49,7 +49,7 @@ public:
      */
     constexpr axis_aligned_rectangle(float x, float y, float width, float height) noexcept : v{x, y, x + width, y + height}
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
 
     /** Create a rectangle from the size.
@@ -58,7 +58,7 @@ public:
      */
     constexpr explicit axis_aligned_rectangle(extent2 const &extent) noexcept : v(static_cast<f32x4>(extent)._00xy())
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
 
     /** Create a rectangle from the left-bottom and right-top points.
@@ -68,9 +68,9 @@ public:
     constexpr axis_aligned_rectangle(point2 const &p0, point2 const &p3) noexcept :
         v(static_cast<f32x4>(p0).xy00() + static_cast<f32x4>(p3)._00xy())
     {
-        tt_axiom(p0.is_valid());
-        tt_axiom(p3.is_valid());
-        tt_axiom(is_valid());
+        tt_axiom(p0.holds_invariant());
+        tt_axiom(p3.holds_invariant());
+        tt_axiom(holds_invariant());
     }
 
     /** Create a rectangle from the size.
@@ -80,29 +80,29 @@ public:
     constexpr axis_aligned_rectangle(point2 const &p0, extent2 const &extent) noexcept :
         v(static_cast<f32x4>(p0).xyxy() + static_cast<f32x4>(extent)._00xy())
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
 
     /** Make sure p0 is left/bottom from p3.
      * @return True is p0 is left and below p3.
      */
-    [[nodiscard]] constexpr bool is_valid() const noexcept
+    [[nodiscard]] constexpr bool holds_invariant() const noexcept
     {
         return le(v, v.zwzw()) == 0b1111;
     }
 
     /** Check if the rectangle has no area.
      */
-    [[nodiscard]] bool empty() const noexcept
+    [[nodiscard]] constexpr bool empty() const noexcept
     {
         return eq(v, v.zwxy()) == 0b1111;
     }
 
     /** True when the rectangle has an area.
      */
-    [[nodiscard]] operator bool() const noexcept
+    [[nodiscard]] constexpr operator bool() const noexcept
     {
-        return !empty();
+        return not empty();
     }
 
     /** Expand the current rectangle to include the new rectangle.
@@ -110,7 +110,7 @@ public:
      *
      * @param rhs The new rectangle to include in the current rectangle.
      */
-    axis_aligned_rectangle &operator|=(axis_aligned_rectangle const &rhs) noexcept
+    constexpr axis_aligned_rectangle &operator|=(axis_aligned_rectangle const &rhs) noexcept
     {
         return *this = *this | rhs;
     }
@@ -120,7 +120,7 @@ public:
      *
      * @param rhs A new point to include in the current rectangle.
      */
-    axis_aligned_rectangle &operator|=(point2 const &rhs) noexcept
+    constexpr axis_aligned_rectangle &operator|=(point2 const &rhs) noexcept
     {
         return *this = *this | rhs;
     }
@@ -156,62 +156,62 @@ public:
      *
      * @return The (x, y) vector representing the width and height of the rectangle.
      */
-    [[nodiscard]] extent2 size() const noexcept
+    [[nodiscard]] constexpr extent2 size() const noexcept
     {
         return extent2{v.zwzw() - v};
     }
 
-    [[nodiscard]] float width() const noexcept
+    [[nodiscard]] constexpr float width() const noexcept
     {
         return (v.zwzw() - v).x();
     }
 
-    [[nodiscard]] float height() const noexcept
+    [[nodiscard]] constexpr float height() const noexcept
     {
         return (v.zwzw() - v).y();
     }
 
-    [[nodiscard]] float bottom() const noexcept
+    [[nodiscard]] constexpr float bottom() const noexcept
     {
         return v.y();
     }
 
-    [[nodiscard]] float top() const noexcept
+    [[nodiscard]] constexpr float top() const noexcept
     {
         return v.w();
     }
 
-    [[nodiscard]] float left() const noexcept
+    [[nodiscard]] constexpr float left() const noexcept
     {
         return v.x();
     }
 
-    [[nodiscard]] float right() const noexcept
+    [[nodiscard]] constexpr float right() const noexcept
     {
         return v.z();
     }
 
     /** The middle on the y-axis between bottom and top.
      */
-    [[nodiscard]] float middle() const noexcept
+    [[nodiscard]] constexpr float middle() const noexcept
     {
         return (bottom() + top()) * 0.5f;
     }
 
     /** The center on the x-axis between left and right.
      */
-    [[nodiscard]] float center() const noexcept
+    [[nodiscard]] constexpr float center() const noexcept
     {
         return (left() + right()) * 0.5f;
     }
 
-    axis_aligned_rectangle &set_width(float newWidth) noexcept
+    constexpr axis_aligned_rectangle &set_width(float newWidth) noexcept
     {
         v = v.xyxw() + f32x4{0.0f, 0.0f, newWidth, 0.0f};
         return *this;
     }
 
-    axis_aligned_rectangle &set_height(float newHeight) noexcept
+    constexpr axis_aligned_rectangle &set_height(float newHeight) noexcept
     {
         v = v.xyzy() + f32x4{0.0f, 0.0f, 0.0f, newHeight};
         return *this;
@@ -221,7 +221,7 @@ public:
      *
      * @param rhs The coordinate of the point to test.
      */
-    [[nodiscard]] bool contains(point2 const &rhs) const noexcept
+    [[nodiscard]] constexpr bool contains(point2 const &rhs) const noexcept
     {
         // No need to check with empty due to half open range check.
         return ge(static_cast<f32x4>(rhs).xyxy(), v) == 0b0011;
@@ -232,7 +232,7 @@ public:
      * @param rhs The coordinate of the point to test. This point is
      *            converted to 2D by this function.
      */
-    [[nodiscard]] bool contains(point3 const &rhs) const noexcept
+    [[nodiscard]] constexpr bool contains(point3 const &rhs) const noexcept
     {
         return contains(point2{rhs});
     }
@@ -243,7 +243,7 @@ public:
      * @param alignment How the inside rectangle should be aligned.
      * @return The needle rectangle repositioned and aligned inside the haystack.
      */
-    [[nodiscard]] friend axis_aligned_rectangle
+    [[nodiscard]] friend constexpr axis_aligned_rectangle
     align(axis_aligned_rectangle haystack, extent2 needle, alignment alignment) noexcept
     {
         float x;
@@ -283,7 +283,7 @@ public:
      * @param alignment How the inside rectangle should be aligned.
      * @return The needle rectangle repositioned and aligned inside the haystack.
      */
-    [[nodiscard]] friend axis_aligned_rectangle
+    [[nodiscard]] friend constexpr axis_aligned_rectangle
     align(axis_aligned_rectangle haystack, axis_aligned_rectangle needle, alignment alignment) noexcept
     {
         return align(haystack, needle.size(), alignment);
@@ -291,7 +291,7 @@ public:
 
     /** Need to call the hidden friend function from within another class.
      */
-    [[nodiscard]] static axis_aligned_rectangle
+    [[nodiscard]] static constexpr axis_aligned_rectangle
     _align(axis_aligned_rectangle outside, axis_aligned_rectangle inside, alignment alignment) noexcept
     {
         return align(outside, inside, alignment);
@@ -302,9 +302,9 @@ public:
         return lhs.v == rhs.v;
     }
 
-    [[nodiscard]] friend bool overlaps(axis_aligned_rectangle const &lhs, axis_aligned_rectangle const &rhs) noexcept
+    [[nodiscard]] friend constexpr bool overlaps(axis_aligned_rectangle const &lhs, axis_aligned_rectangle const &rhs) noexcept
     {
-        if (lhs.empty() || rhs.empty()) {
+        if (lhs.empty() or rhs.empty()) {
             return false;
         }
 
@@ -323,7 +323,7 @@ public:
         return true;
     }
 
-    [[nodiscard]] friend axis_aligned_rectangle
+    [[nodiscard]] friend constexpr axis_aligned_rectangle
     operator|(axis_aligned_rectangle const &lhs, axis_aligned_rectangle const &rhs) noexcept
     {
         if (!lhs) {
@@ -335,7 +335,7 @@ public:
         }
     }
 
-    [[nodiscard]] friend axis_aligned_rectangle operator|(axis_aligned_rectangle const &lhs, point2 const &rhs) noexcept
+    [[nodiscard]] friend constexpr axis_aligned_rectangle operator|(axis_aligned_rectangle const &lhs, point2 const &rhs) noexcept
     {
         if (!lhs) {
             return axis_aligned_rectangle{rhs, rhs};
@@ -346,7 +346,7 @@ public:
 
     /** Get the center of the rectangle.
      */
-    [[nodiscard]] friend point2 center(axis_aligned_rectangle const &rhs) noexcept
+    [[nodiscard]] friend constexpr point2 center(axis_aligned_rectangle const &rhs) noexcept
     {
         return get<0>(rhs) + (get<3>(rhs) - get<0>(rhs)) * 0.5f;
     }
@@ -356,7 +356,7 @@ public:
      * @param rhs How much the width and height should be scaled by.
      * @return A new rectangle expanded on each side.
      */
-    [[nodiscard]] friend axis_aligned_rectangle operator*(axis_aligned_rectangle const &lhs, float rhs) noexcept
+    [[nodiscard]] friend constexpr axis_aligned_rectangle operator*(axis_aligned_rectangle const &lhs, float rhs) noexcept
     {
         ttlet new_extent = lhs.size() * rhs;
         ttlet diff = vector2{new_extent} - vector2{lhs.size()};
@@ -373,7 +373,7 @@ public:
      *            this value may be zero or negative.
      * @return A new rectangle expanded on each side.
      */
-    [[nodiscard]] friend axis_aligned_rectangle operator+(axis_aligned_rectangle const &lhs, float rhs) noexcept
+    [[nodiscard]] friend constexpr axis_aligned_rectangle operator+(axis_aligned_rectangle const &lhs, float rhs) noexcept
     {
         return axis_aligned_rectangle{lhs.v + neg<0b0011>(f32x4::broadcast(rhs))};
     }
@@ -384,12 +384,12 @@ public:
      *            this value may be zero or negative.
      * @return A new rectangle shrank on each side.
      */
-    [[nodiscard]] friend axis_aligned_rectangle operator-(axis_aligned_rectangle const &lhs, float rhs) noexcept
+    [[nodiscard]] friend constexpr axis_aligned_rectangle operator-(axis_aligned_rectangle const &lhs, float rhs) noexcept
     {
         return lhs + -rhs;
     }
 
-    [[nodiscard]] friend axis_aligned_rectangle round(axis_aligned_rectangle const &rhs) noexcept
+    [[nodiscard]] friend constexpr axis_aligned_rectangle round(axis_aligned_rectangle const &rhs) noexcept
     {
         auto p0 = round(get<0>(rhs));
         auto p3 = round(get<3>(rhs));
@@ -398,7 +398,7 @@ public:
 
     /** Round rectangle by expanding to pixel edge.
      */
-    [[nodiscard]] friend axis_aligned_rectangle ceil(axis_aligned_rectangle const &rhs) noexcept
+    [[nodiscard]] friend constexpr axis_aligned_rectangle ceil(axis_aligned_rectangle const &rhs) noexcept
     {
         auto p0 = floor(get<0>(rhs));
         auto p3 = ceil(get<3>(rhs));
@@ -407,7 +407,7 @@ public:
 
     /** Round rectangle by shrinking to pixel edge.
      */
-    [[nodiscard]] friend axis_aligned_rectangle floor(axis_aligned_rectangle const &rhs) noexcept
+    [[nodiscard]] friend constexpr axis_aligned_rectangle floor(axis_aligned_rectangle const &rhs) noexcept
     {
         auto p0 = ceil(get<0>(rhs));
         auto p3 = floor(get<3>(rhs));

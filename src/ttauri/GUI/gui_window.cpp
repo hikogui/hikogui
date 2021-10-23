@@ -19,7 +19,7 @@ bool gui_window::send_event_to_widget(tt::widget const *target_widget, Event con
     while (target_widget) {
         // Send a command in priority order to the widget.
         if constexpr (std::is_same_v<Event, mouse_event>) {
-            if (const_cast<tt::widget *>(target_widget)->handle_event(target_widget->window_to_local() * event)) {
+            if (const_cast<tt::widget *>(target_widget)->handle_event(target_widget->layout().from_window * event)) {
                 return true;
             }
 
@@ -71,8 +71,8 @@ void gui_window::init()
     }
 
     // Execute a constraint check to determine initial window size.
-    widget->constrain();
-    ttlet new_size = widget->preferred_size();
+    widget->set_constraints();
+    ttlet new_size = widget->constraints().preferred;
 
     // Reset the keyboard target to not focus anything.
     update_keyboard_target({});
@@ -125,11 +125,11 @@ void gui_window::render(utc_nanoseconds display_time_point)
     tt_axiom(widget);
 
     // When a widget requests it or a window-wide event like language change
-    // has happened all the widgets will be constrain().
+    // has happened all the widgets will be set_constraints().
     ttlet need_reconstrain = _reconstrain.exchange(false, std::memory_order_relaxed);
     if (need_reconstrain) {
         ttlet t2 = trace<"window::constrain">();
-        widget->constrain();
+        widget->set_constraints();
     }
 
     // Check if the window size matches the preferred size of the window_widget.
@@ -144,7 +144,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     if (request_resize.exchange(false)) {
         // If a widget asked for a resize, change the size of the window to the preferred size of the widgets.
         ttlet current_size = screen_rectangle.size();
-        ttlet new_size = widget->preferred_size();
+        ttlet new_size = widget->constraints().preferred;
         if (new_size != current_size) {
             tt_log_info("A new preferred window size {} was requested by one of the widget.", new_size);
             set_window_size(new_size);
@@ -153,14 +153,14 @@ void gui_window::render(utc_nanoseconds display_time_point)
     } else {
         // Check if the window size matches the minimum and maximum size of the widgets, otherwise resize.
         ttlet current_size = screen_rectangle.size();
-        ttlet new_size = clamp(current_size, widget->minimum_size(), widget->maximum_size());
+        ttlet new_size = clamp(current_size, widget->constraints().minimum, widget->constraints().maximum);
         if (new_size != current_size and size_state != gui_window_size::minimized) {
             tt_log_info("The current window size {} must grow or shrink to {} to fit the widgets.", current_size, new_size);
             set_window_size(new_size);
         }
     }
 
-    if (screen_rectangle.size() < widget->minimum_size() or screen_rectangle.size() > widget->maximum_size()) {
+    if (screen_rectangle.size() < widget->constraints().minimum or screen_rectangle.size() > widget->constraints().maximum) {
         // Even after the resize above it is possible to have an incorrect window size.
         // For example when minimizing the window.
         // Stop processing rendering for this window here.
@@ -175,7 +175,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     if (need_reconstrain or need_relayout or widget_size != screen_rectangle.size()) {
         ttlet t2 = trace<"window::layout">();
         widget_size = screen_rectangle.size();
-        widget->layout(layout_context{widget_size, display_time_point});
+        widget->set_layout(widget_layout{widget_size, display_time_point});
 
         // After layout do a complete redraw.
         _redraw_rectangle = aarectangle{widget_size};

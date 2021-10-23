@@ -30,10 +30,10 @@ tab_widget::tab_widget(gui_window &window, widget *parent, weak_or_unique_ptr<de
     }
 
     // Compare and assign would trigger the signaling NaN that widget sets.
-    _minimum_size = {};
-    _preferred_size = {};
-    _maximum_size = {32767.0f, 32767.0f};
-    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
+    _constraints.minimum = {};
+    _constraints.preferred = {};
+    _constraints.maximum = {32767.0f, 32767.0f};
+    tt_axiom(_constraints.minimum <= _constraints.preferred && _constraints.preferred <= _constraints.maximum);
 
     if (auto d = _delegate.lock()) {
         d->init(*this);
@@ -50,34 +50,30 @@ tab_widget::tab_widget(gui_window &window, widget *parent, std::weak_ptr<delegat
     return 0.0f;
 }
 
-void tab_widget::constrain() noexcept
+widget_constraints const &tab_widget::set_constraints() noexcept
 {
     tt_axiom(is_gui_thread());
 
     _layout = {};
-    for (ttlet &child : _children) {
-        child->constrain();
-    }
 
     ttlet &selected_child_ = selected_child();
+    for (ttlet &child : _children) {
+        ttlet child_contraints = child->set_constraints();
 
-    auto buffer = pmr::scoped_buffer<256>{};
-    for (auto *child : children(buffer.allocator())) {
-        tt_axiom(child);
-        child->visible = child == &selected_child_;
+        ttlet child_is_visible = child.get() == &selected_child_;
+        child->visible = child_is_visible;
+
+        if (child_is_visible) {
+            if (compare_then_assign(_constraints, child_contraints)) {
+                window.request_resize = true;
+            }
+        }
     }
 
-    auto size_changed = compare_then_assign(_minimum_size, selected_child_.minimum_size());
-    size_changed |= compare_then_assign(_preferred_size, selected_child_.preferred_size());
-    size_changed |= compare_then_assign(_maximum_size, selected_child_.maximum_size());
-    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-
-    if (size_changed) {
-        window.request_resize = true;
-    }
+    return _constraints;
 }
 
-void tab_widget::layout(layout_context const &context) noexcept
+void tab_widget::set_layout(widget_layout const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -85,14 +81,14 @@ void tab_widget::layout(layout_context const &context) noexcept
         _layout.store(context);
 
         for (ttlet &child : _children) {
-            child->layout(rectangle() * context);
+            child->set_layout(layout().rectangle() * context);
         }
     }
 }
 
 void tab_widget::draw(draw_context const &context) noexcept
 {
-    if (visible and overlaps(context, _layout)) {
+    if (visible and overlaps(context, layout())) {
         for (ttlet &child : _children) {
             child->draw(context);
         }

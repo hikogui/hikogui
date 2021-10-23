@@ -9,6 +9,8 @@
 
 namespace tt {
 namespace geo {
+template<int D>
+class scale;
 
 /** A high-level geometric extent
  *
@@ -31,7 +33,7 @@ public:
     template<int E>
     requires(E < D) [[nodiscard]] constexpr extent(extent<E> const &other) noexcept : _v(static_cast<f32x4>(other))
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
 
     /** Convert a extent to its f32x4-nummeric_array.
@@ -45,7 +47,7 @@ public:
      */
     [[nodiscard]] constexpr explicit extent(f32x4 const &other) noexcept : _v(other)
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
 
     [[nodiscard]] constexpr explicit operator bool () const noexcept
@@ -62,7 +64,7 @@ public:
     template<int E>
     [[nodiscard]] constexpr explicit operator vector<E>() const noexcept requires(E >= D)
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
         return vector<E>{static_cast<f32x4>(*this)};
     }
 
@@ -70,7 +72,7 @@ public:
      */
     [[nodiscard]] constexpr extent() noexcept : _v(0.0f, 0.0f, 0.0f, 0.0f)
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
 
     /** Construct a 2D extent from x and y elements.
@@ -79,7 +81,7 @@ public:
      */
     [[nodiscard]] constexpr extent(float width, float height) noexcept requires(D == 2) : _v(width, height, 0.0f, 0.0f)
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
 
     /** Construct a 3D extent from x, y and z elements.
@@ -90,7 +92,7 @@ public:
     [[nodiscard]] constexpr extent(float width, float height, float depth = 0.0f) noexcept requires(D == 3) :
         _v(width, height, depth, 0.0f)
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
 
     [[nodiscard]] static constexpr extent infinity() noexcept requires(D == 2)
@@ -221,7 +223,7 @@ public:
      */
     [[nodiscard]] constexpr friend extent operator+(extent const &lhs, extent const &rhs) noexcept
     {
-        tt_axiom(lhs.is_valid() && rhs.is_valid());
+        tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return extent{lhs._v + rhs._v};
     }
 
@@ -232,9 +234,11 @@ public:
      */
     [[nodiscard]] constexpr friend extent operator-(extent const &lhs, extent const &rhs) noexcept
     {
-        tt_axiom(lhs.is_valid() && rhs.is_valid());
+        tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return extent{lhs._v - rhs._v};
     }
+
+    [[nodiscard]] constexpr friend scale<D> operator/(extent const &lhs, extent const &rhs) noexcept;
 
     /** Scale the extent by a scaler.
      * @param lhs The extent to scale.
@@ -243,15 +247,15 @@ public:
      */
     [[nodiscard]] constexpr friend extent operator*(extent const &lhs, float const &rhs) noexcept
     {
-        tt_axiom(lhs.is_valid());
+        tt_axiom(lhs.holds_invariant());
         return extent{lhs._v * rhs};
     }
 
     template<int E>
     [[nodiscard]] constexpr friend auto operator+(extent const &lhs, vector<E> const &rhs) noexcept
     {
-        tt_axiom(lhs.is_valid());
-        tt_axiom(rhs.is_valid());
+        tt_axiom(lhs.holds_invariant());
+        tt_axiom(rhs.holds_invariant());
 
         return extent<std::max(D, E)>{static_cast<f32x4>(lhs) + static_cast<f32x4>(rhs)};
     }
@@ -259,8 +263,8 @@ public:
     template<int E>
     [[nodiscard]] constexpr friend auto operator+(vector<E> const &lhs, extent const &rhs) noexcept
     {
-        tt_axiom(lhs.is_valid());
-        tt_axiom(rhs.is_valid());
+        tt_axiom(lhs.holds_invariant());
+        tt_axiom(rhs.holds_invariant());
 
         return vector<std::max(D, E)>{static_cast<f32x4>(lhs) + static_cast<f32x4>(rhs)};
     }
@@ -272,7 +276,7 @@ public:
      */
     [[nodiscard]] constexpr friend extent operator+(extent const &lhs, float const &rhs) noexcept
     {
-        tt_axiom(lhs.is_valid());
+        tt_axiom(lhs.holds_invariant());
 
         auto r = extent{};
         for (size_t i = 0; i != D; ++i) {
@@ -289,7 +293,7 @@ public:
      */
     [[nodiscard]] constexpr friend extent operator*(float const &lhs, extent const &rhs) noexcept
     {
-        tt_axiom(rhs.is_valid());
+        tt_axiom(rhs.holds_invariant());
         return extent{lhs * rhs._v};
     }
 
@@ -300,7 +304,7 @@ public:
      */
     [[nodiscard]] constexpr friend bool operator==(extent const &lhs, extent const &rhs) noexcept
     {
-        tt_axiom(lhs.is_valid() && rhs.is_valid());
+        tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return lhs._v == rhs._v;
     }
 
@@ -366,7 +370,7 @@ public:
      */
     [[nodiscard]] constexpr friend float squared_hypot(extent const &rhs) noexcept
     {
-        tt_axiom(rhs.is_valid());
+        tt_axiom(rhs.holds_invariant());
         return squared_hypot<element_mask>(rhs._v);
     }
 
@@ -376,7 +380,7 @@ public:
      */
     [[nodiscard]] constexpr friend float hypot(extent const &rhs) noexcept
     {
-        tt_axiom(rhs.is_valid());
+        tt_axiom(rhs.holds_invariant());
         return hypot<element_mask>(rhs._v);
     }
 
@@ -386,7 +390,7 @@ public:
      */
     [[nodiscard]] constexpr friend float rcp_hypot(extent const &rhs) noexcept
     {
-        tt_axiom(rhs.is_valid());
+        tt_axiom(rhs.holds_invariant());
         return rcp_hypot<element_mask>(rhs._v);
     }
 
@@ -396,19 +400,19 @@ public:
      */
     [[nodiscard]] constexpr friend extent normalize(extent const &rhs) noexcept
     {
-        tt_axiom(rhs.is_valid());
+        tt_axiom(rhs.holds_invariant());
         return extent{normalize<element_mask>(rhs._v)};
     }
 
     [[nodiscard]] constexpr friend extent ceil(extent const &rhs) noexcept
     {
-        tt_axiom(rhs.is_valid());
+        tt_axiom(rhs.holds_invariant());
         return extent{ceil(static_cast<f32x4>(rhs))};
     }
 
     [[nodiscard]] constexpr friend extent floor(extent const &rhs) noexcept
     {
-        tt_axiom(rhs.is_valid());
+        tt_axiom(rhs.holds_invariant());
         return extent{floor(static_cast<f32x4>(rhs))};
     }
 
@@ -431,7 +435,7 @@ public:
      * Extends must be positive.
      * This function will check if w is zero, and with 2D extent is z is zero.
      */
-    [[nodiscard]] constexpr bool is_valid() const noexcept
+    [[nodiscard]] constexpr bool holds_invariant() const noexcept
     {
         return _v.x() >= 0.0f && _v.y() >= 0.0f && _v.z() >= 0.0f && _v.w() == 0.0f && (D == 3 || _v.z() == 0.0f);
     }

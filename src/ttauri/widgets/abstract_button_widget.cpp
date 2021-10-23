@@ -49,27 +49,9 @@ void abstract_button_widget::unsubscribe(callback_ptr_type &callback_ptr) noexce
     return _notifier.unsubscribe(callback_ptr);
 }
 
-void abstract_button_widget::constrain_button() noexcept
+widget_constraints abstract_button_widget::set_constraints_button() const noexcept
 {
-    tt_axiom(is_gui_thread());
-
-    _on_label_widget->constrain();
-    _off_label_widget->constrain();
-    _other_label_widget->constrain();
-
-    _minimum_size = _on_label_widget->minimum_size();
-    _preferred_size = _on_label_widget->preferred_size();
-    _maximum_size = _on_label_widget->maximum_size();
-
-    _minimum_size = max(_minimum_size, _off_label_widget->minimum_size());
-    _preferred_size = max(_preferred_size, _off_label_widget->preferred_size());
-    _maximum_size = max(_maximum_size, _off_label_widget->maximum_size());
-
-    _minimum_size = max(_minimum_size, _other_label_widget->minimum_size());
-    _preferred_size = max(_preferred_size, _other_label_widget->preferred_size());
-    _maximum_size = max(_maximum_size, _other_label_widget->maximum_size());
-
-    tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
+    return max(_on_label_widget->set_constraints(), _off_label_widget->set_constraints(), _other_label_widget->set_constraints());
 }
 
 void abstract_button_widget::draw_button(draw_context const &context) noexcept
@@ -85,7 +67,7 @@ void abstract_button_widget::draw_button(draw_context const &context) noexcept
     }
 }
 
-void abstract_button_widget::layout_button(layout_context const &context) noexcept
+void abstract_button_widget::set_layout_button(widget_layout const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -94,9 +76,9 @@ void abstract_button_widget::layout_button(layout_context const &context) noexce
     _off_label_widget->visible = state_ == button_state::off;
     _other_label_widget->visible = state_ == button_state::other;
 
-    _on_label_widget->layout(_label_rectangle * context);
-    _off_label_widget->layout(_label_rectangle * context);
-    _other_label_widget->layout(_label_rectangle * context);
+    _on_label_widget->set_layout(_label_rectangle * context);
+    _off_label_widget->set_layout(_label_rectangle * context);
+    _other_label_widget->set_layout(_label_rectangle * context);
 }
 
 [[nodiscard]] color abstract_button_widget::background_color() const noexcept
@@ -113,7 +95,7 @@ void abstract_button_widget::layout_button(layout_context const &context) noexce
 {
     tt_axiom(is_gui_thread());
 
-    if (_layout.hit_rectangle.contains(position)) {
+    if (layout().hit_rectangle.contains(position)) {
         return hitbox{this, position, enabled ? hitbox::Type::Button : hitbox::Type::Default};
     } else {
         return hitbox{};
@@ -158,7 +140,7 @@ void activate() noexcept;
                 request_redraw();
             }
 
-            if (event.type == mouse_event::Type::ButtonUp && rectangle().contains(event.position)) {
+            if (event.type == mouse_event::Type::ButtonUp && layout().rectangle().contains(event.position)) {
                 handled |= handle_event(command::gui_activate);
             }
         }
