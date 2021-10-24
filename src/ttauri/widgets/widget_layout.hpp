@@ -31,6 +31,12 @@ enum class layout_update {
 
 class widget_layout {
 public:
+    /** The amount of pixels that the redraw request will overhang the widget.
+     * 
+     * Widgets are allowed to draw inside their margins, in most cases this will just be a border.
+     */
+    static constexpr float redraw_overhang = 2.0f;
+
     /** This matrix transforms local coordinates to the coordinates of the parent widget.
      */
     matrix3 to_parent;
@@ -175,7 +181,7 @@ public:
         r.size = child_rectangle.size();
         r.clipping_rectangle = from_parent2 * this->clipping_rectangle;
         r.hit_rectangle = intersect(aarectangle{r.size}, r.clipping_rectangle);
-        r.redraw_rectangle = bounding_rectangle(r.to_window * (aarectangle{r.size} + 2.0f));
+        r.redraw_rectangle = bounding_rectangle(r.to_window * (aarectangle{r.size} + redraw_overhang));
         r.display_time_point = this->display_time_point;
         return r;
     }
