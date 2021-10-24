@@ -1,9 +1,15 @@
 Hardware Support
 ================
 
+The default build of ttauri supports the following hardware requirements.
+
+ - Graphics:
+    * Vulkan-1.1
+ - Processors:
+    * Intel/AMD x86-64-v2.5: Sandry Bridge, Jaguar / Bulldozer
+
 Processors
 ----------
-Each build of ttauri has different processor requirements.
 
 ### x86-64-v2.5
 The minimum CPU requirement:
@@ -16,7 +22,7 @@ Here is a table of microarchitecture levels and the included instruction extensi
  |:-----------     |:---------------------------------------------------- |
  | x86-64          | CMOV CX8 FPU FXSR MMX OSFXSR SCE SSE SSE2            |
  | x86-64-v2       | CMPXCHG16B LAHF-SAHF POPCNT SSE3 SSE4.1 SSE4.2 SSSE3 |
- | **x86-64-v2.5** | **AVX CLMUL AES-NI**                                 |
+ | **x86-64-v2.5** | **AVX CLMUL**                                        |
  | x86-64-v3       | AVX2 BMI1 BMI2 F16C FMA LZCNT MOVBE                  |
  | x86-64-v4       | AVX512F AVX512BW AVX512CD AVX512DQ AVX512VL          |
 

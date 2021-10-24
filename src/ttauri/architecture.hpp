@@ -111,6 +111,8 @@ enum class processor {
 #define TT_HAS_SSSE3
 #define TT_HAS_AVX
 #define TT_HAS_AVX2
+#define TT_HAS_BMI1
+#define TT_HAS_BMI2
 #define TT_HAS_AVX512F
 #define TT_HAS_AVX512BW
 #define TT_HAS_AVX512CD
@@ -130,6 +132,8 @@ enum class processor {
 #define TT_HAS_SSSE3
 #define TT_HAS_AVX
 #define TT_HAS_AVX2
+#define TT_HAS_BMI1
+#define TT_HAS_BMI2
 
 #elif defined(__AVX__)
 #define TT_X86_64_V2_5 1

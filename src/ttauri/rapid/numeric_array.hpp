@@ -305,9 +305,37 @@ struct numeric_array {
     [[nodiscard]] static constexpr numeric_array broadcast(T rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
+#if defined(TT_HAS_AVX)
+            if constexpr (is_f64x4) {
+                return numeric_array{_mm256_set1_pd(rhs)};
+            } else if constexpr (is_f32x8) {
+                return numeric_array{_mm256_set1_ps(rhs)};
+            } else if constexpr (is_i64x4) {
+                return numeric_array{_mm256_set1_epi64x(rhs)};
+            } else if constexpr (is_i32x8) {
+                return numeric_array{_mm256_set1_epi32(rhs)};
+            } else if constexpr (is_i16x16) {
+                return numeric_array{_mm256_set1_epi16(rhs)};
+            } else if constexpr (is_i8x32) {
+                return numeric_array{_mm256_set1_epi8(rhs)};
+            }
+#endif
+#if defined(TT_HAS_SSE2)
+            if constexpr (is_f64x2) {
+                return numeric_array{_mm_set1_pd(rhs)};
+            } else if constexpr (is_i64x2) {
+                return numeric_array{_mm_set1_epi64x(rhs)};
+            } else if constexpr (is_i32x4) {
+                return numeric_array{_mm_set1_epi32(rhs)};
+            } else if constexpr (is_i16x8) {
+                return numeric_array{_mm_set1_epi16(rhs)};
+            } else if constexpr (is_i8x16) {
+                return numeric_array{_mm_set1_epi8(rhs)};
+            }
+#endif
 #if defined(TT_HAS_SSE)
             if constexpr (is_f32x4) {
-                return numeric_array{_mm_set_ps1(rhs)};
+                return numeric_array{_mm_set1_ps(rhs)};
             }
 #endif
         }
@@ -318,9 +346,9 @@ struct numeric_array {
         return r;
     }
 
-    [[nodiscard]] static constexpr numeric_array epsilon() noexcept
+    [[nodiscard]] static constexpr numeric_array epsilon() noexcept requires(std::is_floating_point_v<T,float>)
     {
-        return broadcast(std::numeric_limits<float>::min());
+        return broadcast(std::numeric_limits<T>::min());
     }
 
     [[nodiscard]] numeric_array(std::array<T, N> const &rhs) noexcept : v(rhs) {}
@@ -475,35 +503,23 @@ struct numeric_array {
         using rhs_value_type = typename std::remove_cvref_t<decltype(rhs)>::value_type;
 
         if (not std::is_constant_evaluated()) {
+#if defined(TT_HAS_SSE2)
             if constexpr (Other::is_f32x4 and std::is_integral_v<rhs_value_type>) {
-#if defined(TT_HAS_SSE2)
                 return Other{_mm_castsi128_ps(rhs.reg())};
-#endif
             } else if constexpr (Other::is_f32x4 and rhs.is_f64x2) {
-#if defined(TT_HAS_SSE2)
                 return Other{_mm_castpd_ps(rhs.reg())};
-#endif
             } else if constexpr (Other::is_f64x2 and std::is_integral_v<rhs_value_type>) {
-#if defined(TT_HAS_SSE2)
                 return Other{_mm_castsi128_pd(rhs.reg())};
-#endif
             } else if constexpr (Other::is_f64x2 and rhs.is_f32x4) {
-#if defined(TT_HAS_SSE2)
                 return Other{_mm_castps_pd(rhs.reg())};
-#endif
             } else if constexpr (std::is_integral_v<Other::value_type> and rhs.is_f32x4) {
-#if defined(TT_HAS_SSE2)
                 return Other{_mm_castps_si128(rhs.reg())};
-#endif
             } else if constexpr (std::is_integral_v<Other::value_type> and rhs.is_f64x2) {
-#if defined(TT_HAS_SSE2)
                 return Other{_mm_castpd_si128(rhs.reg())};
-#endif
             } else if constexpr (std::is_integral_v<Other::value_type> and std::is_integral_v<rhs_value_type>) {
-#if defined(TT_HAS_SSE2)
                 return Other{rhs.reg()};
-#endif
             }
+#endif
         }
         return std::bit_cast<Other>(rhs);
     }
@@ -513,19 +529,24 @@ struct numeric_array {
     static constexpr numeric_array interleave_lo(numeric_array a, numeric_array b) noexcept
     {
         if (not std::is_constant_evaluated()) {
-            if constexpr (x86_64_v2 and is_f64x2) {
+#if defined(TT_HAS_SSE2)
+            if constexpr (is_f64x2) {
                 return numeric_array{_mm_unpacklo_pd(a.reg(), b.reg())};
-            } else if constexpr (x86_64_v2 and is_f32x4) {
-                return numeric_array{_mm_unpacklo_ps(a.reg(), b.reg())};
-            } else if constexpr (x86_64_v2 and is_i64x2) {
+            } else if constexpr (is_i64x2) {
                 return numeric_array{_mm_unpacklo_epi64(a.reg(), b.reg())};
-            } else if constexpr (x86_64_v2 and is_i32x4) {
+            } else if constexpr (is_i32x4) {
                 return numeric_array{_mm_unpacklo_epi32(a.reg(), b.reg())};
-            } else if constexpr (x86_64_v2 and is_i16x8) {
+            } else if constexpr (is_i16x8) {
                 return numeric_array{_mm_unpacklo_epi16(a.reg(), b.reg())};
-            } else if constexpr (x86_64_v2 and is_i8x16) {
+            } else if constexpr (is_i8x16) {
                 return numeric_array{_mm_unpacklo_epi8(a.reg(), b.reg())};
             }
+#endif
+#if defined(TT_HAS_SSE)
+            if constexpr (is_f32x4) {
+                return numeric_array{_mm_unpacklo_ps(a.reg(), b.reg())};
+            }
+#endif
         }
 
         auto r = numeric_array{};
@@ -956,15 +977,17 @@ struct numeric_array {
 
     /** Set individual elements to zero.
      *
-     * @tparam Mask bit mask where '1' means to negate, '0' to keep original.
+     * @tparam Mask bit mask where '1' means to zero, '0' to keep original.
      */
     template<size_t Mask = ~size_t{0}>
     [[nodiscard]] friend constexpr numeric_array zero(numeric_array rhs) noexcept
     {
-        if (!std::is_constant_evaluated()) {
-            if constexpr (is_f32x4 && x86_64_v2) {
-                return numeric_array{f32x4_x64v2_zero<Mask & 0xf>(rhs.v)};
+        if (not std::is_constant_evaluated()) {
+#if defined(TT_HAS_SSE4_1)
+            if constexpr (is_f32x4) {
+                return numeric_array{_mm_insert_ps(rhs.reg(), Mask)};
             }
+#endif
         }
 
         auto r = numeric_array{};
@@ -1004,46 +1027,71 @@ struct numeric_array {
 
     [[nodiscard]] friend constexpr numeric_array operator-(numeric_array const &rhs) noexcept
     {
-        auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
-            // -rhs.v[i] will cause a memory load with msvc.
-            r.v[i] = T{} - rhs.v[i];
-        }
-        return r;
+        return T{0} - rhs;
     }
 
     [[nodiscard]] friend constexpr numeric_array abs(numeric_array const &rhs) noexcept
     {
-        auto neg_rhs = -rhs;
-
-        auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
-            r.v[i] = rhs.v[i] < T{} ? neg_rhs.v[i] : rhs.v[i];
+        if (not std::is_constant_evaluated()) {
+#if defined(TT_HAS_SSSE3)
+            if constexpr (is_i32x4) {
+                return numeric_array{_mm_abs_epi32(rhs.reg())};
+            } else if constexpr (is_i16x8) {
+                return numeric_array{_mm_abs_epi16(rhs.reg())};
+            } else if constexpr (is_i32x4) {
+                return numeric_array{_mm_abs_epi16(rhs.reg())};
+            }
+#endif
+#if defined(TT_HAS_SSE2)
+            if constexpr (is_f64x2) {
+                return numeric_array{_mm_castsi128_ps(_mm_srli_epi64(_mm_slli_epi64(_mm_castpd_si128(rhs.reg()), 1), 1))};
+            } else if constexpr (is_f32x4) {
+                return numeric_array{_mm_castsi128_ps(_mm_srli_epi32(_mm_slli_epi32(_mm_castps_si128(rhs.reg()), 1), 1))};
+            }
+#endif
         }
-        return r;
+
+        return max(rhs, -rhs);
     }
 
     [[nodiscard]] friend constexpr numeric_array rcp(numeric_array const &rhs) noexcept
     {
-        if (!std::is_constant_evaluated()) {
-            if constexpr (is_f32x4 and x86_64_v2) {
+        if (not std::is_constant_evaluated()) {
+#if defined(TT_HAS_AVX)
+            if constexpr (is_f32x8) {
+                return numeric_array{_mm256_rcp_ps(rhs.reg())};
+            }
+#endif
+#if defined(TT_HAS_SSE)
+            if constexpr (is_f32x4) {
                 return numeric_array{_mm_rcp_ps(rhs.reg())};
             }
+#endif
         }
 
-        auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
-            r[i] = 1.0f / rhs.v[i];
-        }
-        return r;
+        return T{1} / rhs;
     }
 
     [[nodiscard]] friend constexpr numeric_array sqrt(numeric_array const &rhs) noexcept
     {
-        if (!std::is_constant_evaluated()) {
-            if constexpr (is_f32x4 and x86_64_v2) {
+        if (not std::is_constant_evaluated()) {
+#if defined(TT_HAS_AVX)
+            if constexpr (is_f64x4) {
+                return numeric_array{_mm256_sqrt_pd(rhs.reg())};
+            } else if constexpr (is_f32x8) {
+                return numeric_array{_mm256_sqrt_ps(rhs.reg())};
+            }
+#endif
+#if defined(TT_HAS_SSE2)
+            if constexpr (is_f64x2) {
+                return numeric_array{_mm_sqrt_pd(rhs.reg())};
+            }
+#endif
+#if defined(TT_HAS_SSE)
+            if constexpr (is_f32x4) {
                 return numeric_array{_mm_sqrt_ps(rhs.reg())};
             }
+#endif
         }
 
         auto r = numeric_array{};
@@ -1055,25 +1103,39 @@ struct numeric_array {
 
     [[nodiscard]] friend constexpr numeric_array rcp_sqrt(numeric_array const &rhs) noexcept
     {
-        if (!std::is_constant_evaluated()) {
-            if constexpr (is_f32x4 and x86_64_v2) {
-                return numeric_array{_mm_rcp_sqrt_ps(rhs.reg())};
+        if (not std::is_constant_evaluated()) {
+#if defined(TT_HAS_AVX)
+            if constexpr (is_f32x8) {
+                return numeric_array{_mm256_rsqrt_ps(rhs.reg())};
             }
+#endif
+#if defined(TT_HAS_SSE)
+            if constexpr (is_f32x4) {
+                return numeric_array{_mm_rsqrt_ps(rhs.reg())};
+            }
+#endif
         }
 
-        auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
-            r[i] = 1.0f / std::sqrt(rhs.v[i]);
-        }
-        return r;
+        return rcp(sqrt(rhs));
     }
 
     [[nodiscard]] friend constexpr numeric_array floor(numeric_array const &rhs) noexcept
     {
-        if (!std::is_constant_evaluated()) {
-            if constexpr (is_f32x4 and x86_64_v2) {
+        if (not std::is_constant_evaluated()) {
+#if defined(TT_HAS_AVX)
+            if constexpr (is_f64x4) {
+                return numeric_array{_mm256_floor_pd(rhs.reg())};
+            } else if constexpr (is_f32x8) {
+                return numeric_array{_mm256_floor_ps(rhs.reg())};
+            }
+#endif
+#if defined(TT_HAS_SSE4_1)
+            if constexpr (is_f64x2) {
+                return numeric_array{_mm_floor_pd(rhs.reg())};
+            } else if constexpr (is_f32x4) {
                 return numeric_array{_mm_floor_ps(rhs.reg())};
             }
+#endif
         }
 
         auto r = numeric_array{};
@@ -1085,10 +1147,21 @@ struct numeric_array {
 
     [[nodiscard]] friend constexpr numeric_array ceil(numeric_array const &rhs) noexcept
     {
-        if (!std::is_constant_evaluated()) {
-            if constexpr (is_f32x4 and x86_64_v2) {
+        if (not std::is_constant_evaluated()) {
+#if defined(TT_HAS_AVX)
+            if constexpr (is_f64x4) {
+                return numeric_array{_mm256_ceil_pd(rhs.reg())};
+            } else if constexpr (is_f32x8) {
+                return numeric_array{_mm256_ceil_ps(rhs.reg())};
+            }
+#endif
+#if defined(TT_HAS_SSE4_1)
+            if constexpr (is_f64x2) {
+                return numeric_array{_mm_ceil_pd(rhs.reg())};
+            } else if constexpr (is_f32x4) {
                 return numeric_array{_mm_ceil_ps(rhs.reg())};
             }
+#endif
         }
 
         auto r = numeric_array{};
@@ -1100,10 +1173,21 @@ struct numeric_array {
 
     [[nodiscard]] friend constexpr numeric_array round(numeric_array const &rhs) noexcept
     {
-        if (!std::is_constant_evaluated()) {
-            if constexpr (is_f32x4 and x86_64_v2) {
+        if (not std::is_constant_evaluated()) {
+#if defined(TT_HAS_AVX)
+            if constexpr (is_f64x4) {
+                return numeric_array{_mm256_round_pd(rhs.reg(), _MM_FROUND_CUR_DIRECTION)};
+            } else if constexpr (is_f32x8) {
+                return numeric_array{_mm256_round_ps(rhs.reg(), _MM_FROUND_CUR_DIRECTION)};
+            }
+#endif
+#if defined(TT_HAS_SSE4_1)
+            if constexpr (is_f64x2) {
+                return numeric_array{_mm_round_pd(rhs.reg(), _MM_FROUND_CUR_DIRECTION)};
+            } else if constexpr (is_f32x4) {
                 return numeric_array{_mm_round_ps(rhs.reg(), _MM_FROUND_CUR_DIRECTION)};
             }
+#endif
         }
 
         auto r = numeric_array{};
@@ -1123,10 +1207,12 @@ struct numeric_array {
     template<size_t Mask>
     [[nodiscard]] friend constexpr T dot(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
-        if (!std::is_constant_evaluated()) {
-            if constexpr (is_f32x4 and x86_64_v2) {
-                return f32x4_x64v2_dot<Mask>(lhs.v, rhs.v);
+        if (not std::is_constant_evaluated()) {
+#if defined(TT_HAS_SSE4_1)
+            if constexpr (is_f32x4) {
+                return std::bit_cast<float>(_mm_extract_ps(_mm_dp_ps(lhs.get(), rhs.get(), (Mask << 4) | 0xf), 0));
             }
+#endif
         }
 
         auto r = T{};
@@ -1148,9 +1234,6 @@ struct numeric_array {
     template<size_t Mask>
     [[nodiscard]] friend constexpr T hypot(numeric_array const &rhs) noexcept
     {
-        if (is_f32x4 && x86_64_v2 && !std::is_constant_evaluated()) {
-            return f32x4_x64v2_hypot<Mask>(rhs.v);
-        }
         return std::sqrt(dot<Mask>(rhs, rhs));
     }
 
@@ -1176,8 +1259,12 @@ struct numeric_array {
     template<size_t Mask>
     [[nodiscard]] friend constexpr T rcp_hypot(numeric_array const &rhs) noexcept
     {
-        if (is_f32x4 && x86_64_v2 && !std::is_constant_evaluated()) {
-            return f32x4_x64v2_rcp_hypot<Mask>(rhs.v);
+        if (not std::is_constant_evaluated()) {
+#if defined(TT_HAS_SSE4_1)
+            if constexpr (is_f32x4) {
+                return std::bit_cast<float>(_mm_extract_ps(_mm_rsqrt_ps(_mm_dp_ps(lhs.get(), rhs.get(), (Mask << 4) | 0xf)), 0));
+            }
+#endif
         }
 
         return 1.0f / hypot<Mask>(rhs);
@@ -1196,8 +1283,13 @@ struct numeric_array {
     {
         tt_axiom(rhs.is_vector());
 
-        if (is_f32x4 && x86_64_v2 && !std::is_constant_evaluated()) {
-            return numeric_array{f32x4_x64v2_normalize<Mask>(rhs.v)};
+        if (not std::is_constant_evaluated()) {
+#if defined(TT_HAS_SSE4_1)
+            if constexpr (is_f32x4) {
+                ttlet rhs_ = rhs.get();
+                return numeric_array{_mm_insert_ps(_mm_mul_ps(_mm_rsqrt_ps(_mm_dp_ps(rhs_, rhs_, (Mask << 4) | 0xf)), rhs_), ~Mask & 0xf)};
+            }
+#endif
         }
 
         ttlet rcp_hypot_ = rcp_hypot<Mask>(rhs);
@@ -1215,9 +1307,38 @@ struct numeric_array {
         requires(N <= sizeof(unsigned int) * CHAR_BIT)
     {
         if (!std::is_constant_evaluated()) {
-            if constexpr (is_f32x4 and x86_64_v2) {
+#if defined(TT_HAS_AVX)
+            if constexpr (is_f64x4) {
+                return static_cast<unsigned int>(_mm256_movemask_pd(_mm256_cmp_pd(lhs.reg(), rhs.reg(), _CMP_EQ_OQ)));
+            } else if constexpr (is_f32x8) {
+                return static_cast<unsigned int>(_mm256_movemask_ps(_mm256_cmp_ps(lhs.reg(), rhs.reg(), _CMP_EQ_OQ)));
+            } else if constexpr (is_i64x4) {
+                return static_cast<unsigned int>(_mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpeq_epi64(lhs.reg(), rhs.reg()))));
+            } else if constexpr (is_i32x8) {
+                return static_cast<unsigned int>(_mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpeq_epi32(lhs.reg(), rhs.reg()))));
+            } else if constexpr (is_i8x32) {
+                return static_cast<unsigned int>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(lhs.reg(), rhs.reg())));
+            }
+#endif
+#if defined(TT_HAS_SSE4_1)
+            if constexpr (is_i64x2) {
+                return static_cast<unsigned int>(_mm_movemask_pd(_mm_castsi128_pd(_mm_cmpeq_epi64(lhs.reg(), rhs.reg()))));
+            }
+#endif
+#if defined(TT_HAS_SSE2)
+            if constexpr (is_f64x2) {
+                return static_cast<unsigned int>(_mm_movemask_pd(_mm_cmpeq_pd(lhs.reg(), rhs.reg())));
+            } else if constexpr (is_i32x4) {
+                return static_cast<unsigned int>(_mm_movemask_ps(_mm_castsi128_ps(_mm_cmpeq_epi32(lhs.reg(), rhs.reg()))));
+            } else if constexpr (is_i8x16) {
+                return static_cast<unsigned int>(_mm_movemask_epi8(_mm_cmpeq_epi8(lhs.reg(), rhs.reg())));
+            }
+#endif
+#if defined(TT_HAS_SSE)
+            if constexpr (is_f32x4) {
                 return static_cast<unsigned int>(_mm_movemask_ps(_mm_cmpeq_ps(lhs.reg(), rhs.reg())));
             }
+#endif
         }
 
         unsigned int r = 0;
