@@ -462,23 +462,21 @@ tt_warning_push()
     [[nodiscard]] constexpr friend Other bit_cast(numeric_array const &rhs) noexcept
         requires(sizeof(Other) == sizeof(container_type))
     {
-        using rhs_value_type = typename std::remove_cvref_t<decltype(rhs)>::value_type;
-
         if (not std::is_constant_evaluated()) {
 #if defined(TT_HAS_SSE2)
-            if constexpr (Other::is_f32x4 and std::is_integral_v<rhs_value_type>) {
+            if constexpr (Other::is_f32x4 and std::is_integral_v<T>) {
                 return Other{_mm_castsi128_ps(rhs.reg())};
-            } else if constexpr (Other::is_f32x4 and rhs.is_f64x2) {
+            } else if constexpr (Other::is_f32x4 and is_f64x2) {
                 return Other{_mm_castpd_ps(rhs.reg())};
-            } else if constexpr (Other::is_f64x2 and std::is_integral_v<rhs_value_type>) {
+            } else if constexpr (Other::is_f64x2 and std::is_integral_v<T>) {
                 return Other{_mm_castsi128_pd(rhs.reg())};
-            } else if constexpr (Other::is_f64x2 and rhs.is_f32x4) {
+            } else if constexpr (Other::is_f64x2 and is_f32x4) {
                 return Other{_mm_castps_pd(rhs.reg())};
-            } else if constexpr (std::is_integral_v<Other::value_type> and rhs.is_f32x4) {
+            } else if constexpr (std::is_integral_v<Other::value_type> and is_f32x4) {
                 return Other{_mm_castps_si128(rhs.reg())};
-            } else if constexpr (std::is_integral_v<Other::value_type> and rhs.is_f64x2) {
+            } else if constexpr (std::is_integral_v<Other::value_type> and is_f64x2) {
                 return Other{_mm_castpd_si128(rhs.reg())};
-            } else if constexpr (std::is_integral_v<Other::value_type> and std::is_integral_v<rhs_value_type>) {
+            } else if constexpr (std::is_integral_v<Other::value_type> and std::is_integral_v<T>) {
                 return Other{rhs.reg()};
             }
 #endif
