@@ -66,7 +66,7 @@ void device_shared::destroy(gfx_device_vulkan *vulkanDevice)
     return r;
 }
 
-void device_shared::uploadStagingPixmapToAtlas(atlas_rect location)
+void device_shared::uploadStagingPixmapToAtlas(atlas_rect const &location)
 {
     // Flush the given image, included the border.
     device.flushAllocation(
@@ -123,9 +123,9 @@ void device_shared::prepareAtlasForRendering()
  *  |                     |
  *  O---------------------+
  */
-atlas_rect device_shared::add_glyph_to_atlas(font_glyph_ids glyph) noexcept
+atlas_rect const &device_shared::add_glyph_to_atlas(decltype(glyphs_in_atlas)::iterator it) noexcept
 {
-    ttlet [glyph_path, glyph_bounding_box] = glyph.get_path_and_bounding_box();
+    ttlet [glyph_path, glyph_bounding_box] = it->key().get_path_and_bounding_box();
 
     ttlet draw_scale = scale2{drawfontSize, drawfontSize};
     ttlet draw_bounding_box = draw_scale * glyph_bounding_box;
@@ -144,25 +144,12 @@ atlas_rect device_shared::add_glyph_to_atlas(font_glyph_ids glyph) noexcept
     // Draw glyphs into staging buffer of the atlas and upload it to the correct position in the atlas.
     ttlet lock = std::scoped_lock(gfx_system_mutex);
     prepareStagingPixmapForDrawing();
-    ttlet atlas_rect = allocate_rect(draw_extent, draw_extent / draw_bounding_box.size());
-    auto pixmap = stagingTexture.pixel_map.submap(aarectangle{atlas_rect.size});
+    it->value() = allocate_rect(draw_extent, draw_extent / draw_bounding_box.size());
+    auto pixmap = stagingTexture.pixel_map.submap(aarectangle{it->value().size});
     fill(pixmap, draw_path);
-    uploadStagingPixmapToAtlas(atlas_rect);
+    uploadStagingPixmapToAtlas(it->value());
 
-    return atlas_rect;
-}
-
-std::pair<atlas_rect, bool> device_shared::get_glyph_from_atlas(font_glyph_ids glyph) noexcept
-{
-    ttlet i = glyphs_in_atlas.find(glyph);
-    if (i != glyphs_in_atlas.cend()) {
-        return {i->second, false};
-
-    } else {
-        ttlet atlas_rectangle = add_glyph_to_atlas(glyph);
-        glyphs_in_atlas.emplace(glyph, atlas_rectangle);
-        return {atlas_rectangle, true};
-    }
+    return it->value();
 }
 
 aarectangle device_shared::get_bounding_box(font_glyph_ids const &glyphs) const noexcept
@@ -186,12 +173,12 @@ bool device_shared::_place_vertices(
         return glyph_was_added;
     }
 
-    ttlet box_with_border = scale_from_center(box, atlas_rect.scale);
+    ttlet box_with_border = scale_from_center(box, atlas_rect->scale);
 
-    vertices.emplace_back(box_with_border.p0, clipping_rectangle, get<0>(atlas_rect.texture_coordinates), color);
-    vertices.emplace_back(box_with_border.p1, clipping_rectangle, get<1>(atlas_rect.texture_coordinates), color);
-    vertices.emplace_back(box_with_border.p2, clipping_rectangle, get<2>(atlas_rect.texture_coordinates), color);
-    vertices.emplace_back(box_with_border.p3, clipping_rectangle, get<3>(atlas_rect.texture_coordinates), color);
+    vertices.emplace_back(box_with_border.p0, clipping_rectangle, get<0>(atlas_rect->texture_coordinates), color);
+    vertices.emplace_back(box_with_border.p1, clipping_rectangle, get<1>(atlas_rect->texture_coordinates), color);
+    vertices.emplace_back(box_with_border.p2, clipping_rectangle, get<2>(atlas_rect->texture_coordinates), color);
+    vertices.emplace_back(box_with_border.p3, clipping_rectangle, get<3>(atlas_rect->texture_coordinates), color);
     return glyph_was_added;
 }
 

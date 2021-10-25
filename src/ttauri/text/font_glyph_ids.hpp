@@ -5,8 +5,6 @@
 #pragma once
 
 #include "glyph_id.hpp"
-#include "../hash.hpp"
-#include "../tagged_id.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../architecture.hpp"
 #include <tuple>
@@ -45,13 +43,10 @@ class font_glyph_ids_long {
     [[nodiscard]] size_t hash() const noexcept
     {
         tt_axiom(nr_glyphs > 3);
-        tt_axiom(nr_glyphs < std::ssize(glyph_ids));
 
-        uint64_t r = 0;
-        for (int8_t i = 0; i != nr_glyphs; ++i) {
-            r = hash_mix_two(r, std::hash<glyph_id>{}(glyph_ids[i]));
-        }
-
+        size_t r = 0;
+        std::memcpy(&r, glyph_ids.data(), sizeof(r));
+        r ^= nr_glyphs;
         return r;
     }
 
@@ -215,11 +210,9 @@ public:
 
     [[nodiscard]] size_t hash() const noexcept
     {
-        if (is_long()) {
-            return _glyphs.ids_long->hash();
-        } else {
-            return std::hash<uint64_t>{}(_glyphs.ids_short);
-        }
+        auto r = is_long() ? _glyphs.ids_long->hash() : static_cast<size_t>(_glyphs.ids_short);
+        r ^= static_cast<size_t>(reinterpret_cast<ptrdiff_t>(_font)) >> 3;
+        return r;
     }
 
     [[nodiscard]] std::pair<graphic_path, aarectangle> get_path_and_bounding_box() const noexcept;
@@ -227,15 +220,16 @@ public:
 
     [[nodiscard]] friend bool operator==(font_glyph_ids const &lhs, font_glyph_ids const &rhs) noexcept
     {
-        if (lhs._font == rhs._font and lhs.is_long() == rhs.is_long()) {
-            if (lhs.is_long()) {
-                return *lhs._glyphs.ids_long == *rhs._glyphs.ids_long;
-            } else {
-                return lhs._glyphs.ids_short == rhs._glyphs.ids_short;
-            }
+        // This function is written to expect the comparison to yield true. As it would
+        // most likely be used inside a hash table.
+        auto same = lhs._font == rhs._font;
+        same &= lhs.is_long() == rhs.is_long();
+        if (not lhs.is_long()) {
+            [[likely]] same &= lhs._glyphs.ids_short == rhs._glyphs.ids_short;
         } else {
-            return false;
+            same &= *lhs._glyphs.ids_long == *rhs._glyphs.ids_long;
         }
+        return same;
     }
 
 private:
@@ -263,7 +257,7 @@ private:
         uint64_t tmp = std::bit_cast<uint64_t>(_glyphs);
         // Pointers have the bottom 3 bits zero.
         return (tmp & 0x7) == 0;
-    }    
+    }
 };
 
 } // namespace tt
