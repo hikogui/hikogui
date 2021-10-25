@@ -11,6 +11,7 @@
 #include "../required.hpp"
 #include "../log.hpp"
 #include "../vspan.hpp"
+#include "../hash_map.hpp"
 #include "../geometry/rectangle.hpp"
 #include "../geometry/scale.hpp"
 #include "../geometry/transform.hpp"
@@ -62,7 +63,7 @@ struct device_shared final {
     vk::SpecializationInfo fragmentShaderSpecializationInfo;
     std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
 
-    std::unordered_map<font_glyph_ids, atlas_rect> glyphs_in_atlas;
+    hash_map<font_glyph_ids, atlas_rect> glyphs_in_atlas;
     texture_map stagingTexture;
     std::vector<texture_map> atlasTextures;
 
@@ -98,7 +99,7 @@ struct device_shared final {
     /** Once drawing in the staging pixmap is completed, you can upload it to the atlas.
      * This will transition the stating texture to 'source' and the atlas to 'destination'.
      */
-    void uploadStagingPixmapToAtlas(atlas_rect location);
+    void uploadStagingPixmapToAtlas(atlas_rect const &location);
 
     /** This will transition the staging texture to 'general' for writing by the CPU.
      */
@@ -227,12 +228,22 @@ private:
         return _place_vertices(vertices, clipping_rectangle, transform, attr_glyph, attr_glyph.style.color);
     }
 
-    atlas_rect add_glyph_to_atlas(font_glyph_ids glyph) noexcept;
+    atlas_rect const &add_glyph_to_atlas(decltype(glyphs_in_atlas)::iterator it) noexcept;
 
     /**
      * @return The Atlas rectangle and true if a new glyph was added to the atlas.
      */
-    std::pair<atlas_rect, bool> get_glyph_from_atlas(font_glyph_ids glyph) noexcept;
+    template<typename Glyph>
+    tt_force_inline std::pair<atlas_rect const *, bool> get_glyph_from_atlas(Glyph &&glyph) noexcept
+    {
+        auto i = glyphs_in_atlas.find_or_create(std::forward<Glyph>(glyph));
+        if (i != glyphs_in_atlas.cend()) {
+            [[likely]] return {&i->value(), false};
+
+        } else {
+            return {&add_glyph_to_atlas(i), false};
+        }
+    }
 };
 
 } // namespace tt::pipeline_SDF

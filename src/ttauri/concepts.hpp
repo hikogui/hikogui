@@ -36,9 +36,6 @@ concept pointer = std::is_pointer_v<T>;
 template<typename T>
 concept reference = std::is_reference_v<T>;
 
-template<typename T, typename O>
-concept same = std::is_same_v<T, O>;
-
 template<typename T>
 concept lvalue_reference = std::is_lvalue_reference_v<T>;
 

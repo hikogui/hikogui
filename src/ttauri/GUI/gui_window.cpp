@@ -126,7 +126,13 @@ void gui_window::render(utc_nanoseconds display_time_point)
 
     // When a widget requests it or a window-wide event like language change
     // has happened all the widgets will be set_constraints().
-    ttlet need_reconstrain = _reconstrain.exchange(false, std::memory_order_relaxed);
+    auto need_reconstrain = _reconstrain.exchange(false, std::memory_order_relaxed);
+
+#if 0
+    // For performance checks force reconstraints.
+    need_reconstrain = true;
+#endif
+
     if (need_reconstrain) {
         ttlet t2 = trace<"window::constrain">();
         widget->set_constraints();
@@ -171,7 +177,13 @@ void gui_window::render(utc_nanoseconds display_time_point)
     surface->update(screen_rectangle.size());
 
     // Make sure the widget's layout is updated before draw, but after window resize.
-    ttlet need_relayout = _relayout.exchange(false, std::memory_order_relaxed);
+    auto need_relayout = _relayout.exchange(false, std::memory_order_relaxed);
+
+#if 1
+    // For performance checks force relayout.
+    need_relayout = true;
+#endif
+
     if (need_reconstrain or need_relayout or widget_size != screen_rectangle.size()) {
         ttlet t2 = trace<"window::layout">();
         widget_size = screen_rectangle.size();

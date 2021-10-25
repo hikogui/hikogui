@@ -24,6 +24,7 @@ struct atlas_rect {
 
     std::array<point3, 4> texture_coordinates;
 
+    constexpr atlas_rect() noexcept = default;
     atlas_rect(point3 atlas_position, extent2 size, scale2 scale) noexcept;
 };
 

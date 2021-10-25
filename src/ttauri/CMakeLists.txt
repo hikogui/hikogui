@@ -81,6 +81,7 @@ target_sources(ttauri PRIVATE
     global_state.hpp
     glob.hpp
     hash.hpp
+    hash_map.hpp
     huffman.hpp
     icon.cpp
     icon.hpp
