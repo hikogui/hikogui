@@ -87,6 +87,8 @@ public:
 private:
     weak_or_unique_ptr<delegate_type> _delegate;
 
+    bool _text_was_modified = false;
+
     bool _continues = false;
 
     /** An error string to show to the user.
