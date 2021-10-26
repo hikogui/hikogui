@@ -45,7 +45,8 @@ widget_constraints const &text_field_widget::set_constraints() noexcept
 void text_field_widget::set_layout(widget_layout const &context) noexcept
 {
     if (visible) {
-        if (_layout.store(context) >= layout_update::transform) {
+        ttlet text_was_modified = std::exchange(_text_was_modified, false);
+        if (_layout.store(context) >= layout_update::transform or text_was_modified) {
             _text_field_rectangle = aarectangle{extent2{_text_width + theme().margin * 2.0f, layout().height()}};
 
             // Set the clipping rectangle to within the border of the input field.
@@ -109,6 +110,7 @@ void text_field_widget::draw(draw_context const &context) noexcept
 bool text_field_widget::handle_event(command command) noexcept
 {
     tt_axiom(is_gui_thread());
+    _text_was_modified = true;
     window.request_relayout();
 
     if (enabled) {
@@ -248,6 +250,7 @@ bool text_field_widget::handle_event(keyboard_event const &event) noexcept
         }
     }
 
+    _text_was_modified = true;
     window.request_relayout();
     return handled;
 }
