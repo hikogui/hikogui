@@ -628,6 +628,7 @@ public:
     }
 
     X(==)
+    X(+)
     X(-)
 #undef X
 

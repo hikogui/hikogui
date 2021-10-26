@@ -253,8 +253,11 @@ public:
 
         if (event.type == mouse_event::Type::Wheel) {
             handled = true;
-            _scroll_offset_x += event.wheelDelta.x();
-            _scroll_offset_y += event.wheelDelta.y();
+            ttlet new_scroll_offset_x = _scroll_offset_x + event.wheelDelta.x();
+            ttlet new_scroll_offset_y = _scroll_offset_y + event.wheelDelta.y();
+
+            _scroll_offset_x = std::clamp(new_scroll_offset_x, 0.0f, _scroll_content_width - _scroll_aperture_width);
+            _scroll_offset_y = std::clamp(new_scroll_offset_y, 0.0f, _scroll_content_height - _scroll_aperture_height);
             window.request_relayout();
             return true;
         }
