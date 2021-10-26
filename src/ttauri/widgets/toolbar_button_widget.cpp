@@ -7,11 +7,6 @@
 
 namespace tt {
 
-[[nodiscard]] float toolbar_button_widget::margin() const noexcept
-{
-    return 0.0f;
-}
-
 widget_constraints const &toolbar_button_widget::set_constraints() noexcept
 {
     _layout = {};
