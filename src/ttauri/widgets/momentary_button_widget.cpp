@@ -12,7 +12,9 @@ widget_constraints const &momentary_button_widget::set_constraints() noexcept
 
     // On left side a check mark, on right side short-cut. Around the label extra margin.
     ttlet extra_size = extent2{theme().margin * 2.0f, theme().margin * 2.0f};
-    return _constraints = set_constraints_button() + extra_size;
+    _constraints = set_constraints_button() + extra_size;
+    constraints.margin = theme().margin;
+    return _constraints;
 }
 
 void momentary_button_widget::set_layout(widget_layout const &context) noexcept

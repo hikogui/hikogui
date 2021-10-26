@@ -73,6 +73,7 @@ widget_constraints const &selection_widget::set_constraints() noexcept
         std::max(_constraints.preferred.width(), overlay_constraints.preferred.width() + extra_size.width());
     _constraints.maximum.width() =
         std::max(_constraints.maximum.width(), overlay_constraints.maximum.width() + extra_size.width());
+    _constraints.margin = theme().margin;
 
     tt_axiom(_constraints.holds_invariant());
     return _constraints;
