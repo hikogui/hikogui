@@ -36,7 +36,6 @@ public:
     size_t frame_buffer_index;
 
     /** This is the rectangle of the window that is being redrawn.
-     * The scissor rectangle, like drawing coordinates are relative to the widget.
      */
     aarectangle scissor_rectangle;
 

@@ -86,8 +86,10 @@ void window_widget::set_layout(widget_layout const &context) noexcept
 
 void window_widget::draw(draw_context const &context) noexcept
 {
-    _toolbar->draw(context);
-    _content->draw(context);
+    if (visible) {
+        _toolbar->draw(context);
+        _content->draw(context);
+    }
 }
 
 hitbox window_widget::hitbox_test(point3 position) const noexcept

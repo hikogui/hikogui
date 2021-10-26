@@ -167,12 +167,6 @@ bool device_shared::_place_vertices(
 {
     ttlet[atlas_rect, glyph_was_added] = get_glyph_from_atlas(glyphs);
 
-    // If none of the vertices is inside the clipping rectangle then don't add the
-    // quad to the vertex list.
-    if (!overlaps(clipping_rectangle, bounding_rectangle(box))) {
-        return glyph_was_added;
-    }
-
     ttlet box_with_border = scale_from_center(box, atlas_rect->scale);
 
     vertices.emplace_back(box_with_border.p0, clipping_rectangle, get<0>(atlas_rect->texture_coordinates), color);

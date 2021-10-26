@@ -44,9 +44,9 @@ widget_constraints const &toolbar_widget::set_constraints() noexcept
     tt_axiom(index == std::ssize(_left_children) + 1 + std::ssize(_right_children));
 
     return _constraints = {
-        {_flow_layout.minimum_size(), shared_height},
-        {_flow_layout.preferred_size(), shared_height},
-        {_flow_layout.maximum_size(), shared_height}};
+               {_flow_layout.minimum_size(), shared_height},
+               {_flow_layout.preferred_size(), shared_height},
+               {_flow_layout.maximum_size(), shared_height}};
 }
 
 void toolbar_widget::set_layout(widget_layout const &context_) noexcept
@@ -100,15 +100,17 @@ void toolbar_widget::draw(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (visible and overlaps(context, layout())) {
-        context.draw_box(layout(), layout().rectangle(), theme().color(theme_color::fill, semantic_layer + 1));
+    if (visible) {
+        if (overlaps(context, layout())) {
+            context.draw_box(layout(), layout().rectangle(), theme().color(theme_color::fill, semantic_layer + 1));
 
-        if (tab_button_has_focus()) {
-            ttlet line_rectangle = aarectangle{0.0f, 0.0f, layout().width(), theme().border_width};
+            if (tab_button_has_focus()) {
+                ttlet line_rectangle = aarectangle{0.0f, 0.0f, layout().width(), theme().border_width};
 
-            // Draw the line at a higher elevation, so that the tab buttons can draw above or below the focus
-            // line depending if that specific button is in focus or not.
-            context.draw_box(layout(), translate_z(1.7f) * line_rectangle, focus_color());
+                // Draw the line at a higher elevation, so that the tab buttons can draw above or below the focus
+                // line depending if that specific button is in focus or not.
+                context.draw_box(layout(), translate_z(1.7f) * line_rectangle, focus_color());
+            }
         }
 
         for (ttlet &child : _left_children) {

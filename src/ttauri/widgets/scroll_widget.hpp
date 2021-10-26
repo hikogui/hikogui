@@ -224,7 +224,7 @@ public:
 
     void draw(draw_context const &context) noexcept
     {
-        if (visible and overlaps(context, layout())) {
+        if (visible) {
             _vertical_scroll_bar->draw(context);
             _horizontal_scroll_bar->draw(context);
             _content->draw(context);
