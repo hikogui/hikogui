@@ -41,24 +41,21 @@ public:
     constexpr color &operator=(color const &) noexcept = default;
     constexpr color &operator=(color &&) noexcept = default;
 
-    [[nodiscard]] constexpr explicit color(f32x4 const &other) noexcept : _v(static_cast<f16x4>(other))
-    {
-        tt_axiom(holds_invariant());
-    }
-
     [[nodiscard]] constexpr explicit color(f16x4 const &other) noexcept : _v(other)
     {
         tt_axiom(holds_invariant());
     }
 
-    [[nodiscard]] constexpr explicit operator f32x4() const noexcept
-    {
-        return static_cast<f32x4>(_v);
-    }
+    [[nodiscard]] constexpr explicit color(f32x4 const &other) noexcept : color(static_cast<f16x4>(other)) {}
 
     [[nodiscard]] constexpr explicit operator f16x4() const noexcept
     {
         return _v;
+    }
+
+    [[nodiscard]] constexpr explicit operator f32x4() const noexcept
+    {
+        return static_cast<f32x4>(_v);
     }
 
     [[nodiscard]] constexpr color(float r, float g, float b, float a = 1.0f) noexcept : color(f32x4{r, g, b, a}) {}
@@ -125,15 +122,11 @@ public:
         return _v.w() >= 0.0 && _v.w() <= 1.0;
     }
 
-    [[nodiscard]] constexpr friend bool operator==(color const &lhs, color const &rhs) noexcept
-    {
-        return lhs._v == rhs._v;
-    }
+    [[nodiscard]] constexpr friend bool operator==(color const &lhs, color const &rhs) noexcept = default;
 
     [[nodiscard]] constexpr friend color operator*(color const &lhs, color const &rhs) noexcept
     {
-        ttlet tmp = lhs._v * rhs._v;
-        return color{tmp};
+        return color{lhs._v * rhs._v};
     }
 
     [[nodiscard]] constexpr friend color composit(color const &lhs, color const &rhs) noexcept
