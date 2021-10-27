@@ -72,7 +72,7 @@ widget_constraints const &label_widget::set_constraints() noexcept
         }
     }
 
-    return _constraints = {size, size, size};
+    return _constraints = {size, size, size, theme().margin};
 }
 
 void label_widget::set_layout(widget_layout const &context) noexcept

@@ -36,12 +36,16 @@ public:
         return widget_constraints{lhs.minimum + rhs, lhs.preferred + rhs, lhs.maximum + rhs, lhs.margin};
     }
 
-    [[nodiscard]] friend constexpr bool operator==(widget_constraints const &lhs, widget_constraints const &rhs) noexcept = default;
+    [[nodiscard]] friend constexpr bool
+    operator==(widget_constraints const &lhs, widget_constraints const &rhs) noexcept = default;
 
     [[nodiscard]] friend constexpr widget_constraints max(widget_constraints const &lhs, widget_constraints const &rhs) noexcept
     {
         return widget_constraints{
-            max(lhs.minimum, rhs.minimum), max(lhs.preferred, rhs.preferred), max(lhs.maximum, rhs.maximum), max(lhs.margin, rhs.margin)};
+            max(lhs.minimum, rhs.minimum),
+            max(lhs.preferred, rhs.preferred),
+            max(lhs.maximum, rhs.maximum),
+            std::max(lhs.margin, rhs.margin)};
     }
 
     [[nodiscard]] friend constexpr widget_constraints max(widget_constraints const &lhs, extent2 const &rhs) noexcept

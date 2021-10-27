@@ -156,7 +156,8 @@ void toolbar_widget::update_layout_for_child(widget &child, ssize_t index, widge
 
     ttlet[child_x, child_width] = _flow_layout.get_offset_and_size(index++);
 
-    ttlet child_rectangle = aarectangle{child_x, child_constraints.margin, child_width, layout().height() - child_constraints.margin * 2.0f};
+    ttlet child_rectangle =
+        aarectangle{child_x, child.constraints().margin, child_width, layout().height() - child.constraints().margin * 2.0f};
 
     child.set_layout(child_rectangle * context);
 }
