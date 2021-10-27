@@ -101,7 +101,7 @@ void grid_widget::set_layout(widget_layout const &context) noexcept
 
 void grid_widget::draw(draw_context const &context) noexcept
 {
-    if (visible) {
+    if (visible and overlaps(context, layout())) {
         for (ttlet &cell : _cells) {
             cell.widget->draw(context);
         }

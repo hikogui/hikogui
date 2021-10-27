@@ -179,7 +179,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     // Make sure the widget's layout is updated before draw, but after window resize.
     auto need_relayout = _relayout.exchange(false, std::memory_order_relaxed);
 
-#if 0
+#if 1
     // For performance checks force relayout.
     need_relayout = true;
 #endif

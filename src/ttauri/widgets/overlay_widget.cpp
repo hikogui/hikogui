@@ -48,7 +48,7 @@ void overlay_widget::set_layout(widget_layout const &context_) noexcept
     tt_axiom(is_gui_thread());
 
     if (visible) {
-        // The clipping rectangle of the overlay matches the rectangle exactly, with a border around it.
+        // An overlay has full control over the clipping rectangle.
         ttlet context = context_.override_clip(context_.rectangle() + theme().border_width);
         _layout.store(context);
 
@@ -60,10 +60,8 @@ void overlay_widget::draw(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (visible) {
-        if (overlaps(context, layout())) {
-            draw_background(context);
-        }
+    if (visible and overlaps(context, layout())) {
+        draw_background(context);
         _content->draw(context);
     }
 }

@@ -161,7 +161,7 @@ public:
 
     void draw(draw_context const &context) noexcept override
     {
-        if (visible) {
+        if (visible and overlaps(context, layout())) {
             for (ttlet &child : _children) {
                 child->draw(context);
             }

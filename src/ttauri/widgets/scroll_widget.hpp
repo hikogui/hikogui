@@ -224,7 +224,7 @@ public:
 
     void draw(draw_context const &context) noexcept
     {
-        if (visible) {
+        if (visible and overlaps(context, layout())) {
             _vertical_scroll_bar->draw(context);
             _horizontal_scroll_bar->draw(context);
             _content->draw(context);
@@ -253,11 +253,8 @@ public:
 
         if (event.type == mouse_event::Type::Wheel) {
             handled = true;
-            ttlet new_scroll_offset_x = _scroll_offset_x + event.wheelDelta.x();
-            ttlet new_scroll_offset_y = _scroll_offset_y + event.wheelDelta.y();
-
-            _scroll_offset_x = std::clamp(new_scroll_offset_x, 0.0f, _scroll_content_width - _scroll_aperture_width);
-            _scroll_offset_y = std::clamp(new_scroll_offset_y, 0.0f, _scroll_content_height - _scroll_aperture_height);
+            _scroll_offset_x += event.wheelDelta.x();
+            _scroll_offset_y += event.wheelDelta.y();
             window.request_relayout();
             return true;
         }

@@ -88,7 +88,7 @@ void tab_widget::set_layout(widget_layout const &context) noexcept
 
 void tab_widget::draw(draw_context const &context) noexcept
 {
-    if (visible) {
+    if (visible and overlaps(context, layout())) {
         for (ttlet &child : _children) {
             child->draw(context);
         }

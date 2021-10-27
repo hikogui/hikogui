@@ -45,16 +45,15 @@ public:
     {
         _layout = {};
 
-        // The minimum size is twice the length of the slider, which is twice the theme().size()
         if constexpr (axis == axis::vertical) {
             return _constraints = {
-                       {theme().icon_size, theme().size * 4.0f},
-                       {theme().icon_size, theme().size * 4.0f},
+                       {theme().icon_size, theme().large_size},
+                       {theme().icon_size, theme().large_size},
                        {theme().icon_size, 32767.0f}};
         } else {
             return _constraints = {
-                       {theme().size * 4.0f, theme().icon_size},
-                       {theme().size * 4.0f, theme().icon_size},
+                       {theme().large_size, theme().icon_size},
+                       {theme().large_size, theme().icon_size},
                        {32767.0f, theme().icon_size}};
         }
     }
@@ -115,8 +114,7 @@ public:
                 // start of the drag.
                 ttlet slider_movement = axis == axis::vertical ? event.delta().y() : event.delta().x();
                 ttlet content_movement = slider_movement * hidden_content_vs_travel_ratio();
-                ttlet new_offset = _offset_before_drag + content_movement;
-                offset = std::clamp(new_offset, 0.0f, content - aperture);
+                offset = _offset_before_drag + content_movement;
             } break;
 
             default:;
