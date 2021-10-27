@@ -28,11 +28,6 @@ grid_widget::~grid_widget()
     }
 }
 
-[[nodiscard]] float grid_widget::margin() const noexcept
-{
-    return 0.0f;
-}
-
 bool grid_widget::address_in_use(size_t column_nr, size_t row_nr) const noexcept
 {
     for (ttlet &cell : _cells) {
@@ -67,14 +62,14 @@ widget_constraints const &grid_widget::set_constraints() noexcept
             cell_constraints.minimum.height(),
             cell_constraints.preferred.height(),
             cell_constraints.maximum.height(),
-            cell.widget->margin());
+            cell_constraints.margin);
 
         _columns.update(
             cell.column_nr,
             cell_constraints.minimum.width(),
             cell_constraints.preferred.width(),
             cell_constraints.maximum.width(),
-            cell.widget->margin());
+            cell_constraints.margin);
     }
 
     return _constraints = {

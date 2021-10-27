@@ -11,11 +11,6 @@ system_menu_widget::system_menu_widget(gui_window &window, widget *parent) noexc
     _icon_widget = std::make_unique<icon_widget>(window, this, icon);
 }
 
-[[nodiscard]] float system_menu_widget::margin() const noexcept
-{
-    return 0.0f;
-}
-
 widget_constraints const &system_menu_widget::set_constraints() noexcept
 {
     _layout = {};

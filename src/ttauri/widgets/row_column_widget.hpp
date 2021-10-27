@@ -108,11 +108,6 @@ public:
         }
     }
 
-    [[nodiscard]] float margin() const noexcept override
-    {
-        return 0.0f;
-    }
-
     widget_constraints const &set_constraints() noexcept override
     {
         _layout = {};
@@ -190,11 +185,11 @@ private:
                 child_constraints.minimum.width(),
                 child_constraints.preferred.width(),
                 child_constraints.maximum.width(),
-                child.margin());
+                child_constraints.margin);
 
-            minimum_thickness = std::max(minimum_thickness, child_constraints.minimum.height() + child.margin() * 2.0f);
-            preferred_thickness = std::max(preferred_thickness, child_constraints.preferred.height() + child.margin() * 2.0f);
-            maximum_thickness = std::max(maximum_thickness, child_constraints.maximum.height() + child.margin() * 2.0f);
+            minimum_thickness = std::max(minimum_thickness, child_constraints.minimum.height() + child_constraints.margin * 2.0f);
+            preferred_thickness = std::max(preferred_thickness, child_constraints.preferred.height() + child_constraints.margin * 2.0f);
+            maximum_thickness = std::max(maximum_thickness, child_constraints.maximum.height() + child_constraints.margin * 2.0f);
 
         } else {
             _flow_layout.update(
@@ -202,11 +197,11 @@ private:
                 child_constraints.minimum.height(),
                 child_constraints.preferred.height(),
                 child_constraints.maximum.height(),
-                child.margin());
+                child_constraints.margin);
 
-            minimum_thickness = std::max(minimum_thickness, child_constraints.minimum.width() + child.margin() * 2.0f);
-            preferred_thickness = std::max(preferred_thickness, child_constraints.preferred.width() + child.margin() * 2.0f);
-            maximum_thickness = std::max(maximum_thickness, child_constraints.maximum.width() + child.margin() * 2.0f);
+            minimum_thickness = std::max(minimum_thickness, child_constraints.minimum.width() + child_constraints.margin * 2.0f);
+            preferred_thickness = std::max(preferred_thickness, child_constraints.preferred.width() + child_constraints.margin * 2.0f);
+            maximum_thickness = std::max(maximum_thickness, child_constraints.maximum.width() + child_constraints.margin * 2.0f);
         }
     }
 
@@ -216,12 +211,13 @@ private:
 
         ttlet[child_offset, child_length] = _flow_layout.get_offset_and_size(index++);
 
+        ttlet &child_constraints = child.set_constraints();
         ttlet child_rectangle = axis == axis::row ?
-            aarectangle{child_offset, child.margin(), child_length, layout().height() - child.margin() * 2.0f} :
+            aarectangle{child_offset, child_constraints.margin, child_length, layout().height() - child_constraints.margin * 2.0f} :
             aarectangle{
-                child.margin(),
+                child_constraints.margin,
                 layout().height() - child_offset - child_length,
-                layout().width() - child.margin() * 2.0f,
+                layout().width() - child_constraints.margin * 2.0f,
                 child_length};
 
         child.set_layout(child_rectangle * context);

@@ -45,11 +45,6 @@ tab_widget::tab_widget(gui_window &window, widget *parent, std::weak_ptr<delegat
 {
 }
 
-[[nodiscard]] float tab_widget::margin() const noexcept
-{
-    return 0.0f;
-}
-
 widget_constraints const &tab_widget::set_constraints() noexcept
 {
     tt_axiom(is_gui_thread());

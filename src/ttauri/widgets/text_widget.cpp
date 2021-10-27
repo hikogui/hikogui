@@ -17,7 +17,7 @@ widget_constraints const &text_widget::set_constraints() noexcept
 
     _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), 0.0f, *alignment};
     ttlet shaped_text_size = ceil(_shaped_text.preferred_size());
-    _constraints = {shaped_text_size, shaped_text_size, shaped_text_size};
+    _constraints = {shaped_text_size, shaped_text_size, shaped_text_size, theme().margin};
 
     // Allow text to overhang into the margin of a small widget.
     if (_constraints.minimum.height() > theme().size and _constraints.minimum.height() <= theme().size + theme().margin) {

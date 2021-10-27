@@ -120,11 +120,6 @@ public:
         co_yield _horizontal_scroll_bar.get();
     }
 
-    [[nodiscard]] float margin() const noexcept override
-    {
-        return 0.0f;
-    }
-
     widget_constraints const &set_constraints() noexcept override
     {
         tt_axiom(is_gui_thread());
