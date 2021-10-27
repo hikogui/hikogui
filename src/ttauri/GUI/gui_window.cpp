@@ -193,6 +193,11 @@ void gui_window::render(utc_nanoseconds display_time_point)
         _redraw_rectangle = aarectangle{widget_size};
     }
 
+#if 1
+    // For performance checks force redraw.
+    _redraw_rectangle = aarectangle{widget_size};
+#endif
+
     // Draw widgets if the _redraw_rectangle was set.
     if (auto draw_context = surface->render_start(_redraw_rectangle, display_time_point)) {
         _redraw_rectangle = aarectangle{};

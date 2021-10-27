@@ -1,13 +1,10 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2021.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
-#include <emmintrin.h>
-#include <immintrin.h>
 #include <type_traits>
-#include "rapid/numeric_array.hpp"
 
 namespace tt {
 
@@ -20,109 +17,106 @@ constexpr uint32_t f32_to_f16_adjustment = f32_to_f16_adjustment_exponent << 23;
 constexpr uint32_t f32_to_f16_lowest_normal = f32_to_f16_lowest_normal_exponent << 23;
 constexpr uint32_t f32_to_f16_infinite = f32_to_f16_infinite_exponent << 23;
 
-// Test with greater or equal is slow, so test with greater than, adjust lowerst_normal.
-inline constinit u32x4 f32_to_f16_constants = u32x4{f32_to_f16_lowest_normal - 1, f32_to_f16_infinite, f32_to_f16_adjustment, 0};
-
-constexpr f32x4 f16x8_to_f32x4(i16x8 value) noexcept
+constexpr float cvtsh_ss(uint16_t value) noexcept
 {
     // Convert the 16 bit values to 32 bit with leading zeros.
-    auto u = bit_cast<u32x4>(i16x8::interleave_lo(value, i16x8{}));
+    uint32_t u = value;
 
     // Extract the sign bit.
-    auto sign = (u >> 15) << 31;
+    ttlet sign = (u >> 15) << 31;
 
     // Strip the sign bit and align the exponent/mantissa boundary to a float 32.
     u = (u << 17) >> 4;
 
-    // Adjust the bias.
-    u = u + f32_to_f16_constants.zzzz();
+    // Adjust the bias. f32_to_f16_adjustment
+    u = u + f32_to_f16_adjustment;
 
     // Get a mask of '1' bits when the half-float would be normal or infinite.
-    auto is_normal = bit_cast<u32x4>(gt_mask(bit_cast<i32x4>(u), bit_cast<i32x4>(f32_to_f16_constants.xxxx())));
+    ttlet is_normal = u > f32_to_f16_lowest_normal;
 
     // Add the sign bit back in.
-    u = u | bit_cast<u32x4>(sign);
+    u = u | sign;
 
     // Keep the value if normal, if denormal make it zero.
-    u = u & is_normal;
+    u = is_normal ? u : 0;
 
-    return bit_cast<f32x4>(u);
+    return std::bit_cast<float>(u);
 }
 
-constexpr i16x8 f32x4_to_f16x8(f32x4 value) noexcept
+constexpr uint16_t cvtss_sh(float value) noexcept
 {
     // Interpret the floating point number as 32 bit-field.
-    auto u = bit_cast<u32x4>(value);
+    auto u = std::bit_cast<uint32_t>(value);
 
     // Get the sign of the floating point number as a bit mask of the upper 17 bits.
-    auto sign = (bit_cast<i32x4>(u) >> 31) << 15;
+    ttlet sign = static_cast<uint32_t>(static_cast<int32_t>(u) >> 31) << 15;
 
     // Strip sign bit.
     u = (u << 1) >> 1;
 
     // Get a mask of '1' bits when the half-float would be normal or infinite.
-    auto is_normal = bit_cast<u32x4>(gt_mask(bit_cast<i32x4>(u), bit_cast<i32x4>(f32_to_f16_constants.xxxx())));
+    ttlet is_normal = u > f32_to_f16_lowest_normal;
 
     // Clamp the floating point number to where the half-float would be infinite.
-    u = min(u, f32_to_f16_constants.yyyy());
+    u = std::min(u, f32_to_f16_infinite); // SSE4.1
 
     // Convert the bias from float to half-float.
-    u = u - f32_to_f16_constants.zzzz();
+    u = u - f32_to_f16_adjustment;
 
     // Shift the float until it becomes a half-float. This truncates the mantissa.
     u = u >> 13;
 
     // Keep the value if normal, if denormal make it zero.
-    u = u & is_normal;
+    u = is_normal ? u : 0;
 
     // Add the sign bit back in, also set the upper 16 bits so that saturated pack
     // will work correctly when converting to int16.
-    u = u | bit_cast<u32x4>(sign);
+    u = u | sign;
 
     // Saturate and pack the 32 bit integers to 16 bit integers.
-    auto tmp = bit_cast<i32x4>(u);
-    return i16x8{tmp, tmp};
+    return static_cast<uint16_t>(u);
 }
+
 
 class float16 {
     uint16_t v;
 
 public:
-    float16() noexcept : v() {}
+    constexpr float16() noexcept : v(0) {}
+    constexpr float16(float16 const &) noexcept = default;
+    constexpr float16(float16 &&) noexcept = default;
+    constexpr float16 &operator=(float16 const &) noexcept = default;
+    constexpr float16 &operator=(float16 &&) noexcept = default;
 
-    template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
-    float16(T const &rhs) noexcept {
-        ttlet tmp1 = f32x4{narrow_cast<float>(rhs)};
-        ttlet tmp2 = f32x4_to_f16x8(tmp1);
-        v = tmp2.x();
-    }
+    constexpr explicit float16(float other) noexcept : v(cvtss_sh(other)) {}
+    constexpr explicit float16(double other) noexcept : float16(static_cast<float>(other)) {}
+    constexpr explicit float16(long double other) noexcept : float16(static_cast<float>(other)) {}
 
-    template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
-    float16 &operator=(T const &rhs) noexcept {
-        ttlet tmp1 = f32x4{narrow_cast<float>(rhs)};
-        ttlet tmp2 = f32x4_to_f16x8(tmp1);
-        v = tmp2.x();
+    constexpr float16 &operator=(float other) noexcept
+    {
+        v = cvtss_sh(other);
         return *this;
     }
 
-    operator float () const noexcept {
-        ttlet tmp1 = i16x8{static_cast<int16_t>(v)};
-        ttlet tmp2 = f16x8_to_f32x4(tmp1);
-        return tmp2.x();
+    constexpr operator float () const noexcept
+    {
+        return cvtsh_ss(v);
     }
 
-    static float16 from_uint16_t(uint16_t const rhs) noexcept
+    [[nodiscard]] static constexpr float16 from_uint16_t(uint16_t const rhs) noexcept
     {
         auto r = float16{};
         r.v = rhs;
         return r;
     }
 
-    [[nodiscard]] constexpr uint16_t get() const noexcept {
+    [[nodiscard]] constexpr uint16_t get() const noexcept
+    {
         return v;
     }
 
-    constexpr float16 &set(uint16_t rhs) noexcept {
+    constexpr float16 &set(uint16_t rhs) noexcept
+    {
         v = rhs;
         return *this;
     }
@@ -132,16 +126,15 @@ public:
         return std::hash<uint16_t>{}(v);
     }
 
-    [[nodiscard]] friend bool operator==(float16 const &lhs, float16 const &rhs) noexcept {
-        return lhs.v == rhs.v;
-    }
+    [[nodiscard]] constexpr friend bool operator==(float16 const &lhs, float16 const &rhs) noexcept = default;
 
-    [[nodiscard]] friend bool operator!=(float16 const &lhs, float16 const &rhs) noexcept {
-        return lhs.v != rhs.v;
+    [[nodiscard]] constexpr friend float16 operator*(float16 const &lhs, float16 const &rhs) noexcept
+    {
+        return float16{static_cast<float>(lhs) * static_cast<float>(rhs)};
     }
 };
 
-}
+} // namespace tt
 
 namespace std {
 
@@ -150,6 +143,83 @@ struct std::hash<tt::float16> {
     size_t operator()(tt::float16 const &rhs) noexcept
     {
         return rhs.hash();
+    }
+};
+
+} // namespace std
+
+namespace std {
+
+template<>
+struct numeric_limits<tt::float16> {
+    using value_type = tt::float16;
+
+    static constexpr bool is_specialized = true;
+    static constexpr bool is_signed = true;
+    static constexpr bool is_integer = false;
+    static constexpr bool is_exact = false;
+    static constexpr bool has_infinity = true;
+    static constexpr bool has_quiet_NaN = true;
+    static constexpr bool has_signaling_NaN = false;
+    static constexpr float_denorm_style has_denorm = std::denorm_present;
+    static constexpr bool has_denorm_loss = false;
+    static constexpr float_round_style round_style = std::round_to_nearest;
+    static constexpr bool is_iec559 = true;
+    static constexpr bool is_bounded = true;
+    static constexpr bool is_modulo = false;
+    static constexpr int digits = 10;
+    static constexpr int digits10 = 4;
+    static constexpr int max_digits10 = 4;
+    static constexpr int min_exponent = -14;
+    static constexpr int min_exponent10 = -3;
+    static constexpr int max_exponent = 15;
+    static constexpr int max_exponent10 = 3;
+    static constexpr bool traps = false;
+    static constexpr bool tinyness_before = false;
+
+    static constexpr value_type min() noexcept
+    {
+        return tt::float16::from_uint16_t(0x0400);
+    }
+
+    static constexpr value_type lowest() noexcept
+    {
+        return tt::float16::from_uint16_t(0xfbff);
+    }
+
+    static constexpr value_type max() noexcept
+    {
+        return tt::float16::from_uint16_t(0x7bff);
+    }
+
+    static constexpr value_type epsilon() noexcept
+    {
+        return tt::float16::from_uint16_t(0xfbff);
+    }
+
+    static constexpr value_type round_error() noexcept
+    {
+        return tt::float16::from_uint16_t(0x3800); // 0.5
+    }
+
+    static constexpr value_type infinity() noexcept
+    {
+        return tt::float16::from_uint16_t(0x7c00);
+    }
+
+    static constexpr value_type quiet_NaN() noexcept
+    {
+        return tt::float16::from_uint16_t(0x7c01);
+    }
+
+    static constexpr value_type signaling_NaN() noexcept
+    {
+        return tt::float16::from_uint16_t(0x7e01);
+    }
+
+    static constexpr value_type denorm_min() noexcept
+    {
+        return tt::float16::from_uint16_t(0x0001);
     }
 };
 

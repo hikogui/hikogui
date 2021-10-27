@@ -21,7 +21,6 @@ struct ChunkHeader {
     uint8_t type[4];
 };
 
-
 struct IHDR {
     big_uint32_buf_t width;
     big_uint32_buf_t height;
@@ -55,15 +54,9 @@ void png::read_header(std::span<std::byte const> bytes, ssize_t &offset)
 {
     ttlet png_header = make_placement_ptr<PNGHeader>(bytes, offset);
 
-    ttlet valid_signature =
-        png_header->signature[0] == 137 &&
-        png_header->signature[1] == 80 &&
-        png_header->signature[2] == 78 &&
-        png_header->signature[3] == 71 &&
-        png_header->signature[4] == 13 &&
-        png_header->signature[5] == 10 &&
-        png_header->signature[6] == 26 &&
-        png_header->signature[7] == 10;
+    ttlet valid_signature = png_header->signature[0] == 137 && png_header->signature[1] == 80 && png_header->signature[2] == 78 &&
+        png_header->signature[3] == 71 && png_header->signature[4] == 13 && png_header->signature[5] == 10 &&
+        png_header->signature[6] == 26 && png_header->signature[7] == 10;
 
     tt_parse_check(valid_signature, "invalid PNG file signature");
 }
@@ -100,7 +93,6 @@ void png::generate_gamma_transfer_function(float gamma) noexcept
         _transfer_function.push_back(powf(u, gamma));
     }
 }
-
 
 void png::read_IHDR(std::span<std::byte const> bytes)
 {
@@ -154,8 +146,7 @@ void png::read_cHRM(std::span<std::byte const> bytes)
         narrow_cast<float>(chrm->green_x.value()) / 100'000.0f,
         narrow_cast<float>(chrm->green_y.value()) / 100'000.0f,
         narrow_cast<float>(chrm->blue_x.value()) / 100'000.0f,
-        narrow_cast<float>(chrm->blue_y.value()) / 100'000.0f
-    );
+        narrow_cast<float>(chrm->blue_y.value()) / 100'000.0f);
 
     _color_to_sRGB = XYZ_to_sRGB * color_to_XYZ;
 }
@@ -224,33 +215,19 @@ void png::read_chunks(std::span<std::byte const> bytes, ssize_t &offset)
         tt_parse_check(offset + length + ssizeof(uint32_t) <= std::ssize(bytes), "Chuck extents beyond file.");
 
         switch (fourcc(header->type)) {
-        case fourcc("IDAT"):
-            _idat_chunk_data.push_back(bytes.subspan(offset, length));
-            break;
+        case fourcc("IDAT"): _idat_chunk_data.push_back(bytes.subspan(offset, length)); break;
 
-        case fourcc("IHDR"):
-            IHDR_bytes = bytes.subspan(offset, length);
-            break;
+        case fourcc("IHDR"): IHDR_bytes = bytes.subspan(offset, length); break;
 
-        case fourcc("cHRM"):
-            cHRM_bytes = bytes.subspan(offset, length);
-            break;
+        case fourcc("cHRM"): cHRM_bytes = bytes.subspan(offset, length); break;
 
-        case fourcc("gAMA"):
-            gAMA_bytes = bytes.subspan(offset, length);
-            break;
+        case fourcc("gAMA"): gAMA_bytes = bytes.subspan(offset, length); break;
 
-        case fourcc("iCCP"):
-            iCCP_bytes = bytes.subspan(offset, length);
-            break;
+        case fourcc("iCCP"): iCCP_bytes = bytes.subspan(offset, length); break;
 
-        case fourcc("sRGB"):
-            sRGB_bytes = bytes.subspan(offset, length);
-            break;
+        case fourcc("sRGB"): sRGB_bytes = bytes.subspan(offset, length); break;
 
-        case fourcc("IEND"):
-            has_IEND = true;
-            break;
+        case fourcc("IEND"): has_IEND = true; break;
 
         default:;
         }
@@ -278,11 +255,9 @@ void png::read_chunks(std::span<std::byte const> bytes, ssize_t &offset)
     if (!sRGB_bytes.empty()) {
         read_sRGB(sRGB_bytes);
     }
-
 }
 
-png::png(std::span<std::byte const> bytes) :
-    _view()
+png::png(std::span<std::byte const> bytes) : _view()
 {
     ssize_t offset = 0;
 
@@ -290,8 +265,7 @@ png::png(std::span<std::byte const> bytes) :
     read_chunks(bytes, offset);
 }
 
-png::png(std::unique_ptr<resource_view> view) :
-    _view(std::move(view))
+png::png(std::unique_ptr<resource_view> view) : _view(std::move(view))
 {
     ssize_t offset = 0;
 
@@ -300,17 +274,16 @@ png::png(std::unique_ptr<resource_view> view) :
     read_chunks(bytes, offset);
 }
 
-bstring png::decompress_IDATs(ssize_t image_data_size) const {
+bstring png::decompress_IDATs(ssize_t image_data_size) const
+{
     if (std::ssize(_idat_chunk_data) == 1) {
         return zlib_decompress(_idat_chunk_data[0], image_data_size);
     } else {
         // Merge all idat chunks together.
-        ttlet compressed_data_size = std::accumulate(
-            _idat_chunk_data.cbegin(), _idat_chunk_data.cend(), ssize_t{0},
-            [](ttlet &a, ttlet &b) {
-            return a + std::ssize(b);
-        }
-        );
+        ttlet compressed_data_size =
+            std::accumulate(_idat_chunk_data.cbegin(), _idat_chunk_data.cend(), ssize_t{0}, [](ttlet &a, ttlet &b) {
+                return a + std::ssize(b);
+            });
 
         bstring compressed_data;
         compressed_data.reserve(compressed_data_size);
@@ -349,7 +322,8 @@ void png::unfilter_line_average(std::span<uint8_t> line, std::span<uint8_t const
     }
 }
 
-static uint8_t paeth_predictor(uint8_t _a, uint8_t _b, uint8_t _c) noexcept {
+static uint8_t paeth_predictor(uint8_t _a, uint8_t _b, uint8_t _c) noexcept
+{
     auto a = static_cast<int>(_a);
     auto b = static_cast<int>(_b);
     auto c = static_cast<int>(_c);
@@ -388,8 +362,7 @@ void png::unfilter_line(std::span<uint8_t> line, std::span<uint8_t const> prev_l
     case 2: return unfilter_line_up(line.subspan(1, _bytes_per_line), prev_line);
     case 3: return unfilter_line_average(line.subspan(1, _bytes_per_line), prev_line);
     case 4: return unfilter_line_paeth(line.subspan(1, _bytes_per_line), prev_line);
-    default:
-        throw parse_error("Unknown line-filter type");
+    default: throw parse_error("Unknown line-filter type");
     }
 }
 
@@ -445,20 +418,18 @@ u16x4 png::extract_pixel_from_line(std::span<std::byte const> bytes, int x) cons
 
 void png::data_to_image_line(std::span<std::byte const> bytes, pixel_row<sfloat_rgba16> &line) const noexcept
 {
-    ttlet alpha_mul = _bit_depth == 16 ? 1.0f/65535.0f : 1.0f/255.0f;
+    ttlet alpha_mul = _bit_depth == 16 ? 1.0f / 65535.0f : 1.0f / 255.0f;
     for (int x = 0; x != _width; ++x) {
         ttlet value = extract_pixel_from_line(bytes, x);
 
-        ttlet linear_color = color(
-            _transfer_function[value.x()],
-            _transfer_function[value.y()],
-            _transfer_function[value.z()]
-        );
+        ttlet linear_RGB =
+            f32x4{_transfer_function[value.x()], _transfer_function[value.y()], _transfer_function[value.z()], 1.0f};
 
-        auto lesRGB_color = _color_to_sRGB * linear_color;
-        lesRGB_color.a() = static_cast<float>(value.w()) * alpha_mul;
+        ttlet linear_sRGB_color = _color_to_sRGB * linear_RGB;
+        ttlet alpha = static_cast<float>(value.w()) * alpha_mul;
 
-        line[x] = pre_multiply_alpha(lesRGB_color);
+        // pre-multiply the alpha for use in texture-maps.
+        line[x] = linear_sRGB_color * alpha;
     }
 }
 
@@ -486,7 +457,6 @@ void png::decode_image(pixel_map<sfloat_rgba16> &image) const
     unfilter_lines(image_data);
 
     data_to_image(image_data, image);
-
 }
 
 pixel_map<sfloat_rgba16> png::load(URL const &url)
@@ -497,5 +467,4 @@ pixel_map<sfloat_rgba16> png::load(URL const &url)
     return image;
 }
 
-
-}
+} // namespace tt

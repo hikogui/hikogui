@@ -8,6 +8,7 @@
 #include "../concepts.hpp"
 #include "../cast.hpp"
 #include "../type_traits.hpp"
+#include "../float16.hpp"
 
 #if defined(TT_HAS_AVX)
 #include "swizzle_avx.hpp"
@@ -17,6 +18,7 @@
 #include <nmmintrin.h> // SSE4.2
 #endif
 #if defined(TT_HAS_SSE4_1)
+#include "float16_sse4_1.hpp"
 #include <smmintrin.h> // SSE4.1
 #include <ammintrin.h> // SSE4A
 #endif
@@ -88,6 +90,7 @@ tt_warning_push()
     constexpr static bool is_u16x8 = std::is_same_v<T, uint16_t> && N == 8;
     constexpr static bool is_u16x16 = std::is_same_v<T, uint16_t> && N == 16;
     constexpr static bool is_u16x32 = std::is_same_v<T, uint16_t> && N == 32;
+    constexpr static bool is_f16x4 = std::is_same_v<T, float16> && N == 4;
 
     constexpr static bool is_i32x1 = std::is_same_v<T, int32_t> && N == 1;
     constexpr static bool is_i32x2 = std::is_same_v<T, int32_t> && N == 2;
@@ -126,7 +129,7 @@ tt_warning_push()
     constexpr numeric_array &operator=(numeric_array const &rhs) noexcept = default;
     constexpr numeric_array &operator=(numeric_array &&rhs) noexcept = default;
 
-    template<arithmetic U, size_t M>
+    template<numeric_limited U, size_t M>
     [[nodiscard]] constexpr explicit numeric_array(numeric_array<U, M> const &other) noexcept : v()
     {
         if (!std::is_constant_evaluated()) {
@@ -158,7 +161,12 @@ tt_warning_push()
                 v = numeric_array{_mm_cvtepi8_epi32(other.reg())};
             } else if constexpr (is_i16x8 and other.is_i8x16) {
                 v = numeric_array{_mm_cvtepi8_epi16(other.reg())};
+            } else if constexpr (is_f16x4 and other.is_f32x4) {
+                v = numeric_array{_mm_cvtps_ph_sse4_1(other.reg())};
+            } else if constexpr (is_f32x4 and other.is_f16x4) {
+                v = numeric_array{_mm_cvtph_ps_sse2(other.reg())};
             }
+
 #endif
 #if defined(TT_HAS_SSE2)
             if constexpr (is_f64x2 and other.is_i32x4) {
@@ -185,7 +193,7 @@ tt_warning_push()
         }
     }
 
-    template<arithmetic U, size_t M>
+    template<numeric_limited U, size_t M>
     [[nodiscard]] constexpr explicit numeric_array(numeric_array<U, M> const &other1, numeric_array<U, M> const &other2) noexcept
         :
         v()
@@ -331,6 +339,11 @@ tt_warning_push()
     {
         return _mm_loadu_si128(reinterpret_cast<__m128i const *>(v.data()));
     }
+
+    [[nodiscard]] __m128i reg() const noexcept requires(is_f16x4)
+    {
+        return _mm_set_epi16(0, 0, 0, 0, get<3>(v).get(), get<2>(v).get(), get<1>(v).get(), get<0>(v).get());
+    }
 #endif
 
 #if defined(TT_HAS_SSE2)
@@ -351,6 +364,14 @@ tt_warning_push()
     [[nodiscard]] explicit numeric_array(__m128i const &rhs) noexcept requires(std::is_integral_v<T> and sizeof(T) * N == 16)
     {
         _mm_storeu_si128(reinterpret_cast<__m128i *>(v.data()), rhs);
+    }
+
+    [[nodiscard]] explicit numeric_array(__m128i const &rhs) noexcept requires(is_f16x4)
+    {
+        get<0>(v).set(static_cast<uint16_t>(_mm_extract_epi16(rhs, 0)));
+        get<1>(v).set(static_cast<uint16_t>(_mm_extract_epi16(rhs, 1)));
+        get<2>(v).set(static_cast<uint16_t>(_mm_extract_epi16(rhs, 2)));
+        get<3>(v).set(static_cast<uint16_t>(_mm_extract_epi16(rhs, 3)));
     }
 #endif
 
@@ -2002,6 +2023,8 @@ tt_warning_push()
 #if defined(TT_HAS_SSE4_1)
             if constexpr (is_i32x4) {
                 return numeric_array{_mm_mul_epi32(lhs.reg(), rhs.reg())};
+            } else if constexpr (is_f16x4) {
+                return numeric_array{numeric_array<float,4>{lhs} * numeric_array<float,4>{rhs}};
             }
 #endif
 #if defined(TT_HAS_SSE2)
@@ -2494,6 +2517,12 @@ tt_warning_push()
         return output_color / output_color.www1();
     }
 
+    [[nodiscard]] constexpr friend numeric_array composit(numeric_array const &under, numeric_array const &over) noexcept
+        requires(is_f16x4)
+    {
+        return numeric_array{composit(static_cast<numeric_array<float, 4>>(under), static_cast<numeric_array<float, 4>>(over))};
+    }
+
     [[nodiscard]] friend std::string to_string(numeric_array const &rhs) noexcept
     {
         auto r = std::string{};
@@ -2732,6 +2761,8 @@ using u16x4 = numeric_array<uint16_t, 4>;
 using u16x8 = numeric_array<uint16_t, 8>;
 using u16x16 = numeric_array<uint16_t, 16>;
 using u16x32 = numeric_array<uint16_t, 32>;
+
+using f16x4 = numeric_array<float16, 4>;
 
 using i32x1 = numeric_array<int32_t, 1>;
 using i32x2 = numeric_array<int32_t, 2>;
