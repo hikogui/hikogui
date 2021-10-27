@@ -52,23 +52,22 @@ widget_constraints const &window_widget::set_constraints() noexcept
     ttlet toolbar_constraints = _toolbar->set_constraints();
     ttlet content_constraints = _content->set_constraints();
 
-    _constraints.minimum = {
+    ttlet min_size = extent2{
         std::max(toolbar_constraints.minimum.width(), content_constraints.minimum.width()),
         toolbar_constraints.preferred.height() + content_constraints.minimum.height()};
 
-    _constraints.preferred = {
+    ttlet pref_size = extent2{
         std::max(toolbar_constraints.preferred.width(), content_constraints.preferred.width()),
         toolbar_constraints.preferred.height() + content_constraints.preferred.height()};
 
-    _constraints.maximum = {
+    ttlet max_size = extent2{
         content_constraints.maximum.width(), toolbar_constraints.preferred.height() + content_constraints.maximum.height()};
 
-    // Override maximum size and preferred size.
-    _constraints.maximum = max(_constraints.maximum, _constraints.minimum);
-    _constraints.preferred = clamp(_constraints.preferred, _constraints.minimum, _constraints.maximum);
-
-    tt_axiom(_constraints.holds_invariant());
-    return _constraints;
+    return _constraints = {
+        min_size,
+        clamp(pref_size, min_size, max(max_size, min_size)),
+        max(max_size, min_size)
+    };
 }
 
 void window_widget::set_layout(widget_layout const &context) noexcept

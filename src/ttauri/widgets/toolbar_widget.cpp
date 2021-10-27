@@ -17,11 +17,6 @@ toolbar_widget::toolbar_widget(gui_window &window, widget *parent) noexcept : su
     }
 }
 
-[[nodiscard]] float toolbar_widget::margin() const noexcept
-{
-    return 0.0f;
-}
-
 widget_constraints const &toolbar_widget::set_constraints() noexcept
 {
     tt_axiom(is_gui_thread());
@@ -150,9 +145,9 @@ void toolbar_widget::update_constraints_for_child(widget &child, ssize_t index, 
         child_constraints.minimum.width(),
         child_constraints.preferred.width(),
         child_constraints.maximum.width(),
-        child.margin());
+        child_constraints.margin);
 
-    shared_height = std::max(shared_height, child_constraints.preferred.height() + child.margin() * 2.0f);
+    shared_height = std::max(shared_height, child_constraints.preferred.height() + child_constraints.margin * 2.0f);
 }
 
 void toolbar_widget::update_layout_for_child(widget &child, ssize_t index, widget_layout const &context) const noexcept
@@ -161,7 +156,8 @@ void toolbar_widget::update_layout_for_child(widget &child, ssize_t index, widge
 
     ttlet[child_x, child_width] = _flow_layout.get_offset_and_size(index++);
 
-    ttlet child_rectangle = aarectangle{child_x, child.margin(), child_width, layout().height() - child.margin() * 2.0f};
+    ttlet child_rectangle =
+        aarectangle{child_x, child.constraints().margin, child_width, layout().height() - child.constraints().margin * 2.0f};
 
     child.set_layout(child_rectangle * context);
 }

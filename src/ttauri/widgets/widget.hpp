@@ -119,15 +119,6 @@ public:
      */
     tt::font_book &font_book() const noexcept;
 
-    /** Get the margin around the Widget.
-     * A container widget should layout the children in such
-     * a way that the maximum margin of neighboring widgets is maintained.
-     *
-     * @pre `mutex` must be locked by current thread.
-     * @return The margin for this widget.
-     */
-    [[nodiscard]] virtual float margin() const noexcept;
-
     /** Find the widget that is under the mouse cursor.
      * This function will recursively test with visual child widgets, when
      * widgets overlap on the screen the hitbox object with the highest elevation is returned.
@@ -139,7 +130,6 @@ public:
 
     /** Check if the widget will accept keyboard focus.
      *
-     * @pre `mutex` must be locked by current thread.
      */
     [[nodiscard]] virtual bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept
     {

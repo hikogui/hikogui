@@ -7,18 +7,15 @@
 
 namespace tt {
 
-[[nodiscard]] float toolbar_button_widget::margin() const noexcept
-{
-    return 0.0f;
-}
-
 widget_constraints const &toolbar_button_widget::set_constraints() noexcept
 {
     _layout = {};
 
     // On left side a check mark, on right side short-cut. Around the label extra margin.
     ttlet extra_size = extent2{theme().margin * 2.0f, theme().margin * 2.0f};
-    return _constraints = set_constraints_button() + extra_size;
+    _constraints = set_constraints_button() + extra_size;
+    _constraints.margin = 0.0f;
+    return _constraints;
 }
 
 void toolbar_button_widget::set_layout(widget_layout const &context) noexcept
