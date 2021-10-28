@@ -228,6 +228,12 @@ public:
         }
     }
 
+    template<typename K>
+    [[nodiscard]] constexpr value_type &operator[](K &&key) noexcept
+    {
+        return find_or_create(std::forward<K>(key))->value();
+    }
+
     [[nodiscard]] constexpr std::default_sentinel_t end() const noexcept
     {
         return {};

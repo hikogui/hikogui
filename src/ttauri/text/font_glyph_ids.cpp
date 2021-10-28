@@ -9,6 +9,11 @@
 
 namespace tt {
 
+[[nodiscard]] glyph_atlas_info &font_glyph_ids::atlas_info() const noexcept
+{
+    return _font->atlas_info(_glyphs);
+}
+
 [[nodiscard]] std::pair<graphic_path, aarectangle> font_glyph_ids::get_path_and_bounding_box() const noexcept
 {
     graphic_path path;

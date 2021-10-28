@@ -36,7 +36,7 @@ void device_shared::destroy(gfx_device_vulkan *vulkanDevice)
     teardownAtlas(vulkanDevice);
 }
 
-[[nodiscard]] atlas_rect device_shared::allocate_rect(extent2 draw_extent, scale2 draw_scale) noexcept
+[[nodiscard]] glyph_atlas_info device_shared::allocate_rect(extent2 draw_extent, scale2 draw_scale) noexcept
 {
     auto image_width = narrow_cast<int>(std::ceil(draw_extent.width()));
     auto image_height = narrow_cast<int>(std::ceil(draw_extent.height()));
@@ -60,13 +60,13 @@ void device_shared::destroy(gfx_device_vulkan *vulkanDevice)
         atlas_allocation_position.y() = atlas_allocation_position.y() + atlasAllocationMaxHeight;
     }
 
-    auto r = atlas_rect{atlas_allocation_position, draw_extent, draw_scale};
+    auto r = glyph_atlas_info{atlas_allocation_position, draw_extent, draw_scale, scale2{atlasTextureCoordinateMultiplier}};
     atlas_allocation_position.x() = atlas_allocation_position.x() + image_width;
     atlasAllocationMaxHeight = std::max(atlasAllocationMaxHeight, image_height);
     return r;
 }
 
-void device_shared::uploadStagingPixmapToAtlas(atlas_rect const &location)
+void device_shared::uploadStagingPixmapToAtlas(glyph_atlas_info const &location)
 {
     // Flush the given image, included the border.
     device.flushAllocation(
@@ -80,10 +80,10 @@ void device_shared::uploadStagingPixmapToAtlas(atlas_rect const &location)
         {vk::ImageAspectFlagBits::eColor, 0, 0, 1},
         {0, 0, 0},
         {vk::ImageAspectFlagBits::eColor, 0, 0, 1},
-        {narrow_cast<int32_t>(location.atlas_position.x()), narrow_cast<int32_t>(location.atlas_position.y()), 0},
+        {narrow_cast<int32_t>(location.position.x()), narrow_cast<int32_t>(location.position.y()), 0},
         {narrow_cast<uint32_t>(location.size.width()), narrow_cast<uint32_t>(location.size.height()), 1}}};
 
-    auto &atlasTexture = atlasTextures.at(narrow_cast<size_t>(location.atlas_position.z()));
+    auto &atlasTexture = atlasTextures.at(narrow_cast<size_t>(location.position.z()));
     atlasTexture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eTransferDstOptimal);
 
     device.copyImage(
@@ -123,9 +123,9 @@ void device_shared::prepareAtlasForRendering()
  *  |                     |
  *  O---------------------+
  */
-atlas_rect const &device_shared::add_glyph_to_atlas(decltype(glyphs_in_atlas)::iterator it) noexcept
+void device_shared::add_glyph_to_atlas(font_glyph_ids const &glyph, glyph_atlas_info &info) noexcept
 {
-    ttlet [glyph_path, glyph_bounding_box] = it->key().get_path_and_bounding_box();
+    ttlet [glyph_path, glyph_bounding_box] = glyph.get_path_and_bounding_box();
 
     ttlet draw_scale = scale2{drawfontSize, drawfontSize};
     ttlet draw_bounding_box = draw_scale * glyph_bounding_box;
@@ -137,6 +137,7 @@ atlas_rect const &device_shared::add_glyph_to_atlas(decltype(glyphs_in_atlas)::i
     // This is the bounding box sized to the fixed font size and a border
     ttlet draw_offset = point2{drawBorder, drawBorder} - get<0>(draw_bounding_box);
     ttlet draw_extent = draw_bounding_box.size() + 2.0f * drawBorder;
+    ttlet image_size = ceil(draw_extent);
 
     // Transform the path to the scale of the fixed font size and drawing the bounding box inside the image.
     ttlet draw_path = (translate2{draw_offset} * draw_scale) * glyph_path;
@@ -144,12 +145,10 @@ atlas_rect const &device_shared::add_glyph_to_atlas(decltype(glyphs_in_atlas)::i
     // Draw glyphs into staging buffer of the atlas and upload it to the correct position in the atlas.
     ttlet lock = std::scoped_lock(gfx_system_mutex);
     prepareStagingPixmapForDrawing();
-    it->value() = allocate_rect(draw_extent, draw_extent / draw_bounding_box.size());
-    auto pixmap = stagingTexture.pixel_map.submap(aarectangle{it->value().size});
+    info = allocate_rect(image_size, image_size / draw_bounding_box.size());
+    auto pixmap = stagingTexture.pixel_map.submap(aarectangle{info.size});
     fill(pixmap, draw_path);
-    uploadStagingPixmapToAtlas(it->value());
-
-    return it->value();
+    uploadStagingPixmapToAtlas(info);
 }
 
 aarectangle device_shared::get_bounding_box(font_glyph_ids const &glyphs) const noexcept
@@ -167,7 +166,7 @@ bool device_shared::_place_vertices(
 {
     ttlet[atlas_rect, glyph_was_added] = get_glyph_from_atlas(glyphs);
 
-    ttlet box_with_border = scale_from_center(box, atlas_rect->scale);
+    ttlet box_with_border = scale_from_center(box, atlas_rect->border_scale);
 
     vertices.emplace_back(box_with_border.p0, clipping_rectangle, get<0>(atlas_rect->texture_coordinates), color);
     vertices.emplace_back(box_with_border.p1, clipping_rectangle, get<1>(atlas_rect->texture_coordinates), color);
