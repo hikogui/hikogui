@@ -10,9 +10,9 @@
 #include "../geometry/corner_shapes.hpp"
 #include "../rapid/numeric_array.hpp"
 #include "../hash.hpp"
-#include <immintrin.h>
-#include <emmintrin.h>
 #include <algorithm>
+#include <bit>
+#include <array>
 
 namespace tt {
 
@@ -21,62 +21,55 @@ class sfloat_rgba16 {
     std::array<float16, 4> v;
 
 public:
-    sfloat_rgba16() noexcept
+    constexpr sfloat_rgba16() noexcept : v()
     {
-        std::memset(v.data(), 0, sizeof(v));
     }
 
-    sfloat_rgba16(sfloat_rgba16 const &rhs) noexcept = default;
-    sfloat_rgba16(sfloat_rgba16 &&rhs) noexcept = default;
-    sfloat_rgba16 &operator=(sfloat_rgba16 const &rhs) noexcept = default;
-    sfloat_rgba16 &operator=(sfloat_rgba16 &&rhs) noexcept = default;
+    constexpr sfloat_rgba16(sfloat_rgba16 const &rhs) noexcept = default;
+    constexpr sfloat_rgba16(sfloat_rgba16 &&rhs) noexcept = default;
+    constexpr sfloat_rgba16 &operator=(sfloat_rgba16 const &rhs) noexcept = default;
+    constexpr sfloat_rgba16 &operator=(sfloat_rgba16 &&rhs) noexcept = default;
 
-    sfloat_rgba16(f32x4 const &rhs) noexcept
-    {
-        ttlet rhs_fp16 = f32x4_to_f16x8(rhs);
-        rhs_fp16.store<sizeof(v)>(reinterpret_cast<std::byte *>(v.data())); 
-    }
+    constexpr sfloat_rgba16(f16x4 const &rhs) noexcept : v(std::bit_cast<decltype(v)>(rhs)) {}
 
-    sfloat_rgba16 &operator=(f32x4 const &rhs) noexcept
+    constexpr sfloat_rgba16 &operator=(f16x4 const &rhs) noexcept
     {
-        ttlet rhs_fp16 = f32x4_to_f16x8(rhs);
-        rhs_fp16.store<sizeof(v)>(reinterpret_cast<std::byte *>(v.data()));
+        v = std::bit_cast<decltype(v)>(rhs);
         return *this;
     }
 
-    explicit operator f32x4() const noexcept
+    constexpr explicit operator f16x4() const noexcept
     {
-        auto tmp = i16x8::load<sizeof(v)>(reinterpret_cast<std::byte const*>(v.data()));
-        return f16x8_to_f32x4(tmp);
+        return std::bit_cast<f16x4>(v);
     }
 
-    sfloat_rgba16(color const &rhs) noexcept : sfloat_rgba16(static_cast<f32x4>(rhs)) {}
+    constexpr sfloat_rgba16(f32x4 const &rhs) noexcept : sfloat_rgba16(static_cast<f16x4>(rhs)) {}
 
-    sfloat_rgba16 &operator=(color const &rhs) noexcept
+    constexpr sfloat_rgba16 &operator=(f32x4 const &rhs) noexcept
     {
-        return *this = static_cast<f32x4>(rhs);
+        return *this = static_cast<f16x4>(rhs);
     }
 
-    explicit operator color() const noexcept
+    constexpr sfloat_rgba16(color const &rhs) noexcept : sfloat_rgba16(static_cast<f16x4>(rhs)) {}
+
+    constexpr sfloat_rgba16 &operator=(color const &rhs) noexcept
     {
-        return color{static_cast<f32x4>(*this)};
+        return *this = static_cast<f16x4>(rhs);
     }
 
-    [[nodiscard]] sfloat_rgba16(corner_shapes const &rhs) noexcept : sfloat_rgba16(static_cast<f32x4>(rhs)) {}
+    constexpr explicit operator color() const noexcept
+    {
+        return color{static_cast<f16x4>(*this)};
+    }
+
+    [[nodiscard]] constexpr sfloat_rgba16(corner_shapes const &rhs) noexcept : sfloat_rgba16(static_cast<f32x4>(rhs)) {}
 
     [[nodiscard]] size_t hash() const noexcept
     {
         return hash_mix(v[0], v[1], v[2], v[3]);
     }
 
-    [[nodiscard]] friend bool operator==(sfloat_rgba16 const &lhs, sfloat_rgba16 const &rhs) noexcept
-    {
-        return lhs.v == rhs.v;
-    }
-    [[nodiscard]] friend bool operator!=(sfloat_rgba16 const &lhs, sfloat_rgba16 const &rhs) noexcept
-    {
-        return !(lhs == rhs);
-    }
+    [[nodiscard]] constexpr friend bool operator==(sfloat_rgba16 const &lhs, sfloat_rgba16 const &rhs) noexcept = default;
 
     [[nodiscard]] friend sfloat_rgba16 makeTransparent(sfloat_rgba16 const &rhs) noexcept
     {
@@ -109,7 +102,7 @@ inline void composit(pixel_map<sfloat_rgba16> &under, pixel_map<sfloat_rgba16> c
             ttlet &overPixel = overRow[columnNr];
             auto &underPixel = underRow[columnNr];
 
-            underPixel = composit(static_cast<f32x4>(underPixel), static_cast<f32x4>(overPixel));
+            underPixel = composit(static_cast<f16x4>(underPixel), static_cast<f16x4>(overPixel));
         }
     }
 }
@@ -146,4 +139,4 @@ struct std::hash<tt::sfloat_rgba16> {
     }
 };
 
-}
+} // namespace std
