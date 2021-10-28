@@ -5,6 +5,7 @@
 #pragma once
 
 #include "glyph_id.hpp"
+#include "glyph_atlas_info.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../architecture.hpp"
 #include <tuple>
@@ -206,6 +207,11 @@ public:
         } else {
             return 0;
         }
+    }
+
+    [[nodiscard]] glyph_atlas_info &atlas_info() const noexcept
+    {
+        return _font->atlas_info(_glyphs);
     }
 
     [[nodiscard]] size_t hash() const noexcept
