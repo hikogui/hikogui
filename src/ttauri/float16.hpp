@@ -32,7 +32,7 @@ constexpr float cvtsh_ss(uint16_t value) noexcept
     u = u + f32_to_f16_adjustment;
 
     // Get a mask of '1' bits when the half-float would be normal or infinite.
-    ttlet is_normal = u > f32_to_f16_lowest_normal;
+    ttlet is_normal = u > (f32_to_f16_lowest_normal - 1);
 
     // Add the sign bit back in.
     u = u | sign;
@@ -55,7 +55,7 @@ constexpr uint16_t cvtss_sh(float value) noexcept
     u = (u << 1) >> 1;
 
     // Get a mask of '1' bits when the half-float would be normal or infinite.
-    ttlet is_normal = u > f32_to_f16_lowest_normal;
+    ttlet is_normal = u > (f32_to_f16_lowest_normal - 1);
 
     // Clamp the floating point number to where the half-float would be infinite.
     u = std::min(u, f32_to_f16_infinite); // SSE4.1
