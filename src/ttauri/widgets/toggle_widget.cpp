@@ -24,7 +24,9 @@ widget_constraints const &toggle_widget::set_constraints() noexcept
     // Make room for button and margin.
     _button_size = {theme().size * 2.0f, theme().size};
     ttlet extra_size = extent2{theme().margin + _button_size.width(), 0.0f};
-    return _constraints = max(set_constraints_button() + extra_size, _button_size);
+    _constraints = max(set_constraints_button() + extra_size, _button_size);
+    _constraints.margin = theme().margin;
+    return _constraints;
 }
 
 void toggle_widget::set_layout(widget_layout const &context) noexcept

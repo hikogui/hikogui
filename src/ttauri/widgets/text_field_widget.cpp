@@ -39,7 +39,7 @@ widget_constraints const &text_field_widget::set_constraints() noexcept
     _text_width = 100.0;
 
     auto size = extent2{_text_width + theme().margin * 2.0f, theme().size + theme().margin * 2.0f};
-    return _constraints = {size, size, size};
+    return _constraints = {size, size, size, theme().margin};
 }
 
 void text_field_widget::set_layout(widget_layout const &context) noexcept

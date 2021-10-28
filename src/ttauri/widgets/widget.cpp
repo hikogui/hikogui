@@ -60,12 +60,6 @@ tt::font_book &widget::font_book() const noexcept
     return *window.gui.font_book;
 }
 
-[[nodiscard]] float widget::margin() const noexcept
-{
-    tt_axiom(is_gui_thread());
-    return theme().margin;
-}
-
 [[nodiscard]] color widget::background_color() const noexcept
 {
     if (enabled) {
@@ -171,8 +165,6 @@ bool widget::handle_event(command command) noexcept
         using enum tt::command;
     case gui_keyboard_enter:
         focus = true;
-        // When scrolling, include the margin, so that the widget is clear from the edge of the
-        // scroll view's aperture.
         scroll_to_show();
         request_redraw();
         return true;

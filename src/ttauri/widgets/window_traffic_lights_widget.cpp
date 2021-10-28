@@ -13,11 +13,6 @@ namespace tt {
 
 window_traffic_lights_widget::window_traffic_lights_widget(gui_window &window, widget *parent) noexcept : super(window, parent) {}
 
-[[nodiscard]] float window_traffic_lights_widget::margin() const noexcept
-{
-    return 0.0f;
-}
-
 widget_constraints const &window_traffic_lights_widget::set_constraints() noexcept
 {
     _layout = {};
