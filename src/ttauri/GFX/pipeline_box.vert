@@ -11,7 +11,7 @@ layout(location = 1) in vec4 in_clipping_rectangle;
 layout(location = 2) in vec4 in_edge_distances;
 layout(location = 3) in vec4 in_fill_color;
 layout(location = 4) in vec4 in_border_color;
-layout(location = 5) in vec4 in_corner_radii;
+layout(location = 5) in uvec4 in_corner_radii;
 layout(location = 6) in float in_border_width;
 
 layout(location = 0) out flat vec4 out_clipping_rectangle;

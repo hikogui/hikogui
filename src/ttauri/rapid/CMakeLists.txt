@@ -11,6 +11,7 @@ target_sources(ttauri PRIVATE
     sfloat_rg32.hpp
     snorm_r8.hpp
     sdf_r8.hpp
+    uint_abgr8_pack.hpp
 )
 
 if(TT_BUILD_TESTS)

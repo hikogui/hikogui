@@ -9,6 +9,7 @@
 #include "../rapid/sfloat_rgba16.hpp"
 #include "../rapid/sfloat_rgba32.hpp"
 #include "../rapid/sfloat_rgb32.hpp"
+#include "../rapid/uint_abgr8_pack.hpp"
 #include <vulkan/vulkan.hpp>
 #include <span>
 
@@ -42,7 +43,7 @@ struct vertex {
     sfloat_rgba16 line_color;
 
     //! Shape of each corner, negative values are cut corners, positive values are rounded corners.
-    sfloat_rgba16 corner_shapes;
+    uint_abgr8_pack corner_shapes;
 
     float line_width;
 
@@ -80,7 +81,7 @@ struct vertex {
             { 2, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(vertex, corner_coordinate) },
             { 3, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(vertex, fill_color) },
             { 4, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(vertex, line_color) },
-            { 5, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(vertex, corner_shapes) },
+            { 5, 0, vk::Format::eA8B8G8R8UIntPack32, offsetof(vertex, corner_shapes) },
             { 6, 0, vk::Format::eR32Sfloat, offsetof(vertex, line_width) },
         };
     }
