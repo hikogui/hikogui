@@ -98,10 +98,10 @@ theme::theme(tt::font_book const &font_book, URL const &url)
         if (holds_alternative<long long>(r) and holds_alternative<long long>(g) and holds_alternative<long long>(b) and
             holds_alternative<long long>(a)) {
 
-            auto r_ = get<long long>(r);
-            auto g_ = get<long long>(g);
-            auto b_ = get<long long>(b);
-            auto a_ = get<long long>(a);
+            ttlet r_ = get<long long>(r);
+            ttlet g_ = get<long long>(g);
+            ttlet b_ = get<long long>(b);
+            ttlet a_ = get<long long>(a);
 
             tt_parse_check(r_ >= 0 and r_ <= 255, "integer red-color value not within 0 and 255");
             tt_parse_check(g_ >= 0 and g_ <= 255, "integer green-color value not within 0 and 255");
@@ -115,10 +115,10 @@ theme::theme(tt::font_book const &font_book, URL const &url)
             holds_alternative<double>(r) and holds_alternative<double>(g) and holds_alternative<double>(b) and
             holds_alternative<double>(a)) {
 
-            auto r_ = get<double>(r);
-            auto g_ = get<double>(g);
-            auto b_ = get<double>(b);
-            auto a_ = get<double>(a);
+            ttlet r_ = static_cast<float>(get<double>(r));
+            ttlet g_ = static_cast<float>(get<double>(g));
+            ttlet b_ = static_cast<float>(get<double>(b));
+            ttlet a_ = static_cast<float>(get<double>(a));
 
             return tt::color(r_, g_, b_, a_);
 
