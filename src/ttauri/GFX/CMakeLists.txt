@@ -50,8 +50,6 @@ target_sources(ttauri PRIVATE
     pipeline_SDF.frag
     pipeline_SDF.hpp
     pipeline_SDF.vert
-    pipeline_SDF_atlas_rect.cpp
-    pipeline_SDF_atlas_rect.hpp
     pipeline_SDF_device_shared.cpp
     pipeline_SDF_device_shared.hpp
     pipeline_SDF_push_constants.hpp

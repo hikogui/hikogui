@@ -28,7 +28,7 @@ namespace tt {
         }
     }
 
-    if (!r) {
+    if (not r) {
         // First try decomposed normalization
         for (ttlet c: g.NFD()) {
             if (ttlet glyph_id = find_glyph(c)) {

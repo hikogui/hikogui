@@ -29,12 +29,11 @@ attributed_glyph::attributed_glyph(
     glyphs = font_book.find_glyph(style_font, g);
 
     // Get the metrics of the main glyph.
-    ttlet this_glyph = glyphs.front();
+    ttlet this_glyph = glyphs[0];
 
     // If the next glyph is of the same font, then use it for kerning reasons.
-    ttlet next_glyph = (next_attr_glyph && &next_attr_glyph->glyphs.font() == &glyphs.font()) ?
-        next_attr_glyph->glyphs.front() :
-        glyph_id{};
+    ttlet next_glyph =
+        (next_attr_glyph && &next_attr_glyph->glyphs.font() == &glyphs.font()) ? next_attr_glyph->glyphs[0] : glyph_id{};
 
     if (not glyphs.font().load_glyph_metrics(this_glyph, metrics, next_glyph)) {
         tt_log_error(
@@ -47,7 +46,7 @@ attributed_glyph::attributed_glyph(
         glyphs.clear();
         glyphs.set_font(style_font);
         glyphs += glyph_id{0};
-        if (not glyphs.font().load_glyph_metrics(glyphs.front(), metrics)) {
+        if (not glyphs.font().load_glyph_metrics(glyphs[0], metrics)) {
             // Using null-metrics when even the null-glyph can not be found.
             tt_log_error(
                 "Could not load metrics for null-glyph in font {} - {}",
@@ -70,4 +69,4 @@ attributed_glyph::attributed_glyph(
     return transformed_glyph_path;
 }
 
-}
+} // namespace tt

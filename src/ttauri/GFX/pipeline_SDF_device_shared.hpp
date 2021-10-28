@@ -5,13 +5,12 @@
 #pragma once
 
 #include "pipeline_SDF_texture_map.hpp"
-#include "pipeline_SDF_atlas_rect.hpp"
 #include "pipeline_SDF_specialization_constants.hpp"
 #include "../text/font_glyph_ids.hpp"
+#include "../text/glyph_atlas_info.hpp"
 #include "../required.hpp"
 #include "../log.hpp"
 #include "../vspan.hpp"
-#include "../hash_map.hpp"
 #include "../geometry/rectangle.hpp"
 #include "../geometry/scale.hpp"
 #include "../geometry/transform.hpp"
@@ -63,7 +62,6 @@ struct device_shared final {
     vk::SpecializationInfo fragmentShaderSpecializationInfo;
     std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
 
-    hash_map<font_glyph_ids, atlas_rect> glyphs_in_atlas;
     texture_map stagingTexture;
     std::vector<texture_map> atlasTextures;
 
@@ -92,14 +90,14 @@ struct device_shared final {
     /** Allocate an glyph in the atlas.
      * This may allocate an atlas texture, up to atlasMaximumNrImages.
      */
-    [[nodiscard]] atlas_rect allocate_rect(extent2 draw_extent, scale2 draw_scale) noexcept;
+    [[nodiscard]] glyph_atlas_info allocate_rect(extent2 draw_extent, scale2 draw_scale) noexcept;
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
 
     /** Once drawing in the staging pixmap is completed, you can upload it to the atlas.
      * This will transition the stating texture to 'source' and the atlas to 'destination'.
      */
-    void uploadStagingPixmapToAtlas(atlas_rect const &location);
+    void uploadStagingPixmapToAtlas(glyph_atlas_info const &location);
 
     /** This will transition the staging texture to 'general' for writing by the CPU.
      */
@@ -228,20 +226,21 @@ private:
         return _place_vertices(vertices, clipping_rectangle, transform, attr_glyph, attr_glyph.style.color);
     }
 
-    atlas_rect const &add_glyph_to_atlas(decltype(glyphs_in_atlas)::iterator it) noexcept;
+    void add_glyph_to_atlas(font_glyph_ids const &glyph, glyph_atlas_info &info) noexcept;
 
     /**
      * @return The Atlas rectangle and true if a new glyph was added to the atlas.
      */
-    template<typename Glyph>
-    tt_force_inline std::pair<atlas_rect const *, bool> get_glyph_from_atlas(Glyph &&glyph) noexcept
+    tt_force_inline std::pair<glyph_atlas_info const *, bool> get_glyph_from_atlas(font_glyph_ids const &glyph) noexcept
     {
-        auto i = glyphs_in_atlas.find_or_create(std::forward<Glyph>(glyph));
-        if (i != glyphs_in_atlas.cend()) {
-            [[likely]] return {&i->value(), false};
+        auto &info = glyph.atlas_info();
+
+        if (info) [[likely]] {
+            return {&info, false};
 
         } else {
-            return {&add_glyph_to_atlas(i), false};
+            add_glyph_to_atlas(glyph, info);
+            return {&info, true};
         }
     }
 };
