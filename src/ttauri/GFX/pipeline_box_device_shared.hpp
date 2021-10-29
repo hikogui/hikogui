@@ -8,8 +8,9 @@
 #include "../geometry/rectangle.hpp"
 #include "../vspan.hpp"
 #include "../color/color.hpp"
-#include <vk_mem_alloc.h>
+#include "../color/quad_color.hpp"
 #include "../geometry/corner_shapes.hpp"
+#include <vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>
 
@@ -47,9 +48,9 @@ struct device_shared final {
         vspan<vertex> &vertices,
         aarectangle clipping_rectangle,
         rectangle box,
-        color fill_color,
-        color line_color,
-        float line_width,
+        quad_color fill_colors,
+        quad_color line_colors,
+        f32x4 line_width,
         corner_shapes corner_shapes
     );
 

@@ -14,6 +14,7 @@
 #include "../geometry/rectangle.hpp"
 #include "../geometry/scale.hpp"
 #include "../geometry/transform.hpp"
+#include "../color/quad_color.hpp"
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>
@@ -129,9 +130,9 @@ struct device_shared final {
         aarectangle const &clipping_rectangle,
         quad const &box,
         font_glyph_ids const &glyphs,
-        color color) noexcept
+        quad_color colors) noexcept
     {
-        if (_place_vertices(vertices, clipping_rectangle, box, glyphs, color)) {
+        if (_place_vertices(vertices, clipping_rectangle, box, glyphs, colors)) {
             prepareAtlasForRendering();
         }
     }
@@ -174,12 +175,12 @@ struct device_shared final {
         aarectangle const &clipping_rectangle,
         geo::transformer auto const &transform,
         shaped_text const &text,
-        color color) noexcept
+        quad_color colors) noexcept
     {
         auto atlas_was_updated = false;
 
         for (ttlet &attr_glyph : text) {
-            ttlet glyph_added = _place_vertices(vertices, clipping_rectangle, transform, attr_glyph, color);
+            ttlet glyph_added = _place_vertices(vertices, clipping_rectangle, transform, attr_glyph, colors);
             atlas_was_updated = atlas_was_updated or glyph_added;
         }
 
@@ -200,21 +201,21 @@ private:
         aarectangle const &clipping_rectangle,
         quad const &box,
         font_glyph_ids const &glyphs,
-        color color) noexcept;
+        quad_color colors) noexcept;
 
     bool _place_vertices(
         vspan<vertex> &vertices,
         aarectangle clipping_rectangle,
         geo::transformer auto const &transform,
         attributed_glyph const &attr_glyph,
-        color color) noexcept
+        quad_color colors) noexcept
     {
         if (not is_visible(attr_glyph.general_category)) {
             return false;
         }
 
         ttlet bounding_box = transform * attr_glyph.boundingBox();
-        return _place_vertices(vertices, clipping_rectangle, bounding_box, attr_glyph.glyphs, color);
+        return _place_vertices(vertices, clipping_rectangle, bounding_box, attr_glyph.glyphs, colors);
     }
 
     bool _place_vertices(
