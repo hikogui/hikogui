@@ -81,7 +81,7 @@ struct vertex {
             { 2, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(vertex, corner_coordinate) },
             { 3, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(vertex, fill_color) },
             { 4, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(vertex, line_color) },
-            { 5, 0, vk::Format::eA8B8G8R8UIntPack32, offsetof(vertex, corner_shapes) },
+            { 5, 0, vk::Format::eA8B8G8R8UintPack32, offsetof(vertex, corner_shapes) },
             { 6, 0, vk::Format::eR32Sfloat, offsetof(vertex, line_width) },
         };
     }
