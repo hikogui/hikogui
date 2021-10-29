@@ -13,6 +13,7 @@
 #include "../geometry/identity.hpp"
 #include "../geometry/transform.hpp"
 #include "../color/color.hpp"
+#include "../color/quad_color.hpp"
 #include "../vspan.hpp"
 #include "widget_layout.hpp"
 
