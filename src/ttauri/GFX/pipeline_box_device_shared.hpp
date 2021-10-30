@@ -50,7 +50,7 @@ struct device_shared final {
         rectangle box,
         quad_color fill_colors,
         quad_color line_colors,
-        f32x4 line_width,
+        float line_width,
         corner_shapes corner_shapes
     );
 

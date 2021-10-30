@@ -41,7 +41,7 @@ void device_shared::place_vertices(
     rectangle box,
     quad_color fill_colors,
     quad_color line_colors,
-    f32x4 line_width,
+    float line_width,
     tt::corner_shapes corner_shapes
 )
 {
@@ -64,10 +64,10 @@ void device_shared::place_vertices(
     ttlet t2 = static_cast<f32x4>(outer_size)._0yx0();
     ttlet t3 = static_cast<f32x4>(outer_size).xy00();
 
-    vertices.emplace_back(clipping_rectangle, v0, t0, fill_colors.p0, line_colors.p0, line_width.x(), corner_shapes);
-    vertices.emplace_back(clipping_rectangle, v1, t1, fill_colors.p1, line_colors.p1, line_width.y(), corner_shapes);
-    vertices.emplace_back(clipping_rectangle, v2, t2, fill_colors.p2, line_colors.p2, line_width.z(), corner_shapes);
-    vertices.emplace_back(clipping_rectangle, v3, t3, fill_colors.p3, line_colors.p3, line_width.w(), corner_shapes);
+    vertices.emplace_back(clipping_rectangle, v0, t0, fill_colors.p0, line_colors.p0, line_width, corner_shapes);
+    vertices.emplace_back(clipping_rectangle, v1, t1, fill_colors.p1, line_colors.p1, line_width, corner_shapes);
+    vertices.emplace_back(clipping_rectangle, v2, t2, fill_colors.p2, line_colors.p2, line_width, corner_shapes);
+    vertices.emplace_back(clipping_rectangle, v3, t3, fill_colors.p3, line_colors.p3, line_width, corner_shapes);
 }
 
 void device_shared::buildShaders()

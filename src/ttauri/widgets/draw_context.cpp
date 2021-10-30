@@ -49,7 +49,7 @@ void draw_context::draw_box(
         layout.to_window * box,
         fill_color,
         line_color,
-        f32x4::broadcast(line_width),
+        line_width,
         corner_shapes);
 }
 
@@ -96,7 +96,7 @@ void draw_context::draw_box_with_border_inside(
         layout.to_window * new_rectangle,
         fill_color,
         line_color,
-        f32x4::broadcast(line_width),
+        line_width,
         new_corner_shapes);
 }
 
@@ -132,7 +132,7 @@ void draw_context::draw_box_with_border_outside(
         layout.to_window * new_rectangle,
         fill_color,
         line_color,
-        f32x4::broadcast(line_width),
+        line_width,
         new_corner_shapes);
 }
 

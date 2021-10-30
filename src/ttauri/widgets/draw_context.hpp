@@ -73,7 +73,7 @@ public:
         rectangle box,
         quad_color fill_color,
         quad_color line_color,
-        f32x4 line_width = f32x4::broadcast(1.0f),
+        float line_width = 1.0f,
         tt::corner_shapes corner_shapes = tt::corner_shapes{}) const noexcept;
 
     void
@@ -104,7 +104,7 @@ public:
         rectangle rectangle,
         quad_color fill_color,
         quad_color line_color,
-        f32x4 line_width = f32x4::broadcast(1.0f),
+        float line_width = 1.0f,
         tt::corner_shapes corner_shapes = tt::corner_shapes{}) const noexcept;
 
     void draw_box_with_border_inside(
@@ -136,7 +136,7 @@ public:
         rectangle rectangle,
         quad_color fill_color,
         quad_color line_color,
-        f32x4 line_width = f32x4::broadcast(1.0f),
+        float line_width = 1.0f,
         tt::corner_shapes corner_shapes = tt::corner_shapes{}) const noexcept;
 
     void draw_box_with_border_outside(
