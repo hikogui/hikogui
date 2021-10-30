@@ -136,45 +136,68 @@ tt_warning_push()
 #if defined(TT_HAS_AVX)
             if constexpr (is_f64x4 and other.is_f32x4) {
                 v = numeric_array{_mm256_cvteps_pd(other.reg())};
+                return;
             } else if constexpr (is_f64x4 and other.is_i32x4) {
                 v = numeric_array{_mm256_cvtepi32_pd(other.reg())};
+                return;
             } else if constexpr (is_f32x4 and other.is_f64x4) {
                 v = numeric_array{_mm256_cvtpd_ps(other.reg())};
+                return;
             } else if constexpr (is_i32x4 and other.is_f64x4) {
                 v = numeric_array{_mm256_cvtpd_epi32(other.reg())};
+                return;
             } else if constexpr (is_i32x8 and other.is_f32x8) {
                 v = numeric_array{_mm256_cvtps_epi32(other.reg())};
+                return;
             } else if constexpr (is_f32x8 and other.is_i32x8) {
                 v = numeric_array{_mm256_cvtepi32_ps(other.reg())};
+                return;
             }
 #endif
 #if defined(TT_HAS_SSE4_1)
-            if constexpr (is_i64x4 and other.is_i32x4) {
+            if constexpr (is_u8x4 and other.is_f32x4) {
+                ttlet i32_4 = _mm_cvtps_epi32(other.reg());
+                ttlet i16_8 = _mm_packs_epi32(i32_4, _mm_setzero_si128());
+                ttlet u8_16 = _mm_packus_epi16(i16_8, _mm_setzero_si128());
+                v = numeric_array{u8_16};
+                return;
+            } else if constexpr (is_i64x4 and other.is_i32x4) {
                 v = numeric_array{_mm_cvtepi32_epi64(other.reg())};
+                return;
             } else if constexpr (is_i64x4 and other.is_i16x8) {
                 v = numeric_array{_mm_cvtepi16_epi64(other.reg())};
+                return;
             } else if constexpr (is_i32x4 and other.is_i16x8) {
                 v = numeric_array{_mm_cvtepi16_epi32(other.reg())};
+                return;
             } else if constexpr (is_i64x2 and other.is_i8x16) {
                 v = numeric_array{_mm_cvtepi8_epi64(other.reg())};
+                return;
             } else if constexpr (is_i32x4 and other.is_i8x16) {
                 v = numeric_array{_mm_cvtepi8_epi32(other.reg())};
+                return;
             } else if constexpr (is_i16x8 and other.is_i8x16) {
                 v = numeric_array{_mm_cvtepi8_epi16(other.reg())};
+                return;
             } else if constexpr (is_f16x4 and other.is_f32x4) {
                 v = numeric_array{_mm_cvtps_ph_sse4_1(other.reg())};
+                return;
             } else if constexpr (is_f32x4 and other.is_f16x4) {
                 v = numeric_array{_mm_cvtph_ps_sse2(other.reg())};
+                return;
             }
 
 #endif
 #if defined(TT_HAS_SSE2)
             if constexpr (is_f64x2 and other.is_i32x4) {
                 v = numeric_array{_mm_cvtepi32_pd(other.reg())};
+                return;
             } else if constexpr (is_f32x4 and other.is_i32x4) {
                 v = numeric_array{_mm_cvtepi32_ps(other.reg())};
+                return;
             } else if constexpr (is_i32x4 and other.is_f32x4) {
                 v = numeric_array{_mm_cvtps_epi32(other.reg())};
+                return;
             }
 #endif
         }
@@ -365,13 +388,19 @@ tt_warning_push()
     {
         _mm_storeu_si128(reinterpret_cast<__m128i *>(v.data()), rhs);
     }
+#endif
 
-    [[nodiscard]] explicit numeric_array(__m128i const &rhs) noexcept requires(is_f16x4)
+#if defined(TT_HAS_SSE4_1)
+    [[nodiscard]] explicit numeric_array(__m128i const &rhs) noexcept requires(is_f16x4) :
+        v(std::bit_cast<decltype(v)>(_mm_extract_epi64(rhs, 0)))
     {
-        get<0>(v).set(static_cast<uint16_t>(_mm_extract_epi16(rhs, 0)));
-        get<1>(v).set(static_cast<uint16_t>(_mm_extract_epi16(rhs, 1)));
-        get<2>(v).set(static_cast<uint16_t>(_mm_extract_epi16(rhs, 2)));
-        get<3>(v).set(static_cast<uint16_t>(_mm_extract_epi16(rhs, 3)));
+    }
+#endif
+
+#if defined(TT_HAS_SSE4_1)
+    [[nodiscard]] explicit numeric_array(__m128i const &rhs) noexcept requires(is_u8x4) :
+        v(std::bit_cast<decltype(v)>(_mm_extract_epi32(rhs, 0)))
+    {
     }
 #endif
 
@@ -2024,7 +2053,7 @@ tt_warning_push()
             if constexpr (is_i32x4) {
                 return numeric_array{_mm_mul_epi32(lhs.reg(), rhs.reg())};
             } else if constexpr (is_f16x4) {
-                return numeric_array{numeric_array<float,4>{lhs} * numeric_array<float,4>{rhs}};
+                return numeric_array{numeric_array<float, 4>{lhs} * numeric_array<float, 4>{rhs}};
             }
 #endif
 #if defined(TT_HAS_SSE2)

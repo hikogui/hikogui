@@ -23,17 +23,10 @@ public:
     constexpr uint_abgr8_pack &operator=(uint32_t const &rhs) noexcept { v = rhs; return *this; }
     constexpr operator uint32_t () noexcept { return v; }
 
-    constexpr uint_abgr8_pack(f32x4 const &rhs) noexcept :
-        v((static_cast<uint32_t>(rhs.w()) << 24) |
-            (static_cast<uint32_t>(rhs.z()) << 16) |
-            (static_cast<uint32_t>(rhs.y()) << 8) |
-            static_cast<uint32_t>(rhs.x())) {}
+    constexpr uint_abgr8_pack(f32x4 const &rhs) noexcept : v(std::bit_cast<decltype(v)>(u8x4{rhs})) {}
 
     constexpr uint_abgr8_pack &operator=(f32x4 const &rhs) noexcept {
-        v = (static_cast<uint32_t>(rhs.w()) << 24) |
-            (static_cast<uint32_t>(rhs.z()) << 16) |
-            (static_cast<uint32_t>(rhs.y()) << 8) |
-            static_cast<uint32_t>(rhs.x());
+        v = std::bit_cast<decltype(v)>(u8x4{rhs});
         return *this;
     }
 

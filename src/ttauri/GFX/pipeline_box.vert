@@ -6,7 +6,7 @@ layout(push_constant) uniform push_constants {
     vec2 viewport_scale;
 } constants;
 
-layout(location = 0) in vec3 in_position;
+layout(location = 0) in vec4 in_position;
 layout(location = 1) in vec4 in_clipping_rectangle;
 layout(location = 2) in vec4 in_edge_distances;
 layout(location = 3) in vec4 in_fill_color;
@@ -45,7 +45,7 @@ void main() {
     float border_middle = border_start + in_border_width * 0.5;
     float border_end = border_start + in_border_width;
 
-    gl_Position = convert_position_to_viewport(in_position);
+    gl_Position = convert_position_to_viewport(in_position.xyz);
     out_clipping_rectangle = convert_clipping_rectangle_to_screen(in_clipping_rectangle);
     out_edge_distances = in_edge_distances;
     out_fill_color = vec4(in_fill_color.rgb * in_fill_color.a, in_fill_color.a);
