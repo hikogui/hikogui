@@ -36,8 +36,8 @@ draw_context::draw_context(
 void draw_context::draw_box(
     widget_layout const &layout,
     rectangle box,
-    color fill_color,
-    color line_color,
+    quad_color fill_color,
+    quad_color line_color,
     float line_width,
     tt::corner_shapes corner_shapes) const noexcept
 {
@@ -56,29 +56,29 @@ void draw_context::draw_box(
 void draw_context::draw_box(
     widget_layout const &layout,
     rectangle box,
-    color fill_color,
-    color line_color,
+    quad_color fill_color,
+    quad_color line_color,
     tt::corner_shapes corner_shapes) const noexcept
 {
-    draw_box(layout, box, fill_color, line_color, 1.0, corner_shapes);
+    draw_box(layout, box, fill_color, line_color, 1.0f, corner_shapes);
 }
 
-void draw_context::draw_box(widget_layout const &layout, rectangle box, color fill_color, tt::corner_shapes corner_shapes)
+void draw_context::draw_box(widget_layout const &layout, rectangle box, quad_color fill_color, tt::corner_shapes corner_shapes)
     const noexcept
 {
-    draw_box(layout, box, fill_color, fill_color, 0.0, corner_shapes);
+    draw_box(layout, box, fill_color, fill_color, 0.0f, corner_shapes);
 }
 
-void draw_context::draw_box(widget_layout const &layout, rectangle box, color fill_color) const noexcept
+void draw_context::draw_box(widget_layout const &layout, rectangle box, quad_color fill_color) const noexcept
 {
-    draw_box(layout, box, fill_color, fill_color, 0.0, tt::corner_shapes{});
+    draw_box(layout, box, fill_color, fill_color, 0.0f, tt::corner_shapes{});
 }
 
 void draw_context::draw_box_with_border_inside(
     widget_layout const &layout,
     rectangle rectangle,
-    color fill_color,
-    color line_color,
+    quad_color fill_color,
+    quad_color line_color,
     float line_width,
     tt::corner_shapes corner_shapes) const noexcept
 {
@@ -103,18 +103,18 @@ void draw_context::draw_box_with_border_inside(
 void draw_context::draw_box_with_border_inside(
     widget_layout const &layout,
     rectangle rectangle,
-    color fill_color,
-    color line_color,
+    quad_color fill_color,
+    quad_color line_color,
     tt::corner_shapes corner_shapes) const noexcept
 {
-    draw_box_with_border_inside(layout, rectangle, fill_color, line_color, 1.0, corner_shapes);
+    draw_box_with_border_inside(layout, rectangle, fill_color, line_color, 1.0f, corner_shapes);
 }
 
 void draw_context::draw_box_with_border_outside(
     widget_layout const &layout,
     rectangle rectangle,
-    color fill_color,
-    color line_color,
+    quad_color fill_color,
+    quad_color line_color,
     float line_width,
     tt::corner_shapes corner_shapes) const noexcept
 {
@@ -139,8 +139,8 @@ void draw_context::draw_box_with_border_outside(
 void draw_context::draw_box_with_border_outside(
     widget_layout const &layout,
     rectangle rectangle,
-    color fill_color,
-    color line_color,
+    quad_color fill_color,
+    quad_color line_color,
     tt::corner_shapes corner_shapes) const noexcept
 {
     draw_box_with_border_outside(layout, rectangle, fill_color, line_color, 1.0, corner_shapes);
@@ -157,7 +157,7 @@ void draw_context::draw_image(widget_layout const &layout, pipeline_image::image
 void draw_context::draw_text(
     widget_layout const &layout,
     shaped_text const &text,
-    std::optional<color> text_color,
+    std::optional<quad_color> text_color,
     matrix3 transform) const noexcept
 {
     tt_axiom(_sdf_vertices != nullptr);
@@ -179,7 +179,7 @@ void draw_context::draw_glyph(
     widget_layout const &layout,
     font_glyph_ids const &glyph,
     quad const &box,
-    color text_color) const noexcept
+    quad_color text_color) const noexcept
 {
     tt_axiom(_sdf_vertices != nullptr);
 

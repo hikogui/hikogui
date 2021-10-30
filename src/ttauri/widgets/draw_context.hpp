@@ -13,6 +13,7 @@
 #include "../geometry/identity.hpp"
 #include "../geometry/transform.hpp"
 #include "../color/color.hpp"
+#include "../color/quad_color.hpp"
 #include "../vspan.hpp"
 #include "widget_layout.hpp"
 
@@ -70,18 +71,18 @@ public:
     void draw_box(
         widget_layout const &layout,
         rectangle box,
-        color fill_color,
-        color line_color,
-        float line_width = 1.0,
+        quad_color fill_color,
+        quad_color line_color,
+        float line_width = 1.0f,
         tt::corner_shapes corner_shapes = tt::corner_shapes{}) const noexcept;
 
     void
-    draw_box(widget_layout const &layout, rectangle box, color fill_color, color line_color, tt::corner_shapes corner_shapes)
+    draw_box(widget_layout const &layout, rectangle box, quad_color fill_color, quad_color line_color, tt::corner_shapes corner_shapes)
         const noexcept;
 
-    void draw_box(widget_layout const &layout, rectangle box, color fill_color, tt::corner_shapes corner_shapes) const noexcept;
+    void draw_box(widget_layout const &layout, rectangle box, quad_color fill_color, tt::corner_shapes corner_shapes) const noexcept;
 
-    void draw_box(widget_layout const &layout, rectangle box, color fill_color) const noexcept;
+    void draw_box(widget_layout const &layout, rectangle box, quad_color fill_color) const noexcept;
 
     /** Draw an axis aligned box
      * This function will shrink to include the size of the border inside
@@ -101,16 +102,16 @@ public:
     void draw_box_with_border_inside(
         widget_layout const &layout,
         rectangle rectangle,
-        color fill_color,
-        color line_color,
-        float line_width = 1.0,
+        quad_color fill_color,
+        quad_color line_color,
+        float line_width = 1.0f,
         tt::corner_shapes corner_shapes = tt::corner_shapes{}) const noexcept;
 
     void draw_box_with_border_inside(
         widget_layout const &layout,
         rectangle rectangle,
-        color fill_color,
-        color line_color,
+        quad_color fill_color,
+        quad_color line_color,
         tt::corner_shapes corner_shapes)
         const noexcept;
 
@@ -133,16 +134,16 @@ public:
     void draw_box_with_border_outside(
         widget_layout const &layout,
         rectangle rectangle,
-        color fill_color,
-        color line_color,
-        float line_width = 1.0,
+        quad_color fill_color,
+        quad_color line_color,
+        float line_width = 1.0f,
         tt::corner_shapes corner_shapes = tt::corner_shapes{}) const noexcept;
 
     void draw_box_with_border_outside(
         widget_layout const &layout,
         rectangle rectangle,
-        color fill_color,
-        color line_color,
+        quad_color fill_color,
+        quad_color line_color,
         tt::corner_shapes corner_shapes)
         const noexcept;
 
@@ -167,7 +168,7 @@ public:
     void draw_text(
         widget_layout const &layout,
         shaped_text const &text,
-        std::optional<color> text_color = {},
+        std::optional<quad_color> text_color = {},
         matrix3 transform = geo::identity{}) const noexcept;
 
     /** Draw a glyph.
@@ -178,7 +179,7 @@ public:
      *            multiplied by @a glyph_size.
      * @param text_color The color that the glyph should be drawn in.
      */
-    void draw_glyph(widget_layout const &layout, font_glyph_ids const &glyph, quad const &box, color text_color)
+    void draw_glyph(widget_layout const &layout, font_glyph_ids const &glyph, quad const &box, quad_color text_color)
         const noexcept;
 
     [[nodiscard]] friend bool overlaps(draw_context const &context, widget_layout const &layout) noexcept

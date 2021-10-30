@@ -162,16 +162,16 @@ bool device_shared::_place_vertices(
     aarectangle const &clipping_rectangle,
     quad const &box,
     font_glyph_ids const &glyphs,
-    color color) noexcept
+    quad_color colors) noexcept
 {
     ttlet[atlas_rect, glyph_was_added] = get_glyph_from_atlas(glyphs);
 
     ttlet box_with_border = scale_from_center(box, atlas_rect->border_scale);
 
-    vertices.emplace_back(box_with_border.p0, clipping_rectangle, get<0>(atlas_rect->texture_coordinates), color);
-    vertices.emplace_back(box_with_border.p1, clipping_rectangle, get<1>(atlas_rect->texture_coordinates), color);
-    vertices.emplace_back(box_with_border.p2, clipping_rectangle, get<2>(atlas_rect->texture_coordinates), color);
-    vertices.emplace_back(box_with_border.p3, clipping_rectangle, get<3>(atlas_rect->texture_coordinates), color);
+    vertices.emplace_back(box_with_border.p0, clipping_rectangle, get<0>(atlas_rect->texture_coordinates), colors.p0);
+    vertices.emplace_back(box_with_border.p1, clipping_rectangle, get<1>(atlas_rect->texture_coordinates), colors.p1);
+    vertices.emplace_back(box_with_border.p2, clipping_rectangle, get<2>(atlas_rect->texture_coordinates), colors.p2);
+    vertices.emplace_back(box_with_border.p3, clipping_rectangle, get<3>(atlas_rect->texture_coordinates), colors.p3);
     return glyph_was_added;
 }
 
