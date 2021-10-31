@@ -26,6 +26,22 @@ namespace pipeline_image {
 struct image;
 }
 
+/** The side where the border is drawn.
+ */
+enum class border_side {
+    /** The border is drawn on the edge of a quad.
+     */
+    on,
+
+    /** The border is drawn inside the edge of a quad.
+     */
+    inside,
+
+    /** The border is drawn outside the edge of a quad.
+     */
+    outside
+};
+
 /** Draw context for drawing using the TTauri shaders.
  */
 class draw_context {
@@ -57,95 +73,41 @@ public:
         vspan<pipeline_SDF::vertex> &sdfVertices,
         utc_nanoseconds display_time_point) noexcept;
 
-    /** Draw an axis aligned box
-     * This function will draw the given box.
-     * This will use the current:
-     *  - transform, to transform the opposite corner (rotation is not recommended).
-     *  - clippingRectangle
-     *  - fill_color
-     *  - borderSize
-     *  - border_color
-     *  - shadowSize
-     *  - cornerShapes
+    /** Draw a box with rounded corners.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param box The four points of the box to draw.
+     * @param fill_color The fill color of the inside of the box.
+     * @param border_color The line color of the border of the box.
+     * @param border_width The line width of the border.
+     * @param border_side The side of the edge where the border is drawn.
+     * @param corner_radius The corner radii of each corner of the box.
      */
     void draw_box(
         widget_layout const &layout,
-        rectangle box,
+        quad box,
         quad_color fill_color,
-        quad_color line_color,
-        float line_width = 1.0f,
-        tt::corner_shapes corner_shapes = tt::corner_shapes{}) const noexcept;
+        quad_color border_color,
+        float border_width,
+        tt::border_side border_side,
+        tt::corner_shapes corner_radius = {}) const noexcept;
 
-    void
-    draw_box(widget_layout const &layout, rectangle box, quad_color fill_color, quad_color line_color, tt::corner_shapes corner_shapes)
-        const noexcept;
-
-    void draw_box(widget_layout const &layout, rectangle box, quad_color fill_color, tt::corner_shapes corner_shapes) const noexcept;
-
-    void draw_box(widget_layout const &layout, rectangle box, quad_color fill_color) const noexcept;
-
-    /** Draw an axis aligned box
-     * This function will shrink to include the size of the border inside
-     * the given rectangle. This will make the border be drawn sharply.
+    /** Draw a box with rounded corners without a border.
      *
-     * This will also adjust rounded corners to the shrunk box.
-     *
-     * This function will draw the given box.
-     * This will use the current:
-     *  - transform, to transform the opposite corner (rotation is not recommended).
-     *  - clipping_rectangle
-     *  - fill_color
-     *  - border_size
-     *  - border_color
-     *  - corner_shapes
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param box The four points of the box to draw.
+     * @param fill_color The fill color of the inside of the box.
+     * @param corner_radius The corner radii of each corner of the box.
      */
-    void draw_box_with_border_inside(
+    void draw_box(
         widget_layout const &layout,
-        rectangle rectangle,
+        quad box,
         quad_color fill_color,
-        quad_color line_color,
-        float line_width = 1.0f,
-        tt::corner_shapes corner_shapes = tt::corner_shapes{}) const noexcept;
+        tt::corner_shapes corner_radius = {}) const noexcept
+    {
+        return draw_box(layout, box, fill_color, fill_color, 0.0f, border_side::on, corner_radius);
+    }
 
-    void draw_box_with_border_inside(
-        widget_layout const &layout,
-        rectangle rectangle,
-        quad_color fill_color,
-        quad_color line_color,
-        tt::corner_shapes corner_shapes)
-        const noexcept;
-
-    /** Draw an axis aligned box
-     * This function will expand to include the size of the border outside
-     * the given rectangle. This will make the border be drawn sharply.
-     *
-     * This will also adjust rounded corners to the shrunk box.
-     *
-     * This function will draw the given box.
-     * This will use the current:
-     *  - transform, to transform the opposite corner (rotation is not recommended).
-     *  - clippingRectangle
-     *  - fill_color
-     *  - borderSize
-     *  - border_color
-     *  - shadowSize
-     *  - cornerShapes
-     */
-    void draw_box_with_border_outside(
-        widget_layout const &layout,
-        rectangle rectangle,
-        quad_color fill_color,
-        quad_color line_color,
-        float line_width = 1.0f,
-        tt::corner_shapes corner_shapes = tt::corner_shapes{}) const noexcept;
-
-    void draw_box_with_border_outside(
-        widget_layout const &layout,
-        rectangle rectangle,
-        quad_color fill_color,
-        quad_color line_color,
-        tt::corner_shapes corner_shapes)
-        const noexcept;
 
     /** Draw an image
      * This function will draw an image.

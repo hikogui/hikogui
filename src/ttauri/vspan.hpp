@@ -118,12 +118,21 @@ public:
     value_type &back() noexcept { tt_axiom(_end != _begin); return *std::launder(_end - 1); }
     value_type const &back() const noexcept { tt_axiom(_end != _begin); return *std::launder(_end - 1); }
 
-    vspan &clear() noexcept {
+    [[nodiscard]] bool empty() const noexcept
+    {
+        return _begin == _end;
+    }
+
+    [[nodiscard]] bool full() const noexcept
+    {
+        return _end == _max;
+    }
+
+    void clear() noexcept {
         for (auto i = _begin; i != _end; ++i) {
             std::destroy_at(std::launder(i));
         }
         _end = _begin;
-        return *this;
     }
 
     void push_back(value_type const &rhs) noexcept {

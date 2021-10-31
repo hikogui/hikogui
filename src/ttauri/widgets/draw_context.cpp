@@ -35,13 +35,29 @@ draw_context::draw_context(
 
 void draw_context::draw_box(
     widget_layout const &layout,
-    rectangle box,
+    quad box,
     quad_color fill_color,
-    quad_color line_color,
-    float line_width,
-    tt::corner_shapes corner_shapes) const noexcept
+    quad_color border_color,
+    float border_width,
+    tt::border_side border_side,
+    tt::corner_shapes corner_radius) const noexcept
 {
-    tt_axiom(_box_vertices != nullptr);
+    // Expand or shrink the box and the corner radius.
+    ttlet half_line_width = line_width * 0.5f;
+    if (border_side == border_side::inside) {
+        box = box - half_line_width;
+        corner_radius = corner_radius - half_line_width;
+
+    } else if (border_side == border_side::outside) {
+        box = box + half_line_width;
+        corner_radius = corner_shapes + half_line_width;
+    }
+
+    if (_box_vertices.full()) {
+        // Too many boxes where added, just don't draw them anymore.
+        ++global_counter<"draw_box::overrun">;
+        return;
+    }
 
     pipeline_box::device_shared::place_vertices(
         *_box_vertices,
@@ -51,99 +67,6 @@ void draw_context::draw_box(
         line_color,
         line_width,
         corner_shapes);
-}
-
-void draw_context::draw_box(
-    widget_layout const &layout,
-    rectangle box,
-    quad_color fill_color,
-    quad_color line_color,
-    tt::corner_shapes corner_shapes) const noexcept
-{
-    draw_box(layout, box, fill_color, line_color, 1.0f, corner_shapes);
-}
-
-void draw_context::draw_box(widget_layout const &layout, rectangle box, quad_color fill_color, tt::corner_shapes corner_shapes)
-    const noexcept
-{
-    draw_box(layout, box, fill_color, fill_color, 0.0f, corner_shapes);
-}
-
-void draw_context::draw_box(widget_layout const &layout, rectangle box, quad_color fill_color) const noexcept
-{
-    draw_box(layout, box, fill_color, fill_color, 0.0f, tt::corner_shapes{});
-}
-
-void draw_context::draw_box_with_border_inside(
-    widget_layout const &layout,
-    rectangle rectangle,
-    quad_color fill_color,
-    quad_color line_color,
-    float line_width,
-    tt::corner_shapes corner_shapes) const noexcept
-{
-    tt_axiom(_box_vertices != nullptr);
-
-    ttlet shrink_value = line_width * 0.5f;
-
-    ttlet new_rectangle = rectangle - shrink_value;
-
-    ttlet new_corner_shapes = corner_shapes - shrink_value;
-
-    pipeline_box::device_shared::place_vertices(
-        *_box_vertices,
-        bounding_rectangle(layout.to_window * layout.clipping_rectangle),
-        layout.to_window * new_rectangle,
-        fill_color,
-        line_color,
-        line_width,
-        new_corner_shapes);
-}
-
-void draw_context::draw_box_with_border_inside(
-    widget_layout const &layout,
-    rectangle rectangle,
-    quad_color fill_color,
-    quad_color line_color,
-    tt::corner_shapes corner_shapes) const noexcept
-{
-    draw_box_with_border_inside(layout, rectangle, fill_color, line_color, 1.0f, corner_shapes);
-}
-
-void draw_context::draw_box_with_border_outside(
-    widget_layout const &layout,
-    rectangle rectangle,
-    quad_color fill_color,
-    quad_color line_color,
-    float line_width,
-    tt::corner_shapes corner_shapes) const noexcept
-{
-    tt_axiom(_box_vertices != nullptr);
-
-    ttlet expand_value = line_width * 0.5f;
-
-    ttlet new_rectangle = rectangle + expand_value;
-
-    ttlet new_corner_shapes = corner_shapes + expand_value;
-
-    pipeline_box::device_shared::place_vertices(
-        *_box_vertices,
-        bounding_rectangle(layout.to_window * layout.clipping_rectangle),
-        layout.to_window * new_rectangle,
-        fill_color,
-        line_color,
-        line_width,
-        new_corner_shapes);
-}
-
-void draw_context::draw_box_with_border_outside(
-    widget_layout const &layout,
-    rectangle rectangle,
-    quad_color fill_color,
-    quad_color line_color,
-    tt::corner_shapes corner_shapes) const noexcept
-{
-    draw_box_with_border_outside(layout, rectangle, fill_color, line_color, 1.0, corner_shapes);
 }
 
 void draw_context::draw_image(widget_layout const &layout, pipeline_image::image &image, matrix3 image_transform) const noexcept
