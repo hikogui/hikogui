@@ -127,7 +127,7 @@ alignment of lines to actual pixels.
 
 The alignment of borders to pixels is the responsibility of the
 widget that draws itself. The widget has access to
-the `draw_context::drawBoxIncludingBorder()` function to position the border's
+the `draw_context::draw_box_including_border()` function to position the border's
 edge to the edge of the given rectangle, if the rectangle is rounded to
 integer coordinates; the rectangle, border and pixel will share the same edge.
 
@@ -206,3 +206,9 @@ As illustrated below:
 v    \ |
 0 ---> 1
 ```
+
+When edges of a quad are packed in a data type their ordering is:
+ - bottom-edge
+ - left-edge
+ - top-edge
+ - right-edge

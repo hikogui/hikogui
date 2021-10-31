@@ -35,115 +35,38 @@ draw_context::draw_context(
 
 void draw_context::draw_box(
     widget_layout const &layout,
-    rectangle box,
+    quad box,
     quad_color fill_color,
-    quad_color line_color,
-    float line_width,
-    tt::corner_shapes corner_shapes) const noexcept
+    quad_color border_color,
+    float border_width,
+    tt::border_side border_side,
+    tt::corner_shapes corner_radius) const noexcept
 {
-    tt_axiom(_box_vertices != nullptr);
+    // Expand or shrink the box and the corner radius.
+    ttlet border_line_width = border_width * 0.5f;
+    if (border_side == border_side::inside) {
+        box = box - extent2{border_line_width, border_line_width};
+        corner_radius = corner_radius - border_line_width;
+
+    } else if (border_side == border_side::outside) {
+        box = box + extent2{border_line_width, border_line_width};
+        corner_radius = corner_radius + border_line_width;
+    }
+
+    if (_box_vertices->full()) {
+        // Too many boxes where added, just don't draw them anymore.
+        ++global_counter<"draw_box::overflow">;
+        return;
+    }
 
     pipeline_box::device_shared::place_vertices(
         *_box_vertices,
         bounding_rectangle(layout.to_window * layout.clipping_rectangle),
         layout.to_window * box,
         fill_color,
-        line_color,
-        line_width,
-        corner_shapes);
-}
-
-void draw_context::draw_box(
-    widget_layout const &layout,
-    rectangle box,
-    quad_color fill_color,
-    quad_color line_color,
-    tt::corner_shapes corner_shapes) const noexcept
-{
-    draw_box(layout, box, fill_color, line_color, 1.0f, corner_shapes);
-}
-
-void draw_context::draw_box(widget_layout const &layout, rectangle box, quad_color fill_color, tt::corner_shapes corner_shapes)
-    const noexcept
-{
-    draw_box(layout, box, fill_color, fill_color, 0.0f, corner_shapes);
-}
-
-void draw_context::draw_box(widget_layout const &layout, rectangle box, quad_color fill_color) const noexcept
-{
-    draw_box(layout, box, fill_color, fill_color, 0.0f, tt::corner_shapes{});
-}
-
-void draw_context::draw_box_with_border_inside(
-    widget_layout const &layout,
-    rectangle rectangle,
-    quad_color fill_color,
-    quad_color line_color,
-    float line_width,
-    tt::corner_shapes corner_shapes) const noexcept
-{
-    tt_axiom(_box_vertices != nullptr);
-
-    ttlet shrink_value = line_width * 0.5f;
-
-    ttlet new_rectangle = rectangle - shrink_value;
-
-    ttlet new_corner_shapes = corner_shapes - shrink_value;
-
-    pipeline_box::device_shared::place_vertices(
-        *_box_vertices,
-        bounding_rectangle(layout.to_window * layout.clipping_rectangle),
-        layout.to_window * new_rectangle,
-        fill_color,
-        line_color,
-        line_width,
-        new_corner_shapes);
-}
-
-void draw_context::draw_box_with_border_inside(
-    widget_layout const &layout,
-    rectangle rectangle,
-    quad_color fill_color,
-    quad_color line_color,
-    tt::corner_shapes corner_shapes) const noexcept
-{
-    draw_box_with_border_inside(layout, rectangle, fill_color, line_color, 1.0f, corner_shapes);
-}
-
-void draw_context::draw_box_with_border_outside(
-    widget_layout const &layout,
-    rectangle rectangle,
-    quad_color fill_color,
-    quad_color line_color,
-    float line_width,
-    tt::corner_shapes corner_shapes) const noexcept
-{
-    tt_axiom(_box_vertices != nullptr);
-
-    ttlet expand_value = line_width * 0.5f;
-
-    ttlet new_rectangle = rectangle + expand_value;
-
-    ttlet new_corner_shapes = corner_shapes + expand_value;
-
-    pipeline_box::device_shared::place_vertices(
-        *_box_vertices,
-        bounding_rectangle(layout.to_window * layout.clipping_rectangle),
-        layout.to_window * new_rectangle,
-        fill_color,
-        line_color,
-        line_width,
-        new_corner_shapes);
-}
-
-void draw_context::draw_box_with_border_outside(
-    widget_layout const &layout,
-    rectangle rectangle,
-    quad_color fill_color,
-    quad_color line_color,
-    tt::corner_shapes corner_shapes) const noexcept
-{
-    draw_box_with_border_outside(layout, rectangle, fill_color, line_color, 1.0, corner_shapes);
+        border_color,
+        border_width,
+        corner_radius);
 }
 
 void draw_context::draw_image(widget_layout const &layout, pipeline_image::image &image, matrix3 image_transform) const noexcept
@@ -154,41 +77,59 @@ void draw_context::draw_image(widget_layout const &layout, pipeline_image::image
         *_image_vertices, bounding_rectangle(layout.to_window * layout.clipping_rectangle), layout.to_window * image_transform);
 }
 
-void draw_context::draw_text(
-    widget_layout const &layout,
-    shaped_text const &text,
-    std::optional<quad_color> text_color,
-    matrix3 transform) const noexcept
+void draw_context::draw_glyph(widget_layout const &layout, quad const &box, quad_color color, font_glyph_ids const &glyph)
+    const noexcept
 {
     tt_axiom(_sdf_vertices != nullptr);
+    ttlet pipeline = narrow_cast<gfx_device_vulkan &>(device).SDFPipeline.get();
 
-    if (text_color) {
-        narrow_cast<gfx_device_vulkan &>(device).SDFPipeline->place_vertices(
-            *_sdf_vertices,
-            bounding_rectangle(layout.to_window * layout.clipping_rectangle),
-            layout.to_window * transform,
-            text,
-            *text_color);
-    } else {
-        narrow_cast<gfx_device_vulkan &>(device).SDFPipeline->place_vertices(
-            *_sdf_vertices, bounding_rectangle(layout.to_window * layout.clipping_rectangle), layout.to_window * transform, text);
+    if (_sdf_vertices->full()) {
+        draw_box(layout, box, tt::color{1.0f, 0.0f, 1.0f});
+        ++global_counter<"draw_glyph::overflow">;
+        return;
+    }
+
+    ttlet atlas_was_updated = pipeline->place_vertices(
+        *_sdf_vertices, bounding_rectangle(layout.to_window * layout.clipping_rectangle), layout.to_window * box, glyph, color);
+
+    if (atlas_was_updated) {
+        pipeline->prepare_atlas_for_rendering();
     }
 }
 
-void draw_context::draw_glyph(
+void draw_context::_draw_text(
     widget_layout const &layout,
-    font_glyph_ids const &glyph,
-    quad const &box,
-    quad_color text_color) const noexcept
+    matrix3 transform,
+    std::optional<quad_color> text_color,
+    shaped_text const &text) const noexcept
 {
     tt_axiom(_sdf_vertices != nullptr);
+    ttlet pipeline = narrow_cast<gfx_device_vulkan &>(device).SDFPipeline.get();
 
-    narrow_cast<gfx_device_vulkan &>(device).SDFPipeline->place_vertices(
-        *_sdf_vertices,
-        bounding_rectangle(layout.to_window * layout.clipping_rectangle),
-        layout.to_window * box,
-        glyph,
-        text_color);
+    ttlet clipping_rectangle = bounding_rectangle(layout.to_window * layout.clipping_rectangle);
+    ttlet to_window_transform = layout.to_window * transform;
+
+    auto atlas_was_updated = false;
+    for (ttlet &attr_glyph : text) {
+        ttlet box = attr_glyph.boundingBox();
+        ttlet color = text_color ? *text_color : quad_color{attr_glyph.style.color};
+
+        if (not is_visible(attr_glyph.general_category)) {
+            continue;
+
+        } else if (_sdf_vertices->full()) {
+            draw_box(layout, transform * box, tt::color{1.0f, 0.0f, 1.0f});
+            ++global_counter<"draw_glyph::overflow">;
+            break;
+        }
+
+        atlas_was_updated |=
+            pipeline->place_vertices(*_sdf_vertices, clipping_rectangle, to_window_transform * box, attr_glyph.glyphs, color);
+    }
+
+    if (atlas_was_updated) {
+        pipeline->prepare_atlas_for_rendering();
+    }
 }
 
 } // namespace tt

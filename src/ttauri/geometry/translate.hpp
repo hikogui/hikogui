@@ -144,6 +144,11 @@ public:
         return aarectangle{*this * get<0>(rhs), *this * get<3>(rhs)};
     }
 
+    [[nodiscard]] constexpr rectangle operator*(aarectangle const &rhs) const noexcept requires(D == 3)
+    {
+        return *this * rectangle{rhs};
+    }
+
     [[nodiscard]] constexpr rectangle operator*(rectangle const &rhs) const noexcept
     {
         return rectangle{*this * rhs.origin, rhs.right, rhs.up};

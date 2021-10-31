@@ -47,7 +47,7 @@ struct device_shared final {
     static void place_vertices(
         vspan<vertex> &vertices,
         aarectangle clipping_rectangle,
-        rectangle box,
+        quad box,
         quad_color fill_colors,
         quad_color line_colors,
         float line_width,

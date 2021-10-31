@@ -36,6 +36,8 @@ public:
         return f32x4{v};
     }
 
+    sfloat_rgba32(point3 const &rhs) noexcept : sfloat_rgba32(f32x4{rhs}) {}
+
     sfloat_rgba32(aarectangle const &rhs) noexcept : sfloat_rgba32(rhs.v) {}
 
     sfloat_rgba32(corner_shapes const &rhs) noexcept : sfloat_rgba32(static_cast<f32x4>(rhs)) {}

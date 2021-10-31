@@ -47,7 +47,7 @@ void text_widget::draw(draw_context const &context) noexcept
     tt_axiom(is_gui_thread());
 
     if (visible and overlaps(context, layout())) {
-        context.draw_text(layout(), _shaped_text, label_color(), _shaped_text_transform);
+        context.draw_text(layout(), _shaped_text_transform, label_color(), _shaped_text);
     }
 }
 

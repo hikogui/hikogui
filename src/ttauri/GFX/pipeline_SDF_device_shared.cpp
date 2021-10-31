@@ -99,7 +99,7 @@ void device_shared::prepareStagingPixmapForDrawing()
     stagingTexture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eGeneral);
 }
 
-void device_shared::prepareAtlasForRendering()
+void device_shared::prepare_atlas_for_rendering()
 {
     ttlet lock = std::scoped_lock(gfx_system_mutex);
     for (auto &atlasTexture : atlasTextures) {
@@ -157,7 +157,7 @@ aarectangle device_shared::get_bounding_box(font_glyph_ids const &glyphs) const 
     return glyphs.get_bounding_box() + scaledDrawBorder;
 }
 
-bool device_shared::_place_vertices(
+bool device_shared::place_vertices(
     vspan<vertex> &vertices,
     aarectangle const &clipping_rectangle,
     quad const &box,

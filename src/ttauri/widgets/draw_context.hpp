@@ -26,6 +26,22 @@ namespace pipeline_image {
 struct image;
 }
 
+/** The side where the border is drawn.
+ */
+enum class border_side {
+    /** The border is drawn on the edge of a quad.
+     */
+    on,
+
+    /** The border is drawn inside the edge of a quad.
+     */
+    inside,
+
+    /** The border is drawn outside the edge of a quad.
+     */
+    outside
+};
+
 /** Draw context for drawing using the TTauri shaders.
  */
 class draw_context {
@@ -41,7 +57,7 @@ public:
     aarectangle scissor_rectangle;
 
     utc_nanoseconds display_time_point;
-    
+
     draw_context(draw_context const &rhs) noexcept = default;
     draw_context(draw_context &&rhs) noexcept = default;
     draw_context &operator=(draw_context const &rhs) noexcept = default;
@@ -57,95 +73,37 @@ public:
         vspan<pipeline_SDF::vertex> &sdfVertices,
         utc_nanoseconds display_time_point) noexcept;
 
-    /** Draw an axis aligned box
-     * This function will draw the given box.
-     * This will use the current:
-     *  - transform, to transform the opposite corner (rotation is not recommended).
-     *  - clippingRectangle
-     *  - fill_color
-     *  - borderSize
-     *  - border_color
-     *  - shadowSize
-     *  - cornerShapes
+    /** Draw a box with rounded corners.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param box The four points of the box to draw.
+     * @param fill_color The fill color of the inside of the box.
+     * @param border_color The line color of the border of the box.
+     * @param border_width The line width of the border.
+     * @param border_side The side of the edge where the border is drawn.
+     * @param corner_radius The corner radii of each corner of the box.
      */
     void draw_box(
         widget_layout const &layout,
-        rectangle box,
+        quad box,
         quad_color fill_color,
-        quad_color line_color,
-        float line_width = 1.0f,
-        tt::corner_shapes corner_shapes = tt::corner_shapes{}) const noexcept;
+        quad_color border_color,
+        float border_width,
+        tt::border_side border_side,
+        tt::corner_shapes corner_radius = {}) const noexcept;
 
+    /** Draw a box with rounded corners without a border.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param box The four points of the box to draw.
+     * @param fill_color The fill color of the inside of the box.
+     * @param corner_radius The corner radii of each corner of the box.
+     */
     void
-    draw_box(widget_layout const &layout, rectangle box, quad_color fill_color, quad_color line_color, tt::corner_shapes corner_shapes)
-        const noexcept;
-
-    void draw_box(widget_layout const &layout, rectangle box, quad_color fill_color, tt::corner_shapes corner_shapes) const noexcept;
-
-    void draw_box(widget_layout const &layout, rectangle box, quad_color fill_color) const noexcept;
-
-    /** Draw an axis aligned box
-     * This function will shrink to include the size of the border inside
-     * the given rectangle. This will make the border be drawn sharply.
-     *
-     * This will also adjust rounded corners to the shrunk box.
-     *
-     * This function will draw the given box.
-     * This will use the current:
-     *  - transform, to transform the opposite corner (rotation is not recommended).
-     *  - clipping_rectangle
-     *  - fill_color
-     *  - border_size
-     *  - border_color
-     *  - corner_shapes
-     */
-    void draw_box_with_border_inside(
-        widget_layout const &layout,
-        rectangle rectangle,
-        quad_color fill_color,
-        quad_color line_color,
-        float line_width = 1.0f,
-        tt::corner_shapes corner_shapes = tt::corner_shapes{}) const noexcept;
-
-    void draw_box_with_border_inside(
-        widget_layout const &layout,
-        rectangle rectangle,
-        quad_color fill_color,
-        quad_color line_color,
-        tt::corner_shapes corner_shapes)
-        const noexcept;
-
-    /** Draw an axis aligned box
-     * This function will expand to include the size of the border outside
-     * the given rectangle. This will make the border be drawn sharply.
-     *
-     * This will also adjust rounded corners to the shrunk box.
-     *
-     * This function will draw the given box.
-     * This will use the current:
-     *  - transform, to transform the opposite corner (rotation is not recommended).
-     *  - clippingRectangle
-     *  - fill_color
-     *  - borderSize
-     *  - border_color
-     *  - shadowSize
-     *  - cornerShapes
-     */
-    void draw_box_with_border_outside(
-        widget_layout const &layout,
-        rectangle rectangle,
-        quad_color fill_color,
-        quad_color line_color,
-        float line_width = 1.0f,
-        tt::corner_shapes corner_shapes = tt::corner_shapes{}) const noexcept;
-
-    void draw_box_with_border_outside(
-        widget_layout const &layout,
-        rectangle rectangle,
-        quad_color fill_color,
-        quad_color line_color,
-        tt::corner_shapes corner_shapes)
-        const noexcept;
+    draw_box(widget_layout const &layout, quad box, quad_color fill_color, tt::corner_shapes corner_radius = {}) const noexcept
+    {
+        return draw_box(layout, box, fill_color, fill_color, 0.0f, border_side::on, corner_radius);
+    }
 
     /** Draw an image
      * This function will draw an image.
@@ -155,32 +113,37 @@ public:
      */
     void draw_image(widget_layout const &layout, pipeline_image::image &image, matrix3 image_transform) const noexcept;
 
-    /** Draw shaped text.
-     * This function will draw the shaped text.
-     * The SDF-image-atlas needs to be prepared ahead of time.
-     * This will use the current:
-     *  - transform, to transform the shaped-text's bounding box
-     *  - clippingRectangle
-     *
-     * @param text The shaped text to draw.
-     * @param useContextColor When true display the text in the context's color, if false use text style color
-     */
-    void draw_text(
-        widget_layout const &layout,
-        shaped_text const &text,
-        std::optional<quad_color> text_color = {},
-        matrix3 transform = geo::identity{}) const noexcept;
-
     /** Draw a glyph.
      *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param box The size and position of the glyph.
+     * @param color The color that the glyph should be drawn in.
      * @param glyph The glyphs to draw.
-     * @param glyph_size The scale with which the glyph is being drawn.
-     * @param box The size and position of the glyph. The size must be the size of the bounding box of the glyph
-     *            multiplied by @a glyph_size.
-     * @param text_color The color that the glyph should be drawn in.
      */
-    void draw_glyph(widget_layout const &layout, font_glyph_ids const &glyph, quad const &box, quad_color text_color)
-        const noexcept;
+    void draw_glyph(widget_layout const &layout, quad const &box, quad_color color, font_glyph_ids const &glyph) const noexcept;
+
+    /** Draw shaped text.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param transform How to transform the shaped text relative to layout.
+     * @param color Text-color overriding the colors from the shaped_text.
+     * @param text The shaped text to draw.
+     */
+    void draw_text(widget_layout const &layout, matrix3 transform, quad_color color, shaped_text const &text) const noexcept
+    {
+        return _draw_text(layout, transform, color, text);
+    }
+
+    /** Draw shaped text.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param transform How to transform the shaped text relative to layout.
+     * @param text The shaped text to draw.
+     */
+    void draw_text(widget_layout const &layout, matrix3 transform, shaped_text const &text) const noexcept
+    {
+        return _draw_text(layout, transform, {}, text);
+    }
 
     [[nodiscard]] friend bool overlaps(draw_context const &context, widget_layout const &layout) noexcept
     {
@@ -192,6 +155,8 @@ private:
     vspan<pipeline_image::vertex> *_image_vertices;
     vspan<pipeline_SDF::vertex> *_sdf_vertices;
 
+    void _draw_text(widget_layout const &layout, matrix3 transform, std::optional<quad_color> color, shaped_text const &text)
+        const noexcept;
 };
 
 } // namespace tt
