@@ -83,6 +83,11 @@ public:
         tt_axiom(holds_invariant());
     }
 
+    constexpr explicit operator f32x4() const noexcept
+    {
+        return v;
+    }
+
     /** Make sure p0 is left/bottom from p3.
      * @return True is p0 is left and below p3.
      */
@@ -100,7 +105,7 @@ public:
 
     /** True when the rectangle has an area.
      */
-    [[nodiscard]] constexpr operator bool() const noexcept
+    [[nodiscard]] constexpr explicit operator bool() const noexcept
     {
         return not empty();
     }

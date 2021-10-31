@@ -99,11 +99,13 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const &cont
                                                                  theme().color(theme_color::fill, semantic_layer);
 
     ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme().rounding_radius, theme().rounding_radius};
-    context.draw_box_with_border_inside(
+    context.draw_box(
         layout(),
         button_z * outline_rectangle,
         button_color,
         (focus && window.active) ? focus_color() : button_color,
+        theme().border_width,
+        border_side::inside,
         corner_shapes);
 }
 

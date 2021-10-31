@@ -43,17 +43,17 @@ void draw_context::draw_box(
     tt::corner_shapes corner_radius) const noexcept
 {
     // Expand or shrink the box and the corner radius.
-    ttlet half_line_width = line_width * 0.5f;
+    ttlet border_line_width = border_width * 0.5f;
     if (border_side == border_side::inside) {
-        box = box - half_line_width;
-        corner_radius = corner_radius - half_line_width;
+        box = box - extent2{border_line_width, border_line_width};
+        corner_radius = corner_radius - border_line_width;
 
     } else if (border_side == border_side::outside) {
-        box = box + half_line_width;
-        corner_radius = corner_shapes + half_line_width;
+        box = box + extent2{border_line_width, border_line_width};
+        corner_radius = corner_radius + border_line_width;
     }
 
-    if (_box_vertices.full()) {
+    if (_box_vertices->full()) {
         // Too many boxes where added, just don't draw them anymore.
         ++global_counter<"draw_box::overrun">;
         return;
@@ -64,9 +64,9 @@ void draw_context::draw_box(
         bounding_rectangle(layout.to_window * layout.clipping_rectangle),
         layout.to_window * box,
         fill_color,
-        line_color,
-        line_width,
-        corner_shapes);
+        border_color,
+        border_width,
+        corner_radius);
 }
 
 void draw_context::draw_image(widget_layout const &layout, pipeline_image::image &image, matrix3 image_transform) const noexcept

@@ -44,8 +44,14 @@ void momentary_button_widget::draw_label_button(draw_context const &context) noe
     tt_axiom(is_gui_thread());
 
     // Move the border of the button in the middle of a pixel.
-    context.draw_box_with_border_inside(
-        layout(), layout().rectangle(), background_color(), focus_color(), corner_shapes{theme().rounding_radius});
+    context.draw_box(
+        layout(),
+        layout().rectangle(),
+        background_color(),
+        focus_color(),
+        theme().border_width,
+        border_side::inside,
+        corner_shapes{theme().rounding_radius});
 }
 
 } // namespace tt

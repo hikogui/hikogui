@@ -383,7 +383,8 @@ void text_field_widget::draw_partial_grapheme_caret(draw_context const &context)
     ttlet partial_grapheme_caret = _field.partial_grapheme_caret();
     if (partial_grapheme_caret) {
         ttlet box = round(_text_translate) * translate_z(0.1f) * round(partial_grapheme_caret);
-        context.draw_box_with_border_inside(layout(), box, color::transparent(), theme().color(theme_color::incomplete_glyph));
+        context.draw_box(
+            layout(), box, color::transparent(), theme().color(theme_color::incomplete_glyph), 1.0f, border_side::outside);
     }
 }
 
@@ -397,7 +398,7 @@ void text_field_widget::draw_caret(draw_context const &context) noexcept
     _left_to_right_caret = _field.left_to_right_caret();
     if (_left_to_right_caret && blink_is_on && focus && window.active) {
         ttlet box = round(_text_translate) * translate_z(0.1f) * round(_left_to_right_caret);
-        context.draw_box_with_border_inside(layout(), box, color::transparent(), theme().color(theme_color::cursor));
+        context.draw_box(layout(), box, color::transparent(), theme().color(theme_color::cursor), 1.0f, border_side::inside);
     }
 }
 

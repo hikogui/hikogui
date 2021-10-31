@@ -49,8 +49,14 @@ void radio_button_widget::draw_radio_button(draw_context const &context) noexcep
 {
     tt_axiom(is_gui_thread());
 
-    context.draw_box_with_border_inside(
-        layout(), _button_rectangle, background_color(), focus_color(), corner_shapes{_button_rectangle.height() * 0.5f});
+    context.draw_box(
+        layout(),
+        _button_rectangle,
+        background_color(),
+        focus_color(),
+        theme().border_width,
+        border_side::inside,
+        corner_shapes{_button_rectangle.height() * 0.5f});
 }
 
 void radio_button_widget::draw_radio_pip(draw_context const &context) noexcept

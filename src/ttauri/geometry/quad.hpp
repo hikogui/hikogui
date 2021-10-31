@@ -27,6 +27,15 @@ public:
     constexpr quad &operator=(quad const &) noexcept = default;
     constexpr quad &operator=(quad &&) noexcept = default;
 
+    constexpr quad(aarectangle const &rhs) noexcept
+    {
+        ttlet tmp = f32x4{rhs};
+        p0 = point3{tmp.xy01()};
+        p1 = point3{tmp.zy01()};
+        p2 = point3{tmp.xw01()};
+        p3 = point3{tmp.zw01()};
+    }
+
     constexpr quad(rectangle const &rhs) noexcept : p0(get<0>(rhs)), p1(get<1>(rhs)), p2(get<2>(rhs)), p3(get<3>(rhs)) {}
 
     /** The vector from left-bottom to right-bottom.
@@ -110,10 +119,10 @@ public:
      * Move each corner of the quad by the given size outward in the direction of the edges.
      *
      * @param lhs A quad.
-     * @param rhs The width and height to add to each corner of the quad.
+     * @param rhs The width and height to add to each corner of the quad, only (x, y) are used.
      * @return The new quad extended by the size and the new edge-lengths.
      */
-    [[nodiscard]] friend constexpr std::pair<quad, f32x4> expand_and_edge_hypots(quad const &lhs, extent2 const &rhs) noexcept
+    [[nodiscard]] friend constexpr std::pair<quad, f32x4> expand_and_edge_hypots(quad const &lhs, f32x4 const &rhs) noexcept
     {
         ttlet t = f32x4{lhs.top()};
         ttlet l = f32x4{lhs.left()};
@@ -128,9 +137,8 @@ public:
         ttlet norm_b = b * inv_lengths.zzzz();
         ttlet norm_r = r * inv_lengths.wwww();
 
-        ttlet rhs_ = f32x4{rhs};
-        ttlet width = rhs_.xxxx();
-        ttlet height = rhs_.yyyy();
+        ttlet width = rhs.xxxx();
+        ttlet height = rhs.yyyy();
 
         ttlet top_extra = vector3{norm_t * width};
         ttlet left_extra = vector3{norm_l * height};
@@ -139,7 +147,7 @@ public:
 
         ttlet lengths = rcp(inv_lengths);
 
-        ttlet rhs_times_2 = rhs_ + rhs_;
+        ttlet rhs_times_2 = rhs + rhs;
 
         return {
             quad{
@@ -156,11 +164,51 @@ public:
      *
      * @param lhs A quad.
      * @param rhs The width and height to add to each corner of the quad.
+     * @return The new quad extended by the size and the new edge-lengths.
+     */
+    [[nodiscard]] friend constexpr std::pair<quad, f32x4> expand_and_edge_hypots(quad const &lhs, extent2 const &rhs) noexcept
+    {
+        return expand_and_edge_hypots(lhs, f32x4{rhs});
+    }
+
+    /** Subtract a border from the quad.
+     *
+     * Move each corner of the quad by the given size inward in the direction of the edges.
+     *
+     * @param lhs A quad.
+     * @param rhs The width and height to subtract from each corner of the quad.
+     * @return The new quad shrunk by the size and the new edge-lengths.
+     */
+    [[nodiscard]] friend constexpr std::pair<quad, f32x4> shrink_and_edge_hypots(quad const &lhs, extent2 const &rhs) noexcept
+    {
+        return expand_and_edge_hypots(lhs, -f32x4{rhs});
+    }
+
+    /** Add a border around the quad.
+     *
+     * Move each corner of the quad by the given size outward in the direction of the edges.
+     *
+     * @param lhs A quad.
+     * @param rhs The width and height to add to each corner of the quad.
      * @return The new quad extended by the size.
      */
     [[nodiscard]] friend constexpr quad operator+(quad const &lhs, extent2 const &rhs) noexcept
     {
         ttlet[expanded_quad, new_lengths] = expand_and_edge_hypots(lhs, rhs);
+        return expanded_quad;
+    }
+
+    /** Add a border around the quad.
+     *
+     * Move each corner of the quad by the given size outward in the direction of the edges.
+     *
+     * @param lhs A quad.
+     * @param rhs The width and height to add to each corner of the quad.
+     * @return The new quad extended by the size.
+     */
+    [[nodiscard]] friend constexpr quad operator-(quad const &lhs, extent2 const &rhs) noexcept
+    {
+        ttlet[expanded_quad, new_lengths] = shrink_and_edge_hypots(lhs, rhs);
         return expanded_quad;
     }
 

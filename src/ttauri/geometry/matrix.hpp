@@ -162,6 +162,11 @@ public:
             _col2 * static_cast<f32x4>(rhs).zzzz() + _col3 * static_cast<f32x4>(rhs).wwww()};
     }
 
+    [[nodiscard]] constexpr rectangle operator*(aarectangle const &rhs) const noexcept
+    {
+        return *this * rectangle{rhs};
+    }
+
     [[nodiscard]] constexpr rectangle operator*(rectangle const &rhs) const noexcept
     {
         return rectangle{*this * rhs.origin, *this * rhs.right, *this * rhs.up};

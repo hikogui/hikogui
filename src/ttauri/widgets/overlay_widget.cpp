@@ -86,7 +86,8 @@ void overlay_widget::scroll_to_show(tt::aarectangle rectangle) noexcept
 
 void overlay_widget::draw_background(draw_context const &context) noexcept
 {
-    context.draw_box_with_border_outside(layout(), layout().rectangle(), background_color(), foreground_color());
+    context.draw_box(
+        layout(), layout().rectangle(), background_color(), foreground_color(), theme().border_width, border_side::outside);
 }
 
 } // namespace tt

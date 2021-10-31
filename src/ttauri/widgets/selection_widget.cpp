@@ -315,8 +315,14 @@ void selection_widget::draw_outline(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    context.draw_box_with_border_inside(
-        layout(), layout().rectangle(), background_color(), focus_color(), corner_shapes{theme().rounding_radius});
+    context.draw_box(
+        layout(),
+        layout().rectangle(),
+        background_color(),
+        focus_color(),
+        theme().border_width,
+        border_side::inside,
+        corner_shapes{theme().rounding_radius});
 }
 
 void selection_widget::draw_left_box(draw_context const &context) noexcept

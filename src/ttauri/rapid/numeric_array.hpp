@@ -269,7 +269,7 @@ tt_warning_push()
         }
     }
 
-    [[nodiscard]] constexpr explicit numeric_array(T const &rhs) noexcept : v()
+    [[nodiscard]] constexpr explicit numeric_array(std::convertible_to<T> auto const &rhs) noexcept : v()
     {
         get<0>(*this) = rhs;
     }

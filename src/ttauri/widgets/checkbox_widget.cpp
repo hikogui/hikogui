@@ -65,7 +65,7 @@ void checkbox_widget::draw(draw_context const &context) noexcept
 void checkbox_widget::draw_check_box(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
-    context.draw_box_with_border_inside(layout(), _button_rectangle, background_color(), focus_color());
+    context.draw_box(layout(), _button_rectangle, background_color(), focus_color(), theme().border_width, border_side::inside);
 }
 
 void checkbox_widget::draw_check_mark(draw_context const &context) noexcept
