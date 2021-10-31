@@ -167,6 +167,7 @@ public:
         return *this * rectangle{rhs};
     }
 
+    // XXX rectangle -> quad, perspective operation.
     [[nodiscard]] constexpr rectangle operator*(rectangle const &rhs) const noexcept
     {
         return rectangle{*this * rhs.origin, *this * rhs.right, *this * rhs.up};

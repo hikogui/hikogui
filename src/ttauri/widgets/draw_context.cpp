@@ -77,34 +77,31 @@ void draw_context::draw_image(widget_layout const &layout, pipeline_image::image
         *_image_vertices, bounding_rectangle(layout.to_window * layout.clipping_rectangle), layout.to_window * image_transform);
 }
 
-void draw_context::draw_glyph(widget_layout const &layout, font_glyph_ids const &glyph, quad const &box, quad_color text_color)
+void draw_context::draw_glyph(widget_layout const &layout, quad const &box, quad_color color, font_glyph_ids const &glyph)
     const noexcept
 {
     tt_axiom(_sdf_vertices != nullptr);
     ttlet pipeline = narrow_cast<gfx_device_vulkan &>(device).SDFPipeline.get();
 
     if (_sdf_vertices->full()) {
+        draw_box(layout, box, tt::color{1.0f, 0.0f, 1.0f});
         ++global_counter<"draw_glyph::overflow">;
         return;
     }
 
     ttlet atlas_was_updated = pipeline->place_vertices(
-        *_sdf_vertices,
-        bounding_rectangle(layout.to_window * layout.clipping_rectangle),
-        layout.to_window * box,
-        glyph,
-        text_color);
+        *_sdf_vertices, bounding_rectangle(layout.to_window * layout.clipping_rectangle), layout.to_window * box, glyph, color);
 
     if (atlas_was_updated) {
         pipeline->prepare_atlas_for_rendering();
     }
 }
 
-void draw_context::draw_text(
+void draw_context::_draw_text(
     widget_layout const &layout,
-    shaped_text const &text,
+    matrix3 transform,
     std::optional<quad_color> text_color,
-    matrix3 transform) const noexcept
+    shaped_text const &text) const noexcept
 {
     tt_axiom(_sdf_vertices != nullptr);
     ttlet pipeline = narrow_cast<gfx_device_vulkan &>(device).SDFPipeline.get();
@@ -114,18 +111,20 @@ void draw_context::draw_text(
 
     auto atlas_was_updated = false;
     for (ttlet &attr_glyph : text) {
+        ttlet box = attr_glyph.boundingBox();
+        ttlet color = text_color ? *text_color : quad_color{attr_glyph.style.color};
+
         if (not is_visible(attr_glyph.general_category)) {
             continue;
 
         } else if (_sdf_vertices->full()) {
+            draw_box(layout, transform * box, tt::color{1.0f, 0.0f, 1.0f});
             ++global_counter<"draw_glyph::overflow">;
             break;
         }
 
-        ttlet color = text_color ? *text_color : quad_color{attr_glyph.style.color};
-
-        atlas_was_updated |= pipeline->place_vertices(
-            *_sdf_vertices, clipping_rectangle, to_window_transform * attr_glyph.boundingBox(), attr_glyph.glyphs, color);
+        atlas_was_updated |=
+            pipeline->place_vertices(*_sdf_vertices, clipping_rectangle, to_window_transform * box, attr_glyph.glyphs, color);
     }
 
     if (atlas_was_updated) {

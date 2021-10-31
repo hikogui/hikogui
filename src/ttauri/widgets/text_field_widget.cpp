@@ -404,7 +404,7 @@ void text_field_widget::draw_caret(draw_context const &context) noexcept
 
 void text_field_widget::draw_text(draw_context const &context) const noexcept
 {
-    context.draw_text(layout(), _shaped_text, label_color(), _text_translate * translate_z(0.2f));
+    context.draw_text(layout(), _text_translate * translate_z(0.2f), label_color(), _shaped_text);
 }
 
 } // namespace tt

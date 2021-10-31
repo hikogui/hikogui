@@ -57,7 +57,7 @@ public:
     aarectangle scissor_rectangle;
 
     utc_nanoseconds display_time_point;
-    
+
     draw_context(draw_context const &rhs) noexcept = default;
     draw_context(draw_context &&rhs) noexcept = default;
     draw_context &operator=(draw_context const &rhs) noexcept = default;
@@ -99,15 +99,11 @@ public:
      * @param fill_color The fill color of the inside of the box.
      * @param corner_radius The corner radii of each corner of the box.
      */
-    void draw_box(
-        widget_layout const &layout,
-        quad box,
-        quad_color fill_color,
-        tt::corner_shapes corner_radius = {}) const noexcept
+    void
+    draw_box(widget_layout const &layout, quad box, quad_color fill_color, tt::corner_shapes corner_radius = {}) const noexcept
     {
         return draw_box(layout, box, fill_color, fill_color, 0.0f, border_side::on, corner_radius);
     }
-
 
     /** Draw an image
      * This function will draw an image.
@@ -119,31 +115,35 @@ public:
 
     /** Draw a glyph.
      *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param box The size and position of the glyph.
+     * @param color The color that the glyph should be drawn in.
      * @param glyph The glyphs to draw.
-     * @param glyph_size The scale with which the glyph is being drawn.
-     * @param box The size and position of the glyph. The size must be the size of the bounding box of the glyph
-     *            multiplied by @a glyph_size.
-     * @param text_color The color that the glyph should be drawn in.
      */
-    void
-    draw_glyph(widget_layout const &layout, font_glyph_ids const &glyph, quad const &box, quad_color text_color) const noexcept;
+    void draw_glyph(widget_layout const &layout, quad const &box, quad_color color, font_glyph_ids const &glyph) const noexcept;
 
     /** Draw shaped text.
-     * This function will draw the shaped text.
-     * The SDF-image-atlas needs to be prepared ahead of time.
-     * This will use the current:
-     *  - transform, to transform the shaped-text's bounding box
-     *  - clippingRectangle
      *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param transform How to transform the shaped text relative to layout.
+     * @param color Text-color overriding the colors from the shaped_text.
      * @param text The shaped text to draw.
-     * @param useContextColor When true display the text in the context's color, if false use text style color
      */
-    void draw_text(
-        widget_layout const &layout,
-        shaped_text const &text,
-        std::optional<quad_color> text_color = {},
-        matrix3 transform = geo::identity{}) const noexcept;
+    void draw_text(widget_layout const &layout, matrix3 transform, quad_color color, shaped_text const &text) const noexcept
+    {
+        return _draw_text(layout, transform, color, text);
+    }
 
+    /** Draw shaped text.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param transform How to transform the shaped text relative to layout.
+     * @param text The shaped text to draw.
+     */
+    void draw_text(widget_layout const &layout, matrix3 transform, shaped_text const &text) const noexcept
+    {
+        return _draw_text(layout, transform, {}, text);
+    }
 
     [[nodiscard]] friend bool overlaps(draw_context const &context, widget_layout const &layout) noexcept
     {
@@ -155,6 +155,8 @@ private:
     vspan<pipeline_image::vertex> *_image_vertices;
     vspan<pipeline_SDF::vertex> *_sdf_vertices;
 
+    void _draw_text(widget_layout const &layout, matrix3 transform, std::optional<quad_color> color, shaped_text const &text)
+        const noexcept;
 };
 
 } // namespace tt
