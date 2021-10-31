@@ -106,7 +106,7 @@ struct device_shared final {
 
     /** This will transition the atlas to 'shader-read'.
      */
-    void prepareAtlasForRendering();
+    void prepare_atlas_for_rendering();
 
     /** Prepare the atlas for drawing a text.
      */
@@ -124,70 +124,14 @@ struct device_shared final {
      *            of the glyph's bounding box times @a glyph_size.
      * @param glyphs The font-id, composed-glyphs to render
      * @param color The color of the glyph.
+     * @return True is atlas was updated.
      */
-    void place_vertices(
+    bool place_vertices(
         vspan<vertex> &vertices,
         aarectangle const &clipping_rectangle,
         quad const &box,
         font_glyph_ids const &glyphs,
-        quad_color colors) noexcept
-    {
-        if (_place_vertices(vertices, clipping_rectangle, box, glyphs, colors)) {
-            prepareAtlasForRendering();
-        }
-    }
-
-    /** Draw the text on the screen.
-     *
-     * @param vertices The vertices to draw the glyphs to.
-     * @param clipping_rectangle The clipping rectangle in screen space where glyphs should be cut off.
-     * @param transform The 2D transformation to move and rotate the box to the correct position on screen.
-     * @param text The box of text to draw
-     */
-    void place_vertices(
-        vspan<vertex> &vertices,
-        aarectangle const &clipping_rectangle,
-        geo::transformer auto const &transform,
-        shaped_text const &text) noexcept
-    {
-        auto atlas_was_updated = false;
-
-        for (ttlet &attr_glyph : text) {
-            ttlet glyph_added = _place_vertices(vertices, clipping_rectangle, transform, attr_glyph);
-            atlas_was_updated = atlas_was_updated or glyph_added;
-        }
-
-        if (atlas_was_updated) {
-            prepareAtlasForRendering();
-        }
-    }
-
-    /** Draw the text on the screen.
-     *
-     * @param vertices The vertices to draw the glyphs to.
-     * @param clipping_rectangle The clipping rectangle in screen space where glyphs should be cut off.
-     * @param transform The 2D transformation to move and rotate the box to the correct position on screen.
-     * @param text The box of text to draw
-     * @param color Override the color of the text to draw.
-     */
-    void place_vertices(
-        vspan<vertex> &vertices,
-        aarectangle const &clipping_rectangle,
-        geo::transformer auto const &transform,
-        shaped_text const &text,
-        quad_color colors) noexcept
-    {
-        auto atlas_was_updated = false;
-
-        for (ttlet &attr_glyph : text) {
-            ttlet glyph_added = _place_vertices(vertices, clipping_rectangle, transform, attr_glyph, colors);
-            atlas_was_updated = atlas_was_updated or glyph_added;
-        }
-
-        if (atlas_was_updated) {
-            prepareAtlasForRendering();
-        }
-    }
+        quad_color colors) noexcept;
 
 private:
     void buildShaders();
@@ -195,38 +139,6 @@ private:
     void addAtlasImage();
     void buildAtlas();
     void teardownAtlas(gfx_device_vulkan *vulkanDevice);
-
-    bool _place_vertices(
-        vspan<vertex> &vertices,
-        aarectangle const &clipping_rectangle,
-        quad const &box,
-        font_glyph_ids const &glyphs,
-        quad_color colors) noexcept;
-
-    bool _place_vertices(
-        vspan<vertex> &vertices,
-        aarectangle clipping_rectangle,
-        geo::transformer auto const &transform,
-        attributed_glyph const &attr_glyph,
-        quad_color colors) noexcept
-    {
-        if (not is_visible(attr_glyph.general_category)) {
-            return false;
-        }
-
-        ttlet bounding_box = transform * attr_glyph.boundingBox();
-        return _place_vertices(vertices, clipping_rectangle, bounding_box, attr_glyph.glyphs, colors);
-    }
-
-    bool _place_vertices(
-        vspan<vertex> &vertices,
-        aarectangle const &clipping_rectangle,
-        geo::transformer auto const &transform,
-        attributed_glyph const &attr_glyph) noexcept
-    {
-        return _place_vertices(vertices, clipping_rectangle, transform, attr_glyph, attr_glyph.style.color);
-    }
-
     void add_glyph_to_atlas(font_glyph_ids const &glyph, glyph_atlas_info &info) noexcept;
 
     /**

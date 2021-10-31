@@ -55,7 +55,7 @@ void draw_context::draw_box(
 
     if (_box_vertices->full()) {
         // Too many boxes where added, just don't draw them anymore.
-        ++global_counter<"draw_box::overrun">;
+        ++global_counter<"draw_box::overflow">;
         return;
     }
 
@@ -77,6 +77,29 @@ void draw_context::draw_image(widget_layout const &layout, pipeline_image::image
         *_image_vertices, bounding_rectangle(layout.to_window * layout.clipping_rectangle), layout.to_window * image_transform);
 }
 
+void draw_context::draw_glyph(widget_layout const &layout, font_glyph_ids const &glyph, quad const &box, quad_color text_color)
+    const noexcept
+{
+    tt_axiom(_sdf_vertices != nullptr);
+    ttlet pipeline = narrow_cast<gfx_device_vulkan &>(device).SDFPipeline.get();
+
+    if (_sdf_vertices->full()) {
+        ++global_counter<"draw_glyph::overflow">;
+        return;
+    }
+
+    ttlet atlas_was_updated = pipeline->place_vertices(
+        *_sdf_vertices,
+        bounding_rectangle(layout.to_window * layout.clipping_rectangle),
+        layout.to_window * box,
+        glyph,
+        text_color);
+
+    if (atlas_was_updated) {
+        pipeline->prepare_atlas_for_rendering();
+    }
+}
+
 void draw_context::draw_text(
     widget_layout const &layout,
     shaped_text const &text,
@@ -84,34 +107,30 @@ void draw_context::draw_text(
     matrix3 transform) const noexcept
 {
     tt_axiom(_sdf_vertices != nullptr);
+    ttlet pipeline = narrow_cast<gfx_device_vulkan &>(device).SDFPipeline.get();
 
-    if (text_color) {
-        narrow_cast<gfx_device_vulkan &>(device).SDFPipeline->place_vertices(
-            *_sdf_vertices,
-            bounding_rectangle(layout.to_window * layout.clipping_rectangle),
-            layout.to_window * transform,
-            text,
-            *text_color);
-    } else {
-        narrow_cast<gfx_device_vulkan &>(device).SDFPipeline->place_vertices(
-            *_sdf_vertices, bounding_rectangle(layout.to_window * layout.clipping_rectangle), layout.to_window * transform, text);
+    ttlet clipping_rectangle = bounding_rectangle(layout.to_window * layout.clipping_rectangle);
+    ttlet to_window_transform = layout.to_window * transform;
+
+    auto atlas_was_updated = false;
+    for (ttlet &attr_glyph : text) {
+        if (not is_visible(attr_glyph.general_category)) {
+            continue;
+
+        } else if (_sdf_vertices->full()) {
+            ++global_counter<"draw_glyph::overflow">;
+            break;
+        }
+
+        ttlet color = text_color ? *text_color : quad_color{attr_glyph.style.color};
+
+        atlas_was_updated |= pipeline->place_vertices(
+            *_sdf_vertices, clipping_rectangle, to_window_transform * attr_glyph.boundingBox(), attr_glyph.glyphs, color);
     }
-}
 
-void draw_context::draw_glyph(
-    widget_layout const &layout,
-    font_glyph_ids const &glyph,
-    quad const &box,
-    quad_color text_color) const noexcept
-{
-    tt_axiom(_sdf_vertices != nullptr);
-
-    narrow_cast<gfx_device_vulkan &>(device).SDFPipeline->place_vertices(
-        *_sdf_vertices,
-        bounding_rectangle(layout.to_window * layout.clipping_rectangle),
-        layout.to_window * box,
-        glyph,
-        text_color);
+    if (atlas_was_updated) {
+        pipeline->prepare_atlas_for_rendering();
+    }
 }
 
 } // namespace tt

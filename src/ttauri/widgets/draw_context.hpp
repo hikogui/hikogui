@@ -117,6 +117,17 @@ public:
      */
     void draw_image(widget_layout const &layout, pipeline_image::image &image, matrix3 image_transform) const noexcept;
 
+    /** Draw a glyph.
+     *
+     * @param glyph The glyphs to draw.
+     * @param glyph_size The scale with which the glyph is being drawn.
+     * @param box The size and position of the glyph. The size must be the size of the bounding box of the glyph
+     *            multiplied by @a glyph_size.
+     * @param text_color The color that the glyph should be drawn in.
+     */
+    void
+    draw_glyph(widget_layout const &layout, font_glyph_ids const &glyph, quad const &box, quad_color text_color) const noexcept;
+
     /** Draw shaped text.
      * This function will draw the shaped text.
      * The SDF-image-atlas needs to be prepared ahead of time.
@@ -133,16 +144,6 @@ public:
         std::optional<quad_color> text_color = {},
         matrix3 transform = geo::identity{}) const noexcept;
 
-    /** Draw a glyph.
-     *
-     * @param glyph The glyphs to draw.
-     * @param glyph_size The scale with which the glyph is being drawn.
-     * @param box The size and position of the glyph. The size must be the size of the bounding box of the glyph
-     *            multiplied by @a glyph_size.
-     * @param text_color The color that the glyph should be drawn in.
-     */
-    void draw_glyph(widget_layout const &layout, font_glyph_ids const &glyph, quad const &box, quad_color text_color)
-        const noexcept;
 
     [[nodiscard]] friend bool overlaps(draw_context const &context, widget_layout const &layout) noexcept
     {
