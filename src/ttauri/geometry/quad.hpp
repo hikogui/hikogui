@@ -7,6 +7,7 @@
 #include "extent.hpp"
 #include "axis_aligned_rectangle.hpp"
 #include "rectangle.hpp"
+#include "../coroutine.hpp"
 #include <tuple>
 
 namespace tt {
@@ -224,6 +225,48 @@ public:
         min_p = min(min_p, rhs.p3);
         max_p = max(max_p, rhs.p3);
         return aarectangle{point2{min_p}, point2{max_p}};
+    }
+
+    /** Split a quad evenly by count.
+    * 
+    * @param count The number of splits horizontally and vertically.
+    * @return generates quads left-to-right, then from bottom-to-top.
+     */
+    [[nodiscard]] generator<quad> split_by(f32x4 count) const noexcept
+    {
+        ttlet ceil_count = ceil(count);
+        ttlet rcp_count = rcp(count);
+        ttlet num_columns = static_cast<size_t>(ceil_count.x());
+        ttlet num_rows = static_cast<size_t>(ceil_count.y());
+
+        ttlet left_increment = left() * rcp_count.y();
+        ttlet right_increment = right() * rcp_count.y();
+
+        auto left_bottom = p0;
+        auto right_bottom = p1;
+        auto bottom_increment = (p1 - p0) * rcp_count.x();
+        for (size_t row_nr = 0; row_nr != num_rows; ++row_nr) {
+            ttlet left_top = left_bottom + left_increment;
+            ttlet right_top = right_bottom + right_increment;
+            ttlet top_increment = (right_top - left_top) * rcp_count.x();
+
+            auto new_p0 = left_bottom;
+            auto new_p2 = left_top;
+            for (size_t column_nr = 0; column_nr != num_columns; ++column_nr) {
+                ttlet new_p1 = new_p0 + bottom_increment;
+                ttlet new_p3 = new_p2 + top_increment;
+
+                // The new quad, limited to the right-top corner of the original quad.
+                co_yield quad{new_p0, min(new_p1, p3), min(new_p2, p3), min(new_p3, p3)};
+
+                new_p0 = new_p1;
+                new_p2 = new_p3;
+            }
+
+            left_bottom = left_top;
+            right_bottom = right_top;
+            bottom_increment = top_increment;
+        }
     }
 
     constexpr quad &operator+=(extent2 const &rhs) noexcept
