@@ -19,8 +19,6 @@ namespace tt {
  */
 class axis_aligned_rectangle {
 private:
-    friend class sfloat_rgba32;
-
     /** Intrinsic of the rectangle.
      * Elements are assigned as follows:
      *  - (x, y) 2D-coordinate of left-bottom corner of the rectangle

@@ -31,7 +31,7 @@ widget_constraints const &icon_widget::set_constraints() noexcept
         _pixmap_hash = 0;
         _pixmap_backing = {};
         // For uniform scaling issues, make sure the size is not zero.
-        _icon_bounding_box = {};
+        _icon_size = {};
 
     } else if (holds_alternative<pixel_map<sfloat_rgba16>>(icon_)) {
         // XXX very ugly, please fix.
@@ -53,16 +53,15 @@ widget_constraints const &icon_widget::set_constraints() noexcept
             // We need a device to upload the image as texture map, so retry until it does.
             _pixmap_hash = 0;
             _pixmap_backing = {};
-            _icon_bounding_box = {};
+            _icon_size = {};
             window.request_reconstrain();
 
         } else if (pixmap.hash() != _pixmap_hash) {
             _pixmap_hash = pixmap.hash();
-            _pixmap_backing = device->imagePipeline->makeImage(pixmap.width(), pixmap.height());
+            _pixmap_backing = device->imagePipeline->make_image(pixmap.width(), pixmap.height());
 
             _pixmap_backing.upload(pixmap);
-            _icon_bounding_box = aarectangle{
-                extent2{narrow_cast<float>(_pixmap_backing.width_in_px), narrow_cast<float>(_pixmap_backing.height_in_px)}};
+            _icon_size = extent2{narrow_cast<float>(_pixmap_backing.width), narrow_cast<float>(_pixmap_backing.height)};
         }
 
     } else if (holds_alternative<font_glyph_ids>(icon_)) {
@@ -71,7 +70,7 @@ widget_constraints const &icon_widget::set_constraints() noexcept
         _pixmap_hash = 0;
         _pixmap_backing = {};
 
-        _icon_bounding_box = _glyph.get_bounding_box() * theme().text_style(theme_text_style::label).scaled_size();
+        _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).scaled_size();
 
     } else if (holds_alternative<elusive_icon>(icon_)) {
         _icon_type = icon_type::glyph;
@@ -79,7 +78,7 @@ widget_constraints const &icon_widget::set_constraints() noexcept
         _pixmap_hash = 0;
         _pixmap_backing = {};
 
-        _icon_bounding_box = _glyph.get_bounding_box() * theme().text_style(theme_text_style::label).scaled_size();
+        _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).scaled_size();
 
     } else if (holds_alternative<ttauri_icon>(icon_)) {
         _icon_type = icon_type::glyph;
@@ -87,13 +86,13 @@ widget_constraints const &icon_widget::set_constraints() noexcept
         _pixmap_hash = 0;
         _pixmap_backing = {};
 
-        _icon_bounding_box = _glyph.get_bounding_box() * theme().text_style(theme_text_style::label).scaled_size();
+        _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).scaled_size();
 
     } else {
         tt_no_default();
     }
 
-    return _constraints = {extent2{0.0f, 0.0f}, _icon_bounding_box.size(), _icon_bounding_box.size(), theme().margin};
+    return _constraints = {extent2{0.0f, 0.0f}, _icon_size, _icon_size, theme().margin};
 }
 
 void icon_widget::set_layout(widget_layout const &context) noexcept
@@ -101,10 +100,12 @@ void icon_widget::set_layout(widget_layout const &context) noexcept
     tt_axiom(is_gui_thread());
 
     if (visible and _layout.store(context) >= layout_update::transform) {
-        if (_icon_type == icon_type::no or not _icon_bounding_box) {
-            _icon_transform = {};
+        if (_icon_type == icon_type::no or not _icon_size) {
+            _icon_rectangle = {};
         } else {
-            _icon_transform = matrix2::uniform(_icon_bounding_box, layout().rectangle(), *alignment);
+            ttlet icon_scale = scale2::uniform(_icon_size, layout().size);
+            ttlet new_icon_size = icon_scale * _icon_size;
+            _icon_rectangle = align(layout().rectangle(), new_icon_size, *alignment);
         }
     }
 }
@@ -119,15 +120,16 @@ void icon_widget::draw(draw_context const &context) noexcept
 
         case icon_type::pixmap:
             switch (_pixmap_backing.state) {
-            case pipeline_image::image::State::Drawing: request_redraw(); break;
-            case pipeline_image::image::State::Uploaded: context.draw_image(layout(), _pixmap_backing, _icon_transform); break;
+            case pipeline_image::image::state_type::drawing: request_redraw(); break;
+            case pipeline_image::image::state_type::uploaded:
+                context.draw_image(layout(), _icon_rectangle, _pixmap_backing);
+                break;
             default: break;
             }
             break;
 
         case icon_type::glyph: {
-            ttlet box = _icon_transform * _icon_bounding_box;
-            context.draw_glyph(layout(), box, theme().color(*color), _glyph);
+            context.draw_glyph(layout(), _icon_rectangle, theme().color(*color), _glyph);
         } break;
 
         default: tt_no_default();

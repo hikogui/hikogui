@@ -8,16 +8,19 @@
 #include "../vspan.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/matrix.hpp"
+#include "../memory.hpp"
 #include <cstdlib>
 #include <span>
 #include <atomic>
 #include <string>
+#include <vector>
 
 namespace tt {
 
-template<typename T> class pixel_map;
+template<typename T>
+class pixel_map;
 class sfloat_rgba16;
-};
+}; // namespace tt
 
 namespace tt::pipeline_image {
 
@@ -28,48 +31,19 @@ struct device_shared;
 /** This is a image that is uploaded into the texture atlas.
  */
 struct image {
-    enum class State { Uninitialized, Drawing, Uploaded };
+    enum class state_type { uninitialized, drawing, uploaded };
 
-    mutable std::atomic<State> state = State::Uninitialized;
+    mutable std::atomic<state_type> state = state_type::uninitialized;
 
     device_shared *parent = nullptr;
+    size_t width;
+    size_t height;
+    std::vector<page> pages;
 
-    /** The width of the image in pixels.
-     */
-    size_t width_in_px = 0;
-
-    /** The height of the image in pixels.
-     */
-    size_t height_in_px = 0;
-
-    /** The width of the image in pages
-     */
-    size_t width_in_pages = 0;
-
-    /** The height of the image in pages
-     */
-    size_t height_in_pages = 0;
-
-    /** The number of pages in this image.
-     */
-    extent2 size_in_pages;
-
-    std::vector<Page> pages;
-
-    constexpr image(
-        device_shared *parent,
-        size_t width_in_px,
-        size_t height_in_px,
-        size_t width_in_pages,
-        size_t height_in_pages,
-        std::vector<Page> &&pages) noexcept :
-        parent(parent),
-        width_in_px(width_in_px),
-        height_in_px(height_in_px),
-        width_in_pages(width_in_pages),
-        height_in_pages(height_in_pages),
-        size_in_pages{float{width_in_px} / float{Page::width}, float{height_in_px} / float{Page::height}},
-        pages(std::move(pages)) {}
+    constexpr image(device_shared *parent, size_t width, size_t height, std::vector<page> &&pages) noexcept :
+        parent(parent), width(width), height(height), pages(std::move(pages))
+    {
+    }
 
     ~image();
     constexpr image() noexcept = default;
@@ -78,31 +52,34 @@ struct image {
     image(image const &other) = delete;
     image &operator=(image const &other) = delete;
 
-    /** Find the image coordinates of a page in the image.
-     * @param pageIndex Index in the pages-vector.
-     * @return The rectangle within the image representing a quad to be drawn.
-     *         This rectangle is already size-adjusted for the quads on the edge.
-     */
-    aarectangle index_to_rect(size_t page_index) const noexcept;
+    [[nodiscard]] constexpr std::pair<size_t, size_t> size_in_int_pages() const noexcept
+    {
+        return {ceil(width, page::size) / page::size, ceil(height, page::size) / page::size};
+    }
 
-    /*! Place vertices for this image.
-     * An image is build out of atlas pages, that need to be individual rendered.
-     * A page with the value std::numeric_limits<uint16_t>::max() is not rendered.
+    [[nodiscard]] constexpr extent2 size_in_float_pages() const noexcept
+    {
+        return {narrow_cast<float>(width) / page::size, narrow_cast<float>(height) / page::size};
+    }
+
+    /** Get the page size, for the given page index.
+     *
+     * @return For a full page {page::size, page::size}, for partial pages at the right and top edge smaller.
      */
-    void place_vertices(vspan<vertex> &vertices, aarectangle clipping_rectangle, matrix3 transform);
+    [[nodiscard]] constexpr extent2 page_size(size_t page_index) const noexcept
+    {
+        constexpr auto page_size = f32x4{page::size, page::size};
+
+        ttlet page_width = (width + page::size - 1) / page::size;
+        ttlet image_size = f32x4{width, height};
+        ttlet page_xy = f32x4{page_index % page_width, page_index / page_width};
+
+        return extent2{min(image_size - page_xy * page_size, page_size)};
+    }
 
     /** Upload image to atlas.
      */
     void upload(pixel_map<sfloat_rgba16> const &image) noexcept;
-
-private:
-    //! Temporary memory used for pre calculating vertices.
-    std::vector<std::tuple<point3, extent2, bool>> tmpvertexPositions;
-
-    void calculateVertexPositions(matrix3 transform, aarectangle clippingRectangle);
-
-    void placePageVertices(vspan<vertex> &vertices, size_t index, aarectangle clippingRectangle) const;
-
 };
 
-}
+} // namespace tt::pipeline_image

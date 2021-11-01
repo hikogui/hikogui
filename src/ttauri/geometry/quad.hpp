@@ -228,27 +228,31 @@ public:
     }
 
     /** Split a quad evenly by count.
-    * 
-    * @param count The number of splits horizontally and vertically.
-    * @return generates quads left-to-right, then from bottom-to-top.
+     *
+     * This function will split a quad evenly horizontal and vertical into pages.
+     * The pages on the right and top edge of the quad may be fractional if the
+     * @a size_in_pages are not integral.
+     * 
+     * @param size_in_pages The number of pages that the quad must be split by.
+     * @return generates quads left-to-right, then from bottom-to-top.
      */
-    [[nodiscard]] generator<quad> split_by(f32x4 count) const noexcept
+    [[nodiscard]] generator<quad> split_by(extent2 size_in_pages) const noexcept
     {
-        ttlet ceil_count = ceil(count);
-        ttlet rcp_count = rcp(count);
-        ttlet num_columns = static_cast<size_t>(ceil_count.x());
-        ttlet num_rows = static_cast<size_t>(ceil_count.y());
+        ttlet num_columns_and_rows = ceil(size_in_pages);
+        ttlet num_columns = static_cast<size_t>(num_columns_and_rows.width());
+        ttlet num_rows = static_cast<size_t>(num_columns_and_rows.height());
 
-        ttlet left_increment = left() * rcp_count.y();
-        ttlet right_increment = right() * rcp_count.y();
+        ttlet page_to_quad_ratio = rcp(f32x4{size_in_pages});
+        ttlet left_increment = left() * page_to_quad_ratio.y();
+        ttlet right_increment = right() * page_to_quad_ratio.y();
 
         auto left_bottom = p0;
         auto right_bottom = p1;
-        auto bottom_increment = (p1 - p0) * rcp_count.x();
+        auto bottom_increment = (p1 - p0) * page_to_quad_ratio.x();
         for (size_t row_nr = 0; row_nr != num_rows; ++row_nr) {
             ttlet left_top = left_bottom + left_increment;
             ttlet right_top = right_bottom + right_increment;
-            ttlet top_increment = (right_top - left_top) * rcp_count.x();
+            ttlet top_increment = (right_top - left_top) * page_to_quad_ratio.x();
 
             auto new_p0 = left_bottom;
             auto new_p2 = left_top;

@@ -24,7 +24,7 @@ struct alignas(16) vertex {
     //! The x, y coordinate inside the texture-atlas, z is used as an index in the texture-atlas array
     sfloat_rgba32 atlas_position;
 
-    vertex(sfloat_rgba32 position, sfloat_rgba32 clipping_rectange, sfloat_rgba32 atlas_position) noexcept :
+    vertex(sfloat_rgba32 position, sfloat_rgba32 clipping_rectangle, sfloat_rgba32 atlas_position) noexcept :
         position(position),
         clipping_rectangle(clipping_rectangle),
         atlas_position(atlas_position) {}

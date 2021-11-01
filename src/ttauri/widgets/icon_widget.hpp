@@ -61,8 +61,8 @@ private:
     size_t _pixmap_hash;
     pipeline_image::image _pixmap_backing;
 
-    aarectangle _icon_bounding_box;
-    matrix2 _icon_transform;
+    extent2 _icon_size;
+    aarectangle _icon_rectangle;
 
     icon_widget(gui_window &window, widget *parent) noexcept;
 };

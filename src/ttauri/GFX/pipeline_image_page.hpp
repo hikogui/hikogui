@@ -9,22 +9,30 @@
 
 namespace tt::pipeline_image {
 
-struct Page {
-    static constexpr int width = 64;
-    static constexpr int height = 64;
-    static constexpr int border = 1;
-    static constexpr int widthIncludingBorder = width + 2 * border;
-    static constexpr int heightIncludingBorder = height + 2 * border;
+/** Page of an image
+ *
+ * The page of an image is a square part of an image.
+ */
+struct page {
+    static constexpr size_t size = 64;
+    static constexpr size_t border = 1;
 
-    ssize_t nr;
+    size_t nr;
 
-    Page(ssize_t nr) : nr(nr) {}
-
-    /*! Create a transparent page.
+    /** Create a page on the texture atlas
+     *
+     * @param nr The page number identifies a specific page in the texture atlas.
      */
-    Page() : nr(std::numeric_limits<ssize_t>::max()) {}
+    constexpr page(size_t nr) : nr(nr) {}
 
-    bool isFullyTransparent() const noexcept { return nr == std::numeric_limits<ssize_t>::max(); }
+    /** Create a transparent page.
+     */
+    constexpr page() : nr(std::numeric_limits<size_t>::max()) {}
+
+    bool is_fully_transparent() const noexcept
+    {
+        return nr == std::numeric_limits<size_t>::max();
+    }
 };
 
-}
+} // namespace tt::pipeline_image

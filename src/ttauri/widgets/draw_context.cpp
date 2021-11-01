@@ -72,18 +72,10 @@ void draw_context::draw_box(
 void draw_context::draw_image(widget_layout const &layout, quad box, pipeline_image::image &image) const noexcept
 {
     tt_axiom(_image_vertices != nullptr);
-    ttlet pipeline = narrow_cast<gfx_device_vulkan &>(device).SDFPipeline.get();
+    ttlet pipeline = narrow_cast<gfx_device_vulkan &>(device).imagePipeline.get();
 
     pipeline->place_vertices(
-        *_image_vertices, bounding_rectangle(layout.to_window * layout.clipping_rectangle, layout.to_window * box, image);
-}
-
-void draw_context::draw_image(widget_layout const &layout, pipeline_image::image &image, matrix3 image_transform) const noexcept
-{
-    tt_axiom(_image_vertices != nullptr);
-
-    image.place_vertices(
-        *_image_vertices, bounding_rectangle(layout.to_window * layout.clipping_rectangle), layout.to_window * image_transform);
+        *_image_vertices, bounding_rectangle(layout.to_window * layout.clipping_rectangle), layout.to_window * box, image);
 }
 
 void draw_context::draw_glyph(widget_layout const &layout, quad const &box, quad_color color, font_glyph_ids const &glyph)

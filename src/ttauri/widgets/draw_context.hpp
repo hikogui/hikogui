@@ -113,14 +113,6 @@ public:
      */
     void draw_image(widget_layout const &layout, quad box, pipeline_image::image &image) const noexcept;
 
-    /** Draw an image
-     * This function will draw an image.
-     * This will use the current:
-     *  - transform, to transform the image.
-     *  - clippingRectangle
-     */
-    void draw_image(widget_layout const &layout, pipeline_image::image &image, matrix3 image_transform) const noexcept;
-
     /** Draw a glyph.
      *
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
