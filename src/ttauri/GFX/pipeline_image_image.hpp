@@ -32,30 +32,31 @@ struct image {
 
     mutable std::atomic<State> state = State::Uninitialized;
 
-    device_shared *parent;
+    device_shared *parent = nullptr;
 
     /** The width of the image in pixels.
      */
-    size_t width_in_px;
+    size_t width_in_px = 0;
 
     /** The height of the image in pixels.
      */
-    size_t height_in_px;
+    size_t height_in_px = 0;
 
     /** The width of the image in pages
      */
-    size_t width_in_pages;
+    size_t width_in_pages = 0;
 
     /** The height of the image in pages
      */
-    size_t height_in_pages;
+    size_t height_in_pages = 0;
+
+    /** The number of pages in this image.
+     */
+    extent2 size_in_pages;
 
     std::vector<Page> pages;
 
-    image() noexcept :
-        parent(nullptr), width_in_px(0), height_in_px(0), width_in_pages(0), height_in_pages(0), pages() {}
-
-    image(
+    constexpr image(
         device_shared *parent,
         size_t width_in_px,
         size_t height_in_px,
@@ -67,12 +68,13 @@ struct image {
         height_in_px(height_in_px),
         width_in_pages(width_in_pages),
         height_in_pages(height_in_pages),
+        size_in_pages{float{width_in_px} / float{Page::width}, float{height_in_px} / float{Page::height}},
         pages(std::move(pages)) {}
 
+    ~image();
+    constexpr image() noexcept = default;
     image(image &&other) noexcept;
     image &operator=(image &&other) noexcept;
-    ~image();
-
     image(image const &other) = delete;
     image &operator=(image const &other) = delete;
 

@@ -106,6 +106,14 @@ public:
     }
 
     /** Draw an image
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param box The four points of the box to draw.
+     * @param image The image to show.
+     */
+    void draw_image(widget_layout const &layout, quad box, pipeline_image::image &image) const noexcept;
+
+    /** Draw an image
      * This function will draw an image.
      * This will use the current:
      *  - transform, to transform the image.

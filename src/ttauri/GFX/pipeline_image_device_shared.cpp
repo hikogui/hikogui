@@ -299,4 +299,17 @@ void device_shared::teardownAtlas(gfx_device_vulkan *vulkanDevice)
     vulkanDevice->destroyImage(stagingTexture.image, stagingTexture.allocation);
 }
 
+bool device_shared::place_vertices(
+    vspan<vertex> &vertices,
+    aarectangle const &clipping_rectangle,
+    quad const &box,
+    tt::pipeline_image::image const &image) noexcept
+{
+    auto it = image.begin();
+    for (ttlet &polygon : box.split_by(image.rcp_nr_pages)) {
+        ttlet &page = *it++;
+
+    }
+}
+
 } // namespace tt::pipeline_image

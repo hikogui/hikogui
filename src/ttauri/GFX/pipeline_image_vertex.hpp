@@ -6,7 +6,6 @@
 
 #include "pipeline_image_image_location.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
-#include "../rapid/sfloat_rgb32.hpp"
 #include "../rapid/sfloat_rgba32.hpp"
 #include <vulkan/vulkan.hpp>
 
@@ -15,20 +14,20 @@ namespace tt::pipeline_image {
 /*! A vertex defining a rectangle on a window.
 * The vertex shader will convert window pixel-coordinates to normalized projection-coordinates.
 */
-struct vertex {
+struct alignas(16) vertex {
     //! The pixel-coordinates where the origin is located relative to the bottom-left corner of the window.
-    sfloat_rgb32 position;
+    sfloat_rgba32 position;
 
     //! The position in pixels of the clipping rectangle relative to the bottom-left corner of the window, and extent in pixels.
-    sfloat_rgba32 clippingRectangle;
+    sfloat_rgba32 clipping_rectangle;
 
     //! The x, y coordinate inside the texture-atlas, z is used as an index in the texture-atlas array
-    sfloat_rgb32 atlasPosition;
+    sfloat_rgba32 atlas_position;
 
-    vertex(point3 position, point3 atlasPosition, aarectangle clippingRectangle) noexcept :
+    vertex(sfloat_rgba32 position, sfloat_rgba32 clipping_rectange, sfloat_rgba32 atlas_position) noexcept :
         position(position),
-        clippingRectangle(clippingRectangle),
-        atlasPosition(atlasPosition) {}
+        clipping_rectangle(clipping_rectangle),
+        atlas_position(atlas_position) {}
 
     static vk::VertexInputBindingDescription inputBindingDescription()
     {
@@ -40,9 +39,9 @@ struct vertex {
     static std::vector<vk::VertexInputAttributeDescription> inputAttributeDescriptions()
     {
         return {
-            { 0, 0, vk::Format::eR32G32B32Sfloat, offsetof(vertex, position) },
-            { 1, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(vertex, clippingRectangle) },
-            { 2, 0, vk::Format::eR32G32B32Sfloat, offsetof(vertex, atlasPosition) },                
+            { 0, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(vertex, position) },
+            { 1, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(vertex, clipping_rectangle) },
+            { 2, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(vertex, atlas_position) },                
         };
     }
 };

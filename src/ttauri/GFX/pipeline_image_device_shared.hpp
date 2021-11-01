@@ -97,6 +97,20 @@ struct device_shared final {
 
     void prepareAtlasForRendering();
 
+    /** Place vertices for a single image.
+     *
+     * @param vertices The list of vertices to add to.
+     * @param clipping_rectangle The rectangle to clip the glyph.
+     * @param box The rectangle of the image in window coordinates.
+     * @param image The image to render.
+     * @return True is atlas was updated.
+     */
+    bool place_vertices(
+        vspan<vertex> &vertices,
+        aarectangle const &clipping_rectangle,
+        quad const &box,
+        tt::pipeline_image::image const &image) noexcept;
+
 private:
     tt::pixel_map<sfloat_rgba16> getStagingPixelMap(size_t width, size_t height) {
         return getStagingPixelMap().submap(0, 0, width, height);

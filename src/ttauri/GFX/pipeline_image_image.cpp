@@ -23,13 +23,13 @@ image::image(image &&other) noexcept :
     height_in_pages(other.height_in_pages),
     pages(std::move(other.pages))
 {
-    tt_axiom(&other != this);
-    other.parent = nullptr;
 }
 
 image &image::operator=(image &&other) noexcept
 {
-    // Self-assignment is allowed.
+    tt_return_on_self_assignment(other);
+
+    // If the old image had pages, free them.    
     if (parent) {
         parent->freePages(pages);
     }
@@ -40,7 +40,7 @@ image &image::operator=(image &&other) noexcept
     width_in_pages = other.width_in_pages;
     height_in_pages = other.height_in_pages;
     pages = std::move(other.pages);
-    other.parent = nullptr;
+    other.pages.clear();
     return *this;
 }
 
@@ -149,10 +149,10 @@ void image::placePageVertices(vspan<vertex> &vertices, size_t index, aarectangle
         narrow_cast<float>(atlasPosition.x()), narrow_cast<float>(atlasPosition.y()), narrow_cast<float>(atlasPosition.z())};
     ttlet atlasRect = translate3{atlasPosition_} * aarectangle{e4};
 
-    vertices.emplace_back(p1, get<0>(atlasRect), clippingRectangle);
-    vertices.emplace_back(p2, get<1>(atlasRect), clippingRectangle);
-    vertices.emplace_back(p3, get<2>(atlasRect), clippingRectangle);
-    vertices.emplace_back(p4, get<3>(atlasRect), clippingRectangle);
+    vertices.emplace_back(p1, clippingRectangle, get<0>(atlasRect));
+    vertices.emplace_back(p2, clippingRectangle, get<1>(atlasRect));
+    vertices.emplace_back(p3, clippingRectangle, get<2>(atlasRect));
+    vertices.emplace_back(p4, clippingRectangle, get<3>(atlasRect));
 }
 
 /*! Place vertices for this image.

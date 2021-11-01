@@ -69,6 +69,15 @@ void draw_context::draw_box(
         corner_radius);
 }
 
+void draw_context::draw_image(widget_layout const &layout, quad box, pipeline_image::image &image) const noexcept
+{
+    tt_axiom(_image_vertices != nullptr);
+    ttlet pipeline = narrow_cast<gfx_device_vulkan &>(device).SDFPipeline.get();
+
+    pipeline->place_vertices(
+        *_image_vertices, bounding_rectangle(layout.to_window * layout.clipping_rectangle, layout.to_window * box, image);
+}
+
 void draw_context::draw_image(widget_layout const &layout, pipeline_image::image &image, matrix3 image_transform) const noexcept
 {
     tt_axiom(_image_vertices != nullptr);
