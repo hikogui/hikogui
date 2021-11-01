@@ -269,26 +269,62 @@ tt_warning_push()
         }
     }
 
-    [[nodiscard]] constexpr explicit numeric_array(std::convertible_to<T> auto const &rhs) noexcept : v()
+    [[nodiscard]] constexpr explicit numeric_array(T const &x) noexcept : v()
     {
-        get<0>(*this) = rhs;
-    }
-
-    template<size_t I, std::convertible_to<T> First, std::convertible_to<T>... Args>
-    constexpr void initialize_elements(First const &first, Args const &...args) noexcept
-    {
-        get<I>(*this) = static_cast<T>(first);
-        if constexpr (sizeof...(Args) > 0) {
-            initialize_elements<I + 1>(args...);
+        if (not std::is_constant_evaluated()) {
+#if defined(TT_HAS_SSE)
+            if constexpr (is_f32x4) {
+                *this = numeric_array{_mm_set_ss(x)};
+                return;
+            }
+#endif
         }
+        get<0>(v) = x;
     }
 
-    template<std::convertible_to<T> First, std::convertible_to<T> Second, std::convertible_to<T>... Args>
-    [[nodiscard]] constexpr numeric_array(First const &first, Second const &second, Args const &...args) noexcept
-        requires(sizeof...(Args) + 2 <= N) :
-        v()
+    [[nodiscard]] constexpr explicit numeric_array(T const &x, T const &y) noexcept requires(N >= 2) : v()
     {
-        initialize_elements<0>(first, second, args...);
+        if (not std::is_constant_evaluated()) {
+#if defined(TT_HAS_SSE2)
+            if constexpr (is_i32x4) {
+                *this = numeric_array{_mm_set_epi32(0, 0, y, x)};
+                return;
+            }
+#endif
+        }
+        get<0>(v) = x;
+        get<1>(v) = y;
+    }
+
+    [[nodiscard]] constexpr explicit numeric_array(T const &x, T const &y, T const &z) noexcept requires(N >= 3) : v()
+    {
+        if (not std::is_constant_evaluated()) {
+#if defined(TT_HAS_SSE2)
+            if constexpr (is_i32x4) {
+                *this = numeric_array{_mm_set_epi32(0, z, y, x)};
+                return;
+            }
+#endif
+        }
+        get<0>(v) = x;
+        get<1>(v) = y;
+        get<2>(v) = z;
+    }
+
+    [[nodiscard]] constexpr explicit numeric_array(T const &x, T const &y, T const &z, T const &w) noexcept requires(N >= 4) : v()
+    {
+        if (not std::is_constant_evaluated()) {
+#if defined(TT_HAS_SSE2)
+            if constexpr (is_i32x4) {
+                *this = numeric_array{_mm_set_epi32(w, z, y, x)};
+                return;
+            }
+#endif
+        }
+        get<0>(v) = x;
+        get<1>(v) = y;
+        get<2>(v) = z;
+        get<3>(v) = w;
     }
 
     [[nodiscard]] static constexpr numeric_array broadcast(T rhs) noexcept
@@ -345,13 +381,13 @@ tt_warning_push()
     }
 
     [[nodiscard]] numeric_array(std::array<T, N> const &rhs) noexcept : v(rhs) {}
-
+    
     numeric_array &operator=(std::array<T, N> const &rhs) noexcept
     {
         v = rhs;
         return *this;
     }
-
+    
     [[nodiscard]] operator std::array<T, N>() const noexcept
     {
         return v;

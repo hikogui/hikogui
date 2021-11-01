@@ -15,8 +15,6 @@
 
 namespace tt::pipeline_image {
 
-using namespace std;
-
 device_shared::device_shared(gfx_device_vulkan const &device) : device(device)
 {
     build_shaders();
@@ -78,16 +76,20 @@ static point3 get_atlas_position_from_page(page const &page) noexcept
 {
     constexpr auto num_pages_per_image = device_shared::atlas_num_pages_per_image;
     constexpr auto num_vertical_pages = device_shared::atlas_num_pages_per_axis;
+    constexpr auto page_border_size_border = f32x4{
+        narrow_cast<float>(page::border + page::size + page::border),
+        narrow_cast<float>(page::border + page::size + page::border),
+        1.0f,
+        1.0f};
+    constexpr auto page_border = f32x4{narrow_cast<float>(page::border), narrow_cast<float>(page::border)};
 
     ttlet image_nr = narrow_cast<float>(page.nr / num_pages_per_image);
     ttlet page_nr_inside_image = page.nr % num_pages_per_image;
 
-    ttlet page_y = page_nr_inside_image / num_vertical_pages;
-    ttlet page_x = page_nr_inside_image % num_vertical_pages;
+    ttlet page_xy =
+        f32x4{i32x4{narrow_cast<int32_t>(page_nr_inside_image % num_vertical_pages), narrow_cast<int32_t>(page_nr_inside_image / num_vertical_pages), narrow_cast<int32_t>(image_nr), 1}};
 
-    ttlet coord_x = page_x * (page::border + page::size + page::border) + page::border;
-    ttlet coord_y = page_y * (page::border + page::size + page::border) + page::border;
-    return point3{narrow_cast<float>(coord_x), narrow_cast<float>(coord_y), narrow_cast<float>(image_nr)};
+    return point3{page_xy * page_border_size_border + page_border};
 }
 
 /** Get the rectangle in the staging texture map to copy from.
@@ -133,7 +135,7 @@ void device_shared::update_atlas_with_staging_pixel_map(const image &image) noex
 
     staging_texture.transitionLayout(device, vk::Format::eR16G16B16A16Sfloat, vk::ImageLayout::eTransferSrcOptimal);
 
-    array<vector<vk::ImageCopy>, atlas_maximum_num_images> regions_to_copy_per_atlas_texture;
+    std::array<std::vector<vk::ImageCopy>, atlas_maximum_num_images> regions_to_copy_per_atlas_texture;
     for (size_t index = 0; index < std::size(image.pages); index++) {
         ttlet page = image.pages.at(index);
         if (page.is_fully_transparent()) {
@@ -328,32 +330,65 @@ void device_shared::teardown_atlas(gfx_device_vulkan *vulkan_device)
     vulkan_device->destroyImage(staging_texture.image, staging_texture.allocation);
 }
 
-[[nodiscard]] static rectangle get_uv_rectangle_from_page(tt::pipeline_image::image const &image, size_t page_index) noexcept
-{
-    tt_axiom(page_index < size(image.pages));
-
-    ttlet &page = image.pages[page_index];
-    ttlet atlas_position = get_atlas_position_from_page(page);
-
-    return rectangle{atlas_position, image.page_size(page_index)};
-}
-
 bool device_shared::place_vertices(
     vspan<vertex> &vertices,
     aarectangle const &clipping_rectangle,
     quad const &box,
     tt::pipeline_image::image const &image) noexcept
 {
-    size_t page_index = 0;
-    for (ttlet &polygon : box.split_by(image.size_in_float_pages())) {
-        ttlet uv_rectangle = get_uv_rectangle_from_page(image, page_index++);
+    constexpr auto page_size = f32x4{i32x4{narrow_cast<int32_t>(page::size), narrow_cast<int32_t>(page::size)}};
 
-        vertices.emplace_back(polygon.p0, clipping_rectangle, get<0>(uv_rectangle));
-        vertices.emplace_back(polygon.p1, clipping_rectangle, get<1>(uv_rectangle));
-        vertices.emplace_back(polygon.p2, clipping_rectangle, get<2>(uv_rectangle));
-        vertices.emplace_back(polygon.p3, clipping_rectangle, get<3>(uv_rectangle));
+    ttlet image_size = f32x4{i32x4{narrow_cast<int32_t>(image.width), narrow_cast<int32_t>(image.height)}};
+    ttlet size_in_float_pages = f32x4{image.size_in_float_pages()};
+    ttlet size_in_int_pages = i32x4{ceil(size_in_float_pages)};
+    ttlet num_columns = narrow_cast<size_t>(size_in_int_pages.x());
+    ttlet num_rows = narrow_cast<size_t>(size_in_int_pages.y());
+
+    ttlet page_to_quad_ratio = rcp(size_in_float_pages);
+    ttlet page_to_quad_ratio_x = scale3{page_to_quad_ratio.xxx1()};
+    ttlet page_to_quad_ratio_y = scale3{page_to_quad_ratio.yyy1()};
+    ttlet left_increment = page_to_quad_ratio_y * box.left();
+    ttlet right_increment = page_to_quad_ratio_y * box.right();
+
+    auto left_bottom = box.p0;
+    auto right_bottom = box.p1;
+    auto bottom_increment = page_to_quad_ratio_x * (right_bottom - left_bottom);
+    auto it = image.pages.begin();
+    for (size_t page_index = 0, row_nr = 0; row_nr != num_rows; ++row_nr) {
+        ttlet left_top = left_bottom + left_increment;
+        ttlet right_top = right_bottom + right_increment;
+        ttlet top_increment = page_to_quad_ratio_x * (right_top - left_top);
+
+        auto new_p0 = left_bottom;
+        auto new_p2 = left_top;
+        for (size_t column_nr = 0; column_nr != num_columns; ++column_nr, ++page_index, ++it) {
+            ttlet new_p1 = new_p0 + bottom_increment;
+            ttlet new_p3 = new_p2 + top_increment;
+
+            // The new quad, limited to the right-top corner of the original quad.
+            ttlet polygon = quad{new_p0, min(new_p1, box.p3), min(new_p2, box.p3), min(new_p3, box.p3)};
+            ttlet atlas_position = get_atlas_position_from_page(*it);
+
+            static_assert(std::popcount(page::size) == 1);
+            constexpr int page_size_shift = std::countr_zero(page::size);
+            ttlet xy = f32x4{i32x4{narrow_cast<int32_t>(column_nr), narrow_cast<int32_t>(row_nr)} << page_size_shift};
+            ttlet uv_rectangle = rectangle{atlas_position, extent2{min(image_size - xy, page_size)}};
+
+            vertices.emplace_back(polygon.p0, clipping_rectangle, get<0>(uv_rectangle));
+            vertices.emplace_back(polygon.p1, clipping_rectangle, get<1>(uv_rectangle));
+            vertices.emplace_back(polygon.p2, clipping_rectangle, get<2>(uv_rectangle));
+            vertices.emplace_back(polygon.p3, clipping_rectangle, get<3>(uv_rectangle));
+
+            new_p0 = new_p1;
+            new_p2 = new_p3;
+        }
+
+        left_bottom = left_top;
+        right_bottom = right_top;
+        bottom_increment = top_increment;
     }
-    return false;
+
+    return true;
 }
 
 } // namespace tt::pipeline_image

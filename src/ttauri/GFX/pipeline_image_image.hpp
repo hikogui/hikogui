@@ -59,22 +59,9 @@ struct image {
 
     [[nodiscard]] constexpr extent2 size_in_float_pages() const noexcept
     {
-        return {narrow_cast<float>(width) / page::size, narrow_cast<float>(height) / page::size};
-    }
-
-    /** Get the page size, for the given page index.
-     *
-     * @return For a full page {page::size, page::size}, for partial pages at the right and top edge smaller.
-     */
-    [[nodiscard]] constexpr extent2 page_size(size_t page_index) const noexcept
-    {
-        constexpr auto page_size = f32x4{page::size, page::size};
-
-        ttlet page_width = (width + page::size - 1) / page::size;
-        ttlet image_size = f32x4{width, height};
-        ttlet page_xy = f32x4{page_index % page_width, page_index / page_width};
-
-        return extent2{min(image_size - page_xy * page_size, page_size)};
+        constexpr auto page_size = f32x4{narrow_cast<float>(page::size), narrow_cast<float>(page::size)};
+        auto size = f32x4{i32x4{narrow_cast<int32_t>(width),narrow_cast<int32_t>(height), 1, 1}};
+        return extent2{size / page_size};
     }
 
     /** Upload image to atlas.

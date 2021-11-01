@@ -413,7 +413,7 @@ u16x4 png::extract_pixel_from_line(std::span<std::byte const> bytes, int x) cons
         a = (_bit_depth == 16) ? 65535 : 255;
     }
 
-    return {r, g, b, a};
+    return u16x4{r, g, b, a};
 }
 
 void png::data_to_image_line(std::span<std::byte const> bytes, pixel_row<sfloat_rgba16> &line) const noexcept

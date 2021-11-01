@@ -227,52 +227,6 @@ public:
         return aarectangle{point2{min_p}, point2{max_p}};
     }
 
-    /** Split a quad evenly by count.
-     *
-     * This function will split a quad evenly horizontal and vertical into pages.
-     * The pages on the right and top edge of the quad may be fractional if the
-     * @a size_in_pages are not integral.
-     * 
-     * @param size_in_pages The number of pages that the quad must be split by.
-     * @return generates quads left-to-right, then from bottom-to-top.
-     */
-    [[nodiscard]] generator<quad> split_by(extent2 size_in_pages) const noexcept
-    {
-        ttlet num_columns_and_rows = ceil(size_in_pages);
-        ttlet num_columns = static_cast<size_t>(num_columns_and_rows.width());
-        ttlet num_rows = static_cast<size_t>(num_columns_and_rows.height());
-
-        ttlet page_to_quad_ratio = rcp(f32x4{size_in_pages});
-        ttlet left_increment = left() * page_to_quad_ratio.y();
-        ttlet right_increment = right() * page_to_quad_ratio.y();
-
-        auto left_bottom = p0;
-        auto right_bottom = p1;
-        auto bottom_increment = (p1 - p0) * page_to_quad_ratio.x();
-        for (size_t row_nr = 0; row_nr != num_rows; ++row_nr) {
-            ttlet left_top = left_bottom + left_increment;
-            ttlet right_top = right_bottom + right_increment;
-            ttlet top_increment = (right_top - left_top) * page_to_quad_ratio.x();
-
-            auto new_p0 = left_bottom;
-            auto new_p2 = left_top;
-            for (size_t column_nr = 0; column_nr != num_columns; ++column_nr) {
-                ttlet new_p1 = new_p0 + bottom_increment;
-                ttlet new_p3 = new_p2 + top_increment;
-
-                // The new quad, limited to the right-top corner of the original quad.
-                co_yield quad{new_p0, min(new_p1, p3), min(new_p2, p3), min(new_p3, p3)};
-
-                new_p0 = new_p1;
-                new_p2 = new_p3;
-            }
-
-            left_bottom = left_top;
-            right_bottom = right_top;
-            bottom_increment = top_increment;
-        }
-    }
-
     constexpr quad &operator+=(extent2 const &rhs) noexcept
     {
         return *this = *this + rhs;
