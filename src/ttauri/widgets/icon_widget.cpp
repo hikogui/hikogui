@@ -14,65 +14,51 @@ namespace tt {
 
 icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
 {
+    _icon_callback_ptr = icon.subscribe([this]() {
+        _icon_has_modified = true;
+        this->window.request_reconstrain();
+    });
     icon.subscribe(_reconstrain_callback);
 }
 
 widget_constraints const &icon_widget::set_constraints() noexcept
 {
     tt_axiom(is_gui_thread());
-
     _layout = {};
 
-    ttlet icon_ = icon.cget();
-
-    if (holds_alternative<std::monostate>(icon_)) {
+    if (_icon_has_modified.exchange(false)) {
+        ttlet icon_ = icon.cget();
         _icon_type = icon_type::no;
         _icon_size = {};
         _glyph = {};
-        _pixmap_hash = 0;
         _pixmap_backing = {};
-        // For uniform scaling issues, make sure the size is not zero.
 
-    } else if (ttlet pixmap = get_if<pixel_map<sfloat_rgba16>>(icon_)) {
-        _icon_type = icon_type::pixmap;
-        _icon_size = extent2{narrow_cast<float>(_pixmap_backing.width), narrow_cast<float>(_pixmap_backing.height)};
-        _glyph = {};
+        if (ttlet pixmap = get_if<pixel_map<sfloat_rgba16>>(&*icon_)) {
+            _icon_type = icon_type::pixmap;
+            _icon_size = extent2{narrow_cast<float>(pixmap->width()), narrow_cast<float>(pixmap->height())};
 
-        if (_pixmap_hash != pixmap.hash()) {
-            // Pixmap has been changed, or has never been set.
-            if (_pixmap_backing = window.make_image(pixmap.width(), pixmap.height())) {
-                _pixmap_backing.upload(pixmap);
-                _pixmap_hash = pixmap.hash();
-            } else {
+            if (not (_pixmap_backing = pipeline_image::image{window.surface.get(), *pixmap})) {
+                // Could not get an image, retry.
+                _icon_has_modified = true;
                 window.request_reconstrain();
             }
+
+        } else if (ttlet g1 = get_if<font_glyph_ids>(&*icon_)) {
+            _glyph = *g1;
+            _icon_type = icon_type::glyph;
+            _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).scaled_size();
+
+        } else if (ttlet g2 = get_if<elusive_icon>(&*icon_)) {
+            _glyph = font_book().find_glyph(*g2);
+            _icon_type = icon_type::glyph;
+            _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).scaled_size();
+
+        } else if (ttlet g3 = get_if<ttauri_icon>(&*icon_)) {
+            _glyph = font_book().find_glyph(*g3);
+            _icon_type = icon_type::glyph;
+            _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).scaled_size();
         }
-
-    } else if (ttlet g1 = get_if<font_glyph_ids>(icon_)) {
-        _icon_type = icon_type::glyph;
-        _glyph = *g1;
-        _pixmap_hash = 0;
-        _pixmap_backing = {};
-        _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).scaled_size();
-
-    } else if (ttlet g2 = get_if<elusive_icon>(icon_)) {
-        _icon_type = icon_type::glyph;
-        _glyph = font_book().find_glyph(*g2);
-        _pixmap_hash = 0;
-        _pixmap_backing = {};
-        _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).scaled_size();
-
-    } else if (ttlet g3 = get_if<ttauri_icon>(icon_)) {
-        _icon_type = icon_type::glyph;
-        _glyph = font_book().find_glyph(*g3);
-        _pixmap_hash = 0;
-        _pixmap_backing = {};
-        _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).scaled_size();
-
-    } else {
-        tt_no_default();
     }
-
     return _constraints = {extent2{0.0f, 0.0f}, _icon_size, _icon_size, theme().margin};
 }
 

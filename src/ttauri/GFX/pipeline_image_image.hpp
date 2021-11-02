@@ -5,10 +5,7 @@
 #pragma once
 
 #include "pipeline_image_page.hpp"
-#include "../vspan.hpp"
-#include "../geometry/axis_aligned_rectangle.hpp"
-#include "../geometry/matrix.hpp"
-#include "../memory.hpp"
+#include "../geometry/extent.hpp"
 #include <cstdlib>
 #include <span>
 #include <atomic>
@@ -20,6 +17,7 @@ namespace tt {
 template<typename T>
 class pixel_map;
 class sfloat_rgba16;
+class gfx_surface;
 }; // namespace tt
 
 namespace tt::pipeline_image {
@@ -40,11 +38,6 @@ struct image {
     size_t height;
     std::vector<page> pages;
 
-    constexpr image(device_shared *parent, size_t width, size_t height, std::vector<page> &&pages) noexcept :
-        parent(parent), width(width), height(height), pages(std::move(pages))
-    {
-    }
-
     ~image();
     constexpr image() noexcept = default;
     image(image &&other) noexcept;
@@ -52,9 +45,19 @@ struct image {
     image(image const &other) = delete;
     image &operator=(image const &other) = delete;
 
+    image(gfx_surface const *surface, size_t width, size_t height) noexcept;
+    image(gfx_surface const *surface, pixel_map<sfloat_rgba16> const &pixmap) noexcept;
+
+    [[nodiscard]] constexpr explicit operator bool() const noexcept
+    {
+        return parent != nullptr;
+    }
+
     [[nodiscard]] constexpr std::pair<size_t, size_t> size_in_int_pages() const noexcept
     {
-        return {ceil(width, page::size) / page::size, ceil(height, page::size) / page::size};
+        ttlet num_columns = (width + page::size - 1) / page::size;
+        ttlet num_rows = (height + page::size - 1) / page::size;
+        return {num_columns, num_rows};
     }
 
     [[nodiscard]] constexpr extent2 size_in_float_pages() const noexcept

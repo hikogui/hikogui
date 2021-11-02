@@ -58,8 +58,9 @@ private:
 
     icon_type _icon_type;
     font_glyph_ids _glyph;
-    size_t _pixmap_hash;
     pipeline_image::image _pixmap_backing;
+    decltype(icon)::callback_ptr_type _icon_callback_ptr;
+    std::atomic<bool> _icon_has_modified = true;
 
     extent2 _icon_size;
     aarectangle _icon_rectangle;

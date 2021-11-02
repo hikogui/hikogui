@@ -6,6 +6,8 @@
 #include "pipeline_image_device_shared.hpp"
 #include "pipeline_image_image_location.hpp"
 #include "pipeline_image_vertex.hpp"
+#include "gfx_device_vulkan.hpp"
+#include "gfx_surface_vulkan.hpp"
 #include "../log.hpp"
 #include "../required.hpp"
 #include "../cast.hpp"
@@ -15,8 +17,44 @@
 
 namespace tt::pipeline_image {
 
+image::image(gfx_surface const *surface, size_t width, size_t height) noexcept :
+    parent(nullptr), width(width), height(height), pages()
+{
+    if (surface == nullptr) {
+        // During initialization of a widget, the window may not have a surface yet.
+        // As it needs to determine the size of the surface based on the size of the containing widgets.
+        // Return an empty image.
+        return;
+    }
+
+    // Like before the surface may not be assigned to a device either.
+    // In that case also return an empty image.
+    ttlet lock = std::scoped_lock(gfx_system_mutex);
+    if (ttlet device = surface->device()) {
+        ttlet &vulkan_device = narrow_cast<gfx_device_vulkan &>(*device);
+        this->parent = vulkan_device.imagePipeline.get();
+        tt_axiom(this->parent);
+
+        ttlet[num_columns, num_rows] = size_in_int_pages();
+        this->pages = this->parent->allocate_pages(num_columns * num_rows);
+    }
+}
+
+image::image(gfx_surface const *surface, pixel_map<sfloat_rgba16> const &pixmap) noexcept :
+    image(surface, narrow_cast<size_t>(pixmap.width()), narrow_cast<size_t>(pixmap.height()))
+{
+    if (parent) {
+        ttlet lock = std::scoped_lock(gfx_system_mutex);
+        this->upload(pixmap);
+    }
+}
+
 image::image(image &&other) noexcept :
-    parent(std::exchange(other.parent, nullptr)), width(other.width), height(other.height), pages(std::move(other.pages))
+    state(other.state.exchange(state_type::uninitialized)),
+    parent(std::exchange(other.parent, nullptr)),
+    width(other.width),
+    height(other.height),
+    pages(std::move(other.pages))
 {
 }
 
@@ -29,6 +67,7 @@ image &image::operator=(image &&other) noexcept
         parent->free_pages(pages);
     }
 
+    state = other.state.exchange(state_type::uninitialized);
     parent = std::exchange(other.parent, nullptr);
     width = other.width;
     height = other.height;
@@ -47,6 +86,8 @@ void image::upload(pixel_map<sfloat_rgba16> const &image) noexcept
 {
     tt_axiom(parent);
     tt_axiom(image.width() == narrow_cast<ssize_t>(width) and image.height() == narrow_cast<ssize_t>(height));
+
+    ttlet lock = std::scoped_lock(gfx_system_mutex);
 
     state = state_type::drawing;
 

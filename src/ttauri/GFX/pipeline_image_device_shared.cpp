@@ -50,15 +50,6 @@ void device_shared::free_pages(std::vector<page> const &pages) noexcept
     _atlas_free_pages.insert(_atlas_free_pages.end(), pages.begin(), pages.end());
 }
 
-image device_shared::make_image(size_t width, size_t height) noexcept
-{
-    ttlet width_in_pages = ceil(width, page::size) / page::size;
-    ttlet height_in_pages = ceil(height, page::size) / page::size;
-    ttlet num_pages = width_in_pages + height_in_pages;
-
-    return image{this, width, height, allocate_pages(num_pages)};
-}
-
 tt::pixel_map<sfloat_rgba16> device_shared::get_staging_pixel_map()
 {
     staging_texture.transitionLayout(device, vk::Format::eR16G16B16A16Sfloat, vk::ImageLayout::eGeneral);
@@ -336,7 +327,7 @@ void device_shared::place_vertices(
     quad const &box,
     tt::pipeline_image::image const &image) noexcept
 {
-    tt_axiom(image.state == tt::pipeline_image::state_type::uploaded);
+    tt_axiom(image.state == tt::pipeline_image::image::state_type::uploaded);
 
     constexpr auto page_size = f32x4{i32x4{narrow_cast<int32_t>(page::size), narrow_cast<int32_t>(page::size)}};
 

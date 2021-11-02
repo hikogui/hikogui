@@ -78,8 +78,9 @@ void draw_context::draw_box(
     }
 
     ttlet pipeline = narrow_cast<gfx_device_vulkan &>(device).imagePipeline.get();
-    return pipeline->place_vertices(
+    pipeline->place_vertices(
         *_image_vertices, bounding_rectangle(layout.to_window * layout.clipping_rectangle), layout.to_window * box, image);
+    return true;
 }
 
 void draw_context::draw_glyph(widget_layout const &layout, quad const &box, quad_color color, font_glyph_ids const &glyph)
