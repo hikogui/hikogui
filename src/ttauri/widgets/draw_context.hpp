@@ -110,8 +110,10 @@ public:
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
      * @param box The four points of the box to draw.
      * @param image The image to show.
+     * @return True when the image was drawn, false if the image is not ready yet.
+     *         Widgets may want to request a redraw if the image is not ready.
      */
-    void draw_image(widget_layout const &layout, quad box, pipeline_image::image &image) const noexcept;
+    [[nodiscard]] bool draw_image(widget_layout const &layout, quad box, pipeline_image::image &image) const noexcept;
 
     /** Draw a glyph.
      *

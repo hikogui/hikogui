@@ -27,65 +27,46 @@ widget_constraints const &icon_widget::set_constraints() noexcept
 
     if (holds_alternative<std::monostate>(icon_)) {
         _icon_type = icon_type::no;
+        _icon_size = {};
         _glyph = {};
         _pixmap_hash = 0;
         _pixmap_backing = {};
         // For uniform scaling issues, make sure the size is not zero.
-        _icon_size = {};
 
-    } else if (holds_alternative<pixel_map<sfloat_rgba16>>(icon_)) {
-        // XXX very ugly, please fix.
-        // This requires access to internals of vulkan, wtf.
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
-
+    } else if (ttlet pixmap = get_if<pixel_map<sfloat_rgba16>>(icon_)) {
         _icon_type = icon_type::pixmap;
+        _icon_size = extent2{narrow_cast<float>(_pixmap_backing.width), narrow_cast<float>(_pixmap_backing.height)};
         _glyph = {};
 
-        ttlet &pixmap = get<pixel_map<sfloat_rgba16>>(icon_);
-
-        gfx_device_vulkan *device = nullptr;
-        if (window.surface) {
-            device = narrow_cast<gfx_device_vulkan *>(window.surface->device());
+        if (_pixmap_hash != pixmap.hash()) {
+            // Pixmap has been changed, or has never been set.
+            if (_pixmap_backing = window.make_image(pixmap.width(), pixmap.height())) {
+                _pixmap_backing.upload(pixmap);
+                _pixmap_hash = pixmap.hash();
+            } else {
+                window.request_reconstrain();
+            }
         }
 
-        if (device == nullptr) {
-            // The window does not have a surface or device assigned.
-            // We need a device to upload the image as texture map, so retry until it does.
-            _pixmap_hash = 0;
-            _pixmap_backing = {};
-            _icon_size = {};
-            window.request_reconstrain();
-
-        } else if (pixmap.hash() != _pixmap_hash) {
-            _pixmap_hash = pixmap.hash();
-            _pixmap_backing = device->imagePipeline->make_image(pixmap.width(), pixmap.height());
-
-            _pixmap_backing.upload(pixmap);
-            _icon_size = extent2{narrow_cast<float>(_pixmap_backing.width), narrow_cast<float>(_pixmap_backing.height)};
-        }
-
-    } else if (holds_alternative<font_glyph_ids>(icon_)) {
+    } else if (ttlet g1 = get_if<font_glyph_ids>(icon_)) {
         _icon_type = icon_type::glyph;
-        _glyph = get<font_glyph_ids>(icon_);
+        _glyph = *g1;
         _pixmap_hash = 0;
         _pixmap_backing = {};
-
         _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).scaled_size();
 
-    } else if (holds_alternative<elusive_icon>(icon_)) {
+    } else if (ttlet g2 = get_if<elusive_icon>(icon_)) {
         _icon_type = icon_type::glyph;
-        _glyph = font_book().find_glyph(get<elusive_icon>(icon_));
+        _glyph = font_book().find_glyph(*g2);
         _pixmap_hash = 0;
         _pixmap_backing = {};
-
         _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).scaled_size();
 
-    } else if (holds_alternative<ttauri_icon>(icon_)) {
+    } else if (ttlet g3 = get_if<ttauri_icon>(icon_)) {
         _icon_type = icon_type::glyph;
-        _glyph = font_book().find_glyph(get<ttauri_icon>(icon_));
+        _glyph = font_book().find_glyph(*g3);
         _pixmap_hash = 0;
         _pixmap_backing = {};
-
         _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).scaled_size();
 
     } else {
@@ -119,12 +100,8 @@ void icon_widget::draw(draw_context const &context) noexcept
         case icon_type::no: break;
 
         case icon_type::pixmap:
-            switch (_pixmap_backing.state) {
-            case pipeline_image::image::state_type::drawing: request_redraw(); break;
-            case pipeline_image::image::state_type::uploaded:
-                context.draw_image(layout(), _icon_rectangle, _pixmap_backing);
-                break;
-            default: break;
+            if (not context.draw_image(layout(), _icon_rectangle, _pixmap_backing)) {
+                request_redraw();
             }
             break;
 

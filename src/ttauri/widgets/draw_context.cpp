@@ -69,12 +69,16 @@ void draw_context::draw_box(
         corner_radius);
 }
 
-void draw_context::draw_image(widget_layout const &layout, quad box, pipeline_image::image &image) const noexcept
+[[nodiscard]] bool draw_context::draw_image(widget_layout const &layout, quad box, pipeline_image::image &image) const noexcept
 {
     tt_axiom(_image_vertices != nullptr);
-    ttlet pipeline = narrow_cast<gfx_device_vulkan &>(device).imagePipeline.get();
 
-    pipeline->place_vertices(
+    if (image.state != pipeline_image::image::state_type::uploaded) {
+        return false;
+    }
+
+    ttlet pipeline = narrow_cast<gfx_device_vulkan &>(device).imagePipeline.get();
+    return pipeline->place_vertices(
         *_image_vertices, bounding_rectangle(layout.to_window * layout.clipping_rectangle), layout.to_window * box, image);
 }
 

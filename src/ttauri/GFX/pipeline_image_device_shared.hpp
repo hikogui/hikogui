@@ -88,13 +88,13 @@ struct device_shared {
 
     /** Place vertices for a single image.
      *
+     * @pre The image is uploaded.
      * @param vertices The list of vertices to add to.
      * @param clipping_rectangle The rectangle to clip the glyph.
      * @param box The rectangle of the image in window coordinates.
      * @param image The image to render.
-     * @return True is atlas was updated.
      */
-    bool place_vertices(
+    void place_vertices(
         vspan<vertex> &vertices,
         aarectangle const &clipping_rectangle,
         quad const &box,

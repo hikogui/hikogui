@@ -330,12 +330,14 @@ void device_shared::teardown_atlas(gfx_device_vulkan *vulkan_device)
     vulkan_device->destroyImage(staging_texture.image, staging_texture.allocation);
 }
 
-bool device_shared::place_vertices(
+void device_shared::place_vertices(
     vspan<vertex> &vertices,
     aarectangle const &clipping_rectangle,
     quad const &box,
     tt::pipeline_image::image const &image) noexcept
 {
+    tt_axiom(image.state == tt::pipeline_image::state_type::uploaded);
+
     constexpr auto page_size = f32x4{i32x4{narrow_cast<int32_t>(page::size), narrow_cast<int32_t>(page::size)}};
 
     ttlet image_size = f32x4{i32x4{narrow_cast<int32_t>(image.width), narrow_cast<int32_t>(image.height)}};
@@ -387,8 +389,6 @@ bool device_shared::place_vertices(
         right_bottom = right_top;
         bottom_increment = top_increment;
     }
-
-    return true;
 }
 
 } // namespace tt::pipeline_image
