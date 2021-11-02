@@ -110,7 +110,7 @@ template<tt::pointer DerivedType, tt::strict_base_of<std::remove_pointer_t<Deriv
     static_assert(
         !std::is_const_v<BaseType> || std::is_const_v<std::remove_pointer_t<DerivedType>>,
         "narrow_cast must not cast away const");
-    tt_axiom(dynamic_cast<DerivedType>(value) != nullptr);
+    tt_axiom(value == nullptr or dynamic_cast<DerivedType>(value) != nullptr);
     return static_cast<DerivedType>(value);
 }
 

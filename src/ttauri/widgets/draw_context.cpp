@@ -6,7 +6,7 @@
 #include "../GFX/pipeline_box_device_shared.hpp"
 #include "../GFX/pipeline_image_device_shared.hpp"
 #include "../GFX/pipeline_SDF_device_shared.hpp"
-#include "../GFX/pipeline_image_image.hpp"
+#include "../GFX/paged_image.hpp"
 #include "../GFX/gfx_device_vulkan.hpp"
 #include "../text/shaped_text.hpp"
 
@@ -69,11 +69,11 @@ void draw_context::draw_box(
         corner_radius);
 }
 
-[[nodiscard]] bool draw_context::draw_image(widget_layout const &layout, quad box, pipeline_image::image &image) const noexcept
+[[nodiscard]] bool draw_context::draw_image(widget_layout const &layout, quad box, paged_image &image) const noexcept
 {
     tt_axiom(_image_vertices != nullptr);
 
-    if (image.state != pipeline_image::image::state_type::uploaded) {
+    if (image.state != paged_image::state_type::uploaded) {
         return false;
     }
 

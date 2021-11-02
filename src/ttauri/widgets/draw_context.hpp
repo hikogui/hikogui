@@ -22,9 +22,7 @@ class gfx_device;
 class gfx_device_vulkan;
 class shaped_text;
 class font_glyph_ids;
-namespace pipeline_image {
-struct image;
-}
+struct paged_image;
 
 /** The side where the border is drawn.
  */
@@ -113,7 +111,7 @@ public:
      * @return True when the image was drawn, false if the image is not ready yet.
      *         Widgets may want to request a redraw if the image is not ready.
      */
-    [[nodiscard]] bool draw_image(widget_layout const &layout, quad box, pipeline_image::image &image) const noexcept;
+    [[nodiscard]] bool draw_image(widget_layout const &layout, quad box, paged_image &image) const noexcept;
 
     /** Draw a glyph.
      *

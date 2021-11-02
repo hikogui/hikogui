@@ -5,7 +5,7 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../GFX/pipeline_image_image.hpp"
+#include "../GFX/paged_image.hpp"
 #include "../GUI/theme_color.hpp"
 #include "../alignment.hpp"
 #include "../icon.hpp"
@@ -58,7 +58,7 @@ private:
 
     icon_type _icon_type;
     font_glyph_ids _glyph;
-    pipeline_image::image _pixmap_backing;
+    paged_image _pixmap_backing;
     decltype(icon)::callback_ptr_type _icon_callback_ptr;
     std::atomic<bool> _icon_has_modified = true;
 

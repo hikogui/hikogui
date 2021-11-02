@@ -37,7 +37,7 @@ widget_constraints const &icon_widget::set_constraints() noexcept
             _icon_type = icon_type::pixmap;
             _icon_size = extent2{narrow_cast<float>(pixmap->width()), narrow_cast<float>(pixmap->height())};
 
-            if (not (_pixmap_backing = pipeline_image::image{window.surface.get(), *pixmap})) {
+            if (not(_pixmap_backing = paged_image{window.surface.get(), *pixmap})) {
                 // Could not get an image, retry.
                 _icon_has_modified = true;
                 window.request_reconstrain();

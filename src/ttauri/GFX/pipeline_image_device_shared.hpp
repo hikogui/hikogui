@@ -5,7 +5,7 @@
 #pragma once
 
 #include "pipeline_image_texture_map.hpp"
-#include "pipeline_image_page.hpp"
+#include "paged_image.hpp"
 #include "../required.hpp"
 #include "../rapid/sfloat_rgba16.hpp"
 #include <vk_mem_alloc.h>
@@ -20,12 +20,12 @@ class pixel_map;
 
 namespace tt::pipeline_image {
 
-struct image;
-
 struct device_shared {
+    static constexpr size_t page_size = paged_image::page_size;
+    static constexpr size_t page_border = paged_image::page_border;
     static constexpr size_t atlas_num_pages_per_axis = 16;
     static constexpr size_t atlas_num_pages_per_image = atlas_num_pages_per_axis * atlas_num_pages_per_axis;
-    static constexpr size_t atlas_image_axis_size = atlas_num_pages_per_axis * (page::border + page::size + page::border);
+    static constexpr size_t atlas_image_axis_size = atlas_num_pages_per_axis * (page_border + page_size + page_border);
     static constexpr size_t atlas_maximum_num_images = 16;
     static constexpr size_t staging_image_width = 1024;
     static constexpr size_t staging_image_height = 1024;
@@ -57,22 +57,13 @@ struct device_shared {
      */
     void destroy(gfx_device_vulkan *vulkanDevice);
 
-    
-
     /** Allocate pages from the atlas.
      */
-    std::vector<page> allocate_pages(size_t num_pages) noexcept;
+    std::vector<size_t> allocate_pages(size_t num_pages) noexcept;
 
     /** Deallocate pages back to the atlas.
      */
-    void free_pages(std::vector<page> const &pages) noexcept;
-
-    /** Allocate an image in the atlas.
-     * @param width The width of the image.
-     * @param height The height of the image.
-     * @return An image with allocated pages in the atlas.
-     */
-    image make_image(size_t width, size_t height) noexcept;
+    void free_pages(std::vector<size_t> const &pages) noexcept;
 
     void draw_in_command_buffer(vk::CommandBuffer &commandBuffer);
 
@@ -98,13 +89,13 @@ struct device_shared {
         vspan<vertex> &vertices,
         aarectangle const &clipping_rectangle,
         quad const &box,
-        tt::pipeline_image::image const &image) noexcept;
+        paged_image const &image) noexcept;
 
 private:
-    std::vector<page> _atlas_free_pages;
+    std::vector<size_t> _atlas_free_pages;
 
-    /** Get a submap of the stafing pixal map to draw the image in.
-    */
+    /** Get a submap of the staging pixel map to draw the image in.
+     */
     tt::pixel_map<sfloat_rgba16> get_staging_pixel_map(size_t width, size_t height)
     {
         return get_staging_pixel_map().submap(0, 0, width, height);
@@ -112,7 +103,7 @@ private:
 
     /** Copy the image from the staging pixel map into the atlas.
      */
-    void update_atlas_with_staging_pixel_map(image const &image) noexcept;
+    void update_atlas_with_staging_pixel_map(paged_image const &image) noexcept;
 
     void build_shaders();
     void teardown_shaders(gfx_device_vulkan *vulkan_device);
@@ -120,7 +111,7 @@ private:
     void build_atlas();
     void teardown_atlas(gfx_device_vulkan *vulkan_device);
 
-    friend image;
+    friend paged_image;
 };
 
 } // namespace tt::pipeline_image
