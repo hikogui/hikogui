@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "pipeline_image_image_location.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../rapid/sfloat_rgba32.hpp"
 #include <vulkan/vulkan.hpp>

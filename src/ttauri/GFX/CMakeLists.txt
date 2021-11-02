@@ -40,7 +40,6 @@ target_sources(ttauri PRIVATE
     pipeline_image_device_shared.hpp
     pipeline_image_image.cpp
     pipeline_image_image.hpp
-    pipeline_image_image_location.hpp
     pipeline_image_page.hpp
     pipeline_image_push_constants.hpp
     pipeline_image_texture_map.cpp

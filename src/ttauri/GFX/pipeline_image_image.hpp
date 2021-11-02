@@ -23,7 +23,6 @@ class gfx_surface;
 namespace tt::pipeline_image {
 
 struct vertex;
-struct ImageLocation;
 struct device_shared;
 
 /** This is a image that is uploaded into the texture atlas.
