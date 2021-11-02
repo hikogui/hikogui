@@ -6,7 +6,7 @@
 #include "../GFX/pipeline_box_device_shared.hpp"
 #include "../GFX/pipeline_image_device_shared.hpp"
 #include "../GFX/pipeline_SDF_device_shared.hpp"
-#include "../GFX/pipeline_image_image.hpp"
+#include "../GFX/paged_image.hpp"
 #include "../GFX/gfx_device_vulkan.hpp"
 #include "../text/shaped_text.hpp"
 
@@ -69,12 +69,18 @@ void draw_context::draw_box(
         corner_radius);
 }
 
-void draw_context::draw_image(widget_layout const &layout, pipeline_image::image &image, matrix3 image_transform) const noexcept
+[[nodiscard]] bool draw_context::draw_image(widget_layout const &layout, quad box, paged_image &image) const noexcept
 {
     tt_axiom(_image_vertices != nullptr);
 
-    image.place_vertices(
-        *_image_vertices, bounding_rectangle(layout.to_window * layout.clipping_rectangle), layout.to_window * image_transform);
+    if (image.state != paged_image::state_type::uploaded) {
+        return false;
+    }
+
+    ttlet pipeline = narrow_cast<gfx_device_vulkan &>(device).imagePipeline.get();
+    pipeline->place_vertices(
+        *_image_vertices, bounding_rectangle(layout.to_window * layout.clipping_rectangle), layout.to_window * box, image);
+    return true;
 }
 
 void draw_context::draw_glyph(widget_layout const &layout, quad const &box, quad_color color, font_glyph_ids const &glyph)

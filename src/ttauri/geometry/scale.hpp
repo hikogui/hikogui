@@ -7,6 +7,7 @@
 #include "matrix.hpp"
 #include "identity.hpp"
 #include "translate.hpp"
+#include "extent.hpp"
 
 namespace tt {
 namespace geo {
@@ -25,6 +26,16 @@ public:
     {
         tt_axiom(holds_invariant());
         return _v;
+    }
+
+    [[nodiscard]] constexpr explicit operator extent<2>() const noexcept requires(D == 2)
+    {
+        return extent<2>{_v.xy00()};
+    }
+
+    [[nodiscard]] constexpr explicit operator extent<3>() const noexcept requires(D == 3)
+    {
+        return extent<3>{_v.xyz0()};
     }
 
     [[nodiscard]] constexpr explicit scale(f32x4 const &v) noexcept : _v(v)
@@ -191,8 +202,6 @@ private:
     tt_axiom(rhs._v.z() != 0.0f);
     return scale<3>{lhs._v.xyz1() / rhs._v.xyz1()};
 }
-
-
 
 template<int D>
 [[nodiscard]] constexpr matrix<D>

@@ -43,12 +43,7 @@ public:
         return _v;
     }
 
-    /** Construct a extent from a f32x4-numeric_array.
-     */
-    [[nodiscard]] constexpr explicit extent(f32x4 const &other) noexcept : _v(other)
-    {
-        tt_axiom(holds_invariant());
-    }
+    [[nodiscard]] constexpr explicit extent(f32x4 const &other) noexcept : _v(other) {}
 
     [[nodiscard]] constexpr explicit operator bool () const noexcept
     {
@@ -407,7 +402,7 @@ public:
     [[nodiscard]] constexpr friend extent ceil(extent const &rhs) noexcept
     {
         tt_axiom(rhs.holds_invariant());
-        return extent{ceil(static_cast<f32x4>(rhs))};
+        return extent{ceil(f32x4{rhs})};
     }
 
     [[nodiscard]] constexpr friend extent floor(extent const &rhs) noexcept

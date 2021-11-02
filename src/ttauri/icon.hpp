@@ -56,7 +56,19 @@ public:
     template<typename T>
     [[nodiscard]] friend T &get(tt::icon &icon) noexcept
     {
-        return std::get<T>(_image);
+        return std::get<T>(icon._image);
+    }
+
+    template<typename T>
+    [[nodiscard]] friend std::add_pointer_t<T const> get_if(tt::icon const *icon) noexcept
+    {
+        return std::get_if<T>(&icon->_image);
+    }
+
+    template<typename T>
+    [[nodiscard]] friend std::add_pointer_t<T> get_if(tt::icon *icon) noexcept
+    {
+        return std::get_if<T>(&icon->_image);
     }
 
 private:

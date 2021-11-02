@@ -22,9 +22,7 @@ class gfx_device;
 class gfx_device_vulkan;
 class shaped_text;
 class font_glyph_ids;
-namespace pipeline_image {
-struct image;
-}
+struct paged_image;
 
 /** The side where the border is drawn.
  */
@@ -106,12 +104,14 @@ public:
     }
 
     /** Draw an image
-     * This function will draw an image.
-     * This will use the current:
-     *  - transform, to transform the image.
-     *  - clippingRectangle
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param box The four points of the box to draw.
+     * @param image The image to show.
+     * @return True when the image was drawn, false if the image is not ready yet.
+     *         Widgets may want to request a redraw if the image is not ready.
      */
-    void draw_image(widget_layout const &layout, pipeline_image::image &image, matrix3 image_transform) const noexcept;
+    [[nodiscard]] bool draw_image(widget_layout const &layout, quad box, paged_image &image) const noexcept;
 
     /** Draw a glyph.
      *

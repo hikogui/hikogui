@@ -86,4 +86,5 @@ struct alignas(16) vertex {
         };
     }
 };
+
 } // namespace tt::pipeline_box

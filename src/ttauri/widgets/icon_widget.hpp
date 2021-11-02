@@ -5,7 +5,7 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../GFX/pipeline_image_image.hpp"
+#include "../GFX/paged_image.hpp"
 #include "../GUI/theme_color.hpp"
 #include "../alignment.hpp"
 #include "../icon.hpp"
@@ -58,11 +58,12 @@ private:
 
     icon_type _icon_type;
     font_glyph_ids _glyph;
-    size_t _pixmap_hash;
-    pipeline_image::image _pixmap_backing;
+    paged_image _pixmap_backing;
+    decltype(icon)::callback_ptr_type _icon_callback_ptr;
+    std::atomic<bool> _icon_has_modified = true;
 
-    aarectangle _icon_bounding_box;
-    matrix2 _icon_transform;
+    extent2 _icon_size;
+    aarectangle _icon_rectangle;
 
     icon_widget(gui_window &window, widget *parent) noexcept;
 };

@@ -20,6 +20,8 @@ target_sources(ttauri PRIVATE
     #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/gfx_system_vulkan_macos.hpp>
     #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/fgx_system_vulkan_macos.mm>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gfx_system_vulkan_win32.cpp>
+    paged_image.cpp
+    paged_image.hpp
     pipeline.cpp
     pipeline.hpp
     pipeline_vulkan.cpp
@@ -38,10 +40,6 @@ target_sources(ttauri PRIVATE
     pipeline_image.vert
     pipeline_image_device_shared.cpp
     pipeline_image_device_shared.hpp
-    pipeline_image_image.cpp
-    pipeline_image_image.hpp
-    pipeline_image_image_location.hpp
-    pipeline_image_page.hpp
     pipeline_image_push_constants.hpp
     pipeline_image_texture_map.cpp
     pipeline_image_texture_map.hpp
