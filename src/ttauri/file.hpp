@@ -102,11 +102,11 @@ public:
      * @param whence Where to seek from: begin, current or end
      * @return The new seek position relative to the beginning of the file.
      */
-    ssize_t seek(ssize_t offset, seek_whence whence = seek_whence::begin);
+    size_t seek(ssize_t offset, seek_whence whence = seek_whence::begin);
 
     /** Get the current seek location.
      */
-    ssize_t get_seek() {
+    size_t get_seek() {
         return seek(0, seek_whence::current);
     }
 
@@ -118,7 +118,7 @@ public:
     * @return The number of bytes written.
     * @throw io_error
     */
-    ssize_t write(std::byte const *data, ssize_t size, ssize_t offset=-1);
+    size_t write(std::byte const *data, size_t size, ssize_t offset=-1);
 
     /** Write data to a file.
     * 
@@ -128,7 +128,7 @@ public:
     * @return The number of bytes written.
     * @throw io_error
     */
-    ssize_t write(void const *data, ssize_t size, ssize_t offset=-1) {
+    size_t write(void const *data, size_t size, ssize_t offset=-1) {
         return write(reinterpret_cast<std::byte const *>(data), size, offset);
     }
 
@@ -140,7 +140,7 @@ public:
     * @return The number of bytes written.
     * @throw io_error
     */
-    ssize_t write(char const *data, ssize_t size, ssize_t offset=-1) {
+    ssize_t write(char const *data, size_t size, ssize_t offset=-1) {
         return write(reinterpret_cast<std::byte const *>(data), size, offset);
     }
 
@@ -151,9 +151,9 @@ public:
      * @return The number of bytes written.
      * @throw io_error
      */
-    ssize_t write(std::span<std::byte const> bytes, ssize_t offset = -1)
+    ssize_t write(std::span<std::byte const> bytes, size_t offset = -1)
     {
-        return write(bytes.data(), std::ssize(bytes), offset);
+        return write(bytes.data(), ssize(bytes), offset);
     }
 
     /** Write data to a file.
@@ -165,7 +165,7 @@ public:
      */
     ssize_t write(bstring_view text, ssize_t offset = -1)
     {
-        return write(text.data(), std::ssize(text), offset);
+        return write(text.data(), ssize(text), offset);
     }
 
     /** Write data to a file.
@@ -177,7 +177,7 @@ public:
      */
     ssize_t write(bstring const &text, ssize_t offset = -1)
     {
-        return write(text.data(), std::ssize(text), offset);
+        return write(text.data(), ssize(text), offset);
     }
 
     /** Write data to a file.
@@ -188,7 +188,7 @@ public:
      */
     ssize_t write(std::string_view text)
     {
-        return write(text.data(), std::ssize(text));
+        return write(text.data(), ssize(text));
     }
 
     /** Read data from a file.
@@ -199,9 +199,9 @@ public:
      * @return The number of bytes read.
      * @throw io_error
      */
-    ssize_t read(std::byte *data, ssize_t size, ssize_t offset = -1);
+    ssize_t read(std::byte *data, size_t size, ssize_t offset = -1);
 
-    ssize_t read(void *data, ssize_t size, ssize_t offset = -1)
+    ssize_t read(void *data, size_t size, ssize_t offset = -1)
     {
         return read(reinterpret_cast<std::byte *>(data), size, offset);
     }
@@ -213,7 +213,7 @@ public:
      * @return Data as a byte string, may return less then the requested size.
      * @throws io_error On IO error.
      */
-    bstring read_bstring(ssize_t size = 10'000'000, ssize_t offset = -1);
+    bstring read_bstring(size_t size = 10'000'000, ssize_t offset = -1);
 
     /** Read the whole file as a UTF-8 string.
      * This will ignore the value from `seek()`, and read the whole
@@ -227,7 +227,7 @@ public:
      * @throws io_error On IO error.
      * @throws parse_error On invalid UTF-8 string.
      */
-    std::string read_string(ssize_t max_size = 10'000'000);
+    std::string read_string(size_t max_size = 10'000'000);
 
     /** Read the whole file as a UTF-8 string.
      * This will ignore the value from `seek()`, and read the whole
@@ -241,7 +241,7 @@ public:
      * @throws io_error On IO error
      * @throws parse_error On invalid UTF-8 string.
      */
-    std::u8string read_u8string(ssize_t max_size = 10'000'000);
+    std::u8string read_u8string(size_t max_size = 10'000'000);
 
     /** Get the size of a file on the file system.
      * \return The size of the file in bytes.

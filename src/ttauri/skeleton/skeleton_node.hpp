@@ -87,7 +87,7 @@ struct skeleton_node {
     }
 
     static void append_child(statement_vector &children, std::unique_ptr<skeleton_node> new_child) {
-        if (std::ssize(children) > 0 && new_child->should_left_align()) {
+        if (ssize(children) > 0 && new_child->should_left_align()) {
             children.back()->left_align();
         }
         children.push_back(std::move(new_child));

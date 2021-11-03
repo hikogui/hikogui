@@ -34,7 +34,7 @@ widget_constraints const &toolbar_widget::set_constraints() noexcept
         update_constraints_for_child(*child, index++, shared_height);
     }
 
-    tt_axiom(index == std::ssize(_left_children) + 1 + std::ssize(_right_children));
+    tt_axiom(index == ssize(_left_children) + 1 + ssize(_right_children));
 
     return _constraints = {
                {_flow_layout.minimum_size(), shared_height},
@@ -63,7 +63,7 @@ void toolbar_widget::set_layout(widget_layout const &context_) noexcept
             update_layout_for_child(*child, index++, context);
         }
 
-        tt_axiom(index == std::ssize(_left_children) + 1 + std::ssize(_right_children));
+        tt_axiom(index == ssize(_left_children) + 1 + ssize(_right_children));
     }
 }
 

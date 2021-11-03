@@ -439,12 +439,24 @@ public:
         case tag_type::boolean: return get<bool>(*this);
         case tag_type::integral: return static_cast<bool>(get<long long>(*this));
         case tag_type::year_month_day: return true;
-        case tag_type::string: return static_cast<bool>(std::size(get<std::string>(*this)));
-        case tag_type::vector: return static_cast<bool>(std::size(get<vector_type>(*this)));
-        case tag_type::map: return static_cast<bool>(std::size(get<map_type>(*this)));
-        case tag_type::url: return static_cast<bool>(get<URL>(*this));
-        case tag_type::bstring: return static_cast<bool>(std::size(get<bstring>(*this)));
+        case tag_type::string: return not get<std::string>(*this).empty();
+        case tag_type::vector: return not get<vector_type>(*this).empty();
+        case tag_type::map: return not get<map_type>(*this).empty();
+        case tag_type::url: return not get<URL>(*this).empty();
+        case tag_type::bstring: return not get<bstring>(*this).empty();
         default: return false;
+        }
+    }
+
+    [[nodiscard]] constexpr bool empty() const
+    {
+        switch (_tag) {
+        case tag_type::string: return get<std::string>(*this).empty();
+        case tag_type::vector: return get<vector_type>(*this).empty();
+        case tag_type::map: return get<map_type>(*this).empty();
+        case tag_type::url: return get<URL>(*this).empty();
+        case tag_type::bstring: return get<bstring>(*this).empty();
+        default: throw std::domain_error(std::format("Type {} can not be checked for empty", *this));
         }
     }
 
@@ -678,16 +690,21 @@ public:
     [[nodiscard]] constexpr size_t size() const
     {
         if (ttlet *s = get_if<std::string>(*this)) {
-            return std::size(*s);
+            return s->size();
         } else if (ttlet *v = get_if<vector_type>(*this)) {
-            return std::size(*v);
+            return v->size();
         } else if (ttlet *m = get_if<map_type>(*this)) {
-            return std::size(*m);
+            return m->size();
         } else if (ttlet *b = get_if<bstring>(*this)) {
-            return std::size(get<bstring>(*this));
+            return b->size();
         } else {
             throw std::domain_error(std::format("Can not evaluate {}.size()", repr(*this)));
         }
+    }
+
+    [[nodiscard]] constexpr friend size_t size(datum const &rhs)
+    {
+        return rhs.size();
     }
 
     [[nodiscard]] constexpr datum const &back() const
@@ -798,7 +815,7 @@ public:
     {
         if (ttlet *m = get_if<map_type>(*this)) {
             auto r = vector_type{};
-            r.reserve(std::size(*m));
+            r.reserve(m->size());
             for (ttlet &kv : *m) {
                 r.push_back(kv.first);
             }
@@ -814,7 +831,7 @@ public:
     {
         if (ttlet *m = get_if<map_type>(*this)) {
             auto r = vector_type{};
-            r.reserve(std::size(*m));
+            r.reserve(m->size());
             for (ttlet &kv : *m) {
                 r.push_back(kv.second);
             }
@@ -830,7 +847,7 @@ public:
     {
         if (ttlet *m = get_if<map_type>(*this)) {
             auto r = vector_type{};
-            r.reserve(std::size(*m));
+            r.reserve(m->size());
 
             for (ttlet &item : *m) {
                 r.push_back(make_vector(item.first, item.second));
@@ -961,9 +978,9 @@ public:
 
             auto index = get<long long>(rhs);
             if (index < 0) {
-                index = std::ssize(v) + index;
+                index = ssize(v) + index;
             }
-            if (index < 0 or index >= std::ssize(v)) {
+            if (index < 0 or index >= ssize(v)) {
                 throw std::overflow_error(std::format("Index {} beyond bounds of vector", repr(rhs)));
             }
 
@@ -990,9 +1007,9 @@ public:
 
             auto index = get<long long>(rhs);
             if (index < 0) {
-                index = std::ssize(v) + index;
+                index = ssize(v) + index;
             }
-            if (index < 0 or index >= std::ssize(v)) {
+            if (index < 0 or index >= ssize(v)) {
                 throw std::overflow_error(std::format("Index {} beyond bounds of vector", repr(rhs)));
             }
 
@@ -1985,7 +2002,7 @@ private:
         std::vector<datum *> &r) noexcept
     {
         if (auto vector = get_if<datum::vector_type>(*this)) {
-            for (ttlet index : indices.filter(std::ssize(*vector))) {
+            for (ttlet index : indices.filter(ssize(*vector))) {
                 (*vector)[index].find(it + 1, it_end, r);
             }
         }
@@ -2146,7 +2163,7 @@ private:
             int r = 0;
             size_t offset = 0;
 
-            for (ttlet index : indices.filter(std::ssize(*vector))) {
+            for (ttlet index : indices.filter(ssize(*vector))) {
                 ttlet match = (*vector)[index - offset].remove(it + 1, it_end);
                 r |= match ? 1 : 0;
                 if (match == 2) {

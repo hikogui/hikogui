@@ -54,7 +54,7 @@ std::unordered_map<translation_key,std::vector<std::string>> translations;
 
         ttlet i = translations.find(key);
         if (i != translations.cend()) {
-            ttlet plurality = language->plurality(n, std::ssize(i->second));
+            ttlet plurality = language->plurality(n, ssize(i->second));
             ttlet &translation = i->second[plurality];
             if (translation.size() != 0) {
                 return translation;
@@ -86,7 +86,7 @@ void add_translation(
 void add_translation(po_translations const &po_translations, language const &language) noexcept
 {
     for (ttlet &translation : po_translations.translations) {
-        auto msgid = std::ssize(translation.msgctxt) == 0 ? translation.msgid : translation.msgctxt + '|' + translation.msgid;
+        auto msgid = ssize(translation.msgctxt) == 0 ? translation.msgid : translation.msgctxt + '|' + translation.msgid;
         add_translation(
             msgid,
             language,

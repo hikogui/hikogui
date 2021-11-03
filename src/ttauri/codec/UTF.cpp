@@ -79,7 +79,7 @@ constexpr void append_code_point(std::basic_string<CharT> &r, uint32_t code_poin
 template<typename ToCharT, typename FromCharT>
 [[nodiscard]] constexpr size_t guess_num_code_units(std::basic_string_view<FromCharT> const &rhs) noexcept
 {
-    return std::size(rhs);
+    return size(rhs);
 }
 
 template<typename ToCharT, typename FromCharT>
@@ -122,8 +122,8 @@ template<typename ToCharT, typename FromCharT>
     auto r = std::basic_string<ToCharT>{};
     r.reserve(guess_num_code_units<ToCharT>(rhs));
 
-    auto it = std::begin(rhs);
-    ttlet last = std::end(rhs);
+    auto it = begin(rhs);
+    ttlet last = end(rhs);
 
     uint32_t code_point = 0;
     int todo = 0;
@@ -200,8 +200,8 @@ template<typename ToCharT, typename FromCharT>
     auto r = std::basic_string<ToCharT>{};
     r.reserve(guess_num_code_units<ToCharT>(rhs));
 
-    auto it = std::begin(rhs);
-    ttlet last = std::end(rhs);
+    auto it = begin(rhs);
+    ttlet last = end(rhs);
 
     uint32_t code_point = 0;
     int todo = 0;

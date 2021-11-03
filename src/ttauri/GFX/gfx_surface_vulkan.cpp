@@ -600,7 +600,7 @@ void gfx_surface_vulkan::teardownSwapchain()
     vulkan_device().destroy(swapchain);
     vulkan_device().destroyImage(depthImage, depthImageAllocation);
 
-    for (size_t i = 0; i != std::size(colorImages); ++i) {
+    for (size_t i = 0; i != colorImages.size(); ++i) {
         vulkan_device().destroyImage(colorImages[i], colorImageAllocations[i]);
     }
 }
@@ -617,7 +617,7 @@ void gfx_surface_vulkan::buildFramebuffers()
          vk::ComponentMapping(),
          {vk::ImageAspectFlagBits::eDepth, 0, 1, 0, 1}});
 
-    for (size_t i = 0; i != std::size(colorImageViews); ++i) {
+    for (size_t i = 0; i != colorImageViews.size(); ++i) {
         colorImageViews[i] = vulkan_device().createImageView(
             {vk::ImageViewCreateFlags(),
              colorImages[i],
@@ -669,7 +669,7 @@ void gfx_surface_vulkan::teardownFramebuffers()
     swapchain_image_infos.clear();
 
     vulkan_device().destroy(depthImageView);
-    for (size_t i = 0; i != std::size(colorImageViews); ++i) {
+    for (size_t i = 0; i != colorImageViews.size(); ++i) {
         vulkan_device().destroy(colorImageViews[i]);
     }
 }

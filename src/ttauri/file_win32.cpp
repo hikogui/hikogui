@@ -130,7 +130,7 @@ size_t file::size() const
     return merge_bit_cast<size_t>(file_information.nFileSizeHigh, file_information.nFileSizeLow);
 }
 
-ssize_t file::seek(ssize_t offset, seek_whence whence)
+size_t file::seek(ssize_t offset, seek_whence whence)
 {
     tt_axiom(_file_handle);
 
@@ -143,22 +143,20 @@ ssize_t file::seek(ssize_t offset, seek_whence whence)
     default: tt_no_default();
     }
 
-    LONG offset_lo = low_bit_cast<LONG>(offset);
-    LONG offset_hi = high_bit_cast<LONG>(offset);
-
-    offset_lo = SetFilePointer(_file_handle, offset_lo, &offset_hi, whence_);
-
-    if (offset_lo == INVALID_SET_FILE_POINTER && GetLastError() != NO_ERROR) {
+    LARGE_INTEGER offset_;
+    LARGE_INTEGER new_offset;
+    offset_.QuadPart = narrow_cast<LONGLONG>(offset);
+    if (not SetFilePointerEx(_file_handle, offset_, &new_offset, whence_)) {
         throw io_error("{}: Could not seek in file. '{}'", _location, get_last_error_message());
     }
 
-    return merge_bit_cast<ssize_t>(offset_hi, offset_lo);
+    return narrow_cast<size_t>(new_offset.QuadPart);
 }
 
 void file::rename(URL const &destination, bool overwrite_existing)
 {
     auto dst_filename = destination.nativeWPath();
-    auto dst_filename_wsize = (std::size(dst_filename) + 1) *
+    auto dst_filename_wsize = (dst_filename.size() + 1) *
         sizeof(WCHAR);
 
     ttlet rename_info_size = narrow_cast<DWORD>(sizeof(_FILE_RENAME_INFO) + dst_filename_wsize);
@@ -183,14 +181,14 @@ void file::rename(URL const &destination, bool overwrite_existing)
 
 /*! Write data to a file.
  */
-ssize_t file::write(std::byte const *data, ssize_t size, ssize_t offset)
+size_t file::write(std::byte const *data, size_t size, ssize_t offset)
 {
     tt_axiom(size >= 0);
     tt_axiom(_file_handle != INVALID_HANDLE_VALUE);
 
     ssize_t total_written_size = 0;
     while (size) {
-        ttlet to_write_size = static_cast<DWORD>(std::min(size, static_cast<ssize_t>(std::numeric_limits<DWORD>::max())));
+        ttlet to_write_size = static_cast<DWORD>(std::min(size, static_cast<size_t>(std::numeric_limits<DWORD>::max())));
         DWORD written_size = 0;
 
         OVERLAPPED overlapped;
@@ -216,14 +214,14 @@ ssize_t file::write(std::byte const *data, ssize_t size, ssize_t offset)
     return total_written_size;
 }
 
-ssize_t file::read(std::byte *data, ssize_t size, ssize_t offset)
+ssize_t file::read(std::byte *data, size_t size, ssize_t offset)
 {
     tt_axiom(size >= 0);
     tt_axiom(_file_handle != INVALID_HANDLE_VALUE);
 
     ssize_t total_read_size = 0;
     while (size) {
-        ttlet to_read_size = static_cast<DWORD>(std::min(size, static_cast<ssize_t>(std::numeric_limits<DWORD>::max())));
+        ttlet to_read_size = static_cast<DWORD>(std::min(size, static_cast<size_t>(std::numeric_limits<DWORD>::max())));
         DWORD read_size = 0;
 
         OVERLAPPED overlapped;
@@ -249,10 +247,10 @@ ssize_t file::read(std::byte *data, ssize_t size, ssize_t offset)
     return total_read_size;
 }
 
-bstring file::read_bstring(ssize_t size, ssize_t offset)
+bstring file::read_bstring(size_t max_size, ssize_t offset)
 {
     ttlet offset_ = offset == -1 ? get_seek() : offset;
-    ttlet size_ = std::ssize(*this) - offset_;
+    ttlet size_ = std::min(max_size, this->size() - offset_);
 
     auto r = bstring{};
     r.resize(size_);
@@ -265,9 +263,9 @@ bstring file::read_bstring(ssize_t size, ssize_t offset)
     return r;
 }
 
-std::string file::read_string(ssize_t max_size)
+std::string file::read_string(size_t max_size)
 {
-    ttlet size_ = std::ssize(*this);
+    ttlet size_ = size();
     if (size_ > max_size) {
         throw io_error("{}: File size is larger than max_size.", _location);
     }
@@ -279,9 +277,9 @@ std::string file::read_string(ssize_t max_size)
     return r;
 }
 
-std::u8string file::read_u8string(ssize_t max_size)
+std::u8string file::read_u8string(size_t max_size)
 {
-    ttlet size_ = std::ssize(*this);
+    ttlet size_ = size();
     if (size_ > max_size) {
         throw io_error("{}: File size is larger than max_size.", _location);
     }

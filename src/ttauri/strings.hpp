@@ -261,7 +261,7 @@ namespace tt {
 
 constexpr size_t string_size(sizeable auto str) noexcept
 {
-    return std::size(str);
+    return size(str);
 }
 
 constexpr size_t string_size(auto str) noexcept
@@ -301,7 +301,7 @@ template<typename StringType, typename... Needles>
 
     std::string_view::size_type current_pos = 0;
 
-    while (current_pos < std::size(haystack)) {
+    while (current_pos < size(haystack)) {
         ttlet[needle_first, needle_last] = string_find_any(haystack, current_pos, needles...);
         r.push_back(StringType{haystack.substr(current_pos, needle_first - current_pos)});
         current_pos = needle_last;
@@ -438,20 +438,20 @@ constexpr auto to_array_without_last(T(&&rhs)[N]) noexcept
 
 [[nodiscard]] inline std::string lstrip(std::string_view haystack, std::string needle = " \t\r\n\f") noexcept
 {
-    auto first = front_strip(std::begin(haystack), std::end(haystack), std::begin(needle), std::end(needle));
-    return std::string{first, std::end(haystack)};
+    auto first = front_strip(begin(haystack), end(haystack), begin(needle), end(needle));
+    return std::string{first, end(haystack)};
 }
 
 [[nodiscard]] inline std::string rstrip(std::string_view haystack, std::string needle = " \t\r\n\f") noexcept
 {
-    auto last = back_strip(std::begin(haystack), std::end(haystack), std::begin(needle), std::end(needle));
-    return std::string{std::begin(haystack), last};
+    auto last = back_strip(begin(haystack), end(haystack), begin(needle), end(needle));
+    return std::string{begin(haystack), last};
 }
 
 [[nodiscard]] inline std::string strip(std::string_view haystack, std::string needle = " \t\r\n\f") noexcept
 {
-    auto first = front_strip(std::begin(haystack), std::end(haystack), std::begin(needle), std::end(needle));
-    auto last = back_strip(first, std::end(haystack), std::begin(needle), std::end(needle));
+    auto first = front_strip(begin(haystack), end(haystack), begin(needle), end(needle));
+    auto last = back_strip(first, end(haystack), begin(needle), end(needle));
     return std::string{first, last};
 }
 
@@ -484,7 +484,7 @@ constexpr auto to_array_without_last(T(&&rhs)[N]) noexcept
         first = it_zero + 1;
     }
 
-    if (nr_strings != -1 && std::ssize(r) != nr_strings) {
+    if (nr_strings != -1 && ssize(r) != nr_strings) {
         throw parse_error("Unexpected number of string in list.");
     }
 

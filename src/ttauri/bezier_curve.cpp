@@ -74,7 +74,7 @@ std::vector<bezier_curve> makeContourFromPoints(std::vector<bezier_point>::const
     }
 
     // If there is only a single curve, water-drop-shaped, it should be marked white.
-    if (std::ssize(r) == 1) {
+    if (ssize(r) == 1) {
         r.front().color = bezier_curve::Color::White;
     }
 
@@ -389,8 +389,8 @@ static void bad_pixels_horizontally(pixel_map<sdf_r8> &image) noexcept
             ttlet normal_mean = mean(area.cbegin(), area.cend());
             ttlet normal_stddev = stddev(area.cbegin(), area.cend(), normal_mean);
 
-            static_assert(std::ssize(area) % 2 == 1);
-            area[std::ssize(area) / 2] = -area[std::ssize(area) / 2];
+            static_assert(ssize(area) % 2 == 1);
+            area[ssize(area) / 2] = -area[ssize(area) / 2];
 
             ttlet flipped_mean = mean(area.cbegin(), area.cend());
             ttlet flipped_stddev = stddev(area.cbegin(), area.cend(), flipped_mean);
@@ -422,7 +422,7 @@ void fill(pixel_map<sdf_r8> &image, std::vector<bezier_curve> const &curves) noe
     std::vector<std::pair<int,int>> bad_pixel_list;
     for (int i = 0; i < 10; i++) {
         bad_pixel_list = bad_pixels_homogenious(image);
-        if (std::ssize(bad_pixel_list) == 0) {
+        if (ssize(bad_pixel_list) == 0) {
             break;
         }
 

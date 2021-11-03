@@ -158,7 +158,7 @@ public:
         }
         std::erase(_windows, nullptr);
 
-        ttlet num_windows = std::size(_windows);
+        ttlet num_windows = size(_windows);
         if (num_windows == 0 && num_windows != _previous_num_windows) {
             // If last_window_closed() creates a new window we should
             // let it do that before entering the event queue again.

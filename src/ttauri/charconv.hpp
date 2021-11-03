@@ -21,7 +21,7 @@ template<std::integral T>
     std::array<char, 21> buffer;
 
     ttlet first = buffer.data();
-    ttlet last = first + std::size(buffer);
+    ttlet last = first + size(buffer);
 
     ttlet[new_last, ec] = std::to_chars(first, last, value);
     tt_axiom(ec == std::errc{});
@@ -43,7 +43,7 @@ template<std::floating_point T>
     std::array<char, 128> buffer;
 
     ttlet first = buffer.data();
-    ttlet last = first + std::size(buffer);
+    ttlet last = first + size(buffer);
 
     ttlet[new_last, ec] = std::to_chars(first, last, value, std::chars_format::general);
     tt_axiom(ec == std::errc{});
@@ -67,7 +67,7 @@ template<std::integral T>
     T value;
 
     ttlet first = str.data();
-    ttlet last = first + std::ssize(str);
+    ttlet last = first + ssize(str);
 
     ttlet[new_last, ec] = std::from_chars(first, last, value, base);
     if (ec != std::errc{} or new_last != last) {
@@ -90,7 +90,7 @@ template<std::floating_point T>
     T value;
 
     ttlet first = str.data();
-    ttlet last = first + std::ssize(str);
+    ttlet last = first + ssize(str);
 
     ttlet[new_last, ec] = std::from_chars(first, last, value);
     if (ec != std::errc{} or new_last != last) {

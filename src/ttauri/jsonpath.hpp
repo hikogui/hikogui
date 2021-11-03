@@ -107,12 +107,12 @@ struct jsonpath_names {
 
     [[nodiscard]] auto begin() const noexcept
     {
-        return std::begin(names);
+        return names.begin();
     }
 
     [[nodiscard]] auto end() const noexcept
     {
-        return std::end(names);
+        return names.end();
     }
 
     void push_back(std::string rhs) noexcept
@@ -122,7 +122,7 @@ struct jsonpath_names {
 
     [[nodiscard]] bool is_singular() const noexcept
     {
-        return std::size(names) == 1;
+        return names.size() == 1;
     }
 };
 
@@ -184,7 +184,7 @@ struct jsonpath_indices {
 
     [[nodiscard]] bool is_singular() const noexcept
     {
-        return std::size(indices) == 1;
+        return indices.size() == 1;
     }
 };
 

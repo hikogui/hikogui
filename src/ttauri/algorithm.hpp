@@ -254,19 +254,19 @@ T inverse_smoothstep(T x)
  */
 auto shuffle_by_index(auto first, auto last, auto indices_first, auto indices_last, auto index_op) noexcept
 {
-    size_t size = std::distance(first, last);
+    size_t src_size = std::distance(first, last);
 
     // Keep track of index locations during shuffling of items.
     auto src_indices = std::vector<size_t>{};
-    src_indices.reserve(size);
-    for (size_t i = 0; i != size; ++i) {
+    src_indices.reserve(src_size);
+    for (size_t i = 0; i != src_size; ++i) {
         src_indices.push_back(i);
     }
 
     size_t dst = 0;
     for (auto it = indices_first; it != indices_last; ++it, ++dst) {
         ttlet index = index_op(*it);
-        tt_axiom(index < std::size(src_indices));
+        tt_axiom(index < size(src_indices));
 
         auto src = [&src_indices,index]() {
             auto src = index;
@@ -278,7 +278,7 @@ auto shuffle_by_index(auto first, auto last, auto indices_first, auto indices_la
 
         if (src != dst) {
             std::iter_swap(first + src, first + dst);
-            std::iter_swap(std::begin(src_indices) + src, std::begin(src_indices) + dst);
+            std::iter_swap(begin(src_indices) + src, begin(src_indices) + dst);
         }
     }
 

@@ -45,7 +45,7 @@ int tt_main(int argc, char* argv[])
         std::cout << "Error BON8 encode -> decode failure" << std::endl;
     }
 
-    std::cout << std::format("json {}, bon8 {}, compression {:.1f}", std::size(json_data), std::size(bon8_data), (static_cast<double>(std::size(bon8_data)) / static_cast<double>(std::size(json_data))) * 100.0) << std::endl;
+    std::cout << std::format("json {}, bon8 {}, compression {:.1f}", size(json_data), size(bon8_data), (static_cast<double>(size(bon8_data)) / static_cast<double>(size(json_data))) * 100.0) << std::endl;
 
     return 0;
 }

@@ -100,7 +100,7 @@ void tab_widget::draw(draw_context const &context) noexcept
     tt_axiom(is_gui_thread());
     if (auto delegate = _delegate.lock()) {
         auto index = delegate->index(const_cast<tab_widget &>(*this));
-        if (index >= 0 and index < std::ssize(_children)) {
+        if (index >= 0 and index < ssize(_children)) {
             return _children.begin() + index;
         }
     }
@@ -112,7 +112,7 @@ void tab_widget::draw(draw_context const &context) noexcept
     tt_axiom(is_gui_thread());
     if (auto delegate = _delegate.lock()) {
         auto index = delegate->index(*this);
-        if (index >= 0 and index < std::ssize(_children)) {
+        if (index >= 0 and index < ssize(_children)) {
             return _children.begin() + index;
         }
     }
@@ -122,7 +122,7 @@ void tab_widget::draw(draw_context const &context) noexcept
 [[nodiscard]] widget const &tab_widget::selected_child() const noexcept
 {
     tt_axiom(is_gui_thread());
-    tt_axiom(std::ssize(_children) != 0);
+    tt_axiom(ssize(_children) != 0);
 
     auto i = find_selected_child();
     if (i != _children.cend()) {

@@ -26,19 +26,19 @@ theme::theme(tt::font_book const &font_book, URL const &url)
 [[nodiscard]] tt::color theme::color(theme_color theme_color, ssize_t nesting_level) const noexcept
 {
     ttlet theme_color_i = static_cast<size_t>(theme_color);
-    tt_axiom(theme_color_i < std::size(_colors));
+    tt_axiom(theme_color_i < _colors.size());
 
     ttlet &shades = _colors[theme_color_i];
-    tt_axiom(std::ssize(shades) > 0);
+    tt_axiom(not shades.empty());
 
     nesting_level = std::max(ssize_t{0}, nesting_level);
-    return shades[nesting_level % std::ssize(shades)];
+    return shades[nesting_level % ssize(shades)];
 }
 
 [[nodiscard]] tt::text_style const &theme::text_style(theme_text_style theme_text_style) const noexcept
 {
     ttlet theme_text_style_i = static_cast<size_t>(theme_text_style);
-    tt_axiom(theme_text_style_i < std::size(_text_styles));
+    tt_axiom(theme_text_style_i < _text_styles.size());
 
     return _text_styles[theme_text_style_i];
 }
@@ -87,13 +87,13 @@ theme::theme(tt::font_book const &font_book, URL const &url)
 [[nodiscard]] color theme::parse_color_value(datum const &data)
 {
     if (holds_alternative<datum::vector_type>(data)) {
-        if (std::ssize(data) != 3 && std::ssize(data) != 4) {
+        if (data.size() != 3 && data.size() != 4) {
             throw parse_error("Expect 3 or 4 values for a color, got {}.", data);
         }
         ttlet r = data[0];
         ttlet g = data[1];
         ttlet b = data[2];
-        ttlet a = std::ssize(data) == 4 ? data[3] : (holds_alternative<long long>(r) ? datum{255} : datum{1.0});
+        ttlet a = data.size() == 4 ? data[3] : (holds_alternative<long long>(r) ? datum{255} : datum{1.0});
 
         if (holds_alternative<long long>(r) and holds_alternative<long long>(g) and holds_alternative<long long>(b) and
             holds_alternative<long long>(a)) {
@@ -167,7 +167,7 @@ theme::theme(tt::font_book const &font_book, URL const &url)
     }
 
     ttlet color_list_object = data[object_name];
-    if (holds_alternative<datum::vector_type>(color_list_object) and std::size(color_list_object) > 0 and
+    if (holds_alternative<datum::vector_type>(color_list_object) and not color_list_object.empty() and
         holds_alternative<datum::vector_type>(color_list_object[0])) {
 
         auto r = std::vector<tt::color>{};

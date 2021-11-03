@@ -312,7 +312,7 @@ void gui_window_win32::set_text_on_clipboard(std::string str) noexcept
     {
         auto wstr = tt::to_wstring(str);
 
-        auto wstr_handle = GlobalAlloc(GMEM_MOVEABLE, (std::ssize(wstr) + 1) * sizeof(wchar_t));
+        auto wstr_handle = GlobalAlloc(GMEM_MOVEABLE, (ssize(wstr) + 1) * sizeof(wchar_t));
         if (wstr_handle == nullptr) {
             tt_log_error("Could not allocate clipboard data '{}'", get_last_error_message());
             goto done;
@@ -325,7 +325,7 @@ void gui_window_win32::set_text_on_clipboard(std::string str) noexcept
             goto done;
         }
 
-        std::memcpy(wstr_c, wstr.c_str(), (std::ssize(wstr) + 1) * sizeof(wchar_t));
+        std::memcpy(wstr_c, wstr.c_str(), (ssize(wstr) + 1) * sizeof(wchar_t));
 
         if (!GlobalUnlock(wstr_handle) && GetLastError() != ERROR_SUCCESS) {
             tt_log_error("Could not unlock clipboard data '{}'", get_last_error_message());

@@ -27,7 +27,7 @@ theme_book::theme_book(tt::font_book const &font_book, std::vector<URL> const &t
         }
     }
 
-    if (std::ssize(themes) == 0) {
+    if (ssize(themes) == 0) {
         tt_log_fatal("Did not load any themes.");
     }
 }
@@ -73,7 +73,7 @@ theme_book::theme_book(tt::font_book const &font_book, std::vector<URL> const &t
         return *default_theme_and_mode;
     } else if (default_theme) {
         return *default_theme;
-    } else if (std::ssize(themes) > 0) {
+    } else if (ssize(themes) > 0) {
         return *themes[0].get();
     } else {
         tt_no_default();

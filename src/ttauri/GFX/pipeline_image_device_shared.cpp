@@ -131,7 +131,7 @@ void device_shared::update_atlas_with_staging_pixel_map(const paged_image &image
     staging_texture.transitionLayout(device, vk::Format::eR16G16B16A16Sfloat, vk::ImageLayout::eTransferSrcOptimal);
 
     std::array<std::vector<vk::ImageCopy>, atlas_maximum_num_images> regions_to_copy_per_atlas_texture;
-    for (size_t index = 0; index < std::size(image.pages); index++) {
+    for (size_t index = 0; index < size(image.pages); index++) {
         ttlet page = image.pages.at(index);
 
         ttlet border_offset = translate2{narrow_cast<float>(page_border), narrow_cast<float>(page_border)};

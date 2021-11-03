@@ -448,7 +448,7 @@ std::vector<vk::DeviceQueueCreateInfo> gfx_device_vulkan::make_device_queue_crea
     auto r = std::vector<vk::DeviceQueueCreateInfo>{};
     for (auto queue_family_properties : physicalIntrinsic.getQueueFamilyProperties()) {
         ttlet num_queues = 1;
-        tt_axiom(std::size(default_queue_priority) >= num_queues);
+        tt_axiom(size(default_queue_priority) >= num_queues);
         r.emplace_back(vk::DeviceQueueCreateFlags(), queue_family_index++, num_queues, default_queue_priority.data());
     }
     return r;

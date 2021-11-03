@@ -76,7 +76,7 @@ public:
         _gap_size(_grow_size),
         _allocator(allocator)
     {
-        placement_copy(std::begin(init), std::end(init), _begin);
+        placement_copy(init.begin(), init.end(), _begin);
         tt_axiom(holds_invariant());
     }
 
@@ -429,6 +429,36 @@ public:
         return const_iterator{this, _it_end};
     }
 
+    [[nodiscard]] friend iterator begin(gap_buffer &rhs) noexcept
+    {
+        return rhs.begin();
+    }
+
+    [[nodiscard]] friend const_iterator begin(gap_buffer const &rhs) noexcept
+    {
+        return rhs.begin();
+    }
+
+    [[nodiscard]] friend const_iterator cbegin(gap_buffer const &rhs) noexcept
+    {
+        return rhs.begin();
+    }
+
+    [[nodiscard]] friend iterator end(gap_buffer &rhs) noexcept
+    {
+        return rhs.end();
+    }
+
+    [[nodiscard]] friend const_iterator end(gap_buffer const &rhs) noexcept
+    {
+        return rhs.end();
+    }
+
+    [[nodiscard]] friend const_iterator cend(gap_buffer const &rhs) noexcept
+    {
+        return rhs.end();
+    }
+
     template<typename... Args>
     reference emplace_back(Args &&...args) noexcept
     {
@@ -633,28 +663,27 @@ public:
         if (lhs.size() != rhs.size()) {
             return false;
         } else {
-            return std::equal(std::begin(lhs), std::end(lhs), std::begin(rhs));
+            return std::equal(lhs.begin(), lhs.end(), rhs.begin());
         }
     }
 
     template<typename Container>
     [[nodiscard]] friend bool operator==(gap_buffer const &lhs, Container const &rhs) noexcept
     {
-        if (lhs.size() != rhs.size()) {
+        using std::size;
+        using std::begin;
+
+        if (lhs.size() != size(rhs)) {
             return false;
         } else {
-            return std::equal(std::begin(lhs), std::end(lhs), std::begin(rhs));
+            return std::equal(lhs.begin(), lhs.end(), begin(rhs));
         }
     }
 
     template<typename Container>
     [[nodiscard]] friend bool operator==(Container const &lhs, gap_buffer const &rhs) noexcept
     {
-        if (lhs.size() != rhs.size()) {
-            return false;
-        } else {
-            return std::equal(std::begin(lhs), std::end(lhs), std::begin(rhs));
-        }
+        return rhs == lhs;
     }
 
 private:

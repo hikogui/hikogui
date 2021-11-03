@@ -87,24 +87,44 @@ struct unicode_bidi_isolated_run_sequence {
     {
     }
 
-    auto begin() noexcept
+    [[nodiscard]] auto begin() noexcept
     {
         return recursive_iterator_begin(runs);
     }
 
-    auto end() noexcept
+    [[nodiscard]] auto end() noexcept
     {
         return recursive_iterator_end(runs);
     }
 
-    auto begin() const noexcept
+    [[nodiscard]] auto begin() const noexcept
     {
         return recursive_iterator_begin(runs);
     }
 
-    auto end() const noexcept
+    [[nodiscard]] auto end() const noexcept
     {
         return recursive_iterator_end(runs);
+    }
+
+    [[nodiscard]] friend auto begin(unicode_bidi_isolated_run_sequence &rhs) noexcept
+    {
+        return rhs.begin();
+    }
+
+    [[nodiscard]] friend auto begin(unicode_bidi_isolated_run_sequence const &rhs) noexcept
+    {
+        return rhs.begin();
+    }
+
+    [[nodiscard]] friend auto end(unicode_bidi_isolated_run_sequence &rhs) noexcept
+    {
+        return rhs.end();
+    }
+
+    [[nodiscard]] friend auto end(unicode_bidi_isolated_run_sequence const &rhs) noexcept
+    {
+        return rhs.end();
     }
 
     void add_run(unicode_bidi_level_run const &run) noexcept
@@ -282,7 +302,7 @@ LRI:
                 ;
             } else if (overflow_embedding_count > 0) {
                 --overflow_embedding_count;
-            } else if (stack.back().isolate_status == false && std::ssize(stack) >= 2) {
+            } else if (stack.back().isolate_status == false && stack.size() >= 2) {
                 stack.pop_back();
             } else {
                 // PDF does not match embedding character.
@@ -391,32 +411,32 @@ static void unicode_bidi_W5(unicode_bidi_isolated_run_sequence &sequence) noexce
 {
     using enum unicode_bidi_class;
 
-    auto ET_start = std::end(sequence);
+    auto ET_start = end(sequence);
     auto starts_with_EN = false;
 
-    for (auto it = std::begin(sequence); it != std::end(sequence); ++it) {
+    for (auto it = begin(sequence); it != end(sequence); ++it) {
         auto &char_info = *it;
 
         switch (char_info.direction) {
         case ET:
             if (starts_with_EN) {
                 char_info.direction = EN;
-            } else if (ET_start == std::end(sequence)) {
+            } else if (ET_start == end(sequence)) {
                 ET_start = it;
             }
             break;
 
         case EN:
             starts_with_EN = true;
-            if (ET_start != std::end(sequence)) {
+            if (ET_start != end(sequence)) {
                 for (auto jt = ET_start; jt != it; ++jt) {
                     jt->direction = EN;
                 }
-                ET_start = std::end(sequence);
+                ET_start = end(sequence);
             }
             break;
 
-        default: starts_with_EN = false; ET_start = std::end(sequence);
+        default: starts_with_EN = false; ET_start = end(sequence);
         }
     }
 }
@@ -468,7 +488,7 @@ static std::vector<unicode_bidi_bracket_pair> unicode_bidi_BD16(unicode_bidi_iso
     auto pairs = std::vector<unicode_bidi_bracket_pair>{};
     auto stack = tt::stack<bracket_start, 63>{};
 
-    for (auto it = std::begin(isolated_run_sequence); it != std::end(isolated_run_sequence); ++it) {
+    for (auto it = begin(isolated_run_sequence); it != end(isolated_run_sequence); ++it) {
         if (it->direction == ON) {
             switch (it->description->bidi_bracket_type()) {
             case unicode_bidi_bracket_type::o:
@@ -507,7 +527,7 @@ static std::vector<unicode_bidi_bracket_pair> unicode_bidi_BD16(unicode_bidi_iso
     }
 
 stop_processing:
-    std::sort(std::begin(pairs), std::end(pairs));
+    std::sort(begin(pairs), end(pairs));
     return pairs;
 }
 
@@ -531,7 +551,7 @@ stop_processing:
     using enum unicode_bidi_class;
 
     auto it = open_bracket;
-    while (it != std::begin(isolated_run_sequence)) {
+    while (it != begin(isolated_run_sequence)) {
         --it;
 
         if (ttlet direction = unicode_bidi_N0_strong(it->direction); direction != ON) {
@@ -599,7 +619,7 @@ unicode_bidi_N0(unicode_bidi_isolated_run_sequence &isolated_run_sequence, unico
             it->direction = pair_direction;
         }
 
-        for (auto it = pair.close + 1; it != std::end(isolated_run_sequence); ++it) {
+        for (auto it = pair.close + 1; it != end(isolated_run_sequence); ++it) {
             if (it->description->bidi_class() != NSM) {
                 break;
             }
@@ -613,11 +633,11 @@ static void unicode_bidi_N1(unicode_bidi_isolated_run_sequence &isolated_run_seq
     using enum unicode_bidi_class;
 
     auto direction_before_NI = isolated_run_sequence.sos;
-    auto first_NI = std::end(isolated_run_sequence);
+    auto first_NI = end(isolated_run_sequence);
 
-    for (auto it = std::begin(isolated_run_sequence); it != std::end(isolated_run_sequence); ++it) {
+    for (auto it = begin(isolated_run_sequence); it != end(isolated_run_sequence); ++it) {
         ttlet &char_info = *it;
-        if (first_NI != std::end(isolated_run_sequence)) {
+        if (first_NI != end(isolated_run_sequence)) {
             if (!is_NI(char_info.direction)) {
                 ttlet direction_after_NI = (it->direction == EN || it->direction == AN) ? R : it->direction;
 
@@ -627,7 +647,7 @@ static void unicode_bidi_N1(unicode_bidi_isolated_run_sequence &isolated_run_seq
                     });
                 }
 
-                first_NI = std::end(isolated_run_sequence);
+                first_NI = end(isolated_run_sequence);
                 direction_before_NI = direction_after_NI;
             }
 
@@ -638,8 +658,8 @@ static void unicode_bidi_N1(unicode_bidi_isolated_run_sequence &isolated_run_seq
         }
     }
 
-    if (first_NI != std::end(isolated_run_sequence) && direction_before_NI == isolated_run_sequence.eos) {
-        std::for_each(first_NI, std::end(isolated_run_sequence), [direction_before_NI](auto &item) {
+    if (first_NI != end(isolated_run_sequence) && direction_before_NI == isolated_run_sequence.eos) {
+        std::for_each(first_NI, end(isolated_run_sequence), [direction_before_NI](auto &item) {
             item.direction = direction_before_NI;
         });
     }
@@ -707,7 +727,7 @@ unicode_bidi_BD13(std::vector<unicode_bidi_level_run> level_runs) noexcept
 {
     std::vector<unicode_bidi_isolated_run_sequence> r;
 
-    std::reverse(std::begin(level_runs), std::end(level_runs));
+    std::reverse(begin(level_runs), end(level_runs));
     while (!level_runs.empty()) {
         auto isolated_run_sequence = unicode_bidi_isolated_run_sequence(level_runs.back());
         level_runs.pop_back();
@@ -745,11 +765,11 @@ unicode_bidi_BD13(std::vector<unicode_bidi_level_run> level_runs) noexcept
     unicode_bidi_char_info_iterator last,
     int8_t paragraph_embedding_level) noexcept
 {
-    if (std::begin(isolated_run_sequence) != std::end(isolated_run_sequence)) {
+    if (begin(isolated_run_sequence) != end(isolated_run_sequence)) {
         // The calculations on the iterator for last_char_it is required because
         // calling child() on an end iterator is undefined behavior.
-        ttlet first_char_it = std::begin(isolated_run_sequence).child();
-        ttlet last_char_it = (std::end(isolated_run_sequence) - 1).child() + 1;
+        ttlet first_char_it = begin(isolated_run_sequence).child();
+        ttlet last_char_it = (end(isolated_run_sequence) - 1).child() + 1;
 
         ttlet has_char_before = first_char_it != first;
         ttlet has_char_after = last_char_it != last;

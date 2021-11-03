@@ -212,7 +212,7 @@ bool selection_widget::handle_event(command command) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (std::ssize(_menu_button_widgets) != 0) {
+    if (ssize(_menu_button_widgets) != 0) {
         return _menu_button_widgets.front();
     } else {
         return nullptr;
@@ -270,7 +270,7 @@ void selection_widget::repopulate_options() noexcept
         std::tie(options, selected) = delegate->options_and_selected(*this);
     }
 
-    _has_options = std::size(options) > 0;
+    _has_options = size(options) > 0;
 
     // If any of the options has a an icon, all of the options should show the icon.
     auto show_icon = false;

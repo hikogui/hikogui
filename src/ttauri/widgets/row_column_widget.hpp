@@ -112,7 +112,7 @@ public:
     {
         _layout = {};
         _flow_layout.clear();
-        _flow_layout.reserve(std::ssize(_children));
+        _flow_layout.reserve(ssize(_children));
 
         ssize_t index = 0;
 
@@ -123,7 +123,7 @@ public:
             update_constraints_for_child(*child, index++, minimum_thickness, preferred_thickness, maximum_thickness);
         }
 
-        tt_axiom(index == std::ssize(_children));
+        tt_axiom(index == ssize(_children));
 
         if constexpr (axis == axis::row) {
             return _constraints = {
@@ -150,7 +150,7 @@ public:
                 update_layout_for_child(*child, index++, context);
             }
 
-            tt_axiom(index == std::ssize(_children));
+            tt_axiom(index == ssize(_children));
         }
     }
 
