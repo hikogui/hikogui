@@ -63,11 +63,7 @@ widget_constraints const &window_widget::set_constraints() noexcept
     ttlet max_size = extent2{
         content_constraints.maximum.width(), toolbar_constraints.preferred.height() + content_constraints.maximum.height()};
 
-    return _constraints = {
-        min_size,
-        clamp(pref_size, min_size, max(max_size, min_size)),
-        max(max_size, min_size)
-    };
+    return _constraints = {min_size, clamp(pref_size, min_size, max(max_size, min_size)), max(max_size, min_size)};
 }
 
 void window_widget::set_layout(widget_layout const &context) noexcept
@@ -97,40 +93,61 @@ hitbox window_widget::hitbox_test(point3 position) const noexcept
 
     constexpr float BORDER_WIDTH = 10.0f;
 
-    ttlet is_on_left_edge = position.x() <= BORDER_WIDTH;
-    ttlet is_on_right_edge = position.x() >= (layout().width() - BORDER_WIDTH);
-    ttlet is_on_bottom_edge = position.y() <= BORDER_WIDTH;
-    ttlet is_on_top_edge = position.y() >= (layout().height() - BORDER_WIDTH);
+    ttlet can_resize_w = _constraints.minimum.width() != _constraints.maximum.width();
+    ttlet can_resize_h = _constraints.minimum.height() != _constraints.maximum.height();
 
-    ttlet is_on_bottom_left_corner = is_on_bottom_edge && is_on_left_edge;
-    ttlet is_on_bottom_right_corner = is_on_bottom_edge && is_on_right_edge;
-    ttlet is_on_top_left_corner = is_on_top_edge && is_on_left_edge;
-    ttlet is_on_top_right_corner = is_on_top_edge && is_on_right_edge;
+    ttlet is_on_l_edge = position.x() <= BORDER_WIDTH;
+    ttlet is_on_r_edge = position.x() >= (layout().width() - BORDER_WIDTH);
+    ttlet is_on_b_edge = position.y() <= BORDER_WIDTH;
+    ttlet is_on_t_edge = position.y() >= (layout().height() - BORDER_WIDTH);
+
+    ttlet is_on_lb_corner = is_on_l_edge and is_on_b_edge;
+    ttlet is_on_rb_corner = is_on_r_edge and is_on_b_edge;
+    ttlet is_on_lt_corner = is_on_r_edge and is_on_t_edge;
+    ttlet is_on_rt_corner = is_on_l_edge and is_on_t_edge;
+    ttlet is_on_corner = is_on_lb_corner or is_on_rb_corner or is_on_lt_corner or is_on_rt_corner;
+
+    ttlet is_on_l_resizer = can_resize_w and is_on_l_edge;
+    ttlet is_on_r_resizer = can_resize_w and is_on_r_edge;
+    ttlet is_on_b_resizer = can_resize_h and is_on_b_edge;
+    ttlet is_on_t_resizer = can_resize_h and is_on_t_edge;
+
+    ttlet is_on_lb_resizer = is_on_l_resizer and is_on_b_resizer;
+    ttlet is_on_rb_resizer = is_on_r_resizer and is_on_b_resizer;
+    ttlet is_on_lt_resizer = is_on_l_resizer and is_on_t_resizer;
+    ttlet is_on_rt_resizer = is_on_r_resizer and is_on_t_resizer;
 
     auto r = hitbox{this, position};
-    if (is_on_bottom_left_corner) {
-        return {this, position, hitbox::Type::BottomLeftResizeCorner};
-    } else if (is_on_bottom_right_corner) {
-        return {this, position, hitbox::Type::BottomRightResizeCorner};
-    } else if (is_on_top_left_corner) {
-        return {this, position, hitbox::Type::TopLeftResizeCorner};
-    } else if (is_on_top_right_corner) {
-        return {this, position, hitbox::Type::TopRightResizeCorner};
-    } else if (is_on_left_edge) {
+    if (is_on_lb_resizer) {
+        r.type = hitbox::Type::BottomLeftResizeCorner;
+    } else if (is_on_rb_resizer) {
+        r.type = hitbox::Type::BottomRightResizeCorner;
+    } else if (is_on_lt_resizer) {
+        r.type = hitbox::Type::TopLeftResizeCorner;
+    } else if (is_on_rt_resizer) {
+        r.type = hitbox::Type::TopRightResizeCorner;
+    } else if (is_on_l_resizer) {
         r.type = hitbox::Type::LeftResizeBorder;
-    } else if (is_on_right_edge) {
+    } else if (is_on_r_resizer) {
         r.type = hitbox::Type::RightResizeBorder;
-    } else if (is_on_bottom_edge) {
+    } else if (is_on_b_resizer) {
         r.type = hitbox::Type::BottomResizeBorder;
-    } else if (is_on_top_edge) {
+    } else if (is_on_t_resizer) {
         r.type = hitbox::Type::TopResizeBorder;
     }
 
-    if ((is_on_left_edge && _left_resize_border_has_priority) || (is_on_right_edge && _right_resize_border_has_priority) ||
-        (is_on_bottom_edge && _bottom_resize_border_has_priority) || (is_on_top_edge && _top_resize_border_has_priority)) {
+    if (is_on_corner and r.type != hitbox::Type::Default) {
+        // Resizers on corners always have priority.
         return r;
     }
 
+    if ((is_on_l_resizer and _left_resize_border_has_priority) or (is_on_r_resizer and _right_resize_border_has_priority) or
+        (is_on_b_resizer and _bottom_resize_border_has_priority) or (is_on_t_resizer and _top_resize_border_has_priority)) {
+        // Resizers on edges only have priority if there is not a scroll bar on that edge.
+        return r;
+    }
+
+    // Otherwise children have priority.
     auto buffer = pmr::scoped_buffer<256>{};
     for (auto *child : children(buffer.allocator())) {
         if (child) {
