@@ -9,6 +9,7 @@
 #include <ranges>
 
 namespace tt {
+inline namespace v1 {
 
 widget::widget(gui_window &_window, widget *parent) noexcept :
     window(_window), parent(parent), logical_layer(0), semantic_layer(0)
@@ -360,4 +361,5 @@ void widget::scroll_to_show(tt::aarectangle rectangle) noexcept
     return bounding_rectangle(layout().from_window * response_window_rectangle);
 }
 
+}
 } // namespace tt

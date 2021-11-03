@@ -8,6 +8,7 @@
 #include <functional>
 
 namespace tt {
+inline namespace v1 {
 class tab_widget;
 
 class tab_delegate {
@@ -47,4 +48,6 @@ public:
     }
 };
 
+}
 } // namespace tt
+

@@ -8,6 +8,7 @@
 #include "default_button_delegate.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 /** A graphical control element that allows the user to choose only one of a
  * predefined set of mutually exclusive options.
@@ -100,4 +101,5 @@ private:
     void draw_radio_pip(draw_context const &context) noexcept;
 };
 
+}
 } // namespace tt

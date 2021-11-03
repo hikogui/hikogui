@@ -16,6 +16,7 @@
 #include <future>
 
 namespace tt {
+inline namespace v1 {
 
 /** An simple GUI widget that displays an icon.
  *
@@ -68,4 +69,5 @@ private:
     icon_widget(gui_window &window, widget *parent) noexcept;
 };
 
+}
 } // namespace tt

@@ -10,6 +10,7 @@
 #include "../geometry/translate.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 /** Result of widget_layout::store()
  */
@@ -220,4 +221,5 @@ public:
     }
 };
 
+}
 } // namespace tt

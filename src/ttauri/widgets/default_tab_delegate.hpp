@@ -12,6 +12,7 @@
 #include <unordered_map>
 
 namespace tt {
+inline namespace v1 {
 
 template<typename T>
 class default_tab_delegate : public tab_delegate {
@@ -64,4 +65,5 @@ std::unique_ptr<tab_delegate> make_unique_default_tab_delegate(Value &&value) no
     return std::make_unique<default_tab_delegate<value_type>>(std::forward<Value>(value));
 }
 
+}
 } // namespace tt

@@ -24,6 +24,7 @@
 #include <ranges>
 
 namespace tt {
+inline namespace v1 {
 class gui_window;
 struct mouse_event;
 struct keyboard_event;
@@ -322,4 +323,5 @@ protected:
     [[nodiscard]] aarectangle make_overlay_rectangle(aarectangle requested_rectangle) const noexcept;
 };
 
+}
 } // namespace tt

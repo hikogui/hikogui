@@ -11,6 +11,7 @@
 #include "../text/shaped_text.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 draw_context::draw_context(
     gfx_device_vulkan &device,
@@ -138,4 +139,5 @@ void draw_context::_draw_text(
     }
 }
 
+}
 } // namespace tt

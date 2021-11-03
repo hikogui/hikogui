@@ -19,6 +19,7 @@
 #include <future>
 
 namespace tt {
+inline namespace v1 {
 
 class abstract_button_widget : public widget {
 public:
@@ -112,4 +113,5 @@ protected:
     void draw_button(draw_context const &context) noexcept;
 };
 
+}
 } // namespace tt

@@ -7,6 +7,7 @@
 #include "../GUI/gui_system.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 abstract_button_widget::abstract_button_widget(
     gui_window &window,
@@ -146,4 +147,5 @@ void activate() noexcept;
     return handled;
 }
 
+}
 } // namespace tt

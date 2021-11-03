@@ -5,6 +5,7 @@
 #include "momentary_button_widget.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 widget_constraints const &momentary_button_widget::set_constraints() noexcept
 {
@@ -48,4 +49,5 @@ void momentary_button_widget::draw_label_button(draw_context const &context) noe
         corner_shapes{theme().rounding_radius});
 }
 
+}
 } // namespace tt

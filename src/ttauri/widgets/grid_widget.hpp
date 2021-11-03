@@ -12,6 +12,7 @@
 #include <memory>
 
 namespace tt {
+inline namespace v1 {
 
 /** A GUI widget that lays out child-widgets in a grid with variable sized cells.
  *
@@ -127,4 +128,5 @@ private:
     widget &add_widget(size_t column_nr, size_t row_nr, std::unique_ptr<widget> child_widget) noexcept;
 };
 
+}
 } // namespace tt

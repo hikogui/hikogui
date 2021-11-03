@@ -5,6 +5,7 @@
 #include "system_menu_widget.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 system_menu_widget::system_menu_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
 {
@@ -56,4 +57,5 @@ hitbox system_menu_widget::hitbox_test(point3 position) const noexcept
     }
 }
 
+}
 } // namespace tt

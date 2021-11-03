@@ -15,6 +15,7 @@
 #include <concepts>
 
 namespace tt {
+inline namespace v1 {
 
 template<typename T>
 class default_text_field_delegate;
@@ -129,4 +130,5 @@ std::unique_ptr<text_field_delegate> make_unique_default_text_field_delegate(Val
     return std::make_unique<default_text_field_delegate<value_type>>(std::forward<Value>(value), std::forward<Args>(args)...);
 }
 
+}
 } // namespace tt

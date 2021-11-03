@@ -7,6 +7,7 @@
 #pragma once
 
 namespace tt {
+inline namespace v1 {
 
 /** The state of a button.
  */
@@ -29,4 +30,5 @@ enum class button_state {
     other
 };
 
+}
 }

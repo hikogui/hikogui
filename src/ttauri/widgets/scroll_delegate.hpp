@@ -9,6 +9,7 @@
 #include <functional>
 
 namespace tt {
+inline namespace v1 {
 template<axis,bool>
 class scroll_widget;
 
@@ -20,4 +21,5 @@ public:
     virtual void deinit(scroll_widget<Axis, ControlsWindow> &sender) noexcept {}
 };
 
+}
 } // namespace tt

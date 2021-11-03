@@ -6,6 +6,7 @@
 #include "../GUI/gui_window.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 widget_constraints const &toolbar_tab_button_widget::set_constraints() noexcept
 {
@@ -106,4 +107,5 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const &cont
         corner_shapes);
 }
 
+}
 } // namespace tt

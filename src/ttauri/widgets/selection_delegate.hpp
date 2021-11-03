@@ -10,6 +10,7 @@
 #include <vector>
 
 namespace tt {
+inline namespace v1 {
 class selection_widget;
 
 class selection_delegate {
@@ -55,4 +56,5 @@ public:
     }
 };
 
+}
 } // namespace tt

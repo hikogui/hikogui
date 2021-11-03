@@ -18,6 +18,7 @@
 #include "widget_layout.hpp"
 
 namespace tt {
+inline namespace v1 {
 class gfx_device;
 class gfx_device_vulkan;
 class shaped_text;
@@ -159,4 +160,5 @@ private:
         const noexcept;
 };
 
+}
 } // namespace tt

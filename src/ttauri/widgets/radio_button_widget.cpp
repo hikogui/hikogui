@@ -5,6 +5,7 @@
 #include "radio_button_widget.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 widget_constraints const &radio_button_widget::set_constraints() noexcept
 {
@@ -68,4 +69,5 @@ void radio_button_widget::draw_radio_pip(draw_context const &context) noexcept
     }
 }
 
+}
 } // namespace tt

@@ -9,6 +9,7 @@
 #include "../weak_or_unique_ptr.hpp"
 
 namespace tt {
+inline namespace v1 {
 class toolbar_widget;
 class system_menu_widget;
 class grid_widget;
@@ -79,4 +80,5 @@ private:
     void constructor_implementation() noexcept;
 };
 
+}
 } // namespace tt

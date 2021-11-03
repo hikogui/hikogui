@@ -11,6 +11,7 @@
 #include <ranges>
 
 namespace tt {
+inline namespace v1 {
 
 /** A toolbar widget is located at the top of a window and lays out its children
  * horizontally.
@@ -97,4 +98,5 @@ private:
     bool tab_button_has_focus() const noexcept;
 };
 
+}
 } // namespace tt

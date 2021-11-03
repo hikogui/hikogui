@@ -10,6 +10,7 @@
 #include "../label.hpp"
 
 namespace tt {
+inline namespace v1 {
 class text_field_widget;
 
 class text_field_delegate {
@@ -72,4 +73,5 @@ public:
     }
 };
 
+}
 } // namespace tt

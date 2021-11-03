@@ -9,6 +9,7 @@
 #include "../cast.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
 {
@@ -93,4 +94,5 @@ void icon_widget::draw(draw_context const &context) noexcept
     }
 }
 
+}
 } // namespace tt

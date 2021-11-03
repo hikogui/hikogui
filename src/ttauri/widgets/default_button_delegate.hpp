@@ -11,6 +11,7 @@
 #include <memory>
 
 namespace tt {
+inline namespace v1 {
 
 /** A default button delegate.
  *
@@ -125,4 +126,5 @@ std::unique_ptr<button_delegate> make_unique_default_button_delegate(Value &&val
         std::forward<Value>(value), std::forward<Args>(args)...);
 }
 
+}
 } // namespace tt

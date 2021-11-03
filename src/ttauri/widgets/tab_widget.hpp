@@ -10,6 +10,7 @@
 #include "default_tab_delegate.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 /** A graphical element that shows only one of a predefined set of mutually
  * exclusive child widgets.
@@ -108,4 +109,5 @@ private:
     [[nodiscard]] widget const &selected_child() const noexcept;
 };
 
+}
 } // namespace tt

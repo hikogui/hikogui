@@ -8,6 +8,7 @@
 #include "../GUI/gui_system.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 text_field_widget::text_field_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
     super(window, parent),
@@ -410,4 +411,5 @@ void text_field_widget::draw_text(draw_context const &context) const noexcept
     context.draw_text(layout(), _text_translate * translate_z(0.2f), label_color(), _shaped_text);
 }
 
+}
 } // namespace tt

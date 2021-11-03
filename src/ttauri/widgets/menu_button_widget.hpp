@@ -8,6 +8,7 @@
 #include "default_button_delegate.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 /** A button that is part of a menu.
  *
@@ -96,4 +97,5 @@ private:
     void draw_check_mark(draw_context const &context) noexcept;
 };
 
+}
 } // namespace tt

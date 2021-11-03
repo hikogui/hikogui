@@ -7,6 +7,7 @@
 #include "abstract_button_widget.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 class momentary_button_widget final : public abstract_button_widget {
 public:
@@ -55,4 +56,5 @@ private:
     void draw_label_button(draw_context const &context) noexcept;
 };
 
+}
 } // namespace tt

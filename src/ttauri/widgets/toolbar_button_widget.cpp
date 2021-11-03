@@ -6,6 +6,7 @@
 #include "../GUI/gui_window.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 widget_constraints const &toolbar_button_widget::set_constraints() noexcept
 {
@@ -79,4 +80,5 @@ void toolbar_button_widget::draw_toolbar_button(draw_context const &context) noe
         layout(), layout().rectangle(), background_color(), foreground_color_, theme().border_width, border_side::inside);
 }
 
+}
 } // namespace tt

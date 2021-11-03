@@ -8,6 +8,7 @@
 #include "overlay_delegate.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 /** A GUI widget which may exist anywhere on a window overlaid above any other widget.
  *
@@ -90,4 +91,5 @@ private:
     void draw_background(draw_context const &context) noexcept;
 };
 
+}
 } // namespace tt

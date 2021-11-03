@@ -18,6 +18,7 @@
 #include <future>
 
 namespace tt {
+inline namespace v1 {
 
 /** A single line text field.
  *
@@ -139,4 +140,5 @@ private:
     void draw_text(draw_context const &context) const noexcept;
 };
 
+}
 } // namespace tt

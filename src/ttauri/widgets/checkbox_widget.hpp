@@ -8,6 +8,7 @@
 #include "default_button_delegate.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 /** A GUI widget that permits the user to make a binary choice.
  *
@@ -87,4 +88,5 @@ private:
     void draw_check_mark(draw_context const &context) noexcept;
 };
 
+}
 } // namespace tt

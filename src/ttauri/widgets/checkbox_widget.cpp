@@ -7,6 +7,7 @@
 #include "../GFX/pipeline_SDF_device_shared.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 checkbox_widget::checkbox_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
     super(window, parent, std::move(delegate))
@@ -79,4 +80,5 @@ void checkbox_widget::draw_check_mark(draw_context const &context) noexcept
     }
 }
 
+}
 } // namespace tt

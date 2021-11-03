@@ -7,6 +7,7 @@
 #include "../GUI/gui_system.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 label_widget::label_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
 {
@@ -131,4 +132,5 @@ void label_widget::draw(draw_context const &context) noexcept
     }
 }
 
+}
 } // namespace tt

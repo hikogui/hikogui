@@ -14,6 +14,7 @@
 #include <memory>
 
 namespace tt {
+inline namespace v1 {
 
 /** A row/column widget lays out child widgets along a row or column.
  *
@@ -232,4 +233,5 @@ using row_widget = row_column_widget<axis::row>;
  */
 using column_widget = row_column_widget<axis::column>;
 
+}
 } // namespace tt

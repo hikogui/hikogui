@@ -7,6 +7,7 @@
 #include "../scoped_buffer.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 tab_widget::~tab_widget()
 {
@@ -132,4 +133,5 @@ void tab_widget::draw(draw_context const &context) noexcept
     }
 }
 
+}
 } // namespace tt

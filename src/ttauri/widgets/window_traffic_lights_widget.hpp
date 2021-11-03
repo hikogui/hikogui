@@ -12,10 +12,8 @@
 #include <array>
 
 namespace tt {
+inline namespace v1 {
 struct graphic_path;
-}
-
-namespace tt {
 
 class window_traffic_lights_widget final : public widget {
 public:
@@ -63,4 +61,5 @@ private:
     void drawWindows(draw_context const &context) noexcept;
 };
 
+}
 } // namespace tt
