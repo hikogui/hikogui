@@ -1380,11 +1380,11 @@ bool true_type_font::load_glyph_metrics(tt::glyph_id glyph_id, glyph_metrics &me
     ttlet entries = make_placement_array<SFNTEntry>(bytes, offset, header->numTables.value());
 
     ttlet tag = fourcc(table_name);
-    auto it = std::lower_bound(std::cbegin(entries), std::cend(entries), tag, [](auto const &entry, auto const &tag) {
+    auto it = std::lower_bound(cbegin(entries), cend(entries), tag, [](auto const &entry, auto const &tag) {
         return entry.tag < tag;
     });
 
-    if (it != std::cend(entries) and it->tag == tag) {
+    if (it != cend(entries) and it->tag == tag) {
         return bytes.subspan(it->offset.value(), it->length.value());
     } else {
         return {};

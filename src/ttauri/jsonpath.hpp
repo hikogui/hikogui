@@ -386,8 +386,8 @@ public:
     [[nodiscard]] jsonpath(std::string_view rhs) : _nodes()
     {
         auto tokens = parseTokens(rhs);
-        ttlet it_end = std::cend(tokens);
-        for (auto it = std::cbegin(tokens); it != it_end; ++it) {
+        ttlet it_end = tokens.cend();
+        for (auto it = tokens.cbegin(); it != it_end; ++it) {
             if (*it == tokenizer_name_t::Operator and *it == ".") {
                 _nodes.emplace_back(parse_jsonpath_child_operator(it, it_end));
 

@@ -912,14 +912,14 @@ public:
     [[nodiscard]] std::vector<datum *> find(jsonpath const &path) noexcept
     {
         auto r = std::vector<datum *>{};
-        find(std::cbegin(path), std::cend(path), r);
+        find(path.cbegin(), path.cend(), r);
         return r;
     }
 
     [[nodiscard]] std::vector<datum const *> find(jsonpath const &path) const noexcept
     {
         auto tmp = std::vector<datum *>{};
-        const_cast<datum *>(this)->find(std::cbegin(path), std::cend(path), tmp);
+        const_cast<datum *>(this)->find(path.cbegin(), path.cend(), tmp);
         auto r = std::vector<datum const *>{};
         std::copy(tmp.begin(), tmp.end(), std::back_inserter(r));
         return r;
@@ -935,7 +935,7 @@ public:
      */
     [[nodiscard]] bool remove(jsonpath const &path) noexcept
     {
-        return static_cast<bool>(remove(std::cbegin(path), std::cend(path)));
+        return static_cast<bool>(remove(path.cbegin(), path.cend()));
     }
 
     /** Find a object by path.
@@ -946,7 +946,7 @@ public:
     [[nodiscard]] datum *find_one(jsonpath const &path) noexcept
     {
         tt_axiom(path.is_singular());
-        return find_one(std::cbegin(path), std::cend(path), false);
+        return find_one(path.cbegin(), path.cend(), false);
     }
 
     /** Find a object by path potentially creating intermediate objects.
@@ -957,7 +957,7 @@ public:
     [[nodiscard]] datum *find_one_or_create(jsonpath const &path) noexcept
     {
         tt_axiom(path.is_singular());
-        return find_one(std::cbegin(path), std::cend(path), true);
+        return find_one(path.cbegin(), path.cend(), true);
     }
 
     /** Find a object by path.
@@ -968,7 +968,7 @@ public:
     [[nodiscard]] datum const *find_one(jsonpath const &path) const noexcept
     {
         tt_axiom(path.is_singular());
-        return const_cast<datum *>(this)->find_one(std::cbegin(path), std::cend(path), false);
+        return const_cast<datum *>(this)->find_one(path.cbegin(), path.cend(), false);
     }
 
     [[nodiscard]] constexpr datum const &operator[](datum const &rhs) const
