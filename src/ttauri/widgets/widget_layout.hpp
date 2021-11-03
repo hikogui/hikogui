@@ -8,6 +8,7 @@
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/transform.hpp"
 #include "../geometry/translate.hpp"
+#include "../chrono.hpp"
 
 namespace tt {
 inline namespace v1 {
