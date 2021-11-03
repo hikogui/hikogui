@@ -5,7 +5,6 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../graphic_path.hpp"
 #include "../text/font_glyph_ids.hpp"
 #include <memory>
 #include <string>
@@ -13,7 +12,6 @@
 
 namespace tt {
 inline namespace v1 {
-struct graphic_path;
 
 class window_traffic_lights_widget final : public widget {
 public:
