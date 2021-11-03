@@ -99,6 +99,7 @@ protected:
 private:
     gfx_queue_vulkan const *_graphics_queue;
     gfx_queue_vulkan const *_present_queue;
+    vk::Extent2D _render_area_granularity;
 
     void build(extent2 new_size);
 

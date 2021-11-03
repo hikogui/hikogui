@@ -246,6 +246,14 @@ public:
         return intrinsic.createRenderPass(createInfo);
     }
 
+    vk::Extent2D getRenderAreaGranularity(const vk::RenderPass &render_pass) const noexcept
+    {
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        vk::Extent2D r;
+        intrinsic.getRenderAreaGranularity(render_pass, &r);
+        return r;
+    }
+
     vk::Semaphore createSemaphore(const vk::SemaphoreCreateInfo &createInfo) const
     {
         tt_axiom(gfx_system_mutex.recurse_lock_count());

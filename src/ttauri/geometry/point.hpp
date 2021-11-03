@@ -6,6 +6,7 @@
 
 #include "../rapid/numeric_array.hpp"
 #include "vector.hpp"
+#include "extent.hpp"
 #include <format>
 
 namespace tt {
@@ -248,6 +249,23 @@ public:
     {
         return point{floor(static_cast<f32x4>(rhs))};
     }
+
+    /** Round the coordinates of a point toward the top-right with the given granularity.
+     */
+    [[nodiscard]] friend constexpr point ceil(point const &lhs, extent2 rhs) noexcept
+    {
+        ttlet rhs_ = f32x4{rhs}.xy11();
+        return point{ceil(f32x4{lhs} / rhs_) * rhs_};
+    }
+
+    /** Round the coordinates of a point toward the left-bottom with the given granularity.
+     */
+    [[nodiscard]] friend constexpr point floor(point const &lhs, extent2 rhs) noexcept
+    {
+        ttlet rhs_ = f32x4{rhs}.xy11();
+        return point{floor(f32x4{lhs} / rhs_) * rhs_};
+    }
+
 
     /** Check if the point is valid.
      * This function will check if w is not zero, and with a 2D point is z is zero.
