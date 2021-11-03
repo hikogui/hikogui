@@ -73,6 +73,7 @@ void toolbar_tab_button_widget::request_redraw() const noexcept
                 return true;
             }
             break;
+        case command::gui_sysmenu_open: window.open_system_menu(); return true;
 
         default:;
         }

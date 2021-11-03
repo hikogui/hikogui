@@ -310,6 +310,9 @@ bool gui_window::handle_event(tt::command command) noexcept
     case command::gui_widget_prev:
         update_keyboard_target(_keyboard_target_widget, keyboard_focus_group::normal, keyboard_focus_direction::backward);
         return true;
+    case command::gui_toolbar_open:
+        update_keyboard_target(widget.get(), keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
+        return true;
     default:;
     }
     return false;

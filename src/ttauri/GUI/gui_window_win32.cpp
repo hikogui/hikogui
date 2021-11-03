@@ -215,6 +215,23 @@ void gui_window_win32::normalize_window()
     });
 }
 
+void gui_window_win32::open_system_menu()
+{
+    tt_axiom(is_gui_thread());
+
+    // Position the system menu on the left side, below the system menu button.
+    ttlet screen_extent = virtual_screen_size();
+    ttlet left = screen_rectangle.left();
+    ttlet top = screen_extent.height() - (screen_rectangle.top() - 30.0f);
+
+    // Open the system menu window and wait.
+    ttlet system_menu = GetSystemMenu(win32Window, false);
+    ttlet cmd = TrackPopupMenu(system_menu, TPM_RETURNCMD, narrow_cast<int>(left), narrow_cast<int>(top), 0, win32Window, NULL);
+    if (cmd > 0) {
+        SendMessage(win32Window, WM_SYSCOMMAND, narrow_cast<WPARAM>(cmd), LPARAM{0});
+    }
+}
+
 void gui_window_win32::set_window_size(extent2 new_extent)
 {
     tt_axiom(is_gui_thread());
@@ -594,13 +611,29 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         }
     } break;
 
-    case WM_SYSKEYDOWN: {
-        auto alt_pressed = (narrow_cast<uint32_t>(lParam) & 0x20000000) != 0;
-        if (!alt_pressed) {
-            return -1;
+    case WM_SYSCOMMAND: {
+        if (wParam == SC_KEYMENU) {
+            send_event(KeyboardState::Idle, keyboard_modifiers::None, keyboard_virtual_key::Menu);
+            return 0;
         }
     }
-        [[fallthrough]];
+
+    //case WM_SYSKEYUP: {
+    //    auto alt_pressed = (narrow_cast<uint32_t>(lParam) & 0x20000000) != 0;
+    //    if (!alt_pressed) {
+    //        return -1;
+    //    }
+    //    return -1;
+    //} break;
+    //
+    //case WM_SYSKEYDOWN: {
+    //    auto alt_pressed = (narrow_cast<uint32_t>(lParam) & 0x20000000) != 0;
+    //    if (!alt_pressed) {
+    //        return -1;
+    //    }
+    //    return -1;
+    //} break;
+
     case WM_KEYDOWN: {
         auto extended = (narrow_cast<uint32_t>(lParam) & 0x01000000) != 0;
         auto key_code = narrow_cast<int>(wParam);

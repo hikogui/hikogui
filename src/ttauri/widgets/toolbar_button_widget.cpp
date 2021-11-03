@@ -62,6 +62,9 @@ void toolbar_button_widget::draw(draw_context const &context) noexcept
             }
             break;
 
+        case command::gui_sysmenu_open:
+            window.open_system_menu();
+            return true;
         default:;
         }
     }

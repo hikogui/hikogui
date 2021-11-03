@@ -37,6 +37,8 @@ public:
 
     void normalize_window() override;
 
+    void open_system_menu() override;
+
     void set_window_size(extent2 extent) override;
 
     [[nodiscard]] extent2 virtual_screen_size() const noexcept override;
