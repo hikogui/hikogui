@@ -9,6 +9,7 @@
 #include "../geometry/point.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 class widget;
 
@@ -73,4 +74,5 @@ private:
     float _elevation;
 };
 
+}
 } // namespace tt
