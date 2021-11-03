@@ -20,8 +20,6 @@ widget_constraints const &radio_button_widget::set_constraints() noexcept
 
 void radio_button_widget::set_layout(widget_layout const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (visible) {
         if (_layout.store(context) >= layout_update::transform) {
             _button_rectangle = align(layout().rectangle(), _button_size, alignment::top_left);
@@ -36,8 +34,6 @@ void radio_button_widget::set_layout(widget_layout const &context) noexcept
 
 void radio_button_widget::draw(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (visible and overlaps(context, layout())) {
         draw_radio_button(context);
         draw_radio_pip(context);
@@ -47,8 +43,6 @@ void radio_button_widget::draw(draw_context const &context) noexcept
 
 void radio_button_widget::draw_radio_button(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     context.draw_box(
         layout(),
         _button_rectangle,
@@ -61,8 +55,6 @@ void radio_button_widget::draw_radio_button(draw_context const &context) noexcep
 
 void radio_button_widget::draw_radio_pip(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     _animated_value.update(state() == button_state::on ? 1.0f : 0.0f, context.display_time_point);
     if (_animated_value.is_animating()) {
         request_redraw();

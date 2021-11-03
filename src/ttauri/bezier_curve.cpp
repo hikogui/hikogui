@@ -237,10 +237,10 @@ static void fillRowSpan(pixel_row<uint8_t> row, float const startX, float const 
         return;
     }
 
-    ttlet startX_int = narrow_cast<ssize_t>(startX);
+    ttlet startX_int = narrow_cast<size_t>(startX);
     ttlet endXplusOne = endX + 1.0f;
-    ttlet endX_int = narrow_cast<ssize_t>(endXplusOne);
-    ttlet startColumn = std::max(startX_int, ssize_t{0});
+    ttlet endX_int = narrow_cast<size_t>(endXplusOne);
+    ttlet startColumn = std::max(startX_int, size_t{0});
     ttlet endColumn = std::min(endX_int, row.width());
     ttlet nrColumns = endColumn - startColumn;
 
@@ -253,7 +253,7 @@ static void fillRowSpan(pixel_row<uint8_t> row, float const startX, float const 
     }
 }
 
-static void fillRow(pixel_row<uint8_t> row, int const rowY, std::vector<bezier_curve> const& curves) noexcept
+static void fillRow(pixel_row<uint8_t> row, size_t rowY, std::vector<bezier_curve> const& curves) noexcept
 {
     // 5 times super sampling.
     for (float y = rowY + 0.1f; y < (rowY + 1); y += 0.2f) {
@@ -275,7 +275,7 @@ static void fillRow(pixel_row<uint8_t> row, int const rowY, std::vector<bezier_c
 
 void fill(pixel_map<uint8_t> &image, std::vector<bezier_curve> const &curves) noexcept
 {
-    for (int rowNr = 0; rowNr < image.height(); rowNr++) {
+    for (size_t rowNr = 0; rowNr < image.height(); rowNr++) {
         fillRow(image.at(rowNr), rowNr, curves);
     }
 }
@@ -283,7 +283,7 @@ void fill(pixel_map<uint8_t> &image, std::vector<bezier_curve> const &curves) no
 
  [[nodiscard]] static float generate_sdf_r8_pixel(point2 point, std::vector<bezier_curve> const &curves) noexcept
 {
-    if (std::ssize(curves) == 0) {
+    if (size(curves) == 0) {
         return -std::numeric_limits<float>::max();
     }
 
@@ -303,7 +303,7 @@ static void bad_pixels_edges(pixel_map<sdf_r8> &image) noexcept
 {
     // Bottom edge.
     auto row = image[0];
-    for (ssize_t column_nr = 0; column_nr != image.width(); ++column_nr) {
+    for (size_t column_nr = 0; column_nr != image.width(); ++column_nr) {
         auto &pixel = row[column_nr];
         if (static_cast<float>(pixel) > 0.0) {
             pixel.repair();
@@ -312,7 +312,7 @@ static void bad_pixels_edges(pixel_map<sdf_r8> &image) noexcept
 
     // Top edge
     row = image[image.height() - 1];
-    for (ssize_t column_nr = 0; column_nr != image.width(); ++column_nr) {
+    for (size_t column_nr = 0; column_nr != image.width(); ++column_nr) {
         auto &pixel = row[column_nr];
         if (static_cast<float>(pixel) > 0.0) {
             pixel.repair();
@@ -320,7 +320,7 @@ static void bad_pixels_edges(pixel_map<sdf_r8> &image) noexcept
     }
 
     // Left and right edge
-    for (ssize_t row_nr = 0; row_nr != image.height(); ++row_nr) {
+    for (size_t row_nr = 0; row_nr != image.height(); ++row_nr) {
         row = image[row_nr];
 
         auto &left_pixel = row[0];
@@ -337,11 +337,11 @@ static void bad_pixels_edges(pixel_map<sdf_r8> &image) noexcept
 
 static void bad_pixels_horizontally(pixel_map<sdf_r8> &image) noexcept
 {
-    for (ssize_t row_nr = 0; row_nr != image.height(); ++row_nr) {
+    for (size_t row_nr = 0; row_nr != image.height(); ++row_nr) {
         auto row = image[row_nr];
         // The left edge of the signed distance field should be outside of the glyph -float_max
         auto prev_pixel_value = sdf_r8(-std::numeric_limits<float>::max());
-        for (ssize_t column_nr = 0; column_nr != image.width(); ++column_nr) {
+        for (size_t column_nr = 0; column_nr != image.width(); ++column_nr) {
             auto &pixel = row[column_nr];
             ttlet pixel_value = static_cast<float>(pixel);
 

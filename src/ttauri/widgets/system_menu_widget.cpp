@@ -22,8 +22,6 @@ widget_constraints const &system_menu_widget::set_constraints() noexcept
 
 void system_menu_widget::set_layout(widget_layout const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (visible) {
         if (_layout.store(context) >= layout_update::transform) {
             ttlet icon_height = layout().height() < theme().toolbar_height * 1.2f ? layout().height() : theme().toolbar_height;

@@ -26,8 +26,6 @@ widget_constraints const &menu_button_widget::set_constraints() noexcept
 
 void menu_button_widget::set_layout(widget_layout const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (visible) {
         if (_layout.store(context) >= layout_update::transform) {
             ttlet inside_rectangle = layout().rectangle() - theme().margin;
@@ -48,8 +46,6 @@ void menu_button_widget::set_layout(widget_layout const &context) noexcept
 
 void menu_button_widget::draw(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (visible and overlaps(context, layout())) {
         draw_menu_button(context);
         draw_check_mark(context);
@@ -98,8 +94,6 @@ void menu_button_widget::draw(draw_context const &context) noexcept
 
 void menu_button_widget::draw_menu_button(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     ttlet foreground_color_ = focus && window.active ? focus_color() : color::transparent();
     context.draw_box(
         layout(), layout().rectangle(), background_color(), foreground_color_, theme().border_width, border_side::inside);
@@ -107,8 +101,6 @@ void menu_button_widget::draw_menu_button(draw_context const &context) noexcept
 
 void menu_button_widget::draw_check_mark(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     auto state_ = state();
 
     // Checkmark or tristate.

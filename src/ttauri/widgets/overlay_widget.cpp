@@ -10,8 +10,6 @@ namespace tt {
 overlay_widget::overlay_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
     super(window, parent), _delegate(std::move(delegate))
 {
-    tt_axiom(is_gui_thread());
-
     if (parent) {
         // The overlay-widget will reset the semantic_layer as it is the bottom
         // layer of this virtual-window. However the draw-layer should be above
@@ -45,8 +43,6 @@ widget_constraints const &overlay_widget::set_constraints() noexcept
 
 void overlay_widget::set_layout(widget_layout const &context_) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (visible) {
         // The clipping rectangle of the overlay matches the rectangle exactly, with a border around it.
         ttlet context = context_.override_clip(context_.rectangle() + theme().border_width);
@@ -58,8 +54,6 @@ void overlay_widget::set_layout(widget_layout const &context_) noexcept
 
 void overlay_widget::draw(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (visible) {
         if (overlaps(context, layout())) {
             draw_background(context);

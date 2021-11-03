@@ -462,7 +462,7 @@ void png::decode_image(pixel_map<sfloat_rgba16> &image) const
 pixel_map<sfloat_rgba16> png::load(URL const &url)
 {
     ttlet png_data = png(url);
-    auto image = pixel_map<sfloat_rgba16>{narrow_cast<ssize_t>(png_data.width()), narrow_cast<ssize_t>(png_data.height())};
+    auto image = pixel_map<sfloat_rgba16>{png_data.width(), png_data.height()};
     png_data.decode_image(image);
     return image;
 }

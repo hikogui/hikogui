@@ -81,8 +81,6 @@ widget_constraints const &selection_widget::set_constraints() noexcept
 
 void selection_widget::set_layout(widget_layout const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (visible) {
         if (_layout.store(context) >= layout_update::transform) {
             // The overlay itself will make sure the overlay fits the window, so we give the preferred size and position
@@ -120,8 +118,6 @@ void selection_widget::set_layout(widget_layout const &context) noexcept
 
 void selection_widget::draw(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (visible) {
         if (overlaps(context, layout())) {
             draw_outline(context);
@@ -313,8 +309,6 @@ void selection_widget::repopulate_options() noexcept
 
 void selection_widget::draw_outline(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     context.draw_box(
         layout(),
         layout().rectangle(),
@@ -327,16 +321,12 @@ void selection_widget::draw_outline(draw_context const &context) noexcept
 
 void selection_widget::draw_left_box(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     ttlet corner_shapes = tt::corner_shapes{theme().rounding_radius, 0.0f, theme().rounding_radius, 0.0f};
     context.draw_box(layout(), translate_z(0.1f) * _left_box_rectangle, focus_color(), corner_shapes);
 }
 
 void selection_widget::draw_chevrons(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     context.draw_glyph(layout(), translate_z(0.2f) * _chevrons_rectangle, label_color(), _chevrons_glyph);
 }
 

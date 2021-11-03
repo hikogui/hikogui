@@ -19,8 +19,6 @@ toolbar_widget::toolbar_widget(gui_window &window, widget *parent) noexcept : su
 
 widget_constraints const &toolbar_widget::set_constraints() noexcept
 {
-    tt_axiom(is_gui_thread());
-
     _layout = {};
     _flow_layout.clear();
     ssize_t index = 0;
@@ -46,8 +44,6 @@ widget_constraints const &toolbar_widget::set_constraints() noexcept
 
 void toolbar_widget::set_layout(widget_layout const &context_) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (visible) {
         // Clip directly around the toolbar, so that tab buttons looks proper.
         ttlet context = context_.clip(context_.rectangle());
@@ -93,8 +89,6 @@ bool toolbar_widget::tab_button_has_focus() const noexcept
 
 void toolbar_widget::draw(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (visible) {
         if (overlaps(context, layout())) {
             context.draw_box(layout(), layout().rectangle(), theme().color(theme_color::fill, semantic_layer + 1));

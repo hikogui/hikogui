@@ -29,7 +29,7 @@ paged_image::paged_image(gfx_surface const *surface, size_t width, size_t height
     // Like before the surface may not be assigned to a device either.
     // In that case also return an empty image.
     ttlet lock = std::scoped_lock(gfx_system_mutex);
-    if ((this->device = surface->device())) {
+    if ((this->device = surface->device()) != nullptr) {
         ttlet &vulkan_device = narrow_cast<gfx_device_vulkan &>(*device);
 
         ttlet[num_columns, num_rows] = size_in_int_pages();
@@ -81,7 +81,7 @@ paged_image::~paged_image()
 
 void paged_image::upload(pixel_map<sfloat_rgba16> const &image) noexcept
 {
-    tt_axiom(image.width() == narrow_cast<ssize_t>(width) and image.height() == narrow_cast<ssize_t>(height));
+    tt_axiom(image.width() == width and image.height() == height);
 
     if (ttlet vulkan_device = narrow_cast<gfx_device_vulkan *>(device)) {
         ttlet lock = std::scoped_lock(gfx_system_mutex);

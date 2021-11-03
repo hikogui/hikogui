@@ -91,8 +91,6 @@ void window_traffic_lights_widget::set_layout(widget_layout const &context) noex
 
 void window_traffic_lights_widget::drawMacOS(draw_context const &drawContext) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     auto context = drawContext;
 
     ttlet close_circle_color = (!window.active && !hover) ? color(0.246f, 0.246f, 0.246f) :
@@ -128,8 +126,6 @@ void window_traffic_lights_widget::drawMacOS(draw_context const &drawContext) no
 
 void window_traffic_lights_widget::drawWindows(draw_context const &drawContext) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     auto context = drawContext;
 
     if (pressedClose) {
@@ -169,8 +165,6 @@ void window_traffic_lights_widget::drawWindows(draw_context const &drawContext) 
 
 void window_traffic_lights_widget::draw(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (visible and overlaps(context, layout())) {
         if (theme().operating_system == operating_system::macos) {
             drawMacOS(context);

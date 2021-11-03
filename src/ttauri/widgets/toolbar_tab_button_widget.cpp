@@ -34,8 +34,6 @@ void toolbar_tab_button_widget::set_layout(widget_layout const &context) noexcep
 
 void toolbar_tab_button_widget::draw(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (visible and overlaps(context, layout())) {
         draw_toolbar_tab_button(context);
         draw_button(context);
@@ -85,8 +83,6 @@ void toolbar_tab_button_widget::request_redraw() const noexcept
 
 void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     // Draw the outline of the button across the clipping rectangle to clip the
     // bottom of the outline.
     ttlet offset = theme().margin + theme().border_width;

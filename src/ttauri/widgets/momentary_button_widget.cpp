@@ -19,8 +19,6 @@ widget_constraints const &momentary_button_widget::set_constraints() noexcept
 
 void momentary_button_widget::set_layout(widget_layout const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (visible) {
         if (_layout.store(context) >= layout_update::transform) {
             _label_rectangle = aarectangle{theme().margin, 0.0f, layout().width() - theme().margin * 2.0f, layout().height()};
@@ -31,8 +29,6 @@ void momentary_button_widget::set_layout(widget_layout const &context) noexcept
 
 void momentary_button_widget::draw(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (visible and overlaps(context, layout())) {
         draw_label_button(context);
         draw_button(context);
@@ -41,8 +37,6 @@ void momentary_button_widget::draw(draw_context const &context) noexcept
 
 void momentary_button_widget::draw_label_button(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     // Move the border of the button in the middle of a pixel.
     context.draw_box(
         layout(),

@@ -88,8 +88,6 @@ void text_field_widget::set_layout(widget_layout const &context) noexcept
 
 void text_field_widget::draw(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     _next_redraw_time_point = context.display_time_point + _blink_interval;
 
     if (visible and overlaps(context, layout())) {

@@ -47,8 +47,6 @@ tab_widget::tab_widget(gui_window &window, widget *parent, std::weak_ptr<delegat
 
 widget_constraints const &tab_widget::set_constraints() noexcept
 {
-    tt_axiom(is_gui_thread());
-
     _layout = {};
 
     ttlet &selected_child_ = selected_child();
@@ -70,8 +68,6 @@ widget_constraints const &tab_widget::set_constraints() noexcept
 
 void tab_widget::set_layout(widget_layout const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (visible) {
         _layout.store(context);
 

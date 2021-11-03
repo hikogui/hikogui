@@ -80,8 +80,6 @@ widget_constraints const &grid_widget::set_constraints() noexcept
 
 void grid_widget::set_layout(widget_layout const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (visible) {
         if (_layout.store(context) >= layout_update::transform) {
             _columns.set_size(layout().width());
