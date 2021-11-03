@@ -26,8 +26,6 @@ label_widget::label_widget(gui_window &window, widget *parent) noexcept : super(
 
 widget_constraints const &label_widget::set_constraints() noexcept
 {
-    tt_axiom(is_gui_thread());
-
     _layout = {};
     ttlet &text_constraints = _text_widget->set_constraints();
     ttlet &icon_constraints = _icon_widget->set_constraints();
@@ -77,8 +75,6 @@ widget_constraints const &label_widget::set_constraints() noexcept
 
 void label_widget::set_layout(widget_layout const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (visible) {
         if (_layout.store(context) >= layout_update::transform) {
             _text_rectangle = aarectangle{};

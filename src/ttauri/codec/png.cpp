@@ -174,7 +174,7 @@ static std::string read_string(std::span<std::byte const> bytes)
 {
     std::string r;
 
-    for (ssize_t i = 0; i != std::ssize(bytes); ++i) {
+    for (ssize_t i = 0; i != ssize(bytes); ++i) {
         auto c = static_cast<char>(bytes[i]);
         if (c == 0) {
             return r;
@@ -212,7 +212,7 @@ void png::read_chunks(std::span<std::byte const> bytes, ssize_t &offset)
         ttlet header = make_placement_ptr<ChunkHeader>(bytes, offset);
         ttlet length = narrow_cast<ssize_t>(header->length.value());
         tt_parse_check(length < 0x8000'0000, "Chunk length must be smaller than 2GB");
-        tt_parse_check(offset + length + ssizeof(uint32_t) <= std::ssize(bytes), "Chuck extents beyond file.");
+        tt_parse_check(offset + length + ssizeof(uint32_t) <= ssize(bytes), "Chuck extents beyond file.");
 
         switch (fourcc(header->type)) {
         case fourcc("IDAT"): _idat_chunk_data.push_back(bytes.subspan(offset, length)); break;
@@ -276,13 +276,13 @@ png::png(std::unique_ptr<resource_view> view) : _view(std::move(view))
 
 bstring png::decompress_IDATs(ssize_t image_data_size) const
 {
-    if (std::ssize(_idat_chunk_data) == 1) {
+    if (ssize(_idat_chunk_data) == 1) {
         return zlib_decompress(_idat_chunk_data[0], image_data_size);
     } else {
         // Merge all idat chunks together.
         ttlet compressed_data_size =
             std::accumulate(_idat_chunk_data.cbegin(), _idat_chunk_data.cend(), ssize_t{0}, [](ttlet &a, ttlet &b) {
-                return a + std::ssize(b);
+                return a + ssize(b);
             });
 
         bstring compressed_data;
@@ -368,10 +368,10 @@ void png::unfilter_line(std::span<uint8_t> line, std::span<uint8_t const> prev_l
 
 void png::unfilter_lines(bstring &image_data) const
 {
-    auto image_bytes = std::span(reinterpret_cast<uint8_t *>(image_data.data()), std::ssize(image_data));
+    auto image_bytes = std::span(reinterpret_cast<uint8_t *>(image_data.data()), ssize(image_data));
     auto zero_line = bstring(_bytes_per_line, std::byte{0});
 
-    auto prev_line = std::span(reinterpret_cast<uint8_t *>(zero_line.data()), std::ssize(zero_line));
+    auto prev_line = std::span(reinterpret_cast<uint8_t *>(zero_line.data()), ssize(zero_line));
     for (int y = 0; y != _height; ++y) {
         auto line = image_bytes.subspan(y * _stride, _stride);
         unfilter_line(line, prev_line);
@@ -452,7 +452,7 @@ void png::decode_image(pixel_map<sfloat_rgba16> &image) const
     ttlet image_data_size = _stride * _height;
 
     auto image_data = decompress_IDATs(image_data_size);
-    tt_parse_check(std::ssize(image_data) == image_data_size, "Uncompressed image data has incorrect size.");
+    tt_parse_check(ssize(image_data) == image_data_size, "Uncompressed image data has incorrect size.");
 
     unfilter_lines(image_data);
 
@@ -462,7 +462,7 @@ void png::decode_image(pixel_map<sfloat_rgba16> &image) const
 pixel_map<sfloat_rgba16> png::load(URL const &url)
 {
     ttlet png_data = png(url);
-    auto image = pixel_map<sfloat_rgba16>{narrow_cast<ssize_t>(png_data.width()), narrow_cast<ssize_t>(png_data.height())};
+    auto image = pixel_map<sfloat_rgba16>{png_data.width(), png_data.height()};
     png_data.decode_image(image);
     return image;
 }

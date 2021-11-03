@@ -69,7 +69,7 @@ struct skeleton_parse_context {
 
     bool starts_with_and_advance_over(std::string_view text) noexcept {
         if (starts_with(text)) {
-            *this += std::ssize(text);
+            *this += ssize(text);
             return true;
         } else {
             return false;
@@ -88,7 +88,7 @@ struct skeleton_parse_context {
 
     bool advance_over(std::string_view text) noexcept {
         if (advance_to(text)) {
-            *this += std::ssize(text);
+            *this += ssize(text);
             return true;
         } else {
             return false;

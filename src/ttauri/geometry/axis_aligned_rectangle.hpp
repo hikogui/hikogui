@@ -408,6 +408,16 @@ public:
         return axis_aligned_rectangle{p0, p3};
     }
 
+    /** Round rectangle by expanding to a certain granularity.
+     */
+    [[nodiscard]] friend constexpr axis_aligned_rectangle ceil(axis_aligned_rectangle const &lhs, extent2 const &rhs) noexcept
+    {
+        auto p0 = floor(get<0>(lhs), rhs);
+        auto p3 = ceil(get<3>(lhs), rhs);
+        return axis_aligned_rectangle{p0, p3};
+    }
+
+
     /** Round rectangle by shrinking to pixel edge.
      */
     [[nodiscard]] friend constexpr axis_aligned_rectangle floor(axis_aligned_rectangle const &rhs) noexcept

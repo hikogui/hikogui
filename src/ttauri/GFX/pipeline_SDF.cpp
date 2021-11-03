@@ -133,7 +133,7 @@ vector<vk::WriteDescriptorSet> pipeline_SDF::createWriteDescriptorSet() const
 
 ssize_t pipeline_SDF::getDescriptorSetVersion() const
 {
-    return std::ssize(vulkan_device().SDFPipeline->atlasTextures);
+    return ssize(vulkan_device().SDFPipeline->atlasTextures);
 }
 
 std::vector<vk::PushConstantRange> pipeline_SDF::createPushConstantRanges() const

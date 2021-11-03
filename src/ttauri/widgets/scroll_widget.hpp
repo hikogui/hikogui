@@ -122,7 +122,6 @@ public:
 
     widget_constraints const &set_constraints() noexcept override
     {
-        tt_axiom(is_gui_thread());
         tt_axiom(_content);
 
         _layout = {};

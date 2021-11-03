@@ -35,7 +35,7 @@ struct skeleton_block_node final: skeleton_node {
     }
 
     void post_process(formula_post_process_context &context) override {
-        if (std::ssize(children) > 0) {
+        if (ssize(children) > 0) {
             children.back()->left_align();
         }
 

@@ -32,7 +32,7 @@ enum class keyboard_virtual_key : uint8_t {
     Left, Right, Up, Down, PageUp, PageDown, Home, End,
     Backspace, Insert, Delete, Clear, Escape,
 
-    PrintScreen, PauseBreak,
+    PrintScreen, PauseBreak, Menu,
 
     F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12,
     F13, F14, F15, F16, F17, F18, F19, F20, F21, F22, F23, F24,
@@ -130,6 +130,7 @@ inline ttlet string_to_keyboard_virtual_key_table = std::unordered_map<std::stri
     {"escape", keyboard_virtual_key::Escape},
     {"print", keyboard_virtual_key::PrintScreen},
     {"pause", keyboard_virtual_key::PauseBreak},
+    {"menu", keyboard_virtual_key::Menu},
     {"f1", keyboard_virtual_key::F1},
     {"f2", keyboard_virtual_key::F2},
     {"f3", keyboard_virtual_key::F3},
@@ -272,6 +273,7 @@ constexpr char const *to_const_string(keyboard_virtual_key key) noexcept
     case keyboard_virtual_key::Escape: return "escape";
     case keyboard_virtual_key::PrintScreen: return "print";
     case keyboard_virtual_key::PauseBreak: return "pause";
+    case keyboard_virtual_key::Menu: return "menu";
     case keyboard_virtual_key::F1: return "f1";
     case keyboard_virtual_key::F2: return "f2";
     case keyboard_virtual_key::F3: return "f3";

@@ -30,8 +30,6 @@ void toolbar_button_widget::set_layout(widget_layout const &context) noexcept
 
 void toolbar_button_widget::draw(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (visible and overlaps(context, layout())) {
         draw_toolbar_button(context);
         draw_button(context);
@@ -64,6 +62,9 @@ void toolbar_button_widget::draw(draw_context const &context) noexcept
             }
             break;
 
+        case command::gui_sysmenu_open:
+            window.open_system_menu();
+            return true;
         default:;
         }
     }
@@ -73,8 +74,6 @@ void toolbar_button_widget::draw(draw_context const &context) noexcept
 
 void toolbar_button_widget::draw_toolbar_button(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     ttlet foreground_color_ = focus && window.active ? focus_color() : color::transparent();
     context.draw_box(
         layout(), layout().rectangle(), background_color(), foreground_color_, theme().border_width, border_side::inside);

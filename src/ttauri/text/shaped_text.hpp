@@ -108,12 +108,17 @@ public:
         bool wrap=true
     ) noexcept;
 
+    [[nodiscard]] constexpr bool empty() const noexcept
+    {
+        return lines.empty();
+    }
+
     [[nodiscard]] size_t size() const noexcept {
-        ssize_t count = 0;
+        size_t count = 0;
         for (ttlet &line: lines) {
-            count += std::ssize(line);
+            count += line.size();
         }
-        return narrow_cast<size_t>(count);
+        return count;
     }
 
     [[nodiscard]] extent2 preferred_size() const noexcept
@@ -148,10 +153,10 @@ public:
     /** Get the capHeight of the middle line(s).
      */
     float middleCapHeight() const noexcept {
-        if ((std::ssize(lines) % 2) == 1) {
-            return lines[std::ssize(lines) / 2].capHeight;
+        if ((ssize(lines) % 2) == 1) {
+            return lines[ssize(lines) / 2].capHeight;
         } else {
-            return (lines[std::ssize(lines) / 2 - 1].capHeight + lines[std::ssize(lines) / 2].capHeight) * 0.5f;
+            return (lines[ssize(lines) / 2 - 1].capHeight + lines[ssize(lines) / 2].capHeight) * 0.5f;
         }
     }
 

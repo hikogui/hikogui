@@ -38,10 +38,10 @@ struct attributed_glyph_line {
     }
 
     [[nodiscard]] bool shouldWrap(float maximum_width) noexcept {
-        tt_axiom(std::ssize(line) >= 1);
+        tt_axiom(ssize(line) >= 1);
         return
             width > maximum_width &&
-            std::ssize(line) >= (line.back().isParagraphSeparator() ? 3 : 2);
+            ssize(line) >= (line.back().isParagraphSeparator() ? 3 : 2);
     }
 
     [[nodiscard]] attributed_glyph_line wrap(float maximum_width) noexcept {
@@ -80,7 +80,7 @@ struct attributed_glyph_line {
     }
 
     [[nodiscard]] aarectangle boundingBox() const noexcept {
-        tt_axiom(std::ssize(line) >= 1);
+        tt_axiom(ssize(line) >= 1);
 
         ttlet p0 = point2{
             line.front().position.x(),
@@ -161,8 +161,8 @@ private:
                 validWidth = totalWidth;
             }
         }
-        capHeight /= narrow_cast<float>(std::ssize(line));
-        xHeight /= narrow_cast<float>(std::ssize(line));
+        capHeight /= narrow_cast<float>(ssize(line));
+        xHeight /= narrow_cast<float>(ssize(line));
 
         width = validWidth;
     }

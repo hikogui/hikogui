@@ -11,6 +11,7 @@ namespace tt {
 keyboard_virtual_key to_keyboard_virtual_key(int key_code, bool extended, keyboard_modifiers modifiers)
 {
     switch (key_code) {
+    case VK_MENU: return keyboard_virtual_key::Menu;
     case VK_BACK: return keyboard_virtual_key::Backspace;
     case VK_TAB: return keyboard_virtual_key::Tab;
     case VK_CLEAR: return keyboard_virtual_key::Clear;

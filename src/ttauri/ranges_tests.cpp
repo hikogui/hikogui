@@ -67,5 +67,5 @@ TEST(ranges, split4)
     auto test = std::string{""};
 
     auto r = tt::views::split(test, "..");
-    ASSERT_TRUE(std::begin(r) == std::end(r));
+    ASSERT_TRUE(begin(r) == end(r));
 }

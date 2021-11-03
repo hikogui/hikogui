@@ -70,7 +70,7 @@ placement_ptr<T,Byte> unsafe_make_placement_ptr(std::span<Byte> bytes, ssize_t &
 template<typename T,typename Byte>
 bool check_placement_ptr(std::span<Byte> bytes, ssize_t offset = 0)
 {
-    return check_alignment<T>(bytes.data()) && (offset + sizeof(T) <= std::size(bytes));
+    return check_alignment<T>(bytes.data()) && (offset + sizeof(T) <= size(bytes));
 }
 
 template<typename T,typename Byte>
@@ -131,7 +131,7 @@ public:
     }
 
     bool contains(ssize_t index) const noexcept {
-        return index < std::ssize(*this);
+        return index < ssize(*this);
     }
 
     value_type *begin() const noexcept {
@@ -163,7 +163,7 @@ placement_array<T,Byte> unsafe_make_placement_array(std::span<Byte> bytes, ssize
 template<typename T,typename Byte>
 placement_array<T,Byte> unsafe_make_placement_array(std::span<Byte> bytes, ssize_t &offset)
 {
-    ttlet n = std::size(bytes) / sizeof(T);
+    ttlet n = size(bytes) / sizeof(T);
     return unsafe_make_placement_array<T>(bytes, offset, n);
 }
 
@@ -177,7 +177,7 @@ placement_array<T,Byte> unsafe_make_placement_array(std::span<Byte> bytes, ssize
 template<typename T,typename Byte>
 bool check_placement_array(std::span<Byte> bytes, ssize_t offset, ssize_t n)
 {
-    return check_alignment<T>(bytes.data()) && (offset + (n * ssizeof(T)) <= std::ssize(bytes));
+    return check_alignment<T>(bytes.data()) && (offset + (n * ssizeof(T)) <= ssize(bytes));
 }
 
 template<typename T,typename Byte>
@@ -203,7 +203,7 @@ placement_array<T,Byte> make_placement_array(std::span<Byte> bytes, ssize_t &&of
 template<typename T,typename Byte>
 placement_array<T,Byte> make_placement_array(std::span<Byte> bytes, ssize_t &offset)
 {
-    ttlet n = std::ssize(bytes) / ssizeof(T);
+    ttlet n = ssize(bytes) / ssizeof(T);
     return make_placement_array<T>(bytes, offset, n);
 }
 

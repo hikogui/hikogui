@@ -439,12 +439,24 @@ public:
         case tag_type::boolean: return get<bool>(*this);
         case tag_type::integral: return static_cast<bool>(get<long long>(*this));
         case tag_type::year_month_day: return true;
-        case tag_type::string: return static_cast<bool>(std::size(get<std::string>(*this)));
-        case tag_type::vector: return static_cast<bool>(std::size(get<vector_type>(*this)));
-        case tag_type::map: return static_cast<bool>(std::size(get<map_type>(*this)));
-        case tag_type::url: return static_cast<bool>(get<URL>(*this));
-        case tag_type::bstring: return static_cast<bool>(std::size(get<bstring>(*this)));
+        case tag_type::string: return not get<std::string>(*this).empty();
+        case tag_type::vector: return not get<vector_type>(*this).empty();
+        case tag_type::map: return not get<map_type>(*this).empty();
+        case tag_type::url: return not get<URL>(*this).empty();
+        case tag_type::bstring: return not get<bstring>(*this).empty();
         default: return false;
+        }
+    }
+
+    [[nodiscard]] constexpr bool empty() const
+    {
+        switch (_tag) {
+        case tag_type::string: return get<std::string>(*this).empty();
+        case tag_type::vector: return get<vector_type>(*this).empty();
+        case tag_type::map: return get<map_type>(*this).empty();
+        case tag_type::url: return get<URL>(*this).empty();
+        case tag_type::bstring: return get<bstring>(*this).empty();
+        default: throw std::domain_error(std::format("Type {} can not be checked for empty", *this));
         }
     }
 
@@ -678,16 +690,21 @@ public:
     [[nodiscard]] constexpr size_t size() const
     {
         if (ttlet *s = get_if<std::string>(*this)) {
-            return std::size(*s);
+            return s->size();
         } else if (ttlet *v = get_if<vector_type>(*this)) {
-            return std::size(*v);
+            return v->size();
         } else if (ttlet *m = get_if<map_type>(*this)) {
-            return std::size(*m);
+            return m->size();
         } else if (ttlet *b = get_if<bstring>(*this)) {
-            return std::size(get<bstring>(*this));
+            return b->size();
         } else {
             throw std::domain_error(std::format("Can not evaluate {}.size()", repr(*this)));
         }
+    }
+
+    [[nodiscard]] constexpr friend size_t size(datum const &rhs)
+    {
+        return rhs.size();
     }
 
     [[nodiscard]] constexpr datum const &back() const
@@ -798,7 +815,7 @@ public:
     {
         if (ttlet *m = get_if<map_type>(*this)) {
             auto r = vector_type{};
-            r.reserve(std::size(*m));
+            r.reserve(m->size());
             for (ttlet &kv : *m) {
                 r.push_back(kv.first);
             }
@@ -814,7 +831,7 @@ public:
     {
         if (ttlet *m = get_if<map_type>(*this)) {
             auto r = vector_type{};
-            r.reserve(std::size(*m));
+            r.reserve(m->size());
             for (ttlet &kv : *m) {
                 r.push_back(kv.second);
             }
@@ -830,7 +847,7 @@ public:
     {
         if (ttlet *m = get_if<map_type>(*this)) {
             auto r = vector_type{};
-            r.reserve(std::size(*m));
+            r.reserve(m->size());
 
             for (ttlet &item : *m) {
                 r.push_back(make_vector(item.first, item.second));
@@ -895,14 +912,14 @@ public:
     [[nodiscard]] std::vector<datum *> find(jsonpath const &path) noexcept
     {
         auto r = std::vector<datum *>{};
-        find(std::cbegin(path), std::cend(path), r);
+        find(path.cbegin(), path.cend(), r);
         return r;
     }
 
     [[nodiscard]] std::vector<datum const *> find(jsonpath const &path) const noexcept
     {
         auto tmp = std::vector<datum *>{};
-        const_cast<datum *>(this)->find(std::cbegin(path), std::cend(path), tmp);
+        const_cast<datum *>(this)->find(path.cbegin(), path.cend(), tmp);
         auto r = std::vector<datum const *>{};
         std::copy(tmp.begin(), tmp.end(), std::back_inserter(r));
         return r;
@@ -918,7 +935,7 @@ public:
      */
     [[nodiscard]] bool remove(jsonpath const &path) noexcept
     {
-        return static_cast<bool>(remove(std::cbegin(path), std::cend(path)));
+        return static_cast<bool>(remove(path.cbegin(), path.cend()));
     }
 
     /** Find a object by path.
@@ -929,7 +946,7 @@ public:
     [[nodiscard]] datum *find_one(jsonpath const &path) noexcept
     {
         tt_axiom(path.is_singular());
-        return find_one(std::cbegin(path), std::cend(path), false);
+        return find_one(path.cbegin(), path.cend(), false);
     }
 
     /** Find a object by path potentially creating intermediate objects.
@@ -940,7 +957,7 @@ public:
     [[nodiscard]] datum *find_one_or_create(jsonpath const &path) noexcept
     {
         tt_axiom(path.is_singular());
-        return find_one(std::cbegin(path), std::cend(path), true);
+        return find_one(path.cbegin(), path.cend(), true);
     }
 
     /** Find a object by path.
@@ -951,7 +968,7 @@ public:
     [[nodiscard]] datum const *find_one(jsonpath const &path) const noexcept
     {
         tt_axiom(path.is_singular());
-        return const_cast<datum *>(this)->find_one(std::cbegin(path), std::cend(path), false);
+        return const_cast<datum *>(this)->find_one(path.cbegin(), path.cend(), false);
     }
 
     [[nodiscard]] constexpr datum const &operator[](datum const &rhs) const
@@ -961,9 +978,9 @@ public:
 
             auto index = get<long long>(rhs);
             if (index < 0) {
-                index = std::ssize(v) + index;
+                index = ssize(v) + index;
             }
-            if (index < 0 or index >= std::ssize(v)) {
+            if (index < 0 or index >= ssize(v)) {
                 throw std::overflow_error(std::format("Index {} beyond bounds of vector", repr(rhs)));
             }
 
@@ -990,9 +1007,9 @@ public:
 
             auto index = get<long long>(rhs);
             if (index < 0) {
-                index = std::ssize(v) + index;
+                index = ssize(v) + index;
             }
-            if (index < 0 or index >= std::ssize(v)) {
+            if (index < 0 or index >= ssize(v)) {
                 throw std::overflow_error(std::format("Index {} beyond bounds of vector", repr(rhs)));
             }
 
@@ -1985,7 +2002,7 @@ private:
         std::vector<datum *> &r) noexcept
     {
         if (auto vector = get_if<datum::vector_type>(*this)) {
-            for (ttlet index : indices.filter(std::ssize(*vector))) {
+            for (ttlet index : indices.filter(ssize(*vector))) {
                 (*vector)[index].find(it + 1, it_end, r);
             }
         }
@@ -2146,7 +2163,7 @@ private:
             int r = 0;
             size_t offset = 0;
 
-            for (ttlet index : indices.filter(std::ssize(*vector))) {
+            for (ttlet index : indices.filter(ssize(*vector))) {
                 ttlet match = (*vector)[index - offset].remove(it + 1, it_end);
                 r |= match ? 1 : 0;
                 if (match == 2) {

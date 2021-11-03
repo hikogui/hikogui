@@ -45,7 +45,7 @@ struct skeleton_function_node final: skeleton_node {
     }
 
     void post_process(formula_post_process_context &context) override {
-        if (std::ssize(children) > 0) {
+        if (ssize(children) > 0) {
             children.back()->left_align();
         }
 
@@ -62,11 +62,11 @@ struct skeleton_function_node final: skeleton_node {
 
     datum evaluate_call(formula_evaluation_context &context, datum::vector_type const &arguments) {
         context.push();
-        if (std::ssize(argument_names) != std::ssize(arguments)) {
+        if (ssize(argument_names) != ssize(arguments)) {
             throw operation_error("{}: Invalid number of arguments to function {}() expecting {} got {}.", location, name, argument_names.size(), arguments.size());
         }
 
-        for (ssize_t i = 0; i != std::ssize(argument_names); ++i) {
+        for (ssize_t i = 0; i != ssize(argument_names); ++i) {
             context.set(argument_names[i], arguments[i]);
         }
 

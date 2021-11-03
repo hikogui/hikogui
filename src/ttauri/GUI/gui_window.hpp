@@ -219,6 +219,12 @@ public:
      */
     virtual void normalize_window() = 0;
 
+    /** Open the system menu of the window.
+    * 
+    * On windows 10 this is activated by pressing Alt followed by Spacebar.
+     */
+    virtual void open_system_menu() = 0;
+
     /** Ask the operating system to set the size of this window.
      */
     virtual void set_window_size(extent2 extent) = 0;

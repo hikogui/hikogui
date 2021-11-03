@@ -88,8 +88,6 @@ void text_field_widget::set_layout(widget_layout const &context) noexcept
 
 void text_field_widget::draw(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     _next_redraw_time_point = context.display_time_point + _blink_interval;
 
     if (visible and overlaps(context, layout())) {
@@ -390,15 +388,20 @@ void text_field_widget::draw_partial_grapheme_caret(draw_context const &context)
 
 void text_field_widget::draw_caret(draw_context const &context) noexcept
 {
-    // Display the caret and handle blinking.
-    ttlet duration_since_last_update = context.display_time_point - _last_update_time_point;
-    ttlet nr_half_blinks = static_cast<int64_t>(duration_since_last_update / _blink_interval);
+    if (focus and window.active) {
+        // Keep redrawing while the text-field has focus.
+        request_redraw();
 
-    ttlet blink_is_on = nr_half_blinks % 2 == 0;
-    _left_to_right_caret = _field.left_to_right_caret();
-    if (_left_to_right_caret && blink_is_on && focus && window.active) {
-        ttlet box = round(_text_translate) * translate_z(0.1f) * round(_left_to_right_caret);
-        context.draw_box(layout(), box, color::transparent(), theme().color(theme_color::cursor), 1.0f, border_side::inside);
+        // Display the caret and handle blinking.
+        ttlet duration_since_last_update = context.display_time_point - _last_update_time_point;
+        ttlet nr_half_blinks = static_cast<int64_t>(duration_since_last_update / _blink_interval);
+        ttlet blink_is_on = nr_half_blinks % 2 == 0;
+
+        _left_to_right_caret = _field.left_to_right_caret();
+        if (_left_to_right_caret and blink_is_on) {
+            ttlet box = round(_text_translate) * translate_z(0.1f) * round(_left_to_right_caret);
+            context.draw_box(layout(), box, color::transparent(), theme().color(theme_color::cursor), 1.0f, border_side::inside);
+        }
     }
 }
 

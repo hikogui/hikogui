@@ -51,7 +51,7 @@ public:
 
             if (value == 0) {
                 // Unused node entry. Point to the first of two new entries.
-                value = -(static_cast<int>(std::ssize(tree)) - offset);
+                value = -(static_cast<int>(ssize(tree)) - offset);
 
                 tree[offset] = narrow_cast<T>(value);
                 tree.push_back(0);
@@ -153,7 +153,7 @@ public:
     }
 
     [[nodiscard]] static huffman_tree from_lengths(std::vector<int> const &lengths) {
-        return from_lengths(lengths.data(), std::ssize(lengths));
+        return from_lengths(lengths.data(), ssize(lengths));
     }
 };
 

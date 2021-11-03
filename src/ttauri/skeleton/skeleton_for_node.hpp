@@ -39,10 +39,10 @@ struct skeleton_for_node final: skeleton_node {
     }
 
     void post_process(formula_post_process_context &context) override {
-        if (std::ssize(children) > 0) {
+        if (ssize(children) > 0) {
             children.back()->left_align();
         }
-        if (std::ssize(else_children) > 0) {
+        if (ssize(else_children) > 0) {
             else_children.back()->left_align();
         }
 
@@ -65,8 +65,7 @@ struct skeleton_for_node final: skeleton_node {
         }
 
         ttlet output_size = context.output_size();
-        if (list_data.size() > 0) {
-            ttlet loop_size = std::ssize(list_data);
+        if (ttlet loop_size = list_data.size()) {
             ssize_t loop_count = 0;
             for (ttlet &item : list_data) {
                 try {

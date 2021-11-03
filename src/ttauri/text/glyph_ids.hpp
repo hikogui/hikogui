@@ -61,7 +61,7 @@ public:
 
     constexpr glyph_ids_long &operator+=(glyph_id id) noexcept
     {
-        if (_size < std::size(_glyphs)) {
+        if (_size < _glyphs.size()) {
             _glyphs[_size++] = id;
         }
         return *this;

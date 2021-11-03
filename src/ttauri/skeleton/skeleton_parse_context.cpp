@@ -126,7 +126,7 @@ void skeleton_parse_context::include(parse_location _location, std::unique_ptr<f
 
     ttlet new_skeleton_path = current_skeleton_directory.urlByAppendingPath(static_cast<std::string>(argument));
 
-    if (std::ssize(statement_stack) > 0) {
+    if (ssize(statement_stack) > 0) {
         if (!statement_stack.back()->append(parse_skeleton(new_skeleton_path))) {
             throw parse_error("{}: Unexpected #include statement.", location);
         }

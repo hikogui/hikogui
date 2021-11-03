@@ -21,7 +21,6 @@ icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(wi
 
 widget_constraints const &icon_widget::set_constraints() noexcept
 {
-    tt_axiom(is_gui_thread());
     _layout = {};
 
     if (_icon_has_modified.exchange(false)) {
@@ -62,8 +61,6 @@ widget_constraints const &icon_widget::set_constraints() noexcept
 
 void icon_widget::set_layout(widget_layout const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (visible and _layout.store(context) >= layout_update::transform) {
         if (_icon_type == icon_type::no or not _icon_size) {
             _icon_rectangle = {};
@@ -77,8 +74,6 @@ void icon_widget::set_layout(widget_layout const &context) noexcept
 
 void icon_widget::draw(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     if (visible and overlaps(context, layout())) {
         switch (_icon_type) {
         case icon_type::no: break;

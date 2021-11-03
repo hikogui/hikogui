@@ -144,12 +144,12 @@ It unicode_bidi(
         proxy.emplace_back(index++, get_code_point(*it));
     }
 
-    auto proxy_last = detail::unicode_bidi_P1(std::begin(proxy), std::end(proxy), test_parameters);
-    last = shuffle_by_index(first, last, std::begin(proxy), proxy_last, [](ttlet &item) {
+    auto proxy_last = detail::unicode_bidi_P1(begin(proxy), end(proxy), test_parameters);
+    last = shuffle_by_index(first, last, begin(proxy), proxy_last, [](ttlet &item) {
         return item.index;
     });
 
-    detail::unicode_bidi_L4(std::begin(proxy), proxy_last, first, set_code_point);
+    detail::unicode_bidi_L4(begin(proxy), proxy_last, first, set_code_point);
     return last;
 }
 

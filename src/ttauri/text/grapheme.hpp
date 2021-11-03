@@ -134,7 +134,7 @@ public:
     [[nodiscard]] size_t hash() const noexcept
     {
         size_t r = 0;
-        for (ssize_t i = 0; i != std::ssize(*this); ++i) {
+        for (size_t i = 0; i != size(); ++i) {
             r = hash_mix_two(r, std::hash<char32_t>{}((*this)[i]));
         }
         return r;
@@ -154,6 +154,11 @@ public:
             }
             return i;
         }
+    }
+
+    [[nodiscard]] friend size_t size(grapheme const &rhs) noexcept
+    {
+        return rhs.size();
     }
 
     [[nodiscard]] char32_t front() const noexcept
@@ -180,8 +185,8 @@ public:
     [[nodiscard]] std::u32string NFC() const noexcept
     {
         std::u32string r;
-        r.reserve(std::ssize(*this));
-        for (ssize_t i = 0; i != std::ssize(*this); ++i) {
+        r.reserve(size());
+        for (size_t i = 0; i != size(); ++i) {
             r += (*this)[i];
         }
         return r;
@@ -249,29 +254,17 @@ private:
         }
     }
 
-    [[nodiscard]] friend bool operator<(grapheme const &a, grapheme const &b) noexcept
-    {
-        ttlet length = std::min(std::ssize(a), std::ssize(b));
-
-        for (ssize_t i = 0; i != length; ++i) {
-            if (a[i] < b[i]) {
-                return true;
-            }
-        }
-        return std::ssize(a) < std::ssize(b);
-    }
-
     [[nodiscard]] friend bool operator==(grapheme const &a, grapheme const &b) noexcept
     {
         if (a.value == b.value) {
             return true;
         }
 
-        if (std::ssize(a) != std::ssize(b)) {
+        if (a.size() != b.size()) {
             return false;
         }
 
-        for (ssize_t i = 0; i != std::ssize(a); ++i) {
+        for (size_t i = 0; i != a.size(); ++i) {
             if (a[i] != b[i]) {
                 return false;
             }
@@ -279,29 +272,26 @@ private:
         return true;
     }
 
-    [[nodiscard]] friend bool operator!=(grapheme const &a, grapheme const &b) noexcept
-    {
-        return !(a == b);
-    }
+    //[[nodiscard]] friend bool operator<=>(grapheme const &a, grapheme const &b) noexcept
+    //{
+    //    ttlet length = std::min(a.size(), b.size());
+    //
+    //    for (ssize_t i = 0; i != length; ++i) {
+    //        if (a[i] < b[i]) {
+    //            return true;
+    //        }
+    //    }
+    //    return a.size() < b.size();
+    //}
 
     [[nodiscard]] friend bool operator==(grapheme const &lhs, char32_t const &rhs) noexcept
     {
-        return (std::ssize(lhs) == 1) && (lhs[0] == rhs);
-    }
-
-    [[nodiscard]] friend bool operator!=(grapheme const &lhs, char32_t const &rhs) noexcept
-    {
-        return !(lhs == rhs);
+        return (lhs.size() == 1) && (lhs[0] == rhs);
     }
 
     [[nodiscard]] friend bool operator==(grapheme const &lhs, char const &rhs) noexcept
     {
         return lhs == static_cast<char32_t>(rhs);
-    }
-
-    [[nodiscard]] friend bool operator!=(grapheme const &lhs, char const &rhs) noexcept
-    {
-        return !(lhs == rhs);
     }
 };
 

@@ -76,8 +76,6 @@ public:
 
     void draw(draw_context const &context) noexcept override
     {
-        tt_axiom(is_gui_thread());
-
         if (visible and overlaps(context, layout())) {
             draw_rails(context);
             draw_slider(context);
@@ -205,8 +203,6 @@ private:
 
     void draw_rails(draw_context const &context) noexcept
     {
-        tt_axiom(is_gui_thread());
-
         ttlet corner_shapes =
             axis == axis::vertical ? tt::corner_shapes{layout().width() * 0.5f} : tt::corner_shapes{layout().height() * 0.5f};
         context.draw_box(layout(), layout().rectangle(), background_color(), corner_shapes);
@@ -214,8 +210,6 @@ private:
 
     void draw_slider(draw_context const &context) noexcept
     {
-        tt_axiom(is_gui_thread());
-
         ttlet corner_shapes = axis == axis::vertical ? tt::corner_shapes{_slider_rectangle.width() * 0.5f} :
                                                        tt::corner_shapes{_slider_rectangle.height() * 0.5f};
 

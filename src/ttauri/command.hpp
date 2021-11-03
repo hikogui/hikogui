@@ -43,6 +43,8 @@ enum class command {
     gui_widget_prev,
     gui_menu_next,
     gui_menu_prev,
+    gui_sysmenu_open,
+    gui_toolbar_open,
     gui_toolbar_next,
     gui_toolbar_prev,
     gui_activate,
@@ -84,6 +86,8 @@ constexpr char const *to_const_string(command rhs) noexcept
     case command::gui_widget_prev: return "gui_widget_prev";
     case command::gui_menu_next: return "gui_menu_next";
     case command::gui_menu_prev: return "gui_menu_prev";
+    case command::gui_sysmenu_open: return "gui_sysmenu_open";
+    case command::gui_toolbar_open: return "gui_toolbar_open";
     case command::gui_toolbar_next: return "gui_toolbar_next";
     case command::gui_toolbar_prev: return "gui_toolbar_prev";
     case command::gui_activate: return "gui_activate";
@@ -164,6 +168,10 @@ constexpr command to_command(std::string_view name) noexcept
         return command::gui_menu_next;
     } else if (name == "gui_menu_prev") {
         return command::gui_menu_prev;
+    } else if (name == "gui_sysmenu_open") {
+        return command::gui_sysmenu_open;
+    } else if (name == "gui_toolbar_open") {
+        return command::gui_toolbar_open;
     } else if (name == "gui_toolbar_next") {
         return command::gui_toolbar_next;
     } else if (name == "gui_toolbar_prev") {

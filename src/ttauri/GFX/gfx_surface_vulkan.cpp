@@ -302,7 +302,7 @@ std::optional<draw_context> gfx_surface_vulkan::render_start(aarectangle redraw_
     ttlet lock = std::scoped_lock(gfx_system_mutex);
 
     // Bail out when the window is not yet ready to be rendered, or if there is nothing to render.
-    if (state != gfx_surface_state::ready_to_render || !redraw_rectangle) {
+    if (state != gfx_surface_state::ready_to_render or not redraw_rectangle) {
         return {};
     }
 
@@ -315,6 +315,11 @@ std::optional<draw_context> gfx_surface_vulkan::render_start(aarectangle redraw_
 
     ttlet frame_buffer_index = *optional_frame_buffer_index;
     auto &current_image = swapchain_image_infos.at(frame_buffer_index);
+
+    // Extent the redraw_rectangle to the render-area-granularity to improve performance on tile based GPUs.
+    redraw_rectangle = ceil(
+        redraw_rectangle,
+        extent2{narrow_cast<float>(_render_area_granularity.width), narrow_cast<float>(_render_area_granularity.height)});
 
     // Record which part of the image will be redrawn on the current swapchain image.
     current_image.redraw_rectangle = redraw_rectangle;
@@ -402,7 +407,7 @@ void gfx_surface_vulkan::fill_command_buffer(
     // The scissor and render area makes sure that the frame buffer is not modified where we are not drawing the widgets.
     commandBuffer.setScissor(0, scissors);
 
-    ttlet renderArea = scissors.at(0);
+    ttlet render_area = scissors.at(0);
 
     // Because we use a scissor the image from the swapchain around the scissor-area is reused.
     // Because of reuse the swapchain image must already be in the "ePresentSrcKHR" layout.
@@ -419,7 +424,7 @@ void gfx_surface_vulkan::fill_command_buffer(
     }
 
     commandBuffer.beginRenderPass(
-        {renderPass, current_image.frame_buffer, renderArea, narrow_cast<uint32_t>(clearValues.size()), clearValues.data()},
+        {renderPass, current_image.frame_buffer, render_area, narrow_cast<uint32_t>(clearValues.size()), clearValues.data()},
         vk::SubpassContents::eInline);
 
     boxPipeline->drawInCommandBuffer(commandBuffer);
@@ -600,7 +605,7 @@ void gfx_surface_vulkan::teardownSwapchain()
     vulkan_device().destroy(swapchain);
     vulkan_device().destroyImage(depthImage, depthImageAllocation);
 
-    for (size_t i = 0; i != std::size(colorImages); ++i) {
+    for (size_t i = 0; i != colorImages.size(); ++i) {
         vulkan_device().destroyImage(colorImages[i], colorImageAllocations[i]);
     }
 }
@@ -617,7 +622,7 @@ void gfx_surface_vulkan::buildFramebuffers()
          vk::ComponentMapping(),
          {vk::ImageAspectFlagBits::eDepth, 0, 1, 0, 1}});
 
-    for (size_t i = 0; i != std::size(colorImageViews); ++i) {
+    for (size_t i = 0; i != colorImageViews.size(); ++i) {
         colorImageViews[i] = vulkan_device().createImageView(
             {vk::ImageViewCreateFlags(),
              colorImages[i],
@@ -669,7 +674,7 @@ void gfx_surface_vulkan::teardownFramebuffers()
     swapchain_image_infos.clear();
 
     vulkan_device().destroy(depthImageView);
-    for (size_t i = 0; i != std::size(colorImageViews); ++i) {
+    for (size_t i = 0; i != colorImageViews.size(); ++i) {
         vulkan_device().destroy(colorImageViews[i]);
     }
 }
@@ -842,6 +847,7 @@ void gfx_surface_vulkan::buildRenderPasses()
     };
 
     renderPass = vulkan_device().createRenderPass(renderPassCreateInfo);
+    _render_area_granularity = vulkan_device().getRenderAreaGranularity(renderPass);
 }
 
 void gfx_surface_vulkan::teardownRenderPasses()

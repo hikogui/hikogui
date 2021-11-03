@@ -42,7 +42,7 @@ public:
         gstring gstr = to_gstring(str);
 
         _text.clear();
-        _text.reserve(std::ssize(gstr));
+        _text.reserve(gstr.size());
         for (ttlet &g : gstr) {
             _text.emplace_back(g, _current_style);
         }
@@ -61,7 +61,7 @@ public:
 
         // Make sure there is an end-paragraph marker in the _text.
         // This allows the shaped_text to figure out the style of the _text of an empty paragraph.
-        if (std::ssize(_text) == 0) {
+        if (ssize(_text) == 0) {
             text_.emplace_back(grapheme::PS(), _current_style, 0);
         } else {
             text_.emplace_back(grapheme::PS(), text_.back().style, 0);
@@ -102,7 +102,7 @@ public:
     decltype(auto) it(ssize_t index) noexcept {
         tt_axiom(index >= 0);
         // Index should never be at _text.cend();
-        tt_axiom(index < std::ssize(_text));
+        tt_axiom(index < ssize(_text));
 
         return _text.begin() + index;
     }
@@ -112,7 +112,7 @@ public:
     decltype(auto) cit(ssize_t index) const noexcept {
         tt_axiom(index >= 0);
         // Index should never be beyond _text.cend();
-        tt_axiom(index <= std::ssize(_text));
+        tt_axiom(index <= ssize(_text));
 
         return _text.cbegin() + index;
     }
@@ -342,13 +342,13 @@ public:
         gstring gstr = to_gstring(str);
 
         auto str_attr = std::vector<attributed_grapheme>{};
-        str_attr.reserve(std::ssize(gstr));
+        str_attr.reserve(gstr.size());
         for (ttlet &g: gstr) {
             str_attr.emplace_back(g, _current_style);
         }
 
         _text.insert_after(cit(_cursor_index), str_attr.cbegin(), str_attr.cend());
-        _selection_index = _cursor_index += std::ssize(str_attr);
+        _selection_index = _cursor_index += ssize(str_attr);
 
         update_shaped_text();
         tt_axiom(is_valid());
@@ -518,7 +518,7 @@ public:
             if (_cursor_index != _selection_index) {
                 delete_selection();
 
-            } else if (_cursor_index < std::ssize(_text)) {
+            } else if (_cursor_index < ssize(_text)) {
                 // Don't delete the trailing paragraph separator.
                 _text.erase(cit(_cursor_index));
                 update_shaped_text();
@@ -532,7 +532,7 @@ public:
 
     bool is_valid() const noexcept
     {
-        return _selection_index >= 0 && _selection_index <= std::ssize(_text) && _cursor_index >= 0 && _cursor_index <= std::ssize(_text);
+        return _selection_index >= 0 && _selection_index <= ssize(_text) && _cursor_index >= 0 && _cursor_index <= ssize(_text);
     }
 
 private:

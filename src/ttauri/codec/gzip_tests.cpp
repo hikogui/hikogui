@@ -17,9 +17,9 @@ TEST(GZip, UnzipEmpty) {
     ttlet original = file_view(URL("file:gzip_test1.bin"));
     ttlet original_bytes = original.bytes();
 
-    ASSERT_EQ(std::ssize(decompressed), std::ssize(original_bytes));
+    ASSERT_EQ(ssize(decompressed), ssize(original_bytes));
 
-    for (ssize_t i = 0; i != std::ssize(decompressed); ++i) {
+    for (ssize_t i = 0; i != ssize(decompressed); ++i) {
         ASSERT_EQ(decompressed[i], original_bytes[i]);
     }
 }
@@ -30,9 +30,9 @@ TEST(GZip, UnzipSingleA) {
     ttlet original = file_view(URL("file:gzip_test2.bin"));
     ttlet original_bytes = original.bytes();
 
-    ASSERT_EQ(std::ssize(decompressed), std::ssize(original_bytes));
+    ASSERT_EQ(ssize(decompressed), ssize(original_bytes));
 
-    for (ssize_t i = 0; i != std::ssize(decompressed); ++i) {
+    for (ssize_t i = 0; i != ssize(decompressed); ++i) {
         ASSERT_EQ(decompressed[i], original_bytes[i]);
     }
 }
@@ -43,9 +43,9 @@ TEST(GZip, UnzipText) {
     ttlet original = file_view(URL("file:gzip_test3.bin"));
     ttlet original_bytes = original.bytes();
 
-    ASSERT_EQ(std::ssize(decompressed), std::ssize(original_bytes));
+    ASSERT_EQ(ssize(decompressed), ssize(original_bytes));
 
-    for (ssize_t i = 0; i != std::ssize(decompressed); ++i) {
+    for (ssize_t i = 0; i != ssize(decompressed); ++i) {
         ASSERT_EQ(decompressed[i], original_bytes[i]);
     }
 }
@@ -58,9 +58,9 @@ TEST(GZip, UnzipCpHTML) {
     ttlet original = file_view(URL("file:gzip_test4.bin"));
     ttlet original_bytes = original.bytes();
 
-    ASSERT_EQ(std::ssize(decompressed), std::ssize(original_bytes));
+    ASSERT_EQ(ssize(decompressed), ssize(original_bytes));
 
-    for (ssize_t i = 0; i != std::ssize(decompressed); ++i) {
+    for (ssize_t i = 0; i != ssize(decompressed); ++i) {
         ASSERT_EQ(decompressed[i], original_bytes[i]);
     }
 }
@@ -71,9 +71,9 @@ TEST(GZip, UnzipFieldsC) {
     ttlet original = file_view(URL("file:gzip_test5.bin"));
     ttlet original_bytes = original.bytes();
 
-    ASSERT_EQ(std::ssize(decompressed), std::ssize(original_bytes));
+    ASSERT_EQ(ssize(decompressed), ssize(original_bytes));
 
-    for (ssize_t i = 0; i != std::ssize(decompressed); ++i) {
+    for (ssize_t i = 0; i != ssize(decompressed); ++i) {
         ASSERT_EQ(decompressed[i], original_bytes[i]);
     }
 }
@@ -84,9 +84,9 @@ TEST(GZip, UnzipGrammarLSP) {
     ttlet original = file_view(URL("file:gzip_test6.bin"));
     ttlet original_bytes = original.bytes();
 
-    ASSERT_EQ(std::ssize(decompressed), std::ssize(original_bytes));
+    ASSERT_EQ(ssize(decompressed), ssize(original_bytes));
 
-    for (ssize_t i = 0; i != std::ssize(decompressed); ++i) {
+    for (ssize_t i = 0; i != ssize(decompressed); ++i) {
         ASSERT_EQ(decompressed[i], original_bytes[i]);
     }
 }
@@ -97,9 +97,9 @@ TEST(GZip, UnzipSum) {
     ttlet original = file_view(URL("file:gzip_test7.bin"));
     ttlet original_bytes = original.bytes();
 
-    ASSERT_EQ(std::ssize(decompressed), std::ssize(original_bytes));
+    ASSERT_EQ(ssize(decompressed), ssize(original_bytes));
 
-    for (ssize_t i = 0; i != std::ssize(decompressed); ++i) {
+    for (ssize_t i = 0; i != ssize(decompressed); ++i) {
         ASSERT_EQ(decompressed[i], original_bytes[i]);
     }
 }
@@ -110,9 +110,9 @@ TEST(GZip, UnzipXargs1) {
     ttlet original = file_view(URL("file:gzip_test8.bin"));
     ttlet original_bytes = original.bytes();
 
-    ASSERT_EQ(std::ssize(decompressed), std::ssize(original_bytes));
+    ASSERT_EQ(ssize(decompressed), ssize(original_bytes));
 
-    for (ssize_t i = 0; i != std::ssize(decompressed); ++i) {
+    for (ssize_t i = 0; i != ssize(decompressed); ++i) {
         ASSERT_EQ(decompressed[i], original_bytes[i]);
     }
 }

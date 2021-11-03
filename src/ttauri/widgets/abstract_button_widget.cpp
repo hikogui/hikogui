@@ -69,8 +69,6 @@ void abstract_button_widget::draw_button(draw_context const &context) noexcept
 
 void abstract_button_widget::set_layout_button(widget_layout const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
     auto state_ = state();
     _on_label_widget->visible = state_ == button_state::on;
     _off_label_widget->visible = state_ == button_state::off;

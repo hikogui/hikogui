@@ -49,13 +49,13 @@ struct skeleton_if_node final: skeleton_node {
     }
 
     void post_process(formula_post_process_context &context) override {
-        tt_assert(std::ssize(expressions) == std::ssize(formula_locations));
-        for (ssize_t i = 0; i != std::ssize(expressions); ++i) {
+        tt_assert(ssize(expressions) == ssize(formula_locations));
+        for (ssize_t i = 0; i != ssize(expressions); ++i) {
             post_process_expression(context, *expressions[i], formula_locations[i]);
         }
 
         for (ttlet &children: children_groups) {
-            if (std::ssize(children) > 0) {
+            if (ssize(children) > 0) {
                 children.back()->left_align();
             }
 
@@ -66,14 +66,14 @@ struct skeleton_if_node final: skeleton_node {
     }
 
     datum evaluate(formula_evaluation_context &context) override {
-        tt_axiom(std::ssize(expressions) == std::ssize(formula_locations));
-        for (ssize_t i = 0; i != std::ssize(expressions); ++i) {
+        tt_axiom(ssize(expressions) == ssize(formula_locations));
+        for (ssize_t i = 0; i != ssize(expressions); ++i) {
             if (evaluate_formula_without_output(context, *expressions[i], formula_locations[i])) {
                 return evaluate_children(context, children_groups[i]);
             }
         }
-        if (std::ssize(children_groups) > std::ssize(expressions)) {
-            return evaluate_children(context, children_groups[std::ssize(expressions)]);
+        if (ssize(children_groups) > ssize(expressions)) {
+            return evaluate_children(context, children_groups[ssize(expressions)]);
         }
         return {};
     }

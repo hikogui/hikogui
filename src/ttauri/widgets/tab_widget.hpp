@@ -75,7 +75,7 @@ public:
         auto tmp = std::make_unique<WidgetType>(window, this, std::forward<Args>(args)...);
         auto &ref = *tmp;
         if (auto delegate = _delegate.lock()) {
-            delegate->add_tab(*this, static_cast<size_t>(key), std::size(_children));
+            delegate->add_tab(*this, static_cast<size_t>(key), size(_children));
         }
         _children.push_back(std::move(tmp));
         window.request_reconstrain();
