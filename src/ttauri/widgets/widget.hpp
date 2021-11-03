@@ -24,11 +24,11 @@
 #include <ranges>
 
 namespace tt {
-inline namespace v1 {
 class gui_window;
 struct mouse_event;
 struct keyboard_event;
 class font_book;
+inline namespace v1 {
 
 /** An interactive graphical object as part of the user-interface.
  *

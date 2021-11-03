@@ -18,12 +18,12 @@
 #include "widget_layout.hpp"
 
 namespace tt {
-inline namespace v1 {
 class gfx_device;
 class gfx_device_vulkan;
 class shaped_text;
 class font_glyph_ids;
 struct paged_image;
+inline namespace v1 {
 
 /** The side where the border is drawn.
  */
