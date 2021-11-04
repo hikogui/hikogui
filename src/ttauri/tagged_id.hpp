@@ -286,7 +286,7 @@ private:
     value_type value;
 };
 
-} // namespace tt
+} // namespace tt::inline v1
 
 namespace std {
 

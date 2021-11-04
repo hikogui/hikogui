@@ -77,7 +77,6 @@ constexpr uint16_t cvtss_sh(float value) noexcept
     return static_cast<uint16_t>(u);
 }
 
-
 class float16 {
     uint16_t v;
 
@@ -98,7 +97,7 @@ public:
         return *this;
     }
 
-    constexpr operator float () const noexcept
+    constexpr operator float() const noexcept
     {
         return cvtsh_ss(v);
     }
@@ -134,7 +133,7 @@ public:
     }
 };
 
-} // namespace tt
+} // namespace tt::inline v1
 
 namespace std {
 
@@ -223,4 +222,4 @@ struct numeric_limits<tt::float16> {
     }
 };
 
-}
+} // namespace std

@@ -100,6 +100,4 @@ private:
     std::random_device _device;
 };
 
-
-
-}
+} // namespace tt::inline v1

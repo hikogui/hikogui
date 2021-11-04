@@ -76,5 +76,4 @@ namespace tt::inline v1 {
     return r;
 }
 
-
-}
+} // namespace tt::inline v1

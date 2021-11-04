@@ -22,4 +22,4 @@ std::span<std::byte const> static_resource_view::get_static_resource(std::string
     return r;
 }
 
-}
+} // namespace tt::inline v1

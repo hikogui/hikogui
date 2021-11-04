@@ -32,13 +32,15 @@ struct wfree_unordered_map_item {
     std::atomic<size_t> hash;
     K key;
 
-    template<typename X=K, std::enable_if_t<std::is_same_v<X,std::type_index>, int> = 0>
-    constexpr wfree_unordered_map_item() noexcept :
-        value(), hash(0), key(std::type_index(typeid(void))) {}
+    template<typename X = K, std::enable_if_t<std::is_same_v<X, std::type_index>, int> = 0>
+    constexpr wfree_unordered_map_item() noexcept : value(), hash(0), key(std::type_index(typeid(void)))
+    {
+    }
 
-    template<typename X=K, std::enable_if_t<!std::is_same_v<X,std::type_index>, int> = 0>
-    constexpr wfree_unordered_map_item() noexcept :
-        value(), hash(0), key() {}
+    template<typename X = K, std::enable_if_t<!std::is_same_v<X, std::type_index>, int> = 0>
+    constexpr wfree_unordered_map_item() noexcept : value(), hash(0), key()
+    {
+    }
 
     constexpr wfree_unordered_map_item(wfree_unordered_map_item const &) noexcept = delete;
     constexpr wfree_unordered_map_item(wfree_unordered_map_item &&) noexcept = delete;
@@ -61,7 +63,7 @@ public:
 private:
     static constexpr size_t CAPACITY = MAX_NR_ITEMS * 2;
 
-    std::array<wfree_unordered_map_item<K,V>, CAPACITY> items = {};
+    std::array<wfree_unordered_map_item<K, V>, CAPACITY> items = {};
 
 public:
     constexpr wfree_unordered_map() noexcept = default;
@@ -71,12 +73,14 @@ public:
     constexpr wfree_unordered_map &operator=(wfree_unordered_map const &) noexcept = delete;
     constexpr wfree_unordered_map &operator=(wfree_unordered_map &&) noexcept = delete;
 
-    static size_t make_hash(K const &key) noexcept {
+    static size_t make_hash(K const &key) noexcept
+    {
         ttlet hash = std::hash<K>{}(key);
         return hash >= 3 ? hash : hash + 3;
     }
 
-    void insert(K key, V value) noexcept {
+    void insert(K key, V value) noexcept
+    {
         ttlet hash = make_hash(key);
 
         auto index = hash % CAPACITY;
@@ -108,11 +112,12 @@ public:
         }
     }
 
-    std::vector<K> keys() const noexcept {
+    std::vector<K> keys() const noexcept
+    {
         std::vector<K> r;
         // XXX - with counting items, we could reserve capacity.
 
-        for (ttlet &item: items) {
+        for (ttlet &item : items) {
             if (item.hash >= 3) {
                 r.push_back(item.key);
             }
@@ -120,7 +125,8 @@ public:
         return r;
     }
 
-    V& operator[](K const &key) noexcept {
+    V &operator[](K const &key) noexcept
+    {
         ttlet hash = make_hash(key);
 
         auto index = hash % CAPACITY;
@@ -157,7 +163,8 @@ public:
         }
     }
 
-    std::optional<V> get(K const &key) const noexcept {
+    std::optional<V> get(K const &key) const noexcept
+    {
         ttlet hash = make_hash(key);
 
         auto index = hash % CAPACITY;
@@ -168,7 +175,7 @@ public:
 
             if (item_hash == hash && key == item.key) {
                 // Found key
-                return { item.value };
+                return {item.value};
 
             } else if (item_hash == 0) {
                 // Item is empty.
@@ -180,7 +187,8 @@ public:
         }
     }
 
-    V get(K const &key, V const &default_value) const noexcept {
+    V get(K const &key, V const &default_value) const noexcept
+    {
         if (ttlet optional_value = get(key)) {
             return *optional_value;
         } else {
@@ -188,7 +196,8 @@ public:
         }
     }
 
-    std::optional<V> erase(K const &key) noexcept {
+    std::optional<V> erase(K const &key) noexcept
+    {
         ttlet hash = make_hash(key);
 
         auto index = hash % CAPACITY;
@@ -199,7 +208,7 @@ public:
             if (item_hash == hash && key == item.key) {
                 // Set tombstone. Don't actually delete the key or value.
                 item.hash.store(1, std::memory_order::release);
-                return { item.value };
+                return {item.value};
 
             } else if (item_hash == 0) {
                 // Item is empty.
@@ -212,5 +221,4 @@ public:
     }
 };
 
-
-}
+} // namespace tt::inline v1

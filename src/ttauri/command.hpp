@@ -93,16 +93,17 @@ constexpr char const *to_const_string(command rhs) noexcept
     case command::gui_activate: return "gui_activate";
     case command::gui_enter: return "gui_enter";
     case command::gui_escape: return "gui_escape";
-    default:
-        tt_no_default();
+    default: tt_no_default();
     }
 }
 
-inline std::string to_string(command rhs) noexcept {
+inline std::string to_string(command rhs) noexcept
+{
     return to_const_string(rhs);
 }
 
-inline std::ostream &operator<<(std::ostream &lhs, command const &rhs) {
+inline std::ostream &operator<<(std::ostream &lhs, command const &rhs)
+{
     return lhs << to_const_string(rhs);
 }
 
@@ -187,4 +188,4 @@ constexpr command to_command(std::string_view name) noexcept
     }
 }
 
-}
+} // namespace tt::inline v1

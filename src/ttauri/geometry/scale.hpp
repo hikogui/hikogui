@@ -218,4 +218,4 @@ matrix<D>::uniform(aarectangle src_rectangle, aarectangle dst_rectangle, alignme
 using scale2 = geo::scale<2>;
 using scale3 = geo::scale<3>;
 
-} // namespace tt
+} // namespace tt::inline v1

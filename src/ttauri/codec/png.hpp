@@ -26,8 +26,7 @@ public:
 
     [[nodiscard]] png(std::unique_ptr<resource_view> view);
 
-    [[nodiscard]] png(URL const &url) :
-        png(url.loadView()) {}
+    [[nodiscard]] png(URL const &url) : png(url.loadView()) {}
 
     [[nodiscard]] size_t width() const noexcept
     {
@@ -99,7 +98,6 @@ private:
     void data_to_image(bstring bytes, pixel_map<sfloat_rgba16> &image) const noexcept;
     void data_to_image_line(std::span<std::byte const> bytes, pixel_row<sfloat_rgba16> &row) const noexcept;
     u16x4 extract_pixel_from_line(std::span<std::byte const> bytes, int x) const noexcept;
-
 };
 
-}
+} // namespace tt::inline v1

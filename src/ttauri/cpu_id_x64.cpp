@@ -7,10 +7,8 @@
 namespace tt::inline v1 {
 
 struct {
-
 };
 
 tt_cpu_id(
 
-
-};
+}; // namespace tt::inline v1

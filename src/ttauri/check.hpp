@@ -12,7 +12,7 @@ namespace tt::inline v1 {
 #define tt_parse_check(expression, message, ...) \
     do { \
         if (!(expression)) { \
-            throw ::tt::parse_error(message __VA_OPT__(,) __VA_ARGS__); \
+            throw ::tt::parse_error(message __VA_OPT__(, ) __VA_ARGS__); \
         } \
     } while (false)
 
@@ -24,4 +24,4 @@ namespace tt::inline v1 {
         return result; \
     }(expression))
 
-}
+} // namespace tt::inline v1

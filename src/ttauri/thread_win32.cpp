@@ -73,6 +73,4 @@ std::vector<bool> set_thread_affinity_mask(std::vector<bool> const &mask)
     return index;
 }
 
-
-
-}
+} // namespace tt::inline v1

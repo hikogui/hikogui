@@ -14,7 +14,7 @@ static_assert(
     bounds_test.upper() <= std::numeric_limits<signed long>::max());
 
 /** Bound integer.
- * 
+ *
  */
 template<interval<register_long> Bounds>
 struct bound_integer {
@@ -388,13 +388,13 @@ struct bound_integer {
     }*/
 };
 
-//bound_integer(std::integral auto value)
+// bound_integer(std::integral auto value)
 //    -> bound_integer<std::numeric_limits<decltype(value)>::min(), std::numeric_limits<decltype(value)>::max()>;
 
-//template<char... Chars>
-//constexpr auto operator"" _I()
+// template<char... Chars>
+// constexpr auto operator"" _I()
 //{
 //    constexpr long long value = long_long_from_chars<Chars...>();
 //    return bound_integer_underlying<value, value>{value};
 //}
-} // namespace tt
+} // namespace tt::inline v1

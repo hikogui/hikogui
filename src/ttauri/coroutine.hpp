@@ -259,4 +259,4 @@ using generator = tt::generator<T, std::pmr::polymorphic_allocator<>>;
 
 }
 
-} // namespace tt
+} // namespace tt::inline v1

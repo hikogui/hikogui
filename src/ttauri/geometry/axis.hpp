@@ -36,4 +36,4 @@ enum class axis : unsigned char {
     return static_cast<bool>(static_cast<unsigned char>(rhs));
 }
 
-}
+} // namespace tt::inline v1

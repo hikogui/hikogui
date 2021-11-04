@@ -30,7 +30,9 @@ public:
     constexpr locked_memory_allocator(locked_memory_allocator const &other) noexcept {}
 
     template<typename U>
-    constexpr locked_memory_allocator(locked_memory_allocator<U> const &other) noexcept {}
+    constexpr locked_memory_allocator(locked_memory_allocator<U> const &other) noexcept
+    {
+    }
 
     [[nodiscard]] value_type *allocate(size_type n) const noexcept
     {
@@ -44,4 +46,4 @@ public:
     }
 };
 
-}
+} // namespace tt::inline v1

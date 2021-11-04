@@ -79,4 +79,4 @@ private:
 template<basic_fixed_string Fmt, typename... Args>
 delayed_format(Args &&...) -> delayed_format<Fmt, forward_value_t<Args>...>;
 
-} // namespace tt
+} // namespace tt::inline v1

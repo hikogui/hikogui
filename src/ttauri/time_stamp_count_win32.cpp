@@ -4,9 +4,5 @@
 #include <profileapi.h>
 
 namespace tt::inline v1 {
-    
-
-
 
 }
-

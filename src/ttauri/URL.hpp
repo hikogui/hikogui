@@ -200,7 +200,7 @@ private:
     static URL _urlOfCurrentWorkingDirectory;
 };
 
-} // namespace tt
+} // namespace tt::inline v1
 
 namespace std {
 

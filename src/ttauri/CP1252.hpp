@@ -54,4 +54,4 @@ namespace tt::inline v1 {
     }
 }
 
-}
+} // namespace tt::inline v1

@@ -45,7 +45,7 @@ public:
 
     [[nodiscard]] constexpr explicit extent(f32x4 const &other) noexcept : _v(other) {}
 
-    [[nodiscard]] constexpr explicit operator bool () const noexcept
+    [[nodiscard]] constexpr explicit operator bool() const noexcept
     {
         if constexpr (D == 2) {
             return _v.x() != 0.0f or _v.y() != 0.0f;
@@ -462,7 +462,7 @@ private:
 using extent2 = geo::extent<2>;
 using extent3 = geo::extent<3>;
 
-} // namespace tt
+} // namespace tt::inline v1
 
 namespace std {
 

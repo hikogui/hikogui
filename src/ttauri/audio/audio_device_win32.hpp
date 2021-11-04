@@ -38,7 +38,6 @@ public:
     void set_output_speaker_mapping(tt::speaker_mapping speaker_mapping) noexcept override;
     [[nodiscard]] std::vector<tt::speaker_mapping> available_output_speaker_mappings() const noexcept override;
 
-
     [[nodiscard]] bool supports_format(audio_stream_format const &format) const noexcept;
 
     /** Get the device id for the given win32 audio end-point.
@@ -74,16 +73,17 @@ private:
      * The prototype consists of a sample-rate and speaker mapping. From this the best sample format
      * is selected: int24 -> float32 -> int20 -> int16. int24 is selected above float, so that ttauri
      * will handle dithering.
-     * 
+     *
      * @param sample_rate The sample rate selected by the user.
      * @param speaker_mapping The speaker mapping selected by the user.
      * @return A supported audio_stream_format or empty.
      */
-    [[nodiscard]] audio_stream_format find_exclusive_stream_format(double sample_rate, tt::speaker_mapping speaker_mapping) noexcept;
+    [[nodiscard]] audio_stream_format
+    find_exclusive_stream_format(double sample_rate, tt::speaker_mapping speaker_mapping) noexcept;
 
     /** Get the shared stream format for the device.
      */
     [[nodiscard]] audio_stream_format shared_stream_format() const;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

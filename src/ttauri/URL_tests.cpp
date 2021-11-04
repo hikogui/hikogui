@@ -12,7 +12,8 @@ using namespace std;
 using namespace std::literals;
 using namespace tt;
 
-TEST(URLTests, parsing) {
+TEST(URLTests, parsing)
+{
     ttlet a = URL("scheme://user:password@hostname:1234/path1/path2?query#fragment");
 
     ASSERT_EQ(a.scheme(), "scheme");
@@ -23,27 +24,36 @@ TEST(URLTests, parsing) {
     ASSERT_EQ(a.fragment(), "fragment");
 }
 
-TEST(URLTests, relativePath) {
+TEST(URLTests, relativePath)
+{
     ttlet a = URL("file:foo/bar.txt");
 
     ASSERT_EQ(a.path(), "foo/bar.txt");
 }
 
-TEST(URLTests, glob1) {
+TEST(URLTests, glob1)
+{
     ttlet executableDirectory = URL::urlFromExecutableDirectory();
-    
+
     ttlet txt_file_glob = executableDirectory.urlByAppendingPath("*.txt");
     auto txt_files = txt_file_glob.urlsByScanningWithGlobPattern();
 
-    ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) { return x.path().ends_with("file_view.txt"s); }));
-    ASSERT_FALSE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) { return x.path().ends_with("TTauri_Foundation.lib"s); }));
+    ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) {
+        return x.path().ends_with("file_view.txt"s);
+    }));
+    ASSERT_FALSE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) {
+        return x.path().ends_with("TTauri_Foundation.lib"s);
+    }));
 }
 
-TEST(URLTests, glob2) {
+TEST(URLTests, glob2)
+{
     ttlet executableDirectory = URL::urlFromExecutableDirectory();
 
     ttlet txt_file_glob = executableDirectory.urlByAppendingPath("**/*.txt");
     auto txt_files = txt_file_glob.urlsByScanningWithGlobPattern();
 
-    ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) { return x.path().ends_with("glob2.txt"s); }));
+    ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) {
+        return x.path().ends_with("glob2.txt"s);
+    }));
 }

@@ -38,5 +38,4 @@ bstring zlib_decompress(std::span<std::byte const> bytes, ssize_t max_size)
     return r;
 }
 
-
-}
+} // namespace tt::inline v1

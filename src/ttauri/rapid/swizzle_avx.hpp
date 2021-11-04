@@ -159,6 +159,6 @@ template<ssize_t A = -1, ssize_t B = -1>
     return _mm_castpd_si128(_mm_swizzle_pd<A, B>(_mm_castsi128_pd(value)));
 }
 
-} // namespace tt
+} // namespace tt::inline v1
 
 #endif

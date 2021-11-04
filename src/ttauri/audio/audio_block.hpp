@@ -71,4 +71,4 @@ public:
     audio_block_state state;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

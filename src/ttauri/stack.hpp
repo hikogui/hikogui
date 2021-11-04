@@ -39,8 +39,7 @@ public:
     /** Construct a stack with the given data.
      * @param init An initializer_list of items to add to the stack.
      */
-    stack(std::initializer_list<value_type> init) noexcept :
-        _top(begin())
+    stack(std::initializer_list<value_type> init) noexcept : _top(begin())
     {
         for (ttlet &init_item : init) {
             push_back(init_item);
@@ -199,7 +198,7 @@ public:
      * @param args The arguments for the constructor of `value_type`.
      */
     template<typename... Args>
-    void emplace_back(Args &&... args) noexcept
+    void emplace_back(Args &&...args) noexcept
     {
         tt_axiom(!full());
         new (end()) value_type(std::forward<Args>(args)...);
@@ -210,8 +209,8 @@ public:
      * @tparam Arg The type of an object that can be converted to `value_type`
      * @param arg The object to be pushed on the stack.
      */
-    template<typename Arg> requires (std::is_convertible_v<Arg,value_type>)
-    void push_back(Arg &&arg) noexcept
+    template<typename Arg>
+    requires(std::is_convertible_v<Arg, value_type>) void push_back(Arg &&arg) noexcept
     {
         emplace_back(std::forward<Arg>(arg));
     }
@@ -250,4 +249,4 @@ private:
     pointer_type _top;
 };
 
-}
+} // namespace tt::inline v1

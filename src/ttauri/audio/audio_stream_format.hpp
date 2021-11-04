@@ -17,8 +17,7 @@ struct audio_stream_format {
     double sample_rate;
     tt::speaker_mapping speaker_mapping;
 
-    constexpr audio_stream_format() noexcept :
-        sample_format(), sample_rate(0.0f), speaker_mapping(tt::speaker_mapping::none) {}
+    constexpr audio_stream_format() noexcept : sample_format(), sample_rate(0.0f), speaker_mapping(tt::speaker_mapping::none) {}
 
     constexpr audio_stream_format(audio_stream_format const &) noexcept = default;
     constexpr audio_stream_format(audio_stream_format &&) noexcept = default;
@@ -29,16 +28,14 @@ struct audio_stream_format {
         audio_sample_format sample_format,
         double sample_rate,
         tt::speaker_mapping speaker_mapping) noexcept :
-        sample_format(sample_format),
-        sample_rate(sample_rate),
-        speaker_mapping(speaker_mapping)
+        sample_format(sample_format), sample_rate(sample_rate), speaker_mapping(speaker_mapping)
     {
     }
 
-    constexpr explicit operator bool () const noexcept
+    constexpr explicit operator bool() const noexcept
     {
         return static_cast<bool>(sample_format);
     }
 };
 
-} // namespace tt
+} // namespace tt::inline v1

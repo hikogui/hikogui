@@ -268,4 +268,4 @@ public:
     }
 };
 
-} // namespace tt
+} // namespace tt::inline v1

@@ -20,10 +20,10 @@ class quarter {
     unsigned int q;
 
 public:
-    explicit constexpr quarter(std::chrono::month m) noexcept :
-        q(((static_cast<unsigned>(m) - 1) / 3) + 1) {}
+    explicit constexpr quarter(std::chrono::month m) noexcept : q(((static_cast<unsigned>(m) - 1) / 3) + 1) {}
 
-    [[nodiscard]] explicit constexpr operator unsigned () const noexcept {
+    [[nodiscard]] explicit constexpr operator unsigned() const noexcept
+    {
         return q;
     }
 
@@ -53,7 +53,8 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr bool increment_carry() noexcept {
+    [[nodiscard]] constexpr bool increment_carry() noexcept
+    {
         if (++q > 4) {
             q = 1;
             return true;
@@ -67,21 +68,40 @@ public:
         return md >= first() && md <= last();
     }
 
-    [[nodiscard]] friend constexpr bool operator==(quarter const &lhs, quarter const &rhs) noexcept { return lhs.q == rhs.q; }
-    [[nodiscard]] friend constexpr bool operator!=(quarter const &lhs, quarter const &rhs) noexcept { return lhs.q != rhs.q; }
-    [[nodiscard]] friend constexpr bool operator<(quarter const &lhs, quarter const &rhs) noexcept { return lhs.q < rhs.q; }
-    [[nodiscard]] friend constexpr bool operator>(quarter const &lhs, quarter const &rhs) noexcept { return lhs.q > rhs.q; }
-    [[nodiscard]] friend constexpr bool operator<=(quarter const &lhs, quarter const &rhs) noexcept { return lhs.q <= rhs.q; }
-    [[nodiscard]] friend constexpr bool operator>=(quarter const &lhs, quarter const &rhs) noexcept { return lhs.q >= rhs.q; }
+    [[nodiscard]] friend constexpr bool operator==(quarter const &lhs, quarter const &rhs) noexcept
+    {
+        return lhs.q == rhs.q;
+    }
+    [[nodiscard]] friend constexpr bool operator!=(quarter const &lhs, quarter const &rhs) noexcept
+    {
+        return lhs.q != rhs.q;
+    }
+    [[nodiscard]] friend constexpr bool operator<(quarter const &lhs, quarter const &rhs) noexcept
+    {
+        return lhs.q < rhs.q;
+    }
+    [[nodiscard]] friend constexpr bool operator>(quarter const &lhs, quarter const &rhs) noexcept
+    {
+        return lhs.q > rhs.q;
+    }
+    [[nodiscard]] friend constexpr bool operator<=(quarter const &lhs, quarter const &rhs) noexcept
+    {
+        return lhs.q <= rhs.q;
+    }
+    [[nodiscard]] friend constexpr bool operator>=(quarter const &lhs, quarter const &rhs) noexcept
+    {
+        return lhs.q >= rhs.q;
+    }
 
-    [[nodiscard]] friend std::string to_string(quarter const &rhs) noexcept {
+    [[nodiscard]] friend std::string to_string(quarter const &rhs) noexcept
+    {
         return std::format("{}", rhs.q);
     }
 
-    friend std::ostream &operator<<(std::ostream &lhs, quarter const &rhs) noexcept {
+    friend std::ostream &operator<<(std::ostream &lhs, quarter const &rhs) noexcept
+    {
         return lhs << to_string(rhs);
     }
-
 };
 
 class year_quarter {
@@ -89,15 +109,15 @@ class year_quarter {
     quarter q;
 
 public:
-    explicit constexpr year_quarter(std::chrono::year_month const &ym) :
-        y(ym.year()), q(ym.month()) {}
+    explicit constexpr year_quarter(std::chrono::year_month const &ym) : y(ym.year()), q(ym.month()) {}
 
     explicit constexpr year_quarter(std::chrono::year_month_day const &ymd) :
         year_quarter(std::chrono::year_month{ymd.year(), ymd.month()})
     {
     }
 
-    constexpr year_quarter &operator++() noexcept {
+    constexpr year_quarter &operator++() noexcept
+    {
         if (q.increment_carry()) {
             ++y;
         }
@@ -131,11 +151,13 @@ public:
         return y == ymd.year() && q.contains(std::chrono::month_day(ymd.month(), ymd.day()));
     }
 
-    [[nodiscard]] friend constexpr bool operator==(year_quarter const &lhs, year_quarter const &rhs) noexcept {
+    [[nodiscard]] friend constexpr bool operator==(year_quarter const &lhs, year_quarter const &rhs) noexcept
+    {
         return lhs.y == rhs.y && lhs.q == rhs.q;
     }
 
-    [[nodiscard]] friend constexpr bool operator<(year_quarter const &lhs, year_quarter const &rhs) noexcept {
+    [[nodiscard]] friend constexpr bool operator<(year_quarter const &lhs, year_quarter const &rhs) noexcept
+    {
         if (lhs.y == rhs.y) {
             return lhs.q < rhs.q;
         } else {
@@ -143,19 +165,32 @@ public:
         }
     }
 
-    [[nodiscard]] friend constexpr bool operator!=(year_quarter const &lhs, year_quarter const &rhs) noexcept { return !(lhs == rhs); }
-    [[nodiscard]] friend constexpr bool operator>(year_quarter const &lhs, year_quarter const &rhs) noexcept { return rhs < lhs; }
-    [[nodiscard]] friend constexpr bool operator<=(year_quarter const &lhs, year_quarter const &rhs) noexcept { return !(lhs > rhs); }
-    [[nodiscard]] friend constexpr bool operator>=(year_quarter const &lhs, year_quarter const &rhs) noexcept { return !(lhs < rhs); }
+    [[nodiscard]] friend constexpr bool operator!=(year_quarter const &lhs, year_quarter const &rhs) noexcept
+    {
+        return !(lhs == rhs);
+    }
+    [[nodiscard]] friend constexpr bool operator>(year_quarter const &lhs, year_quarter const &rhs) noexcept
+    {
+        return rhs < lhs;
+    }
+    [[nodiscard]] friend constexpr bool operator<=(year_quarter const &lhs, year_quarter const &rhs) noexcept
+    {
+        return !(lhs > rhs);
+    }
+    [[nodiscard]] friend constexpr bool operator>=(year_quarter const &lhs, year_quarter const &rhs) noexcept
+    {
+        return !(lhs < rhs);
+    }
 
-    [[nodiscard]] friend std::string to_string(year_quarter const &rhs) noexcept {
+    [[nodiscard]] friend std::string to_string(year_quarter const &rhs) noexcept
+    {
         return std::format("{}Q{}", rhs.y, rhs.q);
     }
 
-    friend std::ostream &operator<<(std::ostream &lhs, year_quarter const &rhs) noexcept {
+    friend std::ostream &operator<<(std::ostream &lhs, year_quarter const &rhs) noexcept
+    {
         return lhs << to_string(rhs);
     }
 };
 
-
-}
+} // namespace tt::inline v1

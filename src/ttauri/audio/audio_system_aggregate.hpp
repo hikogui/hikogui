@@ -49,4 +49,4 @@ private:
     friend class audio_system_aggregate_delegate;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

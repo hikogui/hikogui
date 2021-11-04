@@ -14,11 +14,11 @@ namespace tt::inline v1 {
  * This is a fast implementation of a recursive-mutex which does not fairly
  * arbitrate between multiple blocking threads. Due to the unfairness it is
  * possible that blocking threads will be completely starved.
- * 
+ *
  * This recursive-mutex however does block on a operating system's
  * futex/unfair_mutex primitives and therefor thread priority are properly
  * handled.
- * 
+ *
  * On windows and Linux the compiler generally emits the following sequence
  * of instructions:
  *  + non-recursive:
@@ -31,7 +31,7 @@ namespace tt::inline v1 {
  */
 class unfair_recursive_mutex {
     /* Thread annotation syntax.
-     * 
+     *
      * FIRST - The thread that acquires/acquired the mutex
      * OWNER - The FIRST thread that recursively requests a lock.
      * OTHER - Another thread while the mutex is held.
@@ -57,7 +57,8 @@ public:
      * @return The number of recursive locks the current thread has taken.
      * @retval 0 The current thread does not have a lock, or no-thread have a lock.
      */
-    [[nodiscard]] int recurse_lock_count() const noexcept {
+    [[nodiscard]] int recurse_lock_count() const noexcept
+    {
         // The following load() is:
         // - valid-and-equal to thread_id when the OWNER has the lock.
         // - zero or valid-and-not-equal to thread_id when this is an OTHER thread.
@@ -74,7 +75,8 @@ public:
     /**
      * When `try_lock()` is called on a thread that already holds the lock true is returned.
      */
-    [[nodiscard]] bool try_lock() noexcept {
+    [[nodiscard]] bool try_lock() noexcept
+    {
         // FIRST | OWNER | OTHER
         ttlet thread_id = current_thread_id();
 
@@ -105,22 +107,23 @@ public:
     }
 
     /**
-    * 
-    *                lea  rbx,[rcx+98h]  
-    *                mov  esi,dword ptr gs:[48h]  
-    *                mov  eax,dword ptr [rbx+4]  
-    *                cmp  eax,esi  
-    *                jne  non_recursive  
-    *                lea  r15,[rbx+8]  
-    *                inc  dword ptr [r15]
-    *                jmp  locked
-    * non_recursive: call unfair_mutex.lock()
-    *                lea  r15,[r14+0A0h]  
-    *                mov  dword ptr [r15],r13d
-    *                mov  dword ptr [rbx+4],esi
-    * locked:
-    */
-    void lock() noexcept {
+     *
+     *                lea  rbx,[rcx+98h]
+     *                mov  esi,dword ptr gs:[48h]
+     *                mov  eax,dword ptr [rbx+4]
+     *                cmp  eax,esi
+     *                jne  non_recursive
+     *                lea  r15,[rbx+8]
+     *                inc  dword ptr [r15]
+     *                jmp  locked
+     * non_recursive: call unfair_mutex.lock()
+     *                lea  r15,[r14+0A0h]
+     *                mov  dword ptr [r15],r13d
+     *                mov  dword ptr [rbx+4],esi
+     * locked:
+     */
+    void lock() noexcept
+    {
         // FIRST | OWNER | OTHER
         ttlet thread_id = current_thread_id();
 
@@ -146,7 +149,8 @@ public:
         }
     }
 
-    void unlock() noexcept {
+    void unlock() noexcept
+    {
         // FIRST | OWNER
         tt_axiom(recurse_lock_count(), "Unlock must be called on the thread that locked the mutex");
 
@@ -163,9 +167,6 @@ public:
         }
         // OWNER | OTHER
     }
-
 };
 
-
-
-}
+} // namespace tt::inline v1

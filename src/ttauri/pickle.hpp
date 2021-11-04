@@ -95,4 +95,4 @@ struct pickle<bool> {
     }
 };
 
-} // namespace tt
+} // namespace tt::inline v1

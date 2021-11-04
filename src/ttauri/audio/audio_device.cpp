@@ -5,5 +5,4 @@
 
 namespace tt::inline v1 {
 
-
 }

@@ -12,7 +12,9 @@ namespace tt::inline v1 {
 
 [[nodiscard]] std::unique_ptr<skeleton_node> parse_skeleton(skeleton_parse_context &context);
 
-[[nodiscard]] inline std::unique_ptr<skeleton_node> parse_skeleton(URL url, std::string_view::const_iterator first, std::string_view::const_iterator last) {
+[[nodiscard]] inline std::unique_ptr<skeleton_node>
+parse_skeleton(URL url, std::string_view::const_iterator first, std::string_view::const_iterator last)
+{
     auto context = skeleton_parse_context(std::move(url), first, last);
     auto e = parse_skeleton(context);
     return e;
@@ -31,4 +33,4 @@ namespace tt::inline v1 {
     return parse_skeleton(std::move(url), sv.cbegin(), sv.cend());
 }
 
-}
+} // namespace tt::inline v1

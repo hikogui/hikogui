@@ -29,7 +29,8 @@ size_t advance_thread_affinity(size_t &cpu) noexcept
             try {
                 set_thread_affinity(cpu);
                 selected_cpu = narrow_cast<ssize_t>(cpu);
-            } catch (os_error const &) {}
+            } catch (os_error const &) {
+            }
         }
 
         // Advance to the next available cpu.
@@ -44,4 +45,4 @@ size_t advance_thread_affinity(size_t &cpu) noexcept
     return narrow_cast<size_t>(selected_cpu);
 }
 
-}
+} // namespace tt::inline v1

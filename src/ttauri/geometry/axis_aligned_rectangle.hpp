@@ -417,7 +417,6 @@ public:
         return axis_aligned_rectangle{p0, p3};
     }
 
-
     /** Round rectangle by shrinking to pixel edge.
      */
     [[nodiscard]] friend constexpr axis_aligned_rectangle floor(axis_aligned_rectangle const &rhs) noexcept
@@ -460,7 +459,7 @@ public:
 
 using aarectangle = axis_aligned_rectangle;
 
-} // namespace tt
+} // namespace tt::inline v1
 
 namespace std {
 

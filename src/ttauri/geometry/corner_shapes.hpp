@@ -77,5 +77,4 @@ private:
     f32x4 _v;
 };
 
-
-}
+} // namespace tt::inline v1

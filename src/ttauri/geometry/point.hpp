@@ -266,7 +266,6 @@ public:
         return point{floor(f32x4{lhs} / rhs_) * rhs_};
     }
 
-
     /** Check if the point is valid.
      * This function will check if w is not zero, and with a 2D point is z is zero.
      */
@@ -300,12 +299,12 @@ private:
 using point2 = geo::point<2>;
 using point3 = geo::point<3>;
 
-} // namespace tt
+} // namespace tt::inline v1
 
 namespace std {
 
 template<typename CharT>
-struct formatter<tt::geo::point<2>, CharT>  {
+struct formatter<tt::geo::point<2>, CharT> {
     auto parse(auto &pc)
     {
         return pc.end();

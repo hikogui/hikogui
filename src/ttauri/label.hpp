@@ -83,7 +83,7 @@ public:
 private:
 };
 
-} // namespace tt
+} // namespace tt::inline v1
 
 namespace std {
 

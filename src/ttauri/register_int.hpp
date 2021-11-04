@@ -45,14 +45,13 @@ using register_signed_long = __int128_t;
 using register_unsigned_long = unsigned __int128_t;
 
 #else
-using register_long = bigint<register_unsigned_int,2,true>;
-using register_signed_long = bigint<register_unsigned_int,2,true>;
-using register_unsigned_long = bigint<register_unsigned_int,2,false>;
+using register_long = bigint<register_unsigned_int, 2, true>;
+using register_signed_long = bigint<register_unsigned_int, 2, true>;
+using register_unsigned_long = bigint<register_unsigned_int, 2, false>;
 #endif
 
 #else
 #error "register_int missing implementation"
 #endif
 
-}
-
+} // namespace tt::inline v1

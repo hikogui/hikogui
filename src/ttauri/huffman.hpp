@@ -28,26 +28,28 @@ class huffman_tree {
     std::vector<T> tree;
 
 public:
-    huffman_tree() {
+    huffman_tree()
+    {
         tree.push_back(0);
         tree.push_back(0);
     }
 
     /** Add a symbol to the huffman_tree.
-     * 
+     *
      */
-    void add(int symbol, int code, int code_length) noexcept {
+    void add(int symbol, int code, int code_length) noexcept
+    {
         tt_axiom(code_length >= 1);
 
         int offset = 0;
         while (--code_length > 0) {
             int select = (code >> code_length) & 1;
             offset += select;
-          
+
             int value = tree[offset];
 
             // value may not be a leaf.
-            tt_axiom(value <= 0); 
+            tt_axiom(value <= 0);
 
             if (value == 0) {
                 // Unused node entry. Point to the first of two new entries.
@@ -66,11 +68,12 @@ public:
         int select = code & 1;
         offset += select;
 
-        tt_axiom(tree[offset] == 0); 
+        tt_axiom(tree[offset] == 0);
         tree[offset] = narrow_cast<T>(symbol + 1);
     }
 
-    [[nodiscard]] state_t start() const noexcept {
+    [[nodiscard]] state_t start() const noexcept
+    {
         return tree.data();
     }
 
@@ -86,7 +89,8 @@ public:
      *         are needed.
      * @throw parse-error on invalid code-bit sequence.
      */
-    [[nodiscard]] int get(bool code_bit, state_t &state) const {
+    [[nodiscard]] int get(bool code_bit, state_t &state) const
+    {
         state += static_cast<ptrdiff_t>(code_bit);
 
         if (*state == 0) {
@@ -98,7 +102,8 @@ public:
         return value - 1;
     }
 
-    [[nodiscard]] int get_symbol(std::span<std::byte const> bytes, ssize_t &bit_offset) const noexcept {
+    [[nodiscard]] int get_symbol(std::span<std::byte const> bytes, ssize_t &bit_offset) const noexcept
+    {
         auto state = start();
         while (true) {
             int symbol;
@@ -107,10 +112,11 @@ public:
             }
         }
     }
-    
+
     /** Build a canonical-huffman table from a set of lengths.
      */
-    [[nodiscard]] static huffman_tree from_lengths(int const *lengths, ssize_t nr_symbols) {
+    [[nodiscard]] static huffman_tree from_lengths(int const *lengths, ssize_t nr_symbols)
+    {
         struct symbol_length_t {
             int symbol;
             int length;
@@ -138,7 +144,7 @@ public:
 
         int code = 0;
         int prev_length = 0;
-        for (auto &&entry: symbol_lengths) {
+        for (auto &&entry : symbol_lengths) {
             if (entry.length != 0) {
                 code <<= (entry.length - prev_length);
 
@@ -152,11 +158,10 @@ public:
         return r;
     }
 
-    [[nodiscard]] static huffman_tree from_lengths(std::vector<int> const &lengths) {
+    [[nodiscard]] static huffman_tree from_lengths(std::vector<int> const &lengths)
+    {
         return from_lengths(lengths.data(), ssize(lengths));
     }
 };
 
-
-
-}
+} // namespace tt::inline v1

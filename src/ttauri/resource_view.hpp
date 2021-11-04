@@ -34,10 +34,11 @@ public:
     [[nodiscard]] virtual std::span<std::byte const> bytes() const noexcept = 0;
 
     /** Get a span to the memory mapping.
-    */
+     */
     [[nodiscard]] virtual std::string_view string_view() const noexcept = 0;
 
-    operator std::span<std::byte const> () const noexcept {
+    operator std::span<std::byte const>() const noexcept
+    {
         return bytes();
     }
 
@@ -48,8 +49,6 @@ public:
     /** Pointer to the memory mapping.
      */
     [[nodiscard]] virtual std::byte const *data() const noexcept = 0;
-
-    
 };
 
-}
+} // namespace tt::inline v1

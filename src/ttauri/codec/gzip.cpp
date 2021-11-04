@@ -84,4 +84,4 @@ bstring gzip_decompress(std::span<std::byte const> bytes, ssize_t max_size)
     return r;
 }
 
-} // namespace tt
+} // namespace tt::inline v1

@@ -171,7 +171,7 @@ private:
     std::shared_ptr<audio_device_delegate> delegate = {};
 };
 
-} // namespace tt
+} // namespace tt::inline v1
 
 namespace std {
 

@@ -22,17 +22,18 @@ class range_map {
         Key last;
         std::shared_ptr<values> values;
 
-        item &operation+=(Value const &value) noexcept {
+        item &operation += (Value const &value) noexcept
+        {
             if (values->count(value) == 0) {
                 // When a value is added we need to create a new set.
                 auto tmp = *values;
-                tmp.insert(value)
-                values = std::make_shared<values>(std::move(tmp));
+                tmp.insert(value) values = std::make_shared<values>(std::move(tmp));
             }
             return *this;
         }
 
-        [[nodiscard]] friend bool can_be_merged(item const &lhs, item const &rhs) noexcept {
+        [[nodiscard]] friend bool can_be_merged(item const &lhs, item const &rhs) noexcept
+        {
             return lhs.last == rhs.first && lhs.values == rhs.values;
         }
     };
@@ -41,14 +42,16 @@ class range_map {
 
     /** Get iterator to the first item that contains value.
      */
-    auto find(Key const &key) noexcept {
+    auto find(Key const &key) noexcept
+    {
         return std::lower_bound(items.begin(), items.end(), key, [](ttlet &a, ttlet &b) {
             return a.first < b;
         });
     }
 
 public:
-    range_map() noexcept {
+    range_map() noexcept
+    {
         items.emplace_back(std::numeric_limits<Key>::min(), std::numeric_limits<Key>::max());
     }
 
@@ -56,7 +59,8 @@ public:
      * Inserts may be slow, since it may require moves of large number of objects
      * and allocations.
      */
-    void insert(Key const &first, Key const &last, Value &&value) noexcept {
+    void insert(Key const &first, Key const &last, Value &&value) noexcept
+    {
         tt_assert(last > first);
 
         // Find all (partially) overlapping items.
@@ -94,14 +98,20 @@ public:
 
     /** Optimize range_map for improved lookup performance and reduced memory footprint.
      */
-    void optimize() noexcept {
-        std::set<std::shared_ptr<values>,[](ttlet &lhs, ttlet &rhs) { return *lhs < *rhs; }> values_set;
+    void optimize() noexcept
+    {
+        std::set<
+            std::shared_ptr<values>,
+            [](ttlet &lhs, ttlet &rhs) {
+                return *lhs < *rhs;
+            }>
+            values_set;
 
         auto p = items.begin();
         values_set.insert(p->values);
         for (auto i = p + 1; i != items.end(); p = i++) {
             // De-duplicate value-sets.
-            ttlet [deduplicated_values, dummy] = values_set.insert(i->values);
+            ttlet[deduplicated_values, dummy] = values_set.insert(i->values);
             i->values = *deduplicated_values;
 
             if (can_be_merged(*p, *i)) {
@@ -114,10 +124,10 @@ public:
         items.shrink_to_fit();
     }
 
-    values const &operator[](Key const &key) const noexcept {
+    values const &operator[](Key const &key) const noexcept
+    {
         return *((find(key))->values);
     }
 };
 
-
-}
+} // namespace tt::inline v1

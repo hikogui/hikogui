@@ -94,12 +94,11 @@ template<typename CharT>
 [[nodiscard]] constexpr size_t basic_fixed_string_length_(CharT const *str) noexcept
 {
     size_t i = 0;
-    while (str[i++] != CharT{}) {
-    }
+    while (str[i++] != CharT{}) {}
     return i;
 }
 
-} // namespace tt
+} // namespace tt::inline v1
 
 namespace std {
 

@@ -467,4 +467,4 @@ pixel_map<sfloat_rgba16> png::load(URL const &url)
     return image;
 }
 
-} // namespace tt
+} // namespace tt::inline v1

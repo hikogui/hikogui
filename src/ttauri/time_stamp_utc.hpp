@@ -69,4 +69,4 @@ private:
 
 std::string format_engineering(std::chrono::nanoseconds duration);
 
-} // namespace tt
+} // namespace tt::inline v1

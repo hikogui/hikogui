@@ -45,7 +45,7 @@ public:
         }
     }
 
-    constexpr explicit operator bool () const noexcept
+    constexpr explicit operator bool() const noexcept
     {
         return _v0 == 0 and _v1 == 0 and _v2 == 0;
     }
@@ -80,5 +80,4 @@ private:
     char _v2;
 };
 
-}
-
+} // namespace tt::inline v1

@@ -24,10 +24,8 @@ namespace tt::inline v1 {
     ++index;
 
     tt_axiom(byte_index < ssize(buffer));
-    return static_cast<bool>(
-        static_cast<int>(buffer[byte_index] >> bit_index) & 1
-    );
-} 
+    return static_cast<bool>(static_cast<int>(buffer[byte_index] >> bit_index) & 1);
+}
 
 /** Read a single bit of span of bytes
  * Bits are ordered LSB first.
@@ -72,6 +70,6 @@ namespace tt::inline v1 {
     }
 
     return value;
-} 
-
 }
+
+} // namespace tt::inline v1

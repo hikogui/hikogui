@@ -8,15 +8,18 @@
 
 namespace tt::inline v1 {
 
-struct skeleton_string_node final: skeleton_node {
+struct skeleton_string_node final : skeleton_node {
     std::string text;
 
-    skeleton_string_node(parse_location location, std::string text) :
-        skeleton_node(std::move(location)), text(std::move(text)) {}
+    skeleton_string_node(parse_location location, std::string text) : skeleton_node(std::move(location)), text(std::move(text)) {}
 
-    [[nodiscard]] bool should_left_align() const noexcept override { return false; }
+    [[nodiscard]] bool should_left_align() const noexcept override
+    {
+        return false;
+    }
 
-    void left_align() noexcept override {
+    void left_align() noexcept override
+    {
         // first check if there are only spaces and tabs after the last line feed.
         auto new_text_length = ssize(text);
         for (auto i = text.crbegin(); i != text.crend(); ++i, --new_text_length) {
@@ -34,14 +37,16 @@ struct skeleton_string_node final: skeleton_node {
         text.resize(new_text_length);
     }
 
-    std::string string() const noexcept override {
+    std::string string() const noexcept override
+    {
         return std::format("<text {}>", text);
     }
 
-    datum evaluate(formula_evaluation_context &context) override {
+    datum evaluate(formula_evaluation_context &context) override
+    {
         context.write(text);
         return {};
     }
 };
 
-}
+} // namespace tt::inline v1

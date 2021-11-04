@@ -15,8 +15,8 @@ namespace tt::inline v1 {
 
 class sfloat_rg32 {
     alignas(sizeof(float) * 2)
-    // Red, Green in binary32 (native endian).
-    std::array<float,2> v;
+        // Red, Green in binary32 (native endian).
+        std::array<float, 2> v;
 
 public:
     sfloat_rg32() = default;
@@ -25,8 +25,7 @@ public:
     sfloat_rg32 &operator=(sfloat_rg32 const &rhs) noexcept = default;
     sfloat_rg32 &operator=(sfloat_rg32 &&rhs) noexcept = default;
 
-    explicit sfloat_rg32(f32x4 const &rhs) noexcept :
-        v{rhs.r(), rhs.g()} {}
+    explicit sfloat_rg32(f32x4 const &rhs) noexcept : v{rhs.r(), rhs.g()} {}
 
     sfloat_rg32 &operator=(f32x4 const &rhs) noexcept
     {
@@ -44,12 +43,14 @@ public:
     sfloat_rg32(vector2 const &rhs) noexcept : sfloat_rg32{static_cast<f32x4>(rhs)} {}
     sfloat_rg32(point2 const &rhs) noexcept : sfloat_rg32{static_cast<f32x4>(rhs)} {}
 
-    [[nodiscard]] friend bool operator==(sfloat_rg32 const &lhs, sfloat_rg32 const &rhs) noexcept {
+    [[nodiscard]] friend bool operator==(sfloat_rg32 const &lhs, sfloat_rg32 const &rhs) noexcept
+    {
         return lhs.v == rhs.v;
     }
-    [[nodiscard]] friend bool operator!=(sfloat_rg32 const &lhs, sfloat_rg32 const &rhs) noexcept {
+    [[nodiscard]] friend bool operator!=(sfloat_rg32 const &lhs, sfloat_rg32 const &rhs) noexcept
+    {
         return !(lhs == rhs);
     }
 };
 
-}
+} // namespace tt::inline v1

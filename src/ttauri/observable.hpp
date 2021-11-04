@@ -52,9 +52,9 @@ struct observable_notifier_type {
     }
 
     /** Add a callback to the list.
-    * 
-    * @pre observable_mutex must be locked.
-    */
+     *
+     * @pre observable_mutex must be locked.
+     */
     void push(callback_ptr_type callback_ptr) noexcept
     {
         tt_axiom(observable_mutex.is_locked());
@@ -62,13 +62,14 @@ struct observable_notifier_type {
     }
 
     /** Notify all callbacks that have been pushed.
-     * 
+     *
      * @pre observable_mutex must be locked.
      * @post obervable_mutex is unlocked
      * @post All registered callbacks have been called.
      * @post List of registered callbacks has been cleared.
      */
-    void notify() noexcept {
+    void notify() noexcept
+    {
         tt_axiom(observable_mutex.is_locked());
 
         if (proxy_count == 0 and not callbacks.empty()) {
@@ -427,7 +428,7 @@ struct observable_impl {
  * When assigning observables to each other, the subscriptions
  * to the observable remain unmodified. However which value is shared is shown in the
  * example below:
- * 
+ *
  * ```
  * auto a = observable<int>{1};
  * auto b = observable<int>{5};
@@ -443,7 +444,7 @@ struct observable_impl {
  * to a callback function. This means that the object that subscribed
  * to the observable needs to own the `std::shared_ptr` that is returned
  * by the `subscribe()` method.
- * 
+ *
  * A proxy object is returned when dereferencing an observable. The
  * callbacks are called when both the value has changed and the
  * lifetime of all non-scalar proxy objects in the system has ended.
@@ -726,4 +727,4 @@ struct observable_argument<observable<T>> {
 template<typename T>
 using observable_argument_t = typename observable_argument<T>::type;
 
-} // namespace tt
+} // namespace tt::inline v1

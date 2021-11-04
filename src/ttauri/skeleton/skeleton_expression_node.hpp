@@ -8,21 +8,26 @@
 
 namespace tt::inline v1 {
 
-struct skeleton_expression_node final: skeleton_node {
+struct skeleton_expression_node final : skeleton_node {
     std::unique_ptr<formula_node> expression;
 
     skeleton_expression_node(parse_location location, std::unique_ptr<formula_node> expression) :
-        skeleton_node(std::move(location)), expression(std::move(expression)) {}
+        skeleton_node(std::move(location)), expression(std::move(expression))
+    {
+    }
 
-    void post_process(formula_post_process_context &context) override {
+    void post_process(formula_post_process_context &context) override
+    {
         post_process_expression(context, *expression, location);
     }
 
-    std::string string() const noexcept override {
+    std::string string() const noexcept override
+    {
         return std::format("<expression {}>", *expression);
     }
 
-    datum evaluate(formula_evaluation_context &context) override {
+    datum evaluate(formula_evaluation_context &context) override
+    {
         ttlet tmp = evaluate_formula_without_output(context, *expression, location);
         if (tmp.is_break()) {
             throw operation_error("{}: Found #break not inside a loop statement.", location);
@@ -36,4 +41,4 @@ struct skeleton_expression_node final: skeleton_node {
     }
 };
 
-}
+} // namespace tt::inline v1

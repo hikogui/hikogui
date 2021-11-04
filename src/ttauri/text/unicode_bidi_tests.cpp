@@ -229,19 +229,17 @@ struct unicode_bidi_character_test {
         resolved_paragraph_direction == 1                              ? unicode_bidi_class::R :
                                                                          unicode_bidi_class::unknown;
 
-    std::transform(
-        begin(int_resolved_levels), end(int_resolved_levels), std::back_inserter(r.resolved_levels), [](ttlet &x) {
-            if (x == "x") {
-                return -1;
-            } else {
-                return tt::from_string<int>(x);
-            }
-        });
-
-    std::transform(
-        begin(int_resolved_order), end(int_resolved_order), std::back_inserter(r.resolved_order), [](ttlet &x) {
+    std::transform(begin(int_resolved_levels), end(int_resolved_levels), std::back_inserter(r.resolved_levels), [](ttlet &x) {
+        if (x == "x") {
+            return -1;
+        } else {
             return tt::from_string<int>(x);
-        });
+        }
+    });
+
+    std::transform(begin(int_resolved_order), end(int_resolved_order), std::back_inserter(r.resolved_order), [](ttlet &x) {
+        return tt::from_string<int>(x);
+    });
 
     return r;
 }

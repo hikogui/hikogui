@@ -32,4 +32,4 @@ void audio_system::deinit() noexcept
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

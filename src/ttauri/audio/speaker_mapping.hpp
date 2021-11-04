@@ -235,4 +235,4 @@ struct pickle<speaker_mapping> {
     }
 };
 
-} // namespace tt
+} // namespace tt::inline v1

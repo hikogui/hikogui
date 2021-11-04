@@ -301,4 +301,4 @@ using base64url = base_n<detail::base64url_rfc4648_alphabet, 4, 3>;
 using base85 = base_n<detail::base85_rfc1924_alphabet, 5, 4>;
 using ascii85 = base_n<detail::base85_btoa_alphabet, 5, 4>;
 
-} // namespace tt
+} // namespace tt::inline v1

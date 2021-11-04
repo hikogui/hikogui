@@ -11,7 +11,7 @@ namespace tt::inline v1 {
 
 class sfloat_rgb32 {
     // Red, Green, Blue in binary32 (native endian).
-    std::array<float,3> v;
+    std::array<float, 3> v;
 
 public:
     sfloat_rgb32() = default;
@@ -22,12 +22,14 @@ public:
 
     sfloat_rgb32(f32x4 const &rhs) noexcept : v{rhs.r(), rhs.g(), rhs.b()} {}
 
-    sfloat_rgb32 &operator=(f32x4 const &rhs) noexcept {
+    sfloat_rgb32 &operator=(f32x4 const &rhs) noexcept
+    {
         v = {rhs.r(), rhs.g(), rhs.b()};
         return *this;
     }
 
-    operator f32x4 () const noexcept {
+    operator f32x4() const noexcept
+    {
         return f32x4{std::get<0>(v), std::get<1>(v), std::get<2>(v), 0.0f};
     }
 
@@ -43,12 +45,14 @@ public:
         return point3{f32x4{*this}};
     }
 
-    [[nodiscard]] friend bool operator==(sfloat_rgb32 const &lhs, sfloat_rgb32 const &rhs) noexcept {
+    [[nodiscard]] friend bool operator==(sfloat_rgb32 const &lhs, sfloat_rgb32 const &rhs) noexcept
+    {
         return lhs.v == rhs.v;
     }
-    [[nodiscard]] friend bool operator!=(sfloat_rgb32 const &lhs, sfloat_rgb32 const &rhs) noexcept {
+    [[nodiscard]] friend bool operator!=(sfloat_rgb32 const &lhs, sfloat_rgb32 const &rhs) noexcept
+    {
         return !(lhs == rhs);
     }
 };
 
-}
+} // namespace tt::inline v1

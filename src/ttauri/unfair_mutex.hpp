@@ -18,16 +18,16 @@ namespace tt::inline v1 {
  * This is a fast implementation of a mutex which does not fairly arbitrate
  * between multiple blocking threads. Due to the unfairness it is possible
  * that blocking threads will be completely starved.
- * 
+ *
  * This mutex however does block on a operating system's futex/unfair_mutex
  * primitives and therefor thread priority are properly handled.
- * 
+ *
  * On windows and Linux the compiler generally emits the following sequence
  * of instructions:
  *  + non-contented:
  *     - lock(): MOV r,1; XOR r,r; LOCK CMPXCHG; JNE (skip)
  *     - unlock(): LOCK XADD [],-1; CMP; JE
- * 
+ *
  */
 template<bool UseDeadLockDetector>
 class unfair_mutex_impl {
@@ -38,7 +38,7 @@ public:
     unfair_mutex_impl &operator=(unfair_mutex_impl const &) = delete;
     unfair_mutex_impl &operator=(unfair_mutex_impl &&) = delete;
 
-    ~unfair_mutex_impl() requires (UseDeadLockDetector)
+    ~unfair_mutex_impl() requires(UseDeadLockDetector)
     {
         dead_lock_detector::remove_object(this);
     }
@@ -76,7 +76,8 @@ public:
      * Calling try_lock() in a loop will bypass the operating system's wait system,
      * meaning that no priority inversion will take place.
      */
-    [[nodiscard]] bool try_lock() noexcept {
+    [[nodiscard]] bool try_lock() noexcept
+    {
         if constexpr (UseDeadLockDetector) {
             ttlet other = dead_lock_detector::lock(this);
             tt_axiom(other != this, "Mutex already locked.");
@@ -101,7 +102,8 @@ public:
         return true;
     }
 
-    void unlock() noexcept {
+    void unlock() noexcept
+    {
         if constexpr (UseDeadLockDetector) {
             tt_axiom(dead_lock_detector::unlock(this), "Unlocking mutex out of order.");
         }
@@ -161,4 +163,4 @@ using unfair_mutex = unfair_mutex_impl<true>;
 using unfair_mutex = unfair_mutex_impl<false>;
 #endif
 
-}
+} // namespace tt::inline v1

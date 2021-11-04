@@ -8,33 +8,37 @@
 
 namespace tt::inline v1 {
 
-struct skeleton_block_node final: skeleton_node {
+struct skeleton_block_node final : skeleton_node {
     std::string name;
     statement_vector children;
 
     formula_post_process_context::function_type function;
     formula_post_process_context::function_type super_function;
 
-    skeleton_block_node(parse_location location, formula_post_process_context &context, std::unique_ptr<formula_node> name_expression) noexcept :
+    skeleton_block_node(
+        parse_location location,
+        formula_post_process_context &context,
+        std::unique_ptr<formula_node> name_expression) noexcept :
         skeleton_node(std::move(location)), name(name_expression->get_name())
     {
         name = name_expression->get_name();
 
-        super_function = context.set_function(name,
-            [&](formula_evaluation_context &context, datum::vector_type const &arguments) {
-            return this->evaluate_call(context, arguments);
-        }
-        );
+        super_function =
+            context.set_function(name, [&](formula_evaluation_context &context, datum::vector_type const &arguments) {
+                return this->evaluate_call(context, arguments);
+            });
     }
 
     /** Append a template-piece to the current template.
-    */
-    bool append(std::unique_ptr<skeleton_node> x) noexcept override {
+     */
+    bool append(std::unique_ptr<skeleton_node> x) noexcept override
+    {
         append_child(children, std::move(x));
         return true;
     }
 
-    void post_process(formula_post_process_context &context) override {
+    void post_process(formula_post_process_context &context) override
+    {
         if (ssize(children) > 0) {
             children.back()->left_align();
         }
@@ -43,13 +47,14 @@ struct skeleton_block_node final: skeleton_node {
         tt_assert(function);
 
         context.push_super(super_function);
-        for (ttlet &child: children) {
+        for (ttlet &child : children) {
             child->post_process(context);
         }
         context.pop_super();
     }
 
-    datum evaluate(formula_evaluation_context &context) override {
+    datum evaluate(formula_evaluation_context &context) override
+    {
         datum tmp;
         try {
             tmp = function(context, datum::vector_type{});
@@ -72,7 +77,8 @@ struct skeleton_block_node final: skeleton_node {
         }
     }
 
-    datum evaluate_call(formula_evaluation_context &context, datum::vector_type const &arguments) {
+    datum evaluate_call(formula_evaluation_context &context, datum::vector_type const &arguments)
+    {
         context.push();
         auto tmp = evaluate_children(context, children);
         context.pop();
@@ -91,13 +97,16 @@ struct skeleton_block_node final: skeleton_node {
         }
     }
 
-    std::string string() const noexcept override {
+    std::string string() const noexcept override
+    {
         std::string s = "<block ";
         s += name;
-        s += join(transform<std::vector<std::string>>(children, [](auto &x) { return to_string(*x); }));
+        s += join(transform<std::vector<std::string>>(children, [](auto &x) {
+            return to_string(*x);
+        }));
         s += ">";
         return s;
     }
 };
 
-}
+} // namespace tt::inline v1

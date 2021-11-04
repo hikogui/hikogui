@@ -18,9 +18,7 @@ public:
     static constexpr char macos = 2;
     static constexpr char asio = 3;
 
-    audio_device_id() noexcept : _v{}
-    {
-    }
+    audio_device_id() noexcept : _v{} {}
 
     audio_device_id(char type, wchar_t const *id) noexcept;
     constexpr audio_device_id(audio_device_id const &) noexcept = default;
@@ -97,11 +95,11 @@ struct pickle<audio_device_id> {
     {
         if (auto *s = get_if<std::string>(rhs)) {
             return decode(*s);
-            
+
         } else {
             throw parse_error("audio_device_id must be encoded as a string, got {}", rhs);
         }
     }
 };
 
-} // namespace tt
+} // namespace tt::inline v1

@@ -8,9 +8,7 @@
 
 namespace tt::inline v1 {
 
-class audio_system_asio: public audio_system {
-
-
+class audio_system_asio : public audio_system {
 };
 
-}
+} // namespace tt::inline v1

@@ -11,12 +11,11 @@
 using namespace std;
 using namespace tt;
 
-
-TEST(SafeIntTests, Add) {
+TEST(SafeIntTests, Add)
+{
     tint64_t r;
 
     ttlet minimum = tint64_t{numeric_limits<int64_t>::min()};
 
     ASSERT_THROW(r = minimum + minimum, std::overflow_error);
 }
-

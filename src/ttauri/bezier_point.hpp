@@ -21,9 +21,7 @@ struct bezier_point {
     Type type;
     point2 p;
 
-    bezier_point(point2 const p, Type const type) noexcept : type(type), p(p)
-    {
-    }
+    bezier_point(point2 const p, Type const type) noexcept : type(type), p(p) {}
 
     bezier_point(float const x, float const y, Type const type) noexcept : bezier_point(point2{x, y}, type) {}
 
@@ -107,9 +105,10 @@ struct bezier_point {
 
     /** Transform the point.
      */
-    [[nodiscard]] friend bezier_point operator*(geo::transformer auto const &lhs, bezier_point const &rhs) noexcept {
+    [[nodiscard]] friend bezier_point operator*(geo::transformer auto const &lhs, bezier_point const &rhs) noexcept
+    {
         return {lhs * rhs.p, rhs.type};
     }
 };
 
-} // namespace tt
+} // namespace tt::inline v1

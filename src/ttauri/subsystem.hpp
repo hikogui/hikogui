@@ -219,4 +219,4 @@ inline void shutdown_system() noexcept
     detail::subsystem_mutex.unlock();
 }
 
-} // namespace tt
+} // namespace tt::inline v1

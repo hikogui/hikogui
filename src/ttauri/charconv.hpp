@@ -100,4 +100,4 @@ template<std::floating_point T>
     return value;
 }
 
-} // namespace tt
+} // namespace tt::inline v1

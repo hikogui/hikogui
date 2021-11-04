@@ -2,13 +2,11 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-
 #pragma once
 
 namespace tt::inline v1 {
 
 class Socketstream {
-
 protected:
     bool connecting = false;
 
@@ -21,7 +19,6 @@ protected:
     packet_buffer writeBuffer;
 
 public:
-
     /** Handle connected event.
      */
     void handleConnect();
@@ -43,11 +40,6 @@ public:
      *
      */
     [[nodiscard]] virtual void handleReadyToWriteEvent();
-
-
 }
 
-
-
-}
-
+} // namespace tt::inline v1

@@ -88,10 +88,10 @@ std::vector<bool> set_thread_affinity(size_t cpu_id);
 /** Advance thread affinity to the next CPU.
  * It is possible to detect when `advance_thread_affinity()` is at the last cpu;
  * in that case the cpu parameter is less than or equal to the return value.
- * 
+ *
  * @param [inout] cpu On input The cpu to start a search in the available-cpu list.
  *                    On output the cpu next on the available-cpu list.
- *                                
+ *
  * @return The cpu that was selected to run on.
  */
 size_t advance_thread_affinity(size_t &cpu) noexcept;
@@ -102,6 +102,4 @@ size_t advance_thread_affinity(size_t &cpu) noexcept;
  */
 [[nodiscard]] size_t current_cpu_id() noexcept;
 
-
-}
-
+} // namespace tt::inline v1

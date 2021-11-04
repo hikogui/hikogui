@@ -247,4 +247,4 @@ private:
     std::unique_ptr<detail::l10n_args_base> _args;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

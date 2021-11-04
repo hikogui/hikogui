@@ -57,7 +57,8 @@ public:
 
     atomic_unique_ptr(atomic_unique_ptr &&other) noexcept : _pointer(other._pointer.exchange(nullptr)) {}
 
-    atomic_unique_ptr &operator=(atomic_unique_ptr &&other) noexcept {
+    atomic_unique_ptr &operator=(atomic_unique_ptr &&other) noexcept
+    {
         tt_return_on_self_assignment(other);
 
         delete _pointer.exchange(other._pointer.exchange(nullptr));
@@ -88,18 +89,18 @@ public:
     }
 
     /** Get or make an object.
-    * 
-    * This function will return a previously created object, or if the internal pointer is
-    * null a new element_type is constructed and returned.
-    * 
-    * It is possible for the element_type to be constructed multiple times during a race,
-    * but only one will be returned from this function.
-    * 
-    * @param args The arguments passed to the constructor
-    * @return A reference to an existing or just constructed object.
-    */
+     *
+     * This function will return a previously created object, or if the internal pointer is
+     * null a new element_type is constructed and returned.
+     *
+     * It is possible for the element_type to be constructed multiple times during a race,
+     * but only one will be returned from this function.
+     *
+     * @param args The arguments passed to the constructor
+     * @return A reference to an existing or just constructed object.
+     */
     template<typename... Args>
-    [[nodiscard]] reference get_or_make(Args &&... args) noexcept
+    [[nodiscard]] reference get_or_make(Args &&...args) noexcept
     {
         auto expected = _pointer.load(std::memory_order::acquire);
         if (expected != nullptr) {
@@ -120,4 +121,4 @@ private:
     std::atomic<pointer> _pointer;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

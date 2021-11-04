@@ -763,4 +763,4 @@ void BON8_encoder::add(datum const &value)
     return encoder.get();
 }
 
-} // namespace tt
+} // namespace tt::inline v1

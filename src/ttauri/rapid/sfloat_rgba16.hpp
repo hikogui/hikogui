@@ -21,9 +21,7 @@ class sfloat_rgba16 {
     std::array<float16, 4> v;
 
 public:
-    constexpr sfloat_rgba16() noexcept : v()
-    {
-    }
+    constexpr sfloat_rgba16() noexcept : v() {}
 
     constexpr sfloat_rgba16(sfloat_rgba16 const &rhs) noexcept = default;
     constexpr sfloat_rgba16(sfloat_rgba16 &&rhs) noexcept = default;
@@ -127,7 +125,7 @@ inline void composit(pixel_map<sfloat_rgba16> &under, color over, pixel_map<uint
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1
 
 namespace std {
 

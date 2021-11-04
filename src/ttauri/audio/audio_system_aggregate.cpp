@@ -28,4 +28,4 @@ audio_system_aggregate::audio_system_aggregate(
 {
 }
 
-}
+} // namespace tt::inline v1

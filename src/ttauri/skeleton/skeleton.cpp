@@ -88,12 +88,14 @@ static void parse_skeleton_hash(skeleton_parse_context &context)
         context.start_of_text_segment();
 
     } else if (context.starts_with_and_advance_over("function ")) {
-        context.push<skeleton_function_node>(location, context.post_process_context, context.parse_expression_and_advance_over("\n"));
+        context.push<skeleton_function_node>(
+            location, context.post_process_context, context.parse_expression_and_advance_over("\n"));
 
         context.start_of_text_segment();
 
     } else if (context.starts_with_and_advance_over("block ")) {
-        context.push<skeleton_block_node>(location, context.post_process_context, context.parse_expression_and_advance_over("\n"));
+        context.push<skeleton_block_node>(
+            location, context.post_process_context, context.parse_expression_and_advance_over("\n"));
 
         context.start_of_text_segment();
 
@@ -201,9 +203,8 @@ static void parse_skeleton_escape(skeleton_parse_context &context)
             parse_skeleton_escape(context);
             break;
 
-        default:
-            ++context;
-        } 
+        default: ++context;
+        }
     }
     context.end_of_text_segment();
 
@@ -220,4 +221,4 @@ static void parse_skeleton_escape(skeleton_parse_context &context)
     return top;
 }
 
-}
+} // namespace tt::inline v1

@@ -80,7 +80,6 @@ namespace tt::inline v1 {
     return r;
 }
 
-
 [[nodiscard]] uint32_t speaker_mapping_to_win32(speaker_mapping from) noexcept
 {
     if (is_direct(from)) {
@@ -148,5 +147,4 @@ namespace tt::inline v1 {
     return r;
 }
 
-
-}
+} // namespace tt::inline v1

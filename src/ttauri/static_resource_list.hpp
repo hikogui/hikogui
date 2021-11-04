@@ -17,7 +17,7 @@ struct static_resource_item;
  * The std::atomic pointer constructor is constexpr therefor the variable is initialized at compile time.
  * This is before any of the dynamic initializer is called, which will modify this pointer at run-time.
  */
-inline std::atomic<static_resource_item const *> static_resource_list = nullptr; 
+inline std::atomic<static_resource_item const *> static_resource_list = nullptr;
 
 struct static_resource_item {
     static_resource_item const *next;
@@ -41,7 +41,7 @@ struct static_resource_item {
     /** Add a resource item to the list.
      * This function should be used to initialize a static global variable which
      * will modify the static_resource_list.
-     * 
+     *
      * Example:
      * ```
      * static static_resource_item tmp1 = {nullptr, "foo", foo_bytes};
@@ -57,6 +57,4 @@ struct static_resource_item {
     }
 };
 
-
-
-}
+} // namespace tt::inline v1

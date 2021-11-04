@@ -118,7 +118,8 @@ public:
         ttlet index = _head.fetch_add(slot_size, std::memory_order::relaxed);
         tt_axiom(index % slot_size == 0);
 
-        auto &slot = *std::launder(std::assume_aligned<slot_size>(reinterpret_cast<slot_type*>(reinterpret_cast<char*>(this) + index)));
+        auto &slot =
+            *std::launder(std::assume_aligned<slot_size>(reinterpret_cast<slot_type *>(reinterpret_cast<char *>(this) + index)));
 
         // The division here should be eliminated by the equal multiplication inside the index operator.
         // auto &slot = _slots[index / slot_size];
@@ -181,4 +182,4 @@ private:
     uint16_t _tail = 0;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

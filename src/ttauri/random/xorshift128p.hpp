@@ -12,7 +12,7 @@
 namespace tt::inline v1 {
 
 /** xorshift128+
-*/
+ */
 class xorshift128p {
 public:
     constexpr xorshift128p(xorshift128p const &) noexcept = default;
@@ -72,8 +72,8 @@ public:
 
         // scalar: auto x_ = x;
         // scalar: t.y() = tmp.x();
-        t = insert<0,1>(t, tmp);
-        
+        t = insert<0, 1>(t, tmp);
+
         // scalar: y ^= x_ ^ (x_ >> 26);
         s ^= t ^ (t >> 26);
 
@@ -107,5 +107,4 @@ private:
     u64x2 _state;
 };
 
-
-}
+} // namespace tt::inline v1

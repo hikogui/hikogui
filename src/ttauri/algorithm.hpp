@@ -268,7 +268,7 @@ auto shuffle_by_index(auto first, auto last, auto indices_first, auto indices_la
         ttlet index = index_op(*it);
         tt_axiom(index < size(src_indices));
 
-        auto src = [&src_indices,index]() {
+        auto src = [&src_indices, index]() {
             auto src = index;
             do {
                 src = src_indices[src];
@@ -348,4 +348,4 @@ DataIt back_strip(DataIt data_first, DataIt data_last, ValueIt value_first, Valu
     return data_first;
 }
 
-} // namespace tt
+} // namespace tt::inline v1

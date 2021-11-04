@@ -180,4 +180,4 @@ void time_stamp_utc::stop_subsystem() noexcept
     return tt::stop_subsystem(deinit_subsystem);
 }
 
-} // namespace tt
+} // namespace tt::inline v1

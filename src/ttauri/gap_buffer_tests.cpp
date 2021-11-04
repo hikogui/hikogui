@@ -99,7 +99,7 @@ TEST(gap_buffer, insert_after_last)
     tmp.insert_after(tmp.begin(), start_string.begin(), start_string.end());
     auto append_string = std::string("3");
 
-    tmp.insert_after(tmp.begin() + 2,  append_string.begin(), append_string.end());
+    tmp.insert_after(tmp.begin() + 2, append_string.begin(), append_string.end());
 
     auto result = std::string(tmp.begin(), tmp.end());
     ASSERT_EQ(result, "123");

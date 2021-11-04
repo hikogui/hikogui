@@ -213,4 +213,4 @@ void audio_system_win32::device_property_value_changed(tt::audio_device_id const
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

@@ -20,8 +20,7 @@ public:
 
     constexpr semantic_version() noexcept : major(0), minor(0), patch(0) {}
 
-    constexpr semantic_version(int major, int minor, int patch) noexcept :
-        major(major), minor(minor), patch(patch) {}
+    constexpr semantic_version(int major, int minor, int patch) noexcept : major(major), minor(minor), patch(patch) {}
 };
 
-}
+} // namespace tt::inline v1

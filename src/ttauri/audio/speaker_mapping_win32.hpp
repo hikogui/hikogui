@@ -12,4 +12,4 @@ namespace tt::inline v1 {
 
 [[nodiscard]] uint32_t speaker_mapping_to_win32(speaker_mapping from) noexcept;
 
-}
+} // namespace tt::inline v1

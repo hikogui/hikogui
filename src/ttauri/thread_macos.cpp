@@ -17,4 +17,4 @@ void set_thread_name(std::string_view name)
     pthread_setname_np(name.data());
 }
 
-}
+} // namespace tt::inline v1

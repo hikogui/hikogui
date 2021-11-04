@@ -67,4 +67,4 @@ private:
     friend audio_system_win32_notification_client;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

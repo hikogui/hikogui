@@ -24,17 +24,18 @@ struct snorm_r8 {
     snorm_r8 &operator=(snorm_r8 &&rhs) noexcept = default;
     ~snorm_r8() = default;
 
-    explicit snorm_r8(float rhs) noexcept :
-        value(make_snorm_r8_value(rhs)) {}
+    explicit snorm_r8(float rhs) noexcept : value(make_snorm_r8_value(rhs)) {}
 
-    snorm_r8 &operator=(float rhs) noexcept {
+    snorm_r8 &operator=(float rhs) noexcept
+    {
         value = make_snorm_r8_value(rhs);
         return *this;
     }
 
-    explicit operator float () const noexcept {
+    explicit operator float() const noexcept
+    {
         return narrow_cast<float>(value) / 127.0f;
     }
 };
 
-}
+} // namespace tt::inline v1

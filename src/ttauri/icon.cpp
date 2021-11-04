@@ -17,4 +17,4 @@ icon::icon(elusive_icon const &icon) noexcept : _image(icon) {}
 
 icon::icon(ttauri_icon const &icon) noexcept : _image(icon) {}
 
-} // namespace tt
+} // namespace tt::inline v1

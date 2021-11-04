@@ -85,7 +85,8 @@ static void store_sample(
     return r;
 }
 
-audio_sample_packer::audio_sample_packer(audio_sample_format format, size_t stride) noexcept : _dither(format.num_bits), _format(format), _stride(stride)
+audio_sample_packer::audio_sample_packer(audio_sample_format format, size_t stride) noexcept :
+    _dither(format.num_bits), _format(format), _stride(stride)
 {
     _store_shuffle_indices = format.store_shuffle_indices(stride);
     _concat_shuffle_indices = format.concat_shuffle_indices(stride);
@@ -161,4 +162,4 @@ void audio_sample_packer::operator()(float const *tt_restrict src, std::byte *tt
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

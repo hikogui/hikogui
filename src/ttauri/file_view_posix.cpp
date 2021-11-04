@@ -96,4 +96,4 @@ void file_view::flush(void *base, size_t size)
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

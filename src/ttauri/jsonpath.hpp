@@ -487,7 +487,7 @@ private:
     std::vector<jsonpath_node> _nodes;
 };
 
-} // namespace tt
+} // namespace tt::inline v1
 
 namespace std {
 

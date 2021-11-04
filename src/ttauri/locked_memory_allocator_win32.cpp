@@ -73,4 +73,4 @@ void locked_memory_allocator_deallocate(std::byte *p, size_t n) noexcept
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

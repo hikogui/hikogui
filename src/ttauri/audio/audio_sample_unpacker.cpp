@@ -140,4 +140,4 @@ void audio_sample_unpacker::operator()(std::byte const *tt_restrict src, float *
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

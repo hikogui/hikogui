@@ -11,7 +11,8 @@
 using namespace std;
 using namespace tt;
 
-TEST(file_view, read) {
+TEST(file_view, read)
+{
     ttlet view = file_view(URL("file:file_view.txt"));
 
     ttlet *test = reinterpret_cast<char const *>(view.bytes().data());

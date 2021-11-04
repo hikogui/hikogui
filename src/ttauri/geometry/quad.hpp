@@ -235,4 +235,4 @@ public:
     [[nodiscard]] friend constexpr bool operator==(quad const &lhs, quad const &rhs) noexcept = default;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

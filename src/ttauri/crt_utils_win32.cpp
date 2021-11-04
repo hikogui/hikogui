@@ -25,7 +25,7 @@ static void configure_current_working_directory() noexcept
     URL::setUrlForCurrentWorkingDirectory(URL::urlFromWPath(current_directory.get()));
 }
 
-std::pair<int, char**> crt_start(int, char **, void *instance, int show_cmd)
+std::pair<int, char **> crt_start(int, char **, void *instance, int show_cmd)
 {
     // lpCmdLine does not handle UTF-8 command line properly.
     // So use GetCommandLineW() to get wide string arguments.
@@ -72,7 +72,6 @@ std::pair<int, char**> crt_start(int, char **, void *instance, int show_cmd)
     return {argc, argv};
 }
 
-
 int crt_finish(int argc, char **argv, int exit_code)
 {
     tt::shutdown_system();
@@ -84,5 +83,4 @@ int crt_finish(int argc, char **argv, int exit_code)
     return exit_code;
 }
 
-
-}
+} // namespace tt::inline v1

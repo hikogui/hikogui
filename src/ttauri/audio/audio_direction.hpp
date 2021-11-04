@@ -6,12 +6,6 @@
 
 namespace tt::inline v1 {
 
-enum class audio_direction : unsigned char {
-    none = 0b00,
-    input = 0b01,
-    output = 0b10,
-    bidirectional = 0b11
-};
-
+enum class audio_direction : unsigned char { none = 0b00, input = 0b01, output = 0b10, bidirectional = 0b11 };
 
 }

@@ -311,4 +311,4 @@ T *uint48_to_ptr(uint64_t x) noexcept
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

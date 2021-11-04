@@ -37,4 +37,4 @@ namespace tt::inline v1 {
  */
 [[nodiscard]] std::string format_JSON(datum const &root);
 
-}
+} // namespace tt::inline v1

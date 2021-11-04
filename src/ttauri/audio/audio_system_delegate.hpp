@@ -21,4 +21,4 @@ public:
     virtual void audio_device_list_changed(audio_system &self) {}
 };
 
-}
+} // namespace tt::inline v1

@@ -33,4 +33,4 @@ constexpr decltype(auto) get_last_argument(Args &&...args) noexcept
     return get_argument_impl<sizeof...(Args) - 1>(std::forward<Args>(args)...);
 }
 
-}
+} // namespace tt::inline v1

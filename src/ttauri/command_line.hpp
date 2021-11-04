@@ -126,7 +126,7 @@ generator<cmdln_option> command_line_parser(It first, It last, std::string_view 
     }
 
     // All tokens after double hyphen '--' are non-options.
-    for (;it != last; ++it) {
+    for (; it != last; ++it) {
         co_yield cmdln_non_option{*it};
     }
 
@@ -162,13 +162,10 @@ public:
      *         global_foo = filename;
      *     });
      */
-    constexpr command_line_option(std::string_view option_help) {
+    constexpr command_line_option(std::string_view option_help)
+    {
         auto it = begin(option_help);
         ttlet last = end(option_help);
-
-
-
-
     }
 
     static char32_t parse_short_option(std::string_view::iterator &it, std::string_view::iterator last)
@@ -199,7 +196,8 @@ public:
 #endif
 
     template<typename... Args>
-    command_line_option &add_option(Args &&... args) noexcept {
+    command_line_option &add_option(Args &&...args) noexcept
+    {
         return _options.emplace(std::forward<Args>(args)...);
     }
 
@@ -207,6 +205,4 @@ private:
     std::vector<command_line_option> _options = {};
 };
 
-
-}
-
+} // namespace tt::inline v1

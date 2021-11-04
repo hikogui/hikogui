@@ -378,4 +378,4 @@ void mergeMaximum(pixel_map<uint8_t> &dst, pixel_map<uint8_t> const &src) noexce
 template<typename T>
 inline void makeTransparentBorder(pixel_map<T> &pixel_map) noexcept;
 
-} // namespace tt
+} // namespace tt::inline v1

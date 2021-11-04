@@ -48,4 +48,4 @@ private:
     int _align_shift;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

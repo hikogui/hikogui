@@ -93,10 +93,10 @@ concept sizeable = requires(T v)
 };
 
 /** Concept for std::is_scoped_enum_v<T>.
-* 
-* XXX std::is_scoped_enum_v<T> ios a c++23 feature, so right now we use std::is_enum_v<T> instead.
-*/
+ *
+ * XXX std::is_scoped_enum_v<T> ios a c++23 feature, so right now we use std::is_enum_v<T> instead.
+ */
 template<typename T>
 concept scoped_enum = std::is_enum_v<T>;
 
-} // namespace tt
+} // namespace tt::inline v1

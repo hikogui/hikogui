@@ -28,21 +28,23 @@ struct sdf_r8 : public snorm_r8 {
     sdf_r8 &operator=(sdf_r8 &&other) noexcept = default;
     ~sdf_r8() = default;
 
-    sdf_r8(float rhs) noexcept :
-        snorm_r8(rhs * one_over_max_distance) {}
+    sdf_r8(float rhs) noexcept : snorm_r8(rhs * one_over_max_distance) {}
 
-    sdf_r8 &operator=(float rhs) noexcept {
-        snorm_r8::operator=(rhs * one_over_max_distance);
+    sdf_r8 &operator=(float rhs) noexcept
+    {
+        snorm_r8::operator=(rhs *one_over_max_distance);
         return *this;
     }
 
-    operator float () const noexcept {
+    operator float() const noexcept
+    {
         return (snorm_r8::operator float()) * max_distance;
     }
 
-    void repair() noexcept {
+    void repair() noexcept
+    {
         *this = -static_cast<float>(*this);
     }
 };
 
-}
+} // namespace tt::inline v1

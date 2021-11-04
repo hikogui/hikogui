@@ -127,4 +127,4 @@ void dead_lock_detector::remove_object(void *object) noexcept
     });
 }
 
-} // namespace tt
+} // namespace tt::inline v1

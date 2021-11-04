@@ -4,4 +4,3 @@
 
 #include "ttauri/bound_integer.hpp"
 #include <gtest/gtest.h>
-

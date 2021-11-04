@@ -77,4 +77,4 @@ public:
     [[nodiscard]] static metadata const &library() noexcept;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

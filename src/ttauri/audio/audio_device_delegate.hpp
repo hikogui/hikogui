@@ -19,8 +19,7 @@ public:
      * @param outputBlock Samples rendered to the audio device.
      * @param current_time The current time according to the audio clock.
      */
-    virtual void process_audio(
-    ) noexcept = 0;
+    virtual void process_audio() noexcept = 0;
 };
 
-}
+} // namespace tt::inline v1

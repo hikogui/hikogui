@@ -288,4 +288,4 @@ std::unique_ptr<resource_view> URL::loadView() const
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

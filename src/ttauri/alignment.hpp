@@ -171,4 +171,4 @@ constexpr bool operator==(alignment lhs, vertical_alignment rhs) noexcept
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

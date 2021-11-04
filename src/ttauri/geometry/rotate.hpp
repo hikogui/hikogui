@@ -74,16 +74,16 @@ public:
         return {2.0f * std::atan2(length), vector<3>{_v.xyz0() * rcp_length}};
     }
 
-private:
+private :
     /** rotation is stored as a quaternion
      * w + x*i + y*j + z*k
      */
     f32x4 _v;
 };
 
-}
+} // namespace geo
 
 using rotate2 = geo::rotate<2>;
 using rotate3 = geo::rotate<3>;
 
-}
+} // namespace tt::inline v1

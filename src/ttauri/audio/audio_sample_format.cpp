@@ -123,4 +123,4 @@ namespace tt::inline v1 {
     return i8x16::byte_srl_shuffle_indices(narrow_cast<unsigned int>(byte_shift));
 }
 
-} // namespace tt
+} // namespace tt::inline v1

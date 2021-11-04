@@ -10,16 +10,12 @@
 
 namespace tt::inline v1 {
 
-enum class dialog_type {
-    ok,
-    yes_no,
-    yes_no_cancel
-};
+enum class dialog_type { ok, yes_no, yes_no_cancel };
 
 /** Display a modal dialog.
  * You should never display a modal dialog unless it is absolutely
  * necessary for the user to respond right now, or on a catastrophic failure.
- * 
+ *
  * @throw cancel_error When the user presses "cancel".
  * @return True when the user presses "ok" or "yes"
  */
@@ -43,4 +39,4 @@ template<typename... Args>
     return _dialog(dialog_type::yes_no_cancel, title, std::format(fmt, args...));
 }
 
-} // namespace tt
+} // namespace tt::inline v1

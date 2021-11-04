@@ -271,4 +271,4 @@ private:
     }
 };
 
-} // namespace tt
+} // namespace tt::inline v1

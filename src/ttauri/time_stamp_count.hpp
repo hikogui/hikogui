@@ -28,9 +28,12 @@ namespace tt::inline v1 {
  */
 class time_stamp_count {
 public:
-    struct inplace {};
-    struct inplace_with_cpu_id {};
-    struct inplace_with_thread_id {};
+    struct inplace {
+    };
+    struct inplace_with_cpu_id {
+    };
+    struct inplace_with_thread_id {
+    };
 
     constexpr time_stamp_count() noexcept : _count(0), _aux(0), _thread_id(0) {}
 
@@ -38,7 +41,7 @@ public:
 
     /** Use a constructor to in-place create the timestamp.
      */
-    explicit time_stamp_count(time_stamp_count::inplace) noexcept : _aux(0), _thread_id(0)  
+    explicit time_stamp_count(time_stamp_count::inplace) noexcept : _aux(0), _thread_id(0)
     {
         if constexpr (processor::current == processor::x64) {
             uint32_t tmp;
@@ -123,7 +126,7 @@ public:
     {
         using namespace std::chrono_literals;
 
-        ttlet [lo, hi] = mul_carry(count, _period.load(std::memory_order::relaxed));
+        ttlet[lo, hi] = mul_carry(count, _period.load(std::memory_order::relaxed));
         return 1ns * static_cast<int64_t>((hi << 32) | (lo >> 32));
     }
 
@@ -211,4 +214,4 @@ private:
     static void configure_frequency() noexcept;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

@@ -311,4 +311,4 @@ inline std::optional<point2> getExtrapolatedIntersectionPoint(point2 A1, point2 
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

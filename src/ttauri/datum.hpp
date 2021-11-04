@@ -2339,7 +2339,7 @@ private:
     }
 };
 
-} // namespace tt
+} // namespace tt::inline v1
 
 namespace std {
 [[nodiscard]] constexpr size_t hash<tt::datum>::operator()(tt::datum const &rhs) const noexcept

@@ -28,22 +28,22 @@ struct unorm_a2bgr10_pack {
     unorm_a2bgr10_pack &operator=(unorm_a2bgr10_pack &&rhs) noexcept = default;
     ~unorm_a2bgr10_pack() = default;
 
-    explicit unorm_a2bgr10_pack(f32x4 const &rhs) noexcept :
-        value(make_unorm_a2bgr10_pack_value(rhs)) {}
+    explicit unorm_a2bgr10_pack(f32x4 const &rhs) noexcept : value(make_unorm_a2bgr10_pack_value(rhs)) {}
 
-    unorm_a2bgr10_pack &operator=(f32x4 const &rhs) noexcept {
+    unorm_a2bgr10_pack &operator=(f32x4 const &rhs) noexcept
+    {
         value = make_unorm_a2bgr10_pack_value(rhs);
         return *this;
     }
 
-    explicit operator f32x4 () const noexcept {
+    explicit operator f32x4() const noexcept
+    {
         return f32x4{
             static_cast<float>((value >> 20) & 0x3ff) / 1023.0f,
             static_cast<float>((value >> 10) & 0x3ff) / 1023.0f,
             static_cast<float>(value & 0x3ff) / 1023.0f,
-            static_cast<float>(value >> 30) / 3.0f
-        };
+            static_cast<float>(value >> 30) / 3.0f};
     }
 };
 
-}
+} // namespace tt::inline v1

@@ -32,7 +32,7 @@ public:
      * @param num_bits Number of significant fraction bits, excluding the sign bit.
      *                 For 24 bit signed PCM samples this value is 23.
      */
-    dither(int num_bits) noexcept 
+    dither(int num_bits) noexcept
     {
         tt_axiom(num_bits > 0);
         auto maximum_value = static_cast<float>((1_uz << num_bits) - 1);
@@ -92,4 +92,4 @@ private:
     unsigned char _counter = 0;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

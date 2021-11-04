@@ -60,4 +60,4 @@ private:
     mutable wfree_fifo<detail::event_queue_item_base, 128> fifo;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

@@ -549,7 +549,7 @@ using ubig128 = bigint<uint64_t, 2, false>;
 using big128 = bigint<uint64_t, 2, true>;
 using uuid = bigint<uint64_t, 2, false>;
 
-} // namespace tt
+} // namespace tt::inline v1
 
 namespace std {
 

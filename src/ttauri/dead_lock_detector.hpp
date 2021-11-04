@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <compare>
 
-
 namespace tt::inline v1 {
 namespace detail {
 
@@ -23,16 +22,16 @@ struct dead_lock_detector_pair {
     operator<=>(dead_lock_detector_pair const &lhs, dead_lock_detector_pair const &rhs) noexcept = default;
 };
 
-}
+} // namespace detail
 
 /** Dead lock detector.
-* 
-* The dead lock detector should not be used before and after main().
-* By using `tt::unfair_mutex_impl<false>` you can get a mutex without a dead lock detector.
-* 
-* In the future when MSVC allows constinit thread_local variables we can change the implementation
-* to allow the dead lock detector before main().
-*/
+ *
+ * The dead lock detector should not be used before and after main().
+ * By using `tt::unfair_mutex_impl<false>` you can get a mutex without a dead lock detector.
+ *
+ * In the future when MSVC allows constinit thread_local variables we can change the implementation
+ * to allow the dead lock detector before main().
+ */
 class dead_lock_detector {
 public:
     /** Lock an object on this thread.
@@ -51,7 +50,7 @@ public:
     /** Remove the object from the detection.
      * This function is needed when there are mutex-like objects
      * that are dynamically de-allocated.
-     * 
+     *
      * @param object The object to remove from the lock order graph.
      */
     static void remove_object(void *object) noexcept;
@@ -71,7 +70,7 @@ private:
 
     /** The order in which objects where locked.
      * Each pair gives a first before second order.
-     * 
+     *
      * When accessing lock_order dead_lock_detector_mutex must be locked.
      */
     inline static std::vector<detail::dead_lock_detector_pair> lock_graph;
@@ -79,4 +78,4 @@ private:
     [[nodiscard]] static void *check_graph(void *object) noexcept;
 };
 
-}
+} // namespace tt::inline v1

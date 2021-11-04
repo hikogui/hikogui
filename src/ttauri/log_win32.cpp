@@ -40,5 +40,4 @@ namespace tt::inline v1 {
     return strip(message);
 }
 
-
-} // namespace tt
+} // namespace tt::inline v1

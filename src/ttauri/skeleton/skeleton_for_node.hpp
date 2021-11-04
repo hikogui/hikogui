@@ -8,19 +8,27 @@
 
 namespace tt::inline v1 {
 
-struct skeleton_for_node final: skeleton_node {
+struct skeleton_for_node final : skeleton_node {
     std::unique_ptr<formula_node> name_expression;
     std::unique_ptr<formula_node> list_expression;
     bool has_else = false;
     statement_vector children;
     statement_vector else_children;
 
-    skeleton_for_node(parse_location location, std::unique_ptr<formula_node> name_expression, std::unique_ptr<formula_node> list_expression) noexcept :
-        skeleton_node(std::move(location)), name_expression(std::move(name_expression)), list_expression(std::move(list_expression)) {}
+    skeleton_for_node(
+        parse_location location,
+        std::unique_ptr<formula_node> name_expression,
+        std::unique_ptr<formula_node> list_expression) noexcept :
+        skeleton_node(std::move(location)),
+        name_expression(std::move(name_expression)),
+        list_expression(std::move(list_expression))
+    {
+    }
 
     /** Append a template-piece to the current template.
-    */
-    bool append(std::unique_ptr<skeleton_node> x) noexcept override {
+     */
+    bool append(std::unique_ptr<skeleton_node> x) noexcept override
+    {
         if (has_else) {
             append_child(else_children, std::move(x));
         } else {
@@ -29,7 +37,8 @@ struct skeleton_for_node final: skeleton_node {
         return true;
     }
 
-    bool found_else(parse_location _location) noexcept override {
+    bool found_else(parse_location _location) noexcept override
+    {
         if (has_else) {
             return false;
         } else {
@@ -38,7 +47,8 @@ struct skeleton_for_node final: skeleton_node {
         }
     }
 
-    void post_process(formula_post_process_context &context) override {
+    void post_process(formula_post_process_context &context) override
+    {
         if (ssize(children) > 0) {
             children.back()->left_align();
         }
@@ -49,15 +59,16 @@ struct skeleton_for_node final: skeleton_node {
         post_process_expression(context, *name_expression, location);
         post_process_expression(context, *list_expression, location);
 
-        for (ttlet &child: children) {
+        for (ttlet &child : children) {
             child->post_process(context);
         }
-        for (ttlet &child: else_children) {
+        for (ttlet &child : else_children) {
             child->post_process(context);
         }
     }
 
-    datum evaluate(formula_evaluation_context &context) override {
+    datum evaluate(formula_evaluation_context &context) override
+    {
         auto list_data = evaluate_formula_without_output(context, *list_expression, location);
 
         if (!holds_alternative<datum::vector_type>(list_data)) {
@@ -101,19 +112,24 @@ struct skeleton_for_node final: skeleton_node {
         return {};
     }
 
-    std::string string() const noexcept override {
+    std::string string() const noexcept override
+    {
         std::string s = "<for ";
         s += to_string(*name_expression);
         s += ": ";
         s += to_string(*list_expression);
-        s += join(transform<std::vector<std::string>>(children, [](auto &x) { return to_string(*x); }));
+        s += join(transform<std::vector<std::string>>(children, [](auto &x) {
+            return to_string(*x);
+        }));
         if (has_else) {
             s += "else ";
-            s += join(transform<std::vector<std::string>>(else_children, [](auto &x) { return to_string(*x); }));
+            s += join(transform<std::vector<std::string>>(else_children, [](auto &x) {
+                return to_string(*x);
+            }));
         }
         s += ">";
         return s;
     }
 };
 
-}
+} // namespace tt::inline v1

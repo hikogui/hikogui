@@ -138,4 +138,4 @@ private:
     f16x4 _v;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

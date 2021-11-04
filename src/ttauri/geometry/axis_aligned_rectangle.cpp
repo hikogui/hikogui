@@ -20,4 +20,4 @@ namespace tt::inline v1 {
     return translate2{translate_from_p0 + translate_from_p3} * resized_rectangle;
 }
 
-} // namespace tt
+} // namespace tt::inline v1

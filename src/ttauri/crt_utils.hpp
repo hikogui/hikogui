@@ -63,4 +63,4 @@ inline std::pair<int, char **> crt_start(int argc, char **argv)
  */
 int crt_finish(int argc, char **argv, int exit_code);
 
-} // namespace tt
+} // namespace tt::inline v1

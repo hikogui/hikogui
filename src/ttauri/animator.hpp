@@ -53,7 +53,8 @@ public:
 
     /** The interpolated value between start and end value.
      */
-    value_type current_value() const noexcept {
+    value_type current_value() const noexcept
+    {
         tt_axiom(initialized);
         return std::lerp(_old_value, _new_value, progress());
     }
@@ -76,4 +77,4 @@ private:
     }
 };
 
-} // namespace tt
+} // namespace tt::inline v1

@@ -38,17 +38,13 @@ bool _dialog(dialog_type type, const char *title, std::string_view text)
 
     switch (r) {
     case IDABORT:
-    case IDCANCEL:
-        throw cancel_error("User pressed cancel");
+    case IDCANCEL: throw cancel_error("User pressed cancel");
     case IDCONTINUE:
     case IDOK:
-    case IDYES:
-        return true;
-    case IDNO:
-        return false;
-    default:
-        tt_no_default();
+    case IDYES: return true;
+    case IDNO: return false;
+    default: tt_no_default();
     }
 }
 
-}
+} // namespace tt::inline v1

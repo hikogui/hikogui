@@ -9,10 +9,10 @@
 
 namespace tt::inline v1 {
 
-template<typename T,size_t N>
+template<typename T, size_t N>
 class small_vector {
     using value_type = T;
-    using array_type = std::array<T,N>;
+    using array_type = std::array<T, N>;
     using iterator = typename array_type::iterator;
     using const_iterator = typename array_type::iterator;
 
@@ -20,27 +20,33 @@ class small_vector {
     iterator _end;
 
 public:
-    constexpr small_vector() noexcept {
+    constexpr small_vector() noexcept
+    {
         _end = items.begin();
     }
 
-    constexpr auto begin() noexcept {
+    constexpr auto begin() noexcept
+    {
         return items.begin();
     }
 
-    constexpr auto end() noexcept {
+    constexpr auto end() noexcept
+    {
         return _end;
     }
 
-    constexpr size_t size() const noexcept {
+    constexpr size_t size() const noexcept
+    {
         return static_cast<size_t>(_end - items.begin());
     }
 
-    constexpr void clear() noexcept {
+    constexpr void clear() noexcept
+    {
         _end = items.begin();
     }
 
-    constexpr bool push_back(value_type &&value) noexcept {
+    constexpr bool push_back(value_type &&value) noexcept
+    {
         if (_end == items.end()) {
             return false;
         }
@@ -48,14 +54,14 @@ public:
         return true;
     }
 
-    constexpr bool push_back(value_type const &value) noexcept {
+    constexpr bool push_back(value_type const &value) noexcept
+    {
         if (_end == items.end()) {
             return false;
         }
         *(_end++) = value;
         return true;
     }
-
 };
 
-}
+} // namespace tt::inline v1

@@ -8,23 +8,28 @@
 
 namespace tt::inline v1 {
 
-struct skeleton_return_node final: skeleton_node {
+struct skeleton_return_node final : skeleton_node {
     std::unique_ptr<formula_node> expression;
 
     skeleton_return_node(parse_location location, std::unique_ptr<formula_node> expression) noexcept :
-        skeleton_node(std::move(location)), expression(std::move(expression)) {}
+        skeleton_node(std::move(location)), expression(std::move(expression))
+    {
+    }
 
-    void post_process(formula_post_process_context &context) override {
+    void post_process(formula_post_process_context &context) override
+    {
         post_process_expression(context, *expression, location);
     }
 
-    datum evaluate(formula_evaluation_context &context) override {
+    datum evaluate(formula_evaluation_context &context) override
+    {
         return evaluate_formula_without_output(context, *expression, location);
     }
 
-    std::string string() const noexcept override {
+    std::string string() const noexcept override
+    {
         return std::format("<return {}>", *expression);
     }
 };
 
-}
+} // namespace tt::inline v1

@@ -8,30 +8,32 @@
 
 namespace tt::inline v1 {
 
-struct skeleton_top_node final: skeleton_node {
+struct skeleton_top_node final : skeleton_node {
     statement_vector children;
 
-    skeleton_top_node(parse_location location) :
-        skeleton_node(std::move(location)), children() {}
+    skeleton_top_node(parse_location location) : skeleton_node(std::move(location)), children() {}
 
     /** Append a template-piece to the current template.
-    */
-    bool append(std::unique_ptr<skeleton_node> x) noexcept override {
+     */
+    bool append(std::unique_ptr<skeleton_node> x) noexcept override
+    {
         append_child(children, std::move(x));
         return true;
     }
 
-    void post_process(formula_post_process_context &context) override {
+    void post_process(formula_post_process_context &context) override
+    {
         if (ssize(children) > 0) {
             children.back()->left_align();
         }
 
-        for (ttlet &child: children) {
+        for (ttlet &child : children) {
             child->post_process(context);
         }
     }
 
-    datum evaluate(formula_evaluation_context &context) override {
+    datum evaluate(formula_evaluation_context &context) override
+    {
         try {
             return evaluate_children(context, children);
 
@@ -40,10 +42,13 @@ struct skeleton_top_node final: skeleton_node {
         }
     }
 
-    std::string string() const noexcept override {
-        ttlet children_str = transform<std::vector<std::string>>(children, [](ttlet &x) { return x->string(); });
+    std::string string() const noexcept override
+    {
+        ttlet children_str = transform<std::vector<std::string>>(children, [](ttlet &x) {
+            return x->string();
+        });
         return std::format("<top {}>", join(children_str));
     }
 };
 
-}
+} // namespace tt::inline v1

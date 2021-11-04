@@ -24,4 +24,4 @@ namespace tt::inline v1 {
     std::terminate();
 }
 
-}
+} // namespace tt::inline v1

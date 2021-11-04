@@ -8,10 +8,6 @@
 
 namespace tt::inline v1 {
 
-
-
-
-
 void mergeMaximum(pixel_map<uint8_t> &dst, pixel_map<uint8_t> const &src) noexcept
 {
     tt_assert(src.width() >= dst.width());
@@ -28,4 +24,4 @@ void mergeMaximum(pixel_map<uint8_t> &dst, pixel_map<uint8_t> const &src) noexce
     }
 }
 
-}
+} // namespace tt::inline v1

@@ -13,19 +13,23 @@ struct formula_map_literal_node final : formula_node {
     formula_vector values;
 
     formula_map_literal_node(parse_location location, formula_vector keys, formula_vector values) :
-        formula_node(std::move(location)), keys(std::move(keys)), values(std::move(values)) {}
+        formula_node(std::move(location)), keys(std::move(keys)), values(std::move(values))
+    {
+    }
 
-    void post_process(formula_post_process_context& context) override {
-        for (auto &key: keys) {
+    void post_process(formula_post_process_context &context) override
+    {
+        for (auto &key : keys) {
             key->post_process(context);
         }
 
-        for (auto &value: values) {
+        for (auto &value : values) {
             value->post_process(context);
         }
     }
 
-    datum evaluate(formula_evaluation_context& context) const override {
+    datum evaluate(formula_evaluation_context &context) const override
+    {
         tt_assert(keys.size() == values.size());
 
         datum::map_type r;
@@ -38,7 +42,8 @@ struct formula_map_literal_node final : formula_node {
         return datum{std::move(r)};
     }
 
-    std::string string() const noexcept override {
+    std::string string() const noexcept override
+    {
         tt_assert(keys.size() == values.size());
 
         std::string r = "{";
@@ -57,4 +62,4 @@ struct formula_map_literal_node final : formula_node {
     }
 };
 
-}
+} // namespace tt::inline v1

@@ -68,7 +68,7 @@ enum class global_state_type : uint64_t {
     return to_bool(rhs & global_state_type::system_is_shutting_down);
 }
 
-} // namespace tt
+} // namespace tt::inline v1
 
 namespace std {
 
@@ -205,9 +205,9 @@ inline std::atomic<global_state_type> global_state = global_state_type::log_leve
 }
 
 /** Disable a subsystem.
-* 
-* @param subsystem The subsystem to disable.
-* @return True if the subsystem was enabled.
+ *
+ * @param subsystem The subsystem to disable.
+ * @return True if the subsystem was enabled.
  */
 inline bool global_state_disable(global_state_type subsystem, std::memory_order order = std::memory_order::seq_cst) noexcept
 {
@@ -226,4 +226,4 @@ inline bool global_state_enable(global_state_type subsystem, std::memory_order o
     return to_bool(global_state.fetch_or(subsystem, order) & subsystem);
 }
 
-} // namespace tt
+} // namespace tt::inline v1

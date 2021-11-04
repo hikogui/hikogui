@@ -6,25 +6,25 @@
 
 namespace tt::inline v1 {
 
-enum class tokenizer_state_t: uint8_t {
+enum class tokenizer_state_t : uint8_t {
     Initial,
     Name,
-    MinusOrPlus,            // Could be the start of a number, or an operator starting with '+' or '-'.
-    Zero,                   // Could be part of a number with a base.
-    Dot,                    // Could be the start of a floating point number, or the '.' operator.
-    Number,                 // Could be some kind of number without a base.
-    DashAfterNumber,        // Could be a date.
-    ColonAfterNumber,       // Could be a time.
-    DashAfterInteger,       // Integer followed by a operator starting with '-'
-    ColonAfterInteger,      // Integer followed by a operator starting with ':'
+    MinusOrPlus, // Could be the start of a number, or an operator starting with '+' or '-'.
+    Zero, // Could be part of a number with a base.
+    Dot, // Could be the start of a floating point number, or the '.' operator.
+    Number, // Could be some kind of number without a base.
+    DashAfterNumber, // Could be a date.
+    ColonAfterNumber, // Could be a time.
+    DashAfterInteger, // Integer followed by a operator starting with '-'
+    ColonAfterInteger, // Integer followed by a operator starting with ':'
     Float,
     Date,
     Time,
     Quote,
     QuoteString,
     QuoteStringEscape,
-    DQuote,                 // Could be the start of a string, an empty string, or block string.
-    DoubleDQuote,           // Is an empty string or a block string.
+    DQuote, // Could be the start of a string, an empty string, or block string.
+    DoubleDQuote, // Is an empty string or a block string.
     DQuoteString,
     DQuoteStringEscape,
     BlockString,
@@ -32,10 +32,10 @@ enum class tokenizer_state_t: uint8_t {
     BlockStringDoubleDQuote,
     BlockStringCaptureDQuote,
     BlockStringEscape,
-    Slash,                  // Could be the start of a LineComment, BlockComment, or an operator.
+    Slash, // Could be the start of a LineComment, BlockComment, or an operator.
     LineComment,
     BlockComment,
-    BlockCommentMaybeEnd,   // Found a '*' possibly end of comment.
+    BlockCommentMaybeEnd, // Found a '*' possibly end of comment.
     OperatorFirstChar,
     OperatorSecondChar,
     OperatorThirdChar,
@@ -44,7 +44,7 @@ enum class tokenizer_state_t: uint8_t {
 };
 constexpr size_t NR_TOKENIZER_STATES = static_cast<size_t>(tokenizer_state_t::Sentinal);
 
-enum class tokenizer_action_t: uint8_t {
+enum class tokenizer_action_t : uint8_t {
     Idle = 0x00,
     Capture = 0x01, // Capture this character.
     Start = 0x02, // Start the capture queue.
@@ -52,10 +52,11 @@ enum class tokenizer_action_t: uint8_t {
     Found = 0x08, // Token Found.
     Tab = 0x10, // Move the location modulo 8 to the right.
     LineFeed = 0x20, // Move to the next line.
-    Poison = 0x80, // Cleared. 
+    Poison = 0x80, // Cleared.
 };
 
-constexpr uint16_t get_offset(tokenizer_state_t state, char c = '\0') noexcept {
+constexpr uint16_t get_offset(tokenizer_state_t state, char c = '\0') noexcept
+{
     return (static_cast<uint16_t>(state) << 8) | static_cast<uint8_t>(c);
 }
 
@@ -89,17 +90,20 @@ struct tokenizer_transition_t {
         char c,
         tokenizer_state_t next = tokenizer_state_t::Initial,
         tokenizer_action_t action = tokenizer_action_t::Idle,
-        tokenizer_name_t name = tokenizer_name_t::NotAssigned
-    ) :
-        next(next), action(action), c(c), name(name) {}
+        tokenizer_name_t name = tokenizer_name_t::NotAssigned) :
+        next(next), action(action), c(c), name(name)
+    {
+    }
 
     constexpr tokenizer_transition_t() :
-        next(tokenizer_state_t::Initial), action(tokenizer_action_t::Idle), c('\0'), name(tokenizer_name_t::NotAssigned) {}
+        next(tokenizer_state_t::Initial), action(tokenizer_action_t::Idle), c('\0'), name(tokenizer_name_t::NotAssigned)
+    {
+    }
 };
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Name()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Name()
 {
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         ttlet c = static_cast<char>(i);
@@ -119,9 +123,9 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Name()
     return r;
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_MinusOrPlus()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_MinusOrPlus()
 {
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         ttlet c = static_cast<char>(i);
@@ -141,9 +145,9 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_MinusO
     return r;
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Dot()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Dot()
 {
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         ttlet c = static_cast<char>(i);
@@ -162,9 +166,9 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Dot()
     return r;
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Zero()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Zero()
 {
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         ttlet c = static_cast<char>(i);
@@ -182,9 +186,9 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Zero()
     return r;
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Number()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Number()
 {
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         ttlet c = static_cast<char>(i);
@@ -216,9 +220,9 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Number
     return r;
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_DashAfterNumber()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_DashAfterNumber()
 {
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         ttlet c = static_cast<char>(i);
@@ -238,9 +242,9 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_DashAf
     return r;
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_ColonAfterNumber()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_ColonAfterNumber()
 {
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         ttlet c = static_cast<char>(i);
@@ -260,9 +264,9 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_ColonA
     return r;
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_DashAfterInteger()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_DashAfterInteger()
 {
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         tokenizer_transition_t transition = {'-'};
@@ -274,9 +278,9 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_DashAf
     return r;
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_ColonAfterInteger()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_ColonAfterInteger()
 {
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         tokenizer_transition_t transition = {':'};
@@ -288,9 +292,9 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_ColonA
     return r;
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Date()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Date()
 {
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         ttlet c = static_cast<char>(i);
@@ -310,9 +314,9 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Date()
     return r;
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Time()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Time()
 {
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         ttlet c = static_cast<char>(i);
@@ -331,9 +335,9 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Time()
     }
     return r;
 }
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Float()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Float()
 {
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         ttlet c = static_cast<char>(i);
@@ -356,9 +360,9 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Float(
     return r;
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Slash()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Slash()
 {
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         ttlet c = static_cast<char>(i);
@@ -379,9 +383,9 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Slash(
     return r;
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_LineComment()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_LineComment()
 {
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         ttlet c = static_cast<char>(i);
@@ -402,9 +406,9 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_LineCo
     return r;
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_BlockComment()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_BlockComment()
 {
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         ttlet c = static_cast<char>(i);
@@ -427,9 +431,9 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_BlockC
     return r;
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_BlockCommentMaybeEnd()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_BlockCommentMaybeEnd()
 {
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         ttlet c = static_cast<char>(i);
@@ -478,9 +482,9 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Quote
     return r;
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_DQuote()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_DQuote()
 {
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         ttlet c = static_cast<char>(i);
@@ -498,9 +502,9 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_DQuote
     return r;
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_DoubleDQuote()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_DoubleDQuote()
 {
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         ttlet c = static_cast<char>(i);
@@ -555,9 +559,9 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Quote
     return r;
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_DQuoteString()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_DQuoteString()
 {
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         ttlet c = static_cast<char>(i);
@@ -569,7 +573,8 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_DQuote
             transition.name = tokenizer_name_t::ErrorEOTInString;
         } else if (is_line_feed(c)) {
             transition.next = tokenizer_state_t::Initial;
-            transition.action = tokenizer_action_t::Found | tokenizer_action_t::Read | tokenizer_action_t::Capture | tokenizer_action_t::Start | c;
+            transition.action = tokenizer_action_t::Found | tokenizer_action_t::Read | tokenizer_action_t::Capture |
+                tokenizer_action_t::Start | c;
             transition.name = tokenizer_name_t::ErrorLFInString;
         } else if (c == '\\') {
             transition.next = tokenizer_state_t::DQuoteStringEscape;
@@ -620,9 +625,9 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Quote
     return r;
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_DQuoteStringEscape()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_DQuoteStringEscape()
 {
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         ttlet c = static_cast<char>(i);
@@ -652,9 +657,9 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_DQuote
     return r;
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_BlockString()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_BlockString()
 {
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         ttlet c = static_cast<char>(i);
@@ -683,9 +688,9 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_BlockS
     return r;
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_BlockStringDQuote()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_BlockStringDQuote()
 {
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         ttlet c = static_cast<char>(i);
@@ -705,9 +710,9 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_BlockS
     return r;
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_BlockStringDoubleDQuote()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_BlockStringDoubleDQuote()
 {
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         ttlet c = static_cast<char>(i);
@@ -728,9 +733,9 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_BlockS
     return r;
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_BlockStringCaptureDQuote()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_BlockStringCaptureDQuote()
 {
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         ttlet c = static_cast<char>(i);
@@ -745,9 +750,9 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_BlockS
     return r;
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_BlockStringEscape()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_BlockStringEscape()
 {
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         ttlet c = static_cast<char>(i);
@@ -777,9 +782,9 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_BlockS
     return r;
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_OperatorThirdChar()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_OperatorThirdChar()
 {
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         ttlet c = static_cast<char>(i);
@@ -803,18 +808,18 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Operat
     return r;
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_OperatorSecondChar()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_OperatorSecondChar()
 {
-#define LAST_CHAR\
-    transition.next = tokenizer_state_t::Initial;\
-    transition.action = tokenizer_action_t::Found | tokenizer_action_t::Read | tokenizer_action_t::Capture;\
+#define LAST_CHAR \
+    transition.next = tokenizer_state_t::Initial; \
+    transition.action = tokenizer_action_t::Found | tokenizer_action_t::Read | tokenizer_action_t::Capture; \
     transition.name = tokenizer_name_t::Operator
 
-#define MORE_CHARS\
-    transition.next = tokenizer_state_t::OperatorThirdChar;\
+#define MORE_CHARS \
+    transition.next = tokenizer_state_t::OperatorThirdChar; \
     transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
 
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         ttlet c = static_cast<char>(i);
@@ -871,18 +876,18 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Colon
 #undef LAST_CHAR
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_OperatorFirstChar()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_OperatorFirstChar()
 {
-#define LAST_CHAR\
-    transition.next = tokenizer_state_t::Initial;\
-    transition.action = tokenizer_action_t::Found | tokenizer_action_t::Read | tokenizer_action_t::Capture;\
+#define LAST_CHAR \
+    transition.next = tokenizer_state_t::Initial; \
+    transition.action = tokenizer_action_t::Found | tokenizer_action_t::Read | tokenizer_action_t::Capture; \
     transition.name = tokenizer_name_t::Operator
 
-#define MORE_CHARS\
-    transition.next = tokenizer_state_t::OperatorSecondChar;\
+#define MORE_CHARS \
+    transition.next = tokenizer_state_t::OperatorSecondChar; \
     transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
 
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         ttlet c = static_cast<char>(i);
@@ -933,9 +938,9 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Operat
 #undef MORE_CHARS
 }
 
-constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Initial()
+constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Initial()
 {
-    std::array<tokenizer_transition_t,256> r{};
+    std::array<tokenizer_transition_t, 256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
         ttlet c = static_cast<char>(i);
@@ -985,13 +990,15 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Initia
 }
 
 constexpr size_t TRANSITION_TABLE_SIZE = NR_TOKENIZER_STATES * 256;
-using transitionTable_t = std::array<tokenizer_transition_t,TRANSITION_TABLE_SIZE>;
+using transitionTable_t = std::array<tokenizer_transition_t, TRANSITION_TABLE_SIZE>;
 
 constexpr transitionTable_t calculateTransitionTable()
 {
-#define CALCULATE_SUB_TABLE(x)\
-    i = get_offset(tokenizer_state_t::x);\
-    for (ttlet t: calculateTransitionTable_ ## x()) { r[i++] = t; }
+#define CALCULATE_SUB_TABLE(x) \
+    i = get_offset(tokenizer_state_t::x); \
+    for (ttlet t : calculateTransitionTable_##x()) { \
+        r[i++] = t; \
+    }
 
     transitionTable_t r{};
 
@@ -1072,7 +1079,6 @@ constexpr bool checkTransitionTable(transitionTable_t const &r)
     return true;
 }
 
-
 constexpr transitionTable_t buildTransitionTable()
 {
     constexpr auto transitionTable = calculateTransitionTable();
@@ -1081,7 +1087,6 @@ constexpr transitionTable_t buildTransitionTable()
 }
 
 constexpr transitionTable_t transitionTable = buildTransitionTable();
-
 
 struct tokenizer {
     using iterator = typename std::string_view::const_iterator;
@@ -1092,12 +1097,12 @@ struct tokenizer {
     parse_location location;
     parse_location captureLocation;
 
-    tokenizer(iterator begin, iterator end) :
-        state(tokenizer_state_t::Initial), index(begin), end(end) {}
+    tokenizer(iterator begin, iterator end) : state(tokenizer_state_t::Initial), index(begin), end(end) {}
 
     /*! Parse a token.
-    */
-    [[nodiscard]] token_t getNextToken() {
+     */
+    [[nodiscard]] token_t getNextToken()
+    {
         auto token = token_t{};
 
         auto transition = tokenizer_transition_t{};
@@ -1147,8 +1152,9 @@ struct tokenizer {
     }
 
     /*! Parse all tokens.
-    */
-    [[nodiscard]] std::vector<token_t> getTokens() noexcept {
+     */
+    [[nodiscard]] std::vector<token_t> getTokens() noexcept
+    {
         std::vector<token_t> r;
 
         tokenizer_name_t token_name;
@@ -1162,7 +1168,8 @@ struct tokenizer {
     }
 };
 
-[[nodiscard]] std::vector<token_t> parseTokens(std::string_view::const_iterator first, std::string_view::const_iterator last) noexcept
+[[nodiscard]] std::vector<token_t>
+parseTokens(std::string_view::const_iterator first, std::string_view::const_iterator last) noexcept
 {
     return tokenizer(first, last).getTokens();
 }
@@ -1172,4 +1179,4 @@ struct tokenizer {
     return parseTokens(text.cbegin(), text.cend());
 }
 
-}
+} // namespace tt::inline v1

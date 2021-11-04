@@ -28,8 +28,7 @@ struct formula_evaluation_context {
         datum first;
         datum last;
 
-        loop_info(ssize_t count, ssize_t size) :
-            count(), size(), first(), last()
+        loop_info(ssize_t count, ssize_t size) : count(), size(), first(), last()
         {
             if (count >= 0) {
                 this->count = count;
@@ -44,76 +43,89 @@ struct formula_evaluation_context {
     std::vector<loop_info> loop_stack;
     scope globals;
 
-    formula_evaluation_context() {};
+    formula_evaluation_context(){};
 
     /** Write data to the output.
-    */
-    void write(std::string_view text) noexcept {
+     */
+    void write(std::string_view text) noexcept
+    {
         if (output_disable_count == 0) {
             output += text;
         }
     }
 
     /** Get the size of the output.
-    * Used if you need to reset the output to a previous position.
-    */
-    ssize_t output_size() const noexcept {
+     * Used if you need to reset the output to a previous position.
+     */
+    ssize_t output_size() const noexcept
+    {
         return ssize(output);
     }
 
     /** Set the size of the output.
-    * Used if you need to reset the output to a previous position.
-    */
-    void set_output_size(ssize_t new_size) noexcept {
+     * Used if you need to reset the output to a previous position.
+     */
+    void set_output_size(ssize_t new_size) noexcept
+    {
         tt_assert(new_size > 0);
         tt_assert(new_size <= output_size());
         output.resize(new_size);
     }
 
-    void enable_output() noexcept {
+    void enable_output() noexcept
+    {
         tt_assert(output_disable_count > 0);
         output_disable_count--;
     }
 
-    void disable_output() noexcept {
+    void disable_output() noexcept
+    {
         output_disable_count++;
     }
 
-    void loop_push(ssize_t count = -1, ssize_t size = -1) noexcept {
+    void loop_push(ssize_t count = -1, ssize_t size = -1) noexcept
+    {
         loop_stack.emplace_back(count, size);
     }
 
-    void loop_pop() noexcept {
+    void loop_pop() noexcept
+    {
         tt_assert(ssize(loop_stack) > 0);
         loop_stack.pop_back();
     }
 
-    void push() {
+    void push()
+    {
         local_stack.emplace_back();
         loop_push();
     }
 
-    void pop() {
+    void pop()
+    {
         tt_assert(local_stack.size() > 0);
         local_stack.pop_back();
         loop_pop();
     }
 
-    [[nodiscard]] bool has_locals() const noexcept {
+    [[nodiscard]] bool has_locals() const noexcept
+    {
         return local_stack.size() > 0;
     }
 
-    scope const& locals() const {
+    scope const &locals() const
+    {
         tt_axiom(has_locals());
         return local_stack.back();
     }
 
-    scope& locals() {
+    scope &locals()
+    {
         tt_axiom(has_locals());
         return local_stack.back();
     }
 
-    [[nodiscard]] datum const &loop_get(std::string_view name) const {
+    [[nodiscard]] datum const &loop_get(std::string_view name) const
+    {
         tt_axiom(name.size() > 0);
         if (name.back() == '$') {
             throw operation_error("Invalid loop variable '{}'", name);
@@ -150,7 +162,8 @@ struct formula_evaluation_context {
         }
     }
 
-    [[nodiscard]] datum const& get(std::string const &name) const {
+    [[nodiscard]] datum const &get(std::string const &name) const
+    {
         tt_assert(name.size() > 0);
 
         if (name[0] == '$') {
@@ -172,7 +185,8 @@ struct formula_evaluation_context {
         throw operation_error("Could not find {} in local or global scope.", name);
     }
 
-    [[nodiscard]] datum &get(std::string const &name) {
+    [[nodiscard]] datum &get(std::string const &name)
+    {
         tt_assert(name.size() > 0);
 
         if (has_locals()) {
@@ -191,16 +205,19 @@ struct formula_evaluation_context {
     }
 
     template<typename T>
-    void set_local(std::string const &name, T &&value) {
+    void set_local(std::string const &name, T &&value)
+    {
         locals()[name] = std::forward<T>(value);
     }
 
     template<typename T>
-    void set_global(std::string const& name, T &&value) {
+    void set_global(std::string const &name, T &&value)
+    {
         globals[name] = std::forward<T>(value);
     }
 
-    datum &set(std::string const &name, datum const &value) {
+    datum &set(std::string const &name, datum const &value)
+    {
         if (has_locals()) {
             return locals()[name] = value;
         } else {
@@ -209,4 +226,4 @@ struct formula_evaluation_context {
     }
 };
 
-}
+} // namespace tt::inline v1

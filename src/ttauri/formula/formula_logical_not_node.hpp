@@ -10,9 +10,12 @@ namespace tt::inline v1 {
 
 struct formula_logical_not_node final : formula_unary_operator_node {
     formula_logical_not_node(parse_location location, std::unique_ptr<formula_node> rhs) :
-        formula_unary_operator_node(std::move(location), std::move(rhs)) {}
+        formula_unary_operator_node(std::move(location), std::move(rhs))
+    {
+    }
 
-    datum evaluate(formula_evaluation_context& context) const override {
+    datum evaluate(formula_evaluation_context &context) const override
+    {
         auto rhs_ = rhs->evaluate(context);
         try {
             return datum{!rhs_};
@@ -21,9 +24,10 @@ struct formula_logical_not_node final : formula_unary_operator_node {
         }
     }
 
-    std::string string() const noexcept override {
+    std::string string() const noexcept override
+    {
         return std::format("(! {})", *rhs);
     }
 };
 
-}
+} // namespace tt::inline v1

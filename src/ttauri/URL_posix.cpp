@@ -35,9 +35,7 @@ std::vector<std::string> URL::filenamesByScanningDirectory(std::string_view path
             }
             filename += '/';
             [[fallthrough]];
-        case DT_REG:
-            filenames.push_back(std::move(filename));
-            break;
+        case DT_REG: filenames.push_back(std::move(filename)); break;
         default:;
         }
     }
@@ -46,4 +44,4 @@ std::vector<std::string> URL::filenamesByScanningDirectory(std::string_view path
     return filenames;
 }
 
-}
+} // namespace tt::inline v1

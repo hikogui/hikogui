@@ -59,4 +59,4 @@ struct skeleton_placeholder_node final : skeleton_node {
     }
 };
 
-} // namespace tt
+} // namespace tt::inline v1

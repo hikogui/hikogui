@@ -298,4 +298,4 @@ static void format_JSON_impl(datum const &value, std::string &result, tt::indent
     r += '\n';
     return r;
 }
-} // namespace tt
+} // namespace tt::inline v1

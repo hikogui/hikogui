@@ -45,4 +45,4 @@ protected:
     std::weak_ptr<audio_system_delegate> _delegate;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

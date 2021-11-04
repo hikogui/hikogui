@@ -28,7 +28,6 @@ TEST(dead_lock_detector, good)
     ASSERT_TRUE(dead_lock_detector::unlock(&a));
     dead_lock_detector::remove_object(&a);
     dead_lock_detector::remove_object(&b);
-
 }
 
 TEST(dead_lock_detector, relock1)
@@ -60,7 +59,6 @@ TEST(dead_lock_detector, relock2)
     dead_lock_detector::remove_object(&a);
     dead_lock_detector::remove_object(&b);
 }
-
 
 TEST(dead_lock_detector, unlock1)
 {
@@ -96,13 +94,13 @@ TEST(dead_lock_detector, unlock_different_thread)
 
     int a;
 
-    auto at = std::thread([&a](){
+    auto at = std::thread([&a]() {
         dead_lock_detector::clear_stack();
         ASSERT_NULL(dead_lock_detector::lock(&a));
     });
     at.join();
 
-    auto bt = std::thread([&a](){
+    auto bt = std::thread([&a]() {
         dead_lock_detector::clear_stack();
         ASSERT_FALSE(dead_lock_detector::unlock(&a));
     });
@@ -330,4 +328,3 @@ TEST(dead_lock_detector, good_lock4)
     dead_lock_detector::remove_object(&b);
     dead_lock_detector::remove_object(&c);
 }
-

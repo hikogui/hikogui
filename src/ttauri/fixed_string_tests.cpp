@@ -12,4 +12,3 @@ TEST(fixed_string, from_string_literal)
     ASSERT_EQ(s.c_str(), std::string("Hello World"));
     ASSERT_EQ(size(s), 11);
 }
-

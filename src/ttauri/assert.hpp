@@ -34,7 +34,7 @@ namespace tt::inline v1 {
  * An axiom is checked in debug mode, and is used as an optimization
  * in release mode.
  */
-#define tt_axiom(expression, ...) tt_assert(expression __VA_OPT__(,) __VA_ARGS__)
+#define tt_axiom(expression, ...) tt_assert(expression __VA_OPT__(, ) __VA_ARGS__)
 
 /** This part of the code should not be reachable, unless a programming bug.
  * This function should be used in unreachable else statements or switch-default labels,
@@ -58,7 +58,12 @@ namespace tt::inline v1 {
 /** This part of the code should not be reachable, unless a programming bug.
  * This function should be used in unreachable constexpr else statements.
  */
-#define tt_static_no_default() []<bool Flag = false>(){ static_assert(Flag); }()
+#define tt_static_no_default() \
+    []<bool Flag = false>() \
+    { \
+        static_assert(Flag); \
+    } \
+    ()
 
 /** This part of the code has not been implemented yet.
  * This aborts the program.
@@ -70,6 +75,6 @@ namespace tt::inline v1 {
  */
 #define tt_static_not_implemented() tt_static_no_default()
 
-} // namespace tt
+} // namespace tt::inline v1
 
 #endif

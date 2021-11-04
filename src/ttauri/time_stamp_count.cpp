@@ -146,4 +146,4 @@ void time_stamp_count::start_subsystem() noexcept
     populate_aux_values();
 }
 
-} // namespace tt
+} // namespace tt::inline v1

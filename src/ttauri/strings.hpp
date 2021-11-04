@@ -513,4 +513,4 @@ constexpr auto to_array_without_last(T(&&rhs)[N]) noexcept
     return make_cstr(s.c_str(), s.size());
 }
 
-} // namespace tt
+} // namespace tt::inline v1

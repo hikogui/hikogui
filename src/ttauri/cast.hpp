@@ -207,4 +207,4 @@ template<std::signed_integral OutType, std::unsigned_integral InType>
     return static_cast<std::underlying_type_t<decltype(rhs)>>(rhs);
 }
 
-} // namespace tt
+} // namespace tt::inline v1

@@ -124,4 +124,4 @@ struct std::formatter<tt::formula_node, CharT> : std::formatter<string_view, Cha
     }
 };
 
-} // namespace tt
+} // namespace tt::inline v1

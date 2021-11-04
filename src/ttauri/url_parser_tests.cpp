@@ -11,13 +11,15 @@
 using namespace std;
 using namespace tt;
 
-TEST(urlParserTests, parsing) {
+TEST(urlParserTests, parsing)
+{
     ttlet parts = parse_url("file:");
     ASSERT_FALSE(parts.absolute);
     ASSERT_EQ(parts.segments.size(), 0);
 }
 
-TEST(urlParserTests, filenameWithDriveLetter) {
+TEST(urlParserTests, filenameWithDriveLetter)
+{
     ttlet parts = parse_url("file:///C:/Program%20Files/RenderDoc/renderdoc.dll");
     ASSERT_TRUE(parts.absolute);
     ASSERT_EQ(parts.scheme, "file");

@@ -8,32 +8,37 @@
 
 namespace tt::inline v1 {
 
-struct skeleton_while_node final: skeleton_node {
+struct skeleton_while_node final : skeleton_node {
     statement_vector children;
     std::unique_ptr<formula_node> expression;
 
     skeleton_while_node(parse_location location, std::unique_ptr<formula_node> expression) noexcept :
-        skeleton_node(std::move(location)), expression(std::move(expression)) {}
+        skeleton_node(std::move(location)), expression(std::move(expression))
+    {
+    }
 
     /** Append a template-piece to the current template.
-    */
-    bool append(std::unique_ptr<skeleton_node> x) noexcept override {
+     */
+    bool append(std::unique_ptr<skeleton_node> x) noexcept override
+    {
         append_child(children, std::move(x));
         return true;
     }
 
-    void post_process(formula_post_process_context &context) override {
+    void post_process(formula_post_process_context &context) override
+    {
         if (ssize(children) > 0) {
             children.back()->left_align();
         }
 
         post_process_expression(context, *expression, location);
-        for (ttlet &child: children) {
+        for (ttlet &child : children) {
             child->post_process(context);
         }
     }
 
-    datum evaluate(formula_evaluation_context &context) override {
+    datum evaluate(formula_evaluation_context &context) override
+    {
         ttlet output_size = context.output_size();
 
         ssize_t loop_count = 0;
@@ -53,13 +58,16 @@ struct skeleton_while_node final: skeleton_node {
         return {};
     }
 
-    std::string string() const noexcept override {
+    std::string string() const noexcept override
+    {
         std::string s = "<while ";
         s += to_string(*expression);
-        s += join(transform<std::vector<std::string>>(children, [](auto &x) { return to_string(*x); }));
+        s += join(transform<std::vector<std::string>>(children, [](auto &x) {
+            return to_string(*x);
+        }));
         s += ">";
         return s;
     }
 };
 
-}
+} // namespace tt::inline v1
