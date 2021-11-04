@@ -31,7 +31,6 @@ namespace tt {
 inline namespace v1 {
 class gfx_device_vulkan;
 
-inline namespace v1 {
 struct swapchain_image_info {
     vk::Image image;
     vk::ImageView image_view;
