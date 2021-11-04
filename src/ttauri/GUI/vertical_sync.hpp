@@ -9,6 +9,7 @@
 #include <atomic>
 
 namespace tt {
+inline namespace v1 {
 
 class vertical_sync {
 public:
@@ -22,4 +23,5 @@ public:
     virtual utc_nanoseconds wait() noexcept = 0;
 };
 
+}
 }

@@ -12,6 +12,7 @@ struct HWND__;
 using HWND = HWND__ *;
 
 namespace tt {
+inline namespace v1 {
 
 class gui_window_win32 final : public gui_window {
 public:
@@ -66,4 +67,5 @@ private:
     [[nodiscard]] mouse_event createmouse_event(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept;
 };
 
+}
 } // namespace tt

@@ -10,6 +10,7 @@
 #include <ostream>
 
 namespace tt {
+inline namespace v1 {
 
 enum class theme_mode { light, dark };
 
@@ -34,9 +35,8 @@ inline std::ostream &operator<<(std::ostream &lhs, theme_mode rhs)
 
 theme_mode read_os_theme_mode() noexcept;
 
+}
 } // namespace tt
-
-namespace std {
 
 template<typename CharT>
 struct std::formatter<tt::theme_mode, CharT> : std::formatter<char const *, CharT> {
@@ -46,4 +46,3 @@ struct std::formatter<tt::theme_mode, CharT> : std::formatter<char const *, Char
     }
 };
 
-} // namespace std

@@ -18,8 +18,7 @@
 #pragma comment(lib, "dwmapi")
 
 namespace tt {
-
-using namespace std;
+inline namespace v1 {
 
 static const wchar_t *win32WindowClassName = nullptr;
 static WNDCLASSW win32WindowClass = {};
@@ -889,4 +888,5 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     return mouseEvent;
 }
 
+}
 } // namespace tt

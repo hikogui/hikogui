@@ -10,6 +10,7 @@
 #include <cstdint>
 
 namespace tt {
+inline namespace v1 {
 
 /** Key modification keys pressed at the same time as another key.
  *
@@ -92,12 +93,11 @@ inline std::ostream &operator<<(std::ostream &lhs, keyboard_modifiers const &rhs
     return lhs << to_string(rhs);
 }
 
+}
 } // namespace tt
 
-namespace std {
-
 template<>
-struct hash<tt::keyboard_modifiers> {
+struct std::hash<tt::keyboard_modifiers> {
     [[nodiscard]] size_t operator()(tt::keyboard_modifiers const &rhs) const noexcept
     {
         return std::hash<uint8_t>{}(static_cast<uint8_t>(rhs));
@@ -112,4 +112,3 @@ struct std::formatter<tt::keyboard_modifiers, CharT> : std::formatter<std::strin
     }
 };
 
-} // namespace std

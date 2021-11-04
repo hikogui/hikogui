@@ -13,6 +13,7 @@
 #include <utility>
 
 namespace tt {
+inline namespace v1 {
 
 enum class KeyboardState : uint8_t {
     Idle = 0x00,
@@ -90,4 +91,5 @@ struct keyboard_event {
     }
 };
 
+}
 }

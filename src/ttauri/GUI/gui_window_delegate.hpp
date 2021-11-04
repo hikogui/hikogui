@@ -7,6 +7,7 @@
 #include "../widgets/grid_delegate.hpp"
 
 namespace tt {
+inline namespace v1 {
 class gui_window;
 
 class gui_window_delegate : public grid_delegate {
@@ -15,4 +16,5 @@ public:
     virtual void deinit(gui_window &window) noexcept {}
 };
 
+}
 }

@@ -13,6 +13,7 @@
 
 
 namespace tt {
+inline namespace v1 {
 
 [[nodiscard]] theme_mode read_os_theme_mode() noexcept
 {
@@ -51,4 +52,5 @@ namespace tt {
 
 }
 
+}
 }

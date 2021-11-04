@@ -9,6 +9,7 @@
 #include "../log.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 theme_book::~theme_book() {}
 
@@ -80,4 +81,5 @@ theme_book::theme_book(tt::font_book const &font_book, std::vector<URL> const &t
     }
 }
 
+}
 } // namespace tt

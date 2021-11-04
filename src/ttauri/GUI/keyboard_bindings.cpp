@@ -8,6 +8,7 @@
 #include "../log.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 void keyboard_bindings::load_bindings(URL url, bool system_binding)
 {
@@ -58,4 +59,5 @@ void keyboard_bindings::load_bindings(URL url, bool system_binding)
     }
 }
 
+}
 } // namespace tt

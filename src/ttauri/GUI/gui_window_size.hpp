@@ -5,7 +5,9 @@
 #pragma once
 
 namespace tt {
+inline namespace v1 {
 
 enum class gui_window_size { normal, minimized, maximized };
 
+}
 }

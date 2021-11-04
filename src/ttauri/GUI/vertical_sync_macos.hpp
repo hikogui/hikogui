@@ -11,6 +11,7 @@
 typedef struct __CVDisplayLink CVDisplayLinkRef;
 
 namespace tt {
+inline namespace v1 {
 
 class vertical_sync_macos final : public vertical_sync_base {
 private:
@@ -21,4 +22,5 @@ public:
     ~vertical_sync_macos();
 };
 
+}
 }

@@ -11,6 +11,7 @@
 #include <chrono>
 
 namespace tt {
+inline namespace v1 {
 
 struct mouse_event {
     enum class Type { None, Entered, Exited, Move, Drag, ButtonDown, ButtonUp, Wheel };
@@ -103,6 +104,5 @@ struct mouse_event {
     }
 };
 
-
-
+}
 }

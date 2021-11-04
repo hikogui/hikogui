@@ -13,6 +13,7 @@
 #include <memory>
 
 namespace tt {
+inline namespace v1 {
 
 [[nodiscard]] std::unique_ptr<gui_system> gui_system::make_unique(std::weak_ptr<gui_system_delegate> delegate) noexcept
 {
@@ -144,4 +145,5 @@ bypass_render:
     return *exit_code;
 }
 
+}
 } // namespace tt

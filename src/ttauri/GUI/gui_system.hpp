@@ -18,6 +18,7 @@
 #include <vector>
 
 namespace tt {
+inline namespace v1 {
 class gfx_system;
 class vertical_sync;
 class font_book;
@@ -228,4 +229,5 @@ private:
     tt::theme const *_theme = nullptr;
 };
 
+}
 } // namespace tt

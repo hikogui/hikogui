@@ -7,6 +7,7 @@
 #include <Windows.h>
 
 namespace tt {
+inline namespace v1 {
 
 keyboard_virtual_key to_keyboard_virtual_key(int key_code, bool extended, keyboard_modifiers modifiers)
 {
@@ -137,4 +138,5 @@ keyboard_virtual_key to_keyboard_virtual_key(int key_code, bool extended, keyboa
     }
 }
 
+}
 }

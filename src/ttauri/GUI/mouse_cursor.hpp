@@ -5,6 +5,7 @@
 #pragma once
 
 namespace tt {
+inline namespace v1 {
 
 enum class mouse_cursor {
     None,
@@ -13,4 +14,5 @@ enum class mouse_cursor {
     Button
 };
 
+}
 }

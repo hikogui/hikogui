@@ -8,6 +8,7 @@
 #include <unordered_map>
 
 namespace tt {
+inline namespace v1 {
 
 class gui_window_vulkan_macos final : public gfx_surface_vulkan {
 public:
@@ -60,4 +61,5 @@ private:
     friend tt::Application_macos;
 };
 
+}
 }

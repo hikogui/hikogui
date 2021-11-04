@@ -6,6 +6,7 @@
 #include <optional>
 
 namespace tt {
+inline namespace v1 {
 class gui_system;
 
 class gui_system_delegate {
@@ -20,4 +21,5 @@ public:
     [[nodiscard]] virtual std::optional<int> last_window_closed(gui_system &self) { return 0; };
 };
 
+}
 }

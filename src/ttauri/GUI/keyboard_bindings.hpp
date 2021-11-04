@@ -13,6 +13,7 @@
 #include <tuple>
 
 namespace tt {
+inline namespace v1 {
 
 class keyboard_bindings {
     struct commands_t {
@@ -134,4 +135,5 @@ public:
     //void save_user_bindings(URL url);
 };
 
+}
 }

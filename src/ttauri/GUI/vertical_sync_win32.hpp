@@ -10,6 +10,7 @@
 #include <array>
 
 namespace tt {
+inline namespace v1 {
 
 class vertical_sync_win32 final : public vertical_sync {
 public:
@@ -35,4 +36,5 @@ private:
     [[nodiscard]] std::chrono::nanoseconds average_frame_duration(utc_nanoseconds frameTimestamp) noexcept;
 };
 
+}
 }

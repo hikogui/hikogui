@@ -17,6 +17,7 @@
 #include <array>
 
 namespace tt {
+inline namespace v1 {
 class font_book;
 
 class theme {
@@ -102,4 +103,5 @@ private:
     }
 };
 
+}
 }

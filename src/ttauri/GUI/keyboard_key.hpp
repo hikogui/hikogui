@@ -13,6 +13,7 @@
 #include <unordered_map>
 
 namespace tt {
+inline namespace v1 {
 
 /** A key in combination with modifiers.
  * This key is based on the actual symbol on the keyboard.
@@ -73,14 +74,12 @@ public:
 };
 
 }
-
-namespace std {
+}
 
 template<>
-struct hash<tt::keyboard_key> {
+struct std::hash<tt::keyboard_key> {
     [[nodiscard]] size_t operator() (tt::keyboard_key const &rhs) const noexcept {
         return rhs.hash();
     }
 };
 
-}

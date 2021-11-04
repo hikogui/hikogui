@@ -43,8 +43,7 @@ PFND3DKMT_OPENADAPTERFROMHDC		pfnD3DKMTOpenAdapterFromHdc;
 PFND3DKMT_CLOSEADAPTER		        pfnD3DKMTCloseAdapter;
 
 namespace tt {
-
-using namespace std;
+inline namespace v1 {
 
 vertical_sync_win32::vertical_sync_win32() noexcept :
     vertical_sync()
@@ -179,4 +178,5 @@ utc_nanoseconds vertical_sync_win32::wait() noexcept
     return now + average_frame_duration(now);
 }
 
+}
 }

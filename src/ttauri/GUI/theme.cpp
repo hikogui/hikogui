@@ -11,6 +11,7 @@
 #include "../URL.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 theme::theme(tt::font_book const &font_book, URL const &url)
 {
@@ -304,4 +305,5 @@ void theme::parse(tt::font_book const &font_book, datum const &data)
         parse_text_style(font_book, data, "link-label-style");
 }
 
+}
 } // namespace tt

@@ -25,6 +25,7 @@
 #include <mutex>
 
 namespace tt {
+inline namespace v1 {
 class gfx_device;
 class gfx_system;
 class gfx_surface;
@@ -404,4 +405,5 @@ private:
     friend class widget;
 };
 
+}
 } // namespace tt
