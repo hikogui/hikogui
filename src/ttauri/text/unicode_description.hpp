@@ -11,9 +11,9 @@
 #include "../required.hpp"
 #include "../assert.hpp"
 
-namespace tt {
+namespace tt::detail {
 inline namespace v1 {
-namespace detail {
+
 constexpr char32_t unicode_hangul_S_base = U'\uac00';
 constexpr char32_t unicode_hangul_L_base = U'\u1100';
 constexpr char32_t unicode_hangul_V_base = U'\u1161';
@@ -24,6 +24,10 @@ constexpr char32_t unicode_hangul_T_count = 28;
 constexpr char32_t unicode_hangul_N_count = unicode_hangul_V_count * unicode_hangul_T_count;
 constexpr char32_t unicode_hangul_S_count = unicode_hangul_L_count * unicode_hangul_N_count;
 }
+}
+
+namespace tt {
+inline namespace v1 {
 
 [[nodiscard]] constexpr bool is_hangul_L_part(char32_t code_point) noexcept
 {

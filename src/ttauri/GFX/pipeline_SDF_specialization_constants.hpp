@@ -8,6 +8,7 @@
 #include <vulkan/vulkan.hpp>
 
 namespace tt::pipeline_SDF {
+inline namespace v1 {
 
 struct specialization_constants {
     float sdf_r8maxDistance;
@@ -29,4 +30,5 @@ struct specialization_constants {
     }
 };
 
+}
 }

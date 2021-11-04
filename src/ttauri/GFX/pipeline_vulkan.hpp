@@ -10,6 +10,7 @@
 #include <vector>
 
 namespace tt {
+inline namespace v1 {
 class gfx_device_vulkan;
 
 class pipeline_vulkan : public pipeline {
@@ -64,4 +65,5 @@ protected:
     virtual void teardownPipeline();
 };
 
+}
 }

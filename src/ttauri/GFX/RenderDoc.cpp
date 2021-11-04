@@ -12,6 +12,7 @@
 #include <type_traits>
 
 namespace tt {
+inline namespace v1 {
 
 RenderDoc::RenderDoc() noexcept {
 #if TT_BUILD_TYPE == TT_BT_DEBUG
@@ -99,4 +100,5 @@ void RenderDoc::set_overlay(bool frameRate, bool frameNumber, bool captureList) 
     api_->MaskOverlayBits(and_mask, or_mask);
 }
 
+}
 }

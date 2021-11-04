@@ -10,8 +10,7 @@
 #include <vector>
 
 namespace tt {
-
-using namespace std;
+inline namespace v1 {
 
 pipeline_vulkan::pipeline_vulkan(gfx_surface const &surface) :
     pipeline(surface) {}
@@ -308,4 +307,5 @@ void pipeline_vulkan::teardownForWindowLost()
 {
 }
 
+}
 }

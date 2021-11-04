@@ -8,6 +8,7 @@
 #include <memory>
 
 namespace tt {
+inline namespace v1 {
 class gfx_surface;
 
 class pipeline {
@@ -23,4 +24,5 @@ public:
     pipeline &operator=(pipeline &&) = delete;
 };
 
+}
 }

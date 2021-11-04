@@ -15,6 +15,7 @@
 #include "../geometry/extent.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 paged_image::paged_image(gfx_surface const *surface, size_t width, size_t height) noexcept :
     device(nullptr), width(width), height(height), pages()
@@ -96,4 +97,5 @@ void paged_image::upload(pixel_map<sfloat_rgba16> const &image) noexcept
     }
 }
 
+}
 } // namespace tt

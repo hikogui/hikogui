@@ -5,8 +5,7 @@
 #include "pipeline.hpp"
 
 namespace tt {
-
-using namespace std;
+inline namespace v1 {
 
 pipeline::pipeline(gfx_surface const &surface) :
     surface(surface)
@@ -14,5 +13,5 @@ pipeline::pipeline(gfx_surface const &surface) :
 }
 
 
-
+}
 }

@@ -7,6 +7,7 @@
 #include <memory>
 
 namespace tt {
+inline namespace v1 {
 
 class RenderDoc {
 public:
@@ -20,4 +21,5 @@ private:
     void *api = nullptr;
 };
 
+}
 }

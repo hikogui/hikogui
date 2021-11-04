@@ -10,6 +10,7 @@
 #include <span>
 
 namespace tt::pipeline_tone_mapper {
+inline namespace v1 {
 
 /*! Pipeline for rendering simple flat shaded quats.
  */
@@ -34,4 +35,5 @@ protected:
 
 };
 
+}
 }

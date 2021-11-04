@@ -15,8 +15,7 @@
 #include <vector>
 
 namespace tt {
-
-using namespace std;
+inline namespace v1 {
 
 gfx_surface_vulkan::gfx_surface_vulkan(gfx_system &system, vk::SurfaceKHR surface) : gfx_surface(system), intrinsic(surface) {}
 
@@ -911,4 +910,5 @@ void gfx_surface_vulkan::teardownDevice()
     _device = nullptr;
 }
 
+}
 } // namespace tt

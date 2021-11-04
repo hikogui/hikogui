@@ -5,6 +5,7 @@
 #pragma once
 
 namespace tt {
+inline namespace v1 {
 
 enum class subpixel_orientation {
     Unknown = 0,
@@ -14,4 +15,5 @@ enum class subpixel_orientation {
     BlueBottom = 4,
 };
 
+}
 }

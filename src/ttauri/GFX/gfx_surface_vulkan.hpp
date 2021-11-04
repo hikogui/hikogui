@@ -10,22 +10,28 @@
 #include <vk_mem_alloc.h>
 #include <optional>
 
+namespace tt::pipeline_image {
+inline namespace v1 {
+class pipeline_image;
+}}
+namespace tt::pipeline_box {
+inline namespace v1 {
+class pipeline_box;
+}}
+namespace tt::pipeline_SDF {
+inline namespace v1 {
+class pipeline_SDF;
+}}
+namespace tt::pipeline_tone_mapper {
+inline namespace v1 {
+class pipeline_tone_mapper;
+}}
+
 namespace tt {
+inline namespace v1 {
 class gfx_device_vulkan;
 
-namespace pipeline_image {
-class pipeline_image;
-}
-namespace pipeline_box {
-class pipeline_box;
-}
-namespace pipeline_SDF {
-class pipeline_SDF;
-}
-namespace pipeline_tone_mapper {
-class pipeline_tone_mapper;
-}
-
+inline namespace v1 {
 struct swapchain_image_info {
     vk::Image image;
     vk::ImageView image_view;
@@ -142,4 +148,5 @@ private:
     std::tuple<size_t, extent2> get_image_count_and_size(size_t new_count, extent2 new_size);
 };
 
+}
 }

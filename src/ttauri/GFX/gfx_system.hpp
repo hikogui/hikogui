@@ -14,6 +14,7 @@
 #include <vector>
 
 namespace tt {
+inline namespace v1 {
 class gfx_surface;
 
 /** Graphics system
@@ -43,4 +44,5 @@ public:
     gfx_device *find_best_device_for_surface(gfx_surface const &surface);
 };
 
+}
 }

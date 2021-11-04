@@ -8,9 +8,8 @@
 #include "ttauri/text/unicode_description.hpp"
 #include <array>
 
-namespace tt {
+namespace tt::detail {
 inline namespace v1 {
-namespace detail {
 
 #define TTXD unicode_description
 #define TTXGC unicode_general_category
@@ -35044,6 +35043,5 @@ constexpr auto unicode_db_decomposition_table = std::array{
     U'\u3014',U'\u52dd',U'\u3015',
     U'\u3014',U'\u6557',U'\u3015'};
 
-}
 }
 }

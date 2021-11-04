@@ -8,6 +8,7 @@
 #include <vulkan/vulkan.hpp>
 
 namespace tt::pipeline_box {
+inline namespace v1 {
 
 struct push_constants {
     sfloat_rg32 windowExtent = extent2{ 0.0, 0.0 };
@@ -21,4 +22,5 @@ struct push_constants {
     }
 };
 
+}
 }

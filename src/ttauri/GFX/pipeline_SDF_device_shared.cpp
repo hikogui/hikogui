@@ -17,8 +17,7 @@
 #include <array>
 
 namespace tt::pipeline_SDF {
-
-using namespace std;
+inline namespace v1 {
 
 device_shared::device_shared(gfx_device_vulkan const &device) : device(device)
 {
@@ -337,4 +336,5 @@ void device_shared::teardownAtlas(gfx_device_vulkan *vulkanDevice)
     vulkanDevice->destroyImage(stagingTexture.image, stagingTexture.allocation);
 }
 
+}
 } // namespace tt::pipeline_SDF

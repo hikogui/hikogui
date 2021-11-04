@@ -21,18 +21,19 @@
 #include <unordered_map>
 
 namespace tt {
-class gfx_device_vulkan;
 template<typename T>
 class pixel_map;
 class mat;
-} // namespace tt
 
-namespace tt {
+inline namespace v1 {
+class gfx_device_vulkan;
 class shaped_text;
 struct attributed_glyph;
 } // namespace tt
+}
 
 namespace tt::pipeline_SDF {
+inline namespace v1 {
 
 struct Image;
 struct vertex;
@@ -158,4 +159,4 @@ private:
     }
 };
 
-} // namespace tt::pipeline_SDF
+}} // namespace tt::pipeline_SDF

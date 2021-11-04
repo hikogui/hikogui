@@ -8,6 +8,7 @@
 #include "../assert.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 void gfx_surface::set_device(gfx_device *new_device) noexcept
 {
@@ -30,4 +31,5 @@ void gfx_surface::set_device(gfx_device *new_device) noexcept
     _device = new_device;
 }
 
+}
 }

@@ -10,6 +10,7 @@
 #include "gfx_system_globals.hpp"
 
 namespace tt {
+inline namespace v1 {
 class gfx_device;
 class gfx_system;
 
@@ -82,4 +83,5 @@ protected:
     virtual void teardown() = 0;
 };
 
+}
 } // namespace tt

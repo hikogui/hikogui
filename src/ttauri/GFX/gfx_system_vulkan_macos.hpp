@@ -8,6 +8,7 @@
 #include <span>
 
 namespace tt {
+inline namespace v1 {
 
 class gfx_system_vulkan_macos final: public gfx_system_vulkan {
 public:
@@ -25,4 +26,5 @@ public:
     }
 };
 
+}
 }

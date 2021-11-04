@@ -11,6 +11,7 @@
 #include <vk_mem_alloc.h>
 
 namespace tt::pipeline_image {
+inline namespace v1 {
 
 /*! Pipeline for rendering backings of widgets.
  * Maintains texture map atlas and sharing for all views.
@@ -49,4 +50,5 @@ private:
     void teardownvertexBuffers() override;
 };
 
+}
 }

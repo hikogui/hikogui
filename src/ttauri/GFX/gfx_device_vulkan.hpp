@@ -16,9 +16,7 @@
 
 namespace tt {
 class URL;
-}
-
-namespace tt {
+inline namespace v1 {
 
 class gfx_device_vulkan final : public gfx_device {
 public:
@@ -348,4 +346,5 @@ private:
     void destroy_quad_index_buffer();
 };
 
+}
 } // namespace tt

@@ -12,6 +12,7 @@
 #include <span>
 
 namespace tt::pipeline_SDF {
+inline namespace v1 {
 
 /*! Pipeline for rendering backings of widgets.
  * Maintains texture map atlases and sharing for all views.
@@ -51,4 +52,5 @@ private:
     void teardownvertexBuffers() override;
 };
 
+}
 }

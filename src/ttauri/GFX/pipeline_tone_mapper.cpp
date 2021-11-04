@@ -8,9 +8,7 @@
 #include "gfx_device_vulkan.hpp"
 
 namespace tt::pipeline_tone_mapper {
-
-using namespace tt;
-using namespace std;
+inline namespace v1 {
 
 pipeline_tone_mapper::pipeline_tone_mapper(gfx_surface const &surface) : pipeline_vulkan(surface) {}
 
@@ -92,4 +90,5 @@ vk::PipelineDepthStencilStateCreateInfo pipeline_tone_mapper::getPipelineDepthSt
     };
 }
 
+}
 } // namespace tt::pipeline_tone_mapper

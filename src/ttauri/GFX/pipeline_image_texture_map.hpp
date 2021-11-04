@@ -10,10 +10,13 @@
 #include <vulkan/vulkan.hpp>
 
 namespace tt {
+inline namespace v1 {
 class gfx_device_vulkan;
+}
 }
 
 namespace tt::pipeline_image {
+inline namespace v1 {
 
 struct texture_map {
     vk::Image image;
@@ -25,4 +28,5 @@ struct texture_map {
     void transitionLayout(const gfx_device_vulkan &device, vk::Format format, vk::ImageLayout nextLayout);
 };
 
+}
 }

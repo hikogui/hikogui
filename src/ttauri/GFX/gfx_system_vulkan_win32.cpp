@@ -7,9 +7,7 @@
 #include <ddraw.h>
 
 namespace tt {
-
-using namespace std;
-
+inline namespace v1 {
 
 [[nodiscard]] std::unique_ptr<gfx_surface> gfx_system_vulkan::make_surface(os_handle instance, void *os_window) const noexcept
 {
@@ -25,4 +23,5 @@ using namespace std;
     return ptr;
 }
 
+}
 } // namespace tt

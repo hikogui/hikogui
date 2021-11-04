@@ -6,6 +6,7 @@
 #include "gfx_device_vulkan.hpp"
 
 namespace tt::pipeline_SDF {
+inline namespace v1 {
 
 void texture_map::transitionLayout(const gfx_device_vulkan &device, vk::Format format, vk::ImageLayout nextLayout)
 {
@@ -17,4 +18,5 @@ void texture_map::transitionLayout(const gfx_device_vulkan &device, vk::Format f
     }
 }
 
+}
 }

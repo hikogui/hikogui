@@ -14,6 +14,7 @@
 #include <array>
 
 namespace tt::pipeline_image {
+inline namespace v1 {
 
 device_shared::device_shared(gfx_device_vulkan const &device) : device(device)
 {
@@ -382,4 +383,5 @@ void device_shared::place_vertices(
     }
 }
 
+}
 } // namespace tt::pipeline_image

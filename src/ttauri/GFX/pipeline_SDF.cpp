@@ -8,9 +8,7 @@
 #include "gfx_device_vulkan.hpp"
 
 namespace tt::pipeline_SDF {
-
-using namespace tt;
-using namespace std;
+inline namespace v1 {
 
 pipeline_SDF::pipeline_SDF(gfx_surface const &surface) :
     pipeline_vulkan(surface)
@@ -174,4 +172,5 @@ void pipeline_SDF::teardownvertexBuffers()
     vulkan_device().destroyBuffer(vertexBuffer, vertexBufferAllocation);
 }
 
+}
 }

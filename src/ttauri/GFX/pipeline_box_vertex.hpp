@@ -14,6 +14,7 @@
 #include <span>
 
 namespace tt::pipeline_box {
+inline namespace v1 {
 
 /*! A vertex defining a rectangle on a window.
  * The vertex shader will convert window pixel-coordinates to normalized projection-coordinates.
@@ -87,4 +88,5 @@ struct alignas(16) vertex {
     }
 };
 
+}
 } // namespace tt::pipeline_box

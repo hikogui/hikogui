@@ -9,9 +9,8 @@
 #include <cstdint>
 #include <cstddef>
 
-namespace tt {
+namespace tt::detail {
 inline namespace v1 {
-namespace detail {
 
 class unicode_mask_entry {
 public:
@@ -87,6 +86,10 @@ private:
 };
 
 }
+}
+
+namespace tt {
+namespace detail {
 
 /** A mask of unicode code-points.
  *

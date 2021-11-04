@@ -12,6 +12,7 @@
 #include <span>
 
 namespace tt::pipeline_box {
+inline namespace v1 {
 
 /*! Pipeline for rendering simple box shaded quats.
  */
@@ -48,4 +49,5 @@ private:
     void teardownvertexBuffers() override;
 };
 
+}
 }

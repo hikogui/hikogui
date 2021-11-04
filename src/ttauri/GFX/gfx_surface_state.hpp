@@ -5,6 +5,7 @@
 #pragma once
 
 namespace tt {
+inline namespace v1 {
 
 enum class gfx_surface_state {
     initializing, ///< The window has not been initialized yet.
@@ -19,4 +20,5 @@ enum class gfx_surface_state {
     window_lost, ///< The window was destroyed, need to cleanup.
 };
 
+}
 }

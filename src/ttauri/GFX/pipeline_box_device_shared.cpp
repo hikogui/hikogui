@@ -11,8 +11,7 @@
 #include <array>
 
 namespace tt::pipeline_box {
-
-using namespace std;
+inline namespace v1 {
 
 device_shared::device_shared(gfx_device_vulkan const &device) :
     device(device)
@@ -90,4 +89,5 @@ void device_shared::teardownShaders(gfx_device_vulkan *vulkanDevice)
     vulkanDevice->destroy(fragmentShaderModule);
 }
 
+}
 }

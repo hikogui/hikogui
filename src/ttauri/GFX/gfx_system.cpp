@@ -9,6 +9,7 @@
 #include <chrono>
 
 namespace tt {
+inline namespace v1 {
 
 gfx_system::gfx_system() noexcept {}
 
@@ -35,7 +36,5 @@ gfx_device *gfx_system::find_best_device_for_surface(gfx_surface const &surface)
     return best_device;
 }
 
-
-
-
+}
 }

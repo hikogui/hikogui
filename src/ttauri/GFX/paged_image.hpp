@@ -16,6 +16,7 @@ namespace tt {
 template<typename T>
 class pixel_map;
 class sfloat_rgba16;
+inline namespace v1 {
 class gfx_surface;
 class gfx_device;
 
@@ -67,4 +68,5 @@ struct paged_image {
     void upload(pixel_map<sfloat_rgba16> const &image) noexcept;
 };
 
+}
 } // namespace tt::pipeline_image

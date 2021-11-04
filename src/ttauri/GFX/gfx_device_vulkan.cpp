@@ -12,6 +12,7 @@
 #include <span>
 
 namespace tt {
+inline namespace v1 {
 
 #define QUEUE_CAPABILITY_GRAPHICS 1
 #define QUEUE_CAPABILITY_COMPUTE 2
@@ -839,4 +840,5 @@ vk::ShaderModule gfx_device_vulkan::loadShader(URL const &shaderObjectLocation) 
     return loadShader(*shaderObjectLocation.loadView());
 }
 
+}
 } // namespace tt

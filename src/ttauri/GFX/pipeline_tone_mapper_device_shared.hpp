@@ -11,10 +11,13 @@
 #include <mutex>
 
 namespace tt {
+inline namespace v1 {
 class gfx_device_vulkan;
+}
 }
 
 namespace tt::pipeline_tone_mapper {
+inline namespace v1 {
 
 struct Image;
 
@@ -45,4 +48,5 @@ private:
     void teardownShaders(gfx_device_vulkan *vulkanDevice);
 };
 
+}
 }

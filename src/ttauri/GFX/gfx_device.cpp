@@ -9,8 +9,7 @@
 #include <vector>
 
 namespace tt {
-
-using namespace std;
+inline namespace v1 {
 
 gfx_device::gfx_device(gfx_system &system) noexcept : system(system)
 {
@@ -27,4 +26,5 @@ std::string gfx_device::string() const noexcept
     return std::format("{0:04x}:{1:04x} {2} {3}", vendorID, deviceID, deviceName, deviceUUID.uuid_string());
 }
 
+}
 }
