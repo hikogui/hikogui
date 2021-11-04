@@ -91,12 +91,12 @@ public:
         value.unsubscribe(callback_ptr);
     }
 
-    std::optional<label> validate(text_field_widget &sender, std::string_view text) noexcept override
+    label validate(text_field_widget &sender, std::string_view text) noexcept override
     {
         try {
             [[maybe_unused]] auto dummy = from_string<value_type>(text);
         } catch (parse_error const &) {
-            return {l10n{"Invalid integer"}};
+            return {elusive_icon::WarningSign, l10n{"Invalid floating point number"}};
         }
 
         return {};

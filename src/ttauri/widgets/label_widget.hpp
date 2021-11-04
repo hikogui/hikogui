@@ -104,6 +104,7 @@ private:
     float _inner_margin;
 
     decltype(label)::callback_ptr_type _label_callback;
+    decltype(text_style)::callback_ptr_type _text_style_callback;
 
     aarectangle _icon_rectangle;
     std::unique_ptr<icon_widget> _icon_widget;

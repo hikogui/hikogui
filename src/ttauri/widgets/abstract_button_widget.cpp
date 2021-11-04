@@ -56,15 +56,9 @@ widget_constraints abstract_button_widget::set_constraints_button() const noexce
 
 void abstract_button_widget::draw_button(draw_context const &context) noexcept
 {
-    if (_on_label_widget->visible) {
-        _on_label_widget->draw(context);
-    }
-    if (_off_label_widget->visible) {
-        _off_label_widget->draw(context);
-    }
-    if (_other_label_widget->visible) {
-        _other_label_widget->draw(context);
-    }
+    _on_label_widget->draw(context);
+    _off_label_widget->draw(context);
+    _other_label_widget->draw(context);
 }
 
 void abstract_button_widget::set_layout_button(widget_layout const &context) noexcept

@@ -16,11 +16,22 @@ label_widget::label_widget(gui_window &window, widget *parent) noexcept : super(
     _text_widget->alignment = alignment;
     _text_widget->text_style = text_style;
 
+    _text_style_callback = text_style.subscribe([this] {
+        switch (*text_style) {
+        case theme_text_style::label: _icon_widget->color = theme_color::foreground; break;
+        case theme_text_style::small_label: _icon_widget->color = theme_color::foreground; break;
+        case theme_text_style::warning: _icon_widget->color = theme_color::orange; break;
+        case theme_text_style::error: _icon_widget->color = theme_color::red; break;
+        case theme_text_style::help: _icon_widget->color = theme_color::indigo; break;
+        case theme_text_style::placeholder: _icon_widget->color = theme_color::gray; break;
+        case theme_text_style::link: _icon_widget->color = theme_color::blue; break;
+        default: _icon_widget->color = theme_color::foreground;
+        }
+    });
+
     _label_callback = label.subscribe([this] {
-        this->window.gui.run([this] {
-            _icon_widget->icon = label->icon;
-            _text_widget->text = label->text;
-        });
+        _icon_widget->icon = label->icon;
+        _text_widget->text = label->text;
     });
 }
 
@@ -42,8 +53,10 @@ widget_constraints const &label_widget::set_constraints() noexcept
         // Override the natural icon size.
         if (*alignment == horizontal_alignment::center) {
             _icon_size = theme().large_icon_size;
-        } else {
+        } else if (alignment == vertical_alignment::middle) {
             _icon_size = std::ceil(theme().text_style(*text_style).scaled_size() * 1.4f);
+        } else {
+            _icon_size = std::ceil(theme().text_style(*text_style).scaled_size());
         }
     } else {
         _icon_size = 0.0f;

@@ -31,9 +31,14 @@ public:
     icon &operator=(icon const &) noexcept = default;
     icon &operator=(icon &&) noexcept = default;
 
-    [[nodiscard]] explicit operator bool() const noexcept
+    [[nodiscard]] constexpr bool empty() const noexcept
     {
-        return !std::holds_alternative<std::monostate>(_image);
+        return std::holds_alternative<std::monostate>(_image);
+    }
+
+    [[nodiscard]] constexpr explicit operator bool() const noexcept
+    {
+        return not empty();
     }
 
     [[nodiscard]] friend bool operator==(icon const &lhs, icon const &rhs) noexcept
