@@ -14,17 +14,17 @@ class srgb_abgr8_pack {
     uint32_t v;
 
 public:
-    srgb_abgr8_pack() = default;
-    srgb_abgr8_pack(srgb_abgr8_pack const &rhs) noexcept = default;
-    srgb_abgr8_pack(srgb_abgr8_pack &&rhs) noexcept = default;
-    srgb_abgr8_pack &operator=(srgb_abgr8_pack const &rhs) noexcept = default;
-    srgb_abgr8_pack &operator=(srgb_abgr8_pack &&rhs) noexcept = default;
+    constexpr srgb_abgr8_pack() = default;
+    constexpr srgb_abgr8_pack(srgb_abgr8_pack const &rhs) noexcept = default;
+    constexpr srgb_abgr8_pack(srgb_abgr8_pack &&rhs) noexcept = default;
+    constexpr srgb_abgr8_pack &operator=(srgb_abgr8_pack const &rhs) noexcept = default;
+    constexpr srgb_abgr8_pack &operator=(srgb_abgr8_pack &&rhs) noexcept = default;
 
-    srgb_abgr8_pack(uint32_t const &rhs) noexcept : v(rhs) {}
-    srgb_abgr8_pack &operator=(uint32_t const &rhs) noexcept { v = rhs; return *this; }
-    operator uint32_t () noexcept { return v; }
+    constexpr srgb_abgr8_pack(uint32_t const &rhs) noexcept : v(rhs) {}
+    constexpr srgb_abgr8_pack &operator=(uint32_t const &rhs) noexcept { v = rhs; return *this; }
+    constexpr operator uint32_t () noexcept { return v; }
 
-    srgb_abgr8_pack(sfloat_rgba16 const &rhs) noexcept {
+    constexpr srgb_abgr8_pack(sfloat_rgba16 const &rhs) noexcept {
         ttlet &rhs_v = rhs.get();
 
         ttlet r = sRGB_linear16_to_gamma8(rhs_v[0].get());
@@ -37,7 +37,7 @@ public:
             static_cast<uint32_t>(r);
     }
 
-    srgb_abgr8_pack &operator=(sfloat_rgba16 const &rhs) noexcept {
+    constexpr srgb_abgr8_pack &operator=(sfloat_rgba16 const &rhs) noexcept {
         ttlet &rhs_v = rhs.get();
 
         ttlet r = sRGB_linear16_to_gamma8(rhs_v[0]);
@@ -51,14 +51,14 @@ public:
         return *this;
     }
 
-    [[nodiscard]] friend bool operator==(srgb_abgr8_pack const &lhs, srgb_abgr8_pack const &rhs) noexcept {
+    [[nodiscard]] constexpr friend bool operator==(srgb_abgr8_pack const &lhs, srgb_abgr8_pack const &rhs) noexcept {
         return lhs.v == rhs.v;
     }
-    [[nodiscard]] friend bool operator!=(srgb_abgr8_pack const &lhs, srgb_abgr8_pack const &rhs) noexcept {
+    [[nodiscard]] constexpr friend bool operator!=(srgb_abgr8_pack const &lhs, srgb_abgr8_pack const &rhs) noexcept {
         return !(lhs == rhs);
     }
 
-    [[nodiscard]] friend srgb_abgr8_pack makeTransparent(srgb_abgr8_pack const &rhs) noexcept {
+    [[nodiscard]] constexpr friend srgb_abgr8_pack makeTransparent(srgb_abgr8_pack const &rhs) noexcept {
         return {rhs.v & 0x00ffffff};
     }
 };

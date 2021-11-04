@@ -23,6 +23,7 @@ target_sources(ttauri PRIVATE
     font_weight.hpp
     glyph_id.hpp
     glyph_metrics.hpp
+    glyph_ids.hpp
     grapheme.cpp
     grapheme.hpp
     grapheme_iterator.hpp

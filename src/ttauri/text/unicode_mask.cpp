@@ -8,11 +8,11 @@ namespace tt {
 
 [[nodiscard]] bool unicode_mask::contains(char32_t c) const noexcept
 {
-    auto it = std::upper_bound(std::begin(_entries), std::end(_entries), c, [](char32_t const &c, entry_type const &item) {
+    auto it = std::upper_bound(begin(_entries), end(_entries), c, [](char32_t const &c, entry_type const &item) {
         return c < item.begin();
     });
 
-    if (it != std::begin(_entries)) {
+    if (it != begin(_entries)) {
         return (it - 1)->contains(c);
     } else {
         return false;
@@ -46,10 +46,10 @@ namespace tt {
 
 [[nodiscard]] bool unicode_mask::contains(unicode_mask const &other) const noexcept
 {
-    auto this_it = std::begin(_entries);
-    auto this_end = std::end(_entries);
-    auto other_it = std::begin(other._entries);
-    auto other_end = std::end(other._entries);
+    auto this_it = begin(_entries);
+    auto this_end = end(_entries);
+    auto other_it = begin(other._entries);
+    auto other_end = end(other._entries);
 
     if (other_it == other_end) {
         return true;
@@ -86,7 +86,7 @@ namespace tt {
 
 void unicode_mask::add(char32_t first, char32_t last) noexcept
 {
-    auto it = std::lower_bound(std::begin(_entries), std::end(_entries), first, [](ttlet &item, ttlet &c) {
+    auto it = std::lower_bound(begin(_entries), end(_entries), first, [](ttlet &item, ttlet &c) {
         return item.begin() < c;
     });
 
@@ -123,9 +123,9 @@ void unicode_mask::add(char32_t first, char32_t last) noexcept
 
 void unicode_mask::optimize() noexcept
 {
-    auto it = std::begin(_entries);
+    auto it = begin(_entries);
     auto next_it = it;
-    while (next_it != std::end(_entries)) {
+    while (next_it != end(_entries)) {
         if (it == next_it) {
             ++next_it;
 
@@ -155,13 +155,13 @@ void unicode_mask::optimize() noexcept
         }
     }
 
-    if (it != std::end(_entries) and not it->empty()) {
+    if (it != end(_entries) and not it->empty()) {
         // The current entry was the last element that is still in use.
         ++it;
     }
-    tt_axiom(it == std::end(_entries) or it->empty());
+    tt_axiom(it == end(_entries) or it->empty());
 
-    _entries.erase(it, std::end(_entries));
+    _entries.erase(it, end(_entries));
     tt_axiom(holds_invariant());
 }
 

@@ -41,6 +41,8 @@ public:
 
     observable<label> unknown_label;
 
+    ~selection_widget();
+
     /** Construct a selection widget with a delegate.
      *
      * @param window The window the selection widget will be displayed on.
@@ -74,25 +76,28 @@ public:
     }
 
     /// @privatesection
-    void init() noexcept override;
-    void deinit() noexcept override;
-    [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
-    [[nodiscard]] void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept override;
-    void draw(draw_context context, utc_nanoseconds display_time_point) noexcept override;
+    [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
+    {
+        co_yield _overlay_widget.get();
+        co_yield _current_label_widget.get();
+        co_yield _unknown_label_widget.get();
+    }
+
+    widget_constraints const &set_constraints() noexcept override;
+    void set_layout(widget_layout const &context) noexcept override;
+    void draw(draw_context const &context) noexcept override;
     bool handle_event(mouse_event const &event) noexcept override;
     bool handle_event(command command) noexcept override;
-    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept override;
+    [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
     [[nodiscard]] color focus_color() const noexcept override;
     /// @endprivatesection
 private:
+    delegate_type::callback_ptr_type _delegate_callback;
     weak_or_unique_ptr<delegate_type> _delegate;
 
-    typename delegate_type::callback_ptr_type _delegate_callback;
-    typename decltype(unknown_label)::callback_ptr_type _unknown_label_callback;
-
-    label_widget *_current_label_widget = nullptr;
-    label_widget *_unknown_label_widget = nullptr;
+    std::unique_ptr<label_widget> _current_label_widget;
+    std::unique_ptr<label_widget> _unknown_label_widget;
 
     aarectangle _option_rectangle;
     aarectangle _left_box_rectangle;
@@ -103,7 +108,8 @@ private:
     bool _selecting = false;
     bool _has_options = false;
 
-    overlay_widget *_overlay_widget = nullptr;
+    aarectangle _overlay_rectangle;
+    std::unique_ptr<overlay_widget> _overlay_widget;
     vertical_scroll_widget<> *_scroll_widget = nullptr;
     column_widget *_column_widget = nullptr;
 
@@ -116,9 +122,9 @@ private:
     void start_selecting() noexcept;
     void stop_selecting() noexcept;
     void repopulate_options() noexcept;
-    void draw_outline(draw_context context) noexcept;
-    void draw_left_box(draw_context context) noexcept;
-    void draw_chevrons(draw_context context) noexcept;
+    void draw_outline(draw_context const &context) noexcept;
+    void draw_left_box(draw_context const &context) noexcept;
+    void draw_chevrons(draw_context const &context) noexcept;
 };
 
 } // namespace tt

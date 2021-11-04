@@ -89,9 +89,15 @@ public:
     }
 
     /// @privatesection
-    void init() noexcept override;
-    [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
-    [[nodiscard]] void layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept override;
+    [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
+    {
+        co_yield _icon_widget.get();
+        co_yield _text_widget.get();
+    }
+
+    widget_constraints const &set_constraints() noexcept override;
+    void set_layout(widget_layout const &context) noexcept override;
+    void draw(draw_context const &context) noexcept;
     /// @endprivatesection
 private:
     float _icon_size;
@@ -99,8 +105,10 @@ private:
 
     decltype(label)::callback_ptr_type _label_callback;
 
-    icon_widget *_icon_widget = nullptr;
-    text_widget *_text_widget = nullptr;
+    aarectangle _icon_rectangle;
+    std::unique_ptr<icon_widget> _icon_widget;
+    aarectangle _text_rectangle;
+    std::unique_ptr<text_widget> _text_widget;
 
     label_widget(gui_window &window, widget *parent) noexcept;
 };

@@ -6,67 +6,47 @@
 
 namespace tt {
 
-text_widget::text_widget(gui_window &window, widget *parent) noexcept : super(window, parent) {}
-
-void text_widget::init() noexcept
+text_widget::text_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
 {
-    _text_callback = text.subscribe([this] {
-        _request_constrain = true;
-    });
+    text.subscribe(_reconstrain_callback);
 }
 
-[[nodiscard]] bool text_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+widget_constraints const &text_widget::set_constraints() noexcept
 {
-    tt_axiom(is_gui_thread());
+    _layout = {};
 
-    if (super::constrain(display_time_point, need_reconstrain)) {
-        _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), 0.0f, *alignment};
-        _minimum_size = ceil(_shaped_text.minimum_size());
-        _preferred_size = ceil(_shaped_text.preferred_size());
-        _maximum_size = ceil(_shaped_text.maximum_size());
+    _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), 0.0f, *alignment};
+    ttlet shaped_text_size = ceil(_shaped_text.preferred_size());
+    _constraints = {shaped_text_size, shaped_text_size, shaped_text_size, theme().margin};
 
-        ttlet size_ = theme().size;
-        ttlet margin_ = margin();
+    // Allow text to overhang into the margin of a small widget.
+    if (_constraints.minimum.height() > theme().size and _constraints.minimum.height() <= theme().size + theme().margin) {
+        _constraints.minimum.height() = theme().size;
+    }
+    if (_constraints.preferred.height() > theme().size and _constraints.preferred.height() <= theme().size + theme().margin) {
+        _constraints.preferred.height() = theme().size;
+    }
+    if (_constraints.maximum.height() > theme().size and _constraints.maximum.height() <= theme().size + theme().margin) {
+        _constraints.maximum.height() = theme().size;
+    }
 
-        // Allow text to overhang into the margin of a small widget.
-        if (_minimum_size.height() > size_ && _minimum_size.height() <= size_ + margin_) {
-            _minimum_size.height() = size_;
-        }
-        if (_preferred_size.height() > size_ && _preferred_size.height() <= size_ + margin_) {
-            _preferred_size.height() = size_;
-        }
-        if (_maximum_size.height() > size_ && _maximum_size.height() <= size_ + margin_) {
-            _maximum_size.height() = size_;
-        }
+    tt_axiom(_constraints.holds_invariant());
+    return _constraints;
+}
 
-        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-        return true;
-    } else {
-        return false;
+void text_widget::set_layout(widget_layout const &context) noexcept
+{
+    if (visible and _layout.store(context) >= layout_update::size) {
+        _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), layout().width(), *alignment};
+        _shaped_text_transform = _shaped_text.translate_base_line(point2{0.0f, layout().base_line()});
     }
 }
 
-[[nodiscard]] void text_widget::layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept
+void text_widget::draw(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
-    need_layout |= _request_layout.exchange(false);
-    if (need_layout) {
-        _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), width(), *alignment};
-        _shaped_text_transform = _shaped_text.translate_base_line(point2{0.0f, base_line()});
+    if (visible and overlaps(context, layout())) {
+        context.draw_text(layout(), _shaped_text_transform, label_color(), _shaped_text);
     }
-    super::layout(displayTimePoint, need_layout);
-}
-
-void text_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
-{
-    tt_axiom(is_gui_thread());
-
-    if (overlaps(context, _clipping_rectangle)) {
-        context.draw_text(_shaped_text, label_color(), _shaped_text_transform);
-    }
-
-    super::draw(std::move(context), display_time_point);
 }
 
 } // namespace tt

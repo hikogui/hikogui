@@ -7,6 +7,7 @@
 #include "matrix.hpp"
 #include "identity.hpp"
 #include "translate.hpp"
+#include "extent.hpp"
 
 namespace tt {
 namespace geo {
@@ -23,24 +24,34 @@ public:
 
     [[nodiscard]] constexpr explicit operator f32x4() const noexcept
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
         return _v;
+    }
+
+    [[nodiscard]] constexpr explicit operator extent<2>() const noexcept requires(D == 2)
+    {
+        return extent<2>{_v.xy00()};
+    }
+
+    [[nodiscard]] constexpr explicit operator extent<3>() const noexcept requires(D == 3)
+    {
+        return extent<3>{_v.xyz0()};
     }
 
     [[nodiscard]] constexpr explicit scale(f32x4 const &v) noexcept : _v(v)
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
 
     template<int E>
     requires(E <= D) [[nodiscard]] constexpr explicit scale(vector<E> const &v) noexcept : _v(static_cast<f32x4>(v).xyz1())
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
 
     [[nodiscard]] constexpr operator matrix<D>() const noexcept
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
         return matrix<D>{_v.x000(), _v._0y00(), _v._00z0(), _v._000w()};
     }
 
@@ -87,21 +98,21 @@ public:
     template<int E>
     [[nodiscard]] constexpr vector<E> operator*(vector<E> const &rhs) const noexcept
     {
-        tt_axiom(is_valid() && rhs.is_valid());
+        tt_axiom(holds_invariant() && rhs.holds_invariant());
         return vector<E>{_v * static_cast<f32x4>(rhs)};
     }
 
     template<int E>
     [[nodiscard]] constexpr extent<E> operator*(extent<E> const &rhs) const noexcept
     {
-        tt_axiom(is_valid() && rhs.is_valid());
+        tt_axiom(holds_invariant() && rhs.holds_invariant());
         return extent<E>{_v * static_cast<f32x4>(rhs)};
     }
 
     template<int E>
     [[nodiscard]] constexpr point<E> operator*(point<E> const &rhs) const noexcept
     {
-        tt_axiom(is_valid() && rhs.is_valid());
+        tt_axiom(holds_invariant() && rhs.holds_invariant());
         return point<E>{_v * static_cast<f32x4>(rhs)};
     }
 
@@ -117,34 +128,80 @@ public:
         return rectangle{*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
     }
 
+    [[nodiscard]] constexpr quad operator*(quad const &rhs) const noexcept
+    {
+        return quad{*this * rhs.p0, *this * rhs.p1, *this * rhs.p2, *this * rhs.p3};
+    }
+
+    /** scale the quad.
+     *
+     * Each edge of the quad scaled.
+     *
+     * @param lhs A quad.
+     * @param rhs The width and height to scale each edge with.
+     * @return The new quad extended by the size.
+     */
+    [[nodiscard]] friend constexpr quad scale_from_center(quad const &lhs, scale const &rhs) noexcept requires(D == 2)
+    {
+        ttlet top_extra = (lhs.top() * rhs._v.x() - lhs.top()) * 0.5f;
+        ttlet bottom_extra = (lhs.bottom() * rhs._v.x() - lhs.bottom()) * 0.5f;
+        ttlet left_extra = (lhs.left() * rhs._v.y() - lhs.left()) * 0.5f;
+        ttlet right_extra = (lhs.right() * rhs._v.y() - lhs.right()) * 0.5f;
+
+        return {
+            lhs.p0 - bottom_extra - left_extra,
+            lhs.p1 + bottom_extra - right_extra,
+            lhs.p2 - top_extra + left_extra,
+            lhs.p3 + top_extra + right_extra};
+    }
+
     [[nodiscard]] constexpr scale operator*(identity const &) const noexcept
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
         return *this;
     }
 
     template<int E>
     [[nodiscard]] constexpr auto operator*(scale<E> const &rhs) const noexcept
     {
-        tt_axiom(is_valid() && rhs.is_valid());
+        tt_axiom(holds_invariant() && rhs.holds_invariant());
         return scale<std::max(D, E)>{_v * static_cast<f32x4>(rhs)};
     }
 
     template<int E>
     [[nodiscard]] constexpr bool operator==(scale<E> const &rhs) const noexcept
     {
-        tt_axiom(is_valid() && rhs.is_valid());
+        tt_axiom(holds_invariant() && rhs.holds_invariant());
         return _v == static_cast<f32x4>(rhs);
     }
 
-    [[nodiscard]] constexpr bool is_valid() const noexcept
+    [[nodiscard]] constexpr bool holds_invariant() const noexcept
     {
-        return _v.w() == 1.0f && (D == 3 || _v.z() == 1.0f);
+        if constexpr (D == 3) {
+            return _v.w() == 1.0f;
+        } else {
+            return _v.z() == 1.0f and _v.w() == 1.0f;
+        }
     }
 
 private:
     f32x4 _v;
 };
+
+[[nodiscard]] constexpr scale<2> operator/(extent<2> const &lhs, extent<2> const &rhs) noexcept
+{
+    tt_axiom(rhs._v.x() != 0.0f);
+    tt_axiom(rhs._v.y() != 0.0f);
+    return scale<2>{lhs._v.xy11() / rhs._v.xy11()};
+}
+
+[[nodiscard]] constexpr scale<3> operator/(extent<3> const &lhs, extent<3> const &rhs) noexcept
+{
+    tt_axiom(rhs._v.x() != 0.0f);
+    tt_axiom(rhs._v.y() != 0.0f);
+    tt_axiom(rhs._v.z() != 0.0f);
+    return scale<3>{lhs._v.xyz1() / rhs._v.xyz1()};
+}
 
 template<int D>
 [[nodiscard]] constexpr matrix<D>

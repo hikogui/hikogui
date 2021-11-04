@@ -173,26 +173,26 @@ static datum bookstore = parse_JSON(
 TEST(datum, find)
 {
     auto authors1 = bookstore.find(jsonpath("$.store.book[*].author"));
-    ASSERT_EQ(std::size(authors1), 4);
+    ASSERT_EQ(size(authors1), 4);
     ASSERT_EQ(*(authors1[0]), "Nigel Rees");
     ASSERT_EQ(*(authors1[1]), "Evelyn Waugh");
     ASSERT_EQ(*(authors1[2]), "Herman Melville");
     ASSERT_EQ(*(authors1[3]), "J. R. R. Tolkien");
 
     auto authors2 = bookstore.find(jsonpath("$..author"));
-    ASSERT_EQ(std::size(authors2), 4);
+    ASSERT_EQ(size(authors2), 4);
     ASSERT_EQ(*(authors2[0]), "Nigel Rees");
     ASSERT_EQ(*(authors2[1]), "Evelyn Waugh");
     ASSERT_EQ(*(authors2[2]), "Herman Melville");
     ASSERT_EQ(*(authors2[3]), "J. R. R. Tolkien");
 
     auto things = bookstore.find(jsonpath("$.store.*"));
-    ASSERT_EQ(std::size(things), 2);
-    ASSERT_EQ(std::size(*(things[0])), 2); // attributes of bicycle
-    ASSERT_EQ(std::size(*(things[1])), 4); // list of books
+    ASSERT_EQ(size(things), 2);
+    ASSERT_EQ(size(*(things[0])), 2); // attributes of bicycle
+    ASSERT_EQ(size(*(things[1])), 4); // list of books
 
     auto prices = bookstore.find(jsonpath("$.store..price"));
-    ASSERT_EQ(std::size(prices), 5);
+    ASSERT_EQ(size(prices), 5);
     ASSERT_EQ(*(prices[0]), 19.95); // bicycle first
     ASSERT_EQ(*(prices[1]), 8.95);
     ASSERT_EQ(*(prices[2]), 12.99);
@@ -200,20 +200,20 @@ TEST(datum, find)
     ASSERT_EQ(*(prices[4]), 22.99);
 
     auto book3 = bookstore.find(jsonpath("$..book[2]"));
-    ASSERT_EQ(std::size(book3), 1);
+    ASSERT_EQ(size(book3), 1);
     ASSERT_EQ((*(book3[0]))["title"], "Moby Dick");
 
     auto last_book = bookstore.find(jsonpath("$..book[-1:]"));
-    ASSERT_EQ(std::size(last_book), 1);
+    ASSERT_EQ(size(last_book), 1);
     ASSERT_EQ((*(last_book[0]))["title"], "The Lord of the Rings");
 
     auto first_two_books = bookstore.find(jsonpath("$..book[:2]"));
-    ASSERT_EQ(std::size(first_two_books), 2);
+    ASSERT_EQ(size(first_two_books), 2);
     ASSERT_EQ((*(first_two_books[0]))["title"], "Sayings of the Century");
     ASSERT_EQ((*(first_two_books[1]))["title"], "Sword of Honour");
 
     auto everything_flat = bookstore.find(jsonpath("$..*"));
-    ASSERT_EQ(std::size(everything_flat), 27);
+    ASSERT_EQ(size(everything_flat), 27);
 }
 
 TEST(datum, find_one_or_create1)
@@ -245,11 +245,11 @@ TEST(datum, remove1)
 
     auto removed1 = bookstore_copy.remove(jsonpath("$.store.book[-1]"));
     ASSERT_TRUE(removed1);
-    ASSERT_EQ(std::size(bookstore_copy["store"]["book"]), 3);
+    ASSERT_EQ(size(bookstore_copy["store"]["book"]), 3);
 
     auto removed2 = bookstore_copy.remove(jsonpath("$.store.book[0]"));
     ASSERT_TRUE(removed2);
-    ASSERT_EQ(std::size(bookstore_copy["store"]["book"]), 2);
+    ASSERT_EQ(size(bookstore_copy["store"]["book"]), 2);
     ASSERT_EQ(bookstore_copy["store"]["book"][0]["title"], "Sword of Honour");
 }
 
@@ -275,16 +275,16 @@ TEST(datum, remove2)
 
     auto removed4 = bookstore_copy.remove(jsonpath("$..book[1].title"));
     ASSERT_TRUE(removed4);
-    ASSERT_EQ(std::size(bookstore_copy["store"]["book"]), 4);
+    ASSERT_EQ(size(bookstore_copy["store"]["book"]), 4);
     ASSERT_FALSE(bookstore_copy["store"]["book"][1].contains("title"));
 
     auto removed5 = bookstore_copy.remove(jsonpath("$..book[1].author"));
     ASSERT_TRUE(removed5);
-    ASSERT_EQ(std::size(bookstore_copy["store"]["book"]), 4);
+    ASSERT_EQ(size(bookstore_copy["store"]["book"]), 4);
     ASSERT_FALSE(bookstore_copy["store"]["book"][1].contains("author"));
 
     auto removed6 = bookstore_copy.remove(jsonpath("$..book[1].category"));
     ASSERT_TRUE(removed6);
-    ASSERT_EQ(std::size(bookstore_copy["store"]["book"]), 3);
+    ASSERT_EQ(size(bookstore_copy["store"]["book"]), 3);
     ASSERT_EQ(bookstore_copy["store"]["book"][1]["title"], "Moby Dick");
 }

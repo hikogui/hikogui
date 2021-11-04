@@ -296,7 +296,7 @@ noexcept
     constexpr max_num_channels = 128;
 
     auto r = std::vector<audio_stream_format>{};
-    r.reserve(std::size(speaker_mappings) + (max_num_channels / 2) + 2);
+    r.reserve(size(speaker_mappings) + (max_num_channels / 2) + 2);
 
     for (ttlet &info: speaker_mappings) {
         if (auto f = best_format(sample_rate, info.mapping)) {

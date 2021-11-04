@@ -87,7 +87,7 @@ namespace tt {
     po_translation r;
 
     while (true) {
-        if (std::ssize(r.msgstr) == 0) {
+        if (ssize(r.msgstr) == 0) {
             if (auto result = parseLine(token)) {
                 token = result.next_token;
 
@@ -102,7 +102,7 @@ namespace tt {
                     r.msgid_plural = value;
 
                 } else if (name == "msgstr") {
-                    while (std::ssize(r.msgstr) <= index) {
+                    while (ssize(r.msgstr) <= index) {
                         r.msgstr.push_back({});
                     }
                     r.msgstr[index] = value;
@@ -120,7 +120,7 @@ namespace tt {
                 token = result.next_token;
                 ttlet [name, index, value] = *result;
 
-                while (std::ssize(r.msgstr) <= index) {
+                while (ssize(r.msgstr) <= index) {
                     r.msgstr.push_back({});
                 }
                 r.msgstr[index] = value;
@@ -138,13 +138,13 @@ namespace tt {
 static void parse_po_header(po_translations &r, std::string const &header)
 {
     for (ttlet &line : split(header, '\n')) {
-        if (std::ssize(line) == 0) {
+        if (ssize(line) == 0) {
             // Skip empty header lines.
             continue;
         }
 
         auto split_line = split(line, ':');
-        if (std::ssize(split_line) < 2) {
+        if (ssize(split_line) < 2) {
             throw parse_error("Unknown header '{}'", line);
         }
 
@@ -172,10 +172,10 @@ static void parse_po_header(po_translations &r, std::string const &header)
         if (auto result = parse_po_translation(token)) {
             token = result.next_token;
 
-            if (std::ssize(result.value.msgid) != 0) {
+            if (ssize(result.value.msgid) != 0) {
                 r.translations.push_back(result.value);
 
-            } else if (std::ssize(result.value.msgstr) == 1) {
+            } else if (ssize(result.value.msgstr) == 1) {
                 parse_po_header(r, result.value.msgstr.front());
 
             } else {

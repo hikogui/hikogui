@@ -145,10 +145,10 @@ public:
         auto r = unicode_mask{};
         r._entries.reserve(lhs._entries.size() * 2 + rhs._entries.size() * 2);
 
-        auto lhs_it = std::begin(lhs._entries);
-        auto rhs_it = std::begin(rhs._entries);
-        ttlet lhs_end = std::end(lhs._entries);
-        ttlet rhs_end = std::end(rhs._entries);
+        auto lhs_it = begin(lhs._entries);
+        auto rhs_it = begin(rhs._entries);
+        ttlet lhs_end = end(lhs._entries);
+        ttlet rhs_end = end(rhs._entries);
 
         while (lhs_it != lhs_end or rhs_it != rhs_end) {
             // clang-format off

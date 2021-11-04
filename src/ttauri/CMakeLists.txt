@@ -19,6 +19,7 @@ configure_file(metadata.cpp.in metadata.cpp @ONLY)
 
 target_sources(ttauri PRIVATE
     algorithm.hpp
+    arguments.hpp
     animator.hpp
     assert.hpp
     atomic.hpp
@@ -80,6 +81,7 @@ target_sources(ttauri PRIVATE
     global_state.hpp
     glob.hpp
     hash.hpp
+    hash_map.hpp
     huffman.hpp
     icon.cpp
     icon.hpp
@@ -125,6 +127,7 @@ target_sources(ttauri PRIVATE
     resource_view.hpp
     safe_int.hpp
     semantic_version.hpp
+    scoped_buffer.hpp
     source_location.hpp
     small_map.hpp
     small_vector.hpp

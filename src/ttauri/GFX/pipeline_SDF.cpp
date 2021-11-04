@@ -22,7 +22,6 @@ void pipeline_SDF::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
     pipeline_vulkan::drawInCommandBuffer(commandBuffer);
 
     vulkan_device().flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof (vertex));
-    vulkan_device().SDFPipeline->prepareAtlasForRendering();
 
     std::vector<vk::Buffer> tmpvertexBuffers = { vertexBuffer };
     std::vector<vk::DeviceSize> tmpOffsets = { 0 };
@@ -134,7 +133,7 @@ vector<vk::WriteDescriptorSet> pipeline_SDF::createWriteDescriptorSet() const
 
 ssize_t pipeline_SDF::getDescriptorSetVersion() const
 {
-    return std::ssize(vulkan_device().SDFPipeline->atlasTextures);
+    return ssize(vulkan_device().SDFPipeline->atlasTextures);
 }
 
 std::vector<vk::PushConstantRange> pipeline_SDF::createPushConstantRanges() const

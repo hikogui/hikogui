@@ -80,12 +80,15 @@ public:
     void unsubscribe(callback_ptr_type &callback_ptr) noexcept;
 
     /// @privatesection
-    void init() noexcept override;
-    void deinit() noexcept override;
-    [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
-    [[nodiscard]] void layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept override;
+    [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
+    {
+        co_yield _on_label_widget.get();
+        co_yield _off_label_widget.get();
+        co_yield _other_label_widget.get();
+    }
+
     [[nodiscard]] color background_color() const noexcept override;
-    [[nodiscard]] hitbox hitbox_test(point2 position) const noexcept final;
+    [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept final;
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
     void activate() noexcept;
     [[nodiscard]] bool handle_event(command command) noexcept override;
@@ -93,15 +96,20 @@ public:
     /// @endprivatesection
 protected:
     aarectangle _label_rectangle;
-    label_widget *_on_label_widget = nullptr;
-    label_widget *_off_label_widget = nullptr;
-    label_widget *_other_label_widget = nullptr;
+    std::unique_ptr<label_widget> _on_label_widget;
+    std::unique_ptr<label_widget> _off_label_widget;
+    std::unique_ptr<label_widget> _other_label_widget;
 
     bool _pressed = false;
     notifier<void()> _notifier;
     weak_or_unique_ptr<delegate_type> _delegate;
 
+    ~abstract_button_widget();
     abstract_button_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
+
+    widget_constraints set_constraints_button() const noexcept;
+    void set_layout_button(widget_layout const &context) noexcept;
+    void draw_button(draw_context const &context) noexcept;
 };
 
 } // namespace tt

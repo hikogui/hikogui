@@ -7,10 +7,7 @@
 
 namespace tt {
 
-icon::icon(pixel_map<sfloat_rgba16> &&image) noexcept : _image(std::move(image))
-{
-    std::get<pixel_map<sfloat_rgba16>>(_image).update_hash();
-}
+icon::icon(pixel_map<sfloat_rgba16> &&image) noexcept : _image(std::move(image)) {}
 
 icon::icon(font_glyph_ids const &image) noexcept : _image(image) {}
 

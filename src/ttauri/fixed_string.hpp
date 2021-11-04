@@ -72,6 +72,11 @@ struct basic_fixed_string {
         return N - 1;
     }
 
+    [[nodiscard]] constexpr friend size_t size(basic_fixed_string const &rhs) noexcept
+    {
+        return rhs.size();
+    }
+
     [[nodiscard]] constexpr CharT const *data() const noexcept
     {
         return &_str[0];

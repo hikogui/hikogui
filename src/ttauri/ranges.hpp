@@ -30,8 +30,8 @@ template<
         std::ranges::subrange<std::ranges::iterator_t<Haystack>, std::ranges::iterator_t<Haystack>>>>
 [[nodiscard]] generator<SubHaystack> split(Haystack &haystack, Needle needle) noexcept
 {
-    auto it = std::begin(haystack);
-    auto last = std::end(haystack);
+    auto it = begin(haystack);
+    auto last = end(haystack);
 
     auto needle_first = std::ranges::begin(needle);
     auto needle_last = std::ranges::end(needle);
@@ -117,8 +117,8 @@ template<typename View>
 [[nodiscard]] std::vector<typename View::value_type> make_vector(View const &view)
 {
     auto r = std::vector<View::value_type>{};
-    auto first = std::begin(view);
-    auto last = std::end(view);
+    auto first = begin(view);
+    auto last = end(view);
     r.reserve(std::distance(first, last));
     std::copy(first, last, std::back_inserter(r));
     return r;
@@ -127,14 +127,27 @@ template<typename View>
 /** Make a vector from a view.
  * This function will make a vector with a by moving the elements of a view.
  */
-template<typename View>
-[[nodiscard]] std::vector<typename View::value_type> make_vector(View &&view)
+template<std::ranges::sized_range View>
+[[nodiscard]] std::vector<typename View::value_type> make_vector(View &&view) noexcept
 {
     auto r = std::vector<View::value_type>{};
-    auto first = std::begin(view);
-    auto last = std::end(view);
+    auto first = begin(view);
+    auto last = end(view);
     r.reserve(std::distance(first, last));
-    std::move(first, last, std::back_inserter(r));
+    std::ranges::copy(first, last, std::back_inserter(r));
+    return r;
+}
+
+/** Make a vector from a view.
+ * This function will make a vector with a by moving the elements of a view.
+ */
+template<typename View>
+[[nodiscard]] std::vector<typename View::value_type> make_vector(View &&view) noexcept
+{
+    auto r = std::vector<View::value_type>{};
+    auto first = begin(view);
+    auto last = end(view);
+    std::ranges::copy(first, last, std::back_inserter(r));
     return r;
 }
 

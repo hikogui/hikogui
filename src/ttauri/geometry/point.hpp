@@ -6,6 +6,7 @@
 
 #include "../rapid/numeric_array.hpp"
 #include "vector.hpp"
+#include "extent.hpp"
 #include <format>
 
 namespace tt {
@@ -33,7 +34,7 @@ public:
     template<int E>
     requires(E < D) [[nodiscard]] constexpr point(point<E> const &other) noexcept : _v(static_cast<f32x4>(other))
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
 
     /** Construct a point from a higher dimension point.
@@ -45,14 +46,14 @@ public:
         for (size_t i = D; i != E; ++i) {
             _v[i] = 0.0f;
         }
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
 
     /** Convert a point to its f32x4-nummeric_array.
      */
     [[nodiscard]] constexpr explicit operator f32x4() const noexcept
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
         return _v;
     }
 
@@ -60,7 +61,7 @@ public:
      */
     [[nodiscard]] constexpr explicit point(f32x4 const &other) noexcept : _v(other)
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
 
     /** Construct a point at the origin of the coordinate system.
@@ -131,7 +132,7 @@ public:
     template<int E>
     requires(E <= D) constexpr point &operator+=(vector<E> const &rhs) noexcept
     {
-        tt_axiom(is_valid() && rhs.is_valid());
+        tt_axiom(holds_invariant() && rhs.holds_invariant());
         _v = _v + static_cast<f32x4>(rhs);
         return *this;
     }
@@ -144,7 +145,7 @@ public:
     template<int E>
     [[nodiscard]] constexpr friend point<std::max(D, E)> operator+(point const &lhs, vector<E> const &rhs) noexcept
     {
-        tt_axiom(lhs.is_valid() && rhs.is_valid());
+        tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return point<std::max(D, E)>{lhs._v + static_cast<f32x4>(rhs)};
     }
 
@@ -156,7 +157,7 @@ public:
     template<int E>
     [[nodiscard]] constexpr friend point<std::max(D, E)> operator+(vector<E> const &rhs, point const &lhs) noexcept
     {
-        tt_axiom(lhs.is_valid() && rhs.is_valid());
+        tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return point<std::max(D, E)>{lhs._v + static_cast<f32x4>(rhs)};
     }
 
@@ -168,7 +169,7 @@ public:
     template<int E>
     [[nodiscard]] constexpr friend point<std::max(D, E)> operator-(point const &lhs, vector<E> const &rhs) noexcept
     {
-        tt_axiom(lhs.is_valid() && rhs.is_valid());
+        tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return point<std::max(D, E)>{lhs._v - static_cast<f32x4>(rhs)};
     }
 
@@ -179,7 +180,7 @@ public:
      */
     [[nodiscard]] constexpr friend vector<D> operator-(point const &lhs, point const &rhs) noexcept
     {
-        tt_axiom(lhs.is_valid() && rhs.is_valid());
+        tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return vector<D>{lhs._v - rhs._v};
     }
 
@@ -190,7 +191,7 @@ public:
      */
     [[nodiscard]] constexpr friend bool operator==(point const &lhs, point const &rhs) noexcept
     {
-        tt_axiom(lhs.is_valid() && rhs.is_valid());
+        tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return lhs._v == rhs._v;
     }
 
@@ -249,10 +250,27 @@ public:
         return point{floor(static_cast<f32x4>(rhs))};
     }
 
+    /** Round the coordinates of a point toward the top-right with the given granularity.
+     */
+    [[nodiscard]] friend constexpr point ceil(point const &lhs, extent2 rhs) noexcept
+    {
+        ttlet rhs_ = f32x4{rhs}.xy11();
+        return point{ceil(f32x4{lhs} / rhs_) * rhs_};
+    }
+
+    /** Round the coordinates of a point toward the left-bottom with the given granularity.
+     */
+    [[nodiscard]] friend constexpr point floor(point const &lhs, extent2 rhs) noexcept
+    {
+        ttlet rhs_ = f32x4{rhs}.xy11();
+        return point{floor(f32x4{lhs} / rhs_) * rhs_};
+    }
+
+
     /** Check if the point is valid.
      * This function will check if w is not zero, and with a 2D point is z is zero.
      */
-    [[nodiscard]] constexpr bool is_valid() const noexcept
+    [[nodiscard]] constexpr bool holds_invariant() const noexcept
     {
         return _v.w() != 0.0f && (D == 3 || _v.z() == 0.0f);
     }

@@ -199,7 +199,7 @@ public:
      * @param args The arguments for the constructor of `value_type`.
      */
     template<typename... Args>
-    [[nodiscard]] void emplace_back(Args &&... args) noexcept
+    void emplace_back(Args &&... args) noexcept
     {
         tt_axiom(!full());
         new (end()) value_type(std::forward<Args>(args)...);
@@ -211,7 +211,7 @@ public:
      * @param arg The object to be pushed on the stack.
      */
     template<typename Arg> requires (std::is_convertible_v<Arg,value_type>)
-    [[nodiscard]] void push_back(Arg &&arg) noexcept
+    void push_back(Arg &&arg) noexcept
     {
         emplace_back(std::forward<Arg>(arg));
     }

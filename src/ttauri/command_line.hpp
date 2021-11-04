@@ -95,8 +95,8 @@ generator<cmdln_option> command_line_parser(It first, It last, std::string_view 
             // List of short-options.
             // Short options are processed as UTF-32 units.
             ttlet token = to_u32string(*it);
-            ttlet first_c = std::next(std::begin(token));
-            ttlet last_c = std::end(token);
+            ttlet first_c = std::next(begin(token));
+            ttlet last_c = end(token);
             negative = it.front() == '+';
 
             for (auto jt = first_c; jt != last_c; ++jt) {
@@ -163,8 +163,8 @@ public:
      *     });
      */
     constexpr command_line_option(std::string_view option_help) {
-        auto it = std::begin(option_help);
-        ttlet last = std::end(option_help);
+        auto it = begin(option_help);
+        ttlet last = end(option_help);
 
 
 

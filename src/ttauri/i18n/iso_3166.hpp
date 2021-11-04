@@ -25,10 +25,10 @@ public:
 
     constexpr iso_3166(std::string_view str) noexcept
     {
-        if (std::size(str) == 0) {
+        if (size(str) == 0) {
             _v0 = 0;
             _v1 = 0;
-        } else if (std::size(str) == 2) {
+        } else if (size(str) == 2) {
             _v0 = to_upper(str[0]);
             _v1 = to_upper(str[1]);
         } else {

@@ -5,7 +5,6 @@
 #pragma once
 
 #include "../GUI/theme.hpp"
-#include "../GFX/draw_context.hpp"
 #include "../GUI/hitbox.hpp"
 #include "../GUI/keyboard_focus_direction.hpp"
 #include "../GUI/keyboard_focus_group.hpp"
@@ -15,9 +14,14 @@
 #include "../observable.hpp"
 #include "../command.hpp"
 #include "../chrono.hpp"
+#include "../coroutine.hpp"
+#include "draw_context.hpp"
+#include "widget_constraints.hpp"
+#include "widget_layout.hpp"
 #include <memory>
 #include <vector>
 #include <string>
+#include <ranges>
 
 namespace tt {
 class gui_window;
@@ -27,11 +31,10 @@ class font_book;
 
 /** An interactive graphical object as part of the user-interface.
  *
- * Rendering is done in four distinct phases:
- *  1. Updating Constraints: `widget::constrain()`
- *  2. Update layout parameters `widget::set_layout_parameters()`
- *  3. Updating Layout: `widget::layout()`
- *  4. Drawing: `widget::draw()`
+ * Rendering is done in three distinct phases:
+ *  1. Updating Constraints: `widget::set_constraints()`
+ *  2. Updating Layout: `widget::set_layout()`
+ *  3. Drawing: `widget::draw()`
  *
  */
 class widget {
@@ -59,19 +62,13 @@ public:
      */
     observable<bool> visible = true;
 
-    /** The draw layer of the widget.
-     * Drawing layers start at 0.0 and go up to 100.0.
-     *
-     * Each child widget that has drawing to do increases the layer by 1.0.
-     *
-     * The widget should draw within 0.0 and 1.0 of its drawing layer.
-     * The toWindowTransfer and the DrawingContext will already include
-     * the draw_layer.
-     *
-     * An overlay widget such as pop-ups will increase the layer by 25.0,
-     * to make sure the overlay will draw above other widgets in the window.     *
+    /** Mouse cursor is hovering over the widget.
      */
-    float draw_layer;
+    bool hover = false;
+
+    /** The widget has keyboard focus.
+     */
+    bool focus = false;
 
     /** The draw layer of the widget.
      * The semantic layer is used mostly by the `draw()` function
@@ -108,14 +105,6 @@ public:
     widget(widget &&) = delete;
     widget &operator=(widget &&) = delete;
 
-    /** Should be called right after allocating and constructing a widget.
-     */
-    virtual void init() noexcept;
-
-    /** Should be called right after allocating and constructing a widget.
-     */
-    virtual void deinit() noexcept;
-
     [[nodiscard]] bool is_gui_thread() const noexcept;
 
     /** Get the theme.
@@ -130,89 +119,6 @@ public:
      */
     tt::font_book &font_book() const noexcept;
 
-    /** Get the margin around the Widget.
-     * A container widget should layout the children in such
-     * a way that the maximum margin of neighboring widgets is maintained.
-     *
-     * @pre `mutex` must be locked by current thread.
-     * @return The margin for this widget.
-     */
-    [[nodiscard]] virtual float margin() const noexcept;
-
-    /** Minimum size.
-     * The absolute minimum size of the widget.
-     * A container will never reserve less space for the widget.
-     * For windows this size becomes a hard limit for the minimum window size.
-     */
-    [[nodiscard]] extent2 minimum_size() const noexcept;
-
-    /** Preferred size.
-     * The preferred size of a widget.
-     * Containers will initialize their layout algorithm at this size
-     * before growing or shrinking.
-     * For scroll-views this size will be used in the scroll-direction.
-     * For tab-views this is propagated.
-     * For windows this size is used to set the initial window size.
-     */
-    [[nodiscard]] extent2 preferred_size() const noexcept;
-
-    /** Maximum size.
-     * The maximum size of a widget.
-     * Containers will try to not grow a widget beyond the maximum size,
-     * but it may do so to satisfy the minimum constraint on a neighboring widget.
-     * For windows the maximum size becomes a hard limit for the window size.
-     */
-    [[nodiscard]] extent2 maximum_size() const noexcept;
-
-    /** Set the location and size of the widget inside the window.
-     *
-     * The parent should call this `set_layout_paramters()` before this `updateLayout()`.
-     *
-     * If the parent's layout did not change, it does not need to call this `set_layout_parameters()`.
-     * This way the parent does not need to keep a cache, recalculate or query the client for these
-     * layout parameters for each frame.
-     *
-     * @pre `mutex` must be locked by current thread.
-     */
-    void set_layout_parameters(
-        geo::transformer auto const &local_to_parent,
-        extent2 size,
-        aarectangle const &clipping_rectangle) noexcept;
-
-    void set_layout_parameters_from_parent(
-        aarectangle child_rectangle,
-        aarectangle parent_clipping_rectangle,
-        float draw_layer_delta) noexcept;
-
-    void set_layout_parameters_from_parent(aarectangle child_rectangle) noexcept;
-
-    [[nodiscard]] matrix3 parent_to_local() const noexcept;
-
-    [[nodiscard]] matrix3 local_to_parent() const noexcept;
-
-    [[nodiscard]] matrix3 window_to_local() const noexcept;
-
-    [[nodiscard]] matrix3 local_to_window() const noexcept;
-
-    [[nodiscard]] extent2 size() const noexcept;
-
-    [[nodiscard]] float width() const noexcept;
-
-    [[nodiscard]] float height() const noexcept;
-
-    /** Get the rectangle in local coordinates.
-     *
-     * @pre `mutex` must be locked by current thread.
-     */
-    [[nodiscard]] aarectangle rectangle() const noexcept;
-
-    /** Return the base-line where the text should be located.
-     * @return Number of pixels from the bottom of the widget where the base-line is located.
-     */
-    [[nodiscard]] virtual float base_line() const noexcept;
-
-    [[nodiscard]] aarectangle clipping_rectangle() const noexcept;
-
     /** Find the widget that is under the mouse cursor.
      * This function will recursively test with visual child widgets, when
      * widgets overlap on the screen the hitbox object with the highest elevation is returned.
@@ -220,11 +126,10 @@ public:
      * @param position The coordinate of the mouse local to the widget.
      * @return A hit_box object with the cursor-type and a reference to the widget.
      */
-    [[nodiscard]] virtual hitbox hitbox_test(point2 position) const noexcept;
+    [[nodiscard]] virtual hitbox hitbox_test(point3 position) const noexcept;
 
     /** Check if the widget will accept keyboard focus.
      *
-     * @pre `mutex` must be locked by current thread.
      */
     [[nodiscard]] virtual bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept
     {
@@ -233,56 +138,47 @@ public:
     }
 
     /** Update the constraints of the widget.
-     * This function is called on each vertical sync, even if no drawing is to be done.
      *
-     * This function may be used for expensive calculations, such as text-shaping, which
-     * should only be done when the data changes. Because this function is called on every
-     * vertical sync it should cache these calculations.
-     *
-     * Subclasses should call `constrain()` on its base-class to check if its or any of
-     * its children's constraints where changed, before doing specific constraining
-     *
+     * Typically the implementation of this function starts with recursively calling set_constraints()
+     * on its children.
+     * 
+     * 
      * If the container, due to a change in constraints, wants the window to resize to the minimum size
      * it should set `window::request_resize` to `true`.
      *
      * @post This function will change what is returned by `widget::minimum_size()`, `widget::preferred_size()`
      *       and `widget::maximum_size()`.
-     * @param display_time_point The time point when the widget will be shown on the screen.
-     * @param need_reconstrain Force the widget to re-constrain.
-     * @return True if its or any children's constraints has changed.
      */
-    [[nodiscard]] virtual bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept;
+    virtual widget_constraints const &set_constraints() noexcept = 0;
+
+    widget_constraints const &constraints() const noexcept
+    {
+        return _constraints;
+    }
 
     /** Update the internal layout of the widget.
-     * This function is called on each vertical sync, even if no drawing is to be done.
+     * This function is called when the size of this widget must change, or if any of the
+     * widget request a re-layout.
      *
      * This function may be used for expensive calculations, such as geometry calculations,
-     * which should only be done when the data or sizes change. Because this function is called
-     * on every vertical sync it should cache these calculations.
+     * which should only be done when the data or sizes change; it should cache these calculations.
      *
-     * Subclasses should call `widget::set_layout_parameters()` to position and size each child
-     * relative to this widget. At the end of the function the subclass should call `layout()`
-     * on its base-class to recursively update the layout of the children.
-     *
-     * @pre `widget::set_layout_parameters()` should be called.
      * @post This function will change what is returned by `widget::size()` and the transformation
      *       matrices.
-     * @param display_time_point The time point when the widget will be shown on the screen.
-     * @param need_layout Force the widget to layout
+     * @param context The layout context for this child.
+     * @return The new size of the widget, should be a copy of the new_size parameter.
      */
-    [[nodiscard]] virtual void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept;
+    virtual void set_layout(widget_layout const &context) noexcept = 0;
 
-    virtual [[nodiscard]] color background_color() const noexcept;
-
-    virtual [[nodiscard]] color foreground_color() const noexcept;
-
-    virtual [[nodiscard]] color focus_color() const noexcept;
-
-    virtual [[nodiscard]] color accent_color() const noexcept;
-
-    virtual [[nodiscard]] color label_color() const noexcept;
+    /** Get the current layout for this widget.
+     */
+    widget_layout const &layout() const noexcept
+    {
+        return _layout;
+    }
 
     /** Draw the widget.
+     *
      * This function is called by the window (optionally) on every frame.
      * It should recursively call this function on every visible child.
      * This function is only called when `updateLayout()` has returned true.
@@ -293,12 +189,12 @@ public:
      * for alpha-compositing. However the pipelines are always drawn in the same
      * order.
      *
-     * @pre `mutex` must be locked by current thread.
      * @param context The context to where the widget will draw.
-     * @param display_time_point The time point when the widget will be shown on the screen.
      */
-    virtual void draw(draw_context context, utc_nanoseconds display_time_point) noexcept;
+    virtual void draw(draw_context const &context) noexcept = 0;
 
+    /** Request the widget to be redrawn on the next frame.
+     */
     virtual void request_redraw() const noexcept;
 
     /** Handle command.
@@ -374,92 +270,44 @@ public:
     /** Scroll to show the given rectangle on the window.
      * This will call parents, until all parents have scrolled
      * the rectangle to be shown on the window.
+     *
+     * @param rectangle The rectangle in window coordinates.
      */
-    virtual void scroll_to_show(tt::rectangle rectangle) noexcept;
+    virtual void scroll_to_show(tt::aarectangle rectangle) noexcept;
+
+    /** Scroll to show the current widget.
+     */
+    void scroll_to_show() noexcept
+    {
+        scroll_to_show(layout().redraw_rectangle);
+    }
 
     /** Get a list of parents of a given widget.
      * The chain includes the given widget.
      */
     [[nodiscard]] std::vector<widget const *> parent_chain() const noexcept;
 
-    /** Remove and deallocate all child widgets.
-     */
-    void clear() noexcept;
+    virtual [[nodiscard]] color background_color() const noexcept;
 
-    /** Add a widget directly to this widget.
-     * Thread safety: locks.
-     */
-    widget &add_widget(std::unique_ptr<widget> widget) noexcept;
+    virtual [[nodiscard]] color foreground_color() const noexcept;
+
+    virtual [[nodiscard]] color focus_color() const noexcept;
+
+    virtual [[nodiscard]] color accent_color() const noexcept;
+
+    virtual [[nodiscard]] color label_color() const noexcept;
 
 protected:
-    /** A list of child widgets.
-     */
-    std::vector<std::unique_ptr<widget>> _children;
-
-    /** Mouse cursor is hovering over the widget.
-     */
-    bool _hover = false;
-
-    /** The widget has keyboard focus.
-     */
-    bool _focus = false;
-
-    /** Conversion of coordinates relative to the window to relative to this widget.
-     */
-    matrix3 _window_to_local;
-
-    /** Conversion of coordinates relative to this widget to relative to the window.
-     */
-    matrix3 _local_to_window;
-
-    /** Conversion of coordinates relative to the parent widget to relative to this widget.
-     */
-    matrix3 _parent_to_local;
-
-    /** Conversion of coordinates relative to this widget to relative to the parent widget.
-     */
-    matrix3 _local_to_parent;
-
-    /** Size of the widget.
-     */
-    extent2 _size;
-
-    /** Clipping rectangle of the widget in local coordinates.
-     */
-    aarectangle _clipping_rectangle;
-
-    /** The rectangle of the widget intersecting with the clipping_rectangle.
-     * This visible rectangle is used in the `hitbox_test()` so that mouse events
-     * will only match when that part of the widget is actual visible and not hidden
-     * behind the border of a for example a scroll view.
-     */
-    aarectangle _visible_rectangle;
-
-    /** When set to true the widget will recalculate the constraints on the next call to `updateConstraints()`
-     */
-    std::atomic<bool> _request_constrain = true;
-
-    /** When set to true the widget will recalculate the layout on the next call to `updateLayout()`
-     */
-    std::atomic<bool> _request_layout = true;
-
-    extent2 _minimum_size;
-    extent2 _preferred_size;
-    extent2 _maximum_size;
+    widget_constraints _constraints;
+    widget_layout _layout;
 
     std::shared_ptr<std::function<void()>> _redraw_callback;
     std::shared_ptr<std::function<void()>> _relayout_callback;
     std::shared_ptr<std::function<void()>> _reconstrain_callback;
 
-    /** Add a widget directly to this widget.
-     */
-    template<typename T, typename... Args>
-    T &make_widget(Args &&...args)
+    [[nodiscard]] virtual pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept
     {
-        tt_axiom(is_gui_thread());
-        auto tmp = std::make_unique<T>(window, this, std::forward<Args>(args)...);
-        tmp->init();
-        return static_cast<T &>(add_widget(std::move(tmp)));
+        co_return;
     }
 
     /** Make an overlay rectangle.

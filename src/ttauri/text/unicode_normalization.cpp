@@ -66,7 +66,7 @@ static void unicode_decompose(char32_t code_point, bool compatible, bool ligatur
             unicode_decompose(static_cast<char32_t>(description.decomposition_index()), compatible, ligature, paragraph, r);
 
         } else if (description.composition_canonical() && description.decomposition_length() == 2) {
-            tt_axiom(description.decomposition_index() < std::size(detail::unicode_db_composition_table));
+            tt_axiom(description.decomposition_index() < size(detail::unicode_db_composition_table));
             ttlet &composition = detail::unicode_db_composition_table[description.decomposition_index()];
 
             unicode_decompose(composition.first(), compatible, ligature, paragraph, r);
@@ -75,9 +75,9 @@ static void unicode_decompose(char32_t code_point, bool compatible, bool ligatur
         } else {
             tt_axiom(
                 description.decomposition_index() + description.decomposition_length() <=
-                std::size(detail::unicode_db_decomposition_table));
+                size(detail::unicode_db_decomposition_table));
 
-            auto it = std::begin(detail::unicode_db_decomposition_table) + description.decomposition_index();
+            auto it = begin(detail::unicode_db_decomposition_table) + description.decomposition_index();
 
             for (size_t i = 0; i != description.decomposition_length(); ++i) {
                 unicode_decompose(*(it++), compatible, ligature, paragraph, r);

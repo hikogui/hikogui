@@ -57,29 +57,44 @@ public:
     Widget &make_widget(Args &&...args)
     {
         auto widget = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
-        widget->init();
         return static_cast<Widget &>(add_widget(Alignment, std::move(widget)));
     }
 
     /// @privatesection
-    [[nodiscard]] float margin() const noexcept override;
-    [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept;
-    void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept override;
-    void draw(draw_context context, utc_nanoseconds display_time_point) noexcept override;
-    hitbox hitbox_test(point2 position) const noexcept override;
+    [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
+    {
+        for (ttlet &child : _left_children) {
+            co_yield child.get();
+        }
+        for (ttlet &child : std::ranges::reverse_view(_right_children)) {
+            co_yield child.get();
+        }
+    }
+
+    widget_constraints const &set_constraints() noexcept;
+    void set_layout(widget_layout const &context) noexcept override;
+    void draw(draw_context const &context) noexcept override;
+    hitbox hitbox_test(point3 position) const noexcept override;
+    [[nodiscard]] color focus_color() const noexcept override;
     /// @endprivatesection
 private:
-    std::vector<widget *> _left_children;
-    std::vector<widget *> _right_children;
-    flow_layout _layout;
+    std::vector<std::unique_ptr<widget>> _left_children;
+    std::vector<std::unique_ptr<widget>> _right_children;
+    flow_layout _flow_layout;
 
-    void update_constraints_for_child(widget const &child, ssize_t index, float &shared_height) noexcept;
+    void update_constraints_for_child(widget &child, ssize_t index, float &shared_height) noexcept;
 
-    void update_layout_for_child(widget &child, ssize_t index) const noexcept;
+    void update_layout_for_child(widget &child, ssize_t index, widget_layout const &context) const noexcept;
 
     /** Add a widget directly to this widget.
      */
     widget &add_widget(horizontal_alignment alignment, std::unique_ptr<widget> widget) noexcept;
+
+    /** Check if a child tab-button has focus.
+     *
+     * @return If true the toolbar should draw a focus bar.
+     */
+    bool tab_button_has_focus() const noexcept;
 };
 
 } // namespace tt

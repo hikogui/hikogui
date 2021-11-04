@@ -34,7 +34,7 @@ public:
     [[nodiscard]] std::vector<audio_device *> devices() noexcept override
     {
         auto r = std::vector<audio_device *>{};
-        r.reserve(std::size(_devices));
+        r.reserve(size(_devices));
         for (ttlet &device : _devices) {
             r.push_back(device.get());
         }

@@ -69,9 +69,9 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override;
-    [[nodiscard]] void layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept override;
-    void draw(draw_context context, utc_nanoseconds display_time_point) noexcept override;
+    widget_constraints const &set_constraints() noexcept override;
+    void set_layout(widget_layout const &context) noexcept override;
+    void draw(draw_context const &context) noexcept override;
     /// @endprivatesection
 private:
     extent2 _button_size;
@@ -84,7 +84,7 @@ private:
     checkbox_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
 
     void draw_check_box(draw_context const &context) noexcept;
-    void draw_check_mark(draw_context context) noexcept;
+    void draw_check_mark(draw_context const &context) noexcept;
 };
 
 } // namespace tt

@@ -38,36 +38,38 @@ void device_shared::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
 void device_shared::place_vertices(
     vspan<vertex> &vertices,
     aarectangle clipping_rectangle,
-    rectangle box,
-    color fill_color,
-    color line_color,
+    quad box,
+    quad_color fill_colors,
+    quad_color line_colors,
     float line_width,
     tt::corner_shapes corner_shapes
 )
 {
+    // Include the half line_width, so that the border is drawn centered
+    // around the box outline. Then add 1 pixel for anti-aliasing.
+    // The shader will compensate for the pixel and half the border.
     ttlet extra_space = (line_width * 0.5f) + 1.0f;
-    ttlet outer_box = expand(box, extra_space);
+    ttlet [box_, lengths] = expand_and_edge_hypots(box, extent2{extra_space, extra_space});
 
-    ttlet v0 = get<0>(outer_box);
-    ttlet v1 = get<1>(outer_box);
-    ttlet v2 = get<2>(outer_box);
-    ttlet v3 = get<3>(outer_box);
-
-    ttlet outer_extent = outer_box.extent();
-
-    // x = Number of pixels to the right from the left edge of the quad.
+    // t0-t3 are used inside the shader to determine how far from the corner
+    // a certain fragment is.
+    //
+    // x = Number of pixels from the right edge.
     // y = Number of pixels above the bottom edge.
-    // z = Number of pixels to the left from the right edge of the quad.
+    // z = Number of pixels from the left edge.
     // w = Number of pixels below the top edge.
-    ttlet t0 = static_cast<f32x4>(outer_extent)._00xy();
-    ttlet t1 = static_cast<f32x4>(outer_extent).x00y();
-    ttlet t2 = static_cast<f32x4>(outer_extent)._0yx0();
-    ttlet t3 = static_cast<f32x4>(outer_extent).xy00();
+    ttlet t0 = sfloat_rgba32{lengths._00xy()};
+    ttlet t1 = sfloat_rgba32{lengths.x00w()};
+    ttlet t2 = sfloat_rgba32{lengths._0yz0()};
+    ttlet t3 = sfloat_rgba32{lengths.zw00()};
 
-    vertices.emplace_back(clipping_rectangle, v0, t0, fill_color, line_color, line_width, corner_shapes);
-    vertices.emplace_back(clipping_rectangle, v1, t1, fill_color, line_color, line_width, corner_shapes);
-    vertices.emplace_back(clipping_rectangle, v2, t2, fill_color, line_color, line_width, corner_shapes);
-    vertices.emplace_back(clipping_rectangle, v3, t3, fill_color, line_color, line_width, corner_shapes);
+    ttlet clipping_rectangle_ = sfloat_rgba32{clipping_rectangle};
+    ttlet corner_shapes_ = uint_abgr8_pack{corner_shapes};
+
+    vertices.emplace_back(box_.p0, clipping_rectangle_, t0, fill_colors.p0, line_colors.p0, corner_shapes_, line_width);
+    vertices.emplace_back(box_.p1, clipping_rectangle_, t1, fill_colors.p1, line_colors.p1, corner_shapes_, line_width);
+    vertices.emplace_back(box_.p2, clipping_rectangle_, t2, fill_colors.p2, line_colors.p2, corner_shapes_, line_width);
+    vertices.emplace_back(box_.p3, clipping_rectangle_, t3, fill_colors.p3, line_colors.p3, corner_shapes_, line_width);
 }
 
 void device_shared::buildShaders()

@@ -68,11 +68,9 @@ public:
         return items.size();
     }
 
-    void update(ssize_t index, float minimum_size, float preferred_size, float maximum_size, float margin) noexcept
+    void update(size_t index, float minimum_size, float preferred_size, float maximum_size, float margin) noexcept
     {
-        tt_axiom(index >= 0);
-        tt_axiom(index < std::ssize(items));
-        tt_axiom(index + 1 < std::ssize(margins));
+        reserve(index + 1);
 
         items[index].update(minimum_size, preferred_size, maximum_size);
 
@@ -129,7 +127,7 @@ public:
 
             auto resize_beyond_maximum = num == 0;
             if (resize_beyond_maximum) {
-                num = narrow_cast<int>(std::size(items));
+                num = narrow_cast<int>(items.size());
             }
 
             resize_items(num, grow_by, resize_beyond_maximum);
@@ -140,7 +138,7 @@ public:
 
     [[nodiscard]] std::pair<float, float> get_offset_and_size(size_t index) const noexcept
     {
-        tt_axiom(index < std::size(items));
+        tt_axiom(index < items.size());
         auto offset = narrow_cast<float>(items[index].offset);
         auto size = narrow_cast<float>(items[index].size);
         return {offset, size};
@@ -150,11 +148,11 @@ public:
      */
     void reserve(ssize_t new_size) noexcept
     {
-        while (std::ssize(items) < new_size) {
+        while (ssize(items) < new_size) {
             items.emplace_back();
         }
 
-        while (std::ssize(margins) < new_size + 1) {
+        while (ssize(margins) < new_size + 1) {
             margins.push_back(0);
         }
 
@@ -193,7 +191,7 @@ private:
         }
     }
 
-    [[nodiscard]] void resize_items(int nr_items, int grow_by, bool resize_beyond_maximum) noexcept
+    void resize_items(int nr_items, int grow_by, bool resize_beyond_maximum) noexcept
     {
         tt_axiom(grow_by != 0);
         tt_axiom(nr_items > 0);
@@ -229,7 +227,7 @@ private:
     void calculate_offset_and_size() noexcept
     {
         auto offset = 0;
-        for (ssize_t i = 0; i != std::ssize(items); ++i) {
+        for (ssize_t i = 0; i != ssize(items); ++i) {
             offset += margins[i];
             items[i].offset = offset;
             offset += items[i].size;

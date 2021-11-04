@@ -8,10 +8,7 @@
 
 namespace tt {
 
-grid_widget::grid_widget(
-    gui_window &window,
-    widget *parent,
-    std::weak_ptr<delegate_type> delegate) noexcept :
+grid_widget::grid_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
     widget(window, parent), _delegate(std::move(delegate))
 {
     tt_axiom(is_gui_thread());
@@ -19,70 +16,16 @@ grid_widget::grid_widget(
     if (parent) {
         semantic_layer = parent->semantic_layer;
     }
-}
-
-void grid_widget::init() noexcept
-{
-    if (auto delegate = _delegate.lock()) {
-        delegate->init(*this);
+    if (auto d = _delegate.lock()) {
+        d->init(*this);
     }
 }
 
-void grid_widget::deinit() noexcept
+grid_widget::~grid_widget()
 {
     if (auto delegate = _delegate.lock()) {
         delegate->deinit(*this);
     }
-}
-
-[[nodiscard]] float grid_widget::margin() const noexcept
-{
-    return 0.0f;
-}
-
-[[nodiscard]] std::pair<size_t, size_t> grid_widget::calculate_grid_size(std::vector<cell> const &cells) noexcept
-{
-    size_t nr_columns = 0;
-    size_t nr_rows = 0;
-
-    for (auto &&cell : cells) {
-        nr_rows = std::max(nr_rows, cell.row_nr + 1);
-        nr_columns = std::max(nr_columns, cell.column_nr + 1);
-    }
-
-    return {nr_columns, nr_rows};
-}
-
-[[nodiscard]] std::tuple<extent2, extent2, extent2>
-grid_widget::calculate_size(std::vector<cell> const &cells, flow_layout &rows, flow_layout &columns) noexcept
-{
-    rows.clear();
-    columns.clear();
-
-    ttlet[nr_columns, nr_rows] = calculate_grid_size(cells);
-    rows.reserve(nr_rows);
-    columns.reserve(nr_columns);
-
-    for (auto &&cell : cells) {
-        rows.update(
-            cell.row_nr,
-            cell.widget->minimum_size().height(),
-            cell.widget->preferred_size().height(),
-            cell.widget->maximum_size().height(),
-            cell.widget->margin());
-
-        columns.update(
-            cell.column_nr,
-            cell.widget->minimum_size().width(),
-            cell.widget->preferred_size().width(),
-            cell.widget->maximum_size().width(),
-            cell.widget->margin());
-    }
-
-    return {
-        extent2{columns.minimum_size(), rows.minimum_size()},
-        extent2{columns.preferred_size(), rows.preferred_size()},
-        extent2{columns.maximum_size(), rows.maximum_size()}};
 }
 
 bool grid_widget::address_in_use(size_t column_nr, size_t row_nr) const noexcept
@@ -100,41 +43,62 @@ widget &grid_widget::add_widget(size_t column_nr, size_t row_nr, std::unique_ptr
     tt_axiom(is_gui_thread());
     tt_assert(!address_in_use(column_nr, row_nr), "cell ({},{}) of grid_widget is already in use", column_nr, row_nr);
 
-    auto &tmp = super::add_widget(std::move(widget));
-    _cells.emplace_back(column_nr, row_nr, &tmp);
-    return tmp;
+    auto &ref = *widget;
+    _cells.emplace_back(column_nr, row_nr, std::move(widget));
+    window.request_reconstrain();
+    return ref;
 }
 
-bool grid_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+widget_constraints const &grid_widget::set_constraints() noexcept
 {
-    tt_axiom(is_gui_thread());
+    _layout = {};
+    _rows.clear();
+    _columns.clear();
 
-    if (super::constrain(display_time_point, need_reconstrain)) {
-        std::tie(_minimum_size, _preferred_size, _maximum_size) = calculate_size(_cells, _rows, _columns);
-        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-        return true;
-    } else {
-        return false;
+    for (ttlet &cell : _cells) {
+        ttlet cell_constraints = cell.widget->set_constraints();
+        _rows.update(
+            cell.row_nr,
+            cell_constraints.minimum.height(),
+            cell_constraints.preferred.height(),
+            cell_constraints.maximum.height(),
+            cell_constraints.margin);
+
+        _columns.update(
+            cell.column_nr,
+            cell_constraints.minimum.width(),
+            cell_constraints.preferred.width(),
+            cell_constraints.maximum.width(),
+            cell_constraints.margin);
     }
+
+    return _constraints = {
+               extent2{_columns.minimum_size(), _rows.minimum_size()},
+               extent2{_columns.preferred_size(), _rows.preferred_size()},
+               extent2{_columns.maximum_size(), _rows.maximum_size()}};
 }
 
-void grid_widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
+void grid_widget::set_layout(widget_layout const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
+    if (visible) {
+        if (_layout.store(context) >= layout_update::transform) {
+            _columns.set_size(layout().width());
+            _rows.set_size(layout().height());
+        }
 
-    need_layout |= _request_layout.exchange(false);
-    if (need_layout) {
-        _columns.set_size(width());
-        _rows.set_size(height());
-
-        for (auto &&cell : _cells) {
-            auto &&child = cell.widget;
-            ttlet child_rectangle = cell.rectangle(_columns, _rows, height());
-            child->set_layout_parameters_from_parent(child_rectangle);
+        for (ttlet &cell : _cells) {
+            cell.widget->set_layout(cell.rectangle(_columns, _rows, layout().height()) * context);
         }
     }
+}
 
-    super::layout(display_time_point, need_layout);
+void grid_widget::draw(draw_context const &context) noexcept
+{
+    if (visible) {
+        for (ttlet &cell : _cells) {
+            cell.widget->draw(context);
+        }
+    }
 }
 
 } // namespace tt

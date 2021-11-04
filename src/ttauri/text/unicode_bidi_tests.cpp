@@ -150,8 +150,8 @@ TEST(unicode_bidi, bidi_test)
             test_parameters.force_paragraph_direction = paragraph_direction;
 
             auto input = test.get_input();
-            auto first = std::begin(input);
-            auto last = std::end(input);
+            auto first = begin(input);
+            auto last = end(input);
 
             last = unicode_bidi_P1(first, last, test_parameters);
 
@@ -163,7 +163,7 @@ TEST(unicode_bidi, bidi_test)
                 ASSERT_TRUE(expected_embedding_level == -1 || expected_embedding_level == it->embedding_level);
             }
 
-            ASSERT_EQ(std::distance(first, last), std::ssize(test.reorder));
+            ASSERT_EQ(std::distance(first, last), ssize(test.reorder));
 
             auto index = 0;
             for (auto it = first; it != last; ++it, ++index) {
@@ -218,7 +218,7 @@ struct unicode_bidi_character_test {
 
     auto r = unicode_bidi_character_test{};
     r.line_nr = line_nr;
-    std::transform(std::begin(hex_characters), std::end(hex_characters), std::back_inserter(r.characters), [](ttlet &x) {
+    std::transform(begin(hex_characters), end(hex_characters), std::back_inserter(r.characters), [](ttlet &x) {
         return static_cast<char32_t>(tt::from_string<uint32_t>(x, 16));
     });
 
@@ -231,7 +231,7 @@ struct unicode_bidi_character_test {
                                                                          unicode_bidi_class::unknown;
 
     std::transform(
-        std::begin(int_resolved_levels), std::end(int_resolved_levels), std::back_inserter(r.resolved_levels), [](ttlet &x) {
+        begin(int_resolved_levels), end(int_resolved_levels), std::back_inserter(r.resolved_levels), [](ttlet &x) {
             if (x == "x") {
                 return -1;
             } else {
@@ -240,7 +240,7 @@ struct unicode_bidi_character_test {
         });
 
     std::transform(
-        std::begin(int_resolved_order), std::end(int_resolved_order), std::back_inserter(r.resolved_order), [](ttlet &x) {
+        begin(int_resolved_order), end(int_resolved_order), std::back_inserter(r.resolved_order), [](ttlet &x) {
             return tt::from_string<int>(x);
         });
 
@@ -281,8 +281,8 @@ TEST(unicode_bidi, bidi_character_test)
         test_parameters.force_paragraph_direction = test.paragraph_direction;
 
         auto input = test.get_input();
-        auto first = std::begin(input);
-        auto last = std::end(input);
+        auto first = begin(input);
+        auto last = end(input);
 
         last = unicode_bidi(
             first,
@@ -303,7 +303,7 @@ TEST(unicode_bidi, bidi_character_test)
         //    ASSERT_TRUE(expected_embedding_level == -1 || expected_embedding_level == it->embedding_level);
         //}
 
-        ASSERT_EQ(std::distance(first, last), std::ssize(test.resolved_order));
+        ASSERT_EQ(std::distance(first, last), ssize(test.resolved_order));
 
         auto index = 0;
         for (auto it = first; it != last; ++it, ++index) {

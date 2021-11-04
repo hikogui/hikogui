@@ -47,12 +47,12 @@ constexpr keyboard_modifiers &operator|=(keyboard_modifiers &lhs, keyboard_modif
  */
 inline keyboard_modifiers to_keyboard_modifiers(std::string_view s)
 {
-    if (std::ssize(s) == 0) {
+    if (ssize(s) == 0) {
         throw parse_error("Empty keyboard modifier");
     }
 
     // Remove the canonical trailing '+'.
-    ttlet s_lower = to_lower((s.back() == '+') ? s.substr(0, std::ssize(s) - 1) : s);
+    ttlet s_lower = to_lower((s.back() == '+') ? s.substr(0, ssize(s) - 1) : s);
 
     if (s_lower == "shift") {
         return keyboard_modifiers::Shift;

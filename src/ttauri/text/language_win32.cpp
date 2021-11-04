@@ -33,7 +33,7 @@ std::vector<language_tag> language::read_os_preferred_languages() noexcept
     case ERROR_SUCCESS: {
         ttlet language_names = ZZWSTR_to_string(result, result + result_length);
         auto r = std::vector<language_tag>{};
-        r.reserve(std::size(language_names));
+        r.reserve(size(language_names));
         for (ttlet &language_name : language_names) {
             r.emplace_back(language_name);
         }

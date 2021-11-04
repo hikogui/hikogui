@@ -215,6 +215,23 @@ void gui_window_win32::normalize_window()
     });
 }
 
+void gui_window_win32::open_system_menu()
+{
+    tt_axiom(is_gui_thread());
+
+    // Position the system menu on the left side, below the system menu button.
+    ttlet screen_extent = virtual_screen_size();
+    ttlet left = screen_rectangle.left();
+    ttlet top = screen_extent.height() - (screen_rectangle.top() - 30.0f);
+
+    // Open the system menu window and wait.
+    ttlet system_menu = GetSystemMenu(win32Window, false);
+    ttlet cmd = TrackPopupMenu(system_menu, TPM_RETURNCMD, narrow_cast<int>(left), narrow_cast<int>(top), 0, win32Window, NULL);
+    if (cmd > 0) {
+        SendMessage(win32Window, WM_SYSCOMMAND, narrow_cast<WPARAM>(cmd), LPARAM{0});
+    }
+}
+
 void gui_window_win32::set_window_size(extent2 new_extent)
 {
     tt_axiom(is_gui_thread());
@@ -312,7 +329,7 @@ void gui_window_win32::set_text_on_clipboard(std::string str) noexcept
     {
         auto wstr = tt::to_wstring(str);
 
-        auto wstr_handle = GlobalAlloc(GMEM_MOVEABLE, (std::ssize(wstr) + 1) * sizeof(wchar_t));
+        auto wstr_handle = GlobalAlloc(GMEM_MOVEABLE, (ssize(wstr) + 1) * sizeof(wchar_t));
         if (wstr_handle == nullptr) {
             tt_log_error("Could not allocate clipboard data '{}'", get_last_error_message());
             goto done;
@@ -325,7 +342,7 @@ void gui_window_win32::set_text_on_clipboard(std::string str) noexcept
             goto done;
         }
 
-        std::memcpy(wstr_c, wstr.c_str(), (std::ssize(wstr) + 1) * sizeof(wchar_t));
+        std::memcpy(wstr_c, wstr.c_str(), (ssize(wstr) + 1) * sizeof(wchar_t));
 
         if (!GlobalUnlock(wstr_handle) && GetLastError() != ERROR_SUCCESS) {
             tt_log_error("Could not unlock clipboard data '{}'", get_last_error_message());
@@ -357,7 +374,7 @@ void gui_window_win32::setOSWindowRectangleFromRECT(RECT rectangle) noexcept
         narrow_cast<float>(rectangle.right - rectangle.left),
         narrow_cast<float>(rectangle.bottom - rectangle.top)};
 
-    request_layout = true;
+    request_relayout();
 }
 
 void gui_window_win32::set_cursor(mouse_cursor cursor) noexcept
@@ -524,7 +541,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
     case WM_ENTERSIZEMOVE: {
         tt_axiom(is_gui_thread());
-        if ((move_and_resize_timer_id = SetTimer(win32Window, 0, 16, NULL)) == 0) {
+        if (SetTimer(win32Window, move_and_resize_timer_id, 16, NULL) != move_and_resize_timer_id) {
             tt_log_error("Could not set timer before move/resize. {}", get_last_error_message());
         }
         resizing = true;
@@ -550,14 +567,14 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
             break;
         default: tt_log_error("Unknown WM_ACTIVE value.");
         }
-        request_layout = true;
+        request_relayout();
     } break;
 
     case WM_GETMINMAXINFO: {
         tt_axiom(is_gui_thread());
         tt_axiom(widget);
-        ttlet minimum_widget_size = widget->minimum_size();
-        ttlet maximum_widget_size = widget->maximum_size();
+        ttlet minimum_widget_size = widget->constraints().minimum;
+        ttlet maximum_widget_size = widget->constraints().maximum;
         ttlet minmaxinfo = std::launder(std::bit_cast<MINMAXINFO *>(lParam));
         minmaxinfo->ptMaxSize.x = narrow_cast<LONG>(maximum_widget_size.width());
         minmaxinfo->ptMaxSize.y = narrow_cast<LONG>(maximum_widget_size.height());
@@ -594,13 +611,29 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         }
     } break;
 
-    case WM_SYSKEYDOWN: {
-        auto alt_pressed = (narrow_cast<uint32_t>(lParam) & 0x20000000) != 0;
-        if (!alt_pressed) {
-            return -1;
+    case WM_SYSCOMMAND: {
+        if (wParam == SC_KEYMENU) {
+            send_event(KeyboardState::Idle, keyboard_modifiers::None, keyboard_virtual_key::Menu);
+            return 0;
         }
     }
-        [[fallthrough]];
+
+    //case WM_SYSKEYUP: {
+    //    auto alt_pressed = (narrow_cast<uint32_t>(lParam) & 0x20000000) != 0;
+    //    if (!alt_pressed) {
+    //        return -1;
+    //    }
+    //    return -1;
+    //} break;
+    //
+    //case WM_SYSKEYDOWN: {
+    //    auto alt_pressed = (narrow_cast<uint32_t>(lParam) & 0x20000000) != 0;
+    //    if (!alt_pressed) {
+    //        return -1;
+    //    }
+    //    return -1;
+    //} break;
+
     case WM_KEYDOWN: {
         auto extended = (narrow_cast<uint32_t>(lParam) & 0x01000000) != 0;
         auto key_code = narrow_cast<int>(wParam);
@@ -679,7 +712,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         tt_log_info("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
 
         gui.set_theme_mode(read_os_theme_mode());
-        request_constrain = true;
+        request_reconstrain();
     } break;
 
     case WM_DPICHANGED: {
@@ -687,7 +720,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         // x-axis dpi value.
         dpi = narrow_cast<float>(LOWORD(wParam));
         tt_log_info("DPI has changed to {}", dpi);
-        request_layout = true;
+        request_relayout();
     } break;
 
     default: break;

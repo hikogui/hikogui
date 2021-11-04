@@ -8,6 +8,7 @@
 #include "extent.hpp"
 #include "point.hpp"
 #include "rectangle.hpp"
+#include "quad.hpp"
 #include "axis_aligned_rectangle.hpp"
 #include "../color/color.hpp"
 
@@ -24,11 +25,14 @@ public:
     constexpr matrix &operator=(matrix const &) noexcept = default;
     constexpr matrix &operator=(matrix &&) noexcept = default;
 
-    constexpr matrix() noexcept :
-        _col0(1.0f, 0.0f, 0.0f, 0.0f),
-        _col1(0.0f, 1.0f, 0.0f, 0.0f),
-        _col2(0.0f, 0.0f, 1.0f, 0.0f),
-        _col3(0.0f, 0.0f, 0.0f, 1.0f){};
+    constexpr matrix() noexcept
+    {
+        ttlet a = f32x4::broadcast(1.0f);
+        _col0 = a.x000();
+        _col1 = a._0y00();
+        _col2 = a._00z0();
+        _col3 = a._000w();
+    };
 
     constexpr matrix(f32x4 col0, f32x4 col1, f32x4 col2, f32x4 col3 = f32x4{0.0f, 0.0f, 0.0f, 1.0f}) noexcept :
         _col0(col0), _col1(col1), _col2(col2), _col3(col3)
@@ -121,7 +125,7 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr bool is_valid() const noexcept
+    [[nodiscard]] constexpr bool holds_invariant() const noexcept
     {
         return true;
     }
@@ -134,7 +138,7 @@ public:
     template<int E>
     [[nodiscard]] constexpr auto operator*(vector<E> const &rhs) const noexcept
     {
-        tt_axiom(rhs.is_valid());
+        tt_axiom(rhs.holds_invariant());
         return vector<std::max(D, E)>{
             _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy() +
             _col2 * static_cast<f32x4>(rhs).zzzz()};
@@ -143,7 +147,7 @@ public:
     template<int E>
     [[nodiscard]] constexpr auto operator*(extent<E> const &rhs) const noexcept
     {
-        tt_axiom(rhs.is_valid());
+        tt_axiom(rhs.holds_invariant());
         return extent<std::max(D, E)>{
             _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy() +
             _col2 * static_cast<f32x4>(rhs).zzzz()};
@@ -152,15 +156,26 @@ public:
     template<int E>
     [[nodiscard]] constexpr auto operator*(point<E> const &rhs) const noexcept
     {
-        tt_axiom(rhs.is_valid());
+        tt_axiom(rhs.holds_invariant());
         return point<std::max(D, E)>{
             _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy() +
             _col2 * static_cast<f32x4>(rhs).zzzz() + _col3 * static_cast<f32x4>(rhs).wwww()};
     }
 
-    [[nodiscard]] constexpr auto operator*(rectangle const &rhs) const noexcept
+    [[nodiscard]] constexpr rectangle operator*(aarectangle const &rhs) const noexcept
     {
-        return rectangle{*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
+        return *this * rectangle{rhs};
+    }
+
+    // XXX rectangle -> quad, perspective operation.
+    [[nodiscard]] constexpr rectangle operator*(rectangle const &rhs) const noexcept
+    {
+        return rectangle{*this * rhs.origin, *this * rhs.right, *this * rhs.up};
+    }
+
+    [[nodiscard]] constexpr quad operator*(quad const &rhs) const noexcept
+    {
+        return quad{*this * rhs.p0, *this * rhs.p1, *this * rhs.p2, *this * rhs.p3};
     }
 
     /** Transform a color by a color matrix.
@@ -169,7 +184,7 @@ public:
      */
     [[nodiscard]] constexpr auto operator*(color const &rhs) const noexcept
     {
-        tt_axiom(rhs.is_valid());
+        tt_axiom(rhs.holds_invariant());
         auto r = color{
             _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy() +
             _col2 * static_cast<f32x4>(rhs).zzzz() + _col3};

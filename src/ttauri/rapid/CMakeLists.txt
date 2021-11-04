@@ -1,10 +1,8 @@
 
 target_sources(ttauri PRIVATE
-    raw_numeric_array.hpp
+    float16_sse4_1.hpp
     numeric_array.hpp
-    f32x4_x64v2.hpp
-    f32x8_x64v25.hpp
-    i8x16_x64v2.hpp
+    swizzle_avx.hpp
     unorm_a2bgr10_pack.hpp
     srgb_abgr8_pack.hpp
     sfloat_rgba16.hpp
@@ -13,6 +11,7 @@ target_sources(ttauri PRIVATE
     sfloat_rg32.hpp
     snorm_r8.hpp
     sdf_r8.hpp
+    uint_abgr8_pack.hpp
 )
 
 if(TT_BUILD_TESTS)

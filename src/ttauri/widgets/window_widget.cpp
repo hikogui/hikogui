@@ -11,19 +11,20 @@
 #endif
 #include "../GUI/gui_window.hpp"
 #include "../GUI/gui_system.hpp"
+#include "../scoped_buffer.hpp"
 
 namespace tt {
 
 using namespace std;
 
-void window_widget::init() noexcept
+void window_widget::constructor_implementation() noexcept
 {
-    _toolbar = &make_widget<toolbar_widget>();
+    _toolbar = std::make_unique<toolbar_widget>(window, this);
 
     if (theme().operating_system == operating_system::windows) {
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
         _system_menu = &_toolbar->make_widget<system_menu_widget>();
-        _title_callback = title.subscribe([this]{
+        _title_callback = title.subscribe([this] {
             window.gui.run([this] {
                 this->_system_menu->icon = this->title->icon;
             });
@@ -36,97 +37,122 @@ void window_widget::init() noexcept
         tt_no_default();
     }
 
-    _content = &make_widget<grid_widget>(_content_delegate);
+    _content = std::make_unique<grid_widget>(window, this, _content_delegate);
 }
 
-[[nodiscard]] bool
-window_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+[[nodiscard]] pmr::generator<widget *> window_widget::children(std::pmr::polymorphic_allocator<> &) const noexcept
 {
-    tt_axiom(is_gui_thread());
+    co_yield _toolbar.get();
+    co_yield _content.get();
+}
 
-    if (super::constrain(display_time_point, need_reconstrain)) {
-        _minimum_size = {
-            std::max(_toolbar->minimum_size().width(), _content->minimum_size().width()),
-            _toolbar->preferred_size().height() + _content->minimum_size().height()};
+widget_constraints const &window_widget::set_constraints() noexcept
+{
+    _layout = {};
+    ttlet toolbar_constraints = _toolbar->set_constraints();
+    ttlet content_constraints = _content->set_constraints();
 
-        _preferred_size = {
-            std::max(_toolbar->preferred_size().width(), _content->preferred_size().width()),
-            _toolbar->preferred_size().height() + _content->preferred_size().height()};
+    ttlet min_size = extent2{
+        std::max(toolbar_constraints.minimum.width(), content_constraints.minimum.width()),
+        toolbar_constraints.preferred.height() + content_constraints.minimum.height()};
 
-        _maximum_size = {
-            _content->maximum_size().width(),
-            _toolbar->preferred_size().height() + _content->maximum_size().height()};
+    ttlet pref_size = extent2{
+        std::max(toolbar_constraints.preferred.width(), content_constraints.preferred.width()),
+        toolbar_constraints.preferred.height() + content_constraints.preferred.height()};
 
-        // Override maximum size and preferred size.
-        _maximum_size = max(_maximum_size, _minimum_size);
-        _preferred_size = clamp(_preferred_size, _minimum_size, _maximum_size);
+    ttlet max_size = extent2{
+        content_constraints.maximum.width(), toolbar_constraints.preferred.height() + content_constraints.maximum.height()};
 
-        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-        return true;
-    } else {
-        return false;
+    return _constraints = {min_size, clamp(pref_size, min_size, max(max_size, min_size)), max(max_size, min_size)};
+}
+
+void window_widget::set_layout(widget_layout const &context) noexcept
+{
+    if (visible) {
+        if (_layout.store(context) >= layout_update::transform) {
+            ttlet toolbar_height = _toolbar->constraints().preferred.height();
+            _toolbar_rectangle = aarectangle{0.0f, layout().height() - toolbar_height, layout().width(), toolbar_height};
+            _content_rectangle = aarectangle{0.0f, 0.0f, layout().width(), layout().height() - toolbar_height};
+        }
+        _toolbar->set_layout(_toolbar_rectangle * context);
+        _content->set_layout(_content_rectangle * context);
     }
 }
 
-void window_widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
+void window_widget::draw(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
-    need_layout |= _request_layout.exchange(false);
-    if (need_layout) {
-        ttlet toolbar_height = _toolbar->preferred_size().height();
-        ttlet toolbar_rectangle = aarectangle{0.0f, rectangle().height() - toolbar_height, rectangle().width(), toolbar_height};
-        _toolbar->set_layout_parameters_from_parent(toolbar_rectangle);
-
-        ttlet content_rectangle = aarectangle{0.0f, 0.0f, rectangle().width(), rectangle().height() - toolbar_height};
-        _content->set_layout_parameters_from_parent(content_rectangle);
+    if (visible) {
+        _toolbar->draw(context);
+        _content->draw(context);
     }
-
-    super::layout(display_time_point, need_layout);
 }
 
-hitbox window_widget::hitbox_test(point2 position) const noexcept
+hitbox window_widget::hitbox_test(point3 position) const noexcept
 {
     tt_axiom(is_gui_thread());
 
     constexpr float BORDER_WIDTH = 10.0f;
 
-    ttlet is_on_left_edge = position.x() <= BORDER_WIDTH;
-    ttlet is_on_right_edge = position.x() >= (_size.width() - BORDER_WIDTH);
-    ttlet is_on_bottom_edge = position.y() <= BORDER_WIDTH;
-    ttlet is_on_top_edge = position.y() >= (_size.height() - BORDER_WIDTH);
+    ttlet can_resize_w = _constraints.minimum.width() != _constraints.maximum.width();
+    ttlet can_resize_h = _constraints.minimum.height() != _constraints.maximum.height();
 
-    ttlet is_on_bottom_left_corner = is_on_bottom_edge && is_on_left_edge;
-    ttlet is_on_bottom_right_corner = is_on_bottom_edge && is_on_right_edge;
-    ttlet is_on_top_left_corner = is_on_top_edge && is_on_left_edge;
-    ttlet is_on_top_right_corner = is_on_top_edge && is_on_right_edge;
+    ttlet is_on_l_edge = position.x() <= BORDER_WIDTH;
+    ttlet is_on_r_edge = position.x() >= (layout().width() - BORDER_WIDTH);
+    ttlet is_on_b_edge = position.y() <= BORDER_WIDTH;
+    ttlet is_on_t_edge = position.y() >= (layout().height() - BORDER_WIDTH);
 
-    auto r = hitbox{this, draw_layer};
-    if (is_on_bottom_left_corner) {
-        return {this, draw_layer, hitbox::Type::BottomLeftResizeCorner};
-    } else if (is_on_bottom_right_corner) {
-        return {this, draw_layer, hitbox::Type::BottomRightResizeCorner};
-    } else if (is_on_top_left_corner) {
-        return {this, draw_layer, hitbox::Type::TopLeftResizeCorner};
-    } else if (is_on_top_right_corner) {
-        return {this, draw_layer, hitbox::Type::TopRightResizeCorner};
-    } else if (is_on_left_edge) {
+    ttlet is_on_lb_corner = is_on_l_edge and is_on_b_edge;
+    ttlet is_on_rb_corner = is_on_r_edge and is_on_b_edge;
+    ttlet is_on_lt_corner = is_on_r_edge and is_on_t_edge;
+    ttlet is_on_rt_corner = is_on_l_edge and is_on_t_edge;
+    ttlet is_on_corner = is_on_lb_corner or is_on_rb_corner or is_on_lt_corner or is_on_rt_corner;
+
+    ttlet is_on_l_resizer = can_resize_w and is_on_l_edge;
+    ttlet is_on_r_resizer = can_resize_w and is_on_r_edge;
+    ttlet is_on_b_resizer = can_resize_h and is_on_b_edge;
+    ttlet is_on_t_resizer = can_resize_h and is_on_t_edge;
+
+    ttlet is_on_lb_resizer = is_on_l_resizer and is_on_b_resizer;
+    ttlet is_on_rb_resizer = is_on_r_resizer and is_on_b_resizer;
+    ttlet is_on_lt_resizer = is_on_l_resizer and is_on_t_resizer;
+    ttlet is_on_rt_resizer = is_on_r_resizer and is_on_t_resizer;
+
+    auto r = hitbox{this, position};
+    if (is_on_lb_resizer) {
+        r.type = hitbox::Type::BottomLeftResizeCorner;
+    } else if (is_on_rb_resizer) {
+        r.type = hitbox::Type::BottomRightResizeCorner;
+    } else if (is_on_lt_resizer) {
+        r.type = hitbox::Type::TopLeftResizeCorner;
+    } else if (is_on_rt_resizer) {
+        r.type = hitbox::Type::TopRightResizeCorner;
+    } else if (is_on_l_resizer) {
         r.type = hitbox::Type::LeftResizeBorder;
-    } else if (is_on_right_edge) {
+    } else if (is_on_r_resizer) {
         r.type = hitbox::Type::RightResizeBorder;
-    } else if (is_on_bottom_edge) {
+    } else if (is_on_b_resizer) {
         r.type = hitbox::Type::BottomResizeBorder;
-    } else if (is_on_top_edge) {
+    } else if (is_on_t_resizer) {
         r.type = hitbox::Type::TopResizeBorder;
     }
 
-    if ((is_on_left_edge && _left_resize_border_has_priority) || (is_on_right_edge && _right_resize_border_has_priority) ||
-        (is_on_bottom_edge && _bottom_resize_border_has_priority) || (is_on_top_edge && _top_resize_border_has_priority)) {
+    if (is_on_corner and r.type != hitbox::Type::Default) {
+        // Resizers on corners always have priority.
         return r;
     }
 
-    for (ttlet &child : _children) {
-        r = std::max(r, child->hitbox_test(point2{child->parent_to_local() * position}));
+    if ((is_on_l_resizer and _left_resize_border_has_priority) or (is_on_r_resizer and _right_resize_border_has_priority) or
+        (is_on_b_resizer and _bottom_resize_border_has_priority) or (is_on_t_resizer and _top_resize_border_has_priority)) {
+        // Resizers on edges only have priority if there is not a scroll bar on that edge.
+        return r;
+    }
+
+    // Otherwise children have priority.
+    auto buffer = pmr::scoped_buffer<256>{};
+    for (auto *child : children(buffer.allocator())) {
+        if (child) {
+            r = std::max(r, child->hitbox_test(child->layout().from_parent * position));
+        }
     }
 
     return r;

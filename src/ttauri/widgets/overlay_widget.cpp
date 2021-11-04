@@ -10,73 +10,56 @@ namespace tt {
 overlay_widget::overlay_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
     super(window, parent), _delegate(std::move(delegate))
 {
-    tt_axiom(is_gui_thread());
-
     if (parent) {
         // The overlay-widget will reset the semantic_layer as it is the bottom
         // layer of this virtual-window. However the draw-layer should be above
         // any other widget drawn.
-        draw_layer = parent->draw_layer + 20.0f;
         semantic_layer = 0;
     }
-}
 
-void overlay_widget::init() noexcept
-{
-    super::init();
-    if (auto delegate = _delegate.lock()) {
-        delegate->init(*this);
+    if (auto d = _delegate.lock()) {
+        d->init(*this);
     }
 }
 
-void overlay_widget::deinit() noexcept
+overlay_widget::~overlay_widget()
 {
     if (auto delegate = _delegate.lock()) {
         delegate->deinit(*this);
     }
-    super::deinit();
 }
 
-[[nodiscard]] bool
-overlay_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+void overlay_widget::set_widget(std::unique_ptr<widget> new_widget) noexcept
 {
-    tt_axiom(is_gui_thread());
-
-    auto has_updated_contraints = super::constrain(display_time_point, need_reconstrain);
-
-    if (has_updated_contraints) {
-        tt_axiom(_content);
-        _minimum_size = _content->minimum_size();
-        _preferred_size = _content->preferred_size();
-        _maximum_size = _content->maximum_size();
-        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-    }
-
-    return has_updated_contraints;
+    _content = std::move(new_widget);
+    window.request_reconstrain();
 }
 
-[[nodiscard]] void overlay_widget::layout(utc_nanoseconds display_time_point, bool need_layout) noexcept
+widget_constraints const &overlay_widget::set_constraints() noexcept
 {
-    tt_axiom(is_gui_thread());
-
-    need_layout |= _request_layout.exchange(false);
-    if (need_layout) {
-        tt_axiom(_content);
-        _content->set_layout_parameters_from_parent(rectangle(), rectangle(), 1.0f);
-    }
-
-    super::layout(display_time_point, need_layout);
+    _layout = {};
+    return _constraints = _content->set_constraints();
 }
 
-void overlay_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
+void overlay_widget::set_layout(widget_layout const &context_) noexcept
 {
-    tt_axiom(is_gui_thread());
+    if (visible) {
+        // The clipping rectangle of the overlay matches the rectangle exactly, with a border around it.
+        ttlet context = context_.override_clip(context_.rectangle() + theme().border_width);
+        _layout.store(context);
 
-    if (overlaps(context, _clipping_rectangle)) {
-        draw_background(context);
+        _content->set_layout(layout().rectangle() * context);
     }
+}
 
-    super::draw(std::move(context), display_time_point);
+void overlay_widget::draw(draw_context const &context) noexcept
+{
+    if (visible) {
+        if (overlaps(context, layout())) {
+            draw_background(context);
+        }
+        _content->draw(context);
+    }
 }
 
 [[nodiscard]] color overlay_widget::background_color() const noexcept
@@ -89,15 +72,16 @@ void overlay_widget::draw(draw_context context, utc_nanoseconds display_time_poi
     return theme().color(theme_color::border, semantic_layer + 1);
 }
 
-void overlay_widget::scroll_to_show(tt::rectangle rectangle) noexcept
+void overlay_widget::scroll_to_show(tt::aarectangle rectangle) noexcept
 {
     // An overlay is in an absolute position on the window,
     // so do not forward the scroll_to_show message to its parent.
 }
 
-void overlay_widget::draw_background(draw_context context) noexcept
+void overlay_widget::draw_background(draw_context const &context) noexcept
 {
-    context.draw_box_with_border_outside(rectangle(), background_color(), foreground_color());
+    context.draw_box(
+        layout(), layout().rectangle(), background_color(), foreground_color(), theme().border_width, border_side::outside);
 }
 
-}
+} // namespace tt

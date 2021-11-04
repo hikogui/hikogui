@@ -19,7 +19,7 @@ namespace tt {
     auto r = font_glyph_ids(*this);
 
     // First try composed normalization
-    for (ssize_t i = 0; i != std::ssize(g); ++i) {
+    for (size_t i = 0; i != g.size(); ++i) {
         if (ttlet glyph_id = find_glyph(g[i])) {
             r += glyph_id;
         } else {
@@ -28,7 +28,7 @@ namespace tt {
         }
     }
 
-    if (!r) {
+    if (not r) {
         // First try decomposed normalization
         for (ttlet c: g.NFD()) {
             if (ttlet glyph_id = find_glyph(c)) {

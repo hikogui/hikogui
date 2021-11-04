@@ -6,70 +6,56 @@
 
 namespace tt {
 
-[[nodiscard]] bool radio_button_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+widget_constraints const &radio_button_widget::set_constraints() noexcept
 {
-    tt_axiom(is_gui_thread());
+    _layout = {};
 
-    if (super::constrain(display_time_point, need_reconstrain)) {
-        // Make room for button and margin.
-        _button_size = {theme().size, theme().size};
-        ttlet extra_size = extent2{theme().margin + _button_size.width(), 0.0f};
-        _minimum_size += extra_size;
-        _preferred_size += extra_size;
-        _maximum_size += extra_size;
+    // Make room for button and margin.
+    _button_size = {theme().size, theme().size};
+    ttlet extra_size = extent2{theme().margin + _button_size.width(), 0.0f};
+    _constraints = max(set_constraints_button() + extra_size, _button_size);
+    _constraints.margin = theme().margin;
+    return _constraints;
+}
 
-        _minimum_size = max(_minimum_size, _button_size);
-        _preferred_size = max(_minimum_size, _button_size);
-        _maximum_size = max(_minimum_size, _button_size);
+void radio_button_widget::set_layout(widget_layout const &context) noexcept
+{
+    if (visible) {
+        if (_layout.store(context) >= layout_update::transform) {
+            _button_rectangle = align(layout().rectangle(), _button_size, alignment::top_left);
 
-        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-        return true;
-    } else {
-        return false;
+            _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, layout().width(), layout().height()};
+
+            _pip_rectangle = align(_button_rectangle, extent2{theme().icon_size, theme().icon_size}, alignment::middle_center);
+        }
+        set_layout_button(context);
     }
 }
 
-[[nodiscard]] void radio_button_widget::layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept
+void radio_button_widget::draw(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
-    need_layout |= _request_layout.exchange(false);
-    if (need_layout) {
-        _button_rectangle = align(rectangle(), _button_size, alignment::top_left);
-
-        _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, width(), height()};
-
-        _pip_rectangle =
-            align(_button_rectangle, extent2{theme().icon_size, theme().icon_size}, alignment::middle_center);
-    }
-    super::layout(displayTimePoint, need_layout);
-}
-
-void radio_button_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
-{
-    tt_axiom(is_gui_thread());
-
-    if (overlaps(context, _clipping_rectangle)) {
+    if (visible and overlaps(context, layout())) {
         draw_radio_button(context);
-        draw_radio_pip(context, display_time_point);
+        draw_radio_pip(context);
+        draw_button(context);
     }
-
-    super::draw(std::move(context), display_time_point);
 }
 
 void radio_button_widget::draw_radio_button(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
-    context.draw_box_with_border_inside(
-        _button_rectangle, background_color(), focus_color(), corner_shapes{_button_rectangle.height() * 0.5f});
+    context.draw_box(
+        layout(),
+        _button_rectangle,
+        background_color(),
+        focus_color(),
+        theme().border_width,
+        border_side::inside,
+        corner_shapes{_button_rectangle.height() * 0.5f});
 }
 
-void radio_button_widget::draw_radio_pip(draw_context const &context, utc_nanoseconds display_time_point) noexcept
+void radio_button_widget::draw_radio_pip(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
-    _animated_value.update(state() == button_state::on ? 1.0f : 0.0f, display_time_point);
+    _animated_value.update(state() == button_state::on ? 1.0f : 0.0f, context.display_time_point);
     if (_animated_value.is_animating()) {
         request_redraw();
     }
@@ -77,8 +63,8 @@ void radio_button_widget::draw_radio_pip(draw_context const &context, utc_nanose
     // draw pip
     auto float_value = _animated_value.current_value();
     if (float_value > 0.0) {
-        ttlet scaled_pip_rectangle = scale(_pip_rectangle, float_value);
-        context.draw_box(scaled_pip_rectangle, accent_color(), corner_shapes{scaled_pip_rectangle.height() * 0.5f});
+        ttlet scaled_pip_rectangle = _pip_rectangle * float_value;
+        context.draw_box(layout(), scaled_pip_rectangle, accent_color(), corner_shapes{scaled_pip_rectangle.height() * 0.5f});
     }
 }
 

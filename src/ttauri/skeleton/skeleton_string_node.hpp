@@ -18,7 +18,7 @@ struct skeleton_string_node final: skeleton_node {
 
     void left_align() noexcept override {
         // first check if there are only spaces and tabs after the last line feed.
-        auto new_text_length = std::ssize(text);
+        auto new_text_length = ssize(text);
         for (auto i = text.crbegin(); i != text.crend(); ++i, --new_text_length) {
             if (*i == ' ' || *i == '\t') {
                 // Strip spaces and tabs.

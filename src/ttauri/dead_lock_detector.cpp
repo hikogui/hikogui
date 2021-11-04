@@ -23,18 +23,18 @@ static unfair_mutex_impl<false> dead_lock_detector_mutex;
         auto correct_order = detail::dead_lock_detector_pair{before, object};
         ttlet reverse_order = detail::dead_lock_detector_pair{object, before};
 
-        if (std::binary_search(std::cbegin(lock_graph), std::cend(lock_graph), correct_order)) {
+        if (std::binary_search(cbegin(lock_graph), cend(lock_graph), correct_order)) {
             // The object has been locked in the correct order in comparison to `before`.
             continue;
         }
 
-        if (std::binary_search(std::cbegin(lock_graph), std::cend(lock_graph), reverse_order)) {
+        if (std::binary_search(cbegin(lock_graph), cend(lock_graph), reverse_order)) {
             // The object has been locked in reverse order in comparison to `before`.
             return before;
         }
 
         // Insert the new 'correct' order in the sorted lock_graph.
-        ttlet it = std::upper_bound(std::cbegin(lock_graph), std::cend(lock_graph), correct_order);
+        ttlet it = std::upper_bound(cbegin(lock_graph), cend(lock_graph), correct_order);
         lock_graph.insert(it, std::move(correct_order));
     }
     return nullptr;

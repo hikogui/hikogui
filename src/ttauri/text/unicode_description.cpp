@@ -11,8 +11,8 @@ constexpr auto _unicode_description_find(char32_t code_point) noexcept
 {
     tt_axiom(code_point <= 0x10'ffff);
 
-    auto first = std::begin(detail::unicode_db_description_table);
-    auto last = std::end(detail::unicode_db_description_table);
+    auto first = begin(detail::unicode_db_description_table);
+    auto last = end(detail::unicode_db_description_table);
     return unicode_description_find(first, last, code_point);
 }
 
@@ -38,7 +38,7 @@ constexpr unicode_description const &Plane_16_Private_Use_unicode_description = 
 
 [[nodiscard]] unicode_description const &unicode_description_find(char32_t code_point) noexcept
 {
-    auto last = std::end(detail::unicode_db_description_table);
+    auto last = end(detail::unicode_db_description_table);
     auto it = _unicode_description_find(code_point);
 
     if (it == last) {

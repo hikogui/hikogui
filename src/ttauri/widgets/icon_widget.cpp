@@ -4,154 +4,93 @@
 
 #include "icon_widget.hpp"
 #include "../text/font_book.hpp"
-#include "../GFX/gfx_surface_vulkan.hpp"
-#include "../GFX/gfx_device_vulkan.hpp"
 #include "../GUI/gui_window.hpp"
 #include "../GUI/theme.hpp"
 #include "../cast.hpp"
 
 namespace tt {
 
-icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(window, parent) {}
-
-void icon_widget::init() noexcept
+icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
 {
-    _icon_callback = icon.subscribe([this]() {
-        _request_constrain = true;
+    _icon_callback_ptr = icon.subscribe([this]() {
+        _icon_has_modified = true;
+        this->window.request_reconstrain();
     });
+    icon.subscribe(_reconstrain_callback);
 }
 
-[[nodiscard]] bool icon_widget::constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept
+widget_constraints const &icon_widget::set_constraints() noexcept
 {
-    tt_axiom(is_gui_thread());
+    _layout = {};
 
-    if (super::constrain(display_time_point, need_reconstrain)) {
+    if (_icon_has_modified.exchange(false)) {
         ttlet icon_ = icon.cget();
+        _icon_type = icon_type::no;
+        _icon_size = {};
+        _glyph = {};
+        _pixmap_backing = {};
 
-        if (holds_alternative<std::monostate>(icon_)) {
-            _icon_type = icon_type::no;
-            _glyph = {};
-            _pixmap_hash = 0;
-            _pixmap_backing = {};
-            // For uniform scaling issues, make sure the size is not zero.
-            _icon_bounding_box = {};
-
-        } else if (holds_alternative<pixel_map<sfloat_rgba16>>(icon_)) {
-            // XXX very ugly, please fix.
-            // This requires access to internals of vulkan, wtf.
-            ttlet lock = std::scoped_lock(gfx_system_mutex);
-
+        if (ttlet pixmap = get_if<pixel_map<sfloat_rgba16>>(&*icon_)) {
             _icon_type = icon_type::pixmap;
-            _glyph = {};
+            _icon_size = extent2{narrow_cast<float>(pixmap->width()), narrow_cast<float>(pixmap->height())};
 
-            ttlet &pixmap = get<pixel_map<sfloat_rgba16>>(icon_);
-
-            gfx_device_vulkan *device = nullptr;
-            if (window.surface) {
-                device = narrow_cast<gfx_device_vulkan *>(window.surface->device());
+            if (not(_pixmap_backing = paged_image{window.surface.get(), *pixmap})) {
+                // Could not get an image, retry.
+                _icon_has_modified = true;
+                window.request_reconstrain();
             }
 
-            if (device == nullptr) {
-                // The window does not have a surface or device assigned.
-                // We need a device to upload the image as texture map, so retry until it does.
-                _pixmap_hash = 0;
-                _pixmap_backing = {};
-                _icon_bounding_box = {};
-                _request_constrain = true;
-
-            } else if (pixmap.hash() != _pixmap_hash) {
-                _pixmap_hash = pixmap.hash();
-                _pixmap_backing = device->imagePipeline->makeImage(pixmap.width(), pixmap.height());
-
-                _pixmap_backing.upload(pixmap);
-                _icon_bounding_box = aarectangle{
-                    extent2{narrow_cast<float>(_pixmap_backing.width_in_px), narrow_cast<float>(_pixmap_backing.height_in_px)}};
-            }
-
-        } else if (holds_alternative<font_glyph_ids>(icon_)) {
+        } else if (ttlet g1 = get_if<font_glyph_ids>(&*icon_)) {
+            _glyph = *g1;
             _icon_type = icon_type::glyph;
-            _glyph = get<font_glyph_ids>(icon_);
-            _pixmap_hash = 0;
-            _pixmap_backing = {};
+            _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).scaled_size();
 
-            _icon_bounding_box =
-                scale(_glyph.get_bounding_box(), theme().text_style(theme_text_style::label).scaled_size());
-
-        } else if (holds_alternative<elusive_icon>(icon_)) {
+        } else if (ttlet g2 = get_if<elusive_icon>(&*icon_)) {
+            _glyph = font_book().find_glyph(*g2);
             _icon_type = icon_type::glyph;
-            _glyph = font_book().find_glyph(get<elusive_icon>(icon_));
-            _pixmap_hash = 0;
-            _pixmap_backing = {};
+            _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).scaled_size();
 
-            _icon_bounding_box =
-                scale(_glyph.get_bounding_box(), theme().text_style(theme_text_style::label).scaled_size());
-
-        } else if (holds_alternative<ttauri_icon>(icon_)) {
+        } else if (ttlet g3 = get_if<ttauri_icon>(&*icon_)) {
+            _glyph = font_book().find_glyph(*g3);
             _icon_type = icon_type::glyph;
-            _glyph = font_book().find_glyph(get<ttauri_icon>(icon_));
-            _pixmap_hash = 0;
-            _pixmap_backing = {};
-
-            _icon_bounding_box =
-                scale(_glyph.get_bounding_box(), theme().text_style(theme_text_style::label).scaled_size());
-
-        } else {
-            tt_no_default();
+            _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).scaled_size();
         }
+    }
+    return _constraints = {extent2{0.0f, 0.0f}, _icon_size, _icon_size, theme().margin};
+}
 
-        _minimum_size = {0.0f, 0.0f};
-        _preferred_size = _icon_bounding_box.size();
-        _maximum_size = _preferred_size;
-        tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-        return true;
-    } else {
-        return false;
+void icon_widget::set_layout(widget_layout const &context) noexcept
+{
+    if (visible and _layout.store(context) >= layout_update::transform) {
+        if (_icon_type == icon_type::no or not _icon_size) {
+            _icon_rectangle = {};
+        } else {
+            ttlet icon_scale = scale2::uniform(_icon_size, layout().size);
+            ttlet new_icon_size = icon_scale * _icon_size;
+            _icon_rectangle = align(layout().rectangle(), new_icon_size, *alignment);
+        }
     }
 }
 
-[[nodiscard]] void icon_widget::layout(utc_nanoseconds displayTimePoint, bool need_layout) noexcept
+void icon_widget::draw(draw_context const &context) noexcept
 {
-    tt_axiom(is_gui_thread());
-
-    need_layout |= _request_layout.exchange(false);
-    if (need_layout) {
-        if (_icon_type == icon_type::no or not _icon_bounding_box) {
-            _icon_transform = {};
-        } else {
-            _icon_transform = matrix2::uniform(_icon_bounding_box, rectangle(), *alignment);
-        }
-    }
-    super::layout(displayTimePoint, need_layout);
-}
-
-void icon_widget::draw(draw_context context, utc_nanoseconds display_time_point) noexcept
-{
-    tt_axiom(is_gui_thread());
-
-    if (overlaps(context, _clipping_rectangle)) {
+    if (visible and overlaps(context, layout())) {
         switch (_icon_type) {
         case icon_type::no: break;
 
         case icon_type::pixmap:
-            switch (_pixmap_backing.state) {
-            case pipeline_image::image::State::Drawing: request_redraw(); break;
-            case pipeline_image::image::State::Uploaded: context.draw_image(_pixmap_backing, _icon_transform); break;
-            default: break;
+            if (not context.draw_image(layout(), _icon_rectangle, _pixmap_backing)) {
+                request_redraw();
             }
             break;
 
         case icon_type::glyph: {
-            ttlet box = _icon_transform * _icon_bounding_box;
-            ttlet scale = box.width() /
-                _icon_bounding_box.width();
-            context.draw_glyph(_glyph, scale, box, theme().color(*color));
+            context.draw_glyph(layout(), _icon_rectangle, theme().color(*color), _glyph);
         } break;
 
         default: tt_no_default();
         }
     }
-
-    super::draw(std::move(context), display_time_point);
 }
 
 } // namespace tt

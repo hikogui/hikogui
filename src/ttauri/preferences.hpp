@@ -165,7 +165,7 @@ public:
 
     /** Reset data members to their default value.
      */
-    [[nodiscard]] void reset() noexcept;
+    void reset() noexcept;
 
     /** Register an observable to a preferences file.
      *

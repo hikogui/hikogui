@@ -108,7 +108,7 @@ font &font_book::register_font(URL url, bool post_process)
 {
     auto r = _font_ptrs;
 
-    std::stable_partition(std::begin(r), std::end(r), [weight, italic](ttlet &item) {
+    std::stable_partition(begin(r), end(r), [weight, italic](ttlet &item) {
         return (item->italic == italic) and almost_equal(item->weight, weight);
     });
 
@@ -134,7 +134,7 @@ void font_book::post_process() noexcept
     family_name_cache = family_names;
 
     // Sort the list of fonts based on the amount of unicode code points it supports.
-    std::sort(std::begin(_font_ptrs), std::end(_font_ptrs), [](ttlet &lhs, ttlet &rhs) {
+    std::sort(begin(_font_ptrs), end(_font_ptrs), [](ttlet &lhs, ttlet &rhs) {
         return lhs->unicode_mask.size() > rhs->unicode_mask.size();
     });
 
@@ -144,10 +144,10 @@ void font_book::post_process() noexcept
 
     tt_log_info(
         "Post processing fonts number={}, regular-fallback={}, bold-fallback={}, italic-fallback={}",
-        std::size(_fonts),
-        std::size(regular_fallback_chain),
-        std::size(bold_fallback_chain),
-        std::size(italic_fallback_chain));
+        size(_fonts),
+        size(regular_fallback_chain),
+        size(bold_fallback_chain),
+        size(italic_fallback_chain));
 
     // For each font, find fallback list.
     for (ttlet &font : _font_ptrs) {
@@ -168,11 +168,11 @@ void font_book::post_process() noexcept
         }
 
         if (almost_equal(font->weight, font_weight::Bold)) {
-            std::copy(std::begin(bold_fallback_chain), std::end(bold_fallback_chain), std::back_inserter(fallback_chain));
+            std::copy(begin(bold_fallback_chain), end(bold_fallback_chain), std::back_inserter(fallback_chain));
         } else if (font->italic == true) {
-            std::copy(std::begin(italic_fallback_chain), std::end(italic_fallback_chain), std::back_inserter(fallback_chain));
+            std::copy(begin(italic_fallback_chain), end(italic_fallback_chain), std::back_inserter(fallback_chain));
         } else {
-            std::copy(std::begin(regular_fallback_chain), std::end(regular_fallback_chain), std::back_inserter(fallback_chain));
+            std::copy(begin(regular_fallback_chain), end(regular_fallback_chain), std::back_inserter(fallback_chain));
         }
 
         font->fallback_chain = std::move(fallback_chain);
@@ -185,7 +185,7 @@ void font_book::post_process() noexcept
 
     auto i = family_names.find(name);
     if (i == family_names.end()) {
-        ttlet family_id = font_family_id(std::ssize(font_variants));
+        ttlet family_id = font_family_id(ssize(font_variants));
         font_variants.emplace_back();
         family_names[name] = family_id;
 
@@ -234,7 +234,7 @@ void font_book::post_process() noexcept
 [[nodiscard]] font const &font_book::find_font(font_family_id family_id, font_variant variant) const noexcept
 {
     tt_assert(family_id);
-    tt_axiom(family_id >= 0 && family_id < std::ssize(font_variants));
+    tt_axiom(family_id >= 0 && family_id < ssize(font_variants));
     ttlet &variants = font_variants[family_id];
     for (auto i = 0; i < 16; i++) {
         if (auto font = variants[variant.alternative(i)]) {

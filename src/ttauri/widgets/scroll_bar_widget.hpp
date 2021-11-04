@@ -23,89 +23,71 @@ public:
 
     static constexpr tt::axis axis = Axis;
 
+    observable<float> offset;
+    observable<float> aperture;
+    observable<float> content;
+
     template<typename Content, typename Aperture, typename Offset>
-    scroll_bar_widget(
-        gui_window &window, widget *parent,
-        Content &&content,
-        Aperture &&aperture,
-        Offset &&offset) noexcept :
+    scroll_bar_widget(gui_window &window, widget *parent, Content &&content, Aperture &&aperture, Offset &&offset) noexcept :
         widget(window, parent),
         content(std::forward<Content>(content)),
         aperture(std::forward<Aperture>(aperture)),
         offset(std::forward<Offset>(offset))
     {
-        _content_callback = this->content.subscribe([this](auto...) {
-            _request_layout = true;
-        });
-        _aperture_callback = this->aperture.subscribe([this](auto...) {
-            _request_layout = true;
-        });
-        _offset_callback = this->offset.subscribe([this](auto...) {
-            _request_layout = true;
-        });
+        this->content.subscribe(_relayout_callback);
+        this->aperture.subscribe(_relayout_callback);
+        this->offset.subscribe(_relayout_callback);
     }
 
     ~scroll_bar_widget() {}
 
-    [[nodiscard]] bool constrain(utc_nanoseconds display_time_point, bool need_reconstrain) noexcept override
+    widget_constraints const &set_constraints() noexcept override
     {
-        tt_axiom(is_gui_thread());
+        _layout = {};
 
-        if (super::constrain(display_time_point, need_reconstrain)) {
-            if constexpr (axis == axis::vertical) {
-                _minimum_size = _preferred_size = {theme().icon_size, theme().large_size};
-                _maximum_size = {theme().icon_size, 32767.0f};
-            } else {
-                _minimum_size = _preferred_size = {theme().large_size, theme().icon_size};
-                _maximum_size = {32767.0f, theme().icon_size};
-            }
-            tt_axiom(_minimum_size <= _preferred_size && _preferred_size <= _maximum_size);
-            return true;
+        // The minimum size is twice the length of the slider, which is twice the theme().size()
+        if constexpr (axis == axis::vertical) {
+            return _constraints = {
+                       {theme().icon_size, theme().size * 4.0f},
+                       {theme().icon_size, theme().size * 4.0f},
+                       {theme().icon_size, 32767.0f}};
         } else {
-            return false;
+            return _constraints = {
+                       {theme().size * 4.0f, theme().icon_size},
+                       {theme().size * 4.0f, theme().icon_size},
+                       {32767.0f, theme().icon_size}};
         }
     }
 
-    [[nodiscard]] void layout(utc_nanoseconds display_time_point, bool need_layout) noexcept override
+    void set_layout(widget_layout const &context) noexcept override
     {
-        tt_axiom(is_gui_thread());
-
-        need_layout |= _request_layout.exchange(false);
-        if (need_layout) {
-            tt_axiom(*content != 0.0f);
+        if (visible) {
+            _layout.store(context);
 
             // Calculate the position of the slider.
             ttlet slider_offset = *offset * travel_vs_hidden_content_ratio();
-
             if constexpr (axis == axis::vertical) {
-                slider_rectangle =
-                    aarectangle{rectangle().left(), rectangle().bottom() + slider_offset, rectangle().width(), slider_length()};
+                _slider_rectangle = aarectangle{0.0f, slider_offset, layout().width(), slider_length()};
             } else {
-                slider_rectangle =
-                    aarectangle{rectangle().left() + slider_offset, rectangle().bottom(), slider_length(), rectangle().height()};
+                _slider_rectangle = aarectangle{slider_offset, 0.0f, slider_length(), layout().height()};
             }
         }
-
-        super::layout(display_time_point, need_layout);
     }
 
-    void draw(draw_context context, utc_nanoseconds display_time_point) noexcept override
+    void draw(draw_context const &context) noexcept override
     {
-        tt_axiom(is_gui_thread());
-
-        if (overlaps(context, this->_clipping_rectangle) and visible) {
+        if (visible and overlaps(context, layout())) {
             draw_rails(context);
             draw_slider(context);
         }
-        super::draw(std::move(context), display_time_point);
     }
 
-    hitbox hitbox_test(point2 position) const noexcept override
+    hitbox hitbox_test(point3 position) const noexcept override
     {
         tt_axiom(is_gui_thread());
 
-        if (visible and _visible_rectangle.contains(position) and slider_rectangle.contains(position)) {
-            return hitbox{this, draw_layer};
+        if (visible and layout().hit_rectangle.contains(position) and _slider_rectangle.contains(position)) {
+            return hitbox{this, position};
         } else {
             return hitbox{};
         }
@@ -123,7 +105,7 @@ public:
                 using enum mouse_event::Type;
             case ButtonDown:
                 // Record the original scroll-position before the drag starts.
-                offset_before_drag = *offset;
+                _offset_before_drag = *offset;
                 break;
 
             case Drag: {
@@ -131,7 +113,8 @@ public:
                 // start of the drag.
                 ttlet slider_movement = axis == axis::vertical ? event.delta().y() : event.delta().x();
                 ttlet content_movement = slider_movement * hidden_content_vs_travel_ratio();
-                offset = offset_before_drag + content_movement;
+                ttlet new_offset = _offset_before_drag + content_movement;
+                offset = std::clamp(new_offset, 0.0f, content - aperture);
             } break;
 
             default:;
@@ -152,7 +135,7 @@ public:
 
     [[nodiscard]] color foreground_color() const noexcept override
     {
-        if (_hover) {
+        if (hover) {
             return theme().color(theme_color::fill, semantic_layer + 2);
         } else {
             return theme().color(theme_color::fill, semantic_layer + 1);
@@ -160,22 +143,14 @@ public:
     }
 
 private:
-    observable<float> offset;
-    observable<float> aperture;
-    observable<float> content;
+    aarectangle _slider_rectangle;
 
-    typename decltype(offset)::callback_ptr_type _offset_callback;
-    typename decltype(aperture)::callback_ptr_type _aperture_callback;
-    typename decltype(content)::callback_ptr_type _content_callback;
-
-    aarectangle slider_rectangle;
-
-    float offset_before_drag;
+    float _offset_before_drag;
 
     [[nodiscard]] float rail_length() const noexcept
     {
         tt_axiom(is_gui_thread());
-        return axis == axis::vertical ? rectangle().height() : rectangle().width();
+        return axis == axis::vertical ? layout().height() : layout().width();
     }
 
     [[nodiscard]] float slider_length() const noexcept
@@ -226,23 +201,19 @@ private:
         return _hidden_content != 0.0f ? slider_travel_range() / _hidden_content : 0.0f;
     }
 
-    void draw_rails(draw_context context) noexcept
+    void draw_rails(draw_context const &context) noexcept
     {
-        tt_axiom(is_gui_thread());
-
         ttlet corner_shapes =
-            axis == axis::vertical ? tt::corner_shapes{rectangle().width() * 0.5f} : tt::corner_shapes{rectangle().height() * 0.5f};
-        context.draw_box(rectangle(), background_color(), corner_shapes);
+            axis == axis::vertical ? tt::corner_shapes{layout().width() * 0.5f} : tt::corner_shapes{layout().height() * 0.5f};
+        context.draw_box(layout(), layout().rectangle(), background_color(), corner_shapes);
     }
 
-    void draw_slider(draw_context context) noexcept
+    void draw_slider(draw_context const &context) noexcept
     {
-        tt_axiom(is_gui_thread());
+        ttlet corner_shapes = axis == axis::vertical ? tt::corner_shapes{_slider_rectangle.width() * 0.5f} :
+                                                       tt::corner_shapes{_slider_rectangle.height() * 0.5f};
 
-        ttlet corner_shapes = axis == axis::vertical ? tt::corner_shapes{slider_rectangle.width() * 0.5f} :
-                                            tt::corner_shapes{slider_rectangle.height() * 0.5f};
-
-        context.draw_box(translate_z(0.1f) * slider_rectangle, foreground_color(), corner_shapes);
+        context.draw_box(layout(), translate_z(0.1f) * _slider_rectangle, foreground_color(), corner_shapes);
     }
 };
 

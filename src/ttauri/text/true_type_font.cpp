@@ -632,7 +632,7 @@ static std::optional<std::string> getStringFromNameTable(
     uint16_t platformSpecificID,
     uint16_t languageID)
 {
-    tt_parse_check(offset + lengthInBytes <= std::size(bytes), "Requesting name at offset beyond name table");
+    tt_parse_check(offset + lengthInBytes <= size(bytes), "Requesting name at offset beyond name table");
 
     switch (platformID) {
     case 2: // Deprecated, but compatible with unicode.
@@ -843,7 +843,7 @@ void true_type_font::parseOS2Table(std::span<std::byte const> table_bytes)
 
 void true_type_font::parseMaxpTable(std::span<std::byte const> table_bytes)
 {
-    tt_parse_check(ssizeof(MAXPTable05) <= std::ssize(table_bytes), "MAXP table is larger than buffer");
+    tt_parse_check(ssizeof(MAXPTable05) <= ssize(table_bytes), "MAXP table is larger than buffer");
     ttlet table = make_placement_ptr<MAXPTable05>(table_bytes);
 
     ttlet version = table->version.value();
@@ -1380,11 +1380,11 @@ bool true_type_font::load_glyph_metrics(tt::glyph_id glyph_id, glyph_metrics &me
     ttlet entries = make_placement_array<SFNTEntry>(bytes, offset, header->numTables.value());
 
     ttlet tag = fourcc(table_name);
-    auto it = std::lower_bound(std::cbegin(entries), std::cend(entries), tag, [](auto const &entry, auto const &tag) {
+    auto it = std::lower_bound(cbegin(entries), cend(entries), tag, [](auto const &entry, auto const &tag) {
         return entry.tag < tag;
     });
 
-    if (it != std::cend(entries) and it->tag == tag) {
+    if (it != cend(entries) and it->tag == tag) {
         return bytes.subspan(it->offset.value(), it->length.value());
     } else {
         return {};

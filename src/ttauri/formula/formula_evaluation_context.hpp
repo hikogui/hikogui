@@ -58,7 +58,7 @@ struct formula_evaluation_context {
     * Used if you need to reset the output to a previous position.
     */
     ssize_t output_size() const noexcept {
-        return std::ssize(output);
+        return ssize(output);
     }
 
     /** Set the size of the output.
@@ -84,7 +84,7 @@ struct formula_evaluation_context {
     }
 
     void loop_pop() noexcept {
-        tt_assert(std::ssize(loop_stack) > 0);
+        tt_assert(ssize(loop_stack) > 0);
         loop_stack.pop_back();
     }
 

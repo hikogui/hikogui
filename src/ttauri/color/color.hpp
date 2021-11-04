@@ -28,6 +28,7 @@ namespace tt {
  * - Alpha values are linear and must be between 0.0 through 1.0.
  * - A=0.0 fully transparent
  * - A=1.0 fully opaque
+ * - RGB values are NOT pre-multiplied with the alpha.
  *
  * This color format is inspired by scRGB, however scRGB only describes
  * a 12- or 16-bit integer per component encoding of RGB values between
@@ -40,21 +41,26 @@ public:
     constexpr color &operator=(color const &) noexcept = default;
     constexpr color &operator=(color &&) noexcept = default;
 
-    [[nodiscard]] constexpr explicit color(f32x4 other) noexcept : _v(std::move(other))
+    [[nodiscard]] constexpr explicit color(f16x4 const &other) noexcept : _v(other)
     {
-        tt_axiom(is_valid());
+        tt_axiom(holds_invariant());
     }
-    [[nodiscard]] constexpr explicit operator f32x4() const noexcept
+
+    [[nodiscard]] constexpr explicit color(f32x4 const &other) noexcept : color(static_cast<f16x4>(other)) {}
+
+    [[nodiscard]] constexpr explicit operator f16x4() const noexcept
     {
         return _v;
     }
 
-    [[nodiscard]] constexpr color() noexcept : _v(0.0, 0.0, 0.0, 1.0) {}
-    [[nodiscard]] constexpr color(float r, float g, float b, float a = 1.0) noexcept : _v(r, g, b, a) {}
-    [[nodiscard]] constexpr color(double r, double g, double b, double a = 1.0) noexcept :
-        _v(static_cast<float>(r), static_cast<float>(g), static_cast<float>(b), static_cast<float>(a))
+    [[nodiscard]] constexpr explicit operator f32x4() const noexcept
     {
+        return static_cast<f32x4>(_v);
     }
+
+    [[nodiscard]] constexpr color(float r, float g, float b, float a = 1.0f) noexcept : color(f32x4{r, g, b, a}) {}
+
+    [[nodiscard]] constexpr color() noexcept : color(f32x4{0.0f, 0.0f, 0.0f, 1.0f}) {}
 
     [[nodiscard]] static constexpr color transparent() noexcept
     {
@@ -71,55 +77,52 @@ public:
         return {0.0f, 0.0f, 0.0f, 1.0f};
     }
 
-    [[nodiscard]] constexpr float &r() noexcept
+    [[nodiscard]] constexpr float16 &r() noexcept
     {
         return _v.x();
     }
 
-    [[nodiscard]] constexpr float &g() noexcept
+    [[nodiscard]] constexpr float16 &g() noexcept
     {
         return _v.y();
     }
 
-    [[nodiscard]] constexpr float &b() noexcept
+    [[nodiscard]] constexpr float16 &b() noexcept
     {
         return _v.z();
     }
 
-    [[nodiscard]] constexpr float &a() noexcept
+    [[nodiscard]] constexpr float16 &a() noexcept
     {
         return _v.w();
     }
 
-    [[nodiscard]] constexpr float const &r() const noexcept
+    [[nodiscard]] constexpr float16 const &r() const noexcept
     {
         return _v.x();
     }
 
-    [[nodiscard]] constexpr float const &g() const noexcept
+    [[nodiscard]] constexpr float16 const &g() const noexcept
     {
         return _v.y();
     }
 
-    [[nodiscard]] constexpr float const &b() const noexcept
+    [[nodiscard]] constexpr float16 const &b() const noexcept
     {
         return _v.z();
     }
 
-    [[nodiscard]] constexpr float const &a() const noexcept
+    [[nodiscard]] constexpr float16 const &a() const noexcept
     {
         return _v.w();
     }
 
-    [[nodiscard]] constexpr bool is_valid() const noexcept
+    [[nodiscard]] constexpr bool holds_invariant() const noexcept
     {
         return _v.w() >= 0.0 && _v.w() <= 1.0;
     }
 
-    [[nodiscard]] constexpr friend bool operator==(color const &lhs, color const &rhs) noexcept
-    {
-        return lhs._v == rhs._v;
-    }
+    [[nodiscard]] constexpr friend bool operator==(color const &lhs, color const &rhs) noexcept = default;
 
     [[nodiscard]] constexpr friend color operator*(color const &lhs, color const &rhs) noexcept
     {
@@ -131,15 +134,8 @@ public:
         return color{composit(lhs._v, rhs._v)};
     }
 
-    [[nodiscard]] constexpr friend color pre_multiply_alpha(color const &rhs) noexcept
-    {
-        auto r = rhs._v * rhs.a();
-        r.a() = rhs.a();
-        return color{r};
-    }
-
 private:
-    f32x4 _v;
+    f16x4 _v;
 };
 
 } // namespace tt
