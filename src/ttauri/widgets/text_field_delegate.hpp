@@ -40,7 +40,7 @@ public:
      * @param text The text entered by the user into the text field.
      * @return no-value when valid, or a label to display to the user when invalid.
      */
-    virtual std::optional<label> validate(text_field_widget &sender, std::string_view text) noexcept
+    virtual label validate(text_field_widget &sender, std::string_view text) noexcept
     {
         return {};
     }

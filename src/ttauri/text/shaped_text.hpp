@@ -173,10 +173,14 @@ public:
      */
     float middleCapHeight() const noexcept
     {
-        if ((ssize(lines) % 2) == 1) {
-            return lines[ssize(lines) / 2].capHeight;
+        if (lines.empty()) {
+            return 0;
         } else {
-            return (lines[ssize(lines) / 2 - 1].capHeight + lines[ssize(lines) / 2].capHeight) * 0.5f;
+            if ((ssize(lines) % 2) == 1) {
+                return lines[ssize(lines) / 2].capHeight;
+            } else {
+                return (lines[ssize(lines) / 2 - 1].capHeight + lines[ssize(lines) / 2].capHeight) * 0.5f;
+            }
         }
     }
 

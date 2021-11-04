@@ -7,6 +7,7 @@
 #include "text_field_delegate.hpp"
 #include "default_text_field_delegate.hpp"
 #include "widget.hpp"
+#include "label_widget.hpp"
 #include "../text/editable_text.hpp"
 #include "../format.hpp"
 #include "../label.hpp"
@@ -62,6 +63,14 @@ public:
      */
     observable<bool> continues = false;
 
+    /** The style of the text.
+     */
+    observable<theme_text_style> text_style = theme_text_style::label;
+
+    /** width of the text inside the text field.
+     */
+    observable<float> text_width = 100.0f;
+
     virtual ~text_field_widget();
 
     text_field_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept;
@@ -93,9 +102,9 @@ private:
 
     /** An error string to show to the user.
      */
-    std::optional<label>(_error);
+    observable<label> _error_label;
+    std::unique_ptr<label_widget> _error_label_widget;
 
-    float _text_width = 0.0f;
     aarectangle _text_rectangle = {};
 
     aarectangle _text_field_rectangle;
@@ -133,10 +142,10 @@ private:
     void drag_select() noexcept;
     void scroll_text() noexcept;
     void draw_background_box(draw_context const &context) const noexcept;
-    void draw_selection_rectangles(draw_context const &context) const noexcept;
-    void draw_partial_grapheme_caret(draw_context const &context) const noexcept;
-    void draw_caret(draw_context const &context) noexcept;
-    void draw_text(draw_context const &context) const noexcept;
+    void draw_selection_rectangles(widget_layout const &clipped_layout, draw_context const &context) const noexcept;
+    void draw_partial_grapheme_caret(widget_layout const &clipped_layout, draw_context const &context) const noexcept;
+    void draw_caret(widget_layout const &clipped_layout, draw_context const &context) noexcept;
+    void draw_text(widget_layout const &clipped_layout, draw_context const &context) const noexcept;
 };
 
 } // namespace tt::inline v1

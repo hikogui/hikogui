@@ -45,7 +45,7 @@ void text_widget::set_layout(widget_layout const &context) noexcept
 void text_widget::draw(draw_context const &context) noexcept
 {
     if (visible and overlaps(context, layout())) {
-        context.draw_text(layout(), _shaped_text_transform, label_color(), _shaped_text);
+        context.draw_text(layout(), _shaped_text_transform, _shaped_text);
     }
 }
 

@@ -164,11 +164,16 @@ public:
         return *this;
     }
 
+    [[nodiscard]] constexpr bool empty() const noexcept
+    {
+        return _msg_id.empty();
+    }
+
     /** Check if the message is in use.
      */
-    [[nodiscard]] explicit operator bool() const noexcept
+    [[nodiscard]] constexpr explicit operator bool() const noexcept
     {
-        return not _msg_id.empty();
+        return not empty();
     }
 
     /** Construct a localizable message.

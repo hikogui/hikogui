@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "theme_text_style.hpp"
 #include "../exception.hpp"
 
 namespace tt::inline v1 {

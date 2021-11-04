@@ -60,6 +60,16 @@ public:
     label(label &&other) noexcept = default;
     label &operator=(label &&other) noexcept = default;
 
+    [[nodiscard]] constexpr bool empty() const noexcept
+    {
+        return icon.empty() and text.empty();
+    }
+
+    constexpr explicit operator bool() const noexcept
+    {
+        return not empty();
+    }
+
     /** Compare if both labels are equal.
      * @param lhs A label.
      * @param rhs A label.

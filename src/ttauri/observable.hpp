@@ -609,7 +609,7 @@ public:
 
     explicit operator bool() const noexcept
     {
-        return static_cast<bool>(cget());
+        return static_cast<bool>(*cget());
     }
 
 #define X(op) \
