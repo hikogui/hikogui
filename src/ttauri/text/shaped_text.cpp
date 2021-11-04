@@ -8,6 +8,7 @@
 #include "../small_map.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 [[nodiscard]] static std::vector<attributed_grapheme> makeattributed_graphemeVector(gstring const &text, text_style const &style) noexcept
 {
@@ -572,5 +573,5 @@ shaped_text::shaped_text(
     return r;
 }
 
-
+}
 }

@@ -16,6 +16,7 @@
 #include <optional>
 
 namespace tt {
+inline namespace v1 {
 class font_book;
 
 /** shaped_text represent a piece of text shaped to be displayed.
@@ -306,6 +307,5 @@ public:
     [[nodiscard]] std::vector<int> indicesFromCoordinates(point2 start, point2 current) const noexcept;
 };
 
-
-
+}
 }
