@@ -74,7 +74,7 @@ void gui_system_win32::exit(int exit_code)
 
 int gui_system_win32::loop()
 {
-    using namespace std::literals::chrono_literals;
+    using namespace std::chrono_literals;
 
     // Run the message loop.
     std::optional<int> exit_code = {};

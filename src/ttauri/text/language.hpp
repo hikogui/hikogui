@@ -164,7 +164,7 @@ private:
 
     [[nodiscard]] static bool subsystem_init() noexcept
     {
-        using namespace std::literals::chrono_literals;
+        using namespace std::chrono_literals;
 
         _languages_maintenance_callback = timer::global().add_callback(
             5s,

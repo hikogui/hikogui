@@ -68,7 +68,7 @@ private:
 
     float progress() const noexcept
     {
-        using namespace std::literals::chrono_literals;
+        using namespace std::chrono_literals;
 
         ttlet dt = _current_time - _start_time;
         ttlet p = static_cast<float>(dt / 1ms) / static_cast<float>(_animation_duration / 1ms);

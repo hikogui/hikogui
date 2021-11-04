@@ -11,8 +11,6 @@
 #include <format>
 #include <ostream>
 
-using namespace tt;
-
 int usage()
 {
     std::cerr << "Usage:\n";
@@ -25,14 +23,14 @@ int tt_main(int argc, char* argv[])
     if (argc != 3) {
         return usage();
     }
-    auto json_filename = URL(argv[1]);
-    auto bon8_filename = URL(argv[2]);
+    auto json_filename = tt::URL(argv[1]);
+    auto bon8_filename = tt::URL(argv[2]);
 
     auto json_view = json_filename.loadView();
     auto json_data = json_view->string_view();
-    auto data = parse_JSON(json_data);
+    auto data = tt::parse_JSON(json_data);
 
-    auto bon8_file = file(bon8_filename, access_mode::truncate_or_create_for_write);
+    auto bon8_file = tt::file(bon8_filename, tt::access_mode::truncate_or_create_for_write);
     auto bon8_data = encode_BON8(data);
     bon8_file.write(bon8_data);
     bon8_file.close();

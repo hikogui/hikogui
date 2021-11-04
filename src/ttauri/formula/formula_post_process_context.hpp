@@ -54,7 +54,7 @@ struct formula_post_process_context {
     }
 
     [[nodiscard]] function_type set_function(std::string const &name, function_type func) noexcept {
-        using namespace std;
+        using std::swap;
 
         swap(functions[name], func);
         return func;

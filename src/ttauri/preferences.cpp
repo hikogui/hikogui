@@ -41,7 +41,7 @@ void preference_item_base::load() noexcept
 
 preferences::preferences() noexcept : _location(), _data(datum::make_map()), _modified(false)
 {
-    using namespace std::literals::chrono_literals;
+    using namespace std::chrono_literals;
 
     _check_modified_callback_ptr = timer::global().add_callback(5s, [this](auto...) {
         this->check_modified();

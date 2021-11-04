@@ -94,7 +94,7 @@ public:
 
     tt_no_inline void contended() noexcept
     {
-        using namespace std::literals::chrono_literals;
+        using namespace std::chrono_literals;
 
         // If we get here, that would suck, but nothing to do about it.
         ++global_counter<"wfree_fifo">;

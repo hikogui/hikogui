@@ -116,7 +116,7 @@ timer::find_triggered_callbacks(utc_nanoseconds current_time) noexcept
 
 void timer::loop(std::stop_token stop_token) noexcept
 {
-    using namespace std::literals::chrono_literals;
+    using namespace std::chrono_literals;
 
     tt_log_info("Timer {}: started", name);
     while (true) {
