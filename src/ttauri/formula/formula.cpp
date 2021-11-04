@@ -64,11 +64,13 @@
 #include <functional>
 #include <limits>
 
-namespace tt {
+namespace tt::inline v1 {
 
-static std::unique_ptr<formula_node> parse_formula_1(formula_parse_context& context, std::unique_ptr<formula_node> lhs, uint8_t min_precedence);
+static std::unique_ptr<formula_node>
+parse_formula_1(formula_parse_context &context, std::unique_ptr<formula_node> lhs, uint8_t min_precedence);
 
-[[nodiscard]] std::pair<uint8_t,bool> operator_precedence(token_t const &token, bool binary) noexcept {
+[[nodiscard]] std::pair<uint8_t, bool> operator_precedence(token_t const &token, bool binary) noexcept
+{
     if (token != tokenizer_name_t::Operator) {
         return {uint8_t{0}, false};
     } else {
@@ -78,8 +80,11 @@ static std::unique_ptr<formula_node> parse_formula_1(formula_parse_context& cont
 }
 
 static std::unique_ptr<formula_node> parse_operation_formula(
-    formula_parse_context& context, std::unique_ptr<formula_node> lhs, token_t const& op, std::unique_ptr<formula_node> rhs
-) {
+    formula_parse_context &context,
+    std::unique_ptr<formula_node> lhs,
+    token_t const &op,
+    std::unique_ptr<formula_node> rhs)
+{
     if (lhs) {
         // Binary operator
         switch (operator_to_int(op.value.data())) {
@@ -101,25 +106,35 @@ static std::unique_ptr<formula_node> parse_operation_formula(
         case operator_to_int("&"): return std::make_unique<formula_bit_and_node>(op.location, std::move(lhs), std::move(rhs));
         case operator_to_int("^"): return std::make_unique<formula_bit_xor_node>(op.location, std::move(lhs), std::move(rhs));
         case operator_to_int("|"): return std::make_unique<formula_bit_or_node>(op.location, std::move(lhs), std::move(rhs));
-        case operator_to_int("&&"): return std::make_unique<formula_logical_and_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("&&"):
+            return std::make_unique<formula_logical_and_node>(op.location, std::move(lhs), std::move(rhs));
         case operator_to_int("||"): return std::make_unique<formula_logical_or_node>(op.location, std::move(lhs), std::move(rhs));
-        case operator_to_int("?"): return std::make_unique<formula_ternary_operator_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("?"):
+            return std::make_unique<formula_ternary_operator_node>(op.location, std::move(lhs), std::move(rhs));
         case operator_to_int("["): return std::make_unique<formula_index_node>(op.location, std::move(lhs), std::move(rhs));
         case operator_to_int("("): return std::make_unique<formula_call_node>(op.location, std::move(lhs), std::move(rhs));
         case operator_to_int("="): return std::make_unique<formula_assign_node>(op.location, std::move(lhs), std::move(rhs));
-        case operator_to_int("+="): return std::make_unique<formula_inplace_add_node>(op.location, std::move(lhs), std::move(rhs));
-        case operator_to_int("-="): return std::make_unique<formula_inplace_sub_node>(op.location, std::move(lhs), std::move(rhs));
-        case operator_to_int("*="): return std::make_unique<formula_inplace_mul_node>(op.location, std::move(lhs), std::move(rhs));
-        case operator_to_int("/="): return std::make_unique<formula_inplace_div_node>(op.location, std::move(lhs), std::move(rhs));
-        case operator_to_int("%="): return std::make_unique<formula_inplace_mod_node>(op.location, std::move(lhs), std::move(rhs));
-        case operator_to_int("<<="): return std::make_unique<formula_inplace_shl_node>(op.location, std::move(lhs), std::move(rhs));
-        case operator_to_int(">>="): return std::make_unique<formula_inplace_shr_node>(op.location, std::move(lhs), std::move(rhs));
-        case operator_to_int("&="): return std::make_unique<formula_inplace_and_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("+="):
+            return std::make_unique<formula_inplace_add_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("-="):
+            return std::make_unique<formula_inplace_sub_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("*="):
+            return std::make_unique<formula_inplace_mul_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("/="):
+            return std::make_unique<formula_inplace_div_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("%="):
+            return std::make_unique<formula_inplace_mod_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("<<="):
+            return std::make_unique<formula_inplace_shl_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int(">>="):
+            return std::make_unique<formula_inplace_shr_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("&="):
+            return std::make_unique<formula_inplace_and_node>(op.location, std::move(lhs), std::move(rhs));
         case operator_to_int("|="): return std::make_unique<formula_inplace_or_node>(op.location, std::move(lhs), std::move(rhs));
-        case operator_to_int("^="): return std::make_unique<formula_inplace_xor_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("^="):
+            return std::make_unique<formula_inplace_xor_node>(op.location, std::move(lhs), std::move(rhs));
         case operator_to_int("!"): return std::make_unique<formula_filter_node>(op.location, std::move(lhs), std::move(rhs));
-        default:
-            throw parse_error("{}: Unexpected binary operator {}.", op.location, op);
+        default: throw parse_error("{}: Unexpected binary operator {}.", op.location, op);
         }
     } else {
         // Unary operator
@@ -130,22 +145,21 @@ static std::unique_ptr<formula_node> parse_operation_formula(
         case operator_to_int("!"): return std::make_unique<formula_logical_not_node>(op.location, std::move(rhs));
         case operator_to_int("++"): return std::make_unique<formula_increment_node>(op.location, std::move(rhs));
         case operator_to_int("--"): return std::make_unique<formula_decrement_node>(op.location, std::move(rhs));
-        default: 
-            throw parse_error("{}: Unexpected unary operator {}.", op.location, op);
+        default: throw parse_error("{}: Unexpected unary operator {}.", op.location, op);
         }
     }
 }
 
 /** Parse a lhs or rhs part of an formula.
-    * This should expect any off:
-    *  - leaf node: literal
-    *  - leaf node: name
-    *  - vector literal: '[' ( parse_formula() ( ',' parse_formula() )* ','? )? ']'
-    *  - map literal: '{' ( parse_formula() ':' parse_formula() ( ',' parse_formula() ':' parse_formula() )* ','? )? '}'
-    *  - subformula:  '(' parse_formula() ')'
-    *  - unary operator: op parse_formula()
-    */
-static std::unique_ptr<formula_node> parse_primary_formula(formula_parse_context& context)
+ * This should expect any off:
+ *  - leaf node: literal
+ *  - leaf node: name
+ *  - vector literal: '[' ( parse_formula() ( ',' parse_formula() )* ','? )? ']'
+ *  - map literal: '{' ( parse_formula() ':' parse_formula() ( ',' parse_formula() ':' parse_formula() )* ','? )? '}'
+ *  - subformula:  '(' parse_formula() ')'
+ *  - unary operator: op parse_formula()
+ */
+static std::unique_ptr<formula_node> parse_primary_formula(formula_parse_context &context)
 {
     ttlet &location = context->location;
 
@@ -247,19 +261,18 @@ static std::unique_ptr<formula_node> parse_primary_formula(formula_parse_context
         } else {
             ttlet unary_op = *context;
             ++context;
-            ttlet [precedence, left_to_right] = operator_precedence(unary_op, false);
+            ttlet[precedence, left_to_right] = operator_precedence(unary_op, false);
             auto subformula = parse_formula_1(context, parse_primary_formula(context), precedence);
             return parse_operation_formula(context, {}, unary_op, std::move(subformula));
         }
 
-    default:
-        throw parse_error("{}: Unexpected token in primary formula {}.", location, *context);
+    default: throw parse_error("{}: Unexpected token in primary formula {}.", location, *context);
     }
 }
 
 /** Parse the rhs of an index operator, including the closing bracket.
-    */
-static std::unique_ptr<formula_node> parse_index_formula(formula_parse_context& context)
+ */
+static std::unique_ptr<formula_node> parse_index_formula(formula_parse_context &context)
 {
     auto rhs = parse_formula(context);
 
@@ -273,7 +286,7 @@ static std::unique_ptr<formula_node> parse_index_formula(formula_parse_context& 
 
 /** Parse the rhs of an index operator, including the closing bracket.
  */
-static std::unique_ptr<formula_node> parse_ternary_argument_formula(formula_parse_context& context)
+static std::unique_ptr<formula_node> parse_ternary_argument_formula(formula_parse_context &context)
 {
     auto rhs_true = parse_formula(context);
 
@@ -290,33 +303,34 @@ static std::unique_ptr<formula_node> parse_ternary_argument_formula(formula_pars
 
 /** Parse the rhs of an index operator, including the closing bracket.
  */
-static std::unique_ptr<formula_node> parse_call_argument_formula(formula_parse_context& context)
+static std::unique_ptr<formula_node> parse_call_argument_formula(formula_parse_context &context)
 {
     formula_node::formula_vector args;
 
     if ((*context == tokenizer_name_t::Operator) && (*context == ")")) {
         ++context;
 
-    } else while (true) {
-        args.push_back(parse_formula(context));
+    } else
+        while (true) {
+            args.push_back(parse_formula(context));
 
-        if ((*context == tokenizer_name_t::Operator) && (*context == ",")) {
-            ++context;
-            continue;
+            if ((*context == tokenizer_name_t::Operator) && (*context == ",")) {
+                ++context;
+                continue;
 
-        } else if ((*context == tokenizer_name_t::Operator) && (*context == ")")) {
-            ++context;
-            break;
+            } else if ((*context == tokenizer_name_t::Operator) && (*context == ")")) {
+                ++context;
+                break;
 
-        } else {
-            throw parse_error("{}: Expected ',' or ')' After a function argument {}.", context->location, *context);
+            } else {
+                throw parse_error("{}: Expected ',' or ')' After a function argument {}.", context->location, *context);
+            }
         }
-    }
 
     return std::make_unique<formula_arguments>(context->location, std::move(args));
 }
 
-static bool parse_formula_is_at_end(formula_parse_context& context)
+static bool parse_formula_is_at_end(formula_parse_context &context)
 {
     if (*context == tokenizer_name_t::End) {
         return true;
@@ -326,19 +340,15 @@ static bool parse_formula_is_at_end(formula_parse_context& context)
         throw parse_error("{}: Expecting an operator token got {}.", context->location, *context);
     }
 
-    return
-        *context == ")" ||
-        *context == "}" ||
-        *context == "]" ||
-        *context == ":" ||
-        *context == ",";
+    return *context == ")" || *context == "}" || *context == "]" || *context == ":" || *context == ",";
 }
 
 /** Parse an formula.
  * https://en.wikipedia.org/wiki/Operator-precedence_parser
  * Parses an formula until EOF, ')', '}', ']', ':', ','
  */
-static std::unique_ptr<formula_node> parse_formula_1(formula_parse_context& context, std::unique_ptr<formula_node> lhs, uint8_t min_precedence)
+static std::unique_ptr<formula_node>
+parse_formula_1(formula_parse_context &context, std::unique_ptr<formula_node> lhs, uint8_t min_precedence)
 {
     token_t lookahead;
     uint8_t lookahead_precedence;
@@ -370,10 +380,8 @@ static std::unique_ptr<formula_node> parse_formula_1(formula_parse_context& cont
             return parse_operation_formula(context, std::move(lhs), op, std::move(rhs));
         }
 
-        while (
-            (lookahead_left_to_right == true && lookahead_precedence > op_precedence) ||
-            (lookahead_left_to_right == false && lookahead_precedence == op_precedence)
-        ) {
+        while ((lookahead_left_to_right == true && lookahead_precedence > op_precedence) ||
+               (lookahead_left_to_right == false && lookahead_precedence == op_precedence)) {
             rhs = parse_formula_1(context, std::move(rhs), lookahead_precedence);
 
             std::tie(lookahead_precedence, lookahead_left_to_right) = operator_precedence(lookahead = *context, true);
@@ -386,7 +394,7 @@ static std::unique_ptr<formula_node> parse_formula_1(formula_parse_context& cont
     return lhs;
 }
 
-std::unique_ptr<formula_node> parse_formula(formula_parse_context& context)
+std::unique_ptr<formula_node> parse_formula(formula_parse_context &context)
 {
     return parse_formula_1(context, parse_primary_formula(context), 0);
 }
@@ -434,4 +442,4 @@ std::string_view::const_iterator find_end_of_formula(
     return last;
 }
 
-}
+} // namespace tt::inline v1

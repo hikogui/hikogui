@@ -7,7 +7,7 @@
 #include "../geometry/scale.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 class glyph_atlas_info {
 public:
@@ -62,4 +62,4 @@ public:
     }
 };
 
-} // namespace tt
+} // namespace tt::inline v1

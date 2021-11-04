@@ -6,7 +6,7 @@
 #include "../algorithm.hpp"
 #include <algorithm>
 
-namespace tt {
+namespace tt::inline v1 {
 
 class audio_system_aggregate : public audio_system {
 public:
@@ -49,4 +49,4 @@ private:
     friend class audio_system_aggregate_delegate;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

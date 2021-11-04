@@ -10,7 +10,7 @@
 #include <type_traits>
 #include <Windows.h>
 
-namespace tt {
+namespace tt::inline v1 {
 
 file::file(URL const &location, access_mode access_mode) : _access_mode(access_mode), _location(location)
 {
@@ -156,8 +156,7 @@ size_t file::seek(ssize_t offset, seek_whence whence)
 void file::rename(URL const &destination, bool overwrite_existing)
 {
     auto dst_filename = destination.nativeWPath();
-    auto dst_filename_wsize = (dst_filename.size() + 1) *
-        sizeof(WCHAR);
+    auto dst_filename_wsize = (dst_filename.size() + 1) * sizeof(WCHAR);
 
     ttlet rename_info_size = narrow_cast<DWORD>(sizeof(_FILE_RENAME_INFO) + dst_filename_wsize);
 
@@ -337,4 +336,4 @@ void file::create_directory_hierarchy(URL const &url)
     return create_directory(url, true);
 }
 
-} // namespace tt
+} // namespace tt::inline v1

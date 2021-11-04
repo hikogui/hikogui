@@ -327,7 +327,7 @@ TEST(audio_sample_packer, pack_int16le_trio)
     for (auto i = 20; i != packed.size(); ++i) {
         ASSERT_EQ(packed[i], static_cast<std::byte>(i));
     }
-    
+
     packed = make_packed();
     packer(flat_samples.data(), packed.data(), 8);
     ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), int16_max_diff);
@@ -417,7 +417,7 @@ TEST(audio_sample_packer, pack_int16le_quadro)
     for (auto i = 18; i != packed.size(); ++i) {
         ASSERT_EQ(packed[i], static_cast<std::byte>(i));
     }
-    
+
     packed = make_packed();
     packer(flat_samples.data(), packed.data(), 4);
     ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), int16_max_diff);
@@ -445,7 +445,7 @@ TEST(audio_sample_packer, pack_int16le_quadro)
     for (auto i = 26; i != packed.size(); ++i) {
         ASSERT_EQ(packed[i], static_cast<std::byte>(i));
     }
-    
+
     packed = make_packed();
     packer(flat_samples.data(), packed.data(), 8);
     ASSERT_NEAR(flat_samples[0], int16_to_float(packed[1], packed[0]), int16_max_diff);
@@ -633,7 +633,7 @@ TEST(audio_sample_packer, pack_int24le_stereo)
     for (auto i = 9; i != packed.size(); ++i) {
         ASSERT_EQ(packed[i], static_cast<std::byte>(i));
     }
-    
+
     packed = make_packed();
     packer(flat_samples.data(), packed.data(), 3);
     ASSERT_NEAR(flat_samples[0], int24_to_float(packed[2], packed[1], packed[0]), int24_max_diff);
@@ -648,7 +648,7 @@ TEST(audio_sample_packer, pack_int24le_stereo)
     for (auto i = 15; i != packed.size(); ++i) {
         ASSERT_EQ(packed[i], static_cast<std::byte>(i));
     }
-    
+
     packed = make_packed();
     packer(flat_samples.data(), packed.data(), 4);
     ASSERT_NEAR(flat_samples[0], int24_to_float(packed[2], packed[1], packed[0]), int24_max_diff);
@@ -667,7 +667,7 @@ TEST(audio_sample_packer, pack_int24le_stereo)
     for (auto i = 21; i != packed.size(); ++i) {
         ASSERT_EQ(packed[i], static_cast<std::byte>(i));
     }
-    
+
     packed = make_packed();
     packer(flat_samples.data(), packed.data(), 8);
     ASSERT_NEAR(flat_samples[0], int24_to_float(packed[2], packed[1], packed[0]), int24_max_diff);

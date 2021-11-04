@@ -44,7 +44,7 @@
 #include <bit>
 #include <climits>
 
-namespace tt {
+namespace tt::inline v1 {
 
 tt_warning_push()
     // C4702 unreachable code: Suppressed due intrinsics and std::is_constant_evaluated()
@@ -381,13 +381,13 @@ tt_warning_push()
     }
 
     [[nodiscard]] numeric_array(std::array<T, N> const &rhs) noexcept : v(rhs) {}
-    
+
     numeric_array &operator=(std::array<T, N> const &rhs) noexcept
     {
         v = rhs;
         return *this;
     }
-    
+
     [[nodiscard]] operator std::array<T, N>() const noexcept
     {
         return v;
@@ -2862,7 +2862,7 @@ using f64x2 = numeric_array<double, 2>;
 using f64x4 = numeric_array<double, 4>;
 using f64x8 = numeric_array<double, 8>;
 
-} // namespace tt
+} // namespace tt::inline v1
 
 namespace std {
 template<class T, std::size_t N>

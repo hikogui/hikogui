@@ -10,7 +10,7 @@
 #include <iostream>
 #include <string_view>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /*! Location inside a configuration file.
  */
@@ -185,7 +185,7 @@ public:
     }
 };
 
-} // namespace tt
+} // namespace tt::inline v1
 
 namespace std {
 

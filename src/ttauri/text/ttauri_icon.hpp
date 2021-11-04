@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace tt {
+namespace tt::inline v1 {
 
 enum class ttauri_icon : char32_t {
     MinimizeWindow = 0xf301,

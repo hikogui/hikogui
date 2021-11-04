@@ -2,51 +2,45 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-
 #include "translation.hpp"
 #include "po_parser.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct translation_key {
     std::string msgid;
     language const *language;
 
-    translation_key(std::string_view msgid, tt::language const *language=nullptr) noexcept :
-        msgid(msgid), language(language) {}
+    translation_key(std::string_view msgid, tt::language const *language = nullptr) noexcept : msgid(msgid), language(language) {}
 
-    [[nodiscard]] size_t hash() const noexcept {
+    [[nodiscard]] size_t hash() const noexcept
+    {
         return hash_mix(language, msgid);
     }
 
-    [[nodiscard]] friend bool operator==(translation_key const &lhs, translation_key const &rhs) noexcept {
+    [[nodiscard]] friend bool operator==(translation_key const &lhs, translation_key const &rhs) noexcept
+    {
         return lhs.language == rhs.language && lhs.msgid == rhs.msgid;
     }
 };
 
-}
-
-namespace std {
+} // namespace tt::inline v1
 
 template<>
-struct hash<tt::translation_key> {
-    [[nodiscard]] size_t operator()(tt::translation_key const &rhs) const noexcept {
+struct std::hash<tt::translation_key> {
+    [[nodiscard]] size_t operator()(tt::translation_key const &rhs) const noexcept
+    {
         return rhs.hash();
     }
 };
 
-}
+namespace tt::inline v1 {
 
-namespace tt {
+std::unordered_map<translation_key, std::vector<std::string>> translations;
 
-std::unordered_map<translation_key,std::vector<std::string>> translations;
-
-[[nodiscard]] std::string_view get_translation(
-    std::string_view msgid,
-    long long n,
-    std::vector<language*> const &languages
-) noexcept {
-
+[[nodiscard]] std::string_view
+get_translation(std::string_view msgid, long long n, std::vector<language *> const &languages) noexcept
+{
     auto key = translation_key{msgid};
 
     for (ttlet *language : languages) {
@@ -65,11 +59,8 @@ std::unordered_map<translation_key,std::vector<std::string>> translations;
     return msgid;
 }
 
-void add_translation(
-    std::string_view msgid,
-    language const &language,
-    std::vector<std::string> const &plural_forms
-) noexcept {
+void add_translation(std::string_view msgid, language const &language, std::vector<std::string> const &plural_forms) noexcept
+{
     auto key = translation_key{msgid, &language};
     translations[key] = plural_forms;
 }
@@ -77,8 +68,8 @@ void add_translation(
 void add_translation(
     std::string_view msgid,
     language_tag const &language_tag,
-    std::vector<std::string> const &plural_forms
-) noexcept {
+    std::vector<std::string> const &plural_forms) noexcept
+{
     ttlet &language = language::find_or_create(language_tag);
     add_translation(msgid, language, plural_forms);
 }
@@ -87,12 +78,8 @@ void add_translation(po_translations const &po_translations, language const &lan
 {
     for (ttlet &translation : po_translations.translations) {
         auto msgid = ssize(translation.msgctxt) == 0 ? translation.msgid : translation.msgctxt + '|' + translation.msgid;
-        add_translation(
-            msgid,
-            language,
-            translation.msgstr
-        );
+        add_translation(msgid, language, translation.msgstr);
     }
 }
 
-}
+} // namespace tt::inline v1

@@ -8,7 +8,7 @@
 #include "../assert.hpp"
 #include "../strings.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** ISO-3166 country code.
  * ISO-3166-1 alpha-2 (upper-case)
@@ -36,7 +36,7 @@ public:
         }
     }
 
-    constexpr explicit operator bool () const noexcept
+    constexpr explicit operator bool() const noexcept
     {
         return _v0 == 0 and _v1 == 0;
     }
@@ -65,5 +65,4 @@ private:
     char _v1;
 };
 
-}
-
+} // namespace tt::inline v1

@@ -9,9 +9,7 @@
 #include <chrono>
 #include <cstring>
 
-namespace tt {
-
-using namespace std;
+namespace tt::inline v1 {
 
 static bool hasFoundationExtensions(const std::vector<const char *> &requiredExtensions)
 {
@@ -178,4 +176,4 @@ VkBool32 gfx_system_vulkan::debugUtilsMessageCallback(
     return VK_FALSE;
 }
 
-} // namespace tt
+} // namespace tt::inline v1

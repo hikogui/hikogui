@@ -5,7 +5,7 @@
 #include "counters.hpp"
 #include "log.hpp"
 
-namespace tt::detail {
+namespace tt::inline v1::detail {
 
 void counter::log_header() noexcept
 {
@@ -44,4 +44,4 @@ void counter::log(std::string const &tag) noexcept
     }
 }
 
-}
+} // namespace tt::inline v1::detail

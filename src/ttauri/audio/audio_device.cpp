@@ -3,7 +3,6 @@
 
 #include "audio_device.hpp"
 
-namespace tt {
-
+namespace tt::inline v1 {
 
 }

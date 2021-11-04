@@ -11,7 +11,7 @@
 #include <atomic>
 #include <thread>
 
-namespace tt {
+namespace tt::inline v1 {
 class time_stamp_count;
 
 /** Timestamp
@@ -69,4 +69,4 @@ private:
 
 std::string format_engineering(std::chrono::nanoseconds duration);
 
-} // namespace tt
+} // namespace tt::inline v1

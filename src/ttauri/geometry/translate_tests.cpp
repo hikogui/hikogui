@@ -74,5 +74,3 @@ TEST(geometry, translate_translate)
     ASSERT_TRUE(translate<3>(4.0, 6.0, 8.0) * translate<2>(1.0, 2.0) == translate<3>(5.0, 8.0, 8.0));
     ASSERT_TRUE(translate<3>(4.0, 6.0, 8.0) * translate<3>(1.0, 2.0, 3.0) == translate<3>(5.0, 8.0, 11.0));
 }
-
-

@@ -8,7 +8,7 @@
 #include "../strings.hpp"
 #include <vector>
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct gstring {
     std::vector<grapheme> graphemes;
@@ -155,4 +155,4 @@ struct gstring {
     return to_gstring(to_u32string(rhs));
 }
 
-} // namespace tt
+} // namespace tt::inline v1

@@ -8,7 +8,7 @@
 #include "../assert.hpp"
 #include "../strings.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** ISO-15924 script code.
  * A 4 letter title case script code:
@@ -41,7 +41,7 @@ public:
         }
     }
 
-    constexpr explicit operator bool () const noexcept
+    constexpr explicit operator bool() const noexcept
     {
         return _v0 == 0 and _v1 == 0 and _v2 == 0;
     }
@@ -75,7 +75,6 @@ private:
     uint8_t _v1;
     uint8_t _v2;
 
-    
     /** The 4 character code is compressed in 24 bits.
      * 6 bits per character from lsb to msb.
      * a-z is 1 to 26
@@ -95,5 +94,4 @@ private:
     }
 };
 
-}
-
+} // namespace tt::inline v1

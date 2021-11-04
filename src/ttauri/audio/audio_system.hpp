@@ -11,7 +11,7 @@
 #include <vector>
 #include <memory>
 
-namespace tt {
+namespace tt::inline v1 {
 class event_queue;
 
 /*! An system of audio devices.
@@ -45,4 +45,4 @@ protected:
     std::weak_ptr<audio_system_delegate> _delegate;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

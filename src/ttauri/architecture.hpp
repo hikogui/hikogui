@@ -11,7 +11,7 @@
 #include <TargetConditionals.h>
 #endif
 
-namespace tt {
+namespace tt::inline v1 {
 
 #define TT_BT_DEBUG 'D'
 #define TT_BT_RELEASE 'R'
@@ -74,7 +74,6 @@ enum class compiler {
 
     current = TT_COMPILER
 };
-
 
 #define TT_CPU_X64 'i'
 #define TT_CPU_ARM 'a'
@@ -221,8 +220,16 @@ constexpr bool x86_64_v4 = false;
 
 #elif TT_COMPILER == TT_CC_GCC
 #define tt_unreachable() __builtin_unreachable()
-#define tt_assume(condition) do { if (!(condition)) tt_unreachable(); } while (false)
-#define tt_assume2(condition, msg) do { if (!(condition)) tt_unreachable(); } while (false)
+#define tt_assume(condition) \
+    do { \
+        if (!(condition)) \
+            tt_unreachable(); \
+    } while (false)
+#define tt_assume2(condition, msg) \
+    do { \
+        if (!(condition)) \
+            tt_unreachable(); \
+    } while (false)
 #define tt_force_inline inline __attribute__((always_inline))
 #define tt_no_inline __attribute__((noinline))
 #define tt_restrict __restrict__
@@ -291,4 +298,4 @@ using file_handle = int;
 #error "file_handle Not implemented."
 #endif
 
-}
+} // namespace tt::inline v1

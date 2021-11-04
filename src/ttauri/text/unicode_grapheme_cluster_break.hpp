@@ -6,7 +6,7 @@
 
 #include <cstdint>
 
-namespace tt {
+namespace tt::inline v1 {
 
 enum class unicode_grapheme_cluster_break : uint8_t {
     Other,

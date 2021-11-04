@@ -5,7 +5,7 @@
 #include "toolbar_widget.hpp"
 #include "../scoped_buffer.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 toolbar_widget::toolbar_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
 {
@@ -184,4 +184,4 @@ widget &toolbar_widget::add_widget(horizontal_alignment alignment, std::unique_p
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

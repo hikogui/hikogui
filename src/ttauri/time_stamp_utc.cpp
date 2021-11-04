@@ -13,7 +13,7 @@
 #include <numeric>
 #include <chrono>
 
-namespace tt {
+namespace tt::inline v1 {
 
 std::string format_engineering(std::chrono::nanoseconds duration)
 {
@@ -88,7 +88,7 @@ std::string format_engineering(std::chrono::nanoseconds duration)
 
 void time_stamp_utc::subsystem_proc_frequency_calibration(std::stop_token stop_token) noexcept
 {
-    using namespace std::literals::chrono_literals;
+    using namespace std::chrono_literals;
 
     // Calibrate the TSC frequency to within 1 ppm.
     // A 1s measurement already brings is to about 1ppm. We are
@@ -132,7 +132,7 @@ static void advance_cpu_thread_mask(uint64_t const &process_cpu_mask, uint64_t &
 
 void time_stamp_utc::subsystem_proc(std::stop_token stop_token) noexcept
 {
-    using namespace std::literals::chrono_literals;
+    using namespace std::chrono_literals;
 
     set_thread_name("time_stamp_utc");
     subsystem_proc_frequency_calibration(stop_token);
@@ -180,4 +180,4 @@ void time_stamp_utc::stop_subsystem() noexcept
     return tt::stop_subsystem(deinit_subsystem);
 }
 
-} // namespace tt
+} // namespace tt::inline v1

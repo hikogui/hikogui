@@ -6,11 +6,7 @@
 #include "endian.hpp"
 #include <algorithm>
 
-namespace tt {
-
-
-
-
+namespace tt::inline v1 {
 
 void mergeMaximum(pixel_map<uint8_t> &dst, pixel_map<uint8_t> const &src) noexcept
 {
@@ -28,4 +24,4 @@ void mergeMaximum(pixel_map<uint8_t> &dst, pixel_map<uint8_t> const &src) noexce
     }
 }
 
-}
+} // namespace tt::inline v1

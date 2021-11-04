@@ -8,7 +8,7 @@
 #include <string>
 #include <string_view>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Convert text to Unicode-NFD normal form.
  *
@@ -30,8 +30,7 @@ std::u32string unicode_NFD(std::u32string_view text, bool ligatures = false, boo
  * @param composeCRLF Compose CR-LF combinations to LF.
  */
 [[nodiscard]] std::u32string
-unicode_NFC(std::u32string_view text, bool ligatures = false, bool paragraph = false, bool composeCRLF = false)
-    noexcept;
+unicode_NFC(std::u32string_view text, bool ligatures = false, bool paragraph = false, bool composeCRLF = false) noexcept;
 
 /** Convert text to Unicode-NFKD normal form.
  * Code point 0x00'ffff is used internally, do not pass in text.
@@ -50,4 +49,4 @@ std::u32string unicode_NFKD(std::u32string_view text, bool paragraph = false) no
  */
 std::u32string unicode_NFKC(std::u32string_view text, bool paragraph = false, bool composeCRLF = false) noexcept;
 
-}
+} // namespace tt::inline v1

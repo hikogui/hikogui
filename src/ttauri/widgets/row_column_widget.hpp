@@ -13,7 +13,7 @@
 #include "../geometry/axis.hpp"
 #include <memory>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** A row/column widget lays out child widgets along a row or column.
  *
@@ -188,7 +188,8 @@ private:
                 child_constraints.margin);
 
             minimum_thickness = std::max(minimum_thickness, child_constraints.minimum.height() + child_constraints.margin * 2.0f);
-            preferred_thickness = std::max(preferred_thickness, child_constraints.preferred.height() + child_constraints.margin * 2.0f);
+            preferred_thickness =
+                std::max(preferred_thickness, child_constraints.preferred.height() + child_constraints.margin * 2.0f);
             maximum_thickness = std::max(maximum_thickness, child_constraints.maximum.height() + child_constraints.margin * 2.0f);
 
         } else {
@@ -200,7 +201,8 @@ private:
                 child_constraints.margin);
 
             minimum_thickness = std::max(minimum_thickness, child_constraints.minimum.width() + child_constraints.margin * 2.0f);
-            preferred_thickness = std::max(preferred_thickness, child_constraints.preferred.width() + child_constraints.margin * 2.0f);
+            preferred_thickness =
+                std::max(preferred_thickness, child_constraints.preferred.width() + child_constraints.margin * 2.0f);
             maximum_thickness = std::max(maximum_thickness, child_constraints.maximum.width() + child_constraints.margin * 2.0f);
         }
     }
@@ -213,7 +215,8 @@ private:
 
         ttlet &child_constraints = child.set_constraints();
         ttlet child_rectangle = axis == axis::row ?
-            aarectangle{child_offset, child_constraints.margin, child_length, layout().height() - child_constraints.margin * 2.0f} :
+            aarectangle{
+                child_offset, child_constraints.margin, child_length, layout().height() - child_constraints.margin * 2.0f} :
             aarectangle{
                 child_constraints.margin,
                 layout().height() - child_offset - child_length,
@@ -232,4 +235,4 @@ using row_widget = row_column_widget<axis::row>;
  */
 using column_widget = row_column_widget<axis::column>;
 
-} // namespace tt
+} // namespace tt::inline v1

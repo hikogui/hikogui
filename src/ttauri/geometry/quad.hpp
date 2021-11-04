@@ -10,7 +10,7 @@
 #include "../coroutine.hpp"
 #include <tuple>
 
-namespace tt {
+namespace tt::inline v1 {
 
 class quad {
 public:
@@ -235,4 +235,4 @@ public:
     [[nodiscard]] friend constexpr bool operator==(quad const &lhs, quad const &rhs) noexcept = default;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

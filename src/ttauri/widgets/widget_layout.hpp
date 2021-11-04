@@ -8,8 +8,9 @@
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/transform.hpp"
 #include "../geometry/translate.hpp"
+#include "../chrono.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Result of widget_layout::store()
  */
@@ -32,7 +33,7 @@ enum class layout_update {
 class widget_layout {
 public:
     /** The amount of pixels that the redraw request will overhang the widget.
-     * 
+     *
      * Widgets are allowed to draw inside their margins, in most cases this will just be a border.
      */
     static constexpr float redraw_overhang = 2.0f;
@@ -220,4 +221,4 @@ public:
     }
 };
 
-} // namespace tt
+} // namespace tt::inline v1

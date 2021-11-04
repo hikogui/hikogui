@@ -10,7 +10,7 @@
 #include "../log.hpp"
 #include "../URL.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 theme::theme(tt::font_book const &font_book, URL const &url)
 {
@@ -97,7 +97,6 @@ theme::theme(tt::font_book const &font_book, URL const &url)
 
         if (holds_alternative<long long>(r) and holds_alternative<long long>(g) and holds_alternative<long long>(b) and
             holds_alternative<long long>(a)) {
-
             ttlet r_ = get<long long>(r);
             ttlet g_ = get<long long>(g);
             ttlet b_ = get<long long>(b);
@@ -114,7 +113,6 @@ theme::theme(tt::font_book const &font_book, URL const &url)
         } else if (
             holds_alternative<double>(r) and holds_alternative<double>(g) and holds_alternative<double>(b) and
             holds_alternative<double>(a)) {
-
             ttlet r_ = static_cast<float>(get<double>(r));
             ttlet g_ = static_cast<float>(get<double>(g));
             ttlet b_ = static_cast<float>(get<double>(b));
@@ -169,7 +167,6 @@ theme::theme(tt::font_book const &font_book, URL const &url)
     ttlet color_list_object = data[object_name];
     if (holds_alternative<datum::vector_type>(color_list_object) and not color_list_object.empty() and
         holds_alternative<datum::vector_type>(color_list_object[0])) {
-
         auto r = std::vector<tt::color>{};
         ssize_t i = 0;
         for (ttlet &color : color_list_object) {
@@ -304,4 +301,4 @@ void theme::parse(tt::font_book const &font_book, datum const &data)
         parse_text_style(font_book, data, "link-label-style");
 }
 
-} // namespace tt
+} // namespace tt::inline v1

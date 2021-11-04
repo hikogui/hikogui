@@ -2,12 +2,11 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-
 #pragma once
 
 #include "cast.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Indentation for writing out text files.
  * This type is used to pass indentation information recursivly to
@@ -21,14 +20,16 @@ public:
      * @param spaces Number of spaces per indentation.
      * @param space Character used for indentation.
      */
-    [[nodiscard]] constexpr indent(int spaces = 4, char space = ' ') noexcept :
-        _space(space), _spaces(spaces), _depth(0) {}
+    [[nodiscard]] constexpr indent(int spaces = 4, char space = ' ') noexcept : _space(space), _spaces(spaces), _depth(0) {}
 
     [[nodiscard]] constexpr indent(indent const &other) noexcept :
-        _space(other._space), _spaces(other._spaces), _depth(other._depth) {}
+        _space(other._space), _spaces(other._spaces), _depth(other._depth)
+    {
+    }
 
-    [[nodiscard]] constexpr indent(indent &&other) noexcept :
-        _space(other._space), _spaces(other._spaces), _depth(other._depth) {}
+    [[nodiscard]] constexpr indent(indent &&other) noexcept : _space(other._space), _spaces(other._spaces), _depth(other._depth)
+    {
+    }
 
     [[nodiscard]] constexpr indent &operator=(indent const &other) noexcept
     {
@@ -50,7 +51,7 @@ public:
 
     /** String conversion operator.
      */
-    [[nodiscard]] operator std::string () const noexcept
+    [[nodiscard]] operator std::string() const noexcept
     {
         return std::string(narrow_cast<size_t>(_depth) * narrow_cast<size_t>(_spaces), _space);
     }
@@ -85,6 +86,4 @@ private:
     int _depth;
 };
 
-
-}
-
+} // namespace tt::inline v1

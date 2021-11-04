@@ -11,7 +11,7 @@
 #include <string>
 #include <limits>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Encode and decode a type to and from a UTF-8 string.
  *
@@ -95,4 +95,4 @@ struct pickle<bool> {
     }
 };
 
-} // namespace tt
+} // namespace tt::inline v1

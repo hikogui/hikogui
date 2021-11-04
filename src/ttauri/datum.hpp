@@ -24,7 +24,7 @@
 #include <vector>
 #include <map>
 
-namespace tt {
+namespace tt::inline v1 {
 class datum;
 }
 
@@ -37,7 +37,7 @@ struct hash<tt::datum> {
 
 } // namespace std
 
-namespace tt {
+namespace tt::inline v1 {
 namespace detail {
 
 /** Promotion result.
@@ -2339,7 +2339,7 @@ private:
     }
 };
 
-} // namespace tt
+} // namespace tt::inline v1
 
 namespace std {
 [[nodiscard]] constexpr size_t hash<tt::datum>::operator()(tt::datum const &rhs) const noexcept

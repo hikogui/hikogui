@@ -23,8 +23,8 @@ TEST(base_n, base16_encode)
     ASSERT_EQ(base16::encode(to_bstring("foobar")), "666F6F626172");
 }
 
-
-TEST(base_n, base64_encode) {
+TEST(base_n, base64_encode)
+{
     ASSERT_EQ(base64::encode(to_bstring("")), "");
     ASSERT_EQ(base64::encode(to_bstring("f")), "Zg==");
     ASSERT_EQ(base64::encode(to_bstring("fo")), "Zm8=");
@@ -36,7 +36,8 @@ TEST(base_n, base64_encode) {
     ASSERT_EQ(base64::encode(to_bstring("Hello World\n")), "SGVsbG8gV29ybGQK");
 }
 
-TEST(base_n, base64_decode) {
+TEST(base_n, base64_decode)
+{
     ASSERT_EQ(base64::decode(""), to_bstring(""));
     ASSERT_THROW(base64::decode("Z"), parse_error);
     ASSERT_EQ(base64::decode("Zg=="), to_bstring("f"));

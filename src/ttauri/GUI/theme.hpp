@@ -16,7 +16,7 @@
 #include "../subsystem.hpp"
 #include <array>
 
-namespace tt {
+namespace tt::inline v1 {
 class font_book;
 
 class theme {
@@ -61,7 +61,6 @@ public:
      */
     float label_icon_size = 20.0f;
 
-
     std::string name;
     theme_mode mode;
 
@@ -93,13 +92,15 @@ private:
     [[nodiscard]] tt::text_style parse_text_style(tt::font_book const &font_book, datum const &data, char const *object_name);
     void parse(tt::font_book const &font_book, datum const &data);
 
-    [[nodiscard]] friend std::string to_string(theme const &rhs) noexcept {
+    [[nodiscard]] friend std::string to_string(theme const &rhs) noexcept
+    {
         return std::format("{}:{}", rhs.name, rhs.mode);
     }
 
-    friend std::ostream &operator<<(std::ostream &lhs, theme const &rhs) {
+    friend std::ostream &operator<<(std::ostream &lhs, theme const &rhs)
+    {
         return lhs << to_string(rhs);
     }
 };
 
-}
+} // namespace tt::inline v1

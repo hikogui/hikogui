@@ -15,29 +15,33 @@ struct A {
 
     virtual ~A() {}
 
-    virtual int foo() const noexcept {
+    virtual int foo() const noexcept
+    {
         return 1;
     }
 };
 
-struct B: public A {
-    int foo() const noexcept override {
+struct B : public A {
+    int foo() const noexcept override
+    {
         return 2;
     }
 };
 
-struct C: public A {
+struct C : public A {
     int world = 20;
 
-    int foo() const noexcept override {
+    int foo() const noexcept override
+    {
         return 3;
     }
 };
 
-TEST(polymorphic_optional, assignment) {
-    std::array<polymorphic_optional<A,sizeof(C)>, 3> values;
+TEST(polymorphic_optional, assignment)
+{
+    std::array<polymorphic_optional<A, sizeof(C)>, 3> values;
 
-    static_assert(is_decayed_derived_from_v<B,A>);
+    static_assert(is_decayed_derived_from_v<B, A>);
 
     values[0] = A{};
     values[1] = B{};
@@ -46,4 +50,3 @@ TEST(polymorphic_optional, assignment) {
     ASSERT_EQ(values[1]->foo(), 2);
     ASSERT_EQ(values[2]->foo(), 3);
 }
-

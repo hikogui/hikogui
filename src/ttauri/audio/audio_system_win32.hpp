@@ -12,7 +12,7 @@
 
 struct IMMDeviceEnumerator;
 
-namespace tt {
+namespace tt::inline v1 {
 
 class audio_system_win32_notification_client;
 
@@ -67,4 +67,4 @@ private:
     friend audio_system_win32_notification_client;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

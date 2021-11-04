@@ -7,11 +7,11 @@
 #include "gfx_surface_vulkan.hpp"
 #include <unordered_map>
 
-namespace tt {
+namespace tt::inline v1 {
 
 class gui_window_vulkan_macos final : public gfx_surface_vulkan {
 public:
-    //HWND win32Window = nullptr;
+    // HWND win32Window = nullptr;
 
     gui_window_vulkan_macos(std::shared_ptr<WindowDelegate> const &delegate, Label &&title);
     ~gui_window_vulkan_macos();
@@ -39,20 +39,20 @@ public:
 
     void set_window_size(size_t width, size_t height) override {}
 
-    [[nodiscard]] std::string get_text_from_clipboard() const noexcept override {
+    [[nodiscard]] std::string get_text_from_clipboard() const noexcept override
+    {
         return "<clipboard>";
     }
 
-    void set_text_on_clipboard(std::string str) noexcept override { }
-
+    void set_text_on_clipboard(std::string str) noexcept override {}
 
 private:
-    //void setOSWindowRectangleFromRECT(RECT aarectangle) noexcept;
+    // void setOSWindowRectangleFromRECT(RECT aarectangle) noexcept;
 
-    //TRACKMOUSEEVENT trackMouseLeaveEventParameters;
+    // TRACKMOUSEEVENT trackMouseLeaveEventParameters;
     bool trackingMouseLeaveEvent = false;
 
-    //static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+    // static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     /*! The application class will function as a main-thread trampoline for this class
      * methods that start with `mainThread`.
@@ -60,4 +60,4 @@ private:
     friend tt::Application_macos;
 };
 
-}
+} // namespace tt::inline v1

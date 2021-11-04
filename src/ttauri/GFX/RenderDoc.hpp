@@ -6,7 +6,7 @@
 
 #include <memory>
 
-namespace tt {
+namespace tt::inline v1 {
 
 class RenderDoc {
 public:
@@ -20,4 +20,4 @@ private:
     void *api = nullptr;
 };
 
-}
+} // namespace tt::inline v1

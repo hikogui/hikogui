@@ -6,7 +6,7 @@
 
 #include "audio_direction.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 class audio_channel {
 public:
@@ -51,8 +51,6 @@ public:
      * @param num_samples Number of samples to take the running average over.
      */
     [[nodiscard]] float rms(size_t num_samples) noexcept;
-
 };
 
-}
-
+} // namespace tt::inline v1

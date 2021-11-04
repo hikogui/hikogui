@@ -6,7 +6,7 @@
 #include "../GUI/gui_window.hpp"
 #include "../scoped_buffer.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 tab_widget::~tab_widget()
 {
@@ -132,4 +132,4 @@ void tab_widget::draw(draw_context const &context) noexcept
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

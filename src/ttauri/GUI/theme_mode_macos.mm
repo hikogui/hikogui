@@ -5,7 +5,7 @@
 #include "../strings.hpp"
 #include "../log.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] theme_mode readOStheme_mode() noexcept
 {

@@ -11,11 +11,10 @@
 #include <mutex>
 #include <Windows.h>
 
-namespace tt {
+namespace tt::inline v1 {
 
-file_view::file_view(std::shared_ptr<file_mapping> const& _file_mapping_object, size_t offset, size_t size) :
-    _file_mapping_object(_file_mapping_object),
-    _offset(offset)
+file_view::file_view(std::shared_ptr<file_mapping> const &_file_mapping_object, size_t offset, size_t size) :
+    _file_mapping_object(_file_mapping_object), _offset(offset)
 {
     if (size == 0) {
         size = _file_mapping_object->size - _offset;
@@ -25,11 +24,9 @@ file_view::file_view(std::shared_ptr<file_mapping> const& _file_mapping_object, 
     DWORD desiredAccess;
     if (accessMode() >= (access_mode::read | access_mode::write)) {
         desiredAccess = FILE_MAP_WRITE;
-    }
-    else if (accessMode() >= access_mode::read) {
+    } else if (accessMode() >= access_mode::read) {
         desiredAccess = FILE_MAP_READ;
-    }
-    else {
+    } else {
         throw io_error("{}: Illegal access mode WRONLY/0 when viewing file.", location());
     }
 
@@ -50,12 +47,12 @@ file_view::file_view(std::shared_ptr<file_mapping> const& _file_mapping_object, 
 }
 
 file_view::file_view(URL const &location, access_mode accessMode, size_t offset, size_t size) :
-    file_view(findOrCreateFileMappingObject(location, accessMode, offset + size), offset, size) {}
+    file_view(findOrCreateFileMappingObject(location, accessMode, offset + size), offset, size)
+{
+}
 
-file_view::file_view(file_view const &other) noexcept:
-    _file_mapping_object(other._file_mapping_object),
-    _bytes(other._bytes),
-    _offset(other._offset)
+file_view::file_view(file_view const &other) noexcept :
+    _file_mapping_object(other._file_mapping_object), _bytes(other._bytes), _offset(other._offset)
 {
     tt_axiom(&other != this);
 }
@@ -69,10 +66,8 @@ file_view &file_view::operator=(file_view const &other) noexcept
     return *this;
 }
 
-file_view::file_view(file_view &&other) noexcept:
-    _file_mapping_object(std::move(other._file_mapping_object)),
-    _bytes(std::move(other._bytes)),
-    _offset(other._offset)
+file_view::file_view(file_view &&other) noexcept :
+    _file_mapping_object(std::move(other._file_mapping_object)), _bytes(std::move(other._bytes)), _offset(other._offset)
 {
     tt_axiom(&other != this);
 }
@@ -99,11 +94,11 @@ void file_view::unmap(std::span<std::byte> *bytes) noexcept
     }
 }
 
-void file_view::flush(void* base, size_t size)
+void file_view::flush(void *base, size_t size)
 {
     if (!FlushViewOfFile(base, size)) {
         throw io_error("{}: Could not flush file. '{}'", location(), get_last_error_message());
     }
 }
 
-}
+} // namespace tt::inline v1

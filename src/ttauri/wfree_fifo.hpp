@@ -8,7 +8,7 @@
 #include <memory>
 #include <array>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** A wait-free multiple-producer/single-consumer fifo designed for absolute performance.
  * Because of performance reasons the ring-buffer is 64kByte.
@@ -94,7 +94,7 @@ public:
 
     tt_no_inline void contended() noexcept
     {
-        using namespace std::literals::chrono_literals;
+        using namespace std::chrono_literals;
 
         // If we get here, that would suck, but nothing to do about it.
         ++global_counter<"wfree_fifo">;
@@ -118,7 +118,8 @@ public:
         ttlet index = _head.fetch_add(slot_size, std::memory_order::relaxed);
         tt_axiom(index % slot_size == 0);
 
-        auto &slot = *std::launder(std::assume_aligned<slot_size>(reinterpret_cast<slot_type*>(reinterpret_cast<char*>(this) + index)));
+        auto &slot =
+            *std::launder(std::assume_aligned<slot_size>(reinterpret_cast<slot_type *>(reinterpret_cast<char *>(this) + index)));
 
         // The division here should be eliminated by the equal multiplication inside the index operator.
         // auto &slot = _slots[index / slot_size];
@@ -181,4 +182,4 @@ private:
     uint16_t _tail = 0;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

@@ -4,7 +4,7 @@
 
 #include "audio_system_aggregate.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 class audio_system_aggregate_delegate : public audio_system_delegate {
 public:
@@ -28,4 +28,4 @@ audio_system_aggregate::audio_system_aggregate(
 {
 }
 
-}
+} // namespace tt::inline v1

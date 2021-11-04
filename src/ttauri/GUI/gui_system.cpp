@@ -12,7 +12,7 @@
 #include "../log.hpp"
 #include <chrono>
 
-namespace tt {
+namespace tt::inline v1 {
 
 gui_system::gui_system(
     std::shared_ptr<tt::event_queue> event_queue,
@@ -81,4 +81,4 @@ void gui_system::set_theme_mode(tt::theme_mode mode) noexcept
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-namespace tt {
+namespace tt::inline v1 {
 
 template<typename T>
 class pixel_map;
@@ -58,7 +58,7 @@ struct paged_image {
     [[nodiscard]] constexpr extent2 size_in_float_pages() const noexcept
     {
         constexpr auto page_size_ = f32x4{narrow_cast<float>(page_size), narrow_cast<float>(page_size)};
-        auto size = f32x4{i32x4{narrow_cast<int32_t>(width),narrow_cast<int32_t>(height), 1, 1}};
+        auto size = f32x4{i32x4{narrow_cast<int32_t>(width), narrow_cast<int32_t>(height), 1, 1}};
         return extent2{size / page_size_};
     }
 
@@ -67,4 +67,4 @@ struct paged_image {
     void upload(pixel_map<sfloat_rgba16> const &image) noexcept;
 };
 
-} // namespace tt::pipeline_image
+} // namespace tt::inline v1

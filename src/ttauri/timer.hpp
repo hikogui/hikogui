@@ -2,7 +2,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-
 #pragma once
 
 #include "unfair_mutex.hpp"
@@ -14,7 +13,7 @@
 #include <tuple>
 #include <thread>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** A timer which will execute callbacks at given intervals.
  */
@@ -24,7 +23,7 @@ public:
      * @param current_time The current time of executing this timer.
      * @param last True if this is the last time this timer is called, on emergency stop.
      */
-    using callback_type = std::function<void(utc_nanoseconds,bool)>;
+    using callback_type = std::function<void(utc_nanoseconds, bool)>;
     using callback_ptr_type = std::shared_ptr<callback_type>;
 
     timer(std::string name) noexcept;
@@ -37,9 +36,9 @@ public:
     void start() noexcept;
 
     /** Stop the timer thread.
-    * Maybe called to emergency stop the timer thread, this will
-    * cause all callbacks to be called with last=true.
-    */
+     * Maybe called to emergency stop the timer thread, this will
+     * cause all callbacks to be called with last=true.
+     */
     void stop() noexcept;
 
     /** Add a callback function to be executed each interval.
@@ -55,8 +54,11 @@ public:
      * @return An shared_ptr to retain the callback function, when the shared_ptr is removed then
      *         the callback can no longer be called.
      */
-    template<typename Callback> requires(std::is_invocable_v<Callback>)
-    [[nodiscard]] std::shared_ptr<callback_type> add_callback(std::chrono::nanoseconds interval, Callback callback, bool immediate=false) noexcept
+    template<typename Callback>
+    requires(std::is_invocable_v<Callback>) [[nodiscard]] std::shared_ptr<callback_type> add_callback(
+        std::chrono::nanoseconds interval,
+        Callback callback,
+        bool immediate = false) noexcept
     {
         ttlet current_time = utc_nanoseconds(std::chrono::utc_clock::now());
         auto callback_ptr = std::make_shared<callback_type>(std::forward<Callback>(callback));
@@ -64,11 +66,7 @@ public:
         {
             ttlet lock = std::scoped_lock(mutex);
 
-            callback_list.emplace_back(
-                interval,
-                calculate_next_wakeup(current_time, interval),
-                callback_ptr
-            );
+            callback_list.emplace_back(interval, calculate_next_wakeup(current_time, interval), callback_ptr);
 
             if (ssize(callback_list) == 1) {
                 start_with_lock_held();
@@ -140,11 +138,11 @@ private:
      */
     void stop_with_lock_held() noexcept;
 
-    [[nodiscard]] static utc_nanoseconds calculate_next_wakeup(utc_nanoseconds current_time, std::chrono::nanoseconds interval) noexcept;
+    [[nodiscard]] static utc_nanoseconds
+    calculate_next_wakeup(utc_nanoseconds current_time, std::chrono::nanoseconds interval) noexcept;
 
     [[nodiscard]] static timer *subsystem_init() noexcept;
     static void subsystem_deinit() noexcept;
 };
 
-
-}
+} // namespace tt::inline v1

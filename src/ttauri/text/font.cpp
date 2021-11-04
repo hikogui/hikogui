@@ -6,7 +6,7 @@
 #include "true_type_font.hpp"
 #include "../resource_view.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] font_glyph_ids font::find_glyph(grapheme g) const noexcept
 {
@@ -30,7 +30,7 @@ namespace tt {
 
     if (not r) {
         // First try decomposed normalization
-        for (ttlet c: g.NFD()) {
+        for (ttlet c : g.NFD()) {
             if (ttlet glyph_id = find_glyph(c)) {
                 r += glyph_id;
             } else {
@@ -43,4 +43,4 @@ namespace tt {
     return r;
 }
 
-}
+} // namespace tt::inline v1

@@ -4,7 +4,7 @@
 
 #include "JSON.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct parse_context_t {
     std::string_view::const_iterator text_begin;
@@ -298,4 +298,4 @@ static void format_JSON_impl(datum const &value, std::string &result, tt::indent
     r += '\n';
     return r;
 }
-} // namespace tt
+} // namespace tt::inline v1

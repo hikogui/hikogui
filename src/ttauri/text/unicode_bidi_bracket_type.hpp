@@ -6,7 +6,7 @@
 
 #include <cstdint>
 
-namespace tt {
+namespace tt::inline v1 {
 
 enum class unicode_bidi_bracket_type : uint8_t {
     n, ///< Not mirrored

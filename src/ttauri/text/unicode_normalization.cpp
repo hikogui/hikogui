@@ -9,7 +9,7 @@
 #include "../assert.hpp"
 #include "../required.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Detect typographical ligature.
  * A typographical ligatures will have the same meaning in the text
@@ -92,7 +92,7 @@ static void unicode_decompose(char32_t code_point, bool compatible, bool ligatur
 static void
 unicode_decompose(std::u32string_view text, bool compatible, bool ligature, bool paragraph, std::u32string &r) noexcept
 {
-    for (ttlet c: text) {
+    for (ttlet c : text) {
         unicode_decompose(c, compatible, ligature, paragraph, r);
     }
 }
@@ -211,8 +211,7 @@ std::u32string unicode_NFD(std::u32string_view text, bool ligatures, bool paragr
     return r;
 }
 
-[[nodiscard]] std::u32string
-unicode_NFC(std::u32string_view text, bool ligatures, bool paragraph, bool composeCRLF) noexcept
+[[nodiscard]] std::u32string unicode_NFC(std::u32string_view text, bool ligatures, bool paragraph, bool composeCRLF) noexcept
 {
     auto r = std::u32string{};
     unicode_decompose(text, false, ligatures, paragraph, r);
@@ -241,4 +240,4 @@ std::u32string unicode_NFKC(std::u32string_view text, bool paragraph, bool compo
     return r;
 }
 
-}
+} // namespace tt::inline v1

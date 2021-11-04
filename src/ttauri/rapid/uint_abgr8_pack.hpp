@@ -7,7 +7,7 @@
 #include "../geometry/corner_shapes.hpp"
 #include <algorithm>
 
-namespace tt {
+namespace tt::inline v1 {
 
 class uint_abgr8_pack {
     uint32_t v;
@@ -20,12 +20,20 @@ public:
     constexpr uint_abgr8_pack &operator=(uint_abgr8_pack &&rhs) noexcept = default;
 
     constexpr uint_abgr8_pack(uint32_t const &rhs) noexcept : v(rhs) {}
-    constexpr uint_abgr8_pack &operator=(uint32_t const &rhs) noexcept { v = rhs; return *this; }
-    constexpr operator uint32_t () noexcept { return v; }
+    constexpr uint_abgr8_pack &operator=(uint32_t const &rhs) noexcept
+    {
+        v = rhs;
+        return *this;
+    }
+    constexpr operator uint32_t() noexcept
+    {
+        return v;
+    }
 
     constexpr uint_abgr8_pack(f32x4 const &rhs) noexcept : v(std::bit_cast<decltype(v)>(u8x4{rhs})) {}
 
-    constexpr uint_abgr8_pack &operator=(f32x4 const &rhs) noexcept {
+    constexpr uint_abgr8_pack &operator=(f32x4 const &rhs) noexcept
+    {
         v = std::bit_cast<decltype(v)>(u8x4{rhs});
         return *this;
     }
@@ -35,6 +43,4 @@ public:
     [[nodiscard]] constexpr friend bool operator==(uint_abgr8_pack const &lhs, uint_abgr8_pack const &rhs) noexcept = default;
 };
 
-
-
-}
+} // namespace tt::inline v1

@@ -8,11 +8,11 @@
 #include <compare>
 #include <iterator>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** An iterator which recursively iterates through nested containers.
  * Currently only recurses through two levels of containers.
- * 
+ *
  */
 template<typename ParentIt>
 class recursive_iterator {
@@ -198,8 +198,7 @@ public:
         }
     }
 
-    [[nodiscard]] friend std::strong_ordering
-    operator<=>(recursive_iterator const &lhs, recursive_iterator const &rhs) noexcept
+    [[nodiscard]] friend std::strong_ordering operator<=>(recursive_iterator const &lhs, recursive_iterator const &rhs) noexcept
     {
         if (lhs._parent_it != rhs._parent_it) {
             return (lhs._parent_it - rhs._parent_it) <=> 0;
@@ -278,4 +277,4 @@ template<typename Container>
     return recursive_iterator(end(rhs), end(rhs));
 }
 
-} // namespace tt
+} // namespace tt::inline v1

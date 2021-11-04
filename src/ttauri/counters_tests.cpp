@@ -11,7 +11,8 @@
 using namespace std;
 using namespace tt;
 
-TEST(Counters, CompileTime) {
+TEST(Counters, CompileTime)
+{
     ++global_counter<"foo_a">;
     ++global_counter<"bar_a">;
     ++global_counter<"bar_a">;
@@ -21,7 +22,8 @@ TEST(Counters, CompileTime) {
     ASSERT_EQ(global_counter<"bar_a">, 2);
 }
 
-TEST(Counters, RunTimeRead) {
+TEST(Counters, RunTimeRead)
+{
     ++global_counter<"foo_b">;
     ++global_counter<"bar_b">;
     ++global_counter<"bar_b">;

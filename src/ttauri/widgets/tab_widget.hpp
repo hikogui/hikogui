@@ -9,7 +9,7 @@
 #include "tab_delegate.hpp"
 #include "default_tab_delegate.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** A graphical element that shows only one of a predefined set of mutually
  * exclusive child widgets.
@@ -71,7 +71,6 @@ public:
     {
         tt_axiom(is_gui_thread());
 
-
         auto tmp = std::make_unique<WidgetType>(window, this, std::forward<Args>(args)...);
         auto &ref = *tmp;
         if (auto delegate = _delegate.lock()) {
@@ -85,7 +84,7 @@ public:
     /// @privatesection
     [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
     {
-        for (ttlet &child: _children) {
+        for (ttlet &child : _children) {
             co_yield child.get();
         }
     }
@@ -108,4 +107,4 @@ private:
     [[nodiscard]] widget const &selected_child() const noexcept;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

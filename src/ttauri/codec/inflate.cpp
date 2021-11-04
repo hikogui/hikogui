@@ -8,7 +8,7 @@
 #include "../huffman.hpp"
 #include <array>
 
-namespace tt {
+namespace tt::inline v1 {
 
 static void inflate_copy_block(std::span<std::byte const> bytes, ssize_t &bit_offset, ssize_t max_size, bstring &r)
 {
@@ -24,10 +24,7 @@ static void inflate_copy_block(std::span<std::byte const> bytes, ssize_t &bit_of
     bit_offset = offset * 8;
 }
 
-[[nodiscard]] static int inflate_decode_length(
-    std::span<std::byte const> bytes,
-    ssize_t &bit_offset,
-    int symbol)
+[[nodiscard]] static int inflate_decode_length(std::span<std::byte const> bytes, ssize_t &bit_offset, int symbol)
 {
     switch (symbol) {
     case 257: return 3;
@@ -59,15 +56,11 @@ static void inflate_copy_block(std::span<std::byte const> bytes, ssize_t &bit_of
     case 283: return get_bits(bytes, bit_offset, 5) + 195;
     case 284: return get_bits(bytes, bit_offset, 5) + 227;
     case 285: return 258;
-    default:
-        throw parse_error("Literal/Length symbol out of range {}", symbol);
+    default: throw parse_error("Literal/Length symbol out of range {}", symbol);
     }
 }
 
-[[nodiscard]] static int inflate_decode_distance(
-    std::span<std::byte const> bytes,
-    ssize_t &bit_offset,
-    int symbol)
+[[nodiscard]] static int inflate_decode_distance(std::span<std::byte const> bytes, ssize_t &bit_offset, int symbol)
 {
     switch (symbol) {
     case 0: return 1;
@@ -100,8 +93,7 @@ static void inflate_copy_block(std::span<std::byte const> bytes, ssize_t &bit_of
     case 27: return get_bits(bytes, bit_offset, 12) + 12289;
     case 28: return get_bits(bytes, bit_offset, 13) + 16385;
     case 29: return get_bits(bytes, bit_offset, 13) + 24577;
-    default:
-        throw parse_error("Distance symbol out of range {}", symbol);
+    default: throw parse_error("Distance symbol out of range {}", symbol);
     }
 }
 
@@ -184,19 +176,16 @@ huffman_tree<int16_t> deflate_fixed_distance_tree = []() {
     return huffman_tree<int16_t>::from_lengths(lengths);
 }();
 
-
-
 static void inflate_fixed_block(std::span<std::byte const> bytes, ssize_t &bit_offset, ssize_t max_size, bstring &r)
 {
     inflate_block(bytes, bit_offset, max_size, deflate_fixed_literal_tree, deflate_fixed_distance_tree, r);
 }
 
-[[nodiscard]] static huffman_tree<int16_t> inflate_code_lengths(std::span<std::byte const> bytes, ssize_t &bit_offset, int nr_symbols)
+[[nodiscard]] static huffman_tree<int16_t>
+inflate_code_lengths(std::span<std::byte const> bytes, ssize_t &bit_offset, int nr_symbols)
 {
     // The symbols are in different order in the table.
-    constexpr auto symbols = std::array{
-        16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15
-    };
+    constexpr auto symbols = std::array{16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
 
     tt_parse_check(((bit_offset + (3 * static_cast<ssize_t>(nr_symbols)) + 7) >> 3) <= ssize(bytes), "Input buffer overrun");
 
@@ -228,25 +217,24 @@ std::vector<int> inflate_lengths(
 
         switch (symbol) {
         case 16: {
-                auto copy_length = get_bits(bytes, bit_offset, 2) + 3;
-                while (copy_length--) {
-                    r.push_back(prev_length);
-                }
-            } break;
+            auto copy_length = get_bits(bytes, bit_offset, 2) + 3;
+            while (copy_length--) {
+                r.push_back(prev_length);
+            }
+        } break;
         case 17: {
-                auto copy_length = get_bits(bytes, bit_offset, 3) + 3;
-                while (copy_length--) {
-                    r.push_back(0);
-                }
-            } break;
+            auto copy_length = get_bits(bytes, bit_offset, 3) + 3;
+            while (copy_length--) {
+                r.push_back(0);
+            }
+        } break;
         case 18: {
-                auto copy_length = get_bits(bytes, bit_offset, 7) + 11;
-                while (copy_length--) {
-                    r.push_back(0);
-                }
-            } break;
-        default:
-            r.push_back(prev_length = symbol);
+            auto copy_length = get_bits(bytes, bit_offset, 7) + 11;
+            while (copy_length--) {
+                r.push_back(0);
+            }
+        } break;
+        default: r.push_back(prev_length = symbol);
         }
     }
 
@@ -292,17 +280,10 @@ bstring inflate(std::span<std::byte const> bytes, ssize_t &offset, ssize_t max_s
         ttlet BTYPE = get_bits(bytes, bit_offset, 2);
 
         switch (BTYPE) {
-        case 0:
-            inflate_copy_block(bytes, bit_offset, max_size - ssize(r), r);
-            break;
-        case 1:
-            inflate_fixed_block(bytes, bit_offset, max_size - ssize(r), r);
-            break;
-        case 2:
-            inflate_dynamic_block(bytes, bit_offset, max_size - ssize(r), r);
-            break;
-        default:
-            throw parse_error("Reserved block type");
+        case 0: inflate_copy_block(bytes, bit_offset, max_size - ssize(r), r); break;
+        case 1: inflate_fixed_block(bytes, bit_offset, max_size - ssize(r), r); break;
+        case 2: inflate_dynamic_block(bytes, bit_offset, max_size - ssize(r), r); break;
+        default: throw parse_error("Reserved block type");
         }
 
     } while (!BFINAL);
@@ -311,4 +292,4 @@ bstring inflate(std::span<std::byte const> bytes, ssize_t &offset, ssize_t max_s
     return r;
 }
 
-}
+} // namespace tt::inline v1

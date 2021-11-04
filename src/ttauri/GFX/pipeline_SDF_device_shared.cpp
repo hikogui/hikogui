@@ -16,9 +16,7 @@
 #include "../geometry/translate.hpp"
 #include <array>
 
-namespace tt::pipeline_SDF {
-
-using namespace std;
+namespace tt::inline v1::pipeline_SDF {
 
 device_shared::device_shared(gfx_device_vulkan const &device) : device(device)
 {
@@ -74,7 +72,7 @@ void device_shared::uploadStagingPixmapToAtlas(glyph_atlas_info const &location)
 
     stagingTexture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eTransferSrcOptimal);
 
-    array<vector<vk::ImageCopy>, atlasMaximumNrImages> regionsToCopyPerAtlasTexture;
+    std::array<std::vector<vk::ImageCopy>, atlasMaximumNrImages> regionsToCopyPerAtlasTexture;
 
     auto regionsToCopy = std::vector{vk::ImageCopy{
         {vk::ImageAspectFlagBits::eColor, 0, 0, 1},
@@ -125,7 +123,7 @@ void device_shared::prepare_atlas_for_rendering()
  */
 void device_shared::add_glyph_to_atlas(font_glyph_ids const &glyph, glyph_atlas_info &info) noexcept
 {
-    ttlet [glyph_path, glyph_bounding_box] = glyph.get_path_and_bounding_box();
+    ttlet[glyph_path, glyph_bounding_box] = glyph.get_path_and_bounding_box();
 
     ttlet draw_scale = scale2{drawfontSize, drawfontSize};
     ttlet draw_bounding_box = draw_scale * glyph_bounding_box;
@@ -337,4 +335,4 @@ void device_shared::teardownAtlas(gfx_device_vulkan *vulkanDevice)
     vulkanDevice->destroyImage(stagingTexture.image, stagingTexture.allocation);
 }
 
-} // namespace tt::pipeline_SDF
+} // namespace tt::inline v1::pipeline_SDF

@@ -17,7 +17,7 @@
 #include <vector>
 #include <optional>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Parse a JSON string.
  * @param text The text to parse.
@@ -37,4 +37,4 @@ namespace tt {
  */
 [[nodiscard]] std::string format_JSON(datum const &root);
 
-}
+} // namespace tt::inline v1

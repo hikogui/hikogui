@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace tt {
+namespace tt::inline v1 {
 
 enum class subpixel_orientation {
     Unknown = 0,

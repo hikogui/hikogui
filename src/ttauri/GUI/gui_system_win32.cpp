@@ -12,7 +12,7 @@
 #include "../locked_memory_allocator.hpp"
 #include <memory>
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] std::unique_ptr<gui_system> gui_system::make_unique(std::weak_ptr<gui_system_delegate> delegate) noexcept
 {
@@ -74,7 +74,7 @@ void gui_system_win32::exit(int exit_code)
 
 int gui_system_win32::loop()
 {
-    using namespace std::literals::chrono_literals;
+    using namespace std::chrono_literals;
 
     // Run the message loop.
     std::optional<int> exit_code = {};
@@ -144,4 +144,4 @@ bypass_render:
     return *exit_code;
 }
 
-} // namespace tt
+} // namespace tt::inline v1

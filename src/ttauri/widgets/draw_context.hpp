@@ -17,7 +17,7 @@
 #include "../vspan.hpp"
 #include "widget_layout.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 class gfx_device;
 class gfx_device_vulkan;
 class shaped_text;
@@ -159,4 +159,4 @@ private:
         const noexcept;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

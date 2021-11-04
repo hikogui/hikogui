@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Compare then assign if there was a change.
  * @return true when the right hand side is different from the left and side.
@@ -20,4 +20,4 @@ template<typename T, typename U>
     }
 }
 
-}
+} // namespace tt::inline v1

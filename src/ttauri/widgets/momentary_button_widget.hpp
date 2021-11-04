@@ -6,7 +6,7 @@
 
 #include "abstract_button_widget.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 class momentary_button_widget final : public abstract_button_widget {
 public:
@@ -15,22 +15,14 @@ public:
     using callback_ptr_type = typename delegate_type::callback_ptr_type;
 
     template<typename Label>
-    momentary_button_widget(
-        gui_window &window,
-        widget *parent,
-        Label &&label,
-        std::weak_ptr<delegate_type> delegate) noexcept :
+    momentary_button_widget(gui_window &window, widget *parent, Label &&label, std::weak_ptr<delegate_type> delegate) noexcept :
         momentary_button_widget(window, parent, std::forward<Label>(label), weak_or_unique_ptr{std::move(delegate)})
     {
     }
 
     template<typename Label>
     momentary_button_widget(gui_window &window, widget *parent, Label &&label) noexcept :
-        momentary_button_widget(
-            window,
-            parent,
-            std::forward<Label>(label),
-            std::make_unique<delegate_type>())
+        momentary_button_widget(window, parent, std::forward<Label>(label), std::make_unique<delegate_type>())
     {
     }
 
@@ -55,4 +47,4 @@ private:
     void draw_label_button(draw_context const &context) noexcept;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

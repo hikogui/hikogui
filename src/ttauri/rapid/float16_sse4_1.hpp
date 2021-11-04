@@ -23,7 +23,7 @@
 #include "../required.hpp"
 #include "../float16.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 inline __m128 _mm_cvtph_ps_sse2(__m128i value) noexcept
 {
@@ -77,7 +77,7 @@ inline __m128i _mm_cvtps_ph_sse4_1(__m128 value) noexcept
     u = _mm_min_epi32(u, f32_to_f16_infinite_); // SSE4.1
 
     // Convert the bias from float to half-float.
-    ttlet f32_to_f16_adjustment_ = _mm_shuffle_epi32(f32_to_f16_constants, 0b10'10'10'10); // SSE2 
+    ttlet f32_to_f16_adjustment_ = _mm_shuffle_epi32(f32_to_f16_constants, 0b10'10'10'10); // SSE2
     u = _mm_sub_epi32(u, f32_to_f16_adjustment_);
 
     // Shift the float until it becomes a half-float. This truncates the mantissa.
@@ -94,4 +94,4 @@ inline __m128i _mm_cvtps_ph_sse4_1(__m128 value) noexcept
     return _mm_packs_epi32(u, u);
 }
 
-} // namespace tt
+} // namespace tt::inline v1

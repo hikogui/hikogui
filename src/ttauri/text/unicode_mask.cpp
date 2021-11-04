@@ -4,7 +4,7 @@
 
 #include "unicode_mask.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] bool unicode_mask::contains(char32_t c) const noexcept
 {
@@ -189,4 +189,4 @@ void unicode_mask::shrink_to_fit() noexcept
     return true;
 }
 
-} // namespace tt
+} // namespace tt::inline v1

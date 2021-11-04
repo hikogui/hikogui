@@ -11,7 +11,7 @@
 #include "../counters.hpp"
 #include <memory>
 
-namespace tt {
+namespace tt::inline v1 {
 
 class true_type_font final : public font {
 private:
@@ -169,4 +169,4 @@ private:
     bool loadCompoundglyph_metrics(std::span<std::byte const> bytes, tt::glyph_id &metrics_glyph_id) const noexcept;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

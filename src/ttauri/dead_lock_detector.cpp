@@ -9,7 +9,7 @@
 #include "subsystem.hpp"
 #include <mutex>
 
-namespace tt {
+namespace tt::inline v1 {
 
 static unfair_mutex_impl<false> dead_lock_detector_mutex;
 
@@ -127,4 +127,4 @@ void dead_lock_detector::remove_object(void *object) noexcept
     });
 }
 
-} // namespace tt
+} // namespace tt::inline v1

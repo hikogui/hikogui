@@ -10,7 +10,7 @@
 #include <memory>
 #include <string_view>
 
-namespace tt {
+namespace tt::inline v1 {
 
 void console_start() noexcept
 {
@@ -58,4 +58,4 @@ void console_output(std::string_view text, std::ostream &output) noexcept
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

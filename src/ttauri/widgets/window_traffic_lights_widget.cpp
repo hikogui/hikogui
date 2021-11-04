@@ -9,7 +9,7 @@
 #include <cmath>
 #include <typeinfo>
 
-namespace tt {
+namespace tt::inline v1 {
 
 window_traffic_lights_widget::window_traffic_lights_widget(gui_window &window, widget *parent) noexcept : super(window, parent) {}
 
@@ -247,4 +247,4 @@ hitbox window_traffic_lights_widget::hitbox_test(point3 position) const noexcept
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

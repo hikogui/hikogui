@@ -10,9 +10,8 @@
 #include <vk_mem_alloc.h>
 #include <optional>
 
-namespace tt {
+namespace tt::inline v1 {
 class gfx_device_vulkan;
-
 namespace pipeline_image {
 class pipeline_image;
 }
@@ -55,9 +54,9 @@ public:
     vk::ImageView depthImageView;
 
     static const vk::Format colorImageFormat = vk::Format::eR16G16B16A16Sfloat;
-    std::array<VmaAllocation,2> colorImageAllocations;
-    std::array<vk::Image,2> colorImages;
-    std::array<vk::ImageView,2> colorImageViews;
+    std::array<VmaAllocation, 2> colorImageAllocations;
+    std::array<vk::Image, 2> colorImages;
+    std::array<vk::ImageView, 2> colorImageViews;
     std::array<vk::DescriptorImageInfo, 2> colorDescriptorImageInfos;
 
     vk::RenderPass renderPass;
@@ -90,7 +89,8 @@ public:
 
     void update(extent2 new_size) noexcept override;
 
-    [[nodiscard]] std::optional<draw_context> render_start(aarectangle redraw_rectangle, utc_nanoseconds display_time_point) override;
+    [[nodiscard]] std::optional<draw_context>
+    render_start(aarectangle redraw_rectangle, utc_nanoseconds display_time_point) override;
     void render_finish(draw_context const &context, color background_color) override;
 
 protected:
@@ -132,14 +132,14 @@ private:
     void waitIdle();
 
     /** Get the image size and image count from the Vulkan surface.
-    * 
-    * This function will return an appropriate 
-    * 
-    * @param new_count Request the number of images in the swapchain.
-    * @param new_size Request the image size in the swapchain.
-    * @return A valid swapchain image count, swapchain image size.
+     *
+     * This function will return an appropriate
+     *
+     * @param new_count Request the number of images in the swapchain.
+     * @param new_size Request the image size in the swapchain.
+     * @return A valid swapchain image count, swapchain image size.
      */
     std::tuple<size_t, extent2> get_image_count_and_size(size_t new_count, extent2 new_size);
 };
 
-}
+} // namespace tt::inline v1

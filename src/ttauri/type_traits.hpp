@@ -14,7 +14,7 @@
 #include <string_view>
 #include <memory>
 
-namespace tt {
+namespace tt::inline v1 {
 
 // clang-format off
 
@@ -359,4 +359,4 @@ constexpr bool acts_as_pointer_v = acts_as_pointer<T>::value;
 
 // clang-format on
 
-} // namespace tt
+} // namespace tt::inline v1

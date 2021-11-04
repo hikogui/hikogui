@@ -10,45 +10,53 @@
 #include <vector>
 #include <functional>
 
-namespace tt {
+namespace tt::inline v1 {
 
 constexpr char native_path_seperator = (operating_system::current == operating_system::windows) ? '\\' : '/';
 
-constexpr bool is_urlchar_alpha(char c) {
+constexpr bool is_urlchar_alpha(char c)
+{
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
 
-constexpr bool is_urlchar_digit(char c) {
+constexpr bool is_urlchar_digit(char c)
+{
     return (c >= '0' && c <= '9');
 }
 
-constexpr bool is_urlchar_gen_delims(char c) {
+constexpr bool is_urlchar_gen_delims(char c)
+{
     return c == ':' || c == '/' || c == '?' || c == '#' || c == '[' || c == ']' || c == '@';
 }
 
-constexpr bool is_urlchar_sub_delims(char c) {
-    return
-        c == '!' || c == '$' || c == '&' || c == '\'' || c == '(' || c == ')' ||
-        c == '*' || c == '+' || c == ',' || c == ';' || c == '=';
+constexpr bool is_urlchar_sub_delims(char c)
+{
+    return c == '!' || c == '$' || c == '&' || c == '\'' || c == '(' || c == ')' || c == '*' || c == '+' || c == ',' ||
+        c == ';' || c == '=';
 }
 
-constexpr bool is_urlchar_unreserved(char c) {
+constexpr bool is_urlchar_unreserved(char c)
+{
     return is_urlchar_alpha(c) || is_urlchar_digit(c) || c == '-' || c == '.' || c == '_' || c == '~';
 }
 
-constexpr bool is_urlchar_reserved(char c) {
+constexpr bool is_urlchar_reserved(char c)
+{
     return is_urlchar_gen_delims(c) || is_urlchar_sub_delims(c);
 }
 
-constexpr bool is_urlchar_pchar(char c) {
+constexpr bool is_urlchar_pchar(char c)
+{
     return is_urlchar_unreserved(c) || is_urlchar_sub_delims(c) || c == ':' || c == '@';
 }
 
-constexpr bool is_urlchar_pchar_forward(char c) {
+constexpr bool is_urlchar_pchar_forward(char c)
+{
     return is_urlchar_pchar(c) || c == '/';
 }
 
-constexpr bool is_urlchar_pchar_backward(char c) {
+constexpr bool is_urlchar_pchar_backward(char c)
+{
     return is_urlchar_pchar(c) || c == '\\';
 }
 
@@ -60,10 +68,10 @@ constexpr bool is_urlchar_pchar_backward(char c) {
  */
 std::string url_encode_part(std::string_view input, std::function<bool(char)> unreserved_char_check) noexcept;
 
-inline std::string url_encode(std::string_view input) noexcept {
+inline std::string url_encode(std::string_view input) noexcept
+{
     return url_encode_part(input, is_urlchar_unreserved);
 }
-
 
 /*! Replace all percent-encoding with actual characters from a part of a URL.
  *
@@ -72,9 +80,9 @@ inline std::string url_encode(std::string_view input) noexcept {
  *
  * \param input url-encoded string.
  * \param plus_to_space Convert '+' character to space ' ' characters.
- * \return 
+ * \return
  */
-std::string url_decode(std::string_view input, bool plus_to_space=false) noexcept;
+std::string url_decode(std::string_view input, bool plus_to_space = false) noexcept;
 
 /*! A URL split into its parts.
  * Each part is url_encoded.
@@ -112,7 +120,7 @@ url_parts parse_path(std::string_view path, std::string &encodedPath) noexcept;
 
 std::string generate_url(url_parts const &parts) noexcept;
 
-std::string generate_path(url_parts const &parts, char sep='/') noexcept;
+std::string generate_path(url_parts const &parts, char sep = '/') noexcept;
 
 std::string generate_native_path(url_parts const &parts) noexcept;
 
@@ -146,4 +154,4 @@ std::string concatenate_url_filename(std::string_view lhs, std::string_view rhs)
  */
 std::string filename_from_path(std::string_view path) noexcept;
 
-}
+} // namespace tt::inline v1

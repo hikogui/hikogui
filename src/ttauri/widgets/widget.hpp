@@ -23,7 +23,7 @@
 #include <string>
 #include <ranges>
 
-namespace tt {
+namespace tt::inline v1 {
 class gui_window;
 struct mouse_event;
 struct keyboard_event;
@@ -141,8 +141,8 @@ public:
      *
      * Typically the implementation of this function starts with recursively calling set_constraints()
      * on its children.
-     * 
-     * 
+     *
+     *
      * If the container, due to a change in constraints, wants the window to resize to the minimum size
      * it should set `window::request_resize` to `true`.
      *
@@ -322,4 +322,4 @@ protected:
     [[nodiscard]] aarectangle make_overlay_rectangle(aarectangle requested_rectangle) const noexcept;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

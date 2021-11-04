@@ -6,7 +6,7 @@
 #include <array>
 #include <cstdint>
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] ssize_t time_stamp_count::cpu_id_fallback() const noexcept
 {
@@ -36,7 +36,7 @@ namespace tt {
 
 [[nodiscard]] uint64_t time_stamp_count::measure_frequency(std::chrono::milliseconds sample_duration) noexcept
 {
-    using namespace std::literals::chrono_literals;
+    using namespace std::chrono_literals;
 
     // Only sample the frequency of one of the TSC clocks.
     auto prev_mask = set_thread_affinity(current_cpu_id());
@@ -115,7 +115,7 @@ void time_stamp_count::populate_aux_values() noexcept
 
 void time_stamp_count::configure_frequency() noexcept
 {
-    using namespace std::literals::chrono_literals;
+    using namespace std::chrono_literals;
 
     // This function is called from the crt and must therefor be quick as we do not
     // want to keep the user waiting. We are satisfied if the measured frequency is
@@ -146,4 +146,4 @@ void time_stamp_count::start_subsystem() noexcept
     populate_aux_values();
 }
 
-} // namespace tt
+} // namespace tt::inline v1

@@ -5,7 +5,6 @@
 #include "trace.hpp"
 #include "log.hpp"
 
-namespace tt {
-
+namespace tt::inline v1 {
 
 }

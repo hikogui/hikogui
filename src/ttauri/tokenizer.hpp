@@ -19,7 +19,7 @@
 #include <charconv>
 #include <array>
 
-namespace tt {
+namespace tt::inline v1 {
 
 enum class tokenizer_name_t : uint8_t {
     NotAssigned,
@@ -281,7 +281,7 @@ struct parse_result {
 [[nodiscard]] std::vector<token_t>
 parseTokens(std::string_view::const_iterator first, std::string_view::const_iterator last) noexcept;
 
-} // namespace tt
+} // namespace tt::inline v1
 
 namespace std {
 
@@ -292,6 +292,5 @@ struct std::formatter<tt::token_t, CharT> : std::formatter<std::string_view, Cha
         return std::formatter<std::string_view, CharT>::format(t.repr(), fc);
     }
 };
-
 
 } // namespace std

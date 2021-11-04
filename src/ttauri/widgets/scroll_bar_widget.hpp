@@ -14,7 +14,7 @@
 #include <optional>
 #include <future>
 
-namespace tt {
+namespace tt::inline v1 {
 
 template<axis Axis>
 class scroll_bar_widget final : public widget {
@@ -220,4 +220,4 @@ private:
 using horizontal_scroll_bar_widget = scroll_bar_widget<axis::horizontal>;
 using vertical_scroll_bar_widget = scroll_bar_widget<axis::vertical>;
 
-} // namespace tt
+} // namespace tt::inline v1

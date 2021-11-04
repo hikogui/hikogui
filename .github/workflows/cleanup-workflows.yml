@@ -73,7 +73,6 @@ jobs:
             const workflows = [
               'build-docs.yml',
               'build-on-windows.yml',
-              'codeql-analysis.yml',
               'publish-PR-test-results.yml'
             ]
 

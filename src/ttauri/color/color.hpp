@@ -6,7 +6,7 @@
 
 #include "../rapid/numeric_array.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** This is a RGBA floating point color.
  * The color can be converted between different color spaces using the matrix-class.
@@ -138,4 +138,4 @@ private:
     f16x4 _v;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

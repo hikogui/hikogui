@@ -11,7 +11,7 @@
 #include <cstddef>
 #include <bit>
 
-namespace tt {
+namespace tt::inline v1 {
 
 class audio_sample_unpacker {
 public:
@@ -47,4 +47,4 @@ private:
     [[nodiscard]] size_t calculate_num_fast_samples(size_t num_samples) const noexcept;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

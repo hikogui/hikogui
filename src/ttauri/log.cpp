@@ -19,11 +19,11 @@
 #include <chrono>
 #include <thread>
 
-namespace tt {
+namespace tt::inline v1 {
 
 void log::log_thread_main(std::stop_token stop_token) noexcept
 {
-    using namespace std::literals::chrono_literals;
+    using namespace std::chrono_literals;
 
     set_thread_name("log");
     tt_log_info("log thread started");
@@ -100,4 +100,4 @@ void log::flush() noexcept
     } while (wrote_message);
 }
 
-} // namespace tt
+} // namespace tt::inline v1

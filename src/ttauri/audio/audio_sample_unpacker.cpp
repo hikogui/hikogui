@@ -12,7 +12,7 @@
 #include <cstdint>
 #include <tuple>
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] static int32_t
 load_sample(std::byte const *&src, size_t stride, int num_bytes, int direction, int start_byte, int align_shift) noexcept
@@ -140,4 +140,4 @@ void audio_sample_unpacker::operator()(std::byte const *tt_restrict src, float *
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

@@ -4,7 +4,7 @@
 
 #include "text_widget.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 text_widget::text_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
 {
@@ -49,4 +49,4 @@ void text_widget::draw(draw_context const &context) noexcept
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

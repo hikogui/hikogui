@@ -7,7 +7,7 @@
 #include "../endian.hpp"
 #include "../placement.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct GZIPMemberHeader {
     uint8_t ID1;
@@ -84,4 +84,4 @@ bstring gzip_decompress(std::span<std::byte const> bytes, ssize_t max_size)
     return r;
 }
 
-} // namespace tt
+} // namespace tt::inline v1

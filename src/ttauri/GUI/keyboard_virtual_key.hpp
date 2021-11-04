@@ -10,94 +10,199 @@
 #include "../strings.hpp"
 #include <unordered_map>
 
-namespace tt {
+namespace tt::inline v1 {
 
 enum class keyboard_virtual_key : uint8_t {
     Nul,
 
-    A, B, C, D, E, F, G, H, I, J, K, L, M,
-    N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
+    A,
+    B,
+    C,
+    D,
+    E,
+    F,
+    G,
+    H,
+    I,
+    J,
+    K,
+    L,
+    M,
+    N,
+    O,
+    P,
+    Q,
+    R,
+    S,
+    T,
+    U,
+    V,
+    W,
+    X,
+    Y,
+    Z,
 
-    _0, _1, _2, _3, _4, _5, _6, _7, _8, _9,
+    _0,
+    _1,
+    _2,
+    _3,
+    _4,
+    _5,
+    _6,
+    _7,
+    _8,
+    _9,
 
-    Plus, Minus, Star, Slash, Percent,
-    Tilde, Ampersant, Pipe, Caret,
-    Less, Equal, Greater,
-    OpenParentheses, CloseParentheses, OpenBracket, CloseBracket, OpenBrace, CloseBrace,
-    Period, Comma, Colon, SemiColon, Bang, Question,
-    Space, Tab, Enter,
-    Backtick, Quote, DoubleQuote,
-    At, Hash, Dollar, Underscore, Backslash,
+    Plus,
+    Minus,
+    Star,
+    Slash,
+    Percent,
+    Tilde,
+    Ampersant,
+    Pipe,
+    Caret,
+    Less,
+    Equal,
+    Greater,
+    OpenParentheses,
+    CloseParentheses,
+    OpenBracket,
+    CloseBracket,
+    OpenBrace,
+    CloseBrace,
+    Period,
+    Comma,
+    Colon,
+    SemiColon,
+    Bang,
+    Question,
+    Space,
+    Tab,
+    Enter,
+    Backtick,
+    Quote,
+    DoubleQuote,
+    At,
+    Hash,
+    Dollar,
+    Underscore,
+    Backslash,
 
-    Left, Right, Up, Down, PageUp, PageDown, Home, End,
-    Backspace, Insert, Delete, Clear, Escape,
+    Left,
+    Right,
+    Up,
+    Down,
+    PageUp,
+    PageDown,
+    Home,
+    End,
+    Backspace,
+    Insert,
+    Delete,
+    Clear,
+    Escape,
 
-    PrintScreen, PauseBreak, Menu,
+    PrintScreen,
+    PauseBreak,
+    Menu,
 
-    F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12,
-    F13, F14, F15, F16, F17, F18, F19, F20, F21, F22, F23, F24,
+    F1,
+    F2,
+    F3,
+    F4,
+    F5,
+    F6,
+    F7,
+    F8,
+    F9,
+    F10,
+    F11,
+    F12,
+    F13,
+    F14,
+    F15,
+    F16,
+    F17,
+    F18,
+    F19,
+    F20,
+    F21,
+    F22,
+    F23,
+    F24,
 
-    BrowserBack, BrowserForward, BrowserRefresh, BrowserStop,
-    BrowserSearch, BrowserFavorites, BrowserHome,
-    VolumeMute, VolumeUp, VolumeDown,
-    MediaNextTrack, MediaPrevTrack, MediaStop, MediaPlayPause,
+    BrowserBack,
+    BrowserForward,
+    BrowserRefresh,
+    BrowserStop,
+    BrowserSearch,
+    BrowserFavorites,
+    BrowserHome,
+    VolumeMute,
+    VolumeUp,
+    VolumeDown,
+    MediaNextTrack,
+    MediaPrevTrack,
+    MediaStop,
+    MediaPlayPause,
 };
 
-inline ttlet string_to_keyboard_virtual_key_table = std::unordered_map<std::string,keyboard_virtual_key>{
-    {"0", keyboard_virtual_key::_0}, 
-    {"1", keyboard_virtual_key::_1}, 
-    {"2", keyboard_virtual_key::_2}, 
-    {"3", keyboard_virtual_key::_3}, 
-    {"4", keyboard_virtual_key::_4}, 
-    {"5", keyboard_virtual_key::_5}, 
-    {"6", keyboard_virtual_key::_6}, 
-    {"7", keyboard_virtual_key::_7}, 
-    {"8", keyboard_virtual_key::_8}, 
-    {"9", keyboard_virtual_key::_9}, 
-    {"a", keyboard_virtual_key::A}, 
-    {"b", keyboard_virtual_key::B}, 
-    {"c", keyboard_virtual_key::C}, 
-    {"d", keyboard_virtual_key::D}, 
-    {"e", keyboard_virtual_key::E}, 
-    {"f", keyboard_virtual_key::F}, 
-    {"g", keyboard_virtual_key::G}, 
-    {"h", keyboard_virtual_key::H}, 
-    {"i", keyboard_virtual_key::I}, 
-    {"j", keyboard_virtual_key::J}, 
-    {"k", keyboard_virtual_key::K}, 
-    {"l", keyboard_virtual_key::L}, 
-    {"m", keyboard_virtual_key::M}, 
-    {"n", keyboard_virtual_key::N}, 
-    {"o", keyboard_virtual_key::O}, 
-    {"p", keyboard_virtual_key::P}, 
-    {"q", keyboard_virtual_key::Q}, 
-    {"r", keyboard_virtual_key::R}, 
-    {"s", keyboard_virtual_key::S}, 
-    {"t", keyboard_virtual_key::T}, 
-    {"u", keyboard_virtual_key::U}, 
-    {"v", keyboard_virtual_key::V}, 
-    {"w", keyboard_virtual_key::W}, 
-    {"x", keyboard_virtual_key::X}, 
-    {"y", keyboard_virtual_key::Y}, 
-    {"z", keyboard_virtual_key::Z}, 
-    {"plus", keyboard_virtual_key::Plus}, 
-    {"-", keyboard_virtual_key::Minus}, 
-    {"*", keyboard_virtual_key::Star}, 
-    {"/", keyboard_virtual_key::Slash}, 
-    {"%", keyboard_virtual_key::Percent}, 
-    {"~", keyboard_virtual_key::Tilde}, 
-    {"&", keyboard_virtual_key::Ampersant}, 
-    {"|", keyboard_virtual_key::Pipe}, 
-    {"^", keyboard_virtual_key::Caret}, 
-    {"<", keyboard_virtual_key::Less}, 
-    {"=", keyboard_virtual_key::Equal}, 
-    {">", keyboard_virtual_key::Greater}, 
-    {"(", keyboard_virtual_key::OpenParentheses}, 
-    {")", keyboard_virtual_key::CloseParentheses}, 
-    {"[", keyboard_virtual_key::OpenBracket}, 
-    {"]", keyboard_virtual_key::CloseBracket}, 
-    {"{", keyboard_virtual_key::OpenBrace}, 
-    {"}", keyboard_virtual_key::CloseBrace}, 
+inline ttlet string_to_keyboard_virtual_key_table = std::unordered_map<std::string, keyboard_virtual_key>{
+    {"0", keyboard_virtual_key::_0},
+    {"1", keyboard_virtual_key::_1},
+    {"2", keyboard_virtual_key::_2},
+    {"3", keyboard_virtual_key::_3},
+    {"4", keyboard_virtual_key::_4},
+    {"5", keyboard_virtual_key::_5},
+    {"6", keyboard_virtual_key::_6},
+    {"7", keyboard_virtual_key::_7},
+    {"8", keyboard_virtual_key::_8},
+    {"9", keyboard_virtual_key::_9},
+    {"a", keyboard_virtual_key::A},
+    {"b", keyboard_virtual_key::B},
+    {"c", keyboard_virtual_key::C},
+    {"d", keyboard_virtual_key::D},
+    {"e", keyboard_virtual_key::E},
+    {"f", keyboard_virtual_key::F},
+    {"g", keyboard_virtual_key::G},
+    {"h", keyboard_virtual_key::H},
+    {"i", keyboard_virtual_key::I},
+    {"j", keyboard_virtual_key::J},
+    {"k", keyboard_virtual_key::K},
+    {"l", keyboard_virtual_key::L},
+    {"m", keyboard_virtual_key::M},
+    {"n", keyboard_virtual_key::N},
+    {"o", keyboard_virtual_key::O},
+    {"p", keyboard_virtual_key::P},
+    {"q", keyboard_virtual_key::Q},
+    {"r", keyboard_virtual_key::R},
+    {"s", keyboard_virtual_key::S},
+    {"t", keyboard_virtual_key::T},
+    {"u", keyboard_virtual_key::U},
+    {"v", keyboard_virtual_key::V},
+    {"w", keyboard_virtual_key::W},
+    {"x", keyboard_virtual_key::X},
+    {"y", keyboard_virtual_key::Y},
+    {"z", keyboard_virtual_key::Z},
+    {"plus", keyboard_virtual_key::Plus},
+    {"-", keyboard_virtual_key::Minus},
+    {"*", keyboard_virtual_key::Star},
+    {"/", keyboard_virtual_key::Slash},
+    {"%", keyboard_virtual_key::Percent},
+    {"~", keyboard_virtual_key::Tilde},
+    {"&", keyboard_virtual_key::Ampersant},
+    {"|", keyboard_virtual_key::Pipe},
+    {"^", keyboard_virtual_key::Caret},
+    {"<", keyboard_virtual_key::Less},
+    {"=", keyboard_virtual_key::Equal},
+    {">", keyboard_virtual_key::Greater},
+    {"(", keyboard_virtual_key::OpenParentheses},
+    {")", keyboard_virtual_key::CloseParentheses},
+    {"[", keyboard_virtual_key::OpenBracket},
+    {"]", keyboard_virtual_key::CloseBracket},
+    {"{", keyboard_virtual_key::OpenBrace},
+    {"}", keyboard_virtual_key::CloseBrace},
     {"backslash", keyboard_virtual_key::Backslash},
     {".", keyboard_virtual_key::Period},
     {",", keyboard_virtual_key::Comma},
@@ -183,46 +288,45 @@ inline keyboard_virtual_key to_keyboard_virtual_key(std::string_view s)
 
 keyboard_virtual_key to_keyboard_virtual_key(int key_code, bool extended, keyboard_modifiers modifiers);
 
-
 constexpr char const *to_const_string(keyboard_virtual_key key) noexcept
 {
     switch (key) {
-    case keyboard_virtual_key::_0: return "0"; 
-    case keyboard_virtual_key::_1: return "1"; 
-    case keyboard_virtual_key::_2: return "2";  
-    case keyboard_virtual_key::_3: return "3"; 
-    case keyboard_virtual_key::_4: return "4"; 
-    case keyboard_virtual_key::_5: return "5"; 
-    case keyboard_virtual_key::_6: return "6"; 
-    case keyboard_virtual_key::_7: return "7"; 
-    case keyboard_virtual_key::_8: return "8"; 
-    case keyboard_virtual_key::_9: return "9"; 
-    case keyboard_virtual_key::A: return "a"; 
-    case keyboard_virtual_key::B: return "b"; 
-    case keyboard_virtual_key::C: return "c"; 
-    case keyboard_virtual_key::D: return "d"; 
-    case keyboard_virtual_key::E: return "e"; 
-    case keyboard_virtual_key::F: return "f"; 
-    case keyboard_virtual_key::G: return "g"; 
-    case keyboard_virtual_key::H: return "h"; 
-    case keyboard_virtual_key::I: return "i"; 
-    case keyboard_virtual_key::J: return "j"; 
-    case keyboard_virtual_key::K: return "k"; 
-    case keyboard_virtual_key::L: return "l"; 
-    case keyboard_virtual_key::M: return "m"; 
-    case keyboard_virtual_key::N: return "n"; 
-    case keyboard_virtual_key::O: return "o"; 
-    case keyboard_virtual_key::P: return "p"; 
-    case keyboard_virtual_key::Q: return "q"; 
-    case keyboard_virtual_key::R: return "r"; 
-    case keyboard_virtual_key::S: return "s"; 
-    case keyboard_virtual_key::T: return "t"; 
-    case keyboard_virtual_key::U: return "u"; 
-    case keyboard_virtual_key::V: return "v"; 
-    case keyboard_virtual_key::W: return "w"; 
-    case keyboard_virtual_key::X: return "x"; 
-    case keyboard_virtual_key::Y: return "y"; 
-    case keyboard_virtual_key::Z: return "z"; 
+    case keyboard_virtual_key::_0: return "0";
+    case keyboard_virtual_key::_1: return "1";
+    case keyboard_virtual_key::_2: return "2";
+    case keyboard_virtual_key::_3: return "3";
+    case keyboard_virtual_key::_4: return "4";
+    case keyboard_virtual_key::_5: return "5";
+    case keyboard_virtual_key::_6: return "6";
+    case keyboard_virtual_key::_7: return "7";
+    case keyboard_virtual_key::_8: return "8";
+    case keyboard_virtual_key::_9: return "9";
+    case keyboard_virtual_key::A: return "a";
+    case keyboard_virtual_key::B: return "b";
+    case keyboard_virtual_key::C: return "c";
+    case keyboard_virtual_key::D: return "d";
+    case keyboard_virtual_key::E: return "e";
+    case keyboard_virtual_key::F: return "f";
+    case keyboard_virtual_key::G: return "g";
+    case keyboard_virtual_key::H: return "h";
+    case keyboard_virtual_key::I: return "i";
+    case keyboard_virtual_key::J: return "j";
+    case keyboard_virtual_key::K: return "k";
+    case keyboard_virtual_key::L: return "l";
+    case keyboard_virtual_key::M: return "m";
+    case keyboard_virtual_key::N: return "n";
+    case keyboard_virtual_key::O: return "o";
+    case keyboard_virtual_key::P: return "p";
+    case keyboard_virtual_key::Q: return "q";
+    case keyboard_virtual_key::R: return "r";
+    case keyboard_virtual_key::S: return "s";
+    case keyboard_virtual_key::T: return "t";
+    case keyboard_virtual_key::U: return "u";
+    case keyboard_virtual_key::V: return "v";
+    case keyboard_virtual_key::W: return "w";
+    case keyboard_virtual_key::X: return "x";
+    case keyboard_virtual_key::Y: return "y";
+    case keyboard_virtual_key::Z: return "z";
     case keyboard_virtual_key::Plus: return "plus";
     case keyboard_virtual_key::Minus: return "-";
     case keyboard_virtual_key::Star: return "*";
@@ -230,8 +334,8 @@ constexpr char const *to_const_string(keyboard_virtual_key key) noexcept
     case keyboard_virtual_key::Percent: return "%";
     case keyboard_virtual_key::Tilde: return "~";
     case keyboard_virtual_key::Ampersant: return "&";
-    case keyboard_virtual_key::Pipe: return "|"; 
-    case keyboard_virtual_key::Caret: return "^"; 
+    case keyboard_virtual_key::Pipe: return "|";
+    case keyboard_virtual_key::Caret: return "^";
     case keyboard_virtual_key::Less: return "<";
     case keyboard_virtual_key::Equal: return "=";
     case keyboard_virtual_key::Greater: return ">";
@@ -321,24 +425,20 @@ inline std::string to_string(keyboard_virtual_key key) noexcept
     return std::string{to_const_string(key)};
 }
 
-inline std::ostream &operator<<(std::ostream &lhs, keyboard_virtual_key const &rhs) {
+inline std::ostream &operator<<(std::ostream &lhs, keyboard_virtual_key const &rhs)
+{
     return lhs << to_string(rhs);
 }
 
-}
-
-namespace std {
+} // namespace tt::inline v1
 
 template<>
-struct hash<tt::keyboard_virtual_key> {
-    [[nodiscard]] size_t operator() (tt::keyboard_virtual_key rhs) const noexcept {
+struct std::hash<tt::keyboard_virtual_key> {
+    [[nodiscard]] size_t operator()(tt::keyboard_virtual_key rhs) const noexcept
+    {
         return std::hash<uint8_t>{}(static_cast<uint8_t>(rhs));
     }
 };
-
-}
-
-namespace std {
 
 template<typename CharT>
 struct std::formatter<tt::keyboard_virtual_key, CharT> : std::formatter<char const *, CharT> {
@@ -347,5 +447,3 @@ struct std::formatter<tt::keyboard_virtual_key, CharT> : std::formatter<char con
         return std::formatter<char const *, CharT>::format(tt::to_const_string(t), fc);
     }
 };
-
-} // namespace std

@@ -6,20 +6,24 @@
 
 #include "formula_binary_operator_node.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct formula_assign_node final : formula_binary_operator_node {
     formula_assign_node(parse_location location, std::unique_ptr<formula_node> lhs, std::unique_ptr<formula_node> rhs) :
-        formula_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
+        formula_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs))
+    {
+    }
 
-    datum evaluate(formula_evaluation_context& context) const override {
+    datum evaluate(formula_evaluation_context &context) const override
+    {
         auto rhs_ = rhs->evaluate(context);
         return lhs->assign(context, rhs_);
     }
 
-    std::string string() const noexcept override {
+    std::string string() const noexcept override
+    {
         return std::format("({} = {})", *lhs, *rhs);
     }
 };
 
-}
+} // namespace tt::inline v1

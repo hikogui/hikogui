@@ -10,7 +10,7 @@
 #include "../color/Rec2100.hpp"
 #include "../color/color_space.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct PNGHeader {
     uint8_t signature[8];
@@ -467,4 +467,4 @@ pixel_map<sfloat_rgba16> png::load(URL const &url)
     return image;
 }
 
-} // namespace tt
+} // namespace tt::inline v1

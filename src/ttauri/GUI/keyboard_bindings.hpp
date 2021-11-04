@@ -12,7 +12,7 @@
 #include <unordered_map>
 #include <tuple>
 
-namespace tt {
+namespace tt::inline v1 {
 
 class keyboard_bindings {
     struct commands_t {
@@ -28,11 +28,13 @@ class keyboard_bindings {
         /** Combined system-/ignored-/added-commands. */
         std::vector<command> cache = {};
 
-        [[nodiscard]] std::vector<command> const &get_commands() const noexcept {
+        [[nodiscard]] std::vector<command> const &get_commands() const noexcept
+        {
             return cache;
         }
 
-        void add_system_command(command cmd) noexcept {
+        void add_system_command(command cmd) noexcept
+        {
             ttlet i = std::find(system.cbegin(), system.cend(), cmd);
             if (i == system.cend()) {
                 system.push_back(cmd);
@@ -40,7 +42,8 @@ class keyboard_bindings {
             }
         }
 
-        void add_ignored_command(command cmd) noexcept {
+        void add_ignored_command(command cmd) noexcept
+        {
             ttlet i = std::find(ignored.cbegin(), ignored.cend(), cmd);
             if (i == ignored.cend()) {
                 ignored.push_back(cmd);
@@ -48,7 +51,8 @@ class keyboard_bindings {
             }
         }
 
-        void add_user_command(command cmd) noexcept {
+        void add_user_command(command cmd) noexcept
+        {
             ttlet i = std::find(user.cbegin(), user.cend(), cmd);
             if (i == user.cend()) {
                 user.push_back(cmd);
@@ -56,24 +60,25 @@ class keyboard_bindings {
             }
         }
 
-        void update_cache() noexcept {
+        void update_cache() noexcept
+        {
             cache.reserve(ssize(system) + ssize(user));
 
-            for (ttlet cmd: system) {
+            for (ttlet cmd : system) {
                 ttlet i = std::find(cache.cbegin(), cache.cend(), cmd);
                 if (i == cache.cend()) {
                     cache.push_back(cmd);
                 }
             }
 
-            for (ttlet cmd: ignored) {
+            for (ttlet cmd : ignored) {
                 ttlet i = std::find(cache.cbegin(), cache.cend(), cmd);
                 if (i != cache.cend()) {
                     cache.erase(i);
                 }
             }
 
-            for (ttlet cmd: user) {
+            for (ttlet cmd : user) {
                 ttlet i = std::find(cache.cbegin(), cache.cend(), cmd);
                 if (i == cache.cend()) {
                     cache.push_back(cmd);
@@ -84,27 +89,30 @@ class keyboard_bindings {
 
     /** Bindings made by the user which may be saved for the user.
      */
-    std::unordered_map<keyboard_key,commands_t> bindings;
+    std::unordered_map<keyboard_key, commands_t> bindings;
 
 public:
-    keyboard_bindings() noexcept :
-        bindings() {}
+    keyboard_bindings() noexcept : bindings() {}
 
-    void add_system_binding(keyboard_key key, command command) noexcept {
+    void add_system_binding(keyboard_key key, command command) noexcept
+    {
         bindings[key].add_system_command(command);
     }
 
-    void add_ignored_binding(keyboard_key key, command command) noexcept {
+    void add_ignored_binding(keyboard_key key, command command) noexcept
+    {
         bindings[key].add_ignored_command(command);
     }
 
-    void add_user_binding(keyboard_key key, command command) noexcept {
+    void add_user_binding(keyboard_key key, command command) noexcept
+    {
         bindings[key].add_user_command(command);
     }
 
     /** translate a key press in the empty-context to a command.
-    */
-    [[nodiscard]] std::vector<command> const &translate(keyboard_key key) const noexcept {
+     */
+    [[nodiscard]] std::vector<command> const &translate(keyboard_key key) const noexcept
+    {
         static std::vector<command> empty_commands = {};
 
         ttlet i = bindings.find(key);
@@ -120,18 +128,19 @@ public:
      * do a `clear()` followed by loading the system bindings, followed by the
      * user bindings.
      */
-    void clear() noexcept {
+    void clear() noexcept
+    {
         bindings.clear();
     }
 
     /** Load bindings from a JSON file.
      */
-    void load_bindings(URL url, bool system_binding=false);
+    void load_bindings(URL url, bool system_binding = false);
 
     /** Save user bindings
      * This will save all bindings that are different from the system bindings.
      */
-    //void save_user_bindings(URL url);
+    // void save_user_bindings(URL url);
 };
 
-}
+} // namespace tt::inline v1

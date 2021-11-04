@@ -5,7 +5,7 @@
 
 #include "pixel_map.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 template<int KERNEL_SIZE, typename KERNEL>
 inline void horizontalFilterRow(pixel_row<uint8_t> row, KERNEL kernel) noexcept

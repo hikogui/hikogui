@@ -8,7 +8,7 @@
 #include <memory>
 #include <iterator>
 
-namespace tt {
+namespace tt::inline v1 {
 namespace detail {
 
 struct hash_map_entry_h {
@@ -314,4 +314,4 @@ template<typename Key, typename T>
 using hash_map = tt::hash_map<Key, T, std::pmr::polymorphic_allocator<tt::hash_map_entry<Key, T>>>;
 
 }
-} // namespace tt
+} // namespace tt::inline v1

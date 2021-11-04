@@ -10,7 +10,7 @@
 #include "../GUI/gui_window.hpp"
 #include "../geometry/axis.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** The scroll widget allows a content widget to be shown in less space than is
  * required.
@@ -330,4 +330,4 @@ using vertical_scroll_widget = scroll_widget<axis::vertical, ControlsWindow>;
 template<bool ControlsWindow = false>
 using horizontal_scroll_widget = scroll_widget<axis::horizontal, ControlsWindow>;
 
-} // namespace tt
+} // namespace tt::inline v1

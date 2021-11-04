@@ -7,7 +7,7 @@
 #include "architecture.hpp"
 #include <format>
 
-namespace tt {
+namespace tt::inline v1 {
 
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 void _debugger_break();
@@ -46,4 +46,4 @@ debugger_abort(char const *source_file, int source_line, std::string_view fmt, A
 
 #define tt_debugger_abort(...) ::tt::debugger_abort(__FILE__, __LINE__ __VA_OPT__(, ) __VA_ARGS__)
 
-} // namespace tt
+} // namespace tt::inline v1

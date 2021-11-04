@@ -12,7 +12,7 @@
 #include <unistd.h>
 #include <mach-o/dyld.h>
 
-namespace tt {
+namespace tt::inline v1 {
 
 URL URL::urlFromCurrentWorkingDirectory() noexcept
 {

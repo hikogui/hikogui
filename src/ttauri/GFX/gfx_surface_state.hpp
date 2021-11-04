@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace tt {
+namespace tt::inline v1 {
 
 enum class gfx_surface_state {
     initializing, ///< The window has not been initialized yet.

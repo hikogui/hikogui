@@ -9,7 +9,7 @@
 
 #pragma once
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Delayed formatting.
  * This class will capture all the arguments so that it may be passed
@@ -79,4 +79,4 @@ private:
 template<basic_fixed_string Fmt, typename... Args>
 delayed_format(Args &&...) -> delayed_format<Fmt, forward_value_t<Args>...>;
 
-} // namespace tt
+} // namespace tt::inline v1

@@ -6,7 +6,7 @@
 #include "../algorithm.hpp"
 #include "../alignment.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 grid_widget::grid_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
     widget(window, parent), _delegate(std::move(delegate))
@@ -101,4 +101,4 @@ void grid_widget::draw(draw_context const &context) noexcept
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

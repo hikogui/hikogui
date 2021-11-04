@@ -8,7 +8,7 @@
 #include <Windows.h>
 #include <Winnls.h>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /**
  * GetUserPreferredUILanguages() returns at most two of the selected languages in random order
@@ -27,7 +27,8 @@ std::vector<language_tag> language::read_os_preferred_languages() noexcept
     wchar_t result[256];
     DWORD result_length = sizeof(result);
 
-    auto status = RegGetValueW(HKEY_CURRENT_USER, subkey.c_str(), name.c_str(), RRF_RT_REG_MULTI_SZ, NULL, &result, &result_length);
+    auto status =
+        RegGetValueW(HKEY_CURRENT_USER, subkey.c_str(), name.c_str(), RRF_RT_REG_MULTI_SZ, NULL, &result, &result_length);
 
     switch (status) {
     case ERROR_SUCCESS: {
@@ -54,4 +55,4 @@ std::vector<language_tag> language::read_os_preferred_languages() noexcept
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

@@ -107,7 +107,7 @@ template<
 
 } // namespace tt::ranges::views
 
-namespace tt {
+namespace tt::inline v1 {
 namespace views = tt::ranges::views;
 
 /** Make a vector from a view.
@@ -151,4 +151,4 @@ template<typename View>
     return r;
 }
 
-} // namespace tt
+} // namespace tt::inline v1

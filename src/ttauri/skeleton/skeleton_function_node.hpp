@@ -6,16 +6,19 @@
 
 #include "skeleton_node.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
-struct skeleton_function_node final: skeleton_node {
+struct skeleton_function_node final : skeleton_node {
     std::string name;
     std::vector<std::string> argument_names;
     statement_vector children;
 
     formula_post_process_context::function_type super_function;
 
-    skeleton_function_node(parse_location location, formula_post_process_context &context, std::unique_ptr<formula_node> function_declaration_expression) noexcept :
+    skeleton_function_node(
+        parse_location location,
+        formula_post_process_context &context,
+        std::unique_ptr<formula_node> function_declaration_expression) noexcept :
         skeleton_node(std::move(location))
     {
         auto name_and_arguments = function_declaration_expression->get_name_and_argument_names();
@@ -25,45 +28,53 @@ struct skeleton_function_node final: skeleton_node {
         name_and_arguments.erase(name_and_arguments.begin());
         argument_names = std::move(name_and_arguments);
 
-        super_function = context.set_function(name,
-            [this,&location](formula_evaluation_context &context, datum::vector_type const &arguments) {
-            try {
-                return this->evaluate_call(context, arguments);
+        super_function = context.set_function(
+            name, [this, &location](formula_evaluation_context &context, datum::vector_type const &arguments) {
+                try {
+                    return this->evaluate_call(context, arguments);
 
-            } catch (std::exception const &e) {
-                throw operation_error("{}: Failed during handling of function call.\n{}", location, e.what());
-            }
-        }
-        );
+                } catch (std::exception const &e) {
+                    throw operation_error("{}: Failed during handling of function call.\n{}", location, e.what());
+                }
+            });
     }
 
     /** Append a template-piece to the current template.
-    */
-    bool append(std::unique_ptr<skeleton_node> x) noexcept override {
+     */
+    bool append(std::unique_ptr<skeleton_node> x) noexcept override
+    {
         append_child(children, std::move(x));
         return true;
     }
 
-    void post_process(formula_post_process_context &context) override {
+    void post_process(formula_post_process_context &context) override
+    {
         if (ssize(children) > 0) {
             children.back()->left_align();
         }
 
         context.push_super(super_function);
-        for (ttlet &child: children) {
+        for (ttlet &child : children) {
             child->post_process(context);
         }
         context.pop_super();
     }
 
-    datum evaluate(formula_evaluation_context &context) override {
+    datum evaluate(formula_evaluation_context &context) override
+    {
         return {};
     }
 
-    datum evaluate_call(formula_evaluation_context &context, datum::vector_type const &arguments) {
+    datum evaluate_call(formula_evaluation_context &context, datum::vector_type const &arguments)
+    {
         context.push();
         if (ssize(argument_names) != ssize(arguments)) {
-            throw operation_error("{}: Invalid number of arguments to function {}() expecting {} got {}.", location, name, argument_names.size(), arguments.size());
+            throw operation_error(
+                "{}: Invalid number of arguments to function {}() expecting {} got {}.",
+                location,
+                name,
+                argument_names.size(),
+                arguments.size());
         }
 
         for (ssize_t i = 0; i != ssize(argument_names); ++i) {
@@ -90,16 +101,19 @@ struct skeleton_function_node final: skeleton_node {
         }
     }
 
-    std::string string() const noexcept override {
+    std::string string() const noexcept override
+    {
         std::string s = "<function ";
         s += name;
         s += "(";
         s += join(argument_names, ",");
         s += ")";
-        s += join(transform<std::vector<std::string>>(children, [](auto &x) { return to_string(*x); }));
+        s += join(transform<std::vector<std::string>>(children, [](auto &x) {
+            return to_string(*x);
+        }));
         s += ">";
         return s;
     }
 };
 
-}
+} // namespace tt::inline v1

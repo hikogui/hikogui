@@ -14,7 +14,7 @@
 #include <memory>
 #include <string>
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct formula_node {
     using formula_vector = std::vector<std::unique_ptr<formula_node>>;
@@ -124,4 +124,4 @@ struct std::formatter<tt::formula_node, CharT> : std::formatter<string_view, Cha
     }
 };
 
-} // namespace tt
+} // namespace tt::inline v1

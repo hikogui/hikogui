@@ -12,7 +12,7 @@
 #include "axis_aligned_rectangle.hpp"
 #include "../color/color.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 namespace geo {
 
 template<int D>
@@ -107,7 +107,8 @@ public:
      * @param alignment How the src_rectangle should be aligned inside the dst_rectangle after scaling and moving.
      * @return A transformation matrix to move and scale the src_rectangle to the dst_rectangle.
      */
-    [[nodiscard]] constexpr static matrix uniform(aarectangle src_rectangle, aarectangle dst_rectangle, alignment alignment) noexcept;
+    [[nodiscard]] constexpr static matrix
+    uniform(aarectangle src_rectangle, aarectangle dst_rectangle, alignment alignment) noexcept;
 
     template<int I>
     [[nodiscard]] friend constexpr f32x4 get(matrix const &rhs) noexcept
@@ -337,4 +338,4 @@ private:
 using matrix2 = geo::matrix<2>;
 using matrix3 = geo::matrix<3>;
 
-} // namespace tt
+} // namespace tt::inline v1

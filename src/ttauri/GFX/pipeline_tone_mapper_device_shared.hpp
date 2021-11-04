@@ -10,12 +10,10 @@
 #include <vulkan/vulkan.hpp>
 #include <mutex>
 
-namespace tt {
+namespace tt::inline v1 {
 class gfx_device_vulkan;
-}
 
-namespace tt::pipeline_tone_mapper {
-
+namespace pipeline_tone_mapper {
 struct Image;
 
 struct device_shared final {
@@ -34,8 +32,9 @@ struct device_shared final {
     device_shared &operator=(device_shared &&) = delete;
 
     /*! Deallocate vulkan resources.
-    * This is called in the destructor of gfx_device_vulkan, therefor we can not use our `std::weak_ptr<gfx_device_vulkan> device`.
-    */
+     * This is called in the destructor of gfx_device_vulkan, therefor we can not use our `std::weak_ptr<gfx_device_vulkan>
+     * device`.
+     */
     void destroy(gfx_device_vulkan *vulkanDevice);
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
@@ -45,4 +44,5 @@ private:
     void teardownShaders(gfx_device_vulkan *vulkanDevice);
 };
 
-}
+} // namespace pipeline_tone_mapper
+} // namespace tt::inline v1

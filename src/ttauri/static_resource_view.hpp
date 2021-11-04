@@ -10,7 +10,7 @@
 #include <cstddef>
 #include <unordered_map>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** A resource that was included in the executable.
  */
@@ -25,17 +25,33 @@ public:
     static_resource_view(static_resource_view &&other) = default;
     static_resource_view &operator=(static_resource_view &&other) = default;
 
-    [[nodiscard]] size_t offset() const noexcept override { return 0; }
+    [[nodiscard]] size_t offset() const noexcept override
+    {
+        return 0;
+    }
 
-    [[nodiscard]] size_t size() const noexcept override { return _bytes.size(); }
+    [[nodiscard]] size_t size() const noexcept override
+    {
+        return _bytes.size();
+    }
 
-    [[nodiscard]] std::byte const *data() const noexcept override { return _bytes.data(); }
+    [[nodiscard]] std::byte const *data() const noexcept override
+    {
+        return _bytes.data();
+    }
 
-    [[nodiscard]] std::span<std::byte const> bytes() const noexcept override { return _bytes; }
+    [[nodiscard]] std::span<std::byte const> bytes() const noexcept override
+    {
+        return _bytes;
+    }
 
-    [[nodiscard]] std::string_view string_view() const noexcept override { return {reinterpret_cast<char const*>(data()), size()}; }
+    [[nodiscard]] std::string_view string_view() const noexcept override
+    {
+        return {reinterpret_cast<char const *>(data()), size()};
+    }
 
-    [[nodiscard]] static std::unique_ptr<resource_view> loadView(std::string const &location) {
+    [[nodiscard]] static std::unique_ptr<resource_view> loadView(std::string const &location)
+    {
         return std::make_unique<static_resource_view>(location);
     }
 
@@ -53,5 +69,4 @@ private:
     std::span<std::byte const> _bytes;
 };
 
-
-}
+} // namespace tt::inline v1

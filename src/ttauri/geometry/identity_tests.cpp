@@ -32,7 +32,3 @@ TEST(geometry, identity_point)
     ASSERT_TRUE(identity() * point<2>(1.0, 2.0) == point<2>(1.0, 2.0));
     ASSERT_TRUE(identity() * point<3>(1.0, 2.0, 3.0) == point<3>(1.0, 2.0, 3.0));
 }
-
-
-
-

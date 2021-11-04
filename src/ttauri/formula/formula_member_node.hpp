@@ -6,29 +6,31 @@
 
 #include "formula_binary_operator_node.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct formula_member_node final : formula_binary_operator_node {
     mutable formula_post_process_context::method_type method;
-    formula_name_node* rhs_name;
+    formula_name_node *rhs_name;
 
     formula_member_node(parse_location location, std::unique_ptr<formula_node> lhs, std::unique_ptr<formula_node> rhs) :
         formula_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs))
     {
-        rhs_name = dynamic_cast<formula_name_node*>(this->rhs.get());
+        rhs_name = dynamic_cast<formula_name_node *>(this->rhs.get());
         if (rhs_name == nullptr) {
             throw parse_error("{}: Expecting a name token on the right hand side of a member accessor. got {}.", location, *rhs);
         }
     }
 
-    void resolve_function_pointer(formula_post_process_context& context) override {
+    void resolve_function_pointer(formula_post_process_context &context) override
+    {
         method = context.get_method(rhs_name->name);
         if (!method) {
             throw parse_error("{}: Could not find method .{}().", location, rhs_name->name);
         }
     }
 
-    datum evaluate(formula_evaluation_context& context) const override {
+    datum evaluate(formula_evaluation_context &context) const override
+    {
         if (lhs->has_evaluate_xvalue()) {
             ttlet &lhs_ = lhs->evaluate_xvalue(context);
 
@@ -55,7 +57,8 @@ struct formula_member_node final : formula_binary_operator_node {
         }
     }
 
-    datum &evaluate_lvalue(formula_evaluation_context& context) const override {
+    datum &evaluate_lvalue(formula_evaluation_context &context) const override
+    {
         auto &lhs_ = lhs->evaluate_lvalue(context);
         try {
             return lhs_[rhs_name->name];
@@ -64,7 +67,8 @@ struct formula_member_node final : formula_binary_operator_node {
         }
     }
 
-    datum call(formula_evaluation_context& context, datum::vector_type const &arguments) const override {
+    datum call(formula_evaluation_context &context, datum::vector_type const &arguments) const override
+    {
         auto &lhs_ = lhs->evaluate_lvalue(context);
         try {
             return method(context, lhs_, arguments);
@@ -73,9 +77,10 @@ struct formula_member_node final : formula_binary_operator_node {
         }
     }
 
-    std::string string() const noexcept override {
+    std::string string() const noexcept override
+    {
         return std::format("({} . {})", *lhs, *rhs);
     }
 };
 
-}
+} // namespace tt::inline v1

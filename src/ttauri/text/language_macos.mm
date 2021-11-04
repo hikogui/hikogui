@@ -5,7 +5,7 @@
 #include "../required.hpp"
 #include "../log.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 std::vector<std::string> language::get_preferred_language_tags() noexcept
 {

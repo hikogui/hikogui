@@ -15,7 +15,7 @@
 #include <type_traits>
 #include <mutex>
 
-namespace tt {
+namespace tt::inline v1 {
 namespace detail {
 
 /** A list of deinit function to be called on shutdown.
@@ -219,4 +219,4 @@ inline void shutdown_system() noexcept
     detail::subsystem_mutex.unlock();
 }
 
-} // namespace tt
+} // namespace tt::inline v1

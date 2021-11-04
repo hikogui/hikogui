@@ -5,7 +5,7 @@
 #include "axis_aligned_rectangle.hpp"
 #include "translate.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] axis_aligned_rectangle fit(axis_aligned_rectangle const &bounds, axis_aligned_rectangle const &rectangle) noexcept
 {
@@ -20,4 +20,4 @@ namespace tt {
     return translate2{translate_from_p0 + translate_from_p3} * resized_rectangle;
 }
 
-} // namespace tt
+} // namespace tt::inline v1

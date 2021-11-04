@@ -9,14 +9,14 @@
 #include <string>
 #include <string_view>
 
-namespace tt {
+namespace tt::inline v1 {
 
-/** Guess the endianess of an UTF-16 string.
+/** Guess the endianness of an UTF-16 string.
  *
  * @param first The iterator pointing to an array of 8-bit char type.
  * @param last The one beyond the last position of the array.
- * @param default_guess The default endianess.
- * @return The endianess that was guessed based on the byte array.
+ * @param default_guess The default endianness.
+ * @return The endianness that was guessed based on the byte array.
  */
 template<typename It>
 [[nodiscard]] constexpr std::endian guess_utf16_endianess(It first, It last, std::endian default_guess)
@@ -286,4 +286,4 @@ template<typename It>
 
 [[nodiscard]] std::wstring to_wstring(std::u32string_view rhs) noexcept;
 
-} // namespace tt
+} // namespace tt::inline v1

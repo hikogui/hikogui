@@ -6,15 +6,14 @@
 
 #include "formula_node.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** A temporary node used during parsing.
-*/
+ */
 struct formula_arguments final : formula_node {
     formula_vector args;
 
-    formula_arguments(parse_location location, formula_vector args) :
-        formula_node(std::move(location)), args(std::move(args)) {}
+    formula_arguments(parse_location location, formula_vector args) : formula_node(std::move(location)), args(std::move(args)) {}
 
     formula_arguments(parse_location location, std::unique_ptr<formula_node> arg1, std::unique_ptr<formula_node> arg2) :
         formula_node(std::move(location))
@@ -23,14 +22,16 @@ struct formula_arguments final : formula_node {
         args.push_back(std::move(arg2));
     }
 
-    datum evaluate(formula_evaluation_context& context) const override {
+    datum evaluate(formula_evaluation_context &context) const override
+    {
         return {};
     };
 
-    std::string string() const noexcept override {
+    std::string string() const noexcept override
+    {
         std::string s = "<args ";
         int i = 0;
-        for (ttlet &arg: args) {
+        for (ttlet &arg : args) {
             if (i++ > 0) {
                 s += ", ";
             }
@@ -40,4 +41,4 @@ struct formula_arguments final : formula_node {
     }
 };
 
-}
+} // namespace tt::inline v1

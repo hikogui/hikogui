@@ -6,7 +6,7 @@
 
 #include "audio_block.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 class audio_device_delegate {
 public:
@@ -19,8 +19,7 @@ public:
      * @param outputBlock Samples rendered to the audio device.
      * @param current_time The current time according to the audio clock.
      */
-    virtual void process_audio(
-    ) noexcept = 0;
+    virtual void process_audio() noexcept = 0;
 };
 
-}
+} // namespace tt::inline v1

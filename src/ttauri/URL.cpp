@@ -13,7 +13,7 @@
 #include "log.hpp"
 #include <regex>
 
-namespace tt {
+namespace tt::inline v1 {
 
 URL URL::_urlOfCurrentWorkingDirectory;
 
@@ -288,4 +288,4 @@ std::unique_ptr<resource_view> URL::loadView() const
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

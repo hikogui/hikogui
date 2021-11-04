@@ -5,7 +5,7 @@
 #include "overlay_widget.hpp"
 #include "../GUI/theme.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 overlay_widget::overlay_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
     super(window, parent), _delegate(std::move(delegate))
@@ -84,4 +84,4 @@ void overlay_widget::draw_background(draw_context const &context) noexcept
         layout(), layout().rectangle(), background_color(), foreground_color(), theme().border_width, border_side::outside);
 }
 
-} // namespace tt
+} // namespace tt::inline v1

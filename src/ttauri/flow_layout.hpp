@@ -11,13 +11,10 @@
 #include <optional>
 #include <numeric>
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct flow_layout_item {
-    constexpr flow_layout_item() noexcept :
-        minimum_size(0), preferred_size(0), maximum_size(0), offset(0), size(0)
-    {
-    }
+    constexpr flow_layout_item() noexcept : minimum_size(0), preferred_size(0), maximum_size(0), offset(0), size(0) {}
 
     constexpr flow_layout_item(flow_layout_item const &rhs) noexcept = default;
     constexpr flow_layout_item(flow_layout_item &&rhs) noexcept = default;
@@ -248,4 +245,4 @@ private:
     }
 };
 
-} // namespace tt
+} // namespace tt::inline v1

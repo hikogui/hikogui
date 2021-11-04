@@ -12,7 +12,7 @@
 #include <ostream>
 #include <array>
 
-namespace tt {
+namespace tt::inline v1 {
 
 enum class font_weight {
     Thin, ///< 100: Thin / Hairline
@@ -161,9 +161,7 @@ constexpr auto font_weight_alternative_table = font_weight_alternative_table_gen
     return font_weight_alternative_table[(w * 10) + i];
 }
 
-} // namespace tt
-
-namespace std {
+} // namespace tt::inline v1
 
 template<typename CharT>
 struct std::formatter<tt::font_weight, CharT> : std::formatter<char const *, CharT> {
@@ -172,5 +170,3 @@ struct std::formatter<tt::font_weight, CharT> : std::formatter<char const *, Cha
         return std::formatter<char const *, CharT>::format(tt::to_const_string(t), fc);
     }
 };
-
-} // namespace std

@@ -14,7 +14,7 @@
 #include <vector>
 #include <limits>
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct jsonpath_root {
     [[nodiscard]] std::string string() const noexcept
@@ -487,7 +487,7 @@ private:
     std::vector<jsonpath_node> _nodes;
 };
 
-} // namespace tt
+} // namespace tt::inline v1
 
 namespace std {
 

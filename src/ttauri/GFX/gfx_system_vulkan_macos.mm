@@ -1,7 +1,7 @@
 #include "gui_system_vulkan_macos.hpp"
 #include "Window.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 gui_system_vulkan_macos::gui_system_vulkan_macos(gui_systemDelegate *delegate) :
     gui_system_vulkan(delegate, { VK_EXT_METAL_SURFACE_EXTENSION_NAME })

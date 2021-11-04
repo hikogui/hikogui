@@ -12,7 +12,7 @@
 #include <string>
 #include <iostream>
 
-namespace tt {
+namespace tt::inline v1 {
 
 enum class speaker_mapping : uint64_t {
     /** Direct. speakers are not assigned, and no matrix-mixing is done.
@@ -235,4 +235,4 @@ struct pickle<speaker_mapping> {
     }
 };
 
-} // namespace tt
+} // namespace tt::inline v1

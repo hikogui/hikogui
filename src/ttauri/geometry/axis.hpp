@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace tt {
+namespace tt::inline v1 {
 
 enum class axis : unsigned char {
     none = 0,
@@ -36,4 +36,4 @@ enum class axis : unsigned char {
     return static_cast<bool>(static_cast<unsigned char>(rhs));
 }
 
-}
+} // namespace tt::inline v1

@@ -9,22 +9,17 @@
 #include <array>
 #include <vector>
 
-namespace tt {
+namespace tt::inline v1 {
 
-using namespace std;
+pipeline_vulkan::pipeline_vulkan(gfx_surface const &surface) : pipeline(surface) {}
 
-pipeline_vulkan::pipeline_vulkan(gfx_surface const &surface) :
-    pipeline(surface) {}
-
-pipeline_vulkan::~pipeline_vulkan()
-{
-}
+pipeline_vulkan::~pipeline_vulkan() {}
 
 gfx_device_vulkan &pipeline_vulkan::vulkan_device() const noexcept
 {
     auto device = surface.device();
     tt_axiom(device != nullptr);
-    return narrow_cast<gfx_device_vulkan&>(*device);
+    return narrow_cast<gfx_device_vulkan &>(*device);
 }
 
 void pipeline_vulkan::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
@@ -38,13 +33,9 @@ void pipeline_vulkan::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
             vulkan_device().updateDescriptorSets(createWriteDescriptorSet(), {});
         }
 
-        commandBuffer.bindDescriptorSets(
-            vk::PipelineBindPoint::eGraphics,
-            pipelineLayout, 0, {descriptorSet}, {}
-        );
+        commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, {descriptorSet}, {});
     }
 }
-
 
 void pipeline_vulkan::buildDescriptorSets()
 {
@@ -58,37 +49,26 @@ void pipeline_vulkan::buildDescriptorSets()
 
     ttlet descriptorSetLayoutCreateInfo = vk::DescriptorSetLayoutCreateInfo{
         vk::DescriptorSetLayoutCreateFlags(),
-        narrow_cast<uint32_t>(descriptorSetLayoutBindings.size()), descriptorSetLayoutBindings.data()
-    };
+        narrow_cast<uint32_t>(descriptorSetLayoutBindings.size()),
+        descriptorSetLayoutBindings.data()};
 
     descriptorSetLayout = vulkan_device().createDescriptorSetLayout(descriptorSetLayoutCreateInfo);
 
-    ttlet descriptorPoolSizes = transform<std::vector<vk::DescriptorPoolSize>>(
-        descriptorSetLayoutBindings,
-        [](auto x) -> vk::DescriptorPoolSize {
-            return {
-                x.descriptorType,
-                narrow_cast<uint32_t>(x.descriptorCount)
-            };
-        }
-    );
-  
-    descriptorPool = vulkan_device().createDescriptorPool(
-        {
-        vk::DescriptorPoolCreateFlags(),
-        1, // maxSets
-        narrow_cast<uint32_t>(descriptorPoolSizes.size()), descriptorPoolSizes.data()
-    });
+    ttlet descriptorPoolSizes =
+        transform<std::vector<vk::DescriptorPoolSize>>(descriptorSetLayoutBindings, [](auto x) -> vk::DescriptorPoolSize {
+            return {x.descriptorType, narrow_cast<uint32_t>(x.descriptorCount)};
+        });
 
-    ttlet descriptorSetLayouts = std::array{
-        descriptorSetLayout
-    };
-    
+    descriptorPool = vulkan_device().createDescriptorPool(
+        {vk::DescriptorPoolCreateFlags(),
+         1, // maxSets
+         narrow_cast<uint32_t>(descriptorPoolSizes.size()),
+         descriptorPoolSizes.data()});
+
+    ttlet descriptorSetLayouts = std::array{descriptorSetLayout};
+
     ttlet descriptorSets = vulkan_device().allocateDescriptorSets(
-        {
-        descriptorPool,
-        narrow_cast<uint32_t>(descriptorSetLayouts.size()), descriptorSetLayouts.data()
-    });
+        {descriptorPool, narrow_cast<uint32_t>(descriptorSetLayouts.size()), descriptorSetLayouts.data()});
 
     descriptorSet = descriptorSets.at(0);
     descriptorSetVersion = 0;
@@ -123,19 +103,19 @@ vk::PipelineDepthStencilStateCreateInfo pipeline_vulkan::getPipelineDepthStencil
 }
 
 /* pre-multiplied alpha blending.
-*/
+ */
 std::vector<vk::PipelineColorBlendAttachmentState> pipeline_vulkan::getPipelineColorBlendAttachmentStates() const
 {
-    return { {
-        VK_TRUE, // blendEnable
-        vk::BlendFactor::eOne, // srcColorBlendFactor
-        vk::BlendFactor::eOneMinusSrcAlpha, // dstColorBlendFactor
-        vk::BlendOp::eAdd, // colorBlendOp
-        vk::BlendFactor::eOne, // srcAlphaBlendFactor
-        vk::BlendFactor::eOneMinusSrcAlpha, // dstAlphaBlendFactor
-        vk::BlendOp::eAdd, // aphaBlendOp
-        vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
-    } };
+    return {
+        {VK_TRUE, // blendEnable
+         vk::BlendFactor::eOne, // srcColorBlendFactor
+         vk::BlendFactor::eOneMinusSrcAlpha, // dstColorBlendFactor
+         vk::BlendOp::eAdd, // colorBlendOp
+         vk::BlendFactor::eOne, // srcAlphaBlendFactor
+         vk::BlendFactor::eOneMinusSrcAlpha, // dstAlphaBlendFactor
+         vk::BlendOp::eAdd, // aphaBlendOp
+         vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB |
+             vk::ColorComponentFlagBits::eA}};
 }
 
 void pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D _extent)
@@ -154,44 +134,43 @@ void pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSu
     }
 
     pipelineLayout = vulkan_device().createPipelineLayout(
-        {
-        vk::PipelineLayoutCreateFlags(),
-        narrow_cast<uint32_t>(descriptorSetLayouts.size()), descriptorSetLayouts.data(),
-        narrow_cast<uint32_t>(pushConstantRanges.size()), pushConstantRanges.data()
-    });
+        {vk::PipelineLayoutCreateFlags(),
+         narrow_cast<uint32_t>(descriptorSetLayouts.size()),
+         descriptorSetLayouts.data(),
+         narrow_cast<uint32_t>(pushConstantRanges.size()),
+         pushConstantRanges.data()});
 
     const vk::PipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo = {
         vk::PipelineVertexInputStateCreateFlags(),
-        1, &vertexInputBindingDescription,
-        narrow_cast<uint32_t>(vertexInputAttributeDescriptions.size()), vertexInputAttributeDescriptions.data()
-    };
+        1,
+        &vertexInputBindingDescription,
+        narrow_cast<uint32_t>(vertexInputAttributeDescriptions.size()),
+        vertexInputAttributeDescriptions.data()};
 
     const vk::PipelineInputAssemblyStateCreateInfo pipelineInputAssemblyStateCreateInfo = {
-        vk::PipelineInputAssemblyStateCreateFlags(),
-        vk::PrimitiveTopology::eTriangleList,
-        VK_FALSE
-    };
+        vk::PipelineInputAssemblyStateCreateFlags(), vk::PrimitiveTopology::eTriangleList, VK_FALSE};
 
-    const std::array<vk::Viewport, 1> viewports = {
-        vk::Viewport{
-            0.0f, 0.0f,
-            narrow_cast<float>(extent.width), narrow_cast<float>(extent.height),
-            // Reverse-z, with float buffer this will give a linear depth buffer.
-            1.0f, 0.0f
-        }
-    };
+    const std::array<vk::Viewport, 1> viewports = {vk::Viewport{
+        0.0f,
+        0.0f,
+        narrow_cast<float>(extent.width),
+        narrow_cast<float>(extent.height),
+        // Reverse-z, with float buffer this will give a linear depth buffer.
+        1.0f,
+        0.0f}};
 
-    ttlet scissor = vk::Rect2D{vk::Offset2D{ 0, 0 }, extent};
+    ttlet scissor = vk::Rect2D{vk::Offset2D{0, 0}, extent};
 
-    ttlet scissors = std::array{ scissor };
+    ttlet scissors = std::array{scissor};
 
     const vk::PipelineViewportStateCreateInfo pipelineViewportStateCreateInfo = {
         vk::PipelineViewportStateCreateFlags(),
-        narrow_cast<uint32_t>(viewports.size()), viewports.data(),
-        narrow_cast<uint32_t>(scissors.size()), scissors.data()
-    };
+        narrow_cast<uint32_t>(viewports.size()),
+        viewports.data(),
+        narrow_cast<uint32_t>(scissors.size()),
+        scissors.data()};
 
-    const vk::PipelineRasterizationStateCreateInfo pipelineRasterizationStateCreateInfo =  {
+    const vk::PipelineRasterizationStateCreateInfo pipelineRasterizationStateCreateInfo = {
         vk::PipelineRasterizationStateCreateFlags(),
         VK_FALSE, // depthClampEnable
         VK_FALSE, // rasterizerDiscardEnable
@@ -216,31 +195,27 @@ void pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSu
     };
 
     ttlet pipelineDepthStencilStateCreateInfo = getPipelineDepthStencilStateCreateInfo();
-    
-   
+
     /* Pre-multiplied alpha blending.
      */
     ttlet pipelineColorBlendAttachmentStates = getPipelineColorBlendAttachmentStates();
-    
-    const vk::PipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo =  {
+
+    const vk::PipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo = {
         vk::PipelineColorBlendStateCreateFlags(),
         VK_FALSE, // logicOpenable
         vk::LogicOp::eCopy,
-        narrow_cast<uint32_t>(pipelineColorBlendAttachmentStates.size()), pipelineColorBlendAttachmentStates.data()
-    };
+        narrow_cast<uint32_t>(pipelineColorBlendAttachmentStates.size()),
+        pipelineColorBlendAttachmentStates.data()};
 
-    ttlet dynamicStates = std::array{
-        vk::DynamicState::eScissor
-    };
+    ttlet dynamicStates = std::array{vk::DynamicState::eScissor};
 
     ttlet pipelineDynamicStateInfo = vk::PipelineDynamicStateCreateInfo{
-        vk::PipelineDynamicStateCreateFlags(),
-        narrow_cast<uint32_t>(dynamicStates.size()), dynamicStates.data()
-    };
+        vk::PipelineDynamicStateCreateFlags(), narrow_cast<uint32_t>(dynamicStates.size()), dynamicStates.data()};
 
     const vk::GraphicsPipelineCreateInfo graphicsPipelineCreateInfo = {
         vk::PipelineCreateFlags(),
-        narrow_cast<uint32_t>(shaderStages.size()), shaderStages.data(),
+        narrow_cast<uint32_t>(shaderStages.size()),
+        shaderStages.data(),
         &pipelineVertexInputStateCreateInfo,
         &pipelineInputAssemblyStateCreateInfo,
         nullptr, // tesselationStateCreateInfo
@@ -267,14 +242,9 @@ void pipeline_vulkan::teardownPipeline()
     vulkan_device().destroy(pipelineLayout);
 }
 
+void pipeline_vulkan::buildForNewDevice() {}
 
-void pipeline_vulkan::buildForNewDevice()
-{
-}
-
-void pipeline_vulkan::buildForNewSurface()
-{
-}
+void pipeline_vulkan::buildForNewSurface() {}
 
 void pipeline_vulkan::buildForNewSwapchain(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D _extent)
 {
@@ -294,9 +264,7 @@ void pipeline_vulkan::teardownForSwapchainLost()
     teardownDescriptorSets();
 }
 
-void pipeline_vulkan::teardownForSurfaceLost()
-{
-}
+void pipeline_vulkan::teardownForSurfaceLost() {}
 
 void pipeline_vulkan::teardownForDeviceLost()
 {
@@ -304,8 +272,6 @@ void pipeline_vulkan::teardownForDeviceLost()
     buffersInitialized = false;
 }
 
-void pipeline_vulkan::teardownForWindowLost()
-{
-}
+void pipeline_vulkan::teardownForWindowLost() {}
 
-}
+} // namespace tt::inline v1

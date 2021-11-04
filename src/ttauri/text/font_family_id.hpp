@@ -6,7 +6,7 @@
 
 #include "../tagged_id.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 using font_family_id = tagged_id<uint16_t, "font_family_id">;
 

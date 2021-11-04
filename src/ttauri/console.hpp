@@ -8,7 +8,7 @@
 #include <iostream>
 #include <format>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Initialize the console.
  */
@@ -17,11 +17,11 @@ void console_start() noexcept;
 /** Output text to the console.
  * This will output the text to the console.
  * During debugging the console will be the debugger's output panel/window.
- * 
+ *
  * @param text The text to display on the console.
  * @param output Either std::cout or std::cerr. (No other stream is allowed here).
  */
-void console_output(std::string_view text, std::ostream &output=std::cout) noexcept;
+void console_output(std::string_view text, std::ostream &output = std::cout) noexcept;
 
 /** Format and output text to the console.
  * This will output the text to the console's std::cout.
@@ -30,9 +30,9 @@ void console_output(std::string_view text, std::ostream &output=std::cout) noexc
  * @param text The text to display on the console.
  */
 template<typename... Args>
-void print(char const *fmt, Args const &... args) noexcept
+void print(char const *fmt, Args const &...args) noexcept
 {
     console_output(std::format(fmt, args...));
 }
 
-}
+} // namespace tt::inline v1

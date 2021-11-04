@@ -6,7 +6,7 @@
 
 #include "../rapid/numeric_array.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 namespace geo {
 
 /** A high-level geometric vector
@@ -134,8 +134,8 @@ public:
         return vector{-_v};
     }
 
-    template<int E> requires (E <= D)
-    constexpr vector &operator+=(vector<E> const &rhs) noexcept
+    template<int E>
+    requires(E <= D) constexpr vector &operator+=(vector<E> const &rhs) noexcept
     {
         tt_axiom(holds_invariant() && rhs.holds_invariant());
         _v = _v + static_cast<f32x4>(rhs);
@@ -366,12 +366,12 @@ private:
     return vector<3>{cross_3D(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs))};
 }
 
-}
+} // namespace geo
 
 using vector2 = geo::vector<2>;
 using vector3 = geo::vector<3>;
 
-} // namespace tt
+} // namespace tt::inline v1
 
 namespace std {
 

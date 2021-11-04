@@ -16,7 +16,7 @@
 #include <optional>
 #include <future>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** A text widget.
  * The text widget is a simple widget that just displays text.
@@ -71,4 +71,4 @@ private:
     text_widget(gui_window &window, widget *parent) noexcept;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

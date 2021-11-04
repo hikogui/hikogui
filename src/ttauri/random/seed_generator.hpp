@@ -9,7 +9,7 @@
 #include <random>
 #include <concepts>
 
-namespace tt {
+namespace tt::inline v1 {
 
 class seed_generator {
 public:
@@ -100,6 +100,4 @@ private:
     std::random_device _device;
 };
 
-
-
-}
+} // namespace tt::inline v1

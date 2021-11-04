@@ -10,8 +10,8 @@
 using namespace std;
 using namespace tt;
 
-
-TEST(GZip, UnzipEmpty) {
+TEST(GZip, UnzipEmpty)
+{
     auto decompressed = gzip_decompress(URL("file:gzip_test1.bin.gz"));
 
     ttlet original = file_view(URL("file:gzip_test1.bin"));
@@ -24,7 +24,8 @@ TEST(GZip, UnzipEmpty) {
     }
 }
 
-TEST(GZip, UnzipSingleA) {
+TEST(GZip, UnzipSingleA)
+{
     auto decompressed = gzip_decompress(URL("file:gzip_test2.bin.gz"));
 
     ttlet original = file_view(URL("file:gzip_test2.bin"));
@@ -37,7 +38,8 @@ TEST(GZip, UnzipSingleA) {
     }
 }
 
-TEST(GZip, UnzipText) {
+TEST(GZip, UnzipText)
+{
     auto decompressed = gzip_decompress(URL("file:gzip_test3.bin.gz"));
 
     ttlet original = file_view(URL("file:gzip_test3.bin"));
@@ -52,7 +54,8 @@ TEST(GZip, UnzipText) {
 
 // The rest of the tests are from the caterbury corpus
 
-TEST(GZip, UnzipCpHTML) {
+TEST(GZip, UnzipCpHTML)
+{
     auto decompressed = gzip_decompress(URL("file:gzip_test4.bin.gz"));
 
     ttlet original = file_view(URL("file:gzip_test4.bin"));
@@ -65,7 +68,8 @@ TEST(GZip, UnzipCpHTML) {
     }
 }
 
-TEST(GZip, UnzipFieldsC) {
+TEST(GZip, UnzipFieldsC)
+{
     auto decompressed = gzip_decompress(URL("file:gzip_test5.bin.gz"));
 
     ttlet original = file_view(URL("file:gzip_test5.bin"));
@@ -78,7 +82,8 @@ TEST(GZip, UnzipFieldsC) {
     }
 }
 
-TEST(GZip, UnzipGrammarLSP) {
+TEST(GZip, UnzipGrammarLSP)
+{
     auto decompressed = gzip_decompress(URL("file:gzip_test6.bin.gz"));
 
     ttlet original = file_view(URL("file:gzip_test6.bin"));
@@ -91,7 +96,8 @@ TEST(GZip, UnzipGrammarLSP) {
     }
 }
 
-TEST(GZip, UnzipSum) {
+TEST(GZip, UnzipSum)
+{
     auto decompressed = gzip_decompress(URL("file:gzip_test7.bin.gz"));
 
     ttlet original = file_view(URL("file:gzip_test7.bin"));
@@ -104,7 +110,8 @@ TEST(GZip, UnzipSum) {
     }
 }
 
-TEST(GZip, UnzipXargs1) {
+TEST(GZip, UnzipXargs1)
+{
     auto decompressed = gzip_decompress(URL("file:gzip_test8.bin.gz"));
 
     ttlet original = file_view(URL("file:gzip_test8.bin"));

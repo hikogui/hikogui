@@ -10,11 +10,11 @@
 #include "../rapid/sfloat_rgb32.hpp"
 #include <vulkan/vulkan.hpp>
 
-namespace tt::pipeline_SDF {
+namespace tt::inline v1::pipeline_SDF {
 
 /*! A vertex defining a rectangle on a window.
-* The vertex shader will convert window pixel-coordinates to normalized projection-coordinates.
-*/
+ * The vertex shader will convert window pixel-coordinates to normalized projection-coordinates.
+ */
 struct vertex {
     //! The pixel-coordinates where the origin is located relative to the bottom-left corner of the window.
     sfloat_rgb32 position;
@@ -29,26 +29,23 @@ struct vertex {
     sfloat_rgba16 color;
 
     vertex(point3 position, aarectangle clippingRectangle, point3 textureCoord, tt::color color) noexcept :
-        position(position),
-        clippingRectangle(clippingRectangle),
-        textureCoord(textureCoord),
-        color(color) {}
+        position(position), clippingRectangle(clippingRectangle), textureCoord(textureCoord), color(color)
+    {
+    }
 
     static vk::VertexInputBindingDescription inputBindingDescription()
     {
-        return {
-            0, sizeof(vertex), vk::VertexInputRate::eVertex
-        };
+        return {0, sizeof(vertex), vk::VertexInputRate::eVertex};
     }
 
     static std::vector<vk::VertexInputAttributeDescription> inputAttributeDescriptions()
     {
         return {
-            { 0, 0, vk::Format::eR32G32B32Sfloat, offsetof(vertex, position) },
-            { 1, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(vertex, clippingRectangle) },
-            { 2, 0, vk::Format::eR32G32B32Sfloat, offsetof(vertex, textureCoord) },                
-            { 3, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(vertex, color) }
-        };
+            {0, 0, vk::Format::eR32G32B32Sfloat, offsetof(vertex, position)},
+            {1, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(vertex, clippingRectangle)},
+            {2, 0, vk::Format::eR32G32B32Sfloat, offsetof(vertex, textureCoord)},
+            {3, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(vertex, color)}};
     }
 };
-}
+
+} // namespace tt::inline v1::pipeline_SDF

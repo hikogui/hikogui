@@ -17,7 +17,7 @@
 #include <limits>
 #include <algorithm>
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct bezier_point;
 
@@ -359,4 +359,4 @@ void fill(pixel_map<uint8_t> &image, std::vector<bezier_curve> const &curves) no
  */
 void fill(pixel_map<sdf_r8> &image, std::vector<bezier_curve> const &curves) noexcept;
 
-} // namespace tt
+} // namespace tt::inline v1

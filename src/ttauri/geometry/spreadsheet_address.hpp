@@ -4,7 +4,7 @@
 
 /** @file
  * The functions in this file are for handling spreadsheet addresses.
- * 
+ *
  * Spreadsheet addresses are of the form:
  * ```
  * address_range := address ':' address;
@@ -12,12 +12,12 @@
  * column := [A-Z]+;
  * row := [0-9]+;
  * ```
- * 
+ *
  * Columns start at 'A' for the left most column.
  * After 'Z' follows 'AA' then 'AB'.
- * 
+ *
  * Rows start at '1' for the top most row.
- * 
+ *
  * A column or row that is prefixed with '$' is absolute, instead of relative.
  */
 
@@ -28,8 +28,7 @@
 #include <tuple>
 #include <string_view>
 
-namespace tt {
-
+namespace tt::inline v1 {
 
 inline std::tuple<bool, size_t, bool, size_t> _parse_spreadsheet_address(std::string_view &address)
 {
@@ -64,13 +63,14 @@ inline std::tuple<bool, size_t, bool, size_t> _parse_spreadsheet_address(std::st
 }
 
 /** Parse a spreadsheet address.
- * 
+ *
  * @param address The address to parse.
  * @param start_column_nr A relative column in the address is added to the start-column.
  * @param start_row_nr A relative row in the address is added to the start-row.
  * @return The zero-based column and row index.
  */
-inline std::pair<size_t, size_t> parse_spreadsheet_address(std::string_view address, size_t start_column_nr = 0, size_t start_row_nr = 0)
+inline std::pair<size_t, size_t>
+parse_spreadsheet_address(std::string_view address, size_t start_column_nr = 0, size_t start_row_nr = 0)
 {
     auto [column_nr_is_relative, column_nr, row_nr_is_relative, row_nr] = _parse_spreadsheet_address(address);
     tt_parse_check(address.empty(), "Extra characters in spread sheet address {}", address);
@@ -117,4 +117,4 @@ parse_spreadsheet_range(std::string_view address, size_t start_column_nr = 0, si
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

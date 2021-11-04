@@ -13,7 +13,7 @@
 #include <ostream>
 #include <concepts>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** High performance big integer implementation.
  * The bigint is a fixed width integer which will allow the compiler
@@ -549,7 +549,7 @@ using ubig128 = bigint<uint64_t, 2, false>;
 using big128 = bigint<uint64_t, 2, true>;
 using uuid = bigint<uint64_t, 2, false>;
 
-} // namespace tt
+} // namespace tt::inline v1
 
 namespace std {
 

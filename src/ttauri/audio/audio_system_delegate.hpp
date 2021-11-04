@@ -6,7 +6,7 @@
 
 #include "audio_block.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 class audio_system;
 
 class audio_system_delegate {
@@ -21,4 +21,4 @@ public:
     virtual void audio_device_list_changed(audio_system &self) {}
 };
 
-}
+} // namespace tt::inline v1

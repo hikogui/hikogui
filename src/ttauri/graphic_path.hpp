@@ -13,7 +13,7 @@
 #include "rapid/sdf_r8.hpp"
 #include <vector>
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct bezier_curve;
 template<typename T>
@@ -274,4 +274,4 @@ void composit(pixel_map<sfloat_rgba16> &dst, graphic_path const &mask) noexcept;
  */
 void fill(pixel_map<sdf_r8> &dst, graphic_path const &path) noexcept;
 
-} // namespace tt
+} // namespace tt::inline v1

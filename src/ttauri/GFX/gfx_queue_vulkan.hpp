@@ -7,7 +7,7 @@
 #include <vulkan/vulkan.hpp>
 #include <cstdint>
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct gfx_queue_vulkan {
     uint32_t family_queue_index;
@@ -17,5 +17,4 @@ struct gfx_queue_vulkan {
     vk::CommandPool command_pool;
 };
 
-
-}
+} // namespace tt::inline v1

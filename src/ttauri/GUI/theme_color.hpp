@@ -6,7 +6,7 @@
 
 #include "../exception.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 enum class theme_color : unsigned char {
     blue,
@@ -90,4 +90,4 @@ constexpr size_t num_theme_colors = static_cast<size_t>(theme_color::_size);
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

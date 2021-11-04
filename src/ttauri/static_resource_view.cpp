@@ -6,7 +6,7 @@
 #include "static_resource_list.hpp"
 #include "exception.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 static_resource_view::static_resource_view(std::string const &filename) :
     _bytes(static_resource_view::get_static_resource(filename))
@@ -22,4 +22,4 @@ std::span<std::byte const> static_resource_view::get_static_resource(std::string
     return r;
 }
 
-}
+} // namespace tt::inline v1

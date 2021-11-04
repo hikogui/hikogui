@@ -4,14 +4,13 @@
 
 #pragma once
 
-
 #include "required.hpp"
 #include "assert.hpp"
 #include <utility>
 #include <array>
 #include <type_traits>
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] inline size_t hash_mix_two(size_t hash1, size_t hash2) noexcept
 {
@@ -25,19 +24,17 @@ namespace tt {
 }
 
 template<typename First, typename Second, typename... Args>
-[[nodiscard]] size_t hash_mix(First &&first, Second &&second, Args &&... args) noexcept {
+[[nodiscard]] size_t hash_mix(First &&first, Second &&second, Args &&...args) noexcept
+{
     if constexpr (sizeof...(args) == 0) {
         return hash_mix_two(
             std::hash<std::remove_cvref_t<First>>{}(std::forward<First>(first)),
-            std::hash<std::remove_cvref_t<Second>>{}(std::forward<Second>(second))
-        );
+            std::hash<std::remove_cvref_t<Second>>{}(std::forward<Second>(second)));
     } else {
         return hash_mix_two(
             std::hash<std::remove_cvref_t<First>>{}(std::forward<First>(first)),
-            hash_mix(std::forward<Second>(second), std::forward<Args>(args)...)
-        );
+            hash_mix(std::forward<Second>(second), std::forward<Args>(args)...));
     }
 }
 
-
-}
+} // namespace tt::inline v1

@@ -52,4 +52,3 @@ TEST(concepts, generator_temporary)
         ++index;
     }
 }
-

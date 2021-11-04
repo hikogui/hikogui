@@ -21,13 +21,13 @@
 #include <memory>
 #include <mutex>
 
-namespace tt {
+namespace tt::inline v1 {
 namespace detail {
 
 class counter {
 public:
     /** Get the named counter.
-     * 
+     *
      * @pre main() must have been started.
      * @param name The name of the counter.
      * @return A pointer to the counter, or nullptr if the counter is not found.
@@ -50,9 +50,7 @@ public:
     counter &operator=(counter const &) = delete;
     counter &operator=(counter &&) = delete;
 
-    constexpr counter() noexcept
-    {
-    }
+    constexpr counter() noexcept {}
 
     operator uint64_t() const noexcept
     {
@@ -63,7 +61,7 @@ public:
     {
         ttlet lock = std::scoped_lock(_mutex);
         log_header();
-        for (ttlet &[string, counter]: _map.get_or_make()) {
+        for (ttlet & [ string, counter ] : _map.get_or_make()) {
             tt_axiom(counter);
             counter->log(string);
         }
@@ -105,8 +103,8 @@ protected:
     using map_type = std::map<std::string, counter *>;
 
     /** Mutex for managing _map.
-    * We disable the dead_lock_detector, so that this mutex can be used before main().
-    */
+     * We disable the dead_lock_detector, so that this mutex can be used before main().
+     */
     constinit static inline unfair_mutex_impl<false> _mutex;
     constinit static inline atomic_unique_ptr<map_type> _map;
 
@@ -120,7 +118,7 @@ protected:
      * - [9:0] Count.
      * - [63:10] Sum.
      */
-    std::atomic<uint64_t> _duration_avg = 0;    
+    std::atomic<uint64_t> _duration_avg = 0;
 };
 
 template<basic_fixed_string Tag>
@@ -143,4 +141,4 @@ inline detail::tagged_counter<Tag> global_counter;
     return detail::counter::get_if(name);
 }
 
-} // namespace tt
+} // namespace tt::inline v1

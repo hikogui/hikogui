@@ -11,7 +11,8 @@ using namespace std;
 using namespace std::literals;
 using namespace tt;
 
-TEST(Decimal, StringConstruction) {
+TEST(Decimal, StringConstruction)
+{
     decimal x;
 
     ASSERT_NO_THROW(x = decimal("0"));
@@ -107,7 +108,8 @@ TEST(Decimal, StringConstruction) {
     ASSERT_EQ(x.exponent(), -1);
 }
 
-TEST(Decimal, ToString) {
+TEST(Decimal, ToString)
+{
     ASSERT_EQ(to_string(decimal(0, 0)), "0");
     ASSERT_EQ(to_string(decimal(0, 1)), "1");
     ASSERT_EQ(to_string(decimal(0, -1)), "-1");
@@ -125,11 +127,13 @@ TEST(Decimal, ToString) {
     ASSERT_EQ(to_string(decimal(-2, -1)), "-0.01");
 }
 
-tt_no_inline decimal test(decimal a, decimal b) {
+tt_no_inline decimal test(decimal a, decimal b)
+{
     return a + b;
 }
 
-TEST(Decimal, Add) {
+TEST(Decimal, Add)
+{
     ASSERT_EQ(decimal(0, 0) + decimal(0, 0), decimal(0, 0));
     ASSERT_EQ(decimal(2, 0) + decimal(0, 0), decimal(0, 0));
     ASSERT_EQ(decimal(-2, 0) + decimal(0, 0), decimal(-2, 0));
@@ -139,13 +143,11 @@ TEST(Decimal, Add) {
     ASSERT_EQ(decimal(-2, 42) + decimal(0, 55), decimal(-2, 5542));
     ASSERT_EQ(decimal(-2, 42) + decimal(2, 55), decimal(-2, 550042));
 
-
     ASSERT_EQ(test(decimal(2, 42), decimal(0, 55)), decimal(0, 4255));
-
 }
 
-
-TEST(Decimal, Sub) {
+TEST(Decimal, Sub)
+{
     ASSERT_EQ(decimal(0, 0) - decimal(0, 0), decimal(0, 0));
     ASSERT_EQ(decimal(2, 0) - decimal(0, 0), decimal(0, 0));
     ASSERT_EQ(decimal(-2, 0) - decimal(0, 0), decimal(-2, 0));
@@ -156,8 +158,8 @@ TEST(Decimal, Sub) {
     ASSERT_EQ(decimal(-2, 42) - decimal(2, 55), decimal(-2, -549958));
 }
 
-
-TEST(Decimal, Mul) {
+TEST(Decimal, Mul)
+{
     ASSERT_EQ(decimal(0, 0) * decimal(0, 0), decimal(0, 0));
     ASSERT_EQ(decimal(2, 0) * decimal(0, 0), decimal(0, 0));
     ASSERT_EQ(decimal(-2, 0) * decimal(0, 0), decimal(-2, 0));
@@ -168,7 +170,8 @@ TEST(Decimal, Mul) {
     ASSERT_EQ(decimal(-2, 42) * decimal(2, 55), decimal(0, 2310));
 }
 
-TEST(Decimal, Div) {
+TEST(Decimal, Div)
+{
     ASSERT_EQ(decimal(0, 42) / decimal(0, 55), decimal(-15, 763636363636363));
     ASSERT_EQ(decimal(2, 42) / decimal(0, 55), decimal(-13, 763636363636363));
     ASSERT_EQ(decimal(-2, 42) / decimal(0, 55), decimal(-17, 763636363636363));

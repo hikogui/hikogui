@@ -8,7 +8,7 @@
 #include <ostream>
 #include "../strings.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** An IETF BCP 47 Language tag.
  */
@@ -60,12 +60,10 @@ private:
     std::string tag;
 };
 
-} // namespace tt
-
-namespace std {
+} // namespace tt::inline v1
 
 template<>
-class hash<tt::language_tag> {
+class std::hash<tt::language_tag> {
 public:
     [[nodiscard]] size_t operator()(tt::language_tag const &rhs) const noexcept
     {
@@ -80,5 +78,3 @@ struct std::formatter<tt::language_tag, CharT> : std::formatter<std::string_view
         return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
     }
 };
-
-} // namespace std

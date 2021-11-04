@@ -9,7 +9,7 @@
 #include "../exception.hpp"
 #include "../assert.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Bidirectional class
  * Unicode Standard Annex #9: https://unicode.org/reports/tr9/
@@ -115,4 +115,4 @@ enum class unicode_bidi_class : uint8_t {
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

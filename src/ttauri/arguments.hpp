@@ -8,7 +8,7 @@
 
 #pragma once
 
-namespace tt {
+namespace tt::inline v1 {
 
 template<size_t I, typename FirstArg, typename... Args>
 constexpr decltype(auto) get_argument_impl(FirstArg &&first_arg, Args &&...args) noexcept
@@ -33,4 +33,4 @@ constexpr decltype(auto) get_last_argument(Args &&...args) noexcept
     return get_argument_impl<sizeof...(Args) - 1>(std::forward<Args>(args)...);
 }
 
-}
+} // namespace tt::inline v1

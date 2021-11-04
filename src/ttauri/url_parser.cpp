@@ -9,7 +9,7 @@
 #include "memory.hpp"
 #include <numeric>
 
-namespace tt {
+namespace tt::inline v1 {
 
 static bool is_urlchar_scheme(char c, size_t i)
 {
@@ -21,7 +21,7 @@ std::string url_encode_part(std::string_view const input, std::function<bool(cha
     std::string s;
     s.reserve(input.size() + input.size() / 2);
 
-    for (ttlet c: input) {
+    for (ttlet c : input) {
         if (unreserved_char_check(c)) {
             // Unreserved character.
             s += c;
@@ -36,7 +36,7 @@ std::string url_encode_part(std::string_view const input, std::function<bool(cha
 
 std::string url_decode(std::string_view const input, bool const plus_to_space) noexcept
 {
-    enum class state_t {Idle, FirstNibble, SecondNibble};
+    enum class state_t { Idle, FirstNibble, SecondNibble };
 
     state_t state = state_t::Idle;
 
@@ -44,20 +44,15 @@ std::string url_decode(std::string_view const input, bool const plus_to_space) n
 
     uint8_t value = 0;
     int8_t nibble_result;
-    for (ttlet c: input) {
+    for (ttlet c : input) {
         switch (state) {
         case state_t::Idle:
             switch (c) {
-            case '+':
-                s += plus_to_space ? ' ' : '+';
-                break;
+            case '+': s += plus_to_space ? ' ' : '+'; break;
 
-            case '%':
-                state = state_t::FirstNibble;
-                break;
+            case '%': state = state_t::FirstNibble; break;
 
-            default:
-                s += c;
+            default: s += c;
             }
             break;
 
@@ -89,8 +84,7 @@ std::string url_decode(std::string_view const input, bool const plus_to_space) n
             }
             break;
 
-        default:
-            tt_no_default();
+        default: tt_no_default();
         }
     }
 
@@ -103,15 +97,15 @@ static void parse_authority_split(url_parts &parts, std::string_view authority) 
 }
 
 /*! Parse and normalize a file path.
-* The path is already split into segments.
-* This function will work with both url-encoded or no encoding paths.
-*
-* The input segments may include empty segments such as from the leading
-* slash of an absolute path.
-*
-* \param segments a list of path segments.
-* \return the path split into the parts and normalized.
-*/
+ * The path is already split into segments.
+ * This function will work with both url-encoded or no encoding paths.
+ *
+ * The input segments may include empty segments such as from the leading
+ * slash of an absolute path.
+ *
+ * \param segments a list of path segments.
+ * \return the path split into the parts and normalized.
+ */
 static void parse_path_split(url_parts &parts, std::vector<std::string_view> segments) noexcept
 {
     // Extract optional server from file path.
@@ -147,7 +141,7 @@ static void parse_path_split(url_parts &parts, std::vector<std::string_view> seg
     normalize_url_path(parts);
 }
 
-static void parse_path_split(url_parts &parts, std::string_view path, char sep='/') noexcept
+static void parse_path_split(url_parts &parts, std::string_view path, char sep = '/') noexcept
 {
     if (path.size() == 0) {
         // Empty path is relative.
@@ -196,16 +190,14 @@ static size_t generate_size_guess(url_parts const &parts, bool only_path) noexce
 {
     ttlet path_size = parts.authority.size() + parts.drive.size() + parts.segments.size() + 10;
 
-    ttlet start_size = only_path ?
-        path_size :
-        path_size + parts.scheme.size() + parts.query.size() + parts.fragment.size();
+    ttlet start_size = only_path ? path_size : path_size + parts.scheme.size() + parts.query.size() + parts.fragment.size();
 
     return std::accumulate(parts.segments.begin(), parts.segments.end(), start_size, [](size_t a, auto b) {
         return a + b.size();
-        });
+    });
 }
 
-static void generate_path_append(std::string &r, url_parts const &parts, char sep='/') noexcept
+static void generate_path_append(std::string &r, url_parts const &parts, char sep = '/') noexcept
 {
     if (parts.authority.size() > 0) {
         r.append(2, sep);
@@ -286,9 +278,8 @@ url_parts parse_path(std::string_view path, std::string &encodedPath) noexcept
     ttlet forward_count = std::count(path.begin(), path.end(), '/');
     ttlet backward_count = std::count(path.begin(), path.end(), '\\');
 
-    encodedPath = (forward_count >= backward_count) ?
-        url_encode_part(path, is_urlchar_pchar_forward) :
-        url_encode_part(path, is_urlchar_pchar_backward);
+    encodedPath = (forward_count >= backward_count) ? url_encode_part(path, is_urlchar_pchar_forward) :
+                                                      url_encode_part(path, is_urlchar_pchar_backward);
 
     ttlet sep = (forward_count >= backward_count) ? '/' : '\\';
 
@@ -297,11 +288,10 @@ url_parts parse_path(std::string_view path, std::string &encodedPath) noexcept
     return parts;
 }
 
-
 void normalize_url_path(url_parts &parts) noexcept
 {
     auto &segments = parts.segments;
-    
+
     for (auto i = segments.begin(); i != segments.end();) {
         if ((*i).size() == 0 || *i == "." || (parts.absolute && i == segments.begin() && *i == "..")) {
             // Strip out:
@@ -312,7 +302,7 @@ void normalize_url_path(url_parts &parts) noexcept
             //  * and double dot at the start of an absolute path. "/../foo" -> "/foo"
             i = segments.erase(i, i + 1);
 
-        } else if (*i != ".." && (i+1) != segments.end() && *(i+1) == "..") {
+        } else if (*i != ".." && (i + 1) != segments.end() && *(i + 1) == "..") {
             // Remove both when a name is followed by a double dot:
             //  * "foo/bar/../baz" -> "foo/baz"
             i = segments.erase(i, i + 2);
@@ -394,4 +384,4 @@ std::string filename_from_path(std::string_view path) noexcept
     }
 }
 
-}
+} // namespace tt::inline v1

@@ -7,10 +7,7 @@
 #include "gfx_surface_vulkan.hpp"
 #include "gfx_device_vulkan.hpp"
 
-namespace tt::pipeline_tone_mapper {
-
-using namespace tt;
-using namespace std;
+namespace tt::inline v1::pipeline_tone_mapper {
 
 pipeline_tone_mapper::pipeline_tone_mapper(gfx_surface const &surface) : pipeline_vulkan(surface) {}
 
@@ -43,7 +40,7 @@ std::vector<vk::DescriptorSetLayoutBinding> pipeline_tone_mapper::createDescript
          vk::ShaderStageFlagBits::eFragment}};
 }
 
-vector<vk::WriteDescriptorSet> pipeline_tone_mapper::createWriteDescriptorSet() const
+std::vector<vk::WriteDescriptorSet> pipeline_tone_mapper::createWriteDescriptorSet() const
 {
     ttlet &color_descriptor_image_infos = narrow_cast<gfx_surface_vulkan const &>(surface).colorDescriptorImageInfos;
 
@@ -92,4 +89,4 @@ vk::PipelineDepthStencilStateCreateInfo pipeline_tone_mapper::getPipelineDepthSt
     };
 }
 
-} // namespace tt::pipeline_tone_mapper
+} // namespace tt::inline v1::pipeline_tone_mapper

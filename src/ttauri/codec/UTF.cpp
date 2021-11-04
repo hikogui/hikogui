@@ -10,7 +10,7 @@
 #include <bit>
 #include <type_traits>
 
-namespace tt {
+namespace tt::inline v1 {
 namespace detail {
 
 template<typename CharT>
@@ -424,4 +424,4 @@ template<typename ToCharT, typename FromCharT>
     return utf32_to_wide(rhs);
 }
 
-} // namespace tt
+} // namespace tt::inline v1

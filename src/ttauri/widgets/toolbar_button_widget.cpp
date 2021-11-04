@@ -5,7 +5,7 @@
 #include "toolbar_button_widget.hpp"
 #include "../GUI/gui_window.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 widget_constraints const &toolbar_button_widget::set_constraints() noexcept
 {
@@ -62,9 +62,7 @@ void toolbar_button_widget::draw(draw_context const &context) noexcept
             }
             break;
 
-        case command::gui_sysmenu_open:
-            window.open_system_menu();
-            return true;
+        case command::gui_sysmenu_open: window.open_system_menu(); return true;
         default:;
         }
     }
@@ -79,4 +77,4 @@ void toolbar_button_widget::draw_toolbar_button(draw_context const &context) noe
         layout(), layout().rectangle(), background_color(), foreground_color_, theme().border_width, border_side::inside);
 }
 
-} // namespace tt
+} // namespace tt::inline v1

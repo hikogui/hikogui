@@ -17,9 +17,7 @@
 
 #pragma comment(lib, "dwmapi")
 
-namespace tt {
-
-using namespace std;
+namespace tt::inline v1 {
 
 static const wchar_t *win32WindowClassName = nullptr;
 static WNDCLASSW win32WindowClass = {};
@@ -169,6 +167,8 @@ void gui_window_win32::create_window(extent2 new_size)
 gui_window_win32::gui_window_win32(gui_system &gui, label const &title, std::weak_ptr<gui_window_delegate> delegate) noexcept :
     gui_window(gui, title, std::move(delegate)), trackMouseLeaveEventParameters()
 {
+    using namespace std::chrono_literals;
+
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
     doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;
@@ -511,6 +511,8 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     } break;
 
     case WM_TIMER: {
+        using namespace std::chrono_literals;
+
         if (last_forced_redraw + 16.7ms < current_time) {
             // During sizing the event loop is blocked.
             // Render at about 60fps.
@@ -618,21 +620,21 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         }
     }
 
-    //case WM_SYSKEYUP: {
-    //    auto alt_pressed = (narrow_cast<uint32_t>(lParam) & 0x20000000) != 0;
-    //    if (!alt_pressed) {
-    //        return -1;
-    //    }
-    //    return -1;
-    //} break;
-    //
-    //case WM_SYSKEYDOWN: {
-    //    auto alt_pressed = (narrow_cast<uint32_t>(lParam) & 0x20000000) != 0;
-    //    if (!alt_pressed) {
-    //        return -1;
-    //    }
-    //    return -1;
-    //} break;
+        // case WM_SYSKEYUP: {
+        //    auto alt_pressed = (narrow_cast<uint32_t>(lParam) & 0x20000000) != 0;
+        //    if (!alt_pressed) {
+        //        return -1;
+        //    }
+        //    return -1;
+        //} break;
+        //
+        // case WM_SYSKEYDOWN: {
+        //    auto alt_pressed = (narrow_cast<uint32_t>(lParam) & 0x20000000) != 0;
+        //    if (!alt_pressed) {
+        //        return -1;
+        //    }
+        //    return -1;
+        //} break;
 
     case WM_KEYDOWN: {
         auto extended = (narrow_cast<uint32_t>(lParam) & 0x01000000) != 0;
@@ -707,6 +709,8 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     } break;
 
     case WM_SETTINGCHANGE: {
+        using namespace std::chrono_literals;
+
         tt_axiom(is_gui_thread());
         doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;
         tt_log_info("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
@@ -889,4 +893,4 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     return mouseEvent;
 }
 
-} // namespace tt
+} // namespace tt::inline v1

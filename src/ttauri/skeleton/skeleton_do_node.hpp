@@ -6,18 +6,17 @@
 
 #include "skeleton_node.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
-struct skeleton_do_node final: skeleton_node {
+struct skeleton_do_node final : skeleton_node {
     statement_vector children;
     std::unique_ptr<formula_node> expression;
     parse_location formula_location;
 
-    skeleton_do_node(parse_location location) noexcept :
-        skeleton_node(std::move(location)) {}
+    skeleton_do_node(parse_location location) noexcept : skeleton_node(std::move(location)) {}
 
-
-    bool found_while(parse_location _location, std::unique_ptr<formula_node> x) noexcept override {
+    bool found_while(parse_location _location, std::unique_ptr<formula_node> x) noexcept override
+    {
         if (expression) {
             return false;
         } else {
@@ -28,8 +27,9 @@ struct skeleton_do_node final: skeleton_node {
     }
 
     /** Append a template-piece to the current template.
-    */
-    bool append(std::unique_ptr<skeleton_node> x) noexcept override {
+     */
+    bool append(std::unique_ptr<skeleton_node> x) noexcept override
+    {
         if (expression) {
             return false;
         } else {
@@ -38,19 +38,21 @@ struct skeleton_do_node final: skeleton_node {
         }
     }
 
-    void post_process(formula_post_process_context &context) override {
+    void post_process(formula_post_process_context &context) override
+    {
         if (ssize(children) > 0) {
             children.back()->left_align();
         }
 
         post_process_expression(context, *expression, location);
 
-        for (ttlet &child: children) {
+        for (ttlet &child : children) {
             child->post_process(context);
         }
     }
 
-    datum evaluate(formula_evaluation_context &context) override {
+    datum evaluate(formula_evaluation_context &context) override
+    {
         ttlet output_size = context.output_size();
 
         ssize_t loop_count = 0;
@@ -72,14 +74,17 @@ struct skeleton_do_node final: skeleton_node {
         return {};
     }
 
-    std::string string() const noexcept override {
+    std::string string() const noexcept override
+    {
         tt_assert(expression);
         std::string s = "<do ";
-        s += join(transform<std::vector<std::string>>(children, [](auto &x) { return to_string(*x); }));
+        s += join(transform<std::vector<std::string>>(children, [](auto &x) {
+            return to_string(*x);
+        }));
         s += to_string(*expression);
         s += ">";
         return s;
     }
 };
 
-}
+} // namespace tt::inline v1

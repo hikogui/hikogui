@@ -15,7 +15,7 @@
 #include <optional>
 #include <future>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** The GUI widget displays and lays out text together with an icon.
  *
@@ -113,4 +113,4 @@ private:
     label_widget(gui_window &window, widget *parent) noexcept;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

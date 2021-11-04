@@ -20,7 +20,7 @@
 #include <type_traits>
 #include <cstdlib>
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] constexpr bool is_upper(char c) noexcept
 {
@@ -513,4 +513,4 @@ constexpr auto to_array_without_last(T(&&rhs)[N]) noexcept
     return make_cstr(s.c_str(), s.size());
 }
 
-} // namespace tt
+} // namespace tt::inline v1

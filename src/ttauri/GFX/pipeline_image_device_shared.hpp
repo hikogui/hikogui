@@ -12,13 +12,12 @@
 #include <vulkan/vulkan.hpp>
 #include <mutex>
 
-namespace tt {
+namespace tt::inline v1 {
 class gfx_device_vulkan;
 template<typename T>
 class pixel_map;
-} // namespace tt
 
-namespace tt::pipeline_image {
+namespace pipeline_image {
 
 struct device_shared {
     static constexpr size_t page_size = paged_image::page_size;
@@ -114,4 +113,5 @@ private:
     friend paged_image;
 };
 
-} // namespace tt::pipeline_image
+} // namespace pipeline_image
+} // namespace tt::inline v1

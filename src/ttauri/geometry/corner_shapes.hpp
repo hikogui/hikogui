@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace tt {
+namespace tt::inline v1 {
 
 class corner_shapes {
 public:
@@ -77,5 +77,4 @@ private:
     f32x4 _v;
 };
 
-
-}
+} // namespace tt::inline v1

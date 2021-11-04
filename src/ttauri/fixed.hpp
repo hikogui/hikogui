@@ -10,7 +10,7 @@
 #include <type_traits>
 #include <limits>
 
-namespace tt {
+namespace tt::inline v1 {
 
 template<typename T, int M>
 struct fixed {
@@ -26,109 +26,123 @@ struct fixed {
     fixed(fixed &&) = default;
     fixed &operator=(fixed &&) = default;
 
-    template<typename O, std::enable_if_t<std::is_floating_point_v<O>, int> = 0>  
-    explicit constexpr fixed(O other) noexcept :
-        value(static_cast<T>(other * M)) {
-        tt_assert(
-            other >= (std::numeric_limits<T>::min() / M) &&
-            other <= (std::numeric_limits<T>::max() / M)
-        );
+    template<typename O, std::enable_if_t<std::is_floating_point_v<O>, int> = 0>
+    explicit constexpr fixed(O other) noexcept : value(static_cast<T>(other * M))
+    {
+        tt_assert(other >= (std::numeric_limits<T>::min() / M) && other <= (std::numeric_limits<T>::max() / M));
     }
 
     template<typename O, std::enable_if_t<std::is_integral_v<O>, int> = 0>
-    explicit constexpr fixed(O other) noexcept :
-        value(static_cast<T>(other) * M) {
-        tt_assert(
-            other >= (std::numeric_limits<T>::min() / M) &&
-            other <= (std::numeric_limits<T>::max() / M)
-        );
+    explicit constexpr fixed(O other) noexcept : value(static_cast<T>(other) * M)
+    {
+        tt_assert(other >= (std::numeric_limits<T>::min() / M) && other <= (std::numeric_limits<T>::max() / M));
     }
 
-    explicit fixed(std::string const &other) :
-        fixed(stod(other)) {}
+    explicit fixed(std::string const &other) : fixed(stod(other)) {}
 
-    template<typename O, std::enable_if_t<std::is_floating_point_v<O>, int> = 0>  
-    constexpr fixed &operator=(O other) noexcept {
+    template<typename O, std::enable_if_t<std::is_floating_point_v<O>, int> = 0>
+    constexpr fixed &operator=(O other) noexcept
+    {
         value = static_cast<T>(other * M);
-        tt_assert(
-            other >= (std::numeric_limits<T>::min() / M) &&
-            other <= (std::numeric_limits<T>::max() / M)
-        );
+        tt_assert(other >= (std::numeric_limits<T>::min() / M) && other <= (std::numeric_limits<T>::max() / M));
         return *this;
     }
 
     template<typename O, std::enable_if_t<std::is_integral_v<O>, int> = 0>
-    constexpr fixed &operator=(O other) noexcept {
+    constexpr fixed &operator=(O other) noexcept
+    {
         value = static_cast<T>(other) * M;
-        tt_assert(
-            other >= (std::numeric_limits<T>::min() / M) &&
-            other <= (std::numeric_limits<T>::max() / M)
-        );
+        tt_assert(other >= (std::numeric_limits<T>::min() / M) && other <= (std::numeric_limits<T>::max() / M));
         return *this;
     }
 
-    fixed &operator=(std::string const &other) {
+    fixed &operator=(std::string const &other)
+    {
         value = static_cast<T>(stod(other) * M);
-        tt_assert(
-            other >= (std::numeric_limits<T>::min() / M) &&
-            other <= (std::numeric_limits<T>::max() / M)
-        );
+        tt_assert(other >= (std::numeric_limits<T>::min() / M) && other <= (std::numeric_limits<T>::max() / M));
         return *this;
     }
 
-    template<typename O, std::enable_if_t<std::is_floating_point_v<O>, int> = 0>  
-    explicit operator O () const noexcept {
+    template<typename O, std::enable_if_t<std::is_floating_point_v<O>, int> = 0>
+    explicit operator O() const noexcept
+    {
         return static_cast<O>(value) / M;
     }
 
     template<typename O, std::enable_if_t<std::is_integral_v<O>, int> = 0>
-    explicit operator O () const noexcept {
+    explicit operator O() const noexcept
+    {
         return static_cast<O>(value / M);
     }
 
-    std::string string() const noexcept {
+    std::string string() const noexcept
+    {
         return std::format("{}", static_cast<double>(value) / M);
     }
-    
-    static fixed fromValue(T value) noexcept {
+
+    static fixed fromValue(T value) noexcept
+    {
         fixed r;
         r.value = value;
         return r;
     }
 };
 
-template<typename T, int M> inline bool operator==(fixed<T,M> const &lhs, fixed<T,M> const &rhs) { return lhs.value == rhs.value; }
-template<typename T, int M> inline bool operator!=(fixed<T,M> const &lhs, fixed<T,M> const &rhs) { return lhs.value != rhs.value; }
-template<typename T, int M> inline bool operator<(fixed<T,M> const &lhs, fixed<T,M> const &rhs) { return lhs.value < rhs.value; }
-template<typename T, int M> inline bool operator>(fixed<T,M> const &lhs, fixed<T,M> const &rhs) { return lhs.value > rhs.value; }
-template<typename T, int M> inline bool operator<=(fixed<T,M> const &lhs, fixed<T,M> const &rhs) { return lhs.value <= rhs.value; }
-template<typename T, int M> inline bool operator>=(fixed<T,M> const &lhs, fixed<T,M> const &rhs) { return lhs.value >= rhs.value; }
-
-template<typename T, int M> 
-fixed<T,M> operator+(fixed<T,M> const &lhs, fixed<T,M> const &rhs)
+template<typename T, int M>
+inline bool operator==(fixed<T, M> const &lhs, fixed<T, M> const &rhs)
 {
-    return fixed<T,M>::fromValue(lhs.value + rhs.value);
+    return lhs.value == rhs.value;
+}
+template<typename T, int M>
+inline bool operator!=(fixed<T, M> const &lhs, fixed<T, M> const &rhs)
+{
+    return lhs.value != rhs.value;
+}
+template<typename T, int M>
+inline bool operator<(fixed<T, M> const &lhs, fixed<T, M> const &rhs)
+{
+    return lhs.value < rhs.value;
+}
+template<typename T, int M>
+inline bool operator>(fixed<T, M> const &lhs, fixed<T, M> const &rhs)
+{
+    return lhs.value > rhs.value;
+}
+template<typename T, int M>
+inline bool operator<=(fixed<T, M> const &lhs, fixed<T, M> const &rhs)
+{
+    return lhs.value <= rhs.value;
+}
+template<typename T, int M>
+inline bool operator>=(fixed<T, M> const &lhs, fixed<T, M> const &rhs)
+{
+    return lhs.value >= rhs.value;
 }
 
 template<typename T, int M>
-fixed<T,M> operator-(fixed<T,M> const &lhs, fixed<T,M> const &rhs)
+fixed<T, M> operator+(fixed<T, M> const &lhs, fixed<T, M> const &rhs)
 {
-    return fixed<T,M>::fromValue(lhs.value - rhs.value);
+    return fixed<T, M>::fromValue(lhs.value + rhs.value);
 }
 
 template<typename T, int M>
-std::string to_string(fixed<T,M> const v)
+fixed<T, M> operator-(fixed<T, M> const &lhs, fixed<T, M> const &rhs)
+{
+    return fixed<T, M>::fromValue(lhs.value - rhs.value);
+}
+
+template<typename T, int M>
+std::string to_string(fixed<T, M> const v)
 {
     return v.string();
 }
 
 template<typename T, int M>
-std::ostream &operator<<(std::ostream &lhs, fixed<T,M> const &rhs)
+std::ostream &operator<<(std::ostream &lhs, fixed<T, M> const &rhs)
 {
     return lhs << rhs.string();
 }
 
-using money = fixed<safe_int<int64_t>,100>;
+using money = fixed<safe_int<int64_t>, 100>;
 
-}
-
+} // namespace tt::inline v1

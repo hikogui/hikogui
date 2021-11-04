@@ -13,9 +13,7 @@
 #include "../GUI/gui_system.hpp"
 #include "../scoped_buffer.hpp"
 
-namespace tt {
-
-using namespace std;
+namespace tt::inline v1 {
 
 void window_widget::constructor_implementation() noexcept
 {
@@ -189,4 +187,4 @@ void window_widget::set_resize_border_priority(bool left, bool right, bool botto
     return *_toolbar;
 }
 
-} // namespace tt
+} // namespace tt::inline v1

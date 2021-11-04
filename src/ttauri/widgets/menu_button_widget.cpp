@@ -7,7 +7,7 @@
 #include "../GFX/pipeline_SDF_device_shared.hpp"
 #include "../GUI/gui_window.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 widget_constraints const &menu_button_widget::set_constraints() noexcept
 {
@@ -109,4 +109,4 @@ void menu_button_widget::draw_check_mark(draw_context const &context) noexcept
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

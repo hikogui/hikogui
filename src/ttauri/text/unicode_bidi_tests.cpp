@@ -15,7 +15,6 @@
 #include <format>
 
 using namespace tt;
-using namespace tt::detail;
 
 struct unicode_bidi_test {
     std::vector<int> levels;
@@ -32,9 +31,9 @@ struct unicode_bidi_test {
     {
     }
 
-    [[nodiscard]] std::vector<detail::unicode_bidi_char_info> get_input() const noexcept
+    [[nodiscard]] std::vector<tt::detail::unicode_bidi_char_info> get_input() const noexcept
     {
-        auto r = std::vector<detail::unicode_bidi_char_info>{};
+        auto r = std::vector<tt::detail::unicode_bidi_char_info>{};
         auto index = 0;
         for (auto cls : input) {
             r.emplace_back(index++, cls);
@@ -144,7 +143,7 @@ TEST(unicode_bidi, bidi_test)
 {
     for (auto test : parse_bidi_test()) {
         for (auto paragraph_direction : test.get_paragraph_directions()) {
-            auto test_parameters = unicode_bidi_test_parameters{};
+            auto test_parameters = tt::detail::unicode_bidi_test_parameters{};
             test_parameters.enable_mirrored_brackets = false;
             test_parameters.enable_line_separator = false;
             test_parameters.force_paragraph_direction = paragraph_direction;
@@ -230,19 +229,17 @@ struct unicode_bidi_character_test {
         resolved_paragraph_direction == 1                              ? unicode_bidi_class::R :
                                                                          unicode_bidi_class::unknown;
 
-    std::transform(
-        begin(int_resolved_levels), end(int_resolved_levels), std::back_inserter(r.resolved_levels), [](ttlet &x) {
-            if (x == "x") {
-                return -1;
-            } else {
-                return tt::from_string<int>(x);
-            }
-        });
-
-    std::transform(
-        begin(int_resolved_order), end(int_resolved_order), std::back_inserter(r.resolved_order), [](ttlet &x) {
+    std::transform(begin(int_resolved_levels), end(int_resolved_levels), std::back_inserter(r.resolved_levels), [](ttlet &x) {
+        if (x == "x") {
+            return -1;
+        } else {
             return tt::from_string<int>(x);
-        });
+        }
+    });
+
+    std::transform(begin(int_resolved_order), end(int_resolved_order), std::back_inserter(r.resolved_order), [](ttlet &x) {
+        return tt::from_string<int>(x);
+    });
 
     return r;
 }
@@ -275,7 +272,7 @@ generator<unicode_bidi_character_test> parse_bidi_character_test(int test_line_n
 TEST(unicode_bidi, bidi_character_test)
 {
     for (auto test : parse_bidi_character_test()) {
-        auto test_parameters = unicode_bidi_test_parameters{};
+        auto test_parameters = tt::detail::unicode_bidi_test_parameters{};
         test_parameters.enable_mirrored_brackets = true;
         test_parameters.enable_line_separator = true;
         test_parameters.force_paragraph_direction = test.paragraph_direction;

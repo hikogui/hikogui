@@ -5,17 +5,12 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../graphic_path.hpp"
 #include "../text/font_glyph_ids.hpp"
 #include <memory>
 #include <string>
 #include <array>
 
-namespace tt {
-struct graphic_path;
-}
-
-namespace tt {
+namespace tt::inline v1 {
 
 class window_traffic_lights_widget final : public widget {
 public:
@@ -63,4 +58,4 @@ private:
     void drawWindows(draw_context const &context) noexcept;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

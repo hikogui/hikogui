@@ -6,7 +6,7 @@
 #include "../codec/UTF.hpp"
 #include "../log.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 audio_device_id::audio_device_id(char type, wchar_t const *id) noexcept : _v{}
 {
@@ -24,5 +24,4 @@ audio_device_id::audio_device_id(char type, wchar_t const *id) noexcept : _v{}
     }
 }
 
-
-}
+} // namespace tt::inline v1

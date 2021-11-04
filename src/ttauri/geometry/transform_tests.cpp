@@ -42,7 +42,8 @@ TEST(geometry, translate_scale_point)
     static_assert(std::is_same_v<decltype(translate<3>(-3, -4, -5) * (scale<2>(4.0, 6.0) * point<2>(1.0, 2.0))), point<3>>);
     static_assert(std::is_same_v<decltype(translate<3>(-3, -4, -5) * (scale<2>(4.0, 6.0) * point<3>(1.0, 2.0, 3.0))), point<3>>);
     static_assert(std::is_same_v<decltype(translate<3>(-3, -4, -5) * (scale<3>(4.0, 6.0, 8.0) * point<2>(1.0, 2.0))), point<3>>);
-    static_assert(std::is_same_v<decltype(translate<3>(-3, -4, -5) * (scale<3>(4.0, 6.0, 8.0) * point<3>(1.0, 2.0, 3.0))), point<3>>);
+    static_assert(
+        std::is_same_v<decltype(translate<3>(-3, -4, -5) * (scale<3>(4.0, 6.0, 8.0) * point<3>(1.0, 2.0, 3.0))), point<3>>);
 
     static_assert(translate<2>(-3, -4) * (scale<2>(4.0, 6.0) * point<2>(1.0, 2.0)) == point<2>(1.0, 8.0));
     static_assert(translate<2>(-3, -4) * (scale<2>(4.0, 6.0) * point<3>(1.0, 2.0, 3.0)) == point<3>(1.0, 8.0, 3.0));
@@ -69,7 +70,8 @@ TEST(geometry, translate_scale_point)
     static_assert(std::is_same_v<decltype((translate<3>(-3, -4, -5) * scale<2>(4.0, 6.0)) * point<2>(1.0, 2.0)), point<3>>);
     static_assert(std::is_same_v<decltype((translate<3>(-3, -4, -5) * scale<2>(4.0, 6.0)) * point<3>(1.0, 2.0, 3.0)), point<3>>);
     static_assert(std::is_same_v<decltype((translate<3>(-3, -4, -5) * scale<3>(4.0, 6.0, 8.0)) * point<2>(1.0, 2.0)), point<3>>);
-    static_assert(std::is_same_v<decltype((translate<3>(-3, -4, -5) * scale<3>(4.0, 6.0, 8.0)) * point<3>(1.0, 2.0, 3.0)), point<3>>);
+    static_assert(
+        std::is_same_v<decltype((translate<3>(-3, -4, -5) * scale<3>(4.0, 6.0, 8.0)) * point<3>(1.0, 2.0, 3.0)), point<3>>);
 
     static_assert((translate<2>(-3, -4) * scale<2>(4.0, 6.0)) * point<3>(1.0, 2.0, 3.0) == point<3>(1.0, 8.0, 3.0));
     static_assert((translate<2>(-3, -4) * scale<3>(4.0, 6.0, 8.0)) * point<2>(1.0, 2.0) == point<3>(1.0, 8.0, 0.0));
@@ -89,5 +91,3 @@ TEST(geometry, translate_scale_point)
     ASSERT_TRUE((translate<3>(-3, -4, -5) * scale<3>(4.0, 6.0, 8.0)) * point<2>(1.0, 2.0) == point<3>(1.0, 8.0, -5));
     ASSERT_TRUE((translate<3>(-3, -4, -5) * scale<3>(4.0, 6.0, 8.0)) * point<3>(1.0, 2.0, 3.0) == point<3>(1, 8.0, 19.0));
 }
-
-

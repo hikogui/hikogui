@@ -8,10 +8,10 @@
 #include <Windows.h>
 #include <mmreg.h>
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] WAVEFORMATEXTENSIBLE audio_stream_format_to_win32(audio_stream_format stream_format) noexcept;
 [[nodiscard]] audio_stream_format audio_stream_format_from_win32(WAVEFORMATEXTENSIBLE const &wave_format);
 [[nodiscard]] audio_stream_format audio_stream_format_from_win32(WAVEFORMATEX const &wave_format);
 
-}
+} // namespace tt::inline v1

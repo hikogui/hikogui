@@ -11,7 +11,7 @@
 #include <mutex>
 #include <sys/mman.h>
 
-namespace tt {
+namespace tt::inline v1 {
 
 file_view::file_view(std::shared_ptr<file_mapping> const &_file_mapping_object, size_t offset, size_t size) :
     _file_mapping_object(_file_mapping_object), _offset(offset)
@@ -96,4 +96,4 @@ void file_view::flush(void *base, size_t size)
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

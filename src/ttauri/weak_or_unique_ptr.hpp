@@ -6,13 +6,13 @@
 
 #include <memory>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Class that hold either a weak_ptr or a unique_ptr
  * This class is to hold a weak_ptr, and potentially also
  * an owning unique_ptr. Technically this class will use
  * a shared_ptr for owning.
- * 
+ *
  * The following unique_ptr, shared_ptr, weak_ptr or weak_or_unique_ptr conversions are allowed:
  *  - move weak_or_unique_ptr: (optional) ownership is moved
  *  - copy weak_or_unique_ptr: weak_ptr is copied
@@ -39,14 +39,12 @@ public:
     }
 
     template<typename Y>
-    requires(std::is_convertible_v<std::remove_cvref_t<Y> *, value_type *>)
-    weak_or_unique_ptr(weak_or_unique_ptr<Y> const &other) noexcept : _shared_ptr(), _weak_ptr(other._weak_ptr)
-    {
-    }
+    requires(std::is_convertible_v<std::remove_cvref_t<Y> *, value_type *>) weak_or_unique_ptr(weak_or_unique_ptr<Y> const &other)
+    noexcept : _shared_ptr(), _weak_ptr(other._weak_ptr) {}
 
     template<typename Y>
-    requires(std::is_convertible_v<std::remove_cvref_t<Y> *, value_type *>)
-    weak_or_unique_ptr &operator=(weak_or_unique_ptr<Y> const &other) noexcept
+    requires(std::is_convertible_v<std::remove_cvref_t<Y> *, value_type *>) weak_or_unique_ptr &
+    operator=(weak_or_unique_ptr<Y> const &other) noexcept
     {
         _shared_ptr = {};
         _weak_ptr = other._weak_ptr;
@@ -54,14 +52,12 @@ public:
     }
 
     template<typename Y>
-    requires(std::is_convertible_v<std::remove_cvref_t<Y> *, value_type *>)
-    weak_or_unique_ptr(weak_or_unique_ptr<Y> &&other) noexcept : _shared_ptr(other._shared_ptr), _weak_ptr(other._weak_ptr)
-    {
-    }
+    requires(std::is_convertible_v<std::remove_cvref_t<Y> *, value_type *>) weak_or_unique_ptr(weak_or_unique_ptr<Y> &&other)
+    noexcept : _shared_ptr(other._shared_ptr), _weak_ptr(other._weak_ptr) {}
 
     template<typename Y>
-    requires(std::is_convertible_v<std::remove_cvref_t<Y> *, value_type *>)
-    weak_or_unique_ptr &operator=(weak_or_unique_ptr<Y> &&other) noexcept
+    requires(std::is_convertible_v<std::remove_cvref_t<Y> *, value_type *>) weak_or_unique_ptr &
+    operator=(weak_or_unique_ptr<Y> &&other) noexcept
     {
         _shared_ptr = other._shared_ptr;
         _weak_ptr = other._weak_ptr;
@@ -69,14 +65,12 @@ public:
     }
 
     template<typename Y>
-    requires(std::is_convertible_v<std::remove_cvref_t<Y> *, value_type *>)
-    weak_or_unique_ptr(std::unique_ptr<Y> &&other) noexcept : _shared_ptr(std::move(other)), _weak_ptr(_shared_ptr)
-    {
-    }
+    requires(std::is_convertible_v<std::remove_cvref_t<Y> *, value_type *>) weak_or_unique_ptr(std::unique_ptr<Y> &&other)
+    noexcept : _shared_ptr(std::move(other)), _weak_ptr(_shared_ptr) {}
 
     template<typename Y>
-    requires(std::is_convertible_v<std::remove_cvref_t<Y> *, value_type *>)
-    weak_or_unique_ptr &operator=(std::unique_ptr<Y> &&other) noexcept
+    requires(std::is_convertible_v<std::remove_cvref_t<Y> *, value_type *>) weak_or_unique_ptr &
+    operator=(std::unique_ptr<Y> &&other) noexcept
     {
         _shared_ptr = std::move(other);
         _weak_ptr = _shared_ptr;
@@ -84,15 +78,12 @@ public:
     }
 
     template<typename Y>
-    requires(std::is_convertible_v<std::remove_cvref_t<Y> *, value_type *>)
-        weak_or_unique_ptr(std::shared_ptr<Y> const &other) noexcept :
-        _shared_ptr(), _weak_ptr(other)
-    {
-    }
+    requires(std::is_convertible_v<std::remove_cvref_t<Y> *, value_type *>) weak_or_unique_ptr(std::shared_ptr<Y> const &other)
+    noexcept : _shared_ptr(), _weak_ptr(other) {}
 
     template<typename Y>
-    requires(std::is_convertible_v<std::remove_cvref_t<Y> *, value_type *>)
-    weak_or_unique_ptr &operator=(std::shared_ptr<Y> const &other) noexcept
+    requires(std::is_convertible_v<std::remove_cvref_t<Y> *, value_type *>) weak_or_unique_ptr &
+    operator=(std::shared_ptr<Y> const &other) noexcept
     {
         _shared_ptr = nullptr;
         _weak_ptr = other;
@@ -100,20 +91,16 @@ public:
     }
 
     template<typename Y>
-    requires(std::is_convertible_v<std::remove_cvref_t<Y> *, value_type *>)
-    weak_or_unique_ptr(std::weak_ptr<Y> const &other) noexcept : _shared_ptr(), _weak_ptr(other)
-    {
-    }
+    requires(std::is_convertible_v<std::remove_cvref_t<Y> *, value_type *>) weak_or_unique_ptr(std::weak_ptr<Y> const &other)
+    noexcept : _shared_ptr(), _weak_ptr(other) {}
 
     template<typename Y>
-    requires(std::is_convertible_v<std::remove_cvref_t<Y> *, value_type *>)
-    weak_or_unique_ptr(std::weak_ptr<Y> &&other) noexcept : _shared_ptr(), _weak_ptr(std::move(other))
-    {
-    }
+    requires(std::is_convertible_v<std::remove_cvref_t<Y> *, value_type *>) weak_or_unique_ptr(std::weak_ptr<Y> &&other)
+    noexcept : _shared_ptr(), _weak_ptr(std::move(other)) {}
 
     template<typename Y>
-    requires(std::is_convertible_v<std::remove_cvref_t<Y> *, value_type *>)
-    weak_or_unique_ptr &operator=(std::weak_ptr<Y> const &other) noexcept
+    requires(std::is_convertible_v<std::remove_cvref_t<Y> *, value_type *>) weak_or_unique_ptr &
+    operator=(std::weak_ptr<Y> const &other) noexcept
     {
         _shared_ptr = nullptr;
         _weak_ptr = other;
@@ -121,8 +108,8 @@ public:
     }
 
     template<typename Y>
-    requires(std::is_convertible_v<std::remove_cvref_t<Y> *, value_type *>)
-    weak_or_unique_ptr &operator=(std::weak_ptr<Y> &&other) noexcept
+    requires(std::is_convertible_v<std::remove_cvref_t<Y> *, value_type *>) weak_or_unique_ptr &
+    operator=(std::weak_ptr<Y> &&other) noexcept
     {
         _shared_ptr = nullptr;
         _weak_ptr = std::move(other);
@@ -153,4 +140,4 @@ private:
     friend class weak_or_unique_ptr;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

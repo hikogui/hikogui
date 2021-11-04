@@ -14,8 +14,7 @@
 #include <vector>
 #include <concepts>
 
-namespace tt {
-
+namespace tt::inline v1 {
 template<typename T>
 class default_text_field_delegate;
 
@@ -123,10 +122,10 @@ template<typename Value>
 default_text_field_delegate(Value &&) -> default_text_field_delegate<observable_argument_t<std::remove_cvref_t<Value>>>;
 
 template<typename Value, typename... Args>
-std::unique_ptr<text_field_delegate> make_unique_default_text_field_delegate(Value &&value, Args &&... args) noexcept
+std::unique_ptr<text_field_delegate> make_unique_default_text_field_delegate(Value &&value, Args &&...args) noexcept
 {
     using value_type = observable_argument_t<std::remove_cvref_t<Value>>;
     return std::make_unique<default_text_field_delegate<value_type>>(std::forward<Value>(value), std::forward<Args>(args)...);
 }
 
-} // namespace tt
+} // namespace tt::inline v1

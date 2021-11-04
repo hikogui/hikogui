@@ -7,7 +7,7 @@
 #include "log.hpp"
 #include <algorithm>
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] timer *timer::subsystem_init() noexcept
 {
@@ -22,7 +22,8 @@ void timer::subsystem_deinit() noexcept
     }
 }
 
-[[nodiscard]] utc_nanoseconds timer::calculate_next_wakeup(utc_nanoseconds current_time, std::chrono::nanoseconds interval) noexcept
+[[nodiscard]] utc_nanoseconds
+timer::calculate_next_wakeup(utc_nanoseconds current_time, std::chrono::nanoseconds interval) noexcept
 {
     ttlet current_time_ = narrow_cast<int64_t>(current_time.time_since_epoch().count());
     ttlet interval_ = narrow_cast<int64_t>(interval.count());
@@ -116,7 +117,7 @@ timer::find_triggered_callbacks(utc_nanoseconds current_time) noexcept
 
 void timer::loop(std::stop_token stop_token) noexcept
 {
-    using namespace std::literals::chrono_literals;
+    using namespace std::chrono_literals;
 
     tt_log_info("Timer {}: started", name);
     while (true) {
@@ -166,4 +167,4 @@ void timer::remove_callback(callback_ptr_type const &callback_ptr) noexcept
     callback_list.erase(i, callback_list.end());
 }
 
-} // namespace tt
+} // namespace tt::inline v1

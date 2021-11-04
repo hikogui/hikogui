@@ -8,7 +8,7 @@
 #include <string>
 #include <chrono>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /*! Invariant should be the default for variables.
  * C++ does have an invariant but it requires you to enter the 'const' keyword which
@@ -40,7 +40,8 @@ constexpr ssize_t operator"" _z(unsigned long long lhs) noexcept
     return static_cast<ssize_t>(lhs);
 }
 
-#define tt_return_on_self_assignment(other)\
-    if (&(other) == this) [[unlikely]] return *this;
+#define tt_return_on_self_assignment(other) \
+    if (&(other) == this) [[unlikely]] \
+        return *this;
 
-} // namespace tt
+} // namespace tt::inline v1

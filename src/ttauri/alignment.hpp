@@ -8,7 +8,7 @@
 
 #include "assert.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Vertical alignment.
  */
@@ -171,4 +171,4 @@ constexpr bool operator==(alignment lhs, vertical_alignment rhs) noexcept
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

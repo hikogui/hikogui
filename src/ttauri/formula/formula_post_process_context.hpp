@@ -14,16 +14,16 @@
 #include <string>
 #include <string_view>
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct formula_post_process_context {
     using filter_type = std::function<std::string(std::string_view)>;
-    using filter_table = std::unordered_map<std::string,filter_type>;
-    using function_type = std::function<datum(formula_evaluation_context&, datum::vector_type const &)>;
-    using function_table = std::unordered_map<std::string,function_type>;
+    using filter_table = std::unordered_map<std::string, filter_type>;
+    using function_type = std::function<datum(formula_evaluation_context &, datum::vector_type const &)>;
+    using function_table = std::unordered_map<std::string, function_type>;
     using function_stack = std::vector<function_type>;
-    using method_type = std::function<datum(formula_evaluation_context&, datum &, datum::vector_type const &)>;
-    using method_table = std::unordered_map<std::string,method_type>;
+    using method_type = std::function<datum(formula_evaluation_context &, datum &, datum::vector_type const &)>;
+    using method_table = std::unordered_map<std::string, method_type>;
 
     function_table functions;
     function_stack super_stack;
@@ -31,7 +31,8 @@ struct formula_post_process_context {
     static method_table global_methods;
     static filter_table global_filters;
 
-    [[nodiscard]] function_type get_function(std::string const &name) const noexcept {
+    [[nodiscard]] function_type get_function(std::string const &name) const noexcept
+    {
         if (name == "super") {
             if (super_stack.size() > 0) {
                 return super_stack.back();
@@ -53,22 +54,26 @@ struct formula_post_process_context {
         return {};
     }
 
-    [[nodiscard]] function_type set_function(std::string const &name, function_type func) noexcept {
-        using namespace std;
+    [[nodiscard]] function_type set_function(std::string const &name, function_type func) noexcept
+    {
+        using std::swap;
 
         swap(functions[name], func);
         return func;
     }
 
-    void push_super(function_type func) noexcept {
+    void push_super(function_type func) noexcept
+    {
         super_stack.push_back(func);
     }
 
-    void pop_super(void) noexcept {
+    void pop_super(void) noexcept
+    {
         super_stack.pop_back();
     }
 
-    [[nodiscard]] filter_type get_filter(std::string const &name) const noexcept {
+    [[nodiscard]] filter_type get_filter(std::string const &name) const noexcept
+    {
         ttlet i = global_filters.find(name);
         if (i != global_filters.end()) {
             return i->second;
@@ -77,7 +82,8 @@ struct formula_post_process_context {
         return {};
     }
 
-    [[nodiscard]] method_type get_method(std::string const &name) const noexcept {
+    [[nodiscard]] method_type get_method(std::string const &name) const noexcept
+    {
         ttlet i = global_methods.find(name);
         if (i != global_methods.end()) {
             return i->second;
@@ -87,4 +93,4 @@ struct formula_post_process_context {
     }
 };
 
-}
+} // namespace tt::inline v1

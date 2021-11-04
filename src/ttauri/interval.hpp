@@ -14,12 +14,12 @@
 #include <algorithm>
 #include <compare>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Interval arithmetic.
  *
  * Based on: "INTERVAL ARITHMETIC USING SSE-2 (DRAFT)" - BRANIMIR LAMBOV
- * 
+ *
  * This interval is implemented with a negated upper bound, this
  * allows the rounding direction to negative infinity.
  *
@@ -29,7 +29,7 @@ template<numeric_limited T>
 struct interval {
 public:
     using value_type = T;
-    using bound_type = numeric_array<value_type,2>;
+    using bound_type = numeric_array<value_type, 2>;
 
     bound_type v;
 
@@ -39,9 +39,9 @@ public:
     constexpr interval &operator=(interval &&rhs) noexcept = default;
 
     /** Default construct an interval.
-    * 
-    * The interval includes all values of the value_type.
-    */
+     *
+     * The interval includes all values of the value_type.
+     */
     constexpr interval() noexcept
     {
         if constexpr (std::is_floating_point_v<value_type>) {
@@ -55,21 +55,20 @@ public:
     }
 
     /** Construct an interval from a lower and upper bounds.
-    * 
-    * @param lower The lower bound.
-    * @param upper The upper bound.
-    */
-    [[nodiscard]] constexpr interval(value_type lower, value_type upper) noexcept : 
-        v(lower, -upper)
+     *
+     * @param lower The lower bound.
+     * @param upper The upper bound.
+     */
+    [[nodiscard]] constexpr interval(value_type lower, value_type upper) noexcept : v(lower, -upper)
     {
         tt_axiom(holds_invariant());
     }
 
     /** Construct an interval from a bound_type value.
-    * 
-    * @param bounds The bounds x=lower, y=-upper.
-    * @return An interval.
-    */
+     *
+     * @param bounds The bounds x=lower, y=-upper.
+     * @return An interval.
+     */
     [[nodiscard]] static constexpr interval raw(bound_type bounds) noexcept
     {
         interval r;
@@ -77,16 +76,16 @@ public:
         tt_axiom(r.holds_invariant());
         return r;
     }
-    
+
     [[nodiscard]] constexpr bool holds_invariant() const noexcept
     {
         return v[0] <= -v[1];
     }
 
     /** Get the lower bound of the interval.
-    * 
-    * @return The lower bound.
-    */
+     *
+     * @return The lower bound.
+     */
     [[nodiscard]] constexpr value_type lower() const noexcept
     {
         return v[0];
@@ -102,8 +101,8 @@ public:
     }
 
     /** The distance between lower and upper bound.
-    * 
-    * @return the difference between the lower and upper bound. Must be always larger or equal to zero.
+     *
+     * @return the difference between the lower and upper bound. Must be always larger or equal to zero.
      */
     [[nodiscard]] constexpr value_type delta() const noexcept
     {
@@ -111,18 +110,18 @@ public:
     }
 
     /** Check if the interval is one value.
-    * 
-    * @return true if the delta is zero.
-    */
+     *
+     * @return true if the delta is zero.
+     */
     [[nodiscard]] constexpr bool is_value() const noexcept
     {
         return delta() == 0;
     }
 
     /** Check if the interval is a range of values.
-    * 
-    * @return true if the delta is greater than zero.
-    */
+     *
+     * @return true if the delta is greater than zero.
+     */
     [[nodiscard]] constexpr bool is_range() const noexcept
     {
         return delta() > 0;
@@ -145,10 +144,10 @@ public:
     }
 
     /** Check if the interval is true.
-    * 
-    * @return false if both the lower and upper bound are zero.
-    */
-    operator bool () const noexcept
+     *
+     * @return false if both the lower and upper bound are zero.
+     */
+    operator bool() const noexcept
     {
         return v[0] != 0 or v[1] != 0;
     }
@@ -296,18 +295,17 @@ public:
     }
 
     /** Check if the current interval is fully inside the other interval.
-    * 
-    * @param other The other interval.
-    * @return true If this interval is fully inside the @a other interval.
-    */
+     *
+     * @param other The other interval.
+     * @return true If this interval is fully inside the @a other interval.
+     */
     [[nodiscard]] constexpr bool is_fully_inside(interval const &other) const noexcept
     {
         return ge(v, other.v) == 0b11;
     }
-
 };
 
 using finterval = interval<float>;
 using dinterval = interval<double>;
 
-} // namespace tt
+} // namespace tt::inline v1

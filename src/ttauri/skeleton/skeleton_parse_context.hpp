@@ -11,7 +11,7 @@
 #include <string_view>
 #include <optional>
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct skeleton_node;
 
@@ -28,8 +28,8 @@ struct skeleton_parse_context {
     std::optional<const_iterator> text_segment_start;
 
     /** Post process context is used to record functions that are defined
-    * in the template being parsed.
-    */
+     * in the template being parsed.
+     */
     formula_post_process_context post_process_context;
 
     skeleton_parse_context() = delete;
@@ -41,33 +41,39 @@ struct skeleton_parse_context {
 
     skeleton_parse_context(URL const &url, const_iterator first, const_iterator last);
 
-    [[nodiscard]] char const& operator*() const noexcept {
+    [[nodiscard]] char const &operator*() const noexcept
+    {
         return *index;
     }
 
-    [[nodiscard]] bool atEOF() const noexcept {
+    [[nodiscard]] bool atEOF() const noexcept
+    {
         return index == last;
     }
 
-    skeleton_parse_context& operator++() noexcept {
+    skeleton_parse_context &operator++() noexcept
+    {
         tt_axiom(!atEOF());
         location += *index;
         ++index;
         return *this;
     }
 
-    skeleton_parse_context& operator+=(ssize_t x) noexcept {
+    skeleton_parse_context &operator+=(ssize_t x) noexcept
+    {
         for (ssize_t i = 0; i != x; ++i) {
             ++(*this);
         }
         return *this;
     }
 
-    bool starts_with(std::string_view text) const noexcept {
+    bool starts_with(std::string_view text) const noexcept
+    {
         return std::string_view{index, last}.starts_with(text);
     }
 
-    bool starts_with_and_advance_over(std::string_view text) noexcept {
+    bool starts_with_and_advance_over(std::string_view text) noexcept
+    {
         if (starts_with(text)) {
             *this += ssize(text);
             return true;
@@ -76,7 +82,8 @@ struct skeleton_parse_context {
         }
     }
 
-    bool advance_to(std::string_view text) noexcept {
+    bool advance_to(std::string_view text) noexcept
+    {
         while (!atEOF()) {
             if (starts_with(text)) {
                 return true;
@@ -86,7 +93,8 @@ struct skeleton_parse_context {
         return false;
     }
 
-    bool advance_over(std::string_view text) noexcept {
+    bool advance_over(std::string_view text) noexcept
+    {
         if (advance_to(text)) {
             *this += ssize(text);
             return true;
@@ -100,14 +108,16 @@ struct skeleton_parse_context {
     std::unique_ptr<formula_node> parse_expression_and_advance_over(std::string_view end_text);
 
     template<typename T, typename... Args>
-    void push(Args &&... args) {
+    void push(Args &&...args)
+    {
         statement_stack.push_back(std::make_unique<T>(std::forward<Args>(args)...));
     }
 
     [[nodiscard]] bool append(std::unique_ptr<skeleton_node> x) noexcept;
 
     template<typename T, typename... Args>
-    [[nodiscard]] bool append(Args &&... args) noexcept {
+    [[nodiscard]] bool append(Args &&...args) noexcept
+    {
         if (statement_stack.size() > 0) {
             return append(std::make_unique<T>(std::forward<Args>(args)...));
         } else {
@@ -116,9 +126,9 @@ struct skeleton_parse_context {
     }
 
     /** Handle \#end statement.
-    * This will pop the current statement of the stack and append it
-    * to the statement that is now at the top of the stack.
-    */
+     * This will pop the current statement of the stack and append it
+     * to the statement that is now at the top of the stack.
+     */
     [[nodiscard]] bool pop() noexcept;
 
     void start_of_text_segment(int back_track = 0) noexcept;
@@ -135,4 +145,4 @@ struct skeleton_parse_context {
     void include(parse_location location, std::unique_ptr<formula_node> expression);
 };
 
-}
+} // namespace tt::inline v1

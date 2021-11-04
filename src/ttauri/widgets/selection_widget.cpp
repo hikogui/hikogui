@@ -7,7 +7,7 @@
 #include "../GUI/gui_system.hpp"
 #include "../GFX/pipeline_SDF_device_shared.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 selection_widget::~selection_widget()
 {
@@ -330,4 +330,4 @@ void selection_widget::draw_chevrons(draw_context const &context) noexcept
     context.draw_glyph(layout(), translate_z(0.2f) * _chevrons_rectangle, label_color(), _chevrons_glyph);
 }
 
-} // namespace tt
+} // namespace tt::inline v1

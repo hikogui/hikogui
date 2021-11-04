@@ -9,7 +9,7 @@
 #include <Windows.h>
 #include <Synchapi.h>
 
-namespace tt {
+namespace tt::inline v1 {
 
 void set_thread_name(std::string_view name)
 {
@@ -73,6 +73,4 @@ std::vector<bool> set_thread_affinity_mask(std::vector<bool> const &mask)
     return index;
 }
 
-
-
-}
+} // namespace tt::inline v1

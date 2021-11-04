@@ -8,7 +8,7 @@
 
 #pragma once
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Exception thrown during parsing on an error.
  * This exception is often thrown due to an error in the syntax
@@ -28,8 +28,10 @@ public:
     using std::runtime_error::runtime_error;
 
     template<typename FirstArg, typename... Args>
-    parse_error(std::string_view fmt, FirstArg const &arg1, Args const &... args) noexcept :
-        parse_error(std::format(fmt, arg1, args...)) {}
+    parse_error(std::string_view fmt, FirstArg const &arg1, Args const &...args) noexcept :
+        parse_error(std::format(fmt, arg1, args...))
+    {
+    }
 };
 
 /** Exception thrown during execution of a dynamic operation.
@@ -44,7 +46,7 @@ public:
     using std::runtime_error::runtime_error;
 
     template<typename FirstArg, typename... Args>
-    operation_error(std::string_view fmt, FirstArg const &arg1, Args const &... args) noexcept :
+    operation_error(std::string_view fmt, FirstArg const &arg1, Args const &...args) noexcept :
         operation_error(std::format(fmt, arg1, args...))
     {
     }
@@ -62,8 +64,7 @@ public:
     using std::runtime_error::runtime_error;
 
     template<typename FirstArg, typename... Args>
-    io_error(std::string_view fmt, FirstArg const &arg1, Args const &... args) noexcept :
-        io_error(std::format(fmt, arg1, args...))
+    io_error(std::string_view fmt, FirstArg const &arg1, Args const &...args) noexcept : io_error(std::format(fmt, arg1, args...))
     {
     }
 };
@@ -89,7 +90,7 @@ public:
     using std::runtime_error::runtime_error;
 
     template<typename FirstArg, typename... Args>
-    gui_error(std::string_view fmt, FirstArg const &arg1, Args const &... args) noexcept :
+    gui_error(std::string_view fmt, FirstArg const &arg1, Args const &...args) noexcept :
         gui_error(std::format(fmt, arg1, args...))
     {
     }
@@ -100,7 +101,7 @@ public:
     using std::runtime_error::runtime_error;
 
     template<typename FirstArg, typename... Args>
-    key_error(std::string_view fmt, FirstArg const &arg1, Args const &... args) noexcept :
+    key_error(std::string_view fmt, FirstArg const &arg1, Args const &...args) noexcept :
         key_error(std::format(fmt, arg1, args...))
     {
     }
@@ -111,7 +112,7 @@ public:
     using std::runtime_error::runtime_error;
 
     template<typename FirstArg, typename... Args>
-    url_error(std::string_view fmt, FirstArg const &arg1, Args const &... args) noexcept :
+    url_error(std::string_view fmt, FirstArg const &arg1, Args const &...args) noexcept :
         url_error(std::format(fmt, arg1, args...))
     {
     }
@@ -132,5 +133,4 @@ public:
     }
 };
 
-}
-
+} // namespace tt::inline v1

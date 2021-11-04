@@ -6,10 +6,9 @@
 #include "unicode_description.hpp"
 #include "../required.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
-[[nodiscard]] static bool
-breaks_grapheme(unicode_grapheme_cluster_break cluster_break, grapheme_break_state &state) noexcept
+[[nodiscard]] static bool breaks_grapheme(unicode_grapheme_cluster_break cluster_break, grapheme_break_state &state) noexcept
 {
     using enum unicode_grapheme_cluster_break;
 
@@ -42,11 +41,8 @@ breaks_grapheme(unicode_grapheme_cluster_break cluster_break, grapheme_break_sta
         }
     }
 
-    ttlet GB6 = (lhs == L) &&
-        ((rhs == L) || (rhs == V) ||
-         (rhs == LV) | (rhs == LVT));
-    ttlet GB7 = ((lhs == LV) || (lhs == V)) &&
-        ((rhs == V) || (rhs == T));
+    ttlet GB6 = (lhs == L) && ((rhs == L) || (rhs == V) || (rhs == LV) | (rhs == LVT));
+    ttlet GB7 = ((lhs == LV) || (lhs == V)) && ((rhs == V) || (rhs == T));
     ttlet GB8 = ((lhs == LVT) || (lhs == T)) && (rhs == T);
     if ((break_state == break_state::unknown) && (GB6 || GB7 || GB8)) {
         break_state = break_state::dont_break;
@@ -59,8 +55,7 @@ breaks_grapheme(unicode_grapheme_cluster_break cluster_break, grapheme_break_sta
         break_state = break_state::dont_break;
     }
 
-    ttlet GB11 =
-        state.in_extended_pictograph && (lhs == ZWJ) && (rhs == Extended_Pictographic);
+    ttlet GB11 = state.in_extended_pictograph && (lhs == ZWJ) && (rhs == Extended_Pictographic);
     if ((break_state == break_state::unknown) && GB11) {
         break_state = break_state::dont_break;
     }
@@ -71,8 +66,7 @@ breaks_grapheme(unicode_grapheme_cluster_break cluster_break, grapheme_break_sta
         state.in_extended_pictograph = false;
     }
 
-    ttlet GB12_13 = (lhs == Regional_Indicator) && (rhs == Regional_Indicator) &&
-        ((state.RI_count % 2) == 1);
+    ttlet GB12_13 = (lhs == Regional_Indicator) && (rhs == Regional_Indicator) && ((state.RI_count % 2) == 1);
     if ((break_state == break_state::unknown) && (GB12_13)) {
         break_state = break_state::dont_break;
     }
@@ -92,10 +86,9 @@ breaks_grapheme(unicode_grapheme_cluster_break cluster_break, grapheme_break_sta
     return break_state == break_state::do_break;
 }
 
-
 [[nodiscard]] bool breaks_grapheme(char32_t code_point, grapheme_break_state &state) noexcept
 {
     return breaks_grapheme(unicode_description_find(code_point).grapheme_cluster_break(), state);
 }
 
-}
+} // namespace tt::inline v1

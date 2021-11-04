@@ -7,15 +7,16 @@
 #include <Windows.h>
 #include <debugapi.h>
 
-namespace tt {
+namespace tt::inline v1 {
 
-bool debugger_is_present() noexcept {
+bool debugger_is_present() noexcept
+{
     return IsDebuggerPresent();
 }
 
-void _debugger_break() 
+void _debugger_break()
 {
     DebugBreak();
 }
 
-}
+} // namespace tt::inline v1

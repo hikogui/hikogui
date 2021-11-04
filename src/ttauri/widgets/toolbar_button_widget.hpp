@@ -7,7 +7,7 @@
 #include "abstract_button_widget.hpp"
 #include "default_button_delegate.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 class toolbar_button_widget final : public abstract_button_widget {
 public:
@@ -16,11 +16,7 @@ public:
     using callback_ptr_type = typename delegate_type::callback_ptr_type;
 
     template<typename Label>
-    toolbar_button_widget(
-        gui_window &window,
-        widget *parent,
-        Label &&label,
-        std::weak_ptr<delegate_type> delegate) noexcept :
+    toolbar_button_widget(gui_window &window, widget *parent, Label &&label, std::weak_ptr<delegate_type> delegate) noexcept :
         toolbar_button_widget(window, parent, std::forward<Label>(label), weak_or_unique_ptr{std::move(delegate)})
     {
     }
@@ -51,4 +47,4 @@ private:
     void draw_toolbar_button(draw_context const &context) noexcept;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

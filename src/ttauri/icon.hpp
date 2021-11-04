@@ -12,7 +12,7 @@
 #include "text/ttauri_icon.hpp"
 #include <variant>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** An image, in different formats.
  */
@@ -31,7 +31,7 @@ public:
     icon &operator=(icon const &) noexcept = default;
     icon &operator=(icon &&) noexcept = default;
 
-    [[nodiscard]] explicit operator bool () const noexcept
+    [[nodiscard]] explicit operator bool() const noexcept
     {
         return !std::holds_alternative<std::monostate>(_image);
     }
@@ -79,5 +79,4 @@ private:
     friend class stencil;
 };
 
-
-}
+} // namespace tt::inline v1

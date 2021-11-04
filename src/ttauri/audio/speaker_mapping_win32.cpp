@@ -8,7 +8,7 @@
 #include <ks.h>
 #include <ksmedia.h>
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] speaker_mapping speaker_mapping_from_win32(uint32_t from)
 {
@@ -80,7 +80,6 @@ namespace tt {
     return r;
 }
 
-
 [[nodiscard]] uint32_t speaker_mapping_to_win32(speaker_mapping from) noexcept
 {
     if (is_direct(from)) {
@@ -148,5 +147,4 @@ namespace tt {
     return r;
 }
 
-
-}
+} // namespace tt::inline v1

@@ -6,23 +6,24 @@
 
 #include "formula_node.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct formula_name_node final : formula_node {
     std::string name;
     mutable formula_post_process_context::function_type function;
 
-    formula_name_node(parse_location location, std::string_view name) :
-        formula_node(std::move(location)), name(name) {}
+    formula_name_node(parse_location location, std::string_view name) : formula_node(std::move(location)), name(name) {}
 
-    void resolve_function_pointer(formula_post_process_context& context) override {
+    void resolve_function_pointer(formula_post_process_context &context) override
+    {
         function = context.get_function(name);
         if (!function) {
             throw parse_error("{}: Could not find function {}().", location, name);
         }
     }
 
-    datum evaluate(formula_evaluation_context& context) const override {
+    datum evaluate(formula_evaluation_context &context) const override
+    {
         ttlet &const_context = context;
 
         try {
@@ -32,7 +33,8 @@ struct formula_name_node final : formula_node {
         }
     }
 
-    datum &evaluate_lvalue(formula_evaluation_context& context) const override {
+    datum &evaluate_lvalue(formula_evaluation_context &context) const override
+    {
         try {
             return context.get(name);
         } catch (std::exception const &e) {
@@ -40,13 +42,15 @@ struct formula_name_node final : formula_node {
         }
     }
 
-    bool has_evaluate_xvalue() const override {
+    bool has_evaluate_xvalue() const override
+    {
         return true;
     }
 
     /** Evaluate an existing xvalue.
-    */
-    datum const &evaluate_xvalue(formula_evaluation_context const& context) const override {
+     */
+    datum const &evaluate_xvalue(formula_evaluation_context const &context) const override
+    {
         try {
             return context.get(name);
         } catch (std::exception const &e) {
@@ -54,7 +58,8 @@ struct formula_name_node final : formula_node {
         }
     }
 
-    datum &assign(formula_evaluation_context& context, datum const &rhs) const override {
+    datum &assign(formula_evaluation_context &context, datum const &rhs) const override
+    {
         try {
             return context.set(name, rhs);
         } catch (std::exception const &e) {
@@ -62,17 +67,20 @@ struct formula_name_node final : formula_node {
         }
     }
 
-    datum call(formula_evaluation_context& context, datum::vector_type const &arguments) const override {
+    datum call(formula_evaluation_context &context, datum::vector_type const &arguments) const override
+    {
         return function(context, arguments);
     }
 
-    std::string get_name() const noexcept override {
+    std::string get_name() const noexcept override
+    {
         return name;
     }
 
-    std::string string() const noexcept override {
+    std::string string() const noexcept override
+    {
         return name;
     }
 };
 
-}
+} // namespace tt::inline v1

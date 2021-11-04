@@ -9,7 +9,7 @@
 #include "skeleton_string_node.hpp"
 #include "skeleton.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] bool skeleton_parse_context::append(std::unique_ptr<skeleton_node> x) noexcept
 {
@@ -22,7 +22,8 @@ skeleton_parse_context::skeleton_parse_context(URL const &url, const_iterator fi
     push<skeleton_top_node>(location);
 }
 
-std::unique_ptr<formula_node> skeleton_parse_context::parse_expression(std::string_view end_text) {
+std::unique_ptr<formula_node> skeleton_parse_context::parse_expression(std::string_view end_text)
+{
     ttlet formula_last = find_end_of_formula(index, last, end_text);
 
     auto context = formula_parse_context(index, formula_last);
@@ -40,7 +41,8 @@ std::unique_ptr<formula_node> skeleton_parse_context::parse_expression(std::stri
     return expression;
 }
 
-std::unique_ptr<formula_node> skeleton_parse_context::parse_expression_and_advance_over(std::string_view end_text) {
+std::unique_ptr<formula_node> skeleton_parse_context::parse_expression_and_advance_over(std::string_view end_text)
+{
     auto expression = parse_expression(end_text);
 
     if (!starts_with_and_advance_over(end_text)) {
@@ -50,7 +52,8 @@ std::unique_ptr<formula_node> skeleton_parse_context::parse_expression_and_advan
     return expression;
 }
 
-[[nodiscard]] bool skeleton_parse_context::pop() noexcept {
+[[nodiscard]] bool skeleton_parse_context::pop() noexcept
+{
     if (statement_stack.size() > 0) {
         auto tmp = std::move(statement_stack.back());
         statement_stack.pop_back();
@@ -66,7 +69,7 @@ std::unique_ptr<formula_node> skeleton_parse_context::parse_expression_and_advan
         return false;
     }
 
-    auto ptr = dynamic_cast<skeleton_do_node*>(statement_stack.back().get());
+    auto ptr = dynamic_cast<skeleton_do_node *>(statement_stack.back().get());
     return ptr != nullptr;
 }
 
@@ -88,7 +91,8 @@ void skeleton_parse_context::end_of_text_segment()
     }
 }
 
-[[nodiscard]] bool skeleton_parse_context::found_elif(parse_location _location, std::unique_ptr<formula_node> expression) noexcept {
+[[nodiscard]] bool skeleton_parse_context::found_elif(parse_location _location, std::unique_ptr<formula_node> expression) noexcept
+{
     if (statement_stack.size() > 0) {
         return statement_stack.back()->found_elif(std::move(_location), std::move(expression));
     } else {
@@ -96,7 +100,8 @@ void skeleton_parse_context::end_of_text_segment()
     }
 }
 
-[[nodiscard]] bool skeleton_parse_context::found_else(parse_location _location) noexcept {
+[[nodiscard]] bool skeleton_parse_context::found_else(parse_location _location) noexcept
+{
     if (statement_stack.size() > 0) {
         return statement_stack.back()->found_else(std::move(_location));
     } else {
@@ -104,7 +109,9 @@ void skeleton_parse_context::end_of_text_segment()
     }
 }
 
-[[nodiscard]] bool skeleton_parse_context::found_while(parse_location _location, std::unique_ptr<formula_node> expression) noexcept {
+[[nodiscard]] bool
+skeleton_parse_context::found_while(parse_location _location, std::unique_ptr<formula_node> expression) noexcept
+{
     if (statement_stack.size() > 0) {
         return statement_stack.back()->found_while(std::move(_location), std::move(expression));
     } else {
@@ -120,9 +127,8 @@ void skeleton_parse_context::include(parse_location _location, std::unique_ptr<f
     auto evaluation_context = formula_evaluation_context();
     ttlet argument = expression->evaluate(evaluation_context);
 
-    ttlet current_skeleton_directory = _location.has_file() ?
-        _location.file().urlByRemovingFilename() :
-        URL::urlFromCurrentWorkingDirectory();
+    ttlet current_skeleton_directory =
+        _location.has_file() ? _location.file().urlByRemovingFilename() : URL::urlFromCurrentWorkingDirectory();
 
     ttlet new_skeleton_path = current_skeleton_directory.urlByAppendingPath(static_cast<std::string>(argument));
 
@@ -135,5 +141,4 @@ void skeleton_parse_context::include(parse_location _location, std::unique_ptr<f
     }
 }
 
-}
-
+} // namespace tt::inline v1

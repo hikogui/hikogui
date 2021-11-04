@@ -11,7 +11,7 @@
 #include <array>
 #include <tuple>
 
-namespace tt {
+namespace tt::inline v1 {
 
 class trace_base {
 public:
@@ -35,8 +35,6 @@ protected:
     time_stamp_count _time_stamp;
     trace_base *_next = nullptr;
 };
-
-
 
 template<basic_fixed_string Tag, int NumItems = 0>
 class trace : public trace_base {
@@ -76,7 +74,7 @@ private:
 };
 
 template<basic_fixed_string Tag>
-class trace<Tag,0> : public trace_base {
+class trace<Tag, 0> : public trace_base {
 public:
     trace() noexcept : trace_base() {}
 
@@ -98,4 +96,4 @@ public:
     }
 };
 
-} // namespace tt
+} // namespace tt::inline v1

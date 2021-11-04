@@ -10,8 +10,9 @@
 using namespace std;
 using namespace tt;
 
-TEST(SmallMap, Default) {
-    small_map<int,int,4> items;
+TEST(SmallMap, Default)
+{
+    small_map<int, int, 4> items;
     ASSERT_EQ(items.size(), 0);
 
     ASSERT_EQ(items.set(10, 100), true);

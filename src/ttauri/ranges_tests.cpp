@@ -18,7 +18,7 @@ TEST(ranges, split1)
     auto index = 0;
     for (auto result : tt::views::split(test, sep)) {
         if (index == 0) {
-            auto expected = std::vector{1,2};
+            auto expected = std::vector{1, 2};
             ASSERT_TRUE(std::ranges::equal(result, expected));
         } else if (index == 1) {
             auto expected = std::vector{3, 4};

@@ -12,24 +12,24 @@
 #include <string_view>
 #include <iostream>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** A parser to parse command line arguments.
  */
 class CommandLineParser {
     /** Specification of possible command line option.
-    */
+     */
     struct option_t {
         /** Name of the option.
-        */
+         */
         std::string name;
 
         /** Type of the option.
-        */
+         */
         datum_type_t type;
 
         /** Help message for the option.
-        */
+         */
         std::string help;
 
         /** A function to decode a string into an integer.
@@ -38,7 +38,9 @@ class CommandLineParser {
         std::function<int(std::string_view)> enum_conversion;
 
         option_t(std::string name, datum_type_t type, std::string help, std::function<int(std::string_view)> enum_conversion) :
-            name(std::move(name)), type(type), help(std::move(help)), enum_conversion(std::move(enum_conversion)) {}
+            name(std::move(name)), type(type), help(std::move(help)), enum_conversion(std::move(enum_conversion))
+        {
+        }
     };
 
     // The synopsis of the application to be printed on --help and error.
@@ -60,21 +62,25 @@ public:
      * @param help Description text of the option.
      * @param enum_conversion A function that converts a string to an integer.
      */
-    void add(std::string name, datum_type_t type, std::string help, std::function<int(std::string_view)> enum_conversion = {}) noexcept {
+    void
+    add(std::string name, datum_type_t type, std::string help, std::function<int(std::string_view)> enum_conversion = {}) noexcept
+    {
         options.emplace_back(std::move(name), type, std::move(help), std::move(enum_conversion));
     }
 
     /** check if an error has occured during parsing.
      */
-    bool has_error() const noexcept {
+    bool has_error() const noexcept
+    {
         return error_messages.size() > 0;
     }
 
     /** Print help text for the command line arguments.
      * This will also print any error messages that happened during the parsing.
      */
-    void print_help() {
-        for (ttlet &error_message: error_messages) {
+    void print_help()
+    {
+        for (ttlet &error_message : error_messages) {
             std::cerr << error_message << "\n";
         }
         if (has_error()) {
@@ -83,7 +89,7 @@ public:
 
         std::cerr << synopsis << "\n";
 
-        for (ttlet &option: options) {
+        for (ttlet &option : options) {
             ttlet example = std::format("--{}=<{}>", option.name, option.type);
             std::cerr << std::format("  {:20s}    {}\n", example, option.help);
         }
@@ -95,11 +101,12 @@ public:
      * Special options are:
      * - 'executable-path' The path to the exectuable.
      * - 'arguments' A list of strings of the non-option arguments.
-     * 
+     *
      * @param arguments a list of command line arguments, including the exectable name as the first argument.
      * @return The result as a map-datum, with option names as the keys.
      */
-    datum parse(int argc, char const * const argv[]) noexcept {
+    datum parse(int argc, char const *const argv[]) noexcept
+    {
         auto r = datum{datum::map{}};
 
         for (int arg_index = 0; arg_index != argc; ++arg_index) {
@@ -115,7 +122,7 @@ public:
 
                     ttlet &option = std::find_if(options.begin(), options.end(), [&](auto x) {
                         return x.name == option_name;
-                        });
+                    });
 
                     if (option == options.end()) {
                         error_messages.push_back(std::format("Unknown option '{}'", option_name));
@@ -128,12 +135,12 @@ public:
                     }
 
                 } else {
-                    ttlet option_name = argument.substr(2, i-2);
-                    ttlet option_value_string = argument.substr(i+1);
+                    ttlet option_name = argument.substr(2, i - 2);
+                    ttlet option_value_string = argument.substr(i + 1);
 
                     ttlet &option = std::find_if(options.begin(), options.end(), [&](auto x) {
                         return x.name == option_name;
-                        });
+                    });
 
                     if (option == options.end()) {
                         error_messages.push_back(std::format("Unknown option '{}'", option_name));
@@ -146,9 +153,10 @@ public:
                             } else if (option_value_string == "false") {
                                 r[option_name] = false;
                             } else {
-                                error_messages.push_back(
-                                    std::format("Expected a boolean value ('true' or 'false') for option '{}' got '{}'", option_name, option_value_string)
-                                );
+                                error_messages.push_back(std::format(
+                                    "Expected a boolean value ('true' or 'false') for option '{}' got '{}'",
+                                    option_name,
+                                    option_value_string));
                             }
                             break;
 
@@ -159,8 +167,7 @@ public:
                                     r[option_name] = option_value_int;
                                 } else {
                                     error_messages.push_back(
-                                        std::format("Unknown value '{}' for option '{}'", option_value_string, option_name)
-                                    );
+                                        std::format("Unknown value '{}' for option '{}'", option_value_string, option_name));
                                 }
 
                             } else {
@@ -168,27 +175,21 @@ public:
                                     ttlet option_value_int = std::stoll(option_value_string);
                                     r[option_name] = option_value_int;
                                 } catch (...) {
-                                    error_messages.push_back(
-                                        std::format("Expected a integer value for option '{}' got '{}'", option_name, option_value_string)
-                                    );
+                                    error_messages.push_back(std::format(
+                                        "Expected a integer value for option '{}' got '{}'", option_name, option_value_string));
                                 }
                             }
                             break;
 
-                        case datum_type_t::String:
-                            r[option_name] = option_value_string;
-                            break;
+                        case datum_type_t::String: r[option_name] = option_value_string; break;
 
-                        case datum_type_t::Vector:
-                            r[option_name].push_back(datum{option_value_string});
-                            break;
+                        case datum_type_t::Vector: r[option_name].push_back(datum{option_value_string}); break;
 
                         case datum_type_t::URL:
                             r[option_name] = URL::urlFromCurrentWorkingDirectory().urlByAppendingPath(option_value_string);
-                            break; 
+                            break;
 
-                        default:
-                            tt_no_default();
+                        default: tt_no_default();
                         }
                     }
                 }
@@ -201,4 +202,4 @@ public:
     }
 };
 
-}
+} // namespace tt::inline v1

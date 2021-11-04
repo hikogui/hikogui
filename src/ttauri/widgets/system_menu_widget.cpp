@@ -4,7 +4,7 @@
 
 #include "system_menu_widget.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 system_menu_widget::system_menu_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
 {
@@ -25,7 +25,7 @@ void system_menu_widget::set_layout(widget_layout const &context) noexcept
     if (visible) {
         if (_layout.store(context) >= layout_update::transform) {
             ttlet icon_height = layout().height() < theme().toolbar_height * 1.2f ? layout().height() : theme().toolbar_height;
-            _icon_rectangle = aarectangle{0.0f, layout().height() -icon_height, layout().width(), icon_height};
+            _icon_rectangle = aarectangle{0.0f, layout().height() - icon_height, layout().width(), icon_height};
 
             // Leave space for window resize handles on the left and top.
             _system_menu_rectangle =
@@ -56,4 +56,4 @@ hitbox system_menu_widget::hitbox_test(point3 position) const noexcept
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

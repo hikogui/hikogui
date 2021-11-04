@@ -12,7 +12,7 @@
 #include <tuple>
 #include <functional>
 
-namespace tt {
+namespace tt::inline v1 {
 
 template<typename T>
 class notifier {
@@ -28,7 +28,7 @@ class notifier {
 template<typename Result, typename... Args>
 class notifier<Result(Args...)> {
 public:
-    static_assert(std::is_same_v<Result,void>, "Result of a notifier must be void.");
+    static_assert(std::is_same_v<Result, void>, "Result of a notifier must be void.");
 
     using result_type = Result;
     using callback_type = std::function<Result(Args const &...)>;
@@ -63,8 +63,8 @@ public:
      * @param callback The callback-function to register.
      * @return A shared_ptr to a function object holding the callback.
      */
-    template<typename Callback> requires (std::is_invocable_v<Callback>)
-    [[nodiscard]] callback_ptr_type subscribe(Callback &&callback) noexcept
+    template<typename Callback>
+    requires(std::is_invocable_v<Callback>) [[nodiscard]] callback_ptr_type subscribe(Callback &&callback) noexcept
     {
         auto callback_ptr = std::make_shared<callback_type>(std::forward<decltype(callback)>(callback));
 
@@ -91,14 +91,16 @@ public:
         auto lock = std::scoped_lock(_mutex);
 
         // Clean up all the callbacks that expired.
-        std::erase_if(_callbacks, [](auto &x){ return x.expired(); });
+        std::erase_if(_callbacks, [](auto &x) {
+            return x.expired();
+        });
 
         return _callbacks;
     }
 
     /** Call the subscribed callbacks with the given arguments.
      * The callbacks will be run from the main thread, asynchronously.
-     * 
+     *
      * @param args The arguments to pass with the invocation of the callback
      */
     void operator()(Args const &...args) const noexcept requires(std::is_same_v<result_type, void>)
@@ -113,11 +115,11 @@ public:
 
     /** Call the subscribed callbacks with the given arguments.
      * The callbacks will be called from the current thread.
-     * 
+     *
      * @param args The arguments to pass with the invocation of the callback
      * @return The result of each callback.
      */
-    generator<result_type> operator()(Args const &...args) const noexcept requires(not std::is_same_v<result_type,void>)
+    generator<result_type> operator()(Args const &...args) const noexcept requires(not std::is_same_v<result_type, void>)
     {
         auto callbacks_ = callbacks();
         for (auto &callback : callbacks_) {
@@ -127,9 +129,8 @@ public:
         };
     }
 
-private:
-    mutable unfair_recursive_mutex _mutex;
+private : mutable unfair_recursive_mutex _mutex;
     mutable std::vector<std::weak_ptr<callback_type>> _callbacks;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

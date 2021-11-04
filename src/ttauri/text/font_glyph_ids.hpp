@@ -11,7 +11,7 @@
 #include "../architecture.hpp"
 #include <tuple>
 
-namespace tt {
+namespace tt::inline v1 {
 struct graphic_path;
 class font;
 
@@ -57,7 +57,7 @@ public:
         return _glyphs.empty();
     }
 
-    explicit constexpr operator bool () const noexcept
+    explicit constexpr operator bool() const noexcept
     {
         return not _glyphs.empty();
     }
@@ -83,10 +83,10 @@ public:
 
 private:
     tt::font const *_font;
-    glyph_ids _glyphs;    
+    glyph_ids _glyphs;
 };
 
-} // namespace tt
+} // namespace tt::inline v1
 
 template<>
 struct std::hash<tt::font_glyph_ids> {

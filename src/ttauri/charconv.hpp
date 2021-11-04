@@ -7,7 +7,7 @@
 #include <concepts>
 #include <charconv>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Convert integer to string.
  * This function bypasses std::locale.
@@ -100,4 +100,4 @@ template<std::floating_point T>
     return value;
 }
 
-} // namespace tt
+} // namespace tt::inline v1

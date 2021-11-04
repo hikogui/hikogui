@@ -9,7 +9,7 @@
 #include "../endian.hpp"
 #include <span>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Inflate compressed data using the deflate algorithm
  * `bytes` should include at least 32 bit of trailer, for the overflow check which
@@ -23,7 +23,6 @@ namespace tt {
  *   in the byte array passed to inflate anyway.
  * - png IDAT chunks include the full zlib-format, including the 32 bit check value.
  */
-bstring inflate(std::span<std::byte const> bytes, ssize_t &offset, ssize_t max_size=0x0100'0000);
+bstring inflate(std::span<std::byte const> bytes, ssize_t &offset, ssize_t max_size = 0x0100'0000);
 
-}
-
+} // namespace tt::inline v1

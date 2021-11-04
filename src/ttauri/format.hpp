@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace tt {
+namespace tt::inline v1 {
 namespace detail {
 template<typename Arg>
 auto u8format_argument_cast(Arg const &arg) noexcept -> std::
@@ -17,10 +17,10 @@ auto u8format_argument_cast(Arg const &arg) noexcept -> std::
     }
 }
 
-} // namespace tt
+} // namespace detail
 
 template<typename... Args>
-std::u8string format(const std::locale &loc, std::u8string_view fmt, const Args &... args)
+std::u8string format(const std::locale &loc, std::u8string_view fmt, const Args &...args)
 {
     // The current implementation assumes that `std::format()` is 8-bit clean and therefor compatible with UTF-8.
     auto r = std::format(detail::u8format_argument_cast(fmt), detail::u8format_argument_cast(args)...);
@@ -31,7 +31,7 @@ std::u8string format(const std::locale &loc, std::u8string_view fmt, const Args 
 }
 
 template<typename... Args>
-std::u8string format(std::u8string_view fmt, const Args &... args)
+std::u8string format(std::u8string_view fmt, const Args &...args)
 {
     return format(std::locale::classic(), fmt, args...);
 }
@@ -54,4 +54,4 @@ constexpr inline bool format_uses_arg_ids(const char *fmt)
     }
 }
 
-}
+} // namespace tt::inline v1

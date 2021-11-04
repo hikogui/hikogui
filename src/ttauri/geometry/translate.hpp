@@ -7,7 +7,7 @@
 #include "matrix.hpp"
 #include "identity.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 namespace geo {
 
 template<int D>
@@ -215,4 +215,4 @@ constexpr translate3 translate_z(float z) noexcept
     return translate3{0.0f, 0.0f, z};
 }
 
-} // namespace tt
+} // namespace tt::inline v1

@@ -10,10 +10,9 @@
 #include "unfair_mutex.hpp"
 #include <mutex>
 
-namespace tt {
+namespace tt::inline v1 {
 
-
-std::shared_ptr<file> file_mapping::findOrOpenFile(URL const& location, access_mode accessMode)
+std::shared_ptr<file> file_mapping::findOrOpenFile(URL const &location, access_mode accessMode)
 {
     static unfair_mutex mutex;
     static std::unordered_map<URL, std::vector<std::weak_ptr<tt::file>>> mappedFiles;
@@ -23,7 +22,7 @@ std::shared_ptr<file> file_mapping::findOrOpenFile(URL const& location, access_m
     cleanupWeakPointers(mappedFiles);
 
     // We want files to be freshly created if it did not exist before.
-    auto& files = mappedFiles[location];
+    auto &files = mappedFiles[location];
     for (ttlet &weak_file : files) {
         if (auto file = weak_file.lock()) {
             if (file->_access_mode >= accessMode) {
@@ -37,4 +36,4 @@ std::shared_ptr<file> file_mapping::findOrOpenFile(URL const& location, access_m
     return file;
 }
 
-}
+} // namespace tt::inline v1

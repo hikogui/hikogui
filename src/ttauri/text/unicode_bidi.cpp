@@ -8,7 +8,7 @@
 #include "../coroutine.hpp"
 #include <algorithm>
 
-namespace tt::detail {
+namespace tt::inline v1::detail {
 
 [[nodiscard]] static unicode_bidi_class unicode_bidi_P2(
     unicode_bidi_char_info_iterator first,
@@ -1017,4 +1017,4 @@ static void unicode_bidi_P1_line(
     return last;
 }
 
-} // namespace tt::detail
+} // namespace tt::inline v1::detail

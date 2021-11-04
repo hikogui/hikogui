@@ -8,7 +8,7 @@
 
 #include <pthread.h>
 
-namespace tt {
+namespace tt::inline v1 {
 
 static std::atomic<uint32_t> thread_id_count = 0;
 
@@ -17,4 +17,4 @@ void set_thread_name(std::string_view name)
     pthread_setname_np(name.data());
 }
 
-}
+} // namespace tt::inline v1

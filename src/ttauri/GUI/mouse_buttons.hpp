@@ -6,16 +6,16 @@
 
 #include <cstdint>
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct mouse_buttons {
-    uint8_t leftButton:1;
-    uint8_t middleButton:1;
-    uint8_t rightButton:1;
-    uint8_t x1Button:1;
-    uint8_t x2Button:1;
-    uint8_t controlKey:1;
-    uint8_t shiftKey:1;
+    uint8_t leftButton : 1;
+    uint8_t middleButton : 1;
+    uint8_t rightButton : 1;
+    uint8_t x1Button : 1;
+    uint8_t x2Button : 1;
+    uint8_t controlKey : 1;
+    uint8_t shiftKey : 1;
 
     mouse_buttons() noexcept :
         leftButton(false),
@@ -29,4 +29,4 @@ struct mouse_buttons {
     }
 };
 
-}
+} // namespace tt::inline v1

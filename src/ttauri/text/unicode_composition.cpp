@@ -5,7 +5,7 @@
 #include "unicode_composition.hpp"
 #include "unicode_db.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] char32_t unicode_composition_find(char32_t first, char32_t second) noexcept
 {
@@ -20,4 +20,4 @@ namespace tt {
     }
 }
 
-}
+} // namespace tt::inline v1

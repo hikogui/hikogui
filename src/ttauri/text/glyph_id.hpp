@@ -9,9 +9,8 @@
 #include <algorithm>
 #include <utility>
 
-namespace tt {
+namespace tt::inline v1 {
 
 using glyph_id = tagged_id<uint16_t, "glyph_id">;
 
-};
-
+}

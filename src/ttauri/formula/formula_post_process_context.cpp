@@ -5,7 +5,7 @@
 #include "formula_post_process_context.hpp"
 #include "../url_parser.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 static datum function_float(formula_evaluation_context &context, datum::vector_type const &args)
 {
@@ -248,4 +248,4 @@ formula_post_process_context::filter_table formula_post_process_context::global_
     {"id", make_identifier},
     {"url", url_encode}};
 
-} // namespace tt
+} // namespace tt::inline v1

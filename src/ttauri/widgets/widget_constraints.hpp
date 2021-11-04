@@ -6,7 +6,7 @@
 
 #include "../geometry/extent.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 class widget_constraints {
 public:
@@ -61,4 +61,4 @@ public:
     }
 };
 
-} // namespace tt
+} // namespace tt::inline v1

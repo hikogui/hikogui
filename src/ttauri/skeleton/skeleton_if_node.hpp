@@ -6,22 +6,22 @@
 
 #include "skeleton_node.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
-struct skeleton_if_node final: skeleton_node {
+struct skeleton_if_node final : skeleton_node {
     std::vector<statement_vector> children_groups;
     std::vector<std::unique_ptr<formula_node>> expressions;
     std::vector<parse_location> formula_locations;
 
-    skeleton_if_node(parse_location location, std::unique_ptr<formula_node> expression) noexcept :
-        skeleton_node(location)
+    skeleton_if_node(parse_location location, std::unique_ptr<formula_node> expression) noexcept : skeleton_node(location)
     {
         expressions.push_back(std::move(expression));
         formula_locations.push_back(location);
         children_groups.emplace_back();
     }
 
-    bool found_elif(parse_location _location, std::unique_ptr<formula_node> expression) noexcept override {
+    bool found_elif(parse_location _location, std::unique_ptr<formula_node> expression) noexcept override
+    {
         if (children_groups.size() != expressions.size()) {
             return false;
         }
@@ -32,7 +32,8 @@ struct skeleton_if_node final: skeleton_node {
         return true;
     }
 
-    bool found_else(parse_location _location) noexcept override {
+    bool found_else(parse_location _location) noexcept override
+    {
         if (children_groups.size() != expressions.size()) {
             return false;
         }
@@ -42,30 +43,33 @@ struct skeleton_if_node final: skeleton_node {
     }
 
     /** Append a template-piece to the current template.
-    */
-    bool append(std::unique_ptr<skeleton_node> x) noexcept override {
+     */
+    bool append(std::unique_ptr<skeleton_node> x) noexcept override
+    {
         append_child(children_groups.back(), std::move(x));
         return true;
     }
 
-    void post_process(formula_post_process_context &context) override {
+    void post_process(formula_post_process_context &context) override
+    {
         tt_assert(ssize(expressions) == ssize(formula_locations));
         for (ssize_t i = 0; i != ssize(expressions); ++i) {
             post_process_expression(context, *expressions[i], formula_locations[i]);
         }
 
-        for (ttlet &children: children_groups) {
+        for (ttlet &children : children_groups) {
             if (ssize(children) > 0) {
                 children.back()->left_align();
             }
 
-            for (ttlet &child: children) {
+            for (ttlet &child : children) {
                 child->post_process(context);
             }
         }
     }
 
-    datum evaluate(formula_evaluation_context &context) override {
+    datum evaluate(formula_evaluation_context &context) override
+    {
         tt_axiom(ssize(expressions) == ssize(formula_locations));
         for (ssize_t i = 0; i != ssize(expressions); ++i) {
             if (evaluate_formula_without_output(context, *expressions[i], formula_locations[i])) {
@@ -78,21 +82,28 @@ struct skeleton_if_node final: skeleton_node {
         return {};
     }
 
-    std::string string() const noexcept override {
+    std::string string() const noexcept override
+    {
         tt_assert(expressions.size() > 0);
         std::string s = "<if ";
         s += to_string(*expressions[0]);
-        s += join(transform<std::vector<std::string>>(children_groups[0], [](auto &x) { return to_string(*x); }));
+        s += join(transform<std::vector<std::string>>(children_groups[0], [](auto &x) {
+            return to_string(*x);
+        }));
 
         for (size_t i = 1; i != expressions.size(); ++i) {
             s += "elif ";
             s += to_string(*expressions[i]);
-            s += join(transform<std::vector<std::string>>(children_groups[i], [](auto &x) { return to_string(*x); }));
+            s += join(transform<std::vector<std::string>>(children_groups[i], [](auto &x) {
+                return to_string(*x);
+            }));
         }
 
         if (children_groups.size() != expressions.size()) {
             s += "else ";
-            s += join(transform<std::vector<std::string>>(children_groups.back(), [](auto &x) { return to_string(*x); }));
+            s += join(transform<std::vector<std::string>>(children_groups.back(), [](auto &x) {
+                return to_string(*x);
+            }));
         }
 
         s += ">";
@@ -100,4 +111,4 @@ struct skeleton_if_node final: skeleton_node {
     }
 };
 
-}
+} // namespace tt::inline v1

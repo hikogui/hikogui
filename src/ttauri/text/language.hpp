@@ -16,8 +16,7 @@
 #include <functional>
 #include <mutex>
 
-namespace tt {
-
+namespace tt::inline v1 {
 
 class language {
 public:
@@ -33,7 +32,8 @@ public:
     language &operator=(language const &) = delete;
     language &operator=(language &&) = delete;
 
-    [[nodiscard]] ssize_t plurality(long long n, ssize_t max) const noexcept {
+    [[nodiscard]] ssize_t plurality(long long n, ssize_t max) const noexcept
+    {
         int r;
         if (plurality_func) {
             r = plurality_func(narrow_cast<int>(n % 1'000'000));
@@ -44,7 +44,8 @@ public:
         return std::clamp(narrow_cast<ssize_t>(r), ssize_t{0}, max - 1);
     }
 
-    [[nodiscard]] static language *find(language_tag const &tag) noexcept {
+    [[nodiscard]] static language *find(language_tag const &tag) noexcept
+    {
         ttlet lock = std::scoped_lock(_mutex);
 
         ttlet i = _languages.find(tag);
@@ -86,7 +87,7 @@ public:
         std::vector<language_tag> r;
 
         auto prev_short_tag = language_tag{};
-        for (ttlet &tag: tags) {
+        for (ttlet &tag : tags) {
             ttlet short_tag = tag.short_tag();
 
             if (prev_short_tag && short_tag != prev_short_tag) {
@@ -114,8 +115,8 @@ public:
     {
         ttlet lock = std::scoped_lock(_mutex);
 
-        auto tmp = std::vector<language*>{};
-        for (ttlet &tag: add_short_names(tags)) {
+        auto tmp = std::vector<language *>{};
+        for (ttlet &tag : add_short_names(tags)) {
             tmp.push_back(&find_or_create(tag));
         }
 
@@ -141,8 +142,8 @@ public:
         return _notifier.subscribe(callback);
     }
 
-    template<typename Callback> requires(std::is_invocable_v<Callback>)
-    [[nodiscard]] static callback_ptr_type subscribe(Callback &&callback) noexcept
+    template<typename Callback>
+    requires(std::is_invocable_v<Callback>) [[nodiscard]] static callback_ptr_type subscribe(Callback &&callback) noexcept
     {
         return _notifier.subscribe(std::forward<Callback>(callback));
     }
@@ -163,27 +164,28 @@ private:
 
     [[nodiscard]] static bool subsystem_init() noexcept
     {
-        using namespace std::literals::chrono_literals;
+        using namespace std::chrono_literals;
 
-        _languages_maintenance_callback = timer::global().add_callback(5s, [](auto...) {
-            ttlet new_preferred_language_tags = language::read_os_preferred_languages();
+        _languages_maintenance_callback = timer::global().add_callback(
+            5s,
+            [](auto...) {
+                ttlet new_preferred_language_tags = language::read_os_preferred_languages();
 
-            if (language::_preferred_language_tags != new_preferred_language_tags) {
-                language::_preferred_language_tags = new_preferred_language_tags;
-                set_preferred_languages(language::_preferred_language_tags);
-                language::_notifier();
-            }
-        }, true);
+                if (language::_preferred_language_tags != new_preferred_language_tags) {
+                    language::_preferred_language_tags = new_preferred_language_tags;
+                    set_preferred_languages(language::_preferred_language_tags);
+                    language::_notifier();
+                }
+            },
+            true);
 
         return true;
     }
 
     static void subsystem_deinit() noexcept
     {
-        if (_is_running.exchange(false)) {
-
-        }
+        if (_is_running.exchange(false)) {}
     }
 };
 
-}
+} // namespace tt::inline v1

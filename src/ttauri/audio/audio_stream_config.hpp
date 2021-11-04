@@ -3,11 +3,10 @@
 
 #pragma once
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct audio_stream_config {
     double sample_rate;
-
 };
 
-}
+} // namespace tt::inline v1

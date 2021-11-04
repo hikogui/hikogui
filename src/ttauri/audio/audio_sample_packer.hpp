@@ -12,7 +12,7 @@
 #include <cstddef>
 #include <bit>
 
-namespace tt {
+namespace tt::inline v1 {
 
 class audio_sample_packer {
 public:
@@ -48,4 +48,4 @@ private:
     int _align_shift;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

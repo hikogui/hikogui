@@ -11,7 +11,7 @@
 #include <mmeapi.h>
 #include <bit>
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] WAVEFORMATEXTENSIBLE audio_stream_format_to_win32(audio_stream_format x) noexcept
 {
@@ -125,4 +125,4 @@ namespace tt {
     return r;
 }
 
-} // namespace tt
+} // namespace tt::inline v1

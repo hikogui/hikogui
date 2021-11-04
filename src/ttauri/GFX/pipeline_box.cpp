@@ -6,62 +6,51 @@
 #include "pipeline_box_device_shared.hpp"
 #include "gfx_device_vulkan.hpp"
 
-namespace tt::pipeline_box {
+namespace tt::inline v1::pipeline_box {
 
-using namespace tt;
-using namespace std;
-
-pipeline_box::pipeline_box(gfx_surface const &surface) :
-    pipeline_vulkan(surface)
-{
-}
+pipeline_box::pipeline_box(gfx_surface const &surface) : pipeline_vulkan(surface) {}
 
 void pipeline_box::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 {
     pipeline_vulkan::drawInCommandBuffer(commandBuffer);
 
-    vulkan_device().flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof (vertex));
+    vulkan_device().flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof(vertex));
 
-    std::vector<vk::Buffer> tmpvertexBuffers = { vertexBuffer };
-    std::vector<vk::DeviceSize> tmpOffsets = { 0 };
+    std::vector<vk::Buffer> tmpvertexBuffers = {vertexBuffer};
+    std::vector<vk::DeviceSize> tmpOffsets = {0};
     tt_axiom(tmpvertexBuffers.size() == tmpOffsets.size());
 
     vulkan_device().boxPipeline->drawInCommandBuffer(commandBuffer);
 
     commandBuffer.bindVertexBuffers(0, tmpvertexBuffers, tmpOffsets);
 
-    pushConstants.windowExtent = extent2{ narrow_cast<float>(extent.width) , narrow_cast<float>(extent.height) };
-    pushConstants.viewportScale = scale2{ 2.0f / extent.width, 2.0f / extent.height };
+    pushConstants.windowExtent = extent2{narrow_cast<float>(extent.width), narrow_cast<float>(extent.height)};
+    pushConstants.viewportScale = scale2{2.0f / extent.width, 2.0f / extent.height};
     commandBuffer.pushConstants(
         pipelineLayout,
         vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
-        0, 
-        sizeof(push_constants), 
-        &pushConstants
-    );
+        0,
+        sizeof(push_constants),
+        &pushConstants);
 
     ttlet numberOfRectangles = vertexBufferData.size() / 4;
     ttlet numberOfTriangles = numberOfRectangles * 2;
-    commandBuffer.drawIndexed(
-        narrow_cast<uint32_t>(numberOfTriangles * 3),
-        1,
-        0,
-        0,
-        0
-    );
+    commandBuffer.drawIndexed(narrow_cast<uint32_t>(numberOfTriangles * 3), 1, 0, 0, 0);
 }
 
-std::vector<vk::PipelineShaderStageCreateInfo> pipeline_box::createShaderStages() const {
+std::vector<vk::PipelineShaderStageCreateInfo> pipeline_box::createShaderStages() const
+{
     return vulkan_device().boxPipeline->shaderStages;
 }
 
-std::vector<vk::DescriptorSetLayoutBinding> pipeline_box::createDescriptorSetLayoutBindings() const {
-    return { };
+std::vector<vk::DescriptorSetLayoutBinding> pipeline_box::createDescriptorSetLayoutBindings() const
+{
+    return {};
 }
 
-vector<vk::WriteDescriptorSet> pipeline_box::createWriteDescriptorSet() const
+std::vector<vk::WriteDescriptorSet> pipeline_box::createWriteDescriptorSet() const
 {
-    return { };
+    return {};
 }
 
 ssize_t pipeline_box::getDescriptorSetVersion() const
@@ -79,7 +68,8 @@ vk::VertexInputBindingDescription pipeline_box::createVertexInputBindingDescript
     return vertex::inputBindingDescription();
 }
 
-std::vector<vk::VertexInputAttributeDescription> pipeline_box::createVertexInputAttributeDescriptions() const {
+std::vector<vk::VertexInputAttributeDescription> pipeline_box::createVertexInputAttributeDescriptions() const
+{
     return vertex::inputAttributeDescriptions();
 }
 
@@ -90,10 +80,9 @@ void pipeline_box::buildvertexBuffers()
 
     vk::BufferCreateInfo const bufferCreateInfo = {
         vk::BufferCreateFlags(),
-        sizeof (vertex) * numberOfVertices,
+        sizeof(vertex) * numberOfVertices,
         vk::BufferUsageFlagBits::eVertexBuffer,
-        vk::SharingMode::eExclusive
-    };
+        vk::SharingMode::eExclusive};
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
@@ -107,4 +96,4 @@ void pipeline_box::teardownvertexBuffers()
     vulkan_device().destroyBuffer(vertexBuffer, vertexBufferAllocation);
 }
 
-}
+} // namespace tt::inline v1::pipeline_box

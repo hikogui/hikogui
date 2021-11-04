@@ -13,7 +13,7 @@
 #include <string>
 #include <type_traits>
 
-namespace tt {
+namespace tt::inline v1 {
 
 template<typename T, typename Allocator>
 class gap_buffer;
@@ -84,11 +84,7 @@ public:
      * Allocates memory and copies all items from other into this.
      */
     gap_buffer(gap_buffer const &other) noexcept :
-        _begin(nullptr),
-        _it_end(nullptr),
-        _gap_begin(nullptr),
-        _gap_size(0),
-        _allocator(other._allocator)
+        _begin(nullptr), _it_end(nullptr), _gap_begin(nullptr), _gap_size(0), _allocator(other._allocator)
     {
         tt_axiom(&other != this);
 
@@ -97,7 +93,7 @@ public:
             _it_end = _begin + other.size();
             _gap_begin = _begin + other.left_size();
             _gap_size = other._gap_size;
-            
+
             placement_copy(other.left_begin_ptr(), other.left_end_ptr(), left_begin_ptr());
             placement_copy(other.right_begin_ptr(), other.right_end_ptr(), right_begin_ptr());
         }
@@ -848,7 +844,6 @@ private:
         return _it_end - _gap_begin;
     }
 
-
     /** Move the start of the gap to a new location.
      */
     void set_gap_offset(value_type *new_gap_begin) noexcept
@@ -907,7 +902,8 @@ public:
     gap_buffer_iterator &operator=(gap_buffer_iterator const &) noexcept = default;
     gap_buffer_iterator &operator=(gap_buffer_iterator &&) noexcept = default;
 
-    gap_buffer_iterator(gap_buffer_iterator<value_type> const &other) noexcept requires(is_const) : _buffer(other._buffer), _it_ptr(other._it_ptr)
+    gap_buffer_iterator(gap_buffer_iterator<value_type> const &other) noexcept requires(is_const) :
+        _buffer(other._buffer), _it_ptr(other._it_ptr)
     {
 #if TT_BUILT_TYPE == TT_BT_DEBUG
         _version = other._version;
@@ -919,13 +915,15 @@ public:
         gap_buffer_type *buffer,
         T *it_ptr
 #if TT_BUILT_TYPE == TT_BT_DEBUG
-        , size_t version
+        ,
+        size_t version
 #endif
-    ) noexcept :
+        ) noexcept :
         _buffer(buffer),
         _it_ptr(it_ptr)
 #if TT_BUILT_TYPE == TT_BT_DEBUG
-        , _version(version)
+        ,
+        _version(version)
 #endif
     {
         tt_axiom(holds_invariant());
@@ -1070,22 +1068,19 @@ private:
 
     [[nodiscard]] bool holds_invariant() const noexcept
     {
-        return
-            _buffer
-            and _it_ptr >= _buffer->_begin
-            and _it_ptr <= _buffer->_it_end
+        return _buffer and _it_ptr >= _buffer->_begin and _it_ptr <= _buffer->_it_end
 #if TT_BUILT_TYPE == TT_BT_DEBUG
             and _version == _buffer->_version
 #endif
-        ;
+            ;
     }
 
     template<typename O>
     requires(std::is_same_v<std::remove_cv_t<T>, std::remove_cv_t<O>>)
-    [[nodiscard]] bool holds_invariant(gap_buffer_iterator<O> const &other) const noexcept
+        [[nodiscard]] bool holds_invariant(gap_buffer_iterator<O> const &other) const noexcept
     {
         return holds_invariant() and other.holds_invariant() and _buffer == other._buffer;
     }
 };
 
-} // namespace tt
+} // namespace tt::inline v1

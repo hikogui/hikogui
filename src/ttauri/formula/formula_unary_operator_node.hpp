@@ -6,21 +6,25 @@
 
 #include "formula_node.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct formula_unary_operator_node : formula_node {
     std::unique_ptr<formula_node> rhs;
 
     formula_unary_operator_node(parse_location location, std::unique_ptr<formula_node> rhs) :
-        formula_node(std::move(location)), rhs(std::move(rhs)) {}
+        formula_node(std::move(location)), rhs(std::move(rhs))
+    {
+    }
 
-    void post_process(formula_post_process_context& context) override {
+    void post_process(formula_post_process_context &context) override
+    {
         rhs->post_process(context);
     }
 
-    std::string string() const noexcept override {
+    std::string string() const noexcept override
+    {
         return std::format("<unary_operator {}>", *rhs);
     }
 };
 
-}
+} // namespace tt::inline v1

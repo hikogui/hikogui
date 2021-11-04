@@ -6,26 +6,26 @@
 #include "../log.hpp"
 #include "../URL.hpp"
 #include <renderdoc/renderdoc_app.h>
-#if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include <Windows.h>
 #endif
 #include <type_traits>
 
-namespace tt {
+namespace tt::inline v1 {
 
-RenderDoc::RenderDoc() noexcept {
+RenderDoc::RenderDoc() noexcept
+{
 #if TT_BUILD_TYPE == TT_BT_DEBUG
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
     ttlet dll_urls = std::vector{
         URL{"file:renderdoc.dll"},
         URL{"file:///C:/Program%20Files/RenderDoc/renderdoc.dll"},
-        URL{"file:///C:/Program%20Files%20(x86)/RenderDoc/renderdoc.dll"}
-    };
+        URL{"file:///C:/Program%20Files%20(x86)/RenderDoc/renderdoc.dll"}};
 
     HMODULE mod = nullptr;
-    for (ttlet &dll_url: dll_urls) {
+    for (ttlet &dll_url : dll_urls) {
         tt_log_debug("Trying to load renderdoc.dll at: {}", dll_url.nativePath());
-        
+
         if ((mod = LoadLibraryW(dll_url.nativeWPath().c_str()))) {
             goto found_dll;
         }
@@ -49,7 +49,7 @@ found_dll:
 
     // At init, on linux/android.
     // For android replace librenderdoc.so with libVkLayer_GLES_RenderDoc.so
-    //if(void *mod = dlopen("librenderdoc.so", RTLD_NOW | RTLD_NOLOAD))
+    // if(void *mod = dlopen("librenderdoc.so", RTLD_NOW | RTLD_NOLOAD))
     //{
     //    pRENDERDOC_GetAPI RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)dlsym(mod, "RENDERDOC_GetAPI");
     //    int ret = RENDERDOC_GetAPI(eRENDERDOC_API_Version_1_1_2, (void **)&rdoc_api);
@@ -61,7 +61,8 @@ found_dll:
 #endif
 }
 
-void RenderDoc::set_overlay(bool frameRate, bool frameNumber, bool captureList) noexcept {
+void RenderDoc::set_overlay(bool frameRate, bool frameNumber, bool captureList) noexcept
+{
     if (!api) {
         return;
     }
@@ -99,4 +100,4 @@ void RenderDoc::set_overlay(bool frameRate, bool frameNumber, bool captureList) 
     api_->MaskOverlayBits(and_mask, or_mask);
 }
 
-}
+} // namespace tt::inline v1

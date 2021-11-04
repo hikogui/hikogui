@@ -2,7 +2,7 @@
 
 #include "vertical_sync_macos.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 static CVReturn proc(CVDisplayLinkRef displayLink, const CVTimeStamp* now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* target)
 {

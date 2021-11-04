@@ -21,7 +21,8 @@ static_assert(0 < std::numeric_limits<ubig128>::max());
 static_assert(0 > std::numeric_limits<big128>::min());
 static_assert(0 < std::numeric_limits<big128>::max());
 
-TEST(BigInt, Construct) {
+TEST(BigInt, Construct)
+{
     ASSERT_EQ(ubig128("1").string(), "1");
     ASSERT_EQ(ubig128("10").string(), "10");
     ASSERT_EQ(ubig128("100").string(), "100");
@@ -80,7 +81,8 @@ TEST(BigInt, Construct) {
     ASSERT_EQ(ubig128("123456789012345678901234567890").string(), "123456789012345678901234567890");
 }
 
-TEST(BigInt, ShiftRight) {
+TEST(BigInt, ShiftRight)
+{
     auto t = ubig128{"10000000000000000000000000000"};
 
     ASSERT_EQ(t, ubig128{"10000000000000000000000000000"});
@@ -102,7 +104,8 @@ TEST(BigInt, ShiftRight) {
     ASSERT_EQ(t, ubig128{"145519152283668518"});
 }
 
-TEST(BigInt, ShiftLeft) {
+TEST(BigInt, ShiftLeft)
+{
     auto t = ubig128{0b100101};
     auto u = ubig128{0b100000};
 
@@ -119,7 +122,8 @@ TEST(BigInt, ShiftLeft) {
     ASSERT_EQ(v, ubig128{"71897621192479027456"});
 }
 
-TEST(BigInt, Subtract) {
+TEST(BigInt, Subtract)
+{
     auto t = ubig128{"83076749736557242056487941267521536"};
 
     ASSERT_EQ(t - 1, ubig128{"83076749736557242056487941267521535"});
@@ -128,9 +132,9 @@ TEST(BigInt, Subtract) {
     ASSERT_EQ(t, ubig128{"83076749736557242056487941267521535"});
 }
 
-TEST(BigInt, LessThan) {
+TEST(BigInt, LessThan)
+{
     ASSERT_TRUE(ubig128{"1ffff"} < ubig128{"2bd40"});
-
 }
 
 TEST(BigInt, LessThanOrEqual)
@@ -150,7 +154,8 @@ TEST(BigInt, LessThanOrEqual)
     static_assert(big128{0} <= std::numeric_limits<big128>::max());
 }
 
-TEST(BigInt, GreaterOrEqual) {
+TEST(BigInt, GreaterOrEqual)
+{
     ASSERT_TRUE(ubig128{"10000000000000000000000000000"} >= 32);
     ASSERT_TRUE(ubig128{"33"} >= 32);
     ASSERT_TRUE(ubig128{"32"} >= 32);
@@ -159,7 +164,8 @@ TEST(BigInt, GreaterOrEqual) {
     ASSERT_FALSE(ubig128{"0"} >= 32);
 }
 
-TEST(BigInt, XOR) {
+TEST(BigInt, XOR)
+{
     ASSERT_EQ(ubig128{"0"} ^ ubig128{"2"}, ubig128{"2"});
     ASSERT_EQ(ubig128{"2"} ^ ubig128{"0"}, ubig128{"2"});
     ASSERT_EQ(ubig128{"2"} ^ ubig128{"2"}, ubig128{"0"});
@@ -179,10 +185,11 @@ TEST(BigInt, XOR) {
     ASSERT_EQ(ubig128{"36893488147419103234"} ^ ubig128{"2"}, ubig128{"36893488147419103232"});
 }
 
-TEST(BigInt, Divide) {
+TEST(BigInt, Divide)
+{
     auto t = ubig128{"3689348814741910323200"};
 
-    ttlet [quotient, remainder] = div(t, 93);
+    ttlet[quotient, remainder] = div(t, 93);
 
     ASSERT_EQ(quotient, ubig128{"39670417362816240034"});
     ASSERT_EQ(remainder, 38);
@@ -201,9 +208,8 @@ TEST(BigInt, reciprocal)
     ASSERT_EQ(r, r2);
 }
 
-
-
-TEST(BigInt, Multiply) {
+TEST(BigInt, Multiply)
+{
     auto t = ubig128{0x1f2e3d4c5b6a7988};
 
     ASSERT_EQ(t * 93, ubig128{"208952461590642173544"});
@@ -215,7 +221,8 @@ TEST(BigInt, Multiply) {
     ASSERT_EQ(t, ubig128{"208952461590642173569"});
 }
 
-TEST(BigInt, Default) {
+TEST(BigInt, Default)
+{
     {
         auto t = ubig128{1};
         auto u = ubig128{1};
@@ -244,7 +251,7 @@ TEST(BigInt, Default) {
     {
         auto t = ubig128{"9223372036854775857"};
         auto u = ubig128{9223372036854775807};
-        u+= 50;
+        u += 50;
         ASSERT_EQ(t, u);
     }
 }

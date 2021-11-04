@@ -8,7 +8,7 @@
 #include "../trace.hpp"
 #include "../log.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 theme_book::~theme_book() {}
 
@@ -80,4 +80,4 @@ theme_book::theme_book(tt::font_book const &font_book, std::vector<URL> const &t
     }
 }
 
-} // namespace tt
+} // namespace tt::inline v1

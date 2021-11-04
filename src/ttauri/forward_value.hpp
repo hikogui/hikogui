@@ -8,7 +8,7 @@
 
 #pragma once
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Functor for forwarding an forwarding-reference to variable.
  *
@@ -35,7 +35,6 @@ struct forward_value {
     }
 };
 
-
 #define MAKE_FORWARD_VALUE(TEMPLATE_TYPE, RETURN_TYPE, ARGUMENT_TYPE) \
     template<> \
     struct forward_value<TEMPLATE_TYPE> { \
@@ -56,12 +55,12 @@ MAKE_FORWARD_VALUE(std::string_view const &, std::string, std::string_view const
 // Copy char pointers by string value.
 MAKE_FORWARD_VALUE(char *, std::string, char const *)
 MAKE_FORWARD_VALUE(char const *, std::string, char const *)
-MAKE_FORWARD_VALUE(char * const, std::string, char const *)
-MAKE_FORWARD_VALUE(char const * const, std::string, char const *)
+MAKE_FORWARD_VALUE(char *const, std::string, char const *)
+MAKE_FORWARD_VALUE(char const *const, std::string, char const *)
 MAKE_FORWARD_VALUE(char *&, std::string, char const *)
 MAKE_FORWARD_VALUE(char const *&, std::string, char const *)
-MAKE_FORWARD_VALUE(char *const&, std::string, char const *)
-MAKE_FORWARD_VALUE(char const *const&, std::string, char const *)
+MAKE_FORWARD_VALUE(char *const &, std::string, char const *)
+MAKE_FORWARD_VALUE(char const *const &, std::string, char const *)
 
 #undef MAKE_FORWARD_VALUE
 
@@ -83,4 +82,4 @@ struct forward_value<char const (&)[N]> {
 template<typename T>
 using forward_value_t = typename forward_value<T>::type;
 
-} // namespace tt
+} // namespace tt::inline v1

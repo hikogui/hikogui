@@ -23,31 +23,32 @@
 #include <immintrin.h>
 #endif
 
-namespace tt {
+namespace tt::inline v1 {
 
-constexpr long long pow10_table[20] {
-                            1LL,
-                           10LL,
-                          100LL,
-                        1'000LL,
-                       10'000LL,
-                      100'000LL,
-                    1'000'000LL,
-                   10'000'000LL,
-                  100'000'000LL,
-                1'000'000'000LL,
-               10'000'000'000LL,
-              100'000'000'000LL,
-            1'000'000'000'000LL,
-           10'000'000'000'000LL,
-          100'000'000'000'000LL,
-        1'000'000'000'000'000LL,
-       10'000'000'000'000'000LL,
-      100'000'000'000'000'000LL,
+constexpr long long pow10_table[20]{
+    1LL,
+    10LL,
+    100LL,
+    1'000LL,
+    10'000LL,
+    100'000LL,
+    1'000'000LL,
+    10'000'000LL,
+    100'000'000LL,
+    1'000'000'000LL,
+    10'000'000'000LL,
+    100'000'000'000LL,
+    1'000'000'000'000LL,
+    10'000'000'000'000LL,
+    100'000'000'000'000LL,
+    1'000'000'000'000'000LL,
+    10'000'000'000'000'000LL,
+    100'000'000'000'000'000LL,
     1'000'000'000'000'000'000LL,
 };
 
-constexpr long long pow10ll(int x) noexcept {
+constexpr long long pow10ll(int x) noexcept
+{
     tt_axiom(x >= 0 && x <= 18);
     return pow10_table[x];
 }
@@ -55,7 +56,7 @@ constexpr long long pow10ll(int x) noexcept {
 /** Find the position of the left-most '1' bit.
  * @return Bit position of the left-most '1' bit, or -1 if there is no '1' bit.
  */
-template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>,int> = 0>
+template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>, int> = 0>
 constexpr int bsr(T x) noexcept
 {
     return static_cast<int>(sizeof(T) * 8 - std::countr_zero(x)) - 1;
@@ -71,9 +72,9 @@ constexpr T make_mask(T x)
     return static_cast<T>(p2 - 1);
 }
 
-
 template<typename T>
-constexpr T median(T a, T b, T c) noexcept {
+constexpr T median(T a, T b, T c) noexcept
+{
     return std::clamp(c, std::min(a, b), std::max(a, b));
 }
 
@@ -81,7 +82,8 @@ constexpr T median(T a, T b, T c) noexcept {
  * The two floating point values are almost equal if they are
  * at most 10 smallest float steps away from each other.
  */
-constexpr bool almost_equal(float a, float b) noexcept {
+constexpr bool almost_equal(float a, float b) noexcept
+{
     constexpr int32_t epsilon = 5;
 
     ttlet a_ = std::bit_cast<int32_t>(a);
@@ -106,7 +108,7 @@ auto mean(Iterator first, Iterator last)
 
     ttlet sum = std::reduce(first, last, init);
     ttlet count = static_cast<decltype(sum)>(std::distance(first, last));
- 
+
     return count > 0.0 ? sum / count : sum;
 }
 
@@ -117,11 +119,11 @@ auto stddev(Iterator first, Iterator last, T mean)
 
     ttlet sum = std::accumulate(first, last, init, [=](ttlet &acc, ttlet &value) {
         ttlet tmp = value - mean;
-        return acc + tmp*tmp;
+        return acc + tmp * tmp;
     });
 
     ttlet count = static_cast<decltype(sum)>(std::distance(first, last));
     return count > 0.0 ? sum / count : sum;
 }
 
-}
+} // namespace tt::inline v1

@@ -9,20 +9,14 @@
 #include "../URL.hpp"
 #include <array>
 
-namespace tt::pipeline_tone_mapper {
+namespace tt::inline v1::pipeline_tone_mapper {
 
-using namespace std;
-
-device_shared::device_shared(gfx_device_vulkan const &device) :
-    device(device)
+device_shared::device_shared(gfx_device_vulkan const &device) : device(device)
 {
     buildShaders();
 }
 
-device_shared::~device_shared()
-{
-}
-
+device_shared::~device_shared() {}
 
 void device_shared::destroy(gfx_device_vulkan *vulkanDevice)
 {
@@ -43,8 +37,7 @@ void device_shared::buildShaders()
 
     shaderStages = {
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, vertexShaderModule, "main"},
-        {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, fragmentShaderModule, "main"}
-    };
+        {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, fragmentShaderModule, "main"}};
 }
 
 void device_shared::teardownShaders(gfx_device_vulkan *vulkanDevice)
@@ -55,4 +48,4 @@ void device_shared::teardownShaders(gfx_device_vulkan *vulkanDevice)
     vulkanDevice->destroy(fragmentShaderModule);
 }
 
-}
+} // namespace tt::inline v1::pipeline_tone_mapper

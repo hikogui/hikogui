@@ -5,7 +5,7 @@
 #include "icon.hpp"
 #include "codec/png.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 icon::icon(pixel_map<sfloat_rgba16> &&image) noexcept : _image(std::move(image)) {}
 
@@ -17,4 +17,4 @@ icon::icon(elusive_icon const &icon) noexcept : _image(icon) {}
 
 icon::icon(ttauri_icon const &icon) noexcept : _image(icon) {}
 
-} // namespace tt
+} // namespace tt::inline v1

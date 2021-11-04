@@ -16,18 +16,19 @@
 #include <immintrin.h>
 #endif
 
-#if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include <intrin.h>
 #pragma intrinsic(_mul128)
 #endif
 
-namespace tt {
+namespace tt::inline v1 {
 
 template<typename T, typename U>
 inline bool convert_overflow(T x, U *r)
 {
     static_assert(std::is_integral_v<U>, "convert_overflow() requires integral return type.");
-    static_assert(std::is_integral_v<T> || std::is_floating_point_v<T>, "convert_overflow() requires float or integral argument type.");
+    static_assert(
+        std::is_integral_v<T> || std::is_floating_point_v<T>, "convert_overflow() requires float or integral argument type.");
 
     if constexpr (std::is_integral_v<T>) {
         // Optimized away when is_same_v<T,U>
@@ -35,7 +36,7 @@ inline bool convert_overflow(T x, U *r)
         return *r != x;
     } else {
         *r = static_cast<U>(std::llround(x));
-        return x < std::numeric_limits<U>::min() || x > std::numeric_limits<U>::max(); 
+        return x < std::numeric_limits<U>::min() || x > std::numeric_limits<U>::max();
     }
 }
 
@@ -110,9 +111,9 @@ inline bool mul_overflow(T lhs, T rhs, T *r)
         std::is_unsigned_v<T> && compiler::current == compiler::msvc && sizeof(T) == sizeof(unsigned long long)) {
         unsigned long long hi = 0;
         *r = _umul128(lhs, rhs, &hi);
-        return hi > 0; 
+        return hi > 0;
 
-    } else if constexpr (sizeof(T) <= (sizeof(make_intmax_t<T>)/2)) {
+    } else if constexpr (sizeof(T) <= (sizeof(make_intmax_t<T>) / 2)) {
         // MOVSX, MOVSX, IMUL, MOVSX, CMP, JNE
         ttlet lhs_ = static_cast<make_intmax_t<T>>(lhs);
         ttlet rhs_ = static_cast<make_intmax_t<T>>(rhs);
@@ -125,4 +126,4 @@ inline bool mul_overflow(T lhs, T rhs, T *r)
     }
 }
 
-}
+} // namespace tt::inline v1

@@ -8,7 +8,7 @@
 #include <memory>
 #include <unordered_map>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /*! A file mapping.
  * A file mapping maps a region of bytes to a handle.
@@ -46,7 +46,7 @@ public:
      * \param accessMode mode of how to access the file.
      * \param size Number of bytes from the start to map.
      */
-    file_mapping(URL const& path, access_mode accessMode, size_t size);
+    file_mapping(URL const &path, access_mode accessMode, size_t size);
     ~file_mapping();
 
     file_mapping(file_mapping const &other) = delete;
@@ -56,11 +56,17 @@ public:
 
     /*! Get access mode of the file object.
      */
-    [[nodiscard]] access_mode accessMode() const noexcept{ return file->_access_mode; }
+    [[nodiscard]] access_mode accessMode() const noexcept
+    {
+        return file->_access_mode;
+    }
 
     /*! Get URL of the file object.
      */
-    [[nodiscard]] URL const &location() const noexcept { return file->_location; }
+    [[nodiscard]] URL const &location() const noexcept
+    {
+        return file->_location;
+    }
 
 private:
     /*! Find or open a file object.
@@ -73,4 +79,4 @@ private:
     [[nodiscard]] static std::shared_ptr<tt::file> findOrOpenFile(URL const &path, access_mode accessMode);
 };
 
-}
+} // namespace tt::inline v1

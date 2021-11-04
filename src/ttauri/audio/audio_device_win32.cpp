@@ -22,7 +22,7 @@
 #include <audioclient.h>
 #include <bit>
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] static WAVEFORMATEXTENSIBLE make_wave_format(
     audio_sample_format format,
@@ -392,4 +392,4 @@ std::string audio_device_win32::end_point_name() const noexcept
     return r;
 }
 
-} // namespace tt
+} // namespace tt::inline v1
