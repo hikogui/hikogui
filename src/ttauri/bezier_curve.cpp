@@ -8,7 +8,7 @@
 #include "memory.hpp"
 #include <optional>
 
-namespace tt {
+namespace tt::inline v1 {
 
 static constexpr bezier_curve::Color operator++(bezier_curve::Color &lhs, int) noexcept
 {

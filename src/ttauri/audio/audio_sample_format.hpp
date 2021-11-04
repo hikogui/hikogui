@@ -10,7 +10,7 @@
 #include "../rapid/numeric_array.hpp"
 #include <bit>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Audio sample format.
  * Audio samples described by this type can be in three different formats.

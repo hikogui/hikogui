@@ -7,8 +7,7 @@
 #include "abstract_button_widget.hpp"
 #include "default_button_delegate.hpp"
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 /** A graphical control element that allows the user to choose only one of a
  * predefined set of mutually exclusive views of a `tab_widget`.
@@ -105,5 +104,4 @@ private:
     void draw_toolbar_tab_button(draw_context const &context) noexcept;
 };
 
-}
-} // namespace tt
+} // namespace tt::inline v1

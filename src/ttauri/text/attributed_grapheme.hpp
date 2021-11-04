@@ -9,8 +9,7 @@
 #include "unicode_bidi_class.hpp"
 #include "unicode_general_category.hpp"
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 struct attributed_grapheme {
     tt::grapheme grapheme;
@@ -33,13 +32,14 @@ struct attributed_grapheme {
 
     unicode_general_category general_category;
 
-    attributed_grapheme(tt::grapheme grapheme, text_style style, ssize_t logicalIndex=0) :
-        grapheme(std::move(grapheme)), style(std::move(style)), logicalIndex(logicalIndex),
+    attributed_grapheme(tt::grapheme grapheme, text_style style, ssize_t logicalIndex = 0) :
+        grapheme(std::move(grapheme)),
+        style(std::move(style)),
+        logicalIndex(logicalIndex),
         bidi_class(unicode_bidi_class::unknown),
         general_category(unicode_general_category::Cn)
     {
     }
 };
 
-}
-}
+} // namespace tt::inline v1

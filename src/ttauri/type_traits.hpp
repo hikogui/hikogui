@@ -14,7 +14,7 @@
 #include <string_view>
 #include <memory>
 
-namespace tt {
+namespace tt::inline v1 {
 
 // clang-format off
 

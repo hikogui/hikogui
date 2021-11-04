@@ -7,14 +7,13 @@
 #include "widget.hpp"
 #include "overlay_delegate.hpp"
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 /** A GUI widget which may exist anywhere on a window overlaid above any other widget.
  *
  * The overlay widget allows a content widget to be shown on top of other
  * widgets in the window. It may be used for pop-up widgets, dialog boxes and
- * sheets. 
+ * sheets.
  *
  * The size of the overlay widget is based on the `widget::minimum_size()`,
  * `widget::preferred_size()` and `widget::maximum_size()`. Unlike other
@@ -27,7 +26,7 @@ inline namespace v1 {
  * setting its layout parameters, it is recommended to use
  * `widget::make_overlay_rectangle()` to make a rectangle that will fit inside
  * the window.
- * 
+ *
  * It is recommended that the content of an overlay widget is a scroll widget
  * so that when the overlay widget is drawn smaller than the requested rectangle
  * the content will behave correctly.
@@ -91,5 +90,4 @@ private:
     void draw_background(draw_context const &context) noexcept;
 };
 
-}
-} // namespace tt
+} // namespace tt::inline v1

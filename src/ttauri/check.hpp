@@ -7,7 +7,7 @@
 #include "exception.hpp"
 #include "utils.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 #define tt_parse_check(expression, message, ...) \
     do { \

@@ -9,8 +9,7 @@
 #include <functional>
 #include <vector>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 class selection_widget;
 
 class selection_delegate {
@@ -56,5 +55,4 @@ public:
     }
 };
 
-}
-} // namespace tt
+} // namespace tt::inline v1

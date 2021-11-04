@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace tt {
+namespace tt::inline v1 {
 
 enum class audio_direction : unsigned char {
     none = 0b00,

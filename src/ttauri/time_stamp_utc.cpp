@@ -13,7 +13,7 @@
 #include <numeric>
 #include <chrono>
 
-namespace tt {
+namespace tt::inline v1 {
 
 std::string format_engineering(std::chrono::nanoseconds duration)
 {

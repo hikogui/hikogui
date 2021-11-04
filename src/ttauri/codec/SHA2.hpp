@@ -12,7 +12,7 @@
 #include <cstdint>
 #include <span>
 
-namespace tt {
+namespace tt::inline v1 {
 namespace detail::SHA2 {
 
 template<typename T>

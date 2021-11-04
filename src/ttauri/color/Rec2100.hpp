@@ -8,7 +8,7 @@
 #include <cmath>
 #include <array>
 
-namespace tt {
+namespace tt::inline v1 {
 
 constexpr matrix3 Rec2100_to_XYZ = Rec2020_to_XYZ;
 

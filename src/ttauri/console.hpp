@@ -8,7 +8,7 @@
 #include <iostream>
 #include <format>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Initialize the console.
  */

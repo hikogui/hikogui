@@ -6,7 +6,7 @@
 
 #include "formula_node.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** A temporary node used during parsing.
 */

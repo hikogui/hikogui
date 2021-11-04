@@ -9,7 +9,7 @@
 
 #pragma once
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Delayed formatting.
  * This class will capture all the arguments so that it may be passed

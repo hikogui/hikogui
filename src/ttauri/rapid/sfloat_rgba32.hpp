@@ -10,7 +10,7 @@
 #include "../color/color.hpp"
 #include <algorithm>
 
-namespace tt {
+namespace tt::inline v1 {
 
 class sfloat_rgba32 {
     // Red, Green, Blue, Alpha in binary32 (native endian).

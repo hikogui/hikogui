@@ -12,7 +12,7 @@
 #include "axis_aligned_rectangle.hpp"
 #include "../color/color.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 namespace geo {
 
 template<int D>

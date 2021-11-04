@@ -6,7 +6,7 @@
 
 #include <type_traits>
 
-namespace tt {
+namespace tt::inline v1 {
 
 //template<typename T, typename Head, typename... Tail>
 //constexpr size_t count_type_if(size_t count = 0) {

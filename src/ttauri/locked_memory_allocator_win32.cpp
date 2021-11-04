@@ -7,7 +7,7 @@
 #include "memory.hpp"
 #include <Windows.h>
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] std::byte *locked_memory_allocator_allocate(size_t n) noexcept
 {

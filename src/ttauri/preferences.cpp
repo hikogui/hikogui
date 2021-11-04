@@ -8,11 +8,10 @@
 #include "timer.hpp"
 #include "log.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 namespace detail {
 
-preference_item_base::preference_item_base(preferences &parent, std::string_view path) noexcept :
-    _parent(parent), _path(path)
+preference_item_base::preference_item_base(preferences &parent, std::string_view path) noexcept : _parent(parent), _path(path)
 {
     _modified_callback_ptr = std::make_shared<std::function<void()>>([this]() {
         if (auto tmp = this->encode(); not holds_alternative<std::monostate>(tmp)) {
@@ -38,10 +37,9 @@ void preference_item_base::load() noexcept
     }
 }
 
-}
+} // namespace detail
 
-preferences::preferences() noexcept :
-    _location(), _data(datum::make_map()), _modified(false)
+preferences::preferences() noexcept : _location(), _data(datum::make_map()), _modified(false)
 {
     using namespace std::literals::chrono_literals;
 
@@ -50,8 +48,7 @@ preferences::preferences() noexcept :
     });
 }
 
-preferences::preferences(URL location) noexcept :
-    preferences()
+preferences::preferences(URL location) noexcept : preferences()
 {
     load(location);
 }
@@ -104,7 +101,7 @@ void preferences::_load() noexcept
 void preferences::reset() noexcept
 {
     _data = datum::make_map();
-    for (auto &item: _items) {
+    for (auto &item : _items) {
         item->reset();
     }
 }
@@ -182,5 +179,4 @@ void preferences::check_modified() noexcept
     }
 }
 
-}
-
+} // namespace tt::inline v1

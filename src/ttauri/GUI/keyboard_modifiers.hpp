@@ -9,8 +9,7 @@
 #include "../strings.hpp"
 #include <cstdint>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 /** Key modification keys pressed at the same time as another key.
  *
@@ -93,8 +92,7 @@ inline std::ostream &operator<<(std::ostream &lhs, keyboard_modifiers const &rhs
     return lhs << to_string(rhs);
 }
 
-}
-} // namespace tt
+} // namespace tt::inline v1
 
 template<>
 struct std::hash<tt::keyboard_modifiers> {
@@ -111,4 +109,3 @@ struct std::formatter<tt::keyboard_modifiers, CharT> : std::formatter<std::strin
         return std::formatter<std::string_view, CharT>::format(tt::to_string(t), fc);
     }
 };
-

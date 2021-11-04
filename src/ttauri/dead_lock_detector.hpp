@@ -11,7 +11,7 @@
 #include <compare>
 
 
-namespace tt {
+namespace tt::inline v1 {
 namespace detail {
 
 struct dead_lock_detector_pair {

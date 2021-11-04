@@ -11,7 +11,7 @@
 #include "check.hpp"
 #include <span>
 
-namespace tt {
+namespace tt::inline v1 {
 
 template<typename T>
 inline bool check_alignment(void const *ptr) {

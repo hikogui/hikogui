@@ -9,7 +9,7 @@
 #include "../check.hpp"
 #include <array>
 
-namespace tt {
+namespace tt::inline v1 {
 
 class audio_device_id {
 public:

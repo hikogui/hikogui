@@ -4,10 +4,8 @@
 
 #pragma once
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 enum class gui_window_size { normal, minimized, maximized };
 
-}
 }

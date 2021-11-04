@@ -6,7 +6,7 @@
 
 #include "formula_node.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct formula_binary_operator_node : formula_node {
     std::unique_ptr<formula_node> lhs;

@@ -7,8 +7,7 @@
 #include "unicode_normalization.hpp"
 #include "../strings.hpp"
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 [[nodiscard]] gstring to_gstring(std::u32string_view rhs) noexcept
 {
@@ -34,5 +33,4 @@ inline namespace v1 {
     return r;
 }
 
-}
-}
+} // namespace tt::inline v1

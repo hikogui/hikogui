@@ -273,7 +273,7 @@ def writeUnicodeData(filename, descriptions, compositions, decompositions):
     fd.write('#include "ttauri/text/unicode_description.hpp"\n')
     fd.write('#include <array>\n\n')
 
-    fd.write('namespace tt::detail {\n\n')
+    fd.write('namespace tt::inline v1::detail {\n\n')
 
     fd.write('#define TTXD unicode_description\n')
     fd.write('#define TTXGC unicode_general_category\n')

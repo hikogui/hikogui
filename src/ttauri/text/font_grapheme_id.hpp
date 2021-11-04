@@ -7,8 +7,7 @@
 #include "grapheme.hpp"
 #include "../hash.hpp"
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 /** Combined font_id + grapheme for use as a key in a std::unordered_map.
  */
@@ -31,8 +30,7 @@ struct font_grapheme_id {
     }
 };
 
-}
-} // namespace tt
+} // namespace tt::inline v1
 
 template<>
 struct std::hash<tt::font_grapheme_id> {
@@ -41,4 +39,3 @@ struct std::hash<tt::font_grapheme_id> {
         return rhs.hash();
     }
 };
-

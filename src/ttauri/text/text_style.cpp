@@ -4,7 +4,7 @@
 
 #include "text_style.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 
 }

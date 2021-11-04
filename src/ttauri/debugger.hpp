@@ -7,7 +7,7 @@
 #include "architecture.hpp"
 #include <format>
 
-namespace tt {
+namespace tt::inline v1 {
 
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 void _debugger_break();

@@ -11,7 +11,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-namespace tt {
+namespace tt::inline v1 {
 
 File::File(URL const &location, AccessMode accessMode) :
     accessMode(accessMode), location(location)

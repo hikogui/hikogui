@@ -4,7 +4,7 @@
 
 #include "BON8.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 
 

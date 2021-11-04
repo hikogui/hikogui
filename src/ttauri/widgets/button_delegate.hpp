@@ -8,8 +8,7 @@
 #include <memory>
 #include <functional>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 class abstract_button_widget;
 
 class button_delegate {
@@ -54,5 +53,4 @@ public:
     }
 };
 
-}
-} // namespace tt
+} // namespace tt::inline v1

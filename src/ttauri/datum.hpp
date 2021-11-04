@@ -24,7 +24,7 @@
 #include <vector>
 #include <map>
 
-namespace tt {
+namespace tt::inline v1 {
 class datum;
 }
 
@@ -37,7 +37,7 @@ struct hash<tt::datum> {
 
 } // namespace std
 
-namespace tt {
+namespace tt::inline v1 {
 namespace detail {
 
 /** Promotion result.

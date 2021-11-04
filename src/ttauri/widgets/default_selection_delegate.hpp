@@ -11,8 +11,7 @@
 #include <memory>
 #include <vector>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 template<typename T>
 class default_selection_delegate : public selection_delegate {
@@ -95,5 +94,4 @@ make_unique_default_selection_delegate(OptionList &&option_list, Value &&value, 
         std::forward<OptionList>(option_list), std::forward<Value>(value), std::forward<Args>(args)...);
 }
 
-}
-} // namespace tt
+} // namespace tt::inline v1

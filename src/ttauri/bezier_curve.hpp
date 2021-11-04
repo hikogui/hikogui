@@ -17,7 +17,7 @@
 #include <limits>
 #include <algorithm>
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct bezier_point;
 

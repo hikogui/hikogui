@@ -8,7 +8,7 @@
 #include "../assert.hpp"
 #include "../strings.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** ISO-639 language code.
  * A 2 or 3 lower case language code selected from the following iso standards in this order:

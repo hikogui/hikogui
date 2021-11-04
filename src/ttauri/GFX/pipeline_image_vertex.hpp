@@ -8,12 +8,11 @@
 #include "../rapid/sfloat_rgba32.hpp"
 #include <vulkan/vulkan.hpp>
 
-namespace tt::pipeline_image {
-inline namespace v1 {
+namespace tt::inline v1::pipeline_image {
 
 /*! A vertex defining a rectangle on a window.
-* The vertex shader will convert window pixel-coordinates to normalized projection-coordinates.
-*/
+ * The vertex shader will convert window pixel-coordinates to normalized projection-coordinates.
+ */
 struct alignas(16) vertex {
     //! The pixel-coordinates where the origin is located relative to the bottom-left corner of the window.
     sfloat_rgba32 position;
@@ -25,26 +24,23 @@ struct alignas(16) vertex {
     sfloat_rgba32 atlas_position;
 
     vertex(sfloat_rgba32 position, sfloat_rgba32 clipping_rectangle, sfloat_rgba32 atlas_position) noexcept :
-        position(position),
-        clipping_rectangle(clipping_rectangle),
-        atlas_position(atlas_position) {}
+        position(position), clipping_rectangle(clipping_rectangle), atlas_position(atlas_position)
+    {
+    }
 
     static vk::VertexInputBindingDescription inputBindingDescription()
     {
-        return {
-            0, sizeof(vertex), vk::VertexInputRate::eVertex
-        };
+        return {0, sizeof(vertex), vk::VertexInputRate::eVertex};
     }
 
     static std::vector<vk::VertexInputAttributeDescription> inputAttributeDescriptions()
     {
         return {
-            { 0, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(vertex, position) },
-            { 1, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(vertex, clipping_rectangle) },
-            { 2, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(vertex, atlas_position) },                
+            {0, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(vertex, position)},
+            {1, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(vertex, clipping_rectangle)},
+            {2, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(vertex, atlas_position)},
         };
     }
 };
 
-}
-}
+} // namespace tt::inline v1::pipeline_image

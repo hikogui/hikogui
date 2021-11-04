@@ -9,15 +9,14 @@
 #include <vk_mem_alloc.h>
 #include <span>
 
-namespace tt::pipeline_tone_mapper {
-inline namespace v1 {
+namespace tt::inline v1::pipeline_tone_mapper {
 
 /*! Pipeline for rendering simple flat shaded quats.
  */
 class pipeline_tone_mapper : public pipeline_vulkan {
 public:
     pipeline_tone_mapper(gfx_surface const &surface);
-    ~pipeline_tone_mapper() {};
+    ~pipeline_tone_mapper(){};
 
     pipeline_tone_mapper(const pipeline_tone_mapper &) = delete;
     pipeline_tone_mapper &operator=(const pipeline_tone_mapper &) = delete;
@@ -32,8 +31,6 @@ protected:
     std::vector<vk::WriteDescriptorSet> createWriteDescriptorSet() const override;
     ssize_t getDescriptorSetVersion() const override;
     vk::PipelineDepthStencilStateCreateInfo getPipelineDepthStencilStateCreateInfo() const override;
-
 };
 
-}
-}
+} // namespace tt::inline v1::pipeline_tone_mapper

@@ -11,7 +11,7 @@
 #include <vector>
 #include <string_view>
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct formula_evaluation_context {
     using scope = std::unordered_map<std::string, datum>;

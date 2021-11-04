@@ -9,7 +9,7 @@
 #include <thread>
 #include <chrono>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Lock-free fetch-then-max operation on an atomic.
  */

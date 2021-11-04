@@ -9,7 +9,7 @@
 #include "skeleton_string_node.hpp"
 #include "skeleton.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] bool skeleton_parse_context::append(std::unique_ptr<skeleton_node> x) noexcept
 {

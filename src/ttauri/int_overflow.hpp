@@ -21,7 +21,7 @@
 #pragma intrinsic(_mul128)
 #endif
 
-namespace tt {
+namespace tt::inline v1 {
 
 template<typename T, typename U>
 inline bool convert_overflow(T x, U *r)

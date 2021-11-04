@@ -14,7 +14,7 @@
 #include <memory>
 #include <string>
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct formula_node {
     using formula_vector = std::vector<std::unique_ptr<formula_node>>;

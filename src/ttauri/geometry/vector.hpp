@@ -6,7 +6,7 @@
 
 #include "../rapid/numeric_array.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 namespace geo {
 
 /** A high-level geometric vector

@@ -9,7 +9,7 @@
 #include "../required.hpp"
 #include <random>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** xorshift128+
 */

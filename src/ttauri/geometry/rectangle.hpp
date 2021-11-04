@@ -9,7 +9,7 @@
 #include "../alignment.hpp"
 #include <array>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** A rectangle / parallelogram in 3D space.
  *

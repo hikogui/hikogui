@@ -8,7 +8,7 @@
 #include "../assert.hpp"
 #include "../strings.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** ISO-3166 country code.
  * ISO-3166-1 alpha-2 (upper-case)

@@ -9,7 +9,7 @@
 #include <type_traits>
 #include <bit>
 
-namespace tt {
+namespace tt::inline v1 {
 
 enum class global_state_type : uint64_t {
     log_debug = 0x01,
@@ -171,7 +171,7 @@ struct atomic<tt::global_state_type> {
 
 } // namespace std
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** The global state of the ttauri framework.
  *

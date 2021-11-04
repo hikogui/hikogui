@@ -8,7 +8,7 @@
 
 #pragma once
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Functor for forwarding an forwarding-reference to variable.
  *

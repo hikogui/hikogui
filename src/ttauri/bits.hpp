@@ -9,7 +9,7 @@
 #include <span>
 #include <cstddef>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Read a single bit of span of bytes
  * Bits are ordered LSB first.

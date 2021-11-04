@@ -10,18 +10,14 @@
 #include "../geometry/corner_shapes.hpp"
 #include <array>
 
-namespace tt::pipeline_box {
-inline namespace v1 {
+namespace tt::inline v1::pipeline_box {
 
-device_shared::device_shared(gfx_device_vulkan const &device) :
-    device(device)
+device_shared::device_shared(gfx_device_vulkan const &device) : device(device)
 {
     buildShaders();
 }
 
-device_shared::~device_shared()
-{
-}
+device_shared::~device_shared() {}
 
 void device_shared::destroy(gfx_device_vulkan *vulkanDevice)
 {
@@ -41,14 +37,13 @@ void device_shared::place_vertices(
     quad_color fill_colors,
     quad_color line_colors,
     float line_width,
-    tt::corner_shapes corner_shapes
-)
+    tt::corner_shapes corner_shapes)
 {
     // Include the half line_width, so that the border is drawn centered
     // around the box outline. Then add 1 pixel for anti-aliasing.
     // The shader will compensate for the pixel and half the border.
     ttlet extra_space = (line_width * 0.5f) + 1.0f;
-    ttlet [box_, lengths] = expand_and_edge_hypots(box, extent2{extra_space, extra_space});
+    ttlet[box_, lengths] = expand_and_edge_hypots(box, extent2{extra_space, extra_space});
 
     // t0-t3 are used inside the shader to determine how far from the corner
     // a certain fragment is.
@@ -78,8 +73,7 @@ void device_shared::buildShaders()
 
     shaderStages = {
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, vertexShaderModule, "main"},
-        {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, fragmentShaderModule, "main"}
-    };
+        {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, fragmentShaderModule, "main"}};
 }
 
 void device_shared::teardownShaders(gfx_device_vulkan *vulkanDevice)
@@ -89,5 +83,4 @@ void device_shared::teardownShaders(gfx_device_vulkan *vulkanDevice)
     vulkanDevice->destroy(fragmentShaderModule);
 }
 
-}
-}
+} // namespace tt::inline v1::pipeline_box

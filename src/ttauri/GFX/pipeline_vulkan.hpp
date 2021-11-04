@@ -9,8 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 class gfx_device_vulkan;
 
 class pipeline_vulkan : public pipeline {
@@ -50,20 +49,28 @@ protected:
     virtual std::vector<vk::DescriptorSetLayoutBinding> createDescriptorSetLayoutBindings() const = 0;
     virtual std::vector<vk::WriteDescriptorSet> createWriteDescriptorSet() const = 0;
     virtual ssize_t getDescriptorSetVersion() const = 0;
-    virtual std::vector<vk::PushConstantRange> createPushConstantRanges() const { return {}; }
-    virtual vk::VertexInputBindingDescription createVertexInputBindingDescription() const { return{}; }
-    virtual std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const { return {}; }
+    virtual std::vector<vk::PushConstantRange> createPushConstantRanges() const
+    {
+        return {};
+    }
+    virtual vk::VertexInputBindingDescription createVertexInputBindingDescription() const
+    {
+        return {};
+    }
+    virtual std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const
+    {
+        return {};
+    }
 
     virtual vk::PipelineDepthStencilStateCreateInfo getPipelineDepthStencilStateCreateInfo() const;
     virtual std::vector<vk::PipelineColorBlendAttachmentState> getPipelineColorBlendAttachmentStates() const;
 
-    virtual void buildvertexBuffers() {};
-    virtual void teardownvertexBuffers() {};
+    virtual void buildvertexBuffers(){};
+    virtual void teardownvertexBuffers(){};
     virtual void buildDescriptorSets();
     virtual void teardownDescriptorSets();
     virtual void buildPipeline(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D extent);
     virtual void teardownPipeline();
 };
 
-}
-}
+} // namespace tt::inline v1

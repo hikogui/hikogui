@@ -8,7 +8,7 @@
 #include "../assert.hpp"
 #include "../strings.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** ISO-15924 script code.
  * A 4 letter title case script code:

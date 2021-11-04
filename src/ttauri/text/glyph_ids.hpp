@@ -13,9 +13,7 @@
 #include <cstdint>
 #include <functional>
 
-namespace tt {
-inline namespace v1 {
-
+namespace tt::inline v1 {
 class glyph_ids_long {
 public:
     constexpr glyph_ids_long(glyph_ids_long const &) noexcept = default;
@@ -57,7 +55,7 @@ public:
         r <<= 16;
         r |= size_t{get<0>(_glyphs)};
 
-        return r ^ size_t{_size};
+        return r ^ size_t { _size };
     }
 
     constexpr glyph_ids_long &operator+=(glyph_id id) noexcept
@@ -116,9 +114,7 @@ public:
         return *this;
     }
 
-    constexpr glyph_ids(glyph_ids &&other) noexcept : _ptr(std::exchange(other._ptr, sgo_null))
-    {
-    }
+    constexpr glyph_ids(glyph_ids &&other) noexcept : _ptr(std::exchange(other._ptr, sgo_null)) {}
 
     constexpr glyph_ids &operator=(glyph_ids &&other) noexcept
     {
@@ -164,7 +160,7 @@ public:
 
     [[nodiscard]] constexpr size_t hash() const noexcept
     {
-        ttlet value = sgo_value() ;
+        ttlet value = sgo_value();
         if ((value & sgo_size_mask) == 0) {
             return _ptr->hash();
         } else {
@@ -232,8 +228,7 @@ private:
     }
 };
 
-}
-} // namespace tt
+} // namespace tt::inline v1
 
 template<>
 struct std::hash<tt::glyph_ids> {

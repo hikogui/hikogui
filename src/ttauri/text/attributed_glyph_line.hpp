@@ -8,8 +8,7 @@
 #include <vector>
 #include <optional>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 struct attributed_glyph_line {
     using vector_type = std::vector<attributed_glyph>;
@@ -27,7 +26,7 @@ struct attributed_glyph_line {
     float y;
 
     /** This constructor will move the data from first to last.
-    */
+     */
     attributed_glyph_line(iterator first, iterator last) noexcept :
         line(), width(0.0f), ascender(0.0f), descender(0.0f), lineGap(0.0f), capHeight(0.0f), xHeight(0.0f)
     {
@@ -38,14 +37,14 @@ struct attributed_glyph_line {
         calculateLineMetrics();
     }
 
-    [[nodiscard]] bool shouldWrap(float maximum_width) noexcept {
+    [[nodiscard]] bool shouldWrap(float maximum_width) noexcept
+    {
         tt_axiom(ssize(line) >= 1);
-        return
-            width > maximum_width &&
-            ssize(line) >= (line.back().isParagraphSeparator() ? 3 : 2);
+        return width > maximum_width && ssize(line) >= (line.back().isParagraphSeparator() ? 3 : 2);
     }
 
-    [[nodiscard]] attributed_glyph_line wrap(float maximum_width) noexcept {
+    [[nodiscard]] attributed_glyph_line wrap(float maximum_width) noexcept
+    {
         tt_axiom(shouldWrap(maximum_width));
 
         auto word_end = line.begin();
@@ -80,24 +79,20 @@ struct attributed_glyph_line {
         return reset_of_line;
     }
 
-    [[nodiscard]] aarectangle boundingBox() const noexcept {
+    [[nodiscard]] aarectangle boundingBox() const noexcept
+    {
         tt_axiom(ssize(line) >= 1);
 
-        ttlet p0 = point2{
-            line.front().position.x(),
-            line.front().position.y() - descender
-        };
+        ttlet p0 = point2{line.front().position.x(), line.front().position.y() - descender};
 
-        ttlet p3 = point2{
-            line.back().position.x() + line.back().metrics.advance.x(),
-            line.back().position.y() + ascender
-        };
+        ttlet p3 = point2{line.back().position.x() + line.back().metrics.advance.x(), line.back().position.y() + ascender};
 
         return aarectangle{p0, p3};
     }
 
-    [[nodiscard]] bool contains(point2 coordinate) const noexcept {
-        return boundingBox().contains(coordinate);            
+    [[nodiscard]] bool contains(point2 coordinate) const noexcept
+    {
+        return boundingBox().contains(coordinate);
     }
 
     [[nodiscard]] const_iterator find(point2 coordinate) const noexcept
@@ -121,26 +116,49 @@ struct attributed_glyph_line {
         });
     }
 
-    [[nodiscard]] size_t size() const noexcept { return line.size(); }
+    [[nodiscard]] size_t size() const noexcept
+    {
+        return line.size();
+    }
 
-    [[nodiscard]] iterator begin() noexcept { return line.begin(); }
-    [[nodiscard]] const_iterator begin() const noexcept { return line.cbegin(); }
-    [[nodiscard]] const_iterator cbegin() const noexcept { return line.cbegin(); }
+    [[nodiscard]] iterator begin() noexcept
+    {
+        return line.begin();
+    }
+    [[nodiscard]] const_iterator begin() const noexcept
+    {
+        return line.cbegin();
+    }
+    [[nodiscard]] const_iterator cbegin() const noexcept
+    {
+        return line.cbegin();
+    }
 
-    [[nodiscard]] iterator end() noexcept { return line.end(); }
-    [[nodiscard]] const_iterator end() const noexcept { return line.cend(); }
-    [[nodiscard]] const_iterator cend() const noexcept { return line.cend(); }
+    [[nodiscard]] iterator end() noexcept
+    {
+        return line.end();
+    }
+    [[nodiscard]] const_iterator end() const noexcept
+    {
+        return line.cend();
+    }
+    [[nodiscard]] const_iterator cend() const noexcept
+    {
+        return line.cend();
+    }
 
-    void positionGlyphs(point2 position) noexcept {
+    void positionGlyphs(point2 position) noexcept
+    {
         y = position.y();
-        for (auto &&g: line) {
+        for (auto &&g : line) {
             g.position = position;
             position += g.metrics.advance;
         }
     }
 
 private:
-    void calculateLineMetrics() noexcept {
+    void calculateLineMetrics() noexcept
+    {
         ascender = 0.0f;
         descender = 0.0f;
         lineGap = 0.0f;
@@ -149,7 +167,7 @@ private:
 
         auto totalWidth = 0.0f;
         auto validWidth = 0.0f;
-        for (ttlet &g: line) {
+        for (ttlet &g : line) {
             totalWidth += g.metrics.advance.x();
             ascender = std::max(ascender, g.metrics.ascender);
             descender = std::max(descender, g.metrics.descender);
@@ -167,8 +185,6 @@ private:
 
         width = validWidth;
     }
-
 };
 
-}
-}
+} // namespace tt::inline v1

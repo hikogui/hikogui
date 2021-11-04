@@ -13,7 +13,7 @@
 #include "log.hpp"
 #include <regex>
 
-namespace tt {
+namespace tt::inline v1 {
 
 URL URL::_urlOfCurrentWorkingDirectory;
 

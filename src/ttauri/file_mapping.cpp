@@ -10,7 +10,7 @@
 #include "unfair_mutex.hpp"
 #include <mutex>
 
-namespace tt {
+namespace tt::inline v1 {
 
 
 std::shared_ptr<file> file_mapping::findOrOpenFile(URL const& location, access_mode accessMode)

@@ -7,12 +7,11 @@
 #include "translation.hpp"
 #include "../tokenizer.hpp"
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 ///** Return the plarity index.
 //*/
-//ssize_t plurality(long long n) const noexcept {
+// ssize_t plurality(long long n) const noexcept {
 //    // To protect against overflow make the number smaller,
 //    // But preserve trailing digits since language rules check for these.
 //    n = (n > 1000000) ? (n % 1000000) : n;
@@ -40,7 +39,7 @@ inline namespace v1 {
 //    }
 //}
 
-[[nodiscard]] static parse_result<std::tuple<std::string,int,std::string>> parseLine(token_iterator token)
+[[nodiscard]] static parse_result<std::tuple<std::string, int, std::string>> parseLine(token_iterator token)
 {
     std::string name;
     if ((*token == tokenizer_name_t::Name)) {
@@ -58,7 +57,6 @@ inline namespace v1 {
         } else {
             throw parse_error("{}: Expecting an integer literal as an index for {}", token->location, name);
         }
-
 
         if ((*token == tokenizer_name_t::Operator) && (*token == "]")) {
             token++;
@@ -92,7 +90,7 @@ inline namespace v1 {
             if (auto result = parseLine(token)) {
                 token = result.next_token;
 
-                ttlet [name, index, value] = *result;
+                ttlet[name, index, value] = *result;
                 if (name == "msgctxt") {
                     r.msgctxt = value;
 
@@ -119,7 +117,7 @@ inline namespace v1 {
         } else if ((*token == tokenizer_name_t::Name) && (*token == "msgstr")) {
             if (auto result = parseLine(token)) {
                 token = result.next_token;
-                ttlet [name, index, value] = *result;
+                ttlet[name, index, value] = *result;
 
                 while (ssize(r.msgstr) <= index) {
                     r.msgstr.push_back({});
@@ -194,6 +192,4 @@ static void parse_po_header(po_translations &r, std::string const &header)
     return parse_po(text->string_view());
 }
 
-}
-}
-
+} // namespace tt::inline v1

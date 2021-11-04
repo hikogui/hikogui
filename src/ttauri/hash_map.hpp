@@ -8,7 +8,7 @@
 #include <memory>
 #include <iterator>
 
-namespace tt {
+namespace tt::inline v1 {
 namespace detail {
 
 struct hash_map_entry_h {

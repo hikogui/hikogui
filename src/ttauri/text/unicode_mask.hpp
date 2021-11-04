@@ -9,8 +9,8 @@
 #include <cstdint>
 #include <cstddef>
 
-namespace tt::detail {
-inline namespace v1 {
+namespace tt::inline v1 {
+namespace detail {
 
 class unicode_mask_entry {
 public:
@@ -85,11 +85,7 @@ private:
     uint32_t _value;
 };
 
-}
-}
-
-namespace tt {
-namespace detail {
+} // namespace detail
 
 /** A mask of unicode code-points.
  *
@@ -193,7 +189,6 @@ public:
     [[nodiscard]] bool holds_invariant() const noexcept;
 
 private:
-    
     using entry_type = detail::unicode_mask_entry;
     using entries_type = std::vector<entry_type>;
     using iterator = typename entries_type::iterator;
@@ -203,5 +198,4 @@ private:
     entries_type _entries = {};
 };
 
-}
-} // namespace tt
+} // namespace tt::inline v1

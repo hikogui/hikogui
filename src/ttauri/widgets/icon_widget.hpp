@@ -15,8 +15,7 @@
 #include <optional>
 #include <future>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 /** An simple GUI widget that displays an icon.
  *
@@ -40,9 +39,7 @@ public:
     observable<alignment> alignment = alignment::middle_center;
 
     template<typename Icon, typename Color = tt::theme_color>
-    icon_widget(
-        gui_window &window,
-        widget *parent, Icon &&icon, Color &&color = theme_color::foreground) noexcept :
+    icon_widget(gui_window &window, widget *parent, Icon &&icon, Color &&color = theme_color::foreground) noexcept :
         icon_widget(window, parent)
     {
         this->icon = std::forward<Icon>(icon);
@@ -69,5 +66,4 @@ private:
     icon_widget(gui_window &window, widget *parent) noexcept;
 };
 
-}
-} // namespace tt
+} // namespace tt::inline v1

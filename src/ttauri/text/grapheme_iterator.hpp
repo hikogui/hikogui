@@ -11,8 +11,7 @@
 #include <type_traits>
 #include <iterator_traits>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 template<typename Iterator>
 class grapheme_iterator {
@@ -31,7 +30,8 @@ public:
 
     [[nodiscard]] constexpr grapheme_iterator(iterator const &it) noexcept : it(itr), forward_break_state() {}
 
-    [[nodiscard]] grapheme operator*() noexcept {
+    [[nodiscard]] grapheme operator*() noexcept
+    {
         ttlet last_it = std::next(*this).it;
         auto r = grapheme(it, last_it);
     }
@@ -64,5 +64,4 @@ private:
     grapheme_break_state forward_break_state;
 };
 
-}
-} // namespace tt
+} // namespace tt::inline v1

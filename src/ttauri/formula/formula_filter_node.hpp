@@ -8,7 +8,7 @@
 #include "formula_post_process_context.hpp"
 #include "formula_name_node.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct formula_filter_node final : formula_binary_operator_node {
     mutable formula_post_process_context::filter_type filter;

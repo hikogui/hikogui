@@ -8,11 +8,9 @@
 #include "po_parser.hpp"
 #include <format>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
-language::language(language_tag tag) noexcept :
-    tag(std::move(tag)), plurality_func()
+language::language(language_tag tag) noexcept : tag(std::move(tag)), plurality_func()
 {
     // XXX std::format is unable to find language_tag::operator<<
     auto po_url = URL(std::format("resource:locale/{}.po", to_string(this->tag)));
@@ -27,5 +25,4 @@ language::language(language_tag tag) noexcept :
     }
 }
 
-}
-}
+} // namespace tt::inline v1

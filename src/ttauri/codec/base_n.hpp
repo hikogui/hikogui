@@ -17,7 +17,7 @@
 
 #pragma once
 
-namespace tt {
+namespace tt::inline v1 {
 namespace detail {
 
 struct base_n_alphabet {

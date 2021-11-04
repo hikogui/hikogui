@@ -13,7 +13,7 @@
 #include <typeinfo>
 #include <typeindex>
 
-namespace tt {
+namespace tt::inline v1 {
 
 template<basic_fixed_string Head, basic_fixed_string... Tail>
 std::string tag_at_index_impl(size_t index) noexcept

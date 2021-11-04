@@ -6,7 +6,7 @@
 #include "endian.hpp"
 #include <algorithm>
 
-namespace tt {
+namespace tt::inline v1 {
 
 
 

@@ -6,8 +6,7 @@
 
 #include "gui_system.hpp"
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 class gui_system_win32 final : public gui_system {
 public:
@@ -25,5 +24,4 @@ public:
     void exit(int exit_code) override;
 };
 
-}
-}
+} // namespace tt::inline v1

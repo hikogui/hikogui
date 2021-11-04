@@ -10,7 +10,7 @@
 #include "geometry/transform.hpp"
 #include <vector>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /*! A point or control-point on contour of bezier curves.
  * The bezier curves can be linear (a line), quadratic or cubic.

@@ -8,7 +8,7 @@
 #include "skeleton_parse_context.hpp"
 #include "../resource_view.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] std::unique_ptr<skeleton_node> parse_skeleton(skeleton_parse_context &context);
 

@@ -9,8 +9,7 @@
 #include <optional>
 #include "../label.hpp"
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 class text_field_widget;
 
 class text_field_delegate {
@@ -35,9 +34,7 @@ public:
         return subscribe(sender, std::make_shared<std::function<void()>>(std::forward<Callback>(callback)));
     }
 
-    virtual void unsubscribe(text_field_widget &sender, callback_ptr_type const &callback_ptr) noexcept
-    {
-    }
+    virtual void unsubscribe(text_field_widget &sender, callback_ptr_type const &callback_ptr) noexcept {}
 
     /** Validate the text field.
      * @param text The text entered by the user into the text field.
@@ -51,7 +48,7 @@ public:
     /** Get the text to show in the text field.
      * When the user is not editing the text the text-field will request what to show
      * using this function.
-     * 
+     *
      * @return The text to show in the text field.
      */
     virtual std::string text(text_field_widget &sender) noexcept
@@ -64,14 +61,11 @@ public:
      * by pressing enter, tab, or clicking outside the field and when
      * the text was validated the widget will call this function to commit the
      * text with the delegate.
-     * 
+     *
      * @pre text Must have been validated as correct.
      * @param text The text entered by the user.
      */
-    virtual void set_text(text_field_widget &sender, std::string_view text) noexcept
-    {
-    }
+    virtual void set_text(text_field_widget &sender, std::string_view text) noexcept {}
 };
 
-}
-} // namespace tt
+} // namespace tt::inline v1

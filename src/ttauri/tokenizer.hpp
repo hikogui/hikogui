@@ -19,7 +19,7 @@
 #include <charconv>
 #include <array>
 
-namespace tt {
+namespace tt::inline v1 {
 
 enum class tokenizer_name_t : uint8_t {
     NotAssigned,

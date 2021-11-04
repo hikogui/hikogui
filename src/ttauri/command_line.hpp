@@ -7,7 +7,7 @@
 #include <coroutine>
 #include "architecture.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct cmdline_short_option {
     char32_t option;

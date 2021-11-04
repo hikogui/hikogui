@@ -10,7 +10,7 @@
 #include <type_traits>
 #include <Windows.h>
 
-namespace tt {
+namespace tt::inline v1 {
 
 file::file(URL const &location, access_mode access_mode) : _access_mode(access_mode), _location(location)
 {

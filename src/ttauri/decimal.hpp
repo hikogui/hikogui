@@ -13,7 +13,7 @@
 #include <charconv>
 #include <ostream>
 
-namespace tt {
+namespace tt::inline v1 {
 
 class decimal {
 private:

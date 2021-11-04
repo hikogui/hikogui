@@ -28,7 +28,7 @@
 #include <tuple>
 #include <string_view>
 
-namespace tt {
+namespace tt::inline v1 {
 
 
 inline std::tuple<bool, size_t, bool, size_t> _parse_spreadsheet_address(std::string_view &address)

@@ -8,7 +8,7 @@
 #include "URL.hpp"
 #include <string>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Metadata for a library or application.
  */

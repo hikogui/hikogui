@@ -8,7 +8,7 @@
 #include <limits>
 #include <tuple>
 
-namespace tt {
+namespace tt::inline v1 {
 
 enum class graphic_character_t {
     none = 0x00,

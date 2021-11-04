@@ -6,7 +6,7 @@
 
 #include <cstddef>
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] constexpr char32_t CP1252_to_UTF32(char inputCharacter) noexcept
 {

@@ -7,7 +7,7 @@
 #include "../endian.hpp"
 #include "../placement.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct zlib_header {
     uint8_t CMF;

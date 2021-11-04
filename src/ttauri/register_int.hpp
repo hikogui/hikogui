@@ -32,7 +32,7 @@
  * A unsigned integer twice the maximum size of a scaler register.
  */
 
-namespace tt {
+namespace tt::inline v1 {
 
 #if TT_PROCESSOR == TT_CPU_X64
 using register_int = int64_t;

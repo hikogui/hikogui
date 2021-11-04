@@ -10,7 +10,7 @@
 #include <vector>
 #include <functional>
 
-namespace tt {
+namespace tt::inline v1 {
 
 constexpr char native_path_seperator = (operating_system::current == operating_system::windows) ? '\\' : '/';
 

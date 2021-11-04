@@ -7,8 +7,7 @@
 #include <memory>
 #include <functional>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 class grid_widget;
 
 class grid_delegate {
@@ -20,5 +19,4 @@ public:
     virtual void deinit(grid_widget &sender) noexcept {}
 };
 
-}
-} // namespace tt
+} // namespace tt::inline v1

@@ -9,7 +9,7 @@
 #include <format>
 #include <string>
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] std::string to_string(std::chrono::year y) noexcept
 {

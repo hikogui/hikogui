@@ -12,7 +12,7 @@
 #include <cstddef>
 #include <string>
 
-namespace tt {
+namespace tt::inline v1 {
 namespace detail {
 constexpr auto BON8_code_array_count0 = uint8_t{0x80};
 constexpr auto BON8_code_array_count1 = uint8_t{0x81};

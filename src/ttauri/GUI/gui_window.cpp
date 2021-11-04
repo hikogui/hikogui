@@ -11,8 +11,7 @@
 #include "../widgets/window_widget.hpp"
 #include "../widgets/grid_widget.hpp"
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 template<typename Event>
 bool gui_window::send_event_to_widget(tt::widget const *target_widget, Event const &event) noexcept
@@ -392,5 +391,4 @@ bool gui_window::send_event(char32_t c, bool full) noexcept
     return send_event(grapheme(c), full);
 }
 
-}
-} // namespace tt
+} // namespace tt::inline v1

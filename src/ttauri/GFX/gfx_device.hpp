@@ -14,8 +14,7 @@
 #include <mutex>
 #include <tuple>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 class gfx_system;
 
 /*! A gfx_device that handles a set of windows.
@@ -49,5 +48,4 @@ public:
     virtual int score(gfx_surface const &surface) const = 0;
 };
 
-}
-}
+} // namespace tt::inline v1

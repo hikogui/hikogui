@@ -14,7 +14,7 @@
 #include <algorithm>
 #include <compare>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Interval arithmetic.
  *

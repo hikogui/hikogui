@@ -6,8 +6,7 @@
 
 #pragma once
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 /** The type of button.
  */
@@ -48,5 +47,4 @@ enum class button_type {
     radio
 };
 
-}
-} // namespace tt
+} // namespace tt::inline v1

@@ -13,8 +13,7 @@
 #include <thread>
 #include <vector>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 class gfx_surface;
 
 /** Graphics system
@@ -36,13 +35,12 @@ public:
     /** Initialize after construction.
      * Call this function directly after the constructor on the same thread.
      */
-    virtual void init() {};
-    virtual void deinit() {};
+    virtual void init(){};
+    virtual void deinit(){};
 
     [[nodiscard]] virtual std::unique_ptr<gfx_surface> make_surface(os_handle instance, void *os_window) const noexcept = 0;
 
     gfx_device *find_best_device_for_surface(gfx_surface const &surface);
 };
 
-}
-}
+} // namespace tt::inline v1

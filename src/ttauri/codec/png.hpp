@@ -18,7 +18,7 @@
 #include <cstdint>
 #include <numeric>
 
-namespace tt {
+namespace tt::inline v1 {
 
 class png {
 public:

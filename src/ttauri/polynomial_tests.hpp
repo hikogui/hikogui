@@ -47,7 +47,7 @@ testing::AssertionResult ResultsNearPredFormat(const char* expr1,
 
 #define ASSERT_RESULTS(val1, val2) ASSERT_RESULTS_NEAR(val1, val2, 0.000001)
 
-namespace tt {
+namespace tt::inline v1 {
 using results1 = tt::results<double,1>;
 using results2 = tt::results<double,2>;
 using results3 = tt::results<double,3>;

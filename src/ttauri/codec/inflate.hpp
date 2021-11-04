@@ -9,7 +9,7 @@
 #include "../endian.hpp"
 #include <span>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Inflate compressed data using the deflate algorithm
  * `bytes` should include at least 32 bit of trailer, for the overflow check which

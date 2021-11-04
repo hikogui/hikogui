@@ -4,7 +4,7 @@
 
 #include "color.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 class quad_color {
 public:

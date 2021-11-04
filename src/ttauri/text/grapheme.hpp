@@ -9,8 +9,7 @@
 #include "../hash.hpp"
 #include <array>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 // "Compatibility mappings are guaranteed to be no longer than 18 characters, although most consist of just a few characters."
 // https://unicode.org/reports/tr44/ (TR44 5.7.3)
@@ -296,8 +295,7 @@ private:
     }
 };
 
-}
-} // namespace tt
+} // namespace tt::inline v1
 
 template<>
 struct std::hash<tt::grapheme> {
@@ -306,4 +304,3 @@ struct std::hash<tt::grapheme> {
         return rhs.hash();
     }
 };
-

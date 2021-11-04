@@ -8,7 +8,7 @@
 #include "../huffman.hpp"
 #include <array>
 
-namespace tt {
+namespace tt::inline v1 {
 
 static void inflate_copy_block(std::span<std::byte const> bytes, ssize_t &bit_offset, ssize_t max_size, bstring &r)
 {

@@ -12,7 +12,7 @@
 #include <cmath>
 #include <iterator>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Transform an input container to the output container.
  * @param input Input container.

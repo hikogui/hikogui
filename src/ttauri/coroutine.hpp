@@ -11,7 +11,7 @@
 #include <memory_resource>
 #include "arguments.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** A return value for a generator-function.
  * A generator-function is a coroutine which co_yields zero or more values.

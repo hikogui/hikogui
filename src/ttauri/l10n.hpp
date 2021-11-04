@@ -13,7 +13,7 @@
 #include <string_view>
 #include <tuple>
 
-namespace tt {
+namespace tt::inline v1 {
 namespace detail {
 class l10n_args_base {
 public:

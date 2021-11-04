@@ -11,7 +11,7 @@
 #include "unfair_mutex.hpp"
 #include <mutex>
 
-namespace tt {
+namespace tt::inline v1 {
 
 std::shared_ptr<file_mapping> file_view::findOrCreateFileMappingObject(URL const& location, access_mode accessMode, size_t size)
 {

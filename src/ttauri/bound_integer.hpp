@@ -5,7 +5,7 @@
 #include "register_int.hpp"
 #include "interval.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 constexpr auto bounds_test = interval<register_long>{1, 5};
 

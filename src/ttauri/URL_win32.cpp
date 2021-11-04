@@ -13,7 +13,7 @@
 #include <Windows.h>
 #include <ShlObj_core.h>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /*! Convenience function for SHGetKnownFolderPath().
  *  Retrieves a full path of a known folder identified by the folder's KNOWNFOLDERID.

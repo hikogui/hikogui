@@ -3,7 +3,7 @@
 #include <Windows.h>
 #include <profileapi.h>
 
-namespace tt {
+namespace tt::inline v1 {
     
 
 

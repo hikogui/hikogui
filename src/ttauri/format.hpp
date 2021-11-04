@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace tt {
+namespace tt::inline v1 {
 namespace detail {
 template<typename Arg>
 auto u8format_argument_cast(Arg const &arg) noexcept -> std::

@@ -10,7 +10,7 @@
 #include <cstddef>
 #include <string_view>
 
-namespace tt {
+namespace tt::inline v1 {
 class URL;
 
 /** A read-only memory mapping of a resource.

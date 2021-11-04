@@ -12,7 +12,7 @@
 #include <typeinfo>
 #include <typeindex>
 
-namespace tt {
+namespace tt::inline v1 {
 
 template<typename K, typename V>
 struct wfree_unordered_map_item {

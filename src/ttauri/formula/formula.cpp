@@ -64,7 +64,7 @@
 #include <functional>
 #include <limits>
 
-namespace tt {
+namespace tt::inline v1 {
 
 static std::unique_ptr<formula_node> parse_formula_1(formula_parse_context& context, std::unique_ptr<formula_node> lhs, uint8_t min_precedence);
 

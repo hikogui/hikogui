@@ -14,7 +14,7 @@ struct IAudioEndpointVolume;
 struct IAudioMeterInformation;
 struct IAudioClient;
 
-namespace tt {
+namespace tt::inline v1 {
 
 /*! A class representing an audio device on the system.
  */

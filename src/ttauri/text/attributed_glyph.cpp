@@ -7,8 +7,7 @@
 #include "../log.hpp"
 #include "../graphic_path.hpp"
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 attributed_glyph::attributed_glyph(
     tt::font_book const &font_book,
@@ -70,5 +69,4 @@ attributed_glyph::attributed_glyph(
     return transformed_glyph_path;
 }
 
-}
-} // namespace tt
+} // namespace tt::inline v1

@@ -12,7 +12,7 @@
 #include <memory>
 
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Parse an formula.
     * Parses an formula until EOF, ')', ',', '}'

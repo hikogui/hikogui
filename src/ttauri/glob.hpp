@@ -11,7 +11,7 @@
 #include <string_view>
 #include <ostream>
 
-namespace tt {
+namespace tt::inline v1 {
 
 enum class glob_token_type_t {
     String,

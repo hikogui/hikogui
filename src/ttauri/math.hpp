@@ -23,7 +23,7 @@
 #include <immintrin.h>
 #endif
 
-namespace tt {
+namespace tt::inline v1 {
 
 constexpr long long pow10_table[20] {
                             1LL,

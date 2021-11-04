@@ -13,7 +13,7 @@
 #include <concepts>
 #include <mutex>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Class which represents an axis-aligned rectangle.
  */

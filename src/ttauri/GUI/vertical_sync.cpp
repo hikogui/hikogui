@@ -8,7 +8,7 @@
 #include "vertical_sync_win32.hpp"
 #endif
 
-namespace tt {
+namespace tt::inline v1 {
 
 
 }

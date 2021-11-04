@@ -8,7 +8,7 @@
 #include "../geometry/matrix.hpp"
 #include "../geometry/scale.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] constexpr matrix3
 color_primaries_to_RGBtoXYZ(float wx, float wy, float rx, float ry, float gx, float gy, float bx, float by) noexcept

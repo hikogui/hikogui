@@ -29,7 +29,7 @@
 #include <memory>
 #include <thread>
 
-namespace tt {
+namespace tt::inline v1 {
 namespace detail {
 
 class log_message_base {
@@ -107,7 +107,6 @@ private:
     delayed_format<Fmt, Values...> _what;
 };
 
-
 } // namespace detail
 
 class log {
@@ -179,7 +178,6 @@ public:
     }
 
 private:
-
     /** The global log queue contains messages to be displayed by the logger thread.
      */
     wfree_fifo<detail::log_message_base, 64> _fifo;
@@ -217,7 +215,7 @@ inline log log_global;
  */
 [[nodiscard]] std::string get_last_error_message() noexcept;
 
-} // namespace tt
+} // namespace tt::inline v1
 
 #define tt_log_debug(fmt, ...) ::tt::log_global.add<::tt::global_state_type::log_debug, __FILE__, __LINE__, fmt>(__VA_ARGS__)
 #define tt_log_info(fmt, ...) ::tt::log_global.add<::tt::global_state_type::log_info, __FILE__, __LINE__, fmt>(__VA_ARGS__)

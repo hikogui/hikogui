@@ -11,7 +11,7 @@
 #include <concepts>
 #include <type_traits>
 
-namespace tt {
+namespace tt::inline v1 {
 
 using byteptr = std::byte *;
 using cbyteptr = std::byte const *;

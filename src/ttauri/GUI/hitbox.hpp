@@ -8,9 +8,7 @@
 #include <cstdint>
 #include "../geometry/point.hpp"
 
-namespace tt {
-inline namespace v1 {
-
+namespace tt::inline v1 {
 class widget;
 
 class hitbox {
@@ -74,5 +72,4 @@ private:
     float _elevation;
 };
 
-}
-} // namespace tt
+} // namespace tt::inline v1

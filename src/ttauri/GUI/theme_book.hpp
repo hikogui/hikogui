@@ -10,8 +10,7 @@
 #include <vector>
 #include <new>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 class font_book;
 
 /** theme_book keeps track of multiple themes.
@@ -41,5 +40,4 @@ private:
     std::vector<std::unique_ptr<theme>> themes;
 };
 
-}
-} // namespace tt
+} // namespace tt::inline v1

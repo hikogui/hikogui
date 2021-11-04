@@ -10,7 +10,7 @@
 #include <type_traits>
 #include <limits>
 
-namespace tt {
+namespace tt::inline v1 {
 
 template<typename T, int M>
 struct fixed {

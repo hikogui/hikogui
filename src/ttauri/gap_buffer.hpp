@@ -13,7 +13,7 @@
 #include <string>
 #include <type_traits>
 
-namespace tt {
+namespace tt::inline v1 {
 
 template<typename T, typename Allocator>
 class gap_buffer;

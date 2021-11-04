@@ -5,7 +5,7 @@
 
 #pragma once
 
-namespace tt {
+namespace tt::inline v1 {
 
 class packet_buffer {
     std::list<packet> packets;

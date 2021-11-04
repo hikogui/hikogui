@@ -15,8 +15,7 @@
 #include <string_view>
 #include <optional>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 class font_book;
 
 /** shaped_text represent a piece of text shaped to be displayed.
@@ -36,8 +35,7 @@ private:
     extent2 _preferred_extent;
 
 public:
-    shaped_text() noexcept :
-        alignment(alignment::middle_center), boundingBox(), width(0.0f), _preferred_extent(), lines() {}
+    shaped_text() noexcept : alignment(alignment::middle_center), boundingBox(), width(0.0f), _preferred_extent(), lines() {}
     shaped_text(shaped_text const &other) = default;
     shaped_text(shaped_text &&other) noexcept = default;
     shaped_text &operator=(shaped_text const &other) = default;
@@ -69,9 +67,8 @@ public:
         tt::font_book const &font_book,
         std::vector<attributed_grapheme> const &text,
         float width,
-        tt::alignment const alignment=alignment::middle_center,
-        bool wrap=true
-    ) noexcept;
+        tt::alignment const alignment = alignment::middle_center,
+        bool wrap = true) noexcept;
 
     /** Create shaped text from a string.
      * This function is mostly used for drawing label text.
@@ -87,9 +84,8 @@ public:
         gstring const &text,
         text_style const &style,
         float width,
-        tt::alignment const alignment=alignment::middle_center,
-        bool wrap=true
-    ) noexcept;
+        tt::alignment const alignment = alignment::middle_center,
+        bool wrap = true) noexcept;
 
     /** Create shaped text from a string.
      * This function is mostly used for drawing label text.
@@ -105,18 +101,18 @@ public:
         std::string_view text,
         text_style const &style,
         float width,
-        tt::alignment const alignment=alignment::middle_center,
-        bool wrap=true
-    ) noexcept;
+        tt::alignment const alignment = alignment::middle_center,
+        bool wrap = true) noexcept;
 
     [[nodiscard]] constexpr bool empty() const noexcept
     {
         return lines.empty();
     }
 
-    [[nodiscard]] size_t size() const noexcept {
+    [[nodiscard]] size_t size() const noexcept
+    {
         size_t count = 0;
-        for (ttlet &line: lines) {
+        for (ttlet &line : lines) {
             count += line.size();
         }
         return count;
@@ -127,33 +123,56 @@ public:
         return _preferred_extent;
     }
 
-    [[nodiscard]] iterator begin() noexcept { return recursive_iterator_begin(lines); }
-    [[nodiscard]] const_iterator begin() const noexcept { return recursive_iterator_begin(lines); }
-    [[nodiscard]] const_iterator cbegin() const noexcept { return recursive_iterator_begin(lines); }
+    [[nodiscard]] iterator begin() noexcept
+    {
+        return recursive_iterator_begin(lines);
+    }
+    [[nodiscard]] const_iterator begin() const noexcept
+    {
+        return recursive_iterator_begin(lines);
+    }
+    [[nodiscard]] const_iterator cbegin() const noexcept
+    {
+        return recursive_iterator_begin(lines);
+    }
 
-    [[nodiscard]] iterator end() noexcept { return recursive_iterator_end(lines); }
-    [[nodiscard]] const_iterator end() const noexcept { return recursive_iterator_end(lines); }
-    [[nodiscard]] const_iterator cend() const noexcept { return recursive_iterator_end(lines); }
+    [[nodiscard]] iterator end() noexcept
+    {
+        return recursive_iterator_end(lines);
+    }
+    [[nodiscard]] const_iterator end() const noexcept
+    {
+        return recursive_iterator_end(lines);
+    }
+    [[nodiscard]] const_iterator cend() const noexcept
+    {
+        return recursive_iterator_end(lines);
+    }
 
-    float topAccender() const noexcept {
+    float topAccender() const noexcept
+    {
         return lines.front().ascender;
     }
 
-    float bottomDescender() const noexcept {
+    float bottomDescender() const noexcept
+    {
         return lines.back().descender;
     }
 
-    float topCapHeight() const noexcept {
+    float topCapHeight() const noexcept
+    {
         return lines.front().capHeight;
     }
 
-    float bottomCapHeight() const noexcept {
+    float bottomCapHeight() const noexcept
+    {
         return lines.back().capHeight;
     }
 
     /** Get the capHeight of the middle line(s).
      */
-    float middleCapHeight() const noexcept {
+    float middleCapHeight() const noexcept
+    {
         if ((ssize(lines) % 2) == 1) {
             return lines[ssize(lines) / 2].capHeight;
         } else {
@@ -166,7 +185,8 @@ public:
      * a box of the given height.
      * The offset is depended on the vertical alignment of the shaped text.
      */
-    float baselineOffset(float height) noexcept {
+    float baselineOffset(float height) noexcept
+    {
         if (alignment == vertical_alignment::top) {
             return height - topAccender();
         } else if (alignment == vertical_alignment::bottom) {
@@ -179,11 +199,12 @@ public:
     }
 
     /** Get the offset of the middle of a line.
-    * The offset of the baseline when the middle of a line needs to be
-    * at a specific height.
-    * The offset is depended on the vertical alignment of the shaped text.
-    */
-    float middleOffset(float height) const noexcept {
+     * The offset of the baseline when the middle of a line needs to be
+     * at a specific height.
+     * The offset is depended on the vertical alignment of the shaped text.
+     */
+    float middleOffset(float height) const noexcept
+    {
         if (alignment == vertical_alignment::top) {
             return height - topCapHeight() * 0.5f;
         } else if (alignment == vertical_alignment::bottom) {
@@ -213,14 +234,14 @@ public:
      *  - From left side bearing to right side bearing of the glyph.
      *  - from descender to ascender of the line that the glyph is part of.
      *
-     * @param index 
+     * @param index
      * @return A rectangle describing the position of the grapheme.
      */
     [[nodiscard]] aarectangle rectangleOfgrapheme(ssize_t index) const noexcept;
 
     /** Return the cursor-carets.
      * The caret will be to the left of the character at position.
-     * 
+     *
      * @param index Logical grapheme index.
      * @param overwrite When true display a overwrite cursor.
      * @return left-to-right caret rectangle to display.
@@ -237,57 +258,56 @@ public:
     [[nodiscard]] std::vector<aarectangle> selection_rectangles(ssize_t first, ssize_t last) const noexcept;
 
     /** Get the character close to a coordinate.
-    * @param coordinate The coordinate of the mouse pointer.
-    * @return The logical index of the character closest to the coordinate
-    */
+     * @param coordinate The coordinate of the mouse pointer.
+     * @return The logical index of the character closest to the coordinate
+     */
     [[nodiscard]] std::optional<ssize_t> index_of_grapheme_at_coordinate(point2 coordinate) const noexcept;
 
     /** Get the character left of the given character
-    * @param logical_index The index of the logical character pointed to.
-    * @return The logical index of the character left-closest to the given character.
-    */
+     * @param logical_index The index of the logical character pointed to.
+     * @return The logical index of the character left-closest to the given character.
+     */
     [[nodiscard]] std::optional<ssize_t> indexOfCharOnTheLeft(ssize_t logical_index) const noexcept;
 
     /** Get the character right of the given character
-    * @param logical_index The index of the logical character pointed to.
-    * @return The logical index of the character right-closest to the given character.
-    */
+     * @param logical_index The index of the logical character pointed to.
+     * @return The logical index of the character right-closest to the given character.
+     */
     [[nodiscard]] std::optional<ssize_t> indexOfCharOnTheRight(ssize_t logical_index) const noexcept;
 
     /** Get the word with the given character
-    * @param logical_index The index of the logical character pointed to.
-    * @return The logical indices of the first and last character of a word.
-    */
-    [[nodiscard]] std::pair<ssize_t,ssize_t> indices_of_word(ssize_t logical_index) const noexcept;
+     * @param logical_index The index of the logical character pointed to.
+     * @return The logical indices of the first and last character of a word.
+     */
+    [[nodiscard]] std::pair<ssize_t, ssize_t> indices_of_word(ssize_t logical_index) const noexcept;
 
     /** Get the character right of the given character
-    * @param logical_index The index of the logical character pointed to.
-    * @return The logical indices of the first and last character of a paragraph.
-    */
-    [[nodiscard]] std::pair<ssize_t,ssize_t> indices_of_paragraph(ssize_t logical_index) const noexcept;
+     * @param logical_index The index of the logical character pointed to.
+     * @return The logical indices of the first and last character of a paragraph.
+     */
+    [[nodiscard]] std::pair<ssize_t, ssize_t> indices_of_paragraph(ssize_t logical_index) const noexcept;
 
     /** Get the character right of the given character
-    * @param logical_index The index of the logical character pointed to.
-    * @return The logical indices beyond the last character of a word.
-    */
+     * @param logical_index The index of the logical character pointed to.
+     * @return The logical indices beyond the last character of a word.
+     */
     [[nodiscard]] ssize_t indexAtRightSideOfWord(ssize_t logical_index) const noexcept;
 
     /** Get the first character of the word on the left.
-    * @param logical_index The index of the logical character pointed to.
-    * @return The logical index of a first letter of the word on the left
-    */
+     * @param logical_index The index of the logical character pointed to.
+     * @return The logical index of a first letter of the word on the left
+     */
     [[nodiscard]] std::optional<ssize_t> indexOfWordOnTheLeft(ssize_t logical_index) const noexcept;
 
     /** Get the last character of the word on the right.
-    * @param logical_index The index of the logical character pointed to.
-    * @return The logical index of a last letter of the word on the right
-    */
+     * @param logical_index The index of the logical character pointed to.
+     * @return The logical index of a last letter of the word on the right
+     */
     [[nodiscard]] std::optional<ssize_t> indexOfWordOnTheRight(ssize_t logical_index) const noexcept;
 
     /** Convert the whole shaped text into a layered path.
      */
     [[nodiscard]] graphic_path get_path() const noexcept;
-
 
     /** Get the index into the text from a coordinate.
      * The index returned is from the text that was used to construct the shaped_text.
@@ -307,5 +327,4 @@ public:
     [[nodiscard]] std::vector<int> indicesFromCoordinates(point2 start, point2 current) const noexcept;
 };
 
-}
-}
+} // namespace tt::inline v1

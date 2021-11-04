@@ -17,8 +17,7 @@
 #include <thread>
 #include <vector>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 class gfx_system;
 class vertical_sync;
 class font_book;
@@ -36,7 +35,6 @@ public:
     std::unique_ptr<tt::font_book> font_book;
     std::unique_ptr<tt::theme_book> theme_book;
     std::unique_ptr<tt::keyboard_bindings> keyboard_bindings;
-
 
     thread_id const thread_id;
 
@@ -96,10 +94,10 @@ public:
     virtual void exit(int exit_code) = 0;
 
     /** Get the event queue.
-    * 
-    * This queue allows for adding jobs to the queue which will
-    * be executed on the gui thread.
-    */
+     *
+     * This queue allows for adding jobs to the queue which will
+     * be executed on the gui thread.
+     */
     tt::event_queue const &event_queue() const noexcept
     {
         return *_event_queue;
@@ -229,5 +227,4 @@ private:
     tt::theme const *_theme = nullptr;
 };
 
-}
-} // namespace tt
+} // namespace tt::inline v1

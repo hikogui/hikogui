@@ -13,7 +13,7 @@
 #include <unordered_map>
 #include <type_traits>
 
-namespace tt {
+namespace tt::inline v1 {
 
 template<typename T, typename U>
 void memswap(T &dst, U &src)

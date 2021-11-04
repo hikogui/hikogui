@@ -14,7 +14,7 @@
 #include <tuple>
 #include <thread>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** A timer which will execute callbacks at given intervals.
  */

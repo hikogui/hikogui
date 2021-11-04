@@ -4,8 +4,7 @@
 
 #include "toggle_widget.hpp"
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 toggle_widget::toggle_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
     super(window, parent, std::move(delegate))
@@ -85,5 +84,4 @@ void toggle_widget::draw_toggle_pip(draw_context const &context) noexcept
         layout(), positioned_pip_rectangle, forground_color_, corner_shapes{positioned_pip_rectangle.height() * 0.5f});
 }
 
-}
-} // namespace tt
+} // namespace tt::inline v1

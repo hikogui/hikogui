@@ -8,7 +8,7 @@
 #include <numbers>
 #include <array>
 
-namespace tt {
+namespace tt::inline v1 {
 
 template<typename T, int N>
 struct results {

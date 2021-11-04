@@ -8,7 +8,7 @@
 #include "speaker_mapping.hpp"
 #include <bit>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** The format of a stream of audio.
  */

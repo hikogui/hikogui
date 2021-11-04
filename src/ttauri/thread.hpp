@@ -16,7 +16,7 @@
 #include <chrono>
 #include <bit>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Set the name of the current thread.
  * This function will set the name of the thread so that it is available

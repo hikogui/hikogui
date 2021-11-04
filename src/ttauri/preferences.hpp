@@ -13,7 +13,7 @@
 
 #pragma once
 
-namespace tt {
+namespace tt::inline v1 {
 class preferences;
 
 namespace detail {
@@ -42,9 +42,9 @@ protected:
     jsonpath _path;
 
     /** Encode the value into a datum.
-    * 
-    * @return A datum representing the value, or undefined if same as the initial value.
-    */
+     *
+     * @return A datum representing the value, or undefined if same as the initial value.
+     */
     [[nodiscard]] virtual datum encode() const noexcept = 0;
 
     virtual void decode(datum const &data) = 0;
@@ -225,4 +225,4 @@ private:
     friend class detail::preference_item_base;
 };
 
-} // namespace tt
+} // namespace tt::inline v1

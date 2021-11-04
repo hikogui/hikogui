@@ -9,7 +9,7 @@
 #include "extent.hpp"
 #include <format>
 
-namespace tt {
+namespace tt::inline v1 {
 namespace geo {
 
 /** A high-level geometric point

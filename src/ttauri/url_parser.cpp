@@ -9,7 +9,7 @@
 #include "memory.hpp"
 #include <numeric>
 
-namespace tt {
+namespace tt::inline v1 {
 
 static bool is_urlchar_scheme(char c, size_t i)
 {

@@ -11,7 +11,7 @@
 #include <cmath>
 #include <array>
 
-namespace tt {
+namespace tt::inline v1 {
 
 constexpr matrix3 sRGB_to_XYZ =
     matrix3{

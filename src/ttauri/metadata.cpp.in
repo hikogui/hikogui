@@ -8,7 +8,7 @@
 #include <ttauri/strings.hpp>
 #include <atomic>
 
-namespace tt {
+namespace tt::inline v1 {
 
 static metadata library_metadata = metadata{
     "@TT_LIB_NAME@",

@@ -13,8 +13,7 @@
 #include "../cast.hpp"
 #include <array>
 
-namespace tt::pipeline_image {
-inline namespace v1 {
+namespace tt::inline v1::pipeline_image {
 
 device_shared::device_shared(gfx_device_vulkan const &device) : device(device)
 {
@@ -383,5 +382,4 @@ void device_shared::place_vertices(
     }
 }
 
-}
-} // namespace tt::pipeline_image
+} // namespace tt::inline v1::pipeline_image

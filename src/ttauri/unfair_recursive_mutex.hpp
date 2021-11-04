@@ -8,7 +8,7 @@
 #include "thread.hpp"
 #include <thread>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** An unfair recursive-mutex
  * This is a fast implementation of a recursive-mutex which does not fairly

@@ -8,16 +8,11 @@
 #include <tuple>
 #include <vector>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
-gfx_device::gfx_device(gfx_system &system) noexcept : system(system)
-{
-}
+gfx_device::gfx_device(gfx_system &system) noexcept : system(system) {}
 
-gfx_device::~gfx_device()
-{
-}
+gfx_device::~gfx_device() {}
 
 std::string gfx_device::string() const noexcept
 {
@@ -26,5 +21,4 @@ std::string gfx_device::string() const noexcept
     return std::format("{0:04x}:{1:04x} {2} {3}", vendorID, deviceID, deviceName, deviceUUID.uuid_string());
 }
 
-}
-}
+} // namespace tt::inline v1

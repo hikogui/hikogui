@@ -7,7 +7,7 @@
 #include "matrix.hpp"
 #include "identity.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 namespace geo {
 
 template<int D>

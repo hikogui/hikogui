@@ -10,7 +10,7 @@
 #include <concepts>
 #include <limits>
 
-namespace tt {
+namespace tt::inline v1 {
 
 template<typename T>
 concept numeric_limited = std::numeric_limits<T>::is_specialized;

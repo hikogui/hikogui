@@ -6,7 +6,7 @@
 
 #include <type_traits>
 
-namespace tt {
+namespace tt::inline v1 {
 
 constexpr uint32_t float16_bias = 15;
 constexpr uint32_t float32_bias = 127;

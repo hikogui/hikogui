@@ -9,7 +9,7 @@
 #include "console.hpp"
 #include <Windows.h>
 
-namespace tt {
+namespace tt::inline v1 {
 
 static void configure_current_working_directory() noexcept
 {

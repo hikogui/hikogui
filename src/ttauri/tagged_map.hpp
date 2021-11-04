@@ -10,7 +10,7 @@
 #include <typeindex>
 #include <array>
 
-namespace tt {
+namespace tt::inline v1 {
 
 template<typename T, basic_fixed_string... Tags>
 class tagged_map {

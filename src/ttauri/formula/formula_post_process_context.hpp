@@ -14,7 +14,7 @@
 #include <string>
 #include <string_view>
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct formula_post_process_context {
     using filter_type = std::function<std::string(std::string_view)>;

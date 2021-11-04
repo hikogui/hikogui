@@ -44,7 +44,7 @@
 #include <bit>
 #include <climits>
 
-namespace tt {
+namespace tt::inline v1 {
 
 tt_warning_push()
     // C4702 unreachable code: Suppressed due intrinsics and std::is_constant_evaluated()

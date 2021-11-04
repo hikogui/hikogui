@@ -11,7 +11,7 @@
 #include "../geometry/point.hpp"
 #include <algorithm>
 
-namespace tt {
+namespace tt::inline v1 {
 
 class sfloat_rg32 {
     alignas(sizeof(float) * 2)

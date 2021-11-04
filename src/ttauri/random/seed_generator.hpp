@@ -9,7 +9,7 @@
 #include <random>
 #include <concepts>
 
-namespace tt {
+namespace tt::inline v1 {
 
 class seed_generator {
 public:

@@ -6,8 +6,7 @@
 #include "keyboard_modifiers.hpp"
 #include <Windows.h>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 keyboard_virtual_key to_keyboard_virtual_key(int key_code, bool extended, keyboard_modifiers modifiers)
 {
@@ -128,15 +127,17 @@ keyboard_virtual_key to_keyboard_virtual_key(int key_code, bool extended, keyboa
     case VK_OEM_PERIOD: return keyboard_virtual_key::Period;
     case VK_OEM_2: return modifiers >= keyboard_modifiers::Shift ? keyboard_virtual_key::Question : keyboard_virtual_key::Slash;
     case VK_OEM_3: return modifiers >= keyboard_modifiers::Shift ? keyboard_virtual_key::Tilde : keyboard_virtual_key::Backtick;
-    case VK_OEM_4: return modifiers >= keyboard_modifiers::Shift ? keyboard_virtual_key::OpenBrace : keyboard_virtual_key::OpenBracket;
+    case VK_OEM_4:
+        return modifiers >= keyboard_modifiers::Shift ? keyboard_virtual_key::OpenBrace : keyboard_virtual_key::OpenBracket;
     case VK_OEM_5: return modifiers >= keyboard_modifiers::Shift ? keyboard_virtual_key::Pipe : keyboard_virtual_key::Backslash;
-    case VK_OEM_6: return modifiers >= keyboard_modifiers::Shift ? keyboard_virtual_key::CloseBrace : keyboard_virtual_key::CloseBracket;
-    case VK_OEM_7: return modifiers >= keyboard_modifiers::Shift ? keyboard_virtual_key::DoubleQuote : keyboard_virtual_key::Quote;
+    case VK_OEM_6:
+        return modifiers >= keyboard_modifiers::Shift ? keyboard_virtual_key::CloseBrace : keyboard_virtual_key::CloseBracket;
+    case VK_OEM_7:
+        return modifiers >= keyboard_modifiers::Shift ? keyboard_virtual_key::DoubleQuote : keyboard_virtual_key::Quote;
     case VK_PLAY: return keyboard_virtual_key::MediaPlayPause;
     case VK_OEM_CLEAR: return keyboard_virtual_key::Clear;
     default: return keyboard_virtual_key::Nul;
     }
 }
 
-}
-}
+} // namespace tt::inline v1

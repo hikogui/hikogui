@@ -6,7 +6,7 @@
 
 #include "formula_binary_operator_node.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct formula_member_node final : formula_binary_operator_node {
     mutable formula_post_process_context::method_type method;

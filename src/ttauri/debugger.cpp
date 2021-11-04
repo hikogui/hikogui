@@ -8,7 +8,7 @@
 #include "log.hpp"
 #include <exception>
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[noreturn]] void debugger_abort(std::string const &message) noexcept
 {

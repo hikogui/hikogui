@@ -6,7 +6,7 @@
 
 #include "skeleton_node.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct skeleton_for_node final: skeleton_node {
     std::unique_ptr<formula_node> name_expression;

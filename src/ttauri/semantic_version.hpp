@@ -7,7 +7,7 @@
 #include <string>
 #include <string_view>
 
-namespace tt {
+namespace tt::inline v1 {
 
 class semantic_version {
 public:

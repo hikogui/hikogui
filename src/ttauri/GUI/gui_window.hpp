@@ -24,8 +24,7 @@
 #include <memory>
 #include <mutex>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 class gfx_device;
 class gfx_system;
 class gfx_surface;
@@ -176,7 +175,7 @@ public:
      */
     [[nodiscard]] bool is_closed() const noexcept;
 
-        /** Get a reference to the window's content widget.
+    /** Get a reference to the window's content widget.
      * @see grid_widget
      * @return A reference to a grid_widget.
      */
@@ -221,8 +220,8 @@ public:
     virtual void normalize_window() = 0;
 
     /** Open the system menu of the window.
-    * 
-    * On windows 10 this is activated by pressing Alt followed by Spacebar.
+     *
+     * On windows 10 this is activated by pressing Alt followed by Spacebar.
      */
     virtual void open_system_menu() = 0;
 
@@ -405,5 +404,4 @@ private:
     friend class widget;
 };
 
-}
-} // namespace tt
+} // namespace tt::inline v1

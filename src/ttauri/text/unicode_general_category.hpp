@@ -6,8 +6,7 @@
 
 #include <cstdint>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 enum class unicode_general_category : uint8_t {
     Lu,
@@ -96,5 +95,4 @@ enum class unicode_general_category : uint8_t {
     return rhs < Zs or rhs == Co;
 }
 
-}
-} // namespace tt
+} // namespace tt::inline v1

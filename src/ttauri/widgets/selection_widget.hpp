@@ -20,19 +20,18 @@
 #include <optional>
 #include <future>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 /** A graphical control element that allows the user to choose only one of a
  * predefined set of mutually exclusive options.
- * 
+ *
  * @image html selection_widget.gif
- * 
+ *
  * The following example creates a selection widget with three options.
  * which will monitor and modify `value` to display the options from
  * the `option_list`. At application startup, value is zero and none
  * of the options is selected:
- * 
+ *
  * @snippet widgets/selection_example.cpp Create selection
  */
 class selection_widget final : public widget {
@@ -128,5 +127,4 @@ private:
     void draw_chevrons(draw_context const &context) noexcept;
 };
 
-}
-} // namespace tt
+} // namespace tt::inline v1

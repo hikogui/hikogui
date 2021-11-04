@@ -16,7 +16,7 @@
 #include <memory>
 #include <ostream>
 
-namespace tt {
+namespace tt::inline v1 {
 
 enum class audio_device_state { active, disabled, not_present, unplugged };
 

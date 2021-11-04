@@ -10,7 +10,7 @@
 #include "required.hpp"
 #include "cast.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** A static sized stack.
  * This stack is designed around the functionality of a std::vector, except the

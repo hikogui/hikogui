@@ -21,7 +21,7 @@
 #include "../strings.hpp"
 #include "../algorithm.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 static void parse_skeleton_hash(skeleton_parse_context &context)
 {

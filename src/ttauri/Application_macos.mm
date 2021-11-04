@@ -3,7 +3,7 @@
 #include "Application_macos.hpp"
 #import <Cocoa/Cocoa.h>
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] static std::vector<std::string> passArguments(int argc, char const * const *argv) noexcept
 {

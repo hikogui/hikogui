@@ -9,7 +9,7 @@
 #include "translate.hpp"
 #include "extent.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 namespace geo {
 
 template<int D>

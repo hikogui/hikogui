@@ -14,7 +14,7 @@
 #include <Windows.h>
 #include <mmdeviceapi.h>
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] std::unique_ptr<audio_system>
 audio_system::make_unique(tt::event_queue const &event_queue, std::weak_ptr<audio_system_delegate> delegate) noexcept

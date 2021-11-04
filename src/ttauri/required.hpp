@@ -8,7 +8,7 @@
 #include <string>
 #include <chrono>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /*! Invariant should be the default for variables.
  * C++ does have an invariant but it requires you to enter the 'const' keyword which

@@ -18,10 +18,10 @@ typedef UINT D3DDDI_VIDEO_PRESENT_SOURCE_ID;
 typedef UINT D3DDDI_VIDEO_PRESENT_TARGET_ID;
 
 typedef struct _D3DKMT_OPENADAPTERFROMHDC {
-    HDC                             hDc;            // in:  DC that maps to a single display
-    D3DKMT_HANDLE                   hAdapter;       // out: adapter handle
-    LUID                            AdapterLuid;    // out: adapter LUID
-    D3DDDI_VIDEO_PRESENT_SOURCE_ID  VidPnSourceId;  // out: VidPN source ID for that particular display
+    HDC hDc; // in:  DC that maps to a single display
+    D3DKMT_HANDLE hAdapter; // out: adapter handle
+    LUID AdapterLuid; // out: adapter LUID
+    D3DDDI_VIDEO_PRESENT_SOURCE_ID VidPnSourceId; // out: VidPN source ID for that particular display
 } D3DKMT_OPENADAPTERFROMHDC;
 
 typedef struct _D3DKMT_CLOSEADAPTER {
@@ -29,34 +29,34 @@ typedef struct _D3DKMT_CLOSEADAPTER {
 } D3DKMT_CLOSEADAPTER;
 
 typedef struct _D3DKMT_WAITFORVERTICALBLANKEVENT {
-    D3DKMT_HANDLE                   hAdapter;      // in: adapter handle
-    D3DKMT_HANDLE                   hDevice;       // in: device handle [Optional]
-    D3DDDI_VIDEO_PRESENT_SOURCE_ID  VidPnSourceId; // in: adapter's VidPN Source ID
+    D3DKMT_HANDLE hAdapter; // in: adapter handle
+    D3DKMT_HANDLE hDevice; // in: device handle [Optional]
+    D3DDDI_VIDEO_PRESENT_SOURCE_ID VidPnSourceId; // in: adapter's VidPN Source ID
 } D3DKMT_WAITFORVERTICALBLANKEVENT;
 
-typedef NTSTATUS(APIENTRY* PFND3DKMT_WAITFORVERTICALBLANKEVENT)(_In_ CONST D3DKMT_WAITFORVERTICALBLANKEVENT*);
-typedef NTSTATUS(APIENTRY* PFND3DKMT_OPENADAPTERFROMHDC)(_Inout_ D3DKMT_OPENADAPTERFROMHDC*);
-typedef NTSTATUS(APIENTRY* PFND3DKMT_CLOSEADAPTER)(_Inout_ D3DKMT_CLOSEADAPTER*);
+typedef NTSTATUS(APIENTRY *PFND3DKMT_WAITFORVERTICALBLANKEVENT)(_In_ CONST D3DKMT_WAITFORVERTICALBLANKEVENT *);
+typedef NTSTATUS(APIENTRY *PFND3DKMT_OPENADAPTERFROMHDC)(_Inout_ D3DKMT_OPENADAPTERFROMHDC *);
+typedef NTSTATUS(APIENTRY *PFND3DKMT_CLOSEADAPTER)(_Inout_ D3DKMT_CLOSEADAPTER *);
 
 PFND3DKMT_WAITFORVERTICALBLANKEVENT pfnD3DKMTWaitForVerticalBlankEvent;
-PFND3DKMT_OPENADAPTERFROMHDC		pfnD3DKMTOpenAdapterFromHdc;
-PFND3DKMT_CLOSEADAPTER		        pfnD3DKMTCloseAdapter;
+PFND3DKMT_OPENADAPTERFROMHDC pfnD3DKMTOpenAdapterFromHdc;
+PFND3DKMT_CLOSEADAPTER pfnD3DKMTCloseAdapter;
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
-vertical_sync_win32::vertical_sync_win32() noexcept :
-    vertical_sync()
+vertical_sync_win32::vertical_sync_win32() noexcept : vertical_sync()
 {
-    //Initialize driver hooks for D3DKMT.
+    // Initialize driver hooks for D3DKMT.
     _gdi = LoadLibraryW(L"Gdi32.dll");
     if (!_gdi) {
         tt_log_fatal("Error opening Gdi32.dll {}", get_last_error_message());
     }
 
     // Grab the necessary function pointers needed to assist us in detecting vertical blank interrupts.
-    pfnD3DKMTWaitForVerticalBlankEvent = (PFND3DKMT_WAITFORVERTICALBLANKEVENT) GetProcAddress(reinterpret_cast<HMODULE>(_gdi), "D3DKMTWaitForVerticalBlankEvent");
-    pfnD3DKMTOpenAdapterFromHdc = (PFND3DKMT_OPENADAPTERFROMHDC)GetProcAddress(reinterpret_cast<HMODULE>(_gdi), "D3DKMTOpenAdapterFromHdc");
+    pfnD3DKMTWaitForVerticalBlankEvent =
+        (PFND3DKMT_WAITFORVERTICALBLANKEVENT)GetProcAddress(reinterpret_cast<HMODULE>(_gdi), "D3DKMTWaitForVerticalBlankEvent");
+    pfnD3DKMTOpenAdapterFromHdc =
+        (PFND3DKMT_OPENADAPTERFROMHDC)GetProcAddress(reinterpret_cast<HMODULE>(_gdi), "D3DKMTOpenAdapterFromHdc");
     pfnD3DKMTCloseAdapter = (PFND3DKMT_CLOSEADAPTER)GetProcAddress(reinterpret_cast<HMODULE>(_gdi), "D3DKMTCloseAdapter");
 
     if (!pfnD3DKMTOpenAdapterFromHdc) {
@@ -94,7 +94,7 @@ void vertical_sync_win32::open_adapter() noexcept
         }
     }
 
-    tt_log_info("Found primary display device '{}'.", to_string(wstring(dd.DeviceName)));
+    tt_log_info("Found primary display device '{}'.", to_string(std::wstring(dd.DeviceName)));
 
     HDC hdc = CreateDCW(NULL, dd.DeviceName, NULL, NULL);
     if (hdc == NULL) {
@@ -130,8 +130,10 @@ void vertical_sync_win32::close_adapter() noexcept
     _adapter = 0;
 }
 
-std::chrono::nanoseconds vertical_sync_win32::average_frame_duration(utc_nanoseconds frame_time_point) noexcept 
+std::chrono::nanoseconds vertical_sync_win32::average_frame_duration(utc_nanoseconds frame_time_point) noexcept
 {
+    using namespace std::chrono_literals;
+
     ttlet currentDuration = _frame_duration_counter == 0 ? 16ms : frame_time_point - _previous_frame_time_point;
     _previous_frame_time_point = frame_time_point;
 
@@ -156,8 +158,7 @@ utc_nanoseconds vertical_sync_win32::wait() noexcept
 
         NTSTATUS status = pfnD3DKMTWaitForVerticalBlankEvent(&we);
         switch (status) {
-        case STATUS_SUCCESS:
-            break;
+        case STATUS_SUCCESS: break;
         case STATUS_DEVICE_REMOVED:
             tt_log_warning("gfx_device for vertical sync removed.");
             close_adapter();
@@ -170,6 +171,8 @@ utc_nanoseconds vertical_sync_win32::wait() noexcept
     }
 
     if (not _adapter) {
+        using namespace std::chrono_literals;
+
         std::this_thread::sleep_for(16ms);
     }
 
@@ -178,5 +181,4 @@ utc_nanoseconds vertical_sync_win32::wait() noexcept
     return now + average_frame_duration(now);
 }
 
-}
-}
+} // namespace tt::inline v1

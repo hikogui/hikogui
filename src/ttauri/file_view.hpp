@@ -8,7 +8,7 @@
 #include "resource_view.hpp"
 #include <span>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /*! Map a file into virtual memory.
  */

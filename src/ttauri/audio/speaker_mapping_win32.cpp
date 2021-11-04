@@ -8,7 +8,7 @@
 #include <ks.h>
 #include <ksmedia.h>
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] speaker_mapping speaker_mapping_from_win32(uint32_t from)
 {

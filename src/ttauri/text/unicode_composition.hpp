@@ -6,8 +6,7 @@
 
 #include "../assert.hpp"
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 class unicode_composition {
 public:
@@ -71,5 +70,4 @@ template<typename It>
  */
 [[nodiscard]] char32_t unicode_composition_find(char32_t first, char32_t second) noexcept;
 
-}
-}
+} // namespace tt::inline v1

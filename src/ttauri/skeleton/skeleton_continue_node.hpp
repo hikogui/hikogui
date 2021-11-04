@@ -6,7 +6,7 @@
 
 #include "skeleton_node.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct skeleton_continue_node final: skeleton_node {
     skeleton_continue_node(parse_location location) noexcept : skeleton_node(std::move(location)) {}

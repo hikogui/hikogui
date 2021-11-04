@@ -6,7 +6,7 @@
 
 #include "audio_block.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 class audio_device_delegate {
 public:

@@ -6,7 +6,7 @@
 
 #include <memory>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Class that hold either a weak_ptr or a unique_ptr
  * This class is to hold a weak_ptr, and potentially also

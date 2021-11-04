@@ -8,7 +8,7 @@
 #include <memory>
 #include <unordered_map>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /*! A file mapping.
  * A file mapping maps a region of bytes to a handle.

@@ -18,8 +18,7 @@
         [[unlikely]] return y; \
     }
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 struct Fixed_buf_t {
     big_uint32_buf_t x;
@@ -1448,5 +1447,4 @@ void true_type_font::parse_font_directory()
     }
 }
 
-}
-} // namespace tt
+} // namespace tt::inline v1

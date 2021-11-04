@@ -11,8 +11,7 @@
 #include <vk_mem_alloc.h>
 #include <span>
 
-namespace tt::pipeline_box {
-inline namespace v1 {
+namespace tt::inline v1::pipeline_box {
 
 /*! Pipeline for rendering simple box shaded quats.
  */
@@ -21,7 +20,7 @@ public:
     vspan<vertex> vertexBufferData;
 
     pipeline_box(gfx_surface const &surface);
-    ~pipeline_box() {};
+    ~pipeline_box(){};
 
     pipeline_box(const pipeline_box &) = delete;
     pipeline_box &operator=(const pipeline_box &) = delete;
@@ -49,5 +48,4 @@ private:
     void teardownvertexBuffers() override;
 };
 
-}
-}
+} // namespace tt::inline v1::pipeline_box

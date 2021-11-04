@@ -11,7 +11,7 @@
 #include <string_view>
 #include <optional>
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct skeleton_node;
 

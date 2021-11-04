@@ -5,7 +5,7 @@
 #include <memory_resource>
 #include <array>
 
-namespace tt::pmr {
+namespace tt::inline v1::pmr {
 
 /** A buffer with an attached memory allocator.
  */

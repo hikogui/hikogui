@@ -8,7 +8,7 @@
 
 #pragma once
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Exception thrown during parsing on an error.
  * This exception is often thrown due to an error in the syntax

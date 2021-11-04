@@ -11,7 +11,7 @@
 #include "scale.hpp"
 #include <type_traits>
 
-namespace tt {
+namespace tt::inline v1 {
 namespace geo {
 
 template<int D>

@@ -14,7 +14,7 @@
 #include <bit>
 #include <array>
 
-namespace tt {
+namespace tt::inline v1 {
 
 class sfloat_rgba16 {
     // Red, Green, Blue, Alpha in binary16 (native endian).

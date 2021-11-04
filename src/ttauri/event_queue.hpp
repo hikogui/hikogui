@@ -7,7 +7,7 @@
 #include "wfree_fifo.hpp"
 #include <concepts>
 
-namespace tt {
+namespace tt::inline v1 {
 namespace detail {
 
 class event_queue_item_base {

@@ -8,7 +8,7 @@
 #include <cmath>
 #include <array>
 
-namespace tt {
+namespace tt::inline v1 {
 
 constexpr matrix3 Rec2020_to_XYZ = color_primaries_to_RGBtoXYZ(
     0.3127f, 0.3290f,

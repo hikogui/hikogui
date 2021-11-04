@@ -7,8 +7,7 @@
 #include "gfx_system.hpp"
 #include <vulkan/vulkan.hpp>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 /** Vulkan gfx_device controller.
  * Manages Vulkan device and a set of Windows.
@@ -76,5 +75,4 @@ public:
         void *pUserData);
 };
 
-}
-} // namespace tt
+} // namespace tt::inline v1

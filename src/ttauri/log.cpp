@@ -19,7 +19,7 @@
 #include <chrono>
 #include <thread>
 
-namespace tt {
+namespace tt::inline v1 {
 
 void log::log_thread_main(std::stop_token stop_token) noexcept
 {
@@ -100,4 +100,4 @@ void log::flush() noexcept
     } while (wrote_message);
 }
 
-} // namespace tt
+} // namespace tt::inline v1

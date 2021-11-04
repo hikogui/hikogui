@@ -7,10 +7,9 @@
 #include "abstract_button_widget.hpp"
 #include "default_button_delegate.hpp"
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
-/** A GUI widget that permits the user to make a binary choice. 
+/** A GUI widget that permits the user to make a binary choice.
  *
  * A toggle is very similar to a `checkbox_widget`. The
  * semantic difference between a checkbox and a toggle is:
@@ -98,5 +97,4 @@ private:
     void draw_toggle_pip(draw_context const &context) noexcept;
 };
 
-}
-} // namespace tt
+} // namespace tt::inline v1

@@ -12,7 +12,7 @@
 #include <string_view>
 #include <iostream>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** A parser to parse command line arguments.
  */

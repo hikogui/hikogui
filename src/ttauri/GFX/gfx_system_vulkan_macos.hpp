@@ -7,10 +7,9 @@
 #include "gfx_system_vulkan.hpp"
 #include <span>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
-class gfx_system_vulkan_macos final: public gfx_system_vulkan {
+class gfx_system_vulkan_macos final : public gfx_system_vulkan {
 public:
     gfx_system_vulkan_macos(gui_system_delegate *delegate);
     ~gfx_system_vulkan_macos();
@@ -20,11 +19,11 @@ public:
     gfx_system_vulkan_macos(gfx_system_vulkan_macos &&) = delete;
     gfx_system_vulkan_macos &operator=(gfx_system_vulkan_macos &&) = delete;
 
-    vk::ResultValueType<vk::SurfaceKHR>::type createMetalSurfaceKHR(const vk::MetalSurfaceCreateInfoEXT& createInfo) const {
+    vk::ResultValueType<vk::SurfaceKHR>::type createMetalSurfaceKHR(const vk::MetalSurfaceCreateInfoEXT &createInfo) const
+    {
         tt_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.createMetalSurfaceEXT(createInfo);
     }
 };
 
-}
-}
+} // namespace tt::inline v1

@@ -7,7 +7,7 @@
 #include "log.hpp"
 #include <algorithm>
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] timer *timer::subsystem_init() noexcept
 {

@@ -9,7 +9,7 @@
 #include <vector>
 #include <string_view>
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct formula_parse_context {
     using const_iterator = typename std::vector<token_t>::const_iterator;

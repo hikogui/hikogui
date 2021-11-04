@@ -12,7 +12,7 @@
 #include "utils.hpp"
 #include <exception>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Assert if expression is true.
  * Independent of built type this macro will always check and abort on fail.

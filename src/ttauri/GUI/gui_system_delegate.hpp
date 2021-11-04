@@ -5,8 +5,7 @@
 
 #include <optional>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 class gui_system;
 
 class gui_system_delegate {
@@ -18,8 +17,10 @@ public:
     /** This function is called when the last window is closed.
      * @param An exit code if the gui-system's event-loop should exit; otherwise empty.
      */
-    [[nodiscard]] virtual std::optional<int> last_window_closed(gui_system &self) { return 0; };
+    [[nodiscard]] virtual std::optional<int> last_window_closed(gui_system &self)
+    {
+        return 0;
+    };
 };
 
-}
-}
+} // namespace tt::inline v1

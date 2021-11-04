@@ -6,7 +6,7 @@
 
 #include "formula_unary_operator_node.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct formula_logical_not_node final : formula_unary_operator_node {
     formula_logical_not_node(parse_location location, std::unique_ptr<formula_node> rhs) :

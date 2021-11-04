@@ -8,7 +8,7 @@
 #include <span>
 #include <vector>
 
-namespace tt {
+namespace tt::inline v1 {
 
 template<typename T>
 class huffman_tree {

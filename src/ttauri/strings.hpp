@@ -20,7 +20,7 @@
 #include <type_traits>
 #include <cstdlib>
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] constexpr bool is_upper(char c) noexcept
 {

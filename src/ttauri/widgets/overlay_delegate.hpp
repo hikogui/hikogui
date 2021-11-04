@@ -7,8 +7,7 @@
 #include <memory>
 #include <functional>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 class overlay_widget;
 
 class overlay_delegate {
@@ -18,5 +17,4 @@ public:
     virtual void deinit(overlay_widget &sender) noexcept {}
 };
 
-}
-} // namespace tt
+} // namespace tt::inline v1

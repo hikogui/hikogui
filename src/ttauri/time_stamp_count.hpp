@@ -18,7 +18,7 @@
 #include <x86intrin.h>
 #endif
 
-namespace tt {
+namespace tt::inline v1 {
 
 /**
  * Since Window's 10 QueryPerformanceCounter() counts at only 10MHz which

@@ -5,8 +5,7 @@
 #include "ttauri/text/unicode_db.hpp"
 #include <exception>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 constexpr auto _unicode_description_find(char32_t code_point) noexcept
 {
@@ -102,5 +101,4 @@ constexpr unicode_description const &Plane_16_Private_Use_unicode_description = 
     }
 }
 
-}
-} // namespace tt
+} // namespace tt::inline v1

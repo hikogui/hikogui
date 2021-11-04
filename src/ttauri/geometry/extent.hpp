@@ -7,7 +7,7 @@
 #include "vector.hpp"
 #include "../rapid/numeric_array.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 namespace geo {
 template<int D>
 class scale;

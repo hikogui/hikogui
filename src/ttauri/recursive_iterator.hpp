@@ -8,7 +8,7 @@
 #include <compare>
 #include <iterator>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** An iterator which recursively iterates through nested containers.
  * Currently only recurses through two levels of containers.

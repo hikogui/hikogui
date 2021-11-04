@@ -12,8 +12,7 @@
 #include "../geometry/transform.hpp"
 #include <utility>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 enum class KeyboardState : uint8_t {
     Idle = 0x00,
@@ -22,21 +21,23 @@ enum class KeyboardState : uint8_t {
     NumLock = 0x04,
 };
 
-[[nodiscard]] constexpr KeyboardState operator|(KeyboardState lhs, KeyboardState rhs) noexcept {
+[[nodiscard]] constexpr KeyboardState operator|(KeyboardState lhs, KeyboardState rhs) noexcept
+{
     return static_cast<KeyboardState>(static_cast<uint8_t>(lhs) | static_cast<uint8_t>(rhs));
 }
 
-constexpr KeyboardState &operator|=(KeyboardState &lhs, KeyboardState rhs) noexcept {
+constexpr KeyboardState &operator|=(KeyboardState &lhs, KeyboardState rhs) noexcept
+{
     lhs = lhs | rhs;
     return lhs;
 }
 
-[[nodiscard]] constexpr bool operator>=(KeyboardState lhs, KeyboardState rhs) noexcept {
+[[nodiscard]] constexpr bool operator>=(KeyboardState lhs, KeyboardState rhs) noexcept
+{
     ttlet lhs_ = static_cast<uint8_t>(lhs);
     ttlet rhs_ = static_cast<uint8_t>(rhs);
     return (lhs_ & rhs_) == rhs_;
 }
-
 
 struct keyboard_event {
     enum class Type : uint8_t {
@@ -52,20 +53,24 @@ struct keyboard_event {
     tt::grapheme grapheme;
     keyboard_key key;
 
-    keyboard_event(Type type=Type::Idle) noexcept :
-        type(type), state(), grapheme(), key() {}
+    keyboard_event(Type type = Type::Idle) noexcept : type(type), state(), grapheme(), key() {}
 
     /** Create a key-key keyboard event.
      */
     keyboard_event(KeyboardState state, keyboard_modifiers modifiers, keyboard_virtual_key key) noexcept :
-        type(Type::Key), state(state), grapheme(), key(modifiers, key) {}
+        type(Type::Key), state(state), grapheme(), key(modifiers, key)
+    {
+    }
 
     keyboard_event(tt::grapheme grapheme, bool full = true) noexcept :
-        type(full ? Type::grapheme : Type::Partialgrapheme), state(), grapheme(std::move(grapheme)), key() {}
+        type(full ? Type::grapheme : Type::Partialgrapheme), state(), grapheme(std::move(grapheme)), key()
+    {
+    }
 
     [[nodiscard]] std::vector<command> const &getCommands() const noexcept;
 
-    [[nodiscard]] friend std::string to_string(keyboard_event const &rhs) noexcept {
+    [[nodiscard]] friend std::string to_string(keyboard_event const &rhs) noexcept
+    {
         auto r = std::string{"<keyboard_event "};
 
         switch (rhs.type) {
@@ -86,10 +91,10 @@ struct keyboard_event {
         return r;
     }
 
-    friend std::ostream &operator<<(std::ostream &lhs, keyboard_event const &rhs) {
+    friend std::ostream &operator<<(std::ostream &lhs, keyboard_event const &rhs)
+    {
         return lhs << to_string(rhs);
     }
 };
 
-}
-}
+} // namespace tt::inline v1

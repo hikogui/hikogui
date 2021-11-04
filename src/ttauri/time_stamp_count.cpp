@@ -6,7 +6,7 @@
 #include <array>
 #include <cstdint>
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] ssize_t time_stamp_count::cpu_id_fallback() const noexcept
 {

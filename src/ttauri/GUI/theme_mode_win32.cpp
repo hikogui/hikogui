@@ -11,9 +11,7 @@
 #include <winreg.h>
 #include <Uxtheme.h>
 
-
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 [[nodiscard]] theme_mode read_os_theme_mode() noexcept
 {
@@ -21,15 +19,7 @@ inline namespace v1 {
     ttlet name = tt::to_wstring("AppsUseLightTheme");
     DWORD result;
     DWORD result_length = sizeof(result);
-    auto status = RegGetValueW(
-        HKEY_CURRENT_USER,
-        subkey.c_str(),
-        name.c_str(),
-        RRF_RT_DWORD,
-        NULL,
-        &result,
-        &result_length
-    );
+    auto status = RegGetValueW(HKEY_CURRENT_USER, subkey.c_str(), name.c_str(), RRF_RT_DWORD, NULL, &result, &result_length);
 
     switch (status) {
     case ERROR_SUCCESS:
@@ -44,13 +34,11 @@ inline namespace v1 {
         auto reg_path = "HKEY_CURRENT_USER\\" + tt::to_string(subkey) + "\\" + tt::to_string(name);
 
         tt_log_error("Missing {} registry entry: 0x{:08x}", reg_path, status);
-        } return theme_mode::light;
-
-    default:
-        tt_log_fatal("Could get AppsUseLightTheme registry value. {:08x}", status);
     }
+        return theme_mode::light;
 
+    default: tt_log_fatal("Could get AppsUseLightTheme registry value. {:08x}", status);
+    }
 }
 
-}
-}
+} // namespace tt::inline v1

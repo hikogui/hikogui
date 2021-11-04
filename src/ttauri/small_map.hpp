@@ -10,7 +10,7 @@
 #include <optional>
 #include <type_traits>
 
-namespace tt {
+namespace tt::inline v1 {
 
 template<typename K, typename V, int N>
 class small_map {

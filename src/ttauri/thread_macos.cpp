@@ -8,7 +8,7 @@
 
 #include <pthread.h>
 
-namespace tt {
+namespace tt::inline v1 {
 
 static std::atomic<uint32_t> thread_id_count = 0;
 

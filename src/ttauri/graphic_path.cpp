@@ -8,7 +8,7 @@
 #include "pixel_map.hpp"
 #include "required.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 ssize_t graphic_path::numberOfContours() const noexcept
 {

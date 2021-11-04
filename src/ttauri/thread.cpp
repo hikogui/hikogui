@@ -8,7 +8,7 @@
 #include "GUI/gui_system.hpp"
 #include <bit>
 
-namespace tt {
+namespace tt::inline v1 {
 
 std::vector<bool> set_thread_affinity(size_t cpu_id)
 {

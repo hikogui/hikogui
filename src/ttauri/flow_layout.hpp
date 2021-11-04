@@ -11,7 +11,7 @@
 #include <optional>
 #include <numeric>
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct flow_layout_item {
     constexpr flow_layout_item() noexcept :

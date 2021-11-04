@@ -8,8 +8,7 @@
 #include <memory>
 #include <functional>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 template<axis>
 class row_column_widget;
 
@@ -24,5 +23,4 @@ public:
 using row_delegate = row_column_delegate<axis::row>;
 using column_delegate = row_column_delegate<axis::column>;
 
-}
-} // namespace tt
+} // namespace tt::inline v1

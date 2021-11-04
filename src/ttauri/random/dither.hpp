@@ -7,7 +7,7 @@
 #include "xorshift128p.hpp"
 #include "../required.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** An object that create dither values to add to samples before rounding.
  *

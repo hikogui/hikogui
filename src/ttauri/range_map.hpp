@@ -11,7 +11,7 @@
 #include <algorithm>
 #include <set>
 
-namespace tt {
+namespace tt::inline v1 {
 
 template<typename Key, typename Value>
 class range_map {

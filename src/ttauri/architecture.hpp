@@ -11,7 +11,7 @@
 #include <TargetConditionals.h>
 #endif
 
-namespace tt {
+namespace tt::inline v1 {
 
 #define TT_BT_DEBUG 'D'
 #define TT_BT_RELEASE 'R'

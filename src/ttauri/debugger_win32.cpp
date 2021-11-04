@@ -7,7 +7,7 @@
 #include <Windows.h>
 #include <debugapi.h>
 
-namespace tt {
+namespace tt::inline v1 {
 
 bool debugger_is_present() noexcept {
     return IsDebuggerPresent();

@@ -13,7 +13,7 @@
 #include <sys/types.h>
 #include <sys/dir.h>
 
-namespace tt {
+namespace tt::inline v1 {
 
 std::vector<std::string> URL::filenamesByScanningDirectory(std::string_view path) noexcept
 {

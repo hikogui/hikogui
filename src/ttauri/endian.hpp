@@ -13,7 +13,7 @@
 #endif
 #include <bit>
 
-namespace tt {
+namespace tt::inline v1 {
 
 template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>,int> = 0>
 [[nodiscard]] T byte_swap(T x) noexcept

@@ -15,7 +15,7 @@
 #include <ostream>
 #include <mutex>
 
-namespace tt {
+namespace tt::inline v1 {
 struct url_parts;
 class resource_view;
 

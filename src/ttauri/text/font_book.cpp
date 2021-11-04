@@ -10,8 +10,7 @@
 #include <ranges>
 #include <vector>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 font_book::font_book(std::vector<URL> const &font_directories)
 {
@@ -287,5 +286,4 @@ void font_book::post_process() noexcept
     return glyph_ids;
 }
 
-}
-}; // namespace tt
+} // namespace tt::inline v1

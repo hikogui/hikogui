@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** A row of pixels.
  */

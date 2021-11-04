@@ -10,7 +10,7 @@
 #include <array>
 #include <optional>
 
-namespace tt {
+namespace tt::inline v1 {
 
 // B(t)=(P_{2}-P_{1})t+P_{1}
 template<typename T>

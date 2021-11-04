@@ -21,7 +21,7 @@
 #include <memory>
 #include <mutex>
 
-namespace tt {
+namespace tt::inline v1 {
 namespace detail {
 
 class counter {

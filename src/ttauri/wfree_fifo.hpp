@@ -8,7 +8,7 @@
 #include <memory>
 #include <array>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** A wait-free multiple-producer/single-consumer fifo designed for absolute performance.
  * Because of performance reasons the ring-buffer is 64kByte.

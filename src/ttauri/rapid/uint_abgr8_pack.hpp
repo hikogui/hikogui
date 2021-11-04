@@ -7,7 +7,7 @@
 #include "../geometry/corner_shapes.hpp"
 #include <algorithm>
 
-namespace tt {
+namespace tt::inline v1 {
 
 class uint_abgr8_pack {
     uint32_t v;

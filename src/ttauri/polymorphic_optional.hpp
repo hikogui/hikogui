@@ -11,7 +11,7 @@
 #include <optional>
 #include <type_traits>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Polymorphic optional.
  * This optional container can hold an polymorphic value.

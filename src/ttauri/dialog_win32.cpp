@@ -8,7 +8,7 @@
 #include <Windows.h>
 #include <WinUser.h>
 
-namespace tt {
+namespace tt::inline v1 {
 
 bool _dialog(dialog_type type, const char *title, std::string_view text)
 {

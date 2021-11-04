@@ -4,7 +4,7 @@
 
 #include "audio_sample_format.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 [[nodiscard]] float audio_sample_format::pack_multiplier() const noexcept
 {

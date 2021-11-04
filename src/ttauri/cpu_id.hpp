@@ -15,7 +15,7 @@
 #error "Unsuported compiler for x64 cpu_id"
 #endif
 
-namespace tt {
+namespace tt::inline v1 {
 
 #if TT_COMPILER == TT_CC_MSVC
 std::array<uint32_t,4> cpu_id_x64_result cpu_id_x64(uint32_t cpu_id_leaf)

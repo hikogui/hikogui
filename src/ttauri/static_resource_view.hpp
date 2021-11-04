@@ -10,7 +10,7 @@
 #include <cstddef>
 #include <unordered_map>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** A resource that was included in the executable.
  */

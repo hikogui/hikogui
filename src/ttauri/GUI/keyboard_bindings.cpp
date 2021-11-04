@@ -7,8 +7,7 @@
 #include "../command.hpp"
 #include "../log.hpp"
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 void keyboard_bindings::load_bindings(URL url, bool system_binding)
 {
@@ -18,9 +17,10 @@ void keyboard_bindings::load_bindings(URL url, bool system_binding)
         tt_parse_check(data.contains("bindings"), "Missing key 'bindings' at top level.");
 
         ttlet binding_list = data["bindings"];
-        tt_parse_check(holds_alternative<datum::vector_type>(binding_list), "Expecting array value for key 'bindings' at top level.");
+        tt_parse_check(
+            holds_alternative<datum::vector_type>(binding_list), "Expecting array value for key 'bindings' at top level.");
 
-        for (ttlet &binding: binding_list) {
+        for (ttlet &binding : binding_list) {
             tt_parse_check(holds_alternative<datum::map_type>(binding), "Expecting object for a binding, got {}", binding);
 
             tt_parse_check(
@@ -59,5 +59,4 @@ void keyboard_bindings::load_bindings(URL url, bool system_binding)
     }
 }
 
-}
-} // namespace tt
+} // namespace tt::inline v1

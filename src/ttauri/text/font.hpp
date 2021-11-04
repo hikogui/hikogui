@@ -20,9 +20,9 @@
 #include <span>
 #include <vector>
 #include <map>
+#include <string>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 /*! A font.
  * This class has information on how to shape text and
@@ -102,7 +102,7 @@ public:
         if (glyphs.is_single()) [[likely]] {
             ttlet index = size_t{glyphs.get_single()};
             if (index >= _single_glyph_atlas_table.size()) [[unlikely]] {
-                 _single_glyph_atlas_table.resize(index + 1);
+                _single_glyph_atlas_table.resize(index + 1);
             }
             return _single_glyph_atlas_table[index];
 
@@ -133,20 +133,15 @@ public:
 
 private:
     mutable std::vector<glyph_atlas_info> _single_glyph_atlas_table;
-    mutable hash_map<glyph_ids,glyph_atlas_info> _multi_glyph_atlas_table;
+    mutable hash_map<glyph_ids, glyph_atlas_info> _multi_glyph_atlas_table;
 };
 
-} // namespace tt
-
-namespace std {
+} // namespace tt::inline v1
 
 template<typename CharT>
-struct formatter<tt::font, CharT> : formatter<std::string_view, CharT> {
+struct std::formatter<tt::font, CharT> : formatter<std::string_view, CharT> {
     auto format(tt::font const &t, auto &fc)
     {
         return formatter<string_view, CharT>::format(to_string(t), fc);
     }
 };
-
-}
-} // namespace std

@@ -6,7 +6,7 @@
 
 #include "skeleton_node.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct skeleton_function_node final: skeleton_node {
     std::string name;

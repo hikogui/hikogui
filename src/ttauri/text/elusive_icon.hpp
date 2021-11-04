@@ -4,8 +4,7 @@
 
 #pragma once
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 enum class elusive_icon : char32_t {
     AddressBook = 0xf102,
@@ -314,5 +313,4 @@ enum class elusive_icon : char32_t {
     ZoomOut = 0xf230,
 };
 
-}
 }

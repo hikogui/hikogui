@@ -9,7 +9,7 @@
 #include <Windows.h>
 #include <Synchapi.h>
 
-namespace tt {
+namespace tt::inline v1 {
 
 void set_thread_name(std::string_view name)
 {

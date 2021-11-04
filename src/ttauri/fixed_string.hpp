@@ -8,7 +8,7 @@
 #include <string_view>
 #include <format>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /**
  *

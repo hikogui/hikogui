@@ -8,7 +8,7 @@
 #include "../color/sRGB.hpp"
 #include <algorithm>
 
-namespace tt {
+namespace tt::inline v1 {
 
 class srgb_abgr8_pack {
     uint32_t v;

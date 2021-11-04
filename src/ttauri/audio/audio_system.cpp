@@ -9,7 +9,7 @@
 #include "audio_system_win32.hpp"
 #endif
 
-namespace tt {
+namespace tt::inline v1 {
 
 audio_system::audio_system(tt::event_queue const &event_queue, std::weak_ptr<audio_system_delegate> delegate) :
     _event_queue(event_queue), _delegate(std::move(delegate))

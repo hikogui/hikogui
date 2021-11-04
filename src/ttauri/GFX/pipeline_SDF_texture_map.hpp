@@ -1,4 +1,5 @@
 // Copyright Take Vos 2020.
+// Copyright Take Vos 2020.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -9,14 +10,10 @@
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 class gfx_device_vulkan;
-}
-}
 
-namespace tt::pipeline_SDF {
-inline namespace v1 {
+namespace pipeline_SDF {
 
 struct texture_map {
     vk::Image image;
@@ -28,5 +25,5 @@ struct texture_map {
     void transitionLayout(const gfx_device_vulkan &device, vk::Format format, vk::ImageLayout nextLayout);
 };
 
-}
-}
+} // namespace pipeline_SDF
+} // namespace tt::inline v1

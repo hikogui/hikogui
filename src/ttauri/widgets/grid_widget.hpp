@@ -11,8 +11,7 @@
 #include "../weak_or_unique_ptr.hpp"
 #include <memory>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 /** A GUI widget that lays out child-widgets in a grid with variable sized cells.
  *
@@ -84,7 +83,7 @@ public:
     /// @privatesection
     [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
     {
-        for (ttlet &cell: _cells) {
+        for (ttlet &cell : _cells) {
             co_yield cell.widget.get();
         }
     }
@@ -128,5 +127,4 @@ private:
     widget &add_widget(size_t column_nr, size_t row_nr, std::unique_ptr<widget> child_widget) noexcept;
 };
 
-}
-} // namespace tt
+} // namespace tt::inline v1

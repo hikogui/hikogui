@@ -9,7 +9,7 @@
 #include "concepts.hpp"
 #include <cmath>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** A type that gets animated between two values.
  */

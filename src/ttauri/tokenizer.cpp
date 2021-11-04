@@ -4,7 +4,7 @@
 
 #include "tokenizer.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 enum class tokenizer_state_t: uint8_t {
     Initial,

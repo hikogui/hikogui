@@ -7,8 +7,7 @@
 #include "unicode_grapheme_cluster_break.hpp"
 #include "unicode_description.hpp"
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 struct grapheme_break_state {
     unicode_grapheme_cluster_break previous = unicode_grapheme_cluster_break::Other;
@@ -33,7 +32,6 @@ struct grapheme_break_state {
  * @return true when a grapheme break exists before the current code-point.
  */
 [[nodiscard]] bool breaks_grapheme(char32_t code_point, grapheme_break_state &state) noexcept;
-
 
 /** Wrap lines in text that are too wide.
  * This algorithm may modify white-space in text and change them into line seperators.
@@ -88,5 +86,4 @@ void wrap_lines(auto first, auto last, float max_width, auto get_width, auto get
     }
 }
 
-}
-}
+} // namespace tt::inline v1

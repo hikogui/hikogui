@@ -4,15 +4,8 @@
 
 #pragma once
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
-enum class mouse_cursor {
-    None,
-    Default,
-    TextEdit,
-    Button
-};
+enum class mouse_cursor { None, Default, TextEdit, Button };
 
-}
 }

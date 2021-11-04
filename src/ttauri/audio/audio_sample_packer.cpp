@@ -12,7 +12,7 @@
 #include <cstdint>
 #include <tuple>
 
-namespace tt {
+namespace tt::inline v1 {
 
 static void store_sample(
     int32_t int_sample,

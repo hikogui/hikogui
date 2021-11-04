@@ -5,15 +5,14 @@
 #include "pipeline_image_texture_map.hpp"
 #include "gfx_device_vulkan.hpp"
 
-namespace tt::pipeline_image {
-inline namespace v1 {
+namespace tt::inline v1::pipeline_image {
 
-void texture_map::transitionLayout(const gfx_device_vulkan &device, vk::Format format, vk::ImageLayout nextLayout) {
+void texture_map::transitionLayout(const gfx_device_vulkan &device, vk::Format format, vk::ImageLayout nextLayout)
+{
     if (layout != nextLayout) {
         device.transition_layout(image, format, layout, nextLayout);
         layout = nextLayout;
     }
 }
 
-}
-}
+} // namespace tt::inline v1::pipeline_image

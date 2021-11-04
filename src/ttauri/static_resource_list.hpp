@@ -10,7 +10,7 @@
 #include <atomic>
 #include <optional>
 
-namespace tt {
+namespace tt::inline v1 {
 struct static_resource_item;
 
 /** The start of the list of static resource items.

@@ -12,7 +12,7 @@
 #include <memory>
 #include <thread>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** An unfair mutex
  * This is a fast implementation of a mutex which does not fairly arbitrate

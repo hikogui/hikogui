@@ -20,21 +20,15 @@
 #include <mutex>
 #include <unordered_map>
 
-namespace tt {
+namespace tt::inline v1 {
 template<typename T>
 class pixel_map;
 class mat;
-
-inline namespace v1 {
 class gfx_device_vulkan;
 class shaped_text;
 struct attributed_glyph;
-} // namespace tt
-}
 
-namespace tt::pipeline_SDF {
-inline namespace v1 {
-
+namespace pipeline_SDF {
 struct Image;
 struct vertex;
 
@@ -159,4 +153,5 @@ private:
     }
 };
 
-}} // namespace tt::pipeline_SDF
+} // namespace pipeline_SDF
+} // namespace tt::inline v1

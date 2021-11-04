@@ -6,7 +6,7 @@
 
 #pragma once
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** A network message or stream buffer.
  */

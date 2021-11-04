@@ -4,14 +4,8 @@
 
 #include "pipeline.hpp"
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
-pipeline::pipeline(gfx_surface const &surface) :
-    surface(surface)
-{
-}
+pipeline::pipeline(gfx_surface const &surface) : surface(surface) {}
 
-
-}
-}
+} // namespace tt::inline v1

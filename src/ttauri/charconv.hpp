@@ -7,7 +7,7 @@
 #include <concepts>
 #include <charconv>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Convert integer to string.
  * This function bypasses std::locale.

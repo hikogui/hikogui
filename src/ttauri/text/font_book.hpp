@@ -19,8 +19,7 @@
 #include <new>
 #include <atomic>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 
 /** font_book keeps track of multiple fonts.
  * The font_book is instantiated during application startup
@@ -175,5 +174,4 @@ private:
     void create_family_name_fallback_chain() noexcept;
 };
 
-}
-} // namespace tt
+} // namespace tt::inline v1

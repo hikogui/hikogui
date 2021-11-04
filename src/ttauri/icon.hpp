@@ -12,7 +12,7 @@
 #include "text/ttauri_icon.hpp"
 #include <variant>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** An image, in different formats.
  */

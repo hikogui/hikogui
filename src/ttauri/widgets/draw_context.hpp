@@ -17,13 +17,12 @@
 #include "../vspan.hpp"
 #include "widget_layout.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 class gfx_device;
 class gfx_device_vulkan;
 class shaped_text;
 class font_glyph_ids;
 struct paged_image;
-inline namespace v1 {
 
 /** The side where the border is drawn.
  */
@@ -160,5 +159,4 @@ private:
         const noexcept;
 };
 
-}
-} // namespace tt
+} // namespace tt::inline v1

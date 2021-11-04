@@ -11,7 +11,7 @@
 #include <array>
 #include <tuple>
 
-namespace tt {
+namespace tt::inline v1 {
 
 class trace_base {
 public:

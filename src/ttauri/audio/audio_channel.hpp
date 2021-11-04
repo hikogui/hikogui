@@ -6,7 +6,7 @@
 
 #include "audio_direction.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 class audio_channel {
 public:

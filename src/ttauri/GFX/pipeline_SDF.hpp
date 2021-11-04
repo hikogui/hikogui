@@ -11,8 +11,7 @@
 #include <vk_mem_alloc.h>
 #include <span>
 
-namespace tt::pipeline_SDF {
-inline namespace v1 {
+namespace tt::inline v1::pipeline_SDF {
 
 /*! Pipeline for rendering backings of widgets.
  * Maintains texture map atlases and sharing for all views.
@@ -22,7 +21,7 @@ public:
     vspan<vertex> vertexBufferData;
 
     pipeline_SDF(gfx_surface const &surface);
-    ~pipeline_SDF() {};
+    ~pipeline_SDF(){};
 
     pipeline_SDF(const pipeline_SDF &) = delete;
     pipeline_SDF &operator=(const pipeline_SDF &) = delete;
@@ -52,5 +51,4 @@ private:
     void teardownvertexBuffers() override;
 };
 
-}
-}
+} // namespace tt::inline v1::pipeline_SDF

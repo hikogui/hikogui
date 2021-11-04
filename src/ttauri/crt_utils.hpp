@@ -9,7 +9,7 @@
 
 #include <tuple>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** Start the ttauri system.
  *

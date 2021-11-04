@@ -13,7 +13,7 @@
 #include "rapid/sdf_r8.hpp"
 #include <vector>
 
-namespace tt {
+namespace tt::inline v1 {
 
 struct bezier_curve;
 template<typename T>

@@ -7,8 +7,7 @@
 #include <memory>
 #include <functional>
 
-namespace tt {
-inline namespace v1 {
+namespace tt::inline v1 {
 class tab_widget;
 
 class tab_delegate {
@@ -25,9 +24,7 @@ public:
         return callback_ptr;
     }
 
-    virtual void unsubscribe(tab_widget &sender, callback_ptr_type const &callback_ptr) noexcept
-    {
-    }
+    virtual void unsubscribe(tab_widget &sender, callback_ptr_type const &callback_ptr) noexcept {}
 
     /** Subscribe a callback for notifying the widget of a data change.
      */
@@ -38,9 +35,7 @@ public:
         return subscribe(sender, std::make_shared<callback_type>(std::forward<Callback>(callback)));
     }
 
-    virtual void add_tab(tab_widget &sender, size_t key, size_t index) noexcept
-    {
-    }
+    virtual void add_tab(tab_widget &sender, size_t key, size_t index) noexcept {}
 
     virtual ssize_t index(tab_widget &sender) noexcept
     {
@@ -48,6 +43,4 @@ public:
     }
 };
 
-}
-} // namespace tt
-
+} // namespace tt::inline v1

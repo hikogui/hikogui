@@ -12,7 +12,7 @@
 #include <type_traits>
 #include <memory>
 
-namespace tt {
+namespace tt::inline v1 {
 
 /** A label consisting of localizable text and an icon.
  *

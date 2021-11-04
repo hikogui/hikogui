@@ -23,7 +23,7 @@
 #include "../required.hpp"
 #include "../float16.hpp"
 
-namespace tt {
+namespace tt::inline v1 {
 
 inline __m128 _mm_cvtph_ps_sse2(__m128i value) noexcept
 {

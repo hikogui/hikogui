@@ -12,7 +12,7 @@
 #include <typeinfo>
 #include <typeindex>
 
-namespace tt {
+namespace tt::inline v1 {
 
 template<typename T, basic_fixed_string Tag, ssize_t Max = std::numeric_limits<T>::max() - 1>
 class tagged_id {

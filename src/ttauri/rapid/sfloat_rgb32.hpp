@@ -7,7 +7,7 @@
 #include "numeric_array.hpp"
 #include <algorithm>
 
-namespace tt {
+namespace tt::inline v1 {
 
 class sfloat_rgb32 {
     // Red, Green, Blue in binary32 (native endian).

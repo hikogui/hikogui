@@ -11,7 +11,7 @@
 #include <type_traits>
 #include <limits>
 
-namespace tt {
+namespace tt::inline v1 {
 
 enum class on_overflow_t {
     //! On overflow throw an exception.

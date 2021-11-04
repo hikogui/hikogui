@@ -9,7 +9,7 @@
 #include "../file_view.hpp"
 #include <cstddef>
 
-namespace tt {
+namespace tt::inline v1 {
 
 bstring zlib_decompress(std::span<std::byte const> bytes, ssize_t max_size=0x01000000);
 

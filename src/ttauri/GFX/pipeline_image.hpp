@@ -10,8 +10,7 @@
 #include "../vspan.hpp"
 #include <vk_mem_alloc.h>
 
-namespace tt::pipeline_image {
-inline namespace v1 {
+namespace tt::inline v1::pipeline_image {
 
 /*! Pipeline for rendering backings of widgets.
  * Maintains texture map atlas and sharing for all views.
@@ -21,7 +20,7 @@ public:
     vspan<vertex> vertexBufferData;
 
     pipeline_image(gfx_surface const &surface);
-    ~pipeline_image() {};
+    ~pipeline_image(){};
 
     pipeline_image(const pipeline_image &) = delete;
     pipeline_image &operator=(const pipeline_image &) = delete;
@@ -50,5 +49,4 @@ private:
     void teardownvertexBuffers() override;
 };
 
-}
-}
+} // namespace tt::inline v1::pipeline_image
