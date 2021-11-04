@@ -13,10 +13,9 @@
 #include <vector>
 
 namespace tt {
+inline namespace v1 {
 
 class editable_text {
-
-
 public:
     editable_text(tt::font_book const &font_book, text_style style) :
         _font_book(font_book), _text(), _shaped_text(), _current_style(style)
@@ -565,6 +564,6 @@ private:
     bool _has_partial_grapheme = false;
 };
 
-
+}
 }
 

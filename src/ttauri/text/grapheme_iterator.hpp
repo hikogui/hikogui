@@ -12,6 +12,7 @@
 #include <iterator_traits>
 
 namespace tt {
+inline namespace v1 {
 
 template<typename Iterator>
 class grapheme_iterator {
@@ -63,4 +64,5 @@ private:
     grapheme_break_state forward_break_state;
 };
 
+}
 } // namespace tt

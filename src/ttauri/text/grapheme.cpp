@@ -6,6 +6,7 @@
 #include "unicode_normalization.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 grapheme::grapheme(std::u32string_view codePoints) noexcept :
     value(0)
@@ -74,5 +75,5 @@ grapheme& grapheme::operator+=(char32_t codePoint) noexcept
     return unicode_NFKD(static_cast<std::u32string>(*this));
 }
 
-
+}
 }

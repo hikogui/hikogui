@@ -11,6 +11,7 @@
 #include "../geometry/translate.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 /**
 */
@@ -131,4 +132,5 @@ struct attributed_glyph {
     [[nodiscard]] graphic_path get_path() const noexcept;
 };
 
+}
 }

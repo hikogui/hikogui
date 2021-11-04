@@ -8,6 +8,7 @@
 #include "../tokenizer.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 ///** Return the plarity index.
 //*/
@@ -193,5 +194,6 @@ static void parse_po_header(po_translations &r, std::string const &header)
     return parse_po(text->string_view());
 }
 
+}
 }
 

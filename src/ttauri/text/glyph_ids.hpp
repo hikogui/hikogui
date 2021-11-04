@@ -14,6 +14,7 @@
 #include <functional>
 
 namespace tt {
+inline namespace v1 {
 
 class glyph_ids_long {
 public:
@@ -231,6 +232,7 @@ private:
     }
 };
 
+}
 } // namespace tt
 
 template<>

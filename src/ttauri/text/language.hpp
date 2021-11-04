@@ -17,7 +17,7 @@
 #include <mutex>
 
 namespace tt {
-
+inline namespace v1 {
 
 class language {
 public:
@@ -186,4 +186,5 @@ private:
     }
 };
 
+}
 }

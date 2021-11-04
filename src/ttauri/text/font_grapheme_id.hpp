@@ -8,6 +8,7 @@
 #include "../hash.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 /** Combined font_id + grapheme for use as a key in a std::unordered_map.
  */
@@ -30,16 +31,14 @@ struct font_grapheme_id {
     }
 };
 
+}
 } // namespace tt
 
-namespace std {
-
 template<>
-struct hash<tt::font_grapheme_id> {
+struct std::hash<tt::font_grapheme_id> {
     [[nodiscard]] size_t operator()(tt::font_grapheme_id const &rhs) const noexcept
     {
         return rhs.hash();
     }
 };
 
-} // namespace std

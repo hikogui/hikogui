@@ -12,6 +12,7 @@
 #include <ostream>
 
 namespace tt {
+inline namespace v1 {
 class font_book;
 
 struct text_style {
@@ -53,4 +54,5 @@ struct text_style {
     }
 };
 
+}
 }

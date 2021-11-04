@@ -10,7 +10,7 @@
 #include <iterator_traits>
 
 namespace tt {
-
+inline namespace v1 {
 
 /** Iterate over code points (char32_t) through char8_t, char16_t or char32_t iterators.
  *
@@ -123,4 +123,5 @@ template<typename Container>
     return code_point_container(end(container));
 }
 
+}
 } // namespace tt

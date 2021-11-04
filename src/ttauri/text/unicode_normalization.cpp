@@ -10,6 +10,7 @@
 #include "../required.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 /** Detect typographical ligature.
  * A typographical ligatures will have the same meaning in the text
@@ -241,4 +242,5 @@ std::u32string unicode_NFKC(std::u32string_view text, bool paragraph, bool compo
     return r;
 }
 
+}
 }

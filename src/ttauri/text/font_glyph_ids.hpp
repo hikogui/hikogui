@@ -13,6 +13,7 @@
 
 namespace tt {
 struct graphic_path;
+inline namespace v1 {
 class font;
 
 class font_glyph_ids {
@@ -86,6 +87,7 @@ private:
     glyph_ids _glyphs;    
 };
 
+}
 } // namespace tt
 
 template<>

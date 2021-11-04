@@ -10,6 +10,7 @@
 #include <cstddef>
 
 namespace tt {
+inline namespace v1 {
 namespace detail {
 
 class unicode_mask_entry {
@@ -199,4 +200,5 @@ private:
     entries_type _entries = {};
 };
 
+}
 } // namespace tt

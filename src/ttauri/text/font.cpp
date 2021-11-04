@@ -7,6 +7,7 @@
 #include "../resource_view.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 [[nodiscard]] font_glyph_ids font::find_glyph(grapheme g) const noexcept
 {
@@ -43,4 +44,5 @@ namespace tt {
     return r;
 }
 
+}
 }

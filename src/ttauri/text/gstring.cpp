@@ -8,6 +8,7 @@
 #include "../strings.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 [[nodiscard]] gstring to_gstring(std::u32string_view rhs) noexcept
 {
@@ -33,5 +34,5 @@ namespace tt {
     return r;
 }
 
-
+}
 }

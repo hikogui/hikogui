@@ -9,6 +9,7 @@
 #include <ostream>
 
 namespace tt {
+inline namespace v1 {
 
 /** Describes how a grapheme should be underlined when rendering the text.
 * It is carried with the grapheme and glyphs, so that the text render engine
@@ -53,4 +54,5 @@ inline std::ostream &operator<<(std::ostream &lhs, text_decoration const &rhs)
     return lhs << to_const_string(rhs);
 }
 
+}
 }

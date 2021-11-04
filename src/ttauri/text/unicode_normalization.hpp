@@ -9,6 +9,7 @@
 #include <string_view>
 
 namespace tt {
+inline namespace v1 {
 
 /** Convert text to Unicode-NFD normal form.
  *
@@ -50,4 +51,5 @@ std::u32string unicode_NFKD(std::u32string_view text, bool paragraph = false) no
  */
 std::u32string unicode_NFKC(std::u32string_view text, bool paragraph = false, bool composeCRLF = false) noexcept;
 
+}
 }

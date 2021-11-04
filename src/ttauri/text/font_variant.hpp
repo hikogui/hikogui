@@ -7,6 +7,7 @@
 #include "font_weight.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 /** A font variant is one of 16 different fonts that can be part of a family.
 * It only contains the font-weight and if it is italic/oblique.
@@ -71,4 +72,5 @@ public:
     }
 };
 
+}
 }

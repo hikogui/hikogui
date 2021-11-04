@@ -9,6 +9,7 @@
 #include <format>
 
 namespace tt {
+inline namespace v1 {
 
 language::language(language_tag tag) noexcept :
     tag(std::move(tag)), plurality_func()
@@ -26,4 +27,5 @@ language::language(language_tag tag) noexcept :
     }
 }
 
+}
 }

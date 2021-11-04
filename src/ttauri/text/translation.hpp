@@ -13,6 +13,7 @@
 #include <unordered_map>
 
 namespace tt {
+inline namespace v1 {
 
 [[nodiscard]] std::string_view get_translation(
     std::string_view msgid,
@@ -35,4 +36,5 @@ void add_translation(
 struct po_translations;
 void add_translation(po_translations const &translations, language const &language) noexcept;
 
+}
 }

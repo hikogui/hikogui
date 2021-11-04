@@ -10,6 +10,7 @@
 #include "unicode_general_category.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 struct attributed_grapheme {
     tt::grapheme grapheme;
@@ -40,4 +41,5 @@ struct attributed_grapheme {
     }
 };
 
+}
 }

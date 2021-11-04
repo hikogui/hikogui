@@ -22,6 +22,7 @@
 #include <map>
 
 namespace tt {
+inline namespace v1 {
 
 /*! A font.
  * This class has information on how to shape text and
@@ -147,4 +148,5 @@ struct formatter<tt::font, CharT> : formatter<std::string_view, CharT> {
     }
 };
 
+}
 } // namespace std

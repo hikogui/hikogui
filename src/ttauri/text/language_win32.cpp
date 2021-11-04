@@ -9,6 +9,7 @@
 #include <Winnls.h>
 
 namespace tt {
+inline namespace v1 {
 
 /**
  * GetUserPreferredUILanguages() returns at most two of the selected languages in random order
@@ -54,4 +55,5 @@ std::vector<language_tag> language::read_os_preferred_languages() noexcept
     }
 }
 
+}
 } // namespace tt

@@ -8,6 +8,7 @@
 #include "unicode_description.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 struct grapheme_break_state {
     unicode_grapheme_cluster_break previous = unicode_grapheme_cluster_break::Other;
@@ -87,4 +88,5 @@ void wrap_lines(auto first, auto last, float max_width, auto get_width, auto get
     }
 }
 
+}
 }

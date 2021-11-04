@@ -12,6 +12,7 @@
 #include "../URL.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 struct po_translation {
     std::string msgctxt;
@@ -29,5 +30,6 @@ struct po_translations {
 
 [[nodiscard]] po_translations parse_po(URL const &url);
 
+}
 }
 

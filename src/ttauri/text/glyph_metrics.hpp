@@ -9,6 +9,7 @@
 #include "../geometry/scale.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 /*! Metrics of a glyph.
  * This information is used to position glyphs next to each other
@@ -94,6 +95,5 @@ struct glyph_metrics {
     }
 };
 
-
-
+}
 }

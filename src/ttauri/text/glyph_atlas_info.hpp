@@ -8,6 +8,7 @@
 #include "../geometry/axis_aligned_rectangle.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 class glyph_atlas_info {
 public:
@@ -62,4 +63,5 @@ public:
     }
 };
 
+}
 } // namespace tt

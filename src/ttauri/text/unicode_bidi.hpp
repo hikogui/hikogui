@@ -9,6 +9,7 @@
 #include "unicode_description.hpp"
 
 namespace tt {
+inline namespace v1 {
 namespace detail {
 
 struct unicode_bidi_char_info {
@@ -153,4 +154,5 @@ It unicode_bidi(
     return last;
 }
 
+}
 } // namespace tt

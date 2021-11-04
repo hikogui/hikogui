@@ -10,8 +10,10 @@
 #include <utility>
 
 namespace tt {
+inline namespace v1 {
 
 using glyph_id = tagged_id<uint16_t, "glyph_id">;
 
+}
 };
 

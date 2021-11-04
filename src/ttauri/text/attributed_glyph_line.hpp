@@ -9,6 +9,7 @@
 #include <optional>
 
 namespace tt {
+inline namespace v1 {
 
 struct attributed_glyph_line {
     using vector_type = std::vector<attributed_glyph>;
@@ -169,4 +170,5 @@ private:
 
 };
 
+}
 }

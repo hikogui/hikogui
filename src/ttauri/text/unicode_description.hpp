@@ -12,6 +12,7 @@
 #include "../assert.hpp"
 
 namespace tt {
+inline namespace v1 {
 namespace detail {
 constexpr char32_t unicode_hangul_S_base = U'\uac00';
 constexpr char32_t unicode_hangul_L_base = U'\u1100';
@@ -303,4 +304,5 @@ template<typename It>
  */
 [[nodiscard]] unicode_description const &unicode_description_find(char32_t code_point) noexcept;
 
+}
 }

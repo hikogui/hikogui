@@ -7,6 +7,7 @@
 #include "po_parser.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 struct translation_key {
     std::string msgid;
@@ -25,19 +26,17 @@ struct translation_key {
 };
 
 }
-
-namespace std {
+}
 
 template<>
-struct hash<tt::translation_key> {
+struct std::hash<tt::translation_key> {
     [[nodiscard]] size_t operator()(tt::translation_key const &rhs) const noexcept {
         return rhs.hash();
     }
 };
 
-}
-
 namespace tt {
+inline namespace v1 {
 
 std::unordered_map<translation_key,std::vector<std::string>> translations;
 
@@ -95,4 +94,5 @@ void add_translation(po_translations const &po_translations, language const &lan
     }
 }
 
+}
 }

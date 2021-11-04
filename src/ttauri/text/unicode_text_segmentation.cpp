@@ -7,6 +7,7 @@
 #include "../required.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 [[nodiscard]] static bool
 breaks_grapheme(unicode_grapheme_cluster_break cluster_break, grapheme_break_state &state) noexcept
@@ -98,4 +99,5 @@ breaks_grapheme(unicode_grapheme_cluster_break cluster_break, grapheme_break_sta
     return breaks_grapheme(unicode_description_find(code_point).grapheme_cluster_break(), state);
 }
 
+}
 }

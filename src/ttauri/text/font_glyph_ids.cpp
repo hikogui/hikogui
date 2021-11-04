@@ -8,6 +8,7 @@
 #include "../log.hpp"
 
 namespace tt {
+inline namespace v1 {
 
 [[nodiscard]] glyph_atlas_info &font_glyph_ids::atlas_info() const noexcept
 {
@@ -78,4 +79,5 @@ namespace tt {
     return boundingBox;
 }
 
+}
 } // namespace tt
