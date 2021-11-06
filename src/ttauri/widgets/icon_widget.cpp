@@ -61,7 +61,7 @@ widget_constraints const &icon_widget::set_constraints() noexcept
 
 void icon_widget::set_layout(widget_layout const &context) noexcept
 {
-    if (visible and _layout.store(context) >= layout_update::transform) {
+    if (_layout.store(context) >= layout_update::transform) {
         if (_icon_type == icon_type::no or not _icon_size) {
             _icon_rectangle = {};
         } else {

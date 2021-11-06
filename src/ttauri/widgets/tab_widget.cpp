@@ -68,10 +68,10 @@ widget_constraints const &tab_widget::set_constraints() noexcept
 
 void tab_widget::set_layout(widget_layout const &context) noexcept
 {
-    if (visible) {
-        _layout.store(context);
+    _layout.store(context);
 
-        for (ttlet &child : _children) {
+    for (ttlet &child : _children) {
+        if (child->visible) {
             child->set_layout(layout().rectangle() * context);
         }
     }
@@ -81,7 +81,9 @@ void tab_widget::draw(draw_context const &context) noexcept
 {
     if (visible) {
         for (ttlet &child : _children) {
-            child->draw(context);
+            if (child->visible) {
+                child->draw(context);
+            }
         }
     }
 }

@@ -140,18 +140,16 @@ public:
 
     void set_layout(widget_layout const &context) noexcept override
     {
-        if (visible) {
-            if (_layout.store(context) >= layout_update::size) {
-                _flow_layout.set_size(axis == axis::row ? layout().width() : layout().height());
-            }
-
-            ssize_t index = 0;
-            for (ttlet &child : _children) {
-                update_layout_for_child(*child, index++, context);
-            }
-
-            tt_axiom(index == ssize(_children));
+        if (_layout.store(context) >= layout_update::size) {
+            _flow_layout.set_size(axis == axis::row ? layout().width() : layout().height());
         }
+
+        ssize_t index = 0;
+        for (ttlet &child : _children) {
+            update_layout_for_child(*child, index++, context);
+        }
+
+        tt_axiom(index == ssize(_children));
     }
 
     void draw(draw_context const &context) noexcept override

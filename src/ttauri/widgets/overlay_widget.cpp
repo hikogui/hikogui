@@ -43,13 +43,11 @@ widget_constraints const &overlay_widget::set_constraints() noexcept
 
 void overlay_widget::set_layout(widget_layout const &context_) noexcept
 {
-    if (visible) {
-        // The clipping rectangle of the overlay matches the rectangle exactly, with a border around it.
-        ttlet context = context_.override_clip(context_.rectangle() + theme().border_width);
-        _layout.store(context);
+    // The clipping rectangle of the overlay matches the rectangle exactly, with a border around it.
+    ttlet context = context_.override_clip(context_.rectangle() + theme().border_width);
+    _layout.store(context);
 
-        _content->set_layout(layout().rectangle() * context);
-    }
+    _content->set_layout(layout().rectangle() * context);
 }
 
 void overlay_widget::draw(draw_context const &context) noexcept

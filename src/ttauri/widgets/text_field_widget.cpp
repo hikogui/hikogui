@@ -53,53 +53,51 @@ widget_constraints const &text_field_widget::set_constraints() noexcept
 
 void text_field_widget::set_layout(widget_layout const &context) noexcept
 {
-    if (visible) {
-        ttlet text_was_modified = std::exchange(_text_was_modified, false);
-        if (_layout.store(context) >= layout_update::transform or text_was_modified) {
-            ttlet text_field_height = theme().size + theme().margin * 2.0f;
-            ttlet error_label_rectangle = aarectangle{
-                extent2{layout().width(), std::min(layout().height(), _error_label_widget->constraints().preferred.height())}};
-            _error_label_widget->visible = not _error_label->empty();
-            _error_label_widget->set_layout(error_label_rectangle * context);
+    ttlet text_was_modified = std::exchange(_text_was_modified, false);
+    if (_layout.store(context) >= layout_update::transform or text_was_modified) {
+        ttlet text_field_height = theme().size + theme().margin * 2.0f;
+        ttlet error_label_rectangle = aarectangle{
+            extent2{layout().width(), std::min(layout().height(), _error_label_widget->constraints().preferred.height())}};
+        _error_label_widget->visible = not _error_label->empty();
+        _error_label_widget->set_layout(error_label_rectangle * context);
 
-            // The rectangle is a single line, but at full width. Aligned to the top of the widget.
-            ttlet text_field_size = extent2{layout().width(), text_field_height};
-            _text_field_rectangle = aarectangle{point2{0.0f, layout().height() - text_field_height}, text_field_size};
+        // The rectangle is a single line, but at full width. Aligned to the top of the widget.
+        ttlet text_field_size = extent2{layout().width(), text_field_height};
+        _text_field_rectangle = aarectangle{point2{0.0f, layout().height() - text_field_height}, text_field_size};
 
-            // Set the clipping rectangle to within the border of the input field.
-            // Add another border width, so glyphs do not touch the border.
-            _text_field_clipping_rectangle = intersect(layout().clipping_rectangle, _text_field_rectangle);
+        // Set the clipping rectangle to within the border of the input field.
+        // Add another border width, so glyphs do not touch the border.
+        _text_field_clipping_rectangle = intersect(layout().clipping_rectangle, _text_field_rectangle);
 
-            _text_rectangle = _text_field_rectangle - theme().margin;
+        _text_rectangle = _text_field_rectangle - theme().margin;
 
-            ttlet field_str = static_cast<std::string>(_field);
+        ttlet field_str = static_cast<std::string>(_field);
 
-            if (focus) {
-                // Update the optional error value from the string conversion when the
-                // field has keyboard focus.
-                if (auto delegate = _delegate.lock()) {
-                    _error_label = delegate->validate(*this, field_str);
-                } else {
-                    _error_label = {};
-                }
-
+        if (focus) {
+            // Update the optional error value from the string conversion when the
+            // field has keyboard focus.
+            if (auto delegate = _delegate.lock()) {
+                _error_label = delegate->validate(*this, field_str);
             } else {
-                // When field is not focused, simply follow the observed_value.
-                if (auto delegate = _delegate.lock()) {
-                    _field = delegate->text(*this);
-                } else {
-                    _field = {};
-                }
                 _error_label = {};
             }
 
-            _field.set_style_of_all(theme().text_style(theme_text_style::label));
-            _field.set_width(std::numeric_limits<float>::infinity());
-            _shaped_text = _field.shaped_text();
-
-            // Record the last time the text is modified, so that the caret remains lit.
-            _last_update_time_point = context.display_time_point;
+        } else {
+            // When field is not focused, simply follow the observed_value.
+            if (auto delegate = _delegate.lock()) {
+                _field = delegate->text(*this);
+            } else {
+                _field = {};
+            }
+            _error_label = {};
         }
+
+        _field.set_style_of_all(theme().text_style(theme_text_style::label));
+        _field.set_width(std::numeric_limits<float>::infinity());
+        _shaped_text = _field.shaped_text();
+
+        // Record the last time the text is modified, so that the caret remains lit.
+        _last_update_time_point = context.display_time_point;
     }
 }
 

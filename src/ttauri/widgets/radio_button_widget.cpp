@@ -20,16 +20,14 @@ widget_constraints const &radio_button_widget::set_constraints() noexcept
 
 void radio_button_widget::set_layout(widget_layout const &context) noexcept
 {
-    if (visible) {
-        if (_layout.store(context) >= layout_update::transform) {
-            _button_rectangle = align(layout().rectangle(), _button_size, alignment::top_left);
+    if (_layout.store(context) >= layout_update::transform) {
+        _button_rectangle = align(layout().rectangle(), _button_size, alignment::top_left);
 
-            _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, layout().width(), layout().height()};
+        _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, layout().width(), layout().height()};
 
-            _pip_rectangle = align(_button_rectangle, extent2{theme().icon_size, theme().icon_size}, alignment::middle_center);
-        }
-        set_layout_button(context);
+        _pip_rectangle = align(_button_rectangle, extent2{theme().icon_size, theme().icon_size}, alignment::middle_center);
     }
+    set_layout_button(context);
 }
 
 void radio_button_widget::draw(draw_context const &context) noexcept

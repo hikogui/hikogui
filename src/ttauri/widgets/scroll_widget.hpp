@@ -159,61 +159,63 @@ public:
 
     void set_layout(widget_layout const &context) noexcept override
     {
-        if (visible) {
-            if (_layout.store(context) >= layout_update::transform) {
-                ttlet vertical_scroll_bar_width = _vertical_scroll_bar->constraints().preferred.width();
-                ttlet horizontal_scroll_bar_height = _horizontal_scroll_bar->constraints().preferred.height();
+        if (_layout.store(context) >= layout_update::transform) {
+            ttlet vertical_scroll_bar_width = _vertical_scroll_bar->constraints().preferred.width();
+            ttlet horizontal_scroll_bar_height = _horizontal_scroll_bar->constraints().preferred.height();
 
-                std::tie(_horizontal_scroll_bar->visible, _vertical_scroll_bar->visible) = needed_scrollbars();
+            std::tie(_horizontal_scroll_bar->visible, _vertical_scroll_bar->visible) = needed_scrollbars();
 
-                _height_adjustment = _horizontal_scroll_bar->visible ? horizontal_scroll_bar_height : 0.0f;
-                _width_adjustment = _vertical_scroll_bar->visible ? vertical_scroll_bar_width : 0.0f;
+            _height_adjustment = _horizontal_scroll_bar->visible ? horizontal_scroll_bar_height : 0.0f;
+            _width_adjustment = _vertical_scroll_bar->visible ? vertical_scroll_bar_width : 0.0f;
 
-                _vertical_scroll_bar_rectangle = aarectangle{
-                    layout().width() - vertical_scroll_bar_width,
-                    _height_adjustment,
-                    vertical_scroll_bar_width,
-                    layout().height() - _height_adjustment};
+            _vertical_scroll_bar_rectangle = aarectangle{
+                layout().width() - vertical_scroll_bar_width,
+                _height_adjustment,
+                vertical_scroll_bar_width,
+                layout().height() - _height_adjustment};
 
-                _horizontal_scroll_bar_rectangle =
-                    aarectangle{0.0f, 0.0f, layout().width() - _width_adjustment, horizontal_scroll_bar_height};
+            _horizontal_scroll_bar_rectangle =
+                aarectangle{0.0f, 0.0f, layout().width() - _width_adjustment, horizontal_scroll_bar_height};
 
-                _aperture_rectangle = aarectangle{
-                    0.0f, _height_adjustment, layout().width() - _width_adjustment, layout().height() - _height_adjustment};
+            _aperture_rectangle = aarectangle{
+                0.0f, _height_adjustment, layout().width() - _width_adjustment, layout().height() - _height_adjustment};
 
-                // We use the preferred size of the content for determining what to scroll.
-                // This means it is possible for the scroll_content_width or scroll_content_height to be smaller
-                // than the aperture.
-                _scroll_content_width = _content->constraints().preferred.width();
-                _scroll_content_height = _content->constraints().preferred.height();
-                _scroll_aperture_width = _aperture_rectangle.width();
-                _scroll_aperture_height = _aperture_rectangle.height();
+            // We use the preferred size of the content for determining what to scroll.
+            // This means it is possible for the scroll_content_width or scroll_content_height to be smaller
+            // than the aperture.
+            _scroll_content_width = _content->constraints().preferred.width();
+            _scroll_content_height = _content->constraints().preferred.height();
+            _scroll_aperture_width = _aperture_rectangle.width();
+            _scroll_aperture_height = _aperture_rectangle.height();
 
-                if constexpr (controls_window) {
-                    window.set_resize_border_priority(
-                        true, not _vertical_scroll_bar->visible, not _horizontal_scroll_bar->visible, true);
-                }
+            if constexpr (controls_window) {
+                window.set_resize_border_priority(
+                    true, not _vertical_scroll_bar->visible, not _horizontal_scroll_bar->visible, true);
             }
-
-            _vertical_scroll_bar->set_layout(_vertical_scroll_bar_rectangle * context);
-            _horizontal_scroll_bar->set_layout(_horizontal_scroll_bar_rectangle * context);
-
-            ttlet scroll_offset_x_max = std::max(_scroll_content_width - _scroll_aperture_width, 0.0f);
-            ttlet scroll_offset_y_max = std::max(_scroll_content_height - _scroll_aperture_height, 0.0f);
-            _scroll_offset_x = std::clamp(std::round(*_scroll_offset_x), 0.0f, scroll_offset_x_max);
-            _scroll_offset_y = std::clamp(std::round(*_scroll_offset_y), 0.0f, scroll_offset_y_max);
-
-            // Its size scroll content size, or the size of the aperture whichever is bigger.
-            ttlet content_size = extent2{
-                std::max(*_scroll_content_width, _aperture_rectangle.width()),
-                std::max(*_scroll_content_height, _aperture_rectangle.height())};
-
-            // The position of the content rectangle relative to the scroll view.
-            // The size is further adjusted if the either the horizontal or vertical scroll bar is invisible.
-            _content_rectangle = aarectangle{
-                -_scroll_offset_x, -_scroll_offset_y - _height_adjustment, content_size.width(), content_size.height()};
-            _content->set_layout(_content_rectangle * context.clip(_aperture_rectangle));
         }
+
+        if (_vertical_scroll_bar->visible) {
+            _vertical_scroll_bar->set_layout(_vertical_scroll_bar_rectangle * context);
+        }
+        if (_horizontal_scroll_bar->visible) {
+            _horizontal_scroll_bar->set_layout(_horizontal_scroll_bar_rectangle * context);
+        }
+
+        ttlet scroll_offset_x_max = std::max(_scroll_content_width - _scroll_aperture_width, 0.0f);
+        ttlet scroll_offset_y_max = std::max(_scroll_content_height - _scroll_aperture_height, 0.0f);
+        _scroll_offset_x = std::clamp(std::round(*_scroll_offset_x), 0.0f, scroll_offset_x_max);
+        _scroll_offset_y = std::clamp(std::round(*_scroll_offset_y), 0.0f, scroll_offset_y_max);
+
+        // Its size scroll content size, or the size of the aperture whichever is bigger.
+        ttlet content_size = extent2{
+            std::max(*_scroll_content_width, _aperture_rectangle.width()),
+            std::max(*_scroll_content_height, _aperture_rectangle.height())};
+
+        // The position of the content rectangle relative to the scroll view.
+        // The size is further adjusted if the either the horizontal or vertical scroll bar is invisible.
+        _content_rectangle =
+            aarectangle{-_scroll_offset_x, -_scroll_offset_y - _height_adjustment, content_size.width(), content_size.height()};
+        _content->set_layout(_content_rectangle * context.clip(_aperture_rectangle));
     }
 
     void draw(draw_context const &context) noexcept

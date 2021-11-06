@@ -44,27 +44,25 @@ widget_constraints const &toolbar_widget::set_constraints() noexcept
 
 void toolbar_widget::set_layout(widget_layout const &context_) noexcept
 {
-    if (visible) {
-        // Clip directly around the toolbar, so that tab buttons looks proper.
-        ttlet context = context_.clip(context_.rectangle());
-        if (_layout.store(context) >= layout_update::size) {
-            _flow_layout.set_size(layout().width());
-        }
-
-        ssize_t index = 0;
-        for (ttlet &child : _left_children) {
-            update_layout_for_child(*child, index++, context);
-        }
-
-        // Skip over the cell between left and right children.
-        index++;
-
-        for (ttlet &child : std::views::reverse(_right_children)) {
-            update_layout_for_child(*child, index++, context);
-        }
-
-        tt_axiom(index == ssize(_left_children) + 1 + ssize(_right_children));
+    // Clip directly around the toolbar, so that tab buttons looks proper.
+    ttlet context = context_.clip(context_.rectangle());
+    if (_layout.store(context) >= layout_update::size) {
+        _flow_layout.set_size(layout().width());
     }
+
+    ssize_t index = 0;
+    for (ttlet &child : _left_children) {
+        update_layout_for_child(*child, index++, context);
+    }
+
+    // Skip over the cell between left and right children.
+    index++;
+
+    for (ttlet &child : std::views::reverse(_right_children)) {
+        update_layout_for_child(*child, index++, context);
+    }
+
+    tt_axiom(index == ssize(_left_children) + 1 + ssize(_right_children));
 }
 
 bool toolbar_widget::tab_button_has_focus() const noexcept

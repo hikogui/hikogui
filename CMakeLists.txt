@@ -487,6 +487,7 @@ endif()
 if(TT_BUILD_EXAMPLES)
     add_subdirectory(examples/ttauri_demo)
     add_subdirectory(examples/widgets)
+    add_subdirectory(examples/custom_widgets)
     add_subdirectory(examples/codec)
 endif()
 

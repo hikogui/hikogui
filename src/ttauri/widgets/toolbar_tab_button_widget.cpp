@@ -18,18 +18,16 @@ widget_constraints const &toolbar_tab_button_widget::set_constraints() noexcept
 
 void toolbar_tab_button_widget::set_layout(widget_layout const &context) noexcept
 {
-    if (visible) {
-        // The toolbar tab will draw below the button into the margin.
-        auto context_ = context;
-        context_.redraw_rectangle =
-            aarectangle{translate2{0.0, -theme().margin} * get<0>(context.redraw_rectangle), get<3>(context.redraw_rectangle)};
+    // The toolbar tab will draw below the button into the margin.
+    auto context_ = context;
+    context_.redraw_rectangle =
+        aarectangle{translate2{0.0, -theme().margin} * get<0>(context.redraw_rectangle), get<3>(context.redraw_rectangle)};
 
-        if (_layout.store(context_) >= layout_update::transform) {
-            _label_rectangle =
-                aarectangle{theme().margin, 0.0f, layout().width() - theme().margin * 2.0f, layout().height() - theme().margin};
-        }
-        set_layout_button(context_);
+    if (_layout.store(context_) >= layout_update::transform) {
+        _label_rectangle =
+            aarectangle{theme().margin, 0.0f, layout().width() - theme().margin * 2.0f, layout().height() - theme().margin};
     }
+    set_layout_button(context_);
 }
 
 void toolbar_tab_button_widget::draw(draw_context const &context) noexcept

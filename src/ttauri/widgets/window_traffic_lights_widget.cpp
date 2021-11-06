@@ -32,7 +32,7 @@ widget_constraints const &window_traffic_lights_widget::set_constraints() noexce
 
 void window_traffic_lights_widget::set_layout(widget_layout const &context) noexcept
 {
-    if (visible and _layout.store(context) >= layout_update::transform) {
+    if (_layout.store(context) >= layout_update::transform) {
         auto extent = layout().size;
         if (extent.height() > theme().toolbar_height * 1.2f) {
             extent = extent2{extent.width(), theme().toolbar_height};

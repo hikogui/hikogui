@@ -80,15 +80,13 @@ widget_constraints const &grid_widget::set_constraints() noexcept
 
 void grid_widget::set_layout(widget_layout const &context) noexcept
 {
-    if (visible) {
-        if (_layout.store(context) >= layout_update::transform) {
-            _columns.set_size(layout().width());
-            _rows.set_size(layout().height());
-        }
+    if (_layout.store(context) >= layout_update::transform) {
+        _columns.set_size(layout().width());
+        _rows.set_size(layout().height());
+    }
 
-        for (ttlet &cell : _cells) {
-            cell.widget->set_layout(cell.rectangle(_columns, _rows, layout().height()) * context);
-        }
+    for (ttlet &cell : _cells) {
+        cell.widget->set_layout(cell.rectangle(_columns, _rows, layout().height()) * context);
     }
 }
 
