@@ -6,13 +6,12 @@ TTauri is a cross platform C++ GUI library.
 Manuals
 -------
  - [How to use Widgets](how_to/how_to_use_widgets.md)
- - [How to log](how_to/how_to_log.md) ![new](media/images/new.png)
- - [How to use preferences](how_to/how_to_use_preferences.md) ![new](media/images/new.png)
-
+ - [How to log](how_to/how_to_log.md)
+ - [How to use preferences](how_to/how_to_use_preferences.md) 
+ - [How to make Widgets](how_to/how_to_make_widget.md) ![new](media/images/new.png)
 
 Subsystems
 ----------
- - [GUI system](gui_system.md): 
  - [Application Lifetime](application_lifetime.md)
  - [Information Reporting](information_reporting.md): exceptions, assertions,
    logging, counting and tracing.
