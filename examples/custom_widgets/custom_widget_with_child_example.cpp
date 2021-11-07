@@ -47,11 +47,6 @@ public:
         // Update the `_layout` with the new context, in this case we want to do some
         // calculations when the size of the widget was changed.
         if (_layout.store(context) >= tt::layout_update::size) {
-            // Here we can do some semi-expensive calculations which must be done when resizing the widget.
-            // In this case we make two rectangles which are used in the `draw()` function.
-            _left_rectangle = tt::aarectangle{ tt::extent2{_layout.width() / 2, _layout.height()} };
-            _right_rectangle = tt::aarectangle{ tt::point2{_layout.width() / 2, 0.0}, _left_rectangle.size() };
-
             // The layout of the child widget are also calculated here, which only needs to be done
             // when the layout of the current widget changes.
             _label_rectangle = align(_layout.rectangle(), _label_widget->constraints().preferred, tt::alignment::middle_center);
@@ -67,14 +62,22 @@ public:
     // requests a (partial) redraw, or when a widget requests a redraw of itself.
     void draw(tt::draw_context const& context) noexcept override
     {
-        // We only need to draw the widget when it is visible and when the visible area of
-        // the widget overlaps with the scissor-rectangle (partial redraw) of the drawing context.
         if (visible) {
+            // We only need to draw the widget when it is visible and when the visible area of
+            // the widget overlaps with the scissor-rectangle (partial redraw) of the drawing context.
             if (overlaps(context, layout())) {
-                // Draw two boxes matching the rectangles calculated during set_layout().
-                // The actual RGB colors are taken from the current theme.
-                context.draw_box(_layout, _left_rectangle, theme().color(tt::theme_color::indigo));
-                context.draw_box(_layout, _right_rectangle, theme().color(tt::theme_color::blue));
+                // There may be stylistic reasons to draw into the margin, for example
+                // round objects need to be drawn slightly larger than square objects.
+                // The standard clipping rectangle is 2 pixels larger than the _layout.rectangle().
+                // In this example we draw the border outside the rectangle.
+                context.draw_box(
+                    _layout,
+                    _layout.rectangle(),
+                    theme().color(tt::theme_color::indigo),
+                    theme().color(tt::theme_color::foreground),
+                    theme().border_width,
+                    tt::border_side::outside,
+                    theme().rounding_radius);
             }
 
             // Child widget only need to be drawn when the parent is visible, but the child may have
@@ -85,10 +88,13 @@ public:
     }
 
 protected:
-    // This function is used to determine the children of this widget.
+    // This function MUST be overridden when a widget has children.
     //
     // The order of the children returned is used for determining the next widget for
     // keyboard navigation.
+    //
+    // The allocator argument should not be used by the function, it is used by the caller
+    // to allocate the co-routine's frame on the stack.
     [[nodiscard]] tt::pmr::generator<widget*> children(std::pmr::polymorphic_allocator<>&) const noexcept override
     {
         // This function is often written as a co-routine that yields a pointer to each of its children.
@@ -99,8 +105,6 @@ private:
     // Child widgets are owned by their parent.
     std::unique_ptr<tt::label_widget> _label_widget;
     tt::aarectangle _label_rectangle;
-    tt::aarectangle _left_rectangle;
-    tt::aarectangle _right_rectangle;
 };
 
 int tt_main(int argc, char* argv[])
