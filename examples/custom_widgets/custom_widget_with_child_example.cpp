@@ -28,14 +28,15 @@ public:
         // trigger the calculations in `set_layout()` as well.
         _layout = {};
 
-        // The constrains below have different minimum, preferred and maximum sizes.
-        auto const boxes_constraints = tt::widget_constraints{{100, 50}, {200, 100}, {300, 100}, theme().margin};
-
         // We need to recursively set the constraints of any child widget here as well
         auto const label_constraints = _label_widget->set_constraints();
 
-        // We combine the boxes and label-constraints into a single constraint for this widget.
-        return _constraints = max(boxes_constraints, label_constraints);
+        // We add the ability to resize the widget beyond the size of the label.
+        _constraints.minimum = label_constraints.minimum;
+        _constraints.preferred = label_constraints.preferred + theme().margin;
+        _constraints.maximum = label_constraints.maximum + tt::extent2{100.0f, 50.0f};
+        _constraints.margin = theme().margin;
+        return _constraints;
     }
 
     // The `set_layout()` function is called when the window has resized, or when
@@ -73,8 +74,8 @@ public:
                 context.draw_box(
                     _layout,
                     _layout.rectangle(),
-                    theme().color(tt::theme_color::indigo),
-                    theme().color(tt::theme_color::foreground),
+                    background_color(),
+                    foreground_color(),
                     theme().border_width,
                     tt::border_side::outside,
                     theme().rounding_radius);
