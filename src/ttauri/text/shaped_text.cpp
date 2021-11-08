@@ -258,7 +258,6 @@ struct shape_text_result {
     for (auto &c : text) {
         ttlet &description = unicode_description_find(c.grapheme[0]);
         c.logicalIndex = logicalIndex++;
-        c.bidi_class = description.bidi_class();
         c.general_category = description.general_category();
     }
     tt_axiom(text.back().general_category == unicode_general_category::Zp);
@@ -273,6 +272,9 @@ struct shape_text_result {
         },
         [](auto &c, char32_t code_point) {
             c.grapheme.set_front(code_point);
+        },
+        [](auto &c, unicode_bidi_class bidi_class) {
+            c.bidi_class = bidi_class;
         });
 
     // Convert attributed-graphemes into attributes-glyphs using font_book's find_glyph algorithm.
@@ -342,7 +344,7 @@ shaped_text::shaped_text(
     });
 }
 
-[[nodiscard]] aarectangle shaped_text::rectangleOfgrapheme(ssize_t index) const noexcept
+[[nodiscard]] std::pair<aarectangle, bool> shaped_text::rectangleOfgrapheme(ssize_t index) const noexcept
 {
     ttlet i = find(index);
 
@@ -367,16 +369,20 @@ shaped_text::shaped_text(
 
     ttlet p0 = ligature_position_left - vector2{0.0f, line_i->descender};
     ttlet p3 = ligature_position_right + vector2{0.0f, line_i->ascender};
-    return aarectangle{p0, p3};
+    return {aarectangle{p0, p3}, i->bidi_class == unicode_bidi_class::L};
 }
 
 [[nodiscard]] aarectangle shaped_text::left_to_right_caret(ssize_t index, bool insertMode) const noexcept
 {
-    auto r = rectangleOfgrapheme(index);
+    auto [r, ltor] = rectangleOfgrapheme(index);
 
     if (insertMode) {
         // Change width to a single pixel.
-        return {get<0>(r), point2{get<2>(r).x() + 1.0f, get<2>(r).y()}}; 
+        if (ltor) {
+        return {get<0>(r), point2{get<2>(r).x() + 1.0f, get<2>(r).y()}};
+        } else {
+            return {point2{get<1>(r).x() - 1, get<1>(r).y()}, get<3>(r)};
+        }
     }
 
     return r;
@@ -384,7 +390,7 @@ shaped_text::shaped_text(
 
 [[nodiscard]] aarectangle shaped_text::right_to_left_caret(ssize_t index, bool insertMode) const noexcept
 {
-    auto r = rectangleOfgrapheme(index);
+    auto [r, ltor] = rectangleOfgrapheme(index);
 
     if (insertMode) {
         // Change width to a single pixel.
@@ -400,11 +406,11 @@ shaped_text::shaped_text(
     auto r = std::vector<aarectangle>{};
 
     for (ssize_t i = first; i != last; ++i) {
-        auto newRect = rectangleOfgrapheme(i);
-        if (ssize(r) > 0 && overlaps(r.back(), newRect)) {
-            r.back() |= newRect;
+        auto [new_rect, ltor] = rectangleOfgrapheme(i);
+        if (ssize(r) > 0 && overlaps(r.back(), new_rect)) {
+            r.back() |= new_rect;
         } else {
-            r.push_back(newRect);
+            r.push_back(new_rect);
         }
     }
 

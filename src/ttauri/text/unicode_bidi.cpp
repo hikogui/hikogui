@@ -963,6 +963,7 @@ static void unicode_bidi_P1_line(
             return item.code_point == line_separator_character or item.code_point == paragraph_separator_character;
         });
         if (it != last) {
+            it->direction = unicode_bidi_class::L;
             std::rotate(it, it + 1, last);
         }
     }

@@ -77,14 +77,16 @@ struct unicode_bidi_paragraph {
     }
 };
 
-template<typename OutputIt, typename SetCodePoint>
+template<typename OutputIt, typename SetCodePoint, typename SetTextDirection>
 static void unicode_bidi_L4(
     unicode_bidi_char_info_iterator first,
     unicode_bidi_char_info_iterator last,
     OutputIt output_it,
-    SetCodePoint set_code_point) noexcept
+    SetCodePoint set_code_point,
+    SetTextDirection set_text_direction) noexcept
 {
     for (auto it = first; it != last; ++it, ++output_it) {
+        set_text_direction(*output_it, it->direction);
         if (it->direction == unicode_bidi_class::R && it->description->bidi_bracket_type() != unicode_bidi_bracket_type::n) {
             set_code_point(*output_it, it->description->bidi_mirrored_glyph());
         }
@@ -123,17 +125,20 @@ struct unicode_bidi_test_parameters {
  * @tparam It A Bidirectional read-write iterator.
  * @tparam GetChar function of the form: `(auto &) -> char32_t`.
  * @tparam SetChar function of the form: `(auto &, char32_t) -> void`.
+ * @tparam SetTextDirection function of the form: `(auto &, unicode_bidi_class) -> void`
  * @param first The first iterator
  * @param last The last iterator
  * @param get_char A function to get the character from an item.
  * @param set_char A function to set the character in an item.
+ * @param set_text_direction A function to set the text direction in an item.
  */
-template<typename It, typename GetCodePoint, typename SetCodePoint>
+template<typename It, typename GetCodePoint, typename SetCodePoint, typename SetTextDirection>
 It unicode_bidi(
     It first,
     It last,
     GetCodePoint get_code_point,
     SetCodePoint set_code_point,
+    SetTextDirection set_text_direction,
     detail::unicode_bidi_test_parameters test_parameters = {})
 {
     auto proxy = detail::unicode_bidi_char_info_vector{};
@@ -149,7 +154,12 @@ It unicode_bidi(
         return item.index;
     });
 
-    detail::unicode_bidi_L4(begin(proxy), proxy_last, first, set_code_point);
+    detail::unicode_bidi_L4(
+        begin(proxy),
+        proxy_last,
+        first,
+        std::forward<SetCodePoint>(set_code_point),
+        std::forward<SetTextDirection>(set_text_direction));
     return last;
 }
 

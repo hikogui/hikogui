@@ -238,10 +238,10 @@ public:
      *  - From left side bearing to right side bearing of the glyph.
      *  - from descender to ascender of the line that the glyph is part of.
      *
-     * @param index
-     * @return A rectangle describing the position of the grapheme.
+     * @param index The logical index of the character
+     * @return A rectangle describing the position of the grapheme, true if character is left-to-right.
      */
-    [[nodiscard]] aarectangle rectangleOfgrapheme(ssize_t index) const noexcept;
+    [[nodiscard]] std::pair<aarectangle, bool> rectangleOfgrapheme(ssize_t index) const noexcept;
 
     /** Return the cursor-carets.
      * The caret will be to the left of the character at position.
