@@ -5,6 +5,7 @@
 #include "shaped_text.hpp"
 #include "unicode_description.hpp"
 #include "font_book.hpp"
+#include "unicode_bidi.hpp"
 #include "../small_map.hpp"
 
 namespace tt::inline v1 {
@@ -31,7 +32,7 @@ makeattributed_graphemeVector(gstring const &text, text_style const &style) noex
 graphemes_to_glyphs(tt::font_book const &font_book, std::vector<attributed_grapheme> const &text) noexcept
 {
     // The end-of-paragraph must end text.
-    tt_axiom(ssize(text) >= 1 && text.back().grapheme == grapheme::PS());
+    tt_axiom(ssize(text) >= 1);
 
     std::vector<attributed_glyph> glyphs;
     glyphs.reserve(size(text));
@@ -262,6 +263,18 @@ struct shape_text_result {
     }
     tt_axiom(text.back().general_category == unicode_general_category::Zp);
 
+    auto old_text = text;
+
+    unicode_bidi(
+        text.begin(),
+        text.end(),
+        [](ttlet &c) {
+            return c.grapheme.front();
+        },
+        [](auto &c, char32_t code_point) {
+            c.grapheme.set_front(code_point);
+        });
+
     // Convert attributed-graphemes into attributes-glyphs using font_book's find_glyph algorithm.
     auto glyphs = graphemes_to_glyphs(font_book, text);
 
@@ -363,11 +376,24 @@ shaped_text::shaped_text(
 
     if (insertMode) {
         // Change width to a single pixel.
-        r.set_width(1.0);
+        return {get<0>(r), point2{get<2>(r).x() + 1.0f, get<2>(r).y()}}; 
     }
 
     return r;
 }
+
+[[nodiscard]] aarectangle shaped_text::right_to_left_caret(ssize_t index, bool insertMode) const noexcept
+{
+    auto r = rectangleOfgrapheme(index);
+
+    if (insertMode) {
+        // Change width to a single pixel.
+        return {point2{get<1>(r).x() - 1, get<3>(r).y()}, get<3>(r)};
+    }
+
+    return r;
+}
+
 
 [[nodiscard]] std::vector<aarectangle> shaped_text::selection_rectangles(ssize_t first, ssize_t last) const noexcept
 {
@@ -431,7 +457,7 @@ shaped_text::shaped_text(
     auto i = find(logicalIndex);
     if (i->isParagraphSeparator()) {
         return {};
-    } else if (logicalIndex < (i->logicalIndex + i->graphemeCount)) {
+    } else if (logicalIndex < (i->logicalIndex + i->graphemeCount - 1)) {
         // Go right inside a ligature.
         return logicalIndex + 1;
     } else {

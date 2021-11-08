@@ -95,6 +95,7 @@ struct unicode_bidi_test_parameters {
     unicode_bidi_class force_paragraph_direction = unicode_bidi_class::unknown;
     bool enable_mirrored_brackets = true;
     bool enable_line_separator = true;
+    bool move_lf_and_ps_to_end_of_line = true;
 };
 
 [[nodiscard]] unicode_bidi_char_info_iterator unicode_bidi_P1(

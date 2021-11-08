@@ -252,6 +252,15 @@ public:
      */
     [[nodiscard]] aarectangle left_to_right_caret(ssize_t index, bool overwrite) const noexcept;
 
+    /** Return the cursor-carets.
+     * The caret will be to the left of the character at position.
+     *
+     * @param index Logical grapheme index.
+     * @param overwrite When true display a overwrite cursor.
+     * @return left-to-right caret rectangle to display.
+     */
+    [[nodiscard]] aarectangle right_to_left_caret(ssize_t index, bool overwrite) const noexcept;
+
     /** Return a list of merged rectangles to display for the selection.
      * The selection may be discontinues due to bidirectional text.
      *

@@ -950,12 +950,22 @@ static void unicode_bidi_L3(unicode_bidi_char_info_iterator first, unicode_bidi_
 static void unicode_bidi_P1_line(
     unicode_bidi_char_info_iterator first,
     unicode_bidi_char_info_iterator last,
-    int8_t paragraph_embedding_level) noexcept
+    int8_t paragraph_embedding_level,
+    unicode_bidi_test_parameters test_parameters) noexcept
 {
     ttlet[lowest_odd, highest] = unicode_bidi_L1(first, last, paragraph_embedding_level);
     unicode_bidi_L2(first, last, lowest_odd, highest);
     unicode_bidi_L3(first, last);
     // L4 is delayed after the original array has been shuffled.
+
+    if (test_parameters.move_lf_and_ps_to_end_of_line) {
+        ttlet it = std::find_if(first, last, [](ttlet &item) {
+            return item.code_point == line_separator_character or item.code_point == paragraph_separator_character;
+        });
+        if (it != last) {
+            std::rotate(it, it + 1, last);
+        }
+    }
 }
 
 [[nodiscard]] static unicode_bidi_char_info_iterator unicode_bidi_P1_paragraph(
@@ -973,15 +983,15 @@ static void unicode_bidi_P1_line(
 
     auto line_begin = first;
     for (auto it = first; it != last; ++it) {
-        if (test_parameters.enable_line_separator && it->description->general_category() == unicode_general_category::Zl) {
+        if (test_parameters.enable_line_separator && it->code_point == line_separator_character) {
             ttlet line_end = it + 1;
-            unicode_bidi_P1_line(line_begin, line_end, paragraph_embedding_level);
+            unicode_bidi_P1_line(line_begin, line_end, paragraph_embedding_level, test_parameters);
             line_begin = line_end;
         }
     }
 
     if (line_begin != last) {
-        unicode_bidi_P1_line(line_begin, last, paragraph_embedding_level);
+        unicode_bidi_P1_line(line_begin, last, paragraph_embedding_level, test_parameters);
     }
 
     return last;

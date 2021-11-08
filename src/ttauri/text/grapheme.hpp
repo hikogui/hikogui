@@ -31,8 +31,8 @@ class grapheme {
      *    - 0       '1'
      *
      * if bit 0 is '0' the value contains a length+pointer as follows:
-     *    - 63:48   Length
-     *    - 47:0    Pointer to long_grapheme on the heap;
+     *    - 63:59   Length
+     *    - 58:0    Pointer to long_grapheme on the heap;
      *              bottom two bits are zero, due to alignment.
      */
     uint64_t value;
@@ -143,16 +143,15 @@ public:
     [[nodiscard]] size_t size() const noexcept
     {
         if (has_pointer()) {
-            return value >> 48;
+            return value >> 59;
+        } else if (value == 1) {
+            return 0;
+        } else if (value <= 0x3f'ffff) {
+            return 1;
+        } else if (value <= 0x7ffffffffff) {
+            return 2;
         } else {
-            auto tmp = value >> 1;
-            size_t i;
-            for (i = 0; i < 3; i++, tmp >>= 21) {
-                if ((tmp & 0x1f'ffff) == 0) {
-                    return i;
-                }
-            }
-            return i;
+            return 3;
         }
     }
 
@@ -163,10 +162,24 @@ public:
 
     [[nodiscard]] char32_t front() const noexcept
     {
-        if (size() == 0) {
-            return 0;
+        if (has_pointer()) {
+            return (*get_pointer())[0];
         } else {
-            return (*this)[0];
+            return (value >> 1) & 0x1f'ffff;
+        }
+    }
+
+    /** Update the first code point of a grapheme.
+     */
+    [[nodiscard]] void set_front(char32_t code_point) noexcept
+    {
+        if (has_pointer()) {
+            (*get_pointer())[0] = code_point;
+
+        } else {
+            tt_axiom(code_point <= 0x10'ffff);
+            constexpr uint64_t mask = 0x1f'ffff << 1;            
+            value = (value & ~mask) | (static_cast<uint64_t>(code_point) << 1);
         }
     }
 
@@ -236,14 +249,14 @@ private:
         memcpy(ptr->data(), data, size);
 
         auto iptr = reinterpret_cast<ptrdiff_t>(ptr);
-        auto uptr = static_cast<uint64_t>(iptr << 16) >> 16;
-        return (size << 48) | uptr;
+        auto uptr = static_cast<uint64_t>(iptr << 5) >> 5;
+        return (size << 59) | uptr;
     }
 
     [[nodiscard]] long_grapheme *get_pointer() const noexcept
     {
-        auto uptr = (value << 16);
-        auto iptr = static_cast<ptrdiff_t>(uptr) >> 16;
+        auto uptr = (value << 5);
+        auto iptr = static_cast<ptrdiff_t>(uptr) >> 5;
         return std::launder(reinterpret_cast<long_grapheme *>(iptr));
     }
 
