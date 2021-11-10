@@ -142,10 +142,10 @@ private:
     void drag_select() noexcept;
     void scroll_text() noexcept;
     void draw_background_box(draw_context const &context) const noexcept;
-    void draw_selection_rectangles(widget_layout const &clipped_layout, draw_context const &context) const noexcept;
-    void draw_partial_grapheme_caret(widget_layout const &clipped_layout, draw_context const &context) const noexcept;
-    void draw_caret(widget_layout const &clipped_layout, draw_context const &context) noexcept;
-    void draw_text(widget_layout const &clipped_layout, draw_context const &context) const noexcept;
+    void draw_selection_rectangles(draw_context const &context) const noexcept;
+    void draw_partial_grapheme_caret(draw_context const &context) const noexcept;
+    void draw_caret(draw_context const &context) noexcept;
+    void draw_text(draw_context const &context) const noexcept;
 };
 
 } // namespace tt::inline v1

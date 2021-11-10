@@ -144,13 +144,8 @@ hitbox window_widget::hitbox_test(point3 position) const noexcept
     }
 
     // Otherwise children have priority.
-    auto buffer = pmr::scoped_buffer<256>{};
-    for (auto *child : children(buffer.allocator())) {
-        if (child) {
-            r = std::max(r, child->hitbox_test(child->layout().from_parent * position));
-        }
-    }
-
+    r = _toolbar->hitbox_test_from_parent(position, r);
+    r = _content->hitbox_test_from_parent(position, r);
     return r;
 }
 

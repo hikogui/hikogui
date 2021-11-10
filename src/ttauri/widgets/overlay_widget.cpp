@@ -41,13 +41,16 @@ widget_constraints const &overlay_widget::set_constraints() noexcept
     return _constraints = _content->set_constraints();
 }
 
-void overlay_widget::set_layout(widget_layout const &context_) noexcept
+void overlay_widget::set_layout(widget_layout const &context) noexcept
 {
-    // The clipping rectangle of the overlay matches the rectangle exactly, with a border around it.
-    ttlet context = context_.override_clip(context_.rectangle() + theme().border_width);
-    _layout.store(context);
+    auto context_ = context;
 
-    _content->set_layout(layout().rectangle() * context);
+    // The clipping rectangle of the overlay matches the rectangle exactly, with a border around it.
+    context_.clipping_rectangle = context_.rectangle() + theme().border_width;
+    _layout.store(context_);
+
+    // The content should not draw in the border of the overlay, so give a tight clipping rectangle.
+    _content->set_layout(context_.transform(context_.rectangle(), 1.0f, context_.rectangle()));
 }
 
 void overlay_widget::draw(draw_context const &context) noexcept
@@ -80,6 +83,17 @@ void overlay_widget::draw_background(draw_context const &context) noexcept
 {
     context.draw_box(
         layout(), layout().rectangle(), background_color(), foreground_color(), theme().border_width, border_side::outside);
+}
+
+[[nodiscard]] hitbox overlay_widget::hitbox_test(point3 position) const noexcept
+{
+    tt_axiom(is_gui_thread());
+
+    if (visible and enabled) {
+        return _content->hitbox_test_from_parent(position);
+    } else {
+        return {};
+    }
 }
 
 } // namespace tt::inline v1

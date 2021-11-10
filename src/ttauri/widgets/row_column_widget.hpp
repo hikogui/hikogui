@@ -161,6 +161,20 @@ public:
         }
     }
 
+    hitbox hitbox_test(point3 position) const noexcept override
+    {
+        tt_axiom(is_gui_thread());
+
+        if (visible and enabled) {
+            auto r = hitbox{};
+            for (ttlet &child : _children) {
+                r = child->hitbox_test_from_parent(position, r);
+            }
+            return r;
+        } else {
+            return {};
+        }
+    }
     /// @endprivatesection
 private:
     std::vector<std::unique_ptr<widget>> _children;

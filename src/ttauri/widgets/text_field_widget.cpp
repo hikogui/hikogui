@@ -113,12 +113,10 @@ void text_field_widget::draw(draw_context const &context) noexcept
         // After drawing the border around the input field make sure any other
         // drawing remains inside this border. And change the transform to account
         // for how much the text has scrolled.
-        auto clipped_layout = layout();
-        clipped_layout.clipping_rectangle = _text_field_clipping_rectangle;
-        draw_selection_rectangles(clipped_layout, context);
-        draw_partial_grapheme_caret(clipped_layout, context);
-        draw_caret(clipped_layout, context);
-        draw_text(clipped_layout, context);
+        draw_selection_rectangles(context);
+        draw_partial_grapheme_caret(context);
+        draw_caret(context);
+        draw_text(context);
     }
 
     _error_label_widget->draw(context);
@@ -276,8 +274,8 @@ hitbox text_field_widget::hitbox_test(point3 position) const noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (layout().hit_rectangle.contains(position)) {
-        return hitbox{this, position, enabled ? hitbox::Type::TextEdit : hitbox::Type::Default};
+    if (visible and enabled and layout().contains(position) and _text_field_rectangle.contains(position)) {
+        return hitbox{this, position, hitbox::Type::TextEdit};
     } else {
         return hitbox{};
     }
@@ -285,8 +283,7 @@ hitbox text_field_widget::hitbox_test(point3 position) const noexcept
 
 [[nodiscard]] bool text_field_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
-    tt_axiom(is_gui_thread());
-    return is_normal(group) and enabled;
+    return visible and enabled and any(group & tt::keyboard_focus_group::normal);
 }
 
 [[nodiscard]] color text_field_widget::focus_color() const noexcept
@@ -380,33 +377,33 @@ void text_field_widget::scroll_text() noexcept
 void text_field_widget::draw_background_box(draw_context const &context) const noexcept
 {
     ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme().rounding_radius, theme().rounding_radius};
-    context.draw_box(layout(), _text_field_rectangle, background_color(), corner_shapes);
+    context.draw_box(_layout, _text_field_rectangle, background_color(), corner_shapes);
 
     ttlet line_rectangle = aarectangle{get<0>(_text_field_rectangle), extent2{_text_field_rectangle.width(), 1.0f}};
-    context.draw_box(layout(), translate3{0.0f, 0.0f, 0.1f} * line_rectangle, focus_color());
+    context.draw_box(_layout, translate3{0.0f, 0.0f, 0.1f} * line_rectangle, focus_color());
 }
 
-void text_field_widget::draw_selection_rectangles(widget_layout const &clipped_layout, draw_context const &context) const noexcept
+void text_field_widget::draw_selection_rectangles(draw_context const &context) const noexcept
 {
     ttlet selection_rectangles = _field.selection_rectangles();
     for (ttlet selection_rectangle : selection_rectangles) {
         context.draw_box(
-            clipped_layout, _text_translate * translate_z(0.1f) * selection_rectangle, theme().color(theme_color::text_select));
+            _layout, _text_translate * translate_z(0.1f) * selection_rectangle, theme().color(theme_color::text_select));
     }
 }
 
-void text_field_widget::draw_partial_grapheme_caret(widget_layout const &clipped_layout, draw_context const &context)
+void text_field_widget::draw_partial_grapheme_caret(draw_context const &context)
     const noexcept
 {
     ttlet partial_grapheme_caret = _field.partial_grapheme_caret();
     if (partial_grapheme_caret) {
         ttlet box = round(_text_translate) * translate_z(0.1f) * round(partial_grapheme_caret);
         context.draw_box(
-            clipped_layout, box, color::transparent(), theme().color(theme_color::incomplete_glyph), 1.0f, border_side::outside);
+            _layout, box, color::transparent(), theme().color(theme_color::incomplete_glyph), 1.0f, border_side::outside);
     }
 }
 
-void text_field_widget::draw_caret(widget_layout const &clipped_layout, draw_context const &context) noexcept
+void text_field_widget::draw_caret(draw_context const &context) noexcept
 {
     if (focus and window.active) {
         // Keep redrawing while the text-field has focus.
@@ -421,14 +418,20 @@ void text_field_widget::draw_caret(widget_layout const &clipped_layout, draw_con
         if (_left_to_right_caret and blink_is_on) {
             ttlet box = round(_text_translate) * translate_z(0.1f) * round(_left_to_right_caret);
             context.draw_box(
-                clipped_layout, box, color::transparent(), theme().color(theme_color::cursor), 1.0f, border_side::inside);
+                _layout,
+                _text_field_clipping_rectangle,
+                box,
+                color::transparent(),
+                theme().color(theme_color::cursor),
+                1.0f,
+                border_side::inside);
         }
     }
 }
 
-void text_field_widget::draw_text(widget_layout const &clipped_layout, draw_context const &context) const noexcept
+void text_field_widget::draw_text(draw_context const &context) const noexcept
 {
-    context.draw_text(clipped_layout, _text_translate * translate_z(0.2f), label_color(), _shaped_text);
+    context.draw_text(_layout, _text_field_clipping_rectangle, _text_translate * translate_z(0.2f), label_color(), _shaped_text);
 }
 
 } // namespace tt::inline v1

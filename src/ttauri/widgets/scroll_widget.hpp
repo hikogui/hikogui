@@ -215,7 +215,8 @@ public:
         // The size is further adjusted if the either the horizontal or vertical scroll bar is invisible.
         _content_rectangle =
             aarectangle{-_scroll_offset_x, -_scroll_offset_y - _height_adjustment, content_size.width(), content_size.height()};
-        _content->set_layout(_content_rectangle * context.clip(_aperture_rectangle));
+        ttlet content_clipping_rectangle = bounding_rectangle(~translate3{_content_rectangle} * _aperture_rectangle);
+        _content->set_layout(context.transform(_content_rectangle, 1.0f, content_clipping_rectangle));
     }
 
     void draw(draw_context const &context) noexcept
@@ -230,16 +231,20 @@ public:
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override
     {
         tt_axiom(is_gui_thread());
-        tt_axiom(_content);
 
-        auto r = super::hitbox_test(position);
+        if (visible and enabled) {
+            auto r = _content->hitbox_test_from_parent(position);
+            r = _horizontal_scroll_bar->hitbox_test_from_parent(position, r);
+            r = _vertical_scroll_bar->hitbox_test_from_parent(position, r);
 
-        if (layout().hit_rectangle.contains(position)) {
-            // Claim mouse events for scrolling.
-            r = std::max(r, hitbox{this, position});
+            if (layout().contains(position)) {
+                r = std::max(r, hitbox{this, position});
+            }
+            return r;
+
+        } else {
+            return {};
         }
-
-        return r;
     }
 
     bool handle_event(mouse_event const &event) noexcept override
@@ -251,9 +256,11 @@ public:
             handled = true;
             ttlet new_scroll_offset_x = _scroll_offset_x + event.wheelDelta.x();
             ttlet new_scroll_offset_y = _scroll_offset_y + event.wheelDelta.y();
+            ttlet max_scroll_offset_x = std::max(0.0f, _scroll_content_width - _scroll_aperture_width);
+            ttlet max_scroll_offset_y = std::max(0.0f, _scroll_content_height - _scroll_aperture_height);
 
-            _scroll_offset_x = std::clamp(new_scroll_offset_x, 0.0f, _scroll_content_width - _scroll_aperture_width);
-            _scroll_offset_y = std::clamp(new_scroll_offset_y, 0.0f, _scroll_content_height - _scroll_aperture_height);
+            _scroll_offset_x = std::clamp(new_scroll_offset_x, 0.0f, max_scroll_offset_x);
+            _scroll_offset_y = std::clamp(new_scroll_offset_y, 0.0f, max_scroll_offset_y);
             window.request_relayout();
             return true;
         }
@@ -262,18 +269,20 @@ public:
 
     void scroll_to_show(tt::aarectangle to_show) noexcept override
     {
+        ttlet window_clipping_rectangle = layout().window_clipping_rectangle();
+
         float delta_x = 0.0f;
-        if (to_show.right() > layout().redraw_rectangle.right()) {
-            delta_x = to_show.right() - layout().redraw_rectangle.right();
-        } else if (to_show.left() < layout().redraw_rectangle.left()) {
-            delta_x = to_show.left() - layout().redraw_rectangle.left();
+        if (to_show.right() > window_clipping_rectangle.right()) {
+            delta_x = to_show.right() - window_clipping_rectangle.right();
+        } else if (to_show.left() < window_clipping_rectangle.left()) {
+            delta_x = to_show.left() - window_clipping_rectangle.left();
         }
 
         float delta_y = 0.0f;
-        if (to_show.top() > layout().redraw_rectangle.top()) {
-            delta_y = to_show.top() - layout().redraw_rectangle.top();
-        } else if (to_show.bottom() < layout().redraw_rectangle.bottom()) {
-            delta_y = to_show.bottom() - layout().redraw_rectangle.bottom();
+        if (to_show.top() > window_clipping_rectangle.top()) {
+            delta_y = to_show.top() - window_clipping_rectangle.top();
+        } else if (to_show.bottom() < window_clipping_rectangle.bottom()) {
+            delta_y = to_show.bottom() - window_clipping_rectangle.bottom();
         }
 
         _scroll_offset_x += delta_x;

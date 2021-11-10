@@ -18,16 +18,11 @@ widget_constraints const &toolbar_tab_button_widget::set_constraints() noexcept
 
 void toolbar_tab_button_widget::set_layout(widget_layout const &context) noexcept
 {
-    // The toolbar tab will draw below the button into the margin.
-    auto context_ = context;
-    context_.redraw_rectangle =
-        aarectangle{translate2{0.0, -theme().margin} * get<0>(context.redraw_rectangle), get<3>(context.redraw_rectangle)};
-
-    if (_layout.store(context_) >= layout_update::transform) {
+    if (_layout.store(context) >= layout_update::transform) {
         _label_rectangle =
             aarectangle{theme().margin, 0.0f, layout().width() - theme().margin * 2.0f, layout().height() - theme().margin};
     }
-    set_layout_button(context_);
+    set_layout_button(context);
 }
 
 void toolbar_tab_button_widget::draw(draw_context const &context) noexcept
@@ -48,8 +43,7 @@ void toolbar_tab_button_widget::request_redraw() const noexcept
 
 [[nodiscard]] bool toolbar_tab_button_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
-    tt_axiom(is_gui_thread());
-    return is_toolbar(group) and enabled;
+    return visible and enabled and any(group & tt::keyboard_focus_group::toolbar);
 }
 
 [[nodiscard]] bool toolbar_tab_button_widget::handle_event(command command) noexcept

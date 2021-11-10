@@ -65,8 +65,6 @@ A `widget_layout` currently consists of the following attributes:
  | `to_window`          | Transformation matrix to convert coordinates from local to window. |
  | `from_window`        | Transformation matrix to convert coordinates from window to local. |
  | `clipping_rectangle` | The axis aligned rectangle to clip any drawing.                    |
- | `hit_rectangle`      | The visual rectangle to compare mouse coordinates with             |
- | `redraw_rectangle`   | The rectangle uses to request redraws to the window                |
  | `display_time_point` | The time when the drawing will appear on the screen.               |
 
 A layout can be transformed to child size & coordinates, by combining the layout with a
@@ -98,6 +96,8 @@ void set_layout(tt::widget_layout const &context) noexcept override
 ```
 
 ### Drawing
+
+This is a introduction to drawing a lot more information can be found in the [how to draw](how_to_draw.md)
 
 The draw context has the following attributes:
 
@@ -150,8 +150,57 @@ Event handling
 --------------
 
 ### Hitbox check
+When you want your widget to receive mouse events you will first need to override
+the `widget::hitbox_test()` function. This function is called by the operating
+system to determine the type of cursor and if the window can be dragged or resized at that position.
+
+ttauri at the same time uses this function to determine if this widget is directly underneath the
+mouse cursor; at the highest elevation. It will then send mouse events directly to the widget, and
+continue to track drag and exit events when the mouse leaves the widget.
+
+The default `hitbox_test()` returns an empty `hitbox`, this means that the mouse pointer is not
+hitting the widget, or the widget does not receive any mouse events at this time.
+
+To handle situations where your widget is scrolled outside of a scroll view's aperture you should always use
+the `layout().constains(position)` test which also checks the clipping rectangle.
+
+You can call `widget::hitbox_test_from_parent()` on any of the widget's children that can be interacted with.
+The `hitbox_test_from_parent()` will adjust the given position to the local coordinate system of the child widget.
+You can also use this function to combine the `hitbox` results from several children.
+
+```cpp
+[[nodiscard]] tt::hitbox hitbox_test(tt::point3 position) const noexcept override
+{
+    if (visible and enabled and layout().contains(position)) {
+        return {this, position, tt::hitbox::Type::Button};
+    } else {
+        return {};
+    }
+}
+```
 
 ### Accepting keyboard focus
+Similar to how `hitbox_test` will enable receiving mouse events for the widget,
+overriding `widget::accepts_keyboard_focus()` will enable receiving keyboard events for the widget.
+
+The `group` argument is a mask of reasons why this widget is being focused:
+
+ | name    | description                                                                     |
+ |:------- |:------------------------------------------------------------------------------- |
+ | normal  | The user used (shift-) tab to select the next normal widget.                    |
+ | menu    | The user used up/down-arrow to select the next widget in a pull down menu.      |
+ | toolbar | The user used alt or left/right-arrow to select the next widget in the toolbar. |
+
+A mouse click on a widget will cause `accepts_keyboard_focus()` to be called with all three
+values set. This means that any widget that will accept focus from any of those in the table above
+will also accept keyboard focus by a mouse click.
+
+```cpp
+[[nodiscard]] bool accepts_keyboard_focus(tt::keyboard_focus_group group) const noexcept override
+{
+    return visible and enabled and is_normal(group);
+}
+```
 
 ### Handling mouse events
 

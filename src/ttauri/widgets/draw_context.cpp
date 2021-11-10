@@ -33,11 +33,11 @@ draw_context::draw_context(
     _sdf_vertices->clear();
 }
 
-void draw_context::draw_box(
-    widget_layout const &layout,
+void draw_context::_draw_box(
+    aarectangle const &clipping_rectangle,
     quad box,
-    quad_color fill_color,
-    quad_color border_color,
+    quad_color const &fill_color,
+    quad_color const &border_color,
     float border_width,
     tt::border_side border_side,
     tt::corner_shapes corner_radius) const noexcept
@@ -60,16 +60,12 @@ void draw_context::draw_box(
     }
 
     pipeline_box::device_shared::place_vertices(
-        *_box_vertices,
-        bounding_rectangle(layout.to_window * layout.clipping_rectangle),
-        layout.to_window * box,
-        fill_color,
-        border_color,
-        border_width,
-        corner_radius);
+        *_box_vertices, clipping_rectangle, box, fill_color, border_color, border_width, corner_radius);
 }
 
-[[nodiscard]] bool draw_context::draw_image(widget_layout const &layout, quad box, paged_image &image) const noexcept
+[[nodiscard]] bool
+draw_context::_draw_image(aarectangle const &clipping_rectangle, quad const &box, paged_image &image)
+    const noexcept
 {
     tt_axiom(_image_vertices != nullptr);
 
@@ -78,25 +74,27 @@ void draw_context::draw_box(
     }
 
     ttlet pipeline = narrow_cast<gfx_device_vulkan &>(device).imagePipeline.get();
-    pipeline->place_vertices(
-        *_image_vertices, bounding_rectangle(layout.to_window * layout.clipping_rectangle), layout.to_window * box, image);
+    pipeline->place_vertices(*_image_vertices, clipping_rectangle, box, image);
     return true;
 }
 
-void draw_context::draw_glyph(widget_layout const &layout, quad const &box, quad_color color, font_glyph_ids const &glyph)
-    const noexcept
+void draw_context::_draw_glyph(
+    aarectangle const &clipping_rectangle,
+    quad const &box,
+    quad_color const &color,
+    font_glyph_ids const &glyph) const noexcept
 {
     tt_axiom(_sdf_vertices != nullptr);
     ttlet pipeline = narrow_cast<gfx_device_vulkan &>(device).SDFPipeline.get();
 
     if (_sdf_vertices->full()) {
-        draw_box(layout, box, tt::color{1.0f, 0.0f, 1.0f});
+        _draw_box(clipping_rectangle, box, tt::color{1.0f, 0.0f, 1.0f}, tt::color{}, 0.0f, border_side::on, {});
         ++global_counter<"draw_glyph::overflow">;
         return;
     }
 
     ttlet atlas_was_updated = pipeline->place_vertices(
-        *_sdf_vertices, bounding_rectangle(layout.to_window * layout.clipping_rectangle), layout.to_window * box, glyph, color);
+        *_sdf_vertices, clipping_rectangle, box, glyph, color);
 
     if (atlas_was_updated) {
         pipeline->prepare_atlas_for_rendering();
@@ -104,16 +102,13 @@ void draw_context::draw_glyph(widget_layout const &layout, quad const &box, quad
 }
 
 void draw_context::_draw_text(
-    widget_layout const &layout,
-    matrix3 transform,
-    std::optional<quad_color> text_color,
-    shaped_text const &text) const noexcept
+    aarectangle const &clipping_rectangle,
+    matrix3 const &transform,
+    shaped_text const &text,
+    std::optional<quad_color> text_color) const noexcept
 {
     tt_axiom(_sdf_vertices != nullptr);
     ttlet pipeline = narrow_cast<gfx_device_vulkan &>(device).SDFPipeline.get();
-
-    ttlet clipping_rectangle = bounding_rectangle(layout.to_window * layout.clipping_rectangle);
-    ttlet to_window_transform = layout.to_window * transform;
 
     auto atlas_was_updated = false;
     for (ttlet &attr_glyph : text) {
@@ -124,13 +119,13 @@ void draw_context::_draw_text(
             continue;
 
         } else if (_sdf_vertices->full()) {
-            draw_box(layout, transform * box, tt::color{1.0f, 0.0f, 1.0f});
+            _draw_box(clipping_rectangle, box, tt::color{1.0f, 0.0f, 1.0f}, tt::color{}, 0.0f, border_side::on, {});
             ++global_counter<"draw_glyph::overflow">;
             break;
         }
 
         atlas_was_updated |=
-            pipeline->place_vertices(*_sdf_vertices, clipping_rectangle, to_window_transform * box, attr_glyph.glyphs, color);
+            pipeline->place_vertices(*_sdf_vertices, clipping_rectangle, transform * box, attr_glyph.glyphs, color);
     }
 
     if (atlas_was_updated) {

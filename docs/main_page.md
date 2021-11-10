@@ -9,6 +9,7 @@ Manuals
  - [How to log](how_to/how_to_log.md)
  - [How to use preferences](how_to/how_to_use_preferences.md) 
  - [How to make custom widgets](how_to/how_to_make_custom_widget.md) ![new](media/images/new.png)
+ - [How to draw](how_to/how_to_draw.md) ![new](media/images/new.png)
 
 Subsystems
 ----------

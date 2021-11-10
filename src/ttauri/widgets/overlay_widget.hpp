@@ -82,6 +82,7 @@ public:
     [[nodiscard]] color background_color() const noexcept override;
     [[nodiscard]] color foreground_color() const noexcept override;
     void scroll_to_show(tt::aarectangle rectangle) noexcept override;
+    [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
     /// @endprivatesection
 private:
     std::weak_ptr<delegate_type> _delegate;

@@ -36,8 +36,7 @@ void toolbar_button_widget::draw(draw_context const &context) noexcept
 
 [[nodiscard]] bool toolbar_button_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
-    tt_axiom(is_gui_thread());
-    return is_toolbar(group) and enabled;
+    return visible and enabled and any(group & tt::keyboard_focus_group::toolbar);
 }
 
 [[nodiscard]] bool toolbar_button_widget::handle_event(command command) noexcept

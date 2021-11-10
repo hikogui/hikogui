@@ -126,7 +126,30 @@ public:
      * @param position The coordinate of the mouse local to the widget.
      * @return A hit_box object with the cursor-type and a reference to the widget.
      */
-    [[nodiscard]] virtual hitbox hitbox_test(point3 position) const noexcept;
+    [[nodiscard]] virtual hitbox hitbox_test(point3 position) const noexcept { return {}; }
+
+    /** Call hitbox_test from a parent widget.
+    * 
+    * This function will transform the position from parent coordinates to local coordinates.
+    * 
+    * @param position The coordinate of the mouse local to the parent widget.
+    */
+    [[nodiscard]] virtual hitbox hitbox_test_from_parent(point3 position) const noexcept
+    {
+        return hitbox_test(_layout.from_parent * position);
+    }
+
+    /** Call hitbox_test from a parent widget.
+     *
+     * This function will transform the position from parent coordinates to local coordinates.
+     *
+     * @param position The coordinate of the mouse local to the parent widget.
+     * @param sibling_hitbox The hitbox of a sibling to combine with the hitbox of this widget.
+     */
+    [[nodiscard]] virtual hitbox hitbox_test_from_parent(point3 position, hitbox sibling_hitbox) const noexcept
+    {
+        return std::max(sibling_hitbox, hitbox_test(_layout.from_parent * position));
+    }
 
     /** Check if the widget will accept keyboard focus.
      *
@@ -279,7 +302,7 @@ public:
      */
     void scroll_to_show() noexcept
     {
-        scroll_to_show(layout().redraw_rectangle);
+        scroll_to_show(layout().window_clipping_rectangle());
     }
 
     /** Get a list of parents of a given widget.

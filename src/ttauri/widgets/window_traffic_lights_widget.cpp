@@ -236,12 +236,9 @@ hitbox window_traffic_lights_widget::hitbox_test(point3 position) const noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (layout().hit_rectangle.contains(position)) {
-        if (closeRectangle.contains(position) || minimizeRectangle.contains(position) || maximizeRectangle.contains(position)) {
-            return hitbox{this, position, hitbox::Type::Button};
-        } else {
-            return hitbox{};
-        }
+    if (visible and enabled and layout().contains(position) and
+        (closeRectangle.contains(position) or minimizeRectangle.contains(position) or maximizeRectangle.contains(position))) {
+        return hitbox{this, position, hitbox::Type::Button};
     } else {
         return {};
     }

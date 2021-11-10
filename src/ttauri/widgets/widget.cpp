@@ -125,7 +125,7 @@ tt::font_book &widget::font_book() const noexcept
 
 void widget::request_redraw() const noexcept
 {
-    window.request_redraw(layout().redraw_rectangle);
+    window.request_redraw(layout().window_clipping_rectangle());
 }
 
 [[nodiscard]] bool widget::handle_event(std::vector<command> const &commands) noexcept
@@ -137,24 +137,6 @@ void widget::request_redraw() const noexcept
         }
     }
     return false;
-}
-
-[[nodiscard]] hitbox widget::hitbox_test(point3 position) const noexcept
-{
-    tt_axiom(is_gui_thread());
-
-    auto r = hitbox{};
-
-    auto buffer = pmr::scoped_buffer<256>{};
-    for (auto *child : children(buffer.allocator())) {
-        if (child) {
-            tt_axiom(child->parent == this);
-            if (child->visible) {
-                r = std::max(r, child->hitbox_test(child->layout().from_parent * position));
-            }
-        }
-    }
-    return r;
 }
 
 bool widget::handle_event(command command) noexcept
@@ -354,7 +336,7 @@ void widget::scroll_to_show(tt::aarectangle rectangle) noexcept
     tt_axiom(is_gui_thread());
 
     // Move the request_rectangle to window coordinates.
-    ttlet requested_window_rectangle = translate2{layout().redraw_rectangle - theme().margin} * requested_rectangle;
+    ttlet requested_window_rectangle = translate2{layout().window_clipping_rectangle()} * requested_rectangle;
     ttlet window_bounds = aarectangle{window.screen_rectangle.size()} - theme().margin;
     ttlet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
     return bounding_rectangle(layout().from_window * response_window_rectangle);

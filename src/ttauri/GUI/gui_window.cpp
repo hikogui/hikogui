@@ -337,7 +337,7 @@ bool gui_window::send_event(mouse_event const &event) noexcept
         update_mouse_target(hitbox.widget, event.position);
 
         if (event.type == mouse_event::Type::ButtonDown) {
-            update_keyboard_target(hitbox.widget, keyboard_focus_group::any);
+            update_keyboard_target(hitbox.widget, keyboard_focus_group::all);
         }
     } break;
     default:;
@@ -370,7 +370,7 @@ bool gui_window::send_event(keyboard_event const &event) noexcept
             // The update_keyboard_target() function will send gui_keyboard_exit and a
             // potential duplicate gui_escape messages to all widgets that need it.
             if (command == command::gui_escape) {
-                update_keyboard_target({}, keyboard_focus_group::any);
+                update_keyboard_target({}, keyboard_focus_group::all);
             }
         }
 

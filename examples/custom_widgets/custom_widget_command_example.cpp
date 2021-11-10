@@ -75,7 +75,7 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(tt::keyboard_focus_group group) const noexcept override
     {
         // This widget will react to "normal" tab/shift-tab keys and mouse clicks to focus the widget.
-        return enabled and is_normal(group);
+        return enabled and any(group & tt::keyboard_focus_group::normal);
     }
 
     // Override this function when your widget needs to be controllable by mouse interaction.
@@ -83,7 +83,7 @@ public:
     {
         // Check if the (mouse) position is within the visual-area of the widget.
         // The hit_rectangle is the _layout.rectangle() intersected with the _layout.clipping_rectangle.
-        if (layout().hit_rectangle.contains(position)) {
+        if (visible and enabled and layout().contains(position)) {
             // The `this` argument allows the gui_window to forward mouse events to handle_event(mouse) of this widget.
             // The `position` argument is used to handle widgets that are visually overlapping, widgets with higher elevation
             // get priority. When this widget is enabled it should show a button-cursor, otherwise just the normal arrow.

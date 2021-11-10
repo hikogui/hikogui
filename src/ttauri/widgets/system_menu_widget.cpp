@@ -45,10 +45,10 @@ hitbox system_menu_widget::hitbox_test(point3 position) const noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (layout().hit_rectangle.contains(position)) {
+    if (visible and enabled and layout().contains(position)) {
         // Only the top-left square should return ApplicationIcon, leave
         // the reset to the toolbar implementation.
-        return hitbox{this, position, hitbox::Type::ApplicationIcon};
+        return {this, position, hitbox::Type::ApplicationIcon};
     } else {
         return {};
     }

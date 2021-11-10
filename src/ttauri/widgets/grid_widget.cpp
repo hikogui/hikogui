@@ -99,4 +99,19 @@ void grid_widget::draw(draw_context const &context) noexcept
     }
 }
 
+hitbox grid_widget::hitbox_test(point3 position) const noexcept
+{
+    tt_axiom(is_gui_thread());
+
+    if (visible and enabled) {
+        auto r = hitbox{};
+        for (ttlet &cell : _cells) {
+            r = cell.widget->hitbox_test_from_parent(position, r);
+        }
+        return r;
+    } else {
+        return {};
+    }
+}
+
 } // namespace tt::inline v1

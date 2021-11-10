@@ -81,10 +81,23 @@ void tab_widget::draw(draw_context const &context) noexcept
 {
     if (visible) {
         for (ttlet &child : _children) {
-            if (child->visible) {
-                child->draw(context);
-            }
+            child->draw(context);
         }
+    }
+}
+
+[[nodiscard]] hitbox tab_widget::hitbox_test(point3 position) const noexcept
+{
+    tt_axiom(is_gui_thread());
+
+    if (visible and enabled) {
+        auto r = hitbox{};
+        for (ttlet &child : _children) {
+            r = child->hitbox_test_from_parent(position, r);
+        }
+        return r;
+    } else {
+        return {};
     }
 }
 

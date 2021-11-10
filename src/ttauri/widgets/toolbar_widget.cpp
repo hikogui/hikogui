@@ -42,10 +42,9 @@ widget_constraints const &toolbar_widget::set_constraints() noexcept
                {_flow_layout.maximum_size(), shared_height}};
 }
 
-void toolbar_widget::set_layout(widget_layout const &context_) noexcept
+void toolbar_widget::set_layout(widget_layout const &context) noexcept
 {
     // Clip directly around the toolbar, so that tab buttons looks proper.
-    ttlet context = context_.clip(context_.rectangle());
     if (_layout.store(context) >= layout_update::size) {
         _flow_layout.set_size(layout().width());
     }
@@ -113,18 +112,24 @@ hitbox toolbar_widget::hitbox_test(point3 position) const noexcept
 {
     tt_axiom(is_gui_thread());
 
-    auto r = hitbox{};
+    // By default the toolbar is used for dragging the window.
+    if (visible and enabled) {
+        auto r = layout().contains(position) ? hitbox{this, position, hitbox::Type::MoveArea} : hitbox{};
 
-    if (layout().hit_rectangle.contains(position)) {
-        r = hitbox{this, position, hitbox::Type::MoveArea};
-    }
+        for (ttlet &child : _left_children) {
+            tt_axiom(child);
+            r = child->hitbox_test_from_parent(position, r);
+        }
 
-    auto buffer = pmr::scoped_buffer<256>{};
-    for (auto *child : children(buffer.allocator())) {
-        tt_axiom(child);
-        r = std::max(r, child->hitbox_test(child->layout().from_parent * position));
+        for (ttlet &child : _right_children) {
+            tt_axiom(child);
+            r = child->hitbox_test_from_parent(position, r);
+        }
+
+        return r;
+    } else {
+        return {};
     }
-    return r;
 }
 
 void toolbar_widget::update_constraints_for_child(widget &child, ssize_t index, float &shared_height) noexcept
@@ -151,7 +156,8 @@ void toolbar_widget::update_layout_for_child(widget &child, ssize_t index, widge
     ttlet child_rectangle =
         aarectangle{child_x, child.constraints().margin, child_width, layout().height() - child.constraints().margin * 2.0f};
 
-    child.set_layout(child_rectangle * context);
+    ttlet child_clipping_rectangle = aarectangle{child_rectangle.size()} + child.constraints().margin;
+    child.set_layout(context.transform(child_rectangle, 1.0f, child_clipping_rectangle));
 }
 
 widget &toolbar_widget::add_widget(horizontal_alignment alignment, std::unique_ptr<widget> widget) noexcept

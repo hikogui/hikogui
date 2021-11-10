@@ -87,17 +87,17 @@ void abstract_button_widget::set_layout_button(widget_layout const &context) noe
 {
     tt_axiom(is_gui_thread());
 
-    if (layout().hit_rectangle.contains(position)) {
-        return hitbox{this, position, enabled ? hitbox::Type::Button : hitbox::Type::Default};
+    if (visible and enabled and layout().contains(position)) {
+        return {this, position, hitbox::Type::Button};
     } else {
-        return hitbox{};
+        return {};
     }
 }
 
 [[nodiscard]] bool abstract_button_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
     tt_axiom(is_gui_thread());
-    return is_normal(group) and enabled;
+    return visible and enabled and any(group & tt::keyboard_focus_group::normal);
 }
 
 void activate() noexcept;

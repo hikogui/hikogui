@@ -84,10 +84,10 @@ public:
     {
         tt_axiom(is_gui_thread());
 
-        if (visible and layout().hit_rectangle.contains(position) and _slider_rectangle.contains(position)) {
-            return hitbox{this, position};
+        if (visible and enabled and layout().contains(position) and _slider_rectangle.contains(position)) {
+            return {this, position};
         } else {
-            return hitbox{};
+            return {};
         }
     }
 
