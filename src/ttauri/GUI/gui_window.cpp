@@ -276,7 +276,7 @@ void gui_window::update_keyboard_target(tt::widget const *new_target_widget, key
     }
 
     // Tell "escape" to all the widget that are not parents of the new widget
-    [[maybe_unused]] ttlet handled = widget->handle_command_recursive(command::gui_escape, new_target_parent_chain);
+    [[maybe_unused]] ttlet handled = widget->handle_command_recursive(command::gui_cancel, new_target_parent_chain);
 
     // Tell the new widget that keyboard focus was entered.
     if (new_target_widget) {
@@ -368,8 +368,8 @@ bool gui_window::send_event(keyboard_event const &event) noexcept
             // Intercept the keyboard generated escape.
             // A keyboard generated escape should always remove keyboard focus.
             // The update_keyboard_target() function will send gui_keyboard_exit and a
-            // potential duplicate gui_escape messages to all widgets that need it.
-            if (command == command::gui_escape) {
+            // potential duplicate gui_cancel messages to all widgets that need it.
+            if (command == command::gui_cancel) {
                 update_keyboard_target({}, keyboard_focus_group::all);
             }
         }

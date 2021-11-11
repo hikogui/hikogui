@@ -139,7 +139,7 @@ bool text_field_widget::handle_event(command command) noexcept
 
         case command::text_edit_cut: window.set_text_on_clipboard(_field.handle_cut()); return true;
 
-        case command::gui_escape: revert(true); return true;
+        case command::gui_cancel: revert(true); return true;
 
         case command::gui_enter:
             commit(true);

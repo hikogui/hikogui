@@ -49,7 +49,7 @@ enum class command {
     gui_toolbar_prev,
     gui_activate,
     gui_enter,
-    gui_escape,
+    gui_cancel,
 };
 
 constexpr char const *to_const_string(command rhs) noexcept
@@ -92,7 +92,7 @@ constexpr char const *to_const_string(command rhs) noexcept
     case command::gui_toolbar_prev: return "gui_toolbar_prev";
     case command::gui_activate: return "gui_activate";
     case command::gui_enter: return "gui_enter";
-    case command::gui_escape: return "gui_escape";
+    case command::gui_cancel: return "gui_cancel";
     default: tt_no_default();
     }
 }
@@ -181,8 +181,8 @@ constexpr command to_command(std::string_view name) noexcept
         return command::gui_activate;
     } else if (name == "gui_enter") {
         return command::gui_enter;
-    } else if (name == "gui_escape") {
-        return command::gui_escape;
+    } else if (name == "gui_cancel") {
+        return command::gui_cancel;
     } else {
         return command::unknown;
     }

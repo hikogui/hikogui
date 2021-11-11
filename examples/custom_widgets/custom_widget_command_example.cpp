@@ -124,6 +124,17 @@ public:
         // The default handle_event() doesn't do anything, but should still be called.
         return widget::handle_event(event);
     }
+
+    bool handle_event(tt::keyboard_event const &event) noexcept
+    {
+        if (enabled) {
+            if (event.type == tt::keyboard_event::Type::grapheme) {
+                tt_log_error("User typed the letter U+{:x}.", static_cast<uint32_t>(event.grapheme.front()));
+                return true;
+            }
+        }
+        return false;
+    }
 };
 
 int tt_main(int argc, char *argv[])

@@ -164,7 +164,7 @@ bool selection_widget::handle_event(command command) noexcept
             }
             return true;
 
-        case gui_escape:
+        case gui_cancel:
             if (_selecting) {
                 stop_selecting();
             }

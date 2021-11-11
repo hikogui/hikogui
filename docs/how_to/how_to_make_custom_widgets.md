@@ -202,12 +202,133 @@ will also accept keyboard focus by a mouse click.
 }
 ```
 
-### Handling mouse events
-
 ### Handling keyboard events
+In most cases you do not need to handle keyboard events directly, unless you want to
+receive characters/graphemes being entered by the user. When a keyboard event is not handled
+the key is translated to a command-event.
+
+The following steps are executed when a key-press is detected:
+ - When the operating system determines that a key press causes a character being typed.
+    1. The grapheme keyboard event is send to the widget with keyboard focus.
+    2. If the event is unhandled send it to the parent widget, until it is handled.
+ - When the operating system determines that a key press causes a partial character being typed.
+    1. The partial-grapheme keyboard event is send to the widget with keyboard focus.
+    2. If the event is unhandled send it to the parent widget, until it is handled.
+ - Any key event will be translated into a `tt::keyboard_key`, this event is also send before or
+   after a (partial-) grapheme event was send.
+    1. The key event is send to the widget with keyboard focus.
+    2. If the event is unhandled send it to the parent widget, until it is handled.
+    3. If the event is still unhandled translate the `tt::keyboard_key` into zero or more `tt::command`
+       using the `*.keybinds.json` files.
+    4. Handle the commands in sequential order, until an command-event is handled:
+       1. The command event is send to the widget with keyboard focus.
+       2. If the event is unhandled send it to the parent widget, until it is handled.
+
+In this example the widget intercepts a grapheme being entered on the keyboard. Graphemes
+are what a user of a language feels what a single character is, this may be one or more unicode
+code-points where accents are composed on top of a base character. The function returns `true`
+to signify that it handled the event and that processing the event should stop.
+
+```cpp
+bool handle_event(tt::keyboard_event const &event) noexcept
+{
+    if (enabled) {
+        if (event.type == tt::keyboard_event::Type::grapheme) {
+            tt_log_error("User typed the letter U+{:x}.", static_cast<uint32_t>(event.grapheme.front()));
+            return true;
+        }
+    }
+    return false;
+}
+```
+### Handling mouse events
+Unlike keyboard events mouse events are not easy to directly translate into `tt::command`,
+since the position of the mouse inside the widget often determines the context. In many
+cases the handle mouse event function is used to directly translate mouse clicks in commands.
+
+This function can also be used to handle drag events. During the drag:
+ - The widget where the drag starts will receive all the mouse events.
+ - Drag events continue even if the mouse leaves the window.
+ - No `gui_mouse_exit` or `gui_mouse_enter` events are send to any widget.
+
+When the drag ends, the widget where the drag starts receives the button-up event.
+If the mouse was hovering over another widget or outside the window this is followed
+up by the appropriate `gui_mouse_exit` and `gui_mouse_enter` events.
+
+The function below intercepts the left-mouse-button-up event when the mouse is inside
+the rectangle of the widget, this allows a drag outside the widget to cancel
+an accidental button-down. The function then forwards this event as a `gui_activate` command
+which is the same command that is being send when pressing the space-bar.
+
+```cpp
+[[nodiscard]] bool handle_event(tt::mouse_event const &event) noexcept override
+{
+    if (enabled and event.is_left_button_up(_layout.rectangle())) {
+        return handle_event(tt::command::gui_activate);
+    }
+    return widget::handle_event(event);
+}
+```
 
 ### Handling command events
+It is best to do actual work in the command event handler. This allows the
+user to customize what key combinations causes which commands to be send.
+The key-combination to command translations are stored in the `*.keybinds.json` files.
 
-Child widgets
--------------
+Besides the key-bindings there are several automatic commands that are send
+to a widget:
+
+ | Command            | Description                                                       |
+ |:------------------ |:----------------------------------------------------------------- |
+ | gui_keyboard_enter | The widget gets keyboard focus.                                   |
+ | gui_keyboard_exit  | The widget looses keyboard focus.                                 |
+ | gui_mouse_enter    | The mouse cursor enters the widget, unless the mouse is dragging. |
+ | gui_mouse_exit     | The mouse cursor exists the widget, unless the mouse is dragging. |
+ | gui_cancel         | The widget should cancel the current incomplete operation.        |
+ | gui_action         | The primary action.                                               |
+ | gui_enter          | The primary action and switch keyboard focus to the next widget.  |
+
+```cpp
+[[nodiscard]] bool handle_event(tt::command command) noexcept override
+{
+    if (enabled and command == tt::command::gui_activate) {
+        value = not value;
+        return true;
+
+    } else if (enabled and command == tt::command::gui_enter) {
+        value = not value;
+        window.update_keyboard_target(tt::keyboard_focus_group::normal, tt::keyboard_focus_direction::forward);
+        return true;
+    }
+    return widget::handle_event(command);
+}
+```
+
+Children
+--------
+For the following high-performance methods the children need to be recursively called:
+ - `set_contraints()`
+ - `set_layout()`
+ - `draw()`
+ - `hitbox_text()`
+
+A widget that owns one or more child widgets will need to override the `children()` method to let the
+system know how to call the lower-performance methods automatically. The `children()` method should be
+implemented as a generator-coroutine, which `co_yield` the raw-pointer to each widget.
+
+The keyboard focus ordering is the same as the order of children yielded by this function.
+
+The example function below yields the pointer to both children stored as member variables and children
+stored in a vector.  
+
+```cpp
+[[nodiscard]] tt::pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
+{
+    co_yield _label_widget.get();
+    co_yield _checkbox_widget.get();
+    for (auto const &child: _children) {
+        co_yield child.get();
+    }
+}
+```
 

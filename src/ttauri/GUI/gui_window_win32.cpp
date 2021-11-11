@@ -620,22 +620,6 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         }
     }
 
-        // case WM_SYSKEYUP: {
-        //    auto alt_pressed = (narrow_cast<uint32_t>(lParam) & 0x20000000) != 0;
-        //    if (!alt_pressed) {
-        //        return -1;
-        //    }
-        //    return -1;
-        //} break;
-        //
-        // case WM_SYSKEYDOWN: {
-        //    auto alt_pressed = (narrow_cast<uint32_t>(lParam) & 0x20000000) != 0;
-        //    if (!alt_pressed) {
-        //        return -1;
-        //    }
-        //    return -1;
-        //} break;
-
     case WM_KEYDOWN: {
         auto extended = (narrow_cast<uint32_t>(lParam) & 0x01000000) != 0;
         auto key_code = narrow_cast<int>(wParam);
