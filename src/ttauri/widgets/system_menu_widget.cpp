@@ -20,18 +20,18 @@ widget_constraints const &system_menu_widget::set_constraints() noexcept
     return _constraints = {size, size, size};
 }
 
-void system_menu_widget::set_layout(widget_layout const &context) noexcept
+void system_menu_widget::set_layout(widget_layout const &layout) noexcept
 {
-    if (_layout.store(context) >= layout_update::transform) {
-        ttlet icon_height = layout().height() < theme().toolbar_height * 1.2f ? layout().height() : theme().toolbar_height;
-        _icon_rectangle = aarectangle{0.0f, layout().height() - icon_height, layout().width(), icon_height};
+    if (compare_store(_layout, layout)) {
+        ttlet icon_height = layout.height() < theme().toolbar_height * 1.2f ? layout.height() : theme().toolbar_height;
+        _icon_rectangle = aarectangle{0.0f, layout.height() - icon_height, layout.width(), icon_height};
 
         // Leave space for window resize handles on the left and top.
         _system_menu_rectangle =
-            aarectangle{theme().margin, 0.0f, layout().width() - theme().margin, layout().height() - theme().margin};
+            aarectangle{theme().margin, 0.0f, layout.width() - theme().margin, layout.height() - theme().margin};
     }
 
-    _icon_widget->set_layout(_icon_rectangle * context);
+    _icon_widget->set_layout(_icon_rectangle * layout);
 }
 
 void system_menu_widget::draw(draw_context const &context) noexcept

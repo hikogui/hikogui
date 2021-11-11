@@ -43,19 +43,19 @@ public:
     // a widget wants to change the internal layout.
     //
     // NOTE: The size of the layout may be larger than the maximum constraints of this widget.
-    void set_layout(tt::widget_layout const &context) noexcept override
+    void set_layout(tt::widget_layout const &layout) noexcept override
     {
         // Update the `_layout` with the new context, in this case we want to do some
         // calculations when the size of the widget was changed.
-        if (_layout.store(context) >= tt::layout_update::size) {
+        if (compare_store(_layout, layout)) {
             // The layout of the child widget are also calculated here, which only needs to be done
             // when the layout of the current widget changes.
-            _label_rectangle = align(_layout.rectangle(), _label_widget->constraints().preferred, tt::alignment::middle_center);
+            _label_rectangle = align(layout.rectangle(), _label_widget->constraints().preferred, tt::alignment::middle_center);
         }
 
         // The layout of any child widget must always be set, even if the layout didn't actually change.
         // This is because child widgets may need to re-layout for other reasons.
-        _label_widget->set_layout(_label_rectangle * context);
+        _label_widget->set_layout(_label_rectangle * layout);
     }
 
     // The `draw()` function is called when all or part of the window requires redrawing.

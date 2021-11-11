@@ -30,14 +30,14 @@ widget_constraints const &window_traffic_lights_widget::set_constraints() noexce
     }
 }
 
-void window_traffic_lights_widget::set_layout(widget_layout const &context) noexcept
+void window_traffic_lights_widget::set_layout(widget_layout const &layout) noexcept
 {
-    if (_layout.store(context) >= layout_update::transform) {
-        auto extent = layout().size;
+    if (compare_store(_layout, layout)) {
+        auto extent = layout.size;
         if (extent.height() > theme().toolbar_height * 1.2f) {
             extent = extent2{extent.width(), theme().toolbar_height};
         }
-        auto y = layout().height() - extent.height();
+        auto y = layout.height() - extent.height();
 
         if (theme().operating_system == operating_system::windows) {
             closeRectangle =
@@ -185,9 +185,9 @@ bool window_traffic_lights_widget::handle_event(mouse_event const &event) noexce
 
     // Check the hover states of each button.
     auto stateHasChanged = false;
-    stateHasChanged |= compare_then_assign(hoverClose, closeRectangle.contains(event.position));
-    stateHasChanged |= compare_then_assign(hoverMinimize, minimizeRectangle.contains(event.position));
-    stateHasChanged |= compare_then_assign(hoverMaximize, maximizeRectangle.contains(event.position));
+    stateHasChanged |= compare_store(hoverClose, closeRectangle.contains(event.position));
+    stateHasChanged |= compare_store(hoverMinimize, minimizeRectangle.contains(event.position));
+    stateHasChanged |= compare_store(hoverMaximize, maximizeRectangle.contains(event.position));
     if (stateHasChanged) {
         request_redraw();
     }

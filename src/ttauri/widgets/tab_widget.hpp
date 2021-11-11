@@ -90,7 +90,7 @@ public:
     }
 
     widget_constraints const &set_constraints() noexcept override;
-    void set_layout(widget_layout const &context) noexcept override;
+    void set_layout(widget_layout const &layout) noexcept override;
     void draw(draw_context const &context) noexcept override;
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
     [[nodiscard]] widget const *find_next_widget(

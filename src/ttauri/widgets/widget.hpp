@@ -191,7 +191,7 @@ public:
      * @param context The layout context for this child.
      * @return The new size of the widget, should be a copy of the new_size parameter.
      */
-    virtual void set_layout(widget_layout const &context) noexcept = 0;
+    virtual void set_layout(widget_layout const &layout) noexcept = 0;
 
     /** Get the current layout for this widget.
      */

@@ -41,16 +41,15 @@ widget_constraints const &overlay_widget::set_constraints() noexcept
     return _constraints = _content->set_constraints();
 }
 
-void overlay_widget::set_layout(widget_layout const &context) noexcept
+void overlay_widget::set_layout(widget_layout const &layout) noexcept
 {
-    auto context_ = context;
+    _layout = layout;
 
     // The clipping rectangle of the overlay matches the rectangle exactly, with a border around it.
-    context_.clipping_rectangle = context_.rectangle() + theme().border_width;
-    _layout.store(context_);
+    _layout.clipping_rectangle = _layout.rectangle() + theme().border_width;
 
     // The content should not draw in the border of the overlay, so give a tight clipping rectangle.
-    _content->set_layout(context_.transform(context_.rectangle(), 1.0f, context_.rectangle()));
+    _content->set_layout(_layout.transform(_layout.rectangle(), 1.0f, _layout.rectangle()));
 }
 
 void overlay_widget::draw(draw_context const &context) noexcept

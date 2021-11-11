@@ -59,16 +59,16 @@ public:
         }
     }
 
-    void set_layout(widget_layout const &context) noexcept override
+    void set_layout(widget_layout const &layout) noexcept override
     {
-        _layout.store(context);
+        _layout = layout;
 
         // Calculate the position of the slider.
         ttlet slider_offset = *offset * travel_vs_hidden_content_ratio();
         if constexpr (axis == axis::vertical) {
-            _slider_rectangle = aarectangle{0.0f, slider_offset, layout().width(), slider_length()};
+            _slider_rectangle = aarectangle{0.0f, slider_offset, layout.width(), slider_length()};
         } else {
-            _slider_rectangle = aarectangle{slider_offset, 0.0f, slider_length(), layout().height()};
+            _slider_rectangle = aarectangle{slider_offset, 0.0f, slider_length(), layout.height()};
         }
     }
 

@@ -29,12 +29,12 @@ widget_constraints const &toggle_widget::set_constraints() noexcept
     return _constraints;
 }
 
-void toggle_widget::set_layout(widget_layout const &context) noexcept
+void toggle_widget::set_layout(widget_layout const &layout) noexcept
 {
-    if (_layout.store(context) >= layout_update::transform) {
-        _button_rectangle = align(layout().rectangle(), _button_size, alignment::top_left);
+    if (compare_store(_layout, layout)) {
+        _button_rectangle = align(layout.rectangle(), _button_size, alignment::top_left);
 
-        _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, layout().width(), layout().height()};
+        _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, layout.width(), layout.height()};
 
         ttlet button_square =
             aarectangle{get<0>(_button_rectangle), extent2{_button_rectangle.height(), _button_rectangle.height()}};
@@ -44,7 +44,7 @@ void toggle_widget::set_layout(widget_layout const &context) noexcept
         ttlet pip_to_button_margin_x2 = _button_rectangle.height() - _pip_rectangle.height();
         _pip_move_range = _button_rectangle.width() - _pip_rectangle.width() - pip_to_button_margin_x2;
     }
-    set_layout_button(context);
+    set_layout_button(layout);
 }
 
 void toggle_widget::draw(draw_context const &context) noexcept

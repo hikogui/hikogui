@@ -78,15 +78,15 @@ widget_constraints const &grid_widget::set_constraints() noexcept
                extent2{_columns.maximum_size(), _rows.maximum_size()}};
 }
 
-void grid_widget::set_layout(widget_layout const &context) noexcept
+void grid_widget::set_layout(widget_layout const &layout) noexcept
 {
-    if (_layout.store(context) >= layout_update::transform) {
-        _columns.set_size(layout().width());
-        _rows.set_size(layout().height());
+    if (compare_store(_layout, layout)) {
+        _columns.set_size(layout.width());
+        _rows.set_size(layout.height());
     }
 
     for (ttlet &cell : _cells) {
-        cell.widget->set_layout(cell.rectangle(_columns, _rows, layout().height()) * context);
+        cell.widget->set_layout(cell.rectangle(_columns, _rows, layout.height()) * layout);
     }
 }
 

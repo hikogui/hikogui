@@ -157,9 +157,9 @@ public:
         return _constraints;
     }
 
-    void set_layout(widget_layout const &context) noexcept override
+    void set_layout(widget_layout const &layout) noexcept override
     {
-        if (_layout.store(context) >= layout_update::transform) {
+        if (compare_store(_layout, layout)) {
             ttlet vertical_scroll_bar_width = _vertical_scroll_bar->constraints().preferred.width();
             ttlet horizontal_scroll_bar_height = _horizontal_scroll_bar->constraints().preferred.height();
 
@@ -169,16 +169,16 @@ public:
             _width_adjustment = _vertical_scroll_bar->visible ? vertical_scroll_bar_width : 0.0f;
 
             _vertical_scroll_bar_rectangle = aarectangle{
-                layout().width() - vertical_scroll_bar_width,
+                layout.width() - vertical_scroll_bar_width,
                 _height_adjustment,
                 vertical_scroll_bar_width,
-                layout().height() - _height_adjustment};
+                layout.height() - _height_adjustment};
 
             _horizontal_scroll_bar_rectangle =
-                aarectangle{0.0f, 0.0f, layout().width() - _width_adjustment, horizontal_scroll_bar_height};
+                aarectangle{0.0f, 0.0f, layout.width() - _width_adjustment, horizontal_scroll_bar_height};
 
-            _aperture_rectangle = aarectangle{
-                0.0f, _height_adjustment, layout().width() - _width_adjustment, layout().height() - _height_adjustment};
+            _aperture_rectangle =
+                aarectangle{0.0f, _height_adjustment, layout.width() - _width_adjustment, layout.height() - _height_adjustment};
 
             // We use the preferred size of the content for determining what to scroll.
             // This means it is possible for the scroll_content_width or scroll_content_height to be smaller
@@ -195,10 +195,10 @@ public:
         }
 
         if (_vertical_scroll_bar->visible) {
-            _vertical_scroll_bar->set_layout(_vertical_scroll_bar_rectangle * context);
+            _vertical_scroll_bar->set_layout(_vertical_scroll_bar_rectangle * layout);
         }
         if (_horizontal_scroll_bar->visible) {
-            _horizontal_scroll_bar->set_layout(_horizontal_scroll_bar_rectangle * context);
+            _horizontal_scroll_bar->set_layout(_horizontal_scroll_bar_rectangle * layout);
         }
 
         ttlet scroll_offset_x_max = std::max(_scroll_content_width - _scroll_aperture_width, 0.0f);
@@ -216,7 +216,7 @@ public:
         _content_rectangle =
             aarectangle{-_scroll_offset_x, -_scroll_offset_y - _height_adjustment, content_size.width(), content_size.height()};
         ttlet content_clipping_rectangle = bounding_rectangle(~translate3{_content_rectangle} * _aperture_rectangle);
-        _content->set_layout(context.transform(_content_rectangle, 1.0f, content_clipping_rectangle));
+        _content->set_layout(layout.transform(_content_rectangle, 1.0f, content_clipping_rectangle));
     }
 
     void draw(draw_context const &context) noexcept

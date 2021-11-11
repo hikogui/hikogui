@@ -35,15 +35,15 @@ public:
     // a widget wants to change the internal layout.
     //
     // NOTE: The size of the layout may be larger than the maximum constraints of this widget.
-    void set_layout(tt::widget_layout const &context) noexcept override
+    void set_layout(tt::widget_layout const &layout) noexcept override
     {
         // Update the `_layout` with the new context, in this case we want to do some
         // calculations when the size of the widget was changed.
-        if (_layout.store(context) >= tt::layout_update::size) {
+        if (compare_store(_layout, layout)) {
             // Here we can do some semi-expensive calculations which must be done when resizing the widget.
             // In this case we make two rectangles which are used in the `draw()` function.
-            _left_rectangle = tt::aarectangle{tt::extent2{_layout.width() / 2, _layout.height()}};
-            _right_rectangle = tt::aarectangle{tt::point2{_layout.width() / 2, 0.0}, _left_rectangle.size()};
+            _left_rectangle = tt::aarectangle{tt::extent2{layout.width() / 2, layout.height()}};
+            _right_rectangle = tt::aarectangle{tt::point2{layout.width() / 2, 0.0}, _left_rectangle.size()};
         }
     }
 

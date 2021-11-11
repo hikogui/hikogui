@@ -51,23 +51,23 @@ widget_constraints const &text_field_widget::set_constraints() noexcept
     return _constraints = {size, size, size, theme().margin};
 }
 
-void text_field_widget::set_layout(widget_layout const &context) noexcept
+void text_field_widget::set_layout(widget_layout const &layout) noexcept
 {
     ttlet text_was_modified = std::exchange(_text_was_modified, false);
-    if (_layout.store(context) >= layout_update::transform or text_was_modified) {
+    if (compare_store(_layout, layout) or text_was_modified) {
         ttlet text_field_height = theme().size + theme().margin * 2.0f;
         ttlet error_label_rectangle = aarectangle{
-            extent2{layout().width(), std::min(layout().height(), _error_label_widget->constraints().preferred.height())}};
+            extent2{layout.width(), std::min(layout.height(), _error_label_widget->constraints().preferred.height())}};
         _error_label_widget->visible = not _error_label->empty();
-        _error_label_widget->set_layout(error_label_rectangle * context);
+        _error_label_widget->set_layout(error_label_rectangle * layout);
 
         // The rectangle is a single line, but at full width. Aligned to the top of the widget.
-        ttlet text_field_size = extent2{layout().width(), text_field_height};
-        _text_field_rectangle = aarectangle{point2{0.0f, layout().height() - text_field_height}, text_field_size};
+        ttlet text_field_size = extent2{layout.width(), text_field_height};
+        _text_field_rectangle = aarectangle{point2{0.0f, layout.height() - text_field_height}, text_field_size};
 
         // Set the clipping rectangle to within the border of the input field.
         // Add another border width, so glyphs do not touch the border.
-        _text_field_clipping_rectangle = intersect(layout().clipping_rectangle, _text_field_rectangle);
+        _text_field_clipping_rectangle = intersect(layout.clipping_rectangle, _text_field_rectangle);
 
         _text_rectangle = _text_field_rectangle - theme().margin;
 
@@ -97,7 +97,7 @@ void text_field_widget::set_layout(widget_layout const &context) noexcept
         _shaped_text = _field.shaped_text();
 
         // Record the last time the text is modified, so that the caret remains lit.
-        _last_update_time_point = context.display_time_point;
+        _last_update_time_point = layout.display_time_point;
     }
 }
 

@@ -12,24 +12,6 @@
 
 namespace tt::inline v1 {
 
-/** Result of widget_layout::store()
- */
-enum class layout_update {
-    /** The layout was unmodified.
-     */
-    none,
-
-    /** One or more matrices, clipping, hit and redraw rectangle was modified.
-     */
-    transform,
-
-    /** The size of the widget was modified.
-     *
-     * This state also implies `layout_update::transform`.
-     */
-    size
-};
-
 class widget_layout {
 public:
     /** The amount of pixels that the redraw request will overhang the widget.
@@ -80,25 +62,13 @@ public:
     constexpr widget_layout &operator=(widget_layout &&) noexcept = default;
     constexpr widget_layout() noexcept = default;
 
-    constexpr layout_update compare(widget_layout const &other) const noexcept
+    [[nodiscard]] constexpr friend bool operator==(widget_layout const &lhs, widget_layout const &rhs) noexcept                  
     {
-        tt_axiom((to_parent == other.to_parent) == (from_parent == other.from_parent));
-        tt_axiom((to_window == other.to_window) == (from_window == other.from_window));
+        tt_axiom((lhs.to_parent == rhs.to_parent) == (lhs.from_parent == rhs.from_parent));
+        tt_axiom((lhs.to_window == rhs.to_window) == (lhs.from_window == rhs.from_window));
 
-        // clang-format off
-        if (size != other.size) {
-            return layout_update::size;
-
-        } else if (
-            to_parent != other.to_parent or
-            to_window != other.to_window or
-            clipping_rectangle != other.clipping_rectangle) {
-            return layout_update::transform;
-
-        } else {
-            return layout_update::none;
-        }
-        // clang-format on
+        return lhs.size == rhs.size and lhs.to_parent == rhs.to_parent and lhs.to_window == rhs.to_window and
+            lhs.clipping_rectangle == rhs.clipping_rectangle;
     }
 
     /** Check if the mouse position is inside the widget.
@@ -146,15 +116,6 @@ public:
     [[nodiscard]] constexpr float base_line() const noexcept
     {
         return size.height() * 0.5f;
-    }
-
-    constexpr layout_update store(widget_layout const &other) noexcept
-    {
-        ttlet r = compare(other);
-        if (r != layout_update::none) {
-            *this = other;
-        }
-        return r;
     }
 
     /** Construct a widget_layout from inside the window.

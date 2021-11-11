@@ -18,12 +18,12 @@ widget_constraints const &toolbar_button_widget::set_constraints() noexcept
     return _constraints;
 }
 
-void toolbar_button_widget::set_layout(widget_layout const &context) noexcept
+void toolbar_button_widget::set_layout(widget_layout const &layout) noexcept
 {
-    if (_layout.store(context) >= layout_update::transform) {
-        _label_rectangle = aarectangle{theme().margin, 0.0f, layout().width() - theme().margin * 2.0f, layout().height()};
+    if (compare_store(_layout, layout)) {
+        _label_rectangle = aarectangle{theme().margin, 0.0f, layout.width() - theme().margin * 2.0f, layout.height()};
     }
-    set_layout_button(context);
+    set_layout_button(layout);
 }
 
 void toolbar_button_widget::draw(draw_context const &context) noexcept

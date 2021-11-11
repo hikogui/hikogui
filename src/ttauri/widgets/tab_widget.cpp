@@ -57,7 +57,7 @@ widget_constraints const &tab_widget::set_constraints() noexcept
         child->visible = child_is_visible;
 
         if (child_is_visible) {
-            if (compare_then_assign(_constraints, child_contraints)) {
+            if (compare_store(_constraints, child_contraints)) {
                 window.request_resize = true;
             }
         }
@@ -66,13 +66,13 @@ widget_constraints const &tab_widget::set_constraints() noexcept
     return _constraints;
 }
 
-void tab_widget::set_layout(widget_layout const &context) noexcept
+void tab_widget::set_layout(widget_layout const &layout) noexcept
 {
-    _layout.store(context);
+    _layout = layout;
 
     for (ttlet &child : _children) {
         if (child->visible) {
-            child->set_layout(layout().rectangle() * context);
+            child->set_layout(layout);
         }
     }
 }

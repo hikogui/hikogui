@@ -128,7 +128,7 @@ void activate() noexcept;
     if (event.cause.leftButton) {
         handled = true;
         if (enabled) {
-            if (compare_then_assign(_pressed, static_cast<bool>(event.down.leftButton))) {
+            if (compare_store(_pressed, static_cast<bool>(event.down.leftButton))) {
                 request_redraw();
             }
 

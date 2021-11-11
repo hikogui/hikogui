@@ -59,15 +59,15 @@ widget_constraints const &icon_widget::set_constraints() noexcept
     return _constraints = {extent2{0.0f, 0.0f}, _icon_size, _icon_size, theme().margin};
 }
 
-void icon_widget::set_layout(widget_layout const &context) noexcept
+void icon_widget::set_layout(widget_layout const &layout) noexcept
 {
-    if (_layout.store(context) >= layout_update::transform) {
+    if (compare_store(_layout, layout)) {
         if (_icon_type == icon_type::no or not _icon_size) {
             _icon_rectangle = {};
         } else {
-            ttlet icon_scale = scale2::uniform(_icon_size, layout().size);
+            ttlet icon_scale = scale2::uniform(_icon_size, layout.size);
             ttlet new_icon_size = icon_scale * _icon_size;
-            _icon_rectangle = align(layout().rectangle(), new_icon_size, *alignment);
+            _icon_rectangle = align(layout.rectangle(), new_icon_size, *alignment);
         }
     }
 }

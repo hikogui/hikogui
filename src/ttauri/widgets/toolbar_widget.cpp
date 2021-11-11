@@ -42,23 +42,23 @@ widget_constraints const &toolbar_widget::set_constraints() noexcept
                {_flow_layout.maximum_size(), shared_height}};
 }
 
-void toolbar_widget::set_layout(widget_layout const &context) noexcept
+void toolbar_widget::set_layout(widget_layout const &layout) noexcept
 {
     // Clip directly around the toolbar, so that tab buttons looks proper.
-    if (_layout.store(context) >= layout_update::size) {
-        _flow_layout.set_size(layout().width());
+    if (compare_store(_layout, layout)) {
+        _flow_layout.set_size(layout.width());
     }
 
     ssize_t index = 0;
     for (ttlet &child : _left_children) {
-        update_layout_for_child(*child, index++, context);
+        update_layout_for_child(*child, index++, layout);
     }
 
     // Skip over the cell between left and right children.
     index++;
 
     for (ttlet &child : std::views::reverse(_right_children)) {
-        update_layout_for_child(*child, index++, context);
+        update_layout_for_child(*child, index++, layout);
     }
 
     tt_axiom(index == ssize(_left_children) + 1 + ssize(_right_children));

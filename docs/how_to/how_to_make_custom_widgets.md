@@ -85,13 +85,13 @@ may have been moved which is captured in the layout as well. As you can see the 
 passed to the child is calculated by transforming the context by the `_label_rectangle`.
 
 ```cpp
-void set_layout(tt::widget_layout const &context) noexcept override
+void set_layout(tt::widget_layout const &layout) noexcept override
 {
-    if (_layout.store(context) >= tt::layout_update::size) {
-        _label_rectangle = align(_layout.rectangle(), _label_widget->constraints().preferred, tt::alignment::middle_center);
+    if (compare_store(_layout, layout)) {
+        _label_rectangle = align(layout.rectangle(), _label_widget->constraints().preferred, tt::alignment::middle_center);
     }
 
-    _label_widget->set_layout(_label_rectangle * context);
+    _label_widget->set_layout(_label_rectangle * layout);
 }
 ```
 

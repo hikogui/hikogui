@@ -34,11 +34,11 @@ widget_constraints const &text_widget::set_constraints() noexcept
     return _constraints;
 }
 
-void text_widget::set_layout(widget_layout const &context) noexcept
+void text_widget::set_layout(widget_layout const &layout) noexcept
 {
-    if (_layout.store(context) >= layout_update::size) {
-        _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), layout().width(), *alignment};
-        _shaped_text_transform = _shaped_text.translate_base_line(point2{0.0f, layout().base_line()});
+    if (compare_store(_layout, layout)) {
+        _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), layout.width(), *alignment};
+        _shaped_text_transform = _shaped_text.translate_base_line(point2{0.0f, layout.base_line()});
     }
 }
 

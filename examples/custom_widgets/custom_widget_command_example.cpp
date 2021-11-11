@@ -36,10 +36,10 @@ public:
     // a widget wants to change the internal layout.
     //
     // NOTE: The size of the layout may be larger than the maximum constraints of this widget.
-    void set_layout(tt::widget_layout const &context) noexcept override
+    void set_layout(tt::widget_layout const &layout) noexcept override
     {
         // Update the `_layout` with the new context.
-        if (_layout.store(context) >= tt::layout_update::size) {}
+        if (compare_store(_layout, layout)) {}
     }
 
     // It is common to override the context sensitive colors of the default widget.

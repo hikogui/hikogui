@@ -120,7 +120,7 @@ public:
             tmp.push_back(&find_or_create(tag));
         }
 
-        if (compare_then_assign(_preferred_languages, tmp)) {
+        if (compare_store(_preferred_languages, tmp)) {
             auto language_order_string = std::string{};
             for (ttlet &language : tmp) {
                 if (language_order_string.size() != 0) {

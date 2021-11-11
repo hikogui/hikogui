@@ -79,10 +79,10 @@ widget_constraints const &selection_widget::set_constraints() noexcept
     return _constraints;
 }
 
-void selection_widget::set_layout(widget_layout const &context) noexcept
+void selection_widget::set_layout(widget_layout const &layout) noexcept
 {
-    if (_layout.store(context) >= layout_update::transform) {
-        _left_box_rectangle = aarectangle{0.0f, 0.0f, theme().size, layout().height()};
+    if (compare_store(_layout, layout)) {
+        _left_box_rectangle = aarectangle{0.0f, 0.0f, theme().size, layout.height()};
         _chevrons_glyph = font_book().find_glyph(elusive_icon::ChevronUp);
         ttlet chevrons_glyph_bbox = _chevrons_glyph.get_bounding_box();
         _chevrons_rectangle = align(_left_box_rectangle, chevrons_glyph_bbox * theme().icon_size, alignment::middle_center);
@@ -91,8 +91,8 @@ void selection_widget::set_layout(widget_layout const &context) noexcept
         _option_rectangle = aarectangle{
             _left_box_rectangle.right() + theme().margin,
             0.0f,
-            layout().width() - _left_box_rectangle.width() - theme().margin * 2.0f,
-            layout().height()};
+            layout.width() - _left_box_rectangle.width() - theme().margin * 2.0f,
+            layout.height()};
     }
 
     // The overlay itself will make sure the overlay fits the window, so we give the preferred size and position
@@ -100,18 +100,18 @@ void selection_widget::set_layout(widget_layout const &context) noexcept
     // The overlay should start on the same left edge as the selection box and the same width.
     // The height of the overlay should be the maximum height, which will show all the options.
     ttlet overlay_width = std::clamp(
-        layout().width() - theme().size,
+        layout.width() - theme().size,
         _overlay_widget->constraints().minimum.width(),
         _overlay_widget->constraints().maximum.width());
     ttlet overlay_height = _overlay_widget->constraints().preferred.height();
     ttlet overlay_x = theme().size;
-    ttlet overlay_y = std::round(layout().height() * 0.5f - overlay_height * 0.5f);
+    ttlet overlay_y = std::round(layout.height() * 0.5f - overlay_height * 0.5f);
     ttlet overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};
     _overlay_rectangle = make_overlay_rectangle(overlay_rectangle_request);
-    _overlay_widget->set_layout(context.transform(_overlay_rectangle, 20.0f));
+    _overlay_widget->set_layout(layout.transform(_overlay_rectangle, 20.0f));
 
-    _unknown_label_widget->set_layout(_option_rectangle * context);
-    _current_label_widget->set_layout(_option_rectangle * context);
+    _unknown_label_widget->set_layout(_option_rectangle * layout);
+    _current_label_widget->set_layout(_option_rectangle * layout);
 }
 
 void selection_widget::draw(draw_context const &context) noexcept
