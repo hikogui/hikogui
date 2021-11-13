@@ -1,6 +1,8 @@
 
+#pragma once
 
-#include "../rapid/numeric_array.hpp"
+#include "point.hpp"
+#include "aarectangle.hpp"
 
 namespace tt::inline v1 {
 
