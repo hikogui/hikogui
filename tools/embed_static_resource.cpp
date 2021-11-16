@@ -129,11 +129,9 @@ int main(int argc, char* argv[])
     write(os, "    nullptr,\n");
     write(os, "    \"{}\",\n", input_filename.generic_string());
     write(os, "    {{reinterpret_cast<std::byte const *>({}_srd), {}}}\n", identifier, input_data.size());
-    write(os, "}};\n");
+    write(os, "}};\n\n");
 
     write(os, "extern \"C\" {{\n");
-    write(os, "tt::static_resource_item const *{}_srip = tt::static_resource_item::add(&{}_sri) tt_retain;\n", identifier, identifier);
-    write(os, "}}\n");
-    write(os, "tt_retain_symbol({}_srip);\n", identifier);
-
+    write(os, "tt::static_resource_item const *{}_srip = tt::static_resource_item::add(&{}_sri);\n", identifier, identifier);
+    write(os, "}}\n\n");
 }

@@ -217,7 +217,7 @@ public:
      */
     [[nodiscard]] constexpr friend point2 midpoint(axis_aligned_rectangle const &rhs) noexcept
     {
-        return midpoint(get<0(rhs), get<3>(rhs));
+        return midpoint(get<0>(rhs), get<3>(rhs));
     }
 
 

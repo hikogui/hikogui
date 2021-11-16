@@ -2,7 +2,7 @@
 #pragma once
 
 #include "point.hpp"
-#include "aarectangle.hpp"
+#include "axis_aligned_rectangle.hpp"
 #include "quad.hpp"
 
 namespace tt::inline v1 {
@@ -14,6 +14,16 @@ public:
     constexpr circle &operator=(circle const &other) noexcept = default;
     constexpr circle &operator=(circle &&other) noexcept = default;
 
+    constexpr circle() noexcept : _v()
+    {
+        tt_axiom(holds_invariant());
+    }
+
+    [[nodiscard]] constexpr explicit circle(f32x4 v) noexcept : _v(v)
+    {
+        tt_axiom(holds_invariant());
+    }
+
     [[nodiscard]] constexpr circle(point3 point, float radius) noexcept :
         _v(f32x4{point})
     {
@@ -21,7 +31,7 @@ public:
         tt_axiom(holds_invariant());
     }
 
-    [[nodiscard]] constexpr circle(aarectangle square) noexcept :
+    [[nodiscard]] constexpr circle(aarectangle square) noexcept
     {
         tt_axiom(square.is_square());
         auto square_ = f32x4{square};
@@ -29,6 +39,16 @@ public:
         // center=(p3 + p1)/2, radius=(p3 - p1)/2
         _v = (addsub<0b0011>(square_.xyxy(), square_.zwzw()) * 0.5f).xy0w();
         tt_axiom(holds_invariant());
+    }
+
+    [[nodiscard]] constexpr bool empty() const noexcept
+    {
+        return _v.w() == 0.0f;
+    }
+
+    [[nodiscard]] explicit operator bool () const noexcept
+    {
+        return not empty();
     }
 
     [[nodiscard]] constexpr float radius() const noexcept
@@ -41,9 +61,25 @@ public:
         return point3{_v.xyz1()};
     }
 
+    [[nodiscard]] constexpr friend circle operator+(circle const &lhs, float rhs) noexcept
+    {
+        return circle{lhs._v + insert<3>(f32x4{}, rhs)};
+    }
+
+    [[nodiscard]] constexpr friend circle operator-(circle const &lhs, float rhs) noexcept
+    {
+        return circle{lhs._v + insert<3>(f32x4{}, rhs)};
+    }
+
+    [[nodiscard]] constexpr friend circle operator*(circle const &lhs, float rhs) noexcept
+    {
+        return circle{lhs._v * insert<3>(f32x4::broadcast(1.0f), rhs)};
+    }
+
+
     /** return a quad surrounding the circle including elevation.
      */
-    [[nodiscard]] constexpr friend quad bouding_quad(circle const &rhs) const noexcept
+    [[nodiscard]] constexpr friend quad bounding_quad(circle const &rhs) noexcept
     {
         ttlet c = rhs._v.xyz1();
         ttlet r = rhs._v.ww00();
