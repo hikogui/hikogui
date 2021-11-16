@@ -9,6 +9,7 @@
 #include "point.hpp"
 #include "rectangle.hpp"
 #include "quad.hpp"
+#include "circle.hpp"
 #include "axis_aligned_rectangle.hpp"
 #include "../color/color.hpp"
 

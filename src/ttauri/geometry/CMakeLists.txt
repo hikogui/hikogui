@@ -3,8 +3,10 @@ target_sources(ttauri PRIVATE
     axis.hpp
     axis_aligned_rectangle.cpp
     axis_aligned_rectangle.hpp
+    circle.hpp
     extent.hpp
     identity.hpp
+    line.hpp
     matrix.hpp
     point.hpp
     rectangle.hpp

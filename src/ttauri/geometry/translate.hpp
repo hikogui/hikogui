@@ -159,6 +159,11 @@ public:
         return quad{*this * rhs.p0, *this * rhs.p1, *this * rhs.p2, *this * rhs.p3};
     }
 
+    [[nodiscard]] constexpr circle operator*(circle const &rhs) const noexcept
+    {
+        return circle{f32x4{rhs} + _v};
+    }
+
     [[nodiscard]] constexpr translate operator*(identity const &) const noexcept
     {
         tt_axiom(holds_invariant());

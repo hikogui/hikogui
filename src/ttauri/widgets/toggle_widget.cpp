@@ -75,11 +75,11 @@ void toggle_widget::draw_toggle_pip(draw_context const &context) noexcept
         request_redraw();
     }
 
-    ttlet positioned_pip_rectangle = translate3{_pip_move_range * _animated_value.current_value(), 0.0f, 0.1f} * _pip_rectangle;
+    ttlet positioned_pip_circle =
+        translate3{_pip_move_range * _animated_value.current_value(), 0.0f, 0.1f} * (circle{_pip_rectangle} * 1.02f);
 
     ttlet forground_color_ = state() == button_state::on ? accent_color() : foreground_color();
-    context.draw_box(
-        layout(), positioned_pip_rectangle, forground_color_, corner_shapes{positioned_pip_rectangle.height() * 0.5f});
+    context.draw_circle(layout(), positioned_pip_circle, forground_color_);
 }
 
 } // namespace tt::inline v1

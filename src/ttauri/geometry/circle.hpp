@@ -24,6 +24,11 @@ public:
         tt_axiom(holds_invariant());
     }
 
+    [[nodiscard]] constexpr explicit operator f32x4() const noexcept
+    {
+        return _v;
+    }
+
     [[nodiscard]] constexpr circle(point3 point, float radius) noexcept :
         _v(f32x4{point})
     {
@@ -36,8 +41,8 @@ public:
         tt_axiom(square.is_square());
         auto square_ = f32x4{square};
 
-        // center=(p3 + p1)/2, radius=(p3 - p1)/2
-        _v = (addsub<0b0011>(square_.xyxy(), square_.zwzw()) * 0.5f).xy0w();
+        // center=(p3 + p0)/2, radius=(p3 - p0)/2
+        _v = (addsub<0b0011>(square_.zwzw(), square_.xyxy()) * 0.5f).xy0w();
         tt_axiom(holds_invariant());
     }
 
@@ -68,7 +73,7 @@ public:
 
     [[nodiscard]] constexpr friend circle operator-(circle const &lhs, float rhs) noexcept
     {
-        return circle{lhs._v + insert<3>(f32x4{}, rhs)};
+        return circle{lhs._v - insert<3>(f32x4{}, rhs)};
     }
 
     [[nodiscard]] constexpr friend circle operator*(circle const &lhs, float rhs) noexcept
