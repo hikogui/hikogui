@@ -1006,6 +1006,38 @@ tt_warning_push()
         }
     }
 
+    /** Set a value.
+     *
+     * @tparam I The index into array
+     * @tparam ZeroMask When a bit in the mask is '1' set that element to zero.
+     * @param value The value to set the element to.
+     */
+    template<size_t I, size_t ZeroMask = 0>
+    [[nodiscard]] constexpr void set(float value) noexcept requires (is_f32x4 or is_i32x4 or is_u32x4)
+    {
+        static_assert(I < N);
+        static_assert(ZeroMask <= ((1 << N) - 1));
+
+        if (not std::is_constant_evaluated()) {
+#if defined(TT_HAS_SSE4_1)
+            if constexpr (is_f32x4) {
+                constexpr int imm8 = (I << 4) | ZeroMask;
+                return numeric_array{_mm_insert_ps(reg(), _mm_set_ss(value), imm8)};
+            } else if constexpr (is_i32x4 or is_u32x4) {
+                constexpr int imm8 = (I << 4) | ZeroMask;
+                return numeric_array{_mm_castps_si128(_mm_insert_ps(_mm_castsi128_ps(reg()), _mm_castsi128_ps(_mm_set1_epi32(value)), imm8))};
+            }
+#endif
+        }
+
+        std::get<I>(v) = value;
+        for (size_t i = 0; i != N; ++i) {
+            if ((ZeroMask >> i) & 1 == 1) {
+                v[i] = T{};
+            }
+        }
+    }
+
     /** Get a element from the numeric array.
      *
      * @tparam I Index into the array,

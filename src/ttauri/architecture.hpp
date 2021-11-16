@@ -197,19 +197,38 @@ constexpr bool x86_64_v4 = false;
 #if TT_COMPILER == TT_CC_MSVC
 #define tt_unreachable() __assume(0)
 #define tt_assume(condition) __assume(condition)
-#define tt_assume2(condition, msg) __assume(condition)
 #define tt_force_inline __forceinline
 #define tt_no_inline __declspec(noinline)
-#define tt_restrict __restrict
+#define tt_restrict __declspec(restrict)
 #define tt_warning_push() _Pragma("warning( push )")
 #define tt_warning_pop() _Pragma("warning( pop )")
 #define tt_msvc_pragma(a) _Pragma(a)
 #define clang_suppress(a)
 
+/** Retain a symbol in the final executable.
+ *
+ * This makes sure a symbol that is not referenced within the program
+ * will still be linked in the executable. This is useful if the construction
+ * of a global variable has a side-effect.
+ *
+ * @note Should be combined with `tt_retain`
+ * @param The symbol to force being linked.
+ */
+#define tt_retain_symbol(symbol) _Pragma("comment(linker, \"/include:" tt_stringify(symbol) "\")")
+
+/** Attribute to retain a function or variable in the final executable.
+ *
+ * @note Should be combined with `tt_retain_symbol()`
+ */
+#define tt_retain
+
+/** Attribute to export a function, class, variable in the shared library or dll.
+ */
+#define tt_export __declspec(dllexport)
+
 #elif TT_COMPILER == TT_CC_CLANG
 #define tt_unreachable() __builtin_unreachable()
 #define tt_assume(condition) __builtin_assume(static_cast<bool>(condition))
-#define tt_assume2(condition, msg) __builtin_assume(static_cast<bool>(condition))
 #define tt_force_inline inline __attribute__((always_inline))
 #define tt_no_inline __attribute__((noinline))
 #define tt_restrict __restrict__
@@ -218,14 +237,13 @@ constexpr bool x86_64_v4 = false;
 #define tt_msvc_pragma(a)
 #define clang_suppress(a) _Pragma(tt_stringify(clang diagnostic ignored a))
 
+#define tt_retain_symbol(symbol)
+#define tt_retain __attribute__((used,retain))
+#define tt_export
+
 #elif TT_COMPILER == TT_CC_GCC
 #define tt_unreachable() __builtin_unreachable()
 #define tt_assume(condition) \
-    do { \
-        if (!(condition)) \
-            tt_unreachable(); \
-    } while (false)
-#define tt_assume2(condition, msg) \
     do { \
         if (!(condition)) \
             tt_unreachable(); \
@@ -242,7 +260,6 @@ constexpr bool x86_64_v4 = false;
 #else
 #define tt_unreachable() std::terminate()
 #define tt_assume(condition) static_assert(sizeof(condition) == 1)
-#define tt_assume2(condition, msg) static_assert(sizeof(condition) == 1, msg)
 #define tt_force_inline inline
 #define tt_no_inline
 #define tt_restrict

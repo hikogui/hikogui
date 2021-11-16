@@ -12,6 +12,7 @@
 #include "../geometry/corner_shapes.hpp"
 #include "../geometry/identity.hpp"
 #include "../geometry/transform.hpp"
+#include "../geometry/circle.hpp"
 #include "../color/color.hpp"
 #include "../color/quad_color.hpp"
 #include "../vspan.hpp"
@@ -176,6 +177,47 @@ public:
             0.0f,
             border_side::on,
             corner_radius);
+    }
+
+    void draw_circle(
+        widget_layout const &layout,
+        tt::circle const &circle,
+        quad_color const &fill_color)
+    {
+        return _draw_box(
+            layout.window_clipping_rectangle(),
+            layout.to_window * bounding_quad(circle),
+            fill_color,
+            fill_color,
+            0.0f,
+            border_side::on,
+            corner_shapes{circle.radius()});
+    }
+
+    void draw_circle(
+        widget_layout const &layout,
+        aarectangle const &clipping_rectangle,
+        tt::circle const &circle,
+        quad_color const &fill_color,
+        quad_color const &border_color,
+        float border_width,
+        tt::border_side border_side) const noexcept
+    {
+        // clang-format off
+        tt::circle circle_ =
+            border_side == border_side::outside ? circle + 0.5f * border_width :
+            border_side == border_side::inside ? circle - 0.5f * border_width :
+            circle;
+        // clang-format on
+
+        return _draw_box(
+            layout.window_clipping_rectangle(clipping_rectangle),
+            layout.to_window * bounding_quad(circle),
+            fill_color,
+            border_color,
+            border_width,
+            border_side::on,
+            corner_shapes{circle.radius()});
     }
 
     /** Draw an image
