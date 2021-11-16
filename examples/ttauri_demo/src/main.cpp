@@ -22,7 +22,6 @@ auto create_main_window(tt::gui_system &gui, std::shared_ptr<my_preferences_wind
 
     auto &preferences_button = main_window.toolbar().make_widget<toolbar_button_widget>(label{elusive_icon::Wrench, l10n("Preferences")});
     auto callback = preferences_button.subscribe([&gui,preferences_controller]{
-        tt_not_implemented();
         gui.make_window(
             label{icon{URL{"resource:ttauri_demo.png"}}, l10n("TTauri Demo - Preferences")},
             preferences_controller
