@@ -15,8 +15,8 @@ layout(set = 0, binding = 1) uniform sampler in_sampler;
 layout(set = 0, binding = 2) uniform texture2D in_textures[16];
 
 layout(location = 0) in flat vec4 in_clipping_rectangle;
-layout(location = 1) in noperspective vec3 in_texture_coord;
-layout(location = 2) in noperspective vec4 in_color_luv;
+layout(location = 1) in vec3 in_texture_coord;
+layout(location = 2) in vec4 in_color_luv;
 
 layout(origin_upper_left) in vec4 gl_FragCoord;
 layout(location = 0) out vec4 out_color;

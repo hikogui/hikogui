@@ -27,6 +27,12 @@ target_link_libraries(custom_widget_command_example PRIVATE ttauri)
 target_include_directories(custom_widget_command_example PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
 add_dependencies(custom_widget_command_example custom_widget_example_resources)
 
+add_executable(custom_widget_drawing_example WIN32 MACOSX_BUNDLE)
+target_sources(custom_widget_drawing_example PRIVATE custom_widget_drawing_example.cpp)
+target_link_libraries(custom_widget_drawing_example PRIVATE ttauri)
+target_include_directories(custom_widget_drawing_example PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
+add_dependencies(custom_widget_drawing_example custom_widget_example_resources)
+
 #-------------------------------------------------------------------
 # Installation Rules: ttauri_demo
 #-------------------------------------------------------------------
@@ -34,6 +40,7 @@ add_dependencies(custom_widget_command_example custom_widget_example_resources)
 install(TARGETS minimum_custom_widget_example DESTINATION examples/custom_widgets)
 install(TARGETS custom_widget_with_child_example DESTINATION examples/custom_widgets)
 install(TARGETS custom_widget_command_example DESTINATION examples/custom_widgets)
+install(TARGETS custom_widget_drawing_example DESTINATION examples/custom_widgets)
 
 # copy additional "ttauri library" resources from top-level
 install(DIRECTORY ../../resources/  DESTINATION examples/custom_widgets/resources)

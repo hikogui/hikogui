@@ -61,6 +61,18 @@ template<typename BaseType, typename DerivedType>
 concept strict_derived_from = derived_from<BaseType, DerivedType> && !std::same_as<BaseType, DerivedType>;
 
 template<typename T>
+concept pre_incrementable = requires(T a)
+{
+    {++a};
+};
+
+template<typename T>
+concept pre_decrementable = requires(T a)
+{
+    {--a};
+};
+
+template<typename T>
 concept to_stringable = requires(T v)
 {
     {

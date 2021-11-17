@@ -14,8 +14,8 @@ layout(location = 2) in vec3 in_texture_coord;
 layout(location = 3) in vec4 in_color_rgb;
 
 layout(location = 0) out flat vec4 out_clipping_rectangle;
-layout(location = 1) out noperspective vec3 out_texture_coord;
-layout(location = 2) out noperspective vec4 out_color_luv;
+layout(location = 1) out vec3 out_texture_coord;
+layout(location = 2) out vec4 out_color_luv;
 
 #include "utils.glsl"
 

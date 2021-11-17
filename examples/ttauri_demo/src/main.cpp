@@ -50,7 +50,7 @@ int tt_main(int argc, char *argv[])
     tt::time_stamp_count::start_subsystem();
 
     // Startup renderdoc for debugging
-    //auto render_doc = tt::RenderDoc();
+    auto render_doc = tt::RenderDoc();
 
     auto preferences = tt::preferences(tt::URL::urlFromApplicationPreferencesFile());
     auto preferences_controller = std::make_shared<my_preferences_window_controller>(preferences);

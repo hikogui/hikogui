@@ -141,8 +141,7 @@ public:
         widget_layout const &layout,
         quad const &box,
         quad_color const &fill_color,
-        tt::corner_shapes const &corner_radius = {})
-        const noexcept
+        tt::corner_shapes const &corner_radius = {}) const noexcept
     {
         return _draw_box(
             layout.window_clipping_rectangle(),
@@ -179,13 +178,26 @@ public:
             corner_radius);
     }
 
+    void draw_circle(widget_layout const &layout, tt::circle const &circle, quad_color const &fill_color) const
+    {
+        return _draw_box(
+            layout.window_clipping_rectangle(),
+            layout.to_window * bounding_quad(circle),
+            fill_color,
+            fill_color,
+            0.0f,
+            border_side::on,
+            corner_shapes{circle.radius()});
+    }
+
     void draw_circle(
         widget_layout const &layout,
+        aarectangle const clipping_rectangle,
         tt::circle const &circle,
         quad_color const &fill_color) const
     {
         return _draw_box(
-            layout.window_clipping_rectangle(),
+            layout.window_clipping_rectangle(clipping_rectangle),
             layout.to_window * bounding_quad(circle),
             fill_color,
             fill_color,
@@ -271,6 +283,23 @@ public:
         return _draw_glyph(layout.window_clipping_rectangle(), layout.to_window * box, color, glyph);
     }
 
+    /** Draw a glyph.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param clipping_rectangle A more narrow clipping rectangle than supplied by layout.
+     * @param box The size and position of the glyph.
+     * @param color The color that the glyph should be drawn in.
+     * @param glyph The glyphs to draw.
+     */
+    void draw_glyph(
+        widget_layout const &layout,
+        aarectangle clipping_rectangle,
+        quad const &box,
+        quad_color const &color,
+        font_glyph_ids const &glyph) const noexcept
+    {
+        return _draw_glyph(layout.window_clipping_rectangle(clipping_rectangle), layout.to_window * box, color, glyph);
+    }
     /** Draw shaped text.
      *
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
@@ -297,8 +326,7 @@ public:
         aarectangle const &clipping_rectangle,
         matrix3 const &transform,
         quad_color const &color,
-        shaped_text const &text
-        ) const noexcept
+        shaped_text const &text) const noexcept
     {
         return _draw_text(layout.window_clipping_rectangle(clipping_rectangle), layout.to_window * transform, text, color);
     }

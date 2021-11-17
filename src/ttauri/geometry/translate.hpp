@@ -6,6 +6,7 @@
 
 #include "matrix.hpp"
 #include "identity.hpp"
+#include "rotate.hpp"
 
 namespace tt::inline v1 {
 namespace geo {
@@ -175,6 +176,12 @@ public:
     {
         tt_axiom(holds_invariant() && rhs.holds_invariant());
         return matrix<std::max(D, E)>{get<0>(rhs), get<1>(rhs), get<2>(rhs), get<3>(rhs) + _v};
+    }
+
+    template<int E>
+    [[nodiscard]] constexpr auto operator*(rotate<E> const &rhs) const noexcept
+    {
+        return *this * matrix<E>(rhs);
     }
 
     template<int E>
