@@ -379,8 +379,8 @@ void text_field_widget::draw_background_box(draw_context const &context) const n
     ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme().rounding_radius, theme().rounding_radius};
     context.draw_box(_layout, _text_field_rectangle, background_color(), corner_shapes);
 
-    ttlet line_rectangle = aarectangle{get<0>(_text_field_rectangle), extent2{_text_field_rectangle.width(), 1.0f}};
-    context.draw_box(_layout, translate3{0.0f, 0.0f, 0.1f} * line_rectangle, focus_color());
+    ttlet line = line_segment(get<0>(_text_field_rectangle), get<1>(_text_field_rectangle));
+    context.draw_line(_layout, translate3{0.0f, 0.5f, 0.1f} * line, theme().border_width, focus_color());
 }
 
 void text_field_widget::draw_selection_rectangles(draw_context const &context) const noexcept

@@ -127,8 +127,9 @@ void label_widget::set_layout(widget_layout const &layout) noexcept
         _icon_rectangle = aarectangle{icon_pos, extent2{_icon_size, _icon_size}};
     }
 
-    _icon_widget->set_layout(_icon_rectangle * layout);
-    _text_widget->set_layout(_text_rectangle * layout);
+    // Elevate the child widget by 0.0f since the label widget does not draw itself.
+    _icon_widget->set_layout(layout.transform(_icon_rectangle, 0.0f));
+    _text_widget->set_layout(layout.transform(_text_rectangle, 0.0f));
 }
 
 void label_widget::draw(draw_context const &context) noexcept

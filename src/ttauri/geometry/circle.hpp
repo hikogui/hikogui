@@ -81,23 +81,6 @@ public:
         return circle{lhs._v * insert<3>(f32x4::broadcast(1.0f), rhs)};
     }
 
-
-    /** return a quad surrounding the circle including elevation.
-     */
-    [[nodiscard]] constexpr friend quad bounding_quad(circle const &rhs) noexcept
-    {
-        ttlet c = rhs._v.xyz1();
-        ttlet r = rhs._v.ww00();
-   
-        ttlet p0 = point3{c - r};
-        ttlet p3 = point3{c + r};
-
-        ttlet r_negx = neg<0b0001>(r);
-        ttlet p1 = point3{c - r_negx};
-        ttlet p2 = point3{c + r_negx};
-        return quad{p0, p1, p2, p3};
-    }
-
     [[nodiscard]] constexpr friend point3 midpoint(circle const &rhs) noexcept
     {
         return point3{rhs.center()};

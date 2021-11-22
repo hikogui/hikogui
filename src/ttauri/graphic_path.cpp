@@ -421,14 +421,14 @@ void graphic_path::addStroke(
     graphic_path const &path,
     color strokeColor,
     float strokeWidth,
-    LineJoinStyle lineJoinStyle,
+    line_join_style line_join_style,
     float tolerance) noexcept
 {
-    *this += path.toStroke(strokeWidth, lineJoinStyle, tolerance);
+    *this += path.toStroke(strokeWidth, line_join_style, tolerance);
     closeLayer(strokeColor);
 }
 
-graphic_path graphic_path::toStroke(float strokeWidth, LineJoinStyle lineJoinStyle, float tolerance) const noexcept
+graphic_path graphic_path::toStroke(float strokeWidth, line_join_style line_join_style, float tolerance) const noexcept
 {
     tt_assert(!hasLayers());
     tt_assert(!isContourOpen());
@@ -441,10 +441,10 @@ graphic_path graphic_path::toStroke(float strokeWidth, LineJoinStyle lineJoinSty
     for (int i = 0; i < numberOfContours(); i++) {
         ttlet baseContour = getBeziersOfContour(i);
 
-        ttlet starboardContour = makeParallelContour(baseContour, starboardOffset, lineJoinStyle, tolerance);
+        ttlet starboardContour = makeParallelContour(baseContour, starboardOffset, line_join_style, tolerance);
         r.addContour(starboardContour);
 
-        ttlet portContour = makeInverseContour(makeParallelContour(baseContour, portOffset, lineJoinStyle, tolerance));
+        ttlet portContour = makeInverseContour(makeParallelContour(baseContour, portOffset, line_join_style, tolerance));
         r.addContour(portContour);
     }
 

@@ -43,14 +43,14 @@ void draw_context::_draw_box(
     tt::corner_shapes corner_radius) const noexcept
 {
     // Expand or shrink the box and the corner radius.
-    ttlet border_line_width = border_width * 0.5f;
+    ttlet border_radius = border_width * 0.5f;
     if (border_side == border_side::inside) {
-        box = box - extent2{border_line_width, border_line_width};
-        corner_radius = corner_radius - border_line_width;
+        box = box - extent2{border_radius, border_radius};
+        corner_radius = corner_radius - border_radius;
 
     } else if (border_side == border_side::outside) {
-        box = box + extent2{border_line_width, border_line_width};
-        corner_radius = corner_radius + border_line_width;
+        box = box + extent2{border_radius, border_radius};
+        corner_radius = corner_radius + border_radius;
     }
 
     if (_box_vertices->full()) {

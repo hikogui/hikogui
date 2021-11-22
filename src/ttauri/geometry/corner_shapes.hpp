@@ -16,8 +16,9 @@ public:
     [[nodiscard]] constexpr corner_shapes() noexcept : _v() {}
     [[nodiscard]] constexpr corner_shapes(float radius) noexcept : _v(radius, radius, radius, radius) {}
     [[nodiscard]] constexpr corner_shapes(float lb, float rb, float lt, float rt) noexcept : _v(lb, rb, lt, rt) {}
+    [[nodiscard]] constexpr explicit corner_shapes(f32x4 v) noexcept : _v(v) {}
 
-    [[nodiscard]] explicit constexpr operator f32x4() const noexcept
+    [[nodiscard]] constexpr explicit operator f32x4() const noexcept
     {
         return _v;
     }

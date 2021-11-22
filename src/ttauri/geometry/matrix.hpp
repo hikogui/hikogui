@@ -10,6 +10,7 @@
 #include "rectangle.hpp"
 #include "quad.hpp"
 #include "circle.hpp"
+#include "line_segment.hpp"
 #include "axis_aligned_rectangle.hpp"
 #include "../color/color.hpp"
 
@@ -137,6 +138,16 @@ public:
         return f32x4{_col0 * rhs.xxxx() + _col1 * rhs.yyyy() + _col2 * rhs.zzzz() + _col3 * rhs.wwww()};
     }
 
+    /** Transform a float by the scaling factor of the matrix.
+     * 
+     * The floating point number is transformed into a vector laying on the x-axis,
+     * then transformed, then extracting the hypot from it.
+     */
+    [[nodiscard]] constexpr float operator*(float const &rhs) const noexcept
+    {
+        return hypot<D>(_col0 * f32x4::broadcast(rhs));
+    }
+
     template<int E>
     [[nodiscard]] constexpr auto operator*(vector<E> const &rhs) const noexcept
     {
@@ -178,6 +189,16 @@ public:
     [[nodiscard]] constexpr quad operator*(quad const &rhs) const noexcept
     {
         return quad{*this * rhs.p0, *this * rhs.p1, *this * rhs.p2, *this * rhs.p3};
+    }
+
+    [[nodiscard]] constexpr circle operator*(circle const &rhs) const noexcept
+    {
+        return circle{*this * midpoint(rhs), *this * rhs.radius()};
+    }
+
+    [[nodiscard]] constexpr line_segment operator*(line_segment const &rhs) const noexcept
+    {
+        return line_segment{*this * rhs.origin(), *this * rhs.direction()};
     }
 
     /** Transform a color by a color matrix.

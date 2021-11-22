@@ -81,8 +81,8 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const &cont
     ttlet offset = theme().margin + theme().border_width;
     ttlet outline_rectangle = aarectangle{0.0f, -offset, layout().width(), layout().height() + offset};
 
-    // The focus line will be placed at 0.7.
-    ttlet button_z = (focus && window.active) ? translate_z(0.8f) : translate_z(0.6f);
+    // The focus line will be drawn by the parent widget (toolbar_widget) at 0.5.
+    ttlet button_z = (focus && window.active) ? translate_z(0.6f) : translate_z(0.0f);
 
     auto button_color = (hover || state() == button_state::on) ? theme().color(theme_color::fill, semantic_layer - 1) :
                                                                  theme().color(theme_color::fill, semantic_layer);

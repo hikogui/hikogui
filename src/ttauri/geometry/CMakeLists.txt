@@ -6,7 +6,9 @@ target_sources(ttauri PRIVATE
     circle.hpp
     extent.hpp
     identity.hpp
-    line.hpp
+    line_segment.hpp
+    line_end_cap.hpp
+    line_join_style.hpp
     matrix.hpp
     point.hpp
     rectangle.hpp

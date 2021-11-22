@@ -1126,9 +1126,10 @@ struct numeric_array {
         if (not std::is_constant_evaluated()) {
 #if defined(TT_HAS_SSE4_1)
             if constexpr (is_f32x4) {
-                return numeric_array{_mm_insert_ps(rhs.reg(), Mask)};
+                return numeric_array{_mm_insert_ps(rhs.reg(), rhs.reg(), Mask)};
             } else if constexpr (is_i32x4 or is_u32x4) {
-                return numeric_array{_mm_castps_si128(_mm_insert_ps(_mm_castsi128_ps(rhs.reg()), Mask))};
+                return numeric_array{
+                    _mm_castps_si128(_mm_insert_ps(_mm_castsi128_ps(rhs.reg()), _mm_castsi128_ps(rhs.reg()), Mask))};
             }
 #endif
         }

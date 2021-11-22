@@ -165,6 +165,11 @@ public:
         return circle{f32x4{rhs} + _v};
     }
 
+    [[nodiscard]] constexpr line_segment operator*(line_segment const &rhs) const noexcept
+    {
+        return line_segment{*this * rhs.origin(), rhs.direction()};
+    }
+
     [[nodiscard]] constexpr translate operator*(identity const &) const noexcept
     {
         tt_axiom(holds_invariant());

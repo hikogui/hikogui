@@ -13,6 +13,7 @@
 #include "../geometry/identity.hpp"
 #include "../geometry/transform.hpp"
 #include "../geometry/circle.hpp"
+#include "../geometry/line_end_cap.hpp"
 #include "../color/color.hpp"
 #include "../color/quad_color.hpp"
 #include "../vspan.hpp"
@@ -178,16 +179,148 @@ public:
             corner_radius);
     }
 
-    void draw_circle(widget_layout const &layout, tt::circle const &circle, quad_color const &fill_color) const
+    [[nodiscard]] constexpr static rectangle
+    make_rectangle(line_segment const &line, float width, line_end_cap c1, line_end_cap c2) noexcept
     {
+        auto right = line.direction();
+
+        ttlet radius = width * 0.5f;
+        ttlet n = normal(right, 0.0f);
+        ttlet up = n * width;
+        ttlet t = normalize(right);
+
+        auto origin = line.origin() - n * radius;
+
+        // Extend the line by the radius for rounded end-caps.
+        ttlet radius_offset = t * radius;
+        if (c1 == line_end_cap::round) {
+            origin -= radius_offset;
+            right += radius_offset;
+        }
+        if (c2 == line_end_cap::round) {
+            right += radius_offset;
+        }
+
+        return rectangle{origin, right, up};
+    }
+
+    [[nodiscard]] constexpr static corner_shapes make_corner_shapes(float width, line_end_cap c1, line_end_cap c2) noexcept
+    {
+        auto r = f32x4::broadcast(width * 0.5f);
+
+        if (c1 == line_end_cap::flat) {
+            r = zero<0b0101>(r);
+        }
+        if (c2 == line_end_cap::flat) {
+            r = zero<0b1010>(r);
+        }
+
+        return corner_shapes{r};
+    }
+
+    void draw_line(
+        widget_layout const &layout,
+        line_segment const &line,
+        float width,
+        quad_color const &fill_color,
+        line_end_cap c1 = line_end_cap::flat,
+        line_end_cap c2 = line_end_cap::flat) const noexcept
+    {
+        ttlet line_ = layout.to_window * line;
+        ttlet width_ = layout.to_window * width;
+
+        ttlet box = make_rectangle(line_, width_, c1, c2);
+        ttlet corners = make_corner_shapes(width_, c1, c2);
+
+        return _draw_box(layout.window_clipping_rectangle(), box, fill_color, fill_color, 0.0f, border_side::on, corners);
+    }
+
+    void draw_line(
+        widget_layout const &layout,
+        aarectangle const &clipping_rectangle,
+        line_segment const &line,
+        float width,
+        quad_color const &fill_color,
+        line_end_cap c1 = line_end_cap::flat,
+        line_end_cap c2 = line_end_cap::flat) const noexcept
+    {
+        ttlet line_ = layout.to_window * line;
+        ttlet width_ = layout.to_window * width;
+
+        ttlet box = make_rectangle(line_, width_, c1, c2);
+        ttlet corners = make_corner_shapes(width_, c1, c2);
+
         return _draw_box(
-            layout.window_clipping_rectangle(),
-            layout.to_window * bounding_quad(circle),
+            layout.window_clipping_rectangle(clipping_rectangle), box, fill_color, fill_color, 0.0f, border_side::on, corners);
+    }
+
+    void draw_line(
+        widget_layout const &layout,
+        line_segment const &line,
+        float width,
+        quad_color const &fill_color,
+        quad_color const &border_color,
+        float border_width,
+        tt::border_side border_side,
+        line_end_cap c1 = line_end_cap::flat,
+        line_end_cap c2 = line_end_cap::flat) const noexcept
+    {
+        ttlet line_ = layout.to_window * line;
+        ttlet width_ = layout.to_window * width;
+
+        ttlet box = make_rectangle(line_, width_, c1, c2);
+        ttlet corners = make_corner_shapes(width_, c1, c2);
+
+        return _draw_box(layout.window_clipping_rectangle(), box, fill_color, border_color, border_width, border_side, corners);
+    }
+
+    void draw_line(
+        widget_layout const &layout,
+        aarectangle const &clipping_rectangle,
+        line_segment const &line,
+        float width,
+        quad_color const &fill_color,
+        quad_color const &border_color,
+        float border_width,
+        tt::border_side border_side,
+        line_end_cap c1 = line_end_cap::flat,
+        line_end_cap c2 = line_end_cap::flat) const noexcept
+    {
+        ttlet line_ = layout.to_window * line;
+        ttlet width_ = layout.to_window * width;
+
+        ttlet box = make_rectangle(line_, width_, c1, c2);
+        ttlet corners = make_corner_shapes(width_, c1, c2);
+
+        return _draw_box(
+            layout.window_clipping_rectangle(clipping_rectangle),
+            box,
             fill_color,
-            fill_color,
-            0.0f,
-            border_side::on,
-            corner_shapes{circle.radius()});
+            border_color,
+            border_width,
+            border_side,
+            corners);
+    }
+    [[nodiscard]] constexpr static rectangle make_rectangle(tt::circle const &circle) noexcept
+    {
+        ttlet circle_ = f32x4{circle};
+        ttlet origin = point3{circle_.xyz1() - circle_.ww00()};
+        ttlet right = vector3{circle_.w000() * 2.0f};
+        ttlet up = vector3{circle_._0w00() * 2.0f};
+        return rectangle{origin, right, up};
+    }
+
+    [[nodiscard]] constexpr static corner_shapes make_corner_shapes(tt::circle const &circle) noexcept
+    {
+        return corner_shapes{f32x4{circle}.wwww()};
+    }
+
+    void draw_circle(widget_layout const &layout, tt::circle const &circle, quad_color const &fill_color) const noexcept
+    {
+        ttlet circle_ = layout.to_window * circle;
+        ttlet box = make_rectangle(circle_);
+        ttlet corners = make_corner_shapes(circle_);
+        return _draw_box(layout.window_clipping_rectangle(), box, fill_color, fill_color, 0.0f, border_side::on, corners);
     }
 
     void draw_circle(
@@ -196,14 +329,11 @@ public:
         tt::circle const &circle,
         quad_color const &fill_color) const
     {
+        ttlet circle_ = layout.to_window * circle;
+        ttlet box = make_rectangle(circle_);
+        ttlet corners = make_corner_shapes(circle_);
         return _draw_box(
-            layout.window_clipping_rectangle(clipping_rectangle),
-            layout.to_window * bounding_quad(circle),
-            fill_color,
-            fill_color,
-            0.0f,
-            border_side::on,
-            corner_shapes{circle.radius()});
+            layout.window_clipping_rectangle(clipping_rectangle), box, fill_color, fill_color, 0.0f, border_side::on, corners);
     }
 
     void draw_circle(
@@ -214,21 +344,10 @@ public:
         float border_width,
         tt::border_side border_side) const noexcept
     {
-        // clang-format off
-        tt::circle circle_ =
-            border_side == border_side::outside ? circle + 0.5f * border_width :
-            border_side == border_side::inside ? circle - 0.5f * border_width :
-            circle;
-        // clang-format on
-
-        return _draw_box(
-            layout.window_clipping_rectangle(),
-            layout.to_window * bounding_quad(circle_),
-            fill_color,
-            border_color,
-            border_width,
-            border_side::on,
-            corner_shapes{circle_.radius()});
+        ttlet circle_ = layout.to_window * circle;
+        ttlet box = make_rectangle(circle_);
+        ttlet corners = make_corner_shapes(circle_);
+        return _draw_box(layout.window_clipping_rectangle(), box, fill_color, border_color, border_width, border_side, corners);
     }
 
     void draw_circle(
@@ -240,21 +359,17 @@ public:
         float border_width,
         tt::border_side border_side) const noexcept
     {
-        // clang-format off
-        tt::circle circle_ =
-            border_side == border_side::outside ? circle + 0.5f * border_width :
-            border_side == border_side::inside ? circle - 0.5f * border_width :
-            circle;
-        // clang-format on
-
+        ttlet circle_ = layout.to_window * circle;
+        ttlet box = make_rectangle(circle_);
+        ttlet corners = make_corner_shapes(circle_);
         return _draw_box(
             layout.window_clipping_rectangle(clipping_rectangle),
-            layout.to_window * bounding_quad(circle),
+            box,
             fill_color,
             border_color,
             border_width,
-            border_side::on,
-            corner_shapes{circle.radius()});
+            border_side,
+            corners);
     }
 
     /** Draw an image
@@ -300,6 +415,7 @@ public:
     {
         return _draw_glyph(layout.window_clipping_rectangle(clipping_rectangle), layout.to_window * box, color, glyph);
     }
+
     /** Draw shaped text.
      *
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
