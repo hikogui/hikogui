@@ -31,7 +31,7 @@ void system_menu_widget::set_layout(widget_layout const &layout) noexcept
             aarectangle{theme().margin, 0.0f, layout.width() - theme().margin, layout.height() - theme().margin};
     }
 
-    _icon_widget->set_layout(_icon_rectangle * layout);
+    _icon_widget->set_layout(layout.transform(_icon_rectangle));
 }
 
 void system_menu_widget::draw(draw_context const &context) noexcept

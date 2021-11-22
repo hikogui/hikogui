@@ -195,10 +195,10 @@ public:
         }
 
         if (_vertical_scroll_bar->visible) {
-            _vertical_scroll_bar->set_layout(_vertical_scroll_bar_rectangle * layout);
+            _vertical_scroll_bar->set_layout(layout.transform(_vertical_scroll_bar_rectangle));
         }
         if (_horizontal_scroll_bar->visible) {
-            _horizontal_scroll_bar->set_layout(_horizontal_scroll_bar_rectangle * layout);
+            _horizontal_scroll_bar->set_layout(layout.transform(_horizontal_scroll_bar_rectangle));
         }
 
         ttlet scroll_offset_x_max = std::max(_scroll_content_width - _scroll_aperture_width, 0.0f);
@@ -216,6 +216,9 @@ public:
         _content_rectangle =
             aarectangle{-_scroll_offset_x, -_scroll_offset_y - _height_adjustment, content_size.width(), content_size.height()};
         ttlet content_clipping_rectangle = bounding_rectangle(~translate3{_content_rectangle} * _aperture_rectangle);
+
+        // The scrollbars and content need to be at a higher elevation, so that hitbox check
+        // will work correctly for handling scrolling with mouse wheel.
         _content->set_layout(layout.transform(_content_rectangle, 1.0f, content_clipping_rectangle));
     }
 

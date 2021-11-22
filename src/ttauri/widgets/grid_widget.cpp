@@ -86,7 +86,8 @@ void grid_widget::set_layout(widget_layout const &layout) noexcept
     }
 
     for (ttlet &cell : _cells) {
-        cell.widget->set_layout(cell.rectangle(_columns, _rows, layout.height()) * layout);
+        ttlet child_rectangle = cell.rectangle(_columns, _rows, layout.height());
+        cell.widget->set_layout(layout.transform(child_rectangle, 0.0f));
     }
 }
 

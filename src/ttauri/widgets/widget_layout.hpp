@@ -176,11 +176,6 @@ public:
         r.clipping_rectangle = new_clipping_rectangle;
         return r;
     }
-
-    [[nodiscard]] friend constexpr widget_layout operator*(aarectangle const &lhs, widget_layout const &rhs) noexcept
-    {
-        return rhs.transform(lhs);
-    }
 };
 
 } // namespace tt::inline v1

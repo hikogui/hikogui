@@ -59,7 +59,7 @@ void text_field_widget::set_layout(widget_layout const &layout) noexcept
         ttlet error_label_rectangle = aarectangle{
             extent2{layout.width(), std::min(layout.height(), _error_label_widget->constraints().preferred.height())}};
         _error_label_widget->visible = not _error_label->empty();
-        _error_label_widget->set_layout(error_label_rectangle * layout);
+        _error_label_widget->set_layout(layout.transform(error_label_rectangle));
 
         // The rectangle is a single line, but at full width. Aligned to the top of the widget.
         ttlet text_field_size = extent2{layout.width(), text_field_height};

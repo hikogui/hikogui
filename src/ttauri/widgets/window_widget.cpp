@@ -71,8 +71,8 @@ void window_widget::set_layout(widget_layout const &layout) noexcept
         _toolbar_rectangle = aarectangle{0.0f, layout.height() - toolbar_height, layout.width(), toolbar_height};
         _content_rectangle = aarectangle{0.0f, 0.0f, layout.width(), layout.height() - toolbar_height};
     }
-    _toolbar->set_layout(_toolbar_rectangle * layout);
-    _content->set_layout(_content_rectangle * layout);
+    _toolbar->set_layout(layout.transform(_toolbar_rectangle));
+    _content->set_layout(layout.transform(_content_rectangle));
 }
 
 void window_widget::draw(draw_context const &context) noexcept

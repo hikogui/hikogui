@@ -55,7 +55,7 @@ public:
 
         // The layout of any child widget must always be set, even if the layout didn't actually change.
         // This is because child widgets may need to re-layout for other reasons.
-        _label_widget->set_layout(_label_rectangle * layout);
+        _label_widget->set_layout(layout.transform(_label_rectangle));
     }
 
     // The `draw()` function is called when all or part of the window requires redrawing.

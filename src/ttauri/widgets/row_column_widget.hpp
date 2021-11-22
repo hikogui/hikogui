@@ -235,7 +235,7 @@ private:
                 layout().width() - child_constraints.margin * 2.0f,
                 child_length};
 
-        child.set_layout(child_rectangle * context);
+        child.set_layout(context.transform(child_rectangle, 0.0f));
     }
 };
 

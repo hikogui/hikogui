@@ -110,8 +110,8 @@ void selection_widget::set_layout(widget_layout const &layout) noexcept
     _overlay_rectangle = make_overlay_rectangle(overlay_rectangle_request);
     _overlay_widget->set_layout(layout.transform(_overlay_rectangle, 20.0f));
 
-    _unknown_label_widget->set_layout(_option_rectangle * layout);
-    _current_label_widget->set_layout(_option_rectangle * layout);
+    _unknown_label_widget->set_layout(layout.transform(_option_rectangle));
+    _current_label_widget->set_layout(layout.transform(_option_rectangle));
 }
 
 void selection_widget::draw(draw_context const &context) noexcept
