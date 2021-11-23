@@ -1,38 +1,46 @@
 How to draw
 ===========
 
+Drawing is done through the `tt::draw_context` object that is passed to
+`tt::widget::draw()` when drawing a frame. The `tt::draw_context` has
+several `draw_*()` member functions that allows drawing of shapes,
+glyphs, text and images.
+
+The first argument to those `draw_*()` functions is an reference to the
+widget's `tt::widget_layout` object. This object was stored by the
+`tt::widget::set_layout()` function and contains the to-window
+transformation matrix and clipping rectangle used when drawing.
+
+The transformation matrix is used so that drawing can be done
+in the local cordinate system of the widget. Where the left bottom
+corner of the widget is the origin. With the axis:
+ * x increasing to the right,
+ * y increasing to the top, and
+ * z increasing toward the user.
+
+The second optional argument is an axis-aligned clipping rectangle
+which will be intersected with the layout's clipping rectangle.
+This can be used to specifically clip the shape, glyph or image being drawn.
+
+
+
 Drawing shapes
--------------
-Most shapes are drawn using the box-shader, this shader does the following:
- * Draws a polygon between 4 vertices, 2 triangles.
- * Each vertex has a fill color and the polygon is smooth shaded
- * Each vertex has a border color: a border is drawn around the polygon and is smooth shaded
-   at a given border width..
- * Each vertex has a corner radius: the polygon will be drawn with rounded corners.
- * The border and the polygon itself are anti-aliased.
- * Rendering of rounded corners and borders remain correct even when the polygon
-   is an irreguar shape.
- * The polygon is clipped by an axis aligned rectangle.
+--------------
 
-The anti-aliased rounded rectangle shape is very powerfull and can be used to draw several shapes:
- * Rectangle
- * Rectangle with rounded corners
- * Circle
- * Slot
- * Line with flat or rounded end-points
- * Other 4 corner polygons with or without rounded corners.
+### Drawing rectangles and other quads
 
-The clipping rectangle also adds abilities, for example the toolbar-tab-button-widget
-uses this to clip of the border on the bottom edge of the tab.
-
-### Drawing rectangles
+The `tt::draw_context::draw_box(
 
 ```
-
+void draw(tt::draw_context const &context) noexcept override
+{
+    auto const q = tt::quad(point3{3, 0, 0}, point3{
+    context.draw_box(_layout, q, f)
+}
 ```
 
 
-### Drawing rectangles with rounded corners
+### Drawing quads with rounded corners
 
 ### Drawing circles
 
