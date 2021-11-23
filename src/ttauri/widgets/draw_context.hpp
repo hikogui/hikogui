@@ -385,6 +385,22 @@ public:
         return _draw_image(layout.window_clipping_rectangle(), layout.to_window * box, image);
     }
 
+    /** Draw an image
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param clipping_rectangle A more narrow clipping rectangle than supplied by layout.
+     * @param box The four points of the box to draw.
+     * @param image The image to show.
+     * @return True when the image was drawn, false if the image is not ready yet.
+     *         Widgets may want to request a redraw if the image is not ready.
+     */
+    [[nodiscard]] bool
+    draw_image(widget_layout const &layout, aarectangle const &clipping_rectangle, quad const &box, paged_image &image)
+        const noexcept
+    {
+        return _draw_image(layout.window_clipping_rectangle(clipping_rectangle), layout.to_window * box, image);
+    }
+
     /** Draw a glyph.
      *
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.

@@ -359,18 +359,17 @@ void device_shared::place_vertices(
             ttlet new_p3 = new_p2 + top_increment;
 
             // The new quad, limited to the right-top corner of the original quad.
-            ttlet polygon = quad{new_p0, min(new_p1, box.p3), min(new_p2, box.p3), min(new_p3, box.p3)};
             ttlet atlas_position = get_atlas_position_from_page(*it);
 
             static_assert(std::popcount(page_size) == 1);
             constexpr int page_size_shift = std::countr_zero(page_size);
             ttlet xy = f32x4{i32x4{narrow_cast<int32_t>(column_nr), narrow_cast<int32_t>(row_nr)} << page_size_shift};
-            ttlet uv_rectangle = rectangle{atlas_position, extent2{min(image_size - xy, page_size2)}};
+            ttlet uv_rectangle = rectangle{atlas_position, extent2{page_size2}};
 
-            vertices.emplace_back(polygon.p0, clipping_rectangle, get<0>(uv_rectangle));
-            vertices.emplace_back(polygon.p1, clipping_rectangle, get<1>(uv_rectangle));
-            vertices.emplace_back(polygon.p2, clipping_rectangle, get<2>(uv_rectangle));
-            vertices.emplace_back(polygon.p3, clipping_rectangle, get<3>(uv_rectangle));
+            vertices.emplace_back(new_p0, clipping_rectangle, get<0>(uv_rectangle));
+            vertices.emplace_back(new_p1, clipping_rectangle, get<1>(uv_rectangle));
+            vertices.emplace_back(new_p2, clipping_rectangle, get<2>(uv_rectangle));
+            vertices.emplace_back(new_p3, clipping_rectangle, get<3>(uv_rectangle));
 
             new_p0 = new_p1;
             new_p2 = new_p3;
