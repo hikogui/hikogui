@@ -97,9 +97,9 @@ static aarectangle get_staging_rectangle_from_page(const paged_image &image, siz
 {
     ttlet[pages_width, pages_height] = image.size_in_int_pages();
     ttlet left = (page_index % pages_width) * paged_image::page_size;
-    ttlet bottom = (page_index / pages_height) * paged_image::page_size;
-    ttlet right = std::min(left + paged_image::page_size, image.width);
-    ttlet top = std::min(bottom + paged_image::page_size, image.height);
+    ttlet bottom = (page_index / pages_width) * paged_image::page_size;
+    ttlet right = left + paged_image::page_size;
+    ttlet top = bottom + paged_image::page_size;
 
     ttlet p0 = point2{narrow_cast<float>(left), narrow_cast<float>(bottom)};
     ttlet p3 = point2{narrow_cast<float>(right), narrow_cast<float>(top)};

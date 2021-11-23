@@ -186,7 +186,6 @@ public:
             return tt::quad{
                 tt::point3{-50.0f, -10.0f}, tt::point3{50.0f, -40.0f}, tt::point3{-50.0f, 40.0f}, tt::point3{50.0f, 50.0f}};
         case shape_type::concave:
-            // It is not possible to make a concave shape, because the object is really two triangles.
             return tt::quad{
                 tt::point3{20.0f, 20.0f}, tt::point3{50.0f, -40.0f}, tt::point3{-50.0f, 40.0f}, tt::point3{50.0f, 50.0f}};
         case shape_type::glyph_aspect_ratio: return _glyph_rectangle;
