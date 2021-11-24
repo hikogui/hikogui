@@ -69,7 +69,7 @@ public:
 
     [[nodiscard]] constexpr friend bool operator==(sfloat_rgba16 const &lhs, sfloat_rgba16 const &rhs) noexcept = default;
 
-    [[nodiscard]] friend sfloat_rgba16 makeTransparent(sfloat_rgba16 const &rhs) noexcept
+    [[nodiscard]] friend sfloat_rgba16 make_transparent(sfloat_rgba16 const &rhs) noexcept
     {
         sfloat_rgba16 r;
         r.v = rhs.v;

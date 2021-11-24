@@ -54,8 +54,7 @@ tt::pixel_map<sfloat_rgba16> device_shared::get_staging_pixel_map()
 {
     staging_texture.transitionLayout(device, vk::Format::eR16G16B16A16Sfloat, vk::ImageLayout::eGeneral);
 
-    return staging_texture.pixel_map.submap(
-        1, 1, staging_image_width - 2, staging_image_height - 2);
+    return staging_texture.pixel_map.submap(1, 1, staging_image_width - 2, staging_image_height - 2);
 }
 
 /** Get the coordinate in the atlas from a page index.
@@ -68,7 +67,7 @@ tt::pixel_map<sfloat_rgba16> device_shared::get_staging_pixel_map()
     // The amount of pixels per page, that is the page plus two borders.
     constexpr auto page_stride = paged_image::page_size + 2;
 
-    ttlet image_nr = page / num_pages_per_image;
+    ttlet image_nr = page / device_shared::atlas_num_pages_per_image;
     ttlet image_page = page % device_shared::atlas_num_pages_per_image;
 
     return point3{
@@ -92,24 +91,87 @@ static point2 get_staging_position(const paged_image &image, size_t page_index)
         narrow_cast<float>((page_index / width_in_pages) * paged_image::page_size + 1)};
 }
 
-void device_shared::update_atlas_with_staging_pixel_map(const paged_image &image) noexcept
+void device_shared::make_staging_border_transparent(aarectangle border_rectangle) noexcept
 {
-    {
-        auto rectangle = aarectangle{point2{1.0f, 1.0f}, image.size()};
-        rectangle = rectangle + 1.0f;
+    ttlet width = static_cast<size_t>(border_rectangle.width());
+    ttlet height = static_cast<size_t>(border_rectangle.height());
+    ttlet bottom = static_cast<size_t>(border_rectangle.bottom());
+    ttlet top = static_cast<size_t>(border_rectangle.top());
+    ttlet left = static_cast<size_t>(border_rectangle.left());
+    ttlet right = static_cast<size_t>(border_rectangle.right());
 
-        auto pixel_map = staging_texture.pixel_map.submap(rectangle);
-        makeTransparentBorder(pixel_map);
+    tt_axiom(bottom == 0);
+    tt_axiom(left == 0);
+    tt_axiom(top >= 2);
+    tt_axiom(right >= 2);
+
+    // Add a border below and above the image.
+    auto border_bottom_row = staging_texture.pixel_map[bottom];
+    auto border_top_row = staging_texture.pixel_map[top - 1];
+    auto image_bottom_row = staging_texture.pixel_map[bottom + 1];
+    auto image_top_row = staging_texture.pixel_map[top - 2];
+    for (auto x = 0_uz; x != width; ++x) {
+        border_bottom_row[x] = make_transparent(image_bottom_row[x]);
+        border_top_row[x] = make_transparent(image_top_row[x]);
     }
 
-    // Flush the given image, included the border.
-    // Also include the full page at the right and top edge of the image.
-    device.flushAllocation(
-        staging_texture.allocation,
-        0,
-        ((image.width + 2) * staging_texture.pixel_map.stride()) * sizeof(uint32_t));
+    // Add a border to the left and right of the image.
+    for (auto y = 0_uz; y != height; ++y) {
+        auto row = staging_texture.pixel_map[y];
+        row[left] = make_transparent(row[left + 1]);
+        row[right - 2] = make_transparent(row[right - 1]);
+    }
+}
 
+void device_shared::clear_staging_between_border_and_upload(aarectangle border_rectangle, aarectangle upload_rectangle) noexcept
+{
+    tt_axiom(border_rectangle.left() == 0.0f and border_rectangle.bottom() == 0.0f);
+    tt_axiom(upload_rectangle.left() == 0.0f and upload_rectangle.bottom() == 0.0f);
+
+    ttlet border_top = narrow_cast<size_t>(border_rectangle.top());
+    ttlet border_right = narrow_cast<size_t>(border_rectangle.right());
+    ttlet upload_top = narrow_cast<size_t>(upload_rectangle.top());
+    ttlet upload_right = narrow_cast<size_t>(upload_rectangle.right());
+    tt_axiom(border_right <= upload_right);
+    tt_axiom(border_top <= upload_top);
+
+    // Clear the area to the right of the border.
+    for (auto y = 0_uz; y != border_top; ++y) {
+        auto row = staging_texture.pixel_map[y];
+        for (auto x = border_right; x != upload_right; ++x) {
+            row[x] = {};
+        }
+    }
+
+    // Clear the area above the border.
+    for (auto y = border_top; y != upload_top; ++y) {
+        auto row = staging_texture.pixel_map[y];
+        for (auto x = 0_uz; x != upload_right; ++x) {
+            row[x] = {};
+        }
+    }
+}
+
+void device_shared::prepare_staging_for_upload(paged_image const &image) noexcept
+{
+    ttlet image_rectangle = aarectangle{point2{1.0f, 1.0f}, image.size()};
+    ttlet border_rectangle = image_rectangle + 1;
+    ttlet upload_rectangle = aarectangle{extent2{
+        narrow_cast<float>(ceil(image.width, paged_image::page_size) + 2),
+        narrow_cast<float>(ceil(image.height, paged_image::page_size) + 2)}};
+
+    make_staging_border_transparent(border_rectangle);
+    clear_staging_between_border_and_upload(border_rectangle, upload_rectangle);
+
+    // Flush the given image, everything that may be uploaded.
+    static_assert(std::is_same_v<decltype(staging_texture.pixel_map)::value_type, sfloat_rgba16>);
+    device.flushAllocation(staging_texture.allocation, 0, upload_rectangle.height() * staging_texture.pixel_map.stride() * 8);
     staging_texture.transitionLayout(device, vk::Format::eR16G16B16A16Sfloat, vk::ImageLayout::eTransferSrcOptimal);
+}
+
+void device_shared::update_atlas_with_staging_pixel_map(paged_image const &image) noexcept
+{
+    prepare_staging_for_upload(image);
 
     std::array<std::vector<vk::ImageCopy>, atlas_maximum_num_images> regions_to_copy_per_atlas_texture;
     for (size_t index = 0; index < size(image.pages); index++) {
@@ -129,11 +191,11 @@ void device_shared::update_atlas_with_staging_pixel_map(const paged_image &image
 
         auto &regionsToCopy = regions_to_copy_per_atlas_texture.at(dst_z);
         regionsToCopy.emplace_back(
-            {vk::ImageAspectFlagBits::eColor, 0, 0, 1},
-            {src_x, src_y, 0},
-            {vk::ImageAspectFlagBits::eColor, 0, 0, 1},
-            {dst_x, dst_y, 0},
-            {width, height, 1});
+            vk::ImageSubresourceLayers{vk::ImageAspectFlagBits::eColor, 0, 0, 1},
+            vk::Offset3D{src_x, src_y, 0},
+            vk::ImageSubresourceLayers{vk::ImageAspectFlagBits::eColor, 0, 0, 1},
+            vk::Offset3D{dst_x, dst_y, 0},
+            vk::Extent3D{width, height, 1});
     }
 
     for (size_t atlas_texture_index = 0; atlas_texture_index < size(atlas_textures); atlas_texture_index++) {
@@ -318,9 +380,10 @@ void device_shared::place_vertices(
 {
     tt_axiom(image.state == paged_image::state_type::uploaded);
 
-    constexpr auto page_size2 = f32x4{i32x4{narrow_cast<int32_t>(page_size), narrow_cast<int32_t>(page_size)}};
+    constexpr auto page_size2 =
+        f32x4{i32x4{narrow_cast<int32_t>(paged_image::page_size), narrow_cast<int32_t>(paged_image::page_size)}};
 
-    ttlet image_size = f32x4{i32x4{narrow_cast<int32_t>(image.width), narrow_cast<int32_t>(image.height)}};
+    ttlet image_size = image.size();
     ttlet size_in_float_pages = f32x4{image.size_in_float_pages()};
     ttlet size_in_int_pages = i32x4{ceil(size_in_float_pages)};
     ttlet num_columns = narrow_cast<size_t>(size_in_int_pages.x());
@@ -350,8 +413,8 @@ void device_shared::place_vertices(
             // The new quad, limited to the right-top corner of the original quad.
             ttlet atlas_position = get_atlas_position(*it);
 
-            static_assert(std::popcount(page_size) == 1);
-            constexpr int page_size_shift = std::countr_zero(page_size);
+            static_assert(std::popcount(paged_image::page_size) == 1);
+            constexpr int page_size_shift = std::countr_zero(paged_image::page_size);
             ttlet xy = f32x4{i32x4{narrow_cast<int32_t>(column_nr), narrow_cast<int32_t>(row_nr)} << page_size_shift};
             ttlet uv_rectangle = rectangle{atlas_position, extent2{page_size2}};
 

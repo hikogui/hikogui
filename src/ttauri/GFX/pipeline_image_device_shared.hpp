@@ -22,7 +22,7 @@ namespace pipeline_image {
 struct device_shared {
     static constexpr size_t atlas_num_pages_per_axis = 16;
     static constexpr size_t atlas_num_pages_per_image = atlas_num_pages_per_axis * atlas_num_pages_per_axis;
-    static constexpr size_t atlas_image_axis_size = atlas_num_pages_per_axis * (page_size + 2);
+    static constexpr size_t atlas_image_axis_size = atlas_num_pages_per_axis * (paged_image::page_size + 2);
     static constexpr size_t atlas_maximum_num_images = 16;
     static constexpr size_t staging_image_width = 1024;
     static constexpr size_t staging_image_height = 1024;
@@ -97,6 +97,31 @@ private:
     {
         return get_staging_pixel_map().submap(0, 0, width, height);
     }
+
+    /** Add a transparent border around the image.
+     *
+     * @param border_rectangle The rectangle of the border, the image-rectangle is inside this 1 pixel border.
+     */
+    void make_staging_border_transparent(aarectangle border_rectangle) noexcept;
+
+    /** Clear the area between the border rectangle and upload rectangle.
+    * 
+    * @param border_rectangle The rectangle where the border is located.
+    * @param upload_rectangle The rectangle which will be uploaded to the atlas.
+     */
+    void clear_staging_between_border_and_upload(aarectangle border_rectangle, aarectangle upload_rectangle) noexcept;
+
+    /** Prepare the staging image for upload.
+     *
+     * The following will be done.
+     *  * Around the edge of the image the color is copied into the 1 pixel border.
+     *    with the alpha channel set to zero.
+     *  * On the right and upper edge the pixels are set to transparent-black up to
+     *    a multiple of the `paged_image::page_size`.
+     *  * flush the image to the GPU
+     *  * transition the image for transferring to the atlas.
+     */
+    void prepare_staging_for_upload(paged_image const &image) noexcept;
 
     /** Copy the image from the staging pixel map into the atlas.
      */

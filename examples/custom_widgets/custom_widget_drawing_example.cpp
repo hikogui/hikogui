@@ -71,7 +71,6 @@ public:
     constexpr static auto greenish = tt::color(0.00f, 0.30f, 0.70f);
     constexpr static auto blueish = tt::color(0.00f, 0.70f, 0.30f);
     constexpr static auto redish2 = tt::color(0.70f, 0.00f, 0.30f);
-    constexpr static auto shape_bounding_box = tt::aarectangle{tt::point2{-50.0f, -50.0f}, tt::extent2{100.0f, 100.0f}};
 
     tt::observable<drawing_type> drawing = drawing_type::box;
     tt::observable<shape_type> shape = shape_type::square;
@@ -119,7 +118,7 @@ public:
         // When the window is initially created it will try to size itself so that
         // the contained widgets are at their preferred size. Having a different minimum
         // and/or maximum size will allow the window to be resizable.
-        return _constraints = {{100, 100}, {150, 150}, {200, 200}, theme().margin};
+        return _constraints = {{100, 100}, {150, 150}, {400, 400}, theme().margin};
     }
 
     // The `set_layout()` function is called when the window has resized, or when
@@ -131,17 +130,21 @@ public:
         // Update the `_layout` with the new context, in this case we want to do some
         // calculations when the size of the widget was changed.
         if (compare_store(_layout, layout)) {
+            // Make a size scaled to the layout.
+            auto const max_size = _layout.size * 0.9f;
+            auto const max_rectangle = tt::aarectangle{tt::point2{max_size.width() * -0.5f, max_size.height() * -0.5f}, max_size};
+
             // Here we can do some semi-expensive calculations which must be done when resizing the widget.
             // In this case we make two rectangles which are used in the `draw()` function.
             auto const glyph_size = _glyph.get_bounding_box().size();
-            auto const glyph_scale = tt::scale2::uniform(glyph_size, shape_bounding_box.size());
+            auto const glyph_scale = tt::scale2::uniform(glyph_size, max_size);
             auto const new_glyph_size = glyph_scale * glyph_size;
-            _glyph_rectangle = align(shape_bounding_box, new_glyph_size, tt::alignment::middle_center);
+            _glyph_rectangle = align(max_rectangle, new_glyph_size, tt::alignment::middle_center);
 
             auto const image_size = tt::extent2{static_cast<float>(_image.width()), static_cast<float>(_image.height())};
-            auto const image_scale = tt::scale2::uniform(image_size, shape_bounding_box.size());
+            auto const image_scale = tt::scale2::uniform(image_size, max_size);
             auto const new_image_size = image_scale * image_size;
-            _image_rectangle = align(shape_bounding_box, new_image_size, tt::alignment::middle_center);
+            _image_rectangle = align(max_rectangle, new_image_size, tt::alignment::middle_center);
         }
     }
 
