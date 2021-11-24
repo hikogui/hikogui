@@ -77,7 +77,7 @@ public:
             delegate->add_tab(*this, static_cast<size_t>(key), size(_children));
         }
         _children.push_back(std::move(tmp));
-        window.request_reconstrain();
+        request_reconstrain();
         return ref;
     }
 
@@ -90,8 +90,9 @@ public:
     }
 
     widget_constraints const &set_constraints() noexcept override;
-    void set_layout(widget_layout const &context) noexcept override;
+    void set_layout(widget_layout const &layout) noexcept override;
     void draw(draw_context const &context) noexcept override;
+    [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
     [[nodiscard]] widget const *find_next_widget(
         widget const *current_widget,
         keyboard_focus_group group,

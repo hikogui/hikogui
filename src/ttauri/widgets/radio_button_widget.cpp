@@ -18,18 +18,16 @@ widget_constraints const &radio_button_widget::set_constraints() noexcept
     return _constraints;
 }
 
-void radio_button_widget::set_layout(widget_layout const &context) noexcept
+void radio_button_widget::set_layout(widget_layout const &layout) noexcept
 {
-    if (visible) {
-        if (_layout.store(context) >= layout_update::transform) {
-            _button_rectangle = align(layout().rectangle(), _button_size, alignment::top_left);
+    if (compare_store(_layout, layout)) {
+        _button_rectangle = align(layout.rectangle(), _button_size, alignment::top_left);
 
-            _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, layout().width(), layout().height()};
+        _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, layout.width(), layout.height()};
 
-            _pip_rectangle = align(_button_rectangle, extent2{theme().icon_size, theme().icon_size}, alignment::middle_center);
-        }
-        set_layout_button(context);
+        _pip_rectangle = align(_button_rectangle, extent2{theme().icon_size, theme().icon_size}, alignment::middle_center);
     }
+    set_layout_button(layout);
 }
 
 void radio_button_widget::draw(draw_context const &context) noexcept
@@ -43,14 +41,13 @@ void radio_button_widget::draw(draw_context const &context) noexcept
 
 void radio_button_widget::draw_radio_button(draw_context const &context) noexcept
 {
-    context.draw_box(
+    context.draw_circle(
         layout(),
-        _button_rectangle,
+        circle{_button_rectangle} * 1.02f,
         background_color(),
         focus_color(),
         theme().border_width,
-        border_side::inside,
-        corner_shapes{_button_rectangle.height() * 0.5f});
+        border_side::inside);
 }
 
 void radio_button_widget::draw_radio_pip(draw_context const &context) noexcept
@@ -63,8 +60,7 @@ void radio_button_widget::draw_radio_pip(draw_context const &context) noexcept
     // draw pip
     auto float_value = _animated_value.current_value();
     if (float_value > 0.0) {
-        ttlet scaled_pip_rectangle = _pip_rectangle * float_value;
-        context.draw_box(layout(), scaled_pip_rectangle, accent_color(), corner_shapes{scaled_pip_rectangle.height() * 0.5f});
+        context.draw_circle(layout(), circle{_pip_rectangle} * 1.02f * float_value, accent_color());
     }
 }
 

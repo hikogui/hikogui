@@ -19,6 +19,8 @@ namespace tt::inline v1 {
 template<typename T>
 class pixel_row {
 public:
+    using value_type = T;
+
     pixel_row(T *pixels, size_t width) noexcept : _pixels(pixels), _width(width) {}
 
     [[nodiscard]] size_t width() const noexcept
@@ -99,6 +101,8 @@ private:
 template<typename T>
 class pixel_map {
 public:
+    using value_type = T;
+
     /** Construct an empty pixel-map.
      */
     pixel_map() noexcept : _pixels(nullptr), _width(0), _height(0), _stride(0), _self_allocated(true) {}

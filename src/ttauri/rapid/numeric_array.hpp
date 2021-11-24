@@ -44,14 +44,14 @@
 #include <bit>
 #include <climits>
 
+tt_warning_push();
+// C4702 unreachable code: Suppressed due intrinsics and std::is_constant_evaluated()
+tt_msvc_suppress(4702);
+
 namespace tt::inline v1 {
 
-tt_warning_push()
-    // C4702 unreachable code: Suppressed due intrinsics and std::is_constant_evaluated()
-    tt_msvc_pragma("warning( disable : 4702 )")
-
-        template<numeric_limited T, size_t N>
-        struct numeric_array {
+template<numeric_limited T, size_t N>
+struct numeric_array {
     using container_type = std::array<T, N>;
     using value_type = typename container_type::value_type;
     using size_type = typename container_type::size_type;
@@ -1006,6 +1006,97 @@ tt_warning_push()
         }
     }
 
+    /** Extract an element from the array.
+     *
+     * @tparam I The index into the array.
+     * @param rhs The vector to extract the value from.
+     * @return The value extracted.
+     */
+    template<size_t I>
+    [[nodiscard]] constexpr friend T extract(numeric_array const &rhs) noexcept
+    {
+        static_assert(I < N);
+
+        if (not std::is_constant_evaluated()) {
+#if defined(TT_HAS_AVX2)
+            if constexpr (is_i16x16 or is_u16x16) {
+                return static_cast<T>(_mm256_extract_epi16(rhs.v.reg(), I));
+            } else if constexpr (is_i8x32 or is_u8x32) {
+                return static_cast<T>(_mm256_extract_epi8(rhs.v.reg(), I));
+            }
+#endif
+#if defined(TT_HAS_AVX)
+            if constexpr (is_f64x4) {
+                return bit_cast<T>(_mm256_extract_epi64(_mm256_castpd_si256(rhs.v.reg()), I));
+            } else if constexpr (is_f32x8) {
+                return bit_cast<T>(_mm256_extract_epi32(_mm256_castps_si256(rhs.v.reg()), I));
+            } else if constexpr (is_i64x4 or is_u64x4) {
+                return static_cast<T>(_mm256_extract_epi64(rhs.v.reg(), I));
+            } else if constexpr (is_i32x8 or is_u32x8) {
+                return static_cast<T>(_mm256_extract_epi32(rhs.v.reg(), I));
+            }
+#endif
+#if defined(TT_HAS_SSE4_1)
+            if constexpr (is_f64x2) {
+                return bit_cast<T>(_mm_extract_epi64(_mm_castpd_si128(rhs.v.reg()), I));
+            } else if constexpr (is_f32x4) {
+                return std::bit_cast<T>(_mm_extract_ps(rhs.v.reg(), I));
+            } else if constexpr (is_i64x2 or is_u64x2) {
+                return static_cast<T>(_mm_extract_epi64(rhs.v.reg(), I));
+            } else if constexpr (is_i32x4 or is_u32x4) {
+                return static_cast<T>(_mm_extract_epi32(rhs.v.reg(), I));
+            } else if constexpr (is_i8x16 or is_u8x16) {
+                return static_cast<T>(_mm_extract_epi8(rhs.v.reg(), I));
+            }
+#endif
+#if defined(TT_HAS_SSE2)
+            if constexpr (is_i16x8 or is_u16x8) {
+                return static_cast<T>(_mm_extract_epi16(rhs.v.reg(), I));
+            }
+#endif
+        }
+
+        return get<I>(rhs);
+    }
+
+    /** Insert a value in the array.
+     *
+     * @tparam I The index into the array.
+     * @tparam ZeroMask When a bit in the mask is '1' set that element to zero.
+     * @param lhs The vector to insert the value into.
+     * @param rhs The value to insert.
+     * @return The vector with the inserted value.
+     */
+    template<size_t I, size_t ZeroMask = 0>
+    [[nodiscard]] constexpr friend numeric_array insert(numeric_array const &lhs, T rhs) noexcept
+        requires(is_f32x4 or is_i32x4 or is_u32x4)
+    {
+        static_assert(I < N);
+        static_assert(ZeroMask <= ((1 << N) - 1));
+
+        if (not std::is_constant_evaluated()) {
+#if defined(TT_HAS_SSE4_1)
+            if constexpr (is_f32x4) {
+                constexpr int imm8 = (I << 4) | ZeroMask;
+                return numeric_array{_mm_insert_ps(lhs.reg(), _mm_set_ss(rhs), imm8)};
+            } else if constexpr (is_i32x4 or is_u32x4) {
+                constexpr int imm8 = (I << 4) | ZeroMask;
+                return numeric_array{
+                    _mm_castps_si128(_mm_insert_ps(_mm_castsi128_ps(lhs.reg()), _mm_castsi128_ps(_mm_set1_epi32(rhs)), imm8))};
+            }
+#endif
+        }
+
+        auto r = lhs;
+        std::get<I>(r.v) = rhs;
+        for (size_t i = 0; i != N; ++i) {
+            if ((ZeroMask >> i) & 1) {
+                r.v[i] = T{};
+            }
+        }
+        return r;
+    }
+
     /** Get a element from the numeric array.
      *
      * @tparam I Index into the array,
@@ -1035,9 +1126,10 @@ tt_warning_push()
         if (not std::is_constant_evaluated()) {
 #if defined(TT_HAS_SSE4_1)
             if constexpr (is_f32x4) {
-                return numeric_array{_mm_insert_ps(rhs.reg(), Mask)};
+                return numeric_array{_mm_insert_ps(rhs.reg(), rhs.reg(), Mask)};
             } else if constexpr (is_i32x4 or is_u32x4) {
-                return numeric_array{_mm_castps_si128(_mm_insert_ps(_mm_castsi128_ps(rhs.reg()), Mask))};
+                return numeric_array{
+                    _mm_castps_si128(_mm_insert_ps(_mm_castsi128_ps(rhs.reg()), _mm_castsi128_ps(rhs.reg()), Mask))};
             }
 #endif
         }
@@ -2874,6 +2966,6 @@ struct tuple_element<I, tt::numeric_array<T, N>> {
     using type = T;
 };
 
-tt_warning_pop()
-
 } // namespace std
+
+tt_warning_pop();

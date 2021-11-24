@@ -147,7 +147,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     //
     // Make sure the widget does have its window rectangle match the constraints, otherwise
     // the logic for layout and drawing becomes complicated.
-    if (request_resize.exchange(false)) {
+    if (_resize.exchange(false)) {
         // If a widget asked for a resize, change the size of the window to the preferred size of the widgets.
         ttlet current_size = screen_rectangle.size();
         ttlet new_size = widget->constraints().preferred;
@@ -187,7 +187,11 @@ void gui_window::render(utc_nanoseconds display_time_point)
     if (need_reconstrain or need_relayout or widget_size != screen_rectangle.size()) {
         ttlet t2 = trace<"window::layout">();
         widget_size = screen_rectangle.size();
-        widget->set_layout(widget_layout{widget_size, display_time_point});
+
+        // Guarantee that the layout size is always at least the minimum size.
+        // We do this because it simplifies calculations if no minimum checks are necessary inside widget.
+        ttlet widget_layout_size = max(widget->constraints().minimum, widget_size);
+        widget->set_layout(widget_layout{widget_layout_size, display_time_point});
 
         // After layout do a complete redraw.
         _redraw_rectangle = aarectangle{widget_size};
@@ -272,7 +276,7 @@ void gui_window::update_keyboard_target(tt::widget const *new_target_widget, key
     }
 
     // Tell "escape" to all the widget that are not parents of the new widget
-    [[maybe_unused]] ttlet handled = widget->handle_command_recursive(command::gui_escape, new_target_parent_chain);
+    [[maybe_unused]] ttlet handled = widget->handle_command_recursive(command::gui_cancel, new_target_parent_chain);
 
     // Tell the new widget that keyboard focus was entered.
     if (new_target_widget) {
@@ -333,7 +337,7 @@ bool gui_window::send_event(mouse_event const &event) noexcept
         update_mouse_target(hitbox.widget, event.position);
 
         if (event.type == mouse_event::Type::ButtonDown) {
-            update_keyboard_target(hitbox.widget, keyboard_focus_group::any);
+            update_keyboard_target(hitbox.widget, keyboard_focus_group::all);
         }
     } break;
     default:;
@@ -364,9 +368,9 @@ bool gui_window::send_event(keyboard_event const &event) noexcept
             // Intercept the keyboard generated escape.
             // A keyboard generated escape should always remove keyboard focus.
             // The update_keyboard_target() function will send gui_keyboard_exit and a
-            // potential duplicate gui_escape messages to all widgets that need it.
-            if (command == command::gui_escape) {
-                update_keyboard_target({}, keyboard_focus_group::any);
+            // potential duplicate gui_cancel messages to all widgets that need it.
+            if (command == command::gui_cancel) {
+                update_keyboard_target({}, keyboard_focus_group::all);
             }
         }
 

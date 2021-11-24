@@ -71,6 +71,18 @@ to the ttauri\_demo application._
 
 [directory-based project]: https://docs.microsoft.com/en-us/visualstudio/ide/develop-code-in-visual-studio-without-projects-or-solutions?view=vs-2019
 
+### Just-in-time debugging with Visual Studio
+When a ttauri application hits a break-point while not running with a debugger the windows 10 CRT will
+try to start the just-in-time debugger as a fallback.
+
+See [Just in time debugging](https://docs.microsoft.com/en-us/visualstudio/debugger/debug-using-the-just-in-time-debugger?view=vs-2022).
+
+A common problem in Windows 10 is missing registry entries for the jit debugger to work, set the following
+two registry entries for 64 bit and 32 bit applications:
+
+ * HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AeDebug "Auto" DWORD (1)
+ * HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows NT\CurrentVersion\AeDebug "Auto" DWORD (1)
+
 ### Building and running using the "Developer Command Prompt for VS"
 
 ```

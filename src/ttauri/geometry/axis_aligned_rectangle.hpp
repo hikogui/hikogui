@@ -155,6 +155,11 @@ public:
         }
     }
 
+    [[nodiscard]] constexpr bool is_square() const noexcept
+    {
+        return width() == height();
+    }
+
     /** Get size of the rectangle
      *
      * @return The (x, y) vector representing the width and height of the rectangle.
@@ -207,6 +212,14 @@ public:
     {
         return (left() + right()) * 0.5f;
     }
+
+    /** Get the center of the rectangle.
+     */
+    [[nodiscard]] constexpr friend point2 midpoint(axis_aligned_rectangle const &rhs) noexcept
+    {
+        return midpoint(get<0>(rhs), get<3>(rhs));
+    }
+
 
     constexpr axis_aligned_rectangle &set_width(float newWidth) noexcept
     {
@@ -347,12 +360,6 @@ public:
         }
     }
 
-    /** Get the center of the rectangle.
-     */
-    [[nodiscard]] friend constexpr point2 center(axis_aligned_rectangle const &rhs) noexcept
-    {
-        return get<0>(rhs) + (get<3>(rhs) - get<0>(rhs)) * 0.5f;
-    }
 
     /** Expand the rectangle for the same amount in all directions.
      * @param lhs The original rectangle.

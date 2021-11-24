@@ -12,24 +12,6 @@
 
 namespace tt::inline v1 {
 
-/** Result of widget_layout::store()
- */
-enum class layout_update {
-    /** The layout was unmodified.
-     */
-    none,
-
-    /** One or more matrices, clipping, hit and redraw rectangle was modified.
-     */
-    transform,
-
-    /** The size of the widget was modified.
-     *
-     * This state also implies `layout_update::transform`.
-     */
-    size
-};
-
 class widget_layout {
 public:
     /** The amount of pixels that the redraw request will overhang the widget.
@@ -70,21 +52,6 @@ public:
      */
     aarectangle clipping_rectangle;
 
-    /** The hit rectangle
-     *
-     * This rectangle is used to check if the hitbox test falls within the visual-area of
-     * the widget. This rectangle was intersected by the clipping-rectangle.
-     *
-     * @note widget's coordinate system.
-     */
-    aarectangle hit_rectangle;
-
-    /** The rectangle to use to request a redraw for the widget.
-     *
-     * @note window's coordinate system.
-     */
-    aarectangle redraw_rectangle;
-
     /** The layout created for displaying at this time point.
      */
     utc_nanoseconds display_time_point;
@@ -95,32 +62,45 @@ public:
     constexpr widget_layout &operator=(widget_layout &&) noexcept = default;
     constexpr widget_layout() noexcept = default;
 
-    constexpr layout_update compare(widget_layout const &other) const noexcept
+    [[nodiscard]] constexpr friend bool operator==(widget_layout const &lhs, widget_layout const &rhs) noexcept                  
     {
-        tt_axiom((to_parent == other.to_parent) == (from_parent == other.from_parent));
-        tt_axiom((to_window == other.to_window) == (from_window == other.from_window));
+        tt_axiom((lhs.to_parent == rhs.to_parent) == (lhs.from_parent == rhs.from_parent));
+        tt_axiom((lhs.to_window == rhs.to_window) == (lhs.from_window == rhs.from_window));
 
-        // clang-format off
-        if (size != other.size) {
-            return layout_update::size;
+        return lhs.size == rhs.size and lhs.to_parent == rhs.to_parent and lhs.to_window == rhs.to_window and
+            lhs.clipping_rectangle == rhs.clipping_rectangle;
+    }
 
-        } else if (
-            to_parent != other.to_parent or
-            to_window != other.to_window or
-            clipping_rectangle != other.clipping_rectangle or
-            hit_rectangle != other.hit_rectangle or
-            redraw_rectangle != other.redraw_rectangle) {
-            return layout_update::transform;
-
-        } else {
-            return layout_update::none;
-        }
-        // clang-format on
+    /** Check if the mouse position is inside the widget.
+     *
+     * @param mouse_position The mouse position in local coordinates.
+     * @return True if the mouse position is on the widget and is not clipped.
+     */
+    [[nodiscard]] constexpr bool contains(point3 mouse_position) const noexcept
+    {
+        return rectangle().contains(mouse_position) and clipping_rectangle.contains(mouse_position);
     }
 
     [[nodiscard]] constexpr aarectangle rectangle() const noexcept
     {
         return aarectangle{size};
+    }
+
+    /** Get the clipping rectangle in window coordinate system.
+     */
+    [[nodiscard]] constexpr aarectangle window_clipping_rectangle() const noexcept
+    {
+        return bounding_rectangle(to_window * clipping_rectangle);
+    }
+
+    /** Get the clipping rectangle in window coordinate system.
+     *
+     * @param narrow_clipping_rectangle A clipping rectangle in local coordinate
+     *        system that will be intersected with the layout's clipping rectangle.
+     */
+    [[nodiscard]] constexpr aarectangle window_clipping_rectangle(aarectangle narrow_clipping_rectangle) const noexcept
+    {
+        return bounding_rectangle(to_window * intersect(clipping_rectangle, narrow_clipping_rectangle));
     }
 
     [[nodiscard]] constexpr float width() const noexcept
@@ -138,15 +118,6 @@ public:
         return size.height() * 0.5f;
     }
 
-    constexpr layout_update store(widget_layout const &other) noexcept
-    {
-        ttlet r = compare(other);
-        if (r != layout_update::none) {
-            *this = other;
-        }
-        return r;
-    }
-
     /** Construct a widget_layout from inside the window.
      */
     constexpr widget_layout(extent2 window_size, utc_nanoseconds display_time_point) noexcept :
@@ -156,8 +127,6 @@ public:
         from_window(),
         size(window_size),
         clipping_rectangle(window_size),
-        hit_rectangle(window_size),
-        redraw_rectangle(window_size),
         display_time_point(display_time_point)
     {
     }
@@ -168,9 +137,9 @@ public:
      * @param elevation The relative elevation of the child widget compared to the current widget.
      * @return A new widget_layout for use by the child widget.
      */
-    [[nodiscard]] constexpr widget_layout transform(aarectangle const &child_rectangle, float elevation = 1.0f) const noexcept
+    [[nodiscard]] constexpr widget_layout
+    transform(aarectangle const &child_rectangle, float elevation, aarectangle new_clipping_rectangle) const noexcept
     {
-        auto from_parent2 = ~translate2{child_rectangle};
         auto to_parent3 = translate3{child_rectangle, elevation};
         auto from_parent3 = ~to_parent3;
 
@@ -180,26 +149,20 @@ public:
         r.to_window = to_parent3 * this->to_window;
         r.from_window = from_parent3 * this->from_window;
         r.size = child_rectangle.size();
-        r.clipping_rectangle = from_parent2 * this->clipping_rectangle;
-        r.hit_rectangle = intersect(aarectangle{r.size}, r.clipping_rectangle);
-        r.redraw_rectangle = bounding_rectangle(r.to_window * (aarectangle{r.size} + redraw_overhang));
+        r.clipping_rectangle = intersect(bounding_rectangle(from_parent3 * this->clipping_rectangle), new_clipping_rectangle);
         r.display_time_point = this->display_time_point;
         return r;
     }
 
-    /** Clip the context with the new clipping rectangle.
+    /** Create a new widget_layout for the child widget.
      *
-     * The context's clipping rectangle is intersected with the new clipping rectangle.
-     *
-     * @param new_clipping_rectangle The new clipping rectangle.
-     * @return A new context that is clipped..
+     * @param child_rectangle The location and size of the child widget, relative to the current widget.
+     * @param elevation The relative elevation of the child widget compared to the current widget.
+     * @return A new widget_layout for use by the child widget.
      */
-    [[nodiscard]] constexpr widget_layout clip(aarectangle new_clipping_rectangle) const noexcept
+    [[nodiscard]] constexpr widget_layout transform(aarectangle const &child_rectangle, float elevation = 1.0f) const noexcept
     {
-        auto r = *this;
-        r.clipping_rectangle = intersect(r.clipping_rectangle, new_clipping_rectangle);
-        r.hit_rectangle = intersect(r.hit_rectangle, new_clipping_rectangle);
-        return r;
+        return transform(child_rectangle, elevation, aarectangle{child_rectangle.size()} + redraw_overhang);
     }
 
     /** Override e context with the new clipping rectangle.
@@ -211,13 +174,7 @@ public:
     {
         auto r = *this;
         r.clipping_rectangle = new_clipping_rectangle;
-        r.hit_rectangle = new_clipping_rectangle;
         return r;
-    }
-
-    [[nodiscard]] friend constexpr widget_layout operator*(aarectangle const &lhs, widget_layout const &rhs) noexcept
-    {
-        return rhs.transform(lhs);
     }
 };
 

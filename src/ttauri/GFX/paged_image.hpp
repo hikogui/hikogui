@@ -15,6 +15,7 @@ namespace tt::inline v1 {
 
 template<typename T>
 class pixel_map;
+class png;
 class sfloat_rgba16;
 class gfx_surface;
 class gfx_device;
@@ -25,7 +26,6 @@ struct paged_image {
     enum class state_type { uninitialized, drawing, uploaded };
 
     static constexpr size_t page_size = 64;
-    static constexpr size_t page_border = 1;
 
     mutable std::atomic<state_type> state = state_type::uninitialized;
     gfx_device *device = nullptr;
@@ -41,11 +41,17 @@ struct paged_image {
     paged_image &operator=(paged_image const &other) = delete;
 
     paged_image(gfx_surface const *surface, size_t width, size_t height) noexcept;
-    paged_image(gfx_surface const *surface, pixel_map<sfloat_rgba16> const &pixmap) noexcept;
+    paged_image(gfx_surface const *surface, pixel_map<sfloat_rgba16> const &image) noexcept;
+    paged_image(gfx_surface const *surface, png const &image) noexcept;
 
     [[nodiscard]] constexpr explicit operator bool() const noexcept
     {
         return device != nullptr;
+    }
+
+    [[nodiscard]] constexpr extent2 size() const noexcept
+    {
+        return extent2{narrow_cast<float>(width), narrow_cast<float>(height)};
     }
 
     [[nodiscard]] constexpr std::pair<size_t, size_t> size_in_int_pages() const noexcept
@@ -65,6 +71,10 @@ struct paged_image {
     /** Upload image to atlas.
      */
     void upload(pixel_map<sfloat_rgba16> const &image) noexcept;
+
+    /** Upload image to atlas.
+     */
+    void upload(png const &image) noexcept;
 };
 
 } // namespace tt::inline v1

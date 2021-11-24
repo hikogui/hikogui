@@ -84,7 +84,7 @@ public:
 
     /// @privatesection
     widget_constraints const &set_constraints() noexcept override;
-    void set_layout(widget_layout const &context) noexcept override;
+    void set_layout(widget_layout const &layout) noexcept override;
     void draw(draw_context const &context) noexcept override;
     bool handle_event(command command) noexcept override;
     bool handle_event(mouse_event const &event) noexcept override;
@@ -142,10 +142,10 @@ private:
     void drag_select() noexcept;
     void scroll_text() noexcept;
     void draw_background_box(draw_context const &context) const noexcept;
-    void draw_selection_rectangles(widget_layout const &clipped_layout, draw_context const &context) const noexcept;
-    void draw_partial_grapheme_caret(widget_layout const &clipped_layout, draw_context const &context) const noexcept;
-    void draw_caret(widget_layout const &clipped_layout, draw_context const &context) noexcept;
-    void draw_text(widget_layout const &clipped_layout, draw_context const &context) const noexcept;
+    void draw_selection_rectangles(draw_context const &context) const noexcept;
+    void draw_partial_grapheme_caret(draw_context const &context) const noexcept;
+    void draw_caret(draw_context const &context) noexcept;
+    void draw_text(draw_context const &context) const noexcept;
 };
 
 } // namespace tt::inline v1

@@ -3,8 +3,12 @@ target_sources(ttauri PRIVATE
     axis.hpp
     axis_aligned_rectangle.cpp
     axis_aligned_rectangle.hpp
+    circle.hpp
     extent.hpp
     identity.hpp
+    line_segment.hpp
+    line_end_cap.hpp
+    line_join_style.hpp
     matrix.hpp
     point.hpp
     rectangle.hpp

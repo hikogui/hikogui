@@ -20,11 +20,11 @@ namespace tt::inline v1 {
  */
 #define tt_assert(expression, ...) \
     do { \
-        if (!(expression)) { \
-            if constexpr (__VA_OPT__(!) true) { \
-                [[unlikely]] tt_debugger_abort(#expression); \
+        if (not (expression)) { \
+            if constexpr (__VA_OPT__(not) true) { \
+                tt_debug_abort(#expression); \
             } else { \
-                [[unlikely]] tt_debugger_abort(__VA_ARGS__); \
+                tt_debug_abort(__VA_ARGS__); \
             } \
         } \
     } while (false)
@@ -39,7 +39,7 @@ namespace tt::inline v1 {
 /** This part of the code should not be reachable, unless a programming bug.
  * This function should be used in unreachable else statements or switch-default labels,
  */
-#define tt_no_default() [[unlikely]] tt_debugger_abort("tt_no_default()")
+#define tt_no_default() [[unlikely]] tt_debug_abort("tt_no_default()");
 
 #else
 
@@ -68,7 +68,7 @@ namespace tt::inline v1 {
 /** This part of the code has not been implemented yet.
  * This aborts the program.
  */
-#define tt_not_implemented() [[unlikely]] tt_debugger_abort("tt_not_implemented()")
+#define tt_not_implemented() [[unlikely]] tt_debug_abort("tt_not_implemented()");
 
 /** This part of the code has not been implemented yet.
  * This function should be used in unreachable constexpr else statements.

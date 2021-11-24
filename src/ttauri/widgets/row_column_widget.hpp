@@ -87,7 +87,7 @@ public:
         auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
         auto &ref = *tmp;
         _children.push_back(std::move(tmp));
-        window.request_reconstrain();
+        request_reconstrain();
         return ref;
     }
 
@@ -97,7 +97,7 @@ public:
     {
         tt_axiom(is_gui_thread());
         _children.clear();
-        window.request_reconstrain();
+        request_reconstrain();
     }
 
     /// @privatesection
@@ -138,20 +138,18 @@ public:
         }
     }
 
-    void set_layout(widget_layout const &context) noexcept override
+    void set_layout(widget_layout const &layout) noexcept override
     {
-        if (visible) {
-            if (_layout.store(context) >= layout_update::size) {
-                _flow_layout.set_size(axis == axis::row ? layout().width() : layout().height());
-            }
-
-            ssize_t index = 0;
-            for (ttlet &child : _children) {
-                update_layout_for_child(*child, index++, context);
-            }
-
-            tt_axiom(index == ssize(_children));
+        if (compare_store(_layout, layout)) {
+            _flow_layout.set_size(axis == axis::row ? layout.width() : layout.height());
         }
+
+        ssize_t index = 0;
+        for (ttlet &child : _children) {
+            update_layout_for_child(*child, index++, layout);
+        }
+
+        tt_axiom(index == ssize(_children));
     }
 
     void draw(draw_context const &context) noexcept override
@@ -163,6 +161,20 @@ public:
         }
     }
 
+    hitbox hitbox_test(point3 position) const noexcept override
+    {
+        tt_axiom(is_gui_thread());
+
+        if (visible and enabled) {
+            auto r = hitbox{};
+            for (ttlet &child : _children) {
+                r = child->hitbox_test_from_parent(position, r);
+            }
+            return r;
+        } else {
+            return {};
+        }
+    }
     /// @endprivatesection
 private:
     std::vector<std::unique_ptr<widget>> _children;
@@ -223,7 +235,7 @@ private:
                 layout().width() - child_constraints.margin * 2.0f,
                 child_length};
 
-        child.set_layout(child_rectangle * context);
+        child.set_layout(context.transform(child_rectangle, 0.0f));
     }
 };
 

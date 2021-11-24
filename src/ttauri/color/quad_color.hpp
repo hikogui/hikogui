@@ -17,6 +17,7 @@ public:
     constexpr quad_color(quad_color &&) noexcept = default;
     constexpr quad_color &operator=(quad_color const &) noexcept = default;
     constexpr quad_color &operator=(quad_color &&) noexcept = default;
+    constexpr quad_color() noexcept = default;
     constexpr quad_color(color const &p0, color const &p1, color const &p2, color const &p3) noexcept :
         p0(p0), p1(p1), p2(p2), p3(p3)
     {

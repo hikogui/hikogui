@@ -45,7 +45,7 @@ widget &grid_widget::add_widget(size_t column_nr, size_t row_nr, std::unique_ptr
 
     auto &ref = *widget;
     _cells.emplace_back(column_nr, row_nr, std::move(widget));
-    window.request_reconstrain();
+    request_reconstrain();
     return ref;
 }
 
@@ -78,17 +78,16 @@ widget_constraints const &grid_widget::set_constraints() noexcept
                extent2{_columns.maximum_size(), _rows.maximum_size()}};
 }
 
-void grid_widget::set_layout(widget_layout const &context) noexcept
+void grid_widget::set_layout(widget_layout const &layout) noexcept
 {
-    if (visible) {
-        if (_layout.store(context) >= layout_update::transform) {
-            _columns.set_size(layout().width());
-            _rows.set_size(layout().height());
-        }
+    if (compare_store(_layout, layout)) {
+        _columns.set_size(layout.width());
+        _rows.set_size(layout.height());
+    }
 
-        for (ttlet &cell : _cells) {
-            cell.widget->set_layout(cell.rectangle(_columns, _rows, layout().height()) * context);
-        }
+    for (ttlet &cell : _cells) {
+        ttlet child_rectangle = cell.rectangle(_columns, _rows, layout.height());
+        cell.widget->set_layout(layout.transform(child_rectangle, 0.0f));
     }
 }
 
@@ -98,6 +97,21 @@ void grid_widget::draw(draw_context const &context) noexcept
         for (ttlet &cell : _cells) {
             cell.widget->draw(context);
         }
+    }
+}
+
+hitbox grid_widget::hitbox_test(point3 position) const noexcept
+{
+    tt_axiom(is_gui_thread());
+
+    if (visible and enabled) {
+        auto r = hitbox{};
+        for (ttlet &cell : _cells) {
+            r = cell.widget->hitbox_test_from_parent(position, r);
+        }
+        return r;
+    } else {
+        return {};
     }
 }
 

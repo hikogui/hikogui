@@ -13,6 +13,7 @@
 #include "geometry/vector.hpp"
 #include "geometry/point.hpp"
 #include "geometry/transform.hpp"
+#include "geometry/line_join_style.hpp"
 #include <tuple>
 #include <limits>
 #include <algorithm>
@@ -20,8 +21,6 @@
 namespace tt::inline v1 {
 
 struct bezier_point;
-
-enum class LineJoinStyle { Bevel, Miter, Rounded };
 
 /*! Bezier Curve
  * A linear, quadratic or cubic bezier curve.
@@ -338,13 +337,13 @@ makeContourFromPoints(std::vector<bezier_point>::const_iterator first, std::vect
  *
  * \param contour a list of bezier curve segments forming a closed contour.
  * \param offset positive means the parallel contour will be on the starboard side of the given contour.
- * \param lineJoinStyle how the gaps between line segments are joined together.
+ * \param line_join_style how the gaps between line segments are joined together.
  * \param tolerance to how curved the new contour should look.
  */
 [[nodiscard]] std::vector<bezier_curve> makeParallelContour(
     std::vector<bezier_curve> const &contour,
     float offset,
-    LineJoinStyle lineJoinStyle,
+    tt::line_join_style line_join_style,
     float tolerance) noexcept;
 
 /** Fill a linear gray scale image by filling a curve with anti-aliasing.

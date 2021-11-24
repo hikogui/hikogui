@@ -30,23 +30,21 @@ widget_constraints const &checkbox_widget::set_constraints() noexcept
     return _constraints;
 }
 
-void checkbox_widget::set_layout(widget_layout const &context) noexcept
+void checkbox_widget::set_layout(widget_layout const &layout) noexcept
 {
-    if (visible) {
-        if (_layout.store(context) >= layout_update::transform) {
-            _button_rectangle = align(layout().rectangle(), _button_size, alignment::top_left);
-            _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, layout().width(), layout().height()};
+    if (compare_store(_layout, layout)) {
+        _button_rectangle = align(layout.rectangle(), _button_size, alignment::top_left);
+        _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, layout.width(), layout.height()};
 
-            _check_glyph = font_book().find_glyph(elusive_icon::Ok);
-            ttlet check_glyph_bb = _check_glyph.get_bounding_box();
-            _check_glyph_rectangle = align(_button_rectangle, check_glyph_bb * theme().icon_size, alignment::middle_center);
+        _check_glyph = font_book().find_glyph(elusive_icon::Ok);
+        ttlet check_glyph_bb = _check_glyph.get_bounding_box();
+        _check_glyph_rectangle = align(_button_rectangle, check_glyph_bb * theme().icon_size, alignment::middle_center);
 
-            _minus_glyph = font_book().find_glyph(elusive_icon::Minus);
-            ttlet minus_glyph_bb = _minus_glyph.get_bounding_box();
-            _minus_glyph_rectangle = align(_button_rectangle, minus_glyph_bb * theme().icon_size, alignment::middle_center);
-        }
-        set_layout_button(context);
+        _minus_glyph = font_book().find_glyph(elusive_icon::Minus);
+        ttlet minus_glyph_bb = _minus_glyph.get_bounding_box();
+        _minus_glyph_rectangle = align(_button_rectangle, minus_glyph_bb * theme().icon_size, alignment::middle_center);
     }
+    set_layout_button(layout);
 }
 
 void checkbox_widget::draw(draw_context const &context) noexcept

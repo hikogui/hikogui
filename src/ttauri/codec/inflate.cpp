@@ -280,9 +280,9 @@ bstring inflate(std::span<std::byte const> bytes, ssize_t &offset, ssize_t max_s
         ttlet BTYPE = get_bits(bytes, bit_offset, 2);
 
         switch (BTYPE) {
-        case 0: inflate_copy_block(bytes, bit_offset, max_size - ssize(r), r); break;
-        case 1: inflate_fixed_block(bytes, bit_offset, max_size - ssize(r), r); break;
-        case 2: inflate_dynamic_block(bytes, bit_offset, max_size - ssize(r), r); break;
+        case 0: inflate_copy_block(bytes, bit_offset, max_size, r); break;
+        case 1: inflate_fixed_block(bytes, bit_offset, max_size, r); break;
+        case 2: inflate_dynamic_block(bytes, bit_offset, max_size, r); break;
         default: throw parse_error("Reserved block type");
         }
 

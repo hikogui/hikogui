@@ -3,7 +3,9 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "toolbar_widget.hpp"
+#include "toolbar_tab_button_widget.hpp"
 #include "../scoped_buffer.hpp"
+#include "../geometry/translate.hpp"
 
 namespace tt::inline v1 {
 
@@ -42,29 +44,26 @@ widget_constraints const &toolbar_widget::set_constraints() noexcept
                {_flow_layout.maximum_size(), shared_height}};
 }
 
-void toolbar_widget::set_layout(widget_layout const &context_) noexcept
+void toolbar_widget::set_layout(widget_layout const &layout) noexcept
 {
-    if (visible) {
-        // Clip directly around the toolbar, so that tab buttons looks proper.
-        ttlet context = context_.clip(context_.rectangle());
-        if (_layout.store(context) >= layout_update::size) {
-            _flow_layout.set_size(layout().width());
-        }
-
-        ssize_t index = 0;
-        for (ttlet &child : _left_children) {
-            update_layout_for_child(*child, index++, context);
-        }
-
-        // Skip over the cell between left and right children.
-        index++;
-
-        for (ttlet &child : std::views::reverse(_right_children)) {
-            update_layout_for_child(*child, index++, context);
-        }
-
-        tt_axiom(index == ssize(_left_children) + 1 + ssize(_right_children));
+    // Clip directly around the toolbar, so that tab buttons looks proper.
+    if (compare_store(_layout, layout)) {
+        _flow_layout.set_size(layout.width());
     }
+
+    ssize_t index = 0;
+    for (ttlet &child : _left_children) {
+        update_layout_for_child(*child, index++, layout);
+    }
+
+    // Skip over the cell between left and right children.
+    index++;
+
+    for (ttlet &child : std::views::reverse(_right_children)) {
+        update_layout_for_child(*child, index++, layout);
+    }
+
+    tt_axiom(index == ssize(_left_children) + 1 + ssize(_right_children));
 }
 
 bool toolbar_widget::tab_button_has_focus() const noexcept
@@ -94,11 +93,11 @@ void toolbar_widget::draw(draw_context const &context) noexcept
             context.draw_box(layout(), layout().rectangle(), theme().color(theme_color::fill, semantic_layer + 1));
 
             if (tab_button_has_focus()) {
-                ttlet line_rectangle = aarectangle{0.0f, 0.0f, layout().width(), theme().border_width};
+                ttlet line = line_segment(point2{0.0f, 0.0f}, point2{layout().width(), 0.0f});
 
                 // Draw the line at a higher elevation, so that the tab buttons can draw above or below the focus
                 // line depending if that specific button is in focus or not.
-                context.draw_box(layout(), translate_z(1.7f) * line_rectangle, focus_color());
+                context.draw_line(layout(), translate3{0.0f, 0.5f, 1.5f} * line, theme().border_width, focus_color());
             }
         }
 
@@ -115,18 +114,24 @@ hitbox toolbar_widget::hitbox_test(point3 position) const noexcept
 {
     tt_axiom(is_gui_thread());
 
-    auto r = hitbox{};
+    // By default the toolbar is used for dragging the window.
+    if (visible and enabled) {
+        auto r = layout().contains(position) ? hitbox{this, position, hitbox::Type::MoveArea} : hitbox{};
 
-    if (layout().hit_rectangle.contains(position)) {
-        r = hitbox{this, position, hitbox::Type::MoveArea};
-    }
+        for (ttlet &child : _left_children) {
+            tt_axiom(child);
+            r = child->hitbox_test_from_parent(position, r);
+        }
 
-    auto buffer = pmr::scoped_buffer<256>{};
-    for (auto *child : children(buffer.allocator())) {
-        tt_axiom(child);
-        r = std::max(r, child->hitbox_test(child->layout().from_parent * position));
+        for (ttlet &child : _right_children) {
+            tt_axiom(child);
+            r = child->hitbox_test_from_parent(position, r);
+        }
+
+        return r;
+    } else {
+        return {};
     }
-    return r;
 }
 
 void toolbar_widget::update_constraints_for_child(widget &child, ssize_t index, float &shared_height) noexcept
@@ -153,7 +158,8 @@ void toolbar_widget::update_layout_for_child(widget &child, ssize_t index, widge
     ttlet child_rectangle =
         aarectangle{child_x, child.constraints().margin, child_width, layout().height() - child.constraints().margin * 2.0f};
 
-    child.set_layout(child_rectangle * context);
+    ttlet child_clipping_rectangle = aarectangle{child_rectangle.size()} + child.constraints().margin;
+    child.set_layout(context.transform(child_rectangle, 1.0f, child_clipping_rectangle));
 }
 
 widget &toolbar_widget::add_widget(horizontal_alignment alignment, std::unique_ptr<widget> widget) noexcept
@@ -172,7 +178,7 @@ widget &toolbar_widget::add_widget(horizontal_alignment alignment, std::unique_p
 [[nodiscard]] color toolbar_widget::focus_color() const noexcept
 {
     if (enabled) {
-        if (window.active) {
+        if (active()) {
             return theme().color(theme_color::accent);
         } else if (hover) {
             return theme().color(theme_color::border, semantic_layer + 1);

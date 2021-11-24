@@ -71,7 +71,6 @@ jobs:
             // list the workflows runs to remove here
 
             const workflows = [
-              'build-docs.yml',
               'build-on-windows.yml',
               'publish-PR-test-results.yml'
             ]

@@ -54,97 +54,148 @@ tt::pixel_map<sfloat_rgba16> device_shared::get_staging_pixel_map()
 {
     staging_texture.transitionLayout(device, vk::Format::eR16G16B16A16Sfloat, vk::ImageLayout::eGeneral);
 
-    return staging_texture.pixel_map.submap(
-        page_border, page_border, staging_image_width - 2 * page_border, staging_image_height - 2 * page_border);
+    return staging_texture.pixel_map.submap(1, 1, staging_image_width - 2, staging_image_height - 2);
 }
 
 /** Get the coordinate in the atlas from a page index.
  *
- * \param page number in the atlas
- * \return x, y pixel coordinate in an atlasTexture and z the atlasTextureIndex. Inside the border.
+ * @param page number in the atlas
+ * @return x, y pixel coordinate in an atlasTexture and z the atlasTextureIndex. Inside the border.
  */
-static point3 get_atlas_position_from_page(size_t page) noexcept
+[[nodiscard]] static point3 get_atlas_position(size_t page) noexcept
 {
-    constexpr auto num_pages_per_image = device_shared::atlas_num_pages_per_image;
-    constexpr auto num_vertical_pages = device_shared::atlas_num_pages_per_axis;
-    constexpr auto page_border_size_border = f32x4{
-        narrow_cast<float>(paged_image::page_border + paged_image::page_size + paged_image::page_border),
-        narrow_cast<float>(paged_image::page_border + paged_image::page_size + paged_image::page_border),
-        1.0f,
-        1.0f};
-    constexpr auto page_border =
-        f32x4{narrow_cast<float>(paged_image::page_border), narrow_cast<float>(paged_image::page_border)};
+    // The amount of pixels per page, that is the page plus two borders.
+    constexpr auto page_stride = paged_image::page_size + 2;
 
-    ttlet image_nr = narrow_cast<float>(page / num_pages_per_image);
-    ttlet page_nr_inside_image = page % num_pages_per_image;
+    ttlet image_nr = page / device_shared::atlas_num_pages_per_image;
+    ttlet image_page = page % device_shared::atlas_num_pages_per_image;
 
-    ttlet page_xy = f32x4{i32x4{
-        narrow_cast<int32_t>(page_nr_inside_image % num_vertical_pages),
-        narrow_cast<int32_t>(page_nr_inside_image / num_vertical_pages),
-        narrow_cast<int32_t>(image_nr),
-        1}};
-
-    return point3{page_xy * page_border_size_border + page_border};
+    return point3{
+        narrow_cast<float>((image_page % device_shared::atlas_num_pages_per_axis) * page_stride + 1),
+        narrow_cast<float>((image_page / device_shared::atlas_num_pages_per_axis) * page_stride + 1),
+        narrow_cast<float>(image_nr)};
 }
 
-/** Get the rectangle in the staging texture map to copy from.
+/** Get the position in the staging texture map to copy from.
  *
  * @param image The image
  * @param page_index The index of the page of the image.
- * @return The rectangle excluding the border into the staging map.
+ * @return The position into the staging map.
  */
-static aarectangle get_staging_rectangle_from_page(const paged_image &image, size_t page_index)
+static point2 get_staging_position(const paged_image &image, size_t page_index)
 {
-    ttlet[pages_width, pages_height] = image.size_in_int_pages();
-    ttlet left = (page_index % pages_width) * paged_image::page_size;
-    ttlet bottom = (page_index / pages_height) * paged_image::page_size;
-    ttlet right = std::min(left + paged_image::page_size, image.width);
-    ttlet top = std::min(bottom + paged_image::page_size, image.height);
+    ttlet width_in_pages = (image.width + paged_image::page_size - 1) / paged_image::page_size;
 
-    ttlet p0 = point2{narrow_cast<float>(left), narrow_cast<float>(bottom)};
-    ttlet p3 = point2{narrow_cast<float>(right), narrow_cast<float>(top)};
-    return aarectangle{p0, p3};
+    return point2{
+        narrow_cast<float>((page_index % width_in_pages) * paged_image::page_size + 1),
+        narrow_cast<float>((page_index / width_in_pages) * paged_image::page_size + 1)};
 }
 
-void device_shared::update_atlas_with_staging_pixel_map(const paged_image &image) noexcept
+void device_shared::make_staging_border_transparent(aarectangle border_rectangle) noexcept
 {
-    // Start with the actual image inside the stagingImage.
-    auto rectangle = aarectangle{
-        point2{narrow_cast<float>(page_border), narrow_cast<float>(page_border)},
-        extent2{narrow_cast<float>(image.width), narrow_cast<float>(image.height)}};
+    ttlet width = static_cast<size_t>(border_rectangle.width());
+    ttlet height = static_cast<size_t>(border_rectangle.height());
+    ttlet bottom = static_cast<size_t>(border_rectangle.bottom());
+    ttlet top = static_cast<size_t>(border_rectangle.top());
+    ttlet left = static_cast<size_t>(border_rectangle.left());
+    ttlet right = static_cast<size_t>(border_rectangle.right());
 
-    // Add one pixel of border around the actual image and keep extending
-    // until the full border width is finished.
-    for (int b = 0; b < page_border; b++) {
-        rectangle = rectangle + 1.0f;
+    tt_axiom(bottom == 0);
+    tt_axiom(left == 0);
+    tt_axiom(top >= 2);
+    tt_axiom(right >= 2);
 
-        auto pixel_map = staging_texture.pixel_map.submap(rectangle);
-        makeTransparentBorder(pixel_map);
+    // Add a border below and above the image.
+    auto border_bottom_row = staging_texture.pixel_map[bottom];
+    auto border_top_row = staging_texture.pixel_map[top - 1];
+    auto image_bottom_row = staging_texture.pixel_map[bottom + 1];
+    auto image_top_row = staging_texture.pixel_map[top - 2];
+    for (auto x = 0_uz; x != width; ++x) {
+        border_bottom_row[x] = make_transparent(image_bottom_row[x]);
+        border_top_row[x] = make_transparent(image_top_row[x]);
     }
 
-    // Flush the given image, included the border.
-    device.flushAllocation(
-        staging_texture.allocation,
-        0,
-        ((page_border + image.width + page_border) * staging_texture.pixel_map.stride()) * sizeof(uint32_t));
+    // Add a border to the left and right of the image.
+    for (auto y = 0_uz; y != height; ++y) {
+        auto row = staging_texture.pixel_map[y];
+        row[left] = make_transparent(row[left + 1]);
+        row[right - 2] = make_transparent(row[right - 1]);
+    }
+}
 
+void device_shared::clear_staging_between_border_and_upload(aarectangle border_rectangle, aarectangle upload_rectangle) noexcept
+{
+    tt_axiom(border_rectangle.left() == 0.0f and border_rectangle.bottom() == 0.0f);
+    tt_axiom(upload_rectangle.left() == 0.0f and upload_rectangle.bottom() == 0.0f);
+
+    ttlet border_top = narrow_cast<size_t>(border_rectangle.top());
+    ttlet border_right = narrow_cast<size_t>(border_rectangle.right());
+    ttlet upload_top = narrow_cast<size_t>(upload_rectangle.top());
+    ttlet upload_right = narrow_cast<size_t>(upload_rectangle.right());
+    tt_axiom(border_right <= upload_right);
+    tt_axiom(border_top <= upload_top);
+
+    // Clear the area to the right of the border.
+    for (auto y = 0_uz; y != border_top; ++y) {
+        auto row = staging_texture.pixel_map[y];
+        for (auto x = border_right; x != upload_right; ++x) {
+            row[x] = {};
+        }
+    }
+
+    // Clear the area above the border.
+    for (auto y = border_top; y != upload_top; ++y) {
+        auto row = staging_texture.pixel_map[y];
+        for (auto x = 0_uz; x != upload_right; ++x) {
+            row[x] = {};
+        }
+    }
+}
+
+void device_shared::prepare_staging_for_upload(paged_image const &image) noexcept
+{
+    ttlet image_rectangle = aarectangle{point2{1.0f, 1.0f}, image.size()};
+    ttlet border_rectangle = image_rectangle + 1;
+    ttlet upload_width = ceil(image.width, paged_image::page_size) + 2;
+    ttlet upload_height = ceil(image.height, paged_image::page_size) + 2;
+    ttlet upload_rectangle = aarectangle{extent2{narrow_cast<float>(upload_width), narrow_cast<float>(upload_height)}};
+
+    make_staging_border_transparent(border_rectangle);
+    clear_staging_between_border_and_upload(border_rectangle, upload_rectangle);
+
+    // Flush the given image, everything that may be uploaded.
+    static_assert(std::is_same_v<decltype(staging_texture.pixel_map)::value_type, sfloat_rgba16>);
+    device.flushAllocation(staging_texture.allocation, 0, upload_height * staging_texture.pixel_map.stride() * 8);
     staging_texture.transitionLayout(device, vk::Format::eR16G16B16A16Sfloat, vk::ImageLayout::eTransferSrcOptimal);
+}
+
+void device_shared::update_atlas_with_staging_pixel_map(paged_image const &image) noexcept
+{
+    prepare_staging_for_upload(image);
 
     std::array<std::vector<vk::ImageCopy>, atlas_maximum_num_images> regions_to_copy_per_atlas_texture;
     for (size_t index = 0; index < size(image.pages); index++) {
         ttlet page = image.pages.at(index);
 
-        ttlet border_offset = translate2{narrow_cast<float>(page_border), narrow_cast<float>(page_border)};
-        ttlet src_rectangle = border_offset * get_staging_rectangle_from_page(image, index) + page_border;
-        ttlet dst_position = ~border_offset * get_atlas_position_from_page(page);
+        ttlet src_position = get_staging_position(image, index);
+        ttlet dst_position = get_atlas_position(page);
 
-        auto &regionsToCopy = regions_to_copy_per_atlas_texture.at(narrow_cast<size_t>(dst_position.z()));
-        regionsToCopy.push_back(
-            {{vk::ImageAspectFlagBits::eColor, 0, 0, 1},
-             {narrow_cast<int32_t>(src_rectangle.left()), narrow_cast<int32_t>(src_rectangle.bottom()), 0},
-             {vk::ImageAspectFlagBits::eColor, 0, 0, 1},
-             {narrow_cast<int32_t>(dst_position.x()), narrow_cast<int32_t>(dst_position.y()), 0},
-             {narrow_cast<uint32_t>(src_rectangle.width()), narrow_cast<uint32_t>(src_rectangle.height()), 1}});
+        // Copy including a 1 pixel border.
+        constexpr auto width = narrow_cast<int32_t>(paged_image::page_size + 2);
+        constexpr auto height = narrow_cast<int32_t>(paged_image::page_size + 2);
+        ttlet src_x = narrow_cast<int32_t>(src_position.x() - 1);
+        ttlet src_y = narrow_cast<int32_t>(src_position.y() - 1);
+        ttlet dst_x = narrow_cast<int32_t>(dst_position.x() - 1);
+        ttlet dst_y = narrow_cast<int32_t>(dst_position.y() - 1);
+        ttlet dst_z = narrow_cast<size_t>(dst_position.z());
+
+        auto &regionsToCopy = regions_to_copy_per_atlas_texture.at(dst_z);
+        regionsToCopy.emplace_back(
+            vk::ImageSubresourceLayers{vk::ImageAspectFlagBits::eColor, 0, 0, 1},
+            vk::Offset3D{src_x, src_y, 0},
+            vk::ImageSubresourceLayers{vk::ImageAspectFlagBits::eColor, 0, 0, 1},
+            vk::Offset3D{dst_x, dst_y, 0},
+            vk::Extent3D{width, height, 1});
     }
 
     for (size_t atlas_texture_index = 0; atlas_texture_index < size(atlas_textures); atlas_texture_index++) {
@@ -329,9 +380,10 @@ void device_shared::place_vertices(
 {
     tt_axiom(image.state == paged_image::state_type::uploaded);
 
-    constexpr auto page_size2 = f32x4{i32x4{narrow_cast<int32_t>(page_size), narrow_cast<int32_t>(page_size)}};
+    constexpr auto page_size2 =
+        f32x4{i32x4{narrow_cast<int32_t>(paged_image::page_size), narrow_cast<int32_t>(paged_image::page_size)}};
 
-    ttlet image_size = f32x4{i32x4{narrow_cast<int32_t>(image.width), narrow_cast<int32_t>(image.height)}};
+    ttlet image_size = image.size();
     ttlet size_in_float_pages = f32x4{image.size_in_float_pages()};
     ttlet size_in_int_pages = i32x4{ceil(size_in_float_pages)};
     ttlet num_columns = narrow_cast<size_t>(size_in_int_pages.x());
@@ -359,18 +411,17 @@ void device_shared::place_vertices(
             ttlet new_p3 = new_p2 + top_increment;
 
             // The new quad, limited to the right-top corner of the original quad.
-            ttlet polygon = quad{new_p0, min(new_p1, box.p3), min(new_p2, box.p3), min(new_p3, box.p3)};
-            ttlet atlas_position = get_atlas_position_from_page(*it);
+            ttlet atlas_position = get_atlas_position(*it);
 
-            static_assert(std::popcount(page_size) == 1);
-            constexpr int page_size_shift = std::countr_zero(page_size);
+            static_assert(std::popcount(paged_image::page_size) == 1);
+            constexpr int page_size_shift = std::countr_zero(paged_image::page_size);
             ttlet xy = f32x4{i32x4{narrow_cast<int32_t>(column_nr), narrow_cast<int32_t>(row_nr)} << page_size_shift};
-            ttlet uv_rectangle = rectangle{atlas_position, extent2{min(image_size - xy, page_size2)}};
+            ttlet uv_rectangle = rectangle{atlas_position, extent2{page_size2}};
 
-            vertices.emplace_back(polygon.p0, clipping_rectangle, get<0>(uv_rectangle));
-            vertices.emplace_back(polygon.p1, clipping_rectangle, get<1>(uv_rectangle));
-            vertices.emplace_back(polygon.p2, clipping_rectangle, get<2>(uv_rectangle));
-            vertices.emplace_back(polygon.p3, clipping_rectangle, get<3>(uv_rectangle));
+            vertices.emplace_back(new_p0, clipping_rectangle, get<0>(uv_rectangle));
+            vertices.emplace_back(new_p1, clipping_rectangle, get<1>(uv_rectangle));
+            vertices.emplace_back(new_p2, clipping_rectangle, get<2>(uv_rectangle));
+            vertices.emplace_back(new_p3, clipping_rectangle, get<3>(uv_rectangle));
 
             new_p0 = new_p1;
             new_p2 = new_p3;
