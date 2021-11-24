@@ -20,11 +20,9 @@ class pixel_map;
 namespace pipeline_image {
 
 struct device_shared {
-    static constexpr size_t page_size = paged_image::page_size;
-    static constexpr size_t page_border = paged_image::page_border;
     static constexpr size_t atlas_num_pages_per_axis = 16;
     static constexpr size_t atlas_num_pages_per_image = atlas_num_pages_per_axis * atlas_num_pages_per_axis;
-    static constexpr size_t atlas_image_axis_size = atlas_num_pages_per_axis * (page_border + page_size + page_border);
+    static constexpr size_t atlas_image_axis_size = atlas_num_pages_per_axis * (page_size + 2);
     static constexpr size_t atlas_maximum_num_images = 16;
     static constexpr size_t staging_image_width = 1024;
     static constexpr size_t staging_image_height = 1024;

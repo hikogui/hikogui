@@ -26,7 +26,6 @@ struct paged_image {
     enum class state_type { uninitialized, drawing, uploaded };
 
     static constexpr size_t page_size = 64;
-    static constexpr size_t page_border = 1;
 
     mutable std::atomic<state_type> state = state_type::uninitialized;
     gfx_device *device = nullptr;
@@ -48,6 +47,11 @@ struct paged_image {
     [[nodiscard]] constexpr explicit operator bool() const noexcept
     {
         return device != nullptr;
+    }
+
+    [[nodiscard]] constexpr extent2 size() const noexcept
+    {
+        return extent2{narrow_cast<float>(width), narrow_cast<float>(height)};
     }
 
     [[nodiscard]] constexpr std::pair<size_t, size_t> size_in_int_pages() const noexcept
