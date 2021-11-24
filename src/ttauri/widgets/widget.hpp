@@ -107,6 +107,10 @@ public:
 
     [[nodiscard]] bool is_gui_thread() const noexcept;
 
+    /** The widget is active (the window is active).
+     */
+    [[nodiscard]] bool active() const noexcept;
+
     /** Get the theme.
      *
      * @return The current theme.
@@ -126,7 +130,30 @@ public:
      * @param position The coordinate of the mouse local to the widget.
      * @return A hit_box object with the cursor-type and a reference to the widget.
      */
-    [[nodiscard]] virtual hitbox hitbox_test(point3 position) const noexcept;
+    [[nodiscard]] virtual hitbox hitbox_test(point3 position) const noexcept { return {}; }
+
+    /** Call hitbox_test from a parent widget.
+    * 
+    * This function will transform the position from parent coordinates to local coordinates.
+    * 
+    * @param position The coordinate of the mouse local to the parent widget.
+    */
+    [[nodiscard]] virtual hitbox hitbox_test_from_parent(point3 position) const noexcept
+    {
+        return hitbox_test(_layout.from_parent * position);
+    }
+
+    /** Call hitbox_test from a parent widget.
+     *
+     * This function will transform the position from parent coordinates to local coordinates.
+     *
+     * @param position The coordinate of the mouse local to the parent widget.
+     * @param sibling_hitbox The hitbox of a sibling to combine with the hitbox of this widget.
+     */
+    [[nodiscard]] virtual hitbox hitbox_test_from_parent(point3 position, hitbox sibling_hitbox) const noexcept
+    {
+        return std::max(sibling_hitbox, hitbox_test(_layout.from_parent * position));
+    }
 
     /** Check if the widget will accept keyboard focus.
      *
@@ -142,9 +169,8 @@ public:
      * Typically the implementation of this function starts with recursively calling set_constraints()
      * on its children.
      *
-     *
      * If the container, due to a change in constraints, wants the window to resize to the minimum size
-     * it should set `window::request_resize` to `true`.
+     * it should call `request_resize()`.
      *
      * @post This function will change what is returned by `widget::minimum_size()`, `widget::preferred_size()`
      *       and `widget::maximum_size()`.
@@ -168,7 +194,7 @@ public:
      * @param context The layout context for this child.
      * @return The new size of the widget, should be a copy of the new_size parameter.
      */
-    virtual void set_layout(widget_layout const &context) noexcept = 0;
+    virtual void set_layout(widget_layout const &layout) noexcept = 0;
 
     /** Get the current layout for this widget.
      */
@@ -196,6 +222,18 @@ public:
     /** Request the widget to be redrawn on the next frame.
      */
     virtual void request_redraw() const noexcept;
+
+    /** Request the window to be relayout on the next frame.
+     */
+    void request_relayout() const noexcept;
+
+    /** Request the window to be reconstrain on the next frame.
+     */
+    void request_reconstrain() const noexcept;
+
+    /** Request the window to be resize based on the preferred size of the widgets.
+     */
+    void request_resize() const noexcept;
 
     /** Handle command.
      * If a widget does not fully handle a command it should pass the
@@ -279,7 +317,7 @@ public:
      */
     void scroll_to_show() noexcept
     {
-        scroll_to_show(layout().redraw_rectangle);
+        scroll_to_show(layout().window_clipping_rectangle());
     }
 
     /** Get a list of parents of a given widget.

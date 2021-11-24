@@ -366,15 +366,19 @@ void gui_window_win32::setOSWindowRectangleFromRECT(RECT rectangle) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    auto screen_extent = virtual_screen_size();
+    ttlet screen_extent = virtual_screen_size();
 
-    screen_rectangle = aarectangle{
+    ttlet new_screen_rectangle = aarectangle{
         narrow_cast<float>(rectangle.left),
         narrow_cast<float>(screen_extent.height() - rectangle.bottom),
         narrow_cast<float>(rectangle.right - rectangle.left),
         narrow_cast<float>(rectangle.bottom - rectangle.top)};
 
-    request_relayout();
+    if (screen_rectangle.size() != new_screen_rectangle.size()) {
+        request_relayout();
+    }
+
+    screen_rectangle = new_screen_rectangle;
 }
 
 void gui_window_win32::set_cursor(mouse_cursor cursor) noexcept
@@ -619,22 +623,6 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
             return 0;
         }
     }
-
-        // case WM_SYSKEYUP: {
-        //    auto alt_pressed = (narrow_cast<uint32_t>(lParam) & 0x20000000) != 0;
-        //    if (!alt_pressed) {
-        //        return -1;
-        //    }
-        //    return -1;
-        //} break;
-        //
-        // case WM_SYSKEYDOWN: {
-        //    auto alt_pressed = (narrow_cast<uint32_t>(lParam) & 0x20000000) != 0;
-        //    if (!alt_pressed) {
-        //        return -1;
-        //    }
-        //    return -1;
-        //} break;
 
     case WM_KEYDOWN: {
         auto extended = (narrow_cast<uint32_t>(lParam) & 0x01000000) != 0;

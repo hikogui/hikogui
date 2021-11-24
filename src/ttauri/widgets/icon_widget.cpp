@@ -14,7 +14,7 @@ icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(wi
 {
     _icon_callback_ptr = icon.subscribe([this]() {
         _icon_has_modified = true;
-        this->window.request_reconstrain();
+        this->request_reconstrain();
     });
     icon.subscribe(_reconstrain_callback);
 }
@@ -37,7 +37,7 @@ widget_constraints const &icon_widget::set_constraints() noexcept
             if (not(_pixmap_backing = paged_image{window.surface.get(), *pixmap})) {
                 // Could not get an image, retry.
                 _icon_has_modified = true;
-                window.request_reconstrain();
+                request_reconstrain();
             }
 
         } else if (ttlet g1 = get_if<font_glyph_ids>(&*icon_)) {
@@ -59,15 +59,15 @@ widget_constraints const &icon_widget::set_constraints() noexcept
     return _constraints = {extent2{0.0f, 0.0f}, _icon_size, _icon_size, theme().margin};
 }
 
-void icon_widget::set_layout(widget_layout const &context) noexcept
+void icon_widget::set_layout(widget_layout const &layout) noexcept
 {
-    if (visible and _layout.store(context) >= layout_update::transform) {
+    if (compare_store(_layout, layout)) {
         if (_icon_type == icon_type::no or not _icon_size) {
             _icon_rectangle = {};
         } else {
-            ttlet icon_scale = scale2::uniform(_icon_size, layout().size);
+            ttlet icon_scale = scale2::uniform(_icon_size, layout.size);
             ttlet new_icon_size = icon_scale * _icon_size;
-            _icon_rectangle = align(layout().rectangle(), new_icon_size, *alignment);
+            _icon_rectangle = align(layout.rectangle(), new_icon_size, *alignment);
         }
     }
 }

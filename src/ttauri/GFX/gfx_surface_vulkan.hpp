@@ -48,7 +48,8 @@ public:
     vk::SurfaceFormatKHR swapchainImageFormat;
     std::vector<swapchain_image_info> swapchain_image_infos;
 
-    static const vk::Format depthImageFormat = vk::Format::eD32Sfloat;
+    //static const vk::Format depthImageFormat = vk::Format::eD32Sfloat;
+    static const vk::Format depthImageFormat = vk::Format::eD16Unorm;
     VmaAllocation depthImageAllocation;
     vk::Image depthImage;
     vk::ImageView depthImageView;

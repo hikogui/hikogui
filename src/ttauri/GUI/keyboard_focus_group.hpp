@@ -12,42 +12,39 @@ enum class keyboard_focus_group {
     /** A normal widget.
      * Normal widgets accept keyboard focus using tab/shift-tab keys.
      */
-    normal,
+    normal = 1,
 
     /** A menu item in a popup overlay
      * Menu item widget accepts keyboard focus from the up/down cursor keys.
      */
-    menu,
+    menu = 2,
 
     /** A menu item in the toolbar of the window.
      * Menu item widget in the toolbar accepts keyboard focus from the left/right cursor keys
      * and from the main-menu-select key.
      */
-    toolbar,
+    toolbar = 4,
 
     /** Used for selecting any widget that can accept keyboard focus.
      * This is used for selecting a widget of group normal, menu or toolbar using
      * the mouse.
      */
-    any,
+    all = normal | menu | toolbar,
 };
 
-[[nodiscard]] constexpr bool is_normal(keyboard_focus_group group) noexcept
+[[nodiscard]] constexpr keyboard_focus_group operator&(keyboard_focus_group const &lhs, keyboard_focus_group const &rhs) noexcept
 {
-    using enum keyboard_focus_group;
-    return group == normal || group == any;
+    return static_cast<keyboard_focus_group>(to_underlying(lhs) & to_underlying(rhs));
 }
 
-[[nodiscard]] constexpr bool is_menu(keyboard_focus_group group) noexcept
+[[nodiscard]] constexpr keyboard_focus_group operator|(keyboard_focus_group const &lhs, keyboard_focus_group const &rhs) noexcept
 {
-    using enum keyboard_focus_group;
-    return group == menu || group == any;
+    return static_cast<keyboard_focus_group>(to_underlying(lhs) | to_underlying(rhs));
 }
 
-[[nodiscard]] constexpr bool is_toolbar(keyboard_focus_group group) noexcept
+[[nodiscard]] constexpr bool any(keyboard_focus_group group) noexcept
 {
-    using enum keyboard_focus_group;
-    return group == toolbar || group == any;
+    return static_cast<bool>(to_underlying(group));
 }
 
 } // namespace tt::inline v1

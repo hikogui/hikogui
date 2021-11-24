@@ -110,6 +110,7 @@ int main(int argc, char* argv[])
     auto os = open_output(output_path); // lgtm[cpp/path-injection]
 
     write(os, "#include \"ttauri/static_resource_list.hpp\"\n");
+    write(os, "#include \"ttauri/architecture.hpp\"\n");
     write(os, "#include <span>\n");
     write(os, "#include <cstddef>\n");
     write(os, "#include <cstdint>\n\n");
@@ -128,10 +129,9 @@ int main(int argc, char* argv[])
     write(os, "    nullptr,\n");
     write(os, "    \"{}\",\n", input_filename.generic_string());
     write(os, "    {{reinterpret_cast<std::byte const *>({}_srd), {}}}\n", identifier, input_data.size());
-    write(os, "}};\n");
+    write(os, "}};\n\n");
 
     write(os, "extern \"C\" {{\n");
     write(os, "tt::static_resource_item const *{}_srip = tt::static_resource_item::add(&{}_sri);\n", identifier, identifier);
-    write(os, "}}\n");
-
+    write(os, "}}\n\n");
 }

@@ -18,14 +18,12 @@ widget_constraints const &toolbar_button_widget::set_constraints() noexcept
     return _constraints;
 }
 
-void toolbar_button_widget::set_layout(widget_layout const &context) noexcept
+void toolbar_button_widget::set_layout(widget_layout const &layout) noexcept
 {
-    if (visible) {
-        if (_layout.store(context) >= layout_update::transform) {
-            _label_rectangle = aarectangle{theme().margin, 0.0f, layout().width() - theme().margin * 2.0f, layout().height()};
-        }
-        set_layout_button(context);
+    if (compare_store(_layout, layout)) {
+        _label_rectangle = aarectangle{theme().margin, 0.0f, layout.width() - theme().margin * 2.0f, layout.height()};
     }
+    set_layout_button(layout);
 }
 
 void toolbar_button_widget::draw(draw_context const &context) noexcept
@@ -38,8 +36,7 @@ void toolbar_button_widget::draw(draw_context const &context) noexcept
 
 [[nodiscard]] bool toolbar_button_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
-    tt_axiom(is_gui_thread());
-    return is_toolbar(group) and enabled;
+    return visible and enabled and any(group & tt::keyboard_focus_group::toolbar);
 }
 
 [[nodiscard]] bool toolbar_button_widget::handle_event(command command) noexcept
@@ -72,7 +69,7 @@ void toolbar_button_widget::draw(draw_context const &context) noexcept
 
 void toolbar_button_widget::draw_toolbar_button(draw_context const &context) noexcept
 {
-    ttlet foreground_color_ = focus && window.active ? focus_color() : color::transparent();
+    ttlet foreground_color_ = focus and active() ? focus_color() : color::transparent();
     context.draw_box(
         layout(), layout().rectangle(), background_color(), foreground_color_, theme().border_width, border_side::inside);
 }

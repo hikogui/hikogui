@@ -5,6 +5,7 @@
 #pragma once
 
 #include "unfair_mutex.hpp"
+#include "concepts.hpp"
 #include <memory>
 #include <vector>
 #include <atomic>
@@ -252,6 +253,50 @@ struct observable_proxy {
     decltype(auto) operator[](Arg &&arg) const noexcept requires(is_constant and not is_atomic)
     {
         return const_cast<value_type const &>(_actual->value)[std::forward<Arg>(arg)];
+    }
+
+    auto operator++() noexcept requires(is_variable and is_atomic and not pre_incrementable<decltype(_actual->value)>)
+    {
+        auto expected_value = _actual->value.load();
+        decltype(expected_value) new_value;
+        do {
+            // Make a copy so that expected value does not get incremented.
+            new_value = expected_value;
+            if (++new_value == expected_value) {
+                return new_value;
+            }
+        } while (not _actual->value.compare_exchange_weak(expected_value, new_value));
+
+        prepare(state_type::modified);
+        return new_value;
+    }
+
+    auto operator--() noexcept requires(is_variable and is_atomic and not pre_decrementable<decltype(_actual->value)>)
+    {
+        auto expected_value = _actual->value.load();
+        decltype(expected_value) new_value;
+        do {
+            // Make a copy so that expected value does not get incremented.
+            new_value = expected_value;
+            if (--new_value == expected_value) {
+                return new_value;
+            }
+        } while (not _actual->value.compare_exchange_weak(expected_value, new_value));
+
+        prepare(state_type::modified);
+        return new_value;
+    }
+
+    auto operator++() noexcept requires(is_variable and is_atomic and pre_incrementable<decltype(_actual->value)>)
+    {
+        prepare(state_type::modified);
+        return ++(_actual->value);
+    }
+
+    auto operator--() noexcept requires(is_variable and is_atomic and pre_decrementable<decltype(_actual->value)>)
+    {
+        prepare(state_type::modified);
+        return --(_actual->value);
     }
 
 #define X(op) \
@@ -610,6 +655,16 @@ public:
     explicit operator bool() const noexcept
     {
         return static_cast<bool>(*cget());
+    }
+
+    auto operator++() noexcept
+    {
+        return ++(get());
+    }
+
+    auto operator--() noexcept
+    {
+        return --(get());
     }
 
 #define X(op) \

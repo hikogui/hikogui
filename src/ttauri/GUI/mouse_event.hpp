@@ -59,6 +59,13 @@ struct mouse_event {
         return event;
     }
 
+    /** Check if this event is for a left-button-up event while the mouse pointer is in the given area.
+     */
+    [[nodiscard]] bool is_left_button_up(aarectangle active_area) const noexcept
+    {
+        return type == Type::ButtonUp and cause.leftButton and active_area.contains(position);
+    }
+
     /** Get the location of the mouse relative to the start of a drag.
      */
     [[nodiscard]] vector2 delta() const noexcept

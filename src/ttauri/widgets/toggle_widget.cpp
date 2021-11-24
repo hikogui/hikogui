@@ -29,24 +29,22 @@ widget_constraints const &toggle_widget::set_constraints() noexcept
     return _constraints;
 }
 
-void toggle_widget::set_layout(widget_layout const &context) noexcept
+void toggle_widget::set_layout(widget_layout const &layout) noexcept
 {
-    if (visible) {
-        if (_layout.store(context) >= layout_update::transform) {
-            _button_rectangle = align(layout().rectangle(), _button_size, alignment::top_left);
+    if (compare_store(_layout, layout)) {
+        _button_rectangle = align(layout.rectangle(), _button_size, alignment::top_left);
 
-            _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, layout().width(), layout().height()};
+        _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, layout.width(), layout.height()};
 
-            ttlet button_square =
-                aarectangle{get<0>(_button_rectangle), extent2{_button_rectangle.height(), _button_rectangle.height()}};
+        ttlet button_square =
+            aarectangle{get<0>(_button_rectangle), extent2{_button_rectangle.height(), _button_rectangle.height()}};
 
-            _pip_rectangle = align(button_square, extent2{theme().icon_size, theme().icon_size}, alignment::middle_center);
+        _pip_rectangle = align(button_square, extent2{theme().icon_size, theme().icon_size}, alignment::middle_center);
 
-            ttlet pip_to_button_margin_x2 = _button_rectangle.height() - _pip_rectangle.height();
-            _pip_move_range = _button_rectangle.width() - _pip_rectangle.width() - pip_to_button_margin_x2;
-        }
-        set_layout_button(context);
+        ttlet pip_to_button_margin_x2 = _button_rectangle.height() - _pip_rectangle.height();
+        _pip_move_range = _button_rectangle.width() - _pip_rectangle.width() - pip_to_button_margin_x2;
     }
+    set_layout_button(layout);
 }
 
 void toggle_widget::draw(draw_context const &context) noexcept
@@ -77,11 +75,11 @@ void toggle_widget::draw_toggle_pip(draw_context const &context) noexcept
         request_redraw();
     }
 
-    ttlet positioned_pip_rectangle = translate3{_pip_move_range * _animated_value.current_value(), 0.0f, 0.1f} * _pip_rectangle;
+    ttlet positioned_pip_circle =
+        translate3{_pip_move_range * _animated_value.current_value(), 0.0f, 0.1f} * (circle{_pip_rectangle} * 1.02f);
 
     ttlet forground_color_ = state() == button_state::on ? accent_color() : foreground_color();
-    context.draw_box(
-        layout(), positioned_pip_rectangle, forground_color_, corner_shapes{positioned_pip_rectangle.height() * 0.5f});
+    context.draw_circle(layout(), positioned_pip_circle, forground_color_);
 }
 
 } // namespace tt::inline v1

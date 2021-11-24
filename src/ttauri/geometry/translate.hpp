@@ -6,6 +6,7 @@
 
 #include "matrix.hpp"
 #include "identity.hpp"
+#include "rotate.hpp"
 
 namespace tt::inline v1 {
 namespace geo {
@@ -159,6 +160,16 @@ public:
         return quad{*this * rhs.p0, *this * rhs.p1, *this * rhs.p2, *this * rhs.p3};
     }
 
+    [[nodiscard]] constexpr circle operator*(circle const &rhs) const noexcept
+    {
+        return circle{f32x4{rhs} + _v};
+    }
+
+    [[nodiscard]] constexpr line_segment operator*(line_segment const &rhs) const noexcept
+    {
+        return line_segment{*this * rhs.origin(), rhs.direction()};
+    }
+
     [[nodiscard]] constexpr translate operator*(identity const &) const noexcept
     {
         tt_axiom(holds_invariant());
@@ -170,6 +181,12 @@ public:
     {
         tt_axiom(holds_invariant() && rhs.holds_invariant());
         return matrix<std::max(D, E)>{get<0>(rhs), get<1>(rhs), get<2>(rhs), get<3>(rhs) + _v};
+    }
+
+    template<int E>
+    [[nodiscard]] constexpr auto operator*(rotate<E> const &rhs) const noexcept
+    {
+        return *this * matrix<E>(rhs);
     }
 
     template<int E>

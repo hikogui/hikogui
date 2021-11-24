@@ -6,6 +6,7 @@
 #include "../GUI/gui_window.hpp"
 #include "../GUI/gui_system.hpp"
 #include "../scoped_buffer.hpp"
+#include "../ranges.hpp"
 #include <ranges>
 
 namespace tt::inline v1 {
@@ -24,10 +25,10 @@ widget::widget(gui_window &_window, widget *parent) noexcept :
         request_redraw();
     });
     _relayout_callback = std::make_shared<std::function<void()>>([this] {
-        window.request_relayout();
+        request_relayout();
     });
     _reconstrain_callback = std::make_shared<std::function<void()>>([this] {
-        window.request_reconstrain();
+        request_reconstrain();
     });
 
     enabled.subscribe(_redraw_callback);
@@ -48,6 +49,11 @@ widget::~widget()
 [[nodiscard]] bool widget::is_gui_thread() const noexcept
 {
     return window.is_gui_thread();
+}
+
+[[nodiscard]] bool widget::active() const noexcept
+{
+    return window.active;
 }
 
 tt::theme const &widget::theme() const noexcept
@@ -89,7 +95,7 @@ tt::font_book &widget::font_book() const noexcept
 [[nodiscard]] color widget::focus_color() const noexcept
 {
     if (enabled) {
-        if (focus && window.active) {
+        if (focus and active()) {
             return theme().color(theme_color::accent);
         } else if (hover) {
             return theme().color(theme_color::border, semantic_layer + 1);
@@ -104,7 +110,7 @@ tt::font_book &widget::font_book() const noexcept
 [[nodiscard]] color widget::accent_color() const noexcept
 {
     if (enabled) {
-        if (window.active) {
+        if (active()) {
             return theme().color(theme_color::accent);
         } else {
             return theme().color(theme_color::border, semantic_layer);
@@ -125,7 +131,22 @@ tt::font_book &widget::font_book() const noexcept
 
 void widget::request_redraw() const noexcept
 {
-    window.request_redraw(layout().redraw_rectangle);
+    window.request_redraw(layout().window_clipping_rectangle());
+}
+
+void widget::request_relayout() const noexcept
+{
+    window.request_relayout();
+}
+
+void widget::request_reconstrain() const noexcept
+{
+    window.request_reconstrain();
+}
+
+void widget::request_resize() const noexcept
+{
+    window.request_resize();
 }
 
 [[nodiscard]] bool widget::handle_event(std::vector<command> const &commands) noexcept
@@ -137,24 +158,6 @@ void widget::request_redraw() const noexcept
         }
     }
     return false;
-}
-
-[[nodiscard]] hitbox widget::hitbox_test(point3 position) const noexcept
-{
-    tt_axiom(is_gui_thread());
-
-    auto r = hitbox{};
-
-    auto buffer = pmr::scoped_buffer<256>{};
-    for (auto *child : children(buffer.allocator())) {
-        if (child) {
-            tt_axiom(child->parent == this);
-            if (child->visible) {
-                r = std::max(r, child->hitbox_test(child->layout().from_parent * position));
-            }
-        }
-    }
-    return r;
 }
 
 bool widget::handle_event(command command) noexcept
@@ -354,7 +357,7 @@ void widget::scroll_to_show(tt::aarectangle rectangle) noexcept
     tt_axiom(is_gui_thread());
 
     // Move the request_rectangle to window coordinates.
-    ttlet requested_window_rectangle = translate2{layout().redraw_rectangle - theme().margin} * requested_rectangle;
+    ttlet requested_window_rectangle = translate2{layout().window_clipping_rectangle()} * requested_rectangle;
     ttlet window_bounds = aarectangle{window.screen_rectangle.size()} - theme().margin;
     ttlet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
     return bounding_rectangle(layout().from_window * response_window_rectangle);

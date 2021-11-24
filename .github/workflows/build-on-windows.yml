@@ -28,10 +28,8 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - { OS: windows-2019, BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: OFF, COMPILER: "VC16", JOB_NAME: "VC16 | x64-win-static | RelWithDebInfo | PCH:OFF" }
-          - { OS: windows-2019, BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON,  COMPILER: "VC16", JOB_NAME: "VC16 | x64-win-static | RelWithDebInfo"           }
-          - { OS: windows-2022, BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON,  COMPILER: "VC17", JOB_NAME: "VC17 | x64-win-static | RelWithDebInfo"           }
-          - { OS: windows-2022, BUILD_TYPE: Debug,          VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON,  COMPILER: "VC17", JOB_NAME: "VC17 | x64-win-static | Debug"                    }
+          - { OS: windows-2022, BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: OFF, COMPILER: "VC17", JOB_NAME: "VC17 | x64-win-static | Release"}
+          - { OS: windows-2022, BUILD_TYPE: Debug,          VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON,  COMPILER: "VC17", JOB_NAME: "VC17 | x64-win-static | Debug"  }
 
     env:
       PLATFORM: x64
@@ -95,9 +93,9 @@ jobs:
         run: call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" %PLATFORM%
 
       # https://github.com/actions/virtual-environments/blob/main/images/win/Windows2022-Readme.md#visual-studio-enterprise-2022
-      - name: 📥 Setup VC17 Environment (→ vcvarsall)
+      - name: 📥 Setup VC17 Environment (→ vcvars64)
         if: matrix.config.COMPILER == 'VC17'
-        run: call "C:/Program Files/Microsoft Visual Studio/2022/Preview/VC/Auxiliary/Build/vcvars64.bat"
+        run: call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
 
       - name: 🔽 Update VCPKG
         run: |

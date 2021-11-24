@@ -3,7 +3,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "tab_widget.hpp"
-#include "../GUI/gui_window.hpp"
 #include "../scoped_buffer.hpp"
 
 namespace tt::inline v1 {
@@ -57,8 +56,8 @@ widget_constraints const &tab_widget::set_constraints() noexcept
         child->visible = child_is_visible;
 
         if (child_is_visible) {
-            if (compare_then_assign(_constraints, child_contraints)) {
-                window.request_resize = true;
+            if (compare_store(_constraints, child_contraints)) {
+                request_resize();
             }
         }
     }
@@ -66,13 +65,13 @@ widget_constraints const &tab_widget::set_constraints() noexcept
     return _constraints;
 }
 
-void tab_widget::set_layout(widget_layout const &context) noexcept
+void tab_widget::set_layout(widget_layout const &layout) noexcept
 {
-    if (visible) {
-        _layout.store(context);
+    _layout = layout;
 
-        for (ttlet &child : _children) {
-            child->set_layout(layout().rectangle() * context);
+    for (ttlet &child : _children) {
+        if (child->visible) {
+            child->set_layout(layout);
         }
     }
 }
@@ -83,6 +82,21 @@ void tab_widget::draw(draw_context const &context) noexcept
         for (ttlet &child : _children) {
             child->draw(context);
         }
+    }
+}
+
+[[nodiscard]] hitbox tab_widget::hitbox_test(point3 position) const noexcept
+{
+    tt_axiom(is_gui_thread());
+
+    if (visible and enabled) {
+        auto r = hitbox{};
+        for (ttlet &child : _children) {
+            r = child->hitbox_test_from_parent(position, r);
+        }
+        return r;
+    } else {
+        return {};
     }
 }
 

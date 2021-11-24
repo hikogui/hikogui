@@ -93,7 +93,7 @@ std::vector<bezier_curve> makeInverseContour(std::vector<bezier_curve> const &co
 }
 
 std::vector<bezier_curve>
-makeParallelContour(std::vector<bezier_curve> const &contour, float offset, LineJoinStyle lineJoinStyle, float tolerance) noexcept
+makeParallelContour(std::vector<bezier_curve> const &contour, float offset, line_join_style line_join_style, float tolerance) noexcept
 {
     auto contourAtOffset = std::vector<bezier_curve>{};
     for (ttlet &curve : contour) {
@@ -119,7 +119,7 @@ makeParallelContour(std::vector<bezier_curve> const &contour, float offset, Line
             r.back().P1 = intersectPoint.value();
 
         } else if (
-            lineJoinStyle == LineJoinStyle::Miter &&
+            line_join_style == line_join_style::miter &&
             (intersectPoint = getExtrapolatedIntersectionPoint(r.back().P1, r.back().P2, curve.P1, curve.P2))) {
             r.back().P2 = intersectPoint.value();
             r.push_back(curve);

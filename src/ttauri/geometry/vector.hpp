@@ -341,6 +341,19 @@ private:
     return normalize(cross(rhs));
 }
 
+/** Get the normal on a 3D vector.
+ * @param rhs The vector.
+ * @param angle The angle around the vector, only 0.0 is implemented (xy-plane)
+ * @return A normal on the vector.
+ */
+[[nodiscard]] constexpr vector<3> normal(vector<3> const &rhs, float angle) noexcept
+{
+    if (angle != 0.0f) {
+        tt_not_implemented();
+    }
+    return normal(vector<2>{f32x4{rhs}.xy00()});
+}
+
 /** Get the cross product between two 2D vectors.
  * This function is useful for finding the winding direction of the vectors,
  * when doing ray casting.

@@ -16,20 +16,13 @@ widget_constraints const &toolbar_tab_button_widget::set_constraints() noexcept
     return _constraints = set_constraints_button() + extra_size;
 }
 
-void toolbar_tab_button_widget::set_layout(widget_layout const &context) noexcept
+void toolbar_tab_button_widget::set_layout(widget_layout const &layout) noexcept
 {
-    if (visible) {
-        // The toolbar tab will draw below the button into the margin.
-        auto context_ = context;
-        context_.redraw_rectangle =
-            aarectangle{translate2{0.0, -theme().margin} * get<0>(context.redraw_rectangle), get<3>(context.redraw_rectangle)};
-
-        if (_layout.store(context_) >= layout_update::transform) {
-            _label_rectangle =
-                aarectangle{theme().margin, 0.0f, layout().width() - theme().margin * 2.0f, layout().height() - theme().margin};
-        }
-        set_layout_button(context_);
+    if (compare_store(_layout, layout)) {
+        _label_rectangle =
+            aarectangle{theme().margin, 0.0f, layout.width() - theme().margin * 2.0f, layout.height() - theme().margin};
     }
+    set_layout_button(layout);
 }
 
 void toolbar_tab_button_widget::draw(draw_context const &context) noexcept
@@ -50,8 +43,7 @@ void toolbar_tab_button_widget::request_redraw() const noexcept
 
 [[nodiscard]] bool toolbar_tab_button_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
-    tt_axiom(is_gui_thread());
-    return is_toolbar(group) and enabled;
+    return visible and enabled and any(group & tt::keyboard_focus_group::toolbar);
 }
 
 [[nodiscard]] bool toolbar_tab_button_widget::handle_event(command command) noexcept
@@ -89,8 +81,8 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const &cont
     ttlet offset = theme().margin + theme().border_width;
     ttlet outline_rectangle = aarectangle{0.0f, -offset, layout().width(), layout().height() + offset};
 
-    // The focus line will be placed at 0.7.
-    ttlet button_z = (focus && window.active) ? translate_z(0.8f) : translate_z(0.6f);
+    // The focus line will be drawn by the parent widget (toolbar_widget) at 0.5.
+    ttlet button_z = (focus and active()) ? translate_z(0.6f) : translate_z(0.0f);
 
     auto button_color = (hover || state() == button_state::on) ? theme().color(theme_color::fill, semantic_layer - 1) :
                                                                  theme().color(theme_color::fill, semantic_layer);
@@ -100,7 +92,7 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const &cont
         layout(),
         button_z * outline_rectangle,
         button_color,
-        (focus && window.active) ? focus_color() : button_color,
+        (focus && active()) ? focus_color() : button_color,
         theme().border_width,
         border_side::inside,
         corner_shapes);

@@ -64,17 +64,15 @@ widget_constraints const &window_widget::set_constraints() noexcept
     return _constraints = {min_size, clamp(pref_size, min_size, max(max_size, min_size)), max(max_size, min_size)};
 }
 
-void window_widget::set_layout(widget_layout const &context) noexcept
+void window_widget::set_layout(widget_layout const &layout) noexcept
 {
-    if (visible) {
-        if (_layout.store(context) >= layout_update::transform) {
-            ttlet toolbar_height = _toolbar->constraints().preferred.height();
-            _toolbar_rectangle = aarectangle{0.0f, layout().height() - toolbar_height, layout().width(), toolbar_height};
-            _content_rectangle = aarectangle{0.0f, 0.0f, layout().width(), layout().height() - toolbar_height};
-        }
-        _toolbar->set_layout(_toolbar_rectangle * context);
-        _content->set_layout(_content_rectangle * context);
+    if (compare_store(_layout, layout)) {
+        ttlet toolbar_height = _toolbar->constraints().preferred.height();
+        _toolbar_rectangle = aarectangle{0.0f, layout.height() - toolbar_height, layout.width(), toolbar_height};
+        _content_rectangle = aarectangle{0.0f, 0.0f, layout.width(), layout.height() - toolbar_height};
     }
+    _toolbar->set_layout(layout.transform(_toolbar_rectangle));
+    _content->set_layout(layout.transform(_content_rectangle));
 }
 
 void window_widget::draw(draw_context const &context) noexcept
@@ -146,13 +144,8 @@ hitbox window_widget::hitbox_test(point3 position) const noexcept
     }
 
     // Otherwise children have priority.
-    auto buffer = pmr::scoped_buffer<256>{};
-    for (auto *child : children(buffer.allocator())) {
-        if (child) {
-            r = std::max(r, child->hitbox_test(child->layout().from_parent * position));
-        }
-    }
-
+    r = _toolbar->hitbox_test_from_parent(position, r);
+    r = _content->hitbox_test_from_parent(position, r);
     return r;
 }
 

@@ -64,10 +64,6 @@ public:
      */
     mouse_cursor currentmouse_cursor = mouse_cursor::None;
 
-    /** When set to true the window will resize to the preferred size of the contained widget.
-     */
-    std::atomic<bool> request_resize = true;
-
     /*! The window is currently being resized by the user.
      * We can disable expensive redraws during rendering until this
      * is false again.
@@ -156,6 +152,11 @@ public:
     void request_reconstrain() noexcept
     {
         _reconstrain.store(true, std::memory_order::relaxed);
+    }
+
+    void request_resize() noexcept
+    {
+        _resize.store(true, std::memory_order::relaxed);
     }
 
     /** By how much the font needs to be scaled compared to current windowScale.
@@ -287,10 +288,9 @@ protected:
     std::weak_ptr<delegate_type> _delegate;
 
     std::atomic<aarectangle> _redraw_rectangle = aarectangle{};
-
     std::atomic<bool> _relayout = true;
-
     std::atomic<bool> _reconstrain = true;
+    std::atomic<bool> _resize = true;
 
     /** The time of the last forced redraw.
      * A forced redraw may happen when needing to draw outside

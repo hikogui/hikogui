@@ -4,11 +4,20 @@
 
 #include "../architecture.hpp"
 
-clang_suppress("-Wunused-variable") clang_suppress("-Wreorder") clang_suppress("-Wunused-private-field")
+tt_warning_push();
+tt_clang_suppress("-Wunused-variable");
+tt_clang_suppress("-Wreorder");
+tt_clang_suppress("-Wunused-private-field");
 
-    tt_msvc_pragma("warning(disable:4127)") tt_msvc_pragma("warning(disable:6011)") tt_msvc_pragma("warning(disable:6386)")
-        tt_msvc_pragma("warning(disable:6387)") tt_msvc_pragma("warning(disable:4701)") tt_msvc_pragma("warning(disable:4703)")
-            tt_msvc_pragma("warning(disable:4189)")
+tt_msvc_suppress(4127);
+tt_msvc_suppress(6011);
+tt_msvc_suppress(6386);
+tt_msvc_suppress(6387);
+tt_msvc_suppress(4701);
+tt_msvc_suppress(4703);
+tt_msvc_suppress(4189);
 
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>
+
+tt_warning_pop();

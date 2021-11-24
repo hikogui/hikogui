@@ -68,9 +68,9 @@ void abstract_button_widget::set_layout_button(widget_layout const &context) noe
     _off_label_widget->visible = state_ == button_state::off;
     _other_label_widget->visible = state_ == button_state::other;
 
-    _on_label_widget->set_layout(_label_rectangle * context);
-    _off_label_widget->set_layout(_label_rectangle * context);
-    _other_label_widget->set_layout(_label_rectangle * context);
+    _on_label_widget->set_layout(context.transform(_label_rectangle));
+    _off_label_widget->set_layout(context.transform(_label_rectangle));
+    _other_label_widget->set_layout(context.transform(_label_rectangle));
 }
 
 [[nodiscard]] color abstract_button_widget::background_color() const noexcept
@@ -87,17 +87,17 @@ void abstract_button_widget::set_layout_button(widget_layout const &context) noe
 {
     tt_axiom(is_gui_thread());
 
-    if (layout().hit_rectangle.contains(position)) {
-        return hitbox{this, position, enabled ? hitbox::Type::Button : hitbox::Type::Default};
+    if (visible and enabled and layout().contains(position)) {
+        return {this, position, hitbox::Type::Button};
     } else {
-        return hitbox{};
+        return {};
     }
 }
 
 [[nodiscard]] bool abstract_button_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
     tt_axiom(is_gui_thread());
-    return is_normal(group) and enabled;
+    return visible and enabled and any(group & tt::keyboard_focus_group::normal);
 }
 
 void activate() noexcept;
@@ -128,7 +128,7 @@ void activate() noexcept;
     if (event.cause.leftButton) {
         handled = true;
         if (enabled) {
-            if (compare_then_assign(_pressed, static_cast<bool>(event.down.leftButton))) {
+            if (compare_store(_pressed, static_cast<bool>(event.down.leftButton))) {
                 request_redraw();
             }
 

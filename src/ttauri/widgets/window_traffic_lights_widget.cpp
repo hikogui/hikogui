@@ -30,14 +30,14 @@ widget_constraints const &window_traffic_lights_widget::set_constraints() noexce
     }
 }
 
-void window_traffic_lights_widget::set_layout(widget_layout const &context) noexcept
+void window_traffic_lights_widget::set_layout(widget_layout const &layout) noexcept
 {
-    if (visible and _layout.store(context) >= layout_update::transform) {
-        auto extent = layout().size;
+    if (compare_store(_layout, layout)) {
+        auto extent = layout.size;
         if (extent.height() > theme().toolbar_height * 1.2f) {
             extent = extent2{extent.width(), theme().toolbar_height};
         }
-        auto y = layout().height() - extent.height();
+        auto y = layout.height() - extent.height();
 
         if (theme().operating_system == operating_system::windows) {
             closeRectangle =
@@ -93,17 +93,17 @@ void window_traffic_lights_widget::drawMacOS(draw_context const &drawContext) no
 {
     auto context = drawContext;
 
-    ttlet close_circle_color = (!window.active && !hover) ? color(0.246f, 0.246f, 0.246f) :
+    ttlet close_circle_color = (not active() and not hover) ? color(0.246f, 0.246f, 0.246f) :
         pressedClose                                      ? color(1.0f, 0.242f, 0.212f) :
                                                             color(1.0f, 0.1f, 0.082f);
     context.draw_box(layout(), closeRectangle, close_circle_color, corner_shapes{RADIUS});
 
-    ttlet minimize_circle_color = (!window.active && !hover) ? color(0.246f, 0.246f, 0.246f) :
+    ttlet minimize_circle_color = (not active() and not hover) ? color(0.246f, 0.246f, 0.246f) :
         pressedMinimize                                      ? color(1.0f, 0.847f, 0.093f) :
                                                                color(0.784f, 0.521f, 0.021f);
     context.draw_box(layout(), minimizeRectangle, minimize_circle_color, corner_shapes{RADIUS});
 
-    ttlet maximize_circle_color = (!window.active && !hover) ? color(0.246f, 0.246f, 0.246f) :
+    ttlet maximize_circle_color = (not active() and not hover) ? color(0.246f, 0.246f, 0.246f) :
         pressedMaximize                                      ? color(0.223f, 0.863f, 0.1f) :
                                                                color(0.082f, 0.533f, 0.024f);
 
@@ -152,7 +152,7 @@ void window_traffic_lights_widget::drawWindows(draw_context const &drawContext) 
         context.draw_box(layout(), maximizeRectangle, theme().color(theme_color::fill, semantic_layer));
     }
 
-    ttlet glyph_color = window.active ? label_color() : foreground_color();
+    ttlet glyph_color = active() ? label_color() : foreground_color();
 
     context.draw_glyph(layout(), translate_z(0.1f) * closeWindowGlyphRectangle, glyph_color, closeWindowGlyph);
     context.draw_glyph(layout(), translate_z(0.1f) * minimizeWindowGlyphRectangle, glyph_color, minimizeWindowGlyph);
@@ -185,9 +185,9 @@ bool window_traffic_lights_widget::handle_event(mouse_event const &event) noexce
 
     // Check the hover states of each button.
     auto stateHasChanged = false;
-    stateHasChanged |= compare_then_assign(hoverClose, closeRectangle.contains(event.position));
-    stateHasChanged |= compare_then_assign(hoverMinimize, minimizeRectangle.contains(event.position));
-    stateHasChanged |= compare_then_assign(hoverMaximize, maximizeRectangle.contains(event.position));
+    stateHasChanged |= compare_store(hoverClose, closeRectangle.contains(event.position));
+    stateHasChanged |= compare_store(hoverMinimize, minimizeRectangle.contains(event.position));
+    stateHasChanged |= compare_store(hoverMaximize, maximizeRectangle.contains(event.position));
     if (stateHasChanged) {
         request_redraw();
     }
@@ -236,12 +236,9 @@ hitbox window_traffic_lights_widget::hitbox_test(point3 position) const noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (layout().hit_rectangle.contains(position)) {
-        if (closeRectangle.contains(position) || minimizeRectangle.contains(position) || maximizeRectangle.contains(position)) {
-            return hitbox{this, position, hitbox::Type::Button};
-        } else {
-            return hitbox{};
-        }
+    if (visible and enabled and layout().contains(position) and
+        (closeRectangle.contains(position) or minimizeRectangle.contains(position) or maximizeRectangle.contains(position))) {
+        return hitbox{this, position, hitbox::Type::Button};
     } else {
         return {};
     }

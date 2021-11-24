@@ -13,6 +13,7 @@
 #include "../geometry/translate.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/extent.hpp"
+#include "../codec/png.hpp"
 
 namespace tt::inline v1 {
 
@@ -37,12 +38,21 @@ paged_image::paged_image(gfx_surface const *surface, size_t width, size_t height
     }
 }
 
-paged_image::paged_image(gfx_surface const *surface, pixel_map<sfloat_rgba16> const &pixmap) noexcept :
-    paged_image(surface, narrow_cast<size_t>(pixmap.width()), narrow_cast<size_t>(pixmap.height()))
+paged_image::paged_image(gfx_surface const *surface, pixel_map<sfloat_rgba16> const &image) noexcept :
+    paged_image(surface, narrow_cast<size_t>(image.width()), narrow_cast<size_t>(image.height()))
 {
     if (this->device) {
         ttlet lock = std::scoped_lock(gfx_system_mutex);
-        this->upload(pixmap);
+        this->upload(image);
+    }
+}
+
+paged_image::paged_image(gfx_surface const *surface, png const &image) noexcept :
+    paged_image(surface, narrow_cast<size_t>(image.width()), narrow_cast<size_t>(image.height()))
+{
+    if (this->device) {
+        ttlet lock = std::scoped_lock(gfx_system_mutex);
+        this->upload(image);
     }
 }
 
@@ -76,6 +86,23 @@ paged_image::~paged_image()
 {
     if (ttlet vulkan_device = narrow_cast<gfx_device_vulkan *>(device)) {
         vulkan_device->imagePipeline->free_pages(pages);
+    }
+}
+
+void paged_image::upload(png const &image) noexcept
+{
+    tt_axiom(image.width() == width and image.height() == height);
+
+    if (ttlet vulkan_device = narrow_cast<gfx_device_vulkan *>(device)) {
+        ttlet lock = std::scoped_lock(gfx_system_mutex);
+
+        state = state_type::drawing;
+
+        auto staging_image = vulkan_device->imagePipeline->get_staging_pixel_map(image.width(), image.height());
+        image.decode_image(staging_image);
+        vulkan_device->imagePipeline->update_atlas_with_staging_pixel_map(*this);
+
+        state = state_type::uploaded;
     }
 }
 

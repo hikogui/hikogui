@@ -254,130 +254,135 @@ using xuint8_t = safe_int<uint8_t, on_overflow_t::Axiom>;
 
 } // namespace tt::inline v1
 
-namespace std {
-
 template<>
-class numeric_limits<tt::safe_int<signed long long, tt::on_overflow_t::Saturate>> : public numeric_limits<signed long long> {
+class std::numeric_limits<tt::safe_int<signed long long, tt::on_overflow_t::Saturate>> :
+    public std::numeric_limits<signed long long> {
 };
 template<>
-class numeric_limits<tt::safe_int<signed long, tt::on_overflow_t::Saturate>> : public numeric_limits<signed long> {
+class std::numeric_limits<tt::safe_int<signed long, tt::on_overflow_t::Saturate>> : public std::numeric_limits<signed long> {
 };
 template<>
-class numeric_limits<tt::safe_int<signed int, tt::on_overflow_t::Saturate>> : public numeric_limits<signed int> {
+class std::numeric_limits<tt::safe_int<signed int, tt::on_overflow_t::Saturate>> : public std::numeric_limits<signed int> {
 };
 template<>
-class numeric_limits<tt::safe_int<signed short, tt::on_overflow_t::Saturate>> : public numeric_limits<signed short> {
+class std::numeric_limits<tt::safe_int<signed short, tt::on_overflow_t::Saturate>> : public std::numeric_limits<signed short> {
 };
 template<>
-class numeric_limits<tt::safe_int<signed char, tt::on_overflow_t::Saturate>> : public numeric_limits<signed char> {
+class std::numeric_limits<tt::safe_int<signed char, tt::on_overflow_t::Saturate>> : public std::numeric_limits<signed char> {
 };
 template<>
-class numeric_limits<tt::safe_int<unsigned long long, tt::on_overflow_t::Saturate>> : public numeric_limits<unsigned long long> {
+class std::numeric_limits<tt::safe_int<unsigned long long, tt::on_overflow_t::Saturate>> :
+    public std::numeric_limits<unsigned long long> {
 };
 template<>
-class numeric_limits<tt::safe_int<unsigned long, tt::on_overflow_t::Saturate>> : public numeric_limits<unsigned long> {
+class std::numeric_limits<tt::safe_int<unsigned long, tt::on_overflow_t::Saturate>> : public std::numeric_limits<unsigned long> {
 };
 template<>
-class numeric_limits<tt::safe_int<unsigned int, tt::on_overflow_t::Saturate>> : public numeric_limits<unsigned int> {
+class std::numeric_limits<tt::safe_int<unsigned int, tt::on_overflow_t::Saturate>> : public std::numeric_limits<unsigned int> {
 };
 template<>
-class numeric_limits<tt::safe_int<unsigned short, tt::on_overflow_t::Saturate>> : public numeric_limits<unsigned short> {
+class std::numeric_limits<tt::safe_int<unsigned short, tt::on_overflow_t::Saturate>> :
+    public std::numeric_limits<unsigned short> {
 };
 template<>
-class numeric_limits<tt::safe_int<unsigned char, tt::on_overflow_t::Saturate>> : public numeric_limits<unsigned char> {
-};
-
-template<>
-class numeric_limits<tt::safe_int<signed long long, tt::on_overflow_t::Assert>> : public numeric_limits<signed long long> {
-};
-template<>
-class numeric_limits<tt::safe_int<signed long, tt::on_overflow_t::Assert>> : public numeric_limits<signed long> {
-};
-template<>
-class numeric_limits<tt::safe_int<signed int, tt::on_overflow_t::Assert>> : public numeric_limits<signed int> {
-};
-template<>
-class numeric_limits<tt::safe_int<signed short, tt::on_overflow_t::Assert>> : public numeric_limits<signed short> {
-};
-template<>
-class numeric_limits<tt::safe_int<signed char, tt::on_overflow_t::Assert>> : public numeric_limits<signed char> {
-};
-template<>
-class numeric_limits<tt::safe_int<unsigned long long, tt::on_overflow_t::Assert>> : public numeric_limits<unsigned long long> {
-};
-template<>
-class numeric_limits<tt::safe_int<unsigned long, tt::on_overflow_t::Assert>> : public numeric_limits<unsigned long> {
-};
-template<>
-class numeric_limits<tt::safe_int<unsigned int, tt::on_overflow_t::Assert>> : public numeric_limits<unsigned int> {
-};
-template<>
-class numeric_limits<tt::safe_int<unsigned short, tt::on_overflow_t::Assert>> : public numeric_limits<unsigned short> {
-};
-template<>
-class numeric_limits<tt::safe_int<unsigned char, tt::on_overflow_t::Assert>> : public numeric_limits<unsigned char> {
+class std::numeric_limits<tt::safe_int<unsigned char, tt::on_overflow_t::Saturate>> : public std::numeric_limits<unsigned char> {
 };
 
 template<>
-class numeric_limits<tt::safe_int<signed long long, tt::on_overflow_t::Throw>> : public numeric_limits<signed long long> {
+class std::numeric_limits<tt::safe_int<signed long long, tt::on_overflow_t::Assert>> :
+    public std::numeric_limits<signed long long> {
 };
 template<>
-class numeric_limits<tt::safe_int<signed long, tt::on_overflow_t::Throw>> : public numeric_limits<signed long> {
+class std::numeric_limits<tt::safe_int<signed long, tt::on_overflow_t::Assert>> : public std::numeric_limits<signed long> {
 };
 template<>
-class numeric_limits<tt::safe_int<signed int, tt::on_overflow_t::Throw>> : public numeric_limits<signed int> {
+class std::numeric_limits<tt::safe_int<signed int, tt::on_overflow_t::Assert>> : public std::numeric_limits<signed int> {
 };
 template<>
-class numeric_limits<tt::safe_int<signed short, tt::on_overflow_t::Throw>> : public numeric_limits<signed short> {
+class std::numeric_limits<tt::safe_int<signed short, tt::on_overflow_t::Assert>> : public std::numeric_limits<signed short> {
 };
 template<>
-class numeric_limits<tt::safe_int<signed char, tt::on_overflow_t::Throw>> : public numeric_limits<signed char> {
+class std::numeric_limits<tt::safe_int<signed char, tt::on_overflow_t::Assert>> : public std::numeric_limits<signed char> {
 };
 template<>
-class numeric_limits<tt::safe_int<unsigned long long, tt::on_overflow_t::Throw>> : public numeric_limits<unsigned long long> {
+class std::numeric_limits<tt::safe_int<unsigned long long, tt::on_overflow_t::Assert>> :
+    public std::numeric_limits<unsigned long long> {
 };
 template<>
-class numeric_limits<tt::safe_int<unsigned long, tt::on_overflow_t::Throw>> : public numeric_limits<unsigned long> {
+class std::numeric_limits<tt::safe_int<unsigned long, tt::on_overflow_t::Assert>> : public std::numeric_limits<unsigned long> {
 };
 template<>
-class numeric_limits<tt::safe_int<unsigned int, tt::on_overflow_t::Throw>> : public numeric_limits<unsigned int> {
+class std::numeric_limits<tt::safe_int<unsigned int, tt::on_overflow_t::Assert>> : public std::numeric_limits<unsigned int> {
 };
 template<>
-class numeric_limits<tt::safe_int<unsigned short, tt::on_overflow_t::Throw>> : public numeric_limits<unsigned short> {
+class std::numeric_limits<tt::safe_int<unsigned short, tt::on_overflow_t::Assert>> : public std::numeric_limits<unsigned short> {
 };
 template<>
-class numeric_limits<tt::safe_int<unsigned char, tt::on_overflow_t::Throw>> : public numeric_limits<unsigned char> {
+class std::numeric_limits<tt::safe_int<unsigned char, tt::on_overflow_t::Assert>> : public std::numeric_limits<unsigned char> {
 };
 
 template<>
-class numeric_limits<tt::safe_int<signed long long, tt::on_overflow_t::Axiom>> : public numeric_limits<signed long long> {
+class std::numeric_limits<tt::safe_int<signed long long, tt::on_overflow_t::Throw>> :
+    public std::numeric_limits<signed long long> {
 };
 template<>
-class numeric_limits<tt::safe_int<signed long, tt::on_overflow_t::Axiom>> : public numeric_limits<signed long> {
+class std::numeric_limits<tt::safe_int<signed long, tt::on_overflow_t::Throw>> : public std::numeric_limits<signed long> {
 };
 template<>
-class numeric_limits<tt::safe_int<signed int, tt::on_overflow_t::Axiom>> : public numeric_limits<signed int> {
+class std::numeric_limits<tt::safe_int<signed int, tt::on_overflow_t::Throw>> : public std::numeric_limits<signed int> {
 };
 template<>
-class numeric_limits<tt::safe_int<signed short, tt::on_overflow_t::Axiom>> : public numeric_limits<signed short> {
+class std::numeric_limits<tt::safe_int<signed short, tt::on_overflow_t::Throw>> : public std::numeric_limits<signed short> {
 };
 template<>
-class numeric_limits<tt::safe_int<signed char, tt::on_overflow_t::Axiom>> : public numeric_limits<signed char> {
+class std::numeric_limits<tt::safe_int<signed char, tt::on_overflow_t::Throw>> : public std::numeric_limits<signed char> {
 };
 template<>
-class numeric_limits<tt::safe_int<unsigned long long, tt::on_overflow_t::Axiom>> : public numeric_limits<unsigned long long> {
+class std::numeric_limits<tt::safe_int<unsigned long long, tt::on_overflow_t::Throw>> :
+    public std::numeric_limits<unsigned long long> {
 };
 template<>
-class numeric_limits<tt::safe_int<unsigned long, tt::on_overflow_t::Axiom>> : public numeric_limits<unsigned long> {
+class std::numeric_limits<tt::safe_int<unsigned long, tt::on_overflow_t::Throw>> : public std::numeric_limits<unsigned long> {
 };
 template<>
-class numeric_limits<tt::safe_int<unsigned int, tt::on_overflow_t::Axiom>> : public numeric_limits<unsigned int> {
+class std::numeric_limits<tt::safe_int<unsigned int, tt::on_overflow_t::Throw>> : public std::numeric_limits<unsigned int> {
 };
 template<>
-class numeric_limits<tt::safe_int<unsigned short, tt::on_overflow_t::Axiom>> : public numeric_limits<unsigned short> {
+class std::numeric_limits<tt::safe_int<unsigned short, tt::on_overflow_t::Throw>> : public std::numeric_limits<unsigned short> {
 };
 template<>
-class numeric_limits<tt::safe_int<unsigned char, tt::on_overflow_t::Axiom>> : public numeric_limits<unsigned char> {
+class std::numeric_limits<tt::safe_int<unsigned char, tt::on_overflow_t::Throw>> : public std::numeric_limits<unsigned char> {
 };
 
-} // namespace std
+template<>
+class std::numeric_limits<tt::safe_int<signed long long, tt::on_overflow_t::Axiom>> :
+    public std::numeric_limits<signed long long> {
+};
+template<>
+class std::numeric_limits<tt::safe_int<signed long, tt::on_overflow_t::Axiom>> : public std::numeric_limits<signed long> {
+};
+template<>
+class std::numeric_limits<tt::safe_int<signed int, tt::on_overflow_t::Axiom>> : public std::numeric_limits<signed int> {
+};
+template<>
+class std::numeric_limits<tt::safe_int<signed short, tt::on_overflow_t::Axiom>> : public std::numeric_limits<signed short> {
+};
+template<>
+class std::numeric_limits<tt::safe_int<signed char, tt::on_overflow_t::Axiom>> : public std::numeric_limits<signed char> {
+};
+template<>
+class std::numeric_limits<tt::safe_int<unsigned long long, tt::on_overflow_t::Axiom>> :
+    public std::numeric_limits<unsigned long long> {
+};
+template<>
+class std::numeric_limits<tt::safe_int<unsigned long, tt::on_overflow_t::Axiom>> : public std::numeric_limits<unsigned long> {
+};
+template<>
+class std::numeric_limits<tt::safe_int<unsigned int, tt::on_overflow_t::Axiom>> : public std::numeric_limits<unsigned int> {
+};
+template<>
+class std::numeric_limits<tt::safe_int<unsigned short, tt::on_overflow_t::Axiom>> : public std::numeric_limits<unsigned short> {
+};
+template<>
+class std::numeric_limits<tt::safe_int<unsigned char, tt::on_overflow_t::Axiom>> : public std::numeric_limits<unsigned char> {
+};

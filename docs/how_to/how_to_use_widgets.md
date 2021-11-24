@@ -9,7 +9,8 @@ first argument is the `tt::label` of the window. The label consists of both a
 translatable text and an icon.
 
 ```cpp
-auto &window = gui_system::global().make_window(l10n("The window title"));
+auto gui = tt::gui_system::make_unique();
+auto &window = gui->make_window(tt::l10n("l10n("The window title"));
 ```
 
 The second optional argument to `make_window()` is a subclass of
@@ -20,13 +21,12 @@ Unlike many other GUI libraries a window is not given a size; its initial,
 minimum and maximum size is determined by the constrain and layout algorithm of
 the widgets being displayed in the window.
 
-The `tt::gui_system::global()` function returns a reference to an global
-instance of the GUI system. The first call to `global()` initializes the GUI system
-and potentially other subsystems. From this point forward, any usage of the GUI system,
+The `tt::gui_system::make_unique()` function returns a `std::unique_ptr` to a new
+instance of a configured GUI system. From this point forward, any usage of the GUI system,
 its windows and their widgets must be done from the same thread, called the `gui_thread`.
 
 After creating at least one window you should call `tt::gui_system::loop()` on
-the global object. This function will enter the system's GUI-loop, monitor
+the gui_system object. This function will enter the system's GUI-loop, monitor
 keyboard & mouse events and render all the windows. Once all windows are closed
 the `loop()` function will return with a return code, which may be returned from
 the `main()` function.
@@ -34,9 +34,10 @@ the `main()` function.
 ```cpp
 int tt_main(int argc, char *argv[])
 {
-    auto &window = gui_system::global().make_window(l10n("The window title"));
+    auto gui = tt::gui_system::make_unique();
+    auto &window = gui->make_window(tt::l10n("The window title"));
     window.content().make_widget<momentary_button_widget>("A1", l10n("Does nothing"));
-    return gui_system::global().loop();
+    return gui->loop();
 }
 ```
 
@@ -64,14 +65,15 @@ int tt_main(int argc, char *argv[])
 {
     observable<int> value = 0;
 
-    auto &window = gui_system::global().make_window(l10n("Radio button example"));
+    auto gui = tt::gui_system::make_unique();
+    auto &window = gui->make_window(tt::l10n("Radio button example"));
 
     window.content().make_widget<label_widget>("A1", l10n("radio buttons:"));
     window.content().make_widget<radio_button_widget>("B1", l10n("one"), value, 1);
     window.content().make_widget<radio_button_widget>("B2", l10n("two"), value, 2);
     window.content().make_widget<radio_button_widget>("B3", l10n("three"), value, 3);
 
-    return gui_system::global().loop();
+    return gui->loop();
 }
 ```
 

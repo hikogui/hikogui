@@ -14,7 +14,7 @@
 #include <type_traits>
 #include <vector>
 
-namespace tt::ranges::views {
+namespace tt::inline v1::ranges::views {
 
 /** Split a range of values into sub-ranges.
  * @param haystack The range of values to split
@@ -105,7 +105,7 @@ template<
 }
 ///@}
 
-} // namespace tt::ranges::views
+} // namespace tt::inline v1::ranges::views
 
 namespace tt::inline v1 {
 namespace views = tt::ranges::views;

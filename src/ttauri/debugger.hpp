@@ -9,41 +9,39 @@
 
 namespace tt::inline v1 {
 
-#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
-void _debugger_break();
-#define tt_debugger_break() _debugger_break()
+void _prepare_debug_break(char const *source_file, int source_line, std::string const &message) noexcept;
 
-#elif TT_COMPILER == TT_CC_GCC || TT_COMPILER == TT_CC_CLANG
-#define tt_debugger_break() __builtin_trap()
-
-#else
-#error "Not implemented"
-#endif
-
-/*! Check if the program is being debugged.
- */
-bool debugger_is_present() noexcept;
-
-[[noreturn]] void debugger_abort(std::string const &message) noexcept;
-
-/** Abort the application.
+/** Prepare fallback for breaking in the debugger.
+ *
  * @param source_file __FILE__
  * @param source_line __LINE__
  * @param fmt Message to display.
  * @param args Rest arguments to formatter
  */
 template<typename... Args>
-[[noreturn]] tt_no_inline void
-debugger_abort(char const *source_file, int source_line, std::string_view fmt, Args &&...args) noexcept
+tt_no_inline void prepare_debug_break(char const *source_file, int source_line, std::string_view fmt, Args &&...args) noexcept
 {
-    debugger_abort(std::format(fmt, std::forward<Args>(args)...));
+    _prepare_debug_break(source_file, source_line, std::format(fmt, std::forward<Args>(args)...));
 }
 
-[[noreturn]] tt_no_inline inline void debugger_abort(char const *source_file, int source_line) noexcept
+/** Prepare fallback for breaking in the debugger.
+ *
+ * @param source_file __FILE__
+ * @param source_line __LINE__
+ */
+tt_no_inline inline void prepare_debug_break(char const *source_file, int source_line) noexcept
 {
-    debugger_abort(source_file, source_line, "<unknown>");
+    _prepare_debug_break(source_file, source_line, "<unknown>");
 }
 
-#define tt_debugger_abort(...) ::tt::debugger_abort(__FILE__, __LINE__ __VA_OPT__(, ) __VA_ARGS__)
+#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+
+#define tt_debug_break(...) ::tt::prepare_debug_break(__FILE__, __LINE__ __VA_OPT__(, ) __VA_ARGS__); __debugbreak()
+
+#else
+#error Missing implementation of tt_debug_break().
+#endif
+
+#define tt_debug_abort(...) tt_debug_break(__VA_ARGS__); std::terminate();
 
 } // namespace tt::inline v1

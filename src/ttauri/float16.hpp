@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "required.hpp"
+#include <cstdint>
 #include <type_traits>
 
 namespace tt::inline v1 {
@@ -135,8 +137,6 @@ public:
 
 } // namespace tt::inline v1
 
-namespace std {
-
 template<>
 struct std::hash<tt::float16> {
     size_t operator()(tt::float16 const &rhs) noexcept
@@ -145,12 +145,9 @@ struct std::hash<tt::float16> {
     }
 };
 
-} // namespace std
-
-namespace std {
 
 template<>
-struct numeric_limits<tt::float16> {
+struct std::numeric_limits<tt::float16> {
     using value_type = tt::float16;
 
     static constexpr bool is_specialized = true;
@@ -221,5 +218,3 @@ struct numeric_limits<tt::float16> {
         return tt::float16::from_uint16_t(0x0001);
     }
 };
-
-} // namespace std

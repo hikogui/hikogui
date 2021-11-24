@@ -33,6 +33,16 @@ public:
         _v.w() = C;
     }
 
+    [[nodiscard]] rotate(float angle) noexcept requires(D == 2) : _v()
+    {
+        ttlet half_angle = angle * 0.5f;
+        ttlet C = std::cos(half_angle);
+        ttlet S = std::sin(half_angle);
+
+        _v = f32x4{0.0f, 0.0f, 1.0f, 0.0f} * S;
+        _v.w() = C;
+    }
+
     /** Convert quaternion to matrix.
      *
      */

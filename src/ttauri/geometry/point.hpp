@@ -137,6 +137,14 @@ public:
         return *this;
     }
 
+    template<int E>
+    requires(E <= D) constexpr point &operator-=(vector<E> const &rhs) noexcept
+    {
+        tt_axiom(holds_invariant() && rhs.holds_invariant());
+        _v = _v - static_cast<f32x4>(rhs);
+        return *this;
+    }
+
     /** Move a point along a vector.
      * @param lhs The point to move.
      * @param rhs The vector to move along.

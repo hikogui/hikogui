@@ -551,10 +551,9 @@ using uuid = bigint<uint64_t, 2, false>;
 
 } // namespace tt::inline v1
 
-namespace std {
 
-template<unsigned_integral DigitType, size_t NumDigits, bool IsSigned>
-struct numeric_limits<tt::bigint<DigitType, NumDigits, IsSigned>> {
+template<std::unsigned_integral DigitType, size_t NumDigits, bool IsSigned>
+struct std::numeric_limits<tt::bigint<DigitType, NumDigits, IsSigned>> {
     using value_type = tt::bigint<DigitType, NumDigits, IsSigned>;
 
     static constexpr bool is_specialized = true;
@@ -570,21 +569,21 @@ struct numeric_limits<tt::bigint<DigitType, NumDigits, IsSigned>> {
     static constexpr bool is_iec559 = false;
     static constexpr bool is_bounded = true;
     static constexpr bool is_modulo = true;
-    static constexpr int digits = numeric_limits<DigitType>::digits * NumDigits;
-    static constexpr int digits10 = numeric_limits<DigitType>::digits10 * NumDigits;
+    static constexpr int digits = std::numeric_limits<DigitType>::digits * NumDigits;
+    static constexpr int digits10 = std::numeric_limits<DigitType>::digits10 * NumDigits;
     static constexpr int max_digits10 = 0;
     static constexpr int min_exponent = 0;
     static constexpr int min_exponent10 = 0;
     static constexpr int max_exponent = 0;
     static constexpr int max_exponent10 = 0;
-    static constexpr bool traps = numeric_limits<DigitType>::traps;
+    static constexpr bool traps = std::numeric_limits<DigitType>::traps;
     static constexpr bool tinyness_before = false;
 
     static constexpr value_type min() noexcept
     {
         auto r = value_type{};
-        constexpr auto smin = numeric_limits<value_type::signed_digit_type>::min();
-        constexpr auto umin = numeric_limits<value_type::digit_type>::min();
+        constexpr auto smin = std::numeric_limits<value_type::signed_digit_type>::min();
+        constexpr auto umin = std::numeric_limits<value_type::digit_type>::min();
 
         for (size_t i = 0; i != value_type::num_digits; ++i) {
             r.digits[i] = umin;
@@ -605,8 +604,8 @@ struct numeric_limits<tt::bigint<DigitType, NumDigits, IsSigned>> {
     static constexpr value_type max() noexcept
     {
         auto r = value_type{};
-        constexpr auto smax = numeric_limits<value_type::signed_digit_type>::max();
-        constexpr auto umax = numeric_limits<value_type::digit_type>::max();
+        constexpr auto smax = std::numeric_limits<value_type::signed_digit_type>::max();
+        constexpr auto umax = std::numeric_limits<value_type::digit_type>::max();
 
         for (size_t i = 0; i != value_type::num_digits; ++i) {
             r.digits[i] = umax;
@@ -650,4 +649,3 @@ struct numeric_limits<tt::bigint<DigitType, NumDigits, IsSigned>> {
     }
 };
 
-} // namespace std
