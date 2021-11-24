@@ -6,6 +6,7 @@
 #include "../GUI/gui_window.hpp"
 #include "../GUI/gui_system.hpp"
 #include "../scoped_buffer.hpp"
+#include "../ranges.hpp"
 #include <ranges>
 
 namespace tt::inline v1 {
@@ -50,6 +51,11 @@ widget::~widget()
     return window.is_gui_thread();
 }
 
+[[nodiscard]] bool widget::active() const noexcept
+{
+    return window.active;
+}
+
 tt::theme const &widget::theme() const noexcept
 {
     return window.gui.theme();
@@ -89,7 +95,7 @@ tt::font_book &widget::font_book() const noexcept
 [[nodiscard]] color widget::focus_color() const noexcept
 {
     if (enabled) {
-        if (focus && window.active) {
+        if (focus and active()) {
             return theme().color(theme_color::accent);
         } else if (hover) {
             return theme().color(theme_color::border, semantic_layer + 1);
@@ -104,7 +110,7 @@ tt::font_book &widget::font_book() const noexcept
 [[nodiscard]] color widget::accent_color() const noexcept
 {
     if (enabled) {
-        if (window.active) {
+        if (active()) {
             return theme().color(theme_color::accent);
         } else {
             return theme().color(theme_color::border, semantic_layer);

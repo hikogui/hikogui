@@ -93,17 +93,17 @@ void window_traffic_lights_widget::drawMacOS(draw_context const &drawContext) no
 {
     auto context = drawContext;
 
-    ttlet close_circle_color = (!window.active && !hover) ? color(0.246f, 0.246f, 0.246f) :
+    ttlet close_circle_color = (not active() and not hover) ? color(0.246f, 0.246f, 0.246f) :
         pressedClose                                      ? color(1.0f, 0.242f, 0.212f) :
                                                             color(1.0f, 0.1f, 0.082f);
     context.draw_box(layout(), closeRectangle, close_circle_color, corner_shapes{RADIUS});
 
-    ttlet minimize_circle_color = (!window.active && !hover) ? color(0.246f, 0.246f, 0.246f) :
+    ttlet minimize_circle_color = (not active() and not hover) ? color(0.246f, 0.246f, 0.246f) :
         pressedMinimize                                      ? color(1.0f, 0.847f, 0.093f) :
                                                                color(0.784f, 0.521f, 0.021f);
     context.draw_box(layout(), minimizeRectangle, minimize_circle_color, corner_shapes{RADIUS});
 
-    ttlet maximize_circle_color = (!window.active && !hover) ? color(0.246f, 0.246f, 0.246f) :
+    ttlet maximize_circle_color = (not active() and not hover) ? color(0.246f, 0.246f, 0.246f) :
         pressedMaximize                                      ? color(0.223f, 0.863f, 0.1f) :
                                                                color(0.082f, 0.533f, 0.024f);
 
@@ -152,7 +152,7 @@ void window_traffic_lights_widget::drawWindows(draw_context const &drawContext) 
         context.draw_box(layout(), maximizeRectangle, theme().color(theme_color::fill, semantic_layer));
     }
 
-    ttlet glyph_color = window.active ? label_color() : foreground_color();
+    ttlet glyph_color = active() ? label_color() : foreground_color();
 
     context.draw_glyph(layout(), translate_z(0.1f) * closeWindowGlyphRectangle, glyph_color, closeWindowGlyph);
     context.draw_glyph(layout(), translate_z(0.1f) * minimizeWindowGlyphRectangle, glyph_color, minimizeWindowGlyph);

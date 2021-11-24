@@ -69,7 +69,7 @@ void toolbar_button_widget::draw(draw_context const &context) noexcept
 
 void toolbar_button_widget::draw_toolbar_button(draw_context const &context) noexcept
 {
-    ttlet foreground_color_ = focus && window.active ? focus_color() : color::transparent();
+    ttlet foreground_color_ = focus and active() ? focus_color() : color::transparent();
     context.draw_box(
         layout(), layout().rectangle(), background_color(), foreground_color_, theme().border_width, border_side::inside);
 }

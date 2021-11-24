@@ -288,7 +288,7 @@ hitbox text_field_widget::hitbox_test(point3 position) const noexcept
 
 [[nodiscard]] color text_field_widget::focus_color() const noexcept
 {
-    if (enabled and window.active and not _error_label->empty()) {
+    if (enabled and active() and not _error_label->empty()) {
         return theme().text_style(theme_text_style::error).color;
     } else {
         return super::focus_color();
@@ -405,7 +405,7 @@ void text_field_widget::draw_partial_grapheme_caret(draw_context const &context)
 
 void text_field_widget::draw_caret(draw_context const &context) noexcept
 {
-    if (focus and window.active) {
+    if (focus and active()) {
         // Keep redrawing while the text-field has focus.
         request_redraw();
 

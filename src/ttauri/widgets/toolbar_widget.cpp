@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "toolbar_widget.hpp"
+#include "toolbar_tab_button_widget.hpp"
 #include "../scoped_buffer.hpp"
 #include "../geometry/translate.hpp"
 
@@ -177,7 +178,7 @@ widget &toolbar_widget::add_widget(horizontal_alignment alignment, std::unique_p
 [[nodiscard]] color toolbar_widget::focus_color() const noexcept
 {
     if (enabled) {
-        if (window.active) {
+        if (active()) {
             return theme().color(theme_color::accent);
         } else if (hover) {
             return theme().color(theme_color::border, semantic_layer + 1);
