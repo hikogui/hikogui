@@ -3,7 +3,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "tab_widget.hpp"
-#include "../GUI/gui_window.hpp"
 #include "../scoped_buffer.hpp"
 
 namespace tt::inline v1 {
@@ -58,7 +57,7 @@ widget_constraints const &tab_widget::set_constraints() noexcept
 
         if (child_is_visible) {
             if (compare_store(_constraints, child_contraints)) {
-                window.request_resize = true;
+                request_resize();
             }
         }
     }

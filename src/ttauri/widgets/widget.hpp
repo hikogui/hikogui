@@ -165,9 +165,8 @@ public:
      * Typically the implementation of this function starts with recursively calling set_constraints()
      * on its children.
      *
-     *
      * If the container, due to a change in constraints, wants the window to resize to the minimum size
-     * it should set `window::request_resize` to `true`.
+     * it should call `request_resize()`.
      *
      * @post This function will change what is returned by `widget::minimum_size()`, `widget::preferred_size()`
      *       and `widget::maximum_size()`.
@@ -219,6 +218,18 @@ public:
     /** Request the widget to be redrawn on the next frame.
      */
     virtual void request_redraw() const noexcept;
+
+    /** Request the window to be relayout on the next frame.
+     */
+    void request_relayout() const noexcept;
+
+    /** Request the window to be reconstrain on the next frame.
+     */
+    void request_reconstrain() const noexcept;
+
+    /** Request the window to be resize based on the preferred size of the widgets.
+     */
+    void request_resize() const noexcept;
 
     /** Handle command.
      * If a widget does not fully handle a command it should pass the

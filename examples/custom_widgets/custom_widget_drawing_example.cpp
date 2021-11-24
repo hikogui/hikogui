@@ -107,7 +107,7 @@ public:
             if (not(_image_backing = tt::paged_image{window.surface.get(), _image})) {
                 // Could not get an image, retry.
                 _image_was_modified = true;
-                window.request_reconstrain();
+                request_reconstrain();
             }
         }
 

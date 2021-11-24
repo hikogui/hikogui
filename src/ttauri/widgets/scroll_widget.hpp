@@ -264,7 +264,7 @@ public:
 
             _scroll_offset_x = std::clamp(new_scroll_offset_x, 0.0f, max_scroll_offset_x);
             _scroll_offset_y = std::clamp(new_scroll_offset_y, 0.0f, max_scroll_offset_y);
-            window.request_relayout();
+            request_relayout();
             return true;
         }
         return handled;

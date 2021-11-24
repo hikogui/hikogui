@@ -147,7 +147,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     //
     // Make sure the widget does have its window rectangle match the constraints, otherwise
     // the logic for layout and drawing becomes complicated.
-    if (request_resize.exchange(false)) {
+    if (_resize.exchange(false)) {
         // If a widget asked for a resize, change the size of the window to the preferred size of the widgets.
         ttlet current_size = screen_rectangle.size();
         ttlet new_size = widget->constraints().preferred;

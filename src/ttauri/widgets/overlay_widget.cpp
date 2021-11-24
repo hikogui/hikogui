@@ -32,7 +32,7 @@ overlay_widget::~overlay_widget()
 void overlay_widget::set_widget(std::unique_ptr<widget> new_widget) noexcept
 {
     _content = std::move(new_widget);
-    window.request_reconstrain();
+    request_reconstrain();
 }
 
 widget_constraints const &overlay_widget::set_constraints() noexcept

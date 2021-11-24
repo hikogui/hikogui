@@ -5,6 +5,7 @@
 #pragma once
 
 #include "pipeline_image_texture_map.hpp"
+#include "pipeline_image_vertex.hpp"
 #include "paged_image.hpp"
 #include "../required.hpp"
 #include "../rapid/sfloat_rgba16.hpp"

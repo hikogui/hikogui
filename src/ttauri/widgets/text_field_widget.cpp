@@ -126,7 +126,7 @@ bool text_field_widget::handle_event(command command) noexcept
 {
     tt_axiom(is_gui_thread());
     _text_was_modified = true;
-    window.request_relayout();
+    request_relayout();
 
     if (enabled) {
         switch (command) {
@@ -266,7 +266,7 @@ bool text_field_widget::handle_event(keyboard_event const &event) noexcept
     }
 
     _text_was_modified = true;
-    window.request_relayout();
+    request_relayout();
     return handled;
 }
 

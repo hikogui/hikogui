@@ -24,10 +24,10 @@ widget::widget(gui_window &_window, widget *parent) noexcept :
         request_redraw();
     });
     _relayout_callback = std::make_shared<std::function<void()>>([this] {
-        window.request_relayout();
+        request_relayout();
     });
     _reconstrain_callback = std::make_shared<std::function<void()>>([this] {
-        window.request_reconstrain();
+        request_reconstrain();
     });
 
     enabled.subscribe(_redraw_callback);
@@ -126,6 +126,21 @@ tt::font_book &widget::font_book() const noexcept
 void widget::request_redraw() const noexcept
 {
     window.request_redraw(layout().window_clipping_rectangle());
+}
+
+void widget::request_relayout() const noexcept
+{
+    window.request_relayout();
+}
+
+void widget::request_reconstrain() const noexcept
+{
+    window.request_reconstrain();
+}
+
+void widget::request_resize() const noexcept
+{
+    window.request_resize();
 }
 
 [[nodiscard]] bool widget::handle_event(std::vector<command> const &commands) noexcept

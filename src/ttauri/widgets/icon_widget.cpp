@@ -14,7 +14,7 @@ icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(wi
 {
     _icon_callback_ptr = icon.subscribe([this]() {
         _icon_has_modified = true;
-        this->window.request_reconstrain();
+        this->request_reconstrain();
     });
     icon.subscribe(_reconstrain_callback);
 }
@@ -37,7 +37,7 @@ widget_constraints const &icon_widget::set_constraints() noexcept
             if (not(_pixmap_backing = paged_image{window.surface.get(), *pixmap})) {
                 // Could not get an image, retry.
                 _icon_has_modified = true;
-                window.request_reconstrain();
+                request_reconstrain();
             }
 
         } else if (ttlet g1 = get_if<font_glyph_ids>(&*icon_)) {

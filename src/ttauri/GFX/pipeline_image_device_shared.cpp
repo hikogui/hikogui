@@ -156,16 +156,16 @@ void device_shared::prepare_staging_for_upload(paged_image const &image) noexcep
 {
     ttlet image_rectangle = aarectangle{point2{1.0f, 1.0f}, image.size()};
     ttlet border_rectangle = image_rectangle + 1;
-    ttlet upload_rectangle = aarectangle{extent2{
-        narrow_cast<float>(ceil(image.width, paged_image::page_size) + 2),
-        narrow_cast<float>(ceil(image.height, paged_image::page_size) + 2)}};
+    ttlet upload_width = ceil(image.width, paged_image::page_size) + 2;
+    ttlet upload_height = ceil(image.height, paged_image::page_size) + 2;
+    ttlet upload_rectangle = aarectangle{extent2{narrow_cast<float>(upload_width), narrow_cast<float>(upload_height)}};
 
     make_staging_border_transparent(border_rectangle);
     clear_staging_between_border_and_upload(border_rectangle, upload_rectangle);
 
     // Flush the given image, everything that may be uploaded.
     static_assert(std::is_same_v<decltype(staging_texture.pixel_map)::value_type, sfloat_rgba16>);
-    device.flushAllocation(staging_texture.allocation, 0, upload_rectangle.height() * staging_texture.pixel_map.stride() * 8);
+    device.flushAllocation(staging_texture.allocation, 0, upload_height * staging_texture.pixel_map.stride() * 8);
     staging_texture.transitionLayout(device, vk::Format::eR16G16B16A16Sfloat, vk::ImageLayout::eTransferSrcOptimal);
 }
 

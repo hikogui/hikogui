@@ -87,7 +87,7 @@ public:
         auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
         auto &ref = *tmp;
         _children.push_back(std::move(tmp));
-        window.request_reconstrain();
+        request_reconstrain();
         return ref;
     }
 
@@ -97,7 +97,7 @@ public:
     {
         tt_axiom(is_gui_thread());
         _children.clear();
-        window.request_reconstrain();
+        request_reconstrain();
     }
 
     /// @privatesection

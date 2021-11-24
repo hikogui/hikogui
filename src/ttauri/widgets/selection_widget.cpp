@@ -37,7 +37,7 @@ selection_widget::selection_widget(gui_window &window, widget *parent, weak_or_u
         _delegate_callback = d->subscribe(*this, [this] {
             this->window.gui.run([this] {
                 repopulate_options();
-                this->window.request_reconstrain();
+                this->request_reconstrain();
             });
         });
 
@@ -150,7 +150,7 @@ bool selection_widget::handle_event(mouse_event const &event) noexcept
 bool selection_widget::handle_event(command command) noexcept
 {
     tt_axiom(is_gui_thread());
-    window.request_relayout();
+    request_relayout();
 
     if (enabled and _has_options) {
         switch (command) {

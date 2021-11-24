@@ -77,7 +77,7 @@ public:
             delegate->add_tab(*this, static_cast<size_t>(key), size(_children));
         }
         _children.push_back(std::move(tmp));
-        window.request_reconstrain();
+        request_reconstrain();
         return ref;
     }
 
