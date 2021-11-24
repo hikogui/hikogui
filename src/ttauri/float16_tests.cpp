@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <limits>
+#include <algorithm>
 
 TEST(float16, half_to_float)
 {

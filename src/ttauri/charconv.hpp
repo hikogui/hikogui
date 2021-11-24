@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "required.hpp"
 #include <concepts>
 #include <charconv>
 
@@ -21,7 +22,7 @@ template<std::integral T>
     std::array<char, 21> buffer;
 
     ttlet first = buffer.data();
-    ttlet last = first + size(buffer);
+    ttlet last = first + buffer.size();
 
     ttlet[new_last, ec] = std::to_chars(first, last, value);
     tt_axiom(ec == std::errc{});
@@ -43,7 +44,7 @@ template<std::floating_point T>
     std::array<char, 128> buffer;
 
     ttlet first = buffer.data();
-    ttlet last = first + size(buffer);
+    ttlet last = first + buffer.size();
 
     ttlet[new_last, ec] = std::to_chars(first, last, value, std::chars_format::general);
     tt_axiom(ec == std::errc{});

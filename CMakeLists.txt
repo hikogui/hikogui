@@ -286,6 +286,12 @@ elseif (MSVC)
     # C4648: standard attribute 'no_unique_address' is ignored
     target_compile_options(ttauri PUBLIC -wd4648)
 
+    # C4744: 'x' has different type in 'foo.cpp' and 'bar.cpp':
+    #        'struct (8 bytes)' and '__declspec(align(8)) struct (8 bytes)' [foobar.vcxproj]
+    # Bug in linker where atomic variables defined in a header file and used in two .cpp files be
+    # interpreted as different types. Microsoft knows about the bug for many years.
+    target_link_options(ttauri PUBLIC "-ignore:4744")
+
     if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
         # Enable Security Development Lifecycle checks.
         # This includes run-time checks, don't include this in the Release type
