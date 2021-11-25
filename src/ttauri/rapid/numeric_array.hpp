@@ -123,7 +123,43 @@ struct numeric_array {
 
     container_type v;
 
-    constexpr numeric_array() noexcept = default;
+    constexpr numeric_array() noexcept : v()
+    {
+        if (not std::is_constant_evaluated()) {
+#if defined(TT_HAS_AVX)
+            if constexpr (is_i64x4 or is_u64x4 or is_i32x8 or is_u32x8 or is_i16x16 or is_u16x16 or is_i8x32 or is_u8x32) {
+                _mm256_storeu_si256(reinterpret_cast<__m256i *>(v.data()), _mm256_setzero_si256());
+                return;
+            } else if constexpr (is_f64x4) {
+                _mm256_storeu_pd(reinterpret_cast<__m256d *>(v.data()), _mm256_setzero_pd());
+                return;
+            } else if constexpr (is_f32x8) {
+                _mm256_storeu_ps(v.data(), _mm256_setzero_ps());
+                return;
+            }
+#endif
+#if defined(TT_HAS_SSE2)
+            if constexpr (is_i64x2 or is_u64x2 or is_i32x4 or is_u32x4 or is_i16x8 or is_u16x8 or is_i8x16 or is_u8x16) {
+                _mm_storeu_si128(reinterpret_cast<__m128i *>(v.data()), _mm_setzero_si128());
+                return;
+            } else if constexpr (is_f64x2) {
+                _mm_storeu_pd(reinterpret_cast<__m128d *>(v.data()), _mm_setzero_pd());
+                return;
+            }
+#endif
+#if defined(TT_HAS_SSE)
+            if constexpr (is_f32x4) {
+                _mm_storeu_ps(v.data(), _mm_setzero_ps());
+                return;
+            }
+#endif
+        }
+
+        for (auto i = 0_uz; i != N; ++i) {
+            v[i] = T{};
+        }
+    }
+
     constexpr numeric_array(numeric_array const &rhs) noexcept = default;
     constexpr numeric_array(numeric_array &&rhs) noexcept = default;
     constexpr numeric_array &operator=(numeric_array const &rhs) noexcept = default;

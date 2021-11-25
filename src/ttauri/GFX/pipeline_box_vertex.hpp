@@ -9,7 +9,7 @@
 #include "../rapid/sfloat_rgba16.hpp"
 #include "../rapid/sfloat_rgba32.hpp"
 #include "../rapid/sfloat_rgb32.hpp"
-#include "../rapid/uint_abgr8_pack.hpp"
+#include "../rapid/int_abgr8_pack.hpp"
 #include <vulkan/vulkan.hpp>
 #include <span>
 
@@ -36,6 +36,10 @@ struct alignas(16) vertex {
      */
     sfloat_rgba32 corner_coordinate;
 
+    /** Shape of each corner, negative values are cut corners, positive values are rounded corners.
+     */
+    sfloat_rgba32 corner_shapes;
+
     /** background color of the box.
      */
     sfloat_rgba16 fill_color;
@@ -44,9 +48,6 @@ struct alignas(16) vertex {
      */
     sfloat_rgba16 line_color;
 
-    /** Shape of each corner, negative values are cut corners, positive values are rounded corners.
-     */
-    uint_abgr8_pack corner_shapes;
 
     float line_width;
 
@@ -54,16 +55,16 @@ struct alignas(16) vertex {
         sfloat_rgba32 position,
         sfloat_rgba32 clipping_rectangle,
         sfloat_rgba32 corner_coordinate,
+        sfloat_rgba32 corner_shapes,
         sfloat_rgba16 fill_color,
         sfloat_rgba16 line_color,
-        uint_abgr8_pack corner_shapes,
         float line_width) noexcept :
         position(position),
         clipping_rectangle(clipping_rectangle),
         corner_coordinate(corner_coordinate),
+        corner_shapes(corner_shapes),
         fill_color(fill_color),
         line_color(line_color),
-        corner_shapes(corner_shapes),
         line_width(line_width)
     {
     }
@@ -79,9 +80,9 @@ struct alignas(16) vertex {
             {0, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(vertex, position)},
             {1, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(vertex, clipping_rectangle)},
             {2, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(vertex, corner_coordinate)},
-            {3, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(vertex, fill_color)},
-            {4, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(vertex, line_color)},
-            {5, 0, vk::Format::eA8B8G8R8UintPack32, offsetof(vertex, corner_shapes)},
+            {3, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(vertex, corner_shapes)},
+            {4, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(vertex, fill_color)},
+            {5, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(vertex, line_color)},
             {6, 0, vk::Format::eR32Sfloat, offsetof(vertex, line_width)},
         };
     }

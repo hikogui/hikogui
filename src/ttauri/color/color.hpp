@@ -60,7 +60,7 @@ public:
 
     [[nodiscard]] constexpr color(float r, float g, float b, float a = 1.0f) noexcept : color(f32x4{r, g, b, a}) {}
 
-    [[nodiscard]] constexpr color() noexcept : color(f32x4{0.0f, 0.0f, 0.0f, 1.0f}) {}
+    [[nodiscard]] constexpr color() noexcept : color(f32x4{}) {}
 
     [[nodiscard]] static constexpr color transparent() noexcept
     {

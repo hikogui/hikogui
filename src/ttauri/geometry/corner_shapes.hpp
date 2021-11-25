@@ -13,7 +13,7 @@ public:
     constexpr corner_shapes &operator=(corner_shapes const &) noexcept = default;
     constexpr corner_shapes &operator=(corner_shapes &&) noexcept = default;
 
-    [[nodiscard]] constexpr corner_shapes() noexcept : _v() {}
+    [[nodiscard]] constexpr corner_shapes() noexcept : corner_shapes(-std::numeric_limits<float>::infinity()) {}
     [[nodiscard]] constexpr corner_shapes(float radius) noexcept : _v(radius, radius, radius, radius) {}
     [[nodiscard]] constexpr corner_shapes(float lb, float rb, float lt, float rt) noexcept : _v(lb, rb, lt, rt) {}
     [[nodiscard]] constexpr explicit corner_shapes(f32x4 v) noexcept : _v(v) {}
@@ -56,22 +56,24 @@ public:
 
     [[nodiscard]] constexpr friend corner_shapes operator+(corner_shapes const &lhs, float rhs) noexcept
     {
-        auto r = corner_shapes{};
-
-        for (size_t i = 0; i != lhs._v.size(); ++i) {
-            if (lhs._v[i] >= 0) {
-                r._v[i] = std::max(0.0f, lhs._v[i] + rhs);
-            } else {
-                r._v[i] = std::min(0.0f, lhs._v[i] - rhs);
-            }
-        }
-
-        return r;
+        return corner_shapes{f32x4{lhs} + rhs};
+        //auto r = corner_shapes{};
+        //
+        //for (size_t i = 0; i != lhs._v.size(); ++i) {
+        //    if (lhs._v[i] >= 0) {
+        //        r._v[i] = std::max(0.0f, lhs._v[i] + rhs);
+        //    } else {
+        //        r._v[i] = std::min(0.0f, lhs._v[i] - rhs);
+        //    }
+        //}
+        //
+        //return r;
     }
 
     [[nodiscard]] constexpr friend corner_shapes operator-(corner_shapes const &lhs, float rhs) noexcept
     {
-        return lhs + -rhs;
+        return corner_shapes{f32x4{lhs} - rhs};
+        //return lhs + -rhs;
     }
 
 private:

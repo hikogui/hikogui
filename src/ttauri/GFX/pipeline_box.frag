@@ -47,27 +47,30 @@ float distance_from_box_outline()
     }
 }
 
-void main() {
+
+
+void main()
+{
     if (!contains(in_clipping_rectangle, gl_FragCoord.xy)) {
         discard;
     }
         
     float distance = distance_from_box_outline();
     
-    float fill_coverage = clamp(distance - in_border_end + 0.5, 0.0, 1.0);
-    if (fill_coverage == 1.0) {
-        out_color = in_fill_color;
-
-    } else {
-        float border_coverage = clamp(distance - in_border_start + 0.5, 0.0, 1.0);
-        if (border_coverage == 0.0) {
-            // Don't update depth beyond the border.
-            discard;
-        }
-
-        vec4 border_color = in_border_color * border_coverage;
-        vec4 fill_color = in_fill_color * fill_coverage;
-
-        out_color = fill_color + border_color * (1.0 - fill_coverage);
+    float border_coverage = clamp(distance - in_border_start + 0.5, 0.0, 1.0);
+    if (border_coverage == 0.0) {
+        // Don't update depth beyond the border.
+        discard;
     }
+
+    float fill_coverage = clamp(in_border_end - distance + 0.5, 0.0, 1.0);
+    
+    // Adjust transparency of the border color by how much it is overlapping with the fill.
+    vec4 border_color = in_border_color * fill_coverage;
+
+    // combine the border on top of the fill.
+    vec4 combined_color = border_color + in_fill_color * (1.0 - border_color.a);
+
+    // Adjust transparency of the combined color by how much it is overlapping with the background.
+    out_color = combined_color * border_coverage;
 }

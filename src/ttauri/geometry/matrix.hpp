@@ -11,6 +11,7 @@
 #include "quad.hpp"
 #include "circle.hpp"
 #include "line_segment.hpp"
+#include "corner_shapes.hpp"
 #include "axis_aligned_rectangle.hpp"
 #include "../color/color.hpp"
 
@@ -139,13 +140,27 @@ public:
     }
 
     /** Transform a float by the scaling factor of the matrix.
-     * 
+     *
      * The floating point number is transformed into a vector laying on the x-axis,
      * then transformed, then extracting the hypot from it.
      */
     [[nodiscard]] constexpr float operator*(float const &rhs) const noexcept
     {
-        return hypot<D>(_col0 * f32x4::broadcast(rhs));
+        // As if _col0 * rhs.xxxx() in operator*(f32x4 rhs)
+        auto abs_scale = hypot<D>(_col0 * f32x4::broadcast(rhs));
+
+        // We want to keep the sign of the original scaler, even if the matrix has rotation.
+        return std::copysign(abs_scale, rhs);
+    }
+
+    /** Transform a float by the scaling factor of the matrix.
+     *
+     * The floating point number is transformed into a vector laying on the x-axis,
+     * then transformed, then extracting the hypot from it.
+     */
+    [[nodiscard]] constexpr corner_shapes operator*(corner_shapes const &rhs) const noexcept
+    {
+        return {*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
     }
 
     template<int E>

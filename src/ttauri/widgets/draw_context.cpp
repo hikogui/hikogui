@@ -39,20 +39,8 @@ void draw_context::_draw_box(
     quad_color const &fill_color,
     quad_color const &border_color,
     float border_width,
-    tt::border_side border_side,
     tt::corner_shapes corner_radius) const noexcept
 {
-    // Expand or shrink the box and the corner radius.
-    ttlet border_radius = border_width * 0.5f;
-    if (border_side == border_side::inside) {
-        box = box - extent2{border_radius, border_radius};
-        corner_radius = corner_radius - border_radius;
-
-    } else if (border_side == border_side::outside) {
-        box = box + extent2{border_radius, border_radius};
-        corner_radius = corner_radius + border_radius;
-    }
-
     if (_box_vertices->full()) {
         // Too many boxes where added, just don't draw them anymore.
         ++global_counter<"draw_box::overflow">;
@@ -64,8 +52,7 @@ void draw_context::_draw_box(
 }
 
 [[nodiscard]] bool
-draw_context::_draw_image(aarectangle const &clipping_rectangle, quad const &box, paged_image &image)
-    const noexcept
+draw_context::_draw_image(aarectangle const &clipping_rectangle, quad const &box, paged_image &image) const noexcept
 {
     tt_axiom(_image_vertices != nullptr);
 
@@ -88,13 +75,12 @@ void draw_context::_draw_glyph(
     ttlet pipeline = narrow_cast<gfx_device_vulkan &>(device).SDFPipeline.get();
 
     if (_sdf_vertices->full()) {
-        _draw_box(clipping_rectangle, box, tt::color{1.0f, 0.0f, 1.0f}, tt::color{}, 0.0f, border_side::on, {});
+        _draw_box(clipping_rectangle, box, tt::color{1.0f, 0.0f, 1.0f}, tt::color{}, 0.0f, {});
         ++global_counter<"draw_glyph::overflow">;
         return;
     }
 
-    ttlet atlas_was_updated = pipeline->place_vertices(
-        *_sdf_vertices, clipping_rectangle, box, glyph, color);
+    ttlet atlas_was_updated = pipeline->place_vertices(*_sdf_vertices, clipping_rectangle, box, glyph, color);
 
     if (atlas_was_updated) {
         pipeline->prepare_atlas_for_rendering();
@@ -119,7 +105,7 @@ void draw_context::_draw_text(
             continue;
 
         } else if (_sdf_vertices->full()) {
-            _draw_box(clipping_rectangle, box, tt::color{1.0f, 0.0f, 1.0f}, tt::color{}, 0.0f, border_side::on, {});
+            _draw_box(clipping_rectangle, box, tt::color{1.0f, 0.0f, 1.0f}, tt::color{}, 0.0f, {});
             ++global_counter<"draw_glyph::overflow">;
             break;
         }

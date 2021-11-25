@@ -1,6 +1,7 @@
 
 target_sources(ttauri PRIVATE
     float16_sse4_1.hpp
+    int_abgr8_pack.hpp
     numeric_array.hpp
     swizzle_avx.hpp
     unorm_a2bgr10_pack.hpp
