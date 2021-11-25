@@ -100,18 +100,34 @@ public:
     }
 
     template<size_t I>
-    [[nodiscard]] constexpr friend point3 get(quad const &rhs) noexcept
+    [[nodiscard]] constexpr friend point3 const &get(quad const &rhs) noexcept
     {
         static_assert(I < 4, "Index out of range.");
 
         if constexpr (I == 0) {
-            return p0;
+            return rhs.p0;
         } else if constexpr (I == 1) {
-            return p1;
+            return rhs.p1;
         } else if constexpr (I == 2) {
-            return p2;
+            return rhs.p2;
         } else {
-            return p3;
+            return rhs.p3;
+        }
+    }
+
+    template<size_t I>
+    [[nodiscard]] constexpr friend point3 &get(quad &rhs) noexcept
+    {
+        static_assert(I < 4, "Index out of range.");
+
+        if constexpr (I == 0) {
+            return rhs.p0;
+        } else if constexpr (I == 1) {
+            return rhs.p1;
+        } else if constexpr (I == 2) {
+            return rhs.p2;
+        } else {
+            return rhs.p3;
         }
     }
 
@@ -199,6 +215,11 @@ public:
         return expanded_quad;
     }
 
+    [[nodiscard]] friend constexpr quad operator+(quad const &lhs, float rhs) noexcept
+    {
+        return lhs + extent2{rhs, rhs};
+    }
+
     /** Add a border around the quad.
      *
      * Move each corner of the quad by the given size outward in the direction of the edges.
@@ -211,6 +232,11 @@ public:
     {
         ttlet[expanded_quad, new_lengths] = shrink_and_edge_hypots(lhs, rhs);
         return expanded_quad;
+    }
+
+    [[nodiscard]] friend constexpr quad operator-(quad const &lhs, float rhs) noexcept
+    {
+        return lhs - extent2{rhs, rhs};
     }
 
     [[nodiscard]] friend constexpr aarectangle bounding_rectangle(quad const &rhs) noexcept
