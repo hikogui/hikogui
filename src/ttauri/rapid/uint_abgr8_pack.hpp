@@ -19,18 +19,18 @@ public:
     constexpr uint_abgr8_pack &operator=(uint_abgr8_pack const &rhs) noexcept = default;
     constexpr uint_abgr8_pack &operator=(uint_abgr8_pack &&rhs) noexcept = default;
 
-    constexpr uint_abgr8_pack(uint32_t const &rhs) noexcept : v(rhs) {}
+    constexpr explicit uint_abgr8_pack(uint32_t const &rhs) noexcept : v(rhs) {}
     constexpr uint_abgr8_pack &operator=(uint32_t const &rhs) noexcept
     {
         v = rhs;
         return *this;
     }
-    constexpr operator uint32_t() noexcept
+    constexpr explicit operator uint32_t() noexcept
     {
         return v;
     }
 
-    constexpr uint_abgr8_pack(f32x4 const &rhs) noexcept : v(std::bit_cast<decltype(v)>(u8x4{rhs})) {}
+    constexpr explicit uint_abgr8_pack(f32x4 const &rhs) noexcept : v(std::bit_cast<decltype(v)>(u8x4{rhs})) {}
 
     constexpr uint_abgr8_pack &operator=(f32x4 const &rhs) noexcept
     {
@@ -38,7 +38,7 @@ public:
         return *this;
     }
 
-    constexpr uint_abgr8_pack(corner_shapes const &rhs) noexcept : uint_abgr8_pack(static_cast<f32x4>(rhs)) {}
+    constexpr explicit uint_abgr8_pack(corner_shapes const &rhs) noexcept : uint_abgr8_pack(static_cast<f32x4>(rhs)) {}
 
     [[nodiscard]] constexpr friend bool operator==(uint_abgr8_pack const &lhs, uint_abgr8_pack const &rhs) noexcept = default;
 };

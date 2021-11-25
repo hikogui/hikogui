@@ -58,12 +58,12 @@ void device_shared::place_vertices(
     ttlet t3 = sfloat_rgba32{lengths.zw00()};
 
     ttlet clipping_rectangle_ = sfloat_rgba32{clipping_rectangle};
-    ttlet corner_shapes_ = uint_abgr8_pack{corner_shapes};
+    ttlet corner_shapes_ = sfloat_rgba32{corner_shapes};
 
-    vertices.emplace_back(box_.p0, clipping_rectangle_, t0, fill_colors.p0, line_colors.p0, corner_shapes_, line_width);
-    vertices.emplace_back(box_.p1, clipping_rectangle_, t1, fill_colors.p1, line_colors.p1, corner_shapes_, line_width);
-    vertices.emplace_back(box_.p2, clipping_rectangle_, t2, fill_colors.p2, line_colors.p2, corner_shapes_, line_width);
-    vertices.emplace_back(box_.p3, clipping_rectangle_, t3, fill_colors.p3, line_colors.p3, corner_shapes_, line_width);
+    vertices.emplace_back(box_.p0, clipping_rectangle_, t0, corner_shapes_, fill_colors.p0, line_colors.p0, line_width);
+    vertices.emplace_back(box_.p1, clipping_rectangle_, t1, corner_shapes_, fill_colors.p1, line_colors.p1, line_width);
+    vertices.emplace_back(box_.p2, clipping_rectangle_, t2, corner_shapes_, fill_colors.p2, line_colors.p2, line_width);
+    vertices.emplace_back(box_.p3, clipping_rectangle_, t3, corner_shapes_, fill_colors.p3, line_colors.p3, line_width);
 }
 
 void device_shared::buildShaders()

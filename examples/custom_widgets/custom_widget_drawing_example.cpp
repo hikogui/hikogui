@@ -18,7 +18,7 @@
 
 enum class drawing_type {
     box,
-    rounded,
+    lines,
     circle,
     glyph,
     image,
@@ -26,7 +26,7 @@ enum class drawing_type {
 
 auto drawing_list = std::vector<std::pair<drawing_type, tt::label>>{
     {drawing_type::box, tt::l10n("Box")},
-    {drawing_type::rounded, tt::l10n("Rounded box")},
+    {drawing_type::lines, tt::l10n("Lines")},
     {drawing_type::circle, tt::l10n("Circle")},
     {drawing_type::glyph, tt::l10n("Glyph")},
     {drawing_type::image, tt::l10n("Image")},
@@ -79,10 +79,12 @@ public:
     tt::observable<bool> clip = false;
     tt::observable<tt::border_side> border_side = tt::border_side::on;
     tt::observable<float> border_width = 0.0f;
+    tt::observable<bool> rounded = false;
 
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
-    drawing_widget(tt::gui_window &window, tt::widget *parent) noexcept : widget(window, parent), _image(tt::URL("resource:mars3.png"))
+    drawing_widget(tt::gui_window &window, tt::widget *parent) noexcept :
+        widget(window, parent), _image(tt::URL("resource:mars3.png"))
     {
         this->drawing.subscribe(_redraw_callback);
         this->shape.subscribe(_redraw_callback);
@@ -91,6 +93,7 @@ public:
         this->clip.subscribe(_redraw_callback);
         this->border_side.subscribe(_redraw_callback);
         this->border_width.subscribe(_redraw_callback);
+        this->rounded.subscribe(_redraw_callback);
 
         this->_glyph = font_book().find_glyph(tt::elusive_icon::Briefcase);
     }
@@ -163,8 +166,9 @@ public:
     {
         if (border_width == 0.0f) {
             // Due to inaccuracies in the shaders, a thin border may present itself inside
-            // the anti-aliased edges; so make it transparent.
-            return tt::quad_color{};
+            // the anti-aliased edges; so make it the same color as the fill. This is the
+            // same thing that happens when you call draw_box with only a fill color.
+            return fill_color();
         } else {
             switch (*gradient) {
             case gradient_type::solid: return tt::quad_color(redish);
@@ -209,6 +213,20 @@ public:
         return tt::rotate3(angle, tt::vector3{0.0f, 0.0f, 1.0f});
     }
 
+    [[nodiscard]] tt::corner_shapes corners() const noexcept
+    {
+        if (*rounded) {
+            return tt::corner_shapes{20.0f, 10.0f, 5.0f, 0.0f};
+        } else {
+            return {};
+        }
+    }
+
+    [[nodiscard]] tt::line_end_cap end_cap() const noexcept
+    {
+        return *rounded ? tt::line_end_cap::round : tt::line_end_cap::flat;
+    }
+
     // The `draw()` function is called when all or part of the window requires redrawing.
     // This may happen when showing the window for the first time, when the operating-system
     // requests a (partial) redraw, or when a widget requests a redraw of itself.
@@ -224,8 +242,6 @@ public:
 
         auto const circle = tt::circle{tt::point3{0.0f, 0.0f, 0.0f}, 50.0f};
 
-        auto const corners = tt::corner_shapes{20.0f, 10.0f, 5.0f, 0.0f};
-
         // We only need to draw the widget when it is visible and when the visible area of
         // the widget overlaps with the scissor-rectangle (partial redraw) of the drawing context.
         if (visible and overlaps(context, layout())) {
@@ -238,20 +254,21 @@ public:
                     fill_color(),
                     line_color(),
                     *border_width,
-                    *border_side);
+                    *border_side,
+                    corners());
                 break;
 
-            case drawing_type::rounded:
-                context.draw_box(
-                    _layout,
-                    clipping_rectangle,
-                    transform * shape_quad(),
-                    fill_color(),
-                    line_color(),
-                    *border_width,
-                    *border_side,
-                    corners);
-                break;
+            case drawing_type::lines: {
+                // There is a concave corner at left-bottom, so I want this to be the second point the lines pass through.
+                auto const quad = shape_quad();
+                auto const line1 = tt::line_segment{get<0>(quad), get<1>(quad)};
+                auto const line2 = tt::line_segment{get<0>(quad), get<2>(quad)};
+                auto const line3 = tt::line_segment{get<3>(quad), get<2>(quad)};
+                auto const width = std::max(*border_width, 0.5f);
+                context.draw_line(_layout, clipping_rectangle, transform * line1, width, fill_color(), end_cap(), end_cap());
+                context.draw_line(_layout, clipping_rectangle, transform * line2, width, fill_color(), end_cap(), end_cap());
+                context.draw_line(_layout, clipping_rectangle, transform * line3, width, fill_color(), end_cap(), end_cap());
+            } break;
 
             case drawing_type::circle:
                 context.draw_circle(
@@ -293,6 +310,7 @@ int tt_main(int argc, char *argv[])
     tt::observable<gradient_type> gradient = gradient_type::solid;
     tt::observable<tt::border_side> border_side = tt::border_side::on;
     tt::observable<float> border_width = 0.0f;
+    tt::observable<bool> rounded = false;
 
     // Startup renderdoc for debugging
     auto render_doc = tt::RenderDoc();
@@ -308,6 +326,7 @@ int tt_main(int argc, char *argv[])
     custom_widget.gradient = gradient;
     custom_widget.border_side = border_side;
     custom_widget.border_width = border_width;
+    custom_widget.rounded = rounded;
 
     auto &grid = window.content().make_widget<tt::grid_widget>("A2");
 
@@ -334,6 +353,9 @@ int tt_main(int argc, char *argv[])
 
     grid.make_widget<tt::label_widget>("A7", tt::l10n("Clip:"));
     grid.make_widget<tt::toggle_widget>("B7", clip);
+
+    grid.make_widget<tt::label_widget>("A8", tt::l10n("Rounded:"));
+    grid.make_widget<tt::toggle_widget>("B8", rounded);
 
     return gui->loop();
 }

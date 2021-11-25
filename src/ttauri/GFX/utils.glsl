@@ -130,3 +130,53 @@ vec3 tluv_to_rgb(vec3 sub_R, vec3 sub_G, vec3 sub_B)
     vec3 sub_B_ = vec3(sub_B.x * sub_B.x, sub_B.y, sub_B.z);
     return tYUV_to_rgb(sub_R_, sub_G_, sub_B_);
 }
+
+/** Convert RGB to luminance.
+ */
+float rgb_to_y(vec3 color)
+{
+    return 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
+}
+
+/** Convert coverage to alpha matching perceptional uniform lightness.
+ *
+ * @param coverage The relative amount (0.0 - 1.0) of top color being composited on the bottom color.
+ * @param top_luminance The luminance of the top color.
+ * @param bottom_luminance The luminance of the bottom color.
+ * @return An alpha value for mixing colors with perceptional uniform lightness.
+ */
+float coverage_to_alpha(float coverage, float top_luminance, float bottom_luminance)
+{
+    float delta_luminance = bottom_luminance - top_luminance;
+    if (delta_luminance == 0.0) {
+        return coverage;
+    }
+
+    float top_lightness = sqrt(top_luminance);
+    float bottom_lightness = sqrt(bottom_luminance);
+    float coverage_lightness = mix(top_lightness, bottom_lightness, coverage);
+    float coverage_luminance = coverage_lightness * coverage_lightness;
+    return (coverage_luminance - top_luminance) / delta_luminance;
+}
+
+/** Convert coverage to alpha matching perceptional uniform lightness.
+ *
+ * This function guesses based on only a single luminance value:
+ *  * lightness > 0.6: luminance on black background
+ *  * lightness < 0.4: luminance on white background
+ *  * otherwise equal luminances.
+ *
+ * @param coverage The relative amount (0.0 - 1.0) of top color being composited on the bottom color.
+ * @param luminance The luminance of the top color.
+ * @return An alpha value for mixing colors with perceptional uniform lightness.
+ */
+float coverage_to_alpha(float coverage, float luminance)
+{
+    if (luminance > 0.36) {
+        return coverage_to_alpha(coverage, luminance, 0.0);
+    } else if (luminance < 0.16) {
+        return coverage_to_alpha(coverage, luminance, 1.0);
+    } else {
+        return coverage;
+    }
+}
