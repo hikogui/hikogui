@@ -41,10 +41,10 @@ public:
      * @param text The text as a vector of attributed graphemes.
      *             Use U+2029 as paragraph separator, and if needed U+2028 as line separator.
      * @param alignment The alignment to use for the text.
-     * @param paragraph_spacing A multiplier to scale the distance between lines compared to the
-     *                          line spacing after @a line_spacing argument has been applied.
      * @param line_spacing A multiplier to scale the distance between lines compared to the
      *                     natural line spacing of the font: ascender + descender + line-gap.
+     * @param paragraph_spacing A multiplier to scale the distance between lines compared to the
+     *                          line spacing after @a line_spacing argument has been applied.
      */
     [[nodiscard]] text_shaper(
         std::vector<attributed_grapheme> const &text,
