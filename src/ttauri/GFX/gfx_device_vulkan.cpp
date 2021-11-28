@@ -477,6 +477,12 @@ void gfx_device_vulkan::initialize_device()
 {
     ttlet device_queue_create_infos = make_device_queue_create_infos();
 
+    ttlet available_device_features = physicalIntrinsic.getFeatures();
+
+    // Enable optional features.
+    device_features = narrow_cast<gfx_system_vulkan &>(system).requiredFeatures;
+    device_features.setDualSrcBlend(available_device_features.dualSrcBlend);
+
     intrinsic = physicalIntrinsic.createDevice(
         {vk::DeviceCreateFlags(),
          narrow_cast<uint32_t>(device_queue_create_infos.size()),
@@ -485,7 +491,7 @@ void gfx_device_vulkan::initialize_device()
          nullptr,
          narrow_cast<uint32_t>(requiredExtensions.size()),
          requiredExtensions.data(),
-         &(narrow_cast<gfx_system_vulkan &>(system).requiredFeatures)});
+         &device_features});
 
     VmaAllocatorCreateInfo allocatorCreateInfo = {};
     allocatorCreateInfo.physicalDevice = physicalIntrinsic;
