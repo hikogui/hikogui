@@ -50,13 +50,18 @@ std::vector<vk::PipelineShaderStageCreateInfo> pipeline_SDF::createShaderStages(
  */
 std::vector<vk::PipelineColorBlendAttachmentState> pipeline_SDF::getPipelineColorBlendAttachmentStates() const
 {
+    bool has_dual_source_blend = false;
+    if (auto device = narrow_cast<gfx_device_vulkan *>(surface.device())) {
+        has_dual_source_blend = device->device_features.dualSrcBlend;
+    }
+
     return {
         {VK_TRUE, // blendEnable
          vk::BlendFactor::eOne, // srcColorBlendFactor
-         vk::BlendFactor::eOneMinusSrcAlpha, // dstColorBlendFactor
+         has_dual_source_blend ? vk::BlendFactor::eOneMinusSrc1Color : vk::BlendFactor::eOneMinusSrcAlpha, // dstColorBlendFactor
          vk::BlendOp::eAdd, // colorBlendOp
          vk::BlendFactor::eOne, // srcAlphaBlendFactor
-         vk::BlendFactor::eZero, // dstAlphaBlendFactor
+         has_dual_source_blend ? vk::BlendFactor::eOneMinusSrc1Alpha : vk::BlendFactor::eOneMinusSrcAlpha, // dstAlphaBlendFactor
          vk::BlendOp::eAdd, // aphaBlendOp
          vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB |
              vk::ColorComponentFlagBits::eA}};

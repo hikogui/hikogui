@@ -55,10 +55,10 @@ public:
     vk::ImageView depthImageView;
 
     static const vk::Format colorImageFormat = vk::Format::eR16G16B16A16Sfloat;
-    std::array<VmaAllocation, 2> colorImageAllocations;
-    std::array<vk::Image, 2> colorImages;
-    std::array<vk::ImageView, 2> colorImageViews;
-    std::array<vk::DescriptorImageInfo, 2> colorDescriptorImageInfos;
+    std::array<VmaAllocation, 1> colorImageAllocations;
+    std::array<vk::Image, 1> colorImages;
+    std::array<vk::ImageView, 1> colorImageViews;
+    std::array<vk::DescriptorImageInfo, 1> colorDescriptorImageInfos;
 
     vk::RenderPass renderPass;
 

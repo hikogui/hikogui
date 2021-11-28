@@ -20,9 +20,22 @@ layout(location = 3) in vec4 in_color_sqrt;
 
 layout(origin_upper_left) in vec4 gl_FragCoord;
 layout(location = 0) out vec4 out_color;
-layout(location = 1) out vec4 out_blend_factor;;
+layout(location = 1) out vec4 out_blend_factor;
 
 #include "utils.glsl"
+
+/** Get the horizontal and vertical stride in a texture map from one fragment to the next.
+ *
+ * @return The horizontal texture stride in (x,y) and the vertical texture stride in (z,w).
+ */
+vec4 get_texture_stride()
+{
+    // The amount of distance and direction covered in 2D inside the texture when
+    // stepping one fragment to the right.
+    vec2 horizontal_texture_stride = dFdxCoarse(in_texture_coord.xy);
+    vec2 vertical_texture_stride = vec2(-horizontal_texture_stride.y, horizontal_texture_stride.x);
+    return vec4(horizontal_texture_stride, vertical_texture_stride);
+}
 
 /** Get the red and blue subpixel offsets.
  * @return The red subpixel offset in (x,y), the blue subpixel offset in (z,w)
@@ -54,41 +67,74 @@ vec4 get_red_blue_subpixel_offset(vec4 texture_stride) {
     }
 }
 
-/** Get the red and blue subpixel coordinates.
- * @return The red subpixel coordinate in (x,y), the blue subpixel coordinate in (z,w)
+/** Get the distance from the sub-pixels to the nearest edge.
+ *
+ * @return Distances to the edge from the center of the red, green and blue sub-pixels.
  */
-vec4 get_red_blue_subpixel_coord(vec4 texture_stride) {
-    vec4 rb_offset = get_red_blue_subpixel_offset(texture_stride);
-    return in_texture_coord.xyxy + rb_offset;
-}
-
-/** Get the green subpixel radius to nearest edge.
- * @return The green subpixel radius
- */
-float get_green_subpixel_radius(float distance_multiplier) {
-    return texture(sampler2D(in_textures[int(in_texture_coord.z)], in_sampler), in_texture_coord.xy).r * distance_multiplier;
-}
-
-/** Get the red and blue subpixel radius to nearest edge.
- * @return The red subpixel radius in x, the blue subpixel radius in y
- */
-vec2 get_red_blue_subpixel_radius(float distance_multiplier, vec4 texture_stride) {
-    vec4 rb_coords = get_red_blue_subpixel_coord(texture_stride);
-    return vec2(
-        texture(sampler2D(in_textures[int(in_texture_coord.z)], in_sampler), rb_coords.xy).r * distance_multiplier,
-        texture(sampler2D(in_textures[int(in_texture_coord.z)], in_sampler), rb_coords.zw).r * distance_multiplier);
-}
-
-/** Get the horizontal and vertical stride in a texture map from one fragment to the next.
- * @return The horizontal texture stride in (x,y) and the vertical texture stride in (z,w).
- */
-vec4 get_texture_stride()
+vec3 get_subpixel_to_edge_distances()
 {
-    // The amount of distance and direction covered in 2D inside the texture when
-    // stepping one fragment to the right.
-    vec2 horizontal_texture_stride = dFdxCoarse(in_texture_coord.xy);
-    vec2 vertical_texture_stride = vec2(-horizontal_texture_stride.y, horizontal_texture_stride.x);
-    return vec4(horizontal_texture_stride, vertical_texture_stride);
+    float green_distance = texture(sampler2D(in_textures[int(in_texture_coord.z)], in_sampler), in_texture_coord.xy).r;
+
+    vec3 distances = vec3(green_distance, green_distance, green_distance);
+    vec4 texture_stride = get_texture_stride();
+    if (pushConstants.subpixel_orientation != 0) {
+        vec4 rb_coords = in_texture_coord.xyxy + get_red_blue_subpixel_offset(texture_stride);
+
+        distances.r = texture(sampler2D(in_textures[int(in_texture_coord.z)], in_sampler), rb_coords.xy).r;
+        distances.b = texture(sampler2D(in_textures[int(in_texture_coord.z)], in_sampler), rb_coords.zw).r;
+    }
+
+    float pixel_distance = length(texture_stride.xy);
+    float distance_multiplier = sdf_max_distance / (pixel_distance * atlas_image_width);
+    return distances * distance_multiplier;
+}
+
+/** Convert coverage to a perceptional uniform alpha.
+ *
+ * This function takes into account the lightness of the full pixel, then
+ * determines based on this if the background is either black or white, or
+ * if linear conversion of coverage to alpha is needed.
+ *
+ * On black and white background we measure the target lightness of each sub-pixel
+ * then convert to target luminosity and eventually the alpha value.
+ *
+ * The alpha-component of the return value is calculated based on the full pixel
+ * lightness and from the green sub-pixel coverage.
+ *
+ * @param coverage The amount of coverage on the red, green and blue sub-pixels.
+ * @return The alpha value for the red, blue, green, alpha color components.
+ */
+vec4 alpha_from_coverage(vec4 coverage)
+{
+    if (in_color_sqrt.a > 0.6) {
+        // The full formula to anti-alias perceptional uniform light text on a black background:
+        //     F = in_color_sqrt
+        //     c = coverage
+        //     alpha = (F * c)^2 / F^2
+        //
+        // Simplified, removing the division:
+        //     alpha = c^2
+
+        return coverage * coverage;
+
+    } else if (in_color_sqrt.a < 0.4) {
+        // The full formula to anti-alias perceptional uniform dark text on a white background:
+        //     F = in_color_sqrt
+        //     c = coverage
+        //     alpha = (((1 - c) + (F * c))^2 - 1) / (F^2 - 1)
+        //
+        // We can use the following formula to approximate, which also removes the division:
+        //     alpha = c(1 + K - Kc)
+        //     K = 0.7 * F^2 - 1.7 * F + 1
+
+        vec4 K = 0.7 * (in_color_sqrt * in_color_sqrt) - 1.7 * in_color_sqrt + 1.0;
+        return coverage * (1.0 + K - K * coverage);
+
+    } else {
+        // The brightness of the foreground and background are similar.
+        // Use the coverage value directly.
+        return coverage;
+    }
 }
 
 void main()
@@ -97,36 +143,13 @@ void main()
         discard;
     }
 
-    // The amount of distance and direction covered in 2D inside the texture when
-    // stepping one fragment to the right.
-    vec4 texture_stride = get_texture_stride();
+    vec3 distances = get_subpixel_to_edge_distances();
+    vec3 coverage = clamp(distances + 0.5, 0.0, 1.0);
 
-    float pixel_distance = length(texture_stride.xy);
-    float distance_multiplier = sdf_max_distance / (pixel_distance * atlas_image_width);
+    vec4 alpha = alpha_from_coverage(coverage.rgbg);
 
-    float g_radius = get_green_subpixel_radius(distance_multiplier);
-
-    if (g_radius < -0.5) {
-        // Fully outside the fragment, early exit.
-        discard;
-
-    } else {
-        if (pushConstants.subpixel_orientation == 0 || (in_color_sqrt.a > 0.4 && in_color_sqrt.a < 0.6)) {
-            // Normal anti-aliasing.
-            float coverage = clamp(g_radius + 0.5, 0.0, 1.0);
-            out_color = in_color_rgb * coverage;
-            out_blend_factor = vec4(coverage);
-
-        } else {
-            // Subpixel anti-aliasing
-            vec2 rb_radius = get_red_blue_subpixel_radius(distance_multiplier, texture_stride);
-            vec3 rgb_radius = vec3(rb_radius.x, g_radius, rb_radius.y);
-            vec3 rgb_coverage = clamp(rgb_radius + 0.5, 0.0, 1.0);
-
-            // XXX use green for alpha now.
-            out_color = in_color_rgb * rgb_coverage.g;
-            out_blend_factor = vec(rgb_coverage.rgb, rgb_coverage.g)
-        }
-    }
+    // Properly set both the out_color.a and the out_blend_factor, this makes this
+    // shader compatible with or without the dualSrcBlend feature.
+    out_color = vec4(in_color * alpha);
+    out_blend_factor = in_color.a * alpha;
 }
-

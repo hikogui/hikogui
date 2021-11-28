@@ -24,6 +24,10 @@ public:
 
     std::vector<gfx_queue_vulkan> _queues;
 
+    /** The device features that have been turned on for this device.
+     */
+    vk::PhysicalDeviceFeatures device_features;
+
     /** Get a graphics queue.
      * Always returns the first queue that can handle graphics.
      */

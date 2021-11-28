@@ -43,12 +43,12 @@ void main() {
     out_clipping_rectangle = convert_clipping_rectangle_to_screen(in_clipping_rectangle);
     out_texture_coord = in_texture_coord;
 
-    // Pre-multiply the alpha due to subpixel compositing. 
+    // Pre-multiply the alpha. 
     vec4 color = vec4(in_color.rgb * in_color.a, in_color.a);
 
     float luminance = 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
 
-    out_color_rgb = color;
-    out_color_sqrt_rgb = sqrt(vec4(color.rgb, luminance));
+    out_color = color;
+    out_color_sqrt = sqrt(vec4(color.rgb, luminance));
 }
 
