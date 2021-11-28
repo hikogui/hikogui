@@ -147,6 +147,7 @@ TEST(unicode_bidi, bidi_test)
             test_parameters.enable_mirrored_brackets = false;
             test_parameters.enable_line_separator = false;
             test_parameters.force_paragraph_direction = paragraph_direction;
+            test_parameters.move_lf_and_ps_to_end_of_line = false;
 
             auto input = test.get_input();
             auto first = begin(input);
@@ -276,6 +277,7 @@ TEST(unicode_bidi, bidi_character_test)
         test_parameters.enable_mirrored_brackets = true;
         test_parameters.enable_line_separator = true;
         test_parameters.force_paragraph_direction = test.paragraph_direction;
+        test_parameters.move_lf_and_ps_to_end_of_line = false;
 
         auto input = test.get_input();
         auto first = begin(input);
@@ -290,6 +292,7 @@ TEST(unicode_bidi, bidi_character_test)
             [](auto &x, ttlet &code_point) {
                 x.code_point = code_point;
             },
+            [](auto &x, auto bidi_class) {},
             test_parameters);
 
         // We are using the index from the iterator to find embedded levels

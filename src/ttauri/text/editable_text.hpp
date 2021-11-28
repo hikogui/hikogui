@@ -150,6 +150,14 @@ public:
         return _shaped_text.left_to_right_caret(_cursor_index, _insert_mode);
     }
 
+    /** Get carets at the cursor position.
+     */
+    aarectangle right_to_left_caret() const noexcept
+    {
+        tt_axiom(is_valid());
+        return _shaped_text.right_to_left_caret(_cursor_index, _insert_mode);
+    }
+
     /** Get a set of rectangles for which _text is selected.
      */
     std::vector<aarectangle> selection_rectangles() const noexcept

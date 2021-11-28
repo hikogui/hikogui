@@ -11,11 +11,12 @@ layout(push_constant) uniform push_constants {
 layout(location = 0) in vec3 in_position;
 layout(location = 1) in vec4 in_clipping_rectangle;
 layout(location = 2) in vec3 in_texture_coord;
-layout(location = 3) in vec4 in_color_rgb;
+layout(location = 3) in vec4 in_color;
 
 layout(location = 0) out flat vec4 out_clipping_rectangle;
 layout(location = 1) out vec3 out_texture_coord;
-layout(location = 2) out vec4 out_color_luv;
+layout(location = 2) out vec4 out_color;
+layout(location = 3) out vec4 out_color_sqrt;
 
 #include "utils.glsl"
 
@@ -42,6 +43,12 @@ void main() {
     out_clipping_rectangle = convert_clipping_rectangle_to_screen(in_clipping_rectangle);
     out_texture_coord = in_texture_coord;
 
-    // Do not pre-multiply the alpha due to subpixel compositing. 
-    out_color_luv = rgb_to_tluv(in_color_rgb);
+    // Pre-multiply the alpha. 
+    vec4 color = vec4(in_color.rgb * in_color.a, in_color.a);
+
+    float luminance = 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
+
+    out_color = color;
+    out_color_sqrt = sqrt(vec4(color.rgb, luminance));
 }
+

@@ -590,8 +590,6 @@ gfx_surface_state gfx_surface_vulkan::buildSwapchain(size_t new_count, extent2 n
     colorAllocationCreateInfo.usage = vulkan_device().lazyMemoryUsage;
     std::tie(colorImages[0], colorImageAllocations[0]) =
         vulkan_device().createImage(colorImageCreateInfo, colorAllocationCreateInfo);
-    std::tie(colorImages[1], colorImageAllocations[1]) =
-        vulkan_device().createImage(colorImageCreateInfo, colorAllocationCreateInfo);
 
     return gfx_surface_state::ready_to_render;
 }
@@ -642,7 +640,7 @@ void gfx_surface_vulkan::buildFramebuffers()
              vk::ComponentMapping(),
              {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}});
 
-        ttlet attachments = std::array{depthImageView, colorImageViews[0], colorImageViews[1], image_view};
+        ttlet attachments = std::array{depthImageView, colorImageViews[0], image_view};
 
         ttlet frame_buffer = vulkan_device().createFramebuffer({
             vk::FramebufferCreateFlags(),
@@ -677,11 +675,22 @@ void gfx_surface_vulkan::teardownFramebuffers()
     }
 }
 
+/** Build render passes.
+ *
+ * One pass, with 4 subpasses:
+ *  1. box shader: to color-attachment+depth 
+ *  2. image shader: to color-attachmen+depth
+ *  3. sdf shader: to color-attachmne+depth
+ *  4. tone-mapper: color-input-attachment to swapchain-attachment.
+ *
+ * Rendering is done on a float-16 RGBA color-attachment.
+ * In the last subpass the color-attachment is translated to the swap-chain attachment.
+ */
 void gfx_surface_vulkan::buildRenderPasses()
 {
     tt_axiom(gfx_system_mutex.recurse_lock_count());
 
-    ttlet attachmentDescriptions = std::array{
+    ttlet attachment_descriptions = std::array{
         vk::AttachmentDescription{
             // Depth attachment
             vk::AttachmentDescriptionFlags(),
@@ -695,19 +704,7 @@ void gfx_surface_vulkan::buildRenderPasses()
             vk::ImageLayout::eDepthStencilAttachmentOptimal // finalLayout
         },
         vk::AttachmentDescription{
-            // Color1 attachment
-            vk::AttachmentDescriptionFlags(),
-            colorImageFormat,
-            vk::SampleCountFlagBits::e1,
-            vk::AttachmentLoadOp::eClear,
-            vk::AttachmentStoreOp::eDontCare,
-            vk::AttachmentLoadOp::eDontCare, // stencilLoadOp
-            vk::AttachmentStoreOp::eDontCare, // stencilStoreOp
-            vk::ImageLayout::eUndefined, // initialLayout
-            vk::ImageLayout::eColorAttachmentOptimal // finalLayout
-        },
-        vk::AttachmentDescription{
-            // Color2 attachment
+            // Color attachment
             vk::AttachmentDescriptionFlags(),
             colorImageFormat,
             vk::SampleCountFlagBits::e1,
@@ -731,29 +728,21 @@ void gfx_surface_vulkan::buildRenderPasses()
             vk::ImageLayout::ePresentSrcKHR // finalLayout
         }};
 
-    ttlet depthAttachmentReference = vk::AttachmentReference{0, vk::ImageLayout::eDepthStencilAttachmentOptimal};
+    ttlet depth_attachment_reference = vk::AttachmentReference{0, vk::ImageLayout::eDepthStencilAttachmentOptimal};
+    ttlet color_attachment_references = std::array{vk::AttachmentReference{1, vk::ImageLayout::eColorAttachmentOptimal}};
+    ttlet color_input_attachment_references = std::array{vk::AttachmentReference{1, vk::ImageLayout::eShaderReadOnlyOptimal}};
+    ttlet swapchain_attachment_references = std::array{vk::AttachmentReference{2, vk::ImageLayout::eColorAttachmentOptimal}};
 
-    ttlet color1AttachmentReferences = std::array{vk::AttachmentReference{1, vk::ImageLayout::eColorAttachmentOptimal}};
-    ttlet color2AttachmentReferences = std::array{vk::AttachmentReference{2, vk::ImageLayout::eColorAttachmentOptimal}};
-
-    ttlet color1InputAttachmentReferences = std::array{vk::AttachmentReference{1, vk::ImageLayout::eShaderReadOnlyOptimal}};
-    ttlet color2InputAttachmentReferences = std::array{vk::AttachmentReference{2, vk::ImageLayout::eShaderReadOnlyOptimal}};
-    ttlet color12InputAttachmentReferences = std::array{
-        vk::AttachmentReference{1, vk::ImageLayout::eShaderReadOnlyOptimal},
-        vk::AttachmentReference{2, vk::ImageLayout::eShaderReadOnlyOptimal}};
-
-    ttlet swapchainAttachmentReferences = std::array{vk::AttachmentReference{3, vk::ImageLayout::eColorAttachmentOptimal}};
-
-    ttlet subpassDescriptions = std::array{
+    ttlet subpass_descriptions = std::array{
         vk::SubpassDescription{// Subpass 0 Box
                                vk::SubpassDescriptionFlags(),
                                vk::PipelineBindPoint::eGraphics,
                                0, // inputAttchmentReferencesCount
                                nullptr, // inputAttachmentReferences
-                               narrow_cast<uint32_t>(color1AttachmentReferences.size()),
-                               color1AttachmentReferences.data(),
+                               narrow_cast<uint32_t>(color_attachment_references.size()),
+                               color_attachment_references.data(),
                                nullptr, // resolveAttachments
-                               &depthAttachmentReference
+                               &depth_attachment_reference
 
         },
         vk::SubpassDescription{// Subpass 1 Image
@@ -761,34 +750,34 @@ void gfx_surface_vulkan::buildRenderPasses()
                                vk::PipelineBindPoint::eGraphics,
                                0, // inputAttchmentReferencesCount
                                nullptr, // inputAttachmentReferences
-                               narrow_cast<uint32_t>(color1AttachmentReferences.size()),
-                               color1AttachmentReferences.data(),
+                               narrow_cast<uint32_t>(color_attachment_references.size()),
+                               color_attachment_references.data(),
                                nullptr, // resolveAttachments
-                               &depthAttachmentReference
+                               &depth_attachment_reference
 
         },
         vk::SubpassDescription{// Subpass 2 SDF
                                vk::SubpassDescriptionFlags(),
                                vk::PipelineBindPoint::eGraphics,
-                               narrow_cast<uint32_t>(color1InputAttachmentReferences.size()),
-                               color1InputAttachmentReferences.data(),
-                               narrow_cast<uint32_t>(color2AttachmentReferences.size()),
-                               color2AttachmentReferences.data(),
+                               0,
+                               nullptr,
+                               narrow_cast<uint32_t>(color_attachment_references.size()),
+                               color_attachment_references.data(),
                                nullptr, // resolveAttachments
-                               &depthAttachmentReference
+                               &depth_attachment_reference
 
         },
         vk::SubpassDescription{// Subpass 3 tone-mapper
                                vk::SubpassDescriptionFlags(),
                                vk::PipelineBindPoint::eGraphics,
-                               narrow_cast<uint32_t>(color12InputAttachmentReferences.size()),
-                               color12InputAttachmentReferences.data(),
-                               narrow_cast<uint32_t>(swapchainAttachmentReferences.size()),
-                               swapchainAttachmentReferences.data(),
+                               narrow_cast<uint32_t>(color_input_attachment_references.size()),
+                               color_input_attachment_references.data(),
+                               narrow_cast<uint32_t>(swapchain_attachment_references.size()),
+                               swapchain_attachment_references.data(),
                                nullptr,
                                nullptr}};
 
-    ttlet subpassDependency = std::array{
+    ttlet subpass_dependency = std::array{
         vk::SubpassDependency{
             VK_SUBPASS_EXTERNAL,
             0,
@@ -811,9 +800,9 @@ void gfx_surface_vulkan::buildRenderPasses()
             1,
             2,
             vk::PipelineStageFlagBits::eColorAttachmentOutput,
-            vk::PipelineStageFlagBits::eFragmentShader,
+            vk::PipelineStageFlagBits::eColorAttachmentOutput,
             vk::AccessFlagBits::eColorAttachmentWrite,
-            vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eInputAttachmentRead,
+            vk::AccessFlagBits::eColorAttachmentRead,
             vk::DependencyFlagBits::eByRegion},
         // Subpass 2: Render SDF-texture mapped polygons to color+depth with fixed function alpha compositing
         vk::SubpassDependency{
@@ -834,17 +823,17 @@ void gfx_surface_vulkan::buildRenderPasses()
             vk::AccessFlagBits::eMemoryRead,
             vk::DependencyFlagBits::eByRegion}};
 
-    vk::RenderPassCreateInfo const renderPassCreateInfo = {
+    vk::RenderPassCreateInfo const render_pass_create_info = {
         vk::RenderPassCreateFlags(),
-        narrow_cast<uint32_t>(attachmentDescriptions.size()), // attachmentCount
-        attachmentDescriptions.data(), // attachments
-        narrow_cast<uint32_t>(subpassDescriptions.size()), // subpassCount
-        subpassDescriptions.data(), // subpasses
-        narrow_cast<uint32_t>(subpassDependency.size()), // dependencyCount
-        subpassDependency.data() // dependencies
+        narrow_cast<uint32_t>(attachment_descriptions.size()), // attachmentCount
+        attachment_descriptions.data(), // attachments
+        narrow_cast<uint32_t>(subpass_descriptions.size()), // subpassCount
+        subpass_descriptions.data(), // subpasses
+        narrow_cast<uint32_t>(subpass_dependency.size()), // dependencyCount
+        subpass_dependency.data() // dependencies
     };
 
-    renderPass = vulkan_device().createRenderPass(renderPassCreateInfo);
+    renderPass = vulkan_device().createRenderPass(render_pass_create_info);
     _render_area_granularity = vulkan_device().getRenderAreaGranularity(renderPass);
 }
 

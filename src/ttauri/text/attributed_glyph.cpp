@@ -16,6 +16,7 @@ attributed_glyph::attributed_glyph(
     logicalIndex(attr_grapheme.logicalIndex),
     graphemeCount(1),
     general_category(attr_grapheme.general_category),
+    bidi_class(attr_grapheme.bidi_class),
     style(attr_grapheme.style)
 {
     // Get the font_id that matches the requested style.

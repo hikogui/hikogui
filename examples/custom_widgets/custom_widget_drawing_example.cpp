@@ -313,7 +313,7 @@ int tt_main(int argc, char *argv[])
     tt::observable<bool> rounded = false;
 
     // Startup renderdoc for debugging
-    auto render_doc = tt::RenderDoc();
+    //auto render_doc = tt::RenderDoc();
 
     auto gui = tt::gui_system::make_unique();
     auto &window = gui->make_window(tt::l10n("Drawing Custom Widget"));

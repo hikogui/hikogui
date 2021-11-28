@@ -25,6 +25,10 @@ constexpr char32_t unicode_hangul_N_count = unicode_hangul_V_count * unicode_han
 constexpr char32_t unicode_hangul_S_count = unicode_hangul_L_count * unicode_hangul_N_count;
 } // namespace detail
 
+constexpr char32_t replacement_character = U'\ufffd';
+constexpr char32_t line_separator_character = U'\u2028';
+constexpr char32_t paragraph_separator_character = U'\u2029';
+
 [[nodiscard]] constexpr bool is_hangul_L_part(char32_t code_point) noexcept
 {
     return code_point >= detail::unicode_hangul_L_base &&
