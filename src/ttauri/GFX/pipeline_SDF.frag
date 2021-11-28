@@ -10,16 +10,17 @@ layout(push_constant) uniform push_constants {
 layout(constant_id = 0) const float sdf_max_distance = 1.0;
 layout(constant_id = 1) const float atlas_image_width = 1.0;
 
-layout(input_attachment_index = 0, set = 0, binding = 0) uniform subpassInput in_background_color;
-layout(set = 0, binding = 1) uniform sampler in_sampler;
-layout(set = 0, binding = 2) uniform texture2D in_textures[16];
+layout(set = 0, binding = 0) uniform sampler in_sampler;
+layout(set = 0, binding = 1) uniform texture2D in_textures[16];
 
 layout(location = 0) in flat vec4 in_clipping_rectangle;
 layout(location = 1) in vec3 in_texture_coord;
-layout(location = 2) in vec4 in_color_luv;
+layout(location = 2) in vec4 in_color;
+layout(location = 3) in vec4 in_color_sqrt;
 
 layout(origin_upper_left) in vec4 gl_FragCoord;
 layout(location = 0) out vec4 out_color;
+layout(location = 1) out vec4 out_blend_factor;;
 
 #include "utils.glsl"
 
@@ -109,34 +110,23 @@ void main()
         // Fully outside the fragment, early exit.
         discard;
 
-    } else if (in_color_luv.a == 1.0 && g_radius >= 0.5) {
-        // Fully inside the fragment.
-        vec3 composit_rgb = tluv_to_rgb(in_color_luv.xyz);
-        out_color = vec4(composit_rgb, 1.0);
-
     } else {
-        vec4 background_rgba = subpassLoad(in_background_color);
-        vec3 background_luv = rgb_to_tluv(background_rgba.rgb);
-
-        if (pushConstants.subpixel_orientation == 0) {
+        if (pushConstants.subpixel_orientation == 0 || (in_color_sqrt.a > 0.4 && in_color_sqrt.a < 0.6)) {
             // Normal anti-aliasing.
-            float coverage = clamp(g_radius + 0.5, 0.0, 1.0) * in_color_luv.a;
-            vec3 composit_luv = mix(background_luv, in_color_luv.xyz, coverage);
-            vec3 composit_rgb = tluv_to_rgb(composit_luv);
-            out_color = vec4(composit_rgb, 1.0);
+            float coverage = clamp(g_radius + 0.5, 0.0, 1.0);
+            out_color = in_color_rgb * coverage;
+            out_blend_factor = vec4(coverage);
 
         } else {
             // Subpixel anti-aliasing
             vec2 rb_radius = get_red_blue_subpixel_radius(distance_multiplier, texture_stride);
             vec3 rgb_radius = vec3(rb_radius.x, g_radius, rb_radius.y);
-            vec3 rgb_coverage = clamp(rgb_radius + 0.5, 0.0, 1.0) * in_color_luv.a;
+            vec3 rgb_coverage = clamp(rgb_radius + 0.5, 0.0, 1.0);
 
-            vec3 r_composit_luv = mix(background_luv, in_color_luv.xyz, rgb_coverage.r);
-            vec3 g_composit_luv = mix(background_luv, in_color_luv.xyz, rgb_coverage.g);
-            vec3 b_composit_luv = mix(background_luv, in_color_luv.xyz, rgb_coverage.b);
-
-            vec3 composit_rgb = tluv_to_rgb(r_composit_luv, g_composit_luv, b_composit_luv);
-            out_color = vec4(composit_rgb, 1.0);
+            // XXX use green for alpha now.
+            out_color = in_color_rgb * rgb_coverage.g;
+            out_blend_factor = vec(rgb_coverage.rgb, rgb_coverage.g)
         }
     }
 }
+

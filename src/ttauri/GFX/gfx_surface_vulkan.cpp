@@ -590,8 +590,6 @@ gfx_surface_state gfx_surface_vulkan::buildSwapchain(size_t new_count, extent2 n
     colorAllocationCreateInfo.usage = vulkan_device().lazyMemoryUsage;
     std::tie(colorImages[0], colorImageAllocations[0]) =
         vulkan_device().createImage(colorImageCreateInfo, colorAllocationCreateInfo);
-    std::tie(colorImages[1], colorImageAllocations[1]) =
-        vulkan_device().createImage(colorImageCreateInfo, colorAllocationCreateInfo);
 
     return gfx_surface_state::ready_to_render;
 }
@@ -642,7 +640,7 @@ void gfx_surface_vulkan::buildFramebuffers()
              vk::ComponentMapping(),
              {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}});
 
-        ttlet attachments = std::array{depthImageView, colorImageViews[0], colorImageViews[1], image_view};
+        ttlet attachments = std::array{depthImageView, colorImageViews[0], image_view};
 
         ttlet frame_buffer = vulkan_device().createFramebuffer({
             vk::FramebufferCreateFlags(),
@@ -677,6 +675,17 @@ void gfx_surface_vulkan::teardownFramebuffers()
     }
 }
 
+/** Build render passes.
+ *
+ * One pass, with 4 subpasses:
+ *  1. box shader: to color-attachment+depth 
+ *  2. image shader: to color-attachmen+depth
+ *  3. sdf shader: to color-attachmne+depth
+ *  4. tone-mapper: color-input-attachment to swapchain-attachment.
+ *
+ * Rendering is done on a float-16 RGBA color-attachment.
+ * In the last subpass the color-attachment is translated to the swap-chain attachment.
+ */
 void gfx_surface_vulkan::buildRenderPasses()
 {
     tt_axiom(gfx_system_mutex.recurse_lock_count());
@@ -695,19 +704,7 @@ void gfx_surface_vulkan::buildRenderPasses()
             vk::ImageLayout::eDepthStencilAttachmentOptimal // finalLayout
         },
         vk::AttachmentDescription{
-            // Color1 attachment
-            vk::AttachmentDescriptionFlags(),
-            colorImageFormat,
-            vk::SampleCountFlagBits::e1,
-            vk::AttachmentLoadOp::eClear,
-            vk::AttachmentStoreOp::eDontCare,
-            vk::AttachmentLoadOp::eDontCare, // stencilLoadOp
-            vk::AttachmentStoreOp::eDontCare, // stencilStoreOp
-            vk::ImageLayout::eUndefined, // initialLayout
-            vk::ImageLayout::eColorAttachmentOptimal // finalLayout
-        },
-        vk::AttachmentDescription{
-            // Color2 attachment
+            // Color attachment
             vk::AttachmentDescriptionFlags(),
             colorImageFormat,
             vk::SampleCountFlagBits::e1,
@@ -732,16 +729,8 @@ void gfx_surface_vulkan::buildRenderPasses()
         }};
 
     ttlet depthAttachmentReference = vk::AttachmentReference{0, vk::ImageLayout::eDepthStencilAttachmentOptimal};
-
-    ttlet color1AttachmentReferences = std::array{vk::AttachmentReference{1, vk::ImageLayout::eColorAttachmentOptimal}};
-    ttlet color2AttachmentReferences = std::array{vk::AttachmentReference{2, vk::ImageLayout::eColorAttachmentOptimal}};
-
-    ttlet color1InputAttachmentReferences = std::array{vk::AttachmentReference{1, vk::ImageLayout::eShaderReadOnlyOptimal}};
-    ttlet color2InputAttachmentReferences = std::array{vk::AttachmentReference{2, vk::ImageLayout::eShaderReadOnlyOptimal}};
-    ttlet color12InputAttachmentReferences = std::array{
-        vk::AttachmentReference{1, vk::ImageLayout::eShaderReadOnlyOptimal},
-        vk::AttachmentReference{2, vk::ImageLayout::eShaderReadOnlyOptimal}};
-
+    ttlet colorAttachmentReferences = std::array{vk::AttachmentReference{1, vk::ImageLayout::eColorAttachmentOptimal}};
+    ttlet colorInputAttachmentReferences = std::array{vk::AttachmentReference{1, vk::ImageLayout::eShaderReadOnlyOptimal}};
     ttlet swapchainAttachmentReferences = std::array{vk::AttachmentReference{3, vk::ImageLayout::eColorAttachmentOptimal}};
 
     ttlet subpassDescriptions = std::array{
@@ -751,7 +740,7 @@ void gfx_surface_vulkan::buildRenderPasses()
                                0, // inputAttchmentReferencesCount
                                nullptr, // inputAttachmentReferences
                                narrow_cast<uint32_t>(color1AttachmentReferences.size()),
-                               color1AttachmentReferences.data(),
+                               colorAttachmentReferences.data(),
                                nullptr, // resolveAttachments
                                &depthAttachmentReference
 
@@ -762,7 +751,7 @@ void gfx_surface_vulkan::buildRenderPasses()
                                0, // inputAttchmentReferencesCount
                                nullptr, // inputAttachmentReferences
                                narrow_cast<uint32_t>(color1AttachmentReferences.size()),
-                               color1AttachmentReferences.data(),
+                               colorAttachmentReferences.data(),
                                nullptr, // resolveAttachments
                                &depthAttachmentReference
 
@@ -771,9 +760,9 @@ void gfx_surface_vulkan::buildRenderPasses()
                                vk::SubpassDescriptionFlags(),
                                vk::PipelineBindPoint::eGraphics,
                                narrow_cast<uint32_t>(color1InputAttachmentReferences.size()),
-                               color1InputAttachmentReferences.data(),
+                               colorInputAttachmentReferences.data(),
                                narrow_cast<uint32_t>(color2AttachmentReferences.size()),
-                               color2AttachmentReferences.data(),
+                               colorAttachmentReferences.data(),
                                nullptr, // resolveAttachments
                                &depthAttachmentReference
 
@@ -781,8 +770,8 @@ void gfx_surface_vulkan::buildRenderPasses()
         vk::SubpassDescription{// Subpass 3 tone-mapper
                                vk::SubpassDescriptionFlags(),
                                vk::PipelineBindPoint::eGraphics,
-                               narrow_cast<uint32_t>(color12InputAttachmentReferences.size()),
-                               color12InputAttachmentReferences.data(),
+                               narrow_cast<uint32_t>(colorInputAttachmentReferences.size()),
+                               colorInputAttachmentReferences.data(),
                                narrow_cast<uint32_t>(swapchainAttachmentReferences.size()),
                                swapchainAttachmentReferences.data(),
                                nullptr,

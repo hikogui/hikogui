@@ -46,12 +46,12 @@ std::vector<vk::PipelineShaderStageCreateInfo> pipeline_SDF::createShaderStages(
     return vulkan_device().SDFPipeline->shaderStages;
 }
 
-/* No alpha blending as SDF fragment shader does this manually.
+/* Dual-source alpha blending which allows subpixel anti-aliasing.
  */
 std::vector<vk::PipelineColorBlendAttachmentState> pipeline_SDF::getPipelineColorBlendAttachmentStates() const
 {
     return {
-        {VK_FALSE, // blendEnable
+        {VK_TRUE, // blendEnable
          vk::BlendFactor::eOne, // srcColorBlendFactor
          vk::BlendFactor::eOneMinusSrcAlpha, // dstColorBlendFactor
          vk::BlendOp::eAdd, // colorBlendOp
@@ -66,14 +66,10 @@ std::vector<vk::DescriptorSetLayoutBinding> pipeline_SDF::createDescriptorSetLay
 {
     return {
         {0, // binding
-         vk::DescriptorType::eInputAttachment,
-         1, // descriptorCount
-         vk::ShaderStageFlagBits::eFragment},
-        {1, // binding
          vk::DescriptorType::eSampler,
          1, // descriptorCount
          vk::ShaderStageFlagBits::eFragment},
-        {2, // binding
+        {1, // binding
          vk::DescriptorType::eSampledImage,
          narrow_cast<uint32_t>(device_shared::atlasMaximumNrImages), // descriptorCount
          vk::ShaderStageFlagBits::eFragment}};
@@ -89,16 +85,6 @@ std::vector<vk::WriteDescriptorSet> pipeline_SDF::createWriteDescriptorSet() con
             0, // destBinding
             0, // arrayElement
             1, // descriptorCount
-            vk::DescriptorType::eInputAttachment,
-            &(narrow_cast<gfx_surface_vulkan const &>(surface).colorDescriptorImageInfos[0]),
-            nullptr, // bufferInfo
-            nullptr // texelBufferView
-        },
-        {
-            descriptorSet,
-            1, // destBinding
-            0, // arrayElement
-            1, // descriptorCount
             vk::DescriptorType::eSampler,
             &sharedImagePipeline->atlasSamplerDescriptorImageInfo,
             nullptr, // bufferInfo
@@ -106,7 +92,7 @@ std::vector<vk::WriteDescriptorSet> pipeline_SDF::createWriteDescriptorSet() con
         },
         {
             descriptorSet,
-            2, // destBinding
+            1, // destBinding
             0, // arrayElement
             narrow_cast<uint32_t>(sharedImagePipeline->atlasDescriptorImageInfos.size()), // descriptorCount
             vk::DescriptorType::eSampledImage,
