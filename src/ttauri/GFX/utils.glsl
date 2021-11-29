@@ -25,158 +25,88 @@ bool contains(vec4 rectangle, vec2 point)
     return greaterThanEqual(point.xyxy, rectangle) == bvec4(true, true, false, false);
 }
 
-float Kr = 0.2126;
-float Kg = 0.7152;
-float Kb = 0.0722;
-float Ku = Kb / Kg;
-float Kv = Kr / Kg;
-
-/** Convert linear-rgb to tYUV.
- * The tYUV format's elements are:
- * .x = Y = linear-luminosity
- * .y = U = B - Y
- * .z = V = R - Y
+/** Convert coverage to a perceptional uniform alpha.
+ *
+ * This function takes into account the lightness of the full pixel, then
+ * determines based on this if the background is either black or white, or
+ * if linear conversion of coverage to alpha is needed.
+ *
+ * On black and white background we measure the target lightness of each sub-pixel
+ * then convert to target luminosity and eventually the alpha value.
+ *
+ * The alpha-component of the return value is calculated based on the full pixel
+ * lightness and from the green sub-pixel coverage.
+ *
+ * The full formula to convert coverage to alpha taking into account perceptional
+ * uniform lightness between foreground and background colors:
+ * ```
+ *    F = foreground color
+ *    B = background color
+ *    T = target color
+ *    c = coverage
+ *    a = alpha
+ *    T = mix(sqrt(F), sqrt(B), c) ^ 2
+ *
+ *    a = (T - B) / (F - B)       if F != B
+ *    a = c                       otherwise
+ * ```
+ *
+ * To simplify this formula and remove the division we fill in the foreground and background
+ * with black and white and the other way around:
+ * ```
+ *    a = c^2                     if F == 1 and B == 0
+ *    a = 2c - c^2                if F == 0 and B == 1
+ * ```
+ *
+ * Now we mix based on the foreground color, expecting the background color to mirror.
+ * ```
+ *    a = mix(2c - c^2, c^2, F^2)   if B^2 == 1 - F^2
+ * ```
+ *
+ * @param coverage The amount of coverage. Elements must be between 0.0 and 1.0
+ * @param foreground_sq The sqrt of the foreground. Elements must be between 0.0 and 1.0
+ * @return The alpha value for the red, blue, green, alpha color components.
  */
-vec3 rgb_to_tYUV(vec3 rgb)
+float coverage_to_alpha(float coverage, float sqrt_foreground)
 {
-    float R = rgb.r;
-    float G = rgb.g;
-    float B = rgb.b;
-
-    float Y = Kr * R + Kg * G + Kb * B;
-    float U = B - Y;
-    float V = R - Y;
-
-    return vec3(Y, U, V);
+    float coverage_sq = coverage * coverage;
+    float coverage_2 = coverage + coverage;
+    return mix(coverage_2 - coverage_sq, coverage_sq, sqrt_foreground);
 }
 
-float tYUV_to_R(vec3 yuv)
-{
-    float Y = yuv.x;
-    float V = yuv.z;
-
-    return V + Y;
-}
-
-float tYUV_to_G(vec3 yuv)
-{
-    float Y = yuv.x;
-    float U = yuv.y;
-    float V = yuv.z;
-
-    return Y - U * Ku - V * Kv;
-}
-
-float tYUV_to_B(vec3 yuv)
-{
-    float Y = yuv.x;
-    float U = yuv.y;
-
-    return U + Y;
-}
-
-/** Convert tYUV to linear-rgb.
- * The tYUV format's elements are:
- * .x = Y = linear-luminosity
- * .y = U = B - Y
- * .z = V = R - Y
+/** Convert coverage to a perceptional uniform alpha.
+ *
+ * @see coverage_to_alpha(float, float)
  */
-vec3 tYUV_to_rgb(vec3 yuv)
+vec4 coverage_to_alpha(vec4 coverage, vec4 sqrt_foreground)
 {
-    return vec3(tYUV_to_R(yuv), tYUV_to_G(yuv), tYUV_to_B(yuv));
+    vec4 coverage_sq = coverage * coverage;
+    vec4 coverage_2 = coverage + coverage;
+    return mix(coverage_2 - coverage_sq, coverage_sq, sqrt_foreground);
 }
 
-/** Convert linear-rgb to tluv.
- * The tYUV format's elements are:
- * .x = L = perceptional-lightness = sqrt(Y)
- * .y = U = B - Y
- * .z = V = R - Y
+/** Multiply the alpha with the color.
+ *
+ * @param color The color+alpha without pre-multiplication.
+ * @return The color+alpha where the color is multiplied with the alpha.
  */
-vec3 rgb_to_tluv(vec3 rgb)
+vec4 multiply_alpha(vec4 color)
 {
-    vec3 tmp = rgb_to_tYUV(rgb);
-    return vec3(sqrt(tmp.r), tmp.g, tmp.b);
+    return vec4(color.rgb * color.a, color.a);
 }
 
-vec4 rgb_to_tluv(vec4 rgba)
-{
-    return vec4(rgb_to_tluv(rgba.rgb), rgba.a);
-}
-
-/** Convert tluv to linear-rgb.
- * The tYUV format's elements are:
- * .x = L = perceptional-lightness = sqrt(Y)
- * .y = U = B - Y
- * .z = V = R - Y
- */
-vec3 tluv_to_rgb(vec3 luv)
-{
-    return tYUV_to_rgb(vec3(luv.x * luv.x, luv.y, luv.z));
-}
-
-/** Convert a subpixel-triplet of tYUV values to a single rgb value.
- */
-vec3 tYUV_to_rgb(vec3 sub_R, vec3 sub_G, vec3 sub_B)
-{
-    return vec3(tYUV_to_R(sub_R), tYUV_to_G(sub_G), tYUV_to_B(sub_B));
-}
-
-/** Convert a subpixel-triplet of tluv values to a single rgb value.
- */
-vec3 tluv_to_rgb(vec3 sub_R, vec3 sub_G, vec3 sub_B)
-{
-    vec3 sub_R_ = vec3(sub_R.x * sub_R.x, sub_R.y, sub_R.z);
-    vec3 sub_G_ = vec3(sub_G.x * sub_G.x, sub_G.y, sub_G.z);
-    vec3 sub_B_ = vec3(sub_B.x * sub_B.x, sub_B.y, sub_B.z);
-    return tYUV_to_rgb(sub_R_, sub_G_, sub_B_);
-}
-
-/** Convert RGB to luminance.
+/** Convert RGB to Y.
  */
 float rgb_to_y(vec3 color)
 {
-    return 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
+    vec3 tmp = color * vec3(0.2126, 0.7152, 0.0722);
+    return tmp.r + tmp.g + tmp.b;
 }
 
-/** Convert coverage to alpha matching perceptional uniform lightness.
- *
- * @param coverage The relative amount (0.0 - 1.0) of top color being composited on the bottom color.
- * @param top_luminance The luminance of the top color.
- * @param bottom_luminance The luminance of the bottom color.
- * @return An alpha value for mixing colors with perceptional uniform lightness.
+/** Convert RGB to RGBY.
  */
-float coverage_to_alpha(float coverage, float top_luminance, float bottom_luminance)
+vec4 rgb_to_rgby(vec3 color)
 {
-    float delta_luminance = bottom_luminance - top_luminance;
-    if (delta_luminance == 0.0) {
-        return coverage;
-    }
-
-    float top_lightness = sqrt(top_luminance);
-    float bottom_lightness = sqrt(bottom_luminance);
-    float coverage_lightness = mix(top_lightness, bottom_lightness, coverage);
-    float coverage_luminance = coverage_lightness * coverage_lightness;
-    return (coverage_luminance - top_luminance) / delta_luminance;
+    return vec4(color, rgb_to_y(color));
 }
 
-/** Convert coverage to alpha matching perceptional uniform lightness.
- *
- * This function guesses based on only a single luminance value:
- *  * lightness > 0.6: luminance on black background
- *  * lightness < 0.4: luminance on white background
- *  * otherwise equal luminances.
- *
- * @param coverage The relative amount (0.0 - 1.0) of top color being composited on the bottom color.
- * @param luminance The luminance of the top color.
- * @return An alpha value for mixing colors with perceptional uniform lightness.
- */
-float coverage_to_alpha(float coverage, float luminance)
-{
-    if (luminance > 0.36) {
-        return coverage_to_alpha(coverage, luminance, 0.0);
-    } else if (luminance < 0.16) {
-        return coverage_to_alpha(coverage, luminance, 1.0);
-    } else {
-        return coverage;
-    }
-}

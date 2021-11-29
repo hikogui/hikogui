@@ -7,9 +7,10 @@ layout(location = 0) in flat vec4 in_clipping_rectangle;
 layout(location = 1) in vec4 in_edge_distances;
 layout(location = 2) in vec4 in_fill_color;
 layout(location = 3) in vec4 in_border_color;
-layout(location = 4) in flat vec4 in_corner_radii;
-layout(location = 5) in flat float in_border_start;
-layout(location = 6) in flat float in_border_end;
+layout(location = 4) in float in_border_sqrt_y;
+layout(location = 5) in flat vec4 in_corner_radii;
+layout(location = 6) in flat float in_border_start;
+layout(location = 7) in flat float in_border_end;
 
 layout(location = 0) out vec4 out_color;
 
@@ -47,8 +48,6 @@ float distance_from_box_outline()
     }
 }
 
-
-
 void main()
 {
     if (!contains(in_clipping_rectangle, gl_FragCoord.xy)) {
@@ -65,12 +64,18 @@ void main()
 
     float fill_coverage = clamp(in_border_end - distance + 0.5, 0.0, 1.0);
     
+    // Both the border_coverage and fill_coverage modulate the amount of border_color
+    // that is visible. So convert both coverages to alpha using the border lightness.
+    float border_alpha = coverage_to_alpha(border_coverage, in_border_sqrt_y);
+    float fill_alpha = coverage_to_alpha(fill_coverage, in_border_sqrt_y);
+
     // Adjust transparency of the border color by how much it is overlapping with the fill.
-    vec4 border_color = in_border_color * fill_coverage;
+    vec4 border_color = in_border_color * fill_alpha;
 
     // combine the border on top of the fill.
-    vec4 combined_color = border_color + in_fill_color * (1.0 - border_color.a);
+    //vec4 combined_color = in_fill_color * (1.0 - border_color.a) + border_color;
+    vec4 combined_color = fma(in_fill_color, vec4(1.0 - border_color.a), border_color);
 
     // Adjust transparency of the combined color by how much it is overlapping with the background.
-    out_color = combined_color * border_coverage;
+    out_color = combined_color * border_alpha;
 }
