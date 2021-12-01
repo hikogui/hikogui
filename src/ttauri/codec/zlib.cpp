@@ -14,9 +14,9 @@ struct zlib_header {
     uint8_t FLG;
 };
 
-bstring zlib_decompress(std::span<std::byte const> bytes, ssize_t max_size)
+bstring zlib_decompress(std::span<std::byte const> bytes, size_t max_size)
 {
-    ssize_t offset = 0;
+    auto offset = 0_uz;
 
     ttlet header = make_placement_ptr<zlib_header>(bytes, offset);
 

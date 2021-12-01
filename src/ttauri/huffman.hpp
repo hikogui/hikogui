@@ -102,32 +102,34 @@ public:
         return value - 1;
     }
 
-    [[nodiscard]] int get_symbol(std::span<std::byte const> bytes, ssize_t &bit_offset) const noexcept
+    [[nodiscard]] size_t get_symbol(std::span<std::byte const> bytes, size_t &bit_offset) const noexcept
     {
         auto state = start();
         while (true) {
             int symbol;
             if ((symbol = get(get_bit(bytes, bit_offset), state)) >= 0) {
-                return symbol;
+                return static_cast<size_t>(symbol);
             }
         }
     }
 
     /** Build a canonical-huffman table from a set of lengths.
      */
-    [[nodiscard]] static huffman_tree from_lengths(int const *lengths, ssize_t nr_symbols)
+    [[nodiscard]] static huffman_tree from_lengths(uint8_t const *lengths, size_t nr_symbols)
     {
-        struct symbol_length_t {
-            int symbol;
-            int length;
+        tt_axiom(nr_symbols < std::numeric_limits<T>::min());
 
-            symbol_length_t(int symbol, int length) : symbol(symbol), length(length) {}
+        struct symbol_length_t {
+            T symbol;
+            uint8_t length;
+
+            symbol_length_t(T symbol, uint8_t length) : symbol(symbol), length(length) {}
         };
 
         std::vector<symbol_length_t> symbol_lengths;
         symbol_lengths.reserve(nr_symbols);
 
-        for (int symbol = 0; symbol != nr_symbols; ++symbol) {
+        for (T symbol = T{0}; symbol != static_cast<T>(nr_symbols); ++symbol) {
             symbol_lengths.emplace_back(symbol, lengths[symbol]);
         }
 
@@ -158,9 +160,9 @@ public:
         return r;
     }
 
-    [[nodiscard]] static huffman_tree from_lengths(std::vector<int> const &lengths)
+    [[nodiscard]] static huffman_tree from_lengths(std::vector<uint8_t> const &lengths)
     {
-        return from_lengths(lengths.data(), ssize(lengths));
+        return from_lengths(lengths.data(), lengths.size());
     }
 };
 
