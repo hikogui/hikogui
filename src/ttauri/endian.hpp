@@ -109,6 +109,18 @@ template<typename T, std::endian E, size_t A = alignof(T)>
 struct endian_buf_t {
     alignas(A) std::byte _value[sizeof(T)];
 
+    endian_buf_t &operator=(T x) noexcept
+    {
+        T aligned_value;
+        if constexpr (E == std::endian::native) {
+            aligned_value = x;
+        } else {
+            aligned_value = byte_swap(x);
+        }
+        std::memcpy(&_value[0], &aligned_value, sizeof(T));
+        return *this;
+    }
+
     [[nodiscard]] T value() const noexcept
     {
         T aligned_value;
@@ -131,18 +143,6 @@ struct endian_buf_t {
         } else {
             return byte_swap(aligned_value);
         }
-    }
-
-    endian_buf_t &operator=(T x) noexcept
-    {
-        T aligned_value;
-        if constexpr (E == std::endian::native) {
-            aligned_value = x;
-        } else {
-            aligned_value = byte_swap(x);
-        }
-        std::memcpy(&_value[0], &aligned_value, sizeof(T));
-        return *this;
     }
 };
 

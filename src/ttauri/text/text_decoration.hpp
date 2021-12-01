@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "../enum_metadata.hpp"
 #include <unordered_map>
 #include <string>
 #include <ostream>
@@ -20,37 +21,26 @@ enum class text_decoration {
     None,
     Underline,
     WavyUnderline,
-    StrikeThrough,
-
-    max = StrikeThrough
+    StrikeThrough
 };
 
-inline ttlet text_decoration_from_string_table = std::unordered_map<std::string, text_decoration>{
-    {"none", text_decoration::None},
-    {"underline", text_decoration::Underline},
-    {"wavy-underline", text_decoration::WavyUnderline},
-    {"strike-through", text_decoration::StrikeThrough},
+// clang-format off
+constexpr auto text_decoration_metadata = enum_metadata{
+    text_decoration::None, "none",
+    text_decoration::Underline, "underline",
+    text_decoration::WavyUnderline, "wavy-underline",
+    text_decoration::StrikeThrough, "strike-through"
 };
+// clang-format on
 
-[[nodiscard]] inline char const *to_const_string(text_decoration const &rhs) noexcept
+[[nodiscard]] inline std::string_view to_string(text_decoration const &rhs) noexcept
 {
-    switch (rhs) {
-    case text_decoration::None: return "none";
-    case text_decoration::Underline: return "underline";
-    case text_decoration::WavyUnderline: return "wavy-underline";
-    case text_decoration::StrikeThrough: return "strike-through";
-    default: tt_no_default();
-    }
-}
-
-[[nodiscard]] inline std::string to_string(text_decoration const &rhs) noexcept
-{
-    return to_const_string(rhs);
+    return text_decoration_metadata[rhs];
 }
 
 inline std::ostream &operator<<(std::ostream &lhs, text_decoration const &rhs)
 {
-    return lhs << to_const_string(rhs);
+    return lhs << text_decoration_metadata[rhs];
 }
 
 } // namespace tt::inline v1

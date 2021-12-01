@@ -334,7 +334,7 @@ struct GLYFEntry {
 
 static std::span<std::byte const> parseCharacterMapDirectory(std::span<std::byte const> bytes)
 {
-    ssize_t offset = 0;
+    size_t offset = 0;
 
     ttlet header = make_placement_ptr<CMAPHeader>(bytes, offset);
     tt_parse_check(header->version.value() == 0, "CMAP version is not 0");
@@ -394,92 +394,109 @@ static std::span<std::byte const> parseCharacterMapDirectory(std::span<std::byte
 
 static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char32_t c) noexcept
 {
+    // We are not checking for validity of the table, as this is being done in `parseCharacterMapFormat4`.
+
     if (c > 0xffff) {
         // character value too high.
         return {};
     }
 
-    ssize_t offset = 0;
+    size_t offset = 0;
 
-    assert_or_return(check_placement_ptr<CMAPFormat4>(bytes, offset), {});
+    tt_axiom(check_placement_ptr<CMAPFormat4>(bytes, offset));
     ttlet header = unsafe_make_placement_ptr<CMAPFormat4>(bytes, offset);
 
     ttlet length = header->length.value();
-    assert_or_return(length <= bytes.size(), {});
+    tt_axiom(length <= bytes.size());
 
-    ttlet segCount = header->segCountX2.value() / 2;
+    ttlet num_segments = header->segCountX2.value() / 2;
 
-    assert_or_return(check_placement_array<big_uint16_buf_t>(bytes, offset, segCount), {});
-    ttlet endCode = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, segCount);
+    tt_axiom(check_placement_array<big_uint16_buf_t>(bytes, offset, num_segments));
+    ttlet end_codes = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, num_segments);
+
+    auto c16 = static_cast<uint16_t>(c);
+    ttlet end_code_it = std::lower_bound(end_codes.begin(), end_codes.end(), c16);
+    if (end_code_it == end_codes.end()) {
+        // The character to find has a higher value than available in the table.
+        return {};
+    }
+    ttlet segment_i = static_cast<uint16_t>(std::distance(end_codes.begin(), end_code_it));
 
     offset += ssizeof(uint16_t); // reservedPad
 
-    assert_or_return(check_placement_array<big_uint16_buf_t>(bytes, offset, segCount), {});
-    ttlet startCode = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, segCount);
+    tt_axiom(check_placement_array<big_uint16_buf_t>(bytes, offset, num_segments));
+    ttlet start_codes = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, num_segments);
 
-    assert_or_return(check_placement_array<big_uint16_buf_t>(bytes, offset, segCount), {});
-    ttlet idDelta = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, segCount);
-
-    // The glyphIdArray is included inside idRangeOffset.
-    ttlet idRangeOffset_count = (length - offset) / ssizeof(uint16_t);
-    assert_or_return(check_placement_array<big_uint16_buf_t>(bytes, offset, idRangeOffset_count), {});
-    ttlet idRangeOffset = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, idRangeOffset_count);
-
-    for (uint16_t i = 0; i < segCount; i++) {
-        ttlet endCode_ = endCode[i].value();
-        if (c <= endCode_) {
-            ttlet startCode_ = startCode[i].value();
-            if (c >= startCode_) {
-                // Found the glyph.
-                ttlet idRangeOffset_ = idRangeOffset[i].value();
-                if (idRangeOffset_ == 0) {
-                    // Use modulo 65536 arithmetic.
-                    uint16_t glyphIndex = idDelta[i].value();
-                    glyphIndex += static_cast<uint16_t>(c);
-                    return glyph_id{glyphIndex};
-
-                } else {
-                    ttlet charOffset = c - startCode_;
-                    ttlet glyphOffset = (idRangeOffset_ / 2) + charOffset + i;
-
-                    assert_or_return(glyphOffset < idRangeOffset.size(), {});
-                    uint16_t glyphIndex = idRangeOffset[glyphOffset].value();
-                    if (glyphIndex == 0) {
-                        return {};
-                    } else {
-                        // Use modulo 65536 arithmetic.
-                        glyphIndex += idDelta[i].value();
-                        return glyph_id{glyphIndex};
-                    }
-                }
-
-            } else {
-                // character outside of segment
-                return {};
-            }
-        }
+    ttlet start_code = start_codes[segment_i];
+    if (c16 < start_code) {
+        // The character to find is inside a gap in the table.
+        return {};
     }
 
-    // Could not find character.
-    return {};
+    tt_axiom(check_placement_array<big_uint16_buf_t>(bytes, offset, num_segments));
+    ttlet id_deltas = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, num_segments);
+
+    // The glyphIdArray is included inside idRangeOffset.
+    ttlet id_range_offset_count = (length - offset) / ssizeof(uint16_t);
+    tt_axiom(check_placement_array<big_uint16_buf_t>(bytes, offset, id_range_offset_count));
+    ttlet id_range_offsets = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, id_range_offset_count);
+
+    // Found the glyph.
+    ttlet id_range_offset = id_range_offsets[segment_i].value();
+    if (id_range_offset == 0) {
+        // Use modulo 65536 arithmetic.
+        c16 += id_deltas[segment_i].value();
+        return glyph_id{c16};
+
+    } else {
+        c16 -= start_code;
+        c16 += segment_i;
+        c16 += id_range_offset / 2;
+
+        tt_axiom(c16 < id_range_offsets.size());
+        uint16_t glyph_index = id_range_offsets[c16].value();
+        if (glyph_index == 0) {
+            return {};
+        } else {
+            // Use modulo 65536 arithmetic.
+            glyph_index += id_deltas[segment_i].value();
+            return glyph_id{glyph_index};
+        }
+    }
 }
 
 [[nodiscard]] static unicode_mask parseCharacterMapFormat4(std::span<std::byte const> bytes)
 {
     unicode_mask r;
 
-    ssize_t offset = 0;
+    size_t offset = 0;
     ttlet header = make_placement_ptr<CMAPFormat4>(bytes, offset);
     ttlet length = header->length.value();
     tt_parse_check(length <= bytes.size(), "CMAP header length is larger than table.");
-    ttlet segCount = header->segCountX2.value() / 2;
+    ttlet num_segments = header->segCountX2.value() / 2;
 
-    ttlet endCode = make_placement_array<big_uint16_buf_t>(bytes, offset, segCount);
+    ttlet end_codes = make_placement_array<big_uint16_buf_t>(bytes, offset, num_segments);
     offset += ssizeof(uint16_t); // reservedPad
-    ttlet startCode = make_placement_array<big_uint16_buf_t>(bytes, offset, segCount);
+    ttlet start_codes = make_placement_array<big_uint16_buf_t>(bytes, offset, num_segments);
 
-    for (int i = 0; i != segCount; ++i) {
-        r.add(static_cast<char32_t>(startCode[i].value()), static_cast<char32_t>(endCode[i].value()) + 1);
+    ttlet id_deltas = make_placement_array<big_uint16_buf_t>(bytes, offset, num_segments);
+
+    ttlet id_range_offset_count = (length - offset) / ssizeof(uint16_t);
+    ttlet id_range_offsets = make_placement_array<big_uint16_buf_t>(bytes, offset, id_range_offset_count);
+
+    for (uint16_t segment_i = 0; segment_i != num_segments; ++segment_i) {
+        ttlet end_code = end_codes[segment_i].value();
+        ttlet start_code = start_codes[segment_i].value();
+        r.add(static_cast<char32_t>(start_code), static_cast<char32_t>(end_code) + 1);
+
+        ttlet id_range_offset = id_range_offsets[segment_i].value();
+        if (id_range_offset != 0) {
+            auto c16 = end_code;
+            c16 -= start_code;
+            c16 += segment_i;
+            c16 += id_range_offset / 2;
+            tt_parse_check(c16 < id_range_offsets.size(), "id_range_offsets invalid");
+        }
     }
 
     return r;
@@ -487,7 +504,7 @@ static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char
 
 static glyph_id searchCharacterMapFormat6(std::span<std::byte const> bytes, char32_t c) noexcept
 {
-    ssize_t offset = 0;
+    size_t offset = 0;
 
     assert_or_return(check_placement_ptr<CMAPFormat6>(bytes, offset), {});
     ttlet header = unsafe_make_placement_ptr<CMAPFormat6>(bytes, offset);
@@ -511,7 +528,7 @@ static glyph_id searchCharacterMapFormat6(std::span<std::byte const> bytes, char
 {
     unicode_mask r;
 
-    ssize_t offset = 0;
+    size_t offset = 0;
     ttlet header = make_placement_ptr<CMAPFormat6>(bytes, offset);
     ttlet firstCode = static_cast<char32_t>(header->firstCode.value());
     ttlet entryCount = header->entryCount.value();
@@ -523,7 +540,7 @@ static glyph_id searchCharacterMapFormat6(std::span<std::byte const> bytes, char
 
 static glyph_id searchCharacterMapFormat12(std::span<std::byte const> bytes, char32_t c) noexcept
 {
-    ssize_t offset = 0;
+    size_t offset = 0;
 
     assert_or_return(check_placement_ptr<CMAPFormat12>(bytes, offset), {});
     ttlet header = unsafe_make_placement_ptr<CMAPFormat12>(bytes, offset);
@@ -558,7 +575,7 @@ static glyph_id searchCharacterMapFormat12(std::span<std::byte const> bytes, cha
 {
     unicode_mask r;
 
-    ssize_t offset = 0;
+    size_t offset = 0;
     ttlet header = make_placement_ptr<CMAPFormat12>(bytes, offset);
     ttlet numGroups = header->numGroups.value();
 
@@ -701,7 +718,7 @@ static std::optional<std::string> getStringFromNameTable(
 
 void true_type_font::parseNameTable(std::span<std::byte const> table_bytes)
 {
-    ssize_t offset = 0;
+    size_t offset = 0;
 
     ttlet table = make_placement_ptr<NAMETable>(table_bytes, offset);
     tt_parse_check(table->format.value() == 0 || table->format.value() == 1, "Name table format must be 0 or 1");
@@ -892,7 +909,7 @@ static void getKerningFormat0(
     glyph_id glyph2_id,
     vector2 &r) noexcept
 {
-    ssize_t offset = 0;
+    size_t offset = 0;
 
     assert_or_return(check_placement_ptr<KERNFormat0>(bytes, offset), );
     ttlet formatheader = unsafe_make_placement_ptr<KERNFormat0>(bytes, offset);
@@ -942,7 +959,7 @@ static void getKerningFormat3(
 getKerning(std::span<std::byte const> const &bytes, float unitsPerEm, glyph_id glyph1_id, glyph_id glyph2_id) noexcept
 {
     auto r = vector2{0.0f, 0.0f};
-    ssize_t offset = 0;
+    size_t offset = 0;
 
     assert_or_return(check_placement_ptr<KERNTable_ver0>(bytes, offset), r);
     ttlet header_ver0 = unsafe_make_placement_ptr<KERNTable_ver0>(bytes, offset);
@@ -1048,7 +1065,7 @@ constexpr uint8_t FLAG_X_SAME = 0x10;
 constexpr uint8_t FLAG_Y_SAME = 0x20;
 bool true_type_font::loadSimpleGlyph(std::span<std::byte const> glyph_bytes, graphic_path &glyph) const noexcept
 {
-    ssize_t offset = 0;
+    size_t offset = 0;
 
     assert_or_return(check_placement_ptr<GLYFEntry>(glyph_bytes, offset), false);
     ttlet entry = unsafe_make_placement_ptr<GLYFEntry>(glyph_bytes, offset);
@@ -1171,7 +1188,7 @@ constexpr uint16_t FLAG_SCALED_COMPONENT_OFFSET = 0x0800;
 bool true_type_font::loadCompoundGlyph(std::span<std::byte const> glyph_bytes, graphic_path &glyph, glyph_id &metrics_glyph_id)
     const noexcept
 {
-    ssize_t offset = ssizeof(GLYFEntry);
+    size_t offset = ssizeof(GLYFEntry);
 
     uint16_t flags;
     do {
@@ -1284,7 +1301,7 @@ std::optional<glyph_id> true_type_font::load_glyph(glyph_id glyph_id, graphic_pa
 
 bool true_type_font::loadCompoundglyph_metrics(std::span<std::byte const> bytes, glyph_id &metrics_glyph_id) const noexcept
 {
-    ssize_t offset = ssizeof(GLYFEntry);
+    size_t offset = ssizeof(GLYFEntry);
 
     uint16_t flags;
     do {
@@ -1370,7 +1387,7 @@ bool true_type_font::load_glyph_metrics(tt::glyph_id glyph_id, glyph_metrics &me
 
     ttlet bytes = view->bytes();
 
-    ssize_t offset = 0;
+    size_t offset = 0;
     ttlet header = make_placement_ptr<SFNTHeader>(bytes, offset);
 
     if (!(header->scalerType.value() == fourcc("true") || header->scalerType.value() == 0x00010000)) {

@@ -11,23 +11,23 @@
 
 namespace tt::inline v1 {
 
-/** Read a single bit of span of bytes
+/** Read a single bit from span of bytes
  * Bits are ordered LSB first.
  *
  * @param buffer The buffer of bytes to extract the bit from.
  * @param index The index of the bit in the byte span.
  */
-[[nodiscard]] inline bool get_bit(std::span<std::byte const> buffer, ssize_t &index) noexcept
+[[nodiscard]] inline bool get_bit(std::span<std::byte const> buffer, size_t &index) noexcept
 {
     auto byte_index = index >> 3;
-    auto bit_index = static_cast<uint8_t>(index & 7);
+    auto bit_index = index & 7;
     ++index;
 
-    tt_axiom(byte_index < ssize(buffer));
-    return static_cast<bool>(static_cast<int>(buffer[byte_index] >> bit_index) & 1);
+    tt_axiom(byte_index < buffer.size());
+    return static_cast<bool>(static_cast<uint8_t>(buffer[byte_index] >> bit_index) & 1);
 }
 
-/** Read a single bit of span of bytes
+/** Read a bits from of span of bytes
  * Bits are ordered LSB first.
  * Bits are copied as if the byte array is layed out from right to left, example:
  *
@@ -45,16 +45,18 @@ namespace tt::inline v1 {
  * @param index The index of the bit in the byte span.
  * @param length the number of bits to return.
  */
-[[nodiscard]] inline int get_bits(std::span<std::byte const> buffer, ssize_t &index, int length) noexcept
+[[nodiscard]] inline size_t get_bits(std::span<std::byte const> buffer, size_t &index, size_t length) noexcept
 {
+    tt_axiom(length <= sizeof(size_t) * CHAR_BIT);
+
     auto value = 0;
 
     auto todo = length;
-    auto done = 0;
+    auto done = 0_uz;
     while (todo) {
         auto byte_index = index >> 3;
-        auto bit_index = static_cast<int>(index & 7);
-        tt_axiom(byte_index < ssize(buffer));
+        auto bit_index = index & 7;
+        tt_axiom(byte_index < buffer.size());
 
         auto available_bits = 8 - bit_index;
         auto nr_bits = std::min(available_bits, todo);

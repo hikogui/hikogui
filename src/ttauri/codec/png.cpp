@@ -50,7 +50,7 @@ struct sRGB {
     uint8_t rendering_intent;
 };
 
-void png::read_header(std::span<std::byte const> bytes, ssize_t &offset)
+void png::read_header(std::span<std::byte const> bytes, size_t &offset)
 {
     ttlet png_header = make_placement_ptr<PNGHeader>(bytes, offset);
 
@@ -199,7 +199,7 @@ void png::read_iCCP(std::span<std::byte const> bytes)
     }
 }
 
-void png::read_chunks(std::span<std::byte const> bytes, ssize_t &offset)
+void png::read_chunks(std::span<std::byte const> bytes, size_t &offset)
 {
     auto IHDR_bytes = std::span<std::byte const>{};
     auto cHRM_bytes = std::span<std::byte const>{};
@@ -212,7 +212,7 @@ void png::read_chunks(std::span<std::byte const> bytes, ssize_t &offset)
         ttlet header = make_placement_ptr<ChunkHeader>(bytes, offset);
         ttlet length = narrow_cast<ssize_t>(header->length.value());
         tt_parse_check(length < 0x8000'0000, "Chunk length must be smaller than 2GB");
-        tt_parse_check(offset + length + ssizeof(uint32_t) <= ssize(bytes), "Chuck extents beyond file.");
+        tt_parse_check(offset + length + ssizeof(uint32_t) <= bytes.size(), "Chuck extents beyond file.");
 
         switch (fourcc(header->type)) {
         case fourcc("IDAT"): _idat_chunk_data.push_back(bytes.subspan(offset, length)); break;
@@ -259,7 +259,7 @@ void png::read_chunks(std::span<std::byte const> bytes, ssize_t &offset)
 
 png::png(std::span<std::byte const> bytes) : _view()
 {
-    ssize_t offset = 0;
+    size_t offset = 0;
 
     read_header(bytes, offset);
     read_chunks(bytes, offset);
@@ -267,14 +267,14 @@ png::png(std::span<std::byte const> bytes) : _view()
 
 png::png(std::unique_ptr<resource_view> view) : _view(std::move(view))
 {
-    ssize_t offset = 0;
+    size_t offset = 0;
 
     ttlet bytes = _view->bytes();
     read_header(bytes, offset);
     read_chunks(bytes, offset);
 }
 
-bstring png::decompress_IDATs(ssize_t image_data_size) const
+bstring png::decompress_IDATs(size_t image_data_size) const
 {
     if (ssize(_idat_chunk_data) == 1) {
         return zlib_decompress(_idat_chunk_data[0], image_data_size);
