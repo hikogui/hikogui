@@ -6,6 +6,7 @@
 
 #include "../required.hpp"
 #include "../assert.hpp"
+#include "../enum_metadata.hpp"
 #include <string>
 #include <ostream>
 
@@ -13,23 +14,16 @@ namespace tt::inline v1 {
 
 enum class theme_mode { light, dark };
 
-[[nodiscard]] constexpr char const *to_const_string(theme_mode rhs) noexcept
-{
-    switch (rhs) {
-    case theme_mode::light: return "light";
-    case theme_mode::dark: return "dark";
-    default: tt_no_default();
-    }
-}
+constexpr auto theme_mode_metadata = enum_metadata{theme_mode::light, "light", theme_mode::dark, "dark"};
 
-[[nodiscard]] inline std::string to_string(theme_mode rhs) noexcept
+[[nodiscard]] inline std::string_view to_string(theme_mode rhs) noexcept
 {
-    return to_const_string(rhs);
+    return theme_mode_metadata[rhs];
 }
 
 inline std::ostream &operator<<(std::ostream &lhs, theme_mode rhs)
 {
-    return lhs << to_const_string(rhs);
+    return lhs << theme_mode_metadata[rhs];
 }
 
 theme_mode read_os_theme_mode() noexcept;
@@ -37,9 +31,9 @@ theme_mode read_os_theme_mode() noexcept;
 } // namespace tt::inline v1
 
 template<typename CharT>
-struct std::formatter<tt::theme_mode, CharT> : std::formatter<char const *, CharT> {
+struct std::formatter<tt::theme_mode, CharT> : std::formatter<std::string_view, CharT> {
     auto format(tt::theme_mode const &t, auto &fc)
     {
-        return std::formatter<char const *, CharT>::format(tt::to_const_string(t), fc);
+        return std::formatter<std::string_view, CharT>::format(tt::theme_mode_metadata[t], fc);
     }
 };

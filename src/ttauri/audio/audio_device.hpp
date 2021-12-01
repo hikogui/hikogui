@@ -12,6 +12,7 @@
 #include "speaker_mapping.hpp"
 #include "audio_device_id.hpp"
 #include "../label.hpp"
+#include "../enum_metadata.hpp"
 #include <string>
 #include <memory>
 #include <ostream>
@@ -20,25 +21,24 @@ namespace tt::inline v1 {
 
 enum class audio_device_state { active, disabled, not_present, unplugged };
 
-[[nodiscard]] constexpr char const *to_const_string(audio_device_state const &rhs) noexcept
-{
-    switch (rhs) {
-    case audio_device_state::active: return "active";
-    case audio_device_state::disabled: return "disabled";
-    case audio_device_state::not_present: return "not_present";
-    case audio_device_state::unplugged: return "unplugged";
-    default: tt_no_default();
-    }
-}
+// clang-format off
+constexpr auto audio_device_state_metadata = enum_metadata{
+    audio_device_state::active, "active",
+    audio_device_state::disabled, "disabled",
+    audio_device_state::not_present, "not_present",
+    audio_device_state::unplugged, "unplugged",
+};
+// clang-format on
 
-[[nodiscard]] inline std::string to_string(audio_device_state const &rhs) noexcept
+
+[[nodiscard]] inline std::string_view to_string(audio_device_state const &rhs) noexcept
 {
-    return {to_const_string(rhs)};
+    return audio_device_state_metadata[rhs];
 }
 
 inline std::ostream &operator<<(std::ostream &lhs, audio_device_state const &rhs)
 {
-    return lhs << to_const_string(rhs);
+    return lhs << audio_device_state_metadata[rhs];
 }
 
 /** A set of audio channels which can be rendered and/or captures at the same time.

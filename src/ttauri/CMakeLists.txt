@@ -59,6 +59,7 @@ target_sources(ttauri PRIVATE
     dialog.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/dialog_win32.cpp>
     endian.hpp
+    enum_metadata.hpp
     exception.hpp
     file.hpp
     $<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/file_posix.cpp>
@@ -197,6 +198,7 @@ if(TT_BUILD_TESTS)
         datum_tests.cpp
         dead_lock_detector_tests.cpp
         decimal_tests.cpp
+        enum_metadata_tests.cpp
         exceptions_tests.cpp
         file_view_tests.cpp
         fixed_string_tests.cpp
