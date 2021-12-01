@@ -8,6 +8,8 @@ add_custom_target(custom_widget_example_resources
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
     DEPENDS
     ttauri
+    resources/copyright.md
+    resources/mars3.png
 )
 
 add_executable(minimum_custom_widget_example WIN32 MACOSX_BUNDLE)
@@ -42,6 +44,8 @@ install(TARGETS minimum_custom_widget_example DESTINATION examples/custom_widget
 install(TARGETS custom_widget_with_child_example DESTINATION examples/custom_widgets)
 install(TARGETS custom_widget_command_example DESTINATION examples/custom_widgets)
 install(TARGETS custom_widget_drawing_example DESTINATION examples/custom_widgets)
+
+install(DIRECTORY resources/ DESTINATION examples/custom_widgets/resources)
 
 # copy additional "ttauri library" resources from top-level
 install(DIRECTORY ../../resources/  DESTINATION examples/custom_widgets/resources)

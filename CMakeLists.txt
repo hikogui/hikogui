@@ -85,7 +85,6 @@ endif()
 
 include(AddStaticResource)
 include(AddShader)
-include(AddStaticResource)
 include(ShowBuildTargetProperties)
 include(FetchContent)
 if(WIN32)
@@ -101,7 +100,7 @@ endif()
 #
 if(TT_BUILD_TESTS)
     set(INSTALL_GTEST OFF CACHE INTERNAL "Don't install gtest")
-    set(INSTALL_GMOCK OFF CACHE INTERNAL "Don't install gmock")
+    set(BUILD_GMOCK OFF CACHE INTERNAL "Don't build gmock")
     FetchContent_Declare(googletest GIT_REPOSITORY https://github.com/google/googletest.git GIT_TAG release-1.11.0)
     FetchContent_MakeAvailable(googletest)
 endif()
@@ -312,7 +311,7 @@ elseif (MSVC)
         target_compile_options(ttauri PUBLIC -analyze)
 
         #target_compile_options(ttauri PUBLIC -analyze:ruleset ${CMAKE_CURRENT_SOURCE_DIR}/AllRules.ruleset)
-        
+
         # The Core Guidelines checker, not so useful for real programs.
         #target_compile_options(ttauri PUBLIC -analyze:plugin EspXEngine.dll)
     endif()
