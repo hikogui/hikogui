@@ -33,10 +33,6 @@ std::vector<vk::DescriptorSetLayoutBinding> pipeline_tone_mapper::createDescript
         {0, // binding
          vk::DescriptorType::eInputAttachment,
          1, // descriptorCount
-         vk::ShaderStageFlagBits::eFragment},
-        {1, // binding
-         vk::DescriptorType::eInputAttachment,
-         1, // descriptorCount
          vk::ShaderStageFlagBits::eFragment}};
 }
 
@@ -44,26 +40,15 @@ std::vector<vk::WriteDescriptorSet> pipeline_tone_mapper::createWriteDescriptorS
 {
     ttlet &color_descriptor_image_infos = narrow_cast<gfx_surface_vulkan const &>(surface).colorDescriptorImageInfos;
 
-    return {
-        {
-            descriptorSet,
-            0, // destBinding
-            0, // arrayElement
-            1, // descriptorCount
-            vk::DescriptorType::eInputAttachment,
-            &color_descriptor_image_infos[0],
-            nullptr, // bufferInfo
-            nullptr // texelBufferView
-        },
-        {
-            descriptorSet,
-            1, // destBinding
-            0, // arrayElement
-            1, // descriptorCount
-            vk::DescriptorType::eInputAttachment,
-            &color_descriptor_image_infos[1],
-            nullptr, // bufferInfo
-            nullptr // texelBufferView
+    return {{
+        descriptorSet,
+        0, // destBinding
+        0, // arrayElement
+        1, // descriptorCount
+        vk::DescriptorType::eInputAttachment,
+        &color_descriptor_image_infos[0],
+        nullptr, // bufferInfo
+        nullptr // texelBufferView
         }};
 }
 

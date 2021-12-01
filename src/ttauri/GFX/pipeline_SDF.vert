@@ -4,18 +4,21 @@
 layout(push_constant) uniform push_constants {
     vec2 window_extent;
     vec2 viewport_scale;
-    int subpixel_orientation;
+    vec2 red_subpixel_orientation;
+    vec2 blue_subpixel_orientation;
+    bool has_subpixels;
 } pushConstants;
 
 // In position is in window pixel position, with left-bottom origin.
 layout(location = 0) in vec3 in_position;
 layout(location = 1) in vec4 in_clipping_rectangle;
 layout(location = 2) in vec3 in_texture_coord;
-layout(location = 3) in vec4 in_color_rgb;
+layout(location = 3) in vec4 in_color;
 
 layout(location = 0) out flat vec4 out_clipping_rectangle;
 layout(location = 1) out vec3 out_texture_coord;
-layout(location = 2) out vec4 out_color_luv;
+layout(location = 2) out vec4 out_color;
+layout(location = 3) out vec4 out_color_sqrt_rgby;
 
 #include "utils.glsl"
 
@@ -42,6 +45,8 @@ void main() {
     out_clipping_rectangle = convert_clipping_rectangle_to_screen(in_clipping_rectangle);
     out_texture_coord = in_texture_coord;
 
-    // Do not pre-multiply the alpha due to subpixel compositing. 
-    out_color_luv = rgb_to_tluv(in_color_rgb);
+    vec4 color = multiply_alpha(in_color);
+
+    out_color = color;
+    out_color_sqrt_rgby = sqrt(clamp(rgb_to_rgby(color.rgb), 0.0, 1.0));
 }

@@ -10,9 +10,11 @@
 namespace tt::inline v1::pipeline_SDF {
 
 struct push_constants {
-    sfloat_rg32 windowExtent = extent2{0.0, 0.0};
-    sfloat_rg32 viewportScale = scale2{0.0, 0.0};
-    int32_t subpixel_orientation = 0;
+    sfloat_rg32 window_extent = extent2{0.0, 0.0};
+    sfloat_rg32 viewport_scale = scale2{0.0, 0.0};
+    sfloat_rg32 red_subpixel_offset = vector2{0.0, 0.0};
+    sfloat_rg32 blue_subpixel_offset = vector2{0.0, 0.0};
+    VkBool32 has_subpixels = false;
 
     static std::vector<vk::PushConstantRange> pushConstantRanges()
     {

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
-    <Type Name="tt::datum">
+    <Type Name="tt::v1::datum">
         <DisplayString Condition="_tag == 0">undefined</DisplayString>
         <DisplayString Condition="_tag == 1">{_value._double}</DisplayString>
         <DisplayString Condition="_tag == 2">{_value._long_long}</DisplayString>
@@ -20,14 +20,17 @@
             <ExpandedItem Condition="_tag == -3">*_value._map</ExpandedItem>
         </Expand>
     </Type>
-    <Type Name="tt::unicode_mask::entry_type">
+    <Type Name="tt::v1::grapheme">
+        <DisplayString>{static_cast&lt;char32_t&gt;((value >> 1) &amp; 0x1fffff)}</DisplayString>
+    </Type>
+    <Type Name="tt::v1::unicode_mask::entry_type">
         <DisplayString>{(_value &amp; 0x7ff) == 0 ? 0 : _value >> 11} - {(_value &amp; 0x7ff) == 0 ? 0 : (_value >> 11) + (_value &amp; 0x7ff)}</DisplayString>
         <Expand>
             <Item Name="[Begin]">_value >> 11</Item>
             <Item Name="[End]">(_value >> 11) + (_value &amp; 0x7ff)</Item>
         </Expand>
     </Type>
-    <Type Name="tt::numeric_array&lt;*,4&gt;">
+    <Type Name="tt::v1::numeric_array&lt;*,4&gt;">
         <DisplayString>{v[0],g}, {v[1],g}, {v[2],g}, {v[3],g}</DisplayString>
         <Expand>
             <Item Name="[x]">v[0],g</Item>
@@ -36,7 +39,7 @@
             <Item Name="[w]">v[3],g</Item>
         </Expand>
     </Type>
-    <Type Name="tt::numeric_array&lt;*,8&gt;">
+    <Type Name="tt::v1::numeric_array&lt;*,8&gt;">
         <DisplayString>{v[0],g}, {v[1],g}, {v[2],g}, {v[3],g}, {v[4],g}, {v[5],g}, {v[6],g}, {v[7],g}</DisplayString>
         <Expand>
             <Item Name="[0]">v[0],g</Item>
@@ -49,14 +52,14 @@
             <Item Name="[7]">v[7],g</Item>
         </Expand>
     </Type>
-    <Type Name="tt::geo::point&lt;2&gt;">
+    <Type Name="tt::v1::geo::point&lt;2&gt;">
         <DisplayString>&lt;{_v.v[0],g}, {_v.v[1],g}&gt;</DisplayString>
         <Expand>
             <Item Name="[x]">_v.v[0],g</Item>
             <Item Name="[y]">_v.v[1],g</Item>
         </Expand>
     </Type>
-    <Type Name="tt::geo::point&lt;3&gt;">
+    <Type Name="tt::v1::geo::point&lt;3&gt;">
         <DisplayString>&lt;{_v.v[0],g}, {_v.v[1],g}, {_v.v[2],g}&gt;</DisplayString>
         <Expand>
             <Item Name="[x]">_v.v[0],g</Item>
@@ -64,14 +67,14 @@
             <Item Name="[z]">_v.v[2],g</Item>
         </Expand>
     </Type>
-    <Type Name="tt::geo::vector&lt;2&gt;">
+    <Type Name="tt::v1::geo::vector&lt;2&gt;">
         <DisplayString>(_v.v[0],g}, {_v.v[1],g})</DisplayString>
         <Expand>
             <Item Name="[x]">_v.v[0],g</Item>
             <Item Name="[y]">_v.v[1],g</Item>
         </Expand>
     </Type>
-    <Type Name="tt::geo::vector&lt;3&gt;">
+    <Type Name="tt::v1::geo::vector&lt;3&gt;">
         <DisplayString>({_v.v[0],g}, {_v.v[1],g}, {_v.v[2],g})</DisplayString>
         <Expand>
             <Item Name="[x]">_v.v[0],g</Item>
@@ -79,14 +82,14 @@
             <Item Name="[z]">_v.v[2],g</Item>
         </Expand>
     </Type>
-    <Type Name="tt::geo::extent&lt;2&gt;">
+    <Type Name="tt::v1::geo::extent&lt;2&gt;">
         <DisplayString>[{_v.v[0],g}, {_v.v[1],g}]</DisplayString>
         <Expand>
             <Item Name="[width]">_v.v[0],g</Item>
             <Item Name="[height]">_v.v[1],g</Item>
         </Expand>
     </Type>
-    <Type Name="tt::geo::extent&lt;3&gt;">
+    <Type Name="tt::v1::geo::extent&lt;3&gt;">
         <DisplayString>[{_v.v[0],g}, {_v.v[1],g}, {_v.v[2],g}]</DisplayString>
         <Expand>
             <Item Name="[width]">_v.v[0],g</Item>
@@ -94,7 +97,7 @@
             <Item Name="[depth]">_v.v[2],g</Item>
         </Expand>
     </Type>
-    <Type Name="tt::color">
+    <Type Name="tt::v1::color">
         <DisplayString>{{ r={_v.v[0],g}, g={_v.v[1],g}, b={_v.v[1],g}, a={_v.v[1],g} }}</DisplayString>
         <Expand>
             <Item Name="[red]">_v.v[0],g</Item>
@@ -103,7 +106,7 @@
             <Item Name="[alpha]">_v.v[3],g</Item>
         </Expand>
     </Type>
-    <Type Name="tt::corner_shapes">
+    <Type Name="tt::v1::corner_shapes">
         <DisplayString>{{ lb={_v.v[0],g}, rb={_v.v[1],g}, lt={_v.v[1],g}, rt={_v.v[1],g} }}</DisplayString>
         <Expand>
             <Item Name="[left bottom]">_v.v[0],g</Item>
@@ -112,7 +115,7 @@
             <Item Name="[right top]">_v.v[3],g</Item>
         </Expand>
     </Type>
-    <Type Name="tt::rectangle">
+    <Type Name="tt::v1::rectangle">
         <DisplayString>{{ {origin}, {right}, {up} }}</DisplayString>
         <Expand>
             <Item Name="[origin]">origin</Item>
@@ -120,7 +123,7 @@
             <Item Name="[up]">up</Item>
         </Expand>
     </Type>
-    <Type Name="tt::quad">
+    <Type Name="tt::v1::quad">
         <DisplayString>{{ {p0}, {p1}, {p2}, {p3} }}</DisplayString>
         <Expand>
             <Item Name="[0]">p0</Item>
@@ -129,7 +132,7 @@
             <Item Name="[3]">p3</Item>
         </Expand>
     </Type>
-    <Type Name="tt::axis_aligned_rectangle">
+    <Type Name="tt::v1::axis_aligned_rectangle">
         <DisplayString>{{ &lt;{v.v[0],g}, {v.v[1],g}&gt;, [{v.v[2] - v.v[0],g}, {v.v[3] - v.v[1],g}] }}</DisplayString>
         <Expand>
             <Item Name="[left]">v.v[0],g</Item>
@@ -140,22 +143,22 @@
             <Item Name="[height]">v.v[3] - v.v[1],g</Item>
         </Expand>
     </Type>
-    <Type Name="tt::detail::observable_value&lt;*&gt;">
+    <Type Name="tt::v1::detail::observable_value&lt;*&gt;">
         <DisplayString>.{_value}</DisplayString>
     </Type>
-    <Type Name="tt::detail::observable_chain&lt;*&gt;">
+    <Type Name="tt::v1::detail::observable_chain&lt;*&gt;">
         <DisplayString>->{*(_operand.value())}</DisplayString>
     </Type>
-    <Type Name="tt::observable&lt;*&gt;">
+    <Type Name="tt::v1::observable&lt;*&gt;">
         <DisplayString>{*(pimpl)}</DisplayString>
     </Type>
-    <Type Name="tt::l10n">
+    <Type Name="tt::v1::l10n">
         <DisplayString>l10n({_msg_id})</DisplayString>
     </Type>
-    <Type Name="tt::label">
+    <Type Name="tt::v1::label">
         <DisplayString>label({text._msg_id})</DisplayString>
     </Type>
-    <Type Name="tt::label_widget">
+    <Type Name="tt::v1::label_widget">
         <DisplayString>{{ label_widget {label} }}</DisplayString>
     </Type>
 </AutoVisualizer>

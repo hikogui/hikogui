@@ -426,6 +426,14 @@ void text_field_widget::draw_caret(draw_context const &context) noexcept
                 1.0f,
                 border_side::inside);
         }
+
+        //ttlet right_to_left_caret = _field.right_to_left_caret();
+        //if (right_to_left_caret and blink_is_on) {
+        //    ttlet box = round(_text_translate) * translate_z(0.1f) * round(right_to_left_caret);
+        //    context.draw_box(
+        //        clipped_layout, box, color::transparent(), theme().color(theme_color::red), 1.0f, //border_side::inside);
+        //}
+
     }
 }
 

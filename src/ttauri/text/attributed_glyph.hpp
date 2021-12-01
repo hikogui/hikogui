@@ -31,6 +31,8 @@ struct attributed_glyph {
     /** Number of graphemes merged (ligature) into this attributed-glyph. */
     int8_t graphemeCount;
 
+    unicode_bidi_class bidi_class;
+
     unicode_general_category general_category;
 
     /** Copied from the original attributed-grapheme. */
