@@ -7,7 +7,7 @@
 #include "../color/color.hpp"
 #include "../float16.hpp"
 #include "../pixel_map.hpp"
-#include "../geometry/corner_shapes.hpp"
+#include "../geometry/corner_radii.hpp"
 #include "../rapid/numeric_array.hpp"
 #include "../hash.hpp"
 #include <algorithm>
@@ -60,7 +60,7 @@ public:
         return color{static_cast<f16x4>(*this)};
     }
 
-    [[nodiscard]] constexpr sfloat_rgba16(corner_shapes const &rhs) noexcept : sfloat_rgba16(static_cast<f32x4>(rhs)) {}
+    [[nodiscard]] constexpr sfloat_rgba16(corner_radii const &rhs) noexcept : sfloat_rgba16(static_cast<f32x4>(rhs)) {}
 
     [[nodiscard]] size_t hash() const noexcept
     {

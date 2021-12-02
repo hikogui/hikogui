@@ -6,17 +6,17 @@
 
 namespace tt::inline v1 {
 
-class corner_shapes {
+class corner_radii {
 public:
-    constexpr corner_shapes(corner_shapes const &) noexcept = default;
-    constexpr corner_shapes(corner_shapes &&) noexcept = default;
-    constexpr corner_shapes &operator=(corner_shapes const &) noexcept = default;
-    constexpr corner_shapes &operator=(corner_shapes &&) noexcept = default;
+    constexpr corner_radii(corner_radii const &) noexcept = default;
+    constexpr corner_radii(corner_radii &&) noexcept = default;
+    constexpr corner_radii &operator=(corner_radii const &) noexcept = default;
+    constexpr corner_radii &operator=(corner_radii &&) noexcept = default;
 
-    [[nodiscard]] constexpr corner_shapes() noexcept : corner_shapes(-std::numeric_limits<float>::infinity()) {}
-    [[nodiscard]] constexpr corner_shapes(float radius) noexcept : _v(radius, radius, radius, radius) {}
-    [[nodiscard]] constexpr corner_shapes(float lb, float rb, float lt, float rt) noexcept : _v(lb, rb, lt, rt) {}
-    [[nodiscard]] constexpr explicit corner_shapes(f32x4 v) noexcept : _v(v) {}
+    [[nodiscard]] constexpr corner_radii() noexcept : corner_radii(-std::numeric_limits<float>::infinity()) {}
+    [[nodiscard]] constexpr corner_radii(float radius) noexcept : _v(radius, radius, radius, radius) {}
+    [[nodiscard]] constexpr corner_radii(float lb, float rb, float lt, float rt) noexcept : _v(lb, rb, lt, rt) {}
+    [[nodiscard]] constexpr explicit corner_radii(f32x4 v) noexcept : _v(v) {}
 
     [[nodiscard]] constexpr explicit operator f32x4() const noexcept
     {
@@ -44,7 +44,7 @@ public:
     }
 
     template<int I>
-    [[nodiscard]] constexpr friend float get(corner_shapes const &rhs) noexcept
+    [[nodiscard]] constexpr friend float get(corner_radii const &rhs) noexcept
     {
         return get<I>(rhs._v);
     }
@@ -54,10 +54,10 @@ public:
         return _v[i];
     }
 
-    [[nodiscard]] constexpr friend corner_shapes operator+(corner_shapes const &lhs, float rhs) noexcept
+    [[nodiscard]] constexpr friend corner_radii operator+(corner_radii const &lhs, float rhs) noexcept
     {
-        return corner_shapes{f32x4{lhs} + rhs};
-        //auto r = corner_shapes{};
+        return corner_radii{f32x4{lhs} + rhs};
+        //auto r = corner_radii{};
         //
         //for (size_t i = 0; i != lhs._v.size(); ++i) {
         //    if (lhs._v[i] >= 0) {
@@ -70,9 +70,9 @@ public:
         //return r;
     }
 
-    [[nodiscard]] constexpr friend corner_shapes operator-(corner_shapes const &lhs, float rhs) noexcept
+    [[nodiscard]] constexpr friend corner_radii operator-(corner_radii const &lhs, float rhs) noexcept
     {
-        return corner_shapes{f32x4{lhs} - rhs};
+        return corner_radii{f32x4{lhs} - rhs};
         //return lhs + -rhs;
     }
 

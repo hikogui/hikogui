@@ -39,7 +39,7 @@ void draw_context::_draw_box(
     quad_color const &fill_color,
     quad_color const &border_color,
     float border_width,
-    tt::corner_shapes corner_radius) const noexcept
+    tt::corner_radii corner_radius) const noexcept
 {
     if (_box_vertices->full()) {
         // Too many boxes where added, just don't draw them anymore.

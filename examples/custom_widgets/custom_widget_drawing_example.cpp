@@ -213,10 +213,10 @@ public:
         return tt::rotate3(angle, tt::vector3{0.0f, 0.0f, 1.0f});
     }
 
-    [[nodiscard]] tt::corner_shapes corners() const noexcept
+    [[nodiscard]] tt::corner_radii corners() const noexcept
     {
         if (*rounded) {
-            return tt::corner_shapes{20.0f, 10.0f, 5.0f, 0.0f};
+            return tt::corner_radii{20.0f, 10.0f, 5.0f, 0.0f};
         } else {
             return {};
         }

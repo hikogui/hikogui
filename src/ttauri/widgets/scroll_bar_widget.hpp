@@ -201,17 +201,17 @@ private:
 
     void draw_rails(draw_context const &context) noexcept
     {
-        ttlet corner_shapes =
-            axis == axis::vertical ? tt::corner_shapes{layout().width() * 0.5f} : tt::corner_shapes{layout().height() * 0.5f};
-        context.draw_box(layout(), layout().rectangle(), background_color(), corner_shapes);
+        ttlet corner_radii =
+            axis == axis::vertical ? tt::corner_radii{layout().width() * 0.5f} : tt::corner_radii{layout().height() * 0.5f};
+        context.draw_box(layout(), layout().rectangle(), background_color(), corner_radii);
     }
 
     void draw_slider(draw_context const &context) noexcept
     {
-        ttlet corner_shapes = axis == axis::vertical ? tt::corner_shapes{_slider_rectangle.width() * 0.5f} :
-                                                       tt::corner_shapes{_slider_rectangle.height() * 0.5f};
+        ttlet corner_radii = axis == axis::vertical ? tt::corner_radii{_slider_rectangle.width() * 0.5f} :
+                                                       tt::corner_radii{_slider_rectangle.height() * 0.5f};
 
-        context.draw_box(layout(), translate_z(0.1f) * _slider_rectangle, foreground_color(), corner_shapes);
+        context.draw_box(layout(), translate_z(0.1f) * _slider_rectangle, foreground_color(), corner_radii);
     }
 };
 

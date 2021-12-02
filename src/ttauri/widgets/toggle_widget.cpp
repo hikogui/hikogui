@@ -65,7 +65,7 @@ void toggle_widget::draw_toggle_button(draw_context const &context) noexcept
         focus_color(),
         theme().border_width,
         border_side::inside,
-        corner_shapes{_button_rectangle.height() * 0.5f});
+        corner_radii{_button_rectangle.height() * 0.5f});
 }
 
 void toggle_widget::draw_toggle_pip(draw_context const &context) noexcept

@@ -106,7 +106,7 @@
             <Item Name="[alpha]">_v.v[3],g</Item>
         </Expand>
     </Type>
-    <Type Name="tt::v1::corner_shapes">
+    <Type Name="tt::v1::corner_radii">
         <DisplayString>{{ lb={_v.v[0],g}, rb={_v.v[1],g}, lt={_v.v[1],g}, rt={_v.v[1],g} }}</DisplayString>
         <Expand>
             <Item Name="[left bottom]">_v.v[0],g</Item>

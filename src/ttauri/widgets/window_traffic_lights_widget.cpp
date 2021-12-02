@@ -96,18 +96,18 @@ void window_traffic_lights_widget::drawMacOS(draw_context const &drawContext) no
     ttlet close_circle_color = (not active() and not hover) ? color(0.246f, 0.246f, 0.246f) :
         pressedClose                                      ? color(1.0f, 0.242f, 0.212f) :
                                                             color(1.0f, 0.1f, 0.082f);
-    context.draw_box(layout(), closeRectangle, close_circle_color, corner_shapes{RADIUS});
+    context.draw_box(layout(), closeRectangle, close_circle_color, corner_radii{RADIUS});
 
     ttlet minimize_circle_color = (not active() and not hover) ? color(0.246f, 0.246f, 0.246f) :
         pressedMinimize                                      ? color(1.0f, 0.847f, 0.093f) :
                                                                color(0.784f, 0.521f, 0.021f);
-    context.draw_box(layout(), minimizeRectangle, minimize_circle_color, corner_shapes{RADIUS});
+    context.draw_box(layout(), minimizeRectangle, minimize_circle_color, corner_radii{RADIUS});
 
     ttlet maximize_circle_color = (not active() and not hover) ? color(0.246f, 0.246f, 0.246f) :
         pressedMaximize                                      ? color(0.223f, 0.863f, 0.1f) :
                                                                color(0.082f, 0.533f, 0.024f);
 
-    context.draw_box(layout(), maximizeRectangle, maximize_circle_color, corner_shapes{RADIUS});
+    context.draw_box(layout(), maximizeRectangle, maximize_circle_color, corner_radii{RADIUS});
 
     if (hover) {
         context.draw_glyph(layout(), translate_z(0.1f) * closeWindowGlyphRectangle, color{0.319f, 0.0f, 0.0f}, closeWindowGlyph);
