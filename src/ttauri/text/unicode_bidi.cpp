@@ -161,9 +161,9 @@ struct unicode_bidi_bracket_pair {
     {
     }
 
-    [[nodiscard]] friend bool operator<(unicode_bidi_bracket_pair const &lhs, unicode_bidi_bracket_pair const &rhs) noexcept
+    [[nodiscard]] friend auto operator<=>(unicode_bidi_bracket_pair const &lhs, unicode_bidi_bracket_pair const &rhs) noexcept
     {
-        return lhs.open < rhs.open;
+        return lhs.open <=> rhs.open;
     }
 };
 

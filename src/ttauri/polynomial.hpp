@@ -42,10 +42,8 @@ struct results {
         sort();
     }
 
-    template<
-        int O,
-        typename std::enable_if_t<O<N, int> = 0> results(results<T, O> const &other) noexcept : count(other.count),
-        value()
+    template<int O>
+    results(results<T, O> const &other) noexcept requires(O < N) : count(other.count), value()
     {
         if constexpr (O > 0) {
             for (int i = 0; i < other.maxCount; i++) {

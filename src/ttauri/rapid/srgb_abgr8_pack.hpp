@@ -56,14 +56,7 @@ public:
         return *this;
     }
 
-    [[nodiscard]] constexpr friend bool operator==(srgb_abgr8_pack const &lhs, srgb_abgr8_pack const &rhs) noexcept
-    {
-        return lhs.v == rhs.v;
-    }
-    [[nodiscard]] constexpr friend bool operator!=(srgb_abgr8_pack const &lhs, srgb_abgr8_pack const &rhs) noexcept
-    {
-        return !(lhs == rhs);
-    }
+    [[nodiscard]] constexpr friend bool operator==(srgb_abgr8_pack const &lhs, srgb_abgr8_pack const &rhs) noexcept = default;
 
     [[nodiscard]] constexpr friend srgb_abgr8_pack makeTransparent(srgb_abgr8_pack const &rhs) noexcept
     {

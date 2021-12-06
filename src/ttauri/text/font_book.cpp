@@ -185,7 +185,7 @@ void font_book::post_process() noexcept
 
     auto i = family_names.find(name);
     if (i == family_names.end()) {
-        ttlet family_id = font_family_id(ssize(font_variants));
+        ttlet family_id = font_family_id(font_variants.size());
         font_variants.emplace_back();
         family_names[name] = family_id;
 

@@ -8,6 +8,7 @@
 #include <date/date.h>
 #include <format>
 #include <string>
+#include <compare>
 
 namespace tt::inline v1 {
 
@@ -72,25 +73,10 @@ public:
     {
         return lhs.q == rhs.q;
     }
-    [[nodiscard]] friend constexpr bool operator!=(quarter const &lhs, quarter const &rhs) noexcept
+
+    [[nodiscard]] friend constexpr auto operator<=>(quarter const &lhs, quarter const &rhs) noexcept
     {
-        return lhs.q != rhs.q;
-    }
-    [[nodiscard]] friend constexpr bool operator<(quarter const &lhs, quarter const &rhs) noexcept
-    {
-        return lhs.q < rhs.q;
-    }
-    [[nodiscard]] friend constexpr bool operator>(quarter const &lhs, quarter const &rhs) noexcept
-    {
-        return lhs.q > rhs.q;
-    }
-    [[nodiscard]] friend constexpr bool operator<=(quarter const &lhs, quarter const &rhs) noexcept
-    {
-        return lhs.q <= rhs.q;
-    }
-    [[nodiscard]] friend constexpr bool operator>=(quarter const &lhs, quarter const &rhs) noexcept
-    {
-        return lhs.q >= rhs.q;
+        return lhs.q <=> rhs.q;
     }
 
     [[nodiscard]] friend std::string to_string(quarter const &rhs) noexcept
@@ -151,36 +137,9 @@ public:
         return y == ymd.year() && q.contains(std::chrono::month_day(ymd.month(), ymd.day()));
     }
 
-    [[nodiscard]] friend constexpr bool operator==(year_quarter const &lhs, year_quarter const &rhs) noexcept
-    {
-        return lhs.y == rhs.y && lhs.q == rhs.q;
-    }
+    [[nodiscard]] friend constexpr bool operator==(year_quarter const &lhs, year_quarter const &rhs) noexcept = default;
+    [[nodiscard]] friend constexpr std::strong_ordering operator<=>(year_quarter const &lhs, year_quarter const &rhs) noexcept = default;
 
-    [[nodiscard]] friend constexpr bool operator<(year_quarter const &lhs, year_quarter const &rhs) noexcept
-    {
-        if (lhs.y == rhs.y) {
-            return lhs.q < rhs.q;
-        } else {
-            return lhs.y < rhs.y;
-        }
-    }
-
-    [[nodiscard]] friend constexpr bool operator!=(year_quarter const &lhs, year_quarter const &rhs) noexcept
-    {
-        return !(lhs == rhs);
-    }
-    [[nodiscard]] friend constexpr bool operator>(year_quarter const &lhs, year_quarter const &rhs) noexcept
-    {
-        return rhs < lhs;
-    }
-    [[nodiscard]] friend constexpr bool operator<=(year_quarter const &lhs, year_quarter const &rhs) noexcept
-    {
-        return !(lhs > rhs);
-    }
-    [[nodiscard]] friend constexpr bool operator>=(year_quarter const &lhs, year_quarter const &rhs) noexcept
-    {
-        return !(lhs < rhs);
-    }
 
     [[nodiscard]] friend std::string to_string(year_quarter const &rhs) noexcept
     {

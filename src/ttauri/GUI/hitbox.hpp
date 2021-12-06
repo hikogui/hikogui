@@ -4,9 +4,11 @@
 
 #pragma once
 
+#include "../geometry/point.hpp"
+#include "../assert.hpp"
 #include <limits>
 #include <cstdint>
-#include "../geometry/point.hpp"
+#include <compare>
 
 namespace tt::inline v1 {
 class widget;
@@ -53,18 +55,26 @@ public:
     {
     }
 
-    friend bool operator<(hitbox const &lhs, hitbox const &rhs) noexcept
+    [[nodiscard]] constexpr friend std::strong_ordering operator<=>(hitbox const &lhs, hitbox const &rhs) noexcept
     {
         if ((lhs.widget == nullptr) == (rhs.widget == nullptr)) {
-            if (lhs._elevation == rhs._elevation) {
-                return static_cast<int>(lhs.type) < static_cast<int>(rhs.type);
+            // Either both are widgets, or both are not widgets.
+            ttlet elevation_cmp = lhs._elevation <=> rhs._elevation;
+            if (elevation_cmp == 0) {
+                return static_cast<int>(lhs.type) <=> static_cast<int>(rhs.type);
+            } else if (elevation_cmp < 0) {
+                return std::strong_ordering::less;
+            } else if (elevation_cmp > 0) {
+                return std::strong_ordering::greater;
             } else {
-                // We actually want to check if a hitbox is above another hitbox;
-                // which means the inverse of depth.
-                return lhs._elevation < rhs._elevation;
+                tt_no_default();
             }
+        } else if (lhs.widget == nullptr) {
+            // If lhs is not a widget than it is less.
+            return std::strong_ordering::less;
         } else {
-            return lhs.widget == nullptr;
+            // Otherwise the lhs is greater.
+            return std::strong_ordering::greater;
         }
     }
 

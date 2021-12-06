@@ -43,14 +43,7 @@ public:
     sfloat_rg32(vector2 const &rhs) noexcept : sfloat_rg32{static_cast<f32x4>(rhs)} {}
     sfloat_rg32(point2 const &rhs) noexcept : sfloat_rg32{static_cast<f32x4>(rhs)} {}
 
-    [[nodiscard]] friend bool operator==(sfloat_rg32 const &lhs, sfloat_rg32 const &rhs) noexcept
-    {
-        return lhs.v == rhs.v;
-    }
-    [[nodiscard]] friend bool operator!=(sfloat_rg32 const &lhs, sfloat_rg32 const &rhs) noexcept
-    {
-        return !(lhs == rhs);
-    }
+    [[nodiscard]] friend bool operator==(sfloat_rg32 const &lhs, sfloat_rg32 const &rhs) noexcept = default;
 };
 
 } // namespace tt::inline v1

@@ -32,15 +32,12 @@ struct wfree_unordered_map_item {
     std::atomic<size_t> hash;
     K key;
 
-    template<typename X = K, std::enable_if_t<std::is_same_v<X, std::type_index>, int> = 0>
-    constexpr wfree_unordered_map_item() noexcept : value(), hash(0), key(std::type_index(typeid(void)))
+    constexpr wfree_unordered_map_item() noexcept requires(std::is_same_v<K, std::type_index>) :
+        value(), hash(0), key(std::type_index(typeid(void)))
     {
     }
 
-    template<typename X = K, std::enable_if_t<!std::is_same_v<X, std::type_index>, int> = 0>
-    constexpr wfree_unordered_map_item() noexcept : value(), hash(0), key()
-    {
-    }
+    constexpr wfree_unordered_map_item() noexcept requires(not std::is_same_v<K, std::type_index>) : value(), hash(0), key() {}
 
     constexpr wfree_unordered_map_item(wfree_unordered_map_item const &) noexcept = delete;
     constexpr wfree_unordered_map_item(wfree_unordered_map_item &&) noexcept = delete;

@@ -39,12 +39,7 @@ public:
         return language_tag{split(tag, '-').front()};
     }
 
-    [[nodiscard]] bool operator==(language_tag const &rhs) const noexcept
-    {
-        return tag == rhs.tag;
-    }
-
-    [[nodiscard]] bool operator!=(language_tag const &rhs) const noexcept = default;
+    [[nodiscard]] friend bool operator==(language_tag const &, language_tag const &) noexcept = default;
 
     [[nodiscard]] friend std::string to_string(language_tag const &url) noexcept
     {
