@@ -8,17 +8,18 @@
 #include "cast.hpp"
 #include "math.hpp"
 #include "fixed_string.hpp"
+#include "concepts.hpp"
 #include <limits>
 #include <typeinfo>
 #include <typeindex>
+#include <compare>
+#include <concepts>
 
 namespace tt::inline v1 {
 
-template<typename T, basic_fixed_string Tag, ssize_t Max = std::numeric_limits<T>::max() - 1>
+template<std::unsigned_integral T, basic_fixed_string Tag, ssize_t Max = std::numeric_limits<T>::max() - 1>
 class tagged_id {
 public:
-    static_assert(std::is_integral_v<T>, "Expecting tagged_id to be an integral");
-    static_assert(std::is_unsigned_v<T>, "Expecting tagged_id to be an unsigned integer");
     static_assert(Max < std::numeric_limits<T>::max(), "Max must be at least one less than the maximum value of T");
 
     using value_type = T;
@@ -27,158 +28,42 @@ public:
     constexpr static value_type invalid = max + 1;
     constexpr static value_type mask = static_cast<value_type>((1ULL << std::bit_width(invalid)) - 1);
 
-    constexpr explicit tagged_id(signed long long rhs) noexcept : value(narrow_cast<value_type>(rhs))
-    {
-        tt_axiom(value <= invalid);
-    }
-    constexpr explicit tagged_id(signed long rhs) noexcept : value(narrow_cast<value_type>(rhs))
-    {
-        tt_axiom(value <= invalid);
-    }
-    constexpr explicit tagged_id(signed int rhs) noexcept : value(narrow_cast<value_type>(rhs))
-    {
-        tt_axiom(value <= invalid);
-    }
-    constexpr explicit tagged_id(signed short rhs) noexcept : value(narrow_cast<value_type>(rhs))
-    {
-        tt_axiom(value <= invalid);
-    }
-    constexpr explicit tagged_id(signed char rhs) noexcept : value(narrow_cast<value_type>(rhs))
-    {
-        tt_axiom(value <= invalid);
-    }
-    constexpr explicit tagged_id(unsigned long long rhs) noexcept : value(narrow_cast<value_type>(rhs))
-    {
-        tt_axiom(value <= invalid);
-    }
-    constexpr explicit tagged_id(unsigned long rhs) noexcept : value(narrow_cast<value_type>(rhs))
-    {
-        tt_axiom(value <= invalid);
-    }
-    constexpr explicit tagged_id(unsigned int rhs) noexcept : value(narrow_cast<value_type>(rhs))
-    {
-        tt_axiom(value <= invalid);
-    }
-    constexpr explicit tagged_id(unsigned short rhs) noexcept : value(narrow_cast<value_type>(rhs))
-    {
-        tt_axiom(value <= invalid);
-    }
-    constexpr explicit tagged_id(unsigned char rhs) noexcept : value(narrow_cast<value_type>(rhs))
-    {
-        tt_axiom(value <= invalid);
-    }
-
-    constexpr tagged_id &operator=(signed long long rhs) noexcept
-    {
-        value = narrow_cast<value_type>(rhs);
-        tt_axiom(value <= invalid);
-        return *this;
-    }
-    constexpr tagged_id &operator=(signed long rhs) noexcept
-    {
-        value = narrow_cast<value_type>(rhs);
-        tt_axiom(value <= invalid);
-        return *this;
-    }
-    constexpr tagged_id &operator=(signed int rhs) noexcept
-    {
-        value = narrow_cast<value_type>(rhs);
-        tt_axiom(value <= invalid);
-        return *this;
-    }
-    constexpr tagged_id &operator=(signed short rhs) noexcept
-    {
-        value = narrow_cast<value_type>(rhs);
-        tt_axiom(value <= invalid);
-        return *this;
-    }
-    constexpr tagged_id &operator=(signed char rhs) noexcept
-    {
-        value = narrow_cast<value_type>(rhs);
-        tt_axiom(value <= invalid);
-        return *this;
-    }
-    constexpr tagged_id &operator=(unsigned long long rhs) noexcept
-    {
-        value = narrow_cast<value_type>(rhs);
-        tt_axiom(value <= invalid);
-        return *this;
-    }
-    constexpr tagged_id &operator=(unsigned long rhs) noexcept
-    {
-        value = narrow_cast<value_type>(rhs);
-        tt_axiom(value <= invalid);
-        return *this;
-    }
-    constexpr tagged_id &operator=(unsigned int rhs) noexcept
-    {
-        value = narrow_cast<value_type>(rhs);
-        tt_axiom(value <= invalid);
-        return *this;
-    }
-    constexpr tagged_id &operator=(unsigned short rhs) noexcept
-    {
-        value = narrow_cast<value_type>(rhs);
-        tt_axiom(value <= invalid);
-        return *this;
-    }
-    constexpr tagged_id &operator=(unsigned char rhs) noexcept
-    {
-        value = narrow_cast<value_type>(rhs);
-        tt_axiom(value <= invalid);
-        return *this;
-    }
-
     constexpr tagged_id() noexcept : value(invalid) {}
     constexpr tagged_id(tagged_id const &other) noexcept = default;
     constexpr tagged_id(tagged_id &&other) noexcept = default;
     constexpr tagged_id &operator=(tagged_id const &other) noexcept = default;
     constexpr tagged_id &operator=(tagged_id &&other) noexcept = default;
 
-    constexpr operator signed long long() const noexcept
+    template<std::integral O>
+    constexpr explicit tagged_id(O rhs) noexcept : value(narrow_cast<value_type>(rhs))
     {
-        return narrow_cast<signed long long>(value);
+        tt_axiom(holds_invariant() and value != invalid);
     }
-    constexpr operator signed long() const noexcept
+
+    template<std::integral O>
+    constexpr tagged_id &operator=(O rhs) noexcept
     {
-        return narrow_cast<signed long>(value);
+        value = narrow_cast<value_type>(rhs);
+        tt_axiom(holds_invariant() and value != invalid);
+        return *this;
     }
-    constexpr operator signed int() const noexcept
+
+    constexpr tagged_id &operator=(std::monostate) noexcept
     {
-        return narrow_cast<signed int>(value);
+        value = invalid;
+        return *this;
     }
-    constexpr operator signed short() const noexcept
+
+    template<std::integral O>
+    constexpr operator O() const noexcept
     {
-        return narrow_cast<signed short>(value);
-    }
-    constexpr operator signed char() const noexcept
-    {
-        return narrow_cast<signed char>(value);
-    }
-    constexpr operator unsigned long long() const noexcept
-    {
-        return narrow_cast<unsigned long long>(value);
-    }
-    constexpr operator unsigned long() const noexcept
-    {
-        return narrow_cast<unsigned long>(value);
-    }
-    constexpr operator unsigned int() const noexcept
-    {
-        return narrow_cast<unsigned int>(value);
-    }
-    constexpr operator unsigned short() const noexcept
-    {
-        return narrow_cast<unsigned short>(value);
-    }
-    constexpr operator unsigned char() const noexcept
-    {
-        return narrow_cast<unsigned char>(value);
+        tt_axiom(value != invalid);
+        return narrow_cast<O>(value);
     }
 
     constexpr operator bool() const noexcept
     {
-        return value <= max;
+        return value != invalid;
     }
 
     [[nodiscard]] constexpr size_t hash() const noexcept
@@ -190,86 +75,39 @@ public:
     {
         return lhs.value == rhs.value;
     }
-    [[nodiscard]] constexpr friend bool operator!=(tagged_id const &lhs, tagged_id const &rhs) noexcept
+
+    [[nodiscard]] constexpr friend std::partial_ordering operator<=>(tagged_id const &lhs, tagged_id const &rhs) noexcept
     {
-        return lhs.value != rhs.value;
-    }
-    [[nodiscard]] constexpr friend bool operator<(tagged_id const &lhs, tagged_id const &rhs) noexcept
-    {
-        return lhs.value < rhs.value;
-    }
-    [[nodiscard]] constexpr friend bool operator>(tagged_id const &lhs, tagged_id const &rhs) noexcept
-    {
-        return lhs.value > rhs.value;
-    }
-    [[nodiscard]] constexpr friend bool operator<=(tagged_id const &lhs, tagged_id const &rhs) noexcept
-    {
-        return lhs.value <= rhs.value;
-    }
-    [[nodiscard]] constexpr friend bool operator>=(tagged_id const &lhs, tagged_id const &rhs) noexcept
-    {
-        return lhs.value >= rhs.value;
+        if (lhs.value == invalid or rhs.value == invalid) {
+            return std::partial_ordering::unordered;
+        } else {
+            return lhs.value <=> rhs.value;
+        }
     }
 
-    template<typename O>
-    [[nodiscard]] constexpr friend bool operator==(tagged_id const &lhs, O const &rhs) noexcept
+    [[nodiscard]] constexpr friend bool operator==(tagged_id const &lhs, std::integral auto const &rhs) noexcept
     {
         return lhs == tagged_id{rhs};
     }
-    template<typename O>
-    [[nodiscard]] constexpr friend bool operator!=(tagged_id const &lhs, O const &rhs) noexcept
-    {
-        return lhs != tagged_id{rhs};
-    }
-    template<typename O>
-    [[nodiscard]] constexpr friend bool operator<(tagged_id const &lhs, O const &rhs) noexcept
-    {
-        return lhs < tagged_id{rhs};
-    }
-    template<typename O>
-    [[nodiscard]] constexpr friend bool operator>(tagged_id const &lhs, O const &rhs) noexcept
-    {
-        return lhs > tagged_id{rhs};
-    }
-    template<typename O>
-    [[nodiscard]] constexpr friend bool operator<=(tagged_id const &lhs, O const &rhs) noexcept
-    {
-        return lhs <= tagged_id{rhs};
-    }
-    template<typename O>
-    [[nodiscard]] constexpr friend bool operator>=(tagged_id const &lhs, O const &rhs) noexcept
-    {
-        return lhs >= tagged_id{rhs};
-    }
-    template<typename O>
-    [[nodiscard]] constexpr friend bool operator==(O const &lhs, tagged_id const &rhs) noexcept
+
+    [[nodiscard]] constexpr friend bool operator==(std::integral auto const &lhs, tagged_id const &rhs) noexcept
     {
         return tagged_id{lhs} == rhs;
     }
-    template<typename O>
-    [[nodiscard]] constexpr friend bool operator!=(O const &lhs, tagged_id const &rhs) noexcept
+
+    [[nodiscard]] constexpr friend std::partial_ordering operator<=>(tagged_id const &lhs, std::integral auto const &rhs) noexcept
     {
-        return tagged_id{lhs} != rhs;
+        return lhs <=> tagged_id{rhs};
     }
-    template<typename O>
-    [[nodiscard]] constexpr friend bool operator<(O const &lhs, tagged_id const &rhs) noexcept
+
+    [[nodiscard]] constexpr friend std::partial_ordering operator<=>(std::integral auto const &lhs, tagged_id const &rhs) noexcept
     {
-        return tagged_id{lhs} < rhs;
+        return tagged_id{lhs} <=> rhs;
     }
-    template<typename O>
-    [[nodiscard]] constexpr friend bool operator>(O const &lhs, tagged_id const &rhs) noexcept
+
+    [[nodiscard]] bool holds_invariant() const noexcept
     {
-        return tagged_id{lhs} > rhs;
-    }
-    template<typename O>
-    [[nodiscard]] constexpr friend bool operator<=(O const &lhs, tagged_id const &rhs) noexcept
-    {
-        return tagged_id{lhs} <= rhs;
-    }
-    template<typename O>
-    [[nodiscard]] constexpr friend bool operator>=(O const &lhs, tagged_id const &rhs) noexcept
-    {
-        return tagged_id{lhs} >= rhs;
+        return value <= max or value == invalid;
     }
 
     [[nodiscard]] friend std::string to_string(tagged_id const &rhs) noexcept

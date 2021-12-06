@@ -47,14 +47,7 @@ public:
         return aarectangle{f32x4{v}};
     }
 
-    [[nodiscard]] friend bool operator==(sfloat_rgba32 const &lhs, sfloat_rgba32 const &rhs) noexcept
-    {
-        return lhs.v == rhs.v;
-    }
-    [[nodiscard]] friend bool operator!=(sfloat_rgba32 const &lhs, sfloat_rgba32 const &rhs) noexcept
-    {
-        return !(lhs == rhs);
-    }
+    [[nodiscard]] friend bool operator==(sfloat_rgba32 const &lhs, sfloat_rgba32 const &rhs) noexcept = default;
 };
 
 } // namespace tt::inline v1

@@ -105,25 +105,10 @@ public:
     {
         return lhs.ptr == rhs.ptr;
     }
-    [[nodiscard]] friend bool operator!=(vspan_iterator const &lhs, vspan_iterator const &rhs) noexcept
+
+    [[nodiscard]] friend auto operator<=>(vspan_iterator const &lhs, vspan_iterator const &rhs) noexcept
     {
-        return lhs.ptr != rhs.ptr;
-    }
-    [[nodiscard]] friend bool operator<(vspan_iterator const &lhs, vspan_iterator const &rhs) noexcept
-    {
-        return lhs.ptr < rhs.ptr;
-    }
-    [[nodiscard]] friend bool operator>(vspan_iterator const &lhs, vspan_iterator const &rhs) noexcept
-    {
-        return lhs.ptr > rhs.ptr;
-    }
-    [[nodiscard]] friend bool operator<=(vspan_iterator const &lhs, vspan_iterator const &rhs) noexcept
-    {
-        return lhs.ptr <= rhs.ptr;
-    }
-    [[nodiscard]] friend bool operator>=(vspan_iterator const &lhs, vspan_iterator const &rhs) noexcept
-    {
-        return lhs.ptr >= rhs.ptr;
+        return lhs.ptr <=> rhs.ptr;
     }
 
     [[nodiscard]] friend vspan_iterator operator+(vspan_iterator const &lhs, ssize_t rhs) noexcept
