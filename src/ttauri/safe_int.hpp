@@ -10,6 +10,7 @@
 #include <system_error>
 #include <type_traits>
 #include <limits>
+#include <concepts>
 
 namespace tt::inline v1 {
 
@@ -120,13 +121,13 @@ struct safe_int {
     safe_int &operator=(safe_int const &) = default;
     safe_int &operator=(safe_int &&) = default;
 
-    template<typename O, std::enable_if_t<std::is_integral_v<O>, int> = 0>
-    explicit safe_int(O const &other) noexcept(OnOverflow != on_overflow_t::Throw) : value(safe_convert<T, OnOverflow>(other))
+    explicit safe_int(std::integral auto const &other) noexcept(OnOverflow != on_overflow_t::Throw) :
+        value(safe_convert<T, OnOverflow>(other))
     {
     }
 
-    template<typename O, std::enable_if_t<std::is_floating_point_v<O>, int> = 0>
-    explicit safe_int(O const &other) noexcept(OnOverflow != on_overflow_t::Throw) : value(safe_convert<T, OnOverflow>(other))
+    explicit safe_int(std::floating_point auto const &other) noexcept(OnOverflow != on_overflow_t::Throw) :
+        value(safe_convert<T, OnOverflow>(other))
     {
     }
 
@@ -136,8 +137,7 @@ struct safe_int {
     {
     }
 
-    template<typename O, std::enable_if_t<std::is_integral_v<O>, int> = 0>
-    safe_int &operator=(O const &other) noexcept(OnOverflow != on_overflow_t::Throw)
+    safe_int &operator=(std::integral auto const &other) noexcept(OnOverflow != on_overflow_t::Throw)
     {
         value = safe_convert<T, OnOverflow>(other);
         return *this;
@@ -150,13 +150,13 @@ struct safe_int {
         return *this;
     }
 
-    template<typename O, std::enable_if_t<std::is_integral_v<O>, int> = 0>
+    template<std::integral O>
     explicit operator O() const noexcept(OnOverflow != on_overflow_t::Throw)
     {
         return safe_convert<O, OnOverflow>(value);
     }
 
-    template<typename O, std::enable_if_t<std::is_floating_point_v<O>, int> = 0>
+    template<std::floating_point O>
     explicit operator O() const noexcept
     {
         return static_cast<O>(value);

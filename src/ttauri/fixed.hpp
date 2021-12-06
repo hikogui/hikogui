@@ -9,6 +9,7 @@
 #include "safe_int.hpp"
 #include <type_traits>
 #include <limits>
+#include <concepts>
 
 namespace tt::inline v1 {
 
@@ -26,30 +27,26 @@ struct fixed {
     fixed(fixed &&) = default;
     fixed &operator=(fixed &&) = default;
 
-    template<typename O, std::enable_if_t<std::is_floating_point_v<O>, int> = 0>
-    explicit constexpr fixed(O other) noexcept : value(static_cast<T>(other * M))
+    explicit constexpr fixed(std::floating_point auto other) noexcept : value(static_cast<T>(other * M))
     {
         tt_assert(other >= (std::numeric_limits<T>::min() / M) && other <= (std::numeric_limits<T>::max() / M));
     }
 
-    template<typename O, std::enable_if_t<std::is_integral_v<O>, int> = 0>
-    explicit constexpr fixed(O other) noexcept : value(static_cast<T>(other) * M)
+    explicit constexpr fixed(std::integral auto other) noexcept : value(static_cast<T>(other) * M)
     {
         tt_assert(other >= (std::numeric_limits<T>::min() / M) && other <= (std::numeric_limits<T>::max() / M));
     }
 
     explicit fixed(std::string const &other) : fixed(stod(other)) {}
 
-    template<typename O, std::enable_if_t<std::is_floating_point_v<O>, int> = 0>
-    constexpr fixed &operator=(O other) noexcept
+    constexpr fixed &operator=(std::floating_point auto other) noexcept
     {
         value = static_cast<T>(other * M);
         tt_assert(other >= (std::numeric_limits<T>::min() / M) && other <= (std::numeric_limits<T>::max() / M));
         return *this;
     }
 
-    template<typename O, std::enable_if_t<std::is_integral_v<O>, int> = 0>
-    constexpr fixed &operator=(O other) noexcept
+    constexpr fixed &operator=(std::integral auto other) noexcept
     {
         value = static_cast<T>(other) * M;
         tt_assert(other >= (std::numeric_limits<T>::min() / M) && other <= (std::numeric_limits<T>::max() / M));
@@ -63,13 +60,13 @@ struct fixed {
         return *this;
     }
 
-    template<typename O, std::enable_if_t<std::is_floating_point_v<O>, int> = 0>
+    template<std::floating_point O>
     explicit operator O() const noexcept
     {
         return static_cast<O>(value) / M;
     }
 
-    template<typename O, std::enable_if_t<std::is_integral_v<O>, int> = 0>
+    template<std::integral O>
     explicit operator O() const noexcept
     {
         return static_cast<O>(value / M);

@@ -160,13 +160,13 @@ struct make_intmax {
     using type = uintmax_t;
 };
 
-template<typename T>
-struct make_intmax<T,std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>>> {
+template<std::unsigned_integral T>
+struct make_intmax<T> {
     using type = uintmax_t;
 };
 
-template<typename T>
-struct make_intmax<T,std::enable_if_t<std::is_integral_v<T> && std::is_signed_v<T>>> {
+template<std::signed_integral T>
+struct make_intmax<T> {
     using type = intmax_t;
 };
 
@@ -243,23 +243,23 @@ template<size_t N> using make_floatxx_t = typename make_floatxx<N>::type;
 template<typename To, typename From, typename Ei=void>
 struct copy_cv {};
 
-template<typename To, typename From>
-struct copy_cv<To,From,std::enable_if_t<!std::is_const_v<From> && !std::is_volatile_v<From>>> {
+template<typename To, typename From> requires(not std::is_const_v<From> and not std::is_volatile_v<From>)
+struct copy_cv<To,From> {
     using type = std::remove_cv_t<To>;
 };
 
-template<typename To, typename From>
-struct copy_cv<To,From,std::enable_if_t<!std::is_const_v<From> && std::is_volatile_v<From>>> {
+template<typename To, typename From> requires(not std::is_const_v<From> and std::is_volatile_v<From>)
+struct copy_cv<To,From> {
     using type = std::remove_cv_t<To> volatile;
 };
 
-template<typename To, typename From>
-struct copy_cv<To,From,std::enable_if_t<std::is_const_v<From> && !std::is_volatile_v<From>>> {
+template<typename To, typename From> requires(std::is_const_v<From> and not std::is_volatile_v<From>)
+struct copy_cv<To,From> {
     using type = std::remove_cv_t<To> const;
 };
 
-template<typename To, typename From>
-struct copy_cv<To,From,std::enable_if_t<std::is_const_v<From> && std::is_volatile_v<From>>> {
+template<typename To, typename From> requires(std::is_const_v<From> and std::is_volatile_v<From>)
+struct copy_cv<To,From> {
     using type = std::remove_cv_t<To> const volatile;
 };
 
