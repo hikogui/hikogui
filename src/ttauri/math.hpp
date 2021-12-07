@@ -7,6 +7,7 @@
 #include "required.hpp"
 #include "cast.hpp"
 #include "type_traits.hpp"
+#include "assert.hpp"
 #include <complex>
 #include <cmath>
 #include <limits>
@@ -16,6 +17,7 @@
 #include <iterator>
 #include <bit>
 #include <concepts>
+#include <algorithm>
 
 #if TT_COMPILER == TT_CC_MSVC
 #include <intrin.h>
@@ -77,6 +79,25 @@ auto stddev(Iterator first, Iterator last, T mean)
 
     ttlet count = static_cast<decltype(sum)>(std::distance(first, last));
     return count > 0.0 ? sum / count : sum;
+}
+
+template<typename T>
+constexpr void inplace_max(T &a, T const &b) noexcept
+{
+    a = std::max(a, b);
+}
+
+template<typename T>
+constexpr void inplace_min(T &a, T const &b) noexcept
+{
+    a = std::min(a, b);
+}
+
+template<typename T>
+constexpr void inplace_clamp(T &a, T const &lo, T const &hi) noexcept
+{
+    tt_axiom(lo <= hi);
+    a = std::clamp(a, lo, hi);
 }
 
 } // namespace tt::inline v1
