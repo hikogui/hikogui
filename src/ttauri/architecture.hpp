@@ -262,26 +262,26 @@ constexpr bool x86_64_v4 = false;
 /** Minimum offset between two objects to avoid false sharing. Guaranteed to be at least alignof(std::max_align_t)
  * Part of c++17 but never implemented by clang or gcc.
  */
-constexpr size_t hardware_destructive_interference_size = 128;
+constexpr std::size_t hardware_destructive_interference_size = 128;
 
 /** Maximum size of contiguous memory to promote true sharing. Guaranteed to be at least alignof(std::max_align_t)
  * Part of c++17 but never implemented by clang or gcc.
  */
-constexpr size_t hardware_constructive_interference_size = 64;
+constexpr std::size_t hardware_constructive_interference_size = 64;
 #elif TT_PROCESSOR == TT_CPU_ARM
 /** Minimum offset between two objects to avoid false sharing. Guaranteed to be at least alignof(std::max_align_t)
  * Part of c++17 but never implemented by clang or gcc.
  */
-constexpr size_t hardware_destructive_interference_size = 64;
+constexpr std::size_t hardware_destructive_interference_size = 64;
 
 /** Maximum size of contiguous memory to promote true sharing. Guaranteed to be at least alignof(std::max_align_t)
  * Part of c++17 but never implemented by clang or gcc.
  */
-constexpr size_t hardware_constructive_interference_size = 64;
+constexpr std::size_t hardware_constructive_interference_size = 64;
 
 #elif TT_PROCESSOR == TT_CPU_UNKNOWN
-constexpr size_t hardware_destructive_interference_size = 128;
-constexpr size_t hardware_constructive_interference_size = 64;
+constexpr std::size_t hardware_destructive_interference_size = 128;
+constexpr std::size_t hardware_constructive_interference_size = 64;
 #else
 #error "Missing implementation of hardware_destructive_interference_size and hardware_constructive_interference_size"
 #endif

@@ -80,7 +80,7 @@ public:
         return *this;
     }
 
-    size_t size() const
+    std::size_t size() const
     {
         return _end - items.begin();
     }

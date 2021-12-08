@@ -21,7 +21,7 @@ namespace tt::inline v1 {
  * Columns are laid out from left to right, and rows from top to bottom. The row
  * and columns number may be specified as integers, or using an spreadsheet-like
  * cell-address:
- *  - `grid_widget::make_widget<T>(size_t column_nr, size_t row_nr, ...)`
+ *  - `grid_widget::make_widget<T>(std::size_t column_nr, std::size_t row_nr, ...)`
  *  - `grid_widget::make_widget<T>(std::string address, ...)`
  *
  * The grid widget will calculate the size of each row and column based on the
@@ -59,7 +59,7 @@ public:
      * @return A reference to the widget that was created.
      */
     template<typename Widget, typename... Args>
-    Widget &make_widget(size_t column_first, size_t row_first, size_t column_last, size_t row_last, Args &&...args)
+    Widget &make_widget(std::size_t column_first, std::size_t row_first, std::size_t column_last, std::size_t row_last, Args &&...args)
     {
         auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
         return static_cast<Widget &>(add_widget(column_first, row_first, column_last, row_last, std::move(tmp)));
@@ -74,7 +74,7 @@ public:
      * @return A reference to the widget that was created.
      */
     template<typename Widget, typename... Args>
-    Widget &make_widget(size_t column, size_t row, Args &&...args)
+    Widget &make_widget(std::size_t column, std::size_t row, Args &&...args)
     {
         auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
         return static_cast<Widget &>(add_widget(column, row, column + 1, row + 1, std::move(tmp)));
@@ -110,17 +110,17 @@ public:
     /// @endprivatesection
 private:
     struct cell_type {
-        size_t column_first;
-        size_t row_first;
-        size_t column_last;
-        size_t row_last;
+        std::size_t column_first;
+        std::size_t row_first;
+        std::size_t column_last;
+        std::size_t row_last;
         std::unique_ptr<tt::widget> widget;
 
         cell_type(
-            size_t column_first,
-            size_t row_first,
-            size_t column_last,
-            size_t row_last,
+            std::size_t column_first,
+            std::size_t row_first,
+            std::size_t column_last,
+            std::size_t row_last,
             std::unique_ptr<tt::widget> widget) noexcept :
             column_first(column_first),
             row_first(row_first),
@@ -147,15 +147,15 @@ private:
 
     std::weak_ptr<delegate_type> _delegate;
 
-    [[nodiscard]] bool address_in_use(size_t column_first, size_t row_first, size_t column_last, size_t row_last) const noexcept;
+    [[nodiscard]] bool address_in_use(std::size_t column_first, std::size_t row_first, std::size_t column_last, std::size_t row_last) const noexcept;
 
     /* Add a widget to the grid.
      */
     widget &add_widget(
-        size_t column_first,
-        size_t row_first,
-        size_t column_last,
-        size_t row_last,
+        std::size_t column_first,
+        std::size_t row_first,
+        std::size_t column_last,
+        std::size_t row_last,
         std::unique_ptr<widget> child_widget) noexcept;
 };
 

@@ -13,7 +13,7 @@ namespace detail {
 struct unicode_bidi_char_info {
     /** Index from the first character in the original list.
      */
-    size_t index;
+    std::size_t index;
 
     /** The current code point.
      * The value may change during the execution of the bidi algorithm.
@@ -39,7 +39,7 @@ struct unicode_bidi_char_info {
      */
     unicode_description const *description;
 
-    [[nodiscard]] unicode_bidi_char_info(size_t index, char32_t code_point) noexcept :
+    [[nodiscard]] unicode_bidi_char_info(std::size_t index, char32_t code_point) noexcept :
         index(index), code_point(code_point), embedding_level(0)
     {
         description = &unicode_description_find(code_point);
@@ -50,7 +50,7 @@ struct unicode_bidi_char_info {
     /** Constructor for testing to bypass normal initialization.
      * WARNING: DO NOT USE EXCEPT IN UNIT TESTS.
      */
-    [[nodiscard]] unicode_bidi_char_info(size_t index, unicode_bidi_class bidi_class) noexcept :
+    [[nodiscard]] unicode_bidi_char_info(std::size_t index, unicode_bidi_class bidi_class) noexcept :
         index(index),
         code_point(U'\ufffd'),
         direction(bidi_class),
@@ -144,7 +144,7 @@ It unicode_bidi(
     auto proxy = detail::unicode_bidi_char_info_vector{};
     proxy.reserve(std::distance(first, last));
 
-    size_t index = 0;
+    std::size_t index = 0;
     for (auto it = first; it != last; ++it) {
         proxy.emplace_back(index++, get_code_point(*it));
     }

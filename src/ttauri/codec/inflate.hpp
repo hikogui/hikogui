@@ -23,6 +23,6 @@ namespace tt::inline v1 {
  *   in the byte array passed to inflate anyway.
  * - png IDAT chunks include the full zlib-format, including the 32 bit check value.
  */
-bstring inflate(std::span<std::byte const> bytes, size_t &offset, size_t max_size = 0x0100'0000);
+bstring inflate(std::span<std::byte const> bytes, std::size_t &offset, std::size_t max_size = 0x0100'0000);
 
 } // namespace tt::inline v1

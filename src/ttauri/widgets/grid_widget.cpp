@@ -28,7 +28,7 @@ grid_widget::~grid_widget()
     }
 }
 
-bool grid_widget::address_in_use(size_t column_first, size_t row_first, size_t column_last, size_t row_last) const noexcept
+bool grid_widget::address_in_use(std::size_t column_first, std::size_t row_first, std::size_t column_last, std::size_t row_last) const noexcept
 {
     for (ttlet &cell : _cells) {
         if (column_last > cell.column_first and column_first < cell.column_last and row_last > cell.row_last and
@@ -40,10 +40,10 @@ bool grid_widget::address_in_use(size_t column_first, size_t row_first, size_t c
 }
 
 widget &grid_widget::add_widget(
-    size_t column_first,
-    size_t row_first,
-    size_t column_last,
-    size_t row_last,
+    std::size_t column_first,
+    std::size_t row_first,
+    std::size_t column_last,
+    std::size_t row_last,
     std::unique_ptr<widget> widget) noexcept
 {
     tt_axiom(is_gui_thread());

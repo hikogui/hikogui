@@ -100,7 +100,7 @@ public:
     glyph_atlas_info &atlas_info(glyph_ids const &glyphs) const noexcept
     {
         if (glyphs.is_single()) [[likely]] {
-            ttlet index = static_cast<size_t>(glyphs.get_single());
+            ttlet index = static_cast<std::size_t>(glyphs.get_single());
             if (index >= _single_glyph_atlas_table.size()) [[unlikely]] {
                 _single_glyph_atlas_table.resize(index + 1);
             }

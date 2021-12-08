@@ -530,7 +530,7 @@ void BON8_encoder::add(datum const &value)
     throw parse_error("Incomplete array at end of buffer");
 }
 
-[[nodiscard]] datum decode_BON8_array(cbyteptr &ptr, cbyteptr last, size_t count)
+[[nodiscard]] datum decode_BON8_array(cbyteptr &ptr, cbyteptr last, std::size_t count)
 {
     auto r = datum::make_vector();
     auto &vector = get<datum::vector_type>(r);
@@ -562,7 +562,7 @@ void BON8_encoder::add(datum const &value)
     throw parse_error("Incomplete object at end of buffer");
 }
 
-[[nodiscard]] datum decode_BON8_object(cbyteptr &ptr, cbyteptr last, size_t count)
+[[nodiscard]] datum decode_BON8_object(cbyteptr &ptr, cbyteptr last, std::size_t count)
 {
     auto r = datum::make_map();
     auto &map = get<datum::map_type>(r);

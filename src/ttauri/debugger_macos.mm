@@ -20,7 +20,7 @@ bool debugger_is_present() noexcept
     mib[2] = KERN_PROC_PID;
     mib[3] = getpid();
 
-    size_t size = sizeof(info);
+    std::size_t size = sizeof(info);
     sysctl(mib, sizeof(mib) / sizeof(*mib), &info, &size, NULL, 0);
 
     return ((info.kp_proc.p_flag & P_TRACED) != 0);

@@ -34,7 +34,7 @@ public:
         return hypot(rhs._v);
     }
 
-    template<size_t I>
+    template<std::size_t I>
     [[nodiscard]] constexpr friend point3 get(line_segment const &rhs) noexcept
     {
         if constexpr (I == 0) {

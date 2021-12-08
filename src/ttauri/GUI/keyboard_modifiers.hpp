@@ -96,7 +96,7 @@ inline std::ostream &operator<<(std::ostream &lhs, keyboard_modifiers const &rhs
 
 template<>
 struct std::hash<tt::keyboard_modifiers> {
-    [[nodiscard]] size_t operator()(tt::keyboard_modifiers const &rhs) const noexcept
+    [[nodiscard]] std::size_t operator()(tt::keyboard_modifiers const &rhs) const noexcept
     {
         return std::hash<uint8_t>{}(static_cast<uint8_t>(rhs));
     }

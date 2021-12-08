@@ -19,7 +19,7 @@ namespace tt::inline v1 {
  * @tparam T The enum-type.
  * @tparam N Number of enum-values.
  */
-template<typename T, size_t N>
+template<typename T, std::size_t N>
 class enum_metadata {
     static_assert(std::is_enum_v<T>, "Must be an enum");
     static_assert(N != 0);
@@ -29,7 +29,7 @@ public:
 
     /** The number of enum values.
      */
-    static constexpr size_t count = N;
+    static constexpr std::size_t count = N;
 
     /** The numeric values in the enum do not contain a gap.
      */
@@ -225,7 +225,7 @@ private:
      *
      * Used by the constructor.
      */
-    template<size_t I, typename... Rest>
+    template<std::size_t I, typename... Rest>
     constexpr void add_value_name(value_type value, std::string_view name, Rest const &...rest) noexcept
     {
         static_assert(sizeof...(Rest) % 2 == 0);

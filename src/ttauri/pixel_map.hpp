@@ -21,9 +21,9 @@ class pixel_row {
 public:
     using value_type = T;
 
-    pixel_row(T *pixels, size_t width) noexcept : _pixels(pixels), _width(width) {}
+    pixel_row(T *pixels, std::size_t width) noexcept : _pixels(pixels), _width(width) {}
 
-    [[nodiscard]] size_t width() const noexcept
+    [[nodiscard]] std::size_t width() const noexcept
     {
         return _width;
     }
@@ -46,7 +46,7 @@ public:
      * @param columnNr The column number in the row.
      * @return a reference to a pixel.
      */
-    [[nodiscard]] T const &operator[](size_t columnNr) const noexcept
+    [[nodiscard]] T const &operator[](std::size_t columnNr) const noexcept
     {
         return _pixels[columnNr];
     }
@@ -55,7 +55,7 @@ public:
      * @param columnNr The column number in the row.
      * @return a reference to a pixel.
      */
-    [[nodiscard]] T &operator[](size_t columnNr) noexcept
+    [[nodiscard]] T &operator[](std::size_t columnNr) noexcept
     {
         return _pixels[columnNr];
     }
@@ -66,7 +66,7 @@ public:
      * @param columnNr The column number in the row.
      * @return a reference to a pixel.
      */
-    [[nodiscard]] T const &at(size_t columnNr) const noexcept
+    [[nodiscard]] T const &at(std::size_t columnNr) const noexcept
     {
         tt_assert(columnNr >= 0 && columnNr < _width);
         return _pixels[columnNr];
@@ -78,7 +78,7 @@ public:
      * @param columnNr The column number in the row.
      * @return a reference to a pixel.
      */
-    [[nodiscard]] T &at(size_t columnNr) noexcept
+    [[nodiscard]] T &at(std::size_t columnNr) noexcept
     {
         tt_assert(columnNr >= 0 && columnNr < _width);
         return _pixels[columnNr];
@@ -91,7 +91,7 @@ private:
 
     /** Number of pixels in the row.
      */
-    size_t _width;
+    std::size_t _width;
 };
 
 /** A 2D canvas of pixels.
@@ -113,7 +113,7 @@ public:
      * @param height The height of the image.
      * @param stride Number of pixel elements until the next row.
      */
-    pixel_map(T *pixels, size_t width, size_t height, size_t stride) noexcept :
+    pixel_map(T *pixels, std::size_t width, std::size_t height, std::size_t stride) noexcept :
         _pixels(pixels), _width(width), _height(height), _stride(stride), _self_allocated(false)
     {
         tt_assert(_stride >= _width);
@@ -132,21 +132,21 @@ public:
      * @param height The height of the image.
      * @param stride Number of pixel elements until the next row.
      */
-    pixel_map(T *pixels, size_t width, size_t height) noexcept : pixel_map(pixels, width, height, width) {}
+    pixel_map(T *pixels, std::size_t width, std::size_t height) noexcept : pixel_map(pixels, width, height, width) {}
 
     /** Construct an pixel-map from memory received from an API.
      * @param pixels A pointer to pixels received from the API.
      * @param width The width of the image.
      * @param height The height of the image.
      */
-    pixel_map(size_t width, size_t height, size_t stride) noexcept : pixel_map(nullptr, width, height, stride) {}
+    pixel_map(std::size_t width, std::size_t height, std::size_t stride) noexcept : pixel_map(nullptr, width, height, stride) {}
 
     /** Construct an pixel-map from memory received from an API.
      * @param pixels A pointer to pixels received from the API.
      * @param width The width of the image.
      * @param height The height of the image.
      */
-    pixel_map(size_t width, size_t height) noexcept : pixel_map(nullptr, width, height, width) {}
+    pixel_map(std::size_t width, std::size_t height) noexcept : pixel_map(nullptr, width, height, width) {}
 
     ~pixel_map()
     {
@@ -170,10 +170,10 @@ public:
         if (_self_allocated) {
             _pixels = new T[_height * _stride];
 
-            for (size_t y = 0; y != _height; ++y) {
+            for (std::size_t y = 0; y != _height; ++y) {
                 ttlet src_row = other[y];
                 auto dst_row = (*this)[y];
-                for (size_t x = 0; x != _width; ++x) {
+                for (std::size_t x = 0; x != _width; ++x) {
                     dst_row[x] = src_row[x];
                 }
             }
@@ -196,17 +196,17 @@ public:
         return _pixels != nullptr;
     }
 
-    [[nodiscard]] size_t width() const noexcept
+    [[nodiscard]] std::size_t width() const noexcept
     {
         return _width;
     }
 
-    [[nodiscard]] size_t height() const noexcept
+    [[nodiscard]] std::size_t height() const noexcept
     {
         return _height;
     }
 
-    [[nodiscard]] size_t stride() const noexcept
+    [[nodiscard]] std::size_t stride() const noexcept
     {
         return _stride;
     }
@@ -226,10 +226,10 @@ public:
         if (_self_allocated) {
             _pixels = new T[_height * _stride];
 
-            for (size_t y = 0; y != _height; ++y) {
+            for (std::size_t y = 0; y != _height; ++y) {
                 ttlet src_row = other[y];
                 auto dst_row = (*this)[y];
-                for (size_t x = 0; x != _width; ++x) {
+                for (std::size_t x = 0; x != _width; ++x) {
                     dst_row[x] = src_row[x];
                 }
             }
@@ -264,7 +264,7 @@ public:
      * @param height height of the returned image.
      * @return A new pixel-map that point to the same memory as the current pixel-map.
      */
-    pixel_map submap(size_t x, size_t y, size_t width, size_t height) const noexcept
+    pixel_map submap(std::size_t x, std::size_t y, std::size_t width, std::size_t height) const noexcept
     {
         tt_axiom((x >= 0) && (y >= 0));
         tt_assert((x + width <= _width) && (y + height <= _height));
@@ -278,29 +278,29 @@ public:
     {
         tt_axiom(round(rectangle) == rectangle);
         return submap(
-            narrow_cast<size_t>(rectangle.left()),
-            narrow_cast<size_t>(rectangle.bottom()),
-            narrow_cast<size_t>(rectangle.width()),
-            narrow_cast<size_t>(rectangle.height()));
+            narrow_cast<std::size_t>(rectangle.left()),
+            narrow_cast<std::size_t>(rectangle.bottom()),
+            narrow_cast<std::size_t>(rectangle.width()),
+            narrow_cast<std::size_t>(rectangle.height()));
     }
 
-    pixel_row<T> const operator[](size_t rowNr) const noexcept
+    pixel_row<T> const operator[](std::size_t rowNr) const noexcept
     {
         return {_pixels + (rowNr * _stride), _width};
     }
 
-    pixel_row<T> operator[](size_t rowNr) noexcept
+    pixel_row<T> operator[](std::size_t rowNr) noexcept
     {
         return {_pixels + (rowNr * _stride), _width};
     }
 
-    pixel_row<T> const at(size_t rowNr) const noexcept
+    pixel_row<T> const at(std::size_t rowNr) const noexcept
     {
         tt_assert(rowNr < _height);
         return (*this)[rowNr];
     }
 
-    pixel_row<T> at(size_t rowNr) noexcept
+    pixel_row<T> at(std::size_t rowNr) noexcept
     {
         tt_assert(rowNr < _height);
         return (*this)[rowNr];
@@ -313,16 +313,16 @@ private:
 
     /** Number of horizontal pixels.
      */
-    size_t _width;
+    std::size_t _width;
 
     /** Number of vertical pixels.
      */
-    size_t _height;
+    std::size_t _height;
 
     /** Number of pixel element until the next row.
      * This is used when the alignment of each row is different from the width of the canvas.
      */
-    size_t _stride;
+    std::size_t _stride;
 
     /** True if the memory was allocated by this class, false if the canvas was received from another API.
      */
@@ -332,13 +332,13 @@ private:
 template<typename T>
 void copy(pixel_map<T> const &src, pixel_map<T> &dst) noexcept
 {
-    size_t width = std::min(src.width(), dst.width());
-    size_t height = std::min(src.height(), dst.height());
+    std::size_t width = std::min(src.width(), dst.width());
+    std::size_t height = std::min(src.height(), dst.height());
 
-    for (size_t y = 0; y != height; ++y) {
+    for (std::size_t y = 0; y != height; ++y) {
         ttlet src_row = src[y];
         auto dst_row = dst[y];
-        for (size_t x = 0; x != width; ++x) {
+        for (std::size_t x = 0; x != width; ++x) {
             dst_row[x] = src_row[x];
         }
     }

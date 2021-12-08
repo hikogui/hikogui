@@ -176,32 +176,32 @@ using make_intmax_t = typename make_intmax<T>::type;
 /** Has an signed integer of a specific size.
  * @tparam N The number of bits of the signed integer.
  */
-template<size_t N> struct has_intxx : public std::false_type {};
+template<std::size_t N> struct has_intxx : public std::false_type {};
 
 /** Has an unsigned integer of a specific size.
  * @tparam N The number of bits of the unsigned integer.
  */
-template<size_t N> struct has_uintxx : public std::false_type {};
+template<std::size_t N> struct has_uintxx : public std::false_type {};
 
 /** Has an float of a specific size.
  * @tparam N The number of bits of the float.
  */
-template<size_t N> struct has_floatxx : public std::false_type {};
+template<std::size_t N> struct has_floatxx : public std::false_type {};
 
 /** Make an signed integer.
  * @tparam N The number of bits of the signed integer.
  */
-template<size_t N> struct make_intxx {};
+template<std::size_t N> struct make_intxx {};
 
 /** Make an unsigned integer.
  * @tparam N The number of bits of the unsigned integer.
  */
-template<size_t N> struct make_uintxx {};
+template<std::size_t N> struct make_uintxx {};
 
 /** Make an floating point.
  * @tparam N The number of bits of the floating point.
  */
-template<size_t N> struct make_floatxx {};
+template<std::size_t N> struct make_floatxx {};
 
 #if (TT_COMPILER == TT_CC_CLANG || TT_COMPILER == TT_CC_GCC) && (TT_PROCESSOR == TT_CPU_X64)
 template<> struct has_intxx<128> : public std::true_type {};
@@ -230,12 +230,12 @@ template<> struct has_uintxx<8> : public std::true_type {};
 template<> struct make_intxx<8> { using type = int8_t; };
 template<> struct make_uintxx<8> { using type = uint8_t; };
 
-template<size_t N> constexpr bool has_intxx_v = has_intxx<N>::value;
-template<size_t N> constexpr bool has_uintxx_v = has_uintxx<N>::value;
-template<size_t N> constexpr bool has_floatxx_v = has_floatxx<N>::value;
-template<size_t N> using make_intxx_t = typename make_intxx<N>::type;
-template<size_t N> using make_uintxx_t = typename make_uintxx<N>::type;
-template<size_t N> using make_floatxx_t = typename make_floatxx<N>::type;
+template<std::size_t N> constexpr bool has_intxx_v = has_intxx<N>::value;
+template<std::size_t N> constexpr bool has_uintxx_v = has_uintxx<N>::value;
+template<std::size_t N> constexpr bool has_floatxx_v = has_floatxx<N>::value;
+template<std::size_t N> using make_intxx_t = typename make_intxx<N>::type;
+template<std::size_t N> using make_uintxx_t = typename make_uintxx<N>::type;
+template<std::size_t N> using make_floatxx_t = typename make_floatxx<N>::type;
 
 
 /** Type-trait to copy const volitile qualifiers from one type to another.

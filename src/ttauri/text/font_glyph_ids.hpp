@@ -42,7 +42,7 @@ public:
         return *this;
     }
 
-    [[nodiscard]] constexpr glyph_id operator[](size_t index) const noexcept
+    [[nodiscard]] constexpr glyph_id operator[](std::size_t index) const noexcept
     {
         return _glyphs[index];
     }
@@ -62,17 +62,17 @@ public:
         return not _glyphs.empty();
     }
 
-    [[nodiscard]] constexpr size_t size() const noexcept
+    [[nodiscard]] constexpr std::size_t size() const noexcept
     {
         return _glyphs.size();
     }
 
     [[nodiscard]] glyph_atlas_info &atlas_info() const noexcept;
 
-    [[nodiscard]] constexpr size_t hash() const noexcept
+    [[nodiscard]] constexpr std::size_t hash() const noexcept
     {
         auto r = std::hash<glyph_ids>{}(_glyphs);
-        r ^= std::bit_cast<size_t>(_font);
+        r ^= std::bit_cast<std::size_t>(_font);
         return r;
     }
 
@@ -90,7 +90,7 @@ private:
 
 template<>
 struct std::hash<tt::font_glyph_ids> {
-    [[nodiscard]] constexpr size_t operator()(tt::font_glyph_ids const &rhs) const noexcept
+    [[nodiscard]] constexpr std::size_t operator()(tt::font_glyph_ids const &rhs) const noexcept
     {
         return rhs.hash();
     }

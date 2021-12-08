@@ -128,7 +128,7 @@ public:
         return *this = *this | rhs;
     }
 
-    [[nodiscard]] constexpr point2 operator[](size_t i) const noexcept
+    [[nodiscard]] constexpr point2 operator[](std::size_t i) const noexcept
     {
         switch (i) {
         case 0: return point2{v.xy01()};

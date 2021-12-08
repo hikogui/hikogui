@@ -25,7 +25,7 @@ URL::URL(std::string const &url) : value(normalize_url(url)) {}
 
 URL::URL(url_parts const &parts) : value(generate_url(parts)) {}
 
-size_t URL::hash() const noexcept
+std::size_t URL::hash() const noexcept
 {
     return std::hash<std::string>{}(value);
 }

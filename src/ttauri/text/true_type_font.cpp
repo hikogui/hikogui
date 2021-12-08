@@ -334,7 +334,7 @@ struct GLYFEntry {
 
 static std::span<std::byte const> parseCharacterMapDirectory(std::span<std::byte const> bytes)
 {
-    size_t offset = 0;
+    std::size_t offset = 0;
 
     ttlet header = make_placement_ptr<CMAPHeader>(bytes, offset);
     tt_parse_check(header->version.value() == 0, "CMAP version is not 0");
@@ -401,7 +401,7 @@ static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char
         return {};
     }
 
-    size_t offset = 0;
+    std::size_t offset = 0;
 
     tt_axiom(check_placement_ptr<CMAPFormat4>(bytes, offset));
     ttlet header = unsafe_make_placement_ptr<CMAPFormat4>(bytes, offset);
@@ -469,7 +469,7 @@ static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char
 {
     unicode_mask r;
 
-    size_t offset = 0;
+    std::size_t offset = 0;
     ttlet header = make_placement_ptr<CMAPFormat4>(bytes, offset);
     ttlet length = header->length.value();
     tt_parse_check(length <= bytes.size(), "CMAP header length is larger than table.");
@@ -504,7 +504,7 @@ static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char
 
 static glyph_id searchCharacterMapFormat6(std::span<std::byte const> bytes, char32_t c) noexcept
 {
-    size_t offset = 0;
+    std::size_t offset = 0;
 
     assert_or_return(check_placement_ptr<CMAPFormat6>(bytes, offset), {});
     ttlet header = unsafe_make_placement_ptr<CMAPFormat6>(bytes, offset);
@@ -528,7 +528,7 @@ static glyph_id searchCharacterMapFormat6(std::span<std::byte const> bytes, char
 {
     unicode_mask r;
 
-    size_t offset = 0;
+    std::size_t offset = 0;
     ttlet header = make_placement_ptr<CMAPFormat6>(bytes, offset);
     ttlet firstCode = static_cast<char32_t>(header->firstCode.value());
     ttlet entryCount = header->entryCount.value();
@@ -540,7 +540,7 @@ static glyph_id searchCharacterMapFormat6(std::span<std::byte const> bytes, char
 
 static glyph_id searchCharacterMapFormat12(std::span<std::byte const> bytes, char32_t c) noexcept
 {
-    size_t offset = 0;
+    std::size_t offset = 0;
 
     assert_or_return(check_placement_ptr<CMAPFormat12>(bytes, offset), {});
     ttlet header = unsafe_make_placement_ptr<CMAPFormat12>(bytes, offset);
@@ -575,7 +575,7 @@ static glyph_id searchCharacterMapFormat12(std::span<std::byte const> bytes, cha
 {
     unicode_mask r;
 
-    size_t offset = 0;
+    std::size_t offset = 0;
     ttlet header = make_placement_ptr<CMAPFormat12>(bytes, offset);
     ttlet numGroups = header->numGroups.value();
 
@@ -643,8 +643,8 @@ void true_type_font::parseHeadTable(std::span<std::byte const> table_bytes)
 
 static std::optional<std::string> getStringFromNameTable(
     std::span<std::byte const> bytes,
-    size_t offset,
-    size_t lengthInBytes,
+    std::size_t offset,
+    std::size_t lengthInBytes,
     uint16_t platformID,
     uint16_t platformSpecificID,
     uint16_t languageID)
@@ -718,11 +718,11 @@ static std::optional<std::string> getStringFromNameTable(
 
 void true_type_font::parseNameTable(std::span<std::byte const> table_bytes)
 {
-    size_t offset = 0;
+    std::size_t offset = 0;
 
     ttlet table = make_placement_ptr<NAMETable>(table_bytes, offset);
     tt_parse_check(table->format.value() == 0 || table->format.value() == 1, "Name table format must be 0 or 1");
-    size_t storageAreaOffset = table->stringOffset.value();
+    std::size_t storageAreaOffset = table->stringOffset.value();
 
     uint16_t numRecords = table->count.value();
     ttlet records = make_placement_array<NAMERecord>(table_bytes, offset, numRecords);
@@ -876,8 +876,8 @@ bool true_type_font::getGlyphBytes(glyph_id glyph_id, std::span<std::byte const>
     ttlet locaTableBytes = getTableBytes("loca");
     ttlet glyfTableBytes = getTableBytes("glyf");
 
-    size_t startOffset = 0;
-    size_t endOffset = 0;
+    std::size_t startOffset = 0;
+    std::size_t endOffset = 0;
     if (locaTableIsOffset32) {
         ttlet entries = make_placement_array<big_uint32_buf_t>(locaTableBytes);
         assert_or_return(entries.contains(static_cast<int>(glyph_id) + 1), false);
@@ -896,7 +896,7 @@ bool true_type_font::getGlyphBytes(glyph_id glyph_id, std::span<std::byte const>
     assert_or_return(startOffset <= endOffset, false);
     ttlet size = endOffset - startOffset;
 
-    assert_or_return(endOffset <= static_cast<size_t>(glyfTableBytes.size()), false);
+    assert_or_return(endOffset <= static_cast<std::size_t>(glyfTableBytes.size()), false);
     glyph_bytes = glyfTableBytes.subspan(startOffset, size);
     return true;
 }
@@ -909,7 +909,7 @@ static void getKerningFormat0(
     glyph_id glyph2_id,
     vector2 &r) noexcept
 {
-    size_t offset = 0;
+    std::size_t offset = 0;
 
     assert_or_return(check_placement_ptr<KERNFormat0>(bytes, offset), );
     ttlet formatheader = unsafe_make_placement_ptr<KERNFormat0>(bytes, offset);
@@ -959,7 +959,7 @@ static void getKerningFormat3(
 getKerning(std::span<std::byte const> const &bytes, float unitsPerEm, glyph_id glyph1_id, glyph_id glyph2_id) noexcept
 {
     auto r = vector2{0.0f, 0.0f};
-    size_t offset = 0;
+    std::size_t offset = 0;
 
     assert_or_return(check_placement_ptr<KERNTable_ver0>(bytes, offset), r);
     ttlet header_ver0 = unsafe_make_placement_ptr<KERNTable_ver0>(bytes, offset);
@@ -1065,12 +1065,12 @@ constexpr uint8_t FLAG_X_SAME = 0x10;
 constexpr uint8_t FLAG_Y_SAME = 0x20;
 bool true_type_font::loadSimpleGlyph(std::span<std::byte const> glyph_bytes, graphic_path &glyph) const noexcept
 {
-    size_t offset = 0;
+    std::size_t offset = 0;
 
     assert_or_return(check_placement_ptr<GLYFEntry>(glyph_bytes, offset), false);
     ttlet entry = unsafe_make_placement_ptr<GLYFEntry>(glyph_bytes, offset);
 
-    ttlet numberOfContours = static_cast<size_t>(entry->numberOfContours.value());
+    ttlet numberOfContours = static_cast<std::size_t>(entry->numberOfContours.value());
 
     // Check includes instructionLength.
     assert_or_return(check_placement_array<big_uint16_buf_t>(glyph_bytes, offset, numberOfContours), false);
@@ -1099,18 +1099,18 @@ bool true_type_font::loadSimpleGlyph(std::span<std::byte const> glyph_bytes, gra
             assert_or_return(check_placement_ptr<uint8_t>(glyph_bytes, offset), false);
             ttlet repeat = *unsafe_make_placement_ptr<uint8_t>(glyph_bytes, offset);
 
-            for (size_t i = 0; i < repeat; i++) {
+            for (std::size_t i = 0; i < repeat; i++) {
                 flags.push_back(flag);
             }
         }
     }
     assert_or_return(flags.size() == numberOfPoints, false);
 
-    ttlet point_table_size = std::accumulate(flags.begin(), flags.end(), static_cast<size_t>(0), [](auto size, auto flag) {
+    ttlet point_table_size = std::accumulate(flags.begin(), flags.end(), static_cast<std::size_t>(0), [](auto size, auto flag) {
         return size + ((flag & FLAG_X_SHORT) > 0 ? 1 : ((flag & FLAG_X_SAME) > 0 ? 0 : 2)) +
             ((flag & FLAG_Y_SHORT) > 0 ? 1 : ((flag & FLAG_Y_SAME) > 0 ? 0 : 2));
     });
-    assert_or_return(offset + point_table_size <= static_cast<size_t>(glyph_bytes.size()), false);
+    assert_or_return(offset + point_table_size <= static_cast<std::size_t>(glyph_bytes.size()), false);
 
     // Get xCoordinates
     std::vector<int16_t> xCoordinates;
@@ -1157,7 +1157,7 @@ bool true_type_font::loadSimpleGlyph(std::span<std::byte const> glyph_bytes, gra
     // Create absolute points
     int16_t x = 0;
     int16_t y = 0;
-    size_t pointNr = 0;
+    std::size_t pointNr = 0;
     std::vector<bezier_point> points;
     points.reserve(numberOfPoints);
     for (ttlet flag : flags) {
@@ -1188,7 +1188,7 @@ constexpr uint16_t FLAG_SCALED_COMPONENT_OFFSET = 0x0800;
 bool true_type_font::loadCompoundGlyph(std::span<std::byte const> glyph_bytes, graphic_path &glyph, glyph_id &metrics_glyph_id)
     const noexcept
 {
-    size_t offset = ssizeof(GLYFEntry);
+    std::size_t offset = ssizeof(GLYFEntry);
 
     uint16_t flags;
     do {
@@ -1213,8 +1213,8 @@ bool true_type_font::loadCompoundGlyph(std::span<std::byte const> glyph_bytes, g
                 subGlyphOffset = vector2{tmp[0].value(unitsPerEm), tmp[1].value(unitsPerEm)};
             }
         } else {
-            size_t pointNr1;
-            size_t pointNr2;
+            std::size_t pointNr1;
+            std::size_t pointNr2;
             if (flags & FLAG_ARG_1_AND_2_ARE_WORDS) {
                 assert_or_return(check_placement_array<big_uint16_buf_t>(glyph_bytes, offset, 2), false);
                 ttlet tmp = unsafe_make_placement_array<big_uint16_buf_t>(glyph_bytes, offset, 2);
@@ -1301,7 +1301,7 @@ std::optional<glyph_id> true_type_font::load_glyph(glyph_id glyph_id, graphic_pa
 
 bool true_type_font::loadCompoundglyph_metrics(std::span<std::byte const> bytes, glyph_id &metrics_glyph_id) const noexcept
 {
-    size_t offset = ssizeof(GLYFEntry);
+    std::size_t offset = ssizeof(GLYFEntry);
 
     uint16_t flags;
     do {
@@ -1387,7 +1387,7 @@ bool true_type_font::load_glyph_metrics(tt::glyph_id glyph_id, glyph_metrics &me
 
     ttlet bytes = view->bytes();
 
-    size_t offset = 0;
+    std::size_t offset = 0;
     ttlet header = make_placement_ptr<SFNTHeader>(bytes, offset);
 
     if (!(header->scalerType.value() == fourcc("true") || header->scalerType.value() == 0x00010000)) {

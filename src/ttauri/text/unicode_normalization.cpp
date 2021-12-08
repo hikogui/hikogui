@@ -79,7 +79,7 @@ static void unicode_decompose(char32_t code_point, bool compatible, bool ligatur
 
             auto it = begin(detail::unicode_db_decomposition_table) + description.decomposition_index();
 
-            for (size_t i = 0; i != description.decomposition_length(); ++i) {
+            for (std::size_t i = 0; i != description.decomposition_length(); ++i) {
                 unicode_decompose(*(it++), compatible, ligature, paragraph, r);
             }
         }
@@ -126,8 +126,8 @@ static void unicode_compose(bool paragraph, bool composeCRLF, std::u32string &te
         return;
     }
 
-    size_t i = 0;
-    size_t j = 0;
+    std::size_t i = 0;
+    std::size_t j = 0;
     while (i < text.size()) {
         ttlet code_unit = text[i++];
         ttlet code_point = code_unit & 0x1f'ffff;
@@ -141,7 +141,7 @@ static void unicode_compose(bool paragraph, bool composeCRLF, std::u32string &te
             // Try composing.
             auto first_code_point = code_point;
             char32_t previous_combining_class = 0;
-            for (size_t k = i; k < text.size(); k++) {
+            for (std::size_t k = i; k < text.size(); k++) {
                 ttlet second_code_unit = text[k];
                 ttlet second_code_point = second_code_unit & 0x1f'ffff;
                 ttlet second_combining_class = second_code_unit >> 24;

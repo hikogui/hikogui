@@ -339,7 +339,7 @@ std::optional<draw_context> gfx_surface_vulkan::render_start(aarectangle redraw_
     // We unset modified before, so that modification requests are captured.
     return draw_context{
         *narrow_cast<gfx_device_vulkan *>(_device),
-        narrow_cast<size_t>(frame_buffer_index),
+        narrow_cast<std::size_t>(frame_buffer_index),
         scissor_rectangle,
         boxPipeline->vertexBufferData,
         imagePipeline->vertexBufferData,
@@ -462,14 +462,14 @@ void gfx_surface_vulkan::submitCommandBuffer()
     _graphics_queue->queue.submit(submitInfo, vk::Fence());
 }
 
-std::tuple<size_t, extent2> gfx_surface_vulkan::get_image_count_and_size(size_t new_count, extent2 new_size)
+std::tuple<std::size_t, extent2> gfx_surface_vulkan::get_image_count_and_size(std::size_t new_count, extent2 new_size)
 {
     tt_axiom(gfx_system_mutex.recurse_lock_count());
 
     ttlet surfaceCapabilities = vulkan_device().getSurfaceCapabilitiesKHR(intrinsic);
 
-    ttlet min_count = narrow_cast<size_t>(surfaceCapabilities.minImageCount);
-    ttlet max_count = narrow_cast<size_t>(surfaceCapabilities.maxImageCount ? surfaceCapabilities.maxImageCount : 3);
+    ttlet min_count = narrow_cast<std::size_t>(surfaceCapabilities.minImageCount);
+    ttlet max_count = narrow_cast<std::size_t>(surfaceCapabilities.maxImageCount ? surfaceCapabilities.maxImageCount : 3);
     ttlet clamped_count = std::clamp(new_count, min_count, max_count);
     tt_log_info(
         "gfx_surface min_count={}, max_count={}, requested_count={}, count={}", min_count, max_count, new_count, clamped_count);
@@ -499,7 +499,7 @@ bool gfx_surface_vulkan::buildSurface()
     return vulkan_device().score(*this) > 0;
 }
 
-gfx_surface_state gfx_surface_vulkan::buildSwapchain(size_t new_count, extent2 new_size)
+gfx_surface_state gfx_surface_vulkan::buildSwapchain(std::size_t new_count, extent2 new_size)
 {
     tt_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -601,7 +601,7 @@ void gfx_surface_vulkan::teardownSwapchain()
     vulkan_device().destroy(swapchain);
     vulkan_device().destroyImage(depthImage, depthImageAllocation);
 
-    for (size_t i = 0; i != colorImages.size(); ++i) {
+    for (std::size_t i = 0; i != colorImages.size(); ++i) {
         vulkan_device().destroyImage(colorImages[i], colorImageAllocations[i]);
     }
 }
@@ -618,7 +618,7 @@ void gfx_surface_vulkan::buildFramebuffers()
          vk::ComponentMapping(),
          {vk::ImageAspectFlagBits::eDepth, 0, 1, 0, 1}});
 
-    for (size_t i = 0; i != colorImageViews.size(); ++i) {
+    for (std::size_t i = 0; i != colorImageViews.size(); ++i) {
         colorImageViews[i] = vulkan_device().createImageView(
             {vk::ImageViewCreateFlags(),
              colorImages[i],
@@ -670,7 +670,7 @@ void gfx_surface_vulkan::teardownFramebuffers()
     swapchain_image_infos.clear();
 
     vulkan_device().destroy(depthImageView);
-    for (size_t i = 0; i != colorImageViews.size(); ++i) {
+    for (std::size_t i = 0; i != colorImageViews.size(); ++i) {
         vulkan_device().destroy(colorImageViews[i]);
     }
 }

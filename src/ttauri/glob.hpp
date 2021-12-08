@@ -66,7 +66,7 @@ inline std::ostream &operator<<(std::ostream &lhs, glob_token_t const &rhs)
         lhs << ":" << rhs.value;
     } else if (rhs.values.size() > 0) {
         lhs << ":{";
-        for (size_t i = 0; i < rhs.values.size(); i++) {
+        for (std::size_t i = 0; i < rhs.values.size(); i++) {
             if (i != 0) {
                 lhs << ",";
             }
@@ -370,7 +370,7 @@ inline glob_match_result_t matchGlob(glob_token_const_iterator index, glob_token
 
     case glob_token_type_t::AnyString:
         // Loop through each character in the string, including the end.
-        for (size_t i = 0; i <= str.size(); i++) {
+        for (std::size_t i = 0; i <= str.size(); i++) {
             MATCH_GLOB_RECURSE(result, next_index, end, str.substr(i));
 
             // Don't continue beyond a slash.
@@ -383,7 +383,7 @@ inline glob_match_result_t matchGlob(glob_token_const_iterator index, glob_token
     case glob_token_type_t::AnyDirectory:
         // Recurse after each slash.
         found_slash = false;
-        for (size_t i = 0; i <= str.size(); i++) {
+        for (std::size_t i = 0; i <= str.size(); i++) {
             if (i == str.size() || str[i] == '/') {
                 MATCH_GLOB_RECURSE(result, next_index, end, str.substr(i));
             }

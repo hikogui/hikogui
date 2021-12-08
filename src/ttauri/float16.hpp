@@ -122,7 +122,7 @@ public:
         return *this;
     }
 
-    [[nodiscard]] size_t hash() const noexcept
+    [[nodiscard]] std::size_t hash() const noexcept
     {
         return std::hash<uint16_t>{}(v);
     }
@@ -139,7 +139,7 @@ public:
 
 template<>
 struct std::hash<tt::float16> {
-    size_t operator()(tt::float16 const &rhs) noexcept
+    std::size_t operator()(tt::float16 const &rhs) noexcept
     {
         return rhs.hash();
     }

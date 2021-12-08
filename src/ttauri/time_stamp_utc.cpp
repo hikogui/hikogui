@@ -139,7 +139,7 @@ void time_stamp_utc::subsystem_proc(std::stop_token stop_token) noexcept
 
     ttlet process_cpu_mask = process_affinity_mask();
 
-    size_t next_cpu = 0;
+    std::size_t next_cpu = 0;
     while (!stop_token.stop_requested()) {
         ttlet current_cpu = advance_thread_affinity(next_cpu);
 

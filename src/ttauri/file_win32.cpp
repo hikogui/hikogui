@@ -119,7 +119,7 @@ void file::close()
     }
 }
 
-size_t file::size() const
+std::size_t file::size() const
 {
     BY_HANDLE_FILE_INFORMATION file_information;
 
@@ -127,10 +127,10 @@ size_t file::size() const
         throw io_error("{}: Could not get file information. '{}'", _location, get_last_error_message());
     }
 
-    return merge_bit_cast<size_t>(file_information.nFileSizeHigh, file_information.nFileSizeLow);
+    return merge_bit_cast<std::size_t>(file_information.nFileSizeHigh, file_information.nFileSizeLow);
 }
 
-size_t file::seek(ssize_t offset, seek_whence whence)
+std::size_t file::seek(ssize_t offset, seek_whence whence)
 {
     tt_axiom(_file_handle);
 
@@ -150,7 +150,7 @@ size_t file::seek(ssize_t offset, seek_whence whence)
         throw io_error("{}: Could not seek in file. '{}'", _location, get_last_error_message());
     }
 
-    return narrow_cast<size_t>(new_offset.QuadPart);
+    return narrow_cast<std::size_t>(new_offset.QuadPart);
 }
 
 void file::rename(URL const &destination, bool overwrite_existing)
@@ -180,14 +180,14 @@ void file::rename(URL const &destination, bool overwrite_existing)
 
 /*! Write data to a file.
  */
-size_t file::write(std::byte const *data, size_t size, ssize_t offset)
+std::size_t file::write(std::byte const *data, std::size_t size, ssize_t offset)
 {
     tt_axiom(size >= 0);
     tt_axiom(_file_handle != INVALID_HANDLE_VALUE);
 
     ssize_t total_written_size = 0;
     while (size) {
-        ttlet to_write_size = static_cast<DWORD>(std::min(size, static_cast<size_t>(std::numeric_limits<DWORD>::max())));
+        ttlet to_write_size = static_cast<DWORD>(std::min(size, static_cast<std::size_t>(std::numeric_limits<DWORD>::max())));
         DWORD written_size = 0;
 
         OVERLAPPED overlapped;
@@ -213,14 +213,14 @@ size_t file::write(std::byte const *data, size_t size, ssize_t offset)
     return total_written_size;
 }
 
-ssize_t file::read(std::byte *data, size_t size, ssize_t offset)
+ssize_t file::read(std::byte *data, std::size_t size, ssize_t offset)
 {
     tt_axiom(size >= 0);
     tt_axiom(_file_handle != INVALID_HANDLE_VALUE);
 
     ssize_t total_read_size = 0;
     while (size) {
-        ttlet to_read_size = static_cast<DWORD>(std::min(size, static_cast<size_t>(std::numeric_limits<DWORD>::max())));
+        ttlet to_read_size = static_cast<DWORD>(std::min(size, static_cast<std::size_t>(std::numeric_limits<DWORD>::max())));
         DWORD read_size = 0;
 
         OVERLAPPED overlapped;
@@ -246,7 +246,7 @@ ssize_t file::read(std::byte *data, size_t size, ssize_t offset)
     return total_read_size;
 }
 
-bstring file::read_bstring(size_t max_size, ssize_t offset)
+bstring file::read_bstring(std::size_t max_size, ssize_t offset)
 {
     ttlet offset_ = offset == -1 ? get_seek() : offset;
     ttlet size_ = std::min(max_size, this->size() - offset_);
@@ -262,7 +262,7 @@ bstring file::read_bstring(size_t max_size, ssize_t offset)
     return r;
 }
 
-std::string file::read_string(size_t max_size)
+std::string file::read_string(std::size_t max_size)
 {
     ttlet size_ = size();
     if (size_ > max_size) {
@@ -276,7 +276,7 @@ std::string file::read_string(size_t max_size)
     return r;
 }
 
-std::u8string file::read_u8string(size_t max_size)
+std::u8string file::read_u8string(std::size_t max_size)
 {
     ttlet size_ = size();
     if (size_ > max_size) {
@@ -290,7 +290,7 @@ std::u8string file::read_u8string(size_t max_size)
     return r;
 }
 
-size_t file::file_size(URL const &url)
+std::size_t file::file_size(URL const &url)
 {
     ttlet name = url.nativeWPath();
 

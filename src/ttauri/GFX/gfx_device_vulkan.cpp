@@ -556,7 +556,7 @@ void gfx_device_vulkan::initialize_quad_index_buffer()
 
         // Initialize indices.
         ttlet stagingvertexIndexBufferData = mapMemory<vertex_index_type>(stagingvertexIndexBufferAllocation);
-        for (size_t i = 0; i < maximum_number_of_indices; i++) {
+        for (std::size_t i = 0; i < maximum_number_of_indices; i++) {
             ttlet vertexInRectangle = i % 6;
             ttlet rectangleNr = i / 6;
             ttlet rectangleBase = rectangleNr * 4;
@@ -813,7 +813,7 @@ void gfx_device_vulkan::clearColorImage(
     endSingleTimeCommands(commandBuffer);
 }
 
-vk::ShaderModule gfx_device_vulkan::loadShader(uint32_t const *data, size_t size) const
+vk::ShaderModule gfx_device_vulkan::loadShader(uint32_t const *data, std::size_t size) const
 {
     tt_axiom(gfx_system_mutex.recurse_lock_count());
 

@@ -91,7 +91,7 @@ struct skeleton_if_node final : skeleton_node {
             return to_string(*x);
         }));
 
-        for (size_t i = 1; i != expressions.size(); ++i) {
+        for (std::size_t i = 1; i != expressions.size(); ++i) {
             s += "elif ";
             s += to_string(*expressions[i]);
             s += join(transform<std::vector<std::string>>(children_groups[i], [](auto &x) {

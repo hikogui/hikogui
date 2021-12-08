@@ -30,13 +30,13 @@ void device_shared::destroy(gfx_device_vulkan *vulkan_device)
     teardown_atlas(vulkan_device);
 }
 
-std::vector<size_t> device_shared::allocate_pages(size_t num_pages) noexcept
+std::vector<std::size_t> device_shared::allocate_pages(std::size_t num_pages) noexcept
 {
     while (num_pages > _atlas_free_pages.size()) {
         add_atlas_image();
     }
 
-    auto r = std::vector<size_t>();
+    auto r = std::vector<std::size_t>();
     for (int i = 0; i < num_pages; i++) {
         ttlet page = _atlas_free_pages.back();
         r.push_back(page);
@@ -45,7 +45,7 @@ std::vector<size_t> device_shared::allocate_pages(size_t num_pages) noexcept
     return r;
 }
 
-void device_shared::free_pages(std::vector<size_t> const &pages) noexcept
+void device_shared::free_pages(std::vector<std::size_t> const &pages) noexcept
 {
     _atlas_free_pages.insert(_atlas_free_pages.end(), pages.begin(), pages.end());
 }
@@ -62,7 +62,7 @@ tt::pixel_map<sfloat_rgba16> device_shared::get_staging_pixel_map()
  * @param page number in the atlas
  * @return x, y pixel coordinate in an atlasTexture and z the atlasTextureIndex. Inside the border.
  */
-[[nodiscard]] static point3 get_atlas_position(size_t page) noexcept
+[[nodiscard]] static point3 get_atlas_position(std::size_t page) noexcept
 {
     // The amount of pixels per page, that is the page plus two borders.
     constexpr auto page_stride = paged_image::page_size + 2;
@@ -82,7 +82,7 @@ tt::pixel_map<sfloat_rgba16> device_shared::get_staging_pixel_map()
  * @param page_index The index of the page of the image.
  * @return The position into the staging map.
  */
-static point2 get_staging_position(const paged_image &image, size_t page_index)
+static point2 get_staging_position(const paged_image &image, std::size_t page_index)
 {
     ttlet width_in_pages = (image.width + paged_image::page_size - 1) / paged_image::page_size;
 
@@ -93,12 +93,12 @@ static point2 get_staging_position(const paged_image &image, size_t page_index)
 
 void device_shared::make_staging_border_transparent(aarectangle border_rectangle) noexcept
 {
-    ttlet width = static_cast<size_t>(border_rectangle.width());
-    ttlet height = static_cast<size_t>(border_rectangle.height());
-    ttlet bottom = static_cast<size_t>(border_rectangle.bottom());
-    ttlet top = static_cast<size_t>(border_rectangle.top());
-    ttlet left = static_cast<size_t>(border_rectangle.left());
-    ttlet right = static_cast<size_t>(border_rectangle.right());
+    ttlet width = static_cast<std::size_t>(border_rectangle.width());
+    ttlet height = static_cast<std::size_t>(border_rectangle.height());
+    ttlet bottom = static_cast<std::size_t>(border_rectangle.bottom());
+    ttlet top = static_cast<std::size_t>(border_rectangle.top());
+    ttlet left = static_cast<std::size_t>(border_rectangle.left());
+    ttlet right = static_cast<std::size_t>(border_rectangle.right());
 
     tt_axiom(bottom == 0);
     tt_axiom(left == 0);
@@ -128,10 +128,10 @@ void device_shared::clear_staging_between_border_and_upload(aarectangle border_r
     tt_axiom(border_rectangle.left() == 0.0f and border_rectangle.bottom() == 0.0f);
     tt_axiom(upload_rectangle.left() == 0.0f and upload_rectangle.bottom() == 0.0f);
 
-    ttlet border_top = narrow_cast<size_t>(border_rectangle.top());
-    ttlet border_right = narrow_cast<size_t>(border_rectangle.right());
-    ttlet upload_top = narrow_cast<size_t>(upload_rectangle.top());
-    ttlet upload_right = narrow_cast<size_t>(upload_rectangle.right());
+    ttlet border_top = narrow_cast<std::size_t>(border_rectangle.top());
+    ttlet border_right = narrow_cast<std::size_t>(border_rectangle.right());
+    ttlet upload_top = narrow_cast<std::size_t>(upload_rectangle.top());
+    ttlet upload_right = narrow_cast<std::size_t>(upload_rectangle.right());
     tt_axiom(border_right <= upload_right);
     tt_axiom(border_top <= upload_top);
 
@@ -174,7 +174,7 @@ void device_shared::update_atlas_with_staging_pixel_map(paged_image const &image
     prepare_staging_for_upload(image);
 
     std::array<std::vector<vk::ImageCopy>, atlas_maximum_num_images> regions_to_copy_per_atlas_texture;
-    for (size_t index = 0; index < size(image.pages); index++) {
+    for (std::size_t index = 0; index < size(image.pages); index++) {
         ttlet page = image.pages.at(index);
 
         ttlet src_position = get_staging_position(image, index);
@@ -187,7 +187,7 @@ void device_shared::update_atlas_with_staging_pixel_map(paged_image const &image
         ttlet src_y = narrow_cast<int32_t>(src_position.y() - 1);
         ttlet dst_x = narrow_cast<int32_t>(dst_position.x() - 1);
         ttlet dst_y = narrow_cast<int32_t>(dst_position.y() - 1);
-        ttlet dst_z = narrow_cast<size_t>(dst_position.z());
+        ttlet dst_z = narrow_cast<std::size_t>(dst_position.z());
 
         auto &regionsToCopy = regions_to_copy_per_atlas_texture.at(dst_z);
         regionsToCopy.emplace_back(
@@ -198,7 +198,7 @@ void device_shared::update_atlas_with_staging_pixel_map(paged_image const &image
             vk::Extent3D{width, height, 1});
     }
 
-    for (size_t atlas_texture_index = 0; atlas_texture_index < size(atlas_textures); atlas_texture_index++) {
+    for (std::size_t atlas_texture_index = 0; atlas_texture_index < size(atlas_textures); atlas_texture_index++) {
         ttlet &regions_to_copy = regions_to_copy_per_atlas_texture.at(atlas_texture_index);
         if (regions_to_copy.empty()) {
             continue;
@@ -292,7 +292,7 @@ void device_shared::add_atlas_image()
     }
 
     // Build image descriptor info.
-    for (size_t i = 0; i < size(atlas_descriptor_image_infos); i++) {
+    for (std::size_t i = 0; i < size(atlas_descriptor_image_infos); i++) {
         // Point the descriptors to each imageView,
         // repeat the first imageView if there are not enough.
         atlas_descriptor_image_infos.at(i) = {
@@ -386,8 +386,8 @@ void device_shared::place_vertices(
     ttlet image_size = image.size();
     ttlet size_in_float_pages = f32x4{image.size_in_float_pages()};
     ttlet size_in_int_pages = i32x4{ceil(size_in_float_pages)};
-    ttlet num_columns = narrow_cast<size_t>(size_in_int_pages.x());
-    ttlet num_rows = narrow_cast<size_t>(size_in_int_pages.y());
+    ttlet num_columns = narrow_cast<std::size_t>(size_in_int_pages.x());
+    ttlet num_rows = narrow_cast<std::size_t>(size_in_int_pages.y());
 
     ttlet page_to_quad_ratio = rcp(size_in_float_pages);
     ttlet page_to_quad_ratio_x = scale3{page_to_quad_ratio.xxx1()};
@@ -399,14 +399,14 @@ void device_shared::place_vertices(
     auto right_bottom = box.p1;
     auto bottom_increment = page_to_quad_ratio_x * (right_bottom - left_bottom);
     auto it = image.pages.begin();
-    for (size_t page_index = 0, row_nr = 0; row_nr != num_rows; ++row_nr) {
+    for (std::size_t page_index = 0, row_nr = 0; row_nr != num_rows; ++row_nr) {
         ttlet left_top = left_bottom + left_increment;
         ttlet right_top = right_bottom + right_increment;
         ttlet top_increment = page_to_quad_ratio_x * (right_top - left_top);
 
         auto new_p0 = left_bottom;
         auto new_p2 = left_top;
-        for (size_t column_nr = 0; column_nr != num_columns; ++column_nr, ++page_index, ++it) {
+        for (std::size_t column_nr = 0; column_nr != num_columns; ++column_nr, ++page_index, ++it) {
             ttlet new_p1 = new_p0 + bottom_increment;
             ttlet new_p3 = new_p2 + top_increment;
 

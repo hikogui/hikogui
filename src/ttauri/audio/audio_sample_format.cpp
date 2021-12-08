@@ -27,24 +27,24 @@ namespace tt::inline v1 {
     return 1.0f / pack_multiplier();
 }
 
-[[nodiscard]] size_t audio_sample_format::num_samples_per_chunk(size_t stride) const noexcept
+[[nodiscard]] std::size_t audio_sample_format::num_samples_per_chunk(std::size_t stride) const noexcept
 {
     auto r = narrow_cast<int>(std::bit_floor((((16u - num_bytes) / stride) & 3) + 1));
     tt_axiom(r == 1 || r == 2 || r == 4);
     return r;
 }
 
-[[nodiscard]] size_t audio_sample_format::chunk_stride(size_t stride) const noexcept
+[[nodiscard]] std::size_t audio_sample_format::chunk_stride(std::size_t stride) const noexcept
 {
     return stride * num_samples_per_chunk(stride);
 }
 
-[[nodiscard]] size_t audio_sample_format::num_chunks_per_quad(size_t stride) const noexcept
+[[nodiscard]] std::size_t audio_sample_format::num_chunks_per_quad(std::size_t stride) const noexcept
 {
     return 4 / num_samples_per_chunk(stride);
 }
 
-[[nodiscard]] size_t audio_sample_format::num_fast_quads(size_t stride, size_t num_samples) const noexcept
+[[nodiscard]] std::size_t audio_sample_format::num_fast_quads(std::size_t stride, std::size_t num_samples) const noexcept
 {
     ttlet src_buffer_size = (num_samples - 1) * stride + num_bytes;
     if (src_buffer_size < 16) {
@@ -55,7 +55,7 @@ namespace tt::inline v1 {
     return num_chunks / num_chunks_per_quad(stride);
 }
 
-[[nodiscard]] i8x16 audio_sample_format::load_shuffle_indices(size_t stride) const noexcept
+[[nodiscard]] i8x16 audio_sample_format::load_shuffle_indices(std::size_t stride) const noexcept
 {
     ttlet num_samples = num_samples_per_chunk(stride);
 
@@ -84,7 +84,7 @@ namespace tt::inline v1 {
     return r;
 }
 
-[[nodiscard]] i8x16 audio_sample_format::store_shuffle_indices(size_t stride) const noexcept
+[[nodiscard]] i8x16 audio_sample_format::store_shuffle_indices(std::size_t stride) const noexcept
 {
     ttlet num_samples = num_samples_per_chunk(stride);
 
@@ -113,7 +113,7 @@ namespace tt::inline v1 {
     return r;
 }
 
-[[nodiscard]] i8x16 audio_sample_format::concat_shuffle_indices(size_t stride) const noexcept
+[[nodiscard]] i8x16 audio_sample_format::concat_shuffle_indices(std::size_t stride) const noexcept
 {
     ttlet num_samples = num_samples_per_chunk(stride);
 

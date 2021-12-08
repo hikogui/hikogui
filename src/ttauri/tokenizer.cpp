@@ -42,7 +42,7 @@ enum class tokenizer_state_t : uint8_t {
     ColonOperatorSecondChar,
     Sentinal
 };
-constexpr size_t NR_TOKENIZER_STATES = static_cast<size_t>(tokenizer_state_t::Sentinal);
+constexpr std::size_t NR_TOKENIZER_STATES = static_cast<std::size_t>(tokenizer_state_t::Sentinal);
 
 enum class tokenizer_action_t : uint8_t {
     Idle = 0x00,
@@ -989,7 +989,7 @@ constexpr std::array<tokenizer_transition_t, 256> calculateTransitionTable_Initi
     return r;
 }
 
-constexpr size_t TRANSITION_TABLE_SIZE = NR_TOKENIZER_STATES * 256;
+constexpr std::size_t TRANSITION_TABLE_SIZE = NR_TOKENIZER_STATES * 256;
 using transitionTable_t = std::array<tokenizer_transition_t, TRANSITION_TABLE_SIZE>;
 
 constexpr transitionTable_t calculateTransitionTable()
@@ -1003,11 +1003,11 @@ constexpr transitionTable_t calculateTransitionTable()
     transitionTable_t r{};
 
     // Poisson the table, to make sure all sub tables have been initialized.
-    for (size_t i = 0; i < r.size(); i++) {
+    for (std::size_t i = 0; i < r.size(); i++) {
         r[i].action = tokenizer_action_t::Poison;
     }
 
-    size_t i = 0;
+    std::size_t i = 0;
     CALCULATE_SUB_TABLE(Initial);
     CALCULATE_SUB_TABLE(Name);
     CALCULATE_SUB_TABLE(MinusOrPlus);
@@ -1048,7 +1048,7 @@ constexpr transitionTable_t calculateTransitionTable()
 constexpr bool optimizeTransitionTableOnce(transitionTable_t &r)
 {
     bool foundOptimization = false;
-    for (size_t i = 0; i < r.size(); i++) {
+    for (std::size_t i = 0; i < r.size(); i++) {
         auto &transition = r[i];
         if (transition.action == tokenizer_action_t::Idle) {
             foundOptimization = true;
@@ -1071,7 +1071,7 @@ constexpr transitionTable_t optimizeTransitionTable(transitionTable_t transition
 
 constexpr bool checkTransitionTable(transitionTable_t const &r)
 {
-    for (size_t i = 0; i < r.size(); i++) {
+    for (std::size_t i = 0; i < r.size(); i++) {
         if (r[i].action >= tokenizer_action_t::Poison) {
             return false;
         }

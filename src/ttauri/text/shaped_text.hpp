@@ -109,9 +109,9 @@ public:
         return lines.empty();
     }
 
-    [[nodiscard]] size_t size() const noexcept
+    [[nodiscard]] std::size_t size() const noexcept
     {
-        size_t count = 0;
+        std::size_t count = 0;
         for (ttlet &line : lines) {
             count += line.size();
         }

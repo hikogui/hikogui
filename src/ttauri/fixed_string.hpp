@@ -40,14 +40,14 @@ struct basic_fixed_string {
 
     [[nodiscard]] constexpr basic_fixed_string() noexcept : _str()
     {
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             _str[i] = CharT{};
         }
     }
 
     [[nodiscard]] constexpr basic_fixed_string(CharT const (&str)[N]) noexcept : _str()
     {
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             _str[i] = str[i];
         }
     }
@@ -67,12 +67,12 @@ struct basic_fixed_string {
         return &_str[N];
     }
 
-    [[nodiscard]] constexpr size_t size() const noexcept
+    [[nodiscard]] constexpr std::size_t size() const noexcept
     {
         return N - 1;
     }
 
-    [[nodiscard]] constexpr friend size_t size(basic_fixed_string const &rhs) noexcept
+    [[nodiscard]] constexpr friend std::size_t size(basic_fixed_string const &rhs) noexcept
     {
         return rhs.size();
     }
@@ -91,9 +91,9 @@ struct basic_fixed_string {
 };
 
 template<typename CharT>
-[[nodiscard]] constexpr size_t basic_fixed_string_length_(CharT const *str) noexcept
+[[nodiscard]] constexpr std::size_t basic_fixed_string_length_(CharT const *str) noexcept
 {
-    size_t i = 0;
+    std::size_t i = 0;
     while (str[i++] != CharT{}) {}
     return i;
 }
@@ -102,7 +102,7 @@ template<typename CharT>
 
 namespace std {
 
-template<typename T, size_t N, typename CharT>
+template<typename T, std::size_t N, typename CharT>
 struct std::formatter<tt::basic_fixed_string<T, N>, CharT> : std::formatter<T const *, CharT> {
     auto format(tt::basic_fixed_string<T, N> const &t, auto &fc)
     {

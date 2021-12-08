@@ -177,7 +177,7 @@ public:
         vmaFlushAllocation(allocator, allocation, alignedOffset, alignedSize);
     }
 
-    vk::ShaderModule loadShader(uint32_t const *data, size_t size) const;
+    vk::ShaderModule loadShader(uint32_t const *data, std::size_t size) const;
 
     vk::ShaderModule loadShader(std::span<std::byte const> shaderObjectBytes) const;
 

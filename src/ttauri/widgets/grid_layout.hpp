@@ -4,6 +4,14 @@
 
 #pragma once
 
+#include "../required.hpp"
+#include "../assert.hpp"
+#include "../math.hpp"
+#include <tuple>
+#include <vector>
+#include <cstddef>
+#include <functional>
+
 namespace tt::inline v1 {
 
 /** Grid layout is used to layout widgets along an axis.
@@ -38,7 +46,7 @@ public:
      * @param maximum The maximum size that a widget should be laid out as.
      * @param margin The space between this widget and other widgets.
      */
-    void add_constraint(size_t first, size_t last, float minimum, float preferred, float maximum, float margin) noexcept
+    void add_constraint(std::size_t first, std::size_t last, float minimum, float preferred, float maximum, float margin) noexcept
     {
         _num_cells = std::max(_num_cells, last);
         _constraints.emplace_back(first, last, minimum, preferred, maximum, margin);
@@ -52,7 +60,7 @@ public:
      * @param maximum The maximum size that a widget should be laid out as.
      * @param margin The space between this widget and other widgets.
      */
-    void add_constraint(size_t index, float minimum, float preferred, float maximum, float margin) noexcept
+    void add_constraint(std::size_t index, float minimum, float preferred, float maximum, float margin) noexcept
     {
         return add_constraint(index, index + 1, minimum, preferred, maximum, margin);
     }
@@ -71,7 +79,7 @@ public:
      *
      * @pre `commit_constraints()` must be called.
      */
-    [[nodiscard]] size_t num_cells() const noexcept
+    [[nodiscard]] std::size_t num_cells() const noexcept
     {
         return _num_cells;
     }
@@ -114,7 +122,7 @@ public:
      * @param index The index of the cell.
      * @return The lower position of the cell, excluding the cell's margin.
      */
-    [[nodiscard]] float get_position(size_t index) const noexcept
+    [[nodiscard]] float get_position(std::size_t index) const noexcept
     {
         tt_axiom(index < num_cells());
         return get_position(_cells.begin(), _cells.begin() + index);
@@ -126,7 +134,7 @@ public:
      * @param last The index one past the last cell.
      * @return The size of the cell-span excluding external margins.
      */
-    [[nodiscard]] float get_size(size_t first, size_t last) const noexcept
+    [[nodiscard]] float get_size(std::size_t first, std::size_t last) const noexcept
     {
         tt_axiom(first <= last);
         tt_axiom(last <= _cells.size());
@@ -138,7 +146,7 @@ public:
      * @param index The index of the cell.
      * @return The size of the cell-span excluding external margins.
      */
-    [[nodiscard]] float get_size(size_t index) const noexcept
+    [[nodiscard]] float get_size(std::size_t index) const noexcept
     {
         return get_size(index, index + 1);
     }
@@ -149,7 +157,7 @@ public:
      * @param last The index one past the last cell.
      * @return The position and size of the cell-span excluding external margins.
      */
-    std::pair<float, float> get_position_and_size(size_t first, size_t last) const noexcept
+    std::pair<float, float> get_position_and_size(std::size_t first, std::size_t last) const noexcept
     {
         return {get_position(first), get_size(first, last)};
     }
@@ -159,7 +167,7 @@ public:
      * @param index The index of the cell.
      * @return The position and size of the cell-span excluding external margins.
      */
-    std::pair<float, float> get_position_and_size(size_t index) const noexcept
+    std::pair<float, float> get_position_and_size(std::size_t index) const noexcept
     {
         return get_position_and_size(index, index + 1);
     }
@@ -170,7 +178,7 @@ public:
      * @param last The index one past the last cell.
      * @return The first and last position of the cell-span excluding external margins.
      */
-    std::pair<float, float> get_positions(size_t first, size_t last) const noexcept
+    std::pair<float, float> get_positions(std::size_t first, std::size_t last) const noexcept
     {
         ttlet position = get_position(first);
         ttlet size = get_size(first, last);
@@ -183,15 +191,15 @@ public:
      * @param index The index of the cell.
      * @return The first and last position of the cell excluding external margins.
      */
-    std::pair<float, float> get_positions(size_t index) const noexcept
+    std::pair<float, float> get_positions(std::size_t index) const noexcept
     {
         return get_positions(index, index + 1);
     }
 
 private:
     struct constraint_type {
-        size_t first;
-        size_t last;
+        std::size_t first;
+        std::size_t last;
         float minimum;
         float preferred;
         float maximum;
@@ -258,7 +266,7 @@ private:
     using cell_iterator = cell_vector_type::iterator;
     using cell_const_iterator = cell_vector_type::const_iterator;
 
-    size_t _num_cells;
+    std::size_t _num_cells;
     float _minimum;
     float _preferred;
     float _maximum;

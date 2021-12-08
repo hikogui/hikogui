@@ -30,12 +30,12 @@
 
 namespace tt::inline v1 {
 
-inline std::tuple<bool, size_t, bool, size_t> _parse_spreadsheet_address(std::string_view &address)
+inline std::tuple<bool, std::size_t, bool, std::size_t> _parse_spreadsheet_address(std::string_view &address)
 {
     bool column_nr_is_relative = true;
-    size_t column_nr = 0;
+    std::size_t column_nr = 0;
     bool row_nr_is_relative = true;
-    size_t row_nr = 0;
+    std::size_t row_nr = 0;
 
     if (address.starts_with("$")) {
         column_nr_is_relative = false;
@@ -69,8 +69,8 @@ inline std::tuple<bool, size_t, bool, size_t> _parse_spreadsheet_address(std::st
  * @param start_row_nr A relative row in the address is added to the start-row.
  * @return The zero-based column and row index.
  */
-inline std::pair<size_t, size_t>
-parse_spreadsheet_address(std::string_view address, size_t start_column_nr = 0, size_t start_row_nr = 0)
+inline std::pair<std::size_t, std::size_t>
+parse_spreadsheet_address(std::string_view address, std::size_t start_column_nr = 0, std::size_t start_row_nr = 0)
 {
     auto [column_nr_is_relative, column_nr, row_nr_is_relative, row_nr] = _parse_spreadsheet_address(address);
     tt_parse_check(address.empty(), "Extra characters in spread sheet address {}", address);
@@ -84,8 +84,8 @@ parse_spreadsheet_address(std::string_view address, size_t start_column_nr = 0, 
     return {column_nr, row_nr};
 }
 
-inline std::tuple<size_t, size_t, size_t, size_t>
-parse_spreadsheet_range(std::string_view address, size_t start_column_nr = 0, size_t start_row_nr = 0)
+inline std::tuple<std::size_t, std::size_t, std::size_t, std::size_t>
+parse_spreadsheet_range(std::string_view address, std::size_t start_column_nr = 0, std::size_t start_row_nr = 0)
 {
     auto [column_nr_is_relative1, column_nr1, row_nr_is_relative1, row_nr1] = _parse_spreadsheet_address(address);
     if (column_nr_is_relative1) {

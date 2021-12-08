@@ -17,7 +17,7 @@ namespace tt::inline v1 {
  * @param buffer The buffer of bytes to extract the bit from.
  * @param index The index of the bit in the byte span.
  */
-[[nodiscard]] inline bool get_bit(std::span<std::byte const> buffer, size_t &index) noexcept
+[[nodiscard]] inline bool get_bit(std::span<std::byte const> buffer, std::size_t &index) noexcept
 {
     auto byte_index = index >> 3;
     auto bit_index = index & 7;
@@ -45,9 +45,9 @@ namespace tt::inline v1 {
  * @param index The index of the bit in the byte span.
  * @param length the number of bits to return.
  */
-[[nodiscard]] inline size_t get_bits(std::span<std::byte const> buffer, size_t &index, size_t length) noexcept
+[[nodiscard]] inline std::size_t get_bits(std::span<std::byte const> buffer, std::size_t &index, std::size_t length) noexcept
 {
-    tt_axiom(length <= sizeof(size_t) * CHAR_BIT);
+    tt_axiom(length <= sizeof(std::size_t) * CHAR_BIT);
 
     auto value = 0;
 

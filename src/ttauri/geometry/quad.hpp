@@ -77,7 +77,7 @@ public:
         return sqrt(x * x + y * y + z * z);
     }
 
-    [[nodiscard]] constexpr point3 &operator[](size_t index) noexcept
+    [[nodiscard]] constexpr point3 &operator[](std::size_t index) noexcept
     {
         switch (index) {
         case 0: return p0;
@@ -88,7 +88,7 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr point3 const &operator[](size_t index) const noexcept
+    [[nodiscard]] constexpr point3 const &operator[](std::size_t index) const noexcept
     {
         switch (index) {
         case 0: return p0;
@@ -99,7 +99,7 @@ public:
         }
     }
 
-    template<size_t I>
+    template<std::size_t I>
     [[nodiscard]] constexpr friend point3 const &get(quad const &rhs) noexcept
     {
         static_assert(I < 4, "Index out of range.");
@@ -115,7 +115,7 @@ public:
         }
     }
 
-    template<size_t I>
+    template<std::size_t I>
     [[nodiscard]] constexpr friend point3 &get(quad &rhs) noexcept
     {
         static_assert(I < 4, "Index out of range.");

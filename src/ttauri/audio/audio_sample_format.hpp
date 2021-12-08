@@ -194,31 +194,31 @@ struct audio_sample_format {
     /** The number of packed samples that are handled in a single 128 bit load or store.
      * Always one of: 1, 2 or 4.
      */
-    [[nodiscard]] size_t num_samples_per_chunk(size_t stride) const noexcept;
+    [[nodiscard]] std::size_t num_samples_per_chunk(std::size_t stride) const noexcept;
 
     /** The number of bytes to advance to the next chunk to be loaded or stored.
      */
-    [[nodiscard]] size_t chunk_stride(size_t stride) const noexcept;
+    [[nodiscard]] std::size_t chunk_stride(std::size_t stride) const noexcept;
 
     /** The number of chunks to load or store to handle 4 samples.
      */
-    [[nodiscard]] size_t num_chunks_per_quad(size_t stride) const noexcept;
+    [[nodiscard]] std::size_t num_chunks_per_quad(std::size_t stride) const noexcept;
 
     /** Calculate the number of 4 sample-quads can be handled as chunked loads and stores.
      */
-    [[nodiscard]] size_t num_fast_quads(size_t stride, size_t num_samples) const noexcept;
+    [[nodiscard]] std::size_t num_fast_quads(std::size_t stride, std::size_t num_samples) const noexcept;
 
     /** Return a shuffle indices for loading samples into 32 bit integers.
      */
-    [[nodiscard]] i8x16 load_shuffle_indices(size_t stride) const noexcept;
+    [[nodiscard]] i8x16 load_shuffle_indices(std::size_t stride) const noexcept;
 
     /** Return a shuffle indices for storing 32 bit samples into packed samples.
      */
-    [[nodiscard]] i8x16 store_shuffle_indices(size_t stride) const noexcept;
+    [[nodiscard]] i8x16 store_shuffle_indices(std::size_t stride) const noexcept;
 
     /** Return a shuffle indices to shift previous loaded samples for concatenation.
      */
-    [[nodiscard]] i8x16 concat_shuffle_indices(size_t stride) const noexcept;
+    [[nodiscard]] i8x16 concat_shuffle_indices(std::size_t stride) const noexcept;
 
     /** Is the audio sample format valid.
      */

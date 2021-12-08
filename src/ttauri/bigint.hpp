@@ -19,7 +19,7 @@ namespace tt::inline v1 {
  * The bigint is a fixed width integer which will allow the compiler
  * to make aggressive optimizations, unrolling most loops and easy inlining.
  */
-template<std::unsigned_integral DigitType, size_t NumDigits, bool IsSigned>
+template<std::unsigned_integral DigitType, std::size_t NumDigits, bool IsSigned>
 struct bigint {
     using digit_type = DigitType;
     using signed_digit_type = std::make_signed_t<digit_type>;
@@ -38,7 +38,7 @@ struct bigint {
      */
     constexpr bigint() noexcept
     {
-        for (size_t i = 0; i != num_digits; ++i) {
+        for (std::size_t i = 0; i != num_digits; ++i) {
             digits[i] = zero_digit;
         }
     }
@@ -50,10 +50,10 @@ struct bigint {
 
     /** Construct from a small bigint.
      */
-    template<size_t N, bool S>
+    template<std::size_t N, bool S>
     constexpr bigint(bigint<digit_type, N, S> const &rhs) noexcept requires(N < num_digits)
     {
-        size_t i = 0;
+        std::size_t i = 0;
 
         // Copy the data from a smaller bigint.
         for (; i != N; ++i) {
@@ -69,10 +69,10 @@ struct bigint {
 
     /** Assign from a small bigint.
      */
-    template<size_t N, bool S>
+    template<std::size_t N, bool S>
     constexpr bigint &operator=(bigint<digit_type, N, S> const &rhs) noexcept requires(N < num_digits)
     {
-        size_t i = 0;
+        std::size_t i = 0;
 
         // Copy the data from a smaller bigint.
         for (; i != N; ++i) {
@@ -101,7 +101,7 @@ struct bigint {
 
         // Sign extent to the rest of the digits.
         ttlet sign = value < 0 ? min1_digit : zero_digit;
-        for (size_t i = 1; i != num_digits; ++i) {
+        for (std::size_t i = 1; i != num_digits; ++i) {
             digits[i] = sign;
         }
     }
@@ -120,7 +120,7 @@ struct bigint {
 
         // Sign extent to the rest of the digits.
         ttlet sign = value < 0 ? min1_digit : zero_digit;
-        for (size_t i = 1; i != num_digits; ++i) {
+        for (std::size_t i = 1; i != num_digits; ++i) {
             digits[i] = sign;
         }
         return *this;
@@ -128,7 +128,7 @@ struct bigint {
 
     constexpr explicit bigint(std::string_view str, int base = 10) noexcept : bigint()
     {
-        size_t i = 0;
+        std::size_t i = 0;
         for (; i < str.size(); ++i) {
             (*this) *= base;
             (*this) += base16::int_from_char<int>(str[i]);
@@ -178,7 +178,7 @@ struct bigint {
 
     constexpr explicit operator bool() const noexcept
     {
-        for (size_t i = 0; i != num_digits; ++i) {
+        for (std::size_t i = 0; i != num_digits; ++i) {
             if (digits[i] != 0) {
                 return true;
             }
@@ -195,7 +195,7 @@ struct bigint {
         }
     }
 
-    template<size_t N, bool S>
+    template<std::size_t N, bool S>
     constexpr explicit operator bigint<digit_type, N, S>() const noexcept
     {
         auto r = bigint<digit_type, N, S>{};
@@ -250,13 +250,13 @@ struct bigint {
         return r;
     }
 
-    constexpr bigint &operator<<=(size_t rhs) noexcept
+    constexpr bigint &operator<<=(std::size_t rhs) noexcept
     {
         sll_carry_chain(digits, digits, rhs, num_digits);
         return *this;
     }
 
-    constexpr bigint &operator>>=(size_t rhs) noexcept
+    constexpr bigint &operator>>=(std::size_t rhs) noexcept
     {
         if constexpr (is_signed) {
             sra_carry_chain(digits, digits, rhs, num_digits);
@@ -309,7 +309,7 @@ struct bigint {
         auto r = bigint{};
         for (ssize_t i = static_cast<ssize_t>(num_digits) - 1; i >= 0; i--) {
             digit_type d = 0;
-            for (size_t j = 0; j < sizeof(digit_type); j++) {
+            for (std::size_t j = 0; j < sizeof(digit_type); j++) {
                 d <<= 8;
                 d |= *(data++);
             }
@@ -323,7 +323,7 @@ struct bigint {
         auto r = bigint{};
         for (int i = 0; i < num_digits; ++i) {
             digit_type d = 0;
-            for (size_t j = 0; j < sizeof(digit_type); j++) {
+            for (std::size_t j = 0; j < sizeof(digit_type); j++) {
                 d |= static_cast<digit_type>(*(data++)) << (j * 8);
             }
             r.digits[i] = d;
@@ -393,14 +393,14 @@ struct bigint {
         }
     }
 
-    [[nodiscard]] constexpr friend bigint operator<<(bigint const &lhs, size_t rhs) noexcept
+    [[nodiscard]] constexpr friend bigint operator<<(bigint const &lhs, std::size_t rhs) noexcept
     {
         auto r = bigint{};
         sll_carry_chain(r.digits, lhs.digits, rhs, lhs.num_digits);
         return r;
     }
 
-    [[nodiscard]] constexpr friend bigint operator>>(bigint const &lhs, size_t rhs) noexcept
+    [[nodiscard]] constexpr friend bigint operator>>(bigint const &lhs, std::size_t rhs) noexcept
     {
         auto r = bigint{};
         if constexpr (lhs.is_signed) {
@@ -533,15 +533,15 @@ struct bigint {
     }
 };
 
-template<std::unsigned_integral T, size_t N>
+template<std::unsigned_integral T, std::size_t N>
 struct is_numeric_unsigned_integral<bigint<T, N, false>> : std::true_type {
 };
 
-template<std::unsigned_integral T, size_t N>
+template<std::unsigned_integral T, std::size_t N>
 struct is_numeric_signed_integral<bigint<T, N, true>> : std::true_type {
 };
 
-template<std::unsigned_integral T, size_t N, bool S>
+template<std::unsigned_integral T, std::size_t N, bool S>
 struct is_numeric_integral<bigint<T, N, S>> : std::true_type {
 };
 
@@ -552,7 +552,7 @@ using uuid = bigint<uint64_t, 2, false>;
 } // namespace tt::inline v1
 
 
-template<std::unsigned_integral DigitType, size_t NumDigits, bool IsSigned>
+template<std::unsigned_integral DigitType, std::size_t NumDigits, bool IsSigned>
 struct std::numeric_limits<tt::bigint<DigitType, NumDigits, IsSigned>> {
     using value_type = tt::bigint<DigitType, NumDigits, IsSigned>;
 
@@ -585,7 +585,7 @@ struct std::numeric_limits<tt::bigint<DigitType, NumDigits, IsSigned>> {
         constexpr auto smin = std::numeric_limits<value_type::signed_digit_type>::min();
         constexpr auto umin = std::numeric_limits<value_type::digit_type>::min();
 
-        for (size_t i = 0; i != value_type::num_digits; ++i) {
+        for (std::size_t i = 0; i != value_type::num_digits; ++i) {
             r.digits[i] = umin;
         }
 
@@ -607,7 +607,7 @@ struct std::numeric_limits<tt::bigint<DigitType, NumDigits, IsSigned>> {
         constexpr auto smax = std::numeric_limits<value_type::signed_digit_type>::max();
         constexpr auto umax = std::numeric_limits<value_type::digit_type>::max();
 
-        for (size_t i = 0; i != value_type::num_digits; ++i) {
+        for (std::size_t i = 0; i != value_type::num_digits; ++i) {
             r.digits[i] = umax;
         }
 

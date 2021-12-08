@@ -36,7 +36,7 @@ public:
     public:
         struct allocator_info {
             allocator_type *allocator;
-            size_t size;
+            std::size_t size;
         };
 
         void operator delete(void *ptr)
@@ -56,7 +56,7 @@ public:
             }
         }
 
-        [[nodiscard]] static void *simple_new(size_t size)
+        [[nodiscard]] static void *simple_new(std::size_t size)
         {
             auto size_plus_info = size + sizeof(allocator_info);
 
@@ -67,7 +67,7 @@ public:
             return ptr + sizeof(allocator_info);
         }
 
-        [[nodiscard]] static void *allocator_new(size_t size, allocator_type &allocator)
+        [[nodiscard]] static void *allocator_new(std::size_t size, allocator_type &allocator)
         {
             auto size_plus_info = size + sizeof(allocator_info);
 
@@ -80,7 +80,7 @@ public:
         }
 
         template<typename... Args>
-        void *operator new(size_t size, Args &&...args)
+        void *operator new(std::size_t size, Args &&...args)
         {
             if constexpr (std::allocator_traits<allocator_type>::is_always_equal::value) {
                 // This is just a coroutine with arguments.

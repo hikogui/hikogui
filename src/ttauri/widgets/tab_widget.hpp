@@ -62,7 +62,7 @@ public:
      *
      * @pre A widget with the same @a value must not have been added before.
      * @tparam WidgetType The type of the widget to create.
-     * @tparam Key The type of the key, must be convertible to `size_t`.
+     * @tparam Key The type of the key, must be convertible to `std::size_t`.
      * @param key The value used as a key to select this newly added widget.
      * @param args The arguments to pass to the constructor of widget to add.
      */
@@ -74,7 +74,7 @@ public:
         auto tmp = std::make_unique<WidgetType>(window, this, std::forward<Args>(args)...);
         auto &ref = *tmp;
         if (auto delegate = _delegate.lock()) {
-            delegate->add_tab(*this, static_cast<size_t>(key), size(_children));
+            delegate->add_tab(*this, static_cast<std::size_t>(key), size(_children));
         }
         _children.push_back(std::move(tmp));
         request_reconstrain();

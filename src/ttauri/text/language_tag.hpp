@@ -24,7 +24,7 @@ public:
     explicit language_tag(std::string_view tag) noexcept : tag(tag) {}
     explicit language_tag(char const *tag) noexcept : tag(tag) {}
 
-    [[nodiscard]] size_t hash() const noexcept
+    [[nodiscard]] std::size_t hash() const noexcept
     {
         return std::hash<std::string>{}(tag);
     }
@@ -60,7 +60,7 @@ private:
 template<>
 class std::hash<tt::language_tag> {
 public:
-    [[nodiscard]] size_t operator()(tt::language_tag const &rhs) const noexcept
+    [[nodiscard]] std::size_t operator()(tt::language_tag const &rhs) const noexcept
     {
         return rhs.hash();
     }

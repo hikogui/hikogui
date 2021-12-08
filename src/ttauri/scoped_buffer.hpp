@@ -9,7 +9,7 @@ namespace tt::inline v1::pmr {
 
 /** A buffer with an attached memory allocator.
  */
-template<size_t Size, typename T = std::byte>
+template<std::size_t Size, typename T = std::byte>
 class scoped_buffer {
 public:
     using value_type = T;

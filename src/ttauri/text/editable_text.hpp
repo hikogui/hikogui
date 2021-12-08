@@ -96,7 +96,7 @@ public:
         update_shaped_text();
     }
 
-    size_t size() const noexcept
+    std::size_t size() const noexcept
     {
         return _text.size();
     }
