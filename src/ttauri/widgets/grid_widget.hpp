@@ -6,8 +6,8 @@
 
 #include "widget.hpp"
 #include "grid_delegate.hpp"
+#include "grid_layout.hpp"
 #include "../geometry/spreadsheet_address.hpp"
-#include "../flow_layout.hpp"
 #include "../weak_or_unique_ptr.hpp"
 #include <memory>
 
@@ -105,19 +105,19 @@ private:
         }
 
         [[nodiscard]] aarectangle
-        rectangle(flow_layout const &columns, flow_layout const &rows, float container_height) const noexcept
+        rectangle(grid_layout const &columns, grid_layout const &rows, float container_height) const noexcept
         {
-            ttlet[x, width] = columns.get_offset_and_size(column_nr);
-            ttlet[y, height] = rows.get_offset_and_size(row_nr);
+            ttlet[x0, x3] = columns.get_positions(column_nr);
+            ttlet[y0, y3] = rows.get_positions(row_nr);
 
-            return {x, container_height - y - height, width, height};
-        };
+            return {point2{x0, container_height - y3}, point2{x3, container_height - y0}};
+        }
     };
 
     std::vector<cell> _cells;
 
-    flow_layout _rows;
-    flow_layout _columns;
+    grid_layout _rows;
+    grid_layout _columns;
 
     std::weak_ptr<delegate_type> _delegate;
 

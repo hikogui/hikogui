@@ -17,6 +17,8 @@ target_sources(ttauri PRIVATE
     draw_context.cpp
     draw_context.hpp
     grid_delegate.hpp
+    grid_layout.hpp
+    grid_layout.cpp
     grid_widget.cpp
     grid_widget.hpp
     icon_widget.cpp

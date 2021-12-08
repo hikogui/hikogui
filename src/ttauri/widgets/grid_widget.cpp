@@ -57,32 +57,36 @@ widget_constraints const &grid_widget::set_constraints() noexcept
 
     for (ttlet &cell : _cells) {
         ttlet cell_constraints = cell.widget->set_constraints();
-        _rows.update(
+        _rows.add_constraint(
             cell.row_nr,
+            cell.row_nr + 1,
             cell_constraints.minimum.height(),
             cell_constraints.preferred.height(),
             cell_constraints.maximum.height(),
             cell_constraints.margin);
 
-        _columns.update(
+        _columns.add_constraint(
             cell.column_nr,
+            cell.column_nr + 1,
             cell_constraints.minimum.width(),
             cell_constraints.preferred.width(),
             cell_constraints.maximum.width(),
             cell_constraints.margin);
     }
+    _rows.commit_constraints();
+    _columns.commit_constraints();
 
     return _constraints = {
-               extent2{_columns.minimum_size(), _rows.minimum_size()},
-               extent2{_columns.preferred_size(), _rows.preferred_size()},
-               extent2{_columns.maximum_size(), _rows.maximum_size()}};
+               extent2{_columns.minimum(), _rows.minimum()},
+               extent2{_columns.preferred(), _rows.preferred()},
+               extent2{_columns.maximum(), _rows.maximum()}};
 }
 
 void grid_widget::set_layout(widget_layout const &layout) noexcept
 {
     if (compare_store(_layout, layout)) {
-        _columns.set_size(layout.width());
-        _rows.set_size(layout.height());
+        _columns.layout(layout.width());
+        _rows.layout(layout.height());
     }
 
     for (ttlet &cell : _cells) {

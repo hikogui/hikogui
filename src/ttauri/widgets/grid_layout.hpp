@@ -25,9 +25,8 @@ public:
     void clear() noexcept
     {
         _num_cells = 0;
-        _widget_constraints.clear();
+        _constraints.clear();
         _cells.clear();
-        _margins.clear();
     }
 
     /** Add a constraint for a widget.
@@ -81,19 +80,28 @@ public:
      *
      * @pre `commit_constraints()` must be called.
      */
-    [[nodiscard]] float minimum() const noexcept;
+    [[nodiscard]] float minimum() const noexcept
+    {
+        return _minimum + _cells.front().margin + _cells.back().margin;
+    }
 
     /** The minimum size of the total grid_layout.
      *
      * @pre `commit_constraints()` must be called.
      */
-    [[nodiscard]] float preferred() const noexcept;
+    [[nodiscard]] float preferred() const noexcept
+    {
+        return _preferred + _cells.front().margin + _cells.back().margin;
+    }
 
     /** The minimum size of the total grid_layout.
      *
      * @pre `commit_constraints()` must be called.
      */
-    [[nodiscard]] float maximum() const noexcept;
+    [[nodiscard]] float maximum() const noexcept
+    {
+        return _maximum + _cells.front().margin + _cells.back().margin;
+    }
 
     /** Layout the cells based on the total size.
      *
@@ -108,13 +116,8 @@ public:
      */
     [[nodiscard]] float get_position(size_t index) const noexcept
     {
-        auto i = 0_uz;
-        auto position = _cells[i].margin;
-        for (; i != index; ++i) {
-            position += cells[i].size;
-            position += cells[i + 1].margin;
-        }
-        return position;
+        tt_axiom(index < num_cells());
+        return get_position(_cells.begin(), _cells.begin() + index);
     }
 
     /** Get size of the cells.
@@ -125,13 +128,9 @@ public:
      */
     [[nodiscard]] float get_size(size_t first, size_t last) const noexcept
     {
-        tt_axiom(first < last);
-
-        auto i = first;
-        auto size = _cells[i].size;
-        for (; i != last; ++i) {
-            size += cells[i].margin size += cells[i].size;
-        }
+        tt_axiom(first <= last);
+        tt_axiom(last <= _cells.size());
+        return get_size(_cells.begin() + first, _cells.begin() + last);
     }
 
     /** Get size of the cell.
@@ -165,13 +164,13 @@ public:
      */
     std::pair<float, float> get_positions(size_t index) const noexcept
     {
-        return get_position(index, index + 1);
+        return get_positions(index, index + 1);
     }
 
 private:
-    struct constraints_type {
-        size_t start;
-        size_t end;
+    struct constraint_type {
+        size_t first;
+        size_t last;
         float minimum;
         float preferred;
         float maximum;
@@ -179,7 +178,7 @@ private:
 
         [[nodiscard]] bool is_single_cell() const noexcept
         {
-            return start == end - 1;
+            return first == last - 1;
         }
 
         [[nodiscard]] bool is_span() const noexcept
@@ -189,24 +188,35 @@ private:
     };
 
     struct cell_type {
+        /** The size of this cell.
+         */
         float size;
 
-        /** The margin left of the cell.
+        /** The margin before of the cell.
          */
         float margin;
+
+        /** The absolute minimum size of this widget.
+         */
         float minimum;
+
+        /** The preferred size of this cell.
+         */
         float preferred;
+
+        /** The maximum size of this cell.
+         */
         float maximum;
 
-        cell_type() noexcept : size(0.0f), margin(0.0f), minimum(0.0f), preferred(0.0f), maximum(0.0f) {}
+        cell_type() noexcept : size(0.0f), margin(0.0f), minimum(0.0f), preferred(0.0f), maximum(std::numeric_limits<float>::infinity()) {}
 
-        void fix_constraints() noexcept
+        void fix_constraint() noexcept
         {
             inplace_max(maximum, minimum);
             inplace_clamp(preferred, minimum, maximum);
         }
 
-        void set_constraints(constraint_type const &constraint) noexcept
+        void set_constraint(constraint_type const &constraint) noexcept
         {
             inplace_max(minimum, constraint.minimum);
             inplace_max(preferred, constraint.preferred);
@@ -219,28 +229,61 @@ private:
         }
     };
 
-    using contraints_vector_type = std::vector<constraints_type>
+    using contraint_vector_type = std::vector<constraint_type>;
     using cell_vector_type = std::vector<cell_type>;
     using cell_iterator = cell_vector_type::iterator;
+    using cell_const_iterator = cell_vector_type::const_iterator;
 
     size_t _num_cells;
     float _minimum;
     float _preferred;
     float _maximum;
-    contraints_vector_type _constraints;
+    contraint_vector_type _constraints;
     cell_vector_type _cells;
 
-    [[nodiscard]] static bool has_preferred_room(cell_iterator first, cell_iterator last) noexcept;
-    [[nodiscard]] static bool has_maximum_room(cell_iterator first, cell_iterator last) noexcept;
-    [[nodiscard]] static float add_upto_preferred_size(cell_iterator first, cell_iterator last, float extra) noexcept;
-    [[nodiscard]] static float add_upto_maximum_size(cell_iterator first, cell_iterator last, float extra) noexcept;
-    static void add_beyond_maximum_size(cell_iterator first, cell_iterator last, float extra) noexcept;
-    static void add_size(cell_iterator first, cell_iterator last, float extra_size) noexcept;
+    /** Get position of cell.
+     *
+     * @param begin An iterator to the first cell.
+     * @param first An iterator to the cell to calculate the position for.
+     * @return The lower position of the cell, excluding the cell's margin.
+     */
+    [[nodiscard]] float get_position(cell_const_iterator begin, cell_const_iterator first) const noexcept
+    {
+        auto it = begin;
+        auto position = it->margin;
+        while (it != first) {
+            position += it->size;
+            ++it;
+            position += it->margin;
+        }
+        return position;
+    }
 
-    void cells_update_constraints_and_margins() noexcept;
-    [[nodiscard]] float cells_calculate_minimum() noexcept;
-    [[nodiscard]] float cells_calculate_preferred() noexcept;
-    [[nodiscard]] float cells_calculate_maximum() noexcept;
+    /** Get size of the cells.
+     *
+     * @param first The index of the first cell.
+     * @param last The index one past the last cell.
+     * @return The size of the cell-span excluding external margins.
+     */
+    [[nodiscard]] static float get_size(cell_const_iterator first, cell_const_iterator last) noexcept
+    {
+        if (first == last) {
+            return 0.0f;
+        }
+
+        auto it = first;
+        auto size = it->size;
+        ++it;
+        for (; it != last; ++it) {
+            size += it->margin;
+            size += it->size;
+        }
+        return size;
+    }
+
+    void constrain_cells_by_singles() noexcept;
+    void constrain_cells_by_spans(std::function<float(constraint_type const &)> const &predicate) noexcept;
+    [[nodiscard]] bool holds_invariant() const noexcept;
 };
 
 } // namespace tt::inline v1
