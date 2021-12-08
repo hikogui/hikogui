@@ -28,23 +28,33 @@ grid_widget::~grid_widget()
     }
 }
 
-bool grid_widget::address_in_use(size_t column_nr, size_t row_nr) const noexcept
+bool grid_widget::address_in_use(size_t column_first, size_t row_first, size_t column_last, size_t row_last) const noexcept
 {
     for (ttlet &cell : _cells) {
-        if (cell.column_nr == column_nr && cell.row_nr == row_nr) {
+        if (column_last > cell.column_first and column_first < cell.column_last and row_last > cell.row_last and
+            row_first < cell.row_first) {
             return true;
         }
     }
     return false;
 }
 
-widget &grid_widget::add_widget(size_t column_nr, size_t row_nr, std::unique_ptr<widget> widget) noexcept
+widget &grid_widget::add_widget(
+    size_t column_first,
+    size_t row_first,
+    size_t column_last,
+    size_t row_last,
+    std::unique_ptr<widget> widget) noexcept
 {
     tt_axiom(is_gui_thread());
-    tt_assert(!address_in_use(column_nr, row_nr), "cell ({},{}) of grid_widget is already in use", column_nr, row_nr);
+    tt_assert(
+        not address_in_use(column_first, row_first, column_last, row_last),
+        "cell ({},{}) of grid_widget is already in use",
+        column_first,
+        row_first);
 
     auto &ref = *widget;
-    _cells.emplace_back(column_nr, row_nr, std::move(widget));
+    _cells.emplace_back(column_first, row_first, column_last, row_last, std::move(widget));
     request_reconstrain();
     return ref;
 }
@@ -58,16 +68,16 @@ widget_constraints const &grid_widget::set_constraints() noexcept
     for (ttlet &cell : _cells) {
         ttlet cell_constraints = cell.widget->set_constraints();
         _rows.add_constraint(
-            cell.row_nr,
-            cell.row_nr + 1,
+            cell.row_first,
+            cell.row_last,
             cell_constraints.minimum.height(),
             cell_constraints.preferred.height(),
             cell_constraints.maximum.height(),
             cell_constraints.margin);
 
         _columns.add_constraint(
-            cell.column_nr,
-            cell.column_nr + 1,
+            cell.column_first,
+            cell.column_last,
             cell_constraints.minimum.width(),
             cell_constraints.preferred.width(),
             cell_constraints.maximum.width(),

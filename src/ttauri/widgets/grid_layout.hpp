@@ -143,6 +143,27 @@ public:
         return get_size(index, index + 1);
     }
 
+    /** Get the position and size of a cell-span.
+     *
+     * @param first The index of the first cell.
+     * @param last The index one past the last cell.
+     * @return The position and size of the cell-span excluding external margins.
+     */
+    std::pair<float, float> get_position_and_size(size_t first, size_t last) const noexcept
+    {
+        return {get_position(first), get_size(first, last)};
+    }
+
+    /** Get the position and size of cell.
+     *
+     * @param index The index of the cell.
+     * @return The position and size of the cell-span excluding external margins.
+     */
+    std::pair<float, float> get_position_and_size(size_t index) const noexcept
+    {
+        return get_position_and_size(index, index + 1);
+    }
+
     /** Get the start and end position of the cells.
      *
      * @param first The index of the first cell.
@@ -208,7 +229,10 @@ private:
          */
         float maximum;
 
-        cell_type() noexcept : size(0.0f), margin(0.0f), minimum(0.0f), preferred(0.0f), maximum(std::numeric_limits<float>::infinity()) {}
+        cell_type() noexcept :
+            size(0.0f), margin(0.0f), minimum(0.0f), preferred(0.0f), maximum(std::numeric_limits<float>::infinity())
+        {
+        }
 
         void fix_constraint() noexcept
         {

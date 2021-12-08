@@ -22,7 +22,7 @@ toolbar_widget::toolbar_widget(gui_window &window, widget *parent) noexcept : su
 widget_constraints const &toolbar_widget::set_constraints() noexcept
 {
     _layout = {};
-    _flow_layout.clear();
+    _grid_layout.clear();
     ssize_t index = 0;
     auto shared_height = 0.0f;
     for (ttlet &child : _left_children) {
@@ -30,7 +30,7 @@ widget_constraints const &toolbar_widget::set_constraints() noexcept
     }
 
     // Add a space between the left and right widgets.
-    _flow_layout.update(index++, theme().large_size, theme().large_size, 32767.0f, 0.0f);
+    _grid_layout.add_constraint(index++, theme().large_size, theme().large_size, 32767.0f, 0.0f);
 
     for (ttlet &child : std::views::reverse(_right_children)) {
         update_constraints_for_child(*child, index++, shared_height);
@@ -38,17 +38,18 @@ widget_constraints const &toolbar_widget::set_constraints() noexcept
 
     tt_axiom(index == ssize(_left_children) + 1 + ssize(_right_children));
 
+    _grid_layout.commit_constraints();
     return _constraints = {
-               {_flow_layout.minimum_size(), shared_height},
-               {_flow_layout.preferred_size(), shared_height},
-               {_flow_layout.maximum_size(), shared_height}};
+               {_grid_layout.minimum(), shared_height},
+               {_grid_layout.preferred(), shared_height},
+               {_grid_layout.maximum(), shared_height}};
 }
 
 void toolbar_widget::set_layout(widget_layout const &layout) noexcept
 {
     // Clip directly around the toolbar, so that tab buttons looks proper.
     if (compare_store(_layout, layout)) {
-        _flow_layout.set_size(layout.width());
+        _grid_layout.layout(layout.width());
     }
 
     ssize_t index = 0;
@@ -139,7 +140,7 @@ void toolbar_widget::update_constraints_for_child(widget &child, ssize_t index, 
     tt_axiom(is_gui_thread());
 
     ttlet child_constraints = child.set_constraints();
-    _flow_layout.update(
+    _grid_layout.add_constraint(
         index,
         child_constraints.minimum.width(),
         child_constraints.preferred.width(),
@@ -153,7 +154,7 @@ void toolbar_widget::update_layout_for_child(widget &child, ssize_t index, widge
 {
     tt_axiom(is_gui_thread());
 
-    ttlet[child_x, child_width] = _flow_layout.get_offset_and_size(index++);
+    ttlet[child_x, child_width] = _grid_layout.get_position_and_size(index);
 
     ttlet child_rectangle =
         aarectangle{child_x, child.constraints().margin, child_width, layout().height() - child.constraints().margin * 2.0f};

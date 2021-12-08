@@ -59,10 +59,25 @@ public:
      * @return A reference to the widget that was created.
      */
     template<typename Widget, typename... Args>
-    Widget &make_widget(size_t column_nr, size_t row_nr, Args &&...args)
+    Widget &make_widget(size_t column_first, size_t row_first, size_t column_last, size_t row_last, Args &&...args)
     {
         auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
-        return static_cast<Widget &>(add_widget(column_nr, row_nr, std::move(tmp)));
+        return static_cast<Widget &>(add_widget(column_first, row_first, column_last, row_last, std::move(tmp)));
+    }
+
+    /** Add a widget directly to this grid-widget.
+     *
+     * @tparam Widget The type of the widget to be constructed.
+     * @param column_nr The zero-based index from left-to-right.
+     * @param row_nr The zero-based index from top-to-bottom.
+     * @param args The arguments passed to the constructor of the widget.
+     * @return A reference to the widget that was created.
+     */
+    template<typename Widget, typename... Args>
+    Widget &make_widget(size_t column, size_t row, Args &&...args)
+    {
+        auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
+        return static_cast<Widget &>(add_widget(column, row, column + 1, row + 1, std::move(tmp)));
     }
 
     /** Add a widget directly to this grid-widget.
@@ -76,8 +91,8 @@ public:
     template<typename Widget, typename... Args>
     Widget &make_widget(std::string_view address, Args &&...args)
     {
-        ttlet[column_nr, row_nr] = parse_spreadsheet_address(address);
-        return make_widget<Widget>(column_nr, row_nr, std::forward<Args>(args)...);
+        ttlet[column_first, row_first, column_last, row_last] = parse_spreadsheet_range(address);
+        return make_widget<Widget>(column_first, row_first, column_last, row_last, std::forward<Args>(args)...);
     }
 
     /// @privatesection
@@ -94,38 +109,54 @@ public:
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
     /// @endprivatesection
 private:
-    struct cell {
-        size_t column_nr;
-        size_t row_nr;
+    struct cell_type {
+        size_t column_first;
+        size_t row_first;
+        size_t column_last;
+        size_t row_last;
         std::unique_ptr<tt::widget> widget;
 
-        cell(size_t column_nr, size_t row_nr, std::unique_ptr<tt::widget> widget) noexcept :
-            column_nr(column_nr), row_nr(row_nr), widget(std::move(widget))
+        cell_type(
+            size_t column_first,
+            size_t row_first,
+            size_t column_last,
+            size_t row_last,
+            std::unique_ptr<tt::widget> widget) noexcept :
+            column_first(column_first),
+            row_first(row_first),
+            column_last(column_last),
+            row_last(row_last),
+            widget(std::move(widget))
         {
         }
 
         [[nodiscard]] aarectangle
         rectangle(grid_layout const &columns, grid_layout const &rows, float container_height) const noexcept
         {
-            ttlet[x0, x3] = columns.get_positions(column_nr);
-            ttlet[y0, y3] = rows.get_positions(row_nr);
+            ttlet[x0, x3] = columns.get_positions(column_first, column_last);
+            ttlet[y0, y3] = rows.get_positions(row_first, row_last);
 
             return {point2{x0, container_height - y3}, point2{x3, container_height - y0}};
         }
     };
 
-    std::vector<cell> _cells;
+    std::vector<cell_type> _cells;
 
     grid_layout _rows;
     grid_layout _columns;
 
     std::weak_ptr<delegate_type> _delegate;
 
-    [[nodiscard]] bool address_in_use(size_t column_nr, size_t row_nr) const noexcept;
+    [[nodiscard]] bool address_in_use(size_t column_first, size_t row_first, size_t column_last, size_t row_last) const noexcept;
 
     /* Add a widget to the grid.
      */
-    widget &add_widget(size_t column_nr, size_t row_nr, std::unique_ptr<widget> child_widget) noexcept;
+    widget &add_widget(
+        size_t column_first,
+        size_t row_first,
+        size_t column_last,
+        size_t row_last,
+        std::unique_ptr<widget> child_widget) noexcept;
 };
 
 } // namespace tt::inline v1
