@@ -89,7 +89,7 @@ void File::close()
     }
 }
 
-size_t File::fileSize(URL const &url)
+std::size_t File::fileSize(URL const &url)
 {
     ttlet name = url.nativePath();
 
@@ -99,7 +99,7 @@ size_t File::fileSize(URL const &url)
         throw io_error("{}: Could not retrieve file attributes. '{}'", location(), get_last_error_message());
     }
 
-    return narrow_cast<size_t>(statbuf.st_size);
+    return narrow_cast<std::size_t>(statbuf.st_size);
 }
 
 } // namespace tt::inline v1

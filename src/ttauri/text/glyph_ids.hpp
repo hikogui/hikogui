@@ -23,39 +23,39 @@ public:
 
     /** Construct a list of glyphs starting with a packed set of glyphs.
      *
-     * @param value The value contains a set of glyphs packed into a size_t,
+     * @param value The value contains a set of glyphs packed into a std::size_t,
      *              the first glyph is in the least significant bits.
      */
-    constexpr glyph_ids_long(size_t value) noexcept : _glyphs(), _size(0)
+    constexpr glyph_ids_long(std::size_t value) noexcept : _glyphs(), _size(0)
     {
         *this += glyph_id{value & 0xffff};
 
-        if constexpr (sizeof(size_t) == 8) {
+        if constexpr (sizeof(std::size_t) == 8) {
             *this += glyph_id{(value >> 16) & 0xffff};
             *this += glyph_id{(value >> 32) & 0xffff};
         }
     }
 
-    [[nodiscard]] constexpr size_t size() const noexcept
+    [[nodiscard]] constexpr std::size_t size() const noexcept
     {
         return _size;
     }
 
-    [[nodiscard]] constexpr size_t hash() const noexcept
+    [[nodiscard]] constexpr std::size_t hash() const noexcept
     {
-        size_t r = 0;
+        std::size_t r = 0;
 
-        if constexpr (sizeof(size_t) == 8) {
-            r |= size_t{get<3>(_glyphs)};
+        if constexpr (sizeof(std::size_t) == 8) {
+            r |= std::size_t{get<3>(_glyphs)};
             r <<= 16;
-            r |= size_t{get<2>(_glyphs)};
+            r |= std::size_t{get<2>(_glyphs)};
             r <<= 16;
         }
-        r |= size_t{get<1>(_glyphs)};
+        r |= std::size_t{get<1>(_glyphs)};
         r <<= 16;
-        r |= size_t{get<0>(_glyphs)};
+        r |= std::size_t{get<0>(_glyphs)};
 
-        return r ^ size_t { _size };
+        return r ^ std::size_t { _size };
     }
 
     constexpr glyph_ids_long &operator+=(glyph_id id) noexcept
@@ -66,7 +66,7 @@ public:
         return *this;
     }
 
-    [[nodiscard]] constexpr glyph_id const &operator[](size_t i) const noexcept
+    [[nodiscard]] constexpr glyph_id const &operator[](std::size_t i) const noexcept
     {
         return _glyphs[i];
     }
@@ -82,8 +82,8 @@ private:
 
 class glyph_ids {
 public:
-    static constexpr size_t sgo_size_max = sizeof(void *) == 8 ? 3 : 1;
-    static constexpr size_t sgo_size_mask = sizeof(void *) == 8 ? 7 : 3;
+    static constexpr std::size_t sgo_size_max = sizeof(void *) == 8 ? 3 : 1;
+    static constexpr std::size_t sgo_size_mask = sizeof(void *) == 8 ? 7 : 3;
     static constexpr glyph_ids_long *sgo_null = reinterpret_cast<glyph_ids_long *>(1);
 
     constexpr ~glyph_ids()
@@ -148,7 +148,7 @@ public:
         return glyph_id{(sgo_value() >> 16) & 0xffff};
     }
 
-    [[nodiscard]] constexpr size_t size() const noexcept
+    [[nodiscard]] constexpr std::size_t size() const noexcept
     {
         ttlet size = sgo_value() & sgo_size_mask;
         if (size == 0) {
@@ -158,7 +158,7 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr size_t hash() const noexcept
+    [[nodiscard]] constexpr std::size_t hash() const noexcept
     {
         ttlet value = sgo_value();
         if ((value & sgo_size_mask) == 0) {
@@ -177,7 +177,7 @@ public:
             *_ptr += id;
 
         } else if (size_code <= sgo_size_max) {
-            set_sgo_value((size_code + 1) | (size_t{id} << (size_code * 16)));
+            set_sgo_value((size_code + 1) | (std::size_t{id} << (size_code * 16)));
 
         } else {
             _ptr = new glyph_ids_long(value >> 16);
@@ -186,7 +186,7 @@ public:
         return *this;
     }
 
-    [[nodiscard]] constexpr glyph_id operator[](size_t i) const noexcept
+    [[nodiscard]] constexpr glyph_id operator[](std::size_t i) const noexcept
     {
         tt_axiom(i < size());
 
@@ -217,14 +217,14 @@ public:
 private:
     glyph_ids_long *_ptr;
 
-    constexpr void set_sgo_value(size_t value) noexcept
+    constexpr void set_sgo_value(std::size_t value) noexcept
     {
         _ptr = std::bit_cast<glyph_ids_long *>(value);
     }
 
-    [[nodiscard]] constexpr size_t sgo_value() const noexcept
+    [[nodiscard]] constexpr std::size_t sgo_value() const noexcept
     {
-        return std::bit_cast<size_t>(_ptr);
+        return std::bit_cast<std::size_t>(_ptr);
     }
 };
 
@@ -232,7 +232,7 @@ private:
 
 template<>
 struct std::hash<tt::glyph_ids> {
-    [[nodiscard]] constexpr size_t operator()(tt::glyph_ids const &rhs) const noexcept
+    [[nodiscard]] constexpr std::size_t operator()(tt::glyph_ids const &rhs) const noexcept
     {
         return rhs.hash();
     }

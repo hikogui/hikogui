@@ -100,7 +100,7 @@ public:
         return std::apply(format_locale_wrapper<Values const &...>, std::tuple_cat(std::tuple{loc, fmt}, _values));
     }
 
-    template<size_t I>
+    template<std::size_t I>
     [[nodiscard]] long long n_recurse() const noexcept
     {
         if constexpr (I < sizeof...(Values)) {

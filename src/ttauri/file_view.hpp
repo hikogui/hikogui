@@ -14,8 +14,8 @@ namespace tt::inline v1 {
  */
 class file_view : public resource_view {
 public:
-    file_view(std::shared_ptr<file_mapping> const &mappingObject, size_t offset, size_t size);
-    file_view(URL const &location, access_mode accessMode = access_mode::open_for_read, size_t offset = 0, size_t size = 0);
+    file_view(std::shared_ptr<file_mapping> const &mappingObject, std::size_t offset, std::size_t size);
+    file_view(URL const &location, access_mode accessMode = access_mode::open_for_read, std::size_t offset = 0, std::size_t size = 0);
     ~file_view() = default;
 
     file_view() = delete;
@@ -40,14 +40,14 @@ public:
 
     /*! Offset of the mapping into the file.
      */
-    [[nodiscard]] size_t offset() const noexcept override
+    [[nodiscard]] std::size_t offset() const noexcept override
     {
         return _offset;
     }
 
     /*! Number of bytes which is mapped to memory.
      */
-    [[nodiscard]] size_t size() const noexcept override
+    [[nodiscard]] std::size_t size() const noexcept override
     {
         return _bytes->size();
     }
@@ -98,7 +98,7 @@ public:
      * \param base Start location of the memory to flush.
      * \param size Number of bytes from the base of the memory region to flush.
      */
-    void flush(void *base, size_t size);
+    void flush(void *base, std::size_t size);
 
     /*! Load a view of a resource.
      * This is used when the resource that needs to be opened is a file.
@@ -127,7 +127,7 @@ private:
      * \return A shared-pointer to file mapping object.
      */
     [[nodiscard]] static std::shared_ptr<file_mapping>
-    findOrCreateFileMappingObject(URL const &path, access_mode accessMode, size_t size);
+    findOrCreateFileMappingObject(URL const &path, access_mode accessMode, std::size_t size);
 
 private:
     /*! pointer to a file mapping object.
@@ -142,7 +142,7 @@ private:
 
     /*! The offset into the file which is mapped to memory.
      */
-    size_t _offset;
+    std::size_t _offset;
 };
 
 } // namespace tt::inline v1

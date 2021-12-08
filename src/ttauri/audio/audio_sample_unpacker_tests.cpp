@@ -20,7 +20,7 @@ constexpr float float32_max_diff = 0.0f;
 [[nodiscard]] static std::array<std::byte, 256> make_packed() noexcept
 {
     auto r = std::array<std::byte, 256>{};
-    for (size_t i = 0; i != 256; ++i) {
+    for (std::size_t i = 0; i != 256; ++i) {
         if ((i / 2) % 2 == 0) {
             r[i] = static_cast<std::byte>(i);
         } else {

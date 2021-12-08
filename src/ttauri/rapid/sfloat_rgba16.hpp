@@ -62,7 +62,7 @@ public:
 
     [[nodiscard]] constexpr sfloat_rgba16(corner_shapes const &rhs) noexcept : sfloat_rgba16(static_cast<f32x4>(rhs)) {}
 
-    [[nodiscard]] size_t hash() const noexcept
+    [[nodiscard]] std::size_t hash() const noexcept
     {
         return hash_mix(v[0], v[1], v[2], v[3]);
     }
@@ -80,9 +80,9 @@ public:
 
 inline void fill(pixel_map<sfloat_rgba16> &image, f32x4 color) noexcept
 {
-    for (size_t y = 0; y != image.height(); ++y) {
+    for (std::size_t y = 0; y != image.height(); ++y) {
         auto row = image[y];
-        for (size_t x = 0; x != image.width(); ++x) {
+        for (std::size_t x = 0; x != image.width(); ++x) {
             row[x] = color;
         }
     }
@@ -93,10 +93,10 @@ inline void composit(pixel_map<sfloat_rgba16> &under, pixel_map<sfloat_rgba16> c
     tt_assert(over.height() >= under.height());
     tt_assert(over.width() >= under.width());
 
-    for (size_t rowNr = 0; rowNr != under.height(); ++rowNr) {
+    for (std::size_t rowNr = 0; rowNr != under.height(); ++rowNr) {
         ttlet overRow = over.at(rowNr);
         auto underRow = under.at(rowNr);
-        for (size_t columnNr = 0; columnNr != under.width(); ++columnNr) {
+        for (std::size_t columnNr = 0; columnNr != under.width(); ++columnNr) {
             ttlet &overPixel = overRow[columnNr];
             auto &underPixel = underRow[columnNr];
 
@@ -112,10 +112,10 @@ inline void composit(pixel_map<sfloat_rgba16> &under, color over, pixel_map<uint
 
     auto maskPixel = color{1.0f, 1.0f, 1.0f, 1.0f};
 
-    for (size_t rowNr = 0; rowNr != under.height(); ++rowNr) {
+    for (std::size_t rowNr = 0; rowNr != under.height(); ++rowNr) {
         ttlet maskRow = mask.at(rowNr);
         auto underRow = under.at(rowNr);
-        for (size_t columnNr = 0; columnNr != under.width(); ++columnNr) {
+        for (std::size_t columnNr = 0; columnNr != under.width(); ++columnNr) {
             ttlet maskValue = maskRow[columnNr] / 255.0f;
             maskPixel.a() = maskValue;
 
@@ -131,7 +131,7 @@ namespace std {
 
 template<>
 struct std::hash<tt::sfloat_rgba16> {
-    size_t operator()(tt::sfloat_rgba16 const &rhs) const noexcept
+    std::size_t operator()(tt::sfloat_rgba16 const &rhs) const noexcept
     {
         return rhs.hash();
     }

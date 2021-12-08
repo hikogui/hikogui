@@ -112,7 +112,7 @@ private:
     mutable unfair_mutex mutex;
     std::jthread thread;
     std::vector<callback_entry> callback_list;
-    size_t callback_count = 0;
+    std::size_t callback_count = 0;
 
     /** Find the callbacks that have triggered.
      * This function will also update the wakup times of triggered callbacks.

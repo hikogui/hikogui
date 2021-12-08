@@ -28,7 +28,7 @@ struct state {
 
     constexpr state(T a, T b, T c, T d, T e, T f, T g, T h) noexcept : a(a), b(b), c(c), d(d), e(e), f(f), g(g), h(h) {}
 
-    [[nodiscard]] constexpr T get_word(size_t i) const noexcept
+    [[nodiscard]] constexpr T get_word(std::size_t i) const noexcept
     {
         switch (i) {
         case 0: return a;
@@ -43,7 +43,7 @@ struct state {
         }
     }
 
-    [[nodiscard]] constexpr std::byte get_byte(size_t i) const noexcept
+    [[nodiscard]] constexpr std::byte get_byte(std::size_t i) const noexcept
     {
         tt_axiom(i < 8 * sizeof(T));
         ttlet word_nr = i / sizeof(T);
@@ -52,13 +52,13 @@ struct state {
         return static_cast<std::byte>(word >> (sizeof(T) - 1 - byte_nr) * 8);
     }
 
-    template<size_t N>
+    template<std::size_t N>
     [[nodiscard]] bstring get_bytes() const noexcept
     {
         auto r = bstring{};
         r.reserve(N);
 
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             r += get_byte(i);
         }
         return r;
@@ -82,9 +82,9 @@ template<typename T>
 struct block {
     std::array<T, 16> v;
 
-    static constexpr size_t size = sizeof(v);
+    static constexpr std::size_t size = sizeof(v);
 
-    constexpr void set_byte(size_t i, std::byte value) noexcept
+    constexpr void set_byte(std::size_t i, std::byte value) noexcept
     {
         ttlet word_nr = i / sizeof(T);
         ttlet byte_nr = i % sizeof(T);
@@ -96,17 +96,17 @@ struct block {
 
     constexpr block(std::byte const *ptr) noexcept : v()
     {
-        for (size_t i = 0; i != size; ++i) {
+        for (std::size_t i = 0; i != size; ++i) {
             set_byte(i, *(ptr++));
         }
     }
 
-    constexpr T const &operator[](size_t i) const noexcept
+    constexpr T const &operator[](std::size_t i) const noexcept
     {
         return v[i % 16];
     }
 
-    constexpr T &operator[](size_t i) noexcept
+    constexpr T &operator[](std::size_t i) noexcept
     {
         return v[i % 16];
     }
@@ -114,11 +114,11 @@ struct block {
 
 } // namespace detail::SHA2
 
-template<typename T, size_t Bits>
+template<typename T, std::size_t Bits>
 class SHA2 {
     static_assert(Bits % 8 == 0);
-    static constexpr size_t nr_rounds = (sizeof(T) == 4) ? 64 : 80;
-    static constexpr size_t pad_length_of_length = (sizeof(T) == 4) ? 8 : 16;
+    static constexpr std::size_t nr_rounds = (sizeof(T) == 4) ? 64 : 80;
+    static constexpr std::size_t pad_length_of_length = (sizeof(T) == 4) ? 8 : 16;
 
     using state_type = detail::SHA2::state<T>;
     using block_type = detail::SHA2::block<T>;
@@ -130,9 +130,9 @@ class SHA2 {
     overflow_type overflow;
     typename overflow_type::iterator overflow_it;
 
-    size_t size;
+    std::size_t size;
 
-    [[nodiscard]] static constexpr T K(size_t i) noexcept
+    [[nodiscard]] static constexpr T K(std::size_t i) noexcept
     {
         constexpr std::array<uint32_t, 64> K32 = {
             0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
@@ -239,11 +239,11 @@ class SHA2 {
     constexpr void add(block_type W) noexcept
     {
         auto tmp = state;
-        for (size_t i = 0; i != 16; ++i) {
+        for (std::size_t i = 0; i != 16; ++i) {
             tmp = round(tmp, K(i), W[i]);
         }
 
-        for (size_t i = 16; i != nr_rounds; ++i) {
+        for (std::size_t i = 16; i != nr_rounds; ++i) {
             ttlet W_ = s1(W[i - 2]) + W[i - 7] + s0(W[i - 15]) + W[i - 16];
 
             tmp = round(tmp, K(i), W_);
@@ -284,7 +284,7 @@ class SHA2 {
             *(overflow_it++) = std::byte{0x00};
         }
 
-        size_t nr_of_bits = size * 8;
+        std::size_t nr_of_bits = size * 8;
         for (int i = pad_length_of_length - 1; i >= 0; --i) {
             *(overflow_it++) = i < sizeof(nr_of_bits) ? static_cast<std::byte>(nr_of_bits >> i * 8) : std::byte{0x00};
         }

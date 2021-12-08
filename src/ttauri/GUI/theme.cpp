@@ -25,7 +25,7 @@ theme::theme(tt::font_book const &font_book, URL const &url)
 
 [[nodiscard]] tt::color theme::color(theme_color theme_color, ssize_t nesting_level) const noexcept
 {
-    ttlet theme_color_i = static_cast<size_t>(theme_color);
+    ttlet theme_color_i = static_cast<std::size_t>(theme_color);
     tt_axiom(theme_color_i < _colors.size());
 
     ttlet &shades = _colors[theme_color_i];
@@ -37,7 +37,7 @@ theme::theme(tt::font_book const &font_book, URL const &url)
 
 [[nodiscard]] tt::text_style const &theme::text_style(theme_text_style theme_text_style) const noexcept
 {
-    ttlet theme_text_style_i = static_cast<size_t>(theme_text_style);
+    ttlet theme_text_style_i = static_cast<std::size_t>(theme_text_style);
     tt_axiom(theme_text_style_i < _text_styles.size());
 
     return _text_styles[theme_text_style_i];
@@ -260,44 +260,44 @@ void theme::parse(tt::font_book const &font_book, datum const &data)
         throw parse_error("Attribute 'mode' must be \"light\" or \"dark\", got \"{}\".", mode_name);
     }
 
-    std::get<static_cast<size_t>(theme_color::blue)>(this->_colors) = parse_color_list(data, "blue");
-    std::get<static_cast<size_t>(theme_color::green)>(this->_colors) = parse_color_list(data, "green");
-    std::get<static_cast<size_t>(theme_color::indigo)>(this->_colors) = parse_color_list(data, "indigo");
-    std::get<static_cast<size_t>(theme_color::orange)>(this->_colors) = parse_color_list(data, "orange");
-    std::get<static_cast<size_t>(theme_color::pink)>(this->_colors) = parse_color_list(data, "pink");
-    std::get<static_cast<size_t>(theme_color::purple)>(this->_colors) = parse_color_list(data, "purple");
-    std::get<static_cast<size_t>(theme_color::red)>(this->_colors) = parse_color_list(data, "red");
-    std::get<static_cast<size_t>(theme_color::teal)>(this->_colors) = parse_color_list(data, "teal");
-    std::get<static_cast<size_t>(theme_color::yellow)>(this->_colors) = parse_color_list(data, "yellow");
+    std::get<static_cast<std::size_t>(theme_color::blue)>(this->_colors) = parse_color_list(data, "blue");
+    std::get<static_cast<std::size_t>(theme_color::green)>(this->_colors) = parse_color_list(data, "green");
+    std::get<static_cast<std::size_t>(theme_color::indigo)>(this->_colors) = parse_color_list(data, "indigo");
+    std::get<static_cast<std::size_t>(theme_color::orange)>(this->_colors) = parse_color_list(data, "orange");
+    std::get<static_cast<std::size_t>(theme_color::pink)>(this->_colors) = parse_color_list(data, "pink");
+    std::get<static_cast<std::size_t>(theme_color::purple)>(this->_colors) = parse_color_list(data, "purple");
+    std::get<static_cast<std::size_t>(theme_color::red)>(this->_colors) = parse_color_list(data, "red");
+    std::get<static_cast<std::size_t>(theme_color::teal)>(this->_colors) = parse_color_list(data, "teal");
+    std::get<static_cast<std::size_t>(theme_color::yellow)>(this->_colors) = parse_color_list(data, "yellow");
 
-    std::get<static_cast<size_t>(theme_color::gray)>(this->_colors) = parse_color_list(data, "gray");
-    std::get<static_cast<size_t>(theme_color::gray2)>(this->_colors) = parse_color_list(data, "gray2");
-    std::get<static_cast<size_t>(theme_color::gray3)>(this->_colors) = parse_color_list(data, "gray3");
-    std::get<static_cast<size_t>(theme_color::gray4)>(this->_colors) = parse_color_list(data, "gray4");
-    std::get<static_cast<size_t>(theme_color::gray5)>(this->_colors) = parse_color_list(data, "gray5");
-    std::get<static_cast<size_t>(theme_color::gray6)>(this->_colors) = parse_color_list(data, "gray6");
+    std::get<static_cast<std::size_t>(theme_color::gray)>(this->_colors) = parse_color_list(data, "gray");
+    std::get<static_cast<std::size_t>(theme_color::gray2)>(this->_colors) = parse_color_list(data, "gray2");
+    std::get<static_cast<std::size_t>(theme_color::gray3)>(this->_colors) = parse_color_list(data, "gray3");
+    std::get<static_cast<std::size_t>(theme_color::gray4)>(this->_colors) = parse_color_list(data, "gray4");
+    std::get<static_cast<std::size_t>(theme_color::gray5)>(this->_colors) = parse_color_list(data, "gray5");
+    std::get<static_cast<std::size_t>(theme_color::gray6)>(this->_colors) = parse_color_list(data, "gray6");
 
-    std::get<static_cast<size_t>(theme_color::foreground)>(this->_colors) = parse_color_list(data, "foreground-color");
-    std::get<static_cast<size_t>(theme_color::border)>(this->_colors) = parse_color_list(data, "border-color");
-    std::get<static_cast<size_t>(theme_color::fill)>(this->_colors) = parse_color_list(data, "fill-color");
-    std::get<static_cast<size_t>(theme_color::accent)>(this->_colors) = parse_color_list(data, "accent-color");
-    std::get<static_cast<size_t>(theme_color::text_select)>(this->_colors) = parse_color_list(data, "text-select-color");
-    std::get<static_cast<size_t>(theme_color::cursor)>(this->_colors) = parse_color_list(data, "cursor-color");
-    std::get<static_cast<size_t>(theme_color::incomplete_glyph)>(this->_colors) =
+    std::get<static_cast<std::size_t>(theme_color::foreground)>(this->_colors) = parse_color_list(data, "foreground-color");
+    std::get<static_cast<std::size_t>(theme_color::border)>(this->_colors) = parse_color_list(data, "border-color");
+    std::get<static_cast<std::size_t>(theme_color::fill)>(this->_colors) = parse_color_list(data, "fill-color");
+    std::get<static_cast<std::size_t>(theme_color::accent)>(this->_colors) = parse_color_list(data, "accent-color");
+    std::get<static_cast<std::size_t>(theme_color::text_select)>(this->_colors) = parse_color_list(data, "text-select-color");
+    std::get<static_cast<std::size_t>(theme_color::cursor)>(this->_colors) = parse_color_list(data, "cursor-color");
+    std::get<static_cast<std::size_t>(theme_color::incomplete_glyph)>(this->_colors) =
         parse_color_list(data, "incomplete-glyph-color");
 
-    std::get<static_cast<size_t>(theme_text_style::label)>(this->_text_styles) = parse_text_style(font_book, data, "label-style");
-    std::get<static_cast<size_t>(theme_text_style::small_label)>(this->_text_styles) =
+    std::get<static_cast<std::size_t>(theme_text_style::label)>(this->_text_styles) = parse_text_style(font_book, data, "label-style");
+    std::get<static_cast<std::size_t>(theme_text_style::small_label)>(this->_text_styles) =
         parse_text_style(font_book, data, "small-label-style");
-    std::get<static_cast<size_t>(theme_text_style::warning)>(this->_text_styles) =
+    std::get<static_cast<std::size_t>(theme_text_style::warning)>(this->_text_styles) =
         parse_text_style(font_book, data, "warning-label-style");
-    std::get<static_cast<size_t>(theme_text_style::error)>(this->_text_styles) =
+    std::get<static_cast<std::size_t>(theme_text_style::error)>(this->_text_styles) =
         parse_text_style(font_book, data, "error-label-style");
-    std::get<static_cast<size_t>(theme_text_style::help)>(this->_text_styles) =
+    std::get<static_cast<std::size_t>(theme_text_style::help)>(this->_text_styles) =
         parse_text_style(font_book, data, "help-label-style");
-    std::get<static_cast<size_t>(theme_text_style::placeholder)>(this->_text_styles) =
+    std::get<static_cast<std::size_t>(theme_text_style::placeholder)>(this->_text_styles) =
         parse_text_style(font_book, data, "placeholder-label-style");
-    std::get<static_cast<size_t>(theme_text_style::link)>(this->_text_styles) =
+    std::get<static_cast<std::size_t>(theme_text_style::link)>(this->_text_styles) =
         parse_text_style(font_book, data, "link-label-style");
 }
 

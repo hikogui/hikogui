@@ -20,6 +20,6 @@ enum class theme_text_style : unsigned char {
     _size
 };
 
-constexpr size_t num_theme_text_styles = static_cast<size_t>(theme_text_style::_size);
+constexpr std::size_t num_theme_text_styles = static_cast<std::size_t>(theme_text_style::_size);
 
 } // namespace tt::inline v1

@@ -116,7 +116,7 @@ struct attributed_glyph_line {
         });
     }
 
-    [[nodiscard]] size_t size() const noexcept
+    [[nodiscard]] std::size_t size() const noexcept
     {
         return line.size();
     }

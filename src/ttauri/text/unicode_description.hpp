@@ -207,9 +207,9 @@ public:
      * @return Values 3 and above are the number of code points in the decomposition table
      *          pointed to from the `decomposition_index()`.
      */
-    [[nodiscard]] constexpr size_t decomposition_length() const noexcept
+    [[nodiscard]] constexpr std::size_t decomposition_length() const noexcept
     {
-        return static_cast<size_t>(_decomposition_length);
+        return static_cast<std::size_t>(_decomposition_length);
     }
 
     /** A multi-use value representing the decomposition of this code-point.
@@ -223,9 +223,9 @@ public:
      * @return A code-point value, or a index into the composition table, or an index into the
      *         decomposition table.
      */
-    [[nodiscard]] constexpr size_t decomposition_index() const noexcept
+    [[nodiscard]] constexpr std::size_t decomposition_index() const noexcept
     {
-        return static_cast<size_t>(_decomposition_index);
+        return static_cast<std::size_t>(_decomposition_index);
     }
 
     /** Get the canonical equivalent of this code-point.

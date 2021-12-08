@@ -49,7 +49,7 @@ public:
         return get<I>(rhs._v);
     }
 
-    [[nodiscard]] constexpr float operator[](size_t i) const noexcept
+    [[nodiscard]] constexpr float operator[](std::size_t i) const noexcept
     {
         return _v[i];
     }
@@ -59,7 +59,7 @@ public:
         return corner_shapes{f32x4{lhs} + rhs};
         //auto r = corner_shapes{};
         //
-        //for (size_t i = 0; i != lhs._v.size(); ++i) {
+        //for (std::size_t i = 0; i != lhs._v.size(); ++i) {
         //    if (lhs._v[i] >= 0) {
         //        r._v[i] = std::max(0.0f, lhs._v[i] + rhs);
         //    } else {

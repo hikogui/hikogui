@@ -185,7 +185,7 @@ public:
         return mantissa() != 0;
     }
 
-    size_t hash() const noexcept
+    std::size_t hash() const noexcept
     {
         auto v = this->normalize();
         return std::hash<uint64_t>{}(v.value);
@@ -571,7 +571,7 @@ namespace std {
 
 template<>
 struct hash<tt::decimal> {
-    inline size_t operator()(tt::decimal const &value) const
+    inline std::size_t operator()(tt::decimal const &value) const
     {
         return value.hash();
     }

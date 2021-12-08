@@ -102,20 +102,20 @@ public:
         return value - 1;
     }
 
-    [[nodiscard]] size_t get_symbol(std::span<std::byte const> bytes, size_t &bit_offset) const noexcept
+    [[nodiscard]] std::size_t get_symbol(std::span<std::byte const> bytes, std::size_t &bit_offset) const noexcept
     {
         auto state = start();
         while (true) {
             int symbol;
             if ((symbol = get(get_bit(bytes, bit_offset), state)) >= 0) {
-                return static_cast<size_t>(symbol);
+                return static_cast<std::size_t>(symbol);
             }
         }
     }
 
     /** Build a canonical-huffman table from a set of lengths.
      */
-    [[nodiscard]] static huffman_tree from_lengths(uint8_t const *lengths, size_t nr_symbols)
+    [[nodiscard]] static huffman_tree from_lengths(uint8_t const *lengths, std::size_t nr_symbols)
     {
         tt_axiom(nr_symbols < std::numeric_limits<T>::min());
 

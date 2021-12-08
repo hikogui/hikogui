@@ -27,7 +27,7 @@ public:
     /** Offset into the resource file.
      * @return offset into the resource file.
      */
-    [[nodiscard]] virtual size_t offset() const noexcept = 0;
+    [[nodiscard]] virtual std::size_t offset() const noexcept = 0;
 
     /** Get a span to the memory mapping.
      */
@@ -44,7 +44,7 @@ public:
 
     /** Size of the memory mapping.
      */
-    [[nodiscard]] virtual size_t size() const noexcept = 0;
+    [[nodiscard]] virtual std::size_t size() const noexcept = 0;
 
     /** Pointer to the memory mapping.
      */

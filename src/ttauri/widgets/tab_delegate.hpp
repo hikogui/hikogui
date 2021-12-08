@@ -35,7 +35,7 @@ public:
         return subscribe(sender, std::make_shared<callback_type>(std::forward<Callback>(callback)));
     }
 
-    virtual void add_tab(tab_widget &sender, size_t key, size_t index) noexcept {}
+    virtual void add_tab(tab_widget &sender, std::size_t key, std::size_t index) noexcept {}
 
     virtual ssize_t index(tab_widget &sender) noexcept
     {

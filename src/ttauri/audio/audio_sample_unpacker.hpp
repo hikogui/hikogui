@@ -22,7 +22,7 @@ public:
      *
      * @param format The sample format.
      */
-    audio_sample_unpacker(audio_sample_format format, size_t stride) noexcept;
+    audio_sample_unpacker(audio_sample_format format, std::size_t stride) noexcept;
 
     /** Unpack samples.
      *
@@ -30,21 +30,21 @@ public:
      * @param dst A pointer to a array of floating point samples of a single channel.
      * @param num_samples Number of samples.
      */
-    void operator()(std::byte const *tt_restrict src, float *tt_restrict dst, size_t num_samples) const noexcept;
+    void operator()(std::byte const *tt_restrict src, float *tt_restrict dst, std::size_t num_samples) const noexcept;
 
 private:
     f32x4 _multiplier;
     i8x16 _load_shuffle_indices;
     i8x16 _concat_shuffle_indices;
-    size_t _num_chunks_per_quad;
-    size_t _stride;
-    size_t _chunk_stride;
+    std::size_t _num_chunks_per_quad;
+    std::size_t _stride;
+    std::size_t _chunk_stride;
     audio_sample_format _format;
     int _direction;
     int _start_byte;
     int _align_shift;
 
-    [[nodiscard]] size_t calculate_num_fast_samples(size_t num_samples) const noexcept;
+    [[nodiscard]] std::size_t calculate_num_fast_samples(std::size_t num_samples) const noexcept;
 };
 
 } // namespace tt::inline v1

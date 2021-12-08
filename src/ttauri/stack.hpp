@@ -19,7 +19,7 @@ namespace tt::inline v1 {
  * Because the stack can not grow or shrink, the iterators remain valid over the
  * lifetime of the stack.
  */
-template<typename T, size_t MaxSize>
+template<typename T, std::size_t MaxSize>
 class stack {
 public:
     using value_type = T;
@@ -29,7 +29,7 @@ public:
     using const_reference_type = value_type const &;
     using iterator_type = pointer_type;
     using const_iterator_type = const_pointer_type;
-    using size_type = size_t;
+    using size_type = std::size_t;
     using difference_type = ptrdiff_t;
 
     /** Construct an empty stack.
@@ -135,7 +135,7 @@ public:
      * No bounds checking is performed.
      * @return True if the stack is empty, empty if otherwise.
      */
-    [[nodiscard]] reference_type operator[](size_t index) noexcept
+    [[nodiscard]] reference_type operator[](std::size_t index) noexcept
     {
         tt_axiom(index < size());
         return *std::launder(reinterpret_cast<pointer_type>(&_buffer[index]));
@@ -145,7 +145,7 @@ public:
      * No bounds checking is performed.
      * @return True if the stack is empty, empty if otherwise.
      */
-    [[nodiscard]] const_reference_type operator[](size_t index) const noexcept
+    [[nodiscard]] const_reference_type operator[](std::size_t index) const noexcept
     {
         tt_axiom(index < size());
         return *std::launder(reinterpret_cast<pointer_type>(&_buffer[index]));
@@ -155,7 +155,7 @@ public:
      * @throws std::out_of_range when the index points beyond the top of the stack.
      * @return True if the stack is empty, empty if otherwise.
      */
-    [[nodiscard]] reference_type at(size_t index) noexcept
+    [[nodiscard]] reference_type at(std::size_t index) noexcept
     {
         if (index >= size()) {
             throw std::out_of_range("stack::at");
@@ -167,7 +167,7 @@ public:
      * @throws std::out_of_range when the index points beyond the top of the stack.
      * @return True if the stack is empty, empty if otherwise.
      */
-    [[nodiscard]] const_reference_type at(size_t index) const noexcept
+    [[nodiscard]] const_reference_type at(std::size_t index) const noexcept
     {
         if (index >= size()) {
             throw std::out_of_range("stack::at");

@@ -52,7 +52,7 @@ public:
         virtualKey = to_keyboard_virtual_key(modifiers_and_vkey.back());
     }
 
-    size_t hash() const noexcept
+    std::size_t hash() const noexcept
     {
         return hash_mix(modifiers, virtualKey);
     }
@@ -77,7 +77,7 @@ public:
 
 template<>
 struct std::hash<tt::keyboard_key> {
-    [[nodiscard]] size_t operator()(tt::keyboard_key const &rhs) const noexcept
+    [[nodiscard]] std::size_t operator()(tt::keyboard_key const &rhs) const noexcept
     {
         return rhs.hash();
     }

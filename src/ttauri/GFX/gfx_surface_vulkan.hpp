@@ -116,7 +116,7 @@ private:
     void buildDevice();
     void buildSemaphores();
     void teardownSemaphores();
-    gfx_surface_state buildSwapchain(size_t new_count, extent2 new_size);
+    gfx_surface_state buildSwapchain(std::size_t new_count, extent2 new_size);
     void teardownSwapchain();
     void buildCommandBuffers();
     void teardownCommandBuffers();
@@ -140,7 +140,7 @@ private:
      * @param new_size Request the image size in the swapchain.
      * @return A valid swapchain image count, swapchain image size.
      */
-    std::tuple<size_t, extent2> get_image_count_and_size(size_t new_count, extent2 new_size);
+    std::tuple<std::size_t, extent2> get_image_count_and_size(std::size_t new_count, extent2 new_size);
 };
 
 } // namespace tt::inline v1

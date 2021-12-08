@@ -48,7 +48,7 @@ struct formula_vector_literal_node final : formula_node {
         // Make a copy, in case of self assignment.
         ttlet rhs_copy = rhs;
 
-        size_t i = 0;
+        std::size_t i = 0;
         while (true) {
             ttlet &lhs_ = values[i];
             ttlet &rhs_ = rhs_copy[i];

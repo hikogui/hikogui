@@ -191,7 +191,7 @@ private:
 
     /** The number of CPU ids we know of.
      */
-    inline static std::atomic<size_t> _num_aux_values = 0;
+    inline static std::atomic<std::size_t> _num_aux_values = 0;
 
     /** A list of known CPU ids.
      */
@@ -199,7 +199,7 @@ private:
 
     /** A list of CPU ids that match the _aux_values list.
      */
-    inline static std::array<size_t, maximum_num_cpus> _cpu_ids;
+    inline static std::array<std::size_t, maximum_num_cpus> _cpu_ids;
 
     /** Get the CPU id.
      * This is logical CPU id that the operating system uses.

@@ -17,7 +17,7 @@ namespace tt::inline v1 {
 static void store_sample(
     int32_t int_sample,
     std::byte *&dst,
-    size_t stride,
+    std::size_t stride,
     int num_bytes,
     int direction,
     int start_byte,
@@ -35,7 +35,7 @@ static void store_sample(
     dst += stride;
 }
 
-[[nodiscard]] static void store_samples(i8x16 int_samples, std::byte *&dst, i8x16 store_shuffle_indices, size_t stride) noexcept
+[[nodiscard]] static void store_samples(i8x16 int_samples, std::byte *&dst, i8x16 store_shuffle_indices, std::size_t stride) noexcept
 {
     tt_axiom(dst != nullptr);
     tt_axiom(stride > 0);
@@ -59,8 +59,8 @@ static void store_sample(
     std::byte *&dst,
     i8x16 store_shuffle_indices,
     i8x16 concat_shuffle_indices,
-    size_t num_chunks,
-    size_t stride) noexcept
+    std::size_t num_chunks,
+    std::size_t stride) noexcept
 {
     tt_axiom(dst != nullptr);
     tt_axiom(num_chunks > 0 and num_chunks <= 4);
@@ -85,7 +85,7 @@ static void store_sample(
     return r;
 }
 
-audio_sample_packer::audio_sample_packer(audio_sample_format format, size_t stride) noexcept :
+audio_sample_packer::audio_sample_packer(audio_sample_format format, std::size_t stride) noexcept :
     _dither(format.num_bits), _format(format), _stride(stride)
 {
     _store_shuffle_indices = format.store_shuffle_indices(stride);
@@ -101,7 +101,7 @@ audio_sample_packer::audio_sample_packer(audio_sample_format format, size_t stri
     _align_shift = 32 - format.num_bytes * 8;
 }
 
-void audio_sample_packer::operator()(float const *tt_restrict src, std::byte *tt_restrict dst, size_t num_samples) const noexcept
+void audio_sample_packer::operator()(float const *tt_restrict src, std::byte *tt_restrict dst, std::size_t num_samples) const noexcept
 {
     tt_axiom(src != nullptr);
     tt_axiom(dst != nullptr);

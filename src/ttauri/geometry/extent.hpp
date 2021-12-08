@@ -275,7 +275,7 @@ public:
         tt_axiom(lhs.holds_invariant());
 
         auto r = extent{};
-        for (size_t i = 0; i != D; ++i) {
+        for (std::size_t i = 0; i != D; ++i) {
             r._v[i] = lhs._v[i] + rhs;
         }
 
@@ -307,7 +307,7 @@ public:
     [[nodiscard]] constexpr friend std::partial_ordering operator<=>(extent const &lhs, extent const &rhs) noexcept
         requires(D == 3)
     {
-        constexpr size_t mask = 0b111;
+        constexpr std::size_t mask = 0b111;
 
         ttlet equal = eq(lhs._v, rhs._v) & mask;
         if (equal == mask) {
@@ -334,7 +334,7 @@ public:
     [[nodiscard]] constexpr friend std::partial_ordering operator<=>(extent const &lhs, extent const &rhs) noexcept
         requires(D == 2)
     {
-        constexpr size_t mask = 0b11;
+        constexpr std::size_t mask = 0b11;
 
         ttlet equal = eq(lhs._v, rhs._v) & mask;
         if (equal == mask) {
@@ -453,7 +453,7 @@ public:
 private:
     f32x4 _v;
 
-    static constexpr size_t element_mask = (1_uz << D) - 1;
+    static constexpr std::size_t element_mask = (1_uz << D) - 1;
 };
 
 } // namespace geo

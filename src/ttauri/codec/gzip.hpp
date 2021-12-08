@@ -11,9 +11,9 @@
 
 namespace tt::inline v1 {
 
-bstring gzip_decompress(std::span<std::byte const> bytes, size_t max_size = 0x01000000);
+bstring gzip_decompress(std::span<std::byte const> bytes, std::size_t max_size = 0x01000000);
 
-inline bstring gzip_decompress(URL const &url, size_t max_size = 0x01000000)
+inline bstring gzip_decompress(URL const &url, std::size_t max_size = 0x01000000)
 {
     return gzip_decompress(*url.loadView(), max_size);
 }

@@ -13,7 +13,7 @@
 
 namespace tt::inline v1 {
 
-std::shared_ptr<file_mapping> file_view::findOrCreateFileMappingObject(URL const &location, access_mode accessMode, size_t size)
+std::shared_ptr<file_mapping> file_view::findOrCreateFileMappingObject(URL const &location, access_mode accessMode, std::size_t size)
 {
     static unfair_mutex mutex;
     static std::unordered_map<URL, std::vector<std::weak_ptr<file_mapping>>> mappedFileObjects;

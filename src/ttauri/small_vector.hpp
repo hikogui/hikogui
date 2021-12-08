@@ -9,7 +9,7 @@
 
 namespace tt::inline v1 {
 
-template<typename T, size_t N>
+template<typename T, std::size_t N>
 class small_vector {
     using value_type = T;
     using array_type = std::array<T, N>;
@@ -35,9 +35,9 @@ public:
         return _end;
     }
 
-    constexpr size_t size() const noexcept
+    constexpr std::size_t size() const noexcept
     {
-        return static_cast<size_t>(_end - items.begin());
+        return static_cast<std::size_t>(_end - items.begin());
     }
 
     constexpr void clear() noexcept

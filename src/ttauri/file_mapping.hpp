@@ -24,7 +24,7 @@ public:
 
     /*! Size of the mapping.
      */
-    size_t size;
+    std::size_t size;
 
     /*! Operating system handle to a file mapping.
      */
@@ -35,7 +35,7 @@ public:
      * \param file a pointer to an open file.
      * \param size Number of bytes from the start to map.
      */
-    file_mapping(std::shared_ptr<tt::file> const &file, size_t size);
+    file_mapping(std::shared_ptr<tt::file> const &file, std::size_t size);
 
     /*! Map a file.
      * Map a file up to size bytes.
@@ -46,7 +46,7 @@ public:
      * \param accessMode mode of how to access the file.
      * \param size Number of bytes from the start to map.
      */
-    file_mapping(URL const &path, access_mode accessMode, size_t size);
+    file_mapping(URL const &path, access_mode accessMode, std::size_t size);
     ~file_mapping();
 
     file_mapping(file_mapping const &other) = delete;

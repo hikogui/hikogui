@@ -27,9 +27,9 @@ namespace tt::inline v1 {
 void set_thread_name(std::string_view name);
 
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
-constexpr size_t maximum_num_cpus = 64;
+constexpr std::size_t maximum_num_cpus = 64;
 #elif TT_OPERATING_SYSTEM == TT_OS_LINUX || TT_OPERATING_SYSTEM == TT_OS_MACOS
-constexpr size_t maximum_num_cpus = CPU_SETSIZE;
+constexpr std::size_t maximum_num_cpus = CPU_SETSIZE;
 #endif
 
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
@@ -83,7 +83,7 @@ std::vector<bool> set_thread_affinity_mask(std::vector<bool> const &mask);
  * @return The previous bit mask. Or zero on failure.
  * @throw std::os_error When unable to set the thread affinity to the given index
  */
-std::vector<bool> set_thread_affinity(size_t cpu_id);
+std::vector<bool> set_thread_affinity(std::size_t cpu_id);
 
 /** Advance thread affinity to the next CPU.
  * It is possible to detect when `advance_thread_affinity()` is at the last cpu;
@@ -94,12 +94,12 @@ std::vector<bool> set_thread_affinity(size_t cpu_id);
  *
  * @return The cpu that was selected to run on.
  */
-size_t advance_thread_affinity(size_t &cpu) noexcept;
+std::size_t advance_thread_affinity(std::size_t &cpu) noexcept;
 
 /** Get the current CPU id.
  *
  * @return The current CPU id.
  */
-[[nodiscard]] size_t current_cpu_id() noexcept;
+[[nodiscard]] std::size_t current_cpu_id() noexcept;
 
 } // namespace tt::inline v1

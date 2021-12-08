@@ -106,7 +106,7 @@ template<std::integral T>
     }
 }
 
-template<typename T, std::endian E, size_t A = alignof(T)>
+template<typename T, std::endian E, std::size_t A = alignof(T)>
 struct endian_buf_t {
     alignas(A) std::byte _value[sizeof(T)];
 

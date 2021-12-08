@@ -50,7 +50,7 @@ public:
 
     /** The frame buffer index of the image we are currently rendering.
      */
-    size_t frame_buffer_index;
+    std::size_t frame_buffer_index;
 
     /** This is the rectangle of the window that is being redrawn.
      */
@@ -66,7 +66,7 @@ public:
 
     draw_context(
         gfx_device_vulkan &device,
-        size_t frame_buffer_index,
+        std::size_t frame_buffer_index,
         aarectangle scissor_rectangle,
         vspan<pipeline_box::vertex> &boxVertices,
         vspan<pipeline_image::vertex> &imageVertices,

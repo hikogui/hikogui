@@ -74,7 +74,6 @@ target_sources(ttauri PRIVATE
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/file_view_win32.cpp>
     fixed.hpp
     float16.hpp
-    flow_layout.hpp
     format.hpp
     forward_value.hpp
     gap_buffer.hpp

@@ -37,7 +37,7 @@ public:
 
     void normalize_window() override;
 
-    void set_window_size(size_t width, size_t height) override {}
+    void set_window_size(std::size_t width, std::size_t height) override {}
 
     [[nodiscard]] std::string get_text_from_clipboard() const noexcept override
     {

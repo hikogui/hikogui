@@ -37,11 +37,11 @@ public:
 
     /** Number of samples for each channel in samples.
      */
-    size_t num_samples;
+    std::size_t num_samples;
 
     /** Number of channels in samples.
      */
-    size_t num_channels;
+    std::size_t num_channels;
 
     /** The sample rate this block was taken at.
      * This is the word-clock rate, not the sample rate the device was configured as.

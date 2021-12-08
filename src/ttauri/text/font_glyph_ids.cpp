@@ -19,7 +19,7 @@ namespace tt::inline v1 {
     graphic_path path;
     auto boundingBox = aarectangle{};
 
-    for (size_t i = 0; i < size(); i++) {
+    for (std::size_t i = 0; i < size(); i++) {
         ttlet glyph_id = (*this)[i];
 
         graphic_path glyph_path;
@@ -56,7 +56,7 @@ namespace tt::inline v1 {
     graphic_path path;
     auto boundingBox = aarectangle{};
 
-    for (size_t i = 0; i < size(); i++) {
+    for (std::size_t i = 0; i < size(); i++) {
         ttlet glyph_id = (*this)[i];
 
         glyph_metrics glyph_metrics;

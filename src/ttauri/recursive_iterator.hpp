@@ -96,7 +96,7 @@ public:
         return &(*_child_it);
     }
 
-    [[nodiscard]] reference operator[](size_t i) const noexcept
+    [[nodiscard]] reference operator[](std::size_t i) const noexcept
     {
         return *(*this + i);
     }

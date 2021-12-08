@@ -11,7 +11,7 @@
 
 namespace tt::inline v1 {
 
-static bool is_urlchar_scheme(char c, size_t i)
+static bool is_urlchar_scheme(char c, std::size_t i)
 {
     return is_urlchar_alpha(c) || (i > 0 && (is_urlchar_digit(c) || c == '+' || c == '-' || c == '.'));
 }
@@ -156,7 +156,7 @@ static void parse_url_split(url_parts &parts, std::string_view url)
 {
     // Find the scheme. A scheme must be at least two character
     // to differentiate it from a directory.
-    for (size_t i = 0; i < url.size(); i++) {
+    for (std::size_t i = 0; i < url.size(); i++) {
         ttlet c = url.at(i);
         if (c == ':' && i >= 2) {
             parts.scheme = url.substr(0, i);
@@ -186,13 +186,13 @@ static void parse_url_split(url_parts &parts, std::string_view url)
     parse_path_split(parts, url);
 }
 
-static size_t generate_size_guess(url_parts const &parts, bool only_path) noexcept
+static std::size_t generate_size_guess(url_parts const &parts, bool only_path) noexcept
 {
     ttlet path_size = parts.authority.size() + parts.drive.size() + parts.segments.size() + 10;
 
     ttlet start_size = only_path ? path_size : path_size + parts.scheme.size() + parts.query.size() + parts.fragment.size();
 
-    return std::accumulate(parts.segments.begin(), parts.segments.end(), start_size, [](size_t a, auto b) {
+    return std::accumulate(parts.segments.begin(), parts.segments.end(), start_size, [](std::size_t a, auto b) {
         return a + b.size();
     });
 }

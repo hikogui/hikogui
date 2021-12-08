@@ -10,7 +10,7 @@
 
 namespace tt::inline v1 {
 
-static void inflate_copy_block(std::span<std::byte const> bytes, size_t &bit_offset, size_t max_size, bstring &r)
+static void inflate_copy_block(std::span<std::byte const> bytes, std::size_t &bit_offset, std::size_t max_size, bstring &r)
 {
     auto offset = (bit_offset + 7) / 8;
 
@@ -24,7 +24,7 @@ static void inflate_copy_block(std::span<std::byte const> bytes, size_t &bit_off
     bit_offset = offset * 8;
 }
 
-[[nodiscard]] static size_t inflate_decode_length(std::span<std::byte const> bytes, size_t &bit_offset, size_t symbol)
+[[nodiscard]] static std::size_t inflate_decode_length(std::span<std::byte const> bytes, std::size_t &bit_offset, std::size_t symbol)
 {
     switch (symbol) {
     case 257: return 3;
@@ -60,7 +60,7 @@ static void inflate_copy_block(std::span<std::byte const> bytes, size_t &bit_off
     }
 }
 
-[[nodiscard]] static size_t inflate_decode_distance(std::span<std::byte const> bytes, size_t &bit_offset, size_t symbol)
+[[nodiscard]] static std::size_t inflate_decode_distance(std::span<std::byte const> bytes, std::size_t &bit_offset, std::size_t symbol)
 {
     switch (symbol) {
     case 0: return 1;
@@ -99,8 +99,8 @@ static void inflate_copy_block(std::span<std::byte const> bytes, size_t &bit_off
 
 static void inflate_block(
     std::span<std::byte const> bytes,
-    size_t &bit_offset,
-    size_t max_size,
+    std::size_t &bit_offset,
+    std::size_t max_size,
     huffman_tree<int16_t> const &literal_tree,
     huffman_tree<int16_t> const &distance_tree,
     bstring &r)
@@ -176,18 +176,18 @@ huffman_tree<int16_t> deflate_fixed_distance_tree = []() {
     return huffman_tree<int16_t>::from_lengths(lengths);
 }();
 
-static void inflate_fixed_block(std::span<std::byte const> bytes, size_t &bit_offset, size_t max_size, bstring &r)
+static void inflate_fixed_block(std::span<std::byte const> bytes, std::size_t &bit_offset, std::size_t max_size, bstring &r)
 {
     inflate_block(bytes, bit_offset, max_size, deflate_fixed_literal_tree, deflate_fixed_distance_tree, r);
 }
 
 [[nodiscard]] static huffman_tree<int16_t>
-inflate_code_lengths(std::span<std::byte const> bytes, size_t &bit_offset, size_t nr_symbols)
+inflate_code_lengths(std::span<std::byte const> bytes, std::size_t &bit_offset, std::size_t nr_symbols)
 {
     // The symbols are in different order in the table.
     constexpr auto symbols = std::array<int16_t,19>{16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
 
-    tt_parse_check(((bit_offset + (3 * static_cast<size_t>(nr_symbols)) + 7) >> 3) <= bytes.size(), "Input buffer overrun");
+    tt_parse_check(((bit_offset + (3 * static_cast<std::size_t>(nr_symbols)) + 7) >> 3) <= bytes.size(), "Input buffer overrun");
 
     auto lengths = std::vector<uint8_t>(symbols.size(), 0);
     for (auto i = 0_uz; i != nr_symbols; ++i) {
@@ -199,8 +199,8 @@ inflate_code_lengths(std::span<std::byte const> bytes, size_t &bit_offset, size_
 
 std::vector<uint8_t> inflate_lengths(
     std::span<std::byte const> bytes,
-    size_t &bit_offset,
-    size_t nr_symbols,
+    std::size_t &bit_offset,
+    std::size_t nr_symbols,
     huffman_tree<int16_t> const &code_length_tree)
 {
     auto r = std::vector<uint8_t>{};
@@ -241,7 +241,7 @@ std::vector<uint8_t> inflate_lengths(
     return r;
 }
 
-void inflate_dynamic_block(std::span<std::byte const> bytes, size_t &bit_offset, size_t max_size, bstring &r)
+void inflate_dynamic_block(std::span<std::byte const> bytes, std::size_t &bit_offset, std::size_t max_size, bstring &r)
 {
     // Test all lengths, the trailer is at least 32 bits (Checksum)
     // - 14 bits lengths
@@ -263,9 +263,9 @@ void inflate_dynamic_block(std::span<std::byte const> bytes, size_t &bit_offset,
     inflate_block(bytes, bit_offset, max_size, literal_tree, distance_tree, r);
 }
 
-bstring inflate(std::span<std::byte const> bytes, size_t &offset, size_t max_size)
+bstring inflate(std::span<std::byte const> bytes, std::size_t &offset, std::size_t max_size)
 {
-    size_t bit_offset = offset * 8;
+    std::size_t bit_offset = offset * 8;
 
     auto r = bstring{};
 

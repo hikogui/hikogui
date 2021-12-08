@@ -19,7 +19,7 @@ namespace tt::inline v1 {
     auto r = font_glyph_ids(*this);
 
     // First try composed normalization
-    for (size_t i = 0; i != g.size(); ++i) {
+    for (std::size_t i = 0; i != g.size(); ++i) {
         if (ttlet glyph_id = find_glyph(g[i])) {
             r += glyph_id;
         } else {

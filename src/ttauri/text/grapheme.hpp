@@ -115,7 +115,7 @@ public:
         } else {
             auto r = std::u32string{};
             auto tmp = value >> 1;
-            for (size_t i = 0; i < 3; i++, tmp >>= 21) {
+            for (std::size_t i = 0; i < 3; i++, tmp >>= 21) {
                 if (auto codePoint = static_cast<char32_t>(tmp & 0x1f'ffff)) {
                     r += codePoint;
                 } else {
@@ -131,16 +131,16 @@ public:
         return value != 1;
     }
 
-    [[nodiscard]] size_t hash() const noexcept
+    [[nodiscard]] std::size_t hash() const noexcept
     {
-        size_t r = 0;
-        for (size_t i = 0; i != size(); ++i) {
+        std::size_t r = 0;
+        for (std::size_t i = 0; i != size(); ++i) {
             r = hash_mix_two(r, std::hash<char32_t>{}((*this)[i]));
         }
         return r;
     }
 
-    [[nodiscard]] size_t size() const noexcept
+    [[nodiscard]] std::size_t size() const noexcept
     {
         if (has_pointer()) {
             return value >> 59;
@@ -155,7 +155,7 @@ public:
         }
     }
 
-    [[nodiscard]] friend size_t size(grapheme const &rhs) noexcept
+    [[nodiscard]] friend std::size_t size(grapheme const &rhs) noexcept
     {
         return rhs.size();
     }
@@ -183,7 +183,7 @@ public:
         }
     }
 
-    [[nodiscard]] char32_t operator[](size_t i) const noexcept
+    [[nodiscard]] char32_t operator[](std::size_t i) const noexcept
     {
         if (has_pointer()) {
             tt_axiom(i < std::tuple_size_v<long_grapheme>);
@@ -199,7 +199,7 @@ public:
     {
         std::u32string r;
         r.reserve(size());
-        for (size_t i = 0; i != size(); ++i) {
+        for (std::size_t i = 0; i != size(); ++i) {
             r += (*this)[i];
         }
         return r;
@@ -241,7 +241,7 @@ private:
         return (value & 1) == 0;
     }
 
-    [[nodiscard]] static uint64_t create_pointer(char32_t const *data, size_t size) noexcept
+    [[nodiscard]] static uint64_t create_pointer(char32_t const *data, std::size_t size) noexcept
     {
         tt_assert(size <= std::tuple_size<long_grapheme>::value);
 
@@ -277,7 +277,7 @@ private:
             return false;
         }
 
-        for (size_t i = 0; i != a.size(); ++i) {
+        for (std::size_t i = 0; i != a.size(); ++i) {
             if (a[i] != b[i]) {
                 return false;
             }
@@ -312,7 +312,7 @@ private:
 
 template<>
 struct std::hash<tt::grapheme> {
-    [[nodiscard]] size_t operator()(tt::grapheme const &rhs) const noexcept
+    [[nodiscard]] std::size_t operator()(tt::grapheme const &rhs) const noexcept
     {
         return rhs.hash();
     }

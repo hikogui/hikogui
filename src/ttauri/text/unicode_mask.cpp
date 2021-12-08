@@ -172,7 +172,7 @@ void unicode_mask::shrink_to_fit() noexcept
 
 [[nodiscard]] bool unicode_mask::holds_invariant() const noexcept
 {
-    size_t total_size = 0;
+    std::size_t total_size = 0;
 
     for (ttlet entry : _entries) {
         if (entry.empty()) {

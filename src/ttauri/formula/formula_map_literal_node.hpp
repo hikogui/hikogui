@@ -33,7 +33,7 @@ struct formula_map_literal_node final : formula_node {
         tt_assert(keys.size() == values.size());
 
         datum::map_type r;
-        for (size_t i = 0; i < keys.size(); i++) {
+        for (std::size_t i = 0; i < keys.size(); i++) {
             ttlet &key = keys[i];
             ttlet &value = values[i];
 
@@ -47,7 +47,7 @@ struct formula_map_literal_node final : formula_node {
         tt_assert(keys.size() == values.size());
 
         std::string r = "{";
-        for (size_t i = 0; i < keys.size(); i++) {
+        for (std::size_t i = 0; i < keys.size(); i++) {
             ttlet &key = keys[i];
             ttlet &value = values[i];
 

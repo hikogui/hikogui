@@ -12,7 +12,7 @@
 
 namespace tt::inline v1 {
 
-file_mapping::file_mapping(std::shared_ptr<tt::file> const &file, size_t size) :
+file_mapping::file_mapping(std::shared_ptr<tt::file> const &file, std::size_t size) :
     file(file), size(size > 0 ? size : file::file_size(file->_location))
 {
     DWORD protect;
@@ -37,7 +37,7 @@ file_mapping::file_mapping(std::shared_ptr<tt::file> const &file, size_t size) :
     }
 }
 
-file_mapping::file_mapping(URL const &location, access_mode accessMode, size_t size) :
+file_mapping::file_mapping(URL const &location, access_mode accessMode, std::size_t size) :
     file_mapping(findOrOpenFile(location, accessMode), size)
 {
 }

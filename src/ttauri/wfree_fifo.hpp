@@ -20,19 +20,19 @@ namespace tt::inline v1 {
  * @tparam T Base class of the value type stored in the ring buffer.
  * @tparam SlotSize Size of each slot, must be power-of-two.
  */
-template<typename T, size_t SlotSize>
+template<typename T, std::size_t SlotSize>
 class wfree_fifo {
 public:
     static_assert(std::has_single_bit(SlotSize), "Only power-of-two number of messages size allowed.");
 
     using value_type = T;
 
-    static constexpr size_t fifo_size = 65536;
-    static constexpr size_t slot_size = SlotSize;
-    static constexpr size_t num_slots = fifo_size / slot_size;
+    static constexpr std::size_t fifo_size = 65536;
+    static constexpr std::size_t slot_size = SlotSize;
+    static constexpr std::size_t num_slots = fifo_size / slot_size;
 
     struct slot_type {
-        static constexpr size_t buffer_size = slot_size - sizeof(value_type *);
+        static constexpr std::size_t buffer_size = slot_size - sizeof(value_type *);
 
         std::atomic<value_type *> pointer = nullptr;
         std::array<std::byte, buffer_size> buffer = {};
