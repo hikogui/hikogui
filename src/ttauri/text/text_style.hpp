@@ -8,6 +8,7 @@
 #include "text_decoration.hpp"
 #include "font_family_id.hpp"
 #include "../color/color.hpp"
+#include "../numbers.hpp"
 #include <format>
 #include <ostream>
 
@@ -15,9 +16,6 @@ namespace tt::inline v1 {
 class font_book;
 
 struct text_style {
-    static constexpr float default_dpi = 84.0f;
-    static constexpr float dpi_scale = default_dpi / 72.0f;
-
     font_family_id family_id;
     font_variant variant;
     float size;
@@ -43,7 +41,7 @@ struct text_style {
 
     float scaled_size() const noexcept
     {
-        return size * dpi_scale;
+        return points_to_dp(size);
     }
 
     [[nodiscard]] friend std::string to_string(text_style const &rhs) noexcept

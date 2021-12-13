@@ -101,6 +101,7 @@ target_sources(ttauri PRIVATE
     meta.hpp
     ${CMAKE_CURRENT_BINARY_DIR}/metadata.cpp
     metadata.hpp
+    numbers.hpp
     notifier.hpp
     cast.hpp
     observable.hpp
