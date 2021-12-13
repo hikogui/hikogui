@@ -25,8 +25,8 @@ The `tt::gui_system::make_unique()` function returns a `std::unique_ptr` to a ne
 instance of a configured GUI system. From this point forward, any usage of the GUI system,
 its windows and their widgets must be done from the same thread, called the `gui_thread`.
 
-After creating at least one window you should call `tt::gui_system::loop()` on
-the gui_system object. This function will enter the system's GUI-loop, monitor
+After creating at least one window you should call `tt::gui_system::loop()`
+memver function. This function will enter the system's GUI-loop, monitor
 keyboard & mouse events and render all the windows. Once all windows are closed
 the `loop()` function will return with a return code, which may be returned from
 the `main()` function.
@@ -81,6 +81,24 @@ There are often two different ways to construct a widget: with a delegate or
 with an observable. In the example above we use an `tt::observable<int>` for the
 radio buttons to monitor and update. Sharing the same observable allows the
 radio buttons to act as a set.
+
+### Layout using the grid widget
+The `tt::grid_widget` is a powerful layout widget which allows adding of new widgets
+using the `tt::grid_widget::make_widget<>()` member function.
+
+The template parameter for `make_widget()` specifies the widget class to allocate and construct.
+The first argument to `make_widget()` is a string specifying the location where the
+new widget should be positioned. The rest of the arguments are passed to the constructor of
+the new widget.
+
+The location is specified using a spreadsheet-like address. There are two forms:
+ - single cell, examples: "A1", "C4", "AB45"
+ - cell range, examples: "A1:E1", "C4:C7", "Z3:AA4"
+
+A widget may span multiple rows and columns. Widget that spans multiple column or rows
+are often widgets that are resizable; therefor the `grid_widget` will override the
+preferred- and maximum constraint of other widgets in those rows or columns.
+
 
 ### Observable
 
@@ -143,7 +161,7 @@ auto button = window.make_widget<checkbox_button>("A1", delegate));
 ```
 
 The `tt::gui_system`, `tt::gui_window` and the widgets will retain only
-a std::weak_ptr to the given delegate.
+a `std::weak_ptr` to the given delegate.
 
 A list of widgets
 -----------------

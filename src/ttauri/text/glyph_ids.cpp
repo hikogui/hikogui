@@ -9,15 +9,15 @@
 
 namespace tt::inline v1 {
 
-[[nodiscard]] glyph_atlas_info &font_glyph_ids::atlas_info() const noexcept
+[[nodiscard]] glyph_atlas_info &glyph_ids::atlas_info() const noexcept
 {
     return _font->atlas_info(_glyphs);
 }
 
-[[nodiscard]] std::pair<graphic_path, aarectangle> font_glyph_ids::get_path_and_bounding_box() const noexcept
+[[nodiscard]] std::pair<graphic_path, aarectangle> glyph_ids::get_path_and_bounding_box() const noexcept
 {
     graphic_path path;
-    auto boundingBox = aarectangle{};
+    auto bounding_box = aarectangle{};
 
     for (size_t i = 0; i < size(); i++) {
         ttlet glyph_id = (*this)[i];
@@ -42,19 +42,19 @@ namespace tt::inline v1 {
         }
 
         if (i == 0) {
-            boundingBox = glyph_metrics.boundingBox;
+            bounding_box = glyph_metrics.boundingBox;
         } else {
-            boundingBox |= glyph_metrics.boundingBox;
+            bounding_box |= glyph_metrics.boundingBox;
         }
     }
 
-    return {path, boundingBox};
+    return {path, bounding_box};
 }
 
-[[nodiscard]] aarectangle font_glyph_ids::get_bounding_box() const noexcept
+[[nodiscard]] aarectangle glyph_ids::get_bounding_box() const noexcept
 {
     graphic_path path;
-    auto boundingBox = aarectangle{};
+    auto bounding_box = aarectangle{};
 
     for (size_t i = 0; i < size(); i++) {
         ttlet glyph_id = (*this)[i];
@@ -69,13 +69,13 @@ namespace tt::inline v1 {
         }
 
         if (i == 0) {
-            boundingBox = glyph_metrics.boundingBox;
+            bounding_box = glyph_metrics.boundingBox;
         } else {
-            boundingBox |= glyph_metrics.boundingBox;
+            bounding_box |= glyph_metrics.boundingBox;
         }
     }
 
-    return boundingBox;
+    return bounding_box;
 }
 
 } // namespace tt::inline v1

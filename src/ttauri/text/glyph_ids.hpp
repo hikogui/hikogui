@@ -5,6 +5,9 @@
 #pragma once
 
 #include "glyph_id.hpp"
+#include "font.hpp"
+#include "glyph_atlas_info.hpp"
+#include "../geometry/axis_aligned_rectangle.hpp"
 #include "../required.hpp"
 #include <bit>
 #include <memory>
@@ -14,6 +17,8 @@
 #include <functional>
 
 namespace tt::inline v1 {
+namespace detail {
+
 class glyph_ids_long {
 public:
     constexpr glyph_ids_long(glyph_ids_long const &) noexcept = default;
@@ -23,16 +28,19 @@ public:
 
     /** Construct a list of glyphs starting with a packed set of glyphs.
      *
-     * @param value The value contains a set of glyphs packed into a size_t,
-     *              the first glyph is in the least significant bits.
+     * @param value The value from the `glyph_ids` internal value,
+     * @param new_id The new id being added to glyph_ids.
      */
-    constexpr glyph_ids_long(size_t value) noexcept : _glyphs(), _size(0)
+    constexpr glyph_ids_long(size_t value, glyph_id new_id) noexcept : _glyphs(), _size(sizeof(size_t) == 4 ? 2 : 4)
     {
-        *this += glyph_id{value & 0xffff};
-
-        if constexpr (sizeof(size_t) == 8) {
-            *this += glyph_id{(value >> 16) & 0xffff};
-            *this += glyph_id{(value >> 32) & 0xffff};
+        if constexpr (sizeof(size_t) == 4) {
+            std::get<0>(_glyphs) = glyph_id{(value >> 16) & 0xffff};
+            std::get<1>(_glyphs) = *new_id;
+        } else {
+            std::get<0>(_glyphs) = glyph_id{(value >> 16) & 0xffff};
+            std::get<1>(_glyphs) = glyph_id{(value >> 32) & 0xffff};
+            std::get<2>(_glyphs) = glyph_id{(value >> 48) & 0xffff};
+            std::get<3>(_glyphs) = *new_id;
         }
     }
 
@@ -45,21 +53,18 @@ public:
     {
         size_t r = 0;
 
-        if constexpr (sizeof(size_t) == 8) {
-            r |= size_t{get<3>(_glyphs)};
-            r <<= 16;
-            r |= size_t{get<2>(_glyphs)};
-            r <<= 16;
+        for (auto i = 0_uz; i != _size; ++i) {
+            r ^= _glyphs[i];
+            r ^= r << 16;
+            r ^= r >> 16;
         }
-        r |= size_t{get<1>(_glyphs)};
-        r <<= 16;
-        r |= size_t{get<0>(_glyphs)};
 
-        return r ^ size_t { _size };
+        return r;
     }
 
     constexpr glyph_ids_long &operator+=(glyph_id id) noexcept
     {
+        // On overflow silently drop glyphs.
         if (_size < _glyphs.size()) {
             _glyphs[_size++] = id;
         }
@@ -79,24 +84,31 @@ private:
     std::array<glyph_id, 18> _glyphs;
     uint8_t _size;
 };
+}
 
+/** Glyph IDs of a single grapheme.
+ *
+ * This class holds a set of glyphs belonging to a single grapheme.
+ * All glyph ids are 16-bit integers that belong to a single font.
+ *
+ * The maximum number of glyphs are based on:
+ *    "Compatibility mappings are guaranteed to be no longer than 18 characters, although most consist of just a few characters."
+ *    https://unicode.org/reports/tr44/ (TR44 5.7.3)
+ *
+ */
 class glyph_ids {
 public:
-    static constexpr size_t sgo_size_max = sizeof(void *) == 8 ? 3 : 1;
-    static constexpr size_t sgo_size_mask = sizeof(void *) == 8 ? 7 : 3;
-    static constexpr glyph_ids_long *sgo_null = reinterpret_cast<glyph_ids_long *>(1);
-
     constexpr ~glyph_ids()
     {
-        if ((sgo_value() & sgo_size_mask) == 0) {
+        if (is_long()) {
             delete _ptr;
         }
     }
 
-    constexpr glyph_ids(glyph_ids const &other) noexcept : _ptr(other._ptr)
+    constexpr glyph_ids(glyph_ids const &other) noexcept : _font(other._font), _ptr(other._ptr)
     {
-        if ((sgo_value() & sgo_size_mask) == 0) {
-            _ptr = new glyph_ids_long(*(other._ptr));
+        if (is_long()) {
+            _ptr = new detail::glyph_ids_long(*_ptr);
         }
     }
 
@@ -104,127 +116,223 @@ public:
     {
         tt_return_on_self_assignment(other);
 
-        if ((sgo_value() & sgo_size_mask) == 0) {
+        _font = other._font;
+        if (is_long()) {
             delete _ptr;
         }
         _ptr = other._ptr;
-        if ((sgo_value() & sgo_size_mask) == 0) {
-            _ptr = new glyph_ids_long(*(other._ptr));
+        if (is_long()) {
+            _ptr = new detail::glyph_ids_long(*_ptr);
         }
         return *this;
     }
 
-    constexpr glyph_ids(glyph_ids &&other) noexcept : _ptr(std::exchange(other._ptr, sgo_null)) {}
+    constexpr glyph_ids(glyph_ids &&other) noexcept : _font(other._font), _ptr(std::exchange(other._ptr, make_ptr(1))) {}
 
     constexpr glyph_ids &operator=(glyph_ids &&other) noexcept
     {
+        _font = other._font;
         std::swap(_ptr, other._ptr);
         return *this;
     }
 
-    constexpr glyph_ids() noexcept : _ptr(sgo_null) {}
+    /** Create an empty glyph_ids object.
+     *
+     * This consructor should only be used for default member initialization.
+     * Normally the font should always be assigned.
+     */
+    constexpr glyph_ids() noexcept : _font(nullptr), _ptr(make_ptr(1)) {}
 
+    /** Create an empty glyph_ids for a font.
+     *
+     * This is the normal constructor.
+     *
+     * @param font The font to be used for this glyph_ids.
+     */
+    constexpr glyph_ids(tt::font const &font) noexcept : _font(*font), _ptr(make_ptr(1)) {}
+
+    /** Get the font for this glyph_ids object.
+     */
+    [[nodiscard]] constexpr font const &font() const noexcept
+    {
+        tt_axiom(_font);
+        return *_font;
+    }
+
+    /** Set the font for this glyph_ids object.
+     */
+    //void set_font(tt::font const &font) noexcept
+    //{
+    //    _font = &font;
+    //}
+
+    /** Clear the glyphs in this glyph_ids object.
+     *
+     * The font remains attached to this object.
+     */
     constexpr void clear() noexcept
     {
-        if ((sgo_value() & sgo_size_mask) == 0) {
+        if (is_long()) {
             delete _ptr;
         }
-        _ptr = sgo_null;
+        _ptr = make_ptr(1);
     }
 
+    /** Check if glyphs are attached.
+     */
     [[nodiscard]] constexpr bool empty() const noexcept
     {
-        return _ptr == sgo_null;
+        return _ptr == make_ptr(1);
     }
 
+    /** Check if glyphs are attached.
+     */
+    constexpr operator bool() const noexcept
+    {
+        return not enpty();
+    }
+
+    /** Check if this object contains a single glyph.
+     */
     [[nodiscard]] constexpr bool is_single() const noexcept
     {
-        return (sgo_value() & sgo_size_mask) == 2;
+        return _ptr == make_ptr(3);
     }
 
+    /** Get the value of the single glyph.
+     */
     [[nodiscard]] constexpr glyph_id get_single() const noexcept
     {
         tt_axiom(is_single());
-        return glyph_id{(sgo_value() >> 16) & 0xffff};
+        return get_glyph(1);
     }
 
+    /** Get the number of glyphs.
+     */
     [[nodiscard]] constexpr size_t size() const noexcept
     {
-        ttlet size = sgo_value() & sgo_size_mask;
-        if (size == 0) {
-            return _ptr->size();
-        } else {
-            return size - 1;
-        }
+        return is_long() ? _ptr->size() : (make_value(_ptr) >> 1) & 7;
     }
 
+    /** Get the hash value.
+     */
     [[nodiscard]] constexpr size_t hash() const noexcept
     {
-        ttlet value = sgo_value();
-        if ((value & sgo_size_mask) == 0) {
-            return _ptr->hash();
-        } else {
-            return value;
-        }
+        return is_long() ? _ptr->hash() : make_value(_ptr);
     }
 
+    /** Add a glyph to this object.
+     *
+     * @param id The glyph to add.
+     */
     constexpr glyph_ids &operator+=(glyph_id id) noexcept
     {
-        ttlet value = sgo_value();
-        ttlet size_code = value & sgo_size_mask;
+        constexpr size_t max_short_size = sizeof(_ptr) == 4 ? 7 : 15;
 
-        if (size_code == 0) {
+        if (is_long()) {
             *_ptr += id;
 
-        } else if (size_code <= sgo_size_max) {
-            set_sgo_value((size_code + 1) | (size_t{id} << (size_code * 16)));
+        } else if (short_size() < max_short_size) {
+            ttlet new_index = increment_size();
+            set_glyph(index, id);
 
         } else {
-            _ptr = new glyph_ids_long(value >> 16);
-            *_ptr += id;
+            _ptr = new detail::glyph_ids_long(value, id);
         }
         return *this;
     }
 
+    /** Get a glyph.
+     *
+     * @param index The index to the glyph to access
+     */
     [[nodiscard]] constexpr glyph_id operator[](size_t i) const noexcept
     {
         tt_axiom(i < size());
 
-        ttlet value = sgo_value();
-        if ((value & sgo_size_mask) == 0) {
+        if (is_long()) {
             return (*_ptr)[i];
         } else {
-            return glyph_id{value >> ((i + 1) * 16) & 0xffff};
+            return get_glyph(i);
         }
     }
 
     [[nodiscard]] constexpr friend bool operator==(glyph_ids const &lhs, glyph_ids const &rhs) noexcept
     {
-        ttlet lhs_value = lhs.sgo_value();
-        ttlet rhs_value = rhs.sgo_value();
-        ttlet lhs_sgo_size = lhs_value & sgo_size_mask;
-        ttlet rhs_sgo_size = rhs_value & sgo_size_mask;
+        ttlet lhs_value = make_value(lhs._ptr);
+        ttlet rhs_value = make_value(rhs._ptr);
 
-        if (lhs_sgo_size != rhs_sgo_size) {
+        if (lhs._font != rhs._font) {
             return false;
-        } else if (lhs_sgo_size == 0) {
-            return *lhs._ptr == *rhs._ptr;
+        } else if (lhs_value == rhs_value) {
+            return true;
         } else {
-            return lhs_value == rhs_value;
+            return (lhs_value | rhs_value) & 1 == 0 and *lhs._ptr == *rhs._ptr;
         }
     }
 
-private:
-    glyph_ids_long *_ptr;
+    [[nodiscard]] std::pair<graphic_path, aarectangle> get_path_and_bounding_box() const noexcept;
 
-    constexpr void set_sgo_value(size_t value) noexcept
+    /** Get the bounding box of the combined glyphs.
+     *
+     * The 
+     */
+    [[nodiscard]] aarectangle get_bounding_box() const noexcept;
+
+private:
+    tt::font const *_font;
+    detail::glyph_ids_long *_ptr;
+
+    [[nodiscard]] constexpr size_t increment_size() const noexcept
     {
-        _ptr = std::bit_cast<glyph_ids_long *>(value);
+        tt_axiom(is_short());
+
+        ttlet new_value = make_value(_ptr) + 2; 
+        _ptr = make_ptr(new_value);
+        return (new_value >> 1) & 15;
     }
 
-    [[nodiscard]] constexpr size_t sgo_value() const noexcept
+    [[nodiscard]] constexpr glyph_id get_glyph(size_t i) const noexcept
     {
-        return std::bit_cast<size_t>(_ptr);
+        tt_axiom(is_short());
+
+        auto shift = (i + 1) * 16;
+        return glyph_id{(make_value(_ptr) >> shift) & 0xffff};
+    }
+
+    constexpr void set_glyph(size_t i, glyph_id id) noexcept
+    {
+        tt_axiom(is_short());
+
+        auto shift = (i + 1) * 16;
+        auto mask = size_t{0xffff} << shift;
+        _ptr = make_ptr((make_value(_ptr) & ~mask) | (*id << shift));
+    }
+
+    [[nodiscard]] constexpr size_t short_size() const noexcept
+    {
+        tt_axiom(is_short());
+        return (make_value(_ptr) >> 1) & 7;
+    }
+
+    [[nodiscard]] constexpr bool is_short() const noexcept
+    {
+        return static_cast<bool>(make_value(_ptr) & 1);
+    }
+
+    [[nodiscard]] constexpr bool is_long() const noexcept
+    {
+        return not is_short();
+    }
+
+    [[nodiscard]] static constexpr detail::glyph_ids_long *make_ptr(size_t value) noexcept
+    {
+        return std::bit_cast<detail::glyph_ids_long *>(value);
+    }
+
+    [[nodiscard]] static constexpr size_t make_value(detail::glyph_ids_long *ptr) noexcept
+    {
+        return std::bit_cast<size_t>(ptr);
     }
 };
 
