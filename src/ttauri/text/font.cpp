@@ -16,7 +16,9 @@ namespace tt::inline v1 {
         return {};
     }
 
+    // Create a glyph_ids object for a single grapheme.
     auto r = glyph_ids(*this);
+    r.set_num_graphemes(1);
 
     // First try composed normalization
     for (std::size_t i = 0; i != g.size(); ++i) {
