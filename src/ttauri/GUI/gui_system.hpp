@@ -219,7 +219,7 @@ private:
     std::weak_ptr<gui_system_delegate> _delegate;
 
     std::vector<std::unique_ptr<gui_window>> _windows;
-    size_t _previous_num_windows = 0;
+    std::size_t _previous_num_windows = 0;
 
     /** The theme of the system.
      * Should never be nullptr in reality.

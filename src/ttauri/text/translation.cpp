@@ -13,7 +13,7 @@ struct translation_key {
 
     translation_key(std::string_view msgid, tt::language const *language = nullptr) noexcept : msgid(msgid), language(language) {}
 
-    [[nodiscard]] size_t hash() const noexcept
+    [[nodiscard]] std::size_t hash() const noexcept
     {
         return hash_mix(language, msgid);
     }
@@ -28,7 +28,7 @@ struct translation_key {
 
 template<>
 struct std::hash<tt::translation_key> {
-    [[nodiscard]] size_t operator()(tt::translation_key const &rhs) const noexcept
+    [[nodiscard]] std::size_t operator()(tt::translation_key const &rhs) const noexcept
     {
         return rhs.hash();
     }

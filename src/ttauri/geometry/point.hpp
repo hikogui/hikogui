@@ -43,7 +43,7 @@ public:
     template<int E>
     requires(E > D) [[nodiscard]] constexpr explicit point(point<E> const &other) noexcept : _v(static_cast<f32x4>(other))
     {
-        for (size_t i = D; i != E; ++i) {
+        for (std::size_t i = D; i != E; ++i) {
             _v[i] = 0.0f;
         }
         tt_axiom(holds_invariant());

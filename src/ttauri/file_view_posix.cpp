@@ -13,7 +13,7 @@
 
 namespace tt::inline v1 {
 
-file_view::file_view(std::shared_ptr<file_mapping> const &_file_mapping_object, size_t offset, size_t size) :
+file_view::file_view(std::shared_ptr<file_mapping> const &_file_mapping_object, std::size_t offset, std::size_t size) :
     _file_mapping_object(_file_mapping_object), _offset(offset)
 {
     if (size == 0) {
@@ -41,7 +41,7 @@ file_view::file_view(std::shared_ptr<file_mapping> const &_file_mapping_object, 
     _bytes = std::shared_ptr<std::span<std::byte>>(bytes_ptr, file_view::unmap);
 }
 
-file_view::file_view(URL const &location, AccessMode accessMode, size_t offset, size_t size) :
+file_view::file_view(URL const &location, AccessMode accessMode, std::size_t offset, std::size_t size) :
     file_view(findOrCreateFileMappingObject(location, accessMode, offset + size), offset, size)
 {
 }
@@ -88,7 +88,7 @@ void file_view::unmap(std::span<std::byte> *bytes) noexcept
     }
 }
 
-void file_view::flush(void *base, size_t size)
+void file_view::flush(void *base, std::size_t size)
 {
     int flags = MS_SYNC;
     if (!msync(base, size, flags)) {

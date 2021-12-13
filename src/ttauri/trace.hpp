@@ -70,7 +70,7 @@ public:
 
 private:
     std::array<std::pair<char const *, datum>, NumItems> items;
-    size_t size = 0;
+    std::size_t size = 0;
 };
 
 template<basic_fixed_string Tag>

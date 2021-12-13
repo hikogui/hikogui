@@ -53,7 +53,7 @@ public:
      */
     [[nodiscard]] operator std::string() const noexcept
     {
-        return std::string(narrow_cast<size_t>(_depth) * narrow_cast<size_t>(_spaces), _space);
+        return std::string(narrow_cast<std::size_t>(_depth) * narrow_cast<std::size_t>(_spaces), _space);
     }
 
     /** Increase the depth of this indentation.

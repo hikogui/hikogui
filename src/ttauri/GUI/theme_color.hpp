@@ -38,7 +38,7 @@ enum class theme_color : unsigned char {
     _size
 };
 
-constexpr size_t num_theme_colors = static_cast<size_t>(theme_color::_size);
+constexpr std::size_t num_theme_colors = static_cast<std::size_t>(theme_color::_size);
 
 [[nodiscard]] inline theme_color theme_color_from_string(std::string_view str)
 {

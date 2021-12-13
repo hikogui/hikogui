@@ -50,7 +50,7 @@ tt_msvc_suppress(4702);
 
 namespace tt::inline v1 {
 
-template<numeric_limited T, size_t N>
+template<numeric_limited T, std::size_t N>
 struct numeric_array {
     using container_type = std::array<T, N>;
     using value_type = typename container_type::value_type;
@@ -165,7 +165,7 @@ struct numeric_array {
     constexpr numeric_array &operator=(numeric_array const &rhs) noexcept = default;
     constexpr numeric_array &operator=(numeric_array &&rhs) noexcept = default;
 
-    template<numeric_limited U, size_t M>
+    template<numeric_limited U, std::size_t M>
     [[nodiscard]] constexpr explicit numeric_array(numeric_array<U, M> const &other) noexcept : v()
     {
         if (!std::is_constant_evaluated()) {
@@ -238,7 +238,7 @@ struct numeric_array {
 #endif
         }
 
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             if (i < M) {
                 if constexpr (std::is_integral_v<T> and std::is_floating_point_v<U>) {
                     // SSE conversion round floats before converting to integer.
@@ -252,7 +252,7 @@ struct numeric_array {
         }
     }
 
-    template<numeric_limited U, size_t M>
+    template<numeric_limited U, std::size_t M>
     [[nodiscard]] constexpr explicit numeric_array(numeric_array<U, M> const &other1, numeric_array<U, M> const &other2) noexcept
         :
         v()
@@ -284,7 +284,7 @@ struct numeric_array {
 #endif
         }
 
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             if (i < M) {
                 if constexpr (std::is_integral_v<T> and std::is_floating_point_v<U>) {
                     // SSE conversion round floats before converting to integer.
@@ -401,7 +401,7 @@ struct numeric_array {
 #endif
         }
         auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             r[i] = rhs;
         }
         return r;
@@ -632,7 +632,7 @@ struct numeric_array {
         }
 
         auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             r[i] = (i % 2 == 0) ? a[i / 2] : b[i / 2];
         }
         return r;
@@ -642,7 +642,7 @@ struct numeric_array {
      * @param ptr A Pointer to an array of values in memory.
      * @return A numeric array.
      */
-    template<size_t S>
+    template<std::size_t S>
     [[nodiscard]] static constexpr numeric_array load(std::byte const *ptr) noexcept
     {
         auto r = numeric_array{};
@@ -672,7 +672,7 @@ struct numeric_array {
         return r;
     }
 
-    template<size_t S>
+    template<std::size_t S>
     constexpr void store(std::byte *ptr) const noexcept
     {
         std::memcpy(ptr, this, S);
@@ -700,14 +700,14 @@ struct numeric_array {
         }
     }
 
-    [[nodiscard]] constexpr T const &operator[](size_t i) const noexcept
+    [[nodiscard]] constexpr T const &operator[](std::size_t i) const noexcept
     {
         static_assert(std::endian::native == std::endian::little, "Indices need to be reversed on big endian machines");
         tt_axiom(i < N);
         return v[i];
     }
 
-    [[nodiscard]] constexpr T &operator[](size_t i) noexcept
+    [[nodiscard]] constexpr T &operator[](std::size_t i) noexcept
     {
         static_assert(std::endian::native == std::endian::little, "Indices need to be reversed on big endian machines");
         tt_axiom(i < N);
@@ -1016,7 +1016,7 @@ struct numeric_array {
      *
      * @tparam I Index into the array
      */
-    template<size_t I>
+    template<std::size_t I>
     [[nodiscard]] friend constexpr T &get(numeric_array &rhs) noexcept
     {
         static_assert(I < N, "Index out of bounds");
@@ -1048,7 +1048,7 @@ struct numeric_array {
      * @param rhs The vector to extract the value from.
      * @return The value extracted.
      */
-    template<size_t I>
+    template<std::size_t I>
     [[nodiscard]] constexpr friend T extract(numeric_array const &rhs) noexcept
     {
         static_assert(I < N);
@@ -1103,7 +1103,7 @@ struct numeric_array {
      * @param rhs The value to insert.
      * @return The vector with the inserted value.
      */
-    template<size_t I, size_t ZeroMask = 0>
+    template<std::size_t I, std::size_t ZeroMask = 0>
     [[nodiscard]] constexpr friend numeric_array insert(numeric_array const &lhs, T rhs) noexcept
         requires(is_f32x4 or is_i32x4 or is_u32x4)
     {
@@ -1125,7 +1125,7 @@ struct numeric_array {
 
         auto r = lhs;
         std::get<I>(r.v) = rhs;
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             if ((ZeroMask >> i) & 1) {
                 r.v[i] = T{};
             }
@@ -1156,7 +1156,7 @@ struct numeric_array {
      *
      * @tparam Mask bit mask where '1' means to zero, '0' to keep original.
      */
-    template<size_t Mask = ~size_t{0}>
+    template<std::size_t Mask = ~std::size_t{0}>
     [[nodiscard]] friend constexpr numeric_array zero(numeric_array rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
@@ -1171,7 +1171,7 @@ struct numeric_array {
         }
 
         auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             if (static_cast<bool>((Mask >> i) & 1)) {
                 r.v[i] = T{0};
             } else {
@@ -1181,7 +1181,7 @@ struct numeric_array {
         return r;
     }
 
-    template<size_t Mask>
+    template<std::size_t Mask>
     [[nodiscard]] friend constexpr numeric_array blend(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
@@ -1225,7 +1225,7 @@ struct numeric_array {
         }
 
         auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             r[i] = static_cast<bool>((Mask >> i) & 1) ? rhs[i] : lhs[i];
         }
         return r;
@@ -1272,7 +1272,7 @@ struct numeric_array {
         }
 
         auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             r[i] = mask[i] != T{0} ? b[i] : a[i];
         }
         return r;
@@ -1282,7 +1282,7 @@ struct numeric_array {
      *
      * @tparam Mask bit mask where '1' means to negate, '0' to keep original.
      */
-    template<size_t Mask>
+    template<std::size_t Mask>
     [[nodiscard]] friend constexpr numeric_array neg(numeric_array rhs) noexcept
     {
         return blend<Mask>(rhs, -rhs);
@@ -1367,7 +1367,7 @@ struct numeric_array {
         }
 
         auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             r[i] = std::sqrt(rhs.v[i]);
         }
         return r;
@@ -1412,7 +1412,7 @@ struct numeric_array {
         }
 
         auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             r[i] = std::floor(rhs.v[i]);
         }
         return r;
@@ -1439,7 +1439,7 @@ struct numeric_array {
         }
 
         auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             r[i] = std::ceil(rhs.v[i]);
         }
         return r;
@@ -1466,7 +1466,7 @@ struct numeric_array {
         }
 
         auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             r[i] = std::round(rhs.v[i]);
         }
         return r;
@@ -1479,7 +1479,7 @@ struct numeric_array {
      * @param rhs The right hand side.
      * @return Result of the dot product.
      */
-    template<size_t Mask>
+    template<std::size_t Mask>
     [[nodiscard]] friend constexpr T dot(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
@@ -1493,7 +1493,7 @@ struct numeric_array {
         }
 
         auto r = T{};
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             if (static_cast<bool>(Mask & (1_uz << i))) {
                 r += lhs.v[i] * rhs.v[i];
             }
@@ -1508,7 +1508,7 @@ struct numeric_array {
      * @param rhs The right hand side.
      * @return Result of the hypot calculation.
      */
-    template<size_t Mask>
+    template<std::size_t Mask>
     [[nodiscard]] friend constexpr T hypot(numeric_array const &rhs) noexcept
     {
         return std::sqrt(dot<Mask>(rhs, rhs));
@@ -1521,7 +1521,7 @@ struct numeric_array {
      * @param rhs The right hand side.
      * @return Result of the hypot-squared calculation.
      */
-    template<size_t Mask>
+    template<std::size_t Mask>
     [[nodiscard]] friend constexpr T squared_hypot(numeric_array const &rhs) noexcept
     {
         return dot<Mask>(rhs, rhs);
@@ -1533,7 +1533,7 @@ struct numeric_array {
      * @param rhs The right hand side.
      * @return Result of the hypot-squared calculation.
      */
-    template<size_t Mask>
+    template<std::size_t Mask>
     [[nodiscard]] friend constexpr T rcp_hypot(numeric_array const &rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
@@ -1555,7 +1555,7 @@ struct numeric_array {
      * @param rhs The right hand side.
      * @return The normalized vector.
      */
-    template<size_t Mask>
+    template<std::size_t Mask>
     [[nodiscard]] friend constexpr numeric_array normalize(numeric_array const &rhs) noexcept
     {
         tt_axiom(rhs.is_vector());
@@ -1573,7 +1573,7 @@ struct numeric_array {
         ttlet rcp_hypot_ = rcp_hypot<Mask>(rhs);
 
         auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             if (static_cast<bool>(Mask & (1_uz << i))) {
                 r.v[i] = rhs.v[i] * rcp_hypot_;
             }
@@ -1581,152 +1581,152 @@ struct numeric_array {
         return r;
     }
 
-    [[nodiscard]] friend constexpr size_t eq(numeric_array const &lhs, numeric_array const &rhs) noexcept
-        requires(N <= sizeof(size_t) * CHAR_BIT)
+    [[nodiscard]] friend constexpr std::size_t eq(numeric_array const &lhs, numeric_array const &rhs) noexcept
+        requires(N <= sizeof(std::size_t) * CHAR_BIT)
     {
         if (not std::is_constant_evaluated()) {
 #if defined(TT_HAS_AVX2)
             if constexpr (is_i64x4 or is_u64x4) {
-                return static_cast<size_t>(_mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpeq_epi64(lhs.reg(), rhs.reg()))));
+                return static_cast<std::size_t>(_mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpeq_epi64(lhs.reg(), rhs.reg()))));
             } else if constexpr (is_i32x8 or is_u32x8) {
-                return static_cast<size_t>(_mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpeq_epi32(lhs.reg(), rhs.reg()))));
+                return static_cast<std::size_t>(_mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpeq_epi32(lhs.reg(), rhs.reg()))));
             } else if constexpr (is_i8x32 or is_u8x32) {
-                return static_cast<size_t>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(lhs.reg(), rhs.reg())));
+                return static_cast<std::size_t>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(lhs.reg(), rhs.reg())));
             }
 #endif
 #if defined(TT_HAS_AVX)
             if constexpr (is_f64x4) {
-                return static_cast<size_t>(_mm256_movemask_pd(_mm256_cmp_pd(lhs.reg(), rhs.reg(), _CMP_EQ_OQ)));
+                return static_cast<std::size_t>(_mm256_movemask_pd(_mm256_cmp_pd(lhs.reg(), rhs.reg(), _CMP_EQ_OQ)));
             } else if constexpr (is_f32x8) {
-                return static_cast<size_t>(_mm256_movemask_ps(_mm256_cmp_ps(lhs.reg(), rhs.reg(), _CMP_EQ_OQ)));
+                return static_cast<std::size_t>(_mm256_movemask_ps(_mm256_cmp_ps(lhs.reg(), rhs.reg(), _CMP_EQ_OQ)));
             }
 #endif
 #if defined(TT_HAS_SSE4_1)
             if constexpr (is_i64x2 or is_u64x2) {
-                return static_cast<size_t>(_mm_movemask_pd(_mm_castsi128_pd(_mm_cmpeq_epi64(lhs.reg(), rhs.reg()))));
+                return static_cast<std::size_t>(_mm_movemask_pd(_mm_castsi128_pd(_mm_cmpeq_epi64(lhs.reg(), rhs.reg()))));
             }
 #endif
 #if defined(TT_HAS_SSE2)
             if constexpr (is_f64x2) {
-                return static_cast<size_t>(_mm_movemask_pd(_mm_cmpeq_pd(lhs.reg(), rhs.reg())));
+                return static_cast<std::size_t>(_mm_movemask_pd(_mm_cmpeq_pd(lhs.reg(), rhs.reg())));
             } else if constexpr (is_i32x4 or is_u32x4) {
-                return static_cast<size_t>(_mm_movemask_ps(_mm_castsi128_ps(_mm_cmpeq_epi32(lhs.reg(), rhs.reg()))));
+                return static_cast<std::size_t>(_mm_movemask_ps(_mm_castsi128_ps(_mm_cmpeq_epi32(lhs.reg(), rhs.reg()))));
             } else if constexpr (is_i8x16 or is_u8x16) {
-                return static_cast<size_t>(_mm_movemask_epi8(_mm_cmpeq_epi8(lhs.reg(), rhs.reg())));
+                return static_cast<std::size_t>(_mm_movemask_epi8(_mm_cmpeq_epi8(lhs.reg(), rhs.reg())));
             }
 #endif
 #if defined(TT_HAS_SSE)
             if constexpr (is_f32x4) {
-                return static_cast<size_t>(_mm_movemask_ps(_mm_cmpeq_ps(lhs.reg(), rhs.reg())));
+                return static_cast<std::size_t>(_mm_movemask_ps(_mm_cmpeq_ps(lhs.reg(), rhs.reg())));
             }
 #endif
         }
 
-        size_t r = 0;
-        for (size_t i = 0; i != N; ++i) {
-            r |= static_cast<size_t>(lhs.v[i] == rhs.v[i]) << i;
+        std::size_t r = 0;
+        for (std::size_t i = 0; i != N; ++i) {
+            r |= static_cast<std::size_t>(lhs.v[i] == rhs.v[i]) << i;
         }
         return r;
     }
 
-    [[nodiscard]] friend constexpr size_t ne(numeric_array const &lhs, numeric_array const &rhs) noexcept
-        requires(N <= sizeof(size_t) * CHAR_BIT)
+    [[nodiscard]] friend constexpr std::size_t ne(numeric_array const &lhs, numeric_array const &rhs) noexcept
+        requires(N <= sizeof(std::size_t) * CHAR_BIT)
     {
         if (not std::is_constant_evaluated()) {
 #if defined(TT_HAS_AVX)
             if constexpr (is_f64x4) {
-                return static_cast<size_t>(_mm256_movemask_pd(_mm256_cmp_pd(lhs.reg(), rhs.reg(), _CMP_NEQ_OQ)));
+                return static_cast<std::size_t>(_mm256_movemask_pd(_mm256_cmp_pd(lhs.reg(), rhs.reg(), _CMP_NEQ_OQ)));
             } else if constexpr (is_f32x8) {
-                return static_cast<size_t>(_mm256_movemask_ps(_mm256_cmp_ps(lhs.reg(), rhs.reg(), _CMP_NEQ_OQ)));
+                return static_cast<std::size_t>(_mm256_movemask_ps(_mm256_cmp_ps(lhs.reg(), rhs.reg(), _CMP_NEQ_OQ)));
             }
 #endif
 #if defined(TT_HAS_SSE2)
             if constexpr (is_f64x2) {
-                return static_cast<size_t>(_mm_movemask_pd(_mm_cmpneq_pd(lhs.reg(), rhs.reg())));
+                return static_cast<std::size_t>(_mm_movemask_pd(_mm_cmpneq_pd(lhs.reg(), rhs.reg())));
             }
 #endif
 #if defined(TT_HAS_SSE)
             if constexpr (is_f32x4) {
-                return static_cast<size_t>(_mm_movemask_ps(_mm_cmpneq_ps(lhs.reg(), rhs.reg())));
+                return static_cast<std::size_t>(_mm_movemask_ps(_mm_cmpneq_ps(lhs.reg(), rhs.reg())));
             }
 #endif
         }
 
-        constexpr size_t not_mask = (1 << N) - 1;
+        constexpr std::size_t not_mask = (1 << N) - 1;
         return eq(lhs, rhs) ^ not_mask;
     }
 
-    [[nodiscard]] friend constexpr size_t gt(numeric_array const &lhs, numeric_array const &rhs) noexcept
-        requires(N <= sizeof(size_t) * CHAR_BIT)
+    [[nodiscard]] friend constexpr std::size_t gt(numeric_array const &lhs, numeric_array const &rhs) noexcept
+        requires(N <= sizeof(std::size_t) * CHAR_BIT)
     {
         if (not std::is_constant_evaluated()) {
 #if defined(TT_HAS_AVX2)
             if constexpr (is_i64x4) {
-                return static_cast<size_t>(_mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpgt_epi64(lhs.reg(), rhs.reg()))));
+                return static_cast<std::size_t>(_mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpgt_epi64(lhs.reg(), rhs.reg()))));
             } else if constexpr (is_i32x8) {
-                return static_cast<size_t>(_mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpgt_epi32(lhs.reg(), rhs.reg()))));
+                return static_cast<std::size_t>(_mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpgt_epi32(lhs.reg(), rhs.reg()))));
             } else if constexpr (is_i8x32) {
-                return static_cast<size_t>(_mm256_movemask_epi8(_mm256_cmpgt_epi8(lhs.reg(), rhs.reg())));
+                return static_cast<std::size_t>(_mm256_movemask_epi8(_mm256_cmpgt_epi8(lhs.reg(), rhs.reg())));
             }
 #endif
 #if defined(TT_HAS_AVX)
             if constexpr (is_f64x4) {
-                return static_cast<size_t>(_mm256_movemask_pd(_mm256_cmp_pd(lhs.reg(), rhs.reg(), _CMP_GT_OQ)));
+                return static_cast<std::size_t>(_mm256_movemask_pd(_mm256_cmp_pd(lhs.reg(), rhs.reg(), _CMP_GT_OQ)));
             } else if constexpr (is_f32x8) {
-                return static_cast<size_t>(_mm256_movemask_ps(_mm256_cmp_ps(lhs.reg(), rhs.reg(), _CMP_GT_OQ)));
+                return static_cast<std::size_t>(_mm256_movemask_ps(_mm256_cmp_ps(lhs.reg(), rhs.reg(), _CMP_GT_OQ)));
             }
 #endif
 #if defined(TT_HAS_SSE4_1)
             if constexpr (is_i64x2) {
-                return static_cast<size_t>(_mm_movemask_pd(_mm_castsi128_pd(_mm_cmpgt_epi64(lhs.reg(), rhs.reg()))));
+                return static_cast<std::size_t>(_mm_movemask_pd(_mm_castsi128_pd(_mm_cmpgt_epi64(lhs.reg(), rhs.reg()))));
             }
 #endif
 #if defined(TT_HAS_SSE2)
             if constexpr (is_f64x2) {
-                return static_cast<size_t>(_mm_movemask_pd(_mm_cmpgt_pd(lhs.reg(), rhs.reg())));
+                return static_cast<std::size_t>(_mm_movemask_pd(_mm_cmpgt_pd(lhs.reg(), rhs.reg())));
             } else if constexpr (is_i32x4) {
-                return static_cast<size_t>(_mm_movemask_ps(_mm_castsi128_ps(_mm_cmpgt_epi32(lhs.reg(), rhs.reg()))));
+                return static_cast<std::size_t>(_mm_movemask_ps(_mm_castsi128_ps(_mm_cmpgt_epi32(lhs.reg(), rhs.reg()))));
             } else if constexpr (is_i8x16) {
-                return static_cast<size_t>(_mm_movemask_epi8(_mm_cmpgt_epi8(lhs.reg(), rhs.reg())));
+                return static_cast<std::size_t>(_mm_movemask_epi8(_mm_cmpgt_epi8(lhs.reg(), rhs.reg())));
             }
 #endif
 #if defined(TT_HAS_SSE)
             if constexpr (is_f32x4) {
-                return static_cast<size_t>(_mm_movemask_ps(_mm_cmpgt_ps(lhs.reg(), rhs.reg())));
+                return static_cast<std::size_t>(_mm_movemask_ps(_mm_cmpgt_ps(lhs.reg(), rhs.reg())));
             }
 #endif
         }
 
         unsigned int r = 0;
-        for (size_t i = 0; i != N; ++i) {
-            r |= static_cast<size_t>(lhs.v[i] > rhs.v[i]) << i;
+        for (std::size_t i = 0; i != N; ++i) {
+            r |= static_cast<std::size_t>(lhs.v[i] > rhs.v[i]) << i;
         }
         return r;
     }
 
-    [[nodiscard]] friend constexpr size_t lt(numeric_array const &lhs, numeric_array const &rhs) noexcept
-        requires(N <= sizeof(size_t) * CHAR_BIT)
+    [[nodiscard]] friend constexpr std::size_t lt(numeric_array const &lhs, numeric_array const &rhs) noexcept
+        requires(N <= sizeof(std::size_t) * CHAR_BIT)
     {
         if (not std::is_constant_evaluated()) {
 #if defined(TT_HAS_AVX)
             if constexpr (is_f64x4) {
-                return static_cast<size_t>(_mm256_movemask_pd(_mm256_cmp_pd(lhs.reg(), rhs.reg(), _CMP_LT_OQ)));
+                return static_cast<std::size_t>(_mm256_movemask_pd(_mm256_cmp_pd(lhs.reg(), rhs.reg(), _CMP_LT_OQ)));
             } else if constexpr (is_f32x8) {
-                return static_cast<size_t>(_mm256_movemask_ps(_mm256_cmp_ps(lhs.reg(), rhs.reg(), _CMP_LT_OQ)));
+                return static_cast<std::size_t>(_mm256_movemask_ps(_mm256_cmp_ps(lhs.reg(), rhs.reg(), _CMP_LT_OQ)));
             }
 #endif
 #if defined(TT_HAS_SSE2)
             if constexpr (is_f64x2) {
-                return static_cast<size_t>(_mm_movemask_pd(_mm_cmplt_pd(lhs.reg(), rhs.reg())));
+                return static_cast<std::size_t>(_mm_movemask_pd(_mm_cmplt_pd(lhs.reg(), rhs.reg())));
             } else if constexpr (is_i32x4) {
-                return static_cast<size_t>(_mm_movemask_ps(_mm_castsi128_ps(_mm_cmplt_epi32(lhs.reg(), rhs.reg()))));
+                return static_cast<std::size_t>(_mm_movemask_ps(_mm_castsi128_ps(_mm_cmplt_epi32(lhs.reg(), rhs.reg()))));
             } else if constexpr (is_i8x16) {
-                return static_cast<size_t>(_mm_movemask_epi8(_mm_cmplt_epi8(lhs.reg(), rhs.reg())));
+                return static_cast<std::size_t>(_mm_movemask_epi8(_mm_cmplt_epi8(lhs.reg(), rhs.reg())));
             }
 #endif
 #if defined(TT_HAS_SSE)
             if constexpr (is_f32x4) {
-                return static_cast<size_t>(_mm_movemask_ps(_mm_cmplt_ps(lhs.reg(), rhs.reg())));
+                return static_cast<std::size_t>(_mm_movemask_ps(_mm_cmplt_ps(lhs.reg(), rhs.reg())));
             }
 #endif
         }
@@ -1735,25 +1735,25 @@ struct numeric_array {
         return gt(rhs, lhs);
     }
 
-    [[nodiscard]] friend constexpr size_t ge(numeric_array const &lhs, numeric_array const &rhs) noexcept
-        requires(N <= sizeof(size_t) * CHAR_BIT)
+    [[nodiscard]] friend constexpr std::size_t ge(numeric_array const &lhs, numeric_array const &rhs) noexcept
+        requires(N <= sizeof(std::size_t) * CHAR_BIT)
     {
         if (not std::is_constant_evaluated()) {
 #if defined(TT_HAS_AVX)
             if constexpr (is_f64x4) {
-                return static_cast<size_t>(_mm256_movemask_pd(_mm256_cmp_pd(lhs.reg(), rhs.reg(), _CMP_GE_OQ)));
+                return static_cast<std::size_t>(_mm256_movemask_pd(_mm256_cmp_pd(lhs.reg(), rhs.reg(), _CMP_GE_OQ)));
             } else if constexpr (is_f32x8) {
-                return static_cast<size_t>(_mm256_movemask_ps(_mm256_cmp_ps(lhs.reg(), rhs.reg(), _CMP_GE_OQ)));
+                return static_cast<std::size_t>(_mm256_movemask_ps(_mm256_cmp_ps(lhs.reg(), rhs.reg(), _CMP_GE_OQ)));
             }
 #endif
 #if defined(TT_HAS_SSE2)
             if constexpr (is_f64x2) {
-                return static_cast<size_t>(_mm_movemask_pd(_mm_cmpge_pd(lhs.reg(), rhs.reg())));
+                return static_cast<std::size_t>(_mm_movemask_pd(_mm_cmpge_pd(lhs.reg(), rhs.reg())));
             }
 #endif
 #if defined(TT_HAS_SSE)
             if constexpr (is_f32x4) {
-                return static_cast<size_t>(_mm_movemask_ps(_mm_cmpge_ps(lhs.reg(), rhs.reg())));
+                return static_cast<std::size_t>(_mm_movemask_ps(_mm_cmpge_ps(lhs.reg(), rhs.reg())));
             }
 #endif
         }
@@ -1762,25 +1762,25 @@ struct numeric_array {
         return gt(lhs, rhs) | eq(lhs, rhs);
     }
 
-    [[nodiscard]] friend constexpr size_t le(numeric_array const &lhs, numeric_array const &rhs) noexcept
-        requires(N <= sizeof(size_t) * CHAR_BIT)
+    [[nodiscard]] friend constexpr std::size_t le(numeric_array const &lhs, numeric_array const &rhs) noexcept
+        requires(N <= sizeof(std::size_t) * CHAR_BIT)
     {
         if (not std::is_constant_evaluated()) {
 #if defined(TT_HAS_AVX)
             if constexpr (is_f64x4) {
-                return static_cast<size_t>(_mm256_movemask_pd(_mm256_cmp_pd(lhs.reg(), rhs.reg(), _CMP_LE_OQ)));
+                return static_cast<std::size_t>(_mm256_movemask_pd(_mm256_cmp_pd(lhs.reg(), rhs.reg(), _CMP_LE_OQ)));
             } else if constexpr (is_f32x8) {
-                return static_cast<size_t>(_mm256_movemask_ps(_mm256_cmp_ps(lhs.reg(), rhs.reg(), _CMP_LE_OQ)));
+                return static_cast<std::size_t>(_mm256_movemask_ps(_mm256_cmp_ps(lhs.reg(), rhs.reg(), _CMP_LE_OQ)));
             }
 #endif
 #if defined(TT_HAS_SSE2)
             if constexpr (is_f64x2) {
-                return static_cast<size_t>(_mm_movemask_pd(_mm_cmple_pd(lhs.reg(), rhs.reg())));
+                return static_cast<std::size_t>(_mm_movemask_pd(_mm_cmple_pd(lhs.reg(), rhs.reg())));
             }
 #endif
 #if defined(TT_HAS_SSE)
             if constexpr (is_f32x4) {
-                return static_cast<size_t>(_mm_movemask_ps(_mm_cmple_ps(lhs.reg(), rhs.reg())));
+                return static_cast<std::size_t>(_mm_movemask_ps(_mm_cmple_ps(lhs.reg(), rhs.reg())));
             }
 #endif
         }
@@ -1817,7 +1817,7 @@ struct numeric_array {
         constexpr auto ones = std::bit_cast<T>(~uint_type{0});
 
         auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             r[i] = lhs.v[i] > rhs.v[i] ? ones : T{0};
         }
         return r;
@@ -1860,7 +1860,7 @@ struct numeric_array {
         }
 
         auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] << rhs;
         }
         return r;
@@ -1906,7 +1906,7 @@ struct numeric_array {
         }
 
         auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] >> rhs;
         }
         return r;
@@ -1953,7 +1953,7 @@ struct numeric_array {
         using uint_type = make_uintxx_t<sizeof(T) * CHAR_BIT>;
 
         auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             r.v[i] =
                 std::bit_cast<T>(static_cast<uint_type>(std::bit_cast<uint_type>(lhs.v[i]) | std::bit_cast<uint_type>(rhs.v[i])));
         }
@@ -2009,7 +2009,7 @@ struct numeric_array {
         }
 
         auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] & rhs.v[i];
         }
         return r;
@@ -2064,7 +2064,7 @@ struct numeric_array {
         }
 
         auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] ^ rhs.v[i];
         }
         return r;
@@ -2122,7 +2122,7 @@ struct numeric_array {
         }
 
         auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] + rhs.v[i];
         }
         return r;
@@ -2180,7 +2180,7 @@ struct numeric_array {
         }
 
         auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] - rhs.v[i];
         }
         return r;
@@ -2233,7 +2233,7 @@ struct numeric_array {
         }
 
         auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] * rhs.v[i];
         }
         return r;
@@ -2272,7 +2272,7 @@ struct numeric_array {
         }
 
         auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             r.v[i] = lhs.v[i] / rhs.v[i];
         }
         return r;
@@ -2357,7 +2357,7 @@ struct numeric_array {
         }
 
         auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             r.v[i] = std::min(lhs.v[i], rhs.v[i]);
         }
         return r;
@@ -2416,7 +2416,7 @@ struct numeric_array {
         }
 
         auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             r.v[i] = std::max(lhs.v[i], rhs.v[i]);
         }
         return r;
@@ -2465,8 +2465,8 @@ struct numeric_array {
 
         auto r = numeric_array{};
 
-        size_t src_i = 0;
-        size_t dst_i = 0;
+        std::size_t src_i = 0;
+        std::size_t dst_i = 0;
         while (src_i != N) {
             auto tmp = lhs[src_i++];
             tmp += lhs[src_i++];
@@ -2519,8 +2519,8 @@ struct numeric_array {
 
         auto r = numeric_array{};
 
-        size_t src_i = 0;
-        size_t dst_i = 0;
+        std::size_t src_i = 0;
+        std::size_t dst_i = 0;
         while (src_i != N) {
             auto tmp = lhs[src_i++];
             tmp -= lhs[src_i++];
@@ -2540,10 +2540,10 @@ struct numeric_array {
      *
      * @tparam Mask bit mask where '1' means to add, '0' means to subtract.
      */
-    template<size_t Mask>
+    template<std::size_t Mask>
     [[nodiscard]] friend constexpr numeric_array addsub(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
-        constexpr size_t not_mask = (1 << N) - 1;
+        constexpr std::size_t not_mask = (1 << N) - 1;
         return lhs + neg<Mask ^ not_mask>(rhs);
     }
 
@@ -2636,7 +2636,7 @@ struct numeric_array {
         }
 
         auto r = numeric_array{};
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             if (rhs[i] >= 0) {
                 r[i] = lhs[rhs[i] & 0xf];
             } else {
@@ -2721,7 +2721,7 @@ struct numeric_array {
         auto r = std::string{};
 
         r += '(';
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             if (i != 0) {
                 r += "; ";
             }
@@ -2740,7 +2740,7 @@ struct numeric_array {
      * This function copies the lhs, then inserts one element from rhs into the result.
      * It also can clear any of the elements to zero.
      */
-    template<size_t FromElement, size_t ToElement>
+    template<std::size_t FromElement, std::size_t ToElement>
     [[nodiscard]] constexpr friend numeric_array insert(numeric_array const &lhs, numeric_array const &rhs)
     {
         auto r = numeric_array{};
@@ -2786,7 +2786,7 @@ struct numeric_array {
 #endif
         }
 
-        for (size_t i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             r[i] = (i == ToElement) ? rhs[FromElement] : lhs[i];
         }
 
@@ -2903,7 +2903,7 @@ struct numeric_array {
     template<int I, typename First, typename... Rest>
     friend constexpr void transpose_detail(First const &first, Rest const &...rest, std::array<numeric_array, N> &r) noexcept
     {
-        for (size_t j = 0; j != N; ++j) {
+        for (std::size_t j = 0; j != N; ++j) {
             r[j][I] = first[j];
         }
 

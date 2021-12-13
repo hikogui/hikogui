@@ -25,13 +25,13 @@ class gfx_device;
 struct paged_image {
     enum class state_type { uninitialized, drawing, uploaded };
 
-    static constexpr size_t page_size = 64;
+    static constexpr std::size_t page_size = 64;
 
     mutable std::atomic<state_type> state = state_type::uninitialized;
     gfx_device *device = nullptr;
-    size_t width;
-    size_t height;
-    std::vector<size_t> pages;
+    std::size_t width;
+    std::size_t height;
+    std::vector<std::size_t> pages;
 
     ~paged_image();
     constexpr paged_image() noexcept = default;
@@ -40,7 +40,7 @@ struct paged_image {
     paged_image(paged_image const &other) = delete;
     paged_image &operator=(paged_image const &other) = delete;
 
-    paged_image(gfx_surface const *surface, size_t width, size_t height) noexcept;
+    paged_image(gfx_surface const *surface, std::size_t width, std::size_t height) noexcept;
     paged_image(gfx_surface const *surface, pixel_map<sfloat_rgba16> const &image) noexcept;
     paged_image(gfx_surface const *surface, png const &image) noexcept;
 
@@ -54,7 +54,7 @@ struct paged_image {
         return extent2{narrow_cast<float>(width), narrow_cast<float>(height)};
     }
 
-    [[nodiscard]] constexpr std::pair<size_t, size_t> size_in_int_pages() const noexcept
+    [[nodiscard]] constexpr std::pair<std::size_t, std::size_t> size_in_int_pages() const noexcept
     {
         ttlet num_columns = (width + page_size - 1) / page_size;
         ttlet num_rows = (height + page_size - 1) / page_size;

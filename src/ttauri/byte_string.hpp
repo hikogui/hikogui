@@ -44,27 +44,27 @@ public:
         return reinterpret_cast<std::byte *>(std::memset(p, static_cast<uint8_t>(a), count));
     }
 
-    static std::byte *move(std::byte *dest, std::byte const *src, size_t count)
+    static std::byte *move(std::byte *dest, std::byte const *src, std::size_t count)
     {
         return reinterpret_cast<std::byte *>(std::memmove(dest, src, count));
     }
 
-    static std::byte *copy(std::byte *dest, std::byte const *src, size_t count)
+    static std::byte *copy(std::byte *dest, std::byte const *src, std::size_t count)
     {
         return reinterpret_cast<std::byte *>(std::memcpy(dest, src, count));
     }
 
-    static int compare(std::byte const *a, std::byte const *b, size_t count)
+    static int compare(std::byte const *a, std::byte const *b, std::size_t count)
     {
         return std::memcmp(a, b, count);
     }
 
-    static size_t length(std::byte const *s)
+    static std::size_t length(std::byte const *s)
     {
         return std::strlen(reinterpret_cast<char const *>(s));
     }
 
-    static std::byte const *find(std::byte const *s, size_t count, std::byte const &ch)
+    static std::byte const *find(std::byte const *s, std::size_t count, std::byte const &ch)
     {
         return reinterpret_cast<std::byte const *>(
             std::memchr(reinterpret_cast<char const *>(s), static_cast<uint8_t>(ch), count));

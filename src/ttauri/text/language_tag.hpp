@@ -24,7 +24,7 @@ public:
     explicit language_tag(std::string_view tag) noexcept : tag(tag) {}
     explicit language_tag(char const *tag) noexcept : tag(tag) {}
 
-    [[nodiscard]] size_t hash() const noexcept
+    [[nodiscard]] std::size_t hash() const noexcept
     {
         return std::hash<std::string>{}(tag);
     }
@@ -39,12 +39,7 @@ public:
         return language_tag{split(tag, '-').front()};
     }
 
-    [[nodiscard]] bool operator==(language_tag const &rhs) const noexcept
-    {
-        return tag == rhs.tag;
-    }
-
-    [[nodiscard]] bool operator!=(language_tag const &rhs) const noexcept = default;
+    [[nodiscard]] friend bool operator==(language_tag const &, language_tag const &) noexcept = default;
 
     [[nodiscard]] friend std::string to_string(language_tag const &url) noexcept
     {
@@ -65,7 +60,7 @@ private:
 template<>
 class std::hash<tt::language_tag> {
 public:
-    [[nodiscard]] size_t operator()(tt::language_tag const &rhs) const noexcept
+    [[nodiscard]] std::size_t operator()(tt::language_tag const &rhs) const noexcept
     {
         return rhs.hash();
     }

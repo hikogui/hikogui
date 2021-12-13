@@ -168,7 +168,7 @@ static std::optional<std::vector<std::pair<float, float>>> getFillSpansAtY(std::
     ttlet uniqueEnd = std::unique(xValues.begin(), xValues.end());
 
     // After removing duplicates, we should end up with pairs of x values.
-    size_t const uniqueValueCount = (uniqueEnd - xValues.begin());
+    std::size_t const uniqueValueCount = (uniqueEnd - xValues.begin());
 
     if (uniqueValueCount % 2 != 0) {
         // Something is wrong in solving the curves. Probably numeric instability.
@@ -179,7 +179,7 @@ static std::optional<std::vector<std::pair<float, float>>> getFillSpansAtY(std::
     // Create pairs of values.
     auto r = std::vector<std::pair<float, float>>{};
     r.reserve(uniqueValueCount / 2);
-    for (size_t i = 0; i < uniqueValueCount; i += 2) {
+    for (std::size_t i = 0; i < uniqueValueCount; i += 2) {
         r.emplace_back(xValues[i], xValues[i + 1]);
     }
     return r;
@@ -234,10 +234,10 @@ static void fillRowSpan(pixel_row<uint8_t> row, float const startX, float const 
         return;
     }
 
-    ttlet startX_int = narrow_cast<size_t>(startX);
+    ttlet startX_int = narrow_cast<std::size_t>(startX);
     ttlet endXplusOne = endX + 1.0f;
-    ttlet endX_int = narrow_cast<size_t>(endXplusOne);
-    ttlet startColumn = std::max(startX_int, size_t{0});
+    ttlet endX_int = narrow_cast<std::size_t>(endXplusOne);
+    ttlet startColumn = std::max(startX_int, std::size_t{0});
     ttlet endColumn = std::min(endX_int, row.width());
     ttlet nrColumns = endColumn - startColumn;
 
@@ -250,7 +250,7 @@ static void fillRowSpan(pixel_row<uint8_t> row, float const startX, float const 
     }
 }
 
-static void fillRow(pixel_row<uint8_t> row, size_t rowY, std::vector<bezier_curve> const &curves) noexcept
+static void fillRow(pixel_row<uint8_t> row, std::size_t rowY, std::vector<bezier_curve> const &curves) noexcept
 {
     // 5 times super sampling.
     for (float y = rowY + 0.1f; y < (rowY + 1); y += 0.2f) {
@@ -272,7 +272,7 @@ static void fillRow(pixel_row<uint8_t> row, size_t rowY, std::vector<bezier_curv
 
 void fill(pixel_map<uint8_t> &image, std::vector<bezier_curve> const &curves) noexcept
 {
-    for (size_t rowNr = 0; rowNr < image.height(); rowNr++) {
+    for (std::size_t rowNr = 0; rowNr < image.height(); rowNr++) {
         fillRow(image.at(rowNr), rowNr, curves);
     }
 }
@@ -299,7 +299,7 @@ static void bad_pixels_edges(pixel_map<sdf_r8> &image) noexcept
 {
     // Bottom edge.
     auto row = image[0];
-    for (size_t column_nr = 0; column_nr != image.width(); ++column_nr) {
+    for (std::size_t column_nr = 0; column_nr != image.width(); ++column_nr) {
         auto &pixel = row[column_nr];
         if (static_cast<float>(pixel) > 0.0) {
             pixel.repair();
@@ -308,7 +308,7 @@ static void bad_pixels_edges(pixel_map<sdf_r8> &image) noexcept
 
     // Top edge
     row = image[image.height() - 1];
-    for (size_t column_nr = 0; column_nr != image.width(); ++column_nr) {
+    for (std::size_t column_nr = 0; column_nr != image.width(); ++column_nr) {
         auto &pixel = row[column_nr];
         if (static_cast<float>(pixel) > 0.0) {
             pixel.repair();
@@ -316,7 +316,7 @@ static void bad_pixels_edges(pixel_map<sdf_r8> &image) noexcept
     }
 
     // Left and right edge
-    for (size_t row_nr = 0; row_nr != image.height(); ++row_nr) {
+    for (std::size_t row_nr = 0; row_nr != image.height(); ++row_nr) {
         row = image[row_nr];
 
         auto &left_pixel = row[0];
@@ -333,11 +333,11 @@ static void bad_pixels_edges(pixel_map<sdf_r8> &image) noexcept
 
 static void bad_pixels_horizontally(pixel_map<sdf_r8> &image) noexcept
 {
-    for (size_t row_nr = 0; row_nr != image.height(); ++row_nr) {
+    for (std::size_t row_nr = 0; row_nr != image.height(); ++row_nr) {
         auto row = image[row_nr];
         // The left edge of the signed distance field should be outside of the glyph -float_max
         auto prev_pixel_value = sdf_r8(-std::numeric_limits<float>::max());
-        for (size_t column_nr = 0; column_nr != image.width(); ++column_nr) {
+        for (std::size_t column_nr = 0; column_nr != image.width(); ++column_nr) {
             auto &pixel = row[column_nr];
             ttlet pixel_value = static_cast<float>(pixel);
 

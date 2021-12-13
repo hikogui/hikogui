@@ -65,7 +65,7 @@ TEST(gap_buffer, insert_before)
     ASSERT_EQ(tmp, e);
 
     // Insert to at least two reallocation.
-    for (size_t i = 0; i != 500; ++i) {
+    for (std::size_t i = 0; i != 500; ++i) {
         // Get a semi random number indexing into the current gap_buffer and vector, or one beyond.
         auto index = hash_mix_two(i, i) % (i + 1);
 
@@ -82,7 +82,7 @@ TEST(gap_buffer, insert_after)
     ASSERT_EQ(tmp, e);
 
     // Insert to at least two reallocation.
-    for (size_t i = 1; i != 500; ++i) {
+    for (std::size_t i = 1; i != 500; ++i) {
         // Get a semi random number indexing into the current gap_buffer and vector, or one beyond.
         auto index = hash_mix_two(i, i) % i;
 
@@ -105,11 +105,11 @@ TEST(gap_buffer, insert_after_last)
     ASSERT_EQ(result, "123");
 }
 
-std::pair<gap_buffer<int>, std::vector<int>> gap_buffer_test_initial_data(size_t nr_elements)
+std::pair<gap_buffer<int>, std::vector<int>> gap_buffer_test_initial_data(std::size_t nr_elements)
 {
     std::pair<gap_buffer<int>, std::vector<int>> r;
 
-    for (size_t i = 0; i != nr_elements; ++i) {
+    for (std::size_t i = 0; i != nr_elements; ++i) {
         r.first.push_back(narrow_cast<int>(i * 3));
         r.second.push_back(narrow_cast<int>(i * 3));
     }
@@ -175,7 +175,7 @@ TEST(gap_buffer, insert_after_clear)
     ASSERT_TRUE(e_cap >= start_size);
 
     // Insert to at least two reallocation.
-    for (size_t i = 0; i != start_size; ++i) {
+    for (std::size_t i = 0; i != start_size; ++i) {
         // Get a semi random number indexing into the current gap_buffer and vector, or one beyond.
         auto index = hash_mix_two(i, i) % (i + 1);
 
@@ -207,7 +207,7 @@ TEST(gap_buffer, insert_after_reserve)
     ASSERT_TRUE(e_cap >= start_size);
 
     // Insert to at least two reallocation.
-    for (size_t i = 0; i != start_size; ++i) {
+    for (std::size_t i = 0; i != start_size; ++i) {
         // Get a semi random number indexing into the current gap_buffer and vector, or one beyond.
         auto index = hash_mix_two(i, i) % (i + 1);
 

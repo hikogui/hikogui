@@ -23,12 +23,12 @@ class pixel_map;
 namespace pipeline_image {
 
 struct device_shared {
-    static constexpr size_t atlas_num_pages_per_axis = 16;
-    static constexpr size_t atlas_num_pages_per_image = atlas_num_pages_per_axis * atlas_num_pages_per_axis;
-    static constexpr size_t atlas_image_axis_size = atlas_num_pages_per_axis * (paged_image::page_size + 2);
-    static constexpr size_t atlas_maximum_num_images = 16;
-    static constexpr size_t staging_image_width = 1024;
-    static constexpr size_t staging_image_height = 1024;
+    static constexpr std::size_t atlas_num_pages_per_axis = 16;
+    static constexpr std::size_t atlas_num_pages_per_image = atlas_num_pages_per_axis * atlas_num_pages_per_axis;
+    static constexpr std::size_t atlas_image_axis_size = atlas_num_pages_per_axis * (paged_image::page_size + 2);
+    static constexpr std::size_t atlas_maximum_num_images = 16;
+    static constexpr std::size_t staging_image_width = 1024;
+    static constexpr std::size_t staging_image_height = 1024;
 
     gfx_device_vulkan const &device;
 
@@ -59,11 +59,11 @@ struct device_shared {
 
     /** Allocate pages from the atlas.
      */
-    std::vector<size_t> allocate_pages(size_t num_pages) noexcept;
+    std::vector<std::size_t> allocate_pages(std::size_t num_pages) noexcept;
 
     /** Deallocate pages back to the atlas.
      */
-    void free_pages(std::vector<size_t> const &pages) noexcept;
+    void free_pages(std::vector<std::size_t> const &pages) noexcept;
 
     void draw_in_command_buffer(vk::CommandBuffer &commandBuffer);
 
@@ -92,11 +92,11 @@ struct device_shared {
         paged_image const &image) noexcept;
 
 private:
-    std::vector<size_t> _atlas_free_pages;
+    std::vector<std::size_t> _atlas_free_pages;
 
     /** Get a submap of the staging pixel map to draw the image in.
      */
-    tt::pixel_map<sfloat_rgba16> get_staging_pixel_map(size_t width, size_t height)
+    tt::pixel_map<sfloat_rgba16> get_staging_pixel_map(std::size_t width, std::size_t height)
     {
         return get_staging_pixel_map().submap(0, 0, width, height);
     }

@@ -30,7 +30,7 @@ namespace tt::inline v1 {
     speaker_mapping speaker_mapping,
     uint32_t sample_rate) noexcept
 {
-    tt_axiom(std::popcount(static_cast<size_t>(speaker_mapping)) <= num_channels);
+    tt_axiom(std::popcount(static_cast<std::size_t>(speaker_mapping)) <= num_channels);
 
     bool extended = false;
 

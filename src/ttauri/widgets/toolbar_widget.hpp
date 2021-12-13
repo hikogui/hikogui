@@ -5,7 +5,7 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../flow_layout.hpp"
+#include "grid_layout.hpp"
 #include "../alignment.hpp"
 #include <memory>
 #include <ranges>
@@ -80,7 +80,7 @@ public:
 private:
     std::vector<std::unique_ptr<widget>> _left_children;
     std::vector<std::unique_ptr<widget>> _right_children;
-    flow_layout _flow_layout;
+    grid_layout _grid_layout;
 
     void update_constraints_for_child(widget &child, ssize_t index, float &shared_height) noexcept;
 

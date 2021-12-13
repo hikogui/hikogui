@@ -81,7 +81,7 @@ TEST(unicode_text_segmentation, breaks_grapheme)
 
         auto state = grapheme_break_state{};
 
-        for (size_t i = 0; i < test.code_points.size(); i++) {
+        for (std::size_t i = 0; i < test.code_points.size(); i++) {
             ttlet code_point = test.code_points[i];
             ttlet break_opportunities = test.break_opportunities[i];
 

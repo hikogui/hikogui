@@ -21,17 +21,17 @@ struct gstring {
         return graphemes.empty();
     }
 
-    size_t size() const noexcept
+    std::size_t size() const noexcept
     {
         return graphemes.size();
     }
 
-    grapheme const &at(size_t i) const
+    grapheme const &at(std::size_t i) const
     {
         return graphemes.at(i);
     }
 
-    grapheme &at(size_t i)
+    grapheme &at(std::size_t i)
     {
         return graphemes.at(i);
     }
@@ -108,7 +108,7 @@ struct gstring {
         return rhs.cend();
     }
 
-    [[nodiscard]] friend size_t size(gstring const &rhs) noexcept
+    [[nodiscard]] friend std::size_t size(gstring const &rhs) noexcept
     {
         return rhs.size();
     }

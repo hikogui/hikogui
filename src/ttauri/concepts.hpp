@@ -101,7 +101,7 @@ concept sizeable = requires(T v)
 {
     {
         size(v)
-        } -> std::convertible_to<size_t>;
+        } -> std::convertible_to<std::size_t>;
 };
 
 /** Concept for std::is_scoped_enum_v<T>.

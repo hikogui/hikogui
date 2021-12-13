@@ -14,7 +14,7 @@ namespace tt::inline v1 {
 
 draw_context::draw_context(
     gfx_device_vulkan &device,
-    size_t frame_buffer_index,
+    std::size_t frame_buffer_index,
     aarectangle scissor_rectangle,
     vspan<pipeline_box::vertex> &boxVertices,
     vspan<pipeline_image::vertex> &imageVertices,

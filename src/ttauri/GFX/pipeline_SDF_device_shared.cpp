@@ -81,7 +81,7 @@ void device_shared::uploadStagingPixmapToAtlas(glyph_atlas_info const &location)
         {narrow_cast<int32_t>(location.position.x()), narrow_cast<int32_t>(location.position.y()), 0},
         {narrow_cast<uint32_t>(location.size.width()), narrow_cast<uint32_t>(location.size.height()), 1}}};
 
-    auto &atlasTexture = atlasTextures.at(narrow_cast<size_t>(location.position.z()));
+    auto &atlasTexture = atlasTextures.at(narrow_cast<std::size_t>(location.position.z()));
     atlasTexture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eTransferDstOptimal);
 
     device.copyImage(

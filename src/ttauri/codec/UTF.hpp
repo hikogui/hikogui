@@ -22,7 +22,7 @@ template<typename It>
 [[nodiscard]] constexpr std::endian guess_utf16_endianess(It first, It last, std::endian default_guess)
 {
     static_assert(sizeof(*first) == 1, "Expecting an array of 8-bit characters");
-    ttlet num_words = narrow_cast<size_t>(std::distance(first, last) / 2);
+    ttlet num_words = narrow_cast<std::size_t>(std::distance(first, last) / 2);
 
     if (not num_words) {
         return default_guess;
@@ -40,8 +40,8 @@ template<typename It>
     }
 
     // Count the nul bytes in high or low byte of the UTF16 string.
-    size_t count0 = 0;
-    size_t count1 = 0;
+    std::size_t count0 = 0;
+    std::size_t count1 = 0;
     auto it = first;
     for (auto i = 0; i != num_words; ++i) {
         ttlet c0 = static_cast<uint8_t>(*(it++));

@@ -77,16 +77,16 @@ constexpr void append_code_point(std::basic_string<CharT> &r, uint32_t code_poin
 }
 
 template<typename ToCharT, typename FromCharT>
-[[nodiscard]] constexpr size_t guess_num_code_units(std::basic_string_view<FromCharT> const &rhs) noexcept
+[[nodiscard]] constexpr std::size_t guess_num_code_units(std::basic_string_view<FromCharT> const &rhs) noexcept
 {
     return size(rhs);
 }
 
 template<typename ToCharT, typename FromCharT>
-[[nodiscard]] constexpr size_t guess_num_code_units(std::basic_string_view<FromCharT> const &rhs) noexcept
+[[nodiscard]] constexpr std::size_t guess_num_code_units(std::basic_string_view<FromCharT> const &rhs) noexcept
     requires(sizeof(FromCharT) == 1 and sizeof(ToCharT) > 1)
 {
-    size_t r = 0;
+    std::size_t r = 0;
     for (ttlet c : rhs) {
         if ((c & 0xc0) != 0x80) {
             ++r;
@@ -96,10 +96,10 @@ template<typename ToCharT, typename FromCharT>
 }
 
 template<typename ToCharT, typename FromCharT>
-[[nodiscard]] constexpr size_t guess_num_code_units(std::basic_string_view<FromCharT> const &rhs) noexcept
+[[nodiscard]] constexpr std::size_t guess_num_code_units(std::basic_string_view<FromCharT> const &rhs) noexcept
     requires(sizeof(FromCharT) > 1 and sizeof(ToCharT) == 1)
 {
-    size_t r = 0;
+    std::size_t r = 0;
     for (ttlet c : rhs) {
         if (c < 0x80) {
             ++r;

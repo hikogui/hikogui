@@ -58,11 +58,11 @@ public:
     {
         return std::launder(ptr);
     }
-    [[nodiscard]] value_type &operator[](size_t i) noexcept
+    [[nodiscard]] value_type &operator[](std::size_t i) noexcept
     {
         return *std::launder(ptr + i);
     }
-    [[nodiscard]] value_type const &operator[](size_t i) const noexcept
+    [[nodiscard]] value_type const &operator[](std::size_t i) const noexcept
     {
         return *std::launder(ptr + i);
     }
@@ -105,25 +105,10 @@ public:
     {
         return lhs.ptr == rhs.ptr;
     }
-    [[nodiscard]] friend bool operator!=(vspan_iterator const &lhs, vspan_iterator const &rhs) noexcept
+
+    [[nodiscard]] friend auto operator<=>(vspan_iterator const &lhs, vspan_iterator const &rhs) noexcept
     {
-        return lhs.ptr != rhs.ptr;
-    }
-    [[nodiscard]] friend bool operator<(vspan_iterator const &lhs, vspan_iterator const &rhs) noexcept
-    {
-        return lhs.ptr < rhs.ptr;
-    }
-    [[nodiscard]] friend bool operator>(vspan_iterator const &lhs, vspan_iterator const &rhs) noexcept
-    {
-        return lhs.ptr > rhs.ptr;
-    }
-    [[nodiscard]] friend bool operator<=(vspan_iterator const &lhs, vspan_iterator const &rhs) noexcept
-    {
-        return lhs.ptr <= rhs.ptr;
-    }
-    [[nodiscard]] friend bool operator>=(vspan_iterator const &lhs, vspan_iterator const &rhs) noexcept
-    {
-        return lhs.ptr >= rhs.ptr;
+        return lhs.ptr <=> rhs.ptr;
     }
 
     [[nodiscard]] friend vspan_iterator operator+(vspan_iterator const &lhs, ssize_t rhs) noexcept
@@ -199,17 +184,17 @@ public:
         return _end;
     }
 
-    [[nodiscard]] size_t size() const noexcept
+    [[nodiscard]] std::size_t size() const noexcept
     {
         return std::distance(_begin, _end);
     }
 
-    [[nodiscard]] value_type &operator[](size_t i) noexcept
+    [[nodiscard]] value_type &operator[](std::size_t i) noexcept
     {
         tt_axiom(i < size());
         return *std::launder(_begin + i);
     }
-    [[nodiscard]] value_type const &operator[](size_t i) const noexcept
+    [[nodiscard]] value_type const &operator[](std::size_t i) const noexcept
     {
         tt_axiom(i < size());
         return *std::launder(_begin + i);

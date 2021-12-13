@@ -17,7 +17,7 @@
 
 namespace tt::inline v1 {
 
-paged_image::paged_image(gfx_surface const *surface, size_t width, size_t height) noexcept :
+paged_image::paged_image(gfx_surface const *surface, std::size_t width, std::size_t height) noexcept :
     device(nullptr), width(width), height(height), pages()
 {
     if (surface == nullptr) {
@@ -39,7 +39,7 @@ paged_image::paged_image(gfx_surface const *surface, size_t width, size_t height
 }
 
 paged_image::paged_image(gfx_surface const *surface, pixel_map<sfloat_rgba16> const &image) noexcept :
-    paged_image(surface, narrow_cast<size_t>(image.width()), narrow_cast<size_t>(image.height()))
+    paged_image(surface, narrow_cast<std::size_t>(image.width()), narrow_cast<std::size_t>(image.height()))
 {
     if (this->device) {
         ttlet lock = std::scoped_lock(gfx_system_mutex);
@@ -48,7 +48,7 @@ paged_image::paged_image(gfx_surface const *surface, pixel_map<sfloat_rgba16> co
 }
 
 paged_image::paged_image(gfx_surface const *surface, png const &image) noexcept :
-    paged_image(surface, narrow_cast<size_t>(image.width()), narrow_cast<size_t>(image.height()))
+    paged_image(surface, narrow_cast<std::size_t>(image.width()), narrow_cast<std::size_t>(image.height()))
 {
     if (this->device) {
         ttlet lock = std::scoped_lock(gfx_system_mutex);

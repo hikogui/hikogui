@@ -50,7 +50,7 @@ public:
         "Type of a managing container can not be const, volatile nor a reference");
     using value_type = T;
     using allocator_type = Allocator;
-    using size_type = size_t;
+    using size_type = std::size_t;
     using difference_type = ptrdiff_t;
     using reference = T &;
     using const_reference = T const &;
@@ -352,9 +352,9 @@ public:
         tt_axiom(holds_invariant());
     }
 
-    [[nodiscard]] size_t size() const noexcept
+    [[nodiscard]] std::size_t size() const noexcept
     {
-        return static_cast<size_t>(_it_end - _begin);
+        return static_cast<std::size_t>(_it_end - _begin);
     }
 
     [[nodiscard]] bool empty() const noexcept
@@ -362,12 +362,12 @@ public:
         return size() == 0;
     }
 
-    [[nodiscard]] size_t capacity() const noexcept
+    [[nodiscard]] std::size_t capacity() const noexcept
     {
         return size() + _gap_size;
     }
 
-    void reserve(size_t new_capacity) noexcept
+    void reserve(std::size_t new_capacity) noexcept
     {
         ttlet extra_capacity = static_cast<ssize_t>(new_capacity) - capacity();
         if (extra_capacity <= 0) {
@@ -704,7 +704,7 @@ private:
     size_type _gap_size;
 
 #if TT_BUILT_TYPE == TT_BT_DEBUG
-    size_t _version = 0;
+    std::size_t _version = 0;
 #endif
 
     [[no_unique_address]] allocator_type _allocator;
@@ -881,7 +881,7 @@ public:
     static constexpr bool is_const = std::is_const_v<T>;
 
     using value_type = std::remove_cv_t<T>;
-    using size_type = size_t;
+    using size_type = std::size_t;
     using difference_type = ptrdiff_t;
     using pointer = value_type *;
     using const_pointer = value_type const *;
@@ -916,7 +916,7 @@ public:
         T *it_ptr
 #if TT_BUILT_TYPE == TT_BT_DEBUG
         ,
-        size_t version
+        std::size_t version
 #endif
         ) noexcept :
         _buffer(buffer),
@@ -1044,7 +1044,7 @@ private:
     gap_buffer_type *_buffer;
     T *_it_ptr;
 #if TT_BUILT_TYPE == TT_BT_DEBUG
-    size_t _version;
+    std::size_t _version;
 #endif
 
     [[nodiscard]] gap_buffer_iterator(gap_buffer_iterator<value_type const> const &other) noexcept requires(!is_const) :

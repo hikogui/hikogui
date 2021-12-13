@@ -32,7 +32,7 @@ namespace std {
 
 template<>
 struct hash<tt::datum> {
-    [[nodiscard]] constexpr size_t operator()(tt::datum const &rhs) const noexcept;
+    [[nodiscard]] constexpr std::size_t operator()(tt::datum const &rhs) const noexcept;
 };
 
 } // namespace std
@@ -652,7 +652,7 @@ public:
         return _tag == tag_type::flow_continue;
     }
 
-    [[nodiscard]] constexpr size_t hash() const noexcept
+    [[nodiscard]] constexpr std::size_t hash() const noexcept
     {
         switch (_tag) {
         case tag_type::floating_point: return std::hash<double>{}(_value._double);
@@ -668,14 +668,14 @@ public:
         }
         case tag_type::string: return std::hash<std::string>{}(*_value._string);
         case tag_type::vector: {
-            size_t r = 0;
+            std::size_t r = 0;
             for (ttlet &v : *_value._vector) {
                 r = hash_mix(r, v.hash());
             }
             return r;
         }
         case tag_type::map: {
-            size_t r = 0;
+            std::size_t r = 0;
             for (ttlet &kv : *_value._map) {
                 r = hash_mix(r, kv.first.hash(), kv.second.hash());
             }
@@ -687,7 +687,7 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr size_t size() const
+    [[nodiscard]] constexpr std::size_t size() const
     {
         if (ttlet *s = get_if<std::string>(*this)) {
             return s->size();
@@ -702,7 +702,7 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr friend size_t size(datum const &rhs)
+    [[nodiscard]] constexpr friend std::size_t size(datum const &rhs)
     {
         return rhs.size();
     }
@@ -2161,7 +2161,7 @@ private:
     {
         if (auto vector = get_if<datum::vector_type>(*this)) {
             int r = 0;
-            size_t offset = 0;
+            std::size_t offset = 0;
 
             for (ttlet index : indices.filter(ssize(*vector))) {
                 ttlet match = (*vector)[index - offset].remove(it + 1, it_end);
@@ -2213,7 +2213,7 @@ private:
             ttlet first = slice.begin(vector->size());
             ttlet last = slice.end(vector->size());
 
-            size_t offset = 0;
+            std::size_t offset = 0;
             for (auto index = first; index != last; index += slice.step) {
                 if (index >= 0 and index < vector->size()) {
                     ttlet match = (*this)[index - offset].remove(it + 1, it_end);
@@ -2293,7 +2293,7 @@ private:
     }
 
     [[nodiscard]] datum *
-    find_one_index(size_t index, jsonpath::const_iterator it, jsonpath::const_iterator it_end, bool create) noexcept
+    find_one_index(std::size_t index, jsonpath::const_iterator it, jsonpath::const_iterator it_end, bool create) noexcept
     {
         if (auto *vector = get_if<vector_type>(*this)) {
             if (index < vector->size()) {
@@ -2342,7 +2342,7 @@ private:
 } // namespace tt::inline v1
 
 namespace std {
-[[nodiscard]] constexpr size_t hash<tt::datum>::operator()(tt::datum const &rhs) const noexcept
+[[nodiscard]] constexpr std::size_t hash<tt::datum>::operator()(tt::datum const &rhs) const noexcept
 {
     return rhs.hash();
 }

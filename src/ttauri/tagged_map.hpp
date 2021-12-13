@@ -18,12 +18,12 @@ private:
     std::array<T, sizeof...(Tags)> data;
 
 public:
-    static constexpr size_t size() noexcept
+    static constexpr std::size_t size() noexcept
     {
         return sizeof...(Tags);
     }
 
-    static std::string get_tag(size_t i) noexcept
+    static std::string get_tag(std::size_t i) noexcept
     {
         return tag_at_index<Tags...>(i);
     }
@@ -53,12 +53,12 @@ public:
         return data.end();
     }
 
-    constexpr T &operator[](size_t i) noexcept
+    constexpr T &operator[](std::size_t i) noexcept
     {
         return data[i];
     }
 
-    constexpr T const &operator[](size_t i) const noexcept
+    constexpr T const &operator[](std::size_t i) const noexcept
     {
         return data[i];
     }

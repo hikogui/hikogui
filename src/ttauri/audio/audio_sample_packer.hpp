@@ -24,7 +24,7 @@ public:
      * @param format The sample format.
      * @param stride Number of bytes to step for the next sample of the same channel.
      */
-    audio_sample_packer(audio_sample_format format, size_t stride) noexcept;
+    audio_sample_packer(audio_sample_format format, std::size_t stride) noexcept;
 
     /** Unpack samples.
      *
@@ -32,7 +32,7 @@ public:
      * @param dst A pointer to a byte array to store the packed samples into.
      * @param num_samples Number of samples.
      */
-    void operator()(float const *tt_restrict src, std::byte *tt_restrict dst, size_t num_samples) const noexcept;
+    void operator()(float const *tt_restrict src, std::byte *tt_restrict dst, std::size_t num_samples) const noexcept;
 
 private:
     i8x16 _store_shuffle_indices;
@@ -40,9 +40,9 @@ private:
     f32x4 _multiplier;
     mutable dither _dither;
     audio_sample_format _format;
-    size_t _num_chunks_per_quad;
-    size_t _stride;
-    size_t _chunk_stride;
+    std::size_t _num_chunks_per_quad;
+    std::size_t _stride;
+    std::size_t _chunk_stride;
     int _direction;
     int _start_byte;
     int _align_shift;

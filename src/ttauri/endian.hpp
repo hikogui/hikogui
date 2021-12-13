@@ -12,10 +12,11 @@
 #include <stdlib.h>
 #endif
 #include <bit>
+#include <concepts>
 
 namespace tt::inline v1 {
 
-template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>, int> = 0>
+template<std::unsigned_integral T>
 [[nodiscard]] T byte_swap(T x) noexcept
 {
 #if TT_COMPILER == TT_CC_CLANG || TT_COMPILER == TT_CC_GCC
@@ -43,13 +44,13 @@ template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_
 #endif
 }
 
-template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_signed_v<T>, int> = 0>
+template<std::signed_integral T>
 [[nodiscard]] T byte_swap(T x) noexcept
 {
     return static_cast<T>(byte_swap(static_cast<std::make_unsigned_t<T>>(x)));
 }
 
-template<typename T, std::enable_if_t<std::is_floating_point_v<T>, T> = 0>
+template<std::floating_point T>
 [[nodiscard]] T byte_swap(T x) noexcept
 {
     if constexpr (std::is_same_v<T, float>) {
@@ -65,7 +66,7 @@ template<typename T, std::enable_if_t<std::is_floating_point_v<T>, T> = 0>
     }
 }
 
-template<typename T, std::enable_if_t<std::is_integral_v<T>, int> = 0>
+template<std::integral T>
 [[nodiscard]] T little_to_native(T x)
 {
     if constexpr (std::endian::native == std::endian::little) {
@@ -75,7 +76,7 @@ template<typename T, std::enable_if_t<std::is_integral_v<T>, int> = 0>
     }
 }
 
-template<typename T, std::enable_if_t<std::is_integral_v<T>, int> = 0>
+template<std::integral T>
 [[nodiscard]] T big_to_native(T x)
 {
     if constexpr (std::endian::native == std::endian::big) {
@@ -85,7 +86,7 @@ template<typename T, std::enable_if_t<std::is_integral_v<T>, int> = 0>
     }
 }
 
-template<typename T, std::enable_if_t<std::is_integral_v<T>, int> = 0>
+template<std::integral T>
 [[nodiscard]] T native_to_little(T x)
 {
     if constexpr (std::endian::native == std::endian::little) {
@@ -95,7 +96,7 @@ template<typename T, std::enable_if_t<std::is_integral_v<T>, int> = 0>
     }
 }
 
-template<typename T, std::enable_if_t<std::is_integral_v<T>, int> = 0>
+template<std::integral T>
 [[nodiscard]] T native_to_big(T x)
 {
     if constexpr (std::endian::native == std::endian::big) {
@@ -105,7 +106,7 @@ template<typename T, std::enable_if_t<std::is_integral_v<T>, int> = 0>
     }
 }
 
-template<typename T, std::endian E, size_t A = alignof(T)>
+template<typename T, std::endian E, std::size_t A = alignof(T)>
 struct endian_buf_t {
     alignas(A) std::byte _value[sizeof(T)];
 

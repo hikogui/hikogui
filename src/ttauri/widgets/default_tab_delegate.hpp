@@ -19,7 +19,7 @@ public:
     using value_type = T;
 
     observable<value_type> value;
-    std::unordered_map<size_t, size_t> tab_indices;
+    std::unordered_map<std::size_t, std::size_t> tab_indices;
 
     template<typename Value>
     default_tab_delegate(Value &&value) noexcept : value(std::forward<Value>(value))
@@ -37,7 +37,7 @@ public:
         value.unsubscribe(callback_ptr);
     }
 
-    void add_tab(tab_widget &sender, size_t key, size_t index) noexcept override
+    void add_tab(tab_widget &sender, std::size_t key, std::size_t index) noexcept override
     {
         tt_axiom(not tab_indices.contains(key));
         tab_indices[key] = index;

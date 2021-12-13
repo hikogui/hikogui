@@ -182,7 +182,7 @@ namespace tt::inline v1 {
     std::string r;
     r.reserve(size(str));
 
-    size_t dash_count = 0;
+    std::size_t dash_count = 0;
     for (ttlet c : str) {
         if (is_alpha_num(c)) {
             dash_count = 0;
@@ -207,8 +207,8 @@ namespace tt::inline v1 {
     r.reserve(size(str));
 
     // Do not start with a space.
-    size_t space_count = 1;
-    size_t letter_count = 0;
+    std::size_t space_count = 1;
+    std::size_t letter_count = 0;
     for (ttlet c : str) {
         if (is_alpha_num(c)) {
             if (is_digit(c)) {
@@ -259,24 +259,24 @@ namespace tt::inline v1 {
     return {c_str};
 }
 
-constexpr size_t string_size(sizeable auto str) noexcept
+constexpr std::size_t string_size(sizeable auto str) noexcept
 {
     return size(str);
 }
 
-constexpr size_t string_size(auto str) noexcept
+constexpr std::size_t string_size(auto str) noexcept
 {
     return 1;
 }
 
 template<typename FirstNeedle, typename... Needles>
-[[nodiscard]] std::pair<size_t, size_t>
-string_find_any(std::string_view haystack, size_t pos, FirstNeedle const &first_needle, Needles const &...needles) noexcept
+[[nodiscard]] std::pair<std::size_t, std::size_t>
+string_find_any(std::string_view haystack, std::size_t pos, FirstNeedle const &first_needle, Needles const &...needles) noexcept
 {
     using std::size;
 
-    size_t first = haystack.find(first_needle, pos);
-    size_t last = first + string_size(first_needle);
+    std::size_t first = haystack.find(first_needle, pos);
+    std::size_t last = first + string_size(first_needle);
 
     if (first == std::string_view::npos) {
         first = size(haystack);
@@ -339,14 +339,14 @@ join(std::vector<std::basic_string<CharT>> const &list, std::basic_string_view<C
     std::string r;
 
     if (list.size() > 1) {
-        size_t final_size = (list.size() - 1) * joiner.size();
+        std::size_t final_size = (list.size() - 1) * joiner.size();
         for (ttlet &item : list) {
             final_size += item.size();
         }
         r.reserve(final_size);
     }
 
-    size_t i = 0;
+    std::size_t i = 0;
     for (ttlet &item : list) {
         if (i++ != 0) {
             r += joiner;
@@ -374,7 +374,7 @@ template<typename CharT>
     std::string r;
 
     if (list.size() > 1) {
-        size_t final_size = (list.size() - 1) * joiner.size();
+        std::size_t final_size = (list.size() - 1) * joiner.size();
         for (ttlet &item : list) {
             final_size += item.size();
         }
@@ -413,11 +413,11 @@ template<typename It>
 /** Create an std::array from a one dimensional array, without the last element.
  * Useful for copying a string literal without the nul-termination
  */
-template<typename T, size_t N>
+template<typename T, std::size_t N>
 constexpr auto to_array_without_last(T (&rhs)[N]) noexcept
 {
     auto r = std::array<std::remove_cv_t<T>, N - 1>{};
-    for (size_t i = 0; i != (N - 1); ++i) {
+    for (std::size_t i = 0; i != (N - 1); ++i) {
         r[i] = rhs[i];
     }
     return r;
@@ -426,11 +426,11 @@ constexpr auto to_array_without_last(T (&rhs)[N]) noexcept
 /** Create an std::array from a one dimensional array, without the last element.
  * Useful for copying a string literal without the nul-termination
  */
-template<typename T, size_t N>
+template<typename T, std::size_t N>
 constexpr auto to_array_without_last(T(&&rhs)[N]) noexcept
 {
     auto r = std::array<std::remove_cv_t<T>, N - 1>{};
-    for (size_t i = 0; i != (N - 1); ++i) {
+    for (std::size_t i = 0; i != (N - 1); ++i) {
         r[i] = std::move(rhs[i]);
     }
     return r;
@@ -472,7 +472,7 @@ constexpr auto to_array_without_last(T(&&rhs)[N]) noexcept
             throw parse_error("Could not find terminating zero of a string.");
         }
 
-        auto ws = std::wstring_view{first, narrow_cast<size_t>(it_zero - first)};
+        auto ws = std::wstring_view{first, narrow_cast<std::size_t>(it_zero - first)};
         if (ws.empty()) {
             // The list is terminated with an empty string.
             break;
@@ -494,7 +494,7 @@ constexpr auto to_array_without_last(T(&&rhs)[N]) noexcept
 /** Copy a std::string to new memory.
  * The caller will have to delete [] return value.
  */
-[[nodiscard]] inline char *make_cstr(char const *c_str, size_t size = -1) noexcept
+[[nodiscard]] inline char *make_cstr(char const *c_str, std::size_t size = -1) noexcept
 {
     if (size == -1) {
         size = std::strlen(c_str);

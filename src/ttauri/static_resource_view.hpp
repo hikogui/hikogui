@@ -25,12 +25,12 @@ public:
     static_resource_view(static_resource_view &&other) = default;
     static_resource_view &operator=(static_resource_view &&other) = default;
 
-    [[nodiscard]] size_t offset() const noexcept override
+    [[nodiscard]] std::size_t offset() const noexcept override
     {
         return 0;
     }
 
-    [[nodiscard]] size_t size() const noexcept override
+    [[nodiscard]] std::size_t size() const noexcept override
     {
         return _bytes.size();
     }

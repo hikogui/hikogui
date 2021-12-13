@@ -25,7 +25,7 @@ private:
 
     utc_nanoseconds _previous_frame_time_point;
     std::array<std::chrono::nanoseconds, 15> _frame_duration_data;
-    size_t _frame_duration_counter = 0;
+    std::size_t _frame_duration_counter = 0;
 
     void open_adapter() noexcept;
     void close_adapter() noexcept;

@@ -8,8 +8,8 @@
 
 #include "widget.hpp"
 #include "row_column_delegate.hpp"
+#include "grid_layout.hpp"
 #include "../GUI/theme.hpp"
-#include "../flow_layout.hpp"
 #include "../geometry/axis.hpp"
 #include <memory>
 
@@ -111,37 +111,37 @@ public:
     widget_constraints const &set_constraints() noexcept override
     {
         _layout = {};
-        _flow_layout.clear();
-        _flow_layout.reserve(ssize(_children));
 
         ssize_t index = 0;
 
         auto minimum_thickness = 0.0f;
         auto preferred_thickness = 0.0f;
         auto maximum_thickness = 0.0f;
+        _grid_layout.clear();
         for (ttlet &child : _children) {
             update_constraints_for_child(*child, index++, minimum_thickness, preferred_thickness, maximum_thickness);
         }
+        _grid_layout.commit_constraints();
 
         tt_axiom(index == ssize(_children));
 
         if constexpr (axis == axis::row) {
             return _constraints = {
-                       {_flow_layout.minimum_size(), minimum_thickness},
-                       {_flow_layout.preferred_size(), preferred_thickness},
-                       {_flow_layout.maximum_size(), maximum_thickness}};
+                       {_grid_layout.minimum(), minimum_thickness},
+                       {_grid_layout.preferred(), preferred_thickness},
+                       {_grid_layout.maximum(), maximum_thickness}};
         } else {
             return _constraints = {
-                       {minimum_thickness, _flow_layout.minimum_size()},
-                       {preferred_thickness, _flow_layout.preferred_size()},
-                       {maximum_thickness, _flow_layout.maximum_size()}};
+                       {minimum_thickness, _grid_layout.minimum()},
+                       {preferred_thickness, _grid_layout.preferred()},
+                       {maximum_thickness, _grid_layout.maximum()}};
         }
     }
 
     void set_layout(widget_layout const &layout) noexcept override
     {
         if (compare_store(_layout, layout)) {
-            _flow_layout.set_size(axis == axis::row ? layout.width() : layout.height());
+            _grid_layout.layout(axis == axis::row ? layout.width() : layout.height());
         }
 
         ssize_t index = 0;
@@ -179,7 +179,7 @@ public:
 private:
     std::vector<std::unique_ptr<widget>> _children;
     std::weak_ptr<delegate_type> _delegate;
-    flow_layout _flow_layout;
+    grid_layout _grid_layout;
 
     void update_constraints_for_child(
         widget &child,
@@ -192,7 +192,7 @@ private:
 
         ttlet &child_constraints = child.set_constraints();
         if (axis == axis::row) {
-            _flow_layout.update(
+            _grid_layout.add_constraint(
                 index,
                 child_constraints.minimum.width(),
                 child_constraints.preferred.width(),
@@ -205,7 +205,7 @@ private:
             maximum_thickness = std::max(maximum_thickness, child_constraints.maximum.height() + child_constraints.margin * 2.0f);
 
         } else {
-            _flow_layout.update(
+            _grid_layout.add_constraint(
                 index,
                 child_constraints.minimum.height(),
                 child_constraints.preferred.height(),
@@ -223,15 +223,15 @@ private:
     {
         tt_axiom(is_gui_thread());
 
-        ttlet[child_offset, child_length] = _flow_layout.get_offset_and_size(index++);
+        ttlet[child_position, child_length] = _grid_layout.get_position_and_size(index);
 
         ttlet &child_constraints = child.set_constraints();
         ttlet child_rectangle = axis == axis::row ?
             aarectangle{
-                child_offset, child_constraints.margin, child_length, layout().height() - child_constraints.margin * 2.0f} :
+                child_position, child_constraints.margin, child_length, layout().height() - child_constraints.margin * 2.0f} :
             aarectangle{
                 child_constraints.margin,
-                layout().height() - child_offset - child_length,
+                layout().height() - child_position - child_length,
                 layout().width() - child_constraints.margin * 2.0f,
                 child_length};
 

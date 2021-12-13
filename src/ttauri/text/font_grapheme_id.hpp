@@ -17,7 +17,7 @@ struct font_grapheme_id {
 
     font_grapheme_id(tt::font const &font, grapheme g) noexcept : font(&font), g(std::move(g)) {}
 
-    [[nodiscard]] size_t hash() const noexcept
+    [[nodiscard]] std::size_t hash() const noexcept
     {
         tt_axiom(font);
         return hash_mix(reinterpret_cast<ptrdiff_t>(font), g);
@@ -34,7 +34,7 @@ struct font_grapheme_id {
 
 template<>
 struct std::hash<tt::font_grapheme_id> {
-    [[nodiscard]] size_t operator()(tt::font_grapheme_id const &rhs) const noexcept
+    [[nodiscard]] std::size_t operator()(tt::font_grapheme_id const &rhs) const noexcept
     {
         return rhs.hash();
     }

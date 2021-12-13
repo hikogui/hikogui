@@ -65,7 +65,7 @@ MAKE_FORWARD_VALUE(char const *const &, std::string, char const *)
 #undef MAKE_FORWARD_VALUE
 
 // Copy string literal by pointer.
-template<size_t N>
+template<std::size_t N>
 struct forward_value<char const (&)[N]> {
     using type = char const *;
 

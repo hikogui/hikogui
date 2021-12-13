@@ -161,7 +161,7 @@ public:
         return hypot(cross(right, up));
     }
 
-    [[nodiscard]] constexpr point3 operator[](size_t i) const noexcept
+    [[nodiscard]] constexpr point3 operator[](std::size_t i) const noexcept
     {
         switch (i) {
         case 0: return get<0>(*this);
@@ -172,7 +172,7 @@ public:
         }
     }
 
-    template<size_t I>
+    template<std::size_t I>
     [[nodiscard]] friend constexpr point3 get(rectangle const &rhs) noexcept
     {
         static_assert(I < 4);

@@ -40,7 +40,7 @@ public:
     template<int E>
     requires(E > D) [[nodiscard]] constexpr explicit vector(vector<E> const &other) noexcept : _v(static_cast<f32x4>(other))
     {
-        for (size_t i = D; i != E; ++i) {
+        for (std::size_t i = D; i != E; ++i) {
             _v[i] = 0.0f;
         }
         tt_axiom(holds_invariant());
@@ -318,7 +318,7 @@ public:
 private:
     f32x4 _v;
 
-    static constexpr size_t element_mask = (1_uz << D) - 1;
+    static constexpr std::size_t element_mask = (1_uz << D) - 1;
 };
 
 /** Get the cross product of one 2D vectors.

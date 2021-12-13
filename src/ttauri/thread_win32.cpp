@@ -22,7 +22,7 @@ static std::vector<bool> mask_int_to_vec(DWORD_PTR rhs) noexcept
     auto r = std::vector<bool>{};
 
     r.resize(64);
-    for (size_t i = 0; i != r.size(); ++i) {
+    for (std::size_t i = 0; i != r.size(); ++i) {
         r[i] = static_cast<bool>(rhs & (DWORD_PTR{1} << i));
     }
 
@@ -32,7 +32,7 @@ static std::vector<bool> mask_int_to_vec(DWORD_PTR rhs) noexcept
 static DWORD_PTR mask_vec_to_int(std::vector<bool> const &rhs) noexcept
 {
     DWORD r = 0;
-    for (size_t i = 0; i != rhs.size(); ++i) {
+    for (std::size_t i = 0; i != rhs.size(); ++i) {
         r |= rhs[i] ? (DWORD{1} << i) : 0;
     }
     return r;
@@ -66,7 +66,7 @@ std::vector<bool> set_thread_affinity_mask(std::vector<bool> const &mask)
     return mask_int_to_vec(old_mask);
 }
 
-[[nodiscard]] size_t current_cpu_id() noexcept
+[[nodiscard]] std::size_t current_cpu_id() noexcept
 {
     ttlet index = GetCurrentProcessorNumber();
     tt_axiom(index < 64);

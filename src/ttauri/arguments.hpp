@@ -10,7 +10,7 @@
 
 namespace tt::inline v1 {
 
-template<size_t I, typename FirstArg, typename... Args>
+template<std::size_t I, typename FirstArg, typename... Args>
 constexpr decltype(auto) get_argument_impl(FirstArg &&first_arg, Args &&...args) noexcept
 {
     if constexpr (I == 0) {
@@ -20,7 +20,7 @@ constexpr decltype(auto) get_argument_impl(FirstArg &&first_arg, Args &&...args)
     }
 }
 
-template<size_t I, typename... Args>
+template<std::size_t I, typename... Args>
 constexpr decltype(auto) get_argument(Args &&...args) noexcept
 {
     static_assert(I < sizeof...(Args), "Index to high for number of arguments");

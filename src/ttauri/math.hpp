@@ -7,6 +7,7 @@
 #include "required.hpp"
 #include "cast.hpp"
 #include "type_traits.hpp"
+#include "assert.hpp"
 #include <complex>
 #include <cmath>
 #include <limits>
@@ -15,6 +16,8 @@
 #include <numeric>
 #include <iterator>
 #include <bit>
+#include <concepts>
+#include <algorithm>
 
 #if TT_COMPILER == TT_CC_MSVC
 #include <intrin.h>
@@ -53,54 +56,6 @@ constexpr long long pow10ll(int x) noexcept
     return pow10_table[x];
 }
 
-/** Find the position of the left-most '1' bit.
- * @return Bit position of the left-most '1' bit, or -1 if there is no '1' bit.
- */
-template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>, int> = 0>
-constexpr int bsr(T x) noexcept
-{
-    return static_cast<int>(sizeof(T) * 8 - std::countr_zero(x)) - 1;
-}
-
-/** Make a bit-mask which includes the given value.
- */
-template<typename T>
-constexpr T make_mask(T x)
-{
-    ttlet x_ = static_cast<unsigned long long>(x) + 1;
-    ttlet p2 = std::bit_ceil(x_);
-    return static_cast<T>(p2 - 1);
-}
-
-template<typename T>
-constexpr T median(T a, T b, T c) noexcept
-{
-    return std::clamp(c, std::min(a, b), std::max(a, b));
-}
-
-/** Compare two floating point values to be almost equal.
- * The two floating point values are almost equal if they are
- * at most 10 smallest float steps away from each other.
- */
-constexpr bool almost_equal(float a, float b) noexcept
-{
-    constexpr int32_t epsilon = 5;
-
-    ttlet a_ = std::bit_cast<int32_t>(a);
-    ttlet b_ = std::bit_cast<int32_t>(b);
-
-    // Strip the sign bit, and extend to not overflow when calculating the delta.
-    ttlet a_abs = static_cast<int64_t>(a_ & 0x7ffffff);
-    ttlet b_abs = static_cast<int64_t>(b_ & 0x7ffffff);
-
-    // If both floats have the same size, we can subtract to get the delta.
-    // If they have a different sign then we need to add.
-    ttlet delta = (a_ < 0) == (b_ < 0) ? a_abs - b_abs : a_abs + b_abs;
-
-    // Check if the delta is with epsilon.
-    return delta < epsilon && delta > -epsilon;
-}
-
 template<typename Iterator>
 auto mean(Iterator first, Iterator last)
 {
@@ -124,6 +79,25 @@ auto stddev(Iterator first, Iterator last, T mean)
 
     ttlet count = static_cast<decltype(sum)>(std::distance(first, last));
     return count > 0.0 ? sum / count : sum;
+}
+
+template<typename T>
+constexpr void inplace_max(T &a, T const &b) noexcept
+{
+    a = std::max(a, b);
+}
+
+template<typename T>
+constexpr void inplace_min(T &a, T const &b) noexcept
+{
+    a = std::min(a, b);
+}
+
+template<typename T>
+constexpr void inplace_clamp(T &a, T const &lo, T const &hi) noexcept
+{
+    tt_axiom(lo <= hi);
+    a = std::clamp(a, lo, hi);
 }
 
 } // namespace tt::inline v1

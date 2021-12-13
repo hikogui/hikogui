@@ -9,15 +9,15 @@
 
 namespace tt::inline v1 {
 
-[[nodiscard]] std::byte *locked_memory_allocator_allocate(size_t n) noexcept;
+[[nodiscard]] std::byte *locked_memory_allocator_allocate(std::size_t n) noexcept;
 
-void locked_memory_allocator_deallocate(std::byte *p, size_t n) noexcept;
+void locked_memory_allocator_deallocate(std::byte *p, std::size_t n) noexcept;
 
 template<typename T>
 class locked_memory_allocator {
 public:
     using value_type = T;
-    using size_type = size_t;
+    using size_type = std::size_t;
     using difference_type = ptrdiff_t;
 
     template<typename U>

@@ -6,6 +6,7 @@
 
 #include "vector.hpp"
 #include "../rapid/numeric_array.hpp"
+#include <compare>
 
 namespace tt::inline v1 {
 namespace geo {
@@ -274,7 +275,7 @@ public:
         tt_axiom(lhs.holds_invariant());
 
         auto r = extent{};
-        for (size_t i = 0; i != D; ++i) {
+        for (std::size_t i = 0; i != D; ++i) {
             r._v[i] = lhs._v[i] + rhs;
         }
 
@@ -303,60 +304,58 @@ public:
         return lhs._v == rhs._v;
     }
 
-    /** Compare the size of the extents.
-     */
-    [[nodiscard]] constexpr friend bool operator<(extent const &lhs, extent const &rhs) noexcept requires(D == 2)
+    [[nodiscard]] constexpr friend std::partial_ordering operator<=>(extent const &lhs, extent const &rhs) noexcept
+        requires(D == 3)
     {
-        return lhs.width() < rhs.width() && lhs.height() < rhs.height();
+        constexpr std::size_t mask = 0b111;
+
+        ttlet equal = eq(lhs._v, rhs._v) & mask;
+        if (equal == mask) {
+            // Only equivalent if all elements are equal.
+            return std::partial_ordering::equivalent;
+        }
+
+        ttlet less = lt(lhs._v, rhs._v) & mask;
+        if ((less | equal) == mask) {
+            // If one or more elements is less (but none are greater) then the ordering is less.
+            return std::partial_ordering::less;
+        }
+
+        ttlet greater = lt(lhs._v, rhs._v) & mask;
+        if ((greater | equal) == mask) {
+            // If one or more elements is greater (but none are less) then the ordering is greater.
+            return std::partial_ordering::greater;
+        }
+
+        // Some elements are less and others are greater, we don't have an ordering.
+        return std::partial_ordering::unordered;
     }
 
-    /** Compare the size of the extents.
-     */
-    [[nodiscard]] constexpr friend bool operator<(extent const &lhs, extent const &rhs) noexcept requires(D == 3)
+    [[nodiscard]] constexpr friend std::partial_ordering operator<=>(extent const &lhs, extent const &rhs) noexcept
+        requires(D == 2)
     {
-        return lhs.width() < rhs.width() && lhs.height() < rhs.height() && lhs.depth() < rhs.depth();
-    }
+        constexpr std::size_t mask = 0b11;
 
-    /** Compare the size of the extents.
-     */
-    [[nodiscard]] constexpr friend bool operator<=(extent const &lhs, extent const &rhs) noexcept requires(D == 2)
-    {
-        return lhs.width() <= rhs.width() && lhs.height() <= rhs.height();
-    }
+        ttlet equal = eq(lhs._v, rhs._v) & mask;
+        if (equal == mask) {
+            // Only equivalent if all elements are equal.
+            return std::partial_ordering::equivalent;
+        }
 
-    /** Compare the size of the extents.
-     */
-    [[nodiscard]] constexpr friend bool operator<=(extent const &lhs, extent const &rhs) noexcept requires(D == 3)
-    {
-        return lhs.width() <= rhs.width() && lhs.height() <= rhs.height() && lhs.depth() <= rhs.depth();
-    }
+        ttlet less = lt(lhs._v, rhs._v) & mask;
+        if ((less | equal) == mask) {
+            // If one or more elements is less (but none are greater) then the ordering is less.
+            return std::partial_ordering::less;
+        }
 
-    /** Compare the size of the extents.
-     */
-    [[nodiscard]] constexpr friend bool operator>(extent const &lhs, extent const &rhs) noexcept requires(D == 2)
-    {
-        return lhs.width() > rhs.width() && lhs.height() > rhs.height();
-    }
+        ttlet greater = lt(lhs._v, rhs._v) & mask;
+        if ((greater | equal) == mask) {
+            // If one or more elements is greater (but none are less) then the ordering is greater.
+            return std::partial_ordering::greater;
+        }
 
-    /** Compare the size of the extents.
-     */
-    [[nodiscard]] constexpr friend bool operator>(extent const &lhs, extent const &rhs) noexcept requires(D == 3)
-    {
-        return lhs.width() > rhs.width() && lhs.height() > rhs.height() && lhs.depth() > rhs.depth();
-    }
-
-    /** Compare the size of the extents.
-     */
-    [[nodiscard]] constexpr friend bool operator>=(extent const &lhs, extent const &rhs) noexcept requires(D == 2)
-    {
-        return lhs.width() >= rhs.width() && lhs.height() >= rhs.height();
-    }
-
-    /** Compare the size of the extents.
-     */
-    [[nodiscard]] constexpr friend bool operator>=(extent const &lhs, extent const &rhs) noexcept requires(D == 3)
-    {
-        return lhs.width() >= rhs.width() && lhs.height() >= rhs.height() && lhs.depth() >= rhs.depth();
+        // Some elements are less and others are greater, we don't have an ordering.
+        return std::partial_ordering::unordered;
     }
 
     /** Get the squared length of the extent.
@@ -454,7 +453,7 @@ public:
 private:
     f32x4 _v;
 
-    static constexpr size_t element_mask = (1_uz << D) - 1;
+    static constexpr std::size_t element_mask = (1_uz << D) - 1;
 };
 
 } // namespace geo

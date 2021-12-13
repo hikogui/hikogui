@@ -219,19 +219,9 @@ struct token_t {
         return lhs.name == rhs;
     }
 
-    [[nodiscard]] friend bool operator!=(token_t const &lhs, tokenizer_name_t const &rhs) noexcept
-    {
-        return !(lhs == rhs);
-    }
-
     [[nodiscard]] friend bool operator==(token_t const &lhs, const char *rhs) noexcept
     {
         return lhs.value == rhs;
-    }
-
-    [[nodiscard]] friend bool operator!=(token_t const &lhs, const char *rhs) noexcept
-    {
-        return !(lhs == rhs);
     }
 };
 

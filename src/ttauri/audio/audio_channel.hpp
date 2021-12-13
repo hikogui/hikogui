@@ -23,7 +23,7 @@ public:
     /** The index of the audio channel.
      * The index is per direction. There is a index zero for both input and output direction.
      */
-    [[nodiscard]] size_t index() const noexcept;
+    [[nodiscard]] std::size_t index() const noexcept;
 
     /** The direction of audio.
      */
@@ -39,7 +39,7 @@ public:
 
     /** The number of times the audio clipped since last read.
      */
-    [[nodiscard]] size_t clip_count() noexcept;
+    [[nodiscard]] std::size_t clip_count() noexcept;
 
     /** The maximum peak sample value since last read.
      */
@@ -50,7 +50,7 @@ public:
      *
      * @param num_samples Number of samples to take the running average over.
      */
-    [[nodiscard]] float rms(size_t num_samples) noexcept;
+    [[nodiscard]] float rms(std::size_t num_samples) noexcept;
 };
 
 } // namespace tt::inline v1

@@ -12,12 +12,12 @@ namespace tt::inline v1 {
 namespace detail {
 
 struct hash_map_entry_h {
-    size_t hash;
+    std::size_t hash;
 };
 
 template<typename Key, typename Value>
 struct hash_map_entry_hkv {
-    size_t hash;
+    std::size_t hash;
     Key key;
     Value value;
 };
@@ -41,7 +41,7 @@ public:
         }
     }
 
-    size_t hash() const noexcept
+    std::size_t hash() const noexcept
     {
         return _h.hash;
     }
@@ -88,7 +88,7 @@ class hash_map {
 public:
     using key_type = Key;
     using value_type = T;
-    using size_type = size_t;
+    using size_type = std::size_t;
     using difference_type = ptrdiff_t;
     using allocator_type = Allocator;
     using reference = value_type &;
@@ -169,7 +169,7 @@ public:
         return allocator;
     }
 
-    tt_no_inline constexpr void reserve(size_t new_capacity) noexcept
+    tt_no_inline constexpr void reserve(std::size_t new_capacity) noexcept
     {
         if (new_capacity > _capacity) {
             auto *new_nodes = std::allocator_traits<allocator_type>::allocate(allocator, new_capacity);
@@ -245,15 +245,15 @@ public:
     }
 
 private:
-    static constexpr size_t initial_capacity = 307;
+    static constexpr std::size_t initial_capacity = 307;
 
     node_type *_nodes = nullptr;
-    size_t _capacity = 0;
-    size_t _size = 0;
+    std::size_t _capacity = 0;
+    std::size_t _size = 0;
     [[no_unique_address]] allocator_type allocator;
 
     template<typename K>
-    tt_no_inline constexpr iterator or_create(node_type &node, size_t hash, K &&key) noexcept
+    tt_no_inline constexpr iterator or_create(node_type &node, std::size_t hash, K &&key) noexcept
     {
         grow_by(1);
         node.set(hash, std::forward<K>(key));
@@ -265,7 +265,7 @@ private:
      * This function will std::move() the keys and values from one allocation to another.
      * Also all the from nodes will be destructed, and all the to nodes will be constructed.
      */
-    tt_no_inline constexpr void move_nodes(node_type *src, size_t src_size, node_type *dst, size_t dst_size) noexcept
+    tt_no_inline constexpr void move_nodes(node_type *src, std::size_t src_size, node_type *dst, std::size_t dst_size) noexcept
     {
         auto *dst_ = std::uninitialized_value_construct_n(dst, dst_size);
 
@@ -290,7 +290,7 @@ private:
         std::destroy_n(src, src_size);
     }
 
-    void grow_by(size_t nr_entries) noexcept
+    void grow_by(std::size_t nr_entries) noexcept
     {
         tt_axiom(_nodes != nullptr);
         tt_axiom(_capacity != 0);

@@ -16,7 +16,7 @@ namespace tt::inline v1 {
     tt_axiom(_aux_values.size() == _cpu_ids.size());
     tt_axiom(num_aux_values < _aux_values.size());
 
-    for (size_t i = 0; i < num_aux_values; i += 4) {
+    for (std::size_t i = 0; i < num_aux_values; i += 4) {
         ttlet row = _mm_loadu_si128(reinterpret_cast<__m128i const *>(_aux_values.data() + i));
         ttlet row_result = _mm_cmpeq_epi32(row, aux_value_);
         ttlet row_result_ = _mm_castsi128_ps(row_result);
@@ -85,8 +85,8 @@ void time_stamp_count::populate_aux_values() noexcept
     auto prev_mask = set_thread_affinity(current_cpu_id());
 
     // Create a table of cpu_ids.
-    size_t next_cpu = 0;
-    size_t current_cpu = 0;
+    std::size_t next_cpu = 0;
+    std::size_t current_cpu = 0;
     bool aux_is_cpu_id = true;
     do {
         current_cpu = advance_thread_affinity(next_cpu);
