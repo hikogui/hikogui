@@ -6,7 +6,7 @@
 
 #include "glyph_metrics.hpp"
 #include "glyph_atlas_info.hpp"
-#include "font_glyph_ids.hpp"
+#include "glyph_ids.hpp"
 #include "gstring.hpp"
 #include "unicode_mask.hpp"
 #include "font_weight.hpp"
@@ -73,7 +73,7 @@ public:
     /** Get the glyphs for a grapheme.
      * @return a set of glyph-ids, or invalid when not found or error.
      */
-    [[nodiscard]] font_glyph_ids find_glyph(grapheme g) const noexcept;
+    [[nodiscard]] tt::glyph_ids find_glyph(grapheme g) const noexcept;
 
     /*! Load a glyph into a path.
      * The glyph is directly loaded from the font file.
@@ -99,8 +99,8 @@ public:
 
     glyph_atlas_info &atlas_info(glyph_ids const &glyphs) const noexcept
     {
-        if (glyphs.is_single()) [[likely]] {
-            ttlet index = static_cast<std::size_t>(glyphs.get_single());
+        if (glyphs.has_num_glyphs<1>()) [[likely]] {
+            ttlet index = static_cast<std::size_t>(get<0>(glyphs));
             if (index >= _single_glyph_atlas_table.size()) [[unlikely]] {
                 _single_glyph_atlas_table.resize(index + 1);
             }

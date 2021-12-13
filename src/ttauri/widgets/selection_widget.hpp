@@ -102,7 +102,7 @@ private:
     aarectangle _option_rectangle;
     aarectangle _left_box_rectangle;
 
-    font_glyph_ids _chevrons_glyph;
+    glyph_ids _chevrons_glyph;
     aarectangle _chevrons_rectangle;
 
     bool _selecting = false;

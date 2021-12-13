@@ -255,7 +255,7 @@ void font_book::post_process() noexcept
     return find_font(find_family(family_name), weight, italic);
 }
 
-[[nodiscard]] font_glyph_ids font_book::find_glyph(tt::font const &font, grapheme g) const noexcept
+[[nodiscard]] glyph_ids font_book::find_glyph(tt::font const &font, grapheme g) const noexcept
 {
     auto key = font_grapheme_id{font, g};
 

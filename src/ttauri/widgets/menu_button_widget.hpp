@@ -77,7 +77,7 @@ public:
     [[nodiscard]] bool handle_event(command command) noexcept override;
     /// @endprivatesection
 private:
-    font_glyph_ids _check_glyph;
+    glyph_ids _check_glyph;
     extent2 _check_size;
     aarectangle _check_rectangle;
     aarectangle _check_glyph_rectangle;

@@ -293,7 +293,7 @@ public:
     }
 
 private:
-    tt::font_glyph_ids _glyph;
+    tt::glyph_ids _glyph;
     tt::aarectangle _glyph_rectangle;
     std::atomic<bool> _image_was_modified = true;
     tt::png _image;

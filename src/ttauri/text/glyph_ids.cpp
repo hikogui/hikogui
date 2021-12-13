@@ -11,7 +11,7 @@ namespace tt::inline v1 {
 
 [[nodiscard]] glyph_atlas_info &glyph_ids::atlas_info() const noexcept
 {
-    return _font->atlas_info(_glyphs);
+    return _font->atlas_info(*this);
 }
 
 [[nodiscard]] std::pair<graphic_path, aarectangle> glyph_ids::get_path_and_bounding_box() const noexcept
@@ -19,7 +19,7 @@ namespace tt::inline v1 {
     graphic_path path;
     auto bounding_box = aarectangle{};
 
-    for (std::size_t i = 0; i < size(); i++) {
+    for (std::size_t i = 0; i < num_glyphs(); i++) {
         ttlet glyph_id = (*this)[i];
 
         graphic_path glyph_path;
@@ -56,7 +56,7 @@ namespace tt::inline v1 {
     graphic_path path;
     auto bounding_box = aarectangle{};
 
-    for (std::size_t i = 0; i < size(); i++) {
+    for (std::size_t i = 0; i < num_glyphs(); i++) {
         ttlet glyph_id = (*this)[i];
 
         glyph_metrics glyph_metrics;

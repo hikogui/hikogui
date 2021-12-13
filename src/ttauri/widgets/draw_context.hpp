@@ -23,7 +23,7 @@ namespace tt::inline v1 {
 class gfx_device;
 class gfx_device_vulkan;
 class shaped_text;
-class font_glyph_ids;
+class glyph_ids;
 struct paged_image;
 
 /** The side where the border is drawn.
@@ -385,7 +385,7 @@ public:
      * @param glyph The glyphs to draw.
      */
     void
-    draw_glyph(widget_layout const &layout, quad const &box, quad_color const &color, font_glyph_ids const &glyph) const noexcept
+    draw_glyph(widget_layout const &layout, quad const &box, quad_color const &color, glyph_ids const &glyph) const noexcept
     {
         return _draw_glyph(layout.window_clipping_rectangle(), layout.to_window * box, color, glyph);
     }
@@ -403,7 +403,7 @@ public:
         aarectangle clipping_rectangle,
         quad const &box,
         quad_color const &color,
-        font_glyph_ids const &glyph) const noexcept
+        glyph_ids const &glyph) const noexcept
     {
         return _draw_glyph(layout.window_clipping_rectangle(clipping_rectangle), layout.to_window * box, color, glyph);
     }
@@ -474,7 +474,7 @@ private:
         shaped_text const &text,
         std::optional<quad_color> color = {}) const noexcept;
 
-    void _draw_glyph(aarectangle const &clipping_rectangle, quad const &box, quad_color const &color, font_glyph_ids const &glyph)
+    void _draw_glyph(aarectangle const &clipping_rectangle, quad const &box, quad_color const &color, glyph_ids const &glyph)
         const noexcept;
 
     [[nodiscard]] bool _draw_image(aarectangle const &clipping_rectangle, quad const &box, paged_image &image) const noexcept;

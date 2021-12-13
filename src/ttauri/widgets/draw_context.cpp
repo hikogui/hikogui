@@ -69,7 +69,7 @@ void draw_context::_draw_glyph(
     aarectangle const &clipping_rectangle,
     quad const &box,
     quad_color const &color,
-    font_glyph_ids const &glyph) const noexcept
+    glyph_ids const &glyph) const noexcept
 {
     tt_axiom(_sdf_vertices != nullptr);
     ttlet pipeline = narrow_cast<gfx_device_vulkan &>(device).SDFPipeline.get();

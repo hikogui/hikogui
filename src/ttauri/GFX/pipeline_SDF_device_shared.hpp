@@ -6,7 +6,7 @@
 
 #include "pipeline_SDF_texture_map.hpp"
 #include "pipeline_SDF_specialization_constants.hpp"
-#include "../text/font_glyph_ids.hpp"
+#include "../text/glyph_ids.hpp"
 #include "../text/glyph_atlas_info.hpp"
 #include "../required.hpp"
 #include "../log.hpp"
@@ -109,7 +109,7 @@ struct device_shared final {
 
     /** Get the bounding box, including draw border of a glyph.
      */
-    aarectangle get_bounding_box(font_glyph_ids const &glyphs) const noexcept;
+    aarectangle get_bounding_box(glyph_ids const &glyphs) const noexcept;
 
     /** Place vertices for a single glyph.
      *
@@ -125,7 +125,7 @@ struct device_shared final {
         vspan<vertex> &vertices,
         aarectangle const &clipping_rectangle,
         quad const &box,
-        font_glyph_ids const &glyphs,
+        glyph_ids const &glyphs,
         quad_color colors) noexcept;
 
 private:
@@ -134,12 +134,12 @@ private:
     void addAtlasImage();
     void buildAtlas();
     void teardownAtlas(gfx_device_vulkan *vulkanDevice);
-    void add_glyph_to_atlas(font_glyph_ids const &glyph, glyph_atlas_info &info) noexcept;
+    void add_glyph_to_atlas(glyph_ids const &glyph, glyph_atlas_info &info) noexcept;
 
     /**
      * @return The Atlas rectangle and true if a new glyph was added to the atlas.
      */
-    tt_force_inline std::pair<glyph_atlas_info const *, bool> get_glyph_from_atlas(font_glyph_ids const &glyph) noexcept
+    tt_force_inline std::pair<glyph_atlas_info const *, bool> get_glyph_from_atlas(glyph_ids const &glyph) noexcept
     {
         auto &info = glyph.atlas_info();
 

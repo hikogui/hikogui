@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "font_glyph_ids.hpp"
+#include "glyph_ids.hpp"
 #include "attributed_grapheme.hpp"
 #include "glyph_metrics.hpp"
 #include "../graphic_path.hpp"
@@ -15,7 +15,7 @@ namespace tt::inline v1 {
 /**
  */
 struct attributed_glyph {
-    font_glyph_ids glyphs;
+    glyph_ids glyphs;
 
     /** The logical index of the grapheme before bidi-algorithm.
      */
