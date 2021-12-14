@@ -265,6 +265,9 @@ void device_shared::add_atlas_image()
         nullptr,
         vk::ImageLayout::eUndefined};
     VmaAllocationCreateInfo allocationCreateInfo = {};
+    auto allocation_name = std::format("image-pipeline atlas image {}", current_image_index);
+    allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
+    allocationCreateInfo.pUserData = const_cast<char *>(allocation_name.c_str());
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
     ttlet[atlasImage, atlasImageAllocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
@@ -320,6 +323,8 @@ void device_shared::build_atlas()
         nullptr,
         vk::ImageLayout::ePreinitialized};
     VmaAllocationCreateInfo allocationCreateInfo = {};
+    allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
+    allocationCreateInfo.pUserData = const_cast<char *>("image-pipeline staging image");
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
     ttlet[image, allocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
     ttlet data = device.mapMemory<sfloat_rgba16>(allocation);
@@ -413,9 +418,7 @@ void device_shared::place_vertices(
             // The new quad, limited to the right-top corner of the original quad.
             ttlet atlas_position = get_atlas_position(*it);
 
-            static_assert(std::popcount(paged_image::page_size) == 1);
-            constexpr int page_size_shift = std::countr_zero(paged_image::page_size);
-            ttlet xy = f32x4{i32x4{narrow_cast<int32_t>(column_nr), narrow_cast<int32_t>(row_nr)} << page_size_shift};
+            ttlet xy = f32x4{i32x4{narrow_cast<int32_t>(column_nr), narrow_cast<int32_t>(row_nr)} * paged_image::page_size};
             ttlet uv_rectangle = rectangle{atlas_position, extent2{page_size2}};
 
             vertices.emplace_back(new_p0, clipping_rectangle, get<0>(uv_rectangle));

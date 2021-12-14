@@ -5,6 +5,7 @@
 #include "ttauri/time_stamp_count.hpp"
 #include "ttauri/metadata.hpp"
 #include "ttauri/GFX/RenderDoc.hpp"
+#include "ttauri/GFX/gfx_system.hpp"
 #include "ttauri/GUI/gui_system.hpp"
 #include "ttauri/audio/audio_system.hpp"
 #include "ttauri/widgets/toolbar_button_widget.hpp"
@@ -20,20 +21,23 @@ auto create_main_window(tt::gui_system &gui, std::shared_ptr<my_preferences_wind
     auto window_label = label{URL{"resource:ttauri_demo.png"}, l10n("TTauri demo")};
     auto &main_window = gui.make_window(window_label);
 
-    auto &preferences_button = main_window.toolbar().make_widget<toolbar_button_widget>(label{elusive_icon::Wrench, l10n("Preferences")});
-    auto callback = preferences_button.subscribe([&gui,preferences_controller]{
-        gui.make_window(
-            label{icon{URL{"resource:ttauri_demo.png"}}, l10n("TTauri Demo - Preferences")},
-            preferences_controller
-        );
-    });
-
+    auto &preferences_button =
+        main_window.toolbar().make_widget<toolbar_button_widget>(label{elusive_icon::Wrench, l10n("Preferences")});
     auto &column = main_window.content().make_widget<column_widget>("A1");
     column.make_widget<momentary_button_widget>(l10n("Hello \u4e16\u754c"));
     column.make_widget<momentary_button_widget>(l10n("Hello world"));
-    column.make_widget<momentary_button_widget>(l10n("Hello earthlings"));
+    auto &vma_dump_button = column.make_widget<momentary_button_widget>(l10n("vma calculate stats"));
 
-    return callback;
+
+    return std::array{
+        preferences_button.subscribe([&gui, preferences_controller] {
+            gui.make_window(
+                label{icon{URL{"resource:ttauri_demo.png"}}, l10n("TTauri Demo - Preferences")}, preferences_controller);
+        }),
+        vma_dump_button.subscribe([&gui]{
+            gui.gfx->log_memory_usage();
+        })
+    };
 }
 
 int tt_main(int argc, char *argv[])
@@ -63,6 +67,6 @@ int tt_main(int argc, char *argv[])
     return gui->loop();
 }
 
-//extern "C" const char *__asan_default_options() {
+// extern "C" const char *__asan_default_options() {
 //    return "help=1:log_path=asan.log";
 //}

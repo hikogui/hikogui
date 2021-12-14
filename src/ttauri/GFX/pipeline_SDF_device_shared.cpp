@@ -208,7 +208,7 @@ void device_shared::teardownShaders(gfx_device_vulkan *vulkanDevice)
 
 void device_shared::addAtlasImage()
 {
-    // ttlet currentImageIndex = ssize(atlasTextures);
+    ttlet current_image_index = ssize(atlasTextures);
 
     // Create atlas image
     vk::ImageCreateInfo const imageCreateInfo = {
@@ -226,6 +226,9 @@ void device_shared::addAtlasImage()
         nullptr,
         vk::ImageLayout::eUndefined};
     VmaAllocationCreateInfo allocationCreateInfo = {};
+    auto allocation_name = std::format("sdf-pipeline atlas image {}", current_image_index);
+    allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
+    allocationCreateInfo.pUserData = const_cast<char *>(allocation_name.c_str());
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
     ttlet[atlasImage, atlasImageAllocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
@@ -282,6 +285,8 @@ void device_shared::buildAtlas()
         nullptr,
         vk::ImageLayout::ePreinitialized};
     VmaAllocationCreateInfo allocationCreateInfo = {};
+    allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
+    allocationCreateInfo.pUserData = const_cast<char *>("sdf-shader staging image");
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
     ttlet[image, allocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
     ttlet data = device.mapMemory<sdf_r8>(allocation);

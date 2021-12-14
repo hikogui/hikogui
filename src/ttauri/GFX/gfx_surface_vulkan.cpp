@@ -566,6 +566,8 @@ gfx_surface_state gfx_surface_vulkan::buildSwapchain(std::size_t new_count, exte
         vk::ImageLayout::eUndefined};
 
     VmaAllocationCreateInfo depthAllocationCreateInfo = {};
+    depthAllocationCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
+    depthAllocationCreateInfo.pUserData = const_cast<char *>("depth attachment");
     depthAllocationCreateInfo.usage = vulkan_device().lazyMemoryUsage;
     std::tie(depthImage, depthImageAllocation) = vulkan_device().createImage(depthImageCreateInfo, depthAllocationCreateInfo);
 
@@ -587,7 +589,10 @@ gfx_surface_state gfx_surface_vulkan::buildSwapchain(std::size_t new_count, exte
         vk::ImageLayout::eUndefined};
 
     VmaAllocationCreateInfo colorAllocationCreateInfo = {};
+    colorAllocationCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
+    colorAllocationCreateInfo.pUserData = const_cast<char *>("color attachment");
     colorAllocationCreateInfo.usage = vulkan_device().lazyMemoryUsage;
+
     std::tie(colorImages[0], colorImageAllocations[0]) =
         vulkan_device().createImage(colorImageCreateInfo, colorAllocationCreateInfo);
 

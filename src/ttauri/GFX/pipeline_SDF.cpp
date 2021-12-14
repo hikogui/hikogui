@@ -164,6 +164,8 @@ void pipeline_SDF::buildvertexBuffers()
         vk::BufferUsageFlagBits::eVertexBuffer,
         vk::SharingMode::eExclusive};
     VmaAllocationCreateInfo allocationCreateInfo = {};
+    allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
+    allocationCreateInfo.pUserData = const_cast<char *>("sdf-shader vertex buffer");
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
     std::tie(vertexBuffer, vertexBufferAllocation) = vulkan_device().createBuffer(bufferCreateInfo, allocationCreateInfo);

@@ -148,12 +148,16 @@ struct attributed_glyph_line {
 
     void positionGlyphs(point2 position) noexcept
     {
-        // Round to integral dp position.
-        y = position.y();
+        // XXX Take into account sub-pixel and dpi scaling.
+
+        // Round the baseline to pixel boundary.
+        y = std::round(position.y());
         for (auto &&g : line) {
-            // Round y to pixels, round x to sub-pixels.
-            // XXX should take into account resolution of sub-pixel and dpi scaling.
-            g.position = {std::round(position.x() * 3.0f) / 3.0f, std::round(position.y())};
+            // Round x to sub-pixels.
+            // By rounding the baseline but not the vertical advance of individual glyphs we allow
+            // for perfect vertical alignment of cursive scripts. Horizontal rounding
+            // should have less impact to cursive continuations since most will be horizontal lines.
+            g.position = {std::round(position.x() * 3.0f) / 3.0f, position.y()};
 
             position += g.metrics.advance;
         }

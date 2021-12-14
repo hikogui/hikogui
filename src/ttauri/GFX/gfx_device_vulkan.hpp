@@ -334,6 +334,8 @@ public:
         return physicalIntrinsic.getSurfaceCapabilitiesKHR(surface);
     }
 
+    void log_memory_usage() const noexcept override;
+
 protected:
     vk::PhysicalDevice physicalIntrinsic;
     vk::Device intrinsic;

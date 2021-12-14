@@ -500,6 +500,8 @@ void gfx_device_vulkan::initialize_device()
     vmaCreateAllocator(&allocatorCreateInfo, &allocator);
 
     VmaAllocationCreateInfo lazyAllocationInfo = {};
+    lazyAllocationInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
+    lazyAllocationInfo.pUserData = const_cast<char *>("lazy transient image check");
     lazyAllocationInfo.usage = VMA_MEMORY_USAGE_GPU_LAZILY_ALLOCATED;
     uint32_t typeIndexOut = 0;
     supportsLazyTransientImages =
@@ -537,6 +539,8 @@ void gfx_device_vulkan::initialize_quad_index_buffer()
             vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst,
             vk::SharingMode::eExclusive};
         VmaAllocationCreateInfo allocationCreateInfo = {};
+        allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
+        allocationCreateInfo.pUserData = const_cast<char *>("vertex index buffer");
         allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
         std::tie(quadIndexBuffer, quadIndexBufferAllocation) = createBuffer(bufferCreateInfo, allocationCreateInfo);
     }
@@ -550,6 +554,8 @@ void gfx_device_vulkan::initialize_quad_index_buffer()
             vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferSrc,
             vk::SharingMode::eExclusive};
         VmaAllocationCreateInfo allocationCreateInfo = {};
+        allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
+        allocationCreateInfo.pUserData = const_cast<char *>("vertex index buffer (staging)");
         allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
         ttlet[stagingvertexIndexBuffer, stagingvertexIndexBufferAllocation] =
             createBuffer(bufferCreateInfo, allocationCreateInfo);
@@ -842,6 +848,16 @@ vk::ShaderModule gfx_device_vulkan::loadShader(URL const &shaderObjectLocation) 
     // no lock, only local variable.
 
     return loadShader(*shaderObjectLocation.loadView());
+}
+
+void gfx_device_vulkan::log_memory_usage() const noexcept
+{
+    tt_log_info("Memory usage for gfx device {}:", string());
+
+    char *stat_string;
+    vmaBuildStatsString(allocator, &stat_string, VK_TRUE);
+    tt_log_info(" * {}", stat_string);
+    vmaFreeStatsString(allocator, stat_string);
 }
 
 } // namespace tt::inline v1

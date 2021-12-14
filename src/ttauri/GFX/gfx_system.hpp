@@ -40,6 +40,12 @@ public:
 
     [[nodiscard]] virtual std::unique_ptr<gfx_surface> make_surface(os_handle instance, void *os_window) const noexcept = 0;
 
+    void log_memory_usage() const noexcept {
+        for (ttlet &device: devices) {
+            device->log_memory_usage();
+        }
+    }
+
     gfx_device *find_best_device_for_surface(gfx_surface const &surface);
 };
 

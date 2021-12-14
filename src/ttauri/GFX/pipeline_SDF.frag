@@ -13,7 +13,7 @@ layout(constant_id = 0) const float sdf_max_distance = 1.0;
 layout(constant_id = 1) const float atlas_image_width = 1.0;
 
 layout(set = 0, binding = 0) uniform sampler in_sampler;
-layout(set = 0, binding = 1) uniform texture2D in_textures[16];
+layout(set = 0, binding = 1) uniform texture2D in_textures[128];
 
 layout(location = 0) in flat vec4 in_clipping_rectangle;
 layout(location = 1) in vec3 in_texture_coord;
