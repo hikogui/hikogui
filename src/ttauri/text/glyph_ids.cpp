@@ -42,9 +42,9 @@ namespace tt::inline v1 {
         }
 
         if (i == 0) {
-            bounding_box = glyph_metrics.boundingBox;
+            bounding_box = glyph_metrics.bounding_rectangle;
         } else {
-            bounding_box |= glyph_metrics.boundingBox;
+            bounding_box |= glyph_metrics.bounding_rectangle;
         }
     }
 
@@ -69,9 +69,9 @@ namespace tt::inline v1 {
         }
 
         if (i == 0) {
-            bounding_box = glyph_metrics.boundingBox;
+            bounding_box = glyph_metrics.bounding_rectangle;
         } else {
-            bounding_box |= glyph_metrics.boundingBox;
+            bounding_box |= glyph_metrics.bounding_rectangle;
         }
     }
 

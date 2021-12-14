@@ -7,6 +7,8 @@
 #include "glyph_ids.hpp"
 #include "attributed_grapheme.hpp"
 #include "glyph_metrics.hpp"
+#include "font_metrics.hpp"
+#include "font.hpp"
 #include "../graphic_path.hpp"
 #include "../geometry/translate.hpp"
 
@@ -21,15 +23,19 @@ struct attributed_glyph {
      */
     ssize_t logicalIndex;
 
-    /** Metrics taken from the font file, pre-scaled to the font-size. */
+    /** The scale value used to convert 'em' units to the units used in this object.
+     */
+    float scale;
+
+    /** Metrics taken from the font file.
+     *
+     * @note scaled.
+     */
     glyph_metrics metrics;
 
     /** Position of the glyph.
      */
     point2 position;
-
-    /** Number of graphemes merged (ligature) into this attributed-glyph. */
-    int8_t graphemeCount;
 
     unicode_bidi_class bidi_class;
 
@@ -65,7 +71,7 @@ struct attributed_glyph {
     [[nodiscard]] bool containsLogicalIndex(ssize_t index) const noexcept
     {
         ttlet first = logicalIndex;
-        ttlet last = first + graphemeCount;
+        ttlet last = first + narrow_cast<ssize_t>(glyphs.num_graphemes());
         return index >= first && index < last;
     }
 
@@ -124,7 +130,7 @@ struct attributed_glyph {
      */
     [[nodiscard]] aarectangle boundingBox() const noexcept
     {
-        return translate2{position} * metrics.boundingBox;
+        return translate2{position} * metrics.bounding_rectangle;
     }
 
     /** Find the logical index closest to the coordinate.
@@ -134,8 +140,29 @@ struct attributed_glyph {
     [[nodiscard]] ssize_t relativeIndexAtCoordinate(point2 coordinate) const noexcept
     {
         ttlet relativePositionInGlyph = (coordinate.x() - position.x()) / metrics.advance.x();
-        ttlet relativePositionPergrapheme = relativePositionInGlyph * narrow_cast<float>(graphemeCount);
+        ttlet relativePositionPergrapheme = relativePositionInGlyph * narrow_cast<float>(glyphs.num_graphemes());
         return narrow_cast<ssize_t>(std::round(relativePositionPergrapheme));
+    }
+
+    /** Advance to the start of the grapheme within the glyph.
+     *
+     * @param index The index of the grapheme to advance to. The index may be one beyond the last grapheme.
+     * @return The advance to get to the grapheme within the glyph.
+     */
+    [[nodiscard]] vector2 advance_for_grapheme(size_t index) const noexcept
+    {
+        tt_axiom(index <= glyphs.num_graphemes());
+        return (static_cast<float>(index) / static_cast<float>(glyphs.num_graphemes())) * metrics.advance;
+    }
+
+    /** Get the font metrics for this attributes glyph.
+     *
+     * @note: scaled.
+     * @return The scaled font_metrics.
+     */
+    [[nodiscard]] constexpr tt::font_metrics font_metrics() const noexcept
+    {
+        return scale * glyphs.font().metrics;
     }
 
     [[nodiscard]] graphic_path get_path() const noexcept;

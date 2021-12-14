@@ -17,6 +17,7 @@ target_sources(ttauri PRIVATE
     font_book.hpp
     font_family_id.hpp
     font_grapheme_id.hpp
+    font_metrics.hpp
     font_variant.hpp
     font_weight.hpp
     glyph_id.hpp
