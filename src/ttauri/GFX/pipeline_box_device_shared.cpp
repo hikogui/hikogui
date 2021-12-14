@@ -69,7 +69,10 @@ void device_shared::place_vertices(
 void device_shared::buildShaders()
 {
     vertexShaderModule = device.loadShader(URL("resource:GUI/pipeline_box.vert.spv"));
+    device.setDebugUtilsObjectNameEXT(vertexShaderModule, "sdf-pipeline vertex shader");
+
     fragmentShaderModule = device.loadShader(URL("resource:GUI/pipeline_box.frag.spv"));
+    device.setDebugUtilsObjectNameEXT(vertexShaderModule, "sdf-pipeline fragment shader");
 
     shaderStages = {
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, vertexShaderModule, "main"},

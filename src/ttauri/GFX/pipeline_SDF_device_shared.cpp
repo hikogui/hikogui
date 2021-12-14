@@ -232,6 +232,7 @@ void device_shared::addAtlasImage()
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
     ttlet[atlasImage, atlasImageAllocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
+    device.setDebugUtilsObjectNameEXT(atlasImage, allocation_name.c_str());
 
     ttlet clearValue = vk::ClearColorValue{std::array{-1.0f, -1.0f, -1.0f, -1.0f}};
     ttlet clearRange = std::array{vk::ImageSubresourceRange{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}};
@@ -286,9 +287,10 @@ void device_shared::buildAtlas()
         vk::ImageLayout::ePreinitialized};
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
-    allocationCreateInfo.pUserData = const_cast<char *>("sdf-shader staging image");
+    allocationCreateInfo.pUserData = const_cast<char *>("sdf-pipeline staging image");
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
     ttlet[image, allocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
+    device.setDebugUtilsObjectNameEXT(image, "sdf-pipeline staging image");
     ttlet data = device.mapMemory<sdf_r8>(allocation);
 
     stagingTexture = {
@@ -316,6 +318,7 @@ void device_shared::buildAtlas()
         VK_FALSE // unnormazlizedCoordinates
     };
     atlasSampler = device.createSampler(samplerCreateInfo);
+    device.setDebugUtilsObjectNameEXT(atlasSampler, "sdf-pipeline atlas sampler");
 
     atlasSamplerDescriptorImageInfo = {atlasSampler, vk::ImageView(), vk::ImageLayout::eUndefined};
 

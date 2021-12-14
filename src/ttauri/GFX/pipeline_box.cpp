@@ -35,7 +35,10 @@ void pipeline_box::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 
     ttlet numberOfRectangles = vertexBufferData.size() / 4;
     ttlet numberOfTriangles = numberOfRectangles * 2;
+
+    vulkan_device().cmdBeginDebugUtilsLabelEXT(commandBuffer, "draw boxes");
     commandBuffer.drawIndexed(narrow_cast<uint32_t>(numberOfTriangles * 3), 1, 0, 0, 0);
+    vulkan_device().cmdEndDebugUtilsLabelEXT(commandBuffer);
 }
 
 std::vector<vk::PipelineShaderStageCreateInfo> pipeline_box::createShaderStages() const
@@ -89,6 +92,7 @@ void pipeline_box::buildvertexBuffers()
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
     std::tie(vertexBuffer, vertexBufferAllocation) = vulkan_device().createBuffer(bufferCreateInfo, allocationCreateInfo);
+    vulkan_device().setDebugUtilsObjectNameEXT(vertexBuffer, "box-pipeline vertex buffer");
     vertexBufferData = vulkan_device().mapMemory<vertex>(vertexBufferAllocation);
 }
 

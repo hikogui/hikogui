@@ -271,6 +271,7 @@ void device_shared::add_atlas_image()
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
     ttlet[atlasImage, atlasImageAllocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
+    device.setDebugUtilsObjectNameEXT(atlasImage, allocation_name.c_str());
 
     ttlet atlasImageView = device.createImageView(
         {vk::ImageViewCreateFlags(),
@@ -327,6 +328,7 @@ void device_shared::build_atlas()
     allocationCreateInfo.pUserData = const_cast<char *>("image-pipeline staging image");
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
     ttlet[image, allocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
+    device.setDebugUtilsObjectNameEXT(image, "image-pipeline staging image");
     ttlet data = device.mapMemory<sfloat_rgba16>(allocation);
 
     staging_texture = {

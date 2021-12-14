@@ -543,6 +543,7 @@ void gfx_device_vulkan::initialize_quad_index_buffer()
         allocationCreateInfo.pUserData = const_cast<char *>("vertex index buffer");
         allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
         std::tie(quadIndexBuffer, quadIndexBufferAllocation) = createBuffer(bufferCreateInfo, allocationCreateInfo);
+        setDebugUtilsObjectNameEXT(quadIndexBuffer, "vertex index buffer");
     }
 
     // Fill in the vertex index buffer, using a staging buffer, then copying.
@@ -555,10 +556,11 @@ void gfx_device_vulkan::initialize_quad_index_buffer()
             vk::SharingMode::eExclusive};
         VmaAllocationCreateInfo allocationCreateInfo = {};
         allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
-        allocationCreateInfo.pUserData = const_cast<char *>("vertex index buffer (staging)");
+        allocationCreateInfo.pUserData = const_cast<char *>("staging vertex index buffer");
         allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
         ttlet[stagingvertexIndexBuffer, stagingvertexIndexBufferAllocation] =
             createBuffer(bufferCreateInfo, allocationCreateInfo);
+        setDebugUtilsObjectNameEXT(stagingvertexIndexBuffer, "staging vertex index buffer");
 
         // Initialize indices.
         ttlet stagingvertexIndexBufferData = mapMemory<vertex_index_type>(stagingvertexIndexBufferAllocation);
@@ -583,9 +585,12 @@ void gfx_device_vulkan::initialize_quad_index_buffer()
         // Copy indices to vertex index buffer.
         auto &queue = get_graphics_queue();
         auto commands = allocateCommandBuffers({queue.command_pool, vk::CommandBufferLevel::ePrimary, 1}).at(0);
+
         commands.begin({vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
+        cmdBeginDebugUtilsLabelEXT(commands, "copy vertex index buffer");
         commands.copyBuffer(
             stagingvertexIndexBuffer, quadIndexBuffer, {{0, 0, sizeof(vertex_index_type) * maximum_number_of_indices}});
+        cmdEndDebugUtilsLabelEXT(commands);
         commands.end();
 
         std::vector<vk::CommandBuffer> const commandBuffersToSubmit = {commands};
@@ -848,6 +853,22 @@ vk::ShaderModule gfx_device_vulkan::loadShader(URL const &shaderObjectLocation) 
     // no lock, only local variable.
 
     return loadShader(*shaderObjectLocation.loadView());
+}
+
+void gfx_device_vulkan::setDebugUtilsObjectNameEXT(vk::DebugUtilsObjectNameInfoEXT const &name_info) const
+{
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    return intrinsic.setDebugUtilsObjectNameEXT(name_info, narrow_cast<gfx_system_vulkan &>(system).loader());
+}
+
+void gfx_device_vulkan::cmdBeginDebugUtilsLabelEXT(vk::CommandBuffer buffer, vk::DebugUtilsLabelEXT const &create_info) const
+{
+    buffer.beginDebugUtilsLabelEXT(create_info, narrow_cast<gfx_system_vulkan &>(system).loader());
+}
+
+void gfx_device_vulkan::cmdEndDebugUtilsLabelEXT(vk::CommandBuffer buffer) const
+{
+    buffer.endDebugUtilsLabelEXT(narrow_cast<gfx_system_vulkan &>(system).loader());
 }
 
 void gfx_device_vulkan::log_memory_usage() const noexcept

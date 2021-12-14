@@ -17,7 +17,9 @@ void pipeline_tone_mapper::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 
     vulkan_device().toneMapperPipeline->drawInCommandBuffer(commandBuffer);
 
+    vulkan_device().cmdBeginDebugUtilsLabelEXT(commandBuffer, "tone mapping");
     commandBuffer.draw(3, 1, 0, 0);
+    vulkan_device().cmdEndDebugUtilsLabelEXT(commandBuffer);
 }
 
 std::vector<vk::PipelineShaderStageCreateInfo> pipeline_tone_mapper::createShaderStages() const
