@@ -853,8 +853,8 @@ void true_type_font::parseOS2Table(std::span<std::byte const> table_bytes)
     if (version >= 2) {
         ttlet table_v2 = make_placement_ptr<OS2Table2>(table_bytes);
 
-        OS2_xHeight = table_v2->sxHeight.value();
-        OS2_HHeight = table_v2->sCapHeight.value();
+        OS2_x_height = table_v2->sxHeight.value();
+        OS2_cap_height = table_v2->sCapHeight.value();
     }
 }
 
@@ -1041,13 +1041,13 @@ bool true_type_font::update_glyph_metrics(
     }
 
     metrics.advance = vector2{advanceWidth, 0.0f};
-    metrics.leftSideBearing = leftSideBearing;
-    metrics.rightSideBearing = advanceWidth - (leftSideBearing + metrics.boundingBox.width());
+    metrics.left_side_bearing = leftSideBearing;
+    metrics.right_side_bearing = advanceWidth - (leftSideBearing + metrics.boundingBox.width());
     metrics.ascender = ascender;
     metrics.descender = -descender;
-    metrics.lineGap = lineGap;
-    metrics.xHeight = xHeight;
-    metrics.capHeight = HHeight;
+    metrics.line_gap = line_gap;
+    metrics.x_height = x_height;
+    metrics.cap_height = cap_height;
 
     if (kern_glyph1_id && kern_glyph2_id) {
         ttlet kernTableBytes = getTableBytes("kern");
@@ -1434,25 +1434,26 @@ void true_type_font::parse_font_directory()
     unicode_mask.optimize();
     unicode_mask.shrink_to_fit();
 
-    if (OS2_xHeight > 0) {
-        xHeight = emScale * OS2_xHeight;
+    if (OS2_x_height > 0) {
+        x_height = emScale * OS2_x_height;
     } else {
         ttlet glyph_id = find_glyph('x');
         if (glyph_id) {
             glyph_metrics metrics;
             load_glyph_metrics(glyph_id, metrics);
-            xHeight = metrics.boundingBox.height();
+            x_height = metrics.boundingBox.height();
         }
     }
+    rcp_x_height = 1.0f / x_height;
 
-    if (OS2_HHeight > 0) {
-        HHeight = emScale * OS2_HHeight;
+    if (OS2_cap_height > 0) {
+        cap_height = emScale * OS2_cap_height;
     } else {
         ttlet glyph_id = find_glyph('H');
         if (glyph_id) {
             glyph_metrics metrics;
             load_glyph_metrics(glyph_id, metrics);
-            HHeight = metrics.boundingBox.height();
+            cap_height = metrics.boundingBox.height();
         }
     }
 

@@ -366,7 +366,7 @@ private:
      *  -     [0] is short string '1' / is pointer '0'.
      *  - [ 3: 1] number of glyphs (zero when empty).
      *  - [ 7: 4] number of graphemes (zero when empty).
-     *  - [15: 8] reserved '0'.
+     *  - [15: 8] reserved for ratio of grapheme sizes for cursor positioning (set to '0' for even distribution.)
      *  - [31:16] glyph 0
      *  - [47:32] glyph 1
      *  - [63:48] glyph 2

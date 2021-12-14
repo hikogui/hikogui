@@ -30,9 +30,16 @@ namespace tt::inline v1 {
  */
 class font {
 public:
-    /** The description is filled with information parsed from the font.
+    /** The family name as parsed from the font file.
+     *
+     * Examples: "Helvetica", "Times New Roman"
      */
     std::string family_name;
+
+    /** The sub-family name as parsed from the font file.
+     *
+     * Examples: "Regular", "ItalicBold"
+     */
     std::string sub_family_name;
 
     bool monospace = false;
@@ -44,9 +51,42 @@ public:
 
     tt::unicode_mask unicode_mask;
 
-    float xHeight = 0.0;
-    float HHeight = 0.0;
-    float DigitWidth = 0.0;
+    /** The height above the base-line where the ascender ends.
+     * @note: unit is 'em'
+     */
+    float ascender;
+
+    /** The height above the base-line where the descender ends.
+     * @note: negative number.
+     * @note: unit is 'em'
+     */
+    float descender;
+
+    /** Distance between the descender of a line and the ascender of the next line.
+     * @note: unit is 'em'
+     */
+    float line_gap;
+
+    /** The height of the lower case character 'x'.
+     * @note: unit is 'em'
+     */
+    float x_height = 0.0f;
+
+    /** Reciprical of the height of the lower case character 'x'.
+     * @note: unit is 'em'
+     */
+    float rcp_x_height = 1.0f;
+
+    /** The height of the upper case character 'H'.
+     * @note: unit is 'em'
+     */
+    float cap_height = 0.0f;
+
+    /** The advance of the digit '8'.
+     * @note: Digits should all have the same advance.
+     * @note: unit is 'em'
+     */
+    float digit_width = 0.0f;
 
     /** List of fonts to use as a fallback for this font.
      */
@@ -114,6 +154,13 @@ public:
     [[nodiscard]] font_variant font_variant() const noexcept
     {
         return {weight, italic};
+    }
+
+    /** Round a size so that the scaled x-height is an integral.
+     */
+    [[nodiscard]] constexpr float round_size(float size) const noexcept
+    {
+        return std::round(x_height * size) * rcp_x_height;
     }
 
     [[nodiscard]] friend std::string to_string(font const &rhs) noexcept
