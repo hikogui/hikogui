@@ -7,6 +7,7 @@
 #include "widget.hpp"
 #include "../GUI/theme_text_style.hpp"
 #include "../text/shaped_text.hpp"
+#include "../text/text_shaper.hpp"
 #include "../observable.hpp"
 #include "../alignment.hpp"
 #include "../l10n.hpp"

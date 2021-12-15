@@ -15,7 +15,7 @@ public:
     extent2 maximum;
     float margin;
 
-    constexpr widget_constraints() noexcept : minimum(), preferred(), maximum() {}
+    constexpr widget_constraints() noexcept : minimum(), preferred(), maximum(), margin() {}
     constexpr widget_constraints(widget_constraints const &) noexcept = default;
     constexpr widget_constraints(widget_constraints &&) noexcept = default;
     constexpr widget_constraints &operator=(widget_constraints const &) noexcept = default;

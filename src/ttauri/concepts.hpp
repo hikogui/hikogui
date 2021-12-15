@@ -104,6 +104,9 @@ concept sizeable = requires(T v)
         } -> std::convertible_to<std::size_t>;
 };
 
+template<typename T>
+concept scalar = std::is_scalar_v<T>;
+
 /** Concept for std::is_scoped_enum_v<T>.
  *
  * XXX std::is_scoped_enum_v<T> ios a c++23 feature, so right now we use std::is_enum_v<T> instead.

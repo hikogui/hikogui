@@ -12,7 +12,6 @@
 
 namespace tt::inline v1 {
 
-
 /** Text shaper.
  *
  * This class takes text as a set of graphemes attributed with font, size, style and color.
@@ -88,32 +87,108 @@ public:
      */
     void fold(float width) noexcept;
 
-
 private:
     struct char_type {
+        using vector_type = std::vector<char_type>;
+        using iterator = vector_type::iterator;
+
+        /** The grapheme.
+         */
         tt::grapheme grapheme;
-        tt::glyph_ids glyph;
+
+        /** The style of how to display the grapheme.
+         */
         tt::text_style style;
+
+        /** The glyph representing one or more graphemes.
+         * The glyph will change during shaping of the text:
+         *  1. The initial glyph, used for determining the width of the grapheme
+         *     and the folding algorithm.
+         *  2. The glyph representing a bracket may be replaced with a mirrored bracket
+         *     by the bidi-algorithm.
+         *  3. The glyph may be replaced by the font using the glyph-morphing algorithms
+         *     for better continuation of cursive text and merging of graphemes into
+         *     a ligature.
+         */
+        tt::glyph_ids glyph;
+
+        /** The glyph metrics of the currently glyph.
+         *
+         * The metrics are scaled by `style.size`.
+         */
+        tt::glyph_metrics metrics;
+
+        /** The bounding rectangle for this character.
+         *
+         * The bounding rectangle is used to create selection-boxes,
+         * cursor-position & mouse-position of the character.
+         *
+         * When multiple characters are converted to a ligature, the
+         * bounding_rectangle of each of those characters occupies a
+         * subsection of the ligature-glyph. In this case the left most
+         * character will contain the ligature-glyph, and the rest of
+         * the characters of the ligature will have empty glyphs.
+         *
+         * The left-bottom corner of the bounding_rectangle is used as the
+         * offset for metrics.bounding_rectangle to display the glyph.
+         */
         aarectangle bounding_rectangle;
+
+        /** The glyph is the initial glyph.
+         *
+         * This flag is set to true after loading the initial glyph.
+         * This flag is set to false when the glyph is replaced by the bidi-algorithm
+         * or glyph-morphing.
+         */
+        bool glyph_is_initial = false;
+
+        /** The width used for this grapheme when folding lines.
+         *
+         * This width is based on the initial glyph's advance after converting the grapheme
+         * using the text-style into a glyph. This width excludes kerning and glyph-morphing.
+         */
+        float width = 0.0f;
+
+        /** Initialize the glyph based on the grapheme.
+         *
+         * @note The glyph is only initialized when `glyph_is_initial == false`.
+         * @post `glyph`, `metrics` and `width` are modified. `glyph_is_initial` is set to true.
+         */
+        void initialize_glyph() noexcept;
+
+        /** Called by the bidi-algorithm to mirror glyphs.
+         *
+         * The glyph is replaced with a glyph from the same font using the given code-point.
+         *
+         * @pre `glyph.num_grapheme == 1`.
+         * @post `glyph` and `metrics` are modified. `glyph_is_initial` is set to false.
+         * @note The `width` remains based on the original glyph.
+         */
+        void replace_glyph(char32_t code_point) noexcept;
     };
-    using char_vector_type = std::vector<char_type>;
-    using char_iterator = char_vector_type::iterator;
 
     struct line_type {
         tt::font_metrics metrics;
-        std::vector<char_iterator> 
+        float y;
+        float width;
     };
 
     struct paragraph_type {
-
+        std::vector<char_type::iterator> chars_in_display_order;
+        std::vector<line_type> lines;
     };
 
     enum class state_type { init, loaded, folded, complete };
 
     state_type _state;
 
+    /** A list of character in logical order.
+     *
+     * @note Graphemes are not allowed to be typographical-ligatures.
+     * @note The last grapheme must be a paragraph-separator.
+     * @note line-feeds, carriage-returns & form-feeds must be replaced by paragraph-separators or line-separators.
+     */
     std::vector<char_type> _chars_in_logical_order;
 };
 
-}
-
+} // namespace tt::inline v1

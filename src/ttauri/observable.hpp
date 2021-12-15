@@ -368,17 +368,31 @@ struct observable_proxy {
     }
 };
 
+template<typename T>
+struct observable_impl_storage {
+    T value;
+
+    observable_impl_storage() noexcept : value() {}
+    observable_impl_storage(T const &value) noexcept : value(value) {}
+    observable_impl_storage(T &&value) noexcept : value(std::move(value)) {}
+};
+
+template<scalar T>
+struct observable_impl_storage<T> {
+    std::atomic<T> value;
+
+    observable_impl_storage() noexcept : value() {}
+    observable_impl_storage(T const &value) noexcept : value(value) {}
+    observable_impl_storage(T &&value) noexcept : value(std::move(value)) {}
+};
+
 /** The shared value, shared between observers.
  */
 template<typename T>
-struct observable_impl {
-    static constexpr bool is_atomic = std::is_scalar_v<T>;
-
+struct observable_impl: public observable_impl_storage<T> {
     using value_type = T;
-    using atomic_value_type = std::conditional_t<is_atomic, std::atomic<value_type>, value_type>;
     using owner_type = observable<value_type>;
 
-    atomic_value_type value;
     std::vector<owner_type *> owners;
 
     /** The mutex is used to serialize state to the owners list and non-atomic value.
@@ -395,9 +409,9 @@ struct observable_impl {
     observable_impl &operator=(observable_impl const &) = delete;
     observable_impl &operator=(observable_impl &&) = delete;
 
-    observable_impl() noexcept : value() {}
-    observable_impl(value_type const &value) noexcept : value(value) {}
-    observable_impl(value_type &&value) noexcept : value(std::move(value)) {}
+    observable_impl() noexcept : observable_impl_storage<T>() {}
+    observable_impl(value_type const &value) noexcept : observable_impl_storage<T>(value) {}
+    observable_impl(value_type &&value) noexcept : observable_impl_storage<T>(std::move(value)) {}
 
     observable_proxy<value_type, false> get() noexcept
     {
@@ -514,7 +528,7 @@ public:
     using const_reference = detail::observable_proxy<value_type, true>;
     using impl_type = detail::observable_impl<value_type>;
     using callback_ptr_type = std::shared_ptr<std::function<void()>>;
-    static constexpr bool is_atomic = impl_type::is_atomic;
+    static constexpr bool is_atomic = std::is_scalar_v<value_type>;
 
     ~observable()
     {

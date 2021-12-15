@@ -10,7 +10,7 @@
 namespace tt::inline v1 {
 
 class int_abgr8_pack {
-    uint32_t v;
+    uint32_t v = 0;
 
 public:
     constexpr int_abgr8_pack() = default;
