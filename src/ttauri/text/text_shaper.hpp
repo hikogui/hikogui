@@ -1,4 +1,12 @@
+// Copyright Take Vos 2021.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#include "../alignment.hpp"
+#include "grapheme.hpp"
+#include "text_style.hpp"
+#include "glyph_ids.hpp"
+#include <vector>
 
 #pragma once
 
@@ -40,7 +48,7 @@ public:
      *
      * @param text The text as a vector of attributed graphemes.
      *             Use U+2029 as paragraph separator, and if needed U+2028 as line separator.
-     * @param alignment The alignment to use for the text.
+     * @param vertical_alignment How the text will be aligned vertically.
      * @param line_spacing A multiplier to scale the distance between lines compared to the
      *                     natural line spacing of the font: ascender + descender + line-gap.
      * @param paragraph_spacing A multiplier to scale the distance between lines compared to the
@@ -48,7 +56,7 @@ public:
      */
     [[nodiscard]] text_shaper(
         std::vector<attributed_grapheme> const &text,
-        tt::alignment alignment,
+        tt::vertical_alignment vertical_alignment,
         float line_spacing = 1.0f,
         float paragraph_spacing = 1.5f) noexcept;
 
@@ -82,9 +90,29 @@ public:
 
 
 private:
+    struct char_type {
+        tt::grapheme grapheme;
+        tt::glyph_ids glyph;
+        tt::text_style style;
+        aarectangle bounding_rectangle;
+    };
+    using char_vector_type = std::vector<char_type>;
+    using char_iterator = char_vector_type::iterator;
+
+    struct line_type {
+        tt::font_metrics metrics;
+        std::vector<char_iterator> 
+    };
+
+    struct paragraph_type {
+
+    };
+
     enum class state_type { init, loaded, folded, complete };
 
     state_type _state;
+
+    std::vector<char_type> _chars_in_logical_order;
 };
 
 }
