@@ -189,6 +189,9 @@ private:
     struct value_name {
         value_type value;
         std::string_view name;
+
+        constexpr value_name() noexcept : value(), name() {}
+        constexpr value_name(value_type value, std::string_view name) noexcept : value(value), name(name) {}
     };
 
     std::array<value_name, N> _by_name;

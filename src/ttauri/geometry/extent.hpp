@@ -234,7 +234,7 @@ public:
         return extent{lhs._v - rhs._v};
     }
 
-    [[nodiscard]] constexpr friend scale<D> operator/(extent const &lhs, extent const &rhs) noexcept;
+    constexpr friend scale<D> operator/(extent const &lhs, extent const &rhs) noexcept;
 
     /** Scale the extent by a scaler.
      * @param lhs The extent to scale.
