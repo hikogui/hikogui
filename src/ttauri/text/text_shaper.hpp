@@ -87,6 +87,47 @@ public:
      */
     void fold(float width) noexcept;
 
+    /** find the nearest character.
+     *
+     * @param point The point near 
+     * @return The index to the character that is nearest to the point.
+     */
+    [[nodiscard]] ssize_t get_nearest(point2 point) const noexcept;
+
+    /** Get the character to the left.
+     *
+     * @param index The index to a character.
+     * @return The index to the character on the left,
+     *         or the most right character in the line above,
+     *         or -1 if before begin of text.
+     */
+    [[nodiscard]] ssize_t left_of(ssize_t index) const noexcept;
+
+    /** Get the character to the right.
+     *
+     * @param index The index to a character.
+     * @return The index to the character on the right,
+     *         or the most left character in the line below,
+     *         or one beyond the end of text.
+     */
+    [[nodiscard]] ssize_t right_of(ssize_t index) const noexcept;
+
+    /** Get the character above.
+     *
+     * @param index The index to a character.
+     * @return The index to the character above,
+     *         or -1 if before begin of text.
+     */
+    [[nodiscard]] ssize_t above(ssize_t index) const noexcept;
+
+    /** Get the character to the right.
+     *
+     * @param index The index to a character.
+     * @return The index to the character below,
+     *         or one beyond the end of text.
+     */
+    [[nodiscard]] ssize_t below(ssize_t index) const noexcept;
+
 private:
     struct char_type {
         using vector_type = std::vector<char_type>;
@@ -168,13 +209,14 @@ private:
     };
 
     struct line_type {
+        std::vector<ssize_t> columns;
         tt::font_metrics metrics;
         float y;
         float width;
     };
 
     struct paragraph_type {
-        std::vector<char_type::iterator> chars_in_display_order;
+        std::vector<ssize_t> chars;
         std::vector<line_type> lines;
     };
 
@@ -188,7 +230,15 @@ private:
      * @note The last grapheme must be a paragraph-separator.
      * @note line-feeds, carriage-returns & form-feeds must be replaced by paragraph-separators or line-separators.
      */
-    std::vector<char_type> _chars_in_logical_order;
+    std::vector<char_type> _chars;
+
+    std::vector<line_type> _lines;
+
+    std::vector<paragraph_type> _paragraphs;
+
+    /** Get column and line of a character.
+     */
+    [[nodiscard]] std::pair<ssize_t,ssize_t> text_shaper::get_column_line(ssize_t index) const noexcept;
 };
 
 } // namespace tt::inline v1
