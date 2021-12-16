@@ -42,6 +42,24 @@ enum class horizontal_alignment {
     right
 };
 
+enum class text_alignment {
+    /** Align the text to the left side
+     */
+    flush_left,
+
+    /** Align the text in the center.
+     */
+    centered,
+
+    /** Stretch the text to be flushed to both sides.
+     */
+    justified,
+
+    /** Align the text to the right side
+     */
+    flush_right,
+};
+
 /** Vertical and horizontal alignment.
  */
 enum class alignment {
@@ -112,6 +130,40 @@ constexpr alignment operator|(vertical_alignment lhs, horizontal_alignment rhs) 
         case horizontal_alignment::right: return alignment::bottom_right;
         default: tt_no_default();
         }
+    default: tt_no_default();
+    }
+}
+
+constexpr horizontal_alignment to_horizontal_alignment(alignment rhs) noexcept
+{
+    switch (rhs) {
+        using enum alignment;
+    case bottom_left:
+    case middle_left:
+    case top_left: return horizontal_alignment::left;
+    case bottom_center:
+    case middle_center:
+    case top_center: return horizontal_alignment::center;
+    case bottom_right:
+    case middle_right:
+    case top_right: return horizontal_alignment::right;
+    default: tt_no_default();
+    }
+}
+
+constexpr vertical_alignment to_vertical_alignment(alignment rhs) noexcept
+{
+    switch (rhs) {
+        using enum alignment;
+    case bottom_left:
+    case bottom_center:
+    case bottom_right: return vertical_alignment::bottom;
+    case middle_left:
+    case middle_center:
+    case middle_right: return vertical_alignment::middle;
+    case top_left:
+    case top_center: 
+    case top_right: return vertical_alignment::top;
     default: tt_no_default();
     }
 }

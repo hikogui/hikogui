@@ -38,6 +38,7 @@ target_sources(ttauri PRIVATE
     shaped_text.cpp
     shaped_text.hpp
     text_decoration.hpp
+    text_shaper.cpp
     text_shaper.hpp
     text_style.cpp
     text_style.hpp

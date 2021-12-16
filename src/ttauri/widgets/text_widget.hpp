@@ -67,6 +67,7 @@ public:
     /// @endprivatesection
 private:
     shaped_text _shaped_text;
+    text_shaper _text_shaper;
     matrix2 _shaped_text_transform;
 
     text_widget(gui_window &window, widget *parent) noexcept;

@@ -3,14 +3,18 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "../alignment.hpp"
+#include "../coroutine.hpp"
 #include "grapheme.hpp"
+#include "gstring.hpp"
 #include "text_style.hpp"
 #include "glyph_ids.hpp"
+#include "unicode_description.hpp"
 #include <vector>
 
 #pragma once
 
 namespace tt::inline v1 {
+class font_book;
 
 /** Text shaper.
  *
@@ -22,18 +26,24 @@ namespace tt::inline v1 {
  *  3. Run unicode bidirectional algorithm.
  *  4. Reload glyphs and metrics of any brackets.
  *  5. Morph glyphs.
- *  6. Position glyphs including kerning and justifcation.
+ *  6. Position glyphs including kerning and justification.
  *
  */
 class text_shaper {
 public:
+    constexpr text_shaper() noexcept = default;
+    constexpr text_shaper(text_shaper const &) noexcept = default;
+    constexpr text_shaper(text_shaper &&) noexcept = default;
+    constexpr text_shaper &operator=(text_shaper const &) noexcept = default;
+    constexpr text_shaper &operator=(text_shaper &&) noexcept = default;
+
     /** Construct a text_shaper with a text and alignment.
      *
-     * Horizontal alignment is done for each line independed of the writing direction.
+     * Horizontal alignment is done for each line independent of the writing direction.
      * This allows labels to remain aligned in the same direction on the user-interface
      * even when the labels have translations in different languages.
      *
-     * Label widgets should flip the alignement passed to the text shaper when the
+     * Label widgets should flip the alignment passed to the text shaper when the
      * user interface is mirrored.
      *
      * Text edit fields may want to change the alignment of the text depending on the
@@ -54,7 +64,17 @@ public:
      *                          line spacing after @a line_spacing argument has been applied.
      */
     [[nodiscard]] text_shaper(
-        std::vector<attributed_grapheme> const &text,
+        tt::font_book &font_book,
+        gstring const &text,
+        text_style const &style,
+        tt::vertical_alignment vertical_alignment,
+        float line_spacing = 1.0f,
+        float paragraph_spacing = 1.5f) noexcept;
+
+    [[nodiscard]] text_shaper(
+        font_book &font_book,
+        std::string_view text,
+        text_style const &style,
         tt::vertical_alignment vertical_alignment,
         float line_spacing = 1.0f,
         float paragraph_spacing = 1.5f) noexcept;
@@ -83,13 +103,9 @@ public:
      */
     [[nodiscard]] aarectangle bounding_rectangle() noexcept;
 
-    /** Fold the text to width.
-     */
-    void fold(float width) noexcept;
-
     /** find the nearest character.
      *
-     * @param point The point near 
+     * @param point The point near
      * @return The index to the character that is nearest to the point.
      */
     [[nodiscard]] ssize_t get_nearest(point2 point) const noexcept;
@@ -175,13 +191,13 @@ private:
          */
         aarectangle bounding_rectangle;
 
-        /** The glyph is the initial glyph.
-         *
-         * This flag is set to true after loading the initial glyph.
-         * This flag is set to false when the glyph is replaced by the bidi-algorithm
-         * or glyph-morphing.
+        /** The unicode description of the grapheme.
          */
-        bool glyph_is_initial = false;
+        unicode_description const *description;
+
+        /** The scale of the glyph for displaying on the screen.
+         */
+        float scale = 1.0f;
 
         /** The width used for this grapheme when folding lines.
          *
@@ -190,12 +206,29 @@ private:
          */
         float width = 0.0f;
 
+        /** The glyph is the initial glyph.
+         *
+         * This flag is set to true after loading the initial glyph.
+         * This flag is set to false when the glyph is replaced by the bidi-algorithm
+         * or glyph-morphing.
+         */
+        bool glyph_is_initial = false;
+
+        [[nodiscard]] char_type(tt::grapheme const &grapheme, text_style const &style) noexcept;
+
         /** Initialize the glyph based on the grapheme.
          *
          * @note The glyph is only initialized when `glyph_is_initial == false`.
          * @post `glyph`, `metrics` and `width` are modified. `glyph_is_initial` is set to true.
          */
-        void initialize_glyph() noexcept;
+        void initialize_glyph(tt::font_book &font_book, tt::font const &font) noexcept;
+
+        /** Initialize the glyph based on the grapheme.
+         *
+         * @note The glyph is only initialized when `glyph_is_initial == false`.
+         * @post `glyph`, `metrics` and `width` are modified. `glyph_is_initial` is set to true.
+         */
+        void initialize_glyph(tt::font_book &font_book) noexcept;
 
         /** Called by the bidi-algorithm to mirror glyphs.
          *
@@ -205,7 +238,12 @@ private:
          * @post `glyph` and `metrics` are modified. `glyph_is_initial` is set to false.
          * @note The `width` remains based on the original glyph.
          */
-        void replace_glyph(char32_t code_point) noexcept;
+        void replace_glyph(tt::font_book &font_book, char32_t code_point) noexcept;
+
+    private:
+        /** Load metrics based on the loaded glyph.
+         */
+        void set_glyph(tt::glyph_ids &&new_glyph) noexcept;
     };
 
     struct line_type {
@@ -224,21 +262,54 @@ private:
 
     state_type _state;
 
+    font_book *_font_book = nullptr;
+
     /** A list of character in logical order.
      *
      * @note Graphemes are not allowed to be typographical-ligatures.
      * @note The last grapheme must be a paragraph-separator.
      * @note line-feeds, carriage-returns & form-feeds must be replaced by paragraph-separators or line-separators.
      */
-    std::vector<char_type> _chars;
+    std::vector<char_type> _text;
+
+    vertical_alignment _vertical_alignment = vertical_alignment::middle;
+
+    text_alignment _text_alignment = text_alignment::centered;
+
+    float _line_spacing = 1.0f;
+
+    float _paragraph_spacing = 1.0f;
 
     std::vector<line_type> _lines;
 
     std::vector<paragraph_type> _paragraphs;
 
+    /** Fold the text based on the given width.
+     *
+     * Since we do not want to modify the original _text, we insert special
+     * indices for the line separator (-1) and paragraph separator (-2) if they needed to
+     * be inserted into the text. For example if there is no paragraph separator at the end
+     * of text -2 will be added to the end and when line separators are inserted due to folding
+     * -1 will be added.
+     *
+     * @return A list of indices pointing into _text. With special indices -1 line separator, -2 paragraph separator.
+     */
+    [[nodiscard]] generator<ssize_t> fold(float width) const noexcept;
+
+    /** Calculate the bounding box based on the folded text.
+     *
+     * @param indices A list of indices to _text.
+     * @return The bounding rectangle around the text and the x-height.
+     *         Where y=0 is the base-line of the text as a whole.
+     *         The bottom being at the base-line of the last line.
+     *         The top being at x-height of the first line.
+     *         The returned x-height is for the line at y=0.
+     */
+    [[nodiscard]] std::pair<aarectangle, float> calculate_bounding_rectangle(std::vector<ssize_t> const &indices) const noexcept;
+
     /** Get column and line of a character.
      */
-    [[nodiscard]] std::pair<ssize_t,ssize_t> text_shaper::get_column_line(ssize_t index) const noexcept;
+    //[[nodiscard]] std::pair<ssize_t, ssize_t> text_shaper::get_column_line(ssize_t index) const noexcept;
 };
 
 } // namespace tt::inline v1

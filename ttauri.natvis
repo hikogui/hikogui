@@ -89,7 +89,7 @@
         </Expand>
     </Type>
     <Type Name="tt::v1::geo::vector&lt;2&gt;">
-        <DisplayString>(_v.v[0],g}, {_v.v[1],g})</DisplayString>
+        <DisplayString>({_v.v[0],g}, {_v.v[1],g})</DisplayString>
         <Expand>
             <Item Name="[x]">_v.v[0],g</Item>
             <Item Name="[y]">_v.v[1],g</Item>
