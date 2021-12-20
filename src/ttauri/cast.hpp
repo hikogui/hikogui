@@ -19,53 +19,80 @@ template<typename T>
     return value;
 }
 
-
-/** Up-cast executes an always safe cast between types.
+/** Cast a pointer to a class to its base class or itself.
  */
-template<std::integral Out, std::integral In>
-[[nodiscard]] constexpr Out up_cast(In rhs) noexcept
+template<typename Out, std::derived_from<std::remove_pointer_t<Out>> In>
+[[nodiscard]] constexpr Out up_cast(In *rhs) noexcept
+    requires(std::is_const_v<std::remove_pointer_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_pointer_t<Out>>)
 {
-    static_assert(type_in_range<Out,In>, "invalid up_cast() integer argument may be out of range of integer return type.");
+    return static_cast<Out>(rhs);
+}
+
+/** Cast a reference to a class to its base class or itself.
+ */
+template<typename Out>
+[[nodiscard]] constexpr Out up_cast(nullptr_t) noexcept
+{
+    return nullptr;
+}
+
+/** Cast a reference to a class to its base class or itself.
+ */
+template<typename Out, std::derived_from<std::remove_reference_t<Out>> In>
+[[nodiscard]] constexpr Out up_cast(In &rhs) noexcept requires(
+    std::is_const_v<std::remove_reference_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_reference_t<Out>>)
+{
+    return static_cast<Out>(rhs);
+}
+
+/** Cast a pointer to a class to its derived class or itself.
+ *
+ * @note It is undefined behavior if the argument is not of type Out.
+ * @param rhs A pointer to an object that is of type `Out`. Or a nullptr which will be
+ *        passed through.
+ * @return A pointer to the same object with a new type.
+ */
+template<typename Out, base_of<std::remove_pointer_t<Out>> In>
+[[nodiscard]] constexpr Out down_cast(In *rhs) noexcept
+    requires(std::is_const_v<std::remove_pointer_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_pointer_t<Out>>)
+{
+    tt_axiom(rhs == nullptr or dynamic_cast<Out>(rhs) != nullptr);
+    return static_cast<Out>(rhs);
+}
+
+/** Cast a pointer to a class to its derived class or itself.
+ *
+ * @note It is undefined behavior if the argument is not of type Out.
+ * @param rhs A pointer to an object that is of type `Out`. Or a nullptr which will be
+ *        passed through.
+ * @return A pointer to the same object with a new type.
+ */
+template<typename Out>
+[[nodiscard]] constexpr Out down_cast(nullptr_t) noexcept
+{
+    return nullptr;
+}
+
+/** Cast a reference to a class to its derived class or itself.
+ *
+ * @note It is undefined behavior if the argument is not of type Out.
+ * @param rhs A reference to an object that is of type `Out`.
+ * @return A reference to the same object with a new type.
+ */
+template<typename Out, base_of<std::remove_reference_t<Out>> In>
+[[nodiscard]] constexpr Out down_cast(In &rhs) noexcept requires(
+    std::is_const_v<std::remove_reference_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_reference_t<Out>>)
+{
     return static_cast<Out>(rhs);
 }
 
 /** Up-cast executes an always safe cast between types.
  */
-template<std::floating_point Out, std::floating_point In>
-[[nodiscard]] constexpr Out up_cast(In rhs) noexcept
-{
-    static_assert(sizeof(Out) >= sizeof(In), "invalid up_cast() float argument larger than float return type.");
-    return static_cast<Out>(rhs);
-}
-
-/** Up-cast executes an always safe cast between types.
- */
-template<std::floating_point Out, std::integral In>
-[[nodiscard]] constexpr Out up_cast(In rhs) noexcept
+template<numeric Out, numeric In>
+[[nodiscard]] constexpr Out wide_cast(In rhs) noexcept requires(type_in_range_v<Out, In>)
 {
     return static_cast<Out>(rhs);
 }
-
-/** Up-cast executes an always safe cast between types.
- */
-template<typename Out, typename In>
-[[nodiscard]] constexpr Out *up_cast(In *rhs) noexcept
-{
-    static_assert(std::is_pointer_interconvertible_base_of<Out,In>, "invalid up_cast() argument type is not derived from return type");
-    static_assert(std::is_const_v<Out> == std::is_const_v<in> or std::is_const_v<Out>, "invalid up_cast() argument is const return type is non-const");
-    return static_cast<Out *>(rhs);
-}
-
-/** Up-cast executes an always safe cast between types.
- */
-template<typename Out, typename In>
-[[nodiscard]] constexpr Out &up_cast(In &rhs) noexcept
-{
-    static_assert(std::is_pointer_interconvertible_base_of<Out,In>, "invalid up_cast() argument type is not derived from return type");
-    static_assert(std::is_const_v<Out> == std::is_const_v<in> or std::is_const_v<Out>, "invalid up_cast() argument is const return type is non-const");
-    return static_cast<Out &>(rhs);
-}
-
 
 template<std::signed_integral OutType, std::floating_point InType>
 [[nodiscard]] constexpr OutType narrow_cast(InType value) noexcept
@@ -122,44 +149,6 @@ template<std::floating_point OutType, tt::arithmetic InType>
 [[nodiscard]] constexpr OutType narrow_cast(InType value) noexcept
 {
     return static_cast<OutType>(value);
-}
-
-template<tt::lvalue_reference BaseType, tt::derived_from<std::remove_reference_t<BaseType>> DerivedType>
-[[nodiscard]] constexpr BaseType narrow_cast(DerivedType &value) noexcept
-{
-    static_assert(
-        !std::is_const_v<DerivedType> || std::is_const_v<std::remove_reference_t<BaseType>>,
-        "narrow_cast must not cast away const");
-    return static_cast<BaseType>(value);
-}
-
-template<tt::lvalue_reference DerivedType, tt::strict_base_of<std::remove_reference_t<DerivedType>> BaseType>
-[[nodiscard]] constexpr DerivedType narrow_cast(BaseType &value) noexcept
-{
-    static_assert(
-        !std::is_const_v<BaseType> || std::is_const_v<std::remove_reference_t<DerivedType>>,
-        "narrow_cast must not cast away const");
-    tt_axiom(dynamic_cast<std::remove_reference_t<DerivedType> *>(&value) != nullptr);
-    return static_cast<DerivedType>(value);
-}
-
-template<tt::pointer BaseType, tt::derived_from<std::remove_pointer_t<BaseType>> DerivedType>
-[[nodiscard]] constexpr BaseType narrow_cast(DerivedType *value) noexcept
-{
-    static_assert(
-        !std::is_const_v<DerivedType> || std::is_const_v<std::remove_pointer_t<BaseType>>,
-        "narrow_cast must not cast away const");
-    return static_cast<BaseType>(value);
-}
-
-template<tt::pointer DerivedType, tt::strict_base_of<std::remove_pointer_t<DerivedType>> BaseType>
-[[nodiscard]] constexpr DerivedType narrow_cast(BaseType *value) noexcept
-{
-    static_assert(
-        !std::is_const_v<BaseType> || std::is_const_v<std::remove_pointer_t<DerivedType>>,
-        "narrow_cast must not cast away const");
-    tt_axiom(value == nullptr or dynamic_cast<DerivedType>(value) != nullptr);
-    return static_cast<DerivedType>(value);
 }
 
 /** Return the low half of the input value.

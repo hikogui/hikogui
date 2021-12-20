@@ -10,17 +10,17 @@ namespace tt::inline v1 {
 /**
  * @param first Iterator of the first character of a text.
  * @param last Iterator to one beyond the last character of a text.
- * @param char_info_func A function taking an derefence of the iterator, returing a
+ * @param char_info_func A function taking an dereference of the iterator, returning a
  *                       pair of unicode_generic_category and its width.
  * @param max_line_width The maximum width of a line.
  * @return A list of line sizes.
  */
 template<typename It, typename ItEnd, typename CharInfoFunc>
-[[nodiscard]] constexpr generator<std::size_t> text_fold(
+[[nodiscard]] inline generator<std::size_t> text_fold(
     It first,
     ItEnd last,
     float max_line_width,
-    CharInfoFunc const &char_info_func) const noexcept
+    CharInfoFunc const &char_info_func) noexcept
 {
     auto word_begin = 0_uz;
     auto word_width = 0.0f;
@@ -51,11 +51,11 @@ template<typename It, typename ItEnd, typename CharInfoFunc>
             word_width = 0.0f;
             word_begin = index + 1;
 
-        } else if (line_width == 0.0f and word_width + char_width > width) {
+        } else if (line_width == 0.0f and word_width + char_width > max_line_width) {
             // The word by itself on the line is too large. Just continue and wait for a white-space.
             word_width += char_width;
 
-        } else if (line_width + word_width + char_width > width) {
+        } else if (line_width + word_width + char_width > max_line_width) {
             // Adding another character to the line makes it too long.
             // Break the line at the begin of the word.
             co_yield word_begin - line_begin;

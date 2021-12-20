@@ -359,7 +359,10 @@ constexpr bool acts_as_pointer_v = acts_as_pointer<T>::value;
 
 // clang-format on
 
-template<std::integral Out, std::integral In>
-constexpr bool type_in_range_v = std::in_range<Out>(std::numeric_limits<In>::lower()) and std::in_range<Out>(std::numeric_limits<In>::max());
+/** All values of numeric type `In` can be represented without loss of precision by numeric type `Out`.
+ */
+template<typename Out, typename In>
+constexpr bool type_in_range_v = std::numeric_limits<Out>::digits() >= std::numeric_limits<In>::digits() and
+    (std::numeric_limits<Out>::is_signed() == std::numeric_limits<In>::is_signed() or std::numeric_limits<Out>::is_signed());
 
 } // namespace tt::inline v1

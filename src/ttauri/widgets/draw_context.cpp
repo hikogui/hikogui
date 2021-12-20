@@ -60,7 +60,7 @@ draw_context::_draw_image(aarectangle const &clipping_rectangle, quad const &box
         return false;
     }
 
-    ttlet pipeline = narrow_cast<gfx_device_vulkan &>(device).imagePipeline.get();
+    ttlet pipeline = down_cast<gfx_device_vulkan &>(device).imagePipeline.get();
     pipeline->place_vertices(*_image_vertices, clipping_rectangle, box, image);
     return true;
 }
@@ -72,7 +72,7 @@ void draw_context::_draw_glyph(
     glyph_ids const &glyph) const noexcept
 {
     tt_axiom(_sdf_vertices != nullptr);
-    ttlet pipeline = narrow_cast<gfx_device_vulkan &>(device).SDFPipeline.get();
+    ttlet pipeline = down_cast<gfx_device_vulkan &>(device).SDFPipeline.get();
 
     if (_sdf_vertices->full()) {
         _draw_box(clipping_rectangle, box, tt::color{1.0f, 0.0f, 1.0f}, tt::color{}, 0.0f, {});
@@ -94,7 +94,7 @@ void draw_context::_draw_text(
     std::optional<quad_color> text_color) const noexcept
 {
     tt_axiom(_sdf_vertices != nullptr);
-    ttlet pipeline = narrow_cast<gfx_device_vulkan &>(device).SDFPipeline.get();
+    ttlet pipeline = down_cast<gfx_device_vulkan &>(device).SDFPipeline.get();
 
     auto atlas_was_updated = false;
     for (ttlet &attr_glyph : text) {

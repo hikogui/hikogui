@@ -193,6 +193,7 @@ if(TT_BUILD_TESTS)
         bezier_curve_tests.cpp
         bigint_tests.cpp
         bound_integer_tests.cpp
+        cast_tests.cpp
         coroutine_tests.cpp
         counters_tests.cpp
         datum_tests.cpp

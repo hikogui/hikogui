@@ -32,7 +32,7 @@ void gfx_surface_vulkan::set_device(gfx_device *device) noexcept
     ttlet lock = std::scoped_lock(gfx_system_mutex);
     super::set_device(device);
 
-    auto device_ = narrow_cast<gfx_device_vulkan *>(device);
+    auto device_ = down_cast<gfx_device_vulkan *>(device);
     _present_queue = &device_->get_present_queue(*this);
     _graphics_queue = &device_->get_graphics_queue(*this);
 }
@@ -41,7 +41,7 @@ gfx_device_vulkan &gfx_surface_vulkan::vulkan_device() const noexcept
 {
     tt_axiom(gfx_system_mutex.recurse_lock_count());
     tt_axiom(_device != nullptr);
-    return narrow_cast<gfx_device_vulkan &>(*_device);
+    return down_cast<gfx_device_vulkan &>(*_device);
 }
 
 void gfx_surface_vulkan::init()
@@ -338,7 +338,7 @@ std::optional<draw_context> gfx_surface_vulkan::render_start(aarectangle redraw_
     // Update the widgets before the pipelines need their vertices.
     // We unset modified before, so that modification requests are captured.
     return draw_context{
-        *narrow_cast<gfx_device_vulkan *>(_device),
+        *down_cast<gfx_device_vulkan *>(_device),
         narrow_cast<std::size_t>(frame_buffer_index),
         scissor_rectangle,
         boxPipeline->vertexBufferData,
@@ -685,7 +685,7 @@ void gfx_surface_vulkan::teardownFramebuffers()
 /** Build render passes.
  *
  * One pass, with 4 subpasses:
- *  1. box shader: to color-attachment+depth 
+ *  1. box shader: to color-attachment+depth
  *  2. image shader: to color-attachmen+depth
  *  3. sdf shader: to color-attachmne+depth
  *  4. tone-mapper: color-input-attachment to swapchain-attachment.
@@ -895,7 +895,7 @@ void gfx_surface_vulkan::teardownSurface()
 {
     tt_axiom(gfx_system_mutex.recurse_lock_count());
 
-    narrow_cast<gfx_system_vulkan &>(system).destroySurfaceKHR(intrinsic);
+    down_cast<gfx_system_vulkan&>(system).destroySurfaceKHR(intrinsic);
 }
 
 void gfx_surface_vulkan::teardownDevice()

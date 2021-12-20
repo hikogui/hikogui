@@ -40,7 +40,7 @@ std::vector<vk::DescriptorSetLayoutBinding> pipeline_tone_mapper::createDescript
 
 std::vector<vk::WriteDescriptorSet> pipeline_tone_mapper::createWriteDescriptorSet() const
 {
-    ttlet &color_descriptor_image_infos = narrow_cast<gfx_surface_vulkan const &>(surface).colorDescriptorImageInfos;
+    ttlet &color_descriptor_image_infos = down_cast<gfx_surface_vulkan const &>(surface).colorDescriptorImageInfos;
 
     return {{
         descriptorSet,

@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "text_shaper.hpp"
+#include "text_fold.hpp"
 #include "font_book.hpp"
 #include "../log.hpp"
 

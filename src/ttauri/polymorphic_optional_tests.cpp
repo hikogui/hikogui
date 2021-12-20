@@ -6,10 +6,9 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
+#include <type_traits>
 
-using namespace std;
-using namespace tt;
-
+namespace polymorphic_optional_tests {
 struct A {
     int hello = 10;
 
@@ -36,16 +35,16 @@ struct C : public A {
         return 3;
     }
 };
-
+}
 TEST(polymorphic_optional, assignment)
 {
-    std::array<polymorphic_optional<A, sizeof(C)>, 3> values;
+    std::array<tt::polymorphic_optional<polymorphic_optional_tests::A, sizeof(polymorphic_optional_tests::C)>, 3> values;
 
-    static_assert(is_decayed_derived_from_v<B, A>);
+    static_assert(std::is_base_of_v<polymorphic_optional_tests::A, polymorphic_optional_tests::B>);
 
-    values[0] = A{};
-    values[1] = B{};
-    values[2] = C{};
+    values[0] = polymorphic_optional_tests::A{};
+    values[1] = polymorphic_optional_tests::B{};
+    values[2] = polymorphic_optional_tests::C{};
     ASSERT_EQ(values[0]->foo(), 1);
     ASSERT_EQ(values[1]->foo(), 2);
     ASSERT_EQ(values[2]->foo(), 3);
