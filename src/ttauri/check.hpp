@@ -24,4 +24,26 @@ namespace tt::inline v1 {
         return result; \
     }(expression))
 
+
+/** Cast integrals to different types and signedness
+ */
+template<std::integral Out, std::integral In>
+[[nodiscard]] constexpr Out check_cast(In in) noexcept(type_in_range_v<Out,In>)
+{
+    if constexpr not (type_in_range_v<Out,In>) {
+        if (not std::in_range<Out>(in)) {
+            throw std::out_of_range("integer cast failed");
+        }
+    }
+    return static_cast<Out>(in);
+}
+
+/** Cast integrals to floating point.
+ */
+template<std::floating_point Out, std::integral In>
+[[nodiscard]] constexpr Out check_cast(In in) noexcept
+{
+    return static_cast<Out>(in);
+}
+
 } // namespace tt::inline v1

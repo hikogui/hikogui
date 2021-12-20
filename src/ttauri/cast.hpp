@@ -19,6 +19,54 @@ template<typename T>
     return value;
 }
 
+
+/** Up-cast executes an always safe cast between types.
+ */
+template<std::integral Out, std::integral In>
+[[nodiscard]] constexpr Out up_cast(In rhs) noexcept
+{
+    static_assert(type_in_range<Out,In>, "invalid up_cast() integer argument may be out of range of integer return type.");
+    return static_cast<Out>(rhs);
+}
+
+/** Up-cast executes an always safe cast between types.
+ */
+template<std::floating_point Out, std::floating_point In>
+[[nodiscard]] constexpr Out up_cast(In rhs) noexcept
+{
+    static_assert(sizeof(Out) >= sizeof(In), "invalid up_cast() float argument larger than float return type.");
+    return static_cast<Out>(rhs);
+}
+
+/** Up-cast executes an always safe cast between types.
+ */
+template<std::floating_point Out, std::integral In>
+[[nodiscard]] constexpr Out up_cast(In rhs) noexcept
+{
+    return static_cast<Out>(rhs);
+}
+
+/** Up-cast executes an always safe cast between types.
+ */
+template<typename Out, typename In>
+[[nodiscard]] constexpr Out *up_cast(In *rhs) noexcept
+{
+    static_assert(std::is_pointer_interconvertible_base_of<Out,In>, "invalid up_cast() argument type is not derived from return type");
+    static_assert(std::is_const_v<Out> == std::is_const_v<in> or std::is_const_v<Out>, "invalid up_cast() argument is const return type is non-const");
+    return static_cast<Out *>(rhs);
+}
+
+/** Up-cast executes an always safe cast between types.
+ */
+template<typename Out, typename In>
+[[nodiscard]] constexpr Out &up_cast(In &rhs) noexcept
+{
+    static_assert(std::is_pointer_interconvertible_base_of<Out,In>, "invalid up_cast() argument type is not derived from return type");
+    static_assert(std::is_const_v<Out> == std::is_const_v<in> or std::is_const_v<Out>, "invalid up_cast() argument is const return type is non-const");
+    return static_cast<Out &>(rhs);
+}
+
+
 template<std::signed_integral OutType, std::floating_point InType>
 [[nodiscard]] constexpr OutType narrow_cast(InType value) noexcept
 {

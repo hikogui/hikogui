@@ -84,68 +84,12 @@ void text_shaper::char_type::replace_glyph(tt::font_book &font_book, char32_t co
 
 [[nodiscard]] generator<ssize_t> text_shaper::fold(float width) const noexcept
 {
-    auto word_begin = 0_uz;
-    auto word_width = 0.0f;
-    auto line_width = 0.0f;
-    auto index = 0_uz;
-
-    auto prev_category = unicode_general_category::Zp;
-    while (index != _text.size()) {
-        ttlet &c = _text[index];
-        ttlet category = c.description->general_category();
-
-        if (category == unicode_general_category::Zp or category == unicode_general_category::Zl) {
-            // Found a line or paragraph separator; add all the characters including the separator.
-            for (auto i = word_begin; i != (index + 1); ++i) {
-                co_yield static_cast<ssize_t>(i);
-            }
-            line_width = 0.0f;
-            word_begin = ++index;
-            word_width = 0.0f;
-
-        } else if (category == unicode_general_category::Zs) {
-            // Found a space; add all the characters including the space.
-            for (auto i = word_begin; i != (index + 1); ++i) {
-                co_yield static_cast<ssize_t>(i);
-            }
-
-            // Extent the line with the word upto and including the space.
-            // The new word starts at the space.
-            // Add the length of the space to the new word.
-            line_width += word_width + c.width;
-            word_begin = ++index;
-            word_width = 0.0f;
-
-        } else if (line_width == 0.0f and word_width + c.width > width) {
-            // The word by itself on the line is too large. Just continue and wait for a white-space.
-            word_width += c.width;
-            ++index;
-
-        } else if (line_width + word_width + c.width > width) {
-            // Adding another character to the line makes it too long.
-            // Break the line at the begin of the word.
-            co_yield -1;
-
-            // Start at a new line.
-            line_width = 0.0f;
-
-            // retry the character on the next iteration. Don't increment index.
-
-        } else {
-            // Add the new character to the word.
-            word_width += c.width;
-            ++index;
-        }
-    }
-
-    // Add the last word
-    for (auto i = word_begin; i != _text.size(); ++i) {
-        co_yield static_cast<ssize_t>(i);
-    }
-
-    // If the text does not have a paragraph separator at the end; add one here.
-    if (_text.back().description->general_category() != unicode_general_category::Zp) {
-        co_yield -2;
+    auto g = text_fold(_text.begin(), _text.end(), width, [](ttlet &c) {
+        return std::pair{c.description->general_category(), c.width};
+    });
+ 
+    for (ttlet span : g) {
+        co_yield span;
     }
 }
 
