@@ -250,10 +250,10 @@ namespace tt::inline v1 {
 [[nodiscard]] inline std::string fourcc_to_string(uint32_t x) noexcept
 {
     char c_str[5];
-    c_str[0] = narrow_cast<char>((x >> 24) & 0xff);
-    c_str[1] = narrow_cast<char>((x >> 16) & 0xff);
-    c_str[2] = narrow_cast<char>((x >> 8) & 0xff);
-    c_str[3] = narrow_cast<char>(x & 0xff);
+    c_str[0] = static_cast<char>((x >> 24) & 0xff);
+    c_str[1] = static_cast<char>((x >> 16) & 0xff);
+    c_str[2] = static_cast<char>((x >> 8) & 0xff);
+    c_str[3] = static_cast<char>(x & 0xff);
     c_str[4] = 0;
 
     return {c_str};

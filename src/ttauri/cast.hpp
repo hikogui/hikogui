@@ -86,7 +86,7 @@ template<typename Out, base_of<std::remove_reference_t<Out>> In>
     return static_cast<Out>(rhs);
 }
 
-/** Up-cast executes an always safe cast between types.
+/** Cast a number to a type that will be able to represent all values without loss of precision.
  */
 template<numeric Out, numeric In>
 [[nodiscard]] constexpr Out wide_cast(In rhs) noexcept requires(type_in_range_v<Out, In>)
@@ -94,61 +94,52 @@ template<numeric Out, numeric In>
     return static_cast<Out>(rhs);
 }
 
-template<std::signed_integral OutType, std::floating_point InType>
-[[nodiscard]] constexpr OutType narrow_cast(InType value) noexcept
+/** Cast numeric values without loss of precision.
+ *
+ * @tparam Out The numeric type to cast to
+ * @tparam In The numeric type to cast from
+ * @param rhs The value to cast.
+ * @return The value casted to a different type without loss of precision.
+ * @throws std::bad_cast when the value could not be casted without loss of precision.
+ */
+template<numeric Out, numeric In>
+[[nodiscard]] constexpr Out narrow(In rhs) noexcept(type_in_range_v<Out, In>)
 {
-    tt_axiom(value >= std::numeric_limits<OutType>::lowest() && value <= std::numeric_limits<OutType>::max());
-    return static_cast<OutType>(value);
-}
+    if constexpr (type_in_range_v<Out, In>) {
+        return static_cast<Out>(rhs);
+    } else {
+        ttlet r = static_cast<Out>(rhs);
 
-template<std::signed_integral OutType, std::signed_integral InType>
-[[nodiscard]] constexpr OutType narrow_cast(InType value) noexcept
-{
-    constexpr auto smin = static_cast<long long>(std::numeric_limits<OutType>::lowest());
-    constexpr auto smax = static_cast<long long>(std::numeric_limits<OutType>::max());
-    tt_axiom(value >= smin && value <= smax);
-    return static_cast<OutType>(value);
-}
+        if (rhs != static_cast<In>(r)) {
+            throw std::bad_cast();
+        }
 
-template<std::signed_integral OutType, std::unsigned_integral InType>
-[[nodiscard]] constexpr OutType narrow_cast(InType value) noexcept
-{
-    constexpr auto umax = static_cast<unsigned long long>(std::numeric_limits<OutType>::max());
-    tt_axiom(value <= umax);
-    return static_cast<OutType>(value);
-}
+        if constexpr (std::numeric_limits<Out>::is_signed != std::numeric_limits<In>::is_signed) {
+            if ((rhs < In{}) != (r < Out{})) {
+                throw std::bad_cast();
+            }
+        }
 
-template<std::unsigned_integral OutType, std::floating_point InType>
-[[nodiscard]] constexpr OutType narrow_cast(InType value) noexcept
-{
-    tt_axiom(value >= InType{0});
-    tt_axiom(value <= std::numeric_limits<OutType>::max());
-    return static_cast<OutType>(value);
-}
-
-template<std::unsigned_integral OutType, std::signed_integral InType>
-[[nodiscard]] constexpr OutType narrow_cast(InType value) noexcept
-{
-    tt_axiom(value >= InType{0});
-    if constexpr (sizeof(OutType) < sizeof(InType)) {
-        constexpr auto smax = static_cast<long long>(std::numeric_limits<OutType>::max());
-        tt_axiom(value <= smax);
+        return r;
     }
-    return static_cast<OutType>(value);
 }
 
-template<std::unsigned_integral OutType, std::unsigned_integral InType>
-[[nodiscard]] constexpr OutType narrow_cast(InType value) noexcept
+/** Cast numeric values without loss of precision.
+ *
+ * @note It is undefined behavior to cast a value which will cause a loss of precision.
+ * @tparam Out The numeric type to cast to
+ * @tparam In The numeric type to cast from
+ * @param rhs The value to cast.
+ * @return The value casted to a different type without loss of precision.
+ */
+template<numeric Out, numeric In>
+[[nodiscard]] constexpr Out narrow_cast(In rhs) noexcept
 {
-    constexpr auto umax = static_cast<unsigned long long>(std::numeric_limits<OutType>::max());
-    tt_axiom(value <= umax);
-    return static_cast<OutType>(value);
-}
-
-template<std::floating_point OutType, tt::arithmetic InType>
-[[nodiscard]] constexpr OutType narrow_cast(InType value) noexcept
-{
-    return static_cast<OutType>(value);
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+    return narrow<Out>(rhs);
+#else
+    return static_cast<Out>(rhs);
+#endif
 }
 
 /** Return the low half of the input value.

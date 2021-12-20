@@ -591,7 +591,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     } break;
 
     case WM_UNICHAR: {
-        auto c = narrow_cast<char32_t>(wParam);
+        auto c = static_cast<char32_t>(wParam);
         if (c == UNICODE_NOCHAR) {
             // Tell the 3rd party keyboard handler application that we support WM_UNICHAR.
             return 1;
@@ -604,14 +604,14 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     } break;
 
     case WM_DEADCHAR: {
-        auto c = handleSuragates(narrow_cast<char32_t>(wParam));
+        auto c = handleSuragates(static_cast<char32_t>(wParam));
         if (c != 0) {
             send_event(c, false);
         }
     } break;
 
     case WM_CHAR: {
-        auto c = handleSuragates(narrow_cast<char32_t>(wParam));
+        auto c = handleSuragates(static_cast<char32_t>(wParam));
         if (c >= 0x20) {
             send_event(c);
         }
