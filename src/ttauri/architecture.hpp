@@ -2,6 +2,11 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file architecture.hpp
+*
+* Functions and macros for handling architectural difference between compilers, CPUs and operating systems.
+*/
+
 #pragma once
 
 #include <exception>
@@ -201,8 +206,23 @@ constexpr bool x86_64_v4 = false;
 #define tt_cat(a, b) tt_cat_(a, b)
 
 #if TT_COMPILER == TT_CC_MSVC
+
+/** Marker to tell the compiler that this line will never be executed.
+ * 
+ * This marker allows the compiler to do certain optimization.
+ */
 #define tt_unreachable() __assume(0)
+
+/** Mark an expression as true.
+ *
+ * The expression inside tt_assume() can be used by the compiler
+ * to optimize the code (before and after) based on the fact that
+ * the expression is true.
+ */
 #define tt_assume(condition) __assume(condition)
+
+/** 
+ */
 #define tt_force_inline __forceinline
 #define tt_no_inline __declspec(noinline)
 #define tt_restrict __restrict
