@@ -94,6 +94,25 @@ template<numeric Out, numeric In>
     return static_cast<Out>(rhs);
 }
 
+namespace detail {
+
+template<numeric Out, numeric In>
+[[nodiscard]] constexpr bool narrow_validate(Out out, In in) noexcept
+{
+    // in- and out-value compares the same, after converting out-value back to in-type.
+    auto r = (in == static_cast<In>(out));
+
+    // If the types have different signs we need to do an extra test to make sure the actual sign
+    // of the values are the same as well.
+    if constexpr (std::numeric_limits<Out>::is_signed != std::numeric_limits<In>::is_signed) {
+        r &= (in < In{}) == (out < Out{});
+    }
+
+    return r;
+}
+
+}
+
 /** Cast numeric values without loss of precision.
  *
  * @tparam Out The numeric type to cast to
@@ -110,14 +129,8 @@ template<numeric Out, numeric In>
     } else {
         ttlet r = static_cast<Out>(rhs);
 
-        if (rhs != static_cast<In>(r)) {
+        if (not detail::narrow_validate(r, rhs)) {
             throw std::bad_cast();
-        }
-
-        if constexpr (std::numeric_limits<Out>::is_signed != std::numeric_limits<In>::is_signed) {
-            if ((rhs < In{}) != (r < Out{})) {
-                throw std::bad_cast();
-            }
         }
 
         return r;
@@ -135,11 +148,13 @@ template<numeric Out, numeric In>
 template<numeric Out, numeric In>
 [[nodiscard]] constexpr Out narrow_cast(In rhs) noexcept
 {
-#if TT_BUILD_TYPE == TT_BT_DEBUG
-    return narrow<Out>(rhs);
-#else
-    return static_cast<Out>(rhs);
-#endif
+    if constexpr (type_in_range_v<Out, In>) {
+        return static_cast<Out>(rhs);
+    } else {
+        ttlet r = static_cast<Out>(rhs);
+        tt_axiom(detail::narrow_validate(r, rhs));
+        return r;
+    }
 }
 
 /** Return the low half of the input value.
