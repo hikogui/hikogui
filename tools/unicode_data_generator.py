@@ -13,6 +13,7 @@ parser.add_argument("--composition-exclusions", dest="composition_exclusions_pat
 parser.add_argument("--grapheme-break-property", dest="grapheme_break_property_path", action="store", required=True)
 parser.add_argument("--bidi-brackets", dest="bidi_brackets_path", action="store", required=True)
 parser.add_argument("--bidi-mirroring", dest="bidi_mirroring_path", action="store", required=True)
+parser.add_argument("--line-break", dest="line_break_path", action="store", required=True)
 options = parser.parse_args()
 
 def format_char32(x):
@@ -68,6 +69,7 @@ class UnicodeDescription (object):
         self.compositionIsCanonical = False
         self.decompositionOrder = decompositionOrder
         self.decompositionIndex = None
+        self.lineBreakClass = "XX"
 
     def serialize(self):
         s = "TTXD{"
@@ -81,6 +83,7 @@ class UnicodeDescription (object):
         s += format_char32(self.codePoint)
         s += ", TTXGC::{}".format(self.generalCategory)
         s += ", TTXGU::{}".format(self.graphemeClusterBreak)
+        s += ", TTXLB::{}".format(self.lineBreakClass)
 
         # Bidirection algorithm
         s += ", TTXBC::{}".format(self.bidiClass)
@@ -180,6 +183,24 @@ def parseBidiMirroring(filename, descriptions):
         bidiMirrorredGlyph = int(columns[1], 16)
         descriptions[codePoint].bidiMirroredGlyph = bidiMirrorredGlyph
 
+def parseLineBreak(filename, descriptions):
+    for line in open(filename, encoding="utf-8"):
+        line = line.rstrip()
+        line = line.split("#", 1)[0]
+        if line == "":
+            continue
+
+        columns = [x.strip() for x in line.split(";")]
+        
+        codePointRange = [int(x, 16) for x in columns[0].split("..")]
+        if len(codePointRange) == 1:
+            codePointRange.append(codePointRange[0])
+
+        lineBreakClass = columns[1]
+        for codePoint in range(codePointRange[0], codePointRange[1] + 1):
+            if codePoint in descriptions:
+                descriptions[codePoint].lineBreakClass = lineBreakClass
+
 def parseUnicodeData(filename):
     descriptions = {}
     for line in open(filename, encoding="utf-8"):
@@ -269,6 +290,7 @@ def writeUnicodeData(filename, descriptions, compositions, decompositions):
     fd.write('#include "ttauri/text/unicode_bidi_bracket_type.hpp"\n')
     fd.write('#include "ttauri/text/unicode_bidi_class.hpp"\n')
     fd.write('#include "ttauri/text/unicode_grapheme_cluster_break.hpp"\n')
+    fd.write('#include "ttauri/text/unicode_line_break.hpp"\n')
     fd.write('#include "ttauri/text/unicode_composition.hpp"\n')
     fd.write('#include "ttauri/text/unicode_description.hpp"\n')
     fd.write('#include <array>\n\n')
@@ -280,6 +302,7 @@ def writeUnicodeData(filename, descriptions, compositions, decompositions):
     fd.write('#define TTXBC unicode_bidi_class\n')
     fd.write('#define TTXBB unicode_bidi_bracket_type\n')
     fd.write('#define TTXGU unicode_grapheme_cluster_break\n')
+    fd.write('#define TTXLB unicode_line_break_class\n')
     fd.write('constexpr auto unicode_db_description_table = std::array{')
     for i, description in enumerate(descriptions):
         if i != 0:
@@ -334,6 +357,7 @@ def main():
     descriptions = parseUnicodeData(options.unicode_data_path)
     composition_exclusions = parseCompositionExclusions(options.composition_exclusions_path)
     parseGraphemeBreakProperty(options.grapheme_break_property_path, descriptions)
+    parseLineBreak(options.line_break_path, descriptions)
     parseEmojiData(options.emoji_data_path, descriptions)
     parseBidiBrackets(options.bidi_brackets_path, descriptions)
     parseBidiMirroring(options.bidi_mirroring_path, descriptions)

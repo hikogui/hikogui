@@ -8,8 +8,10 @@
 #include "unicode_bidi_class.hpp"
 #include "unicode_bidi_bracket_type.hpp"
 #include "unicode_grapheme_cluster_break.hpp"
+#include "unicode_line_break.hpp"
 #include "../required.hpp"
 #include "../assert.hpp"
+#include "../cast.hpp"
 
 namespace tt::inline v1 {
 namespace detail {
@@ -75,6 +77,7 @@ public:
         char32_t code_point,
         unicode_general_category general_category,
         unicode_grapheme_cluster_break grapheme_cluster_break,
+        unicode_line_break_class line_break_class,
         unicode_bidi_class bidi_class,
         unicode_bidi_bracket_type bidi_bracket_type,
         char32_t bidi_mirrored_glyph,
@@ -86,20 +89,22 @@ public:
         _general_info(
             (static_cast<uint32_t>(code_point) << 10) | (static_cast<uint32_t>(general_category) << 5) |
             (static_cast<uint32_t>(grapheme_cluster_break) << 1)),
-        _bidi_class(static_cast<uint32_t>(bidi_class)),
-        _bidi_bracket_type(static_cast<uint32_t>(bidi_bracket_type)),
+        _bidi_class(to_underlying(bidi_class)),
+        _bidi_bracket_type(to_underlying(bidi_bracket_type)),
         _bidi_mirrored_glyph(static_cast<uint32_t>(bidi_mirrored_glyph)),
-        _decomposition_canonical(static_cast<uint32_t>(decomposition_canonical)),
-        _composition_canonical(static_cast<uint32_t>(composition_canonical)),
         _combining_class(static_cast<uint32_t>(combining_class)),
+        _composition_canonical(static_cast<uint32_t>(composition_canonical)),
+        _line_break_class(to_underlying(line_break_class)),
         _decomposition_index(static_cast<uint32_t>(decomposition_index)),
+        _decomposition_canonical(static_cast<uint32_t>(decomposition_canonical)),
         _decomposition_length(static_cast<uint32_t>(decomposition_length))
     {
         tt_axiom(code_point <= 0x10ffff);
-        tt_axiom(static_cast<uint32_t>(general_category) <= 0x1f);
-        tt_axiom(static_cast<uint32_t>(grapheme_cluster_break) <= 0x0f);
-        tt_axiom(static_cast<uint32_t>(bidi_class) <= 0x1f);
-        tt_axiom(static_cast<uint32_t>(bidi_bracket_type) <= 0x03);
+        tt_axiom(to_underlying(general_category) <= 0x1f);
+        tt_axiom(to_underlying(grapheme_cluster_break) <= 0x0f);
+        tt_axiom(to_underlying(line_break_class) <= 0x3f);
+        tt_axiom(to_underlying(bidi_class) <= 0x1f);
+        tt_axiom(to_underlying(bidi_bracket_type) <= 0x03);
         tt_axiom(static_cast<uint32_t>(bidi_mirrored_glyph) <= 0x10ffff);
         tt_axiom(static_cast<uint32_t>(combining_class) <= 0xff);
         tt_axiom(static_cast<uint32_t>(decomposition_length) <= 0x1f);
@@ -123,6 +128,11 @@ public:
     [[nodiscard]] constexpr unicode_grapheme_cluster_break grapheme_cluster_break() const noexcept
     {
         return static_cast<unicode_grapheme_cluster_break>((_general_info >> 1) & 0xf);
+    }
+
+    [[nodiscard]] constexpr unicode_line_break_class line_break_class() const noexcept
+    {
+        return static_cast<unicode_line_break_class>(_line_break_class);
     }
 
     /** The general category of this code-point.
@@ -245,7 +255,8 @@ public:
 
 private:
     // 1st dword
-    // code_point must be in msb for fast binary search, so no bit-fields here.
+    // We don't use bit-fields so we can do binary-search without needing shift- & and-operations
+    // code_point must be in msb for correct binary search.
     // [31:10] code-point
     // [9:5] general category
     // [4:1] grapheme cluster break
@@ -256,18 +267,19 @@ private:
     uint32_t _bidi_class : 5;
     uint32_t _bidi_bracket_type : 2;
     uint32_t _bidi_mirrored_glyph : 21;
-    uint32_t _bidi_reserved : 4 = 0;
+    uint32_t _word2_reserved : 4 = 0;
 
     // 3rd dword
-    uint32_t _decomposition_canonical : 1;
-    uint32_t _composition_canonical : 1;
     uint32_t _combining_class : 8;
-    uint32_t _decomposition_index : 21;
-    uint32_t _decomposition_reserved1 : 1 = 0;
+    uint32_t _composition_canonical : 1;
+    uint32_t _line_break_class : 6;
+    uint32_t _word3_reserved : 17 = 0;
 
     // 4th dword
+    uint32_t _decomposition_index : 21;
+    uint32_t _decomposition_canonical : 1;
     uint32_t _decomposition_length : 5;
-    uint32_t _decomposition_reserved2 : 27 = 0;
+    uint32_t _word4_reserved : 5 = 0;
 
     template<typename It>
     friend constexpr It unicode_description_find(It first, It last, char32_t code_point) noexcept;

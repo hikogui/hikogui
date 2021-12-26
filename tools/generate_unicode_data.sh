@@ -13,5 +13,6 @@ python tools/unicode_data_generator.py \
     --composition-exclusions=data/CompositionExclusions.txt \
     --grapheme-break-property=data/GraphemeBreakProperty.txt \
     --bidi-brackets=data/BidiBrackets.txt \
-    --bidi-mirroring=data/BidiMirroring.txt
+    --bidi-mirroring=data/BidiMirroring.txt \
+    --line-break=data/LineBreak.txt
 
