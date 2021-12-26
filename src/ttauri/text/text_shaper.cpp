@@ -83,16 +83,16 @@ void text_shaper::char_type::replace_glyph(tt::font_book &font_book, char32_t co
 {
 }
 
-[[nodiscard]] generator<ssize_t> text_shaper::fold(float width) const noexcept
-{
-    auto g = text_fold(_text.begin(), _text.end(), width, [](ttlet &c) {
-        return std::pair{c.description->general_category(), c.width};
-    });
- 
-    for (ttlet span : g) {
-        co_yield span;
-    }
-}
+//[[nodiscard]] generator<ssize_t> text_shaper::fold(float width) const noexcept
+//{
+//    auto g = text_fold(_text.begin(), _text.end(), width, [](ttlet &c) {
+//        return std::pair{c.description->general_category(), c.width};
+//    });
+// 
+//    for (ttlet span : g) {
+//        co_yield span;
+//    }
+//}
 
 //[[nodiscard]] size_t text_shaper::get_char(size_t column_nr, size_t line_nr) const noexcept
 //{
