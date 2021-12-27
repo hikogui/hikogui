@@ -23,11 +23,6 @@
 #define ttlet auto const
 #endif
 
-// Windows.h adds a "IN" macro that is used in this enum.
-#ifdef IN
-#undef IN
-#endif
-
 namespace tt::inline v1 {
 
 
