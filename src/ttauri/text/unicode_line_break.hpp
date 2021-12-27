@@ -12,7 +12,6 @@
 
 namespace tt::inline v1 {
 
-
 /** Unicode line break class.
  *
  * See "AUX14: Unicode line break algorithm"
@@ -77,14 +76,53 @@ enum class unicode_line_break_class : uint8_t {
     XX, // Unknown Most unassigned, private - use Have as yet unknown line breaking behavior or unassigned code positions
 };
 
+/** The opertunity for a line-break.
+ *
+ * This enum only uses the top 2 bits, and can be combined with the 6 bit `unicode_line_break_class`
+ * into a single byte. This helps with performance in several ways.
+ *  - Only single allocation is needed for both the temporary and return value of the opportunity list.
+ *  - We can use a single iterator in the loop to walk both the break-opportunity and line-break-class.
+ *  - Half the memory usage will reduce cache usage.
+ */
 enum class unicode_break_opertunity : uint8_t {
-    unassigned,
-    mandatory_break,
-    no_break,
-    break_allowed
+    unassigned = 0x00,
+    mandatory_break = 0x40,
+    no_break = 0x80,
+    break_allowed = 0xc0
 };
 
+namespace detail {
 
+template<typename It, typename ItEnd, typename UnicodeDescriptionFunc>
+[[nodiscard]] constexpr std::vector<unicode_break_opertunity>
+unicode_LB1(It first, ItEnd last, UnicodeDescriptionFunc const &unicode_description_func) noexcept
+{
+    auto r = std::vector<unicode_break_opertunity>{};
+    r.reserve(std::distance(first, last));
+
+    for (auto it = first; it != last; ++it) {
+        unicode_description const &description = unicode_description_func(*it);
+        unicode_line_break_class break_class = description.line_break_class();
+        switch (break_class) {
+            using enum unicode_line_break_class;
+        case CB: // XXX CB is an embedded object that needs to be queried how to line-break.
+        case AI:
+        case SG:
+        case XX: r.push_back(to_unicode_break_opertunity(AL)); break;
+        case CJ: r.push_back(to_unicode_break_opertunity(NS)); break;
+        case SA: r.push_back(to_unicode_break_opertunity(is_Mn_or_Mc(description.category()) ? CM : AL)); break;
+        default: r.push_back(to_unicode_break_opertunity(break_class));
+        }
+    }
+    return r;
+}
+
+template<typename It, typename ItEnd, typename UnicodeDescriptionFunc>
+[[nodiscard]] constexpr std::vector<unicode_break_opertunity>
+unicode_line_break_algorithm(It first, ItEnd last, UnicodeDescriptionFunc const &unicode_description_func) noexcept
+{
+    auto opertunities = detail::unicode_LB1(first, last, unicode_description_func);
+}
 
 /** Unicode break lines.
  *
@@ -98,9 +136,6 @@ enum class unicode_break_opertunity : uint8_t {
 template<typename It, typename ItEnd, typename CharInfoFunc>
 std::vector<size_t> unicode_break_lines(It first, ItEnd last, float maximum_line_width, CharInfoFunc const &char_info_func)
 {
-
 }
-
-
 
 } // namespace tt::inline v1
