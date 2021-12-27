@@ -8,13 +8,10 @@
 #pragma once
 
 #include <cstdint>
+#include "../required.hpp"
 
 namespace tt::inline v1 {
 
-// Windows.h adds a "IN" macro that is used in this enum.
-#ifdef IN
-#undef IN
-#endif
 
 /** Unicode line break class.
  *
@@ -79,5 +76,31 @@ enum class unicode_line_break_class : uint8_t {
         // contingent on additional, language - specific context analysis
     XX, // Unknown Most unassigned, private - use Have as yet unknown line breaking behavior or unassigned code positions
 };
+
+enum class unicode_break_opertunity : uint8_t {
+    unassigned,
+    mandatory_break,
+    no_break,
+    break_allowed
+};
+
+
+
+/** Unicode break lines.
+ *
+ * @tparam CharInfoFunc function with signature `std::pair<float, unicode_description const &>(decltype(*It))`
+ * @param first Iterator to the first character.
+ * @param last Iterator to one beyond the last character.
+ * @param maximum_line_width The maximum line width.
+ * @param char_info_func Function converting item dereferenced from a iterator to a width, description
+ * @return A list of line lengths.
+ */
+template<typename It, typename ItEnd, typename CharInfoFunc>
+std::vector<size_t> unicode_break_lines(It first, ItEnd last, float maximum_line_width, CharInfoFunc const &char_info_func)
+{
+
+}
+
+
 
 } // namespace tt::inline v1
