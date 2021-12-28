@@ -135,26 +135,6 @@ public:
         return static_cast<unicode_line_break_class>(_line_break_class);
     }
 
-    /** Resolve line break class.
-     *
-     * The line break class is resolved absent of context according to UAX#14:LB1
-     */
-    [[nodiscard]] constexpr unicode_line_break_class resolved_line_break_class() const noexcept
-    {
-        ttlet line_break_class_ = line_break_class();
-        switch (line_break_class_) {
-        case unicode_line_break_class::AI:
-        case unicode_line_break_class::SG:
-        case unicode_line_break_class::XX: return unicode_line_break_class::AL;
-        case unicode_line_break_class::SA: {
-            ttlet category = general_category();
-            return (category == unicode_general_category::Mn or category == unicode_general_category::Mc) ? unicode_line_break_class::CM : unicode_line_break_class::AL;
-        }
-        case unicode_line_break_class::CJ: return unicode_line_break_class::NS;
-        default: return line_break_class_;
-        }
-    }
-
 
     /** The general category of this code-point.
      * This function is used to determine what kind of code-point this,

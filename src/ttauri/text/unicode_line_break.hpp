@@ -8,6 +8,7 @@
 #pragma once
 
 #include "unicode_general_category.hpp"
+#include "unicode_grapheme_cluster_break.hpp"
 #include "../required.hpp"
 #include "../cast.hpp"
 #include "../assert.hpp"
@@ -100,9 +101,16 @@ enum class unicode_line_break_opportunity : uint8_t {
     break_allowed = 0xc0
 };
 
+/** Strip away the lower 6 bits, leaving on valid values.
+ */
+[[nodiscard]] constexpr unicode_line_break_opportunity clean(unicode_line_break_opportunity rhs) noexcept
+{
+    return static_cast<unicode_line_break_opportunity>(to_underlying(rhs) & 0xc0);
+}
+
 [[nodiscard]] constexpr bool any(unicode_line_break_opportunity rhs) noexcept
 {
-    return static_cast<bool>(to_underlying(rhs) & 0xc0);
+    return static_cast<bool>(to_underlying(clean(rhs)));
 }
 
 [[nodiscard]] constexpr unicode_line_break_opportunity to_unicode_line_break_opportunity(unicode_line_break_class rhs) noexcept
@@ -144,15 +152,16 @@ constexpr unicode_line_break_class exchange(unicode_line_break_opportunity &lhs,
     return tmp;
 }
 
-template<typename It, typename ItEnd, typename CharInfoFunc>
+template<typename It, typename ItEnd, typename DescriptionFunc>
 [[nodiscard]] constexpr std::vector<unicode_line_break_opportunity>
-unicode_LB1(It first, ItEnd last, CharInfoFunc const &char_info_func) noexcept
+unicode_LB1_3(It first, ItEnd last, DescriptionFunc const &description_func) noexcept
 {
     auto r = std::vector<unicode_line_break_opportunity>{};
     r.reserve(std::distance(first, last));
 
     for (auto it = first; it != last; ++it) {
-        ttlet[break_class, category, width] = char_info_func(*it);
+        ttlet &description = description_func(*it);
+        ttlet break_class = description.break_class();
 
         switch (break_class) {
             using enum unicode_line_break_class;
@@ -161,54 +170,68 @@ unicode_LB1(It first, ItEnd last, CharInfoFunc const &char_info_func) noexcept
         case SG:
         case XX: r.push_back(to_unicode_line_break_opportunity(AL)); break;
         case CJ: r.push_back(to_unicode_line_break_opportunity(NS)); break;
-        case SA: r.push_back(to_unicode_line_break_opportunity(is_Mn_or_Mc(category) ? CM : AL)); break;
+        case SA: r.push_back(to_unicode_line_break_opportunity(is_Mn_or_Mc(description.general_category()) ? CM : AL)); break;
         default: r.push_back(to_unicode_line_break_opportunity(break_class));
         }
+    }
+    // LB2: No-op, the break-opportunities are only after the character.
+
+    if (not r.empty()) {
+        // LB3
+        r.back() |= unicode_line_break_opportunity::mandatory_break;
     }
     return r;
 }
 
-constexpr void unicode_LB2_3(std::vector<unicode_line_break_opportunity> &opportunities) noexcept
+template<typename MatchFunc>
+constexpr void unicode_LB_walk(std::vector<unicode_line_break_opportunity> &opportunities, MatchFunc match_func) noexcept
 {
-    // LB2: No-op, the opportunities are only after the character.
-
     tt_axiom(not opportunities.empty());
-    tt_axiom(not any(opportunities.back()));
-    // LB3
-    opportunities.back() |= unicode_line_break_opportunity::mandatory_break;
-}
+    tt_axiom(clean(opportunities.back()) == unicode_line_break_opportunity::mandatory_break);
 
-constexpr void unicode_LB4_7(std::vector<unicode_line_break_opportunity> &opportunities) noexcept
-{
-    using enum unicode_line_break_class;
-    tt_axiom(not opportunities.empty());
     auto it = opportunities.begin();
     ttlet last = opportunities.end() - 1;
 
+    auto prev_class = unicode_line_break_class::XX;
     while (it != last) {
         ttlet next = it + 1;
 
         if (not any(*it)) {
-            if (*it == BK) {
-                // LB4
-                *it |= unicode_line_break_opportunity::mandatory_break;
-            } else if (*it == CR and *next == LF) {
-                // LB5
-                *it |= unicode_line_break_opportunity::no_break;
-            } else if (*it == CR || *it == LF || *it == NL) {
-                // LB5
-                *it |= unicode_line_break_opportunity::mandatory_break;
-            } else if (*next == BK or *next == CR or *next == LF or *next == NL) {
-                // LB6
-                *it |= unicode_line_break_opportunity::no_break;
-            } else if (*next == SP or *next == ZW) {
-                // LB7
-                *it |= unicode_line_break_opportunity::no_break;
-            }
+            ttlet this_class = to_unicode_line_break_class(*it);
+            ttlet next_class = to_unicode_line_break_class(*next);
+
+            *it |= match_func(prev_class, this_class, next_class);
         }
 
+        prev_class = to_unicode_line_break_class(*it);
         it = next;
     }
+}
+
+constexpr void unicode_LB4_7(std::vector<unicode_line_break_opportunity> &opportunities) noexcept
+{
+    unicode_LB_walk(opportunities, [](ttlet prev, ttlet cur, ttlet next) {
+        using enum unicode_line_break_opportunity;
+        using enum unicode_line_break_class;
+        if (cur == BK) {
+            // LB4
+            return mandatory_break;
+        } else if (cur == CR and next == LF) {
+            // LB5
+            return no_break;
+        } else if (cur == CR or cur == LF or cur == NL) {
+            // LB5
+            return mandatory_break;
+        } else if (next == BK or next == CR or next == LF or next == NL) {
+            // LB6
+            return no_break;
+        } else if (next == SP or next == ZW) {
+            // LB7
+            return no_break;
+        } else {
+            return unassigned;
+        }
+    });
 }
 
 constexpr void unicode_LB8(std::vector<unicode_line_break_opportunity> &opportunities) noexcept
@@ -237,11 +260,15 @@ constexpr void unicode_LB8(std::vector<unicode_line_break_opportunity> &opportun
 
 constexpr void unicode_LB8a(std::vector<unicode_line_break_opportunity> &opportunities) noexcept
 {
-    for (auto &x : opportunities) {
-        if (not any(x) and x == unicode_line_break_class::ZWJ) {
-            x |= unicode_line_break_opportunity::no_break;
+    unicode_LB_walk(opportunities, [](ttlet prev, ttlet cur, ttlet next) {
+        using enum unicode_line_break_opportunity;
+        using enum unicode_line_break_class;
+        if (cur == ZWJ) {
+            return no_break;
+        } else {
+            return unassigned;
         }
-    }
+    });
 }
 
 constexpr void unicode_LB9_10(std::vector<unicode_line_break_opportunity> &opportunities) noexcept
@@ -269,51 +296,27 @@ constexpr void unicode_LB9_10(std::vector<unicode_line_break_opportunity> &oppor
     }
 }
 
-constexpr void unicode_LB11_12(std::vector<unicode_line_break_opportunity> &opportunities) noexcept
+constexpr void unicode_LB11_13(std::vector<unicode_line_break_opportunity> &opportunities) noexcept
 {
-    using enum unicode_line_break_class;
-
-    unicode_line_break_opportunity *prev = nullptr;
-    for (auto &x : opportunities) {
-        if (x == WJ) {
+    unicode_LB_walk(opportunities, [](ttlet prev, ttlet cur, ttlet next) {
+        using enum unicode_line_break_opportunity;
+        using enum unicode_line_break_class;
+        if (cur == WJ or next == WJ) {
             // LB11
-            if (not any(x)) {
-                x |= unicode_line_break_opportunity::no_break;
-            }
-            if (prev and not any(*prev)) {
-                *prev |= unicode_line_break_opportunity::no_break;
-            }
-        } else if (x == GL) {
+            return no_break;
+        } else if (cur == GL) {
             // LB12
-            if (not any(x)) {
-                x |= unicode_line_break_opportunity::no_break;
-            }
+            return no_break;
+        } else if (cur != SP and cur != BA and cur != HY and next == GL) {
+            // LB12a
+            return no_break;
+        } else if (cur == CL or cur == CP or cur == EX or cur == IS or cur == SY) {
+            // LB13
+            return no_break;
+        } else {
+            return unassigned;
         }
-    }
-}
-
-constexpr void unicode_LB12a_13(std::vector<unicode_line_break_opportunity> &opportunities) noexcept
-{
-    using enum unicode_line_break_class;
-    tt_axiom(not opportunities.empty());
-    auto it = opportunities.begin();
-    ttlet last = opportunities.end() - 1;
-
-    while (it != last) {
-        ttlet next = it + 1;
-
-        if (not any(*it)) {
-            if (*it != SP and *it != BA and *it != HY and *next == GL) {
-                // LB12a
-                *it |= unicode_line_break_opportunity::no_break;
-            } else if (*it == CL or *it == CP or *it == EX or *it == IS or *it == SY) {
-                // LB13
-                *it |= unicode_line_break_opportunity::no_break;
-            }
-        }
-
-        it = next;
-    }
+    });
 }
 
 constexpr void unicode_LB14(std::vector<unicode_line_break_opportunity> &opportunities) noexcept
@@ -412,138 +415,91 @@ constexpr void unicode_LB17(std::vector<unicode_line_break_opportunity> &opportu
     }
 }
 
-constexpr void unicode_LB18_21(std::vector<unicode_line_break_opportunity> &opportunities) noexcept
+constexpr void unicode_LB18_29(std::vector<unicode_line_break_opportunity> &opportunities) noexcept
 {
-    using enum unicode_line_break_class;
-    tt_axiom(not opportunities.empty());
-    auto it = opportunities.begin();
-    ttlet last = opportunities.end() - 1;
-
-    while (it != last) {
-        ttlet next = it + 1;
-
-        if (not any(*it)) {
-            if (*it == SP) {
-                // LB18
-                *it |= unicode_line_break_opportunity::break_allowed;
-            } else if (*it == QU or *next == QU) {
-                // LB19
-                *it |= unicode_line_break_opportunity::no_break;
-            } else if (*it == CB or *next == CB) {
-                // LB20
-                *it |= unicode_line_break_opportunity::break_allowed;
-            } else if (*it == BB or *next == BA or *next == HY or *next == NS) {
-                // LB21
-                *it |= unicode_line_break_opportunity::no_break;
-            }
+    unicode_LB_walk(opportunities, [](ttlet prev, ttlet cur, ttlet next) {
+        using enum unicode_line_break_opportunity;
+        using enum unicode_line_break_class;
+        if (cur == SP) {
+            // LB18
+            return break_allowed;
+        } else if (cur == QU or next == QU) {
+            // LB19
+            return no_break;
+        } else if (cur == CB or next == CB) {
+            // LB20
+            return break_allowed;
+        } else if (cur == BB or next == BA or next == HY or next == NS) {
+            // LB21
+            return no_break;
+        } else if (prev == HL and (cur == HY or cur == BA)) {
+            // LB21a
+            return no_break;
+        } else if (cur == SY and next == HL) {
+            // LB21b
+            return no_break;
+        } else if (next == IN) {
+            // LB22
+            return no_break;
+        } else if ((cur == AL or cur == HL) and next == NU) {
+            // LB23.01
+            return no_break;
+        } else if (cur == NU and (next == AL or next == HL)) {
+            // LB23.02
+            return no_break;
+        } else if (cur == PR and (next == ID or next == EB or next == EM)) {
+            // LB23a.01
+            return no_break;
+        } else if ((cur == ID or cur == EB or cur == EM) and next == PO) {
+            // LB23a.02
+            return no_break;
+        } else if ((cur == PR or cur == PO) and (next == AL or next == HL)) {
+            // LB24.01
+            return no_break;
+        } else if ((cur == AL or cur == HL) and (next == PR or next == PO)) {
+            // LB24.02
+            return no_break;
+        } else if (
+            (cur == CL and next == PO) or (cur == CP and next == PO) or (cur == CL and next == PR) or
+            (cur == CP and next == PR) or (cur == NU and next == PO) or (cur == NU and next == PR) or
+            (cur == PO and next == OP) or (cur == PO and next == NU) or (cur == PR and next == OP) or
+            (cur == PR and next == NU) or (cur == HY and next == NU) or (cur == IS and next == NU) or
+            (cur == NU and next == NU) or (cur == SY and next == NU)) {
+            // LB25
+            return no_break;
+        } else if (cur == JL and (next == JL or next == JV or next == H2 or next == H3)) {
+            // LB26.01
+            return no_break;
+        } else if ((cur == JV or cur == H2) and (next == JV or next == JT)) {
+            // LB26.02
+            return no_break;
+        } else if ((cur == JT or cur == H3) and next == JT) {
+            // LB26.03
+            return no_break;
+        } else if ((cur == JL or cur == JV or cur == JT or cur == H2 or cur == H3) and next == PO) {
+            // LB27.01
+            return no_break;
+        } else if (cur == PR and (next == JL or next == JV or next == JT or next == H2 or next == H3)) {
+            // LB27.02
+            return no_break;
+        } else if ((cur == AL or cur == HL) and (next == AL or next == HL)) {
+            // LB28
+            return no_break;
+        } else if (cur == IS and (next == AL or next == HL)) {
+            // LB29
+            return no_break;
+        } else {
+            return unassigned;
         }
-
-        it = next;
-    }
+    });
 }
 
-constexpr void unicode_LB21a(std::vector<unicode_line_break_opportunity> &opportunities) noexcept
+template<typename It, typename DescriptionFunc>
+constexpr void unicode_LB30_31(
+    std::vector<unicode_line_break_opportunity> &opportunities,
+    It first,
+    DescriptionFunc const &description_func) noexcept
 {
-    using enum unicode_line_break_class;
-    tt_axiom(not opportunities.empty());
-    auto it = opportunities.begin();
-    ttlet last = opportunities.end() - 1;
-
-    while (it != last) {
-        ttlet next = it + 1;
-
-        if (not any(*next)) {
-            if (*it == HL and (*next == HY or *next == BA)) {
-                *next |= unicode_line_break_opportunity::no_break;
-            }
-        }
-
-        it = next;
-    }
-}
-
-constexpr void unicode_LB21b_30(std::vector<unicode_line_break_opportunity> &opportunities) noexcept
-{
-    using enum unicode_line_break_class;
-    tt_axiom(not opportunities.empty());
-    auto it = opportunities.begin();
-    ttlet last = opportunities.end() - 1;
-
-    while (it != last) {
-        ttlet next = it + 1;
-
-        if (not any(*it)) {
-            if (*it == SY and *next == HL) {
-                // LB21b
-                *it |= unicode_line_break_opportunity::no_break;
-            } else if (*next == IN) {
-                // LB22
-                *it |= unicode_line_break_opportunity::no_break;
-            } else if ((*it == AL or *it == HL) and *next == NU) {
-                // LB23.01
-                *it |= unicode_line_break_opportunity::no_break;
-            } else if (*it == NU and (*next == AL or *next == HL)) {
-                // LB23.02
-                *it |= unicode_line_break_opportunity::no_break;
-            } else if (*it == PR and (*next == ID or *next == EB or *next == EM)) {
-                // LB23a.01
-                *it |= unicode_line_break_opportunity::no_break;
-            } else if ((*it == ID or *it == EB or *it == EM) and *next == PO) {
-                // LB23a.02
-                *it |= unicode_line_break_opportunity::no_break;
-            } else if ((*it == PR or *it == PO) and (*next == AL or *next == HL)) {
-                // LB24.01
-                *it |= unicode_line_break_opportunity::no_break;
-            } else if ((*it == AL or *it == HL) and (*next == PR or *next == PO)) {
-                // LB24.02
-                *it |= unicode_line_break_opportunity::no_break;
-            } else if (
-                (*it == CL and *next == PO) or (*it == CP and *next == PO) or (*it == CL and *next == PR) or
-                (*it == CP and *next == PR) or (*it == NU and *next == PO) or (*it == NU and *next == PR) or
-                (*it == PO and *next == OP) or (*it == PO and *next == NU) or (*it == PR and *next == OP) or
-                (*it == PR and *next == NU) or (*it == HY and *next == NU) or (*it == IS and *next == NU) or
-                (*it == NU and *next == NU) or (*it == SY and *next == NU)) {
-                // LB25
-                *it |= unicode_line_break_opportunity::no_break;
-            } else if (*it == JL and (*next == JL or *next == JV or *next == H2 or *next == H3)) {
-                // LB26.01
-                *it |= unicode_line_break_opportunity::no_break;
-            } else if ((*it == JV or *it == H2) and (*next == JV or *next == JT)) {
-                // LB26.02
-                *it |= unicode_line_break_opportunity::no_break;
-            } else if ((*it == JT or *it == H3) and *next == JT) {
-                // LB26.03
-                *it |= unicode_line_break_opportunity::no_break;
-            } else if ((*it == JL or *it == JV or *it == JT or *it == H2 or *it == H3) and *next == PO) {
-                // LB27.01
-                *it |= unicode_line_break_opportunity::no_break;
-            } else if (*it == PR and (*next == JL or *next == JV or *next == JT or *next == H2 or *next == H3)) {
-                // LB27.02
-                *it |= unicode_line_break_opportunity::no_break;
-            } else if ((*it == AL or *it == HL) and (*next == AL or *next == HL)) {
-                // LB28
-                *it |= unicode_line_break_opportunity::no_break;
-            } else if (*it == IS and (*next == AL or *next == HL)) {
-                // LB29
-                *it |= unicode_line_break_opportunity::no_break;
-            } else if ((*it == AL or *it == HL or *it == NU) and *next == OP) {
-                // LB30.01
-                // XXX incomplete
-                *it |= unicode_line_break_opportunity::no_break;
-            } else if (*it == CP and (*next == AL or *next == HL or *next == NU)) {
-                // LB30.02
-                // XXX incomplete
-                *it |= unicode_line_break_opportunity::no_break;
-            }
-        }
-
-        it = next;
-    }
-}
-
-constexpr void unicode_LB30a_31(std::vector<unicode_line_break_opportunity> &opportunities) noexcept
-{
-    using enum unicode_line_break_class;
     tt_axiom(not opportunities.empty());
     auto it = opportunities.begin();
     ttlet last = opportunities.end() - 1;
@@ -553,18 +509,47 @@ constexpr void unicode_LB30a_31(std::vector<unicode_line_break_opportunity> &opp
         ttlet next = it + 1;
 
         if (not any(*it)) {
-            if (*it == RI and *next == RI and (consequtive_ri % 2) == 0) {
-                // LB30a
-                *it |= unicode_line_break_opportunity::no_break;
-            } else if (*it == EB and *next == EM) {
-                // LB30b XXX incomplete
-                *it |= unicode_line_break_opportunity::no_break;
-            } else {
+            *it |= []() {
+                using enum unicode_line_break_class;
+                using enum unicode_line_break_opportunity;
+                if ((*it == AL or *it == HL or *it == NU) and *next == OP) {
+                    ttlet char_next = first + std::distance(opportunities.begin(), next);
+                    ttlet &description = description_func(*char_next);
+
+                    // LB30.01
+                    // XXX incomplete
+                    return no_break;
+                }
+                if (*it == CP and (*next == AL or *next == HL or *next == NU)) {
+                    ttlet char_it = first + std::distance(opportunities.begin(), it);
+                    ttlet &description = description_func(*char_it);
+                    // LB30.02
+                    // XXX incomplete
+                    return no_break;
+                }
+                if (*it == RI and *next == RI and (consequtive_ri % 2) == 0) {
+                    // LB30a
+                    return no_break;
+                }
+                if (*it == EB and *next == EM) {
+                    // LB30b.01
+                    return no_break;
+                }
+                if (*next == EM) {
+                    ttlet char_it = first + std::distance(opportunities.begin(), it);
+                    ttlet &description = description_func(*char_it);
+                    if (description.grapheme_cluster_break() == unicode_grapheme_cluster_break::Extended_Pictographic or
+                        description.general_category() == unicode_general_category::Cn) {
+                        // LB30b.02
+                        return no_break;
+                    }
+                }
+
                 // LB31
-                *it |= unicode_line_break_opportunity::break_allowed;
-            }
+                return break_allowed;
+            }();
         }
-        
+
         if (*it == RI) {
             ++consequtive_ri;
         } else {
@@ -581,23 +566,19 @@ template<typename It, typename ItEnd, typename UnicodeDescriptionFunc>
 [[nodiscard]] constexpr std::vector<unicode_line_break_opportunity>
 unicode_line_break_algorithm(It first, ItEnd last, UnicodeDescriptionFunc const &unicode_description_func) noexcept
 {
-    auto opportunities = detail::unicode_LB1(first, last, unicode_description_func);
+    auto opportunities = detail::unicode_LB1_3(first, last, unicode_description_func);
     if (not opportunities.empty()) {
-        detail::unicode_LB2_3(opportunities);
         detail::unicode_LB4_7(opportunities);
         detail::unicode_LB8(opportunities);
         detail::unicode_LB8a(opportunities);
         detail::unicode_LB9_10(opportunities);
-        detail::unicode_LB11_12(opportunities);
-        detail::unicode_LB12a_13(opportunities);
+        detail::unicode_LB11_13(opportunities);
         detail::unicode_LB14(opportunities);
         detail::unicode_LB15(opportunities);
         detail::unicode_LB16(opportunities);
         detail::unicode_LB17(opportunities);
-        detail::unicode_LB18_21(opportunities);
-        detail::unicode_LB21a(opportunities);
-        detail::unicode_LB21b_30(opportunities);
-        detail::unicode_LB30a_31(opportunities);
+        detail::unicode_LB18_29(opportunities);
+        detail::unicode_LB30_31(opportunities);
     }
     return opportunities;
 }
