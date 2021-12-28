@@ -9,6 +9,7 @@
 #include "unicode_bidi_bracket_type.hpp"
 #include "unicode_grapheme_cluster_break.hpp"
 #include "unicode_line_break.hpp"
+#include "unicode_east_asian_width.hpp"
 #include "../required.hpp"
 #include "../assert.hpp"
 #include "../cast.hpp"
@@ -78,6 +79,7 @@ public:
         unicode_general_category general_category,
         unicode_grapheme_cluster_break grapheme_cluster_break,
         unicode_line_break_class line_break_class,
+        unicode_east_asian_width east_asian_width,
         unicode_bidi_class bidi_class,
         unicode_bidi_bracket_type bidi_bracket_type,
         char32_t bidi_mirrored_glyph,
@@ -92,6 +94,7 @@ public:
         _bidi_class(to_underlying(bidi_class)),
         _bidi_bracket_type(to_underlying(bidi_bracket_type)),
         _bidi_mirrored_glyph(static_cast<uint32_t>(bidi_mirrored_glyph)),
+        _east_asian_width(static_cast<uint32_t>(east_asian_width)),
         _combining_class(static_cast<uint32_t>(combining_class)),
         _composition_canonical(static_cast<uint32_t>(composition_canonical)),
         _line_break_class(to_underlying(line_break_class)),
@@ -103,6 +106,7 @@ public:
         tt_axiom(to_underlying(general_category) <= 0x1f);
         tt_axiom(to_underlying(grapheme_cluster_break) <= 0x0f);
         tt_axiom(to_underlying(line_break_class) <= 0x3f);
+        tt_axiom(to_underlying(east_asian_width) <= 0x7);
         tt_axiom(to_underlying(bidi_class) <= 0x1f);
         tt_axiom(to_underlying(bidi_bracket_type) <= 0x03);
         tt_axiom(static_cast<uint32_t>(bidi_mirrored_glyph) <= 0x10ffff);
@@ -135,6 +139,10 @@ public:
         return static_cast<unicode_line_break_class>(_line_break_class);
     }
 
+    [[nodiscard]] constexpr unicode_east_asian_width east_asian_width() const noexcept
+    {
+        return static_cast<unicode_east_asian_width>(_east_asian_width);
+    }
 
     /** The general category of this code-point.
      * This function is used to determine what kind of code-point this,
@@ -268,7 +276,8 @@ private:
     uint32_t _bidi_class : 5;
     uint32_t _bidi_bracket_type : 2;
     uint32_t _bidi_mirrored_glyph : 21;
-    uint32_t _word2_reserved : 4 = 0;
+    uint32_t _east_asian_width: 3;
+    uint32_t _word2_reserved : 1 = 0;
 
     // 3rd dword
     uint32_t _combining_class : 8;
