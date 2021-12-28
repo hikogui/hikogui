@@ -54,8 +54,10 @@ target_sources(ttauri PRIVATE
     unicode_composition.hpp
     unicode_description.cpp
     unicode_description.hpp
+    unicode_east_asian_width.hpp
     unicode_general_category.hpp
     unicode_grapheme_cluster_break.hpp
+    unicode_line_break.hpp
     unicode_mask.cpp
     unicode_mask.hpp
     unicode_normalization.cpp
