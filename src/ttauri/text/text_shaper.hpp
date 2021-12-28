@@ -4,6 +4,8 @@
 
 #include "../alignment.hpp"
 #include "../coroutine.hpp"
+#include "glyph_metrics.hpp"
+#include "font_metrics.hpp"
 #include "grapheme.hpp"
 #include "gstring.hpp"
 #include "text_style.hpp"
