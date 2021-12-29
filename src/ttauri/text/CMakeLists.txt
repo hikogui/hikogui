@@ -72,6 +72,7 @@ if(TT_BUILD_TESTS)
     target_sources(ttauri_tests PRIVATE
         language_tag_tests.cpp
         unicode_bidi_tests.cpp
+        unicode_line_break_tests.cpp
         unicode_text_segmentation_tests.cpp
         unicode_normalization_tests.cpp
         language_tag_tests.cpp
