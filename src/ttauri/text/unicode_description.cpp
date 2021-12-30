@@ -28,6 +28,8 @@ constexpr unicode_description const &Private_Use_High_Surrogate_unicode_descript
 constexpr unicode_description const &Low_Surrogate_unicode_description = *_unicode_description_find(char32_t{0xdc00});
 constexpr unicode_description const &Private_Use_unicode_description = *_unicode_description_find(U'\ue000');
 constexpr unicode_description const &Tangut_Ideograph_unicode_description = *_unicode_description_find(U'\U00017000');
+constexpr unicode_description Extended_Pictographic_description =
+    unicode_description::make_unassigned(*_unicode_description_find(U'\U0001f000'));
 constexpr unicode_description const &CJK_Ideograph_Extension_B_unicode_description = *_unicode_description_find(U'\U00020000');
 constexpr unicode_description const &CJK_Ideograph_Extension_C_unicode_description = *_unicode_description_find(U'\U0002a700');
 constexpr unicode_description const &CJK_Ideograph_Extension_D_unicode_description = *_unicode_description_find(U'\U0002b740');
@@ -71,6 +73,9 @@ constexpr unicode_description const &Plane_16_Private_Use_unicode_description = 
 
         } else if (code_point >= U'\U00017000' && code_point <= U'\U000187f7') {
             return Tangut_Ideograph_unicode_description;
+
+        } else if (code_point >= U'\U0001f000' and code_point <= U'\U0001fffd') {
+            return Extended_Pictographic_description;
 
         } else if (code_point >= U'\U00020000' && code_point <= U'\U0002a6d6') {
             return CJK_Ideograph_Extension_B_unicode_description;

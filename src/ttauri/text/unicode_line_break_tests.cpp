@@ -106,17 +106,6 @@ static tt::generator<test_type> parse_tests()
 TEST(unicode_line_break, line_break)
 {
     for (ttlet &test : parse_tests()) {
-        if (test.line_nr == 1161 or test.line_nr == 1163 or test.line_nr == 1165 or test.line_nr == 1167 or
-            test.line_nr == 2873 or test.line_nr == 2875 or test.line_nr == 4425 or test.line_nr == 4427 or
-            test.line_nr == 4473 or test.line_nr == 4475 or test.line_nr == 4597 or test.line_nr == 4599 or
-            test.line_nr == 4645 or test.line_nr == 4647 or test.line_nr == 5109 or test.line_nr == 5111 or
-            test.line_nr == 6149 or test.line_nr == 6151 or test.line_nr == 6153 or test.line_nr == 6155) {
-            // CL x PO. LB25 in UAX#14 is completely different from test requirement 25.0x
-            continue;
-        }
-
-        if (test.line_nr == 7477) {
         ASSERT_TRUE(test.check());
-        }
     }
 }

@@ -195,17 +195,34 @@ constexpr void unicode_LB_walk(std::vector<unicode_line_break_clop> &opportuniti
 
     auto cur = opportunities.begin();
     ttlet last = opportunities.end() - 1;
+    ttlet last2 = opportunities.end();
 
     auto cur_sp_class = XX;
+    auto cur_nu_class = XX;
     auto prev_class = XX;
     auto num_ri = 0_uz;
     while (cur != last) {
         ttlet next = cur + 1;
         ttlet cur_class = unicode_line_break_class{*cur};
+        ttlet next2_class = cur + 2 == last2 ? XX : unicode_line_break_class{*(cur + 2)};
 
         // Keep track of classes followed by zero or more SP.
         if (cur_class != SP) {
             cur_sp_class = cur_class;
+        }
+
+        // Keep track of a "NU (NU|SY|IS)*" and "NU (NU|SY|IS)* (CL|CP)?".
+        if (cur_nu_class == CL) {
+            // Only a single CL|CP class may be at the end, then the number is closed.
+            cur_nu_class = XX;
+        } else if (cur_nu_class == NU) {
+            if (cur_class == CL or cur_class == CP) {
+                cur_nu_class = CL;
+            } else if (cur_class != NU and cur_class != SY and cur_class != IS) {
+                cur_nu_class = XX;
+            }
+        } else if (cur_class == NU) {
+            cur_nu_class = NU;
         }
 
         // Keep track of consecutive RI, but only count the actual RIs.
@@ -216,7 +233,7 @@ constexpr void unicode_LB_walk(std::vector<unicode_line_break_clop> &opportuniti
         }
 
         if (*cur == unicode_line_break_opportunity::unassigned) {
-            *cur |= match_func(prev_class, cur, next, cur_sp_class, num_ri);
+            *cur |= match_func(prev_class, cur, next, next2_class, cur_sp_class, cur_nu_class, num_ri);
         }
 
         prev_class = cur_class;
@@ -226,7 +243,7 @@ constexpr void unicode_LB_walk(std::vector<unicode_line_break_clop> &opportuniti
 
 constexpr void unicode_LB4_8a(std::vector<unicode_line_break_clop> &opportunities) noexcept
 {
-    unicode_LB_walk(opportunities, [](ttlet prev, ttlet cur, ttlet next, ttlet cur_sp, ttlet num_ri) {
+    unicode_LB_walk(opportunities, [](ttlet prev, ttlet cur, ttlet next, ttlet next2, ttlet cur_sp, ttlet cur_nu, ttlet num_ri) {
         using enum unicode_line_break_opportunity;
         using enum unicode_line_break_class;
         if (*cur == BK) {
@@ -329,7 +346,7 @@ constexpr void unicode_LB11_31(
     CharIt char_first,
     DescriptionFunc const &description_func) noexcept
 {
-    unicode_LB_walk(opportunities, [&](ttlet prev, ttlet cur, ttlet next, ttlet cur_sp, ttlet num_ri) {
+    unicode_LB_walk(opportunities, [&](ttlet prev, ttlet cur, ttlet next, ttlet next2, ttlet cur_sp, ttlet cur_nu, ttlet num_ri) {
         using enum unicode_line_break_opportunity;
         using enum unicode_line_break_class;
         if (*cur == WJ or *next == WJ) {
@@ -375,12 +392,16 @@ constexpr void unicode_LB11_31(
         } else if ((*cur == AL or *cur == HL) and (*next == PR or *next == PO)) {
             return no_break; // LB24: 24.03
         } else if (
-            (*cur == CL and *next == PO) or (*cur == CP and *next == PO) or (*cur == CL and *next == PR) or
-            (*cur == CP and *next == PR) or (*cur == NU and *next == PO) or (*cur == NU and *next == PR) or
-            (*cur == PO and *next == OP) or (*cur == PO and *next == NU) or (*cur == PR and *next == OP) or
-            (*cur == PR and *next == NU) or (*cur == HY and *next == NU) or (*cur == IS and *next == NU) or
-            (*cur == NU and *next == NU) or (*cur == SY and *next == NU)) {
-            return no_break; // LB25: 25.01, 25.02, 25.03, 25.04, 25.05
+            (*cur == PR or *cur == PO) and ((*next == OP and next2 == NU) or (*next == HY and next2 == NU) or *next == NU)) {
+            return no_break; // LB25: 25.01
+        } else if ((*cur == OP or *cur == HY) and *next == NU) {
+            return no_break; // LB25: 25.02
+        } else if (*cur == NU and (*next == NU or *next == SY or *next == IS)) {
+            return no_break; // LB25: 25.03
+        } else if (cur_nu == NU and (*next == NU or *next == SY or *next == IS or *next == CL or *next == CP)) {
+            return no_break; // LB25: 25.04
+        } else if ((cur_nu == NU or cur_nu == CL) and (*next == PO or *next == PR)) {
+            return no_break; // LB25: 25.05
         } else if (*cur == JL and (*next == JL or *next == JV or *next == H2 or *next == H3)) {
             return no_break; // LB26: 26.01
         } else if ((*cur == JV or *cur == H2) and (*next == JV or *next == JT)) {

@@ -74,6 +74,13 @@ constexpr char32_t paragraph_separator_character = U'\u2029';
  */
 class unicode_description {
 public:
+    static constexpr uint32_t code_point_shift = 10;
+    static constexpr uint32_t code_point_mask = 0x1f'ffff << code_point_shift;
+    static constexpr uint32_t general_category_shift = 5;
+    static constexpr uint32_t general_category_mask = 0x1f << general_category_shift;
+    static constexpr uint32_t grapheme_cluster_break_shift = 1;
+    static constexpr uint32_t grapheme_cluster_break_mask = 0xf << grapheme_cluster_break_shift;
+
     [[nodiscard]] constexpr unicode_description(
         char32_t code_point,
         unicode_general_category general_category,
@@ -89,8 +96,9 @@ public:
         uint8_t decomposition_length,
         uint32_t decomposition_index) noexcept :
         _general_info(
-            (static_cast<uint32_t>(code_point) << 10) | (static_cast<uint32_t>(general_category) << 5) |
-            (static_cast<uint32_t>(grapheme_cluster_break) << 1)),
+            (static_cast<uint32_t>(code_point) << code_point_shift) |
+            (static_cast<uint32_t>(general_category) << general_category_shift) |
+            (static_cast<uint32_t>(grapheme_cluster_break) << grapheme_cluster_break_shift)),
         _bidi_class(to_underlying(bidi_class)),
         _bidi_bracket_type(to_underlying(bidi_bracket_type)),
         _bidi_mirrored_glyph(static_cast<uint32_t>(bidi_mirrored_glyph)),
@@ -113,6 +121,14 @@ public:
         tt_axiom(static_cast<uint32_t>(combining_class) <= 0xff);
         tt_axiom(static_cast<uint32_t>(decomposition_length) <= 0x1f);
         tt_axiom(static_cast<uint32_t>(decomposition_index) <= 0x1f'ffff);
+    }
+
+    [[nodiscard]] static constexpr unicode_description make_unassigned(unicode_description const &other)
+    {
+        auto r = other;
+        r._general_info &= other._general_info & ~general_category_mask;
+        r._general_info |= static_cast<uint32_t>(to_underlying(unicode_general_category::Cn)) << general_category_shift;
+        return r;
     }
 
     /** The code point of the description.
@@ -276,7 +292,7 @@ private:
     uint32_t _bidi_class : 5;
     uint32_t _bidi_bracket_type : 2;
     uint32_t _bidi_mirrored_glyph : 21;
-    uint32_t _east_asian_width: 3;
+    uint32_t _east_asian_width : 3;
     uint32_t _word2_reserved : 1 = 0;
 
     // 3rd dword
