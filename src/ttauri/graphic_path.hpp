@@ -179,7 +179,7 @@ struct graphic_path {
      * \param corners The radius of the (bottom-left, bottom-right, top-left, top-right)
      *        positive corner are rounded, negative curves are cut.
      */
-    void addRectangle(aarectangle rectangle, corner_shapes corners = corner_shapes{0.0f, 0.0f, 0.0f, 0.0f}) noexcept;
+    void addRectangle(aarectangle rectangle, corner_radii corners = corner_radii{0.0f, 0.0f, 0.0f, 0.0f}) noexcept;
 
     /** Draw a circle.
      * \param position position of the center of the circle.

@@ -620,9 +620,9 @@ void true_type_font::parseHheaTable(std::span<std::byte const> table_bytes)
     ttlet table = make_placement_ptr<HHEATable>(table_bytes);
 
     tt_parse_check(table->majorVersion.value() == 1 && table->minorVersion.value() == 0, "HHEA version is not 1.0");
-    ascender = table->ascender.value(unitsPerEm);
-    descender = table->descender.value(unitsPerEm);
-    lineGap = table->lineGap.value(unitsPerEm);
+    metrics.ascender = table->ascender.value(unitsPerEm);
+    metrics.descender = -table->descender.value(unitsPerEm);
+    metrics.line_gap = table->lineGap.value(unitsPerEm);
     numberOfHMetrics = table->numberOfHMetrics.value();
 }
 
@@ -853,8 +853,8 @@ void true_type_font::parseOS2Table(std::span<std::byte const> table_bytes)
     if (version >= 2) {
         ttlet table_v2 = make_placement_ptr<OS2Table2>(table_bytes);
 
-        OS2_xHeight = table_v2->sxHeight.value();
-        OS2_HHeight = table_v2->sCapHeight.value();
+        OS2_x_height = table_v2->sxHeight.value();
+        OS2_cap_height = table_v2->sCapHeight.value();
     }
 }
 
@@ -1013,7 +1013,7 @@ getKerning(std::span<std::byte const> const &bytes, float unitsPerEm, glyph_id g
 
 bool true_type_font::update_glyph_metrics(
     tt::glyph_id glyph_id,
-    glyph_metrics &metrics,
+    tt::glyph_metrics &glyph_metrics,
     tt::glyph_id kern_glyph1_id,
     tt::glyph_id kern_glyph2_id) const noexcept
 {
@@ -1040,18 +1040,13 @@ bool true_type_font::update_glyph_metrics(
         leftSideBearing = leftSideBearings[static_cast<uint16_t>(glyph_id) - numberOfHMetrics].value(unitsPerEm);
     }
 
-    metrics.advance = vector2{advanceWidth, 0.0f};
-    metrics.leftSideBearing = leftSideBearing;
-    metrics.rightSideBearing = advanceWidth - (leftSideBearing + metrics.boundingBox.width());
-    metrics.ascender = ascender;
-    metrics.descender = -descender;
-    metrics.lineGap = lineGap;
-    metrics.xHeight = xHeight;
-    metrics.capHeight = HHeight;
+    glyph_metrics.advance = vector2{advanceWidth, 0.0f};
+    glyph_metrics.left_side_bearing = leftSideBearing;
+    glyph_metrics.right_side_bearing = advanceWidth - (leftSideBearing + glyph_metrics.bounding_rectangle.width());
 
     if (kern_glyph1_id && kern_glyph2_id) {
         ttlet kernTableBytes = getTableBytes("kern");
-        metrics.advance += getKerning(kernTableBytes, unitsPerEm, kern_glyph1_id, kern_glyph2_id);
+        glyph_metrics.advance += getKerning(kernTableBytes, unitsPerEm, kern_glyph1_id, kern_glyph2_id);
     }
 
     return true;
@@ -1343,7 +1338,7 @@ bool true_type_font::loadCompoundglyph_metrics(std::span<std::byte const> bytes,
     return true;
 }
 
-bool true_type_font::load_glyph_metrics(tt::glyph_id glyph_id, glyph_metrics &metrics, tt::glyph_id lookahead_glyph_id)
+bool true_type_font::load_glyph_metrics(tt::glyph_id glyph_id, tt::glyph_metrics &glyph_metrics, tt::glyph_id lookahead_glyph_id)
     const noexcept
 {
     assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, false);
@@ -1360,7 +1355,7 @@ bool true_type_font::load_glyph_metrics(tt::glyph_id glyph_id, glyph_metrics &me
 
         ttlet xyMin = point2{entry->xMin.value(unitsPerEm), entry->yMin.value(unitsPerEm)};
         ttlet xyMax = point2{entry->xMax.value(unitsPerEm), entry->yMax.value(unitsPerEm)};
-        metrics.boundingBox = aarectangle{xyMin, xyMax};
+        glyph_metrics.bounding_rectangle = aarectangle{xyMin, xyMax};
 
         if (numberOfContours > 0) {
             // A simple glyph does not include metrics information in the data.
@@ -1374,7 +1369,7 @@ bool true_type_font::load_glyph_metrics(tt::glyph_id glyph_id, glyph_metrics &me
         // Empty glyph, such as white-space ' '.
     }
 
-    return update_glyph_metrics(metricsGlyphIndex, metrics, glyph_id, lookahead_glyph_id);
+    return update_glyph_metrics(metricsGlyphIndex, glyph_metrics, glyph_id, lookahead_glyph_id);
 }
 
 [[nodiscard]] std::span<std::byte const> true_type_font::getTableBytes(char const *table_name) const
@@ -1434,33 +1429,33 @@ void true_type_font::parse_font_directory()
     unicode_mask.optimize();
     unicode_mask.shrink_to_fit();
 
-    if (OS2_xHeight > 0) {
-        xHeight = emScale * OS2_xHeight;
+    if (OS2_x_height > 0) {
+        metrics.x_height = emScale * OS2_x_height;
     } else {
         ttlet glyph_id = find_glyph('x');
         if (glyph_id) {
-            glyph_metrics metrics;
-            load_glyph_metrics(glyph_id, metrics);
-            xHeight = metrics.boundingBox.height();
+            tt::glyph_metrics glyph_metrics;
+            load_glyph_metrics(glyph_id, glyph_metrics);
+            metrics.x_height = glyph_metrics.bounding_rectangle.height();
         }
     }
 
-    if (OS2_HHeight > 0) {
-        HHeight = emScale * OS2_HHeight;
+    if (OS2_cap_height > 0) {
+        metrics.cap_height = emScale * OS2_cap_height;
     } else {
         ttlet glyph_id = find_glyph('H');
         if (glyph_id) {
-            glyph_metrics metrics;
-            load_glyph_metrics(glyph_id, metrics);
-            HHeight = metrics.boundingBox.height();
+            tt::glyph_metrics glyph_metrics;
+            load_glyph_metrics(glyph_id, glyph_metrics);
+            metrics.cap_height = glyph_metrics.bounding_rectangle.height();
         }
     }
 
     ttlet glyph_id = find_glyph('8');
     if (glyph_id) {
-        glyph_metrics metrics;
-        load_glyph_metrics(glyph_id, metrics);
-        DigitWidth = metrics.advance.x();
+        tt::glyph_metrics glyph_metrics;
+        load_glyph_metrics(glyph_id, glyph_metrics);
+        metrics.digit_advance = glyph_metrics.advance.x();
     }
 }
 

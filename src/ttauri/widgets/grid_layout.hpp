@@ -266,10 +266,10 @@ private:
     using cell_iterator = cell_vector_type::iterator;
     using cell_const_iterator = cell_vector_type::const_iterator;
 
-    std::size_t _num_cells;
-    float _minimum;
-    float _preferred;
-    float _maximum;
+    std::size_t _num_cells = 0;
+    float _minimum = 0.0f;
+    float _preferred = 0.0f;
+    float _maximum = 0.0f;
     contraint_vector_type _constraints;
     cell_vector_type _cells;
 

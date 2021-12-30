@@ -151,7 +151,7 @@ public:
      * @return The moved point.
      */
     template<int E>
-    [[nodiscard]] constexpr friend point<std::max(D, E)> operator+(point const &lhs, vector<E> const &rhs) noexcept
+    [[nodiscard]] constexpr friend auto operator+(point const &lhs, vector<E> const &rhs) noexcept
     {
         tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return point<std::max(D, E)>{lhs._v + static_cast<f32x4>(rhs)};
@@ -163,7 +163,7 @@ public:
      * @return The moved point.
      */
     template<int E>
-    [[nodiscard]] constexpr friend point<std::max(D, E)> operator+(vector<E> const &rhs, point const &lhs) noexcept
+    [[nodiscard]] constexpr friend auto operator+(vector<E> const &rhs, point const &lhs) noexcept
     {
         tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return point<std::max(D, E)>{lhs._v + static_cast<f32x4>(rhs)};
@@ -175,7 +175,7 @@ public:
      * @return The moved point.
      */
     template<int E>
-    [[nodiscard]] constexpr friend point<std::max(D, E)> operator-(point const &lhs, vector<E> const &rhs) noexcept
+    [[nodiscard]] constexpr friend auto operator-(point const &lhs, vector<E> const &rhs) noexcept
     {
         tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return point<std::max(D, E)>{lhs._v - static_cast<f32x4>(rhs)};

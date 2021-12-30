@@ -11,7 +11,7 @@ namespace tt::inline v1 {
 
 [[nodiscard]] constexpr int8_t make_snorm_r8_value(float rhs) noexcept
 {
-    return narrow_cast<int8_t>(std::clamp(rhs, -1.0f, 1.0f) * 127.0f);
+    return narrow_cast<int8_t>(std::round(std::clamp(rhs, -1.0f, 1.0f) * 127.0f));
 }
 
 struct snorm_r8 {

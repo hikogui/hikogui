@@ -43,47 +43,45 @@ struct bezier_point {
     {
         std::vector<bezier_point> r;
 
-        tt_assert((end - begin) >= 2);
+        tt_axiom((end - begin) >= 2);
 
-        auto previousPoint = *(end - 1);
-        auto previousPreviousPoint = *(end - 2);
-        for (auto i = begin; i != end; i++) {
-            ttlet point = *i;
-
-            switch (point.type) {
+        auto prev_it = end - 1;
+        auto prev_prev_it = end - 2;
+        for (auto it = begin; it != end; it++) {
+            switch (it->type) {
             case bezier_point::Type::Anchor:
-                tt_assert(previousPoint.type != bezier_point::Type::CubicControl1);
-                r.push_back(point);
+                tt_axiom(prev_it->type != bezier_point::Type::CubicControl1);
+                r.push_back(*it);
                 break;
 
             case bezier_point::Type::QuadraticControl:
-                if (previousPoint.type == bezier_point::Type::QuadraticControl) {
-                    r.emplace_back(midpoint(previousPoint.p, point.p), bezier_point::Type::Anchor);
+                if (it->type == bezier_point::Type::QuadraticControl) {
+                    r.emplace_back(midpoint(prev_it->p, it->p), bezier_point::Type::Anchor);
 
                 } else {
-                    tt_assert(previousPoint.type == bezier_point::Type::Anchor);
+                    tt_axiom(prev_it->type == bezier_point::Type::Anchor);
                 }
-                r.push_back(point);
+                r.push_back(*it);
                 break;
 
-            case bezier_point::Type::CubicControl1: r.push_back(point); break;
+            case bezier_point::Type::CubicControl1: r.push_back(*it); break;
 
             case bezier_point::Type::CubicControl2:
-                if (previousPoint.type == bezier_point::Type::Anchor) {
-                    tt_assert(previousPreviousPoint.type == bezier_point::Type::CubicControl2);
+                if (prev_it->type == bezier_point::Type::Anchor) {
+                    tt_axiom(prev_prev_it->type == bezier_point::Type::CubicControl2);
 
-                    r.emplace_back(reflect(previousPreviousPoint.p, previousPoint.p), bezier_point::Type::CubicControl1);
+                    r.emplace_back(reflect(prev_prev_it->p, prev_it->p), bezier_point::Type::CubicControl1);
                 } else {
-                    tt_assert(previousPoint.type == bezier_point::Type::CubicControl1);
+                    tt_axiom(prev_it->type == bezier_point::Type::CubicControl1);
                 }
-                r.push_back(point);
+                r.push_back(*it);
                 break;
 
             default: tt_no_default();
             }
 
-            previousPreviousPoint = previousPoint;
-            previousPoint = point;
+            prev_prev_it = prev_it;
+            prev_it = it;
         }
 
         for (ssize_t i = 0; i < ssize(r); i++) {
@@ -95,7 +93,7 @@ struct bezier_point {
         }
 
         // The result did not contain an anchor.
-        tt_assert(false);
+        tt_no_default();
     }
 
     [[nodiscard]] friend bool operator==(bezier_point const &lhs, bezier_point const &rhs) noexcept

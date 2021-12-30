@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../geometry/corner_shapes.hpp"
+#include "../geometry/corner_radii.hpp"
 #include <algorithm>
 
 namespace tt::inline v1 {
@@ -38,7 +38,7 @@ public:
         return *this;
     }
 
-    constexpr explicit uint_abgr8_pack(corner_shapes const &rhs) noexcept : uint_abgr8_pack(static_cast<f32x4>(rhs)) {}
+    constexpr explicit uint_abgr8_pack(corner_radii const &rhs) noexcept : uint_abgr8_pack(static_cast<f32x4>(rhs)) {}
 
     [[nodiscard]] constexpr friend bool operator==(uint_abgr8_pack const &lhs, uint_abgr8_pack const &rhs) noexcept = default;
 };

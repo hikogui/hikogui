@@ -321,6 +321,40 @@ public:
         return intrinsic.freeCommandBuffers(commandPool, commandBuffers);
     }
 
+    void setDebugUtilsObjectNameEXT(vk::DebugUtilsObjectNameInfoEXT const &name_info) const;
+
+    void setDebugUtilsObjectNameEXT(vk::Image image, char const *name) const
+    {
+        return setDebugUtilsObjectNameEXT(
+            vk::DebugUtilsObjectNameInfoEXT{vk::ObjectType::eImage, std::bit_cast<uint64_t>(image), name});
+    }
+
+    void setDebugUtilsObjectNameEXT(vk::Buffer buffer, char const *name) const
+    {
+        return setDebugUtilsObjectNameEXT(
+            vk::DebugUtilsObjectNameInfoEXT{vk::ObjectType::eBuffer, std::bit_cast<uint64_t>(buffer), name});
+    }
+
+    void setDebugUtilsObjectNameEXT(vk::Sampler sampler, char const *name) const
+    {
+        return setDebugUtilsObjectNameEXT(
+            vk::DebugUtilsObjectNameInfoEXT{vk::ObjectType::eSampler, std::bit_cast<uint64_t>(sampler), name});
+    }
+
+    void setDebugUtilsObjectNameEXT(vk::ShaderModule shader_module, char const *name) const
+    {
+        return setDebugUtilsObjectNameEXT(
+            vk::DebugUtilsObjectNameInfoEXT{vk::ObjectType::eShaderModule, std::bit_cast<uint64_t>(shader_module), name});
+    }
+
+    void cmdBeginDebugUtilsLabelEXT(vk::CommandBuffer buffer, vk::DebugUtilsLabelEXT const &create_info) const;
+    void cmdEndDebugUtilsLabelEXT(vk::CommandBuffer buffer) const;
+
+    void cmdBeginDebugUtilsLabelEXT(vk::CommandBuffer buffer, char const *name) const
+    {
+        return cmdBeginDebugUtilsLabelEXT(buffer, vk::DebugUtilsLabelEXT{name});
+    }
+
     template<typename T>
     void destroy(T x) const
     {
@@ -333,6 +367,8 @@ public:
         tt_axiom(gfx_system_mutex.recurse_lock_count());
         return physicalIntrinsic.getSurfaceCapabilitiesKHR(surface);
     }
+
+    void log_memory_usage() const noexcept override;
 
 protected:
     vk::PhysicalDevice physicalIntrinsic;

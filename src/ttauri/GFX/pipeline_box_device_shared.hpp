@@ -9,7 +9,7 @@
 #include "../vspan.hpp"
 #include "../color/color.hpp"
 #include "../color/quad_color.hpp"
-#include "../geometry/corner_shapes.hpp"
+#include "../geometry/corner_radii.hpp"
 #include <vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>
@@ -50,7 +50,7 @@ struct device_shared final {
         quad_color fill_colors,
         quad_color line_colors,
         float line_width,
-        corner_shapes corner_shapes);
+        corner_radii corner_radii);
 
 private:
     void buildShaders();

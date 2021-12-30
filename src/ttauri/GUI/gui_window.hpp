@@ -159,14 +159,6 @@ public:
         _resize.store(true, std::memory_order::relaxed);
     }
 
-    /** By how much the font needs to be scaled compared to current windowScale.
-     * Widgets should pass this value to the text-shaper.
-     */
-    [[nodiscard]] float fontScale() const noexcept
-    {
-        return dpi / (window_scale() * 72.0f);
-    }
-
     /** Update window.
      * This will update animations and redraw all widgets managed by this window.
      */
@@ -305,12 +297,6 @@ protected:
      * @pre title and extent must be set.
      */
     virtual void create_window(extent2 new_size) = 0;
-
-    /** By how much graphic elements should be scaled to match a point.
-     * The widget should not care much about this value, since the
-     * transformation matrix will match the window scaling.
-     */
-    [[nodiscard]] float window_scale() const noexcept;
 
     /** Handle command event.
      * This function is called when no widget has handled the command.

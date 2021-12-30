@@ -307,7 +307,7 @@ void graphic_path::arcTo(float radius, point2 position) noexcept
     cubicCurveTo(C1, C2, P2);
 }
 
-void graphic_path::addRectangle(aarectangle r, corner_shapes corners) noexcept
+void graphic_path::addRectangle(aarectangle r, corner_radii corners) noexcept
 {
     tt_assert(!isContourOpen());
 

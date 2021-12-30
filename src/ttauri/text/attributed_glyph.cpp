@@ -14,7 +14,6 @@ attributed_glyph::attributed_glyph(
     attributed_grapheme const &attr_grapheme,
     attributed_glyph const *next_attr_glyph) noexcept :
     logicalIndex(attr_grapheme.logicalIndex),
-    graphemeCount(1),
     general_category(attr_grapheme.general_category),
     bidi_class(attr_grapheme.bidi_class),
     style(attr_grapheme.style)
@@ -36,7 +35,9 @@ attributed_glyph::attributed_glyph(
     ttlet next_glyph =
         (next_attr_glyph && &next_attr_glyph->glyphs.font() == &glyphs.font()) ? next_attr_glyph->glyphs[0] : glyph_id{};
 
-    if (not glyphs.font().load_glyph_metrics(this_glyph, metrics, next_glyph)) {
+    auto glyph_metrics = tt::glyph_metrics{};
+    ttlet &font_metrics = glyphs.font().metrics;
+    if (not glyphs.font().load_glyph_metrics(this_glyph, glyph_metrics, next_glyph)) {
         tt_log_error(
             "Could not load metrics for glyph {} in font {} - {}",
             static_cast<int>(this_glyph),
@@ -47,7 +48,7 @@ attributed_glyph::attributed_glyph(
         glyphs.clear();
         glyphs.set_font(style_font);
         glyphs += glyph_id{0};
-        if (not glyphs.font().load_glyph_metrics(glyphs[0], metrics)) {
+        if (not glyphs.font().load_glyph_metrics(glyphs[0], glyph_metrics)) {
             // Using null-metrics when even the null-glyph can not be found.
             tt_log_error(
                 "Could not load metrics for null-glyph in font {} - {}",
@@ -56,13 +57,16 @@ attributed_glyph::attributed_glyph(
         }
     }
 
+    // Get the scale for this attributed glyph and round so that x-height becomes integral.
+    scale = font_metrics.round_scale(style.scaled_size());
+
     // Scale the metrics according to font-size of this glyph.
-    metrics.scale(style.scaled_size());
+    metrics = scale * glyph_metrics;
 }
 
 [[nodiscard]] graphic_path attributed_glyph::get_path() const noexcept
 {
-    ttlet M = translate2(position) * scale2(style.scaled_size(), style.scaled_size());
+    ttlet M = translate2(position) * scale2(scale, scale);
 
     auto [glyph_path, glyph_bounding_box] = glyphs.get_path_and_bounding_box();
     auto transformed_glyph_path = M * glyph_path;

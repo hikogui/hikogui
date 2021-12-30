@@ -319,13 +319,13 @@ void selection_widget::draw_outline(draw_context const &context) noexcept
         focus_color(),
         theme().border_width,
         border_side::inside,
-        corner_shapes{theme().rounding_radius});
+        corner_radii{theme().rounding_radius});
 }
 
 void selection_widget::draw_left_box(draw_context const &context) noexcept
 {
-    ttlet corner_shapes = tt::corner_shapes{theme().rounding_radius, 0.0f, theme().rounding_radius, 0.0f};
-    context.draw_box(layout(), translate_z(0.1f) * _left_box_rectangle, focus_color(), corner_shapes);
+    ttlet corner_radii = tt::corner_radii{theme().rounding_radius, 0.0f, theme().rounding_radius, 0.0f};
+    context.draw_box(layout(), translate_z(0.1f) * _left_box_rectangle, focus_color(), corner_radii);
 }
 
 void selection_widget::draw_chevrons(draw_context const &context) noexcept

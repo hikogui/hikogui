@@ -5,7 +5,7 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../text/font_glyph_ids.hpp"
+#include "../text/glyph_ids.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -36,10 +36,10 @@ private:
     aarectangle minimizeRectangle;
     aarectangle maximizeRectangle;
 
-    font_glyph_ids closeWindowGlyph;
-    font_glyph_ids minimizeWindowGlyph;
-    font_glyph_ids maximizeWindowGlyph;
-    font_glyph_ids restoreWindowGlyph;
+    glyph_ids closeWindowGlyph;
+    glyph_ids minimizeWindowGlyph;
+    glyph_ids maximizeWindowGlyph;
+    glyph_ids restoreWindowGlyph;
 
     aarectangle closeWindowGlyphRectangle;
     aarectangle minimizeWindowGlyphRectangle;

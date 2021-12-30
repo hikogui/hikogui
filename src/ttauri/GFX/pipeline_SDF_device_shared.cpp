@@ -121,7 +121,7 @@ void device_shared::prepare_atlas_for_rendering()
  *  |                     |
  *  O---------------------+
  */
-void device_shared::add_glyph_to_atlas(font_glyph_ids const &glyph, glyph_atlas_info &info) noexcept
+void device_shared::add_glyph_to_atlas(glyph_ids const &glyph, glyph_atlas_info &info) noexcept
 {
     ttlet[glyph_path, glyph_bounding_box] = glyph.get_path_and_bounding_box();
 
@@ -149,7 +149,7 @@ void device_shared::add_glyph_to_atlas(font_glyph_ids const &glyph, glyph_atlas_
     uploadStagingPixmapToAtlas(info);
 }
 
-aarectangle device_shared::get_bounding_box(font_glyph_ids const &glyphs) const noexcept
+aarectangle device_shared::get_bounding_box(glyph_ids const &glyphs) const noexcept
 {
     // Adjust bounding box by adding a border based on 1EM.
     return glyphs.get_bounding_box() + scaledDrawBorder;
@@ -159,7 +159,7 @@ bool device_shared::place_vertices(
     vspan<vertex> &vertices,
     aarectangle const &clipping_rectangle,
     quad const &box,
-    font_glyph_ids const &glyphs,
+    glyph_ids const &glyphs,
     quad_color colors) noexcept
 {
     ttlet[atlas_rect, glyph_was_added] = get_glyph_from_atlas(glyphs);
@@ -208,7 +208,7 @@ void device_shared::teardownShaders(gfx_device_vulkan *vulkanDevice)
 
 void device_shared::addAtlasImage()
 {
-    // ttlet currentImageIndex = ssize(atlasTextures);
+    ttlet current_image_index = ssize(atlasTextures);
 
     // Create atlas image
     vk::ImageCreateInfo const imageCreateInfo = {
@@ -226,9 +226,13 @@ void device_shared::addAtlasImage()
         nullptr,
         vk::ImageLayout::eUndefined};
     VmaAllocationCreateInfo allocationCreateInfo = {};
+    auto allocation_name = std::format("sdf-pipeline atlas image {}", current_image_index);
+    allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
+    allocationCreateInfo.pUserData = const_cast<char *>(allocation_name.c_str());
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
     ttlet[atlasImage, atlasImageAllocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
+    device.setDebugUtilsObjectNameEXT(atlasImage, allocation_name.c_str());
 
     ttlet clearValue = vk::ClearColorValue{std::array{-1.0f, -1.0f, -1.0f, -1.0f}};
     ttlet clearRange = std::array{vk::ImageSubresourceRange{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}};
@@ -282,8 +286,11 @@ void device_shared::buildAtlas()
         nullptr,
         vk::ImageLayout::ePreinitialized};
     VmaAllocationCreateInfo allocationCreateInfo = {};
+    allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
+    allocationCreateInfo.pUserData = const_cast<char *>("sdf-pipeline staging image");
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
     ttlet[image, allocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
+    device.setDebugUtilsObjectNameEXT(image, "sdf-pipeline staging image");
     ttlet data = device.mapMemory<sdf_r8>(allocation);
 
     stagingTexture = {
@@ -311,6 +318,7 @@ void device_shared::buildAtlas()
         VK_FALSE // unnormazlizedCoordinates
     };
     atlasSampler = device.createSampler(samplerCreateInfo);
+    device.setDebugUtilsObjectNameEXT(atlasSampler, "sdf-pipeline atlas sampler");
 
     atlasSamplerDescriptorImageInfo = {atlasSampler, vk::ImageView(), vk::ImageLayout::eUndefined};
 

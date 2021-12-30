@@ -19,99 +19,142 @@ template<typename T>
     return value;
 }
 
-template<std::signed_integral OutType, std::floating_point InType>
-[[nodiscard]] constexpr OutType narrow_cast(InType value) noexcept
+/** Cast a pointer to a class to its base class or itself.
+ */
+template<typename Out, std::derived_from<std::remove_pointer_t<Out>> In>
+[[nodiscard]] constexpr Out up_cast(In *rhs) noexcept
+    requires(std::is_const_v<std::remove_pointer_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_pointer_t<Out>>)
 {
-    tt_axiom(value >= std::numeric_limits<OutType>::lowest() && value <= std::numeric_limits<OutType>::max());
-    return static_cast<OutType>(value);
+    return static_cast<Out>(rhs);
 }
 
-template<std::signed_integral OutType, std::signed_integral InType>
-[[nodiscard]] constexpr OutType narrow_cast(InType value) noexcept
+/** Cast a reference to a class to its base class or itself.
+ */
+template<typename Out>
+[[nodiscard]] constexpr Out up_cast(nullptr_t) noexcept
 {
-    constexpr auto smin = static_cast<long long>(std::numeric_limits<OutType>::lowest());
-    constexpr auto smax = static_cast<long long>(std::numeric_limits<OutType>::max());
-    tt_axiom(value >= smin && value <= smax);
-    return static_cast<OutType>(value);
+    return nullptr;
 }
 
-template<std::signed_integral OutType, std::unsigned_integral InType>
-[[nodiscard]] constexpr OutType narrow_cast(InType value) noexcept
+/** Cast a reference to a class to its base class or itself.
+ */
+template<typename Out, std::derived_from<std::remove_reference_t<Out>> In>
+[[nodiscard]] constexpr Out up_cast(In &rhs) noexcept requires(
+    std::is_const_v<std::remove_reference_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_reference_t<Out>>)
 {
-    constexpr auto umax = static_cast<unsigned long long>(std::numeric_limits<OutType>::max());
-    tt_axiom(value <= umax);
-    return static_cast<OutType>(value);
+    return static_cast<Out>(rhs);
 }
 
-template<std::unsigned_integral OutType, std::floating_point InType>
-[[nodiscard]] constexpr OutType narrow_cast(InType value) noexcept
+/** Cast a pointer to a class to its derived class or itself.
+ *
+ * @note It is undefined behavior if the argument is not of type Out.
+ * @param rhs A pointer to an object that is of type `Out`. Or a nullptr which will be
+ *        passed through.
+ * @return A pointer to the same object with a new type.
+ */
+template<typename Out, base_of<std::remove_pointer_t<Out>> In>
+[[nodiscard]] constexpr Out down_cast(In *rhs) noexcept
+    requires(std::is_const_v<std::remove_pointer_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_pointer_t<Out>>)
 {
-    tt_axiom(value >= InType{0});
-    tt_axiom(value <= std::numeric_limits<OutType>::max());
-    return static_cast<OutType>(value);
+    tt_axiom(rhs == nullptr or dynamic_cast<Out>(rhs) != nullptr);
+    return static_cast<Out>(rhs);
 }
 
-template<std::unsigned_integral OutType, std::signed_integral InType>
-[[nodiscard]] constexpr OutType narrow_cast(InType value) noexcept
+/** Cast a pointer to a class to its derived class or itself.
+ *
+ * @note It is undefined behavior if the argument is not of type Out.
+ * @param rhs A pointer to an object that is of type `Out`. Or a nullptr which will be
+ *        passed through.
+ * @return A pointer to the same object with a new type.
+ */
+template<typename Out>
+[[nodiscard]] constexpr Out down_cast(nullptr_t) noexcept
 {
-    tt_axiom(value >= InType{0});
-    if constexpr (sizeof(OutType) < sizeof(InType)) {
-        constexpr auto smax = static_cast<long long>(std::numeric_limits<OutType>::max());
-        tt_axiom(value <= smax);
+    return nullptr;
+}
+
+/** Cast a reference to a class to its derived class or itself.
+ *
+ * @note It is undefined behavior if the argument is not of type Out.
+ * @param rhs A reference to an object that is of type `Out`.
+ * @return A reference to the same object with a new type.
+ */
+template<typename Out, base_of<std::remove_reference_t<Out>> In>
+[[nodiscard]] constexpr Out down_cast(In &rhs) noexcept requires(
+    std::is_const_v<std::remove_reference_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_reference_t<Out>>)
+{
+    return static_cast<Out>(rhs);
+}
+
+/** Cast a number to a type that will be able to represent all values without loss of precision.
+ */
+template<numeric Out, numeric In>
+[[nodiscard]] constexpr Out wide_cast(In rhs) noexcept requires(type_in_range_v<Out, In>)
+{
+    return static_cast<Out>(rhs);
+}
+
+namespace detail {
+
+template<numeric Out, numeric In>
+[[nodiscard]] constexpr bool narrow_validate(Out out, In in) noexcept
+{
+    // in- and out-value compares the same, after converting out-value back to in-type.
+    auto r = (in == static_cast<In>(out));
+
+    // If the types have different signs we need to do an extra test to make sure the actual sign
+    // of the values are the same as well.
+    if constexpr (std::numeric_limits<Out>::is_signed != std::numeric_limits<In>::is_signed) {
+        r &= (in < In{}) == (out < Out{});
     }
-    return static_cast<OutType>(value);
+
+    return r;
 }
 
-template<std::unsigned_integral OutType, std::unsigned_integral InType>
-[[nodiscard]] constexpr OutType narrow_cast(InType value) noexcept
-{
-    constexpr auto umax = static_cast<unsigned long long>(std::numeric_limits<OutType>::max());
-    tt_axiom(value <= umax);
-    return static_cast<OutType>(value);
 }
 
-template<std::floating_point OutType, tt::arithmetic InType>
-[[nodiscard]] constexpr OutType narrow_cast(InType value) noexcept
+/** Cast numeric values without loss of precision.
+ *
+ * @tparam Out The numeric type to cast to
+ * @tparam In The numeric type to cast from
+ * @param rhs The value to cast.
+ * @return The value casted to a different type without loss of precision.
+ * @throws std::bad_cast when the value could not be casted without loss of precision.
+ */
+template<numeric Out, numeric In>
+[[nodiscard]] constexpr Out narrow(In rhs) noexcept(type_in_range_v<Out, In>)
 {
-    return static_cast<OutType>(value);
+    if constexpr (type_in_range_v<Out, In>) {
+        return static_cast<Out>(rhs);
+    } else {
+        ttlet r = static_cast<Out>(rhs);
+
+        if (not detail::narrow_validate(r, rhs)) {
+            throw std::bad_cast();
+        }
+
+        return r;
+    }
 }
 
-template<tt::lvalue_reference BaseType, tt::derived_from<std::remove_reference_t<BaseType>> DerivedType>
-[[nodiscard]] constexpr BaseType narrow_cast(DerivedType &value) noexcept
+/** Cast numeric values without loss of precision.
+ *
+ * @note It is undefined behavior to cast a value which will cause a loss of precision.
+ * @tparam Out The numeric type to cast to
+ * @tparam In The numeric type to cast from
+ * @param rhs The value to cast.
+ * @return The value casted to a different type without loss of precision.
+ */
+template<numeric Out, numeric In>
+[[nodiscard]] constexpr Out narrow_cast(In rhs) noexcept
 {
-    static_assert(
-        !std::is_const_v<DerivedType> || std::is_const_v<std::remove_reference_t<BaseType>>,
-        "narrow_cast must not cast away const");
-    return static_cast<BaseType>(value);
-}
-
-template<tt::lvalue_reference DerivedType, tt::strict_base_of<std::remove_reference_t<DerivedType>> BaseType>
-[[nodiscard]] constexpr DerivedType narrow_cast(BaseType &value) noexcept
-{
-    static_assert(
-        !std::is_const_v<BaseType> || std::is_const_v<std::remove_reference_t<DerivedType>>,
-        "narrow_cast must not cast away const");
-    tt_axiom(dynamic_cast<std::remove_reference_t<DerivedType> *>(&value) != nullptr);
-    return static_cast<DerivedType>(value);
-}
-
-template<tt::pointer BaseType, tt::derived_from<std::remove_pointer_t<BaseType>> DerivedType>
-[[nodiscard]] constexpr BaseType narrow_cast(DerivedType *value) noexcept
-{
-    static_assert(
-        !std::is_const_v<DerivedType> || std::is_const_v<std::remove_pointer_t<BaseType>>,
-        "narrow_cast must not cast away const");
-    return static_cast<BaseType>(value);
-}
-
-template<tt::pointer DerivedType, tt::strict_base_of<std::remove_pointer_t<DerivedType>> BaseType>
-[[nodiscard]] constexpr DerivedType narrow_cast(BaseType *value) noexcept
-{
-    static_assert(
-        !std::is_const_v<BaseType> || std::is_const_v<std::remove_pointer_t<DerivedType>>,
-        "narrow_cast must not cast away const");
-    tt_axiom(value == nullptr or dynamic_cast<DerivedType>(value) != nullptr);
-    return static_cast<DerivedType>(value);
+    if constexpr (type_in_range_v<Out, In>) {
+        return static_cast<Out>(rhs);
+    } else {
+        ttlet r = static_cast<Out>(rhs);
+        tt_axiom(detail::narrow_validate(r, rhs));
+        return r;
+    }
 }
 
 /** Return the low half of the input value.

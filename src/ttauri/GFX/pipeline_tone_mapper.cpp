@@ -17,7 +17,9 @@ void pipeline_tone_mapper::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 
     vulkan_device().toneMapperPipeline->drawInCommandBuffer(commandBuffer);
 
+    vulkan_device().cmdBeginDebugUtilsLabelEXT(commandBuffer, "tone mapping");
     commandBuffer.draw(3, 1, 0, 0);
+    vulkan_device().cmdEndDebugUtilsLabelEXT(commandBuffer);
 }
 
 std::vector<vk::PipelineShaderStageCreateInfo> pipeline_tone_mapper::createShaderStages() const
@@ -38,7 +40,7 @@ std::vector<vk::DescriptorSetLayoutBinding> pipeline_tone_mapper::createDescript
 
 std::vector<vk::WriteDescriptorSet> pipeline_tone_mapper::createWriteDescriptorSet() const
 {
-    ttlet &color_descriptor_image_infos = narrow_cast<gfx_surface_vulkan const &>(surface).colorDescriptorImageInfos;
+    ttlet &color_descriptor_image_infos = down_cast<gfx_surface_vulkan const &>(surface).colorDescriptorImageInfos;
 
     return {{
         descriptorSet,

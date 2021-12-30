@@ -31,7 +31,7 @@ paged_image::paged_image(gfx_surface const *surface, std::size_t width, std::siz
     // In that case also return an empty image.
     ttlet lock = std::scoped_lock(gfx_system_mutex);
     if ((this->device = surface->device()) != nullptr) {
-        ttlet &vulkan_device = narrow_cast<gfx_device_vulkan &>(*device);
+        ttlet &vulkan_device = down_cast<gfx_device_vulkan &>(*device);
 
         ttlet[num_columns, num_rows] = size_in_int_pages();
         this->pages = vulkan_device.imagePipeline->allocate_pages(num_columns * num_rows);
@@ -70,7 +70,7 @@ paged_image &paged_image::operator=(paged_image &&other) noexcept
     tt_return_on_self_assignment(other);
 
     // If the old image had pages, free them.
-    if (ttlet vulkan_device = narrow_cast<gfx_device_vulkan *>(device)) {
+    if (ttlet vulkan_device = down_cast<gfx_device_vulkan *>(device)) {
         vulkan_device->imagePipeline->free_pages(pages);
     }
 
@@ -84,7 +84,7 @@ paged_image &paged_image::operator=(paged_image &&other) noexcept
 
 paged_image::~paged_image()
 {
-    if (ttlet vulkan_device = narrow_cast<gfx_device_vulkan *>(device)) {
+    if (ttlet vulkan_device = down_cast<gfx_device_vulkan *>(device)) {
         vulkan_device->imagePipeline->free_pages(pages);
     }
 }
@@ -93,7 +93,7 @@ void paged_image::upload(png const &image) noexcept
 {
     tt_axiom(image.width() == width and image.height() == height);
 
-    if (ttlet vulkan_device = narrow_cast<gfx_device_vulkan *>(device)) {
+    if (ttlet vulkan_device = down_cast<gfx_device_vulkan *>(device)) {
         ttlet lock = std::scoped_lock(gfx_system_mutex);
 
         state = state_type::drawing;
@@ -110,7 +110,7 @@ void paged_image::upload(pixel_map<sfloat_rgba16> const &image) noexcept
 {
     tt_axiom(image.width() == width and image.height() == height);
 
-    if (ttlet vulkan_device = narrow_cast<gfx_device_vulkan *>(device)) {
+    if (ttlet vulkan_device = down_cast<gfx_device_vulkan *>(device)) {
         ttlet lock = std::scoped_lock(gfx_system_mutex);
 
         state = state_type::drawing;

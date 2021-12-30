@@ -8,7 +8,7 @@
 #include "font.hpp"
 #include "font_family_id.hpp"
 #include "font_grapheme_id.hpp"
-#include "font_glyph_ids.hpp"
+#include "glyph_ids.hpp"
 #include "elusive_icon.hpp"
 #include "ttauri_icon.hpp"
 #include "../URL.hpp"
@@ -107,15 +107,15 @@ public:
      * @param grapheme The Unicode grapheme to find in the font.
      * @return A list of glyphs which matched the grapheme.
      */
-    [[nodiscard]] font_glyph_ids find_glyph(font const &font, grapheme grapheme) const noexcept;
+    [[nodiscard]] glyph_ids find_glyph(font const &font, grapheme grapheme) const noexcept;
 
-    [[nodiscard]] font_glyph_ids find_glyph(elusive_icon rhs) const noexcept
+    [[nodiscard]] glyph_ids find_glyph(elusive_icon rhs) const noexcept
     {
         tt_axiom(_elusive_icon_font);
         return _elusive_icon_font->find_glyph(grapheme{static_cast<char32_t>(rhs)});
     }
 
-    [[nodiscard]] font_glyph_ids find_glyph(ttauri_icon rhs) const noexcept
+    [[nodiscard]] glyph_ids find_glyph(ttauri_icon rhs) const noexcept
     {
         tt_axiom(_ttauri_icon_font);
         return _ttauri_icon_font->find_glyph(grapheme{static_cast<char32_t>(rhs)});
@@ -148,7 +148,7 @@ private:
     /**
      * Must be cleared when a new font is registered.
      */
-    mutable std::unordered_map<font_grapheme_id, font_glyph_ids> glyph_cache;
+    mutable std::unordered_map<font_grapheme_id, glyph_ids> glyph_cache;
 
     [[nodiscard]] std::vector<tt::font *> make_fallback_chain(font_weight weight, bool italic) noexcept;
 

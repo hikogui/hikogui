@@ -15,6 +15,7 @@ widget_constraints const &text_widget::set_constraints() noexcept
 {
     _layout = {};
 
+    _text_shaper = text_shaper{font_book(), (*text)(), theme().text_style(*text_style), to_vertical_alignment(*alignment)};
     _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), 0.0f, *alignment};
     ttlet shaped_text_size = ceil(_shaped_text.preferred_size());
     _constraints = {shaped_text_size, shaped_text_size, shaped_text_size, theme().margin};

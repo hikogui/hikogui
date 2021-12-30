@@ -9,7 +9,7 @@ namespace tt::inline v1 {
 
 icon::icon(pixel_map<sfloat_rgba16> &&image) noexcept : _image(std::move(image)) {}
 
-icon::icon(font_glyph_ids const &image) noexcept : _image(image) {}
+icon::icon(glyph_ids const &image) noexcept : _image(image) {}
 
 icon::icon(URL const &url) : icon(png::load(url)) {}
 

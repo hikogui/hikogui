@@ -7,7 +7,7 @@ layout(push_constant) uniform push_constants {
 } pushConstants;
 
 layout(set = 0, binding = 0) uniform sampler bilinearSampler;
-layout(set = 0, binding = 1) uniform texture2D textures[16];
+layout(set = 0, binding = 1) uniform texture2D textures[64];
 
 layout(location = 0) in flat vec4 inClippingRectangle;
 layout(location = 1) in vec3 inAtlasPosition;

@@ -6,11 +6,12 @@
 
 #include "glyph_metrics.hpp"
 #include "glyph_atlas_info.hpp"
-#include "font_glyph_ids.hpp"
+#include "glyph_ids.hpp"
 #include "gstring.hpp"
 #include "unicode_mask.hpp"
 #include "font_weight.hpp"
 #include "font_variant.hpp"
+#include "font_metrics.hpp"
 #include "../graphic_path.hpp"
 #include "../resource_view.hpp"
 #include "../exception.hpp"
@@ -30,9 +31,16 @@ namespace tt::inline v1 {
  */
 class font {
 public:
-    /** The description is filled with information parsed from the font.
+    /** The family name as parsed from the font file.
+     *
+     * Examples: "Helvetica", "Times New Roman"
      */
     std::string family_name;
+
+    /** The sub-family name as parsed from the font file.
+     *
+     * Examples: "Regular", "ItalicBold"
+     */
     std::string sub_family_name;
 
     bool monospace = false;
@@ -44,9 +52,11 @@ public:
 
     tt::unicode_mask unicode_mask;
 
-    float xHeight = 0.0;
-    float HHeight = 0.0;
-    float DigitWidth = 0.0;
+    /** The metrics of a font.
+    * 
+    * @note: unit is 'em'.
+    */
+    tt::font_metrics metrics;
 
     /** List of fonts to use as a fallback for this font.
      */
@@ -73,7 +83,7 @@ public:
     /** Get the glyphs for a grapheme.
      * @return a set of glyph-ids, or invalid when not found or error.
      */
-    [[nodiscard]] font_glyph_ids find_glyph(grapheme g) const noexcept;
+    [[nodiscard]] tt::glyph_ids find_glyph(grapheme g) const noexcept;
 
     /*! Load a glyph into a path.
      * The glyph is directly loaded from the font file.
@@ -99,8 +109,8 @@ public:
 
     glyph_atlas_info &atlas_info(glyph_ids const &glyphs) const noexcept
     {
-        if (glyphs.is_single()) [[likely]] {
-            ttlet index = static_cast<std::size_t>(glyphs.get_single());
+        if (glyphs.has_num_glyphs<1>()) [[likely]] {
+            ttlet index = static_cast<std::size_t>(get<0>(glyphs));
             if (index >= _single_glyph_atlas_table.size()) [[unlikely]] {
                 _single_glyph_atlas_table.resize(index + 1);
             }

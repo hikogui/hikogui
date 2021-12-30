@@ -25,16 +25,13 @@ private:
      */
     mutable std::unique_ptr<resource_view> view;
 
-    uint16_t OS2_xHeight = 0;
-    uint16_t OS2_HHeight = 0;
+    uint16_t OS2_x_height = 0;
+    uint16_t OS2_cap_height = 0;
 
     float unitsPerEm;
     float emScale;
     bool locaTableIsOffset32;
 
-    float ascender;
-    float descender;
-    float lineGap;
     uint16_t numberOfHMetrics;
 
     int numGlyphs;

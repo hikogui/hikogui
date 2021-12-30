@@ -38,7 +38,9 @@ void pipeline_image::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 
     ttlet numberOfRectangles = vertexBufferData.size() / 4;
     ttlet numberOfTriangles = numberOfRectangles * 2;
+    vulkan_device().cmdBeginDebugUtilsLabelEXT(commandBuffer, "draw images");
     commandBuffer.drawIndexed(narrow_cast<uint32_t>(numberOfTriangles * 3), 1, 0, 0, 0);
+    vulkan_device().cmdEndDebugUtilsLabelEXT(commandBuffer);
 }
 
 std::vector<vk::PipelineShaderStageCreateInfo> pipeline_image::createShaderStages() const
@@ -117,9 +119,12 @@ void pipeline_image::buildvertexBuffers()
         vk::BufferUsageFlagBits::eVertexBuffer,
         vk::SharingMode::eExclusive};
     VmaAllocationCreateInfo allocationCreateInfo = {};
+    allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
+    allocationCreateInfo.pUserData = const_cast<char *>("image-pipeline vertex buffer");
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
     std::tie(vertexBuffer, vertexBufferAllocation) = vulkan_device().createBuffer(bufferCreateInfo, allocationCreateInfo);
+    vulkan_device().setDebugUtilsObjectNameEXT(vertexBuffer, "image-pipeline vertex buffer");
     vertexBufferData = vulkan_device().mapMemory<vertex>(vertexBufferAllocation);
 }
 

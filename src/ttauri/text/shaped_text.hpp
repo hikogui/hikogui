@@ -151,22 +151,22 @@ public:
 
     float topAccender() const noexcept
     {
-        return lines.front().ascender;
+        return lines.front().metrics.ascender;
     }
 
     float bottomDescender() const noexcept
     {
-        return lines.back().descender;
+        return lines.back().metrics.descender;
     }
 
     float topCapHeight() const noexcept
     {
-        return lines.front().capHeight;
+        return lines.front().metrics.cap_height;
     }
 
     float bottomCapHeight() const noexcept
     {
-        return lines.back().capHeight;
+        return lines.back().metrics.cap_height;
     }
 
     /** Get the capHeight of the middle line(s).
@@ -177,9 +177,9 @@ public:
             return 0;
         } else {
             if ((ssize(lines) % 2) == 1) {
-                return lines[ssize(lines) / 2].capHeight;
+                return lines[ssize(lines) / 2].metrics.cap_height;
             } else {
-                return (lines[ssize(lines) / 2 - 1].capHeight + lines[ssize(lines) / 2].capHeight) * 0.5f;
+                return (lines[ssize(lines) / 2 - 1].metrics.cap_height + lines[ssize(lines) / 2].metrics.cap_height) * 0.5f;
             }
         }
     }
@@ -226,7 +226,8 @@ public:
      */
     translate2 translate_base_line(point2 position) noexcept
     {
-        return translate2{position.x(), middleOffset(position.y())};
+        // Keep the translation integral to have sharper text.
+        return translate2{std::round(position.x()), std::round(middleOffset(position.y()))};
     }
 
     /** Find a glyph that corresponds to position.

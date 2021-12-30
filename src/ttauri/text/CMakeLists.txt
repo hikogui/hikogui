@@ -16,14 +16,14 @@ target_sources(ttauri PRIVATE
     font_book.cpp
     font_book.hpp
     font_family_id.hpp
-    font_glyph_ids.cpp
-    font_glyph_ids.hpp
     font_grapheme_id.hpp
+    font_metrics.hpp
     font_variant.hpp
     font_weight.hpp
     glyph_id.hpp
-    glyph_metrics.hpp
+    glyph_ids.cpp
     glyph_ids.hpp
+    glyph_metrics.hpp
     grapheme.cpp
     grapheme.hpp
     grapheme_iterator.hpp
@@ -38,6 +38,8 @@ target_sources(ttauri PRIVATE
     shaped_text.cpp
     shaped_text.hpp
     text_decoration.hpp
+    text_shaper.cpp
+    text_shaper.hpp
     text_style.cpp
     text_style.hpp
     translation.cpp
@@ -68,7 +70,9 @@ target_sources(ttauri PRIVATE
 
 if(TT_BUILD_TESTS)
     target_sources(ttauri_tests PRIVATE
+        language_tag_tests.cpp
         unicode_bidi_tests.cpp
+        unicode_line_break_tests.cpp
         unicode_text_segmentation_tests.cpp
         unicode_normalization_tests.cpp
         language_tag_tests.cpp

@@ -155,7 +155,7 @@ gfx_device_vulkan::gfx_device_vulkan(gfx_system &system, vk::PhysicalDevice phys
     gfx_device(system), physicalIntrinsic(std::move(physicalDevice))
 {
     auto result = physicalIntrinsic.getProperties2KHR<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceIDProperties>(
-        narrow_cast<gfx_system_vulkan &>(system).loader());
+        down_cast<gfx_system_vulkan&>(system).loader());
 
     auto resultDeviceProperties2 = result.get<vk::PhysicalDeviceProperties2>();
     auto resultDeviceIDProperties = result.get<vk::PhysicalDeviceIDProperties>();
@@ -218,7 +218,7 @@ gfx_device_vulkan::~gfx_device_vulkan()
 
 [[nodiscard]] gfx_queue_vulkan const &gfx_device_vulkan::get_graphics_queue(gfx_surface const &surface) const noexcept
 {
-    ttlet &surface_ = narrow_cast<gfx_surface_vulkan const &>(surface).intrinsic;
+    ttlet &surface_ = down_cast<gfx_surface_vulkan const &>(surface).intrinsic;
 
     // First try to find a graphics queue which can also present.
     gfx_queue_vulkan const *graphics_queue = nullptr;
@@ -239,7 +239,7 @@ gfx_device_vulkan::~gfx_device_vulkan()
 
 [[nodiscard]] gfx_queue_vulkan const &gfx_device_vulkan::get_present_queue(gfx_surface const &surface) const noexcept
 {
-    ttlet &surface_ = narrow_cast<gfx_surface_vulkan const &>(surface).intrinsic;
+    ttlet &surface_ = down_cast<gfx_surface_vulkan const &>(surface).intrinsic;
 
     // First try to find a graphics queue which can also present.
     gfx_queue_vulkan const *present_queue = nullptr;
@@ -260,7 +260,7 @@ gfx_device_vulkan::~gfx_device_vulkan()
 
 [[nodiscard]] vk::SurfaceFormatKHR gfx_device_vulkan::get_surface_format(gfx_surface const &surface, int *score) const noexcept
 {
-    ttlet &surface_ = narrow_cast<gfx_surface_vulkan const &>(surface).intrinsic;
+    ttlet &surface_ = down_cast<gfx_surface_vulkan const &>(surface).intrinsic;
 
     auto best_surface_format = vk::SurfaceFormatKHR{};
     auto best_surface_format_score = 0;
@@ -313,7 +313,7 @@ gfx_device_vulkan::~gfx_device_vulkan()
 
 [[nodiscard]] vk::PresentModeKHR gfx_device_vulkan::get_present_mode(gfx_surface const &surface, int *score) const noexcept
 {
-    ttlet &surface_ = narrow_cast<gfx_surface_vulkan const &>(surface).intrinsic;
+    ttlet &surface_ = down_cast<gfx_surface_vulkan const &>(surface).intrinsic;
 
     auto best_present_mode = vk::PresentModeKHR{};
     auto best_present_mode_score = 0;
@@ -347,17 +347,17 @@ gfx_device_vulkan::~gfx_device_vulkan()
 int gfx_device_vulkan::score(gfx_surface const &surface) const
 {
     tt_axiom(gfx_system_mutex.recurse_lock_count());
-    ttlet &surface_ = narrow_cast<gfx_surface_vulkan const &>(surface).intrinsic;
+    ttlet &surface_ = down_cast<gfx_surface_vulkan const &>(surface).intrinsic;
 
     auto total_score = 0;
 
     tt_log_info("Scoring device: {}", string());
-    if (!hasRequiredFeatures(physicalIntrinsic, narrow_cast<gfx_system_vulkan &>(system).requiredFeatures)) {
+    if (!hasRequiredFeatures(physicalIntrinsic, down_cast<gfx_system_vulkan &>(system).requiredFeatures)) {
         tt_log_info(" - Does not have the required features.");
         return -1;
     }
 
-    if (!meetsRequiredLimits(physicalIntrinsic, narrow_cast<gfx_system_vulkan &>(system).requiredLimits)) {
+    if (!meetsRequiredLimits(physicalIntrinsic, down_cast<gfx_system_vulkan &>(system).requiredLimits)) {
         tt_log_info(" - Does not meet the required limits.");
         return -1;
     }
@@ -480,7 +480,7 @@ void gfx_device_vulkan::initialize_device()
     ttlet available_device_features = physicalIntrinsic.getFeatures();
 
     // Enable optional features.
-    device_features = narrow_cast<gfx_system_vulkan &>(system).requiredFeatures;
+    device_features = down_cast<gfx_system_vulkan &>(system).requiredFeatures;
     device_features.setDualSrcBlend(available_device_features.dualSrcBlend);
 
     intrinsic = physicalIntrinsic.createDevice(
@@ -496,10 +496,12 @@ void gfx_device_vulkan::initialize_device()
     VmaAllocatorCreateInfo allocatorCreateInfo = {};
     allocatorCreateInfo.physicalDevice = physicalIntrinsic;
     allocatorCreateInfo.device = intrinsic;
-    allocatorCreateInfo.instance = narrow_cast<gfx_system_vulkan &>(system).intrinsic;
+    allocatorCreateInfo.instance = down_cast<gfx_system_vulkan &>(system).intrinsic;
     vmaCreateAllocator(&allocatorCreateInfo, &allocator);
 
     VmaAllocationCreateInfo lazyAllocationInfo = {};
+    lazyAllocationInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
+    lazyAllocationInfo.pUserData = const_cast<char *>("lazy transient image check");
     lazyAllocationInfo.usage = VMA_MEMORY_USAGE_GPU_LAZILY_ALLOCATED;
     uint32_t typeIndexOut = 0;
     supportsLazyTransientImages =
@@ -537,8 +539,11 @@ void gfx_device_vulkan::initialize_quad_index_buffer()
             vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst,
             vk::SharingMode::eExclusive};
         VmaAllocationCreateInfo allocationCreateInfo = {};
+        allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
+        allocationCreateInfo.pUserData = const_cast<char *>("vertex index buffer");
         allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
         std::tie(quadIndexBuffer, quadIndexBufferAllocation) = createBuffer(bufferCreateInfo, allocationCreateInfo);
+        setDebugUtilsObjectNameEXT(quadIndexBuffer, "vertex index buffer");
     }
 
     // Fill in the vertex index buffer, using a staging buffer, then copying.
@@ -550,9 +555,12 @@ void gfx_device_vulkan::initialize_quad_index_buffer()
             vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferSrc,
             vk::SharingMode::eExclusive};
         VmaAllocationCreateInfo allocationCreateInfo = {};
+        allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
+        allocationCreateInfo.pUserData = const_cast<char *>("staging vertex index buffer");
         allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
         ttlet[stagingvertexIndexBuffer, stagingvertexIndexBufferAllocation] =
             createBuffer(bufferCreateInfo, allocationCreateInfo);
+        setDebugUtilsObjectNameEXT(stagingvertexIndexBuffer, "staging vertex index buffer");
 
         // Initialize indices.
         ttlet stagingvertexIndexBufferData = mapMemory<vertex_index_type>(stagingvertexIndexBufferAllocation);
@@ -577,9 +585,12 @@ void gfx_device_vulkan::initialize_quad_index_buffer()
         // Copy indices to vertex index buffer.
         auto &queue = get_graphics_queue();
         auto commands = allocateCommandBuffers({queue.command_pool, vk::CommandBufferLevel::ePrimary, 1}).at(0);
+
         commands.begin({vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
+        cmdBeginDebugUtilsLabelEXT(commands, "copy vertex index buffer");
         commands.copyBuffer(
             stagingvertexIndexBuffer, quadIndexBuffer, {{0, 0, sizeof(vertex_index_type) * maximum_number_of_indices}});
+        cmdEndDebugUtilsLabelEXT(commands);
         commands.end();
 
         std::vector<vk::CommandBuffer> const commandBuffersToSubmit = {commands};
@@ -842,6 +853,32 @@ vk::ShaderModule gfx_device_vulkan::loadShader(URL const &shaderObjectLocation) 
     // no lock, only local variable.
 
     return loadShader(*shaderObjectLocation.loadView());
+}
+
+void gfx_device_vulkan::setDebugUtilsObjectNameEXT(vk::DebugUtilsObjectNameInfoEXT const &name_info) const
+{
+    tt_axiom(gfx_system_mutex.recurse_lock_count());
+    return intrinsic.setDebugUtilsObjectNameEXT(name_info, down_cast<gfx_system_vulkan &>(system).loader());
+}
+
+void gfx_device_vulkan::cmdBeginDebugUtilsLabelEXT(vk::CommandBuffer buffer, vk::DebugUtilsLabelEXT const &create_info) const
+{
+    buffer.beginDebugUtilsLabelEXT(create_info, down_cast<gfx_system_vulkan &>(system).loader());
+}
+
+void gfx_device_vulkan::cmdEndDebugUtilsLabelEXT(vk::CommandBuffer buffer) const
+{
+    buffer.endDebugUtilsLabelEXT(down_cast<gfx_system_vulkan &>(system).loader());
+}
+
+void gfx_device_vulkan::log_memory_usage() const noexcept
+{
+    tt_log_info("Memory usage for gfx device {}:", string());
+
+    char *stat_string;
+    vmaBuildStatsString(allocator, &stat_string, VK_TRUE);
+    tt_log_info(" * {}", stat_string);
+    vmaFreeStatsString(allocator, stat_string);
 }
 
 } // namespace tt::inline v1

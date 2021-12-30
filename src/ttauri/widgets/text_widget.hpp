@@ -7,6 +7,7 @@
 #include "widget.hpp"
 #include "../GUI/theme_text_style.hpp"
 #include "../text/shaped_text.hpp"
+#include "../text/text_shaper.hpp"
 #include "../observable.hpp"
 #include "../alignment.hpp"
 #include "../l10n.hpp"
@@ -66,6 +67,7 @@ public:
     /// @endprivatesection
 private:
     shaped_text _shaped_text;
+    text_shaper _text_shaper;
     matrix2 _shaped_text_transform;
 
     text_widget(gui_window &window, widget *parent) noexcept;

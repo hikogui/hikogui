@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include "../geometry/corner_shapes.hpp"
+#include "../geometry/corner_radii.hpp"
 #include <algorithm>
 
 namespace tt::inline v1 {
 
 class int_abgr8_pack {
-    uint32_t v;
+    uint32_t v = 0;
 
 public:
     constexpr int_abgr8_pack() = default;
@@ -38,7 +38,7 @@ public:
         return *this;
     }
 
-    constexpr explicit int_abgr8_pack(corner_shapes const &rhs) noexcept : int_abgr8_pack(static_cast<f32x4>(rhs)) {}
+    constexpr explicit int_abgr8_pack(corner_radii const &rhs) noexcept : int_abgr8_pack(static_cast<f32x4>(rhs)) {}
 
     [[nodiscard]] constexpr friend bool operator==(int_abgr8_pack const &lhs, int_abgr8_pack const &rhs) noexcept = default;
 };

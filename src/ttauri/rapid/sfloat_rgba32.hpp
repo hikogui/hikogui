@@ -5,7 +5,7 @@
 #pragma once
 
 #include "numeric_array.hpp"
-#include "../geometry/corner_shapes.hpp"
+#include "../geometry/corner_radii.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../color/color.hpp"
 #include <algorithm>
@@ -40,7 +40,7 @@ public:
 
     sfloat_rgba32(aarectangle const &rhs) noexcept : sfloat_rgba32(f32x4{rhs}) {}
 
-    sfloat_rgba32(corner_shapes const &rhs) noexcept : sfloat_rgba32(f32x4{rhs}) {}
+    sfloat_rgba32(corner_radii const &rhs) noexcept : sfloat_rgba32(f32x4{rhs}) {}
 
     operator aarectangle() const noexcept
     {

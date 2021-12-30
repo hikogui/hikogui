@@ -40,7 +40,7 @@ widget_constraints const &icon_widget::set_constraints() noexcept
                 request_reconstrain();
             }
 
-        } else if (ttlet g1 = get_if<font_glyph_ids>(&*icon_)) {
+        } else if (ttlet g1 = get_if<glyph_ids>(&*icon_)) {
             _glyph = *g1;
             _icon_type = icon_type::glyph;
             _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).scaled_size();

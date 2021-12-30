@@ -213,10 +213,10 @@ public:
         return tt::rotate3(angle, tt::vector3{0.0f, 0.0f, 1.0f});
     }
 
-    [[nodiscard]] tt::corner_shapes corners() const noexcept
+    [[nodiscard]] tt::corner_radii corners() const noexcept
     {
         if (*rounded) {
-            return tt::corner_shapes{20.0f, 10.0f, 5.0f, 0.0f};
+            return tt::corner_radii{20.0f, 10.0f, 5.0f, 0.0f};
         } else {
             return {};
         }
@@ -293,7 +293,7 @@ public:
     }
 
 private:
-    tt::font_glyph_ids _glyph;
+    tt::glyph_ids _glyph;
     tt::aarectangle _glyph_rectangle;
     std::atomic<bool> _image_was_modified = true;
     tt::png _image;
@@ -313,7 +313,7 @@ int tt_main(int argc, char *argv[])
     tt::observable<bool> rounded = false;
 
     // Startup renderdoc for debugging
-    //auto render_doc = tt::RenderDoc();
+    auto render_doc = tt::RenderDoc();
 
     auto gui = tt::gui_system::make_unique();
     auto &window = gui->make_window(tt::l10n("Drawing Custom Widget"));

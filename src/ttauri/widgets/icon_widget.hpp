@@ -55,7 +55,7 @@ private:
     enum class icon_type { no, glyph, pixmap };
 
     icon_type _icon_type;
-    font_glyph_ids _glyph;
+    glyph_ids _glyph;
     paged_image _pixmap_backing;
     decltype(icon)::callback_ptr_type _icon_callback_ptr;
     std::atomic<bool> _icon_has_modified = true;

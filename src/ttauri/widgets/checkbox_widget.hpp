@@ -76,9 +76,9 @@ public:
 private:
     extent2 _button_size;
     aarectangle _button_rectangle;
-    font_glyph_ids _check_glyph;
+    glyph_ids _check_glyph;
     aarectangle _check_glyph_rectangle;
-    font_glyph_ids _minus_glyph;
+    glyph_ids _minus_glyph;
     aarectangle _minus_glyph_rectangle;
 
     checkbox_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;

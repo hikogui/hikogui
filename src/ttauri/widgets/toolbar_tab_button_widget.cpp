@@ -87,7 +87,7 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const &cont
     auto button_color = (hover || state() == button_state::on) ? theme().color(theme_color::fill, semantic_layer - 1) :
                                                                  theme().color(theme_color::fill, semantic_layer);
 
-    ttlet corner_shapes = tt::corner_shapes{0.0f, 0.0f, theme().rounding_radius, theme().rounding_radius};
+    ttlet corner_radii = tt::corner_radii{0.0f, 0.0f, theme().rounding_radius, theme().rounding_radius};
     context.draw_box(
         layout(),
         button_z * outline_rectangle,
@@ -95,7 +95,7 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const &cont
         (focus && active()) ? focus_color() : button_color,
         theme().border_width,
         border_side::inside,
-        corner_shapes);
+        corner_radii);
 }
 
 } // namespace tt::inline v1

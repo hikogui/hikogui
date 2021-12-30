@@ -6,7 +6,7 @@
 
 #include "pipeline_SDF_texture_map.hpp"
 #include "pipeline_SDF_specialization_constants.hpp"
-#include "../text/font_glyph_ids.hpp"
+#include "../text/glyph_ids.hpp"
 #include "../text/glyph_atlas_info.hpp"
 #include "../required.hpp"
 #include "../log.hpp"
@@ -34,14 +34,18 @@ struct vertex;
 
 struct device_shared final {
     // Studies in China have shown that literate individuals know and use between 3,000 and 4,000 characters.
-    // Handle up to 4096 characters with a 16 x 1024 x 1024, 16 x 1 MByte
-    static constexpr int atlasImageWidth = 1024; // 16 characters, of 64 pixels wide.
-    static constexpr int atlasImageHeight = 1024; // 16 characters, of 64 pixels height.
+    // Handle up to 7 * 7 * 128 == 6321 characters with a 16 x 1024 x 1024, 16 x 1 MByte
+    //
+    // For latin characters we can store about 7 * 12 == 84 characters in a single image, which is enough
+    // for the full alpha numeric range that an application will use.
+
+    static constexpr int atlasImageWidth = 256; // 7-12 characters, of 34 pixels wide.
+    static constexpr int atlasImageHeight = 256; // 7 characters, of 34 pixels height.
     static_assert(atlasImageWidth == atlasImageHeight, "needed for fwidth(textureCoord)");
 
-    static constexpr int atlasMaximumNrImages = 16; // 16 * 512 characters, of 64x64 pixels.
-    static constexpr int stagingImageWidth = 128; // maximum size of character that can be uploaded is 128x128
-    static constexpr int stagingImageHeight = 128;
+    static constexpr int atlasMaximumNrImages = 128; // 128 * 49 characters.
+    static constexpr int stagingImageWidth = 64; // One 'em' is 28 pixels, with edges 34 pixels.
+    static constexpr int stagingImageHeight = 64;
 
     static constexpr float atlasTextureCoordinateMultiplier = 1.0f / atlasImageWidth;
     static constexpr float drawfontSize = 28.0f;
@@ -109,7 +113,7 @@ struct device_shared final {
 
     /** Get the bounding box, including draw border of a glyph.
      */
-    aarectangle get_bounding_box(font_glyph_ids const &glyphs) const noexcept;
+    aarectangle get_bounding_box(glyph_ids const &glyphs) const noexcept;
 
     /** Place vertices for a single glyph.
      *
@@ -125,7 +129,7 @@ struct device_shared final {
         vspan<vertex> &vertices,
         aarectangle const &clipping_rectangle,
         quad const &box,
-        font_glyph_ids const &glyphs,
+        glyph_ids const &glyphs,
         quad_color colors) noexcept;
 
 private:
@@ -134,12 +138,12 @@ private:
     void addAtlasImage();
     void buildAtlas();
     void teardownAtlas(gfx_device_vulkan *vulkanDevice);
-    void add_glyph_to_atlas(font_glyph_ids const &glyph, glyph_atlas_info &info) noexcept;
+    void add_glyph_to_atlas(glyph_ids const &glyph, glyph_atlas_info &info) noexcept;
 
     /**
      * @return The Atlas rectangle and true if a new glyph was added to the atlas.
      */
-    tt_force_inline std::pair<glyph_atlas_info const *, bool> get_glyph_from_atlas(font_glyph_ids const &glyph) noexcept
+    tt_force_inline std::pair<glyph_atlas_info const *, bool> get_glyph_from_atlas(glyph_ids const &glyph) noexcept
     {
         auto &info = glyph.atlas_info();
 

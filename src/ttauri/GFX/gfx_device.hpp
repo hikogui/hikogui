@@ -46,6 +46,8 @@ public:
      * \returns -1 When not viable, 0 when not presentable, positive values for increasing score.
      */
     virtual int score(gfx_surface const &surface) const = 0;
+
+    virtual void log_memory_usage() const noexcept {}
 };
 
 } // namespace tt::inline v1

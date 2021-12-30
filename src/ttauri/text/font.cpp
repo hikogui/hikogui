@@ -8,7 +8,7 @@
 
 namespace tt::inline v1 {
 
-[[nodiscard]] font_glyph_ids font::find_glyph(grapheme g) const noexcept
+[[nodiscard]] glyph_ids font::find_glyph(grapheme g) const noexcept
 {
     if (not loaded() and not unicode_mask.contains(g)) {
         // If the grapheme is not available in the font prevent font loading.
@@ -16,7 +16,9 @@ namespace tt::inline v1 {
         return {};
     }
 
-    auto r = font_glyph_ids(*this);
+    // Create a glyph_ids object for a single grapheme.
+    auto r = glyph_ids(*this);
+    r.set_num_graphemes(1);
 
     // First try composed normalization
     for (std::size_t i = 0; i != g.size(); ++i) {

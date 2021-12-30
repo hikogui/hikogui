@@ -122,30 +122,24 @@ inline bool almost_equal(font_weight const &lhs, font_weight const &rhs) noexcep
 {
     std::array<font_weight, 100> r = {font_weight::Regular};
 
-    for (int w = 0; w < 10; ++w) {
+    for (auto w = 0_uz; w < 10_uz; ++w) {
         auto min_w = w;
         auto max_w = w;
         auto new_w = w;
         auto forward = false;
 
-        for (int i = 0; i < 10; ++i) {
-            r[w * 10 + i] = static_cast<font_weight>(new_w);
+        for (auto i = 0_uz; i < 10_uz; ++i) {
+            r[w * 10_uz + i] = static_cast<font_weight>(new_w);
 
             // Change direction to not overflow.
-            if ((forward && max_w == 9) || (!forward && min_w == 0)) {
-                forward = !forward;
+            if ((forward and max_w == 9_uz) or (not forward and min_w == 0_uz)) {
+                forward = not forward;
             }
 
-            if (forward) {
-                ++max_w;
-                new_w = max_w;
-            } else {
-                --min_w;
-                new_w = min_w;
-            }
+            new_w = forward ? ++max_w : --min_w;
 
             // Change direction to zig-zag.
-            forward = !forward;
+            forward = not forward;
         }
     }
     return r;

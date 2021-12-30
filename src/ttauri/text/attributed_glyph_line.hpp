@@ -5,6 +5,8 @@
 #pragma once
 
 #include "attributed_glyph.hpp"
+#include "font_metrics.hpp"
+#include "font.hpp"
 #include <vector>
 #include <optional>
 
@@ -18,17 +20,13 @@ struct attributed_glyph_line {
 
     vector_type line;
     float width;
-    float ascender;
-    float descender;
-    float lineGap;
-    float capHeight;
-    float xHeight;
     float y;
+
+    font_metrics metrics;
 
     /** This constructor will move the data from first to last.
      */
-    attributed_glyph_line(iterator first, iterator last) noexcept :
-        line(), width(0.0f), ascender(0.0f), descender(0.0f), lineGap(0.0f), capHeight(0.0f), xHeight(0.0f)
+    attributed_glyph_line(iterator first, iterator last) noexcept : line(), width(0.0f), y(), metrics()
     {
         tt_axiom(std::distance(first, last) > 0);
 
@@ -83,9 +81,10 @@ struct attributed_glyph_line {
     {
         tt_axiom(ssize(line) >= 1);
 
-        ttlet p0 = point2{line.front().position.x(), line.front().position.y() - descender};
+        ttlet p0 = point2{line.front().position.x(), line.front().position.y() - metrics.descender};
 
-        ttlet p3 = point2{line.back().position.x() + line.back().metrics.advance.x(), line.back().position.y() + ascender};
+        ttlet p3 =
+            point2{line.back().position.x() + line.back().metrics.advance.x(), line.back().position.y() + metrics.ascender};
 
         return aarectangle{p0, p3};
     }
@@ -149,9 +148,17 @@ struct attributed_glyph_line {
 
     void positionGlyphs(point2 position) noexcept
     {
-        y = position.y();
+        // XXX Take into account sub-pixel and dpi scaling.
+
+        // Round the baseline to pixel boundary.
+        y = std::round(position.y());
         for (auto &&g : line) {
-            g.position = position;
+            // Round x to sub-pixels.
+            // By rounding the baseline but not the vertical advance of individual glyphs we allow
+            // for perfect vertical alignment of cursive scripts. Horizontal rounding
+            // should have less impact to cursive continuations since most will be horizontal lines.
+            g.position = {std::round(position.x() * 3.0f) / 3.0f, position.y()};
+
             position += g.metrics.advance;
         }
     }
@@ -159,29 +166,19 @@ struct attributed_glyph_line {
 private:
     void calculateLineMetrics() noexcept
     {
-        ascender = 0.0f;
-        descender = 0.0f;
-        lineGap = 0.0f;
-        capHeight = 0.0f;
-        xHeight = 0.0f;
+        metrics = {};
 
         auto totalWidth = 0.0f;
         auto validWidth = 0.0f;
-        for (ttlet &g : line) {
-            totalWidth += g.metrics.advance.x();
-            ascender = std::max(ascender, g.metrics.ascender);
-            descender = std::max(descender, g.metrics.descender);
-            lineGap = std::max(lineGap, g.metrics.lineGap);
-            capHeight += g.metrics.capHeight;
-            xHeight += g.metrics.xHeight;
+        for (ttlet &c : line) {
+            totalWidth += c.metrics.advance.x();
+            metrics = max(metrics, c.font_metrics());
 
-            if (g.isVisible()) {
+            if (c.isVisible()) {
                 // Don't include trailing whitespace in the width.
                 validWidth = totalWidth;
             }
         }
-        capHeight /= narrow_cast<float>(ssize(line));
-        xHeight /= narrow_cast<float>(ssize(line));
 
         width = validWidth;
     }

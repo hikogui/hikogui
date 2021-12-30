@@ -109,13 +109,6 @@ void gui_window::set_device(gfx_device *device) noexcept
     return surface->is_closed();
 }
 
-[[nodiscard]] float gui_window::window_scale() const noexcept
-{
-    tt_axiom(is_gui_thread());
-
-    return std::ceil(dpi / 100.0f);
-}
-
 void gui_window::render(utc_nanoseconds display_time_point)
 {
     ttlet t1 = trace<"window::render">();

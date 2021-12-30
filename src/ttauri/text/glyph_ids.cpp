@@ -9,17 +9,17 @@
 
 namespace tt::inline v1 {
 
-[[nodiscard]] glyph_atlas_info &font_glyph_ids::atlas_info() const noexcept
+[[nodiscard]] glyph_atlas_info &glyph_ids::atlas_info() const noexcept
 {
-    return _font->atlas_info(_glyphs);
+    return _font->atlas_info(*this);
 }
 
-[[nodiscard]] std::pair<graphic_path, aarectangle> font_glyph_ids::get_path_and_bounding_box() const noexcept
+[[nodiscard]] std::pair<graphic_path, aarectangle> glyph_ids::get_path_and_bounding_box() const noexcept
 {
     graphic_path path;
-    auto boundingBox = aarectangle{};
+    auto bounding_box = aarectangle{};
 
-    for (std::size_t i = 0; i < size(); i++) {
+    for (std::size_t i = 0; i < num_glyphs(); i++) {
         ttlet glyph_id = (*this)[i];
 
         graphic_path glyph_path;
@@ -42,21 +42,21 @@ namespace tt::inline v1 {
         }
 
         if (i == 0) {
-            boundingBox = glyph_metrics.boundingBox;
+            bounding_box = glyph_metrics.bounding_rectangle;
         } else {
-            boundingBox |= glyph_metrics.boundingBox;
+            bounding_box |= glyph_metrics.bounding_rectangle;
         }
     }
 
-    return {path, boundingBox};
+    return {path, bounding_box};
 }
 
-[[nodiscard]] aarectangle font_glyph_ids::get_bounding_box() const noexcept
+[[nodiscard]] aarectangle glyph_ids::get_bounding_box() const noexcept
 {
     graphic_path path;
-    auto boundingBox = aarectangle{};
+    auto bounding_box = aarectangle{};
 
-    for (std::size_t i = 0; i < size(); i++) {
+    for (std::size_t i = 0; i < num_glyphs(); i++) {
         ttlet glyph_id = (*this)[i];
 
         glyph_metrics glyph_metrics;
@@ -69,13 +69,13 @@ namespace tt::inline v1 {
         }
 
         if (i == 0) {
-            boundingBox = glyph_metrics.boundingBox;
+            bounding_box = glyph_metrics.bounding_rectangle;
         } else {
-            boundingBox |= glyph_metrics.boundingBox;
+            bounding_box |= glyph_metrics.bounding_rectangle;
         }
     }
 
-    return boundingBox;
+    return bounding_box;
 }
 
 } // namespace tt::inline v1

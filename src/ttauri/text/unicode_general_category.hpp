@@ -59,6 +59,12 @@ enum class unicode_general_category : uint8_t {
     return rhs >= Mn and rhs <= Me;
 }
 
+[[nodiscard]] constexpr bool is_Mn_or_Mc(unicode_general_category const &rhs) noexcept
+{
+    using enum unicode_general_category;
+    return rhs == Mn or rhs == Mc;
+}
+
 [[nodiscard]] constexpr bool is_N(unicode_general_category const &rhs) noexcept
 {
     using enum unicode_general_category;
