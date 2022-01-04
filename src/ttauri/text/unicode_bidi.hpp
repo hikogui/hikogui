@@ -8,6 +8,14 @@
 #include "unicode_description.hpp"
 
 namespace tt::inline v1 {
+
+struct unicode_bidi_context {
+    unicode_bidi_class default_paragraph_direction = unicode_bidi_class::unknown;
+    bool enable_mirrored_brackets = true;
+    bool enable_line_separator = true;
+    bool move_lf_and_ps_to_end_of_line = true;
+};
+
 namespace detail {
 
 struct unicode_bidi_char_info {
@@ -93,17 +101,11 @@ static void unicode_bidi_L4(
     }
 }
 
-struct unicode_bidi_test_parameters {
-    unicode_bidi_class force_paragraph_direction = unicode_bidi_class::unknown;
-    bool enable_mirrored_brackets = true;
-    bool enable_line_separator = true;
-    bool move_lf_and_ps_to_end_of_line = true;
-};
 
-[[nodiscard]] unicode_bidi_char_info_iterator unicode_bidi_P1(
+[[nodiscard]] std::pair<unicode_bidi_char_info_iterator, std::vector<unicode_bidi_class>> unicode_bidi_P1(
     unicode_bidi_char_info_iterator first,
     unicode_bidi_char_info_iterator last,
-    unicode_bidi_test_parameters test_parameters = {}) noexcept;
+    unicode_bidi_context context = {}) noexcept;
 
 } // namespace detail
 
@@ -119,7 +121,7 @@ struct unicode_bidi_test_parameters {
  * `set_char` function is used when the code-point needs to be replaced with
  * a mirrored version.
  *
- * The bidrectional algorithm will work correctly with either a list of code points
+ * The bidirectional algorithm will work correctly with either a list of code points
  * or a list of first-code-point-of-graphemes.
  *
  * @tparam It A Bidirectional read-write iterator.
@@ -131,15 +133,16 @@ struct unicode_bidi_test_parameters {
  * @param get_char A function to get the character from an item.
  * @param set_char A function to set the character in an item.
  * @param set_text_direction A function to set the text direction in an item.
+ * @return Iterator pointing one beyond the last element, the writing direction for each paragraph.
  */
 template<typename It, typename GetCodePoint, typename SetCodePoint, typename SetTextDirection>
-It unicode_bidi(
+std::pair<It, std::vector<unicode_bidi_class>> unicode_bidi(
     It first,
     It last,
     GetCodePoint get_code_point,
     SetCodePoint set_code_point,
     SetTextDirection set_text_direction,
-    detail::unicode_bidi_test_parameters test_parameters = {})
+    unicode_bidi_context context = {})
 {
     auto proxy = detail::unicode_bidi_char_info_vector{};
     proxy.reserve(std::distance(first, last));
@@ -149,7 +152,7 @@ It unicode_bidi(
         proxy.emplace_back(index++, get_code_point(*it));
     }
 
-    auto proxy_last = detail::unicode_bidi_P1(begin(proxy), end(proxy), test_parameters);
+    auto [proxy_last, paragraph_directions] = detail::unicode_bidi_P1(begin(proxy), end(proxy), context);
     last = shuffle_by_index(first, last, begin(proxy), proxy_last, [](ttlet &item) {
         return item.index;
     });
@@ -160,7 +163,7 @@ It unicode_bidi(
         first,
         std::forward<SetCodePoint>(set_code_point),
         std::forward<SetTextDirection>(set_text_direction));
-    return last;
+    return {last, std::move(paragraph_directions)};
 }
 
 } // namespace tt::inline v1
