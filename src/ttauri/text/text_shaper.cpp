@@ -5,6 +5,7 @@
 #include "text_shaper.hpp"
 #include "font_book.hpp"
 #include "unicode_line_break.hpp"
+#include "unicode_bidi.hpp"
 #include "../log.hpp"
 #include <numeric>
 
@@ -44,10 +45,10 @@ void text_shaper::char_type::initialize_glyph(tt::font_book &font_book) noexcept
     return initialize_glyph(font_book, font_book.find_font(style.family_id, style.variant));
 }
 
-void text_shaper::char_type::replace_glyph(tt::font_book &font_book, char32_t code_point) noexcept
+void text_shaper::char_type::replace_glyph(char32_t code_point) noexcept
 {
-    ttlet &font = font_book.find_font(style.family_id, style.variant);
-    set_glyph(font_book.find_glyph(font, tt::grapheme{code_point}));
+    ttlet &font = glyph.font();
+    set_glyph(font.find_glyph(tt::grapheme{code_point}));
 
     bounding_rectangle = metrics.bounding_rectangle;
     glyph_is_initial = false;
@@ -83,10 +84,6 @@ text_shaper::line_type::line_type(
     ttlet last_category = (last - 1)->description->general_category();
     if (last_category == unicode_general_category::Zp) {
         end_of_paragraph = true;
-    } else if (last_category != unicode_general_category::Zl) {
-        // If the line does not end in an explicit paragraph-separator or line-separator,
-        // when a line is folded, add a virtual-line separator.
-        columns.push_back(-1_z);
     }
 }
 
@@ -188,6 +185,85 @@ void text_shaper::layout_lines_vertical_spacing(float paragraph_spacing, float l
     ttlet max_y = std::ceil(_lines.front().y + _lines.front().metrics.x_height);
     ttlet min_y = std::floor(_lines.back().y);
     return aarectangle{point2{0.0f, min_y}, point2{std::ceil(max_width), max_y}};
+}
+
+void text_shaper::reorder_glyphs() noexcept
+{
+    // Create a list of all character indices.
+    auto char_its = std::vector<char_iterator>{};
+    char_its.reserve(_text.size());
+    for (auto it = _text.begin(); it != _text.end(); ++it) {
+        char_its.push_back(it);
+    }
+
+    // Reorder the character indices based on the unicode bidi algorithm.
+    ttlet[char_its_last, paragraph_directions] = unicode_bidi(
+        char_its.begin(),
+        char_its.end(),
+        [&](char_const_iterator it) {
+            return it->grapheme[0];
+        },
+        [&](char_iterator it, char32_t code_point) {
+            it->replace_glyph(code_point);
+        },
+        [&](ttlet...) {});
+
+    // The unicode bidi algorithm may have deleted a few characters.
+    char_its.erase(char_its_last, char_its.cend());
+
+    // Add the paragraph direction for each line.
+    tt_axiom(not _lines.empty());
+    auto par_it = paragraph_directions.cbegin();
+    for (auto &line : _lines) {
+        tt_axiom(par_it != paragraph_directions.cend());
+        line.paragraph_direction = *par_it;
+        if (line.end_of_paragraph) {
+            par_it++;
+        }
+    }
+
+    // Add the character indices for each line in display order.
+    tt_axiom(not _lines.empty());
+    auto line_it = _lines.begin();
+    line_it->columns.clear();
+    for (ttlet char_it : char_its) {
+        if (char_it >= line_it->last) {
+            ++line_it;
+            line_it->columns.clear();
+        }
+        tt_axiom(line_it != _lines.end());
+        tt_axiom(char_it >= line_it->first and char_it < line_it->last);
+        line_it->columns.push_back(char_it);
+    }
+}
+
+void text_shaper::resolve_text_alignment(text_alignment alignment) noexcept
+{
+    tt_axiom(not _lines.empty());
+    for (auto &line : _lines) {
+        if (alignment == text_alignment::flush) {
+            if (line.paragraph_direction == unicode_bidi_class::L) {
+                line.paragraph_alignment = text_alignment::flush_left;
+            } else if (line.paragraph_direction == unicode_bidi_class::R) {
+                line.paragraph_alignment = text_alignment::flush_right;
+            } else {
+                tt_no_default();
+            }
+        } else {
+            line.paragraph_alignment = alignment;
+        }
+    }
+}
+
+void text_shaper::position_glyphs(
+    aarectangle rectangle,
+    float base_line,
+    text_alignment alignment,
+    unicode_bidi_class writing_direction,
+    extent2 sub_pixel_size) noexcept
+{
+    reorder_glyphs();
+    resolve_text_alignment(alignment);
 }
 
 //[[nodiscard]] size_t text_shaper::get_char(size_t column_nr, size_t line_nr) const noexcept

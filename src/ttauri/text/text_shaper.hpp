@@ -252,7 +252,7 @@ private:
          * @post `glyph` and `metrics` are modified. `glyph_is_initial` is set to false.
          * @note The `width` remains based on the original glyph.
          */
-        void replace_glyph(tt::font_book &font_book, char32_t code_point) noexcept;
+        void replace_glyph(char32_t code_point) noexcept;
 
         /** Get the scaled font metrics for this character.
          */
@@ -277,10 +277,8 @@ private:
         /** Indices to the characters in the text.
          *
          * The indices are in display-order.
-         * -1 is a line-separator that does not exist in the original text.
-         * -2 is a paragraph-separator that does not exist in the original text.
          */
-        std::vector<ssize_t> columns;
+        std::vector<char_iterator> columns;
 
         /** The maximum metrics of the font of each glyph on this line.
          */
@@ -302,7 +300,7 @@ private:
          *
          * This value will be set the same on each line of a paragraph.
          */
-        unicode_bidi_class paragraph_writing_direction;
+        unicode_bidi_class paragraph_direction;
 
         /** The alignment of the paragraph.
          *
@@ -369,6 +367,8 @@ private:
 
     void layout_lines_vertical_spacing(float paragraph_spacing, float line_spacing) noexcept;
     [[nodiscard]] float layout_lines_vertical_adjustment(vertical_alignment alignment) const noexcept;
+    void reorder_glyphs() noexcept;
+    void resolve_text_alignment(text_alignment alignment) noexcept;
 
     /** Get column and line of a character.
      */
