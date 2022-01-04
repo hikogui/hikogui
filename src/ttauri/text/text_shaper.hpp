@@ -367,7 +367,7 @@ private:
 
     void layout_lines_vertical_spacing(float paragraph_spacing, float line_spacing) noexcept;
     [[nodiscard]] float layout_lines_vertical_adjustment(vertical_alignment alignment) const noexcept;
-    void reorder_glyphs() noexcept;
+    void reorder_glyphs(unicode_bidi_class writing_direction) noexcept;
     void resolve_text_alignment(text_alignment alignment) noexcept;
 
     /** Get column and line of a character.

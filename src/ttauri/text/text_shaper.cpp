@@ -187,7 +187,7 @@ void text_shaper::layout_lines_vertical_spacing(float paragraph_spacing, float l
     return aarectangle{point2{0.0f, min_y}, point2{std::ceil(max_width), max_y}};
 }
 
-void text_shaper::reorder_glyphs() noexcept
+void text_shaper::reorder_glyphs(unicode_bidi_class writing_direction) noexcept
 {
     // Create a list of all character indices.
     auto char_its = std::vector<char_iterator>{};
@@ -197,6 +197,8 @@ void text_shaper::reorder_glyphs() noexcept
     }
 
     // Reorder the character indices based on the unicode bidi algorithm.
+    auto context = unicode_bidi_context{};
+    context.default_paragraph_direction = writing_direction;
     ttlet[char_its_last, paragraph_directions] = unicode_bidi(
         char_its.begin(),
         char_its.end(),
@@ -206,7 +208,8 @@ void text_shaper::reorder_glyphs() noexcept
         [&](char_iterator it, char32_t code_point) {
             it->replace_glyph(code_point);
         },
-        [&](ttlet...) {});
+        [&](ttlet...) {},
+        context);
 
     // The unicode bidi algorithm may have deleted a few characters.
     char_its.erase(char_its_last, char_its.cend());
@@ -262,8 +265,12 @@ void text_shaper::position_glyphs(
     unicode_bidi_class writing_direction,
     extent2 sub_pixel_size) noexcept
 {
-    reorder_glyphs();
+    reorder_glyphs(writing_direction);
     resolve_text_alignment(alignment);
+    // morph_glyphs();
+    // kern_glyphs();
+    // reposition_lines(rectangle, base_line);
+    // advance_glyphs(sub_pixel_size);
 }
 
 //[[nodiscard]] size_t text_shaper::get_char(size_t column_nr, size_t line_nr) const noexcept
