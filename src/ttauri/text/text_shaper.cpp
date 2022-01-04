@@ -3,9 +3,10 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "text_shaper.hpp"
-#include "text_fold.hpp"
 #include "font_book.hpp"
+#include "unicode_line_break.hpp"
 #include "../log.hpp"
+#include <numeric>
 
 namespace tt::inline v1 {
 
@@ -52,17 +53,45 @@ void text_shaper::char_type::replace_glyph(tt::font_book &font_book, char32_t co
     glyph_is_initial = false;
 }
 
-[[nodiscard]] text_shaper::text_shaper(
-    tt::font_book &font_book,
-    gstring const &text,
-    text_style const &style,
-    tt::vertical_alignment vertical_alignment,
-    float line_spacing,
-    float paragraph_spacing) noexcept :
-    _font_book(&font_book),
-    _vertical_alignment(vertical_alignment),
-    _line_spacing(line_spacing),
-    _paragraph_spacing(paragraph_spacing)
+[[nodiscard]] float text_shaper::line_type::calculate_width() noexcept
+{
+    return unicode_LB_width(
+        first,
+        last,
+        [](ttlet &c) {
+            return c.description->general_category();
+        },
+        [](ttlet &c) {
+            return c.width;
+        });
+}
+
+text_shaper::line_type::line_type(
+    text_shaper::char_const_iterator begin,
+    text_shaper::char_const_iterator first,
+    text_shaper::char_const_iterator last) noexcept :
+    first(first), last(last), columns(), metrics(), y(0.0f), width(0.0f), end_of_paragraph(false)
+{
+    tt_axiom(first != last);
+
+    width = calculate_width();
+
+    for (auto it = first; it != last; ++it) {
+        metrics = max(metrics, it->font_metrics());
+    }
+
+    ttlet last_category = (last - 1)->description->general_category();
+    if (last_category == unicode_general_category::Zp) {
+        end_of_paragraph = true;
+    } else if (last_category != unicode_general_category::Zl) {
+        // If the line does not end in an explicit paragraph-separator or line-separator,
+        // when a line is folded, add a virtual-line separator.
+        columns.push_back(-1_z);
+    }
+}
+
+[[nodiscard]] text_shaper::text_shaper(tt::font_book &font_book, gstring const &text, text_style const &style) noexcept :
+    _font_book(&font_book)
 {
     ttlet &font = font_book.find_font(style.family_id, style.variant);
     _text.reserve(text.size());
@@ -72,27 +101,94 @@ void text_shaper::char_type::replace_glyph(tt::font_book &font_book, char32_t co
     }
 }
 
-[[nodiscard]] text_shaper::text_shaper(
-    font_book &font_book,
-    std::string_view text,
-    text_style const &style,
-    tt::vertical_alignment vertical_alignment,
-    float line_spacing,
-    float paragraph_spacing) noexcept :
-    text_shaper(font_book, to_gstring(text), style, vertical_alignment, line_spacing, paragraph_spacing)
+[[nodiscard]] text_shaper::text_shaper(font_book &font_book, std::string_view text, text_style const &style) noexcept :
+    text_shaper(font_book, to_gstring(text), style)
 {
 }
 
-//[[nodiscard]] generator<ssize_t> text_shaper::fold(float width) const noexcept
-//{
-//    auto g = text_fold(_text.begin(), _text.end(), width, [](ttlet &c) {
-//        return std::pair{c.description->general_category(), c.width};
-//    });
-// 
-//    for (ttlet span : g) {
-//        co_yield span;
-//    }
-//}
+[[nodiscard]] std::vector<size_t> text_shaper::fold_lines(float maximum_line_width) const noexcept
+{
+    return unicode_break_lines(
+        _text.begin(),
+        _text.end(),
+        maximum_line_width,
+        [](ttlet &c) {
+            return *(c.description);
+        },
+        [](ttlet &c) {
+            return c.width;
+        });
+}
+
+[[nodiscard]] std::vector<text_shaper::line_type> text_shaper::layout_create_lines(float maximum_line_width) const noexcept
+{
+    ttlet line_sizes = fold_lines(maximum_line_width);
+
+    auto r = std::vector<text_shaper::line_type>{};
+    r.reserve(line_sizes.size());
+
+    auto first = _text.begin();
+    for (ttlet line_size : line_sizes) {
+        tt_axiom(line_size > 0);
+        ttlet last = first + line_size;
+        r.emplace_back(_text.begin(), first, last);
+        first = last;
+    }
+    return r;
+}
+
+void text_shaper::layout_lines_vertical_spacing(float paragraph_spacing, float line_spacing) noexcept
+{
+    tt_axiom(not _lines.empty());
+
+    auto prev = _lines.begin();
+    auto y = prev->y = 0.0f;
+    for (auto it = prev + 1; it != _lines.end(); ++it) {
+        ttlet height = prev->metrics.descender + std::max(prev->metrics.line_gap, it->metrics.line_gap) + it->metrics.ascender;
+        ttlet spacing = prev->end_of_paragraph ? paragraph_spacing : line_spacing;
+        // Lines advance downward on the y-axis.
+        it->y = y -= spacing * height;
+        prev = it;
+    }
+}
+
+[[nodiscard]] float text_shaper::layout_lines_vertical_adjustment(vertical_alignment alignment) const noexcept
+{
+    if (alignment == vertical_alignment::top) {
+        return -_lines.front().y;
+    } else if (alignment == vertical_alignment::bottom) {
+        return -_lines.back().y;
+    } else {
+        auto mp_index = _lines.size() / 2;
+        if (_lines.size() % 2 == 1) {
+            return -_lines[mp_index].y;
+
+        } else {
+            return -std::midpoint(_lines[mp_index - 1].y, _lines[mp_index].y);
+        }
+    }
+}
+
+[[nodiscard]] aarectangle text_shaper::layout_lines(
+    float maximum_line_width,
+    vertical_alignment alignment,
+    float line_spacing,
+    float paragraph_spacing) noexcept
+{
+    _lines = layout_create_lines(maximum_line_width);
+    layout_lines_vertical_spacing(line_spacing, paragraph_spacing);
+    ttlet adjustment = layout_lines_vertical_adjustment(alignment);
+
+    auto max_width = 0.0f;
+    for (auto &line : _lines) {
+        line.y += adjustment;
+        inplace_max(max_width, line.width);
+    }
+
+    ttlet max_y = std::ceil(_lines.front().y + _lines.front().metrics.x_height);
+    ttlet min_y = std::floor(_lines.back().y);
+    return aarectangle{point2{0.0f, min_y}, point2{std::ceil(max_width), max_y}};
+}
 
 //[[nodiscard]] size_t text_shaper::get_char(size_t column_nr, size_t line_nr) const noexcept
 //{

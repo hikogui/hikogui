@@ -43,19 +43,34 @@ enum class horizontal_alignment {
 };
 
 enum class text_alignment {
+    /** Align the text naturally based on the writing direction of each paragraph.
+     *
+     * This will act as flush_left if the paragraph is in left-to-right direction,
+     * and as flush_right if the paragraph is in right-to-left direction.
+     */
+    flush,
+
     /** Align the text to the left side
+     *
+     * The text will be flush-left independent of the writing direction.
      */
     flush_left,
 
     /** Align the text in the center.
+     *
+     * Since the text is centered, the writing direction is unimportant.
      */
     centered,
 
-    /** Stretch the text to be flushed to both sides.
+    /** Stretch the text to be flush to both sides.
+     *
+     * Since the text is flush on both sides, the writing direction is unimportant.
      */
     justified,
 
     /** Align the text to the right side
+     *
+     * The text will be flush-left independent of the writing direction.
      */
     flush_right,
 };
@@ -162,7 +177,7 @@ constexpr vertical_alignment to_vertical_alignment(alignment rhs) noexcept
     case middle_center:
     case middle_right: return vertical_alignment::middle;
     case top_left:
-    case top_center: 
+    case top_center:
     case top_right: return vertical_alignment::top;
     default: tt_no_default();
     }
