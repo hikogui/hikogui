@@ -11,6 +11,7 @@
 #include "text_style.hpp"
 #include "glyph_ids.hpp"
 #include "unicode_description.hpp"
+#include "font.hpp"
 #include <vector>
 
 #pragma once

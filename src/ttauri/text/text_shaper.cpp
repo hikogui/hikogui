@@ -136,7 +136,9 @@ text_shaper::line_type::line_type(
 
 void text_shaper::layout_lines_vertical_spacing(float paragraph_spacing, float line_spacing) noexcept
 {
-    tt_axiom(not _lines.empty());
+    if (_lines.empty()) {
+        return;
+    }
 
     auto prev = _lines.begin();
     auto y = prev->y = 0.0f;
@@ -151,6 +153,10 @@ void text_shaper::layout_lines_vertical_spacing(float paragraph_spacing, float l
 
 [[nodiscard]] float text_shaper::layout_lines_vertical_adjustment(vertical_alignment alignment) const noexcept
 {
+    if (_lines.empty()) {
+        return -0.0f;
+    }
+
     if (alignment == vertical_alignment::top) {
         return -_lines.front().y;
     } else if (alignment == vertical_alignment::bottom) {
@@ -182,9 +188,13 @@ void text_shaper::layout_lines_vertical_spacing(float paragraph_spacing, float l
         inplace_max(max_width, line.width);
     }
 
-    ttlet max_y = std::ceil(_lines.front().y + _lines.front().metrics.x_height);
-    ttlet min_y = std::floor(_lines.back().y);
-    return aarectangle{point2{0.0f, min_y}, point2{std::ceil(max_width), max_y}};
+    if (_lines.empty()) {
+        return aarectangle{};
+    } else {
+        ttlet max_y = std::ceil(_lines.front().y + _lines.front().metrics.x_height);
+        ttlet min_y = std::floor(_lines.back().y);
+        return aarectangle{point2{0.0f, min_y}, point2{std::ceil(max_width), max_y}};
+    }
 }
 
 void text_shaper::reorder_glyphs(unicode_bidi_class writing_direction) noexcept
