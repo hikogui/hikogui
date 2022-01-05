@@ -34,7 +34,6 @@ void text_shaper::char_type::initialize_glyph(tt::font_book &font_book, tt::font
     if (not glyph_is_initial) {
         set_glyph(font_book.find_glyph(font, grapheme));
 
-        bounding_rectangle = metrics.bounding_rectangle;
         width = metrics.advance.x();
         glyph_is_initial = true;
     }
@@ -50,7 +49,6 @@ void text_shaper::char_type::replace_glyph(char32_t code_point) noexcept
     ttlet &font = glyph.font();
     set_glyph(font.find_glyph(tt::grapheme{code_point}));
 
-    bounding_rectangle = metrics.bounding_rectangle;
     glyph_is_initial = false;
 }
 
@@ -250,21 +248,138 @@ void text_shaper::reorder_glyphs(unicode_bidi_class writing_direction) noexcept
     }
 }
 
-void text_shaper::resolve_text_alignment(text_alignment alignment) noexcept
+void text_shaper::line_type::advance_glyphs() noexcept
 {
-    tt_axiom(not _lines.empty());
-    for (auto &line : _lines) {
-        if (alignment == text_alignment::flush) {
-            if (line.paragraph_direction == unicode_bidi_class::L) {
-                line.paragraph_alignment = text_alignment::flush_left;
-            } else if (line.paragraph_direction == unicode_bidi_class::R) {
-                line.paragraph_alignment = text_alignment::flush_right;
-            } else {
-                tt_no_default();
-            }
+    visible_width = 0.0f;
+    num_internal_white_space = 0_uz;
+
+    auto p = point2{};
+    auto num_white_space = 0_uz;
+    for (auto it = columns.begin(); it != columns.end(); ++it) {
+        ttlet char_it = *it;
+        ttlet kerning = it == columns.end() ? vector2{} : char_it->get_kerning(**(it + 1));
+
+        char_it->position = p;
+        p += char_it->metrics.advance + kerning;
+
+        if (is_visible(char_it->description->general_category())) {
+            visible_width = p.x();
+            num_internal_white_space = num_white_space;
         } else {
-            line.paragraph_alignment = alignment;
+            ++num_white_space;
         }
+    }
+}
+
+void text_shaper::line_type::align_glyphs_ragged(float offset, float sub_pixel_width) noexcept
+{
+    for (ttlet &char_it : columns) {
+        auto x = char_it->position.x();
+        x += offset;
+        x = std::round(x / sub_pixel_width) * sub_pixel_width;
+        char_it->position.x() = x;
+    }
+}
+
+[[nodiscard]] bool text_shaper::line_type::align_glyphs_justified(float max_line_width, float sub_pixel_width) noexcept
+{
+    if (num_internal_white_space == 0) {
+        return false;
+    }
+
+    ttlet extra_space = max_line_width - visible_width;
+    if (extra_space > max_line_width * 0.10f) {
+        return false;
+    }
+
+    ttlet extra_space_per_whitespace = extra_space / num_internal_white_space;
+    auto offset = 0.0f;
+    for (ttlet &char_it : columns) {
+        auto x = char_it->position.x();
+        x += offset;
+        x = std::round(x / sub_pixel_width) * sub_pixel_width;
+        char_it->position.x() = x;
+
+        // Add extra space for each white space in the visible part of the line. Leave the
+        // sizes of trailing white space normal.
+        if (char_it->position.x() < visible_width and not is_visible(char_it->description->general_category())) {
+            offset += extra_space_per_whitespace;
+        }
+    }
+
+    return true;
+}
+
+void text_shaper::line_type::align_glyphs(text_alignment alignment, float max_line_width, float sub_pixel_width) noexcept
+{
+    if (alignment == text_alignment::justified) {
+        if (align_glyphs_justified(max_line_width, sub_pixel_width)) {
+            return;
+        }
+    }
+
+    if (alignment == text_alignment::flush or alignment == text_alignment::justified) {
+        alignment = paragraph_direction == unicode_bidi_class::R ? text_alignment::flush_right : text_alignment::flush_left;
+    }
+
+    // clang-format off
+    ttlet offset =
+        alignment == text_alignment::flush_left ? 0.0f :
+        alignment == text_alignment::flush_right ? max_line_width - visible_width :
+        (max_line_width - visible_width) * 0.5f;
+    // clang-format on
+
+    return align_glyphs_ragged(offset, sub_pixel_width);
+}
+
+void text_shaper::line_type::horizontal_positioning(
+    text_alignment alignment,
+    float max_line_width,
+    float sub_pixel_width) noexcept
+{
+    advance_glyphs();
+    align_glyphs(alignment, max_line_width, sub_pixel_width);
+}
+
+void text_shaper::line_type::vertical_positioning(float new_y, float sub_pixel_height) noexcept
+{
+    new_y = std::round(new_y / sub_pixel_height) * sub_pixel_height;
+    for (auto &char_it : columns) {
+        char_it->position.y() = new_y;
+    }
+}
+
+void text_shaper::line_type::create_rectangles() noexcept
+{
+    if (not columns.empty()) {
+        for (auto it = columns.begin(); it != columns.end(); ++it) {
+            ttlet next_it = it + 1;
+            ttlet char_it = *it;
+            if (next_it == columns.end()) {
+                char_it->rectangle = {
+                    point2{char_it->position.x(), char_it->position.y() - metrics.descender},
+                    point2{char_it->position.x() + char_it->metrics.advance.x(), char_it->position.y() + metrics.ascender}};
+            } else {
+                ttlet next_char_it = *next_it;
+                char_it->rectangle = {
+                    point2{char_it->position.x(), char_it->position.y() - metrics.descender},
+                    point2{next_char_it->position.x(), char_it->position.y() + metrics.ascender}};
+            }
+        }
+
+        rectangle = {
+            point2{columns.front()->position.x(), columns.front()->position.y() - metrics.descender},
+            point2{columns.front()->position.x() + visible_width, columns.front()->position.y() - metrics.ascender}};
+    } else {
+        rectangle = {};
+    }
+}
+
+
+void text_shaper::horizontal_positioning(text_alignment alignment, float max_line_width, float sub_pixel_width) noexcept
+{
+    for (auto &line : _lines) {
+        line.horizontal_positioning(alignment, max_line_width, sub_pixel_width);
     }
 }
 
@@ -276,11 +391,9 @@ void text_shaper::position_glyphs(
     extent2 sub_pixel_size) noexcept
 {
     reorder_glyphs(writing_direction);
-    resolve_text_alignment(alignment);
     // morph_glyphs();
-    // kern_glyphs();
+    horizontal_positioning(alignment, rectangle.width(), sub_pixel_size.width());
     // reposition_lines(rectangle, base_line);
-    // advance_glyphs(sub_pixel_size);
 }
 
 //[[nodiscard]] size_t text_shaper::get_char(size_t column_nr, size_t line_nr) const noexcept

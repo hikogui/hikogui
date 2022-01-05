@@ -53,9 +53,9 @@ public:
     tt::unicode_mask unicode_mask;
 
     /** The metrics of a font.
-    * 
-    * @note: unit is 'em'.
-    */
+     *
+     * @note: unit is 'em'.
+     */
     tt::font_metrics metrics;
 
     /** List of fonts to use as a fallback for this font.
@@ -106,6 +106,14 @@ public:
         tt::glyph_id glyph_id,
         glyph_metrics &metrics,
         tt::glyph_id lookahead_glyph_id = tt::glyph_id{}) const noexcept = 0;
+
+    /** Get the kerning between two glyphs.
+    * 
+    * @param current_glyph The glyph on the left
+    * @param next_glyph The glyph on the right
+    * @return The vector to add to the advance of the current_glyph.
+    */
+    [[nodiscard]] virtual vector2 get_kerning(tt::glyph_id current_glyph, tt::glyph_id next_glyph) const noexcept = 0;
 
     glyph_atlas_info &atlas_info(glyph_ids const &glyphs) const noexcept
     {

@@ -190,21 +190,35 @@ private:
          */
         tt::glyph_metrics metrics;
 
-        /** The bounding rectangle for this character.
+        /** Position of the character.
          *
-         * The bounding rectangle is used to create selection-boxes,
-         * cursor-position & mouse-position of the character.
+         * For a non-ligature this is the origin of the glyph, where the actual glyph
+         * is located at `position + metrics.bounding_rectangle`.
+         * For ligatures the position is moved based on the advance of each character within the ligature.
+         */
+        point2 position;
+
+        /** The rectangle for this character.
+         *
+         * The rectangle is used for:
+         *  - creating a selection box around the character.
+         *  - creating cursors before, after and on the character.
+         *  - converting mouse-position to character.
+         *
+         * The attributes of the rectangle are:
+         *  - left side is equal to the position.x
+         *  - The width is the advance of the character within the ligature.
+         *    Or if the glyph is not a ligature the width is the same as the advance.
+         *  - The bottom is at the descender
+         *  - The top is at the ascender
          *
          * When multiple characters are converted to a ligature, the
-         * bounding_rectangle of each of those characters occupies a
+         * rectangle of each of those characters occupies a
          * subsection of the ligature-glyph. In this case the left most
          * character will contain the ligature-glyph, and the rest of
          * the characters of the ligature will have empty glyphs.
-         *
-         * The left-bottom corner of the bounding_rectangle is used as the
-         * offset for metrics.bounding_rectangle to display the glyph.
          */
-        aarectangle bounding_rectangle;
+        aarectangle rectangle;
 
         /** The unicode description of the grapheme.
          */
@@ -262,6 +276,17 @@ private:
             return scale * glyph.font().metrics;
         }
 
+        [[nodiscard]] vector2 get_kerning(char_type const &next) const noexcept
+        {
+            if (&(glyph.font()) != &(next.glyph.font()) or scale != next.scale or
+                not glyph.has_num_glyphs<1>() or not next.glyph.has_num_glyphs<1>()) {
+                return vector2{};
+            } else {
+                ttlet kerning = glyph.font().get_kerning(glyph.get_single(), next.glyph.get_single());
+                return scale * kerning;
+            }
+        }
+
     private:
         /** Load metrics based on the loaded glyph.
          */
@@ -289,9 +314,27 @@ private:
          */
         float y;
 
+        /** The rectangle of the line.
+         *
+         * The attributes of the rectangle are:
+         *  - left: The rectangle.left() of the first character on the line.
+         *  - right: The rectangle.right() of the last visible character on the line.
+         *  - top: At the ascender of the line.
+         *  - bottom: At the descender of the line.
+         */
+        aarectangle rectangle;
+
         /** The width of this line, excluding trailing white space, glyph morphing and kerning.
          */
         float width;
+
+        /** The visible width of this line, excluding trailing white space, including glyph morphing and kerning.
+        */
+        float visible_width;
+
+        /** Number of white space glyphs, excluding trailing white space.
+         */
+        size_t num_internal_white_space;
 
         /** True if this line ends a paragraph.
          */
@@ -303,16 +346,6 @@ private:
          */
         unicode_bidi_class paragraph_direction;
 
-        /** The alignment of the paragraph.
-         *
-         * The paragraph_alignment is resolved after determining the
-         * writing direction of the paragraph. specifically `flush`
-         * is resolved to `flush_left` or `flush_right`.
-         * 
-         * This value will be set the same on each line of a paragraph.
-         */
-        text_alignment paragraph_alignment;
-
         /** Construct a line.
          *
          * @param begin The first character of the text.
@@ -320,6 +353,10 @@ private:
          * @param last One beyond the last character of the line.
          */
         line_type(text_shaper::char_const_iterator begin, char_const_iterator first, char_const_iterator last) noexcept;
+
+        void horizontal_positioning(text_alignment alignment, float max_line_width, float sub_pixel_width) noexcept;
+        void vertical_positioning(float new_y, float sub_pixel_height) noexcept;
+        void create_rectangles() noexcept;
 
     private:
         /** Get the length of a line.
@@ -329,7 +366,13 @@ private:
          * @return The width of the line, excluding trailing white-space.
          */
         [[nodiscard]] float calculate_width() noexcept;
+
+        [[nodiscard]] bool align_glyphs_justified(float max_line_width, float sub_pixel_width) noexcept;
+        void align_glyphs_ragged(float offset, float sub_pixel_width) noexcept;
+        void advance_glyphs() noexcept;
+        void align_glyphs(text_alignment alignment, float max_line_width, float sub_pixel_width) noexcept;
     };
+
     using line_vector = std::vector<line_type>;
     using line_iterator = line_vector::iterator;
     using line_const_iterator = line_vector::const_iterator;
@@ -369,7 +412,7 @@ private:
     void layout_lines_vertical_spacing(float paragraph_spacing, float line_spacing) noexcept;
     [[nodiscard]] float layout_lines_vertical_adjustment(vertical_alignment alignment) const noexcept;
     void reorder_glyphs(unicode_bidi_class writing_direction) noexcept;
-    void resolve_text_alignment(text_alignment alignment) noexcept;
+    void horizontal_positioning(text_alignment alignment, float max_line_width, float sub_pixel_width) noexcept;
 
     /** Get column and line of a character.
      */

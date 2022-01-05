@@ -94,6 +94,8 @@ public:
     bool load_glyph_metrics(tt::glyph_id glyph_id, glyph_metrics &metrics, tt::glyph_id lookahead_glyph_id = tt::glyph_id{})
         const noexcept override;
 
+    [[nodiscard]] vector2 get_kerning(tt::glyph_id current_glyph, tt::glyph_id next_glyph) const noexcept override;
+
 private:
     /** Get the bytes of a table.
      *
