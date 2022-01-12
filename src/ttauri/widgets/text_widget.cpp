@@ -16,7 +16,7 @@ widget_constraints const &text_widget::set_constraints() noexcept
     _layout = {};
 
     _text_shaper = text_shaper{font_book(), (*text)(), theme().text_style(*text_style)};
-    ttlet shaped_text_rectangle = _text_shaper.layout_lines(500.0f, to_vertical_alignment(*alignment));
+    ttlet[shaped_text_rectangle, x_height] = _text_shaper.bounding_rectangle(500.0f, to_vertical_alignment(*alignment));
 
     _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), 0.0f, *alignment};
     ttlet shaped_text_size = ceil(_shaped_text.preferred_size());

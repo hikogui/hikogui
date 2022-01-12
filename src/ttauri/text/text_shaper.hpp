@@ -2,8 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "../alignment.hpp"
-#include "../coroutine.hpp"
+#pragma once
+
+#include "text_shaper_char.hpp"
+#include "text_shaper_line.hpp"
 #include "glyph_metrics.hpp"
 #include "font_metrics.hpp"
 #include "grapheme.hpp"
@@ -12,9 +14,10 @@
 #include "glyph_ids.hpp"
 #include "unicode_description.hpp"
 #include "font.hpp"
+#include "../alignment.hpp"
+#include "../coroutine.hpp"
 #include <vector>
-
-#pragma once
+#include <tuple>
 
 namespace tt::inline v1 {
 class font_book;
@@ -34,6 +37,13 @@ class font_book;
  */
 class text_shaper {
 public:
+    using char_vector = std::vector<text_shaper_char>;
+    using char_iterator = char_vector::iterator;
+    using char_const_iterator = char_vector::const_iterator;
+    using line_vector = std::vector<text_shaper_line>;
+    using line_iterator = line_vector::iterator;
+    using line_const_iterator = line_vector::const_iterator;
+
     constexpr text_shaper() noexcept = default;
     constexpr text_shaper(text_shaper const &) noexcept = default;
     constexpr text_shaper(text_shaper &&) noexcept = default;
@@ -72,6 +82,32 @@ public:
 
     [[nodiscard]] text_shaper(font_book &font_book, std::string_view text, text_style const &style) noexcept;
 
+    /** Get bounding rectangle.
+     *
+     * It will estimate the width and height based on the glyphs before glyph-morphing and kerning
+     * and fold the lines using the unicode line breaking algorithm to the @a max_line_width.
+     *
+     * The @a alignment parameter is used to align the lines vertically:
+     *  - top: y=0 is the base-line of the top line, with following lines below it.
+     *  - bottom: y=0 is the base-line of the bottom line, with previous lines above it.
+     *  - middle, odd number of lines: y=0 is the base-line of the middle line.
+     *  - middle, even number of lines: y=0 is half-way between the base-line of the two lines in the middle.
+     *
+     * @param maximum_line_width The maximum line width allowed, this may be infinite to determine
+     *        the natural text size without folding.
+     * @param alignment The vertical alignment of text.
+     * @param line_spacing The scaling of the spacing between lines.
+     * @param paragraph_spacing The scaling of the spacing between paragraphs.
+     * @return The rectangle surrounding the text, x-height. The rectangle excludes ascenders & descenders, as if
+     *         each line is x-height. y = 0 of the rectangle is at the base-line of the text. The returned x-height is for the
+     *         line which is at y = 0.
+     */
+    [[nodiscard]] std::pair<aarectangle, float> bounding_rectangle(
+        float maximum_line_width,
+        vertical_alignment alignment,
+        float line_spacing = 1.0f,
+        float paragraph_spacing = 1.5f) const noexcept;
+
     /** Layout the lines of the text.
      *
      * It will estimate the width and height based on the glyphs before glyph-morphing and kerning
@@ -84,39 +120,24 @@ public:
      *  - middle, even number of lines: y=0 is half-way between the base-line of the two lines in the middle.
      *
      * @post The lines have been laid out.
-     * @param maximum_line_width The maximum line width allowed, this may be infinite to determine
-     *        the natural text size without folding.
-     * @param alignment The vertical alignment of text.
-     * @param line_spacing The scaling of the spacing between lines.
-     * @param paragraph_spacing The scaling of the spacing between paragraphs.
-     * @return The rectangle surrounding the text, excluding ascenders & descenders, as if
-     *         each line is x-height. y = 0 is the base-line of the text.
-     */
-    [[nodiscard]] aarectangle layout_lines(
-        float maximum_line_width,
-        vertical_alignment alignment,
-        float line_spacing = 1.0f,
-        float paragraph_spacing = 1.5f) noexcept;
-
-    /** Position all the glyphs of the text.
-     *
-     * @pre `layout_lines()` must be called to layout the lines.
-     * @post The glyphs have been positioned.
      * @param rectangle The rectangle to position the glyphs in.
-     * @param base_line The position of the recommended base-line. If the text does not fit in the rectangle using the given
-     *        base-line, then the base-line will be ignored.
-     * @param alignment The horizontal alignment of the text
-     * @param writing_direction The default writing direction, either `L` (left-to-right), `R` (right-to-left) or `unknown`
-     *        when the writing direction is unknown.
-     * @param sub_pixel_size The size of a sub-pixel in device-independent-pixels. This value is use to round coordinates of each
-     *        glyph.
+     * @param base_line The position of the recommended base-line.
+     * @param sub_pixel_size The size of a sub-pixel in device-independent-pixels.
+     * @param writing_direction The default writing direction.
+     * @param text_alignment The horizontal alignment of the text (default: flush).
+     * @param vertical_alignment The vertical alignment of text (default: middle).
+     * @param line_spacing The scaling of the spacing between lines (default: 1.0).
+     * @param paragraph_spacing The scaling of the spacing between paragraphs (default: 1.5).
      */
-    void position_glyphs(
+    [[nodiscard]] void layout(
         aarectangle rectangle,
         float base_line,
-        text_alignment alignment,
+        extent2 sub_pixel_size,
         unicode_bidi_class writing_direction,
-        extent2 sub_pixel_size) noexcept;
+        tt::text_alignment text_alignment = tt::text_alignment::flush,
+        tt::vertical_alignment vertical_alignment = tt::vertical_alignment::middle,
+        float line_spacing = 1.0f,
+        float paragraph_spacing = 1.5f) noexcept;
 
     /** find the nearest character.
      *
@@ -160,259 +181,52 @@ public:
     [[nodiscard]] ssize_t below(ssize_t index) const noexcept;
 
 private:
-    struct char_type {
-        using vector_type = std::vector<char_type>;
-        using iterator = vector_type::iterator;
-
-        /** The grapheme.
-         */
-        tt::grapheme grapheme;
-
-        /** The style of how to display the grapheme.
-         */
-        tt::text_style style;
-
-        /** The glyph representing one or more graphemes.
-         * The glyph will change during shaping of the text:
-         *  1. The initial glyph, used for determining the width of the grapheme
-         *     and the folding algorithm.
-         *  2. The glyph representing a bracket may be replaced with a mirrored bracket
-         *     by the bidi-algorithm.
-         *  3. The glyph may be replaced by the font using the glyph-morphing algorithms
-         *     for better continuation of cursive text and merging of graphemes into
-         *     a ligature.
-         */
-        tt::glyph_ids glyph;
-
-        /** The glyph metrics of the currently glyph.
-         *
-         * The metrics are scaled by `scale`.
-         */
-        tt::glyph_metrics metrics;
-
-        /** Position of the character.
-         *
-         * For a non-ligature this is the origin of the glyph, where the actual glyph
-         * is located at `position + metrics.bounding_rectangle`.
-         * For ligatures the position is moved based on the advance of each character within the ligature.
-         */
-        point2 position;
-
-        /** The rectangle for this character.
-         *
-         * The rectangle is used for:
-         *  - creating a selection box around the character.
-         *  - creating cursors before, after and on the character.
-         *  - converting mouse-position to character.
-         *
-         * The attributes of the rectangle are:
-         *  - left side is equal to the position.x
-         *  - The width is the advance of the character within the ligature.
-         *    Or if the glyph is not a ligature the width is the same as the advance.
-         *  - The bottom is at the descender
-         *  - The top is at the ascender
-         *
-         * When multiple characters are converted to a ligature, the
-         * rectangle of each of those characters occupies a
-         * subsection of the ligature-glyph. In this case the left most
-         * character will contain the ligature-glyph, and the rest of
-         * the characters of the ligature will have empty glyphs.
-         */
-        aarectangle rectangle;
-
-        /** The unicode description of the grapheme.
-         */
-        unicode_description const *description;
-
-        /** The scale of the glyph for displaying on the screen.
-         */
-        float scale = 1.0f;
-
-        /** The width used for this grapheme when folding lines.
-         *
-         * This width is based on the initial glyph's advance after converting the grapheme
-         * using the text-style into a glyph. This width excludes kerning and glyph-morphing.
-         */
-        float width = 0.0f;
-
-        /** The glyph is the initial glyph.
-         *
-         * This flag is set to true after loading the initial glyph.
-         * This flag is set to false when the glyph is replaced by the bidi-algorithm
-         * or glyph-morphing.
-         */
-        bool glyph_is_initial = false;
-
-        [[nodiscard]] char_type(tt::grapheme const &grapheme, text_style const &style) noexcept;
-
-        /** Initialize the glyph based on the grapheme.
-         *
-         * @note The glyph is only initialized when `glyph_is_initial == false`.
-         * @post `glyph`, `metrics` and `width` are modified. `glyph_is_initial` is set to true.
-         */
-        void initialize_glyph(tt::font_book &font_book, tt::font const &font) noexcept;
-
-        /** Initialize the glyph based on the grapheme.
-         *
-         * @note The glyph is only initialized when `glyph_is_initial == false`.
-         * @post `glyph`, `metrics` and `width` are modified. `glyph_is_initial` is set to true.
-         */
-        void initialize_glyph(tt::font_book &font_book) noexcept;
-
-        /** Called by the bidi-algorithm to mirror glyphs.
-         *
-         * The glyph is replaced with a glyph from the same font using the given code-point.
-         *
-         * @pre `glyph.num_grapheme == 1`.
-         * @post `glyph` and `metrics` are modified. `glyph_is_initial` is set to false.
-         * @note The `width` remains based on the original glyph.
-         */
-        void replace_glyph(char32_t code_point) noexcept;
-
-        /** Get the scaled font metrics for this character.
-         */
-        [[nodiscard]] tt::font_metrics font_metrics() const noexcept
-        {
-            return scale * glyph.font().metrics;
-        }
-
-        [[nodiscard]] vector2 get_kerning(char_type const &next) const noexcept
-        {
-            if (&(glyph.font()) != &(next.glyph.font()) or scale != next.scale or
-                not glyph.has_num_glyphs<1>() or not next.glyph.has_num_glyphs<1>()) {
-                return vector2{};
-            } else {
-                ttlet kerning = glyph.font().get_kerning(glyph.get_single(), next.glyph.get_single());
-                return scale * kerning;
-            }
-        }
-
-    private:
-        /** Load metrics based on the loaded glyph.
-         */
-        void set_glyph(tt::glyph_ids &&new_glyph) noexcept;
-    };
-    using char_vector = std::vector<char_type>;
-    using char_iterator = char_vector::iterator;
-    using char_const_iterator = char_vector::const_iterator;
-
-    struct line_type {
-        char_const_iterator first;
-        char_const_iterator last;
-
-        /** Indices to the characters in the text.
-         *
-         * The indices are in display-order.
-         */
-        std::vector<char_iterator> columns;
-
-        /** The maximum metrics of the font of each glyph on this line.
-         */
-        tt::font_metrics metrics;
-
-        /** Position of the base-line of this line.
-         */
-        float y;
-
-        /** The rectangle of the line.
-         *
-         * The attributes of the rectangle are:
-         *  - left: The rectangle.left() of the first character on the line.
-         *  - right: The rectangle.right() of the last visible character on the line.
-         *  - top: At the ascender of the line.
-         *  - bottom: At the descender of the line.
-         */
-        aarectangle rectangle;
-
-        /** The width of this line, excluding trailing white space, glyph morphing and kerning.
-         */
-        float width;
-
-        /** The visible width of this line, excluding trailing white space, including glyph morphing and kerning.
-        */
-        float visible_width;
-
-        /** Number of white space glyphs, excluding trailing white space.
-         */
-        size_t num_internal_white_space;
-
-        /** True if this line ends a paragraph.
-         */
-        bool end_of_paragraph;
-
-        /** The writing direction of the paragraph.
-         *
-         * This value will be set the same on each line of a paragraph.
-         */
-        unicode_bidi_class paragraph_direction;
-
-        /** Construct a line.
-         *
-         * @param begin The first character of the text.
-         * @param first The first character of the line.
-         * @param last One beyond the last character of the line.
-         */
-        line_type(text_shaper::char_const_iterator begin, char_const_iterator first, char_const_iterator last) noexcept;
-
-        void horizontal_positioning(text_alignment alignment, float max_line_width, float sub_pixel_width) noexcept;
-        void vertical_positioning(float new_y, float sub_pixel_height) noexcept;
-        void create_rectangles() noexcept;
-
-    private:
-        /** Get the length of a line.
-         *
-         * @param first The first character of the line.
-         * @param last One beyond the last character of the line.
-         * @return The width of the line, excluding trailing white-space.
-         */
-        [[nodiscard]] float calculate_width() noexcept;
-
-        [[nodiscard]] bool align_glyphs_justified(float max_line_width, float sub_pixel_width) noexcept;
-        void align_glyphs_ragged(float offset, float sub_pixel_width) noexcept;
-        void advance_glyphs() noexcept;
-        void align_glyphs(text_alignment alignment, float max_line_width, float sub_pixel_width) noexcept;
-    };
-
-    using line_vector = std::vector<line_type>;
-    using line_iterator = line_vector::iterator;
-    using line_const_iterator = line_vector::const_iterator;
-
-    enum class state_type { init, loaded, folded, complete };
-
-    state_type _state;
-
     font_book *_font_book = nullptr;
 
     /** A list of character in logical order.
      *
      * @note Graphemes are not allowed to be typographical-ligatures.
-     * @note The last grapheme must be a paragraph-separator.
      * @note line-feeds, carriage-returns & form-feeds must be replaced by paragraph-separators or line-separators.
+     * @note This variable is marked mutable because make_lines() has to modify the characters in the text.
      */
     char_vector _text;
 
-    vertical_alignment _vertical_alignment = vertical_alignment::middle;
-
-    text_alignment _text_alignment = text_alignment::centered;
-
-    float _line_spacing = 1.0f;
-
-    float _paragraph_spacing = 1.0f;
-
-    std::vector<line_type> _lines;
-
-    /** Fold lines.
+    /** A list of lines top-to-bottom order.
      *
-     * @return A vector of number-of-characters for each line. A line is never zero characters long.
+     * The characters contained in each line are in display order.
      */
-    [[nodiscard]] std::vector<size_t> fold_lines(float maximum_line_width) const noexcept;
+    line_vector _lines;
 
-    [[nodiscard]] std::vector<line_type> layout_create_lines(float maximum_line_width) const noexcept;
+    /** Create lines from the characters in the text shaper.
+     *
+     * @param rectangle The rectangle to position the glyphs in.
+     * @param base_line The position of the recommended base-line.
+     * @param sub_pixel_size The size of a sub-pixel in device-independent-pixels.
+     * @param vertical_alignment The vertical alignment of text (default: middle).
+     * @param line_spacing The scaling of the spacing between lines (default: 1.0).
+     * @param paragraph_spacing The scaling of the spacing between paragraphs (default: 1.5).
+     */
+    [[nodiscard]] line_vector make_lines(
+        aarectangle rectangle,
+        float base_line,
+        extent2 sub_pixel_size,
+        tt::vertical_alignment vertical_alignment,
+        float line_spacing,
+        float paragraph_spacing) const noexcept;
 
-    void layout_lines_vertical_spacing(float paragraph_spacing, float line_spacing) noexcept;
-    [[nodiscard]] float layout_lines_vertical_adjustment(vertical_alignment alignment) const noexcept;
-    void reorder_glyphs(unicode_bidi_class writing_direction) noexcept;
-    void horizontal_positioning(text_alignment alignment, float max_line_width, float sub_pixel_width) noexcept;
+    /** Position the glyphs.
+     *
+     * @param rectangle The rectangle to position the glyphs in.
+     * @param sub_pixel_size The size of a sub-pixel in device-independent-pixels.
+     * @param text_alignment The horizontal alignment of the text (default: flush).
+     * @param writing_direction The default writing direction.
+     * @post Glyphs in _text are positioned inside the given rectangle.
+     */
+    void position_glyphs(
+        aarectangle rectangle,
+        extent2 sub_pixel_size,
+        tt::text_alignment text_alignment,
+        unicode_bidi_class writing_direction) noexcept;
 
     /** Get column and line of a character.
      */

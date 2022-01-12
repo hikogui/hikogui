@@ -227,7 +227,7 @@ public:
 
     [[nodiscard]] friend std::string to_string(grapheme const &g) noexcept
     {
-        return tt::to_string(g.NFC());
+        return to_string(g.NFC());
     }
 
     friend std::ostream &operator<<(std::ostream &lhs, grapheme const &rhs)
