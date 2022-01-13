@@ -9,6 +9,7 @@ target_sources(ttauri PRIVATE
     line_segment.hpp
     line_end_cap.hpp
     line_join_style.hpp
+    margins.hpp
     matrix.hpp
     point.hpp
     rectangle.hpp
