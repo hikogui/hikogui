@@ -27,27 +27,27 @@ void pipeline_SDF::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 
     pushConstants.window_extent = extent2{narrow_cast<float>(extent.width), narrow_cast<float>(extent.height)};
     pushConstants.viewport_scale = scale2{narrow_cast<float>(2.0f / extent.width), narrow_cast<float>(2.0f / extent.height)};
-    pushConstants.has_subpixels = surface.subpixel_orientation != subpixel_orientation::Unknown;
+    pushConstants.has_subpixels = surface.sub_pixel_orientation != sub_pixel_orientation::Unknown;
 
     constexpr float third = 1.0f/3.0f;
-    switch (surface.subpixel_orientation) {
-    case subpixel_orientation::Unknown:
+    switch (surface.sub_pixel_orientation) {
+    case sub_pixel_orientation::Unknown:
         pushConstants.red_subpixel_offset = vector2{0.0f, 0.0f};
         pushConstants.blue_subpixel_offset = vector2{0.0f, 0.0f};
         break;
-    case subpixel_orientation::BlueRight:
+    case sub_pixel_orientation::BlueRight:
         pushConstants.red_subpixel_offset = vector2{-third, 0.0f};
         pushConstants.blue_subpixel_offset = vector2{third, 0.0f};
         break;
-    case subpixel_orientation::BlueLeft:
+    case sub_pixel_orientation::BlueLeft:
         pushConstants.red_subpixel_offset = vector2{third, 0.0f};
         pushConstants.blue_subpixel_offset = vector2{-third, 0.0f};
         break;
-    case subpixel_orientation::BlueBottom:
+    case sub_pixel_orientation::BlueBottom:
         pushConstants.red_subpixel_offset = vector2{0.0f, third};
         pushConstants.blue_subpixel_offset = vector2{0.0f, -third};
         break;
-    case subpixel_orientation::BlueTop:
+    case sub_pixel_orientation::BlueTop:
         pushConstants.red_subpixel_offset = vector2{0.0f, -third};
         pushConstants.blue_subpixel_offset = vector2{0.0f, third};
         break;

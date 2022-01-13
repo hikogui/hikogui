@@ -104,6 +104,33 @@ enum class unicode_line_break_opportunity : uint8_t {
     break_allowed = 0xc0
 };
 
+/** Calculate the width of a line.
+ *
+ * @param first Iterator to the first unicode_line_break_clop.
+ * @param last Iterator to one beyond the last unicode_line_break_clop.
+ * @param category_func Function to get the unicode_general_category of a character
+ * @param width_func Function to get the width of a character
+ * @return The length of the line.
+ */
+template<typename It, typename EndIt, typename CategoryFunc, typename WidthFunc>
+[[nodiscard]] constexpr float
+unicode_LB_width(It first, EndIt last, CategoryFunc const &category_func, WidthFunc const &width_func) noexcept
+{
+    if (first == last) {
+        return 0.0f;
+    }
+
+    auto rfirst = std::make_reverse_iterator(last);
+    auto rlast = std::make_reverse_iterator(first);
+
+    auto it = std::find_if(rfirst, rlast, [&category_func](ttlet &c) {
+        return is_visible(category_func(c));
+    });
+    return std::accumulate(it, rlast, 0.0f, [&width_func](float acc, ttlet &c) {
+        return acc + width_func(c);
+    });
+}
+
 namespace detail {
 
 /** Combined unicode_line_break_class and unicode_line_break_opportunity.
@@ -481,21 +508,9 @@ unicode_LB(It first, ItEnd last, DescriptionFunc const &description_func) noexce
 [[nodiscard]] constexpr float
 unicode_LB_width(unicode_line_break_clop_const_iterator first, unicode_line_break_clop_const_iterator last) noexcept
 {
-    if (first == last) {
-        return 0.0f;
-    }
-
-    auto rfirst = std::make_reverse_iterator(last);
-    auto rlast = std::make_reverse_iterator(first);
-    tt_axiom(*rfirst != unicode_line_break_opportunity::no_break);
-
-    auto it = std::find_if(rfirst, rlast, [](ttlet &x) {
-        return is_visible(x.general_category);
-    });
-    return std::accumulate(it, rlast, 0.0f, [](float acc, ttlet &x) {
-        return acc + x.width;
-    });
+    return ::tt::unicode_LB_width(first, last, [](ttlet &c) { return c.general_category; }, [](ttlet &c) { return c.width; });
 }
+
 
 [[nodiscard]] constexpr bool unicode_LB_width_check(
     unicode_line_break_clop_vector const &opportunities,
@@ -665,18 +680,21 @@ std::vector<size_t> unicode_break_lines(
 {
     // Find mandatory breaks.
     auto opportunities = detail::unicode_LB1_3(first, last, description_func, width_func);
-    auto r = detail::unicode_LB_mandatory_lines(opportunities.cbegin(), opportunities.cend());
+    detail::unicode_LB4_8a(opportunities);
+
+    // After LB4 we have gathered the mandatory breaks.
+    // See if the lines after mandatory breaks will fit the width and return.
+    auto r = detail::unicode_LB_mandatory_lines(opportunities);
     if (detail::unicode_LB_width_check(opportunities, r, maximum_line_width)) {
         return r;
     }
 
     // Find other break opportunities.
-    detail::unicode_LB4_8a(opportunities);
     detail::unicode_LB9(opportunities);
     detail::unicode_LB10(opportunities);
     detail::unicode_LB11_31(opportunities);
 
-    r = detail::unicode_LB_fit_lines(opportunities.cbegin(), opportunities.cend(), maximum_line_width);
+    r = detail::unicode_LB_fit_lines(opportunities, maximum_line_width);
     tt_axiom(detail::unicode_LB_width_check(opportunities, r, maximum_line_width));
     return r;
 }

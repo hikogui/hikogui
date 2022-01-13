@@ -30,9 +30,9 @@ public:
      */
     observable<l10n> text;
 
-    /** The alignment of the text inside the space of the widget.
+    /** The horizontal alignment of the text inside the space of the widget.
      */
-    observable<alignment> alignment = alignment::middle_center;
+    observable<alignment> alignment = tt::alignment{horizontal_alignment::center, vertical_alignment::middle};
 
     /** The style of the text.
      */
@@ -43,15 +43,20 @@ public:
      * @param window The window the widget is displayed on.
      * @param parent The owner of this widget.
      * @param text The text to be displayed.
-     * @param alignment The alignment of the text inside the space of the widget.
+     * @param horizontal_alignment The horizontal alignment of the text inside the space of the widget.
+     * @param vertical_alignment The vertical alignment of the text inside the space of the widget.
      * @param text_style The style of the text to be displayed.
      */
-    template<typename Text, typename Alignment = tt::alignment, typename TextStyle = tt::theme_text_style>
+    template<
+        typename Text,
+        typename Alignment = tt::alignment,
+        typename VerticalAlignment = tt::vertical_alignment,
+        typename TextStyle = tt::theme_text_style>
     text_widget(
         gui_window &window,
         widget *parent,
         Text &&text,
-        Alignment &&alignment = alignment::middle_center,
+        Alignment &&alignment = tt::alignment{horizontal_alignment::center, vertical_alignment::middle},
         TextStyle &&text_style = theme_text_style::label) noexcept :
         text_widget(window, parent)
     {
@@ -66,9 +71,8 @@ public:
     void draw(draw_context const &context) noexcept override;
     /// @endprivatesection
 private:
-    shaped_text _shaped_text;
     text_shaper _text_shaper;
-    matrix2 _shaped_text_transform;
+    float _text_shaper_x_height;
 
     text_widget(gui_window &window, widget *parent) noexcept;
 };

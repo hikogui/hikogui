@@ -63,7 +63,7 @@ target_sources(ttauri PRIVATE
     pipeline_tone_mapper_device_shared.hpp
     RenderDoc.cpp
     RenderDoc.hpp
-    subpixel_orientation.hpp
+    sub_pixel_orientation.hpp
     VulkanMemoryAllocator.cpp
 )
 

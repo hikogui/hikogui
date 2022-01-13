@@ -40,6 +40,10 @@ target_sources(ttauri PRIVATE
     text_decoration.hpp
     text_shaper.cpp
     text_shaper.hpp
+    text_shaper_char.cpp
+    text_shaper_char.hpp
+    text_shaper_line.cpp
+    text_shaper_line.hpp
     text_style.cpp
     text_style.hpp
     translation.cpp

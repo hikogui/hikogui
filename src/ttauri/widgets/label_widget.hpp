@@ -55,7 +55,7 @@ public:
      *  - `alignment::middle_center`: text drawn across a large icon. Should only be
      *    used with a `pixmap` icon.
      */
-    observable<alignment> alignment = alignment::middle_right;
+    observable<alignment> alignment = tt::alignment{horizontal_alignment::right, vertical_alignment::middle};
 
     /** The text style to display the label's text in and color of the label's (non-color) icon.
      */
@@ -79,7 +79,7 @@ public:
         gui_window &window,
         widget *parent,
         Label &&label,
-        Alignment &&alignment = alignment::middle_right,
+        Alignment &&alignment = tt::alignment::middle_right(),
         TextStyle &&text_style = theme_text_style::label) noexcept :
         label_widget(window, parent)
     {

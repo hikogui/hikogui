@@ -66,7 +66,8 @@ public:
             text_.emplace_back(grapheme::PS(), text_.back().style, 0);
         }
 
-        _shaped_text = tt::shaped_text{_font_book, text_, _width, alignment::top_left, false};
+        _shaped_text = tt::shaped_text{
+            _font_book, text_, _width, tt::alignment{horizontal_alignment::left, vertical_alignment::top}, false};
     }
 
     [[nodiscard]] shaped_text shaped_text() const noexcept

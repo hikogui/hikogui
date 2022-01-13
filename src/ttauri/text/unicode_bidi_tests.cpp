@@ -143,17 +143,18 @@ TEST(unicode_bidi, bidi_test)
 {
     for (auto test : parse_bidi_test()) {
         for (auto paragraph_direction : test.get_paragraph_directions()) {
-            auto test_parameters = tt::detail::unicode_bidi_test_parameters{};
+            auto test_parameters = tt::unicode_bidi_context{};
             test_parameters.enable_mirrored_brackets = false;
             test_parameters.enable_line_separator = false;
-            test_parameters.force_paragraph_direction = paragraph_direction;
+            test_parameters.default_paragraph_direction = paragraph_direction;
             test_parameters.move_lf_and_ps_to_end_of_line = false;
 
             auto input = test.get_input();
             auto first = begin(input);
             auto last = end(input);
 
-            last = unicode_bidi_P1(first, last, test_parameters);
+            ttlet [new_last, paragraph_directions] = unicode_bidi_P1(first, last, test_parameters);
+            last = new_last;
 
             // We are using the index from the iterator to find embedded levels
             // in input-order. We ignore all elements that where removed by X9.
@@ -273,17 +274,17 @@ generator<unicode_bidi_character_test> parse_bidi_character_test(int test_line_n
 TEST(unicode_bidi, bidi_character_test)
 {
     for (auto test : parse_bidi_character_test()) {
-        auto test_parameters = tt::detail::unicode_bidi_test_parameters{};
+        auto test_parameters = tt::unicode_bidi_context{};
         test_parameters.enable_mirrored_brackets = true;
         test_parameters.enable_line_separator = true;
-        test_parameters.force_paragraph_direction = test.paragraph_direction;
+        test_parameters.default_paragraph_direction = test.paragraph_direction;
         test_parameters.move_lf_and_ps_to_end_of_line = false;
 
         auto input = test.get_input();
         auto first = begin(input);
         auto last = end(input);
 
-        last = unicode_bidi(
+        ttlet [new_last, paragraph_directions] = unicode_bidi(
             first,
             last,
             [](ttlet &x) {
@@ -294,7 +295,7 @@ TEST(unicode_bidi, bidi_character_test)
             },
             [](auto &x, auto bidi_class) {},
             test_parameters);
-
+        last = new_last;
         // We are using the index from the iterator to find embedded levels
         // in input-order. We ignore all elements that where removed by X9.
         // for (auto it = first; it != last; ++it) {

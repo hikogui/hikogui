@@ -8,6 +8,7 @@
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/transform.hpp"
 #include "../geometry/translate.hpp"
+#include "../GFX/sub_pixel_orientation.hpp"
 #include "../chrono.hpp"
 
 namespace tt::inline v1 {
@@ -52,6 +53,12 @@ public:
      */
     aarectangle clipping_rectangle;
 
+    /** The size of a sub-pixel.
+     *
+     * @note the sub-pixel-size is represented in the widget's coordinate system.
+     */
+    extent2 sub_pixel_size;
+
     /** The layout created for displaying at this time point.
      */
     utc_nanoseconds display_time_point;
@@ -62,7 +69,7 @@ public:
     constexpr widget_layout &operator=(widget_layout &&) noexcept = default;
     constexpr widget_layout() noexcept = default;
 
-    [[nodiscard]] constexpr friend bool operator==(widget_layout const &lhs, widget_layout const &rhs) noexcept                  
+    [[nodiscard]] constexpr friend bool operator==(widget_layout const &lhs, widget_layout const &rhs) noexcept
     {
         tt_axiom((lhs.to_parent == rhs.to_parent) == (lhs.from_parent == rhs.from_parent));
         tt_axiom((lhs.to_window == rhs.to_window) == (lhs.from_window == rhs.from_window));
@@ -120,13 +127,17 @@ public:
 
     /** Construct a widget_layout from inside the window.
      */
-    constexpr widget_layout(extent2 window_size, utc_nanoseconds display_time_point) noexcept :
+    constexpr widget_layout(
+        extent2 window_size,
+        tt::sub_pixel_orientation sub_pixel_orientation,
+        utc_nanoseconds display_time_point) noexcept :
         to_parent(),
         from_parent(),
         to_window(),
         from_window(),
         size(window_size),
         clipping_rectangle(window_size),
+        sub_pixel_size(tt::sub_pixel_size(sub_pixel_orientation)),
         display_time_point(display_time_point)
     {
     }
@@ -150,6 +161,7 @@ public:
         r.from_window = from_parent3 * this->from_window;
         r.size = child_rectangle.size();
         r.clipping_rectangle = intersect(bounding_rectangle(from_parent3 * this->clipping_rectangle), new_clipping_rectangle);
+        r.sub_pixel_size = this->sub_pixel_size;
         r.display_time_point = this->display_time_point;
         return r;
     }

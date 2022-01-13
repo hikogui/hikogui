@@ -1011,6 +1011,12 @@ getKerning(std::span<std::byte const> const &bytes, float unitsPerEm, glyph_id g
     return r;
 }
 
+[[nodiscard]] vector2 true_type_font::get_kerning(tt::glyph_id current_glyph, tt::glyph_id next_glyph) const noexcept
+{
+    ttlet kernTableBytes = getTableBytes("kern");
+    return getKerning(kernTableBytes, unitsPerEm, current_glyph, next_glyph);
+}
+
 bool true_type_font::update_glyph_metrics(
     tt::glyph_id glyph_id,
     tt::glyph_metrics &glyph_metrics,

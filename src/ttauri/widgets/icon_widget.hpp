@@ -36,7 +36,7 @@ public:
 
     /** Alignment of the icon inside the widget.
      */
-    observable<alignment> alignment = alignment::middle_center;
+    observable<alignment> alignment = tt::alignment{horizontal_alignment::center, vertical_alignment::middle};
 
     template<typename Icon, typename Color = tt::theme_color>
     icon_widget(gui_window &window, widget *parent, Icon &&icon, Color &&color = theme_color::foreground) noexcept :

@@ -12,7 +12,7 @@ int tt_main(int argc, char *argv[])
 {
     auto gui = gui_system::make_unique();
     auto &window = gui->make_window(l10n("Radio button example"));
-    window.content().make_widget<label_widget>("A1", l10n("Selection Box"), alignment::middle_center);
+    window.content().make_widget<label_widget>("A1", l10n("Selection Box"), alignment::middle_center());
 
     /// [Create selection]
     auto option_list = std::vector<std::pair<int,label>>{

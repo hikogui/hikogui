@@ -40,7 +40,7 @@ private:
         :
         super(window, parent, std::move(delegate))
     {
-        label_alignment = alignment::middle_left;
+        label_alignment = alignment::middle_left();
         set_label(std::forward<Label>(label));
     }
 

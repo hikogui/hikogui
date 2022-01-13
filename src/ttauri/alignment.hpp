@@ -2,17 +2,19 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-/// @file
+/** @file alignment.hpp
+ */
 
 #pragma once
 
 #include "assert.hpp"
+#include "cast.hpp"
 
 namespace tt::inline v1 {
 
 /** Vertical alignment.
  */
-enum class vertical_alignment {
+enum class vertical_alignment : uint8_t {
     /** Align to the top.
      */
     top,
@@ -26,201 +28,169 @@ enum class vertical_alignment {
     bottom
 };
 
-/** Horizontal alignment.
- */
-enum class horizontal_alignment {
-    /** Align to the left.
+enum class horizontal_alignment : uint8_t {
+    /** Align the text naturally based on the writing direction of each paragraph.
+     *
+     * This will act as flush_left if the paragraph is in left-to-right direction,
+     * and as flush_right if the paragraph is in right-to-left direction.
+     */
+    flush,
+
+    /** Align the text to the left side
+     *
+     * The text will be flush-left independent of the writing direction.
      */
     left,
 
-    /** Align to the horizontal-center.
+    /** Align the text in the center.
+     *
+     * Since the text is centered, the writing direction is unimportant.
      */
     center,
 
-    /** Align to the right.
-     */
-    right
-};
-
-enum class text_alignment {
-    /** Align the text to the left side
-     */
-    flush_left,
-
-    /** Align the text in the center.
-     */
-    centered,
-
-    /** Stretch the text to be flushed to both sides.
+    /** Stretch the text to be flush to both sides.
+     *
+     * Since the text is flush on both sides, the writing direction is unimportant.
      */
     justified,
 
     /** Align the text to the right side
+     *
+     * The text will be flush-left independent of the writing direction.
      */
-    flush_right,
+    right,
 };
 
-/** Vertical and horizontal alignment.
- */
-enum class alignment {
-    /** Align to the top and left.
-     */
-    top_left,
+class alignment {
+public:
+    constexpr alignment() noexcept : _value(0) {}
+    constexpr alignment(alignment const &) noexcept = default;
+    constexpr alignment(alignment &&) noexcept = default;
+    constexpr alignment &operator=(alignment const &) noexcept = default;
+    constexpr alignment &operator=(alignment &&) noexcept = default;
 
-    /** Align to the top and horizontal-center.
-     */
-    top_center,
+    constexpr explicit alignment(uint8_t value) noexcept : _value(value) {}
 
-    /** Align to the top and right.
-     */
-    top_right,
+    constexpr alignment(horizontal_alignment t, vertical_alignment v) noexcept :
+        _value((to_underlying(v) << 4) | to_underlying(t))
+    {
+        tt_axiom(to_underlying(v) <= 0xf);
+        tt_axiom(to_underlying(t) <= 0xf);
+    }
 
-    /** Align to the vertical-middle and left.
-     */
-    middle_left,
+    constexpr alignment(vertical_alignment v, horizontal_alignment t) noexcept :
+        _value((to_underlying(v) << 4) | to_underlying(t))
+    {
+        tt_axiom(to_underlying(v) <= 0xf);
+        tt_axiom(to_underlying(t) <= 0xf);
+    }
 
-    /** Align to the vertical-middle and horizontal-center.
-     */
-    middle_center,
+    [[nodiscard]] static constexpr alignment top_left() noexcept
+    {
+        return {horizontal_alignment::left, vertical_alignment::top};
+    }
 
-    /** Align to the vertical-middle and right.
-     */
-    middle_right,
+    [[nodiscard]] static constexpr alignment top_center() noexcept
+    {
+        return {horizontal_alignment::center, vertical_alignment::top};
+    }
 
-    /** Align to the bottom and left.
-     */
-    bottom_left,
+    [[nodiscard]] static constexpr alignment top_right() noexcept
+    {
+        return {horizontal_alignment::right, vertical_alignment::top};
+    }
 
-    /** Align to the bottom and horizontal-center.
-     */
-    bottom_center,
+    [[nodiscard]] static constexpr alignment middle_left() noexcept
+    {
+        return {horizontal_alignment::left, vertical_alignment::middle};
+    }
 
-    /** Align to the bottom and right.
+    [[nodiscard]] static constexpr alignment middle_center() noexcept
+    {
+        return {horizontal_alignment::center, vertical_alignment::middle};
+    }
+
+    [[nodiscard]] static constexpr alignment middle_right() noexcept
+    {
+        return {horizontal_alignment::right, vertical_alignment::middle};
+    }
+
+    [[nodiscard]] static constexpr alignment bottom_left() noexcept
+    {
+        return {horizontal_alignment::left, vertical_alignment::bottom};
+    }
+
+    [[nodiscard]] static constexpr alignment bottom_center() noexcept
+    {
+        return {horizontal_alignment::center, vertical_alignment::bottom};
+    }
+
+    [[nodiscard]] static constexpr alignment bottom_right() noexcept
+    {
+        return {horizontal_alignment::right, vertical_alignment::bottom};
+    }
+
+    [[nodiscard]] constexpr horizontal_alignment text() const noexcept
+    {
+        return static_cast<horizontal_alignment>(_value & 0xf);
+    }
+
+    [[nodiscard]] constexpr vertical_alignment vertical() const noexcept
+    {
+        return static_cast<vertical_alignment>(_value >> 4);
+    }
+
+    [[nodiscard]] constexpr friend bool operator==(alignment const &lhs, alignment const &rhs) noexcept = default;
+
+    [[nodiscard]] constexpr friend bool operator==(alignment const &lhs, horizontal_alignment const &rhs) noexcept
+    {
+        return lhs.text() == rhs;
+    }
+
+    [[nodiscard]] constexpr friend bool operator==(horizontal_alignment const &lhs, alignment const &rhs) noexcept
+    {
+        return lhs == rhs.text();
+    }
+
+    [[nodiscard]] constexpr friend bool operator==(alignment const &lhs, vertical_alignment const &rhs) noexcept
+    {
+        return lhs.vertical() == rhs;
+    }
+
+    [[nodiscard]] constexpr friend bool operator==(vertical_alignment const &lhs, alignment const &rhs) noexcept
+    {
+        return lhs == rhs.vertical();
+    }
+
+private:
+    /** The combined vertical- and text-alignment
+     *
+     * [7:5] vertical_alignment
+     * [4:0] horizontal_alignment
      */
-    bottom_right
+    uint8_t _value;
 };
 
 /** Combine vertical and horizontal alignment.
  *
- * @param lhs A vertical alignment.
- * @param rhs A horizontal alignment.
- * @return A combined vertical and horizontal alignment.
- */
-constexpr alignment operator|(vertical_alignment lhs, horizontal_alignment rhs) noexcept
-{
-    switch (lhs) {
-    case vertical_alignment::top:
-        switch (rhs) {
-        case horizontal_alignment::left: return alignment::top_left;
-        case horizontal_alignment::center: return alignment::top_center;
-        case horizontal_alignment::right: return alignment::top_right;
-        default: tt_no_default();
-        }
-    case vertical_alignment::middle:
-        switch (rhs) {
-        case horizontal_alignment::left: return alignment::middle_left;
-        case horizontal_alignment::center: return alignment::middle_center;
-        case horizontal_alignment::right: return alignment::middle_right;
-        default: tt_no_default();
-        }
-    case vertical_alignment::bottom:
-        switch (rhs) {
-        case horizontal_alignment::left: return alignment::bottom_left;
-        case horizontal_alignment::center: return alignment::bottom_center;
-        case horizontal_alignment::right: return alignment::bottom_right;
-        default: tt_no_default();
-        }
-    default: tt_no_default();
-    }
-}
-
-constexpr horizontal_alignment to_horizontal_alignment(alignment rhs) noexcept
-{
-    switch (rhs) {
-        using enum alignment;
-    case bottom_left:
-    case middle_left:
-    case top_left: return horizontal_alignment::left;
-    case bottom_center:
-    case middle_center:
-    case top_center: return horizontal_alignment::center;
-    case bottom_right:
-    case middle_right:
-    case top_right: return horizontal_alignment::right;
-    default: tt_no_default();
-    }
-}
-
-constexpr vertical_alignment to_vertical_alignment(alignment rhs) noexcept
-{
-    switch (rhs) {
-        using enum alignment;
-    case bottom_left:
-    case bottom_center:
-    case bottom_right: return vertical_alignment::bottom;
-    case middle_left:
-    case middle_center:
-    case middle_right: return vertical_alignment::middle;
-    case top_left:
-    case top_center: 
-    case top_right: return vertical_alignment::top;
-    default: tt_no_default();
-    }
-}
-
-/** Combine vertical and horizontal alignment.
- *
- * @param lhs A horizontal alignment.
+ * @param lhs A text alignment.
  * @param rhs A vertical alignment.
  * @return A combined vertical and horizontal alignment.
  */
 constexpr alignment operator|(horizontal_alignment lhs, vertical_alignment rhs) noexcept
 {
-    return rhs | lhs;
+    return alignment{lhs, rhs};
 }
 
-/** Check if the horizontal alignments are equal.
+/** Combine vertical and horizontal alignment.
  *
- * @param lhs A combined vertical and horizontal alignment.
- * @param rhs A horizontal alignment.
- * @return True when the horizontal alignment of both `lhs` and `rhs` are equal.
- */
-constexpr bool operator==(alignment lhs, horizontal_alignment rhs) noexcept
-{
-    switch (rhs) {
-    case horizontal_alignment::left:
-        return lhs == alignment::top_left || lhs == alignment::middle_left || lhs == alignment::bottom_left;
-
-    case horizontal_alignment::center:
-        return lhs == alignment::top_center || lhs == alignment::middle_center || lhs == alignment::bottom_center;
-
-    case horizontal_alignment::right:
-        return lhs == alignment::top_right || lhs == alignment::middle_right || lhs == alignment::bottom_right;
-
-    default: tt_no_default();
-    }
-}
-
-/** Check if the vertical alignments are equal.
- *
- * @param lhs A combined vertical and horizontal alignment.
+ * @param lhs A text alignment.
  * @param rhs A vertical alignment.
- * @return True when the vertical alignment of both `lhs` and `rhs` are equal.
+ * @return A combined vertical and horizontal alignment.
  */
-constexpr bool operator==(alignment lhs, vertical_alignment rhs) noexcept
+constexpr alignment operator|(vertical_alignment lhs, horizontal_alignment rhs) noexcept
 {
-    switch (rhs) {
-    case vertical_alignment::top:
-        return lhs == alignment::top_left || lhs == alignment::top_center || lhs == alignment::top_right;
-
-    case vertical_alignment::middle:
-        return lhs == alignment::middle_left || lhs == alignment::middle_center || lhs == alignment::middle_right;
-
-    case vertical_alignment::bottom:
-        return lhs == alignment::bottom_left || lhs == alignment::bottom_center || lhs == alignment::bottom_right;
-
-    default: tt_no_default();
-    }
+    return alignment{lhs, rhs};
 }
 
 } // namespace tt::inline v1

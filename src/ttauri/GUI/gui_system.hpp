@@ -7,6 +7,7 @@
 #include "gui_window.hpp"
 #include "gui_window_win32.hpp"
 #include "gui_system_delegate.hpp"
+#include "../text/unicode_bidi_class.hpp"
 #include "../GFX/gfx_device.hpp"
 #include "../thread.hpp"
 #include "../unfair_recursive_mutex.hpp"
@@ -37,6 +38,18 @@ public:
     std::unique_ptr<tt::keyboard_bindings> keyboard_bindings;
 
     thread_id const thread_id;
+
+    /** The writing direction.
+     *
+     * The writing direction determines the initial writing direction of paragraphs.
+     *
+     * When the value is `R` the user-interface should flip the horizontal layout,
+     * for example a row-layout-widget in flipped-mode should layout children ordered from
+     * right to left.
+     *
+     * @note The only values allowed are `L` and `R`.
+     */
+    unicode_bidi_class writing_direction = unicode_bidi_class::L;
 
     /** Make a gui_system instance.
      *
