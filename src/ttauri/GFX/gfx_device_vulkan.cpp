@@ -2,6 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#include "../architecture.hpp"
 #include "gfx_device_vulkan.hpp"
 #include "gfx_system_vulkan.hpp"
 #include "gfx_surface_vulkan.hpp"
@@ -857,18 +858,24 @@ vk::ShaderModule gfx_device_vulkan::loadShader(URL const &shaderObjectLocation) 
 
 void gfx_device_vulkan::setDebugUtilsObjectNameEXT(vk::DebugUtilsObjectNameInfoEXT const &name_info) const
 {
-    tt_axiom(gfx_system_mutex.recurse_lock_count());
-    return intrinsic.setDebugUtilsObjectNameEXT(name_info, down_cast<gfx_system_vulkan &>(system).loader());
+    if constexpr (build_type::current == build_type::debug) {
+        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        return intrinsic.setDebugUtilsObjectNameEXT(name_info, down_cast<gfx_system_vulkan &>(system).loader());
+    }
 }
 
 void gfx_device_vulkan::cmdBeginDebugUtilsLabelEXT(vk::CommandBuffer buffer, vk::DebugUtilsLabelEXT const &create_info) const
 {
-    buffer.beginDebugUtilsLabelEXT(create_info, down_cast<gfx_system_vulkan &>(system).loader());
+    if constexpr (build_type::current == build_type::debug) {
+        buffer.beginDebugUtilsLabelEXT(create_info, down_cast<gfx_system_vulkan &>(system).loader());
+    }
 }
 
 void gfx_device_vulkan::cmdEndDebugUtilsLabelEXT(vk::CommandBuffer buffer) const
 {
-    buffer.endDebugUtilsLabelEXT(down_cast<gfx_system_vulkan &>(system).loader());
+    if constexpr (build_type::current == build_type::debug) {
+        buffer.endDebugUtilsLabelEXT(down_cast<gfx_system_vulkan &>(system).loader());
+    }
 }
 
 void gfx_device_vulkan::log_memory_usage() const noexcept
