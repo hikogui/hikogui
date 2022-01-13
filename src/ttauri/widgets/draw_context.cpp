@@ -9,6 +9,7 @@
 #include "../GFX/paged_image.hpp"
 #include "../GFX/gfx_device_vulkan.hpp"
 #include "../text/shaped_text.hpp"
+#include "../text/text_shaper.hpp"
 
 namespace tt::inline v1 {
 
