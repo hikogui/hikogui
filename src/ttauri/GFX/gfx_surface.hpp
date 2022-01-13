@@ -6,7 +6,7 @@
 
 #include "../widgets/draw_context.hpp"
 #include "gfx_surface_state.hpp"
-#include "subpixel_orientation.hpp"
+#include "sub_pixel_orientation.hpp"
 #include "gfx_system_globals.hpp"
 
 namespace tt::inline v1 {
@@ -21,8 +21,8 @@ public:
 
     /*! Orientation of the RGB subpixels.
      */
-    subpixel_orientation subpixel_orientation = subpixel_orientation::BlueRight;
-    // subpixel_orientation subpixel_orientation = subpixel_orientation::Unknown;
+    sub_pixel_orientation sub_pixel_orientation = sub_pixel_orientation::BlueRight;
+    // sub_pixel_orientation sub_pixel_orientation = sub_pixel_orientation::Unknown;
 
     virtual ~gfx_surface() {}
 

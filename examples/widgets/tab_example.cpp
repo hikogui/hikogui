@@ -23,9 +23,9 @@ int tt_main(int argc, char* argv[])
     auto &l3 = tab_view.make_widget<label_widget>(2, l10n("three"));
     /// [Create three tabs]
 
-    l1.alignment = alignment::middle_center;
-    l2.alignment = alignment::middle_center;
-    l3.alignment = alignment::middle_center;
+    l1.alignment = alignment::middle_center();
+    l2.alignment = alignment::middle_center();
+    l3.alignment = alignment::middle_center();
 
     /// [Create three toolbar tab buttons]
     window.toolbar().make_widget<toolbar_tab_button_widget>(l10n("one"), value, 0);

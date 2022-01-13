@@ -142,12 +142,12 @@ public:
             auto const glyph_size = _glyph.get_bounding_box().size();
             auto const glyph_scale = tt::scale2::uniform(glyph_size, max_size);
             auto const new_glyph_size = glyph_scale * glyph_size;
-            _glyph_rectangle = align(max_rectangle, new_glyph_size, tt::alignment::middle_center);
+            _glyph_rectangle = align(max_rectangle, new_glyph_size, tt::alignment::middle_center());
 
             auto const image_size = tt::extent2{static_cast<float>(_image.width()), static_cast<float>(_image.height())};
             auto const image_scale = tt::scale2::uniform(image_size, max_size);
             auto const new_image_size = image_scale * image_size;
-            _image_rectangle = align(max_rectangle, new_image_size, tt::alignment::middle_center);
+            _image_rectangle = align(max_rectangle, new_image_size, tt::alignment::middle_center());
         }
     }
 

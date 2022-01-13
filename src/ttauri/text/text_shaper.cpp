@@ -13,6 +13,8 @@ namespace tt::inline v1 {
 
 static void layout_lines_vertical_spacing(text_shaper::line_vector &lines, float paragraph_spacing, float line_spacing) noexcept
 {
+    tt_axiom(not lines.empty());
+
     auto prev = lines.begin();
     auto y = prev->y = 0.0f;
     for (auto it = prev + 1; it != lines.end(); ++it) {
@@ -32,24 +34,23 @@ static void layout_lines_vertical_alignment(
     float max_y,
     float sub_pixel_height) noexcept
 {
+    tt_axiom(not lines.empty());
+
     // Calculate the y-adjustment needed to position the base-line of the text to y=0
     auto adjustment = [&]() {
-        if (lines.empty()) {
-            return -0.0f;
-
-        } else if (alignment == vertical_alignment::top) {
-            return lines.front().y;
+        if (alignment == vertical_alignment::top) {
+            return -lines.front().y;
 
         } else if (alignment == vertical_alignment::bottom) {
-            return lines.back().y;
+            return -lines.back().y;
 
         } else {
             ttlet mp_index = lines.size() / 2;
             if (lines.size() % 2 == 1) {
-                return lines[mp_index].y;
+                return -lines[mp_index].y;
 
             } else {
-                return std::midpoint(lines[mp_index - 1].y, lines[mp_index].y);
+                return -std::midpoint(lines[mp_index - 1].y, lines[mp_index].y);
             }
         }
     }();
@@ -82,6 +83,8 @@ static void layout_lines_vertical_alignment(
 static void
 bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, unicode_bidi_class writing_direction) noexcept
 {
+    tt_axiom(not lines.empty());
+
     // Create a list of all character indices.
     auto char_its = std::vector<text_shaper::char_iterator>{};
     char_its.reserve(text.size());
@@ -101,14 +104,15 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
         [&](text_shaper::char_iterator it, char32_t code_point) {
             it->replace_glyph(code_point);
         },
-        [&](ttlet...) {},
+        [&](text_shaper::char_iterator it, unicode_bidi_class direction) {
+            it->direction = direction;
+        },
         context);
 
     // The unicode bidi algorithm may have deleted a few characters.
     char_its.erase(char_its_last, char_its.cend());
 
     // Add the paragraph direction for each line.
-    tt_axiom(not lines.empty());
     auto par_it = paragraph_directions.cbegin();
     for (auto &line : lines) {
         tt_axiom(par_it != paragraph_directions.cend());
@@ -120,7 +124,6 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
     tt_axiom(par_it == paragraph_directions.cend());
 
     // Add the character indices for each line in display order.
-    tt_axiom(not lines.empty());
     auto line_it = lines.begin();
     line_it->columns.clear();
     for (ttlet char_it : char_its) {
@@ -140,7 +143,9 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
     ttlet &font = font_book.find_font(style.family_id, style.variant);
     _text.reserve(text.size());
     for (ttlet &c : text) {
-        auto &tmp = _text.emplace_back(c, style);
+        ttlet clean_c = c == '\n' ? grapheme{paragraph_separator_character} : c;
+
+        auto &tmp = _text.emplace_back(clean_c, style);
         tmp.initialize_glyph(font_book, font);
     }
 }
@@ -192,14 +197,16 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
 void text_shaper::position_glyphs(
     aarectangle rectangle,
     extent2 sub_pixel_size,
-    tt::text_alignment text_alignment,
+    tt::horizontal_alignment horizontal_alignment,
     unicode_bidi_class writing_direction) noexcept
 {
+    tt_axiom(not _lines.empty());
+
     // The bidi algorithm will reorder the characters on each line, and mirror the brackets in the text when needed.
     bidi_algorithm(_lines, _text, writing_direction);
     for (auto &line : _lines) {
         // Position the glyphs on each line. Possibly morph glyphs to handle ligatures and calculate the bounding rectangles.
-        line.layout(text_alignment, rectangle.left(), rectangle.right(), sub_pixel_size.width());
+        line.layout(horizontal_alignment, rectangle.left(), rectangle.right(), sub_pixel_size.width());
     }
 }
 
@@ -226,15 +233,15 @@ void text_shaper::position_glyphs(
     }
 
     // clang-format off
-    ttlet x_height =
-        vertical_alignment == vertical_alignment::bottom ? lines.back().metrics.x_height :
-        vertical_alignment == vertical_alignment::top ? lines.front().metrics.x_height :
-        lines[lines.size() / 2].metrics.x_height;
+    ttlet cap_height =
+        vertical_alignment == vertical_alignment::bottom ? lines.back().metrics.cap_height :
+        vertical_alignment == vertical_alignment::top ? lines.front().metrics.cap_height :
+        lines[lines.size() / 2].metrics.cap_height;
     // clang-format on
 
     ttlet max_y = lines.front().y + std::ceil(lines.front().metrics.x_height);
     ttlet min_y = lines.back().y;
-    return {aarectangle{point2{0.0f, min_y}, point2{std::ceil(max_width), max_y}}, x_height};
+    return {aarectangle{point2{0.0f, min_y}, point2{std::ceil(max_width), max_y}}, cap_height};
 }
 
 [[nodiscard]] void text_shaper::layout(
@@ -242,13 +249,14 @@ void text_shaper::position_glyphs(
     float base_line,
     extent2 sub_pixel_size,
     unicode_bidi_class writing_direction,
-    tt::text_alignment text_alignment,
-    tt::vertical_alignment vertical_alignment,
+    tt::alignment alignment,
     float line_spacing,
     float paragraph_spacing) noexcept
 {
-    _lines = make_lines(rectangle, base_line, sub_pixel_size, vertical_alignment, line_spacing, paragraph_spacing);
-    position_glyphs(rectangle, sub_pixel_size, text_alignment, writing_direction);
+    _lines = make_lines(rectangle, base_line, sub_pixel_size, alignment.vertical(), line_spacing, paragraph_spacing);
+    if (not _lines.empty()) {
+        position_glyphs(rectangle, sub_pixel_size, alignment.text(), writing_direction);
+    }
 }
 
 //[[nodiscard]] size_t text_shaper::get_char(size_t column_nr, size_t line_nr) const noexcept

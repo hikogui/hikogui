@@ -680,13 +680,16 @@ std::vector<size_t> unicode_break_lines(
 {
     // Find mandatory breaks.
     auto opportunities = detail::unicode_LB1_3(first, last, description_func, width_func);
+    detail::unicode_LB4_8a(opportunities);
+
+    // After LB4 we have gathered the mandatory breaks.
+    // See if the lines after mandatory breaks will fit the width and return.
     auto r = detail::unicode_LB_mandatory_lines(opportunities);
     if (detail::unicode_LB_width_check(opportunities, r, maximum_line_width)) {
         return r;
     }
 
     // Find other break opportunities.
-    detail::unicode_LB4_8a(opportunities);
     detail::unicode_LB9(opportunities);
     detail::unicode_LB10(opportunities);
     detail::unicode_LB11_31(opportunities);

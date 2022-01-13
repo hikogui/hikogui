@@ -82,6 +82,36 @@ public:
 
     [[nodiscard]] text_shaper(font_book &font_book, std::string_view text, text_style const &style) noexcept;
 
+    [[nodiscard]] char_iterator begin() noexcept
+    {
+        return _text.begin();
+    }
+
+    [[nodiscard]] char_const_iterator begin() const noexcept
+    {
+        return _text.begin();
+    }
+
+    [[nodiscard]] char_const_iterator cbegin() const noexcept
+    {
+        return _text.cbegin();
+    }
+
+    [[nodiscard]] char_iterator end() noexcept
+    {
+        return _text.end();
+    }
+
+    [[nodiscard]] char_const_iterator end() const noexcept
+    {
+        return _text.end();
+    }
+
+    [[nodiscard]] char_const_iterator cend() const noexcept
+    {
+        return _text.cend();
+    }
+
     /** Get bounding rectangle.
      *
      * It will estimate the width and height based on the glyphs before glyph-morphing and kerning
@@ -98,8 +128,8 @@ public:
      * @param alignment The vertical alignment of text.
      * @param line_spacing The scaling of the spacing between lines.
      * @param paragraph_spacing The scaling of the spacing between paragraphs.
-     * @return The rectangle surrounding the text, x-height. The rectangle excludes ascenders & descenders, as if
-     *         each line is x-height. y = 0 of the rectangle is at the base-line of the text. The returned x-height is for the
+     * @return The rectangle surrounding the text, cap-height. The rectangle excludes ascenders & descenders, as if
+     *         each line is x-height. y = 0 of the rectangle is at the base-line of the text. The returned cap-height is for the
      *         line which is at y = 0.
      */
     [[nodiscard]] std::pair<aarectangle, float> bounding_rectangle(
@@ -124,8 +154,7 @@ public:
      * @param base_line The position of the recommended base-line.
      * @param sub_pixel_size The size of a sub-pixel in device-independent-pixels.
      * @param writing_direction The default writing direction.
-     * @param text_alignment The horizontal alignment of the text (default: flush).
-     * @param vertical_alignment The vertical alignment of text (default: middle).
+     * @param alignment The alignment of the text (default: flush, middle).
      * @param line_spacing The scaling of the spacing between lines (default: 1.0).
      * @param paragraph_spacing The scaling of the spacing between paragraphs (default: 1.5).
      */
@@ -134,8 +163,7 @@ public:
         float base_line,
         extent2 sub_pixel_size,
         unicode_bidi_class writing_direction,
-        tt::text_alignment text_alignment = tt::text_alignment::flush,
-        tt::vertical_alignment vertical_alignment = tt::vertical_alignment::middle,
+        tt::alignment alignment = tt::alignment{horizontal_alignment::flush, vertical_alignment::middle},
         float line_spacing = 1.0f,
         float paragraph_spacing = 1.5f) noexcept;
 
@@ -218,14 +246,14 @@ private:
      *
      * @param rectangle The rectangle to position the glyphs in.
      * @param sub_pixel_size The size of a sub-pixel in device-independent-pixels.
-     * @param text_alignment The horizontal alignment of the text (default: flush).
+     * @param horizontal_alignment The horizontal alignment of the text (default: flush).
      * @param writing_direction The default writing direction.
      * @post Glyphs in _text are positioned inside the given rectangle.
      */
     void position_glyphs(
         aarectangle rectangle,
         extent2 sub_pixel_size,
-        tt::text_alignment text_alignment,
+        tt::horizontal_alignment horizontal_alignment,
         unicode_bidi_class writing_direction) noexcept;
 
     /** Get column and line of a character.

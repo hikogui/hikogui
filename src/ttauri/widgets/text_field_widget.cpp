@@ -23,7 +23,7 @@ text_field_widget::text_field_widget(gui_window &window, widget *parent, weak_or
     text_style.subscribe(_relayout_callback);
     text_width.subscribe(_reconstrain_callback);
     _error_label_widget =
-        std::make_unique<label_widget>(window, this, _error_label, alignment::top_left, theme_text_style::error);
+        std::make_unique<label_widget>(window, this, _error_label, alignment::top_left(), theme_text_style::error);
 }
 
 text_field_widget::text_field_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :

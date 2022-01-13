@@ -11,7 +11,7 @@ namespace tt::inline v1 {
 checkbox_widget::checkbox_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
     super(window, parent, std::move(delegate))
 {
-    label_alignment = alignment::top_left;
+    label_alignment = alignment::top_left();
 }
 
 checkbox_widget::checkbox_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
@@ -33,16 +33,16 @@ widget_constraints const &checkbox_widget::set_constraints() noexcept
 void checkbox_widget::set_layout(widget_layout const &layout) noexcept
 {
     if (compare_store(_layout, layout)) {
-        _button_rectangle = align(layout.rectangle(), _button_size, alignment::top_left);
+        _button_rectangle = align(layout.rectangle(), _button_size, alignment::top_left());
         _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, layout.width(), layout.height()};
 
         _check_glyph = font_book().find_glyph(elusive_icon::Ok);
         ttlet check_glyph_bb = _check_glyph.get_bounding_box();
-        _check_glyph_rectangle = align(_button_rectangle, check_glyph_bb * theme().icon_size, alignment::middle_center);
+        _check_glyph_rectangle = align(_button_rectangle, check_glyph_bb * theme().icon_size, alignment::middle_center());
 
         _minus_glyph = font_book().find_glyph(elusive_icon::Minus);
         ttlet minus_glyph_bb = _minus_glyph.get_bounding_box();
-        _minus_glyph_rectangle = align(_button_rectangle, minus_glyph_bb * theme().icon_size, alignment::middle_center);
+        _minus_glyph_rectangle = align(_button_rectangle, minus_glyph_bb * theme().icon_size, alignment::middle_center());
     }
     set_layout_button(layout);
 }

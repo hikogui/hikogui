@@ -21,9 +21,9 @@ selection_widget::selection_widget(gui_window &window, widget *parent, weak_or_u
 {
     _current_label_widget = std::make_unique<label_widget>(window, this, l10n("<current>"));
     _current_label_widget->visible = false;
-    _current_label_widget->alignment = alignment::middle_left;
+    _current_label_widget->alignment = alignment::middle_left();
     _unknown_label_widget = std::make_unique<label_widget>(window, this, unknown_label);
-    _unknown_label_widget->alignment = alignment::middle_left;
+    _unknown_label_widget->alignment = alignment::middle_left();
     _unknown_label_widget->text_style = theme_text_style::placeholder;
 
     _overlay_widget = std::make_unique<overlay_widget>(window, this);
@@ -85,7 +85,7 @@ void selection_widget::set_layout(widget_layout const &layout) noexcept
         _left_box_rectangle = aarectangle{0.0f, 0.0f, theme().size, layout.height()};
         _chevrons_glyph = font_book().find_glyph(elusive_icon::ChevronUp);
         ttlet chevrons_glyph_bbox = _chevrons_glyph.get_bounding_box();
-        _chevrons_rectangle = align(_left_box_rectangle, chevrons_glyph_bbox * theme().icon_size, alignment::middle_center);
+        _chevrons_rectangle = align(_left_box_rectangle, chevrons_glyph_bbox * theme().icon_size, alignment::middle_center());
 
         // The unknown_label is located to the right of the selection box icon.
         _option_rectangle = aarectangle{

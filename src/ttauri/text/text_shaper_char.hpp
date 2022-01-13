@@ -78,6 +78,12 @@ public:
      */
     unicode_description const *description;
 
+    /** The text direction for this glyph.
+    * 
+    * This is needed to figure out where the location of the insert cursor is compared to the character.
+    */
+    unicode_bidi_class direction;
+
     /** The scale of the glyph for displaying on the screen.
      */
     float scale = 1.0f;

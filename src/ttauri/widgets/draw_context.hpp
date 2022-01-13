@@ -23,6 +23,7 @@ namespace tt::inline v1 {
 class gfx_device;
 class gfx_device_vulkan;
 class shaped_text;
+class text_shaper;
 class glyph_ids;
 struct paged_image;
 
@@ -450,6 +451,86 @@ public:
         return _draw_text(layout.window_clipping_rectangle(), layout.to_window * transform, text);
     }
 
+    /** Draw shaped text.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param transform How to transform the shaped text relative to layout.
+     * @param color Text-color overriding the colors from the shaped_text.
+     * @param text The shaped text to draw.
+     */
+    void draw_text(widget_layout const &layout, matrix3 const &transform, quad_color const &color, text_shaper const &text)
+        const noexcept
+    {
+        return _draw_text(layout.window_clipping_rectangle(), layout.to_window * transform, text, color);
+    }
+
+    /** Draw shaped text.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param color Text-color overriding the colors from the shaped_text.
+     * @param text The shaped text to draw.
+     */
+    void draw_text(widget_layout const &layout, quad_color const &color, text_shaper const &text)
+        const noexcept
+    {
+        return _draw_text(layout.window_clipping_rectangle(), layout.to_window, text, color);
+    }
+
+    /** Draw shaped text.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param clipping_rectangle A more narrow clipping rectangle than supplied by layout.
+     * @param transform How to transform the shaped text relative to layout.
+     * @param color Text-color overriding the colors from the shaped_text.
+     * @param text The shaped text to draw.
+     */
+    void draw_text(
+        widget_layout const &layout,
+        aarectangle const &clipping_rectangle,
+        matrix3 const &transform,
+        quad_color const &color,
+        text_shaper const &text) const noexcept
+    {
+        return _draw_text(layout.window_clipping_rectangle(clipping_rectangle), layout.to_window * transform, text, color);
+    }
+
+    /** Draw shaped text.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param clipping_rectangle A more narrow clipping rectangle than supplied by layout.
+     * @param color Text-color overriding the colors from the shaped_text.
+     * @param text The shaped text to draw.
+     */
+    void draw_text(
+        widget_layout const &layout,
+        aarectangle const &clipping_rectangle,
+        quad_color const &color,
+        text_shaper const &text) const noexcept
+    {
+        return _draw_text(layout.window_clipping_rectangle(clipping_rectangle), layout.to_window, text, color);
+    }
+
+    /** Draw shaped text.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param transform How to transform the shaped text relative to layout.
+     * @param text The shaped text to draw.
+     */
+    void draw_text(widget_layout const &layout, matrix3 const &transform, text_shaper const &text) const noexcept
+    {
+        return _draw_text(layout.window_clipping_rectangle(), layout.to_window * transform, text);
+    }
+
+    /** Draw shaped text.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param text The shaped text to draw.
+     */
+    void draw_text(widget_layout const &layout, text_shaper const &text) const noexcept
+    {
+        return _draw_text(layout.window_clipping_rectangle(), layout.to_window, text);
+    }
+
     [[nodiscard]] friend bool overlaps(draw_context const &context, widget_layout const &layout) noexcept
     {
         return overlaps(context.scissor_rectangle, layout.window_clipping_rectangle());
@@ -472,6 +553,12 @@ private:
         aarectangle const &clipping_rectangle,
         matrix3 const &transform,
         shaped_text const &text,
+        std::optional<quad_color> color = {}) const noexcept;
+
+    void _draw_text(
+        aarectangle const &clipping_rectangle,
+        matrix3 const &transform,
+        text_shaper const &text,
         std::optional<quad_color> color = {}) const noexcept;
 
     void _draw_glyph(aarectangle const &clipping_rectangle, quad const &box, quad_color const &color, glyph_ids const &glyph)

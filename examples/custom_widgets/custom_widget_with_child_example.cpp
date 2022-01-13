@@ -50,7 +50,7 @@ public:
         if (compare_store(_layout, layout)) {
             // The layout of the child widget are also calculated here, which only needs to be done
             // when the layout of the current widget changes.
-            _label_rectangle = align(layout.rectangle(), _label_widget->constraints().preferred, tt::alignment::middle_center);
+            _label_rectangle = align(layout.rectangle(), _label_widget->constraints().preferred, tt::alignment::middle_center());
         }
 
         // The layout of any child widget must always be set, even if the layout didn't actually change.

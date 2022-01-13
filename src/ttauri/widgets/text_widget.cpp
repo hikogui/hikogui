@@ -16,10 +16,9 @@ widget_constraints const &text_widget::set_constraints() noexcept
     _layout = {};
 
     _text_shaper = text_shaper{font_book(), (*text)(), theme().text_style(*text_style)};
-    ttlet[shaped_text_rectangle, x_height] = _text_shaper.bounding_rectangle(500.0f, to_vertical_alignment(*alignment));
-
-    _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), 0.0f, *alignment};
-    ttlet shaped_text_size = ceil(_shaped_text.preferred_size());
+    ttlet[shaped_text_rectangle, x_height] = _text_shaper.bounding_rectangle(500.0f, alignment->vertical());
+    _text_shaper_x_height = x_height;
+    ttlet shaped_text_size = shaped_text_rectangle.size();
     _constraints = {shaped_text_size, shaped_text_size, shaped_text_size, theme().margin};
 
     // Allow text to overhang into the margin of a small widget.
@@ -40,15 +39,19 @@ widget_constraints const &text_widget::set_constraints() noexcept
 void text_widget::set_layout(widget_layout const &layout) noexcept
 {
     if (compare_store(_layout, layout)) {
-        _shaped_text = shaped_text{font_book(), (*text)(), theme().text_style(*text_style), layout.width(), *alignment};
-        _shaped_text_transform = _shaped_text.translate_base_line(point2{0.0f, layout.base_line()});
+        _text_shaper.layout(
+            layout.rectangle(),
+            layout.base_line() - _text_shaper_x_height * 0.5f,
+            layout.sub_pixel_size,
+            window.gui.writing_direction,
+            *alignment);
     }
 }
 
 void text_widget::draw(draw_context const &context) noexcept
 {
     if (visible and overlaps(context, layout())) {
-        context.draw_text(layout(), _shaped_text_transform, _shaped_text);
+        context.draw_text(layout(), _text_shaper);
     }
 }
 

@@ -43,7 +43,8 @@ static std::pair<float, size_t> advance_glyphs(text_shaper_line::column_vector &
     auto num_white_space = 0_uz;
     for (auto it = columns.begin(); it != columns.end(); ++it) {
         ttlet char_it = *it;
-        ttlet kerning = it == columns.end() ? vector2{} : char_it->get_kerning(**(it + 1));
+        ttlet next_it = it + 1;
+        ttlet kerning = next_it == columns.end() ? vector2{} : char_it->get_kerning(**next_it);
 
         char_it->position = p;
         p += char_it->metrics.advance + kerning;
@@ -97,12 +98,12 @@ static void move_glyphs(text_shaper_line::column_vector &columns, float offset) 
 
 static void align_glyphs(
     text_shaper_line::column_vector &columns,
-    text_alignment alignment,
+    horizontal_alignment alignment,
     float max_line_width,
     float visible_width,
     size_t num_internal_white_space) noexcept
 {
-    if (alignment == text_alignment::justified) {
+    if (alignment == horizontal_alignment::justified) {
         if (align_glyphs_justified(columns, max_line_width, visible_width, num_internal_white_space)) {
             return;
         }
@@ -110,8 +111,8 @@ static void align_glyphs(
 
     // clang-format off
     ttlet offset =
-        alignment == text_alignment::flush_left ? 0.0f :
-        alignment == text_alignment::flush_right ? max_line_width - visible_width :
+        alignment == horizontal_alignment::left ? 0.0f :
+        alignment == horizontal_alignment::right ? max_line_width - visible_width :
         (max_line_width - visible_width) * 0.5f;
     // clang-format on
 
@@ -144,10 +145,10 @@ static void create_bounding_rectangles(text_shaper_line::column_vector &columns,
     }
 }
 
-void text_shaper_line::layout(text_alignment alignment, float min_x, float max_x, float sub_pixel_width) noexcept
+void text_shaper_line::layout(horizontal_alignment alignment, float min_x, float max_x, float sub_pixel_width) noexcept
 {
-    if (alignment == text_alignment::flush or alignment == text_alignment::justified) {
-        alignment = paragraph_direction == unicode_bidi_class::R ? text_alignment::flush_right : text_alignment::flush_left;
+    if (alignment == horizontal_alignment::flush or alignment == horizontal_alignment::justified) {
+        alignment = paragraph_direction == unicode_bidi_class::R ? horizontal_alignment::right : horizontal_alignment::left;
     }
 
     // Reset the position and advance the glyphs.

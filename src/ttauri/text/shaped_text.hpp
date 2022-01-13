@@ -35,7 +35,14 @@ private:
     extent2 _preferred_extent;
 
 public:
-    shaped_text() noexcept : alignment(alignment::middle_center), boundingBox(), width(0.0f), _preferred_extent(), lines() {}
+    shaped_text() noexcept :
+        alignment{horizontal_alignment::center, vertical_alignment::middle},
+        boundingBox(),
+        width(0.0f),
+        _preferred_extent(),
+        lines()
+    {
+    }
     shaped_text(shaped_text const &other) = default;
     shaped_text(shaped_text &&other) noexcept = default;
     shaped_text &operator=(shaped_text const &other) = default;
@@ -67,7 +74,7 @@ public:
         tt::font_book const &font_book,
         std::vector<attributed_grapheme> const &text,
         float width,
-        tt::alignment const alignment = alignment::middle_center,
+        tt::alignment const alignment = tt::alignment{horizontal_alignment::center, vertical_alignment::middle},
         bool wrap = true) noexcept;
 
     /** Create shaped text from a string.
@@ -84,7 +91,7 @@ public:
         gstring const &text,
         text_style const &style,
         float width,
-        tt::alignment const alignment = alignment::middle_center,
+        tt::alignment const alignment = tt::alignment{horizontal_alignment::center, vertical_alignment::middle},
         bool wrap = true) noexcept;
 
     /** Create shaped text from a string.
@@ -101,7 +108,7 @@ public:
         std::string_view text,
         text_style const &style,
         float width,
-        tt::alignment const alignment = alignment::middle_center,
+        tt::alignment const alignment = tt::alignment{horizontal_alignment::center, vertical_alignment::middle},
         bool wrap = true) noexcept;
 
     [[nodiscard]] constexpr bool empty() const noexcept

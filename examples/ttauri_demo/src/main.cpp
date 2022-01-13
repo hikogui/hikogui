@@ -26,7 +26,7 @@ auto create_main_window(tt::gui_system &gui, std::shared_ptr<my_preferences_wind
     auto &column = main_window.content().make_widget<column_widget>("A1");
     column.make_widget<momentary_button_widget>(l10n("Hello \u4e16\u754c"));
     column.make_widget<momentary_button_widget>(l10n("Hello world"));
-    auto &vma_dump_button = column.make_widget<momentary_button_widget>(l10n("vma calculate stats"));
+    auto &vma_dump_button = column.make_widget<momentary_button_widget>(l10n("vma\ncalculate stats"));
 
 
     return std::array{
