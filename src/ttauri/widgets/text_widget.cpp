@@ -21,17 +21,6 @@ widget_constraints const &text_widget::set_constraints() noexcept
     ttlet shaped_text_size = shaped_text_rectangle.size();
     _constraints = {shaped_text_size, shaped_text_size, shaped_text_size, theme().margin};
 
-    // Allow text to overhang into the margin of a small widget.
-    if (_constraints.minimum.height() > theme().size and _constraints.minimum.height() <= theme().size + theme().margin) {
-        _constraints.minimum.height() = theme().size;
-    }
-    if (_constraints.preferred.height() > theme().size and _constraints.preferred.height() <= theme().size + theme().margin) {
-        _constraints.preferred.height() = theme().size;
-    }
-    if (_constraints.maximum.height() > theme().size and _constraints.maximum.height() <= theme().size + theme().margin) {
-        _constraints.maximum.height() = theme().size;
-    }
-
     tt_axiom(_constraints.holds_invariant());
     return _constraints;
 }
