@@ -59,6 +59,12 @@ public:
      */
     extent2 sub_pixel_size;
 
+    /** The default writing direction.
+     *
+     * @note Must be either `L` or `R`.
+     */
+    unicode_bidi_class writing_direction;
+
     /** The layout created for displaying at this time point.
      */
     utc_nanoseconds display_time_point;
@@ -74,8 +80,15 @@ public:
         tt_axiom((lhs.to_parent == rhs.to_parent) == (lhs.from_parent == rhs.from_parent));
         tt_axiom((lhs.to_window == rhs.to_window) == (lhs.from_window == rhs.from_window));
 
-        return lhs.size == rhs.size and lhs.to_parent == rhs.to_parent and lhs.to_window == rhs.to_window and
-            lhs.clipping_rectangle == rhs.clipping_rectangle;
+        // clang-format on
+        return
+            lhs.size == rhs.size and
+            lhs.to_parent == rhs.to_parent and
+            lhs.to_window == rhs.to_window and
+            lhs.clipping_rectangle == rhs.clipping_rectangle and
+            lhs.sub_pixel_size == rhs.sub_pixel_size and
+            lhs.writing_direction == rhs.writing_direction;
+        // clang-format off
     }
 
     /** Check if the mouse position is inside the widget.
@@ -130,6 +143,7 @@ public:
     constexpr widget_layout(
         extent2 window_size,
         tt::sub_pixel_orientation sub_pixel_orientation,
+        unicode_bidi_class writing_direction,
         utc_nanoseconds display_time_point) noexcept :
         to_parent(),
         from_parent(),
@@ -138,6 +152,7 @@ public:
         size(window_size),
         clipping_rectangle(window_size),
         sub_pixel_size(tt::sub_pixel_size(sub_pixel_orientation)),
+        writing_direction(writing_direction),
         display_time_point(display_time_point)
     {
     }
@@ -162,6 +177,7 @@ public:
         r.size = child_rectangle.size();
         r.clipping_rectangle = intersect(bounding_rectangle(from_parent3 * this->clipping_rectangle), new_clipping_rectangle);
         r.sub_pixel_size = this->sub_pixel_size;
+        r.writing_direction = this->writing_direction;
         r.display_time_point = this->display_time_point;
         return r;
     }

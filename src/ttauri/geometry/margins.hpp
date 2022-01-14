@@ -17,7 +17,7 @@ public:
 
     [[nodiscard]] constexpr margins() noexcept : _v() {}
     [[nodiscard]] constexpr margins(float margin) noexcept : _v(margin, margin, margin, margin) {}
-    [[nodiscard]] constexpr margins(float bottom, float left, float top, float right) noexcept : _v(bottom, left, top, right) {}
+    [[nodiscard]] constexpr margins(float left, float bottom, float right, float top) noexcept : _v(left, bottom, right, top) {}
     [[nodiscard]] constexpr explicit margins(f32x4 v) noexcept : _v(v) {}
 
     [[nodiscard]] constexpr explicit operator f32x4() const noexcept
@@ -25,22 +25,22 @@ public:
         return _v;
     }
 
-    [[nodiscard]] constexpr float bottom() const noexcept
+    [[nodiscard]] constexpr float left() const noexcept
     {
         return _v.x();
     }
 
-    [[nodiscard]] constexpr float left() const noexcept
+    [[nodiscard]] constexpr float bottom() const noexcept
     {
         return _v.y();
     }
 
-    [[nodiscard]] constexpr float top() const noexcept
+    [[nodiscard]] constexpr float right() const noexcept
     {
         return _v.z();
     }
 
-    [[nodiscard]] constexpr float right() const noexcept
+    [[nodiscard]] constexpr float top() const noexcept
     {
         return _v.w();
     }
@@ -54,6 +54,11 @@ public:
     [[nodiscard]] constexpr float operator[](std::size_t i) const noexcept
     {
         return _v[i];
+    }
+
+    [[nodiscard]] constexpr friend margins max(margins const &lhs, margins const &rhs) noexcept
+    {
+        return margins{max(lhs._v, rhs._v)};
     }
 
 private:

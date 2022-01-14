@@ -3,8 +3,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "text_widget.hpp"
-#include "../GUI/gui_window.hpp"
-#include "../GUI/gui_system.hpp"
 
 namespace tt::inline v1 {
 
@@ -34,7 +32,7 @@ void text_widget::set_layout(widget_layout const &layout) noexcept
             layout.rectangle(),
             layout.base_line() - _text_shaper_x_height * 0.5f,
             layout.sub_pixel_size,
-            window.gui.writing_direction,
+            layout.writing_direction,
             *alignment);
     }
 }

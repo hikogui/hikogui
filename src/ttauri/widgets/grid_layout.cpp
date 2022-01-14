@@ -86,8 +86,8 @@ static void grow(auto first, auto last, float growth) noexcept
 void grid_layout::constrain_cells_by_singles() noexcept
 {
     for (ttlet &constraint : _constraints) {
-        inplace_max(_cells[constraint.first].margin, constraint.margin);
-        inplace_max(_cells[constraint.last].margin, constraint.margin);
+        inplace_max(_cells[constraint.first].margin, constraint.margin_before);
+        inplace_max(_cells[constraint.last].margin, constraint.margin_after);
 
         if (constraint.is_single_cell()) {
             _cells[constraint.first].set_constraint(constraint);

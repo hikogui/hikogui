@@ -44,12 +44,13 @@ public:
      * @param minimum The absolute minimum size that a widget must be laid out as.
      * @param preferred The preferred size a widgets wants to be laid out as.
      * @param maximum The maximum size that a widget should be laid out as.
-     * @param margin The space between this widget and other widgets.
+     * @param margin_before The space between this widget and other widgets.
+     * @param margin_after The space between this widget and other widgets.
      */
-    void add_constraint(std::size_t first, std::size_t last, float minimum, float preferred, float maximum, float margin) noexcept
+    void add_constraint(std::size_t first, std::size_t last, float minimum, float preferred, float maximum, float margin_before, float margin_after) noexcept
     {
         _num_cells = std::max(_num_cells, last);
-        _constraints.emplace_back(first, last, minimum, preferred, maximum, margin);
+        _constraints.emplace_back(first, last, minimum, preferred, maximum, margin_before, margin_after);
     }
 
     /** Add a constraint for a widget.
@@ -58,11 +59,12 @@ public:
      * @param minimum The absolute minimum size that a widget must be laid out as.
      * @param preferred The preferred size a widgets wants to be laid out as.
      * @param maximum The maximum size that a widget should be laid out as.
-     * @param margin The space between this widget and other widgets.
+     * @param margin_before The space between this widget and other widgets.
+     * @param margin_after The space between this widget and other widgets.
      */
-    void add_constraint(std::size_t index, float minimum, float preferred, float maximum, float margin) noexcept
+    void add_constraint(std::size_t index, float minimum, float preferred, float maximum, float margin_before, float margin_after) noexcept
     {
-        return add_constraint(index, index + 1, minimum, preferred, maximum, margin);
+        return add_constraint(index, index + 1, minimum, preferred, maximum, margin_before, margin_after);
     }
 
     /** Commit all the constraints.
@@ -90,7 +92,7 @@ public:
      */
     [[nodiscard]] float minimum() const noexcept
     {
-        return _minimum + _cells.front().margin + _cells.back().margin;
+        return _minimum;
     }
 
     /** The minimum size of the total grid_layout.
@@ -99,7 +101,7 @@ public:
      */
     [[nodiscard]] float preferred() const noexcept
     {
-        return _preferred + _cells.front().margin + _cells.back().margin;
+        return _preferred;
     }
 
     /** The minimum size of the total grid_layout.
@@ -108,7 +110,17 @@ public:
      */
     [[nodiscard]] float maximum() const noexcept
     {
-        return _maximum + _cells.front().margin + _cells.back().margin;
+        return _maximum;
+    }
+
+    [[nodiscard]] float margin_before() const noexcept
+    {
+        return _cells.front().margin;
+    }
+
+    [[nodiscard]] float margin_after() const noexcept
+    {
+        return _cells.back().margin;
     }
 
     /** Layout the cells based on the total size.
@@ -203,7 +215,8 @@ private:
         float minimum;
         float preferred;
         float maximum;
-        float margin;
+        float margin_before;
+        float margin_after;
 
         [[nodiscard]] bool is_single_cell() const noexcept
         {
@@ -221,7 +234,7 @@ private:
          */
         float size;
 
-        /** The margin before of the cell.
+        /** The margin before the cell.
          */
         float margin;
 
@@ -277,12 +290,12 @@ private:
      *
      * @param begin An iterator to the first cell.
      * @param first An iterator to the cell to calculate the position for.
-     * @return The lower position of the cell, excluding the cell's margin.
+     * @return The lower position of the cell, after the cell's margin, skipping the first margin.
      */
     [[nodiscard]] float get_position(cell_const_iterator begin, cell_const_iterator first) const noexcept
     {
         auto it = begin;
-        auto position = it->margin;
+        auto position = 0.0f;
         while (it != first) {
             position += it->size;
             ++it;

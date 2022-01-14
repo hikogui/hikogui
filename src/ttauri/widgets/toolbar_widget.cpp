@@ -25,15 +25,17 @@ widget_constraints const &toolbar_widget::set_constraints() noexcept
     _grid_layout.clear();
     ssize_t index = 0;
     auto shared_height = 0.0f;
+    auto shared_before_margin = 0.0f;
+    auto shared_after_margin = 0.0f;
     for (ttlet &child : _left_children) {
-        update_constraints_for_child(*child, index++, shared_height);
+        update_constraints_for_child(*child, index++, shared_height, shared_before_margin, shared_after_margin);
     }
 
     // Add a space between the left and right widgets.
-    _grid_layout.add_constraint(index++, theme().large_size, theme().large_size, 32767.0f, 0.0f);
+    _grid_layout.add_constraint(index++, theme().large_size, theme().large_size, 32767.0f, 0.0f, 0.0f);
 
     for (ttlet &child : std::views::reverse(_right_children)) {
-        update_constraints_for_child(*child, index++, shared_height);
+        update_constraints_for_child(*child, index++, shared_height, shared_before_margin, shared_after_margin);
     }
 
     tt_axiom(index == ssize(_left_children) + 1 + ssize(_right_children));
@@ -42,7 +44,8 @@ widget_constraints const &toolbar_widget::set_constraints() noexcept
     return _constraints = {
                {_grid_layout.minimum(), shared_height},
                {_grid_layout.preferred(), shared_height},
-               {_grid_layout.maximum(), shared_height}};
+               {_grid_layout.maximum(), shared_height}
+               {_grid_layout.margin_left(), shared_margin_after, _grid_layout.margin_right(), shared_margin_before}};
 }
 
 void toolbar_widget::set_layout(widget_layout const &layout) noexcept
@@ -156,8 +159,7 @@ void toolbar_widget::update_layout_for_child(widget &child, ssize_t index, widge
 
     ttlet[child_x, child_width] = _grid_layout.get_position_and_size(index);
 
-    ttlet child_rectangle =
-        aarectangle{child_x, child.constraints().margin, child_width, layout().height() - child.constraints().margin * 2.0f};
+    ttlet child_rectangle = aarectangle{child_x, 0.0f, child_width, layout().height()};
 
     ttlet child_clipping_rectangle = aarectangle{child_rectangle.size()} + child.constraints().margin;
     child.set_layout(context.transform(child_rectangle, 1.0f, child_clipping_rectangle));
