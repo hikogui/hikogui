@@ -49,39 +49,40 @@ widget_constraints const &label_widget::set_constraints() noexcept
 
     _inner_margin = (has_text and has_icon) ? theme().margin : 0.0f;
 
-    if (has_icon) {
-        // Override the natural icon size.
-        if (alignment == horizontal_alignment::center or alignment == horizontal_alignment::justified) {
-            _icon_size = theme().large_icon_size;
-        } else if (alignment == vertical_alignment::middle) {
-            _icon_size = std::ceil(theme().text_style(*text_style).scaled_size() * 1.4f);
+    _icon_size = [&] {
+        if (has_icon) {
+            // Override the natural icon size.
+            if (alignment == horizontal_alignment::center or alignment == horizontal_alignment::justified) {
+                return theme().large_icon_size;
+            } else {
+                return std::ceil(theme().text_style(*text_style).scaled_size());
+            }
         } else {
-            _icon_size = std::ceil(theme().text_style(*text_style).scaled_size());
+            return 0.0f;
         }
-    } else {
-        _icon_size = 0.0f;
-    }
+    }();
 
-    auto size = label_size;
-    if (has_icon) {
-        if (alignment != horizontal_alignment::center and alignment != horizontal_alignment::justified) {
-            // If the icon is on the left or right, add the icon to the width.
-            // Since the label is inline, we do not adjust the height of the label widget on the icon size.
-            size.width() += _inner_margin + _icon_size;
+    ttlet size = [&] {
+        if (has_icon) {
+            if (alignment != horizontal_alignment::center and alignment != horizontal_alignment::justified) {
+                // If the icon is on the left or right, add the icon to the width.
+                // Since the label is inline, we do not adjust the height of the label widget on the icon size.
+                return extent2{label_size.width() + _inner_margin + _icon_size, label_size.height()};
 
-        } else if (alignment != vertical_alignment::middle) {
-            // If the icon is above or below the text, add the icon height and the
-            // minimum width is the maximum of the icon and text width.
-            size.width() = std::max(size.width(), _icon_size);
-            size.height() += _icon_size;
+            } else if (alignment != vertical_alignment::middle) {
+                // If the icon is above or below the text, add the icon height and the
+                // minimum width is the maximum of the icon and text width.
+                return extent2{std::max(label_size.width(), _icon_size), label_size.height() + _inner_margin + _icon_size};
 
+            } else {
+                // The text is written across the icon. Take the maximum width and height
+                // of both the icon and text.
+                return extent2{std::max(label_size.width(), _icon_size), std::max(label_size.height(), _icon_size)};
+            }
         } else {
-            // The text is written across the icon. Take the maximum width and height
-            // of both the icon and text.
-            size.width() = std::max(size.width(), _icon_size);
-            size.height() = std::max(size.height(), _icon_size);
+            return label_size;
         }
-    }
+    }();
 
     return _constraints = {size, size, size, theme().margin};
 }
@@ -99,33 +100,33 @@ void label_widget::set_layout(widget_layout const &layout) noexcept
             _text_rectangle = {0.0f, 0.0f, text_width, layout.height()};
 
         } else if (alignment == vertical_alignment::top) {
-            ttlet text_height = layout.height() - _icon_size;
+            ttlet text_height = layout.height() - _icon_size - _inner_margin;
             _text_rectangle = {0.0f, 0.0f, layout.width(), text_height};
 
         } else if (alignment == vertical_alignment::bottom) {
-            ttlet text_height = layout.height() - _icon_size;
-            _text_rectangle = {0.0f, _icon_size, layout.width(), text_height};
+            ttlet text_height = layout.height() - _icon_size - _inner_margin;
+            _text_rectangle = {0.0f, _icon_size + _inner_margin, layout.width(), text_height};
 
         } else {
             _text_rectangle = layout.rectangle();
         }
 
         ttlet icon_pos = [&] {
-            if (alignment == tt::alignment{vertical_alignment::top, horizontal_alignment::left}) {
+            if (alignment == tt::alignment::top_left()) {
                 return point2{0.0f, layout.height() - _icon_size};
-            } else if (alignment == tt::alignment{vertical_alignment::top, horizontal_alignment::right}) {
+            } else if (alignment == tt::alignment::top_right()) {
                 return point2{layout.width() - _icon_size, layout.height() - _icon_size};
             } else if (alignment == vertical_alignment::top) {
                 return point2{(layout.width() - _icon_size) / 2.0f, layout.height() - _icon_size};
-            } else if (alignment == tt::alignment{vertical_alignment::bottom, horizontal_alignment::left}) {
+            } else if (alignment == tt::alignment::bottom_left()) {
                 return point2{0.0f, 0.0f};
-            } else if (alignment == tt::alignment{vertical_alignment::bottom, horizontal_alignment::right}) {
+            } else if (alignment == tt::alignment::bottom_right()) {
                 return point2{layout.width() - _icon_size, 0.0f};
             } else if (alignment == vertical_alignment::bottom) {
                 return point2{(layout.width() - _icon_size) / 2.0f, 0.0f};
-            } else if (alignment == tt::alignment{vertical_alignment::middle, horizontal_alignment::left}) {
+            } else if (alignment == tt::alignment::middle_left()) {
                 return point2{0.0f, (layout.height() - _icon_size) / 2.0f};
-            } else if (alignment == tt::alignment{vertical_alignment::middle, horizontal_alignment::right}) {
+            } else if (alignment == tt::alignment::middle_right()) {
                 return point2{layout.width() - _icon_size, (layout.height() - _icon_size)};
             } else if (alignment == vertical_alignment::middle) {
                 return point2{(layout.width() - _icon_size) / 2.0f, (layout.height() - _icon_size)};
