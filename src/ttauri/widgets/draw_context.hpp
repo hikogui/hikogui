@@ -531,6 +531,19 @@ public:
         return _draw_text(layout.window_clipping_rectangle(), layout.to_window, text);
     }
 
+    /** Draw text-selection of shaped text.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param text The shaped text to draw.
+     * @param first Index to the first character that is selectd.
+     * @param last Index one beyond the last character that is selected.
+     * @param color The color of the selection.
+     */
+    void draw_text_selection(widget_layout const &layout, text_shaper const &text, size_t first, size_t last, tt::color color) const noexcept
+    {
+        return _draw_text_selection(layout.window_clipping_rectangle(), layout.to_window, text, first, last, color);
+    }
+
     [[nodiscard]] friend bool overlaps(draw_context const &context, widget_layout const &layout) noexcept
     {
         return overlaps(context.scissor_rectangle, layout.window_clipping_rectangle());
@@ -561,6 +574,15 @@ private:
         text_shaper const &text,
         std::optional<quad_color> color = {}) const noexcept;
 
+    void _draw_text_selection(
+        aarectangle const &clipping_rectangle,
+        matrix3 const &transform,
+        text_shaper const &text,
+        size_t first,
+        size_t last,
+        tt::color) const noexcept;
+
+    void _draw_glyph(aarectangle const &clipping_rectangle, quad const &box, quad_color const &color, glyph_ids const &glyph)
     void _draw_glyph(aarectangle const &clipping_rectangle, quad const &box, quad_color const &color, glyph_ids const &glyph)
         const noexcept;
 

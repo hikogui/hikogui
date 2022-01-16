@@ -153,4 +153,23 @@ void draw_context::_draw_text(
     }
 }
 
+void draw_context::_draw_text_selection(
+    aarectangle const &clipping_rectangle,
+    matrix3 const &transform,
+    text_shaper const &text,
+    size_t first,
+    size_t last,
+    tt::color color) const noexcept
+{
+    tt_axiom(first <= last);
+    ttlet first_ = text.begin() + first;
+    ttlet last_ = text.begin() + last;
+    tt_axiom(last_ <= text.end());
+
+    for (auto it = first_; it != last_; ++it) {
+        _draw_box(clipping_rectangle, it->rectangle, color, tt::color{}, 0.0f, {});
+    }
+}
+
+
 } // namespace tt::inline v1

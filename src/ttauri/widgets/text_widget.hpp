@@ -26,17 +26,38 @@ class text_widget final : public widget {
 public:
     using super = widget;
 
+    /** Mode of the text-widget.
+     */
+    enum class edit_mode_type {
+        /** Text is fixed.
+         */
+        fixed,
+
+        /** Text is selectable and copyable.
+         */
+        selectable,
+
+        /** Text is editable.
+         */
+        editable
+    };
+
+
     /** The text to be displayed.
      */
-    observable<l10n> text;
+    observable<gstring> text;
 
     /** The horizontal alignment of the text inside the space of the widget.
      */
-    observable<alignment> alignment = tt::alignment{horizontal_alignment::center, vertical_alignment::middle};
+    observable<alignment> alignment = tt::alignment::middle_center();
 
     /** The style of the text.
      */
     observable<theme_text_style> text_style = theme_text_style::label;
+
+    /** The edit-mode.
+     */
+    observable<mode_type> edit_mode = edit_mode_type::selectable;
 
     /** Construct a text widget.
      *
@@ -71,8 +92,16 @@ public:
     void draw(draw_context const &context) noexcept override;
     /// @endprivatesection
 private:
-    text_shaper _text_shaper;
-    float _text_shaper_x_height;
+    text_shaper _shaped_text;
+    float _shaped_text_cap_height;
+
+    /** The first character selected in text.
+     */
+    size_t _selection_first = 0;
+
+    /** One beyond the last character selected in text.
+     */
+    size_t _selection_last = 0;
 
     text_widget(gui_window &window, widget *parent) noexcept;
 };
