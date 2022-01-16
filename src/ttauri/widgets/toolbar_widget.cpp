@@ -25,24 +25,32 @@ widget_constraints const &toolbar_widget::set_constraints() noexcept
     _grid_layout.clear();
     ssize_t index = 0;
     auto shared_height = 0.0f;
+    auto shared_top_margin = 0.0f;
+    auto shared_bottom_margin = 0.0f;
     for (ttlet &child : _left_children) {
-        update_constraints_for_child(*child, index++, shared_height);
+        update_constraints_for_child(*child, index++, shared_height, shared_top_margin, shared_bottom_margin);
     }
 
     // Add a space between the left and right widgets.
-    _grid_layout.add_constraint(index++, theme().large_size, theme().large_size, 32767.0f, 0.0f);
+    _grid_layout.add_constraint(index++, theme().large_size, theme().large_size, 32767.0f, 0.0f, 0.0f);
 
     for (ttlet &child : std::views::reverse(_right_children)) {
-        update_constraints_for_child(*child, index++, shared_height);
+        update_constraints_for_child(*child, index++, shared_height, shared_top_margin, shared_bottom_margin);
     }
 
     tt_axiom(index == ssize(_left_children) + 1 + ssize(_right_children));
 
     _grid_layout.commit_constraints();
-    return _constraints = {
-               {_grid_layout.minimum(), shared_height},
-               {_grid_layout.preferred(), shared_height},
-               {_grid_layout.maximum(), shared_height}};
+    _inner_margins = {0.0f, shared_bottom_margin, 0.0f, shared_top_margin};
+
+    // The toolbar shows a background color that envelops the margins of the toolbar-items.
+    // The toolbar itself only has a bottom margin.
+    ttlet minimum_width = _grid_layout.minimum() + _grid_layout.margin_before() + _grid_layout.margin_after();
+    ttlet preferred_width = _grid_layout.preferred() + _grid_layout.margin_before() + _grid_layout.margin_after();
+    ttlet maximum_width = _grid_layout.maximum() + _grid_layout.margin_before() + _grid_layout.margin_after();
+    ttlet height = shared_height + _inner_margins.top() + _inner_margins.bottom();
+
+    return _constraints = {{minimum_width, height}, {preferred_width, height}, {maximum_width, height}};
 }
 
 void toolbar_widget::set_layout(widget_layout const &layout) noexcept
@@ -135,7 +143,12 @@ hitbox toolbar_widget::hitbox_test(point3 position) const noexcept
     }
 }
 
-void toolbar_widget::update_constraints_for_child(widget &child, ssize_t index, float &shared_height) noexcept
+void toolbar_widget::update_constraints_for_child(
+    widget &child,
+    ssize_t index,
+    float &shared_height,
+    float &shared_top_margin,
+    float &shared_bottom_margin) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -145,9 +158,12 @@ void toolbar_widget::update_constraints_for_child(widget &child, ssize_t index, 
         child_constraints.minimum.width(),
         child_constraints.preferred.width(),
         child_constraints.maximum.width(),
-        child_constraints.margin);
+        child_constraints.margins.left(),
+        child_constraints.margins.right());
 
-    shared_height = std::max(shared_height, child_constraints.preferred.height() + child_constraints.margin * 2.0f);
+    inplace_max(shared_height, child_constraints.preferred.height());
+    inplace_max(shared_top_margin, child_constraints.margins.top());
+    inplace_max(shared_bottom_margin, child_constraints.margins.bottom());
 }
 
 void toolbar_widget::update_layout_for_child(widget &child, ssize_t index, widget_layout const &context) const noexcept
@@ -156,10 +172,14 @@ void toolbar_widget::update_layout_for_child(widget &child, ssize_t index, widge
 
     ttlet[child_x, child_width] = _grid_layout.get_position_and_size(index);
 
-    ttlet child_rectangle =
-        aarectangle{child_x, child.constraints().margin, child_width, layout().height() - child.constraints().margin * 2.0f};
+    ttlet child_rectangle = aarectangle{
+        child_x, _inner_margins.bottom(), child_width, layout().height() - _inner_margins.bottom() - _inner_margins.top()};
 
-    ttlet child_clipping_rectangle = aarectangle{child_rectangle.size()} + child.constraints().margin;
+    ttlet child_clipping_rectangle = aarectangle{
+        child_x - child.constraints().margins.left(),
+        0.0f,
+        child_width + child.constraints().margins.left() + child.constraints().margins.right(),
+        layout().height()};
     child.set_layout(context.transform(child_rectangle, 1.0f, child_clipping_rectangle));
 }
 

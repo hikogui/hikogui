@@ -184,7 +184,8 @@ void gui_window::render(utc_nanoseconds display_time_point)
         // Guarantee that the layout size is always at least the minimum size.
         // We do this because it simplifies calculations if no minimum checks are necessary inside widget.
         ttlet widget_layout_size = max(widget->constraints().minimum, widget_size);
-        widget->set_layout(widget_layout{widget_layout_size, this->surface->sub_pixel_orientation, display_time_point});
+        widget->set_layout(
+            widget_layout{widget_layout_size, this->surface->sub_pixel_orientation, gui.writing_direction, display_time_point});
 
         // After layout do a complete redraw.
         _redraw_rectangle = aarectangle{widget_size};

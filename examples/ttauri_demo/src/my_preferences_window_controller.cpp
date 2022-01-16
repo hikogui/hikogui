@@ -66,7 +66,7 @@ void my_preferences_window_controller::init(tt::gui_window& self) noexcept
 
     auto& tabs = self.content().make_widget<tab_widget>("A1", tab_index);
     init_audio_tab(tabs.make_widget<grid_widget>(0));
-    init_license_tab(tabs.make_widget<vertical_scroll_widget<true>>(1).make_widget<grid_widget>());
+    init_license_tab(tabs.make_widget<scroll_widget<axis::both,true>>(1).make_widget<grid_widget>());
 }
 
 void my_preferences_window_controller::audio_device_list_changed(tt::audio_system& system) noexcept

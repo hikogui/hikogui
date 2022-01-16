@@ -50,26 +50,56 @@ widget_constraints const &window_widget::set_constraints() noexcept
     ttlet toolbar_constraints = _toolbar->set_constraints();
     ttlet content_constraints = _content->set_constraints();
 
-    ttlet min_size = extent2{
-        std::max(toolbar_constraints.minimum.width(), content_constraints.minimum.width()),
-        toolbar_constraints.preferred.height() + content_constraints.minimum.height()};
+    ttlet minimum_width = std::max(
+        toolbar_constraints.margins.left() + toolbar_constraints.minimum.width() + toolbar_constraints.margins.right(),
+        content_constraints.margins.left() + content_constraints.minimum.width() + content_constraints.margins.right());
+    ttlet preferred_width = std::max(
+        toolbar_constraints.margins.left() + toolbar_constraints.preferred.width() + toolbar_constraints.margins.right(),
+        content_constraints.margins.left() + content_constraints.preferred.width() + content_constraints.margins.right());
+    ttlet maximum_width = std::max(
+        toolbar_constraints.margins.left() + toolbar_constraints.maximum.width() + toolbar_constraints.margins.right(),
+        content_constraints.margins.left() + content_constraints.maximum.width() + content_constraints.margins.right());
 
-    ttlet pref_size = extent2{
-        std::max(toolbar_constraints.preferred.width(), content_constraints.preferred.width()),
-        toolbar_constraints.preferred.height() + content_constraints.preferred.height()};
+    // clang-format off
+    ttlet minimum_height =
+        toolbar_constraints.margins.top() +
+        toolbar_constraints.preferred.height() +
+        std::max(toolbar_constraints.margins.bottom(), content_constraints.margins.top()) +
+        content_constraints.minimum.height() +
+        content_constraints.margins.bottom();
+    ttlet preferred_height =
+        toolbar_constraints.margins.top() +
+        toolbar_constraints.preferred.height() +
+        std::max(toolbar_constraints.margins.bottom(), content_constraints.margins.top()) +
+        content_constraints.preferred.height() +
+        content_constraints.margins.bottom();
+    ttlet maximum_height =
+        toolbar_constraints.margins.top() +
+        toolbar_constraints.preferred.height() +
+        std::max(toolbar_constraints.margins.bottom(), content_constraints.margins.top()) +
+        content_constraints.maximum.height() +
+        content_constraints.margins.bottom();
+    // clang-format on
 
-    ttlet max_size = extent2{
-        content_constraints.maximum.width(), toolbar_constraints.preferred.height() + content_constraints.maximum.height()};
-
-    return _constraints = {min_size, clamp(pref_size, min_size, max(max_size, min_size)), max(max_size, min_size)};
+    return _constraints = {{minimum_width, minimum_height}, {preferred_width, preferred_height}, {maximum_width, maximum_height}};
 }
 
 void window_widget::set_layout(widget_layout const &layout) noexcept
 {
     if (compare_store(_layout, layout)) {
         ttlet toolbar_height = _toolbar->constraints().preferred.height();
-        _toolbar_rectangle = aarectangle{0.0f, layout.height() - toolbar_height, layout.width(), toolbar_height};
-        _content_rectangle = aarectangle{0.0f, 0.0f, layout.width(), layout.height() - toolbar_height};
+        ttlet between_margin = std::max(_toolbar->constraints().margins.bottom(), _content->constraints().margins.top());
+
+        _toolbar_rectangle = aarectangle{
+            point2{
+                _toolbar->constraints().margins.left(), layout.height() - toolbar_height - _toolbar->constraints().margins.top()},
+            point2{
+                layout.width() - _toolbar->constraints().margins.right(),
+                layout.height() - _toolbar->constraints().margins.top()}};
+
+        _content_rectangle = aarectangle{
+            point2{_content->constraints().margins.left(), _content->constraints().margins.bottom()},
+            point2{layout.width() - _content->constraints().margins.right(), _toolbar_rectangle.bottom() - between_margin}};
     }
     _toolbar->set_layout(layout.transform(_toolbar_rectangle));
     _content->set_layout(layout.transform(_content_rectangle));

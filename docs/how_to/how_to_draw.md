@@ -31,8 +31,18 @@ when you read "pixel" without an explicit qualifier it is meant to be "virtual p
 ### Corners
 
 The order of the corners in the `tt::quad`, `tt::quad_color` and `tt::corner_radii` are always:
-left-bottom, right-bottom, left-top and right-top.
+ - left-bottom,
+ - right-bottom,
+ - left-top and
+ - right-top.
 
+### Edges
+
+The order of in the `tt::margins` are always;
+ - bottom
+ - left
+ - top
+ - right
 
 Drawing shapes
 --------------

@@ -35,7 +35,7 @@ public:
         _constraints.minimum = label_constraints.minimum;
         _constraints.preferred = label_constraints.preferred + theme().margin;
         _constraints.maximum = label_constraints.maximum + tt::extent2{100.0f, 50.0f};
-        _constraints.margin = theme().margin;
+        _constraints.margins = theme().margin;
         return _constraints;
     }
 

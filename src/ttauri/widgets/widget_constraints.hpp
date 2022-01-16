@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../geometry/extent.hpp"
+#include "../geometry/margins.hpp"
 
 namespace tt::inline v1 {
 
@@ -13,27 +14,27 @@ public:
     extent2 minimum;
     extent2 preferred;
     extent2 maximum;
-    float margin;
+    margins margins;
 
-    constexpr widget_constraints() noexcept : minimum(), preferred(), maximum(), margin() {}
+    constexpr widget_constraints() noexcept : minimum(), preferred(), maximum(), margins() {}
     constexpr widget_constraints(widget_constraints const &) noexcept = default;
     constexpr widget_constraints(widget_constraints &&) noexcept = default;
     constexpr widget_constraints &operator=(widget_constraints const &) noexcept = default;
     constexpr widget_constraints &operator=(widget_constraints &&) noexcept = default;
-    constexpr widget_constraints(extent2 minimum, extent2 preferred, extent2 maximum, float margin = 0.0f) noexcept :
-        minimum(minimum), preferred(preferred), maximum(maximum), margin(margin)
+    constexpr widget_constraints(extent2 minimum, extent2 preferred, extent2 maximum, tt::margins margins = tt::margins{}) noexcept :
+        minimum(minimum), preferred(preferred), maximum(maximum), margins(margins)
     {
         tt_axiom(holds_invariant());
     }
 
     [[nodiscard]] constexpr bool holds_invariant() noexcept
     {
-        return minimum <= preferred and preferred <= maximum and margin >= 0.0f;
+        return minimum <= preferred and preferred <= maximum;
     }
 
     [[nodiscard]] friend constexpr widget_constraints operator+(widget_constraints const &lhs, extent2 const &rhs) noexcept
     {
-        return widget_constraints{lhs.minimum + rhs, lhs.preferred + rhs, lhs.maximum + rhs, lhs.margin};
+        return widget_constraints{lhs.minimum + rhs, lhs.preferred + rhs, lhs.maximum + rhs, lhs.margins};
     }
 
     [[nodiscard]] friend constexpr bool
@@ -45,12 +46,12 @@ public:
             max(lhs.minimum, rhs.minimum),
             max(lhs.preferred, rhs.preferred),
             max(lhs.maximum, rhs.maximum),
-            std::max(lhs.margin, rhs.margin)};
+            max(lhs.margins, rhs.margins)};
     }
 
     [[nodiscard]] friend constexpr widget_constraints max(widget_constraints const &lhs, extent2 const &rhs) noexcept
     {
-        return widget_constraints{max(lhs.minimum, rhs), max(lhs.preferred, rhs), max(lhs.maximum, rhs), lhs.margin};
+        return widget_constraints{max(lhs.minimum, rhs), max(lhs.preferred, rhs), max(lhs.maximum, rhs), lhs.margins};
     }
 
     template<typename... Args>

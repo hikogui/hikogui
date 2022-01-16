@@ -26,7 +26,7 @@ widget_constraints const &checkbox_widget::set_constraints() noexcept
     ttlet extra_size = extent2{theme().margin + _button_size.width(), 0.0f};
 
     _constraints = max(set_constraints_button() + extra_size, _button_size);
-    _constraints.margin = theme().margin;
+    _constraints.margins = theme().margin;
     return _constraints;
 }
 

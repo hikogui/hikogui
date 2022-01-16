@@ -73,7 +73,8 @@ widget_constraints const &grid_widget::set_constraints() noexcept
             cell_constraints.minimum.height(),
             cell_constraints.preferred.height(),
             cell_constraints.maximum.height(),
-            cell_constraints.margin);
+            cell_constraints.margins.top(),
+            cell_constraints.margins.bottom());
 
         _columns.add_constraint(
             cell.column_first,
@@ -81,15 +82,17 @@ widget_constraints const &grid_widget::set_constraints() noexcept
             cell_constraints.minimum.width(),
             cell_constraints.preferred.width(),
             cell_constraints.maximum.width(),
-            cell_constraints.margin);
+            cell_constraints.margins.left(),
+            cell_constraints.margins.right());
     }
     _rows.commit_constraints();
     _columns.commit_constraints();
 
     return _constraints = {
-               extent2{_columns.minimum(), _rows.minimum()},
-               extent2{_columns.preferred(), _rows.preferred()},
-               extent2{_columns.maximum(), _rows.maximum()}};
+       extent2{_columns.minimum(), _rows.minimum()},
+       extent2{_columns.preferred(), _rows.preferred()},
+       extent2{_columns.maximum(), _rows.maximum()},
+       margins{_columns.margin_before(), _rows.margin_after(), _columns.margin_after(), _rows.margin_before()}};
 }
 
 void grid_widget::set_layout(widget_layout const &layout) noexcept

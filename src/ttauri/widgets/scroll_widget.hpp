@@ -125,25 +125,33 @@ public:
         tt_axiom(_content);
 
         _layout = {};
-        _constraints = _content->set_constraints();
+        ttlet content_constraints = _content->set_constraints();
         ttlet horizontal_constraints = _horizontal_scroll_bar->set_constraints();
         ttlet vertical_constraints = _vertical_scroll_bar->set_constraints();
 
-        // When there are scrollbars the minimum size is the minimum length of the scrollbar.
-        // The maximum size is the minimum size of the content.
+        // The scroll constraints are the constraints of the content including the margins of the content.
+        _scroll_margins = content_constraints.margins;
+        _scroll_constraints = content_constraints +
+            extent2{_scroll_margins.left() + _scroll_margins.right(), _scroll_margins.bottom() + _scroll_margins.top()};
+        _scroll_constraints.margins = {};
+
+        // Scrollbars are the same size as the content plus their margins. Therefor the scroll view has zero margins itself.
+        _constraints = _scroll_constraints;
+
+        // When there are scrollbars the widget size is at least the minimum length of the scrollbar.
         if constexpr (any(axis & axis::horizontal)) {
-            // The content could be smaller than the scrollbar.
             _constraints.minimum.width() = horizontal_constraints.minimum.width();
-            _constraints.preferred.width() = std::max(_constraints.preferred.width(), horizontal_constraints.minimum.width());
-            _constraints.maximum.width() = std::max(_constraints.maximum.width(), horizontal_constraints.minimum.width());
-        }
-        if constexpr (any(axis & axis::vertical)) {
-            _constraints.minimum.height() = vertical_constraints.minimum.height();
-            _constraints.preferred.height() = std::max(_constraints.preferred.height(), vertical_constraints.minimum.height());
-            _constraints.maximum.height() = std::max(_constraints.maximum.height(), vertical_constraints.minimum.height());
+            inplace_max(_constraints.preferred.width(), horizontal_constraints.minimum.width());
+            inplace_max(_constraints.maximum.width(), horizontal_constraints.minimum.width());
         }
 
-        // Make room for the scroll bars.
+        if constexpr (any(axis & axis::vertical)) {
+            _constraints.minimum.height() = vertical_constraints.minimum.height();
+            inplace_max(_constraints.preferred.height(), vertical_constraints.minimum.height());
+            inplace_max(_constraints.maximum.height(), vertical_constraints.minimum.height());
+        }
+
+        // Make room for the thickness of the scroll bars.
         if constexpr (any(axis & axis::horizontal)) {
             _constraints.minimum.height() += horizontal_constraints.preferred.height();
             _constraints.preferred.height() += horizontal_constraints.preferred.height();
@@ -183,8 +191,8 @@ public:
             // We use the preferred size of the content for determining what to scroll.
             // This means it is possible for the scroll_content_width or scroll_content_height to be smaller
             // than the aperture.
-            _scroll_content_width = _content->constraints().preferred.width();
-            _scroll_content_height = _content->constraints().preferred.height();
+            _scroll_content_width = _scroll_constraints.preferred.width();
+            _scroll_content_height = _scroll_constraints.preferred.height();
             _scroll_aperture_width = _aperture_rectangle.width();
             _scroll_aperture_height = _aperture_rectangle.height();
 
@@ -208,18 +216,20 @@ public:
 
         // Its size scroll content size, or the size of the aperture whichever is bigger.
         ttlet content_size = extent2{
-            std::max(*_scroll_content_width, _aperture_rectangle.width()),
-            std::max(*_scroll_content_height, _aperture_rectangle.height())};
+            std::max(*_scroll_content_width, _aperture_rectangle.width()) - _scroll_margins.left() - _scroll_margins.right(),
+            std::max(*_scroll_content_height, _aperture_rectangle.height()) - _scroll_margins.bottom() - _scroll_margins.top()};
 
         // The position of the content rectangle relative to the scroll view.
         // The size is further adjusted if the either the horizontal or vertical scroll bar is invisible.
-        _content_rectangle =
-            aarectangle{-_scroll_offset_x, -_scroll_offset_y - _height_adjustment, content_size.width(), content_size.height()};
-        ttlet content_clipping_rectangle = bounding_rectangle(~translate3{_content_rectangle} * _aperture_rectangle);
+        _content_rectangle = {
+            -_scroll_offset_x + _scroll_margins.left(),
+            -_scroll_offset_y + _height_adjustment + _scroll_margins.bottom(),
+            content_size.width(),
+            content_size.height()};
 
         // The scrollbars and content need to be at a higher elevation, so that hitbox check
         // will work correctly for handling scrolling with mouse wheel.
-        _content->set_layout(layout.transform(_content_rectangle, 1.0f, content_clipping_rectangle));
+        _content->set_layout(layout.transform(_content_rectangle, 1.0f, _aperture_rectangle));
     }
 
     void draw(draw_context const &context) noexcept
@@ -304,6 +314,9 @@ private:
     aarectangle _content_rectangle;
     std::unique_ptr<widget> _content;
 
+    margins _scroll_margins;
+    widget_constraints _scroll_constraints;
+
     float _height_adjustment;
     aarectangle _horizontal_scroll_bar_rectangle;
     std::unique_ptr<horizontal_scroll_bar_widget> _horizontal_scroll_bar;
@@ -320,21 +333,16 @@ private:
     observable<float> _scroll_offset_y;
 
     /** Calculate which scrollbars are needed to display the content.
-     * @return has_horizontal_scroll_baar, has_vertical_scroll_bar
+     * @return has_horizontal_scroll_bar, has_vertical_scroll_bar
      */
     [[nodiscard]] std::pair<bool, bool> needed_scrollbars() const noexcept
     {
-        ttlet content_size = _content->constraints().preferred;
+        ttlet has_horizontal_scroll_bar =
+            layout().width() - _vertical_scroll_bar->constraints().preferred.width() < _scroll_constraints.preferred.width();
+        ttlet has_vertical_scroll_bar =
+            layout().height() - _horizontal_scroll_bar->constraints().preferred.height() < _scroll_constraints.preferred.height();
 
-        if (content_size <= layout().size) {
-            return {false, false};
-        } else if (content_size.width() - _vertical_scroll_bar->constraints().preferred.width() <= layout().width()) {
-            return {false, true};
-        } else if (content_size.height() - _horizontal_scroll_bar->constraints().preferred.height() <= layout().height()) {
-            return {true, false};
-        } else {
-            return {true, true};
-        }
+        return {has_horizontal_scroll_bar, has_vertical_scroll_bar};
     }
 };
 
