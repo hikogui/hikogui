@@ -61,6 +61,8 @@ public:
         return margins{max(lhs._v, rhs._v)};
     }
 
+    [[nodiscard]] constexpr friend bool operator==(margins const &lhs, margins const &rhs) noexcept = default;
+
 private:
     f32x4 _v;
 };

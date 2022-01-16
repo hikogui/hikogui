@@ -81,8 +81,14 @@ private:
     std::vector<std::unique_ptr<widget>> _left_children;
     std::vector<std::unique_ptr<widget>> _right_children;
     grid_layout _grid_layout;
+    margins _inner_margins;
 
-    void update_constraints_for_child(widget &child, ssize_t index, float &shared_height) noexcept;
+    void update_constraints_for_child(
+        widget &child,
+        ssize_t index,
+        float &shared_height,
+        float &shared_top_margin,
+        float &shared_bottom_margin) noexcept;
 
     void update_layout_for_child(widget &child, ssize_t index, widget_layout const &context) const noexcept;
 

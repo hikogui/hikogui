@@ -8,6 +8,7 @@
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/transform.hpp"
 #include "../geometry/translate.hpp"
+#include "../text/unicode_bidi_class.hpp"
 #include "../GFX/sub_pixel_orientation.hpp"
 #include "../chrono.hpp"
 
@@ -160,7 +161,8 @@ public:
     /** Create a new widget_layout for the child widget.
      *
      * @param child_rectangle The location and size of the child widget, relative to the current widget.
-     * @param elevation The relative elevation of the child widget compared to the current widget.
+     * @param elevation The elevation of the child widget, relative to the current widget.
+     * @param new_clipping_rectangle The new clipping rectangle of the child widget, relative to the current widget.
      * @return A new widget_layout for use by the child widget.
      */
     [[nodiscard]] constexpr widget_layout
@@ -175,7 +177,7 @@ public:
         r.to_window = to_parent3 * this->to_window;
         r.from_window = from_parent3 * this->from_window;
         r.size = child_rectangle.size();
-        r.clipping_rectangle = intersect(bounding_rectangle(from_parent3 * this->clipping_rectangle), new_clipping_rectangle);
+        r.clipping_rectangle = bounding_rectangle(from_parent3 * intersect(this->clipping_rectangle, new_clipping_rectangle));
         r.sub_pixel_size = this->sub_pixel_size;
         r.writing_direction = this->writing_direction;
         r.display_time_point = this->display_time_point;
@@ -190,7 +192,7 @@ public:
      */
     [[nodiscard]] constexpr widget_layout transform(aarectangle const &child_rectangle, float elevation = 1.0f) const noexcept
     {
-        return transform(child_rectangle, elevation, aarectangle{child_rectangle.size()} + redraw_overhang);
+        return transform(child_rectangle, elevation, child_rectangle + redraw_overhang);
     }
 
     /** Override e context with the new clipping rectangle.

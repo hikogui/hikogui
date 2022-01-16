@@ -132,14 +132,14 @@ public:
             return _constraints = {
                {_grid_layout.minimum(), minimum_thickness},
                {_grid_layout.preferred(), preferred_thickness},
-               {_grid_layout.maximum(), maximum_thickness}
+               {_grid_layout.maximum(), maximum_thickness},
                {_grid_layout.margin_before(), margin_before_thickness, _grid_layout.margin_after(), margin_after_thickness}};
         } else {
             return _constraints = {
                {minimum_thickness, _grid_layout.minimum()},
                {preferred_thickness, _grid_layout.preferred()},
                {maximum_thickness, _grid_layout.maximum()},
-               {margin_before_thickmess, _grid_layout.margin_before(), margin_after_thickness, _grid_layout.margin_after()}};
+               {margin_before_thickness, _grid_layout.margin_before(), margin_after_thickness, _grid_layout.margin_after()}};
         }
     }
 
@@ -191,7 +191,7 @@ private:
         ssize_t index,
         float &minimum_thickness,
         float &preferred_thickness,
-        float &maximum_thickness
+        float &maximum_thickness,
         float &margin_before_thickness,
         float &margin_after_thickness) noexcept
     {
@@ -210,8 +210,8 @@ private:
             inplace_max(minimum_thickness, child_constraints.minimum.height());
             inplace_max(preferred_thickness, child_constraints.preferred.height());
             inplace_max(maximum_thickness, child_constraints.maximum.height());
-            inplace_max(margin_before_thickness, child_constraints.margin.top());
-            inplace_max(margin_after_thickness, child_constraints.margin.bottom());
+            inplace_max(margin_before_thickness, child_constraints.margins.top());
+            inplace_max(margin_after_thickness, child_constraints.margins.bottom());
 
         } else {
             _grid_layout.add_constraint(
@@ -225,8 +225,8 @@ private:
             inplace_max(minimum_thickness, child_constraints.minimum.width());
             inplace_max(preferred_thickness, child_constraints.preferred.width());
             inplace_max(maximum_thickness, child_constraints.maximum.width());
-            inplace_max(margin_before_thickness, child_constraints.margin.left());
-            inplace_max(margin_after_thickness, child_constraints.margin.right());
+            inplace_max(margin_before_thickness, child_constraints.margins.left());
+            inplace_max(margin_after_thickness, child_constraints.margins.right());
         }
     }
 
@@ -236,9 +236,8 @@ private:
 
         ttlet[child_position, child_length] = _grid_layout.get_position_and_size(index);
 
-        ttlet &child_constraints = child.set_constraints();
         ttlet child_rectangle = axis == axis::row ?
-            aarectangle{child_position, 0.0f, child_length, layout().height()f} :
+            aarectangle{child_position, 0.0f, child_length, layout().height()} :
             aarectangle{0.0f, layout().height() - child_position - child_length, layout().width(), child_length};
 
         child.set_layout(context.transform(child_rectangle, 0.0f));

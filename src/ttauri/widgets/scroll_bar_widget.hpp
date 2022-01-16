@@ -112,7 +112,7 @@ public:
                 ttlet slider_movement = axis == axis::vertical ? event.delta().y() : event.delta().x();
                 ttlet content_movement = slider_movement * hidden_content_vs_travel_ratio();
                 ttlet new_offset = _offset_before_drag + content_movement;
-                offset = std::clamp(new_offset, 0.0f, content - aperture);
+                offset = clamp_offset(new_offset);
             } break;
 
             default:;
@@ -145,6 +145,16 @@ private:
 
     float _offset_before_drag;
 
+    /** Create a new offset value.
+    * 
+    * Clamp the new offset value by the amount of scrollable distance.
+    */
+    [[nodiscard]] float clamp_offset(float new_offset) const noexcept
+    {
+        ttlet scrollable_distance = std::max(0.0f, content - aperture);
+        return std::clamp(new_offset, 0.0f, scrollable_distance);
+    }
+
     [[nodiscard]] float rail_length() const noexcept
     {
         tt_axiom(is_gui_thread());
@@ -155,8 +165,10 @@ private:
     {
         tt_axiom(is_gui_thread());
 
-        ttlet content_aperture_ratio = *aperture / *content;
-        return std::max(rail_length() * content_aperture_ratio, theme().size * 2.0f);
+        ttlet content_ = *content;
+        ttlet content_aperture_ratio = content_ != 0.0f ? *aperture / content_ : 1.0f;
+        ttlet rail_length_ = rail_length();
+        return std::clamp(rail_length_ * content_aperture_ratio, theme().size * 2.0f, rail_length_);
     }
 
     /** The amount of travel that the slider can make.
