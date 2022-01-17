@@ -12,7 +12,7 @@
 
 namespace tt::inline v1 {
 
-[[nodiscard]] inline std::size_t hash_mix_two(std::size_t hash1, std::size_t hash2) noexcept
+[[nodiscard]] constexpr std::size_t hash_mix_two(std::size_t hash1, std::size_t hash2) noexcept
 {
     if constexpr (sizeof(std::size_t) == 8) {
         return hash1 + 0x9e3779b97f681800 + (hash2 << 6) + (hash2 >> 2);
@@ -24,7 +24,7 @@ namespace tt::inline v1 {
 }
 
 template<typename First, typename Second, typename... Args>
-[[nodiscard]] std::size_t hash_mix(First &&first, Second &&second, Args &&...args) noexcept
+[[nodiscard]] constexpr std::size_t hash_mix(First &&first, Second &&second, Args &&...args) noexcept
 {
     if constexpr (sizeof...(args) == 0) {
         return hash_mix_two(

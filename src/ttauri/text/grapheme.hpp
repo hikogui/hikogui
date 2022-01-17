@@ -4,195 +4,88 @@
 
 #pragma once
 
+#include "unicode_db_non_starter.hpp"
 #include "../strings.hpp"
 #include "../cast.hpp"
 #include "../hash.hpp"
-#include <array>
 
 namespace tt::inline v1 {
 
-// "Compatibility mappings are guaranteed to be no longer than 18 characters, although most consist of just a few characters."
-// https://unicode.org/reports/tr44/ (TR44 5.7.3)
-using long_grapheme = std::array<char32_t, 18>;
-
-/*! A grapheme, what a user thinks a character is.
+/** A grapheme, what a user thinks a character is.
  * This will exclude ligatures, because a user would see those as separate characters.
  */
 class grapheme {
-    /*! This value contains up to 3 code-points, or a pointer+length to an array
-     * of code-points located on the heap.
-     *
-     * The code-points inside the grapheme are in NFC.
-     *
-     * If bit 0 is '1' the value contains up to 3 code-points as follows:
-     *    - 63:43   3rd code-point, or zero
-     *    - 42:22   2nd code-point, or zero
-     *    - 21:1    1st code-point, or zero
-     *    - 0       '1'
-     *
-     * if bit 0 is '0' the value contains a length+pointer as follows:
-     *    - 63:59   Length
-     *    - 58:0    Pointer to long_grapheme on the heap;
-     *              bottom two bits are zero, due to alignment.
-     */
-    uint64_t value;
-
 public:
-    grapheme() noexcept : value(1) {}
+    constexpr grapheme() noexcept = default;
+    constexpr grapheme(grapheme const &) noexcept = default;
+    constexpr grapheme(grapheme &&) noexcept = default;
+    constexpr grapheme &operator=(grapheme const &) noexcept = default;
+    constexpr grapheme &operator=(grapheme &&) noexcept = default;
 
-    ~grapheme()
-    {
-        delete_pointer();
-    }
+    constexpr explicit grapheme(char32_t code_point) noexcept : _v1(static_cast<uint64_t>(code_point) << 43), _v2(1) {}
 
-    grapheme(const grapheme &other) noexcept
+    constexpr grapheme &operator=(char32_t code_point) noexcept
     {
-        tt_axiom(&other != this);
-        value = other.value;
-        if (other.has_pointer()) {
-            value = create_pointer(other.get_pointer()->data(), other.size());
-        }
-    }
-
-    grapheme &operator=(const grapheme &other) noexcept
-    {
-        tt_return_on_self_assignment(other);
-        delete_pointer();
-        value = other.value;
-        if (other.has_pointer()) {
-            value = create_pointer(other.get_pointer()->data(), other.size());
-        }
-        return *this;
-    }
-
-    grapheme(grapheme &&other) noexcept
-    {
-        tt_axiom(&other != this);
-        value = other.value;
-        other.value = 1;
-    }
-
-    grapheme &operator=(grapheme &&other) noexcept
-    {
-        // Self-assignment is allowed.
-        delete_pointer();
-        value = other.value;
-        other.value = 1;
+        _v1 = static_cast<uint64_t>(code_point) << 43;
+        _v2 = 1;
         return *this;
     }
 
     explicit grapheme(std::u32string_view codePoints) noexcept;
+    grapheme &operator=(std::u32string_view codePoints) noexcept;
 
-    explicit grapheme(char32_t codePoint) noexcept : grapheme(std::u32string_view{&codePoint, 1}) {}
-
-    template<typename It>
-    explicit grapheme(It ptr, It last) noexcept : grapheme(*ptr)
+    constexpr operator bool() const noexcept
     {
-        ++ptr;
-        while (ptr != last) {
-            *this += *(ptr++);
-        }
+        return _v1 != 0 or _v2 != 0;
     }
 
-    grapheme &operator=(std::u32string_view codePoints) noexcept
+    [[nodiscard]] constexpr std::size_t hash() const noexcept
     {
-        *this = grapheme(codePoints);
-        return *this;
+        return hash_mix_two(std::hash<uint64_t>{}(_v1), std::hash<uint64_t>{}(_v2));
     }
 
-    grapheme &operator=(char32_t codePoint) noexcept
+    [[nodiscard]] constexpr std::size_t size() const noexcept
     {
-        *this = grapheme(codePoint);
-        return *this;
+        ttlet size_ = _v2 & 0xf;
+        return size_ <= 11 ? size_ : 11;
     }
 
-    grapheme &operator+=(char32_t codePoint) noexcept;
-
-    explicit operator std::u32string() const noexcept
+    [[nodiscard]] constexpr char32_t operator[](size_t i) const noexcept
     {
-        if (has_pointer()) {
-            return {get_pointer()->data(), size()};
-        } else {
-            auto r = std::u32string{};
-            auto tmp = value >> 1;
-            for (std::size_t i = 0; i < 3; i++, tmp >>= 21) {
-                if (auto codePoint = static_cast<char32_t>(tmp & 0x1f'ffff)) {
-                    r += codePoint;
-                } else {
-                    return r;
-                }
-            }
-            return r;
-        }
-    }
+        tt_axiom(i < size());
 
-    operator bool() const noexcept
-    {
-        return value != 1;
-    }
+        if (i == 0) {
+            return static_cast<char32_t>(_v1 >> 43);
 
-    [[nodiscard]] std::size_t hash() const noexcept
-    {
-        std::size_t r = 0;
-        for (std::size_t i = 0; i != size(); ++i) {
-            r = hash_mix_two(r, std::hash<char32_t>{}((*this)[i]));
-        }
-        return r;
-    }
-
-    [[nodiscard]] std::size_t size() const noexcept
-    {
-        if (has_pointer()) {
-            return value >> 59;
-        } else if (value == 1) {
-            return 0;
-        } else if (value <= 0x3f'ffff) {
-            return 1;
-        } else if (value <= 0x7ffffffffff) {
-            return 2;
-        } else {
-            return 3;
-        }
-    }
-
-    [[nodiscard]] friend std::size_t size(grapheme const &rhs) noexcept
-    {
-        return rhs.size();
-    }
-
-    [[nodiscard]] char32_t front() const noexcept
-    {
-        if (has_pointer()) {
-            return (*get_pointer())[0];
-        } else {
-            return (value >> 1) & 0x1f'ffff;
-        }
-    }
-
-    /** Update the first code point of a grapheme.
-     */
-    [[nodiscard]] void set_front(char32_t code_point) noexcept
-    {
-        if (has_pointer()) {
-            (*get_pointer())[0] = code_point;
+        } else if (i <= 4) {
+            ttlet shift = (4 - i) * 10 + 3;
+            return unicode_db_non_starter_table[(_v1 >> shift) & 0x3ff];
 
         } else {
-            tt_axiom(code_point <= 0x10'ffff);
-            constexpr uint64_t mask = 0x1f'ffff << 1;            
-            value = (value & ~mask) | (static_cast<uint64_t>(code_point) << 1);
+            ttlet shift = (10 - i) * 10 + 4;
+            return unicode_db_non_starter_table[(_v2 >> shift) & 0x3fff];
         }
     }
 
-    [[nodiscard]] char32_t operator[](std::size_t i) const noexcept
+    template<size_t I>
+    [[nodiscard]] friend constexpr char32_t get(grapheme const &rhs) noexcept
     {
-        if (has_pointer()) {
-            tt_axiom(i < std::tuple_size_v<long_grapheme>);
-            return (*get_pointer())[i];
+        if constexpr (I == 0) {
+            return static_cast<char32_t>(rhs._v1 >> 43);
+
+        } else if constexpr (I <= 4) {
+            constexpr auto shift = (4 - I) * 10 + 3;
+            return unicode_db_non_starter_table[(_v1 >> shift) & 0x3ff];
 
         } else {
-            tt_axiom(i < 3);
-            return (value >> ((i * 21) + 1)) & 0x1f'ffff;
+            constexpr auto shift = (10 - I) * 10 + 4;
+            return unicode_db_non_starter_table[(_v2 >> shift) & 0x3fff];
         }
+    }
+
+    [[nodiscard]] constexpr char32_t front() const noexcept
+    {
+        return get<0>(*this);
     }
 
     [[nodiscard]] std::u32string NFC() const noexcept
@@ -225,87 +118,50 @@ public:
         return grapheme(U'\u2028');
     }
 
-    [[nodiscard]] friend std::string to_string(grapheme const &g) noexcept
-    {
-        return to_string(g.NFC());
-    }
-
-    friend std::ostream &operator<<(std::ostream &lhs, grapheme const &rhs)
-    {
-        return lhs << to_string(rhs);
-    }
-
-private:
-    [[nodiscard]] bool has_pointer() const noexcept
-    {
-        return (value & 1) == 0;
-    }
-
-    [[nodiscard]] static uint64_t create_pointer(char32_t const *data, std::size_t size) noexcept
-    {
-        tt_assert(size <= std::tuple_size<long_grapheme>::value);
-
-        auto ptr = new long_grapheme();
-        memcpy(ptr->data(), data, size);
-
-        auto iptr = reinterpret_cast<ptrdiff_t>(ptr);
-        auto uptr = static_cast<uint64_t>(iptr << 5) >> 5;
-        return (size << 59) | uptr;
-    }
-
-    [[nodiscard]] long_grapheme *get_pointer() const noexcept
-    {
-        auto uptr = (value << 5);
-        auto iptr = static_cast<ptrdiff_t>(uptr) >> 5;
-        return std::launder(reinterpret_cast<long_grapheme *>(iptr));
-    }
-
-    void delete_pointer() noexcept
-    {
-        if (has_pointer()) {
-            delete get_pointer();
-        }
-    }
-
-    [[nodiscard]] friend bool operator==(grapheme const &a, grapheme const &b) noexcept
-    {
-        if (a.value == b.value) {
-            return true;
-        }
-
-        if (a.size() != b.size()) {
-            return false;
-        }
-
-        for (std::size_t i = 0; i != a.size(); ++i) {
-            if (a[i] != b[i]) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    //[[nodiscard]] friend bool operator<=>(grapheme const &a, grapheme const &b) noexcept
-    //{
-    //    ttlet length = std::min(a.size(), b.size());
-    //
-    //    for (ssize_t i = 0; i != length; ++i) {
-    //        if (a[i] < b[i]) {
-    //            return true;
-    //        }
-    //    }
-    //    return a.size() < b.size();
-    //}
+    [[nodiscard]] friend constexpr bool operator==(grapheme const &a, grapheme const &b) noexcept = default;
+    [[nodiscard]] friend constexpr auto operator<=>(grapheme const &a, grapheme const &b) noexcept = default;
 
     [[nodiscard]] friend bool operator==(grapheme const &lhs, char32_t const &rhs) noexcept
     {
-        return (lhs.size() == 1) && (lhs[0] == rhs);
+        return (lhs.size() == 1) && (get<0>(lhs) == rhs);
     }
 
     [[nodiscard]] friend bool operator==(grapheme const &lhs, char const &rhs) noexcept
     {
         return lhs == static_cast<char32_t>(rhs);
     }
+
+    [[nodiscard]] friend std::string to_string(grapheme const &rhs) noexcept
+    {
+        return to_string(rhs.NFC());
+    }
+
+    [[nodiscard]] friend std::u32string to_u32string(grapheme const &rhs) noexcept
+    {
+        return rhs.NFC();
+    }
+
+private:
+    /**
+     * [63:43] Starter code-point 0.
+     * [42:33] Non-starter code 1
+     * [32:23] Non-starter code 2
+     * [22:13] Non-starter code 3
+     * [12: 3] Non-starter code 4
+     * [ 2: 0] Zero
+     */
+    uint64_t _v1;
+
+    /**
+     * [63:54] Non-starter code 5
+     * [53:44] Non-starter code 6
+     * [43:34] Non-starter code 7
+     * [33:24] Non-starter code 8
+     * [23:14] Non-starter code 9
+     * [13: 4] Non-starter code 10
+     * [ 3: 0] Length 0 to 11, 12 means overlong.
+     */
+    uint64_t _v2;
 };
 
 } // namespace tt::inline v1

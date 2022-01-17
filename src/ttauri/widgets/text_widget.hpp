@@ -57,7 +57,7 @@ public:
 
     /** The edit-mode.
      */
-    observable<mode_type> edit_mode = edit_mode_type::selectable;
+    observable<edit_mode_type> edit_mode = edit_mode_type::selectable;
 
     /** Construct a text widget.
      *

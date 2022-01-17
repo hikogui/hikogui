@@ -31,7 +31,7 @@ label_widget::label_widget(gui_window &window, widget *parent) noexcept : super(
 
     _label_callback = label.subscribe([this] {
         _icon_widget->icon = label->icon;
-        _text_widget->text = label->text;
+        _text_widget->text = to_gstring(label->text());
     });
 }
 

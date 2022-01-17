@@ -22,7 +22,8 @@ widget_constraints const &text_widget::set_constraints() noexcept
     _shaped_text_cap_height = cap_height;
     ttlet shaped_text_size = shaped_text_rectangle.size();
 
-    return _constraints = {shaped_text_size, shaped_text_size, shaped_text_size, theme().margin};;
+    return _constraints = {shaped_text_size, shaped_text_size, shaped_text_size, theme().margin};
+    ;
 }
 
 void text_widget::set_layout(widget_layout const &layout) noexcept
@@ -41,7 +42,8 @@ void text_widget::draw(draw_context const &context) noexcept
 {
     if (visible and overlaps(context, layout())) {
         context.draw_text(layout(), _shaped_text);
-        context.draw_text_selection(layout(), _shared_text, _selection_first, _selection_last, theme().color(theme_color::text_select));
+        context.draw_text_selection(
+            layout(), _shaped_text, _selection_first, _selection_last, theme().color(theme_color::text_select));
     }
 }
 

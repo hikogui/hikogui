@@ -583,7 +583,6 @@ private:
         tt::color) const noexcept;
 
     void _draw_glyph(aarectangle const &clipping_rectangle, quad const &box, quad_color const &color, glyph_ids const &glyph)
-    void _draw_glyph(aarectangle const &clipping_rectangle, quad const &box, quad_color const &color, glyph_ids const &glyph)
         const noexcept;
 
     [[nodiscard]] bool _draw_image(aarectangle const &clipping_rectangle, quad const &box, paged_image &image) const noexcept;

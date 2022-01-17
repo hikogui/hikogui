@@ -94,7 +94,8 @@ public:
         bool composition_canonical,
         uint8_t combining_class,
         uint8_t decomposition_length,
-        uint32_t decomposition_index) noexcept :
+        uint32_t decomposition_index,
+        uint16_t non_starter_code) noexcept :
         _general_info(
             (static_cast<uint32_t>(code_point) << code_point_shift) |
             (static_cast<uint32_t>(general_category) << general_category_shift) |
@@ -108,7 +109,8 @@ public:
         _line_break_class(to_underlying(line_break_class)),
         _decomposition_index(static_cast<uint32_t>(decomposition_index)),
         _decomposition_canonical(static_cast<uint32_t>(decomposition_canonical)),
-        _decomposition_length(static_cast<uint32_t>(decomposition_length))
+        _decomposition_length(static_cast<uint32_t>(decomposition_length)),
+        _non_starter_code(static_cast<uint32_t>(non_starter_code))
     {
         tt_axiom(code_point <= 0x10ffff);
         tt_axiom(to_underlying(general_category) <= 0x1f);
@@ -121,6 +123,7 @@ public:
         tt_axiom(static_cast<uint32_t>(combining_class) <= 0xff);
         tt_axiom(static_cast<uint32_t>(decomposition_length) <= 0x1f);
         tt_axiom(static_cast<uint32_t>(decomposition_index) <= 0x1f'ffff);
+        tt_axiom(static_cast<uint32_t>(non_starter_code) <= 0x3ff);
     }
 
     [[nodiscard]] static constexpr unicode_description make_unassigned(unicode_description const &other)
@@ -278,6 +281,19 @@ public:
         }
     }
 
+    /** Get the non-starter-code
+     * 
+     * Instead of using a full 21-bit code-point this 10-bit value is used to compress non-starter characters.
+     * 
+     * @note It is undefined-behavior to call this function on a starter-character.
+     * @return 10 bit code value for a non-starter character.
+     */
+    [[nodiscard]] constexpr size_t non_starter_code() const noexcept
+    {
+        tt_axiom(_combining_class != 0);
+        return static_cast<size_t>(_non_starter_code);
+    }
+
 private:
     // 1st dword
     // We don't use bit-fields so we can do binary-search without needing shift- & and-operations
@@ -299,7 +315,8 @@ private:
     uint32_t _combining_class : 8;
     uint32_t _composition_canonical : 1;
     uint32_t _line_break_class : 6;
-    uint32_t _word3_reserved : 17 = 0;
+    uint32_t _non_starter_code : 10;
+    uint32_t _word3_reserved : 7 = 0;
 
     // 4th dword
     uint32_t _decomposition_index : 21;
