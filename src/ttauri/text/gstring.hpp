@@ -68,7 +68,7 @@ struct std::char_traits<tt::grapheme> {
     static constexpr int compare(char_type const *s1, char_type const *s2, std::size_t count) noexcept
     {
         for (std::size_t i = 0; i != count; ++i) {
-            if (s1[i] == s2[i]) {
+            if (s1[i] != s2[i]) {
                 return s1[i] < s2[i] ? -1 : 1;
             }
         }
@@ -113,18 +113,19 @@ struct std::char_traits<tt::grapheme> {
 
     static constexpr int_type eof() noexcept
     {
-        return 7;
+        return 0;
     }
 
     static constexpr int_type not_eof(int_type e) noexcept
     {
-        return e != 7 ? e : 0;
+        return e != 0 ? e : 1;
     }
 };
 
 namespace tt::inline v1 {
 
 using gstring = std::basic_string<grapheme>;
+using gstring_view = std::basic_string_view<grapheme>;
 
 namespace pmr {
 using gstring = std::pmr::basic_string<grapheme>;
@@ -135,6 +136,21 @@ using gstring = std::pmr::basic_string<grapheme>;
 [[nodiscard]] inline gstring to_gstring(std::string_view rhs) noexcept
 {
     return to_gstring(to_u32string(rhs));
+}
+
+[[nodiscard]] inline std::string to_string(gstring_view rhs) noexcept
+{
+    auto r = std::string{};
+    r.reserve(rhs.size());
+    for (ttlet c: rhs) {
+        r += to_string(c);
+    }
+    return r;
+}
+
+[[nodiscard]] inline std::string to_string(gstring const &rhs) noexcept
+{
+    return to_string(gstring_view{rhs});
 }
 
 } // namespace tt::inline v1

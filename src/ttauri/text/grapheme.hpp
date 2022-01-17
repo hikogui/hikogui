@@ -12,7 +12,22 @@
 namespace tt::inline v1 {
 
 /** A grapheme, what a user thinks a character is.
- * This will exclude ligatures, because a user would see those as separate characters.
+ *
+ * This class will hold:
+ * - empty/eof (no code points encoded at all, the value 0)
+ * - U+0000 (value 1)
+ * - 1 starter code-point, followed by 0-4 combining characters.
+ *
+ * A grapheme should not include typographical ligatures such as 'fi' as
+ * the font should handle creating ligatures.
+ *
+ * If a grapheme is initialized with more than 4 combining characters
+ * the extra combining characters are dropped and can be detected by
+ * calling `overlong()`.
+ *
+ * This class is trivial and constant-destructible so that it can be used
+ * as a character class in `std::basic_string` and used as a non-type template parameter.
+ *
  */
 struct grapheme {
     using value_type = uint64_t;
@@ -23,7 +38,7 @@ struct grapheme {
      * [32:23] Non-starter code 2
      * [22:13] Non-starter code 3
      * [12: 3] Non-starter code 4
-     * [ 2: 0] Length 0-5, 6 == overlong, 7 == eof.
+     * [ 2: 0] Length 0-5, 6 == overlong, 7 == reserved.
      */
     value_type value;
 
@@ -33,29 +48,113 @@ struct grapheme {
     constexpr grapheme &operator=(grapheme const &) noexcept = default;
     constexpr grapheme &operator=(grapheme &&) noexcept = default;
 
+    /** Encode a single code-point.
+     */
     constexpr explicit grapheme(char32_t code_point) noexcept : value((static_cast<value_type>(code_point) << 43) | 1) {}
 
+    /** Encode a single code-point.
+     */
     constexpr grapheme &operator=(char32_t code_point) noexcept
     {
         value = (static_cast<value_type>(code_point) << 43) | 1;
         return *this;
     }
 
-    explicit grapheme(std::u32string_view code_points) noexcept;
-    grapheme &operator=(std::u32string_view code_points) noexcept;
-    [[nodiscard]] static grapheme from_NFC(std::u32string_view code_points) noexcept;
+    /** Encode a single code-point.
+     */
+    constexpr explicit grapheme(char code_point) noexcept : value((static_cast<value_type>(code_point) << 43) | 1) {}
 
-    constexpr operator bool() const noexcept
+    /** Encode a single code-point.
+     */
+    constexpr grapheme &operator=(char code_point) noexcept
     {
-        return value != 0;
+        value = (static_cast<value_type>(code_point) << 43) | 1;
+        return *this;
     }
 
+    /** Encode a grapheme from a list of code-points.
+    * 
+    * @param code_points The non-normalized list of code-points.
+    */
+    explicit grapheme(std::u32string_view code_points) noexcept;
+
+    /** Encode a grapheme from a list of code-points.
+     *
+     * @param code_points The non-normalized list of code-points.
+     */
+    grapheme &operator=(std::u32string_view code_points) noexcept;
+
+    /** Encode a grapheme from a list of NFC-normalized code-points.
+     *
+     * @param code_points The NFC-normalized list of code-points.
+     */
+    [[nodiscard]] static grapheme from_NFC(std::u32string_view code_points) noexcept;
+
+    /** Paragraph separator.
+     */
+    [[nodiscard]] static constexpr grapheme PS() noexcept
+    {
+        return grapheme(U'\u2029');
+    }
+
+    /** Line separator.
+     */
+    [[nodiscard]] static constexpr grapheme LS() noexcept
+    {
+        return grapheme(U'\u2028');
+    }
+
+    /** Create empty grapheme / end-of-file.
+     */
+    [[nodiscard]] static constexpr grapheme eof() noexcept
+    {
+        grapheme r;
+        r.value = 0;
+        return r;
+    }
+
+    /** Clear the grapheme.
+     */
+    constexpr void clear() noexcept
+    {
+        value = 0;
+    }
+
+    /** Check if the grapheme is empty.
+     */
+    [[nodiscard]] constexpr bool empty() const noexcept
+    {
+        return value == 0;
+    }
+
+    /** Check if the grapheme holds any code-points.
+     */
+    constexpr operator bool() const noexcept
+    {
+        return not empty();
+    }
+
+    /** Return the number of code-points encoded in the grapheme.
+     */
     [[nodiscard]] constexpr std::size_t size() const noexcept
     {
         ttlet size_ = value & 0x7;
-        return size_ == 7 ? 0 : size_ <= 5 ? size_ : 5;
+        return size_ <= 5 ? size_ : 5;
     }
 
+    /** Check if the grapheme was initialized with more than 4 combining characters.
+     */
+    [[nodiscard]] constexpr bool overlong() const noexcept
+    {
+        return (value & 0x7) == 6;
+    }
+
+    /** Get the code-point at the given index.
+     *
+     * @note It is undefined-behavior to index beyond the number of encoded code-points.
+     * @param i Index of code-point in the grapheme.
+     * @return code-point at the given index.
+     */
     [[nodiscard]] constexpr char32_t operator[](size_t i) const noexcept
     {
         tt_axiom(i < size());
@@ -69,6 +168,13 @@ struct grapheme {
         }
     }
 
+    /** Get the code-point at the given index.
+     *
+     * @note It is undefined-behavior to index beyond the number of encoded code-points.
+     * @tparam I Index of code-point in the grapheme.
+     * @param rhs The grapheme to query.
+     * @return code-point at the given index.
+     */
     template<size_t I>
     [[nodiscard]] friend constexpr char32_t get(grapheme const &rhs) noexcept
     {
@@ -81,14 +187,11 @@ struct grapheme {
         }
     }
 
-    [[nodiscard]] constexpr char32_t front() const noexcept
-    {
-        return get<0>(*this);
-    }
-
+    /** Get a list of code-point normalized to NFC.
+     */
     [[nodiscard]] std::u32string NFC() const noexcept
     {
-        std::u32string r;
+        auto r = std::u32string{};
         r.reserve(size());
         for (std::size_t i = 0; i != size(); ++i) {
             r += (*this)[i];
@@ -96,37 +199,44 @@ struct grapheme {
         return r;
     }
 
+    /** Get a list of code-point normalized to NFD.
+     */
     [[nodiscard]] std::u32string NFD() const noexcept;
 
+    /** Get a list of code-point normalized to NFKC.
+     */
     [[nodiscard]] std::u32string NFKC() const noexcept;
 
+    /** Get a list of code-point normalized to NFKD.
+     */
     [[nodiscard]] std::u32string NFKD() const noexcept;
 
-    /** Paragraph separator.
+    /** Compare equivalence of two graphemes.
      */
-    static grapheme PS() noexcept
-    {
-        return grapheme(U'\u2029');
-    }
-
-    /** Line separator.
-     */
-    static grapheme LS() noexcept
-    {
-        return grapheme(U'\u2028');
-    }
-
     [[nodiscard]] friend constexpr bool operator==(grapheme const &a, grapheme const &b) noexcept = default;
+
+    /** Compare two graphemes lexicographically.
+     */
     [[nodiscard]] friend constexpr std::strong_ordering operator<=>(grapheme const &a, grapheme const &b) noexcept = default;
 
-    [[nodiscard]] friend bool operator==(grapheme const &lhs, char32_t const &rhs) noexcept
+    [[nodiscard]] friend constexpr bool operator==(grapheme const &lhs, char32_t const &rhs) noexcept
     {
-        return (lhs.size() == 1) && (get<0>(lhs) == rhs);
+        return lhs == grapheme{rhs};
     }
 
-    [[nodiscard]] friend bool operator==(grapheme const &lhs, char const &rhs) noexcept
+    [[nodiscard]] friend constexpr std::strong_ordering operator<=>(grapheme const &lhs, char32_t const &rhs) noexcept
     {
-        return lhs == static_cast<char32_t>(rhs);
+        return lhs <=> grapheme{rhs};
+    }
+
+    [[nodiscard]] friend constexpr bool operator==(grapheme const &lhs, char const &rhs) noexcept
+    {
+        return lhs == grapheme{rhs};
+    }
+
+    [[nodiscard]] friend constexpr std::strong_ordering operator<=>(grapheme const &lhs, char const &rhs) noexcept
+    {
+        return lhs <=> grapheme{rhs};
     }
 
     [[nodiscard]] friend std::string to_string(grapheme const &rhs) noexcept

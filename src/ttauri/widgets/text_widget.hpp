@@ -95,6 +95,8 @@ private:
     text_shaper _shaped_text;
     float _shaped_text_cap_height;
 
+    decltype(text)::callback_ptr_type _text_callback;
+
     /** The first character selected in text.
      */
     size_t _selection_first = 0;
