@@ -20,7 +20,7 @@ namespace tt::inline v1 {
     for (ttlet codePoint : normalizedString) {
         if (breaks_grapheme(codePoint, breakState)) {
             if (cluster.size() > 0) {
-                r += tt::grapheme{cluster};
+                r += tt::grapheme::from_NFC(cluster);
             }
             cluster.clear();
         }
@@ -28,7 +28,7 @@ namespace tt::inline v1 {
         cluster += codePoint;
     }
     if (ssize(cluster) != 0) {
-        r += tt::grapheme{cluster};
+        r += tt::grapheme::from_NFC(cluster);
     }
     return r;
 }

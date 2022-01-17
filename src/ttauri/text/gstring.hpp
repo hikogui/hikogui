@@ -5,148 +5,130 @@
 #pragma once
 
 #include "grapheme.hpp"
+#include "../required.hpp"
 #include "../strings.hpp"
+#include "../hash.hpp"
 #include <vector>
+#include <string>
 
-namespace tt::inline v1 {
+template<>
+struct std::char_traits<tt::grapheme> {
+    using char_type = tt::grapheme;
+    using int_type = tt::grapheme::value_type;
+    using off_type = std::streamoff;
+    using state_type = std::mbstate_t;
+    using pos_type = std::fpos<state_type>;
+    using comparison_category = std::strong_ordering;
 
-struct gstring {
-    std::vector<grapheme> graphemes;
-
-    using const_iterator = std::vector<grapheme>::const_iterator;
-    using value_type = grapheme;
-
-    [[nodiscard]] constexpr bool empty() const noexcept
+    static constexpr void assign(char_type &r, char_type const &a) noexcept
     {
-        return graphemes.empty();
-    }
-
-    std::size_t size() const noexcept
-    {
-        return graphemes.size();
+        r = a;
     }
 
-    grapheme const &at(std::size_t i) const
+    static constexpr char_type *assign(char_type *p, std::size_t count, char_type a) noexcept
     {
-        return graphemes.at(i);
-    }
-
-    grapheme &at(std::size_t i)
-    {
-        return graphemes.at(i);
-    }
-
-    auto begin() noexcept
-    {
-        return graphemes.begin();
-    }
-    auto begin() const noexcept
-    {
-        return graphemes.begin();
-    }
-    auto cbegin() const noexcept
-    {
-        return graphemes.cbegin();
-    }
-    auto end() noexcept
-    {
-        return graphemes.end();
-    }
-    auto end() const noexcept
-    {
-        return graphemes.end();
-    }
-    auto cend() const noexcept
-    {
-        return graphemes.cend();
-    }
-
-    decltype(auto) front() noexcept
-    {
-        return graphemes.front();
-    }
-    decltype(auto) front() const noexcept
-    {
-        return graphemes.front();
-    }
-    decltype(auto) back() noexcept
-    {
-        return graphemes.back();
-    }
-    decltype(auto) back() const noexcept
-    {
-        return graphemes.back();
-    }
-
-    [[nodiscard]] friend auto begin(gstring &rhs) noexcept
-    {
-        return rhs.begin();
-    }
-
-    [[nodiscard]] friend auto begin(gstring const &rhs) noexcept
-    {
-        return rhs.begin();
-    }
-
-    [[nodiscard]] friend auto cbegin(gstring const &rhs) noexcept
-    {
-        return rhs.cbegin();
-    }
-
-    [[nodiscard]] friend auto end(gstring &rhs) noexcept
-    {
-        return rhs.end();
-    }
-
-    [[nodiscard]] friend auto end(gstring const &rhs) noexcept
-    {
-        return rhs.end();
-    }
-
-    [[nodiscard]] friend auto cend(gstring const &rhs) noexcept
-    {
-        return rhs.cend();
-    }
-
-    [[nodiscard]] friend std::size_t size(gstring const &rhs) noexcept
-    {
-        return rhs.size();
-    }
-
-    gstring &operator+=(gstring const &rhs) noexcept
-    {
-        for (ttlet &rhs_grapheme : rhs.graphemes) {
-            graphemes.push_back(rhs_grapheme);
+        for (std::size_t i = 0; i != count; ++i) {
+            p[i] = a;
         }
-        return *this;
+        return p;
     }
 
-    gstring &operator+=(grapheme const &grapheme) noexcept
+    [[nodiscard]] static constexpr bool eq(char_type a, char_type b) noexcept
     {
-        graphemes.push_back(grapheme);
-        return *this;
+        return a == b;
     }
 
-    [[nodiscard]] friend std::u32string to_u32string(gstring const &rhs) noexcept
+    [[nodiscard]] static constexpr bool lt(char_type a, char_type b) noexcept
     {
-        std::u32string r;
-        r.reserve(rhs.size());
-        for (ttlet &c : rhs) {
-            r += c.NFC();
+        return a < b;
+    }
+
+    static constexpr char_type *move(char_type *dst, char_type const *src, std::size_t count) noexcept
+    {
+        if (src >= dst) {
+            for (std::size_t i = 0; i != count; ++i) {
+                dst[i] = src[i];
+            }
+        } else {
+            for (std::size_t i = count; i != 0; --i) {
+                dst[i - 1] = src[i - 1];
+            }
         }
+        return dst;
+    }
+
+    static constexpr char_type *copy(char_type *dst, char_type const *src, std::size_t count) noexcept
+    {
+        for (std::size_t i = 0; i != count; ++i) {
+            dst[i] = src[i];
+        }
+        return dst;
+    }
+
+    static constexpr int compare(char_type const *s1, char_type const *s2, std::size_t count) noexcept
+    {
+        for (std::size_t i = 0; i != count; ++i) {
+            if (s1[i] == s2[i]) {
+                return s1[i] < s2[i] ? -1 : 1;
+            }
+        }
+        return 0;
+    }
+
+    static constexpr std::size_t length(char_type const *s) noexcept
+    {
+        std::size_t i = 0;
+        while (s[i].value != 0) {
+            ++i;
+        }
+        return i;
+    }
+
+    static constexpr char_type const *find(const char_type *p, std::size_t count, const char_type &ch) noexcept
+    {
+        for (std::size_t i = 0; i != count; ++i, ++p) {
+            if (*p == ch) {
+                return p;
+            }
+        }
+        return nullptr;
+    }
+
+    static constexpr char_type to_char_type(int_type c) noexcept
+    {
+        char_type r;
+        r.value = c;
         return r;
     }
 
-    [[nodiscard]] friend std::string to_string(gstring const &rhs) noexcept
+    static constexpr int_type to_int_type(char_type c) noexcept
     {
-        return tt::to_string(to_u32string(rhs));
+        return c.value;
     }
 
-    friend std::ostream &operator<<(std::ostream &lhs, gstring const &rhs)
+    static constexpr bool eq_int_type(int_type c1, int_type c2) noexcept
     {
-        return lhs << to_string(rhs);
+        return c1 == c2;
+    }
+
+    static constexpr int_type eof() noexcept
+    {
+        return 7;
+    }
+
+    static constexpr int_type not_eof(int_type e) noexcept
+    {
+        return e != 7 ? e : 0;
     }
 };
+
+namespace tt::inline v1 {
+
+using gstring = std::basic_string<grapheme>;
+
+namespace pmr {
+using gstring = std::pmr::basic_string<grapheme>;
+}
 
 [[nodiscard]] gstring to_gstring(std::u32string_view rhs) noexcept;
 
@@ -156,3 +138,27 @@ struct gstring {
 }
 
 } // namespace tt::inline v1
+
+template<>
+struct std::hash<tt::gstring> {
+    [[nodiscard]] std::size_t operator()(tt::gstring const &rhs) noexcept
+    {
+        auto r = std::hash<std::size_t>{}(rhs.size());
+        for (ttlet c: rhs) {
+            r = tt::hash_mix_two(r, std::hash<tt::grapheme>{}(c));
+        }
+        return r;
+    }
+};
+
+template<>
+struct std::hash<tt::pmr::gstring> {
+    [[nodiscard]] std::size_t operator()(tt::pmr::gstring const &rhs) noexcept
+    {
+        auto r = std::hash<std::size_t>{}(rhs.size());
+        for (ttlet c : rhs) {
+            r = tt::hash_mix_two(r, std::hash<tt::grapheme>{}(c));
+        }
+        return r;
+    }
+};

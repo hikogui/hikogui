@@ -7,57 +7,59 @@
 
 namespace tt::inline v1 {
 
-grapheme::grapheme(std::u32string_view codePoints) noexcept : value(0)
+[[nodiscard]] static grapheme::value_type make_grapheme(std::u32string_view code_points) noexcept
 {
-    ttlet codePoints_ = unicode_NFC(codePoints);
+    uint64_t value = 0;
 
-    switch (codePoints_.size()) {
-    case 3: value |= (static_cast<uint64_t>(codePoints_[2] & 0x1f'ffff) << 43); [[fallthrough]];
-    case 2: value |= (static_cast<uint64_t>(codePoints_[1] & 0x1f'ffff) << 22); [[fallthrough]];
-    case 1: value |= (static_cast<uint64_t>(codePoints_[0] & 0x1f'ffff) << 1); [[fallthrough]];
-    case 0: value |= 1; break;
-    default:
-        if (codePoints_.size() <= std::tuple_size_v<long_grapheme>) {
-            value = create_pointer(codePoints_.data(), codePoints_.size());
-        } else {
-            value = (0x00'fffdULL << 1) | 1; // Replacement character.
+    if (not code_points.empty()) {
+        // Set the starter code-point.
+        auto it = code_points.begin();
+        value = static_cast<grapheme::value_type>(*it++) << 43;
+
+        // Set the length.
+        value |= static_cast<grapheme::value_type>(code_points.size() <= 5 ? code_points.size() : 6);
+
+        // Add the non-starter code-points.
+        auto i = 1_uz;
+        for (; i != 5 and it != code_points.end(); ++i, ++it) {
+            ttlet &description = unicode_description_find(*it);
+            ttlet shift = (4 - i) * 10 + 3;
+            value |= static_cast<grapheme::value_type>(description.non_starter_code()) << shift;
         }
     }
+
+    return value;
 }
 
-grapheme &grapheme::operator+=(char32_t codePoint) noexcept
+grapheme::grapheme(std::u32string_view code_points) noexcept : value(make_grapheme(unicode_NFC(code_points))) {
+}
+
+grapheme &grapheme::operator=(std::u32string_view code_points) noexcept
 {
-    tt_axiom(size() < std::tuple_size_v<long_grapheme>);
-    switch (size()) {
-    case 0: value |= (static_cast<uint64_t>(codePoint & 0x1f'ffff) << 1); break;
-    case 1: value |= (static_cast<uint64_t>(codePoint & 0x1f'ffff) << 22); break;
-    case 2: value |= (static_cast<uint64_t>(codePoint & 0x1f'ffff) << 43); break;
-    case 3: {
-        std::array<char32_t, 4> tmp;
-        tmp[0] = (*this)[0];
-        tmp[1] = (*this)[1];
-        tmp[2] = (*this)[2];
-        tmp[3] = codePoint;
-        value = create_pointer(tmp.data(), 3);
-    } break;
-    default: auto tmp = *get_pointer(); tmp[size()] = codePoint;
-    }
+    value = make_grapheme(unicode_NFC(code_points));
     return *this;
+}
+
+[[nodiscard]] grapheme grapheme::from_NFC(std::u32string_view code_points) noexcept
+{
+    grapheme r;
+    r.value = make_grapheme(code_points);
+    return r;
 }
 
 [[nodiscard]] std::u32string grapheme::NFD() const noexcept
 {
-    return unicode_NFD(static_cast<std::u32string>(*this));
+    return unicode_NFD(NFC());
 }
 
 [[nodiscard]] std::u32string grapheme::NFKC() const noexcept
 {
-    return unicode_NFKC(static_cast<std::u32string>(*this));
+    return unicode_NFKC(NFC());
 }
 
 [[nodiscard]] std::u32string grapheme::NFKD() const noexcept
 {
-    return unicode_NFKD(static_cast<std::u32string>(*this));
+    return unicode_NFKD(NFC());
 }
 
 } // namespace tt::inline v1

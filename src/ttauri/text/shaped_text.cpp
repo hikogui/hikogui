@@ -272,7 +272,7 @@ struct shape_text_result {
             return c.grapheme.front();
         },
         [](auto &c, char32_t code_point) {
-            c.grapheme.set_front(code_point);
+            c.grapheme = code_point;
         },
         [](auto &c, unicode_bidi_class bidi_class) {
             c.bidi_class = bidi_class;

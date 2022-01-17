@@ -52,6 +52,7 @@ target_sources(ttauri PRIVATE
     true_type_font.hpp
     ttauri_icon.hpp
     unicode_db.hpp
+    unicode_db_non_starter.hpp
     unicode_bidi.cpp
     unicode_bidi.hpp
     unicode_bidi_bracket_type.hpp

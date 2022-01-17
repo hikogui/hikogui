@@ -12,7 +12,7 @@ label_widget::label_widget(gui_window &window, widget *parent) noexcept : super(
 {
     _icon_widget = std::make_unique<icon_widget>(window, this, label->icon);
     _icon_widget->alignment = alignment;
-    _text_widget = std::make_unique<text_widget>(window, this, label->text);
+    _text_widget = std::make_unique<text_widget>(window, this, to_gstring(label->text()));
     _text_widget->alignment = alignment;
     _text_widget->text_style = text_style;
 
