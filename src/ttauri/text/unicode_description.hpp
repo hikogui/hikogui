@@ -284,9 +284,9 @@ public:
     }
 
     /** Get the non-starter-code
-     * 
+     *
      * Instead of using a full 21-bit code-point this 10-bit value is used to compress non-starter characters.
-     * 
+     *
      * @note It is undefined-behavior to call this function on a starter-character.
      * @return 10 bit code value for a non-starter character.
      */

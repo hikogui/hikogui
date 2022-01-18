@@ -59,6 +59,7 @@ target_sources(ttauri PRIVATE
     unicode_bidi_class.hpp
     unicode_composition.cpp
     unicode_composition.hpp
+    unicode_decomposition_type.hpp
     unicode_description.cpp
     unicode_description.hpp
     unicode_east_asian_width.hpp
