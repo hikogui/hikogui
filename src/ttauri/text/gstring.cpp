@@ -11,7 +11,7 @@ namespace tt::inline v1 {
 
 [[nodiscard]] gstring to_gstring(std::u32string_view rhs) noexcept
 {
-    ttlet normalizedString = unicode_NFC(rhs, true, true, true);
+    ttlet normalizedString = unicode_NFKC(rhs, true, true);
 
     auto r = tt::gstring{};
     auto breakState = tt::grapheme_break_state{};

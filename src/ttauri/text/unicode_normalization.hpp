@@ -18,7 +18,7 @@ namespace tt::inline v1 {
  * @param ligatures typographical-ligatures such as "fi" are decomposed.
  * @param paragraph line-feed characters are converted to paragraph separators.
  */
-std::u32string unicode_NFD(std::u32string_view text, bool ligatures = false, bool paragraph = false) noexcept;
+std::u32string unicode_NFD(std::u32string_view text, bool paragraph = false) noexcept;
 
 /** Convert text to Unicode-NFC normal form.
  *
@@ -30,7 +30,7 @@ std::u32string unicode_NFD(std::u32string_view text, bool ligatures = false, boo
  * @param composeCRLF Compose CR-LF combinations to LF.
  */
 [[nodiscard]] std::u32string
-unicode_NFC(std::u32string_view text, bool ligatures = false, bool paragraph = false, bool composeCRLF = false) noexcept;
+unicode_NFC(std::u32string_view text, bool paragraph = false, bool composeCRLF = false) noexcept;
 
 /** Convert text to Unicode-NFKD normal form.
  * Code point 0x00'ffff is used internally, do not pass in text.

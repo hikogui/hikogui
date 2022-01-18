@@ -58,7 +58,7 @@ class Decomposition (object):
         return ",".join([format_char32(x) for x in self.decomposition])
 
 class UnicodeDescription (object):
-    def __init__(self, codePoint, generalCategory, decomposition, decompositionIsCanonical, canonical_combining_class, bidiClass, bidiMirrored):
+    def __init__(self, codePoint, generalCategory, decomposition, decomposition_type, canonical_combining_class, bidiClass, bidiMirrored):
         self.codePoint = codePoint;
         self.generalCategory = generalCategory
         self.graphemeClusterBreak = "Other"
@@ -67,7 +67,7 @@ class UnicodeDescription (object):
         self.bidiBracketType = "n"
         self.bidiMirroredGlyph = 0xffff
         self.decomposition = decomposition
-        self.decompositionIsCanonical = decompositionIsCanonical
+        self.decomposition_type = decomposition_type
         self.compositionIsCanonical = False
         self.canonical_combining_class = canonical_combining_class
         self.decompositionIndex = None
@@ -77,11 +77,6 @@ class UnicodeDescription (object):
 
     def serialize(self):
         s = "TTXD{"
-
-        decompositionFlagsAndLength = (
-            len(self.decomposition) |
-            (0x20 if self.decompositionIsCanonical else 0)
-        )
 
         # Generic character information
         s += format_char32(self.codePoint)
@@ -99,7 +94,25 @@ class UnicodeDescription (object):
         s += ", " + format_char32(self.bidiMirroredGlyph)
 
         # Composition / Decomposition
-        s += ", true" if self.decompositionIsCanonical else ", false"
+        if self.decomposition_type == "canonical":
+            s += ", TTXDT::canonical"
+        elif self.decomposition_type == "font":
+            s += ", TTXDT::font"
+        elif self.decomposition_type == "noBreak":
+            s += ", TTXDT::no_break"
+        elif self.decomposition_type in ("initial", "medial", "final", "isolated"):
+            s += ", TTXDT::arabic"
+        elif self.decomposition_type == "circle":
+            s += ", TTXDT::circle"
+        elif self.decomposition_type in ("super", "sub", "fraction"):
+            s += ", TTXDT::math"
+        elif self.decomposition_type in ("vertical", "wide", "narrow", "small", "square"):
+            s += ", TTXDT::asian"
+        elif self.decomposition_type == "compat":
+            s += ", TTXDT::compat"
+        else:
+            raise RuntimeError("Unknown decomposition_type '{}'".format(self.decomposition_type))
+
         # compositionIsCanonical the decomposition is available in the composition table.
         s += ", true" if self.compositionIsCanonical else ", false"
         s += ", {}".format(self.canonical_combining_class)
@@ -239,12 +252,12 @@ def parseUnicodeData(filename):
         decomposition = columns[5]
         if not decomposition:
             decomposition = []
-            decomposition_type = None
+            decomposition_type = "canonical"
         else:
             if decomposition[0] == "<":
                 decomposition_type, decomposition = decomposition[1:].split("> ")
             else:
-                decomposition_type = None
+                decomposition_type = "canonical"
 
             decomposition = [int(x, 16) for x in decomposition.split(" ")]
 
@@ -252,7 +265,7 @@ def parseUnicodeData(filename):
             codePoint=int(columns[0], 16),
             generalCategory=columns[2],
             decomposition=decomposition,
-            decompositionIsCanonical=(decomposition_type is None),
+            decomposition_type=decomposition_type,
             canonical_combining_class=int(columns[3]),
             bidiClass=columns[4],
             bidiMirrored=columns[9] == "Y"
@@ -265,7 +278,7 @@ def parseUnicodeData(filename):
 def isCanonicalComposition(description, composition_exclusions):
     return (
         len(description.decomposition) == 2 and
-        description.decompositionIsCanonical and
+        description.decomposition_type == "canonical" and
         description.codePoint not in composition_exclusions and
         description.decompositionStartsWithStart
     )
@@ -345,6 +358,7 @@ def writeUnicodeData(filename, descriptions, compositions, decompositions):
     fd.write('#include "ttauri/text/unicode_line_break.hpp"\n')
     fd.write('#include "ttauri/text/unicode_east_asian_width.hpp"\n')
     fd.write('#include "ttauri/text/unicode_composition.hpp"\n')
+    fd.write('#include "ttauri/text/unicode_decomposition_type.hpp"\n')
     fd.write('#include "ttauri/text/unicode_description.hpp"\n')
     fd.write('#include <array>\n\n')
 
@@ -357,6 +371,7 @@ def writeUnicodeData(filename, descriptions, compositions, decompositions):
     fd.write('#define TTXGU unicode_grapheme_cluster_break\n')
     fd.write('#define TTXLB unicode_line_break_class\n')
     fd.write('#define TTXEA unicode_east_asian_width\n')
+    fd.write('#define TTXDT unicode_decomposition_type\n')
     fd.write('constexpr auto unicode_db_description_table = std::array{')
     for i, description in enumerate(descriptions):
         if i != 0:
@@ -365,6 +380,7 @@ def writeUnicodeData(filename, descriptions, compositions, decompositions):
         fd.write(description.serialize())
     fd.write('};\n\n')
     fd.write('#undef TTXD\n')
+    fd.write('#undef TTXDT\n')
     fd.write('#undef TTXGC\n')
     fd.write('#undef TTXBC\n')
     fd.write('#undef TTXBB\n')

@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020-2021.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -10,6 +10,7 @@
 #include "unicode_grapheme_cluster_break.hpp"
 #include "unicode_line_break.hpp"
 #include "unicode_east_asian_width.hpp"
+#include "unicode_decomposition_type.hpp"
 #include "../required.hpp"
 #include "../assert.hpp"
 #include "../cast.hpp"
@@ -90,9 +91,9 @@ public:
         unicode_bidi_class bidi_class,
         unicode_bidi_bracket_type bidi_bracket_type,
         char32_t bidi_mirrored_glyph,
-        bool decomposition_canonical,
+        unicode_decomposition_type decomposition_type,
         bool composition_canonical,
-        uint8_t combining_class,
+        uint8_t canonical_combining_class,
         uint8_t decomposition_length,
         uint32_t decomposition_index,
         uint16_t non_starter_code) noexcept :
@@ -104,11 +105,11 @@ public:
         _bidi_bracket_type(to_underlying(bidi_bracket_type)),
         _bidi_mirrored_glyph(static_cast<uint32_t>(bidi_mirrored_glyph)),
         _east_asian_width(static_cast<uint32_t>(east_asian_width)),
-        _combining_class(static_cast<uint32_t>(combining_class)),
+        _canonical_combining_class(static_cast<uint32_t>(canonical_combining_class)),
         _composition_canonical(static_cast<uint32_t>(composition_canonical)),
         _line_break_class(to_underlying(line_break_class)),
         _decomposition_index(static_cast<uint32_t>(decomposition_index)),
-        _decomposition_canonical(static_cast<uint32_t>(decomposition_canonical)),
+        _decomposition_type(static_cast<uint32_t>(decomposition_type)),
         _decomposition_length(static_cast<uint32_t>(decomposition_length)),
         _non_starter_code(static_cast<uint32_t>(non_starter_code))
     {
@@ -120,7 +121,8 @@ public:
         tt_axiom(to_underlying(bidi_class) <= 0x1f);
         tt_axiom(to_underlying(bidi_bracket_type) <= 0x03);
         tt_axiom(static_cast<uint32_t>(bidi_mirrored_glyph) <= 0x10ffff);
-        tt_axiom(static_cast<uint32_t>(combining_class) <= 0xff);
+        tt_axiom(static_cast<uint32_t>(canonical_combining_class) <= 0xff);
+        tt_axiom(to_underlying(decomposition_type) <= 0x7);
         tt_axiom(static_cast<uint32_t>(decomposition_length) <= 0x1f);
         tt_axiom(static_cast<uint32_t>(decomposition_index) <= 0x1f'ffff);
         tt_axiom(static_cast<uint32_t>(non_starter_code) <= 0x3ff);
@@ -207,9 +209,9 @@ public:
     /** This character has a canonical decomposition.
      * @return When true you can decompose the character canonically.
      */
-    [[nodiscard]] constexpr bool decomposition_canonical() const noexcept
+    [[nodiscard]] constexpr unicode_decomposition_type decomposition_type() const noexcept
     {
-        return static_cast<bool>(_decomposition_canonical);
+        return static_cast<unicode_decomposition_type>(_decomposition_type);
     }
 
     /** This character has a canonical composition.
@@ -229,9 +231,9 @@ public:
      *
      * @return The numeric combining class of this code point.
      */
-    [[nodiscard]] constexpr uint8_t combining_class() const noexcept
+    [[nodiscard]] constexpr uint8_t canonical_combining_class() const noexcept
     {
-        return static_cast<uint8_t>(_combining_class);
+        return static_cast<uint8_t>(_canonical_combining_class);
     }
 
     /** The number of code-points the decomposed grapheme has.
@@ -274,7 +276,7 @@ public:
      */
     [[nodiscard]] constexpr char32_t canonical_equivalent() const noexcept
     {
-        if (_decomposition_canonical && _decomposition_length == 1) {
+        if (decomposition_type() == unicode_decomposition_type::canonical and _decomposition_length == 1) {
             return static_cast<char32_t>(_decomposition_index);
         } else {
             return U'\uffff';
@@ -290,7 +292,7 @@ public:
      */
     [[nodiscard]] constexpr size_t non_starter_code() const noexcept
     {
-        tt_axiom(_combining_class != 0);
+        tt_axiom(_canonical_combining_class != 0);
         return static_cast<size_t>(_non_starter_code);
     }
 
@@ -312,7 +314,7 @@ private:
     uint32_t _word2_reserved : 1 = 0;
 
     // 3rd dword
-    uint32_t _combining_class : 8;
+    uint32_t _canonical_combining_class : 8;
     uint32_t _composition_canonical : 1;
     uint32_t _line_break_class : 6;
     uint32_t _non_starter_code : 10;
@@ -320,9 +322,9 @@ private:
 
     // 4th dword
     uint32_t _decomposition_index : 21;
-    uint32_t _decomposition_canonical : 1;
+    uint32_t _decomposition_type : 3;
     uint32_t _decomposition_length : 5;
-    uint32_t _word4_reserved : 5 = 0;
+    uint32_t _word4_reserved : 3 = 0;
 
     template<typename It>
     friend constexpr It unicode_description_find(It first, It last, char32_t code_point) noexcept;
