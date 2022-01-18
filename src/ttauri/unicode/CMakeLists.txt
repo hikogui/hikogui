@@ -6,7 +6,6 @@
 target_sources(ttauri PRIVATE
     grapheme.cpp
     grapheme.hpp
-    grapheme_iterator.hpp
     gstring.cpp
     gstring.hpp
     unicode_db.hpp
