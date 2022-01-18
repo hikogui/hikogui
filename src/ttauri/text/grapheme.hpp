@@ -6,6 +6,7 @@
 
 #include "unicode_db_non_starter.hpp"
 #include "../required.hpp"
+#include "../strings.hpp"
 #include <cstdint>
 #include <string>
 #include <cstddef>
@@ -242,7 +243,7 @@ struct grapheme {
 
     [[nodiscard]] friend std::string to_string(grapheme const &rhs) noexcept
     {
-        return to_string(rhs.NFC());
+        return tt::to_string(rhs.NFC());
     }
 
     [[nodiscard]] friend std::u32string to_u32string(grapheme const &rhs) noexcept

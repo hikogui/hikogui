@@ -4,6 +4,7 @@
 
 #include "grapheme.hpp"
 #include "unicode_normalization.hpp"
+#include "unicode_description.hpp"
 
 namespace tt::inline v1 {
 
