@@ -32,35 +32,25 @@ namespace tt::inline v1 {
     return value;
 }
 
-grapheme::grapheme(std::u32string_view code_points) noexcept : value(make_grapheme(unicode_NFC(code_points))) {
+grapheme::grapheme(std::u32string_view code_points) noexcept : value(make_grapheme(unicode_NFKC(code_points))) {
 }
 
 grapheme &grapheme::operator=(std::u32string_view code_points) noexcept
 {
-    value = make_grapheme(unicode_NFC(code_points));
+    value = make_grapheme(unicode_NFKC(code_points));
     return *this;
 }
 
-[[nodiscard]] grapheme grapheme::from_NFC(std::u32string_view code_points) noexcept
+[[nodiscard]] grapheme grapheme::from_composed(std::u32string_view code_points) noexcept
 {
     grapheme r;
     r.value = make_grapheme(code_points);
     return r;
 }
 
-[[nodiscard]] std::u32string grapheme::NFD() const noexcept
+[[nodiscard]] std::u32string grapheme::decomposed() const noexcept
 {
-    return unicode_NFD(NFC());
-}
-
-[[nodiscard]] std::u32string grapheme::NFKC() const noexcept
-{
-    return unicode_NFKC(NFC());
-}
-
-[[nodiscard]] std::u32string grapheme::NFKD() const noexcept
-{
-    return unicode_NFKD(NFC());
+    return unicode_NFD(composed());
 }
 
 } // namespace tt::inline v1

@@ -11,9 +11,9 @@
 #include "../required.hpp"
 #include <string>
 
-namespace tt::inline v1 {
+namespace tt::inline v1{
 
-static void unicode_decompose(char32_t code_point, unicode_normalization_mask decomposition_mask, std::u32string &r) noexcept
+    static void unicode_decompose(char32_t code_point, unicode_normalization_mask decomposition_mask, std::u32string & r) noexcept
 {
     ttlet &description = unicode_description_find(code_point);
 
@@ -64,7 +64,7 @@ static void unicode_decompose(char32_t code_point, unicode_normalization_mask de
     }
 }
 
-static void unicode_decompose(std::u32string_view text, unicode_normalization_mask decomposition_mask, std::u32string &r) noexcept
+static void unicode_decompose(std::u32string_view text, unicode_normalization_mask decomposition_mask, std::u32string & r) noexcept
 {
     for (ttlet c : text) {
         unicode_decompose(c, decomposition_mask, r);
@@ -95,7 +95,7 @@ unicode_compose(char32_t first, char32_t second, unicode_normalization_mask comp
     }
 }
 
-static void unicode_compose(unicode_normalization_mask composition_mask, std::u32string &text) noexcept
+static void unicode_compose(unicode_normalization_mask composition_mask, std::u32string & text) noexcept
 {
     if (text.size() <= 1) {
         return;
@@ -154,22 +154,22 @@ static void unicode_compose(unicode_normalization_mask composition_mask, std::u3
     text.resize(j);
 }
 
-static void unicode_reorder(std::u32string &text) noexcept
+static void unicode_reorder(std::u32string & text) noexcept
 {
     for_each_cluster(
         text.begin(),
         text.end(),
-        [](auto x) {
+        [] (auto x) {
             return (x >> 21) == 0;
         },
-        [](auto s, auto e) {
-            std::stable_sort(s, e, [](auto a, auto b) {
+        [] (auto s, auto e) {
+            std::stable_sort(s, e, [] (auto a, auto b) {
                 return (a >> 21) < (b >> 21);
-            });
+                });
         });
 }
 
-static void unicode_clean(std::u32string &text) noexcept
+static void unicode_clean(std::u32string & text) noexcept
 {
     // clean up the text by removing the upper bits.
     for (auto &codePoint : text) {

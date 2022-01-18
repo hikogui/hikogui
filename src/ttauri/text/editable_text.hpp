@@ -26,7 +26,7 @@ public:
         auto r = std::string{};
 
         for (ttlet &c : _text) {
-            r += to_string(c.grapheme.NFC());
+            r += to_string(c.grapheme.composed());
         }
 
         return r;

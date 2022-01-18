@@ -86,11 +86,11 @@ struct grapheme {
      */
     grapheme &operator=(std::u32string_view code_points) noexcept;
 
-    /** Encode a grapheme from a list of NFC-normalized code-points.
+    /** Encode a grapheme from a list of NFKC-normalized code-points.
      *
-     * @param code_points The NFC-normalized list of code-points.
+     * @param code_points The NFKC-normalized list of code-points.
      */
-    [[nodiscard]] static grapheme from_NFC(std::u32string_view code_points) noexcept;
+    [[nodiscard]] static grapheme from_composed(std::u32string_view code_points) noexcept;
 
     /** Paragraph separator.
      */
@@ -191,7 +191,7 @@ struct grapheme {
 
     /** Get a list of code-point normalized to NFC.
      */
-    [[nodiscard]] std::u32string NFC() const noexcept
+    [[nodiscard]] constexpr std::u32string composed() const noexcept
     {
         auto r = std::u32string{};
         r.reserve(size());
@@ -203,15 +203,7 @@ struct grapheme {
 
     /** Get a list of code-point normalized to NFD.
      */
-    [[nodiscard]] std::u32string NFD() const noexcept;
-
-    /** Get a list of code-point normalized to NFKC.
-     */
-    [[nodiscard]] std::u32string NFKC() const noexcept;
-
-    /** Get a list of code-point normalized to NFKD.
-     */
-    [[nodiscard]] std::u32string NFKD() const noexcept;
+    [[nodiscard]] std::u32string decomposed() const noexcept;
 
     /** Compare equivalence of two graphemes.
      */
@@ -243,12 +235,12 @@ struct grapheme {
 
     [[nodiscard]] friend std::string to_string(grapheme const &rhs) noexcept
     {
-        return tt::to_string(rhs.NFC());
+        return tt::to_string(rhs.composed());
     }
 
     [[nodiscard]] friend std::u32string to_u32string(grapheme const &rhs) noexcept
     {
-        return rhs.NFC();
+        return rhs.composed();
     }
 };
 

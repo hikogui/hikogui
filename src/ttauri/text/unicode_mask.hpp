@@ -117,11 +117,11 @@ public:
 
     /** Check if the full grapheme normalized to NFC is covered by this mask.
      */
-    [[nodiscard]] bool contains_NFC(grapheme g) const noexcept;
+    [[nodiscard]] bool contains_composed(grapheme g) const noexcept;
 
     /** Check if the full grapheme normalized to NFD is covered by this mask.
      */
-    [[nodiscard]] bool contains_NFD(grapheme g) const noexcept;
+    [[nodiscard]] bool contains_decomposed(grapheme g) const noexcept;
 
     /** Check if the full grapheme is covered by this mask.
      */

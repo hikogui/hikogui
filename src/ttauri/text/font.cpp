@@ -32,7 +32,7 @@ namespace tt::inline v1 {
 
     if (not r) {
         // First try decomposed normalization
-        for (ttlet c : g.NFD()) {
+        for (ttlet c : g.decomposed()) {
             if (ttlet glyph_id = find_glyph(c)) {
                 r += glyph_id;
             } else {

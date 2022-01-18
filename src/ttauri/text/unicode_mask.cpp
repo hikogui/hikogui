@@ -19,9 +19,9 @@ namespace tt::inline v1 {
     }
 }
 
-[[nodiscard]] bool unicode_mask::contains_NFC(grapheme g) const noexcept
+[[nodiscard]] bool unicode_mask::contains_composed(grapheme g) const noexcept
 {
-    for (ttlet c : g.NFC()) {
+    for (ttlet c : g.composed()) {
         if (not contains(c)) {
             return false;
         }
@@ -29,9 +29,9 @@ namespace tt::inline v1 {
     return true;
 }
 
-[[nodiscard]] bool unicode_mask::contains_NFD(grapheme g) const noexcept
+[[nodiscard]] bool unicode_mask::contains_decomposed(grapheme g) const noexcept
 {
-    for (ttlet c : g.NFD()) {
+    for (ttlet c : g.decomposed()) {
         if (not contains(c)) {
             return false;
         }
@@ -41,7 +41,7 @@ namespace tt::inline v1 {
 
 [[nodiscard]] bool unicode_mask::contains(grapheme g) const noexcept
 {
-    return contains_NFC(g) or contains_NFD(g);
+    return contains_composed(g) or contains_decomposed(g);
 }
 
 [[nodiscard]] bool unicode_mask::contains(unicode_mask const &other) const noexcept
