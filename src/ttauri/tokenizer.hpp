@@ -4,13 +4,13 @@
 
 #pragma once
 
+#include "unicode/UTF.hpp"
 #include "strings.hpp"
 #include "small_vector.hpp"
 #include "required.hpp"
 #include "decimal.hpp"
 #include "exception.hpp"
 #include "parse_location.hpp"
-#include "codec/UTF.hpp"
 #include "charconv.hpp"
 #include <chrono>
 #include <memory>
