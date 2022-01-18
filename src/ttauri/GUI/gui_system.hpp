@@ -7,7 +7,7 @@
 #include "gui_window.hpp"
 #include "gui_window_win32.hpp"
 #include "gui_system_delegate.hpp"
-#include "../text/unicode_bidi_class.hpp"
+#include "../unicode/unicode_bidi_class.hpp"
 #include "../GFX/gfx_device.hpp"
 #include "../thread.hpp"
 #include "../unfair_recursive_mutex.hpp"

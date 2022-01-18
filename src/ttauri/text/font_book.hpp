@@ -10,7 +10,7 @@
 #include "glyph_ids.hpp"
 #include "elusive_icon.hpp"
 #include "ttauri_icon.hpp"
-#include "unicode/grapheme.hpp"
+#include "../unicode/grapheme.hpp"
 #include "../URL.hpp"
 #include "../alignment.hpp"
 #include "../subsystem.hpp"
