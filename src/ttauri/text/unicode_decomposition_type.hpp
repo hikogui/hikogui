@@ -20,7 +20,7 @@ enum class unicode_decomposition_type : uint8_t {
     compat = 7 ///< <compat> Otherwise unspecified compatibility character
 };
 
-enum class unicode_decomposition_mask : uint8_t {
+enum class unicode_normalization_mask : uint16_t {
     canonical = 1 << to_underlying(unicode_decomposition_type::canonical),
     font = 1 << to_underlying(unicode_decomposition_type::font),
     no_break = 1 << to_underlying(unicode_decomposition_type::no_break),
@@ -30,11 +30,29 @@ enum class unicode_decomposition_mask : uint8_t {
     asian = 1 << to_underlying(unicode_decomposition_type::asian),
     compat = 1 << to_underlying(unicode_decomposition_type::compat),
 
-    NFD = canonical,
-    NFKD = canonical | font | no_break | arabic | circle | math | asian | compat,
+    paragraph = 0x0100, ///< Decompose LF -> PS (paragraph separator), Compose CR LF -> PS
+    hangul = 0x0200, ///< Decompose/Compose hangul
+
+    NFD = canonical | hangul,
+    NFKD = NFD | font | no_break | arabic | circle | math | asian | compat,
 };
 
-[[nodiscard]] constexpr bool operator==(unicode_decomposition_type const& lhs, unicode_decomposition_mask const& rhs) noexcept
+[[nodiscard]] constexpr bool any(unicode_normalization_mask const& rhs) noexcept
+{
+    return static_cast<bool>(to_underlying(rhs));
+}
+
+[[nodiscard]] constexpr unicode_normalization_mask operator|(unicode_normalization_mask const& lhs, unicode_normalization_mask const& rhs) noexcept
+{
+    return static_cast<unicode_normalization_mask>(to_underlying(lhs) | to_underlying(rhs));
+}
+
+[[nodiscard]] constexpr unicode_normalization_mask operator&(unicode_normalization_mask const& lhs, unicode_normalization_mask const& rhs) noexcept
+{
+    return static_cast<unicode_normalization_mask>(to_underlying(lhs) & to_underlying(rhs));
+}
+
+[[nodiscard]] constexpr bool operator==(unicode_decomposition_type const& lhs, unicode_normalization_mask const& rhs) noexcept
 {
     return static_cast<bool>((1 << to_underlying(lhs)) & to_underlying(rhs));
 }

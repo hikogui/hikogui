@@ -9,72 +9,47 @@
 #include "unicode_db.hpp"
 #include "../assert.hpp"
 #include "../required.hpp"
+#include <string>
 
 namespace tt::inline v1{
 
-    /** Detect typographical ligature.
-     * A typographical ligatures will have the same meaning in the text
-     * when it is in composed or decomposed form.
-     */
-    static bool is_typographical_ligature(char32_t codePoint)
-    {
-        switch (codePoint) {
-        case 0xfb00: // ff
-        case 0xfb01: // fi
-        case 0xfb02: // fl
-        case 0xfb03: // ffi
-        case 0xfb04: // ffl
-        case 0xfb05: // long st
-        case 0xfb06: // st
-        case 0xfb13: // men now
-        case 0xfb14: // men ech
-        case 0xfb15: // men ini
-        case 0xfb16: // vew now
-        case 0xfb17: // men xeh
-            return true;
-        default: return false;
-        }
-    }
-
-    static void unicode_decompose(char32_t code_point, unicode_decomposition_mask decomposition_mask, bool paragraph, std::u32string & r) noexcept
+    static void unicode_decompose(char32_t code_point, unicode_normalization_mask decomposition_mask, std::u32string & r) noexcept
     {
         ttlet& description = unicode_description_find(code_point);
 
-        ttlet must_decompose = decomposition_mask == description.decomposition_type();
-
-        if (paragraph && code_point == U'\n') {
+        if (any(decomposition_mask & unicode_normalization_mask::paragraph) and code_point == U'\n') {
             r += U'\u2029'; // paragraph separator.
 
         }
- else if (is_hangul_syllable(code_point)) {
+ else if (any(decomposition_mask & unicode_normalization_mask::hangul) and is_hangul_syllable(code_point)) {
 ttlet S_index = code_point - detail::unicode_hangul_S_base;
 ttlet L_index = static_cast<char32_t>(S_index / detail::unicode_hangul_N_count);
 ttlet V_index = static_cast<char32_t>((S_index % detail::unicode_hangul_N_count) / detail::unicode_hangul_T_count);
 ttlet T_index = static_cast<char32_t>(S_index % detail::unicode_hangul_T_count);
 
-unicode_decompose(detail::unicode_hangul_L_base + L_index, decomposition_mask, paragraph, r);
-unicode_decompose(detail::unicode_hangul_V_base + V_index, decomposition_mask, paragraph, r);
+unicode_decompose(detail::unicode_hangul_L_base + L_index, decomposition_mask, r);
+unicode_decompose(detail::unicode_hangul_V_base + V_index, decomposition_mask, r);
 
 if (T_index > 0) {
-    unicode_decompose(detail::unicode_hangul_T_base + T_index, decomposition_mask, paragraph, r);
+    unicode_decompose(detail::unicode_hangul_T_base + T_index, decomposition_mask, r);
 }
 
 }
-else if (must_decompose) {
+else if (decomposition_mask == description.decomposition_type()) {
  if (description.decomposition_length() == 0) {
      r += code_point | (static_cast<char32_t>(description.canonical_combining_class()) << 24);
 
  }
 else if (description.decomposition_length() == 1) {
- unicode_decompose(static_cast<char32_t>(description.decomposition_index()), decomposition_mask, paragraph, r);
+ unicode_decompose(static_cast<char32_t>(description.decomposition_index()), decomposition_mask, r);
 
 }
 else if (description.composition_canonical() && description.decomposition_length() == 2) {
  tt_axiom(description.decomposition_index() < size(detail::unicode_db_composition_table));
  ttlet& composition = detail::unicode_db_composition_table[description.decomposition_index()];
 
- unicode_decompose(composition.first(), decomposition_mask, paragraph, r);
- unicode_decompose(composition.second(), decomposition_mask, paragraph, r);
+ unicode_decompose(composition.first(), decomposition_mask, r);
+ unicode_decompose(composition.second(), decomposition_mask, r);
 
 }
 else {
@@ -85,7 +60,7 @@ else {
  auto it = begin(detail::unicode_db_decomposition_table) + description.decomposition_index();
 
  for (std::size_t i = 0; i != description.decomposition_length(); ++i) {
-     unicode_decompose(*(it++), decomposition_mask, paragraph, r);
+     unicode_decompose(*(it++), decomposition_mask, r);
  }
 }
 
@@ -96,31 +71,27 @@ else {
 }
 
 static void
-unicode_decompose(std::u32string_view text, unicode_decomposition_mask decomposition_mask, bool paragraph, std::u32string & r) noexcept
+unicode_decompose(std::u32string_view text, unicode_normalization_mask decomposition_mask, std::u32string & r) noexcept
 {
     for (ttlet c : text) {
-        unicode_decompose(c, decomposition_mask, paragraph, r);
+        unicode_decompose(c, decomposition_mask, r);
     }
 }
 
-[[nodiscard]] static char32_t unicode_compose(char32_t first, char32_t second, bool paragraph, bool composeCRLF) noexcept
+[[nodiscard]] static char32_t unicode_compose(char32_t first, char32_t second, unicode_normalization_mask composition_mask) noexcept
 {
-    if (composeCRLF && first == U'\r' && second == U'\n') {
-        return paragraph ? U'\u2029' : U'\n';
-
-    }
- else if (composeCRLF && first == U'\r' && second == U'\u2029') {
+    if (any(composition_mask & unicode_normalization_mask::paragraph) and (first == U'\r' and second == U'\n') or (first == U'\r' and second == U'\u2029')) {
   return U'\u2029';
 
 }
-else if (is_hangul_L_part(first) && is_hangul_V_part(second)) {
+else if (any(composition_mask & unicode_normalization_mask::hangul) and is_hangul_L_part(first) and is_hangul_V_part(second)) {
  ttlet L_index = first - detail::unicode_hangul_L_base;
  ttlet V_index = second - detail::unicode_hangul_V_base;
  ttlet LV_index = L_index * detail::unicode_hangul_N_count + V_index * detail::unicode_hangul_T_count;
  return detail::unicode_hangul_S_base + LV_index;
 
 }
-else if (is_hangul_LV_part(first) && is_hangul_T_part(second)) {
+else if (any(composition_mask & unicode_normalization_mask::hangul) and is_hangul_LV_part(first) and is_hangul_T_part(second)) {
  ttlet T_index = second - detail::unicode_hangul_T_base;
  return first + T_index;
 
@@ -130,7 +101,7 @@ else {
 }
 }
 
-static void unicode_compose(bool paragraph, bool composeCRLF, std::u32string & text) noexcept
+static void unicode_compose(unicode_normalization_mask composition_mask, std::u32string & text) noexcept
 {
     if (text.size() <= 1) {
         return;
@@ -160,7 +131,7 @@ static void unicode_compose(bool paragraph, bool composeCRLF, std::u32string & t
                 bool blocking_pair = previous_combining_class != 0 && previous_combining_class >= second_combining_class;
                 bool second_is_starter = second_combining_class == 0;
 
-                ttlet composed_code_point = unicode_compose(first_code_point, second_code_point, paragraph, composeCRLF);
+                ttlet composed_code_point = unicode_compose(first_code_point, second_code_point, composition_mask);
                 if (composed_code_point != U'\uffff' && !blocking_pair) {
                     // Found a composition.
                     first_code_point = composed_code_point;
@@ -216,40 +187,40 @@ static void unicode_clean(std::u32string & text) noexcept
     }
 }
 
-std::u32string unicode_NFD(std::u32string_view text, bool paragraph) noexcept
+std::u32string unicode_NFD(std::u32string_view text, unicode_normalization_mask normalization_mask) noexcept
 {
     auto r = std::u32string{};
-    unicode_decompose(text, unicode_decomposition_mask::NFD, paragraph, r);
+    unicode_decompose(text, normalization_mask, r);
     unicode_reorder(r);
     unicode_clean(r);
     return r;
 }
 
-[[nodiscard]] std::u32string unicode_NFC(std::u32string_view text, bool paragraph, bool composeCRLF) noexcept
+[[nodiscard]] std::u32string unicode_NFC(std::u32string_view text, unicode_normalization_mask normalization_mask) noexcept
 {
     auto r = std::u32string{};
-    unicode_decompose(text, unicode_decomposition_mask::NFD, paragraph, r);
+    unicode_decompose(text, normalization_mask, r);
     unicode_reorder(r);
-    unicode_compose(paragraph, composeCRLF, r);
+    unicode_compose(normalization_mask, r);
     unicode_clean(r);
     return r;
 }
 
-std::u32string unicode_NFKD(std::u32string_view text, bool paragraph) noexcept
+std::u32string unicode_NFKD(std::u32string_view text, unicode_normalization_mask normalization_mask) noexcept
 {
     auto r = std::u32string{};
-    unicode_decompose(text, unicode_decomposition_mask::NFKD, paragraph, r);
+    unicode_decompose(text, normalization_mask, r);
     unicode_reorder(r);
     unicode_clean(r);
     return r;
 }
 
-std::u32string unicode_NFKC(std::u32string_view text, bool paragraph, bool composeCRLF) noexcept
+std::u32string unicode_NFKC(std::u32string_view text, unicode_normalization_mask normalization_mask) noexcept
 {
     auto r = std::u32string{};
-    unicode_decompose(text, unicode_decomposition_mask::NFKD, paragraph, r);
+    unicode_decompose(text, normalization_mask, r);
     unicode_reorder(r);
-    unicode_compose(paragraph, composeCRLF, r);
+    unicode_compose(normalization_mask, r);
     unicode_clean(r);
     return r;
 }
