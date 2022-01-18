@@ -8,7 +8,6 @@ target_sources(ttauri PRIVATE
     attributed_glyph.hpp
     attributed_glyph_line.hpp
     attributed_grapheme.hpp
-    code_point_iterator.hpp
     editable_text.hpp
     elusive_icon.hpp
     font.cpp
