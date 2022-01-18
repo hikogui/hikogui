@@ -6,7 +6,7 @@
 
 #include "text_shaper_char.hpp"
 #include "font_metrics.hpp"
-#include "unicode_bidi_class.hpp"
+#include "../unicode/unicode_bidi_class.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../alignment.hpp"
 #include <vector>

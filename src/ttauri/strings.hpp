@@ -11,7 +11,7 @@
 #include "architecture.hpp"
 #include "concepts.hpp"
 #include "exception.hpp"
-#include "codec/UTF.hpp"
+#include "unicode/UTF.hpp"
 #include <string>
 #include <string_view>
 #include <iterator>

@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "grapheme.hpp"
 #include "text_style.hpp"
-#include "unicode_bidi_class.hpp"
-#include "unicode_general_category.hpp"
+#include "../unicode/grapheme.hpp"
+#include "../unicode/unicode_bidi_class.hpp"
+#include "../unicode/unicode_general_category.hpp"
 
 namespace tt::inline v1 {
 

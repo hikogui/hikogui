@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "grapheme.hpp"
+#include "../unicode/grapheme.hpp"
 #include "../hash.hpp"
 
 namespace tt::inline v1 {

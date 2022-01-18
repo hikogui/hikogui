@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../codec/UTF.hpp"
+#include "../unicode/UTF.hpp"
 #include "../required.hpp"
 #include <type_traits>
 #include <iterator_traits>

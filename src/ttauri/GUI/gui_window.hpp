@@ -13,13 +13,12 @@
 #include "keyboard_focus_direction.hpp"
 #include "keyboard_focus_group.hpp"
 #include "theme.hpp"
-#include "../text/gstring.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
-#include "../chrono.hpp"
-#include "../label.hpp"
 #include "../widgets/window_widget.hpp"
 #include "../widgets/grid_widget.hpp"
 #include "../widgets/toolbar_widget.hpp"
+#include "../chrono.hpp"
+#include "../label.hpp"
 #include <unordered_set>
 #include <memory>
 #include <mutex>

@@ -24,11 +24,6 @@ target_sources(ttauri PRIVATE
     glyph_ids.cpp
     glyph_ids.hpp
     glyph_metrics.hpp
-    grapheme.cpp
-    grapheme.hpp
-    grapheme_iterator.hpp
-    gstring.cpp
-    gstring.hpp
     language.cpp
     language.hpp
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/language_macos.mm>
@@ -51,36 +46,10 @@ target_sources(ttauri PRIVATE
     true_type_font.cpp
     true_type_font.hpp
     ttauri_icon.hpp
-    unicode_db.hpp
-    unicode_db_non_starter.hpp
-    unicode_bidi.cpp
-    unicode_bidi.hpp
-    unicode_bidi_bracket_type.hpp
-    unicode_bidi_class.hpp
-    unicode_composition.cpp
-    unicode_composition.hpp
-    unicode_decomposition_type.hpp
-    unicode_description.cpp
-    unicode_description.hpp
-    unicode_east_asian_width.hpp
-    unicode_general_category.hpp
-    unicode_grapheme_cluster_break.hpp
-    unicode_line_break.hpp
-    unicode_mask.cpp
-    unicode_mask.hpp
-    unicode_normalization.cpp
-    unicode_normalization.hpp
-    unicode_text_segmentation.cpp
-    unicode_text_segmentation.hpp
 )
 
 if(TT_BUILD_TESTS)
     target_sources(ttauri_tests PRIVATE
-        language_tag_tests.cpp
-        unicode_bidi_tests.cpp
-        unicode_line_break_tests.cpp
-        unicode_text_segmentation_tests.cpp
-        unicode_normalization_tests.cpp
         language_tag_tests.cpp
     )
 endif()

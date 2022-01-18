@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "grapheme.hpp"
+#include "../unicode/grapheme.hpp"
 #include "../tagged_id.hpp"
 #include <algorithm>
 #include <utility>

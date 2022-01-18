@@ -4,7 +4,7 @@
 
 #include "dialog.hpp"
 #include "exception.hpp"
-#include "codec/UTF.hpp"
+#include "unicode/UTF.hpp"
 #include <Windows.h>
 #include <WinUser.h>
 

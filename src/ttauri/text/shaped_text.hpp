@@ -5,13 +5,13 @@
 #pragma once
 
 #include "attributed_glyph_line.hpp"
-#include "gstring.hpp"
+#include "../unicode/gstring.hpp"
+#include "../geometry/extent.hpp"
+#include "../geometry/point.hpp"
 #include "../required.hpp"
 #include "../alignment.hpp"
 #include "../graphic_path.hpp"
 #include "../recursive_iterator.hpp"
-#include "../geometry/extent.hpp"
-#include "../geometry/point.hpp"
 #include <string_view>
 #include <optional>
 

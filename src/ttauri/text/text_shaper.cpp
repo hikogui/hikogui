@@ -4,8 +4,8 @@
 
 #include "text_shaper.hpp"
 #include "font_book.hpp"
-#include "unicode_line_break.hpp"
-#include "unicode_bidi.hpp"
+#include "../unicode/unicode_line_break.hpp"
+#include "../unicode/unicode_bidi.hpp"
 #include "../log.hpp"
 #include <numeric>
 

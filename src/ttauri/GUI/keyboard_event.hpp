@@ -5,11 +5,11 @@
 #pragma once
 
 #include "keyboard_key.hpp"
-#include "../text/grapheme.hpp"
+#include "../unicode/grapheme.hpp"
+#include "../geometry/transform.hpp"
 #include "../required.hpp"
 #include "../assert.hpp"
 #include "../command.hpp"
-#include "../geometry/transform.hpp"
 #include <utility>
 
 namespace tt::inline v1 {

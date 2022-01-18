@@ -4,12 +4,12 @@
 
 #pragma once
 
-#include "grapheme.hpp"
 #include "text_style.hpp"
 #include "glyph_ids.hpp"
 #include "glyph_metrics.hpp"
 #include "unicode_description.hpp"
 #include "font.hpp"
+#include "../unicode/grapheme.hpp"
 #include "../geometry/point.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 
