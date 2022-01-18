@@ -38,6 +38,9 @@ label_widget::label_widget(gui_window &window, widget *parent) noexcept : super(
 widget_constraints const &label_widget::set_constraints() noexcept
 {
     _layout = {};
+
+    // Translate the text of the label during reconstrain as this is triggered when the system language changes.
+    _text_widget->text = to_gstring(label->text());
     ttlet &text_constraints = _text_widget->set_constraints();
     ttlet &icon_constraints = _icon_widget->set_constraints();
 
