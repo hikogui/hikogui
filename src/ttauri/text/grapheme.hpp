@@ -5,6 +5,7 @@
 #pragma once
 
 #include "unicode_db_non_starter.hpp"
+#include "../required.hpp"
 #include <cstdint>
 #include <string>
 #include <cstddef>
