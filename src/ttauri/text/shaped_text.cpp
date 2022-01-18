@@ -3,9 +3,9 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "shaped_text.hpp"
-#include "unicode_description.hpp"
 #include "font_book.hpp"
-#include "unicode_bidi.hpp"
+#include "../unicode/unicode_description.hpp"
+#include "../unicode/unicode_bidi.hpp"
 #include "../small_map.hpp"
 
 namespace tt::inline v1 {
