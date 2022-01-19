@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "ttauri/text/unicode_bidi.hpp"
+#include "ttauri/unicode/unicode_bidi.hpp"
 #include "ttauri/file_view.hpp"
 #include "ttauri/charconv.hpp"
 #include "ttauri/ranges.hpp"
