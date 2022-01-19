@@ -172,7 +172,7 @@ public:
      * @param point The point near
      * @return The index to the character that is nearest to the point.
      */
-    [[nodiscard]] ssize_t get_nearest(point2 point) const noexcept;
+    [[nodiscard]] size_t get_nearest(point2 point) const noexcept;
 
     /** Get the character to the left.
      *

@@ -462,6 +462,16 @@ public:
      */
     friend axis_aligned_rectangle
     fit(axis_aligned_rectangle const &bounds, axis_aligned_rectangle const &rectangle) noexcept;
+
+    [[nodiscard]] constexpr friend float distance(axis_aligned_rectangle const &lhs, point2 const &rhs) noexcept
+    {
+        ttlet lhs_ = static_cast<f32x4>(lhs);
+        ttlet rhs_ = static_cast<f32x4>(rhs);
+        // Only (x,y) of subsequent calculations are valid, (z,w) have garbage values.
+        ttlet closest_point = max(min(rhs_, lhs_.zwzw()), lhs_);
+        ttlet v_closest_point = closest_point - rhs_;
+        return hypot<0b0011>(v_closest_point);
+    }
 };
 
 using aarectangle = axis_aligned_rectangle;

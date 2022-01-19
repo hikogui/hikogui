@@ -274,6 +274,11 @@ public:
         return point{floor(f32x4{lhs} / rhs_) * rhs_};
     }
 
+    [[nodiscard]] friend constexpr float distance(point const &lhs, point const &rhs) noexcept
+    {
+        return hypot(rhs - lhs);
+    }
+
     /** Check if the point is valid.
      * This function will check if w is not zero, and with a 2D point is z is zero.
      */

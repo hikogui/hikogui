@@ -10,17 +10,18 @@
 #include "../GFX/gfx_device_vulkan.hpp"
 #include "../text/shaped_text.hpp"
 #include "../text/text_shaper.hpp"
+#include "../text/text_selection.hpp"
 
-namespace tt::inline v1 {
+namespace tt::inline v1{
 
-draw_context::draw_context(
-    gfx_device_vulkan &device,
-    std::size_t frame_buffer_index,
-    aarectangle scissor_rectangle,
-    vspan<pipeline_box::vertex> &boxVertices,
-    vspan<pipeline_image::vertex> &imageVertices,
-    vspan<pipeline_SDF::vertex> &sdfVertices,
-    utc_nanoseconds display_time_point) noexcept :
+    draw_context::draw_context(
+        gfx_device_vulkan & device,
+        std::size_t frame_buffer_index,
+        aarectangle scissor_rectangle,
+        vspan<pipeline_box::vertex> &boxVertices,
+        vspan<pipeline_image::vertex> &imageVertices,
+        vspan<pipeline_SDF::vertex> &sdfVertices,
+        utc_nanoseconds display_time_point) noexcept :
     device(device),
     frame_buffer_index(frame_buffer_index),
     scissor_rectangle(scissor_rectangle),
@@ -53,7 +54,7 @@ void draw_context::_draw_box(
 }
 
 [[nodiscard]] bool
-draw_context::_draw_image(aarectangle const &clipping_rectangle, quad const &box, paged_image &image) const noexcept
+draw_context::_draw_image(aarectangle const &clipping_rectangle, quad const &box, paged_image & image) const noexcept
 {
     tt_axiom(_image_vertices != nullptr);
 
@@ -131,7 +132,7 @@ void draw_context::_draw_text(
 
     auto atlas_was_updated = false;
     for (ttlet &c : text) {
-        ttlet box = translate2{c.position} * c.metrics.bounding_rectangle;
+        ttlet box = translate2{c.position} *c.metrics.bounding_rectangle;
         ttlet color = text_color ? *text_color : quad_color{c.style.color};
 
         tt_axiom(c.description != nullptr);
@@ -157,17 +158,69 @@ void draw_context::_draw_text_selection(
     aarectangle const &clipping_rectangle,
     matrix3 const &transform,
     text_shaper const &text,
-    size_t first,
-    size_t last,
+    text_selection const &selection,
     tt::color color) const noexcept
 {
-    tt_axiom(first <= last);
+    ttlet[first, last] = selection.selection();
     ttlet first_ = text.begin() + first;
     ttlet last_ = text.begin() + last;
+    tt_axiom(first_ <= text.end());
     tt_axiom(last_ <= text.end());
+    tt_axiom(first_ <= last_);
 
     for (auto it = first_; it != last_; ++it) {
-        _draw_box(clipping_rectangle, it->rectangle, color, tt::color{}, 0.0f, {});
+        _draw_box(clipping_rectangle, transform * it->rectangle, color, tt::color{}, 0.0f, {});
+    }
+}
+
+void draw_context::_draw_text_cursors(
+    aarectangle const &clipping_rectangle,
+    matrix3 const &transform,
+    text_shaper const &text,
+    std::size_t index,
+    tt::color primary_color,
+    tt::color secondary_color) const noexcept
+{
+    ttlet insert_it = text.begin() + index;
+    tt_axiom(insert_it <= text.end());
+
+    // calculate the position of the append-cursor.
+    auto primary_box = aarectangle{};
+    if (insert_it != text.begin()) {
+        ttlet it = insert_it - 1;
+
+        ttlet bottom = std::floor(it->rectangle.bottom());
+        ttlet top = std::ceil(it->rectangle.top());
+        ttlet left = it->direction == unicode_bidi_class::L ? std::ceil(it->rectangle.right() - 1.0f) : std::floor(it->rectangle.left());
+
+        primary_box = {point2{left, bottom}, point2{left + 1.0f, top}};
+    }
+
+    // calculate the position of the insert-cursor
+    auto secondary_box = aarectangle{};
+    if (insert_it != text.end()) {
+        ttlet it = insert_it;
+
+        ttlet bottom = std::floor(it->rectangle.bottom());
+        ttlet top = std::ceil(it->rectangle.top());
+        ttlet left = it->direction == unicode_bidi_class::L ? std::ceil(it->rectangle.left()) : std::floor(it->rectangle.right() - 1.0f);
+
+        secondary_box = {point2{left, bottom}, point2{left + 1.0f, top}};
+    }
+
+    if (not primary_box or overlaps(primary_box, secondary_box)) {
+        primary_box = std::exchange(secondary_box, aarectangle{});
+    }
+
+    if (not (primary_box or secondary_box)) {
+        // XXX Set the primary-box for an empty line.
+    }
+
+    if (primary_box) {
+        _draw_box(clipping_rectangle, transform * primary_box, primary_color, tt::color{}, 0.0f, {});
+    }
+    if (secondary_box) {
+        _draw_box(clipping_rectangle, transform * secondary_box, secondary_color, tt::color{}, 0.0f, {});
     }
 }
 

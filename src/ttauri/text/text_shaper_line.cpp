@@ -170,4 +170,15 @@ void text_shaper_line::layout(horizontal_alignment alignment, float min_x, float
     rectangle = not columns.empty() ? columns.front()->rectangle | columns.back()->rectangle : aarectangle{};
 }
 
+
+[[nodiscard]] text_shaper_line::const_iterator text_shaper_line::get_nearest(point2 position) const noexcept
+{
+    ttlet column_it = std::ranges::min_element(columns, std::ranges::less{}, [position] (ttlet &char_it) {
+        return std::abs(char_it->rectangle.center() - position.x());
+    });
+    tt_axiom(column_it != columns.end());
+
+    return *column_it;
+}
+
 } // namespace tt::inline v1

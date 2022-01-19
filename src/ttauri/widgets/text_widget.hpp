@@ -6,7 +6,7 @@
 
 #include "widget.hpp"
 #include "../GUI/theme_text_style.hpp"
-#include "../text/shaped_text.hpp"
+#include "../text/text_selection.hpp"
 #include "../text/text_shaper.hpp"
 #include "../observable.hpp"
 #include "../alignment.hpp"
@@ -90,6 +90,8 @@ public:
     widget_constraints const &set_constraints() noexcept override;
     void set_layout(widget_layout const &layout) noexcept override;
     void draw(draw_context const &context) noexcept override;
+    bool handle_event(mouse_event const &event) noexcept override;
+    hitbox hitbox_test(point3 position) const noexcept override;
     /// @endprivatesection
 private:
     text_shaper _shaped_text;
@@ -97,13 +99,7 @@ private:
 
     decltype(text)::callback_ptr_type _text_callback;
 
-    /** The first character selected in text.
-     */
-    size_t _selection_first = 0;
-
-    /** One beyond the last character selected in text.
-     */
-    size_t _selection_last = 0;
+    text_selection _selection;
 
     text_widget(gui_window &window, widget *parent) noexcept;
 };

@@ -15,6 +15,7 @@ label_widget::label_widget(gui_window &window, widget *parent) noexcept : super(
     _text_widget = std::make_unique<text_widget>(window, this, to_gstring(label->text()));
     _text_widget->alignment = alignment;
     _text_widget->text_style = text_style;
+    _text_widget->edit_mode = edit_mode;
 
     _text_style_callback = text_style.subscribe([this] {
         switch (*text_style) {
@@ -150,6 +151,17 @@ void label_widget::draw(draw_context const &context) noexcept
     if (visible and overlaps(context, layout())) {
         _icon_widget->draw(context);
         _text_widget->draw(context);
+    }
+}
+
+[[nodiscard]] hitbox label_widget::hitbox_test(point3 position) const noexcept
+{
+    tt_axiom(is_gui_thread());
+
+    if (visible) {
+        return _text_widget->hitbox_test_from_parent(position);
+    } else {
+        return {};
     }
 }
 

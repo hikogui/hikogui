@@ -69,6 +69,8 @@ public:
     text_shaper_line(const_iterator begin, const_iterator first, const_iterator last) noexcept;
 
     void layout(horizontal_alignment alignment, float min_x, float max_x, float sub_pixel_width) noexcept;
+
+    [[nodiscard]] const_iterator get_nearest(point2 position) const noexcept;
 };
 
 }
