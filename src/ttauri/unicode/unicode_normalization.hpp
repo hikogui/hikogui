@@ -6,6 +6,7 @@
 
 #include "unicode_decomposition_type.hpp"
 #include "../cast.hpp"
+#include "../algorithm.hpp"
 #include <cstdint>
 #include <string>
 #include <string_view>
