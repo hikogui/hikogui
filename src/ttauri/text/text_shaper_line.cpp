@@ -170,15 +170,32 @@ void text_shaper_line::layout(horizontal_alignment alignment, float min_x, float
     rectangle = not columns.empty() ? columns.front()->rectangle | columns.back()->rectangle : aarectangle{};
 }
 
+[[nodiscard]] text_shaper_line::const_iterator text_shaper_line::left_of(text_shaper_line::const_iterator it) const noexcept
+{
+    
+}
 
 [[nodiscard]] text_shaper_line::const_iterator text_shaper_line::get_nearest(point2 position) const noexcept
 {
-    ttlet column_it = std::ranges::min_element(columns, std::ranges::less{}, [position] (ttlet &char_it) {
-        return std::abs(char_it->rectangle.center() - position.x());
+    ttlet column_it = std::lower_bound(columns.begin(), columns.end(), position.x(), [] (ttlet &char_it, ttlet &b) {
+        return std::ceil(char_it->rectangle.right()) < b;
     });
-    tt_axiom(column_it != columns.end());
 
-    return *column_it;
+    if (column_it != columns.end()) {
+        auto char_it = *column_it;
+        if (position.x() < char_it->rectangle.center()) {
+            if (char_it->direction == unicode_bidi_class::L) {
+                return char_it;
+            } else {
+
+            }
+        } else {
+        return *column_it;
+
+    } else {
+        tt_axiom(column_it != columns.begin());
+        return (*(column_it - 1)) + 1;
+    }
 }
 
 } // namespace tt::inline v1
