@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "text_cursor.hpp"
 #include "../required.hpp"
 #include "../assert.hpp"
 #include "../math.hpp"
@@ -15,7 +16,7 @@ namespace tt::inline v1{
 
     class text_selection {
     public:
-        constexpr text_selection() noexcept : _cursor(0), _start_first(0), _start_last(0), _finish_first(0), _finish_last(0)
+        constexpr text_selection() noexcept : _cursor(), _start_first(), _start_last(), _finish_first(), _finish_last()
         {
             tt_axiom(holds_invariant());
         }
@@ -25,12 +26,12 @@ namespace tt::inline v1{
         constexpr text_selection &operator=(text_selection const &) noexcept = default;
         constexpr text_selection &operator=(text_selection &&) noexcept = default;
 
-        constexpr std::size_t cursor() const noexcept
+        constexpr text_cursor cursor() const noexcept
         {
             return _cursor;
         }
 
-        constexpr std::pair<std::size_t,std::size_t> selection() const noexcept
+        constexpr std::pair<text_cursor, text_cursor> selection() const noexcept
         {
             return {std::min(_start_first, _finish_first), std::max(_start_last, _finish_last)};
         }
@@ -48,50 +49,49 @@ namespace tt::inline v1{
 
         constexpr void clear_selection(size_t text_size = 0) noexcept
         {
-            inplace_min(_cursor, text_size);
-            _start_first = _start_last = _finish_first = _finish_last = _cursor;
-            tt_axiom(holds_invariant());
+            ttlet new_cursor = std::min(_cursor, text_cursor{text_size, false});
+            return set_cursor(new_cursor);
         }
 
-        constexpr void set_cursor(std::size_t index) noexcept
+        constexpr void set_cursor(text_cursor new_cursor) noexcept
         {
-            _cursor = _start_first = _start_last = _finish_first = _finish_last = index;
+            _cursor = _start_first = _start_last = _finish_first = _finish_last = new_cursor;
             tt_axiom(holds_invariant());
         }
 
-        constexpr void start_selection(std::size_t index, std::size_t first, std::size_t last) noexcept
+        constexpr void start_selection(text_cursor new_cursor, text_cursor first, text_cursor last) noexcept
         {
             _start_first = _finish_first = first;
             _start_last = _finish_last = last;
-            _cursor = index == first ? first : last;
+            _cursor = new_cursor == first ? first : last;
             tt_axiom(holds_invariant());
         }
 
-        constexpr void start_selection(std::size_t index, std::pair<std::size_t, std::size_t> selection) noexcept
+        constexpr void start_selection(text_cursor new_cursor, std::pair<text_cursor, text_cursor> selection) noexcept
         {
-            return start_selection(index, selection.first, selection.second);
+            return start_selection(new_cursor, selection.first, selection.second);
         }
 
-        constexpr void drag_selection(std::size_t index) noexcept
+        constexpr void drag_selection(text_cursor drag_cursor) noexcept
         {
-            _finish_first = _finish_last = index;
-            _cursor = index;
+            _finish_first = _finish_last = drag_cursor;
+            _cursor = drag_cursor;
         }
 
-        constexpr void drag_selection(std::size_t index, std::size_t first, std::size_t last) noexcept
+        constexpr void drag_selection(text_cursor drag_cursor, text_cursor first, text_cursor last) noexcept
         {
             _finish_first = first;
             _finish_last = last;
             _cursor =
                 first < _start_first ? first :
                 last > _start_last ? last :
-                index == first ? first : last;
+                drag_cursor == first ? first : last;
             tt_axiom(holds_invariant());
         }
 
-        constexpr void drag_selection(std::size_t index, std::pair<std::size_t, std::size_t> selection) noexcept
+        constexpr void drag_selection(text_cursor drag_cursor, std::pair<text_cursor, text_cursor> selection) noexcept
         {
-            return drag_selection(index, selection.first, selection.second);
+            return drag_selection(drag_cursor, selection.first, selection.second);
         }
 
         [[nodiscard]] constexpr friend bool operator==(text_selection const &, text_selection const &) noexcept = default;
@@ -108,23 +108,23 @@ namespace tt::inline v1{
         * If the cursor is beyond the end of the text,
         * than cursor is set to the index beyond the end.
          */
-        std::size_t _cursor;
+        text_cursor _cursor;
 
         /** The first character, at the start of the selection.
          */
-        std::size_t _start_first;
+        text_cursor _start_first;
 
         /** One beyond the last character, at the start of the selection.
          */
-        std::size_t _start_last;
+        text_cursor _start_last;
 
         /** The first character, at the end of the selection.
          */
-        std::size_t _finish_first;
+        text_cursor _finish_first;
 
         /** One beyond the last character, at the end of the selection.
          */
-        std::size_t _finish_last;
+        text_cursor _finish_last;
 };
 
 }

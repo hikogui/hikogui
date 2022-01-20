@@ -31,6 +31,7 @@ target_sources(ttauri PRIVATE
     po_parser.hpp
     shaped_text.cpp
     shaped_text.hpp
+    text_cursor.hpp
     text_decoration.hpp
     text_selection.hpp
     text_shaper.cpp

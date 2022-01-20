@@ -82,6 +82,16 @@ public:
 
     [[nodiscard]] text_shaper(font_book &font_book, std::string_view text, text_style const &style) noexcept;
 
+    [[nodiscard]] bool empty() const noexcept
+    {
+        return _text.empty();
+    }
+
+    [[nodiscard]] size_t size() const noexcept
+    {
+        return _text.size();
+    }
+
     [[nodiscard]] char_iterator begin() noexcept
     {
         return _text.begin();
@@ -170,9 +180,9 @@ public:
     /** find the nearest character.
      *
      * @param point The point near
-     * @return The index to the character that is nearest to the point.
+     * @return The text_cursor nearest to the point.
      */
-    [[nodiscard]] size_t get_nearest(point2 point) const noexcept;
+    [[nodiscard]] text_cursor get_nearest(point2 point) const noexcept;
 
     /** Get the character to the left.
      *

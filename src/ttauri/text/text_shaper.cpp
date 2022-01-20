@@ -261,17 +261,17 @@ void text_shaper::position_glyphs(
     }
 }
 
-[[nodiscard]] size_t text_shaper::get_nearest(point2 position) const noexcept
+[[nodiscard]] text_cursor text_shaper::get_nearest(point2 position) const noexcept
 {
     ttlet line_it = std::ranges::min_element(_lines, std::ranges::less{}, [position](ttlet &line) {
         return distance(line.rectangle, position);
     });
 
     if (line_it != _lines.end()) {
-        ttlet char_it = line_it->get_nearest(position);
-        return std::distance(_text.begin(), char_it);
+        ttlet [char_it, after] = line_it->get_nearest(position);
+        return {narrow<size_t>(std::distance(_text.begin(), char_it)), after};
     } else {
-        return 0;
+        return {};
     }
 }
 

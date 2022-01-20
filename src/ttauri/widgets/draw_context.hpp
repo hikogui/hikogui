@@ -14,6 +14,9 @@
 #include "../geometry/transform.hpp"
 #include "../geometry/circle.hpp"
 #include "../geometry/line_end_cap.hpp"
+#include "../text/text_cursor.hpp"
+#include "../text/text_selection.hpp"
+#include "../text/text_shaper.hpp"
 #include "../color/color.hpp"
 #include "../color/quad_color.hpp"
 #include "../vspan.hpp"
@@ -23,8 +26,6 @@ namespace tt::inline v1{
     class gfx_device;
 class gfx_device_vulkan;
 class shaped_text;
-class text_shaper;
-class text_selection;
 class glyph_ids;
 struct paged_image;
 
@@ -548,13 +549,13 @@ public:
      *
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
      * @param text The shaped text to draw.
-     * @param index The character where to insertion cursor is in-front-of.
+     * @param cursor The position of the cursor.
      * @param primary_color The color of the primary cursor (the insertion cursor).
      * @param secondary_color The color of the secondary cursor (the append cursor).
      */
-    void draw_text_cursors(widget_layout const &layout, text_shaper const &text, std::size_t index, tt::color primary_color, tt::color secondary_color) const noexcept
+    void draw_text_cursors(widget_layout const &layout, text_shaper const &text, text_cursor cursor, tt::color primary_color, tt::color secondary_color) const noexcept
     {
-        return _draw_text_cursors(layout.window_clipping_rectangle(), layout.to_window, text, index, primary_color, secondary_color);
+        return _draw_text_cursors(layout.window_clipping_rectangle(), layout.to_window, text, cursor, primary_color, secondary_color);
     }
 
     [[nodiscard]] friend bool overlaps(draw_context const &context, widget_layout const &layout) noexcept
@@ -594,11 +595,15 @@ private:
         text_selection const &selection,
         tt::color) const noexcept;
 
+    void _draw_text_cursor_detail(aarectangle const &clipping_rectangle,
+        matrix3 const &transform,
+        text_shaper::char_const_iterator it, bool on_right, tt::color color, bool show_flag) const noexcept;
+
     void _draw_text_cursors(
         aarectangle const &clipping_rectangle,
         matrix3 const &transform,
         text_shaper const &text,
-        std::size_t index,
+        text_cursor cursor,
         tt::color primary_color,
         tt::color secondary_color) const noexcept;
 
