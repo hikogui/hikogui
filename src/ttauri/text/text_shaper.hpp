@@ -6,6 +6,7 @@
 
 #include "text_shaper_char.hpp"
 #include "text_shaper_line.hpp"
+#include "text_cursor.hpp"
 #include "glyph_metrics.hpp"
 #include "font_metrics.hpp"
 #include "text_style.hpp"

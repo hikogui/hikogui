@@ -1,6 +1,19 @@
 Bidirectional Text Editing
 ==========================
 
+
+Bidirectional text editing is a complex topic and it seems there are many ways
+of implementing it, all of them flawed in some ways.
+
+The way we try to solve this in ttauri is that the cursor keeps track of both the character
+and if it is before or after this character. For example in the string "ab" There are four
+different cursor positions:
+ - before 'a'
+ - after 'a'
+ - before 'b'
+ - after 'b'
+
+
 Use cases: curses in mixed bidi text
 ------------------------------------
 
