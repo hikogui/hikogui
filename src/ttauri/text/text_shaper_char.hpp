@@ -44,6 +44,14 @@ public:
      */
     tt::glyph_metrics metrics;
 
+    /** The line number where this character is located, counting from top to bottom line.
+     */
+    size_t line_nr;
+
+    /** The column number where the character is located on the line, counting from left to right in display order.
+     */
+    size_t column_nr;
+
     /** Position of the character.
      *
      * For a non-ligature this is the origin of the glyph, where the actual glyph

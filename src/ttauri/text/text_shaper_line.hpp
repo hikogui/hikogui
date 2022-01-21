@@ -32,6 +32,10 @@ public:
      */
     font_metrics metrics;
 
+    /** The line number of this line, counted from top to bottom.
+     */
+    size_t line_nr;
+
     /** Position of the base-line of this line.
      */
     float y;
@@ -62,11 +66,12 @@ public:
 
     /** Construct a line.
      *
+     * @param line_nr The line number counting from top to bottom.
      * @param begin The first character of the text.
      * @param first The first character of the line.
      * @param last One beyond the last character of the line.
      */
-    text_shaper_line(const_iterator begin, const_iterator first, const_iterator last) noexcept;
+    text_shaper_line(size_t line_nr, const_iterator begin, const_iterator first, const_iterator last) noexcept;
 
     void layout(horizontal_alignment alignment, float min_x, float max_x, float sub_pixel_width) noexcept;
 

@@ -161,16 +161,16 @@ void draw_context::_draw_text_selection(
     text_selection const &selection,
     tt::color color) const noexcept
 {
-    //ttlet[first, last] = selection.selection();
-    //ttlet first_ = text.begin() + first;
-    //ttlet last_ = text.begin() + last;
-    //tt_axiom(first_ <= text.end());
-    //tt_axiom(last_ <= text.end());
-    //tt_axiom(first_ <= last_);
-    //
-    //for (auto it = first_; it != last_; ++it) {
-    //    _draw_box(clipping_rectangle, transform * it->rectangle, color, tt::color{}, 0.0f, {});
-    //}
+    ttlet[first, last] = selection.selection();
+    ttlet first_ = text.begin() + first.index();
+    ttlet last_ = text.begin() + last.neighbour().index();
+    tt_axiom(first_ <= text.end());
+    tt_axiom(last_ <= text.end());
+    tt_axiom(first_ <= last_);
+    
+    for (auto it = first_; it != last_; ++it) {
+        _draw_box(clipping_rectangle, transform * it->rectangle, color, tt::color{}, 0.0f, {});
+    }
 }
 
 void draw_context::_draw_text_cursor_detail(aarectangle const &clipping_rectangle,
@@ -181,7 +181,7 @@ void draw_context::_draw_text_cursor_detail(aarectangle const &clipping_rectangl
 
     ttlet bottom = std::floor(it->rectangle.bottom());
     ttlet top = std::ceil(it->rectangle.top());
-    ttlet left = on_right ? std::ceil(it->rectangle.right() - 1.0f) : std::floor(it->rectangle.left());
+    ttlet left = std::round((on_right ? it->rectangle.right() : it->rectangle.left()) -0.5f);
 
     ttlet shape_I = aarectangle{point2{left, bottom}, point2{left + 1.0f, top}};
     _draw_box(clipping_rectangle, transform * shape_I, color, tt::color{}, 0.0f, {});
@@ -218,34 +218,35 @@ void draw_context::_draw_text_cursors(
     ttlet primary_is_on_right = primary_ltr == primary_cursor.after();
     ttlet primary_is_on_left = not primary_is_on_right;
 
-    if (primary_cursor.start_of_text()) {
-        // Don't draw secondary cursor which would be on the other edge of the text-field.
-        goto draw_primary;
-    }
+    do {
+        if (primary_cursor.start_of_text()) {
+            // Don't draw secondary cursor which would be on the other edge of the text-field.
+            break;
+        }
 
-    ttlet secondary_cursor = primary_cursor.neighbour();
-    ttlet secondary_it = text.begin() + secondary_cursor.index();
-    if (secondary_it == text.end()) {
-        // Secondary cursor is at end-of-text.
-        goto draw_primary;
-    }
+        ttlet secondary_cursor = primary_cursor.neighbour();
+        ttlet secondary_it = text.begin() + secondary_cursor.index();
+        if (secondary_it == text.end()) {
+            // Secondary cursor is at end-of-text.
+            break;
+        }
 
-    ttlet secondary_ltr = secondary_it->direction == unicode_bidi_class::L;
-    ttlet secondary_is_on_right = secondary_ltr == secondary_cursor.after();
-    ttlet secondary_is_on_left = not secondary_is_on_right;
+        ttlet secondary_ltr = secondary_it->direction == unicode_bidi_class::L;
+        ttlet secondary_is_on_right = secondary_ltr == secondary_cursor.after();
+        ttlet secondary_is_on_left = not secondary_is_on_right;
 
-    if (primary_is_on_right and secondary_is_on_left and text.right_of(primary_it) == secondary_it) {
-        // The secondary character is right of primary character, and the cursors are touching.
-        goto draw_primary;
-    } else if (primary_is_on_left and secondary_is_on_right and text.left_of(primary_it) == secondary_it) {
-        // The secondary character is left of primary character, and the cursors are touching.
-        goto draw_primary;
-    }
+        if (primary_is_on_right and secondary_is_on_left and text.right_of(primary_it) == secondary_it) {
+            // The secondary character is right of primary character, and the cursors are touching.
+            break;
+        } else if (primary_is_on_left and secondary_is_on_right and text.left_of(primary_it) == secondary_it) {
+            // The secondary character is left of primary character, and the cursors are touching.
+            break;
+        }
 
-    draw_flags = true;
-    _draw_text_cursor_detail(clipping_rectangle, transform, secondary_it, secondary_is_on_right, secondary_color, draw_flags);
+        draw_flags = true;
+        _draw_text_cursor_detail(clipping_rectangle, transform, secondary_it, secondary_is_on_right, secondary_color, draw_flags);
+    } while (false);
 
-draw_primary:
     _draw_text_cursor_detail(clipping_rectangle, transform, primary_it, primary_is_on_right, primary_color, draw_flags);
 }
 

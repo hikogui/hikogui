@@ -31,9 +31,22 @@ namespace tt::inline v1{
             return _cursor;
         }
 
+        /** Return the selection of characters.
+        *
+        * @return Cursor before the first character, Cursor after the last character.
+        */
         constexpr std::pair<text_cursor, text_cursor> selection() const noexcept
         {
-            return {std::min(_start_first, _finish_first), std::max(_start_last, _finish_last)};
+            auto first = std::min(_start_first, _finish_first);
+            auto last = std::max(_start_last, _finish_last);
+
+            if (first.after()) {
+                first = first.neighbour();
+            }
+            if (last.before()) {
+                last = last.neighbour();
+            }
+            return {first, last};
         }
 
         [[nodiscard]] constexpr bool empty() const noexcept

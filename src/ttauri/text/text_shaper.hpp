@@ -186,37 +186,17 @@ public:
 
     /** Get the character to the left.
      *
-     * @param index The index to a character.
-     * @return The index to the character on the left,
-     *         or the most right character in the line above,
-     *         or -1 if before begin of text.
+     * @param it The iterator to the character.
+     * @return The iterator to the character on the left, or empty.
      */
-    [[nodiscard]] ssize_t left_of(ssize_t index) const noexcept;
+    [[nodiscard]] std::optional<char_const_iterator> left_of(char_const_iterator it) const noexcept;
 
     /** Get the character to the right.
      *
-     * @param index The index to a character.
-     * @return The index to the character on the right,
-     *         or the most left character in the line below,
-     *         or one beyond the end of text.
-     */
-    [[nodiscard]] ssize_t right_of(ssize_t index) const noexcept;
-
-    /** Get the character above.
-     *
-     * @param index The index to a character.
-     * @return The index to the character above,
-     *         or -1 if before begin of text.
-     */
-    [[nodiscard]] ssize_t above(ssize_t index) const noexcept;
-
-    /** Get the character to the right.
-     *
-     * @param index The index to a character.
-     * @return The index to the character below,
-     *         or one beyond the end of text.
-     */
-    [[nodiscard]] ssize_t below(ssize_t index) const noexcept;
+     * @param it The iterator to the character.
+     * @return The iterator to the character on the left, or empty.
+    */
+    [[nodiscard]] std::optional<char_const_iterator> right_of(char_const_iterator it) const noexcept;
 
 private:
     font_book *_font_book = nullptr;
