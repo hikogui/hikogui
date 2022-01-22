@@ -15,6 +15,8 @@ parser.add_argument("--grapheme-break-property", dest="grapheme_break_property_p
 parser.add_argument("--bidi-brackets", dest="bidi_brackets_path", action="store", required=True)
 parser.add_argument("--bidi-mirroring", dest="bidi_mirroring_path", action="store", required=True)
 parser.add_argument("--line-break", dest="line_break_path", action="store", required=True)
+parser.add_argument("--word-break", dest="word_break_path", action="store", required=True)
+parser.add_argument("--sentence-break", dest="sentence_break_path", action="store", required=True)
 parser.add_argument("--east-asian-width", dest="east_asian_width_path", action="store", required=True)
 options = parser.parse_args()
 
@@ -73,6 +75,8 @@ class UnicodeDescription (object):
         self.decompositionIndex = None
         self.non_starter_code = 0
         self.lineBreakClass = "XX"
+        self.word_break_property = "Other"
+        self.sentence_break_property = "Other"
         self.eastAsianWidth = "N"
 
     def serialize(self):
@@ -83,6 +87,8 @@ class UnicodeDescription (object):
         s += ", TTXGC::{}".format(self.generalCategory)
         s += ", TTXGU::{}".format(self.graphemeClusterBreak)
         s += ", TTXLB::{}".format(self.lineBreakClass)
+        s += ", TTXWB::{}".format(self.word_break_property)
+        s += ", TTXSB::{}".format(self.sentence_break_property)
         s += ", TTXEA::{}".format(self.eastAsianWidth)
 
         # Bidirection algorithm
@@ -221,6 +227,43 @@ def parseLineBreak(filename, descriptions):
             if codePoint in descriptions:
                 descriptions[codePoint].lineBreakClass = lineBreakClass
 
+def parse_word_break_property(filename, descriptions):
+    for line in open(filename, encoding="utf-8"):
+        line = line.rstrip()
+        line = line.split("#", 1)[0]
+        if line == "":
+            continue
+
+        columns = [x.strip() for x in line.split(";")]
+        
+        code_point_range = [int(x, 16) for x in columns[0].split("..")]
+        if len(code_point_range) == 1:
+            code_point_range.append(code_point_range[0])
+
+        word_break_property = columns[1]
+        for code_point in range(code_point_range[0], code_point_range[1] + 1):
+            if code_point in descriptions:
+                descriptions[code_point].word_break_property = word_break_property
+
+def parse_sentence_break_property(filename, descriptions):
+    for line in open(filename, encoding="utf-8"):
+        line = line.rstrip()
+        line = line.split("#", 1)[0]
+        if line == "":
+            continue
+
+        columns = [x.strip() for x in line.split(";")]
+        
+        code_point_range = [int(x, 16) for x in columns[0].split("..")]
+        if len(code_point_range) == 1:
+            code_point_range.append(code_point_range[0])
+
+        sentence_break_property = columns[1]
+        for code_point in range(code_point_range[0], code_point_range[1] + 1):
+            if code_point in descriptions:
+                descriptions[code_point].sentence_break_property = sentence_break_property
+
+
 def parseEastAsianWidth(filename, descriptions):
     for line in open(filename, encoding="utf-8"):
         line = line.rstrip()
@@ -356,6 +399,8 @@ def writeUnicodeData(filename, descriptions, compositions, decompositions):
     fd.write('#include "unicode_bidi_class.hpp"\n')
     fd.write('#include "unicode_grapheme_cluster_break.hpp"\n')
     fd.write('#include "unicode_line_break.hpp"\n')
+    fd.write('#include "unicode_word_break.hpp"\n')
+    fd.write('#include "unicode_sentence_break.hpp"\n')
     fd.write('#include "unicode_east_asian_width.hpp"\n')
     fd.write('#include "unicode_composition.hpp"\n')
     fd.write('#include "unicode_decomposition_type.hpp"\n')
@@ -370,6 +415,8 @@ def writeUnicodeData(filename, descriptions, compositions, decompositions):
     fd.write('#define TTXBB unicode_bidi_bracket_type\n')
     fd.write('#define TTXGU unicode_grapheme_cluster_break\n')
     fd.write('#define TTXLB unicode_line_break_class\n')
+    fd.write('#define TTXWB unicode_word_break_property\n')
+    fd.write('#define TTXSB unicode_sentence_break_property\n')
     fd.write('#define TTXEA unicode_east_asian_width\n')
     fd.write('#define TTXDT unicode_decomposition_type\n')
     fd.write('constexpr auto unicode_db_description_table = std::array{')
@@ -386,6 +433,8 @@ def writeUnicodeData(filename, descriptions, compositions, decompositions):
     fd.write('#undef TTXBB\n')
     fd.write('#undef TTXGU\n')
     fd.write('#undef TTXLB\n')
+    fd.write('#undef TTXWB\n')
+    fd.write('#undef TTXSB\n')
     fd.write('#undef TTXEA\n')
 
     fd.write('#define TTXC unicode_composition\n')
@@ -430,6 +479,8 @@ def main():
     composition_exclusions = parseCompositionExclusions(options.composition_exclusions_path)
     parseGraphemeBreakProperty(options.grapheme_break_property_path, descriptions)
     parseLineBreak(options.line_break_path, descriptions)
+    parse_word_break_property(options.word_break_path, descriptions)
+    parse_sentence_break_property(options.sentence_break_path, descriptions)
     parseEastAsianWidth(options.east_asian_width_path, descriptions)
     parseEmojiData(options.emoji_data_path, descriptions)
     parseBidiBrackets(options.bidi_brackets_path, descriptions)

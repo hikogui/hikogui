@@ -9,6 +9,8 @@
 #include "unicode_bidi_bracket_type.hpp"
 #include "unicode_grapheme_cluster_break.hpp"
 #include "unicode_line_break.hpp"
+#include "unicode_word_break.hpp"
+#include "unicode_sentence_break.hpp"
 #include "unicode_east_asian_width.hpp"
 #include "unicode_decomposition_type.hpp"
 #include "../required.hpp"
@@ -76,17 +78,21 @@ constexpr char32_t paragraph_separator_character = U'\u2029';
 class unicode_description {
 public:
     static constexpr uint32_t code_point_shift = 10;
-    static constexpr uint32_t code_point_mask = 0x1f'ffff << code_point_shift;
+    static constexpr uint32_t code_point_mask = 0x1f'ffff;
     static constexpr uint32_t general_category_shift = 5;
-    static constexpr uint32_t general_category_mask = 0x1f << general_category_shift;
+    static constexpr uint32_t general_category_mask = 0x1f;
     static constexpr uint32_t grapheme_cluster_break_shift = 1;
-    static constexpr uint32_t grapheme_cluster_break_mask = 0xf << grapheme_cluster_break_shift;
+    static constexpr uint32_t grapheme_cluster_break_mask = 0xf;
+    static constexpr uint32_t composition_canonical_shift = 0;
+    static constexpr uint32_t composition_canonical_mask = 1;
 
     [[nodiscard]] constexpr unicode_description(
         char32_t code_point,
         unicode_general_category general_category,
         unicode_grapheme_cluster_break grapheme_cluster_break,
         unicode_line_break_class line_break_class,
+        unicode_word_break_property word_break_property,
+        unicode_sentence_break_property sentence_break_property,
         unicode_east_asian_width east_asian_width,
         unicode_bidi_class bidi_class,
         unicode_bidi_bracket_type bidi_bracket_type,
@@ -100,14 +106,16 @@ public:
         _general_info(
             (static_cast<uint32_t>(code_point) << code_point_shift) |
             (static_cast<uint32_t>(general_category) << general_category_shift) |
-            (static_cast<uint32_t>(grapheme_cluster_break) << grapheme_cluster_break_shift)),
+            (static_cast<uint32_t>(grapheme_cluster_break) << grapheme_cluster_break_shift) |
+            static_cast<uint32_t>(composition_canonical) << composition_canonical_shift),
         _bidi_class(to_underlying(bidi_class)),
         _bidi_bracket_type(to_underlying(bidi_bracket_type)),
         _bidi_mirrored_glyph(static_cast<uint32_t>(bidi_mirrored_glyph)),
         _east_asian_width(static_cast<uint32_t>(east_asian_width)),
         _canonical_combining_class(static_cast<uint32_t>(canonical_combining_class)),
-        _composition_canonical(static_cast<uint32_t>(composition_canonical)),
         _line_break_class(to_underlying(line_break_class)),
+        _word_break_property(to_underlying(word_break_property)),
+        _sentence_break_property(to_underlying(sentence_break_property)),
         _decomposition_index(static_cast<uint32_t>(decomposition_index)),
         _decomposition_type(static_cast<uint32_t>(decomposition_type)),
         _decomposition_length(static_cast<uint32_t>(decomposition_length)),
@@ -117,6 +125,8 @@ public:
         tt_axiom(to_underlying(general_category) <= 0x1f);
         tt_axiom(to_underlying(grapheme_cluster_break) <= 0x0f);
         tt_axiom(to_underlying(line_break_class) <= 0x3f);
+        tt_axiom(to_underlying(word_break_property) <= 0x1f);
+        tt_axiom(to_underlying(sentence_break_property) <= 0xf);
         tt_axiom(to_underlying(east_asian_width) <= 0x7);
         tt_axiom(to_underlying(bidi_class) <= 0x1f);
         tt_axiom(to_underlying(bidi_bracket_type) <= 0x03);
@@ -131,7 +141,7 @@ public:
     [[nodiscard]] static constexpr unicode_description make_unassigned(unicode_description const &other)
     {
         auto r = other;
-        r._general_info &= other._general_info & ~general_category_mask;
+        r._general_info &= ~(general_category_mask << general_category_shift);
         r._general_info |= static_cast<uint32_t>(to_underlying(unicode_general_category::Cn)) << general_category_shift;
         return r;
     }
@@ -141,7 +151,7 @@ public:
      */
     [[nodiscard]] constexpr char32_t code_point() const noexcept
     {
-        return static_cast<char32_t>(_general_info >> 10);
+        return static_cast<char32_t>((_general_info >> code_point_shift) & code_point_mask);
     }
 
     /** The grapheme cluster break of this code-point.
@@ -152,12 +162,22 @@ public:
      */
     [[nodiscard]] constexpr unicode_grapheme_cluster_break grapheme_cluster_break() const noexcept
     {
-        return static_cast<unicode_grapheme_cluster_break>((_general_info >> 1) & 0xf);
+        return static_cast<unicode_grapheme_cluster_break>((_general_info >> grapheme_cluster_break_shift) & grapheme_cluster_break_mask);
     }
 
     [[nodiscard]] constexpr unicode_line_break_class line_break_class() const noexcept
     {
         return static_cast<unicode_line_break_class>(_line_break_class);
+    }
+
+    [[nodiscard]] constexpr unicode_word_break_property word_break_property() const noexcept
+    {
+        return static_cast<unicode_word_break_property>(_word_break_property);
+    }
+
+    [[nodiscard]] constexpr unicode_sentence_break_property sentence_break_property() const noexcept
+    {
+        return static_cast<unicode_sentence_break_property>(_sentence_break_property);
     }
 
     [[nodiscard]] constexpr unicode_east_asian_width east_asian_width() const noexcept
@@ -173,7 +193,7 @@ public:
      */
     [[nodiscard]] constexpr unicode_general_category general_category() const noexcept
     {
-        return static_cast<unicode_general_category>((_general_info >> 5) & 0x1f);
+        return static_cast<unicode_general_category>((_general_info >> general_category_shift) & general_category_mask);
     }
 
     /** The bidi class of this code-point
@@ -219,7 +239,7 @@ public:
      */
     [[nodiscard]] constexpr bool composition_canonical() const noexcept
     {
-        return static_cast<bool>(_composition_canonical);
+        return static_cast<bool>((_general_info >> composition_canonical_shift) & composition_canonical_mask);
     }
 
     /** Get the combining class.
@@ -303,28 +323,27 @@ private:
     // [31:10] code-point
     // [9:5] general category
     // [4:1] grapheme cluster break
-    // [0:0] reserved
+    // [0:0] canonical composition
     uint32_t _general_info;
 
     // 2nd dword
     uint32_t _bidi_class : 5;
     uint32_t _bidi_bracket_type : 2;
     uint32_t _bidi_mirrored_glyph : 21;
-    uint32_t _east_asian_width : 3;
-    uint32_t _word2_reserved : 1 = 0;
+    uint32_t _sentence_break_property : 4;
 
     // 3rd dword
     uint32_t _canonical_combining_class : 8;
-    uint32_t _composition_canonical : 1;
     uint32_t _line_break_class : 6;
+    uint32_t _word_break_property : 5;
     uint32_t _non_starter_code : 10;
-    uint32_t _word3_reserved : 7 = 0;
+    uint32_t _word3_reserved : 3 = 0;
 
     // 4th dword
     uint32_t _decomposition_index : 21;
     uint32_t _decomposition_type : 3;
     uint32_t _decomposition_length : 5;
-    uint32_t _word4_reserved : 3 = 0;
+    uint32_t _east_asian_width : 3;
 
     template<typename It>
     friend constexpr It unicode_description_find(It first, It last, char32_t code_point) noexcept;

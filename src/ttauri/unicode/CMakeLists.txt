@@ -27,8 +27,10 @@ target_sources(ttauri PRIVATE
     unicode_mask.hpp
     unicode_normalization.cpp
     unicode_normalization.hpp
+    unicode_sentence_break.hpp
     unicode_text_segmentation.cpp
     unicode_text_segmentation.hpp
+    unicode_word_break.hpp
     UTF.cpp
     UTF.hpp
 )

@@ -19,5 +19,7 @@ python tools/unicode_data_generator.py \
     --bidi-brackets=${UCDDIR}/BidiBrackets.txt \
     --bidi-mirroring=${UCDDIR}/BidiMirroring.txt \
     --line-break=${UCDDIR}/LineBreak.txt \
+    --word-break=${UCDDIR}/WordBreakProperty.txt \
+    --sentence-break=${UCDDIR}/SentenceBreakProperty.txt \
     --east-asian-width=${UCDDIR}/EastAsianWidth.txt
 
