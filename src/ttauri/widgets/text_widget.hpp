@@ -90,8 +90,10 @@ public:
     widget_constraints const &set_constraints() noexcept override;
     void set_layout(widget_layout const &layout) noexcept override;
     void draw(draw_context const &context) noexcept override;
+    bool handle_event(tt::command command) noexcept override;
     bool handle_event(mouse_event const &event) noexcept override;
     hitbox hitbox_test(point3 position) const noexcept override;
+    [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
     /// @endprivatesection
 private:
     text_shaper _shaped_text;
@@ -102,6 +104,7 @@ private:
     text_selection _selection;
 
     text_widget(gui_window &window, widget *parent) noexcept;
+    [[nodiscard]] gstring_view selected_text() const noexcept;
 };
 
 } // namespace tt::inline v1

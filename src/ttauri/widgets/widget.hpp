@@ -23,8 +23,8 @@
 #include <string>
 #include <ranges>
 
-namespace tt::inline v1 {
-class gui_window;
+namespace tt::inline v1{
+    class gui_window;
 struct mouse_event;
 struct keyboard_event;
 class font_book;
@@ -130,12 +130,15 @@ public:
      * @param position The coordinate of the mouse local to the widget.
      * @return A hit_box object with the cursor-type and a reference to the widget.
      */
-    [[nodiscard]] virtual hitbox hitbox_test(point3 position) const noexcept { return {}; }
+    [[nodiscard]] virtual hitbox hitbox_test(point3 position) const noexcept
+    {
+        return {};
+    }
 
     /** Call hitbox_test from a parent widget.
-    * 
+    *
     * This function will transform the position from parent coordinates to local coordinates.
-    * 
+    *
     * @param position The coordinate of the mouse local to the parent widget.
     */
     [[nodiscard]] virtual hitbox hitbox_test_from_parent(point3 position) const noexcept
@@ -250,7 +253,7 @@ public:
      * @param reject_list The widgets that should ignore this command
      * @return True when the command was handled by this widget or recursed child.
      */
-    [[nodiscard]] virtual bool handle_command_recursive(command command, std::vector<widget const *> const &reject_list) noexcept;
+    virtual bool handle_command_recursive(command command, std::vector<widget const *> const &reject_list = std::vector<widget const *>{}) noexcept;
 
     /*! Handle mouse event.
      * Called by the operating system to show the position and button state of the mouse.

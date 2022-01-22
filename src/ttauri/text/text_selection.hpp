@@ -49,6 +49,16 @@ namespace tt::inline v1{
             return {first, last};
         }
 
+        /** Get the text indices for the selection.
+        */
+        constexpr std::pair<size_t, size_t> selection_indices() const noexcept
+        {
+            ttlet [first, last] = selection();
+            ttlet first_ = first.index();
+            ttlet last_ = last.neighbour().index();
+            return {first_, last_};
+        }
+
         [[nodiscard]] constexpr bool empty() const noexcept
         {
             ttlet [first, last] = selection();

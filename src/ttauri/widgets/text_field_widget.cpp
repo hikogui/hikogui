@@ -122,7 +122,7 @@ void text_field_widget::draw(draw_context const &context) noexcept
     _error_label_widget->draw(context);
 }
 
-bool text_field_widget::handle_event(command command) noexcept
+bool text_field_widget::handle_event(tt::command command) noexcept
 {
     tt_axiom(is_gui_thread());
     _text_was_modified = true;

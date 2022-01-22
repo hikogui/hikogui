@@ -3,7 +3,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "text_widget.hpp"
-#include "../GUI/mouse_event.hpp"
 
 namespace tt::inline v1{
 
@@ -42,11 +41,54 @@ void text_widget::draw(draw_context const &context) noexcept
 {
     if (visible and overlaps(context, layout())) {
         context.draw_text(layout(), _shaped_text);
-        
+
         context.draw_text_selection(layout(), _shaped_text, _selection, theme().color(theme_color::text_select));
 
-        context.draw_text_cursors(layout(), _shaped_text, _selection.cursor(), theme().color(theme_color::cursor), theme().color(theme_color::incomplete_glyph));
+        if (enabled and visible and edit_mode == edit_mode_type::editable) {
+            context.draw_text_cursors(layout(), _shaped_text, _selection.cursor(), theme().color(theme_color::cursor), theme().color(theme_color::incomplete_glyph));
+        }
     }
+}
+
+[[nodiscard]] gstring_view text_widget::selected_text() const noexcept
+{
+    ttlet[first, last] = _selection.selection_indices();
+    ttlet &text_ = *text.cget();
+    tt_axiom(first <= last and last <= text_.size());
+
+    return gstring_view{text_}.substr(first, last - first);
+}
+
+bool text_widget::handle_event(tt::command command) noexcept
+{
+    tt_axiom(is_gui_thread());
+    request_relayout();
+
+    if (enabled) {
+        switch (command) {
+            //case command::text_edit_paste:
+            //    _field.handle_paste(window.get_text_from_clipboard());
+            //    commit(false);
+            //    return true;
+            //
+        case command::text_edit_copy:
+            if (ttlet selected_text_ = selected_text(); not selected_text_.empty()) {
+                window.set_text_on_clipboard(to_string(selected_text_));
+            }
+            return true;
+
+            //
+            //case command::text_edit_cut: window.set_text_on_clipboard(_field.handle_cut()); return true;
+
+        case command::gui_cancel:
+            _selection.clear_selection();
+            return true;
+
+        default:;
+        }
+    }
+
+    return super::handle_event(command);
 }
 
 bool text_widget::handle_event(mouse_event const &event) noexcept
@@ -116,10 +158,16 @@ hitbox text_widget::hitbox_test(point3 position) const noexcept
     tt_axiom(is_gui_thread());
 
     if (visible and enabled and edit_mode != edit_mode_type::fixed and layout().contains(position)) {
-        return hitbox{this, position, hitbox::Type::TextEdit};
+        return hitbox{this, position, edit_mode == edit_mode_type::editable ? hitbox::Type::TextEdit : hitbox::Type::Default};
     } else {
         return hitbox{};
     }
 }
+
+[[nodiscard]] bool text_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
+{
+    return visible and enabled and edit_mode != edit_mode_type::fixed and any(group & tt::keyboard_focus_group::normal);
+}
+
 
 } // namespace tt::inline v1
