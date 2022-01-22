@@ -828,12 +828,18 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     case WM_LBUTTONDBLCLK:
     case WM_MBUTTONDBLCLK:
     case WM_RBUTTONDBLCLK:
-    case WM_XBUTTONDBLCLK:
+    case WM_XBUTTONDBLCLK: {
         mouseEvent.type = mouse_event::Type::ButtonDown;
         mouseEvent.downPosition = mouseEvent.position;
         mouseEvent.clickCount = 2;
         doubleClickTimePoint = std::chrono::utc_clock::now();
-        break;
+
+        // Track draging past the window borders.
+        tt_axiom(win32Window != 0);
+        ttlet window_handle = reinterpret_cast<HWND>(win32Window);
+
+        SetCapture(window_handle);
+        } break;
 
     case WM_MOUSEWHEEL:
     case WM_MOUSEHWHEEL: mouseEvent.type = mouse_event::Type::Wheel; break;

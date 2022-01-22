@@ -156,6 +156,11 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
         auto &tmp = _text.emplace_back(clean_c, style);
         tmp.initialize_glyph(font_book, font);
     }
+
+    _word_break_opportunities = unicode_word_break(_text.begin(), _text.end(), [](ttlet &c) {
+        tt_axiom(c.description != nullptr);
+        return *c.description;
+    });
 }
 
 [[nodiscard]] text_shaper::text_shaper(font_book &font_book, std::string_view text, text_style const &style) noexcept :
@@ -282,6 +287,29 @@ void text_shaper::position_glyphs(
         return {};
     }
 }
+
+[[nodiscard]] std::pair<text_cursor,text_cursor> text_shaper::get_word(text_cursor cursor) const noexcept
+{
+    ttlet first_index = [&]() {
+        for (auto i = narrow<std::ptrdiff_t>(cursor.index()); i >= 0; --i) {
+            if (_word_break_opportunities[i] == unicode_word_break_opportunity::break_allowed) {
+                return narrow<std::size_t>(i);
+            }
+        }
+        return 0_uz;
+    }();
+    ttlet last_index = [&]() {
+        for (auto i = cursor.index() + 1; i < _word_break_opportunities.size(); ++i) {
+            if (_word_break_opportunities[i] == unicode_word_break_opportunity::break_allowed) {
+                return narrow<std::size_t>(i);
+            }
+        }
+        return _word_break_opportunities.size();
+    }();
+
+    return {{first_index, false}, {last_index - 1, true}};
+}
+
 
 [[nodiscard]] std::optional<text_shaper::char_const_iterator> text_shaper::left_of(text_shaper::char_const_iterator it) const noexcept
 {

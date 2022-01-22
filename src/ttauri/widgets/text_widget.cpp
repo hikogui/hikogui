@@ -118,7 +118,7 @@ bool text_widget::handle_event(mouse_event const &event) noexcept
                 _selection.set_cursor(index);
                 break;
             case 2:
-                //_selection.start_selection(index, _shaped_text.get_word(index));
+                _selection.start_selection(index, _shaped_text.get_word(index));
                 break;
             case 3:
                 //_selection.start_selection(index, _shaped_text.get_sentence(index));
@@ -138,7 +138,7 @@ bool text_widget::handle_event(mouse_event const &event) noexcept
                 _selection.drag_selection(index);
                 break;
             case 2:
-                //_selection.drag_selection(index, _shaped_text.get_word(index));
+                _selection.drag_selection(index, _shaped_text.get_word(index));
                 break;
             case 3:
                 //_selection.drag_selection(index, _shaped_text.get_sentence(index));

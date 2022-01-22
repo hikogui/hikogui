@@ -272,16 +272,18 @@ template<typename It, typename ItEnd, typename DescriptionFunc>
     auto size = narrow<size_t>(std::distance(first, last));
     auto r = std::vector<unicode_word_break_opportunity>{size, unicode_word_break_opportunity::unassigned};
 
-    auto infos = std::vector<detail::unicode_word_break_info>{};
-    infos.reserve(size);
-    std::transform(first, last, std::back_inserter(infos), [&] (ttlet &item) {
-        ttlet &description = description_func(item);
-        return detail::unicode_word_break_info{description.word_break_property(), description.grapheme_cluster_break() == unicode_grapheme_cluster_break::Extended_Pictographic};
-        });
+    if (not r.empty()) {
+        auto infos = std::vector<detail::unicode_word_break_info>{};
+        infos.reserve(size);
+        std::transform(first, last, std::back_inserter(infos), [&] (ttlet &item) {
+            ttlet &description = description_func(item);
+            return detail::unicode_word_break_info{description.word_break_property(), description.grapheme_cluster_break() == unicode_grapheme_cluster_break::Extended_Pictographic};
+            });
 
-    detail::unicode_word_break_WB1_WB3d(r, infos);
-    detail::unicode_word_break_WB4(r, infos);
-    detail::unicode_word_break_WB5_WB999(r, infos);
+        detail::unicode_word_break_WB1_WB3d(r, infos);
+        detail::unicode_word_break_WB4(r, infos);
+        detail::unicode_word_break_WB5_WB999(r, infos);
+    }
     return r;
 }
 

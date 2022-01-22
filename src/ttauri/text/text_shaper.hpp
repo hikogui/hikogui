@@ -13,6 +13,7 @@
 #include "glyph_ids.hpp"
 #include "font.hpp"
 #include "../unicode/unicode_description.hpp"
+#include "../unicode/unicode_word_break.hpp"
 #include "../unicode/grapheme.hpp"
 #include "../unicode/gstring.hpp"
 #include "../alignment.hpp"
@@ -185,6 +186,10 @@ public:
      */
     [[nodiscard]] text_cursor get_nearest(point2 point) const noexcept;
 
+    /** Get the selection for the word at the cursor.
+     */
+    [[nodiscard]] std::pair<text_cursor, text_cursor> get_word(text_cursor cursor) const noexcept;
+
     /** Get the character to the left.
      *
      * @param it The iterator to the character.
@@ -209,6 +214,12 @@ private:
      * @note This variable is marked mutable because make_lines() has to modify the characters in the text.
      */
     char_vector _text;
+
+    /** A list of word break opportunities.
+    * 
+    * These indicate a break opportunity before the character in _text.
+    */
+    std::vector<unicode_word_break_opportunity> _word_break_opportunities;
 
     /** A list of lines top-to-bottom order.
      *
