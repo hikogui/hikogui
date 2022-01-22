@@ -3,6 +3,8 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "text_widget.hpp"
+#include "../GUI/gui_window.hpp"
+#include "../GUI/mouse_event.hpp"
 
 namespace tt::inline v1{
 
