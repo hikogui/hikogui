@@ -41,6 +41,7 @@ if(TT_BUILD_TESTS)
         unicode_line_break_tests.cpp
         unicode_text_segmentation_tests.cpp
         unicode_normalization_tests.cpp
+        unicode_word_break_tests.cpp
         UTF_tests.cpp
     )
 endif()
