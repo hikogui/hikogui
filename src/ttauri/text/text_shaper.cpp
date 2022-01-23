@@ -6,6 +6,8 @@
 #include "font_book.hpp"
 #include "../unicode/unicode_line_break.hpp"
 #include "../unicode/unicode_bidi.hpp"
+#include "../unicode/unicode_word_break.hpp"
+#include "../unicode/unicode_sentence_break.hpp"
 #include "../log.hpp"
 #include <numeric>
 #include <ranges>
@@ -157,10 +159,15 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
         tmp.initialize_glyph(font_book, font);
     }
 
-    _word_break_opportunities = unicode_word_break(_text.begin(), _text.end(), [](ttlet &c) {
+    _word_break_opportunities = unicode_word_break(_text.begin(), _text.end(), [] (ttlet &c) {
         tt_axiom(c.description != nullptr);
         return *c.description;
-    });
+        });
+
+    _sentence_break_opportunities = unicode_sentence_break(_text.begin(), _text.end(), [] (ttlet &c) {
+        tt_axiom(c.description != nullptr);
+        return *c.description;
+        });
 }
 
 [[nodiscard]] text_shaper::text_shaper(font_book &font_book, std::string_view text, text_style const &style) noexcept :
@@ -254,8 +261,10 @@ void text_shaper::position_glyphs(
         lines[lines.size() / 2].metrics.cap_height;
     // clang-format on
 
-    ttlet max_y = lines.front().y + std::ceil(lines.front().metrics.x_height);
-    ttlet min_y = lines.back().y;
+    //ttlet max_y = lines.front().y + std::ceil(lines.front().metrics.x_height);
+    //ttlet min_y = lines.back().y;
+    ttlet max_y = lines.front().y + std::ceil(lines.front().metrics.ascender);
+    ttlet min_y = lines.back().y - std::ceil(lines.back().metrics.descender);
     return {aarectangle{point2{0.0f, min_y}, point2{std::ceil(max_width), max_y}}, cap_height};
 }
 
@@ -288,33 +297,38 @@ void text_shaper::position_glyphs(
     }
 }
 
-[[nodiscard]] std::pair<text_cursor,text_cursor> text_shaper::get_word(text_cursor cursor) const noexcept
+[[nodiscard]] static std::pair<text_cursor,text_cursor> get_selection_from_break(text_cursor cursor, std::vector<unicode_break_opportunity> const &break_opportunities) noexcept
 {
     // In the algorithm below we search before and after the character that the cursor is at.
     // We do not use the before/after differentiation.
 
     ttlet first_index = [&]() {
-        for (auto i = narrow<std::ptrdiff_t>(cursor.index()); i >= 0; --i) {
-            // Check the opportunity before the character.
-            if (_word_break_opportunities[i] == unicode_break_opportunity::yes) {
-                return narrow<std::size_t>(i);
-            }
+        auto i = cursor.index();
+        while (break_opportunities[i] == unicode_break_opportunity::no) {
+            --i;
         }
-        return 0_uz;
+        return i;
     }();
     ttlet last_index = [&]() {
-        for (auto i = cursor.index(); i < _word_break_opportunities.size(); ++i) {
-            // Check the opportunity after the character.
-            if (_word_break_opportunities[i + 1] == unicode_break_opportunity::yes) {
-                return narrow<std::size_t>(i);
-            }
+        auto i = cursor.index();
+        while (break_opportunities[i + 1] == unicode_break_opportunity::no) {
+            ++i;
         }
-        return _word_break_opportunities.size();
+        return i;
     }();
 
     return {{first_index, false}, {last_index, true}};
 }
 
+[[nodiscard]] std::pair<text_cursor, text_cursor> text_shaper::get_word(text_cursor cursor) const noexcept
+{
+    return get_selection_from_break(cursor, _word_break_opportunities);
+}
+
+[[nodiscard]] std::pair<text_cursor, text_cursor> text_shaper::get_sentence(text_cursor cursor) const noexcept
+{
+    return get_selection_from_break(cursor, _sentence_break_opportunities);
+}
 
 [[nodiscard]] std::optional<text_shaper::char_const_iterator> text_shaper::left_of(text_shaper::char_const_iterator it) const noexcept
 {

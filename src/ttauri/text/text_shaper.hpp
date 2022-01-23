@@ -13,7 +13,7 @@
 #include "glyph_ids.hpp"
 #include "font.hpp"
 #include "../unicode/unicode_description.hpp"
-#include "../unicode/unicode_word_break.hpp"
+#include "../unicode/unicode_break_opportunity.hpp"
 #include "../unicode/grapheme.hpp"
 #include "../unicode/gstring.hpp"
 #include "../alignment.hpp"
@@ -190,6 +190,10 @@ public:
      */
     [[nodiscard]] std::pair<text_cursor, text_cursor> get_word(text_cursor cursor) const noexcept;
 
+    /** Get the selection for the sentence at the cursor.
+     */
+    [[nodiscard]] std::pair<text_cursor, text_cursor> get_sentence(text_cursor cursor) const noexcept;
+
     /** Get the character to the left.
      *
      * @param it The iterator to the character.
@@ -216,10 +220,12 @@ private:
     char_vector _text;
 
     /** A list of word break opportunities.
-    * 
-    * These indicate a break opportunity before the character in _text.
     */
     std::vector<unicode_break_opportunity> _word_break_opportunities;
+
+    /** A list of sentence break opportunities.
+    */
+    std::vector<unicode_break_opportunity> _sentence_break_opportunities;
 
     /** A list of lines top-to-bottom order.
      *

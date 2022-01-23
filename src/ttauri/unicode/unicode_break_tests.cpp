@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "ttauri/unicode/unicode_word_break.hpp"
+#include "ttauri/unicode/unicode_sentence_break.hpp"
 #include "ttauri/unicode/unicode_description.hpp"
 #include "ttauri/file_view.hpp"
 #include "ttauri/strings.hpp"
@@ -21,30 +22,6 @@ struct test_type {
     std::vector<tt::unicode_break_opportunity> expected;
     std::string comment;
     int line_nr;
-
-    [[nodiscard]] bool check() const noexcept
-    {
-        auto result = tt::unicode_word_break(code_points.begin(), code_points.end(), [] (ttlet code_point) {
-            return tt::unicode_description_find(code_point);
-            });
-
-        if (result.size() != expected.size()) {
-            std::cout << std::format("Expected size {}, result size {}: {}\n", expected.size(), result.size(), comment);
-            std::cout << "Incorrect result size: " << comment << std::endl;
-            return false;
-        }
-
-        for (size_t i = 0; i != result.size(); ++i) {
-            if (expected[i] != result[i]) {
-                std::cout << std::format("Expected '{}', result '{}' at index {}: {}\n", expected[i], result[i], i, comment);
-                return false;
-            } else {
-                return true;
-            }
-        }
-
-        return true;
-    }
 };
 
 static std::optional<test_type> parse_test_line(std::string_view line, int line_nr)
@@ -79,9 +56,9 @@ static std::optional<test_type> parse_test_line(std::string_view line, int line_
     return {std::move(r)};
 }
 
-static tt::generator<test_type> parse_tests()
+static tt::generator<test_type> parse_tests(std::string_view filename)
 {
-    ttlet view = tt::file_view(tt::URL("file:WordBreakTest.txt"));
+    ttlet view = tt::file_view(tt::URL(filename));
     ttlet test_data = view.string_view();
 
     int line_nr = 1;
@@ -95,9 +72,24 @@ static tt::generator<test_type> parse_tests()
 
 } // namespace
 
-TEST(unicode_word_break, word_break)
+TEST(unicode_break, word_break)
 {
-    for (ttlet &test : parse_tests()) {
-        ASSERT_TRUE(test.check());
+    for (ttlet &test : parse_tests("WordBreakTest.txt")) {
+        ttlet result = tt::unicode_word_break(test.code_points.begin(), test.code_points.end(), [] (ttlet code_point) {
+            return tt::unicode_description_find(code_point);
+            });
+
+        ASSERT_EQ(test.expected, result) << test.comment;
+    }
+}
+
+TEST(unicode_break, sentence_break)
+{
+    for (ttlet &test : parse_tests("SentenceBreakTest.txt")) {
+        ttlet result = tt::unicode_sentence_break(test.code_points.begin(), test.code_points.end(), [] (ttlet code_point) {
+            return tt::unicode_description_find(code_point);
+            });
+
+        ASSERT_EQ(test.expected, result) << test.comment;
     }
 }

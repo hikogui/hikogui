@@ -25,7 +25,7 @@ void my_preferences_window_controller::init_license_tab(tt::grid_widget& grid) n
 {
     using namespace tt;
 
-    grid.make_widget<label_widget>("A1", l10n("This is a \xd7\x9c\xd6\xb0\xd7\x9e\xd6\xb7\xd7\xaa\xd6\xb5\xd7\x92:"));
+    grid.make_widget<label_widget>("A1", l10n("This is a \xd7\x9c\xd6\xb0\xd7\x9e\xd6\xb7\xd7\xaa\xd6\xb5\xd7\x92. And another sentence. One more:"));
     auto& checkbox1 = grid.make_widget<toggle_widget>("B1", toggleValue);
     checkbox1.on_label = l10n("true");
     checkbox1.off_label = l10n("false");

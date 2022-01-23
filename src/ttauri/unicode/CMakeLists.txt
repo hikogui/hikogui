@@ -39,10 +39,10 @@ target_sources(ttauri PRIVATE
 if(TT_BUILD_TESTS)
     target_sources(ttauri_tests PRIVATE
         unicode_bidi_tests.cpp
+        unicode_break_tests.cpp
         unicode_line_break_tests.cpp
         unicode_text_segmentation_tests.cpp
         unicode_normalization_tests.cpp
-        unicode_word_break_tests.cpp
         UTF_tests.cpp
     )
 endif()

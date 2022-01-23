@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-/** @file unicode_line_break
+/** @file unicode/unicode_word_break.hpp
  */
 
 #pragma once
@@ -36,17 +36,6 @@ namespace tt::inline v1{
     ExtendNumLet,
     WSegSpace
 };
-
-
-[[nodiscard]] constexpr bool is_AHLetter(unicode_word_break_property const &rhs) noexcept
-{
-    return rhs == unicode_word_break_property::ALetter or rhs == unicode_word_break_property::Hebrew_Letter;
-}
-
-[[nodiscard]] constexpr bool is_MidNumLetQ(unicode_word_break_property const &rhs) noexcept
-{
-    return rhs == unicode_word_break_property::MidNumLet or rhs == unicode_word_break_property::Single_Quote;
-}
 
 namespace detail {
 
@@ -108,9 +97,8 @@ private:
 
     tt_axiom(r.size() == infos.size() + 1);
 
-    // WB1
-    r[0] = yes;
-    // WB2 is implied.
+    r.front() = yes; // WB1
+    r.back() = yes; // WB2
 
     for (auto i = 1_uz; i < infos.size(); ++i) {
         ttlet prev = infos[i - 1];
@@ -142,9 +130,6 @@ private:
     using enum unicode_word_break_property;
 
     tt_axiom(r.size() == infos.size() + 1);
-
-    r.front() = yes; // WB1
-    r.back() = yes; // WB2
 
     for (auto i = 1_uz; i < infos.size(); ++i) {
         ttlet prev = infos[i - 1];

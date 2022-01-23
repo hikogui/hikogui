@@ -7,6 +7,7 @@
 #include "../required.hpp"
 #include "../assert.hpp"
 #include <format>
+#include <ostream>
 
 namespace tt::inline v1 {
 
@@ -16,6 +17,20 @@ enum class unicode_break_opportunity : uint8_t {
     mandatory,
     unassigned,
 };
+
+inline std::ostream &operator<<(std::ostream &lhs, unicode_break_opportunity const &rhs) {
+    ttlet *s = [&] () {
+        switch (rhs) {
+            using enum unicode_break_opportunity;
+        case no: return "X";
+        case yes: return ":";
+        case mandatory: return "!";
+        case unassigned: return "-";
+        default: tt_no_default();
+        }
+    }();
+    return lhs << s;
+}
 
 }
 

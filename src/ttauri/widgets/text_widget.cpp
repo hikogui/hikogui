@@ -46,9 +46,9 @@ void text_widget::draw(draw_context const &context) noexcept
 
         context.draw_text_selection(layout(), _shaped_text, _selection, theme().color(theme_color::text_select));
 
-        if (enabled and visible and edit_mode == edit_mode_type::editable) {
+        //if (enabled and visible and edit_mode == edit_mode_type::editable) {
             context.draw_text_cursors(layout(), _shaped_text, _selection.cursor(), theme().color(theme_color::cursor), theme().color(theme_color::incomplete_glyph));
-        }
+        //}
     }
 }
 
@@ -121,7 +121,7 @@ bool text_widget::handle_event(mouse_event const &event) noexcept
                 _selection.start_selection(index, _shaped_text.get_word(index));
                 break;
             case 3:
-                //_selection.start_selection(index, _shaped_text.get_sentence(index));
+                _selection.start_selection(index, _shaped_text.get_sentence(index));
                 break;
             default:;
             }
@@ -141,7 +141,7 @@ bool text_widget::handle_event(mouse_event const &event) noexcept
                 _selection.drag_selection(index, _shaped_text.get_word(index));
                 break;
             case 3:
-                //_selection.drag_selection(index, _shaped_text.get_sentence(index));
+                _selection.drag_selection(index, _shaped_text.get_sentence(index));
                 break;
             default:;
             }
