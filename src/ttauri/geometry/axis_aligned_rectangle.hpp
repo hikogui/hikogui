@@ -478,18 +478,16 @@ using aarectangle = axis_aligned_rectangle;
 
 } // namespace tt::inline v1
 
-namespace std {
-
 template<>
-class atomic<tt::axis_aligned_rectangle> {
+class std::atomic<tt::axis_aligned_rectangle> {
 public:
     static constexpr bool is_always_lock_free = false;
 
-    constexpr atomic() noexcept : _value() {}
-    atomic(atomic const &) = delete;
-    atomic(atomic &&) = delete;
-    atomic &operator=(atomic const &) = delete;
-    atomic &operator=(atomic &&) = delete;
+    constexpr atomic() noexcept = default;
+    atomic(atomic const &) = default;
+    atomic(atomic &&) = default;
+    atomic &operator=(atomic const &) = default;
+    atomic &operator=(atomic &&) = default;
 
     constexpr atomic(tt::axis_aligned_rectangle const &rhs) noexcept : _value(rhs) {}
     atomic &operator=(tt::axis_aligned_rectangle const &rhs) noexcept
@@ -588,7 +586,7 @@ private:
 };
 
 template<typename CharT>
-struct formatter<tt::axis_aligned_rectangle, CharT> : formatter<float, CharT> {
+struct std::formatter<tt::axis_aligned_rectangle, CharT> : std::formatter<float, CharT> {
     auto parse(auto &pc)
     {
         return pc.end();
@@ -599,5 +597,3 @@ struct formatter<tt::axis_aligned_rectangle, CharT> : formatter<float, CharT> {
         return std::vformat_to(fc.out(), "{}:{}", std::make_format_args(get<0>(t), t.size()));
     }
 };
-
-} // namespace std

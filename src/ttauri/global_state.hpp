@@ -70,21 +70,21 @@ enum class global_state_type : uint64_t {
 
 } // namespace tt::inline v1
 
-namespace std {
-
 template<>
-struct atomic<tt::global_state_type> {
+struct std::atomic<tt::global_state_type> {
     using value_type = tt::global_state_type;
-    using atomic_type = atomic<underlying_type_t<value_type>>;
+    using atomic_type = std::atomic<underlying_type_t<value_type>>;
     atomic_type v;
 
     static constexpr bool is_always_lock_free = atomic_type::is_always_lock_free;
 
     constexpr atomic() noexcept = default;
-    constexpr atomic(value_type desired) noexcept : v(to_underlying(desired)) {}
-    constexpr atomic(atomic const &) = delete;
+    constexpr atomic(atomic const &) = default;
+    constexpr atomic(atomic &&) = default;
+    constexpr atomic &operator=(atomic const &) = default;
+    constexpr atomic &operator=(atomic &&) = default;
 
-    atomic &operator=(const atomic &) = delete;
+    constexpr atomic(value_type desired) noexcept : v(to_underlying(desired)) {}
 
     [[nodiscard]] bool is_lock_free() const noexcept
     {
@@ -168,8 +168,6 @@ struct atomic<tt::global_state_type> {
         return fetch_and(arg) & arg;
     }
 };
-
-} // namespace std
 
 namespace tt::inline v1 {
 

@@ -8,6 +8,7 @@
 #pragma once
 
 #include "unicode_grapheme_cluster_break.hpp"
+#include "unicode_break_opportunity.hpp"
 #include "../cast.hpp"
 #include <algorithm>
 #include <vector>
@@ -46,12 +47,6 @@ namespace tt::inline v1{
 {
     return rhs == unicode_word_break_property::MidNumLet or rhs == unicode_word_break_property::Single_Quote;
 }
-
-enum class unicode_word_break_opportunity {
-    unassigned,
-    no_break,
-    break_allowed
-};
 
 namespace detail {
 
@@ -105,33 +100,33 @@ private:
 };
 
 [[nodiscard]] inline void unicode_word_break_WB1_WB3d(
-    std::vector<unicode_word_break_opportunity> &r,
+    std::vector<unicode_break_opportunity> &r,
     std::vector<unicode_word_break_info> &infos) noexcept
 {
-    using enum unicode_word_break_opportunity;
+    using enum unicode_break_opportunity;
     using enum unicode_word_break_property;
 
-    tt_axiom(r.size() == infos.size());
+    tt_axiom(r.size() == infos.size() + 1);
 
     // WB1
-    r[0] = break_allowed;
+    r[0] = yes;
     // WB2 is implied.
 
-    for (auto i = 1_uz; i != r.size(); ++i) {
+    for (auto i = 1_uz; i < infos.size(); ++i) {
         ttlet prev = infos[i - 1];
         ttlet next = infos[i];
 
         r[i] = [&] () {
             if (prev == CR and next == LF) {
-                return no_break; // WB3
+                return no; // WB3
             } else if (prev == Newline or prev == CR or prev == LF) {
-                return break_allowed; // WB3a
+                return yes; // WB3a
             } else if (next == Newline or next == CR or next == LF) {
-                return break_allowed; // WB3b
+                return yes; // WB3b
             } else if (prev == ZWJ and next.is_pictographic()) {
-                return no_break; // WB3c
+                return no; // WB3c
             } else if (prev == WSegSpace and next == WSegSpace) {
-                return no_break; // WB3d
+                return no; // WB3d
             } else {
                 return unassigned;
             }
@@ -140,25 +135,24 @@ private:
 }
 
 [[nodiscard]] inline void unicode_word_break_WB4(
-    std::vector<unicode_word_break_opportunity> &r,
+    std::vector<unicode_break_opportunity> &r,
     std::vector<unicode_word_break_info> &infos) noexcept
 {
-    using enum unicode_word_break_opportunity;
+    using enum unicode_break_opportunity;
     using enum unicode_word_break_property;
 
-    tt_axiom(r.size() == infos.size());
+    tt_axiom(r.size() == infos.size() + 1);
 
-    // WB1
-    r[0] = break_allowed;
-    // WB2 is implied.
+    r.front() = yes; // WB1
+    r.back() = yes; // WB2
 
-    for (auto i = 1_uz; i != r.size(); ++i) {
+    for (auto i = 1_uz; i < infos.size(); ++i) {
         ttlet prev = infos[i - 1];
         auto &next = infos[i];
 
         if ((prev != Newline and prev != CR and prev != LF) and (next == Extend or next == Format or next == ZWJ)) {
             if (r[i] == unassigned) {
-                r[i] = no_break;
+                r[i] = no;
             }
             next.make_skip();
         }
@@ -166,17 +160,17 @@ private:
 }
 
 [[nodiscard]] inline void unicode_word_break_WB5_WB999(
-    std::vector<unicode_word_break_opportunity> &r,
+    std::vector<unicode_break_opportunity> &r,
     std::vector<unicode_word_break_info> &infos) noexcept
 {
-    using enum unicode_word_break_opportunity;
+    using enum unicode_break_opportunity;
     using enum unicode_word_break_property;
 
-    tt_axiom(r.size() == infos.size());
+    tt_axiom(r.size() == infos.size() + 1);
 
     auto RI_count = 0_uz;
-    ttlet size = narrow<std::ptrdiff_t>(r.size());
-    for (auto i = 0_z; i != size; ++i) {
+    ttlet size = narrow<std::ptrdiff_t>(infos.size());
+    for (auto i = 0_z; i < size; ++i) {
         ttlet &next = infos[i];
         if (next == Regional_Indicator) {
             ++RI_count;
@@ -221,37 +215,37 @@ private:
 
         r[i] = [&] () {
             if (is_AHLetter(prev) and is_AHLetter(next)) {
-                return no_break; // WB5
+                return no; // WB5
             } else if (is_AHLetter(prev) and (next == MidLetter or is_MidNumLetQ(next)) and is_AHLetter(next_next)) {
-                return no_break; // WB6
+                return no; // WB6
             } else if (is_AHLetter(prev_prev) and (prev == MidLetter or is_MidNumLetQ(prev)) and is_AHLetter(next)) {
-                return no_break; // WB7
+                return no; // WB7
             } else if (prev == Hebrew_Letter and next == Single_Quote) {
-                return no_break; // WB7a
+                return no; // WB7a
             } else if (prev == Hebrew_Letter and next == Double_Quote and next_next == Hebrew_Letter) {
-                return no_break; // WB7b
+                return no; // WB7b
             } else if (prev_prev == Hebrew_Letter and prev == Double_Quote and next == Hebrew_Letter) {
-                return no_break; // WB7c
+                return no; // WB7c
             } else if (prev == Numeric and next == Numeric) {
-                return no_break; // WB8
+                return no; // WB8
             } else if (is_AHLetter(prev) and next == Numeric) {
-                return no_break; // WB9
+                return no; // WB9
             } else if (prev == Numeric and is_AHLetter(next)) {
-                return no_break; // WB10
+                return no; // WB10
             } else if (prev_prev == Numeric and (prev == MidNum or is_MidNumLetQ(prev)) and next == Numeric) {
-                return no_break; // WB11
+                return no; // WB11
             } else if (prev == Numeric and (next == MidNum or is_MidNumLetQ(next)) and next_next == Numeric) {
-                return no_break; // WB12
+                return no; // WB12
             } else if (prev == Katakana and next == Katakana) {
-                return no_break; // WB13
+                return no; // WB13
             } else if ((is_AHLetter(prev) or prev == Numeric or prev == Katakana or prev == ExtendNumLet) and next == ExtendNumLet) {
-                return no_break; // WB13a
+                return no; // WB13a
             } else if (prev == ExtendNumLet and (is_AHLetter(next) or next == Numeric or next == Katakana)) {
-                return no_break; // WB13b
+                return no; // WB13b
             } else if (prev == Regional_Indicator and next == Regional_Indicator and (RI_count % 2) == 1) {
-                return no_break; // WB15 WB16
+                return no; // WB15 WB16
             } else {
-                return break_allowed; // WB999
+                return yes; // WB999
             }
         }();
     }
@@ -264,26 +258,24 @@ private:
 * @param first An iterator to the first character.
 * @param last An iterator to the last character.
 * @param description_func A function to get a reference to unicode_description from a character.
-* @return A list of unicode_word_break_opportunity before each character.
+* @return A list of unicode_break_opportunity before each character.
  */
 template<typename It, typename ItEnd, typename DescriptionFunc>
-[[nodiscard]] inline std::vector<unicode_word_break_opportunity> unicode_word_break(It first, ItEnd last, DescriptionFunc const &description_func)
+[[nodiscard]] inline std::vector<unicode_break_opportunity> unicode_word_break(It first, ItEnd last, DescriptionFunc const &description_func)
 {
     auto size = narrow<size_t>(std::distance(first, last));
-    auto r = std::vector<unicode_word_break_opportunity>{size, unicode_word_break_opportunity::unassigned};
+    auto r = std::vector<unicode_break_opportunity>{size + 1, unicode_break_opportunity::unassigned};
 
-    if (not r.empty()) {
-        auto infos = std::vector<detail::unicode_word_break_info>{};
-        infos.reserve(size);
-        std::transform(first, last, std::back_inserter(infos), [&] (ttlet &item) {
-            ttlet &description = description_func(item);
-            return detail::unicode_word_break_info{description.word_break_property(), description.grapheme_cluster_break() == unicode_grapheme_cluster_break::Extended_Pictographic};
-            });
+    auto infos = std::vector<detail::unicode_word_break_info>{};
+    infos.reserve(size);
+    std::transform(first, last, std::back_inserter(infos), [&] (ttlet &item) {
+        ttlet &description = description_func(item);
+        return detail::unicode_word_break_info{description.word_break_property(), description.grapheme_cluster_break() == unicode_grapheme_cluster_break::Extended_Pictographic};
+        });
 
-        detail::unicode_word_break_WB1_WB3d(r, infos);
-        detail::unicode_word_break_WB4(r, infos);
-        detail::unicode_word_break_WB5_WB999(r, infos);
-    }
+    detail::unicode_word_break_WB1_WB3d(r, infos);
+    detail::unicode_word_break_WB4(r, infos);
+    detail::unicode_word_break_WB5_WB999(r, infos);
     return r;
 }
 

@@ -126,14 +126,10 @@ private:
 
 } // namespace tt::inline v1
 
-namespace std {
-
 template<typename T, tt::basic_fixed_string Tag, tt::ssize_t Max>
-struct hash<tt::tagged_id<T, Tag, Max>> {
+struct std::hash<tt::tagged_id<T, Tag, Max>> {
     [[nodiscard]] constexpr std::size_t operator()(tt::tagged_id<T, Tag, Max> const &rhs) const noexcept
     {
         return rhs.hash();
     }
 };
-
-} // namespace std

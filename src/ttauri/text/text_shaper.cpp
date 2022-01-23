@@ -290,24 +290,29 @@ void text_shaper::position_glyphs(
 
 [[nodiscard]] std::pair<text_cursor,text_cursor> text_shaper::get_word(text_cursor cursor) const noexcept
 {
+    // In the algorithm below we search before and after the character that the cursor is at.
+    // We do not use the before/after differentiation.
+
     ttlet first_index = [&]() {
         for (auto i = narrow<std::ptrdiff_t>(cursor.index()); i >= 0; --i) {
-            if (_word_break_opportunities[i] == unicode_word_break_opportunity::break_allowed) {
+            // Check the opportunity before the character.
+            if (_word_break_opportunities[i] == unicode_break_opportunity::yes) {
                 return narrow<std::size_t>(i);
             }
         }
         return 0_uz;
     }();
     ttlet last_index = [&]() {
-        for (auto i = cursor.index() + 1; i < _word_break_opportunities.size(); ++i) {
-            if (_word_break_opportunities[i] == unicode_word_break_opportunity::break_allowed) {
+        for (auto i = cursor.index(); i < _word_break_opportunities.size(); ++i) {
+            // Check the opportunity after the character.
+            if (_word_break_opportunities[i + 1] == unicode_break_opportunity::yes) {
                 return narrow<std::size_t>(i);
             }
         }
         return _word_break_opportunities.size();
     }();
 
-    return {{first_index, false}, {last_index - 1, true}};
+    return {{first_index, false}, {last_index, true}};
 }
 
 

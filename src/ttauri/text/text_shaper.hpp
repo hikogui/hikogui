@@ -219,7 +219,7 @@ private:
     * 
     * These indicate a break opportunity before the character in _text.
     */
-    std::vector<unicode_word_break_opportunity> _word_break_opportunities;
+    std::vector<unicode_break_opportunity> _word_break_opportunities;
 
     /** A list of lines top-to-bottom order.
      *

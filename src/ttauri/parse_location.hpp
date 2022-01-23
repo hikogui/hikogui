@@ -187,14 +187,10 @@ public:
 
 } // namespace tt::inline v1
 
-namespace std {
-
 template<typename CharT>
-struct formatter<tt::parse_location, CharT> : formatter<string_view, CharT> {
+struct std::formatter<tt::parse_location, CharT> : std::formatter<string_view, CharT> {
     auto format(tt::parse_location t, auto &fc)
     {
-        return formatter<string_view, CharT>::format(to_string(t), fc);
+        return std::formatter<string_view, CharT>::format(to_string(t), fc);
     }
 };
-
-} // namespace std

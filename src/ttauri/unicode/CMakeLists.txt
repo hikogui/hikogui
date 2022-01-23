@@ -14,6 +14,7 @@ target_sources(ttauri PRIVATE
     unicode_bidi.hpp
     unicode_bidi_bracket_type.hpp
     unicode_bidi_class.hpp
+    unicode_break_opportunity.hpp
     unicode_composition.cpp
     unicode_composition.hpp
     unicode_decomposition_type.hpp

@@ -127,8 +127,6 @@ inline void composit(pixel_map<sfloat_rgba16> &under, color over, pixel_map<uint
 
 } // namespace tt::inline v1
 
-namespace std {
-
 template<>
 struct std::hash<tt::sfloat_rgba16> {
     std::size_t operator()(tt::sfloat_rgba16 const &rhs) const noexcept
@@ -136,5 +134,3 @@ struct std::hash<tt::sfloat_rgba16> {
         return rhs.hash();
     }
 };
-
-} // namespace std

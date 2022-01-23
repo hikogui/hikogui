@@ -173,14 +173,11 @@ private:
 
 } // namespace tt::inline v1
 
-namespace std {
 
 template<typename CharT>
-struct formatter<tt::audio_device_state, CharT> : formatter<char const *, CharT> {
+struct std::formatter<tt::audio_device_state, CharT> : std::formatter<char const *, CharT> {
     auto format(tt::audio_device_state const &t, auto &fc)
     {
-        return formatter<char const *, CharT>::format(tt::to_const_string(t), fc);
+        return std::formatter<char const *, CharT>::format(tt::to_const_string(t), fc);
     }
 };
-
-} // namespace std

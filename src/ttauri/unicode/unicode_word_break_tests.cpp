@@ -18,7 +18,7 @@ namespace {
 
 struct test_type {
     std::u32string code_points;
-    std::vector<bool> break_opportunities;
+    std::vector<tt::unicode_break_opportunity> expected;
     std::string comment;
     int line_nr;
 
@@ -28,26 +28,18 @@ struct test_type {
             return tt::unicode_description_find(code_point);
             });
 
-        if (result.size() != break_opportunities.size() - 1) {
+        if (result.size() != expected.size()) {
+            std::cout << std::format("Expected size {}, result size {}: {}\n", expected.size(), result.size(), comment);
             std::cout << "Incorrect result size: " << comment << std::endl;
             return false;
         }
 
         for (size_t i = 0; i != result.size(); ++i) {
-            if (result[i] == tt::unicode_word_break_opportunity::unassigned) {
-                std::cout << "unassigned: " << comment << std::endl;
+            if (expected[i] != result[i]) {
+                std::cout << std::format("Expected '{}', result '{}' at index {}: {}\n", expected[i], result[i], i, comment);
                 return false;
-            }
-
-            if (break_opportunities[i]) {
-                if (result[i] == tt::unicode_word_break_opportunity::no_break) {
-                    std::cout << "expected mandatory_break or break_allowed at " << i << ": " << comment << std::endl;
-                    return false;
-                }
-
-            } else if (result[i] != tt::unicode_word_break_opportunity::no_break) {
-                std::cout << "expected no_break at " << i << ": " << comment << std::endl;
-                return false;
+            } else {
+                return true;
             }
         }
 
@@ -75,9 +67,9 @@ static std::optional<test_type> parse_test_line(std::string_view line, int line_
         if (column == "") {
             // Empty.
         } else if (column == "\xc3\xb7") {
-            r.break_opportunities.push_back(true);
+            r.expected.push_back(tt::unicode_break_opportunity::yes);
         } else if (column == "\xc3\x97") {
-            r.break_opportunities.push_back(false);
+            r.expected.push_back(tt::unicode_break_opportunity::no);
         } else {
             auto code_point = static_cast<char32_t>(std::stoi(std::string(column), nullptr, 16));
             r.code_points += code_point;
