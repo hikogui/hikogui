@@ -169,11 +169,9 @@ public:
     }
 
 private:
-    std::array<slot_type, num_slots> _slots = {};
+    std::array<slot_type, num_slots> _slots = {}; // must be at offset 0
     std::atomic<uint16_t> _head = 0;
     alignas(tt::hardware_destructive_interference_size) uint16_t _tail = 0;
 };
-
-static_assert(offsetof(wfree_fifo, _slots) == 0);
 
 } // namespace tt::inline v1
