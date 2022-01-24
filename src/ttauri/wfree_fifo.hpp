@@ -1,7 +1,10 @@
-
+// Copyright Take Vos 2019-2022.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
+#include "architecture.hpp"
 #include "counters.hpp"
 #include <concepts>
 #include <atomic>
@@ -128,8 +131,6 @@ public:
         // The division here should be eliminated by the equal multiplication inside the index operator.
         // auto &slot = _slots[index / slot_size];
 
-        Message* new_ptr;
-
         if constexpr (sizeof(Message) <= slot_type::buffer_size) {
             static_assert(alignof(Message) <= alignof(value_type));
 
@@ -142,13 +143,16 @@ public:
             }
 
             // Overwrite the buffer with the new slot.
-            new_ptr = new (slot.buffer.data()) Message(std::forward<Args>(args)...);
+            auto new_ptr = new (slot.buffer.data()) Message(std::forward<Args>(args)...);
+
+            // Release the buffer for reading.
+            slot.pointer.store(new_ptr, std::memory_order::release);
         }
         else {
             // We need a heap allocated pointer with a fully constructed object
             // Lets do this ahead of time to let another thread have some time
             // to release the ring-buffer-slot.
-            new_ptr = new Message(std::forward<Args>(args)...);
+            ttlet new_ptr = new Message(std::forward<Args>(args)...);
             tt_axiom(new_ptr != nullptr);
     
             // Wait until the slot.pointer is a nullptr.
@@ -158,16 +162,16 @@ public:
                 // If we get here, that would suck, but nothing to do about it.
                 [[unlikely]] contended();
             }
-        }
 
-        // Release the buffer/heap for reading.
-        slot.pointer.store(new_ptr, std::memory_order::release);
+            // Release the heap for reading.
+            slot.pointer.store(new_ptr, std::memory_order::release);
+        }
     }
 
 private:
     std::array<slot_type, num_slots> _slots = {};
     std::atomic<uint16_t> _head = 0;
-    alignas(std::hardware_destructive_interference_size) uint16_t _tail = 0;
+    alignas(tt::hardware_destructive_interference_size) uint16_t _tail = 0;
 };
 
 static_assert(offsetof(wfree_fifo, _slots) == 0);
