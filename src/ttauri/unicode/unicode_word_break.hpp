@@ -243,7 +243,7 @@ private:
 * @param first An iterator to the first character.
 * @param last An iterator to the last character.
 * @param description_func A function to get a reference to unicode_description from a character.
-* @return A list of unicode_break_opportunity before each character.
+* @return A list of unicode_break_opportunity.
  */
 template<typename It, typename ItEnd, typename DescriptionFunc>
 [[nodiscard]] inline std::vector<unicode_break_opportunity> unicode_word_break(It first, ItEnd last, DescriptionFunc const &description_func)

@@ -159,6 +159,11 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
         tmp.initialize_glyph(font_book, font);
     }
 
+    _line_break_opportunities = unicode_line_break(_text.begin(), _text.end(), [](ttlet &c) {
+        tt_axiom(c.description != nullptr);
+        return *c.description;
+    });
+
     _word_break_opportunities = unicode_word_break(_text.begin(), _text.end(), [] (ttlet &c) {
         tt_axiom(c.description != nullptr);
         return *c.description;
@@ -183,16 +188,19 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
     float line_spacing = 1.0f,
     float paragraph_spacing = 1.5f) const noexcept
 {
-    ttlet line_sizes = unicode_break_lines(
-        _text.begin(),
-        _text.end(),
-        rectangle.width(),
-        [](ttlet &c) {
-            return *(c.description);
-        },
-        [](ttlet &c) {
-            return c.width;
-        });
+    //ttlet line_sizes = unicode_break_lines(
+    //    _text.begin(),
+    //    _text.end(),
+    //    rectangle.width(),
+    //    [](ttlet &c) {
+    //        return *(c.description);
+    //    },
+    //    [](ttlet &c) {
+    //        return c.width;
+    //    });
+
+    auto line_sizes = std::vector<size_t>{};
+    line_sizes.push_back(_text.size());
 
     auto r = text_shaper::line_vector{};
     r.reserve(line_sizes.size());

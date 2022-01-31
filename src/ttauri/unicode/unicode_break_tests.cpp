@@ -4,6 +4,7 @@
 
 #include "ttauri/unicode/unicode_word_break.hpp"
 #include "ttauri/unicode/unicode_sentence_break.hpp"
+#include "ttauri/unicode/unicode_line_break.hpp"
 #include "ttauri/unicode/unicode_description.hpp"
 #include "ttauri/file_view.hpp"
 #include "ttauri/strings.hpp"
@@ -89,6 +90,24 @@ TEST(unicode_break, sentence_break)
         ttlet result = tt::unicode_sentence_break(test.code_points.begin(), test.code_points.end(), [] (ttlet code_point) {
             return tt::unicode_description_find(code_point);
             });
+
+        ASSERT_EQ(test.expected, result) << test.comment;
+    }
+}
+
+TEST(unicode_break, line_break)
+{
+    for (ttlet &test : parse_tests("LineBreakTest.txt")) {
+        auto result = tt::unicode_line_break(test.code_points.begin(), test.code_points.end(), [](ttlet code_point) {
+            return tt::unicode_description_find(code_point);
+        });
+
+        // The algorithm produces mandatory-break in the result, but LineBreakTest.txt only has break/no-break.
+        for (auto &x: result) {
+            if (x == tt::unicode_break_opportunity::mandatory) {
+                x = tt::unicode_break_opportunity::yes;
+            }
+        }
 
         ASSERT_EQ(test.expected, result) << test.comment;
     }

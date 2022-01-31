@@ -220,6 +220,10 @@ private:
     char_vector _text;
 
     /** A list of word break opportunities.
+     */
+    std::vector<unicode_break_opportunity> _line_break_opportunities;
+
+    /** A list of word break opportunities.
     */
     std::vector<unicode_break_opportunity> _word_break_opportunities;
 
