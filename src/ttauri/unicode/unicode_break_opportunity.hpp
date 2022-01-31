@@ -8,6 +8,7 @@
 #include "../assert.hpp"
 #include <format>
 #include <ostream>
+#include <vector>
 
 namespace tt::inline v1 {
 
@@ -17,6 +18,10 @@ enum class unicode_break_opportunity : uint8_t {
     mandatory,
     unassigned,
 };
+
+using unicode_break_vector = std::vector<unicode_break_opportunity>;
+using unicode_break_iterator = unicode_break_vector::iterator;
+using unicode_break_const_iterator = unicode_break_vector::const_iterator;
 
 inline std::ostream &operator<<(std::ostream &lhs, unicode_break_opportunity const &rhs) {
     ttlet *s = [&] () {

@@ -14,6 +14,7 @@
 #include "../required.hpp"
 #include "../cast.hpp"
 #include "../assert.hpp"
+#include "../math.hpp"
 #include <cstdint>
 #include <vector>
 #include <algorithm>
@@ -92,15 +93,12 @@ enum class unicode_line_break_class : uint8_t {
 
 /** Calculate the width of a line.
  *
- * @param first Iterator to the first unicode_line_break_clop.
- * @param last Iterator to one beyond the last unicode_line_break_clop.
- * @param category_func Function to get the unicode_general_category of a character
- * @param width_func Function to get the width of a character
+ * @param first Iterator to the first character widths.
+ * @param last Iterator to one beyond the last character width.
  * @return The length of the line.
  */
-template<typename It, typename EndIt, typename CategoryFunc, typename WidthFunc>
 [[nodiscard]] constexpr float
-unicode_LB_width(It first, EndIt last, CategoryFunc const &category_func, WidthFunc const &width_func) noexcept
+unicode_line_break_width(std::vector<float>::const_iterator first, std::vector<float>::const_iterator last) noexcept
 {
     if (first == last) {
         return 0.0f;
@@ -109,11 +107,11 @@ unicode_LB_width(It first, EndIt last, CategoryFunc const &category_func, WidthF
     auto rfirst = std::make_reverse_iterator(last);
     auto rlast = std::make_reverse_iterator(first);
 
-    auto it = std::find_if(rfirst, rlast, [&category_func](ttlet &c) {
-        return is_visible(category_func(c));
+    auto it = std::find_if(rfirst, rlast, [](ttlet &width) {
+        return width >= 0.0;
     });
-    return std::accumulate(it, rlast, 0.0f, [&width_func](float acc, ttlet &c) {
-        return acc + width_func(c);
+    return std::accumulate(it, rlast, 0.0f, [](float acc, ttlet &width) {
+        return acc + abs(width);
     });
 }
 
@@ -187,7 +185,7 @@ unicode_LB1(It first, ItEnd last, DescriptionFunc const &description_func) noexc
 
         ttlet resolved_break_class = [&]() {
             switch (break_class) {
-            using enum unicode_line_break_class;
+                using enum unicode_line_break_class;
             case AI:
             case SG:
             case XX: return AL;
@@ -207,7 +205,7 @@ unicode_LB1(It first, ItEnd last, DescriptionFunc const &description_func) noexc
     return r;
 }
 
-[[nodiscard]] constexpr void unicode_LB2_3(std::vector<unicode_break_opportunity> &opportunities) noexcept
+[[nodiscard]] constexpr void unicode_LB2_3(unicode_break_vector &opportunities) noexcept
 {
     tt_axiom(not opportunities.empty());
     // LB2
@@ -218,7 +216,7 @@ unicode_LB1(It first, ItEnd last, DescriptionFunc const &description_func) noexc
 
 template<typename MatchFunc>
 constexpr void unicode_LB_walk(
-    std::vector<unicode_break_opportunity> &opportunities,
+    unicode_break_vector &opportunities,
     std::vector<unicode_line_break_info> const &infos,
     MatchFunc match_func) noexcept
 {
@@ -278,34 +276,33 @@ constexpr void unicode_LB_walk(
     }
 }
 
-constexpr void
-unicode_LB4_8a(std::vector<unicode_break_opportunity> &opportunities, std::vector<unicode_line_break_info> const &infos) noexcept
+constexpr void unicode_LB4_8a(unicode_break_vector &opportunities, std::vector<unicode_line_break_info> const &infos) noexcept
 {
-    unicode_LB_walk(opportunities, infos, [](ttlet prev, ttlet cur, ttlet next, ttlet next2, ttlet cur_sp, ttlet cur_nu, ttlet num_ri) {
-        using enum unicode_break_opportunity;
-        using enum unicode_line_break_class;
-        if (*cur == BK) {
-            return mandatory; // LB4: 4.0
-        } else if (*cur == CR and *next == LF) {
-            return no; // LB5: 5.01
-        } else if (*cur == CR or *cur == LF or *cur == NL) {
-            return mandatory; // LB5: 5.02, 5.03, 5.04
-        } else if (*next == BK or *next == CR or *next == LF or *next == NL) {
-            return no; // LB6: 6.0
-        } else if (*next == SP or *next == ZW) {
-            return no; // LB7: 7.01, 7.02
-        } else if (cur_sp == ZW) {
-            return yes; // LB8: 8.0
-        } else if (*cur == ZWJ) {
-            return no; // LB8a: 8.1
-        } else {
-            return unassigned;
-        }
-    });
+    unicode_LB_walk(
+        opportunities, infos, [](ttlet prev, ttlet cur, ttlet next, ttlet next2, ttlet cur_sp, ttlet cur_nu, ttlet num_ri) {
+            using enum unicode_break_opportunity;
+            using enum unicode_line_break_class;
+            if (*cur == BK) {
+                return mandatory; // LB4: 4.0
+            } else if (*cur == CR and *next == LF) {
+                return no; // LB5: 5.01
+            } else if (*cur == CR or *cur == LF or *cur == NL) {
+                return mandatory; // LB5: 5.02, 5.03, 5.04
+            } else if (*next == BK or *next == CR or *next == LF or *next == NL) {
+                return no; // LB6: 6.0
+            } else if (*next == SP or *next == ZW) {
+                return no; // LB7: 7.01, 7.02
+            } else if (cur_sp == ZW) {
+                return yes; // LB8: 8.0
+            } else if (*cur == ZWJ) {
+                return no; // LB8a: 8.1
+            } else {
+                return unassigned;
+            }
+        });
 }
 
-constexpr void
-unicode_LB9(std::vector<unicode_break_opportunity> &opportunities, std::vector<unicode_line_break_info> &infos) noexcept
+constexpr void unicode_LB9(unicode_break_vector &opportunities, std::vector<unicode_line_break_info> &infos) noexcept
 {
     using enum unicode_line_break_class;
     using enum unicode_break_opportunity;
@@ -346,8 +343,7 @@ unicode_LB9(std::vector<unicode_break_opportunity> &opportunities, std::vector<u
     }
 }
 
-constexpr void
-unicode_LB10(std::vector<unicode_line_break_info> &infos) noexcept
+constexpr void unicode_LB10(std::vector<unicode_line_break_info> &infos) noexcept
 {
     using enum unicode_line_break_class;
 
@@ -358,95 +354,240 @@ unicode_LB10(std::vector<unicode_line_break_info> &infos) noexcept
     }
 }
 
-constexpr void
-unicode_LB11_31(std::vector<unicode_break_opportunity> &opportunities, std::vector<unicode_line_break_info> const &infos) noexcept
+constexpr void unicode_LB11_31(unicode_break_vector &opportunities, std::vector<unicode_line_break_info> const &infos) noexcept
 {
-    unicode_LB_walk(opportunities, infos, [&](ttlet prev, ttlet cur, ttlet next, ttlet next2, ttlet cur_sp, ttlet cur_nu, ttlet num_ri) {
-        using enum unicode_break_opportunity;
-        using enum unicode_line_break_class;
-        using enum unicode_east_asian_width;
+    unicode_LB_walk(
+        opportunities, infos, [&](ttlet prev, ttlet cur, ttlet next, ttlet next2, ttlet cur_sp, ttlet cur_nu, ttlet num_ri) {
+            using enum unicode_break_opportunity;
+            using enum unicode_line_break_class;
+            using enum unicode_east_asian_width;
 
-        if (*cur == WJ or *next == WJ) {
-            return no; // LB11: 11.01, 11.02
-        } else if (*cur == GL) {
-            return no; // LB12: 12.0
-        } else if (*cur != SP and *cur != BA and *cur != HY and *next == GL) {
-            return no; // LB12a: 12.1
-        } else if (*next == CL or *next == CP or *next == EX or *next == IS or *next == SY) {
-            return no; // LB13: 13.0
-        } else if (cur_sp == OP) {
-            return no; // LB14: 14.0
-        } else if (cur_sp == QU and *next == OP) {
-            return no; // LB15: 15.0
-        } else if ((cur_sp == CL or cur_sp == CP) and *next == NS) {
-            return no; // LB16: 16.0
-        } else if (cur_sp == B2 and *next == B2) {
-            return no; // LB17: 17.0
-        } else if (*cur == SP) {
-            return yes; // LB18: 18.0
-        } else if (*cur == QU or *next == QU) {
-            return no; // LB19: 19.01, 19.02
-        } else if (*cur == CB or *next == CB) {
-            return yes; // LB20: 20.01, 20.02
-        } else if (*cur == BB or *next == BA or *next == HY or *next == NS) {
-            return no; // LB21: 21.01, 21.02, 21.03, 21.04
-        } else if (prev == HL and (*cur == HY or *cur == BA)) {
-            return no; // LB21a: 21.1
-        } else if (*cur == SY and *next == HL) {
-            return no; // LB21b: 21.2
-        } else if (*next == IN) {
-            return no; // LB22: 22.0
-        } else if ((*cur == AL or *cur == HL) and *next == NU) {
-            return no; // LB23: 23.02
-        } else if (*cur == NU and (*next == AL or *next == HL)) {
-            return no; // LB23: 23.03
-        } else if (*cur == PR and (*next == ID or *next == EB or *next == EM)) {
-            return no; // LB23a: 23.12
-        } else if ((*cur == ID or *cur == EB or *cur == EM) and *next == PO) {
-            return no; // LB23a: 23.13
-        } else if ((*cur == PR or *cur == PO) and (*next == AL or *next == HL)) {
-            return no; // LB24: 24.02
-        } else if ((*cur == AL or *cur == HL) and (*next == PR or *next == PO)) {
-            return no; // LB24: 24.03
-        } else if (
-            (*cur == PR or *cur == PO) and ((*next == OP and next2 == NU) or (*next == HY and next2 == NU) or *next == NU)) {
-            return no; // LB25: 25.01
-        } else if ((*cur == OP or *cur == HY) and *next == NU) {
-            return no; // LB25: 25.02
-        } else if (*cur == NU and (*next == NU or *next == SY or *next == IS)) {
-            return no; // LB25: 25.03
-        } else if (cur_nu == NU and (*next == NU or *next == SY or *next == IS or *next == CL or *next == CP)) {
-            return no; // LB25: 25.04
-        } else if ((cur_nu == NU or cur_nu == CL) and (*next == PO or *next == PR)) {
-            return no; // LB25: 25.05
-        } else if (*cur == JL and (*next == JL or *next == JV or *next == H2 or *next == H3)) {
-            return no; // LB26: 26.01
-        } else if ((*cur == JV or *cur == H2) and (*next == JV or *next == JT)) {
-            return no; // LB26: 26.02
-        } else if ((*cur == JT or *cur == H3) and *next == JT) {
-            return no; // LB26: 26.03
-        } else if ((*cur == JL or *cur == JV or *cur == JT or *cur == H2 or *cur == H3) and *next == PO) {
-            return no; // LB27: 27.01
-        } else if (*cur == PR and (*next == JL or *next == JV or *next == JT or *next == H2 or *next == H3)) {
-            return no; // LB27: 27.02
-        } else if ((*cur == AL or *cur == HL) and (*next == AL or *next == HL)) {
-            return no; // LB28: 28.0
-        } else if (*cur == IS and (*next == AL or *next == HL)) {
-            return no; // LB29: 29.0
-        } else if ((*cur == AL or *cur == HL or *cur == NU) and (*next == OP and *next != F and *next != W and *next != H)) {
-            return no; // LB30: 30.01
-        } else if ((*cur == CP and *cur != F and *cur != W and *cur != H) and (*next == AL or *next == HL or *next == NU)) {
-            return no; // LB30: 30.02
-        } else if (*cur == RI and *next == RI and (num_ri % 2) == 1) {
-            return no; // LB30a: 30.11, 30.12, 30.13
-        } else if (*cur == EB and *next == EM) {
-            return no; // LB30b: 30.21
-        } else if (cur->is_extended_pictographic and cur->is_Cn and *next == EM) {
-            return no; // LB30b: 30.22
-        } else {
-            return yes; // LB31: 999.0
+            if (*cur == WJ or *next == WJ) {
+                return no; // LB11: 11.01, 11.02
+            } else if (*cur == GL) {
+                return no; // LB12: 12.0
+            } else if (*cur != SP and *cur != BA and *cur != HY and *next == GL) {
+                return no; // LB12a: 12.1
+            } else if (*next == CL or *next == CP or *next == EX or *next == IS or *next == SY) {
+                return no; // LB13: 13.0
+            } else if (cur_sp == OP) {
+                return no; // LB14: 14.0
+            } else if (cur_sp == QU and *next == OP) {
+                return no; // LB15: 15.0
+            } else if ((cur_sp == CL or cur_sp == CP) and *next == NS) {
+                return no; // LB16: 16.0
+            } else if (cur_sp == B2 and *next == B2) {
+                return no; // LB17: 17.0
+            } else if (*cur == SP) {
+                return yes; // LB18: 18.0
+            } else if (*cur == QU or *next == QU) {
+                return no; // LB19: 19.01, 19.02
+            } else if (*cur == CB or *next == CB) {
+                return yes; // LB20: 20.01, 20.02
+            } else if (*cur == BB or *next == BA or *next == HY or *next == NS) {
+                return no; // LB21: 21.01, 21.02, 21.03, 21.04
+            } else if (prev == HL and (*cur == HY or *cur == BA)) {
+                return no; // LB21a: 21.1
+            } else if (*cur == SY and *next == HL) {
+                return no; // LB21b: 21.2
+            } else if (*next == IN) {
+                return no; // LB22: 22.0
+            } else if ((*cur == AL or *cur == HL) and *next == NU) {
+                return no; // LB23: 23.02
+            } else if (*cur == NU and (*next == AL or *next == HL)) {
+                return no; // LB23: 23.03
+            } else if (*cur == PR and (*next == ID or *next == EB or *next == EM)) {
+                return no; // LB23a: 23.12
+            } else if ((*cur == ID or *cur == EB or *cur == EM) and *next == PO) {
+                return no; // LB23a: 23.13
+            } else if ((*cur == PR or *cur == PO) and (*next == AL or *next == HL)) {
+                return no; // LB24: 24.02
+            } else if ((*cur == AL or *cur == HL) and (*next == PR or *next == PO)) {
+                return no; // LB24: 24.03
+            } else if (
+                (*cur == PR or *cur == PO) and ((*next == OP and next2 == NU) or (*next == HY and next2 == NU) or *next == NU)) {
+                return no; // LB25: 25.01
+            } else if ((*cur == OP or *cur == HY) and *next == NU) {
+                return no; // LB25: 25.02
+            } else if (*cur == NU and (*next == NU or *next == SY or *next == IS)) {
+                return no; // LB25: 25.03
+            } else if (cur_nu == NU and (*next == NU or *next == SY or *next == IS or *next == CL or *next == CP)) {
+                return no; // LB25: 25.04
+            } else if ((cur_nu == NU or cur_nu == CL) and (*next == PO or *next == PR)) {
+                return no; // LB25: 25.05
+            } else if (*cur == JL and (*next == JL or *next == JV or *next == H2 or *next == H3)) {
+                return no; // LB26: 26.01
+            } else if ((*cur == JV or *cur == H2) and (*next == JV or *next == JT)) {
+                return no; // LB26: 26.02
+            } else if ((*cur == JT or *cur == H3) and *next == JT) {
+                return no; // LB26: 26.03
+            } else if ((*cur == JL or *cur == JV or *cur == JT or *cur == H2 or *cur == H3) and *next == PO) {
+                return no; // LB27: 27.01
+            } else if (*cur == PR and (*next == JL or *next == JV or *next == JT or *next == H2 or *next == H3)) {
+                return no; // LB27: 27.02
+            } else if ((*cur == AL or *cur == HL) and (*next == AL or *next == HL)) {
+                return no; // LB28: 28.0
+            } else if (*cur == IS and (*next == AL or *next == HL)) {
+                return no; // LB29: 29.0
+            } else if ((*cur == AL or *cur == HL or *cur == NU) and (*next == OP and *next != F and *next != W and *next != H)) {
+                return no; // LB30: 30.01
+            } else if ((*cur == CP and *cur != F and *cur != W and *cur != H) and (*next == AL or *next == HL or *next == NU)) {
+                return no; // LB30: 30.02
+            } else if (*cur == RI and *next == RI and (num_ri % 2) == 1) {
+                return no; // LB30a: 30.11, 30.12, 30.13
+            } else if (*cur == EB and *next == EM) {
+                return no; // LB30b: 30.21
+            } else if (cur->is_extended_pictographic and cur->is_Cn and *next == EM) {
+                return no; // LB30b: 30.22
+            } else {
+                return yes; // LB31: 999.0
+            }
+        });
+}
+
+[[nodiscard]] constexpr bool unicode_LB_width_check(
+    std::vector<float> const &widths,
+    std::vector<size_t> const &lengths,
+    float maximum_line_width) noexcept
+{
+    auto it = widths.begin();
+    for (auto length : lengths) {
+        if (unicode_line_break_width(it, it + length) > maximum_line_width) {
+            return false;
         }
-    });
+        it += length;
+    }
+    return true;
+}
+
+/** Get the length of each line when broken with mandatory breaks.
+ *
+ * @return A list of line lengths.
+ */
+[[nodiscard]] constexpr std::vector<size_t> unicode_LB_mandatory_lines(unicode_break_vector const &opportunities) noexcept
+{
+    auto r = std::vector<size_t>{};
+
+    auto length = 0_uz;
+    for (auto it = opportunities.begin() + 1; it != opportunities.end(); ++it) {
+        ++length;
+        if (*it == unicode_break_opportunity::mandatory) {
+            r.push_back(length);
+            length = 0_uz;
+        }
+    }
+
+    return r;
+}
+
+[[nodiscard]] constexpr unicode_break_const_iterator unicode_LB_fast_fit_line(
+    unicode_break_const_iterator opportunity_it,
+    std::vector<float>::const_iterator width_it,
+    float maximum_line_width) noexcept
+{
+    using enum unicode_break_opportunity;
+
+    auto width = 0.0f;
+    auto end_of_line = opportunity_it;
+    while (true) {
+        width += abs(*width_it);
+        if (width > maximum_line_width) {
+            // This character makes the width too long.
+            return end_of_line;
+
+        } else if (*opportunity_it == mandatory) {
+            // This character is an end-of-line.
+            return opportunity_it;
+
+        } else if (*opportunity_it == yes) {
+            // This character is a valid break opportunity.
+            end_of_line = opportunity_it;
+        }
+
+        ++opportunity_it;
+        ++width_it;
+    }
+    tt_unreachable();
+}
+
+[[nodiscard]] constexpr unicode_break_const_iterator unicode_LB_slow_fit_line(
+    unicode_break_const_iterator first,
+    unicode_break_const_iterator end_of_line,
+    std::vector<float>::const_iterator first_width,
+    float maximum_line_width) noexcept
+{
+    using enum unicode_break_opportunity;
+
+    // Carefully look forward for a break opportunity.
+    auto it = end_of_line;
+    while (true) {
+        ttlet num_characters = std::distance(first, it + 1);
+        ttlet line_width = unicode_line_break_width(first_width, first_width + num_characters);
+
+        if (line_width <= maximum_line_width) {
+            if (*it == mandatory) {
+                // The next mandatory break fits in the maximum width.
+                return it;
+
+            } else if (*it == yes) {
+                // The next break opportunity fits in the maximum width.
+                end_of_line = it;
+            }
+        } else {
+            // This break opportunity doesn't fit within the maximum width. Use the previous break opportunity.
+            return end_of_line;
+        }
+
+        ++it;
+    }
+    tt_unreachable();
+}
+
+[[nodiscard]] constexpr unicode_break_const_iterator
+unicode_LB_finish_fit_line(unicode_break_const_iterator first, unicode_break_const_iterator end_of_line) noexcept
+{
+    if (first == end_of_line) {
+        // We couldn't break the line to fit the maximum line width.
+        while (*end_of_line == unicode_break_opportunity::no) {
+            ++end_of_line;
+        }
+    }
+
+    // Return iterator past the end-of-line.
+    return end_of_line + 1;
+}
+
+/** Get the length of each line when broken with mandatory breaks.
+ *
+ * @return A list of line lengths.
+ */
+[[nodiscard]] constexpr std::vector<size_t> unicode_LB_fit_lines(
+    unicode_break_vector const &opportunities,
+    std::vector<float> const &widths,
+    float maximum_line_width) noexcept
+{
+    using enum unicode_break_opportunity;
+
+    auto r = std::vector<size_t>{};
+    if (widths.empty()) {
+        return r;
+    }
+
+    auto opportunity_it = opportunities.begin() + 1;
+    auto width_it = widths.begin();
+    while (width_it != widths.end()) {
+        // First quickly find when the line is too long.
+        auto opportunity_eol = unicode_LB_fast_fit_line(opportunity_it, width_it, maximum_line_width);
+        opportunity_eol = unicode_LB_slow_fit_line(opportunity_it, opportunity_eol, width_it, maximum_line_width);
+        opportunity_eol = unicode_LB_finish_fit_line(opportunity_it, opportunity_eol);
+
+        ttlet num_characters = std::distance(opportunity_it, opportunity_eol);
+        r.push_back(num_characters);
+        opportunity_it += num_characters;
+        width_it += num_characters;
+    }
+
+    return r;
 }
 
 } // namespace detail
@@ -459,11 +600,10 @@ unicode_LB11_31(std::vector<unicode_break_opportunity> &opportunities, std::vect
  * @return A list of unicode_break_opportunity.
  */
 template<typename It, typename ItEnd, typename DescriptionFunc>
-[[nodiscard]] inline std::vector<unicode_break_opportunity>
-unicode_line_break(It first, ItEnd last, DescriptionFunc const &description_func)
+[[nodiscard]] inline unicode_break_vector unicode_line_break(It first, ItEnd last, DescriptionFunc const &description_func)
 {
     auto size = narrow<size_t>(std::distance(first, last));
-    auto r = std::vector<unicode_break_opportunity>{size + 1, unicode_break_opportunity::unassigned};
+    auto r = unicode_break_vector{size + 1, unicode_break_opportunity::unassigned};
 
     auto infos = detail::unicode_LB1(first, last, description_func);
     detail::unicode_LB2_3(r);
@@ -474,213 +614,23 @@ unicode_line_break(It first, ItEnd last, DescriptionFunc const &description_func
     return r;
 }
 
-// namespace detail {
-// 
-// /** Calculate the width of a line.
-//  *
-//  * @param first Iterator to the first unicode_line_break_clop.
-//  * @param last Iterator to one beyond the last unicode_line_break_clop.
-//  * @return The length of the line.
-//  */
-// [[nodiscard]] constexpr float
-// unicode_LB_width(unicode_line_break_clop_const_iterator first, unicode_line_break_clop_const_iterator last) noexcept
-// {
-//     return ::tt::unicode_LB_width(
-//         first,
-//         last,
-//         [](ttlet &c) {
-//             return c.general_category;
-//         },
-//         [](ttlet &c) {
-//             return c.width;
-//         });
-// }
-// 
-// [[nodiscard]] constexpr bool unicode_LB_width_check(
-//     unicode_line_break_clop_vector const &opportunities,
-//     std::vector<size_t> const &lengths,
-//     float maximum_line_width) noexcept
-// {
-//     auto it = opportunities.begin();
-//     for (auto length : lengths) {
-//         if (detail::unicode_LB_width(it, it + length) > maximum_line_width) {
-//             return false;
-//         }
-//         it += length;
-//     }
-//     return true;
-// }
-// 
-// /** Get the length of each line when broken with mandatory breaks.
-//  *
-//  * @return A list of line lengths.
-//  */
-// [[nodiscard]] constexpr std::vector<size_t>
-// unicode_LB_mandatory_lines(unicode_line_break_clop_vector const &opportunities) noexcept
-// {
-//     auto r = std::vector<size_t>{};
-// 
-//     auto length = 0_uz;
-//     for (ttlet &x : opportunities) {
-//         ++length;
-//         if (x == unicode_break_opportunity::mandatory) {
-//             r.push_back(length);
-//             length = 0_uz;
-//         }
-//     }
-// 
-//     return r;
-// }
-// 
-// [[nodiscard]] constexpr unicode_line_break_clop_const_iterator unicode_LB_fast_fit_line(
-//     unicode_line_break_clop_const_iterator first,
-//     unicode_line_break_clop_const_iterator last,
-//     float maximum_line_width) noexcept
-// {
-//     using enum unicode_break_opportunity;
-//     tt_axiom(first != last and *(last - 1) == mandatory);
-// 
-//     auto width = 0.0f;
-//     auto end_of_line = first;
-//     auto it = first;
-//     while (true) {
-//         width += it->width;
-//         if (width > maximum_line_width) {
-//             // This character makes the width too long.
-//             return end_of_line;
-// 
-//         } else if (*it == mandatory) {
-//             // This character is an end-of-line.
-//             return it;
-// 
-//         } else if (*it == yes) {
-//             // This character is a valid break opportunity.
-//             end_of_line = it;
-//         }
-// 
-//         ++it;
-//     }
-//     tt_unreachable();
-// }
-// 
-// [[nodiscard]] constexpr unicode_line_break_clop_const_iterator unicode_LB_slow_fit_line(
-//     unicode_line_break_clop_const_iterator first,
-//     unicode_line_break_clop_const_iterator end_of_line,
-//     unicode_line_break_clop_const_iterator last,
-//     float maximum_line_width) noexcept
-// {
-//     using enum unicode_break_opportunity;
-//     tt_axiom(first != last and *(last - 1) == mandatory);
-// 
-//     // Carefully look forward for a break opportunity.
-//     auto it = end_of_line;
-//     while (true) {
-//         if (*it == mandatory and detail::unicode_LB_width(first, it + 1) <= maximum_line_width) {
-//             // The next mandatory break fits in the maximum width.
-//             return it;
-// 
-//         } else if (*it == yes and detail::unicode_LB_width(first, it + 1) <= maximum_line_width) {
-//             // The next break opportunity fits in the maximum width.
-//             end_of_line = it;
-// 
-//         } else if (*it != no) {
-//             // This break opportunity doesn't fit within the maximum width. Use the previous break opportunity.
-//             return end_of_line;
-//         }
-// 
-//         ++it;
-//     }
-//     tt_unreachable();
-// }
-// 
-// [[nodiscard]] constexpr unicode_line_break_clop_const_iterator unicode_LB_finish_fit_line(
-//     unicode_line_break_clop_const_iterator first,
-//     unicode_line_break_clop_const_iterator end_of_line,
-//     unicode_line_break_clop_const_iterator last) noexcept
-// {
-//     tt_axiom(first != last and *(last - 1) == unicode_break_opportunity::mandatory);
-//     tt_axiom(end_of_line != last);
-// 
-//     if (first == end_of_line) {
-//         // We couldn't break the line to fit the maximum line width.
-//         end_of_line = std::find_if(end_of_line, last, [](ttlet &x) {
-//             return x != unicode_break_opportunity::no;
-//         });
-//         tt_axiom(end_of_line != last);
-//     }
-// 
-//     // Return iterator past the end-of-line.
-//     return end_of_line + 1;
-// }
-// 
-// /** Get the length of each line when broken with mandatory breaks.
-//  *
-//  * @return A list of line lengths.
-//  */
-// [[nodiscard]] constexpr std::vector<size_t>
-// unicode_LB_fit_lines(unicode_line_break_clop_vector const &opportunities, float maximum_line_width) noexcept
-// {
-//     using enum unicode_break_opportunity;
-// 
-//     auto r = std::vector<size_t>{};
-//     if (opportunities.empty()) {
-//         return r;
-//     }
-// 
-//     tt_axiom(opportunities.back() == mandatory);
-// 
-//     auto start_of_line = opportunities.cbegin();
-//     while (start_of_line != opportunities.cend()) {
-//         // First quickly find when the line is too long.
-//         auto end_of_line = unicode_LB_fast_fit_line(start_of_line, opportunities.cend(), maximum_line_width);
-//         end_of_line = unicode_LB_slow_fit_line(start_of_line, end_of_line, opportunities.cend(), maximum_line_width);
-//         end_of_line = unicode_LB_finish_fit_line(start_of_line, end_of_line, opportunities.cend());
-// 
-//         r.push_back(std::distance(start_of_line, end_of_line));
-//         start_of_line = end_of_line;
-//     }
-// 
-//     return r;
-// }
-// 
-// } // namespace detail
-// 
-// /** Unicode break lines.
-//  *
-//  * @tparam CharInfoFunc function with signature `std::pair<float, unicode_description const &>(decltype(*It))`
-//  * @param first Iterator to the first character.
-//  * @param last Iterator to one beyond the last character.
-//  * @param maximum_line_width The maximum line width.
-//  * @param char_info_func Function converting item dereferenced from a iterator to a width, description
-//  * @return A list of line lengths.
-//  */
-// template<typename It, typename ItEnd, typename DescriptionFunc, typename WidthFunc>
-// std::vector<size_t> unicode_break_lines(
-//     It first,
-//     ItEnd last,
-//     float maximum_line_width,
-//     DescriptionFunc const &description_func,
-//     WidthFunc const &width_func)
-// {
-//     // Find mandatory breaks.
-//     auto opportunities = detail::unicode_LB1_3(first, last, description_func, width_func);
-//     detail::unicode_LB4_8a(opportunities);
-// 
-//     // After LB4 we have gathered the mandatory breaks.
-//     // See if the lines after mandatory breaks will fit the width and return.
-//     auto r = detail::unicode_LB_mandatory_lines(opportunities);
-//     if (detail::unicode_LB_width_check(opportunities, r, maximum_line_width)) {
-//         return r;
-//     }
-// 
-//     // Find other break opportunities.
-//     detail::unicode_LB9(opportunities);
-//     detail::unicode_LB10(opportunities);
-//     detail::unicode_LB11_31(opportunities);
-// 
-//     r = detail::unicode_LB_fit_lines(opportunities, maximum_line_width);
-//     tt_axiom(detail::unicode_LB_width_check(opportunities, r, maximum_line_width));
-//     return r;
-// }
+/** Unicode break lines.
+ *
+ * @param maximum_line_width The maximum line width.
+ * @return A list of line lengths.
+ */
+[[nodiscard]] constexpr std::vector<size_t>
+unicode_line_break(unicode_break_vector const &opportunities, std::vector<float> const &widths, float maximum_line_width)
+{
+    // See if the lines after mandatory breaks will fit the width and return.
+    auto r = detail::unicode_LB_mandatory_lines(opportunities);
+    if (detail::unicode_LB_width_check(widths, r, maximum_line_width)) {
+        return r;
+    }
+
+    r = detail::unicode_LB_fit_lines(opportunities, widths, maximum_line_width);
+    tt_axiom(detail::unicode_LB_width_check(widths, r, maximum_line_width));
+    return r;
+}
 
 } // namespace tt::inline v1

@@ -7,20 +7,10 @@
 
 namespace tt::inline v1 {
 
-text_shaper_line::text_shaper_line(size_t line_nr, const_iterator begin, const_iterator first, const_iterator last) noexcept :
-    first(first), last(last), columns(), metrics(), line_nr(line_nr), y(0.0f), width(0.0f), end_of_paragraph(false)
+text_shaper_line::text_shaper_line(size_t line_nr, const_iterator begin, const_iterator first, const_iterator last, float width) noexcept :
+    first(first), last(last), columns(), metrics(), line_nr(line_nr), y(0.0f), width(width), end_of_paragraph(false)
 {
     tt_axiom(first != last);
-
-    width = unicode_LB_width(
-        first,
-        last,
-        [](ttlet &c) {
-            return c.description->general_category();
-        },
-        [](ttlet &c) {
-            return c.width;
-        });
 
     for (auto it = first; it != last; ++it) {
         metrics = max(metrics, it->font_metrics());

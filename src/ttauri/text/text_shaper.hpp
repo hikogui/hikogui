@@ -221,15 +221,19 @@ private:
 
     /** A list of word break opportunities.
      */
-    std::vector<unicode_break_opportunity> _line_break_opportunities;
+    unicode_break_vector _line_break_opportunities;
+
+    /** A list of widths, one for each character in _text.
+     */
+    std::vector<float> _line_break_widths;
 
     /** A list of word break opportunities.
     */
-    std::vector<unicode_break_opportunity> _word_break_opportunities;
+    unicode_break_vector _word_break_opportunities;
 
     /** A list of sentence break opportunities.
     */
-    std::vector<unicode_break_opportunity> _sentence_break_opportunities;
+    unicode_break_vector _sentence_break_opportunities;
 
     /** A list of lines top-to-bottom order.
      *

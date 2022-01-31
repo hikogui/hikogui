@@ -164,6 +164,11 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
         return *c.description;
     });
 
+    _line_break_widths.reserve(text.size());
+    for (ttlet &c : _text) {
+        _line_break_widths.push_back(is_visible(c.description->general_category()) ? c.width : -c.width);
+    }
+
     _word_break_opportunities = unicode_word_break(_text.begin(), _text.end(), [] (ttlet &c) {
         tt_axiom(c.description != nullptr);
         return *c.description;
@@ -188,30 +193,24 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
     float line_spacing = 1.0f,
     float paragraph_spacing = 1.5f) const noexcept
 {
-    //ttlet line_sizes = unicode_break_lines(
-    //    _text.begin(),
-    //    _text.end(),
-    //    rectangle.width(),
-    //    [](ttlet &c) {
-    //        return *(c.description);
-    //    },
-    //    [](ttlet &c) {
-    //        return c.width;
-    //    });
-
-    auto line_sizes = std::vector<size_t>{};
-    line_sizes.push_back(_text.size());
+    ttlet line_sizes = unicode_line_break(_line_break_opportunities, _line_break_widths, rectangle.width());
 
     auto r = text_shaper::line_vector{};
     r.reserve(line_sizes.size());
 
-    auto first = _text.begin();
+    auto char_it = _text.begin();
+    auto width_it = _line_break_widths.begin();
     auto line_nr = 0_uz;
     for (ttlet line_size : line_sizes) {
         tt_axiom(line_size > 0);
-        ttlet last = first + line_size;
-        r.emplace_back(line_nr++, _text.begin(), first, last);
-        first = last;
+        ttlet char_eol = char_it + line_size;
+        ttlet width_eol = width_it + line_size;
+
+        ttlet line_width = unicode_line_break_width(width_it, width_eol);
+        r.emplace_back(line_nr++, _text.begin(), char_it, char_eol, line_width);
+
+        char_it = char_eol;
+        width_it = width_eol;
     }
 
     if (not r.empty()) {
@@ -305,7 +304,7 @@ void text_shaper::position_glyphs(
     }
 }
 
-[[nodiscard]] static std::pair<text_cursor,text_cursor> get_selection_from_break(text_cursor cursor, std::vector<unicode_break_opportunity> const &break_opportunities) noexcept
+[[nodiscard]] static std::pair<text_cursor,text_cursor> get_selection_from_break(text_cursor cursor, unicode_break_vector const &break_opportunities) noexcept
 {
     // In the algorithm below we search before and after the character that the cursor is at.
     // We do not use the before/after differentiation.

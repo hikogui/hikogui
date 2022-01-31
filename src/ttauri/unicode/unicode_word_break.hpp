@@ -89,7 +89,7 @@ private:
 };
 
 [[nodiscard]] inline void unicode_word_break_WB1_WB3d(
-    std::vector<unicode_break_opportunity> &r,
+    unicode_break_vector &r,
     std::vector<unicode_word_break_info> &infos) noexcept
 {
     using enum unicode_break_opportunity;
@@ -123,7 +123,7 @@ private:
 }
 
 [[nodiscard]] inline void unicode_word_break_WB4(
-    std::vector<unicode_break_opportunity> &r,
+    unicode_break_vector &r,
     std::vector<unicode_word_break_info> &infos) noexcept
 {
     using enum unicode_break_opportunity;
@@ -145,7 +145,7 @@ private:
 }
 
 [[nodiscard]] inline void unicode_word_break_WB5_WB999(
-    std::vector<unicode_break_opportunity> &r,
+    unicode_break_vector &r,
     std::vector<unicode_word_break_info> &infos) noexcept
 {
     using enum unicode_break_opportunity;
@@ -246,10 +246,10 @@ private:
 * @return A list of unicode_break_opportunity.
  */
 template<typename It, typename ItEnd, typename DescriptionFunc>
-[[nodiscard]] inline std::vector<unicode_break_opportunity> unicode_word_break(It first, ItEnd last, DescriptionFunc const &description_func)
+[[nodiscard]] inline unicode_break_vector unicode_word_break(It first, ItEnd last, DescriptionFunc const &description_func)
 {
     auto size = narrow<size_t>(std::distance(first, last));
-    auto r = std::vector<unicode_break_opportunity>{size + 1, unicode_break_opportunity::unassigned};
+    auto r = unicode_break_vector{size + 1, unicode_break_opportunity::unassigned};
 
     auto infos = std::vector<detail::unicode_word_break_info>{};
     infos.reserve(size);

@@ -100,4 +100,10 @@ constexpr void inplace_clamp(T &a, T const &lo, T const &hi) noexcept
     a = std::clamp(a, lo, hi);
 }
 
+template<typename T>
+[[nodiscard]] constexpr T abs(T a) noexcept
+{
+    return a < T{} ? -a : a;
+}
+
 } // namespace tt::inline v1

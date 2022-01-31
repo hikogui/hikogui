@@ -76,7 +76,7 @@ private:
 };
 
 [[nodiscard]] inline void unicode_sentence_break_SB1_SB4(
-    std::vector<unicode_break_opportunity> &r,
+    unicode_break_vector &r,
     std::vector<unicode_sentence_break_info> &infos) noexcept
 {
     using enum unicode_break_opportunity;
@@ -104,7 +104,7 @@ private:
 }
 
 [[nodiscard]] inline void unicode_sentence_break_SB5(
-    std::vector<unicode_break_opportunity> &r,
+    unicode_break_vector &r,
     std::vector<unicode_sentence_break_info> &infos) noexcept
 {
     using enum unicode_break_opportunity;
@@ -126,7 +126,7 @@ private:
 }
 
 [[nodiscard]] inline void unicode_sentence_break_SB6_SB998(
-    std::vector<unicode_break_opportunity> &r,
+    unicode_break_vector &r,
     std::vector<unicode_sentence_break_info> &infos) noexcept
 {
     using enum unicode_break_opportunity;
@@ -263,10 +263,10 @@ private:
 * @return A list of unicode_break_opportunity before each character.
  */
 template<typename It, typename ItEnd, typename DescriptionFunc>
-[[nodiscard]] inline std::vector<unicode_break_opportunity> unicode_sentence_break(It first, ItEnd last, DescriptionFunc const &description_func)
+[[nodiscard]] inline unicode_break_vector unicode_sentence_break(It first, ItEnd last, DescriptionFunc const &description_func)
 {
     auto size = narrow<size_t>(std::distance(first, last));
-    auto r = std::vector<unicode_break_opportunity>{size + 1, unicode_break_opportunity::unassigned};
+    auto r = unicode_break_vector{size + 1, unicode_break_opportunity::unassigned};
 
     auto infos = std::vector<detail::unicode_sentence_break_info>{};
     infos.reserve(size);
