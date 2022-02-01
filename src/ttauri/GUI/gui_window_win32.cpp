@@ -527,12 +527,32 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
     case WM_SIZING: {
         ttlet rect_ptr = std::launder(std::bit_cast<RECT *>(lParam));
-        setOSWindowRectangleFromRECT(*rect_ptr);
+        if (rect_ptr->right < rect_ptr->left or rect_ptr->bottom < rect_ptr->top) {
+            tt_log_error(
+                "Invalid RECT received on WM_SIZING: left={}, right={}, bottom={}, top={}",
+                rect_ptr->left,
+                rect_ptr->right,
+                rect_ptr->bottom,
+                rect_ptr->top);
+
+        } else {
+            setOSWindowRectangleFromRECT(*rect_ptr);
+        }
     } break;
 
     case WM_MOVING: {
         ttlet rect_ptr = std::launder(std::bit_cast<RECT *>(lParam));
-        setOSWindowRectangleFromRECT(*rect_ptr);
+        if (rect_ptr->right < rect_ptr->left or rect_ptr->bottom < rect_ptr->top) {
+            tt_log_error(
+                "Invalid RECT received on WM_MOVING: left={}, right={}, bottom={}, top={}",
+                rect_ptr->left,
+                rect_ptr->right,
+                rect_ptr->bottom,
+                rect_ptr->top);
+
+        } else {
+            setOSWindowRectangleFromRECT(*rect_ptr);
+        }
     } break;
 
     case WM_WINDOWPOSCHANGED: {
@@ -839,7 +859,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         ttlet window_handle = reinterpret_cast<HWND>(win32Window);
 
         SetCapture(window_handle);
-        } break;
+    } break;
 
     case WM_MOUSEWHEEL:
     case WM_MOUSEHWHEEL: mouseEvent.type = mouse_event::Type::Wheel; break;

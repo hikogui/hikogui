@@ -77,7 +77,7 @@ public:
         gui_window &window,
         widget *parent,
         Text &&text,
-        Alignment &&alignment = tt::alignment{horizontal_alignment::center, vertical_alignment::middle},
+        Alignment &&alignment = tt::alignment::middle_center(),
         TextStyle &&text_style = theme_text_style::label) noexcept :
         text_widget(window, parent)
     {

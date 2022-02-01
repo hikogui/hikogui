@@ -13,7 +13,7 @@ namespace tt::inline v1::detail {
 [[nodiscard]] static unicode_bidi_class unicode_bidi_P2(
     unicode_bidi_char_info_iterator first,
     unicode_bidi_char_info_iterator last,
-    unicode_bidi_context context,
+    unicode_bidi_context const &context,
     bool rule_X5c) noexcept;
 
 [[nodiscard]] static int8_t unicode_bidi_P3(unicode_bidi_class paragraph_bidi_class) noexcept;
@@ -181,7 +181,7 @@ static void unicode_bidi_X1(
     unicode_bidi_char_info_iterator first,
     unicode_bidi_char_info_iterator last,
     int8_t paragraph_embedding_level,
-    unicode_bidi_context context) noexcept
+    unicode_bidi_context const &context) noexcept
 {
     using enum unicode_bidi_class;
 
@@ -265,7 +265,7 @@ LRI:
 
         case FSI: { // X5c. Isolates
             auto sub_context = context;
-            sub_context.default_paragraph_direction = unicode_bidi_class::unknown;
+            sub_context.direction_mode = unicode_bidi_context::mode_type::auto_LTR;
             ttlet sub_paragraph_bidi_class = unicode_bidi_P2(it + 1, last, sub_context, true);
             ttlet sub_paragraph_embedding_level = unicode_bidi_P3(sub_paragraph_bidi_class);
             if (sub_paragraph_embedding_level == 0) {
@@ -582,8 +582,7 @@ unicode_bidi_N0_enclosed_strong_type(unicode_bidi_bracket_pair const &pair, unic
     return opposite_direction;
 }
 
-static void
-unicode_bidi_N0(unicode_bidi_isolated_run_sequence &isolated_run_sequence, unicode_bidi_context context)
+static void unicode_bidi_N0(unicode_bidi_isolated_run_sequence &isolated_run_sequence, unicode_bidi_context const &context)
 {
     using enum unicode_bidi_class;
 
@@ -796,7 +795,7 @@ static void unicode_bidi_X10(
     unicode_bidi_char_info_iterator first,
     unicode_bidi_char_info_iterator last,
     int8_t paragraph_embedding_level,
-    unicode_bidi_context context) noexcept
+    unicode_bidi_context const &context) noexcept
 {
     auto isolated_run_sequence_set = unicode_bidi_BD13(unicode_bidi_BD7(first, last));
 
@@ -903,16 +902,29 @@ static void unicode_bidi_L2(
 
 static void unicode_bidi_L3(unicode_bidi_char_info_iterator first, unicode_bidi_char_info_iterator last) noexcept {}
 
+[[nodiscard]] static unicode_bidi_class unicode_bidi_P2_default(unicode_bidi_context const &context) noexcept
+{
+    if (context.direction_mode == unicode_bidi_context::mode_type::auto_LTR) {
+        return unicode_bidi_class::L;
+    } else if (context.direction_mode == unicode_bidi_context::mode_type::auto_RTL) {
+        return unicode_bidi_class::R;
+    } else {
+        tt_no_default();
+    }
+}
+
 [[nodiscard]] static unicode_bidi_class unicode_bidi_P2(
     unicode_bidi_char_info_iterator first,
     unicode_bidi_char_info_iterator last,
-    unicode_bidi_context context,
+    unicode_bidi_context const &context,
     bool rule_X5c) noexcept
 {
     using enum unicode_bidi_class;
 
-    if (context.default_paragraph_direction != unknown) {
-        return context.default_paragraph_direction;
+    if (context.direction_mode == unicode_bidi_context::mode_type::LTR) {
+        return unicode_bidi_class::L;
+    } else if (context.direction_mode == unicode_bidi_context::mode_type::RTL) {
+        return unicode_bidi_class::R;
     }
 
     long long isolate_level = 0;
@@ -933,13 +945,13 @@ static void unicode_bidi_L3(unicode_bidi_char_info_iterator first, unicode_bidi_
                 --isolate_level;
             } else if (rule_X5c) {
                 // End at the matching PDI, when recursing for rule X5c.
-                return unknown;
+                return unicode_bidi_P2_default(context);
             }
             break;
         default:;
         }
     }
-    return unknown;
+    return unicode_bidi_P2_default(context);
 }
 
 [[nodiscard]] static int8_t unicode_bidi_P3(unicode_bidi_class paragraph_bidi_class) noexcept
@@ -951,7 +963,7 @@ static void unicode_bidi_P1_line(
     unicode_bidi_char_info_iterator first,
     unicode_bidi_char_info_iterator last,
     int8_t paragraph_embedding_level,
-    unicode_bidi_context context) noexcept
+    unicode_bidi_context const &context) noexcept
 {
     ttlet[lowest_odd, highest] = unicode_bidi_L1(first, last, paragraph_embedding_level);
     unicode_bidi_L2(first, last, lowest_odd, highest);
@@ -960,7 +972,7 @@ static void unicode_bidi_P1_line(
 
     if (context.move_lf_and_ps_to_end_of_line) {
         ttlet it = std::find_if(first, last, [](ttlet &item) {
-            return item.code_point == line_separator_character or item.code_point == paragraph_separator_character;
+            return item.code_point == unicode_LS or item.code_point == unicode_PS;
         });
         if (it != last) {
             it->direction = unicode_bidi_class::L;
@@ -972,11 +984,11 @@ static void unicode_bidi_P1_line(
 [[nodiscard]] static std::pair<unicode_bidi_char_info_iterator, unicode_bidi_class> unicode_bidi_P1_paragraph(
     unicode_bidi_char_info_iterator first,
     unicode_bidi_char_info_iterator last,
-    unicode_bidi_context context) noexcept
+    unicode_bidi_context const &context) noexcept
 {
-    auto paragraph_bidi_class = unicode_bidi_P2(first, last, context, false);
-
-    auto paragraph_embedding_level = unicode_bidi_P3(paragraph_bidi_class);
+    ttlet default_paragraph_direction = unicode_bidi_P2(first, last, context, false);
+    ttlet paragraph_embedding_level = unicode_bidi_P3(default_paragraph_direction);
+    ttlet paragraph_direction = paragraph_embedding_level % 2 == 0 ? unicode_bidi_class::L : unicode_bidi_class::R;
 
     unicode_bidi_X1(first, last, paragraph_embedding_level, context);
     last = unicode_bidi_X9(first, last);
@@ -984,7 +996,7 @@ static void unicode_bidi_P1_line(
 
     auto line_begin = first;
     for (auto it = first; it != last; ++it) {
-        if (context.enable_line_separator && it->code_point == line_separator_character) {
+        if (context.enable_line_separator && it->code_point == unicode_LS) {
             ttlet line_end = it + 1;
             unicode_bidi_P1_line(line_begin, line_end, paragraph_embedding_level, context);
             line_begin = line_end;
@@ -995,13 +1007,13 @@ static void unicode_bidi_P1_line(
         unicode_bidi_P1_line(line_begin, last, paragraph_embedding_level, context);
     }
 
-    return {last, paragraph_bidi_class};
+    return {last, paragraph_direction};
 }
 
 [[nodiscard]] std::pair<unicode_bidi_char_info_iterator, std::vector<unicode_bidi_class>> unicode_bidi_P1(
     unicode_bidi_char_info_iterator first,
     unicode_bidi_char_info_iterator last,
-    unicode_bidi_context context) noexcept
+    unicode_bidi_context const &context) noexcept
 {
     auto it = first;
     auto paragraph_begin = it;
@@ -1009,7 +1021,7 @@ static void unicode_bidi_P1_line(
     while (it != last) {
         if (it->direction == unicode_bidi_class::B) {
             ttlet paragraph_end = it + 1;
-            ttlet [new_paragraph_end, paragraph_bidi_class] = unicode_bidi_P1_paragraph(paragraph_begin, paragraph_end, context);
+            ttlet[new_paragraph_end, paragraph_bidi_class] = unicode_bidi_P1_paragraph(paragraph_begin, paragraph_end, context);
             paragraph_directions.push_back(paragraph_bidi_class);
 
             // Move the removed items of the paragraph to the end of the text.
@@ -1017,14 +1029,13 @@ static void unicode_bidi_P1_line(
             last -= std::distance(new_paragraph_end, paragraph_end);
 
             paragraph_begin = it = new_paragraph_end;
-
         } else {
             ++it;
         }
     }
 
     if (paragraph_begin != last) {
-        ttlet [new_paragraph_end, paragraph_bidi_class] = unicode_bidi_P1_paragraph(paragraph_begin, last, context);
+        ttlet[new_paragraph_end, paragraph_bidi_class] = unicode_bidi_P1_paragraph(paragraph_begin, last, context);
         paragraph_directions.push_back(paragraph_bidi_class);
         last = new_paragraph_end;
     }

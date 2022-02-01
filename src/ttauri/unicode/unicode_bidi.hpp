@@ -10,7 +10,9 @@
 namespace tt::inline v1 {
 
 struct unicode_bidi_context {
-    unicode_bidi_class default_paragraph_direction = unicode_bidi_class::unknown;
+    enum class mode_type : uint8_t { LTR, RTL, auto_LTR, auto_RTL };
+
+    mode_type direction_mode = mode_type::auto_LTR;
     bool enable_mirrored_brackets = true;
     bool enable_line_separator = true;
     bool move_lf_and_ps_to_end_of_line = true;
@@ -22,6 +24,10 @@ struct unicode_bidi_char_info {
     /** Index from the first character in the original list.
      */
     std::size_t index;
+
+    /** Description of the code-point.
+     */
+    unicode_description const *description;
 
     /** The current code point.
      * The value may change during the execution of the bidi algorithm.
@@ -43,16 +49,14 @@ struct unicode_bidi_char_info {
      */
     unicode_bidi_class bidi_class;
 
-    /** Description of the code-point.
-     */
-    unicode_description const *description;
-
-    [[nodiscard]] unicode_bidi_char_info(std::size_t index, char32_t code_point) noexcept :
-        index(index), code_point(code_point), embedding_level(0)
+    [[nodiscard]] unicode_bidi_char_info(std::size_t index, unicode_description const &description) noexcept :
+        index(index),
+        description(&description),
+        code_point(description.code_point()),
+        embedding_level(0),
+        direction(description.bidi_class()),
+        bidi_class(description.bidi_class())
     {
-        description = &unicode_description_find(code_point);
-        bidi_class = description->bidi_class();
-        direction = bidi_class;
     }
 
     /** Constructor for testing to bypass normal initialization.
@@ -94,18 +98,18 @@ static void unicode_bidi_L4(
     SetTextDirection set_text_direction) noexcept
 {
     for (auto it = first; it != last; ++it, ++output_it) {
-        set_text_direction(*output_it, it->direction);
+        ttlet text_direction = it->embedding_level % 2 == 0 ? unicode_bidi_class::L : unicode_bidi_class::R;
+        set_text_direction(*output_it, text_direction);
         if (it->direction == unicode_bidi_class::R && it->description->bidi_bracket_type() != unicode_bidi_bracket_type::n) {
             set_code_point(*output_it, it->description->bidi_mirrored_glyph());
         }
     }
 }
 
-
 [[nodiscard]] std::pair<unicode_bidi_char_info_iterator, std::vector<unicode_bidi_class>> unicode_bidi_P1(
     unicode_bidi_char_info_iterator first,
     unicode_bidi_char_info_iterator last,
-    unicode_bidi_context context = {}) noexcept;
+    unicode_bidi_context const &context = {}) noexcept;
 
 } // namespace detail
 
@@ -130,26 +134,26 @@ static void unicode_bidi_L4(
  * @tparam SetTextDirection function of the form: `(auto &, unicode_bidi_class) -> void`
  * @param first The first iterator
  * @param last The last iterator
- * @param get_char A function to get the character from an item.
+ * @param get_description A function to get the unicode description of an item.
  * @param set_char A function to set the character in an item.
  * @param set_text_direction A function to set the text direction in an item.
  * @return Iterator pointing one beyond the last element, the writing direction for each paragraph.
  */
-template<typename It, typename GetCodePoint, typename SetCodePoint, typename SetTextDirection>
+template<typename It, typename GetDescription, typename SetCodePoint, typename SetTextDirection>
 std::pair<It, std::vector<unicode_bidi_class>> unicode_bidi(
     It first,
     It last,
-    GetCodePoint get_code_point,
+    GetDescription get_description,
     SetCodePoint set_code_point,
     SetTextDirection set_text_direction,
-    unicode_bidi_context context = {})
+    unicode_bidi_context const &context = {})
 {
     auto proxy = detail::unicode_bidi_char_info_vector{};
     proxy.reserve(std::distance(first, last));
 
     std::size_t index = 0;
     for (auto it = first; it != last; ++it) {
-        proxy.emplace_back(index++, get_code_point(*it));
+        proxy.emplace_back(index++, get_description(*it));
     }
 
     auto [proxy_last, paragraph_directions] = detail::unicode_bidi_P1(begin(proxy), end(proxy), context);

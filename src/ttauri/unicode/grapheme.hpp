@@ -92,20 +92,6 @@ struct grapheme {
      */
     [[nodiscard]] static grapheme from_composed(std::u32string_view code_points) noexcept;
 
-    /** Paragraph separator.
-     */
-    [[nodiscard]] static constexpr grapheme PS() noexcept
-    {
-        return grapheme(U'\u2029');
-    }
-
-    /** Line separator.
-     */
-    [[nodiscard]] static constexpr grapheme LS() noexcept
-    {
-        return grapheme(U'\u2028');
-    }
-
     /** Create empty grapheme / end-of-file.
      */
     [[nodiscard]] static constexpr grapheme eof() noexcept

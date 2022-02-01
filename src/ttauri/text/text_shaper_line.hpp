@@ -19,12 +19,17 @@ public:
     using const_iterator = std::vector<text_shaper_char>::const_iterator;
     using column_vector = std::vector<iterator>;
 
-    const_iterator first;
-    const_iterator last;
+    /** The first character in the line, in logical order.
+     */
+    iterator first;
 
-    /** Indices to the characters in the text.
+    /** One beyond the last character in the line, in logical order.
+     */
+    iterator last;
+
+    /** Iterators to the characters in the text.
      *
-     * The indices are in display-order.
+     * The Iterators are in display-order.
      */
     column_vector columns;
 
@@ -54,9 +59,14 @@ public:
      */
     float width;
 
-    /** True if this line ends a paragraph.
+    /** Category of the last character on the line.
+     * 
+     * Use to determine if this line ends in:
+     *  - Zp: An explicit paragraph separator.
+     *  - Zl: An explicit line separator.
+     *  - *: A word-wrapped line. Need to add line-separators into the stream for bidi-algorithm.
      */
-    bool end_of_paragraph;
+    unicode_general_category last_category;
 
     /** The writing direction of the paragraph.
      *
@@ -72,7 +82,7 @@ public:
      * @param last One beyond the last character of the line.
      * @param width The width of the line.
      */
-    text_shaper_line(size_t line_nr, const_iterator begin, const_iterator first, const_iterator last, float width) noexcept;
+    text_shaper_line(size_t line_nr, const_iterator begin, iterator first, iterator last, float width) noexcept;
 
     void layout(horizontal_alignment alignment, float min_x, float max_x, float sub_pixel_width) noexcept;
 

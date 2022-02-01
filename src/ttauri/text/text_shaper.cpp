@@ -15,17 +15,17 @@
 
 namespace tt::inline v1 {
 
-static void layout_lines_vertical_spacing(text_shaper::line_vector &lines, float paragraph_spacing, float line_spacing) noexcept
+static void layout_lines_vertical_spacing(text_shaper::line_vector &lines, float line_spacing, float paragraph_spacing) noexcept
 {
     tt_axiom(not lines.empty());
 
     auto prev = lines.begin();
-    auto y = prev->y = 0.0f;
+    prev->y = 0.0f;
     for (auto it = prev + 1; it != lines.end(); ++it) {
         ttlet height = prev->metrics.descender + std::max(prev->metrics.line_gap, it->metrics.line_gap) + it->metrics.ascender;
-        ttlet spacing = prev->end_of_paragraph ? paragraph_spacing : line_spacing;
+        ttlet spacing = prev->last_category == unicode_general_category::Zp ? paragraph_spacing : line_spacing;
         // Lines advance downward on the y-axis.
-        it->y = y -= spacing * height;
+        it->y = prev->y - spacing * height;
         prev = it;
     }
 }
@@ -91,25 +91,48 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
 
     // Create a list of all character indices.
     auto char_its = std::vector<text_shaper::char_iterator>{};
-    char_its.reserve(text.size());
-    for (auto it = text.begin(); it != text.end(); ++it) {
-        char_its.push_back(it);
+    // Make room for implicit line-separators.
+    char_its.reserve(text.size() + lines.size());
+    for (ttlet &line : lines) {
+        // Add all the characters of a line.
+        for (auto it = line.first; it != line.last; ++it) {
+            char_its.push_back(it);
+        }
+        if (line.last_category != unicode_general_category::Zp and line.last_category != unicode_general_category::Zl) {
+            // No explicit paragraph-separator or line-separator, at a virtual one.
+            char_its.push_back(text.end());
+        }
     }
 
     // Reorder the character indices based on the unicode bidi algorithm.
     auto context = unicode_bidi_context{};
-    context.default_paragraph_direction = writing_direction;
+
+    if (writing_direction == unicode_bidi_class::L) {
+        context.direction_mode = unicode_bidi_context::mode_type::auto_LTR;
+    } else if (writing_direction == unicode_bidi_class::R) {
+        context.direction_mode = unicode_bidi_context::mode_type::auto_RTL;
+    } else {
+        tt_no_default();
+    }
+
     ttlet[char_its_last, paragraph_directions] = unicode_bidi(
         char_its.begin(),
         char_its.end(),
-        [&](text_shaper::char_const_iterator it) {
-            return it->grapheme[0];
+        [&](text_shaper::char_const_iterator it) -> decltype(auto) {
+            if (it != text.end()) {
+                return *it->description;
+            } else {
+                return unicode_description_find(unicode_LS);
+            }
         },
         [&](text_shaper::char_iterator it, char32_t code_point) {
+            tt_axiom(it != text.end());
             it->replace_glyph(code_point);
         },
         [&](text_shaper::char_iterator it, unicode_bidi_class direction) {
-            it->direction = direction;
+            if (it != text.end()) {
+                it->direction = direction;
+            }
         },
         context);
 
@@ -121,24 +144,30 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
     for (auto &line : lines) {
         tt_axiom(par_it != paragraph_directions.cend());
         line.paragraph_direction = *par_it;
-        if (line.end_of_paragraph) {
+        if (line.last_category == unicode_general_category::Zp) {
             par_it++;
         }
     }
-    tt_axiom(par_it == paragraph_directions.cend());
+    tt_axiom(par_it <= paragraph_directions.cend());
 
     // Add the character indices for each line in display order.
     auto line_it = lines.begin();
     line_it->columns.clear();
     auto column_nr = 0_uz;
     for (ttlet char_it : char_its) {
-        if (char_it >= line_it->last) {
+        if (char_it == text.end()) {
+            // Ignore the virtual line separators.
+            continue;
+        } else if (char_it >= line_it->last) {
+            // Skip to the next line.
+            tt_axiom(line_it->columns.size() <= narrow_cast<size_t>(std::distance(line_it->first, line_it->last)));
             ++line_it;
             line_it->columns.clear();
             column_nr = 0_uz;
         }
         tt_axiom(line_it != lines.end());
-        tt_axiom(char_it >= line_it->first and char_it < line_it->last);
+        tt_axiom(char_it >= line_it->first);
+        tt_axiom(char_it < line_it->last);
         line_it->columns.push_back(char_it);
 
         // Assign line_nr and column_nr, for quick back referencing.
@@ -153,13 +182,13 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
     ttlet &font = font_book.find_font(style.family_id, style.variant);
     _text.reserve(text.size());
     for (ttlet &c : text) {
-        ttlet clean_c = c == '\n' ? grapheme{paragraph_separator_character} : c;
+        ttlet clean_c = c == '\n' ? grapheme{unicode_PS} : c;
 
         auto &tmp = _text.emplace_back(clean_c, style);
         tmp.initialize_glyph(font_book, font);
     }
 
-    _line_break_opportunities = unicode_line_break(_text.begin(), _text.end(), [](ttlet &c) {
+    _line_break_opportunities = unicode_line_break(_text.begin(), _text.end(), [](ttlet &c) -> decltype(auto) {
         tt_axiom(c.description != nullptr);
         return *c.description;
     });
@@ -169,15 +198,15 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
         _line_break_widths.push_back(is_visible(c.description->general_category()) ? c.width : -c.width);
     }
 
-    _word_break_opportunities = unicode_word_break(_text.begin(), _text.end(), [] (ttlet &c) {
+    _word_break_opportunities = unicode_word_break(_text.begin(), _text.end(), [](ttlet &c) -> decltype(auto) {
         tt_axiom(c.description != nullptr);
         return *c.description;
-        });
+    });
 
-    _sentence_break_opportunities = unicode_sentence_break(_text.begin(), _text.end(), [] (ttlet &c) {
+    _sentence_break_opportunities = unicode_sentence_break(_text.begin(), _text.end(), [](ttlet &c) -> decltype(auto) {
         tt_axiom(c.description != nullptr);
         return *c.description;
-        });
+    });
 }
 
 [[nodiscard]] text_shaper::text_shaper(font_book &font_book, std::string_view text, text_style const &style) noexcept :
@@ -191,7 +220,7 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
     extent2 sub_pixel_size,
     tt::vertical_alignment vertical_alignment = tt::vertical_alignment::middle,
     float line_spacing = 1.0f,
-    float paragraph_spacing = 1.5f) const noexcept
+    float paragraph_spacing = 1.5f) noexcept
 {
     ttlet line_sizes = unicode_line_break(_line_break_opportunities, _line_break_widths, rectangle.width());
 
@@ -214,7 +243,6 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
     }
 
     if (not r.empty()) {
-        r.back().end_of_paragraph = true;
         layout_lines_vertical_spacing(r, line_spacing, paragraph_spacing);
         layout_lines_vertical_alignment(
             r, vertical_alignment, base_line, rectangle.bottom(), rectangle.top(), sub_pixel_size.height());
@@ -243,7 +271,7 @@ void text_shaper::position_glyphs(
     float maximum_line_width,
     tt::vertical_alignment vertical_alignment,
     float line_spacing,
-    float paragraph_spacing) const noexcept
+    float paragraph_spacing) noexcept
 {
     ttlet rectangle = aarectangle{
         point2{0.0f, std::numeric_limits<float>::lowest()}, point2{maximum_line_width, std::numeric_limits<float>::max()}};
@@ -268,8 +296,6 @@ void text_shaper::position_glyphs(
         lines[lines.size() / 2].metrics.cap_height;
     // clang-format on
 
-    //ttlet max_y = lines.front().y + std::ceil(lines.front().metrics.x_height);
-    //ttlet min_y = lines.back().y;
     ttlet max_y = lines.front().y + std::ceil(lines.front().metrics.ascender);
     ttlet min_y = lines.back().y - std::ceil(lines.back().metrics.descender);
     return {aarectangle{point2{0.0f, min_y}, point2{std::ceil(max_width), max_y}}, cap_height};
@@ -297,14 +323,15 @@ void text_shaper::position_glyphs(
     });
 
     if (line_it != _lines.end()) {
-        ttlet [char_it, after] = line_it->get_nearest(position);
+        ttlet[char_it, after] = line_it->get_nearest(position);
         return {narrow<size_t>(std::distance(_text.begin(), char_it)), after};
     } else {
         return {};
     }
 }
 
-[[nodiscard]] static std::pair<text_cursor,text_cursor> get_selection_from_break(text_cursor cursor, unicode_break_vector const &break_opportunities) noexcept
+[[nodiscard]] static std::pair<text_cursor, text_cursor>
+get_selection_from_break(text_cursor cursor, unicode_break_vector const &break_opportunities) noexcept
 {
     // In the algorithm below we search before and after the character that the cursor is at.
     // We do not use the before/after differentiation.
@@ -337,7 +364,8 @@ void text_shaper::position_glyphs(
     return get_selection_from_break(cursor, _sentence_break_opportunities);
 }
 
-[[nodiscard]] std::optional<text_shaper::char_const_iterator> text_shaper::left_of(text_shaper::char_const_iterator it) const noexcept
+[[nodiscard]] std::optional<text_shaper::char_const_iterator>
+text_shaper::left_of(text_shaper::char_const_iterator it) const noexcept
 {
     tt_axiom(it->line_nr < _lines.size());
     tt_axiom(it->column_nr < _lines[it->line_nr].columns.size());
@@ -348,7 +376,8 @@ void text_shaper::position_glyphs(
     return _lines[it->line_nr].columns[it->column_nr - 1];
 }
 
-[[nodiscard]] std::optional<text_shaper::char_const_iterator> text_shaper::right_of(text_shaper::char_const_iterator it) const noexcept
+[[nodiscard]] std::optional<text_shaper::char_const_iterator>
+text_shaper::right_of(text_shaper::char_const_iterator it) const noexcept
 {
     tt_axiom(it->line_nr < _lines.size());
     tt_axiom(it->column_nr < _lines[it->line_nr].columns.size());
@@ -358,6 +387,5 @@ void text_shaper::position_glyphs(
 
     return _lines[it->line_nr].columns[it->column_nr + 1];
 }
-
 
 } // namespace tt::inline v1

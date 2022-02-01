@@ -148,7 +148,7 @@ public:
         float maximum_line_width,
         vertical_alignment alignment,
         float line_spacing = 1.0f,
-        float paragraph_spacing = 1.5f) const noexcept;
+        float paragraph_spacing = 1.5f) noexcept;
 
     /** Layout the lines of the text.
      *
@@ -256,7 +256,7 @@ private:
         extent2 sub_pixel_size,
         tt::vertical_alignment vertical_alignment,
         float line_spacing,
-        float paragraph_spacing) const noexcept;
+        float paragraph_spacing) noexcept;
 
     /** Position the glyphs.
      *

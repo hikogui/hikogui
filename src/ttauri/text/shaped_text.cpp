@@ -21,8 +21,8 @@ makeattributed_graphemeVector(gstring const &text, text_style const &style) noex
         r.emplace_back(grapheme, style, index++);
     }
 
-    if (text.empty() or text.back() != grapheme::PS()) {
-        r.emplace_back(grapheme::PS(), style, index++);
+    if (text.empty() or text.back() != grapheme{unicode_PS}) {
+        r.emplace_back(grapheme{unicode_PS}, style, index++);
     }
 
     return r;
@@ -268,8 +268,8 @@ struct shape_text_result {
     unicode_bidi(
         text.begin(),
         text.end(),
-        [](ttlet &c) {
-            return get<0>(c.grapheme);
+        [](ttlet &c) -> decltype(auto) {
+            return unicode_description_find(get<0>(c.grapheme));
         },
         [](auto &c, char32_t code_point) {
             c.grapheme = code_point;

@@ -61,9 +61,9 @@ public:
         // Make sure there is an end-paragraph marker in the _text.
         // This allows the shaped_text to figure out the style of the _text of an empty paragraph.
         if (ssize(_text) == 0) {
-            text_.emplace_back(grapheme::PS(), _current_style, 0);
+            text_.emplace_back(grapheme{unicode_PS}, _current_style, 0);
         } else {
-            text_.emplace_back(grapheme::PS(), text_.back().style, 0);
+            text_.emplace_back(grapheme{unicode_PS}, text_.back().style, 0);
         }
 
         _shaped_text = tt::shaped_text{

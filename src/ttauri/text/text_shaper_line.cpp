@@ -7,19 +7,20 @@
 
 namespace tt::inline v1 {
 
-text_shaper_line::text_shaper_line(size_t line_nr, const_iterator begin, const_iterator first, const_iterator last, float width) noexcept :
-    first(first), last(last), columns(), metrics(), line_nr(line_nr), y(0.0f), width(width), end_of_paragraph(false)
+text_shaper_line::text_shaper_line(size_t line_nr, const_iterator begin, iterator first, iterator last, float width) noexcept :
+    first(first), last(last), columns(), metrics(), line_nr(line_nr), y(0.0f), width(width), last_category()
 {
     tt_axiom(first != last);
 
     for (auto it = first; it != last; ++it) {
-        metrics = max(metrics, it->font_metrics());
+        // Only calculate line metrics based on visible characters.
+        // For example a paragraph separator is seldom available in a font.
+        if (is_visible(it->description->general_category())) {
+            metrics = max(metrics, it->font_metrics());
+        }
     }
 
-    ttlet last_category = (last - 1)->description->general_category();
-    if (last_category == unicode_general_category::Zp) {
-        end_of_paragraph = true;
-    }
+    last_category = (last - 1)->description->general_category();
 }
 
 /**
@@ -89,6 +90,7 @@ static void move_glyphs(text_shaper_line::column_vector &columns, float offset) 
 static void align_glyphs(
     text_shaper_line::column_vector &columns,
     horizontal_alignment alignment,
+    unicode_bidi_class paragraph_direction,
     float max_line_width,
     float visible_width,
     size_t num_internal_white_space) noexcept
@@ -97,6 +99,10 @@ static void align_glyphs(
         if (align_glyphs_justified(columns, max_line_width, visible_width, num_internal_white_space)) {
             return;
         }
+    }
+
+    if (alignment == horizontal_alignment::flush or alignment == horizontal_alignment::justified) {
+        alignment = paragraph_direction == unicode_bidi_class::R ? horizontal_alignment::right : horizontal_alignment::left;
     }
 
     // clang-format off
@@ -137,15 +143,11 @@ static void create_bounding_rectangles(text_shaper_line::column_vector &columns,
 
 void text_shaper_line::layout(horizontal_alignment alignment, float min_x, float max_x, float sub_pixel_width) noexcept
 {
-    if (alignment == horizontal_alignment::flush or alignment == horizontal_alignment::justified) {
-        alignment = paragraph_direction == unicode_bidi_class::R ? horizontal_alignment::right : horizontal_alignment::left;
-    }
-
     // Reset the position and advance the glyphs.
     ttlet[visible_width, num_internal_white_space] = advance_glyphs(columns, y);
 
     // Align the glyphs for a given width. But keep the left side at x=0.0.
-    align_glyphs(columns, alignment, max_x - min_x, visible_width, num_internal_white_space);
+    align_glyphs(columns, alignment, paragraph_direction, max_x - min_x, visible_width, num_internal_white_space);
 
     // Move the glyphs to where the left side is.
     move_glyphs(columns, min_x);

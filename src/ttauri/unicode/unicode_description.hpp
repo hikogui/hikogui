@@ -31,9 +31,9 @@ constexpr char32_t unicode_hangul_N_count = unicode_hangul_V_count * unicode_han
 constexpr char32_t unicode_hangul_S_count = unicode_hangul_L_count * unicode_hangul_N_count;
 } // namespace detail
 
-constexpr char32_t replacement_character = U'\ufffd';
-constexpr char32_t line_separator_character = U'\u2028';
-constexpr char32_t paragraph_separator_character = U'\u2029';
+constexpr char32_t unicode_replacement_character = U'\ufffd';
+constexpr char32_t unicode_LS = U'\u2028';
+constexpr char32_t unicode_PS = U'\u2029';
 
 [[nodiscard]] constexpr bool is_hangul_L_part(char32_t code_point) noexcept
 {
@@ -85,6 +85,12 @@ public:
     static constexpr uint32_t grapheme_cluster_break_mask = 0xf;
     static constexpr uint32_t composition_canonical_shift = 0;
     static constexpr uint32_t composition_canonical_mask = 1;
+
+    constexpr unicode_description() noexcept = default;
+    unicode_description(unicode_description const &) = delete;
+    unicode_description &operator=(unicode_description const &) = delete;
+    constexpr unicode_description(unicode_description &&) noexcept = default;
+    constexpr unicode_description &operator=(unicode_description &&) noexcept = default;
 
     [[nodiscard]] constexpr unicode_description(
         char32_t code_point,
@@ -140,7 +146,21 @@ public:
 
     [[nodiscard]] static constexpr unicode_description make_unassigned(unicode_description const &other)
     {
-        auto r = other;
+        auto r = unicode_description{};
+        r._general_info = other._general_info;
+        r._bidi_class = other._bidi_class;
+        r._bidi_bracket_type = other._bidi_bracket_type;
+        r._bidi_mirrored_glyph = other._bidi_mirrored_glyph;
+        r._east_asian_width = other._east_asian_width;
+        r._canonical_combining_class = other._canonical_combining_class;
+        r._line_break_class = other._line_break_class;
+        r._word_break_property = other._word_break_property;
+        r._sentence_break_property = other._sentence_break_property;
+        r._decomposition_index = other._decomposition_index;
+        r._decomposition_type = other._decomposition_type;
+        r._decomposition_length = other._decomposition_length;
+        r._non_starter_code = other._non_starter_code;
+
         r._general_info &= ~(general_category_mask << general_category_shift);
         r._general_info |= static_cast<uint32_t>(to_underlying(unicode_general_category::Cn)) << general_category_shift;
         return r;
@@ -162,7 +182,8 @@ public:
      */
     [[nodiscard]] constexpr unicode_grapheme_cluster_break grapheme_cluster_break() const noexcept
     {
-        return static_cast<unicode_grapheme_cluster_break>((_general_info >> grapheme_cluster_break_shift) & grapheme_cluster_break_mask);
+        return static_cast<unicode_grapheme_cluster_break>(
+            (_general_info >> grapheme_cluster_break_shift) & grapheme_cluster_break_mask);
     }
 
     [[nodiscard]] constexpr unicode_line_break_class line_break_class() const noexcept
