@@ -92,6 +92,15 @@ bool text_widget::handle_event(tt::command command) noexcept
         case command::text_cursor_char_right:
             _selection.set_cursor(_shaped_text.move_right_one_character(_selection.cursor()));
             return true;
+
+        case command::text_select_char_left:
+            _selection.drag_selection(_shaped_text.move_left_one_character(_selection.cursor()));
+            return true;
+
+        case command::text_select_char_right:
+            _selection.drag_selection(_shaped_text.move_right_one_character(_selection.cursor()));
+            return true;
+
         default:;
         }
     }
@@ -114,20 +123,17 @@ bool text_widget::handle_event(mouse_event const &event) noexcept
             return true;
         }
 
-        ttlet index = _shaped_text.get_nearest(event.position);
+        ttlet cursor = _shaped_text.get_nearest(event.position);
 
         switch (event.type) {
             using enum mouse_event::Type;
         case ButtonDown:
             switch (event.clickCount) {
-            case 1:
-                _selection.set_cursor(index);
+            case 1: _selection.set_cursor(cursor);
                 break;
-            case 2:
-                _selection.start_selection(index, _shaped_text.get_word(index));
+            case 2: _selection.start_selection(cursor, _shaped_text.get_word(cursor));
                 break;
-            case 3:
-                _selection.start_selection(index, _shaped_text.get_sentence(index));
+            case 3: _selection.start_selection(cursor, _shaped_text.get_sentence(cursor));
                 break;
             default:;
             }
@@ -140,14 +146,11 @@ bool text_widget::handle_event(mouse_event const &event) noexcept
 
         case Drag:
             switch (event.clickCount) {
-            case 1:
-                _selection.drag_selection(index);
+            case 1: _selection.drag_selection(cursor);
                 break;
-            case 2:
-                _selection.drag_selection(index, _shaped_text.get_word(index));
+            case 2: _selection.drag_selection(cursor, _shaped_text.get_word(cursor));
                 break;
-            case 3:
-                _selection.drag_selection(index, _shaped_text.get_sentence(index));
+            case 3: _selection.drag_selection(cursor, _shaped_text.get_sentence(cursor));
                 break;
             default:;
             }
