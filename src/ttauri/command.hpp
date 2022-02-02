@@ -22,6 +22,8 @@ enum class command {
     text_cursor_right_word,
     text_cursor_begin_line,
     text_cursor_end_line,
+    text_cursor_begin_sentence,
+    text_cursor_end_sentence,
     text_select_left_char,
     text_select_right_char,
     text_select_down_char,
@@ -31,6 +33,8 @@ enum class command {
     text_select_right_word,
     text_select_begin_line,
     text_select_end_line,
+    text_select_begin_sentence,
+    text_select_end_sentence,
     text_select_document,
     text_mode_insert,
     text_delete_char_prev,
@@ -68,6 +72,8 @@ constexpr auto command_metadata = enum_metadata{
     command::text_cursor_right_word, "text_cursor_right_word",
     command::text_cursor_begin_line, "text_cursor_begin_line",
     command::text_cursor_end_line, "text_cursor_end_line",
+    command::text_cursor_begin_sentence, "text_cursor_begin_sentence",
+    command::text_cursor_end_sentence, "text_cursor_end_sentence",
     command::text_select_left_char, "text_select_left_char",
     command::text_select_right_char, "text_select_right_char",
     command::text_select_down_char, "text_select_down_char",
@@ -77,6 +83,8 @@ constexpr auto command_metadata = enum_metadata{
     command::text_select_right_word, "text_select_right_word",
     command::text_select_begin_line, "text_select_begin_line",
     command::text_select_end_line, "text_select_end_line",
+    command::text_select_begin_sentence, "text_select_begin_sentence",
+    command::text_select_end_sentence, "text_select_end_sentence",
     command::text_select_document, "text_select_document",
     command::text_mode_insert, "text_mode_insert",
     command::text_delete_char_prev, "text_delete_char_prev",
@@ -126,6 +134,8 @@ inline std::ostream &operator<<(std::ostream &lhs, command const &rhs)
     case text_cursor_right_word:
     case text_cursor_begin_line:
     case text_cursor_end_line:
+    case text_cursor_begin_sentence:
+    case text_cursor_end_sentence:
     case text_select_left_char:
     case text_select_right_char:
     case text_select_down_char:
@@ -135,6 +145,8 @@ inline std::ostream &operator<<(std::ostream &lhs, command const &rhs)
     case text_select_right_word:
     case text_select_begin_line:
     case text_select_end_line:
+    case text_select_begin_sentence:
+    case text_select_end_sentence:
     case text_select_document:
     case text_mode_insert:
     case text_delete_char_prev:

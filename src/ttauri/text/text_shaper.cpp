@@ -485,6 +485,28 @@ void text_shaper::position_glyphs(
     }
 }
 
+[[nodiscard]] text_cursor text_shaper::move_begin_sentence(text_cursor cursor) const noexcept
+{
+    if (cursor.after()) {
+        cursor = {cursor.index(), false};
+    } else if (cursor.index() != 0) {
+        cursor = {cursor.index() - 1, false};
+    }
+    ttlet [first, last] = get_sentence(cursor);
+    return first;
+}
+
+[[nodiscard]] text_cursor text_shaper::move_end_sentence(text_cursor cursor) const noexcept
+{
+    if (cursor.before()) {
+        cursor = {cursor.index(), true};
+    } else if (cursor.index() != _text.size() - 1) {
+        cursor = {cursor.index() + 1, true};
+    }
+    ttlet[first, last] = get_sentence(cursor);
+    return last;
+}
+
 [[nodiscard]] static std::pair<text_cursor, text_cursor>
 get_selection_from_break(text_cursor cursor, unicode_break_vector const &break_opportunities) noexcept
 {
