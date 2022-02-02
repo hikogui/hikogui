@@ -122,6 +122,10 @@ bool text_widget::handle_event(tt::command command) noexcept
             _selection.set_cursor(_shaped_text.move_begin_sentence(_selection.cursor())); return true;
         case command::text_cursor_end_sentence:
             _selection.set_cursor(_shaped_text.move_end_sentence(_selection.cursor())); return true;
+        case command::text_cursor_begin_document:
+            _selection.set_cursor(_shaped_text.move_begin_document(_selection.cursor())); return true;
+        case command::text_cursor_end_document:
+            _selection.set_cursor(_shaped_text.move_end_document(_selection.cursor())); return true;
 
         case command::text_select_left_char:
             _selection.drag_selection(_shaped_text.move_left_char(_selection.cursor())); return true;
@@ -143,6 +147,10 @@ bool text_widget::handle_event(tt::command command) noexcept
             _selection.drag_selection(_shaped_text.move_begin_sentence(_selection.cursor())); return true;
         case command::text_select_end_sentence:
             _selection.drag_selection(_shaped_text.move_end_sentence(_selection.cursor())); return true;
+        case command::text_select_begin_document:
+            _selection.drag_selection(_shaped_text.move_begin_document(_selection.cursor())); return true;
+        case command::text_select_end_document:
+            _selection.drag_selection(_shaped_text.move_end_document(_selection.cursor())); return true;
 
         default:;
         }

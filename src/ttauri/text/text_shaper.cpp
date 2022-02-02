@@ -492,7 +492,7 @@ void text_shaper::position_glyphs(
     } else if (cursor.index() != 0) {
         cursor = {cursor.index() - 1, false};
     }
-    ttlet [first, last] = get_sentence(cursor);
+    ttlet[first, last] = get_sentence(cursor);
     return first;
 }
 
@@ -505,6 +505,16 @@ void text_shaper::position_glyphs(
     }
     ttlet[first, last] = get_sentence(cursor);
     return last;
+}
+
+[[nodiscard]] text_cursor text_shaper::move_begin_document(text_cursor cursor) const noexcept
+{
+    return {0, false};
+}
+
+[[nodiscard]] text_cursor text_shaper::move_end_document(text_cursor cursor) const noexcept
+{
+    return {_text.size() - 1, true};
 }
 
 [[nodiscard]] static std::pair<text_cursor, text_cursor>

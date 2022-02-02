@@ -218,6 +218,8 @@ public:
     [[nodiscard]] text_cursor move_end_line(text_cursor cursor) const noexcept;
     [[nodiscard]] text_cursor move_begin_sentence(text_cursor cursor) const noexcept;
     [[nodiscard]] text_cursor move_end_sentence(text_cursor cursor) const noexcept;
+    [[nodiscard]] text_cursor move_begin_document(text_cursor cursor) const noexcept;
+    [[nodiscard]] text_cursor move_end_document(text_cursor cursor) const noexcept;
 
 private:
     font_book *_font_book = nullptr;
