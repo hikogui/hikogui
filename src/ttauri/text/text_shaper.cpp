@@ -12,6 +12,7 @@
 #include <numeric>
 #include <ranges>
 #include <algorithm>
+#include <cmath>
 
 namespace tt::inline v1 {
 
@@ -330,14 +331,13 @@ void text_shaper::position_glyphs(
     }
 }
 
-[[nodiscard]] text_shaper::char_const_iterator
-text_shaper::move_left_one_character(text_shaper::char_const_iterator it) const noexcept
+[[nodiscard]] text_shaper::char_const_iterator text_shaper::move_left_char(text_shaper::char_const_iterator it) const noexcept
 {
     auto line_nr = it->line_nr;
     auto column_nr = it->column_nr;
 
     if (column_nr == 0) {
-        if (it->direction == unicode_bidi_class::L) {
+        if (_lines[line_nr].paragraph_direction == unicode_bidi_class::L) {
             if (line_nr != 0) {
                 --line_nr;
                 column_nr = _lines[line_nr].size() - 1;
@@ -355,14 +355,13 @@ text_shaper::move_left_one_character(text_shaper::char_const_iterator it) const 
     return _lines[line_nr][column_nr];
 }
 
-[[nodiscard]] text_shaper::char_const_iterator
-text_shaper::move_right_one_character(text_shaper::char_const_iterator it) const noexcept
+[[nodiscard]] text_shaper::char_const_iterator text_shaper::move_right_char(text_shaper::char_const_iterator it) const noexcept
 {
     auto line_nr = it->line_nr;
     auto column_nr = it->column_nr;
 
     if (column_nr == _lines[line_nr].size() - 1) {
-        if (it->direction == unicode_bidi_class::L) {
+        if (_lines[line_nr].paragraph_direction == unicode_bidi_class::L) {
             if (line_nr != _lines.size() - 1) {
                 ++line_nr;
                 column_nr = 0;
@@ -380,7 +379,7 @@ text_shaper::move_right_one_character(text_shaper::char_const_iterator it) const
     return _lines[line_nr][column_nr];
 }
 
-[[nodiscard]] text_cursor text_shaper::move_left_one_character(text_cursor cursor) const noexcept
+[[nodiscard]] text_cursor text_shaper::move_left_char(text_cursor cursor) const noexcept
 {
     auto char_it = _text.begin() + cursor.index();
     tt_axiom(char_it < _text.end());
@@ -390,11 +389,11 @@ text_shaper::move_right_one_character(text_shaper::char_const_iterator it) const
         return {cursor.index(), char_it->direction != unicode_bidi_class::L};
     }
 
-    char_it = move_left_one_character(char_it);
+    char_it = move_left_char(char_it);
     return {narrow<size_t>(std::distance(_text.begin(), char_it)), char_it->direction != unicode_bidi_class::L};
 }
 
-[[nodiscard]] text_cursor text_shaper::move_right_one_character(text_cursor cursor) const noexcept
+[[nodiscard]] text_cursor text_shaper::move_right_char(text_cursor cursor) const noexcept
 {
     auto char_it = _text.begin() + cursor.index();
     tt_axiom(char_it < _text.end());
@@ -404,8 +403,86 @@ text_shaper::move_right_one_character(text_shaper::char_const_iterator it) const
         return {cursor.index(), char_it->direction == unicode_bidi_class::L};
     }
 
-    char_it = move_right_one_character(char_it);
+    char_it = move_right_char(char_it);
     return {narrow<size_t>(std::distance(_text.begin(), char_it)), char_it->direction == unicode_bidi_class::L};
+}
+
+[[nodiscard]] text_cursor text_shaper::move_down_char(text_cursor cursor, float &x) const noexcept
+{
+    auto char_it = _text.begin() + cursor.index();
+    if (char_it->line_nr == _lines.size() - 1) {
+        ttlet &line = _lines[char_it->line_nr];
+        char_it = line.paragraph_direction == unicode_bidi_class::L ? line[line.size() - 1] : line[0];
+        return {narrow<size_t>(std::distance(_text.begin(), char_it)), char_it->direction == unicode_bidi_class::L};
+    }
+
+    if (std::isnan(x)) {
+        ttlet cursor_on_left = (char_it->direction == unicode_bidi_class::L) == cursor.before();
+        x = cursor_on_left ? char_it->rectangle.left() : char_it->rectangle.right();
+    }
+
+    ttlet &line = _lines[char_it->line_nr + 1];
+    ttlet[new_char_it, after] = line.get_nearest(point2{x, 0.0f});
+    return {narrow<size_t>(std::distance(_text.begin(), new_char_it)), after};
+}
+
+[[nodiscard]] text_cursor text_shaper::move_up_char(text_cursor cursor, float &x) const noexcept
+{
+    auto char_it = _text.begin() + cursor.index();
+    if (char_it->line_nr == 0) {
+        ttlet &line = _lines[char_it->line_nr];
+        char_it = line.paragraph_direction == unicode_bidi_class::L ? line[0] : line[line.size() - 1];
+        return {narrow<size_t>(std::distance(_text.begin(), char_it)), char_it->direction != unicode_bidi_class::L};
+    }
+
+    if (std::isnan(x)) {
+        ttlet cursor_on_left = (char_it->direction == unicode_bidi_class::L) == cursor.before();
+        x = cursor_on_left ? char_it->rectangle.left() : char_it->rectangle.right();
+    }
+
+    ttlet &line = _lines[char_it->line_nr - 1];
+    ttlet[new_char_it, after] = line.get_nearest(point2{x, 0.0f});
+    return {narrow<size_t>(std::distance(_text.begin(), new_char_it)), after};
+}
+
+[[nodiscard]] text_cursor text_shaper::move_left_word(text_cursor cursor) const noexcept
+{
+    cursor = move_left_char(cursor);
+    ttlet[first, last] = get_word(cursor);
+    return cursor.before() ? first : last;
+}
+
+[[nodiscard]] text_cursor text_shaper::move_right_word(text_cursor cursor) const noexcept
+{
+    cursor = move_right_char(cursor);
+    ttlet[first, last] = get_word(cursor);
+    return cursor.before() ? first : last;
+}
+
+[[nodiscard]] text_cursor text_shaper::move_begin_line(text_cursor cursor) const noexcept
+{
+    auto char_it = _text.begin() + cursor.index();
+    ttlet &line = _lines[char_it->line_nr];
+    if (line.paragraph_direction == unicode_bidi_class::L) {
+        char_it = line[0];
+        return {narrow<size_t>(std::distance(_text.begin(), char_it)), char_it->direction != unicode_bidi_class::L};
+    } else {
+        char_it = line[line.size() - 1];
+        return {narrow<size_t>(std::distance(_text.begin(), char_it)), char_it->direction == unicode_bidi_class::L};
+    }
+}
+
+[[nodiscard]] text_cursor text_shaper::move_end_line(text_cursor cursor) const noexcept
+{
+    auto char_it = _text.begin() + cursor.index();
+    ttlet &line = _lines[char_it->line_nr];
+    if (line.paragraph_direction == unicode_bidi_class::L) {
+        char_it = line[line.size() - 1];
+        return {narrow<size_t>(std::distance(_text.begin(), char_it)), char_it->direction == unicode_bidi_class::L};
+    } else {
+        char_it = line[0];
+        return {narrow<size_t>(std::distance(_text.begin(), char_it)), char_it->direction != unicode_bidi_class::L};
+    }
 }
 
 [[nodiscard]] static std::pair<text_cursor, text_cursor>

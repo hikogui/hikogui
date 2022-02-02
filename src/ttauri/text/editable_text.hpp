@@ -418,7 +418,7 @@ public:
 
         auto handled = false;
         switch (command) {
-        case command::text_cursor_char_left:
+        case command::text_cursor_left_char:
             cancel_partial_grapheme();
             handled = true;
             if (ttlet new_cursor_position = _shaped_text.indexOfCharOnTheLeft(_cursor_index)) {
@@ -427,7 +427,7 @@ public:
             }
             break;
 
-        case command::text_cursor_char_right:
+        case command::text_cursor_right_char:
             cancel_partial_grapheme();
             handled = true;
             if (ttlet new_cursor_position = _shaped_text.indexOfCharOnTheRight(_cursor_index)) {
@@ -435,7 +435,7 @@ public:
             }
             break;
 
-        case command::text_cursor_word_left:
+        case command::text_cursor_left_word:
             cancel_partial_grapheme();
             handled = true;
             if (ttlet new_cursor_position = _shaped_text.indexOfWordOnTheLeft(_cursor_index)) {
@@ -443,7 +443,7 @@ public:
             }
             break;
 
-        case command::text_cursor_word_right:
+        case command::text_cursor_right_word:
             cancel_partial_grapheme();
             handled = true;
             if (ttlet new_cursor_position = _shaped_text.indexOfWordOnTheRight(_cursor_index)) {
@@ -451,19 +451,19 @@ public:
             }
             break;
 
-        case command::text_cursor_line_end:
+        case command::text_cursor_end_line:
             cancel_partial_grapheme();
             handled = true;
             _selection_index = _cursor_index = size();
             break;
 
-        case command::text_cursor_line_begin:
+        case command::text_cursor_begin_line:
             cancel_partial_grapheme();
             handled = true;
             _selection_index = _cursor_index = 0;
             break;
 
-        case command::text_select_char_left:
+        case command::text_select_left_char:
             cancel_partial_grapheme();
             handled = true;
             if (ttlet new_cursor_position = _shaped_text.indexOfCharOnTheLeft(_cursor_index)) {
@@ -471,7 +471,7 @@ public:
             }
             break;
 
-        case command::text_select_char_right:
+        case command::text_select_right_char:
             cancel_partial_grapheme();
             handled = true;
             if (ttlet new_cursor_position = _shaped_text.indexOfCharOnTheRight(_cursor_index)) {
@@ -479,7 +479,7 @@ public:
             }
             break;
 
-        case command::text_select_word_left:
+        case command::text_select_left_word:
             cancel_partial_grapheme();
             handled = true;
             if (ttlet new_cursor_position = _shaped_text.indexOfWordOnTheLeft(_cursor_index)) {
@@ -487,7 +487,7 @@ public:
             }
             break;
 
-        case command::text_select_word_right:
+        case command::text_select_right_word:
             cancel_partial_grapheme();
             handled = true;
             if (ttlet new_cursor_position = _shaped_text.indexOfWordOnTheRight(_cursor_index)) {
@@ -501,13 +501,13 @@ public:
             std::tie(_selection_index, _cursor_index) = _shaped_text.indices_of_word(_cursor_index);
             break;
 
-        case command::text_select_line_end:
+        case command::text_select_end_line:
             cancel_partial_grapheme();
             handled = true;
             _cursor_index = size();
             break;
 
-        case command::text_select_line_begin:
+        case command::text_select_begin_line:
             cancel_partial_grapheme();
             handled = true;
             _cursor_index = 0;

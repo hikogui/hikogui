@@ -6,9 +6,9 @@
 #include "../GUI/gui_window.hpp"
 #include "../GUI/mouse_event.hpp"
 
-namespace tt::inline v1{
+namespace tt::inline v1 {
 
-    text_widget::text_widget(gui_window & window, widget * parent) noexcept : super(window, parent)
+text_widget::text_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
 {
     text.subscribe(_reconstrain_callback);
 }
@@ -47,7 +47,12 @@ void text_widget::draw(draw_context const &context) noexcept
         context.draw_text_selection(layout(), _shaped_text, _selection, theme().color(theme_color::text_select));
 
         if (enabled and focus) {
-            context.draw_text_cursors(layout(), _shaped_text, _selection.cursor(), theme().color(theme_color::cursor), theme().color(theme_color::incomplete_glyph));
+            context.draw_text_cursors(
+                layout(),
+                _shaped_text,
+                _selection.cursor(),
+                theme().color(theme_color::cursor),
+                theme().color(theme_color::incomplete_glyph));
         }
     }
 }
@@ -66,7 +71,19 @@ bool text_widget::handle_event(tt::command command) noexcept
     tt_axiom(is_gui_thread());
     request_relayout();
 
+    // On commands other than vertical movement, reset the vertical movement state.
+    if (is_text_edit_command(command)) {
+        switch (command) {
+        case command::text_cursor_up_char:
+        case command::text_cursor_down_char:
+        case command::text_select_up_char:
+        case command::text_select_down_char: break;
+        default: _vertical_movement_x = std::numeric_limits<float>::quiet_NaN();
+        }
+    }
+
     if (enabled) {
+        // clang-format off
         switch (command) {
             //case command::text_edit_paste:
             //    _field.handle_paste(window.get_text_from_clipboard());
@@ -83,26 +100,45 @@ bool text_widget::handle_event(tt::command command) noexcept
             //case command::text_edit_cut: window.set_text_on_clipboard(_field.handle_cut()); return true;
 
         case command::gui_cancel:
-            _selection.clear_selection();
-            return true;
+            _selection.clear_selection(); return true;
 
-        case command::text_cursor_char_left:
-            _selection.set_cursor(_shaped_text.move_left_one_character(_selection.cursor()));
-            return true;
-        case command::text_cursor_char_right:
-            _selection.set_cursor(_shaped_text.move_right_one_character(_selection.cursor()));
-            return true;
+        case command::text_cursor_left_char:
+            _selection.set_cursor(_shaped_text.move_left_char(_selection.cursor())); return true;
+        case command::text_cursor_right_char:
+            _selection.set_cursor(_shaped_text.move_right_char(_selection.cursor())); return true;
+        case command::text_cursor_down_char:
+            _selection.set_cursor(_shaped_text.move_down_char(_selection.cursor(), _vertical_movement_x)); return true;
+        case command::text_cursor_up_char:
+            _selection.set_cursor(_shaped_text.move_up_char(_selection.cursor(), _vertical_movement_x)); return true;
+        case command::text_cursor_left_word:
+            _selection.set_cursor(_shaped_text.move_left_word(_selection.cursor())); return true;
+        case command::text_cursor_right_word:
+            _selection.set_cursor(_shaped_text.move_right_word(_selection.cursor())); return true;
+        case command::text_cursor_begin_line:
+            _selection.set_cursor(_shaped_text.move_begin_line(_selection.cursor())); return true;
+        case command::text_cursor_end_line:
+            _selection.set_cursor(_shaped_text.move_end_line(_selection.cursor())); return true;
 
-        case command::text_select_char_left:
-            _selection.drag_selection(_shaped_text.move_left_one_character(_selection.cursor()));
-            return true;
-
-        case command::text_select_char_right:
-            _selection.drag_selection(_shaped_text.move_right_one_character(_selection.cursor()));
-            return true;
+        case command::text_select_left_char:
+            _selection.drag_selection(_shaped_text.move_left_char(_selection.cursor())); return true;
+        case command::text_select_right_char:
+            _selection.drag_selection(_shaped_text.move_right_char(_selection.cursor())); return true;
+        case command::text_select_down_char:
+            _selection.drag_selection(_shaped_text.move_down_char(_selection.cursor(), _vertical_movement_x)); return true;
+        case command::text_select_up_char:
+            _selection.drag_selection(_shaped_text.move_up_char(_selection.cursor(), _vertical_movement_x)); return true;
+        case command::text_select_left_word:
+            _selection.drag_selection(_shaped_text.move_left_word(_selection.cursor())); return true;
+        case command::text_select_right_word:
+            _selection.drag_selection(_shaped_text.move_right_word(_selection.cursor())); return true;
+        case command::text_select_begin_line:
+            _selection.drag_selection(_shaped_text.move_begin_line(_selection.cursor())); return true;
+        case command::text_select_end_line:
+            _selection.drag_selection(_shaped_text.move_end_line(_selection.cursor())); return true;
 
         default:;
         }
+        // clang-format on
     }
 
     return super::handle_event(command);
@@ -124,17 +160,15 @@ bool text_widget::handle_event(mouse_event const &event) noexcept
         }
 
         ttlet cursor = _shaped_text.get_nearest(event.position);
+        _vertical_movement_x = event.position.x();
 
         switch (event.type) {
             using enum mouse_event::Type;
         case ButtonDown:
             switch (event.clickCount) {
-            case 1: _selection.set_cursor(cursor);
-                break;
-            case 2: _selection.start_selection(cursor, _shaped_text.get_word(cursor));
-                break;
-            case 3: _selection.start_selection(cursor, _shaped_text.get_sentence(cursor));
-                break;
+            case 1: _selection.set_cursor(cursor); break;
+            case 2: _selection.start_selection(cursor, _shaped_text.get_word(cursor)); break;
+            case 3: _selection.start_selection(cursor, _shaped_text.get_sentence(cursor)); break;
             default:;
             }
 
@@ -146,12 +180,9 @@ bool text_widget::handle_event(mouse_event const &event) noexcept
 
         case Drag:
             switch (event.clickCount) {
-            case 1: _selection.drag_selection(cursor);
-                break;
-            case 2: _selection.drag_selection(cursor, _shaped_text.get_word(cursor));
-                break;
-            case 3: _selection.drag_selection(cursor, _shaped_text.get_sentence(cursor));
-                break;
+            case 1: _selection.drag_selection(cursor); break;
+            case 2: _selection.drag_selection(cursor, _shaped_text.get_word(cursor)); break;
+            case 3: _selection.drag_selection(cursor, _shaped_text.get_sentence(cursor)); break;
             default:;
             }
 
@@ -179,6 +210,5 @@ hitbox text_widget::hitbox_test(point3 position) const noexcept
 {
     return visible and enabled and edit_mode == edit_mode_type::editable and any(group & tt::keyboard_focus_group::normal);
 }
-
 
 } // namespace tt::inline v1

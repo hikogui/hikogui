@@ -199,18 +199,23 @@ public:
      * @param it The iterator to the character.
      * @return The iterator to the character on the left, or empty.
      */
-    [[nodiscard]] char_const_iterator move_left_one_character(char_const_iterator it) const noexcept;
+    [[nodiscard]] char_const_iterator move_left_char(char_const_iterator it) const noexcept;
 
     /** Get the character to the right.
      *
      * @param it The iterator to the character.
      * @return The iterator to the character on the left, or empty.
     */
-    [[nodiscard]] char_const_iterator move_right_one_character(char_const_iterator it) const noexcept;
+    [[nodiscard]] char_const_iterator move_right_char(char_const_iterator it) const noexcept;
 
-    [[nodiscard]] text_cursor move_left_one_character(text_cursor cursor) const noexcept;
-
-    [[nodiscard]] text_cursor move_right_one_character(text_cursor cursor) const noexcept;
+    [[nodiscard]] text_cursor move_left_char(text_cursor cursor) const noexcept;
+    [[nodiscard]] text_cursor move_right_char(text_cursor cursor) const noexcept;
+    [[nodiscard]] text_cursor move_down_char(text_cursor cursor, float &x) const noexcept;
+    [[nodiscard]] text_cursor move_up_char(text_cursor cursor, float &x) const noexcept;
+    [[nodiscard]] text_cursor move_left_word(text_cursor cursor) const noexcept;
+    [[nodiscard]] text_cursor move_right_word(text_cursor cursor) const noexcept;
+    [[nodiscard]] text_cursor move_begin_line(text_cursor cursor) const noexcept;
+    [[nodiscard]] text_cursor move_end_line(text_cursor cursor) const noexcept;
 
 private:
     font_book *_font_book = nullptr;

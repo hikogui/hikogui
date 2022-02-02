@@ -14,19 +14,23 @@ namespace tt::inline v1 {
 
 enum class command {
     unknown,
-    text_cursor_char_left,
-    text_cursor_char_right,
-    text_cursor_word_left,
-    text_cursor_word_right,
-    text_cursor_line_begin,
-    text_cursor_line_end,
-    text_select_char_left,
-    text_select_char_right,
+    text_cursor_left_char,
+    text_cursor_right_char,
+    text_cursor_down_char,
+    text_cursor_up_char,
+    text_cursor_left_word,
+    text_cursor_right_word,
+    text_cursor_begin_line,
+    text_cursor_end_line,
+    text_select_left_char,
+    text_select_right_char,
+    text_select_down_char,
+    text_select_up_char,
     text_select_word,
-    text_select_word_left,
-    text_select_word_right,
-    text_select_line_begin,
-    text_select_line_end,
+    text_select_left_word,
+    text_select_right_word,
+    text_select_begin_line,
+    text_select_end_line,
     text_select_document,
     text_mode_insert,
     text_delete_char_prev,
@@ -56,19 +60,23 @@ enum class command {
 // clang-format off
 constexpr auto command_metadata = enum_metadata{
     command::unknown, "unknown",
-    command::text_cursor_char_left, "text_cursor_char_left",
-    command::text_cursor_char_right, "text_cursor_char_right",
-    command::text_cursor_word_left, "text_cursor_word_left",
-    command::text_cursor_word_right, "text_cursor_word_right",
-    command::text_cursor_line_begin, "text_cursor_line_begin",
-    command::text_cursor_line_end, "text_cursor_line_end",
-    command::text_select_char_left, "text_select_char_left",
-    command::text_select_char_right, "text_select_char_right",
+    command::text_cursor_left_char, "text_cursor_left_char",
+    command::text_cursor_right_char, "text_cursor_right_char",
+    command::text_cursor_down_char, "text_cursor_down_char",
+    command::text_cursor_up_char, "text_cursor_up_char",
+    command::text_cursor_left_word, "text_cursor_left_word",
+    command::text_cursor_right_word, "text_cursor_right_word",
+    command::text_cursor_begin_line, "text_cursor_begin_line",
+    command::text_cursor_end_line, "text_cursor_end_line",
+    command::text_select_left_char, "text_select_left_char",
+    command::text_select_right_char, "text_select_right_char",
+    command::text_select_down_char, "text_select_down_char",
+    command::text_select_up_char, "text_select_up_char",
     command::text_select_word, "text_select_word",
-    command::text_select_word_left, "text_select_word_left",
-    command::text_select_word_right, "text_select_word_right",
-    command::text_select_line_begin, "text_select_line_begin",
-    command::text_select_line_end, "text_select_line_end",
+    command::text_select_left_word, "text_select_left_word",
+    command::text_select_right_word, "text_select_right_word",
+    command::text_select_begin_line, "text_select_begin_line",
+    command::text_select_end_line, "text_select_end_line",
     command::text_select_document, "text_select_document",
     command::text_mode_insert, "text_mode_insert",
     command::text_delete_char_prev, "text_delete_char_prev",
@@ -104,6 +112,42 @@ inline std::string_view to_string(command rhs) noexcept
 inline std::ostream &operator<<(std::ostream &lhs, command const &rhs)
 {
     return lhs << command_metadata[rhs];
+}
+
+[[nodiscard]] constexpr bool is_text_edit_command(command const &rhs) noexcept
+{
+    using enum tt::command;
+    switch (rhs) {
+    case text_cursor_left_char:
+    case text_cursor_right_char:
+    case text_cursor_down_char:
+    case text_cursor_up_char:
+    case text_cursor_left_word:
+    case text_cursor_right_word:
+    case text_cursor_begin_line:
+    case text_cursor_end_line:
+    case text_select_left_char:
+    case text_select_right_char:
+    case text_select_down_char:
+    case text_select_up_char:
+    case text_select_word:
+    case text_select_left_word:
+    case text_select_right_word:
+    case text_select_begin_line:
+    case text_select_end_line:
+    case text_select_document:
+    case text_mode_insert:
+    case text_delete_char_prev:
+    case text_delete_char_next:
+    case text_edit_paste:
+    case text_edit_copy:
+    case text_edit_cut:
+    case text_undo:
+    case text_redo:
+        return true;
+    default:
+        return false;
+    }
 }
 
 constexpr command to_command(std::string_view name) noexcept

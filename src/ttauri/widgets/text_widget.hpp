@@ -16,6 +16,7 @@
 #include <array>
 #include <optional>
 #include <future>
+#include <limits>
 
 namespace tt::inline v1 {
 
@@ -99,9 +100,11 @@ private:
     text_shaper _shaped_text;
     float _shaped_text_cap_height;
 
+
     decltype(text)::callback_ptr_type _text_callback;
 
     text_selection _selection;
+    float _vertical_movement_x = std::numeric_limits<float>::quiet_NaN();
 
     text_widget(gui_window &window, widget *parent) noexcept;
     [[nodiscard]] gstring_view selected_text() const noexcept;
