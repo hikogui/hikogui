@@ -235,10 +235,10 @@ void draw_context::_draw_text_cursors(
         ttlet secondary_is_on_right = secondary_ltr == secondary_cursor.after();
         ttlet secondary_is_on_left = not secondary_is_on_right;
 
-        if (primary_is_on_right and secondary_is_on_left and text.right_of(primary_it) == secondary_it) {
+        if (primary_is_on_right and secondary_is_on_left and text.move_right_one_character(primary_it) == secondary_it) {
             // The secondary character is right of primary character, and the cursors are touching.
             break;
-        } else if (primary_is_on_left and secondary_is_on_right and text.left_of(primary_it) == secondary_it) {
+        } else if (primary_is_on_left and secondary_is_on_right and text.move_left_one_character(primary_it) == secondary_it) {
             // The secondary character is left of primary character, and the cursors are touching.
             break;
         }

@@ -84,6 +84,17 @@ public:
      */
     text_shaper_line(size_t line_nr, const_iterator begin, iterator first, iterator last, float width) noexcept;
 
+    [[nodiscard]] constexpr size_t size() const noexcept
+    {
+        return columns.size();
+    }
+
+    iterator operator[](size_t index) const noexcept
+    {
+        tt_axiom(index < columns.size());
+        return columns[index];
+    }
+
     void layout(horizontal_alignment alignment, float min_x, float max_x, float sub_pixel_width) noexcept;
 
     /** Get the character nearest to position.

@@ -330,6 +330,84 @@ void text_shaper::position_glyphs(
     }
 }
 
+[[nodiscard]] text_shaper::char_const_iterator
+text_shaper::move_left_one_character(text_shaper::char_const_iterator it) const noexcept
+{
+    auto line_nr = it->line_nr;
+    auto column_nr = it->column_nr;
+
+    if (column_nr == 0) {
+        if (it->direction == unicode_bidi_class::L) {
+            if (line_nr != 0) {
+                --line_nr;
+                column_nr = _lines[line_nr].size() - 1;
+            }
+        } else {
+            if (line_nr != _lines.size() - 1) {
+                ++line_nr;
+                column_nr = _lines[line_nr].size() - 1;
+            }
+        }
+    } else {
+        --column_nr;
+    }
+
+    return _lines[line_nr][column_nr];
+}
+
+[[nodiscard]] text_shaper::char_const_iterator
+text_shaper::move_right_one_character(text_shaper::char_const_iterator it) const noexcept
+{
+    auto line_nr = it->line_nr;
+    auto column_nr = it->column_nr;
+
+    if (column_nr == _lines[line_nr].size() - 1) {
+        if (it->direction == unicode_bidi_class::L) {
+            if (line_nr != _lines.size() - 1) {
+                ++line_nr;
+                column_nr = 0;
+            }
+        } else {
+            if (line_nr != 0) {
+                --line_nr;
+                column_nr = 0;
+            }
+        }
+    } else {
+        ++column_nr;
+    }
+
+    return _lines[line_nr][column_nr];
+}
+
+[[nodiscard]] text_cursor text_shaper::move_left_one_character(text_cursor cursor) const noexcept
+{
+    auto char_it = _text.begin() + cursor.index();
+    tt_axiom(char_it < _text.end());
+
+    if ((char_it->direction == unicode_bidi_class::L) == cursor.after()) {
+        // Skip over the character itself, and put the cursor on the left side of that character.
+        return {cursor.index(), char_it->direction != unicode_bidi_class::L};
+    }
+
+    char_it = move_left_one_character(char_it);
+    return {narrow<size_t>(std::distance(_text.begin(), char_it)), char_it->direction != unicode_bidi_class::L};
+}
+
+[[nodiscard]] text_cursor text_shaper::move_right_one_character(text_cursor cursor) const noexcept
+{
+    auto char_it = _text.begin() + cursor.index();
+    tt_axiom(char_it < _text.end());
+
+    if ((char_it->direction == unicode_bidi_class::L) == cursor.before()) {
+        // Skip over the character itself, and put the cursor on the right side of that character.
+        return {cursor.index(), char_it->direction == unicode_bidi_class::L};
+    }
+
+    char_it = move_right_one_character(char_it);
+    return {narrow<size_t>(std::distance(_text.begin(), char_it)), char_it->direction == unicode_bidi_class::L};
+}
+
 [[nodiscard]] static std::pair<text_cursor, text_cursor>
 get_selection_from_break(text_cursor cursor, unicode_break_vector const &break_opportunities) noexcept
 {
@@ -362,30 +440,6 @@ get_selection_from_break(text_cursor cursor, unicode_break_vector const &break_o
 [[nodiscard]] std::pair<text_cursor, text_cursor> text_shaper::get_sentence(text_cursor cursor) const noexcept
 {
     return get_selection_from_break(cursor, _sentence_break_opportunities);
-}
-
-[[nodiscard]] std::optional<text_shaper::char_const_iterator>
-text_shaper::left_of(text_shaper::char_const_iterator it) const noexcept
-{
-    tt_axiom(it->line_nr < _lines.size());
-    tt_axiom(it->column_nr < _lines[it->line_nr].columns.size());
-    if (it->column_nr == 0) {
-        return {};
-    }
-
-    return _lines[it->line_nr].columns[it->column_nr - 1];
-}
-
-[[nodiscard]] std::optional<text_shaper::char_const_iterator>
-text_shaper::right_of(text_shaper::char_const_iterator it) const noexcept
-{
-    tt_axiom(it->line_nr < _lines.size());
-    tt_axiom(it->column_nr < _lines[it->line_nr].columns.size());
-    if (it->column_nr == _lines[it->line_nr].columns.size() - 1) {
-        return {};
-    }
-
-    return _lines[it->line_nr].columns[it->column_nr + 1];
 }
 
 } // namespace tt::inline v1

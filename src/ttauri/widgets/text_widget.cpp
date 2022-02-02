@@ -46,9 +46,9 @@ void text_widget::draw(draw_context const &context) noexcept
 
         context.draw_text_selection(layout(), _shaped_text, _selection, theme().color(theme_color::text_select));
 
-        //if (enabled and visible and edit_mode == edit_mode_type::editable) {
+        if (enabled and focus) {
             context.draw_text_cursors(layout(), _shaped_text, _selection.cursor(), theme().color(theme_color::cursor), theme().color(theme_color::incomplete_glyph));
-        //}
+        }
     }
 }
 
@@ -86,6 +86,12 @@ bool text_widget::handle_event(tt::command command) noexcept
             _selection.clear_selection();
             return true;
 
+        case command::text_cursor_char_left:
+            _selection.set_cursor(_shaped_text.move_left_one_character(_selection.cursor()));
+            return true;
+        case command::text_cursor_char_right:
+            _selection.set_cursor(_shaped_text.move_right_one_character(_selection.cursor()));
+            return true;
         default:;
         }
     }
@@ -168,7 +174,7 @@ hitbox text_widget::hitbox_test(point3 position) const noexcept
 
 [[nodiscard]] bool text_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
-    return visible and enabled and edit_mode != edit_mode_type::fixed and any(group & tt::keyboard_focus_group::normal);
+    return visible and enabled and edit_mode == edit_mode_type::editable and any(group & tt::keyboard_focus_group::normal);
 }
 
 

@@ -69,7 +69,8 @@ int tt_main(int argc, char *argv[])
 
     auto text = to_gstring(latin_text + "\n" + mixed_rtl_text + "\n" + mixed_ltr_text + "\n" + hebrew_text);
 
-    window.content().make_widget<text_widget>("A1", text, tt::alignment::top_flush());
+    auto &tw = window.content().make_widget<text_widget>("A1", text, tt::alignment::top_flush());
+    tw.edit_mode = text_widget::edit_mode_type::editable;
 
     return gui->loop();
 }

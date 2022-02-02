@@ -199,14 +199,18 @@ public:
      * @param it The iterator to the character.
      * @return The iterator to the character on the left, or empty.
      */
-    [[nodiscard]] std::optional<char_const_iterator> left_of(char_const_iterator it) const noexcept;
+    [[nodiscard]] char_const_iterator move_left_one_character(char_const_iterator it) const noexcept;
 
     /** Get the character to the right.
      *
      * @param it The iterator to the character.
      * @return The iterator to the character on the left, or empty.
     */
-    [[nodiscard]] std::optional<char_const_iterator> right_of(char_const_iterator it) const noexcept;
+    [[nodiscard]] char_const_iterator move_right_one_character(char_const_iterator it) const noexcept;
+
+    [[nodiscard]] text_cursor move_left_one_character(text_cursor cursor) const noexcept;
+
+    [[nodiscard]] text_cursor move_right_one_character(text_cursor cursor) const noexcept;
 
 private:
     font_book *_font_book = nullptr;
