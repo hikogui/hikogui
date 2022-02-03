@@ -52,8 +52,31 @@ void text_widget::draw(draw_context const &context) noexcept
                 _shaped_text,
                 _selection.cursor(),
                 theme().color(theme_color::cursor),
-                theme().color(theme_color::incomplete_glyph));
+                theme().color(theme_color::incomplete_glyph), _insertion_mode);
         }
+    }
+}
+
+void text_widget::undo_push() noexcept
+{
+    _undo_stack.emplace(*text.cget(), _selection);
+}
+
+void text_widget::undo() noexcept
+{
+    if (_undo_stack.can_undo()) {
+        ttlet &tmp = _undo_stack.undo(*text.cget(), _selection);
+        text = tmp.text;
+        _selection = tmp.selection;
+    }
+}
+
+void text_widget::redo() noexcept
+{
+    if (_undo_stack.can_redo()) {
+        ttlet &tmp = _undo_stack.redo();
+        text = tmp.text;
+        _selection = tmp.selection;
     }
 }
 
@@ -64,6 +87,90 @@ void text_widget::draw(draw_context const &context) noexcept
     tt_axiom(first <= last and last <= text_.size());
 
     return gstring_view{text_}.substr(first, last - first);
+}
+
+void text_widget::replace_selection(gstring replacement) noexcept
+{
+    undo_push();
+
+    ttlet[first, last] = _selection.selection_indices();
+    auto text_proxy = text.get();
+    text_proxy->replace(first, last - first, replacement);
+    _selection.set_cursor(text_cursor{first, false}.advance_char(narrow_cast<ptrdiff_t>(replacement.size()), text_proxy->size()));
+}
+
+void text_widget::add_char(grapheme c) noexcept
+{
+    if (not _selection.empty()) {
+        return replace_selection(gstring{c});
+    }
+
+    undo_push();
+
+    auto cursor = _selection.cursor();
+    auto index = cursor.after() ? cursor.index() + 1 : cursor.index();
+
+    auto text_proxy = text.get();
+    if (_insertion_mode) {
+        text_proxy->insert(index, 1, c);
+    } else {
+        text_proxy[index] = c;
+    }
+    _selection.set_cursor(cursor.advance_char(1, text_proxy->size()));
+}
+
+void text_widget::delete_char_prev() noexcept
+{
+    auto cursor = _selection.cursor();
+
+    if (not _selection.empty()) {
+        return replace_selection(gstring{});
+    } else if (cursor.start_of_text()) {
+        return;
+    }
+
+    undo_push();
+
+    // Place the cursor after the character to delete.
+    if (cursor.before()) {
+        cursor = cursor.neighbour();
+    }
+
+    // Delete the character.
+    auto text_proxy = text.get();
+    tt_axiom(cursor.index() < text_proxy->size());
+    text_proxy->erase(cursor.index(), 1);
+
+    _selection.set_cursor(cursor.advance_char(-1, text_proxy->size()));
+}
+
+void text_widget::delete_char_next() noexcept
+{
+    auto cursor = _selection.cursor();
+
+    if (not _selection.empty()) {
+        return replace_selection(gstring{});
+    } else if (cursor.end_of_text(text->size())) {
+        return;
+    }
+
+    undo_push();
+
+    // Place the cursor before the character to delete.
+    if (cursor.after()) {
+        cursor = cursor.neighbour();
+    }
+
+    // Remove the character.
+    auto text_proxy = text.get();
+    tt_axiom(cursor.index() < text_proxy->size());
+    text_proxy->erase(cursor.index(), 1);
+
+    // Place the cursor after the previous character, unless already at start of text.
+    if (not cursor.start_of_text()) {
+        cursor = cursor.neighbour();
+    }
+    _selection.set_cursor(cursor);
 }
 
 bool text_widget::handle_event(tt::command command) noexcept
@@ -85,22 +192,30 @@ bool text_widget::handle_event(tt::command command) noexcept
     if (enabled) {
         // clang-format off
         switch (command) {
-            //case command::text_edit_paste:
-            //    _field.handle_paste(window.get_text_from_clipboard());
-            //    commit(false);
-            //    return true;
-            //
+        case command::text_mode_insert:
+            _insertion_mode = not _insertion_mode;
+            return true;
+
+        case command::text_edit_paste:
+            replace_selection(to_gstring(window.get_text_from_clipboard()));
+            return true;
+        
         case command::text_edit_copy:
             if (ttlet selected_text_ = selected_text(); not selected_text_.empty()) {
                 window.set_text_on_clipboard(to_string(selected_text_));
             }
             return true;
 
-            //
-            //case command::text_edit_cut: window.set_text_on_clipboard(_field.handle_cut()); return true;
+        case command::text_edit_cut:
+            window.set_text_on_clipboard(to_string(selected_text()));
+            replace_selection(gstring{});
+            return true;
 
-        case command::gui_cancel:
-            _selection.clear_selection(); return true;
+        case command::text_undo: undo(); return true;
+        case command::text_redo: redo(); return true;
+
+        case command::text_delete_char_next: delete_char_next(); return true;
+        case command::text_delete_char_prev: delete_char_prev(); return true;
 
         case command::text_cursor_left_char:
             _selection.set_cursor(_shaped_text.move_left_char(_selection.cursor())); return true;
@@ -127,6 +242,8 @@ bool text_widget::handle_event(tt::command command) noexcept
         case command::text_cursor_end_document:
             _selection.set_cursor(_shaped_text.move_end_document(_selection.cursor())); return true;
 
+        case command::gui_cancel:
+            _selection.clear_selection(); return true;
         case command::text_select_left_char:
             _selection.drag_selection(_shaped_text.move_left_char(_selection.cursor())); return true;
         case command::text_select_right_char:
@@ -158,6 +275,33 @@ bool text_widget::handle_event(tt::command command) noexcept
     }
 
     return super::handle_event(command);
+}
+
+bool text_widget::handle_event(keyboard_event const &event) noexcept
+{
+    using enum keyboard_event::Type;
+
+    tt_axiom(is_gui_thread());
+
+    auto handled = super::handle_event(event);
+
+    if (enabled) {
+        switch (event.type) {
+        case grapheme:
+            add_char(event.grapheme);
+            return true;
+
+            // case Partialgrapheme:
+            //     handled = true;
+            //     _field.insert_partial_grapheme(event.grapheme);
+            //     commit(false);
+            //     break;
+
+        default:;
+        }
+    }
+
+    return handled;
 }
 
 bool text_widget::handle_event(mouse_event const &event) noexcept

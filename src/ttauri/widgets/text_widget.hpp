@@ -11,6 +11,7 @@
 #include "../observable.hpp"
 #include "../alignment.hpp"
 #include "../l10n.hpp"
+#include "../undo_stack.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -92,11 +93,17 @@ public:
     void set_layout(widget_layout const &layout) noexcept override;
     void draw(draw_context const &context) noexcept override;
     bool handle_event(tt::command command) noexcept override;
+    bool handle_event(keyboard_event const &event) noexcept override;
     bool handle_event(mouse_event const &event) noexcept override;
     hitbox hitbox_test(point3 position) const noexcept override;
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
     /// @endprivatesection
 private:
+    struct undo_type {
+        gstring text;
+        text_selection selection;
+    };
+
     text_shaper _shaped_text;
     float _shaped_text_cap_height;
 
@@ -104,10 +111,19 @@ private:
     decltype(text)::callback_ptr_type _text_callback;
 
     text_selection _selection;
+    bool _insertion_mode = true;
+    undo_stack<undo_type> _undo_stack = {100};
     float _vertical_movement_x = std::numeric_limits<float>::quiet_NaN();
 
     text_widget(gui_window &window, widget *parent) noexcept;
     [[nodiscard]] gstring_view selected_text() const noexcept;
+    void undo_push() noexcept;
+    void undo() noexcept;
+    void redo() noexcept;
+    void replace_selection(gstring replacement) noexcept;
+    void add_char(grapheme c) noexcept;
+    void delete_char_next() noexcept;
+    void delete_char_prev() noexcept;
 };
 
 } // namespace tt::inline v1

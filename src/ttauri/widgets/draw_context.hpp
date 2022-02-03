@@ -22,8 +22,8 @@
 #include "../vspan.hpp"
 #include "widget_layout.hpp"
 
-namespace tt::inline v1{
-    class gfx_device;
+namespace tt::inline v1 {
+class gfx_device;
 class gfx_device_vulkan;
 class shaped_text;
 class glyph_ids;
@@ -38,11 +38,11 @@ enum class border_side {
 
     /** The border is drawn inside the edge of a quad.
      */
-     inside,
+    inside,
 
-     /** The border is drawn outside the edge of a quad.
-      */
-      outside
+    /** The border is drawn outside the edge of a quad.
+     */
+    outside
 };
 
 /** Draw context for drawing using the TTauri shaders.
@@ -203,7 +203,7 @@ public:
     }
 
     [[nodiscard]] constexpr static rectangle
-        make_rectangle(line_segment const &line, float width, line_end_cap c1, line_end_cap c2) noexcept
+    make_rectangle(line_segment const &line, float width, line_end_cap c1, line_end_cap c2) noexcept
     {
         auto right = line.direction();
 
@@ -374,7 +374,7 @@ public:
      *         Widgets may want to request a redraw if the image is not ready.
      */
     [[nodiscard]] bool
-        draw_image(widget_layout const &layout, aarectangle const &clipping_rectangle, quad const &box, paged_image &image)
+    draw_image(widget_layout const &layout, aarectangle const &clipping_rectangle, quad const &box, paged_image &image)
         const noexcept
     {
         return _draw_image(layout.window_clipping_rectangle(clipping_rectangle), layout.to_window * box, image);
@@ -387,8 +387,7 @@ public:
      * @param color The color that the glyph should be drawn in.
      * @param glyph The glyphs to draw.
      */
-    void
-        draw_glyph(widget_layout const &layout, quad const &box, quad_color const &color, glyph_ids const &glyph) const noexcept
+    void draw_glyph(widget_layout const &layout, quad const &box, quad_color const &color, glyph_ids const &glyph) const noexcept
     {
         return _draw_glyph(layout.window_clipping_rectangle(), layout.to_window * box, color, glyph);
     }
@@ -472,8 +471,7 @@ public:
      * @param color Text-color overriding the colors from the shaped_text.
      * @param text The shaped text to draw.
      */
-    void draw_text(widget_layout const &layout, quad_color const &color, text_shaper const &text)
-        const noexcept
+    void draw_text(widget_layout const &layout, quad_color const &color, text_shaper const &text) const noexcept
     {
         return _draw_text(layout.window_clipping_rectangle(), layout.to_window, text, color);
     }
@@ -540,7 +538,9 @@ public:
      * @param selection The text selection.
      * @param color The color of the selection.
      */
-    void draw_text_selection(widget_layout const &layout, text_shaper const &text, text_selection const &selection, tt::color color) const noexcept
+    void
+    draw_text_selection(widget_layout const &layout, text_shaper const &text, text_selection const &selection, tt::color color)
+        const noexcept
     {
         return _draw_text_selection(layout.window_clipping_rectangle(), layout.to_window, text, selection, color);
     }
@@ -552,10 +552,18 @@ public:
      * @param cursor The position of the cursor.
      * @param primary_color The color of the primary cursor (the insertion cursor).
      * @param secondary_color The color of the secondary cursor (the append cursor).
+     * @param insertion_mode True draw insertion mode cursors, False draw overwrite mode cursor.
      */
-    void draw_text_cursors(widget_layout const &layout, text_shaper const &text, text_cursor cursor, tt::color primary_color, tt::color secondary_color) const noexcept
+    void draw_text_cursors(
+        widget_layout const &layout,
+        text_shaper const &text,
+        text_cursor cursor,
+        tt::color primary_color,
+        tt::color secondary_color,
+        bool insertion_mode) const noexcept
     {
-        return _draw_text_cursors(layout.window_clipping_rectangle(), layout.to_window, text, cursor, primary_color, secondary_color);
+        return _draw_text_cursors(
+            layout.window_clipping_rectangle(), layout.to_window, text, cursor, primary_color, secondary_color, insertion_mode);
     }
 
     [[nodiscard]] friend bool overlaps(draw_context const &context, widget_layout const &layout) noexcept
@@ -595,9 +603,19 @@ private:
         text_selection const &selection,
         tt::color) const noexcept;
 
-    void _draw_text_cursor_detail(aarectangle const &clipping_rectangle,
+    void _draw_text_insertion_cursor(
+        aarectangle const &clipping_rectangle,
         matrix3 const &transform,
-        text_shaper::char_const_iterator it, bool on_right, tt::color color, bool show_flag) const noexcept;
+        text_shaper::char_const_iterator it,
+        bool on_right,
+        tt::color color,
+        bool show_flag) const noexcept;
+
+    void _draw_text_overwrite_cursor(
+        aarectangle const &clipping_rectangle,
+        matrix3 const &transform,
+        text_shaper::char_const_iterator it,
+        tt::color color) const noexcept;
 
     void _draw_text_cursors(
         aarectangle const &clipping_rectangle,
@@ -605,7 +623,8 @@ private:
         text_shaper const &text,
         text_cursor cursor,
         tt::color primary_color,
-        tt::color secondary_color) const noexcept;
+        tt::color secondary_color,
+        bool insertion_mode) const noexcept;
 
     void _draw_glyph(aarectangle const &clipping_rectangle, quad const &box, quad_color const &color, glyph_ids const &glyph)
         const noexcept;

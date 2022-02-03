@@ -12,16 +12,16 @@
 #include "../text/text_shaper.hpp"
 #include "../text/text_selection.hpp"
 
-namespace tt::inline v1{
+namespace tt::inline v1 {
 
-    draw_context::draw_context(
-        gfx_device_vulkan & device,
-        std::size_t frame_buffer_index,
-        aarectangle scissor_rectangle,
-        vspan<pipeline_box::vertex> &boxVertices,
-        vspan<pipeline_image::vertex> &imageVertices,
-        vspan<pipeline_SDF::vertex> &sdfVertices,
-        utc_nanoseconds display_time_point) noexcept :
+draw_context::draw_context(
+    gfx_device_vulkan &device,
+    std::size_t frame_buffer_index,
+    aarectangle scissor_rectangle,
+    vspan<pipeline_box::vertex> &boxVertices,
+    vspan<pipeline_image::vertex> &imageVertices,
+    vspan<pipeline_SDF::vertex> &sdfVertices,
+    utc_nanoseconds display_time_point) noexcept :
     device(device),
     frame_buffer_index(frame_buffer_index),
     scissor_rectangle(scissor_rectangle),
@@ -54,7 +54,7 @@ void draw_context::_draw_box(
 }
 
 [[nodiscard]] bool
-draw_context::_draw_image(aarectangle const &clipping_rectangle, quad const &box, paged_image & image) const noexcept
+draw_context::_draw_image(aarectangle const &clipping_rectangle, quad const &box, paged_image &image) const noexcept
 {
     tt_axiom(_image_vertices != nullptr);
 
@@ -132,7 +132,7 @@ void draw_context::_draw_text(
 
     auto atlas_was_updated = false;
     for (ttlet &c : text) {
-        ttlet box = translate2{c.position} *c.metrics.bounding_rectangle;
+        ttlet box = translate2{c.position} * c.metrics.bounding_rectangle;
         ttlet color = text_color ? *text_color : quad_color{c.style.color};
 
         tt_axiom(c.description != nullptr);
@@ -145,8 +145,7 @@ void draw_context::_draw_text(
             break;
         }
 
-        atlas_was_updated |=
-            pipeline->place_vertices(*_sdf_vertices, clipping_rectangle, transform * box, c.glyph, color);
+        atlas_was_updated |= pipeline->place_vertices(*_sdf_vertices, clipping_rectangle, transform * box, c.glyph, color);
     }
 
     if (atlas_was_updated) {
@@ -161,38 +160,51 @@ void draw_context::_draw_text_selection(
     text_selection const &selection,
     tt::color color) const noexcept
 {
-    ttlet[first, last] = selection.selection();
-    ttlet first_ = text.begin() + first.index();
-    ttlet last_ = text.begin() + last.neighbour().index();
+    ttlet[first, last] = selection.selection_indices();
+    ttlet first_ = text.begin() + first;
+    ttlet last_ = text.begin() + last;
     tt_axiom(first_ <= text.end());
     tt_axiom(last_ <= text.end());
     tt_axiom(first_ <= last_);
-    
+
     for (auto it = first_; it != last_; ++it) {
         _draw_box(clipping_rectangle, transform * it->rectangle, color, tt::color{}, 0.0f, {});
     }
 }
 
-void draw_context::_draw_text_cursor_detail(aarectangle const &clipping_rectangle,
+void draw_context::_draw_text_insertion_cursor(
+    aarectangle const &clipping_rectangle,
     matrix3 const &transform,
-    text_shaper::char_const_iterator it, bool on_right, tt::color color, bool show_flag) const noexcept
+    text_shaper::char_const_iterator it,
+    bool on_right,
+    tt::color color,
+    bool show_flag) const noexcept
 {
     ttlet ltr = it->direction == unicode_bidi_class::L;
 
     ttlet bottom = std::floor(it->rectangle.bottom());
     ttlet top = std::ceil(it->rectangle.top());
-    ttlet left = std::round((on_right ? it->rectangle.right() : it->rectangle.left()) -0.5f);
+    ttlet left = std::round((on_right ? it->rectangle.right() : it->rectangle.left()) - 0.5f);
 
     ttlet shape_I = aarectangle{point2{left, bottom}, point2{left + 1.0f, top}};
     _draw_box(clipping_rectangle, transform * shape_I, color, tt::color{}, 0.0f, {});
 
     if (show_flag) {
-        ttlet shape_flag = ltr ?
-            aarectangle{point2{left + 1.0f, top - 1.0f}, point2{left + 3.0f, top}} :
-            aarectangle{point2{left - 2.0f, top - 1.0f}, point2{left, top}};
+        ttlet shape_flag = ltr ? aarectangle{point2{left + 1.0f, top - 1.0f}, point2{left + 3.0f, top}} :
+                                 aarectangle{point2{left - 2.0f, top - 1.0f}, point2{left, top}};
 
         _draw_box(clipping_rectangle, transform * shape_flag, color, tt::color{}, 0.0f, {});
     }
+}
+
+void draw_context::_draw_text_overwrite_cursor(
+    aarectangle const &clipping_rectangle,
+    matrix3 const &transform,
+    text_shaper::char_const_iterator it,
+    tt::color color) const noexcept
+{
+    ttlet box = ceil(it->rectangle) + 0.5f;
+    _draw_box(clipping_rectangle, transform * box, tt::color{}, color, 1.0f, {});
 }
 
 void draw_context::_draw_text_cursors(
@@ -201,7 +213,8 @@ void draw_context::_draw_text_cursors(
     text_shaper const &text,
     text_cursor primary_cursor,
     tt::color primary_color,
-    tt::color secondary_color) const noexcept
+    tt::color secondary_color,
+    bool insertion_mode) const noexcept
 {
     auto draw_flags = false;
 
@@ -211,6 +224,13 @@ void draw_context::_draw_text_cursors(
     }
 
     tt_axiom(primary_cursor.index() < text.size());
+
+    if (not insertion_mode and not primary_cursor.end_of_text(text.size())) {
+        if (primary_cursor.after()) {
+            primary_cursor = primary_cursor.neighbour();
+        }
+        return _draw_text_overwrite_cursor(clipping_rectangle, transform, text.begin() + primary_cursor.index(), primary_color);
+    }
 
     // calculate the position of the primary cursor.
     ttlet primary_it = text.begin() + primary_cursor.index();
@@ -244,11 +264,12 @@ void draw_context::_draw_text_cursors(
         }
 
         draw_flags = true;
-        _draw_text_cursor_detail(clipping_rectangle, transform, secondary_it, secondary_is_on_right, secondary_color, draw_flags);
+        _draw_text_insertion_cursor(
+            clipping_rectangle, transform, secondary_it, secondary_is_on_right, secondary_color, draw_flags);
     } while (false);
 
-    _draw_text_cursor_detail(clipping_rectangle, transform, primary_it, primary_is_on_right, primary_color, draw_flags);
+    _draw_text_insertion_cursor(
+        clipping_rectangle, transform, primary_it, primary_is_on_right, primary_color, draw_flags);
 }
-
 
 } // namespace tt::inline v1

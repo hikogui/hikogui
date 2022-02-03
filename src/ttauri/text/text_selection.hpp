@@ -61,7 +61,7 @@ namespace tt::inline v1{
 
         [[nodiscard]] constexpr bool empty() const noexcept
         {
-            ttlet [first, last] = selection();
+            ttlet [first, last] = selection_indices();
             return first == last;
         }
 
