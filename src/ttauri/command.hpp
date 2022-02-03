@@ -48,6 +48,7 @@ enum class command {
     text_edit_cut,
     text_undo,
     text_redo,
+    text_insert_enter,
     gui_keyboard_enter,
     gui_keyboard_exit,
     gui_mouse_enter,
@@ -102,6 +103,7 @@ constexpr auto command_metadata = enum_metadata{
     command::text_edit_cut, "text_edit_cut",
     command::text_undo, "text_undo",
     command::text_redo, "text_redo",
+    command::text_insert_enter, "text_insert_enter",
     command::gui_keyboard_enter, "gui_keyboard_enter",
     command::gui_keyboard_exit, "gui_keyboard_exit",
     command::gui_mouse_enter, "gui_mouse_enter",
@@ -168,6 +170,7 @@ inline std::ostream &operator<<(std::ostream &lhs, command const &rhs)
     case text_edit_cut:
     case text_undo:
     case text_redo:
+    case text_insert_enter:
         return true;
     default:
         return false;

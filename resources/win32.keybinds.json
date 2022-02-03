@@ -43,7 +43,7 @@
     //{"key": "ctrl+]",           "command": "text_cursor_bracket_match"},
 
     // Text manipulation
-    //{"key": "enter",            "command": "text_insert_enter"},
+    {"key": "enter",            "command": "text_insert_enter"},
     //{"key": "ctrl+enter",       "command": "text_insert_line_up"},
     //{"key": "ctrl+shift+enter", "command": "text_insert_line_down"},
     {"key": "delete",           "command": "text_delete_char_next"},

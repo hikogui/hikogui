@@ -214,6 +214,7 @@ bool text_widget::handle_event(tt::command command) noexcept
         case command::text_undo: undo(); return true;
         case command::text_redo: redo(); return true;
 
+        case command::text_insert_enter: add_char(grapheme{unicode_PS}); return true;
         case command::text_delete_char_next: delete_char_next(); return true;
         case command::text_delete_char_prev: delete_char_prev(); return true;
 
