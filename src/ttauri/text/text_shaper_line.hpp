@@ -81,8 +81,15 @@ public:
      * @param first The first character of the line.
      * @param last One beyond the last character of the line.
      * @param width The width of the line.
+     * @param metrics The initial line metrics.
      */
-    text_shaper_line(size_t line_nr, const_iterator begin, iterator first, iterator last, float width) noexcept;
+    text_shaper_line(
+        size_t line_nr,
+        const_iterator begin,
+        iterator first,
+        iterator last,
+        float width,
+        tt::font_metrics const &metrics) noexcept;
 
     [[nodiscard]] constexpr size_t size() const noexcept
     {

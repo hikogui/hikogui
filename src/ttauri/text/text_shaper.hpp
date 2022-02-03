@@ -254,6 +254,10 @@ private:
      */
     line_vector _lines;
 
+    /** The font metrics of a line without text.
+     */
+    font_metrics _initial_line_metrics;
+
     /** Create lines from the characters in the text shaper.
      *
      * @param rectangle The rectangle to position the glyphs in.

@@ -24,7 +24,8 @@ enum class unicode_normalization_mask {
     compat = 1 << to_underlying(unicode_decomposition_type::compat),
 
     paragraph = 0x0100, ///< Decompose LF -> PS (paragraph separator), Compose CR LF -> PS
-    hangul = 0x0200, ///< Decompose/Compose hangul
+    line_feed = 0x0200, ///< Decompose/Compose LS -> SP and PS -> LF 
+    hangul = 0x0400, ///< Decompose/Compose hangul
 
     NFD = canonical | hangul,
     NFKD = NFD | font | no_break | arabic | circle | math | asian | compat,

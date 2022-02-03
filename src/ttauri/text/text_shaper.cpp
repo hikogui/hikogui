@@ -181,6 +181,8 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
     _font_book(&font_book)
 {
     ttlet &font = font_book.find_font(style.family_id, style.variant);
+    _initial_line_metrics = style.scaled_size() * font.metrics;
+
     _text.reserve(text.size());
     for (ttlet &c : text) {
         ttlet clean_c = c == '\n' ? grapheme{unicode_PS} : c;
@@ -237,7 +239,7 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
         ttlet width_eol = width_it + line_size;
 
         ttlet line_width = unicode_line_break_width(width_it, width_eol);
-        r.emplace_back(line_nr++, _text.begin(), char_it, char_eol, line_width);
+        r.emplace_back(line_nr++, _text.begin(), char_it, char_eol, line_width, _initial_line_metrics);
 
         char_it = char_eol;
         width_it = width_eol;

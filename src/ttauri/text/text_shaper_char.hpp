@@ -103,6 +103,10 @@ public:
      */
     float width = 0.0f;
 
+    /** Set to true if this glyph is a white space at the end of a line.
+     */
+    bool is_trailing_white_space = false;
+
     /** The glyph is the initial glyph.
      *
      * This flag is set to true after loading the initial glyph.

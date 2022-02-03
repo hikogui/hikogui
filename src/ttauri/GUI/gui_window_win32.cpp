@@ -11,6 +11,7 @@
 #include "../log.hpp"
 #include "../strings.hpp"
 #include "../thread.hpp"
+#include "../unicode/unicode_normalization.hpp"
 #include <windowsx.h>
 #include <dwmapi.h>
 #include <new>
@@ -327,7 +328,8 @@ void gui_window_win32::set_text_on_clipboard(std::string str) noexcept
     }
 
     {
-        auto wstr = tt::to_wstring(str);
+        auto str32 = to_u32string(str);
+        auto wstr = tt::to_wstring(unicode_NFC(str32, unicode_normalization_mask::NFD | unicode_normalization_mask::line_feed));
 
         auto wstr_handle = GlobalAlloc(GMEM_MOVEABLE, (ssize(wstr) + 1) * sizeof(wchar_t));
         if (wstr_handle == nullptr) {
