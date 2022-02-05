@@ -61,7 +61,7 @@ calculate_precise_width(text_shaper_line::column_vector &columns, unicode_bidi_c
 
     auto it = columns.begin();
     for (; it != columns.end(); ++it) {
-        if (not (*it)->is_trailing_white_space) {
+        if (not(*it)->is_trailing_white_space) {
             break;
         }
     }
@@ -84,7 +84,7 @@ calculate_precise_width(text_shaper_line::column_vector &columns, unicode_bidi_c
     ttlet width = right_x - left_x;
 
     // Adjust the offset to left align on the first visible character.
-    for (auto &char_it: columns) {
+    for (auto &char_it : columns) {
         char_it->position.x() -= left_x;
     }
 
@@ -217,10 +217,22 @@ void text_shaper_line::layout(horizontal_alignment alignment, float min_x, float
         column_it = columns.end() - 1;
     }
 
-    ttlet char_it = *column_it;
-    ttlet after = char_it->direction == unicode_bidi_class::L ? position.x() > char_it->rectangle.center() :
-                                                                position.x() < char_it->rectangle.center();
+    auto char_it = *column_it;
+    if (char_it->description->general_category() == unicode_general_category::Zp or
+        char_it->description->general_category() == unicode_general_category::Zl) {
+        // Do not put the cursor on a paragraph separator or line separator.
+        if (paragraph_direction == unicode_bidi_class::L) {
+            if (column_it != columns.begin()) {
+                char_it = *--column_it;
+            }
+        } else {
+            if (column_it + 1 != columns.end()) {
+                char_it = *++column_it;
+            }
+        }
+    }
 
+    ttlet after = (char_it->direction == unicode_bidi_class::L) == position.x() > char_it->rectangle.center();
     return {char_it, after};
 }
 

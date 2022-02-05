@@ -113,7 +113,6 @@ private:
     text_selection _selection;
     bool _insertion_mode = true;
     undo_stack<undo_type> _undo_stack = {100};
-    float _vertical_movement_x = std::numeric_limits<float>::quiet_NaN();
 
     text_widget(gui_window &window, widget *parent) noexcept;
     [[nodiscard]] gstring_view selected_text() const noexcept;

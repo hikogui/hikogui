@@ -132,51 +132,6 @@ inline std::ostream &operator<<(std::ostream &lhs, command const &rhs)
     return lhs << command_metadata[rhs];
 }
 
-[[nodiscard]] constexpr bool is_text_edit_command(command const &rhs) noexcept
-{
-    using enum tt::command;
-    switch (rhs) {
-    case text_cursor_left_char:
-    case text_cursor_right_char:
-    case text_cursor_down_char:
-    case text_cursor_up_char:
-    case text_cursor_left_word:
-    case text_cursor_right_word:
-    case text_cursor_begin_line:
-    case text_cursor_end_line:
-    case text_cursor_begin_sentence:
-    case text_cursor_end_sentence:
-    case text_cursor_begin_document:
-    case text_cursor_end_document:
-    case text_select_left_char:
-    case text_select_right_char:
-    case text_select_down_char:
-    case text_select_up_char:
-    case text_select_word:
-    case text_select_left_word:
-    case text_select_right_word:
-    case text_select_begin_line:
-    case text_select_end_line:
-    case text_select_begin_sentence:
-    case text_select_end_sentence:
-    case text_select_begin_document:
-    case text_select_end_document:
-    case text_select_document:
-    case text_mode_insert:
-    case text_delete_char_prev:
-    case text_delete_char_next:
-    case text_edit_paste:
-    case text_edit_copy:
-    case text_edit_cut:
-    case text_undo:
-    case text_redo:
-    case text_insert_enter:
-        return true;
-    default:
-        return false;
-    }
-}
-
 constexpr command to_command(std::string_view name) noexcept
 {
     return command_metadata.at(name, command::unknown);

@@ -205,13 +205,13 @@ public:
      *
      * @param it The iterator to the character.
      * @return The iterator to the character on the left, or empty.
-    */
+     */
     [[nodiscard]] char_const_iterator move_right_char(char_const_iterator it) const noexcept;
 
     [[nodiscard]] text_cursor move_left_char(text_cursor cursor) const noexcept;
     [[nodiscard]] text_cursor move_right_char(text_cursor cursor) const noexcept;
-    [[nodiscard]] text_cursor move_down_char(text_cursor cursor, float &x) const noexcept;
-    [[nodiscard]] text_cursor move_up_char(text_cursor cursor, float &x) const noexcept;
+    [[nodiscard]] text_cursor move_down_char(text_cursor cursor) const noexcept;
+    [[nodiscard]] text_cursor move_up_char(text_cursor cursor) const noexcept;
     [[nodiscard]] text_cursor move_left_word(text_cursor cursor) const noexcept;
     [[nodiscard]] text_cursor move_right_word(text_cursor cursor) const noexcept;
     [[nodiscard]] text_cursor move_begin_line(text_cursor cursor) const noexcept;
@@ -241,11 +241,11 @@ private:
     std::vector<float> _line_break_widths;
 
     /** A list of word break opportunities.
-    */
+     */
     unicode_break_vector _word_break_opportunities;
 
     /** A list of sentence break opportunities.
-    */
+     */
     unicode_break_vector _sentence_break_opportunities;
 
     /** A list of lines top-to-bottom order.
@@ -257,6 +257,16 @@ private:
     /** The font metrics of a line without text.
      */
     font_metrics _initial_line_metrics;
+
+    /** The x coordinate of the cursor for vertical movement.
+     *
+     * When moving vertically through the text we need to keep track of the first
+     * x-coordinate, this vertical movement doesn't drift. This is especially important
+     * when moving through short lines.
+     *
+     * @note Set to NaN for every non-vertical movement.
+     */
+    mutable float cursor_x;
 
     /** Create lines from the characters in the text shaper.
      *
@@ -288,10 +298,6 @@ private:
         extent2 sub_pixel_size,
         tt::horizontal_alignment horizontal_alignment,
         unicode_bidi_class writing_direction) noexcept;
-
-    /** Get column and line of a character.
-     */
-    //[[nodiscard]] std::pair<ssize_t, ssize_t> text_shaper::get_column_line(ssize_t index) const noexcept;
 };
 
 } // namespace tt::inline v1

@@ -321,8 +321,10 @@ void text_shaper::position_glyphs(
 
 [[nodiscard]] text_cursor text_shaper::get_nearest(point2 position) const noexcept
 {
+    cursor_x = std::numeric_limits<float>::quiet_NaN();
+
     ttlet line_it = std::ranges::min_element(_lines, std::ranges::less{}, [position](ttlet &line) {
-        return distance(line.rectangle, position);
+        return std::abs(line.y - position.y());
     });
 
     if (line_it != _lines.end()) {
@@ -383,6 +385,8 @@ void text_shaper::position_glyphs(
 
 [[nodiscard]] text_cursor text_shaper::move_left_char(text_cursor cursor) const noexcept
 {
+    cursor_x = std::numeric_limits<float>::quiet_NaN();
+
     auto char_it = _text.begin() + cursor.index();
     tt_axiom(char_it < _text.end());
 
@@ -397,6 +401,8 @@ void text_shaper::position_glyphs(
 
 [[nodiscard]] text_cursor text_shaper::move_right_char(text_cursor cursor) const noexcept
 {
+    cursor_x = std::numeric_limits<float>::quiet_NaN();
+
     auto char_it = _text.begin() + cursor.index();
     tt_axiom(char_it < _text.end());
 
@@ -409,7 +415,7 @@ void text_shaper::position_glyphs(
     return {narrow<size_t>(std::distance(_text.begin(), char_it)), char_it->direction == unicode_bidi_class::L};
 }
 
-[[nodiscard]] text_cursor text_shaper::move_down_char(text_cursor cursor, float &x) const noexcept
+[[nodiscard]] text_cursor text_shaper::move_down_char(text_cursor cursor) const noexcept
 {
     auto char_it = _text.begin() + cursor.index();
     if (char_it->line_nr == _lines.size() - 1) {
@@ -418,17 +424,17 @@ void text_shaper::position_glyphs(
         return {narrow<size_t>(std::distance(_text.begin(), char_it)), char_it->direction == unicode_bidi_class::L};
     }
 
-    if (std::isnan(x)) {
+    if (std::isnan(cursor_x)) {
         ttlet cursor_on_left = (char_it->direction == unicode_bidi_class::L) == cursor.before();
-        x = cursor_on_left ? char_it->rectangle.left() : char_it->rectangle.right();
+        cursor_x = cursor_on_left ? char_it->rectangle.left() : char_it->rectangle.right();
     }
 
     ttlet &line = _lines[char_it->line_nr + 1];
-    ttlet[new_char_it, after] = line.get_nearest(point2{x, 0.0f});
+    ttlet[new_char_it, after] = line.get_nearest(point2{cursor_x, 0.0f});
     return {narrow<size_t>(std::distance(_text.begin(), new_char_it)), after};
 }
 
-[[nodiscard]] text_cursor text_shaper::move_up_char(text_cursor cursor, float &x) const noexcept
+[[nodiscard]] text_cursor text_shaper::move_up_char(text_cursor cursor) const noexcept
 {
     auto char_it = _text.begin() + cursor.index();
     if (char_it->line_nr == 0) {
@@ -437,18 +443,20 @@ void text_shaper::position_glyphs(
         return {narrow<size_t>(std::distance(_text.begin(), char_it)), char_it->direction != unicode_bidi_class::L};
     }
 
-    if (std::isnan(x)) {
+    if (std::isnan(cursor_x)) {
         ttlet cursor_on_left = (char_it->direction == unicode_bidi_class::L) == cursor.before();
-        x = cursor_on_left ? char_it->rectangle.left() : char_it->rectangle.right();
+        cursor_x = cursor_on_left ? char_it->rectangle.left() : char_it->rectangle.right();
     }
 
     ttlet &line = _lines[char_it->line_nr - 1];
-    ttlet[new_char_it, after] = line.get_nearest(point2{x, 0.0f});
+    ttlet[new_char_it, after] = line.get_nearest(point2{cursor_x, 0.0f});
     return {narrow<size_t>(std::distance(_text.begin(), new_char_it)), after};
 }
 
 [[nodiscard]] text_cursor text_shaper::move_left_word(text_cursor cursor) const noexcept
 {
+    cursor_x = std::numeric_limits<float>::quiet_NaN();
+
     cursor = move_left_char(cursor);
     ttlet[first, last] = get_word(cursor);
     return cursor.before() ? first : last;
@@ -456,6 +464,8 @@ void text_shaper::position_glyphs(
 
 [[nodiscard]] text_cursor text_shaper::move_right_word(text_cursor cursor) const noexcept
 {
+    cursor_x = std::numeric_limits<float>::quiet_NaN();
+
     cursor = move_right_char(cursor);
     ttlet[first, last] = get_word(cursor);
     return cursor.before() ? first : last;
@@ -463,6 +473,8 @@ void text_shaper::position_glyphs(
 
 [[nodiscard]] text_cursor text_shaper::move_begin_line(text_cursor cursor) const noexcept
 {
+    cursor_x = std::numeric_limits<float>::quiet_NaN();
+
     auto char_it = _text.begin() + cursor.index();
     ttlet &line = _lines[char_it->line_nr];
     if (line.paragraph_direction == unicode_bidi_class::L) {
@@ -476,6 +488,8 @@ void text_shaper::position_glyphs(
 
 [[nodiscard]] text_cursor text_shaper::move_end_line(text_cursor cursor) const noexcept
 {
+    cursor_x = std::numeric_limits<float>::quiet_NaN();
+
     auto char_it = _text.begin() + cursor.index();
     ttlet &line = _lines[char_it->line_nr];
     if (line.paragraph_direction == unicode_bidi_class::L) {
@@ -489,6 +503,8 @@ void text_shaper::position_glyphs(
 
 [[nodiscard]] text_cursor text_shaper::move_begin_sentence(text_cursor cursor) const noexcept
 {
+    cursor_x = std::numeric_limits<float>::quiet_NaN();
+
     if (cursor.after()) {
         cursor = {cursor.index(), false};
     } else if (cursor.index() != 0) {
@@ -500,6 +516,8 @@ void text_shaper::position_glyphs(
 
 [[nodiscard]] text_cursor text_shaper::move_end_sentence(text_cursor cursor) const noexcept
 {
+    cursor_x = std::numeric_limits<float>::quiet_NaN();
+
     if (cursor.before()) {
         cursor = {cursor.index(), true};
     } else if (cursor.index() != _text.size() - 1) {
@@ -511,11 +529,15 @@ void text_shaper::position_glyphs(
 
 [[nodiscard]] text_cursor text_shaper::move_begin_document(text_cursor cursor) const noexcept
 {
+    cursor_x = std::numeric_limits<float>::quiet_NaN();
+
     return {0, false};
 }
 
 [[nodiscard]] text_cursor text_shaper::move_end_document(text_cursor cursor) const noexcept
 {
+    cursor_x = std::numeric_limits<float>::quiet_NaN();
+
     return {_text.size() - 1, true};
 }
 

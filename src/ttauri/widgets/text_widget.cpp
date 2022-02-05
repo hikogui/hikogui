@@ -178,17 +178,6 @@ bool text_widget::handle_event(tt::command command) noexcept
     tt_axiom(is_gui_thread());
     request_relayout();
 
-    // On commands other than vertical movement, reset the vertical movement state.
-    if (is_text_edit_command(command)) {
-        switch (command) {
-        case command::text_cursor_up_char:
-        case command::text_cursor_down_char:
-        case command::text_select_up_char:
-        case command::text_select_down_char: break;
-        default: _vertical_movement_x = std::numeric_limits<float>::quiet_NaN();
-        }
-    }
-
     if (enabled) {
         // clang-format off
         switch (command) {
@@ -223,9 +212,9 @@ bool text_widget::handle_event(tt::command command) noexcept
         case command::text_cursor_right_char:
             _selection.set_cursor(_shaped_text.move_right_char(_selection.cursor())); return true;
         case command::text_cursor_down_char:
-            _selection.set_cursor(_shaped_text.move_down_char(_selection.cursor(), _vertical_movement_x)); return true;
+            _selection.set_cursor(_shaped_text.move_down_char(_selection.cursor())); return true;
         case command::text_cursor_up_char:
-            _selection.set_cursor(_shaped_text.move_up_char(_selection.cursor(), _vertical_movement_x)); return true;
+            _selection.set_cursor(_shaped_text.move_up_char(_selection.cursor())); return true;
         case command::text_cursor_left_word:
             _selection.set_cursor(_shaped_text.move_left_word(_selection.cursor())); return true;
         case command::text_cursor_right_word:
@@ -250,9 +239,9 @@ bool text_widget::handle_event(tt::command command) noexcept
         case command::text_select_right_char:
             _selection.drag_selection(_shaped_text.move_right_char(_selection.cursor())); return true;
         case command::text_select_down_char:
-            _selection.drag_selection(_shaped_text.move_down_char(_selection.cursor(), _vertical_movement_x)); return true;
+            _selection.drag_selection(_shaped_text.move_down_char(_selection.cursor())); return true;
         case command::text_select_up_char:
-            _selection.drag_selection(_shaped_text.move_up_char(_selection.cursor(), _vertical_movement_x)); return true;
+            _selection.drag_selection(_shaped_text.move_up_char(_selection.cursor())); return true;
         case command::text_select_left_word:
             _selection.drag_selection(_shaped_text.move_left_word(_selection.cursor())); return true;
         case command::text_select_right_word:
@@ -321,7 +310,6 @@ bool text_widget::handle_event(mouse_event const &event) noexcept
         }
 
         ttlet cursor = _shaped_text.get_nearest(event.position);
-        _vertical_movement_x = event.position.x();
 
         switch (event.type) {
             using enum mouse_event::Type;
