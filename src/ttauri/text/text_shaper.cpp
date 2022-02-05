@@ -387,9 +387,12 @@ void text_shaper::position_glyphs(
 {
     cursor_x = std::numeric_limits<float>::quiet_NaN();
 
+    if (_text.empty()) {
+        return {*this, 0, false};
+    }
+
     auto char_it = _text.begin() + cursor.index();
     tt_axiom(char_it < _text.end());
-
     if ((char_it->direction == unicode_bidi_class::L) == cursor.after()) {
         // Skip over the character itself, and put the cursor on the left side of that character.
         return {*this, cursor.index(), char_it->direction != unicode_bidi_class::L};
@@ -402,6 +405,10 @@ void text_shaper::position_glyphs(
 [[nodiscard]] text_cursor text_shaper::move_right_char(text_cursor cursor) const noexcept
 {
     cursor_x = std::numeric_limits<float>::quiet_NaN();
+
+    if (_text.empty()) {
+        return {*this, 0, false};
+    }
 
     auto char_it = _text.begin() + cursor.index();
     tt_axiom(char_it < _text.end());
@@ -417,11 +424,14 @@ void text_shaper::position_glyphs(
 
 [[nodiscard]] text_cursor text_shaper::move_down_char(text_cursor cursor) const noexcept
 {
+    if (_text.empty()) {
+        return {*this, 0, false};
+    }
+
     auto char_it = _text.begin() + cursor.index();
+    tt_axiom(char_it < _text.end());
     if (char_it->line_nr == _lines.size() - 1) {
-        ttlet &line = _lines[char_it->line_nr];
-        char_it = line.paragraph_direction == unicode_bidi_class::L ? line[line.size() - 1] : line[0];
-        return {*this, narrow<size_t>(std::distance(_text.begin(), char_it)), char_it->direction == unicode_bidi_class::L};
+        return {*this, size() - 1, true};
     }
 
     if (std::isnan(cursor_x)) {
@@ -436,11 +446,14 @@ void text_shaper::position_glyphs(
 
 [[nodiscard]] text_cursor text_shaper::move_up_char(text_cursor cursor) const noexcept
 {
+    if (_text.empty()) {
+        return {*this, 0, false};
+    }
+
     auto char_it = _text.begin() + cursor.index();
+    tt_axiom(char_it < _text.end());
     if (char_it->line_nr == 0) {
-        ttlet &line = _lines[char_it->line_nr];
-        char_it = line.paragraph_direction == unicode_bidi_class::L ? line[0] : line[line.size() - 1];
-        return {*this, narrow<size_t>(std::distance(_text.begin(), char_it)), char_it->direction != unicode_bidi_class::L};
+        return {*this, 0, false};
     }
 
     if (std::isnan(cursor_x)) {
@@ -475,7 +488,13 @@ void text_shaper::position_glyphs(
 {
     cursor_x = std::numeric_limits<float>::quiet_NaN();
 
+    if (_text.empty()) {
+        return {*this, 0, false};
+    }
+
     auto char_it = _text.begin() + cursor.index();
+    tt_axiom(char_it < _text.end());
+
     ttlet &line = _lines[char_it->line_nr];
     if (line.paragraph_direction == unicode_bidi_class::L) {
         char_it = line[0];
@@ -490,7 +509,13 @@ void text_shaper::position_glyphs(
 {
     cursor_x = std::numeric_limits<float>::quiet_NaN();
 
+    if (_text.empty()) {
+        return {*this, 0, false};
+    }
+
     auto char_it = _text.begin() + cursor.index();
+    tt_axiom(char_it < _text.end());
+
     ttlet &line = _lines[char_it->line_nr];
     if (line.paragraph_direction == unicode_bidi_class::L) {
         char_it = line[line.size() - 1];

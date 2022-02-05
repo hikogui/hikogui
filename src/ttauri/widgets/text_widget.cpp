@@ -112,19 +112,16 @@ void text_widget::add_char(grapheme c) noexcept
     auto text_proxy = text.get();
 
     auto cursor = _selection.cursor();
-    cursor = cursor.before_neighbor(*text_proxy);
 
-    if (cursor.after()) {
-        // Append to end-of-text.
-        text_proxy->insert(cursor.index() + 1, 1, c);
-    } else if (_insertion_mode) {
-        text_proxy->insert(cursor.index(), 1, c);
+    auto index = cursor.before() ? cursor.index() : cursor.index() + 1;
+    if (_insertion_mode or index == text_proxy->size()) {
+        text_proxy->insert(index, 1, c);
     } else {
-        text_proxy[cursor.index()] = c;
+        text_proxy[index] = c;
     }
 
     // After inserts/overwrite/append the cursor is now behind that character.
-    cursor = {*text_proxy, cursor.index(), true};
+    cursor = {*text_proxy, index, true};
     _selection.set_cursor(cursor);
 }
 
