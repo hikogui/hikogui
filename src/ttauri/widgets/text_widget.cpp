@@ -17,9 +17,9 @@ widget_constraints const &text_widget::set_constraints() noexcept
 {
     _layout = {};
 
-    ttlet text_ = text.cget();
-    _selection.clear_selection(text_->size());
-    _shaped_text = text_shaper{font_book(), text_, theme().text_style(*text_style)};
+    ttlet text_proxy = text.cget();
+    _selection.clear_selection(*text_proxy);
+    _shaped_text = text_shaper{font_book(), text_proxy, theme().text_style(*text_style)};
     ttlet[shaped_text_rectangle, cap_height] = _shaped_text.bounding_rectangle(500.0f, alignment->vertical());
     _shaped_text_cap_height = cap_height;
     ttlet shaped_text_size = shaped_text_rectangle.size();
@@ -52,7 +52,8 @@ void text_widget::draw(draw_context const &context) noexcept
                 _shaped_text,
                 _selection.cursor(),
                 theme().color(theme_color::cursor),
-                theme().color(theme_color::incomplete_glyph), _insertion_mode);
+                theme().color(theme_color::incomplete_glyph),
+                _insertion_mode);
         }
     }
 }
@@ -82,21 +83,22 @@ void text_widget::redo() noexcept
 
 [[nodiscard]] gstring_view text_widget::selected_text() const noexcept
 {
+    ttlet &text_proxy = text.cget();
     ttlet[first, last] = _selection.selection_indices();
-    ttlet &text_ = *text.cget();
-    tt_axiom(first <= last and last <= text_.size());
 
-    return gstring_view{text_}.substr(first, last - first);
+    return gstring_view{*text_proxy}.substr(first, last - first);
 }
 
 void text_widget::replace_selection(gstring replacement) noexcept
 {
     undo_push();
 
-    ttlet[first, last] = _selection.selection_indices();
     auto text_proxy = text.get();
+    ttlet[first, last] = _selection.selection_indices();
     text_proxy->replace(first, last - first, replacement);
-    _selection.set_cursor(text_cursor{first, false}.advance_char(narrow_cast<ptrdiff_t>(replacement.size()), text_proxy->size()));
+
+    auto cursor = text_cursor{*text_proxy, first + replacement.size() - 1, true};
+    _selection.set_cursor(cursor);
 }
 
 void text_widget::add_char(grapheme c) noexcept
@@ -107,16 +109,23 @@ void text_widget::add_char(grapheme c) noexcept
 
     undo_push();
 
-    auto cursor = _selection.cursor();
-    auto index = cursor.after() ? cursor.index() + 1 : cursor.index();
-
     auto text_proxy = text.get();
-    if (_insertion_mode) {
-        text_proxy->insert(index, 1, c);
+
+    auto cursor = _selection.cursor();
+    cursor = cursor.before_neighbor(*text_proxy);
+
+    if (cursor.after()) {
+        // Append to end-of-text.
+        text_proxy->insert(cursor.index() + 1, 1, c);
+    } else if (_insertion_mode) {
+        text_proxy->insert(cursor.index(), 1, c);
     } else {
-        text_proxy[index] = c;
+        text_proxy[cursor.index()] = c;
     }
-    _selection.set_cursor(cursor.advance_char(1, text_proxy->size()));
+
+    // After inserts/overwrite/append the cursor is now behind that character.
+    cursor = {*text_proxy, cursor.index(), true};
+    _selection.set_cursor(cursor);
 }
 
 void text_widget::delete_char_prev() noexcept
@@ -131,17 +140,16 @@ void text_widget::delete_char_prev() noexcept
 
     undo_push();
 
-    // Place the cursor after the character to delete.
-    if (cursor.before()) {
-        cursor = cursor.neighbour();
-    }
-
-    // Delete the character.
     auto text_proxy = text.get();
-    tt_axiom(cursor.index() < text_proxy->size());
-    text_proxy->erase(cursor.index(), 1);
 
-    _selection.set_cursor(cursor.advance_char(-1, text_proxy->size()));
+    // Delete the character before the cursor.
+    auto index = cursor.before() ? cursor.index() - 1 : cursor.index();
+    tt_axiom(index < text_proxy->size());
+    text_proxy->erase(index, 1);
+
+    // Now place the cursor before the index of the deleted character.
+    cursor = {*text_proxy, index - 1, true};
+    _selection.set_cursor(cursor);
 }
 
 void text_widget::delete_char_next() noexcept
@@ -150,26 +158,26 @@ void text_widget::delete_char_next() noexcept
 
     if (not _selection.empty()) {
         return replace_selection(gstring{});
-    } else if (cursor.end_of_text(text->size())) {
+    }
+
+    if (cursor.end_of_text(*text.cget())) {
         return;
     }
 
     undo_push();
 
-    // Place the cursor before the character to delete.
-    if (cursor.after()) {
-        cursor = cursor.neighbour();
-    }
-
-    // Remove the character.
     auto text_proxy = text.get();
-    tt_axiom(cursor.index() < text_proxy->size());
-    text_proxy->erase(cursor.index(), 1);
+
+    // Place the cursor before the character to delete.
+    cursor = cursor.before_neighbor(*text_proxy);
+
+    // Remove the character after the cursor.
+    auto index = cursor.before() ? cursor.index() : cursor.index() + 1;
+    tt_axiom(index < text_proxy->size());
+    text_proxy->erase(index, 1);
 
     // Place the cursor after the previous character, unless already at start of text.
-    if (not cursor.start_of_text()) {
-        cursor = cursor.neighbour();
-    }
+    cursor = text_cursor{*text_proxy, index - 1, true};
     _selection.set_cursor(cursor);
 }
 
@@ -233,7 +241,7 @@ bool text_widget::handle_event(tt::command command) noexcept
             _selection.set_cursor(_shaped_text.move_end_document(_selection.cursor())); return true;
 
         case command::gui_cancel:
-            _selection.clear_selection(); return true;
+            _selection.clear_selection(*text.cget()); return true;
         case command::text_select_left_char:
             _selection.drag_selection(_shaped_text.move_left_char(_selection.cursor())); return true;
         case command::text_select_right_char:

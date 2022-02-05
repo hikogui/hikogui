@@ -159,6 +159,16 @@ public:
         }
     }
 
+    [[nodiscard]] friend bool operator==(text_shaper_char const &lhs, char32_t const &rhs) noexcept
+    {
+        return lhs.grapheme == rhs;
+    }
+
+    [[nodiscard]] friend bool operator==(text_shaper_char const &lhs, char const &rhs) noexcept
+    {
+        return lhs.grapheme == rhs;
+    }
+
 private:
     /** Load metrics based on the loaded glyph.
      */

@@ -225,10 +225,8 @@ void draw_context::_draw_text_cursors(
 
     tt_axiom(primary_cursor.index() < text.size());
 
-    if (not insertion_mode and not primary_cursor.end_of_text(text.size())) {
-        if (primary_cursor.after()) {
-            primary_cursor = primary_cursor.neighbour();
-        }
+    if (not insertion_mode and not primary_cursor.end_of_text(text)) {
+        primary_cursor = primary_cursor.before_neighbor(text);
         return _draw_text_overwrite_cursor(clipping_rectangle, transform, text.begin() + primary_cursor.index(), primary_color);
     }
 
@@ -244,7 +242,7 @@ void draw_context::_draw_text_cursors(
             break;
         }
 
-        ttlet secondary_cursor = primary_cursor.neighbour();
+        ttlet secondary_cursor = primary_cursor.neighbor(text);
         ttlet secondary_it = text.begin() + secondary_cursor.index();
         if (secondary_it == text.end()) {
             // Secondary cursor is at end-of-text.

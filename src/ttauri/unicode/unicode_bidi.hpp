@@ -15,7 +15,7 @@ struct unicode_bidi_context {
     mode_type direction_mode = mode_type::auto_LTR;
     bool enable_mirrored_brackets = true;
     bool enable_line_separator = true;
-    bool move_lf_and_ps_to_end_of_line = true;
+    bool move_lf_and_ps_to_end_of_line = false;
 };
 
 namespace detail {

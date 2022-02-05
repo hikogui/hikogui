@@ -8,81 +8,110 @@
 #include "../assert.hpp"
 #include "../math.hpp"
 #include "../cast.hpp"
+#include "../unicode/unicode_description.hpp"
 #include <tuple>
 #include <cstdlib>
 #include <algorithm>
 
-namespace tt::inline v1{
+namespace tt::inline v1 {
 
-    class text_cursor {
-    public:
-        constexpr text_cursor() noexcept : _value(0) {}
-        constexpr text_cursor(text_cursor const &) noexcept = default;
-        constexpr text_cursor(text_cursor &&) noexcept = default;
-        constexpr text_cursor &operator=(text_cursor const &) noexcept = default;
-        constexpr text_cursor &operator=(text_cursor &&) noexcept = default;
+class text_cursor {
+public:
+    constexpr text_cursor() noexcept : _value(0) {}
+    constexpr text_cursor(text_cursor const &) noexcept = default;
+    constexpr text_cursor(text_cursor &&) noexcept = default;
+    constexpr text_cursor &operator=(text_cursor const &) noexcept = default;
+    constexpr text_cursor &operator=(text_cursor &&) noexcept = default;
 
-        constexpr text_cursor(size_t index, bool after) noexcept : _value(index << 1 | static_cast<size_t>(after)) {}
+    template<typename Text>
+    constexpr text_cursor(Text const &text, size_t index, bool after) noexcept
+    {
+        using std::size;
 
-        [[nodiscard]] constexpr text_cursor neighbour() const noexcept
-        {
-            text_cursor r;
-            r._value = _value + (after() ? 1 : -1);
-            return r;
+        if (size(text) == 0) {
+            index = 0;
+            after = false;
+        } else if (static_cast<ptrdiff_t>(index) < 0) {
+            // Underflow.
+            index = 0;
+            after = false;
+        } else if (index >= size(text)) {
+            // Overflow.
+            index = size(text) - 1;
+            after = true;
         }
 
-        /** Advance the cursor by num_characters.
-        * 
-        * @param num_characters
-        * @return A cursor after the added characters. Or start-of-text cursor.
-        */
-        [[nodiscard]] constexpr text_cursor advance_char(ptrdiff_t num_characters, size_t text_size) const noexcept
-        {
-            auto new_index = narrow<ptrdiff_t>(index()) + num_characters;
-
-            if (new_index < 0 or (new_index == 0 and before())) {
-                return {0, false};
-            } else if (new_index >= narrow<ptrdiff_t>(text_size) or (new_index == narrow<ptrdiff_t>(text_size) - 1 and after())) {
-                return {text_size - 1, true};
-            } else if (before()) {
-                return text_cursor{narrow<size_t>(new_index), after()}.neighbour();
-            } else {
-                return {narrow<size_t>(new_index), after()};
-            }
+        if (index < size(text) - 1 and after and
+            (text[index] == '\n' or text[index] == unicode_LS or text[index] == unicode_PS)) {
+            // When the cursor is after a line- or paragraph-separator, move the cursor to
+            // before the next character.
+            ++index;
+            after = false;
         }
 
-        [[nodiscard]] constexpr bool start_of_text() const noexcept
-        {
-            return _value == 0;
+        _value = (index << 1) | static_cast<size_t>(after);
+    }
+
+    /** Return the neighbor cursor.
+     *
+     * @param The text size.
+     * @return The cursor that is the neighbor of the this cursor.
+     *         If this cursor is at start-of-text or end-of-text then this cursor is returned.
+     */
+    template<typename Text>
+    [[nodiscard]] constexpr text_cursor neighbor(Text const &text) const noexcept
+    {
+        if (before()) {
+            return {text, index() - 1, true};
+        } else {
+            return {text, index() + 1, false};
         }
+    }
 
-        [[nodiscard]] constexpr bool end_of_text(size_t text_size) const noexcept
-        {
-            auto end_cursor = text_size == 0 ? text_cursor{0, false} : text_cursor{text_size - 1, true};
-            tt_axiom(_value <= end_cursor._value);
-            return _value == end_cursor._value;
-        }
+    template<typename Text>
+    [[nodiscard]] constexpr text_cursor after_neighbor(Text const &text) const noexcept
+    {
+        return before() ? neighbor(text) : *this;
+    }
 
-        [[nodiscard]] constexpr size_t index() const noexcept
-        {
-            return _value >> 1;
-        }
+    template<typename Text>
+    [[nodiscard]] constexpr text_cursor before_neighbor(Text const &text) const noexcept
+    {
+        return after() ? neighbor(text) : *this;
+    }
 
-        [[nodiscard]] constexpr bool after() const noexcept
-        {
-            return static_cast<bool>(_value & 1);
-        }
+    [[nodiscard]] constexpr bool start_of_text() const noexcept
+    {
+        return _value == 0;
+    }
 
-        [[nodiscard]] constexpr bool before() const noexcept
-        {
-            return not after();
-        }
-        
-        [[nodiscard]] constexpr friend bool operator==(text_cursor const &, text_cursor const &) = default;
-        [[nodiscard]] constexpr friend auto operator<=>(text_cursor const &, text_cursor const &) = default;
+    template<typename Text>
+    [[nodiscard]] constexpr bool end_of_text(Text const &text) const noexcept
+    {
+        using std::size;
+        return size(text) == 0 or (index() == size(text) - 1 and after()) or index() >= size(text);
+    }
 
-    private:
-        size_t _value;
-    };
+    [[nodiscard]] constexpr size_t index() const noexcept
+    {
+        return _value >> 1;
+    }
 
-}
+    [[nodiscard]] constexpr bool after() const noexcept
+    {
+        return static_cast<bool>(_value & 1);
+    }
+
+    [[nodiscard]] constexpr bool before() const noexcept
+    {
+        return not after();
+    }
+
+    [[nodiscard]] constexpr friend bool operator==(text_cursor const &, text_cursor const &) = default;
+    [[nodiscard]] constexpr friend auto operator<=>(text_cursor const &, text_cursor const &) = default;
+
+private:
+    size_t _value;
+};
+
+} // namespace tt::inline v1

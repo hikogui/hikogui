@@ -218,16 +218,21 @@ void text_shaper_line::layout(horizontal_alignment alignment, float min_x, float
     }
 
     auto char_it = *column_it;
-    if (char_it->description->general_category() == unicode_general_category::Zp or
-        char_it->description->general_category() == unicode_general_category::Zl) {
+    if (is_Zp_or_Zl(char_it->description->general_category())) {
         // Do not put the cursor on a paragraph separator or line separator.
         if (paragraph_direction == unicode_bidi_class::L) {
             if (column_it != columns.begin()) {
                 char_it = *--column_it;
+            } else {
+                // If there is only a paragraph separator, place the cursor before it.
+                return {char_it, false};
             }
         } else {
             if (column_it + 1 != columns.end()) {
                 char_it = *++column_it;
+            } else {
+                // If there is only a paragraph separator, place the cursor before it.
+                return {char_it, false};
             }
         }
     }

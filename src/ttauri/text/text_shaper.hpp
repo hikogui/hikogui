@@ -124,6 +124,11 @@ public:
         return _text.cend();
     }
 
+    auto const &operator[](size_t index) const noexcept
+    {
+        return _text[index];
+    }
+
     /** Get bounding rectangle.
      *
      * It will estimate the width and height based on the glyphs before glyph-morphing and kerning
@@ -298,6 +303,9 @@ private:
         extent2 sub_pixel_size,
         tt::horizontal_alignment horizontal_alignment,
         unicode_bidi_class writing_direction) noexcept;
+
+    [[nodiscard]] std::pair<text_cursor, text_cursor>
+    get_selection_from_break(text_cursor cursor, unicode_break_vector const &break_opportunities) const noexcept;
 };
 
 } // namespace tt::inline v1

@@ -33,36 +33,37 @@ namespace tt::inline v1{
 
         /** Return the selection of characters.
         *
+        * @param text The text.
         * @return Cursor before the first character, Cursor after the last character.
         */
-        constexpr std::pair<text_cursor, text_cursor> selection() const noexcept
+        template<typename Text>
+        constexpr std::pair<text_cursor, text_cursor> selection(Text const &text) const noexcept
         {
             auto first = std::min(_start_first, _finish_first);
             auto last = std::max(_start_last, _finish_last);
 
-            if (first.after()) {
-                first = first.neighbour();
-            }
-            if (last.before()) {
-                last = last.neighbour();
-            }
+            first = first.before_neighbor(text);
+            last = last.after_neighbor(text);
             return {first, last};
         }
 
         /** Get the text indices for the selection.
+        * 
         */
         constexpr std::pair<size_t, size_t> selection_indices() const noexcept
         {
-            ttlet [first, last] = selection();
-            ttlet first_ = first.index();
-            ttlet last_ = last.neighbour().index();
-            return {first_, last_};
+            auto first = std::min(_start_first, _finish_first);
+            auto last = std::max(_start_last, _finish_last);
+
+            auto first_index = first.after() ? first.index() + 1 : first.index();
+            auto last_index = last.after() ? last.index() + 1 : last.index();
+            return {first_index, last_index};
         }
 
         [[nodiscard]] constexpr bool empty() const noexcept
         {
-            ttlet [first, last] = selection_indices();
-            return first == last;
+            ttlet [first_index, last_index] = selection_indices();
+            return first_index >= last_index;
         }
 
         constexpr operator bool() const noexcept
@@ -70,9 +71,11 @@ namespace tt::inline v1{
             return not empty();
         }
 
-        constexpr void clear_selection(size_t text_size = 0) noexcept
+        template<typename Text>
+        constexpr void clear_selection(Text const &text) noexcept
         {
-            ttlet new_cursor = std::min(_cursor, text_cursor{text_size, false});
+            using std::size;
+            ttlet new_cursor = std::min(_cursor, text_cursor{text, size(text) - 1, true});
             return set_cursor(new_cursor);
         }
 

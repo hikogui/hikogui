@@ -89,6 +89,12 @@ enum class unicode_general_category : uint8_t {
     return rhs >= Zs and rhs <= Zp;
 }
 
+[[nodiscard]] constexpr bool is_Zp_or_Zl(unicode_general_category const &rhs) noexcept
+{
+    using enum unicode_general_category;
+    return rhs == Zp or rhs == Zl;
+}
+
 [[nodiscard]] constexpr bool is_C(unicode_general_category const &rhs) noexcept
 {
     using enum unicode_general_category;
