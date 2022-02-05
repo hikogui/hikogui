@@ -245,11 +245,13 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
         width_it = width_eol;
     }
 
-    if (not r.empty()) {
-        layout_lines_vertical_spacing(r, line_spacing, paragraph_spacing);
-        layout_lines_vertical_alignment(
-            r, vertical_alignment, base_line, rectangle.bottom(), rectangle.top(), sub_pixel_size.height());
+    if (r.empty() or is_Zp_or_Zl(r.back().last_category)) {
+        r.emplace_back(line_nr++, _text.begin(), _text.end(), _text.end(), 0, _initial_line_metrics);
     }
+
+    layout_lines_vertical_spacing(r, line_spacing, paragraph_spacing);
+    layout_lines_vertical_alignment(
+        r, vertical_alignment, base_line, rectangle.bottom(), rectangle.top(), sub_pixel_size.height());
 
     return r;
 }

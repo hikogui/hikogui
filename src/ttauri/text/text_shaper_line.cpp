@@ -16,8 +16,6 @@ text_shaper_line::text_shaper_line(
     tt::font_metrics const &metrics) noexcept :
     first(first), last(last), columns(), metrics(metrics), line_nr(line_nr), y(0.0f), width(width), last_category()
 {
-    tt_axiom(first != last);
-
     auto last_visible_it = first;
     for (auto it = first; it != last; ++it) {
         // Reset the trailing white space marker.
@@ -31,12 +29,16 @@ text_shaper_line::text_shaper_line(
         }
     }
 
-    // Mark trailing whitespace as such
-    for (auto it = last_visible_it + 1; it != last; ++it) {
-        it->is_trailing_white_space = true;
-    }
+    if (first != last) {
+        // Mark trailing whitespace as such
+        for (auto it = last_visible_it + 1; it != last; ++it) {
+            it->is_trailing_white_space = true;
+        }
 
-    last_category = (last - 1)->description->general_category();
+        last_category = (last - 1)->description->general_category();
+    } else {
+        last_category = unicode_general_category::Cn;
+    }
 }
 
 /**
@@ -57,7 +59,9 @@ static void advance_glyphs(text_shaper_line::column_vector &columns, float y) no
 [[nodiscard]] static std::pair<float, size_t>
 calculate_precise_width(text_shaper_line::column_vector &columns, unicode_bidi_class paragraph_direction)
 {
-    tt_axiom(not columns.empty());
+    if (columns.empty()) {
+        return {0.0, 0};
+    }
 
     auto it = columns.begin();
     for (; it != columns.end(); ++it) {
