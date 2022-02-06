@@ -41,14 +41,6 @@ public:
             after = true;
         }
 
-        if (index < size(text) - 1 and after and
-            (text[index] == '\n' or text[index] == unicode_LS or text[index] == unicode_PS)) {
-            // When the cursor is after a line- or paragraph-separator, move the cursor to
-            // before the next character.
-            ++index;
-            after = false;
-        }
-
         _value = (index << 1) | static_cast<size_t>(after);
     }
 

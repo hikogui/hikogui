@@ -175,21 +175,49 @@ void draw_context::_draw_text_selection(
 void draw_context::_draw_text_insertion_cursor(
     aarectangle const &clipping_rectangle,
     matrix3 const &transform,
-    text_shaper::char_const_iterator it,
-    bool on_right,
+    text_shaper const &text,
+    text_cursor cursor,
     tt::color color,
     bool show_flag) const noexcept
 {
-    ttlet ltr = it->direction == unicode_bidi_class::L;
+    ttlet maximum_left = std::round(text.rectangle().left() - 0.5f);
+    ttlet maximum_right = std::round(text.rectangle().right() - 0.5f);
 
-    ttlet bottom = std::floor(it->rectangle.bottom());
-    ttlet top = std::ceil(it->rectangle.top());
-    ttlet left = std::round((on_right ? it->rectangle.right() : it->rectangle.left()) - 0.5f);
+    ttlet &c = text[cursor.index()];
+    ttlet ltr = c.direction == unicode_bidi_class::L;
+    ttlet on_right = ltr == cursor.after();
 
+    // The initial position of the cursor.
+    auto bottom = std::floor(c.rectangle.bottom());
+    auto top = std::ceil(c.rectangle.top());
+    auto left = std::round((on_right ? c.rectangle.right() : c.rectangle.left()) - 0.5f);
+
+    ttlet &line = text.lines()[c.line_nr];
+    ttlet end_of_line = ltr ? c.column_nr == line.columns.size() - 1 : c.column_nr == 0;
+    if (cursor.after() and end_of_line) {
+        // The cursor is after the last character on the line,
+        // the cursor should appear at the start of the next line.
+        tt_axiom(c.line_nr + 1 < text.lines().size());
+        ttlet &next_line = text.lines()[c.line_nr + 1];
+
+        bottom = std::floor(next_line.rectangle.bottom());
+        top = std::ceil(next_line.rectangle.top());
+        if (c.direction == unicode_bidi_class::L) {
+            left = maximum_left;
+        } else {
+            left = maximum_right;
+        }
+    }
+
+    // Clamp the cursor position between the left and right side of the layed out text.
+    left = std::clamp(left, maximum_left - 1.0f, maximum_right + 1.0f);
+
+    // Draw the vertical line cursor.
     ttlet shape_I = aarectangle{point2{left, bottom}, point2{left + 1.0f, top}};
     _draw_box(clipping_rectangle, transform * shape_I, color, tt::color{}, 0.0f, {});
 
     if (show_flag) {
+        // Draw the LTR/RTL flag at the top of the line cursor.
         ttlet shape_flag = ltr ? aarectangle{point2{left + 1.0f, top - 1.0f}, point2{left + 3.0f, top}} :
                                  aarectangle{point2{left - 2.0f, top - 1.0f}, point2{left, top}};
 
@@ -263,11 +291,11 @@ void draw_context::_draw_text_cursors(
 
         draw_flags = true;
         _draw_text_insertion_cursor(
-            clipping_rectangle, transform, secondary_it, secondary_is_on_right, secondary_color, draw_flags);
+            clipping_rectangle, transform, text, secondary_cursor, secondary_color, draw_flags);
     } while (false);
 
     _draw_text_insertion_cursor(
-        clipping_rectangle, transform, primary_it, primary_is_on_right, primary_color, draw_flags);
+        clipping_rectangle, transform, text, primary_cursor, primary_color, draw_flags);
 }
 
 } // namespace tt::inline v1

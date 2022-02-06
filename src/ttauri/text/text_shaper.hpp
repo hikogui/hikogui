@@ -129,6 +129,11 @@ public:
         return _text[index];
     }
 
+    auto const &lines() const noexcept
+    {
+        return _lines;
+    }
+
     /** Get bounding rectangle.
      *
      * It will estimate the width and height based on the glyphs before glyph-morphing and kerning
@@ -183,6 +188,13 @@ public:
         tt::alignment alignment = tt::alignment{horizontal_alignment::flush, vertical_alignment::middle},
         float line_spacing = 1.0f,
         float paragraph_spacing = 1.5f) noexcept;
+
+    /** The rectangle used when laying out the text.
+     */
+    [[nodiscard]] aarectangle rectangle() const noexcept
+    {
+        return _rectangle;
+    }
 
     /** find the nearest character.
      *
@@ -263,6 +275,10 @@ private:
      */
     font_metrics _initial_line_metrics;
 
+    /** The rectangle used for laying out.
+     */
+    aarectangle _rectangle;
+
     /** The x coordinate of the cursor for vertical movement.
      *
      * When moving vertically through the text we need to keep track of the first
@@ -278,15 +294,17 @@ private:
      * @param rectangle The rectangle to position the glyphs in.
      * @param base_line The position of the recommended base-line.
      * @param sub_pixel_size The size of a sub-pixel in device-independent-pixels.
-     * @param vertical_alignment The vertical alignment of text (default: middle).
-     * @param line_spacing The scaling of the spacing between lines (default: 1.0).
-     * @param paragraph_spacing The scaling of the spacing between paragraphs (default: 1.5).
+     * @param vertical_alignment The vertical alignment of text.
+     * @param writing_direction The default writing direction.
+     * @param line_spacing The scaling of the spacing between lines.
+     * @param paragraph_spacing The scaling of the spacing between paragraphs.
      */
     [[nodiscard]] line_vector make_lines(
         aarectangle rectangle,
         float base_line,
         extent2 sub_pixel_size,
         tt::vertical_alignment vertical_alignment,
+        unicode_bidi_class writing_direction,
         float line_spacing,
         float paragraph_spacing) noexcept;
 

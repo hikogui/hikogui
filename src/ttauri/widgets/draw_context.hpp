@@ -606,8 +606,8 @@ private:
     void _draw_text_insertion_cursor(
         aarectangle const &clipping_rectangle,
         matrix3 const &transform,
-        text_shaper::char_const_iterator it,
-        bool on_right,
+        text_shaper const &text,
+        text_cursor cursor,
         tt::color color,
         bool show_flag) const noexcept;
 

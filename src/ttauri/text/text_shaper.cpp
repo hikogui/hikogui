@@ -221,9 +221,10 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
     aarectangle rectangle,
     float base_line,
     extent2 sub_pixel_size,
-    tt::vertical_alignment vertical_alignment = tt::vertical_alignment::middle,
-    float line_spacing = 1.0f,
-    float paragraph_spacing = 1.5f) noexcept
+    tt::vertical_alignment vertical_alignment,
+    unicode_bidi_class writing_direction,
+    float line_spacing,
+    float paragraph_spacing) noexcept
 {
     ttlet line_sizes = unicode_line_break(_line_break_opportunities, _line_break_widths, rectangle.width());
 
@@ -246,7 +247,8 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
     }
 
     if (r.empty() or is_Zp_or_Zl(r.back().last_category)) {
-        r.emplace_back(line_nr++, _text.begin(), _text.end(), _text.end(), 0, _initial_line_metrics);
+        r.emplace_back(line_nr++, _text.begin(), _text.end(), _text.end(), 0.0f, _initial_line_metrics);
+        r.back().paragraph_direction = writing_direction;
     }
 
     layout_lines_vertical_spacing(r, line_spacing, paragraph_spacing);
@@ -283,7 +285,7 @@ void text_shaper::position_glyphs(
     constexpr auto base_line = 0.0f;
     constexpr auto sub_pixel_size = extent2{1.0f, 1.0f};
 
-    ttlet lines = make_lines(rectangle, base_line, sub_pixel_size, vertical_alignment, line_spacing, paragraph_spacing);
+    ttlet lines = make_lines(rectangle, base_line, sub_pixel_size, vertical_alignment, unicode_bidi_class::L, line_spacing, paragraph_spacing);
 
     if (lines.empty()) {
         return {aarectangle{}, 0.0f};
@@ -315,7 +317,8 @@ void text_shaper::position_glyphs(
     float line_spacing,
     float paragraph_spacing) noexcept
 {
-    _lines = make_lines(rectangle, base_line, sub_pixel_size, alignment.vertical(), line_spacing, paragraph_spacing);
+    _rectangle = rectangle;
+    _lines = make_lines(rectangle, base_line, sub_pixel_size, alignment.vertical(), writing_direction, line_spacing, paragraph_spacing);
     if (not _lines.empty()) {
         position_glyphs(rectangle, sub_pixel_size, alignment.text(), writing_direction);
     }
