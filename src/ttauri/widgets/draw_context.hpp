@@ -603,6 +603,12 @@ private:
         text_selection const &selection,
         tt::color) const noexcept;
 
+    void _draw_text_insertion_cursor_empty(
+        aarectangle const &clipping_rectangle,
+        matrix3 const &transform,
+        text_shaper const &text,
+        tt::color color) const noexcept;
+
     void _draw_text_insertion_cursor(
         aarectangle const &clipping_rectangle,
         matrix3 const &transform,

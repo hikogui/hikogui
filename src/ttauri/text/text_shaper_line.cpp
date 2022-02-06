@@ -60,7 +60,7 @@ static void advance_glyphs(text_shaper_line::column_vector &columns, float y) no
 calculate_precise_width(text_shaper_line::column_vector &columns, unicode_bidi_class paragraph_direction)
 {
     if (columns.empty()) {
-        return {0.0, 0};
+        return {0.0f, 0_uz};
     }
 
     auto it = columns.begin();
@@ -168,20 +168,20 @@ static void round_glyph_positions(text_shaper_line::column_vector &columns, floa
     }
 }
 
-static void create_bounding_rectangles(text_shaper_line::column_vector &columns, float ascender, float descender) noexcept
+static void create_bounding_rectangles(text_shaper_line::column_vector &columns, float y, float ascender, float descender) noexcept
 {
     for (auto it = columns.begin(); it != columns.end(); ++it) {
         ttlet next_it = it + 1;
         ttlet char_it = *it;
         if (next_it == columns.end()) {
             char_it->rectangle = {
-                point2{char_it->position.x(), char_it->position.y() - descender},
-                point2{char_it->position.x() + char_it->metrics.advance.x(), char_it->position.y() + ascender}};
+                point2{char_it->position.x(), y - descender},
+                point2{char_it->position.x() + char_it->metrics.advance.x(), y + ascender}};
         } else {
             ttlet next_char_it = *next_it;
             char_it->rectangle = {
-                point2{char_it->position.x(), char_it->position.y() - descender},
-                point2{next_char_it->position.x(), char_it->position.y() + ascender}};
+                point2{char_it->position.x(), y - descender},
+                point2{next_char_it->position.x(), y + ascender}};
         }
     }
 }
@@ -204,15 +204,22 @@ void text_shaper_line::layout(horizontal_alignment alignment, float min_x, float
     round_glyph_positions(columns, sub_pixel_width);
 
     // Create the bounding rectangles around each glyph, for use to draw selection boxes/cursors and handle mouse control.
-    create_bounding_rectangles(columns, metrics.ascender, metrics.descender);
+    create_bounding_rectangles(columns, y, metrics.ascender, metrics.descender);
 
     // Create a bounding rectangle around the visible part of the line.
-    rectangle = not columns.empty() ? columns.front()->rectangle | columns.back()->rectangle : aarectangle{};
+    if (columns.empty()) {
+        rectangle = {point2{0.0f, y - metrics.descender}, point2{1.0f, y + metrics.ascender}};
+    } else {
+        rectangle = columns.front()->rectangle | columns.back()->rectangle;
+    }
 }
 
 [[nodiscard]] std::pair<text_shaper_line::const_iterator, bool> text_shaper_line::get_nearest(point2 position) const noexcept
 {
-    tt_axiom(not columns.empty());
+    if (columns.empty()) {
+        // This is the last line, so return an the iterator to the end-of-document.
+        return {last, false};
+    }
 
     auto column_it = std::lower_bound(columns.begin(), columns.end(), position.x(), [](ttlet &char_it, ttlet &x) {
         return char_it->rectangle.right() < x;

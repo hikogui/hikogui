@@ -172,6 +172,24 @@ void draw_context::_draw_text_selection(
     }
 }
 
+void draw_context::_draw_text_insertion_cursor_empty(
+    aarectangle const &clipping_rectangle,
+    matrix3 const &transform,
+    text_shaper const &text,
+    tt::color color) const noexcept
+{
+    ttlet maximum_left = std::round(text.rectangle().left() - 0.5f);
+    ttlet maximum_right = std::round(text.rectangle().right() - 0.5f);
+    ttlet &only_line = text.lines()[0];
+
+    ttlet bottom = std::floor(only_line.rectangle.bottom());
+    ttlet top = std::ceil(only_line.rectangle.top());
+    ttlet left = only_line.paragraph_direction == unicode_bidi_class::L ?  maximum_left : maximum_right;
+
+    ttlet shape_I = aarectangle{point2{left, bottom}, point2{left + 1.0f, top}};
+    _draw_box(clipping_rectangle, transform * shape_I, color, tt::color{}, 0.0f, {});
+}
+
 void draw_context::_draw_text_insertion_cursor(
     aarectangle const &clipping_rectangle,
     matrix3 const &transform,
@@ -193,20 +211,16 @@ void draw_context::_draw_text_insertion_cursor(
     auto left = std::round((on_right ? c.rectangle.right() : c.rectangle.left()) - 0.5f);
 
     ttlet &line = text.lines()[c.line_nr];
+    ttlet next_line_nr = c.line_nr + 1;
     ttlet end_of_line = ltr ? c.column_nr == line.columns.size() - 1 : c.column_nr == 0;
-    if (cursor.after() and end_of_line) {
+    if (cursor.after() and end_of_line and next_line_nr < text.lines().size()) {
         // The cursor is after the last character on the line,
         // the cursor should appear at the start of the next line.
-        tt_axiom(c.line_nr + 1 < text.lines().size());
-        ttlet &next_line = text.lines()[c.line_nr + 1];
+        ttlet &next_line = text.lines()[next_line_nr];
 
         bottom = std::floor(next_line.rectangle.bottom());
         top = std::ceil(next_line.rectangle.top());
-        if (c.direction == unicode_bidi_class::L) {
-            left = maximum_left;
-        } else {
-            left = maximum_right;
-        }
+        left = c.direction == unicode_bidi_class::L ? maximum_left : maximum_right;
     }
 
     // Clamp the cursor position between the left and right side of the layed out text.
@@ -244,12 +258,12 @@ void draw_context::_draw_text_cursors(
     tt::color secondary_color,
     bool insertion_mode) const noexcept
 {
-    auto draw_flags = false;
-
-    if (text.size() == 0) {
-        // XXX handle cursor on empty text.
-        return;
+    if (text.empty()) {
+        // When text is empty, draw a cursor directly.
+        return _draw_text_insertion_cursor_empty(clipping_rectangle, transform, text, primary_color);
     }
+
+    auto draw_flags = false;
 
     tt_axiom(primary_cursor.index() < text.size());
 
@@ -265,18 +279,13 @@ void draw_context::_draw_text_cursors(
     ttlet primary_is_on_left = not primary_is_on_right;
 
     do {
-        if (primary_cursor.start_of_text()) {
+        if (primary_cursor.start_of_text() or primary_cursor.end_of_text(text)) {
             // Don't draw secondary cursor which would be on the other edge of the text-field.
             break;
         }
 
         ttlet secondary_cursor = primary_cursor.neighbor(text);
         ttlet secondary_it = text.begin() + secondary_cursor.index();
-        if (secondary_it == text.end()) {
-            // Secondary cursor is at end-of-text.
-            break;
-        }
-
         ttlet secondary_ltr = secondary_it->direction == unicode_bidi_class::L;
         ttlet secondary_is_on_right = secondary_ltr == secondary_cursor.after();
         ttlet secondary_is_on_left = not secondary_is_on_right;
@@ -290,12 +299,10 @@ void draw_context::_draw_text_cursors(
         }
 
         draw_flags = true;
-        _draw_text_insertion_cursor(
-            clipping_rectangle, transform, text, secondary_cursor, secondary_color, draw_flags);
+        _draw_text_insertion_cursor(clipping_rectangle, transform, text, secondary_cursor, secondary_color, draw_flags);
     } while (false);
 
-    _draw_text_insertion_cursor(
-        clipping_rectangle, transform, text, primary_cursor, primary_color, draw_flags);
+    _draw_text_insertion_cursor(clipping_rectangle, transform, text, primary_cursor, primary_color, draw_flags);
 }
 
 } // namespace tt::inline v1
