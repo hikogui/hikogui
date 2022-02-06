@@ -101,7 +101,7 @@ void text_widget::replace_selection(gstring replacement) noexcept
     _selection.set_cursor(cursor);
 }
 
-void text_widget::add_char(grapheme c) noexcept
+void text_widget::add_char(grapheme c, bool insert) noexcept
 {
     if (not _selection.empty()) {
         return replace_selection(gstring{c});
@@ -120,8 +120,10 @@ void text_widget::add_char(grapheme c) noexcept
         text_proxy[index] = c;
     }
 
-    // After inserts/overwrite/append the cursor is now behind that character.
-    cursor = {*text_proxy, index, true};
+    if (not insert) {
+        // After append/overwrite the cursor is now behind that character.
+        cursor = {*text_proxy, index, true};
+    }
     _selection.set_cursor(cursor);
 }
 
@@ -208,7 +210,17 @@ bool text_widget::handle_event(tt::command command) noexcept
         case command::text_undo: undo(); return true;
         case command::text_redo: redo(); return true;
 
-        case command::text_insert_enter: add_char(grapheme{unicode_PS}); return true;
+        case command::text_insert_line: add_char(grapheme{unicode_PS}); return true;
+        case command::text_insert_line_up:
+            _selection.set_cursor(_shaped_text.move_begin_paragraph(_selection.cursor()));
+            add_char(grapheme{unicode_PS}, true);
+            return true;
+
+        case command::text_insert_line_down:
+            _selection.set_cursor(_shaped_text.move_end_paragraph(_selection.cursor()));
+            add_char(grapheme{unicode_PS}, true);
+            return true;
+
         case command::text_delete_char_next: delete_char_next(); return true;
         case command::text_delete_char_prev: delete_char_prev(); return true;
 
@@ -327,6 +339,8 @@ bool text_widget::handle_event(mouse_event const &event) noexcept
             case 1: _selection.set_cursor(cursor); break;
             case 2: _selection.start_selection(cursor, _shaped_text.get_word(cursor)); break;
             case 3: _selection.start_selection(cursor, _shaped_text.get_sentence(cursor)); break;
+            case 4: _selection.start_selection(cursor, _shaped_text.get_paragraph(cursor)); break;
+            case 5: _selection.start_selection(cursor, _shaped_text.get_document(cursor)); break;
             default:;
             }
 
@@ -341,6 +355,7 @@ bool text_widget::handle_event(mouse_event const &event) noexcept
             case 1: _selection.drag_selection(cursor); break;
             case 2: _selection.drag_selection(cursor, _shaped_text.get_word(cursor)); break;
             case 3: _selection.drag_selection(cursor, _shaped_text.get_sentence(cursor)); break;
+            case 4: _selection.drag_selection(cursor, _shaped_text.get_paragraph(cursor)); break;
             default:;
             }
 

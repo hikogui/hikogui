@@ -120,7 +120,13 @@ private:
     void undo() noexcept;
     void redo() noexcept;
     void replace_selection(gstring replacement) noexcept;
-    void add_char(grapheme c) noexcept;
+
+    /** Add a character to the text.
+    * 
+    * @param c The character to add at the current position
+    * @param insert If true then the cursor remains at the current position.
+    */
+    void add_char(grapheme c, bool insert = false) noexcept;
     void delete_char_next() noexcept;
     void delete_char_prev() noexcept;
 };

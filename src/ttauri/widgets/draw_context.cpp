@@ -184,7 +184,7 @@ void draw_context::_draw_text_insertion_cursor_empty(
 
     ttlet bottom = std::floor(only_line.rectangle.bottom());
     ttlet top = std::ceil(only_line.rectangle.top());
-    ttlet left = only_line.paragraph_direction == unicode_bidi_class::L ?  maximum_left : maximum_right;
+    ttlet left = only_line.paragraph_direction == unicode_bidi_class::L ? maximum_left : maximum_right;
 
     ttlet shape_I = aarectangle{point2{left, bottom}, point2{left + 1.0f, top}};
     _draw_box(clipping_rectangle, transform * shape_I, color, tt::color{}, 0.0f, {});
@@ -202,17 +202,18 @@ void draw_context::_draw_text_insertion_cursor(
     ttlet maximum_right = std::round(text.rectangle().right() - 0.5f);
 
     ttlet &c = text[cursor.index()];
+    ttlet &line = text.lines()[c.line_nr];
     ttlet ltr = c.direction == unicode_bidi_class::L;
     ttlet on_right = ltr == cursor.after();
 
     // The initial position of the cursor.
-    auto bottom = std::floor(c.rectangle.bottom());
-    auto top = std::ceil(c.rectangle.top());
+    auto bottom = std::floor(line.rectangle.bottom());
+    auto top = std::ceil(line.rectangle.top());
     auto left = std::round((on_right ? c.rectangle.right() : c.rectangle.left()) - 0.5f);
 
-    ttlet &line = text.lines()[c.line_nr];
     ttlet next_line_nr = c.line_nr + 1;
-    ttlet end_of_line = ltr ? c.column_nr == line.columns.size() - 1 : c.column_nr == 0;
+    ttlet line_ltr = line.paragraph_direction == unicode_bidi_class::L;
+    ttlet end_of_line = line_ltr ? c.column_nr == line.columns.size() - 1 : c.column_nr == 0;
     if (cursor.after() and end_of_line and next_line_nr < text.lines().size()) {
         // The cursor is after the last character on the line,
         // the cursor should appear at the start of the next line.

@@ -832,13 +832,25 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         }
         break;
 
+    case WM_LBUTTONDBLCLK:
+    case WM_MBUTTONDBLCLK:
+    case WM_RBUTTONDBLCLK:
+    case WM_XBUTTONDBLCLK:
     case WM_LBUTTONDOWN:
     case WM_MBUTTONDOWN:
     case WM_RBUTTONDOWN:
     case WM_XBUTTONDOWN: {
         mouseEvent.type = mouse_event::Type::ButtonDown;
         mouseEvent.downPosition = mouseEvent.position;
-        mouseEvent.clickCount = (mouseEvent.timePoint < doubleClickTimePoint + doubleClickMaximumDuration) ? 3 : 1;
+
+        if (mouseEvent.timePoint < multi_click_time_point + doubleClickMaximumDuration) {
+            ++multi_click_count;
+        } else {
+            multi_click_count = 1;
+        }
+        multi_click_time_point = mouseEvent.timePoint;
+
+        mouseEvent.clickCount = multi_click_count;
 
         // Track draging past the window borders.
         tt_axiom(win32Window != 0);
@@ -847,21 +859,21 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         SetCapture(window_handle);
     } break;
 
-    case WM_LBUTTONDBLCLK:
-    case WM_MBUTTONDBLCLK:
-    case WM_RBUTTONDBLCLK:
-    case WM_XBUTTONDBLCLK: {
-        mouseEvent.type = mouse_event::Type::ButtonDown;
-        mouseEvent.downPosition = mouseEvent.position;
-        mouseEvent.clickCount = 2;
-        doubleClickTimePoint = std::chrono::utc_clock::now();
-
-        // Track draging past the window borders.
-        tt_axiom(win32Window != 0);
-        ttlet window_handle = reinterpret_cast<HWND>(win32Window);
-
-        SetCapture(window_handle);
-    } break;
+    //case WM_LBUTTONDBLCLK:
+    //case WM_MBUTTONDBLCLK:
+    //case WM_RBUTTONDBLCLK:
+    //case WM_XBUTTONDBLCLK: {
+    //    mouseEvent.type = mouse_event::Type::ButtonDown;
+    //    mouseEvent.downPosition = mouseEvent.position;
+    //    mouseEvent.clickCount = 2;
+    //    doubleClickTimePoint = std::chrono::utc_clock::now();
+    //
+    //    // Track draging past the window borders.
+    //    tt_axiom(win32Window != 0);
+    //    ttlet window_handle = reinterpret_cast<HWND>(win32Window);
+    //
+    //    SetCapture(window_handle);
+    //} break;
 
     case WM_MOUSEWHEEL:
     case WM_MOUSEHWHEEL: mouseEvent.type = mouse_event::Type::Wheel; break;

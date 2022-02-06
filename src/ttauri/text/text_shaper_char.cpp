@@ -10,7 +10,11 @@
 namespace tt::inline v1 {
 
 [[nodiscard]] text_shaper_char::text_shaper_char(tt::grapheme const &grapheme, text_style const &style) noexcept :
-    grapheme(grapheme), style(style), description(&unicode_description_find(grapheme[0]))
+    grapheme(grapheme),
+    style(style),
+    line_nr(std::numeric_limits<size_t>::max()),
+    column_nr(std::numeric_limits<size_t>::max()),
+    description(&unicode_description_find(grapheme[0]))
 {
 }
 
@@ -50,4 +54,4 @@ void text_shaper_char::replace_glyph(char32_t code_point) noexcept
     glyph_is_initial = false;
 }
 
-}
+} // namespace tt::inline v1

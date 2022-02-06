@@ -5,6 +5,7 @@
 #include "ttauri/GUI/gui_system.hpp"
 #include "ttauri/widgets/text_widget.hpp"
 #include "ttauri/widgets/radio_button_widget.hpp"
+#include "ttauri/GFX/RenderDoc.hpp"
 #include "ttauri/crt.hpp"
 
 using namespace tt;
@@ -13,6 +14,13 @@ int tt_main(int argc, char *argv[])
 {
     auto gui = gui_system::make_unique();
     auto &window = gui->make_window(l10n("Label example"));
+
+    // Start the logger system, so logging is done asynchronously.
+    tt::log::start_subsystem(tt::global_state_type::log_level_info);
+    tt::time_stamp_count::start_subsystem();
+
+    // Startup renderdoc for debugging
+    auto render_doc = tt::RenderDoc();
 
     auto latin_text = std::string(
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "

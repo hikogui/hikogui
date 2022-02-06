@@ -211,6 +211,14 @@ public:
      */
     [[nodiscard]] std::pair<text_cursor, text_cursor> get_sentence(text_cursor cursor) const noexcept;
 
+    /** Get the selection for a paragraph at the cursor.
+     */
+    [[nodiscard]] std::pair<text_cursor, text_cursor> get_paragraph(text_cursor cursor) const noexcept;
+
+    /** Get the selection for a paragraph at the cursor.
+     */
+    [[nodiscard]] std::pair<text_cursor, text_cursor> get_document(text_cursor cursor) const noexcept;
+
     /** Get the character to the left.
      *
      * @param it The iterator to the character.
@@ -235,6 +243,8 @@ public:
     [[nodiscard]] text_cursor move_end_line(text_cursor cursor) const noexcept;
     [[nodiscard]] text_cursor move_begin_sentence(text_cursor cursor) const noexcept;
     [[nodiscard]] text_cursor move_end_sentence(text_cursor cursor) const noexcept;
+    [[nodiscard]] text_cursor move_begin_paragraph(text_cursor cursor) const noexcept;
+    [[nodiscard]] text_cursor move_end_paragraph(text_cursor cursor) const noexcept;
     [[nodiscard]] text_cursor move_begin_document(text_cursor cursor) const noexcept;
     [[nodiscard]] text_cursor move_end_document(text_cursor cursor) const noexcept;
 

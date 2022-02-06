@@ -54,7 +54,8 @@ private:
     bool trackingMouseLeaveEvent = false;
     char32_t highSurrogate = 0;
     mouse_event mouseButtonEvent;
-    utc_nanoseconds doubleClickTimePoint;
+    utc_nanoseconds multi_click_time_point;
+    int multi_click_count;
     std::chrono::nanoseconds doubleClickMaximumDuration;
 
     void setOSWindowRectangleFromRECT(RECT aarectangle) noexcept;
