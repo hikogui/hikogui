@@ -474,6 +474,17 @@ def checkDecompositionsForStartWithStart(descriptions):
                 #raise RuntimeError("Missing %x" % (firstDecompositionCodePoint))
                 description.decompositionStartsWithStart = True
 
+def get_max_mirror_delta(descriptions):
+    max_mirror_delta = 0
+    for description in descriptions:
+        if (description.bidiBracketType != 'n' or description.bidiMirrored) and description.bidiMirroredGlyph != 0xffff:
+            delta = description.bidiMirroredGlyph - description.codePoint
+            if max_mirror_delta < abs(delta):
+                max_mirror_delta = abs(delta)
+
+    return max_mirror_delta
+
+
 def main():
     descriptions = parseUnicodeData(options.unicode_data_path)
     composition_exclusions = parseCompositionExclusions(options.composition_exclusions_path)
@@ -497,6 +508,9 @@ def main():
 
     writeUnicodeData(options.output_path, descriptions, compositions, decompositions)
     writeUnicodeNonStarterData(options.output_non_starter_path, non_starters)
+
+    max_mirror_delta = get_max_mirror_delta(descriptions)
+    print("Maximum mirror delta {}".format(max_mirror_delta))
 
 if __name__ == "__main__":
     main()

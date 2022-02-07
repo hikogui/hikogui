@@ -107,7 +107,7 @@ public:
             static_cast<uint32_t>(composition_canonical) << composition_canonical_shift),
         _bidi_class(to_underlying(bidi_class)),
         _bidi_bracket_type(to_underlying(bidi_bracket_type)),
-        _bidi_mirrored_glyph(static_cast<uint32_t>(bidi_mirrored_glyph)),
+        _bidi_mirrored_glyph(0),
         _east_asian_width(static_cast<uint32_t>(east_asian_width)),
         _canonical_combining_class(static_cast<uint32_t>(canonical_combining_class)),
         _line_break_class(to_underlying(line_break_class)),
@@ -128,6 +128,18 @@ public:
         tt_axiom(to_underlying(bidi_class) <= 0x1f);
         tt_axiom(to_underlying(bidi_bracket_type) <= 0x03);
         tt_axiom(static_cast<uint32_t>(bidi_mirrored_glyph) <= 0x10ffff);
+
+        // Check if the delta fits.
+        if (bidi_bracket_type != unicode_bidi_bracket_type::n) {
+            if (bidi_mirrored_glyph == char32_t{0xffff}) {
+                _bidi_mirrored_glyph = bidi_mirrored_glyph_mask;
+            } else {
+                auto mirrored_glyph_delta = static_cast<int32_t>(bidi_mirrored_glyph) - static_cast<int32_t>(code_point);
+                tt_axiom(mirrored_glyph_delta >= bidi_mirrored_glyph_min and mirrored_glyph_delta <= bidi_mirrored_glyph_max);
+                _bidi_mirrored_glyph = static_cast<uint32_t>(mirrored_glyph_delta) & bidi_mirrored_glyph_mask;
+            }
+        }
+
         tt_axiom(static_cast<uint32_t>(canonical_combining_class) <= 0xff);
         tt_axiom(to_underlying(decomposition_type) <= 0x7);
         tt_axiom(static_cast<uint32_t>(decomposition_length) <= 0x1f);
@@ -227,7 +239,11 @@ public:
      */
     [[nodiscard]] constexpr unicode_bidi_bracket_type bidi_bracket_type() const noexcept
     {
-        return static_cast<unicode_bidi_bracket_type>(_bidi_bracket_type);
+        if (canonical_combining_class() == 0) {
+            return static_cast<unicode_bidi_bracket_type>(_bidi_bracket_type);
+        } else {
+            return unicode_bidi_bracket_type::n;
+        }
     }
 
     /** Get the mirrored glyph.
@@ -235,7 +251,15 @@ public:
      */
     [[nodiscard]] constexpr char32_t bidi_mirrored_glyph() const noexcept
     {
-        return static_cast<char32_t>(_bidi_mirrored_glyph);
+        if (bidi_bracket_type() != unicode_bidi_bracket_type::n and _bidi_mirrored_glyph != bidi_mirrored_glyph_mask) {
+            auto mirrored_glyph = static_cast<int32_t>(_bidi_mirrored_glyph);
+            mirrored_glyph <<= 32 - bidi_mirrored_glyph_width;
+            mirrored_glyph >>= 32 - bidi_mirrored_glyph_width;
+            mirrored_glyph += code_point();
+            return static_cast<char32_t>(mirrored_glyph);
+        } else {
+            return static_cast<char32_t>(0xffff);
+        }
     }
 
     /** This character has a canonical decomposition.
@@ -398,6 +422,10 @@ private:
     static constexpr uint32_t grapheme_cluster_break_mask = 0xf;
     static constexpr uint32_t composition_canonical_shift = 1;
     static constexpr uint32_t composition_canonical_mask = 1;
+    static constexpr uint32_t bidi_mirrored_glyph_mask = 0x1fff;
+    static constexpr uint32_t bidi_mirrored_glyph_width = std::bit_width(bidi_mirrored_glyph_mask);
+    static constexpr int32_t bidi_mirrored_glyph_max = static_cast<int32_t>(bidi_mirrored_glyph_mask) >> 1;
+    static constexpr int32_t bidi_mirrored_glyph_min = -bidi_mirrored_glyph_max;
 
     // 1st dword
     // We don't use bit-fields so we can do binary-search without needing shift- & and-operations
@@ -406,14 +434,15 @@ private:
     // [10:6] general category
     // [5:2] grapheme cluster break
     // [1:1] canonical composition
-    // [0:0] reserved.
+    // [0:0] _word1_reserved.
     uint32_t _general_info;
 
     // 2nd dword
     uint32_t _bidi_class : 5;
     uint32_t _bidi_bracket_type : 2; // _bidi_bracket_type when _canonical_combining_class == 0
-    uint32_t _bidi_mirrored_glyph : 21; // XXX store as delta instead.
+    uint32_t _bidi_mirrored_glyph : 13; // _bidi_mirrored_glyph when _bidi_bracket_type != n
     uint32_t _sentence_break_property : 4;
+    uint32_t _word2_reserved : 8 = 0;
 
     // 3rd dword
     uint32_t _canonical_combining_class : 8;
