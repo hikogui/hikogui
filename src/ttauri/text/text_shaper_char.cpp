@@ -14,7 +14,7 @@ namespace tt::inline v1 {
     style(style),
     line_nr(std::numeric_limits<size_t>::max()),
     column_nr(std::numeric_limits<size_t>::max()),
-    description(&unicode_description_find(grapheme[0]))
+    description(&unicode_description::find(grapheme[0]))
 {
 }
 

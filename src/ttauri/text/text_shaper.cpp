@@ -123,7 +123,7 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
             if (it != text.end()) {
                 return *it->description;
             } else {
-                return unicode_description_find(unicode_LS);
+                return unicode_description::find(unicode_LS);
             }
         },
         [&](text_shaper::char_iterator it, char32_t code_point) {
@@ -176,18 +176,9 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
         char_it->column_nr = column_nr++;
     }
 
-    // For characters that where dropped by the bidi-algorithm, initialize the line_nr and
-    // column_nr to the character before it.
-    auto line_nr = 0_uz;
-    column_nr = 0;
+    // All of the characters in the text must be positioned.    
     for (auto &c: text) {
-        if (c.line_nr == std::numeric_limits<size_t>::max() or c.column_nr == std::numeric_limits<size_t>::max()) {
-            c.line_nr = line_nr;
-            c.column_nr = column_nr;
-        } else {
-            line_nr = c.line_nr;
-            column_nr = c.column_nr;
-        }
+        tt_axiom(c.line_nr != std::numeric_limits<size_t>::max() and c.column_nr != std::numeric_limits<size_t>::max());
     }
 }
 

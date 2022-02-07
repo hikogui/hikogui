@@ -15,7 +15,7 @@ namespace tt::inline v1 {
 
 static void unicode_decompose(char32_t code_point, unicode_normalization_mask decomposition_mask, std::u32string &r) noexcept
 {
-    ttlet &description = unicode_description_find(code_point);
+    ttlet &description = unicode_description::find(code_point);
 
     if (any(decomposition_mask & unicode_normalization_mask::paragraph) and code_point == U'\n') {
         r += unicode_PS;

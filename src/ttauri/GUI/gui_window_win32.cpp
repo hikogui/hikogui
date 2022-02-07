@@ -613,8 +613,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     } break;
 
     case WM_UNICHAR: {
-        auto c = static_cast<char32_t>(wParam);
-        if (c == UNICODE_NOCHAR) {
+        if (auto c = static_cast<char32_t>(wParam); c == UNICODE_NOCHAR) {
             // Tell the 3rd party keyboard handler application that we support WM_UNICHAR.
             return 1;
         } else if (c >= 0x20) {
@@ -625,16 +624,14 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         }
     } break;
 
-    case WM_DEADCHAR: {
-        auto c = handleSuragates(static_cast<char32_t>(wParam));
-        if (c != 0) {
+    case WM_DEADCHAR:
+        if (auto c = handle_suragates(static_cast<char32_t>(wParam)); not is_general_category_C(c)) {
             send_event(c, false);
         }
-    } break;
+        break;
 
     case WM_CHAR: {
-        auto c = handleSuragates(static_cast<char32_t>(wParam));
-        if (c >= 0x20) {
+        if (auto c = handle_suragates(static_cast<char32_t>(wParam)); not is_general_category_C(c)) {
             send_event(c);
         }
     } break;
@@ -744,7 +741,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     return -1;
 }
 
-[[nodiscard]] char32_t gui_window_win32::handleSuragates(char32_t c) noexcept
+[[nodiscard]] char32_t gui_window_win32::handle_suragates(char32_t c) noexcept
 {
     tt_axiom(is_gui_thread());
 

@@ -7,43 +7,41 @@
 
 namespace tt::inline v1 {
 
-constexpr auto _unicode_description_find(char32_t code_point) noexcept
+static unicode_description const &Replacement_Character_unicode_description = unicode_description::find(U'\ufffd');
+static unicode_description const &CJK_Ideograph_Extension_A_unicode_description = unicode_description::find(U'\u3400');
+static unicode_description const &CJK_Ideograph_unicode_description = unicode_description::find(U'\u4e00');
+static unicode_description const &Hangul_Syllable_LV_unicode_description = unicode_description::find(U'\uac00');
+static unicode_description const &Hangul_Syllable_LVT_unicode_description = unicode_description::find(U'\ud7a3');
+static unicode_description const &Non_Private_Use_High_Surrogate_unicode_description =
+    unicode_description::find(char32_t{0xd800});
+static unicode_description const &Private_Use_High_Surrogate_unicode_description = unicode_description::find(char32_t{0xdb80});
+static unicode_description const &Low_Surrogate_unicode_description = unicode_description::find(char32_t{0xdc00});
+static unicode_description const &Private_Use_unicode_description = unicode_description::find(U'\ue000');
+static unicode_description const &Tangut_Ideograph_unicode_description = unicode_description::find(U'\U00017000');
+static unicode_description Extended_Pictographic_description =
+    unicode_description::make_unassigned(unicode_description::find(U'\U0001f000'));
+static unicode_description const &CJK_Ideograph_Extension_B_unicode_description = unicode_description::find(U'\U00020000');
+static unicode_description const &CJK_Ideograph_Extension_C_unicode_description = unicode_description::find(U'\U0002a700');
+static unicode_description const &CJK_Ideograph_Extension_D_unicode_description = unicode_description::find(U'\U0002b740');
+static unicode_description const &CJK_Ideograph_Extension_E_unicode_description = unicode_description::find(U'\U0002b820');
+static unicode_description const &CJK_Ideograph_Extension_F_unicode_description = unicode_description::find(U'\U0002ceb0');
+static unicode_description const &Plane_15_Private_Use_unicode_description = unicode_description::find(U'\U000f0000');
+static unicode_description const &Plane_16_Private_Use_unicode_description = unicode_description::find(U'\U00100000');
+
+[[nodiscard]] unicode_description const &unicode_description::find(char32_t code_point) noexcept
 {
-    tt_axiom(code_point <= 0x10'ffff);
+    ttlet first = cbegin(detail::unicode_db_description_table);
+    ttlet last = cend(detail::unicode_db_description_table);
 
-    auto first = begin(detail::unicode_db_description_table);
-    auto last = end(detail::unicode_db_description_table);
-    return unicode_description_find(first, last, code_point);
-}
+    uint32_t code_point_ = static_cast<uint32_t>(code_point) << code_point_shift;
+    auto it = std::lower_bound(first, last, code_point_, [](auto const &item, auto const &value) {
+        return item._general_info < value;
+    });
 
-constexpr unicode_description const &Replacement_Character_unicode_description = *_unicode_description_find(U'\ufffd');
-constexpr unicode_description const &CJK_Ideograph_Extension_A_unicode_description = *_unicode_description_find(U'\u3400');
-constexpr unicode_description const &CJK_Ideograph_unicode_description = *_unicode_description_find(U'\u4e00');
-constexpr unicode_description const &Hangul_Syllable_LV_unicode_description = *_unicode_description_find(U'\uac00');
-constexpr unicode_description const &Hangul_Syllable_LVT_unicode_description = *_unicode_description_find(U'\ud7a3');
-constexpr unicode_description const &Non_Private_Use_High_Surrogate_unicode_description =
-    *_unicode_description_find(char32_t{0xd800});
-constexpr unicode_description const &Private_Use_High_Surrogate_unicode_description =
-    *_unicode_description_find(char32_t{0xdb80});
-constexpr unicode_description const &Low_Surrogate_unicode_description = *_unicode_description_find(char32_t{0xdc00});
-constexpr unicode_description const &Private_Use_unicode_description = *_unicode_description_find(U'\ue000');
-constexpr unicode_description const &Tangut_Ideograph_unicode_description = *_unicode_description_find(U'\U00017000');
-constexpr unicode_description Extended_Pictographic_description =
-    unicode_description::make_unassigned(*_unicode_description_find(U'\U0001f000'));
-constexpr unicode_description const &CJK_Ideograph_Extension_B_unicode_description = *_unicode_description_find(U'\U00020000');
-constexpr unicode_description const &CJK_Ideograph_Extension_C_unicode_description = *_unicode_description_find(U'\U0002a700');
-constexpr unicode_description const &CJK_Ideograph_Extension_D_unicode_description = *_unicode_description_find(U'\U0002b740');
-constexpr unicode_description const &CJK_Ideograph_Extension_E_unicode_description = *_unicode_description_find(U'\U0002b820');
-constexpr unicode_description const &CJK_Ideograph_Extension_F_unicode_description = *_unicode_description_find(U'\U0002ceb0');
-constexpr unicode_description const &Plane_15_Private_Use_unicode_description = *_unicode_description_find(U'\U000f0000');
-constexpr unicode_description const &Plane_16_Private_Use_unicode_description = *_unicode_description_find(U'\U00100000');
+    if (it != last and *it == code_point) {
+        return *it;
 
-[[nodiscard]] unicode_description const &unicode_description_find(char32_t code_point) noexcept
-{
-    auto last = end(detail::unicode_db_description_table);
-    auto it = _unicode_description_find(code_point);
-
-    if (it == last) {
+    } else {
         if (code_point >= U'\u3400' && code_point <= U'\u4db5') {
             return CJK_Ideograph_Extension_A_unicode_description;
 
@@ -101,8 +99,6 @@ constexpr unicode_description const &Plane_16_Private_Use_unicode_description = 
         } else {
             return Replacement_Character_unicode_description;
         }
-    } else {
-        return *it;
     }
 }
 

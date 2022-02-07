@@ -5,6 +5,7 @@
 #include "text_widget.hpp"
 #include "../GUI/gui_window.hpp"
 #include "../GUI/mouse_event.hpp"
+#include "../unicode/unicode_bidi.hpp"
 
 namespace tt::inline v1 {
 
@@ -17,7 +18,14 @@ widget_constraints const &text_widget::set_constraints() noexcept
 {
     _layout = {};
 
-    ttlet text_proxy = text.cget();
+    ttlet text_proxy = text.get();
+
+    // Filter out all control characters that will not survive the bidi-algorithm.
+    auto new_end = unicode_bidi_control_filter(text_proxy->begin(), text_proxy->end(), [](ttlet &c) -> decltype(auto) {
+        return unicode_description::find(get<0>(c));
+    });
+    text_proxy->erase(new_end, text_proxy->end());
+
     _selection.clear_selection(*text_proxy);
     _shaped_text = text_shaper{font_book(), text_proxy, theme().text_style(*text_style)};
     ttlet[shaped_text_rectangle, cap_height] = _shaped_text.bounding_rectangle(500.0f, alignment->vertical());

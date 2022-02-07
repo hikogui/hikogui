@@ -60,6 +60,12 @@ enum class unicode_bidi_class : uint8_t {
     return rhs == B || rhs == S || rhs == WS || rhs == ON || rhs == FSI || rhs == LRI || rhs == RLI || rhs == PDI;
 }
 
+[[nodiscard]] constexpr bool is_control(unicode_bidi_class const &rhs) noexcept
+{
+    using enum unicode_bidi_class;
+    return rhs == RLE or rhs == LRE or rhs == RLO or rhs == LRO or rhs == PDF or rhs == BN;
+}
+
 [[nodiscard]] constexpr unicode_bidi_class unicode_bidi_class_from_string(std::string_view str) noexcept
 {
     using enum unicode_bidi_class;

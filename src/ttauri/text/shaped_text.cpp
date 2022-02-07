@@ -257,7 +257,7 @@ struct shape_text_result {
     // bidi_algorithm(text);
     ssize_t logicalIndex = 0;
     for (auto &c : text) {
-        ttlet &description = unicode_description_find(get<0>(c.grapheme));
+        ttlet &description = unicode_description::find(get<0>(c.grapheme));
         c.logicalIndex = logicalIndex++;
         c.general_category = description.general_category();
     }
@@ -269,7 +269,7 @@ struct shape_text_result {
         text.begin(),
         text.end(),
         [](ttlet &c) -> decltype(auto) {
-            return unicode_description_find(get<0>(c.grapheme));
+            return unicode_description::find(get<0>(c.grapheme));
         },
         [](auto &c, char32_t code_point) {
             c.grapheme = code_point;

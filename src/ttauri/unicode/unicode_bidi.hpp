@@ -170,4 +170,23 @@ std::pair<It, std::vector<unicode_bidi_class>> unicode_bidi(
     return {last, std::move(paragraph_directions)};
 }
 
+/** Removes control characters which will not survive the bidi-algorithm.
+* 
+* All RLE, LRE, RLO, LRO, PDF, and BN characters are removed.
+* 
+* @post Control characters between the first and last iterators are moved to the end.
+* @param first The first character.
+* @param last One beyond the last character.
+* @param description_func A function returning a `unicode_description const&` of the character.
+* @return The iterator one beyond the last character that is valid.
+*/
+template<typename It, typename EndIt, typename DescriptionFunc>
+It unicode_bidi_control_filter(It first, EndIt last, DescriptionFunc const &description_func)
+{
+    return std::remove_if(first, last, [&](ttlet &item) {
+        return is_control(description_func(item).bidi_class());
+    });
+}
+
+
 } // namespace tt::inline v1

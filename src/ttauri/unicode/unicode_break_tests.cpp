@@ -78,7 +78,7 @@ TEST(unicode_break, word_break)
     for (ttlet &test : parse_tests("WordBreakTest.txt")) {
         ttlet result =
             tt::unicode_word_break(test.code_points.begin(), test.code_points.end(), [](ttlet code_point) -> decltype(auto) {
-                return tt::unicode_description_find(code_point);
+                return tt::unicode_description::find(code_point);
             });
 
         ASSERT_EQ(test.expected, result) << test.comment;
@@ -90,7 +90,7 @@ TEST(unicode_break, sentence_break)
     for (ttlet &test : parse_tests("SentenceBreakTest.txt")) {
         ttlet result =
             tt::unicode_sentence_break(test.code_points.begin(), test.code_points.end(), [](ttlet code_point) -> decltype(auto) {
-                return tt::unicode_description_find(code_point);
+                return tt::unicode_description::find(code_point);
             });
 
         ASSERT_EQ(test.expected, result) << test.comment;
@@ -102,7 +102,7 @@ TEST(unicode_break, line_break)
     for (ttlet &test : parse_tests("LineBreakTest.txt")) {
         auto result =
             tt::unicode_line_break(test.code_points.begin(), test.code_points.end(), [](ttlet code_point) -> decltype(auto) {
-                return tt::unicode_description_find(code_point);
+                return tt::unicode_description::find(code_point);
             });
 
         // The algorithm produces mandatory-break in the result, but LineBreakTest.txt only has break/no-break.

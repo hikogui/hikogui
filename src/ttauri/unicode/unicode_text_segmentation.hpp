@@ -58,7 +58,7 @@ void wrap_lines(auto first, auto last, float max_width, auto get_width, auto get
 
     for (auto it = first; it != last; ++it) {
         ttlet code_point = get_code_point(*it);
-        ttlet description = unicode_description_find(code_point);
+        ttlet description = unicode_description::find(code_point);
         ttlet general_category = description->general_category();
 
         if (general_category == Zp || general_category == Zl) {

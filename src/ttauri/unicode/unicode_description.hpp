@@ -77,15 +77,6 @@ constexpr char32_t unicode_PS = U'\u2029';
  */
 class unicode_description {
 public:
-    static constexpr uint32_t code_point_shift = 10;
-    static constexpr uint32_t code_point_mask = 0x1f'ffff;
-    static constexpr uint32_t general_category_shift = 5;
-    static constexpr uint32_t general_category_mask = 0x1f;
-    static constexpr uint32_t grapheme_cluster_break_shift = 1;
-    static constexpr uint32_t grapheme_cluster_break_mask = 0xf;
-    static constexpr uint32_t composition_canonical_shift = 0;
-    static constexpr uint32_t composition_canonical_mask = 1;
-
     constexpr unicode_description() noexcept = default;
     unicode_description(unicode_description const &) = delete;
     unicode_description &operator=(unicode_description const &) = delete;
@@ -337,27 +328,98 @@ public:
         return static_cast<size_t>(_non_starter_code);
     }
 
+    /** Find a code-point in the global unicode_description table.
+     * For any valid unicode code point this function will return a reference to
+     * the unicode_description. It may return a unicode_description to the
+     * U+fffd 'REPLACEMENT CHARACTER' if the code-point could not be found in the
+     * table. Or it may return unicode_description to a single element in a range
+     * of code-points, such as for hangul-syllables, or private use areas.
+     *
+     * @param code_point The code point to look up.
+     * @return a const reference to the unicode_description entry.
+     */
+    [[nodiscard]] static unicode_description const &find(char32_t code_point) noexcept;
+
+    [[nodiscard]] friend bool operator==(unicode_description const &lhs, unicode_general_category const &rhs) noexcept
+    {
+        return lhs.general_category() == rhs;
+    }
+
+    [[nodiscard]] friend bool operator==(unicode_description const &lhs, unicode_decomposition_type const &rhs) noexcept
+    {
+        return lhs.decomposition_type() == rhs;
+    }
+
+    [[nodiscard]] friend bool operator==(unicode_description const &lhs, unicode_bidi_bracket_type const &rhs) noexcept
+    {
+        return lhs.bidi_bracket_type() == rhs;
+    }
+
+    [[nodiscard]] friend bool operator==(unicode_description const &lhs, unicode_bidi_class const &rhs) noexcept
+    {
+        return lhs.bidi_class() == rhs;
+    }
+    [[nodiscard]] friend bool operator==(unicode_description const &lhs, unicode_east_asian_width const &rhs) noexcept
+    {
+        return lhs.east_asian_width() == rhs;
+    }
+
+    [[nodiscard]] friend bool operator==(unicode_description const &lhs, unicode_sentence_break_property const &rhs) noexcept
+    {
+        return lhs.sentence_break_property() == rhs;
+    }
+
+    [[nodiscard]] friend bool operator==(unicode_description const &lhs, unicode_line_break_class const &rhs) noexcept
+    {
+        return lhs.line_break_class() == rhs;
+    }
+
+    [[nodiscard]] friend bool operator==(unicode_description const &lhs, unicode_word_break_property const &rhs) noexcept
+    {
+        return lhs.word_break_property() == rhs;
+    }
+
+    [[nodiscard]] friend bool operator==(unicode_description const &lhs, unicode_grapheme_cluster_break const &rhs) noexcept
+    {
+        return lhs.grapheme_cluster_break() == rhs;
+    }
+
+    [[nodiscard]] friend bool operator==(unicode_description const &lhs, char32_t const &rhs) noexcept
+    {
+        return lhs.code_point() == rhs;
+    }
+
 private:
+    static constexpr uint32_t code_point_shift = 11;
+    static constexpr uint32_t code_point_mask = 0x1f'ffff;
+    static constexpr uint32_t general_category_shift = 6;
+    static constexpr uint32_t general_category_mask = 0x1f;
+    static constexpr uint32_t grapheme_cluster_break_shift = 2;
+    static constexpr uint32_t grapheme_cluster_break_mask = 0xf;
+    static constexpr uint32_t composition_canonical_shift = 1;
+    static constexpr uint32_t composition_canonical_mask = 1;
+
     // 1st dword
     // We don't use bit-fields so we can do binary-search without needing shift- & and-operations
     // code_point must be in msb for correct binary search.
-    // [31:10] code-point
-    // [9:5] general category
-    // [4:1] grapheme cluster break
-    // [0:0] canonical composition
+    // [31:11] code-point
+    // [10:6] general category
+    // [5:2] grapheme cluster break
+    // [1:1] canonical composition
+    // [0:0] reserved.
     uint32_t _general_info;
 
     // 2nd dword
     uint32_t _bidi_class : 5;
-    uint32_t _bidi_bracket_type : 2;
-    uint32_t _bidi_mirrored_glyph : 21;
+    uint32_t _bidi_bracket_type : 2; // _bidi_bracket_type when _canonical_combining_class == 0
+    uint32_t _bidi_mirrored_glyph : 21; // XXX store as delta instead.
     uint32_t _sentence_break_property : 4;
 
     // 3rd dword
     uint32_t _canonical_combining_class : 8;
     uint32_t _line_break_class : 6;
     uint32_t _word_break_property : 5;
-    uint32_t _non_starter_code : 10;
+    uint32_t _non_starter_code : 10; // _non_starter_code when _canonical_combining_class != 0
     uint32_t _word3_reserved : 3 = 0;
 
     // 4th dword
@@ -365,48 +427,8 @@ private:
     uint32_t _decomposition_type : 3;
     uint32_t _decomposition_length : 5;
     uint32_t _east_asian_width : 3;
-
-    template<typename It>
-    friend constexpr It unicode_description_find(It first, It last, char32_t code_point) noexcept;
 };
 
 static_assert(sizeof(unicode_description) == 16);
-
-/** Find a code-point in a unicode_description table using a binary-search algorithm.
- * @param first The iterator pointing to the first element of a sorted container of unicode_description objects.
- * @param last The iterator pointing to one beyond the last element of a sorted container of unicode_description objects.
- * @param code_point The code point to look up.
- * @return An iterator pointing the found unicode_description, or the last iterator when not found.
- */
-template<typename It>
-[[nodiscard]] constexpr It unicode_description_find(It first, It last, char32_t code_point) noexcept
-{
-    tt_axiom(code_point <= 0x10'ffff);
-    uint32_t general_info = static_cast<uint32_t>(code_point) << 10;
-
-    auto it = std::lower_bound(first, last, general_info, [](auto const &item, auto const &value) {
-        return item._general_info < value;
-    });
-
-    if (it == last || it->code_point() != code_point) {
-        return last;
-    } else {
-        return it;
-    }
-}
-
-/** Find a code-point in the global unicode_description table.
- * For any valid unicode code point this function will return a reference to
- * the unicode_description. It may return a unicode_description to the
- * U+fffd 'REPLACEMENT CHARACTER' if the code-point could not be found in the
- * table. Or it may return unicode_description to a single element in a range
- * of code-points, such as for hangul-syllables, or private use areas..
- *
- * Passing an invalid unicode value causes undefined behaviour.
- *
- * @param code_point The code point to look up.
- * @return a const reference to the unicode_description entry.
- */
-[[nodiscard]] unicode_description const &unicode_description_find(char32_t code_point) noexcept;
 
 } // namespace tt::inline v1

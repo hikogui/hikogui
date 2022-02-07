@@ -501,7 +501,7 @@ static std::vector<unicode_bidi_bracket_pair> unicode_bidi_BD16(unicode_bidi_iso
                     auto mirrored_glyph = it->description->bidi_mirrored_glyph();
                     auto canonical_equivalent = it->description->canonical_equivalent();
                     if (canonical_equivalent != U'\uffff') {
-                        ttlet &canonical_equivalent_description = unicode_description_find(canonical_equivalent);
+                        ttlet &canonical_equivalent_description = unicode_description::find(canonical_equivalent);
                         tt_axiom(canonical_equivalent_description.bidi_bracket_type() == unicode_bidi_bracket_type::o);
                         mirrored_glyph = canonical_equivalent_description.bidi_mirrored_glyph();
                     }

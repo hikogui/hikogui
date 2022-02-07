@@ -23,7 +23,7 @@ namespace tt::inline v1 {
         // Add the non-starter code-points.
         auto i = 1_uz;
         for (; i != 5 and it != code_points.end(); ++i, ++it) {
-            ttlet &description = unicode_description_find(*it);
+            ttlet &description = unicode_description::find(*it);
             ttlet shift = (4 - i) * 10 + 3;
             value |= static_cast<grapheme::value_type>(description.non_starter_code()) << shift;
         }

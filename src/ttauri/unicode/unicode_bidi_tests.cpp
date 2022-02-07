@@ -298,7 +298,7 @@ TEST(unicode_bidi, bidi_character_test)
             first,
             last,
             [](ttlet &x) -> decltype(auto) {
-                return unicode_description_find(x.code_point);
+                return unicode_description::find(x.code_point);
             },
             [](auto &x, ttlet &code_point) {
                 x.code_point = code_point;

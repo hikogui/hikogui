@@ -88,7 +88,7 @@ namespace tt::inline v1 {
 
 [[nodiscard]] bool breaks_grapheme(char32_t code_point, grapheme_break_state &state) noexcept
 {
-    return breaks_grapheme(unicode_description_find(code_point).grapheme_cluster_break(), state);
+    return breaks_grapheme(unicode_description::find(code_point).grapheme_cluster_break(), state);
 }
 
 } // namespace tt::inline v1
