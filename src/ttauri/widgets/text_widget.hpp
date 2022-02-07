@@ -129,6 +129,8 @@ private:
     void add_char(grapheme c, bool insert = false) noexcept;
     void delete_char_next() noexcept;
     void delete_char_prev() noexcept;
+    void delete_word_next() noexcept;
+    void delete_word_prev() noexcept;
 };
 
 } // namespace tt::inline v1

@@ -188,6 +188,32 @@ void text_widget::delete_char_next() noexcept
     _selection.set_cursor(cursor);
 }
 
+void text_widget::delete_word_next() noexcept
+{
+    auto cursor = _selection.cursor();
+    cursor = cursor.before_neighbor(_shaped_text);
+
+    ttlet [first, last] = _shaped_text.get_word(cursor);
+    _selection.drag_selection(last);
+
+    if (not _selection.empty()) {
+        return replace_selection(gstring{});
+    }
+}
+
+void text_widget::delete_word_prev() noexcept
+{
+    auto cursor = _selection.cursor();
+    cursor = cursor.after_neighbor(_shaped_text);
+
+    ttlet[first, last] = _shaped_text.get_word(cursor);
+    _selection.drag_selection(first);
+
+    if (not _selection.empty()) {
+        return replace_selection(gstring{});
+    }
+}
+
 bool text_widget::handle_event(tt::command command) noexcept
 {
     tt_axiom(is_gui_thread());
@@ -231,6 +257,9 @@ bool text_widget::handle_event(tt::command command) noexcept
 
         case command::text_delete_char_next: delete_char_next(); return true;
         case command::text_delete_char_prev: delete_char_prev(); return true;
+
+        case command::text_delete_word_next: delete_word_next(); return true;
+        case command::text_delete_word_prev: delete_word_prev(); return true;
 
         case command::text_cursor_left_char:
             _selection.set_cursor(_shaped_text.move_left_char(_selection.cursor())); return true;
