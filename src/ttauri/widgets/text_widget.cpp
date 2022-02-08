@@ -61,7 +61,7 @@ void text_widget::draw(draw_context const &context) noexcept
                 _selection.cursor(),
                 theme().color(theme_color::cursor),
                 theme().color(theme_color::incomplete_glyph),
-                _insertion_mode);
+                _overwrite_mode);
         }
     }
 }
@@ -105,16 +105,22 @@ void text_widget::replace_selection(gstring replacement) noexcept
     ttlet[first, last] = _selection.selection_indices();
     text_proxy->replace(first, last - first, replacement);
 
-    auto cursor = text_cursor{*text_proxy, first + replacement.size() - 1, true};
-    _selection.set_cursor(cursor);
+    _selection = text_cursor{*text_proxy, first + replacement.size() - 1, true};
 }
 
 void text_widget::add_char(grapheme c, bool insert) noexcept
 {
+    ttlet original_cursor = _selection.cursor();
+
     if (_selection.empty()) {
         // No opperation.
     }
-    return replace_selection(gstring{c});
+    replace_selection(gstring{c});
+
+    if (insert) {
+        // The character was inserted, put the cursor back where it was.
+        _selection = original_cursor;
+    }
 }
 
 void text_widget::delete_char_next() noexcept
@@ -178,7 +184,7 @@ bool text_widget::handle_event(tt::command command) noexcept
         // clang-format off
         switch (command) {
         case command::text_mode_insert:
-            _insertion_mode = not _insertion_mode;
+            _overwrite_mode = not _overwrite_mode;
             return true;
 
         case command::text_edit_paste:
@@ -201,12 +207,12 @@ bool text_widget::handle_event(tt::command command) noexcept
 
         case command::text_insert_line: add_char(grapheme{unicode_PS}); return true;
         case command::text_insert_line_up:
-            _selection.set_cursor(_shaped_text.move_begin_paragraph(_selection.cursor()));
+            _selection = _shaped_text.move_begin_paragraph(_selection.cursor());
             add_char(grapheme{unicode_PS}, true);
             return true;
 
         case command::text_insert_line_down:
-            _selection.set_cursor(_shaped_text.move_end_paragraph(_selection.cursor()));
+            _selection = _shaped_text.move_end_paragraph(_selection.cursor());
             add_char(grapheme{unicode_PS}, true);
             return true;
 
@@ -217,29 +223,29 @@ bool text_widget::handle_event(tt::command command) noexcept
         case command::text_delete_word_prev: delete_word_prev(); return true;
 
         case command::text_cursor_left_char:
-            _selection.set_cursor(_shaped_text.move_left_char(_selection.cursor())); return true;
+            _selection = _shaped_text.move_left_char(_selection.cursor()); return true;
         case command::text_cursor_right_char:
-            _selection.set_cursor(_shaped_text.move_right_char(_selection.cursor())); return true;
+            _selection = _shaped_text.move_right_char(_selection.cursor()); return true;
         case command::text_cursor_down_char:
-            _selection.set_cursor(_shaped_text.move_down_char(_selection.cursor())); return true;
+            _selection = _shaped_text.move_down_char(_selection.cursor()); return true;
         case command::text_cursor_up_char:
-            _selection.set_cursor(_shaped_text.move_up_char(_selection.cursor())); return true;
+            _selection = _shaped_text.move_up_char(_selection.cursor()); return true;
         case command::text_cursor_left_word:
-            _selection.set_cursor(_shaped_text.move_left_word(_selection.cursor())); return true;
+            _selection = _shaped_text.move_left_word(_selection.cursor()); return true;
         case command::text_cursor_right_word:
-            _selection.set_cursor(_shaped_text.move_right_word(_selection.cursor())); return true;
+            _selection = _shaped_text.move_right_word(_selection.cursor()); return true;
         case command::text_cursor_begin_line:
-            _selection.set_cursor(_shaped_text.move_begin_line(_selection.cursor())); return true;
+            _selection = _shaped_text.move_begin_line(_selection.cursor()); return true;
         case command::text_cursor_end_line:
-            _selection.set_cursor(_shaped_text.move_end_line(_selection.cursor())); return true;
+            _selection = _shaped_text.move_end_line(_selection.cursor()); return true;
         case command::text_cursor_begin_sentence:
-            _selection.set_cursor(_shaped_text.move_begin_sentence(_selection.cursor())); return true;
+            _selection = _shaped_text.move_begin_sentence(_selection.cursor()); return true;
         case command::text_cursor_end_sentence:
-            _selection.set_cursor(_shaped_text.move_end_sentence(_selection.cursor())); return true;
+            _selection = _shaped_text.move_end_sentence(_selection.cursor()); return true;
         case command::text_cursor_begin_document:
-            _selection.set_cursor(_shaped_text.move_begin_document(_selection.cursor())); return true;
+            _selection = _shaped_text.move_begin_document(_selection.cursor()); return true;
         case command::text_cursor_end_document:
-            _selection.set_cursor(_shaped_text.move_end_document(_selection.cursor())); return true;
+            _selection = _shaped_text.move_end_document(_selection.cursor()); return true;
 
         case command::gui_cancel:
             _selection.clear_selection(*text.cget()); return true;
@@ -268,7 +274,7 @@ bool text_widget::handle_event(tt::command command) noexcept
         case command::text_select_end_document:
             _selection.drag_selection(_shaped_text.move_end_document(_selection.cursor())); return true;
         case command::text_select_document:
-            _selection.set_cursor(_shaped_text.move_begin_document(_selection.cursor()));
+            _selection = _shaped_text.move_begin_document(_selection.cursor());
             _selection.drag_selection(_shaped_text.move_end_document(_selection.cursor()));
             return true;
 
@@ -328,7 +334,7 @@ bool text_widget::handle_event(mouse_event const &event) noexcept
             using enum mouse_event::Type;
         case ButtonDown:
             switch (event.clickCount) {
-            case 1: _selection.set_cursor(cursor); break;
+            case 1: _selection = cursor; break;
             case 2: _selection.start_selection(cursor, _shaped_text.get_word(cursor)); break;
             case 3: _selection.start_selection(cursor, _shaped_text.get_sentence(cursor)); break;
             case 4: _selection.start_selection(cursor, _shaped_text.get_paragraph(cursor)); break;

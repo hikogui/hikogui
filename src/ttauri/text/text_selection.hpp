@@ -72,17 +72,23 @@ namespace tt::inline v1{
         }
 
         template<typename Text>
-        constexpr void clear_selection(Text const &text) noexcept
+        constexpr text_selection &clear_selection(Text const &text) noexcept
         {
             using std::size;
             ttlet new_cursor = std::min(_cursor, text_cursor{text, size(text) - 1, true});
             return set_cursor(new_cursor);
         }
 
-        constexpr void set_cursor(text_cursor new_cursor) noexcept
+        constexpr text_selection &set_cursor(text_cursor new_cursor) noexcept
         {
             _cursor = _start_first = _start_last = _finish_first = _finish_last = new_cursor;
             tt_axiom(holds_invariant());
+            return *this;
+        }
+
+        constexpr text_selection &operator=(text_cursor const &rhs) noexcept
+        {
+            return set_cursor(rhs);
         }
 
         constexpr void start_selection(text_cursor new_cursor, text_cursor first, text_cursor last) noexcept

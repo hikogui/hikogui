@@ -111,7 +111,7 @@ private:
     decltype(text)::callback_ptr_type _text_callback;
 
     text_selection _selection;
-    bool _insertion_mode = true;
+    bool _overwrite_mode = false;
     undo_stack<undo_type> _undo_stack = {1000};
 
     text_widget(gui_window &window, widget *parent) noexcept;

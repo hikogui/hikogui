@@ -257,7 +257,7 @@ void draw_context::_draw_text_cursors(
     text_cursor primary_cursor,
     tt::color primary_color,
     tt::color secondary_color,
-    bool insertion_mode) const noexcept
+    bool overwrite_mode) const noexcept
 {
     if (text.empty()) {
         // When text is empty, draw a cursor directly.
@@ -268,8 +268,7 @@ void draw_context::_draw_text_cursors(
 
     tt_axiom(primary_cursor.index() < text.size());
 
-    if (not insertion_mode and not primary_cursor.end_of_text(text)) {
-        primary_cursor = primary_cursor.before_neighbor(text);
+    if (overwrite_mode and primary_cursor.before()) {
         return _draw_text_overwrite_cursor(clipping_rectangle, transform, text.begin() + primary_cursor.index(), primary_color);
     }
 
