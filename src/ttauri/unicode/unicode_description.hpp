@@ -414,6 +414,11 @@ public:
         return lhs.code_point() == rhs;
     }
 
+    [[nodiscard]] friend bool is_C(unicode_description const &rhs) noexcept
+    {
+        return is_C(rhs.general_category());
+    }
+
 private:
     static constexpr uint32_t code_point_shift = 11;
     static constexpr uint32_t code_point_mask = 0x1f'ffff;

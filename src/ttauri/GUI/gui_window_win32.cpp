@@ -329,7 +329,7 @@ void gui_window_win32::set_text_on_clipboard(std::string str) noexcept
 
     {
         auto str32 = to_u32string(str);
-        auto wstr = tt::to_wstring(unicode_NFC(str32, unicode_normalization_mask::NFD | unicode_normalization_mask::decompose_CR_LF));
+        auto wstr = tt::to_wstring(unicode_NFC(str32, unicode_normalization_mask::NFD | unicode_normalization_mask::decompose_CRLF));
 
         auto wstr_handle = GlobalAlloc(GMEM_MOVEABLE, (ssize(wstr) + 1) * sizeof(wchar_t));
         if (wstr_handle == nullptr) {
@@ -625,14 +625,18 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     } break;
 
     case WM_DEADCHAR:
-        if (auto c = handle_suragates(static_cast<char32_t>(wParam)); not is_general_category_C(c)) {
-            send_event(c, false);
+        if (auto c = handle_suragates(static_cast<char32_t>(wParam))) {
+            if (auto g = grapheme{}; g.valid()) {
+                send_event(g, false);
+            }
         }
         break;
 
     case WM_CHAR: {
-        if (auto c = handle_suragates(static_cast<char32_t>(wParam)); not is_general_category_C(c)) {
-            send_event(c);
+        if (auto c = handle_suragates(static_cast<char32_t>(wParam))) {
+            if (auto g = grapheme{}; g.valid()) {
+                send_event(g);
+            }
         }
     } break;
 

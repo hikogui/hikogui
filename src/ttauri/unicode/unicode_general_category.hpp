@@ -107,6 +107,4 @@ enum class unicode_general_category : uint8_t {
     return rhs < Zs or rhs == Co;
 }
 
-[[nodiscard]] bool is_general_category_C(char32_t rhs) noexcept;
-
 } // namespace tt::inline v1

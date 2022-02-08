@@ -36,11 +36,9 @@ static void unicode_decompose(char32_t code_point, unicode_normalization_mask ma
             r += unicode_PS;
         }
 
-    } else if (any(mask & unicode_normalization_mask::line_feed) and code_point == unicode_PS) {
-        r += U'\n';
-
-    } else if (any(mask & unicode_normalization_mask::line_feed) and code_point == unicode_LS) {
-        r += U' ';        
+    } else if (any(mask & unicode_normalization_mask::decompose_control) and is_C(description)) {
+        // Control characters are dropped. (no operation)
+        // This must come after checking for new-line which themselves are control characters.
 
     } else if (any(mask & unicode_normalization_mask::decompose_hangul) and is_hangul_syllable(code_point)) {
         ttlet S_index = code_point - detail::unicode_hangul_S_base;
@@ -99,7 +97,7 @@ static void unicode_decompose(std::u32string_view text, unicode_normalization_ma
 [[nodiscard]] static char32_t
 unicode_compose(char32_t first, char32_t second, unicode_normalization_mask composition_mask) noexcept
 {
-    if (any(composition_mask & unicode_normalization_mask::compose_CRLR) and first == U'\r' and second == U'\n') {
+    if (any(composition_mask & unicode_normalization_mask::compose_CRLF) and first == U'\r' and second == U'\n') {
         return U'\n';
 
     } else if (

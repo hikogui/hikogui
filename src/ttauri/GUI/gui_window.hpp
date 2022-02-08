@@ -345,8 +345,6 @@ protected:
 
     bool send_event(grapheme grapheme, bool full = true) noexcept;
 
-    bool send_event(char32_t c, bool full = true) noexcept;
-
 private:
     std::shared_ptr<std::function<void()>> _setting_change_callback;
 

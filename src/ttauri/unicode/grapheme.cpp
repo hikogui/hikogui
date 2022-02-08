@@ -53,4 +53,20 @@ grapheme &grapheme::operator=(std::u32string_view code_points) noexcept
     return unicode_NFD(composed());
 }
 
+[[nodiscard]] bool grapheme::valid() const noexcept
+{
+    if (empty()) {
+        return false;
+    }
+
+    ttlet &description = unicode_description::find(get<0>(*this));
+    if (is_C(description)) {
+        return false;
+    }
+    if (description.canonical_combining_class() != 0) {
+        return false;
+    }
+    return true;
+}
+
 } // namespace tt::inline v1

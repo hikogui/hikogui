@@ -11,9 +11,9 @@ namespace tt::inline v1 {
 
 [[nodiscard]] gstring to_gstring(std::u32string_view rhs) noexcept
 {
-    ttlet normalizedString = unicode_NFKC(
-        rhs,
-        unicode_normalization_mask::NFKD | unicode_normalization_mask::decompose_CR_LF | unicode_normalization_mask::compose_PS);
+    using enum unicode_normalization_mask;
+
+    ttlet normalizedString = unicode_NFKC(rhs, NFKD | compose_CRLF | decompose_PS | decompose_control);
 
     auto r = tt::gstring{};
     auto breakState = tt::grapheme_break_state{};
@@ -23,6 +23,7 @@ namespace tt::inline v1 {
         if (breaks_grapheme(codePoint, breakState)) {
             if (cluster.size() > 0) {
                 r += tt::grapheme::from_composed(cluster);
+                tt_axiom(r.back().valid());
             }
             cluster.clear();
         }
@@ -31,6 +32,7 @@ namespace tt::inline v1 {
     }
     if (ssize(cluster) != 0) {
         r += tt::grapheme::from_composed(cluster);
+        tt_axiom(r.back().valid());
     }
     return r;
 }

@@ -122,6 +122,15 @@ struct grapheme {
         return not empty();
     }
 
+    /** Check if the grapheme is valid.
+    * 
+    * A grapheme is invalid in case:
+    * - The grapheme is empty.
+    * - The first code-point is part of general category 'C'.
+    * - The first code-point is a combining character; canonical combining class != 0.
+    */
+    [[nodiscard]] bool valid() const noexcept;
+
     /** Return the number of code-points encoded in the grapheme.
      */
     [[nodiscard]] constexpr std::size_t size() const noexcept

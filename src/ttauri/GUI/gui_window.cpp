@@ -389,9 +389,4 @@ bool gui_window::send_event(grapheme grapheme, bool full) noexcept
     return send_event(keyboard_event(grapheme, full));
 }
 
-bool gui_window::send_event(char32_t c, bool full) noexcept
-{
-    return send_event(grapheme(c), full);
-}
-
 } // namespace tt::inline v1
