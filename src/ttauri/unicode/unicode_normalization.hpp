@@ -14,21 +14,27 @@
 namespace tt::inline v1 {
 
 enum class unicode_normalization_mask {
-    canonical = 1 << to_underlying(unicode_decomposition_type::canonical),
-    font = 1 << to_underlying(unicode_decomposition_type::font),
-    no_break = 1 << to_underlying(unicode_decomposition_type::no_break),
-    arabic = 1 << to_underlying(unicode_decomposition_type::arabic),
-    circle = 1 << to_underlying(unicode_decomposition_type::circle),
-    math = 1 << to_underlying(unicode_decomposition_type::math),
-    asian = 1 << to_underlying(unicode_decomposition_type::asian),
-    compat = 1 << to_underlying(unicode_decomposition_type::compat),
+    decompose_canonical = 1 << to_underlying(unicode_decomposition_type::canonical),
+    decompose_font = 1 << to_underlying(unicode_decomposition_type::font),
+    decompose_no_break = 1 << to_underlying(unicode_decomposition_type::no_break),
+    decompose_arabic = 1 << to_underlying(unicode_decomposition_type::arabic),
+    decompose_circle = 1 << to_underlying(unicode_decomposition_type::circle),
+    decompose_math = 1 << to_underlying(unicode_decomposition_type::math),
+    decompose_asian = 1 << to_underlying(unicode_decomposition_type::asian),
+    decompose_compat = 1 << to_underlying(unicode_decomposition_type::compat),
 
-    paragraph = 0x0100, ///< Decompose LF -> PS (paragraph separator), Compose CR LF -> PS
-    line_feed = 0x0200, ///< Decompose/Compose LS -> SP and PS -> LF 
-    hangul = 0x0400, ///< Decompose/Compose hangul
+    decompose_hangul = 0x100,
+    compose_hangul = 0x200,
 
-    NFD = canonical | hangul,
-    NFKD = NFD | font | no_break | arabic | circle | math | asian | compat,
+    decompose_newline = 0x7000, ///< Mask for one of decompose_PS, decompose_LF, decompose_CR, decompose_CR_LF
+    decompose_PS = 0x1000, ///< Decompose newline -> PS
+    decompose_LF = 0x2000, ///< Decompose newline -> LF
+    decompose_CR_LF = 0x2000, ///< Decompose newline -> CR+LF.
+    compose_CR_LF = 0x8000, ///< Compose CR+LF -> LF
+
+
+    NFD = decompose_canonical | decompose_hangul | compose_hangul,
+    NFKD = NFD | decompose_font | decompose_no_break | decompose_arabic | decompose_circle | decompose_math | decompose_asian | decompose_compat,
 };
 
 [[nodiscard]] constexpr bool any(unicode_normalization_mask const &rhs) noexcept
@@ -48,9 +54,9 @@ operator&(unicode_normalization_mask const &lhs, unicode_normalization_mask cons
     return static_cast<unicode_normalization_mask>(to_underlying(lhs) & to_underlying(rhs));
 }
 
-[[nodiscard]] constexpr bool operator==(unicode_decomposition_type const &lhs, unicode_normalization_mask const &rhs) noexcept
+[[nodiscard]] constexpr unicode_normalization_mask operator&(unicode_normalization_mask const &lhs, unicode_decomposition_type const &rhs) noexcept
 {
-    return static_cast<bool>((1 << to_underlying(lhs)) & to_underlying(rhs));
+    return static_cast<unicode_normalization_mask>(to_underlying(rhs) & (1 << to_underlying(rhs)));
 }
 
 /** Convert text to Unicode-NFD normal form.
