@@ -626,7 +626,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
     case WM_DEADCHAR:
         if (auto c = handle_suragates(static_cast<char32_t>(wParam))) {
-            if (auto g = grapheme{}; g.valid()) {
+            if (auto g = grapheme{c}; g.valid()) {
                 send_event(g, false);
             }
         }
@@ -634,7 +634,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
     case WM_CHAR: {
         if (auto c = handle_suragates(static_cast<char32_t>(wParam))) {
-            if (auto g = grapheme{}; g.valid()) {
+            if (auto g = grapheme{c}; g.valid()) {
                 send_event(g);
             }
         }

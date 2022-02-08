@@ -644,6 +644,12 @@ text_shaper::get_selection_from_break(text_cursor cursor, unicode_break_vector c
     return {{*this, first_index, false}, {*this, last_index, true}};
 }
 
+[[nodiscard]] std::pair<text_cursor, text_cursor> text_shaper::get_char(text_cursor cursor) const noexcept
+{
+    ttlet index = cursor.index();
+    return {{*this, index, false}, {*this, index, true}};
+}
+
 [[nodiscard]] std::pair<text_cursor, text_cursor> text_shaper::get_word(text_cursor cursor) const noexcept
 {
     return get_selection_from_break(cursor, _word_break_opportunities);

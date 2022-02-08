@@ -203,6 +203,10 @@ public:
      */
     [[nodiscard]] text_cursor get_nearest(point2 point) const noexcept;
 
+    /** Get the selection for the character at the cursor.
+     */
+    [[nodiscard]] std::pair<text_cursor, text_cursor> get_char(text_cursor cursor) const noexcept;
+
     /** Get the selection for the word at the cursor.
      */
     [[nodiscard]] std::pair<text_cursor, text_cursor> get_word(text_cursor cursor) const noexcept;

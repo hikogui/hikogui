@@ -111,107 +111,62 @@ void text_widget::replace_selection(gstring replacement) noexcept
 
 void text_widget::add_char(grapheme c, bool insert) noexcept
 {
-    if (not _selection.empty()) {
-        return replace_selection(gstring{c});
+    if (_selection.empty()) {
+        // No opperation.
     }
-
-    undo_push();
-
-    auto text_proxy = text.get();
-
-    auto cursor = _selection.cursor();
-
-    auto index = cursor.before() ? cursor.index() : cursor.index() + 1;
-    if (_insertion_mode or index == text_proxy->size()) {
-        text_proxy->insert(index, 1, c);
-    } else {
-        text_proxy[index] = c;
-    }
-
-    if (not insert) {
-        // After append/overwrite the cursor is now behind that character.
-        cursor = {*text_proxy, index, true};
-    }
-    _selection.set_cursor(cursor);
-}
-
-void text_widget::delete_char_prev() noexcept
-{
-    auto cursor = _selection.cursor();
-
-    if (not _selection.empty()) {
-        return replace_selection(gstring{});
-    } else if (cursor.start_of_text()) {
-        return;
-    }
-
-    undo_push();
-
-    auto text_proxy = text.get();
-
-    // Delete the character before the cursor.
-    auto index = cursor.before() ? cursor.index() - 1 : cursor.index();
-    tt_axiom(index < text_proxy->size());
-    text_proxy->erase(index, 1);
-
-    // Now place the cursor before the index of the deleted character.
-    cursor = {*text_proxy, index - 1, true};
-    _selection.set_cursor(cursor);
+    return replace_selection(gstring{c});
 }
 
 void text_widget::delete_char_next() noexcept
 {
-    auto cursor = _selection.cursor();
+    if (_selection.empty()) {
+        auto cursor = _selection.cursor();
+        cursor = cursor.before_neighbor(_shaped_text);
 
-    if (not _selection.empty()) {
-        return replace_selection(gstring{});
+        ttlet[first, last] = _shaped_text.get_char(cursor);
+        _selection.drag_selection(last);
     }
 
-    if (cursor.end_of_text(*text.cget())) {
-        return;
+    return replace_selection(gstring{});
+}
+
+void text_widget::delete_char_prev() noexcept
+{
+    if (_selection.empty()) {
+        auto cursor = _selection.cursor();
+        cursor = cursor.after_neighbor(_shaped_text);
+
+        ttlet[first, last] = _shaped_text.get_char(cursor);
+        _selection.drag_selection(first);
     }
 
-    undo_push();
-
-    auto text_proxy = text.get();
-
-    // Place the cursor before the character to delete.
-    cursor = cursor.before_neighbor(*text_proxy);
-
-    // Remove the character after the cursor.
-    auto index = cursor.before() ? cursor.index() : cursor.index() + 1;
-    tt_axiom(index < text_proxy->size());
-    text_proxy->erase(index, 1);
-
-    // Place the cursor after the previous character, unless already at start of text.
-    cursor = text_cursor{*text_proxy, index - 1, true};
-    _selection.set_cursor(cursor);
+    return replace_selection(gstring{});
 }
 
 void text_widget::delete_word_next() noexcept
 {
-    auto cursor = _selection.cursor();
-    cursor = cursor.before_neighbor(_shaped_text);
+    if (_selection.empty()) {
+        auto cursor = _selection.cursor();
+        cursor = cursor.before_neighbor(_shaped_text);
 
-    ttlet [first, last] = _shaped_text.get_word(cursor);
-    _selection.drag_selection(last);
-
-    if (not _selection.empty()) {
-        return replace_selection(gstring{});
+        ttlet[first, last] = _shaped_text.get_word(cursor);
+        _selection.drag_selection(last);
     }
+
+    return replace_selection(gstring{});
 }
 
 void text_widget::delete_word_prev() noexcept
 {
-    auto cursor = _selection.cursor();
-    cursor = cursor.after_neighbor(_shaped_text);
+    if (_selection.empty()) {
+        auto cursor = _selection.cursor();
+        cursor = cursor.after_neighbor(_shaped_text);
 
-    ttlet[first, last] = _shaped_text.get_word(cursor);
-    _selection.drag_selection(first);
-
-    if (not _selection.empty()) {
-        return replace_selection(gstring{});
+        ttlet[first, last] = _shaped_text.get_word(cursor);
+        _selection.drag_selection(first);
     }
+
+    return replace_selection(gstring{});
 }
 
 bool text_widget::handle_event(tt::command command) noexcept
