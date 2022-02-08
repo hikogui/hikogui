@@ -23,21 +23,25 @@ public:
     constexpr text_cursor &operator=(text_cursor const &) noexcept = default;
     constexpr text_cursor &operator=(text_cursor &&) noexcept = default;
 
-    template<typename Text>
-    constexpr text_cursor(Text const &text, size_t index, bool after) noexcept
+    /** Create a new text cursor.
+    * 
+    * @param index The character where the cursor is.
+    * @param after True if the cursor is after the character, false if the cursor is before the character
+    * @param size The size of the text, used to check for overflow.
+    */
+    constexpr text_cursor(size_t index, bool after, size_t size) noexcept
     {
-        using std::size;
-
-        if (size(text) == 0) {
+        if (size == 0) {
+            // Special case, when size is zero, the cursor is before the non-existing first character.
             index = 0;
             after = false;
         } else if (static_cast<ptrdiff_t>(index) < 0) {
             // Underflow.
             index = 0;
             after = false;
-        } else if (index >= size(text)) {
+        } else if (index >= size) {
             // Overflow.
-            index = size(text) - 1;
+            index = size - 1;
             after = true;
         }
 
@@ -46,30 +50,27 @@ public:
 
     /** Return the neighbor cursor.
      *
-     * @param The text size.
+     * @param size The text size.
      * @return The cursor that is the neighbor of the this cursor.
      *         If this cursor is at start-of-text or end-of-text then this cursor is returned.
      */
-    template<typename Text>
-    [[nodiscard]] constexpr text_cursor neighbor(Text const &text) const noexcept
+    [[nodiscard]] constexpr text_cursor neighbor(size_t size) const noexcept
     {
         if (before()) {
-            return {text, index() - 1, true};
+            return {index() - 1, true, size};
         } else {
-            return {text, index() + 1, false};
+            return {index() + 1, false, size};
         }
     }
 
-    template<typename Text>
-    [[nodiscard]] constexpr text_cursor after_neighbor(Text const &text) const noexcept
+    [[nodiscard]] constexpr text_cursor after_neighbor(size_t size) const noexcept
     {
-        return before() ? neighbor(text) : *this;
+        return before() ? neighbor(size) : *this;
     }
 
-    template<typename Text>
-    [[nodiscard]] constexpr text_cursor before_neighbor(Text const &text) const noexcept
+    [[nodiscard]] constexpr text_cursor before_neighbor(size_t size) const noexcept
     {
-        return after() ? neighbor(text) : *this;
+        return after() ? neighbor(size) : *this;
     }
 
     [[nodiscard]] constexpr bool start_of_text() const noexcept
@@ -77,11 +78,9 @@ public:
         return _value == 0;
     }
 
-    template<typename Text>
-    [[nodiscard]] constexpr bool end_of_text(Text const &text) const noexcept
+    [[nodiscard]] constexpr bool end_of_text(size_t size) const noexcept
     {
-        using std::size;
-        return size(text) == 0 or (index() == size(text) - 1 and after()) or index() >= size(text);
+        return size == 0 or (index() == size - 1 and after()) or index() >= size;
     }
 
     [[nodiscard]] constexpr size_t index() const noexcept

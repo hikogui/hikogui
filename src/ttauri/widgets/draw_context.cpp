@@ -279,12 +279,12 @@ void draw_context::_draw_text_cursors(
     ttlet primary_is_on_left = not primary_is_on_right;
 
     do {
-        if (primary_cursor.start_of_text() or primary_cursor.end_of_text(text)) {
+        if (primary_cursor.start_of_text() or primary_cursor.end_of_text(text.size())) {
             // Don't draw secondary cursor which would be on the other edge of the text-field.
             break;
         }
 
-        ttlet secondary_cursor = primary_cursor.neighbor(text);
+        ttlet secondary_cursor = primary_cursor.neighbor(text.size());
         ttlet secondary_it = text.begin() + secondary_cursor.index();
         ttlet secondary_ltr = secondary_it->direction == unicode_bidi_class::L;
         ttlet secondary_is_on_right = secondary_ltr == secondary_cursor.after();

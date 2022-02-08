@@ -18,19 +18,12 @@ widget_constraints const &text_widget::set_constraints() noexcept
 {
     _layout = {};
 
-    ttlet text_proxy = text.get();
-
-    // Filter out all control characters that will not survive the bidi-algorithm.
-    auto new_end = unicode_bidi_control_filter(text_proxy->begin(), text_proxy->end(), [](ttlet &c) -> decltype(auto) {
-        return unicode_description::find(get<0>(c));
-    });
-    text_proxy->erase(new_end, text_proxy->end());
-
-    _selection.clear_selection(*text_proxy);
-    _shaped_text = text_shaper{font_book(), text_proxy, theme().text_style(*text_style)};
+    _shaped_text = text_shaper{font_book(), *text, theme().text_style(*text_style)};
     ttlet[shaped_text_rectangle, cap_height] = _shaped_text.bounding_rectangle(500.0f, alignment->vertical());
     _shaped_text_cap_height = cap_height;
     ttlet shaped_text_size = shaped_text_rectangle.size();
+
+    _selection.clear_selection(_shaped_text.size());
 
     return _constraints = {shaped_text_size, shaped_text_size, shaped_text_size, theme().margin};
 }
@@ -105,7 +98,7 @@ void text_widget::replace_selection(gstring replacement) noexcept
     ttlet[first, last] = _selection.selection_indices();
     text_proxy->replace(first, last - first, replacement);
 
-    _selection = text_cursor{*text_proxy, first + replacement.size() - 1, true};
+    _selection = text_cursor{first + replacement.size() - 1, true, text_proxy->size()};
 }
 
 void text_widget::add_char(grapheme c, bool insert) noexcept
@@ -127,7 +120,7 @@ void text_widget::delete_char_next() noexcept
 {
     if (_selection.empty()) {
         auto cursor = _selection.cursor();
-        cursor = cursor.before_neighbor(_shaped_text);
+        cursor = cursor.before_neighbor(_shaped_text.size());
 
         ttlet[first, last] = _shaped_text.get_char(cursor);
         _selection.drag_selection(last);
@@ -140,7 +133,7 @@ void text_widget::delete_char_prev() noexcept
 {
     if (_selection.empty()) {
         auto cursor = _selection.cursor();
-        cursor = cursor.after_neighbor(_shaped_text);
+        cursor = cursor.after_neighbor(_shaped_text.size());
 
         ttlet[first, last] = _shaped_text.get_char(cursor);
         _selection.drag_selection(first);
@@ -153,7 +146,7 @@ void text_widget::delete_word_next() noexcept
 {
     if (_selection.empty()) {
         auto cursor = _selection.cursor();
-        cursor = cursor.before_neighbor(_shaped_text);
+        cursor = cursor.before_neighbor(_shaped_text.size());
 
         ttlet[first, last] = _shaped_text.get_word(cursor);
         _selection.drag_selection(last);
@@ -166,7 +159,7 @@ void text_widget::delete_word_prev() noexcept
 {
     if (_selection.empty()) {
         auto cursor = _selection.cursor();
-        cursor = cursor.after_neighbor(_shaped_text);
+        cursor = cursor.after_neighbor(_shaped_text.size());
 
         ttlet[first, last] = _shaped_text.get_word(cursor);
         _selection.drag_selection(first);
@@ -248,7 +241,7 @@ bool text_widget::handle_event(tt::command command) noexcept
             _selection = _shaped_text.move_end_document(_selection.cursor()); return true;
 
         case command::gui_cancel:
-            _selection.clear_selection(*text.cget()); return true;
+            _selection.clear_selection(_shaped_text.size()); return true;
         case command::text_select_left_char:
             _selection.drag_selection(_shaped_text.move_left_char(_selection.cursor())); return true;
         case command::text_select_right_char:
