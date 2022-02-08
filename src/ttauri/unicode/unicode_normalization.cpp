@@ -29,7 +29,7 @@ static void unicode_decompose(char32_t code_point, unicode_normalization_mask ma
         ttlet paragraph_type = mask & unicode_normalization_mask::decompose_newline;
         if (paragraph_type == unicode_normalization_mask::decompose_LF) {
             r += U'\n';
-        } else if (paragraph_type == unicode_normalization_mask::decompose_CR_LF) {
+        } else if (paragraph_type == unicode_normalization_mask::decompose_CRLF) {
             r += U'\r';
             r += U'\n';
         } else if (paragraph_type == unicode_normalization_mask::decompose_PS) {
@@ -99,7 +99,7 @@ static void unicode_decompose(std::u32string_view text, unicode_normalization_ma
 [[nodiscard]] static char32_t
 unicode_compose(char32_t first, char32_t second, unicode_normalization_mask composition_mask) noexcept
 {
-    if (any(composition_mask & unicode_normalization_mask::compose_CR_LR) and first == U'\r' and second == U'\n') {
+    if (any(composition_mask & unicode_normalization_mask::compose_CRLR) and first == U'\r' and second == U'\n') {
         return U'\n';
 
     } else if (

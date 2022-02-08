@@ -29,8 +29,8 @@ enum class unicode_normalization_mask {
     decompose_newline = 0x7000, ///< Mask for one of decompose_PS, decompose_LF, decompose_CR, decompose_CR_LF
     decompose_PS = 0x1000, ///< Decompose newline -> PS
     decompose_LF = 0x2000, ///< Decompose newline -> LF
-    decompose_CR_LF = 0x2000, ///< Decompose newline -> CR+LF.
-    compose_CR_LF = 0x8000, ///< Compose CR+LF -> LF
+    decompose_CRLF = 0x2000, ///< Decompose newline -> CR+LF.
+    compose_CRLF = 0x8000, ///< Compose CR+LF -> LF
 
 
     NFD = decompose_canonical | decompose_hangul | compose_hangul,
