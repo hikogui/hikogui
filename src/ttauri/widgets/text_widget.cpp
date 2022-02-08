@@ -90,6 +90,13 @@ void text_widget::redo() noexcept
     return gstring_view{*text_proxy}.substr(first, last - first);
 }
 
+void text_widget::fix_cursor_position(size_t size) noexcept
+{
+    if (_overwrite_mode and _selection.empty() and _selection.cursor().after()) {
+        _selection = _selection.cursor().before_neighbor(size);
+    }
+}
+
 void text_widget::replace_selection(gstring replacement) noexcept
 {
     undo_push();
@@ -99,6 +106,7 @@ void text_widget::replace_selection(gstring replacement) noexcept
     text_proxy->replace(first, last - first, replacement);
 
     _selection = text_cursor{first + replacement.size() - 1, true, text_proxy->size()};
+    fix_cursor_position(text_proxy->size());
 }
 
 void text_widget::add_char(grapheme c, bool insert) noexcept
@@ -178,6 +186,7 @@ bool text_widget::handle_event(tt::command command) noexcept
         switch (command) {
         case command::text_mode_insert:
             _overwrite_mode = not _overwrite_mode;
+            fix_cursor_position();
             return true;
 
         case command::text_edit_paste:
@@ -216,17 +225,17 @@ bool text_widget::handle_event(tt::command command) noexcept
         case command::text_delete_word_prev: delete_word_prev(); return true;
 
         case command::text_cursor_left_char:
-            _selection = _shaped_text.move_left_char(_selection.cursor()); return true;
+            _selection = _shaped_text.move_left_char(_selection.cursor(), _overwrite_mode); return true;
         case command::text_cursor_right_char:
-            _selection = _shaped_text.move_right_char(_selection.cursor()); return true;
+            _selection = _shaped_text.move_right_char(_selection.cursor(), _overwrite_mode); return true;
         case command::text_cursor_down_char:
             _selection = _shaped_text.move_down_char(_selection.cursor()); return true;
         case command::text_cursor_up_char:
             _selection = _shaped_text.move_up_char(_selection.cursor()); return true;
         case command::text_cursor_left_word:
-            _selection = _shaped_text.move_left_word(_selection.cursor()); return true;
+            _selection = _shaped_text.move_left_word(_selection.cursor(), _overwrite_mode); return true;
         case command::text_cursor_right_word:
-            _selection = _shaped_text.move_right_word(_selection.cursor()); return true;
+            _selection = _shaped_text.move_right_word(_selection.cursor(), _overwrite_mode); return true;
         case command::text_cursor_begin_line:
             _selection = _shaped_text.move_begin_line(_selection.cursor()); return true;
         case command::text_cursor_end_line:
@@ -243,17 +252,17 @@ bool text_widget::handle_event(tt::command command) noexcept
         case command::gui_cancel:
             _selection.clear_selection(_shaped_text.size()); return true;
         case command::text_select_left_char:
-            _selection.drag_selection(_shaped_text.move_left_char(_selection.cursor())); return true;
+            _selection.drag_selection(_shaped_text.move_left_char(_selection.cursor(), false)); return true;
         case command::text_select_right_char:
-            _selection.drag_selection(_shaped_text.move_right_char(_selection.cursor())); return true;
+            _selection.drag_selection(_shaped_text.move_right_char(_selection.cursor(), false)); return true;
         case command::text_select_down_char:
             _selection.drag_selection(_shaped_text.move_down_char(_selection.cursor())); return true;
         case command::text_select_up_char:
             _selection.drag_selection(_shaped_text.move_up_char(_selection.cursor())); return true;
         case command::text_select_left_word:
-            _selection.drag_selection(_shaped_text.move_left_word(_selection.cursor())); return true;
+            _selection.drag_selection(_shaped_text.move_left_word(_selection.cursor(), false)); return true;
         case command::text_select_right_word:
-            _selection.drag_selection(_shaped_text.move_right_word(_selection.cursor())); return true;
+            _selection.drag_selection(_shaped_text.move_right_word(_selection.cursor(), false)); return true;
         case command::text_select_begin_line:
             _selection.drag_selection(_shaped_text.move_begin_line(_selection.cursor())); return true;
         case command::text_select_end_line:

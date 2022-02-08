@@ -176,8 +176,8 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
         char_it->column_nr = column_nr++;
     }
 
-    // All of the characters in the text must be positioned.    
-    for (auto &c: text) {
+    // All of the characters in the text must be positioned.
+    for (auto &c : text) {
         tt_axiom(c.line_nr != std::numeric_limits<size_t>::max() and c.column_nr != std::numeric_limits<size_t>::max());
     }
 }
@@ -403,7 +403,7 @@ void text_shaper::position_glyphs(
     return _lines[line_nr][column_nr];
 }
 
-[[nodiscard]] text_cursor text_shaper::move_left_char(text_cursor cursor) const noexcept
+[[nodiscard]] text_cursor text_shaper::move_left_char(text_cursor cursor, bool overwrite_mode) const noexcept
 {
     cursor_x = std::numeric_limits<float>::quiet_NaN();
 
@@ -411,18 +411,28 @@ void text_shaper::position_glyphs(
         return {};
     }
 
-    auto char_it = _text.begin() + cursor.index();
-    tt_axiom(char_it < _text.end());
-    if ((char_it->direction == unicode_bidi_class::L) == cursor.after()) {
-        // Skip over the character itself, and put the cursor on the left side of that character.
-        return {cursor.index(), char_it->direction != unicode_bidi_class::L, size()};
-    }
+    if (overwrite_mode) {
+        cursor = cursor.before_neighbor(size());
+        ttlet char_it = _text.begin() + cursor.index();
+        ttlet new_char_it = move_left_char(char_it);
 
-    char_it = move_left_char(char_it);
-    return {narrow<size_t>(std::distance(_text.begin(), char_it)), char_it->direction != unicode_bidi_class::L, size()};
+        ttlet at_end_of_text = char_it == new_char_it and new_char_it == end() - 1;
+        return {narrow<size_t>(std::distance(_text.begin(), new_char_it)), at_end_of_text, size()};
+
+    } else {
+        auto char_it = _text.begin() + cursor.index();
+        tt_axiom(char_it < _text.end());
+        if ((char_it->direction == unicode_bidi_class::L) == cursor.after()) {
+            // Skip over the character itself, and put the cursor on the left side of that character.
+            return {cursor.index(), char_it->direction != unicode_bidi_class::L, size()};
+        }
+
+        char_it = move_left_char(char_it);
+        return {narrow<size_t>(std::distance(_text.begin(), char_it)), char_it->direction != unicode_bidi_class::L, size()};
+    }
 }
 
-[[nodiscard]] text_cursor text_shaper::move_right_char(text_cursor cursor) const noexcept
+[[nodiscard]] text_cursor text_shaper::move_right_char(text_cursor cursor, bool overwrite_mode) const noexcept
 {
     cursor_x = std::numeric_limits<float>::quiet_NaN();
 
@@ -430,16 +440,25 @@ void text_shaper::position_glyphs(
         return {};
     }
 
-    auto char_it = _text.begin() + cursor.index();
-    tt_axiom(char_it < _text.end());
+    if (overwrite_mode) {
+        cursor = cursor.before_neighbor(size());
+        auto char_it = _text.begin() + cursor.index();
+        auto new_char_it = move_right_char(char_it);
+        ttlet at_end_of_text = char_it == new_char_it and new_char_it == end() - 1;
+        return {narrow<size_t>(std::distance(_text.begin(), new_char_it)), at_end_of_text, size()};
 
-    if ((char_it->direction == unicode_bidi_class::L) == cursor.before()) {
-        // Skip over the character itself, and put the cursor on the right side of that character.
-        return {cursor.index(), char_it->direction == unicode_bidi_class::L, size()};
+    } else {
+        auto char_it = _text.begin() + cursor.index();
+        tt_axiom(char_it < _text.end());
+
+        if ((char_it->direction == unicode_bidi_class::L) == cursor.before()) {
+            // Skip over the character itself, and put the cursor on the right side of that character.
+            return {cursor.index(), char_it->direction == unicode_bidi_class::L, size()};
+        }
+
+        char_it = move_right_char(char_it);
+        return {narrow<size_t>(std::distance(_text.begin(), char_it)), char_it->direction == unicode_bidi_class::L, size()};
     }
-
-    char_it = move_right_char(char_it);
-    return {narrow<size_t>(std::distance(_text.begin(), char_it)), char_it->direction == unicode_bidi_class::L, size()};
 }
 
 [[nodiscard]] text_cursor text_shaper::move_down_char(text_cursor cursor) const noexcept
@@ -461,7 +480,8 @@ void text_shaper::position_glyphs(
 
     ttlet &line = _lines[char_it->line_nr + 1];
     ttlet[new_char_it, after] = line.get_nearest(point2{cursor_x, 0.0f});
-    return {narrow<size_t>(std::distance(_text.begin(), new_char_it)), after, size()};
+    ttlet new_cursor = text_cursor{narrow<size_t>(std::distance(_text.begin(), new_char_it)), after, size()};
+    return new_cursor.before_neighbor(size());
 }
 
 [[nodiscard]] text_cursor text_shaper::move_up_char(text_cursor cursor) const noexcept
@@ -483,25 +503,52 @@ void text_shaper::position_glyphs(
 
     ttlet &line = _lines[char_it->line_nr - 1];
     ttlet[new_char_it, after] = line.get_nearest(point2{cursor_x, 0.0f});
-    return {narrow<size_t>(std::distance(_text.begin(), new_char_it)), after, size()};
+    ttlet new_cursor = text_cursor{narrow<size_t>(std::distance(_text.begin(), new_char_it)), after, size()};
+    return new_cursor.before_neighbor(size());
 }
 
-[[nodiscard]] text_cursor text_shaper::move_left_word(text_cursor cursor) const noexcept
+[[nodiscard]] text_cursor text_shaper::move_left_word(text_cursor cursor, bool overwrite_mode) const noexcept
 {
     cursor_x = std::numeric_limits<float>::quiet_NaN();
 
-    cursor = move_left_char(cursor);
+    ttlet cursor_direction = (begin() + cursor.index())->direction;
+    cursor = move_left_char(cursor, overwrite_mode);
     ttlet[first, last] = get_word(cursor);
-    return cursor.before() ? first : last;
+    ttlet word_direction = (begin() + first.index())->direction;
+
+    if (overwrite_mode) {
+        if (word_direction == unicode_bidi_class::L or word_direction != cursor_direction) {
+            return first;
+        } else {
+            // Get to the character to the left, after the RTL word.
+            ttlet it = move_left_char(begin() + last.index());
+            return {narrow<size_t>(std::distance(begin(), it)), false, size()};
+        }
+    } else {
+        return word_direction == unicode_bidi_class::L ? first : last;
+    }
 }
 
-[[nodiscard]] text_cursor text_shaper::move_right_word(text_cursor cursor) const noexcept
+[[nodiscard]] text_cursor text_shaper::move_right_word(text_cursor cursor, bool overwrite_mode) const noexcept
 {
     cursor_x = std::numeric_limits<float>::quiet_NaN();
 
-    cursor = move_right_char(cursor);
+    ttlet cursor_direction = (begin() + cursor.index())->direction;
+    cursor = move_right_char(cursor, overwrite_mode);
     ttlet[first, last] = get_word(cursor);
-    return cursor.before() ? first : last;
+    ttlet word_direction = (begin() + first.index())->direction;
+
+    if (overwrite_mode) {
+        if (word_direction == unicode_bidi_class::R or word_direction != cursor_direction) {
+            return first;
+        } else {
+            // Get to the character to the right, after the LTR word.
+            ttlet it = move_right_char(begin() + last.index());
+            return {narrow<size_t>(std::distance(begin(), it)), false, size()};
+        }
+    } else {
+        return word_direction == unicode_bidi_class::R ? first : last;
+    }
 }
 
 [[nodiscard]] text_cursor text_shaper::move_begin_line(text_cursor cursor) const noexcept
@@ -556,7 +603,7 @@ void text_shaper::position_glyphs(
         cursor = {cursor.index() - 1, false, size()};
     }
     ttlet[first, last] = get_sentence(cursor);
-    return first;
+    return first.before_neighbor(size());
 }
 
 [[nodiscard]] text_cursor text_shaper::move_end_sentence(text_cursor cursor) const noexcept
@@ -569,7 +616,7 @@ void text_shaper::position_glyphs(
         cursor = {cursor.index() + 1, true, size()};
     }
     ttlet[first, last] = get_sentence(cursor);
-    return last;
+    return last.before_neighbor(size());
 }
 
 [[nodiscard]] text_cursor text_shaper::move_begin_paragraph(text_cursor cursor) const noexcept
@@ -582,7 +629,7 @@ void text_shaper::position_glyphs(
         cursor = {cursor.index() - 1, false, size()};
     }
     ttlet[first, last] = get_paragraph(cursor);
-    return first;
+    return first.before_neighbor(size());
 }
 
 [[nodiscard]] text_cursor text_shaper::move_end_paragraph(text_cursor cursor) const noexcept
@@ -595,7 +642,7 @@ void text_shaper::position_glyphs(
         cursor = {cursor.index() + 1, true, size()};
     }
     ttlet[first, last] = get_paragraph(cursor);
-    return last;
+    return last.before_neighbor(size());
 }
 
 [[nodiscard]] text_cursor text_shaper::move_begin_document(text_cursor cursor) const noexcept

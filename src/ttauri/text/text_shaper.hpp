@@ -237,12 +237,12 @@ public:
      */
     [[nodiscard]] char_const_iterator move_right_char(char_const_iterator it) const noexcept;
 
-    [[nodiscard]] text_cursor move_left_char(text_cursor cursor) const noexcept;
-    [[nodiscard]] text_cursor move_right_char(text_cursor cursor) const noexcept;
+    [[nodiscard]] text_cursor move_left_char(text_cursor cursor, bool overwrite_mode) const noexcept;
+    [[nodiscard]] text_cursor move_right_char(text_cursor cursor, bool overwrite_mode) const noexcept;
     [[nodiscard]] text_cursor move_down_char(text_cursor cursor) const noexcept;
     [[nodiscard]] text_cursor move_up_char(text_cursor cursor) const noexcept;
-    [[nodiscard]] text_cursor move_left_word(text_cursor cursor) const noexcept;
-    [[nodiscard]] text_cursor move_right_word(text_cursor cursor) const noexcept;
+    [[nodiscard]] text_cursor move_left_word(text_cursor cursor, bool overwrite_mode) const noexcept;
+    [[nodiscard]] text_cursor move_right_word(text_cursor cursor, bool overwrite_mode) const noexcept;
     [[nodiscard]] text_cursor move_begin_line(text_cursor cursor) const noexcept;
     [[nodiscard]] text_cursor move_end_line(text_cursor cursor) const noexcept;
     [[nodiscard]] text_cursor move_begin_sentence(text_cursor cursor) const noexcept;

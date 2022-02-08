@@ -44,7 +44,6 @@ public:
         editable
     };
 
-
     /** The text to be displayed.
      */
     observable<gstring> text;
@@ -107,7 +106,6 @@ private:
     text_shaper _shaped_text;
     float _shaped_text_cap_height;
 
-
     decltype(text)::callback_ptr_type _text_callback;
 
     text_selection _selection;
@@ -119,13 +117,29 @@ private:
     void undo_push() noexcept;
     void undo() noexcept;
     void redo() noexcept;
+
+    /** Fix the cursor position after cursor movement.
+     *
+     * @param Size of the text.
+     */
+    void fix_cursor_position(size_t size) noexcept;
+
+    /** Fix the cursor position after cursor movement.
+     *
+     * @note uses size of _shaped_text.
+     */
+    void fix_cursor_position() noexcept
+    {
+        fix_cursor_position(_shaped_text.size());
+    }
+
     void replace_selection(gstring replacement) noexcept;
 
     /** Add a character to the text.
-    * 
-    * @param c The character to add at the current position
-    * @param insert If true then the cursor remains at the current position.
-    */
+     *
+     * @param c The character to add at the current position
+     * @param insert If true then the cursor remains at the current position.
+     */
     void add_char(grapheme c, bool insert = false) noexcept;
     void delete_char_next() noexcept;
     void delete_char_prev() noexcept;
