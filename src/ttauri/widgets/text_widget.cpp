@@ -113,8 +113,9 @@ void text_widget::add_char(grapheme c, bool insert) noexcept
 {
     ttlet original_cursor = _selection.cursor();
 
-    if (_selection.empty()) {
-        // No opperation.
+    if (_selection.empty() and _overwrite_mode and original_cursor.before()) {
+        ttlet[first, last] = _shaped_text.select_char(original_cursor);
+        _selection.drag_selection(last);
     }
     replace_selection(gstring{c});
 

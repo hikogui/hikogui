@@ -528,21 +528,19 @@ void text_shaper::position_glyphs(
         return {};
     }
 
-    auto char_it = _text.begin() + cursor.index();
-    tt_axiom(char_it < _text.end());
-    if (char_it->line_nr == _lines.size() - 1) {
+    auto [column_nr, line_nr] = get_column_line(cursor);
+    if (++line_nr == _lines.size()) {
         return {size() - 1, true, size()};
     }
 
     if (std::isnan(cursor_x)) {
-        ttlet cursor_on_left = (char_it->direction == unicode_bidi_class::L) == cursor.before();
-        cursor_x = cursor_on_left ? char_it->rectangle.left() : char_it->rectangle.right();
+        ttlet char_it = get_it(cursor);
+        tt_axiom(char_it != _text.end());
+        cursor_x = is_on_left(cursor) ? char_it->rectangle.left() : char_it->rectangle.right();
     }
 
-    ttlet &line = _lines[char_it->line_nr + 1];
-    ttlet[new_char_it, after] = line.get_nearest(point2{cursor_x, 0.0f});
-    ttlet new_cursor = text_cursor{narrow<size_t>(std::distance(_text.begin(), new_char_it)), after, size()};
-    return new_cursor.before_neighbor(size());
+    ttlet[new_char_it, after] = _lines[line_nr].get_nearest(point2{cursor_x, 0.0f});
+    return get_before_cursor(new_char_it);
 }
 
 [[nodiscard]] text_cursor text_shaper::move_up_char(text_cursor cursor) const noexcept
@@ -551,21 +549,20 @@ void text_shaper::position_glyphs(
         return {};
     }
 
-    auto char_it = _text.begin() + cursor.index();
-    tt_axiom(char_it < _text.end());
-    if (char_it->line_nr == 0) {
+
+    auto [column_nr, line_nr] = get_column_line(cursor);
+    if (line_nr-- == 0) {
         return {};
     }
 
     if (std::isnan(cursor_x)) {
-        ttlet cursor_on_left = (char_it->direction == unicode_bidi_class::L) == cursor.before();
-        cursor_x = cursor_on_left ? char_it->rectangle.left() : char_it->rectangle.right();
+        auto char_it = get_it(cursor);
+        tt_axiom(char_it < _text.end());
+        cursor_x = is_on_left(cursor) ? char_it->rectangle.left() : char_it->rectangle.right();
     }
 
-    ttlet &line = _lines[char_it->line_nr - 1];
-    ttlet[new_char_it, after] = line.get_nearest(point2{cursor_x, 0.0f});
-    ttlet new_cursor = text_cursor{narrow<size_t>(std::distance(_text.begin(), new_char_it)), after, size()};
-    return new_cursor.before_neighbor(size());
+    ttlet[new_char_it, after] = _lines[line_nr].get_nearest(point2{cursor_x, 0.0f});
+    return get_before_cursor(new_char_it);
 }
 
 [[nodiscard]] text_cursor text_shaper::move_left_word(text_cursor cursor, bool overwrite_mode) const noexcept
@@ -604,42 +601,27 @@ void text_shaper::position_glyphs(
 {
     cursor_x = std::numeric_limits<float>::quiet_NaN();
 
-    if (_text.empty()) {
-        return {};
-    }
-
-    auto char_it = _text.begin() + cursor.index();
-    tt_axiom(char_it < _text.end());
-
-    ttlet &line = _lines[char_it->line_nr];
-    if (line.paragraph_direction == unicode_bidi_class::L) {
-        char_it = line[0];
-        return {narrow<size_t>(std::distance(_text.begin(), char_it)), char_it->direction != unicode_bidi_class::L, size()};
-    } else {
-        char_it = line[line.size() - 1];
-        return {narrow<size_t>(std::distance(_text.begin(), char_it)), char_it->direction == unicode_bidi_class::L, size()};
-    }
+    ttlet[column_nr, line_nr] = get_column_line(cursor);
+    ttlet &line = _lines[line_nr];
+    return get_before_cursor(line.first);
 }
 
 [[nodiscard]] text_cursor text_shaper::move_end_line(text_cursor cursor) const noexcept
 {
     cursor_x = std::numeric_limits<float>::quiet_NaN();
 
-    if (_text.empty()) {
-        return {};
+    ttlet[column_nr, line_nr] = get_column_line(cursor);
+    ttlet &line = _lines[line_nr];
+
+    auto it = line.last;
+    while (it != line.first) {
+        --it;
+        if (not it->is_trailing_white_space) {
+            break;
+        }
     }
 
-    auto char_it = _text.begin() + cursor.index();
-    tt_axiom(char_it < _text.end());
-
-    ttlet &line = _lines[char_it->line_nr];
-    if (line.paragraph_direction == unicode_bidi_class::L) {
-        char_it = line[line.size() - 1];
-        return {narrow<size_t>(std::distance(_text.begin(), char_it)), char_it->direction == unicode_bidi_class::L, size()};
-    } else {
-        char_it = line[0];
-        return {narrow<size_t>(std::distance(_text.begin(), char_it)), char_it->direction != unicode_bidi_class::L, size()};
-    }
+    return get_after_cursor(it);
 }
 
 [[nodiscard]] text_cursor text_shaper::move_begin_sentence(text_cursor cursor) const noexcept
