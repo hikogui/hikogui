@@ -572,44 +572,32 @@ void text_shaper::position_glyphs(
 {
     cursor_x = std::numeric_limits<float>::quiet_NaN();
 
-    ttlet cursor_direction = (begin() + cursor.index())->direction;
-    cursor = move_left_char(cursor, overwrite_mode);
-    ttlet[first, last] = select_word(cursor);
-    ttlet word_direction = (begin() + first.index())->direction;
-
-    if (overwrite_mode) {
-        if (word_direction == unicode_bidi_class::L or word_direction != cursor_direction) {
-            return first;
-        } else {
-            // Get to the character to the left, after the RTL word.
-            ttlet it = move_left_char(begin() + last.index());
-            return {narrow<size_t>(std::distance(begin(), it)), false, size()};
+    cursor = move_left_char(cursor, overwrite_mode).before_neighbor(size());
+    auto it = get_it(cursor);
+    while (true) {
+        if (*(it->description) != unicode_general_category::Zs and
+            _word_break_opportunities[get_index(it)] != unicode_break_opportunity::no) {
+            return get_before_cursor(it);
         }
-    } else {
-        return word_direction == unicode_bidi_class::L ? first : last;
+        it = move_left_char(it);
     }
+    tt_unreachable();
 }
 
 [[nodiscard]] text_cursor text_shaper::move_right_word(text_cursor cursor, bool overwrite_mode) const noexcept
 {
     cursor_x = std::numeric_limits<float>::quiet_NaN();
 
-    ttlet cursor_direction = (begin() + cursor.index())->direction;
-    cursor = move_right_char(cursor, overwrite_mode);
-    ttlet[first, last] = select_word(cursor);
-    ttlet word_direction = (begin() + first.index())->direction;
-
-    if (overwrite_mode) {
-        if (word_direction == unicode_bidi_class::R or word_direction != cursor_direction) {
-            return first;
-        } else {
-            // Get to the character to the right, after the LTR word.
-            ttlet it = move_right_char(begin() + last.index());
-            return {narrow<size_t>(std::distance(begin(), it)), false, size()};
+    cursor = move_right_char(cursor, overwrite_mode).before_neighbor(size());
+    auto it = get_it(cursor);
+    while (true) {
+        if (*(it->description) != unicode_general_category::Zs and
+            _word_break_opportunities[get_index(it)] != unicode_break_opportunity::no) {
+            return get_before_cursor(it);
         }
-    } else {
-        return word_direction == unicode_bidi_class::R ? first : last;
+        it = move_right_char(it);
     }
+    tt_unreachable();
 }
 
 [[nodiscard]] text_cursor text_shaper::move_begin_line(text_cursor cursor) const noexcept
