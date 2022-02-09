@@ -347,32 +347,52 @@ void text_shaper::position_glyphs(
     }
 }
 
+[[nodiscard]] text_shaper::char_const_iterator text_shaper::get_char(size_t column_nr, size_t line_nr) const noexcept
+{
+    tt_axiom(not _lines.empty());
+
+    if (static_cast<ptrdiff_t>(line_nr) < 0) {
+        return begin();
+    } else if (line_nr >= _lines.size()) {
+        return end() - 1;
+    }
+
+    ttlet left_of_line = static_cast<ptrdiff_t>(column_nr) < 0;
+    ttlet right_of_line = column_nr >= line.size();
+
+    if (left_of_line or right_of_line) {
+        ttlet ltr = _lines[line_nr].paragraph_direction == unicode_bidi_class::L;
+        ttlet go_up = left_of_line == ltr;
+        if (go_up) {
+            // Go to line above.
+            if (static_cast<ptrdiff_t>(--line_nr) < 0) {
+                return begin();
+            } else {
+                // Go to end of line above.
+                return _lines[line_nr].paragraph_direction == unicode_bidi_class::L ? _lines[line_nr].back() : _lines[line_nr].front();
+            }
+
+        } else {
+            // Go to the line below.
+            if (++line_nr >= _lines.size()) {
+                return end() - 1;
+            } else {
+                // Go to begin of line below.
+                return _lines[line_nr].paragraph_direction == unicode_bidi_class::L ? _lines[line_nr].front() : _lines[line_nr].back();
+            }
+        }
+    }
+
+    return line.columns[column_nr];
+}
+
 [[nodiscard]] text_shaper::char_const_iterator text_shaper::move_left_char(text_shaper::char_const_iterator it) const noexcept
 {
     if (_text.empty()) {
         return _text.end();
     }
 
-    auto line_nr = it->line_nr;
-    auto column_nr = it->column_nr;
-
-    if (column_nr == 0) {
-        if (_lines[line_nr].paragraph_direction == unicode_bidi_class::L) {
-            if (line_nr != 0) {
-                --line_nr;
-                column_nr = _lines[line_nr].size() - 1;
-            }
-        } else {
-            if (line_nr != _lines.size() - 1) {
-                ++line_nr;
-                column_nr = _lines[line_nr].size() - 1;
-            }
-        }
-    } else {
-        --column_nr;
-    }
-
-    return _lines[line_nr][column_nr];
+    return get_char(it->column_nr - 1, it->line_nr);
 }
 
 [[nodiscard]] text_shaper::char_const_iterator text_shaper::move_right_char(text_shaper::char_const_iterator it) const noexcept
@@ -380,27 +400,8 @@ void text_shaper::position_glyphs(
     if (_text.empty()) {
         return _text.end();
     }
-
-    auto line_nr = it->line_nr;
-    auto column_nr = it->column_nr;
-
-    if (column_nr == _lines[line_nr].size() - 1) {
-        if (_lines[line_nr].paragraph_direction == unicode_bidi_class::L) {
-            if (line_nr != _lines.size() - 1) {
-                ++line_nr;
-                column_nr = 0;
-            }
-        } else {
-            if (line_nr != 0) {
-                --line_nr;
-                column_nr = 0;
-            }
-        }
-    } else {
-        ++column_nr;
-    }
-
-    return _lines[line_nr][column_nr];
+    
+    return get_char(it->column_nr + 1, it->line_nr);
 }
 
 [[nodiscard]] text_cursor text_shaper::move_left_char(text_cursor cursor, bool overwrite_mode) const noexcept
