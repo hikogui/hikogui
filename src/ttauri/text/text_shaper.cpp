@@ -394,14 +394,24 @@ void text_shaper::position_glyphs(
     return narrow<size_t>(std::distance(begin(), it));
 }
 
-[[nodiscard]] text_cursor text_shaper::get_before_cursor(text_shaper::char_const_iterator it) const noexcept
+[[nodiscard]] text_cursor text_shaper::get_begin_cursor() const noexcept
 {
-    return {get_index(it), false, size()};
+    return {};
 }
 
-[[nodiscard]] text_cursor text_shaper::get_after_cursor(text_shaper::char_const_iterator it) const noexcept
+[[nodiscard]] text_cursor text_shaper::get_end_cursor() const noexcept
 {
-    return {get_index(it), true, size()};
+    return {size() - 1, true, size()};
+}
+
+[[nodiscard]] text_cursor text_shaper::get_before_cursor(size_t index) const noexcept
+{
+    return {index, false, size()};
+}
+
+[[nodiscard]] text_cursor text_shaper::get_after_cursor(size_t index) const noexcept
+{
+    return {index, true, size()};
 }
 
 [[nodiscard]] text_cursor text_shaper::get_left_cursor(text_shaper::char_const_iterator it) const noexcept
@@ -413,7 +423,7 @@ void text_shaper::position_glyphs(
             return get_after_cursor(it);
         }
     } else {
-        return {size() - 1, true, size()};
+        return get_end_cursor();
     }
 }
 
@@ -426,7 +436,7 @@ void text_shaper::position_glyphs(
             return get_before_cursor(it);
         }
     } else {
-        return {size() - 1, true, size()};
+        return get_end_cursor();
     }
 }
 
@@ -530,7 +540,7 @@ void text_shaper::position_glyphs(
 
     auto [column_nr, line_nr] = get_column_line(cursor);
     if (++line_nr == _lines.size()) {
-        return {size() - 1, true, size()};
+        return get_end_cursor();
     }
 
     if (std::isnan(cursor_x)) {
@@ -571,14 +581,14 @@ void text_shaper::position_glyphs(
 
     cursor = move_left_char(cursor, overwrite_mode).before_neighbor(size());
     auto it = get_it(cursor);
-    while (true) {
+    while (it != end()) {
         if (*(it->description) != unicode_general_category::Zs and
             _word_break_opportunities[get_index(it)] != unicode_break_opportunity::no) {
             return get_before_cursor(it);
         }
         it = move_left_char(it);
     }
-    tt_unreachable();
+    return get_end_cursor();
 }
 
 [[nodiscard]] text_cursor text_shaper::move_right_word(text_cursor cursor, bool overwrite_mode) const noexcept
@@ -587,14 +597,14 @@ void text_shaper::position_glyphs(
 
     cursor = move_right_char(cursor, overwrite_mode).before_neighbor(size());
     auto it = get_it(cursor);
-    while (true) {
+    while (it != end()) {
         if (*(it->description) != unicode_general_category::Zs and
             _word_break_opportunities[get_index(it)] != unicode_break_opportunity::no) {
             return get_before_cursor(it);
         }
         it = move_right_char(it);
     }
-    tt_unreachable();
+    return get_end_cursor();
 }
 
 [[nodiscard]] text_cursor text_shaper::move_begin_line(text_cursor cursor) const noexcept
@@ -691,7 +701,7 @@ void text_shaper::position_glyphs(
         return {};
     }
 
-    return {_text.size() - 1, true, size()};
+    return get_end_cursor();
 }
 
 [[nodiscard]] std::pair<text_cursor, text_cursor>
@@ -719,13 +729,13 @@ text_shaper::get_selection_from_break(text_cursor cursor, unicode_break_vector c
         return i;
     }();
 
-    return {{first_index, false, size()}, {last_index, true, size()}};
+    return {get_before_cursor(first_index), get_after_cursor(last_index)};
 }
 
 [[nodiscard]] std::pair<text_cursor, text_cursor> text_shaper::select_char(text_cursor cursor) const noexcept
 {
     ttlet index = cursor.index();
-    return {{index, false, size()}, {index, true, size()}};
+    return {get_before_cursor(index), get_after_cursor(index)};
 }
 
 [[nodiscard]] std::pair<text_cursor, text_cursor> text_shaper::select_word(text_cursor cursor) const noexcept
@@ -761,7 +771,7 @@ text_shaper::get_selection_from_break(text_cursor cursor, unicode_break_vector c
         return i;
     }();
 
-    return {{first_index, false, size()}, {last_index, true, size()}};
+    return {get_before_cursor(first_index), get_after_cursor(last_index)};
 }
 
 [[nodiscard]] std::pair<text_cursor, text_cursor> text_shaper::select_document(text_cursor cursor) const noexcept
@@ -770,7 +780,7 @@ text_shaper::get_selection_from_break(text_cursor cursor, unicode_break_vector c
         return {{}, {}};
     }
 
-    return {{}, {_text.size() - 1, true, size()}};
+    return {{}, get_end_cursor()};
 }
 
 } // namespace tt::inline v1

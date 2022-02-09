@@ -268,19 +268,51 @@ public:
      */
     [[nodiscard]] size_t get_index(text_shaper::char_const_iterator it) const noexcept;
 
+    /** Get the cursor at the beginning of the document.
+     *
+     * @return The cursor at the beginning of the document.
+     */
+    [[nodiscard]] text_cursor get_begin_cursor() const noexcept;
+
+    /** Get the cursor at the end of the document.
+     *
+     * @return The cursor at the end of the document.
+     */
+    [[nodiscard]] text_cursor get_end_cursor() const noexcept;
+
     /** Get the cursor before the character in logical order.
      *
      * @param it The iterator to the character or `end()`.
      * @return A cursor before the character in logical order.
      */
-    [[nodiscard]] text_cursor get_before_cursor(text_shaper::char_const_iterator it) const noexcept;
+    [[nodiscard]] text_cursor get_before_cursor(size_t index) const noexcept;
 
     /** Get the cursor after the character in logical order.
      *
      * @param it The iterator to the character or `end()`.
      * @return A cursor after the character in logical order.
      */
-    [[nodiscard]] text_cursor get_after_cursor(text_shaper::char_const_iterator it) const noexcept;
+    [[nodiscard]] text_cursor get_after_cursor(size_t index) const noexcept;
+
+    /** Get the cursor before the character in logical order.
+     *
+     * @param it The iterator to the character or `end()`.
+     * @return A cursor before the character in logical order.
+     */
+    [[nodiscard]] text_cursor get_before_cursor(text_shaper::char_const_iterator it) const noexcept
+    {
+        return get_before_cursor(get_index(it));
+    }
+
+    /** Get the cursor after the character in logical order.
+     *
+     * @param it The iterator to the character or `end()`.
+     * @return A cursor after the character in logical order.
+     */
+    [[nodiscard]] text_cursor get_after_cursor(text_shaper::char_const_iterator it) const noexcept
+    {
+        return get_after_cursor(get_index(it));
+    }
 
     /** Get the cursor left of the character in display order.
      *
