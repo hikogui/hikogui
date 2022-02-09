@@ -201,19 +201,19 @@ void draw_context::_draw_text_insertion_cursor(
     ttlet maximum_left = std::round(text.rectangle().left() - 0.5f);
     ttlet maximum_right = std::round(text.rectangle().right() - 0.5f);
 
-    ttlet &c = text[cursor.index()];
-    ttlet &line = text.lines()[c.line_nr];
-    ttlet ltr = c.direction == unicode_bidi_class::L;
+    ttlet it = text.get_it(cursor);
+    ttlet &line = text.lines()[it->line_nr];
+    ttlet ltr = it->direction == unicode_bidi_class::L;
     ttlet on_right = ltr == cursor.after();
 
     // The initial position of the cursor.
     auto bottom = std::floor(line.rectangle.bottom());
     auto top = std::ceil(line.rectangle.top());
-    auto left = std::round((on_right ? c.rectangle.right() : c.rectangle.left()) - 0.5f);
+    auto left = std::round((on_right ? it->rectangle.right() : it->rectangle.left()) - 0.5f);
 
-    ttlet next_line_nr = c.line_nr + 1;
+    ttlet next_line_nr = it->line_nr + 1;
     ttlet line_ltr = line.paragraph_direction == unicode_bidi_class::L;
-    ttlet end_of_line = line_ltr ? c.column_nr == line.columns.size() - 1 : c.column_nr == 0;
+    ttlet end_of_line = line_ltr ? it->column_nr == line.columns.size() - 1 : it->column_nr == 0;
     if (cursor.after() and end_of_line and next_line_nr < text.lines().size()) {
         // The cursor is after the last character on the line,
         // the cursor should appear at the start of the next line.
@@ -221,7 +221,7 @@ void draw_context::_draw_text_insertion_cursor(
 
         bottom = std::floor(next_line.rectangle.bottom());
         top = std::ceil(next_line.rectangle.top());
-        left = c.direction == unicode_bidi_class::L ? maximum_left : maximum_right;
+        left = it->direction == unicode_bidi_class::L ? maximum_left : maximum_right;
     }
 
     // Clamp the cursor position between the left and right side of the layed out text.

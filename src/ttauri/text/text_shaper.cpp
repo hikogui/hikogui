@@ -327,7 +327,132 @@ void text_shaper::position_glyphs(
     position_glyphs(rectangle, sub_pixel_size, alignment.text(), writing_direction);
 }
 
-[[nodiscard]] text_cursor text_shaper::get_nearest(point2 position) const noexcept
+[[nodiscard]] text_shaper::char_const_iterator text_shaper::get_it(size_t index) const noexcept
+{
+    if (static_cast<ptrdiff_t>(index) < 0) {
+        return begin();
+    } else if (index >= size()) {
+        return end();
+    }
+
+    return begin() + index;
+}
+
+[[nodiscard]] text_shaper::char_const_iterator text_shaper::get_it(size_t column_nr, size_t line_nr) const noexcept
+{
+    tt_axiom(not _lines.empty());
+
+    if (static_cast<ptrdiff_t>(line_nr) < 0) {
+        return begin();
+    } else if (line_nr >= _lines.size()) {
+        return end();
+    }
+
+    ttlet left_of_line = static_cast<ptrdiff_t>(column_nr) < 0;
+    ttlet right_of_line = column_nr >= _lines[line_nr].size();
+
+    if (left_of_line or right_of_line) {
+        ttlet ltr = _lines[line_nr].paragraph_direction == unicode_bidi_class::L;
+        ttlet go_up = left_of_line == ltr;
+        if (go_up) {
+            // Go to line above.
+            if (static_cast<ptrdiff_t>(--line_nr) < 0) {
+                return begin();
+            } else {
+                // Go to end of line above.
+                return _lines[line_nr].paragraph_direction == unicode_bidi_class::L ? _lines[line_nr].back() :
+                                                                                      _lines[line_nr].front();
+            }
+
+        } else {
+            // Go to the line below.
+            if (++line_nr >= _lines.size()) {
+                return end();
+            } else {
+                // Go to begin of line below.
+                return _lines[line_nr].paragraph_direction == unicode_bidi_class::L ? _lines[line_nr].front() :
+                                                                                      _lines[line_nr].back();
+            }
+        }
+    }
+
+    return _lines[line_nr][column_nr];
+}
+
+[[nodiscard]] std::pair<size_t, size_t> text_shaper::get_column_line(text_shaper::char_const_iterator it) const noexcept
+{
+    if (it != end()) {
+        return {it->column_nr, it->line_nr};
+    } else {
+        tt_axiom(not _lines.empty());
+        return {_lines.size() - 1, _lines.back().size()};
+    }
+}
+
+[[nodiscard]] size_t text_shaper::get_index(text_shaper::char_const_iterator it) const noexcept
+{
+    return narrow<size_t>(std::distance(begin(), it));
+}
+
+[[nodiscard]] text_cursor text_shaper::get_before_cursor(text_shaper::char_const_iterator it) const noexcept
+{
+    return {get_index(it), false, size()};
+}
+
+[[nodiscard]] text_cursor text_shaper::get_after_cursor(text_shaper::char_const_iterator it) const noexcept
+{
+    return {get_index(it), true, size()};
+}
+
+[[nodiscard]] text_cursor text_shaper::get_left_cursor(text_shaper::char_const_iterator it) const noexcept
+{
+    if (it != end()) {
+        if (it->direction == unicode_bidi_class::L) {
+            return get_before_cursor(it);
+        } else {
+            return get_after_cursor(it);
+        }
+    } else {
+        return {size() - 1, true, size()};
+    }
+}
+
+[[nodiscard]] text_cursor text_shaper::get_right_cursor(text_shaper::char_const_iterator it) const noexcept
+{
+    if (it != end()) {
+        if (it->direction == unicode_bidi_class::L) {
+            return get_after_cursor(it);
+        } else {
+            return get_before_cursor(it);
+        }
+    } else {
+        return {size() - 1, true, size()};
+    }
+}
+
+[[nodiscard]] bool text_shaper::is_on_left(text_cursor cursor) const noexcept
+{
+    ttlet it = get_it(cursor);
+    if (it != end()) {
+        return (it->direction == unicode_bidi_class::L) == cursor.before();
+    } else {
+        tt_axiom(begin() == end());
+        return true;
+    }
+}
+
+[[nodiscard]] bool text_shaper::is_on_right(text_cursor cursor) const noexcept
+{
+    ttlet it = get_it(cursor);
+    if (it != end()) {
+        return (it->direction == unicode_bidi_class::L) == cursor.after();
+    } else {
+        tt_axiom(begin() == end());
+        return true;
+    }
+}
+
+[[nodiscard]] text_cursor text_shaper::get_nearest_cursor(point2 position) const noexcept
 {
     cursor_x = std::numeric_limits<float>::quiet_NaN();
 
@@ -347,89 +472,34 @@ void text_shaper::position_glyphs(
     }
 }
 
-[[nodiscard]] text_shaper::char_const_iterator text_shaper::get_char(size_t column_nr, size_t line_nr) const noexcept
-{
-    tt_axiom(not _lines.empty());
-
-    if (static_cast<ptrdiff_t>(line_nr) < 0) {
-        return begin();
-    } else if (line_nr >= _lines.size()) {
-        return end() - 1;
-    }
-
-    ttlet left_of_line = static_cast<ptrdiff_t>(column_nr) < 0;
-    ttlet right_of_line = column_nr >= line.size();
-
-    if (left_of_line or right_of_line) {
-        ttlet ltr = _lines[line_nr].paragraph_direction == unicode_bidi_class::L;
-        ttlet go_up = left_of_line == ltr;
-        if (go_up) {
-            // Go to line above.
-            if (static_cast<ptrdiff_t>(--line_nr) < 0) {
-                return begin();
-            } else {
-                // Go to end of line above.
-                return _lines[line_nr].paragraph_direction == unicode_bidi_class::L ? _lines[line_nr].back() : _lines[line_nr].front();
-            }
-
-        } else {
-            // Go to the line below.
-            if (++line_nr >= _lines.size()) {
-                return end() - 1;
-            } else {
-                // Go to begin of line below.
-                return _lines[line_nr].paragraph_direction == unicode_bidi_class::L ? _lines[line_nr].front() : _lines[line_nr].back();
-            }
-        }
-    }
-
-    return line.columns[column_nr];
-}
-
 [[nodiscard]] text_shaper::char_const_iterator text_shaper::move_left_char(text_shaper::char_const_iterator it) const noexcept
 {
-    if (_text.empty()) {
-        return _text.end();
-    }
-
-    return get_char(it->column_nr - 1, it->line_nr);
+    ttlet[column_nr, line_nr] = get_column_line(it);
+    return get_it(column_nr - 1, line_nr);
 }
 
 [[nodiscard]] text_shaper::char_const_iterator text_shaper::move_right_char(text_shaper::char_const_iterator it) const noexcept
 {
-    if (_text.empty()) {
-        return _text.end();
-    }
-    
-    return get_char(it->column_nr + 1, it->line_nr);
+    ttlet[column_nr, line_nr] = get_column_line(it);
+    return get_it(column_nr + 1, line_nr);
 }
 
 [[nodiscard]] text_cursor text_shaper::move_left_char(text_cursor cursor, bool overwrite_mode) const noexcept
 {
     cursor_x = std::numeric_limits<float>::quiet_NaN();
 
-    if (_text.empty()) {
-        return {};
-    }
-
+    auto it = get_it(cursor);
     if (overwrite_mode) {
-        cursor = cursor.before_neighbor(size());
-        ttlet char_it = _text.begin() + cursor.index();
-        ttlet new_char_it = move_left_char(char_it);
-
-        ttlet at_end_of_text = char_it == new_char_it and new_char_it == end() - 1;
-        return {narrow<size_t>(std::distance(_text.begin(), new_char_it)), at_end_of_text, size()};
+        it = move_left_char(it);
+        return get_before_cursor(it);
 
     } else {
-        auto char_it = _text.begin() + cursor.index();
-        tt_axiom(char_it < _text.end());
-        if ((char_it->direction == unicode_bidi_class::L) == cursor.after()) {
-            // Skip over the character itself, and put the cursor on the left side of that character.
-            return {cursor.index(), char_it->direction != unicode_bidi_class::L, size()};
+        if (is_on_left(cursor)) {
+            // If the cursor is on the left side of a character, then move one character left.
+            it = move_left_char(it);
         }
 
-        char_it = move_left_char(char_it);
-        return {narrow<size_t>(std::distance(_text.begin(), char_it)), char_it->direction != unicode_bidi_class::L, size()};
+        return get_left_cursor(it);
     }
 }
 
@@ -437,28 +507,18 @@ void text_shaper::position_glyphs(
 {
     cursor_x = std::numeric_limits<float>::quiet_NaN();
 
-    if (_text.empty()) {
-        return {};
-    }
-
+    auto it = get_it(cursor);
     if (overwrite_mode) {
-        cursor = cursor.before_neighbor(size());
-        auto char_it = _text.begin() + cursor.index();
-        auto new_char_it = move_right_char(char_it);
-        ttlet at_end_of_text = char_it == new_char_it and new_char_it == end() - 1;
-        return {narrow<size_t>(std::distance(_text.begin(), new_char_it)), at_end_of_text, size()};
+        it = move_right_char(it);
+        return get_before_cursor(it);
 
     } else {
-        auto char_it = _text.begin() + cursor.index();
-        tt_axiom(char_it < _text.end());
-
-        if ((char_it->direction == unicode_bidi_class::L) == cursor.before()) {
-            // Skip over the character itself, and put the cursor on the right side of that character.
-            return {cursor.index(), char_it->direction == unicode_bidi_class::L, size()};
+        if (is_on_right(cursor)) {
+            // If the cursor is on the left side of a character, then move one character left.
+            it = move_right_char(it);
         }
 
-        char_it = move_right_char(char_it);
-        return {narrow<size_t>(std::distance(_text.begin(), char_it)), char_it->direction == unicode_bidi_class::L, size()};
+        return get_right_cursor(it);
     }
 }
 
@@ -514,7 +574,7 @@ void text_shaper::position_glyphs(
 
     ttlet cursor_direction = (begin() + cursor.index())->direction;
     cursor = move_left_char(cursor, overwrite_mode);
-    ttlet[first, last] = get_word(cursor);
+    ttlet[first, last] = select_word(cursor);
     ttlet word_direction = (begin() + first.index())->direction;
 
     if (overwrite_mode) {
@@ -536,7 +596,7 @@ void text_shaper::position_glyphs(
 
     ttlet cursor_direction = (begin() + cursor.index())->direction;
     cursor = move_right_char(cursor, overwrite_mode);
-    ttlet[first, last] = get_word(cursor);
+    ttlet[first, last] = select_word(cursor);
     ttlet word_direction = (begin() + first.index())->direction;
 
     if (overwrite_mode) {
@@ -603,7 +663,7 @@ void text_shaper::position_glyphs(
     } else if (cursor.index() != 0) {
         cursor = {cursor.index() - 1, false, size()};
     }
-    ttlet[first, last] = get_sentence(cursor);
+    ttlet[first, last] = select_sentence(cursor);
     return first.before_neighbor(size());
 }
 
@@ -616,7 +676,7 @@ void text_shaper::position_glyphs(
     } else if (cursor.index() != _text.size() - 1) {
         cursor = {cursor.index() + 1, true, size()};
     }
-    ttlet[first, last] = get_sentence(cursor);
+    ttlet[first, last] = select_sentence(cursor);
     return last.before_neighbor(size());
 }
 
@@ -629,7 +689,7 @@ void text_shaper::position_glyphs(
     } else if (cursor.index() != 0) {
         cursor = {cursor.index() - 1, false, size()};
     }
-    ttlet[first, last] = get_paragraph(cursor);
+    ttlet[first, last] = select_paragraph(cursor);
     return first.before_neighbor(size());
 }
 
@@ -642,7 +702,7 @@ void text_shaper::position_glyphs(
     } else if (cursor.index() != _text.size() - 1) {
         cursor = {cursor.index() + 1, true, size()};
     }
-    ttlet[first, last] = get_paragraph(cursor);
+    ttlet[first, last] = select_paragraph(cursor);
     return last.before_neighbor(size());
 }
 
@@ -692,23 +752,23 @@ text_shaper::get_selection_from_break(text_cursor cursor, unicode_break_vector c
     return {{first_index, false, size()}, {last_index, true, size()}};
 }
 
-[[nodiscard]] std::pair<text_cursor, text_cursor> text_shaper::get_char(text_cursor cursor) const noexcept
+[[nodiscard]] std::pair<text_cursor, text_cursor> text_shaper::select_char(text_cursor cursor) const noexcept
 {
     ttlet index = cursor.index();
     return {{index, false, size()}, {index, true, size()}};
 }
 
-[[nodiscard]] std::pair<text_cursor, text_cursor> text_shaper::get_word(text_cursor cursor) const noexcept
+[[nodiscard]] std::pair<text_cursor, text_cursor> text_shaper::select_word(text_cursor cursor) const noexcept
 {
     return get_selection_from_break(cursor, _word_break_opportunities);
 }
 
-[[nodiscard]] std::pair<text_cursor, text_cursor> text_shaper::get_sentence(text_cursor cursor) const noexcept
+[[nodiscard]] std::pair<text_cursor, text_cursor> text_shaper::select_sentence(text_cursor cursor) const noexcept
 {
     return get_selection_from_break(cursor, _sentence_break_opportunities);
 }
 
-[[nodiscard]] std::pair<text_cursor, text_cursor> text_shaper::get_paragraph(text_cursor cursor) const noexcept
+[[nodiscard]] std::pair<text_cursor, text_cursor> text_shaper::select_paragraph(text_cursor cursor) const noexcept
 {
     ttlet first_index = [&]() {
         auto i = cursor.index();
@@ -734,7 +794,7 @@ text_shaper::get_selection_from_break(text_cursor cursor, unicode_break_vector c
     return {{first_index, false, size()}, {last_index, true, size()}};
 }
 
-[[nodiscard]] std::pair<text_cursor, text_cursor> text_shaper::get_document(text_cursor cursor) const noexcept
+[[nodiscard]] std::pair<text_cursor, text_cursor> text_shaper::select_document(text_cursor cursor) const noexcept
 {
     if (_text.empty()) {
         return {{}, {}};

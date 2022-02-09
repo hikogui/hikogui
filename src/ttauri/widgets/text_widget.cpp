@@ -130,7 +130,7 @@ void text_widget::delete_char_next() noexcept
         auto cursor = _selection.cursor();
         cursor = cursor.before_neighbor(_shaped_text.size());
 
-        ttlet[first, last] = _shaped_text.get_char(cursor);
+        ttlet[first, last] = _shaped_text.select_char(cursor);
         _selection.drag_selection(last);
     }
 
@@ -143,7 +143,7 @@ void text_widget::delete_char_prev() noexcept
         auto cursor = _selection.cursor();
         cursor = cursor.after_neighbor(_shaped_text.size());
 
-        ttlet[first, last] = _shaped_text.get_char(cursor);
+        ttlet[first, last] = _shaped_text.select_char(cursor);
         _selection.drag_selection(first);
     }
 
@@ -156,7 +156,7 @@ void text_widget::delete_word_next() noexcept
         auto cursor = _selection.cursor();
         cursor = cursor.before_neighbor(_shaped_text.size());
 
-        ttlet[first, last] = _shaped_text.get_word(cursor);
+        ttlet[first, last] = _shaped_text.select_word(cursor);
         _selection.drag_selection(last);
     }
 
@@ -169,7 +169,7 @@ void text_widget::delete_word_prev() noexcept
         auto cursor = _selection.cursor();
         cursor = cursor.after_neighbor(_shaped_text.size());
 
-        ttlet[first, last] = _shaped_text.get_word(cursor);
+        ttlet[first, last] = _shaped_text.select_word(cursor);
         _selection.drag_selection(first);
     }
 
@@ -330,17 +330,17 @@ bool text_widget::handle_event(mouse_event const &event) noexcept
             return true;
         }
 
-        ttlet cursor = _shaped_text.get_nearest(event.position);
+        ttlet cursor = _shaped_text.get_nearest_cursor(event.position);
 
         switch (event.type) {
             using enum mouse_event::Type;
         case ButtonDown:
             switch (event.clickCount) {
             case 1: _selection = cursor; break;
-            case 2: _selection.start_selection(cursor, _shaped_text.get_word(cursor)); break;
-            case 3: _selection.start_selection(cursor, _shaped_text.get_sentence(cursor)); break;
-            case 4: _selection.start_selection(cursor, _shaped_text.get_paragraph(cursor)); break;
-            case 5: _selection.start_selection(cursor, _shaped_text.get_document(cursor)); break;
+            case 2: _selection.start_selection(cursor, _shaped_text.select_word(cursor)); break;
+            case 3: _selection.start_selection(cursor, _shaped_text.select_sentence(cursor)); break;
+            case 4: _selection.start_selection(cursor, _shaped_text.select_paragraph(cursor)); break;
+            case 5: _selection.start_selection(cursor, _shaped_text.select_document(cursor)); break;
             default:;
             }
 
@@ -353,9 +353,9 @@ bool text_widget::handle_event(mouse_event const &event) noexcept
         case Drag:
             switch (event.clickCount) {
             case 1: _selection.drag_selection(cursor); break;
-            case 2: _selection.drag_selection(cursor, _shaped_text.get_word(cursor)); break;
-            case 3: _selection.drag_selection(cursor, _shaped_text.get_sentence(cursor)); break;
-            case 4: _selection.drag_selection(cursor, _shaped_text.get_paragraph(cursor)); break;
+            case 2: _selection.drag_selection(cursor, _shaped_text.select_word(cursor)); break;
+            case 3: _selection.drag_selection(cursor, _shaped_text.select_sentence(cursor)); break;
+            case 4: _selection.drag_selection(cursor, _shaped_text.select_paragraph(cursor)); break;
             default:;
             }
 

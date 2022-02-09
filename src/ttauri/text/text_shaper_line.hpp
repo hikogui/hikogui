@@ -96,6 +96,16 @@ public:
         return columns.size();
     }
 
+    [[nodiscard]] constexpr iterator front() const noexcept
+    {
+        return columns.front();
+    }
+
+    [[nodiscard]] constexpr iterator back() const noexcept
+    {
+        return columns.back();
+    }
+
     iterator operator[](size_t index) const noexcept
     {
         tt_axiom(index < columns.size());

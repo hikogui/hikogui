@@ -124,11 +124,6 @@ public:
         return _text.cend();
     }
 
-    auto const &operator[](size_t index) const noexcept
-    {
-        return _text[index];
-    }
-
     auto const &lines() const noexcept
     {
         return _lines;
@@ -196,32 +191,151 @@ public:
         return _rectangle;
     }
 
+    /** Get the character at index in logical order.
+     *
+     * @note This function checks for underflow and overflow of index and always returns an iterator
+     *       between `begin()` and `end()` inclusive.
+     * @param index The index in the text.
+     * @return Iterator to the character.
+     */
+    [[nodiscard]] char_const_iterator get_it(size_t index) const noexcept;
+
+    /** Get the character at the cursor.
+     *
+     * @note This function checks for underflow and overflow of cursor and always returns an iterator
+     *       between `begin()` and `end()` inclusive.
+     * @param cursor The cursor in the text.
+     * @return Iterator to the character.
+     */
+    [[nodiscard]] char_const_iterator get_it(text_cursor cursor) const noexcept
+    {
+        return get_it(cursor.index());
+    }
+
+    /** Get the character at column and row in display order.
+     *
+     * @note This function checks for underflow and overflow of column and row and always returns an iterator
+     *       between `begin()` and `end()` inclusive.
+     * @param column The column
+     * @param row The row
+     * @return Iterator to the character.
+     */
+    [[nodiscard]] char_const_iterator get_it(size_t column, size_t row) const noexcept;
+
+    /** Get the character at column and row in display order.
+     *
+     * @note This function checks for underflow and overflow of column and row and always returns an iterator
+     *       between `begin()` and `end()` inclusive.
+     * @param column_row The column, row packed in a `std::pair`.
+     * @return Iterator to the character.
+     */
+    [[nodiscard]] char_const_iterator get_it(std::pair<size_t, size_t> column_row) const noexcept
+    {
+        return get_it(column_row.first, column_row.second);
+    }
+
+    /** Get the column and line of a character.
+     *
+     * @param it The iterator to the character, or `end()`.
+     * @return The (column, row) packed in a `std::pair`.
+     */
+    [[nodiscard]] std::pair<size_t, size_t> get_column_line(text_shaper::char_const_iterator it) const noexcept;
+
+    /** Get the column and line of a character.
+     *
+     * @param index The index of the character in logical order.
+     * @return The (column, row) packed in a `std::pair`.
+     */
+    [[nodiscard]] std::pair<size_t, size_t> get_column_line(size_t index) const noexcept
+    {
+        return get_column_line(get_it(index));
+    }
+
+    /** Get the column and line of a character.
+     *
+     * @param cursor The cursor to the character.
+     * @return The (column, row) packed in a `std::pair`.
+     */
+    [[nodiscard]] std::pair<size_t, size_t> get_column_line(text_cursor cursor) const noexcept
+    {
+        return get_column_line(cursor.index());
+    }
+
+    /** Get the index of the character in logical order.
+     *
+     * @param it The iterator to the character or `end()`.
+     * @return The index in logical order.
+     */
+    [[nodiscard]] size_t get_index(text_shaper::char_const_iterator it) const noexcept;
+
+    /** Get the cursor before the character in logical order.
+     *
+     * @param it The iterator to the character or `end()`.
+     * @return A cursor before the character in logical order.
+     */
+    [[nodiscard]] text_cursor get_before_cursor(text_shaper::char_const_iterator it) const noexcept;
+
+    /** Get the cursor after the character in logical order.
+     *
+     * @param it The iterator to the character or `end()`.
+     * @return A cursor after the character in logical order.
+     */
+    [[nodiscard]] text_cursor get_after_cursor(text_shaper::char_const_iterator it) const noexcept;
+
+    /** Get the cursor left of the character in display order.
+     *
+     * @param it The iterator to the character or `end()`.
+     * @return A cursor left of the character in display order.
+     */
+    [[nodiscard]] text_cursor get_left_cursor(text_shaper::char_const_iterator it) const noexcept;
+
+    /** Get the cursor right of the character in display order.
+     *
+     * @param it The iterator to the character or `end()`.
+     * @return A cursor right of the character in display order.
+     */
+    [[nodiscard]] text_cursor get_right_cursor(text_shaper::char_const_iterator it) const noexcept;
+
+    /** Check if the cursor is on the left side of the character in display order.
+    * 
+    * @param cursor The cursor to query.
+    * @return True if the cursor is on the left of the character.
+    */
+    [[nodiscard]] bool is_on_left(text_cursor cursor) const noexcept;
+    
+    /** Check if the cursor is on the right side of the character in display order.
+     *
+     * @param cursor The cursor to query.
+     * @return True if the cursor is on the right of the character.
+     */
+    [[nodiscard]] bool is_on_right(text_cursor cursor) const noexcept;
+
     /** find the nearest character.
      *
      * @param point The point near
      * @return The text_cursor nearest to the point.
      */
-    [[nodiscard]] text_cursor get_nearest(point2 point) const noexcept;
+    [[nodiscard]] text_cursor get_nearest_cursor(point2 point) const noexcept;
 
     /** Get the selection for the character at the cursor.
      */
-    [[nodiscard]] std::pair<text_cursor, text_cursor> get_char(text_cursor cursor) const noexcept;
+    [[nodiscard]] std::pair<text_cursor, text_cursor> select_char(text_cursor cursor) const noexcept;
 
     /** Get the selection for the word at the cursor.
      */
-    [[nodiscard]] std::pair<text_cursor, text_cursor> get_word(text_cursor cursor) const noexcept;
+    [[nodiscard]] std::pair<text_cursor, text_cursor> select_word(text_cursor cursor) const noexcept;
 
     /** Get the selection for the sentence at the cursor.
      */
-    [[nodiscard]] std::pair<text_cursor, text_cursor> get_sentence(text_cursor cursor) const noexcept;
+    [[nodiscard]] std::pair<text_cursor, text_cursor> select_sentence(text_cursor cursor) const noexcept;
 
     /** Get the selection for a paragraph at the cursor.
      */
-    [[nodiscard]] std::pair<text_cursor, text_cursor> get_paragraph(text_cursor cursor) const noexcept;
+    [[nodiscard]] std::pair<text_cursor, text_cursor> select_paragraph(text_cursor cursor) const noexcept;
 
     /** Get the selection for a paragraph at the cursor.
      */
-    [[nodiscard]] std::pair<text_cursor, text_cursor> get_document(text_cursor cursor) const noexcept;
+    [[nodiscard]] std::pair<text_cursor, text_cursor> select_document(text_cursor cursor) const noexcept;
 
     /** Get the character to the left.
      *
