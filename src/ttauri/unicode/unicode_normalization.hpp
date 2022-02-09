@@ -53,7 +53,6 @@ enum class unicode_normalization_mask {
      *
      * @note Mutually exclusive with decompose_PS and decompose_CRLF.
      */
-
     decompose_LF = 0x2000,
 
     /** Decompose any newline character into CR+LF (Carriage Return + Line Feed).
@@ -96,7 +95,7 @@ operator&(unicode_normalization_mask const &lhs, unicode_normalization_mask cons
 [[nodiscard]] constexpr unicode_normalization_mask
 operator&(unicode_normalization_mask const &lhs, unicode_decomposition_type const &rhs) noexcept
 {
-    return static_cast<unicode_normalization_mask>(to_underlying(rhs) & (1 << to_underlying(rhs)));
+    return static_cast<unicode_normalization_mask>(to_underlying(lhs) & (1 << to_underlying(rhs)));
 }
 
 /** Convert text to Unicode-NFD normal form.
