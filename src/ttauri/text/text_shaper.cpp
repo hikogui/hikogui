@@ -464,8 +464,6 @@ void text_shaper::position_glyphs(
 
 [[nodiscard]] text_cursor text_shaper::get_nearest_cursor(point2 position) const noexcept
 {
-    cursor_x = std::numeric_limits<float>::quiet_NaN();
-
     if (_text.empty()) {
         return {};
     }
@@ -496,8 +494,6 @@ void text_shaper::position_glyphs(
 
 [[nodiscard]] text_cursor text_shaper::move_left_char(text_cursor cursor, bool overwrite_mode) const noexcept
 {
-    cursor_x = std::numeric_limits<float>::quiet_NaN();
-
     auto it = get_it(cursor);
     if (overwrite_mode) {
         it = move_left_char(it);
@@ -515,8 +511,6 @@ void text_shaper::position_glyphs(
 
 [[nodiscard]] text_cursor text_shaper::move_right_char(text_cursor cursor, bool overwrite_mode) const noexcept
 {
-    cursor_x = std::numeric_limits<float>::quiet_NaN();
-
     auto it = get_it(cursor);
     if (overwrite_mode) {
         it = move_right_char(it);
@@ -532,7 +526,7 @@ void text_shaper::position_glyphs(
     }
 }
 
-[[nodiscard]] text_cursor text_shaper::move_down_char(text_cursor cursor) const noexcept
+[[nodiscard]] text_cursor text_shaper::move_down_char(text_cursor cursor, float &x) const noexcept
 {
     if (_text.empty()) {
         return {};
@@ -543,17 +537,17 @@ void text_shaper::position_glyphs(
         return get_end_cursor();
     }
 
-    if (std::isnan(cursor_x)) {
+    if (std::isnan(x)) {
         ttlet char_it = get_it(cursor);
         tt_axiom(char_it != _text.end());
-        cursor_x = is_on_left(cursor) ? char_it->rectangle.left() : char_it->rectangle.right();
+        x = is_on_left(cursor) ? char_it->rectangle.left() : char_it->rectangle.right();
     }
 
-    ttlet[new_char_it, after] = _lines[line_nr].get_nearest(point2{cursor_x, 0.0f});
+    ttlet[new_char_it, after] = _lines[line_nr].get_nearest(point2{x, 0.0f});
     return get_before_cursor(new_char_it);
 }
 
-[[nodiscard]] text_cursor text_shaper::move_up_char(text_cursor cursor) const noexcept
+[[nodiscard]] text_cursor text_shaper::move_up_char(text_cursor cursor, float &x) const noexcept
 {
     if (_text.empty()) {
         return {};
@@ -565,20 +559,18 @@ void text_shaper::position_glyphs(
         return {};
     }
 
-    if (std::isnan(cursor_x)) {
+    if (std::isnan(x)) {
         auto char_it = get_it(cursor);
         tt_axiom(char_it < _text.end());
-        cursor_x = is_on_left(cursor) ? char_it->rectangle.left() : char_it->rectangle.right();
+        x = is_on_left(cursor) ? char_it->rectangle.left() : char_it->rectangle.right();
     }
 
-    ttlet[new_char_it, after] = _lines[line_nr].get_nearest(point2{cursor_x, 0.0f});
+    ttlet[new_char_it, after] = _lines[line_nr].get_nearest(point2{x, 0.0f});
     return get_before_cursor(new_char_it);
 }
 
 [[nodiscard]] text_cursor text_shaper::move_left_word(text_cursor cursor, bool overwrite_mode) const noexcept
 {
-    cursor_x = std::numeric_limits<float>::quiet_NaN();
-
     cursor = move_left_char(cursor, overwrite_mode).before_neighbor(size());
     auto it = get_it(cursor);
     while (it != end()) {
@@ -593,8 +585,6 @@ void text_shaper::position_glyphs(
 
 [[nodiscard]] text_cursor text_shaper::move_right_word(text_cursor cursor, bool overwrite_mode) const noexcept
 {
-    cursor_x = std::numeric_limits<float>::quiet_NaN();
-
     cursor = move_right_char(cursor, overwrite_mode).before_neighbor(size());
     auto it = get_it(cursor);
     while (it != end()) {
@@ -609,8 +599,6 @@ void text_shaper::position_glyphs(
 
 [[nodiscard]] text_cursor text_shaper::move_begin_line(text_cursor cursor) const noexcept
 {
-    cursor_x = std::numeric_limits<float>::quiet_NaN();
-
     ttlet[column_nr, line_nr] = get_column_line(cursor);
     ttlet &line = _lines[line_nr];
     return get_before_cursor(line.first);
@@ -618,8 +606,6 @@ void text_shaper::position_glyphs(
 
 [[nodiscard]] text_cursor text_shaper::move_end_line(text_cursor cursor) const noexcept
 {
-    cursor_x = std::numeric_limits<float>::quiet_NaN();
-
     ttlet[column_nr, line_nr] = get_column_line(cursor);
     ttlet &line = _lines[line_nr];
 
@@ -636,8 +622,6 @@ void text_shaper::position_glyphs(
 
 [[nodiscard]] text_cursor text_shaper::move_begin_sentence(text_cursor cursor) const noexcept
 {
-    cursor_x = std::numeric_limits<float>::quiet_NaN();
-
     if (cursor.after()) {
         cursor = {cursor.index(), false, size()};
     } else if (cursor.index() != 0) {
@@ -649,8 +633,6 @@ void text_shaper::position_glyphs(
 
 [[nodiscard]] text_cursor text_shaper::move_end_sentence(text_cursor cursor) const noexcept
 {
-    cursor_x = std::numeric_limits<float>::quiet_NaN();
-
     if (cursor.before()) {
         cursor = {cursor.index(), true, size()};
     } else if (cursor.index() != _text.size() - 1) {
@@ -662,8 +644,6 @@ void text_shaper::position_glyphs(
 
 [[nodiscard]] text_cursor text_shaper::move_begin_paragraph(text_cursor cursor) const noexcept
 {
-    cursor_x = std::numeric_limits<float>::quiet_NaN();
-
     if (cursor.after()) {
         cursor = {cursor.index(), false, size()};
     } else if (cursor.index() != 0) {
@@ -675,8 +655,6 @@ void text_shaper::position_glyphs(
 
 [[nodiscard]] text_cursor text_shaper::move_end_paragraph(text_cursor cursor) const noexcept
 {
-    cursor_x = std::numeric_limits<float>::quiet_NaN();
-
     if (cursor.before()) {
         cursor = {cursor.index(), true, size()};
     } else if (cursor.index() != _text.size() - 1) {
@@ -688,15 +666,11 @@ void text_shaper::position_glyphs(
 
 [[nodiscard]] text_cursor text_shaper::move_begin_document(text_cursor cursor) const noexcept
 {
-    cursor_x = std::numeric_limits<float>::quiet_NaN();
-
     return {};
 }
 
 [[nodiscard]] text_cursor text_shaper::move_end_document(text_cursor cursor) const noexcept
 {
-    cursor_x = std::numeric_limits<float>::quiet_NaN();
-
     if (_text.empty()) {
         return {};
     }

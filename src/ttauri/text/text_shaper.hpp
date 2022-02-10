@@ -385,8 +385,8 @@ public:
 
     [[nodiscard]] text_cursor move_left_char(text_cursor cursor, bool overwrite_mode) const noexcept;
     [[nodiscard]] text_cursor move_right_char(text_cursor cursor, bool overwrite_mode) const noexcept;
-    [[nodiscard]] text_cursor move_down_char(text_cursor cursor) const noexcept;
-    [[nodiscard]] text_cursor move_up_char(text_cursor cursor) const noexcept;
+    [[nodiscard]] text_cursor move_down_char(text_cursor cursor, float &x) const noexcept;
+    [[nodiscard]] text_cursor move_up_char(text_cursor cursor, float &x) const noexcept;
     [[nodiscard]] text_cursor move_left_word(text_cursor cursor, bool overwrite_mode) const noexcept;
     [[nodiscard]] text_cursor move_right_word(text_cursor cursor, bool overwrite_mode) const noexcept;
     [[nodiscard]] text_cursor move_begin_line(text_cursor cursor) const noexcept;
@@ -438,16 +438,6 @@ private:
     /** The rectangle used for laying out.
      */
     aarectangle _rectangle;
-
-    /** The x coordinate of the cursor for vertical movement.
-     *
-     * When moving vertically through the text we need to keep track of the first
-     * x-coordinate, this vertical movement doesn't drift. This is especially important
-     * when moving through short lines.
-     *
-     * @note Set to NaN for every non-vertical movement.
-     */
-    mutable float cursor_x;
 
     /** Create lines from the characters in the text shaper.
      *

@@ -27,12 +27,12 @@ static void unicode_decompose(char32_t code_point, unicode_normalization_mask ma
         code_point == unicode_PS) // Paragraph Separator, U+2029
     ) {
         ttlet paragraph_type = mask & unicode_normalization_mask::decompose_newline;
-        if (paragraph_type == unicode_normalization_mask::decompose_LF) {
+        if (paragraph_type == unicode_normalization_mask::decompose_newline_to_LF) {
             r += U'\n';
-        } else if (paragraph_type == unicode_normalization_mask::decompose_CRLF) {
+        } else if (paragraph_type == unicode_normalization_mask::decompose_newline_to_CRLF) {
             r += U'\r';
             r += U'\n';
-        } else if (paragraph_type == unicode_normalization_mask::decompose_PS) {
+        } else if (paragraph_type == unicode_normalization_mask::decompose_newline_to_PS) {
             r += unicode_PS;
         }
 

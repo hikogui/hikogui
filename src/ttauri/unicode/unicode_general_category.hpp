@@ -107,4 +107,10 @@ enum class unicode_general_category : uint8_t {
     return rhs < Zs or rhs == Co;
 }
 
+[[nodiscard]] constexpr bool is_noncharacter(char32_t rhs) noexcept
+{
+    ttlet rhs_ = static_cast<uint32_t>(rhs);
+    return rhs_ >= 0x11'0000 or (rhs_ & 0xfffe) == 0xfffe or (rhs >= 0xfdd0 and rhs <= 0xfdef);
+}
+
 } // namespace tt::inline v1

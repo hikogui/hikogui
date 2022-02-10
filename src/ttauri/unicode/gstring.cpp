@@ -13,7 +13,7 @@ namespace tt::inline v1 {
 {
     using enum unicode_normalization_mask;
 
-    ttlet normalizedString = unicode_NFKC(rhs, NFKD | compose_CRLF | decompose_PS | decompose_control);
+    ttlet normalizedString = unicode_NFKC(rhs, NFKD | compose_CRLF | decompose_newline_to_PS | decompose_control);
 
     auto r = tt::gstring{};
     auto breakState = tt::grapheme_break_state{};

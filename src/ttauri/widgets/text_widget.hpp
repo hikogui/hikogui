@@ -98,6 +98,12 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
     /// @endprivatesection
 private:
+    enum class add_type {
+        append,
+        insert,
+        dead
+    };
+
     struct undo_type {
         gstring text;
         text_selection selection;
@@ -109,10 +115,35 @@ private:
     decltype(text)::callback_ptr_type _text_callback;
 
     text_selection _selection;
+
+    /** The x-coordinate during vertical movement.
+    */
+    float _vertical_movement_x = std::numeric_limits<float>::quiet_NaN();
+
     bool _overwrite_mode = false;
+
+    /** The text has a dead character.
+     * The grapheme is empty when there is no dead character.
+     * On overwrite the original grapheme is stored in the _had_dead_character, so
+     * that it can be restored.
+     */
+    grapheme _has_dead_character = {};
+
     undo_stack<undo_type> _undo_stack = {1000};
 
     text_widget(gui_window &window, widget *parent) noexcept;
+
+    /** Reset states.
+    * 
+    * Possible states:
+    *  - 'X' x-coordinate for vertical movement.
+    *  - 'D' Dead-character state.
+    * 
+    * @param states The individual states to reset.
+    */
+    void reset_state(char const *states) noexcept;
+    
+
     [[nodiscard]] gstring_view selected_text() const noexcept;
     void undo_push() noexcept;
     void undo() noexcept;
@@ -138,11 +169,12 @@ private:
     /** Add a character to the text.
      *
      * @param c The character to add at the current position
-     * @param insert If true then the cursor remains at the current position.
+     * @param mode The mode how to add a character.
      */
-    void add_char(grapheme c, bool insert = false) noexcept;
-    void delete_char_next() noexcept;
-    void delete_char_prev() noexcept;
+    void add_character(grapheme c, add_type mode) noexcept;
+    void delete_dead_character() noexcept;
+    void delete_character_next() noexcept;
+    void delete_character_prev() noexcept;
     void delete_word_next() noexcept;
     void delete_word_prev() noexcept;
 };

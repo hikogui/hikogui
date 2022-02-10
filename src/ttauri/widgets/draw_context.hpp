@@ -552,7 +552,8 @@ public:
      * @param cursor The position of the cursor.
      * @param primary_color The color of the primary cursor (the insertion cursor).
      * @param secondary_color The color of the secondary cursor (the append cursor).
-     * @param insertion_mode True draw insertion mode cursors, False draw overwrite mode cursor.
+     * @param overwrite_mode If true draw overwrite mode cursor; if false draw insertion mode cursors,
+     * @param dead_character_mode If true draw the dead-character cursor. The dead_character_mode overrides all other cursors.
      */
     void draw_text_cursors(
         widget_layout const &layout,
@@ -560,10 +561,18 @@ public:
         text_cursor cursor,
         tt::color primary_color,
         tt::color secondary_color,
-        bool overwrite_mode) const noexcept
+        bool overwrite_mode,
+        bool dead_character_mode) const noexcept
     {
         return _draw_text_cursors(
-            layout.window_clipping_rectangle(), layout.to_window, text, cursor, primary_color, secondary_color, overwrite_mode);
+            layout.window_clipping_rectangle(),
+            layout.to_window,
+            text,
+            cursor,
+            primary_color,
+            secondary_color,
+            overwrite_mode,
+            dead_character_mode);
     }
 
     [[nodiscard]] friend bool overlaps(draw_context const &context, widget_layout const &layout) noexcept
@@ -630,7 +639,8 @@ private:
         text_cursor cursor,
         tt::color primary_color,
         tt::color secondary_color,
-        bool overwrite_mode) const noexcept;
+        bool overwrite_mode,
+        bool dead_character_mode) const noexcept;
 
     void _draw_glyph(aarectangle const &clipping_rectangle, quad const &box, quad_color const &color, glyph_ids const &glyph)
         const noexcept;

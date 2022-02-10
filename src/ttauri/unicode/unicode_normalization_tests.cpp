@@ -11,6 +11,10 @@
 #include <span>
 #include <format>
 
+#if TT_BUILD_TYPE == TT_BT_RELEASE
+#define RUN_ALL_TESTS 1
+#endif
+
 using namespace std;
 using namespace tt;
 
@@ -142,7 +146,7 @@ TEST_F(unicode_normalization, toNFC_c1)
     }
 }
 
-#if TT_BUILD_TYPE == TT_BT_RELEASE
+#if defined(RUN_ALL_TESTS)
 TEST_F(unicode_normalization, toNFC_c2)
 {
     for (ttlet &test : normalizationTests) {
@@ -179,7 +183,7 @@ TEST_F(unicode_normalization, toNFKC_c1)
     }
 }
 
-#if TT_BUILD_TYPE == TT_BT_RELEASE
+#if defined(RUN_ALL_TESTS)
 TEST_F(unicode_normalization, toNFKC_c2)
 {
     for (ttlet &test : normalizationTests) {
@@ -216,7 +220,7 @@ TEST_F(unicode_normalization, toNFD_c1)
     }
 }
 
-#if TT_BUILD_TYPE == TT_BT_RELEASE
+#if defined(RUN_ALL_TESTS)
 TEST_F(unicode_normalization, toNFD_c2)
 {
     for (ttlet &test : normalizationTests) {
@@ -253,7 +257,7 @@ TEST_F(unicode_normalization, toNFKD_c1)
     }
 }
 
-#if TT_BUILD_TYPE == TT_BT_RELEASE
+#if defined(RUN_ALL_TESTS)
 TEST_F(unicode_normalization, toNFKD_c2)
 {
     for (ttlet &test : normalizationTests) {
@@ -283,7 +287,7 @@ TEST_F(unicode_normalization, toNFKD_c5)
 }
 #endif
 
-#if TT_BUILD_TYPE == TT_BT_RELEASE
+#if defined(RUN_ALL_TESTS)
 TEST_F(unicode_normalization, Invariant)
 {
     auto previouslyTestedCodePoints = std::vector<bool>(0x11'0000, false);
@@ -309,10 +313,10 @@ TEST_F(unicode_normalization, Invariant)
         if (!previouslyTestedCodePoints[i]) {
             ttlet str = std::u32string(1, i);
 
-            ASSERT_TRUE(unicode_NFD(str) == str);
-            ASSERT_TRUE(unicode_NFC(str) == str);
-            ASSERT_TRUE(unicode_NFKD(str) == str);
-            ASSERT_TRUE(unicode_NFKC(str) == str);
+            ASSERT_TRUE(unicode_NFD(str) == str) << "NFD code-point: " << static_cast<int>(i);
+            ASSERT_TRUE(unicode_NFC(str) == str) << "NFC code-point: " << static_cast<int>(i);
+            ASSERT_TRUE(unicode_NFKD(str) == str) << "NFKD code-point: " << static_cast<int>(i);
+            ASSERT_TRUE(unicode_NFKC(str) == str) << "NFKC code-point: " << static_cast<int>(i);
         }
     }
 }

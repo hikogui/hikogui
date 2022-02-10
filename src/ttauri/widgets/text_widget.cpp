@@ -54,7 +54,8 @@ void text_widget::draw(draw_context const &context) noexcept
                 _selection.cursor(),
                 theme().color(theme_color::cursor),
                 theme().color(theme_color::incomplete_glyph),
-                _overwrite_mode);
+                _overwrite_mode,
+                static_cast<bool>(_has_dead_character));
         }
     }
 }
@@ -109,23 +110,44 @@ void text_widget::replace_selection(gstring replacement) noexcept
     fix_cursor_position(text_proxy->size());
 }
 
-void text_widget::add_char(grapheme c, bool insert) noexcept
+void text_widget::add_character(grapheme c, add_type mode) noexcept
 {
     ttlet original_cursor = _selection.cursor();
+    auto original_grapheme = grapheme{char32_t{0xffff}};
 
     if (_selection.empty() and _overwrite_mode and original_cursor.before()) {
+        original_grapheme = (*text.cget())[original_cursor.index()];
+
         ttlet[first, last] = _shaped_text.select_char(original_cursor);
         _selection.drag_selection(last);
     }
     replace_selection(gstring{c});
 
-    if (insert) {
+    if (mode == add_type::insert) {
         // The character was inserted, put the cursor back where it was.
         _selection = original_cursor;
+
+    } else if (mode == add_type::dead) {
+        _selection = original_cursor.before_neighbor(text.cget()->size());
+        _has_dead_character = original_grapheme;
     }
 }
 
-void text_widget::delete_char_next() noexcept
+void text_widget::delete_dead_character() noexcept
+{
+    if (_has_dead_character) {
+        tt_axiom(_selection.cursor().before());
+        tt_axiom(_selection.cursor().index() < text.cget()->size());
+        if (_has_dead_character.valid()) {
+            (*text.get())[_selection.cursor().index()] = _has_dead_character;
+        } else {
+            text->erase(_selection.cursor().index(), 1);
+        }
+    }
+    _has_dead_character.clear();
+}
+
+void text_widget::delete_character_next() noexcept
 {
     if (_selection.empty()) {
         auto cursor = _selection.cursor();
@@ -138,7 +160,7 @@ void text_widget::delete_char_next() noexcept
     return replace_selection(gstring{});
 }
 
-void text_widget::delete_char_prev() noexcept
+void text_widget::delete_character_prev() noexcept
 {
     if (_selection.empty()) {
         auto cursor = _selection.cursor();
@@ -177,113 +199,229 @@ void text_widget::delete_word_prev() noexcept
     return replace_selection(gstring{});
 }
 
+void text_widget::reset_state(char const *states) noexcept
+{
+    while (*states != 0) {
+        switch (*states) {
+        case 'D': delete_dead_character(); break;
+        case 'X': _vertical_movement_x = std::numeric_limits<float>::quiet_NaN(); break;
+        default: tt_no_default();
+        }
+        ++states;
+    }
+}
+
 bool text_widget::handle_event(tt::command command) noexcept
 {
     tt_axiom(is_gui_thread());
     request_relayout();
 
     if (enabled) {
-        // clang-format off
         switch (command) {
         case command::text_mode_insert:
+            reset_state("DX");
             _overwrite_mode = not _overwrite_mode;
             fix_cursor_position();
             return true;
 
         case command::text_edit_paste:
+            reset_state("DX");
             replace_selection(to_gstring(window.get_text_from_clipboard()));
             return true;
-        
+
         case command::text_edit_copy:
+            reset_state("DX");
             if (ttlet selected_text_ = selected_text(); not selected_text_.empty()) {
                 window.set_text_on_clipboard(to_string(selected_text_));
             }
             return true;
 
         case command::text_edit_cut:
+            reset_state("DX");
             window.set_text_on_clipboard(to_string(selected_text()));
             replace_selection(gstring{});
             return true;
 
-        case command::text_undo: undo(); return true;
-        case command::text_redo: redo(); return true;
+        case command::text_undo:
+            reset_state("DX");
+            undo();
+            return true;
 
-        case command::text_insert_line: add_char(grapheme{unicode_PS}); return true;
+        case command::text_redo:
+            reset_state("DX");
+            redo();
+            return true;
+
+        case command::text_insert_line:
+            reset_state("DX");
+            add_character(grapheme{unicode_PS}, add_type::append);
+            return true;
+
         case command::text_insert_line_up:
+            reset_state("DX");
             _selection = _shaped_text.move_begin_paragraph(_selection.cursor());
-            add_char(grapheme{unicode_PS}, true);
+            add_character(grapheme{unicode_PS}, add_type::insert);
             return true;
 
         case command::text_insert_line_down:
+            reset_state("DX");
             _selection = _shaped_text.move_end_paragraph(_selection.cursor());
-            add_char(grapheme{unicode_PS}, true);
+            add_character(grapheme{unicode_PS}, add_type::insert);
             return true;
 
-        case command::text_delete_char_next: delete_char_next(); return true;
-        case command::text_delete_char_prev: delete_char_prev(); return true;
+        case command::text_delete_char_next:
+            reset_state("DX");
+            delete_character_next();
+            return true;
 
-        case command::text_delete_word_next: delete_word_next(); return true;
-        case command::text_delete_word_prev: delete_word_prev(); return true;
+        case command::text_delete_char_prev:
+            reset_state("DX");
+            delete_character_prev();
+            return true;
+
+        case command::text_delete_word_next:
+            reset_state("DX");
+            delete_word_next();
+            return true;
+
+        case command::text_delete_word_prev:
+            reset_state("DX");
+            delete_word_prev();
+            return true;
 
         case command::text_cursor_left_char:
-            _selection = _shaped_text.move_left_char(_selection.cursor(), _overwrite_mode); return true;
+            reset_state("DX");
+            _selection = _shaped_text.move_left_char(_selection.cursor(), _overwrite_mode);
+            return true;
+
         case command::text_cursor_right_char:
-            _selection = _shaped_text.move_right_char(_selection.cursor(), _overwrite_mode); return true;
+            reset_state("DX");
+            _selection = _shaped_text.move_right_char(_selection.cursor(), _overwrite_mode);
+            return true;
+
         case command::text_cursor_down_char:
-            _selection = _shaped_text.move_down_char(_selection.cursor()); return true;
+            reset_state("D");
+            _selection = _shaped_text.move_down_char(_selection.cursor(), _vertical_movement_x);
+            return true;
+
         case command::text_cursor_up_char:
-            _selection = _shaped_text.move_up_char(_selection.cursor()); return true;
+            reset_state("D");
+            _selection = _shaped_text.move_up_char(_selection.cursor(), _vertical_movement_x);
+            return true;
+
         case command::text_cursor_left_word:
-            _selection = _shaped_text.move_left_word(_selection.cursor(), _overwrite_mode); return true;
+            reset_state("DX");
+            _selection = _shaped_text.move_left_word(_selection.cursor(), _overwrite_mode);
+            return true;
+
         case command::text_cursor_right_word:
-            _selection = _shaped_text.move_right_word(_selection.cursor(), _overwrite_mode); return true;
+            reset_state("DX");
+            _selection = _shaped_text.move_right_word(_selection.cursor(), _overwrite_mode);
+            return true;
+
         case command::text_cursor_begin_line:
-            _selection = _shaped_text.move_begin_line(_selection.cursor()); return true;
+            reset_state("DX");
+            _selection = _shaped_text.move_begin_line(_selection.cursor());
+            return true;
+
         case command::text_cursor_end_line:
-            _selection = _shaped_text.move_end_line(_selection.cursor()); return true;
+            reset_state("DX");
+            _selection = _shaped_text.move_end_line(_selection.cursor());
+            return true;
+
         case command::text_cursor_begin_sentence:
-            _selection = _shaped_text.move_begin_sentence(_selection.cursor()); return true;
+            reset_state("DX");
+            _selection = _shaped_text.move_begin_sentence(_selection.cursor());
+            return true;
+
         case command::text_cursor_end_sentence:
-            _selection = _shaped_text.move_end_sentence(_selection.cursor()); return true;
+            reset_state("DX");
+            _selection = _shaped_text.move_end_sentence(_selection.cursor());
+            return true;
+
         case command::text_cursor_begin_document:
-            _selection = _shaped_text.move_begin_document(_selection.cursor()); return true;
+            reset_state("DX");
+            _selection = _shaped_text.move_begin_document(_selection.cursor());
+            return true;
+
         case command::text_cursor_end_document:
-            _selection = _shaped_text.move_end_document(_selection.cursor()); return true;
+            reset_state("DX");
+            _selection = _shaped_text.move_end_document(_selection.cursor());
+            return true;
 
         case command::gui_cancel:
-            _selection.clear_selection(_shaped_text.size()); return true;
+            reset_state("DX");
+            _selection.clear_selection(_shaped_text.size());
+            return true;
+
         case command::text_select_left_char:
-            _selection.drag_selection(_shaped_text.move_left_char(_selection.cursor(), false)); return true;
+            reset_state("DX");
+            _selection.drag_selection(_shaped_text.move_left_char(_selection.cursor(), false));
+            return true;
+
         case command::text_select_right_char:
-            _selection.drag_selection(_shaped_text.move_right_char(_selection.cursor(), false)); return true;
+            reset_state("DX");
+            _selection.drag_selection(_shaped_text.move_right_char(_selection.cursor(), false));
+            return true;
+
         case command::text_select_down_char:
-            _selection.drag_selection(_shaped_text.move_down_char(_selection.cursor())); return true;
+            reset_state("D");
+            _selection.drag_selection(_shaped_text.move_down_char(_selection.cursor(), _vertical_movement_x));
+            return true;
+
         case command::text_select_up_char:
-            _selection.drag_selection(_shaped_text.move_up_char(_selection.cursor())); return true;
+            reset_state("D");
+            _selection.drag_selection(_shaped_text.move_up_char(_selection.cursor(), _vertical_movement_x));
+            return true;
+
         case command::text_select_left_word:
-            _selection.drag_selection(_shaped_text.move_left_word(_selection.cursor(), false)); return true;
+            reset_state("DX");
+            _selection.drag_selection(_shaped_text.move_left_word(_selection.cursor(), false));
+            return true;
+
         case command::text_select_right_word:
-            _selection.drag_selection(_shaped_text.move_right_word(_selection.cursor(), false)); return true;
+            reset_state("DX");
+            _selection.drag_selection(_shaped_text.move_right_word(_selection.cursor(), false));
+            return true;
+
         case command::text_select_begin_line:
-            _selection.drag_selection(_shaped_text.move_begin_line(_selection.cursor())); return true;
+            reset_state("DX");
+            _selection.drag_selection(_shaped_text.move_begin_line(_selection.cursor()));
+            return true;
+
         case command::text_select_end_line:
-            _selection.drag_selection(_shaped_text.move_end_line(_selection.cursor())); return true;
+            reset_state("DX");
+            _selection.drag_selection(_shaped_text.move_end_line(_selection.cursor()));
+            return true;
+
         case command::text_select_begin_sentence:
-            _selection.drag_selection(_shaped_text.move_begin_sentence(_selection.cursor())); return true;
+            reset_state("DX");
+            _selection.drag_selection(_shaped_text.move_begin_sentence(_selection.cursor()));
+            return true;
+
         case command::text_select_end_sentence:
-            _selection.drag_selection(_shaped_text.move_end_sentence(_selection.cursor())); return true;
+            reset_state("DX");
+            _selection.drag_selection(_shaped_text.move_end_sentence(_selection.cursor()));
+            return true;
+
         case command::text_select_begin_document:
-            _selection.drag_selection(_shaped_text.move_begin_document(_selection.cursor())); return true;
+            reset_state("DX");
+            _selection.drag_selection(_shaped_text.move_begin_document(_selection.cursor()));
+            return true;
+
         case command::text_select_end_document:
-            _selection.drag_selection(_shaped_text.move_end_document(_selection.cursor())); return true;
+            reset_state("DX");
+            _selection.drag_selection(_shaped_text.move_end_document(_selection.cursor()));
+            return true;
+
         case command::text_select_document:
+            reset_state("DX");
             _selection = _shaped_text.move_begin_document(_selection.cursor());
             _selection.drag_selection(_shaped_text.move_end_document(_selection.cursor()));
             return true;
 
         default:;
         }
-        // clang-format on
     }
 
     return super::handle_event(command);
@@ -294,20 +432,21 @@ bool text_widget::handle_event(keyboard_event const &event) noexcept
     using enum keyboard_event::Type;
 
     tt_axiom(is_gui_thread());
+    request_relayout();
 
     auto handled = super::handle_event(event);
 
     if (enabled) {
         switch (event.type) {
         case grapheme:
-            add_char(event.grapheme);
+            reset_state("DX");
+            add_character(event.grapheme, add_type::append);
             return true;
 
-            // case Partialgrapheme:
-            //     handled = true;
-            //     _field.insert_partial_grapheme(event.grapheme);
-            //     commit(false);
-            //     break;
+        case partial_grapheme:
+            reset_state("DX");
+            add_character(event.grapheme, add_type::dead);
+            return true;
 
         default:;
         }
@@ -337,11 +476,26 @@ bool text_widget::handle_event(mouse_event const &event) noexcept
             using enum mouse_event::Type;
         case ButtonDown:
             switch (event.clickCount) {
-            case 1: _selection = cursor; break;
-            case 2: _selection.start_selection(cursor, _shaped_text.select_word(cursor)); break;
-            case 3: _selection.start_selection(cursor, _shaped_text.select_sentence(cursor)); break;
-            case 4: _selection.start_selection(cursor, _shaped_text.select_paragraph(cursor)); break;
-            case 5: _selection.start_selection(cursor, _shaped_text.select_document(cursor)); break;
+            case 1:
+                reset_state("DX");
+                _selection = cursor;
+                break;
+            case 2:
+                reset_state("DX");
+                _selection.start_selection(cursor, _shaped_text.select_word(cursor));
+                break;
+            case 3:
+                reset_state("DX");
+                _selection.start_selection(cursor, _shaped_text.select_sentence(cursor));
+                break;
+            case 4:
+                reset_state("DX");
+                _selection.start_selection(cursor, _shaped_text.select_paragraph(cursor));
+                break;
+            case 5:
+                reset_state("DX");
+                _selection.start_selection(cursor, _shaped_text.select_document(cursor));
+                break;
             default:;
             }
 
@@ -353,10 +507,22 @@ bool text_widget::handle_event(mouse_event const &event) noexcept
 
         case Drag:
             switch (event.clickCount) {
-            case 1: _selection.drag_selection(cursor); break;
-            case 2: _selection.drag_selection(cursor, _shaped_text.select_word(cursor)); break;
-            case 3: _selection.drag_selection(cursor, _shaped_text.select_sentence(cursor)); break;
-            case 4: _selection.drag_selection(cursor, _shaped_text.select_paragraph(cursor)); break;
+            case 1:
+                reset_state("DX");
+                _selection.drag_selection(cursor);
+                break;
+            case 2:
+                reset_state("DX");
+                _selection.drag_selection(cursor, _shaped_text.select_word(cursor));
+                break;
+            case 3:
+                reset_state("DX");
+                _selection.drag_selection(cursor, _shaped_text.select_sentence(cursor));
+                break;
+            case 4:
+                reset_state("DX");
+                _selection.drag_selection(cursor, _shaped_text.select_paragraph(cursor));
+                break;
             default:;
             }
 

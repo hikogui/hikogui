@@ -59,6 +59,10 @@ grapheme &grapheme::operator=(std::u32string_view code_points) noexcept
         return false;
     }
 
+    if (is_noncharacter(get<0>(*this))) {
+        return false;
+    }
+
     ttlet &description = unicode_description::find(get<0>(*this));
     if (is_C(description)) {
         return false;

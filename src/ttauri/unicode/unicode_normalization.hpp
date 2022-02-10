@@ -25,45 +25,46 @@ enum class unicode_normalization_mask {
 
     /** Decompose Hangul syllables into their letters.
      */
-    decompose_hangul = 0x100,
+    decompose_hangul = 1 << 8,
 
     /** Compose letters into Hangul syllables.
      */
-    compose_hangul = 0x200,
+    compose_hangul = 1 << 9,
 
     /** During decomposition remove control characters.
      * This will also eliminate newline characters like CR, LF, CR+LF, NEL, VTAB & FF;
      * these may be retained by using decompose_PS, decompose_LF or decompose_CRLF.
      */
-    decompose_control = 0x300,
+    decompose_control = 1 << 10,
 
-    /** Mask for one of decompose_PS, decompose_LF or decompose_CRLF
-     *
-     * @note Only one of decompose_PS, decompose_LF, decompose_CRLF can be used.
+    /** Compose CR+LF into a single LF.
      */
-    decompose_newline = 0x7000,
+    compose_CRLF = 1 << 11,
 
     /** Decompose any newline character into PS (Paragraph Separator).
      *
      * @note Mutually exclusive with decompose_LF and decompose_CRLF.
      */
-    decompose_PS = 0x1000,
+    decompose_newline_to_PS = 1 << 12,
 
     /** Decompose any newline character into LF (Line Feed).
      *
      * @note Mutually exclusive with decompose_PS and decompose_CRLF.
      */
-    decompose_LF = 0x2000,
+    decompose_newline_to_LF = 1 << 13,
 
     /** Decompose any newline character into CR+LF (Carriage Return + Line Feed).
      *
      * @note Mutually exclusive with decompose_PS and decompose_LF.
      */
-    decompose_CRLF = 0x3000,
+    decompose_newline_to_CRLF = 1 << 14,
 
-    /** Compose CR+LF into a single LF.
+    /** Mask for one of decompose_PS, decompose_LF or decompose_CRLF
+     *
+     * @note Only one of decompose_PS, decompose_LF, decompose_CRLF can be used.
      */
-    compose_CRLF = 0x8000,
+    decompose_newline = decompose_newline_to_PS | decompose_newline_to_LF | decompose_newline_to_CRLF,
+
 
     /** Canonical decomposition and composition.
      */

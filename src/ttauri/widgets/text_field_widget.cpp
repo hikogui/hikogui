@@ -255,7 +255,7 @@ bool text_field_widget::handle_event(keyboard_event const &event) noexcept
             commit(false);
             break;
 
-        case Partialgrapheme:
+        case partial_grapheme:
             handled = true;
             _field.insert_partial_grapheme(event.grapheme);
             commit(false);
