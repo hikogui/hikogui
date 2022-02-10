@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "../required.hpp"
 #include <cstdint>
 
 namespace tt::inline v1 {
