@@ -1,7 +1,10 @@
-
+// Copyright Take Vos 2019-2022.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
+#include "architecture.hpp"
 #include "counters.hpp"
 #include <concepts>
 #include <atomic>
@@ -19,9 +22,10 @@ namespace tt::inline v1 {
  *
  * @tparam T Base class of the value type stored in the ring buffer.
  * @tparam SlotSize Size of each slot, must be power-of-two.
+ * @param Alignment Optional alignment of wfree_fifo.
  */
-template<typename T, std::size_t SlotSize>
-class wfree_fifo {
+template<typename T, std::size_t SlotSize, std::size_t Alignment = std::max(alignof(T*), alignof(T))>
+class alignas(Alignment) wfree_fifo {
 public:
     static_assert(std::has_single_bit(SlotSize), "Only power-of-two number of messages size allowed.");
 
@@ -32,10 +36,13 @@ public:
     static constexpr std::size_t num_slots = fifo_size / slot_size;
 
     struct slot_type {
-        static constexpr std::size_t buffer_size = slot_size - sizeof(value_type *);
+        static constexpr std::size_t buffer_size = slot_size - sizeof(value_type *)
+            - (alignof(value_type) > alignof(value_type*) ? alignof(value_type) - alignof(value_type*) : 0);
+
+        static_assert(buffer_size >= sizeof(value_type));
 
         std::atomic<value_type *> pointer = nullptr;
-        std::array<std::byte, buffer_size> buffer = {};
+        alignas(value_type) std::array<std::byte, buffer_size> buffer = {};
     };
 
     constexpr wfree_fifo() noexcept = default;
@@ -106,7 +113,7 @@ public:
      * @param args The arguments passed to the constructor of Message.
      */
     template<typename Message, typename... Args>
-    tt_force_inline void emplace(Args &&...args) noexcept requires(sizeof(Message) <= slot_type::buffer_size)
+    tt_force_inline void emplace(Args &&...args) noexcept
     {
         // We need a new index.
         // - The index is a byte index into 64kByte of memory.
@@ -124,62 +131,47 @@ public:
         // The division here should be eliminated by the equal multiplication inside the index operator.
         // auto &slot = _slots[index / slot_size];
 
-        // Wait until the slot.pointer is a nullptr.
-        // And acquire the buffer to start overwriting it.
-        // There are no other threads that will make this non-null afterwards.
-        while (slot.pointer.load(std::memory_order_acquire)) {
-            // If we get here, that would suck, but nothing to do about it.
-            [[unlikely]] contended();
+        if constexpr (sizeof(Message) <= slot_type::buffer_size) {
+            static_assert(alignof(Message) <= alignof(value_type));
+
+            // Wait until the slot.pointer is a nullptr.
+            // And acquire the buffer to start overwriting it.
+            // There are no other threads that will make this non-null afterwards.
+            while (slot.pointer.load(std::memory_order_acquire)) {
+                // If we get here, that would suck, but nothing to do about it.
+                [[unlikely]] contended();
+            }
+
+            // Overwrite the buffer with the new slot.
+            auto new_ptr = new (slot.buffer.data()) Message(std::forward<Args>(args)...);
+
+            // Release the buffer for reading.
+            slot.pointer.store(new_ptr, std::memory_order::release);
         }
+        else {
+            // We need a heap allocated pointer with a fully constructed object
+            // Lets do this ahead of time to let another thread have some time
+            // to release the ring-buffer-slot.
+            ttlet new_ptr = new Message(std::forward<Args>(args)...);
+            tt_axiom(new_ptr != nullptr);
+    
+            // Wait until the slot.pointer is a nullptr.
+            // We don't need to acquire since we wrote into a new heap location.
+            // There are no other threads that will make this non-null afterwards.
+            while (slot.pointer.load(std::memory_order::relaxed)) {
+                // If we get here, that would suck, but nothing to do about it.
+                [[unlikely]] contended();
+            }
 
-        // Overwrite the buffer with the new slot.
-        auto new_ptr = new (slot.buffer.data()) Message(std::forward<Args>(args)...);
-
-        // Release the buffer for reading.
-        slot.pointer.store(new_ptr, std::memory_order::release);
-    }
-
-    /** Create an message in-place on the fifo.
-     * @tparam Message The message type derived from value_type to be stored in a free slot.
-     * @param args The arguments passed to the constructor of Message.
-     */
-    template<typename Message, typename... Args>
-    tt_force_inline void emplace(Args &&...args) noexcept
-    {
-        // We need a new index.
-        // - The index is a byte index into 64kByte of memory.
-        // - Increment index by the slot_size and the _head will overflow naturally
-        //   at the end of the fifo.
-        // - We don't care about memory ordering with other writer threads. as
-        //   each slot has an atomic for handling read/writer contention.
-        // - We don't have to check full/empty, this is done on the slot itself.
-        ttlet index = _head.fetch_add(slot_size, std::memory_order::relaxed);
-        tt_axiom(index % slot_size == 0);
-
-        // The division here should be eliminated by the equal multiplication inside the index operator.
-        auto &slot = _slots[index / slot_size];
-
-        // We need a heap allocated pointer with a fully constructed object
-        // Lets do this ahead of time to let another thread have some time
-        // to release the ring-buffer-slot.
-        ttlet new_ptr = new Message(std::forward<Args>(args)...);
-
-        // Wait until the slot.pointer is a nullptr.
-        // We don't need to acquire since we wrote into a new heap location.
-        // There are no other threads that will make this non-null afterwards.
-        while (slot.pointer.load(std::memory_order::relaxed)) {
-            // If we get here, that would suck, but nothing to do about it.
-            [[unlikely]] contended();
+            // Release the heap for reading.
+            slot.pointer.store(new_ptr, std::memory_order::release);
         }
-
-        // Release the heap for reading.
-        slot.pointer.store(new_ptr, std::memory_order::release);
     }
 
 private:
-    std::array<slot_type, num_slots> _slots = {};
+    std::array<slot_type, num_slots> _slots = {}; // must be at offset 0
     std::atomic<uint16_t> _head = 0;
-    uint16_t _tail = 0;
+    alignas(tt::hardware_destructive_interference_size) uint16_t _tail = 0;
 };
 
 } // namespace tt::inline v1
