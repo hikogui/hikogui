@@ -59,31 +59,38 @@ Selecting a font to render a text is done in several steps:
 Text shaping
 ------------
 
-### Phases
+Features:
+ - Each character may have a separate text-style.
+ - Font fallback for characters not found in the selected font/
+ - Word wrapping. (UAX #14 Unicode line breaking algorithm)
+ - Multiple paragraph support.
+ - Bidirectional language handling. (UAX #9 Unicode bidirectional algorithm)
+ - Horizontal alignment: flush, flush-left, flush-right, centered, justified.
+ - Resolved paragraph language direction influences the side of alignment.
+ - True-Type Font kerning.
+ - Reverse coordinate back to index in text.
+ - Handle cursor movement in display-order.
+ - Word and Scentence selection. (UAX #29 Unicode text segmentation)
 
-1. Given a text and a text-style; calculate the natural size of the text
-   - Lookup the glyphs and their width.
-2. Given a maximum width fold the text; shape the text.
-   - Line wrap the text to fit the maximum width.
-   - Execute the Unicode bidirectional algorithm.
-   - Lookup glyphs that have been replaced.
-   - Morph glyphs such as font ligatures
-   - Calculate position of each glyph
-3. Draw the text, possibly replacing the color
-4. Given draw coordinates find character in the original text.
-5. Given a character in the original text find a neighboring character on the screen.
+Text editing
+------------
+The text-widget is used by almost every widget to draw text. This same widget
+is also has full capabilities for text editing.
 
-### Sub-styles
+Features:
+ - Insert and overwrite mode.
+ - Dead-key visualization, shows the character of the dead-key which will be
+   replaced by the composed character.
+ - Bidirectional language support.
+   - Display-order cursor movement.
+   - Cursor keeps track of "current" language direction.
+   - Logical-order delete & backspace.
+   - Logical-order text selection.
+   - Primary/Secondary; LTR/RTL cursors.
+ - Undo, Redo
+ - Copy, Cut & Paste
 
-Sub-styles can be selected in-line in the text using the following Unicode code-points:
 
-Code   | Name     | Common Style        | Description
--------|:---------|:--------------------|:---------------------------------------------------------------
-U+FDD0 | Regular  | Regular             | This is the default regular text
-U+FDD1 | Emphasis | Italic              | For different but not more or less important than regular text.
-U+FDD2 | Strong   | Bold or red         | For important text like warnings.
-U+FDD3 | Light    | Light or gray       | For less important text, like long explanations.
-U+FDD4 | Code     | Monospaced          | For data, or examples of data.
-U+FDD5 | Link     | Underlined and blue | For clickable links.
 
-These code-points are non-character code-point and are used internally of the TTauri library.
+
+
