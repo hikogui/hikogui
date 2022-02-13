@@ -34,6 +34,8 @@ static void unicode_decompose(char32_t code_point, unicode_normalization_mask ma
             r += U'\n';
         } else if (paragraph_type == unicode_normalization_mask::decompose_newline_to_PS) {
             r += unicode_PS;
+        } else if (paragraph_type == unicode_normalization_mask::decompose_newline_to_SP) {
+            r += U' ';
         }
 
     } else if (any(mask & unicode_normalization_mask::decompose_control) and is_C(description)) {

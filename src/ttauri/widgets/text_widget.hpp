@@ -39,9 +39,13 @@ public:
          */
         selectable,
 
+        /** Can edit single lines.
+         */
+        line_editable,
+
         /** Text is editable.
          */
-        editable
+        fully_editable
     };
 
     /** The text to be displayed.

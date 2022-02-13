@@ -131,11 +131,23 @@ namespace pmr {
 using gstring = std::pmr::basic_string<grapheme>;
 }
 
-[[nodiscard]] gstring to_gstring(std::u32string_view rhs) noexcept;
+/** Convert a UTF-32 string to a grapheme-string.
+ *
+ * @param rhs The UTF-32 string to convert.
+ * @param new_line_char The new_line_character to use.
+ * @return A grapheme-string.
+ */
+[[nodiscard]] gstring to_gstring(std::u32string_view rhs, char32_t new_line_char = U'\u2029') noexcept;
 
-[[nodiscard]] inline gstring to_gstring(std::string_view rhs) noexcept
+/** Convert a UTF-8 string to a grapheme-string.
+* 
+* @param rhs The UTF-8 string to convert.
+* @param new_line_char The new_line_character to use.
+* @return A grapheme-string.
+ */
+[[nodiscard]] inline gstring to_gstring(std::string_view rhs, char32_t new_line_char = U'\u2029') noexcept
 {
-    return to_gstring(to_u32string(rhs));
+    return to_gstring(to_u32string(rhs), new_line_char);
 }
 
 [[nodiscard]] inline std::string to_string(gstring_view rhs) noexcept

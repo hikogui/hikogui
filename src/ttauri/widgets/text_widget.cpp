@@ -226,7 +226,11 @@ bool text_widget::handle_event(tt::command command) noexcept
 
         case command::text_edit_paste:
             reset_state("DX");
-            replace_selection(to_gstring(window.get_text_from_clipboard()));
+            if (edit_mode == edit_mode_type::line_editable) {
+                replace_selection(to_gstring(window.get_text_from_clipboard(), U' '));
+            } else {
+                replace_selection(to_gstring(window.get_text_from_clipboard()));
+            }
             return true;
 
         case command::text_edit_copy:
@@ -253,21 +257,30 @@ bool text_widget::handle_event(tt::command command) noexcept
             return true;
 
         case command::text_insert_line:
-            reset_state("DX");
-            add_character(grapheme{unicode_PS}, add_type::append);
-            return true;
+            if (edit_mode == edit_mode_type::fully_editable) {
+                reset_state("DX");
+                add_character(grapheme{unicode_PS}, add_type::append);
+                return true;
+            }
+            break;
 
         case command::text_insert_line_up:
-            reset_state("DX");
-            _selection = _shaped_text.move_begin_paragraph(_selection.cursor());
-            add_character(grapheme{unicode_PS}, add_type::insert);
-            return true;
+            if (edit_mode == edit_mode_type::fully_editable) {
+                reset_state("DX");
+                _selection = _shaped_text.move_begin_paragraph(_selection.cursor());
+                add_character(grapheme{unicode_PS}, add_type::insert);
+                return true;
+            }
+            break;
 
         case command::text_insert_line_down:
-            reset_state("DX");
-            _selection = _shaped_text.move_end_paragraph(_selection.cursor());
-            add_character(grapheme{unicode_PS}, add_type::insert);
-            return true;
+            if (edit_mode == edit_mode_type::fully_editable) {
+                reset_state("DX");
+                _selection = _shaped_text.move_end_paragraph(_selection.cursor());
+                add_character(grapheme{unicode_PS}, add_type::insert);
+                return true;
+            }
+            break;
 
         case command::text_delete_char_next:
             reset_state("DX");
@@ -539,8 +552,13 @@ hitbox text_widget::hitbox_test(point3 position) const noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (visible and enabled and edit_mode != edit_mode_type::fixed and layout().contains(position)) {
-        return hitbox{this, position, edit_mode == edit_mode_type::editable ? hitbox::Type::TextEdit : hitbox::Type::Default};
+    if (visible and enabled and layout().contains(position)) {
+        switch (*edit_mode) {
+        case edit_mode_type::selectable: return hitbox{this, position, hitbox::Type::Default};
+        case edit_mode_type::line_editable: return hitbox{this, position, hitbox::Type::TextEdit};
+        case edit_mode_type::fully_editable: return hitbox{this, position, hitbox::Type::TextEdit};
+        default: return hitbox{};
+        }
     } else {
         return hitbox{};
     }
@@ -548,7 +566,10 @@ hitbox text_widget::hitbox_test(point3 position) const noexcept
 
 [[nodiscard]] bool text_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
-    return visible and enabled and edit_mode == edit_mode_type::editable and any(group & tt::keyboard_focus_group::normal);
+    using enum edit_mode_type;
+    using enum keyboard_focus_group;
+
+    return visible and enabled and any(group & normal) and (edit_mode == line_editable or edit_mode == fully_editable);
 }
 
 } // namespace tt::inline v1

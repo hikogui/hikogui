@@ -43,28 +43,33 @@ enum class unicode_normalization_mask {
 
     /** Decompose any newline character into PS (Paragraph Separator).
      *
-     * @note Mutually exclusive with decompose_LF and decompose_CRLF.
+     * @note Mutually exclusive with decompose_LF, decompose_CRLF and decompoase_newline_to_SP.
      */
     decompose_newline_to_PS = 1 << 12,
 
     /** Decompose any newline character into LF (Line Feed).
      *
-     * @note Mutually exclusive with decompose_PS and decompose_CRLF.
+     * @note Mutually exclusive with decompose_PS, decompose_CRLF and decompoase_newline_to_SP.
      */
     decompose_newline_to_LF = 1 << 13,
 
     /** Decompose any newline character into CR+LF (Carriage Return + Line Feed).
      *
-     * @note Mutually exclusive with decompose_PS and decompose_LF.
+     * @note Mutually exclusive with decompose_PS, decompose_LF and decompoase_newline_to_SP.
      */
     decompose_newline_to_CRLF = 1 << 14,
+
+    /** Decompose any newline character into SP (Space).
+     *
+     * @note Mutually exclusive with decompose_PS, decompose_newline_to_CRLF and decompose_LF.
+     */
+    decompose_newline_to_SP = 1 << 15,
 
     /** Mask for one of decompose_PS, decompose_LF or decompose_CRLF
      *
      * @note Only one of decompose_PS, decompose_LF, decompose_CRLF can be used.
      */
-    decompose_newline = decompose_newline_to_PS | decompose_newline_to_LF | decompose_newline_to_CRLF,
-
+    decompose_newline = decompose_newline_to_PS | decompose_newline_to_LF | decompose_newline_to_CRLF | decompose_newline_to_SP,
 
     /** Canonical decomposition and composition.
      */
@@ -75,6 +80,17 @@ enum class unicode_normalization_mask {
     NFKD = NFD | decompose_font | decompose_no_break | decompose_arabic | decompose_circle | decompose_math | decompose_asian |
         decompose_compat,
 };
+
+[[nodiscard]] constexpr unicode_normalization_mask decompose_newline_to(char32_t new_line_char) noexcept
+{
+    switch (new_line_char) {
+    case U'\n': return unicode_normalization_mask::decompose_newline_to_LF;
+    case U'\r': return unicode_normalization_mask::decompose_newline_to_CRLF;
+    case U'\u2029': return unicode_normalization_mask::decompose_newline_to_PS;
+    case U' ': return unicode_normalization_mask::decompose_newline_to_SP;
+    default: tt_no_default();
+    }
+}
 
 [[nodiscard]] constexpr bool any(unicode_normalization_mask const &rhs) noexcept
 {
