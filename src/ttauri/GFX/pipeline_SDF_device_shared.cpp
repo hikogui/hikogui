@@ -6,7 +6,6 @@
 #include "pipeline_SDF_device_shared.hpp"
 #include "gfx_device_vulkan.hpp"
 #include "gfx_system.hpp"
-#include "../text/shaped_text.hpp"
 #include "../pixel_map.hpp"
 #include "../URL.hpp"
 #include "../memory.hpp"

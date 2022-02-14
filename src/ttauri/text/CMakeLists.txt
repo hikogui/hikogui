@@ -4,11 +4,6 @@
 
 
 target_sources(ttauri PRIVATE
-    attributed_glyph.cpp
-    attributed_glyph.hpp
-    attributed_glyph_line.hpp
-    attributed_grapheme.hpp
-    editable_text.hpp
     elusive_icon.hpp
     font.cpp
     font.hpp
@@ -29,8 +24,6 @@ target_sources(ttauri PRIVATE
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/language_win32.cpp>
     po_parser.cpp
     po_parser.hpp
-    shaped_text.cpp
-    shaped_text.hpp
     text_cursor.hpp
     text_decoration.hpp
     text_selection.hpp

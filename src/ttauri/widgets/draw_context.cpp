@@ -8,7 +8,6 @@
 #include "../GFX/pipeline_SDF_device_shared.hpp"
 #include "../GFX/paged_image.hpp"
 #include "../GFX/gfx_device_vulkan.hpp"
-#include "../text/shaped_text.hpp"
 #include "../text/text_shaper.hpp"
 #include "../text/text_selection.hpp"
 
@@ -83,38 +82,6 @@ void draw_context::_draw_glyph(
     }
 
     ttlet atlas_was_updated = pipeline->place_vertices(*_sdf_vertices, clipping_rectangle, box, glyph, color);
-
-    if (atlas_was_updated) {
-        pipeline->prepare_atlas_for_rendering();
-    }
-}
-
-void draw_context::_draw_text(
-    aarectangle const &clipping_rectangle,
-    matrix3 const &transform,
-    shaped_text const &text,
-    std::optional<quad_color> text_color) const noexcept
-{
-    tt_axiom(_sdf_vertices != nullptr);
-    ttlet pipeline = down_cast<gfx_device_vulkan &>(device).SDFPipeline.get();
-
-    auto atlas_was_updated = false;
-    for (ttlet &attr_glyph : text) {
-        ttlet box = attr_glyph.boundingBox();
-        ttlet color = text_color ? *text_color : quad_color{attr_glyph.style.color};
-
-        if (not is_visible(attr_glyph.general_category)) {
-            continue;
-
-        } else if (_sdf_vertices->full()) {
-            _draw_box(clipping_rectangle, box, tt::color{1.0f, 0.0f, 1.0f}, tt::color{}, 0.0f, {});
-            ++global_counter<"draw_glyph::overflow">;
-            break;
-        }
-
-        atlas_was_updated |=
-            pipeline->place_vertices(*_sdf_vertices, clipping_rectangle, transform * box, attr_glyph.glyphs, color);
-    }
 
     if (atlas_was_updated) {
         pipeline->prepare_atlas_for_rendering();
