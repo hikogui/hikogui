@@ -25,22 +25,42 @@ public:
         return _v;
     }
 
-    [[nodiscard]] constexpr float left() const noexcept
+    [[nodiscard]] constexpr float const &left() const noexcept
     {
         return _v.x();
     }
 
-    [[nodiscard]] constexpr float bottom() const noexcept
+    [[nodiscard]] constexpr float &left() noexcept
+    {
+        return _v.x();
+    }
+
+    [[nodiscard]] constexpr float const &bottom() const noexcept
     {
         return _v.y();
     }
 
-    [[nodiscard]] constexpr float right() const noexcept
+    [[nodiscard]] constexpr float &bottom() noexcept
+    {
+        return _v.y();
+    }
+
+    [[nodiscard]] constexpr float const &right() const noexcept
     {
         return _v.z();
     }
 
-    [[nodiscard]] constexpr float top() const noexcept
+    [[nodiscard]] constexpr float &right() noexcept
+    {
+        return _v.z();
+    }
+
+    [[nodiscard]] constexpr float const &top() const noexcept
+    {
+        return _v.w();
+    }
+
+    [[nodiscard]] constexpr float &top() noexcept
     {
         return _v.w();
     }

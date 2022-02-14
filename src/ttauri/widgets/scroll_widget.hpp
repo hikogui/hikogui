@@ -42,8 +42,6 @@ namespace tt::inline v1 {
 template<axis Axis = axis::both, bool ControlsWindow = false>
 class scroll_widget final : public widget {
 public:
-    static_assert(Axis == axis::horizontal or Axis == axis::vertical or Axis == axis::both);
-
     using super = widget;
     using delegate_type = scroll_delegate<Axis, ControlsWindow>;
 

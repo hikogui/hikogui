@@ -310,7 +310,7 @@ For the following high-performance methods the children need to be recursively c
  - `set_contraints()`
  - `set_layout()`
  - `draw()`
- - `hitbox_text()`
+ - `hitbox_test()`
 
 A widget that owns one or more child widgets will need to override the `children()` method to let the
 system know how to call the lower-performance methods automatically. The `children()` method should be
