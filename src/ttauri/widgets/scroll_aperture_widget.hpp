@@ -171,7 +171,8 @@ public:
 
         if (safe_rectangle.width() > theme().margin and safe_rectangle.height() > theme().margin) {
             // This will look visually better, if the selected widget is moved with some margin from
-            // the edge of the scroll widget.
+            // the edge of the scroll widget. The margins of the content do not have anything to do
+            // with the margins that are needed here.
             safe_rectangle = safe_rectangle - theme().margin;
 
             if (to_show.right() > safe_rectangle.right()) {

@@ -191,7 +191,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
         _redraw_rectangle = aarectangle{widget_size};
     }
 
-#if 0
+#if 1
     // For performance checks force redraw.
     _redraw_rectangle = aarectangle{widget_size};
 #endif

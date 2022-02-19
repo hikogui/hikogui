@@ -113,6 +113,7 @@ private:
     /** An error string to show to the user.
      */
     observable<label> _error_label;
+    aarectangle _error_label_rectangle;
     std::unique_ptr<label_widget> _error_label_widget;
 
     text_field_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;

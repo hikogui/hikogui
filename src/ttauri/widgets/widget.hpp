@@ -316,7 +316,7 @@ public:
      */
     virtual void scroll_to_show(tt::aarectangle rectangle) noexcept;
 
-    /** Scroll to show the current widget.
+    /** Scroll to show the important part of the widget.
      */
     void scroll_to_show() noexcept
     {

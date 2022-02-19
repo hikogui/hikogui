@@ -85,18 +85,20 @@ void text_field_widget::set_layout(widget_layout const &layout) noexcept
 {
     if (compare_store(_layout, layout)) {
         if (_error_label_widget->visible) {
-            ttlet error_label_rectangle =
+            _error_label_rectangle =
                 aarectangle{0.0f, 0.0f, layout.rectangle().width(), _error_label_widget->constraints().preferred.height()};
 
-            _error_label_widget->set_layout(layout.transform(error_label_rectangle));
-
-            _text_rectangle = aarectangle{point2{0.0f, error_label_rectangle.height()}, get<3>(layout.rectangle())};
+            _text_rectangle = aarectangle{point2{0.0f, _error_label_rectangle.height()}, get<3>(layout.rectangle())};
         } else {
             _text_rectangle = layout.rectangle();
         }
 
-        _scroll_widget->set_layout(layout.transform(_text_rectangle));
     }
+
+    if (_error_label_widget->visible) {
+        _error_label_widget->set_layout(layout.transform(_error_label_rectangle));
+    }
+    _scroll_widget->set_layout(layout.transform(_text_rectangle));
 }
 
 void text_field_widget::draw(draw_context const &context) noexcept

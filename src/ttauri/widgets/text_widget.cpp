@@ -19,7 +19,8 @@ widget_constraints const &text_widget::set_constraints() noexcept
     _layout = {};
 
     _shaped_text = text_shaper{font_book(), *text, theme().text_style(*text_style)};
-    ttlet[shaped_text_rectangle, cap_height] = _shaped_text.bounding_rectangle(500.0f, alignment->vertical());
+    ttlet[shaped_text_rectangle, cap_height] =
+        _shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity(), alignment->vertical());
     _shaped_text_cap_height = cap_height;
     ttlet shaped_text_size = shaped_text_rectangle.size();
 
@@ -37,6 +38,14 @@ void text_widget::set_layout(widget_layout const &layout) noexcept
             layout.sub_pixel_size,
             layout.writing_direction,
             *alignment);
+    }
+
+    if (visible and focus) {
+        ttlet cursor = _selection.cursor();
+        ttlet char_it = _shaped_text.begin() + cursor.index();
+        if (char_it < _shaped_text.end()) {
+            scroll_to_show(char_it->rectangle);
+        }
     }
 }
 
