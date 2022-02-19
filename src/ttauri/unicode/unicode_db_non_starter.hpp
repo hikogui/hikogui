@@ -5,6 +5,7 @@
 namespace tt::inline v1::detail {
 
 constexpr auto unicode_db_non_starter_table = std::array{
+#ifndef __INTELLISENSE__
     U'\u0300',
     U'\u0301',
     U'\u0302',
@@ -916,6 +917,8 @@ constexpr auto unicode_db_non_starter_table = std::array{
     U'\U0001e947',
     U'\U0001e948',
     U'\U0001e949',
-    U'\U0001e94a'};
+#endif
+    U'\U0001e94a'
+};
 
 }

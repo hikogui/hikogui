@@ -380,11 +380,16 @@ def writeUnicodeNonStarterData(filename, non_starters):
 
     fd.write('namespace tt::inline v1::detail {\n\n')
 
-    fd.write('constexpr auto unicode_db_non_starter_table = std::array{')
+    fd.write('constexpr auto unicode_db_non_starter_table = std::array{\n')
+    fd.write('#ifndef __INTELLISENSE__\n')
+
     for i, code_point in enumerate(non_starters):
-        if i != 0:
-            fd.write(',')
-        fd.write('\n    {}'.format(format_char32(code_point)))
+        if i < len(non_starters) - 1:
+            fd.write('    {},\n'.format(format_char32(code_point)))
+        else:
+            fd.write('#endif\n')
+            fd.write('    {}\n'.format(format_char32(code_point)))
+
     fd.write('};\n\n')
 
     fd.write('}\n')
@@ -419,12 +424,15 @@ def writeUnicodeData(filename, descriptions, compositions, decompositions):
     fd.write('#define TTXSB unicode_sentence_break_property\n')
     fd.write('#define TTXEA unicode_east_asian_width\n')
     fd.write('#define TTXDT unicode_decomposition_type\n')
-    fd.write('constexpr auto unicode_db_description_table = std::array{')
+    fd.write('constexpr auto unicode_db_description_table = std::array{\n')
+    fd.write('#ifndef __INTELLISENSE__\n')
     for i, description in enumerate(descriptions):
-        if i != 0:
-            fd.write(",")
-        fd.write("\n    ")
-        fd.write(description.serialize())
+        if i < len(descriptions) - 1:
+            fd.write('    {},\n'.format(description.serialize()))
+        else:
+            fd.write('#endif\n')
+            fd.write('    {}\n'.format(description.serialize()))
+
     fd.write('};\n\n')
     fd.write('#undef TTXD\n')
     fd.write('#undef TTXDT\n')
@@ -438,12 +446,15 @@ def writeUnicodeData(filename, descriptions, compositions, decompositions):
     fd.write('#undef TTXEA\n')
 
     fd.write('#define TTXC unicode_composition\n')
-    fd.write('constexpr auto unicode_db_composition_table = std::array{')
+    fd.write('constexpr auto unicode_db_composition_table = std::array{\n')
+    fd.write('#ifndef __INTELLISENSE__\n')
     for i, composition in enumerate(compositions):
-        if i != 0:
-            fd.write(",")
-        fd.write("\n    ")
-        fd.write(composition.serialize())
+        if i < len(compositions) - 1:
+            fd.write('    {},\n'.format(composition.serialize()))
+        else:
+            fd.write('#endif\n')
+            fd.write('    {}\n'.format(composition.serialize()))
+
     fd.write('};\n\n')
     fd.write('#undef TTXC\n')
 
@@ -452,12 +463,15 @@ def writeUnicodeData(filename, descriptions, compositions, decompositions):
         for c in decomposition:
             decomposition_characters.append(c)
 
-    fd.write('constexpr auto unicode_db_decomposition_table = std::array{')
+    fd.write('constexpr auto unicode_db_decomposition_table = std::array{\n')
+    fd.write('#ifndef __INTELLISENSE__\n')
     for i, decomposition in enumerate(decompositions):
-        if i != 0:
-            fd.write(",")
-        fd.write("\n    ")
-        fd.write(decomposition.serialize())
+        if i < len(decompositions) - 1:
+            fd.write('    {},\n'.format(decomposition.serialize()))
+        else:
+            fd.write('#endif\n')
+            fd.write('    {}\n'.format(decomposition.serialize()))
+
     fd.write('};\n\n')
 
     fd.write('}\n')
@@ -510,7 +524,7 @@ def main():
     writeUnicodeNonStarterData(options.output_non_starter_path, non_starters)
 
     max_mirror_delta = get_max_mirror_delta(descriptions)
-    print("Maximum mirror delta {}".format(max_mirror_delta))
+    print("Maximum delta between two mirroring code-points = {}".format(max_mirror_delta))
 
 if __name__ == "__main__":
     main()
