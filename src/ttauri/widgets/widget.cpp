@@ -329,7 +329,7 @@ void widget::scroll_to_show(tt::aarectangle rectangle) noexcept
     tt_axiom(is_gui_thread());
 
     if (parent) {
-        parent->scroll_to_show(rectangle);
+        parent->scroll_to_show(bounding_rectangle(_layout.to_parent * rectangle));
     }
 }
 

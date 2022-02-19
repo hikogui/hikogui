@@ -152,18 +152,11 @@ public:
             ttlet vertical_scroll_bar_width = _vertical_scroll_bar->constraints().preferred.width();
             ttlet horizontal_scroll_bar_height = _horizontal_scroll_bar->constraints().preferred.height();
 
-            // The aperture size must remain constant, since there the aperture size will determine if the
-            // scroll bars are visible.
+            // The aperture size grows to fill the size of the layout.
             ttlet aperture_size = extent2{
-                any(axis & axis::vertical) ? layout.width() - vertical_scroll_bar_width : layout.width(),
-                any(axis & axis::horizontal) ? layout.height() - horizontal_scroll_bar_height : layout.height()};
-
-            // The aperture will be flushed to the size if there is a scroll bar next to it, otherwise it will
-            // center in the available space.
-            ttlet aperture_offset = point2{
-                _vertical_scroll_bar->visible ? 0.0f : vertical_scroll_bar_width * 0.5f,
-                _horizontal_scroll_bar->visible ? horizontal_scroll_bar_height : horizontal_scroll_bar_height * 0.5f};
-
+                _vertical_scroll_bar->visible ? layout.width() - vertical_scroll_bar_width : layout.width(),
+                _horizontal_scroll_bar->visible ? layout.height() - horizontal_scroll_bar_height : layout.height()};
+            ttlet aperture_offset = point2{0.0f, _horizontal_scroll_bar->visible ? horizontal_scroll_bar_height : 0.0f};
             _aperture_rectangle = aarectangle{aperture_offset, aperture_size};
 
             // The length of the scroll-bar is the full length of the widget, or just the length of the aperture depending

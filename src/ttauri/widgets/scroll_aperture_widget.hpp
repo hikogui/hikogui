@@ -165,28 +165,35 @@ public:
 
     void scroll_to_show(tt::aarectangle to_show) noexcept override
     {
-        ttlet window_clipping_rectangle = layout().window_clipping_rectangle();
-
+        auto safe_rectangle = intersect(_layout.rectangle(), _layout.clipping_rectangle);
         float delta_x = 0.0f;
-        if (to_show.right() > window_clipping_rectangle.right()) {
-            delta_x = to_show.right() - window_clipping_rectangle.right();
-        } else if (to_show.left() < window_clipping_rectangle.left()) {
-            delta_x = to_show.left() - window_clipping_rectangle.left();
-        }
-
         float delta_y = 0.0f;
-        if (to_show.top() > window_clipping_rectangle.top()) {
-            delta_y = to_show.top() - window_clipping_rectangle.top();
-        } else if (to_show.bottom() < window_clipping_rectangle.bottom()) {
-            delta_y = to_show.bottom() - window_clipping_rectangle.bottom();
-        }
 
-        offset_x += delta_x;
-        offset_y += delta_y;
+        if (safe_rectangle.width() > theme().margin and safe_rectangle.height() > theme().margin) {
+            // This will look visually better, if the selected widget is moved with some margin from
+            // the edge of the scroll widget.
+            safe_rectangle = safe_rectangle - theme().margin;
+
+            if (to_show.right() > safe_rectangle.right()) {
+                delta_x = to_show.right() - safe_rectangle.right();
+            } else if (to_show.left() < safe_rectangle.left()) {
+                delta_x = to_show.left() - safe_rectangle.left();
+            }
+
+            if (to_show.top() > safe_rectangle.top()) {
+                delta_y = to_show.top() - safe_rectangle.top();
+            } else if (to_show.bottom() < safe_rectangle.bottom()) {
+                delta_y = to_show.bottom() - safe_rectangle.bottom();
+            }
+
+            // Scroll the widget
+            offset_x += delta_x;
+            offset_y += delta_y;
+        }
 
         // There may be recursive scroll view, and they all need to move until the rectangle is visible.
         if (parent) {
-            parent->scroll_to_show(translate2(delta_x, delta_y) * to_show);
+            parent->scroll_to_show(bounding_rectangle(_layout.to_parent * translate2(delta_x, delta_y) * to_show));
         }
     }
     /// @endprivatesection

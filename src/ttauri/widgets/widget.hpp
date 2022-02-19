@@ -320,7 +320,7 @@ public:
      */
     void scroll_to_show() noexcept
     {
-        scroll_to_show(layout().window_clipping_rectangle());
+        scroll_to_show(layout().rectangle());
     }
 
     /** Get a list of parents of a given widget.
