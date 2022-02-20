@@ -40,6 +40,11 @@ void text_widget::set_layout(widget_layout const &layout) noexcept
             *alignment);
     }
 
+    scroll_to_show_selection();
+}
+
+void text_widget::scroll_to_show_selection() noexcept
+{
     if (visible and focus) {
         ttlet cursor = _selection.cursor();
         ttlet char_it = _shaped_text.begin() + cursor.index();
@@ -51,6 +56,25 @@ void text_widget::set_layout(widget_layout const &layout) noexcept
 
 void text_widget::draw(draw_context const &context) noexcept
 {
+    if (_last_drag_mouse_event) {
+        if (_last_drag_mouse_event_next_repeat == utc_nanoseconds{}) {
+            _last_drag_mouse_event_next_repeat = context.display_time_point + _last_drag_mouse_event_repeat_interval;
+
+        } else if (context.display_time_point >= _last_drag_mouse_event_next_repeat) {
+            _last_drag_mouse_event_next_repeat = context.display_time_point + _last_drag_mouse_event_repeat_interval;
+
+            // The last drag mouse event was stored in window coordinate to compensate for scrolling, translate it
+            // back to local coordinates before handling the mouse event again.
+            auto new_mouse_event = _last_drag_mouse_event;
+            new_mouse_event.position = point2{_layout.from_window * _last_drag_mouse_event.position};
+
+            // When mouse is dragging a selection, start continues redraw and scroll parent views to display the selection.
+            text_widget::handle_event(new_mouse_event);
+            scroll_to_show_selection();
+        }
+        request_redraw();
+    }
+
     if (visible and overlaps(context, layout())) {
         context.draw_text(layout(), _shaped_text);
 
@@ -496,6 +520,14 @@ bool text_widget::handle_event(mouse_event const &event) noexcept
 
         switch (event.type) {
             using enum mouse_event::Type;
+        case ButtonUp:
+            // Stop the continues redrawing during dragging.
+            // Also reset the time, so on drag-start it will initialize the time, which will
+            // cause a smooth startup of repeating.
+            _last_drag_mouse_event = {};
+            _last_drag_mouse_event_next_repeat = {};
+            break;
+
         case ButtonDown:
             switch (event.clickCount) {
             case 1:
@@ -521,9 +553,6 @@ bool text_widget::handle_event(mouse_event const &event) noexcept
             default:;
             }
 
-            // Record the last time the cursor is moved, so that the caret remains lit.
-            //_last_update_time_point = event.timePoint;
-
             request_redraw();
             break;
 
@@ -548,6 +577,11 @@ bool text_widget::handle_event(mouse_event const &event) noexcept
             default:;
             }
 
+            // Drag events must be repeated, so that dragging is continues when it causes scrolling.
+            // Normally mouse positions are kept in the local coordinate system, but scrolling
+            // causes this coordinate system to shift, so translate it to the window coordinate system here.
+            _last_drag_mouse_event = event;
+            _last_drag_mouse_event.position = point2{_layout.to_window * event.position};
             request_redraw();
             break;
 

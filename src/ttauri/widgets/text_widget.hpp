@@ -6,6 +6,7 @@
 
 #include "widget.hpp"
 #include "../GUI/theme_text_style.hpp"
+#include "../GUI/mouse_event.hpp"
 #include "../text/text_selection.hpp"
 #include "../text/text_shaper.hpp"
 #include "../observable.hpp"
@@ -18,6 +19,7 @@
 #include <optional>
 #include <future>
 #include <limits>
+#include <chrono>
 
 namespace tt::inline v1 {
 
@@ -102,11 +104,7 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
     /// @endprivatesection
 private:
-    enum class add_type {
-        append,
-        insert,
-        dead
-    };
+    enum class add_type { append, insert, dead };
 
     struct undo_type {
         gstring text;
@@ -120,8 +118,22 @@ private:
 
     text_selection _selection;
 
+    /** The last drag mouse event.
+     *
+     * This variable is used to repeatably execute the mouse event
+     * even in absent of new mouse events. This must be done to get
+     * continues scrolling to work during dragging.
+     */
+    mouse_event _last_drag_mouse_event = {};
+
+    /** When to cause the next mouse drag event repeat.
+     */
+    utc_nanoseconds _last_drag_mouse_event_next_repeat = {};
+
+    static constexpr std::chrono::duration _last_drag_mouse_event_repeat_interval = std::chrono::milliseconds{100};
+
     /** The x-coordinate during vertical movement.
-    */
+     */
     float _vertical_movement_x = std::numeric_limits<float>::quiet_NaN();
 
     bool _overwrite_mode = false;
@@ -137,16 +149,19 @@ private:
 
     text_widget(gui_window &window, widget *parent) noexcept;
 
+    /** Make parent scroll views, scroll to show the current selection and cursor.
+     */
+    void scroll_to_show_selection() noexcept;
+
     /** Reset states.
-    * 
-    * Possible states:
-    *  - 'X' x-coordinate for vertical movement.
-    *  - 'D' Dead-character state.
-    * 
-    * @param states The individual states to reset.
-    */
+     *
+     * Possible states:
+     *  - 'X' x-coordinate for vertical movement.
+     *  - 'D' Dead-character state.
+     *
+     * @param states The individual states to reset.
+     */
     void reset_state(char const *states) noexcept;
-    
 
     [[nodiscard]] gstring_view selected_text() const noexcept;
     void undo_push() noexcept;

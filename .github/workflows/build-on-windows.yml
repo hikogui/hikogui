@@ -52,7 +52,6 @@ jobs:
           cmake --version
           msbuild /version
           vcpkg version
-          echo NUMBER_OF_PROCESSORS=%NUMBER_OF_PROCESSORS%
 
       # Build Artifact Name: ttauri-0.3.0-0cda6a2-MSVC19-x64-static-RelWithDebInfo
       - name: ✏ Fetch Versioning Data & Set Artifact Name
@@ -135,7 +134,7 @@ jobs:
                 -DCMAKE_VERBOSE_MAKEFILE=ON
 
       - name: 🙏 CMake ➔ Build
-        run: cmake --build build --config ${{ matrix.config.BUILD_TYPE }} -j %NUMBER_OF_PROCESSORS%
+        run: cmake --build build --config ${{ matrix.config.BUILD_TYPE }}
 
       - name: 📦 CMake ➔ Install
         run: cmake --install build --config ${{ matrix.config.BUILD_TYPE }} --prefix build/ttauri-%VERSION% --verbose
