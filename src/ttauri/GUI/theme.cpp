@@ -282,11 +282,13 @@ void theme::parse(tt::font_book const &font_book, datum const &data)
     std::get<static_cast<std::size_t>(theme_color::fill)>(this->_colors) = parse_color_list(data, "fill-color");
     std::get<static_cast<std::size_t>(theme_color::accent)>(this->_colors) = parse_color_list(data, "accent-color");
     std::get<static_cast<std::size_t>(theme_color::text_select)>(this->_colors) = parse_color_list(data, "text-select-color");
-    std::get<static_cast<std::size_t>(theme_color::cursor)>(this->_colors) = parse_color_list(data, "cursor-color");
-    std::get<static_cast<std::size_t>(theme_color::incomplete_glyph)>(this->_colors) =
-        parse_color_list(data, "incomplete-glyph-color");
+    std::get<static_cast<std::size_t>(theme_color::primary_cursor)>(this->_colors) =
+        parse_color_list(data, "primary-cursor-color");
+    std::get<static_cast<std::size_t>(theme_color::secondary_cursor)>(this->_colors) =
+        parse_color_list(data, "secondary-cursor-color");
 
-    std::get<static_cast<std::size_t>(theme_text_style::label)>(this->_text_styles) = parse_text_style(font_book, data, "label-style");
+    std::get<static_cast<std::size_t>(theme_text_style::label)>(this->_text_styles) =
+        parse_text_style(font_book, data, "label-style");
     std::get<static_cast<std::size_t>(theme_text_style::small_label)>(this->_text_styles) =
         parse_text_style(font_book, data, "small-label-style");
     std::get<static_cast<std::size_t>(theme_text_style::warning)>(this->_text_styles) =

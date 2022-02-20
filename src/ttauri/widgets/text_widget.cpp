@@ -85,8 +85,8 @@ void text_widget::draw(draw_context const &context) noexcept
                 layout(),
                 _shaped_text,
                 _selection.cursor(),
-                theme().color(theme_color::cursor),
-                theme().color(theme_color::incomplete_glyph),
+                theme().color(theme_color::primary_cursor),
+                theme().color(theme_color::secondary_cursor),
                 _overwrite_mode,
                 static_cast<bool>(_has_dead_character));
         }
