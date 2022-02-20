@@ -123,6 +123,8 @@ target_sources(ttauri PRIVATE
     range_map.hpp
     ranges.hpp
     recursive_iterator.hpp
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32.cpp>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32.hpp>
     required.hpp
     range_map.hpp
     resource_view.hpp

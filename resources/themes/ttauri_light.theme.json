@@ -48,8 +48,8 @@
     // Accent color used by widgets, to show icons, hover and keyboard focus
     "accent-color":           [  0, 122, 255],
     "text-select-color":      [  0, 122, 255],
-    "primary-cursor-color":           [  0,   0,   1],
-    "secondary-glyph-color": [255, 241,   1],
+    "primary-cursor-color":   [  0,   0,   1],
+    "secondary-cursor-color": [170, 170,   1],
 
     "small-label-style": {
         "family": "Arial",
