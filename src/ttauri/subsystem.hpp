@@ -100,11 +100,11 @@ tt_no_inline inline bool start_subsystem(global_state_type state_bit, bool (*ini
  * @return return value from the init_function; off_value if the system is shutting down.
  */
 template<typename T>
-requires(is_atomic_v<T>) typename T::value_type start_subsystem(
+typename T::value_type start_subsystem(
     T &check_variable,
     typename T::value_type off_value,
     typename T::value_type (*init_function)(),
-    void (*deinit_function)())
+    void (*deinit_function)()) requires(is_atomic_v<T>)
 {
     // We can do a relaxed load, if:
     //  - off_value, then we will lock before writing check_variable and memory order will be guaranteed

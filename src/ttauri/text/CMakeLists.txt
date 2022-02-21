@@ -20,8 +20,6 @@ target_sources(ttauri PRIVATE
     glyph_metrics.hpp
     language.cpp
     language.hpp
-    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/language_macos.mm>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/language_win32.cpp>
     po_parser.cpp
     po_parser.hpp
     text_cursor.hpp

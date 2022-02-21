@@ -107,6 +107,9 @@ target_sources(ttauri PRIVATE
     cast.hpp
     observable.hpp
     operator.hpp
+    os_settings.cpp
+    os_settings.hpp
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/os_settings_win32.cpp>
     architecture.hpp
     parse_location.hpp
     preferences.cpp

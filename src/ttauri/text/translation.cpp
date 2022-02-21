@@ -55,7 +55,7 @@ get_translation(std::string_view msgid, long long n, std::vector<language *> con
             }
         }
     }
-    tt_log_info("No translation found for '{}'", msgid);
+    tt_log_debug("No translation found for '{}'", msgid);
     return msgid;
 }
 

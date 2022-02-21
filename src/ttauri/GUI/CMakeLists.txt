@@ -33,8 +33,6 @@ target_sources(ttauri PRIVATE
     theme_book.cpp
     theme_book.hpp
     theme_mode.hpp
-    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/theme_mode_macos.mm>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/theme_mode_win32.cpp>
     vertical_sync.cpp
     vertical_sync.hpp
     #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/vertical_sync_macos.hpp>

@@ -14,22 +14,22 @@ namespace tt::inline v1 {
  */
 class language_tag {
 public:
-    language_tag(language_tag const &other) noexcept = default;
-    language_tag(language_tag &&other) noexcept = default;
-    language_tag &operator=(language_tag const &other) noexcept = default;
-    language_tag &operator=(language_tag &&other) noexcept = default;
+    constexpr language_tag(language_tag const &other) noexcept = default;
+    constexpr language_tag(language_tag &&other) noexcept = default;
+    constexpr language_tag &operator=(language_tag const &other) noexcept = default;
+    constexpr language_tag &operator=(language_tag &&other) noexcept = default;
 
-    language_tag() noexcept : tag() {}
-    explicit language_tag(std::string tag) noexcept : tag(std::move(tag)) {}
-    explicit language_tag(std::string_view tag) noexcept : tag(tag) {}
-    explicit language_tag(char const *tag) noexcept : tag(tag) {}
+    constexpr language_tag() noexcept : tag() {}
+    constexpr explicit language_tag(std::string tag) noexcept : tag(std::move(tag)) {}
+    constexpr explicit language_tag(std::string_view tag) noexcept : tag(tag) {}
+    constexpr explicit language_tag(char const *tag) noexcept : tag(tag) {}
 
     [[nodiscard]] std::size_t hash() const noexcept
     {
         return std::hash<std::string>{}(tag);
     }
 
-    explicit operator bool() const noexcept
+    constexpr explicit operator bool() const noexcept
     {
         return size(tag) != 0;
     }
@@ -39,9 +39,9 @@ public:
         return language_tag{split(tag, '-').front()};
     }
 
-    [[nodiscard]] friend bool operator==(language_tag const &, language_tag const &) noexcept = default;
+    [[nodiscard]] friend constexpr bool operator==(language_tag const &, language_tag const &) noexcept = default;
 
-    [[nodiscard]] friend std::string to_string(language_tag const &url) noexcept
+    [[nodiscard]] friend constexpr std::string to_string(language_tag const &url) noexcept
     {
         return url.tag;
     }

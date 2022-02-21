@@ -7,6 +7,7 @@
 #include "ttauri/widgets/radio_button_widget.hpp"
 #include "ttauri/GFX/RenderDoc.hpp"
 #include "ttauri/crt.hpp"
+#include "ttauri/log.hpp"
 
 using namespace tt;
 

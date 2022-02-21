@@ -7,6 +7,7 @@
 #include "language.hpp"
 #include "../formula/formula.hpp"
 #include "../hash.hpp"
+#include "../os_settings.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
@@ -17,7 +18,7 @@ namespace tt::inline v1 {
 [[nodiscard]] std::string_view get_translation(
     std::string_view msgid,
     long long n = 0,
-    std::vector<language *> const &languages = language::preferred_languages()) noexcept;
+    std::vector<language *> const &languages = os_settings::languages()) noexcept;
 
 void add_translation(std::string_view msgid, language const &language, std::vector<std::string> const &plural_forms) noexcept;
 

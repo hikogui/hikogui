@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "text_widget.hpp"
+#include "../os_settings.hpp"
 #include "../GUI/gui_window.hpp"
 #include "../GUI/mouse_event.hpp"
 #include "../unicode/unicode_bidi.hpp"
@@ -58,10 +59,10 @@ void text_widget::draw(draw_context const &context) noexcept
 {
     if (_last_drag_mouse_event) {
         if (_last_drag_mouse_event_next_repeat == utc_nanoseconds{}) {
-            _last_drag_mouse_event_next_repeat = context.display_time_point + _last_drag_mouse_event_repeat_interval;
+            _last_drag_mouse_event_next_repeat = context.display_time_point + os_settings::keyboard_repeat_delay();
 
         } else if (context.display_time_point >= _last_drag_mouse_event_next_repeat) {
-            _last_drag_mouse_event_next_repeat = context.display_time_point + _last_drag_mouse_event_repeat_interval;
+            _last_drag_mouse_event_next_repeat = context.display_time_point + os_settings::keyboard_repeat_interval();
 
             // The last drag mouse event was stored in window coordinate to compensate for scrolling, translate it
             // back to local coordinates before handling the mouse event again.

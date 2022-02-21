@@ -11,6 +11,7 @@
 #include "../log.hpp"
 #include "../strings.hpp"
 #include "../thread.hpp"
+#include "../os_settings.hpp"
 #include "../unicode/unicode_normalization.hpp"
 #include <windowsx.h>
 #include <dwmapi.h>
@@ -171,9 +172,6 @@ gui_window_win32::gui_window_win32(gui_system &gui, label const &title, std::wea
     using namespace std::chrono_literals;
 
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-
-    doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;
-    tt_log_info("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
 }
 
 gui_window_win32::~gui_window_win32()
@@ -720,16 +718,11 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         }
     } break;
 
-    case WM_SETTINGCHANGE: {
-        using namespace std::chrono_literals;
-
+    case WM_SETTINGCHANGE:
         tt_axiom(is_gui_thread());
-        doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;
-        tt_log_info("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
-
-        gui.set_theme_mode(read_os_theme_mode());
-        request_reconstrain();
-    } break;
+        os_settings::gather();
+        gui.set_theme_mode(os_settings::theme_mode());
+        break;
 
     case WM_DPICHANGED: {
         tt_axiom(is_gui_thread());
@@ -845,7 +838,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         mouseEvent.type = mouse_event::Type::ButtonDown;
         mouseEvent.downPosition = mouseEvent.position;
 
-        if (mouseEvent.timePoint < multi_click_time_point + doubleClickMaximumDuration) {
+        if (mouseEvent.timePoint < multi_click_time_point + os_settings::double_click_interval()) {
             ++multi_click_count;
         } else {
             multi_click_count = 1;
@@ -860,22 +853,6 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
         SetCapture(window_handle);
     } break;
-
-    //case WM_LBUTTONDBLCLK:
-    //case WM_MBUTTONDBLCLK:
-    //case WM_RBUTTONDBLCLK:
-    //case WM_XBUTTONDBLCLK: {
-    //    mouseEvent.type = mouse_event::Type::ButtonDown;
-    //    mouseEvent.downPosition = mouseEvent.position;
-    //    mouseEvent.clickCount = 2;
-    //    doubleClickTimePoint = std::chrono::utc_clock::now();
-    //
-    //    // Track draging past the window borders.
-    //    tt_axiom(win32Window != 0);
-    //    ttlet window_handle = reinterpret_cast<HWND>(win32Window);
-    //
-    //    SetCapture(window_handle);
-    //} break;
 
     case WM_MOUSEWHEEL:
     case WM_MOUSEHWHEEL: mouseEvent.type = mouse_event::Type::Wheel; break;

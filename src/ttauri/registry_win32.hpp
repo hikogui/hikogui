@@ -7,8 +7,8 @@
 namespace tt::inline v1 {
 
 /** Read a DWORD registry value from the HKEY_CURRENT_USER.
-* 
-* @throws tt::os_error when the path/name is not found in the registry.
+ *
+ * @throws tt::os_error when the path/name is not found in the registry.
  */
 [[nodiscard]] uint32_t registry_read_current_user_dword(std::string_view path, std::string_view name);
 
@@ -18,4 +18,4 @@ namespace tt::inline v1 {
  */
 [[nodiscard]] std::vector<std::string> registry_read_current_user_multi_string(std::string_view path, std::string_view name);
 
-}
+} // namespace tt::inline v1

@@ -130,8 +130,6 @@ private:
      */
     utc_nanoseconds _last_drag_mouse_event_next_repeat = {};
 
-    static constexpr std::chrono::duration _last_drag_mouse_event_repeat_interval = std::chrono::milliseconds{100};
-
     /** The x-coordinate during vertical movement.
      */
     float _vertical_movement_x = std::numeric_limits<float>::quiet_NaN();

@@ -10,6 +10,7 @@
 #include "../GFX/gfx_system.hpp"
 #include "../text/font_book.hpp"
 #include "../log.hpp"
+#include "../os_settings.hpp"
 #include <chrono>
 
 namespace tt::inline v1 {
@@ -32,7 +33,7 @@ gui_system::gui_system(
     _delegate(delegate)
 {
     this->gfx->init();
-    set_theme(this->theme_book->find("default", read_os_theme_mode()));
+    set_theme(this->theme_book->find("default", os_settings::theme_mode()));
 }
 
 gui_system::~gui_system()

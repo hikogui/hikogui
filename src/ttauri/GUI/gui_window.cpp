@@ -5,6 +5,7 @@
 #include "gui_window.hpp"
 #include "gui_system.hpp"
 #include "keyboard_bindings.hpp"
+#include "../os_settings.hpp"
 #include "../GFX/gfx_device.hpp"
 #include "../GFX/gfx_surface.hpp"
 #include "../trace.hpp"
@@ -77,7 +78,7 @@ void gui_window::init()
     // Reset the keyboard target to not focus anything.
     update_keyboard_target({});
 
-    _setting_change_callback = language::subscribe([this] {
+    _setting_change_callback = os_settings::subscribe([this] {
         this->request_reconstrain();
     });
 
