@@ -118,6 +118,9 @@ private:
 
     text_selection _selection;
 
+    utc_nanoseconds _cursor_blink_time_point = {};
+
+
     /** The last drag mouse event.
      *
      * This variable is used to repeatably execute the mouse event
@@ -156,6 +159,7 @@ private:
      * Possible states:
      *  - 'X' x-coordinate for vertical movement.
      *  - 'D' Dead-character state.
+     *  - 'B' Reset cursor blink time.
      *
      * @param states The individual states to reset.
      */

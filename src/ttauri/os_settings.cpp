@@ -37,6 +37,8 @@ os_settings::os_settings() noexcept
 
 void os_settings::_gather() noexcept
 {
+    using namespace std::literals::chrono_literals;
+
     ttlet lock = std::scoped_lock(_mutex);
     auto setting_has_changed = false;
 
@@ -70,6 +72,20 @@ void os_settings::_gather() noexcept
     if (compare_store(_keyboard_repeat_interval, gather_keyboard_repeat_interval())) {
         setting_has_changed = true;
         tt_log_info("OS keyboard repeat interval has changed: {}", _keyboard_repeat_interval.load());
+    }
+
+    if (compare_store(_cursor_blink_interval, gather_cursor_blink_interval())) {
+        setting_has_changed = true;
+        if (_cursor_blink_interval.load() < 1min) {
+            tt_log_info("OS cursor blink interval has changed: {}", _cursor_blink_interval.load());
+        } else {
+            tt_log_info("OS cursor blink interval has changed: no-blinking");
+        }
+    }
+
+    if (compare_store(_cursor_blink_delay, gather_cursor_blink_delay())) {
+        setting_has_changed = true;
+        tt_log_info("OS cursor blink delay has changed: {}", _cursor_blink_delay.load());
     }
 
     if (setting_has_changed) {

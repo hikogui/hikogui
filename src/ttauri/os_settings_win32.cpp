@@ -84,5 +84,30 @@ namespace tt::inline v1 {
     return std::chrono::duration_cast<std::chrono::milliseconds>(1000ms / rate);
 }
 
+[[nodiscard]] std::chrono::milliseconds os_settings::gather_cursor_blink_interval() noexcept
+{
+    using namespace std::literals::chrono_literals;
 
-} // namespace tt::inline v1
+    auto r = GetCaretBlinkTime();
+    if (r == 0) {
+        tt_log_error("Could not get caret blink time: {}", get_last_error_message());
+        return std::chrono::milliseconds{1000};
+    }
+
+    if (r == INFINITE) {
+        return std::chrono::milliseconds::max();
+    } else {
+        // GetGaretBlinkTime() gives the time for a half-period.
+        return std::chrono::milliseconds{r} * 2;
+    }
+}
+
+[[nodiscard]] std::chrono::milliseconds os_settings::gather_cursor_blink_delay() noexcept
+{
+    // The blink delay is not available in the OS, we can use the keyboard repeat delay.
+    return std::max(gather_keyboard_repeat_delay(), gather_keyboard_repeat_interval());
+}
+
+}
+
+// namespace tt::inline v1

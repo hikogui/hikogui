@@ -20,6 +20,10 @@ class os_settings {
 public:
     using callback_ptr_type = notifier<void()>::callback_ptr_type;
 
+    /** Get the language tags for the configured languages.
+     *
+     * @return A list of language tags in order of priority.
+     */
     [[nodiscard]] static std::vector<language_tag> language_tags() noexcept
     {
         if (ttlet self = global()) {
@@ -30,6 +34,11 @@ public:
         }
     }
 
+    /** Get the configured languages.
+     *
+     * @note The list of languages include both the configured region-specific-languages and the generic-languages.
+     * @return A list of languages in order of priority.
+     */
     [[nodiscard]] static std::vector<language *> languages() noexcept
     {
         if (ttlet self = global()) {
@@ -40,6 +49,8 @@ public:
         }
     }
 
+    /** Get the configured light/dark theme mode
+     */
     [[nodiscard]] static tt::theme_mode theme_mode() noexcept
     {
         if (ttlet self = global()) {
@@ -49,6 +60,8 @@ public:
         }
     }
 
+    /** Get the mouse double click interval.
+     */
     [[nodiscard]] static std::chrono::milliseconds double_click_interval() noexcept
     {
         if (ttlet self = global()) {
@@ -58,6 +71,10 @@ public:
         }
     }
 
+    /** Get the delay before the keyboard starts repeating.
+     *
+     * @note Also used to determine the scroll delay when selecting text.
+     */
     [[nodiscard]] static std::chrono::milliseconds keyboard_repeat_delay() noexcept
     {
         if (ttlet self = global()) {
@@ -67,12 +84,43 @@ public:
         }
     }
 
+    /** Get the keyboard repeat interval
+     *
+     * @note Also used to determine the scroll speed when selecting text.
+     */
     [[nodiscard]] static std::chrono::milliseconds keyboard_repeat_interval() noexcept
     {
         if (ttlet self = global()) {
             return self->_keyboard_repeat_interval.load(std::memory_order_relaxed);
         } else {
             return std::chrono::milliseconds{250};
+        }
+    }
+
+    /** Get the cursor blink delay.
+     *
+     * @note This delay is used to determine when to blink after cursor movement.
+     */
+    [[nodiscard]] static std::chrono::milliseconds cursor_blink_delay() noexcept
+    {
+        if (ttlet self = global()) {
+            return self->_cursor_blink_delay.load(std::memory_order_relaxed);
+        } else {
+            return std::chrono::milliseconds{500};
+        }
+    }
+
+    /** Get the cursor blink interval.
+     *
+     * @note The interval is the complete period of the cursor blink, from on-to-on.
+     * @return The cursor blink interval, or `std::chrono::milliseconds::max()` when blinking is turned off.
+     */
+    [[nodiscard]] static std::chrono::milliseconds cursor_blink_interval() noexcept
+    {
+        if (ttlet self = global()) {
+            return self->_cursor_blink_interval.load(std::memory_order_relaxed);
+        } else {
+            return std::chrono::milliseconds{500};
         }
     }
 
@@ -96,7 +144,7 @@ public:
     }
 
     template<typename Callback>
-    [[nodiscard]] static callback_ptr_type subscribe(Callback &&callback) noexcept requires(std::is_invocable_v<Callback>) 
+    [[nodiscard]] static callback_ptr_type subscribe(Callback &&callback) noexcept requires(std::is_invocable_v<Callback>)
     {
         if (ttlet self = global()) {
             ttlet lock = std::scoped_lock(self->_mutex);
@@ -128,9 +176,11 @@ private:
     std::vector<language_tag> _language_tags = {};
     std::vector<language *> _languages = {};
     std::atomic<tt::theme_mode> _theme_mode = theme_mode::dark;
-    std::atomic<std::chrono::milliseconds> _double_click_interval = std::chrono::milliseconds(500);
-    std::atomic<std::chrono::milliseconds> _keyboard_repeat_delay = std::chrono::milliseconds(250);
-    std::atomic<std::chrono::milliseconds> _keyboard_repeat_interval = std::chrono::milliseconds(100);
+    std::atomic<std::chrono::milliseconds> _double_click_interval = {};
+    std::atomic<std::chrono::milliseconds> _keyboard_repeat_delay = {};
+    std::atomic<std::chrono::milliseconds> _keyboard_repeat_interval = {};
+    std::atomic<std::chrono::milliseconds> _cursor_blink_interval = {};
+    std::atomic<std::chrono::milliseconds> _cursor_blink_delay = {};
 
     /** Get the global os_settings instance.
      *
@@ -157,6 +207,8 @@ private:
     [[nodiscard]] static std::chrono::milliseconds gather_double_click_interval() noexcept;
     [[nodiscard]] std::chrono::milliseconds gather_keyboard_repeat_delay() noexcept;
     [[nodiscard]] std::chrono::milliseconds gather_keyboard_repeat_interval() noexcept;
+    [[nodiscard]] std::chrono::milliseconds gather_cursor_blink_interval() noexcept;
+    [[nodiscard]] std::chrono::milliseconds gather_cursor_blink_delay() noexcept;
 };
 
 } // namespace tt::inline v1
