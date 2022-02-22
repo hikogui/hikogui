@@ -91,9 +91,8 @@ void menu_button_widget::draw(draw_context const &context) noexcept
 
 void menu_button_widget::draw_menu_button(draw_context const &context) noexcept
 {
-    ttlet foreground_color_ = focus and active() ? focus_color() : color::transparent();
-    context.draw_box(
-        layout(), layout().rectangle(), background_color(), foreground_color_, theme().border_width, border_side::inside);
+    ttlet border_color = focus ? focus_color() : color::transparent();
+    context.draw_box(layout(), layout().rectangle(), background_color(), border_color, theme().border_width, border_side::inside);
 }
 
 void menu_button_widget::draw_check_mark(draw_context const &context) noexcept

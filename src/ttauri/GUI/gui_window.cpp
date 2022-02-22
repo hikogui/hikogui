@@ -5,6 +5,7 @@
 #include "gui_window.hpp"
 #include "gui_system.hpp"
 #include "keyboard_bindings.hpp"
+#include "theme_book.hpp"
 #include "../os_settings.hpp"
 #include "../GFX/gfx_device.hpp"
 #include "../GFX/gfx_surface.hpp"
@@ -73,8 +74,8 @@ void gui_window::init()
     }
 
     // Execute a constraint check to determine initial window size.
-    widget->set_constraints();
-    ttlet new_size = widget->constraints().preferred;
+    theme = gui.theme_book->find("default", os_settings::theme_mode()).transform(dpi, active);
+    ttlet new_size = widget->set_constraints().preferred;
 
     // Reset the keyboard target to not focus anything.
     update_keyboard_target({});
@@ -82,7 +83,6 @@ void gui_window::init()
     // For changes in setting on the OS we should reconstrain/layout/redraw the window
     // For example when the language or theme changes.
     _setting_change_callback = os_settings::subscribe([this] {
-        gui.set_theme_mode(os_settings::theme_mode());
         this->request_reconstrain();
     });
 
@@ -133,6 +133,9 @@ void gui_window::render(utc_nanoseconds display_time_point)
 
     if (need_reconstrain) {
         ttlet t2 = trace<"window::constrain">();
+
+        theme = gui.theme_book->find("default", os_settings::theme_mode()).transform(dpi, active);
+
         widget->set_constraints();
     }
 

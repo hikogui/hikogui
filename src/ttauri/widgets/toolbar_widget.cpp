@@ -199,13 +199,7 @@ widget &toolbar_widget::add_widget(horizontal_alignment alignment, std::unique_p
 [[nodiscard]] color toolbar_widget::focus_color() const noexcept
 {
     if (enabled) {
-        if (active()) {
-            return theme().color(theme_color::accent);
-        } else if (hover) {
-            return theme().color(theme_color::border, semantic_layer + 1);
-        } else {
-            return theme().color(theme_color::border, semantic_layer);
-        }
+        return theme().color(theme_color::accent);
     } else {
         return theme().color(theme_color::border, semantic_layer - 1);
     }

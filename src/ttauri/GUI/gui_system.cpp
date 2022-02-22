@@ -33,7 +33,6 @@ gui_system::gui_system(
     _delegate(delegate)
 {
     this->gfx->init();
-    set_theme(this->theme_book->find("default", os_settings::theme_mode()));
 }
 
 gui_system::~gui_system()
@@ -61,24 +60,6 @@ void gui_system::request_reconstrain() noexcept
 {
     for (auto &window : _windows) {
         window->request_reconstrain();
-    }
-}
-
-void gui_system::set_theme(tt::theme const &new_theme) noexcept
-{
-    _theme = &new_theme;
-}
-
-tt::theme const &gui_system::theme() const noexcept
-{
-    tt_axiom(_theme);
-    return *_theme;
-}
-
-void gui_system::set_theme_mode(tt::theme_mode mode) noexcept
-{
-    if (theme().mode != mode) {
-        set_theme(theme_book->find(theme().name, mode));
     }
 }
 

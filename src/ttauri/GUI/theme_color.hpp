@@ -6,6 +6,7 @@
 
 #include "theme_text_style.hpp"
 #include "../exception.hpp"
+#include <array>
 
 namespace tt::inline v1 {
 
@@ -39,6 +40,19 @@ enum class theme_color : unsigned char {
 };
 
 constexpr std::size_t num_theme_colors = static_cast<std::size_t>(theme_color::_size);
+
+constexpr auto saturated_theme_colors = std::array{
+    theme_color::blue,
+    theme_color::green,
+    theme_color::indigo,
+    theme_color::orange,
+    theme_color::pink,
+    theme_color::purple,
+    theme_color::red,
+    theme_color::teal,
+    theme_color::yellow,
+    theme_color::accent};
+
 
 [[nodiscard]] inline theme_color theme_color_from_string(std::string_view str)
 {

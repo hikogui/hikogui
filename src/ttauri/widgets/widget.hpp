@@ -107,10 +107,6 @@ public:
 
     [[nodiscard]] bool is_gui_thread() const noexcept;
 
-    /** The widget is active (the window is active).
-     */
-    [[nodiscard]] bool active() const noexcept;
-
     /** Get the theme.
      *
      * @return The current theme.

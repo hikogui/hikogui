@@ -594,7 +594,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
             break;
         default: tt_log_error("Unknown WM_ACTIVE value.");
         }
-        request_relayout();
+        request_reconstrain();
     } break;
 
     case WM_GETMINMAXINFO: {

@@ -9,6 +9,7 @@
 #include "../color/sRGB.hpp"
 #include "../log.hpp"
 #include "../URL.hpp"
+#include <algorithm>
 
 namespace tt::inline v1 {
 
@@ -21,6 +22,22 @@ theme::theme(tt::font_book const &font_book, URL const &url)
     } catch (std::exception const &e) {
         throw io_error("{}: Could not load theme.\n{}", url, e.what());
     }
+}
+
+[[nodiscard]] theme theme::transform(float dpi, bool active) const noexcept
+{
+    auto r = *this;
+    if (not active) {
+        for (ttlet saturated_theme_color : saturated_theme_colors) {
+            ttlet &src_colors = this->_colors[to_underlying(saturated_theme_color)];
+            auto &dst_colors = r._colors[to_underlying(saturated_theme_color)];
+            std::transform(src_colors.begin(), src_colors.end(), dst_colors.begin(), [](auto x) {
+                return desaturate(x);
+            });
+        }
+    }
+
+    return r;
 }
 
 [[nodiscard]] tt::color theme::color(theme_color theme_color, ssize_t nesting_level) const noexcept

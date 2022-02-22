@@ -62,17 +62,30 @@ public:
     float label_icon_size = 20.0f;
 
     std::string name;
-    theme_mode mode;
+    theme_mode mode = theme_mode::light;
 
-    theme() noexcept = delete;
-    theme(theme const &) noexcept = delete;
-    theme(theme &&) noexcept = delete;
-    theme &operator=(theme const &) noexcept = delete;
-    theme &operator=(theme &&) noexcept = delete;
+    theme() noexcept = default;
+    theme(theme const &) noexcept = default;
+    theme(theme &&) noexcept = default;
+    theme &operator=(theme const &) noexcept = default;
+    theme &operator=(theme &&) noexcept = default;
 
     /** Open and parse a theme file.
      */
     theme(tt::font_book const &font_book, URL const &url);
+
+    /** Create a transformed copy of the theme.
+    * 
+    * This function is used by the window, to make a specific version of
+    * the theme scaled to the dpi of the window.
+    * 
+    * It can also create a different version when the window becomes active/inactive
+    * mostly this will desaturate the colors in the theme.
+    * 
+    * @param dpi The dpi of the window.
+    * @param active If the window is active or not.
+    */
+    [[nodiscard]] theme transform(float dpi, bool active) const noexcept;
 
     [[nodiscard]] tt::color color(theme_color theme_color, ssize_t nesting_level = 0) const noexcept;
     [[nodiscard]] tt::text_style const &text_style(theme_text_style theme_color) const noexcept;

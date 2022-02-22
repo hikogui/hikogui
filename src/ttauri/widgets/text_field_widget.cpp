@@ -92,7 +92,6 @@ void text_field_widget::set_layout(widget_layout const &layout) noexcept
         } else {
             _text_rectangle = layout.rectangle();
         }
-
     }
 
     if (_error_label_widget->visible) {
@@ -170,11 +169,10 @@ hitbox text_field_widget::hitbox_test(point3 position) const noexcept
 
 [[nodiscard]] color text_field_widget::focus_color() const noexcept
 {
-    if (enabled and _text_widget->active() and not _error_label->empty()) {
-        return theme().text_style(theme_text_style::error).color;
-
-    } else if (enabled) {
-        if (_text_widget->focus and _text_widget->active()) {
+    if (enabled) {
+        if (not _error_label->empty()) {
+            return theme().text_style(theme_text_style::error).color;
+        } else if (_text_widget->focus) {
             return theme().color(theme_color::accent);
         } else if (hover) {
             return theme().color(theme_color::border, semantic_layer + 1);

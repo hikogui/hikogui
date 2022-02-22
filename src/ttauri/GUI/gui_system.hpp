@@ -193,20 +193,6 @@ public:
         return thread_id == current_thread_id();
     }
 
-    /** Set the theme for the system.
-     *
-     * @param new_theme The new theme to use for the gui system.
-     */
-    void set_theme(tt::theme const &new_theme) noexcept;
-
-    /** Get the theme.
-     *
-     * @return The current theme.
-     */
-    tt::theme const &theme() const noexcept;
-
-    void set_theme_mode(tt::theme_mode mode) noexcept;
-
     /** Request all windows to constrain.
      */
     void request_reconstrain() noexcept;

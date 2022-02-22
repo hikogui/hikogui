@@ -86,6 +86,11 @@ public:
      */
     float dpi = 72.0;
 
+    /** Theme to use to draw the widgets on this window.
+     * The sizes and colors of the theme have already been adjusted to the window's state and dpi.
+     */
+    tt::theme theme = {};
+
     /** The size of the widget.
      */
     extent2 widget_size;

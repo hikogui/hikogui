@@ -134,6 +134,15 @@ public:
         return color{composit(lhs._v, rhs._v)};
     }
 
+    [[nodiscard]] constexpr friend color desaturate(color const &rhs) noexcept
+    {
+        auto rhs_ = f32x4{rhs};
+
+        auto Y = 0.2126f * rhs_.r() + 0.7152f * rhs_.g() + 0.0722f * rhs_.b();
+
+        return color{Y, Y, Y, rhs_.a()};
+    }
+
 private:
     f16x4 _v;
 };
