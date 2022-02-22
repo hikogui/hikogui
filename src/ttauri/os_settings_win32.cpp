@@ -5,6 +5,9 @@
 #include "os_settings.hpp"
 #include "registry_win32.hpp"
 #include "log.hpp"
+#include <windows.h>
+#undef WIN32_NO_STATUS
+#include <winuser.h>
 
 namespace tt::inline v1 {
 

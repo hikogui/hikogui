@@ -6,7 +6,7 @@
 #include "exception.hpp"
 #include "strings.hpp"
 #include "log.hpp"
-#include <Windows.h>
+#include <windows.h>
 #undef WIN32_NO_STATUS
 #include <ntstatus.h>
 #include <winreg.h>

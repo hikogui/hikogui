@@ -78,7 +78,10 @@ void gui_window::init()
     // Reset the keyboard target to not focus anything.
     update_keyboard_target({});
 
+    // For changes in setting on the OS we should reconstrain/layout/redraw the window
+    // For example when the language or theme changes.
     _setting_change_callback = os_settings::subscribe([this] {
+        gui.set_theme_mode(os_settings::theme_mode());
         this->request_reconstrain();
     });
 

@@ -721,7 +721,6 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     case WM_SETTINGCHANGE:
         tt_axiom(is_gui_thread());
         os_settings::gather();
-        gui.set_theme_mode(os_settings::theme_mode());
         break;
 
     case WM_DPICHANGED: {
