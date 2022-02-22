@@ -14,6 +14,9 @@
 #include "../geometry/transform.hpp"
 #include "../geometry/circle.hpp"
 #include "../geometry/line_end_cap.hpp"
+#include "../text/text_cursor.hpp"
+#include "../text/text_selection.hpp"
+#include "../text/text_shaper.hpp"
 #include "../color/color.hpp"
 #include "../color/quad_color.hpp"
 #include "../vspan.hpp"
@@ -23,7 +26,6 @@ namespace tt::inline v1 {
 class gfx_device;
 class gfx_device_vulkan;
 class shaped_text;
-class text_shaper;
 class glyph_ids;
 struct paged_image;
 
@@ -96,13 +98,13 @@ public:
         // clang-format off
         ttlet border_radius = border_width * 0.5f;
         ttlet box_ =
-            border_side == tt::border_side::inside  ? box - border_radius :
+            border_side == tt::border_side::inside ? box - border_radius :
             border_side == tt::border_side::outside ? box + border_radius :
-                                                      box;
+            box;
         ttlet corner_radius_ =
-            border_side == tt::border_side::inside  ? corner_radius - border_radius :
+            border_side == tt::border_side::inside ? corner_radius - border_radius :
             border_side == tt::border_side::outside ? corner_radius + border_radius :
-                                                      corner_radius;
+            corner_radius;
         // clang-format on
 
         return _draw_box(
@@ -137,13 +139,13 @@ public:
         // clang-format off
         ttlet border_radius = border_width * 0.5f;
         ttlet box_ =
-            border_side == tt::border_side::inside  ? box - border_radius :
+            border_side == tt::border_side::inside ? box - border_radius :
             border_side == tt::border_side::outside ? box + border_radius :
-                                                      box;
+            box;
         ttlet corner_radius_ =
-            border_side == tt::border_side::inside  ? corner_radius - border_radius :
+            border_side == tt::border_side::inside ? corner_radius - border_radius :
             border_side == tt::border_side::outside ? corner_radius + border_radius :
-                                                      corner_radius;
+            corner_radius;
         // clang-format on
 
         return _draw_box(
@@ -317,9 +319,9 @@ public:
     {
         // clang-format off
         ttlet circle_ =
-            border_side == tt::border_side::inside  ? circle - border_width * 0.5f :
+            border_side == tt::border_side::inside ? circle - border_width * 0.5f :
             border_side == tt::border_side::outside ? circle + border_width * 0.5f :
-                                                      circle;
+            circle;
         // clang-format on
 
         ttlet box = layout.to_window * make_rectangle(circle_);
@@ -338,9 +340,9 @@ public:
     {
         // clang-format off
         ttlet circle_ =
-            border_side == tt::border_side::inside  ? circle - border_width * 0.5f :
+            border_side == tt::border_side::inside ? circle - border_width * 0.5f :
             border_side == tt::border_side::outside ? circle + border_width * 0.5f :
-                                                      circle;
+            circle;
         // clang-format on
 
         ttlet box = layout.to_window * make_rectangle(circle_);
@@ -385,8 +387,7 @@ public:
      * @param color The color that the glyph should be drawn in.
      * @param glyph The glyphs to draw.
      */
-    void
-    draw_glyph(widget_layout const &layout, quad const &box, quad_color const &color, glyph_ids const &glyph) const noexcept
+    void draw_glyph(widget_layout const &layout, quad const &box, quad_color const &color, glyph_ids const &glyph) const noexcept
     {
         return _draw_glyph(layout.window_clipping_rectangle(), layout.to_window * box, color, glyph);
     }
@@ -470,8 +471,7 @@ public:
      * @param color Text-color overriding the colors from the shaped_text.
      * @param text The shaped text to draw.
      */
-    void draw_text(widget_layout const &layout, quad_color const &color, text_shaper const &text)
-        const noexcept
+    void draw_text(widget_layout const &layout, quad_color const &color, text_shaper const &text) const noexcept
     {
         return _draw_text(layout.window_clipping_rectangle(), layout.to_window, text, color);
     }
@@ -531,6 +531,50 @@ public:
         return _draw_text(layout.window_clipping_rectangle(), layout.to_window, text);
     }
 
+    /** Draw text-selection of shaped text.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param text The shaped text to draw.
+     * @param selection The text selection.
+     * @param color The color of the selection.
+     */
+    void
+    draw_text_selection(widget_layout const &layout, text_shaper const &text, text_selection const &selection, tt::color color)
+        const noexcept
+    {
+        return _draw_text_selection(layout.window_clipping_rectangle(), layout.to_window, text, selection, color);
+    }
+
+    /** Draw text cursors of shaped text.
+     *
+     * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param text The shaped text to draw.
+     * @param cursor The position of the cursor.
+     * @param primary_color The color of the primary cursor (the insertion cursor).
+     * @param secondary_color The color of the secondary cursor (the append cursor).
+     * @param overwrite_mode If true draw overwrite mode cursor; if false draw insertion mode cursors,
+     * @param dead_character_mode If true draw the dead-character cursor. The dead_character_mode overrides all other cursors.
+     */
+    void draw_text_cursors(
+        widget_layout const &layout,
+        text_shaper const &text,
+        text_cursor cursor,
+        tt::color primary_color,
+        tt::color secondary_color,
+        bool overwrite_mode,
+        bool dead_character_mode) const noexcept
+    {
+        return _draw_text_cursors(
+            layout.window_clipping_rectangle(),
+            layout.to_window,
+            text,
+            cursor,
+            primary_color,
+            secondary_color,
+            overwrite_mode,
+            dead_character_mode);
+    }
+
     [[nodiscard]] friend bool overlaps(draw_context const &context, widget_layout const &layout) noexcept
     {
         return overlaps(context.scissor_rectangle, layout.window_clipping_rectangle());
@@ -560,6 +604,43 @@ private:
         matrix3 const &transform,
         text_shaper const &text,
         std::optional<quad_color> color = {}) const noexcept;
+
+    void _draw_text_selection(
+        aarectangle const &clipping_rectangle,
+        matrix3 const &transform,
+        text_shaper const &text,
+        text_selection const &selection,
+        tt::color) const noexcept;
+
+    void _draw_text_insertion_cursor_empty(
+        aarectangle const &clipping_rectangle,
+        matrix3 const &transform,
+        text_shaper const &text,
+        tt::color color) const noexcept;
+
+    void _draw_text_insertion_cursor(
+        aarectangle const &clipping_rectangle,
+        matrix3 const &transform,
+        text_shaper const &text,
+        text_cursor cursor,
+        tt::color color,
+        bool show_flag) const noexcept;
+
+    void _draw_text_overwrite_cursor(
+        aarectangle const &clipping_rectangle,
+        matrix3 const &transform,
+        text_shaper::char_const_iterator it,
+        tt::color color) const noexcept;
+
+    void _draw_text_cursors(
+        aarectangle const &clipping_rectangle,
+        matrix3 const &transform,
+        text_shaper const &text,
+        text_cursor cursor,
+        tt::color primary_color,
+        tt::color secondary_color,
+        bool overwrite_mode,
+        bool dead_character_mode) const noexcept;
 
     void _draw_glyph(aarectangle const &clipping_rectangle, quad const &box, quad_color const &color, glyph_ids const &glyph)
         const noexcept;

@@ -100,8 +100,6 @@ template<typename CharT>
 
 } // namespace tt::inline v1
 
-namespace std {
-
 template<typename T, std::size_t N, typename CharT>
 struct std::formatter<tt::basic_fixed_string<T, N>, CharT> : std::formatter<T const *, CharT> {
     auto format(tt::basic_fixed_string<T, N> const &t, auto &fc)
@@ -109,5 +107,3 @@ struct std::formatter<tt::basic_fixed_string<T, N>, CharT> : std::formatter<T co
         return std::formatter<T const *, CharT>::format(t.data(), fc);
     }
 };
-
-} // namespace std

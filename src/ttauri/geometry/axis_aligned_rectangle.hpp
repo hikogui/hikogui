@@ -155,11 +155,6 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr bool is_square() const noexcept
-    {
-        return width() == height();
-    }
-
     /** Get size of the rectangle
      *
      * @return The (x, y) vector representing the width and height of the rectangle.
@@ -462,24 +457,32 @@ public:
      */
     friend axis_aligned_rectangle
     fit(axis_aligned_rectangle const &bounds, axis_aligned_rectangle const &rectangle) noexcept;
+
+    [[nodiscard]] constexpr friend float distance(axis_aligned_rectangle const &lhs, point2 const &rhs) noexcept
+    {
+        ttlet lhs_ = static_cast<f32x4>(lhs);
+        ttlet rhs_ = static_cast<f32x4>(rhs);
+        // Only (x,y) of subsequent calculations are valid, (z,w) have garbage values.
+        ttlet closest_point = max(min(rhs_, lhs_.zwzw()), lhs_);
+        ttlet v_closest_point = closest_point - rhs_;
+        return hypot<0b0011>(v_closest_point);
+    }
 };
 
 using aarectangle = axis_aligned_rectangle;
 
 } // namespace tt::inline v1
 
-namespace std {
-
 template<>
-class atomic<tt::axis_aligned_rectangle> {
+class std::atomic<tt::axis_aligned_rectangle> {
 public:
     static constexpr bool is_always_lock_free = false;
 
-    constexpr atomic() noexcept : _value() {}
-    atomic(atomic const &) = delete;
-    atomic(atomic &&) = delete;
-    atomic &operator=(atomic const &) = delete;
-    atomic &operator=(atomic &&) = delete;
+    constexpr atomic() noexcept = default;
+    atomic(atomic const &) = default;
+    atomic(atomic &&) = default;
+    atomic &operator=(atomic const &) = default;
+    atomic &operator=(atomic &&) = default;
 
     constexpr atomic(tt::axis_aligned_rectangle const &rhs) noexcept : _value(rhs) {}
     atomic &operator=(tt::axis_aligned_rectangle const &rhs) noexcept
@@ -578,7 +581,7 @@ private:
 };
 
 template<typename CharT>
-struct formatter<tt::axis_aligned_rectangle, CharT> : formatter<float, CharT> {
+struct std::formatter<tt::axis_aligned_rectangle, CharT> : std::formatter<float, CharT> {
     auto parse(auto &pc)
     {
         return pc.end();
@@ -589,5 +592,3 @@ struct formatter<tt::axis_aligned_rectangle, CharT> : formatter<float, CharT> {
         return std::vformat_to(fc.out(), "{}:{}", std::make_format_args(get<0>(t), t.size()));
     }
 };
-
-} // namespace std

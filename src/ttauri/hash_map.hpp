@@ -65,13 +65,19 @@ private:
     template<typename K, typename V>
     constexpr void set(std::size_t hash, K &&key, V &&value) noexcept
     {
-        _hkv = {hash, std::forward<K>(key), std::forward<V>(value)};
+        if (this->hash() != 0) {
+            std::destroy_at(std::addressof(_hkv));
+        }
+        std::construct_at(std::addressof(_hkv), hash, std::forward<K>(key), std::forward<V>(value));
     }
 
     template<typename K>
     constexpr void set(std::size_t hash, K &&key) noexcept
     {
-        _hkv = {hash, std::forward<K>(key), Value{}};
+        if (this->hash() != 0) {
+            std::destroy_at(std::addressof(_hkv));
+        }
+        std::construct_at(std::addressof(_hkv), hash, std::forward<K>(key), Value{});
     }
 
     union {

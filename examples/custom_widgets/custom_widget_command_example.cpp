@@ -129,7 +129,7 @@ public:
     {
         if (enabled) {
             if (event.type == tt::keyboard_event::Type::grapheme) {
-                tt_log_error("User typed the letter U+{:x}.", static_cast<uint32_t>(event.grapheme.front()));
+                tt_log_error("User typed the letter U+{:x}.", static_cast<uint32_t>(get<0>(event.grapheme)));
                 return true;
             }
         }

@@ -26,8 +26,6 @@ inline std::ostream &operator<<(std::ostream &lhs, theme_mode rhs)
     return lhs << theme_mode_metadata[rhs];
 }
 
-theme_mode read_os_theme_mode() noexcept;
-
 } // namespace tt::inline v1
 
 template<typename CharT>

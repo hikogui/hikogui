@@ -8,6 +8,7 @@
 #include "text/translation.hpp"
 #include "forward_value.hpp"
 #include "cast.hpp"
+#include "os_settings.hpp"
 #include <memory>
 #include <string>
 #include <string_view>
@@ -201,8 +202,7 @@ public:
      * @param languages A list of languages to search for translations.
      * @return The translated and formatted message.
      */
-    [[nodiscard]] std::string
-    operator()(std::vector<language *> const &languages = language::preferred_languages()) const noexcept
+    [[nodiscard]] std::string operator()(std::vector<language *> const &languages = os_settings::languages()) const noexcept
     {
         if (_args) {
             auto fmt = ::tt::get_translation(_msg_id, _args->n(), languages);
@@ -220,7 +220,7 @@ public:
      * @return The translated and formatted message.
      */
     [[nodiscard]] std::string
-    operator()(std::locale const &loc, std::vector<language *> const &languages = language::preferred_languages()) const noexcept
+    operator()(std::locale const &loc, std::vector<language *> const &languages = os_settings::languages()) const noexcept
     {
         if (_args) {
             auto fmt = ::tt::get_translation(_msg_id, _args->n(), languages);

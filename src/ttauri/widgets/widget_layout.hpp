@@ -8,7 +8,7 @@
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/transform.hpp"
 #include "../geometry/translate.hpp"
-#include "../text/unicode_bidi_class.hpp"
+#include "../unicode/unicode_bidi_class.hpp"
 #include "../GFX/sub_pixel_orientation.hpp"
 #include "../chrono.hpp"
 

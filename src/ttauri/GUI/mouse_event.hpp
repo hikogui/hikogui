@@ -39,6 +39,16 @@ struct mouse_event {
 
     mouse_event() noexcept : type(Type::None), position(), cause(), down(), clickCount(0) {}
 
+    [[nodiscard]] bool empty() const noexcept
+    {
+        return type == Type::None;
+    }
+
+    operator bool() const noexcept
+    {
+        return not empty();
+    }
+
     static mouse_event entered(point2 position = {}) noexcept
     {
         mouse_event event;

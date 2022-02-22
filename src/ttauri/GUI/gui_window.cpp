@@ -5,11 +5,14 @@
 #include "gui_window.hpp"
 #include "gui_system.hpp"
 #include "keyboard_bindings.hpp"
+#include "theme_book.hpp"
+#include "../os_settings.hpp"
 #include "../GFX/gfx_device.hpp"
 #include "../GFX/gfx_surface.hpp"
-#include "../trace.hpp"
 #include "../widgets/window_widget.hpp"
 #include "../widgets/grid_widget.hpp"
+#include "../trace.hpp"
+#include "../log.hpp"
 
 namespace tt::inline v1 {
 
@@ -71,13 +74,15 @@ void gui_window::init()
     }
 
     // Execute a constraint check to determine initial window size.
-    widget->set_constraints();
-    ttlet new_size = widget->constraints().preferred;
+    theme = gui.theme_book->find("default", os_settings::theme_mode()).transform(dpi, active);
+    ttlet new_size = widget->set_constraints().preferred;
 
     // Reset the keyboard target to not focus anything.
     update_keyboard_target({});
 
-    _setting_change_callback = language::subscribe([this] {
+    // For changes in setting on the OS we should reconstrain/layout/redraw the window
+    // For example when the language or theme changes.
+    _setting_change_callback = os_settings::subscribe([this] {
         this->request_reconstrain();
     });
 
@@ -122,12 +127,15 @@ void gui_window::render(utc_nanoseconds display_time_point)
     auto need_reconstrain = _reconstrain.exchange(false, std::memory_order_relaxed);
 
 #if 0
-    // For performance checks force reconstraints.
+    // For performance checks force reconstrain.
     need_reconstrain = true;
 #endif
 
     if (need_reconstrain) {
         ttlet t2 = trace<"window::constrain">();
+
+        theme = gui.theme_book->find("default", os_settings::theme_mode()).transform(dpi, active);
+
         widget->set_constraints();
     }
 
@@ -270,7 +278,7 @@ void gui_window::update_keyboard_target(tt::widget const *new_target_widget, key
     }
 
     // Tell "escape" to all the widget that are not parents of the new widget
-    [[maybe_unused]] ttlet handled = widget->handle_command_recursive(command::gui_cancel, new_target_parent_chain);
+    widget->handle_command_recursive(command::gui_cancel, new_target_parent_chain);
 
     // Tell the new widget that keyboard focus was entered.
     if (new_target_widget) {
@@ -311,6 +319,11 @@ bool gui_window::handle_event(tt::command command) noexcept
     case command::gui_toolbar_open:
         update_keyboard_target(widget.get(), keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
         return true;
+    case command::text_edit_copy:
+        // Widgets, other than the current keyboard target may have text selected and can handle the command::text_edit_copy.
+        widget->handle_command_recursive(command::text_edit_copy);
+        return true;
+
     default:;
     }
     return false;
@@ -382,11 +395,6 @@ bool gui_window::send_event(KeyboardState _state, keyboard_modifiers modifiers, 
 bool gui_window::send_event(grapheme grapheme, bool full) noexcept
 {
     return send_event(keyboard_event(grapheme, full));
-}
-
-bool gui_window::send_event(char32_t c, bool full) noexcept
-{
-    return send_event(grapheme(c), full);
 }
 
 } // namespace tt::inline v1

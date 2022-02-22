@@ -12,6 +12,7 @@ add_subdirectory(GUI)
 add_subdirectory(random)
 add_subdirectory(rapid)
 add_subdirectory(skeleton)
+add_subdirectory(unicode)
 add_subdirectory(text)
 add_subdirectory(widgets)
 
@@ -106,6 +107,9 @@ target_sources(ttauri PRIVATE
     cast.hpp
     observable.hpp
     operator.hpp
+    os_settings.cpp
+    os_settings.hpp
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/os_settings_win32.cpp>
     architecture.hpp
     parse_location.hpp
     preferences.cpp
@@ -122,6 +126,8 @@ target_sources(ttauri PRIVATE
     range_map.hpp
     ranges.hpp
     recursive_iterator.hpp
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32.cpp>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32.hpp>
     required.hpp
     range_map.hpp
     resource_view.hpp
@@ -155,6 +161,7 @@ target_sources(ttauri PRIVATE
     trace.cpp
     trace.hpp
     type_traits.hpp
+    undo_stack.hpp
     unfair_mutex.hpp
     unfair_recursive_mutex.hpp
     URL.cpp

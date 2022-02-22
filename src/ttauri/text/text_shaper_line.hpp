@@ -6,7 +6,7 @@
 
 #include "text_shaper_char.hpp"
 #include "font_metrics.hpp"
-#include "unicode_bidi_class.hpp"
+#include "../unicode/unicode_bidi_class.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../alignment.hpp"
 #include <vector>
@@ -19,18 +19,27 @@ public:
     using const_iterator = std::vector<text_shaper_char>::const_iterator;
     using column_vector = std::vector<iterator>;
 
-    const_iterator first;
-    const_iterator last;
+    /** The first character in the line, in logical order.
+     */
+    iterator first;
 
-    /** Indices to the characters in the text.
+    /** One beyond the last character in the line, in logical order.
+     */
+    iterator last;
+
+    /** Iterators to the characters in the text.
      *
-     * The indices are in display-order.
+     * The Iterators are in display-order.
      */
     column_vector columns;
 
     /** The maximum metrics of the font of each glyph on this line.
      */
     font_metrics metrics;
+
+    /** The line number of this line, counted from top to bottom.
+     */
+    size_t line_nr;
 
     /** Position of the base-line of this line.
      */
@@ -50,9 +59,14 @@ public:
      */
     float width;
 
-    /** True if this line ends a paragraph.
+    /** Category of the last character on the line.
+     * 
+     * Use to determine if this line ends in:
+     *  - Zp: An explicit paragraph separator.
+     *  - Zl: An explicit line separator.
+     *  - *: A word-wrapped line. Need to add line-separators into the stream for bidi-algorithm.
      */
-    bool end_of_paragraph;
+    unicode_general_category last_category;
 
     /** The writing direction of the paragraph.
      *
@@ -62,13 +76,49 @@ public:
 
     /** Construct a line.
      *
+     * @param line_nr The line number counting from top to bottom.
      * @param begin The first character of the text.
      * @param first The first character of the line.
      * @param last One beyond the last character of the line.
+     * @param width The width of the line.
+     * @param metrics The initial line metrics.
      */
-    text_shaper_line(const_iterator begin, const_iterator first, const_iterator last) noexcept;
+    text_shaper_line(
+        size_t line_nr,
+        const_iterator begin,
+        iterator first,
+        iterator last,
+        float width,
+        tt::font_metrics const &metrics) noexcept;
+
+    [[nodiscard]] constexpr size_t size() const noexcept
+    {
+        return columns.size();
+    }
+
+    [[nodiscard]] constexpr iterator front() const noexcept
+    {
+        return columns.front();
+    }
+
+    [[nodiscard]] constexpr iterator back() const noexcept
+    {
+        return columns.back();
+    }
+
+    iterator operator[](size_t index) const noexcept
+    {
+        tt_axiom(index < columns.size());
+        return columns[index];
+    }
 
     void layout(horizontal_alignment alignment, float min_x, float max_x, float sub_pixel_width) noexcept;
+
+    /** Get the character nearest to position.
+    * 
+    * @return An iterator to the character, and true if the position is after the character.
+     */
+    [[nodiscard]] std::pair<const_iterator,bool> get_nearest(point2 position) const noexcept;
 };
 
 }

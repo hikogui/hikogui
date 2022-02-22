@@ -55,10 +55,9 @@ public:
      *         the callback can no longer be called.
      */
     template<typename Callback>
-    requires(std::is_invocable_v<Callback>) [[nodiscard]] std::shared_ptr<callback_type> add_callback(
-        std::chrono::nanoseconds interval,
-        Callback callback,
-        bool immediate = false) noexcept
+    [[nodiscard]] std::shared_ptr<callback_type>
+    add_callback(std::chrono::nanoseconds interval, Callback callback, bool immediate = false) noexcept
+        requires(std::is_invocable_v<Callback, utc_nanoseconds, bool>)
     {
         ttlet current_time = utc_nanoseconds(std::chrono::utc_clock::now());
         auto callback_ptr = std::make_shared<callback_type>(std::forward<Callback>(callback));

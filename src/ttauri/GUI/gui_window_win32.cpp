@@ -11,6 +11,8 @@
 #include "../log.hpp"
 #include "../strings.hpp"
 #include "../thread.hpp"
+#include "../os_settings.hpp"
+#include "../unicode/unicode_normalization.hpp"
 #include <windowsx.h>
 #include <dwmapi.h>
 #include <new>
@@ -170,9 +172,6 @@ gui_window_win32::gui_window_win32(gui_system &gui, label const &title, std::wea
     using namespace std::chrono_literals;
 
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-
-    doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;
-    tt_log_info("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
 }
 
 gui_window_win32::~gui_window_win32()
@@ -327,7 +326,9 @@ void gui_window_win32::set_text_on_clipboard(std::string str) noexcept
     }
 
     {
-        auto wstr = tt::to_wstring(str);
+        auto str32 = to_u32string(str);
+        auto wstr = tt::to_wstring(
+            unicode_NFC(str32, unicode_normalization_mask::NFD | unicode_normalization_mask::decompose_newline_to_CRLF));
 
         auto wstr_handle = GlobalAlloc(GMEM_MOVEABLE, (ssize(wstr) + 1) * sizeof(wchar_t));
         if (wstr_handle == nullptr) {
@@ -527,12 +528,32 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
     case WM_SIZING: {
         ttlet rect_ptr = std::launder(std::bit_cast<RECT *>(lParam));
-        setOSWindowRectangleFromRECT(*rect_ptr);
+        if (rect_ptr->right < rect_ptr->left or rect_ptr->bottom < rect_ptr->top) {
+            tt_log_error(
+                "Invalid RECT received on WM_SIZING: left={}, right={}, bottom={}, top={}",
+                rect_ptr->left,
+                rect_ptr->right,
+                rect_ptr->bottom,
+                rect_ptr->top);
+
+        } else {
+            setOSWindowRectangleFromRECT(*rect_ptr);
+        }
     } break;
 
     case WM_MOVING: {
         ttlet rect_ptr = std::launder(std::bit_cast<RECT *>(lParam));
-        setOSWindowRectangleFromRECT(*rect_ptr);
+        if (rect_ptr->right < rect_ptr->left or rect_ptr->bottom < rect_ptr->top) {
+            tt_log_error(
+                "Invalid RECT received on WM_MOVING: left={}, right={}, bottom={}, top={}",
+                rect_ptr->left,
+                rect_ptr->right,
+                rect_ptr->bottom,
+                rect_ptr->top);
+
+        } else {
+            setOSWindowRectangleFromRECT(*rect_ptr);
+        }
     } break;
 
     case WM_WINDOWPOSCHANGED: {
@@ -573,7 +594,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
             break;
         default: tt_log_error("Unknown WM_ACTIVE value.");
         }
-        request_relayout();
+        request_reconstrain();
     } break;
 
     case WM_GETMINMAXINFO: {
@@ -591,8 +612,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     } break;
 
     case WM_UNICHAR: {
-        auto c = static_cast<char32_t>(wParam);
-        if (c == UNICODE_NOCHAR) {
+        if (auto c = static_cast<char32_t>(wParam); c == UNICODE_NOCHAR) {
             // Tell the 3rd party keyboard handler application that we support WM_UNICHAR.
             return 1;
         } else if (c >= 0x20) {
@@ -603,17 +623,19 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         }
     } break;
 
-    case WM_DEADCHAR: {
-        auto c = handleSuragates(static_cast<char32_t>(wParam));
-        if (c != 0) {
-            send_event(c, false);
+    case WM_DEADCHAR:
+        if (auto c = handle_suragates(static_cast<char32_t>(wParam))) {
+            if (auto g = grapheme{c}; g.valid()) {
+                send_event(g, false);
+            }
         }
-    } break;
+        break;
 
     case WM_CHAR: {
-        auto c = handleSuragates(static_cast<char32_t>(wParam));
-        if (c >= 0x20) {
-            send_event(c);
+        if (auto c = handle_suragates(static_cast<char32_t>(wParam))) {
+            if (auto g = grapheme{c}; g.valid()) {
+                send_event(g);
+            }
         }
     } break;
 
@@ -696,23 +718,29 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         }
     } break;
 
-    case WM_SETTINGCHANGE: {
-        using namespace std::chrono_literals;
-
+    case WM_SETTINGCHANGE:
         tt_axiom(is_gui_thread());
-        doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;
-        tt_log_info("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
-
-        gui.set_theme_mode(read_os_theme_mode());
-        request_reconstrain();
-    } break;
+        os_settings::gather();
+        break;
 
     case WM_DPICHANGED: {
         tt_axiom(is_gui_thread());
         // x-axis dpi value.
         dpi = narrow_cast<float>(LOWORD(wParam));
+
+        // Use the recommended rectangle to resize and reposition the window
+        ttlet new_rectangle = std::launder(reinterpret_cast<RECT *>(lParam));
+        SetWindowPos(
+            win32Window,
+            NULL,
+            new_rectangle->left,
+            new_rectangle->top,
+            new_rectangle->right - new_rectangle->left,
+            new_rectangle->bottom - new_rectangle->top,
+            SWP_NOZORDER | SWP_NOACTIVATE);
+        request_reconstrain();
+
         tt_log_info("DPI has changed to {}", dpi);
-        request_relayout();
     } break;
 
     default: break;
@@ -722,7 +750,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     return -1;
 }
 
-[[nodiscard]] char32_t gui_window_win32::handleSuragates(char32_t c) noexcept
+[[nodiscard]] char32_t gui_window_win32::handle_suragates(char32_t c) noexcept
 {
     tt_axiom(is_gui_thread());
 
@@ -810,13 +838,25 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         }
         break;
 
+    case WM_LBUTTONDBLCLK:
+    case WM_MBUTTONDBLCLK:
+    case WM_RBUTTONDBLCLK:
+    case WM_XBUTTONDBLCLK:
     case WM_LBUTTONDOWN:
     case WM_MBUTTONDOWN:
     case WM_RBUTTONDOWN:
     case WM_XBUTTONDOWN: {
         mouseEvent.type = mouse_event::Type::ButtonDown;
         mouseEvent.downPosition = mouseEvent.position;
-        mouseEvent.clickCount = (mouseEvent.timePoint < doubleClickTimePoint + doubleClickMaximumDuration) ? 3 : 1;
+
+        if (mouseEvent.timePoint < multi_click_time_point + os_settings::double_click_interval()) {
+            ++multi_click_count;
+        } else {
+            multi_click_count = 1;
+        }
+        multi_click_time_point = mouseEvent.timePoint;
+
+        mouseEvent.clickCount = multi_click_count;
 
         // Track draging past the window borders.
         tt_axiom(win32Window != 0);
@@ -824,16 +864,6 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
         SetCapture(window_handle);
     } break;
-
-    case WM_LBUTTONDBLCLK:
-    case WM_MBUTTONDBLCLK:
-    case WM_RBUTTONDBLCLK:
-    case WM_XBUTTONDBLCLK:
-        mouseEvent.type = mouse_event::Type::ButtonDown;
-        mouseEvent.downPosition = mouseEvent.position;
-        mouseEvent.clickCount = 2;
-        doubleClickTimePoint = std::chrono::utc_clock::now();
-        break;
 
     case WM_MOUSEWHEEL:
     case WM_MOUSEHWHEEL: mouseEvent.type = mouse_event::Type::Wheel; break;

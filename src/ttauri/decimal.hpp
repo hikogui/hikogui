@@ -567,10 +567,8 @@ private:
 
 } // namespace tt::inline v1
 
-namespace std {
-
 template<>
-struct hash<tt::decimal> {
+struct std::hash<tt::decimal> {
     inline std::size_t operator()(tt::decimal const &value) const
     {
         return value.hash();
@@ -584,5 +582,3 @@ struct std::formatter<tt::decimal, CharT> : std::formatter<double, CharT> {
         return std::formatter<double, CharT>::format(static_cast<double>(t), fc);
     }
 };
-
-} // namespace std

@@ -489,14 +489,10 @@ private:
 
 } // namespace tt::inline v1
 
-namespace std {
-
 template<typename CharT>
-struct formatter<tt::jsonpath, CharT> : formatter<char const *, CharT> {
+struct std::formatter<tt::jsonpath, CharT> : std::formatter<char const *, CharT> {
     auto format(tt::jsonpath const &t, auto &fc)
     {
-        return formatter<std::string, CharT>{}.format(to_string(t), fc);
+        return std::formatter<std::string, CharT>{}.format(to_string(t), fc);
     }
 };
-
-} // namespace std

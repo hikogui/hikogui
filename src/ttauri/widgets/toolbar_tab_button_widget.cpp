@@ -82,7 +82,7 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const &cont
     ttlet outline_rectangle = aarectangle{0.0f, -offset, layout().width(), layout().height() + offset};
 
     // The focus line will be drawn by the parent widget (toolbar_widget) at 0.5.
-    ttlet button_z = (focus and active()) ? translate_z(0.6f) : translate_z(0.0f);
+    ttlet button_z = focus ? translate_z(0.6f) : translate_z(0.0f);
 
     auto button_color = (hover || state() == button_state::on) ? theme().color(theme_color::fill, semantic_layer - 1) :
                                                                  theme().color(theme_color::fill, semantic_layer);
@@ -92,7 +92,7 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const &cont
         layout(),
         button_z * outline_rectangle,
         button_color,
-        (focus && active()) ? focus_color() : button_color,
+        focus ? focus_color() : button_color,
         theme().border_width,
         border_side::inside,
         corner_radii);

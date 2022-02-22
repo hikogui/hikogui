@@ -9,6 +9,7 @@
 #include "../color/sRGB.hpp"
 #include "../log.hpp"
 #include "../URL.hpp"
+#include <algorithm>
 
 namespace tt::inline v1 {
 
@@ -21,6 +22,42 @@ theme::theme(tt::font_book const &font_book, URL const &url)
     } catch (std::exception const &e) {
         throw io_error("{}: Could not load theme.\n{}", url, e.what());
     }
+}
+
+[[nodiscard]] theme theme::transform(float new_dpi, bool active) const noexcept
+{
+    auto r = *this;
+    if (not active) {
+        for (ttlet saturated_theme_color : saturated_theme_colors) {
+            ttlet &src_colors = _colors[to_underlying(saturated_theme_color)];
+            auto &dst_colors = r._colors[to_underlying(saturated_theme_color)];
+            std::transform(src_colors.begin(), src_colors.end(), dst_colors.begin(), [](auto x) {
+                return desaturate(x);
+            });
+        }
+    }
+
+    tt_axiom(new_dpi != 0.0f);
+    tt_axiom(dpi != 0.0f);
+    tt_axiom(scale != 0.0f);
+
+    auto delta_scale = new_dpi / dpi;
+    r.dpi = new_dpi;
+    r.scale = delta_scale * scale;
+
+    // Scale each size, and round so that everything will stay aligned on pixel boundaries.
+    r.toolbar_height = std::round(delta_scale * toolbar_height);
+    r.toolbar_decoration_button_width = std::round(delta_scale * toolbar_decoration_button_width);
+    r.margin = std::round(delta_scale * margin);
+    r.border_width = std::round(delta_scale * border_width);
+    r.rounding_radius = std::round(delta_scale * rounding_radius);
+    r.size = std::round(delta_scale * size);
+    r.large_size = std::round(delta_scale * large_size);
+    r.icon_size = std::round(delta_scale * icon_size);
+    r.large_icon_size = std::round(delta_scale * large_icon_size);
+    r.label_icon_size = std::round(delta_scale * label_icon_size);
+
+    return r;
 }
 
 [[nodiscard]] tt::color theme::color(theme_color theme_color, ssize_t nesting_level) const noexcept
@@ -282,11 +319,13 @@ void theme::parse(tt::font_book const &font_book, datum const &data)
     std::get<static_cast<std::size_t>(theme_color::fill)>(this->_colors) = parse_color_list(data, "fill-color");
     std::get<static_cast<std::size_t>(theme_color::accent)>(this->_colors) = parse_color_list(data, "accent-color");
     std::get<static_cast<std::size_t>(theme_color::text_select)>(this->_colors) = parse_color_list(data, "text-select-color");
-    std::get<static_cast<std::size_t>(theme_color::cursor)>(this->_colors) = parse_color_list(data, "cursor-color");
-    std::get<static_cast<std::size_t>(theme_color::incomplete_glyph)>(this->_colors) =
-        parse_color_list(data, "incomplete-glyph-color");
+    std::get<static_cast<std::size_t>(theme_color::primary_cursor)>(this->_colors) =
+        parse_color_list(data, "primary-cursor-color");
+    std::get<static_cast<std::size_t>(theme_color::secondary_cursor)>(this->_colors) =
+        parse_color_list(data, "secondary-cursor-color");
 
-    std::get<static_cast<std::size_t>(theme_text_style::label)>(this->_text_styles) = parse_text_style(font_book, data, "label-style");
+    std::get<static_cast<std::size_t>(theme_text_style::label)>(this->_text_styles) =
+        parse_text_style(font_book, data, "label-style");
     std::get<static_cast<std::size_t>(theme_text_style::small_label)>(this->_text_styles) =
         parse_text_style(font_book, data, "small-label-style");
     std::get<static_cast<std::size_t>(theme_text_style::warning)>(this->_text_styles) =

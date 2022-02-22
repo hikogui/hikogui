@@ -5,11 +5,11 @@
 #pragma once
 
 #include "keyboard_key.hpp"
-#include "../text/grapheme.hpp"
+#include "../unicode/grapheme.hpp"
+#include "../geometry/transform.hpp"
 #include "../required.hpp"
 #include "../assert.hpp"
 #include "../command.hpp"
-#include "../geometry/transform.hpp"
 #include <utility>
 
 namespace tt::inline v1 {
@@ -42,7 +42,7 @@ constexpr KeyboardState &operator|=(KeyboardState &lhs, KeyboardState rhs) noexc
 struct keyboard_event {
     enum class Type : uint8_t {
         Idle,
-        Partialgrapheme, ///< The user is combining a grapheme.
+        partial_grapheme, ///< The user is combining a grapheme.
         grapheme, ///< The user has finished entering a grapheme.
         Key, ///< Key (+modifiers) was used to send a key.
     };
@@ -63,7 +63,7 @@ struct keyboard_event {
     }
 
     keyboard_event(tt::grapheme grapheme, bool full = true) noexcept :
-        type(full ? Type::grapheme : Type::Partialgrapheme), state(), grapheme(std::move(grapheme)), key()
+        type(full ? Type::grapheme : Type::partial_grapheme), state(), grapheme(std::move(grapheme)), key()
     {
     }
 
@@ -75,13 +75,13 @@ struct keyboard_event {
 
         switch (rhs.type) {
         case Type::Idle: r += "Idle"; break;
-        case Type::Partialgrapheme: r += "Partialgrapheme="; break;
+        case Type::partial_grapheme: r += "partial_grapheme="; break;
         case Type::grapheme: r += "grapheme="; break;
         case Type::Key: r += "Key="; break;
         default: tt_no_default();
         }
 
-        if (rhs.type == Type::Partialgrapheme || rhs.type == Type::grapheme) {
+        if (rhs.type == Type::partial_grapheme || rhs.type == Type::grapheme) {
             r += to_string(rhs.grapheme);
         } else if (rhs.type == Type::Key) {
             r += to_string(rhs.key);

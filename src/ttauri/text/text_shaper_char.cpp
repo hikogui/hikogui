@@ -9,8 +9,13 @@
 
 namespace tt::inline v1 {
 
-[[nodiscard]] text_shaper_char::text_shaper_char(tt::grapheme const &grapheme, text_style const &style) noexcept :
-    grapheme(grapheme), style(style), description(&unicode_description_find(grapheme[0]))
+[[nodiscard]] text_shaper_char::text_shaper_char(tt::grapheme const &grapheme, text_style const &style, float dpi_scale) noexcept :
+    grapheme(grapheme),
+    style(style),
+    dpi_scale(dpi_scale),
+    line_nr(std::numeric_limits<size_t>::max()),
+    column_nr(std::numeric_limits<size_t>::max()),
+    description(&unicode_description::find(grapheme[0]))
 {
 }
 
@@ -19,7 +24,7 @@ void text_shaper_char::set_glyph(tt::glyph_ids &&new_glyph) noexcept
     glyph = std::move(new_glyph);
     auto glyph_metrics = tt::glyph_metrics{};
     if (glyph.font().load_glyph_metrics(glyph[0], glyph_metrics)) {
-        scale = glyph.font().metrics.round_scale(style.scaled_size());
+        scale = glyph.font().metrics.round_scale(dpi_scale * style.size);
         metrics = scale * glyph_metrics;
     } else {
         // Failed to load metrics, due to corrupt font file.
@@ -50,4 +55,4 @@ void text_shaper_char::replace_glyph(char32_t code_point) noexcept
     glyph_is_initial = false;
 }
 
-}
+} // namespace tt::inline v1

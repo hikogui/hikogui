@@ -8,7 +8,7 @@
 #include "default_text_field_delegate.hpp"
 #include "widget.hpp"
 #include "label_widget.hpp"
-#include "../text/editable_text.hpp"
+#include "scroll_widget.hpp"
 #include "../format.hpp"
 #include "../label.hpp"
 #include "../weak_or_unique_ptr.hpp"
@@ -67,10 +67,6 @@ public:
      */
     observable<theme_text_style> text_style = theme_text_style::label;
 
-    /** width of the text inside the text field.
-     */
-    observable<float> text_width = 100.0f;
-
     virtual ~text_field_widget();
 
     text_field_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept;
@@ -83,12 +79,14 @@ public:
     }
 
     /// @privatesection
+    [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
+    {
+        co_yield _scroll_widget.get();
+    }
     widget_constraints const &set_constraints() noexcept override;
     void set_layout(widget_layout const &layout) noexcept override;
     void draw(draw_context const &context) noexcept override;
     bool handle_event(command command) noexcept override;
-    bool handle_event(mouse_event const &event) noexcept override;
-    bool handle_event(keyboard_event const &event) noexcept override;
     hitbox hitbox_test(point3 position) const noexcept override;
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
     [[nodiscard]] color focus_color() const noexcept override;
@@ -96,56 +94,32 @@ public:
 private:
     weak_or_unique_ptr<delegate_type> _delegate;
 
-    bool _text_was_modified = false;
+    /** The scroll widget embeds the text widget.
+     */
+    std::unique_ptr<scroll_widget<axis::none, false>> _scroll_widget;
 
-    bool _continues = false;
+    /** The text widget inside the scroll widget.
+     */
+    text_widget *_text_widget = nullptr;
+
+    /** The text edited by the _text_widget.
+     */
+    observable<gstring> _text;
+
+    /** The rectangle where the text is displayed.
+     */
+    aarectangle _text_rectangle;
 
     /** An error string to show to the user.
      */
     observable<label> _error_label;
+    aarectangle _error_label_rectangle;
     std::unique_ptr<label_widget> _error_label_widget;
-
-    aarectangle _text_rectangle = {};
-
-    aarectangle _text_field_rectangle;
-    aarectangle _text_field_clipping_rectangle;
-
-    editable_text _field;
-    shaped_text _shaped_text;
-    aarectangle _left_to_right_caret = {};
-
-    /** Scroll speed in points per second.
-     * This is used when dragging outside of the widget.
-     */
-    float _drag_scroll_speed_x = 0.0f;
-
-    /** Number of mouse clicks that caused the drag.
-     */
-    int _drag_click_count = 0;
-
-    point2 _drag_select_position = {};
-
-    /** How much the text has scrolled in points.
-     */
-    float _text_scroll_x = 0.0f;
-
-    translate2 _text_translate;
-    translate2 _text_inv_translate;
-
-    static constexpr std::chrono::nanoseconds _blink_interval = std::chrono::milliseconds(500);
-    utc_nanoseconds _next_redraw_time_point;
-    utc_nanoseconds _last_update_time_point;
 
     text_field_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
     void revert(bool force) noexcept;
     void commit(bool force) noexcept;
-    void drag_select() noexcept;
-    void scroll_text() noexcept;
     void draw_background_box(draw_context const &context) const noexcept;
-    void draw_selection_rectangles(draw_context const &context) const noexcept;
-    void draw_partial_grapheme_caret(draw_context const &context) const noexcept;
-    void draw_caret(draw_context const &context) noexcept;
-    void draw_text(draw_context const &context) const noexcept;
 };
 
 } // namespace tt::inline v1

@@ -6,6 +6,7 @@
 
 #include "theme_text_style.hpp"
 #include "../exception.hpp"
+#include <array>
 
 namespace tt::inline v1 {
 
@@ -32,13 +33,26 @@ enum class theme_color : unsigned char {
     fill,
     accent,
     text_select,
-    cursor,
-    incomplete_glyph,
+    primary_cursor,
+    secondary_cursor,
 
     _size
 };
 
 constexpr std::size_t num_theme_colors = static_cast<std::size_t>(theme_color::_size);
+
+constexpr auto saturated_theme_colors = std::array{
+    theme_color::blue,
+    theme_color::green,
+    theme_color::indigo,
+    theme_color::orange,
+    theme_color::pink,
+    theme_color::purple,
+    theme_color::red,
+    theme_color::teal,
+    theme_color::yellow,
+    theme_color::accent};
+
 
 [[nodiscard]] inline theme_color theme_color_from_string(std::string_view str)
 {
@@ -82,10 +96,10 @@ constexpr std::size_t num_theme_colors = static_cast<std::size_t>(theme_color::_
         return theme_color::accent;
     } else if (str == "text_select") {
         return theme_color::text_select;
-    } else if (str == "cursor") {
-        return theme_color::cursor;
-    } else if (str == "incomplete_glyph") {
-        return theme_color::incomplete_glyph;
+    } else if (str == "primary_cursor") {
+        return theme_color::primary_cursor;
+    } else if (str == "secondary_cursor") {
+        return theme_color::secondary_cursor;
     } else {
         throw parse_error("Unknown theme color '{}'", str);
     }

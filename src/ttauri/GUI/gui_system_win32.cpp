@@ -8,8 +8,9 @@
 #include "theme_book.hpp"
 #include "../GFX/gfx_system_vulkan.hpp"
 #include "../text/font_book.hpp"
-#include "../trace.hpp"
 #include "../locked_memory_allocator.hpp"
+#include "../trace.hpp"
+#include "../log.hpp"
 #include <memory>
 
 namespace tt::inline v1 {

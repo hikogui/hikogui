@@ -51,14 +51,9 @@ widget::~widget()
     return window.is_gui_thread();
 }
 
-[[nodiscard]] bool widget::active() const noexcept
-{
-    return window.active;
-}
-
 tt::theme const &widget::theme() const noexcept
 {
-    return window.gui.theme();
+    return window.theme;
 }
 
 tt::font_book &widget::font_book() const noexcept
@@ -95,7 +90,7 @@ tt::font_book &widget::font_book() const noexcept
 [[nodiscard]] color widget::focus_color() const noexcept
 {
     if (enabled) {
-        if (focus and active()) {
+        if (focus) {
             return theme().color(theme_color::accent);
         } else if (hover) {
             return theme().color(theme_color::border, semantic_layer + 1);
@@ -110,11 +105,7 @@ tt::font_book &widget::font_book() const noexcept
 [[nodiscard]] color widget::accent_color() const noexcept
 {
     if (enabled) {
-        if (active()) {
-            return theme().color(theme_color::accent);
-        } else {
-            return theme().color(theme_color::border, semantic_layer);
-        }
+        return theme().color(theme_color::accent);
     } else {
         return theme().color(theme_color::border, semantic_layer - 1);
     }
@@ -329,7 +320,7 @@ void widget::scroll_to_show(tt::aarectangle rectangle) noexcept
     tt_axiom(is_gui_thread());
 
     if (parent) {
-        parent->scroll_to_show(rectangle);
+        parent->scroll_to_show(bounding_rectangle(_layout.to_parent * rectangle));
     }
 }
 

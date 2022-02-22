@@ -10,7 +10,8 @@ fi
 
 
 python tools/unicode_data_generator.py \
-    --output=src/ttauri/text/unicode_db.hpp \
+    --output=src/ttauri/unicode/unicode_db.hpp \
+    --output-non-starter=src/ttauri/unicode/unicode_db_non_starter.hpp \
     --unicode-data=${UCDDIR}/UnicodeData.txt \
     --emoji-data=${UCDDIR}/emoji-data.txt \
     --composition-exclusions=${UCDDIR}/CompositionExclusions.txt \
@@ -18,5 +19,7 @@ python tools/unicode_data_generator.py \
     --bidi-brackets=${UCDDIR}/BidiBrackets.txt \
     --bidi-mirroring=${UCDDIR}/BidiMirroring.txt \
     --line-break=${UCDDIR}/LineBreak.txt \
+    --word-break=${UCDDIR}/WordBreakProperty.txt \
+    --sentence-break=${UCDDIR}/SentenceBreakProperty.txt \
     --east-asian-width=${UCDDIR}/EastAsianWidth.txt
 

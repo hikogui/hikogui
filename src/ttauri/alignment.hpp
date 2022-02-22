@@ -85,6 +85,11 @@ public:
         tt_axiom(to_underlying(t) <= 0xf);
     }
 
+    [[nodiscard]] static constexpr alignment top_flush() noexcept
+    {
+        return {horizontal_alignment::flush, vertical_alignment::top};
+    }
+
     [[nodiscard]] static constexpr alignment top_left() noexcept
     {
         return {horizontal_alignment::left, vertical_alignment::top};
@@ -95,9 +100,19 @@ public:
         return {horizontal_alignment::center, vertical_alignment::top};
     }
 
+    [[nodiscard]] static constexpr alignment top_justified() noexcept
+    {
+        return {horizontal_alignment::justified, vertical_alignment::top};
+    }
+
     [[nodiscard]] static constexpr alignment top_right() noexcept
     {
         return {horizontal_alignment::right, vertical_alignment::top};
+    }
+
+    [[nodiscard]] static constexpr alignment middle_flush() noexcept
+    {
+        return {horizontal_alignment::flush, vertical_alignment::middle};
     }
 
     [[nodiscard]] static constexpr alignment middle_left() noexcept
@@ -108,6 +123,11 @@ public:
     [[nodiscard]] static constexpr alignment middle_center() noexcept
     {
         return {horizontal_alignment::center, vertical_alignment::middle};
+    }
+
+    [[nodiscard]] static constexpr alignment middle_justified() noexcept
+    {
+        return {horizontal_alignment::justified, vertical_alignment::middle};
     }
 
     [[nodiscard]] static constexpr alignment middle_right() noexcept

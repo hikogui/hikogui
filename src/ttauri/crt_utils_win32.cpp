@@ -7,6 +7,7 @@
 #include "URL.hpp"
 #include "subsystem.hpp"
 #include "console.hpp"
+#include "log.hpp"
 #include <Windows.h>
 
 namespace tt::inline v1 {

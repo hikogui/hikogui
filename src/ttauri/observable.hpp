@@ -336,6 +336,29 @@ struct observable_proxy {
     X(~)
 #undef X
 
+#define X(op) \
+    template<typename Rhs> \
+    value_type operator op(Rhs const &rhs) noexcept requires(is_variable and std::is_arithmetic_v<Rhs>) \
+    { \
+        if (rhs != Rhs{}) { \
+            prepare(state_type::modified); \
+            return _actual->value op rhs; \
+        } else { \
+            return _actual->value; \
+        } \
+    } \
+\
+    template<typename Rhs> \
+    value_type operator op(Rhs const &rhs) noexcept requires(is_variable and not std::is_arithmetic_v<Rhs>) \
+    { \
+        prepare(state_type::write); \
+        return _actual->value op rhs; \
+    }
+
+    X(+=)
+    X(-=)
+#undef X
+
 #define X(func) \
     [[nodiscard]] friend decltype(auto) func(observable_proxy const &rhs) noexcept \
     { \
@@ -347,25 +370,6 @@ struct observable_proxy {
     X(begin)
     X(end)
 #undef X
-
-    // MSVC Internal compiler error
-    template<typename Rhs>
-    value_type operator+=(Rhs const &rhs) noexcept requires(is_variable and std::is_arithmetic_v<Rhs>)
-    {
-        if (rhs != Rhs{}) {
-            prepare(state_type::modified);
-            return _actual->value += rhs;
-        } else {
-            return _actual->value;
-        }
-    }
-
-    template<typename Rhs>
-    value_type operator+=(Rhs const &rhs) noexcept requires(is_variable and not std::is_arithmetic_v<Rhs>)
-    {
-        prepare(state_type::write);
-        return _actual->value += rhs;
-    }
 };
 
 template<typename T>
@@ -389,7 +393,7 @@ struct observable_impl_storage<T> {
 /** The shared value, shared between observers.
  */
 template<typename T>
-struct observable_impl: public observable_impl_storage<T> {
+struct observable_impl : public observable_impl_storage<T> {
     using value_type = T;
     using owner_type = observable<value_type>;
 
@@ -698,6 +702,7 @@ public:
     }
 
     X(==)
+    X(<=>)
     X(+)
     X(-)
 #undef X
@@ -712,12 +717,16 @@ public:
 
 #undef X
 
-    // MSVC Internal compiler error
-    template<typename Rhs>
-    value_type operator+=(Rhs const &rhs) noexcept
-    {
-        return get() += rhs;
+#define X(op) \
+    template<typename Rhs> \
+    value_type operator op(Rhs const &rhs) noexcept \
+    { \
+        return get() op rhs; \
     }
+
+    X(+=)
+    X(-=)
+#undef X
 
     callback_ptr_type subscribe(callback_ptr_type const &callback_ptr) noexcept
     {

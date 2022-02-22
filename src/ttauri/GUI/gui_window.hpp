@@ -13,13 +13,12 @@
 #include "keyboard_focus_direction.hpp"
 #include "keyboard_focus_group.hpp"
 #include "theme.hpp"
-#include "../text/gstring.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
-#include "../chrono.hpp"
-#include "../label.hpp"
 #include "../widgets/window_widget.hpp"
 #include "../widgets/grid_widget.hpp"
 #include "../widgets/toolbar_widget.hpp"
+#include "../chrono.hpp"
+#include "../label.hpp"
 #include <unordered_set>
 #include <memory>
 #include <mutex>
@@ -86,6 +85,11 @@ public:
      * the source for the DPI value.
      */
     float dpi = 72.0;
+
+    /** Theme to use to draw the widgets on this window.
+     * The sizes and colors of the theme have already been adjusted to the window's state and dpi.
+     */
+    tt::theme theme = {};
 
     /** The size of the widget.
      */
@@ -345,8 +349,6 @@ protected:
     bool send_event(KeyboardState _state, keyboard_modifiers modifiers, keyboard_virtual_key key) noexcept;
 
     bool send_event(grapheme grapheme, bool full = true) noexcept;
-
-    bool send_event(char32_t c, bool full = true) noexcept;
 
 private:
     std::shared_ptr<std::function<void()>> _setting_change_callback;

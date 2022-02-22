@@ -28,14 +28,10 @@ namespace tt::inline v1 {
 class datum;
 }
 
-namespace std {
-
 template<>
-struct hash<tt::datum> {
+struct std::hash<tt::datum> {
     [[nodiscard]] constexpr std::size_t operator()(tt::datum const &rhs) const noexcept;
 };
-
-} // namespace std
 
 namespace tt::inline v1 {
 namespace detail {
@@ -2341,8 +2337,7 @@ private:
 
 } // namespace tt::inline v1
 
-namespace std {
-[[nodiscard]] constexpr std::size_t hash<tt::datum>::operator()(tt::datum const &rhs) const noexcept
+[[nodiscard]] constexpr std::size_t std::hash<tt::datum>::operator()(tt::datum const &rhs) const noexcept
 {
     return rhs.hash();
 }
@@ -2354,5 +2349,3 @@ struct std::formatter<tt::datum, CharT> : std::formatter<std::string_view, CharT
         return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
     }
 };
-
-} // namespace std

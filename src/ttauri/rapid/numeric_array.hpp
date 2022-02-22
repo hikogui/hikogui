@@ -2992,16 +2992,13 @@ using f64x8 = numeric_array<double, 8>;
 
 } // namespace tt::inline v1
 
-namespace std {
 template<class T, std::size_t N>
-struct tuple_size<tt::numeric_array<T, N>> : std::integral_constant<std::size_t, N> {
+struct std::tuple_size<tt::numeric_array<T, N>> : std::integral_constant<std::size_t, N> {
 };
 
 template<std::size_t I, class T, std::size_t N>
-struct tuple_element<I, tt::numeric_array<T, N>> {
+struct std::tuple_element<I, tt::numeric_array<T, N>> {
     using type = T;
 };
-
-} // namespace std
 
 tt_warning_pop();

@@ -50,36 +50,50 @@ widget_constraints const &window_widget::set_constraints() noexcept
     ttlet toolbar_constraints = _toolbar->set_constraints();
     ttlet content_constraints = _content->set_constraints();
 
-    ttlet minimum_width = std::max(
+    auto minimum_width = std::max(
         toolbar_constraints.margins.left() + toolbar_constraints.minimum.width() + toolbar_constraints.margins.right(),
         content_constraints.margins.left() + content_constraints.minimum.width() + content_constraints.margins.right());
-    ttlet preferred_width = std::max(
+    auto preferred_width = std::max(
         toolbar_constraints.margins.left() + toolbar_constraints.preferred.width() + toolbar_constraints.margins.right(),
         content_constraints.margins.left() + content_constraints.preferred.width() + content_constraints.margins.right());
-    ttlet maximum_width = std::max(
+    auto maximum_width = std::max(
         toolbar_constraints.margins.left() + toolbar_constraints.maximum.width() + toolbar_constraints.margins.right(),
         content_constraints.margins.left() + content_constraints.maximum.width() + content_constraints.margins.right());
 
     // clang-format off
-    ttlet minimum_height =
+    auto minimum_height =
         toolbar_constraints.margins.top() +
         toolbar_constraints.preferred.height() +
         std::max(toolbar_constraints.margins.bottom(), content_constraints.margins.top()) +
         content_constraints.minimum.height() +
         content_constraints.margins.bottom();
-    ttlet preferred_height =
+    auto preferred_height =
         toolbar_constraints.margins.top() +
         toolbar_constraints.preferred.height() +
         std::max(toolbar_constraints.margins.bottom(), content_constraints.margins.top()) +
         content_constraints.preferred.height() +
         content_constraints.margins.bottom();
-    ttlet maximum_height =
+    auto maximum_height =
         toolbar_constraints.margins.top() +
         toolbar_constraints.preferred.height() +
         std::max(toolbar_constraints.margins.bottom(), content_constraints.margins.top()) +
         content_constraints.maximum.height() +
         content_constraints.margins.bottom();
     // clang-format on
+
+    // The operating system also has a minimum and maximum size, these sizes
+    // are more important than the calculated sizes.
+    ttlet minimum_window_size = os_settings::minimum_window_size();
+    ttlet maximum_window_size = os_settings::maximum_window_size();
+
+    inplace_max(minimum_width, minimum_window_size.width());
+    inplace_max(minimum_height, minimum_window_size.height());
+
+    inplace_clamp(maximum_width, minimum_width, maximum_window_size.width());
+    inplace_clamp(maximum_height, minimum_height, maximum_window_size.height());
+
+    inplace_clamp(preferred_width, minimum_width, maximum_width);
+    inplace_clamp(preferred_height, minimum_height, maximum_height);
 
     return _constraints = {{minimum_width, minimum_height}, {preferred_width, preferred_height}, {maximum_width, maximum_height}};
 }

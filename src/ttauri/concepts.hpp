@@ -114,4 +114,7 @@ concept scalar = std::is_scalar_v<T>;
 template<typename T>
 concept scoped_enum = std::is_enum_v<T>;
 
+template<typename Forward, typename T>
+concept forward_of = is_forward_of_v<T, Forward>;
+
 } // namespace tt::inline v1

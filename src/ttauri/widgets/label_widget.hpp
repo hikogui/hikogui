@@ -61,6 +61,10 @@ public:
      */
     observable<theme_text_style> text_style = theme_text_style::label;
 
+    /** The edit-mode of the embedded text widget.
+     */
+    observable<text_widget::edit_mode_type> edit_mode = text_widget::edit_mode_type::selectable;
+
     /** Construct a label widget.
      *
      * @see `label_widget::alignment`
@@ -98,6 +102,7 @@ public:
     widget_constraints const &set_constraints() noexcept override;
     void set_layout(widget_layout const &layout) noexcept override;
     void draw(draw_context const &context) noexcept;
+    [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept;
     /// @endprivatesection
 private:
     float _icon_size;

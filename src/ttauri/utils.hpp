@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <atomic>
+
 namespace tt::inline v1 {
 
 /** Compare then store if there was a change.
@@ -18,6 +20,17 @@ template<typename T, typename U>
     } else {
         return false;
     }
+}
+
+/** Compare then store if there was a change.
+ *
+ * @note This atomic version does an lhs.exchange(rhs, std::memory_order_relaxed)
+ * @return true if a store was executed.
+ */
+template<typename T, typename U>
+[[nodiscard]] bool compare_store(std::atomic<T> &lhs, U &&rhs) noexcept
+{
+    return lhs.exchange(rhs, std::memory_order::relaxed) != rhs;
 }
 
 } // namespace tt::inline v1

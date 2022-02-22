@@ -12,9 +12,10 @@ label_widget::label_widget(gui_window &window, widget *parent) noexcept : super(
 {
     _icon_widget = std::make_unique<icon_widget>(window, this, label->icon);
     _icon_widget->alignment = alignment;
-    _text_widget = std::make_unique<text_widget>(window, this, label->text);
+    _text_widget = std::make_unique<text_widget>(window, this, to_gstring(label->text()));
     _text_widget->alignment = alignment;
     _text_widget->text_style = text_style;
+    _text_widget->edit_mode = edit_mode;
 
     _text_style_callback = text_style.subscribe([this] {
         switch (*text_style) {
@@ -31,13 +32,16 @@ label_widget::label_widget(gui_window &window, widget *parent) noexcept : super(
 
     _label_callback = label.subscribe([this] {
         _icon_widget->icon = label->icon;
-        _text_widget->text = label->text;
+        _text_widget->text = to_gstring(label->text());
     });
 }
 
 widget_constraints const &label_widget::set_constraints() noexcept
 {
     _layout = {};
+
+    // Translate the text of the label during reconstrain as this is triggered when the system language changes.
+    _text_widget->text = to_gstring(label->text());
     ttlet &text_constraints = _text_widget->set_constraints();
     ttlet &icon_constraints = _icon_widget->set_constraints();
 
@@ -55,7 +59,7 @@ widget_constraints const &label_widget::set_constraints() noexcept
             if (alignment == horizontal_alignment::center or alignment == horizontal_alignment::justified) {
                 return theme().large_icon_size;
             } else {
-                return std::ceil(theme().text_style(*text_style).scaled_size());
+                return std::ceil(theme().text_style(*text_style).size * theme().scale);
             }
         } else {
             return 0.0f;
@@ -147,6 +151,17 @@ void label_widget::draw(draw_context const &context) noexcept
     if (visible and overlaps(context, layout())) {
         _icon_widget->draw(context);
         _text_widget->draw(context);
+    }
+}
+
+[[nodiscard]] hitbox label_widget::hitbox_test(point3 position) const noexcept
+{
+    tt_axiom(is_gui_thread());
+
+    if (visible) {
+        return _text_widget->hitbox_test_from_parent(position);
+    } else {
+        return {};
     }
 }
 

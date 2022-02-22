@@ -6,27 +6,21 @@
 
 #include "../cast.hpp"
 #include "../utils.hpp"
-#include "../log.hpp"
-#include "../subsystem.hpp"
-#include "../notifier.hpp"
-#include "../timer.hpp"
 #include "language_tag.hpp"
 #include <string>
 #include <vector>
 #include <functional>
 #include <mutex>
+#include <format>
 
 namespace tt::inline v1 {
 
 class language {
 public:
-    using callback_ptr_type = typename notifier<void()>::callback_ptr_type;
-
     language_tag tag;
     std::function<int(int)> plurality_func;
 
     language(language_tag tag) noexcept;
-
     language(language const &) = delete;
     language(language &&) = delete;
     language &operator=(language const &) = delete;
@@ -53,16 +47,6 @@ public:
             return i->second.get();
         } else {
             return nullptr;
-        }
-    }
-
-    [[nodiscard]] static std::vector<language *> preferred_languages()
-    {
-        if (start_subsystem(_is_running, false, subsystem_init, subsystem_deinit)) {
-            ttlet lock = std::scoped_lock(_mutex);
-            return _preferred_languages;
-        } else {
-            return {};
         }
     }
 
@@ -111,81 +95,36 @@ public:
         return r;
     }
 
-    static void set_preferred_languages(std::vector<language_tag> tags) noexcept
+    [[nodiscard]] static std::vector<language *> make_languages(std::vector<language_tag> tags) noexcept
     {
         ttlet lock = std::scoped_lock(_mutex);
 
-        auto tmp = std::vector<language *>{};
+        auto r = std::vector<language *>{};
         for (ttlet &tag : add_short_names(tags)) {
-            tmp.push_back(&find_or_create(tag));
+            r.push_back(&find_or_create(tag));
         }
-
-        if (compare_store(_preferred_languages, tmp)) {
-            auto language_order_string = std::string{};
-            for (ttlet &language : tmp) {
-                if (language_order_string.size() != 0) {
-                    language_order_string += ", ";
-                }
-                language_order_string += to_string(language->tag);
-            }
-            tt_log_info("Setting preferred language in order: ", language_order_string);
-        }
-    }
-
-    /** Get the preferred language tags from the operating system.
-     * Language tags are based on IETF BCP-47/RFC-5646
-     */
-    [[nodiscard]] static std::vector<language_tag> read_os_preferred_languages() noexcept;
-
-    [[nodiscard]] static callback_ptr_type subscribe(callback_ptr_type const &callback) noexcept
-    {
-        return _notifier.subscribe(callback);
-    }
-
-    template<typename Callback>
-    requires(std::is_invocable_v<Callback>) [[nodiscard]] static callback_ptr_type subscribe(Callback &&callback) noexcept
-    {
-        return _notifier.subscribe(std::forward<Callback>(callback));
-    }
-
-    static void unsubscribe(callback_ptr_type const &callback) noexcept
-    {
-        _notifier.unsubscribe(callback);
+        return r;
     }
 
 private:
     inline static std::atomic<bool> _is_running;
     inline static std::unordered_map<language_tag, std::unique_ptr<language>> _languages;
-    inline static std::vector<language_tag> _preferred_language_tags;
-    inline static std::vector<language *> _preferred_languages;
     inline static std::recursive_mutex _mutex;
-    inline static notifier<void()> _notifier;
-    inline static typename timer::callback_ptr_type _languages_maintenance_callback;
-
-    [[nodiscard]] static bool subsystem_init() noexcept
-    {
-        using namespace std::chrono_literals;
-
-        _languages_maintenance_callback = timer::global().add_callback(
-            5s,
-            [](auto...) {
-                ttlet new_preferred_language_tags = language::read_os_preferred_languages();
-
-                if (language::_preferred_language_tags != new_preferred_language_tags) {
-                    language::_preferred_language_tags = new_preferred_language_tags;
-                    set_preferred_languages(language::_preferred_language_tags);
-                    language::_notifier();
-                }
-            },
-            true);
-
-        return true;
-    }
-
-    static void subsystem_deinit() noexcept
-    {
-        if (_is_running.exchange(false)) {}
-    }
 };
 
 } // namespace tt::inline v1
+
+template<typename CharT>
+struct std::formatter<std::vector<tt::language *>, CharT> : std::formatter<std::string_view, CharT> {
+    auto format(std::vector<tt::language *> const &t, auto &fc)
+    {
+        auto r = std::string{};
+        for (ttlet language : t) {
+            if (not r.empty()) {
+                r += ", ";
+            }
+            r += to_string(language->tag);
+        }
+        return std::formatter<std::string_view, CharT>::format(r, fc);
+    }
+};

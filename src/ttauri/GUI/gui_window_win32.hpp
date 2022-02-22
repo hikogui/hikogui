@@ -54,15 +54,15 @@ private:
     bool trackingMouseLeaveEvent = false;
     char32_t highSurrogate = 0;
     mouse_event mouseButtonEvent;
-    utc_nanoseconds doubleClickTimePoint;
-    std::chrono::nanoseconds doubleClickMaximumDuration;
+    utc_nanoseconds multi_click_time_point;
+    int multi_click_count;
 
     void setOSWindowRectangleFromRECT(RECT aarectangle) noexcept;
 
     [[nodiscard]] KeyboardState getKeyboardState() noexcept;
     [[nodiscard]] keyboard_modifiers getkeyboard_modifiers() noexcept;
 
-    [[nodiscard]] char32_t handleSuragates(char32_t c) noexcept;
+    [[nodiscard]] char32_t handle_suragates(char32_t c) noexcept;
     [[nodiscard]] mouse_event createmouse_event(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept;
 };
 

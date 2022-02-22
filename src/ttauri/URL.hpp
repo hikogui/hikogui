@@ -202,10 +202,8 @@ private:
 
 } // namespace tt::inline v1
 
-namespace std {
-
 template<>
-class hash<tt::URL> {
+class std::hash<tt::URL> {
 public:
     std::size_t operator()(tt::URL const &url) const noexcept
     {
@@ -220,5 +218,3 @@ struct std::formatter<tt::URL, CharT> : std::formatter<std::string_view, CharT> 
         return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
     }
 };
-
-} // namespace std
