@@ -155,11 +155,6 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr bool is_square() const noexcept
-    {
-        return width() == height();
-    }
-
     /** Get size of the rectangle
      *
      * @return The (x, y) vector representing the width and height of the rectangle.

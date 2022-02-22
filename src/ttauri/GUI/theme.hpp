@@ -23,6 +23,14 @@ class theme {
 public:
     operating_system operating_system = operating_system::windows;
 
+    /** The DPI of the size values.
+     */
+    float dpi = 72;
+
+    /** The scale factor used to convert pt to physical pixel size.
+     */
+    float scale = 1.0f;
+
     float toolbar_height = (operating_system == operating_system::windows) ? 30.0f : 20.0f;
 
     /** The width of a close, minimize, maximize, system menu button.

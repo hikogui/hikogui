@@ -728,7 +728,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         // x-axis dpi value.
         dpi = narrow_cast<float>(LOWORD(wParam));
         tt_log_info("DPI has changed to {}", dpi);
-        request_relayout();
+        request_reconstrain();
     } break;
 
     default: break;

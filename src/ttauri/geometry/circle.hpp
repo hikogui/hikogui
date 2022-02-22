@@ -38,7 +38,6 @@ public:
 
     [[nodiscard]] constexpr circle(aarectangle square) noexcept
     {
-        tt_axiom(square.is_square());
         auto square_ = f32x4{square};
 
         // center=(p3 + p0)/2, radius=(p3 - p0)/2
