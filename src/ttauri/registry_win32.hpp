@@ -4,6 +4,11 @@
 
 #pragma once
 
+#include <string_view>
+#include <string>
+#include <vector>
+#include <cstdint>
+
 namespace tt::inline v1 {
 
 /** Read a DWORD registry value from the HKEY_CURRENT_USER.

@@ -5,6 +5,7 @@
 #include "registry_win32.hpp"
 #include "exception.hpp"
 #include "strings.hpp"
+#include "log.hpp"
 #include <Windows.h>
 #undef WIN32_NO_STATUS
 #include <ntstatus.h>
