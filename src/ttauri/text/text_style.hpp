@@ -39,11 +39,6 @@ struct text_style {
     text_style &operator=(text_style const &) noexcept = default;
     text_style &operator=(text_style &&) noexcept = default;
 
-    float scaled_size() const noexcept
-    {
-        return points_to_dp(size);
-    }
-
     [[nodiscard]] friend std::string to_string(text_style const &rhs) noexcept
     {
         // XXX - fmt:: no longer can format tagged_ids??????

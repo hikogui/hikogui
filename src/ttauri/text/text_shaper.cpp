@@ -182,17 +182,21 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
     }
 }
 
-[[nodiscard]] text_shaper::text_shaper(tt::font_book &font_book, gstring const &text, text_style const &style) noexcept :
-    _font_book(&font_book)
+[[nodiscard]] text_shaper::text_shaper(
+    tt::font_book &font_book,
+    gstring const &text,
+    text_style const &style,
+    float dpi_scale) noexcept :
+    _font_book(&font_book), _dpi_scale(dpi_scale)
 {
     ttlet &font = font_book.find_font(style.family_id, style.variant);
-    _initial_line_metrics = style.scaled_size() * font.metrics;
+    _initial_line_metrics = (style.size * dpi_scale) * font.metrics;
 
     _text.reserve(text.size());
     for (ttlet &c : text) {
         ttlet clean_c = c == '\n' ? grapheme{unicode_PS} : c;
 
-        auto &tmp = _text.emplace_back(clean_c, style);
+        auto &tmp = _text.emplace_back(clean_c, style, dpi_scale);
         tmp.initialize_glyph(font_book, font);
     }
 
@@ -217,8 +221,12 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
     });
 }
 
-[[nodiscard]] text_shaper::text_shaper(font_book &font_book, std::string_view text, text_style const &style) noexcept :
-    text_shaper(font_book, to_gstring(text), style)
+[[nodiscard]] text_shaper::text_shaper(
+    font_book &font_book,
+    std::string_view text,
+    text_style const &style,
+    float dpi_scale) noexcept :
+    text_shaper(font_book, to_gstring(text), style, dpi_scale)
 {
 }
 
@@ -552,7 +560,6 @@ void text_shaper::position_glyphs(
     if (_text.empty()) {
         return {};
     }
-
 
     auto [column_nr, line_nr] = get_column_line(cursor);
     if (line_nr-- == 0) {

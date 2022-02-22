@@ -102,11 +102,10 @@ void toolbar_widget::draw(draw_context const &context) noexcept
             context.draw_box(layout(), layout().rectangle(), theme().color(theme_color::fill, semantic_layer + 1));
 
             if (tab_button_has_focus()) {
-                ttlet line = line_segment(point2{0.0f, 0.0f}, point2{layout().width(), 0.0f});
-
                 // Draw the line at a higher elevation, so that the tab buttons can draw above or below the focus
                 // line depending if that specific button is in focus or not.
-                context.draw_line(layout(), translate3{0.0f, 0.5f, 1.5f} * line, theme().border_width, focus_color());
+                ttlet focus_rectangle = aarectangle{0.0, 0.0, layout().rectangle().width(), theme().border_width};
+                context.draw_box(layout(), translate3{0.0f, 0.0f, 1.5f} * focus_rectangle, focus_color());
             }
         }
 

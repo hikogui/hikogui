@@ -727,8 +727,20 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         tt_axiom(is_gui_thread());
         // x-axis dpi value.
         dpi = narrow_cast<float>(LOWORD(wParam));
-        tt_log_info("DPI has changed to {}", dpi);
+
+        // Use the recommended rectangle to resize and reposition the window
+        ttlet new_rectangle = std::launder(reinterpret_cast<RECT *>(lParam));
+        SetWindowPos(
+            win32Window,
+            NULL,
+            new_rectangle->left,
+            new_rectangle->top,
+            new_rectangle->right - new_rectangle->left,
+            new_rectangle->bottom - new_rectangle->top,
+            SWP_NOZORDER | SWP_NOACTIVATE);
         request_reconstrain();
+
+        tt_log_info("DPI has changed to {}", dpi);
     } break;
 
     default: break;

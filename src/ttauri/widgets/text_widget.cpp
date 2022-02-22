@@ -19,7 +19,7 @@ widget_constraints const &text_widget::set_constraints() noexcept
 {
     _layout = {};
 
-    _shaped_text = text_shaper{font_book(), *text, theme().text_style(*text_style)};
+    _shaped_text = text_shaper{font_book(), *text, theme().text_style(*text_style), theme().scale};
     ttlet[shaped_text_rectangle, cap_height] =
         _shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity(), alignment->vertical());
     _shaped_text_cap_height = cap_height;

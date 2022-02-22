@@ -150,8 +150,8 @@ public:
 
         if (event.type == mouse_event::Type::Wheel) {
             handled = true;
-            ttlet new_offset_x = *offset_x.cget() + event.wheelDelta.x();
-            ttlet new_offset_y = *offset_y.cget() + event.wheelDelta.y();
+            ttlet new_offset_x = *offset_x.cget() + event.wheelDelta.x() * theme().scale;
+            ttlet new_offset_y = *offset_y.cget() + event.wheelDelta.y() * theme().scale;
             ttlet max_offset_x = std::max(0.0f, content_width - aperture_width);
             ttlet max_offset_y = std::max(0.0f, content_height - aperture_height);
 

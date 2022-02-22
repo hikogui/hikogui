@@ -99,13 +99,15 @@ public:
         keyboard_focus_direction direction) const noexcept override;
     /// @endprivatsectopn
 private:
+    widget const *_previous_selected_child = nullptr;
     std::vector<std::unique_ptr<widget>> _children;
     weak_or_unique_ptr<delegate_type> _delegate;
 
+    using const_iterator = decltype(_children)::const_iterator;
+
     tab_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
-    [[nodiscard]] auto find_selected_child() const noexcept;
-    [[nodiscard]] auto find_selected_child() noexcept;
-    [[nodiscard]] widget const &selected_child() const noexcept;
+    [[nodiscard]] const_iterator find_selected_child() const noexcept;
+    [[nodiscard]] widget &selected_child() const noexcept;
 };
 
 } // namespace tt::inline v1

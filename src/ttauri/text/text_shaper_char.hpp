@@ -26,6 +26,10 @@ public:
      */
     tt::text_style style;
 
+    /** The scale to resize the font's size to match the physical display.
+     */
+    float dpi_scale = 1.0f;
+
     /** The glyph representing one or more graphemes.
      * The glyph will change during shaping of the text:
      *  1. The initial glyph, used for determining the width of the grapheme
@@ -115,7 +119,7 @@ public:
      */
     bool glyph_is_initial = false;
 
-    [[nodiscard]] text_shaper_char(tt::grapheme const &grapheme, text_style const &style) noexcept;
+    [[nodiscard]] text_shaper_char(tt::grapheme const &grapheme, text_style const &style, float dpi_scale) noexcept;
 
     /** Initialize the glyph based on the grapheme.
      *

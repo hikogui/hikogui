@@ -79,10 +79,11 @@ public:
      *                     natural line spacing of the font: ascender + descender + line-gap.
      * @param paragraph_spacing A multiplier to scale the distance between lines compared to the
      *                          line spacing after @a line_spacing argument has been applied.
+     * @param dpi_scale The scaling factor to use to scale a font's size to match the physical display.
      */
-    [[nodiscard]] text_shaper(tt::font_book &font_book, gstring const &text, text_style const &style) noexcept;
+    [[nodiscard]] text_shaper(tt::font_book &font_book, gstring const &text, text_style const &style, float dpi_scale) noexcept;
 
-    [[nodiscard]] text_shaper(font_book &font_book, std::string_view text, text_style const &style) noexcept;
+    [[nodiscard]] text_shaper(tt::font_book &font_book, std::string_view text, text_style const &style, float dpi_scale) noexcept;
 
     [[nodiscard]] bool empty() const noexcept
     {
@@ -400,6 +401,10 @@ public:
 
 private:
     font_book *_font_book = nullptr;
+
+    /** The scaling factor to use to scale a font's size to match the physical pixels on the display.
+     */
+    float _dpi_scale;
 
     /** A list of character in logical order.
      *

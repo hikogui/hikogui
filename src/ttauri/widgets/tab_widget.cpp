@@ -18,11 +18,10 @@ tab_widget::tab_widget(gui_window &window, widget *parent, weak_or_unique_ptr<de
     super(window, parent), _delegate(std::move(delegate))
 {
     tt_axiom(is_gui_thread());
+    tt_axiom(parent);
 
-    if (parent) {
-        // The tab-widget will not draw itself, only its selected child.
-        semantic_layer = parent->semantic_layer;
-    }
+    // The tab-widget will not draw itself, only its selected child.
+    semantic_layer = parent->semantic_layer;
 
     if (auto d = _delegate.lock()) {
         d->subscribe(*this, _reconstrain_callback);
@@ -48,21 +47,18 @@ widget_constraints const &tab_widget::set_constraints() noexcept
 {
     _layout = {};
 
-    ttlet &selected_child_ = selected_child();
-    for (ttlet &child : _children) {
-        ttlet child_contraints = child->set_constraints();
+    auto &selected_child_ = selected_child();
 
-        ttlet child_is_visible = child.get() == &selected_child_;
-        child->visible = child_is_visible;
-
-        if (child_is_visible) {
-            if (compare_store(_constraints, child_contraints)) {
-                request_resize();
-            }
-        }
+    if (_previous_selected_child != &selected_child_) {
+        _previous_selected_child = &selected_child_;
+        request_resize();
     }
 
-    return _constraints;
+    for (ttlet &child : _children) {
+        child->visible = child.get() == &selected_child_;
+    }
+
+    return _constraints = selected_child_.set_constraints();
 }
 
 void tab_widget::set_layout(widget_layout const &layout) noexcept
@@ -109,7 +105,7 @@ void tab_widget::draw(draw_context const &context) noexcept
     return selected_child().find_next_widget(current_widget, group, direction);
 }
 
-[[nodiscard]] auto tab_widget::find_selected_child() const noexcept
+[[nodiscard]] tab_widget::const_iterator tab_widget::find_selected_child() const noexcept
 {
     tt_axiom(is_gui_thread());
     if (auto delegate = _delegate.lock()) {
@@ -121,19 +117,7 @@ void tab_widget::draw(draw_context const &context) noexcept
     return _children.end();
 }
 
-[[nodiscard]] auto tab_widget::find_selected_child() noexcept
-{
-    tt_axiom(is_gui_thread());
-    if (auto delegate = _delegate.lock()) {
-        auto index = delegate->index(*this);
-        if (index >= 0 and index < ssize(_children)) {
-            return _children.begin() + index;
-        }
-    }
-    return _children.end();
-}
-
-[[nodiscard]] widget const &tab_widget::selected_child() const noexcept
+[[nodiscard]] widget &tab_widget::selected_child() const noexcept
 {
     tt_axiom(is_gui_thread());
     tt_axiom(ssize(_children) != 0);

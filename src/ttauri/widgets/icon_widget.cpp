@@ -43,17 +43,17 @@ widget_constraints const &icon_widget::set_constraints() noexcept
         } else if (ttlet g1 = get_if<glyph_ids>(&*icon_)) {
             _glyph = *g1;
             _icon_type = icon_type::glyph;
-            _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).scaled_size();
+            _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).size * theme().scale;
 
         } else if (ttlet g2 = get_if<elusive_icon>(&*icon_)) {
             _glyph = font_book().find_glyph(*g2);
             _icon_type = icon_type::glyph;
-            _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).scaled_size();
+            _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).size * theme().scale;
 
         } else if (ttlet g3 = get_if<ttauri_icon>(&*icon_)) {
             _glyph = font_book().find_glyph(*g3);
             _icon_type = icon_type::glyph;
-            _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).scaled_size();
+            _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).size * theme().scale;
         }
     }
     return _constraints = {extent2{0.0f, 0.0f}, _icon_size, _icon_size, theme().margin};
