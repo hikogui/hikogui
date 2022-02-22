@@ -4,6 +4,7 @@
 
 #include "translation.hpp"
 #include "po_parser.hpp"
+#include "../log.hpp"
 
 namespace tt::inline v1 {
 

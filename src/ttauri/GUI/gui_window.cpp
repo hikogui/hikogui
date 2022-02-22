@@ -8,9 +8,10 @@
 #include "../os_settings.hpp"
 #include "../GFX/gfx_device.hpp"
 #include "../GFX/gfx_surface.hpp"
-#include "../trace.hpp"
 #include "../widgets/window_widget.hpp"
 #include "../widgets/grid_widget.hpp"
+#include "../trace.hpp"
+#include "../log.hpp"
 
 namespace tt::inline v1 {
 
