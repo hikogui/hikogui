@@ -5,6 +5,7 @@
 #include "os_settings.hpp"
 #include "registry_win32.hpp"
 #include "log.hpp"
+#include "cast.hpp"
 #include <windows.h>
 #undef WIN32_NO_STATUS
 #include <winuser.h>
@@ -111,6 +112,36 @@ namespace tt::inline v1 {
     return std::max(gather_keyboard_repeat_delay(), gather_keyboard_repeat_interval());
 }
 
+[[nodiscard]] extent2 os_settings::gather_minimum_window_size() noexcept
+{
+    auto width = GetSystemMetrics(SM_CXMINTRACK);
+    if (width == 0) {
+        tt_log_error("Could not retrieve SM_CXMINTRACK");
+        width = 40;
+    }
+
+    auto height = GetSystemMetrics(SM_CYMINTRACK);
+    if (height == 0) {
+        tt_log_error("Could not retrieve SM_CYMINTRACK");
+        height = 25;
+    }
+    return extent2{narrow<float>(width), narrow<float>(height)};
 }
 
-// namespace tt::inline v1
+[[nodiscard]] extent2 os_settings::gather_maximum_window_size() noexcept
+{
+    auto width = GetSystemMetrics(SM_CXMAXTRACK);
+    if (width == 0) {
+        tt_log_error("Could not retrieve SM_CXMAXTRACK");
+        width = 1920;
+    }
+
+    auto height = GetSystemMetrics(SM_CYMAXTRACK);
+    if (height == 0) {
+        tt_log_error("Could not retrieve SM_CYMAXTRACK");
+        height = 1080;
+    }
+    return extent2{narrow<float>(width), narrow<float>(height)};
+}
+
+} // namespace tt::inline v1

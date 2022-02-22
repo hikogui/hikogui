@@ -89,6 +89,15 @@ void os_settings::_gather() noexcept
         tt_log_info("OS cursor blink delay has changed: {}", _cursor_blink_delay.load());
     }
 
+    if (compare_store(_minimum_window_size, gather_minimum_window_size())) {
+        setting_has_changed = true;
+        tt_log_info("OS minimum window size has changed: {}", _minimum_window_size);
+    }
+    if (compare_store(_maximum_window_size, gather_maximum_window_size())) {
+        setting_has_changed = true;
+        tt_log_info("OS maximum window size has changed: {}", _maximum_window_size);
+    }
+
     if (setting_has_changed) {
         _notifier();
     }

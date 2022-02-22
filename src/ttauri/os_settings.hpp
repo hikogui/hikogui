@@ -7,6 +7,7 @@
 #include "text/language_tag.hpp"
 #include "text/language.hpp"
 #include "GUI/theme_mode.hpp"
+#include "geometry/extent.hpp"
 #include "unfair_mutex.hpp"
 #include "subsystem.hpp"
 #include "timer.hpp"
@@ -124,6 +125,31 @@ public:
         }
     }
 
+    /** Get the minimum window size supported by the operating system.
+     */
+    [[nodiscard]] static extent2 minimum_window_size() noexcept
+    {
+        if (ttlet self = global()) {
+            ttlet lock = std::scoped_lock(self->_mutex);
+            return self->_minimum_window_size;
+        } else {
+            return extent2{40.0f, 25.0f};
+        }
+    }
+
+    /** Get the maximum window size supported by the operating system.
+     */
+    [[nodiscard]] static extent2 maximum_window_size() noexcept
+    {
+        if (ttlet self = global()) {
+            ttlet lock = std::scoped_lock(self->_mutex);
+            return self->_maximum_window_size;
+        } else {
+            return extent2{1920.0f, 1080.0f};
+        }
+    }
+
+
     /** Gather the settings from the operating system now.
      */
     static void gather() noexcept
@@ -181,6 +207,8 @@ private:
     std::atomic<std::chrono::milliseconds> _keyboard_repeat_interval = {};
     std::atomic<std::chrono::milliseconds> _cursor_blink_interval = {};
     std::atomic<std::chrono::milliseconds> _cursor_blink_delay = {};
+    extent2 _minimum_window_size = {};
+    extent2 _maximum_window_size = {};
 
     /** Get the global os_settings instance.
      *
@@ -209,6 +237,8 @@ private:
     [[nodiscard]] std::chrono::milliseconds gather_keyboard_repeat_interval() noexcept;
     [[nodiscard]] std::chrono::milliseconds gather_cursor_blink_interval() noexcept;
     [[nodiscard]] std::chrono::milliseconds gather_cursor_blink_delay() noexcept;
+    [[nodiscard]] extent2 gather_minimum_window_size() noexcept;
+    [[nodiscard]] extent2 gather_maximum_window_size() noexcept;
 };
 
 } // namespace tt::inline v1
