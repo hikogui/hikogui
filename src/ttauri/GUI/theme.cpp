@@ -46,8 +46,6 @@ theme::theme(tt::font_book const &font_book, URL const &url)
     r.scale = delta_scale * scale;
 
     // Scale each size, and round so that everything will stay aligned on pixel boundaries.
-    r.toolbar_height = std::round(delta_scale * toolbar_height);
-    r.toolbar_decoration_button_width = std::round(delta_scale * toolbar_decoration_button_width);
     r.margin = std::round(delta_scale * margin);
     r.border_width = std::round(delta_scale * border_width);
     r.rounding_radius = std::round(delta_scale * rounding_radius);

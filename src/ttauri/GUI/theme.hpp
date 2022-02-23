@@ -31,15 +31,9 @@ public:
      */
     float scale = 1.0f;
 
-    float toolbar_height = (operating_system == operating_system::windows) ? 30.0f : 20.0f;
-
-    /** The width of a close, minimize, maximize, system menu button.
-     */
-    float toolbar_decoration_button_width = (operating_system == operating_system::windows) ? 30.0f : 20.0f;
-
     /** Distance between widgets and between widgets and the border of the container.
      */
-    float margin = 6.0f;
+    float margin = 4.5f;
 
     /** The line-width of a border.
      */
@@ -47,27 +41,27 @@ public:
 
     /** The rounding radius of boxes with rounded corners.
      */
-    float rounding_radius = 5.0f;
+    float rounding_radius = 4.0f;
 
     /** The size of small square widgets.
      */
-    float size = 15.0f;
+    float size = 11.0f;
 
     /** The size of large widgets. Such as the minimum scroll bar size.
      */
-    float large_size = 25.0f;
+    float large_size = 18.5f;
 
     /** Size of icons inside a widget.
      */
-    float icon_size = 10.0f;
+    float icon_size = 7.5f;
 
     /** Size of icons representing the length of am average word of a label's text.
      */
-    float large_icon_size = 30.0f;
+    float large_icon_size = 22.5f;
 
     /** Size of icons being inline with a label's text.
      */
-    float label_icon_size = 20.0f;
+    float label_icon_size = 15.0f;
 
     std::string name;
     theme_mode mode = theme_mode::light;

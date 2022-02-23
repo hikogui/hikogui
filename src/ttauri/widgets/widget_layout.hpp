@@ -134,11 +134,6 @@ public:
         return size.height();
     }
 
-    [[nodiscard]] constexpr float base_line() const noexcept
-    {
-        return size.height() * 0.5f;
-    }
-
     /** Construct a widget_layout from inside the window.
      */
     constexpr widget_layout(

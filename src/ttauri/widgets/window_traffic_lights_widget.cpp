@@ -18,7 +18,7 @@ widget_constraints const &window_traffic_lights_widget::set_constraints() noexce
     _layout = {};
 
     if (theme().operating_system == operating_system::windows) {
-        ttlet size = extent2{theme().toolbar_decoration_button_width * 3.0f, theme().toolbar_height};
+        ttlet size = extent2{theme().large_size * 3.0f, theme().large_size};
         return _constraints = {size, size, size};
 
     } else if (theme().operating_system == operating_system::macos) {
@@ -34,8 +34,8 @@ void window_traffic_lights_widget::set_layout(widget_layout const &layout) noexc
 {
     if (compare_store(_layout, layout)) {
         auto extent = layout.size;
-        if (extent.height() > theme().toolbar_height * 1.2f) {
-            extent = extent2{extent.width(), theme().toolbar_height};
+        if (extent.height() > theme().large_size * 1.2f) {
+            extent = extent2{extent.width(), theme().large_size};
         }
         auto y = layout.height() - extent.height();
 

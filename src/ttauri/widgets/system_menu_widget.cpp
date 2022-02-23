@@ -16,14 +16,14 @@ widget_constraints const &system_menu_widget::set_constraints() noexcept
     _layout = {};
     _icon_widget->set_constraints();
 
-    ttlet size = extent2{theme().toolbar_decoration_button_width, theme().toolbar_height};
+    ttlet size = extent2{theme().large_size, theme().large_size};
     return _constraints = {size, size, size};
 }
 
 void system_menu_widget::set_layout(widget_layout const &layout) noexcept
 {
     if (compare_store(_layout, layout)) {
-        ttlet icon_height = layout.height() < theme().toolbar_height * 1.2f ? layout.height() : theme().toolbar_height;
+        ttlet icon_height = layout.height() < theme().large_size * 1.2f ? layout.height() : theme().large_size;
         _icon_rectangle = aarectangle{0.0f, layout.height() - icon_height, layout.width(), icon_height};
 
         // Leave space for window resize handles on the left and top.
