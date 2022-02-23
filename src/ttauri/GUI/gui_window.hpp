@@ -264,12 +264,6 @@ public:
      */
     void update_keyboard_target(keyboard_focus_group group, keyboard_focus_direction direction) noexcept;
 
-    /** Get the size of the virtual-screen.
-     * Each window may be on a different virtual screen with different
-     * sizes, so retrieve it on a per window basis.
-     */
-    [[nodiscard]] virtual extent2 virtual_screen_size() const noexcept = 0;
-
     [[nodiscard]] translate2 window_to_screen() const noexcept
     {
         return translate2{screen_rectangle.left(), screen_rectangle.bottom()};

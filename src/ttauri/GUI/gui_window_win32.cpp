@@ -219,13 +219,16 @@ void gui_window_win32::open_system_menu()
     tt_axiom(is_gui_thread());
 
     // Position the system menu on the left side, below the system menu button.
-    ttlet screen_extent = virtual_screen_size();
     ttlet left = screen_rectangle.left();
-    ttlet top = screen_extent.height() - (screen_rectangle.top() - 30.0f);
+    ttlet top = screen_rectangle.top() - 30.0f;
+
+    // Convert to y-axis down coordinate system
+    ttlet inv_top = os_settings::primary_monitor_rectangle().height() - top;
 
     // Open the system menu window and wait.
     ttlet system_menu = GetSystemMenu(win32Window, false);
-    ttlet cmd = TrackPopupMenu(system_menu, TPM_RETURNCMD, narrow_cast<int>(left), narrow_cast<int>(top), 0, win32Window, NULL);
+    ttlet cmd =
+        TrackPopupMenu(system_menu, TPM_RETURNCMD, narrow_cast<int>(left), narrow_cast<int>(inv_top), 0, win32Window, NULL);
     if (cmd > 0) {
         SendMessage(win32Window, WM_SYSCOMMAND, narrow_cast<WPARAM>(cmd), LPARAM{0});
     }
@@ -244,16 +247,6 @@ void gui_window_win32::set_window_size(extent2 new_extent)
         narrow_cast<int>(std::ceil(new_extent.width())),
         narrow_cast<int>(std::ceil(new_extent.height())),
         SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_DEFERERASE | SWP_NOCOPYBITS | SWP_FRAMECHANGED);
-}
-
-[[nodiscard]] extent2 gui_window_win32::virtual_screen_size() const noexcept
-{
-    ttlet width = GetSystemMetrics(SM_CXMAXTRACK);
-    ttlet height = GetSystemMetrics(SM_CYMAXTRACK);
-    if (width <= 0 || height <= 0) {
-        tt_log_fatal("Failed to get virtual screen size");
-    }
-    return {narrow_cast<float>(width), narrow_cast<float>(height)};
 }
 
 [[nodiscard]] std::string gui_window_win32::get_text_from_clipboard() const noexcept
@@ -367,11 +360,12 @@ void gui_window_win32::setOSWindowRectangleFromRECT(RECT rectangle) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    ttlet screen_extent = virtual_screen_size();
+    // Convert bottom to y-axis up coordinate system.
+    ttlet inv_bottom = os_settings::primary_monitor_rectangle().height() - rectangle.bottom;
 
     ttlet new_screen_rectangle = aarectangle{
         narrow_cast<float>(rectangle.left),
-        narrow_cast<float>(screen_extent.height() - rectangle.bottom),
+        narrow_cast<float>(inv_bottom),
         narrow_cast<float>(rectangle.right - rectangle.left),
         narrow_cast<float>(rectangle.bottom - rectangle.top)};
 
@@ -644,7 +638,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
             send_event(KeyboardState::Idle, keyboard_modifiers::None, keyboard_virtual_key::Menu);
             return 0;
         }
-    }
+    } break;
 
     case WM_KEYDOWN: {
         auto extended = (narrow_cast<uint32_t>(lParam) & 0x01000000) != 0;
@@ -693,11 +687,13 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     case WM_NCHITTEST: {
         tt_axiom(is_gui_thread());
 
-        ttlet screen_extent = virtual_screen_size();
-        ttlet screen_position =
-            point2(narrow_cast<float>(GET_X_LPARAM(lParam)), screen_extent.height() - narrow_cast<float>(GET_Y_LPARAM(lParam)));
+        ttlet x = narrow_cast<float>(GET_X_LPARAM(lParam));
+        ttlet y = narrow_cast<float>(GET_Y_LPARAM(lParam));
 
-        ttlet hitbox_type = widget->hitbox_test(screen_to_window() * screen_position).type;
+        // Convert to y-axis up coordinate system.
+        ttlet inv_y = os_settings::primary_monitor_rectangle().height() - y;
+
+        ttlet hitbox_type = widget->hitbox_test(screen_to_window() * point2{x, inv_y}).type;
 
         switch (hitbox_type) {
         case hitbox::Type::BottomResizeBorder: set_cursor(mouse_cursor::None); return HTBOTTOM;
@@ -772,11 +768,15 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     auto mouseEvent = mouse_event{};
     mouseEvent.timePoint = std::chrono::utc_clock::now();
 
+    ttlet x = narrow_cast<float>(GET_X_LPARAM(lParam));
+    ttlet y = narrow_cast<float>(GET_Y_LPARAM(lParam));
+
+    // Convert to y-axis up coordinate system, y is in window-local.
+    ttlet inv_y = screen_rectangle.height() - y;
+
     // On Window 7 up to and including Window10, the I-beam cursor hot-spot is 2 pixels to the left
     // of the vertical bar. But most applications do not fix this problem.
-    mouseEvent.position =
-        point2(narrow_cast<float>(GET_X_LPARAM(lParam)), screen_rectangle.height() - narrow_cast<float>(GET_Y_LPARAM(lParam)));
-
+    mouseEvent.position = point2{x, inv_y};
     mouseEvent.wheelDelta = {};
     if (uMsg == WM_MOUSEWHEEL) {
         mouseEvent.wheelDelta.y() = narrow_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA * 10.0f;
