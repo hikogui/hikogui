@@ -126,7 +126,7 @@ std::vector<vk::WriteDescriptorSet> pipeline_SDF::createWriteDescriptorSet() con
             descriptorSet,
             1, // destBinding
             0, // arrayElement
-            narrow_cast<uint32_t>(sharedImagePipeline->atlasDescriptorImageInfos.size()), // descriptorCount
+            narrow_cast<uint32_t>(device_shared::atlasMaximumNrImages), // descriptorCount
             vk::DescriptorType::eSampledImage,
             sharedImagePipeline->atlasDescriptorImageInfos.data(),
             nullptr, // bufferInfo

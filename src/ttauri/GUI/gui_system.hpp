@@ -12,6 +12,7 @@
 #include "../thread.hpp"
 #include "../unfair_recursive_mutex.hpp"
 #include "../event_queue.hpp"
+#include "../observable.hpp"
 #include <span>
 #include <memory>
 #include <mutex>
@@ -50,6 +51,10 @@ public:
      * @note The only values allowed are `L` and `R`.
      */
     unicode_bidi_class writing_direction = unicode_bidi_class::L;
+
+    /** The name of the selected theme.
+     */
+    observable<std::string> selected_theme = "default"; 
 
     /** Make a gui_system instance.
      *

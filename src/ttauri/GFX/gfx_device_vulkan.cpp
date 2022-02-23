@@ -156,15 +156,17 @@ gfx_device_vulkan::gfx_device_vulkan(gfx_system &system, vk::PhysicalDevice phys
     gfx_device(system), physicalIntrinsic(std::move(physicalDevice))
 {
     auto result = physicalIntrinsic.getProperties2KHR<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceIDProperties>(
-        down_cast<gfx_system_vulkan&>(system).loader());
+        down_cast<gfx_system_vulkan &>(system).loader());
 
     auto resultDeviceProperties2 = result.get<vk::PhysicalDeviceProperties2>();
     auto resultDeviceIDProperties = result.get<vk::PhysicalDeviceIDProperties>();
 
     requiredExtensions.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
     requiredExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-    requiredExtensions.push_back(VK_KHR_MAINTENANCE2_EXTENSION_NAME);
+    requiredExtensions.push_back(VK_KHR_MAINTENANCE3_EXTENSION_NAME);
+    // requiredExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
     requiredExtensions.push_back(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME);
+    requiredExtensions.push_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
 
     deviceID = resultDeviceProperties2.properties.deviceID;
     vendorID = resultDeviceProperties2.properties.vendorID;
@@ -483,16 +485,27 @@ void gfx_device_vulkan::initialize_device()
     // Enable optional features.
     device_features = down_cast<gfx_system_vulkan &>(system).requiredFeatures;
     device_features.setDualSrcBlend(available_device_features.dualSrcBlend);
+    device_features.setShaderSampledImageArrayDynamicIndexing(VK_TRUE);
+    auto physical_device_features = vk::PhysicalDeviceFeatures2{
+        device_features
+    };
+    
+    auto device_descriptor_indexing_features = vk::PhysicalDeviceDescriptorIndexingFeatures{};
+    device_descriptor_indexing_features.setPNext(&physical_device_features);
+    device_descriptor_indexing_features.setShaderSampledImageArrayNonUniformIndexing(VK_TRUE);
 
-    intrinsic = physicalIntrinsic.createDevice(
-        {vk::DeviceCreateFlags(),
-         narrow_cast<uint32_t>(device_queue_create_infos.size()),
-         device_queue_create_infos.data(),
-         0,
-         nullptr,
-         narrow_cast<uint32_t>(requiredExtensions.size()),
-         requiredExtensions.data(),
-         &device_features});
+    auto device_create_info = vk::DeviceCreateInfo{
+        vk::DeviceCreateFlags(),
+        narrow_cast<uint32_t>(device_queue_create_infos.size()),
+        device_queue_create_infos.data(),
+        0,
+        nullptr,
+        narrow_cast<uint32_t>(requiredExtensions.size()),
+        requiredExtensions.data(),
+        nullptr};
+    device_create_info.setPNext(&device_descriptor_indexing_features);
+
+    intrinsic = physicalIntrinsic.createDevice(device_create_info);
 
     VmaAllocatorCreateInfo allocatorCreateInfo = {};
     allocatorCreateInfo.physicalDevice = physicalIntrinsic;

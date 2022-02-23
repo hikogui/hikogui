@@ -37,6 +37,15 @@ public:
         tt_axiom(holds_invariant());
     }
 
+    /** Construct a point from a lower dimension point.
+     */
+    [[nodiscard]] constexpr point(point<2> const &other, float z) noexcept requires(D == 3) : _v(static_cast<f32x4>(other))
+    {
+        _v.z() = z;
+        tt_axiom(holds_invariant());
+    }
+
+
     /** Construct a point from a higher dimension point.
      * This will clear the values in the higher dimensions.
      */
