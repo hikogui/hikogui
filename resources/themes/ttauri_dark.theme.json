@@ -2,6 +2,30 @@
     "name": "default",
     "mode": "dark",
 
+    // Distance between widgets and between widgets and the border of the container.
+    "margin": 4.5,
+
+    // The line-width of a border.
+    "border-width": 1.0,
+
+    // The rounding radius of boxes with rounded corners.
+    "rounding-radius": 4.0,
+
+    // The size of small square widgets.
+    "size": 11.0,
+
+    // The size of large widgets. Such as the minimum scroll bar size.
+    "large-size": 18.5,
+
+    // Size of icons inside a widget.
+    "icon-size": 7.5,
+
+    // Size of icons representing the length of am average word of a label's text.
+    "large-icon-size": 22.5,
+
+    // Size of icons being inline with a label's text.
+    "label-icon-size": 15.0,
+
     // The colors values are either:
     // - integers are in sRGB
     // - floats are in linear-extended-sRGB

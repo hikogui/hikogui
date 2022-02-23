@@ -284,58 +284,61 @@ void theme::parse(tt::font_book const &font_book, datum const &data)
 {
     tt_assert(holds_alternative<datum::map_type>(data));
 
-    this->name = parse_string(data, "name");
+    name = parse_string(data, "name");
 
     ttlet mode_name = to_lower(parse_string(data, "mode"));
     if (mode_name == "light") {
-        this->mode = theme_mode::light;
+        mode = theme_mode::light;
     } else if (mode_name == "dark") {
-        this->mode = theme_mode::dark;
+        mode = theme_mode::dark;
     } else {
         throw parse_error("Attribute 'mode' must be \"light\" or \"dark\", got \"{}\".", mode_name);
     }
 
-    std::get<static_cast<std::size_t>(theme_color::blue)>(this->_colors) = parse_color_list(data, "blue");
-    std::get<static_cast<std::size_t>(theme_color::green)>(this->_colors) = parse_color_list(data, "green");
-    std::get<static_cast<std::size_t>(theme_color::indigo)>(this->_colors) = parse_color_list(data, "indigo");
-    std::get<static_cast<std::size_t>(theme_color::orange)>(this->_colors) = parse_color_list(data, "orange");
-    std::get<static_cast<std::size_t>(theme_color::pink)>(this->_colors) = parse_color_list(data, "pink");
-    std::get<static_cast<std::size_t>(theme_color::purple)>(this->_colors) = parse_color_list(data, "purple");
-    std::get<static_cast<std::size_t>(theme_color::red)>(this->_colors) = parse_color_list(data, "red");
-    std::get<static_cast<std::size_t>(theme_color::teal)>(this->_colors) = parse_color_list(data, "teal");
-    std::get<static_cast<std::size_t>(theme_color::yellow)>(this->_colors) = parse_color_list(data, "yellow");
+    std::get<to_underlying(theme_color::blue)>(_colors) = parse_color_list(data, "blue");
+    std::get<to_underlying(theme_color::green)>(_colors) = parse_color_list(data, "green");
+    std::get<to_underlying(theme_color::indigo)>(_colors) = parse_color_list(data, "indigo");
+    std::get<to_underlying(theme_color::orange)>(_colors) = parse_color_list(data, "orange");
+    std::get<to_underlying(theme_color::pink)>(_colors) = parse_color_list(data, "pink");
+    std::get<to_underlying(theme_color::purple)>(_colors) = parse_color_list(data, "purple");
+    std::get<to_underlying(theme_color::red)>(_colors) = parse_color_list(data, "red");
+    std::get<to_underlying(theme_color::teal)>(_colors) = parse_color_list(data, "teal");
+    std::get<to_underlying(theme_color::yellow)>(_colors) = parse_color_list(data, "yellow");
 
-    std::get<static_cast<std::size_t>(theme_color::gray)>(this->_colors) = parse_color_list(data, "gray");
-    std::get<static_cast<std::size_t>(theme_color::gray2)>(this->_colors) = parse_color_list(data, "gray2");
-    std::get<static_cast<std::size_t>(theme_color::gray3)>(this->_colors) = parse_color_list(data, "gray3");
-    std::get<static_cast<std::size_t>(theme_color::gray4)>(this->_colors) = parse_color_list(data, "gray4");
-    std::get<static_cast<std::size_t>(theme_color::gray5)>(this->_colors) = parse_color_list(data, "gray5");
-    std::get<static_cast<std::size_t>(theme_color::gray6)>(this->_colors) = parse_color_list(data, "gray6");
+    std::get<to_underlying(theme_color::gray)>(_colors) = parse_color_list(data, "gray");
+    std::get<to_underlying(theme_color::gray2)>(_colors) = parse_color_list(data, "gray2");
+    std::get<to_underlying(theme_color::gray3)>(_colors) = parse_color_list(data, "gray3");
+    std::get<to_underlying(theme_color::gray4)>(_colors) = parse_color_list(data, "gray4");
+    std::get<to_underlying(theme_color::gray5)>(_colors) = parse_color_list(data, "gray5");
+    std::get<to_underlying(theme_color::gray6)>(_colors) = parse_color_list(data, "gray6");
 
-    std::get<static_cast<std::size_t>(theme_color::foreground)>(this->_colors) = parse_color_list(data, "foreground-color");
-    std::get<static_cast<std::size_t>(theme_color::border)>(this->_colors) = parse_color_list(data, "border-color");
-    std::get<static_cast<std::size_t>(theme_color::fill)>(this->_colors) = parse_color_list(data, "fill-color");
-    std::get<static_cast<std::size_t>(theme_color::accent)>(this->_colors) = parse_color_list(data, "accent-color");
-    std::get<static_cast<std::size_t>(theme_color::text_select)>(this->_colors) = parse_color_list(data, "text-select-color");
-    std::get<static_cast<std::size_t>(theme_color::primary_cursor)>(this->_colors) =
-        parse_color_list(data, "primary-cursor-color");
-    std::get<static_cast<std::size_t>(theme_color::secondary_cursor)>(this->_colors) =
-        parse_color_list(data, "secondary-cursor-color");
+    std::get<to_underlying(theme_color::foreground)>(_colors) = parse_color_list(data, "foreground-color");
+    std::get<to_underlying(theme_color::border)>(_colors) = parse_color_list(data, "border-color");
+    std::get<to_underlying(theme_color::fill)>(_colors) = parse_color_list(data, "fill-color");
+    std::get<to_underlying(theme_color::accent)>(_colors) = parse_color_list(data, "accent-color");
+    std::get<to_underlying(theme_color::text_select)>(_colors) = parse_color_list(data, "text-select-color");
+    std::get<to_underlying(theme_color::primary_cursor)>(_colors) = parse_color_list(data, "primary-cursor-color");
+    std::get<to_underlying(theme_color::secondary_cursor)>(_colors) = parse_color_list(data, "secondary-cursor-color");
 
-    std::get<static_cast<std::size_t>(theme_text_style::label)>(this->_text_styles) =
-        parse_text_style(font_book, data, "label-style");
-    std::get<static_cast<std::size_t>(theme_text_style::small_label)>(this->_text_styles) =
+    std::get<to_underlying(theme_text_style::label)>(_text_styles) = parse_text_style(font_book, data, "label-style");
+    std::get<to_underlying(theme_text_style::small_label)>(_text_styles) =
         parse_text_style(font_book, data, "small-label-style");
-    std::get<static_cast<std::size_t>(theme_text_style::warning)>(this->_text_styles) =
+    std::get<to_underlying(theme_text_style::warning)>(_text_styles) =
         parse_text_style(font_book, data, "warning-label-style");
-    std::get<static_cast<std::size_t>(theme_text_style::error)>(this->_text_styles) =
-        parse_text_style(font_book, data, "error-label-style");
-    std::get<static_cast<std::size_t>(theme_text_style::help)>(this->_text_styles) =
-        parse_text_style(font_book, data, "help-label-style");
-    std::get<static_cast<std::size_t>(theme_text_style::placeholder)>(this->_text_styles) =
+    std::get<to_underlying(theme_text_style::error)>(_text_styles) = parse_text_style(font_book, data, "error-label-style");
+    std::get<to_underlying(theme_text_style::help)>(_text_styles) = parse_text_style(font_book, data, "help-label-style");
+    std::get<to_underlying(theme_text_style::placeholder)>(_text_styles) =
         parse_text_style(font_book, data, "placeholder-label-style");
-    std::get<static_cast<std::size_t>(theme_text_style::link)>(this->_text_styles) =
-        parse_text_style(font_book, data, "link-label-style");
+    std::get<to_underlying(theme_text_style::link)>(_text_styles) = parse_text_style(font_book, data, "link-label-style");
+
+    margin = parse_float(data, "margin");
+    border_width = parse_float(data, "border-width");
+    rounding_radius = parse_float(data, "rounding-radius");
+    size = parse_float(data, "size");
+    large_size = parse_float(data, "large-size");
+    icon_size = parse_float(data, "icon-size");
+    large_icon_size = parse_float(data, "large-icon-size");
+    label_icon_size = parse_float(data, "label-icon-size");
 }
 
 } // namespace tt::inline v1
