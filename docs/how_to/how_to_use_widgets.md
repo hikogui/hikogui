@@ -118,7 +118,7 @@ observable<my_type> my_value;
 window.content().make_widget<checkbox_widget>("A1", my_value, my_type::bar, my_type::foo);
 ```
 
-As you can see the checkbox_widget will work with custom types. For the checkbox
+As you can see the `checkbox_widget` will work with custom types. For the checkbox
 the type needs to be equality comparable and assignable.
 
 It is also possible to chain observables to each other. Chaining is done by
@@ -167,7 +167,7 @@ A list of widgets
 -----------------
 
 - **Simple widgets**
-  - `tt::text_widget`: Displays text.
+  - `tt::text_widget`: Displays, select and edit text.
   - `tt::icon_widget`: Displays a small image.
   - `tt::label_widget`: Lays out and displays text and a icon together.
 
@@ -198,8 +198,8 @@ A list of widgets
 - **Misc**
   - `tt::selection_widget`: A selection widget allows selecting one out of a set
     of choices.
-  - `tt::text_field_widget`: A text field widgets allows a user to enter free
-    form text.
+  - `tt::text_field_widget`: A text field widgets allows a user to type in
+    a value of different types: std::string, int, float, etc.
   - `tt::window_widget`: A window widget is directly owned by a window.
   - `tt::window_traffic_light_widget`: This widget displays the minimize,
     maximize and close button of a window.
@@ -208,3 +208,4 @@ A list of widgets
   - `tt::system_menu_widget`: The system menu is a logo to show for the window
     and also is the mouse target for the system-menu that every window has in
     Windows 10.
+

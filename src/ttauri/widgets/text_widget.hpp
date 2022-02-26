@@ -24,7 +24,29 @@
 namespace tt::inline v1 {
 
 /** A text widget.
- * The text widget is a simple widget that just displays text.
+ *
+ * The text widget is a widget for displaying, selecting and editing text.
+ *
+ * On its own it can be used to edit multiple lines of text, but it will probably
+ * be used embedded inside other widgets, like:
+ *  - `label_widget` to display translated text together with an optional icon.
+ *  - `text_field_widget` to edit a value of diffent types, includig integers, floating point, strings, etc.
+ *
+ * Features:
+ *  - Multiple paragraphs.
+ *  - Uses the unicode line break algorithm to wrap lines when not enough horizontal space.
+ *  - Used the unicode word break algorithm for selecting and moving through words.
+ *  - Uses the unicode scentence break algorithm for selecting and moving through scentences.
+ *  - Uses the unicode bidi algorithm for displaying text in mixed left-to-right & right-to-left languages.
+ *  - Displays secondary cursor where text in the other language-direction will be inserted.
+ *  - Keeps track if the user has just worked in left-to-right or right-to-left language.
+ *  - Arrow keys move the cursor visually through the text
+ *  - Handles insertion and overwrite mode; showing a caret or box cursor.
+ *  - When entering dead-key on the keyboard the dead-key character is displayed underneath a secondary
+ *    overwrite cursor.
+ *  - Cut, Copy & Paste.
+ *  - Undo & Redo.
+ *
  */
 class text_widget final : public widget {
 public:
