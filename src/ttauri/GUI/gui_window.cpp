@@ -86,6 +86,11 @@ void gui_window::init()
         this->request_reconstrain();
     });
 
+    // Subscribe on theme changes.
+    _selected_theme_callback = gui.selected_theme.subscribe([this] {
+        this->request_reconstrain();
+    });
+
     // Delegate has been called, layout of widgets has been calculated for the
     // minimum and maximum size of the window.
     create_window(new_size);
