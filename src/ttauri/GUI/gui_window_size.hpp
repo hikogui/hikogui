@@ -6,6 +6,6 @@
 
 namespace tt::inline v1 {
 
-enum class gui_window_size { normal, minimized, maximized };
+enum class gui_window_size { normal, minimized, maximized, fullscreen };
 
 }

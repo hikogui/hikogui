@@ -28,21 +28,13 @@ public:
     int windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept;
 
     void set_cursor(mouse_cursor cursor) noexcept override;
-
     void close_window() override;
-
-    void minimize_window() override;
-
-    void maximize_window() override;
-
-    void normalize_window() override;
-
+    void set_size_state(gui_window_size state) noexcept override;
+    [[nodiscard]] aarectangle workspace_rectangle() const noexcept override;
+    [[nodiscard]] aarectangle fullscreen_rectangle() const noexcept override;
     void open_system_menu() override;
-
     void set_window_size(extent2 extent) override;
-
     [[nodiscard]] std::string get_text_from_clipboard() const noexcept override;
-
     void set_text_on_clipboard(std::string str) noexcept override;
 
 private:

@@ -114,7 +114,7 @@ void window_traffic_lights_widget::drawMacOS(draw_context const &drawContext) no
         context.draw_glyph(
             layout(), translate_z(0.1f) * minimizeWindowGlyphRectangle, color{0.212f, 0.1f, 0.0f}, minimizeWindowGlyph);
 
-        if (window.size_state == gui_window_size::maximized) {
+        if (window.size_state() == gui_window_size::maximized) {
             context.draw_glyph(
                 layout(), translate_z(0.1f) * restoreWindowGlyphRectangle, color{0.0f, 0.133f, 0.0f}, restoreWindowGlyph);
         } else {
@@ -156,7 +156,7 @@ void window_traffic_lights_widget::drawWindows(draw_context const &drawContext) 
 
     context.draw_glyph(layout(), translate_z(0.1f) * closeWindowGlyphRectangle, glyph_color, closeWindowGlyph);
     context.draw_glyph(layout(), translate_z(0.1f) * minimizeWindowGlyphRectangle, glyph_color, minimizeWindowGlyph);
-    if (window.size_state == gui_window_size::maximized) {
+    if (window.size_state() == gui_window_size::maximized) {
         context.draw_glyph(layout(), translate_z(0.1f) * restoreWindowGlyphRectangle, glyph_color, restoreWindowGlyph);
     } else {
         context.draw_glyph(layout(), translate_z(0.1f) * maximizeWindowGlyphRectangle, glyph_color, maximizeWindowGlyph);
@@ -203,13 +203,13 @@ bool window_traffic_lights_widget::handle_event(mouse_event const &event) noexce
             }
 
             if (pressedMinimize && hoverMinimize) {
-                window.minimize_window();
+                window.set_size_state(gui_window_size::minimized);
             }
 
             if (pressedMaximize && hoverMaximize) {
-                switch (window.size_state) {
-                case gui_window_size::normal: window.maximize_window(); break;
-                case gui_window_size::maximized: window.normalize_window(); break;
+                switch (window.size_state()) {
+                case gui_window_size::normal: window.set_size_state(gui_window_size::maximized); break;
+                case gui_window_size::maximized: window.set_size_state(gui_window_size::normal); break;
                 default: tt_no_default();
                 }
             }
