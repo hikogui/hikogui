@@ -37,7 +37,11 @@ private:
     tt::observable<int> radioValue = 0;
     tt::observable<std::vector<std::pair<tt::audio_device_id, tt::label>>> _audio_device_list;
 
+    tt::observable<std::vector<std::pair<std::string, tt::label>>> _theme_list;
+    tt::observable<std::string> _selected_theme;
+
     void init_audio_tab(tt::grid_widget &grid) noexcept;
+    void init_theme_tab(tt::grid_widget &grid) noexcept;
     void init_license_tab(tt::grid_widget &grid) noexcept;
 };
 

@@ -32,8 +32,7 @@ widget_constraints const &text_widget::set_constraints() noexcept
         return _constraints = {shaped_text_size, shaped_text_size, shaped_text_size, theme().margin};
     } else {
         // Allow the text to be 550.0f pixels wide.
-        ttlet[preferred_shaped_text_rectangle, dummy] =
-            _shaped_text.bounding_rectangle(550.0f, alignment->vertical());
+        ttlet[preferred_shaped_text_rectangle, dummy] = _shaped_text.bounding_rectangle(550.0f, alignment->vertical());
         ttlet preferred_shaped_text_size = preferred_shaped_text_rectangle.size();
 
         ttlet height = std::max(shaped_text_size.height(), preferred_shaped_text_size.height());
@@ -48,9 +47,16 @@ widget_constraints const &text_widget::set_constraints() noexcept
 void text_widget::set_layout(widget_layout const &layout) noexcept
 {
     if (compare_store(_layout, layout)) {
+        // clang-format off
+        ttlet base_line =
+            alignment == vertical_alignment::bottom ? layout.rectangle().bottom() :
+            alignment == vertical_alignment::middle ? layout.rectangle().middle() - _shaped_text_cap_height * 0.5f :
+            layout.rectangle().top() - _shaped_text_cap_height;
+        // clang-format on
+
         _shaped_text.layout(
             layout.rectangle(),
-            layout.base_line() - _shaped_text_cap_height * 0.5f,
+            base_line,
             layout.sub_pixel_size,
             layout.writing_direction,
             *alignment);

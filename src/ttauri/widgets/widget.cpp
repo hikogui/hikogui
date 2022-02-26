@@ -349,7 +349,7 @@ void widget::scroll_to_show(tt::aarectangle rectangle) noexcept
 
     // Move the request_rectangle to window coordinates.
     ttlet requested_window_rectangle = translate2{layout().window_clipping_rectangle()} * requested_rectangle;
-    ttlet window_bounds = aarectangle{window.screen_rectangle.size()} - theme().margin;
+    ttlet window_bounds = aarectangle{window.rectangle.size()} - theme().margin;
     ttlet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
     return bounding_rectangle(layout().from_window * response_window_rectangle);
 }

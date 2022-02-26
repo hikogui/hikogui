@@ -11,7 +11,7 @@ namespace tt::inline v1 {
 checkbox_widget::checkbox_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
     super(window, parent, std::move(delegate))
 {
-    label_alignment = alignment::top_left();
+    label_alignment = alignment::middle_left();
 }
 
 checkbox_widget::checkbox_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
@@ -33,8 +33,11 @@ widget_constraints const &checkbox_widget::set_constraints() noexcept
 void checkbox_widget::set_layout(widget_layout const &layout) noexcept
 {
     if (compare_store(_layout, layout)) {
-        _button_rectangle = align(layout.rectangle(), _button_size, alignment::top_left());
-        _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, layout.width(), layout.height()};
+        _button_rectangle = align(layout.rectangle(), _button_size, alignment::middle_left());
+
+        ttlet label_x = _button_rectangle.right() + theme().margin;
+        ttlet label_width = layout.width() - label_x;
+        _label_rectangle = aarectangle{label_x, 0.0f, label_width, layout.height()};
 
         _check_glyph = font_book().find_glyph(elusive_icon::Ok);
         ttlet check_glyph_bb = _check_glyph.get_bounding_box();

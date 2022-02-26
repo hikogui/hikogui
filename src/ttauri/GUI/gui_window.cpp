@@ -74,7 +74,7 @@ void gui_window::init()
     }
 
     // Execute a constraint check to determine initial window size.
-    theme = gui.theme_book->find("default", os_settings::theme_mode()).transform(dpi, active);
+    theme = gui.theme_book->find(*gui.selected_theme.cget(), os_settings::theme_mode()).transform(dpi, active);
     ttlet new_size = widget->set_constraints().preferred;
 
     // Reset the keyboard target to not focus anything.
@@ -83,6 +83,11 @@ void gui_window::init()
     // For changes in setting on the OS we should reconstrain/layout/redraw the window
     // For example when the language or theme changes.
     _setting_change_callback = os_settings::subscribe([this] {
+        this->request_reconstrain();
+    });
+
+    // Subscribe on theme changes.
+    _selected_theme_callback = gui.selected_theme.subscribe([this] {
         this->request_reconstrain();
     });
 
@@ -134,7 +139,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     if (need_reconstrain) {
         ttlet t2 = trace<"window::constrain">();
 
-        theme = gui.theme_book->find("default", os_settings::theme_mode()).transform(dpi, active);
+        theme = gui.theme_book->find(*gui.selected_theme.cget(), os_settings::theme_mode()).transform(dpi, active);
 
         widget->set_constraints();
     }
@@ -150,7 +155,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     // the logic for layout and drawing becomes complicated.
     if (_resize.exchange(false)) {
         // If a widget asked for a resize, change the size of the window to the preferred size of the widgets.
-        ttlet current_size = screen_rectangle.size();
+        ttlet current_size = rectangle.size();
         ttlet new_size = widget->constraints().preferred;
         if (new_size != current_size) {
             tt_log_info("A new preferred window size {} was requested by one of the widget.", new_size);
@@ -159,15 +164,15 @@ void gui_window::render(utc_nanoseconds display_time_point)
 
     } else {
         // Check if the window size matches the minimum and maximum size of the widgets, otherwise resize.
-        ttlet current_size = screen_rectangle.size();
+        ttlet current_size = rectangle.size();
         ttlet new_size = clamp(current_size, widget->constraints().minimum, widget->constraints().maximum);
-        if (new_size != current_size and size_state != gui_window_size::minimized) {
+        if (new_size != current_size and size_state() != gui_window_size::minimized) {
             tt_log_info("The current window size {} must grow or shrink to {} to fit the widgets.", current_size, new_size);
             set_window_size(new_size);
         }
     }
 
-    if (screen_rectangle.size() < widget->constraints().minimum or screen_rectangle.size() > widget->constraints().maximum) {
+    if (rectangle.size() < widget->constraints().minimum or rectangle.size() > widget->constraints().maximum) {
         // Even after the resize above it is possible to have an incorrect window size.
         // For example when minimizing the window.
         // Stop processing rendering for this window here.
@@ -175,7 +180,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     }
 
     // Update the graphics' surface to the current size of the window.
-    surface->update(screen_rectangle.size());
+    surface->update(rectangle.size());
 
     // Make sure the widget's layout is updated before draw, but after window resize.
     auto need_relayout = _relayout.exchange(false, std::memory_order_relaxed);
@@ -185,9 +190,9 @@ void gui_window::render(utc_nanoseconds display_time_point)
     need_relayout = true;
 #endif
 
-    if (need_reconstrain or need_relayout or widget_size != screen_rectangle.size()) {
+    if (need_reconstrain or need_relayout or widget_size != rectangle.size()) {
         ttlet t2 = trace<"window::layout">();
-        widget_size = screen_rectangle.size();
+        widget_size = rectangle.size();
 
         // Guarantee that the layout size is always at least the minimum size.
         // We do this because it simplifies calculations if no minimum checks are necessary inside widget.

@@ -1,15 +1,15 @@
 {
-    "name": "default",
+    "name": "Pink and White",
     "mode": "light",
 
     // Distance between widgets and between widgets and the border of the container.
     "margin": 4.5,
 
     // The line-width of a border.
-    "border-width": 1.0,
+    "border-width": 2.0,
 
     // The rounding radius of boxes with rounded corners.
-    "rounding-radius": 4.0,
+    "rounding-radius": 6.0,
 
     // The size of small square widgets.
     "size": 11.0,
@@ -52,68 +52,68 @@
     // Colors used by widgets, to show nesting inside containers,
     // and for internal elements and disabled icons.
     "fill-color": [
-        [242, 242, 247],
-        [229, 229, 234],
-        [209, 209, 214],
-        [199, 199, 204]
+        [255, 241, 245],
+        [254, 218, 228],
+        [252, 190, 208],
+        [252, 173, 197]
     ],
 
     // Colors used by widgets for internal elements and disabled icons.
     "border-color": [
-        [199, 199, 204],
-        [174, 174, 178],
-        [142, 142, 147],
-        [ 99,  99, 102]
+        [252, 173, 197],
+        [251, 140, 173],
+        [249,  96, 141],
+        [247,  40, 102]
     ],
 
     // Color for textual or primary elements like icons.
-    "foreground-color":       [0, 0, 1],
+    "foreground-color":       [62, 2, 20],
 
     // Accent color used by widgets, to show icons, hover and keyboard focus
-    "accent-color":           [  0, 122, 255],
-    "text-select-color":      [  0, 122, 255],
-    "primary-cursor-color":   [  0,   0,   1],
-    "secondary-cursor-color": [170, 170,   1],
+    "accent-color":           [169,  24,  28],
+    "text-select-color":      [156, 143, 209],
+    "primary-cursor-color":   [ 62,   2,  20],
+    "secondary-cursor-color": [154, 109,   5],
 
     "small-label-style": {
-        "family": "Arial",
+        "family": "Corbel",
         "weight": "Normal",
         "size": 10.0,
         "color": "foreground"
     },
 
     "label-style": {
-        "family": "Arial",
+        "family": "Corbel",
         "weight": "Regular",
         "size": 12.0,
         "color": "foreground"
     },
     "warning-label-style": {
-        "family": "Times New Roman",
+        "family": "Corbel",
         "weight": "Regular",
         "size": 12.0,
         "color": "foreground"
     },
     "error-label-style": {
-        "family": "Arial",
+        "family": "Corbel",
         "weight": "Regular",
         "size": 12.0,
         "color": "red"
     },
     "help-label-style": {
-        "family": "Arial",
+        "family": "Corbel",
         "weight": "Regular",
         "size": 12.0,
         "color": [88, 86, 214]
     },
     "placeholder-label-style": {
-        "family": "Arial",
+        "family": "Corbel",
         "weight": "Regular",
         "size": 12.0,
         "color": [142, 142, 147]
     },
     "link-label-style": {
-        "family": "Arial",
+        "family": "Corbel",
         "weight": "Regular",
         "size": 12.0,
         "color": [0, 122, 255]

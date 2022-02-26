@@ -118,23 +118,14 @@ This is true for:
 
 ### Window and Widget-surface coordinates
 
-The local coordinates in a window and widgets are in points.
-With the origin in the corner of the left bottom most point.
-
-The local x,y-coordinates are multiplied by the DPI-scale of the
-window. The DPI-scale is always an integer, which allows much easier
-alignment of lines to actual pixels.
+The coordinates in a window and widgets  are in pixels.
+With the center of the left bottom pixel having the coordinates (0.5, 0.5).
 
 The alignment of borders to pixels is the responsibility of the
 widget that draws itself. The widget has access to
 the `draw_context::draw_box_including_border()` function to position the border's
 edge to the edge of the given rectangle, if the rectangle is rounded to
 integer coordinates; the rectangle, border and pixel will share the same edge.
-
-At DPI-scale of 1, it is assumed that the display has a 84 DPI.
-This is the middle ground between Window's default 96 DPI and macOS's
-default 72 DPI. The ShapedText class will scale to 84 DPI automatically,
-further DPI scaling will be handled by the `draw_context`.
 
 ### Window depth
 
@@ -178,12 +169,21 @@ Corners are enumerated as follows:
  - 6: far top left
  - 7: far top right
 
-When corners are passing as 4D vectors:
+When corners are packed in a 4D vector:
 
  - x = bottom-left
  - y = bottom-right
  - z = top-left
  - w = top-right
+
+Edges
+-----
+
+When edges are packed in a 4D vector:
+ - x = bottom-edge
+ - y = left-edge
+ - z = top-edge
+ - w = right-edge
 
 Triangles
 ---------
@@ -207,8 +207,3 @@ v    \ |
 0 ---> 1
 ```
 
-When edges of a quad are packed in a data type their ordering is:
- - bottom-edge
- - left-edge
- - top-edge
- - right-edge

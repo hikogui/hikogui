@@ -38,23 +38,29 @@ void device_shared::destroy(gfx_device_vulkan *vulkanDevice)
     auto image_width = narrow_cast<int>(std::ceil(draw_extent.width()));
     auto image_height = narrow_cast<int>(std::ceil(draw_extent.height()));
 
+    // Check if the glyph still fits in the same line of glyphs.
+    // Otherwise go to the next line.
+    if (atlas_allocation_position.x() + image_width > atlasImageWidth) {
+        atlas_allocation_position.x() = 0;
+        atlas_allocation_position.y() = atlas_allocation_position.y() + atlasAllocationMaxHeight;
+        atlasAllocationMaxHeight = 0;
+    }
+
+    // Check if the glyph still fits in the image.
+    // Otherwise allocate a new image.
     if (atlas_allocation_position.y() + image_height > atlasImageHeight) {
         atlas_allocation_position.x() = 0;
         atlas_allocation_position.y() = 0;
         atlas_allocation_position.z() = atlas_allocation_position.z() + 1;
+        atlasAllocationMaxHeight = 0;
 
         if (atlas_allocation_position.z() >= atlasMaximumNrImages) {
             tt_log_fatal("pipeline_SDF atlas overflow, too many glyphs in use.");
         }
 
-        if (atlas_allocation_position.z() >= size(atlasTextures)) {
+        if (atlas_allocation_position.z() >= atlasTextures.size()) {
             addAtlasImage();
         }
-    }
-
-    if (atlas_allocation_position.x() + image_width > atlasImageWidth) {
-        atlas_allocation_position.x() = 0;
-        atlas_allocation_position.y() = atlas_allocation_position.y() + atlasAllocationMaxHeight;
     }
 
     auto r = glyph_atlas_info{atlas_allocation_position, draw_extent, draw_scale, scale2{atlasTextureCoordinateMultiplier}};
@@ -165,10 +171,17 @@ bool device_shared::place_vertices(
 
     ttlet box_with_border = scale_from_center(box, atlas_rect->border_scale);
 
-    vertices.emplace_back(box_with_border.p0, clipping_rectangle, get<0>(atlas_rect->texture_coordinates), colors.p0);
-    vertices.emplace_back(box_with_border.p1, clipping_rectangle, get<1>(atlas_rect->texture_coordinates), colors.p1);
-    vertices.emplace_back(box_with_border.p2, clipping_rectangle, get<2>(atlas_rect->texture_coordinates), colors.p2);
-    vertices.emplace_back(box_with_border.p3, clipping_rectangle, get<3>(atlas_rect->texture_coordinates), colors.p3);
+    auto image_index = atlas_rect->position.z();
+    auto t0 = point3(get<0>(atlas_rect->texture_coordinates), image_index);
+    auto t1 = point3(get<1>(atlas_rect->texture_coordinates), image_index);
+    auto t2 = point3(get<2>(atlas_rect->texture_coordinates), image_index);
+    auto t3 = point3(get<3>(atlas_rect->texture_coordinates), image_index);
+
+
+    vertices.emplace_back(box_with_border.p0, clipping_rectangle, t0, colors.p0);
+    vertices.emplace_back(box_with_border.p1, clipping_rectangle, t1, colors.p1);
+    vertices.emplace_back(box_with_border.p2, clipping_rectangle, t2, colors.p2);
+    vertices.emplace_back(box_with_border.p3, clipping_rectangle, t3, colors.p3);
     return glyph_was_added;
 }
 
@@ -207,7 +220,7 @@ void device_shared::teardownShaders(gfx_device_vulkan *vulkanDevice)
 
 void device_shared::addAtlasImage()
 {
-    ttlet current_image_index = ssize(atlasTextures);
+    ttlet current_image_index = atlasTextures.size();
 
     // Create atlas image
     vk::ImageCreateInfo const imageCreateInfo = {

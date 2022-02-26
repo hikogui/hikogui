@@ -21,9 +21,11 @@ widget_constraints const &radio_button_widget::set_constraints() noexcept
 void radio_button_widget::set_layout(widget_layout const &layout) noexcept
 {
     if (compare_store(_layout, layout)) {
-        _button_rectangle = align(layout.rectangle(), _button_size, alignment::top_left());
+        _button_rectangle = align(layout.rectangle(), _button_size, alignment::middle_left());
 
-        _label_rectangle = aarectangle{_button_rectangle.right() + theme().margin, 0.0f, layout.width(), layout.height()};
+        ttlet label_x = _button_rectangle.right() + theme().margin;
+        ttlet label_width = layout.width() - label_x;
+        _label_rectangle = aarectangle{label_x, 0.0f, label_width, layout.height()};
 
         _pip_rectangle = align(_button_rectangle, extent2{theme().icon_size, theme().icon_size}, alignment::middle_center());
     }
