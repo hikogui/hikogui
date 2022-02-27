@@ -62,6 +62,16 @@ void os_settings::gather() noexcept
     }
 
     try {
+        if (compare_store(_subpixel_orientation, gather_subpixel_orientation())) {
+            setting_has_changed = true;
+            tt_log_info("OS sub-pixel orientation has changed: {}", _subpixel_orientation.load());
+        }
+    } catch (std::exception const &e) {
+        tt_log_error("Failed to get OS sub-pixel orientation: {}", e.what());
+    }
+
+
+    try {
         if (compare_store(_double_click_interval, gather_double_click_interval())) {
             setting_has_changed = true;
             tt_log_info("OS double click interval has changed: {}", _double_click_interval.load());

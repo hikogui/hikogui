@@ -13,6 +13,7 @@
 #include "keyboard_focus_direction.hpp"
 #include "keyboard_focus_group.hpp"
 #include "theme.hpp"
+#include "../GFX/subpixel_orientation.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../widgets/window_widget.hpp"
 #include "../widgets/grid_widget.hpp"
@@ -214,6 +215,8 @@ public:
     /** The rectangle of the screen where the window is currently located.
      */
     virtual aarectangle fullscreen_rectangle() const noexcept = 0;
+
+    virtual tt::subpixel_orientation subpixel_orientation() const noexcept = 0;
 
     /** Get the size-state of the window.
      */

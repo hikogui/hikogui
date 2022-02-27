@@ -11,9 +11,9 @@ namespace tt::inline v1::pipeline_tone_mapper {
 
 pipeline_tone_mapper::pipeline_tone_mapper(gfx_surface const &surface) : pipeline_vulkan(surface) {}
 
-void pipeline_tone_mapper::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
+void pipeline_tone_mapper::drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_context const &context)
 {
-    pipeline_vulkan::drawInCommandBuffer(commandBuffer);
+    pipeline_vulkan::drawInCommandBuffer(commandBuffer, context);
 
     vulkan_device().toneMapperPipeline->drawInCommandBuffer(commandBuffer);
 

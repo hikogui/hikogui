@@ -22,7 +22,7 @@ gfx_device_vulkan &pipeline_vulkan::vulkan_device() const noexcept
     return down_cast<gfx_device_vulkan &>(*device);
 }
 
-void pipeline_vulkan::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
+void pipeline_vulkan::drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_context const &context)
 {
     commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, intrinsic);
 

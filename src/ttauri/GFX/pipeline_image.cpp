@@ -10,9 +10,9 @@ namespace tt::inline v1::pipeline_image {
 
 pipeline_image::pipeline_image(gfx_surface const &surface) : pipeline_vulkan(surface) {}
 
-void pipeline_image::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
+void pipeline_image::drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_context const &context)
 {
-    pipeline_vulkan::drawInCommandBuffer(commandBuffer);
+    pipeline_vulkan::drawInCommandBuffer(commandBuffer, context);
 
     vulkan_device().flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof(vertex));
     vulkan_device().imagePipeline->prepare_atlas_for_rendering();

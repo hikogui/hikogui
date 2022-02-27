@@ -7,6 +7,7 @@
 #include "text/language_tag.hpp"
 #include "text/language.hpp"
 #include "GUI/theme_mode.hpp"
+#include "GFX/subpixel_orientation.hpp"
 #include "geometry/extent.hpp"
 #include "geometry/axis_aligned_rectangle.hpp"
 #include "unfair_mutex.hpp"
@@ -51,6 +52,14 @@ public:
     {
         start_subsystem();
         return _theme_mode.load(std::memory_order_relaxed);
+    }
+
+    /** Get the configured light/dark theme mode
+     */
+    [[nodiscard]] static tt::subpixel_orientation subpixel_orientation() noexcept
+    {
+        start_subsystem();
+        return _subpixel_orientation.load(std::memory_order_relaxed);
     }
 
     /** Get the mouse double click interval.
@@ -182,6 +191,7 @@ private:
     static inline std::vector<language_tag> _language_tags = {};
     static inline std::vector<language *> _languages = {};
     static inline std::atomic<tt::theme_mode> _theme_mode = theme_mode::dark;
+    static inline std::atomic<tt::subpixel_orientation> _subpixel_orientation = tt::subpixel_orientation::unknown;
     static inline std::atomic<std::chrono::milliseconds> _double_click_interval = std::chrono::milliseconds(500);
     static inline std::atomic<std::chrono::milliseconds> _keyboard_repeat_delay = std::chrono::milliseconds(250);
     static inline std::atomic<std::chrono::milliseconds> _keyboard_repeat_interval = std::chrono::milliseconds(33);
@@ -206,6 +216,7 @@ private:
 
     [[nodiscard]] static std::vector<language_tag> gather_languages();
     [[nodiscard]] static tt::theme_mode gather_theme_mode();
+    [[nodiscard]] static tt::subpixel_orientation gather_subpixel_orientation();
     [[nodiscard]] static std::chrono::milliseconds gather_double_click_interval();
     [[nodiscard]] static std::chrono::milliseconds gather_keyboard_repeat_delay();
     [[nodiscard]] static std::chrono::milliseconds gather_keyboard_repeat_interval();

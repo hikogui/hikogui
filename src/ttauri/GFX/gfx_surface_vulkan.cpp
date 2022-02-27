@@ -295,7 +295,7 @@ void gfx_surface_vulkan::update(extent2 new_size) noexcept
     build(new_size);
 }
 
-std::optional<draw_context> gfx_surface_vulkan::render_start(aarectangle redraw_rectangle, utc_nanoseconds display_time_point)
+std::optional<draw_context> gfx_surface_vulkan::render_start(aarectangle redraw_rectangle, utc_nanoseconds display_time_point, tt::subpixel_orientation subpixel_orientation, color background_color)
 {
     ttlet lock = std::scoped_lock(gfx_system_mutex);
 
@@ -344,16 +344,18 @@ std::optional<draw_context> gfx_surface_vulkan::render_start(aarectangle redraw_
         boxPipeline->vertexBufferData,
         imagePipeline->vertexBufferData,
         SDFPipeline->vertexBufferData,
-        display_time_point};
+        display_time_point,
+        subpixel_orientation,
+        background_color};
 }
 
-void gfx_surface_vulkan::render_finish(draw_context const &context, color background_color)
+void gfx_surface_vulkan::render_finish(draw_context const &context)
 {
     ttlet lock = std::scoped_lock(gfx_system_mutex);
 
     auto &current_image = swapchain_image_infos.at(context.frame_buffer_index);
 
-    fill_command_buffer(current_image, context.scissor_rectangle, background_color);
+    fill_command_buffer(current_image, context);
     submitCommandBuffer();
 
     // Signal the fence when all rendering has finished on the graphics queue.
@@ -366,10 +368,7 @@ void gfx_surface_vulkan::render_finish(draw_context const &context, color backgr
     teardown();
 }
 
-void gfx_surface_vulkan::fill_command_buffer(
-    swapchain_image_info &current_image,
-    aarectangle scissor_rectangle,
-    color background_color)
+void gfx_surface_vulkan::fill_command_buffer(swapchain_image_info &current_image, draw_context const &context)
 {
     tt_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -378,7 +377,7 @@ void gfx_surface_vulkan::fill_command_buffer(
     commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
     commandBuffer.begin({vk::CommandBufferUsageFlagBits::eSimultaneousUse});
 
-    ttlet background_color_f32x4 = static_cast<f32x4>(background_color);
+    ttlet background_color_f32x4 = static_cast<f32x4>(context.background_color);
     ttlet background_color_array = static_cast<std::array<float, 4>>(background_color_f32x4);
 
     ttlet colorClearValue = vk::ClearColorValue{background_color_array};
@@ -391,10 +390,10 @@ void gfx_surface_vulkan::fill_command_buffer(
         vk::ClearValue{colorClearValue}};
 
     // Clamp the scissor rectangle to the size of the window.
-    scissor_rectangle = intersect(
-        scissor_rectangle,
-        aarectangle{0.0f, 0.0f, narrow_cast<float>(swapchainImageExtent.width), narrow_cast<float>(swapchainImageExtent.height)});
-    scissor_rectangle = ceil(scissor_rectangle);
+    ttlet scissor_rectangle = ceil(intersect(
+        context.scissor_rectangle,
+        aarectangle{
+            0.0f, 0.0f, narrow_cast<float>(swapchainImageExtent.width), narrow_cast<float>(swapchainImageExtent.height)}));
 
     ttlet scissors = std::array{vk::Rect2D{
         vk::Offset2D(
@@ -425,13 +424,13 @@ void gfx_surface_vulkan::fill_command_buffer(
         {renderPass, current_image.frame_buffer, render_area, narrow_cast<uint32_t>(clearValues.size()), clearValues.data()},
         vk::SubpassContents::eInline);
 
-    boxPipeline->drawInCommandBuffer(commandBuffer);
+    boxPipeline->drawInCommandBuffer(commandBuffer, context);
     commandBuffer.nextSubpass(vk::SubpassContents::eInline);
-    imagePipeline->drawInCommandBuffer(commandBuffer);
+    imagePipeline->drawInCommandBuffer(commandBuffer, context);
     commandBuffer.nextSubpass(vk::SubpassContents::eInline);
-    SDFPipeline->drawInCommandBuffer(commandBuffer);
+    SDFPipeline->drawInCommandBuffer(commandBuffer, context);
     commandBuffer.nextSubpass(vk::SubpassContents::eInline);
-    toneMapperPipeline->drawInCommandBuffer(commandBuffer);
+    toneMapperPipeline->drawInCommandBuffer(commandBuffer, context);
 
     commandBuffer.endRenderPass();
     commandBuffer.end();
@@ -895,7 +894,7 @@ void gfx_surface_vulkan::teardownSurface()
 {
     tt_axiom(gfx_system_mutex.recurse_lock_count());
 
-    down_cast<gfx_system_vulkan&>(system).destroySurfaceKHR(intrinsic);
+    down_cast<gfx_system_vulkan &>(system).destroySurfaceKHR(intrinsic);
 }
 
 void gfx_surface_vulkan::teardownDevice()

@@ -48,7 +48,7 @@ public:
     vk::SurfaceFormatKHR swapchainImageFormat;
     std::vector<swapchain_image_info> swapchain_image_infos;
 
-    //static const vk::Format depthImageFormat = vk::Format::eD32Sfloat;
+    // static const vk::Format depthImageFormat = vk::Format::eD32Sfloat;
     static const vk::Format depthImageFormat = vk::Format::eD16Unorm;
     VmaAllocation depthImageAllocation;
     vk::Image depthImage;
@@ -90,9 +90,12 @@ public:
 
     void update(extent2 new_size) noexcept override;
 
-    [[nodiscard]] std::optional<draw_context>
-    render_start(aarectangle redraw_rectangle, utc_nanoseconds display_time_point) override;
-    void render_finish(draw_context const &context, color background_color) override;
+    [[nodiscard]] std::optional<draw_context> render_start(
+        aarectangle redraw_rectangle,
+        utc_nanoseconds display_time_point,
+        tt::subpixel_orientation subpixel_orientation,
+        color background_color) override;
+    void render_finish(draw_context const &context) override;
 
 protected:
     void teardown() override;
@@ -107,7 +110,7 @@ private:
     std::optional<uint32_t> acquireNextImageFromSwapchain();
     void presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore renderFinishedSemaphore);
 
-    void fill_command_buffer(swapchain_image_info &current_image, aarectangle scissor_rectangle, color background_color);
+    void fill_command_buffer(swapchain_image_info &current_image, draw_context const &context);
     void submitCommandBuffer();
 
     bool readSurfaceExtent(extent2 minimum_size, extent2 maximum_size);

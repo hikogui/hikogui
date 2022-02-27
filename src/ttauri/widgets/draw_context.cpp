@@ -20,14 +20,18 @@ draw_context::draw_context(
     vspan<pipeline_box::vertex> &boxVertices,
     vspan<pipeline_image::vertex> &imageVertices,
     vspan<pipeline_SDF::vertex> &sdfVertices,
-    utc_nanoseconds display_time_point) noexcept :
+    utc_nanoseconds display_time_point,
+    tt::subpixel_orientation subpixel_orientation,
+    color background_color) noexcept :
     device(device),
     frame_buffer_index(frame_buffer_index),
     scissor_rectangle(scissor_rectangle),
     _box_vertices(&boxVertices),
     _image_vertices(&imageVertices),
     _sdf_vertices(&sdfVertices),
-    display_time_point(display_time_point)
+    display_time_point(display_time_point),
+    subpixel_orientation(subpixel_orientation),
+    background_color(background_color)
 {
     _box_vertices->clear();
     _image_vertices->clear();

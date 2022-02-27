@@ -23,7 +23,7 @@ public:
     pipeline_tone_mapper(pipeline_tone_mapper &&) = delete;
     pipeline_tone_mapper &operator=(pipeline_tone_mapper &&) = delete;
 
-    void drawInCommandBuffer(vk::CommandBuffer commandBuffer) override;
+    void drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_context const &context) override;
 
 protected:
     std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages() const override;

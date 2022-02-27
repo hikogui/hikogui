@@ -198,7 +198,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
         // We do this because it simplifies calculations if no minimum checks are necessary inside widget.
         ttlet widget_layout_size = max(widget->constraints().minimum, widget_size);
         widget->set_layout(
-            widget_layout{widget_layout_size, this->surface->sub_pixel_orientation, gui.writing_direction, display_time_point});
+            widget_layout{widget_layout_size, this->subpixel_orientation(), gui.writing_direction, display_time_point});
 
         // After layout do a complete redraw.
         _redraw_rectangle = aarectangle{widget_size};
@@ -210,7 +210,8 @@ void gui_window::render(utc_nanoseconds display_time_point)
 #endif
 
     // Draw widgets if the _redraw_rectangle was set.
-    if (auto draw_context = surface->render_start(_redraw_rectangle, display_time_point)) {
+    if (auto draw_context =
+            surface->render_start(_redraw_rectangle, display_time_point, subpixel_orientation(), widget->background_color())) {
         _redraw_rectangle = aarectangle{};
 
         {
@@ -219,7 +220,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
         }
         {
             ttlet t2 = trace<"window::submit">();
-            surface->render_finish(*draw_context, widget->background_color());
+            surface->render_finish(*draw_context);
         }
     }
 }

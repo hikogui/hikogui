@@ -7,6 +7,7 @@
 #include "../GFX/pipeline_box_vertex.hpp"
 #include "../GFX/pipeline_image_vertex.hpp"
 #include "../GFX/pipeline_SDF_vertex.hpp"
+#include "../GFX/subpixel_orientation.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/matrix.hpp"
 #include "../geometry/corner_radii.hpp"
@@ -59,6 +60,16 @@ public:
      */
     aarectangle scissor_rectangle;
 
+    /** The background color to clear the window with.
+     */
+    color background_color;
+
+    /** The subpixel orientation for rendering glyphs.
+     */
+    tt::subpixel_orientation subpixel_orientation;
+
+    /** The time when the drawing will appear on the screen.
+     */
     utc_nanoseconds display_time_point;
 
     draw_context(draw_context const &rhs) noexcept = default;
@@ -74,7 +85,9 @@ public:
         vspan<pipeline_box::vertex> &boxVertices,
         vspan<pipeline_image::vertex> &imageVertices,
         vspan<pipeline_SDF::vertex> &sdfVertices,
-        utc_nanoseconds display_time_point) noexcept;
+        utc_nanoseconds display_time_point,
+        tt::subpixel_orientation subpixel_orientation,
+        color background_color) noexcept;
 
     /** Draw a box with rounded corners.
      *

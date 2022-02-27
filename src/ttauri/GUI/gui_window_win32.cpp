@@ -302,6 +302,29 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
     return aarectangle{left, inv_bottom, width, height};
 }
 
+[[nodiscard]] tt::subpixel_orientation gui_window_win32::subpixel_orientation() const noexcept
+{
+    // The table for viewing distance are:
+    // 
+    // - Phone/Watch: 10 inch
+    // - Tablet: 15 inch
+    // - Notebook/Desktop: 20 inch
+    //
+    // Pixels Per Degree = PPD = 2 * viewing_distance * resolution * tan(0.5 degree)
+    constexpr auto tan_half_degree = 0.00872686779075879f;
+    constexpr auto viewing_distance = 20.0f;
+    
+    ttlet ppd = 2 * viewing_distance * dpi * tan_half_degree;
+
+    if (ppd > 55.0f) {
+        // High resolution displays do not require subpixel-aliasing.
+        return tt::subpixel_orientation::unknown;
+    } else {
+        // The win32 API does not have a per-monitor subpixel-orientation.
+        return os_settings::subpixel_orientation();
+    }
+}
+
 void gui_window_win32::open_system_menu()
 {
     tt_axiom(is_gui_thread());
