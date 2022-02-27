@@ -20,6 +20,7 @@
 #include "../widgets/toolbar_widget.hpp"
 #include "../chrono.hpp"
 #include "../label.hpp"
+#include "../animator.hpp"
 #include <unordered_set>
 #include <memory>
 #include <mutex>
@@ -284,6 +285,8 @@ public:
     }
 
 protected:
+    static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
+
     std::weak_ptr<delegate_type> _delegate;
 
     std::atomic<aarectangle> _redraw_rectangle = aarectangle{};
@@ -307,6 +310,10 @@ protected:
      * the event loop, but on the same thread as the event loop.
      */
     utc_nanoseconds last_forced_redraw = {};
+
+    /** The animated version of the `active` flag.
+     */
+    animator<float> _animated_active = _animation_duration;
 
     /** Let the operating system create the actual window.
      * @pre title and extent must be set.

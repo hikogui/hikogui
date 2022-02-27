@@ -63,6 +63,7 @@ target_sources(ttauri PRIVATE
     pipeline_tone_mapper.vert
     pipeline_tone_mapper_device_shared.cpp
     pipeline_tone_mapper_device_shared.hpp
+    pipeline_tone_mapper_push_constants.hpp
     RenderDoc.cpp
     RenderDoc.hpp
     subpixel_orientation.hpp

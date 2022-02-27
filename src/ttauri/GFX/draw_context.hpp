@@ -68,6 +68,10 @@ public:
      */
     tt::subpixel_orientation subpixel_orientation;
 
+    /** The tone-mapper's saturation.
+     */
+    float saturation;
+
     /** The time when the drawing will appear on the screen.
      */
     utc_nanoseconds display_time_point;

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "pipeline_vulkan.hpp"
+#include "pipeline_tone_mapper_push_constants.hpp"
 #include "../vspan.hpp"
 #include <vk_mem_alloc.h>
 #include <span>
@@ -26,10 +27,13 @@ public:
     void drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_context const &context) override;
 
 protected:
+    push_constants _push_constants;
+
     std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages() const override;
     std::vector<vk::DescriptorSetLayoutBinding> createDescriptorSetLayoutBindings() const override;
     std::vector<vk::WriteDescriptorSet> createWriteDescriptorSet() const override;
     ssize_t getDescriptorSetVersion() const override;
+    std::vector<vk::PushConstantRange> createPushConstantRanges() const override;
     vk::PipelineDepthStencilStateCreateInfo getPipelineDepthStencilStateCreateInfo() const override;
 };
 

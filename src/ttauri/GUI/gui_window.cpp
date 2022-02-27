@@ -216,6 +216,11 @@ void gui_window::render(utc_nanoseconds display_time_point)
         draw_context.subpixel_orientation = subpixel_orientation();
         draw_context.background_color = widget->background_color();
 
+        if (_animated_active.update(active ? 1.0f : 0.0f, display_time_point)) {
+            request_redraw();
+        }
+        draw_context.saturation = _animated_active.current_value();
+
         {
             ttlet t2 = trace<"window::draw">();
             widget->draw(draw_context);
