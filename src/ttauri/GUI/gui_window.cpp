@@ -74,7 +74,7 @@ void gui_window::init()
     }
 
     // Execute a constraint check to determine initial window size.
-    theme = gui.theme_book->find(*gui.selected_theme.cget(), os_settings::theme_mode()).transform(dpi, active);
+    theme = gui.theme_book->find(*gui.selected_theme.cget(), os_settings::theme_mode()).transform(dpi);
     ttlet new_size = widget->set_constraints().preferred;
 
     // Reset the keyboard target to not focus anything.
@@ -139,7 +139,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     if (need_reconstrain) {
         ttlet t2 = trace<"window::constrain">();
 
-        theme = gui.theme_book->find(*gui.selected_theme.cget(), os_settings::theme_mode()).transform(dpi, active);
+        theme = gui.theme_book->find(*gui.selected_theme.cget(), os_settings::theme_mode()).transform(dpi);
 
         widget->set_constraints();
     }
@@ -210,17 +210,19 @@ void gui_window::render(utc_nanoseconds display_time_point)
 #endif
 
     // Draw widgets if the _redraw_rectangle was set.
-    if (auto draw_context =
-            surface->render_start(_redraw_rectangle, display_time_point, subpixel_orientation(), widget->background_color())) {
+    if (auto draw_context = surface->render_start(_redraw_rectangle)) {
         _redraw_rectangle = aarectangle{};
+        draw_context.display_time_point = display_time_point;
+        draw_context.subpixel_orientation = subpixel_orientation();
+        draw_context.background_color = widget->background_color();
 
         {
             ttlet t2 = trace<"window::draw">();
-            widget->draw(*draw_context);
+            widget->draw(draw_context);
         }
         {
             ttlet t2 = trace<"window::submit">();
-            surface->render_finish(*draw_context);
+            surface->render_finish(draw_context);
         }
     }
 }

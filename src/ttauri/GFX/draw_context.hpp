@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "../GFX/pipeline_box_vertex.hpp"
-#include "../GFX/pipeline_image_vertex.hpp"
-#include "../GFX/pipeline_SDF_vertex.hpp"
-#include "../GFX/subpixel_orientation.hpp"
+#include "pipeline_box_vertex.hpp"
+#include "pipeline_image_vertex.hpp"
+#include "pipeline_SDF_vertex.hpp"
+#include "subpixel_orientation.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/matrix.hpp"
 #include "../geometry/corner_radii.hpp"
@@ -20,8 +20,8 @@
 #include "../text/text_shaper.hpp"
 #include "../color/color.hpp"
 #include "../color/quad_color.hpp"
+#include "../widgets/widget_layout.hpp"
 #include "../vspan.hpp"
-#include "widget_layout.hpp"
 
 namespace tt::inline v1 {
 class gfx_device;
@@ -80,14 +80,16 @@ public:
 
     draw_context(
         gfx_device_vulkan &device,
-        std::size_t frame_buffer_index,
-        aarectangle scissor_rectangle,
         vspan<pipeline_box::vertex> &boxVertices,
         vspan<pipeline_image::vertex> &imageVertices,
-        vspan<pipeline_SDF::vertex> &sdfVertices,
-        utc_nanoseconds display_time_point,
-        tt::subpixel_orientation subpixel_orientation,
-        color background_color) noexcept;
+        vspan<pipeline_SDF::vertex> &sdfVertices) noexcept;
+
+    /** Check if the draw_context should be used for rendering.
+     */
+    operator bool() const noexcept
+    {
+        return frame_buffer_index != std::numeric_limits<size_t>::max();
+    }
 
     /** Draw a box with rounded corners.
      *

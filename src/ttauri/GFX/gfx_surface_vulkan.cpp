@@ -295,36 +295,41 @@ void gfx_surface_vulkan::update(extent2 new_size) noexcept
     build(new_size);
 }
 
-std::optional<draw_context> gfx_surface_vulkan::render_start(aarectangle redraw_rectangle, utc_nanoseconds display_time_point, tt::subpixel_orientation subpixel_orientation, color background_color)
+draw_context gfx_surface_vulkan::render_start(aarectangle redraw_rectangle)
 {
+    // Extent the redraw_rectangle to the render-area-granularity to improve performance on tile based GPUs.
+    redraw_rectangle = ceil(redraw_rectangle, _render_area_granularity);
+
     ttlet lock = std::scoped_lock(gfx_system_mutex);
+
+    auto r = draw_context{
+        *down_cast<gfx_device_vulkan *>(_device),
+        boxPipeline->vertexBufferData,
+        imagePipeline->vertexBufferData,
+        SDFPipeline->vertexBufferData};
 
     // Bail out when the window is not yet ready to be rendered, or if there is nothing to render.
     if (state != gfx_surface_state::ready_to_render or not redraw_rectangle) {
-        return {};
+        return r;
     }
 
     ttlet optional_frame_buffer_index = acquireNextImageFromSwapchain();
     if (!optional_frame_buffer_index) {
         // No image is ready to be rendered, yet, possibly because our vertical sync function
         // is not working correctly.
-        return {};
+        return r;
     }
 
-    ttlet frame_buffer_index = *optional_frame_buffer_index;
-    auto &current_image = swapchain_image_infos.at(frame_buffer_index);
-
-    // Extent the redraw_rectangle to the render-area-granularity to improve performance on tile based GPUs.
-    redraw_rectangle = ceil(
-        redraw_rectangle,
-        extent2{narrow_cast<float>(_render_area_granularity.width), narrow_cast<float>(_render_area_granularity.height)});
+    // Setting the frame buffer index, also enabled the draw_context.
+    r.frame_buffer_index = narrow<size_t>(*optional_frame_buffer_index);
 
     // Record which part of the image will be redrawn on the current swapchain image.
+    auto &current_image = swapchain_image_infos.at(r.frame_buffer_index);
     current_image.redraw_rectangle = redraw_rectangle;
 
     // Calculate the scissor rectangle, from the combined redraws of the complete swapchain.
     // We need to do this so that old redraws are also executed in the current swapchain image.
-    ttlet scissor_rectangle = ceil(
+    r.scissor_rectangle = ceil(
         std::accumulate(swapchain_image_infos.cbegin(), swapchain_image_infos.cend(), aarectangle{}, [](ttlet &sum, ttlet &item) {
             return sum | item.redraw_rectangle;
         }));
@@ -335,18 +340,7 @@ std::optional<draw_context> gfx_surface_vulkan::render_start(aarectangle redraw_
     // Unsignal the fence so we will not modify/destroy the command buffers during rendering.
     vulkan_device().resetFences({renderFinishedFence});
 
-    // Update the widgets before the pipelines need their vertices.
-    // We unset modified before, so that modification requests are captured.
-    return draw_context{
-        *down_cast<gfx_device_vulkan *>(_device),
-        narrow_cast<std::size_t>(frame_buffer_index),
-        scissor_rectangle,
-        boxPipeline->vertexBufferData,
-        imagePipeline->vertexBufferData,
-        SDFPipeline->vertexBufferData,
-        display_time_point,
-        subpixel_orientation,
-        background_color};
+    return r;
 }
 
 void gfx_surface_vulkan::render_finish(draw_context const &context)
@@ -840,7 +834,8 @@ void gfx_surface_vulkan::buildRenderPasses()
     };
 
     renderPass = vulkan_device().createRenderPass(render_pass_create_info);
-    _render_area_granularity = vulkan_device().getRenderAreaGranularity(renderPass);
+    ttlet granularity = vulkan_device().getRenderAreaGranularity(renderPass);
+    _render_area_granularity = extent2{narrow<float>(granularity.width), narrow<float>(granularity.height)};
 }
 
 void gfx_surface_vulkan::teardownRenderPasses()

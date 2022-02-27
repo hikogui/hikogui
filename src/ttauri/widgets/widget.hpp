@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "../GFX/draw_context.hpp"
 #include "../GUI/theme.hpp"
 #include "../GUI/hitbox.hpp"
 #include "../GUI/keyboard_focus_direction.hpp"
@@ -15,7 +16,6 @@
 #include "../command.hpp"
 #include "../chrono.hpp"
 #include "../coroutine.hpp"
-#include "draw_context.hpp"
 #include "widget_constraints.hpp"
 #include "widget_layout.hpp"
 #include <memory>

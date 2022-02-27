@@ -14,8 +14,6 @@ target_sources(ttauri PRIVATE
     default_selection_delegate.hpp
     default_tab_delegate.hpp
     default_text_field_delegate.hpp
-    draw_context.cpp
-    draw_context.hpp
     grid_delegate.hpp
     grid_layout.hpp
     grid_layout.cpp

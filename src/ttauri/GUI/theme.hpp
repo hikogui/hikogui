@@ -85,9 +85,8 @@ public:
     * mostly this will desaturate the colors in the theme.
     * 
     * @param dpi The dpi of the window.
-    * @param active If the window is active or not.
     */
-    [[nodiscard]] theme transform(float dpi, bool active) const noexcept;
+    [[nodiscard]] theme transform(float dpi) const noexcept;
 
     [[nodiscard]] tt::color color(theme_color theme_color, ssize_t nesting_level = 0) const noexcept;
     [[nodiscard]] tt::text_style const &text_style(theme_text_style theme_color) const noexcept;

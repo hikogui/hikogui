@@ -5,7 +5,7 @@
 #pragma once
 
 #include "pipeline.hpp"
-#include "../widgets/draw_context.hpp"
+#include "draw_context.hpp"
 #include <vulkan/vulkan.hpp>
 #include <string>
 #include <vector>

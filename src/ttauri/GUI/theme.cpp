@@ -24,18 +24,9 @@ theme::theme(tt::font_book const &font_book, URL const &url)
     }
 }
 
-[[nodiscard]] theme theme::transform(float new_dpi, bool active) const noexcept
+[[nodiscard]] theme theme::transform(float new_dpi) const noexcept
 {
     auto r = *this;
-    if (not active) {
-        for (ttlet saturated_theme_color : saturated_theme_colors) {
-            ttlet &src_colors = _colors[to_underlying(saturated_theme_color)];
-            auto &dst_colors = r._colors[to_underlying(saturated_theme_color)];
-            std::transform(src_colors.begin(), src_colors.end(), dst_colors.begin(), [](auto x) {
-                return desaturate(x);
-            });
-        }
-    }
 
     tt_axiom(new_dpi != 0.0f);
     tt_axiom(dpi != 0.0f);

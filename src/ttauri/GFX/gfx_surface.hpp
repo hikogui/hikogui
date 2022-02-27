@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../widgets/draw_context.hpp"
+#include "draw_context.hpp"
 #include "gfx_surface_state.hpp"
 #include "gfx_system_globals.hpp"
 
@@ -66,11 +66,7 @@ public:
      */
     virtual void update(extent2 new_size) noexcept = 0;
 
-    [[nodiscard]] virtual std::optional<draw_context> render_start(
-        aarectangle redraw_rectangle,
-        utc_nanoseconds display_time_point,
-        tt::subpixel_orientation subpixel_orientation,
-        color background_color) = 0;
+    [[nodiscard]] virtual draw_context render_start(aarectangle redraw_rectangle) = 0;
     virtual void render_finish(draw_context const &context) = 0;
 
 protected:
