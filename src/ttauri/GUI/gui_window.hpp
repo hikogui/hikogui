@@ -13,12 +13,14 @@
 #include "keyboard_focus_direction.hpp"
 #include "keyboard_focus_group.hpp"
 #include "theme.hpp"
+#include "../GFX/subpixel_orientation.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../widgets/window_widget.hpp"
 #include "../widgets/grid_widget.hpp"
 #include "../widgets/toolbar_widget.hpp"
 #include "../chrono.hpp"
 #include "../label.hpp"
+#include "../animator.hpp"
 #include <unordered_set>
 #include <memory>
 #include <mutex>
@@ -215,6 +217,8 @@ public:
      */
     virtual aarectangle fullscreen_rectangle() const noexcept = 0;
 
+    virtual tt::subpixel_orientation subpixel_orientation() const noexcept = 0;
+
     /** Get the size-state of the window.
      */
     gui_window_size size_state() const noexcept
@@ -281,6 +285,8 @@ public:
     }
 
 protected:
+    static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
+
     std::weak_ptr<delegate_type> _delegate;
 
     std::atomic<aarectangle> _redraw_rectangle = aarectangle{};
@@ -304,6 +310,10 @@ protected:
      * the event loop, but on the same thread as the event loop.
      */
     utc_nanoseconds last_forced_redraw = {};
+
+    /** The animated version of the `active` flag.
+     */
+    animator<float> _animated_active = _animation_duration;
 
     /** Let the operating system create the actual window.
      * @pre title and extent must be set.

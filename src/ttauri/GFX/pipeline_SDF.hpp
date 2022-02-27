@@ -28,7 +28,7 @@ public:
     pipeline_SDF(pipeline_SDF &&) = delete;
     pipeline_SDF &operator=(pipeline_SDF &&) = delete;
 
-    void drawInCommandBuffer(vk::CommandBuffer commandBuffer) override;
+    void drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_context const &context) override;
 
 protected:
     push_constants pushConstants;

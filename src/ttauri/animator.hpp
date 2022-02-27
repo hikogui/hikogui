@@ -26,8 +26,9 @@ public:
     /** Update the value and time.
      * @param new_value The value to animate toward.
      * @param current_time The current time.
+     * @return is_animating
      */
-    void update(value_type new_value, utc_nanoseconds current_time) noexcept
+    bool update(value_type new_value, utc_nanoseconds current_time) noexcept
     {
         if (not initialized) {
             initialized = true;
@@ -41,6 +42,7 @@ public:
             _start_time = current_time;
         }
         _current_time = current_time;
+        return is_animating();
     }
 
     /** Check if the animation is currently running.

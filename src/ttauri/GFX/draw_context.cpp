@@ -15,19 +15,15 @@ namespace tt::inline v1 {
 
 draw_context::draw_context(
     gfx_device_vulkan &device,
-    std::size_t frame_buffer_index,
-    aarectangle scissor_rectangle,
     vspan<pipeline_box::vertex> &boxVertices,
     vspan<pipeline_image::vertex> &imageVertices,
-    vspan<pipeline_SDF::vertex> &sdfVertices,
-    utc_nanoseconds display_time_point) noexcept :
+    vspan<pipeline_SDF::vertex> &sdfVertices) noexcept :
     device(device),
-    frame_buffer_index(frame_buffer_index),
-    scissor_rectangle(scissor_rectangle),
+    frame_buffer_index(std::numeric_limits<size_t>::max()),
+    scissor_rectangle(),
     _box_vertices(&boxVertices),
     _image_vertices(&imageVertices),
-    _sdf_vertices(&sdfVertices),
-    display_time_point(display_time_point)
+    _sdf_vertices(&sdfVertices)
 {
     _box_vertices->clear();
     _image_vertices->clear();

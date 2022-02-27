@@ -5,6 +5,7 @@
 #pragma once
 
 #include "pipeline.hpp"
+#include "draw_context.hpp"
 #include <vulkan/vulkan.hpp>
 #include <string>
 #include <vector>
@@ -26,7 +27,7 @@ public:
 
     gfx_device_vulkan &vulkan_device() const noexcept;
 
-    virtual void drawInCommandBuffer(vk::CommandBuffer commandBuffer);
+    virtual void drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_context const &context);
 
     void buildForNewDevice();
     void teardownForDeviceLost();

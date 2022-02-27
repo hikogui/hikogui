@@ -11,11 +11,14 @@ namespace tt::inline v1::pipeline_tone_mapper {
 
 pipeline_tone_mapper::pipeline_tone_mapper(gfx_surface const &surface) : pipeline_vulkan(surface) {}
 
-void pipeline_tone_mapper::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
+void pipeline_tone_mapper::drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_context const &context)
 {
-    pipeline_vulkan::drawInCommandBuffer(commandBuffer);
+    pipeline_vulkan::drawInCommandBuffer(commandBuffer, context);
 
     vulkan_device().toneMapperPipeline->drawInCommandBuffer(commandBuffer);
+
+    _push_constants.saturation = context.saturation;
+    commandBuffer.pushConstants(pipelineLayout, vk::ShaderStageFlagBits::eFragment, 0, sizeof(push_constants), &_push_constants);
 
     vulkan_device().cmdBeginDebugUtilsLabelEXT(commandBuffer, "tone mapping");
     commandBuffer.draw(3, 1, 0, 0);
@@ -51,12 +54,17 @@ std::vector<vk::WriteDescriptorSet> pipeline_tone_mapper::createWriteDescriptorS
         &color_descriptor_image_infos[0],
         nullptr, // bufferInfo
         nullptr // texelBufferView
-        }};
+    }};
 }
 
 ssize_t pipeline_tone_mapper::getDescriptorSetVersion() const
 {
     return 1;
+}
+
+std::vector<vk::PushConstantRange> pipeline_tone_mapper::createPushConstantRanges() const
+{
+    return push_constants::pushConstantRanges();
 }
 
 vk::PipelineDepthStencilStateCreateInfo pipeline_tone_mapper::getPipelineDepthStencilStateCreateInfo() const

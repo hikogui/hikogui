@@ -27,7 +27,7 @@ public:
     pipeline_box(pipeline_box &&) = delete;
     pipeline_box &operator=(pipeline_box &&) = delete;
 
-    void drawInCommandBuffer(vk::CommandBuffer commandBuffer) override;
+    void drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_context const &context) override;
 
 protected:
     push_constants pushConstants;

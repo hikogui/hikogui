@@ -45,6 +45,62 @@ namespace tt::inline v1 {
     }
 }
 
+[[nodiscard]] tt::subpixel_orientation os_settings::gather_subpixel_orientation()
+{
+    {
+        BOOL has_font_smoothing;
+        if (not SystemParametersInfoW(SPI_GETFONTSMOOTHING, 0, &has_font_smoothing, 0)) {
+            throw os_error("Could not get system parameter SPI_GETFONTSMOOTHING: {}", get_last_error_message());
+        }
+
+        if (has_font_smoothing == FALSE) {
+            // Font smoothing is disabled.
+            return tt::subpixel_orientation::unknown;
+        }
+    }
+
+    {
+        UINT font_smooth_type;
+        if (not SystemParametersInfoW(SPI_GETFONTSMOOTHINGTYPE, 0, &font_smooth_type, 0)) {
+            throw os_error("Could not get system parameter SPI_GETFONTSMOOTHINGTYPE: {}", get_last_error_message());
+        }
+
+        if (font_smooth_type != FE_FONTSMOOTHINGCLEARTYPE) {
+            // Font smoothing is not clear type.
+            return tt::subpixel_orientation::unknown;
+        }
+    }
+
+    {
+        BOOL has_clear_type;
+        if (not SystemParametersInfoW(SPI_GETCLEARTYPE, 0, &has_clear_type, 0)) {
+            throw os_error("Could not get system parameter SPI_GETCLEARTYPE: {}", get_last_error_message());
+        }
+
+        if (has_clear_type == FALSE) {
+            // ClearType is disabled.
+            return tt::subpixel_orientation::unknown;
+        }
+    }
+
+    {
+        UINT font_smooth_orientation;
+        if (not SystemParametersInfoW(SPI_GETFONTSMOOTHINGORIENTATION, 0, &font_smooth_orientation, 0)) {
+            throw os_error("Could not get system parameter SPI_GETFONTSMOOTHINGORIENTATION: {}", get_last_error_message());
+        }
+
+        if (font_smooth_orientation == FE_FONTSMOOTHINGORIENTATIONBGR) {
+            // Font smoothing is not clear type.
+            return tt::subpixel_orientation::horizontal_bgr;
+        } else if (font_smooth_orientation == FE_FONTSMOOTHINGORIENTATIONRGB) {
+            // Font smoothing is not clear type.
+            return tt::subpixel_orientation::horizontal_rgb;
+        } else {
+            throw os_error("Unknown result from SPI_GETFONTSMOOTHINGORIENTATION: {}", font_smooth_orientation);
+        }
+    }
+}
+
 [[nodiscard]] std::chrono::milliseconds os_settings::gather_double_click_interval()
 {
     return std::chrono::milliseconds{GetDoubleClickTime()};

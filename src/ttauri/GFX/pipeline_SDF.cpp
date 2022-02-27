@@ -11,9 +11,9 @@ namespace tt::inline v1::pipeline_SDF {
 
 pipeline_SDF::pipeline_SDF(gfx_surface const &surface) : pipeline_vulkan(surface) {}
 
-void pipeline_SDF::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
+void pipeline_SDF::drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_context const &context)
 {
-    pipeline_vulkan::drawInCommandBuffer(commandBuffer);
+    pipeline_vulkan::drawInCommandBuffer(commandBuffer, context);
 
     vulkan_device().flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof(vertex));
 
@@ -27,27 +27,27 @@ void pipeline_SDF::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 
     pushConstants.window_extent = extent2{narrow_cast<float>(extent.width), narrow_cast<float>(extent.height)};
     pushConstants.viewport_scale = scale2{narrow_cast<float>(2.0f / extent.width), narrow_cast<float>(2.0f / extent.height)};
-    pushConstants.has_subpixels = surface.sub_pixel_orientation != sub_pixel_orientation::Unknown;
+    pushConstants.has_subpixels = context.subpixel_orientation != subpixel_orientation::unknown;
 
     constexpr float third = 1.0f/3.0f;
-    switch (surface.sub_pixel_orientation) {
-    case sub_pixel_orientation::Unknown:
+    switch (context.subpixel_orientation) {
+    case subpixel_orientation::unknown:
         pushConstants.red_subpixel_offset = vector2{0.0f, 0.0f};
         pushConstants.blue_subpixel_offset = vector2{0.0f, 0.0f};
         break;
-    case sub_pixel_orientation::BlueRight:
+    case subpixel_orientation::horizontal_rgb:
         pushConstants.red_subpixel_offset = vector2{-third, 0.0f};
         pushConstants.blue_subpixel_offset = vector2{third, 0.0f};
         break;
-    case sub_pixel_orientation::BlueLeft:
+    case subpixel_orientation::horizontal_bgr:
         pushConstants.red_subpixel_offset = vector2{third, 0.0f};
         pushConstants.blue_subpixel_offset = vector2{-third, 0.0f};
         break;
-    case sub_pixel_orientation::BlueBottom:
+    case subpixel_orientation::vertical_rgb:
         pushConstants.red_subpixel_offset = vector2{0.0f, third};
         pushConstants.blue_subpixel_offset = vector2{0.0f, -third};
         break;
-    case sub_pixel_orientation::BlueTop:
+    case subpixel_orientation::vertical_bgr:
         pushConstants.red_subpixel_offset = vector2{0.0f, -third};
         pushConstants.blue_subpixel_offset = vector2{0.0f, third};
         break;

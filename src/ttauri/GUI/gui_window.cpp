@@ -74,7 +74,7 @@ void gui_window::init()
     }
 
     // Execute a constraint check to determine initial window size.
-    theme = gui.theme_book->find(*gui.selected_theme.cget(), os_settings::theme_mode()).transform(dpi, active);
+    theme = gui.theme_book->find(*gui.selected_theme.cget(), os_settings::theme_mode()).transform(dpi);
     ttlet new_size = widget->set_constraints().preferred;
 
     // Reset the keyboard target to not focus anything.
@@ -139,7 +139,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     if (need_reconstrain) {
         ttlet t2 = trace<"window::constrain">();
 
-        theme = gui.theme_book->find(*gui.selected_theme.cget(), os_settings::theme_mode()).transform(dpi, active);
+        theme = gui.theme_book->find(*gui.selected_theme.cget(), os_settings::theme_mode()).transform(dpi);
 
         widget->set_constraints();
     }
@@ -198,7 +198,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
         // We do this because it simplifies calculations if no minimum checks are necessary inside widget.
         ttlet widget_layout_size = max(widget->constraints().minimum, widget_size);
         widget->set_layout(
-            widget_layout{widget_layout_size, this->surface->sub_pixel_orientation, gui.writing_direction, display_time_point});
+            widget_layout{widget_layout_size, this->subpixel_orientation(), gui.writing_direction, display_time_point});
 
         // After layout do a complete redraw.
         _redraw_rectangle = aarectangle{widget_size};
@@ -210,16 +210,24 @@ void gui_window::render(utc_nanoseconds display_time_point)
 #endif
 
     // Draw widgets if the _redraw_rectangle was set.
-    if (auto draw_context = surface->render_start(_redraw_rectangle, display_time_point)) {
+    if (auto draw_context = surface->render_start(_redraw_rectangle)) {
         _redraw_rectangle = aarectangle{};
+        draw_context.display_time_point = display_time_point;
+        draw_context.subpixel_orientation = subpixel_orientation();
+        draw_context.background_color = widget->background_color();
+
+        if (_animated_active.update(active ? 1.0f : 0.0f, display_time_point)) {
+            request_redraw();
+        }
+        draw_context.saturation = _animated_active.current_value();
 
         {
             ttlet t2 = trace<"window::draw">();
-            widget->draw(*draw_context);
+            widget->draw(draw_context);
         }
         {
             ttlet t2 = trace<"window::submit">();
-            surface->render_finish(*draw_context, widget->background_color());
+            surface->render_finish(draw_context);
         }
     }
 }

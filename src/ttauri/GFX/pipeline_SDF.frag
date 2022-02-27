@@ -91,6 +91,9 @@ void main()
 
     vec3 distances = get_subpixel_to_edge_distances();
     vec3 coverage = clamp(distances + 0.5, 0.0, 1.0);
+    if (coverage == vec3(0.0, 0.0, 0.0)) {
+        discard;
+    }
 
     vec4 alpha = coverage_to_alpha(coverage.rgbg, in_color_sqrt_rgby);
 

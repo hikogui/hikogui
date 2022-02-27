@@ -3,6 +3,8 @@
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 target_sources(ttauri PRIVATE
+    draw_context.cpp
+    draw_context.hpp
     gfx_device.cpp
     gfx_device.hpp
     gfx_device_vulkan.cpp
@@ -61,9 +63,10 @@ target_sources(ttauri PRIVATE
     pipeline_tone_mapper.vert
     pipeline_tone_mapper_device_shared.cpp
     pipeline_tone_mapper_device_shared.hpp
+    pipeline_tone_mapper_push_constants.hpp
     RenderDoc.cpp
     RenderDoc.hpp
-    sub_pixel_orientation.hpp
+    subpixel_orientation.hpp
     VulkanMemoryAllocator.cpp
 )
 
