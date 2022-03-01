@@ -332,15 +332,15 @@ struct GLYFEntry {
     FWord_buf_t yMax;
 };
 
-static std::span<std::byte const> parseCharacterMapDirectory(std::span<std::byte const> bytes)
+[[nodiscard]] std::span<std::byte const> true_type_font::parse_cmap_table_directory() const
 {
     std::size_t offset = 0;
 
-    ttlet header = make_placement_ptr<CMAPHeader>(bytes, offset);
+    ttlet header = make_placement_ptr<CMAPHeader>(_cmap_table_bytes, offset);
     tt_parse_check(header->version.value() == 0, "CMAP version is not 0");
 
     uint16_t numTables = header->numTables.value();
-    ttlet entries = make_placement_array<CMAPEntry>(bytes, offset, numTables);
+    ttlet entries = make_placement_array<CMAPEntry>(_cmap_table_bytes, offset, numTables);
 
     // Entries are ordered by platformID, then platformSpecificID.
     // This allows us to search reasonable quickly for the best entries.
@@ -387,9 +387,9 @@ static std::span<std::byte const> parseCharacterMapDirectory(std::span<std::byte
     tt_parse_check(bestEntry != nullptr, "Missing Unicode CMAP entry");
 
     ttlet entry_offset = bestEntry->offset.value();
-    tt_parse_check(entry_offset < bytes.size(), "CMAP entry is located beyond buffer");
+    tt_parse_check(entry_offset < _cmap_table_bytes.size(), "CMAP entry is located beyond buffer");
 
-    return bytes.subspan(entry_offset, bytes.size() - entry_offset);
+    return _cmap_table_bytes.subspan(entry_offset, _cmap_table_bytes.size() - entry_offset);
 }
 
 static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char32_t c) noexcept
@@ -499,6 +499,8 @@ static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char
         }
     }
 
+    r.optimize();
+    r.shrink_to_fit();
     return r;
 }
 
@@ -535,6 +537,8 @@ static glyph_id searchCharacterMapFormat6(std::span<std::byte const> bytes, char
 
     r.add(static_cast<char32_t>(firstCode), static_cast<char32_t>(firstCode) + entryCount);
 
+    r.optimize();
+    r.shrink_to_fit();
     return r;
 }
 
@@ -583,39 +587,40 @@ static glyph_id searchCharacterMapFormat12(std::span<std::byte const> bytes, cha
     for (ttlet &entry : entries) {
         r.add(static_cast<char32_t>(entry.startCharCode.value()), static_cast<char32_t>(entry.endCharCode.value()) + 1);
     }
+
+    r.optimize();
+    r.shrink_to_fit();
     return r;
 }
 
-[[nodiscard]] unicode_mask true_type_font::parseCharacterMap()
+[[nodiscard]] unicode_mask true_type_font::parse_cmap_table_mask() const
 {
-    ttlet cmapTableBytes = getTableBytes("cmap");
-    ttlet cmapBytes = parseCharacterMapDirectory(cmapTableBytes);
-    ttlet format = make_placement_ptr<big_uint16_buf_t>(cmapBytes);
+    ttlet format = make_placement_ptr<big_uint16_buf_t>(_cmap_bytes);
 
     switch (format->value()) {
-    case 4: return parseCharacterMapFormat4(cmapBytes);
-    case 6: return parseCharacterMapFormat6(cmapBytes);
-    case 12: return parseCharacterMapFormat12(cmapBytes);
+    case 4: return parseCharacterMapFormat4(_cmap_bytes);
+    case 6: return parseCharacterMapFormat6(_cmap_bytes);
+    case 12: return parseCharacterMapFormat12(_cmap_bytes);
     default: throw parse_error("Unknown character map format {}", format->value());
     }
 }
 
 [[nodiscard]] glyph_id true_type_font::find_glyph(char32_t c) const noexcept
 {
-    ttlet cmapTableBytes = getTableBytes("cmap");
-    ttlet cmapBytes = parseCharacterMapDirectory(cmapTableBytes);
-    assert_or_return(check_placement_ptr<big_uint16_buf_t>(cmapBytes), {});
-    ttlet format = unsafe_make_placement_ptr<big_uint16_buf_t>(cmapBytes);
+    load_view();
+
+    assert_or_return(check_placement_ptr<big_uint16_buf_t>(_cmap_bytes), {});
+    ttlet format = unsafe_make_placement_ptr<big_uint16_buf_t>(_cmap_bytes);
 
     switch (format->value()) {
-    case 4: return searchCharacterMapFormat4(cmapBytes, c);
-    case 6: return searchCharacterMapFormat6(cmapBytes, c);
-    case 12: return searchCharacterMapFormat12(cmapBytes, c);
+    case 4: return searchCharacterMapFormat4(_cmap_bytes, c);
+    case 6: return searchCharacterMapFormat6(_cmap_bytes, c);
+    case 12: return searchCharacterMapFormat12(_cmap_bytes, c);
     default: return {};
     }
 }
 
-void true_type_font::parseHheaTable(std::span<std::byte const> table_bytes)
+void true_type_font::parse_hhea_table(std::span<std::byte const> table_bytes)
 {
     ttlet table = make_placement_ptr<HHEATable>(table_bytes);
 
@@ -626,7 +631,7 @@ void true_type_font::parseHheaTable(std::span<std::byte const> table_bytes)
     numberOfHMetrics = table->numberOfHMetrics.value();
 }
 
-void true_type_font::parseHeadTable(std::span<std::byte const> table_bytes)
+void true_type_font::parse_head_table(std::span<std::byte const> table_bytes)
 {
     ttlet table = make_placement_ptr<HEADTable>(table_bytes);
 
@@ -635,7 +640,7 @@ void true_type_font::parseHeadTable(std::span<std::byte const> table_bytes)
 
     ttlet indexToLocFormat = table->indexToLocFormat.value();
     tt_parse_check(indexToLocFormat <= 1, "HEAD indexToLocFormat must be 0 or 1");
-    locaTableIsOffset32 = indexToLocFormat == 1;
+    _loca_table_is_offset32 = indexToLocFormat == 1;
 
     unitsPerEm = table->unitsPerEm.value();
     emScale = 1.0f / unitsPerEm;
@@ -716,7 +721,7 @@ static std::optional<std::string> getStringFromNameTable(
     return {};
 }
 
-void true_type_font::parseNameTable(std::span<std::byte const> table_bytes)
+void true_type_font::parse_name_table(std::span<std::byte const> table_bytes)
 {
     std::size_t offset = 0;
 
@@ -781,7 +786,7 @@ void true_type_font::parseNameTable(std::span<std::byte const> table_bytes)
     }
 }
 
-void true_type_font::parseOS2Table(std::span<std::byte const> table_bytes)
+void true_type_font::parse_OS2_table(std::span<std::byte const> table_bytes)
 {
     ttlet table = make_placement_ptr<OS2Table0>(table_bytes);
     ttlet version = table->version.value();
@@ -858,7 +863,7 @@ void true_type_font::parseOS2Table(std::span<std::byte const> table_bytes)
     }
 }
 
-void true_type_font::parseMaxpTable(std::span<std::byte const> table_bytes)
+void true_type_font::parse_maxp_table(std::span<std::byte const> table_bytes)
 {
     tt_parse_check(ssizeof(MAXPTable05) <= ssize(table_bytes), "MAXP table is larger than buffer");
     ttlet table = make_placement_ptr<MAXPTable05>(table_bytes);
@@ -869,24 +874,21 @@ void true_type_font::parseMaxpTable(std::span<std::byte const> table_bytes)
     numGlyphs = table->numGlyphs.value();
 }
 
-bool true_type_font::getGlyphBytes(glyph_id glyph_id, std::span<std::byte const> &glyph_bytes) const noexcept
+bool true_type_font::get_glyf_bytes(glyph_id glyph_id, std::span<std::byte const> &glyph_bytes) const noexcept
 {
     assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, false);
 
-    ttlet locaTableBytes = getTableBytes("loca");
-    ttlet glyfTableBytes = getTableBytes("glyf");
-
     std::size_t startOffset = 0;
     std::size_t endOffset = 0;
-    if (locaTableIsOffset32) {
-        ttlet entries = make_placement_array<big_uint32_buf_t>(locaTableBytes);
+    if (_loca_table_is_offset32) {
+        ttlet entries = make_placement_array<big_uint32_buf_t>(_loca_table_bytes);
         assert_or_return(entries.contains(static_cast<int>(glyph_id) + 1), false);
 
         startOffset = entries[glyph_id].value();
         endOffset = entries[static_cast<int>(glyph_id) + 1].value();
 
     } else {
-        ttlet entries = make_placement_array<big_uint16_buf_t>(locaTableBytes);
+        ttlet entries = make_placement_array<big_uint16_buf_t>(_loca_table_bytes);
         assert_or_return(entries.contains(static_cast<int>(glyph_id) + 1), false);
 
         startOffset = entries[glyph_id].value() * 2;
@@ -896,12 +898,12 @@ bool true_type_font::getGlyphBytes(glyph_id glyph_id, std::span<std::byte const>
     assert_or_return(startOffset <= endOffset, false);
     ttlet size = endOffset - startOffset;
 
-    assert_or_return(endOffset <= static_cast<std::size_t>(glyfTableBytes.size()), false);
-    glyph_bytes = glyfTableBytes.subspan(startOffset, size);
+    assert_or_return(endOffset <= static_cast<std::size_t>(_glyf_table_bytes.size()), false);
+    glyph_bytes = _glyf_table_bytes.subspan(startOffset, size);
     return true;
 }
 
-static void getKerningFormat0(
+static void get_kern0_kerning(
     std::span<std::byte const> const &bytes,
     uint16_t coverage,
     float unitsPerEm,
@@ -944,7 +946,7 @@ static void getKerningFormat0(
     }
 }
 
-static void getKerningFormat3(
+static void get_kern3_kerning(
     std::span<std::byte const> const &bytes,
     uint16_t coverage,
     float unitsPerEm,
@@ -952,11 +954,10 @@ static void getKerningFormat3(
     glyph_id glyph2_id,
     vector2 &r) noexcept
 {
-    tt_not_implemented();
 }
 
 [[nodiscard]] static vector2
-getKerning(std::span<std::byte const> const &bytes, float unitsPerEm, glyph_id glyph1_id, glyph_id glyph2_id) noexcept
+get_kern_kerning(std::span<std::byte const> const &bytes, float unitsPerEm, glyph_id glyph1_id, glyph_id glyph2_id) noexcept
 {
     auto r = vector2{0.0f, 0.0f};
     std::size_t offset = 0;
@@ -998,10 +999,10 @@ getKerning(std::span<std::byte const> const &bytes, float unitsPerEm, glyph_id g
 
         switch (coverage >> 8) {
         case 0: // Pairs
-            getKerningFormat0(bytes.subspan(offset), coverage, unitsPerEm, glyph1_id, glyph2_id, r);
+            get_kern0_kerning(bytes.subspan(offset), coverage, unitsPerEm, glyph1_id, glyph2_id, r);
             break;
         case 3: // Compact 2D kerning values.
-            getKerningFormat3(bytes.subspan(offset), coverage, unitsPerEm, glyph1_id, glyph2_id, r);
+            get_kern3_kerning(bytes.subspan(offset), coverage, unitsPerEm, glyph1_id, glyph2_id, r);
             break;
         }
 
@@ -1013,8 +1014,11 @@ getKerning(std::span<std::byte const> const &bytes, float unitsPerEm, glyph_id g
 
 [[nodiscard]] vector2 true_type_font::get_kerning(tt::glyph_id current_glyph, tt::glyph_id next_glyph) const noexcept
 {
-    ttlet kernTableBytes = getTableBytes("kern");
-    return getKerning(kernTableBytes, unitsPerEm, current_glyph, next_glyph);
+    if (not _kern_table_bytes.empty()) {
+        return get_kern_kerning(_kern_table_bytes, unitsPerEm, current_glyph, next_glyph);
+    } else {
+        return vector2{0.0f, 0.0f};
+    }
 }
 
 bool true_type_font::update_glyph_metrics(
@@ -1027,14 +1031,12 @@ bool true_type_font::update_glyph_metrics(
 
     ssize_t offset = 0;
 
-    ttlet hmtxTableBytes = getTableBytes("hmtx");
-
-    assert_or_return(check_placement_array<HMTXEntry>(hmtxTableBytes, offset, numberOfHMetrics), false);
-    ttlet longHorizontalMetricTable = unsafe_make_placement_array<HMTXEntry>(hmtxTableBytes, offset, numberOfHMetrics);
+    assert_or_return(check_placement_array<HMTXEntry>(_hmtx_table_bytes, offset, numberOfHMetrics), false);
+    ttlet longHorizontalMetricTable = unsafe_make_placement_array<HMTXEntry>(_hmtx_table_bytes, offset, numberOfHMetrics);
 
     ttlet numberOfLeftSideBearings = numGlyphs - numberOfHMetrics;
-    assert_or_return(check_placement_array<FWord_buf_t>(hmtxTableBytes, offset, numberOfLeftSideBearings), false);
-    ttlet leftSideBearings = unsafe_make_placement_array<FWord_buf_t>(hmtxTableBytes, offset, numberOfLeftSideBearings);
+    assert_or_return(check_placement_array<FWord_buf_t>(_hmtx_table_bytes, offset, numberOfLeftSideBearings), false);
+    ttlet leftSideBearings = unsafe_make_placement_array<FWord_buf_t>(_hmtx_table_bytes, offset, numberOfLeftSideBearings);
 
     float advanceWidth = 0.0f;
     float leftSideBearing;
@@ -1051,8 +1053,7 @@ bool true_type_font::update_glyph_metrics(
     glyph_metrics.right_side_bearing = advanceWidth - (leftSideBearing + glyph_metrics.bounding_rectangle.width());
 
     if (kern_glyph1_id && kern_glyph2_id) {
-        ttlet kernTableBytes = getTableBytes("kern");
-        glyph_metrics.advance += getKerning(kernTableBytes, unitsPerEm, kern_glyph1_id, kern_glyph2_id);
+        glyph_metrics.advance += get_kerning(kern_glyph1_id, kern_glyph2_id);
     }
 
     return true;
@@ -1064,7 +1065,7 @@ constexpr uint8_t FLAG_Y_SHORT = 0x04;
 constexpr uint8_t FLAG_REPEAT = 0x08;
 constexpr uint8_t FLAG_X_SAME = 0x10;
 constexpr uint8_t FLAG_Y_SAME = 0x20;
-bool true_type_font::loadSimpleGlyph(std::span<std::byte const> glyph_bytes, graphic_path &glyph) const noexcept
+bool true_type_font::load_simple_glyph(std::span<std::byte const> glyph_bytes, graphic_path &glyph) const noexcept
 {
     std::size_t offset = 0;
 
@@ -1186,7 +1187,7 @@ constexpr uint16_t FLAG_USE_MY_METRICS = 0x0200;
 [[maybe_unused]] constexpr uint16_t FLAG_OVERLAP_COMPOUND = 0x0400;
 constexpr uint16_t FLAG_SCALED_COMPONENT_OFFSET = 0x0800;
 [[maybe_unused]] constexpr uint16_t FLAG_UNSCALED_COMPONENT_OFFSET = 0x1000;
-bool true_type_font::loadCompoundGlyph(std::span<std::byte const> glyph_bytes, graphic_path &glyph, glyph_id &metrics_glyph_id)
+bool true_type_font::load_compound_glyph(std::span<std::byte const> glyph_bytes, graphic_path &glyph, glyph_id &metrics_glyph_id)
     const noexcept
 {
     std::size_t offset = ssizeof(GLYFEntry);
@@ -1276,7 +1277,7 @@ std::optional<glyph_id> true_type_font::load_glyph(glyph_id glyph_id, graphic_pa
     assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, {});
 
     std::span<std::byte const> glyph_bytes;
-    assert_or_return(getGlyphBytes(glyph_id, glyph_bytes), {});
+    assert_or_return(get_glyf_bytes(glyph_id, glyph_bytes), {});
 
     auto metrics_glyph_id = glyph_id;
 
@@ -1286,9 +1287,9 @@ std::optional<glyph_id> true_type_font::load_glyph(glyph_id glyph_id, graphic_pa
         ttlet numberOfContours = entry->numberOfContours.value();
 
         if (numberOfContours > 0) {
-            assert_or_return(loadSimpleGlyph(glyph_bytes, glyph), {});
+            assert_or_return(load_simple_glyph(glyph_bytes, glyph), {});
         } else if (numberOfContours < 0) {
-            assert_or_return(loadCompoundGlyph(glyph_bytes, glyph, metrics_glyph_id), {});
+            assert_or_return(load_compound_glyph(glyph_bytes, glyph, metrics_glyph_id), {});
         } else {
             // Empty glyph, such as white-space ' '.
         }
@@ -1300,7 +1301,7 @@ std::optional<glyph_id> true_type_font::load_glyph(glyph_id glyph_id, graphic_pa
     return metrics_glyph_id;
 }
 
-bool true_type_font::loadCompoundglyph_metrics(std::span<std::byte const> bytes, glyph_id &metrics_glyph_id) const noexcept
+bool true_type_font::load_compound_glyph_metrics(std::span<std::byte const> bytes, glyph_id &metrics_glyph_id) const noexcept
 {
     std::size_t offset = ssizeof(GLYFEntry);
 
@@ -1350,7 +1351,7 @@ bool true_type_font::load_glyph_metrics(tt::glyph_id glyph_id, tt::glyph_metrics
     assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, false);
 
     std::span<std::byte const> glyph_bytes;
-    assert_or_return(getGlyphBytes(glyph_id, glyph_bytes), false);
+    assert_or_return(get_glyf_bytes(glyph_id, glyph_bytes), false);
 
     auto metricsGlyphIndex = glyph_id;
 
@@ -1366,7 +1367,7 @@ bool true_type_font::load_glyph_metrics(tt::glyph_id glyph_id, tt::glyph_metrics
         if (numberOfContours > 0) {
             // A simple glyph does not include metrics information in the data.
         } else if (numberOfContours < 0) {
-            assert_or_return(loadCompoundglyph_metrics(glyph_bytes, metricsGlyphIndex), false);
+            assert_or_return(load_compound_glyph_metrics(glyph_bytes, metricsGlyphIndex), false);
         } else {
             // Empty glyph, such as white-space ' '.
         }
@@ -1378,14 +1379,8 @@ bool true_type_font::load_glyph_metrics(tt::glyph_id glyph_id, tt::glyph_metrics
     return update_glyph_metrics(metricsGlyphIndex, glyph_metrics, glyph_id, lookahead_glyph_id);
 }
 
-[[nodiscard]] std::span<std::byte const> true_type_font::getTableBytes(char const *table_name) const
+[[nodiscard]] std::span<std::byte const> true_type_font::get_table_bytes(char const *table_name) const
 {
-    if (not view) {
-        tt_axiom(url);
-        view = url->loadView();
-        ++global_counter<"ttf:map">;
-    }
-
     ttlet bytes = view->bytes();
 
     std::size_t offset = 0;
@@ -1411,29 +1406,37 @@ bool true_type_font::load_glyph_metrics(tt::glyph_id glyph_id, tt::glyph_metrics
 
 void true_type_font::parse_font_directory()
 {
-    if (auto headTableBytes = getTableBytes("head"); not headTableBytes.empty()) {
-        parseHeadTable(headTableBytes);
+    if (auto headTableBytes = get_table_bytes("head"); not headTableBytes.empty()) {
+        parse_head_table(headTableBytes);
     }
 
-    if (auto maxpTableBytes = getTableBytes("maxp"); not maxpTableBytes.empty()) {
-        parseMaxpTable(maxpTableBytes);
+    if (auto maxpTableBytes = get_table_bytes("maxp"); not maxpTableBytes.empty()) {
+        parse_maxp_table(maxpTableBytes);
     }
 
-    if (auto hheaTableBytes = getTableBytes("hhea"); not hheaTableBytes.empty()) {
-        parseHheaTable(hheaTableBytes);
+    if (auto hheaTableBytes = get_table_bytes("hhea"); not hheaTableBytes.empty()) {
+        parse_hhea_table(hheaTableBytes);
     }
 
-    if (auto os2TableBytes = getTableBytes("OS/2"); not os2TableBytes.empty()) {
-        parseOS2Table(os2TableBytes);
+    if (auto os2TableBytes = get_table_bytes("OS/2"); not os2TableBytes.empty()) {
+        parse_OS2_table(os2TableBytes);
     }
 
-    if (auto nameTableBytes = getTableBytes("name"); not nameTableBytes.empty()) {
-        parseNameTable(nameTableBytes);
+    if (auto nameTableBytes = get_table_bytes("name"); not nameTableBytes.empty()) {
+        parse_name_table(nameTableBytes);
     }
 
-    unicode_mask = parseCharacterMap();
-    unicode_mask.optimize();
-    unicode_mask.shrink_to_fit();
+    cache_tables();
+    unicode_mask = parse_cmap_table_mask();
+
+    // Figure out the features.
+    features.clear();
+    if (not _kern_table_bytes.empty()) {
+        features += "kern,";
+    }
+    if (not _GSUB_table_bytes.empty()) {
+        features += "GSUB,";
+    }
 
     if (OS2_x_height > 0) {
         metrics.x_height = emScale * OS2_x_height;

@@ -50,6 +50,11 @@ public:
     font_weight weight = font_weight::Regular;
     float optical_size = 12.0;
 
+    /** A string representing the features of a font.
+     * This will be a comma separated list of features, mostly tables like 'kern' and 'GPOS'.
+     */
+    std::string features;
+
     tt::unicode_mask unicode_mask;
 
     /** The metrics of a font.
@@ -108,12 +113,36 @@ public:
         tt::glyph_id lookahead_glyph_id = tt::glyph_id{}) const noexcept = 0;
 
     /** Get the kerning between two glyphs.
-    * 
-    * @param current_glyph The glyph on the left
-    * @param next_glyph The glyph on the right
-    * @return The vector to add to the advance of the current_glyph.
-    */
+     *
+     * @param current_glyph The glyph on the left
+     * @param next_glyph The glyph on the right
+     * @return The vector to add to the advance of the current_glyph.
+     */
     [[nodiscard]] virtual vector2 get_kerning(tt::glyph_id current_glyph, tt::glyph_id next_glyph) const noexcept = 0;
+
+    /** Get the maximum length of a ligature starting with the current glyph.
+     *
+     * This function is required to determine how many next_glyphs need to
+     * be passed to `get_ligature()`.
+     *
+     * If this function returns zero, then `get_ligature()` does not need to be called.
+     *
+     * @param first_glyph The first glyph of a potential ligature.
+     * @return The maximum length of a ligature that starts with @a current_glyph.
+     */
+    [[nodiscard]] virtual size_t get_ligature_length(tt::glyph_id first_glyph) const noexcept = 0;
+
+    /** Get ligature glyphs.
+     *
+     * To determine how many glyphs to pass into @a next_glyphs call `get_ligature_length()`.
+     *
+     * @param first_glyph The first glyph of a potential ligature.
+     * @param next_glyphs A list glyphs following the first glyph.
+     * @return The ligature glyph replacing the ligatures in the argument, the number of glyphs it is replacing.
+     *         If no ligature is found then {first_glyph, 1} is returned.
+     */
+    [[nodiscard]] virtual std::pair<glyph_id, size_t>
+    get_ligature(tt::glyph_id first_glyph, std::vector<tt::glyph_id> const &next_glyphs) const noexcept = 0;
 
     glyph_atlas_info &atlas_info(glyph_ids const &glyphs) const noexcept
     {
@@ -137,7 +166,7 @@ public:
     [[nodiscard]] friend std::string to_string(font const &rhs) noexcept
     {
         return std::format(
-            "{} - {}: {}{}{}{}{} {} num-code-points={}",
+            "{} - {}: style={}{}{}{}{}{}, features={}",
             rhs.family_name,
             rhs.sub_family_name,
             rhs.monospace ? 'M' : '_',
@@ -146,7 +175,7 @@ public:
             rhs.condensed ? 'C' : '_',
             to_char(rhs.weight),
             rhs.optical_size,
-            rhs.unicode_mask.size());
+            rhs.features);
     }
 
 private:

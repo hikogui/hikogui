@@ -30,7 +30,6 @@ private:
 
     float unitsPerEm;
     float emScale;
-    bool locaTableIsOffset32;
 
     uint16_t numberOfHMetrics;
 
@@ -97,11 +96,45 @@ public:
     [[nodiscard]] vector2 get_kerning(tt::glyph_id current_glyph, tt::glyph_id next_glyph) const noexcept override;
 
 private:
+    mutable std::span<std::byte const> _cmap_table_bytes;
+    mutable std::span<std::byte const> _cmap_bytes;
+    mutable std::span<std::byte const> _loca_table_bytes;
+    mutable std::span<std::byte const> _glyf_table_bytes;
+    mutable std::span<std::byte const> _hmtx_table_bytes;
+    mutable std::span<std::byte const> _kern_table_bytes;
+    mutable std::span<std::byte const> _GSUB_table_bytes;
+    bool _loca_table_is_offset32;
+
+    void cache_tables() const noexcept
+    {
+        _cmap_table_bytes = get_table_bytes("cmap");
+        _cmap_bytes = parse_cmap_table_directory();
+        _loca_table_bytes = get_table_bytes("loca");
+        _glyf_table_bytes = get_table_bytes("glyf");
+        _hmtx_table_bytes = get_table_bytes("hmtx");
+
+        // Optional tables.
+        _kern_table_bytes = get_table_bytes("kern");
+        _GSUB_table_bytes = get_table_bytes("GSUB");
+    }
+
+    void load_view() const noexcept
+    {
+        if (view) {
+            [[likely]] return;
+        }
+
+        tt_axiom(url);
+        view = url->loadView();
+        ++global_counter<"ttf:map">;
+        cache_tables();
+    }
+
     /** Get the bytes of a table.
      *
      * @return The bytes of a table, or empty if the table does not exist.
      */
-    [[nodiscard]] std::span<std::byte const> getTableBytes(char const *table_name) const;
+    [[nodiscard]] std::span<std::byte const> get_table_bytes(char const *table_name) const;
 
     /** Parses the directory table of the font file.
      *
@@ -110,32 +143,23 @@ private:
      */
     void parse_font_directory();
 
-    /** Parses the head table of the font file.
-     *
-     * This function is called by parse_font_directory().
-     */
-    void parseHeadTable(std::span<std::byte const> headTableBytes);
+    void parse_head_table(std::span<std::byte const> headTableBytes);
+    void parse_hhea_table(std::span<std::byte const> bytes);
+    void parse_name_table(std::span<std::byte const> bytes);
+    void parse_OS2_table(std::span<std::byte const> bytes);
+    void parse_maxp_table(std::span<std::byte const> bytes);
 
-    void parseHheaTable(std::span<std::byte const> bytes);
-
-    void parseNameTable(std::span<std::byte const> bytes);
-
-    void parseOS2Table(std::span<std::byte const> bytes);
+    [[nodiscard]] std::span<std::byte const> parse_cmap_table_directory() const;
 
     /** Parse the character map to create unicode_ranges.
      */
-    [[nodiscard]] tt::unicode_mask parseCharacterMap();
+    [[nodiscard]] tt::unicode_mask parse_cmap_table_mask() const;
 
-    /** Parses the maxp table of the font file.
-     *
-     * This function is called by parse_font_directory().
-     */
-    void parseMaxpTable(std::span<std::byte const> bytes);
 
     /** Find the glyph in the loca table.
      * called by loadGlyph()
      */
-    bool getGlyphBytes(tt::glyph_id glyph_id, std::span<std::byte const> &bytes) const noexcept;
+    bool get_glyf_bytes(tt::glyph_id glyph_id, std::span<std::byte const> &bytes) const noexcept;
 
     /** Update the glyph metrics from the font tables.
      * called by loadGlyph()
@@ -146,7 +170,7 @@ private:
         tt::glyph_id kern_glyph1_id = tt::glyph_id{},
         tt::glyph_id kern_glyph2_id = tt::glyph_id{}) const noexcept;
 
-    bool loadSimpleGlyph(std::span<std::byte const> bytes, graphic_path &glyph) const noexcept;
+    bool load_simple_glyph(std::span<std::byte const> bytes, graphic_path &glyph) const noexcept;
 
     /** Load a compound glyph.
      * This will call loadGlyph() recursively.
@@ -156,7 +180,7 @@ private:
      * \param metricsGlyphIndex The glyph index of the glyph to use for the metrics.
      *                          this value is only updated when the USE_MY_METRICS flag was set.
      */
-    bool loadCompoundGlyph(std::span<std::byte const> bytes, graphic_path &glyph, tt::glyph_id &metrics_glyph_id) const noexcept;
+    bool load_compound_glyph(std::span<std::byte const> bytes, graphic_path &glyph, tt::glyph_id &metrics_glyph_id) const noexcept;
 
     /** Load a compound glyph.
      * This will call loadGlyph() recursively.
@@ -165,7 +189,7 @@ private:
      * \param metricsGlyphIndex The glyph index of the glyph to use for the metrics.
      *                          this value is only updated when the USE_MY_METRICS flag was set.
      */
-    bool loadCompoundglyph_metrics(std::span<std::byte const> bytes, tt::glyph_id &metrics_glyph_id) const noexcept;
+    bool load_compound_glyph_metrics(std::span<std::byte const> bytes, tt::glyph_id &metrics_glyph_id) const noexcept;
 };
 
 } // namespace tt::inline v1
