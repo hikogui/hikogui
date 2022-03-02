@@ -138,10 +138,9 @@ public:
      *
      * @param first_glyph The first glyph of a potential ligature.
      * @param next_glyphs A list glyphs following the first glyph.
-     * @return The ligature glyph replacing the ligatures in the argument, the number of glyphs it is replacing.
-     *         If no ligature is found then {first_glyph, 1} is returned.
+     * @return The ligature glyph replacing the ligatures in the argument, the advance for each glyph it replaced.
      */
-    [[nodiscard]] virtual std::pair<glyph_id, size_t>
+    [[nodiscard]] virtual std::pair<glyph_id, std::vector<float>>
     get_ligature(tt::glyph_id first_glyph, std::vector<tt::glyph_id> const &next_glyphs) const noexcept = 0;
 
     glyph_atlas_info &atlas_info(glyph_ids const &glyphs) const noexcept

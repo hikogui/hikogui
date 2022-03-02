@@ -33,7 +33,7 @@ private:
 
     uint16_t numberOfHMetrics;
 
-    int numGlyphs;
+    int num_glyphs;
 
 public:
     true_type_font(std::unique_ptr<resource_view> view) : url(), view(std::move(view))
@@ -95,6 +95,10 @@ public:
 
     [[nodiscard]] vector2 get_kerning(tt::glyph_id current_glyph, tt::glyph_id next_glyph) const noexcept override;
 
+    [[nodiscard]] size_t get_ligature_length(tt::glyph_id first_glyph) const noexcept override;
+    [[nodiscard]] std::pair<glyph_id, std::vector<float>>
+    get_ligature(tt::glyph_id first_glyph, std::vector<tt::glyph_id> const &next_glyphs) const noexcept override;
+
 private:
     mutable std::span<std::byte const> _cmap_table_bytes;
     mutable std::span<std::byte const> _cmap_bytes;
@@ -155,7 +159,6 @@ private:
      */
     [[nodiscard]] tt::unicode_mask parse_cmap_table_mask() const;
 
-
     /** Find the glyph in the loca table.
      * called by loadGlyph()
      */
@@ -180,7 +183,8 @@ private:
      * \param metricsGlyphIndex The glyph index of the glyph to use for the metrics.
      *                          this value is only updated when the USE_MY_METRICS flag was set.
      */
-    bool load_compound_glyph(std::span<std::byte const> bytes, graphic_path &glyph, tt::glyph_id &metrics_glyph_id) const noexcept;
+    bool
+    load_compound_glyph(std::span<std::byte const> bytes, graphic_path &glyph, tt::glyph_id &metrics_glyph_id) const noexcept;
 
     /** Load a compound glyph.
      * This will call loadGlyph() recursively.
@@ -190,6 +194,14 @@ private:
      *                          this value is only updated when the USE_MY_METRICS flag was set.
      */
     bool load_compound_glyph_metrics(std::span<std::byte const> bytes, tt::glyph_id &metrics_glyph_id) const noexcept;
+
+    /** Get the index of the glyph from the coverage table.
+     *
+     * @param bytes The bytes of the coverage table.
+     * @param glyph The glyph to search.
+     * @return Coverage-index of the glyph when found, -1 if not found, -2 on error.
+     */
+    [[nodiscard]] std::ptrdiff_t get_coverage_index(std::span<std::byte const> bytes, tt::glyph_id glyph) noexcept;
 };
 
 } // namespace tt::inline v1

@@ -263,12 +263,12 @@ struct NAMERecord {
 
 struct MAXPTable05 {
     big_uint32_buf_t version;
-    big_uint16_buf_t numGlyphs;
+    big_uint16_buf_t num_glyphs;
 };
 
 struct MAXPTable10 {
     big_uint32_buf_t version;
-    big_uint16_buf_t numGlyphs;
+    big_uint16_buf_t num_glyphs;
     big_uint16_buf_t maxPoints;
     big_uint16_buf_t maxContours;
     big_uint16_buf_t maxComponentPoints;
@@ -331,6 +331,7 @@ struct GLYFEntry {
     FWord_buf_t xMax;
     FWord_buf_t yMax;
 };
+
 
 [[nodiscard]] std::span<std::byte const> true_type_font::parse_cmap_table_directory() const
 {
@@ -871,12 +872,12 @@ void true_type_font::parse_maxp_table(std::span<std::byte const> table_bytes)
     ttlet version = table->version.value();
     tt_parse_check(version == 0x00010000 || version == 0x00005000, "MAXP version must be 0.5 or 1.0");
 
-    numGlyphs = table->numGlyphs.value();
+    num_glyphs = table->num_glyphs.value();
 }
 
 bool true_type_font::get_glyf_bytes(glyph_id glyph_id, std::span<std::byte const> &glyph_bytes) const noexcept
 {
-    assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, false);
+    assert_or_return(glyph_id >= 0 && glyph_id < num_glyphs, false);
 
     std::size_t startOffset = 0;
     std::size_t endOffset = 0;
@@ -884,15 +885,15 @@ bool true_type_font::get_glyf_bytes(glyph_id glyph_id, std::span<std::byte const
         ttlet entries = make_placement_array<big_uint32_buf_t>(_loca_table_bytes);
         assert_or_return(entries.contains(static_cast<int>(glyph_id) + 1), false);
 
-        startOffset = entries[glyph_id].value();
-        endOffset = entries[static_cast<int>(glyph_id) + 1].value();
+        startOffset = entries[*glyph_id].value();
+        endOffset = entries[*glyph_id + 1].value();
 
     } else {
         ttlet entries = make_placement_array<big_uint16_buf_t>(_loca_table_bytes);
         assert_or_return(entries.contains(static_cast<int>(glyph_id) + 1), false);
 
-        startOffset = entries[glyph_id].value() * 2;
-        endOffset = entries[static_cast<int>(glyph_id) + 1].value() * 2;
+        startOffset = entries[*glyph_id].value() * 2;
+        endOffset = entries[*glyph_id + 1].value() * 2;
     }
 
     assert_or_return(startOffset <= endOffset, false);
@@ -1021,31 +1022,51 @@ get_kern_kerning(std::span<std::byte const> const &bytes, float unitsPerEm, glyp
     }
 }
 
+
+[[nodiscard]] size_t true_type_font::get_ligature_length(tt::glyph_id first_glyph) const noexcept
+{
+    if (not _GSUB_table_bytes.empty()) {
+        return 1;
+    } else {
+        return 1;
+    }
+}
+
+[[nodiscard]] std::pair<glyph_id, std::vector<float>>
+true_type_font::get_ligature(tt::glyph_id first_glyph, std::vector<tt::glyph_id> const &next_glyphs) const noexcept
+{
+    if (not _GSUB_table_bytes.empty()) {
+        return {first_glyph, {1.0f}};
+    } else {
+        return {first_glyph, {1.0f}};
+    }
+}
+
 bool true_type_font::update_glyph_metrics(
     tt::glyph_id glyph_id,
     tt::glyph_metrics &glyph_metrics,
     tt::glyph_id kern_glyph1_id,
     tt::glyph_id kern_glyph2_id) const noexcept
 {
-    assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, false);
+    assert_or_return(glyph_id >= 0 && glyph_id < num_glyphs, false);
 
     ssize_t offset = 0;
 
     assert_or_return(check_placement_array<HMTXEntry>(_hmtx_table_bytes, offset, numberOfHMetrics), false);
     ttlet longHorizontalMetricTable = unsafe_make_placement_array<HMTXEntry>(_hmtx_table_bytes, offset, numberOfHMetrics);
 
-    ttlet numberOfLeftSideBearings = numGlyphs - numberOfHMetrics;
+    ttlet numberOfLeftSideBearings = num_glyphs - numberOfHMetrics;
     assert_or_return(check_placement_array<FWord_buf_t>(_hmtx_table_bytes, offset, numberOfLeftSideBearings), false);
     ttlet leftSideBearings = unsafe_make_placement_array<FWord_buf_t>(_hmtx_table_bytes, offset, numberOfLeftSideBearings);
 
     float advanceWidth = 0.0f;
     float leftSideBearing;
     if (glyph_id < numberOfHMetrics) {
-        advanceWidth = longHorizontalMetricTable[glyph_id].advanceWidth.value(unitsPerEm);
-        leftSideBearing = longHorizontalMetricTable[glyph_id].leftSideBearing.value(unitsPerEm);
+        advanceWidth = longHorizontalMetricTable[*glyph_id].advanceWidth.value(unitsPerEm);
+        leftSideBearing = longHorizontalMetricTable[*glyph_id].leftSideBearing.value(unitsPerEm);
     } else {
         advanceWidth = longHorizontalMetricTable[numberOfHMetrics - 1].advanceWidth.value(unitsPerEm);
-        leftSideBearing = leftSideBearings[static_cast<uint16_t>(glyph_id) - numberOfHMetrics].value(unitsPerEm);
+        leftSideBearing = leftSideBearings[*glyph_id - numberOfHMetrics].value(unitsPerEm);
     }
 
     glyph_metrics.advance = vector2{advanceWidth, 0.0f};
@@ -1274,7 +1295,7 @@ bool true_type_font::load_compound_glyph(std::span<std::byte const> glyph_bytes,
 
 std::optional<glyph_id> true_type_font::load_glyph(glyph_id glyph_id, graphic_path &glyph) const noexcept
 {
-    assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, {});
+    assert_or_return(glyph_id >= 0 && glyph_id < num_glyphs, {});
 
     std::span<std::byte const> glyph_bytes;
     assert_or_return(get_glyf_bytes(glyph_id, glyph_bytes), {});
@@ -1348,7 +1369,7 @@ bool true_type_font::load_compound_glyph_metrics(std::span<std::byte const> byte
 bool true_type_font::load_glyph_metrics(tt::glyph_id glyph_id, tt::glyph_metrics &glyph_metrics, tt::glyph_id lookahead_glyph_id)
     const noexcept
 {
-    assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, false);
+    assert_or_return(glyph_id >= 0 && glyph_id < num_glyphs, false);
 
     std::span<std::byte const> glyph_bytes;
     assert_or_return(get_glyf_bytes(glyph_id, glyph_bytes), false);

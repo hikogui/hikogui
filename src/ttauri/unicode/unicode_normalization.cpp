@@ -62,7 +62,7 @@ static void unicode_decompose(char32_t code_point, unicode_normalization_mask ma
         } else if (description.decomposition_length() == 1) {
             unicode_decompose(static_cast<char32_t>(description.decomposition_index()), mask, r);
 
-        } else if (description.composition_canonical() && description.decomposition_length() == 2) {
+        } else if (description.is_canonical_composition() && description.decomposition_length() == 2) {
             tt_axiom(description.decomposition_index() < size(detail::unicode_db_composition_table));
             ttlet &composition = detail::unicode_db_composition_table[description.decomposition_index()];
 

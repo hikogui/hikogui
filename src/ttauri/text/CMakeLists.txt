@@ -35,6 +35,7 @@ target_sources(ttauri PRIVATE
     text_style.hpp
     translation.cpp
     translation.hpp
+    true_type_font_coverage.cpp
     true_type_font.cpp
     true_type_font.hpp
     ttauri_icon.hpp

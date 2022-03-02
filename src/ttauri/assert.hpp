@@ -20,14 +20,25 @@ namespace tt::inline v1 {
  */
 #define tt_assert(expression, ...) \
     do { \
-        if (not (expression)) { \
-            if constexpr (__VA_OPT__(not) true) { \
+        if (not(expression)) { \
+            if constexpr (__VA_OPT__(not ) true) { \
                 tt_debug_abort(#expression); \
             } else { \
                 tt_debug_abort(__VA_ARGS__); \
             } \
         } \
     } while (false)
+
+/** Assert if an expression is true.
+ * If the expression is false then return from the function.
+ *
+ * @param x The expression to test
+ * @param y The value to return from the current function.
+ */
+#define tt_assert_or_return(x, y) \
+    if (!(x)) { \
+        [[unlikely]] return y; \
+    }
 
 #if TT_BUILD_TYPE == TT_BT_DEBUG
 /** Specify an axiom; an expression that is true.
