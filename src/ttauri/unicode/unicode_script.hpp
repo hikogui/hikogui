@@ -12,6 +12,7 @@
 namespace tt::inline v1 {
 
 enum class unicode_script: uint8_t {
+    Unknown,
     Common,
     Latin,
     Greek,
@@ -172,7 +173,37 @@ enum class unicode_script: uint8_t {
     Old_Uyghur,
     Tangsa,
     Toto,
-    Vithkuqi
+    Vithkuqi,
+    // Missing from database
+    Tengwar,
+    Visible_Speech,
+    Woleai,
+    Shuishu,
+    Sarati,
+    Rongorongo,
+    Ranjana,
+    Proto_Sinaitic,
+    Kligon,
+    Book_Pahlavi,
+    Proto_Elamite,
+    Proto_Cuneiform,
+    Nakhi_Geba,
+    Naxi_Dongba,
+    Moon,
+    Mayan_Hieroglyphs,
+    Loma,
+    Leke,
+    Kpelle,
+    Khitan_Large_Script,
+    Jurchen,
+    Indus,
+    Khutsuri,
+    Egyptian_Hieratic,
+    Egyptian_Demotic,
+    Cirth,
+    Blissymbols,
+    Afaka,
+    Private_Use
 };
 
 }

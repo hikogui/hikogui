@@ -13,6 +13,7 @@
 #include "unicode_sentence_break.hpp"
 #include "unicode_east_asian_width.hpp"
 #include "unicode_decomposition_type.hpp"
+#include "unicode_script.hpp"
 #include "../required.hpp"
 #include "../assert.hpp"
 #include "../cast.hpp"
@@ -91,6 +92,7 @@ public:
         unicode_word_break_property word_break_property,
         unicode_sentence_break_property sentence_break_property,
         unicode_east_asian_width east_asian_width,
+        unicode_script script,
         unicode_bidi_class bidi_class,
         unicode_bidi_bracket_type bidi_bracket_type,
         char32_t bidi_mirrored_glyph,
@@ -118,7 +120,7 @@ public:
         // Check if the delta fits.
         if (canonical_combining_class == 0) {
             _non_mark.bidi_bracket_type = static_cast<uint32_t>(bidi_bracket_type);
-            _non_mark.script = 0;
+            _non_mark.script = static_cast<uint32_t>(script);
 
             if (bidi_bracket_type != unicode_bidi_bracket_type::n and bidi_mirrored_glyph != char32_t{0xffff}) {
                 auto mirrored_glyph_delta = static_cast<int32_t>(bidi_mirrored_glyph) - static_cast<int32_t>(code_point);
@@ -143,6 +145,7 @@ public:
         tt_axiom(to_underlying(word_break_property) <= 0x1f);
         tt_axiom(to_underlying(sentence_break_property) <= 0xf);
         tt_axiom(to_underlying(east_asian_width) <= 0x7);
+        tt_axiom(to_underlying(script) <= 0xff);
         tt_axiom(to_underlying(bidi_class) <= 0x1f);
         tt_axiom(to_underlying(bidi_bracket_type) <= 0x03);
         tt_axiom(static_cast<uint32_t>(bidi_mirrored_glyph) <= 0x10ffff);
