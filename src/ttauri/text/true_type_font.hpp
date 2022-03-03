@@ -95,9 +95,10 @@ public:
 
     [[nodiscard]] vector2 get_kerning(tt::glyph_id current_glyph, tt::glyph_id next_glyph) const noexcept override;
 
-    [[nodiscard]] size_t get_ligature_length(tt::glyph_id first_glyph) const noexcept override;
-    [[nodiscard]] std::pair<glyph_id, std::vector<float>>
-    get_ligature(tt::glyph_id first_glyph, std::vector<tt::glyph_id> const &next_glyphs) const noexcept override;
+    virtual void substitution_and_kerning(iso_639 language, iso_15924 script, std::vector<substitution_and_kerning_type> &word)
+        const noexcept override
+    {
+    }
 
 private:
     mutable std::span<std::byte const> _cmap_table_bytes;

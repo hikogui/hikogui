@@ -80,10 +80,21 @@ public:
      * @param paragraph_spacing A multiplier to scale the distance between lines compared to the
      *                          line spacing after @a line_spacing argument has been applied.
      * @param dpi_scale The scaling factor to use to scale a font's size to match the physical display.
+     * @param script The script of the text.
      */
-    [[nodiscard]] text_shaper(tt::font_book &font_book, gstring const &text, text_style const &style, float dpi_scale) noexcept;
+    [[nodiscard]] text_shaper(
+        tt::font_book &font_book,
+        gstring const &text,
+        text_style const &style,
+        float dpi_scale,
+        unicode_script script = unicode_script::Common) noexcept;
 
-    [[nodiscard]] text_shaper(tt::font_book &font_book, std::string_view text, text_style const &style, float dpi_scale) noexcept;
+    [[nodiscard]] text_shaper(
+        tt::font_book &font_book,
+        std::string_view text,
+        text_style const &style,
+        float dpi_scale,
+        unicode_script script = unicode_script::Common) noexcept;
 
     [[nodiscard]] bool empty() const noexcept
     {
@@ -330,12 +341,12 @@ public:
     [[nodiscard]] text_cursor get_right_cursor(text_shaper::char_const_iterator it) const noexcept;
 
     /** Check if the cursor is on the left side of the character in display order.
-    * 
-    * @param cursor The cursor to query.
-    * @return True if the cursor is on the left of the character.
-    */
+     *
+     * @param cursor The cursor to query.
+     * @return True if the cursor is on the left of the character.
+     */
     [[nodiscard]] bool is_on_left(text_cursor cursor) const noexcept;
-    
+
     /** Check if the cursor is on the right side of the character in display order.
      *
      * @param cursor The cursor to query.
@@ -430,6 +441,10 @@ private:
      */
     unicode_break_vector _sentence_break_opportunities;
 
+    /** The default script of the text.
+     */
+    unicode_script _script;
+
     /** A list of lines top-to-bottom order.
      *
      * The characters contained in each line are in display order.
@@ -476,6 +491,10 @@ private:
         extent2 sub_pixel_size,
         tt::horizontal_alignment horizontal_alignment,
         unicode_bidi_class writing_direction) noexcept;
+
+    /** Resolve the script of each character in text.
+     */
+    void resolve_script() noexcept;
 
     [[nodiscard]] std::pair<text_cursor, text_cursor>
     get_selection_from_break(text_cursor cursor, unicode_break_vector const &break_opportunities) const noexcept;

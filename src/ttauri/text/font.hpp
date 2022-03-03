@@ -12,6 +12,8 @@
 #include "font_metrics.hpp"
 #include "../unicode/unicode_mask.hpp"
 #include "../unicode/gstring.hpp"
+#include "../i18n/iso_15924.hpp"
+#include "../i18n/iso_639.hpp"
 #include "../graphic_path.hpp"
 #include "../resource_view.hpp"
 #include "../exception.hpp"
@@ -120,28 +122,33 @@ public:
      */
     [[nodiscard]] virtual vector2 get_kerning(tt::glyph_id current_glyph, tt::glyph_id next_glyph) const noexcept = 0;
 
-    /** Get the maximum length of a ligature starting with the current glyph.
-     *
-     * This function is required to determine how many next_glyphs need to
-     * be passed to `get_ligature()`.
-     *
-     * If this function returns zero, then `get_ligature()` does not need to be called.
-     *
-     * @param first_glyph The first glyph of a potential ligature.
-     * @return The maximum length of a ligature that starts with @a current_glyph.
-     */
-    [[nodiscard]] virtual size_t get_ligature_length(tt::glyph_id first_glyph) const noexcept = 0;
+    struct substitution_and_kerning_type {
+        /** The glyph.
+         *
+         * On input: the original glyph
+         * On output: the substituted glyph, possibly a ligature glyph. Or empty if this glyph was substituted
+         *            by a previous ligature.
+         */
+        glyph_id glyph;
 
-    /** Get ligature glyphs.
+        /** The advance in font-unit coordinate system.
+         *
+         * On input: the original advance for the glyph
+         * On output: the advance adjusted by kerning, or the partial advance of the character within
+         *            a ligature. All advances of a ligature added together will be the total advance of
+         *            the full ligature including kerning.
+         */
+        vector2 advance;
+    };
+
+    /** Substitute and kern a run of glyphs.
      *
-     * To determine how many glyphs to pass into @a next_glyphs call `get_ligature_length()`.
-     *
-     * @param first_glyph The first glyph of a potential ligature.
-     * @param next_glyphs A list glyphs following the first glyph.
-     * @return The ligature glyph replacing the ligatures in the argument, the advance for each glyph it replaced.
+     * @param language The language that the word is written in.
+     * @param script The script that the word is written in.
+     * @param [in,out]word A run of glyphs, from the same font, font-size and script of a word.
      */
-    [[nodiscard]] virtual std::pair<glyph_id, std::vector<float>>
-    get_ligature(tt::glyph_id first_glyph, std::vector<tt::glyph_id> const &next_glyphs) const noexcept = 0;
+    virtual void substitution_and_kerning(iso_639 language, iso_15924 script, std::vector<substitution_and_kerning_type> &word)
+        const noexcept = 0;
 
     glyph_atlas_info &atlas_info(glyph_ids const &glyphs) const noexcept
     {

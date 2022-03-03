@@ -186,7 +186,9 @@ enum class unicode_script: uint8_t {
     Han_Simplified,
     Han_Traditional,
     Indus,
+    Jamo,
     Japanese,
+    Japanese_Syllabaries,
     Jurchen,
     Kawi,
     Khitan_Large_Script,
@@ -225,7 +227,7 @@ enum class unicode_script: uint8_t {
     Woleai,
     Mathematical_Notation,
     // Open-type
-    Byznatine_Music,
+    Byzantine_Music,
     Music,
 };
 

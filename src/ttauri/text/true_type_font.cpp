@@ -1022,26 +1022,6 @@ get_kern_kerning(std::span<std::byte const> const &bytes, float unitsPerEm, glyp
     }
 }
 
-
-[[nodiscard]] size_t true_type_font::get_ligature_length(tt::glyph_id first_glyph) const noexcept
-{
-    if (not _GSUB_table_bytes.empty()) {
-        return 1;
-    } else {
-        return 1;
-    }
-}
-
-[[nodiscard]] std::pair<glyph_id, std::vector<float>>
-true_type_font::get_ligature(tt::glyph_id first_glyph, std::vector<tt::glyph_id> const &next_glyphs) const noexcept
-{
-    if (not _GSUB_table_bytes.empty()) {
-        return {first_glyph, {1.0f}};
-    } else {
-        return {first_glyph, {1.0f}};
-    }
-}
-
 bool true_type_font::update_glyph_metrics(
     tt::glyph_id glyph_id,
     tt::glyph_metrics &glyph_metrics,

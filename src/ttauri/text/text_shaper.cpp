@@ -186,8 +186,9 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
     tt::font_book &font_book,
     gstring const &text,
     text_style const &style,
-    float dpi_scale) noexcept :
-    _font_book(&font_book), _dpi_scale(dpi_scale)
+    float dpi_scale,
+    unicode_script script) noexcept :
+    _font_book(&font_book), _dpi_scale(dpi_scale), _script(script)
 {
     ttlet &font = font_book.find_font(style.family_id, style.variant);
     _initial_line_metrics = (style.size * dpi_scale) * font.metrics;
@@ -219,14 +220,17 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
         tt_axiom(c.description != nullptr);
         return *c.description;
     });
+
+    resolve_script();
 }
 
 [[nodiscard]] text_shaper::text_shaper(
     font_book &font_book,
     std::string_view text,
     text_style const &style,
-    float dpi_scale) noexcept :
-    text_shaper(font_book, to_gstring(text), style, dpi_scale)
+    float dpi_scale,
+    unicode_script script) noexcept :
+    text_shaper(font_book, to_gstring(text), style, dpi_scale, script)
 {
 }
 
@@ -284,6 +288,47 @@ void text_shaper::position_glyphs(
     for (auto &line : _lines) {
         // Position the glyphs on each line. Possibly morph glyphs to handle ligatures and calculate the bounding rectangles.
         line.layout(horizontal_alignment, rectangle.left(), rectangle.right(), sub_pixel_size.width());
+    }
+}
+
+void text_shaper::resolve_script() noexcept
+{
+    auto first = 0_uz;
+    for (auto last = 1_uz; last != _text.size() + 1; ++last) {
+        // We iterate over whole words.
+        if (_word_break_opportunities[last] != unicode_break_opportunity::no) {
+            // First assign the actual script from the unicode-character.
+            // And use the previous script if the character is Inherited or Common.
+            auto previous_script = unicode_script::Common;
+            auto first_script = unicode_script::Common;
+            for (auto i = first; i != last; ++i) {
+                auto &c = _text[i];
+                c.script = c.description->script();
+                if (c.script == unicode_script::Inherited or c.script == unicode_script::Common) {
+                    c.script = previous_script;
+
+                } else if (first_script == unicode_script::Common) {
+                    first_script = c.script;
+                }
+
+                previous_script = c.script;
+            }
+
+            // All of the characters in the word are `Common`, use the default script of the text shaper.
+            if (first_script == unicode_script::Common) {
+                first_script = _script;
+            }
+
+            // Replace all leading `Common` characters with the first script found.
+            for (auto i = first; i != last; ++i) {
+                auto &c = _text[i];
+                if (c.script == unicode_script::Common) {
+                    c.script = first_script;
+                }
+            }
+
+            first = last;
+        }
     }
 }
 

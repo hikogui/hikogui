@@ -1,34 +1,42 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "iso_15924.hpp"
 #include "../unicode/unicode_script.hpp"
 #include "../cast.hpp"
+#include "../fixed_string.hpp"
 #include <array>
 
 namespace tt::inline v1 {
+using enum unicode_script;
 
 struct iso_15924_info {
-    char const *code;
-    char const *open_type;
+    fixed_string<4> code;
+    fixed_string<4> open_type;
     tt::unicode_script unicode_script;
     uint16_t nr;
 
-    constexpr iso_15924_info() noexcept : code("Zzzz"), open_type("zzzz"), unicode_script(unicode_script::Unknown), nr(999) {}
 
-    constexpr iso_15924_info(char const *code, char const *open_type, tt::unicode_script unicode_script, uint16_t nr) noexcept :
-        code(code), open_type(open_type), unicode_script(unicode_script), nr(nr)
+    constexpr iso_15924_info(
+        char const (&code)[5],
+        char const (&open_type)[5],
+        tt::unicode_script unicode_script,
+        uint16_t nr) noexcept :
+        code{to_title(basic_fixed_string(code))}, open_type{code}, unicode_script(unicode_script), nr(nr)
     {
     }
 
-    constexpr iso_15924_info(char const *code, tt::unicode_script unicode_script, uint16_t nr) noexcept :
+    constexpr iso_15924_info() noexcept :
+        iso_15924_info("zzzz", Unknown, 999)
+    {
+    }
+
+    constexpr iso_15924_info(char const (&code)[5], tt::unicode_script unicode_script, uint16_t nr) noexcept :
         iso_15924_info(code, code, unicode_script, nr)
     {
     }
 };
-
-using enum unicode_script;
 
 constexpr std::array iso_15924_by_code = {
     iso_15924_info{"adlm", Adlam, 166},
@@ -244,20 +252,35 @@ constexpr std::array iso_15924_by_code = {
     iso_15924_info{"zyyy", "DFLT", Common, 998},
     iso_15924_info{"zzzz", Unknown, 999}};
 
-constexpr auto iso_15924_table_by_nr_init() noexcept
+constexpr auto iso_15924_code_by_nr_init() noexcept
 {
-    auto r = std::array<iso_15924_info, 1000>{};
+    auto r = std::array<fixed_string<4>, 1000>{};
 
     for (ttlet &info : iso_15924_by_code) {
-        r[info.nr] = info;
+        r[info.nr] = info.code;
     }
 
     return r;
 }
 
-constexpr auto iso_15924_by_unicode_script_init() noexcept
+constexpr auto iso_15924_open_type_by_nr_init() noexcept
 {
-    auto r = std::array<uint16_t, 128>{};
+    auto r = std::array<fixed_string<4>, 1000>{};
+
+    for (ttlet &info : iso_15924_by_code) {
+        r[info.nr] = info.open_type;
+    }
+
+    return r;
+}
+
+constexpr auto iso_15924_nr_by_unicode_script_init() noexcept
+{
+    auto r = std::array<uint16_t, 256>{};
+
+    for (auto &item: r) {
+        item = 0;
+    }
 
     for (ttlet &info : iso_15924_by_code) {
         r[to_underlying(info.unicode_script)] = info.nr;
@@ -266,23 +289,22 @@ constexpr auto iso_15924_by_unicode_script_init() noexcept
     return r;
 }
 
-constexpr auto iso_15924_table_by_nr = iso_15924_table_by_nr_init();
-constexpr auto iso_15924_by_unicode_script = iso_15924_by_unicode_script_init();
+constexpr auto iso_15924_code_by_nr = iso_15924_code_by_nr_init();
+constexpr auto iso_15924_open_type_by_nr = iso_15924_open_type_by_nr_init();
+constexpr auto iso_15924_nr_by_unicode_script = iso_15924_nr_by_unicode_script_init();
 
-iso_15924(unicode_script const &script) noexcept :
-    _v(iso_15924_table_by_unicode_script[to_underlying(script)]) {}
+iso_15924::iso_15924(tt::unicode_script const &script) noexcept : _v(iso_15924_nr_by_unicode_script[to_underlying(script)]) {}
 
-[[nodiscard]] iso_15924::code() const noexcept
+[[nodiscard]] std::string_view iso_15924::code() const noexcept
 {
     tt_axiom(_v < 1000);
-    return iso_15924_table_by_nr[_v].code;
+    return static_cast<std::string_view>(iso_15924_code_by_nr[_v]);
 }
 
-[[nodiscard]] iso_15924::open_type() const noexcept
+[[nodiscard]] std::string_view iso_15924::open_type() const noexcept
 {
     tt_axiom(_v < 1000);
-    return iso_15924_table_by_nr[_v].open_type;
+    return static_cast<std::string_view>(iso_15924_open_type_by_nr[_v]);
 }
 
 } // namespace tt::inline v1
-

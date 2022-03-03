@@ -26,12 +26,21 @@ public:
     constexpr iso_15924(uint16_t number) noexcept : _v(number) {}
     iso_15924(unicode_script const &script) noexcept;
 
+    /** Get the iso-15924 numeric value.
+     */
+    [[nodiscard]] constexpr uint16_t number() const noexcept {
+        return _v;
+    }
 
-    [[nodiscard]] char const *code() const noexcept;
-    [[nodiscard]] char const *open_type() const noexcept;
+    /** Get the iso-15924 4-letter code.
+     */
+    [[nodiscard]] std::string_view code() const noexcept;
+
+    /** Get the 4-letter code used by open-type.
+     */
+    [[nodiscard]] std::string_view open_type() const noexcept;
 
     [[nodiscard]] constexpr friend bool operator==(iso_15924 const &lhs, iso_15924 const &rhs) noexcept = default;
-    [[nodiscard]] constexpr friend auto operator<=>(iso_15924 const &lhs, iso_15924 const &rhs) noexcept = default;
 
 private:
     uint16_t _v;

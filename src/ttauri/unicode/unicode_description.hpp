@@ -251,6 +251,17 @@ public:
         return static_cast<unicode_bidi_class>(_bidi_class);
     }
 
+    /** Get the script of this character.
+     */
+    [[nodiscard]] constexpr unicode_script script() const noexcept
+    {
+        if (is_combining_mark()) {
+            return unicode_script::Common;
+        } else {
+            return static_cast<unicode_script>(_non_mark.script);
+        }
+    }
+
     /** Get the bidi bracket type.
      * This function is used by the bidirectional algorithm for mirroring characters
      * when needing to reverse the writing direction.
