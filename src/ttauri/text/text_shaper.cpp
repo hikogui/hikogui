@@ -293,41 +293,50 @@ void text_shaper::position_glyphs(
 
 void text_shaper::resolve_script() noexcept
 {
-    auto first = 0_uz;
-    for (auto last = 1_uz; last != _text.size() + 1; ++last) {
-        // We iterate over whole words.
-        if (_word_break_opportunities[last] != unicode_break_opportunity::no) {
-            // First assign the actual script from the unicode-character.
-            // And use the previous script if the character is Inherited or Common.
-            auto previous_script = unicode_script::Common;
-            auto first_script = unicode_script::Common;
-            for (auto i = first; i != last; ++i) {
-                auto &c = _text[i];
-                c.script = c.description->script();
-                if (c.script == unicode_script::Inherited or c.script == unicode_script::Common) {
-                    c.script = previous_script;
+    auto word_script = unicode_script::Common;
+    auto previous_script = unicode_script::Common;
 
-                } else if (first_script == unicode_script::Common) {
-                    first_script = c.script;
-                }
+    for (auto i = 0_uz; i != _text.size(); ++last) {
+        auto &c = _text[i];
 
-                previous_script = c.script;
+        if (_word_break_opportunities[i] != unicode_break_opportunity::no) {
+            word_script = unicode_script::Common;
+        }
+
+        c.script = c.description->script();
+        if (c.script == unicode_script::Inherited or c.script == unicode_script::Common) {
+            if (*c.description == unicode_general_category::Zs or *c.description == bidi_bracket_type::c) {
+                // Spaces get the script of a previous character
+                // Close bracket get script of a previous character
+                c.script = previous_script;
+            } else {
+                // The rest of the characters match the script of the rest of the word.
+                c.script = word_script;
             }
+        } else if (not c.script == unicode_script::Unknown) {
+            previous_script = word_script = c.script;
+        }
+    }
 
-            // All of the characters in the word are `Common`, use the default script of the text shaper.
-            if (first_script == unicode_script::Common) {
-                first_script = _script;
+    for (auto i = std::ssize(_text.size()) - 1; i >= 0; --last) {
+        auto &c = _text[i];
+
+        if (_word_break_opportunities[i + 1] != unicode_break_opportunity::no) {
+            word_script = unicode_script::Common;
+        }
+
+        c.script = c.description->script();
+        if (c.script == unicode_script::Inherited or c.script == unicode_script::Common) {
+            if (*c.description == unicode_general_category::Zs or *c.description == bidi_bracket_type::o) {
+                // Spaces get the script of a next character
+                // Open bracket get script of a next character
+                c.script = previous_script;
+            } else {
+                // The rest of the characters match the script of the rest of the word.
+                c.script = word_script;
             }
-
-            // Replace all leading `Common` characters with the first script found.
-            for (auto i = first; i != last; ++i) {
-                auto &c = _text[i];
-                if (c.script == unicode_script::Common) {
-                    c.script = first_script;
-                }
-            }
-
-            first = last;
+        } else if (not c.script == unicode_script::Unknown) {
+            previous_script = word_script = c.script;
         }
     }
 }
