@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -25,6 +25,16 @@ public:
 
     constexpr iso_15924(uint16_t number) noexcept : _v(number) {}
     iso_15924(unicode_script const &script) noexcept;
+
+    [[nodiscard]] constexpr bool empty() const noexcept
+    {
+        return _v == 999;
+    }
+
+    explicit operator bool() const noexcept
+    {
+        return not empty();
+    }
 
     /** Get the iso-15924 numeric value.
      */

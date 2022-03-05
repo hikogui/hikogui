@@ -107,6 +107,10 @@ public:
         }
     }
 
+    /** Get the default script if this language.
+     */
+    [[nodiscard]] iso_15924 default_script() const noexcept;
+
 private:
     /**
      * Encoded as follows:
