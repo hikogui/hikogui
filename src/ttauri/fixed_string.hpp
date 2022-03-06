@@ -101,6 +101,48 @@ struct basic_fixed_string {
         return *this;
     }
 
+    constexpr explicit basic_fixed_string(std::basic_string_view<value_type> str) noexcept
+    {
+        tt_axiom(str.size() <= N);
+
+        auto i = 0_uz;
+        for (; i != str.size(); ++i) {
+            _str[i] = str[i];
+        }
+        for (; i != N; ++i) {
+            _str[i] = value_type{};
+        }
+    }
+
+    constexpr explicit basic_fixed_string(std::basic_string<value_type> const &str) noexcept
+    {
+        tt_axiom(str.size() <= N);
+
+        auto i = 0_uz;
+        for (; i != str.size(); ++i) {
+            _str[i] = str[i];
+        }
+        for (; i != N; ++i) {
+            _str[i] = value_type{};
+        }
+    }
+
+    /** Initialize the string from a nul-terminated c-string.
+     */
+    constexpr explicit basic_fixed_string(value_type const *str) noexcept
+    {
+        auto i = 0_uz;
+        for (; i != N and str[i] != value_type{}; ++i) {
+            _str[i] = str[i];
+        }
+
+        tt_axiom(str[i] == value_type{});
+
+        for (; i != N; ++i) {
+            _str[i] = value_type{};
+        }
+    }
+
     operator std::basic_string_view<value_type>() const noexcept
     {
         return std::basic_string_view<value_type>{_str, size()};

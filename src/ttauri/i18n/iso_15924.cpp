@@ -23,7 +23,7 @@ struct iso_15924_info {
         char const (&code4_open_type)[5],
         tt::unicode_script unicode_script,
         uint16_t number) noexcept :
-        code4{to_title(basic_fixed_string(code4))}, code4_open_type{code4}, unicode_script(unicode_script), number(number)
+        code4{to_title(basic_fixed_string(code4))}, code4_open_type{code4_open_type}, unicode_script(unicode_script), number(number)
     {
     }
 
@@ -317,14 +317,14 @@ iso_15924::iso_15924(std::string_view code4)
         throw parse_error("Invalid script '{}'", code4);
     }
 
-    ttlet code4_ = to_title(fixed_string{code4});
+    ttlet code4_ = to_title(fixed_string<4>{code4});
 
     ttlet it = std::lower_bound(
         iso_15924_number_by_code4.begin(), iso_15924_number_by_code4.end(), code4_, [](ttlet &item, ttlet &value) {
             return item.first < value;
         });
 
-    if (it == iso_15924_number_by_code4.end()) {
+    if (it == iso_15924_number_by_code4.end() or it->first != code4_) {
         throw parse_error("Unknown script '{}'", code4);
     }
     
