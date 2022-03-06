@@ -6,39 +6,37 @@
 #include "../unicode/unicode_script.hpp"
 #include "../cast.hpp"
 #include "../fixed_string.hpp"
+#include "../exception.hpp"
 #include <array>
 
 namespace tt::inline v1 {
 using enum unicode_script;
 
 struct iso_15924_info {
-    fixed_string<4> code;
-    fixed_string<4> open_type;
+    fixed_string<4> code4;
+    fixed_string<4> code4_open_type;
     tt::unicode_script unicode_script;
-    uint16_t nr;
-
+    uint16_t number;
 
     constexpr iso_15924_info(
-        char const (&code)[5],
-        char const (&open_type)[5],
+        char const (&code4)[5],
+        char const (&code4_open_type)[5],
         tt::unicode_script unicode_script,
-        uint16_t nr) noexcept :
-        code{to_title(basic_fixed_string(code))}, open_type{code}, unicode_script(unicode_script), nr(nr)
+        uint16_t number) noexcept :
+        code4{to_title(basic_fixed_string(code4))}, code4_open_type{code4}, unicode_script(unicode_script), number(number)
     {
     }
 
-    constexpr iso_15924_info() noexcept :
-        iso_15924_info("zzzz", Unknown, 999)
-    {
-    }
+    constexpr iso_15924_info() noexcept : iso_15924_info("zzzz", Unknown, 999) {}
 
-    constexpr iso_15924_info(char const (&code)[5], tt::unicode_script unicode_script, uint16_t nr) noexcept :
-        iso_15924_info(code, code, unicode_script, nr)
+    constexpr iso_15924_info(char const (&code4)[5], tt::unicode_script unicode_script, uint16_t number) noexcept :
+        iso_15924_info(code4, code4, unicode_script, number)
     {
     }
 };
 
-constexpr std::array iso_15924_by_code = {
+constexpr std::array iso_15924_infos = {
+#ifndef __INTELLISENSE__
     iso_15924_info{"adlm", Adlam, 166},
     iso_15924_info{"afak", Afaka, 439},
     iso_15924_info{"aghb", Caucasian_Albanian, 239},
@@ -250,61 +248,99 @@ constexpr std::array iso_15924_by_code = {
     iso_15924_info{"zsym", Symbols, 996},
     iso_15924_info{"zxxx", Unwritten_Documents, 997},
     iso_15924_info{"zyyy", "DFLT", Common, 998},
+#endif
     iso_15924_info{"zzzz", Unknown, 999}};
 
-constexpr auto iso_15924_code_by_nr_init() noexcept
+constexpr auto iso_15924_code4_by_number_init() noexcept
 {
     auto r = std::array<fixed_string<4>, 1000>{};
 
-    for (ttlet &info : iso_15924_by_code) {
-        r[info.nr] = info.code;
+    for (ttlet &info : iso_15924_infos) {
+        r[info.number] = info.code4;
     }
 
     return r;
 }
 
-constexpr auto iso_15924_open_type_by_nr_init() noexcept
+constexpr auto iso_15924_code4_open_type_by_number_init() noexcept
 {
     auto r = std::array<fixed_string<4>, 1000>{};
 
-    for (ttlet &info : iso_15924_by_code) {
-        r[info.nr] = info.open_type;
+    for (ttlet &info : iso_15924_infos) {
+        r[info.number] = info.code4_open_type;
     }
 
     return r;
 }
 
-constexpr auto iso_15924_nr_by_unicode_script_init() noexcept
+constexpr auto iso_15924_number_by_unicode_script_init() noexcept
 {
     auto r = std::array<uint16_t, 256>{};
 
-    for (auto &item: r) {
+    for (auto &item : r) {
         item = 0;
     }
 
-    for (ttlet &info : iso_15924_by_code) {
-        r[to_underlying(info.unicode_script)] = info.nr;
+    for (ttlet &info : iso_15924_infos) {
+        r[to_underlying(info.unicode_script)] = info.number;
     }
 
     return r;
 }
 
-constexpr auto iso_15924_code_by_nr = iso_15924_code_by_nr_init();
-constexpr auto iso_15924_open_type_by_nr = iso_15924_open_type_by_nr_init();
-constexpr auto iso_15924_nr_by_unicode_script = iso_15924_nr_by_unicode_script_init();
-
-iso_15924::iso_15924(tt::unicode_script const &script) noexcept : _v(iso_15924_nr_by_unicode_script[to_underlying(script)]) {}
-
-[[nodiscard]] std::string_view iso_15924::code() const noexcept
+constexpr auto iso_15924_number_by_code4_init() noexcept
 {
-    tt_axiom(_v < 1000);
-    return static_cast<std::string_view>(iso_15924_code_by_nr[_v]);
+    constexpr size_t array_size = std::tuple_size_v<decltype(iso_15924_infos)>;
+    using record_type = std::pair<fixed_string<4>, uint16_t>;
+
+    auto r = std::array<record_type, array_size>{};
+    for (auto i = 0_uz; i != iso_15924_infos.size(); ++i) {
+        r[i] = {iso_15924_infos[i].code4, iso_15924_infos[i].number};
+    }
+    std::sort(r.begin(), r.end(), [](ttlet &a, ttlet &b) {
+        return a.first < b.first;
+    });
+
+    return r;
 }
 
-[[nodiscard]] std::string_view iso_15924::open_type() const noexcept
+constexpr auto iso_15924_code4_by_number = iso_15924_code4_by_number_init();
+constexpr auto iso_15924_code4_open_type_by_number = iso_15924_code4_open_type_by_number_init();
+constexpr auto iso_15924_number_by_unicode_script = iso_15924_number_by_unicode_script_init();
+constexpr auto iso_15924_number_by_code4 = iso_15924_number_by_code4_init();
+
+iso_15924::iso_15924(tt::unicode_script const &script) noexcept : _v(iso_15924_number_by_unicode_script[to_underlying(script)]) {}
+
+iso_15924::iso_15924(std::string_view code4)
+{
+    if (code4.size() != 4) {
+        throw parse_error("Invalid script '{}'", code4);
+    }
+
+    ttlet code4_ = to_title(fixed_string{code4});
+
+    ttlet it = std::lower_bound(
+        iso_15924_number_by_code4.begin(), iso_15924_number_by_code4.end(), code4_, [](ttlet &item, ttlet &value) {
+            return item.first < value;
+        });
+
+    if (it == iso_15924_number_by_code4.end()) {
+        throw parse_error("Unknown script '{}'", code4);
+    }
+    
+    _v = it->second;
+}
+
+[[nodiscard]] std::string_view iso_15924::code4() const noexcept
 {
     tt_axiom(_v < 1000);
-    return static_cast<std::string_view>(iso_15924_open_type_by_nr[_v]);
+    return static_cast<std::string_view>(iso_15924_code4_by_number[_v]);
+}
+
+[[nodiscard]] std::string_view iso_15924::code4_open_type() const noexcept
+{
+    tt_axiom(_v < 1000);
+    return static_cast<std::string_view>(iso_15924_code4_open_type_by_number[_v]);
 }
 
 } // namespace tt::inline v1

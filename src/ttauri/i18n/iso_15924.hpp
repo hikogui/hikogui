@@ -4,11 +4,10 @@
 
 #pragma once
 
-#include "../assert.hpp"
-#include "../strings.hpp"
+#include "../exception.hpp"
 #include "../unicode/unicode_script.hpp"
 #include <string_view>
-#include <cctype>
+#include <cstdint>
 
 namespace tt::inline v1 {
 
@@ -23,8 +22,14 @@ public:
     constexpr iso_15924 &operator=(iso_15924 const &) noexcept = default;
     constexpr iso_15924 &operator=(iso_15924 &&) noexcept = default;
 
-    constexpr iso_15924(uint16_t number) noexcept : _v(number) {}
+    constexpr iso_15924(uint16_t number) : _v(number) {
+        if (number > 999) {
+            throw parse_error("Invalid script number '{}'", number);
+        }
+    }
+
     iso_15924(unicode_script const &script) noexcept;
+    iso_15924(std::string_view code4);
 
     [[nodiscard]] constexpr bool empty() const noexcept
     {
@@ -44,11 +49,11 @@ public:
 
     /** Get the iso-15924 4-letter code.
      */
-    [[nodiscard]] std::string_view code() const noexcept;
+    [[nodiscard]] std::string_view code4() const noexcept;
 
     /** Get the 4-letter code used by open-type.
      */
-    [[nodiscard]] std::string_view open_type() const noexcept;
+    [[nodiscard]] std::string_view code4_open_type() const noexcept;
 
     [[nodiscard]] constexpr friend bool operator==(iso_15924 const &lhs, iso_15924 const &rhs) noexcept = default;
 

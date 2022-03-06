@@ -150,7 +150,10 @@ struct basic_fixed_string {
         return r;
     }
 
-    [[nodiscard]] friend constexpr bool operator==(basic_fixed_string const &lhs, basic_fixed_string const &rhs) noexcept = default;
+    [[nodiscard]] friend constexpr bool
+    operator==(basic_fixed_string const &lhs, basic_fixed_string const &rhs) noexcept = default;
+    [[nodiscard]] friend constexpr auto
+    operator<=>(basic_fixed_string const &lhs, basic_fixed_string const &rhs) noexcept = default;
 
     [[nodiscard]] friend constexpr bool
     operator==(std::basic_string_view<value_type> const &lhs, basic_fixed_string const &rhs) noexcept
