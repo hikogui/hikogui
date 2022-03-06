@@ -11,8 +11,6 @@
 namespace tt::inline v1 {
 
 /** ISO-3166 country code.
- * ISO-3166-1 alpha-2 (upper-case)
- * nul, nul means empty.
  */
 class iso_3166 {
 public:
@@ -21,48 +19,33 @@ public:
     constexpr iso_3166 &operator=(iso_3166 const &) noexcept = default;
     constexpr iso_3166 &operator=(iso_3166 &&) noexcept = default;
 
-    constexpr iso_3166() noexcept : v0(0), v1(0) {}
+    constexpr iso_3166() noexcept : _v(999) {}
 
-    constexpr iso_3166(std::string_view str) noexcept
+    iso_3166(std::string_view str) noexcept;
+
+    constexpr bool empty() const noexcept
     {
-        if (size(str) == 0) {
-            _v0 = 0;
-            _v1 = 0;
-        } else if (size(str) == 2) {
-            _v0 = to_upper(str[0]);
-            _v1 = to_upper(str[1]);
-        } else {
-            tt_no_default();
-        }
+        return _v == 999;
     }
-
+    
     constexpr explicit operator bool() const noexcept
     {
-        return _v0 == 0 and _v1 == 0;
+        return not empty();
     }
 
-    constexpr explicit operator std::string() const noexcept
+    constexpr uint16_t number() const noexcept
     {
-        auto r = std::string{};
-        if (_v0 == 0) {
-            return r;
-        }
-
-        r += _v0;
-        if (_v1 == 0) {
-            return r;
-        }
-
-        r += _v1;
-        return r;
+        return _v;
     }
+
+    constexpr std::string_view code2() const noexcept;
+    constexpr std::string_view code3() const noexcept;
 
     [[nodiscard]] constexpr friend operator==(iso_3166 const &lhs, iso_3166 const &rhs) noexcept = default;
     [[nodiscard]] constexpr friend operator<=>(iso_3166 const &lhs, iso_3166 const &rhs) noexcept = default;
 
 private:
-    char _v0;
-    char _v1;
+    uint16_t _v;
 };
 
 } // namespace tt::inline v1
