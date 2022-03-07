@@ -110,40 +110,32 @@ template<typename T, std::endian E, std::size_t A = alignof(T)>
 struct endian_buf_t {
     alignas(A) std::byte _value[sizeof(T)];
 
-    endian_buf_t &operator=(T x) noexcept
+    [[nodiscard]] T value() const noexcept
     {
-        T aligned_value;
-        if constexpr (E == std::endian::native) {
-            aligned_value = x;
-        } else {
-            aligned_value = byte_swap(x);
+        T x;
+        std::memcpy(&x, &_value[0], sizeof(T));
+
+        return E == std::endian::native ? x : byte_swap(x);
+    }
+
+    endian_buf_t &set_value(T x) noexcept
+    {
+        if constexpr (E != std::endian::native) {
+            x = byte_swap(x);
         }
-        std::memcpy(&_value[0], &aligned_value, sizeof(T));
+
+        std::memcpy(&_value[0], &x, sizeof(T));
         return *this;
     }
 
-    [[nodiscard]] T value() const noexcept
+    endian_buf_t &operator=(T x) noexcept
     {
-        T aligned_value;
-        std::memcpy(&aligned_value, &_value[0], sizeof(T));
-
-        if constexpr (E == std::endian::native) {
-            return aligned_value;
-        } else {
-            return byte_swap(aligned_value);
-        }
+        return set_value(x);
     }
 
     operator T() const noexcept
     {
-        T aligned_value;
-        std::memcpy(&aligned_value, &_value[0], sizeof(T));
-
-        if constexpr (E == std::endian::native) {
-            return aligned_value;
-        } else {
-            return byte_swap(aligned_value);
-        }
+        return value();
     }
 };
 

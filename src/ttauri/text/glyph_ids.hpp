@@ -72,7 +72,7 @@ public:
         std::size_t r = 0;
 
         for (auto i = 0_uz; i != _num_glyphs; ++i) {
-            r ^= _glyphs[i];
+            r ^= *_glyphs[i];
             r ^= std::rotl(r, 16);
         }
 

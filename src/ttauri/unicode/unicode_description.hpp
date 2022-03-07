@@ -13,6 +13,7 @@
 #include "unicode_sentence_break.hpp"
 #include "unicode_east_asian_width.hpp"
 #include "unicode_decomposition_type.hpp"
+#include "unicode_script.hpp"
 #include "../required.hpp"
 #include "../assert.hpp"
 #include "../cast.hpp"
@@ -91,11 +92,12 @@ public:
         unicode_word_break_property word_break_property,
         unicode_sentence_break_property sentence_break_property,
         unicode_east_asian_width east_asian_width,
+        unicode_script script,
         unicode_bidi_class bidi_class,
         unicode_bidi_bracket_type bidi_bracket_type,
         char32_t bidi_mirrored_glyph,
         unicode_decomposition_type decomposition_type,
-        bool composition_canonical,
+        bool is_canonical_composition,
         uint8_t canonical_combining_class,
         uint8_t decomposition_length,
         uint32_t decomposition_index,
@@ -104,20 +106,38 @@ public:
             (static_cast<uint32_t>(code_point) << code_point_shift) |
             (static_cast<uint32_t>(general_category) << general_category_shift) |
             (static_cast<uint32_t>(grapheme_cluster_break) << grapheme_cluster_break_shift) |
-            static_cast<uint32_t>(bidi_bracket_type) << bidi_bracket_type_shift),
+            (static_cast<uint32_t>(is_canonical_composition) << is_canonical_composition_shift) |
+            (static_cast<uint32_t>(canonical_combining_class != 0) << is_combining_mark_shift)),
         _bidi_class(to_underlying(bidi_class)),
-        _bidi_mirrored_glyph(0),
         _east_asian_width(static_cast<uint32_t>(east_asian_width)),
-        _composition_canonical(static_cast<uint32_t>(composition_canonical)),
-        _canonical_combining_class(static_cast<uint32_t>(canonical_combining_class)),
         _line_break_class(to_underlying(line_break_class)),
         _word_break_property(to_underlying(word_break_property)),
         _sentence_break_property(to_underlying(sentence_break_property)),
         _decomposition_index(static_cast<uint32_t>(decomposition_index)),
         _decomposition_type(static_cast<uint32_t>(decomposition_type)),
-        _decomposition_length(static_cast<uint32_t>(decomposition_length)),
-        _non_starter_code(static_cast<uint32_t>(non_starter_code))
+        _decomposition_length(static_cast<uint32_t>(decomposition_length))
     {
+        // Check if the delta fits.
+        if (canonical_combining_class == 0) {
+            _non_mark.bidi_bracket_type = static_cast<uint32_t>(bidi_bracket_type);
+            _non_mark.script = static_cast<uint32_t>(script);
+
+            if (bidi_bracket_type != unicode_bidi_bracket_type::n and bidi_mirrored_glyph != char32_t{0xffff}) {
+                auto mirrored_glyph_delta = static_cast<int32_t>(bidi_mirrored_glyph) - static_cast<int32_t>(code_point);
+                tt_axiom(mirrored_glyph_delta >= bidi_mirrored_glyph_min and mirrored_glyph_delta <= bidi_mirrored_glyph_max);
+                _non_mark.bidi_mirrored_glyph = static_cast<uint32_t>(mirrored_glyph_delta) & bidi_mirrored_glyph_mask;
+
+            } else {
+                _non_mark.bidi_mirrored_glyph = bidi_mirrored_glyph_null;
+            }
+            _non_mark._reserved = 0;
+
+        } else {
+            _mark.canonical_combining_class = canonical_combining_class;
+            _mark.non_starter_code = static_cast<uint32_t>(non_starter_code);
+            _mark._reserved = 0;
+        }
+
         tt_axiom(code_point <= 0x10ffff);
         tt_axiom(to_underlying(general_category) <= 0x1f);
         tt_axiom(to_underlying(grapheme_cluster_break) <= 0x0f);
@@ -125,21 +145,10 @@ public:
         tt_axiom(to_underlying(word_break_property) <= 0x1f);
         tt_axiom(to_underlying(sentence_break_property) <= 0xf);
         tt_axiom(to_underlying(east_asian_width) <= 0x7);
+        tt_axiom(to_underlying(script) <= 0xff);
         tt_axiom(to_underlying(bidi_class) <= 0x1f);
         tt_axiom(to_underlying(bidi_bracket_type) <= 0x03);
         tt_axiom(static_cast<uint32_t>(bidi_mirrored_glyph) <= 0x10ffff);
-
-        // Check if the delta fits.
-        if (bidi_bracket_type != unicode_bidi_bracket_type::n) {
-            if (bidi_mirrored_glyph == char32_t{0xffff}) {
-                _bidi_mirrored_glyph = bidi_mirrored_glyph_null;
-            } else {
-                auto mirrored_glyph_delta = static_cast<int32_t>(bidi_mirrored_glyph) - static_cast<int32_t>(code_point);
-                tt_axiom(mirrored_glyph_delta >= bidi_mirrored_glyph_min and mirrored_glyph_delta <= bidi_mirrored_glyph_max);
-                _bidi_mirrored_glyph = static_cast<uint32_t>(mirrored_glyph_delta) & bidi_mirrored_glyph_mask;
-            }
-        }
-
         tt_axiom(static_cast<uint32_t>(canonical_combining_class) <= 0xff);
         tt_axiom(to_underlying(decomposition_type) <= 0x7);
         tt_axiom(static_cast<uint32_t>(decomposition_length) <= 0x1f);
@@ -152,17 +161,18 @@ public:
         auto r = unicode_description{};
         r._general_info = other._general_info;
         r._bidi_class = other._bidi_class;
-        r._bidi_mirrored_glyph = other._bidi_mirrored_glyph;
+        if (other.is_combining_mark()) {
+            r._mark = other._mark;
+        } else {
+            r._non_mark = other._non_mark;
+        }
         r._east_asian_width = other._east_asian_width;
-        r._composition_canonical = other._composition_canonical;
-        r._canonical_combining_class = other._canonical_combining_class;
         r._line_break_class = other._line_break_class;
         r._word_break_property = other._word_break_property;
         r._sentence_break_property = other._sentence_break_property;
         r._decomposition_index = other._decomposition_index;
         r._decomposition_type = other._decomposition_type;
         r._decomposition_length = other._decomposition_length;
-        r._non_starter_code = other._non_starter_code;
 
         r._general_info &= ~(general_category_mask << general_category_shift);
         r._general_info |= static_cast<uint32_t>(to_underlying(unicode_general_category::Cn)) << general_category_shift;
@@ -177,6 +187,17 @@ public:
         return static_cast<char32_t>((_general_info >> code_point_shift) & code_point_mask);
     }
 
+    /** The general category of this code-point.
+     * This function is used to determine what kind of code-point this,
+     * this allows you to determine if the code-point is a letter, number, punctuation, white-space, etc.
+     *
+     * @return The general category of this code-point
+     */
+    [[nodiscard]] constexpr unicode_general_category general_category() const noexcept
+    {
+        return static_cast<unicode_general_category>((_general_info >> general_category_shift) & general_category_mask);
+    }
+
     /** The grapheme cluster break of this code-point.
      * This function is used to determine where to break a string of code-points
      * into grapheme clusters.
@@ -187,6 +208,16 @@ public:
     {
         return static_cast<unicode_grapheme_cluster_break>(
             (_general_info >> grapheme_cluster_break_shift) & grapheme_cluster_break_mask);
+    }
+
+    [[nodiscard]] constexpr bool is_canonical_composition() const noexcept
+    {
+        return static_cast<bool>((_general_info >> is_canonical_composition_shift) & is_canonical_composition_mask);
+    }
+
+    [[nodiscard]] constexpr bool is_combining_mark() const noexcept
+    {
+        return static_cast<bool>((_general_info >> is_combining_mark_shift) & is_combining_mark_mask);
     }
 
     [[nodiscard]] constexpr unicode_line_break_class line_break_class() const noexcept
@@ -209,17 +240,6 @@ public:
         return static_cast<unicode_east_asian_width>(_east_asian_width);
     }
 
-    /** The general category of this code-point.
-     * This function is used to determine what kind of code-point this,
-     * this allows you to determine if the code-point is a letter, number, punctuation, white-space, etc.
-     *
-     * @return The general category of this code-point
-     */
-    [[nodiscard]] constexpr unicode_general_category general_category() const noexcept
-    {
-        return static_cast<unicode_general_category>((_general_info >> general_category_shift) & general_category_mask);
-    }
-
     /** The bidi class of this code-point
      * This function is used by the bidirectional algorithm to figure out if the code-point
      * represents a character that is written left-to-right or right-to-left.
@@ -231,6 +251,17 @@ public:
         return static_cast<unicode_bidi_class>(_bidi_class);
     }
 
+    /** Get the script of this character.
+     */
+    [[nodiscard]] constexpr unicode_script script() const noexcept
+    {
+        if (is_combining_mark()) {
+            return unicode_script::Common;
+        } else {
+            return static_cast<unicode_script>(_non_mark.script);
+        }
+    }
+
     /** Get the bidi bracket type.
      * This function is used by the bidirectional algorithm for mirroring characters
      * when needing to reverse the writing direction.
@@ -239,10 +270,10 @@ public:
      */
     [[nodiscard]] constexpr unicode_bidi_bracket_type bidi_bracket_type() const noexcept
     {
-        if (canonical_combining_class() == 0) {
-            return static_cast<unicode_bidi_bracket_type>((_general_info >> bidi_bracket_type_shift) & bidi_bracket_type_mask);
-        } else {
+        if (is_combining_mark()) {
             return unicode_bidi_bracket_type::n;
+        } else {
+            return static_cast<unicode_bidi_bracket_type>(_non_mark.bidi_bracket_type);
         }
     }
 
@@ -251,16 +282,17 @@ public:
      */
     [[nodiscard]] constexpr char32_t bidi_mirrored_glyph() const noexcept
     {
-        if (bidi_bracket_type() != unicode_bidi_bracket_type::n and _bidi_mirrored_glyph != bidi_mirrored_glyph_null) {
-            constexpr auto sign_extent_shift = 32 - bidi_mirrored_glyph_width;
-
-            ttlet mirrored_glyph_delta = static_cast<int32_t>(_bidi_mirrored_glyph << sign_extent_shift) >> sign_extent_shift;
-            ttlet cp = code_point();
-            ttlet mirror_cp = static_cast<char32_t>(cp + mirrored_glyph_delta);
-            return mirror_cp;
-        } else {
-            return static_cast<char32_t>(0xffff);
+        if (bidi_bracket_type() == unicode_bidi_bracket_type::n or _non_mark.bidi_mirrored_glyph == bidi_mirrored_glyph_null) {
+            return 0xffff;
         }
+
+        constexpr auto sign_extent_shift = 32 - bidi_mirrored_glyph_width;
+
+        ttlet mirrored_glyph_delta =
+            static_cast<int32_t>(_non_mark.bidi_mirrored_glyph << sign_extent_shift) >> sign_extent_shift;
+        ttlet cp = code_point();
+        ttlet mirror_cp = static_cast<char32_t>(cp + mirrored_glyph_delta);
+        return mirror_cp;
     }
 
     /** This character has a canonical decomposition.
@@ -269,14 +301,6 @@ public:
     [[nodiscard]] constexpr unicode_decomposition_type decomposition_type() const noexcept
     {
         return static_cast<unicode_decomposition_type>(_decomposition_type);
-    }
-
-    /** This character has a canonical composition.
-     * @return When true the decomposition_index() points into the composition table.
-     */
-    [[nodiscard]] constexpr bool composition_canonical() const noexcept
-    {
-        return static_cast<bool>(_composition_canonical);
     }
 
     /** Get the combining class.
@@ -290,7 +314,11 @@ public:
      */
     [[nodiscard]] constexpr uint8_t canonical_combining_class() const noexcept
     {
-        return static_cast<uint8_t>(_canonical_combining_class);
+        if (is_combining_mark()) {
+            return static_cast<uint8_t>(_mark.canonical_combining_class);
+        } else {
+            return 0;
+        }
     }
 
     /** The number of code-points the decomposed grapheme has.
@@ -349,8 +377,8 @@ public:
      */
     [[nodiscard]] constexpr size_t non_starter_code() const noexcept
     {
-        tt_axiom(_canonical_combining_class != 0);
-        return static_cast<size_t>(_non_starter_code);
+        tt_axiom(is_combining_mark());
+        return static_cast<size_t>(_mark.non_starter_code);
     }
 
     /** Find a code-point in the global unicode_description table.
@@ -426,8 +454,11 @@ private:
     static constexpr uint32_t general_category_mask = 0x1f;
     static constexpr uint32_t grapheme_cluster_break_shift = 2;
     static constexpr uint32_t grapheme_cluster_break_mask = 0xf;
-    static constexpr uint32_t bidi_bracket_type_shift = 0;
-    static constexpr uint32_t bidi_bracket_type_mask = 0x3;
+    static constexpr uint32_t is_canonical_composition_shift = 1;
+    static constexpr uint32_t is_canonical_composition_mask = 0x1;
+    static constexpr uint32_t is_combining_mark_shift = 0;
+    static constexpr uint32_t is_combining_mark_mask = 0x1;
+
     static constexpr uint32_t bidi_mirrored_glyph_mask = 0x1fff;
     static constexpr uint32_t bidi_mirrored_glyph_width = std::bit_width(bidi_mirrored_glyph_mask);
     static constexpr int32_t bidi_mirrored_glyph_max = static_cast<int32_t>(bidi_mirrored_glyph_mask >> 1);
@@ -441,21 +472,36 @@ private:
     // [31:11] code-point
     // [10:6] general category
     // [5:2] grapheme cluster break
-    // [1:0] bidi bracket type (when CCC == 0)
+    // [1] is_canonical_composition
+    // [0] is_combining_mark
     uint32_t _general_info;
 
     // 2nd dword
     uint32_t _bidi_class : 5;
-    uint32_t _bidi_mirrored_glyph : 13; // _bidi_mirrored_glyph when _bidi_bracket_type != n
-    uint32_t _composition_canonical : 1;
-    uint32_t _canonical_combining_class : 8;
     uint32_t _word_break_property : 5;
-
-    // 3rd dword
     uint32_t _line_break_class : 6;
     uint32_t _sentence_break_property : 4;
-    uint32_t _non_starter_code : 10; // _non_starter_code when _canonical_combining_class != 0
-    uint32_t _word3_reserved : 12 = 0;
+    uint32_t _word2_reserved : 12 = 0;
+
+    struct mark_type {
+        uint32_t canonical_combining_class : 8;
+        uint32_t non_starter_code : 10;
+        uint32_t _reserved : 14;
+    };
+
+    struct non_mark_type {
+        uint32_t bidi_mirrored_glyph : 13;
+        uint32_t bidi_bracket_type : 2;
+        uint32_t script : 8;
+        uint32_t _reserved : 9;
+    };
+
+    // 3rd dword
+    union {
+        mark_type _mark;
+        non_mark_type _non_mark;
+        uint32_t _word3 = 0;
+    };
 
     // 4th dword
     uint32_t _decomposition_index : 21;

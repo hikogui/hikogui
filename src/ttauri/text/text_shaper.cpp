@@ -186,8 +186,9 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
     tt::font_book &font_book,
     gstring const &text,
     text_style const &style,
-    float dpi_scale) noexcept :
-    _font_book(&font_book), _dpi_scale(dpi_scale)
+    float dpi_scale,
+    unicode_script script) noexcept :
+    _font_book(&font_book), _dpi_scale(dpi_scale), _script(script)
 {
     ttlet &font = font_book.find_font(style.family_id, style.variant);
     _initial_line_metrics = (style.size * dpi_scale) * font.metrics;
@@ -219,14 +220,17 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
         tt_axiom(c.description != nullptr);
         return *c.description;
     });
+
+    resolve_script();
 }
 
 [[nodiscard]] text_shaper::text_shaper(
     font_book &font_book,
     std::string_view text,
     text_style const &style,
-    float dpi_scale) noexcept :
-    text_shaper(font_book, to_gstring(text), style, dpi_scale)
+    float dpi_scale,
+    unicode_script script) noexcept :
+    text_shaper(font_book, to_gstring(text), style, dpi_scale, script)
 {
 }
 
@@ -284,6 +288,59 @@ void text_shaper::position_glyphs(
     for (auto &line : _lines) {
         // Position the glyphs on each line. Possibly morph glyphs to handle ligatures and calculate the bounding rectangles.
         line.layout(horizontal_alignment, rectangle.left(), rectangle.right(), sub_pixel_size.width());
+    }
+}
+
+void text_shaper::resolve_script() noexcept
+{
+    // Find the first script in the text if no script is found use the text_shaper's default script.
+    auto first_script = _script;
+    for (auto &c : _text) {
+        ttlet script = c.description->script();
+        if (script != unicode_script::Common or script == unicode_script::Unknown or script == unicode_script::Inherited) {
+            first_script = script;
+            break;
+        }
+    }
+
+    // Backward pass: fix start of words and open-brackets.
+    // After this pass unknown-script is no longer in the text.
+    // Close brackets will not be fixed, those will be fixed in the last forward pass.
+    auto word_script = unicode_script::Common;
+    auto previous_script = first_script;
+    for (auto i = std::ssize(_text) - 1; i >= 0; --i) {
+        auto &c = _text[i];
+
+        if (_word_break_opportunities[i + 1] != unicode_break_opportunity::no) {
+            word_script = unicode_script::Common;
+        }
+
+        c.script = c.description->script();
+        if (c.script == unicode_script::Common or c.script == unicode_script::Unknown) {
+            ttlet bracket_type = c.description->bidi_bracket_type();
+            // clang-format off
+            c.script =
+                bracket_type == unicode_bidi_bracket_type::o ? previous_script :
+                bracket_type == unicode_bidi_bracket_type::c ? unicode_script::Common :
+                word_script;
+            // clang-format on
+
+        } else if (c.script != unicode_script::Inherited) {
+            previous_script = word_script = c.script;
+        }
+    }
+
+    // Forward pass: fix all common and inherited with previous or first script.
+    previous_script = first_script;
+    for (auto i = 0_uz; i != _text.size(); ++i) {
+        auto &c = _text[i];
+
+        if (c.script == unicode_script::Common or c.script == unicode_script::Inherited) {
+            c.script = previous_script;
+
+        } else {
+            previous_script = c.script;
+        }
     }
 }
 

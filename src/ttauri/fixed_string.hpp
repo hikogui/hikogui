@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "required.hpp"
+#include "strings.hpp"
 #include <string>
 #include <string_view>
 #include <format>
@@ -31,72 +33,197 @@ template<typename CharT, int N>
 struct basic_fixed_string {
     using value_type = CharT;
 
-    CharT _str[N];
+    value_type _str[N];
+
+    constexpr basic_fixed_string() noexcept : _str()
+    {
+        for (auto i = 0_uz; i != N; ++i) {
+            _str[i] = value_type{};
+        }
+    }
 
     constexpr basic_fixed_string(basic_fixed_string const &) noexcept = default;
     constexpr basic_fixed_string(basic_fixed_string &&) noexcept = default;
     constexpr basic_fixed_string &operator=(basic_fixed_string const &) noexcept = default;
     constexpr basic_fixed_string &operator=(basic_fixed_string &&) noexcept = default;
 
-    [[nodiscard]] constexpr basic_fixed_string() noexcept : _str()
+    template<std::size_t O>
+    constexpr basic_fixed_string(basic_fixed_string<value_type,O> const &other) noexcept requires (O < N)
     {
-        for (std::size_t i = 0; i != N; ++i) {
-            _str[i] = CharT{};
+        auto i = 0_uz;
+        for (; i != O; ++i) {
+            _str[i] = other._str[i];
+        }
+        for (; i != N; ++i) {
+            _str[i] = value_type{};
         }
     }
 
-    [[nodiscard]] constexpr basic_fixed_string(CharT const (&str)[N]) noexcept : _str()
+    template<std::size_t O>
+    constexpr basic_fixed_string &operator=(basic_fixed_string<value_type, O> const &other) noexcept requires(O < N)
     {
-        for (std::size_t i = 0; i != N; ++i) {
+        auto i = 0_uz;
+        for (; i != O; ++i) {
+            _str[i] = other._str[i];
+        }
+        for (; i != N; ++i) {
+            _str[i] = value_type{};
+        }
+        return *this;
+    }
+
+    template<std::size_t O>
+    constexpr basic_fixed_string(value_type const (&str)[O]) noexcept : _str()
+    {
+        static_assert((O - 1) <= N);
+
+        auto i = 0_uz;
+        for (; i != (O - 1); ++i) {
             _str[i] = str[i];
         }
+        for (; i != N; ++i) {
+            _str[i] = value_type{};
+        }
     }
 
-    [[nodiscard]] operator std::basic_string_view<CharT>() const noexcept
+    template<std::size_t O>
+    constexpr basic_fixed_string &operator=(value_type const (&str)[O]) noexcept : _str()
     {
-        return std::basic_string_view<CharT>{data(), size()};
+        static_assert((O - 1) <= N);
+
+        auto i = 0_uz;
+        for (; i != (O - 1); ++i) {
+            _str[i] = str[i];
+        }
+        for (; i != N; ++i) {
+            _str[i] = value_type{};
+        }
+        return *this;
     }
 
-    [[nodiscard]] constexpr auto begin() const noexcept
+    constexpr explicit basic_fixed_string(std::basic_string_view<value_type> str) noexcept
     {
-        return &_str[0];
+        tt_axiom(str.size() <= N);
+
+        auto i = 0_uz;
+        for (; i != str.size(); ++i) {
+            _str[i] = str[i];
+        }
+        for (; i != N; ++i) {
+            _str[i] = value_type{};
+        }
     }
 
-    [[nodiscard]] constexpr auto end() const noexcept
+    constexpr explicit basic_fixed_string(std::basic_string<value_type> const &str) noexcept
     {
-        return &_str[N];
+        tt_axiom(str.size() <= N);
+
+        auto i = 0_uz;
+        for (; i != str.size(); ++i) {
+            _str[i] = str[i];
+        }
+        for (; i != N; ++i) {
+            _str[i] = value_type{};
+        }
+    }
+
+    /** Initialize the string from a nul-terminated c-string.
+     */
+    constexpr explicit basic_fixed_string(value_type const *str) noexcept
+    {
+        auto i = 0_uz;
+        for (; i != N and str[i] != value_type{}; ++i) {
+            _str[i] = str[i];
+        }
+
+        tt_axiom(str[i] == value_type{});
+
+        for (; i != N; ++i) {
+            _str[i] = value_type{};
+        }
+    }
+
+    operator std::basic_string_view<value_type>() const noexcept
+    {
+        return std::basic_string_view<value_type>{_str, size()};
     }
 
     [[nodiscard]] constexpr std::size_t size() const noexcept
     {
-        return N - 1;
+        for (auto i = 0_uz; i != N; ++i) {
+            if (_str[i] == value_type{}) {
+                return i;
+            }
+        }
+        return N;
     }
 
-    [[nodiscard]] constexpr friend std::size_t size(basic_fixed_string const &rhs) noexcept
-    {
-        return rhs.size();
-    }
-
-    [[nodiscard]] constexpr CharT const *data() const noexcept
-    {
-        return &_str[0];
-    }
-
-    [[nodiscard]] constexpr CharT const *c_str() const noexcept
+    [[nodiscard]] constexpr value_type *begin() noexcept
     {
         return &_str[0];
     }
 
-    [[nodiscard]] friend bool operator==(basic_fixed_string const &lhs, basic_fixed_string const &rhs) noexcept = default;
+    [[nodiscard]] constexpr value_type *end() noexcept
+    {
+        return &_str[N];
+    }
+
+    /** Convert the current string to using title case.
+    * 
+    * This function does not do full unicode case conversion;
+    * only ASCII letters [a-zA-Z] will be modified.
+    */
+    [[nodiscard]] friend constexpr basic_fixed_string to_title(basic_fixed_string const &rhs) noexcept
+    {
+        auto r = rhs;
+
+        bool first = true;
+        for (auto &c: r) {
+            if (first) {
+                c = to_upper(c);
+                first = false;
+            } else if (c == ' ') {
+                first = true;
+            } else {
+                c = to_lower(c);
+            }
+        }
+
+        return r;
+    }
+
+    [[nodiscard]] friend constexpr bool
+    operator==(basic_fixed_string const &lhs, basic_fixed_string const &rhs) noexcept = default;
+    [[nodiscard]] friend constexpr auto
+    operator<=>(basic_fixed_string const &lhs, basic_fixed_string const &rhs) noexcept = default;
+
+    [[nodiscard]] friend constexpr bool
+    operator==(std::basic_string_view<value_type> const &lhs, basic_fixed_string const &rhs) noexcept
+    {
+        return lhs == static_cast<decltype(lhs)>(rhs);
+    }
+
+    [[nodiscard]] friend constexpr bool
+    operator==(basic_fixed_string const &lhs, std::basic_string_view<value_type> const &rhs) noexcept
+    {
+        return static_cast<decltype(rhs)>(lhs) == rhs;
+    }
 };
 
-template<typename CharT>
-[[nodiscard]] constexpr std::size_t basic_fixed_string_length_(CharT const *str) noexcept
-{
-    std::size_t i = 0;
-    while (str[i++] != CharT{}) {}
-    return i;
-}
+template<std::size_t N>
+using fixed_string = basic_fixed_string<char, N>;
+
+//template<typename CharT>
+//[[nodiscard]] constexpr std::size_t basic_fixed_string_length_(CharT const *str) noexcept
+//{
+//    std::size_t i = 0;
+//    while (str[i++] != CharT{}) {}
+//    return i;
+//}
+
+
+template<typename CharT, std::size_t N>
+basic_fixed_string(CharT const (&str)[N]) -> basic_fixed_string<CharT, N - 1>;
 
 } // namespace tt::inline v1
 

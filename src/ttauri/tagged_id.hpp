@@ -34,14 +34,12 @@ public:
     constexpr tagged_id &operator=(tagged_id const &other) noexcept = default;
     constexpr tagged_id &operator=(tagged_id &&other) noexcept = default;
 
-    template<std::integral O>
-    constexpr explicit tagged_id(O rhs) noexcept : value(narrow_cast<value_type>(rhs))
+    constexpr explicit tagged_id(numeric_integral auto rhs) noexcept : value(narrow_cast<value_type>(rhs))
     {
         tt_axiom(holds_invariant() and value != invalid);
     }
 
-    template<std::integral O>
-    constexpr tagged_id &operator=(O rhs) noexcept
+    constexpr tagged_id &operator=(numeric_integral auto rhs) noexcept
     {
         value = narrow_cast<value_type>(rhs);
         tt_axiom(holds_invariant() and value != invalid);
@@ -54,16 +52,21 @@ public:
         return *this;
     }
 
-    template<std::integral O>
-    constexpr operator O() const noexcept
+    template<numeric_integral O>
+    constexpr explicit operator O() const noexcept
     {
         tt_axiom(value != invalid);
         return narrow_cast<O>(value);
     }
 
-    constexpr operator bool() const noexcept
+    constexpr explicit operator bool() const noexcept
     {
         return value != invalid;
+    }
+
+    [[nodiscard]] constexpr value_type const &operator*() const noexcept
+    {
+        return value;
     }
 
     [[nodiscard]] constexpr std::size_t hash() const noexcept
@@ -90,17 +93,19 @@ public:
         return lhs == tagged_id{rhs};
     }
 
-    [[nodiscard]] constexpr friend bool operator==(std::integral auto const &lhs, tagged_id const &rhs) noexcept
+    [[nodiscard]] constexpr friend bool operator==(numeric_integral auto const &lhs, tagged_id const &rhs) noexcept
     {
         return tagged_id{lhs} == rhs;
     }
 
-    [[nodiscard]] constexpr friend std::partial_ordering operator<=>(tagged_id const &lhs, std::integral auto const &rhs) noexcept
+    [[nodiscard]] constexpr friend std::partial_ordering
+    operator<=>(tagged_id const &lhs, numeric_integral auto const &rhs) noexcept
     {
         return lhs <=> tagged_id{rhs};
     }
 
-    [[nodiscard]] constexpr friend std::partial_ordering operator<=>(std::integral auto const &lhs, tagged_id const &rhs) noexcept
+    [[nodiscard]] constexpr friend std::partial_ordering
+    operator<=>(numeric_integral auto const &lhs, tagged_id const &rhs) noexcept
     {
         return tagged_id{lhs} <=> rhs;
     }

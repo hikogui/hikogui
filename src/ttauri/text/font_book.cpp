@@ -92,7 +92,7 @@ font &font_book::register_font(URL url, bool post_process)
     tt_log_info("Parsed font {}: {}", url, to_string(*font));
 
     ttlet font_family_id = register_family(font->family_name);
-    font_variants[font_family_id][font->font_variant()] = font_ptr;
+    font_variants[*font_family_id][font->font_variant()] = font_ptr;
 
     _fonts.emplace_back(std::move(font));
     _font_ptrs.push_back(font_ptr);
@@ -235,7 +235,7 @@ void font_book::post_process() noexcept
 {
     tt_assert(family_id);
     tt_axiom(family_id >= 0 && family_id < ssize(font_variants));
-    ttlet &variants = font_variants[family_id];
+    ttlet &variants = font_variants[*family_id];
     for (auto i = 0; i < 16; i++) {
         if (auto font = variants[variant.alternative(i)]) {
             return *font;

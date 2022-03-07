@@ -21,5 +21,6 @@ python tools/unicode_data_generator.py \
     --line-break=${UCDDIR}/LineBreak.txt \
     --word-break=${UCDDIR}/WordBreakProperty.txt \
     --sentence-break=${UCDDIR}/SentenceBreakProperty.txt \
-    --east-asian-width=${UCDDIR}/EastAsianWidth.txt
+    --east-asian-width=${UCDDIR}/EastAsianWidth.txt \
+    --scripts=${UCDDIR}/Scripts.txt
 

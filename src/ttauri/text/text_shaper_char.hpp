@@ -91,10 +91,18 @@ public:
     unicode_description const *description;
 
     /** The text direction for this glyph.
-    * 
-    * This is needed to figure out where the location of the insert cursor is compared to the character.
-    */
+     *
+     * This is needed to figure out where the location of the insert cursor is compared to the character.
+     */
     unicode_bidi_class direction;
+
+    /** The script of this character.
+     * The script of the character is based on:
+     * - The actual script of this unicode character, or if `unicode_script::Common`;
+     * - The script of characters before/after this character in the same word, or if `unicode_script::Common`;
+     * - The script passed during construction of the text_shaper.
+     */
+    unicode_script script;
 
     /** The scale of the glyph for displaying on the screen.
      */

@@ -18,6 +18,7 @@ parser.add_argument("--line-break", dest="line_break_path", action="store", requ
 parser.add_argument("--word-break", dest="word_break_path", action="store", required=True)
 parser.add_argument("--sentence-break", dest="sentence_break_path", action="store", required=True)
 parser.add_argument("--east-asian-width", dest="east_asian_width_path", action="store", required=True)
+parser.add_argument("--scripts", dest="scripts_path", action="store", required=True)
 options = parser.parse_args()
 
 def format_char32(x):
@@ -78,6 +79,7 @@ class UnicodeDescription (object):
         self.word_break_property = "Other"
         self.sentence_break_property = "Other"
         self.eastAsianWidth = "N"
+        self.script = "Unknown"
 
     def serialize(self):
         s = "TTXD{"
@@ -90,6 +92,7 @@ class UnicodeDescription (object):
         s += ", TTXWB::{}".format(self.word_break_property)
         s += ", TTXSB::{}".format(self.sentence_break_property)
         s += ", TTXEA::{}".format(self.eastAsianWidth)
+        s += ", TTXSC::{}".format(self.script)
 
         # Bidirection algorithm
         s += ", TTXBC::{}".format(self.bidiClass)
@@ -282,6 +285,24 @@ def parseEastAsianWidth(filename, descriptions):
             if codePoint in descriptions:
                 descriptions[codePoint].eastAsianWidth = eastAsianWidth
 
+def parseScripts(filename, descriptions):
+    for line in open(filename, encoding="utf-8"):
+        line = line.rstrip()
+        line = line.split("#", 1)[0]
+        if line == "":
+            continue
+
+        columns = [x.strip() for x in line.split(";")]
+        
+        codePointRange = [int(x, 16) for x in columns[0].split("..")]
+        if len(codePointRange) == 1:
+            codePointRange.append(codePointRange[0])
+
+        script = columns[1]
+        for codePoint in range(codePointRange[0], codePointRange[1] + 1):
+            if codePoint in descriptions:
+                descriptions[codePoint].script = script
+
 def parseUnicodeData(filename):
     descriptions = {}
     for line in open(filename, encoding="utf-8"):
@@ -407,6 +428,7 @@ def writeUnicodeData(filename, descriptions, compositions, decompositions):
     fd.write('#include "unicode_word_break.hpp"\n')
     fd.write('#include "unicode_sentence_break.hpp"\n')
     fd.write('#include "unicode_east_asian_width.hpp"\n')
+    fd.write('#include "unicode_script.hpp"\n')
     fd.write('#include "unicode_composition.hpp"\n')
     fd.write('#include "unicode_decomposition_type.hpp"\n')
     fd.write('#include "unicode_description.hpp"\n')
@@ -423,6 +445,7 @@ def writeUnicodeData(filename, descriptions, compositions, decompositions):
     fd.write('#define TTXWB unicode_word_break_property\n')
     fd.write('#define TTXSB unicode_sentence_break_property\n')
     fd.write('#define TTXEA unicode_east_asian_width\n')
+    fd.write('#define TTXSC unicode_script\n')
     fd.write('#define TTXDT unicode_decomposition_type\n')
     fd.write('constexpr auto unicode_db_description_table = std::array{\n')
     fd.write('#ifndef __INTELLISENSE__\n')
@@ -444,6 +467,7 @@ def writeUnicodeData(filename, descriptions, compositions, decompositions):
     fd.write('#undef TTXWB\n')
     fd.write('#undef TTXSB\n')
     fd.write('#undef TTXEA\n')
+    fd.write('#undef TTXSC\n')
 
     fd.write('#define TTXC unicode_composition\n')
     fd.write('constexpr auto unicode_db_composition_table = std::array{\n')
@@ -507,6 +531,7 @@ def main():
     parse_word_break_property(options.word_break_path, descriptions)
     parse_sentence_break_property(options.sentence_break_path, descriptions)
     parseEastAsianWidth(options.east_asian_width_path, descriptions)
+    parseScripts(options.scripts_path, descriptions)
     parseEmojiData(options.emoji_data_path, descriptions)
     parseBidiBrackets(options.bidi_brackets_path, descriptions)
     parseBidiMirroring(options.bidi_mirroring_path, descriptions)

@@ -12,6 +12,8 @@
 #include "font_metrics.hpp"
 #include "../unicode/unicode_mask.hpp"
 #include "../unicode/gstring.hpp"
+#include "../i18n/iso_15924.hpp"
+#include "../i18n/iso_639.hpp"
 #include "../graphic_path.hpp"
 #include "../resource_view.hpp"
 #include "../exception.hpp"
@@ -49,6 +51,11 @@ public:
     bool condensed = false;
     font_weight weight = font_weight::Regular;
     float optical_size = 12.0;
+
+    /** A string representing the features of a font.
+     * This will be a comma separated list of features, mostly tables like 'kern' and 'GPOS'.
+     */
+    std::string features;
 
     tt::unicode_mask unicode_mask;
 
@@ -108,12 +115,40 @@ public:
         tt::glyph_id lookahead_glyph_id = tt::glyph_id{}) const noexcept = 0;
 
     /** Get the kerning between two glyphs.
-    * 
-    * @param current_glyph The glyph on the left
-    * @param next_glyph The glyph on the right
-    * @return The vector to add to the advance of the current_glyph.
-    */
+     *
+     * @param current_glyph The glyph on the left
+     * @param next_glyph The glyph on the right
+     * @return The vector to add to the advance of the current_glyph.
+     */
     [[nodiscard]] virtual vector2 get_kerning(tt::glyph_id current_glyph, tt::glyph_id next_glyph) const noexcept = 0;
+
+    struct substitution_and_kerning_type {
+        /** The glyph.
+         *
+         * On input: the original glyph
+         * On output: the substituted glyph, possibly a ligature glyph. Or empty if this glyph was substituted
+         *            by a previous ligature.
+         */
+        glyph_id glyph;
+
+        /** The advance in font-unit coordinate system.
+         *
+         * On input: the original advance for the glyph
+         * On output: the advance adjusted by kerning, or the partial advance of the character within
+         *            a ligature. All advances of a ligature added together will be the total advance of
+         *            the full ligature including kerning.
+         */
+        vector2 advance;
+    };
+
+    /** Substitute and kern a run of glyphs.
+     *
+     * @param language The language that the word is written in.
+     * @param script The script that the word is written in.
+     * @param [in,out]word A run of glyphs, from the same font, font-size and script of a word.
+     */
+    virtual void substitution_and_kerning(iso_639 language, iso_15924 script, std::vector<substitution_and_kerning_type> &word)
+        const noexcept = 0;
 
     glyph_atlas_info &atlas_info(glyph_ids const &glyphs) const noexcept
     {
@@ -137,7 +172,7 @@ public:
     [[nodiscard]] friend std::string to_string(font const &rhs) noexcept
     {
         return std::format(
-            "{} - {}: {}{}{}{}{} {} num-code-points={}",
+            "{} - {}: style={}{}{}{}{}{}, features={}",
             rhs.family_name,
             rhs.sub_family_name,
             rhs.monospace ? 'M' : '_',
@@ -146,7 +181,7 @@ public:
             rhs.condensed ? 'C' : '_',
             to_char(rhs.weight),
             rhs.optical_size,
-            rhs.unicode_mask.size());
+            rhs.features);
     }
 
 private:
