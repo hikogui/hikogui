@@ -52,9 +52,14 @@ LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     auto window = std::launder(std::bit_cast<gui_window_win32 *>(window_userdata));
     tt_axiom(window->is_gui_thread());
 
-    LRESULT result = window->windowProc(uMsg, wParam, lParam);
+    // WM_CLOSE and WM_DESTROY will re-enter and run the destructor for `window`.
+    // We can no longer call virtual functions on the `window` object.
+    if (uMsg == WM_CLOSE) {
+        // Listeners can close the window by calling the destructor on `window`.
+        window->_close_notifier();
+        return 0;
 
-    if (uMsg == WM_DESTROY) {
+    } else if (uMsg == WM_DESTROY) {
         // Remove the window now, before DefWindowProc, which could recursively
         // Reuse the window as it is being cleaned up.
         SetLastError(0);
@@ -65,17 +70,14 @@ LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         // Also remove the win32Window from the window, so that we don't get double DestroyWindow().
         window->win32Window = nullptr;
+        return 0;
 
-        // Notify users of window that the window is being closed.
-        // After this call `window` may be destroyed, don't use it anymore.
-        window->_close_notifier();
-    }
-
-    if (result == -1) {
+    } else {
+        if (auto result = window->windowProc(uMsg, wParam, lParam); result != -1) {
+            return result;
+        }
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
-
-    return result;
 }
 
 static void createWindowClass()
@@ -196,9 +198,10 @@ gui_window_win32::~gui_window_win32()
 
 void gui_window_win32::close_window()
 {
-    gui.run_from_event_queue([=]() {
-        DestroyWindow(reinterpret_cast<HWND>(win32Window));
-    });
+    tt_axiom(is_gui_thread());
+    if (not PostMessageW(reinterpret_cast<HWND>(win32Window), WM_CLOSE, 0, 0)) {
+        tt_log_error("Could not send WM_CLOSE to window {}: {}", title, get_last_error_message());
+    }
 }
 
 void gui_window_win32::set_size_state(gui_window_size state) noexcept
@@ -572,6 +575,10 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     ttlet current_time = std::chrono::utc_clock::now();
 
     switch (uMsg) {
+    case WM_CLOSE:
+        // WM_DESTROY is handled inside `_windowProc` since it has to deal with lifetime of `this`.
+        break;
+
     case WM_DESTROY:
         // WM_DESTROY is handled inside `_windowProc` since it has to deal with lifetime of `this`.
         break;
