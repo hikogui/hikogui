@@ -114,13 +114,6 @@ public:
      */
     virtual void init();
 
-    /** 2 phase constructor.
-     * Must be called directly before the destructor on the same thread,
-     *
-     * `deinit()` should not take locks on window::mutex.
-     */
-    virtual void deinit();
-
     /** Check if the current thread is the same as the gui_system loop.
      */
     [[nodiscard]] bool is_gui_thread() const noexcept;
@@ -284,8 +277,18 @@ public:
         return ~window_to_screen();
     }
 
+    [[nodiscard]] auto subscribe_close(std::invocable<> auto &&callback) noexcept
+    {
+        return _close_notifier.subscribe(tt_forward(callback));
+    }
+
 protected:
     static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
+
+    /** Notifier used when the window is closing.
+     * It is expected that after notifying these callbacks the instance of this class is destroyed.
+     */
+    notifier<void()> _close_notifier;
 
     std::weak_ptr<delegate_type> _delegate;
 
@@ -371,6 +374,7 @@ protected:
 private:
     std::shared_ptr<std::function<void()>> _setting_change_callback;
     std::shared_ptr<std::function<void()>> _selected_theme_callback;
+
     /** Target of the mouse
      * Since any mouse event will change the target this is used
      * to check if the target has changed, to send exit events to the previous mouse target.

@@ -55,6 +55,8 @@ private:
 
     [[nodiscard]] char32_t handle_suragates(char32_t c) noexcept;
     [[nodiscard]] mouse_event createmouse_event(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept;
+
+    friend LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept;
 };
 
 } // namespace tt::inline v1

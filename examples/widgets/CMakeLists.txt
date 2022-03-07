@@ -9,11 +9,11 @@ add_custom_target(widget_example_resources
     ttauri
 )
 
-add_executable(checkbox_example WIN32 MACOSX_BUNDLE)
-target_sources(checkbox_example PRIVATE checkbox_example.cpp)
-target_link_libraries(checkbox_example PRIVATE ttauri)
-target_include_directories(checkbox_example PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
-add_dependencies(checkbox_example widget_example_resources)
+#add_executable(checkbox_example WIN32 MACOSX_BUNDLE)
+#target_sources(checkbox_example PRIVATE checkbox_example.cpp)
+#target_link_libraries(checkbox_example PRIVATE ttauri)
+#target_include_directories(checkbox_example PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
+#add_dependencies(checkbox_example widget_example_resources)
 
 add_executable(text_example WIN32 MACOSX_BUNDLE)
 target_sources(text_example PRIVATE text_example.cpp)
@@ -51,7 +51,7 @@ add_dependencies(selection_example widget_example_resources)
 # Installation Rules: ttauri_demo
 #-------------------------------------------------------------------
 
-install(TARGETS checkbox_example DESTINATION examples/widgets)
+#install(TARGETS checkbox_example DESTINATION examples/widgets)
 install(TARGETS text_example DESTINATION examples/widgets)
 install(TARGETS toggle_example DESTINATION examples/widgets)
 install(TARGETS radio_button_example DESTINATION examples/widgets)

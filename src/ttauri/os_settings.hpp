@@ -170,13 +170,6 @@ public:
         return _notifier.subscribe(std::forward<Callback>(callback));
     }
 
-    static void unsubscribe(callback_ptr_type const &callback) noexcept
-    {
-        start_subsystem();
-        ttlet lock = std::scoped_lock(_mutex);
-        return _notifier.unsubscribe(callback);
-    }
-
 private:
     static constexpr std::chrono::duration gather_interval = std::chrono::seconds(5);
     static constexpr std::chrono::duration gather_minimum_interval = std::chrono::seconds(1);

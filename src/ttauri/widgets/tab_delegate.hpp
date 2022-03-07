@@ -24,8 +24,6 @@ public:
         return callback_ptr;
     }
 
-    virtual void unsubscribe(tab_widget &sender, callback_ptr_type const &callback_ptr) noexcept {}
-
     /** Subscribe a callback for notifying the widget of a data change.
      */
     template<typename Callback>

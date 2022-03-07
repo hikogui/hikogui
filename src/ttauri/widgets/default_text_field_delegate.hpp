@@ -36,11 +36,6 @@ public:
         return callback_ptr;
     }
 
-    void unsubscribe(text_field_widget &sender, callback_ptr_type const &callback_ptr) noexcept override
-    {
-        value.unsubscribe(callback_ptr);
-    }
-
     std::optional<label> validate(text_field_widget &sender, std::string_view text) noexcept override
     {
         try {
@@ -84,11 +79,6 @@ public:
     {
         value.subscribe(callback_ptr);
         return callback_ptr;
-    }
-
-    void unsubscribe(text_field_widget &sender, callback_ptr_type const &callback_ptr) noexcept override
-    {
-        value.unsubscribe(callback_ptr);
     }
 
     label validate(text_field_widget &sender, std::string_view text) noexcept override

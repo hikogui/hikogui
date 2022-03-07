@@ -21,7 +21,9 @@ gfx_surface_vulkan::gfx_surface_vulkan(gfx_system &system, vk::SurfaceKHR surfac
 gfx_surface_vulkan::~gfx_surface_vulkan()
 {
     if (state != gfx_surface_state::no_window) {
-        tt_log_fatal("The window attached to the gfx_surface still exists during destruction.");
+        state = gfx_surface_state::window_lost;
+        ttlet lock = std::scoped_lock(gfx_system_mutex);
+        teardown();
     }
 }
 

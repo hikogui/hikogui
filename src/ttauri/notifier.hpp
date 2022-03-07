@@ -73,19 +73,6 @@ public:
         return callback_ptr;
     }
 
-    /** Remove a callback from the notifier.
-     * @param callback_ptr A share_ptr to the callback function to unsubscribe.
-     */
-    void unsubscribe(callback_ptr_type const &callback_ptr) noexcept
-    {
-        auto lock = std::scoped_lock(_mutex);
-
-        ttlet new_end = std::remove_if(_callbacks.begin(), _callbacks.end(), [&callback_ptr](ttlet &item) {
-            return item.expired() || item.lock() == callback_ptr;
-        });
-        _callbacks.erase(new_end, _callbacks.cend());
-    }
-
     std::vector<std::weak_ptr<callback_type>> callbacks() const noexcept
     {
         auto lock = std::scoped_lock(_mutex);

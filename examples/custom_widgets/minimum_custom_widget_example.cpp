@@ -70,7 +70,7 @@ private:
 int tt_main(int argc, char *argv[])
 {
     auto gui = tt::gui_system::make_unique();
-    auto &window = gui->make_window(tt::l10n("Minimum Custom Widget"));
-    window.content().make_widget<minimum_widget>("A1");
+    auto window = gui->make_window(tt::l10n("Minimum Custom Widget"));
+    window->content().make_widget<minimum_widget>("A1");
     return gui->loop();
 }

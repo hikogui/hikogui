@@ -38,10 +38,6 @@ public:
         return subscribe(sender, std::make_shared<std::function<void()>>(std::forward<Callback>(callback)));
     }
 
-    /** Unsubscribe a callback.
-     */
-    virtual void unsubscribe(selection_widget &sender, callback_ptr_type const &callback) noexcept {}
-
     /** Called when an option is selected by the user.
      * @param index The index of the option selected, -1 if no option is selected.
      */

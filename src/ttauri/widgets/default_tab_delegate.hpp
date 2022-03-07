@@ -32,11 +32,6 @@ public:
         return callback_ptr;
     }
 
-    void unsubscribe(tab_widget &sender, callback_ptr_type const &callback_ptr) noexcept override
-    {
-        value.unsubscribe(callback_ptr);
-    }
-
     void add_tab(tab_widget &sender, std::size_t key, std::size_t index) noexcept override
     {
         tt_axiom(not tab_indices.contains(key));

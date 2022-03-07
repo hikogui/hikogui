@@ -75,10 +75,6 @@ public:
         return _notifier.subscribe(std::forward<Callback>(callback));
     }
 
-    /** Unsubscribe a callback.
-     */
-    void unsubscribe(callback_ptr_type &callback_ptr) noexcept;
-
     /// @privatesection
     [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
     {

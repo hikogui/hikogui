@@ -34,8 +34,6 @@ public:
         return subscribe(sender, std::make_shared<std::function<void()>>(std::forward<Callback>(callback)));
     }
 
-    virtual void unsubscribe(text_field_widget &sender, callback_ptr_type const &callback_ptr) noexcept {}
-
     /** Validate the text field.
      * @param text The text entered by the user into the text field.
      * @return no-value when valid, or a label to display to the user when invalid.

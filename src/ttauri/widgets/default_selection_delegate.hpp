@@ -43,12 +43,6 @@ public:
         return callback_ptr;
     }
 
-    void unsubscribe(selection_widget &sender, callback_ptr_type const &callback_ptr) noexcept override
-    {
-        value.unsubscribe(callback_ptr);
-        options.unsubscribe(callback_ptr);
-    }
-
     void set_selected(selection_widget &sender, ssize_t index) noexcept override
     {
         auto options_ = options.cget();

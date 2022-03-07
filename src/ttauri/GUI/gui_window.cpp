@@ -50,6 +50,10 @@ gui_window::gui_window(gui_system &gui, label const &title, std::weak_ptr<gui_wi
 
 gui_window::~gui_window()
 {
+    if (auto delegate = _delegate.lock()) {
+        delegate->deinit(*this);
+    }
+
     // Destroy the top-level widget, before Window-members that the widgets require from the window during their destruction.
     widget = {};
 
@@ -94,13 +98,6 @@ void gui_window::init()
     // Delegate has been called, layout of widgets has been calculated for the
     // minimum and maximum size of the window.
     create_window(new_size);
-}
-
-void gui_window::deinit()
-{
-    if (auto delegate = _delegate.lock()) {
-        delegate->deinit(*this);
-    }
 }
 
 [[nodiscard]] bool gui_window::is_gui_thread() const noexcept

@@ -76,13 +76,6 @@ public:
         return callback_ptr;
     }
 
-    void unsubscribe(abstract_button_widget &sender, callback_ptr_type const &callback_ptr) noexcept override
-    {
-        _value.unsubscribe(callback_ptr);
-        _on_value.unsubscribe(callback_ptr);
-        _off_value.unsubscribe(callback_ptr);
-    }
-
     [[nodiscard]] button_state state(abstract_button_widget const &sender) const noexcept override
     {
         if (_value == _on_value) {

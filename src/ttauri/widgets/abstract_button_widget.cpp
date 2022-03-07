@@ -41,14 +41,6 @@ void abstract_button_widget::activate() noexcept
     });
 }
 
-/** Unsubscribe a callback.
- */
-void abstract_button_widget::unsubscribe(callback_ptr_type &callback_ptr) noexcept
-{
-    tt_axiom(is_gui_thread());
-    return _notifier.unsubscribe(callback_ptr);
-}
-
 widget_constraints abstract_button_widget::set_constraints_button() const noexcept
 {
     return max(_on_label_widget->set_constraints(), _off_label_widget->set_constraints(), _other_label_widget->set_constraints());

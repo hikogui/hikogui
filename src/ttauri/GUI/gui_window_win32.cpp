@@ -62,9 +62,12 @@ static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
         if (r == 0 || GetLastError() != 0) {
             tt_log_fatal("Could not set GWLP_USERDATA on window. '{}'", get_last_error_message());
         }
+
+        // Notify users of window that the window is being closed.
+        // After this call `window` may be destroyed, don't use it anymore.
+        window->_close_notifier();
     }
 
-    // The call to DefWindowProc() recurses make sure we do not hold on to any locks.
     if (result == -1) {
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }

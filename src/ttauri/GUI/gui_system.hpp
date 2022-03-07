@@ -54,7 +54,7 @@ public:
 
     /** The name of the selected theme.
      */
-    observable<std::string> selected_theme = "default"; 
+    observable<std::string> selected_theme = "default";
 
     /** Make a gui_system instance.
      *
@@ -139,7 +139,7 @@ public:
         }
     }
 
-    gui_window &add_window(std::unique_ptr<gui_window> window);
+    std::shared_ptr<gui_window> add_window(std::shared_ptr<gui_window> window);
 
     /** Create a new window.
      * @param args The arguments that are forwarded to the constructor of
@@ -147,12 +147,12 @@ public:
      * @return A reference to the new window.
      */
     template<typename... Args>
-    gui_window &make_window(Args &&...args)
+    std::shared_ptr<gui_window> make_window(Args &&...args)
     {
         tt_axiom(is_gui_thread());
 
         // XXX abstract away the _win32 part.
-        auto window = std::make_unique<gui_window_win32>(*this, std::forward<Args>(args)...);
+        auto window = std::make_shared<gui_window_win32>(*this, std::forward<Args>(args)...);
         window->init();
 
         return add_window(std::move(window));
@@ -167,13 +167,11 @@ public:
         tt_axiom(is_gui_thread());
 
         for (auto &window : _windows) {
-            window->render(display_time_point);
-            if (window->is_closed()) {
-                window->deinit();
-                window = nullptr;
+            if (auto window_ = window.lock()) {
+                window_->render(display_time_point);
             }
         }
-        std::erase(_windows, nullptr);
+        std::erase_if(_windows, [](auto &window) { return window.expired(); });
 
         ttlet num_windows = size(_windows);
         if (num_windows == 0 && num_windows != _previous_num_windows) {
@@ -222,7 +220,7 @@ protected:
 private:
     std::weak_ptr<gui_system_delegate> _delegate;
 
-    std::vector<std::unique_ptr<gui_window>> _windows;
+    std::vector<std::weak_ptr<gui_window>> _windows;
     std::size_t _previous_num_windows = 0;
 
     /** The theme of the system.

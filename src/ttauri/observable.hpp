@@ -753,15 +753,6 @@ public:
         return callback_ptr;
     }
 
-    void unsubscribe(callback_ptr_type const &callback_ptr) noexcept
-    {
-        ttlet lock = std::scoped_lock(detail::observable_mutex);
-        ttlet erase_count = std::erase_if(_callbacks, [&callback_ptr](ttlet &item) {
-            return item.expired() or item.lock() == callback_ptr;
-        });
-        tt_axiom(erase_count == 1);
-    }
-
 private:
     std::shared_ptr<impl_type> _pimpl;
     mutable std::vector<std::weak_ptr<std::function<void()>>> _callbacks;

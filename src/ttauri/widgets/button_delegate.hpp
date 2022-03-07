@@ -37,10 +37,6 @@ public:
         return subscribe(sender, std::make_shared<std::function<void()>>(std::forward<Callback>(callback)));
     }
 
-    /** Unsubscribe a callback.
-     */
-    virtual void unsubscribe(abstract_button_widget &sender, callback_ptr_type const &callback) noexcept {}
-
     /** Called when the button is pressed by the user.
      */
     virtual void activate(abstract_button_widget &sender) noexcept {};

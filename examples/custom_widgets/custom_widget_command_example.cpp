@@ -140,8 +140,8 @@ public:
 int tt_main(int argc, char *argv[])
 {
     auto gui = tt::gui_system::make_unique();
-    auto &window = gui->make_window(tt::l10n("Custom Widget Command"));
-    window.content().make_widget<command_widget>("A1");
-    window.content().make_widget<command_widget>("A2");
+    auto window = gui->make_window(tt::l10n("Custom Widget Command"));
+    window->content().make_widget<command_widget>("A1");
+    window->content().make_widget<command_widget>("A2");
     return gui->loop();
 }
