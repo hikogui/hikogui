@@ -111,11 +111,6 @@ void gui_window::set_device(gfx_device *device) noexcept
     surface->set_device(device);
 }
 
-[[nodiscard]] bool gui_window::is_closed() const noexcept
-{
-    return surface->is_closed();
-}
-
 void gui_window::render(utc_nanoseconds display_time_point)
 {
     ttlet t1 = trace<"window::render">();

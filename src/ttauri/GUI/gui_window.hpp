@@ -159,10 +159,6 @@ public:
      */
     virtual void render(utc_nanoseconds displayTimePoint);
 
-    /** Check if the window was closed by the operating system.
-     */
-    [[nodiscard]] bool is_closed() const noexcept;
-
     /** Get a reference to the window's content widget.
      * @see grid_widget
      * @return A reference to a grid_widget.

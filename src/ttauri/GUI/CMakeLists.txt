@@ -8,6 +8,7 @@ target_sources(ttauri PRIVATE
     gui_system_delegate.hpp
     gui_system_win32.cpp
     gui_system_win32.hpp
+    gui_task.hpp
     gui_window.cpp
     gui_window.hpp
     gui_window_delegate.hpp

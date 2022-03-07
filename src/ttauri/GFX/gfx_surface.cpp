@@ -23,7 +23,7 @@ void gfx_surface::set_device(gfx_device *new_device) noexcept
     }
 
     if (_device) {
-        state = gfx_surface_state::device_lost;
+        loss = gfx_surface_loss::device_lost;
         teardown();
     }
 

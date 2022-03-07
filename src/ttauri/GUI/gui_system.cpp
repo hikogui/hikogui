@@ -52,6 +52,7 @@ std::shared_ptr<gui_window> gui_system::add_window(std::shared_ptr<gui_window> w
     window->set_device(device);
 
     _windows.push_back(window);
+    _previous_num_windows = size(_windows);
     return std::move(window);
 }
 

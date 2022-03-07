@@ -115,7 +115,7 @@ private:
     void buildDevice();
     void buildSemaphores();
     void teardownSemaphores();
-    gfx_surface_state buildSwapchain(std::size_t new_count, extent2 new_size);
+    gfx_surface_loss buildSwapchain(std::size_t new_count, extent2 new_size);
     void teardownSwapchain();
     void buildCommandBuffers();
     void teardownCommandBuffers();

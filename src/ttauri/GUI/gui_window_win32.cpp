@@ -29,7 +29,7 @@ static bool firstWindowHasBeenOpened = false;
 /** The win32 window message handler.
  * This function should not take any locks as _WindowProc is called recursively.
  */
-static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
+LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 {
     if (uMsg == WM_CREATE && lParam) {
         ttlet createData = std::launder(std::bit_cast<CREATESTRUCT *>(lParam));
@@ -62,6 +62,9 @@ static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
         if (r == 0 || GetLastError() != 0) {
             tt_log_fatal("Could not set GWLP_USERDATA on window. '{}'", get_last_error_message());
         }
+
+        // Also remove the win32Window from the window, so that we don't get double DestroyWindow().
+        window->win32Window = nullptr;
 
         // Notify users of window that the window is being closed.
         // After this call `window` may be destroyed, don't use it anymore.
@@ -181,7 +184,9 @@ gui_window_win32::~gui_window_win32()
 {
     try {
         if (win32Window != nullptr) {
-            tt_log_fatal("win32Window was not destroyed before Window '{}' was destructed.", title);
+            DestroyWindow(win32Window);
+            tt_axiom(win32Window == nullptr);
+            // tt_log_fatal("win32Window was not destroyed before Window '{}' was destructed.", title);
         }
 
     } catch (std::exception const &e) {
@@ -308,7 +313,7 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
 [[nodiscard]] tt::subpixel_orientation gui_window_win32::subpixel_orientation() const noexcept
 {
     // The table for viewing distance are:
-    // 
+    //
     // - Phone/Watch: 10 inch
     // - Tablet: 15 inch
     // - Notebook/Desktop: 20 inch
@@ -316,7 +321,7 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
     // Pixels Per Degree = PPD = 2 * viewing_distance * resolution * tan(0.5 degree)
     constexpr auto tan_half_degree = 0.00872686779075879f;
     constexpr auto viewing_distance = 20.0f;
-    
+
     ttlet ppd = 2 * viewing_distance * dpi * tan_half_degree;
 
     if (ppd > 55.0f) {
@@ -567,11 +572,9 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     ttlet current_time = std::chrono::utc_clock::now();
 
     switch (uMsg) {
-    case WM_DESTROY: {
-        tt_axiom(is_gui_thread());
-        surface->set_closed();
-        win32Window = nullptr;
-    } break;
+    case WM_DESTROY:
+        // WM_DESTROY is handled inside `_windowProc` since it has to deal with lifetime of `this`.
+        break;
 
     case WM_CREATE: {
         ttlet createstruct_ptr = std::launder(std::bit_cast<CREATESTRUCT *>(lParam));
@@ -618,7 +621,10 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         // However we do not support maximizing by the OS.
         tt_axiom(is_gui_thread());
         switch (wParam) {
-        case SIZE_MAXIMIZED: ShowWindow(win32Window, SW_RESTORE); set_size_state(gui_window_size::maximized); break;
+        case SIZE_MAXIMIZED:
+            ShowWindow(win32Window, SW_RESTORE);
+            set_size_state(gui_window_size::maximized);
+            break;
         case SIZE_MINIMIZED: _size_state = gui_window_size::minimized; break;
         case SIZE_RESTORED: _size_state = gui_window_size::normal; break;
         default: break;
