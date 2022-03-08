@@ -37,7 +37,7 @@ void abstract_button_widget::activate() noexcept
     }
 
     window.gui.run_from_event_queue([this]() {
-        this->_notifier();
+        this->pressed();
     });
 }
 

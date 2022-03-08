@@ -42,6 +42,8 @@ public:
      */
     observable<alignment> label_alignment;
 
+    notifier<void()> pressed;
+
     /** Set on/off/other labels of the button to the same value.
      */
     template<typename Label>
@@ -66,15 +68,6 @@ public:
         }
     }
 
-    /** Subscribe a callback to call when the button is activated.
-     */
-    template<typename Callback>
-    [[nodiscard]] callback_ptr_type subscribe(Callback &&callback) noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return _notifier.subscribe(std::forward<Callback>(callback));
-    }
-
     /// @privatesection
     [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
     {
@@ -97,7 +90,6 @@ protected:
     std::unique_ptr<label_widget> _other_label_widget;
 
     bool _pressed = false;
-    notifier<void()> _notifier;
     weak_or_unique_ptr<delegate_type> _delegate;
 
     ~abstract_button_widget();

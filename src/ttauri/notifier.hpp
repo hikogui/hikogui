@@ -7,7 +7,7 @@
 #include "required.hpp"
 #include "unfair_recursive_mutex.hpp"
 #include "coroutine.hpp"
-#include "awaitable.hpp"
+#include "awaiter.hpp"
 #include <mutex>
 #include <vector>
 #include <tuple>
@@ -19,6 +19,9 @@ namespace tt::inline v1 {
 template<typename T>
 class notifier {
 };
+
+template<typename Notifier>
+class notifier_awaiter;
 
 /** A notifier which can be used to call a set of registered callbacks.
  * This class is thread-safe; however you must not use this object
@@ -33,12 +36,13 @@ public:
     static_assert(std::is_same_v<Result, void>, "Result of a notifier must be void.");
 
     using result_type = Result;
+    using awaiter_type = notifier_awaiter<notifier>;
     using callback_type = std::function<Result(Args const &...)>;
     using callback_ptr_type = std::shared_ptr<callback_type>;
 
-    awaitable<void,notifier> operator co_await() noexcept
+    awaiter_type operator co_await() const noexcept
     {
-        return awaitable<void,notifier>{*this};
+        return awaiter_type{const_cast<notifier &>(*this)};
     }
 
     /** Add a callback to the notifier.
@@ -129,20 +133,26 @@ private :
     mutable std::vector<std::weak_ptr<callback_type>> _callbacks;
 };
 
-template<>
-class awaitable<void, notifier<void()>> {
+template<typename Notifier>
+class notifier_awaiter {
 public:
-    using notify_type = notifier<void()>;
+    using notifier_type = Notifier;
+    using result_type = notifier_type::result_type;
     using handle_type = std::coroutine_handle<>;
 
-    constexpr awaitable() noexcept : _notifier(nullptr) {}
-    constexpr awaitable(notify_type &notifier) noexcept : _notifier(&notifier) {}
-    constexpr awaitable(awaitable const &) noexcept = default;
-    constexpr awaitable(awaitable &&) noexcept = default;
-    constexpr awaitable &operator=(awaitable const &) noexcept = default;
-    constexpr awaitable &operator=(awaitable &&) noexcept = default;
+    constexpr notifier_awaiter() noexcept : _notifier(nullptr) {}
+    constexpr notifier_awaiter(notifier_type &notifier) noexcept : _notifier(&notifier) {}
+    constexpr notifier_awaiter(notifier_awaiter const &) noexcept = default;
+    constexpr notifier_awaiter(notifier_awaiter &&) noexcept = default;
+    constexpr notifier_awaiter &operator=(notifier_awaiter const &) noexcept = default;
+    constexpr notifier_awaiter &operator=(notifier_awaiter &&) noexcept = default;
 
-    [[nodiscard]] constexpr static bool await_ready() noexcept
+    [[nodiscard]] constexpr bool was_triggered() noexcept
+    {
+        return _triggered;
+    }
+
+    [[nodiscard]] constexpr bool await_ready() noexcept
     {
         return false;
     }
@@ -150,21 +160,24 @@ public:
     void await_suspend(handle_type handle) noexcept
     {
         tt_axiom(_notifier != nullptr);
+        _triggered = false;
 
         // We can use the this pointer in the callback, as `await_suspend()` is called by
         // the co-routine on the same object as `await_resume()`.
-        _callback_ptr = _notifier->subscribe([handle] {
+        _callback_ptr = _notifier->subscribe([handle, this] {
+            this->_triggered = true;
             handle.resume();
         });
     }
 
-    constexpr static void await_resume() noexcept {}
+    constexpr result_type await_resume() noexcept {}
 
 private:
-    using callback_ptr_type = notify_type::callback_ptr_type;
+    using callback_ptr_type = notifier_type::callback_ptr_type;
 
-    notify_type *_notifier;
+    notifier_type *_notifier;
     callback_ptr_type _callback_ptr;
+    bool _triggered = false;
 };
 
 } // namespace tt::inline v1

@@ -285,7 +285,7 @@ void selection_widget::repopulate_options() noexcept
     for (auto &&label : options) {
         auto menu_button = &_column_widget->make_widget<menu_button_widget>(std::move(label), selected, index);
 
-        _menu_button_callbacks.push_back(menu_button->subscribe([this, index] {
+        _menu_button_callbacks.push_back(menu_button->pressed.subscribe([this, index] {
             window.gui.run([this, index] {
                 if (auto delegate = _delegate.lock()) {
                     delegate->set_selected(*this, index);

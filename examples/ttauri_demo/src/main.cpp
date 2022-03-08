@@ -130,20 +130,23 @@ tt::gui_task<> main_window(tt::gui_system &gui, tt::preferences &preferences)
 
     auto preferences_label = label{elusive_icon::Wrench, l10n("Preferences")};
     auto &preferences_button = window->toolbar().make_widget<tt::toolbar_button_widget>(preferences_label);
-    auto preferences_button_cb = preferences_button.subscribe([&] {
-        preferences_window(gui, preferences);
-    });
 
     auto &column = window->content().make_widget<column_widget>("A1");
     column.make_widget<momentary_button_widget>(l10n("Hello \u4e16\u754c"));
     column.make_widget<momentary_button_widget>(l10n("Hello world"));
 
     auto &vma_dump_button = column.make_widget<momentary_button_widget>(l10n("vma\ncalculate stats"));
-    auto vma_dump_button_cb = vma_dump_button.subscribe([&gui] {
-        gui.gfx->log_memory_usage();
-    });
 
-    co_await window->closing;
+    while (true) {
+        auto result = co_await(preferences_button.pressed or vma_dump_button.pressed or window->closing);
+
+        switch (result.index()) {
+        case 0: preferences_window(gui, preferences); break;
+        case 1: gui.gfx->log_memory_usage(); break;
+        case 2: co_return;
+        default: tt_no_default();
+        }
+    }
 }
 
 int tt_main(int argc, char *argv[])

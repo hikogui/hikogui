@@ -26,7 +26,7 @@ target_sources(ttauri PRIVATE
     animator.hpp
     assert.hpp
     atomic.hpp
-    awaitable.hpp
+    awaiter.hpp
     bezier.hpp
     bezier_curve.cpp
     bezier_curve.hpp
