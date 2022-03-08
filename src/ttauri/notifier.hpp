@@ -172,6 +172,11 @@ public:
 
     constexpr result_type await_resume() noexcept {}
 
+    [[nodiscard]] bool operator==(notifier_awaiter const &rhs) const noexcept
+    {
+        return _notifier == rhs._notifier;
+    }
+
 private:
     using callback_ptr_type = notifier_type::callback_ptr_type;
 

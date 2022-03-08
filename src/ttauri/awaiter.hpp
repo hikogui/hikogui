@@ -59,10 +59,11 @@ template<typename T>
 constexpr bool is_awaitable_v = is_awaitable<T>::value;
 
 template<awaitable T>
-struct resolve_awaitable {};
+struct cast_awaitable {
+};
 
 template<awaitable_direct T>
-struct resolve_awaitable<T> {
+struct cast_awaitable<T> {
     auto operator()(T const &a) const noexcept
     {
         return a;
@@ -70,7 +71,7 @@ struct resolve_awaitable<T> {
 };
 
 template<awaitable_member T>
-struct resolve_awaitable<T> {
+struct cast_awaitable<T> {
     auto operator()(T const &a) const noexcept
     {
         return a.operator co_await();
@@ -78,7 +79,7 @@ struct resolve_awaitable<T> {
 };
 
 template<awaitable_non_member T>
-struct resolve_awaitable<T> {
+struct cast_awaitable<T> {
     auto operator()(T const &a) const noexcept
     {
         return operator co_await(a);
@@ -95,9 +96,65 @@ template<awaitable_direct T>
 using awaitable_variant_element_t = awaitable_variant_element<T>::type;
 
 template<typename... Ts>
+class awaiter_or_result {
+public:
+    using result_type = std::variant<awaitable_variant_element_t<Ts>...>;
+    using awaiter_type = std::variant<Ts...>;
+
+    awaiter_or_result(awaiter_or_result const &) noexcept = default;
+    awaiter_or_result(awaiter_or_result &&) noexcept = default;
+    awaiter_or_result &operator=(awaiter_or_result const &) noexcept = default;
+    awaiter_or_result &operator=(awaiter_or_result &&) noexcept = default;
+
+    template<std::size_t I, typename Awaiter, typename Result>
+    awaiter_or_result(std::in_place_index_t<I>, Awaiter const &awaiter, Result &&result) noexcept :
+        _result{std::in_place_index<I>, std::forward<Result>(result)}, _awaiters{std::in_place_index<I>, awaiter}
+    {
+    }
+
+    template<std::size_t I, typename Awaiter>
+    awaiter_or_result(std::in_place_index_t<I>, Awaiter const &awaiter) noexcept :
+        _result{std::in_place_index<I>}, _awaiters{std::in_place_index<I>, awaiter}
+    {
+    }
+
+    [[nodiscard]] std::size_t index() const noexcept
+    {
+        return _result.index();
+    }
+
+    [[nodiscard]] bool operator==(awaitable auto const &rhs) const noexcept
+    {
+        ttlet rhs_ = cast_awaitable<decltype(rhs)>{}(rhs);
+
+        return std::visit(
+            [&rhs_](auto const &lhs) -> bool {
+                return lhs == rhs_;
+            },
+            _awaiters);
+    }
+
+    template<typename T>
+    friend auto &get(awaiter_or_result const &) noexcept
+    {
+        return std::get<T>(_result);
+    }
+
+    template<std::size_t I>
+    friend auto &get(awaiter_or_result const &) noexcept
+    {
+        return std::get<I>(_result);
+    }
+
+private:
+    result_type _result;
+    awaiter_type _awaiters;
+};
+
+template<typename... Ts>
 class awaiter_or {
 public:
-    using value_type = std::variant<awaitable_variant_element_t<Ts>...>;
+    using value_type = awaiter_or_result<Ts...>;
 
     template<typename... LhsTs, typename... RhsTs>
     awaiter_or(awaiter_or<LhsTs...> const &lhs, awaiter_or<RhsTs...> const &rhs) noexcept :
@@ -142,7 +199,6 @@ public:
 private:
     std::tuple<Ts...> _awaiters;
 
-
     template<std::size_t I>
     void _await_suspend(std::coroutine_handle<> const &handle) noexcept
     {
@@ -159,9 +215,9 @@ private:
         if (awaiter.was_triggered()) {
             if constexpr (std::is_same_v<decltype(awaiter.await_resume()), void>) {
                 awaiter.await_resume();
-                return value_type{std::in_place_index<I>};
+                return value_type{std::in_place_index<I>, awaiter};
             } else {
-                return value_type{std::in_place_index<I>, awaiter.await_resume()};
+                return value_type{std::in_place_index<I>, awaiter, awaiter.await_resume()};
             }
 
         } else if constexpr (I + 1 < sizeof...(Ts)) {
@@ -192,7 +248,7 @@ awaiter_or(Lhs const &lhs, Rhs const &rhs) -> awaiter_or<Lhs, Rhs>;
 template<awaitable Lhs, awaitable Rhs>
 [[nodiscard]] auto operator||(Lhs const &lhs, Rhs const &rhs) noexcept
 {
-    return awaiter_or{resolve_awaitable<Lhs>{}(lhs), resolve_awaitable<Rhs>{}(rhs)};
+    return awaiter_or{cast_awaitable<Lhs>{}(lhs), cast_awaitable<Rhs>{}(rhs)};
 }
 
 } // namespace tt::inline v1

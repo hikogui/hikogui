@@ -129,22 +129,28 @@ tt::gui_task<> main_window(tt::gui_system &gui, tt::preferences &preferences)
     auto window = gui.make_window(window_label);
 
     auto preferences_label = label{elusive_icon::Wrench, l10n("Preferences")};
-    auto &preferences_button = window->toolbar().make_widget<tt::toolbar_button_widget>(preferences_label);
+    ttlet &preferences_button = window->toolbar().make_widget<tt::toolbar_button_widget>(preferences_label);
 
     auto &column = window->content().make_widget<column_widget>("A1");
     column.make_widget<momentary_button_widget>(l10n("Hello \u4e16\u754c"));
     column.make_widget<momentary_button_widget>(l10n("Hello world"));
 
-    auto &vma_dump_button = column.make_widget<momentary_button_widget>(l10n("vma\ncalculate stats"));
+    ttlet &vma_dump_button = column.make_widget<momentary_button_widget>(l10n("vma\ncalculate stats"));
 
     while (true) {
-        auto result = co_await(preferences_button.pressed or vma_dump_button.pressed or window->closing);
+        ttlet result = co_await(preferences_button.pressed or vma_dump_button.pressed or window->closing);
 
-        switch (result.index()) {
-        case 0: preferences_window(gui, preferences); break;
-        case 1: gui.gfx->log_memory_usage(); break;
-        case 2: co_return;
-        default: tt_no_default();
+        if (result == preferences_button.pressed) {
+            preferences_window(gui, preferences);
+
+        } else if (result == vma_dump_button.pressed) {
+            gui.gfx->log_memory_usage();
+
+        } else if (result == window->closing) {
+            co_return;
+
+        } else {
+            tt_no_default();
         }
     }
 }
