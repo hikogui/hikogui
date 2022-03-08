@@ -4,8 +4,11 @@
 
 #pragma once
 
+#include "required.hpp"
 #include <coroutine>
 #include <cstddef>
+#include <type_traits>
+#include <concepts>
 
 namespace tt::inline v1 {
 
@@ -58,62 +61,64 @@ struct is_awaitable<T> : std::true_type {
 template<typename T>
 constexpr bool is_awaitable_v = is_awaitable<T>::value;
 
+decltype(auto) cast_awaitable(awaitable_direct auto &&rhs) noexcept
+{
+    return tt_forward(rhs);
+}
+
+decltype(auto) cast_awaitable(awaitable_member auto &&rhs) noexcept
+{
+    return tt_forward(rhs).operator co_await();
+}
+
+decltype(auto) cast_awaitable(awaitable_non_member auto &&rhs) noexcept
+{
+    return operator co_await(tt_forward(rhs));
+}
+
 template<awaitable T>
-struct cast_awaitable {
+struct resolved_awaitable {
+    using type = std::remove_cvref_t<decltype(cast_awaitable(std::declval<T>()))>;
+};
+
+template<awaitable T>
+using resolved_awaitable_t = resolved_awaitable<T>::type;
+
+template<awaitable_direct T>
+struct await_resume_result {
+    using type = decltype(std::declval<T>().await_resume());
 };
 
 template<awaitable_direct T>
-struct cast_awaitable<T> {
-    auto operator()(T const &a) const noexcept
-    {
-        return a;
-    }
-};
+using await_resume_result_t = await_resume_result<T>::type;
 
-template<awaitable_member T>
-struct cast_awaitable<T> {
-    auto operator()(T const &a) const noexcept
-    {
-        return a.operator co_await();
-    }
-};
-
-template<awaitable_non_member T>
-struct cast_awaitable<T> {
-    auto operator()(T const &a) const noexcept
-    {
-        return operator co_await(a);
-    }
+template<awaitable_direct T>
+struct await_resume_result_variant {
+    using type = std::conditional_t<std::is_same_v<await_resume_result_t<T>, void>, std::monostate, await_resume_result_t<T>>;
 };
 
 template<awaitable_direct T>
-struct awaitable_variant_element {
-    using actual_type = decltype(T{}.await_resume());
-    using type = std::conditional_t<std::is_same_v<actual_type, void>, std::monostate, actual_type>;
-};
-
-template<awaitable_direct T>
-using awaitable_variant_element_t = awaitable_variant_element<T>::type;
+using await_resume_result_variant_t = await_resume_result_variant<T>::type;
 
 template<typename... Ts>
-class awaiter_or_result {
+class when_any_result {
 public:
-    using result_type = std::variant<awaitable_variant_element_t<Ts>...>;
+    using result_type = std::variant<await_resume_result_variant_t<Ts>...>;
     using awaiter_type = std::variant<Ts...>;
 
-    awaiter_or_result(awaiter_or_result const &) noexcept = default;
-    awaiter_or_result(awaiter_or_result &&) noexcept = default;
-    awaiter_or_result &operator=(awaiter_or_result const &) noexcept = default;
-    awaiter_or_result &operator=(awaiter_or_result &&) noexcept = default;
+    when_any_result(when_any_result const &) noexcept = default;
+    when_any_result(when_any_result &&) noexcept = default;
+    when_any_result &operator=(when_any_result const &) noexcept = default;
+    when_any_result &operator=(when_any_result &&) noexcept = default;
 
     template<std::size_t I, typename Awaiter, typename Result>
-    awaiter_or_result(std::in_place_index_t<I>, Awaiter const &awaiter, Result &&result) noexcept :
+    when_any_result(std::in_place_index_t<I>, Awaiter const &awaiter, Result &&result) noexcept :
         _result{std::in_place_index<I>, std::forward<Result>(result)}, _awaiters{std::in_place_index<I>, awaiter}
     {
     }
 
     template<std::size_t I, typename Awaiter>
-    awaiter_or_result(std::in_place_index_t<I>, Awaiter const &awaiter) noexcept :
+    when_any_result(std::in_place_index_t<I>, Awaiter const &awaiter) noexcept :
         _result{std::in_place_index<I>}, _awaiters{std::in_place_index<I>, awaiter}
     {
     }
@@ -125,7 +130,7 @@ public:
 
     [[nodiscard]] bool operator==(awaitable auto const &rhs) const noexcept
     {
-        ttlet rhs_ = cast_awaitable<decltype(rhs)>{}(rhs);
+        ttlet rhs_ = cast_awaitable(rhs);
 
         return std::visit(
             [&rhs_](auto const &lhs) -> bool {
@@ -135,13 +140,13 @@ public:
     }
 
     template<typename T>
-    friend auto &get(awaiter_or_result const &) noexcept
+    friend auto &get(when_any_result const &) noexcept
     {
         return std::get<T>(_result);
     }
 
     template<std::size_t I>
-    friend auto &get(awaiter_or_result const &) noexcept
+    friend auto &get(when_any_result const &) noexcept
     {
         return std::get<I>(_result);
     }
@@ -152,30 +157,13 @@ private:
 };
 
 template<typename... Ts>
-class awaiter_or {
+class when_any {
 public:
-    using value_type = awaiter_or_result<Ts...>;
+    using value_type = when_any_result<Ts...>;
 
-    template<typename... LhsTs, typename... RhsTs>
-    awaiter_or(awaiter_or<LhsTs...> const &lhs, awaiter_or<RhsTs...> const &rhs) noexcept :
-        _awaiters(std::tuple_cat(lhs._awaiters, rhs._awaiters))
-    {
-    }
-
-    template<typename... LhsTs, awaitable_direct Rhs>
-    awaiter_or(awaiter_or<LhsTs...> const &lhs, Rhs const &rhs) noexcept :
-        _awaiters(std::tuple_cat(lhs._awaiters, std::tuple{rhs}))
-    {
-    }
-
-    template<awaitable_direct Lhs, typename... RhsTs>
-    awaiter_or(Lhs const &lhs, awaiter_or<RhsTs...> const &rhs) noexcept :
-        _awaiters(std::tuple_cat(std::tuple{lhs}, rhs._awaiters))
-    {
-    }
-
-    template<awaitable_direct Lhs, awaitable_direct Rhs>
-    awaiter_or(Lhs const &lhs, Rhs const &rhs) noexcept : _awaiters{lhs, rhs}
+    template<awaitable... Others>
+    when_any(Others &&... others) noexcept :
+        _awaiters(cast_awaitable(std::forward<Others>(others))...)
     {
     }
 
@@ -230,25 +218,10 @@ private:
     }
 
     template<typename... Args>
-    friend class awaiter_or;
+    friend class when_any;
 };
 
-template<typename... LhsTs, typename... RhsTs>
-awaiter_or(awaiter_or<LhsTs...> const &lhs, awaiter_or<RhsTs...> const &rhs) -> awaiter_or<LhsTs..., RhsTs...>;
-
-template<typename... LhsTs, awaitable_direct Rhs>
-awaiter_or(awaiter_or<LhsTs...> const &lhs, Rhs const &rhs) -> awaiter_or<LhsTs..., Rhs>;
-
-template<awaitable_direct Lhs, typename... RhsTs>
-awaiter_or(Lhs const &lhs, awaiter_or<RhsTs...> const &rhs) -> awaiter_or<Lhs, RhsTs...>;
-
-template<awaitable_direct Lhs, awaitable_direct Rhs>
-awaiter_or(Lhs const &lhs, Rhs const &rhs) -> awaiter_or<Lhs, Rhs>;
-
-template<awaitable Lhs, awaitable Rhs>
-[[nodiscard]] auto operator||(Lhs const &lhs, Rhs const &rhs) noexcept
-{
-    return awaiter_or{cast_awaitable<Lhs>{}(lhs), cast_awaitable<Rhs>{}(rhs)};
-}
+template<awaitable... Others>
+when_any(Others &&...) -> when_any<resolved_awaitable_t<Others>...>;
 
 } // namespace tt::inline v1

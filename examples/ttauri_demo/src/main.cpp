@@ -138,7 +138,7 @@ tt::gui_task<> main_window(tt::gui_system &gui, tt::preferences &preferences)
     ttlet &vma_dump_button = column.make_widget<momentary_button_widget>(l10n("vma\ncalculate stats"));
 
     while (true) {
-        ttlet result = co_await(preferences_button.pressed or vma_dump_button.pressed or window->closing);
+        ttlet result = co_await when_any(preferences_button.pressed, vma_dump_button.pressed, window->closing);
 
         if (result == preferences_button.pressed) {
             preferences_window(gui, preferences);
