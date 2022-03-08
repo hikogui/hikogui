@@ -70,6 +70,14 @@ public:
         return _double_click_interval.load(std::memory_order_relaxed);
     }
 
+    /** Get the distance from the previous mouse position to detect double click.
+     */
+    [[nodiscard]] static float double_click_distance() noexcept
+    {
+        start_subsystem();
+        return _double_click_distance.load(std::memory_order_relaxed);
+    }
+
     /** Get the delay before the keyboard starts repeating.
      *
      * @note Also used to determine the scroll delay when selecting text.
@@ -186,6 +194,7 @@ private:
     static inline std::atomic<tt::theme_mode> _theme_mode = theme_mode::dark;
     static inline std::atomic<tt::subpixel_orientation> _subpixel_orientation = tt::subpixel_orientation::unknown;
     static inline std::atomic<std::chrono::milliseconds> _double_click_interval = std::chrono::milliseconds(500);
+    static inline std::atomic<float> _double_click_distance = 4.0f;
     static inline std::atomic<std::chrono::milliseconds> _keyboard_repeat_delay = std::chrono::milliseconds(250);
     static inline std::atomic<std::chrono::milliseconds> _keyboard_repeat_interval = std::chrono::milliseconds(33);
     static inline std::atomic<std::chrono::milliseconds> _cursor_blink_interval = std::chrono::milliseconds(1000);
@@ -211,6 +220,7 @@ private:
     [[nodiscard]] static tt::theme_mode gather_theme_mode();
     [[nodiscard]] static tt::subpixel_orientation gather_subpixel_orientation();
     [[nodiscard]] static std::chrono::milliseconds gather_double_click_interval();
+    [[nodiscard]] static float gather_double_click_distance();
     [[nodiscard]] static std::chrono::milliseconds gather_keyboard_repeat_delay();
     [[nodiscard]] static std::chrono::milliseconds gather_keyboard_repeat_interval();
     [[nodiscard]] static std::chrono::milliseconds gather_cursor_blink_interval();
