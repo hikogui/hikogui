@@ -25,7 +25,7 @@ int tt_main(int argc, char *argv[])
     window->content().make_widget<selection_widget>("A2", option_list, value);
     /// [Create selection]
 
-    auto close_cb = window->subscribe_close([&] {
+    auto close_cb = window->closing.subscribe([&] {
         window.reset();
     });
     return gui->loop();

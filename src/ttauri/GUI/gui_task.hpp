@@ -60,7 +60,7 @@ struct gui_task_promise : gui_task_promise_base<T> {
     }
 };
 
-template<typename T>
+template<typename T = void>
 class gui_task {
 public:
     using value_type = T;

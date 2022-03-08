@@ -56,7 +56,7 @@ LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     // We can no longer call virtual functions on the `window` object.
     if (uMsg == WM_CLOSE) {
         // Listeners can close the window by calling the destructor on `window`.
-        window->_close_notifier();
+        window->closing();
         return 0;
 
     } else if (uMsg == WM_DESTROY) {

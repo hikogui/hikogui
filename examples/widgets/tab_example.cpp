@@ -33,7 +33,7 @@ int tt_main(int argc, char* argv[])
     window->toolbar().make_widget<toolbar_tab_button_widget>(l10n("three"), value, 2);
     /// [Create three toolbar tab buttons]
 
-    auto close_cb = window->subscribe_close([&] {
+    auto close_cb = window->closing.subscribe([&] {
         window.reset();
     });
     return gui->loop();

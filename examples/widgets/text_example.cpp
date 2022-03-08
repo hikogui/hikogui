@@ -81,7 +81,7 @@ int tt_main(int argc, char *argv[])
     auto &tw = window->content().make_widget<text_widget>("A1", text, tt::alignment::top_justified());
     tw.edit_mode = text_widget::edit_mode_type::fully_editable;
 
-    auto close_cb = window->subscribe_close([&] {
+    auto close_cb = window->closing.subscribe([&] {
         window.reset();
     });
     return gui->loop();

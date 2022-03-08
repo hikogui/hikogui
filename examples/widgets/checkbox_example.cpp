@@ -26,15 +26,12 @@ gui_task<void> checkbox_example(gui_system &gui)
     cb.other_label = l10n("other");
     /// [Create a checkbox]
 
-    //co_await window.await_close();
-    co_return;
+    co_await window->closing;
 }
 
 int tt_main(int argc, char* argv[])
 {
     auto gui = gui_system::make_unique();
-
     checkbox_example(*gui);
-    
     return gui->loop();
 }

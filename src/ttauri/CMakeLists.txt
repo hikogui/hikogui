@@ -20,12 +20,13 @@ add_subdirectory(widgets)
 configure_file(metadata.cpp.in metadata.cpp @ONLY)
 
 target_sources(ttauri PRIVATE
+    alignment.hpp
     algorithm.hpp
     arguments.hpp
     animator.hpp
     assert.hpp
     atomic.hpp
-    alignment.hpp
+    awaitable.hpp
     bezier.hpp
     bezier_curve.cpp
     bezier_curve.hpp

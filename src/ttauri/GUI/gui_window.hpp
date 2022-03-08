@@ -97,6 +97,11 @@ public:
      */
     std::unique_ptr<window_widget> widget;
 
+    /** Notifier used when the window is closing.
+     * It is expected that after notifying these callbacks the instance of this class is destroyed.
+     */
+    notifier<void()> closing;
+
     gui_window(gui_system &gui, label const &title, std::weak_ptr<delegate_type> delegate = {}) noexcept;
 
     virtual ~gui_window();
@@ -273,18 +278,8 @@ public:
         return ~window_to_screen();
     }
 
-    [[nodiscard]] auto subscribe_close(std::invocable<> auto &&callback) noexcept
-    {
-        return _close_notifier.subscribe(tt_forward(callback));
-    }
-
 protected:
     static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
-
-    /** Notifier used when the window is closing.
-     * It is expected that after notifying these callbacks the instance of this class is destroyed.
-     */
-    notifier<void()> _close_notifier;
 
     std::weak_ptr<delegate_type> _delegate;
 

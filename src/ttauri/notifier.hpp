@@ -7,10 +7,12 @@
 #include "required.hpp"
 #include "unfair_recursive_mutex.hpp"
 #include "coroutine.hpp"
+#include "awaitable.hpp"
 #include <mutex>
 #include <vector>
 #include <tuple>
 #include <functional>
+#include <coroutine>
 
 namespace tt::inline v1 {
 
@@ -33,6 +35,11 @@ public:
     using result_type = Result;
     using callback_type = std::function<Result(Args const &...)>;
     using callback_ptr_type = std::shared_ptr<callback_type>;
+
+    awaitable<void,notifier> operator co_await() noexcept
+    {
+        return awaitable<void,notifier>{*this};
+    }
 
     /** Add a callback to the notifier.
      * Ownership of the callback belongs with the caller of `subscribe()`. The
@@ -116,8 +123,48 @@ public:
         };
     }
 
-private : mutable unfair_recursive_mutex _mutex;
+private :
+    /** Mutex */
+    mutable unfair_recursive_mutex _mutex;
     mutable std::vector<std::weak_ptr<callback_type>> _callbacks;
+};
+
+template<>
+class awaitable<void, notifier<void()>> {
+public:
+    using notify_type = notifier<void()>;
+    using handle_type = std::coroutine_handle<>;
+
+    constexpr awaitable() noexcept : _notifier(nullptr) {}
+    constexpr awaitable(notify_type &notifier) noexcept : _notifier(&notifier) {}
+    constexpr awaitable(awaitable const &) noexcept = default;
+    constexpr awaitable(awaitable &&) noexcept = default;
+    constexpr awaitable &operator=(awaitable const &) noexcept = default;
+    constexpr awaitable &operator=(awaitable &&) noexcept = default;
+
+    [[nodiscard]] constexpr static bool await_ready() noexcept
+    {
+        return false;
+    }
+
+    void await_suspend(handle_type handle) noexcept
+    {
+        tt_axiom(_notifier != nullptr);
+
+        // We can use the this pointer in the callback, as `await_suspend()` is called by
+        // the co-routine on the same object as `await_resume()`.
+        _callback_ptr = _notifier->subscribe([handle] {
+            handle.resume();
+        });
+    }
+
+    constexpr static void await_resume() noexcept {}
+
+private:
+    using callback_ptr_type = notify_type::callback_ptr_type;
+
+    notify_type *_notifier;
+    callback_ptr_type _callback_ptr;
 };
 
 } // namespace tt::inline v1

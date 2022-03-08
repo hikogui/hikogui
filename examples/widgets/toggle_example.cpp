@@ -23,7 +23,7 @@ int tt_main(int argc, char *argv[])
     tb.other_label = l10n("other");
 /// [Create a toggle]
 
-    auto close_cb = window->subscribe_close([&] {
+    auto close_cb = window->closing.subscribe([&] {
         window.reset();
     });
     return gui->loop();
