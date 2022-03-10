@@ -21,8 +21,6 @@ namespace tt::inline v1 {
 
 class os_settings {
 public:
-    using callback_ptr_type = notifier<void()>::callback_ptr_type;
-
     /** Get the language tags for the configured languages.
      *
      * @return A list of language tags in order of priority.
@@ -155,19 +153,11 @@ public:
      */
     static void gather() noexcept;
 
-    [[nodiscard]] static callback_ptr_type subscribe(callback_ptr_type const &callback) noexcept
+    [[nodiscard]] static auto subscribe(std::invocable<> auto &&callback) noexcept
     {
         start_subsystem();
         ttlet lock = std::scoped_lock(_mutex);
-        return _notifier.subscribe(callback);
-    }
-
-    template<typename Callback>
-    [[nodiscard]] static callback_ptr_type subscribe(Callback &&callback) noexcept requires(std::is_invocable_v<Callback>)
-    {
-        start_subsystem();
-        ttlet lock = std::scoped_lock(_mutex);
-        return _notifier.subscribe(std::forward<Callback>(callback));
+        return _notifier.subscribe(tt_forward(callback));
     }
 
 private:

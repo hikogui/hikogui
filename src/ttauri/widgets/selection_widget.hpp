@@ -114,7 +114,7 @@ private:
     column_widget *_column_widget = nullptr;
 
     std::vector<menu_button_widget *> _menu_button_widgets;
-    std::vector<typename menu_button_widget::callback_ptr_type> _menu_button_callbacks;
+    std::vector<notifier<void()>::subscription> _menu_button_subscriptions;
 
     selection_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
     [[nodiscard]] menu_button_widget const *get_first_menu_button() const noexcept;

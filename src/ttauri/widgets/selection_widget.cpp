@@ -265,7 +265,7 @@ void selection_widget::repopulate_options() noexcept
     tt_axiom(is_gui_thread());
     _column_widget->clear();
     _menu_button_widgets.clear();
-    _menu_button_callbacks.clear();
+    _menu_button_subscriptions.clear();
 
     auto options = std::vector<label>{};
     auto selected = -1_z;
@@ -285,7 +285,7 @@ void selection_widget::repopulate_options() noexcept
     for (auto &&label : options) {
         auto menu_button = &_column_widget->make_widget<menu_button_widget>(std::move(label), selected, index);
 
-        _menu_button_callbacks.push_back(menu_button->pressed.subscribe([this, index] {
+        _menu_button_subscriptions.push_back(menu_button->pressed.subscribe([this, index] {
             window.gui.run([this, index] {
                 if (auto delegate = _delegate.lock()) {
                     delegate->set_selected(*this, index);

@@ -363,8 +363,8 @@ protected:
     bool send_event(grapheme grapheme, bool full = true) noexcept;
 
 private:
-    std::shared_ptr<std::function<void()>> _setting_change_callback;
-    std::shared_ptr<std::function<void()>> _selected_theme_callback;
+    notifier<void()>::subscription _setting_change_subscription;
+    observable<std::string>::callback_ptr_type _selected_theme_subscription;
 
     /** Target of the mouse
      * Since any mouse event will change the target this is used

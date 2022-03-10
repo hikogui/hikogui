@@ -38,7 +38,82 @@ public:
     using result_type = Result;
     using awaiter_type = notifier_awaiter<notifier>;
     using callback_type = std::function<Result(Args const &...)>;
-    using callback_ptr_type = std::shared_ptr<callback_type>;
+
+    /** Object that represents a callback subscription.
+     */
+    class subscription {
+    public:
+        ~subscription()
+        {
+            if (_notifier) {
+                _notifier->unsubscribe(this);
+            }
+        }
+
+        constexpr subscription() noexcept : _notifier(nullptr) {}
+
+        constexpr subscription(subscription const &other) noexcept : _notifier(nullptr)
+        {
+            if (other._notifier) {
+                other._notifier->copy_subscription(&other, this);
+                _notifier = other._notifier;
+            }
+        }
+
+        constexpr subscription &operator=(subscription const &other) noexcept
+        {
+            tt_return_on_self_assignment(other);
+
+            if (_notifier) {
+                _notifier->unsubscribe(this);
+                _notifier = nullptr;
+            }
+            if (other._notifier) {
+                other._notifier->copy_subscription(&other, this);
+                _notifier = other._notifier;
+            }
+            return *this;
+        }
+
+        constexpr subscription(subscription &&other) noexcept : _notifier(nullptr)
+        {
+            if (other._notifier) {
+                other._notifier->move_subscription(&other, this);
+                _notifier = std::exchange(other._notifier, nullptr);
+            }
+        }
+
+        constexpr subscription &operator=(subscription &&other) noexcept
+        {
+            tt_return_on_self_assignment(other);
+
+            if (_notifier) {
+                _notifier->unsubscribe(this);
+                _notifier = nullptr;
+            }
+            if (other._notifier) {
+                other._notifier->move_subscription(&other, this);
+                _notifier = std::exchange(other._notifier, nullptr);
+            }
+            return *this;
+        }
+
+        constexpr subscription(notifier *notifier) noexcept : _notifier(notifier){}
+
+    private:
+        notifier *_notifier;
+
+        friend notifier;
+    };
+
+    constexpr notifier() noexcept = default;
+
+    ~notifier()
+    {
+        for (auto &callback: _callbacks) {
+            const_cast<subscription *>(callback.first)->_notifier = nullptr;
+        }
+    }
 
     awaiter_type operator co_await() const noexcept
     {
@@ -51,49 +126,13 @@ public:
      * it will no longer be called.
      *
      * @param callback_ptr A shared_ptr to a callback function.
+     * @return A RAII object which when destroyed will unsubscribe the callback.
      */
-    callback_ptr_type subscribe(callback_ptr_type const &callback_ptr) noexcept
+    subscription subscribe(std::invocable<Args...> auto &&callback) noexcept
     {
-        auto lock = std::scoped_lock(_mutex);
-
-        ttlet i = std::find_if(_callbacks.cbegin(), _callbacks.cend(), [&callback_ptr](ttlet &item) {
-            return item.lock() == callback_ptr;
-        });
-
-        if (i == _callbacks.cend()) {
-            _callbacks.emplace_back(callback_ptr);
-        }
-        return callback_ptr;
-    }
-
-    /** Add a callback to the notifier.
-     * Ownership of the callback belongs with the caller of `subscribe()`. The
-     * `notifier` will hold a weak_ptr to the callback so that when the callback is destroyed
-     * it will no longer be called.
-     *
-     * @param callback The callback-function to register.
-     * @return A shared_ptr to a function object holding the callback.
-     */
-    template<typename Callback>
-    requires(std::is_invocable_v<Callback>) [[nodiscard]] callback_ptr_type subscribe(Callback &&callback) noexcept
-    {
-        auto callback_ptr = std::make_shared<callback_type>(std::forward<decltype(callback)>(callback));
-
-        auto lock = std::scoped_lock(_mutex);
-        _callbacks.emplace_back(callback_ptr);
-        return callback_ptr;
-    }
-
-    std::vector<std::weak_ptr<callback_type>> callbacks() const noexcept
-    {
-        auto lock = std::scoped_lock(_mutex);
-
-        // Clean up all the callbacks that expired.
-        std::erase_if(_callbacks, [](auto &x) {
-            return x.expired();
-        });
-
-        return _callbacks;
+        auto sub = subscription{this};
+        _callbacks.emplace_back(&sub, tt_forward(callback));
+        return sub;
     }
 
     /** Call the subscribed callbacks with the given arguments.
@@ -103,12 +142,9 @@ public:
      */
     void operator()(Args const &...args) const noexcept requires(std::is_same_v<result_type, void>)
     {
-        auto callbacks_ = callbacks();
-        for (auto &callback : callbacks_) {
-            if (auto callback_ = callback.lock()) {
-                (*callback_)(args...);
-            }
-        };
+        for (auto &callback : _callbacks) {
+            callback.second(args...);
+        }
     }
 
     /** Call the subscribed callbacks with the given arguments.
@@ -119,18 +155,39 @@ public:
      */
     generator<result_type> operator()(Args const &...args) const noexcept requires(not std::is_same_v<result_type, void>)
     {
-        auto callbacks_ = callbacks();
-        for (auto &callback : callbacks_) {
-            if (auto callback_ = callback.lock()) {
-                co_yield (*callback_)(args...);
-            }
-        };
+        for (auto &callback : _callbacks) {
+            co_yield callback.second(args...);
+        }
     }
 
 private :
-    /** Mutex */
-    mutable unfair_recursive_mutex _mutex;
-    mutable std::vector<std::weak_ptr<callback_type>> _callbacks;
+    mutable std::vector<std::pair<subscription const *, callback_type>> _callbacks;
+
+    void unsubscribe(subscription const *sub) noexcept
+    {
+        ttlet erase_count = std::erase_if(_callbacks, [sub](ttlet &item) {
+            return item.first == sub;
+        });
+        tt_axiom(erase_count == 1);
+    }
+
+    void move_subscription(subscription const *sub, subscription const *new_sub) noexcept
+    {
+        ttlet it = std::find_if(_callbacks.begin(), _callbacks.end(), [sub](ttlet &item) {
+            return item.first == sub;
+        });
+        tt_axiom(it != _callbacks.end());
+        it->first = new_sub;
+    }
+
+    void copy_subscription(subscription const *sub, subscription const *new_sub) noexcept
+    {
+        ttlet it = std::find_if(_callbacks.begin(), _callbacks.end(), [sub](ttlet &item) {
+            return item.first == sub;
+        });
+        tt_axiom(it != _callbacks.end());
+        _callbacks.emplace_back(new_sub, it->second);
+    }
 };
 
 template<typename Notifier>
@@ -164,7 +221,7 @@ public:
 
         // We can use the this pointer in the callback, as `await_suspend()` is called by
         // the co-routine on the same object as `await_resume()`.
-        _callback_ptr = _notifier->subscribe([handle, this] {
+        _subscription = _notifier->subscribe([handle, this] {
             this->_triggered = true;
             handle.resume();
         });
@@ -178,10 +235,10 @@ public:
     }
 
 private:
-    using callback_ptr_type = notifier_type::callback_ptr_type;
+    using subscription = notifier_type::subscription;
 
     notifier_type *_notifier;
-    callback_ptr_type _callback_ptr;
+    subscription _subscription;
     bool _triggered = false;
 };
 
