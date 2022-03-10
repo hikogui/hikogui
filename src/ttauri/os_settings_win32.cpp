@@ -106,6 +106,22 @@ namespace tt::inline v1 {
     return std::chrono::milliseconds{GetDoubleClickTime()};
 }
 
+[[nodiscard]] float os_settings::gather_double_click_distance()
+{
+    ttlet width = GetSystemMetrics(SM_CXDOUBLECLK);
+    if (width <= 0) {
+        throw os_error("Could not retrieve SM_CXDOUBLECLK");
+    }
+
+    ttlet height = GetSystemMetrics(SM_CYDOUBLECLK);
+    if (height <= 0) {
+        throw os_error("Could not retrieve SM_CYDOUBLECLK");
+    }
+
+    ttlet diameter = std::max(width, height);
+    return diamter * 0.5f;
+}
+
 [[nodiscard]] std::chrono::milliseconds os_settings::gather_keyboard_repeat_delay()
 {
     using namespace std::literals::chrono_literals;
