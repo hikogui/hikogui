@@ -27,12 +27,14 @@ public:
         // The aperture-widget will not draw itself, only its selected content.
         semantic_layer = parent->semantic_layer;
 
-        content_width.subscribe(_relayout_callback);
-        content_height.subscribe(_relayout_callback);
-        aperture_width.subscribe(_relayout_callback);
-        aperture_height.subscribe(_relayout_callback);
-        offset_x.subscribe(_relayout_callback);
-        offset_y.subscribe(_relayout_callback);
+        // clang-format off
+        _content_width_token = content_width.subscribe([&]{ request_relayout(); });
+        _content_height_token = content_height.subscribe([&]{ request_relayout(); });
+        _aperture_width_token = aperture_width.subscribe([&]{ request_relayout(); });
+        _aperture_height_token = aperture_height.subscribe([&]{ request_relayout(); });
+        _offset_x_token = offset_x.subscribe([&]{ request_relayout(); });
+        _offset_y_token = offset_y.subscribe([&]{ request_relayout(); });
+        // clang-format off
     }
 
     template<typename Widget, typename... Args>
@@ -201,6 +203,12 @@ public:
 private:
     aarectangle _content_rectangle;
     std::unique_ptr<widget> _content;
+    notifier<>::token _content_width_token;
+    notifier<>::token _content_height_token;
+    notifier<>::token _aperture_width_token;
+    notifier<>::token _aperture_height_token;
+    notifier<>::token _offset_x_token;
+    notifier<>::token _offset_y_token;
 };
 
 } // namespace tt::inline v1

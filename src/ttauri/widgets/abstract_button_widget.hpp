@@ -24,7 +24,6 @@ class abstract_button_widget : public widget {
 public:
     using super = widget;
     using delegate_type = button_delegate;
-    using callback_ptr_type = typename delegate_type::callback_ptr_type;
 
     /** The label to show when the button is in the 'on' state.
      */

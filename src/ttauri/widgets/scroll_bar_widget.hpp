@@ -34,9 +34,11 @@ public:
         aperture(std::forward<Aperture>(aperture)),
         offset(std::forward<Offset>(offset))
     {
-        this->content.subscribe(_relayout_callback);
-        this->aperture.subscribe(_relayout_callback);
-        this->offset.subscribe(_relayout_callback);
+        // clang-format off
+        _content_token = this->content.subscribe([&]{ request_relayout(); });
+        _aperture_token = this->aperture.subscribe([&]{ request_relayout(); });
+        _offset_token = this->offset.subscribe([&]{ request_relayout(); });
+        // clang-format on
     }
 
     ~scroll_bar_widget() {}
@@ -144,6 +146,10 @@ private:
     aarectangle _slider_rectangle;
 
     float _offset_before_drag;
+
+    notifier<>::token _content_token;
+    notifier<>::token _aperture_token;
+    notifier<>::token _offset_token;
 
     /** Create a new offset value.
     * 

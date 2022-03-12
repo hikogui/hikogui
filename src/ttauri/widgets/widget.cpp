@@ -31,8 +31,10 @@ widget::widget(gui_window &_window, widget *parent) noexcept :
         request_reconstrain();
     });
 
-    enabled.subscribe(_redraw_callback);
-    visible.subscribe(_reconstrain_callback);
+    // clang-format off
+    _enabled_token = enabled.subscribe([&]{ request_redraw(); });
+    _visible_token = visible.subscribe([&]{ request_reconstrain(); });
+    // clang-format off
 
     _constraints.minimum = extent2::nan();
     _constraints.preferred = extent2::nan();

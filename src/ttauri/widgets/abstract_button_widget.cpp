@@ -18,7 +18,7 @@ abstract_button_widget::abstract_button_widget(
     _off_label_widget = std::make_unique<label_widget>(window, this, off_label, label_alignment);
     _other_label_widget = std::make_unique<label_widget>(window, this, other_label, label_alignment);
     if (auto d = _delegate.lock()) {
-        d->subscribe(*this, _relayout_callback);
+        _delegate_token = d->subscribe(*this, [&]{ request_relayout(); });
         d->init(*this);
     }
 }

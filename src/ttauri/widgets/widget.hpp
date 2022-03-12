@@ -338,9 +338,8 @@ protected:
     widget_constraints _constraints;
     widget_layout _layout;
 
-    std::shared_ptr<std::function<void()>> _redraw_callback;
-    std::shared_ptr<std::function<void()>> _relayout_callback;
-    std::shared_ptr<std::function<void()>> _reconstrain_callback;
+    notifier<>::token _enabled_token;
+    notifier<>::token _visible_token;
 
     [[nodiscard]] virtual pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept
     {

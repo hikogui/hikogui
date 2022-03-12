@@ -16,7 +16,7 @@
 
 namespace tt::inline v1 {
 
-template<typename T>
+template<typename T = void()>
 class notifier {
 };
 
@@ -39,11 +39,11 @@ public:
     using awaiter_type = notifier_awaiter<notifier>;
     using callback_type = std::function<Result(Args const &...)>;
 
-    /** Object that represents a callback subscription.
+    /** Object that represents a callback token.
      */
-    class subscription {
+    class token {
     public:
-        ~subscription()
+        ~token()
         {
             ttlet lock = std::scoped_lock(notifier::_mutex);
 
@@ -52,19 +52,19 @@ public:
             }
         }
 
-        constexpr subscription() noexcept : _notifier(nullptr) {}
+        constexpr token() noexcept : _notifier(nullptr) {}
 
-        constexpr subscription(subscription const &other) noexcept : _notifier(nullptr)
+        constexpr token(token const &other) noexcept : _notifier(nullptr)
         {
             ttlet lock = std::scoped_lock(notifier::_mutex);
 
             if (other._notifier) {
-                other._notifier->copy_subscription(&other, this);
+                other._notifier->copy_token(&other, this);
                 _notifier = other._notifier;
             }
         }
 
-        constexpr subscription &operator=(subscription const &other) noexcept
+        constexpr token &operator=(token const &other) noexcept
         {
             tt_return_on_self_assignment(other);
             ttlet lock = std::scoped_lock(notifier::_mutex);
@@ -75,23 +75,23 @@ public:
                 _notifier = nullptr;
             }
             if (other._notifier) {
-                other._notifier->copy_subscription(&other, this);
+                other._notifier->copy_token(&other, this);
                 _notifier = other._notifier;
             }
             return *this;
         }
 
-        constexpr subscription(subscription &&other) noexcept : _notifier(nullptr)
+        constexpr token(token &&other) noexcept : _notifier(nullptr)
         {
             ttlet lock = std::scoped_lock(notifier::_mutex);
 
             if (other._notifier) {
-                other._notifier->move_subscription(&other, this);
+                other._notifier->move_token(&other, this);
                 _notifier = std::exchange(other._notifier, nullptr);
             }
         }
 
-        constexpr subscription &operator=(subscription &&other) noexcept
+        constexpr token &operator=(token &&other) noexcept
         {
             tt_return_on_self_assignment(other);
             ttlet lock = std::scoped_lock(notifier::_mutex);
@@ -102,13 +102,13 @@ public:
                 _notifier = nullptr;
             }
             if (other._notifier) {
-                other._notifier->move_subscription(&other, this);
+                other._notifier->move_token(&other, this);
                 _notifier = std::exchange(other._notifier, nullptr);
             }
             return *this;
         }
 
-        constexpr subscription(notifier *notifier) noexcept : _notifier(notifier){}
+        constexpr token(notifier *notifier) noexcept : _notifier(notifier){}
 
     private:
         notifier *_notifier;
@@ -123,7 +123,7 @@ public:
         ttlet lock = std::scoped_lock(_mutex);
 
         for (auto &callback: _callbacks) {
-            const_cast<subscription *>(callback.first)->_notifier = nullptr;
+            const_cast<token *>(callback.first)->_notifier = nullptr;
         }
     }
 
@@ -140,11 +140,11 @@ public:
      * @param callback_ptr A shared_ptr to a callback function.
      * @return A RAII object which when destroyed will unsubscribe the callback.
      */
-    subscription subscribe(std::invocable<Args...> auto &&callback) noexcept
+    [[nodiscard]] token subscribe(std::invocable<Args...> auto &&callback) noexcept
     {
         ttlet lock = std::scoped_lock(_mutex);
 
-        auto sub = subscription{this};
+        auto sub = token{this};
         _callbacks.emplace_back(&sub, tt_forward(callback));
         return sub;
     }
@@ -193,7 +193,7 @@ public:
 private :
     inline static unfair_recursive_mutex _mutex;
 
-    std::vector<std::pair<subscription const *, callback_type>> _callbacks;
+    std::vector<std::pair<token const *, callback_type>> _callbacks;
 
 #if TT_BUILD_TYPE == TT_BT_DEBUG
     /** The notifier is currently calling all the callbacks.
@@ -201,7 +201,7 @@ private :
     mutable bool _notifying = false;
 #endif
 
-    void unsubscribe(subscription const *sub) noexcept
+    void unsubscribe(token const *sub) noexcept
     {
         ttlet erase_count = std::erase_if(_callbacks, [sub](ttlet &item) {
             return item.first == sub;
@@ -209,7 +209,7 @@ private :
         tt_axiom(erase_count == 1);
     }
 
-    void move_subscription(subscription const *sub, subscription const *new_sub) noexcept
+    void move_token(token const *sub, token const *new_sub) noexcept
     {
         ttlet it = std::find_if(_callbacks.begin(), _callbacks.end(), [sub](ttlet &item) {
             return item.first == sub;
@@ -218,7 +218,7 @@ private :
         it->first = new_sub;
     }
 
-    void copy_subscription(subscription const *sub, subscription const *new_sub) noexcept
+    void copy_token(token const *sub, token const *new_sub) noexcept
     {
         ttlet it = std::find_if(_callbacks.begin(), _callbacks.end(), [sub](ttlet &item) {
             return item.first == sub;
@@ -259,7 +259,7 @@ public:
 
         // We can use the this pointer in the callback, as `await_suspend()` is called by
         // the co-routine on the same object as `await_resume()`.
-        _subscription = _notifier->subscribe([handle, this] {
+        _token = _notifier->subscribe([handle, this] {
             this->_triggered = true;
             handle.resume();
         });
@@ -273,10 +273,10 @@ public:
     }
 
 private:
-    using subscription = notifier_type::subscription;
+    using token = notifier_type::token;
 
     notifier_type *_notifier;
-    subscription _subscription;
+    token _token;
     bool _triggered = false;
 };
 

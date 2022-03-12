@@ -24,9 +24,11 @@ text_field_widget::text_field_widget(gui_window &window, widget *parent, weak_or
     _error_label_widget =
         std::make_unique<label_widget>(window, this, _error_label, alignment::top_left(), theme_text_style::error);
 
-    continues.subscribe(_reconstrain_callback);
-    text_style.subscribe(_reconstrain_callback);
-    _text.subscribe(_reconstrain_callback);
+    // clang-format off
+    _continues_token = continues.subscribe([&]{ request_reconstrain(); });
+    _text_style_token = text_style.subscribe([&]{ request_reconstrain(); });
+    _text_token = _text.subscribe([&]{ request_reconstrain(); });
+    // clang-format on
 }
 
 text_field_widget::text_field_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :

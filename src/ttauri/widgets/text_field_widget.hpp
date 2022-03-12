@@ -116,6 +116,10 @@ private:
     aarectangle _error_label_rectangle;
     std::unique_ptr<label_widget> _error_label_widget;
 
+    notifier<>::token _continues_token;
+    notifier<>::token _text_style_token;
+    notifier<>::token _text_token;
+
     text_field_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
     void revert(bool force) noexcept;
     void commit(bool force) noexcept;
