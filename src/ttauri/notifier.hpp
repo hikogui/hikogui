@@ -45,6 +45,8 @@ public:
     public:
         ~subscription()
         {
+            ttlet lock = std::scoped_lock(notifier::_mutex);
+
             if (_notifier) {
                 _notifier->unsubscribe(this);
             }
@@ -54,6 +56,8 @@ public:
 
         constexpr subscription(subscription const &other) noexcept : _notifier(nullptr)
         {
+            ttlet lock = std::scoped_lock(notifier::_mutex);
+
             if (other._notifier) {
                 other._notifier->copy_subscription(&other, this);
                 _notifier = other._notifier;
@@ -63,6 +67,8 @@ public:
         constexpr subscription &operator=(subscription const &other) noexcept
         {
             tt_return_on_self_assignment(other);
+            ttlet lock = std::scoped_lock(notifier::_mutex);
+
 
             if (_notifier) {
                 _notifier->unsubscribe(this);
@@ -77,6 +83,8 @@ public:
 
         constexpr subscription(subscription &&other) noexcept : _notifier(nullptr)
         {
+            ttlet lock = std::scoped_lock(notifier::_mutex);
+
             if (other._notifier) {
                 other._notifier->move_subscription(&other, this);
                 _notifier = std::exchange(other._notifier, nullptr);
@@ -86,6 +94,8 @@ public:
         constexpr subscription &operator=(subscription &&other) noexcept
         {
             tt_return_on_self_assignment(other);
+            ttlet lock = std::scoped_lock(notifier::_mutex);
+
 
             if (_notifier) {
                 _notifier->unsubscribe(this);
@@ -110,6 +120,8 @@ public:
 
     ~notifier()
     {
+        ttlet lock = std::scoped_lock(_mutex);
+
         for (auto &callback: _callbacks) {
             const_cast<subscription *>(callback.first)->_notifier = nullptr;
         }
@@ -130,6 +142,8 @@ public:
      */
     subscription subscribe(std::invocable<Args...> auto &&callback) noexcept
     {
+        ttlet lock = std::scoped_lock(_mutex);
+
         auto sub = subscription{this};
         _callbacks.emplace_back(&sub, tt_forward(callback));
         return sub;
@@ -142,9 +156,17 @@ public:
      */
     void operator()(Args const &...args) const noexcept requires(std::is_same_v<result_type, void>)
     {
+        ttlet lock = std::scoped_lock(_mutex);
+
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+        tt_axiom(++_recurse_count == 1);
+#endif
         for (auto &callback : _callbacks) {
             callback.second(args...);
         }
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+        --_recurse_count;
+#endif
     }
 
     /** Call the subscribed callbacks with the given arguments.
@@ -155,13 +177,27 @@ public:
      */
     generator<result_type> operator()(Args const &...args) const noexcept requires(not std::is_same_v<result_type, void>)
     {
+        ttlet lock = std::scoped_lock(_mutex);
+
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+        tt_axiom(++_recurse_count == 1);
+#endif
         for (auto &callback : _callbacks) {
             co_yield callback.second(args...);
         }
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+        --_recurse_count;
+#endif
     }
 
 private :
-    mutable std::vector<std::pair<subscription const *, callback_type>> _callbacks;
+    inline static unfair_recursive_mutex _mutex;
+
+    std::vector<std::pair<subscription const *, callback_type>> _callbacks;
+
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+    size_t _recurse_count = 0;
+#endif
 
     void unsubscribe(subscription const *sub) noexcept
     {

@@ -12,33 +12,18 @@
 
 namespace tt::inline v1 {
 
-template<typename T>
-concept awaitable_has_ready = requires(T a)
-{
-    {
-        a.await_ready()
-        } -> std::convertible_to<bool>;
-};
-
-template<typename T>
-concept awaitable_has_suspend = requires(T a, std::coroutine_handle<> b)
-{
-    {a.await_suspend(b)};
-};
-
-template<typename T>
-concept awaitable_has_resume = requires(T a)
-{
-    {a.await_resume()};
-};
-
 /** Check if type can be directly co_await on.
 * 
 * The type needs to have the following member functions:
 *  `await_ready()`, `await_suspend()` and `await_resume()`.
 */
 template<typename T>
-concept awaitable_direct = awaitable_has_ready<T> and awaitable_has_suspend<T> and awaitable_has_resume<T>;
+concept awaitable_direct = requires(T a, std::coroutine_handle<> b)
+{
+    {a.await_ready()} -> std::convertable_to<bool>;
+    a.await_suspend(b);
+    a.await_resume();
+};
 
 /** Check if type can be indirectly co_await on.
  *

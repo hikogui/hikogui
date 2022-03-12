@@ -11,10 +11,10 @@
 namespace tt::inline v1 {
 
 template<typename T>
-class gui_task;
+class task;
 
 template<typename T>
-struct gui_task_promise_base {
+struct task_promise_base {
     T _value;
 
     void return_void() noexcept
@@ -29,22 +29,22 @@ struct gui_task_promise_base {
 };
 
 template<>
-struct gui_task_promise_base<void> {
+struct task_promise_base<void> {
     void return_void() noexcept {}
 };
 
 template<typename T>
-struct gui_task_promise : gui_task_promise_base<T> {
+struct task_promise : task_promise_base<T> {
     using value_type = T;
-    using handle_type = std::coroutine_handle<gui_task_promise<value_type>>;
-    using task_type = gui_task<value_type>;
+    using handle_type = std::coroutine_handle<task_promise<value_type>>;
+    using task_type = task<value_type>;
 
     static void unhandled_exception()
     {
         throw;
     }
 
-    gui_task<value_type> get_return_object()
+    task<value_type> get_return_object()
     {
         return task_type{handle_type::from_promise(*this)};
     }
@@ -60,27 +60,31 @@ struct gui_task_promise : gui_task_promise_base<T> {
     }
 };
 
+/** Co-routine task.
+ * 
+ * @tparam T The type returned by co_return.
+ */
 template<typename T = void>
-class gui_task {
+class task {
 public:
     using value_type = T;
-    using promise_type = gui_task_promise<value_type>;
+    using promise_type = task_promise<value_type>;
     using handle_type = std::coroutine_handle<promise_type>;
 
-    explicit gui_task(handle_type coroutine) : _coroutine(coroutine) {}
+    explicit task(handle_type coroutine) : _coroutine(coroutine) {}
 
-    gui_task() = default;
-    ~gui_task()
+    task() = default;
+    ~task()
     {
         //if (_coroutine) {
         //    _coroutine.destroy();
         //}
     }
 
-    gui_task(gui_task const &) = delete;
-    gui_task(gui_task &&) = delete;
-    gui_task &operator=(gui_task const &) = delete;
-    gui_task &operator=(gui_task &&) = delete;
+    task(task const &) = delete;
+    task(task &&) = delete;
+    task &operator=(task const &) = delete;
+    task &operator=(task &&) = delete;
 
 private:
     handle_type _coroutine;
