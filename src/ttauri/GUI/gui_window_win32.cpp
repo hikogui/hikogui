@@ -980,9 +980,10 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     case WM_RBUTTONDOWN:
     case WM_XBUTTONDOWN: {
         ttlet within_double_click_time = mouseEvent.timePoint - multi_click_time_point < os_settings::double_click_interval();
-        ttlet within_double_click_distance = hypot(mouseEvent.position - multi_click_position) < os_settings:double_click_distance();
+        ttlet within_double_click_distance =
+            hypot(mouseEvent.position - multi_click_position) < os_settings::double_click_distance();
 
-        multi_click_count = within_double_click_time and within_double_clock_distance ? multi_click_count + 1 : 1;
+        multi_click_count = within_double_click_time and within_double_click_distance ? multi_click_count + 1 : 1;
         multi_click_time_point = mouseEvent.timePoint;
         multi_click_position = mouseEvent.position;
 

@@ -159,13 +159,13 @@ public:
         ttlet lock = std::scoped_lock(_mutex);
 
 #if TT_BUILD_TYPE == TT_BT_DEBUG
-        tt_axiom(++_recurse_count == 1);
+        tt_axiom(std::exchange(_notifying, true) == false);
 #endif
         for (auto &callback : _callbacks) {
             callback.second(args...);
         }
 #if TT_BUILD_TYPE == TT_BT_DEBUG
-        --_recurse_count;
+        _notifying = false;
 #endif
     }
 
@@ -180,13 +180,13 @@ public:
         ttlet lock = std::scoped_lock(_mutex);
 
 #if TT_BUILD_TYPE == TT_BT_DEBUG
-        tt_axiom(++_recurse_count == 1);
+        tt_axiom(std::exchange(_notifying, true) == false);
 #endif
         for (auto &callback : _callbacks) {
             co_yield callback.second(args...);
         }
 #if TT_BUILD_TYPE == TT_BT_DEBUG
-        --_recurse_count;
+        _notifying = false;
 #endif
     }
 
@@ -196,7 +196,9 @@ private :
     std::vector<std::pair<subscription const *, callback_type>> _callbacks;
 
 #if TT_BUILD_TYPE == TT_BT_DEBUG
-    size_t _recurse_count = 0;
+    /** The notifier is currently calling all the callbacks.
+     */
+    mutable bool _notifying = false;
 #endif
 
     void unsubscribe(subscription const *sub) noexcept

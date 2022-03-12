@@ -20,7 +20,7 @@ namespace tt::inline v1 {
 template<typename T>
 concept awaitable_direct = requires(T a, std::coroutine_handle<> b)
 {
-    {a.await_ready()} -> std::convertable_to<bool>;
+    {a.await_ready()} -> std::convertible_to<bool>;
     a.await_suspend(b);
     a.await_resume();
 };

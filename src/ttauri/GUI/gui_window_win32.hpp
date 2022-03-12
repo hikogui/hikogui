@@ -46,7 +46,7 @@ private:
     char32_t highSurrogate = 0;
     mouse_event mouseButtonEvent;
     utc_nanoseconds multi_click_time_point;
-    point2 multi_click_point;
+    point2 multi_click_position;
     int multi_click_count;
 
     void setOSWindowRectangleFromRECT(RECT aarectangle) noexcept;

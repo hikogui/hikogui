@@ -8,7 +8,7 @@
 #include "ttauri/GFX/RenderDoc.hpp"
 #include "ttauri/GFX/gfx_system.hpp"
 #include "ttauri/GUI/gui_system.hpp"
-#include "ttauri/GUI/gui_task.hpp"
+#include "ttauri/task.hpp"
 #include "ttauri/GUI/theme_book.hpp"
 #include "ttauri/audio/audio_system.hpp"
 #include "ttauri/widgets/toolbar_button_widget.hpp"
@@ -88,7 +88,7 @@ void init_license_tab(tt::grid_widget &grid, tt::observable<bool> &toggle_value,
     selection3.enabled = toggle_value;
 }
 
-tt::gui_task<> preferences_window(tt::gui_system &gui, tt::preferences &preferences)
+tt::task<> preferences_window(tt::gui_system &gui, tt::preferences &preferences)
 {
     using namespace tt;
 
@@ -121,7 +121,7 @@ tt::gui_task<> preferences_window(tt::gui_system &gui, tt::preferences &preferen
     co_await window->closing;
 }
 
-tt::gui_task<> main_window(tt::gui_system &gui, tt::preferences &preferences)
+tt::task<> main_window(tt::gui_system &gui, tt::preferences &preferences)
 {
     using namespace tt;
 

@@ -119,7 +119,7 @@ namespace tt::inline v1 {
     }
 
     ttlet diameter = std::max(width, height);
-    return diamter * 0.5f;
+    return diameter * 0.5f;
 }
 
 [[nodiscard]] std::chrono::milliseconds os_settings::gather_keyboard_repeat_delay()

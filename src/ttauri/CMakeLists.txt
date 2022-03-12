@@ -147,6 +147,7 @@ target_sources(ttauri PRIVATE
     tag.hpp
     tagged_id.hpp
     tagged_map.hpp
+    task.hpp
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/thread_macos.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/thread_win32.cpp>
     thread.cpp

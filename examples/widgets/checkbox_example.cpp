@@ -3,13 +3,13 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "ttauri/GUI/gui_system.hpp"
-#include "ttauri/GUI/gui_task.hpp"
+#include "ttauri/task.hpp"
 #include "ttauri/widgets/checkbox_widget.hpp"
 #include "ttauri/crt.hpp"
 
 using namespace tt;
 
-gui_task<void> checkbox_example(gui_system &gui)
+task<void> checkbox_example(gui_system &gui)
 {
     auto window = gui.make_window(l10n("Checkbox example"));
 
