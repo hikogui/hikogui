@@ -15,6 +15,7 @@
 #include <string>
 #include <span>
 #include <format>
+#include <ranges>
 
 namespace {
 
@@ -63,7 +64,7 @@ static tt::generator<test_type> parse_tests(std::string_view filename)
     ttlet test_data = view.string_view();
 
     int line_nr = 1;
-    for (ttlet line : tt::views::split(test_data, "\n")) {
+    for (ttlet line : std::views::split(test_data, std::string_view{"\n"})) {
         if (ttlet optional_test = parse_test_line(line, line_nr)) {
             co_yield *optional_test;
         }
