@@ -136,7 +136,7 @@ private:
     text_shaper _shaped_text;
     float _shaped_text_cap_height;
 
-    notifier<>::token _text_token;
+    notifier<>::token_type _text_cbt;
 
     text_selection _selection;
 

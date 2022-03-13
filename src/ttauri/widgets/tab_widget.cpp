@@ -24,7 +24,9 @@ tab_widget::tab_widget(gui_window &window, widget *parent, weak_or_unique_ptr<de
     semantic_layer = parent->semantic_layer;
 
     if (auto d = _delegate.lock()) {
-        d->subscribe(*this, _reconstrain_callback);
+        _delegate_cbt = d->subscribe(*this, [&] {
+            request_reconstrain();
+        });
     }
 
     // Compare and assign would trigger the signaling NaN that widget sets.

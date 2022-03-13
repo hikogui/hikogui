@@ -363,8 +363,8 @@ protected:
     bool send_event(grapheme grapheme, bool full = true) noexcept;
 
 private:
-    notifier<>::token _setting_change_token;
-    notifier<>::token _selected_theme_token;
+    notifier<>::token_type _setting_change_token;
+    notifier<>::token_type _selected_theme_token;
 
     /** Target of the mouse
      * Since any mouse event will change the target this is used

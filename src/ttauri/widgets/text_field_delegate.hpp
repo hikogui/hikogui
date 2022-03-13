@@ -20,18 +20,9 @@ public:
     virtual void init(text_field_widget const &sender) noexcept {}
     virtual void deinit(text_field_widget const &sender) noexcept {}
 
-    virtual callback_ptr_type subscribe(text_field_widget &sender, callback_ptr_type const &callback_ptr) noexcept
+    auto subscribe(text_field_widget &sender, std::invocable<> auto &&callback) noexcept
     {
-        return callback_ptr;
-    }
-
-    /** Subscribe a callback for notifying the widget of a data change.
-     */
-    template<typename Callback>
-    requires(std::is_invocable_v<Callback>) [[nodiscard]] callback_ptr_type
-        subscribe(text_field_widget &sender, Callback &&callback) noexcept
-    {
-        return subscribe(sender, std::make_shared<std::function<void()>>(std::forward<Callback>(callback)));
+        return _notifier.subscribe(tt_forward(callback));
     }
 
     /** Validate the text field.
@@ -64,6 +55,9 @@ public:
      * @param text The text entered by the user.
      */
     virtual void set_text(text_field_widget &sender, std::string_view text) noexcept {}
+
+protected:
+    notifier<> _notifier;
 };
 
 } // namespace tt::inline v1

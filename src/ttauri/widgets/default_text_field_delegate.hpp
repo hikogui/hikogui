@@ -25,15 +25,11 @@ public:
 
     observable<value_type> value;
 
-    template<typename Value>
-    default_text_field_delegate(Value &&value) noexcept : value(std::forward<Value>(value))
+    default_text_field_delegate(auto &&value) noexcept : value(tt_forward(value))
     {
-    }
-
-    callback_ptr_type subscribe(text_field_widget &sender, callback_ptr_type const &callback_ptr) noexcept override
-    {
-        value.subscribe(callback_ptr);
-        return callback_ptr;
+        _value_cbt = this->value.subscribe([&] {
+            this->_notifier();
+        });
     }
 
     std::optional<label> validate(text_field_widget &sender, std::string_view text) noexcept override
@@ -61,6 +57,9 @@ public:
             return;
         }
     }
+
+private:
+    notifier<>::token_type _value_cbt;
 };
 
 template<std::floating_point T>
@@ -70,15 +69,9 @@ public:
 
     observable<value_type> value;
 
-    template<typename Value>
-    default_text_field_delegate(Value &&value) noexcept : value(std::forward<Value>(value))
+    default_text_field_delegate(auto &&value) noexcept : value(tt_forward(value))
     {
-    }
-
-    callback_ptr_type subscribe(text_field_widget &sender, callback_ptr_type const &callback_ptr) noexcept override
-    {
-        value.subscribe(callback_ptr);
-        return callback_ptr;
+        _value_cbt = this->value.subscribe([&]{ this->_notifier(); });
     }
 
     label validate(text_field_widget &sender, std::string_view text) noexcept override
@@ -106,16 +99,18 @@ public:
             return;
         }
     }
+
+private:
+    notifier<>::token_type _value_cbt;
 };
 
 template<typename Value>
 default_text_field_delegate(Value &&) -> default_text_field_delegate<observable_argument_t<std::remove_cvref_t<Value>>>;
 
-template<typename Value, typename... Args>
-std::unique_ptr<text_field_delegate> make_unique_default_text_field_delegate(Value &&value, Args &&...args) noexcept
+std::unique_ptr<text_field_delegate> make_unique_default_text_field_delegate(auto &&value, auto &&...args) noexcept
 {
-    using value_type = observable_argument_t<std::remove_cvref_t<Value>>;
-    return std::make_unique<default_text_field_delegate<value_type>>(std::forward<Value>(value), std::forward<Args>(args)...);
+    using value_type = observable_argument_t<std::remove_cvref_t<decltype(value)>>;
+    return std::make_unique<default_text_field_delegate<value_type>>(tt_forward(value), tt_forward(args)...);
 }
 
 } // namespace tt::inline v1

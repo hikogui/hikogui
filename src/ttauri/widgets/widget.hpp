@@ -338,8 +338,8 @@ protected:
     widget_constraints _constraints;
     widget_layout _layout;
 
-    notifier<>::token _enabled_token;
-    notifier<>::token _visible_token;
+    notifier<>::token_type _enabled_cbt;
+    notifier<>::token_type _visible_cbt;
 
     [[nodiscard]] virtual pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept
     {

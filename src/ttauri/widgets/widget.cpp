@@ -21,19 +21,9 @@ widget::widget(gui_window &_window, widget *parent) noexcept :
         semantic_layer = parent->semantic_layer + 1;
     }
 
-    _redraw_callback = std::make_shared<std::function<void()>>([this] {
-        request_redraw();
-    });
-    _relayout_callback = std::make_shared<std::function<void()>>([this] {
-        request_relayout();
-    });
-    _reconstrain_callback = std::make_shared<std::function<void()>>([this] {
-        request_reconstrain();
-    });
-
     // clang-format off
-    _enabled_token = enabled.subscribe([&]{ request_redraw(); });
-    _visible_token = visible.subscribe([&]{ request_reconstrain(); });
+    _enabled_cbt = enabled.subscribe([&]{ request_redraw(); });
+    _visible_cbt = visible.subscribe([&]{ request_reconstrain(); });
     // clang-format off
 
     _constraints.minimum = extent2::nan();

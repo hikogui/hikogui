@@ -90,6 +90,7 @@ protected:
 
     bool _pressed = false;
     weak_or_unique_ptr<delegate_type> _delegate;
+    notifier<>::token_type _delegate_cbt;
 
     ~abstract_button_widget();
     abstract_button_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;

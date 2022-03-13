@@ -32,20 +32,19 @@ selection_widget::selection_widget(gui_window &window, widget *parent, weak_or_u
     _column_widget = &_scroll_widget->make_widget<column_widget>();
 
     // clang-format off
-    _unknown_label_token = this->unknown_label.subscribe([&]{ request_reconstrain(); });
+    _unknown_label_cbt = this->unknown_label.subscribe([&]{ request_reconstrain(); });
     // clang-format on
 
     if (auto d = _delegate.lock()) {
-        _delegate_callback = d->subscribe(*this, [this] {
+        _delegate_cbt = d->subscribe(*this, [this] {
             this->window.gui.run([this] {
                 repopulate_options();
                 this->request_reconstrain();
             });
         });
 
-        (*_delegate_callback)();
-
         d->init(*this);
+        repopulate_options();
     }
 }
 

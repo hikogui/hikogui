@@ -14,8 +14,6 @@ class selection_widget;
 
 class selection_delegate {
 public:
-    using callback_ptr_type = std::shared_ptr<std::function<void()>>;
-
     virtual ~selection_delegate() = default;
 
     virtual void init(selection_widget &sender) noexcept {}
@@ -24,18 +22,9 @@ public:
 
     /** Subscribe a callback for notifying the widget of a data change.
      */
-    virtual callback_ptr_type subscribe(selection_widget &sender, callback_ptr_type const &callback) noexcept
+    auto subscribe(selection_widget &sender, std::invocable<> auto &&callback) noexcept
     {
-        return callback;
-    }
-
-    /** Subscribe a callback for notifying the widget of a data change.
-     */
-    template<typename Callback>
-    requires(std::is_invocable_v<Callback>) [[nodiscard]] callback_ptr_type
-        subscribe(selection_widget &sender, Callback &&callback) noexcept
-    {
-        return subscribe(sender, std::make_shared<std::function<void()>>(std::forward<Callback>(callback)));
+        return _notifier.subscribe(tt_forward(callback));
     }
 
     /** Called when an option is selected by the user.
@@ -49,6 +38,9 @@ public:
     {
         return {{}, -1};
     }
+
+protected:
+    notifier<> _notifier;
 };
 
 } // namespace tt::inline v1

@@ -13,7 +13,6 @@ class toolbar_button_widget final : public abstract_button_widget {
 public:
     using super = abstract_button_widget;
     using delegate_type = typename super::delegate_type;
-    using callback_ptr_type = typename delegate_type::callback_ptr_type;
 
     template<typename Label>
     toolbar_button_widget(gui_window &window, widget *parent, Label &&label, std::weak_ptr<delegate_type> delegate) noexcept :

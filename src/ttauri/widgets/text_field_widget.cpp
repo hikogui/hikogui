@@ -13,7 +13,9 @@ text_field_widget::text_field_widget(gui_window &window, widget *parent, weak_or
     super(window, parent), _delegate(std::move(delegate)), _text()
 {
     if (auto d = _delegate.lock()) {
-        d->subscribe(*this, _relayout_callback);
+        _delegate_cbt = d->subscribe(*this, [&] {
+            request_relayout();
+        });
         d->init(*this);
     }
 
@@ -25,9 +27,9 @@ text_field_widget::text_field_widget(gui_window &window, widget *parent, weak_or
         std::make_unique<label_widget>(window, this, _error_label, alignment::top_left(), theme_text_style::error);
 
     // clang-format off
-    _continues_token = continues.subscribe([&]{ request_reconstrain(); });
-    _text_style_token = text_style.subscribe([&]{ request_reconstrain(); });
-    _text_token = _text.subscribe([&]{ request_reconstrain(); });
+    _continues_cbt = continues.subscribe([&]{ request_reconstrain(); });
+    _text_style_cbt = text_style.subscribe([&]{ request_reconstrain(); });
+    _text_cbt = _text.subscribe([&]{ request_reconstrain(); });
     // clang-format on
 }
 

@@ -31,18 +31,24 @@ public:
     static constexpr bool can_make_defaults =
         std::is_same_v<value_type, bool> or std::is_integral_v<value_type> or std::is_enum_v<value_type>;
 
+    observable<value_type> value;
+    observable<value_type> on_value;
+    observable<value_type> off_value;
+
     /** Construct a delegate.
      *
      * @param value A value or observable-value used as a representation of the state.
      * @param on_value The value or observable-value that mean 'on'.
      * @param off_value The value or observable-value that mean 'off'.
      */
-    template<typename Value, typename OnValue, typename OffValue>
-    default_button_delegate(Value &&value, OnValue &&on_value, OffValue &&off_value) noexcept :
-        _value(std::forward<Value>(value)),
-        _on_value(std::forward<OnValue>(on_value)),
-        _off_value(std::forward<OnValue>(off_value))
+    default_button_delegate(auto &&value, auto &&on_value, auto &&off_value) noexcept :
+        value(tt_forward(value)), on_value(tt_forward(on_value)), off_value(tt_forward(off_value))
     {
+        // clang-format off
+        _value_cbt = this->value.subscribe([&]{ this->_notifier(); });
+        _on_value_cbt = this->on_value.subscribe([&]{ this->_notifier(); });
+        _off_value_cbt = this->off_value.subscribe([&]{ this->_notifier(); });
+        // clang-format on
     }
 
     /** Construct a delegate.
@@ -50,10 +56,9 @@ public:
      * @param value A value or observable-value used as a representation of the state.
      * @param on_value The value or observable-value that mean 'on'.
      */
-    template<typename Value, typename OnValue>
-    default_button_delegate(Value &&value, OnValue &&on_value) noexcept
+    default_button_delegate(auto &&value, auto &&on_value) noexcept
         requires(can_make_defaults or button_type == button_type::radio) :
-        default_button_delegate(std::forward<Value>(value), std::forward<OnValue>(on_value), value_type{})
+        default_button_delegate(tt_forward(value), tt_forward(on_value), value_type{})
     {
     }
 
@@ -61,26 +66,17 @@ public:
      *
      * @param value A value or observable-value used as a representation of the state.
      */
-    template<typename Value>
-    default_button_delegate(Value &&value) noexcept requires(can_make_defaults) :
-        default_button_delegate(std::forward<Value>(value), static_cast<value_type>(1), value_type{})
+    default_button_delegate(auto &&value) noexcept requires(can_make_defaults) :
+        default_button_delegate(tt_forward(value), value_type{1}, value_type{})
     {
     }
 
     /// @privatesection
-    callback_ptr_type subscribe(abstract_button_widget &sender, callback_ptr_type const &callback_ptr) noexcept override
-    {
-        _value.subscribe(callback_ptr);
-        _on_value.subscribe(callback_ptr);
-        _off_value.subscribe(callback_ptr);
-        return callback_ptr;
-    }
-
     [[nodiscard]] button_state state(abstract_button_widget const &sender) const noexcept override
     {
-        if (_value == _on_value) {
+        if (value == on_value) {
             return button_state::on;
-        } else if (_value == _off_value) {
+        } else if (value == off_value) {
             return button_state::off;
         } else {
             return button_state::other;
@@ -90,20 +86,20 @@ public:
     void activate(abstract_button_widget &sender) noexcept override
     {
         if constexpr (button_type == button_type::toggle) {
-            if (_value == _off_value) {
-                _value = *_on_value;
+            if (value == off_value) {
+                value = *on_value;
             } else {
-                _value = *_off_value;
+                value = *off_value;
             }
         } else if constexpr (button_type == button_type::radio) {
-            _value = *_on_value;
+            value = *on_value;
         }
     }
     /// @endprivatesection
 private:
-    observable<value_type> _value;
-    observable<value_type> _on_value;
-    observable<value_type> _off_value;
+    notifier<>::token_type _value_cbt;
+    notifier<>::token_type _on_value_cbt;
+    notifier<>::token_type _off_value_cbt;
 };
 
 template<button_type ButtonType, typename Value, typename... Args>

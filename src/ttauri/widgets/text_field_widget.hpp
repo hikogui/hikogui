@@ -93,6 +93,7 @@ public:
     /// @endprivatesection
 private:
     weak_or_unique_ptr<delegate_type> _delegate;
+    notifier<>::token_type _delegate_cbt;
 
     /** The scroll widget embeds the text widget.
      */
@@ -116,9 +117,9 @@ private:
     aarectangle _error_label_rectangle;
     std::unique_ptr<label_widget> _error_label_widget;
 
-    notifier<>::token _continues_token;
-    notifier<>::token _text_style_token;
-    notifier<>::token _text_token;
+    notifier<>::token_type _continues_cbt;
+    notifier<>::token_type _text_style_cbt;
+    notifier<>::token_type _text_cbt;
 
     text_field_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
     void revert(bool force) noexcept;
