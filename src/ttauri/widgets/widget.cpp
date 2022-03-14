@@ -5,7 +5,6 @@
 #include "widget.hpp"
 #include "../GUI/gui_window.hpp"
 #include "../GUI/gui_system.hpp"
-#include "../scoped_buffer.hpp"
 #include "../ranges.hpp"
 #include <ranges>
 
@@ -182,8 +181,7 @@ bool widget::handle_command_recursive(command command, std::vector<widget const 
 
     auto handled = false;
 
-    auto buffer = pmr::scoped_buffer<256>{};
-    for (auto *child : children(buffer.allocator())) {
+    for (auto *child : children()) {
         if (child) {
             tt_axiom(child->parent == this);
             handled |= child->handle_command_recursive(command, reject_list);
@@ -229,8 +227,7 @@ widget const *widget::find_next_widget(
         found = true;
     }
 
-    auto buffer = pmr::scoped_buffer<256>{};
-    auto children_copy = make_vector(children(buffer.allocator()));
+    auto children_copy = make_vector(children());
 
     if (direction == keyboard_focus_direction::backward) {
         std::reverse(begin(children_copy), end(children_copy));
@@ -272,8 +269,7 @@ widget const *widget::find_next_widget(
 {
     tt_axiom(is_gui_thread());
 
-    auto buffer = pmr::scoped_buffer<256>{};
-    for (auto *child : children(buffer.allocator())) {
+    for (auto *child : children()) {
         if (child and child->accepts_keyboard_focus(group)) {
             return child;
         }
@@ -285,9 +281,8 @@ widget const *widget::find_next_widget(
 {
     tt_axiom(is_gui_thread());
 
-    auto buffer = pmr::scoped_buffer<256>{};
     widget *found = nullptr;
-    for (auto *child : children(buffer.allocator())) {
+    for (auto *child : children()) {
         if (child and child->accepts_keyboard_focus(group)) {
             found = child;
         }

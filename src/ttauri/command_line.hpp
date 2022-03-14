@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include <coroutine>
 #include "architecture.hpp"
+#include "generator.hpp"
 
 namespace tt::inline v1 {
 

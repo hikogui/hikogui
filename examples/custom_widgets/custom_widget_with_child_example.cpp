@@ -96,7 +96,7 @@ protected:
     //
     // The allocator argument should not be used by the function, it is used by the caller
     // to allocate the co-routine's frame on the stack.
-    [[nodiscard]] tt::pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
+    [[nodiscard]] tt::generator<widget *> children() const noexcept override
     {
         // This function is often written as a co-routine that yields a pointer to each of its children.
         co_yield _label_widget.get();

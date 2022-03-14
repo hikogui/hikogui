@@ -76,9 +76,6 @@ public:
     task() = default;
     ~task()
     {
-        //if (_coroutine) {
-        //    _coroutine.destroy();
-        //}
     }
 
     task(task const &) = delete;

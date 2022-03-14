@@ -26,7 +26,6 @@ target_sources(ttauri PRIVATE
     animator.hpp
     assert.hpp
     atomic.hpp
-    awaiter.hpp
     bezier.hpp
     bezier_curve.cpp
     bezier_curve.hpp
@@ -40,7 +39,6 @@ target_sources(ttauri PRIVATE
     concepts.hpp
     console.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/console_win32.cpp>
-    coroutine.hpp
     command.hpp
     CommandLineParser.hpp
     counters.cpp
@@ -59,6 +57,7 @@ target_sources(ttauri PRIVATE
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/debugger_macos.mm>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/debugger_win32.cpp>
     decimal.hpp
+    delayed_task.hpp
     dialog.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/dialog_win32.cpp>
     endian.hpp
@@ -80,6 +79,7 @@ target_sources(ttauri PRIVATE
     format.hpp
     forward_value.hpp
     gap_buffer.hpp
+    generator.hpp
     global_state.hpp
     glob.hpp
     hash.hpp
@@ -177,6 +177,7 @@ target_sources(ttauri PRIVATE
     utils.hpp
     vspan.hpp
     weak_or_unique_ptr.hpp
+    when_any.hpp
     wfree_fifo.hpp
     wfree_unordered_map.hpp
 )
@@ -204,7 +205,6 @@ if(TT_BUILD_TESTS)
         bigint_tests.cpp
         bound_integer_tests.cpp
         cast_tests.cpp
-        coroutine_tests.cpp
         counters_tests.cpp
         datum_tests.cpp
         dead_lock_detector_tests.cpp
@@ -216,6 +216,7 @@ if(TT_BUILD_TESTS)
         float16_tests.cpp
         forward_value_tests.cpp
         gap_buffer_tests.cpp
+        generator_tests.cpp
         glob_tests.cpp
         interval_tests.cpp
         int_carry_tests.cpp

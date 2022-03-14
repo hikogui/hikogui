@@ -7,6 +7,7 @@
 #include "ttauri/charconv.hpp"
 #include "ttauri/ranges.hpp"
 #include "ttauri/strings.hpp"
+#include "ttauri/generator.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

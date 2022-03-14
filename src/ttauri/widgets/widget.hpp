@@ -15,7 +15,7 @@
 #include "../observable.hpp"
 #include "../command.hpp"
 #include "../chrono.hpp"
-#include "../coroutine.hpp"
+#include "../generator.hpp"
 #include "widget_constraints.hpp"
 #include "widget_layout.hpp"
 #include <memory>
@@ -341,7 +341,7 @@ protected:
     notifier<>::token_type _enabled_cbt;
     notifier<>::token_type _visible_cbt;
 
-    [[nodiscard]] virtual pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept
+    [[nodiscard]] virtual generator<widget *> children() const noexcept
     {
         co_return;
     }

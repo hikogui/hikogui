@@ -38,7 +38,7 @@ void window_widget::constructor_implementation() noexcept
     _content = std::make_unique<grid_widget>(window, this, _content_delegate);
 }
 
-[[nodiscard]] pmr::generator<widget *> window_widget::children(std::pmr::polymorphic_allocator<> &) const noexcept
+[[nodiscard]] generator<widget *> window_widget::children() const noexcept
 {
     co_yield _toolbar.get();
     co_yield _content.get();

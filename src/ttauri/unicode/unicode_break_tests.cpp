@@ -8,7 +8,7 @@
 #include "ttauri/unicode/unicode_description.hpp"
 #include "ttauri/file_view.hpp"
 #include "ttauri/strings.hpp"
-#include "ttauri/coroutine.hpp"
+#include "ttauri/generator.hpp"
 #include "ttauri/ranges.hpp"
 #include <gtest/gtest.h>
 #include <iostream>

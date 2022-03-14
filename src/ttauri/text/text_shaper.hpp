@@ -17,7 +17,6 @@
 #include "../unicode/grapheme.hpp"
 #include "../unicode/gstring.hpp"
 #include "../alignment.hpp"
-#include "../coroutine.hpp"
 #include <vector>
 #include <tuple>
 

@@ -6,8 +6,7 @@
 
 #include "required.hpp"
 #include "unfair_recursive_mutex.hpp"
-#include "coroutine.hpp"
-#include "awaiter.hpp"
+#include "generator.hpp"
 #include <mutex>
 #include <vector>
 #include <tuple>
@@ -117,6 +116,10 @@ public:
     };
 
     constexpr notifier() noexcept = default;
+    notifier(notifier &&) = delete;
+    notifier(notifier const &) = delete;
+    notifier &operator=(notifier &&) = delete;
+    notifier &operator=(notifier const &) = delete;
 
     ~notifier()
     {
@@ -126,6 +129,7 @@ public:
             const_cast<token_type *>(callback.first)->_notifier = nullptr;
         }
     }
+
 
     awaiter_type operator co_await() const noexcept
     {
@@ -161,7 +165,8 @@ public:
 #if TT_BUILD_TYPE == TT_BT_DEBUG
         tt_axiom(std::exchange(_notifying, true) == false);
 #endif
-        for (auto &callback : _callbacks) {
+        ttlet tmp = _callbacks;
+        for (auto &callback : tmp) {
             callback.second(args...);
         }
 #if TT_BUILD_TYPE == TT_BT_DEBUG
@@ -182,7 +187,8 @@ public:
 #if TT_BUILD_TYPE == TT_BT_DEBUG
         tt_axiom(std::exchange(_notifying, true) == false);
 #endif
-        for (auto &callback : _callbacks) {
+        ttlet tmp = _callbacks;
+        for (auto &callback : tmp) {
             co_yield callback.second(args...);
         }
 #if TT_BUILD_TYPE == TT_BT_DEBUG
@@ -228,6 +234,11 @@ private :
     }
 };
 
+template<typename T>
+struct callback_token {
+    using type = notifier<T>::token_type;
+};
+
 template<typename Notifier>
 class notifier_awaiter {
 public:
@@ -242,11 +253,6 @@ public:
     constexpr notifier_awaiter &operator=(notifier_awaiter const &) noexcept = default;
     constexpr notifier_awaiter &operator=(notifier_awaiter &&) noexcept = default;
 
-    [[nodiscard]] constexpr bool was_triggered() noexcept
-    {
-        return _triggered;
-    }
-
     [[nodiscard]] constexpr bool await_ready() noexcept
     {
         return false;
@@ -255,17 +261,15 @@ public:
     void await_suspend(handle_type handle) noexcept
     {
         tt_axiom(_notifier != nullptr);
-        _triggered = false;
 
         // We can use the this pointer in the callback, as `await_suspend()` is called by
         // the co-routine on the same object as `await_resume()`.
-        _cbt = _notifier->subscribe([handle, this] {
-            this->_triggered = true;
+        _cbt = _notifier->subscribe([handle] {
             handle.resume();
         });
     }
 
-    constexpr result_type await_resume() noexcept {}
+    constexpr result_type await_resume() const noexcept {}
 
     [[nodiscard]] bool operator==(notifier_awaiter const &rhs) const noexcept
     {
@@ -277,7 +281,6 @@ private:
 
     notifier_type *_notifier;
     token_type _cbt;
-    bool _triggered = false;
 };
 
 } // namespace tt::inline v1

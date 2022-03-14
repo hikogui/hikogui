@@ -1,14 +1,7 @@
 
-//#include "my_preferences_window_controller.hpp"
-#include "ttauri/log.hpp"
-#include "ttauri/crt.hpp"
-#include "ttauri/time_stamp_count.hpp"
-#include "ttauri/metadata.hpp"
-#include "ttauri/preferences.hpp"
 #include "ttauri/GFX/RenderDoc.hpp"
 #include "ttauri/GFX/gfx_system.hpp"
 #include "ttauri/GUI/gui_system.hpp"
-#include "ttauri/task.hpp"
 #include "ttauri/GUI/theme_book.hpp"
 #include "ttauri/audio/audio_system.hpp"
 #include "ttauri/widgets/toolbar_button_widget.hpp"
@@ -21,6 +14,13 @@
 #include "ttauri/widgets/text_field_widget.hpp"
 #include "ttauri/widgets/tab_widget.hpp"
 #include "ttauri/widgets/toolbar_tab_button_widget.hpp"
+#include "ttauri/log.hpp"
+#include "ttauri/crt.hpp"
+#include "ttauri/time_stamp_count.hpp"
+#include "ttauri/metadata.hpp"
+#include "ttauri/preferences.hpp"
+#include "ttauri/when_any.hpp"
+#include "ttauri/task.hpp"
 #include <Windows.h>
 #include <memory>
 

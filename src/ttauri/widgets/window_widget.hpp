@@ -51,7 +51,7 @@ public:
     void set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept;
 
     /// @privatesection
-    [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override;
+    [[nodiscard]] generator<widget *> children() const noexcept override;
     widget_constraints const &set_constraints() noexcept override;
     void set_layout(widget_layout const &layout) noexcept;
     void draw(draw_context const &context) noexcept override;

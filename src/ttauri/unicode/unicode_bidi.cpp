@@ -5,7 +5,6 @@
 #include "unicode_bidi.hpp"
 #include "../stack.hpp"
 #include "../recursive_iterator.hpp"
-#include "../coroutine.hpp"
 #include <algorithm>
 
 namespace tt::inline v1::detail {
