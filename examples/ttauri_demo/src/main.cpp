@@ -133,18 +133,21 @@ tt::task<> main_window(tt::gui_system &gui, tt::preferences &preferences)
 
     auto &column = window->content().make_widget<column_widget>("A1");
     column.make_widget<momentary_button_widget>(l10n("Hello \u4e16\u754c"));
-    column.make_widget<momentary_button_widget>(l10n("Hello world"));
+    ttlet &hello_world_button = column.make_widget<momentary_button_widget>(l10n("Hello world"));
 
     ttlet &vma_dump_button = column.make_widget<momentary_button_widget>(l10n("vma\ncalculate stats"));
 
     while (true) {
-        ttlet result = co_await when_any(preferences_button.pressed, vma_dump_button.pressed, window->closing);
+        ttlet result = co_await when_any(preferences_button.pressed, vma_dump_button.pressed, hello_world_button.pressed, window->closing);
 
         if (result == preferences_button.pressed) {
             preferences_window(gui, preferences);
 
         } else if (result == vma_dump_button.pressed) {
             gui.gfx->log_memory_usage();
+
+        } else if (result == hello_world_button.pressed) {
+            tt_log_info("Hello World");
 
         } else if (result == window->closing) {
             co_return;
