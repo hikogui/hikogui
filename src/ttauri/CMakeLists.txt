@@ -57,7 +57,6 @@ target_sources(ttauri PRIVATE
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/debugger_macos.mm>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/debugger_win32.cpp>
     decimal.hpp
-    delayed_task.hpp
     dialog.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/dialog_win32.cpp>
     endian.hpp
@@ -136,6 +135,7 @@ target_sources(ttauri PRIVATE
     safe_int.hpp
     semantic_version.hpp
     scoped_buffer.hpp
+    scoped_task.hpp
     source_location.hpp
     small_map.hpp
     small_vector.hpp

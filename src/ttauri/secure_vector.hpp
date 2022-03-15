@@ -50,8 +50,19 @@ template<typename T, typename Alloctor = std::allocator<T>>
 class secure_vector : public secure_vector_base<Allocator> {
 public:
     using value_type = T;
-    using allocator = Allocator;
-    constexpr static bool is_static_allocator = std::allocator_traits<Allocator>::is_always_equal::value;
+    using allocator_type = Allocator;
+    using size_type = std::size_t;
+    using difference_type = std::ptrdiff_t;
+    using reference = value_type &;
+    using const_reference = value_type const &;
+    using pointer = std::allocator_traits<allocator_type>::pointer;
+    using const_pointer = std::allocator_traits<allocator_type>::const_pointer;
+    using iterator = value_type *;
+    using const_iterator = value_type const *;
+    using reverse_iterator = std::reverse_iterator<iterator>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+
+    constexpr static bool is_static_allocator = std::allocator_traits<allocator_type>::is_always_equal::value;
 
     constexpr secure_vector() noexcept : _begin(nullptr), _end(nullptr), _bound(nullptr) {}
 
@@ -67,27 +78,136 @@ public:
         return _begin == _end;
     }
 
-    [[nodisardd]] constexpr size_t size() const noexcept
+    [[nodisardd]] constexpr size_type size() const noexcept
     {
-        return static_cast<size_t>(_end - _begin);
+        return static_cast<size_type>(_end - _begin);
     }
 
-    [[nodiscard]] constexpr size_t capacity() const noexcept
+    [[nodiscard]] constexpr size_type max_size() const noexcept
     {
-        return static_cast<size_t>(_bound - _begin);
+        return std::allocator_traits<allocator_type>::max_size();
     }
 
-    void resize(size_t new_size)
+    [[nodiscard]] constexpr size_type capacity() const noexcept
+    {
+        return static_cast<size_type>(_bound - _begin);
+    }
+
+    reference at(size_type pos)
+    {
+        auto *ptr = _begin + pos;
+        if (ptr >= _end) {
+            throw std::out_of_range();
+        }
+
+        return *ptr;
+    }
+
+    const_reference at(size_type pos) const
+    {
+        auto *ptr = _begin + pos;
+        if (ptr >= _end) {
+            throw std::out_of_range();
+        }
+
+        return *ptr;
+    }
+
+    reference operator[](size_type pos) noexcept
+    {
+        auto *ptr = _begin + pos;
+        tt_axiom(ptr < _end);
+        return *ptr;
+    }
+
+    const_reference operator[](size_type pos) const noexcept
+    {
+        auto *ptr = _begin + pos;
+        tt_axiom(ptr < _end);
+        return *ptr;
+    }
+
+    reference front() noexcept
+    {
+        tt_axiom(not empty());
+        return *_begin;
+    }
+
+    const_reference front() const noexcept
+    {
+        tt_axiom(not empty());
+        return *_begin;
+    }
+
+    reference back() noexcept
+    {
+        tt_axiom(not empty());
+        return *(_end - 1);
+    }
+
+    const_reference back() const noexcept
+    {
+        tt_axiom(not empty());
+        return *(_end - 1);
+    }
+
+    pointer data() noexcept
+    {
+        return _begin;
+    }
+
+    const_pointer data() const noexcept
+    {
+        return _begin;
+    }
+
+    iterator begin() noexcept
+    {
+        return _begin;
+    }
+
+    const_iterator begin() const noexcept
+    {
+        return _begin;
+    }
+
+    const_iterator cbegin() const noexcept
+    {
+        return _begin;
+    }
+
+    iterator end() noexcept
+    {
+        return _end;
+    }
+
+    const_iterator end() const noexcept
+    {
+        return _end;
+    }
+
+    const_iterator cend() const noexcept
+    {
+        return _end;
+    }
+
+
+    void resize(size_type new_size)
     {
         return _resize(new_size);
     }
 
-    void resize(size_t new_size, value_type const &value)
+    void resize(size_type new_size, value_type const &value)
     {
         return _resize(new_size, value);
     }
 
-    void reserve(size_t new_capacity)
+    void clear()
+    {
+        return resize(0);
+    }
+
+    void reserve(size_type new_capacity)
     {
         if (new_capacity <= capacity()) {
             return;

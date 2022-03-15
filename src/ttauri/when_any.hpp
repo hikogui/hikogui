@@ -5,7 +5,7 @@
 #pragma once
 
 #include "required.hpp"
-#include "delayed_task.hpp"
+#include "scoped_task.hpp"
 #include "notifier.hpp"
 #include "concepts.hpp"
 #include "type_traits.hpp"
@@ -150,13 +150,13 @@ public:
 
 private:
     std::tuple<Ts...> _awaiters;
-    std::tuple<delayed_task<await_resume_result_t<Ts>>...> _tasks;
+    std::tuple<scoped_task<await_resume_result_t<Ts>>...> _tasks;
     // std::tuple<typename notifier<detail::when_any_result_element_t<Ts>>::token_type...> _task_cbts;
     std::tuple<typename notifier<void(await_resume_result_t<Ts>)>::token_type...> _task_cbts;
     value_type _value;
 
     template<awaitable_direct Awaiter>
-    static delayed_task<await_resume_result_t<Awaiter>> _await_suspend_task(Awaiter &awaiter)
+    static scoped_task<await_resume_result_t<Awaiter>> _await_suspend_task(Awaiter &awaiter)
     {
         co_await awaiter;
         co_return;

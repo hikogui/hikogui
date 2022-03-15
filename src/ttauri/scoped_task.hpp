@@ -13,20 +13,20 @@
 
 namespace tt::inline v1 {
 
-/** A delayed_task.
+/** A scoped_task.
  *
  * Like the `tt::task` instance this implements a asynchronous co-routine task.
- * This delayed variant will immediately return to the caller until `delayed_task::resume()` is
+ * This scoped variant will immediately return to the caller until `scoped_task::resume()` is
  * called on this. This will allow this object to be assigned callbacks to trigger when co_return
  * is called.
  *
- * The `delayed_task` object needs to be held by the caller until the co-routine returns.
- * If the `delayed_task` object is destroyed, the co-routine will be destroyed as well.
+ * The `scoped_task` object needs to be held by the caller until the co-routine returns.
+ * If the `scoped_task` object is destroyed, the co-routine will be destroyed as well.
  *
  * @tparam T The type returned by co_return.
  */
 template<typename T = void>
-class delayed_task {
+class scoped_task {
 public:
     using value_type = T;
 
@@ -59,10 +59,10 @@ public:
             throw;
         }
 
-        delayed_task get_return_object() noexcept
+        scoped_task get_return_object() noexcept
         {
             _optional_value_ptr = std::make_shared<optional_value_type>();
-            return delayed_task{handle_type::from_promise(*this), _optional_value_ptr};
+            return scoped_task{handle_type::from_promise(*this), _optional_value_ptr};
         }
 
         /** Before we enter the coroutine, allow the caller to set the callback.
@@ -75,12 +75,12 @@ public:
 
     using handle_type = std::coroutine_handle<promise_type>;
 
-    delayed_task(handle_type coroutine, std::shared_ptr<optional_value_type> value_ptr) noexcept :
+    scoped_task(handle_type coroutine, std::shared_ptr<optional_value_type> value_ptr) noexcept :
         _coroutine(coroutine), _optional_value_ptr(std::move(value_ptr))
     {
     }
 
-    ~delayed_task()
+    ~scoped_task()
     {
         if (_optional_value_ptr) {
             if (_optional_value_ptr.use_count() > 1) {
@@ -91,17 +91,17 @@ public:
         }
     }
 
-    delayed_task() = default;
-    delayed_task(delayed_task const &) = delete;
-    delayed_task &operator=(delayed_task const &) = delete;
+    scoped_task() = default;
+    scoped_task(scoped_task const &) = delete;
+    scoped_task &operator=(scoped_task const &) = delete;
 
-    delayed_task(delayed_task &&other) noexcept
+    scoped_task(scoped_task &&other) noexcept
     {
         _coroutine = std::exchange(other._coroutine, {});
         _optional_value_ptr = std::exchange(other._optional_value_ptr, {});
     }
 
-    delayed_task &operator=(delayed_task &&other) noexcept
+    scoped_task &operator=(scoped_task &&other) noexcept
     {
         _coroutine = std::exchange(other._coroutine, {});
         _optional_value_ptr = std::exchange(other._optional_value_ptr, {});
@@ -150,7 +150,7 @@ private:
 };
 
 template<>
-class delayed_task<void> {
+class scoped_task<void> {
 public:
     using value_type = void;
     using optional_value_type = bool;
@@ -181,10 +181,10 @@ public:
             throw;
         }
 
-        delayed_task get_return_object() noexcept
+        scoped_task get_return_object() noexcept
         {
             _optional_value_ptr = std::make_shared<optional_value_type>();
-            return delayed_task{handle_type::from_promise(*this), _optional_value_ptr};
+            return scoped_task{handle_type::from_promise(*this), _optional_value_ptr};
         }
 
         /** Before we enter the coroutine, allow the caller to set the callback.
@@ -197,12 +197,12 @@ public:
 
     using handle_type = std::coroutine_handle<promise_type>;
 
-    delayed_task(handle_type coroutine, std::shared_ptr<optional_value_type> value_ptr) noexcept :
+    scoped_task(handle_type coroutine, std::shared_ptr<optional_value_type> value_ptr) noexcept :
         _coroutine(coroutine), _optional_value_ptr(std::move(value_ptr))
     {
     }
 
-    ~delayed_task()
+    ~scoped_task()
     {
         if (_optional_value_ptr) {
             if (_optional_value_ptr.use_count() > 1) {
@@ -213,17 +213,17 @@ public:
         }
     }
 
-    delayed_task() = default;
-    delayed_task(delayed_task const &) = delete;
-    delayed_task &operator=(delayed_task const &) = delete;
+    scoped_task() = default;
+    scoped_task(scoped_task const &) = delete;
+    scoped_task &operator=(scoped_task const &) = delete;
 
-    delayed_task(delayed_task &&other) noexcept
+    scoped_task(scoped_task &&other) noexcept
     {
         _coroutine = std::exchange(other._coroutine, {});
         _optional_value_ptr = std::exchange(other._optional_value_ptr, {});
     }
 
-    delayed_task &operator=(delayed_task &&other) noexcept
+    scoped_task &operator=(scoped_task &&other) noexcept
     {
         _coroutine = std::exchange(other._coroutine, {});
         _optional_value_ptr = std::exchange(other._optional_value_ptr, {});
