@@ -15,7 +15,7 @@
 #include "../observable.hpp"
 #include "../command.hpp"
 #include "../chrono.hpp"
-#include "../coroutine.hpp"
+#include "../generator.hpp"
 #include "widget_constraints.hpp"
 #include "widget_layout.hpp"
 #include <memory>
@@ -338,11 +338,10 @@ protected:
     widget_constraints _constraints;
     widget_layout _layout;
 
-    std::shared_ptr<std::function<void()>> _redraw_callback;
-    std::shared_ptr<std::function<void()>> _relayout_callback;
-    std::shared_ptr<std::function<void()>> _reconstrain_callback;
+    notifier<>::token_type _enabled_cbt;
+    notifier<>::token_type _visible_cbt;
 
-    [[nodiscard]] virtual pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept
+    [[nodiscard]] virtual generator<widget *> children() const noexcept
     {
         co_return;
     }

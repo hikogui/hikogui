@@ -40,7 +40,7 @@ gui_system::~gui_system()
     gfx->deinit();
 }
 
-gui_window &gui_system::add_window(std::unique_ptr<gui_window> window)
+std::shared_ptr<gui_window> gui_system::add_window(std::shared_ptr<gui_window> window)
 {
     tt_axiom(is_gui_thread());
 
@@ -51,15 +51,17 @@ gui_window &gui_system::add_window(std::unique_ptr<gui_window> window)
 
     window->set_device(device);
 
-    auto window_ptr = &(*window);
-    _windows.push_back(std::move(window));
-    return *window_ptr;
+    _windows.push_back(window);
+    _previous_num_windows = size(_windows);
+    return std::move(window);
 }
 
 void gui_system::request_reconstrain() noexcept
 {
     for (auto &window : _windows) {
-        window->request_reconstrain();
+        if (auto window_ = window.lock()) {
+            window_->request_reconstrain();
+        }
     }
 }
 

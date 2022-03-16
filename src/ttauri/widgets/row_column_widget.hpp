@@ -101,7 +101,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
+    [[nodiscard]] generator<widget *> children() const noexcept override
     {
         for (ttlet &child : _children) {
             co_yield child.get();

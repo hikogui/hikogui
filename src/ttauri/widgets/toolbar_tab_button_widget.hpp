@@ -43,7 +43,6 @@ class toolbar_tab_button_widget final : public abstract_button_widget {
 public:
     using super = abstract_button_widget;
     using delegate_type = typename super::delegate_type;
-    using callback_ptr_type = typename delegate_type::callback_ptr_type;
 
     /** Construct a toolbar tab button widget.
      *

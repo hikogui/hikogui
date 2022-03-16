@@ -16,7 +16,8 @@ class gfx_surface {
 public:
     gfx_system &system;
 
-    gfx_surface_state state = gfx_surface_state::no_device;
+    gfx_surface_state state = gfx_surface_state::has_window;
+    gfx_surface_loss loss = gfx_surface_loss::none;
 
     virtual ~gfx_surface() {}
 
@@ -45,18 +46,6 @@ public:
     /** Get the size of the surface.
      */
     [[nodiscard]] virtual extent2 size() const noexcept = 0;
-
-    void set_closed() noexcept
-    {
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
-        state = gfx_surface_state::window_lost;
-    }
-
-    [[nodiscard]] bool is_closed() const noexcept
-    {
-        ttlet lock = std::scoped_lock(gfx_system_mutex);
-        return state == gfx_surface_state::no_window;
-    }
 
     /** Update the surface.
      * This function will check if the graphic pipeline and swapchain

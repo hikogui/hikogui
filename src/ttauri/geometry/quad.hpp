@@ -7,7 +7,6 @@
 #include "extent.hpp"
 #include "axis_aligned_rectangle.hpp"
 #include "rectangle.hpp"
-#include "../coroutine.hpp"
 #include <tuple>
 
 namespace tt::inline v1 {

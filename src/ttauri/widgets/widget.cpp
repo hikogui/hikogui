@@ -5,7 +5,6 @@
 #include "widget.hpp"
 #include "../GUI/gui_window.hpp"
 #include "../GUI/gui_system.hpp"
-#include "../scoped_buffer.hpp"
 #include "../ranges.hpp"
 #include <ranges>
 
@@ -21,18 +20,10 @@ widget::widget(gui_window &_window, widget *parent) noexcept :
         semantic_layer = parent->semantic_layer + 1;
     }
 
-    _redraw_callback = std::make_shared<std::function<void()>>([this] {
-        request_redraw();
-    });
-    _relayout_callback = std::make_shared<std::function<void()>>([this] {
-        request_relayout();
-    });
-    _reconstrain_callback = std::make_shared<std::function<void()>>([this] {
-        request_reconstrain();
-    });
-
-    enabled.subscribe(_redraw_callback);
-    visible.subscribe(_reconstrain_callback);
+    // clang-format off
+    _enabled_cbt = enabled.subscribe([&]{ request_redraw(); });
+    _visible_cbt = visible.subscribe([&]{ request_reconstrain(); });
+    // clang-format off
 
     _constraints.minimum = extent2::nan();
     _constraints.preferred = extent2::nan();
@@ -190,8 +181,7 @@ bool widget::handle_command_recursive(command command, std::vector<widget const 
 
     auto handled = false;
 
-    auto buffer = pmr::scoped_buffer<256>{};
-    for (auto *child : children(buffer.allocator())) {
+    for (auto *child : children()) {
         if (child) {
             tt_axiom(child->parent == this);
             handled |= child->handle_command_recursive(command, reject_list);
@@ -237,8 +227,7 @@ widget const *widget::find_next_widget(
         found = true;
     }
 
-    auto buffer = pmr::scoped_buffer<256>{};
-    auto children_copy = make_vector(children(buffer.allocator()));
+    auto children_copy = make_vector(children());
 
     if (direction == keyboard_focus_direction::backward) {
         std::reverse(begin(children_copy), end(children_copy));
@@ -280,8 +269,7 @@ widget const *widget::find_next_widget(
 {
     tt_axiom(is_gui_thread());
 
-    auto buffer = pmr::scoped_buffer<256>{};
-    for (auto *child : children(buffer.allocator())) {
+    for (auto *child : children()) {
         if (child and child->accepts_keyboard_focus(group)) {
             return child;
         }
@@ -293,9 +281,8 @@ widget const *widget::find_next_widget(
 {
     tt_axiom(is_gui_thread());
 
-    auto buffer = pmr::scoped_buffer<256>{};
     widget *found = nullptr;
-    for (auto *child : children(buffer.allocator())) {
+    for (auto *child : children()) {
         if (child and child->accepts_keyboard_focus(group)) {
             found = child;
         }

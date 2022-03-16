@@ -23,6 +23,12 @@
 #define ttlet auto const
 #endif
 
+#ifndef tt_forward
+/** Forward a value, based on the decltype of the value.
+ */
+#define tt_forward(x) std::forward<decltype(x)>(x)
+#endif
+
 namespace tt::inline v1 {
 
 

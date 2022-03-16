@@ -6,6 +6,7 @@
 
 #include "unfair_mutex.hpp"
 #include "concepts.hpp"
+#include "notifier.hpp"
 #include <memory>
 #include <vector>
 #include <atomic>
@@ -22,75 +23,6 @@ namespace detail {
 template<typename T>
 struct observable_impl;
 
-inline unfair_mutex observable_mutex;
-
-struct observable_notifier_type {
-    using callback_ptr_type = std::weak_ptr<std::function<void()>>;
-
-    uint64_t proxy_count = 0;
-    std::vector<callback_ptr_type> callbacks;
-
-    observable_notifier_type() = default;
-    observable_notifier_type(observable_notifier_type const &) = delete;
-    observable_notifier_type(observable_notifier_type &&) = delete;
-    observable_notifier_type &operator=(observable_notifier_type const &) = delete;
-    observable_notifier_type &operator=(observable_notifier_type &&) = delete;
-
-    void start_proxy() noexcept
-    {
-        ttlet lock = std::scoped_lock(observable_mutex);
-        ++proxy_count;
-    }
-
-    void finish_proxy() noexcept
-    {
-        observable_mutex.lock();
-
-        tt_axiom(proxy_count != 0);
-        --proxy_count;
-
-        notify();
-    }
-
-    /** Add a callback to the list.
-     *
-     * @pre observable_mutex must be locked.
-     */
-    void push(callback_ptr_type callback_ptr) noexcept
-    {
-        tt_axiom(observable_mutex.is_locked());
-        callbacks.push_back(std::move(callback_ptr));
-    }
-
-    /** Notify all callbacks that have been pushed.
-     *
-     * @pre observable_mutex must be locked.
-     * @post obervable_mutex is unlocked
-     * @post All registered callbacks have been called.
-     * @post List of registered callbacks has been cleared.
-     */
-    void notify() noexcept
-    {
-        tt_axiom(observable_mutex.is_locked());
-
-        if (proxy_count == 0 and not callbacks.empty()) {
-            auto to_call = std::vector<callback_ptr_type>{};
-            std::swap(to_call, callbacks);
-            observable_mutex.unlock();
-
-            for (ttlet &callback_ptr : to_call) {
-                if (auto callback = callback_ptr.lock()) {
-                    (*callback)();
-                }
-            }
-        } else {
-            observable_mutex.unlock();
-        }
-    }
-};
-
-inline observable_notifier_type observable_notifier;
-
 /** A proxy to the shared-value inside an observable.
  *
  * This proxy object makes sure that updates to a value
@@ -103,7 +35,6 @@ inline observable_notifier_type observable_notifier;
 template<typename T, bool Constant>
 struct observable_proxy {
     using value_type = T;
-    static constexpr bool is_atomic = std::is_scalar_v<T>;
     static constexpr bool is_constant = Constant;
     static constexpr bool is_variable = not Constant;
 
@@ -111,7 +42,7 @@ struct observable_proxy {
 
     observable_impl<value_type> *_actual = nullptr;
     mutable value_type _original;
-    mutable state_type _state = state_type::none;
+    mutable state_type _state = state_type::read;
 
     ~observable_proxy()
     {
@@ -121,11 +52,6 @@ struct observable_proxy {
             _state = state_type::modified;
         }
 
-        if (not is_atomic) {
-            _actual->mutex.unlock();
-            observable_notifier.finish_proxy();
-        }
-
         if (is_variable and _state == state_type::modified) {
             _actual->notify_owners();
         }
@@ -133,37 +59,27 @@ struct observable_proxy {
 
     observable_proxy(observable_impl<T> &actual) : _actual(&actual), _original(), _state(state_type::read)
     {
-        if (not is_atomic) {
-            observable_notifier.start_proxy();
-            this->_actual->mutex.lock();
-        }
         tt_axiom(this->_actual);
     }
 
     observable_proxy(observable_proxy &&) = delete;
     observable_proxy(observable_proxy const &) = delete;
 
-    void prepare(state_type new_state) const noexcept
+    void prepare_write() const noexcept
     {
-        tt_axiom(new_state != state_type::read);
-        if (_state == state_type::read and new_state == state_type::write) {
+        if (_state == state_type::read) {
             _original = _actual->value;
+            _state = state_type::write;
         }
-        _state = new_state;
     }
 
-    operator value_type() const noexcept requires(is_atomic)
+    operator value_type &() const noexcept requires(is_variable)
     {
+        prepare_write();
         return _actual->value;
     }
 
-    operator value_type &() const noexcept requires(is_variable and not is_atomic)
-    {
-        prepare(state_type::write);
-        return _actual->value;
-    }
-
-    operator value_type const &() const noexcept requires(is_constant and not is_atomic)
+    operator value_type const &() const noexcept requires(is_constant)
     {
         return _actual->value;
     }
@@ -189,113 +105,64 @@ struct observable_proxy {
     // MSVC Compiler bug returning this with auto argument
     template<typename Arg = value_type>
     observable_proxy &operator=(Arg &&arg) noexcept
-        requires(is_variable and not is_atomic and not std::is_same_v<std::remove_cvref_t<Arg>, observable_proxy>)
+        requires(is_variable and not std::is_same_v<std::remove_cvref_t<Arg>, observable_proxy>)
     {
-        prepare(state_type::write);
+        prepare_write();
         _actual->value = std::forward<Arg>(arg);
         return *this;
     }
 
-    template<typename Arg = value_type>
-    observable_proxy &operator=(Arg &&arg) noexcept
-        requires(is_variable and is_atomic and not std::is_same_v<std::remove_cvref_t<Arg>, observable_proxy>)
-    {
-        // value is not std::forwarded, that means exchange() and operator!=() are called
-        // with a const lvalue reference.
-        if (_actual->value.exchange(arg) != arg) {
-            _state = state_type::modified;
-        }
-        return *this;
-    }
-
-    value_type operator*() const noexcept requires(is_atomic)
-    {
-        return _actual->value.load();
-    }
-
-    value_type const &operator*() const noexcept requires(is_constant and not is_atomic)
+    value_type const &operator*() const noexcept requires(is_constant)
     {
         return _actual->value;
     }
 
-    value_type &operator*() const noexcept requires(is_variable and not is_atomic)
+    value_type &operator*() const noexcept requires(is_variable)
     {
-        prepare(state_type::write);
+        prepare_write();
         return _actual->value;
     }
 
-    value_type const *operator->() const noexcept requires(is_constant and not is_atomic)
+    value_type const *operator->() const noexcept requires(is_constant)
     {
         return &(_actual->value);
     }
 
-    value_type *operator->() const noexcept requires(is_variable and not is_atomic)
+    value_type *operator->() const noexcept requires(is_variable)
     {
-        prepare(state_type::write);
+        prepare_write();
         return &(_actual->value);
     }
 
     template<typename... Args>
     decltype(auto) operator()(Args &&...args) const noexcept
     {
-        prepare(state_type::write);
+        prepare_write();
         return _actual->value(std::forward<Args>(args)...);
     }
 
     template<typename Arg>
-    decltype(auto) operator[](Arg &&arg) const noexcept requires(is_variable and not is_atomic)
+    decltype(auto) operator[](Arg &&arg) const noexcept requires(is_variable)
     {
-        prepare(state_type::write);
+        prepare_write();
         return _actual->value[std::forward<Arg>(arg)];
     }
 
     template<typename Arg>
-    decltype(auto) operator[](Arg &&arg) const noexcept requires(is_constant and not is_atomic)
+    decltype(auto) operator[](Arg &&arg) const noexcept requires(is_constant)
     {
         return const_cast<value_type const &>(_actual->value)[std::forward<Arg>(arg)];
     }
 
-    auto operator++() noexcept requires(is_variable and is_atomic and not pre_incrementable<decltype(_actual->value)>)
+    auto operator++() noexcept requires(is_variable and pre_incrementable<decltype(_actual->value)>)
     {
-        auto expected_value = _actual->value.load();
-        decltype(expected_value) new_value;
-        do {
-            // Make a copy so that expected value does not get incremented.
-            new_value = expected_value;
-            if (++new_value == expected_value) {
-                return new_value;
-            }
-        } while (not _actual->value.compare_exchange_weak(expected_value, new_value));
-
-        prepare(state_type::modified);
-        return new_value;
-    }
-
-    auto operator--() noexcept requires(is_variable and is_atomic and not pre_decrementable<decltype(_actual->value)>)
-    {
-        auto expected_value = _actual->value.load();
-        decltype(expected_value) new_value;
-        do {
-            // Make a copy so that expected value does not get incremented.
-            new_value = expected_value;
-            if (--new_value == expected_value) {
-                return new_value;
-            }
-        } while (not _actual->value.compare_exchange_weak(expected_value, new_value));
-
-        prepare(state_type::modified);
-        return new_value;
-    }
-
-    auto operator++() noexcept requires(is_variable and is_atomic and pre_incrementable<decltype(_actual->value)>)
-    {
-        prepare(state_type::modified);
+        _state = state_type::modified;
         return ++(_actual->value);
     }
 
-    auto operator--() noexcept requires(is_variable and is_atomic and pre_decrementable<decltype(_actual->value)>)
+    auto operator--() noexcept requires(is_variable and pre_decrementable<decltype(_actual->value)>)
     {
-        prepare(state_type::modified);
+        _state = state_type::modified;
         return --(_actual->value);
     }
 
@@ -337,21 +204,9 @@ struct observable_proxy {
 #undef X
 
 #define X(op) \
-    template<typename Rhs> \
-    value_type operator op(Rhs const &rhs) noexcept requires(is_variable and std::is_arithmetic_v<Rhs>) \
+    value_type operator op(auto const &rhs) noexcept requires(is_variable) \
     { \
-        if (rhs != Rhs{}) { \
-            prepare(state_type::modified); \
-            return _actual->value op rhs; \
-        } else { \
-            return _actual->value; \
-        } \
-    } \
-\
-    template<typename Rhs> \
-    value_type operator op(Rhs const &rhs) noexcept requires(is_variable and not std::is_arithmetic_v<Rhs>) \
-    { \
-        prepare(state_type::write); \
+        prepare_write(); \
         return _actual->value op rhs; \
     }
 
@@ -372,36 +227,20 @@ struct observable_proxy {
 #undef X
 };
 
-template<typename T>
-struct observable_impl_storage {
-    T value;
-
-    observable_impl_storage() noexcept : value() {}
-    observable_impl_storage(T const &value) noexcept : value(value) {}
-    observable_impl_storage(T &&value) noexcept : value(std::move(value)) {}
-};
-
-template<scalar T>
-struct observable_impl_storage<T> {
-    std::atomic<T> value;
-
-    observable_impl_storage() noexcept : value() {}
-    observable_impl_storage(T const &value) noexcept : value(value) {}
-    observable_impl_storage(T &&value) noexcept : value(std::move(value)) {}
-};
-
 /** The shared value, shared between observers.
  */
 template<typename T>
-struct observable_impl : public observable_impl_storage<T> {
+struct observable_impl {
     using value_type = T;
     using owner_type = observable<value_type>;
 
-    std::vector<owner_type *> owners;
-
-    /** The mutex is used to serialize state to the owners list and non-atomic value.
+    /** Mutex used to handle ownership of observable_impl.
      */
-    mutable unfair_mutex mutex;
+    inline static unfair_mutex mutex;
+
+    value_type value;
+
+    std::vector<owner_type *> owners;
 
     ~observable_impl()
     {
@@ -413,9 +252,8 @@ struct observable_impl : public observable_impl_storage<T> {
     observable_impl &operator=(observable_impl const &) = delete;
     observable_impl &operator=(observable_impl &&) = delete;
 
-    observable_impl() noexcept : observable_impl_storage<T>() {}
-    observable_impl(value_type const &value) noexcept : observable_impl_storage<T>(value) {}
-    observable_impl(value_type &&value) noexcept : observable_impl_storage<T>(std::move(value)) {}
+    observable_impl() noexcept : value() {}
+    observable_impl(std::convertible_to<value_type> auto &&value) noexcept : value(tt_forward(value)) {}
 
     observable_proxy<value_type, false> get() noexcept
     {
@@ -427,15 +265,24 @@ struct observable_impl : public observable_impl_storage<T> {
         return observable_proxy<value_type, true>(*this);
     }
 
+    void notify_owners() const noexcept
+    {
+        ttlet lock = std::scoped_lock(mutex);
+
+        for (ttlet &owner: owners) {
+            owner->_notifier();
+        }
+    }
+
     /** Add an observer as one of the owners of the shared-value.
      *
      * @param owner A reference to observer
      */
     void add_owner(owner_type &owner) noexcept
     {
+        tt_axiom(mutex.is_locked());
         tt_axiom(std::find(owners.cbegin(), owners.cend(), &owner) == owners.cend());
 
-        ttlet lock = std::scoped_lock(observable_mutex);
         owners.push_back(&owner);
     }
 
@@ -445,34 +292,24 @@ struct observable_impl : public observable_impl_storage<T> {
      */
     void remove_owner(owner_type &owner) noexcept
     {
-        ttlet lock = std::scoped_lock(observable_mutex);
+        tt_axiom(mutex.is_locked());
         ttlet nr_erased = std::erase(owners, &owner);
         tt_axiom(nr_erased == 1);
     }
 
-    void notify_owners() const noexcept
-    {
-        observable_mutex.lock();
-        for (auto owner : owners) {
-            owner->notify();
-        }
-        observable_notifier.notify();
-    }
-
     void reseat_owners(std::shared_ptr<observable_impl> const &new_impl) noexcept
     {
-        observable_mutex.lock();
-
+        tt_axiom(mutex.is_locked());
         tt_axiom(not owners.empty());
+
         auto keep_this_alive = owners.front()->_pimpl;
 
         for (auto owner : owners) {
             owner->_pimpl = new_impl;
             new_impl->owners.push_back(owner);
-            owner->notify();
+            owner->_notifier();
         }
         owners.clear();
-        observable_notifier.notify();
     }
 };
 
@@ -488,7 +325,7 @@ struct observable_impl : public observable_impl_storage<T> {
  * object to each other they will share the same value.
  * Now if one object changes the shared value, the other objects will get notified.
  *
- * When assigning observables to each other, the subscriptions
+ * When assigning observables to each other, the tokens
  * to the observable remain unmodified. However which value is shared is shown in the
  * example below:
  *
@@ -502,11 +339,6 @@ struct observable_impl : public observable_impl_storage<T> {
  * b = c; // 'a', 'b' and 'c' all share the value 42.
  * b = d; // 'a', 'b', 'c' and 'd' all share the value 9.
  * ```
- *
- * A subscription to a observable is maintained using a `std::weak_ptr`
- * to a callback function. This means that the object that subscribed
- * to the observable needs to own the `std::shared_ptr` that is returned
- * by the `subscribe()` method.
  *
  * A proxy object is returned when dereferencing an observable. The
  * callbacks are called when both the value has changed and the
@@ -531,11 +363,11 @@ public:
     using reference = detail::observable_proxy<value_type, false>;
     using const_reference = detail::observable_proxy<value_type, true>;
     using impl_type = detail::observable_impl<value_type>;
-    using callback_ptr_type = std::shared_ptr<std::function<void()>>;
     static constexpr bool is_atomic = std::is_scalar_v<value_type>;
 
     ~observable()
     {
+        ttlet lock = std::scoped_lock(impl_type::mutex);
         _pimpl->remove_owner(*this);
     }
 
@@ -545,6 +377,7 @@ public:
      */
     observable() noexcept : _pimpl(std::make_shared<impl_type>())
     {
+        ttlet lock = std::scoped_lock(impl_type::mutex);
         _pimpl->add_owner(*this);
     }
 
@@ -556,6 +389,7 @@ public:
      */
     observable(observable const &other) noexcept : _pimpl(other._pimpl)
     {
+        ttlet lock = std::scoped_lock(impl_type::mutex);
         _pimpl->add_owner(*this);
     }
 
@@ -571,8 +405,12 @@ public:
      */
     observable &operator=(observable const &other) noexcept
     {
-        tt_return_on_self_assignment(other);
+        if (this == &other or _pimpl == other._pimpl) {
+            return *this;
+        }
 
+        tt_axiom(_pimpl);
+        ttlet lock = std::scoped_lock(impl_type::mutex);
         _pimpl->reseat_owners(other._pimpl);
         return *this;
     }
@@ -587,6 +425,7 @@ public:
      */
     const_reference cget() const noexcept
     {
+        tt_axiom(_pimpl);
         return _pimpl->cget();
     }
 
@@ -600,6 +439,7 @@ public:
      */
     const_reference get() const noexcept
     {
+        tt_axiom(_pimpl);
         return _pimpl->cget();
     }
 
@@ -615,6 +455,7 @@ public:
      */
     reference get() noexcept
     {
+        tt_axiom(_pimpl);
         return _pimpl->get();
     }
 
@@ -623,8 +464,9 @@ public:
      * @param value The value to assign to the shared-value.
      */
     observable(std::convertible_to<value_type> auto &&value) noexcept :
-        _pimpl(std::make_shared<impl_type>(std::forward<decltype(value)>(value)))
+        _pimpl(std::make_shared<impl_type>(tt_forward(value)))
     {
+        ttlet lock = std::scoped_lock(impl_type::mutex);
         _pimpl->add_owner(*this);
     }
 
@@ -633,12 +475,16 @@ public:
      * @post subscribers are notified.
      * @param value The value to assign to the shared-value.
      */
-    template<typename Value = value_type>
-    observable &operator=(Value &&value) noexcept requires(not std::is_same_v<std::remove_cvref_t<Value>, observable>)
+    observable &operator=(std::convertible_to<value_type> auto &&value) noexcept
     {
         tt_axiom(_pimpl);
-        get() = std::forward<Value>(value);
+        get() = tt_forward(value);
         return *this;
+    }
+
+    auto subscribe(std::invocable<> auto &&callback) noexcept
+    {
+        return _notifier.subscribe(tt_forward(callback));
     }
 
     /** Get copy of the shared-value.
@@ -728,63 +574,8 @@ public:
     X(-=)
 #undef X
 
-    callback_ptr_type subscribe(callback_ptr_type const &callback_ptr) noexcept
-    {
-        ttlet lock = std::scoped_lock(detail::observable_mutex);
-#if TT_BUILD_TYPE == TT_BT_DEBUG
-        auto it = std::find_if(_callbacks.cbegin(), _callbacks.cend(), [&callback_ptr](ttlet &item) {
-            return item.lock() == callback_ptr;
-        });
-        tt_axiom(it == _callbacks.cend());
-#endif
-        _callbacks.push_back(callback_ptr);
-        return callback_ptr;
-    }
-
-    template<typename Callback>
-    [[nodiscard]] callback_ptr_type subscribe(Callback &&callback) noexcept requires(std::is_invocable_v<Callback>)
-    {
-        auto callback_ptr = std::make_shared<std::function<void()>>(std::forward<Callback>(callback));
-        subscribe(callback_ptr);
-
-        detail::observable_mutex.lock();
-        detail::observable_notifier.push(callback_ptr);
-        detail::observable_notifier.notify();
-        return callback_ptr;
-    }
-
-    void unsubscribe(callback_ptr_type const &callback_ptr) noexcept
-    {
-        ttlet lock = std::scoped_lock(detail::observable_mutex);
-        ttlet erase_count = std::erase_if(_callbacks, [&callback_ptr](ttlet &item) {
-            return item.expired() or item.lock() == callback_ptr;
-        });
-        tt_axiom(erase_count == 1);
-    }
-
-private:
-    std::shared_ptr<impl_type> _pimpl;
-    mutable std::vector<std::weak_ptr<std::function<void()>>> _callbacks;
-
-    void notify() const noexcept
-    {
-        auto has_expired_callbacks = false;
-        for (ttlet &callback_ptr : _callbacks) {
-            if (callback_ptr.expired()) {
-                has_expired_callbacks = true;
-            } else {
-                detail::observable_notifier.push(callback_ptr);
-            }
-        }
-
-        if (has_expired_callbacks) {
-            ttlet erase_count = std::erase_if(_callbacks, [](ttlet &callback_ptr) {
-                return callback_ptr.expired();
-            });
-            tt_axiom(erase_count > 0);
-        }
-    }
-
+private : std::shared_ptr<impl_type> _pimpl;
+    tt::notifier<void()> _notifier;
     friend impl_type;
 };
 

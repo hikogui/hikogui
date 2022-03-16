@@ -76,7 +76,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
+    [[nodiscard]] generator<widget *> children() const noexcept override
     {
         co_yield _overlay_widget.get();
         co_yield _current_label_widget.get();
@@ -93,8 +93,8 @@ public:
     [[nodiscard]] color focus_color() const noexcept override;
     /// @endprivatesection
 private:
-    delegate_type::callback_ptr_type _delegate_callback;
     weak_or_unique_ptr<delegate_type> _delegate;
+    notifier<>::token_type _delegate_cbt;
 
     std::unique_ptr<label_widget> _current_label_widget;
     std::unique_ptr<label_widget> _unknown_label_widget;
@@ -113,8 +113,9 @@ private:
     vertical_scroll_widget<> *_scroll_widget = nullptr;
     column_widget *_column_widget = nullptr;
 
+    notifier<>::token_type _unknown_label_cbt;
     std::vector<menu_button_widget *> _menu_button_widgets;
-    std::vector<typename menu_button_widget::callback_ptr_type> _menu_button_callbacks;
+    std::vector<notifier<>::token_type> _menu_button_tokens;
 
     selection_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
     [[nodiscard]] menu_button_widget const *get_first_menu_button() const noexcept;

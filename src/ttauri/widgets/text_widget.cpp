@@ -12,7 +12,9 @@ namespace tt::inline v1 {
 
 text_widget::text_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
 {
-    text.subscribe(_reconstrain_callback);
+    // clang-format off
+    _text_cbt = text.subscribe([&]{ request_reconstrain(); });
+    // clang-format on
 }
 
 widget_constraints const &text_widget::set_constraints() noexcept

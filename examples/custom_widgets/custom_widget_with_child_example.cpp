@@ -96,7 +96,7 @@ protected:
     //
     // The allocator argument should not be used by the function, it is used by the caller
     // to allocate the co-routine's frame on the stack.
-    [[nodiscard]] tt::pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
+    [[nodiscard]] tt::generator<widget *> children() const noexcept override
     {
         // This function is often written as a co-routine that yields a pointer to each of its children.
         co_yield _label_widget.get();
@@ -111,7 +111,7 @@ private:
 int tt_main(int argc, char *argv[])
 {
     auto gui = tt::gui_system::make_unique();
-    auto &window = gui->make_window(tt::l10n("Widget with child"));
-    window.content().make_widget<widget_with_child>("A1", tt::l10n("Widget with child"));
+    auto window = gui->make_window(tt::l10n("Widget with child"));
+    window->content().make_widget<widget_with_child>("A1", tt::l10n("Widget with child"));
     return gui->loop();
 }

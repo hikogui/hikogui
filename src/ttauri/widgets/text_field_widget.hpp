@@ -79,7 +79,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
+    [[nodiscard]] generator<widget *> children() const noexcept override
     {
         co_yield _scroll_widget.get();
     }
@@ -93,6 +93,7 @@ public:
     /// @endprivatesection
 private:
     weak_or_unique_ptr<delegate_type> _delegate;
+    notifier<>::token_type _delegate_cbt;
 
     /** The scroll widget embeds the text widget.
      */
@@ -115,6 +116,10 @@ private:
     observable<label> _error_label;
     aarectangle _error_label_rectangle;
     std::unique_ptr<label_widget> _error_label_widget;
+
+    notifier<>::token_type _continues_cbt;
+    notifier<>::token_type _text_style_cbt;
+    notifier<>::token_type _text_cbt;
 
     text_field_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
     void revert(bool force) noexcept;

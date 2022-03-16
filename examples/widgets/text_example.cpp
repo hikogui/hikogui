@@ -14,7 +14,7 @@ using namespace tt;
 int tt_main(int argc, char *argv[])
 {
     auto gui = gui_system::make_unique();
-    auto &window = gui->make_window(l10n("Label example"));
+    auto window = gui->make_window(l10n("Label example"));
 
     // Start the logger system, so logging is done asynchronously.
     tt::log::start_subsystem(tt::global_state_type::log_level_info);
@@ -78,8 +78,11 @@ int tt_main(int argc, char *argv[])
 
     auto text = to_gstring(latin_text + "\n" + mixed_rtl_text + "\n" + mixed_ltr_text + "\n" + hebrew_text);
 
-    auto &tw = window.content().make_widget<text_widget>("A1", text, tt::alignment::top_justified());
+    auto &tw = window->content().make_widget<text_widget>("A1", text, tt::alignment::top_justified());
     tw.edit_mode = text_widget::edit_mode_type::fully_editable;
 
+    auto close_cb = window->closing.subscribe([&] {
+        window.reset();
+    });
     return gui->loop();
 }

@@ -46,6 +46,7 @@ private:
     char32_t highSurrogate = 0;
     mouse_event mouseButtonEvent;
     utc_nanoseconds multi_click_time_point;
+    point2 multi_click_position;
     int multi_click_count;
 
     void setOSWindowRectangleFromRECT(RECT aarectangle) noexcept;
@@ -55,6 +56,8 @@ private:
 
     [[nodiscard]] char32_t handle_suragates(char32_t c) noexcept;
     [[nodiscard]] mouse_event createmouse_event(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept;
+
+    friend LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept;
 };
 
 } // namespace tt::inline v1

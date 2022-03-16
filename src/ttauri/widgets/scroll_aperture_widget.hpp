@@ -27,12 +27,14 @@ public:
         // The aperture-widget will not draw itself, only its selected content.
         semantic_layer = parent->semantic_layer;
 
-        content_width.subscribe(_relayout_callback);
-        content_height.subscribe(_relayout_callback);
-        aperture_width.subscribe(_relayout_callback);
-        aperture_height.subscribe(_relayout_callback);
-        offset_x.subscribe(_relayout_callback);
-        offset_y.subscribe(_relayout_callback);
+        // clang-format off
+        _content_width_cbt = content_width.subscribe([&]{ request_relayout(); });
+        _content_height_cbt = content_height.subscribe([&]{ request_relayout(); });
+        _aperture_width_cbt = aperture_width.subscribe([&]{ request_relayout(); });
+        _aperture_height_cbt = aperture_height.subscribe([&]{ request_relayout(); });
+        _offset_x_cbt = offset_x.subscribe([&]{ request_relayout(); });
+        _offset_y_cbt = offset_y.subscribe([&]{ request_relayout(); });
+        // clang-format off
     }
 
     template<typename Widget, typename... Args>
@@ -58,7 +60,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
+    [[nodiscard]] generator<widget *> children() const noexcept override
     {
         co_yield _content.get();
     }
@@ -201,6 +203,12 @@ public:
 private:
     aarectangle _content_rectangle;
     std::unique_ptr<widget> _content;
+    notifier<>::token_type _content_width_cbt;
+    notifier<>::token_type _content_height_cbt;
+    notifier<>::token_type _aperture_width_cbt;
+    notifier<>::token_type _aperture_height_cbt;
+    notifier<>::token_type _offset_x_cbt;
+    notifier<>::token_type _offset_y_cbt;
 };
 
 } // namespace tt::inline v1

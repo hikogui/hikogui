@@ -37,7 +37,7 @@ public:
     void load() noexcept;
 
 protected:
-    std::shared_ptr<std::function<void()>> _modified_callback_ptr;
+    notifier<>::token_type _value_cbt;
     preferences &_parent;
     jsonpath _path;
 
@@ -56,7 +56,13 @@ public:
     preference_item(preferences &parent, std::string_view path, observable<T> const &value, T init) noexcept :
         preference_item_base(parent, path), _value(value), _init(std::move(init))
     {
-        _value.subscribe(this->_modified_callback_ptr);
+        _value_cbt = _value.subscribe([this]() {
+            if (auto tmp = this->encode(); not holds_alternative<std::monostate>(tmp)) {
+                this->_parent.write(_path, this->encode());
+            } else {
+                this->_parent.remove(_path);
+            }
+        });
     }
 
     void reset() noexcept override
@@ -223,6 +229,8 @@ private:
     void remove(jsonpath const &path) noexcept;
 
     friend class detail::preference_item_base;
+    template<typename T>
+    friend class detail::preference_item;
 };
 
 } // namespace tt::inline v1

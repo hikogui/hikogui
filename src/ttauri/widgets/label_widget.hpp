@@ -93,7 +93,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
+    [[nodiscard]] generator<widget *> children() const noexcept override
     {
         co_yield _icon_widget.get();
         co_yield _text_widget.get();
@@ -108,8 +108,8 @@ private:
     float _icon_size;
     float _inner_margin;
 
-    decltype(label)::callback_ptr_type _label_callback;
-    decltype(text_style)::callback_ptr_type _text_style_callback;
+    notifier<>::token_type _label_cbt;
+    notifier<>::token_type _text_style_cbt;
 
     aarectangle _icon_rectangle;
     std::unique_ptr<icon_widget> _icon_widget;

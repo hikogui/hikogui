@@ -97,6 +97,11 @@ public:
      */
     std::unique_ptr<window_widget> widget;
 
+    /** Notifier used when the window is closing.
+     * It is expected that after notifying these callbacks the instance of this class is destroyed.
+     */
+    notifier<void()> closing;
+
     gui_window(gui_system &gui, label const &title, std::weak_ptr<delegate_type> delegate = {}) noexcept;
 
     virtual ~gui_window();
@@ -113,13 +118,6 @@ public:
      * `init()` should not take locks on window::mutex.
      */
     virtual void init();
-
-    /** 2 phase constructor.
-     * Must be called directly before the destructor on the same thread,
-     *
-     * `deinit()` should not take locks on window::mutex.
-     */
-    virtual void deinit();
 
     /** Check if the current thread is the same as the gui_system loop.
      */
@@ -165,10 +163,6 @@ public:
      * This will update animations and redraw all widgets managed by this window.
      */
     virtual void render(utc_nanoseconds displayTimePoint);
-
-    /** Check if the window was closed by the operating system.
-     */
-    [[nodiscard]] bool is_closed() const noexcept;
 
     /** Get a reference to the window's content widget.
      * @see grid_widget
@@ -369,8 +363,9 @@ protected:
     bool send_event(grapheme grapheme, bool full = true) noexcept;
 
 private:
-    std::shared_ptr<std::function<void()>> _setting_change_callback;
-    std::shared_ptr<std::function<void()>> _selected_theme_callback;
+    notifier<>::token_type _setting_change_token;
+    notifier<>::token_type _selected_theme_token;
+
     /** Target of the mouse
      * Since any mouse event will change the target this is used
      * to check if the target has changed, to send exit events to the previous mouse target.

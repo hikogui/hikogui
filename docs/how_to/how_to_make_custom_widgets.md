@@ -322,7 +322,7 @@ The example function below yields the pointer to both children stored as member 
 stored in a vector.  
 
 ```cpp
-[[nodiscard]] tt::pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
+[[nodiscard]] tt::generator<widget *> children() const noexcept override
 {
     co_yield _label_widget.get();
     co_yield _checkbox_widget.get();

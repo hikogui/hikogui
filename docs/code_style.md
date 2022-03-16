@@ -47,6 +47,7 @@ Common prefixes and suffixes:
  - suffix `_`: A variable after conversion to a different type.
  - suffix `_type`: A type created inside a class.
  - prefix `tt_`: A macro
+ - suffix `_cbt`: A callback-token returned when subscribing a callback.
 
 Private or protected member variables are prefixed with "\_", so that
 getter/setter member functions names will not alias with the variables.

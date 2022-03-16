@@ -7,12 +7,14 @@
 #include "ttauri/charconv.hpp"
 #include "ttauri/ranges.hpp"
 #include "ttauri/strings.hpp"
+#include "ttauri/generator.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
 #include <string_view>
 #include <span>
 #include <format>
+#include <ranges>
 
 using namespace tt;
 
@@ -116,7 +118,7 @@ generator<unicode_bidi_test> parse_bidi_test(int test_line_nr = -1)
     auto reorder = std::vector<int>{};
 
     int line_nr = 1;
-    for (ttlet line : tt::views::split(test_data, "\n")) {
+    for (ttlet line : std::views::split(test_data, std::string_view{"\n"})) {
         ttlet line_ = strip(line);
         if (line_.empty() || line_.starts_with("#")) {
             // Comment and empty lines.
@@ -257,7 +259,7 @@ generator<unicode_bidi_character_test> parse_bidi_character_test(int test_line_n
     ttlet test_data = view.string_view();
 
     int line_nr = 1;
-    for (ttlet line : tt::views::split(test_data, "\n")) {
+    for (ttlet line : std::views::split(test_data, std::string_view{"\n"})) {
         ttlet line_ = strip(line);
         if (line_.empty() || line_.starts_with("#")) {
             // Comment and empty lines.

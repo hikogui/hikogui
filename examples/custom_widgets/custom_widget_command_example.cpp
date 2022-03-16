@@ -18,7 +18,7 @@ public:
     command_widget(tt::gui_window &window, tt::widget *parent) noexcept : widget(window, parent)
     {
         // To visually show the change in value the widget needs to be redrawn.
-        value.subscribe(_redraw_callback);
+        _value_cbt = value.subscribe([&]{ request_redraw(); });
     }
 
     // The set_constraints() function is called when the window is first initialized,
@@ -135,13 +135,16 @@ public:
         }
         return false;
     }
+
+private:
+    tt::notifier<>::token_type _value_cbt;
 };
 
 int tt_main(int argc, char *argv[])
 {
     auto gui = tt::gui_system::make_unique();
-    auto &window = gui->make_window(tt::l10n("Custom Widget Command"));
-    window.content().make_widget<command_widget>("A1");
-    window.content().make_widget<command_widget>("A2");
+    auto window = gui->make_window(tt::l10n("Custom Widget Command"));
+    window->content().make_widget<command_widget>("A1");
+    window->content().make_widget<command_widget>("A2");
     return gui->loop();
 }

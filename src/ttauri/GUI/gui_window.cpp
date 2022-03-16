@@ -50,6 +50,10 @@ gui_window::gui_window(gui_system &gui, label const &title, std::weak_ptr<gui_wi
 
 gui_window::~gui_window()
 {
+    if (auto delegate = _delegate.lock()) {
+        delegate->deinit(*this);
+    }
+
     // Destroy the top-level widget, before Window-members that the widgets require from the window during their destruction.
     widget = {};
 
@@ -82,25 +86,18 @@ void gui_window::init()
 
     // For changes in setting on the OS we should reconstrain/layout/redraw the window
     // For example when the language or theme changes.
-    _setting_change_callback = os_settings::subscribe([this] {
+    _setting_change_token = os_settings::subscribe([this] {
         this->request_reconstrain();
     });
 
     // Subscribe on theme changes.
-    _selected_theme_callback = gui.selected_theme.subscribe([this] {
+    _selected_theme_token = gui.selected_theme.subscribe([this] {
         this->request_reconstrain();
     });
 
     // Delegate has been called, layout of widgets has been calculated for the
     // minimum and maximum size of the window.
     create_window(new_size);
-}
-
-void gui_window::deinit()
-{
-    if (auto delegate = _delegate.lock()) {
-        delegate->deinit(*this);
-    }
 }
 
 [[nodiscard]] bool gui_window::is_gui_thread() const noexcept
@@ -112,11 +109,6 @@ void gui_window::set_device(gfx_device *device) noexcept
 {
     tt_axiom(surface);
     surface->set_device(device);
-}
-
-[[nodiscard]] bool gui_window::is_closed() const noexcept
-{
-    return surface->is_closed();
 }
 
 void gui_window::render(utc_nanoseconds display_time_point)

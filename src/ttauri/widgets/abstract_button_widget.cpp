@@ -18,7 +18,9 @@ abstract_button_widget::abstract_button_widget(
     _off_label_widget = std::make_unique<label_widget>(window, this, off_label, label_alignment);
     _other_label_widget = std::make_unique<label_widget>(window, this, other_label, label_alignment);
     if (auto d = _delegate.lock()) {
-        d->subscribe(*this, _relayout_callback);
+        _delegate_cbt = d->subscribe(*this, [&] {
+            request_relayout();
+        });
         d->init(*this);
     }
 }
@@ -37,16 +39,8 @@ void abstract_button_widget::activate() noexcept
     }
 
     window.gui.run_from_event_queue([this]() {
-        this->_notifier();
+        this->pressed();
     });
-}
-
-/** Unsubscribe a callback.
- */
-void abstract_button_widget::unsubscribe(callback_ptr_type &callback_ptr) noexcept
-{
-    tt_axiom(is_gui_thread());
-    return _notifier.unsubscribe(callback_ptr);
 }
 
 widget_constraints abstract_button_widget::set_constraints_button() const noexcept

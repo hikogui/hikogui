@@ -13,8 +13,6 @@ class abstract_button_widget;
 
 class button_delegate {
 public:
-    using callback_ptr_type = std::shared_ptr<std::function<void()>>;
-
     virtual ~button_delegate() = default;
 
     virtual void init(abstract_button_widget &sender) noexcept {}
@@ -23,23 +21,10 @@ public:
 
     /** Subscribe a callback for notifying the widget of a data change.
      */
-    virtual callback_ptr_type subscribe(abstract_button_widget &sender, callback_ptr_type const &callback) noexcept
+    [[nodiscard]] auto subscribe(abstract_button_widget &sender, std::invocable<> auto &&callback) noexcept
     {
-        return callback;
+        return _notifier.subscribe(tt_forward(callback));
     }
-
-    /** Subscribe a callback for notifying the widget of a data change.
-     */
-    template<typename Callback>
-    requires(std::is_invocable_v<Callback>) [[nodiscard]] callback_ptr_type
-        subscribe(abstract_button_widget &sender, Callback &&callback) noexcept
-    {
-        return subscribe(sender, std::make_shared<std::function<void()>>(std::forward<Callback>(callback)));
-    }
-
-    /** Unsubscribe a callback.
-     */
-    virtual void unsubscribe(abstract_button_widget &sender, callback_ptr_type const &callback) noexcept {}
 
     /** Called when the button is pressed by the user.
      */
@@ -51,6 +36,9 @@ public:
     {
         return button_state::off;
     }
+
+protected:
+    notifier<> _notifier;
 };
 
 } // namespace tt::inline v1

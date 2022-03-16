@@ -20,12 +20,12 @@ add_subdirectory(widgets)
 configure_file(metadata.cpp.in metadata.cpp @ONLY)
 
 target_sources(ttauri PRIVATE
+    alignment.hpp
     algorithm.hpp
     arguments.hpp
     animator.hpp
     assert.hpp
     atomic.hpp
-    alignment.hpp
     bezier.hpp
     bezier_curve.cpp
     bezier_curve.hpp
@@ -39,7 +39,6 @@ target_sources(ttauri PRIVATE
     concepts.hpp
     console.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/console_win32.cpp>
-    coroutine.hpp
     command.hpp
     CommandLineParser.hpp
     counters.cpp
@@ -79,6 +78,7 @@ target_sources(ttauri PRIVATE
     format.hpp
     forward_value.hpp
     gap_buffer.hpp
+    generator.hpp
     global_state.hpp
     glob.hpp
     hash.hpp
@@ -135,6 +135,7 @@ target_sources(ttauri PRIVATE
     safe_int.hpp
     semantic_version.hpp
     scoped_buffer.hpp
+    scoped_task.hpp
     source_location.hpp
     small_map.hpp
     small_vector.hpp
@@ -146,6 +147,7 @@ target_sources(ttauri PRIVATE
     tag.hpp
     tagged_id.hpp
     tagged_map.hpp
+    task.hpp
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/thread_macos.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/thread_win32.cpp>
     thread.cpp
@@ -175,6 +177,7 @@ target_sources(ttauri PRIVATE
     utils.hpp
     vspan.hpp
     weak_or_unique_ptr.hpp
+    when_any.hpp
     wfree_fifo.hpp
     wfree_unordered_map.hpp
 )
@@ -202,7 +205,6 @@ if(TT_BUILD_TESTS)
         bigint_tests.cpp
         bound_integer_tests.cpp
         cast_tests.cpp
-        coroutine_tests.cpp
         counters_tests.cpp
         datum_tests.cpp
         dead_lock_detector_tests.cpp
@@ -214,6 +216,7 @@ if(TT_BUILD_TESTS)
         float16_tests.cpp
         forward_value_tests.cpp
         gap_buffer_tests.cpp
+        generator_tests.cpp
         glob_tests.cpp
         interval_tests.cpp
         int_carry_tests.cpp

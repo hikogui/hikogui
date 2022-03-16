@@ -21,20 +21,9 @@ public:
     observable<value_type> value;
     std::unordered_map<std::size_t, std::size_t> tab_indices;
 
-    template<typename Value>
-    default_tab_delegate(Value &&value) noexcept : value(std::forward<Value>(value))
+    default_tab_delegate(auto &&value) noexcept : value(tt_forward(value))
     {
-    }
-
-    callback_ptr_type subscribe(tab_widget &sender, callback_ptr_type const &callback_ptr) noexcept override
-    {
-        value.subscribe(callback_ptr);
-        return callback_ptr;
-    }
-
-    void unsubscribe(tab_widget &sender, callback_ptr_type const &callback_ptr) noexcept override
-    {
-        value.unsubscribe(callback_ptr);
+        _value_cbt = this->value.subscribe([&]{ this->_notifier(); });
     }
 
     void add_tab(tab_widget &sender, std::size_t key, std::size_t index) noexcept override
@@ -52,6 +41,9 @@ public:
             return static_cast<ssize_t>(i->second);
         }
     }
+
+private:
+    notifier<>::token_type _value_cbt;
 };
 
 template<typename Value>

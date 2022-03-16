@@ -86,14 +86,16 @@ public:
     drawing_widget(tt::gui_window &window, tt::widget *parent) noexcept :
         widget(window, parent), _image(tt::URL("resource:mars3.png"))
     {
-        this->drawing.subscribe(_redraw_callback);
-        this->shape.subscribe(_redraw_callback);
-        this->gradient.subscribe(_redraw_callback);
-        this->rotating.subscribe(_redraw_callback);
-        this->clip.subscribe(_redraw_callback);
-        this->border_side.subscribe(_redraw_callback);
-        this->border_width.subscribe(_redraw_callback);
-        this->rounded.subscribe(_redraw_callback);
+        // clang-format off
+        _drawing_cbt = this->drawing.subscribe([&]{ request_redraw(); });
+        _shape_cbt = this->shape.subscribe([&]{ request_redraw(); });
+        _gradient_cbt = this->gradient.subscribe([&]{ request_redraw(); });
+        _rotating_cbt = this->rotating.subscribe([&]{ request_redraw(); });
+        _clip_cbt = this->clip.subscribe([&]{ request_redraw(); });
+        _border_side_cbt = this->border_side.subscribe([&]{ request_redraw(); });
+        _border_width_cbt = this->border_width.subscribe([&]{ request_redraw(); });
+        _rounded_cbt = this->rounded.subscribe([&]{ request_redraw(); });
+        // clang-format on
 
         this->_glyph = font_book().find_glyph(tt::elusive_icon::Briefcase);
     }
@@ -299,6 +301,15 @@ private:
     tt::png _image;
     tt::aarectangle _image_rectangle;
     tt::paged_image _image_backing;
+
+    tt::notifier<>::token_type _drawing_cbt;
+    tt::notifier<>::token_type _shape_cbt;
+    tt::notifier<>::token_type _gradient_cbt;
+    tt::notifier<>::token_type _rotating_cbt;
+    tt::notifier<>::token_type _clip_cbt;
+    tt::notifier<>::token_type _border_side_cbt;
+    tt::notifier<>::token_type _border_width_cbt;
+    tt::notifier<>::token_type _rounded_cbt;
 };
 
 int tt_main(int argc, char *argv[])
@@ -316,9 +327,9 @@ int tt_main(int argc, char *argv[])
     auto render_doc = tt::RenderDoc();
 
     auto gui = tt::gui_system::make_unique();
-    auto &window = gui->make_window(tt::l10n("Drawing Custom Widget"));
+    auto window = gui->make_window(tt::l10n("Drawing Custom Widget"));
 
-    auto &custom_widget = window.content().make_widget<drawing_widget>("A1:D1");
+    auto &custom_widget = window->content().make_widget<drawing_widget>("A1:D1");
     custom_widget.drawing = drawing;
     custom_widget.shape = shape;
     custom_widget.rotating = rotating;
@@ -328,31 +339,31 @@ int tt_main(int argc, char *argv[])
     custom_widget.border_width = border_width;
     custom_widget.rounded = rounded;
 
-    window.content().make_widget<tt::label_widget>("A2", tt::l10n("Drawing type:"));
-    window.content().make_widget<tt::selection_widget>("B2:D2", drawing_list, drawing);
+    window->content().make_widget<tt::label_widget>("A2", tt::l10n("Drawing type:"));
+    window->content().make_widget<tt::selection_widget>("B2:D2", drawing_list, drawing);
 
-    window.content().make_widget<tt::label_widget>("A3", tt::l10n("Shape:"));
-    window.content().make_widget<tt::selection_widget>("B3:D3", shape_list, shape);
+    window->content().make_widget<tt::label_widget>("A3", tt::l10n("Shape:"));
+    window->content().make_widget<tt::selection_widget>("B3:D3", shape_list, shape);
 
-    window.content().make_widget<tt::label_widget>("A4", tt::l10n("Gradient:"));
-    window.content().make_widget<tt::selection_widget>("B4:D4", gradient_list, gradient);
+    window->content().make_widget<tt::label_widget>("A4", tt::l10n("Gradient:"));
+    window->content().make_widget<tt::selection_widget>("B4:D4", gradient_list, gradient);
 
-    window.content().make_widget<tt::label_widget>("A5", tt::l10n("Border side:"));
-    window.content().make_widget<tt::radio_button_widget>("B5", tt::l10n("on"), border_side, tt::border_side::on);
-    window.content().make_widget<tt::radio_button_widget>("C5", tt::l10n("inside"), border_side, tt::border_side::inside);
-    window.content().make_widget<tt::radio_button_widget>("D5", tt::l10n("outside"), border_side, tt::border_side::outside);
+    window->content().make_widget<tt::label_widget>("A5", tt::l10n("Border side:"));
+    window->content().make_widget<tt::radio_button_widget>("B5", tt::l10n("on"), border_side, tt::border_side::on);
+    window->content().make_widget<tt::radio_button_widget>("C5", tt::l10n("inside"), border_side, tt::border_side::inside);
+    window->content().make_widget<tt::radio_button_widget>("D5", tt::l10n("outside"), border_side, tt::border_side::outside);
 
-    window.content().make_widget<tt::label_widget>("A6", tt::l10n("Border width:"));
-    window.content().make_widget<tt::selection_widget>("B6:D6", border_width_list, border_width);
+    window->content().make_widget<tt::label_widget>("A6", tt::l10n("Border width:"));
+    window->content().make_widget<tt::selection_widget>("B6:D6", border_width_list, border_width);
 
-    window.content().make_widget<tt::label_widget>("A7", tt::l10n("Rotate:"));
-    window.content().make_widget<tt::toggle_widget>("B7:D7", rotating);
+    window->content().make_widget<tt::label_widget>("A7", tt::l10n("Rotate:"));
+    window->content().make_widget<tt::toggle_widget>("B7:D7", rotating);
 
-    window.content().make_widget<tt::label_widget>("A8", tt::l10n("Clip:"));
-    window.content().make_widget<tt::toggle_widget>("B8:D8", clip);
+    window->content().make_widget<tt::label_widget>("A8", tt::l10n("Clip:"));
+    window->content().make_widget<tt::toggle_widget>("B8:D8", clip);
 
-    window.content().make_widget<tt::label_widget>("A9", tt::l10n("Rounded:"));
-    window.content().make_widget<tt::toggle_widget>("B9:D9", rounded);
+    window->content().make_widget<tt::label_widget>("A9", tt::l10n("Rounded:"));
+    window->content().make_widget<tt::toggle_widget>("B9:D9", rounded);
 
     return gui->loop();
 }

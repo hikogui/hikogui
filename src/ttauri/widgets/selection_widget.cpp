@@ -31,19 +31,20 @@ selection_widget::selection_widget(gui_window &window, widget *parent, weak_or_u
     _scroll_widget = &_overlay_widget->make_widget<vertical_scroll_widget<>>();
     _column_widget = &_scroll_widget->make_widget<column_widget>();
 
-    this->unknown_label.subscribe(_reconstrain_callback);
+    // clang-format off
+    _unknown_label_cbt = this->unknown_label.subscribe([&]{ request_reconstrain(); });
+    // clang-format on
 
     if (auto d = _delegate.lock()) {
-        _delegate_callback = d->subscribe(*this, [this] {
+        _delegate_cbt = d->subscribe(*this, [this] {
             this->window.gui.run([this] {
                 repopulate_options();
                 this->request_reconstrain();
             });
         });
 
-        (*_delegate_callback)();
-
         d->init(*this);
+        repopulate_options();
     }
 }
 
@@ -265,7 +266,7 @@ void selection_widget::repopulate_options() noexcept
     tt_axiom(is_gui_thread());
     _column_widget->clear();
     _menu_button_widgets.clear();
-    _menu_button_callbacks.clear();
+    _menu_button_tokens.clear();
 
     auto options = std::vector<label>{};
     auto selected = -1_z;
@@ -285,7 +286,7 @@ void selection_widget::repopulate_options() noexcept
     for (auto &&label : options) {
         auto menu_button = &_column_widget->make_widget<menu_button_widget>(std::move(label), selected, index);
 
-        _menu_button_callbacks.push_back(menu_button->subscribe([this, index] {
+        _menu_button_tokens.push_back(menu_button->pressed.subscribe([this, index] {
             window.gui.run([this, index] {
                 if (auto delegate = _delegate.lock()) {
                     delegate->set_selected(*this, index);

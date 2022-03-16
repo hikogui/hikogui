@@ -27,18 +27,7 @@ public:
     void audio_device_list_changed(tt::audio_system& system) noexcept;
 
 private:
-    tt::observable<tt::audio_device_id> audio_output_device_id;
-    tt::observable<bool> audio_output_exclusive;
-    tt::observable<double> audio_output_sample_rate;
-    tt::observable<tt::speaker_mapping> audio_output_speaker_mapping;
-
-    tt::observable<int> tab_index = 0;
-    tt::observable<bool> toggleValue;
-    tt::observable<int> radioValue = 0;
-    tt::observable<std::vector<std::pair<tt::audio_device_id, tt::label>>> _audio_device_list;
-
-    tt::observable<std::vector<std::pair<std::string, tt::label>>> _theme_list;
-    tt::observable<std::string> _selected_theme;
+    
 
     void init_audio_tab(tt::grid_widget &grid) noexcept;
     void init_theme_tab(tt::grid_widget &grid) noexcept;

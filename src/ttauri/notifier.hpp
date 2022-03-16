@@ -6,17 +6,21 @@
 
 #include "required.hpp"
 #include "unfair_recursive_mutex.hpp"
-#include "coroutine.hpp"
+#include "generator.hpp"
 #include <mutex>
 #include <vector>
 #include <tuple>
 #include <functional>
+#include <coroutine>
 
 namespace tt::inline v1 {
 
-template<typename T>
+template<typename T = void()>
 class notifier {
 };
+
+template<typename Notifier>
+class notifier_awaiter;
 
 /** A notifier which can be used to call a set of registered callbacks.
  * This class is thread-safe; however you must not use this object
@@ -31,8 +35,106 @@ public:
     static_assert(std::is_same_v<Result, void>, "Result of a notifier must be void.");
 
     using result_type = Result;
+    using awaiter_type = notifier_awaiter<notifier>;
     using callback_type = std::function<Result(Args const &...)>;
-    using callback_ptr_type = std::shared_ptr<callback_type>;
+
+    /** Object that represents a callback token.
+     */
+    class token_type {
+    public:
+        ~token_type()
+        {
+            ttlet lock = std::scoped_lock(notifier::_mutex);
+
+            if (_notifier) {
+                _notifier->remove_token(*this);
+            }
+        }
+
+        constexpr token_type() noexcept : _notifier(nullptr) {}
+
+        constexpr token_type(token_type const &other) noexcept : _notifier(nullptr)
+        {
+            ttlet lock = std::scoped_lock(notifier::_mutex);
+
+            if (other._notifier) {
+                other._notifier->copy_token(other, *this);
+                _notifier = other._notifier;
+            }
+        }
+
+        constexpr token_type &operator=(token_type const &other) noexcept
+        {
+            tt_return_on_self_assignment(other);
+            ttlet lock = std::scoped_lock(notifier::_mutex);
+
+
+            if (_notifier) {
+                _notifier->remove_token(*this);
+                _notifier = nullptr;
+            }
+            if (other._notifier) {
+                other._notifier->copy_token(other, *this);
+                _notifier = other._notifier;
+            }
+            return *this;
+        }
+
+        constexpr token_type(token_type &&other) noexcept : _notifier(nullptr)
+        {
+            ttlet lock = std::scoped_lock(notifier::_mutex);
+
+            if (other._notifier) {
+                other._notifier->move_token(other, *this);
+                _notifier = std::exchange(other._notifier, nullptr);
+            }
+        }
+
+        constexpr token_type &operator=(token_type &&other) noexcept
+        {
+            tt_return_on_self_assignment(other);
+            ttlet lock = std::scoped_lock(notifier::_mutex);
+
+
+            if (_notifier) {
+                _notifier->remove_token(*this);
+                _notifier = nullptr;
+            }
+            if (other._notifier) {
+                other._notifier->move_token(other, *this);
+                _notifier = std::exchange(other._notifier, nullptr);
+            }
+            return *this;
+        }
+
+        constexpr token_type(notifier *notifier) noexcept : _notifier(notifier) {}
+
+    private:
+        notifier *_notifier;
+
+        friend notifier;
+    };
+
+    constexpr notifier() noexcept = default;
+    notifier(notifier &&) = delete;
+    notifier(notifier const &) = delete;
+    notifier &operator=(notifier &&) = delete;
+    notifier &operator=(notifier const &) = delete;
+
+    ~notifier()
+    {
+        ttlet lock = std::scoped_lock(_mutex);
+
+        for (auto &callback: _callbacks) {
+            const_cast<token_type *>(callback.first)->_notifier = nullptr;
+        }
+    }
+
+
+    awaiter_type operator co_await() const noexcept
+    {
+        return awaiter_type{const_cast<notifier &>(*this)};
+    }
 
     /** Add a callback to the notifier.
      * Ownership of the callback belongs with the caller of `subscribe()`. The
@@ -40,62 +142,15 @@ public:
      * it will no longer be called.
      *
      * @param callback_ptr A shared_ptr to a callback function.
+     * @return A RAII object which when destroyed will unsubscribe the callback.
      */
-    callback_ptr_type subscribe(callback_ptr_type const &callback_ptr) noexcept
+    [[nodiscard]] token_type subscribe(std::invocable<Args...> auto &&callback) noexcept
     {
-        auto lock = std::scoped_lock(_mutex);
+        ttlet lock = std::scoped_lock(_mutex);
 
-        ttlet i = std::find_if(_callbacks.cbegin(), _callbacks.cend(), [&callback_ptr](ttlet &item) {
-            return item.lock() == callback_ptr;
-        });
-
-        if (i == _callbacks.cend()) {
-            _callbacks.emplace_back(callback_ptr);
-        }
-        return callback_ptr;
-    }
-
-    /** Add a callback to the notifier.
-     * Ownership of the callback belongs with the caller of `subscribe()`. The
-     * `notifier` will hold a weak_ptr to the callback so that when the callback is destroyed
-     * it will no longer be called.
-     *
-     * @param callback The callback-function to register.
-     * @return A shared_ptr to a function object holding the callback.
-     */
-    template<typename Callback>
-    requires(std::is_invocable_v<Callback>) [[nodiscard]] callback_ptr_type subscribe(Callback &&callback) noexcept
-    {
-        auto callback_ptr = std::make_shared<callback_type>(std::forward<decltype(callback)>(callback));
-
-        auto lock = std::scoped_lock(_mutex);
-        _callbacks.emplace_back(callback_ptr);
-        return callback_ptr;
-    }
-
-    /** Remove a callback from the notifier.
-     * @param callback_ptr A share_ptr to the callback function to unsubscribe.
-     */
-    void unsubscribe(callback_ptr_type const &callback_ptr) noexcept
-    {
-        auto lock = std::scoped_lock(_mutex);
-
-        ttlet new_end = std::remove_if(_callbacks.begin(), _callbacks.end(), [&callback_ptr](ttlet &item) {
-            return item.expired() || item.lock() == callback_ptr;
-        });
-        _callbacks.erase(new_end, _callbacks.cend());
-    }
-
-    std::vector<std::weak_ptr<callback_type>> callbacks() const noexcept
-    {
-        auto lock = std::scoped_lock(_mutex);
-
-        // Clean up all the callbacks that expired.
-        std::erase_if(_callbacks, [](auto &x) {
-            return x.expired();
-        });
-
-        return _callbacks;
+        auto sub = token_type{this};
+        _callbacks.emplace_back(&sub, tt_forward(callback));
+        return sub;
     }
 
     /** Call the subscribed callbacks with the given arguments.
@@ -105,12 +160,18 @@ public:
      */
     void operator()(Args const &...args) const noexcept requires(std::is_same_v<result_type, void>)
     {
-        auto callbacks_ = callbacks();
-        for (auto &callback : callbacks_) {
-            if (auto callback_ = callback.lock()) {
-                (*callback_)(args...);
-            }
-        };
+        ttlet lock = std::scoped_lock(_mutex);
+
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+        tt_axiom(std::exchange(_notifying, true) == false);
+#endif
+        ttlet tmp = _callbacks;
+        for (auto &callback : tmp) {
+            callback.second(args...);
+        }
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+        _notifying = false;
+#endif
     }
 
     /** Call the subscribed callbacks with the given arguments.
@@ -121,16 +182,105 @@ public:
      */
     generator<result_type> operator()(Args const &...args) const noexcept requires(not std::is_same_v<result_type, void>)
     {
-        auto callbacks_ = callbacks();
-        for (auto &callback : callbacks_) {
-            if (auto callback_ = callback.lock()) {
-                co_yield (*callback_)(args...);
-            }
-        };
+        ttlet lock = std::scoped_lock(_mutex);
+
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+        tt_axiom(std::exchange(_notifying, true) == false);
+#endif
+        ttlet tmp = _callbacks;
+        for (auto &callback : tmp) {
+            co_yield callback.second(args...);
+        }
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+        _notifying = false;
+#endif
     }
 
-private : mutable unfair_recursive_mutex _mutex;
-    mutable std::vector<std::weak_ptr<callback_type>> _callbacks;
+private :
+    inline static unfair_recursive_mutex _mutex;
+
+    std::vector<std::pair<token_type const *, callback_type>> _callbacks;
+
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+    /** The notifier is currently calling all the callbacks.
+     */
+    mutable bool _notifying = false;
+#endif
+
+    void remove_token(token_type const &sub) noexcept
+    {
+        ttlet erase_count = std::erase_if(_callbacks, [&](ttlet &item) {
+            return item.first == &sub;
+        });
+        tt_axiom(erase_count == 1);
+    }
+
+    void move_token(token_type const &sub, token_type const &new_sub) noexcept
+    {
+        ttlet it = std::find_if(_callbacks.begin(), _callbacks.end(), [&](ttlet &item) {
+            return item.first == &sub;
+        });
+        tt_axiom(it != _callbacks.end());
+        it->first = &new_sub;
+    }
+
+    void copy_token(token_type const &sub, token_type const &new_sub) noexcept
+    {
+        ttlet it = std::find_if(_callbacks.begin(), _callbacks.end(), [&](ttlet &item) {
+            return item.first == &sub;
+        });
+        tt_axiom(it != _callbacks.end());
+        _callbacks.emplace_back(&new_sub, it->second);
+    }
+};
+
+template<typename T>
+struct callback_token {
+    using type = notifier<T>::token_type;
+};
+
+template<typename Notifier>
+class notifier_awaiter {
+public:
+    using notifier_type = Notifier;
+    using result_type = notifier_type::result_type;
+    using handle_type = std::coroutine_handle<>;
+
+    constexpr notifier_awaiter() noexcept : _notifier(nullptr) {}
+    constexpr notifier_awaiter(notifier_type &notifier) noexcept : _notifier(&notifier) {}
+    constexpr notifier_awaiter(notifier_awaiter const &) noexcept = default;
+    constexpr notifier_awaiter(notifier_awaiter &&) noexcept = default;
+    constexpr notifier_awaiter &operator=(notifier_awaiter const &) noexcept = default;
+    constexpr notifier_awaiter &operator=(notifier_awaiter &&) noexcept = default;
+
+    [[nodiscard]] constexpr bool await_ready() noexcept
+    {
+        return false;
+    }
+
+    void await_suspend(handle_type handle) noexcept
+    {
+        tt_axiom(_notifier != nullptr);
+
+        // We can use the this pointer in the callback, as `await_suspend()` is called by
+        // the co-routine on the same object as `await_resume()`.
+        _cbt = _notifier->subscribe([handle] {
+            handle.resume();
+        });
+    }
+
+    constexpr result_type await_resume() const noexcept {}
+
+    [[nodiscard]] bool operator==(notifier_awaiter const &rhs) const noexcept
+    {
+        return _notifier == rhs._notifier;
+    }
+
+private:
+    using token_type = notifier_type::token_type;
+
+    notifier_type *_notifier;
+    token_type _cbt;
 };
 
 } // namespace tt::inline v1

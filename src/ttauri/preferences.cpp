@@ -13,13 +13,6 @@ namespace detail {
 
 preference_item_base::preference_item_base(preferences &parent, std::string_view path) noexcept : _parent(parent), _path(path)
 {
-    _modified_callback_ptr = std::make_shared<std::function<void()>>([this]() {
-        if (auto tmp = this->encode(); not holds_alternative<std::monostate>(tmp)) {
-            this->_parent.write(_path, this->encode());
-        } else {
-            this->_parent.remove(_path);
-        }
-    });
 }
 
 void preference_item_base::load() noexcept

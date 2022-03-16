@@ -15,10 +15,10 @@ TEST(observable, value)
     bool a_modified = false;
 
     observable<int> a;
-    auto a_callback = a.subscribe([&a_modified]() {
+    auto a_cbt = a.subscribe([&a_modified]() {
         a_modified = true;
     });
-    ASSERT_TRUE(a_modified);
+    ASSERT_FALSE(a_modified);
     ASSERT_EQ(a, 0);
     a_modified = false;
 
@@ -35,15 +35,15 @@ TEST(observable, chain1)
 
     observable<int> a;
     observable<int> b;
-    auto a_callback = a.subscribe([&a_modified]() {
+    auto a_cbt = a.subscribe([&a_modified]() {
         a_modified = true;
     });
-    auto b_callback = b.subscribe([&b_modified]() {
+    auto b_cbt = b.subscribe([&b_modified]() {
         b_modified = true;
     });
 
-    ASSERT_TRUE(a_modified);
-    ASSERT_TRUE(b_modified);
+    ASSERT_FALSE(a_modified);
+    ASSERT_FALSE(b_modified);
     ASSERT_EQ(a, 0);
     ASSERT_EQ(b, 0);
     a_modified = false;
@@ -92,19 +92,19 @@ TEST(observable, chain2)
     observable<int> b;
     observable<int> c;
 
-    auto a_callback = a.subscribe([&a_modified]() {
+    auto a_cbt = a.subscribe([&a_modified]() {
         a_modified = true;
     });
-    auto b_callback = b.subscribe([&b_modified]() {
+    auto b_cbt = b.subscribe([&b_modified]() {
         b_modified = true;
     });
-    auto c_callback = c.subscribe([&c_modified]() {
+    auto c_cbt = c.subscribe([&c_modified]() {
         c_modified = true;
     });
 
-    ASSERT_TRUE(a_modified);
-    ASSERT_TRUE(b_modified);
-    ASSERT_TRUE(c_modified);
+    ASSERT_FALSE(a_modified);
+    ASSERT_FALSE(b_modified);
+    ASSERT_FALSE(c_modified);
     ASSERT_EQ(a, 0);
     ASSERT_EQ(b, 0);
     ASSERT_EQ(c, 0);
@@ -191,19 +191,19 @@ TEST(observable, chain3)
     observable<int> b;
     observable<int> c;
 
-    auto a_callback = a.subscribe([&a_modified]() {
+    auto a_cbt = a.subscribe([&a_modified]() {
         a_modified = true;
     });
-    auto b_callback = b.subscribe([&b_modified]() {
+    auto b_cbt = b.subscribe([&b_modified]() {
         b_modified = true;
     });
-    auto c_callback = c.subscribe([&c_modified]() {
+    auto c_cbt = c.subscribe([&c_modified]() {
         c_modified = true;
     });
 
-    ASSERT_TRUE(a_modified);
-    ASSERT_TRUE(b_modified);
-    ASSERT_TRUE(c_modified);
+    ASSERT_FALSE(a_modified);
+    ASSERT_FALSE(b_modified);
+    ASSERT_FALSE(c_modified);
     ASSERT_EQ(a, 0);
     ASSERT_EQ(b, 0);
     ASSERT_EQ(c, 0);

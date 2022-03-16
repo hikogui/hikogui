@@ -84,6 +84,17 @@ public:
         return _total_count.fetch_add(1, std::memory_order::relaxed);
     }
 
+    counter &operator--() noexcept
+    {
+        _total_count.fetch_sub(1, std::memory_order::relaxed);
+        return *this;
+    }
+
+    uint64_t operator--(int) noexcept
+    {
+        return _total_count.fetch_sub(1, std::memory_order::relaxed);
+    }
+
     /** Add a duration.
      */
     void add_duration(uint64_t duration) noexcept

@@ -12,6 +12,7 @@
 #include <map>
 #include <unordered_map>
 #include <type_traits>
+#include <string.h>
 
 namespace tt::inline v1 {
 
@@ -135,6 +136,17 @@ void placement_move(T *src, T *src_last, T *dst)
         placement_move(src++, dst++);
     }
 }
+
+/** Construct a set of objects.
+ */
+template<typename It, typename... Args>
+void construct(It first, It last, Args const &... args)
+{
+    for (auto it = first; it != last; ++it) {
+        std::construct_at(std::addressof(*it), args...);
+    }
+}
+
 
 /** Check if a pointer is properly aligned for the object it is pointing at.
  */

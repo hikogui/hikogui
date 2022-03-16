@@ -70,7 +70,6 @@ void os_settings::gather() noexcept
         tt_log_error("Failed to get OS sub-pixel orientation: {}", e.what());
     }
 
-
     try {
         if (compare_store(_double_click_interval, gather_double_click_interval())) {
             setting_has_changed = true;
@@ -78,6 +77,15 @@ void os_settings::gather() noexcept
         }
     } catch (std::exception const &e) {
         tt_log_error("Failed to get OS double click interval: {}", e.what());
+    }
+
+    try {
+        if (compare_store(_double_click_distance, gather_double_click_distance())) {
+            setting_has_changed = true;
+            tt_log_info("OS double click distance has changed: {}", _double_click_distance.load());
+        }
+    } catch (std::exception const &e) {
+        tt_log_error("Failed to get OS double click distance: {}", e.what());
     }
 
     try {

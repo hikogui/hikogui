@@ -82,7 +82,7 @@ public:
     }
 
     /// @privatesection
-    [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
+    [[nodiscard]] generator<widget *> children() const noexcept override
     {
         for (ttlet &child : _children) {
             co_yield child.get();
@@ -102,6 +102,7 @@ private:
     widget const *_previous_selected_child = nullptr;
     std::vector<std::unique_ptr<widget>> _children;
     weak_or_unique_ptr<delegate_type> _delegate;
+    notifier<>::token_type _delegate_cbt;
 
     using const_iterator = decltype(_children)::const_iterator;
 

@@ -12,27 +12,15 @@ class tab_widget;
 
 class tab_delegate {
 public:
-    using callback_type = std::function<void()>;
-    using callback_ptr_type = std::shared_ptr<callback_type>;
-
     virtual ~tab_delegate() = default;
     virtual void init(tab_widget &sender) noexcept {}
     virtual void deinit(tab_widget &sender) noexcept {}
 
-    virtual callback_ptr_type subscribe(tab_widget &sender, callback_ptr_type const &callback_ptr) noexcept
-    {
-        return callback_ptr;
-    }
-
-    virtual void unsubscribe(tab_widget &sender, callback_ptr_type const &callback_ptr) noexcept {}
-
     /** Subscribe a callback for notifying the widget of a data change.
      */
-    template<typename Callback>
-    requires(std::is_invocable_v<Callback>) [[nodiscard]] callback_ptr_type
-        subscribe(tab_widget &sender, Callback &&callback) noexcept
+    auto subscribe(tab_widget &sender, std::invocable<> auto &&callback) noexcept
     {
-        return subscribe(sender, std::make_shared<callback_type>(std::forward<Callback>(callback)));
+        return _notifier.subscribe(tt_forward(callback));
     }
 
     virtual void add_tab(tab_widget &sender, std::size_t key, std::size_t index) noexcept {}
@@ -41,6 +29,9 @@ public:
     {
         return -1;
     }
+
+protected:
+    notifier<> _notifier;
 };
 
 } // namespace tt::inline v1

@@ -24,7 +24,6 @@ class abstract_button_widget : public widget {
 public:
     using super = widget;
     using delegate_type = button_delegate;
-    using callback_ptr_type = typename delegate_type::callback_ptr_type;
 
     /** The label to show when the button is in the 'on' state.
      */
@@ -41,6 +40,8 @@ public:
     /** The alignment of the on/off/other label.
      */
     observable<alignment> label_alignment;
+
+    notifier<void()> pressed;
 
     /** Set on/off/other labels of the button to the same value.
      */
@@ -66,21 +67,8 @@ public:
         }
     }
 
-    /** Subscribe a callback to call when the button is activated.
-     */
-    template<typename Callback>
-    [[nodiscard]] callback_ptr_type subscribe(Callback &&callback) noexcept
-    {
-        tt_axiom(is_gui_thread());
-        return _notifier.subscribe(std::forward<Callback>(callback));
-    }
-
-    /** Unsubscribe a callback.
-     */
-    void unsubscribe(callback_ptr_type &callback_ptr) noexcept;
-
     /// @privatesection
-    [[nodiscard]] pmr::generator<widget *> children(std::pmr::polymorphic_allocator<> &) const noexcept override
+    [[nodiscard]] generator<widget *> children() const noexcept override
     {
         co_yield _on_label_widget.get();
         co_yield _off_label_widget.get();
@@ -101,8 +89,8 @@ protected:
     std::unique_ptr<label_widget> _other_label_widget;
 
     bool _pressed = false;
-    notifier<void()> _notifier;
     weak_or_unique_ptr<delegate_type> _delegate;
+    notifier<>::token_type _delegate_cbt;
 
     ~abstract_button_widget();
     abstract_button_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;

@@ -29,7 +29,7 @@ static bool firstWindowHasBeenOpened = false;
 /** The win32 window message handler.
  * This function should not take any locks as _WindowProc is called recursively.
  */
-static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
+LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 {
     if (uMsg == WM_CREATE && lParam) {
         ttlet createData = std::launder(std::bit_cast<CREATESTRUCT *>(lParam));
@@ -52,9 +52,14 @@ static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
     auto window = std::launder(std::bit_cast<gui_window_win32 *>(window_userdata));
     tt_axiom(window->is_gui_thread());
 
-    LRESULT result = window->windowProc(uMsg, wParam, lParam);
+    // WM_CLOSE and WM_DESTROY will re-enter and run the destructor for `window`.
+    // We can no longer call virtual functions on the `window` object.
+    if (uMsg == WM_CLOSE) {
+        // Listeners can close the window by calling the destructor on `window`.
+        window->closing();
+        return 0;
 
-    if (uMsg == WM_DESTROY) {
+    } else if (uMsg == WM_DESTROY) {
         // Remove the window now, before DefWindowProc, which could recursively
         // Reuse the window as it is being cleaned up.
         SetLastError(0);
@@ -62,14 +67,17 @@ static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
         if (r == 0 || GetLastError() != 0) {
             tt_log_fatal("Could not set GWLP_USERDATA on window. '{}'", get_last_error_message());
         }
-    }
 
-    // The call to DefWindowProc() recurses make sure we do not hold on to any locks.
-    if (result == -1) {
+        // Also remove the win32Window from the window, so that we don't get double DestroyWindow().
+        window->win32Window = nullptr;
+        return 0;
+
+    } else {
+        if (auto result = window->windowProc(uMsg, wParam, lParam); result != -1) {
+            return result;
+        }
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
-
-    return result;
 }
 
 static void createWindowClass()
@@ -178,7 +186,9 @@ gui_window_win32::~gui_window_win32()
 {
     try {
         if (win32Window != nullptr) {
-            tt_log_fatal("win32Window was not destroyed before Window '{}' was destructed.", title);
+            DestroyWindow(win32Window);
+            tt_axiom(win32Window == nullptr);
+            // tt_log_fatal("win32Window was not destroyed before Window '{}' was destructed.", title);
         }
 
     } catch (std::exception const &e) {
@@ -188,9 +198,10 @@ gui_window_win32::~gui_window_win32()
 
 void gui_window_win32::close_window()
 {
-    gui.run_from_event_queue([=]() {
-        DestroyWindow(reinterpret_cast<HWND>(win32Window));
-    });
+    tt_axiom(is_gui_thread());
+    if (not PostMessageW(reinterpret_cast<HWND>(win32Window), WM_CLOSE, 0, 0)) {
+        tt_log_error("Could not send WM_CLOSE to window {}: {}", title, get_last_error_message());
+    }
 }
 
 void gui_window_win32::set_size_state(gui_window_size state) noexcept
@@ -305,7 +316,7 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
 [[nodiscard]] tt::subpixel_orientation gui_window_win32::subpixel_orientation() const noexcept
 {
     // The table for viewing distance are:
-    // 
+    //
     // - Phone/Watch: 10 inch
     // - Tablet: 15 inch
     // - Notebook/Desktop: 20 inch
@@ -313,7 +324,7 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
     // Pixels Per Degree = PPD = 2 * viewing_distance * resolution * tan(0.5 degree)
     constexpr auto tan_half_degree = 0.00872686779075879f;
     constexpr auto viewing_distance = 20.0f;
-    
+
     ttlet ppd = 2 * viewing_distance * dpi * tan_half_degree;
 
     if (ppd > 55.0f) {
@@ -564,11 +575,13 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     ttlet current_time = std::chrono::utc_clock::now();
 
     switch (uMsg) {
-    case WM_DESTROY: {
-        tt_axiom(is_gui_thread());
-        surface->set_closed();
-        win32Window = nullptr;
-    } break;
+    case WM_CLOSE:
+        // WM_DESTROY is handled inside `_windowProc` since it has to deal with lifetime of `this`.
+        break;
+
+    case WM_DESTROY:
+        // WM_DESTROY is handled inside `_windowProc` since it has to deal with lifetime of `this`.
+        break;
 
     case WM_CREATE: {
         ttlet createstruct_ptr = std::launder(std::bit_cast<CREATESTRUCT *>(lParam));
@@ -615,7 +628,10 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         // However we do not support maximizing by the OS.
         tt_axiom(is_gui_thread());
         switch (wParam) {
-        case SIZE_MAXIMIZED: ShowWindow(win32Window, SW_RESTORE); set_size_state(gui_window_size::maximized); break;
+        case SIZE_MAXIMIZED:
+            ShowWindow(win32Window, SW_RESTORE);
+            set_size_state(gui_window_size::maximized);
+            break;
         case SIZE_MINIMIZED: _size_state = gui_window_size::minimized; break;
         case SIZE_RESTORED: _size_state = gui_window_size::normal; break;
         default: break;
@@ -963,16 +979,16 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     case WM_MBUTTONDOWN:
     case WM_RBUTTONDOWN:
     case WM_XBUTTONDOWN: {
+        ttlet within_double_click_time = mouseEvent.timePoint - multi_click_time_point < os_settings::double_click_interval();
+        ttlet within_double_click_distance =
+            hypot(mouseEvent.position - multi_click_position) < os_settings::double_click_distance();
+
+        multi_click_count = within_double_click_time and within_double_click_distance ? multi_click_count + 1 : 1;
+        multi_click_time_point = mouseEvent.timePoint;
+        multi_click_position = mouseEvent.position;
+
         mouseEvent.type = mouse_event::Type::ButtonDown;
         mouseEvent.downPosition = mouseEvent.position;
-
-        if (mouseEvent.timePoint < multi_click_time_point + os_settings::double_click_interval()) {
-            ++multi_click_count;
-        } else {
-            multi_click_count = 1;
-        }
-        multi_click_time_point = mouseEvent.timePoint;
-
         mouseEvent.clickCount = multi_click_count;
 
         // Track draging past the window borders.

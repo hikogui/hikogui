@@ -22,31 +22,19 @@ public:
     observable<value_type> value;
     observable<value_type> off_value;
 
-    template<typename OptionList, typename Value, typename OffValue>
-    default_selection_delegate(OptionList &&option_list, Value &&value, OffValue &&off_value) noexcept :
-        options(std::forward<OptionList>(option_list)),
-        value(std::forward<Value>(value)),
-        off_value(std::forward<OffValue>(off_value))
+    default_selection_delegate(auto &&options, auto &&value, auto &&off_value) noexcept :
+        options(tt_forward(options)), value(tt_forward(value)), off_value(tt_forward(off_value))
     {
+        // clang-format off
+        _options_cbt = this->options.subscribe([&]{ this->_notifier(); });
+        _value_cbt = this->value.subscribe([&]{ this->_notifier(); });
+        _off_value_cbt = this->off_value.subscribe([&]{ this->_notifier(); });
+        // clang-format on
     }
 
-    template<typename OptionList, typename Value>
-    default_selection_delegate(OptionList &&option_list, Value &&value) noexcept :
-        options(std::forward<OptionList>(option_list)), value(std::forward<Value>(value)), off_value(value_type{})
+    default_selection_delegate(auto &&option_list, auto &&value) noexcept :
+        default_selection_delegate(tt_forward(option_list), tt_forward(value), value_type{})
     {
-    }
-
-    callback_ptr_type subscribe(selection_widget &sender, callback_ptr_type const &callback_ptr) noexcept override
-    {
-        value.subscribe(callback_ptr);
-        options.subscribe(callback_ptr);
-        return callback_ptr;
-    }
-
-    void unsubscribe(selection_widget &sender, callback_ptr_type const &callback_ptr) noexcept override
-    {
-        value.unsubscribe(callback_ptr);
-        options.unsubscribe(callback_ptr);
     }
 
     void set_selected(selection_widget &sender, ssize_t index) noexcept override
@@ -79,6 +67,11 @@ public:
 
         return {std::move(labels), selected_index};
     }
+
+private:
+    notifier<>::token_type _options_cbt;
+    notifier<>::token_type _value_cbt;
+    notifier<>::token_type _off_value_cbt;
 };
 
 template<typename OptionList, typename Value, typename... Args>
