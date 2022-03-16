@@ -24,18 +24,20 @@
 #include <Windows.h>
 #include <memory>
 
-// void init_audio_tab(tt::grid_widget &grid) noexcept
-//{
-//     using namespace tt;
-//
-//     grid.make_widget<label_widget>("A1", l10n("Audio device:"));
-//     grid.make_widget<selection_widget>("B1", _audio_device_list, audio_output_device_id);
-//
-//     grid.make_widget<label_widget>("A2", l10n("Sample Rate:"));
-//     grid.make_widget<text_field_widget>("B2", audio_output_sample_rate);
-// }
+tt::scoped_task<> init_audio_tab(tt::grid_widget &grid, tt::observable<double> &audio_output_sample_rate) noexcept
+{
+    using namespace tt;
 
-void init_theme_tab(
+    // grid.make_widget<label_widget>("A1", l10n("Audio device:"));
+    // grid.make_widget<selection_widget>("B1", _audio_device_list, audio_output_device_id);
+
+    grid.make_widget<label_widget>("A2", l10n("Sample Rate:"));
+    grid.make_widget<text_field_widget>("B2", audio_output_sample_rate);
+
+    co_await std::suspend_always{};
+}
+
+tt::scoped_task<> init_theme_tab(
     tt::grid_widget &grid,
     tt::observable<std::vector<std::pair<std::string, tt::label>>> &theme_list,
     tt::observable<std::string> &selected_theme) noexcept
@@ -52,9 +54,12 @@ void init_theme_tab(
 
     grid.make_widget<label_widget>("A1", l10n("Theme:"));
     grid.make_widget<selection_widget>("B1", theme_list, grid.window.gui.selected_theme);
+
+    co_await std::suspend_always{};
 }
 
-void init_license_tab(tt::grid_widget &grid, tt::observable<bool> &toggle_value, tt::observable<int> &radio_value) noexcept
+tt::scoped_task<>
+init_license_tab(tt::grid_widget &grid, tt::observable<bool> &toggle_value, tt::observable<int> &radio_value) noexcept
 {
     using namespace tt;
 
@@ -86,6 +91,8 @@ void init_license_tab(tt::grid_widget &grid, tt::observable<bool> &toggle_value,
     grid.make_widget<label_widget>("A6", l10n("This is a selection box at the bottom:"));
     auto &selection3 = grid.make_widget<selection_widget>("B6", option_list, radio_value);
     selection3.enabled = toggle_value;
+
+    co_await std::suspend_always{};
 }
 
 tt::task<> preferences_window(tt::gui_system &gui, tt::preferences &preferences)
@@ -108,15 +115,18 @@ tt::task<> preferences_window(tt::gui_system &gui, tt::preferences &preferences)
     auto window_label = label{URL{"resource:ttauri_demo.png"}, l10n("Preferences")};
     auto window = gui.make_window(window_label);
 
-    // window->toolbar().make_widget<toolbar_tab_button_widget>(label{elusive_icon::Speaker, l10n("Audio")}, tab_index, 0);
+    window->toolbar().make_widget<toolbar_tab_button_widget>(label{elusive_icon::Speaker, l10n("Audio")}, tab_index, 0);
     window->toolbar().make_widget<toolbar_tab_button_widget>(label{elusive_icon::Key, l10n("License")}, tab_index, 1);
     window->toolbar().make_widget<toolbar_tab_button_widget>(label{elusive_icon::Brush, l10n("Theme")}, tab_index, 2);
 
     auto &tabs = window->content().make_widget<tab_widget>("A1", tab_index);
+    auto &audio_tab_grid = tabs.make_widget<grid_widget>(0);
+    auto &license_tab_grid = tabs.make_widget<scroll_widget<axis::both, true>>(1).make_widget<grid_widget>();
+    auto &theme_tab_grid = tabs.make_widget<grid_widget>(2);
 
-    // init_audio_tab(tabs.make_widget<grid_widget>(0));
-    init_license_tab(tabs.make_widget<scroll_widget<axis::both, true>>(1).make_widget<grid_widget>(), toggle_value, radio_value);
-    init_theme_tab(tabs.make_widget<grid_widget>(2), theme_list, selected_theme);
+    auto audio_tab = init_audio_tab(audio_tab_grid, audio_output_sample_rate);
+    auto license_tab = init_license_tab(license_tab_grid, toggle_value, radio_value);
+    auto theme_tab = init_theme_tab(theme_tab_grid, theme_list, selected_theme);
 
     co_await window->closing;
 }
@@ -138,7 +148,8 @@ tt::task<> main_window(tt::gui_system &gui, tt::preferences &preferences)
     ttlet &vma_dump_button = column.make_widget<momentary_button_widget>(l10n("vma\ncalculate stats"));
 
     while (true) {
-        ttlet result = co_await when_any(preferences_button.pressed, vma_dump_button.pressed, hello_world_button.pressed, window->closing);
+        ttlet result =
+            co_await when_any(preferences_button.pressed, vma_dump_button.pressed, hello_world_button.pressed, window->closing);
 
         if (result == preferences_button.pressed) {
             preferences_window(gui, preferences);
@@ -174,7 +185,7 @@ int tt_main(int argc, char *argv[])
     time_stamp_count::start_subsystem();
 
     // Startup renderdoc for debugging
-    auto render_doc = RenderDoc();
+    // auto render_doc = RenderDoc();
 
     auto preferences = tt::preferences(URL::urlFromApplicationPreferencesFile());
 

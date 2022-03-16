@@ -134,7 +134,8 @@ public:
 
     [[nodiscard]] constexpr bool await_ready() noexcept
     {
-        return false;
+        static_assert(sizeof...(Ts) > 0);
+        return _await_ready<0>();
     }
 
     void await_suspend(std::coroutine_handle<> const &handle) noexcept
@@ -158,8 +159,30 @@ private:
     template<awaitable_direct Awaiter>
     static scoped_task<await_resume_result_t<Awaiter>> _await_suspend_task(Awaiter &awaiter)
     {
-        co_await awaiter;
-        co_return;
+        co_return co_await awaiter;
+    }
+
+    template<std::size_t I>
+    bool _await_ready() noexcept
+    {
+        auto &task = std::get<I>(_tasks) = _await_suspend_task(std::get<I>(_awaiters));
+
+        if (task.completed()) {
+            using arg_type = await_resume_result_t<decltype(std::get<I>(_awaiters))>;
+
+            if constexpr (std::is_same_v<arg_type, void>) {
+                _value = {std::in_place_index<I>, std::get<I>(_awaiters)};
+            } else {
+                _value = {std::in_place_index<I>, std::get<I>(_awaiters), task.value()};
+            }
+            return true;
+
+        } else if constexpr (I + 1 < sizeof...(Ts)) {
+            return _await_ready<I + 1>();
+
+        } else {
+            return false;
+        }
     }
 
     template<std::size_t I>
@@ -167,16 +190,14 @@ private:
     {
         using arg_type = await_resume_result_t<decltype(std::get<I>(_awaiters))>;
 
-        std::get<I>(_tasks) = _await_suspend_task(std::get<I>(_awaiters));
-
         if constexpr (std::is_same_v<arg_type, void>) {
-            std::get<I>(_task_cbts) = std::get<I>(_tasks).resume([this,handle]() {
+            std::get<I>(_task_cbts) = std::get<I>(_tasks).subscribe([this, handle]() {
                 this->_value = {std::in_place_index<I>, std::get<I>(_awaiters)};
                 handle.resume();
             });
 
         } else {
-            std::get<I>(_task_cbts) = std::get<I>(_tasks).resume([this,handle](arg_type const &arg) {
+            std::get<I>(_task_cbts) = std::get<I>(_tasks).subscribe([this, handle](arg_type const &arg) {
                 this->_value = {std::in_place_index<I>, std::get<I>(_awaiters), arg};
                 handle.resume();
             });

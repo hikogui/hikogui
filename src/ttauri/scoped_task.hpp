@@ -10,18 +10,16 @@
 #include <coroutine>
 #include <type_traits>
 #include <memory>
+#include <exception>
 
 namespace tt::inline v1 {
 
 /** A scoped_task.
  *
  * Like the `tt::task` instance this implements a asynchronous co-routine task.
- * This scoped variant will immediately return to the caller until `scoped_task::resume()` is
- * called on this. This will allow this object to be assigned callbacks to trigger when co_return
- * is called.
  *
- * The `scoped_task` object needs to be held by the caller until the co-routine returns.
- * If the `scoped_task` object is destroyed, the co-routine will be destroyed as well.
+ * If the `scoped_task` object is destroyed, the potentially non-completed co-routine will be destroyed as well.
+ * A `scoped_task` is a move-only object.
  *
  * @tparam T The type returned by co_return.
  */
@@ -30,44 +28,59 @@ class scoped_task {
 public:
     using value_type = T;
 
-    using optional_value_type = std::optional<value_type>;
-    using optional_value_ptr_type = std::shared_ptr<optional_value_type>;
+    /** The return value type.
+     * This value is shared between the promise and the scoped_task.
+     * The variant has three different states:
+     *  - 0: co-routine has not completed.
+     *  - 1: co-routine caught an uncaught exception.
+     *  - 2: co-routine is completed with a value.
+     */
+    using return_value_type = std::variant<std::monostate, std::exception_ptr, value_type>;
+    using return_value_ptr_type = std::shared_ptr<return_value_type>;
+    using const_return_value_ptr_type = std::shared_ptr<return_value_type const>;
     using notifier_type = notifier<void(value_type)>;
 
     struct promise_type {
         notifier_type _notifier;
-        optional_value_ptr_type _optional_value_ptr;
+        return_value_ptr_type _value_ptr;
 
         void return_value(std::convertible_to<value_type> auto &&value) noexcept
         {
-            *_optional_value_ptr = tt_forward(value);
+            *_value_ptr = return_value_type{std::in_place_index<2>, tt_forward(value)};
+        }
+
+        void unhandled_exception() noexcept
+        {
+            *_value_ptr = return_value_type{std::in_place_index<1>, std::current_exception()};
         }
 
         std::suspend_never final_suspend() noexcept
         {
-            // After final suspend this promise will be destroyed.
-            // But the notifier may try to manually destroy the co-routine (and this promise)
-            // if the promise is still holding on to the _optional_value_ptr.
-            auto value = **_optional_value_ptr;
-            _optional_value_ptr.reset();
-            _notifier(std::move(value));
-            return {};
-        }
-
-        void unhandled_exception()
-        {
-            throw;
+            switch (_value_ptr->index()) {
+            case 1:
+                // We need to trigger the notifier on an exception too.
+                if constexpr (std::is_default_constructible_v<value_type>) {
+                    _notifier(value_type{});
+                    return {};
+                }
+                tt_no_default();
+            case 2:
+                // Trigger the notifier with the co_return value.
+                _notifier(std::get<2>(*_value_ptr));
+                return {};
+            default: tt_no_default();
+            }
         }
 
         scoped_task get_return_object() noexcept
         {
-            _optional_value_ptr = std::make_shared<optional_value_type>();
-            return scoped_task{handle_type::from_promise(*this), _optional_value_ptr};
+            _value_ptr = std::make_shared<return_value_type>();
+            return scoped_task{handle_type::from_promise(*this), _value_ptr};
         }
 
         /** Before we enter the coroutine, allow the caller to set the callback.
          */
-        std::suspend_always initial_suspend() noexcept
+        std::suspend_never initial_suspend() noexcept
         {
             return {};
         }
@@ -75,121 +88,148 @@ public:
 
     using handle_type = std::coroutine_handle<promise_type>;
 
-    scoped_task(handle_type coroutine, std::shared_ptr<optional_value_type> value_ptr) noexcept :
-        _coroutine(coroutine), _optional_value_ptr(std::move(value_ptr))
+    scoped_task(handle_type coroutine, const_return_value_ptr_type value_ptr) noexcept :
+        _coroutine(coroutine), _value_ptr(std::move(value_ptr))
     {
     }
 
     ~scoped_task()
     {
-        if (_optional_value_ptr) {
-            if (_optional_value_ptr.use_count() > 1) {
-                tt_axiom(_coroutine);
-                _coroutine.destroy();
-            }
-            tt_axiom(_optional_value_ptr.use_count() == 1);
+        if (_value_ptr and not completed()) {
+            tt_axiom(_coroutine);
+            _coroutine.destroy();
         }
     }
 
     scoped_task() = default;
+
+    // scoped_task can not be copied because it tracks if the co-routine must be destroyed by the
+    // shared_ptr to the value shared between scoped_task and the promise.
     scoped_task(scoped_task const &) = delete;
     scoped_task &operator=(scoped_task const &) = delete;
 
     scoped_task(scoped_task &&other) noexcept
     {
         _coroutine = std::exchange(other._coroutine, {});
-        _optional_value_ptr = std::exchange(other._optional_value_ptr, {});
+        _value_ptr = std::exchange(other._value_ptr, {});
     }
 
     scoped_task &operator=(scoped_task &&other) noexcept
     {
         _coroutine = std::exchange(other._coroutine, {});
-        _optional_value_ptr = std::exchange(other._optional_value_ptr, {});
+        _value_ptr = std::exchange(other._value_ptr, {});
         return *this;
     }
 
+    /** Check if the co-routine has completed.
+     */
     [[nodiscard]] bool completed() const noexcept
     {
-        return static_cast<bool>(*_optional_value_ptr);
+        return _value_ptr->index() != 0;
     }
 
+    /** Check if the co-routine has completed.
+     */
     explicit operator bool() const noexcept
     {
         return completed();
     }
 
-    [[nodiscard]] value_type const &value() const noexcept
+    /** Get the return value returned from co_return.
+     *
+     * @note It is undefined behavior to call this function if the co-routine is incomplete.
+     * @throws The exception thrown from the co-routine.
+     */
+    [[nodiscard]] value_type const &value() const
     {
-        return **_optional_value_ptr;
+        switch (_value_ptr->index()) {
+        case 1: std::rethrow_exception(std::get<1>(*_value_ptr));
+        case 2: return std::get<2>(*_value_ptr);
+        default: tt_no_default();
+        }
     }
 
-    [[nodiscard]] value_type const &operator*() const noexcept
+    /** Get the return value returned from co_return.
+     *
+     * @note It is undefined behavior to call this function if the co-routine is incomplete.
+     * @throws The exception thrown from the co-routine.
+     */
+    [[nodiscard]] value_type const &operator*() const
     {
         return value();
     }
 
-    /** Resume the co-routine.
+    /** Subscribe a callback for when the co-routine is completed.
      *
-     * The co-routine initially suspends, which allows a callback to be
-     * attached to the co-routine which will be called the co-routine returns.
-     *
-     * @param callback The callback to be called when the co-routine returns.
-     * @return A callback-token used to track the lifetime of the callback.
+     * @param callback The callback to call when the co-routine executed co_return. If co_return
+     *                 has a non-void expression then the callback must accept the expression as an argument.
      */
-    auto resume(std::invocable<value_type> auto &&callback) noexcept
+    notifier_type::token_type subscribe(std::invocable<value_type> auto &&callback) noexcept
     {
-        auto tmp = _coroutine.promise()._notifier.subscribe(tt_forward(callback));
-        _coroutine.resume();
-        return tmp;
+        return _coroutine.promise()._notifier.subscribe(tt_forward(callback));
     }
 
 private:
     // Optional value type
     handle_type _coroutine;
-    optional_value_ptr_type _optional_value_ptr;
+    const_return_value_ptr_type _value_ptr;
 };
 
+/**
+ * @sa scoped_task<>
+ */
 template<>
 class scoped_task<void> {
 public:
     using value_type = void;
-    using optional_value_type = bool;
-    using optional_value_ptr_type = std::shared_ptr<optional_value_type>;
+
+    /** The return value type.
+     * This value is shared between the promise and the scoped_task.
+     * The variant has three different states:
+     *  - 0: co-routine has not completed.
+     *  - 1: co-routine caught an uncaught exception.
+     *  - 2: co-routine is completed.
+     */
+    using return_value_type = std::variant<std::monostate, std::exception_ptr, std::monostate>;
+    using return_value_ptr_type = std::shared_ptr<return_value_type>;
+    using const_return_value_ptr_type = std::shared_ptr<return_value_type const>;
     using notifier_type = notifier<void()>;
 
     struct promise_type {
         notifier_type _notifier;
-        optional_value_ptr_type _optional_value_ptr;
+        return_value_ptr_type _value_ptr;
 
         void return_void() noexcept
         {
-            *_optional_value_ptr = true;
+            *_value_ptr = return_value_type{std::in_place_index<2>};
+        }
+
+        void unhandled_exception() noexcept
+        {
+            *_value_ptr = return_value_type{std::in_place_index<1>, std::current_exception()};
         }
 
         std::suspend_never final_suspend() noexcept
         {
-            // After final suspend this promise will be destroyed.
-            // But the notifier may try to manually destroy the co-routine (and this promise)
-            // if the promise is still holding on to the _optional_value_ptr.
-            _optional_value_ptr.reset();
-            _notifier();
-            return {};
+            switch (_value_ptr->index()) {
+            case 1:
+                // Trigger the notifier on exception.
+                _notifier();
+                return {};
+            case 2:
+                // Trigger the notifier with the co_return value.
+                _notifier();
+                return {};
+            default: tt_no_default();
+            }
         }
-
-        void unhandled_exception()
-        {
-            throw;
-        }
-
         scoped_task get_return_object() noexcept
         {
-            _optional_value_ptr = std::make_shared<optional_value_type>();
-            return scoped_task{handle_type::from_promise(*this), _optional_value_ptr};
+            _value_ptr = std::make_shared<return_value_type>();
+            return scoped_task{handle_type::from_promise(*this), _value_ptr};
         }
 
-        /** Before we enter the coroutine, allow the caller to set the callback.
-         */
-        std::suspend_always initial_suspend() noexcept
+        std::suspend_never initial_suspend() noexcept
         {
             return {};
         }
@@ -197,19 +237,16 @@ public:
 
     using handle_type = std::coroutine_handle<promise_type>;
 
-    scoped_task(handle_type coroutine, std::shared_ptr<optional_value_type> value_ptr) noexcept :
-        _coroutine(coroutine), _optional_value_ptr(std::move(value_ptr))
+    scoped_task(handle_type coroutine, const_return_value_ptr_type value_ptr) noexcept :
+        _coroutine(coroutine), _value_ptr(std::move(value_ptr))
     {
     }
 
     ~scoped_task()
     {
-        if (_optional_value_ptr) {
-            if (_optional_value_ptr.use_count() > 1) {
-                tt_axiom(_coroutine);
-                _coroutine.destroy();
-            }
-            tt_axiom(_optional_value_ptr.use_count() == 1);
+        if (_value_ptr and not completed()) {
+            tt_axiom(_coroutine);
+            _coroutine.destroy();
         }
     }
 
@@ -220,45 +257,59 @@ public:
     scoped_task(scoped_task &&other) noexcept
     {
         _coroutine = std::exchange(other._coroutine, {});
-        _optional_value_ptr = std::exchange(other._optional_value_ptr, {});
+        _value_ptr = std::exchange(other._value_ptr, {});
     }
 
     scoped_task &operator=(scoped_task &&other) noexcept
     {
         _coroutine = std::exchange(other._coroutine, {});
-        _optional_value_ptr = std::exchange(other._optional_value_ptr, {});
+        _value_ptr = std::exchange(other._value_ptr, {});
         return *this;
     }
 
+    /**
+     * @sa scoped_task<>::completed()
+     */
     [[nodiscard]] bool completed() const noexcept
     {
-        return static_cast<bool>(*_optional_value_ptr);
+        return _value_ptr->index() != 0;
     }
 
+    /**
+     * @sa scoped_task<>::operator bool()
+     */
     explicit operator bool() const noexcept
     {
         return completed();
     }
 
-    /** Resume the co-routine.
+    /** Get the return value returned from co_return.
      *
-     * The co-routine initially suspends, which allows a callback to be
-     * attached to the co-routine which will be called the co-routine returns.
-     *
-     * @param callback The callback to be called when the co-routine returns.
-     * @return A callback-token used to track the lifetime of the callback.
+     * @note It is undefined behavior to call this function if the co-routine is incomplete.
+     * @return void
+     * @throws The exception thrown from the co-routine.
      */
-    auto resume(std::invocable<> auto &&callback) noexcept
+    void value() const
     {
-        auto tmp = _coroutine.promise()._notifier.subscribe(tt_forward(callback));
-        _coroutine.resume();
-        return tmp;
+        switch (_value_ptr->index()) {
+        case 1: std::rethrow_exception(std::get<1>(*_value_ptr));
+        case 2: return;
+        default: tt_no_default();
+        }
+    }
+
+    /**
+     * @sa scoped_task<>::subscribe()
+     */
+    notifier_type::token_type subscribe(std::invocable<> auto &&callback) noexcept
+    {
+        return _coroutine.promise()._notifier.subscribe(tt_forward(callback));
     }
 
 private:
     // Optional value type
     handle_type _coroutine;
-    optional_value_ptr_type _optional_value_ptr;
+    const_return_value_ptr_type _value_ptr;
 };
 
 } // namespace tt::inline v1

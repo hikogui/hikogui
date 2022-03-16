@@ -44,7 +44,7 @@ template<typename T>
 concept rvalue_reference = std::is_rvalue_reference_v<T>;
 
 template<typename T>
-concept trivially_copyable = std::is_trivially_copyable_t<T>;
+concept trivially_copyable = std::is_trivially_copyable_v<T>;
 
 template<typename BaseType, typename DerivedType>
 concept base_of = std::is_base_of_v<BaseType, DerivedType>;
