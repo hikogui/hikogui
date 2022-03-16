@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "memory.hpp"
+#include "security.hpp"
 
 namespace tt::inline v1 {
 
@@ -66,7 +66,7 @@ public:
 
     constexpr secure_vector() noexcept : _begin(nullptr), _end(nullptr), _bound(nullptr) {}
 
-    ~secure_vector()
+    constexpr ~secure_vector()
     {
         resize(0);
         shrink_to_fit();
@@ -93,7 +93,7 @@ public:
         return static_cast<size_type>(_bound - _begin);
     }
 
-    reference at(size_type pos)
+    [[nodiscard]] constexpr reference at(size_type pos)
     {
         auto *ptr = _begin + pos;
         if (ptr >= _end) {
@@ -103,7 +103,7 @@ public:
         return *ptr;
     }
 
-    const_reference at(size_type pos) const
+    [[nodiscard]] constexpr const_reference at(size_type pos) const
     {
         auto *ptr = _begin + pos;
         if (ptr >= _end) {
@@ -113,101 +113,148 @@ public:
         return *ptr;
     }
 
-    reference operator[](size_type pos) noexcept
+    [[nodiscard]] constexpr reference operator[](size_type pos) noexcept
     {
         auto *ptr = _begin + pos;
         tt_axiom(ptr < _end);
         return *ptr;
     }
 
-    const_reference operator[](size_type pos) const noexcept
+    [[nodiscard]] constexpr const_reference operator[](size_type pos) const noexcept
     {
         auto *ptr = _begin + pos;
         tt_axiom(ptr < _end);
         return *ptr;
     }
 
-    reference front() noexcept
+    [[nodiscard]] constexpr reference front() noexcept
     {
         tt_axiom(not empty());
         return *_begin;
     }
 
-    const_reference front() const noexcept
+    [[nodiscard]] constexpr const_reference front() const noexcept
     {
         tt_axiom(not empty());
         return *_begin;
     }
 
-    reference back() noexcept
+    [[nodiscard]] constexpr reference back() noexcept
     {
         tt_axiom(not empty());
         return *(_end - 1);
     }
 
-    const_reference back() const noexcept
+    [[nodiscard]] constexpr const_reference back() const noexcept
     {
         tt_axiom(not empty());
         return *(_end - 1);
     }
 
-    pointer data() noexcept
+    [[nodiscard]] constexpr pointer data() noexcept
     {
         return _begin;
     }
 
-    const_pointer data() const noexcept
+    [[nodiscard]] constexpr const_pointer data() const noexcept
     {
         return _begin;
     }
 
-    iterator begin() noexcept
+    [[nodiscard]] constexpr iterator begin() noexcept
     {
         return _begin;
     }
 
-    const_iterator begin() const noexcept
+    [[nodiscard]] constexpr const_iterator begin() const noexcept
     {
         return _begin;
     }
 
-    const_iterator cbegin() const noexcept
+    [[nodiscard]] constexpr const_iterator cbegin() const noexcept
     {
         return _begin;
     }
 
-    iterator end() noexcept
+    [[nodiscard]] constexpr iterator end() noexcept
     {
         return _end;
     }
 
-    const_iterator end() const noexcept
+    [[nodiscard]] constexpr const_iterator end() const noexcept
     {
         return _end;
     }
 
-    const_iterator cend() const noexcept
+    [[nodiscard]] constexpr const_iterator cend() const noexcept
     {
         return _end;
     }
 
 
-    void resize(size_type new_size)
+    constexpr void resize(size_type new_size)
     {
         return _resize(new_size);
     }
 
-    void resize(size_type new_size, value_type const &value)
+    constexpr void resize(size_type new_size, value_type const &value)
     {
         return _resize(new_size, value);
     }
 
-    void clear()
+    constexpr void clear()
     {
         return resize(0);
     }
 
-    void reserve(size_type new_capacity)
+    constexpr reference emplace_back(auto &&...args)
+    {
+        grow();
+        auto tmp = std::construct_at(_end, tt_forward(args)...);
+        ++_end;
+        return *tmp;
+    }
+
+    constexpr void push_back(value_type const &value)
+    {
+        emplace_back(value);
+    }
+
+    constexpr void push_back(value_type &&value)
+    {
+        emplace_back(std::move(value));
+    }
+
+    constexpr void pop_back()
+    {
+        secure_destroy_at(back());
+        --_end;
+    }
+
+    constexpr iterator emplace(const_iterator pos, auto &&...args)
+    {
+        ttlet index = std::distance(begin(), pos);
+        ttlet n_first = &emplace_back(tt_forward(args)...);
+
+        // Rotate the newly back-emplaced item to it's intended position.
+        ttlet first = _begin + index;
+        if (first != n_first) {
+            std::rotate(first, n_first, _end);
+        }
+        return first;
+    }
+
+    constexpr iterator insert(const_iterator pos, value_type const &value)
+    {
+        return emplace(pos, value);
+    }
+
+    constexpr iterator insert(const_iterator pos, value_type &&value)
+    {
+        return emplace(pos, std::move(value));
+    }
+
+    constexpr void reserve(size_type new_capacity)
     {
         if (new_capacity <= capacity()) {
             return;
@@ -225,7 +272,7 @@ public:
         }
     }
 
-    void shrink_to_fit()
+    constexpr void shrink_to_fit()
     {
         if (empty()) {
             if (_begin != nullptr) {
@@ -253,8 +300,27 @@ private:
     value_type *_end;
     value_type *_bound;
 
+    [[nodiscard]] constexpr bool full() const noexcept
+    {
+        return _end == _bound;
+    }
+
+    constexpr void grow(size_t count) const noexcept
+    {
+        auto new_size = size();
+        new_size = new_size ? new_size : 8;
+
+        ttlet minimum_new_size = new_size + count;
+
+        while (new_size < minimum_new_size) {
+            new_size += new_size >> 1;
+        }
+
+        resize(new_size);
+    }
+
     template<typename... Args>
-    tt_force_inline void _resize(size_t new_size, Args const &... args)
+    constexpr void _resize(size_t new_size, Args const &... args)
     {
         reserve(new_size);
 

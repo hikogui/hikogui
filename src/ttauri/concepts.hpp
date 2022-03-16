@@ -43,6 +43,9 @@ concept lvalue_reference = std::is_lvalue_reference_v<T>;
 template<typename T>
 concept rvalue_reference = std::is_rvalue_reference_v<T>;
 
+template<typename T>
+concept trivially_copyable = std::is_trivially_copyable_t<T>;
+
 template<typename BaseType, typename DerivedType>
 concept base_of = std::is_base_of_v<BaseType, DerivedType>;
 
@@ -162,5 +165,6 @@ concept awaitable_non_member = requires(T a)
  */
 template<typename T>
 concept awaitable = awaitable_direct<T> or awaitable_member<T> or awaitable_non_member<T>;
+
 
 } // namespace tt::inline v1

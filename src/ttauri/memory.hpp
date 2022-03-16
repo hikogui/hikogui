@@ -137,29 +137,6 @@ void placement_move(T *src, T *src_last, T *dst)
     }
 }
 
-/** Secure erase memory.
- *
- * Writes all '1' followed by all '0' into the memory between
- * the two iterators.
- *
- * @param first An iterator to the first object.
- * @param last An iterator to beyond the last object.
- */
-template<typename It>
-void secure_erase(It first, It last) noexcept
-{
-    ttlet count = std::distance(first, last);
-    ttlet element_size = sizeof(*first);
-    ttlet ptr = std::addressof(*first);
-
-    if (::memset_s(ptr, element_size, 0xff, count)) {
-        std::terminate();
-    }
-    if (::memset_s(ptr, element_size, 0x00, count)) {
-        std::terminate();
-    }
-}
-
 /** Construct a set of objects.
  */
 template<typename It, typename... Args>
@@ -170,36 +147,6 @@ void construct(It first, It last, Args const &... args)
     }
 }
 
-/** Securely destroy objects.
- *
- * Destroy objects and overwrite its memory with all '1' followed by all '0'.
- *
- * @note Internal allocations of objects will not be securily destroyed.
- * @param first An iterator to the first object.
- * @param last An iterator to beyond the last object.
- */
-template<typename It>
-void secure_destroy(It first, It last)
-{
-    std::destroy(first, last);
-    secure_erase(first, last);
-}
-
-/** Securely move objects.
- *
- * First calls std::uinitialized_move() then overwrites memory with all '1'
- * followed by all '0'.
- *
- * @param first An iterator to the first object to move
- * @param last An iterator to beyond the last object to move
- * @param d_first An destination iterator to uninitialized memory.
- */
-template<typename It, typename OutIt>
-void secure_uninitialized_move(It first, It last, OutIt d_first)
-{
-    std::uninitialized_move(first, last, d_first);
-    secure_erase(first, last);
-}
 
 /** Check if a pointer is properly aligned for the object it is pointing at.
  */
