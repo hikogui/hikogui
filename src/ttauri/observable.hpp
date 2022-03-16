@@ -405,7 +405,9 @@ public:
      */
     observable &operator=(observable const &other) noexcept
     {
-        tt_return_on_self_assignment(other);
+        if (this == &other or _pimpl == other._pimpl) {
+            return *this;
+        }
 
         tt_axiom(_pimpl);
         ttlet lock = std::scoped_lock(impl_type::mutex);

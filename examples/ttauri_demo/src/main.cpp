@@ -24,7 +24,33 @@
 #include <Windows.h>
 #include <memory>
 
-tt::scoped_task<> init_audio_tab(tt::grid_widget &grid, tt::observable<double> &audio_output_sample_rate) noexcept
+class my_preferences : public tt::preferences {
+public:
+    tt::observable<tt::audio_device_id> audio_output_device_id;
+    tt::observable<bool> audio_output_exclusive;
+    tt::observable<double> audio_output_sample_rate;
+    tt::observable<tt::speaker_mapping> audio_output_speaker_mapping;
+
+    tt::observable<int> tab_index = 1;
+    tt::observable<bool> toggle_value;
+    tt::observable<int> radio_value = 0;
+    tt::observable<std::vector<std::pair<tt::audio_device_id, tt::label>>> _audio_device_list;
+
+    tt::observable<std::string> selected_theme;
+
+    my_preferences(tt::URL url) : tt::preferences(std::move(url))
+    {
+        add("audio_output_device_id", audio_output_device_id);
+        add("audio_output_exclusive", audio_output_exclusive);
+        add("audio_output_sample_rate", audio_output_sample_rate);
+        add("tab_index", tab_index);
+        add("toggle_value", toggle_value);
+        add("radio_value", radio_value);
+        add("selected_theme", selected_theme);
+    }
+};
+
+tt::scoped_task<> init_audio_tab(tt::grid_widget &grid, my_preferences &preferences) noexcept
 {
     using namespace tt;
 
@@ -32,17 +58,16 @@ tt::scoped_task<> init_audio_tab(tt::grid_widget &grid, tt::observable<double> &
     // grid.make_widget<selection_widget>("B1", _audio_device_list, audio_output_device_id);
 
     grid.make_widget<label_widget>("A2", l10n("Sample Rate:"));
-    grid.make_widget<text_field_widget>("B2", audio_output_sample_rate);
+    grid.make_widget<text_field_widget>("B2", preferences.audio_output_sample_rate);
 
     co_await std::suspend_always{};
 }
 
-tt::scoped_task<> init_theme_tab(
-    tt::grid_widget &grid,
-    tt::observable<std::vector<std::pair<std::string, tt::label>>> &theme_list,
-    tt::observable<std::string> &selected_theme) noexcept
+tt::scoped_task<> init_theme_tab(tt::grid_widget &grid, my_preferences &preferences) noexcept
 {
     using namespace tt;
+
+    tt::observable<std::vector<std::pair<std::string, tt::label>>> theme_list;
 
     {
         auto &theme_book = *grid.window.gui.theme_book;
@@ -53,32 +78,31 @@ tt::scoped_task<> init_theme_tab(
     }
 
     grid.make_widget<label_widget>("A1", l10n("Theme:"));
-    grid.make_widget<selection_widget>("B1", theme_list, grid.window.gui.selected_theme);
+    grid.make_widget<selection_widget>("B1", theme_list, preferences.selected_theme);
 
     co_await std::suspend_always{};
 }
 
-tt::scoped_task<>
-init_license_tab(tt::grid_widget &grid, tt::observable<bool> &toggle_value, tt::observable<int> &radio_value) noexcept
+tt::scoped_task<> init_license_tab(tt::grid_widget &grid, my_preferences &preferences) noexcept
 {
     using namespace tt;
 
     grid.make_widget<label_widget>(
         "A1", l10n("This is a \xd7\x9c\xd6\xb0\xd7\x9e\xd6\xb7\xd7\xaa\xd6\xb5\xd7\x92.\nAnd another sentence. One more:"));
-    auto &checkbox1 = grid.make_widget<toggle_widget>("B1", toggle_value);
+    auto &checkbox1 = grid.make_widget<toggle_widget>("B1", preferences.toggle_value);
     checkbox1.on_label = l10n("true");
     checkbox1.off_label = l10n("false");
     checkbox1.other_label = l10n("other");
 
     grid.make_widget<label_widget>("A2", l10n("These is a disabled checkbox:"));
-    auto &checkbox2 = grid.make_widget<checkbox_widget>("B2", radio_value, 2, 0);
+    auto &checkbox2 = grid.make_widget<checkbox_widget>("B2", preferences.radio_value, 2, 0);
     checkbox2.on_label = l10n("Checkbox, with a pretty large label.");
-    checkbox2.enabled = toggle_value;
+    checkbox2.enabled = preferences.toggle_value;
 
     grid.make_widget<label_widget>("A3", l10n("These are radio buttons:"));
-    grid.make_widget<radio_button_widget>("B3", l10n("Radio 1"), radio_value, 0);
-    grid.make_widget<radio_button_widget>("B4", l10n("Radio 2"), radio_value, 1);
-    grid.make_widget<radio_button_widget>("B5", l10n("Radio 3"), radio_value, 2);
+    grid.make_widget<radio_button_widget>("B3", l10n("Radio 1"), preferences.radio_value, 0);
+    grid.make_widget<radio_button_widget>("B4", l10n("Radio 2"), preferences.radio_value, 1);
+    grid.make_widget<radio_button_widget>("B5", l10n("Radio 3"), preferences.radio_value, 2);
 
     auto option_list = std::vector{
         std::pair{0, label{l10n("first")}},
@@ -89,49 +113,37 @@ init_license_tab(tt::grid_widget &grid, tt::observable<bool> &toggle_value, tt::
         std::pair{5, label{l10n("six")}},
         std::pair{6, label{l10n("seven")}}};
     grid.make_widget<label_widget>("A6", l10n("This is a selection box at the bottom:"));
-    auto &selection3 = grid.make_widget<selection_widget>("B6", option_list, radio_value);
-    selection3.enabled = toggle_value;
+    auto &selection3 = grid.make_widget<selection_widget>("B6", option_list, preferences.radio_value);
+    selection3.enabled = preferences.toggle_value;
 
     co_await std::suspend_always{};
 }
 
-tt::task<> preferences_window(tt::gui_system &gui, tt::preferences &preferences)
+tt::task<> preferences_window(tt::gui_system &gui, my_preferences &preferences)
 {
     using namespace tt;
-
-    observable<audio_device_id> audio_output_device_id;
-    observable<bool> audio_output_exclusive;
-    observable<double> audio_output_sample_rate;
-    observable<speaker_mapping> audio_output_speaker_mapping;
-
-    observable<int> tab_index = 1;
-    observable<bool> toggle_value;
-    observable<int> radio_value = 0;
-    observable<std::vector<std::pair<tt::audio_device_id, label>>> _audio_device_list;
-
-    observable<std::vector<std::pair<std::string, label>>> theme_list;
-    observable<std::string> selected_theme;
 
     auto window_label = label{URL{"resource:ttauri_demo.png"}, l10n("Preferences")};
     auto window = gui.make_window(window_label);
 
-    window->toolbar().make_widget<toolbar_tab_button_widget>(label{elusive_icon::Speaker, l10n("Audio")}, tab_index, 0);
-    window->toolbar().make_widget<toolbar_tab_button_widget>(label{elusive_icon::Key, l10n("License")}, tab_index, 1);
-    window->toolbar().make_widget<toolbar_tab_button_widget>(label{elusive_icon::Brush, l10n("Theme")}, tab_index, 2);
+    window->toolbar().make_widget<toolbar_tab_button_widget>(
+        label{elusive_icon::Speaker, l10n("Audio")}, preferences.tab_index, 0);
+    window->toolbar().make_widget<toolbar_tab_button_widget>(label{elusive_icon::Key, l10n("License")}, preferences.tab_index, 1);
+    window->toolbar().make_widget<toolbar_tab_button_widget>(label{elusive_icon::Brush, l10n("Theme")}, preferences.tab_index, 2);
 
-    auto &tabs = window->content().make_widget<tab_widget>("A1", tab_index);
+    auto &tabs = window->content().make_widget<tab_widget>("A1", preferences.tab_index);
     auto &audio_tab_grid = tabs.make_widget<grid_widget>(0);
     auto &license_tab_grid = tabs.make_widget<scroll_widget<axis::both, true>>(1).make_widget<grid_widget>();
     auto &theme_tab_grid = tabs.make_widget<grid_widget>(2);
 
-    auto audio_tab = init_audio_tab(audio_tab_grid, audio_output_sample_rate);
-    auto license_tab = init_license_tab(license_tab_grid, toggle_value, radio_value);
-    auto theme_tab = init_theme_tab(theme_tab_grid, theme_list, selected_theme);
+    auto audio_tab = init_audio_tab(audio_tab_grid, preferences);
+    auto license_tab = init_license_tab(license_tab_grid, preferences);
+    auto theme_tab = init_theme_tab(theme_tab_grid, preferences);
 
     co_await window->closing;
 }
 
-tt::task<> main_window(tt::gui_system &gui, tt::preferences &preferences)
+tt::task<> main_window(tt::gui_system &gui, my_preferences &preferences)
 {
     using namespace tt;
 
@@ -187,9 +199,10 @@ int tt_main(int argc, char *argv[])
     // Startup renderdoc for debugging
     // auto render_doc = RenderDoc();
 
-    auto preferences = tt::preferences(URL::urlFromApplicationPreferencesFile());
+    auto preferences = my_preferences(URL::urlFromApplicationPreferencesFile());
 
     auto gui = gui_system::make_unique();
+    gui->selected_theme = preferences.selected_theme;
     // auto audio = audio_system::make_unique(gui->event_queue());
 
     main_window(*gui, preferences);

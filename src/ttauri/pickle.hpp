@@ -95,4 +95,23 @@ struct pickle<bool> {
     }
 };
 
+template<>
+struct pickle<std::string> {
+    [[nodiscard]] datum encode(std::string const &rhs) const noexcept
+    {
+        return datum{rhs};
+    }
+
+    [[nodiscard]] std::string decode(datum rhs) const
+    {
+        if (auto *b = get_if<std::string>(rhs)) {
+            return *b;
+
+        } else {
+            throw parse_error("Expecting std::string to be encoded as a string, got {}", rhs);
+        }
+    }
+};
+
+
 } // namespace tt::inline v1
