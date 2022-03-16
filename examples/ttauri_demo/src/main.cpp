@@ -195,9 +195,7 @@ int tt_main(int argc, char *argv[])
     // Start the logger system, so logging is done asynchronously.
     log::start_subsystem(global_state_type::log_level_info);
     time_stamp_count::start_subsystem();
-
-    // Startup renderdoc for debugging
-    // auto render_doc = RenderDoc();
+    auto render_doc = RenderDoc();
 
     auto preferences = my_preferences(URL::urlFromApplicationPreferencesFile());
 
