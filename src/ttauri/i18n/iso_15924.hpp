@@ -24,7 +24,7 @@ public:
 
     constexpr iso_15924(uint16_t number) : _v(number) {
         if (number > 999) {
-            throw parse_error("Invalid script number '{}'", number);
+            throw parse_error(std::format("Invalid script number '{}'", number));
         }
     }
 

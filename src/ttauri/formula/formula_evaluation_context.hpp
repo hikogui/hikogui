@@ -128,7 +128,7 @@ struct formula_evaluation_context {
     {
         tt_axiom(name.size() > 0);
         if (name.back() == '$') {
-            throw operation_error("Invalid loop variable '{}'", name);
+            throw operation_error(std::format("Invalid loop variable '{}'", name));
         }
 
         std::string_view short_name = name.substr(1);
@@ -136,7 +136,7 @@ struct formula_evaluation_context {
 
         while (short_name[0] == '$') {
             if (i == loop_stack.crend() || holds_alternative<std::monostate>(i->count)) {
-                throw operation_error("Accessing loop variable {} while not in loop", name);
+                throw operation_error(std::format("Accessing loop variable {} while not in loop", name));
             }
 
             short_name = short_name.substr(1);
@@ -149,16 +149,16 @@ struct formula_evaluation_context {
             return i->first;
         } else if (short_name == "size" || short_name == "length") {
             if (holds_alternative<std::monostate>(i->size)) {
-                throw operation_error("Accessing loop variable {} only available in #for loops", name);
+                throw operation_error(std::format("Accessing loop variable {} only available in #for loops", name));
             }
             return i->size;
         } else if (short_name == "last") {
             if (holds_alternative<std::monostate>(i->last)) {
-                throw operation_error("Accessing loop variable {} only available in #for loops", name);
+                throw operation_error(std::format("Accessing loop variable {} only available in #for loops", name));
             }
             return i->last;
         } else {
-            throw operation_error("Unknown loop variable {}", name);
+            throw operation_error(std::format("Unknown loop variable {}", name));
         }
     }
 
@@ -182,7 +182,7 @@ struct formula_evaluation_context {
             return j->second;
         }
 
-        throw operation_error("Could not find {} in local or global scope.", name);
+        throw operation_error(std::format("Could not find {} in local or global scope.", name));
     }
 
     [[nodiscard]] datum &get(std::string const &name)
@@ -201,7 +201,7 @@ struct formula_evaluation_context {
             return j->second;
         }
 
-        throw operation_error("Could not find {} in local or global scope.", name);
+        throw operation_error(std::format("Could not find {} in local or global scope.", name));
     }
 
     template<typename T>

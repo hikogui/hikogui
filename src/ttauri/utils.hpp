@@ -5,6 +5,18 @@
 #pragma once
 
 #include <atomic>
+#include <utility>
+
+/** Get an overloaded macro for 1 or 2 arguments.
+* 
+* This macro allows dispatching to other macros based on the number of arguments.
+* ```
+* #define foo1(a) bar(a)
+* #define foo2(a, b) bar(a, b)
+* #define foo(...) tt_get_overloaded_macro2(__VA_ARGS__, foo2, foo1)(__VA_ARGS__)
+* ```
+ */
+#define tt_get_overloaded_macro2(_1, _2, name, ...) name
 
 namespace tt::inline v1 {
 

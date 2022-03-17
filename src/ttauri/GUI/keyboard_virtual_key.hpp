@@ -283,7 +283,7 @@ inline keyboard_virtual_key to_keyboard_virtual_key(std::string_view s)
     if (i != string_to_keyboard_virtual_key_table.cend()) {
         return i->second;
     }
-    throw parse_error("Could not find virtual key '{}'", s);
+    throw parse_error(std::format("Could not find virtual key '{}'", s));
 }
 
 keyboard_virtual_key to_keyboard_virtual_key(int key_code, bool extended, keyboard_modifiers modifiers);

@@ -343,7 +343,7 @@ using jsonpath_node = std::variant<
         return parse_jsonpath_name_indexing_operator(it, it_end, first);
 
     } else {
-        throw parse_error("Expected a integer index or child name after indexing operator '[', got token {}.", *it);
+        throw parse_error(std::format("Expected a integer index or child name after indexing operator '[', got token {}.", *it));
     }
 }
 
@@ -372,7 +372,7 @@ using jsonpath_node = std::variant<
         return jsonpath_names{static_cast<std::string>(*it)};
 
     } else {
-        throw parse_error("Expected a child name or wildcard, got token {}.", *it);
+        throw parse_error(std::format("Expected a child name or wildcard, got token {}.", *it));
     }
 }
 
@@ -410,7 +410,7 @@ public:
                 continue;
 
             } else {
-                throw parse_error("Unexpected token {}.", *it);
+                throw parse_error(std::format("Unexpected token {}.", *it));
             }
         }
     }

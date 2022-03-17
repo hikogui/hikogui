@@ -201,7 +201,7 @@ int tt_main(int argc, char *argv[])
 
     auto gui = gui_system::make_unique();
     gui->selected_theme = preferences.selected_theme;
-    // auto audio = audio_system::make_unique(gui->event_queue());
+    auto audio = audio_system::make_unique(gui->event_queue());
 
     main_window(*gui, preferences);
     return gui->loop();

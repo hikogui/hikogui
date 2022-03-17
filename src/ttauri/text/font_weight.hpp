@@ -67,7 +67,7 @@ inline ttlet font_weight_from_string_table = std::unordered_map<std::string, fon
 {
     ttlet i = font_weight_from_string_table.find(to_lower(rhs));
     if (i == font_weight_from_string_table.end()) {
-        throw parse_error("Unknown font-weight {}", rhs);
+        throw parse_error(std::format("Unknown font-weight {}", rhs));
     }
     return i->second;
 }

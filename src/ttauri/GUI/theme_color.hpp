@@ -101,7 +101,7 @@ constexpr auto saturated_theme_colors = std::array{
     } else if (str == "secondary_cursor") {
         return theme_color::secondary_cursor;
     } else {
-        throw parse_error("Unknown theme color '{}'", str);
+        throw parse_error(std::format("Unknown theme color '{}'", str));
     }
 }
 

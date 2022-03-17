@@ -135,7 +135,7 @@ struct token_t {
             return std::stold(value);
 
         } catch (...) {
-            throw parse_error("Could not convert token {} to long double", *this);
+            throw parse_error(std::format("Could not convert token {} to long double", *this));
         }
     }
 
@@ -145,7 +145,7 @@ struct token_t {
             return std::stod(value);
 
         } catch (...) {
-            throw parse_error("Could not convert token {} to double", *this);
+            throw parse_error(std::format("Could not convert token {} to double", *this));
         }
     }
 
@@ -155,7 +155,7 @@ struct token_t {
             return std::stof(value);
 
         } catch (...) {
-            throw parse_error("Could not convert token {} to float", *this);
+            throw parse_error(std::format("Could not convert token {} to float", *this));
         }
     }
 
@@ -166,7 +166,7 @@ struct token_t {
             return tt::from_string<T>(value);
 
         } catch (...) {
-            throw parse_error("Could not convert token {} to {}", *this, typeid(T).name());
+            throw parse_error(std::format("Could not convert token {} to {}", *this, typeid(T).name()));
         }
     }
 

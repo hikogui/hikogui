@@ -63,7 +63,7 @@ inline keyboard_modifiers to_keyboard_modifiers(std::string_view s)
     } else if (s_lower == "windows" || s_lower == "win" || s_lower == "command" || s_lower == "cmd" || s_lower == "super") {
         return keyboard_modifiers::Super;
     } else {
-        throw parse_error("Unknown keyboard modifier '{}'", s);
+        throw parse_error(std::format("Unknown keyboard modifier '{}'", s));
     }
 }
 

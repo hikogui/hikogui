@@ -10,17 +10,7 @@
 
 namespace tt::inline v1 {
 
-bool debugger_is_present() noexcept
-{
-    return IsDebuggerPresent();
-}
-
-void _debugger_break()
-{
-    DebugBreak();
-}
-
-void _prepare_debug_break(char const *source_file, int source_line, std::string const &message) noexcept
+void prepare_debug_break() noexcept
 {
     if (IsDebuggerPresent()) {
         // When running under the debugger, __debugbreak() after returning.
@@ -36,7 +26,7 @@ void _prepare_debug_break(char const *source_file, int source_line, std::string 
                 //  * If the jit-debugger is not configured the user gets a error dialogue-box that
                 //    with "Abort", "Retry (Debug)", "Ignore". The "Retry" option will only work
                 //    when the application is already being debugged.
-                //  * When the jit-debbuger is configured the user gets a dialogue window which allows
+                //  * When the jit-debugger is configured the user gets a dialogue window which allows
                 //    a selection of debuggers and a "OK (Debug)", "Cancel (aborts application)".
 
             } __except (UnhandledExceptionFilter(GetExceptionInformation())) {

@@ -2,9 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include <format>
 #include <exception>
-#include <string_view>
 
 #pragma once
 
@@ -26,12 +24,6 @@ namespace tt::inline v1 {
 class parse_error : public std::runtime_error {
 public:
     using std::runtime_error::runtime_error;
-
-    template<typename FirstArg, typename... Args>
-    parse_error(std::string_view fmt, FirstArg const &arg1, Args const &...args) noexcept :
-        parse_error(std::format(fmt, arg1, args...))
-    {
-    }
 };
 
 /** Exception thrown during execution of a dynamic operation.
@@ -44,12 +36,6 @@ public:
 class operation_error : public std::runtime_error {
 public:
     using std::runtime_error::runtime_error;
-
-    template<typename FirstArg, typename... Args>
-    operation_error(std::string_view fmt, FirstArg const &arg1, Args const &...args) noexcept :
-        operation_error(std::format(fmt, arg1, args...))
-    {
-    }
 };
 
 /** Exception thrown during I/O on an error.
@@ -62,11 +48,6 @@ public:
 class io_error : public std::runtime_error {
 public:
     using std::runtime_error::runtime_error;
-
-    template<typename FirstArg, typename... Args>
-    io_error(std::string_view fmt, FirstArg const &arg1, Args const &...args) noexcept : io_error(std::format(fmt, arg1, args...))
-    {
-    }
 };
 
 /** Exception thrown during an operating system call.
@@ -78,44 +59,21 @@ public:
 class os_error : public std::runtime_error {
 public:
     using std::runtime_error::runtime_error;
-
-    template<typename FirstArg, typename... Args>
-    os_error(std::string_view fmt, FirstArg const &arg1, Args const &...args) noexcept : os_error(std::format(fmt, arg1, args...))
-    {
-    }
 };
 
 class gui_error : public std::runtime_error {
 public:
     using std::runtime_error::runtime_error;
-
-    template<typename FirstArg, typename... Args>
-    gui_error(std::string_view fmt, FirstArg const &arg1, Args const &...args) noexcept :
-        gui_error(std::format(fmt, arg1, args...))
-    {
-    }
 };
 
 class key_error : public std::runtime_error {
 public:
     using std::runtime_error::runtime_error;
-
-    template<typename FirstArg, typename... Args>
-    key_error(std::string_view fmt, FirstArg const &arg1, Args const &...args) noexcept :
-        key_error(std::format(fmt, arg1, args...))
-    {
-    }
 };
 
 class url_error : public std::runtime_error {
 public:
     using std::runtime_error::runtime_error;
-
-    template<typename FirstArg, typename... Args>
-    url_error(std::string_view fmt, FirstArg const &arg1, Args const &...args) noexcept :
-        url_error(std::format(fmt, arg1, args...))
-    {
-    }
 };
 
 /** Cancel error is caused by user pressing cancel.
@@ -125,12 +83,6 @@ public:
 class cancel_error : public std::runtime_error {
 public:
     using std::runtime_error::runtime_error;
-
-    template<typename FirstArg, typename... Args>
-    cancel_error(std::string_view fmt, FirstArg const &arg1, Args const &...args) noexcept :
-        cancel_error(std::format(fmt, arg1, args...))
-    {
-    }
 };
 
 } // namespace tt::inline v1

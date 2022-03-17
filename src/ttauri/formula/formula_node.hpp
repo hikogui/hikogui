@@ -51,7 +51,7 @@ struct formula_node {
      */
     virtual datum &evaluate_lvalue(formula_evaluation_context &context) const
     {
-        throw operation_error("{}: Expression is not a modifiable value.", location);
+        throw operation_error(std::format("{}: Expression is not a modifiable value.", location));
     }
 
     virtual bool has_evaluate_xvalue() const
@@ -63,7 +63,7 @@ struct formula_node {
      */
     virtual datum const &evaluate_xvalue(formula_evaluation_context const &context) const
     {
-        throw operation_error("{}: Expression is not a xvalue.", location);
+        throw operation_error(std::format("{}: Expression is not a xvalue.", location));
     }
 
     /** Assign to a non-existing or existing lvalue.
@@ -85,14 +85,14 @@ struct formula_node {
      */
     virtual datum call(formula_evaluation_context &context, datum::vector_type const &arguments) const
     {
-        throw operation_error("{}: Expression is not callable.", location);
+        throw operation_error(std::format("{}: Expression is not callable.", location));
     }
 
     /** Get the name of a formula_name_node.
      */
     virtual std::string get_name() const
     {
-        throw parse_error("{}: Expect a name got {})", location, *this);
+        throw parse_error(std::format("{}: Expect a name got {})", location, *this));
     }
 
     /** Get name and argument names from a function declaration.
@@ -100,7 +100,7 @@ struct formula_node {
      */
     virtual std::vector<std::string> get_name_and_argument_names() const
     {
-        throw parse_error("{}: Expect a function definition got {})", location, *this);
+        throw parse_error(std::format("{}: Expect a function definition got {})", location, *this));
     }
 
     virtual std::string string() const noexcept = 0;

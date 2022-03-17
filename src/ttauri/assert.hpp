@@ -17,15 +17,12 @@ namespace tt::inline v1 {
 /** Assert if expression is true.
  * Independent of built type this macro will always check and abort on fail.
  *
+ * @param expression The expression to test.
  */
-#define tt_assert(expression, ...) \
+#define tt_assert(expression) \
     do { \
         if (not(expression)) { \
-            if constexpr (__VA_OPT__(not ) true) { \
-                tt_debug_abort(#expression); \
-            } else { \
-                tt_debug_abort(__VA_ARGS__); \
-            } \
+            tt_debug_abort(); \
         } \
     } while (false)
 
@@ -44,27 +41,31 @@ namespace tt::inline v1 {
 /** Specify an axiom; an expression that is true.
  * An axiom is checked in debug mode, and is used as an optimization
  * in release mode.
+ *
+ * @param expression The expression that is true.
  */
-#define tt_axiom(expression, ...) tt_assert(expression __VA_OPT__(, ) __VA_ARGS__)
+#define tt_axiom(expression) tt_assert(expression)
 
 /** This part of the code should not be reachable, unless a programming bug.
  * This function should be used in unreachable else statements or switch-default labels,
  */
-#define tt_no_default() [[unlikely]] tt_debug_abort("tt_no_default()");
+#define tt_no_default() [[unlikely]] tt_debug_abort();
 
 #else
-
 /** Specify an axiom; an expression that is true.
  * An axiom is checked in debug mode, and is used as an optimization
  * in release mode.
+ *
+ * @param expression The expression that is true.
  */
-#define tt_axiom(expression, ...) tt_assume(expression)
+#define tt_axiom(expression) tt_assume(expression)
 
 /** This part of the code should not be reachable, unless a programming bug.
  * This function should be used in unreachable else statements or switch-default labels,
  */
 #define tt_no_default() tt_unreachable()
 #endif
+
 
 /** This part of the code should not be reachable, unless a programming bug.
  * This function should be used in unreachable constexpr else statements.
@@ -79,7 +80,7 @@ namespace tt::inline v1 {
 /** This part of the code has not been implemented yet.
  * This aborts the program.
  */
-#define tt_not_implemented() [[unlikely]] tt_debug_abort("tt_not_implemented()");
+#define tt_not_implemented() [[unlikely]] tt_debug_abort();
 
 /** This part of the code has not been implemented yet.
  * This function should be used in unreachable constexpr else statements.

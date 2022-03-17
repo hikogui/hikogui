@@ -72,16 +72,16 @@ struct skeleton_node {
     {
         auto tmp = evaluate(context);
         if (tmp.is_break()) {
-            throw operation_error("{}: Found #break not inside a loop statement.", location);
+            throw operation_error(std::format("{}: Found #break not inside a loop statement.", location));
 
         } else if (tmp.is_continue()) {
-            throw operation_error("{}: Found #continue not inside a loop statement.", location);
+            throw operation_error(std::format("{}: Found #continue not inside a loop statement.", location));
 
         } else if (tmp.is_undefined()) {
             return std::move(context.output);
 
         } else {
-            throw operation_error("{}: Found #return not inside a function.", location);
+            throw operation_error(std::format("{}: Found #return not inside a function.", location));
         }
     }
 
@@ -123,7 +123,7 @@ struct skeleton_node {
             return expression.evaluate_without_output(context);
 
         } catch (std::exception const &e) {
-            throw operation_error("{}: Could not evaluate.\n{}", location, e.what());
+            throw operation_error(std::format("{}: Could not evaluate.\n{}", location, e.what()));
         }
     }
 
@@ -134,7 +134,7 @@ struct skeleton_node {
             return expression.evaluate(context);
 
         } catch (std::exception const &e) {
-            throw operation_error("{}: Could not evaluate expression.\n{}", location, e.what());
+            throw operation_error(std::format("{}: Could not evaluate expression.\n{}", location, e.what()));
         }
     }
 
@@ -145,7 +145,7 @@ struct skeleton_node {
             return expression.post_process(context);
 
         } catch (std::exception const &e) {
-            throw operation_error("{}: Could not post-process expression.\n{}", location, e.what());
+            throw operation_error(std::format("{}: Could not post-process expression.\n{}", location, e.what()));
         }
     }
 

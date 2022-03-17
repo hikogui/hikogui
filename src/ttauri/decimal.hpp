@@ -545,7 +545,7 @@ private:
             } else if (c == '-') {
                 mantissa_str += c;
             } else {
-                throw parse_error("Unexpected character in decimal number '{}'", str);
+                throw parse_error(std::format("Unexpected character in decimal number '{}'", str));
             }
         }
 
@@ -556,9 +556,9 @@ private:
         long long mantissa;
         auto result = std::from_chars(first, last, mantissa, 10);
         if (result.ptr == first) {
-            throw parse_error("Could not parse mantissa '{}'", mantissa_str);
+            throw parse_error(std::format("Could not parse mantissa '{}'", mantissa_str));
         } else if (result.ec == std::errc::result_out_of_range) {
-            throw parse_error("Mantissa '{}' out of range ", mantissa_str);
+            throw parse_error(std::format("Mantissa '{}' out of range ", mantissa_str));
         } else {
             return {exponent, mantissa};
         }

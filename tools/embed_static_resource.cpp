@@ -14,7 +14,7 @@
 template<typename... Args>
 void print(std::string_view fmt, Args const &... args) noexcept
 {
-    std::cerr << std::format(fmt, args...) << std::endl;
+    std::cerr << std::vformat(fmt, std::make_format_args(args...)) << std::endl;
 }
 
 void usage(std::string_view program, std::string_view str)
@@ -42,7 +42,7 @@ void usage(std::string_view program, std::string_view str)
 template<typename... Args>
 void write(std::ostream& stream, std::string_view fmt, Args const &... args) noexcept
 {
-    stream << std::format(fmt, args...);
+    stream << std::vformat(fmt, std::make_format_args(args...));
 }
 
 void write_bytes_as_text(std::ostream& stream, std::string_view bytes) noexcept
