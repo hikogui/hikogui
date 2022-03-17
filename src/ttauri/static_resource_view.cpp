@@ -17,7 +17,7 @@ std::span<std::byte const> static_resource_view::get_static_resource(std::string
 {
     auto r = static_resource_item::find(filename);
     if (r.empty()) {
-        throw key_error("Could not find static resource '{}'.", filename);
+        throw key_error(std::format("Could not find static resource '{}'.", filename));
     }
     return r;
 }

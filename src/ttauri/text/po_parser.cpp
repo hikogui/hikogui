@@ -45,7 +45,7 @@ namespace tt::inline v1 {
     if ((*token == tokenizer_name_t::Name)) {
         name = static_cast<std::string>(*token++);
     } else {
-        throw parse_error("{}: Expecting a name at start of each line", token->location);
+        throw parse_error(std::format("{}: Expecting a name at start of each line", token->location));
     }
 
     int index = 0;
@@ -55,13 +55,13 @@ namespace tt::inline v1 {
         if ((*token == tokenizer_name_t::IntegerLiteral)) {
             index = static_cast<int>(*token++);
         } else {
-            throw parse_error("{}: Expecting an integer literal as an index for {}", token->location, name);
+            throw parse_error(std::format("{}: Expecting an integer literal as an index for {}", token->location, name));
         }
 
         if ((*token == tokenizer_name_t::Operator) && (*token == "]")) {
             token++;
         } else {
-            throw parse_error("{}: The index on {} must terminate with a bracket ']'", token->location, name);
+            throw parse_error(std::format("{}: The index on {} must terminate with a bracket ']'", token->location, name));
         }
     }
 
@@ -69,7 +69,7 @@ namespace tt::inline v1 {
     if ((*token == tokenizer_name_t::StringLiteral)) {
         value = static_cast<std::string>(*token++);
     } else {
-        throw parse_error("{}: Expecting a value at end of each line", token->location);
+        throw parse_error(std::format("{}: Expecting a value at end of each line", token->location));
     }
 
     while (true) {
@@ -107,7 +107,7 @@ namespace tt::inline v1 {
                     r.msgstr[index] = value;
 
                 } else {
-                    throw parse_error("{}: Unexpected line {}", token->location, name);
+                    throw parse_error(std::format("{}: Unexpected line {}", token->location, name));
                 }
 
             } else {
@@ -144,7 +144,7 @@ static void parse_po_header(po_translations &r, std::string const &header)
 
         auto split_line = split(line, ':');
         if (ssize(split_line) < 2) {
-            throw parse_error("Unknown header '{}'", line);
+            throw parse_error(std::format("Unknown header '{}'", line));
         }
 
         ttlet name = split_line.front();

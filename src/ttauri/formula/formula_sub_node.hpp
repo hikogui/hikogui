@@ -21,7 +21,7 @@ struct formula_sub_node final : formula_binary_operator_node {
         try {
             return lhs_ - rhs_;
         } catch (std::exception const &e) {
-            throw operation_error("{}: Can not evaluate subtract.\n{}", location, e.what());
+            throw operation_error(std::format("{}: Can not evaluate subtract.\n{}", location, e.what()));
         }
     }
 

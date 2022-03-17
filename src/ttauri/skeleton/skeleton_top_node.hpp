@@ -38,7 +38,7 @@ struct skeleton_top_node final : skeleton_node {
             return evaluate_children(context, children);
 
         } catch (std::exception const &e) {
-            throw operation_error("{}: Could not evaluate.\n{}", location, e.what());
+            throw operation_error(std::format("{}: Could not evaluate.\n{}", location, e.what()));
         }
     }
 

@@ -152,7 +152,9 @@ public:
     void unlock() noexcept
     {
         // FIRST | OWNER
-        tt_axiom(recurse_lock_count(), "Unlock must be called on the thread that locked the mutex");
+
+        // Unlock must be called on the thread that locked the mutex
+        tt_axiom(recurse_lock_count());
 
         if (--count == 0) {
             // FIRST

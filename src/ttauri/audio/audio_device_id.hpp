@@ -86,7 +86,7 @@ struct pickle<audio_device_id> {
                 return r;
 
             } else {
-                throw parse_error("audio_device_id pickle unknown type {}", t);
+                throw parse_error(std::format("audio_device_id pickle unknown type {}", t));
             }
         }
     }
@@ -97,7 +97,7 @@ struct pickle<audio_device_id> {
             return decode(*s);
 
         } else {
-            throw parse_error("audio_device_id must be encoded as a string, got {}", rhs);
+            throw parse_error(std::format("audio_device_id must be encoded as a string, got {}", rhs));
         }
     }
 };

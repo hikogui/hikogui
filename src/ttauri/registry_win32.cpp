@@ -26,7 +26,8 @@ namespace tt::inline v1 {
     switch (status) {
     case ERROR_SUCCESS: break;
     case ERROR_BAD_PATHNAME:
-    case ERROR_FILE_NOT_FOUND: throw os_error("Missing HKEY_CURRENT_USER\\{}\\{} registry entry: 0x{:08x}", path, name, status);
+    case ERROR_FILE_NOT_FOUND:
+        throw os_error(std::format("Missing HKEY_CURRENT_USER\\{}\\{} registry entry: 0x{:08x}", path, name, status));
     default: tt_log_fatal("Error reading HKEY_CURRENT_USER\\{}\\{} registry entry: 0x{:08x}", path, name, status);
     }
 
@@ -59,17 +60,16 @@ namespace tt::inline v1 {
         }
 
         switch (status) {
-        case ERROR_MORE_DATA:
-            result = new wchar_t[result_length];
-            break;
+        case ERROR_MORE_DATA: result = new wchar_t[result_length]; break;
 
         case ERROR_BAD_PATHNAME:
-        case ERROR_FILE_NOT_FOUND: throw os_error("Missing HKEY_CURRENT_USER\\{}\\{} registry entry: 0x{:08x}", path, name, status);
+        case ERROR_FILE_NOT_FOUND:
+            throw os_error(std::format("Missing HKEY_CURRENT_USER\\{}\\{} registry entry: 0x{:08x}", path, name, status));
         default: tt_log_fatal("Error reading HKEY_CURRENT_USER\\{}\\{} registry entry: 0x{:08x}", path, name, status);
         }
     }
 
-    throw os_error("Size requirements for HKEY_CURRENT_USER\\{}\\{} keeps changing", path, name);
+    throw os_error(std::format("Size requirements for HKEY_CURRENT_USER\\{}\\{} keeps changing", path, name));
 }
 
 } // namespace tt::inline v1

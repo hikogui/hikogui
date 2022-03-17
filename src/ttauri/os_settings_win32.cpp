@@ -50,7 +50,7 @@ namespace tt::inline v1 {
     {
         BOOL has_font_smoothing;
         if (not SystemParametersInfoW(SPI_GETFONTSMOOTHING, 0, &has_font_smoothing, 0)) {
-            throw os_error("Could not get system parameter SPI_GETFONTSMOOTHING: {}", get_last_error_message());
+            throw os_error(std::format("Could not get system parameter SPI_GETFONTSMOOTHING: {}", get_last_error_message()));
         }
 
         if (has_font_smoothing == FALSE) {
@@ -62,7 +62,7 @@ namespace tt::inline v1 {
     {
         UINT font_smooth_type;
         if (not SystemParametersInfoW(SPI_GETFONTSMOOTHINGTYPE, 0, &font_smooth_type, 0)) {
-            throw os_error("Could not get system parameter SPI_GETFONTSMOOTHINGTYPE: {}", get_last_error_message());
+            throw os_error(std::format("Could not get system parameter SPI_GETFONTSMOOTHINGTYPE: {}", get_last_error_message()));
         }
 
         if (font_smooth_type != FE_FONTSMOOTHINGCLEARTYPE) {
@@ -74,7 +74,7 @@ namespace tt::inline v1 {
     {
         BOOL has_clear_type;
         if (not SystemParametersInfoW(SPI_GETCLEARTYPE, 0, &has_clear_type, 0)) {
-            throw os_error("Could not get system parameter SPI_GETCLEARTYPE: {}", get_last_error_message());
+            throw os_error(std::format("Could not get system parameter SPI_GETCLEARTYPE: {}", get_last_error_message()));
         }
 
         if (has_clear_type == FALSE) {
@@ -86,7 +86,7 @@ namespace tt::inline v1 {
     {
         UINT font_smooth_orientation;
         if (not SystemParametersInfoW(SPI_GETFONTSMOOTHINGORIENTATION, 0, &font_smooth_orientation, 0)) {
-            throw os_error("Could not get system parameter SPI_GETFONTSMOOTHINGORIENTATION: {}", get_last_error_message());
+            throw os_error(std::format("Could not get system parameter SPI_GETFONTSMOOTHINGORIENTATION: {}", get_last_error_message()));
         }
 
         if (font_smooth_orientation == FE_FONTSMOOTHINGORIENTATIONBGR) {
@@ -96,7 +96,7 @@ namespace tt::inline v1 {
             // Font smoothing is not clear type.
             return tt::subpixel_orientation::horizontal_rgb;
         } else {
-            throw os_error("Unknown result from SPI_GETFONTSMOOTHINGORIENTATION: {}", font_smooth_orientation);
+            throw os_error(std::format("Unknown result from SPI_GETFONTSMOOTHINGORIENTATION: {}", font_smooth_orientation));
         }
     }
 }
@@ -128,7 +128,7 @@ namespace tt::inline v1 {
 
     INT r;
     if (not SystemParametersInfoW(SPI_GETKEYBOARDDELAY, 0, &r, 0)) {
-        throw os_error("Could not get system parameter SPI_GETKEYBOARDDELAY: {}", get_last_error_message());
+        throw os_error(std::format("Could not get system parameter SPI_GETKEYBOARDDELAY: {}", get_last_error_message()));
     }
 
     // SPI_GETKEYBOARDDELAY values are between 0 (250ms) to 3 (1s).
@@ -144,7 +144,7 @@ namespace tt::inline v1 {
 
     INT r;
     if (not SystemParametersInfoW(SPI_GETKEYBOARDSPEED, 0, &r, 0)) {
-        throw os_error("Could not get system parameter SPI_GETKEYBOARDSPEED: {}", get_last_error_message());
+        throw os_error(std::format("Could not get system parameter SPI_GETKEYBOARDSPEED: {}", get_last_error_message()));
     }
 
     // SPI_GETKEYBOARDSPEED values are between 0 (2.5 per/sec) to 31 (30 per/sec).
@@ -160,7 +160,7 @@ namespace tt::inline v1 {
 
     ttlet r = GetCaretBlinkTime();
     if (r == 0) {
-        throw os_error("Could not get caret blink time: {}", get_last_error_message());
+        throw os_error(std::format("Could not get caret blink time: {}", get_last_error_message()));
 
     } else if (r == INFINITE) {
         return std::chrono::milliseconds::max();

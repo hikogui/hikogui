@@ -17,7 +17,7 @@ struct formula_member_node final : formula_binary_operator_node {
     {
         rhs_name = dynamic_cast<formula_name_node *>(this->rhs.get());
         if (rhs_name == nullptr) {
-            throw parse_error("{}: Expecting a name token on the right hand side of a member accessor. got {}.", location, *rhs);
+            throw parse_error(std::format("{}: Expecting a name token on the right hand side of a member accessor. got {}.", location, *rhs));
         }
     }
 
@@ -25,7 +25,7 @@ struct formula_member_node final : formula_binary_operator_node {
     {
         method = context.get_method(rhs_name->name);
         if (!method) {
-            throw parse_error("{}: Could not find method .{}().", location, rhs_name->name);
+            throw parse_error(std::format("{}: Could not find method .{}().", location, rhs_name->name));
         }
     }
 
@@ -35,24 +35,24 @@ struct formula_member_node final : formula_binary_operator_node {
             ttlet &lhs_ = lhs->evaluate_xvalue(context);
 
             if (!lhs_.contains(rhs_name->name)) {
-                throw operation_error("{}: Unknown attribute .{}", location, rhs_name->name);
+                throw operation_error(std::format("{}: Unknown attribute .{}", location, rhs_name->name));
             }
             try {
                 return lhs_[rhs_name->name];
             } catch (std::exception const &e) {
-                throw operation_error("{}: Can not evaluate member selection.\n{}", location, e.what());
+                throw operation_error(std::format("{}: Can not evaluate member selection.\n{}", location, e.what()));
             }
 
         } else {
             ttlet lhs_ = lhs->evaluate(context);
 
             if (!lhs_.contains(rhs_name->name)) {
-                throw operation_error("{}: Unknown attribute .{}", location, rhs_name->name);
+                throw operation_error(std::format("{}: Unknown attribute .{}", location, rhs_name->name));
             }
             try {
                 return lhs_[rhs_name->name];
             } catch (std::exception const &e) {
-                throw operation_error("{}: Can not evaluate member selection.\n{}", location, e.what());
+                throw operation_error(std::format("{}: Can not evaluate member selection.\n{}", location, e.what()));
             }
         }
     }
@@ -63,7 +63,7 @@ struct formula_member_node final : formula_binary_operator_node {
         try {
             return lhs_[rhs_name->name];
         } catch (std::exception const &e) {
-            throw operation_error("{}: Can not evaluate member-selection.\n{}", location, e.what());
+            throw operation_error(std::format("{}: Can not evaluate member-selection.\n{}", location, e.what()));
         }
     }
 
@@ -73,7 +73,7 @@ struct formula_member_node final : formula_binary_operator_node {
         try {
             return method(context, lhs_, arguments);
         } catch (std::exception const &e) {
-            throw operation_error("{}: Can not evaluate call-of-method.\n{}", location, e.what());
+            throw operation_error(std::format("{}: Can not evaluate call-of-method.\n{}", location, e.what()));
         }
     }
 

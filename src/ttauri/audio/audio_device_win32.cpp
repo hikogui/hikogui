@@ -94,7 +94,7 @@ template<>
 
     } else {
         PropVariantClear(&property_value);
-        throw io_error("Unexpected property value type {}.", static_cast<int>(property_value.vt));
+        throw io_error(std::format("Unexpected property value type {}.", static_cast<int>(property_value.vt)));
     }
 }
 
@@ -114,7 +114,7 @@ template<>
 
     } else {
         PropVariantClear(&property_value);
-        throw io_error("Unexpected property value type {}.", static_cast<int>(property_value.vt));
+        throw io_error(std::format("Unexpected property value type {}.", static_cast<int>(property_value.vt)));
     }
 }
 

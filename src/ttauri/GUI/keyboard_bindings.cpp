@@ -42,7 +42,7 @@ void keyboard_bindings::load_bindings(URL url, bool system_binding)
 
             auto command = to_command(command_name);
             if (command == command::unknown) {
-                throw parse_error("Could not parse command '{}'", command_name);
+                throw parse_error(std::format("Could not parse command '{}'", command_name));
             }
 
             if (ignored_binding) {
@@ -55,7 +55,7 @@ void keyboard_bindings::load_bindings(URL url, bool system_binding)
         }
 
     } catch (std::exception const &e) {
-        throw io_error("{}: Could not load keyboard bindings.\n{}", url, e.what());
+        throw io_error(std::format("{}: Could not load keyboard bindings.\n{}", url, e.what()));
     }
 }
 

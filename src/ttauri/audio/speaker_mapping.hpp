@@ -230,7 +230,7 @@ struct pickle<speaker_mapping> {
         if (auto *i = get_if<long long>(rhs)) {
             return decode(*i);
         } else {
-            throw parse_error("Expect speaker mapping to be encoded as a integer, got {}", rhs);
+            throw parse_error(std::format("Expect speaker mapping to be encoded as a integer, got {}", rhs));
         }
     }
 };

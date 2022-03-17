@@ -52,7 +52,7 @@ public:
             ++global_counter<"ttf:unmap">;
 
         } catch (std::exception const &e) {
-            throw parse_error("{}: Could not parse font directory.\n{}", to_string(url), e.what());
+            throw parse_error(std::format("{}: Could not parse font directory.\n{}", to_string(url), e.what()));
         }
     }
 

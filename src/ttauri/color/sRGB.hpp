@@ -104,7 +104,7 @@ inline auto sRGB_gamma8_to_linear16_table = sRGB_gamma8_to_linear16_table_genera
         tmp = tmp.substr(1);
     }
     if (ssize(tmp) != 6 && ssize(tmp) != 8) {
-        throw parse_error("Expecting 6 or 8 hex-digit sRGB color string, got {}.", str);
+        throw parse_error(std::format("Expecting 6 or 8 hex-digit sRGB color string, got {}.", str));
     }
     if (ssize(tmp) == 6) {
         tmp += "ff";

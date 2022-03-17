@@ -97,7 +97,7 @@ namespace tt::inline v1 {
 
     if (wave_format.wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
         if (wave_format.cbSize < (sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX))) {
-            throw parse_error("WAVEFORMATEXTENSIBLE has incorrect size {}", wave_format.cbSize);
+            throw parse_error(std::format("WAVEFORMATEXTENSIBLE has incorrect size {}", wave_format.cbSize));
         }
         return audio_stream_format_from_win32(*std::launder(reinterpret_cast<WAVEFORMATEXTENSIBLE const *>(&wave_format)));
 
@@ -108,7 +108,7 @@ namespace tt::inline v1 {
         r.sample_format.is_float = true;
 
     } else {
-        throw parse_error("Unsupported wFormatTag {}", wave_format.wFormatTag);
+        throw parse_error(std::format("Unsupported wFormatTag {}", wave_format.wFormatTag));
     }
 
     tt_parse_check(wave_format.wBitsPerSample > 0, "wBitsPerSample is zero");

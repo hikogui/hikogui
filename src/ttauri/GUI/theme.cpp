@@ -20,7 +20,7 @@ theme::theme(tt::font_book const &font_book, URL const &url)
         ttlet data = parse_JSON(url);
         parse(font_book, data);
     } catch (std::exception const &e) {
-        throw io_error("{}: Could not load theme.\n{}", url, e.what());
+        throw io_error(std::format("{}: Could not load theme.\n{}", url, e.what()));
     }
 }
 
@@ -73,11 +73,11 @@ theme::theme(tt::font_book const &font_book, URL const &url)
 {
     // Extract name
     if (!data.contains(object_name)) {
-        throw parse_error("Missing '{}'", object_name);
+        throw parse_error(std::format("Missing '{}'", object_name));
     }
     ttlet object = data[object_name];
     if (!holds_alternative<std::string>(object)) {
-        throw parse_error("'{}' attribute must be a string, got {}.", object_name, object.type_name());
+        throw parse_error(std::format("'{}' attribute must be a string, got {}.", object_name, object.type_name()));
     }
     return static_cast<std::string>(object);
 }
@@ -85,26 +85,26 @@ theme::theme(tt::font_book const &font_book, URL const &url)
 [[nodiscard]] float theme::parse_float(datum const &data, char const *object_name)
 {
     if (!data.contains(object_name)) {
-        throw parse_error("Missing '{}'", object_name);
+        throw parse_error(std::format("Missing '{}'", object_name));
     }
 
     ttlet object = data[object_name];
     if (auto f = get_if<double>(object)) {
         return static_cast<float>(*f);
     } else {
-        throw parse_error("'{}' attribute must be a number, got {}.", object_name, object.type_name());
+        throw parse_error(std::format("'{}' attribute must be a number, got {}.", object_name, object.type_name()));
     }
 }
 
 [[nodiscard]] bool theme::parse_bool(datum const &data, char const *object_name)
 {
     if (!data.contains(object_name)) {
-        throw parse_error("Missing '{}'", object_name);
+        throw parse_error(std::format("Missing '{}'", object_name));
     }
 
     ttlet object = data[object_name];
     if (!holds_alternative<bool>(object)) {
-        throw parse_error("'{}' attribute must be a boolean, got {}.", object_name, object.type_name());
+        throw parse_error(std::format("'{}' attribute must be a boolean, got {}.", object_name, object.type_name()));
     }
 
     return static_cast<bool>(object);
@@ -114,7 +114,7 @@ theme::theme(tt::font_book const &font_book, URL const &url)
 {
     if (holds_alternative<datum::vector_type>(data)) {
         if (data.size() != 3 && data.size() != 4) {
-            throw parse_error("Expect 3 or 4 values for a color, got {}.", data);
+            throw parse_error(std::format("Expect 3 or 4 values for a color, got {}.", data));
         }
         ttlet r = data[0];
         ttlet g = data[1];
@@ -147,7 +147,7 @@ theme::theme(tt::font_book const &font_book, URL const &url)
             return tt::color(r_, g_, b_, a_);
 
         } else {
-            throw parse_error("Expect all integers or all floating point numbers in a color, got {}.", data);
+            throw parse_error(std::format("Expect all integers or all floating point numbers in a color, got {}.", data));
         }
 
     } else if (ttlet *color_name = get_if<std::string>(data)) {
@@ -156,17 +156,17 @@ theme::theme(tt::font_book const &font_book, URL const &url)
             return color_from_sRGB(color_name_);
 
         } else {
-            throw parse_error("Unable to parse color, got {}.", data);
+            throw parse_error(std::format("Unable to parse color, got {}.", data));
         }
     } else {
-        throw parse_error("Unable to parse color, got {}.", data);
+        throw parse_error(std::format("Unable to parse color, got {}.", data));
     }
 }
 
 [[nodiscard]] tt::color theme::parse_color(datum const &data, char const *object_name)
 {
     if (!data.contains(object_name)) {
-        throw parse_error("Missing color '{}'", object_name);
+        throw parse_error(std::format("Missing color '{}'", object_name));
     }
 
     ttlet color_object = data[object_name];
@@ -187,7 +187,7 @@ theme::theme(tt::font_book const &font_book, URL const &url)
 {
     // Extract name
     if (!data.contains(object_name)) {
-        throw parse_error("Missing color list '{}'", object_name);
+        throw parse_error(std::format("Missing color list '{}'", object_name));
     }
 
     ttlet color_list_object = data[object_name];
@@ -199,7 +199,7 @@ theme::theme(tt::font_book const &font_book, URL const &url)
             try {
                 r.push_back(parse_color_value(color));
             } catch (parse_error const &e) {
-                throw parse_error("Could not parse {}nd entry of color list '{}'\n{}", i + 1, object_name, e.what());
+                throw parse_error(std::format("Could not parse {}nd entry of color list '{}'\n{}", i + 1, object_name, e.what()));
             }
         }
         return r;
@@ -208,7 +208,7 @@ theme::theme(tt::font_book const &font_book, URL const &url)
         try {
             return {parse_color_value(data[object_name])};
         } catch (parse_error const &e) {
-            throw parse_error("Could not parse color '{}'\n{}", object_name, e.what());
+            throw parse_error(std::format("Could not parse color '{}'\n{}", object_name, e.what()));
         }
     }
 }
@@ -216,7 +216,7 @@ theme::theme(tt::font_book const &font_book, URL const &url)
 [[nodiscard]] font_weight theme::parse_font_weight(datum const &data, char const *object_name)
 {
     if (!data.contains(object_name)) {
-        throw parse_error("Missing '{}'", object_name);
+        throw parse_error(std::format("Missing '{}'", object_name));
     }
 
     ttlet object = data[object_name];
@@ -225,14 +225,14 @@ theme::theme(tt::font_book const &font_book, URL const &url)
     } else if (auto s = get_if<std::string>(object)) {
         return font_weight_from_string(*s);
     } else {
-        throw parse_error("Unable to parse font weight, got {}.", object.type_name());
+        throw parse_error(std::format("Unable to parse font weight, got {}.", object.type_name()));
     }
 }
 
 [[nodiscard]] text_style theme::parse_text_style_value(tt::font_book const &font_book, datum const &data)
 {
     if (!holds_alternative<datum::map_type>(data)) {
-        throw parse_error("Expect a text-style to be an object, got '{}'", data);
+        throw parse_error(std::format("Expect a text-style to be an object, got '{}'", data));
     }
 
     tt::text_style r;
@@ -260,14 +260,14 @@ theme::theme(tt::font_book const &font_book, URL const &url)
 {
     // Extract name
     if (!data.contains(object_name)) {
-        throw parse_error("Missing text-style '{}'", object_name);
+        throw parse_error(std::format("Missing text-style '{}'", object_name));
     }
 
     ttlet textStyleObject = data[object_name];
     try {
         return parse_text_style_value(font_book, textStyleObject);
     } catch (parse_error const &e) {
-        throw parse_error("Could not parse text-style '{}'\n{}", object_name, e.what());
+        throw parse_error(std::format("Could not parse text-style '{}'\n{}", object_name, e.what()));
     }
 }
 
@@ -283,7 +283,7 @@ void theme::parse(tt::font_book const &font_book, datum const &data)
     } else if (mode_name == "dark") {
         mode = theme_mode::dark;
     } else {
-        throw parse_error("Attribute 'mode' must be \"light\" or \"dark\", got \"{}\".", mode_name);
+        throw parse_error(std::format("Attribute 'mode' must be \"light\" or \"dark\", got \"{}\".", mode_name));
     }
 
     std::get<to_underlying(theme_color::blue)>(_colors) = parse_color_list(data, "blue");

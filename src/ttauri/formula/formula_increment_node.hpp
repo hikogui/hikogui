@@ -20,7 +20,7 @@ struct formula_increment_node final : formula_unary_operator_node {
         try {
             return ++rhs_;
         } catch (std::exception const &e) {
-            throw operation_error("{}: Can not evaluate increment.\n{}", location, e.what());
+            throw operation_error(std::format("{}: Can not evaluate increment.\n{}", location, e.what()));
         }
     }
 

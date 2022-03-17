@@ -5,6 +5,7 @@
 #include "grid_widget.hpp"
 #include "../algorithm.hpp"
 #include "../alignment.hpp"
+#include "../log.hpp"
 
 namespace tt::inline v1 {
 
@@ -47,11 +48,9 @@ widget &grid_widget::add_widget(
     std::unique_ptr<widget> widget) noexcept
 {
     tt_axiom(is_gui_thread());
-    tt_assert(
-        not address_in_use(column_first, row_first, column_last, row_last),
-        "cell ({},{}) of grid_widget is already in use",
-        column_first,
-        row_first);
+    if (address_in_use(column_first, row_first, column_last, row_last)) {
+        tt_log_fatal("cell ({},{}) of grid_widget is already in use", column_first, row_first);
+    }
 
     auto &ref = *widget;
     _cells.emplace_back(column_first, row_first, column_last, row_last, std::move(widget));

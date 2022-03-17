@@ -34,7 +34,7 @@ std::unique_ptr<formula_node> skeleton_parse_context::parse_expression(std::stri
         expression = parse_formula(context);
 
     } catch (std::exception const &e) {
-        throw parse_error("{}: Could not parse expression.\n{}", location, e.what());
+        throw parse_error(std::format("{}: Could not parse expression.\n{}", location, e.what()));
     }
 
     (*this) += std::distance(index, formula_last);
@@ -46,7 +46,7 @@ std::unique_ptr<formula_node> skeleton_parse_context::parse_expression_and_advan
     auto expression = parse_expression(end_text);
 
     if (!starts_with_and_advance_over(end_text)) {
-        throw parse_error("{}: Could not find '{}' after expression", location, end_text);
+        throw parse_error(std::format("{}: Could not find '{}' after expression", location, end_text));
     }
 
     return expression;
@@ -83,7 +83,7 @@ void skeleton_parse_context::end_of_text_segment()
     if (text_segment_start) {
         if (index > *text_segment_start) {
             if (!append<skeleton_string_node>(location, std::string(*text_segment_start, index))) {
-                throw parse_error("{}: Unexpected text segment.", location);
+                throw parse_error(std::format("{}: Unexpected text segment.", location));
             }
         }
 
@@ -134,10 +134,10 @@ void skeleton_parse_context::include(parse_location _location, std::unique_ptr<f
 
     if (ssize(statement_stack) > 0) {
         if (!statement_stack.back()->append(parse_skeleton(new_skeleton_path))) {
-            throw parse_error("{}: Unexpected #include statement.", location);
+            throw parse_error(std::format("{}: Unexpected #include statement.", location));
         }
     } else {
-        throw parse_error("{}: Unexpected #include statement, missing top-level", location);
+        throw parse_error(std::format("{}: Unexpected #include statement, missing top-level", location));
     }
 }
 

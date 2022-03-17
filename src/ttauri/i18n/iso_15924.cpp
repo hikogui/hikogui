@@ -314,7 +314,7 @@ iso_15924::iso_15924(tt::unicode_script const &script) noexcept : _v(iso_15924_n
 iso_15924::iso_15924(std::string_view code4)
 {
     if (code4.size() != 4) {
-        throw parse_error("Invalid script '{}'", code4);
+        throw parse_error(std::format("Invalid script '{}'", code4));
     }
 
     ttlet code4_ = to_title(fixed_string<4>{code4});
@@ -325,7 +325,7 @@ iso_15924::iso_15924(std::string_view code4)
         });
 
     if (it == iso_15924_number_by_code4.end() or it->first != code4_) {
-        throw parse_error("Unknown script '{}'", code4);
+        throw parse_error(std::format("Unknown script '{}'", code4));
     }
     
     _v = it->second;

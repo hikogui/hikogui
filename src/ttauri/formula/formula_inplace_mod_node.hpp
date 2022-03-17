@@ -22,7 +22,7 @@ struct formula_inplace_mod_node final : formula_binary_operator_node {
         try {
             return lhs_ %= rhs_;
         } catch (std::exception const &e) {
-            throw operation_error("{}: Can not evaluate inplace_modulo.\n{}", location, e.what());
+            throw operation_error(std::format("{}: Can not evaluate inplace_modulo.\n{}", location, e.what()));
         }
     }
 

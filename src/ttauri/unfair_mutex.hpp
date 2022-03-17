@@ -54,8 +54,10 @@ public:
     {
         if constexpr (UseDeadLockDetector) {
             ttlet other = dead_lock_detector::lock(this);
-            tt_axiom(other != this, "Mutex already locked.");
-            tt_axiom(other == nullptr, "Potential dead-lock.");
+            // *this mutex is already locked.
+            tt_axiom(other != this);
+            // Potential dead-lock because of different ordering with other.
+            tt_axiom(other == nullptr); 
         }
 
         tt_axiom(holds_invariant());
@@ -80,8 +82,10 @@ public:
     {
         if constexpr (UseDeadLockDetector) {
             ttlet other = dead_lock_detector::lock(this);
-            tt_axiom(other != this, "Mutex already locked.");
-            tt_axiom(other == nullptr, "Potential dead-lock.");
+            // *this mutex is already locked.
+            tt_axiom(other != this);
+            // Potential dead-lock because of different ordering with other.
+            tt_axiom(other == nullptr);
         }
 
         tt_axiom(holds_invariant());
@@ -92,7 +96,8 @@ public:
             tt_axiom(holds_invariant());
 
             if constexpr (UseDeadLockDetector) {
-                tt_axiom(dead_lock_detector::unlock(this), "Unlocking mutex out of order.");
+                // *this mutex is locked out-of-order from the order of being locked.
+                tt_axiom(dead_lock_detector::unlock(this));
             }
 
             [[unlikely]] return false;
@@ -105,7 +110,8 @@ public:
     void unlock() noexcept
     {
         if constexpr (UseDeadLockDetector) {
-            tt_axiom(dead_lock_detector::unlock(this), "Unlocking mutex out of order.");
+            // *this mutex is locked out-of-order from the order of being locked.
+            tt_axiom(dead_lock_detector::unlock(this));
         }
 
         tt_axiom(holds_invariant());

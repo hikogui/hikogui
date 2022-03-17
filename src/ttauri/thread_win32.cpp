@@ -60,7 +60,7 @@ std::vector<bool> set_thread_affinity_mask(std::vector<bool> const &mask)
 
     ttlet old_mask = SetThreadAffinityMask(thread_handle, mask_);
     if (old_mask == 0) {
-        throw os_error("Could not set the thread affinity. '{}'", get_last_error_message());
+        throw os_error(std::format("Could not set the thread affinity. '{}'", get_last_error_message()));
     }
 
     return mask_int_to_vec(old_mask);

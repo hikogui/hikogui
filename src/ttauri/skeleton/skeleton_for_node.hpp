@@ -72,7 +72,7 @@ struct skeleton_for_node final : skeleton_node {
         auto list_data = evaluate_formula_without_output(context, *list_expression, location);
 
         if (!holds_alternative<datum::vector_type>(list_data)) {
-            throw operation_error("{}: Expecting expression returns a vector, got {}", location, list_data);
+            throw operation_error(std::format("{}: Expecting expression returns a vector, got {}", location, list_data));
         }
 
         ttlet output_size = context.output_size();
@@ -83,7 +83,7 @@ struct skeleton_for_node final : skeleton_node {
                     name_expression->assign_without_output(context, item);
 
                 } catch (std::exception const &e) {
-                    throw operation_error("{}: Could not evaluate for-loop expression.\n{}", location, e.what());
+                    throw operation_error(std::format("{}: Could not evaluate for-loop expression.\n{}", location, e.what()));
                 }
 
                 context.loop_push(loop_count++, loop_size);

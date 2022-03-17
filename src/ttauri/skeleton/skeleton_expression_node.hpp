@@ -30,10 +30,10 @@ struct skeleton_expression_node final : skeleton_node {
     {
         ttlet tmp = evaluate_formula_without_output(context, *expression, location);
         if (tmp.is_break()) {
-            throw operation_error("{}: Found #break not inside a loop statement.", location);
+            throw operation_error(std::format("{}: Found #break not inside a loop statement.", location));
 
         } else if (tmp.is_continue()) {
-            throw operation_error("{}: Found #continue not inside a loop statement.", location);
+            throw operation_error(std::format("{}: Found #continue not inside a loop statement.", location));
 
         } else {
             return {};

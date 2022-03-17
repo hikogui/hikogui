@@ -602,7 +602,7 @@ static glyph_id searchCharacterMapFormat12(std::span<std::byte const> bytes, cha
     case 4: return parseCharacterMapFormat4(_cmap_bytes);
     case 6: return parseCharacterMapFormat6(_cmap_bytes);
     case 12: return parseCharacterMapFormat12(_cmap_bytes);
-    default: throw parse_error("Unknown character map format {}", format->value());
+    default: throw parse_error(std::format("Unknown character map format {}", format->value()));
     }
 }
 

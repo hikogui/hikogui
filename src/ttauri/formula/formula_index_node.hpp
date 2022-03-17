@@ -20,13 +20,13 @@ struct formula_index_node final : formula_binary_operator_node {
         auto rhs_ = rhs->evaluate(context);
 
         if (holds_alternative<datum::map_type>(lhs_) and not lhs_.contains(rhs_)) {
-            throw operation_error("{}: Unknown key '{}'.", location, rhs_);
+            throw operation_error(std::format("{}: Unknown key '{}'.", location, rhs_));
         }
 
         try {
             return lhs_[rhs_];
         } catch (std::exception const &e) {
-            throw operation_error("{}: Can not evaluate indexing operation.\n{}", location, e.what());
+            throw operation_error(std::format("{}: Can not evaluate indexing operation.\n{}", location, e.what()));
         }
     }
 
@@ -37,7 +37,7 @@ struct formula_index_node final : formula_binary_operator_node {
         try {
             return lhs_[rhs_];
         } catch (std::exception const &e) {
-            throw operation_error("{}: Can not evaluate indexing operation.\n{}", location, e.what());
+            throw operation_error(std::format("{}: Can not evaluate indexing operation.\n{}", location, e.what()));
         }
     }
 

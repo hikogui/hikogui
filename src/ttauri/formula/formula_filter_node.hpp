@@ -19,7 +19,7 @@ struct formula_filter_node final : formula_binary_operator_node {
     {
         rhs_name = dynamic_cast<formula_name_node *>(this->rhs.get());
         if (rhs_name == nullptr) {
-            throw parse_error("{}: Expecting a name token on the right hand side of a filter operator. got {}.", location, *rhs);
+            throw parse_error(std::format("{}: Expecting a name token on the right hand side of a filter operator. got {}.", location, *rhs));
         }
     }
 
@@ -29,7 +29,7 @@ struct formula_filter_node final : formula_binary_operator_node {
 
         filter = context.get_filter(rhs_name->name);
         if (!filter) {
-            throw parse_error("{}: Could not find filter .{}().", location, rhs_name->name);
+            throw parse_error(std::format("{}: Could not find filter .{}().", location, rhs_name->name));
         }
     }
 
@@ -39,7 +39,7 @@ struct formula_filter_node final : formula_binary_operator_node {
         try {
             return datum{filter(static_cast<std::string>(lhs_))};
         } catch (std::exception const &e) {
-            throw operation_error("{}: Can not evaluate filter.\n{}", location, e.what());
+            throw operation_error(std::format("{}: Can not evaluate filter.\n{}", location, e.what()));
         }
     }
 

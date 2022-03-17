@@ -34,7 +34,7 @@ struct skeleton_function_node final : skeleton_node {
                     return this->evaluate_call(context, arguments);
 
                 } catch (std::exception const &e) {
-                    throw operation_error("{}: Failed during handling of function call.\n{}", location, e.what());
+                    throw operation_error(std::format("{}: Failed during handling of function call.\n{}", location, e.what()));
                 }
             });
     }
@@ -69,12 +69,12 @@ struct skeleton_function_node final : skeleton_node {
     {
         context.push();
         if (ssize(argument_names) != ssize(arguments)) {
-            throw operation_error(
+            throw operation_error(std::format(
                 "{}: Invalid number of arguments to function {}() expecting {} got {}.",
                 location,
                 name,
                 argument_names.size(),
-                arguments.size());
+                arguments.size()));
         }
 
         for (ssize_t i = 0; i != ssize(argument_names); ++i) {
@@ -86,10 +86,10 @@ struct skeleton_function_node final : skeleton_node {
         context.pop();
 
         if (tmp.is_break()) {
-            throw operation_error("{}: Found #break not inside a loop statement.", location);
+            throw operation_error(std::format("{}: Found #break not inside a loop statement.", location));
 
         } else if (tmp.is_continue()) {
-            throw operation_error("{}: Found #continue not inside a loop statement.", location);
+            throw operation_error(std::format("{}: Found #continue not inside a loop statement.", location));
 
         } else if (tmp.is_undefined()) {
             return {};

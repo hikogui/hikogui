@@ -47,11 +47,11 @@ struct pickle<T> {
     {
         if (auto *i = get_if<long long>(rhs)) {
             if (*i < std::numeric_limits<T>::lowest() or *i > std::numeric_limits<T>::max()) {
-                throw parse_error("Encoded value is to out of range, got {}", rhs);
+                throw parse_error(std::format("Encoded value is to out of range, got {}", rhs));
             }
             return static_cast<T>(*i);
         } else {
-            throw parse_error("Expecting numeric integrals to be encoded as a long long, got {}", rhs);
+            throw parse_error(std::format("Expecting numeric integrals to be encoded as a long long, got {}", rhs));
         }
     }
 };
@@ -72,7 +72,7 @@ struct pickle<T> {
             return static_cast<T>(*i);
 
         } else {
-            throw parse_error("Expecting floating point to be encoded as a double or long long, got {}", rhs);
+            throw parse_error(std::format("Expecting floating point to be encoded as a double or long long, got {}", rhs));
         }
     }
 };
@@ -90,7 +90,7 @@ struct pickle<bool> {
             return *b;
 
         } else {
-            throw parse_error("Expecting bool to be encoded as a bool, got {}", rhs);
+            throw parse_error(std::format("Expecting bool to be encoded as a bool, got {}", rhs));
         }
     }
 };
@@ -108,7 +108,7 @@ struct pickle<std::string> {
             return *b;
 
         } else {
-            throw parse_error("Expecting std::string to be encoded as a string, got {}", rhs);
+            throw parse_error(std::format("Expecting std::string to be encoded as a string, got {}", rhs));
         }
     }
 };

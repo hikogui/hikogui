@@ -21,7 +21,7 @@ file_mapping::file_mapping(std::shared_ptr<tt::file> const &file, std::size_t si
     } else if (accessMode() >= access_mode::read) {
         protect = PAGE_READONLY;
     } else {
-        throw io_error("{}: Illegal access mode WRONLY/0 when mapping file.", location());
+        throw io_error(std::format("{}: Illegal access mode WRONLY/0 when mapping file.", location()));
     }
 
     DWORD maximumSizeHigh = this->size >> 32;
@@ -32,7 +32,7 @@ file_mapping::file_mapping(std::shared_ptr<tt::file> const &file, std::size_t si
     } else {
         if ((mapHandle = CreateFileMappingW(file->_file_handle, NULL, protect, maximumSizeHigh, maximumSizeLow, nullptr)) ==
             nullptr) {
-            throw io_error("{}: Could not create file mapping. '{}'", location(), get_last_error_message());
+            throw io_error(std::format("{}: Could not create file mapping. '{}'", location(), get_last_error_message()));
         }
     }
 }

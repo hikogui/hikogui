@@ -8,6 +8,7 @@
 #include "../unicode/unicode_script.hpp"
 #include <string_view>
 #include <cstdint>
+#include <format>
 
 namespace tt::inline v1 {
 

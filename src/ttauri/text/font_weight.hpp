@@ -58,7 +58,7 @@ inline ttlet font_weight_from_string_table = std::unordered_map<std::string, fon
 [[nodiscard]] constexpr font_weight font_weight_from_int(numeric_integral auto rhs)
 {
     if (rhs < 50 || rhs > 1000) {
-        throw parse_error("Unknown font-weight {}", rhs);
+        throw parse_error(std::format("Unknown font-weight {}", rhs));
     }
     return static_cast<font_weight>(((rhs + 50) / 100) - 1);
 }

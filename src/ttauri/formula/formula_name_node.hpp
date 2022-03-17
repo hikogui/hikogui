@@ -18,7 +18,7 @@ struct formula_name_node final : formula_node {
     {
         function = context.get_function(name);
         if (!function) {
-            throw parse_error("{}: Could not find function {}().", location, name);
+            throw parse_error(std::format("{}: Could not find function {}().", location, name));
         }
     }
 
@@ -29,7 +29,7 @@ struct formula_name_node final : formula_node {
         try {
             return const_context.get(name);
         } catch (std::exception const &e) {
-            throw operation_error("{}: Can not evaluate function.\n{}", location, e.what());
+            throw operation_error(std::format("{}: Can not evaluate function.\n{}", location, e.what()));
         }
     }
 
@@ -38,7 +38,7 @@ struct formula_name_node final : formula_node {
         try {
             return context.get(name);
         } catch (std::exception const &e) {
-            throw operation_error("{}: Can not evaluate function.\n{}", location, e.what());
+            throw operation_error(std::format("{}: Can not evaluate function.\n{}", location, e.what()));
         }
     }
 
@@ -54,7 +54,7 @@ struct formula_name_node final : formula_node {
         try {
             return context.get(name);
         } catch (std::exception const &e) {
-            throw operation_error("{}: Can not evaluate function.\n{}", location, e.what());
+            throw operation_error(std::format("{}: Can not evaluate function.\n{}", location, e.what()));
         }
     }
 
@@ -63,7 +63,7 @@ struct formula_name_node final : formula_node {
         try {
             return context.set(name, rhs);
         } catch (std::exception const &e) {
-            throw operation_error("{}: Can not evaluate function.\n{}", location, e.what());
+            throw operation_error(std::format("{}: Can not evaluate function.\n{}", location, e.what()));
         }
     }
 
