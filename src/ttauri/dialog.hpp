@@ -19,24 +19,21 @@ enum class dialog_type { ok, yes_no, yes_no_cancel };
  * @throw cancel_error When the user presses "cancel".
  * @return True when the user presses "ok" or "yes"
  */
-bool _dialog(dialog_type type, char const *title, std::string_view text);
+bool dialog(dialog_type type, std::string_view title, std::string_view text);
 
-template<typename... Args>
-void dialog_ok(char const *title, std::string_view fmt, Args const &...args) noexcept
+void dialog_ok(std::string_view title, std::string_view message) noexcept
 {
-    _dialog(dialog_type::ok, title, std::format(fmt, args...));
+    dialog(dialog_type::ok, title, message);
 }
 
-template<typename... Args>
-[[nodiscard]] bool dialog_yes_no(char const *title, char const *fmt, Args const &...args) noexcept
+[[nodiscard]] bool dialog_yes_no(std::string_view title, std::string_view message) noexcept
 {
-    return _dialog(dialog_type::yes_no, title, std::format(fmt, args...));
+    return dialog(dialog_type::yes_no, title, message);
 }
 
-template<typename... Args>
-[[nodiscard]] bool dialog_yes_no_cancel(char const *title, char const *fmt, Args const &...args)
+[[nodiscard]] bool dialog_yes_no_cancel(std::string_view title, std::string_view message)
 {
-    return _dialog(dialog_type::yes_no_cancel, title, std::format(fmt, args...));
+    return dialog(dialog_type::yes_no_cancel, title, message);
 }
 
 } // namespace tt::inline v1

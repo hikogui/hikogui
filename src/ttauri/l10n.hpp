@@ -126,13 +126,13 @@ private:
     template<typename... Args>
     static std::string format_wrapper(std::string_view fmt, Args const &...args)
     {
-        return std::format(fmt, args...);
+        return std::vformat(fmt, std::make_format_args(args...));
     }
 
     template<typename... Args>
     static std::string format_locale_wrapper(std::locale const &loc, std::string_view fmt, Args const &...args)
     {
-        return std::format(loc, fmt, args...);
+        return std::vformat(loc, fmt, std::make_format_args(args...));
     }
 };
 

@@ -10,7 +10,6 @@
 #include "wfree_fifo.hpp"
 #include "atomic.hpp"
 #include "meta.hpp"
-#include "format.hpp"
 #include "source_location.hpp"
 #include "architecture.hpp"
 #include "delayed_format.hpp"
@@ -19,6 +18,7 @@
 #include "global_state.hpp"
 #include "URL.hpp"
 #include "unfair_mutex.hpp"
+#include "debugger.hpp"
 #include <chrono>
 #include <format>
 #include <string>
@@ -144,10 +144,6 @@ public:
             // On fatal error we also want to log from the current thread.
             [[unlikely]] flush();
         }
-
-        if constexpr (to_bool(Level & global_state_type::log_fatal)) {
-            std::terminate();
-        }
     }
 
     /** Flush all messages from the log_queue directly from this thread.
@@ -227,4 +223,4 @@ inline log log_global;
 #define tt_log_error(fmt, ...) ::tt::log_global.add<::tt::global_state_type::log_error, __FILE__, __LINE__, fmt>(__VA_ARGS__)
 #define tt_log_fatal(fmt, ...) \
     ::tt::log_global.add<::tt::global_state_type::log_fatal, __FILE__, __LINE__, fmt>(__VA_ARGS__); \
-    tt_unreachable()
+    tt_debug_abort()

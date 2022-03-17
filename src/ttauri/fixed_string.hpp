@@ -9,6 +9,7 @@
 #include <string>
 #include <string_view>
 #include <format>
+#include <array>
 
 namespace tt::inline v1 {
 
@@ -33,13 +34,10 @@ template<typename CharT, int N>
 struct basic_fixed_string {
     using value_type = CharT;
 
-    value_type _str[N];
+    std::array<value_type, N> _str;
 
-    constexpr basic_fixed_string() noexcept : _str()
+    constexpr basic_fixed_string() noexcept : _str{}
     {
-        for (auto i = 0_uz; i != N; ++i) {
-            _str[i] = value_type{};
-        }
     }
 
     constexpr basic_fixed_string(basic_fixed_string const &) noexcept = default;
@@ -48,14 +46,10 @@ struct basic_fixed_string {
     constexpr basic_fixed_string &operator=(basic_fixed_string &&) noexcept = default;
 
     template<std::size_t O>
-    constexpr basic_fixed_string(basic_fixed_string<value_type,O> const &other) noexcept requires (O < N)
+    constexpr basic_fixed_string(basic_fixed_string<value_type, O> const &other) noexcept requires(O < N) : _str{}
     {
-        auto i = 0_uz;
-        for (; i != O; ++i) {
+        for (auto i = 0_uz; i != O; ++i) {
             _str[i] = other._str[i];
-        }
-        for (; i != N; ++i) {
-            _str[i] = value_type{};
         }
     }
 
@@ -73,21 +67,17 @@ struct basic_fixed_string {
     }
 
     template<std::size_t O>
-    constexpr basic_fixed_string(value_type const (&str)[O]) noexcept : _str()
+    constexpr basic_fixed_string(value_type const (&str)[O]) noexcept : _str{}
     {
         static_assert((O - 1) <= N);
 
-        auto i = 0_uz;
-        for (; i != (O - 1); ++i) {
+        for (auto i = 0_uz; i != (O - 1); ++i) {
             _str[i] = str[i];
-        }
-        for (; i != N; ++i) {
-            _str[i] = value_type{};
         }
     }
 
     template<std::size_t O>
-    constexpr basic_fixed_string &operator=(value_type const (&str)[O]) noexcept : _str()
+    constexpr basic_fixed_string &operator=(value_type const (&str)[O]) noexcept
     {
         static_assert((O - 1) <= N);
 
@@ -101,51 +91,39 @@ struct basic_fixed_string {
         return *this;
     }
 
-    constexpr explicit basic_fixed_string(std::basic_string_view<value_type> str) noexcept
+    constexpr explicit basic_fixed_string(std::basic_string_view<value_type> str) noexcept : _str{}
     {
         tt_axiom(str.size() <= N);
 
-        auto i = 0_uz;
-        for (; i != str.size(); ++i) {
+        for (auto i = 0_uz; i != str.size(); ++i) {
             _str[i] = str[i];
-        }
-        for (; i != N; ++i) {
-            _str[i] = value_type{};
         }
     }
 
-    constexpr explicit basic_fixed_string(std::basic_string<value_type> const &str) noexcept
+    constexpr explicit basic_fixed_string(std::basic_string<value_type> const &str) noexcept : _str{}
     {
         tt_axiom(str.size() <= N);
 
-        auto i = 0_uz;
-        for (; i != str.size(); ++i) {
+        for (auto i = 0_uz; i != str.size(); ++i) {
             _str[i] = str[i];
-        }
-        for (; i != N; ++i) {
-            _str[i] = value_type{};
         }
     }
 
     /** Initialize the string from a nul-terminated c-string.
      */
-    constexpr explicit basic_fixed_string(value_type const *str) noexcept
+    constexpr explicit basic_fixed_string(value_type const *str) noexcept : _str{}
     {
         auto i = 0_uz;
         for (; i != N and str[i] != value_type{}; ++i) {
             _str[i] = str[i];
         }
-
+        
         tt_axiom(str[i] == value_type{});
-
-        for (; i != N; ++i) {
-            _str[i] = value_type{};
-        }
     }
 
     operator std::basic_string_view<value_type>() const noexcept
     {
-        return std::basic_string_view<value_type>{_str, size()};
+        return std::basic_string_view<value_type>{_str.data(), size()};
     }
 
     [[nodiscard]] constexpr std::size_t size() const noexcept
@@ -158,14 +136,14 @@ struct basic_fixed_string {
         return N;
     }
 
-    [[nodiscard]] constexpr value_type *begin() noexcept
+    [[nodiscard]] constexpr auto begin() noexcept
     {
-        return &_str[0];
+        return _str.begin();
     }
 
-    [[nodiscard]] constexpr value_type *end() noexcept
+    [[nodiscard]] constexpr auto end() noexcept
     {
-        return &_str[N];
+        return _str.begin() + size();
     }
 
     /** Convert the current string to using title case.

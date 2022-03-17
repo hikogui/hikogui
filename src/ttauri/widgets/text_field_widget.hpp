@@ -9,7 +9,6 @@
 #include "widget.hpp"
 #include "label_widget.hpp"
 #include "scroll_widget.hpp"
-#include "../format.hpp"
 #include "../label.hpp"
 #include "../weak_or_unique_ptr.hpp"
 #include <memory>

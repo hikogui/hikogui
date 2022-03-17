@@ -29,10 +29,6 @@ void console_output(std::string_view text, std::ostream &output = std::cout) noe
  *
  * @param text The text to display on the console.
  */
-template<typename... Args>
-void print(char const *fmt, Args const &...args) noexcept
-{
-    console_output(std::format(fmt, args...));
-}
+#define tt_print(fmt, ...) console_output(std::format(fmt __VA_OPT__(, ) __VA_ARGS__))
 
 } // namespace tt::inline v1

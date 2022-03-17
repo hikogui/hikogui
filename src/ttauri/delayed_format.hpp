@@ -48,7 +48,7 @@ public:
      */
     [[nodiscard]] std::string operator()() const noexcept
     {
-        return std::apply(format_wrapper<Values const &...>, std::tuple_cat(std::tuple{Fmt}, _values));
+        return std::apply(format_wrapper<Values const &...>, _values);
     }
 
     /** Format now.
@@ -57,22 +57,22 @@ public:
      */
     [[nodiscard]] std::string operator()(std::locale const &loc) const noexcept
     {
-        return std::apply(format_locale_wrapper<Values const &...>, std::tuple_cat(std::tuple{loc, Fmt}, _values));
+        return std::apply(format_locale_wrapper<Values const &...>, _values);
     }
 
 private:
     std::tuple<Values...> _values;
 
     template<typename... Args>
-    static std::string format_wrapper(std::string_view fmt, Args const &...args)
+    static std::string format_wrapper(Args const &...args)
     {
-        return std::format(fmt, args...);
+        return std::format(Fmt, args...);
     }
 
     template<typename... Args>
-    static std::string format_locale_wrapper(std::locale const &loc, std::string_view fmt, Args const &...args)
+    static std::string format_locale_wrapper(std::locale const &loc, Args const &...args)
     {
-        return std::format(loc, fmt, args...);
+        return std::format(loc, Fmt, args...);
     }
 };
 

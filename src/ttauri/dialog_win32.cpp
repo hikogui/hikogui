@@ -10,7 +10,7 @@
 
 namespace tt::inline v1 {
 
-bool _dialog(dialog_type type, const char *title, std::string_view text)
+bool dialog(dialog_type type, std::string_view title, std::string_view text)
 {
     UINT type_;
 
