@@ -7,6 +7,7 @@
 #include <cctype>
 #include "../assert.hpp"
 #include "../strings.hpp"
+#include "../assert.hpp"
 
 namespace tt::inline v1 {
 
@@ -26,13 +27,18 @@ public:
 
     constexpr iso_639() noexcept : _v(0) {}
 
-    constexpr iso_639(std::string_view str) noexcept : _v(0)
+    constexpr iso_639(std::string_view str) : _v(0)
     {
-        tt_axiom(str.size() == 2 or str.size() == 3);
-        set<0>(*this, str[0]);
-        set<1>(*this, str[1]);
-        if (str.size() == 3) {
-            set<2>(*this, str[2]);
+        try {
+            tt_parse_check(str.size() == 2 or str.size() == 3, "ISO-639 incorrect length.");
+
+            set<0>(*this, str[0]);
+            set<1>(*this, str[1]);
+            if (str.size() == 3) {
+                set<2>(*this, str[2]);
+            }
+        } catch (...) {
+            throw parse_error(std::format("A ISO-639 language code must be 2 or 3 letters in length, got '{}'", str));
         }
     }
 
@@ -58,7 +64,6 @@ public:
         return not empty();
     }
 
-
     constexpr explicit operator std::string() const noexcept
     {
         auto r = std::string{};
@@ -75,13 +80,16 @@ public:
     [[nodiscard]] constexpr friend bool operator==(iso_639 const &lhs, iso_639 const &rhs) noexcept = default;
 
     template<std::size_t I>
-    constexpr friend iso_639 &set(iso_639 &rhs, char c) noexcept
+    constexpr friend iso_639 &set(iso_639 &rhs, char c)
     {
-        tt_axiom((c >= 'a' and c <= 'z') or (c >= '1' and c <= '5'));
+        tt_parse_check(
+            (c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or (c >= '1' and c <= '5'),
+            "Must be letters or the digits between '1' and '5'");
 
         // clang-format off
         uint16_t x =
             (c >= 'a' and c <= 'z') ? c - 'a' + 1 :
+            (c >= 'A' and c <= 'Z') ? c - 'A' + 1 :
             (c >= '1' and c <= '5') ? c - '1' + 27 :
             0;
         // clang-format on
