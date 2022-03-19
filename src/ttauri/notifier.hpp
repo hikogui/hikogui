@@ -109,6 +109,13 @@ public:
 
         constexpr token_type(notifier *notifier) noexcept : _notifier(notifier) {}
 
+        constexpr auto operator()(Args const &...args) noexcept
+        {
+            ttlet lock = std::scoped_lock(notifier::_mutex);
+            tt_axiom(_notifier);
+            return (*_notifier)();
+        }
+
     private:
         notifier *_notifier;
 

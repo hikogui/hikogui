@@ -23,10 +23,9 @@ void window_widget::constructor_implementation() noexcept
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
         _system_menu = &_toolbar->make_widget<system_menu_widget>();
         _title_cbt = title.subscribe([this] {
-            window.gui.run([this] {
-                this->_system_menu->icon = this->title->icon;
-            });
+            this->_system_menu->icon = this->title->icon;
         });
+        _title_cbt();
 #endif
         _toolbar->make_widget<window_traffic_lights_widget, horizontal_alignment::right>();
     } else if (theme().operating_system == operating_system::macos) {
