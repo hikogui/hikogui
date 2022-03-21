@@ -63,3 +63,11 @@ private:
 };
 
 } // namespace tt::inline v1
+
+template<>
+struct std::hash<tt::iso_15924> {
+    [[nodiscard]] size_t operator()(tt::iso_15924 const &rhs) const noexcept
+    {
+        return std::hash<uint16_t>{}(rhs.number());
+    }
+};

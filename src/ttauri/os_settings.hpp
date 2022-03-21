@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "text/language_tag.hpp"
+#include "i18n/language_tag.hpp"
 #include "text/language.hpp"
 #include "GUI/theme_mode.hpp"
 #include "GFX/subpixel_orientation.hpp"

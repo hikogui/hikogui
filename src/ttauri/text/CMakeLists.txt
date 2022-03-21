@@ -41,8 +41,8 @@ target_sources(ttauri PRIVATE
     ttauri_icon.hpp
 )
 
-if(TT_BUILD_TESTS)
-    target_sources(ttauri_tests PRIVATE
-        language_tag_tests.cpp
-    )
-endif()
+#if(TT_BUILD_TESTS)
+#    target_sources(ttauri_tests PRIVATE
+#    )
+#endif()
+#

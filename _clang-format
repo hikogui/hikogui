@@ -1,4 +1,5 @@
 AccessModifierOffset: -4
+AlignArrayOfStructures: None
 AlignAfterOpenBracket: AlwaysBreak
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
@@ -51,6 +52,7 @@ ContinuationIndentWidth: 4
 Cpp11BracedListStyle: true
 DeriveLineEnding: true
 DerivePointerAlignment: false
+ExperimentalAutoDetectBinPacking: false
 FixNamespaceComments: true
 IncludeBlocks: Preserve
 IndentCaseLabels: false
@@ -66,7 +68,10 @@ ObjCBlockIndentWidth: 4
 ObjCSpaceAfterProperty: true
 ObjCSpaceBeforeProtocolList: false
 PointerAlignment: Right
+#QualifierOrder: constexpr inline static type const volatile restrict
+ReferenceAlignment: Left
 ReflowComments: true
+#RequiresClausePosition: WithPreceding
 SortIncludes: false
 SortUsingDeclarations: false
 SpaceAfterCStyleCast: false

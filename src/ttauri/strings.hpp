@@ -92,6 +92,26 @@ namespace tt::inline v1 {
     return !is_alpha_num(c) && c != '_' && !is_white_space(c) && !is_quote(c) && !is_open_bracket(c) && !is_close_bracket(c);
 }
 
+[[nodiscard]] constexpr bool is_digit(std::string_view str) noexcept
+{
+    for (ttlet c: str) {
+        if (not is_digit(c)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+[[nodiscard]] constexpr bool is_alpha(std::string_view str) noexcept
+{
+    for (ttlet c : str) {
+        if (not is_alpha(c)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 [[nodiscard]] constexpr char to_lower(char c) noexcept
 {
     return (c >= 'A' and c <= 'Z') ? (c - 'A') + 'a' : c;

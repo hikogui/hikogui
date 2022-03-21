@@ -6,7 +6,7 @@
 
 #include "../cast.hpp"
 #include "../utils.hpp"
-#include "language_tag.hpp"
+#include "../i18n/language_tag.hpp"
 #include <string>
 #include <vector>
 #include <functional>
@@ -74,7 +74,7 @@ public:
         for (ttlet &tag : tags) {
             ttlet short_tag = tag.short_tag();
 
-            if (prev_short_tag && short_tag != prev_short_tag) {
+            if (prev_short_tag and short_tag != prev_short_tag) {
                 if (std::find(r.cbegin(), r.cend(), prev_short_tag) == r.cend()) {
                     r.push_back(prev_short_tag);
                 }
@@ -123,7 +123,7 @@ struct std::formatter<std::vector<tt::language *>, CharT> : std::formatter<std::
             if (not r.empty()) {
                 r += ", ";
             }
-            r += to_string(language->tag);
+            r += language->tag.to_string();
         }
         return std::formatter<std::string_view, CharT>::format(r, fc);
     }

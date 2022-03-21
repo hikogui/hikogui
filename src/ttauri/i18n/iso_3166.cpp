@@ -1,9 +1,23 @@
+// Copyright Take Vos 2022.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+
+#include "iso_3166.hpp"
+#include "../cast.hpp"
+#include "../fixed_string.hpp"
+#include "../exception.hpp"
+#include "../charconv.hpp"
+#include <array>
+
+namespace tt::inline v1 {
 
 struct iso_3166_info {
-
-
+    fixed_string<2> code2;
+    fixed_string<3> code3;
+    uint16_t number;
 };
 
+// clang-format off
 constexpr auto iso_3166_infos = std::array{
 #ifndef __INTELLISENSE__
     iso_3166_info{"AF", "AFG", 4},
@@ -257,44 +271,46 @@ constexpr auto iso_3166_infos = std::array{
 #endif
     iso_3166_info{"ZM", "ZMB", 894}};
 
+// clang-format on
+
 constexpr auto iso_3166_code2_by_number_init() noexcept
 {
-    auto r = std::array<fixed_string<2>,1000>{};
+    auto r = std::array<fixed_string<2>, 1000>{};
     for (auto i = 0_uz; i != r.size(); ++i) {
         r[i] = "ZZ";
     }
 
-    for (ttlet &info: iso_3166_infos) {
-        r[info->number] = info.code2;
+    for (ttlet& info : iso_3166_infos) {
+        r[info.number] = info.code2;
     }
     return r;
 }
 
 constexpr auto iso_3166_code3_by_number_init() noexcept
 {
-    auto r = std::array<fixed_string<3>,1000>{};
+    auto r = std::array<fixed_string<3>, 1000>{};
     for (auto i = 0_uz; i != r.size(); ++i) {
         r[i] = "ZZZ";
     }
 
-    for (ttlet &info: iso_3166_infos) {
-        r[info->number] = info.code3;
+    for (ttlet& info : iso_3166_infos) {
+        r[info.number] = info.code3;
     }
     return r;
 }
 
 constexpr auto iso_3166_number_by_code2_init() noexcept
 {
-    constexpr auto size = std::tupple_size_v<decltype(iso_3166_infos)>;
-    using type = std::pair<fixed_string<2>,uint16_t>;
+    constexpr auto size = std::tuple_size_v<decltype(iso_3166_infos)>;
+    using type = std::pair<fixed_string<2>, uint16_t>;
 
-    auto r = std::array<type,size>{};
+    auto r = std::array<type, size>{};
     for (auto i = 0_uz; i != iso_3166_infos.size(); ++i) {
-        ttlet &info = iso_3166_infos[i];
+        ttlet& info = iso_3166_infos[i];
         r[i] = {info.code2, info.number};
     }
 
-    std::sort(r.begin(), r.end(),[](ttlet &a, ttlet &b) {
+    std::sort(r.begin(), r.end(), [](ttlet& a, ttlet& b) {
         return a.first < b.first;
     });
     return r;
@@ -302,16 +318,16 @@ constexpr auto iso_3166_number_by_code2_init() noexcept
 
 constexpr auto iso_3166_number_by_code3_init() noexcept
 {
-    constexpr auto size = std::tupple_size_v<decltype(iso_3166_infos)>;
-    using type = std::pair<fixed_string<2>,uint16_t>;
+    constexpr auto size = std::tuple_size_v<decltype(iso_3166_infos)>;
+    using type = std::pair<fixed_string<3>, uint16_t>;
 
-    auto r = std::array<type,size>{};
+    auto r = std::array<type, size>{};
     for (auto i = 0_uz; i != iso_3166_infos.size(); ++i) {
-        ttlet &info = iso_3166_infos[i];
+        ttlet& info = iso_3166_infos[i];
         r[i] = {info.code3, info.number};
     }
 
-    std::sort(r.begin(), r.end(),[](ttlet &a, ttlet &b) {
+    std::sort(r.begin(), r.end(), [](ttlet& a, ttlet& b) {
         return a.first < b.first;
     });
     return r;
@@ -322,6 +338,57 @@ constexpr auto iso_3166_code3_by_number = iso_3166_code3_by_number_init();
 constexpr auto iso_3166_number_by_code2 = iso_3166_number_by_code2_init();
 constexpr auto iso_3166_number_by_code3 = iso_3166_number_by_code3_init();
 
+iso_3166::iso_3166(std::string_view str)
+{
+    if (is_digit(str)) {
+        _v = from_string<uint16_t>(str);
+        tt_parse_check(_v < 1000, "ISO-3166 number must be between 000 and 999, got '{}'", _v);
 
+    } else if (str.size() == 2) {
+        ttlet it = std::lower_bound(
+            iso_3166_number_by_code2.begin(),
+            iso_3166_number_by_code2.end(),
+            fixed_string<2>{str},
+            [](ttlet& item, ttlet& value) {
+                return item.first < value;
+            });
 
+        tt_parse_check(
+            it != iso_3166_number_by_code2.end() and it->first == str,
+            "Could not find ISO-3166 2 letter language code '{}'",
+            str);
 
+        _v = it->second;
+
+    } else if (str.size() == 3) {
+        ttlet it = std::lower_bound(
+            iso_3166_number_by_code3.begin(),
+            iso_3166_number_by_code3.end(),
+            fixed_string<3>{str},
+            [](ttlet& item, ttlet& value) {
+                return item.first < value;
+            });
+
+        tt_parse_check(
+            it != iso_3166_number_by_code3.end() and it->first == str, "Could not find ISO-3166 3 letter language code '{}'", str);
+
+        _v = it->second;
+
+    } else {
+        throw parse_error(std::format("Could not parse ISO-3166 code '{}'", str));
+    }
+}
+
+[[nodiscard]] std::string_view iso_3166::code2() const noexcept
+{
+    tt_axiom(_v < 1000);
+    return iso_3166_code2_by_number[_v];
+}
+
+[[nodiscard]] std::string_view iso_3166::code3() const noexcept
+{
+    tt_axiom(_v < 1000);
+    return iso_3166_code3_by_number[_v];
+}
+
+} // namespace tt::inline v1

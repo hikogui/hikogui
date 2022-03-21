@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include <cctype>
 #include "../assert.hpp"
 #include "../strings.hpp"
 #include "../assert.hpp"
+#include <cctype>
 
 namespace tt::inline v1 {
 
@@ -20,10 +20,10 @@ namespace tt::inline v1 {
  */
 class iso_639 {
 public:
-    constexpr iso_639(iso_639 const &) noexcept = default;
-    constexpr iso_639(iso_639 &&) noexcept = default;
-    constexpr iso_639 &operator=(iso_639 const &) noexcept = default;
-    constexpr iso_639 &operator=(iso_639 &&) noexcept = default;
+    constexpr iso_639(iso_639 const&) noexcept = default;
+    constexpr iso_639(iso_639&&) noexcept = default;
+    constexpr iso_639& operator=(iso_639 const&) noexcept = default;
+    constexpr iso_639& operator=(iso_639&&) noexcept = default;
 
     constexpr iso_639() noexcept : _v(0) {}
 
@@ -64,7 +64,14 @@ public:
         return not empty();
     }
 
-    constexpr explicit operator std::string() const noexcept
+    [[nodiscard]] size_t hash() const noexcept
+    {
+        return std::hash<uint16_t>{}(_v);
+    }
+
+    /** Get the 2 or 3 letter ISO-639 code.
+     */
+    [[nodiscard]] std::string code() const noexcept
     {
         auto r = std::string{};
         if (size() >= 2) {
@@ -77,10 +84,10 @@ public:
         return r;
     }
 
-    [[nodiscard]] constexpr friend bool operator==(iso_639 const &lhs, iso_639 const &rhs) noexcept = default;
+    [[nodiscard]] constexpr friend bool operator==(iso_639 const& lhs, iso_639 const& rhs) noexcept = default;
 
     template<std::size_t I>
-    constexpr friend iso_639 &set(iso_639 &rhs, char c)
+    constexpr friend iso_639& set(iso_639& rhs, char c)
     {
         tt_parse_check(
             (c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or (c >= '1' and c <= '5'),
@@ -102,7 +109,7 @@ public:
     }
 
     template<std::size_t I>
-    [[nodiscard]] constexpr friend char get(iso_639 const &rhs) noexcept
+    [[nodiscard]] constexpr friend char get(iso_639 const& rhs) noexcept
     {
         constexpr auto shift = I * 5;
         auto x = (rhs._v >> shift) & 0x1f;
@@ -114,10 +121,6 @@ public:
             return '1' + static_cast<char>(x - 27);
         }
     }
-
-    /** Get the default script if this language.
-     */
-    [[nodiscard]] iso_15924 default_script() const noexcept;
 
 private:
     /**
@@ -133,3 +136,11 @@ private:
 };
 
 } // namespace tt::inline v1
+
+template<>
+struct std::hash<tt::iso_639> {
+    [[nodiscard]] size_t operator()(tt::iso_639 const& rhs) const noexcept
+    {
+        return rhs.hash();
+    }
+};

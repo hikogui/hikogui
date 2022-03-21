@@ -1,104 +1,90 @@
-// Copyright Take Vos 2021-2022.
+// Copyright Take Vos 2022.
 // Distributed under the Boost Software License, Version 1.0.
-// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+// (See accompanying file LICENSE_1_0.txt or copy at
+// https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
-#include "iso639.hpp"
-#include "iso15924.hpp"
-#include "iso3166.hpp"
-#include "../check.hpp"
-#include "../strings.hpp"
+#include "iso_15924.hpp"
+#include "iso_3166.hpp"
+#include "iso_639.hpp"
+#include "../hash.hpp"
 
 namespace tt::inline v1 {
 
 class language_tag {
 public:
+    iso_639 language;
+    iso_15924 script;
+    iso_3166 region;
+
     constexpr language_tag() noexcept {}
-    constexpr language_tag(language_tag const &) noexcept = default;
-    constexpr language_tag(language_tag &&) noexcept = default;
-    constexpr language_tag &operator=(language_tag const &) noexcept = default;
-    constexpr language_tag &operator=(language_tag &&) noexcept = default;
+    constexpr language_tag(language_tag const&) noexcept = default;
+    constexpr language_tag(language_tag&&) noexcept = default;
+    constexpr language_tag& operator=(language_tag const&) noexcept = default;
+    constexpr language_tag& operator=(language_tag&&) noexcept = default;
 
-    constexpr language_tag(iso639 const &language, iso15924 const &script = {}, iso3166 const &region = {}) noexcept :
-        _language(language), _script(script), _region(region)
+    constexpr language_tag(iso_639 const& language, iso_15924 const& script = {}, iso_3166 const& region = {}) noexcept :
+        language(language), script(script), region(region)
     {
     }
 
-    constexpr language_tag(iso639 const &language, iso3166 const &region) noexcept : language_tag(language, {}, region) {}
+    constexpr language_tag(iso_639 const& language, iso_3166 const& region) noexcept : language_tag(language, {}, region) {}
 
-    language_tag(std::string_view str) : _language(), _script(), _region()
+    language_tag(std::string_view str);
+
+    [[nodiscard]] bool empty() const noexcept
     {
-        for (ttlet element : std::views::split(str, std::string_view{"-"})) {
-            if (not _language) {
-                // 2 or 3 letter language code.
-                _language = iso639{element};
-
-            } else if (element.size() == 4 and not _script and not _region) {
-                // 4 letter script code.
-                _script = iso15924{element};
-
-            } else if (element.size() == 3 and not _region) {
-                // 3 digit region code.
-                tt_not_implemented();
-
-            } else if (element.size() == 2 and not _region) {
-                // 2 letter region code.
-                _region = iso3166{element};
-
-            } else {
-                // Ignore stuff on the end.
-                ;
-            }
-        }
+        return language.empty() and script.empty() and region.empty();
     }
 
-    [[nodiscard]] constexpr static language_tag language_only(language_tag const &other) const noexcept
+    explicit operator bool() const noexcept
     {
-        return language_tag{other._language};
+        return not empty();
     }
 
-    [[nodiscard]] constexpr iso639 language() const noexcept
+    /** Get a tag with only the language.
+     */
+    [[nodiscard]] language_tag short_tag() const noexcept
     {
-        return _language;
-    }
-
-    [[nodiscard]] iso15924 script() const noexcept
-    {
-        if (_script) {
-            return _script;
-        } else {
-            return _language.default_script();
-        }
+        return language_tag{language};
     }
 
     [[nodiscard]] std::string to_string() const noexcept
     {
         auto r = std::string{};
-        r += static_cast<std::string>(_language);
-        if (_script) {
+        r += language.code();
+        if (script) {
             r += '-';
-            r += static_cast<std::string>(_script);
+            r += script.code4();
         }
-        if (_region) {
+        if (region) {
             r += "-";
-            r += static_cast<std::string>(_region);
+            r += region.code2();
         }
         return r;
     }
 
-private:
-    iso639 _language;
-    iso15924 _script;
-    iso3166 _region;
+    [[nodiscard]] constexpr friend bool operator==(language_tag const&, language_tag const&) noexcept = default;
 };
 
 } // namespace tt::inline v1
 
+template<>
+struct std::hash<tt::language_tag> {
+    [[nodiscard]] size_t operator()(tt::language_tag const& rhs) const noexcept
+    {
+        return tt::hash_mix(
+            std::hash<tt::iso_639>{}(rhs.language),
+            std::hash<tt::iso_15924>{}(rhs.script),
+            std::hash<tt::iso_3166>{}(rhs.region));
+    }
+};
+
 template<typename CharT>
 struct std::formatter<tt::language_tag, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(tt::language_tag const &t, auto &fc)
+    auto format(tt::language_tag const& t, auto& fc)
     {
-        return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
+        return std::formatter<std::string_view, CharT>::format(t.to_string(), fc);
     }
 };
