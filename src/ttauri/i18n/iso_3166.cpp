@@ -7,6 +7,7 @@
 #include "../fixed_string.hpp"
 #include "../exception.hpp"
 #include "../charconv.hpp"
+#include "../check.hpp"
 #include <array>
 
 namespace tt::inline v1 {

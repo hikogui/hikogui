@@ -7,6 +7,7 @@
 #include "expand_language_tag.hpp"
 #include "../check.hpp"
 #include <algorithm>
+#include <numeric>
 
 namespace tt::inline v1 {
 

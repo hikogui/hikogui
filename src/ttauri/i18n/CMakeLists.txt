@@ -7,8 +7,14 @@ target_sources(ttauri PRIVATE
     iso_639.hpp
 	iso_3166.cpp
     iso_3166.hpp
+    language.cpp
+    language.hpp
 	language_tag.cpp
 	language_tag.hpp
+    po_parser.cpp
+    po_parser.hpp
+    translation.cpp
+    translation.hpp
 )
 
 if(TT_BUILD_TESTS)

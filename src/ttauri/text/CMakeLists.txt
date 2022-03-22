@@ -18,10 +18,6 @@ target_sources(ttauri PRIVATE
     glyph_ids.cpp
     glyph_ids.hpp
     glyph_metrics.hpp
-    language.cpp
-    language.hpp
-    po_parser.cpp
-    po_parser.hpp
     text_cursor.hpp
     text_decoration.hpp
     text_selection.hpp
@@ -33,8 +29,6 @@ target_sources(ttauri PRIVATE
     text_shaper_line.hpp
     text_style.cpp
     text_style.hpp
-    translation.cpp
-    translation.hpp
     true_type_font_coverage.cpp
     true_type_font.cpp
     true_type_font.hpp

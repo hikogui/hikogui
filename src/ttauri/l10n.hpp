@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "text/language.hpp"
-#include "text/translation.hpp"
+#include "i18n/language.hpp"
+#include "i18n/translation.hpp"
 #include "forward_value.hpp"
 #include "cast.hpp"
 #include "os_settings.hpp"

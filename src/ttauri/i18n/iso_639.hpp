@@ -6,7 +6,7 @@
 
 #include "../assert.hpp"
 #include "../strings.hpp"
-#include "../assert.hpp"
+#include "../check.hpp"
 #include <cctype>
 
 namespace tt::inline v1 {
