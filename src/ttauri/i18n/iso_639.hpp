@@ -12,11 +12,15 @@
 namespace tt::inline v1 {
 
 /** ISO-639 language code.
- * A 2 or 3 lower case language code selected from the following iso standards in this order:
+ *
+ * A 2 or 3 lower case language code selected from the following iso standards:
  *  1. ISO 639-1 (2002)
  *  2. ISO 639-2 (1998)
  *  3. ISO 639-3 (2007)
- *  4. ISO 639-5 (2008),
+ *  4. ISO 639-5 (2008)
+ *
+ * This class compresses this 2 or 3 character language code inside 16 bits,
+ * so that together with the script only 32 bits are needed per attributed character.
  */
 class iso_639 {
 public:
@@ -25,8 +29,12 @@ public:
     constexpr iso_639& operator=(iso_639 const&) noexcept = default;
     constexpr iso_639& operator=(iso_639&&) noexcept = default;
 
+    /** Construct empty language.
+     */
     constexpr iso_639() noexcept : _v(0) {}
 
+    /** Construct a language from the 2 or 3 letter code.
+     */
     constexpr iso_639(std::string_view str) : _v(0)
     {
         try {
@@ -42,6 +50,10 @@ public:
         }
     }
 
+    /** Get the number of character.
+     *
+     * @return 2 or 3 for a code, or 0 if empty.
+     */
     [[nodiscard]] constexpr std::size_t size() const noexcept
     {
         auto tmp = _v & 0x7fff;
@@ -54,16 +66,22 @@ public:
         // clang-format on
     }
 
+    /** Check if the language is empty.
+     */
     [[nodiscard]] constexpr bool empty() const noexcept
     {
-        return size() == 0;
+        return _v == 0;
     }
 
+    /** Check if the language is used.
+     */
     constexpr explicit operator bool() const noexcept
     {
         return not empty();
     }
 
+    /** Get the hash value for this language code.
+     */
     [[nodiscard]] size_t hash() const noexcept
     {
         return std::hash<uint16_t>{}(_v);
@@ -84,14 +102,26 @@ public:
         return r;
     }
 
+    /** Compare two language codes.
+     */
     [[nodiscard]] constexpr friend bool operator==(iso_639 const& lhs, iso_639 const& rhs) noexcept = default;
 
+    /** Compare two language codes.
+     */
+    [[nodiscard]] constexpr friend auto operator<=>(iso_639 const& lhs, iso_639 const& rhs) noexcept = default;
+
+    /** Set the letter at a specific position.
+     *
+     * @tparam I index
+     * @param rhs The language code to change.
+     * @param c The character to set. a-z, A-Z, 0-5 or nul.
+     */
     template<std::size_t I>
     constexpr friend iso_639& set(iso_639& rhs, char c)
     {
         tt_parse_check(
-            (c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or (c >= '1' and c <= '5'),
-            "Must be letters or the digits between '1' and '5'");
+            c == 0 or (c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or (c >= '1' and c <= '5'),
+            "Must be letters or the digits between '1' and '5', or nul");
 
         // clang-format off
         uint16_t x =
@@ -108,6 +138,12 @@ public:
         return rhs;
     }
 
+    /** Get the letter at a specific position.
+     *
+     * @tparam I index
+     * @param rhs The language code read from.
+     * @return The character at index, a-z, 0-5 or nul.
+     */
     template<std::size_t I>
     [[nodiscard]] constexpr friend char get(iso_639 const& rhs) noexcept
     {
