@@ -111,7 +111,7 @@ private:
 int tt_main(int argc, char *argv[])
 {
     auto gui = tt::gui_system::make_unique();
-    auto window = gui->make_window(tt::l10n("Widget with child"));
-    window->content().make_widget<widget_with_child>("A1", tt::l10n("Widget with child"));
+    auto window = gui->make_window(tt::tr("Widget with child"));
+    window->content().make_widget<widget_with_child>("A1", tt::tr("Widget with child"));
     return gui->loop();
 }

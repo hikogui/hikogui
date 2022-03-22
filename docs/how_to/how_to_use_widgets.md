@@ -10,7 +10,7 @@ translatable text and an icon.
 
 ```cpp
 auto gui = tt::gui_system::make_unique();
-auto &window = gui->make_window(tt::l10n("l10n("The window title"));
+auto &window = gui->make_window(tt::tr("The window title"));
 ```
 
 The second optional argument to `make_window()` is a subclass of
@@ -35,8 +35,8 @@ the `main()` function.
 int tt_main(int argc, char *argv[])
 {
     auto gui = tt::gui_system::make_unique();
-    auto &window = gui->make_window(tt::l10n("The window title"));
-    window.content().make_widget<momentary_button_widget>("A1", l10n("Does nothing"));
+    auto &window = gui->make_window(tt::tr("The window title"));
+    window.content().make_widget<momentary_button_widget>("A1", tr("Does nothing"));
     return gui->loop();
 }
 ```
@@ -66,12 +66,12 @@ int tt_main(int argc, char *argv[])
     observable<int> value = 0;
 
     auto gui = tt::gui_system::make_unique();
-    auto &window = gui->make_window(tt::l10n("Radio button example"));
+    auto &window = gui->make_window(tt::tr("Radio button example"));
 
-    window.content().make_widget<label_widget>("A1", l10n("radio buttons:"));
-    window.content().make_widget<radio_button_widget>("B1", l10n("one"), value, 1);
-    window.content().make_widget<radio_button_widget>("B2", l10n("two"), value, 2);
-    window.content().make_widget<radio_button_widget>("B3", l10n("three"), value, 3);
+    window.content().make_widget<label_widget>("A1", tr("radio buttons:"));
+    window.content().make_widget<radio_button_widget>("B1", tr("one"), value, 1);
+    window.content().make_widget<radio_button_widget>("B2", tr("two"), value, 2);
+    window.content().make_widget<radio_button_widget>("B3", tr("three"), value, 3);
 
     return gui->loop();
 }

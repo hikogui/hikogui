@@ -13,6 +13,7 @@ target_sources(ttauri PRIVATE
 	language_tag.hpp
     po_parser.cpp
     po_parser.hpp
+	translate.hpp
     translation.cpp
     translation.hpp
 )

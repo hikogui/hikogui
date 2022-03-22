@@ -89,7 +89,6 @@ target_sources(ttauri PRIVATE
     int_overflow.hpp
     interval.hpp
     jsonpath.hpp
-    l10n.hpp
     label.hpp
     locked_memory_allocator.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/locked_memory_allocator_win32.cpp>

@@ -7,7 +7,7 @@
 #include "required.hpp"
 #include "strings.hpp"
 #include "icon.hpp"
-#include "l10n.hpp"
+#include "i18n/translate.hpp"
 #include <string>
 #include <type_traits>
 #include <memory>
@@ -33,18 +33,18 @@ public:
     /** Localizable text.
      * The text in this field is not yet translated nor formatted.
      */
-    l10n text;
+    tr text;
 
     /** Construct a new label from an icon and text.
      * @param icon The icon.
      * @param text The text.
      */
-    label(tt::icon icon, l10n text) noexcept : icon(std::move(icon)), text(std::move(text)) {}
+    label(tt::icon icon, tr text) noexcept : icon(std::move(icon)), text(std::move(text)) {}
 
     /** Construct a new label from text.
      * @param text The text.
      */
-    label(l10n text) noexcept : icon(), text(std::move(text)) {}
+    label(tr text) noexcept : icon(), text(std::move(text)) {}
 
     /** Construct a new label from an icon.
      * @param icon The icon.

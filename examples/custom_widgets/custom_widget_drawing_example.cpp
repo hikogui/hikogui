@@ -25,39 +25,39 @@ enum class drawing_type {
 };
 
 auto drawing_list = std::vector<std::pair<drawing_type, tt::label>>{
-    {drawing_type::box, tt::l10n("Box")},
-    {drawing_type::lines, tt::l10n("Lines")},
-    {drawing_type::circle, tt::l10n("Circle")},
-    {drawing_type::glyph, tt::l10n("Glyph")},
-    {drawing_type::image, tt::l10n("Image")},
+    {drawing_type::box, tt::tr("Box")},
+    {drawing_type::lines, tt::tr("Lines")},
+    {drawing_type::circle, tt::tr("Circle")},
+    {drawing_type::glyph, tt::tr("Glyph")},
+    {drawing_type::image, tt::tr("Image")},
 };
 
 enum class shape_type { square, rectangle, convex, concave, glyph_aspect_ratio, image_aspect_ratio };
 
 auto shape_list = std::vector<std::pair<shape_type, tt::label>>{
-    {shape_type::square, tt::l10n("Square")},
-    {shape_type::rectangle, tt::l10n("Rectangle")},
-    {shape_type::convex, tt::l10n("Convex")},
-    {shape_type::concave, tt::l10n("Concave")},
-    {shape_type::glyph_aspect_ratio, tt::l10n("Glyph Aspect Ratio")},
-    {shape_type::image_aspect_ratio, tt::l10n("Image Aspect Ratio")},
+    {shape_type::square, tt::tr("Square")},
+    {shape_type::rectangle, tt::tr("Rectangle")},
+    {shape_type::convex, tt::tr("Convex")},
+    {shape_type::concave, tt::tr("Concave")},
+    {shape_type::glyph_aspect_ratio, tt::tr("Glyph Aspect Ratio")},
+    {shape_type::image_aspect_ratio, tt::tr("Image Aspect Ratio")},
 };
 
 enum class gradient_type { solid, horizontal, vertical, corners };
 
 auto gradient_list = std::vector<std::pair<gradient_type, tt::label>>{
-    {gradient_type::solid, tt::l10n("Solid")},
-    {gradient_type::horizontal, tt::l10n("Horizontal")},
-    {gradient_type::vertical, tt::l10n("Vertical")},
-    {gradient_type::corners, tt::l10n("Corners")},
+    {gradient_type::solid, tt::tr("Solid")},
+    {gradient_type::horizontal, tt::tr("Horizontal")},
+    {gradient_type::vertical, tt::tr("Vertical")},
+    {gradient_type::corners, tt::tr("Corners")},
 };
 
 auto border_width_list = std::vector<std::pair<float, tt::label>>{
-    {0.0f, tt::l10n("no border")},
-    {1.0f, tt::l10n("1 px")},
-    {2.0f, tt::l10n("2 px")},
-    {4.0f, tt::l10n("4 px")},
-    {8.0f, tt::l10n("8 px")},
+    {0.0f, tt::tr("no border")},
+    {1.0f, tt::tr("1 px")},
+    {2.0f, tt::tr("2 px")},
+    {4.0f, tt::tr("4 px")},
+    {8.0f, tt::tr("8 px")},
 };
 
 // Every widget must inherit from tt::widget.
@@ -327,7 +327,7 @@ int tt_main(int argc, char *argv[])
     auto render_doc = tt::RenderDoc();
 
     auto gui = tt::gui_system::make_unique();
-    auto window = gui->make_window(tt::l10n("Drawing Custom Widget"));
+    auto window = gui->make_window(tt::tr("Drawing Custom Widget"));
 
     auto &custom_widget = window->content().make_widget<drawing_widget>("A1:D1");
     custom_widget.drawing = drawing;
@@ -339,30 +339,30 @@ int tt_main(int argc, char *argv[])
     custom_widget.border_width = border_width;
     custom_widget.rounded = rounded;
 
-    window->content().make_widget<tt::label_widget>("A2", tt::l10n("Drawing type:"));
+    window->content().make_widget<tt::label_widget>("A2", tt::tr("Drawing type:"));
     window->content().make_widget<tt::selection_widget>("B2:D2", drawing_list, drawing);
 
-    window->content().make_widget<tt::label_widget>("A3", tt::l10n("Shape:"));
+    window->content().make_widget<tt::label_widget>("A3", tt::tr("Shape:"));
     window->content().make_widget<tt::selection_widget>("B3:D3", shape_list, shape);
 
-    window->content().make_widget<tt::label_widget>("A4", tt::l10n("Gradient:"));
+    window->content().make_widget<tt::label_widget>("A4", tt::tr("Gradient:"));
     window->content().make_widget<tt::selection_widget>("B4:D4", gradient_list, gradient);
 
-    window->content().make_widget<tt::label_widget>("A5", tt::l10n("Border side:"));
-    window->content().make_widget<tt::radio_button_widget>("B5", tt::l10n("on"), border_side, tt::border_side::on);
-    window->content().make_widget<tt::radio_button_widget>("C5", tt::l10n("inside"), border_side, tt::border_side::inside);
-    window->content().make_widget<tt::radio_button_widget>("D5", tt::l10n("outside"), border_side, tt::border_side::outside);
+    window->content().make_widget<tt::label_widget>("A5", tt::tr("Border side:"));
+    window->content().make_widget<tt::radio_button_widget>("B5", tt::tr("on"), border_side, tt::border_side::on);
+    window->content().make_widget<tt::radio_button_widget>("C5", tt::tr("inside"), border_side, tt::border_side::inside);
+    window->content().make_widget<tt::radio_button_widget>("D5", tt::tr("outside"), border_side, tt::border_side::outside);
 
-    window->content().make_widget<tt::label_widget>("A6", tt::l10n("Border width:"));
+    window->content().make_widget<tt::label_widget>("A6", tt::tr("Border width:"));
     window->content().make_widget<tt::selection_widget>("B6:D6", border_width_list, border_width);
 
-    window->content().make_widget<tt::label_widget>("A7", tt::l10n("Rotate:"));
+    window->content().make_widget<tt::label_widget>("A7", tt::tr("Rotate:"));
     window->content().make_widget<tt::toggle_widget>("B7:D7", rotating);
 
-    window->content().make_widget<tt::label_widget>("A8", tt::l10n("Clip:"));
+    window->content().make_widget<tt::label_widget>("A8", tt::tr("Clip:"));
     window->content().make_widget<tt::toggle_widget>("B8:D8", clip);
 
-    window->content().make_widget<tt::label_widget>("A9", tt::l10n("Rounded:"));
+    window->content().make_widget<tt::label_widget>("A9", tt::tr("Rounded:"));
     window->content().make_widget<tt::toggle_widget>("B9:D9", rounded);
 
     return gui->loop();

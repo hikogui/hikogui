@@ -16,7 +16,7 @@ xgettext \
     --force-po \
     --output=data/ttauri_demo.pot \
     --language=C++ \
-    --keyword=l10n:1g \
+    --keyword=tr:1g \
     --keyword=l10p:1g,1g
 
 msginit --no-translator --input=data/ttauri_demo.pot --output-file=resources/locale/en.po

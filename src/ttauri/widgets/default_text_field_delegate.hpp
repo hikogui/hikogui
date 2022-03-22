@@ -37,7 +37,7 @@ public:
         try {
             [[maybe_unused]] auto dummy = from_string<value_type>(text, 10);
         } catch (parse_error const &) {
-            return {l10n{"Invalid integer"}};
+            return {tr{"Invalid integer"}};
         }
 
         return {};
@@ -79,7 +79,7 @@ public:
         try {
             [[maybe_unused]] auto dummy = from_string<value_type>(text);
         } catch (parse_error const &) {
-            return {elusive_icon::WarningSign, l10n{"Invalid floating point number"}};
+            return {elusive_icon::WarningSign, tr{"Invalid floating point number"}};
         }
 
         return {};

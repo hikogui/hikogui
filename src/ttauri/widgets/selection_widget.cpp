@@ -19,7 +19,7 @@ selection_widget::~selection_widget()
 selection_widget::selection_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
     super(window, parent), _delegate(std::move(delegate))
 {
-    _current_label_widget = std::make_unique<label_widget>(window, this, l10n("<current>"));
+    _current_label_widget = std::make_unique<label_widget>(window, this, tr("<current>"));
     _current_label_widget->visible = false;
     _current_label_widget->alignment = alignment::middle_left();
     _unknown_label_widget = std::make_unique<label_widget>(window, this, unknown_label);

@@ -11,19 +11,19 @@ using namespace tt;
 
 task<void> checkbox_example(gui_system &gui)
 {
-    auto window = gui.make_window(l10n("Checkbox example"));
+    auto window = gui.make_window(tr("Checkbox example"));
 
     /// [Create a label]
-    window->content().make_widget<label_widget>("A1", l10n("checkbox:"));
+    window->content().make_widget<label_widget>("A1", tr("checkbox:"));
     /// [Create a label]
 
     /// [Create a checkbox]
     observable<int> value = 0;
 
     auto &cb = window->content().make_widget<checkbox_widget>("B1", value, 1, 2);
-    cb.on_label = l10n("on");
-    cb.off_label = l10n("off");
-    cb.other_label = l10n("other");
+    cb.on_label = tr("on");
+    cb.off_label = tr("off");
+    cb.other_label = tr("other");
     /// [Create a checkbox]
 
     co_await window->closing;

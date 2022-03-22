@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "i18n/language.hpp"
-#include "i18n/translation.hpp"
-#include "forward_value.hpp"
-#include "cast.hpp"
-#include "os_settings.hpp"
+#include "language.hpp"
+#include "translation.hpp"
+#include "../forward_value.hpp"
+#include "../cast.hpp"
+#include "../os_settings.hpp"
 #include <memory>
 #include <string>
 #include <string_view>
@@ -16,9 +16,9 @@
 
 namespace tt::inline v1 {
 namespace detail {
-class l10n_args_base {
+class translate_args_base {
 public:
-    virtual ~l10n_args_base() {}
+    virtual ~translate_args_base() {}
 
     /** Format text from the arguments and the given format string.
      * @param fmt The format string.
@@ -38,11 +38,11 @@ public:
 
     /** Make a unique copy of the arguments.
      */
-    [[nodiscard]] virtual std::unique_ptr<l10n_args_base> unique_copy() const noexcept = 0;
+    [[nodiscard]] virtual std::unique_ptr<translate_args_base> unique_copy() const noexcept = 0;
 
-    [[nodiscard]] virtual bool equal_to(l10n_args_base const &rhs) const noexcept = 0;
+    [[nodiscard]] virtual bool equal_to(translate_args_base const &rhs) const noexcept = 0;
 
-    [[nodiscard]] bool friend operator==(l10n_args_base const &lhs, l10n_args_base const &rhs) noexcept
+    [[nodiscard]] bool friend operator==(translate_args_base const &lhs, translate_args_base const &rhs) noexcept
     {
         return lhs.equal_to(rhs);
     }
@@ -53,17 +53,17 @@ public:
  * to another thread. Then call the function operator to do the actual formatting.
  */
 template<typename... Values>
-class l10n_args : public l10n_args_base {
+class translate_args : public translate_args_base {
 public:
-    l10n_args(l10n_args &&) noexcept = default;
-    l10n_args(l10n_args const &) noexcept = default;
-    l10n_args &operator=(l10n_args &&) noexcept = default;
-    l10n_args &operator=(l10n_args const &) noexcept = default;
+    translate_args(translate_args &&) noexcept = default;
+    translate_args(translate_args const &) noexcept = default;
+    translate_args &operator=(translate_args &&) noexcept = default;
+    translate_args &operator=(translate_args const &) noexcept = default;
 
-    /** Construct a l10n arguments.
+    /** Construct a translate arguments.
      *
      * All arguments are passed by forwarding-references so that values can be
-     * moved into the storage of the l10n object.
+     * moved into the storage of the translate object.
      *
      * Arguments passed by reference will be copied. Arguments passed by std::string_view
      * or std::span will be copied into a std::string or std::vector.
@@ -73,18 +73,18 @@ public:
      * @param args The parameters to std::format excluding format string and locale.
      */
     template<typename... Args>
-    l10n_args(Args const &...args) noexcept : _values(args...)
+    translate_args(Args const &...args) noexcept : _values(args...)
     {
     }
 
-    [[nodiscard]] std::unique_ptr<l10n_args_base> unique_copy() const noexcept
+    [[nodiscard]] std::unique_ptr<translate_args_base> unique_copy() const noexcept
     {
-        return std::make_unique<l10n_args>(*this);
+        return std::make_unique<translate_args>(*this);
     }
 
-    [[nodiscard]] virtual bool equal_to(l10n_args_base const &rhs) const noexcept
+    [[nodiscard]] virtual bool equal_to(translate_args_base const &rhs) const noexcept
     {
-        if (auto *rhs_ = dynamic_cast<l10n_args const *>(&rhs)) {
+        if (auto *rhs_ = dynamic_cast<translate_args const *>(&rhs)) {
             return _values == rhs_->_values;
         } else {
             return false;
@@ -137,7 +137,7 @@ private:
 };
 
 template<typename... Args>
-l10n_args(Args &&...) -> l10n_args<forward_value_t<Args>...>;
+translate_args(Args &&...) -> translate_args<forward_value_t<Args>...>;
 
 } // namespace detail
 
@@ -147,18 +147,18 @@ l10n_args(Args &&...) -> l10n_args<forward_value_t<Args>...>;
  * it to the user. This allows the user to change the language while the
  * application is running.
  */
-class l10n {
+class translate {
 public:
     /** Construct an empty message.
      */
-    constexpr l10n() noexcept : _msg_id(), _args(nullptr) {}
+    constexpr translate() noexcept : _msg_id(), _args(nullptr) {}
 
-    l10n(l10n &&) noexcept = default;
-    l10n &operator=(l10n &&) noexcept = default;
+    translate(translate &&) noexcept = default;
+    translate &operator=(translate &&) noexcept = default;
 
-    l10n(l10n const &other) noexcept : _msg_id(other._msg_id), _args(other._args ? other._args->unique_copy() : nullptr) {}
+    translate(translate const &other) noexcept : _msg_id(other._msg_id), _args(other._args ? other._args->unique_copy() : nullptr) {}
 
-    l10n &operator=(l10n const &other) noexcept
+    translate &operator=(translate const &other) noexcept
     {
         _msg_id = other._msg_id;
         _args = other._args ? other._args->unique_copy() : nullptr;
@@ -187,12 +187,12 @@ public:
      *               placeholders using the `std::format` format. Plurality is
      *               based on the first `std::integral` arguments.
      * @param args Arguments passed to `std::format`. The arguments are copied
-     *             into the `l10n` object and used when formatting the
+     *             into the `translate` object and used when formatting the
      *             translated string.
      */
     template<typename... Args>
-    l10n(std::string_view msg_id, Args const &...args) noexcept :
-        _msg_id(msg_id), _args(sizeof...(Args) ? std::make_unique<detail::l10n_args<forward_value_t<Args>...>>(args...) : nullptr)
+    translate(std::string_view msg_id, Args const &...args) noexcept :
+        _msg_id(msg_id), _args(sizeof...(Args) ? std::make_unique<detail::translate_args<forward_value_t<Args>...>>(args...) : nullptr)
     {
     }
 
@@ -236,7 +236,7 @@ public:
      * @param rhs A localizable message.
      * @return True if both messages are equal.
      */
-    [[nodiscard]] friend bool operator==(l10n const &lhs, l10n const &rhs) noexcept
+    [[nodiscard]] friend bool operator==(translate const &lhs, translate const &rhs) noexcept
     {
         if (lhs._args == rhs._args) {
             return lhs._msg_id == rhs._msg_id;
@@ -249,7 +249,9 @@ public:
 
 private:
     std::string _msg_id;
-    std::unique_ptr<detail::l10n_args_base> _args;
+    std::unique_ptr<detail::translate_args_base> _args;
 };
+
+using tr = translate;
 
 } // namespace tt::inline v1

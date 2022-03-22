@@ -14,7 +14,7 @@ using namespace tt;
 int tt_main(int argc, char *argv[])
 {
     auto gui = gui_system::make_unique();
-    auto window = gui->make_window(l10n("Label example"));
+    auto window = gui->make_window(tr("Label example"));
 
     // Start the logger system, so logging is done asynchronously.
     tt::log::start_subsystem(tt::global_state_type::log_level_info);

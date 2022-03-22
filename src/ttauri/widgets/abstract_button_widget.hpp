@@ -9,7 +9,7 @@
 #include "label_widget.hpp"
 #include "button_type.hpp"
 #include "../animator.hpp"
-#include "../l10n.hpp"
+#include "../i18n/translate.hpp"
 #include "../notifier.hpp"
 #include "../weak_or_unique_ptr.hpp"
 #include <memory>
@@ -27,15 +27,15 @@ public:
 
     /** The label to show when the button is in the 'on' state.
      */
-    observable<label> on_label = l10n("on");
+    observable<label> on_label = tr("on");
 
     /** The label to show when the button is in the 'off' state.
      */
-    observable<label> off_label = l10n("off");
+    observable<label> off_label = tr("off");
 
     /** The label to show when the button is in the 'other' state.
      */
-    observable<label> other_label = l10n("other");
+    observable<label> other_label = tr("other");
 
     /** The alignment of the on/off/other label.
      */

@@ -54,10 +54,10 @@ tt::scoped_task<> init_audio_tab(tt::grid_widget &grid, my_preferences &preferen
 {
     using namespace tt;
 
-    // grid.make_widget<label_widget>("A1", l10n("Audio device:"));
+    // grid.make_widget<label_widget>("A1", tr("Audio device:"));
     // grid.make_widget<selection_widget>("B1", _audio_device_list, audio_output_device_id);
 
-    grid.make_widget<label_widget>("A2", l10n("Sample Rate:"));
+    grid.make_widget<label_widget>("A2", tr("Sample Rate:"));
     grid.make_widget<text_field_widget>("B2", preferences.audio_output_sample_rate);
 
     co_await std::suspend_always{};
@@ -73,11 +73,11 @@ tt::scoped_task<> init_theme_tab(tt::grid_widget &grid, my_preferences &preferen
         auto &theme_book = *grid.window.gui.theme_book;
         auto proxy = theme_list.get();
         for (ttlet &name : theme_book.theme_names()) {
-            proxy->emplace_back(name, l10n{name});
+            proxy->emplace_back(name, tr{name});
         }
     }
 
-    grid.make_widget<label_widget>("A1", l10n("Theme:"));
+    grid.make_widget<label_widget>("A1", tr("Theme:"));
     grid.make_widget<selection_widget>("B1", theme_list, preferences.selected_theme);
 
     co_await std::suspend_always{};
@@ -88,31 +88,31 @@ tt::scoped_task<> init_license_tab(tt::grid_widget &grid, my_preferences &prefer
     using namespace tt;
 
     grid.make_widget<label_widget>(
-        "A1", l10n("This is a \xd7\x9c\xd6\xb0\xd7\x9e\xd6\xb7\xd7\xaa\xd6\xb5\xd7\x92.\nAnd another sentence. One more:"));
+        "A1", tr("This is a \xd7\x9c\xd6\xb0\xd7\x9e\xd6\xb7\xd7\xaa\xd6\xb5\xd7\x92.\nAnd another sentence. One more:"));
     auto &checkbox1 = grid.make_widget<toggle_widget>("B1", preferences.toggle_value);
-    checkbox1.on_label = l10n("true");
-    checkbox1.off_label = l10n("false");
-    checkbox1.other_label = l10n("other");
+    checkbox1.on_label = tr("true");
+    checkbox1.off_label = tr("false");
+    checkbox1.other_label = tr("other");
 
-    grid.make_widget<label_widget>("A2", l10n("These is a disabled checkbox:"));
+    grid.make_widget<label_widget>("A2", tr("These is a disabled checkbox:"));
     auto &checkbox2 = grid.make_widget<checkbox_widget>("B2", preferences.radio_value, 2, 0);
-    checkbox2.on_label = l10n("Checkbox, with a pretty large label.");
+    checkbox2.on_label = tr("Checkbox, with a pretty large label.");
     checkbox2.enabled = preferences.toggle_value;
 
-    grid.make_widget<label_widget>("A3", l10n("These are radio buttons:"));
-    grid.make_widget<radio_button_widget>("B3", l10n("Radio 1"), preferences.radio_value, 0);
-    grid.make_widget<radio_button_widget>("B4", l10n("Radio 2"), preferences.radio_value, 1);
-    grid.make_widget<radio_button_widget>("B5", l10n("Radio 3"), preferences.radio_value, 2);
+    grid.make_widget<label_widget>("A3", tr("These are radio buttons:"));
+    grid.make_widget<radio_button_widget>("B3", tr("Radio 1"), preferences.radio_value, 0);
+    grid.make_widget<radio_button_widget>("B4", tr("Radio 2"), preferences.radio_value, 1);
+    grid.make_widget<radio_button_widget>("B5", tr("Radio 3"), preferences.radio_value, 2);
 
     auto option_list = std::vector{
-        std::pair{0, label{l10n("first")}},
-        std::pair{1, label{l10n("second")}},
-        std::pair{2, label{l10n("third")}},
-        std::pair{3, label{l10n("four")}},
-        std::pair{4, label{l10n("five")}},
-        std::pair{5, label{l10n("six")}},
-        std::pair{6, label{l10n("seven")}}};
-    grid.make_widget<label_widget>("A6", l10n("This is a selection box at the bottom:"));
+        std::pair{0, label{tr("first")}},
+        std::pair{1, label{tr("second")}},
+        std::pair{2, label{tr("third")}},
+        std::pair{3, label{tr("four")}},
+        std::pair{4, label{tr("five")}},
+        std::pair{5, label{tr("six")}},
+        std::pair{6, label{tr("seven")}}};
+    grid.make_widget<label_widget>("A6", tr("This is a selection box at the bottom:"));
     auto &selection3 = grid.make_widget<selection_widget>("B6", option_list, preferences.radio_value);
     selection3.enabled = preferences.toggle_value;
 
@@ -123,13 +123,13 @@ tt::task<> preferences_window(tt::gui_system &gui, my_preferences &preferences)
 {
     using namespace tt;
 
-    auto window_label = label{URL{"resource:ttauri_demo.png"}, l10n("Preferences")};
+    auto window_label = label{URL{"resource:ttauri_demo.png"}, tr("Preferences")};
     auto window = gui.make_window(window_label);
 
     window->toolbar().make_widget<toolbar_tab_button_widget>(
-        label{elusive_icon::Speaker, l10n("Audio")}, preferences.tab_index, 0);
-    window->toolbar().make_widget<toolbar_tab_button_widget>(label{elusive_icon::Key, l10n("License")}, preferences.tab_index, 1);
-    window->toolbar().make_widget<toolbar_tab_button_widget>(label{elusive_icon::Brush, l10n("Theme")}, preferences.tab_index, 2);
+        label{elusive_icon::Speaker, tr("Audio")}, preferences.tab_index, 0);
+    window->toolbar().make_widget<toolbar_tab_button_widget>(label{elusive_icon::Key, tr("License")}, preferences.tab_index, 1);
+    window->toolbar().make_widget<toolbar_tab_button_widget>(label{elusive_icon::Brush, tr("Theme")}, preferences.tab_index, 2);
 
     auto &tabs = window->content().make_widget<tab_widget>("A1", preferences.tab_index);
     auto &audio_tab_grid = tabs.make_widget<grid_widget>(0);
@@ -147,17 +147,17 @@ tt::task<> main_window(tt::gui_system &gui, my_preferences &preferences)
 {
     using namespace tt;
 
-    auto window_label = label{URL{"resource:ttauri_demo.png"}, l10n("TTauri demo")};
+    auto window_label = label{URL{"resource:ttauri_demo.png"}, tr("TTauri demo")};
     auto window = gui.make_window(window_label);
 
-    auto preferences_label = label{elusive_icon::Wrench, l10n("Preferences")};
+    auto preferences_label = label{elusive_icon::Wrench, tr("Preferences")};
     ttlet &preferences_button = window->toolbar().make_widget<tt::toolbar_button_widget>(preferences_label);
 
     auto &column = window->content().make_widget<column_widget>("A1");
-    column.make_widget<momentary_button_widget>(l10n("Hello \u4e16\u754c"));
-    ttlet &hello_world_button = column.make_widget<momentary_button_widget>(l10n("Hello world"));
+    column.make_widget<momentary_button_widget>(tr("Hello \u4e16\u754c"));
+    ttlet &hello_world_button = column.make_widget<momentary_button_widget>(tr("Hello world"));
 
-    ttlet &vma_dump_button = column.make_widget<momentary_button_widget>(l10n("vma\ncalculate stats"));
+    ttlet &vma_dump_button = column.make_widget<momentary_button_widget>(tr("vma\ncalculate stats"));
 
     while (true) {
         ttlet result =

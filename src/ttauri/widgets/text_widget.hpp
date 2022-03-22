@@ -11,7 +11,7 @@
 #include "../text/text_shaper.hpp"
 #include "../observable.hpp"
 #include "../alignment.hpp"
-#include "../l10n.hpp"
+#include "../i18n/translate.hpp"
 #include "../undo_stack.hpp"
 #include <memory>
 #include <string>
