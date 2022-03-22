@@ -1,7 +1,5 @@
 
 target_sources(ttauri PRIVATE
-	expand_language_tag.cpp
-	expand_language_tag.hpp
     iso_15924.cpp    
     iso_15924.hpp
     iso_639.hpp
