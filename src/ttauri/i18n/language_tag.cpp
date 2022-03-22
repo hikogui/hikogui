@@ -6,6 +6,7 @@
 #include "language_tag.hpp"
 #include "expand_language_tag.hpp"
 #include "../check.hpp"
+#include <algorithm>
 
 namespace tt::inline v1 {
 
@@ -22,6 +23,15 @@ namespace tt::inline v1 {
 
     char extension_first_char = 0;
 
+    // Replace underscores to dashes, since invalid language-tags do exist in the real world.
+    auto str_ = std::string{str};
+    for (auto& c : str_) {
+        if (c == '_') {
+            c = '-';
+        }
+    }
+    str = std::string_view{str_};
+
     for (ttlet element : std::views::split(str, std::string_view{"-"})) {
         if (extension_first_char) {
             // Once inside the extensions portion of a language tag you can no
@@ -31,7 +41,7 @@ namespace tt::inline v1 {
         } else if (not language) {
             tt_parse_check(
                 (element.size() == 2 or element.size() == 3) and is_alpha(element),
-                "First element of a language tag must be a ISO-639 2 or 3 letter language code");
+                "First element of a language tag must be a ISO-639 2 or 3 letter language code, got '{}'", str);
             // 2 or 3 letter non-optional ISO-639 language code.
             language = {element};
 
@@ -68,6 +78,40 @@ namespace tt::inline v1 {
     return language_tag{language, script, region};
 }
 
+[[nodiscard]] language_tag language_tag::expand() const noexcept
+{
+    auto r = *this;
+
+    if (script and region) {
+        return r;
+    }
+
+    if (auto from_language = expand_language_tag(r.language.code())) {
+        auto from_language_tag = parse_language_tag(*from_language);
+
+        if (not r.script and from_language_tag.script) {
+            r.script = from_language_tag.script;
+        }
+        if (not r.region and from_language_tag.region) {
+            r.region = from_language_tag.region;
+        }
+    }
+
+    if (script and region) {
+        return r;
+    }
+
+    if (auto from_region = expand_language_tag(std::string{"und-"} + std::string{r.region.code2()})) {
+        auto from_region_tag = parse_language_tag(*from_region);
+
+        if (not r.script and from_region_tag.script) {
+            r.script = from_region_tag.script;
+        }
+    }
+
+    return r;
+}
+
 language_tag::language_tag(std::string_view str) : language(), script(), region()
 {
     // First do an initial pass over the expansion table to convert likely languages.
@@ -76,30 +120,43 @@ language_tag::language_tag(std::string_view str) : language(), script(), region(
         str = *expanded_str;
     }
 
-    *this = parse_language_tag(str);
+    *this = parse_language_tag(str).expand();
+}
 
-    // It shouldn't really be possible for both script and region to be empty, as that would
-    // mean the original `str` would be just a language, and expand_language_tag() not returning
-    // an expanded version with either/both script and region set.
+[[nodiscard]] std::vector<language_tag> variants(std::vector<language_tag> languages)
+{
+    auto tmp = std::vector<std::vector<language_tag>>{};
 
-    if (auto from_language = expand_language_tag(language.code())) {
-        auto from_language_tag = parse_language_tag(*from_language);
-
-        if (not script and from_language_tag.script) {
-            script = from_language_tag.script;
-        }
-        if (not region and from_language_tag.region) {
-            region = from_language_tag.region;
+    for (ttlet& language : languages) {
+        auto& lang_tmp = tmp.emplace_back();
+        for (ttlet& variant : language.all_variants()) {
+            lang_tmp.push_back(variant);
         }
     }
 
-    if (auto from_region = expand_language_tag(std::string{"und-"} + std::string{region.code2()})) {
-        auto from_region_tag = parse_language_tag(*from_region);
-
-        if (not script and from_region_tag.script) {
-            script = from_region_tag.script;
+    for (auto it = tmp.rbegin(); it != tmp.rend(); ++it) {
+        // Remove duplicates in previous language-variant lists.
+        for (auto jt = it + 1; jt != tmp.rend(); ++jt) {
+            for (ttlet& tag : *it) {
+                std::erase(*jt, tag);
+            }
         }
     }
+
+    auto r = std::vector<language_tag>{};
+
+    ttlet count = std::accumulate(tmp.begin(), tmp.end(), 0_uz, [](ttlet& value, ttlet& item) {
+        return value + item.size();
+    });
+    r.reserve(count);
+
+    for (ttlet& variants : tmp) {
+        for (ttlet& tag : variants) {
+            r.push_back(tag);
+        }
+    }
+
+    return r;
 }
 
 } // namespace tt::inline v1

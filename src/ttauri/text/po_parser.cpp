@@ -152,7 +152,7 @@ static void parse_po_header(po_translations &r, std::string const &header)
         ttlet value = join(split_line, ":");
 
         if (name == "Language") {
-            r.language = language_tag{value};
+            r.language = language_tag{strip(value)};
         } else if (name == "Plural-Forms") {
             ttlet plural_split = split(value, ';');
         }

@@ -9,6 +9,10 @@
 #include "iso_3166.hpp"
 #include "iso_639.hpp"
 #include "../hash.hpp"
+#include "../generator.hpp"
+#include "../ranges.hpp"
+#include <vector>
+#include <string_view>
 
 namespace tt::inline v1 {
 
@@ -31,23 +35,103 @@ public:
 
     constexpr language_tag(iso_639 const& language, iso_3166 const& region) noexcept : language_tag(language, {}, region) {}
 
+    /** Parse a language tag.
+     *
+     * This will construct a language tag with the language, script and region set
+     * as complete as possible. It does this by expanding the language tags using
+     * default script, region and grandfathering tables.
+     *
+     * This function will ignore upper/lower case of the sub-tags, and allow for both
+     * underscores '_' and dashes '-' to separate the sub-tags.
+     *
+     * @param str The language tag to parse
+     * @throws parse_error
+     */
     language_tag(std::string_view str);
 
+    /** Check if the language tag is empty.
+     */
     [[nodiscard]] bool empty() const noexcept
     {
         return language.empty() and script.empty() and region.empty();
     }
 
+    /** Check if the language tag is used.
+     */
     explicit operator bool() const noexcept
     {
         return not empty();
     }
 
+    /** Get variants of the language_tag.
+     *
+     * This function will create language_tags that includes this tag
+     * and tags with strictly less information (no script, no region).
+     *
+     * @return A list of language-tags sorted: lang-script-region, lang-region, lang-script, lang
+     */
+    [[nodiscard]] generator<language_tag> variants() const noexcept
+    {
+        co_yield *this;
+        if (script and region) {
+            co_yield language_tag{language, region};
+            co_yield language_tag{language, script};
+        }
+        if (script or region) {
+            co_yield language_tag{language};
+        }
+    }
+
+    /** Get variants of the language_tag.
+     *
+     * This function will create language_tags that may include this tag
+     * and tags with strictly less information (no script, no region), which still
+     * canonically expands into this tag.
+     *
+     * @return A list of language-tags sorted: lang-script-region, lang-region, lang-script, lang
+     */
+    [[nodiscard]] generator<language_tag> canonical_variants() const noexcept
+    {
+        auto check = expand();
+        for (ttlet& tag : variants()) {
+            if (tag.expand() == check) {
+                co_yield tag;
+            }
+        }
+    }
+
+    /** Creates variants of a language tag, including those by expanding the normal variants.
+     */
+    [[nodiscard]] std::vector<language_tag> all_variants() const noexcept
+    {
+        auto r = make_vector(variants());
+
+        // And languages variants from expanded variants.
+        for (ttlet variant : variants()) {
+            for (ttlet expanded_variant : variant.expand().variants()) {
+                if (std::find(r.begin(), r.end(), expanded_variant) == r.end()) {
+                    r.push_back(expanded_variant);
+                }
+            }
+        }
+        return r;
+    }
+
+    /** Expand the language tag to include script and language.
+     *
+     * Expansion is done by querying default script, default language and grandfathering tables.
+     */
+    [[nodiscard]] language_tag expand() const noexcept;
+
     /** Get a tag with only the language.
      */
-    [[nodiscard]] language_tag short_tag() const noexcept
+    [[nodiscard]] language_tag shrink() const noexcept
     {
-        return language_tag{language};
+        auto last_variant = *this;
+        for (ttlet& variant : canonical_variants()) {
+            last_variant = variant;
+        }
+        return last_variant;
     }
 
     [[nodiscard]] std::string to_string() const noexcept
@@ -65,8 +149,34 @@ public:
         return r;
     }
 
+    /** Check if two language_tags match for their non-empty fields.
+     */
+    [[nodiscard]] constexpr friend bool match(language_tag const& lhs, language_tag const& rhs) noexcept
+    {
+        if (lhs.language != rhs.language) {
+            return false;
+        }
+        if (lhs.script and rhs.script and lhs.script != rhs.script) {
+            return false;
+        }
+        if (lhs.region and rhs.region and lhs.region != rhs.region) {
+            return false;
+        }
+        return true;
+    }
+
     [[nodiscard]] constexpr friend bool operator==(language_tag const&, language_tag const&) noexcept = default;
 };
+
+/** Add variants to the list of languages.
+ *
+ * This function is mostly used to add languages to a list of preferred languages
+ * to search for translations in the translation catalog.
+ *
+ * @param languages A list of languages ordered by preference.
+ * @return A new list of languages which includes variants and ordered by the given list of languages.
+ */
+[[nodiscard]] std::vector<language_tag> variants(std::vector<language_tag> languages);
 
 } // namespace tt::inline v1
 

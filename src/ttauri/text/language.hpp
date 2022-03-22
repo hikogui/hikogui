@@ -63,46 +63,18 @@ public:
         return *r;
     }
 
-    /** Add short language names to the list of names.
-     * The short names are inserted right after a consecutive group of long names with the same short name.
-     */
-    [[nodiscard]] static std::vector<language_tag> add_short_names(std::vector<language_tag> tags) noexcept
-    {
-        std::vector<language_tag> r;
-
-        auto prev_short_tag = language_tag{};
-        for (ttlet &tag : tags) {
-            ttlet short_tag = tag.short_tag();
-
-            if (prev_short_tag and short_tag != prev_short_tag) {
-                if (std::find(r.cbegin(), r.cend(), prev_short_tag) == r.cend()) {
-                    r.push_back(prev_short_tag);
-                }
-            }
-
-            if (std::find(r.cbegin(), r.cend(), tag) == r.cend()) {
-                r.push_back(tag);
-            }
-
-            prev_short_tag = short_tag;
-        }
-
-        if (prev_short_tag) {
-            if (std::find(r.cbegin(), r.cend(), prev_short_tag) == r.cend()) {
-                r.push_back(prev_short_tag);
-            }
-        }
-        return r;
-    }
-
     [[nodiscard]] static std::vector<language *> make_languages(std::vector<language_tag> tags) noexcept
     {
         ttlet lock = std::scoped_lock(_mutex);
 
+        auto variant_tags = variants(tags);
         auto r = std::vector<language *>{};
-        for (ttlet &tag : add_short_names(tags)) {
+        r.reserve(variant_tags.size());
+
+        for (ttlet &tag: variant_tags) {
             r.push_back(&find_or_create(tag));
         }
+
         return r;
     }
 
