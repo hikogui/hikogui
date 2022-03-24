@@ -270,7 +270,7 @@ struct observable_impl {
         ttlet lock = std::scoped_lock(mutex);
 
         for (ttlet &owner: owners) {
-            owner->_notifier();
+            owner->_notifier(value);
         }
     }
 
@@ -307,7 +307,7 @@ struct observable_impl {
         for (auto owner : owners) {
             owner->_pimpl = new_impl;
             new_impl->owners.push_back(owner);
-            owner->_notifier();
+            owner->_notifier(value);
         }
         owners.clear();
     }
@@ -363,6 +363,8 @@ public:
     using reference = detail::observable_proxy<value_type, false>;
     using const_reference = detail::observable_proxy<value_type, true>;
     using impl_type = detail::observable_impl<value_type>;
+    using notifier_type = notifier<void(value_type)>;
+    using token_type = notifier_type::token_type;
     static constexpr bool is_atomic = std::is_scalar_v<value_type>;
 
     ~observable()
@@ -482,7 +484,7 @@ public:
         return *this;
     }
 
-    auto subscribe(std::invocable<> auto &&callback) noexcept
+    token_type subscribe(std::invocable<value_type> auto &&callback) noexcept
     {
         return _notifier.subscribe(tt_forward(callback));
     }
@@ -575,7 +577,7 @@ public:
 #undef X
 
 private : std::shared_ptr<impl_type> _pimpl;
-    tt::notifier<void()> _notifier;
+    notifier_type _notifier;
     friend impl_type;
 };
 

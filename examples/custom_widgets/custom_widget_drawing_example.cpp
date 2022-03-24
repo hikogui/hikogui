@@ -87,14 +87,14 @@ public:
         widget(window, parent), _image(tt::URL("resource:mars3.png"))
     {
         // clang-format off
-        _drawing_cbt = this->drawing.subscribe([&]{ request_redraw(); });
-        _shape_cbt = this->shape.subscribe([&]{ request_redraw(); });
-        _gradient_cbt = this->gradient.subscribe([&]{ request_redraw(); });
-        _rotating_cbt = this->rotating.subscribe([&]{ request_redraw(); });
-        _clip_cbt = this->clip.subscribe([&]{ request_redraw(); });
-        _border_side_cbt = this->border_side.subscribe([&]{ request_redraw(); });
-        _border_width_cbt = this->border_width.subscribe([&]{ request_redraw(); });
-        _rounded_cbt = this->rounded.subscribe([&]{ request_redraw(); });
+        _drawing_cbt = this->drawing.subscribe([&](auto...){ request_redraw(); });
+        _shape_cbt = this->shape.subscribe([&](auto...){ request_redraw(); });
+        _gradient_cbt = this->gradient.subscribe([&](auto...){ request_redraw(); });
+        _rotating_cbt = this->rotating.subscribe([&](auto...){ request_redraw(); });
+        _clip_cbt = this->clip.subscribe([&](auto...){ request_redraw(); });
+        _border_side_cbt = this->border_side.subscribe([&](auto...){ request_redraw(); });
+        _border_width_cbt = this->border_width.subscribe([&](auto...){ request_redraw(); });
+        _rounded_cbt = this->rounded.subscribe([&](auto...){ request_redraw(); });
         // clang-format on
 
         this->_glyph = font_book().find_glyph(tt::elusive_icon::Briefcase);
@@ -302,14 +302,14 @@ private:
     tt::aarectangle _image_rectangle;
     tt::paged_image _image_backing;
 
-    tt::notifier<>::token_type _drawing_cbt;
-    tt::notifier<>::token_type _shape_cbt;
-    tt::notifier<>::token_type _gradient_cbt;
-    tt::notifier<>::token_type _rotating_cbt;
-    tt::notifier<>::token_type _clip_cbt;
-    tt::notifier<>::token_type _border_side_cbt;
-    tt::notifier<>::token_type _border_width_cbt;
-    tt::notifier<>::token_type _rounded_cbt;
+    decltype(drawing)::token_type _drawing_cbt;
+    decltype(shape)::token_type _shape_cbt;
+    decltype(gradient)::token_type _gradient_cbt;
+    decltype(rotating)::token_type _rotating_cbt;
+    decltype(clip)::token_type _clip_cbt;
+    decltype(border_side)::token_type _border_side_cbt;
+    decltype(border_width)::token_type _border_width_cbt;
+    decltype(rounded)::token_type _rounded_cbt;
 };
 
 int tt_main(int argc, char *argv[])

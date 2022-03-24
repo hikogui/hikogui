@@ -27,9 +27,9 @@ text_field_widget::text_field_widget(gui_window &window, widget *parent, weak_or
         std::make_unique<label_widget>(window, this, _error_label, alignment::top_left(), theme_text_style::error);
 
     // clang-format off
-    _continues_cbt = continues.subscribe([&]{ request_reconstrain(); });
-    _text_style_cbt = text_style.subscribe([&]{ request_reconstrain(); });
-    _text_cbt = _text.subscribe([&]{ request_reconstrain(); });
+    _continues_cbt = continues.subscribe([&](auto...){ request_reconstrain(); });
+    _text_style_cbt = text_style.subscribe([&](auto...){ request_reconstrain(); });
+    _text_cbt = _text.subscribe([&](auto...){ request_reconstrain(); });
     // clang-format on
 }
 

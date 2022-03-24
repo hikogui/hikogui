@@ -21,8 +21,8 @@ widget::widget(gui_window &_window, widget *parent) noexcept :
     }
 
     // clang-format off
-    _enabled_cbt = enabled.subscribe([&]{ request_redraw(); });
-    _visible_cbt = visible.subscribe([&]{ request_reconstrain(); });
+    _enabled_cbt = enabled.subscribe([&](auto...){ request_redraw(); });
+    _visible_cbt = visible.subscribe([&](auto...){ request_reconstrain(); });
     // clang-format off
 
     _constraints.minimum = extent2::nan();

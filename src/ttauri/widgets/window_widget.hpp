@@ -58,7 +58,7 @@ public:
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
     /// @endprivatesection
 private:
-    notifier<>::token_type _title_cbt;
+    decltype(title)::token_type _title_cbt;
 
     std::weak_ptr<delegate_type> _content_delegate;
 

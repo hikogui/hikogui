@@ -108,8 +108,8 @@ private:
     float _icon_size;
     float _inner_margin;
 
-    notifier<>::token_type _label_cbt;
-    notifier<>::token_type _text_style_cbt;
+    decltype(label)::token_type _label_cbt;
+    decltype(text_style)::token_type _text_style_cbt;
 
     aarectangle _icon_rectangle;
     std::unique_ptr<icon_widget> _icon_widget;

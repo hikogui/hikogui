@@ -23,7 +23,9 @@ public:
 
     default_tab_delegate(auto &&value) noexcept : value(tt_forward(value))
     {
-        _value_cbt = this->value.subscribe([&]{ this->_notifier(); });
+        _value_cbt = this->value.subscribe([&](auto...) {
+            this->_notifier();
+        });
     }
 
     void add_tab(tab_widget &sender, std::size_t key, std::size_t index) noexcept override
@@ -43,7 +45,7 @@ public:
     }
 
 private:
-    notifier<>::token_type _value_cbt;
+    typename decltype(value)::token_type _value_cbt;
 };
 
 template<typename Value>

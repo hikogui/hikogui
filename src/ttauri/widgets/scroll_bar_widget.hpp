@@ -35,9 +35,9 @@ public:
         offset(std::forward<Offset>(offset))
     {
         // clang-format off
-        _content_cbt = this->content.subscribe([&]{ request_relayout(); });
-        _aperture_cbt = this->aperture.subscribe([&]{ request_relayout(); });
-        _offset_cbt = this->offset.subscribe([&]{ request_relayout(); });
+        _content_cbt = this->content.subscribe([&](auto...){ request_relayout(); });
+        _aperture_cbt = this->aperture.subscribe([&](auto...){ request_relayout(); });
+        _offset_cbt = this->offset.subscribe([&](auto...){ request_relayout(); });
         // clang-format on
     }
 
@@ -147,9 +147,9 @@ private:
 
     float _offset_before_drag;
 
-    notifier<>::token_type _content_cbt;
-    notifier<>::token_type _aperture_cbt;
-    notifier<>::token_type _offset_cbt;
+    typename decltype(content)::token_type _content_cbt;
+    typename decltype(aperture)::token_type _aperture_cbt;
+    typename decltype(offset)::token_type _offset_cbt;
 
     /** Create a new offset value.
     * 

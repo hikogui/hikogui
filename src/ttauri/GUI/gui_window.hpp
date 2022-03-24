@@ -364,7 +364,7 @@ protected:
 
 private:
     notifier<>::token_type _setting_change_token;
-    notifier<>::token_type _selected_theme_token;
+    observable<std::string>::token_type _selected_theme_token;
 
     /** Target of the mouse
      * Since any mouse event will change the target this is used

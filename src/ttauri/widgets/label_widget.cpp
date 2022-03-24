@@ -17,7 +17,7 @@ label_widget::label_widget(gui_window &window, widget *parent) noexcept : super(
     _text_widget->text_style = text_style;
     _text_widget->edit_mode = edit_mode;
 
-    _text_style_cbt = text_style.subscribe([this] {
+    _text_style_cbt = text_style.subscribe([this](auto...) {
         switch (*text_style) {
         case theme_text_style::label: _icon_widget->color = theme_color::foreground; break;
         case theme_text_style::small_label: _icon_widget->color = theme_color::foreground; break;
@@ -30,7 +30,7 @@ label_widget::label_widget(gui_window &window, widget *parent) noexcept : super(
         }
     });
 
-    _label_cbt = label.subscribe([this] {
+    _label_cbt = label.subscribe([this](auto...) {
         _icon_widget->icon = label->icon;
         _text_widget->text = to_gstring(label->text());
     });

@@ -45,9 +45,9 @@ public:
         value(tt_forward(value)), on_value(tt_forward(on_value)), off_value(tt_forward(off_value))
     {
         // clang-format off
-        _value_cbt = this->value.subscribe([&]{ this->_notifier(); });
-        _on_value_cbt = this->on_value.subscribe([&]{ this->_notifier(); });
-        _off_value_cbt = this->off_value.subscribe([&]{ this->_notifier(); });
+        _value_cbt = this->value.subscribe([&](auto...){ this->_notifier(); });
+        _on_value_cbt = this->on_value.subscribe([&](auto...){ this->_notifier(); });
+        _off_value_cbt = this->off_value.subscribe([&](auto...){ this->_notifier(); });
         // clang-format on
     }
 
@@ -97,9 +97,9 @@ public:
     }
     /// @endprivatesection
 private:
-    notifier<>::token_type _value_cbt;
-    notifier<>::token_type _on_value_cbt;
-    notifier<>::token_type _off_value_cbt;
+    typename decltype(value)::token_type _value_cbt;
+    typename decltype(on_value)::token_type _on_value_cbt;
+    typename decltype(off_value)::token_type _off_value_cbt;
 };
 
 template<button_type ButtonType, typename Value, typename... Args>

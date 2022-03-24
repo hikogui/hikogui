@@ -28,12 +28,12 @@ public:
         semantic_layer = parent->semantic_layer;
 
         // clang-format off
-        _content_width_cbt = content_width.subscribe([&]{ request_relayout(); });
-        _content_height_cbt = content_height.subscribe([&]{ request_relayout(); });
-        _aperture_width_cbt = aperture_width.subscribe([&]{ request_relayout(); });
-        _aperture_height_cbt = aperture_height.subscribe([&]{ request_relayout(); });
-        _offset_x_cbt = offset_x.subscribe([&]{ request_relayout(); });
-        _offset_y_cbt = offset_y.subscribe([&]{ request_relayout(); });
+        _content_width_cbt = content_width.subscribe([&](auto...){ request_relayout(); });
+        _content_height_cbt = content_height.subscribe([&](auto...){ request_relayout(); });
+        _aperture_width_cbt = aperture_width.subscribe([&](auto...){ request_relayout(); });
+        _aperture_height_cbt = aperture_height.subscribe([&](auto...){ request_relayout(); });
+        _offset_x_cbt = offset_x.subscribe([&](auto...){ request_relayout(); });
+        _offset_y_cbt = offset_y.subscribe([&](auto...){ request_relayout(); });
         // clang-format off
     }
 
@@ -203,12 +203,12 @@ public:
 private:
     aarectangle _content_rectangle;
     std::unique_ptr<widget> _content;
-    notifier<>::token_type _content_width_cbt;
-    notifier<>::token_type _content_height_cbt;
-    notifier<>::token_type _aperture_width_cbt;
-    notifier<>::token_type _aperture_height_cbt;
-    notifier<>::token_type _offset_x_cbt;
-    notifier<>::token_type _offset_y_cbt;
+    decltype(content_width)::token_type _content_width_cbt;
+    decltype(content_height)::token_type _content_height_cbt;
+    decltype(aperture_width)::token_type _aperture_width_cbt;
+    decltype(aperture_height)::token_type _aperture_height_cbt;
+    decltype(offset_x)::token_type _offset_x_cbt;
+    decltype(offset_y)::token_type _offset_y_cbt;
 };
 
 } // namespace tt::inline v1

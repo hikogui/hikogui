@@ -113,7 +113,7 @@ private:
     vertical_scroll_widget<> *_scroll_widget = nullptr;
     column_widget *_column_widget = nullptr;
 
-    notifier<>::token_type _unknown_label_cbt;
+    decltype(unknown_label)::token_type _unknown_label_cbt;
     std::vector<menu_button_widget *> _menu_button_widgets;
     std::vector<notifier<>::token_type> _menu_button_tokens;
 

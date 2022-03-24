@@ -12,7 +12,7 @@ namespace tt::inline v1 {
 
 icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
 {
-    _icon_cbt = icon.subscribe([this]() {
+    _icon_cbt = icon.subscribe([this](auto...) {
         _icon_has_modified = true;
         this->request_reconstrain();
     });

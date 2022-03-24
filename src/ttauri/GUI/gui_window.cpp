@@ -91,7 +91,7 @@ void gui_window::init()
     });
 
     // Subscribe on theme changes.
-    _selected_theme_token = gui.selected_theme.subscribe([this] {
+    _selected_theme_token = gui.selected_theme.subscribe([this](auto...) {
         this->request_reconstrain();
     });
 

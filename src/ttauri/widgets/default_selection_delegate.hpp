@@ -26,9 +26,9 @@ public:
         options(tt_forward(options)), value(tt_forward(value)), off_value(tt_forward(off_value))
     {
         // clang-format off
-        _options_cbt = this->options.subscribe([&]{ this->_notifier(); });
-        _value_cbt = this->value.subscribe([&]{ this->_notifier(); });
-        _off_value_cbt = this->off_value.subscribe([&]{ this->_notifier(); });
+        _options_cbt = this->options.subscribe([&](auto...){ this->_notifier(); });
+        _value_cbt = this->value.subscribe([&](auto...){ this->_notifier(); });
+        _off_value_cbt = this->off_value.subscribe([&](auto...){ this->_notifier(); });
         // clang-format on
     }
 
@@ -69,9 +69,9 @@ public:
     }
 
 private:
-    notifier<>::token_type _options_cbt;
-    notifier<>::token_type _value_cbt;
-    notifier<>::token_type _off_value_cbt;
+    typename decltype(options)::token_type _options_cbt;
+    typename decltype(value)::token_type _value_cbt;
+    typename decltype(off_value)::token_type _off_value_cbt;
 };
 
 template<typename OptionList, typename Value, typename... Args>

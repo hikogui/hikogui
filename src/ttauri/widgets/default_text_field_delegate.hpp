@@ -25,41 +25,41 @@ public:
 
     observable<value_type> value;
 
-    default_text_field_delegate(auto &&value) noexcept : value(tt_forward(value))
+    default_text_field_delegate(auto&& value) noexcept : value(tt_forward(value))
     {
-        _value_cbt = this->value.subscribe([&] {
+        _value_cbt = this->value.subscribe([&](auto...) {
             this->_notifier();
         });
     }
 
-    std::optional<label> validate(text_field_widget &sender, std::string_view text) noexcept override
+    std::optional<label> validate(text_field_widget& sender, std::string_view text) noexcept override
     {
         try {
             [[maybe_unused]] auto dummy = from_string<value_type>(text, 10);
-        } catch (parse_error const &) {
+        } catch (parse_error const&) {
             return {tr{"Invalid integer"}};
         }
 
         return {};
     }
 
-    std::string text(text_field_widget &sender) noexcept override
+    std::string text(text_field_widget& sender) noexcept override
     {
         return to_string(*value);
     }
 
-    void set_text(text_field_widget &sender, std::string_view text) noexcept override
+    void set_text(text_field_widget& sender, std::string_view text) noexcept override
     {
         try {
             value = from_string<value_type>(text, 10);
-        } catch (std::exception const &) {
+        } catch (std::exception const&) {
             // Ignore the error, don't modify the value.
             return;
         }
     }
 
 private:
-    notifier<>::token_type _value_cbt;
+    typename decltype(value)::token_type _value_cbt;
 };
 
 template<std::floating_point T>
@@ -69,45 +69,47 @@ public:
 
     observable<value_type> value;
 
-    default_text_field_delegate(auto &&value) noexcept : value(tt_forward(value))
+    default_text_field_delegate(auto&& value) noexcept : value(tt_forward(value))
     {
-        _value_cbt = this->value.subscribe([&]{ this->_notifier(); });
+        _value_cbt = this->value.subscribe([&](auto...) {
+            this->_notifier();
+        });
     }
 
-    label validate(text_field_widget &sender, std::string_view text) noexcept override
+    label validate(text_field_widget& sender, std::string_view text) noexcept override
     {
         try {
             [[maybe_unused]] auto dummy = from_string<value_type>(text);
-        } catch (parse_error const &) {
+        } catch (parse_error const&) {
             return {elusive_icon::WarningSign, tr{"Invalid floating point number"}};
         }
 
         return {};
     }
 
-    std::string text(text_field_widget &sender) noexcept override
+    std::string text(text_field_widget& sender) noexcept override
     {
         return to_string(*value);
     }
 
-    void set_text(text_field_widget &sender, std::string_view text) noexcept override
+    void set_text(text_field_widget& sender, std::string_view text) noexcept override
     {
         try {
             value = from_string<value_type>(text);
-        } catch (std::exception const &) {
+        } catch (std::exception const&) {
             // Ignore the error, don't modify the value.
             return;
         }
     }
 
 private:
-    notifier<>::token_type _value_cbt;
+    typename decltype(value)::token_type _value_cbt;
 };
 
 template<typename Value>
-default_text_field_delegate(Value &&) -> default_text_field_delegate<observable_argument_t<std::remove_cvref_t<Value>>>;
+default_text_field_delegate(Value&&) -> default_text_field_delegate<observable_argument_t<std::remove_cvref_t<Value>>>;
 
-std::unique_ptr<text_field_delegate> make_unique_default_text_field_delegate(auto &&value, auto &&...args) noexcept
+std::unique_ptr<text_field_delegate> make_unique_default_text_field_delegate(auto&& value, auto&&...args) noexcept
 {
     using value_type = observable_argument_t<std::remove_cvref_t<decltype(value)>>;
     return std::make_unique<default_text_field_delegate<value_type>>(tt_forward(value), tt_forward(args)...);

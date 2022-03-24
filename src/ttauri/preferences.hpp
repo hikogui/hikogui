@@ -37,7 +37,6 @@ public:
     void load() noexcept;
 
 protected:
-    notifier<>::token_type _value_cbt;
     preferences &_parent;
     jsonpath _path;
 
@@ -56,7 +55,7 @@ public:
     preference_item(preferences &parent, std::string_view path, observable<T> const &value, T init) noexcept :
         preference_item_base(parent, path), _value(value), _init(std::move(init))
     {
-        _value_cbt = _value.subscribe([this]() {
+        _value_cbt = _value.subscribe([this](auto...) {
             if (auto tmp = this->encode(); not holds_alternative<std::monostate>(tmp)) {
                 this->_parent.write(_path, this->encode());
             } else {
@@ -89,6 +88,7 @@ protected:
 private:
     T _init;
     observable<T> _value;
+    typename decltype(_value)::token_type _value_cbt;
 };
 
 } // namespace detail

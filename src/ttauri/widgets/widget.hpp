@@ -338,8 +338,8 @@ protected:
     widget_constraints _constraints;
     widget_layout _layout;
 
-    notifier<>::token_type _enabled_cbt;
-    notifier<>::token_type _visible_cbt;
+    decltype(enabled)::token_type _enabled_cbt;
+    decltype(visible)::token_type _visible_cbt;
 
     [[nodiscard]] virtual generator<widget *> children() const noexcept
     {

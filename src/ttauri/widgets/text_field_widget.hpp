@@ -116,9 +116,9 @@ private:
     aarectangle _error_label_rectangle;
     std::unique_ptr<label_widget> _error_label_widget;
 
-    notifier<>::token_type _continues_cbt;
-    notifier<>::token_type _text_style_cbt;
-    notifier<>::token_type _text_cbt;
+    typename decltype(continues)::token_type _continues_cbt;
+    typename decltype(text_style)::token_type _text_style_cbt;
+    typename decltype(_text)::token_type _text_cbt;
 
     text_field_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
     void revert(bool force) noexcept;
