@@ -9,16 +9,22 @@
 
 TEST(iso_15925, from_code4)
 {
-    ASSERT_EQ(tt::iso_15924{"Latn"}, tt::iso_15924{215});
-    ASSERT_EQ(tt::iso_15924{"Yiii"}, tt::iso_15924{460});
+    ASSERT_EQ(tt::iso_15924{"Latn"}.number(), 215);
+    ASSERT_EQ(tt::iso_15924{"LATN"}.number(), 215);
+    ASSERT_EQ(tt::iso_15924{"latn"}.number(), 215);
+
+    ASSERT_EQ(tt::iso_15924{"Yiii"}.number(), 460);
+    ASSERT_EQ(tt::iso_15924{"YIII"}.number(), 460);
+    ASSERT_EQ(tt::iso_15924{"yiii"}.number(), 460);
+
     ASSERT_THROW(tt::iso_15924{"yi  "}, tt::parse_error);
     ASSERT_THROW(tt::iso_15924{"Foob"}, tt::parse_error);
 }
 
 TEST(iso_15925, from_unicode)
 {
-    ASSERT_EQ(tt::iso_15924{tt::unicode_script::Latin}, tt::iso_15924{215});
-    ASSERT_EQ(tt::iso_15924{tt::unicode_script::Yi}, tt::iso_15924{460});
+    ASSERT_EQ(tt::iso_15924{tt::unicode_script::Latin}.number(), 215);
+    ASSERT_EQ(tt::iso_15924{tt::unicode_script::Yi}.number(), 460);
 }
 
 TEST(iso_15925, to_code4)

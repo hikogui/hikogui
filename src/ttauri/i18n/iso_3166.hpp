@@ -14,12 +14,17 @@ namespace tt::inline v1 {
  */
 class iso_3166 {
 public:
-    constexpr iso_3166(iso_3166 const &) noexcept = default;
-    constexpr iso_3166(iso_3166 &&) noexcept = default;
-    constexpr iso_3166 &operator=(iso_3166 const &) noexcept = default;
-    constexpr iso_3166 &operator=(iso_3166 &&) noexcept = default;
+    constexpr iso_3166(iso_3166 const&) noexcept = default;
+    constexpr iso_3166(iso_3166&&) noexcept = default;
+    constexpr iso_3166& operator=(iso_3166 const&) noexcept = default;
+    constexpr iso_3166& operator=(iso_3166&&) noexcept = default;
 
     constexpr iso_3166() noexcept : _v(999) {}
+
+    constexpr iso_3166(uint16_t number) : _v(number)
+    {
+        tt_parse_check(number <= 999, "ISO-3166 number must be between 0 and 999, got {}", number);
+    }
 
     iso_3166(std::string_view str);
 
@@ -27,7 +32,7 @@ public:
     {
         return _v == 999;
     }
-    
+
     constexpr explicit operator bool() const noexcept
     {
         return not empty();
@@ -41,8 +46,8 @@ public:
     [[nodiscard]] std::string_view code2() const noexcept;
     [[nodiscard]] std::string_view code3() const noexcept;
 
-    [[nodiscard]] constexpr friend bool operator==(iso_3166 const &lhs, iso_3166 const &rhs) noexcept = default;
-    [[nodiscard]] constexpr friend auto operator<=>(iso_3166 const &lhs, iso_3166 const &rhs) noexcept = default;
+    [[nodiscard]] constexpr friend bool operator==(iso_3166 const& lhs, iso_3166 const& rhs) noexcept = default;
+    [[nodiscard]] constexpr friend auto operator<=>(iso_3166 const& lhs, iso_3166 const& rhs) noexcept = default;
 
 private:
     uint16_t _v;

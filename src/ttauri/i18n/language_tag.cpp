@@ -10,7 +10,7 @@
 
 namespace tt::inline v1 {
 
-    struct language_tag_expansion {
+struct language_tag_expansion {
     std::string_view from;
     std::string_view to;
 
@@ -1934,12 +1934,7 @@ static std::optional<std::string_view> expand_language_tag(std::string_view from
     }
 }
 
-/** Basic language tag parser.
- *
- * This parser simply translates the given string into a language-tag. It does
- * this without looking at expansion tables.
- */
-[[nodiscard]] static language_tag parse_language_tag(std::string_view str)
+[[nodiscard]] language_tag language_tag::parse(std::string_view str)
 {
     auto language = iso_639{};
     auto script = iso_15924{};
@@ -1965,7 +1960,8 @@ static std::optional<std::string_view> expand_language_tag(std::string_view from
         } else if (not language) {
             tt_parse_check(
                 (element.size() == 2 or element.size() == 3) and is_alpha(element),
-                "First element of a language tag must be a ISO-639 2 or 3 letter language code, got '{}'", str);
+                "First element of a language tag must be a ISO-639 2 or 3 letter language code, got '{}'",
+                str);
             // 2 or 3 letter non-optional ISO-639 language code.
             language = {element};
 
@@ -1979,9 +1975,12 @@ static std::optional<std::string_view> expand_language_tag(std::string_view from
                 // The language code may be followed by a 4 letter script code.
                 script = {element};
 
-            } else if (
-                not region and (element.size() == 2 and is_alpha(element)) or (element.size() == 3 and is_digit(element))) {
-                // The language code or script code may also be followed by a 2 letter or 3 digit country code.
+            } else if (not region and (element.size() == 2 and is_alpha(element))) {
+                // The language code or script code may also be followed by a 2 letter country code.
+                region = {element};
+
+            } else if (not region and ((element.size() == 2 or element.size() == 3) and is_digit(element))) {
+                // The language code or script code may also be followed by a 2 or 3 digit country code.
                 region = {element};
 
             } else if ((element.size() >= 5 and element.size() <= 8) or (element.size() == 4 and is_digit(element.front()))) {
@@ -2011,7 +2010,7 @@ static std::optional<std::string_view> expand_language_tag(std::string_view from
     }
 
     if (auto from_language = expand_language_tag(r.language.code())) {
-        auto from_language_tag = parse_language_tag(*from_language);
+        auto from_language_tag = parse(*from_language);
 
         if (not r.script and from_language_tag.script) {
             r.script = from_language_tag.script;
@@ -2026,7 +2025,7 @@ static std::optional<std::string_view> expand_language_tag(std::string_view from
     }
 
     if (auto from_region = expand_language_tag(std::string{"und-"} + std::string{r.region.code2()})) {
-        auto from_region_tag = parse_language_tag(*from_region);
+        auto from_region_tag = parse(*from_region);
 
         if (not r.script and from_region_tag.script) {
             r.script = from_region_tag.script;
@@ -2044,7 +2043,7 @@ language_tag::language_tag(std::string_view str) : language(), script(), region(
         str = *expanded_str;
     }
 
-    *this = parse_language_tag(str).expand();
+    *this = parse(str).expand();
 }
 
 [[nodiscard]] std::vector<language_tag> variants(std::vector<language_tag> languages)

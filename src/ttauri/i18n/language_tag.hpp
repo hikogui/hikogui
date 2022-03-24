@@ -16,11 +16,19 @@
 
 namespace tt::inline v1 {
 
+/** The IETF BCP 47 language tag.
+ *
+ * This class stores the language tag in 64 bits; in its individual components of the:
+ * ISO-639 language (16 bit), ISO-15924 script (16 bit) and ISO-3166 region (16 bit).
+ * In the future another 16 bits can be used to store the variants and extensions.
+ *
+ */
 class language_tag {
 public:
     iso_639 language;
     iso_15924 script;
     iso_3166 region;
+    uint16_t _reserved = 0;
 
     constexpr language_tag() noexcept {}
     constexpr language_tag(language_tag const&) noexcept = default;
@@ -48,6 +56,12 @@ public:
      * @throws parse_error
      */
     language_tag(std::string_view str);
+
+    /** Parse the language, script and region raw from the string.
+    * 
+    * No automatic expansion of the script or region will be done.
+     */
+    [[nodiscard]] static language_tag parse(std::string_view str); 
 
     /** Check if the language tag is empty.
      */

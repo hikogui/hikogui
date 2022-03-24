@@ -18,6 +18,8 @@ target_sources(ttauri PRIVATE
 
 if(TT_BUILD_TESTS)
     target_sources(ttauri_tests PRIVATE
+        iso_639_tests.cpp
+        iso_3166_tests.cpp
         iso_15924_tests.cpp
         language_tag_tests.cpp
     )

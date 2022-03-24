@@ -89,7 +89,7 @@ public:
 
     /** Get the 2 or 3 letter ISO-639 code.
      */
-    [[nodiscard]] std::string code() const noexcept
+    [[nodiscard]] constexpr std::string code() const noexcept
     {
         auto r = std::string{};
         if (size() >= 2) {

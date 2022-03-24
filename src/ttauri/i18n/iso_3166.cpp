@@ -346,32 +346,38 @@ iso_3166::iso_3166(std::string_view str)
         tt_parse_check(_v < 1000, "ISO-3166 number must be between 000 and 999, got '{}'", _v);
 
     } else if (str.size() == 2) {
+        auto str_up = to_upper(str);
+
         ttlet it = std::lower_bound(
             iso_3166_number_by_code2.begin(),
             iso_3166_number_by_code2.end(),
-            fixed_string<2>{str},
+            fixed_string<2>{str_up},
             [](ttlet& item, ttlet& value) {
                 return item.first < value;
             });
 
         tt_parse_check(
-            it != iso_3166_number_by_code2.end() and it->first == str,
+            it != iso_3166_number_by_code2.end() and it->first == str_up,
             "Could not find ISO-3166 2 letter language code '{}'",
             str);
 
         _v = it->second;
 
     } else if (str.size() == 3) {
+        auto str_up = to_upper(str);
+
         ttlet it = std::lower_bound(
             iso_3166_number_by_code3.begin(),
             iso_3166_number_by_code3.end(),
-            fixed_string<3>{str},
+            fixed_string<3>{str_up},
             [](ttlet& item, ttlet& value) {
                 return item.first < value;
             });
 
         tt_parse_check(
-            it != iso_3166_number_by_code3.end() and it->first == str, "Could not find ISO-3166 3 letter language code '{}'", str);
+            it != iso_3166_number_by_code3.end() and it->first == str_up,
+            "Could not find ISO-3166 3 letter language code '{}'",
+            str);
 
         _v = it->second;
 
