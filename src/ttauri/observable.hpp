@@ -28,33 +28,31 @@ struct observable_impl {
     using owner_type = observable<value_type>;
 
     struct proxy_type {
-        constexpr proxy_type(proxy_type const &) noexcept = delete;
-        constexpr proxy_type &operator=(proxy_type const &) noexcept = delete;
+        constexpr proxy_type(proxy_type const&) noexcept = delete;
+        constexpr proxy_type& operator=(proxy_type const&) noexcept = delete;
 
-        constexpr proxy_type(proxy_type &&other) noexcept :
-            actual(std::exchange(other.actual, nullptr)),
-            old_value(std::exchange(other.old_value, {}))
+        constexpr proxy_type(proxy_type&& other) noexcept :
+            actual(std::exchange(other.actual, nullptr)), old_value(std::exchange(other.old_value, {}))
         {
         }
 
-        constexpr proxy_type &operator=(proxy_type &&other) noexcept
+        constexpr proxy_type& operator=(proxy_type&& other) noexcept
         {
             if (actual) {
 #if TT_BUILD_TYPE == TT_BT_DEBUG
-                // This proxy will not be used anymore, so notifier_owners may cause new proxies to be openened.
+                // This proxy will not be used anymore, so notifier_owners may cause new proxies to be opened.
                 actual->rw_count = false;
 #endif
                 if (old_value != actual->value) {
                     actual->notifier_owners();
                 }
-
             }
 
             actual = std::exchange(other.actual, nullptr);
             old_value = std::exchange(other.old_value, {});
         }
 
-        constexpr proxy_type() noexcept : acctual(nullptr), old_value() {}
+        constexpr proxy_type() noexcept : actual(nullptr), old_value() {}
 
         constexpr proxy_type(observable_impl *actual) noexcept : actual(actual), old_value(actual->value)
         {
@@ -66,30 +64,41 @@ struct observable_impl {
 #endif
         }
 
-
         constexpr ~proxy_type()
         {
             if (actual) {
 #if TT_BUILD_TYPE == TT_BT_DEBUG
-                // This proxy will not be used anymore, so notifier_owners may cause new proxies to be openened.
+                // This proxy will not be used anymore, so notifier_owners may cause new proxies to be opened.
                 actual->rw_count = false;
 #endif
                 if (old_value != actual->value) {
-                    actual->notifier_owners();
+                    actual->notify_owners();
                 }
             }
+        }
+
+        constexpr operator value_type &() const noexcept
+        {
+            tt_axiom(actual);
+            return actual->value;
         }
 
         constexpr value_type *operator->() const noexcept
         {
             tt_axiom(actual);
-            return &(actual->value);
+            return std::addressof(actual->value);
         }
 
-        constexpr value_type &operator*() const noexcept
+        constexpr value_type& operator*() const noexcept
         {
             tt_axiom(actual);
             return actual->value;
+        }
+
+        constexpr value_type *operator&() const noexcept
+        {
+            tt_axiom(actual);
+            return std::addressof(actual->value);
         }
 
         observable_impl *actual;
@@ -97,7 +106,7 @@ struct observable_impl {
     };
 
     struct const_proxy_type {
-        constexpr const_proxy_type(const_proxy_type const &other) noexcept : actual(other.actual)
+        constexpr const_proxy_type(const_proxy_type const& other) noexcept : actual(other.actual)
         {
 #if TT_BUILD_TYPE == TT_BT_DEBUG
             if (actual) {
@@ -108,7 +117,7 @@ struct observable_impl {
 #endif
         }
 
-        constexpr const_proxy_type(const_proxy_type &&other) noexcept : actual(std::exchange(other.actual, nullptr))
+        constexpr const_proxy_type(const_proxy_type&& other) noexcept : actual(std::exchange(other.actual, nullptr))
         {
 #if TT_BUILD_TYPE == TT_BT_DEBUG
             if (actual) {
@@ -118,7 +127,7 @@ struct observable_impl {
 #endif
         }
 
-        constexpr const_proxy_type &operator=(const_proxy_type const &other) noexcept 
+        constexpr const_proxy_type& operator=(const_proxy_type const& other) noexcept
         {
 #if TT_BUILD_TYPE == TT_BT_DEBUG
             if (actual) {
@@ -137,7 +146,7 @@ struct observable_impl {
 #endif
         }
 
-        constexpr const_proxy_type &operator=(const_proxy_type &&other) noexcept
+        constexpr const_proxy_type& operator=(const_proxy_type&& other) noexcept
         {
 #if TT_BUILD_TYPE == TT_BT_DEBUG
             if (actual) {
@@ -149,7 +158,7 @@ struct observable_impl {
             actual = std::exchange(other.actual, nullptr);
         }
 
-        constexpr const_proxy_type(proxy_type &&other) noexcept : actual(std::exchange(other.actual, nullptr))
+        constexpr const_proxy_type(proxy_type&& other) noexcept : actual(std::exchange(other.actual, nullptr))
         {
 #if TT_BUILD_TYPE == TT_BT_DEBUG
             if (actual) {
@@ -161,7 +170,7 @@ struct observable_impl {
 #endif
         }
 
-        constexpr const_proxy_type &operator=(proxy_type &&other) noexcept
+        constexpr const_proxy_type& operator=(proxy_type&& other) noexcept
         {
 #if TT_BUILD_TYPE == TT_BT_DEBUG
             if (actual) {
@@ -181,7 +190,7 @@ struct observable_impl {
 #endif
         }
 
-        constexpr const_proxy_type() noexcept : actual(nullptr)  {}
+        constexpr const_proxy_type() noexcept : actual(nullptr) {}
 
         constexpr const_proxy_type(observable_impl *actual) noexcept : actual(actual)
         {
@@ -190,7 +199,7 @@ struct observable_impl {
                 // Cannot open a read-only proxy with a read-write proxy.
                 tt_assert(actual->rw_count == false);
                 ++actual->ro_count;
-             }
+            }
 #endif
         }
 
@@ -205,57 +214,66 @@ struct observable_impl {
 #endif
         }
 
-        constexpr value_type const *operator->() const noexcept
-        {
-            tt_axiom(actual);
-            return &(actual->value);
-        }
-
-        constexpr value_type const &operator*() const noexcept
+        constexpr operator value_type const &() const noexcept
         {
             tt_axiom(actual);
             return actual->value;
         }
 
+        constexpr value_type const *operator->() const noexcept
+        {
+            tt_axiom(actual);
+            return std::addressof(actual->value);
+        }
+
+        constexpr value_type const& operator*() const noexcept
+        {
+            tt_axiom(actual);
+            return actual->value;
+        }
+
+        constexpr value_type const *operator&() const noexcept
+        {
+            tt_axiom(actual);
+            return std::addressof(actual->value);
+        }
+
         observable_impl *actual;
     };
 
-    /** Mutex used to handle ownership of observable_impl.
-     */
-    inline static unfair_mutex mutex;
-
     value_type value;
-
     std::vector<owner_type *> owners;
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+    size_t ro_count = 0;
+    bool rw_count = false;
+#endif
 
     ~observable_impl()
     {
         tt_axiom(owners.empty());
     }
 
-    observable_impl(observable_impl const &) = delete;
-    observable_impl(observable_impl &&) = delete;
-    observable_impl &operator=(observable_impl const &) = delete;
-    observable_impl &operator=(observable_impl &&) = delete;
+    observable_impl(observable_impl const&) = delete;
+    observable_impl(observable_impl&&) = delete;
+    observable_impl& operator=(observable_impl const&) = delete;
+    observable_impl& operator=(observable_impl&&) = delete;
 
     observable_impl() noexcept : value() {}
-    observable_impl(std::convertible_to<value_type> auto &&value) noexcept : value(tt_forward(value)) {}
+    observable_impl(std::convertible_to<value_type> auto&& value) noexcept : value(tt_forward(value)) {}
 
-    observable_proxy<value_type, false> get() noexcept
+    proxy_type proxy() noexcept
     {
-        return observable_proxy<value_type, false>(*this);
+        return this;
     }
 
-    observable_proxy<value_type, true> cget() noexcept
+    const_proxy_type const_proxy() noexcept
     {
-        return observable_proxy<value_type, true>(*this);
+        return this;
     }
 
     void notify_owners() const noexcept
     {
-        ttlet lock = std::scoped_lock(mutex);
-
-        for (ttlet &owner: owners) {
+        for (ttlet& owner : owners) {
             owner->_notifier(value);
         }
     }
@@ -264,9 +282,8 @@ struct observable_impl {
      *
      * @param owner A reference to observer
      */
-    void add_owner(owner_type &owner) noexcept
+    void add_owner(owner_type& owner) noexcept
     {
-        tt_axiom(mutex.is_locked());
         tt_axiom(std::find(owners.cbegin(), owners.cend(), &owner) == owners.cend());
 
         owners.push_back(&owner);
@@ -276,16 +293,14 @@ struct observable_impl {
      *
      * @param owner A reference to observer
      */
-    void remove_owner(owner_type &owner) noexcept
+    void remove_owner(owner_type& owner) noexcept
     {
-        tt_axiom(mutex.is_locked());
         ttlet nr_erased = std::erase(owners, &owner);
         tt_axiom(nr_erased == 1);
     }
 
-    void reseat_owners(std::shared_ptr<observable_impl> const &new_impl) noexcept
+    void reseat_owners(std::shared_ptr<observable_impl> const& new_impl) noexcept
     {
-        tt_axiom(mutex.is_locked());
         tt_axiom(not owners.empty());
 
         auto keep_this_alive = owners.front()->_pimpl;
@@ -309,7 +324,7 @@ struct observable_impl {
  * Typically objects will own an instance of an observable and `subscribe()`
  * one of its methods to the observable. By assigning the observables of each
  * object to each other they will share the same value.
- * Now if one object changes the shared value, the other objects will get notified.
+ * Now if one object changes the shared value, the other objects will proxy notified.
  *
  * When assigning observables to each other, the tokens
  * to the observable remain unmodified. However which value is shared is shown in the
@@ -336,7 +351,7 @@ struct observable_impl {
  * the lifetime of multiple proxy objects are extended in different orders.
  *
  * Constant proxies are more efficient than non-constant proxies. You can
- * get a non-constant proxy using the `cget()` function. Many of the
+ * proxy a non-constant proxy using the `const_proxy()` function. Many of the
  * operations available directly on the observable uses constant proxies
  * internally for this reason.
  *
@@ -346,16 +361,14 @@ template<typename T>
 class observable {
 public:
     using value_type = T;
-    using reference = detail::observable_proxy<value_type, false>;
-    using const_reference = detail::observable_proxy<value_type, true>;
     using impl_type = detail::observable_impl<value_type>;
+    using reference = impl_type::proxy_type;
+    using const_reference = impl_type::const_proxy_type;
     using notifier_type = notifier<void(value_type)>;
     using token_type = notifier_type::token_type;
-    static constexpr bool is_atomic = std::is_scalar_v<value_type>;
 
     ~observable()
     {
-        ttlet lock = std::scoped_lock(impl_type::mutex);
         _pimpl->remove_owner(*this);
     }
 
@@ -365,7 +378,6 @@ public:
      */
     observable() noexcept : _pimpl(std::make_shared<impl_type>())
     {
-        ttlet lock = std::scoped_lock(impl_type::mutex);
         _pimpl->add_owner(*this);
     }
 
@@ -375,9 +387,8 @@ public:
      *
      * @param other The other observable to share the value with.
      */
-    observable(observable const &other) noexcept : _pimpl(other._pimpl)
+    observable(observable const& other) noexcept : _pimpl(other._pimpl)
     {
-        ttlet lock = std::scoped_lock(impl_type::mutex);
         _pimpl->add_owner(*this);
     }
 
@@ -391,19 +402,18 @@ public:
      * @post subscribers are notified
      * @param other The other observable to share the value with.
      */
-    observable &operator=(observable const &other) noexcept
+    observable& operator=(observable const& other) noexcept
     {
         if (this == &other or _pimpl == other._pimpl) {
             return *this;
         }
 
         tt_axiom(_pimpl);
-        ttlet lock = std::scoped_lock(impl_type::mutex);
         _pimpl->reseat_owners(other._pimpl);
         return *this;
     }
 
-    /** Get a constant reference to the shared value.
+    /** proxy a constant reference to the shared value.
      *
      * In reality the reference is a proxy object which makes available
      * operations to be used with the shared value. This proxy object will
@@ -411,13 +421,13 @@ public:
      *
      * @return A reference to the shared value.
      */
-    const_reference cget() const noexcept
+    const_reference const_proxy() const noexcept
     {
         tt_axiom(_pimpl);
-        return _pimpl->cget();
+        return _pimpl->const_proxy();
     }
 
-    /** Get a constant reference to the shared value.
+    /** proxy a constant reference to the shared value.
      *
      * In reality the reference is a proxy object which makes available
      * operations to be used with the shared value. This proxy object will
@@ -425,13 +435,13 @@ public:
      *
      * @return A reference to the shared value.
      */
-    const_reference get() const noexcept
+    const_reference proxy() const noexcept
     {
         tt_axiom(_pimpl);
-        return _pimpl->cget();
+        return _pimpl->const_proxy();
     }
 
-    /** Get a writable reference to the shared-value.
+    /** proxy a writable reference to the shared-value.
      *
      * In reality the reference is a proxy object which makes available
      * operations to be used with the shared-value. This proxy object will
@@ -441,20 +451,18 @@ public:
      * @post subscribers are notified after reference's lifetime has ended.
      * @return A reference to the shared value.
      */
-    reference get() noexcept
+    reference proxy() noexcept
     {
         tt_axiom(_pimpl);
-        return _pimpl->get();
+        return _pimpl->proxy();
     }
 
     /** Construct an observable with its value set.
      *
      * @param value The value to assign to the shared-value.
      */
-    observable(std::convertible_to<value_type> auto &&value) noexcept :
-        _pimpl(std::make_shared<impl_type>(tt_forward(value)))
+    observable(std::convertible_to<value_type> auto&& value) noexcept : _pimpl(std::make_shared<impl_type>(tt_forward(value)))
     {
-        ttlet lock = std::scoped_lock(impl_type::mutex);
         _pimpl->add_owner(*this);
     }
 
@@ -463,50 +471,40 @@ public:
      * @post subscribers are notified.
      * @param value The value to assign to the shared-value.
      */
-    observable &operator=(std::convertible_to<value_type> auto &&value) noexcept
+    observable& operator=(std::convertible_to<value_type> auto&& value) noexcept
     {
         tt_axiom(_pimpl);
-        get() = tt_forward(value);
+        *proxy() = tt_forward(value);
         return *this;
     }
 
-    token_type subscribe(std::invocable<value_type> auto &&callback) noexcept
+    token_type subscribe(std::invocable<value_type> auto&& callback) noexcept
     {
         return _notifier.subscribe(tt_forward(callback));
     }
 
-    /** Get copy of the shared-value.
+    /** proxy a constant proxy
      *
-     * @return a copy of the shared-value.
+     * @return A proxy of the value.
      */
-    value_type operator*() const noexcept requires(is_atomic)
+    auto operator*() const noexcept
     {
-        return *(cget());
+        return const_proxy();
     }
 
-    detail::observable_proxy<value_type, true> operator*() const noexcept requires(not is_atomic)
+    auto operator->() const noexcept
     {
-        return cget();
+        return const_proxy();
     }
 
-    detail::observable_proxy<value_type, false> operator*() noexcept requires(not is_atomic)
+    value_type value() const noexcept
     {
-        return get();
-    }
-
-    detail::observable_proxy<value_type, true> operator->() const noexcept
-    {
-        return cget();
-    }
-
-    detail::observable_proxy<value_type, false> operator->() noexcept
-    {
-        return get();
+        return *const_proxy();
     }
 
     explicit operator bool() const noexcept
     {
-        return static_cast<bool>(*cget());
+        return static_cast<bool>(*const_proxy());
     }
 
     auto operator co_await() const noexcept
@@ -516,58 +514,101 @@ public:
 
     auto operator++() noexcept
     {
-        return ++(get());
+        return ++*proxy();
     }
 
     auto operator--() noexcept
     {
-        return --(get());
+        return --*proxy();
     }
 
+    [[nodiscard]] auto operator[](auto&& index) const noexcept
+        requires(requires(value_type a, decltype(index) i) { {a[i]}; })
+    {
+        return (*const_proxy())[tt_forward(index)];
+    }
+
+    [[nodiscard]] auto operator==(observable const& rhs) const noexcept
+    {
+        return *const_proxy() == **rhs;
+    }
+
+    [[nodiscard]] auto operator<=>(observable const& rhs) const noexcept
+    {
+        return *const_proxy() <=> **rhs;
+    }
+
+    [[nodiscard]] auto operator==(different_from<observable> auto const& rhs) const noexcept
+    {
+        return *const_proxy() == rhs;
+    }
+
+    [[nodiscard]] auto operator<=>(different_from<observable> auto const& rhs) const noexcept
+    {
+        return *const_proxy() <=> rhs;
+    }
+
+    // clang-format off
 #define X(op) \
-    [[nodiscard]] friend auto operator op(observable const &lhs, observable const &rhs) noexcept \
+    [[nodiscard]] friend auto operator op(observable const& lhs, observable const& rhs) noexcept \
+        requires(requires(value_type a, value_type b) { {a op b}; }) \
     { \
-        return lhs.cget() op rhs.cget(); \
+        return (**lhs) op (**rhs); \
     } \
 \
-    [[nodiscard]] friend auto operator op(observable const &lhs, auto const &rhs) noexcept \
+    [[nodiscard]] friend auto operator op(observable const& lhs, different_from<observable> auto && rhs) noexcept \
+        requires(requires(value_type a, value_type b) { {a op b}; }) \
     { \
-        return lhs.cget() op rhs; \
+        return (**lhs) op (tt_forward(rhs)); \
     } \
 \
-    [[nodiscard]] friend auto operator op(auto const &lhs, observable const &rhs) noexcept \
+    [[nodiscard]] friend auto operator op(different_from<observable> auto && lhs, observable const& rhs) noexcept \
+        requires(requires(value_type a, value_type b) { {a op b}; }) \
     { \
-        return lhs op rhs.cget(); \
+        return (tt_forward(lhs)) op (**rhs); \
     }
 
-    X(==)
-    X(<=>)
     X(+)
     X(-)
+    X(*)
+    X(/)
+    X(%)
+    X(&)
+    X(|)
+    X(^)
 #undef X
 
 #define X(op) \
     [[nodiscard]] auto operator op() const noexcept \
+        requires(requires(value_type a) { {op a}; }) \
     { \
-        return op cget(); \
+        return op (*const_proxy()); \
     }
 
     X(-)
-
+    X(~)
 #undef X
 
 #define X(op) \
-    template<typename Rhs> \
-    value_type operator op(Rhs const &rhs) noexcept \
+    value_type operator op(auto && rhs) noexcept \
+        requires(requires(value_type a, decltype(rhs) b) { {a op b}; }) \
     { \
-        return get() op rhs; \
-    }
+        return (*proxy()) op rhs; \
+    } \
 
     X(+=)
     X(-=)
+    X(*=)
+    X(/=)
+    X(%=)
+    X(&=)
+    X(|=)
+    X(^=)
 #undef X
 
-private : std::shared_ptr<impl_type> _pimpl;
+    // clang-format on
+private:
+    std::shared_ptr<impl_type> _pimpl;
     notifier_type _notifier;
     friend impl_type;
 };

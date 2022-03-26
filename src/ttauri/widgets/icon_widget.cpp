@@ -23,13 +23,12 @@ widget_constraints const &icon_widget::set_constraints() noexcept
     _layout = {};
 
     if (_icon_has_modified.exchange(false)) {
-        ttlet icon_ = icon.cget();
         _icon_type = icon_type::no;
         _icon_size = {};
         _glyph = {};
         _pixmap_backing = {};
 
-        if (ttlet pixmap = get_if<pixel_map<sfloat_rgba16>>(&*icon_)) {
+        if (ttlet pixmap = get_if<pixel_map<sfloat_rgba16>>(&*icon)) {
             _icon_type = icon_type::pixmap;
             _icon_size = extent2{narrow_cast<float>(pixmap->width()), narrow_cast<float>(pixmap->height())};
 
@@ -39,17 +38,17 @@ widget_constraints const &icon_widget::set_constraints() noexcept
                 request_reconstrain();
             }
 
-        } else if (ttlet g1 = get_if<glyph_ids>(&*icon_)) {
+        } else if (ttlet g1 = get_if<glyph_ids>(&*icon)) {
             _glyph = *g1;
             _icon_type = icon_type::glyph;
             _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).size * theme().scale;
 
-        } else if (ttlet g2 = get_if<elusive_icon>(&*icon_)) {
+        } else if (ttlet g2 = get_if<elusive_icon>(&*icon)) {
             _glyph = font_book().find_glyph(*g2);
             _icon_type = icon_type::glyph;
             _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).size * theme().scale;
 
-        } else if (ttlet g3 = get_if<ttauri_icon>(&*icon_)) {
+        } else if (ttlet g3 = get_if<ttauri_icon>(&*icon)) {
             _glyph = font_book().find_glyph(*g3);
             _icon_type = icon_type::glyph;
             _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).size * theme().scale;

@@ -266,7 +266,7 @@ public:
                 auto const line1 = tt::line_segment{get<0>(quad), get<1>(quad)};
                 auto const line2 = tt::line_segment{get<0>(quad), get<2>(quad)};
                 auto const line3 = tt::line_segment{get<3>(quad), get<2>(quad)};
-                auto const width = std::max(*border_width, 0.5f);
+                auto const width = std::max(0.5f, **border_width);
                 context.draw_line(_layout, clipping_rectangle, transform * line1, width, fill_color(), end_cap(), end_cap());
                 context.draw_line(_layout, clipping_rectangle, transform * line2, width, fill_color(), end_cap(), end_cap());
                 context.draw_line(_layout, clipping_rectangle, transform * line3, width, fill_color(), end_cap(), end_cap());

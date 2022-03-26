@@ -71,7 +71,7 @@ tt::scoped_task<> init_theme_tab(tt::grid_widget &grid, my_preferences &preferen
 
     {
         auto &theme_book = *grid.window.gui.theme_book;
-        auto proxy = theme_list.get();
+        auto proxy = theme_list.proxy();
         for (ttlet &name : theme_book.theme_names()) {
             proxy->emplace_back(name, tr{name});
         }

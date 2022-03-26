@@ -145,13 +145,13 @@ void text_widget::draw(draw_context const &context) noexcept
 
 void text_widget::undo_push() noexcept
 {
-    _undo_stack.emplace(*text.cget(), _selection);
+    _undo_stack.emplace(*text, _selection);
 }
 
 void text_widget::undo() noexcept
 {
     if (_undo_stack.can_undo()) {
-        ttlet &tmp = _undo_stack.undo(*text.cget(), _selection);
+        ttlet &tmp = _undo_stack.undo(*text, _selection);
         text = tmp.text;
         _selection = tmp.selection;
     }
@@ -168,10 +168,9 @@ void text_widget::redo() noexcept
 
 [[nodiscard]] gstring_view text_widget::selected_text() const noexcept
 {
-    ttlet &text_proxy = text.cget();
     ttlet[first, last] = _selection.selection_indices();
 
-    return gstring_view{*text_proxy}.substr(first, last - first);
+    return gstring_view{**text}.substr(first, last - first);
 }
 
 void text_widget::fix_cursor_position(size_t size) noexcept
@@ -185,7 +184,7 @@ void text_widget::replace_selection(gstring replacement) noexcept
 {
     undo_push();
 
-    auto text_proxy = text.get();
+    auto text_proxy = text.proxy();
     ttlet[first, last] = _selection.selection_indices();
     text_proxy->replace(first, last - first, replacement);
 
@@ -199,7 +198,7 @@ void text_widget::add_character(grapheme c, add_type mode) noexcept
     auto original_grapheme = grapheme{char32_t{0xffff}};
 
     if (_selection.empty() and _overwrite_mode and original_cursor.before()) {
-        original_grapheme = (*text.cget())[original_cursor.index()];
+        original_grapheme = (**text)[original_cursor.index()];
 
         ttlet[first, last] = _shaped_text.select_char(original_cursor);
         _selection.drag_selection(last);
@@ -211,7 +210,7 @@ void text_widget::add_character(grapheme c, add_type mode) noexcept
         _selection = original_cursor;
 
     } else if (mode == add_type::dead) {
-        _selection = original_cursor.before_neighbor(text.cget()->size());
+        _selection = original_cursor.before_neighbor(text->size());
         _has_dead_character = original_grapheme;
     }
 }
@@ -220,11 +219,11 @@ void text_widget::delete_dead_character() noexcept
 {
     if (_has_dead_character) {
         tt_axiom(_selection.cursor().before());
-        tt_axiom(_selection.cursor().index() < text.cget()->size());
+        tt_axiom(_selection.cursor().index() < text->size());
         if (_has_dead_character.valid()) {
-            (*text.get())[_selection.cursor().index()] = _has_dead_character;
+            (*text.proxy())[_selection.cursor().index()] = _has_dead_character;
         } else {
-            text->erase(_selection.cursor().index(), 1);
+            text.proxy()->erase(_selection.cursor().index(), 1);
         }
     }
     _has_dead_character.clear();

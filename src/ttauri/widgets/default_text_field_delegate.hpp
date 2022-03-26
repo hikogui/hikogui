@@ -89,7 +89,7 @@ public:
 
     std::string text(text_field_widget& sender) noexcept override
     {
-        return to_string(*value);
+        return to_string(**value);
     }
 
     void set_text(text_field_widget& sender, std::string_view text) noexcept override

@@ -308,8 +308,11 @@ struct is_decayed_derived_from : public is_decayed_base_of<BaseType,DerivedType>
 template<typename DerivedType, typename BaseType>
 constexpr bool is_decayed_derived_from_v = is_decayed_derived_from<DerivedType,BaseType>::value;
 
+/** If the types are different.
+* The two types are checked after removing const, volatile and reference qualifiers.
+ */
 template<typename T1, typename T2>
-constexpr bool is_different_v = !std::is_same_v<T1,T2>;
+constexpr bool is_different_v = not std::is_same_v<std::remove_cvref_t<T1>,std::remove_cvref_t<T2>>;
 
 template<typename T>
 struct is_atomic : public std::false_type {};

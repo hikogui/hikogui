@@ -19,7 +19,7 @@ public:
     observable<float> offset_x;
     observable<float> offset_y;
 
-    scroll_aperture_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
+    scroll_aperture_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
     {
         tt_axiom(is_gui_thread());
         tt_axiom(parent);
@@ -96,25 +96,22 @@ public:
             aperture_width = layout.width() - margins.left() - margins.right();
             aperture_height = layout.height() - margins.bottom() - margins.top();
 
-            ttlet aperture_width_ = *aperture_width.cget();
-            ttlet aperture_height_ = *aperture_height.cget();
-
             // Start scrolling with the preferred size as minimum, so
             // that widgets in the content don't get unnecessarily squeezed.
-            content_width = aperture_width_ < preferred_size.width() ? preferred_size.width() : aperture_width_;
-            content_height = aperture_height_ < preferred_size.height() ? preferred_size.height() : aperture_height_;
+            content_width = aperture_width < preferred_size.width() ? preferred_size.width() : *aperture_width;
+            content_height = aperture_height < preferred_size.height() ? preferred_size.height() : *aperture_height;
         }
 
         // Make sure the offsets are limited to the scrollable area.
         ttlet offset_x_max = std::max(content_width - aperture_width, 0.0f);
         ttlet offset_y_max = std::max(content_height - aperture_height, 0.0f);
-        offset_x = std::clamp(std::round(*offset_x.cget()), 0.0f, offset_x_max);
-        offset_y = std::clamp(std::round(*offset_y.cget()), 0.0f, offset_y_max);
+        offset_x = std::clamp(std::round(offset_x.value()), 0.0f, offset_x_max);
+        offset_y = std::clamp(std::round(offset_y.value()), 0.0f, offset_y_max);
 
         // The position of the content rectangle relative to the scroll view.
         // The size is further adjusted if the either the horizontal or vertical scroll bar is invisible.
         _content_rectangle = {
-            -offset_x + margins.left(), -offset_y + margins.bottom(), *content_width.cget(), *content_height.cget()};
+            -offset_x + margins.left(), -offset_y + margins.bottom(), *content_width, *content_height};
 
         // The content needs to be at a higher elevation, so that hitbox check
         // will work correctly for handling scrolling with mouse wheel.
@@ -152,8 +149,8 @@ public:
 
         if (event.type == mouse_event::Type::Wheel) {
             handled = true;
-            ttlet new_offset_x = *offset_x.cget() + event.wheelDelta.x() * theme().scale;
-            ttlet new_offset_y = *offset_y.cget() + event.wheelDelta.y() * theme().scale;
+            ttlet new_offset_x = *offset_x + event.wheelDelta.x() * theme().scale;
+            ttlet new_offset_y = *offset_y + event.wheelDelta.y() * theme().scale;
             ttlet max_offset_x = std::max(0.0f, content_width - aperture_width);
             ttlet max_offset_y = std::max(0.0f, content_height - aperture_height);
 

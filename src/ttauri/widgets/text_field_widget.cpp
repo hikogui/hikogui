@@ -50,7 +50,7 @@ widget_constraints const &text_field_widget::set_constraints() noexcept
     if (_text_widget->focus) {
         // Update the optional error value from the string conversion when the text-widget has keyboard focus.
         if (auto delegate = _delegate.lock()) {
-            _error_label = delegate->validate(*this, to_string(*_text.cget()));
+            _error_label = delegate->validate(*this, to_string(*_text));
         } else {
             _error_label = {};
         }

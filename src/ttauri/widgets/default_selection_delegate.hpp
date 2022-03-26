@@ -37,27 +37,23 @@ public:
     {
     }
 
-    void set_selected(selection_widget &sender, ssize_t index) noexcept override
+    void set_selected(selection_widget &sender, ptrdiff_t index) noexcept override
     {
-        auto options_ = options.cget();
-        if (index == -1 || index >= ssize(options_)) {
+        if (index == -1 || index >= narrow<ptrdiff_t>(options->size())) {
             value = *off_value;
         } else {
-            value = options_[index].first;
+            value = options[index].first;
         }
     }
 
-    std::pair<std::vector<label>, ssize_t> options_and_selected(selection_widget const &sender) const noexcept override
+    std::pair<std::vector<label>, ptrdiff_t> options_and_selected(selection_widget const& sender) const noexcept override
     {
-        // Make sure that options isn't being modified by another thread.
-        auto options_ = options.cget();
-
         auto labels = std::vector<label>{};
-        labels.reserve(size(options_));
+        labels.reserve(options->size());
 
         auto index = 0_z;
         auto selected_index = -1_z;
-        for (auto &&option : options_) {
+        for (auto &&option : **options) {
             if (value == option.first) {
                 selected_index = index;
             }
