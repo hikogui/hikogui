@@ -20,219 +20,205 @@ class observable;
 
 namespace detail {
 
-template<typename T>
-struct observable_impl;
-
-/** A proxy to the shared-value inside an observable.
- *
- * This proxy object makes sure that updates to a value
- * is atomic and that modifications causes notifications to be
- * sent.
- *
- * @tparam T The type of the observed value.
- * @tparam Constant True when there is read-only access to the value. False if there is read-write access.
- */
-template<typename T, bool Constant>
-struct observable_proxy {
-    using value_type = T;
-    static constexpr bool is_constant = Constant;
-    static constexpr bool is_variable = not Constant;
-
-    enum class state_type : uint8_t { read, write, modified };
-
-    observable_impl<value_type> *_actual = nullptr;
-    mutable value_type _original;
-    mutable state_type _state = state_type::read;
-
-    ~observable_proxy()
-    {
-        tt_axiom(_actual);
-
-        if (is_variable and _state == state_type::write and _actual->value != _original) {
-            _state = state_type::modified;
-        }
-
-        if (is_variable and _state == state_type::modified) {
-            _actual->notify_owners();
-        }
-    }
-
-    observable_proxy(observable_impl<T> &actual) : _actual(&actual), _original(), _state(state_type::read)
-    {
-        tt_axiom(this->_actual);
-    }
-
-    observable_proxy(observable_proxy &&) = delete;
-    observable_proxy(observable_proxy const &) = delete;
-
-    void prepare_write() const noexcept
-    {
-        if (_state == state_type::read) {
-            _original = _actual->value;
-            _state = state_type::write;
-        }
-    }
-
-    operator value_type &() const noexcept requires(is_variable)
-    {
-        prepare_write();
-        return _actual->value;
-    }
-
-    operator value_type const &() const noexcept requires(is_constant)
-    {
-        return _actual->value;
-    }
-
-    /** Copy the value from a temporary proxy.
-     */
-    observable_proxy &operator=(observable_proxy &&other) noexcept
-    {
-        tt_return_on_self_assignment(other);
-
-        return *this = other._actual->value;
-    }
-
-    /** Copy the value from a proxy.
-     */
-    observable_proxy &operator=(observable_proxy const &other) noexcept
-    {
-        tt_return_on_self_assignment(other);
-
-        return *this = other._actual->value;
-    }
-
-    // MSVC Compiler bug returning this with auto argument
-    template<typename Arg = value_type>
-    observable_proxy &operator=(Arg &&arg) noexcept
-        requires(is_variable and not std::is_same_v<std::remove_cvref_t<Arg>, observable_proxy>)
-    {
-        prepare_write();
-        _actual->value = std::forward<Arg>(arg);
-        return *this;
-    }
-
-    value_type const &operator*() const noexcept requires(is_constant)
-    {
-        return _actual->value;
-    }
-
-    value_type &operator*() const noexcept requires(is_variable)
-    {
-        prepare_write();
-        return _actual->value;
-    }
-
-    value_type const *operator->() const noexcept requires(is_constant)
-    {
-        return &(_actual->value);
-    }
-
-    value_type *operator->() const noexcept requires(is_variable)
-    {
-        prepare_write();
-        return &(_actual->value);
-    }
-
-    template<typename... Args>
-    decltype(auto) operator()(Args &&...args) const noexcept
-    {
-        prepare_write();
-        return _actual->value(std::forward<Args>(args)...);
-    }
-
-    template<typename Arg>
-    decltype(auto) operator[](Arg &&arg) const noexcept requires(is_variable)
-    {
-        prepare_write();
-        return _actual->value[std::forward<Arg>(arg)];
-    }
-
-    template<typename Arg>
-    decltype(auto) operator[](Arg &&arg) const noexcept requires(is_constant)
-    {
-        return const_cast<value_type const &>(_actual->value)[std::forward<Arg>(arg)];
-    }
-
-    auto operator++() noexcept requires(is_variable and pre_incrementable<decltype(_actual->value)>)
-    {
-        _state = state_type::modified;
-        return ++(_actual->value);
-    }
-
-    auto operator--() noexcept requires(is_variable and pre_decrementable<decltype(_actual->value)>)
-    {
-        _state = state_type::modified;
-        return --(_actual->value);
-    }
-
-#define X(op) \
-    [[nodiscard]] friend auto operator op(observable_proxy const &lhs, observable_proxy const &rhs) noexcept \
-    { \
-        return lhs._actual->value op rhs._actual->value; \
-    } \
-\
-    [[nodiscard]] friend auto operator op(observable_proxy const &lhs, auto const &rhs) noexcept \
-    { \
-        return lhs._actual->value op rhs; \
-    } \
-\
-    [[nodiscard]] friend auto operator op(auto const &lhs, observable_proxy const &rhs) noexcept \
-    { \
-        return lhs op rhs._actual->value; \
-    }
-
-    X(==)
-    X(<=>)
-    X(-)
-    X(+)
-    X(*)
-    X(/)
-    X(%)
-    X(&)
-    X(|)
-#undef X
-
-#define X(op) \
-    [[nodiscard]] auto operator op() const noexcept \
-    { \
-        return op _actual->value; \
-    }
-
-    X(-)
-    X(~)
-#undef X
-
-#define X(op) \
-    value_type operator op(auto const &rhs) noexcept requires(is_variable) \
-    { \
-        prepare_write(); \
-        return _actual->value op rhs; \
-    }
-
-    X(+=)
-    X(-=)
-#undef X
-
-#define X(func) \
-    [[nodiscard]] friend decltype(auto) func(observable_proxy const &rhs) noexcept \
-    { \
-        return func(rhs._actual->value); \
-    }
-
-    X(size)
-    X(ssize)
-    X(begin)
-    X(end)
-#undef X
-};
-
 /** The shared value, shared between observers.
  */
 template<typename T>
 struct observable_impl {
     using value_type = T;
     using owner_type = observable<value_type>;
+
+    struct proxy_type {
+        constexpr proxy_type(proxy_type const &) noexcept = delete;
+        constexpr proxy_type &operator=(proxy_type const &) noexcept = delete;
+
+        constexpr proxy_type(proxy_type &&other) noexcept :
+            actual(std::exchange(other.actual, nullptr)),
+            old_value(std::exchange(other.old_value, {}))
+        {
+        }
+
+        constexpr proxy_type &operator=(proxy_type &&other) noexcept
+        {
+            if (actual) {
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+                // This proxy will not be used anymore, so notifier_owners may cause new proxies to be openened.
+                actual->rw_count = false;
+#endif
+                if (old_value != actual->value) {
+                    actual->notifier_owners();
+                }
+
+            }
+
+            actual = std::exchange(other.actual, nullptr);
+            old_value = std::exchange(other.old_value, {});
+        }
+
+        constexpr proxy_type() noexcept : acctual(nullptr), old_value() {}
+
+        constexpr proxy_type(observable_impl *actual) noexcept : actual(actual), old_value(actual->value)
+        {
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+            // Cannot open a read-write proxy when something already has a read proxy open.
+            tt_assert(actual->ro_count == 0);
+            // There may only be one read-write proxy.
+            tt_assert(not std::exchange(actual->rw_count, true));
+#endif
+        }
+
+
+        constexpr ~proxy_type()
+        {
+            if (actual) {
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+                // This proxy will not be used anymore, so notifier_owners may cause new proxies to be openened.
+                actual->rw_count = false;
+#endif
+                if (old_value != actual->value) {
+                    actual->notifier_owners();
+                }
+            }
+        }
+
+        constexpr value_type *operator->() const noexcept
+        {
+            tt_axiom(actual);
+            return &(actual->value);
+        }
+
+        constexpr value_type &operator*() const noexcept
+        {
+            tt_axiom(actual);
+            return actual->value;
+        }
+
+        observable_impl *actual;
+        value_type old_value;
+    };
+
+    struct const_proxy_type {
+        constexpr const_proxy_type(const_proxy_type const &other) noexcept : actual(other.actual)
+        {
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+            if (actual) {
+                tt_assert(actual->rw_count == false);
+                tt_assert(actual->ro_count != 0);
+                ++actual->ro_count;
+            }
+#endif
+        }
+
+        constexpr const_proxy_type(const_proxy_type &&other) noexcept : actual(std::exchange(other.actual, nullptr))
+        {
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+            if (actual) {
+                tt_assert(actual->rw_count == false);
+                tt_assert(actual->ro_count != 0);
+            }
+#endif
+        }
+
+        constexpr const_proxy_type &operator=(const_proxy_type const &other) noexcept 
+        {
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+            if (actual) {
+                tt_assert(actual->rw_count == false);
+                tt_assert(actual->ro_count != 0);
+                --actual->ro_count;
+            }
+#endif
+            actual = other.actual;
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+            if (actual) {
+                tt_assert(actual->rw_count == false);
+                tt_assert(actual->ro_count != 0);
+                ++actual->ro_count;
+            }
+#endif
+        }
+
+        constexpr const_proxy_type &operator=(const_proxy_type &&other) noexcept
+        {
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+            if (actual) {
+                tt_assert(actual->rw_count == false);
+                tt_assert(actual->ro_count != 0);
+                --actual->ro_count;
+            }
+#endif
+            actual = std::exchange(other.actual, nullptr);
+        }
+
+        constexpr const_proxy_type(proxy_type &&other) noexcept : actual(std::exchange(other.actual, nullptr))
+        {
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+            if (actual) {
+                tt_assert(actual->rw_count == true);
+                tt_assert(actual->ro_count == 0);
+                actual->rw_count = false;
+                ++actual->ro_count;
+            }
+#endif
+        }
+
+        constexpr const_proxy_type &operator=(proxy_type &&other) noexcept
+        {
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+            if (actual) {
+                tt_assert(actual->rw_count == false);
+                tt_assert(actual->ro_count != 0);
+                --actual->ro_count;
+            }
+#endif
+            actual = std::exchange(other.actual, nullptr);
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+            if (actual) {
+                tt_assert(actual->rw_count == true);
+                tt_assert(actual->ro_count == 0);
+                actual->rw_count = false;
+                ++actual->ro_count;
+            }
+#endif
+        }
+
+        constexpr const_proxy_type() noexcept : actual(nullptr)  {}
+
+        constexpr const_proxy_type(observable_impl *actual) noexcept : actual(actual)
+        {
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+            if (actual) {
+                // Cannot open a read-only proxy with a read-write proxy.
+                tt_assert(actual->rw_count == false);
+                ++actual->ro_count;
+             }
+#endif
+        }
+
+        constexpr ~const_proxy_type()
+        {
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+            if (actual) {
+                tt_assert(actual->rw_count == false);
+                tt_assert(actual->ro_count != 0);
+                --actual->ro_count;
+            }
+#endif
+        }
+
+        constexpr value_type const *operator->() const noexcept
+        {
+            tt_axiom(actual);
+            return &(actual->value);
+        }
+
+        constexpr value_type const &operator*() const noexcept
+        {
+            tt_axiom(actual);
+            return actual->value;
+        }
+
+        observable_impl *actual;
+    };
 
     /** Mutex used to handle ownership of observable_impl.
      */
@@ -521,6 +507,11 @@ public:
     explicit operator bool() const noexcept
     {
         return static_cast<bool>(*cget());
+    }
+
+    auto operator co_await() const noexcept
+    {
+        return _notifier.operator co_await();
     }
 
     auto operator++() noexcept
