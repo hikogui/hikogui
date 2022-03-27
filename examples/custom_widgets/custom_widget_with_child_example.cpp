@@ -63,7 +63,7 @@ public:
     // requests a (partial) redraw, or when a widget requests a redraw of itself.
     void draw(tt::draw_context const &context) noexcept override
     {
-        if (visible) {
+        if (*visible) {
             // We only need to draw the widget when it is visible and when the visible area of
             // the widget overlaps with the scissor-rectangle (partial redraw) of the drawing context.
             if (overlaps(context, layout())) {

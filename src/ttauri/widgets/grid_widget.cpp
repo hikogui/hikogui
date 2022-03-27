@@ -109,7 +109,7 @@ void grid_widget::set_layout(widget_layout const &layout) noexcept
 
 void grid_widget::draw(draw_context const &context) noexcept
 {
-    if (visible) {
+    if (*visible) {
         for (ttlet &cell : _cells) {
             cell.widget->draw(context);
         }
@@ -120,7 +120,7 @@ hitbox grid_widget::hitbox_test(point3 position) const noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (visible and enabled) {
+    if (*visible and *enabled) {
         auto r = hitbox{};
         for (ttlet &cell : _cells) {
             r = cell.widget->hitbox_test_from_parent(position, r);

@@ -76,7 +76,7 @@ public:
 
     void draw(draw_context const &context) noexcept override
     {
-        if (visible and overlaps(context, layout())) {
+        if (*visible and overlaps(context, layout())) {
             draw_rails(context);
             draw_slider(context);
         }
@@ -86,7 +86,7 @@ public:
     {
         tt_axiom(is_gui_thread());
 
-        if (visible and enabled and layout().contains(position) and _slider_rectangle.contains(position)) {
+        if (*visible and *enabled and layout().contains(position) and _slider_rectangle.contains(position)) {
             return {this, position};
         } else {
             return {};
@@ -157,7 +157,7 @@ private:
     */
     [[nodiscard]] float clamp_offset(float new_offset) const noexcept
     {
-        ttlet scrollable_distance = std::max(0.0f, content - aperture);
+        ttlet scrollable_distance = std::max(0.0f, *content - *aperture);
         return std::clamp(new_offset, 0.0f, scrollable_distance);
     }
 
@@ -171,8 +171,7 @@ private:
     {
         tt_axiom(is_gui_thread());
 
-        ttlet content_ = *content;
-        ttlet content_aperture_ratio = content_ != 0.0f ? *aperture / content_ : 1.0f;
+        ttlet content_aperture_ratio = *content != 0.0f ? *aperture / *content : 1.0f;
         ttlet rail_length_ = rail_length();
         return std::clamp(rail_length_ * content_aperture_ratio, theme().size * 2.0f, rail_length_);
     }

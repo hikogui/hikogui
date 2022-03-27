@@ -81,7 +81,7 @@ void abstract_button_widget::set_layout_button(widget_layout const &context) noe
 {
     tt_axiom(is_gui_thread());
 
-    if (visible and enabled and layout().contains(position)) {
+    if (*visible and *enabled and layout().contains(position)) {
         return {this, position, hitbox::Type::Button};
     } else {
         return {};
@@ -91,7 +91,7 @@ void abstract_button_widget::set_layout_button(widget_layout const &context) noe
 [[nodiscard]] bool abstract_button_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
     tt_axiom(is_gui_thread());
-    return visible and enabled and any(group & tt::keyboard_focus_group::normal);
+    return *visible and *enabled and any(group & tt::keyboard_focus_group::normal);
 }
 
 void activate() noexcept;
@@ -100,7 +100,7 @@ void activate() noexcept;
 {
     tt_axiom(is_gui_thread());
 
-    if (enabled) {
+    if (*enabled) {
         switch (command) {
         case command::gui_activate: activate(); return true;
         case command::gui_enter:
@@ -121,7 +121,7 @@ void activate() noexcept;
 
     if (event.cause.leftButton) {
         handled = true;
-        if (enabled) {
+        if (*enabled) {
             if (compare_store(_pressed, static_cast<bool>(event.down.leftButton))) {
                 request_redraw();
             }

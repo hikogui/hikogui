@@ -49,7 +49,7 @@ namespace tt::inline v1 {
 /** This part of the code should not be reachable, unless a programming bug.
  * This function should be used in unreachable else statements or switch-default labels,
  */
-#define tt_no_default() [[unlikely]] tt_debug_abort();
+#define tt_no_default() [[unlikely]] tt_debug_abort()
 
 #else
 /** Specify an axiom; an expression that is true.
@@ -65,7 +65,6 @@ namespace tt::inline v1 {
  */
 #define tt_no_default() tt_unreachable()
 #endif
-
 
 /** This part of the code should not be reachable, unless a programming bug.
  * This function should be used in unreachable constexpr else statements.

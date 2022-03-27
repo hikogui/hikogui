@@ -106,6 +106,8 @@ public:
 
     private:
         notifier *_notifier = nullptr;
+
+        friend notifier;
     };
 
     /** An awaiter object which can wait on a notifier.
@@ -135,12 +137,23 @@ public:
 
             // We can use the this pointer in the callback, as `await_suspend()` is called by
             // the co-routine on the same object as `await_resume()`.
-            _cbt = _notifier->subscribe([handle] {
+            _cbt = _notifier->subscribe([this, handle](Args const&...args) {
+                _args = {args...};
                 handle.resume();
             });
         }
 
-        constexpr result_type await_resume() const noexcept {}
+        constexpr void await_resume() const noexcept requires(sizeof...(Args) == 0) {}
+
+        constexpr auto await_resume() const noexcept requires(sizeof...(Args) == 1)
+        {
+            return std::get<0>(_args);
+        }
+
+        constexpr auto await_resume() const noexcept requires(sizeof...(Args) > 1)
+        {
+            return _args;
+        }
 
         [[nodiscard]] bool operator==(awaiter_type const& rhs) const noexcept
         {
@@ -150,6 +163,7 @@ public:
     private:
         notifier *_notifier = nullptr;
         token_type _cbt;
+        std::tuple<Args...> _args;
     };
 
     /** Create a notifier.
@@ -193,7 +207,7 @@ public:
     }
 
     /** Call the subscribed callbacks with the given arguments.
-     * 
+     *
      * @note This function is not reentrant.
      * @param args The arguments to pass with the invocation of the callback
      */
@@ -231,11 +245,11 @@ public:
 #endif
     }
 
-private:
+private :
     /** A list of callbacks and it's associated token.
      */
-    std::vector<std::pair<token_type const *, callback_type>> _callbacks;
-
+    std::vector<std::pair<token_type const *, callback_type>>
+        _callbacks;
 #if TT_BUILD_TYPE == TT_BT_DEBUG
     /** The notifier is currently calling all the callbacks.
      */
@@ -276,4 +290,3 @@ private:
 };
 
 } // namespace tt::inline v1
-

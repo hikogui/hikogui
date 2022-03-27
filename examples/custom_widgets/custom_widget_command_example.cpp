@@ -46,7 +46,7 @@ public:
     // In this case the background color is 'teal' when the value of the widget is true.
     [[nodiscard]] tt::color background_color() const noexcept override
     {
-        return value ? theme().color(tt::theme_color::green) : widget::background_color();
+        return *value ? theme().color(tt::theme_color::green) : widget::background_color();
     }
 
     // The `draw()` function is called when all or part of the window requires redrawing.
@@ -56,7 +56,7 @@ public:
     {
         // We only need to draw the widget when it is visible and when the visible area of
         // the widget overlaps with the scissor-rectangle (partial redraw) of the drawing context.
-        if (visible and overlaps(context, layout())) {
+        if (*visible and overlaps(context, layout())) {
             // When drawing this box we use the widget's background_color() and focus_color().
             // These colors are context sensitive; for example focus_color() checks if the widget is enabled,
             // has keyboard focus and the window is active.
@@ -75,7 +75,7 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(tt::keyboard_focus_group group) const noexcept override
     {
         // This widget will react to "normal" tab/shift-tab keys and mouse clicks to focus the widget.
-        return enabled and any(group & tt::keyboard_focus_group::normal);
+        return *enabled and any(group & tt::keyboard_focus_group::normal);
     }
 
     // Override this function when your widget needs to be controllable by mouse interaction.
@@ -83,11 +83,11 @@ public:
     {
         // Check if the (mouse) position is within the visual-area of the widget.
         // The hit_rectangle is the _layout.rectangle() intersected with the _layout.clipping_rectangle.
-        if (visible and enabled and layout().contains(position)) {
+        if (*visible and *enabled and layout().contains(position)) {
             // The `this` argument allows the gui_window to forward mouse events to handle_event(mouse) of this widget.
             // The `position` argument is used to handle widgets that are visually overlapping, widgets with higher elevation
             // get priority. When this widget is enabled it should show a button-cursor, otherwise just the normal arrow.
-            return {this, position, enabled ? tt::hitbox::Type::Button : tt::hitbox::Type::Default};
+            return {this, position, *enabled ? tt::hitbox::Type::Button : tt::hitbox::Type::Default};
 
         } else {
             return {};
@@ -97,14 +97,14 @@ public:
     // Override the handle_event(command) to handle high level commands.
     [[nodiscard]] bool handle_event(tt::command command) noexcept override
     {
-        if (enabled and command == tt::command::gui_activate) {
+        if (*enabled and command == tt::command::gui_activate) {
             // Handle activate, by default the "spacebar" causes this command.
-            value = not value;
+            value = not *value;
             return true;
 
-        } else if (enabled and command == tt::command::gui_enter) {
+        } else if (*enabled and command == tt::command::gui_enter) {
             // Handle the enter command, this will activate then set the keyboard focus to the next normal widget.
-            value = not value;
+            value = not *value;
             window.update_keyboard_target(tt::keyboard_focus_group::normal, tt::keyboard_focus_direction::forward);
             return true;
         }
@@ -116,7 +116,7 @@ public:
     // Override the mouse event to handle the left click.
     [[nodiscard]] bool handle_event(tt::mouse_event const &event) noexcept override
     {
-        if (enabled and event.is_left_button_up(_layout.rectangle())) {
+        if (*enabled and event.is_left_button_up(_layout.rectangle())) {
             // Forward the left click as a gui_activate command.
             return handle_event(tt::command::gui_activate);
         }
@@ -127,7 +127,7 @@ public:
 
     bool handle_event(tt::keyboard_event const &event) noexcept
     {
-        if (enabled) {
+        if (*enabled) {
             if (event.type == tt::keyboard_event::Type::grapheme) {
                 tt_log_error("User typed the letter U+{:x}.", static_cast<uint32_t>(get<0>(event.grapheme)));
                 return true;

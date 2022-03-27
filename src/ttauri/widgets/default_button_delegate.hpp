@@ -74,9 +74,9 @@ public:
     /// @privatesection
     [[nodiscard]] button_state state(abstract_button_widget const &sender) const noexcept override
     {
-        if (value == on_value) {
+        if (*value == *on_value) {
             return button_state::on;
-        } else if (value == off_value) {
+        } else if (*value == *off_value) {
             return button_state::off;
         } else {
             return button_state::other;
@@ -86,7 +86,7 @@ public:
     void activate(abstract_button_widget &sender) noexcept override
     {
         if constexpr (button_type == button_type::toggle) {
-            if (value == off_value) {
+            if (*value == *off_value) {
                 value = *on_value;
             } else {
                 value = *off_value;

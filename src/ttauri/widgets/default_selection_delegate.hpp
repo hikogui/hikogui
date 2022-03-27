@@ -39,10 +39,10 @@ public:
 
     void set_selected(selection_widget &sender, ptrdiff_t index) noexcept override
     {
-        if (index == -1 || index >= narrow<ptrdiff_t>(options->size())) {
+        if (index == -1 || index >= std::ssize(*options)) {
             value = *off_value;
         } else {
-            value = options[index].first;
+            value = (*options)[index].first;
         }
     }
 
@@ -53,8 +53,8 @@ public:
 
         auto index = 0_z;
         auto selected_index = -1_z;
-        for (auto &&option : **options) {
-            if (value == option.first) {
+        for (auto &&option : *options) {
+            if (*value == option.first) {
                 selected_index = index;
             }
             labels.push_back(option.second);

@@ -72,7 +72,7 @@ void icon_widget::set_layout(widget_layout const &layout) noexcept
 
 void icon_widget::draw(draw_context const &context) noexcept
 {
-    if (visible and overlaps(context, layout())) {
+    if (*visible and overlaps(context, layout())) {
         switch (_icon_type) {
         case icon_type::no: break;
 

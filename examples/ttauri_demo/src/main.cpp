@@ -89,10 +89,10 @@ tt::scoped_task<> init_license_tab(tt::grid_widget &grid, my_preferences &prefer
 
     grid.make_widget<label_widget>(
         "A1", tr("This is a \xd7\x9c\xd6\xb0\xd7\x9e\xd6\xb7\xd7\xaa\xd6\xb5\xd7\x92.\nAnd another sentence. One more:"));
-    auto &checkbox1 = grid.make_widget<toggle_widget>("B1", preferences.toggle_value);
-    checkbox1.on_label = tr("true");
-    checkbox1.off_label = tr("false");
-    checkbox1.other_label = tr("other");
+    auto &toggle = grid.make_widget<toggle_widget>("B1", preferences.toggle_value);
+    toggle.on_label = tr("true");
+    toggle.off_label = tr("false");
+    toggle.other_label = tr("other");
 
     grid.make_widget<label_widget>("A2", tr("These is a disabled checkbox:"));
     auto &checkbox2 = grid.make_widget<checkbox_widget>("B2", preferences.radio_value, 2, 0);
@@ -154,14 +154,14 @@ tt::task<> main_window(tt::gui_system &gui, my_preferences &preferences)
     ttlet &preferences_button = window->toolbar().make_widget<tt::toolbar_button_widget>(preferences_label);
 
     auto &column = window->content().make_widget<column_widget>("A1");
-    column.make_widget<momentary_button_widget>(tr("Hello \u4e16\u754c"));
+    column.make_widget<toggle_widget>(preferences.toggle_value);
     ttlet &hello_world_button = column.make_widget<momentary_button_widget>(tr("Hello world"));
 
     ttlet &vma_dump_button = column.make_widget<momentary_button_widget>(tr("vma\ncalculate stats"));
 
     while (true) {
         ttlet result =
-            co_await when_any(preferences_button.pressed, vma_dump_button.pressed, hello_world_button.pressed, window->closing);
+            co_await when_any(preferences_button.pressed, vma_dump_button.pressed, hello_world_button.pressed, preferences.toggle_value, window->closing);
 
         if (result == preferences_button.pressed) {
             preferences_window(gui, preferences);
@@ -171,6 +171,9 @@ tt::task<> main_window(tt::gui_system &gui, my_preferences &preferences)
 
         } else if (result == hello_world_button.pressed) {
             tt_log_info("Hello World");
+
+        } else if (result == preferences.toggle_value) {
+            tt_log_info("Toggle value {}", get<bool>(result));
 
         } else if (result == window->closing) {
             co_return;

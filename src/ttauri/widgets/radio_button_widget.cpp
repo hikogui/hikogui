@@ -34,7 +34,7 @@ void radio_button_widget::set_layout(widget_layout const &layout) noexcept
 
 void radio_button_widget::draw(draw_context const &context) noexcept
 {
-    if (visible and overlaps(context, layout())) {
+    if (*visible and overlaps(context, layout())) {
         draw_radio_button(context);
         draw_radio_pip(context);
         draw_button(context);

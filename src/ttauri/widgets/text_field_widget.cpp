@@ -72,7 +72,7 @@ widget_constraints const &text_field_widget::set_constraints() noexcept
     size.height() += text_constraints.margins.bottom();
 
     _error_label_widget->visible = not _error_label->empty();
-    if (_error_label_widget->visible) {
+    if (*_error_label_widget->visible) {
         ttlet error_label_constraints = _error_label_widget->set_constraints();
         size.width() += error_label_constraints.preferred.width();
         size.height() += error_label_constraints.margins.top();
@@ -88,7 +88,7 @@ widget_constraints const &text_field_widget::set_constraints() noexcept
 void text_field_widget::set_layout(widget_layout const &layout) noexcept
 {
     if (compare_store(_layout, layout)) {
-        if (_error_label_widget->visible) {
+        if (*_error_label_widget->visible) {
             _error_label_rectangle =
                 aarectangle{0.0f, 0.0f, layout.rectangle().width(), _error_label_widget->constraints().preferred.height()};
 
@@ -98,7 +98,7 @@ void text_field_widget::set_layout(widget_layout const &layout) noexcept
         }
     }
 
-    if (_error_label_widget->visible) {
+    if (*_error_label_widget->visible) {
         _error_label_widget->set_layout(layout.transform(_error_label_rectangle));
     }
     _scroll_widget->set_layout(layout.transform(_text_rectangle));
@@ -106,7 +106,7 @@ void text_field_widget::set_layout(widget_layout const &layout) noexcept
 
 void text_field_widget::draw(draw_context const &context) noexcept
 {
-    if (visible and overlaps(context, layout())) {
+    if (*visible and overlaps(context, layout())) {
         draw_background_box(context);
 
         _scroll_widget->draw(context);
@@ -118,7 +118,7 @@ bool text_field_widget::handle_event(tt::command command) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (enabled) {
+    if (*enabled) {
         switch (command) {
         case command::gui_cancel:
             revert(true);
@@ -152,7 +152,7 @@ hitbox text_field_widget::hitbox_test(point3 position) const noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (visible and enabled) {
+    if (*visible and *enabled) {
         auto r = hitbox{};
         r = _scroll_widget->hitbox_test_from_parent(position, r);
         r = _error_label_widget->hitbox_test_from_parent(position, r);
@@ -164,7 +164,7 @@ hitbox text_field_widget::hitbox_test(point3 position) const noexcept
 
 [[nodiscard]] bool text_field_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
-    if (visible and enabled) {
+    if (*visible and *enabled) {
         return _scroll_widget->accepts_keyboard_focus(group);
     } else {
         return false;
@@ -173,7 +173,7 @@ hitbox text_field_widget::hitbox_test(point3 position) const noexcept
 
 [[nodiscard]] color text_field_widget::focus_color() const noexcept
 {
-    if (enabled) {
+    if (*enabled) {
         if (not _error_label->empty()) {
             return theme().text_style(theme_text_style::error).color;
         } else if (_text_widget->focus) {

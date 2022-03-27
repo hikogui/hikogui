@@ -54,7 +54,7 @@ tt::font_book &widget::font_book() const noexcept
 
 [[nodiscard]] color widget::background_color() const noexcept
 {
-    if (enabled) {
+    if (*enabled) {
         if (hover) {
             return theme().color(theme_color::fill, semantic_layer + 1);
         } else {
@@ -67,7 +67,7 @@ tt::font_book &widget::font_book() const noexcept
 
 [[nodiscard]] color widget::foreground_color() const noexcept
 {
-    if (enabled) {
+    if (*enabled) {
         if (hover) {
             return theme().color(theme_color::border, semantic_layer + 1);
         } else {
@@ -80,7 +80,7 @@ tt::font_book &widget::font_book() const noexcept
 
 [[nodiscard]] color widget::focus_color() const noexcept
 {
-    if (enabled) {
+    if (*enabled) {
         if (focus) {
             return theme().color(theme_color::accent);
         } else if (hover) {
@@ -95,7 +95,7 @@ tt::font_book &widget::font_book() const noexcept
 
 [[nodiscard]] color widget::accent_color() const noexcept
 {
-    if (enabled) {
+    if (*enabled) {
         return theme().color(theme_color::accent);
     } else {
         return theme().color(theme_color::border, semantic_layer - 1);
@@ -104,7 +104,7 @@ tt::font_book &widget::font_book() const noexcept
 
 [[nodiscard]] color widget::label_color() const noexcept
 {
-    if (enabled) {
+    if (*enabled) {
         return theme().text_style(theme_text_style::label).color;
     } else {
         return theme().color(theme_color::border, semantic_layer - 1);

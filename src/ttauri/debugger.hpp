@@ -24,6 +24,6 @@ void prepare_debug_break() noexcept;
 
 #define tt_debug_abort() \
     tt_debug_break(); \
-    std::terminate();
+    std::terminate()
 
 } // namespace tt::inline v1

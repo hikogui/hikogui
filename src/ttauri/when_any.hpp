@@ -67,17 +67,17 @@ public:
     /** Get the value returned by the awaitable that triggered `when_any`.
      */
     template<typename T>
-    friend auto &get(when_any_result const &) noexcept
+    friend auto &get(when_any_result const &rhs) noexcept
     {
-        return std::get<T>(_result);
+        return std::get<T>(rhs._result);
     }
 
     /** Get the value returned by the awaitable that triggered `when_any`.
      */
     template<std::size_t I>
-    friend auto &get(when_any_result const &) noexcept
+    friend auto& get(when_any_result const& rhs) noexcept
     {
-        return std::get<I + 1>(_result);
+        return std::get<I + 1>(rhs._result);
     }
 
 private:

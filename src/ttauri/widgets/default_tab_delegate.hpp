@@ -36,11 +36,11 @@ public:
 
     [[nodiscard]] ssize_t index(tab_widget &sender) noexcept override
     {
-        auto i = tab_indices.find(*value);
-        if (i == tab_indices.end()) {
+        auto it = tab_indices.find(*value);
+        if (it == tab_indices.end()) {
             return -1;
         } else {
-            return static_cast<ssize_t>(i->second);
+            return static_cast<ssize_t>(it->second);
         }
     }
 

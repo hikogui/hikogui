@@ -159,7 +159,7 @@ public:
 
     void draw(draw_context const &context) noexcept override
     {
-        if (visible) {
+        if (*visible) {
             for (ttlet &child : _children) {
                 child->draw(context);
             }
@@ -170,7 +170,7 @@ public:
     {
         tt_axiom(is_gui_thread());
 
-        if (visible and enabled) {
+        if (*visible and *enabled) {
             auto r = hitbox{};
             for (ttlet &child : _children) {
                 r = child->hitbox_test_from_parent(position, r);

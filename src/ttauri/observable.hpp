@@ -343,7 +343,7 @@ struct observable_impl {
  * The const-proxy is cheap and possibly completely optimized away for accessing
  * the value read-only. The (non-const) proxy may be quite expensive as it makes
  * a copy of the value to compare against to determine if change-notification is needed.
- * 
+ *
  * For this reason almost all operators of `observable` will work on const-proxies.
  *
  * If you want to modify the value, or make multiple modifications you may explicitly
@@ -357,10 +357,13 @@ class observable {
 public:
     using value_type = T;
     using impl_type = detail::observable_impl<value_type>;
-    using reference = impl_type::proxy_type;
-    using const_reference = impl_type::const_proxy_type;
+    using proxy_type = impl_type::proxy_type;
+    using const_proxy_type = impl_type::const_proxy_type;
+    using reference = value_type&;
+    using const_reference = value_type const&;
     using notifier_type = notifier<void(value_type)>;
     using token_type = notifier_type::token_type;
+    using awaiter_type = notifier_type::awaiter_type;
 
     ~observable()
     {
@@ -408,6 +411,16 @@ public:
         return *this;
     }
 
+    token_type subscribe(std::invocable<value_type> auto&& callback) noexcept
+    {
+        return _notifier.subscribe(tt_forward(callback));
+    }
+
+    awaiter_type operator co_await() const noexcept
+    {
+        return _notifier.operator co_await();
+    }
+
     /** proxy a constant reference to the shared value.
      *
      * In reality the reference is a proxy object which makes available
@@ -416,7 +429,7 @@ public:
      *
      * @return A reference to the shared value.
      */
-    const_reference const_proxy() const noexcept
+    const_proxy_type const_proxy() const noexcept
     {
         tt_axiom(_pimpl);
         return _pimpl->const_proxy();
@@ -430,7 +443,7 @@ public:
      *
      * @return A reference to the shared value.
      */
-    const_reference proxy() const noexcept
+    proxy_type proxy() const noexcept
     {
         tt_axiom(_pimpl);
         return _pimpl->const_proxy();
@@ -446,10 +459,30 @@ public:
      * @post subscribers are notified after reference's lifetime has ended.
      * @return A reference to the shared value.
      */
-    reference proxy() noexcept
+    proxy_type proxy() noexcept
     {
         tt_axiom(_pimpl);
         return _pimpl->proxy();
+    }
+
+    /** Dereference to the value.
+     *
+     * @return A const reference to the value.
+     */
+    const_reference operator*() const noexcept
+    {
+        return *const_proxy();
+    }
+
+    /** Member select.
+    * 
+    * Member selection is done recursive through a read-only proxy object.
+    * 
+    * @return A read-only proxy object used to recursively member select.
+    */
+    const_proxy_type operator->() const noexcept
+    {
+        return const_proxy();
     }
 
     /** Construct an observable with its value set.
@@ -473,137 +506,175 @@ public:
         return *this;
     }
 
-    token_type subscribe(std::invocable<value_type> auto&& callback) noexcept
-    {
-        return _notifier.subscribe(tt_forward(callback));
-    }
-
-    /** proxy a constant proxy
+    /** Pre increment.
      *
-     * @return A proxy of the value.
+     * Short for `++*lhs.proxy()`
+     *
+     * @param rhs The right hand side value.
+     * @return The return value of the value_type::operator++().
      */
-    auto operator*() const noexcept
-    {
-        return const_proxy();
-    }
-
-    auto operator->() const noexcept
-    {
-        return const_proxy();
-    }
-
-    value_type value() const noexcept
-    {
-        return *const_proxy();
-    }
-
-    explicit operator bool() const noexcept
-    {
-        return static_cast<bool>(*const_proxy());
-    }
-
-    auto operator co_await() const noexcept
-    {
-        return _notifier.operator co_await();
-    }
-
-    auto operator++() noexcept
+    auto operator++() noexcept requires(requires(value_type a) { {++a}; })
     {
         return ++*proxy();
     }
 
-    auto operator--() noexcept
+    /** Pre decrement.
+     *
+     * Short for `--*lhs.proxy()`
+     *
+     * @param rhs The right hand side value.
+     * @return The return value of the value_type::operator--().
+     */
+    auto operator--() noexcept requires(requires(value_type a) { {--a}; })
     {
         return --*proxy();
     }
 
-    [[nodiscard]] auto operator[](auto&& index) const noexcept
-        requires(requires(value_type a, decltype(index) i) { {a[i]}; })
+    /** Post increment.
+     *
+     * Short for `(*lhs.proxy())++`
+     *
+     * @param rhs The right hand side value.
+     * @return The return value of the value_type::operator++(int).
+     */
+    auto operator++(int) noexcept requires(requires(value_type a) { {a++}; })
     {
-        return (*const_proxy())[tt_forward(index)];
+        return (*proxy())++;
     }
 
-    [[nodiscard]] auto operator==(observable const& rhs) const noexcept
+    /** Post decrement.
+     *
+     * Short for `(*lhs.proxy())--`
+     *
+     * @param rhs The right hand side value.
+     * @return The return value of the value_type::operator--(int).
+     */
+    auto operator--(int) noexcept requires(requires(value_type a) { {a--}; })
     {
-        return *const_proxy() == **rhs;
+        return (*proxy())--;
     }
 
-    [[nodiscard]] auto operator<=>(observable const& rhs) const noexcept
+    /** Inplace add.
+     *
+     * Short for `*lhs.proxy() += rhs`
+     *
+     * @param rhs The right hand side value.
+     * @return The return value of the value_type::operator+=(rhs).
+     */
+    auto operator+=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a += tt_forward(b)}; })
     {
-        return *const_proxy() <=> **rhs;
+        return *proxy() += tt_forward(rhs);
     }
 
-    [[nodiscard]] auto operator==(different_from<observable> auto const& rhs) const noexcept
+    /** Inplace subtract.
+     *
+     * Short for `*lhs.proxy() -= rhs`
+     *
+     * @param rhs The right hand side value.
+     * @return The return value of the value_type::operator-=(rhs).
+     */
+    auto operator-=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a -= tt_forward(b)}; })
     {
-        return *const_proxy() == rhs;
+        return *proxy() -= tt_forward(rhs);
     }
 
-    [[nodiscard]] auto operator<=>(different_from<observable> auto const& rhs) const noexcept
+    /** Inplace multiply.
+     *
+     * Short for `*lhs.proxy() *= rhs`
+     *
+     * @param rhs The right hand side value.
+     * @return The return value of the value_type::operator*=(rhs).
+     */
+    auto operator*=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a *= tt_forward(b)}; })
     {
-        return *const_proxy() <=> rhs;
+        return *proxy() *= tt_forward(rhs);
     }
 
-    // clang-format off
-#define X(op) \
-    [[nodiscard]] friend auto operator op(observable const& lhs, observable const& rhs) noexcept \
-        requires(requires(value_type a, value_type b) { {a op b}; }) \
-    { \
-        return (**lhs) op (**rhs); \
-    } \
-\
-    [[nodiscard]] friend auto operator op(observable const& lhs, different_from<observable> auto && rhs) noexcept \
-        requires(requires(value_type a, value_type b) { {a op b}; }) \
-    { \
-        return (**lhs) op (tt_forward(rhs)); \
-    } \
-\
-    [[nodiscard]] friend auto operator op(different_from<observable> auto && lhs, observable const& rhs) noexcept \
-        requires(requires(value_type a, value_type b) { {a op b}; }) \
-    { \
-        return (tt_forward(lhs)) op (**rhs); \
+    /** Inplace divide.
+     *
+     * Short for `*lhs.proxy() /= rhs`
+     *
+     * @param rhs The right hand side value.
+     * @return The return value of the value_type::operator/=(rhs).
+     */
+    auto operator/=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a /= tt_forward(b)}; })
+    {
+        return *proxy() /= tt_forward(rhs);
     }
 
-    X(+)
-    X(-)
-    X(*)
-    X(/)
-    X(%)
-    X(&)
-    X(|)
-    X(^)
-#undef X
-
-#define X(op) \
-    [[nodiscard]] auto operator op() const noexcept \
-        requires(requires(value_type a) { {op a}; }) \
-    { \
-        return op (*const_proxy()); \
+    /** Inplace remainder.
+     *
+     * Short for `*lhs.proxy() %= rhs`
+     *
+     * @param rhs The right hand side value.
+     * @return The return value of the value_type::operator%=(rhs).
+     */
+    auto operator%=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a %= tt_forward(b)}; })
+    {
+        return *proxy() %= tt_forward(rhs);
     }
 
-    X(-)
-    X(~)
-#undef X
+    /** Inplace bitwise and.
+     *
+     * Short for `*lhs.proxy() &= rhs`
+     *
+     * @param rhs The right hand side value.
+     * @return The return value of the value_type::operator&=(rhs).
+     */
+    auto operator&=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a &= tt_forward(b)}; })
+    {
+        return *proxy() &= tt_forward(rhs);
+    }
 
-#define X(op) \
-    value_type operator op(auto && rhs) noexcept \
-        requires(requires(value_type a, decltype(rhs) b) { {a op b}; }) \
-    { \
-        return (*proxy()) op rhs; \
-    } \
+    /** Inplace bitwise or.
+     *
+     * Short for `*lhs.proxy() |= rhs`
+     *
+     * @param rhs The right hand side value.
+     * @return The return value of the value_type::operator|=(rhs).
+     */
+    auto operator|=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a |= tt_forward(b)}; })
+    {
+        return *proxy() |= tt_forward(rhs);
+    }
 
-    X(+=)
-    X(-=)
-    X(*=)
-    X(/=)
-    X(%=)
-    X(&=)
-    X(|=)
-    X(^=)
-#undef X
+    /** Inplace bitwise xor.
+     *
+     * Short for `*lhs.proxy() ^= rhs`
+     *
+     * @param rhs The right hand side value.
+     * @return The return value of the value_type::operator^=(rhs).
+     */
+    auto operator^=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a ^= tt_forward(b)}; })
+    {
+        return *proxy() ^= tt_forward(rhs);
+    }
 
-    // clang-format on
-private:
-    std::shared_ptr<impl_type> _pimpl;
+    /** Inplace shift left.
+     *
+     * Short for `*lhs.proxy() <<= rhs`
+     *
+     * @param rhs The right hand side value.
+     * @return The return value of the value_type::operator<<=(rhs).
+     */
+    auto operator<<=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a <<= tt_forward(b)}; })
+    {
+        return *proxy() <<= tt_forward(rhs);
+    }
+
+    /** Inplace shift right.
+     *
+     * Short for `*lhs.proxy() >>= rhs`
+     *
+     * @param rhs The right hand side value.
+     * @return The return value of the value_type::operator>>=(rhs).
+     */
+    auto operator>>=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a >>= tt_forward(b)}; })
+    {
+        return *proxy() >>= tt_forward(rhs);
+    }
+
+private : std::shared_ptr<impl_type> _pimpl;
     notifier_type _notifier;
     friend impl_type;
 };

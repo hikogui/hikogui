@@ -27,7 +27,7 @@ void toolbar_tab_button_widget::set_layout(widget_layout const &layout) noexcept
 
 void toolbar_tab_button_widget::draw(draw_context const &context) noexcept
 {
-    if (visible and overlaps(context, layout())) {
+    if (*visible and overlaps(context, layout())) {
         draw_toolbar_tab_button(context);
         draw_button(context);
     }
@@ -43,14 +43,14 @@ void toolbar_tab_button_widget::request_redraw() const noexcept
 
 [[nodiscard]] bool toolbar_tab_button_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
-    return visible and enabled and any(group & tt::keyboard_focus_group::toolbar);
+    return *visible and *enabled and any(group & tt::keyboard_focus_group::toolbar);
 }
 
 [[nodiscard]] bool toolbar_tab_button_widget::handle_event(command command) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (enabled) {
+    if (*enabled) {
         switch (command) {
         case command::gui_toolbar_next:
             if (!is_last(keyboard_focus_group::toolbar)) {

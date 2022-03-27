@@ -166,7 +166,7 @@ public:
 
     [[nodiscard]] tt::quad_color line_color() const noexcept
     {
-        if (border_width == 0.0f) {
+        if (*border_width == 0.0f) {
             // Due to inaccuracies in the shaders, a thin border may present itself inside
             // the anti-aliased edges; so make it the same color as the fill. This is the
             // same thing that happens when you call draw_box with only a fill color.
@@ -206,7 +206,7 @@ public:
     [[nodiscard]] tt::rotate3 rotation(tt::draw_context const &context) const noexcept
     {
         float angle = 0.0f;
-        if (rotating) {
+        if (*rotating) {
             request_redraw();
             constexpr auto interval_in_ns = 10'000'000'000;
             auto const repeating_interval = context.display_time_point.time_since_epoch().count() % interval_in_ns;
@@ -237,7 +237,7 @@ public:
         using namespace std::chrono_literals;
 
         auto const clipping_rectangle =
-            clip ? tt::aarectangle{0.0f, 0.0f, _layout.width(), _layout.height() * 0.5f} : _layout.rectangle();
+            *clip ? tt::aarectangle{0.0f, 0.0f, _layout.width(), _layout.height() * 0.5f} : _layout.rectangle();
 
         auto const translation = tt::translate3(std::floor(_layout.width() * 0.5f), std::floor(_layout.height()) * 0.5f, 0.0f);
         auto const transform = translation * rotation(context);
@@ -246,7 +246,7 @@ public:
 
         // We only need to draw the widget when it is visible and when the visible area of
         // the widget overlaps with the scissor-rectangle (partial redraw) of the drawing context.
-        if (visible and overlaps(context, layout())) {
+        if (*visible and overlaps(context, layout())) {
             switch (*drawing) {
             case drawing_type::box:
                 context.draw_box(
@@ -266,7 +266,7 @@ public:
                 auto const line1 = tt::line_segment{get<0>(quad), get<1>(quad)};
                 auto const line2 = tt::line_segment{get<0>(quad), get<2>(quad)};
                 auto const line3 = tt::line_segment{get<3>(quad), get<2>(quad)};
-                auto const width = std::max(0.5f, **border_width);
+                auto const width = std::max(0.5f, *border_width);
                 context.draw_line(_layout, clipping_rectangle, transform * line1, width, fill_color(), end_cap(), end_cap());
                 context.draw_line(_layout, clipping_rectangle, transform * line2, width, fill_color(), end_cap(), end_cap());
                 context.draw_line(_layout, clipping_rectangle, transform * line3, width, fill_color(), end_cap(), end_cap());

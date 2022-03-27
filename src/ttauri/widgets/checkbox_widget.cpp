@@ -52,7 +52,7 @@ void checkbox_widget::set_layout(widget_layout const &layout) noexcept
 
 void checkbox_widget::draw(draw_context const &context) noexcept
 {
-    if (visible and overlaps(context, layout())) {
+    if (*visible and overlaps(context, layout())) {
         draw_check_box(context);
         draw_check_mark(context);
         draw_button(context);

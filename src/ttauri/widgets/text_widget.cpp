@@ -29,7 +29,7 @@ widget_constraints const &text_widget::set_constraints() noexcept
 
     _selection.clear_selection(_shaped_text.size());
 
-    if (edit_mode == edit_mode_type::line_editable) {
+    if (*edit_mode == edit_mode_type::line_editable) {
         // In line-edit mode the text should not wrap.
         return _constraints = {shaped_text_size, shaped_text_size, shaped_text_size, theme().margin};
     } else {
@@ -51,8 +51,8 @@ void text_widget::set_layout(widget_layout const &layout) noexcept
     if (compare_store(_layout, layout)) {
         // clang-format off
         ttlet base_line =
-            alignment == vertical_alignment::bottom ? layout.rectangle().bottom() :
-            alignment == vertical_alignment::middle ? layout.rectangle().middle() - _shaped_text_cap_height * 0.5f :
+            *alignment == vertical_alignment::bottom ? layout.rectangle().bottom() :
+            *alignment == vertical_alignment::middle ? layout.rectangle().middle() - _shaped_text_cap_height * 0.5f :
             layout.rectangle().top() - _shaped_text_cap_height;
         // clang-format on
 
@@ -69,7 +69,7 @@ void text_widget::set_layout(widget_layout const &layout) noexcept
 
 void text_widget::scroll_to_show_selection() noexcept
 {
-    if (visible and focus) {
+    if (*visible and focus) {
         ttlet cursor = _selection.cursor();
         ttlet char_it = _shaped_text.begin() + cursor.index();
         if (char_it < _shaped_text.end()) {
@@ -102,7 +102,7 @@ void text_widget::draw(draw_context const &context) noexcept
     }
 
     auto cursor_visible = false;
-    if (visible and enabled and focus) {
+    if (*visible and *enabled and focus) {
         ttlet blink_interval = os_settings::cursor_blink_interval();
         if (blink_interval < 1min) {
             if (_cursor_blink_time_point == utc_nanoseconds{}) {
@@ -125,7 +125,7 @@ void text_widget::draw(draw_context const &context) noexcept
         }
     }
 
-    if (visible and overlaps(context, layout())) {
+    if (*visible and overlaps(context, layout())) {
         context.draw_text(layout(), _shaped_text);
 
         context.draw_text_selection(layout(), _shaped_text, _selection, theme().color(theme_color::text_select));
@@ -170,7 +170,7 @@ void text_widget::redo() noexcept
 {
     ttlet[first, last] = _selection.selection_indices();
 
-    return gstring_view{**text}.substr(first, last - first);
+    return gstring_view{*text}.substr(first, last - first);
 }
 
 void text_widget::fix_cursor_position(size_t size) noexcept
@@ -198,7 +198,7 @@ void text_widget::add_character(grapheme c, add_type mode) noexcept
     auto original_grapheme = grapheme{char32_t{0xffff}};
 
     if (_selection.empty() and _overwrite_mode and original_cursor.before()) {
-        original_grapheme = (**text)[original_cursor.index()];
+        original_grapheme = (*text)[original_cursor.index()];
 
         ttlet[first, last] = _shaped_text.select_char(original_cursor);
         _selection.drag_selection(last);
@@ -299,7 +299,7 @@ bool text_widget::handle_event(tt::command command) noexcept
     tt_axiom(is_gui_thread());
     request_relayout();
 
-    if (enabled) {
+    if (*enabled) {
         switch (command) {
         case command::text_mode_insert:
             reset_state("BDX");
@@ -309,7 +309,7 @@ bool text_widget::handle_event(tt::command command) noexcept
 
         case command::text_edit_paste:
             reset_state("BDX");
-            if (edit_mode == edit_mode_type::line_editable) {
+            if (*edit_mode == edit_mode_type::line_editable) {
                 replace_selection(to_gstring(window.get_text_from_clipboard(), U' '));
             } else {
                 replace_selection(to_gstring(window.get_text_from_clipboard()));
@@ -340,7 +340,7 @@ bool text_widget::handle_event(tt::command command) noexcept
             return true;
 
         case command::text_insert_line:
-            if (edit_mode == edit_mode_type::fully_editable) {
+            if (*edit_mode == edit_mode_type::fully_editable) {
                 reset_state("BDX");
                 add_character(grapheme{unicode_PS}, add_type::append);
                 return true;
@@ -348,7 +348,7 @@ bool text_widget::handle_event(tt::command command) noexcept
             break;
 
         case command::text_insert_line_up:
-            if (edit_mode == edit_mode_type::fully_editable) {
+            if (*edit_mode == edit_mode_type::fully_editable) {
                 reset_state("BDX");
                 _selection = _shaped_text.move_begin_paragraph(_selection.cursor());
                 add_character(grapheme{unicode_PS}, add_type::insert);
@@ -357,7 +357,7 @@ bool text_widget::handle_event(tt::command command) noexcept
             break;
 
         case command::text_insert_line_down:
-            if (edit_mode == edit_mode_type::fully_editable) {
+            if (*edit_mode == edit_mode_type::fully_editable) {
                 reset_state("BDX");
                 _selection = _shaped_text.move_end_paragraph(_selection.cursor());
                 add_character(grapheme{unicode_PS}, add_type::insert);
@@ -532,7 +532,7 @@ bool text_widget::handle_event(keyboard_event const &event) noexcept
 
     auto handled = super::handle_event(event);
 
-    if (enabled) {
+    if (*enabled) {
         switch (event.type) {
         case grapheme:
             reset_state("BDX");
@@ -555,7 +555,7 @@ bool text_widget::handle_event(mouse_event const &event) noexcept
 {
     tt_axiom(is_gui_thread());
     auto handled = super::handle_event(event);
-    if (edit_mode == edit_mode_type::fixed) {
+    if (*edit_mode == edit_mode_type::fixed) {
         return handled;
     }
 
@@ -645,7 +645,7 @@ hitbox text_widget::hitbox_test(point3 position) const noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (visible and enabled and layout().contains(position)) {
+    if (*visible and *enabled and layout().contains(position)) {
         switch (*edit_mode) {
         case edit_mode_type::selectable: return hitbox{this, position, hitbox::Type::Default};
         case edit_mode_type::line_editable: return hitbox{this, position, hitbox::Type::TextEdit};
@@ -662,7 +662,7 @@ hitbox text_widget::hitbox_test(point3 position) const noexcept
     using enum edit_mode_type;
     using enum keyboard_focus_group;
 
-    return visible and enabled and any(group & normal) and (edit_mode == line_editable or edit_mode == fully_editable);
+    return *visible and *enabled and any(group & normal) and (*edit_mode == line_editable or *edit_mode == fully_editable);
 }
 
 } // namespace tt::inline v1

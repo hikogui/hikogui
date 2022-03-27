@@ -68,7 +68,7 @@ void tab_widget::set_layout(widget_layout const &layout) noexcept
     _layout = layout;
 
     for (ttlet &child : _children) {
-        if (child->visible) {
+        if (*child->visible) {
             child->set_layout(layout);
         }
     }
@@ -76,7 +76,7 @@ void tab_widget::set_layout(widget_layout const &layout) noexcept
 
 void tab_widget::draw(draw_context const &context) noexcept
 {
-    if (visible) {
+    if (*visible) {
         for (ttlet &child : _children) {
             child->draw(context);
         }
@@ -87,7 +87,7 @@ void tab_widget::draw(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (visible and enabled) {
+    if (*visible and *enabled) {
         auto r = hitbox{};
         for (ttlet &child : _children) {
             r = child->hitbox_test_from_parent(position, r);

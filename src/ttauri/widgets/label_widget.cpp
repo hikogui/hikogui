@@ -56,7 +56,7 @@ widget_constraints const &label_widget::set_constraints() noexcept
     _icon_size = [&] {
         if (has_icon) {
             // Override the natural icon size.
-            if (alignment == horizontal_alignment::center or alignment == horizontal_alignment::justified) {
+            if (*alignment == horizontal_alignment::center or *alignment == horizontal_alignment::justified) {
                 return theme().large_icon_size;
             } else {
                 return std::ceil(theme().text_style(*text_style).size * theme().scale);
@@ -68,12 +68,12 @@ widget_constraints const &label_widget::set_constraints() noexcept
 
     ttlet size = [&] {
         if (has_icon) {
-            if (alignment != horizontal_alignment::center and alignment != horizontal_alignment::justified) {
+            if (*alignment != horizontal_alignment::center and *alignment != horizontal_alignment::justified) {
                 // If the icon is on the left or right, add the icon to the width.
                 // Since the label is inline, we do not adjust the height of the label widget on the icon size.
                 return extent2{label_size.width() + _inner_margin + _icon_size, label_size.height()};
 
-            } else if (alignment != vertical_alignment::middle) {
+            } else if (*alignment != vertical_alignment::middle) {
                 // If the icon is above or below the text, add the icon height and the
                 // minimum width is the maximum of the icon and text width.
                 return extent2{std::max(label_size.width(), _icon_size), label_size.height() + _inner_margin + _icon_size};
@@ -95,19 +95,19 @@ void label_widget::set_layout(widget_layout const &layout) noexcept
 {
     if (compare_store(_layout, layout)) {
         _text_rectangle = aarectangle{};
-        if (alignment == horizontal_alignment::left) {
+        if (*alignment == horizontal_alignment::left) {
             ttlet text_width = layout.width() - _icon_size - _inner_margin;
             _text_rectangle = {_icon_size + _inner_margin, 0.0f, text_width, layout.height()};
 
-        } else if (alignment == horizontal_alignment::right) {
+        } else if (*alignment == horizontal_alignment::right) {
             ttlet text_width = layout.width() - _icon_size - _inner_margin;
             _text_rectangle = {0.0f, 0.0f, text_width, layout.height()};
 
-        } else if (alignment == vertical_alignment::top) {
+        } else if (*alignment == vertical_alignment::top) {
             ttlet text_height = layout.height() - _icon_size - _inner_margin;
             _text_rectangle = {0.0f, 0.0f, layout.width(), text_height};
 
-        } else if (alignment == vertical_alignment::bottom) {
+        } else if (*alignment == vertical_alignment::bottom) {
             ttlet text_height = layout.height() - _icon_size - _inner_margin;
             _text_rectangle = {0.0f, _icon_size + _inner_margin, layout.width(), text_height};
 
@@ -116,23 +116,23 @@ void label_widget::set_layout(widget_layout const &layout) noexcept
         }
 
         ttlet icon_pos = [&] {
-            if (alignment == tt::alignment::top_left()) {
+            if (*alignment == tt::alignment::top_left()) {
                 return point2{0.0f, layout.height() - _icon_size};
-            } else if (alignment == tt::alignment::top_right()) {
+            } else if (*alignment == tt::alignment::top_right()) {
                 return point2{layout.width() - _icon_size, layout.height() - _icon_size};
-            } else if (alignment == vertical_alignment::top) {
+            } else if (*alignment == vertical_alignment::top) {
                 return point2{(layout.width() - _icon_size) / 2.0f, layout.height() - _icon_size};
-            } else if (alignment == tt::alignment::bottom_left()) {
+            } else if (*alignment == tt::alignment::bottom_left()) {
                 return point2{0.0f, 0.0f};
-            } else if (alignment == tt::alignment::bottom_right()) {
+            } else if (*alignment == tt::alignment::bottom_right()) {
                 return point2{layout.width() - _icon_size, 0.0f};
-            } else if (alignment == vertical_alignment::bottom) {
+            } else if (*alignment == vertical_alignment::bottom) {
                 return point2{(layout.width() - _icon_size) / 2.0f, 0.0f};
-            } else if (alignment == tt::alignment::middle_left()) {
+            } else if (*alignment == tt::alignment::middle_left()) {
                 return point2{0.0f, (layout.height() - _icon_size) / 2.0f};
-            } else if (alignment == tt::alignment::middle_right()) {
+            } else if (*alignment == tt::alignment::middle_right()) {
                 return point2{layout.width() - _icon_size, (layout.height() - _icon_size)};
-            } else if (alignment == vertical_alignment::middle) {
+            } else if (*alignment == vertical_alignment::middle) {
                 return point2{(layout.width() - _icon_size) / 2.0f, (layout.height() - _icon_size)};
             } else {
                 tt_no_default();
@@ -148,7 +148,7 @@ void label_widget::set_layout(widget_layout const &layout) noexcept
 
 void label_widget::draw(draw_context const &context) noexcept
 {
-    if (visible and overlaps(context, layout())) {
+    if (*visible and overlaps(context, layout())) {
         _icon_widget->draw(context);
         _text_widget->draw(context);
     }
@@ -158,7 +158,7 @@ void label_widget::draw(draw_context const &context) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (visible) {
+    if (*visible) {
         return _text_widget->hitbox_test_from_parent(position);
     } else {
         return {};

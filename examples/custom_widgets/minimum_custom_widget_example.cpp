@@ -54,7 +54,7 @@ public:
     {
         // We only need to draw the widget when it is visible and when the visible area of
         // the widget overlaps with the scissor-rectangle (partial redraw) of the drawing context.
-        if (visible and overlaps(context, layout())) {
+        if (*visible and overlaps(context, layout())) {
             // Draw two boxes matching the rectangles calculated during set_layout().
             // The actual RGB colors are taken from the current theme.
             context.draw_box(_layout, _left_rectangle, theme().color(tt::theme_color::indigo));

@@ -72,7 +72,7 @@ public:
 protected:
     [[nodiscard]] datum encode() const noexcept override
     {
-        if (_value != _init) {
+        if (*_value != _init) {
             return tt::pickle<T>{}.encode(*_value);
         } else {
             return datum{std::monostate{}};

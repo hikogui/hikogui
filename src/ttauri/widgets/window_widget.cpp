@@ -120,7 +120,7 @@ void window_widget::set_layout(widget_layout const &layout) noexcept
 
 void window_widget::draw(draw_context const &context) noexcept
 {
-    if (visible) {
+    if (*visible) {
         _toolbar->draw(context);
         _content->draw(context);
     }

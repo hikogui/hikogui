@@ -51,7 +51,7 @@ void toggle_widget::set_layout(widget_layout const &layout) noexcept
 
 void toggle_widget::draw(draw_context const &context) noexcept
 {
-    if (visible and overlaps(context, layout())) {
+    if (*visible and overlaps(context, layout())) {
         draw_toggle_button(context);
         draw_toggle_pip(context);
         draw_button(context);

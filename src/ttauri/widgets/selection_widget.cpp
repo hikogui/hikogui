@@ -117,7 +117,7 @@ void selection_widget::set_layout(widget_layout const &layout) noexcept
 
 void selection_widget::draw(draw_context const &context) noexcept
 {
-    if (visible) {
+    if (*visible) {
         if (overlaps(context, layout())) {
             draw_outline(context);
             draw_left_box(context);
@@ -139,7 +139,7 @@ bool selection_widget::handle_event(mouse_event const &event) noexcept
 
     if (event.cause.leftButton) {
         handled = true;
-        if (enabled and _has_options) {
+        if (*enabled and _has_options) {
             if (event.type == mouse_event::Type::ButtonUp && layout().rectangle().contains(event.position)) {
                 handle_event(command::gui_activate);
             }
@@ -153,7 +153,7 @@ bool selection_widget::handle_event(command command) noexcept
     tt_axiom(is_gui_thread());
     request_relayout();
 
-    if (enabled and _has_options) {
+    if (*enabled and _has_options) {
         switch (command) {
             using enum tt::command;
         case gui_activate:
@@ -182,7 +182,7 @@ bool selection_widget::handle_event(command command) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (visible and enabled) {
+    if (*visible and *enabled) {
         auto r = _overlay_widget->hitbox_test_from_parent(position);
 
         if (layout().contains(position)) {
@@ -198,14 +198,14 @@ bool selection_widget::handle_event(command command) noexcept
 [[nodiscard]] bool selection_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
     tt_axiom(is_gui_thread());
-    return visible and enabled and any(group & tt::keyboard_focus_group::normal) and _has_options;
+    return *visible and *enabled and any(group & tt::keyboard_focus_group::normal) and _has_options;
 }
 
 [[nodiscard]] color selection_widget::focus_color() const noexcept
 {
     tt_axiom(is_gui_thread());
 
-    if (enabled and _has_options and _selecting) {
+    if (*enabled and _has_options and _selecting) {
         return theme().color(theme_color::accent);
     } else {
         return super::focus_color();

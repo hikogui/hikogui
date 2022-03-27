@@ -147,16 +147,16 @@ public:
         if (compare_store(_layout, layout)) {
             _horizontal_scroll_bar->visible = _aperture->x_axis_scrolls() and any(axis & axis::horizontal);
             _vertical_scroll_bar->visible = _aperture->y_axis_scrolls() and any(axis & axis::vertical);
-            ttlet both_bars_visible = _horizontal_scroll_bar->visible and _vertical_scroll_bar->visible;
+            ttlet both_bars_visible = *_horizontal_scroll_bar->visible and *_vertical_scroll_bar->visible;
 
             ttlet vertical_scroll_bar_width = _vertical_scroll_bar->constraints().preferred.width();
             ttlet horizontal_scroll_bar_height = _horizontal_scroll_bar->constraints().preferred.height();
 
             // The aperture size grows to fill the size of the layout.
             ttlet aperture_size = extent2{
-                _vertical_scroll_bar->visible ? layout.width() - vertical_scroll_bar_width : layout.width(),
-                _horizontal_scroll_bar->visible ? layout.height() - horizontal_scroll_bar_height : layout.height()};
-            ttlet aperture_offset = point2{0.0f, _horizontal_scroll_bar->visible ? horizontal_scroll_bar_height : 0.0f};
+                *_vertical_scroll_bar->visible ? layout.width() - vertical_scroll_bar_width : layout.width(),
+                *_horizontal_scroll_bar->visible ? layout.height() - horizontal_scroll_bar_height : layout.height()};
+            ttlet aperture_offset = point2{0.0f, *_horizontal_scroll_bar->visible ? horizontal_scroll_bar_height : 0.0f};
             _aperture_rectangle = aarectangle{aperture_offset, aperture_size};
 
             // The length of the scroll-bar is the full length of the widget, or just the length of the aperture depending
@@ -174,22 +174,22 @@ public:
 
             if constexpr (controls_window) {
                 window.set_resize_border_priority(
-                    true, not _vertical_scroll_bar->visible, not _horizontal_scroll_bar->visible, true);
+                    true, not *_vertical_scroll_bar->visible, not *_horizontal_scroll_bar->visible, true);
             }
         }
 
         _aperture->set_layout(layout.transform(_aperture_rectangle));
-        if (_vertical_scroll_bar->visible) {
+        if (*_vertical_scroll_bar->visible) {
             _vertical_scroll_bar->set_layout(layout.transform(_vertical_scroll_bar_rectangle));
         }
-        if (_horizontal_scroll_bar->visible) {
+        if (*_horizontal_scroll_bar->visible) {
             _horizontal_scroll_bar->set_layout(layout.transform(_horizontal_scroll_bar_rectangle));
         }
     }
 
     void draw(draw_context const &context) noexcept
     {
-        if (visible) {
+        if (*visible) {
             _vertical_scroll_bar->draw(context);
             _horizontal_scroll_bar->draw(context);
             _aperture->draw(context);
@@ -200,7 +200,7 @@ public:
     {
         tt_axiom(is_gui_thread());
 
-        if (visible and enabled) {
+        if (*visible and *enabled) {
             auto r = _aperture->hitbox_test_from_parent(position);
             r = _horizontal_scroll_bar->hitbox_test_from_parent(position, r);
             r = _vertical_scroll_bar->hitbox_test_from_parent(position, r);
