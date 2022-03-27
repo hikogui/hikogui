@@ -316,19 +316,14 @@ struct observable_impl {
 
 } // namespace detail
 
-/** A value which can be observed for modifications.
+/** An observable value.
  *
- * An observable is used to share a value between different objects, and
- * for those objects to be notified when this shared-value is modified.
+ * Typically owners of an observable will subscribe a callback that will
+ * be called when the observed value has changed.
  *
- * Typically objects will own an instance of an observable and `subscribe()`
- * one of its methods to the observable. By assigning the observables of each
- * object to each other they will share the same value.
- * Now if one object changes the shared value, the other objects will proxy notified.
- *
- * When assigning observables to each other, the tokens
- * to the observable remain unmodified. However which value is shared is shown in the
- * example below:
+ * Multiple observables will be able to share the same value by assigning
+ * observables to each other, as shown in the example below. The callback
+ * subscribtion on each observable will not change with these assignments.
  *
  * ```
  * auto a = observable<int>{1};
@@ -341,19 +336,19 @@ struct observable_impl {
  * b = d; // 'a', 'b', 'c' and 'd' all share the value 9.
  * ```
  *
- * A proxy object is returned when dereferencing an observable. The
- * callbacks are called when both the value has changed and the
- * lifetime of all non-scalar proxy objects in the system has ended.
+ * Access to the value is done through either a proxy or const-proxy.
+ * Only one proxy xor multiple const-proxies can be outstanding at a time.
+ * This is checked on debug builds.
  *
- * A proxy of a non-scalar observable holds a mutex. It may be useful
- * to extend the lifetime of a proxy to handle multiple steps atomically.
- * However due to the mutex held, it may be possible to dead-lock when
- * the lifetime of multiple proxy objects are extended in different orders.
+ * The const-proxy is cheap and possibly completely optimized away for accessing
+ * the value read-only. The (non-const) proxy may be quite expensive as it makes
+ * a copy of the value to compare against to determine if change-notification is needed.
+ * 
+ * For this reason almost all operators of `observable` will work on const-proxies.
  *
- * Constant proxies are more efficient than non-constant proxies. You can
- * proxy a non-constant proxy using the `const_proxy()` function. Many of the
- * operations available directly on the observable uses constant proxies
- * internally for this reason.
+ * If you want to modify the value, or make multiple modifications you may explicitly
+ * use the `proxy()` function to get a proxy object and dereference it.
+ *
  *
  * @tparam T The type of the value to be observed.
  */
