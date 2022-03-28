@@ -9,6 +9,7 @@
 #include "console.hpp"
 #include "log.hpp"
 #include <Windows.h>
+#include <shellapi.h>
 
 namespace tt::inline v1 {
 

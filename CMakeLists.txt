@@ -318,12 +318,6 @@ elseif (MSVC)
 endif()
 
 if (WIN32)
-    if(TT_BUILD_PCH)
-        if(NOT TT_ENABLE_ANALYSIS)
-            target_precompile_headers(ttauri PRIVATE <Windows.h>)
-        endif()
-    endif()
-
     # Add vulkan win32 surface support.
     target_compile_definitions(ttauri PUBLIC -DVK_USE_PLATFORM_WIN32_KHR)
 
@@ -334,7 +328,7 @@ if (WIN32)
     #target_compile_options(ttauri PUBLIC -D_SILENCE_CLANG_COROUTINE_MESSAGE)
 
     # Make sure that Windows.h doesn't include all kind of weird things.
-    target_compile_options(ttauri PUBLIC -DNOMINMAX -DWIN32_NO_STATUS)
+    target_compile_options(ttauri PUBLIC -DNOMINMAX -DWIN32_LEAN_AND_MEAN)
 
     # define the version of the windows header files to use
     get_windows_ntversion(winnt_version)

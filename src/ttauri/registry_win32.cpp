@@ -7,8 +7,11 @@
 #include "strings.hpp"
 #include "log.hpp"
 #include <windows.h>
-#undef WIN32_NO_STATUS
+tt_warning_push()
+// Suppress C4005 Redefinition of status macros, Microsoft disables this themselves for their internal linter.
+tt_msvc_suppress(4005)
 #include <ntstatus.h>
+tt_warning_pop()
 #include <winreg.h>
 #include <Uxtheme.h>
 

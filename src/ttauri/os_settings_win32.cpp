@@ -8,7 +8,6 @@
 #include "cast.hpp"
 #include "exception.hpp"
 #include <windows.h>
-#undef WIN32_NO_STATUS
 #include <winuser.h>
 
 namespace tt::inline v1 {
