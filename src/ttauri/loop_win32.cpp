@@ -126,38 +126,41 @@ void loop::block_on_network(utc_nanoseconds deadline) noexcept
     }
 }
 
+void loop::handle_redraw(utc_nanoseconds deadline) noexcept
+{
+    // XXX Be careful not to redraw a window too often.
+    // This will be called within the window's internal event loop too often.
+}
+
 void loop::resume_once(bool blocks) noexcept
 {
-    using namespace std::chrono_literals;
-
-    constexpr auto redraw_quota = 5ms;
-
     // Calculate next wake-up time.
-    auto deadline = wake_time();
+    auto redraw_quota = get_redraw_quota();
+    auto redraw_deadline = get_redraw_deadline();
+    auto timer_deadline = blocks ? get_timer_deadline() : utc_nanoseconds{};
 
     // Handle network messages and block so that the CPU is yielded.
     // Make sure to wake up 5ms before the frame needs to be redrawn.
-    block_on_network(deadline - redraw_quota);
+    block_on_network(std::min(redraw_deadline - redraw_quota, timer_deadline));
 
-    // `block_on_network()` may have woken up because of a timer.
+    // `block_on_network()` may have woken up because of a timer, for accuracy call it first.
     // But make sure we finish before the redraw must be done.
-    handle_timers(deadline - redraw_quota);
+    handle_timers(redraw_deadline - redraw_quota);
 
     // It is important that handle_redraw is finished before the deadline.
-    handle_redraw(deadline);
-    if (std::chrono::utc_clock::now() > deadline) {
+    handle_redraw(redraw_deadline);
+    if (std::chrono::utc_clock::now() > redraw_deadline) {
         ++global_counter<"loop::missed-deadline">;
     }
 
     // After redrawn is done, request the new dead-line.
-    deadline = wake_time();
+    redraw_deadline = get_redraw_deadline();
 
     // Process as many gui events as possible.
-    handle_gui_events(deadline - redraw_quota);
+    handle_gui_events(redraw_deadline - redraw_quota);
 
     // Process as many async calls as possible.
-    handle_async(deadline - redraw_quota);
-
+    handle_async(redraw_deadline - redraw_quota);
 }
 
 int loop::resume() noexcept

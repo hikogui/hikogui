@@ -16,7 +16,14 @@ class loop {
 public:
     enum class select_type { none = 0, error = 0b001, read = 0b010, write = 0b100 };
 
-    loop();
+    /** Construct a loop.
+     *
+     * A frame rate above 60.0 will increase the timer resolution of this process;
+     * which may in turn cause a system wide performance degradation and increased power usage.
+     *
+     * @param frame_rate The maximum frame rate that a window will be updated.
+     */
+    loop(double frame_rate = 30.0);
 
     /** Resume the loop on the current thread.
      *
@@ -39,16 +46,20 @@ public:
      */
     void resume_once(bool block = false) noexcept;
 
-    /** The time when the next timed event will happen.
-     *
-     * Timed events are:
-     * - Callbacks added with `add_timer()`,
-     * - window redraws.
-     *
-     * This function may be used together with `resume_once()` to determine
-     * when to call it.
+    /** The typical amount of time needed to redraw all the windows.
      */
-    utc_nanoseconds wake_time() const noexcept;
+    std::chrono::nanoseconds get_redraw_quota() const noexcept
+    {
+        return std::chrono::nanoseconds(5'000'000);
+    }
+
+    /** Get the time when the frame has to have been drawn.
+     */
+    utc_nanoseconds get_redraw_deadline() const noexcept;
+
+    /** Get the time when the next timer needs to be called.
+     */
+    utc_nanoseconds get_timer_deadline() const noexcept;
 
     /** Add a callback that reacts on a socket.
      *
@@ -180,13 +191,13 @@ private:
     void block_on_network(utc_nanoseconds deadline) noexcept;
 
     /** Handle the redraw of windows.
-    * 
+     *
      * @param deadline The deadline before redraw must be finished before moving on.
      */
     void handle_redraw(utc_nanoseconds deadline) noexcept;
 
     /** Call elapsed timers.
-    * 
+     *
      * @param deadline The deadline before all timers must be handled before moving on.
      */
     void handle_timers(utc_nanoseconds deadline) noexcept;
