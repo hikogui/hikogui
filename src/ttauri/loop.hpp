@@ -5,6 +5,7 @@
 #pragma once
 
 #include "wfree_fifo.hpp"
+#include "cast.hpp"
 #include <functional>
 #include <type_traits>
 #include <concepts>
@@ -29,7 +30,7 @@ public:
 
     /** Create or get the main-loop.
      */
-    [[nodiscard]] tt_no_inline static loop &main() noexcept;
+    [[nodiscard]] tt_no_inline static loop& main() noexcept;
 
     /** Set maximum frame rate.
      *
@@ -200,10 +201,34 @@ private:
     std::vector<timer_type> _timers;
     std::optional<int> _exit_code;
     std::unique_ptr<private_type> _private;
+    bool _is_main = false;
+    double _maximum_frame_rate = 30.0;
+    std::chrono::nanoseconds _minimum_frame_time = std::chrono::nanoseconds(33'333'333);
+    thread_id _thread_id = 0;
+
+    /** Get the private operating-system specific data.
+     */
+    template<typename T>
+    T const& get_private() const noexcept
+    {
+        tt_axiom(_private);
+        return down_cast<T const&>(*_private);
+    }
+
+    /** Get the private operating-system specific data.
+     */
+    template<typename T>
+    T& get_private() noexcept
+    {
+        tt_axiom(_private);
+        return down_cast<T&>(*_private);
+    }
 
     /** Interrupt a blocking main loop to process newly added events.
      */
     void interrupt() noexcept;
+
+    void block();
 
     /** Block on network events.
      *
@@ -248,12 +273,6 @@ private:
     {
         return current_thread_id() == _thread_id;
     }
-
-private:
-    bool _is_main = false;
-    double _maximum_frame_rate = 30.0;
-    std::chrono::nanoseconds _minimum_frame_time = std::chrono::nanoseconds(33'333'333);
-    thread_id _thread_id = 0;
 };
 
 [[nodiscard]] loop::select_type operator&(loop::select_type const& lhs, loop::select_type const& rhs) noexcept

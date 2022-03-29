@@ -25,7 +25,7 @@ std::shared_ptr<file> file_mapping::findOrOpenFile(URL const &location, access_m
     auto &files = mappedFiles[location];
     for (ttlet &weak_file : files) {
         if (auto file = weak_file.lock()) {
-            if (file->_access_mode >= accessMode) {
+            if ((file->_access_mode & accessMode) == accessMode) {
                 return file;
             }
         }

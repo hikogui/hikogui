@@ -15,20 +15,20 @@ namespace tt::inline v1 {
 file::file(URL const &location, access_mode access_mode) : _access_mode(access_mode), _location(location)
 {
     DWORD desiredAccess = 0;
-    if (_access_mode >= (access_mode::read | access_mode::write)) {
+    if (any(_access_mode & access_mode::read) and any(_access_mode & access_mode::write)) {
         desiredAccess = GENERIC_READ | GENERIC_WRITE;
-    } else if (_access_mode >= access_mode::read) {
+    } else if (any(_access_mode & access_mode::read)) {
         desiredAccess = GENERIC_READ;
-    } else if (_access_mode >= access_mode::write) {
+    } else if (any(_access_mode & access_mode::write)) {
         desiredAccess = GENERIC_WRITE;
     } else {
         throw io_error(std::format("{}: Invalid AccessMode; expecting Readable and/or Writeable.", location));
     }
 
     DWORD shareMode;
-    if (_access_mode >= access_mode::write_lock) {
+    if (any(_access_mode & access_mode::write_lock)) {
         shareMode = 0;
-    } else if (_access_mode >= access_mode::read_lock) {
+    } else if (any(_access_mode & access_mode::read_lock)) {
         shareMode = FILE_SHARE_READ;
     } else {
         // Allow files to be renamed and deleted.
@@ -36,18 +36,18 @@ file::file(URL const &location, access_mode access_mode) : _access_mode(access_m
     }
 
     DWORD creationDisposition;
-    if (_access_mode >= (access_mode::create | access_mode::open)) {
-        if (_access_mode >= access_mode::truncate) {
+    if (any(_access_mode & access_mode::create) and any(_access_mode & access_mode::open)) {
+        if (any(_access_mode & access_mode::truncate)) {
             creationDisposition = CREATE_ALWAYS;
         } else {
             creationDisposition = OPEN_ALWAYS;
         }
 
-    } else if (_access_mode >= access_mode::create) {
+    } else if (any(_access_mode & access_mode::create)) {
         creationDisposition = CREATE_NEW;
 
-    } else if (_access_mode >= access_mode::open) {
-        if (_access_mode >= access_mode::truncate) {
+    } else if (any(_access_mode & access_mode::open)) {
+        if (any(_access_mode & access_mode::truncate)) {
             creationDisposition = TRUNCATE_EXISTING;
         } else {
             creationDisposition = OPEN_EXISTING;
@@ -58,17 +58,17 @@ file::file(URL const &location, access_mode access_mode) : _access_mode(access_m
     }
 
     DWORD flagsAndAttributes = 0;
-    if (_access_mode >= access_mode::random) {
+    if (any(_access_mode & access_mode::random)) {
         flagsAndAttributes |= FILE_FLAG_RANDOM_ACCESS;
     }
-    if (_access_mode >= access_mode::sequential) {
+    if (any(_access_mode & access_mode::sequential)) {
         flagsAndAttributes |= FILE_FLAG_SEQUENTIAL_SCAN;
     }
-    if (_access_mode >= access_mode::write_through) {
+    if (any(_access_mode & access_mode::write_through)) {
         flagsAndAttributes |= FILE_FLAG_WRITE_THROUGH;
     }
 
-    if (_access_mode >= access_mode::rename) {
+    if (any(_access_mode & access_mode::rename)) {
         desiredAccess |= DELETE;
     }
 
@@ -80,8 +80,8 @@ file::file(URL const &location, access_mode access_mode) : _access_mode(access_m
     }
 
     ttlet error = GetLastError();
-    if (_access_mode >= access_mode::create_directories && error == ERROR_PATH_NOT_FOUND &&
-        (creationDisposition == CREATE_ALWAYS || creationDisposition == OPEN_ALWAYS || creationDisposition == CREATE_NEW)) {
+    if (any(_access_mode & access_mode::create_directories) and error == ERROR_PATH_NOT_FOUND and
+        (creationDisposition == CREATE_ALWAYS or creationDisposition == OPEN_ALWAYS or creationDisposition == CREATE_NEW)) {
         // Retry opening the file, by first creating the directory hierarchy.
         ttlet directory = _location.urlByRemovingFilename();
         file::create_directory_hierarchy(directory);

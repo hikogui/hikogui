@@ -120,20 +120,20 @@ keyboard_virtual_key to_keyboard_virtual_key(int key_code, bool extended, keyboa
     case VK_MEDIA_PREV_TRACK: return keyboard_virtual_key::MediaPrevTrack;
     case VK_MEDIA_STOP: return keyboard_virtual_key::MediaStop;
     case VK_MEDIA_PLAY_PAUSE: return keyboard_virtual_key::MediaPlayPause;
-    case VK_OEM_1: return modifiers >= keyboard_modifiers::Shift ? keyboard_virtual_key::Colon : keyboard_virtual_key::SemiColon;
+    case VK_OEM_1: return any(modifiers & keyboard_modifiers::Shift) ? keyboard_virtual_key::Colon : keyboard_virtual_key::SemiColon;
     case VK_OEM_PLUS: return keyboard_virtual_key::Plus;
     case VK_OEM_COMMA: return keyboard_virtual_key::Comma;
     case VK_OEM_MINUS: return keyboard_virtual_key::Minus;
     case VK_OEM_PERIOD: return keyboard_virtual_key::Period;
-    case VK_OEM_2: return modifiers >= keyboard_modifiers::Shift ? keyboard_virtual_key::Question : keyboard_virtual_key::Slash;
-    case VK_OEM_3: return modifiers >= keyboard_modifiers::Shift ? keyboard_virtual_key::Tilde : keyboard_virtual_key::Backtick;
+    case VK_OEM_2: return any(modifiers & keyboard_modifiers::Shift) ? keyboard_virtual_key::Question : keyboard_virtual_key::Slash;
+    case VK_OEM_3: return any(modifiers & keyboard_modifiers::Shift) ? keyboard_virtual_key::Tilde : keyboard_virtual_key::Backtick;
     case VK_OEM_4:
-        return modifiers >= keyboard_modifiers::Shift ? keyboard_virtual_key::OpenBrace : keyboard_virtual_key::OpenBracket;
-    case VK_OEM_5: return modifiers >= keyboard_modifiers::Shift ? keyboard_virtual_key::Pipe : keyboard_virtual_key::Backslash;
+        return any(modifiers & keyboard_modifiers::Shift) ? keyboard_virtual_key::OpenBrace : keyboard_virtual_key::OpenBracket;
+    case VK_OEM_5: return any(modifiers & keyboard_modifiers::Shift) ? keyboard_virtual_key::Pipe : keyboard_virtual_key::Backslash;
     case VK_OEM_6:
-        return modifiers >= keyboard_modifiers::Shift ? keyboard_virtual_key::CloseBrace : keyboard_virtual_key::CloseBracket;
+        return any(modifiers & keyboard_modifiers::Shift) ? keyboard_virtual_key::CloseBrace : keyboard_virtual_key::CloseBracket;
     case VK_OEM_7:
-        return modifiers >= keyboard_modifiers::Shift ? keyboard_virtual_key::DoubleQuote : keyboard_virtual_key::Quote;
+        return any(modifiers & keyboard_modifiers::Shift) ? keyboard_virtual_key::DoubleQuote : keyboard_virtual_key::Quote;
     case VK_PLAY: return keyboard_virtual_key::MediaPlayPause;
     case VK_OEM_CLEAR: return keyboard_virtual_key::Clear;
     default: return keyboard_virtual_key::Nul;

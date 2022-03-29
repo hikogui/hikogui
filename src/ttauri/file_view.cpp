@@ -26,7 +26,7 @@ std::shared_ptr<file_mapping> file_view::findOrCreateFileMappingObject(URL const
 
     for (auto weak_file_mapping_object : mappings) {
         if (auto _file_mapping_object = weak_file_mapping_object.lock()) {
-            if (_file_mapping_object->size >= size && _file_mapping_object->accessMode() >= accessMode) {
+            if (_file_mapping_object->size >= size and (_file_mapping_object->accessMode() & accessMode) == accessMode) {
                 return _file_mapping_object;
             }
         }

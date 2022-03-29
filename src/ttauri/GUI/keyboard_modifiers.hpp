@@ -7,6 +7,7 @@
 #include "../required.hpp"
 #include "../exception.hpp"
 #include "../strings.hpp"
+#include "../cast.hpp"
 #include <cstdint>
 
 namespace tt::inline v1 {
@@ -24,23 +25,27 @@ enum class keyboard_modifiers : uint8_t {
     Super = 0x08, ///< The windows-key, key-key or super-key is being held.
 };
 
-[[nodiscard]] constexpr keyboard_modifiers operator|(keyboard_modifiers lhs, keyboard_modifiers rhs) noexcept
+[[nodiscard]] constexpr keyboard_modifiers operator|(keyboard_modifiers const& lhs, keyboard_modifiers const& rhs) noexcept
 {
-    return static_cast<keyboard_modifiers>(static_cast<uint8_t>(lhs) | static_cast<uint8_t>(rhs));
+    return static_cast<keyboard_modifiers>(to_underlying(lhs) | to_underlying(rhs));
 }
 
-constexpr keyboard_modifiers &operator|=(keyboard_modifiers &lhs, keyboard_modifiers rhs) noexcept
+[[nodiscard]] constexpr keyboard_modifiers operator&(keyboard_modifiers const& lhs, keyboard_modifiers const& rhs) noexcept
 {
-    lhs = lhs | rhs;
-    return lhs;
+    return static_cast<keyboard_modifiers>(to_underlying(lhs) & to_underlying(rhs));
 }
 
-[[nodiscard]] constexpr bool operator>=(keyboard_modifiers lhs, keyboard_modifiers rhs) noexcept
+constexpr keyboard_modifiers& operator|=(keyboard_modifiers& lhs, keyboard_modifiers const& rhs) noexcept
 {
-    ttlet lhs_ = static_cast<uint8_t>(lhs);
-    ttlet rhs_ = static_cast<uint8_t>(rhs);
-    return (lhs_ & rhs_) == rhs_;
+    return lhs = lhs | rhs;
 }
+
+[[nodiscard]] constexpr bool any(keyboard_modifiers const& rhs) noexcept
+{
+    return static_cast<bool>(to_underlying(rhs));
+}
+
+bool operator>=(keyboard_modifiers const& lhs, keyboard_modifiers const& rhs) = delete;
 
 /** Parse a key-binding modifier name.
  * @param s The modifier name, with or without the canonical trailing '+'
@@ -71,23 +76,23 @@ inline std::string to_string(keyboard_modifiers modifiers)
 {
     auto r = std::string{};
 
-    if (modifiers >= keyboard_modifiers::Shift) {
+    if (any(modifiers & keyboard_modifiers::Shift)) {
         r += "shift+";
     }
-    if (modifiers >= keyboard_modifiers::Control) {
+    if (any(modifiers & keyboard_modifiers::Control)) {
         r += "control+";
     }
-    if (modifiers >= keyboard_modifiers::Alt) {
+    if (any(modifiers & keyboard_modifiers::Alt)) {
         r += "alt+";
     }
-    if (modifiers >= keyboard_modifiers::Super) {
+    if (any(modifiers & keyboard_modifiers::Super)) {
         r += "super+";
     }
 
     return r;
 }
 
-inline std::ostream &operator<<(std::ostream &lhs, keyboard_modifiers const &rhs)
+inline std::ostream& operator<<(std::ostream& lhs, keyboard_modifiers const& rhs)
 {
     return lhs << to_string(rhs);
 }
@@ -96,7 +101,7 @@ inline std::ostream &operator<<(std::ostream &lhs, keyboard_modifiers const &rhs
 
 template<>
 struct std::hash<tt::keyboard_modifiers> {
-    [[nodiscard]] std::size_t operator()(tt::keyboard_modifiers const &rhs) const noexcept
+    [[nodiscard]] std::size_t operator()(tt::keyboard_modifiers const& rhs) const noexcept
     {
         return std::hash<uint8_t>{}(static_cast<uint8_t>(rhs));
     }
@@ -104,7 +109,7 @@ struct std::hash<tt::keyboard_modifiers> {
 
 template<typename CharT>
 struct std::formatter<tt::keyboard_modifiers, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(tt::keyboard_modifiers const &t, auto &fc)
+    auto format(tt::keyboard_modifiers const& t, auto& fc)
     {
         return std::formatter<std::string_view, CharT>::format(tt::to_string(t), fc);
     }

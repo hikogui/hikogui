@@ -9,16 +9,66 @@
 #define OUT
 #include <WinSock2.h>
 #include <Windows.h>
+#include <synchapi.h>
+#include <vector>
+#include <utility>
 
 namespace tt::inline v1 {
 
 struct loop_private_win32 : loop::private_type {
+    struct handle_type {
+        HANDLE handle;
+        int fd;
+    };
 
+    /** The handles to block on.
+     *
+     * The following is the order of handles:
+     * - 0 : interrupt handle, for handling async/timer messages after they have been added to the queues.
+     * - x : A handle, one for each socket, up to 63. XXX Implement recursive sockets-events to go beyond this limit.
+     *
+     */
+    std::vector<handle_type> handles;
 };
 
-loop::loop() noexcept : _private(std::make_unique<loop_private_win32>()), _thread_id(current_thread_id()) {}
+loop::loop() noexcept : _private(std::make_unique<loop_private_win32>()), _thread_id(current_thread_id())
+{
+    auto& prv = get_private<loop_private_win32>();
 
-void loop::interrupt() noexcept {}
+    auto interupt_handle = CreateEventW(NULL, FALSE, FALSE, NULL);
+    if (interupt_handle == NULL) {
+        tt_log_fatal("Could not create an interrupt event handle. {}", get_last_error_message());
+    }
+
+    prv.handles.emplace_back(interupt_handle, -1);
+}
+
+loop::~loop()
+{
+    auto& prv = get_private<loop_private_win32>();
+
+    // Close all socket event handles.
+    while (prv.handles.size() > 1) {
+        auto tmp = prv.handles.back();
+        if (not WSACloseEvent(tmp.handle)) {
+            tt_log_error("Could not clock socket event handle for socket {}. {}", tmp.fd, get_last_error_message());
+        }
+
+        prv.handles.pop_back();
+    }
+
+    if (not CloseHandle(prv.handles.front().handle)) {
+        tt_log_error("Could not close interrupt event handle. {}", get_last_error_message());
+    }
+}
+
+void loop::interrupt() noexcept
+{
+    auto& prv = get_private<loop_private_win32>();
+    if (not SetEvent(prv.handles[0].handle)) {
+        tt_log_error("Could not interrupt event-loop. {}", get_last_error_message());
+    }
+}
 
 int loop::max_fd() const noexcept
 {
@@ -72,7 +122,8 @@ void loop::block_on_network(utc_nanoseconds deadline) noexcept
         case WSANOTINITIALISED: tt_log_fatal("A successful WSAStartup call must occur before using this function.");
         case WSAEFAULT:
             tt_log_fatal(
-                "The Windows Sockets implementation was unable to allocate needed resources for its internal operations, or the "
+                "The Windows Sockets implementation was unable to allocate needed resources for its internal operations, or "
+                "the "
                 "readfds, writefds, exceptfds, or timeval parameters are not part of the user address space.");
         case WSAENETDOWN: tt_log_fatal("The network subsystem has failed.");
         case WSAEINVAL: tt_log_fatal("The time-out value is not valid, or all three descriptor parameters were null.");
@@ -172,17 +223,44 @@ void loop::resume_once(bool blocks) noexcept
     handle_async(redraw_deadline - redraw_quota);
 }
 
-void loop::block() noexcept
+void loop::block()
 {
+    auto& prv = get_private<loop_private_win32>();
 
-    auto r = WaitForMultipleObjectsEx
+    DWORD timeout_ms = 0;
+    auto r = MsgWaitForMultipleObjects(prv.handles.size(), prv.handles.data(), FALSE, timeout_ms, QS_ALLINPUT);
+    if (r == WAIT_FAILED) {
+        tt_log_error("Failed on MsgWaitForMultipleObjects(), {}", get_last_error_message());
+
+    } else if (r == WAIT_TIMEOUT) {
+        return has_timeout;
+
+    } else if (r == WAIT_OBJECT_0) {
+        // Interrupt
+
+    } else if (r >= WAIT_OBJECT_0 + 1 and r < WAIT_OBJECT_0 + prv.handles.size()) {
+        // Socket event.
+        auto &tmp = prv.handles[r - WAIT_OBJECT_0];
+
+        WSANETWORKEVENTS events;
+        if (WSAEnumNetworkEvents(tmp.fd, tmp.handle, &events) != 0) {
+            throw io_error(std::format("Error during WSAEnumNetworkEvents on socket {}: {}", tmp.fd, get_last_error_message()));
+        }
+
+        auto network_events = network_event::none;
+        if (events.lNetworkEvents | 
+
+        r.socket_events.clear();
+        r.socket_events.emplace_back(tmp.fd, 
+
+    } else if (r == WAIT_OBJECT_0 + prv.handles.size()) {
+        // win32 message.
+    }
 }
 
 int loop::resume() noexcept
 {
     while (not _exit_code) {
-        
-
         resume_once(false);
     }
 

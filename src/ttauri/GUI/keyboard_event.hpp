@@ -10,6 +10,7 @@
 #include "../required.hpp"
 #include "../assert.hpp"
 #include "../command.hpp"
+#include "../cast.hpp"
 #include <utility>
 
 namespace tt::inline v1 {
@@ -21,22 +22,26 @@ enum class KeyboardState : uint8_t {
     NumLock = 0x04,
 };
 
-[[nodiscard]] constexpr KeyboardState operator|(KeyboardState lhs, KeyboardState rhs) noexcept
+[[nodiscard]] constexpr KeyboardState operator|(KeyboardState const& lhs, KeyboardState const& rhs) noexcept
 {
-    return static_cast<KeyboardState>(static_cast<uint8_t>(lhs) | static_cast<uint8_t>(rhs));
+    return static_cast<KeyboardState>(to_underlying(lhs) | to_underlying(rhs));
 }
 
-constexpr KeyboardState &operator|=(KeyboardState &lhs, KeyboardState rhs) noexcept
+[[nodiscard]] constexpr KeyboardState operator&(KeyboardState const& lhs, KeyboardState const& rhs) noexcept
 {
-    lhs = lhs | rhs;
-    return lhs;
+    return static_cast<KeyboardState>(to_underlying(lhs) & to_underlying(rhs));
 }
 
-[[nodiscard]] constexpr bool operator>=(KeyboardState lhs, KeyboardState rhs) noexcept
+constexpr KeyboardState& operator|=(KeyboardState& lhs, KeyboardState const& rhs) noexcept
 {
-    ttlet lhs_ = static_cast<uint8_t>(lhs);
-    ttlet rhs_ = static_cast<uint8_t>(rhs);
-    return (lhs_ & rhs_) == rhs_;
+    return lhs = lhs | rhs;
+}
+
+bool operator>=(KeyboardState const& lhs, KeyboardState const& rhs) = delete;
+
+[[nodiscard]] constexpr bool any(KeyboardState const& rhs) noexcept
+{
+    return static_cast<bool>(to_underlying(rhs));
 }
 
 struct keyboard_event {
@@ -67,9 +72,9 @@ struct keyboard_event {
     {
     }
 
-    [[nodiscard]] std::vector<command> const &getCommands() const noexcept;
+    [[nodiscard]] std::vector<command> const& getCommands() const noexcept;
 
-    [[nodiscard]] friend std::string to_string(keyboard_event const &rhs) noexcept
+    [[nodiscard]] friend std::string to_string(keyboard_event const& rhs) noexcept
     {
         auto r = std::string{"<keyboard_event "};
 
@@ -91,7 +96,7 @@ struct keyboard_event {
         return r;
     }
 
-    friend std::ostream &operator<<(std::ostream &lhs, keyboard_event const &rhs)
+    friend std::ostream& operator<<(std::ostream& lhs, keyboard_event const& rhs)
     {
         return lhs << to_string(rhs);
     }

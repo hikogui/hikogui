@@ -16,9 +16,9 @@ file_mapping::file_mapping(std::shared_ptr<tt::file> const &file, std::size_t si
     file(file), size(size > 0 ? size : file::file_size(file->_location))
 {
     DWORD protect;
-    if (accessMode() >= (access_mode::read | access_mode::write)) {
+    if (any(accessMode() & access_mode::read) and any(accessMode() & access_mode::write)) {
         protect = PAGE_READWRITE;
-    } else if (accessMode() >= access_mode::read) {
+    } else if (any(accessMode() & access_mode::read)) {
         protect = PAGE_READONLY;
     } else {
         throw io_error(std::format("{}: Illegal access mode WRONLY/0 when mapping file.", location()));

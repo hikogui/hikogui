@@ -7,6 +7,7 @@
 #include "URL.hpp"
 #include "byte_string.hpp"
 #include "architecture.hpp"
+#include "cast.hpp"
 #include <mutex>
 #include <cstdint>
 #include <map>
@@ -36,14 +37,21 @@ enum class access_mode {
     truncate_or_create_for_write = create_directories | open | create | truncate | write
 };
 
-[[nodiscard]] inline access_mode operator|(access_mode lhs, access_mode rhs) noexcept
+[[nodiscard]] constexpr access_mode operator|(access_mode const& lhs, access_mode const& rhs) noexcept
 {
-    return static_cast<access_mode>(static_cast<int>(lhs) | static_cast<int>(rhs));
+    return static_cast<access_mode>(to_underlying(lhs) | to_underlying(rhs));
 }
 
-[[nodiscard]] inline access_mode operator&(access_mode lhs, access_mode rhs) noexcept
+[[nodiscard]] constexpr access_mode operator&(access_mode const& lhs, access_mode const& rhs) noexcept
 {
-    return static_cast<access_mode>(static_cast<int>(lhs) & static_cast<int>(rhs));
+    return static_cast<access_mode>(to_underlying(lhs) & to_underlying(rhs));
+}
+
+bool operator>=(access_mode const& lhs, access_mode const& rhs) = delete;
+
+[[nodiscard]] constexpr bool any(access_mode const& rhs) noexcept
+{
+    return static_cast<bool>(to_underlying(rhs));
 }
 
 /** True if all bits on rhs are set in lhs.
@@ -61,14 +69,14 @@ public:
      * \param location The file: URL locating the file.
      * \param accessMode access-mode to open the file.
      */
-    file(URL const &location, access_mode accessMode);
+    file(URL const& location, access_mode accessMode);
 
     ~file() noexcept;
 
-    file(file const &other) = delete;
-    file(file &&other) = delete;
-    file &operator=(file const &other) = delete;
-    file &operator=(file &&other) = delete;
+    file(file const& other) = delete;
+    file(file&& other) = delete;
+    file& operator=(file const& other) = delete;
+    file& operator=(file&& other) = delete;
 
     /** Close the file.
      */
@@ -87,7 +95,7 @@ public:
      * @param overwrite_existing Overwrite an existing file.
      * @throw io_error When failing to rename.
      */
-    void rename(URL const &destination, bool overwrite_existing = true);
+    void rename(URL const& destination, bool overwrite_existing = true);
 
     /** Return the size of the file.
      */
@@ -174,7 +182,7 @@ public:
      * @return The number of bytes written.
      * @throw io_error
      */
-    ssize_t write(bstring const &text, ssize_t offset = -1)
+    ssize_t write(bstring const& text, ssize_t offset = -1)
     {
         return write(text.data(), ssize(text), offset);
     }
@@ -245,11 +253,11 @@ public:
     /** Get the size of a file on the file system.
      * \return The size of the file in bytes.
      */
-    [[nodiscard]] static std::size_t file_size(URL const &url);
+    [[nodiscard]] static std::size_t file_size(URL const& url);
 
-    static void create_directory(URL const &url, bool hierarchy = false);
+    static void create_directory(URL const& url, bool hierarchy = false);
 
-    static void create_directory_hierarchy(URL const &url);
+    static void create_directory_hierarchy(URL const& url);
 
 private:
     /** The access mode used to open the file.

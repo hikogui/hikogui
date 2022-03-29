@@ -22,9 +22,9 @@ file_view::file_view(std::shared_ptr<file_mapping> const &_file_mapping_object, 
     tt_assert(_offset + size <= _file_mapping_object->size);
 
     DWORD desiredAccess;
-    if (accessMode() >= (access_mode::read | access_mode::write)) {
+    if (any(accessMode() & access_mode::read) and any(accessMode() & access_mode::write)) {
         desiredAccess = FILE_MAP_WRITE;
-    } else if (accessMode() >= access_mode::read) {
+    } else if (any(accessMode() & access_mode::read)) {
         desiredAccess = FILE_MAP_READ;
     } else {
         throw io_error(std::format("{}: Illegal access mode WRONLY/0 when viewing file.", location()));
