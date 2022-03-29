@@ -14,6 +14,9 @@ namespace tt::inline v1 {
 
 class loop {
 public:
+    struct private_type {
+    };
+
     enum class select_type { none = 0, error = 0b001, read = 0b010, write = 0b100 };
 
     /** Construct a loop.
@@ -176,6 +179,7 @@ private:
     std::vector<socket_type> _sockets;
     std::vector<timer_type> _timers;
     std::optional<int> _exit_code;
+    std::unique_ptr<private_type> _private;
 
     /** Interrupt a blocking main loop to process newly added events.
      */

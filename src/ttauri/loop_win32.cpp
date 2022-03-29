@@ -11,6 +11,12 @@
 
 namespace tt::inline v1 {
 
+struct loop_private_win32 : loop::private_type {
+
+};
+
+loop::loop() noexcept : _private(std::make_unique<loop_private_win32>()) {}
+
 void loop::interrupt() noexcept {}
 
 int loop::max_fd() const noexcept
@@ -163,9 +169,17 @@ void loop::resume_once(bool blocks) noexcept
     handle_async(redraw_deadline - redraw_quota);
 }
 
+void loop::block() noexcept
+{
+
+    auto r = WaitForMultipleObjectsEx
+}
+
 int loop::resume() noexcept
 {
     while (not _exit_code) {
+        
+
         resume_once(false);
     }
 
