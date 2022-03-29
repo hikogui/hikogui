@@ -4,12 +4,19 @@
 
 #include "loop.hpp"
 #include "counters.hpp"
+#include "thread.hpp"
 #define IN
 #define OUT
 #include <WinSock2.h>
 #include <Windows.h>
 
 namespace tt::inline v1 {
+
+loop::loop(double frame_rate) noexcept :
+    _thread_id(current_thread_id()), _frame_rate(frame_rate)
+{
+    
+}
 
 void loop::interrupt() noexcept {}
 
@@ -134,6 +141,8 @@ void loop::handle_redraw(utc_nanoseconds deadline) noexcept
 
 void loop::resume_once(bool blocks) noexcept
 {
+    tt_axiom(is_same_thread());
+
     // Calculate next wake-up time.
     auto redraw_quota = get_redraw_quota();
     auto redraw_deadline = get_redraw_deadline();
