@@ -4,6 +4,7 @@
 
 #include "loop.hpp"
 #include "counters.hpp"
+#include "thread.hpp"
 #define IN
 #define OUT
 #include <WinSock2.h>
@@ -15,7 +16,7 @@ struct loop_private_win32 : loop::private_type {
 
 };
 
-loop::loop() noexcept : _private(std::make_unique<loop_private_win32>()) {}
+loop::loop() noexcept : _private(std::make_unique<loop_private_win32>()), _thread_id(current_thread_id()) {}
 
 void loop::interrupt() noexcept {}
 
@@ -140,6 +141,8 @@ void loop::handle_redraw(utc_nanoseconds deadline) noexcept
 
 void loop::resume_once(bool blocks) noexcept
 {
+    tt_axiom(is_same_thread());
+
     // Calculate next wake-up time.
     auto redraw_quota = get_redraw_quota();
     auto redraw_deadline = get_redraw_deadline();

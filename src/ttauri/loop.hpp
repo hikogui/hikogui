@@ -9,6 +9,7 @@
 #include <type_traits>
 #include <concepts>
 #include <vector>
+#include <memory>
 
 namespace tt::inline v1 {
 
@@ -21,12 +22,23 @@ public:
 
     /** Construct a loop.
      *
-     * A frame rate above 60.0 will increase the timer resolution of this process;
+     */
+    loop();
+
+    ~loop();
+
+    /** Create or get the main-loop.
+     */
+    [[nodiscard]] tt_no_inline static loop &main() noexcept;
+
+    /** Set maximum frame rate.
+     *
+     * A frame rate above 30.0 may increase the timer resolution of this process;
      * which may in turn cause a system wide performance degradation and increased power usage.
      *
      * @param frame_rate The maximum frame rate that a window will be updated.
      */
-    loop(double frame_rate = 30.0);
+    void set_maximum_frame_rate(double frame_rate) noexcept;
 
     /** Resume the loop on the current thread.
      *
@@ -79,6 +91,8 @@ public:
     void add_socket(int fd, select_type mode, std::invocable<int, select_type> auto&& f)
     {
         tt_axiom(fd >= 0);
+        tt_axiom(is_same_thread());
+
         if (fd > max_fd()) {
             throw io_error(
                 std::format("Socket descriptor {} is higher than the maximum {} supported value by select()", fd, max_fd()));
@@ -102,6 +116,7 @@ public:
     template<typename Function>
     void add_timer(utc_nanoseconds wake_time, std::invocable<> auto&& f)
     {
+        tt_axiom(is_same_thread());
         // Insert earlier wake_times at the end of the vector.
         auto it = std::lower_bound(_timers.begin(), _timers.end(), wake_time, [](ttlet& item, ttlet& value) {
             return item.wake_time > value;
@@ -122,6 +137,7 @@ public:
     template<typename Function, typename... Args>
     [[nodiscard]] auto async(Function&& f, Args&&...args) noexcept
     {
+        tt_axiom(is_same_thread());
         using async_task = async_task_type<Function, Args...>;
 
         auto& task = _async_fifo.emplace<async_task>(std::forward<Function>(f), std::forward<Args>(args)...);
@@ -175,6 +191,10 @@ private:
         std::function<void()> callback;
     };
 
+    /** Pointer to the main-loop.
+     */
+    inline static std::unique_ptr<loop> _main;
+
     wfree_fifo<async_task_base_type, 128> _async_fifo;
     std::vector<socket_type> _sockets;
     std::vector<timer_type> _timers;
@@ -221,6 +241,19 @@ private:
     /** Maximum socket value supported.
      */
     int max_fd() const noexcept;
+
+    /** Check if the current thread is the loop's thread.
+     */
+    [[nodiscard]] bool is_same_thread() const noexcept
+    {
+        return current_thread_id() == _thread_id;
+    }
+
+private:
+    bool _is_main = false;
+    double _maximum_frame_rate = 30.0;
+    std::chrono::nanoseconds _minimum_frame_time = std::chrono::nanoseconds(33'333'333);
+    thread_id _thread_id = 0;
 };
 
 [[nodiscard]] loop::select_type operator&(loop::select_type const& lhs, loop::select_type const& rhs) noexcept
