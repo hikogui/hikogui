@@ -146,6 +146,14 @@ public:
         return _primary_monitor_rectangle;
     }
 
+    /** Get an opaque id of the primary monitor.
+     */
+    [[nodiscard]] static uintptr_t primary_monitor_id() noexcept
+    {
+        tt_axiom(_started);
+        return _primary_monitor_id.load(std::memory_order::relaxed);
+    }
+
     /** Get the rectangle describing the desktop.
      *
      * @return The bounding rectangle around the desktop. With the origin being equal to the origin of the primary monitor.
@@ -191,6 +199,7 @@ private:
     static inline std::atomic<std::chrono::milliseconds> _cursor_blink_delay = std::chrono::milliseconds(1000);
     static inline extent2 _minimum_window_size = extent2{40.0f, 25.0f};
     static inline extent2 _maximum_window_size = extent2{1920.0f, 1080.0f};
+    static inline std::atomic<uintptr_t> _primary_monitor_id = 0;
     static inline aarectangle _primary_monitor_rectangle = aarectangle{0.0, 0.0, 1920.0f, 1080.0f};
     static inline aarectangle _desktop_rectangle = aarectangle{0.0, 0.0, 1920.0f, 1080.0f};
 
@@ -217,6 +226,7 @@ private:
     [[nodiscard]] static std::chrono::milliseconds gather_cursor_blink_delay();
     [[nodiscard]] static extent2 gather_minimum_window_size();
     [[nodiscard]] static extent2 gather_maximum_window_size();
+    [[nodiscard]] static uintptr_t gather_primary_monitor_id();
     [[nodiscard]] static aarectangle gather_primary_monitor_rectangle();
     [[nodiscard]] static aarectangle gather_desktop_rectangle();
 };

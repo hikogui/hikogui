@@ -285,7 +285,7 @@ private:
     return static_cast<loop::select_type>(to_underlying(lhs) | to_underlying(rhs));
 }
 
-[[nodiscard]] loop::select_type& operator|=(loop::select_type& lhs, loop::select_type const& rhs) noexcept
+loop::select_type& operator|=(loop::select_type& lhs, loop::select_type const& rhs) noexcept
 {
     return lhs = lhs | rhs;
 }

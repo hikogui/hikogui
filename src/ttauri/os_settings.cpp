@@ -147,6 +147,15 @@ void os_settings::gather() noexcept
     }
 
     try {
+        if (compare_store(_primary_monitor_id, gather_primary_monitor_id())) {
+            setting_has_changed = true;
+            tt_log_info("OS primary monitor id has changed: {}", _primary_monitor_id.load());
+        }
+    } catch (std::exception const& e) {
+        tt_log_error("Failed to get OS primary monitor id: {}", e.what());
+    }
+
+    try {
         if (compare_store(_primary_monitor_rectangle, gather_primary_monitor_rectangle())) {
             setting_has_changed = true;
             tt_log_info("OS primary monitor rectangle has changed: {}", _primary_monitor_rectangle);

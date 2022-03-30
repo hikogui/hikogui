@@ -7,13 +7,13 @@
 #include "../cast.hpp"
 #include "../assert.hpp"
 #include <array>
-#include <cstdef>
-#include <cstint>
+#include <cstddef>
+#include <cstdint>
 #include <bit>
 
 namespace tt::inline v1 {
 
-enum class network_event : uin16_t {
+enum class network_event : uint16_t {
     none = 0,
     read = 0x0001,
     write = 0x0002,
@@ -37,7 +37,7 @@ enum class network_event : uin16_t {
     return static_cast<network_event>(to_underlying(lhs) & to_underlying(rhs));
 }
 
-[[nodiscard]] constexpr network_event& operator|=(network_event& lhs, network_event const& rhs) noexcept
+constexpr network_event& operator|=(network_event& lhs, network_event const& rhs) noexcept
 {
     return lhs = lhs | rhs;
 }
@@ -74,7 +74,7 @@ public:
     network_event events;
     std::array<network_error, network_event_max> errors;
 
-    network_events() noexcept : _events(network_event::none), _error_codes{} {}
+    constexpr network_events() noexcept : events(network_event::none), errors{} {}
 };
 
 } // namespace tt::inline v1

@@ -206,6 +206,13 @@ namespace tt::inline v1 {
     return extent2{narrow<float>(width), narrow<float>(height)};
 }
 
+[[nodiscard]] uintptr_t os_settings::gather_primary_monitor_id()
+{
+    ttlet origin = POINT{0, 0};
+    ttlet monitor = MonitorFromPoint(origin, MONITOR_DEFAULTTOPRIMARY);
+    return std::bit_cast<uintptr_t>(monitor);
+}
+
 [[nodiscard]] aarectangle os_settings::gather_primary_monitor_rectangle()
 {
     ttlet width = GetSystemMetrics(SM_CXSCREEN);
