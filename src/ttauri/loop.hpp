@@ -6,6 +6,8 @@
 
 #include "wfree_fifo.hpp"
 #include "cast.hpp"
+#include "net/network_event.hpp"
+#include "GUI/gui_window.hpp"
 #include <functional>
 #include <type_traits>
 #include <concepts>
@@ -16,10 +18,8 @@ namespace tt::inline v1 {
 
 class loop {
 public:
-    struct private_type {
+    struct impl_type {
     };
-
-    enum class select_type { none = 0, error = 0b001, read = 0b010, write = 0b100 };
 
     /** Construct a loop.
      *
@@ -34,8 +34,7 @@ public:
 
     /** Set maximum frame rate.
      *
-     * A frame rate above 30.0 may increase the timer resolution of this process;
-     * which may in turn cause a system wide performance degradation and increased power usage.
+     * A frame rate above 30.0 may will cause the vsync thread to block on
      *
      * @param frame_rate The maximum frame rate that a window will be updated.
      */
@@ -54,28 +53,13 @@ public:
      * a window is being moved, resized, the title bar or system menu being clicked.
      *
      * It should be called often, as it will be used to process network messages and
-     * latency of network processing will be increased based on the ammount of times
+     * latency of network processing will be increased based on the amount of times
      * this function is called.
      *
      * @note This function must be called from the same thread as `resume()`.
      * @param block Allow processing to block, this is normally done only inside `resume()`.
      */
     void resume_once(bool block = false) noexcept;
-
-    /** The typical amount of time needed to redraw all the windows.
-     */
-    std::chrono::nanoseconds get_redraw_quota() const noexcept
-    {
-        return std::chrono::nanoseconds(5'000'000);
-    }
-
-    /** Get the time when the frame has to have been drawn.
-     */
-    utc_nanoseconds get_redraw_deadline() const noexcept;
-
-    /** Get the time when the next timer needs to be called.
-     */
-    utc_nanoseconds get_timer_deadline() const noexcept;
 
     /** Add a callback that reacts on a socket.
      *
@@ -89,42 +73,13 @@ public:
      * @param mode The mode of how select should work with the socket.
      * @param f The callback to call when the file descriptor unblocks.
      */
-    void add_socket(int fd, select_type mode, std::invocable<int, select_type> auto&& f)
-    {
-        tt_axiom(fd >= 0);
-        tt_axiom(is_same_thread());
-
-        if (fd > max_fd()) {
-            throw io_error(
-                std::format("Socket descriptor {} is higher than the maximum {} supported value by select()", fd, max_fd()));
-        }
-
-        _sockets.emplace_back(fd, mode, tt_forward(f));
-    }
+    void add_socket(int fd, network_event event_mask, std::function<void(int, network_events const&)> f);
 
     /** Remove the callback associated with a socket.
      *
      * @param fd The file descriptor of the socket.
      */
     bool remove_socket(int fd);
-
-    /** Add a callback to be called at a specific time.
-     *
-     * @note The callback will be removed from the loop when it is called.
-     * @param wake_time The time at which the call the callback
-     * @param f The callback to call.
-     */
-    template<typename Function>
-    void add_timer(utc_nanoseconds wake_time, std::invocable<> auto&& f)
-    {
-        tt_axiom(is_same_thread());
-        // Insert earlier wake_times at the end of the vector.
-        auto it = std::lower_bound(_timers.begin(), _timers.end(), wake_time, [](ttlet& item, ttlet& value) {
-            return item.wake_time > value;
-        });
-
-        _timers.emplace(it, wake_time, tt_forward(f));
-    }
 
     /** Call a function from the loop.
      *
@@ -142,7 +97,7 @@ public:
         using async_task = async_task_type<Function, Args...>;
 
         auto& task = _async_fifo.emplace<async_task>(std::forward<Function>(f), std::forward<Args>(args)...);
-        interrupt();
+        trigger_async();
         return task.get_future();
     }
 
@@ -183,24 +138,18 @@ private:
 
     struct socket_type {
         int fd;
-        select_type mode;
-        std::function<void(int, select_type)> callback;
-    };
-
-    struct timer_type {
-        utc_nanoseconds wake_time;
-        std::function<void()> callback;
+        network_event mode;
+        std::function<void(int, network_events const &)> callback;
     };
 
     /** Pointer to the main-loop.
      */
     inline static std::unique_ptr<loop> _main;
 
+    std::unique_ptr<impl_type> _pimpl;
+
     wfree_fifo<async_task_base_type, 128> _async_fifo;
-    std::vector<socket_type> _sockets;
-    std::vector<timer_type> _timers;
     std::optional<int> _exit_code;
-    std::unique_ptr<private_type> _private;
     bool _is_main = false;
     double _maximum_frame_rate = 30.0;
     std::chrono::nanoseconds _minimum_frame_time = std::chrono::nanoseconds(33'333'333);
@@ -209,63 +158,42 @@ private:
     /** Get the private operating-system specific data.
      */
     template<typename T>
-    T const& get_private() const noexcept
+    T const& get_impl() const noexcept
     {
-        tt_axiom(_private);
-        return down_cast<T const&>(*_private);
+        tt_axiom(_pimpl);
+        return down_cast<T const&>(*_pimpl);
     }
 
     /** Get the private operating-system specific data.
      */
     template<typename T>
-    T& get_private() noexcept
+    T& get_impl() noexcept
     {
-        tt_axiom(_private);
-        return down_cast<T&>(*_private);
+        tt_axiom(_pimpl);
+        return down_cast<T&>(*_pimpl);
     }
 
     /** Interrupt a blocking main loop to process newly added events.
      */
-    void interrupt() noexcept;
-
-    void block();
-
-    /** Block on network events.
-     *
-     * This function will block on network sockets, and potentially run callbacks
-     * associated with these network sockets.
-     *
-     * @param deadline The deadline before all network events must be handled before moving on.
-     */
-    void block_on_network(utc_nanoseconds deadline) noexcept;
-
-    /** Handle the redraw of windows.
-     *
-     * @param deadline The deadline before redraw must be finished before moving on.
-     */
-    void handle_redraw(utc_nanoseconds deadline) noexcept;
+    void trigger_async() noexcept;
 
     /** Call elapsed timers.
      *
      * @param deadline The deadline before all timers must be handled before moving on.
      */
-    void handle_timers(utc_nanoseconds deadline) noexcept;
+    void handle_vsync() noexcept;
 
     /** Handle all async calls.
      *
      * @param deadline The deadline before all calls must be executed before moving on.
      */
-    void handle_async(utc_nanoseconds deadline) noexcept;
+    void handle_async() noexcept;
 
     /** Handle the gui events.
      *
      * @param deadline The deadline before all gui-events are handled before moving on.
      */
-    void handle_gui_events(utc_nanoseconds deadline) noexcept;
-
-    /** Maximum socket value supported.
-     */
-    int max_fd() const noexcept;
+    void handle_gui_events() noexcept;
 
     /** Check if the current thread is the loop's thread.
      */
@@ -274,25 +202,5 @@ private:
         return current_thread_id() == _thread_id;
     }
 };
-
-[[nodiscard]] loop::select_type operator&(loop::select_type const& lhs, loop::select_type const& rhs) noexcept
-{
-    return static_cast<loop::select_type>(to_underlying(lhs) & to_underlying(rhs));
-}
-
-[[nodiscard]] loop::select_type operator|(loop::select_type const& lhs, loop::select_type const& rhs) noexcept
-{
-    return static_cast<loop::select_type>(to_underlying(lhs) | to_underlying(rhs));
-}
-
-loop::select_type& operator|=(loop::select_type& lhs, loop::select_type const& rhs) noexcept
-{
-    return lhs = lhs | rhs;
-}
-
-[[nodiscard]] bool any(loop::select_type const& rhs) noexcept
-{
-    return static_cast<bool>(to_underlying(rhs));
-}
 
 } // namespace tt::inline v1

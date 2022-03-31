@@ -73,10 +73,9 @@ public:
      */
     void log(std::string const &tag) noexcept;
 
-    counter &operator++() noexcept
+    uint64_t operator++() noexcept
     {
-        _total_count.fetch_add(1, std::memory_order::relaxed);
-        return *this;
+        return _total_count.fetch_add(1, std::memory_order::relaxed) + 1;
     }
 
     uint64_t operator++(int) noexcept
@@ -84,10 +83,9 @@ public:
         return _total_count.fetch_add(1, std::memory_order::relaxed);
     }
 
-    counter &operator--() noexcept
+    uint64_t operator--() noexcept
     {
-        _total_count.fetch_sub(1, std::memory_order::relaxed);
-        return *this;
+        return _total_count.fetch_sub(1, std::memory_order::relaxed) + 1;
     }
 
     uint64_t operator--(int) noexcept

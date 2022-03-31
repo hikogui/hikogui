@@ -58,7 +58,7 @@ constexpr static size_t vsync_handle_idx = 0;
 constexpr static size_t async_handle_idx = 1;
 constexpr static size_t socket_handle_idx = 2;
 
-struct loop_private_win32 : loop::private_type {
+struct loop_impl_win32 : loop::impl_type {
     /** event-handle to continue the vsync.
      *
      * This event handle is a manual reset event.
@@ -68,13 +68,31 @@ struct loop_private_win32 : loop::private_type {
      */
     HANDLE use_vsync_handle;
 
+    /** Time when the last vertical blank happened.
+     */
     std::atomic<utc_nanoseconds> vsync_time;
+
+    /** The last vsync_time update was made by a call to Sleep().
+     */
+    bool vsync_time_from_sleep = true;
 
     /** pull down ratio for triggering SetEvent from WaitForVBlank.
      *
      * Format is in UQ8.8, this is done to reduce judder introduced by float precision.
      */
-    std::atomic<uint16_t> pull_down;
+    std::atomic<uint16_t> pull_down = 0x100;
+
+    /** Sub-frame count in UQ56.8 format, incremented by `pull_down` on each vertical-blank.
+     *
+     * This is incremented only when blocking on vertical-blank.
+     */
+    uint64_t sub_frame_count = 0;
+
+    /** Frame count after pull-down.
+     *
+     * This is incremented only when blocking on vertical-blank.
+     */
+    uint64_t frame_count = 0;
 
     /** The handles to block on.
      *
@@ -87,56 +105,83 @@ struct loop_private_win32 : loop::private_type {
     std::vector<HANDLE> handles;
 
     /** Socket file descriptors.
-    * 
-    * This list contains one-to-one file descriptors with `handles`.
-    * The first two file descriptors have the value -1 (for the non
-    * socket handles).
-    */
+     *
+     * This list contains one-to-one file descriptors with `handles`.
+     * The first two file descriptors have the value -1 (for the non
+     * socket handles).
+     */
     std::vector<int> sockets;
 
+    /** A list of functions to call on an event to a socket.
+     */
+    std::vector<std::function<void(int, network_events const&)>> socket_functions;
+
+    /** The vsync thread.
+     */
     std::jthread vsync_thread;
 
-    void update_dxgi_output(IDXGIOutput *(&dxgi_output), uintptr_t& monitor_id) noexcept
+    /** The vsync thread handle.
+     */
+    HANDLE vsync_thread_handle;
+
+    /** The current priority of the vsync thread.
+     */
+    int vsync_thread_priority = THREAD_PRIORITY_NORMAL;
+
+    /** The primary monitor id.
+     * As returned by os_settings::primary_monitor_id().
+     */
+    std::uintptr_t primary_monitor_id = 0;
+
+    /** The DXGI Output of the primary monitor.
+     */
+    IDXGIOutput *primary_monitor_output = nullptr;
+
+    /** Update the dxgi_output to point to the primary-monitor.
+     *
+     * @note This function is cheap if the primary-monitor does not change.
+     */
+    void vsync_thread_update_dxgi_output() noexcept
     {
         IDXGIFactory *factory = nullptr;
         IDXGIAdapter *adapter = nullptr;
         DXGI_OUTPUT_DESC description;
 
-        if (not compare_store(monitor_id, os_settings::primary_monitor_id())) {
+        if (not compare_store(primary_monitor_id, os_settings::primary_monitor_id())) {
             return;
         }
 
-        if (dxgi_output) {
-            dxgi_output->Release();
-            dxgi_output = nullptr;
+        if (primary_monitor_output) {
+            primary_monitor_output->Release();
+            primary_monitor_output = nullptr;
         }
 
         if (FAILED(CreateDXGIFactory(__uuidof(IDXGIFactory), (void **)&factory))) {
-            tt_log_error("Could not IDXGIFactory. {}", get_last_error_message());
+            tt_log_error_once("vsync:error:CreateDXGIFactory", "Could not IDXGIFactory. {}", get_last_error_message());
             goto fail;
         }
 
         if (FAILED(factory->EnumAdapters(0, &adapter))) {
-            tt_log_error("Could not get IDXGIAdapter. {}", get_last_error_message());
+            tt_log_error_once("vsync:error:EnumAdapters", "Could not get IDXGIAdapter. {}", get_last_error_message());
             goto fail;
         }
 
-        if (FAILED(adapter->EnumOutputs(0, &dxgi_output))) {
-            tt_log_error("Could not get IDXGIOutput. {}", get_last_error_message());
+        if (FAILED(adapter->EnumOutputs(0, &primary_monitor_output))) {
+            tt_log_error_once("vsync:error:EnumOutputs", "Could not get IDXGIOutput. {}", get_last_error_message());
             goto fail;
         }
 
-        if (FAILED(dxgi_output->GetDesc(&description))) {
-            tt_log_error("Could not get IDXGIOutput. {}", get_last_error_message());
-            dxgi_output->Release();
-            dxgi_output = nullptr;
+        if (FAILED(primary_monitor_output->GetDesc(&description))) {
+            tt_log_error_once("vsync:error:GetDesc", "Could not get IDXGIOutput description. {}", get_last_error_message());
+            primary_monitor_output->Release();
+            primary_monitor_output = nullptr;
             goto fail;
         }
 
-        if (description.Monitor != std::bit_cast<HMONITOR>(monitor_id)) {
-            tt_log_error("DXGI primary monitor does not match desktop primary monitor");
-            dxgi_output->Release();
-            dxgi_output = nullptr;
+        if (description.Monitor != std::bit_cast<HMONITOR>(primary_monitor_id)) {
+            tt_log_error_once("vsync:error:not-primary-monitor", "DXGI primary monitor does not match desktop primary monitor");
+            primary_monitor_output->Release();
+            primary_monitor_output = nullptr;
             goto fail;
         }
 
@@ -150,229 +195,323 @@ fail:
         }
     }
 
-    std::chrono::nanoseconds update_vsync_time()
+    /** Update the `vsync_time`.
+     *
+     * This function should be called directly after a vsync or sleep
+     * to update the time when the last vsync happened. The `vsync_time`
+     * is used to calculate the time when the next frame is displayed on the screen.
+     *
+     * @param on_sleep Set to true when this function was called after sleeping.
+     * @return The duration since the last vsync. Used to determine if vsync didn't block.
+     */
+    std::chrono::nanoseconds vsync_thread_update_time(bool on_sleep)
     {
         ttlet ts = time_stamp_count(time_stamp_count::inplace_with_cpu_id{});
         ttlet new_time = time_stamp_utc::make(ts);
+
+        ttlet was_sleeping = std::exchange(vsync_time_from_sleep, on_sleep);
         ttlet old_time = vsync_time.exchange(new_time, std::memory_order::acquire);
-        return new_time - old_time;
+
+        // If old_time was caused by sleeping it can not be used to calculate how long vsync was blocking.
+        return was_sleeping ? std::chrono::nanoseconds::max() : new_time - old_time;
+    }
+
+    void vsync_thread_wait_for_vblank() noexcept
+    {
+        using namespace std::chrono_literals;
+
+        vsync_thread_update_dxgi_output();
+
+        if (primary_monitor_output and FAILED(primary_monitor_output->WaitForVBlank())) {
+            tt_log_error_once("vsync:error:WaitForVBlank", "WaitForVBlank() failed. {}", get_last_error_message());
+        }
+
+        if (vsync_thread_update_time(false) < 1ms) {
+            tt_log_info_once("vsync:monitor-off", "WaitForVBlank() did not block; is the monitor turned off?");
+            Sleep(16);
+
+            // Fixup the time after the fallback sleep.
+            vsync_thread_update_time(true);
+        } else {
+            ++global_counter<"vsync:vertical-blank">;
+        }
+    }
+
+    /** The pull-down algorithm
+     *
+     * Handles pull-down from the frame rate of the primary monitor to the maximum frame-rate of all windows.
+     * The calculation here uses fixed-point to get a fixed pattern/cadence of frame updates.
+     *
+     * @return True if the frame needs to be updated.
+     */
+    [[nodiscard]] bool vsync_thread_pull_down() noexcept
+    {
+        sub_frame_count += pull_down.load(std::memory_order::relaxed);
+        return compare_store(frame_count, sub_frame_count >> 8);
+    }
+
+    /** Change the priority of the vsync-thread.
+     *
+     * @note This function is cheap when requesting the same priority multiple time.
+     * @param new_priority A win32 thread priority; THREAD_PRIORITY_NORMAL or THREAD_PRIORITY_TIME_CRITICAL
+     */
+    void vsync_thread_update_priority(int new_priority) noexcept
+    {
+        if (std::exchange(vsync_thread_priority, new_priority) != new_priority) {
+            if (not SetThreadPriority(vsync_thread_handle, new_priority)) {
+                tt_log_error_once("vsync:error:SetThreadPriority", "Could not set the vsync thread priority to {}", new_priority);
+            }
+        }
     }
 
     void vsync_thread_proc(std::stop_token stop_token) noexcept
     {
-        using namespace std::chrono_literals;
-
-        ttlet current_thread_handle = GetCurrentThread();
-
-        bool failed_once = false;
-        bool using_vsync = false;
-        uintptr_t monitor_id = 0;
-        IDXGIOutput *dxgi_output = nullptr;
-
-        // Frame-count in UQ56.8 format.
-        uint64_t sub_frame_count = 0;
-        uint64_t frame_count = 0;
+        vsync_thread_handle = GetCurrentThread();
+        set_thread_name("vsync");
 
         while (not stop_token.stop_requested()) {
             switch (WaitForSingleObject(use_vsync_handle, 30)) {
             case WAIT_TIMEOUT:
                 // When use_vsync is off wake the main loop every 30ms.
-                if (std::exchange(using_vsync, false) and not SetThreadPriority(current_thread_handle, THREAD_PRIORITY_NORMAL)) {
-                    tt_log_error("Could not set the vsync thread priority to normal");
-                }
+                vsync_thread_update_time(true);
+
+                vsync_thread_update_priority(THREAD_PRIORITY_NORMAL);
+
+                ++global_counter<"vsync:low-priority">;
+                ++global_counter<"vsync:frame">;
                 SetEvent(handles[vsync_handle_idx]);
                 break;
 
             case WAIT_OBJECT_0:
-                // When use_bsync is on wake the main loop based on the vertical-sync and pull_down.
-                if (not std::exchange(using_vsync, true) and
-                    not SetThreadPriority(current_thread_handle, THREAD_PRIORITY_TIME_CRITICAL)) {
-                    tt_log_error("Could not set the vsync thread priority to time-critical");
-                }
+                // When use_vsync is on wake the main loop based on the vertical-sync and pull_down.
+                vsync_thread_update_priority(THREAD_PRIORITY_TIME_CRITICAL);
 
-                update_dxgi_output(dxgi_output, monitor_id);
+                vsync_thread_wait_for_vblank();
 
-                if (dxgi_output and FAILED(dxgi_output->WaitForVBlank()) and not failed_once) {
-                    failed_once = true;
-                    tt_log_error("WaitForVBlank() failed. {}", get_last_error_message());
-                }
-
-                if (update_vsync_time() < 1ms) {
-                    // WaitForVBlank() will not block when the monitor is turned off, it does not return an error in this case.
-                    Sleep(16);
-                }
-
-                sub_frame_count += pull_down.load(std::memory_order::relaxed);
-                if (compare_store(frame_count, sub_frame_count >> 8)) {
+                if (vsync_thread_pull_down()) {
+                    ++global_counter<"vsync:frame">;
                     SetEvent(handles[vsync_handle_idx]);
                 }
 
                 break;
 
             case WAIT_ABANDONED:
-                if (not failed_once) {
-                    failed_once = true;
-                    tt_log_error("use_vsync has been abandoned.");
-                }
-                Sleep(16);
-                SetEvent(handles[vsync_handle_idx]);
+                tt_log_error_once("vsync:error:WAIT_ABANDONED", "use_vsync_handle has been abandoned.");
+                ResetEvent(use_vsync_handle);
                 break;
 
             case WAIT_FAILED:
-                if (not failed_once) {
-                    failed_once = true;
-                    tt_log_error("WaitForSingleObject failed. {}", get_last_error_message());
-                }
-                Sleep(16);
-                SetEvent(handles[vsync_handle_idx]);
+                tt_log_error_once("vsync:error:WAIT_FAILED", "WaitForSingleObject failed. {}", get_last_error_message());
+                ResetEvent(use_vsync_handle);
                 break;
             }
         }
     }
 };
 
-loop::loop() : _private(std::make_unique<loop_private_win32>()), _thread_id(current_thread_id())
+loop::loop() : _pimpl(std::make_unique<loop_impl_win32>()), _thread_id(current_thread_id())
 {
-    auto& prv = get_private<loop_private_win32>();
+    auto& impl = get_impl<loop_impl_win32>();
 
-    prv.use_vsync_handle = CreateEventW(NULL, TRUE, TRUE, NULL);
-    if (prv.use_vsync_handle == NULL) {
+    // Create an level trigger event, to use as an on/off switch.
+    if (auto handle = CreateEventW(NULL, TRUE, TRUE, NULL)) {
+        impl.use_vsync_handle = handle;
+    } else {
         tt_log_fatal("Could not create an use-vsync handle. {}", get_last_error_message());
     }
 
-    auto vsync_handle = CreateEventW(NULL, FALSE, FALSE, NULL);
-    if (vsync_handle == NULL) {
+    // Create a pulse trigger event.
+    if (auto handle = CreateEventW(NULL, FALSE, FALSE, NULL)) {
+        impl.handles.push_back(handle);
+        impl.sockets.push_back(-1);
+        impl.socket_functions.emplace_back();
+    } else {
         tt_log_fatal("Could not create an vsync-event handle. {}", get_last_error_message());
     }
 
-    auto async_handle = CreateEventW(NULL, FALSE, FALSE, NULL);
-    if (async_handle == NULL) {
+    // Create a pulse trigger event.
+    if (auto handle = CreateEventW(NULL, FALSE, FALSE, NULL)) {
+        impl.handles.push_back(handle);
+        impl.sockets.push_back(-1);
+        impl.socket_functions.emplace_back();
+    } else {
         tt_log_fatal("Could not create an async-event handle. {}", get_last_error_message());
     }
-
-    prv.handles.emplace_back(vsync_handle, -1);
-    prv.handles.emplace_back(async_handle, -1);
 }
 
 loop::~loop()
 {
-    auto& prv = get_private<loop_private_win32>();
+    auto& impl = get_impl<loop_impl_win32>();
 
     // Close all socket event handles.
-    while (prv.handles.size() >= socket_handle_idx) {
-        if (not WSACloseEvent(prv.handles.back())) {
-            tt_log_error("Could not clock socket event handle for socket {}. {}", prv.sockets.back(), get_last_error_message());
+    while (impl.handles.size() >= socket_handle_idx) {
+        if (not WSACloseEvent(impl.handles.back())) {
+            tt_log_error("Could not clock socket event handle for socket {}. {}", impl.sockets.back(), get_last_error_message());
         }
 
-        prv.handles.pop_back();
-        prv.sockets.pop_back();
+        impl.handles.pop_back();
+        impl.sockets.pop_back();
     }
 
-    if (prv.vsync_thread.joinable()) {
-        prv.vsync_thread.request_stop();
-        prv.vsync_thread.join();
+    if (impl.vsync_thread.joinable()) {
+        impl.vsync_thread.request_stop();
+        impl.vsync_thread.join();
     }
 
-    if (not CloseHandle(prv.handles[async_handle_idx])) {
+    if (not CloseHandle(impl.handles[async_handle_idx])) {
         tt_log_error("Could not close async-event handle. {}", get_last_error_message());
     }
-    if (not CloseHandle(prv.handles[vsync_handle_idx])) {
+    if (not CloseHandle(impl.handles[vsync_handle_idx])) {
         tt_log_error("Could not close vsync-event handle. {}", get_last_error_message());
     }
-    if (not CloseHandle(prv.use_vsync_handle)) {
+    if (not CloseHandle(impl.use_vsync_handle)) {
         tt_log_error("Could not close use-vsync handle. {}", get_last_error_message());
     }
 }
 
-void loop::interrupt() noexcept
+void loop::trigger_async() noexcept
 {
-    auto& prv = get_private<loop_private_win32>();
-    if (not SetEvent(prv.handles[async_handle_idx])) {
+    auto& impl = get_impl<loop_impl_win32>();
+    if (not SetEvent(impl.handles[async_handle_idx])) {
         tt_log_error("Could not trigger async-event. {}", get_last_error_message());
     }
 }
 
-void loop::handle_redraw(utc_nanoseconds deadline) noexcept
+void loop::handle_vsync() noexcept
 {
-    // XXX Be careful not to redraw a window too often.
-    // This will be called within the window's internal event loop too often.
+    // XXX Reduce the number of redraws for each window based on the refresh rate of the monitor they are located on.
+    // XXX handle maximum frame rate and update vsync thread
+    // XXX Update active windows more often than inactive windows.
 }
 
-void loop::resume_once(bool blocks) noexcept
+void loop::handle_async() noexcept {}
+
+void loop::handle_gui_events() noexcept
 {
-    tt_axiom(is_same_thread());
+    MSG msg = {};
+    ttlet t1 = trace<"loop:gui-events">();
+    while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
+        ttlet t2 = trace<"loop:gui-event">();
 
-    // Calculate next wake-up time.
-    auto redraw_quota = get_redraw_quota();
-    auto redraw_deadline = get_redraw_deadline();
-    auto timer_deadline = blocks ? get_timer_deadline() : utc_nanoseconds{};
-
-    // Handle network messages and block so that the CPU is yielded.
-    // Make sure to wake up 5ms before the frame needs to be redrawn.
-    block_on_network(std::min(redraw_deadline - redraw_quota, timer_deadline));
-
-    // `block_on_network()` may have woken up because of a timer, for accuracy call it first.
-    // But make sure we finish before the redraw must be done.
-    handle_timers(redraw_deadline - redraw_quota);
-
-    // It is important that handle_redraw is finished before the deadline.
-    handle_redraw(redraw_deadline);
-    if (std::chrono::utc_clock::now() > redraw_deadline) {
-        ++global_counter<"loop::missed-deadline">;
-    }
-
-    // After redrawn is done, request the new dead-line.
-    redraw_deadline = get_redraw_deadline();
-
-    // Process as many gui events as possible.
-    handle_gui_events(redraw_deadline - redraw_quota);
-
-    // Process as many async calls as possible.
-    handle_async(redraw_deadline - redraw_quota);
-}
-
-void loop::block(loop_events& r)
-{
-    r.clear();
-
-    auto& prv = get_private<loop_private_win32>();
-
-    DWORD timeout_ms = 30;
-    auto r = MsgWaitForMultipleObjects(prv.handles.size(), prv.handles.data(), FALSE, timeout_ms, QS_ALLINPUT);
-    if (r == WAIT_FAILED) {
-        throw io_error(std::format("Failed on MsgWaitForMultipleObjects(), {}", get_last_error_message()));
-
-    } else if (r == WAIT_TIMEOUT) {
-        r.timeout = true;
-
-    } else if (r == WAIT_OBJECT_0 + vsync_handle_idx) {
-        // Interrupt
-        r.interupt = true;
-
-    } else if (r == WAIT_OBJECT_0 + async_handle_idx) {
-        // Interrupt
-        r.interupt = true;
-
-    } else if (r >= WAIT_OBJECT_0 + socket_handle_idx and r < WAIT_OBJECT_0 + prv.handles.size()) {
-        // Socket event.
-        auto& tmp = prv.handles[r - WAIT_OBJECT_0];
-
-        WSANETWORKEVENTS events;
-        if (WSAEnumNetworkEvents(tmp.fd, tmp.handle, &events) != 0) {
-            throw io_error(std::format("Error during WSAEnumNetworkEvents on socket {}: {}", tmp.fd, get_last_error_message()));
+        if (msg.message == WM_QUIT) {
+            _exit_code = narrow_cast<int>(msg.wParam);
         }
 
-        r.socket_events.emplace_back(tmp.fd, network_events_from_win32(events));
-
-    } else if (r == WAIT_OBJECT_0 + prv.handles.size()) {
-        r.gui_event = true;
+        TranslateMessage(&msg);
+        DispatchMessageW(&msg);
     }
+}
+
+void loop::resume_once(bool block) noexcept
+{
+    auto& impl = get_impl<loop_impl_win32>();
+
+    ttlet timeout_ms = block ? 100 : 0;
+    ttlet message_mask = block ? QS_ALLINPUT : 0;
+    ttlet wait_r =
+        MsgWaitForMultipleObjects(narrow<DWORD>(impl.handles.size()), impl.handles.data(), FALSE, timeout_ms, message_mask);
+    if (wait_r == WAIT_FAILED) {
+        tt_log_fatal("Failed on MsgWaitForMultipleObjects(), {}", get_last_error_message());
+
+    } else if (wait_r == WAIT_TIMEOUT) {
+        if (block) {
+            // 100 ms timeout happened, this should not normally happen when vsync is working.
+            tt_log_error_once("loop:error:timeout", "MsgWaitForMultipleObjects was timed-out.");
+        }
+
+    } else if (wait_r == WAIT_OBJECT_0 + vsync_handle_idx) {
+        handle_vsync();
+
+    } else if (wait_r == WAIT_OBJECT_0 + async_handle_idx) {
+        // handle_async() is called after every wake-up of MsgWaitForMultipleObjects
+        ;
+
+    } else if (wait_r >= WAIT_OBJECT_0 + socket_handle_idx and wait_r < WAIT_OBJECT_0 + impl.handles.size()) {
+        ttlet index = wait_r - WAIT_OBJECT_0;
+
+        WSANETWORKEVENTS events;
+        if (WSAEnumNetworkEvents(impl.sockets[index], impl.handles[index], &events) != 0) {
+            switch (WSAGetLastError()) {
+            case WSANOTINITIALISED: tt_log_fatal("WSAStartup was not called.");
+            case WSAENETDOWN: tt_log_fatal("The network subsystem has failed.");
+            case WSAEINVAL: tt_log_fatal("One of the specified parameters was invalid.");
+            case WSAEINPROGRESS:
+                tt_log_warning(
+                    "A blocking Windows Sockets 1.1 call is in progress, or the service provider is still processing a callback "
+                    "function.");
+                break;
+            case WSAEFAULT: tt_log_fatal("The lpNetworkEvents parameter is not a valid part of the user address space.");
+            case WSAENOTSOCK:
+                // If somehow the socket was destroyed, lets just remove it.
+                tt_log_error("Error during WSAEnumNetworkEvents on socket {}: {}", impl.sockets[index], get_last_error_message());
+                impl.handles.erase(impl.handles.begin() + index);
+                impl.sockets.erase(impl.sockets.begin() + index);
+                impl.socket_functions.erase(impl.socket_functions.begin() + index);
+                break;
+            default: tt_no_default();
+            }
+
+        } else {
+            // Because of how WSAEnumNetworkEvents() work we must only handle this specific socket.
+            impl.socket_functions[index](impl.sockets[index], network_events_from_win32(events));
+        }
+
+    } else if (wait_r == WAIT_OBJECT_0 + impl.handles.size()) {
+        handle_gui_events();
+
+    } else if (wait_r >= WAIT_ABANDONED_0 and wait_r < WAIT_ABANDONED_0 + impl.handles.size()) {
+        ttlet index = wait_r - WAIT_ABANDONED_0;
+        if (index == vsync_handle_idx) {
+            tt_log_fatal("The vsync-handle has been abandoned.");
+
+        } else if (index == async_handle_idx) {
+            tt_log_fatal("The async-handle has been abandoned.");
+
+        } else {
+            // Socket handle has been abandoned. Remove it from the handles.
+            tt_log_error("The socket-handle for socket {} has been abandoned.", impl.sockets[index]);
+            impl.handles.erase(impl.handles.begin() + index);
+            impl.sockets.erase(impl.sockets.begin() + index);
+            impl.socket_functions.erase(impl.socket_functions.begin() + index);
+        }
+
+    } else {
+        tt_no_default();
+    }
+
+    // When async messages are added wait-free, the async-event is never triggered.
+    // So handle messages after any kind of wake up.
+    handle_async();
 }
 
 int loop::resume() noexcept
 {
+    // Microsoft recommends an event-loop that also renders to the screen to run at above normal priority.
+    ttlet thread_handle = GetCurrentThread();
+
+    int original_thread_priority = GetThreadPriority(thread_handle);
+    if (original_thread_priority == THREAD_PRIORITY_ERROR_RETURN) {
+        original_thread_priority = THREAD_PRIORITY_NORMAL;
+        tt_log_error("GetThreadPriority() for loop failed {}", get_last_error_message());
+    }
+
+    if (original_thread_priority < THREAD_PRIORITY_ABOVE_NORMAL) {
+        if (not SetThreadPriority(thread_handle, THREAD_PRIORITY_ABOVE_NORMAL)) {
+            tt_log_error("SetThreadPriority() for loop failed {}", get_last_error_message());
+        }
+    }
+
     while (not _exit_code) {
-        resume_once(false);
+        resume_once(true);
+
+        // XXX when there are no: windows, async-messages, sockets or timers the loop should exit by itself.
+    }
+
+    // Set the thread priority back to what is was before resume().
+    if (original_thread_priority < THREAD_PRIORITY_ABOVE_NORMAL) {
+        if (not SetThreadPriority(thread_handle, original_thread_priority)) {
+            tt_log_error("SetThreadPriority() for loop failed {}", get_last_error_message());
+        }
     }
 
     return *_exit_code;

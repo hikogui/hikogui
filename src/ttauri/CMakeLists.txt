@@ -97,7 +97,7 @@ target_sources(ttauri PRIVATE
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/log_macos.mm>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/log_win32.cpp>
 	loop.hpp
-    #$<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/loop_win32.cpp>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/loop_win32.cpp>
     math.hpp
     memory.hpp
     meta.hpp

@@ -64,11 +64,11 @@ public:
         "<unknown log level>";
     // clang-format on
 
-    log_message(log_message const &) noexcept = default;
-    log_message &operator=(log_message const &) noexcept = default;
+    log_message(log_message const&) noexcept = default;
+    log_message& operator=(log_message const&) noexcept = default;
 
     template<typename... Args>
-    tt_force_inline log_message(Args &&...args) noexcept :
+    tt_force_inline log_message(Args&&...args) noexcept :
         _time_stamp(time_stamp_count::inplace_with_thread_id{}), _what(std::forward<Args>(args)...)
     {
     }
@@ -120,7 +120,7 @@ public:
      * @param args Arguments to std::format.
      */
     template<global_state_type Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Args>
-    tt_force_inline void add(Args &&...args) noexcept
+    tt_force_inline void add(Args&&...args) noexcept
     {
         static_assert(std::popcount(to_underlying(Level)) == 1);
 
@@ -183,7 +183,7 @@ private:
      * This will write to the console if one is open.
      * It will also create a log file in the application-data directory.
      */
-    void write(std::string const &str) const noexcept;
+    void write(std::string const& str) const noexcept;
 
     /** The global logger thread.
      */
@@ -224,3 +224,17 @@ inline log log_global;
 #define tt_log_fatal(fmt, ...) \
     ::tt::log_global.add<::tt::global_state_type::log_fatal, __FILE__, __LINE__, fmt>(__VA_ARGS__); \
     tt_debug_abort()
+
+#define tt_log_info_once(name, fmt, ...) \
+    do { \
+        if (++global_counter<name> == 1) { \
+            ::tt::log_global.add<::tt::global_state_type::log_info, __FILE__, __LINE__, fmt>(__VA_ARGS__); \
+        } \
+    } while (false)
+
+#define tt_log_error_once(name, fmt, ...) \
+    do { \
+        if (++global_counter<name> == 1) { \
+            ::tt::log_global.add<::tt::global_state_type::log_error, __FILE__, __LINE__, fmt>(__VA_ARGS__); \
+        } \
+    } while (false)
