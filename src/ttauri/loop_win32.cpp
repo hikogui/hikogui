@@ -420,6 +420,8 @@ void loop::resume_once(bool block) noexcept
         }
 
     } else if (wait_r == WAIT_OBJECT_0 + vsync_handle_idx) {
+        // XXX Make sure this is not starving the win32 events.
+        // should we just empty the win32 events after every unblock?
         handle_vsync();
 
     } else if (wait_r == WAIT_OBJECT_0 + async_handle_idx) {

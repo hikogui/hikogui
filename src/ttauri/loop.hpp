@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "wfree_fifo.hpp"
+#include "async_fifo.hpp"
 #include "cast.hpp"
 #include "net/network_event.hpp"
 #include "GUI/gui_window.hpp"
@@ -88,54 +88,29 @@ public:
      *       this function is wait-free.
      * @param f The function to call from the event-loop
      * @param args The arguments to pass to the function.
+     */
+    template<typename Func, typename... Args>
+    [[nodiscard]] void post(Func&& func, Args&&...args) noexcept
+    {
+        return _async_fifo.post(std::forward<Func>(func), std::forward<Args>(args)...);
+    }
+
+    /** Call a function from the loop.
+     *
+     * @note It is safe to call this function from another thread.
+     * @param f The function to call from the event-loop
+     * @param args The arguments to pass to the function.
      * @return A future for the return value.
      */
-    template<typename Function, typename... Args>
-    [[nodiscard]] auto async(Function&& f, Args&&...args) noexcept
+    template<typename Func, typename... Args>
+    [[nodiscard]] auto send(Func&& func, Args&&...args) noexcept
     {
-        tt_axiom(is_same_thread());
-        using async_task = async_task_type<Function, Args...>;
-
-        auto& task = _async_fifo.emplace<async_task>(std::forward<Function>(f), std::forward<Args>(args)...);
+        auto future = _async_fifo.send(std::forward<Func>(func), std::forward<Args>(args)...);
         trigger_async();
-        return task.get_future();
+        return future;
     }
 
 private:
-    struct async_task_base_type {
-        virtual void operator()() noexcept = 0;
-    };
-
-    template<typename Function, typename... Args>
-    struct async_task_type : async_task_base_type {
-        using result_type = std::invoke_result_t<std::decay_t<Function>, std::decay_t<Args>...>;
-        using future_type = std::future<result_type>;
-        using promise_type = std::promise<result_type>;
-
-        async_task_type(Function&& f, Args&&...args) noexcept :
-            async_task_base_type(), _function(std::forward<Function>(f)), _args(std::forward<Args>(args)...)
-        {
-        }
-
-        void operator()() noexcept override
-        {
-            try {
-                _promise.set_value(std::apply(std::move(_function), std::move(_args)));
-            } catch (...) {
-                _promise.set_exception(std::current_exception());
-            }
-        }
-
-        future_type get_future() noexcept
-        {
-            return _promise.get_future();
-        }
-
-        Function _function;
-        std::tuple<std::decay_t<Args>...> _args;
-        promise_type _promise;
-    };
-
     struct socket_type {
         int fd;
         network_event mode;
@@ -148,7 +123,7 @@ private:
 
     std::unique_ptr<impl_type> _pimpl;
 
-    wfree_fifo<async_task_base_type, 128> _async_fifo;
+    async_fifo<> _async_fifo;
     std::optional<int> _exit_code;
     bool _is_main = false;
     double _maximum_frame_rate = 30.0;
