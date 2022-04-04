@@ -169,6 +169,7 @@ if(APPLE)
 endif()
 if(WIN32)
 	target_link_libraries(ttauri PUBLIC "ws2_32")
+	target_link_libraries(ttauri PUBLIC "DXGI")
 endif()
 
 target_include_directories(ttauri PUBLIC ${Vulkan_INCLUDE_DIRS})

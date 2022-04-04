@@ -42,12 +42,7 @@ public:
             return future;
         }
 
-        void add_window(std::weak_ptr<gui_window> window) noexcept
-        {
-            tt_axiom(is_same_thread());
-            _windows.push_back(std::move(window));
-        }
-
+        virtual void add_window(std::weak_ptr<gui_window> window) noexcept = 0;
         virtual void add_socket(int fd, network_event event_mask, std::function<void(int, network_events const&)> f) = 0;
         virtual void remove_socket(int fd) = 0;
         virtual int resume() noexcept = 0;

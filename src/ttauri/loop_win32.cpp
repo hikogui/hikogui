@@ -118,6 +118,19 @@ public:
         tt_axiom(is_same_thread());
     }
 
+    void add_window(std::weak_ptr<gui_window> window) noexcept override
+    {
+        tt_axiom(is_same_thread());
+        _windows.push_back(std::move(window));
+
+        // Startup the vsync thread once there is a window.
+        if (not _vsync_thread.joinable()) {
+            _vsync_thread = std::jthread{[this](std::stop_token token) {
+                return vsync_thread_proc(std::move(token));
+            }};
+        }
+    }
+
     void add_socket(int fd, network_event event_mask, std::function<void(int, network_events const&)> f) override
     {
         tt_axiom(is_same_thread());
@@ -378,6 +391,13 @@ private:
         std::erase_if(_windows, [](auto& window) {
             return window.expired();
         });
+
+        if (_windows.empty()) {
+            // Stop the vsync thread when there are no more windows.
+            if (_vsync_thread.joinable()) {
+                _vsync_thread.request_stop();
+            }
+        }
     }
 
     /** Handle all function calls.
