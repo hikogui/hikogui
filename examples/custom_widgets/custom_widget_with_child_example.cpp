@@ -6,6 +6,7 @@
 #include "ttauri/widgets/widget.hpp"
 #include "ttauri/widgets/label_widget.hpp"
 #include "ttauri/crt.hpp"
+#include "ttauri/loop.hpp"
 
 // Every widget must inherit from tt::widget.
 class widget_with_child : public tt::widget {
@@ -113,5 +114,5 @@ int tt_main(int argc, char *argv[])
     auto gui = tt::gui_system::make_unique();
     auto window = gui->make_window(tt::tr("Widget with child"));
     window->content().make_widget<widget_with_child>("A1", tt::tr("Widget with child"));
-    return gui->loop();
+    return tt::loop::main().resume();
 }

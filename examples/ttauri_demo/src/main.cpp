@@ -21,6 +21,7 @@
 #include "ttauri/preferences.hpp"
 #include "ttauri/when_any.hpp"
 #include "ttauri/task.hpp"
+#include "ttauri/loop.hpp"
 #include <Windows.h>
 #include <memory>
 
@@ -207,7 +208,7 @@ int tt_main(int argc, char *argv[])
     //auto audio = audio_system::make_unique(gui->event_queue());
 
     main_window(*gui, preferences);
-    return gui->loop();
+    return loop::main().resume();
 }
 
 // extern "C" const char *__asan_default_options() {

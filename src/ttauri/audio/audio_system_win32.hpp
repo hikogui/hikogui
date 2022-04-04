@@ -26,7 +26,7 @@ class audio_system_win32 : public audio_system {
 public:
     using super = audio_system;
 
-    audio_system_win32(tt::event_queue const &event_queue, std::weak_ptr<audio_system_delegate> delegate);
+    audio_system_win32(std::weak_ptr<audio_system_delegate> delegate);
     ~audio_system_win32();
 
     void init() noexcept override;

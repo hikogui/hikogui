@@ -7,6 +7,7 @@
 #include "architecture.hpp"
 #include "counters.hpp"
 #include "memory.hpp"
+#include <type_traits>
 #include <concepts>
 #include <atomic>
 #include <memory>
@@ -130,12 +131,17 @@ public:
     }
 
     /** Create an message in-place on the fifo.
+     *
      * @tparam Message The message type derived from value_type to be stored in a free slot.
+     * @param func The function to invoke on the message created on the fifo.
      * @param args The arguments passed to the constructor of Message.
+     * @return A reference to the emplaced message.
      */
-    template<typename Message, typename... Args>
-    tt_force_inline void emplace(Args&&...args) noexcept
+    template<typename Message, typename Func, typename... Args>
+    tt_force_inline auto emplace_and_invoke(Func&& func, Args&&...args) noexcept
     {
+        using func_result = decltype(std::declval<Func>()(std::declval<Message&>()));
+
         // We need a new index.
         // - The index is a byte index into 64kByte of memory.
         // - Increment index by the slot_size and the _head will overflow naturally
@@ -167,8 +173,21 @@ public:
             // Overwrite the buffer with the new slot.
             auto new_ptr = new (slot.begin() + offset_within_buffer) Message(std::forward<Args>(args)...);
 
-            // Release the buffer for reading.
-            slot.pointer.store(new_ptr, std::memory_order::release);
+            if constexpr (std::is_same_v<func_result, void>) {
+                // Call the function on the newly created message
+                std::forward<Func>(func)(*new_ptr);
+
+                // Release the buffer for reading.
+                slot.pointer.store(new_ptr, std::memory_order::release);
+
+            } else {
+                // Call the function on the newly created message
+                auto tmp = std::forward<Func>(func)(*new_ptr);
+
+                // Release the buffer for reading.
+                slot.pointer.store(new_ptr, std::memory_order::release);
+                return tmp;
+            }
 
         } else {
             // We need a heap allocated pointer with a fully constructed object
@@ -185,9 +204,28 @@ public:
                 [[unlikely]] contended();
             }
 
-            // Release the heap for reading.
-            slot.pointer.store(new_ptr, std::memory_order::release);
+            if constexpr (std::is_same_v<func_result, void>) {
+                // Call the function on the newly created message
+                std::forward<Func>(func)(*new_ptr);
+
+                // Release the heap for reading.
+                slot.pointer.store(new_ptr, std::memory_order::release);
+
+            } else {
+                // Call the function on the newly created message
+                auto tmp = std::forward<Func>(func)(*new_ptr);
+
+                // Release the heap for reading.
+                slot.pointer.store(new_ptr, std::memory_order::release);
+                return tmp;
+            }
         }
+    }
+
+    template<typename Message, typename... Args>
+    tt_force_inline void emplace(Args&&...args) noexcept
+    {
+        return emplace_and_invoke<Message>([](Message&) -> void {}, std::forward<Args>(args)...);
     }
 
 private:

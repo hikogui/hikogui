@@ -8,9 +8,9 @@ namespace tt::inline v1 {
 
 class audio_system_aggregate_delegate : public audio_system_delegate {
 public:
-    audio_system_aggregate_delegate(audio_system_aggregate &owner) : _owner(owner) {}
+    audio_system_aggregate_delegate(audio_system_aggregate& owner) : _owner(owner) {}
 
-    void audio_device_list_changed(audio_system &self) override
+    void audio_device_list_changed(audio_system& self) override
     {
         if (auto delegate = _owner._delegate.lock()) {
             delegate->audio_device_list_changed(_owner);
@@ -18,13 +18,11 @@ public:
     }
 
 private:
-    audio_system_aggregate &_owner;
+    audio_system_aggregate& _owner;
 };
 
-audio_system_aggregate::audio_system_aggregate(
-    tt::event_queue const &event_queue,
-    std::weak_ptr<audio_system_delegate> delegate) :
-    super(event_queue, std::move(delegate)), _aggregate_delegate(std::make_shared<audio_system_aggregate_delegate>(*this))
+audio_system_aggregate::audio_system_aggregate(std::weak_ptr<audio_system_delegate> delegate) :
+    super(std::move(delegate)), _aggregate_delegate(std::make_shared<audio_system_aggregate_delegate>(*this))
 {
 }
 

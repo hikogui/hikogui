@@ -14,6 +14,7 @@
 #include "ttauri/codec/png.hpp"
 #include "ttauri/GFX/RenderDoc.hpp"
 #include "ttauri/crt.hpp"
+#include "ttauri/loop.hpp"
 #include <numbers>
 
 enum class drawing_type {
@@ -365,5 +366,5 @@ int tt_main(int argc, char *argv[])
     window->content().make_widget<tt::label_widget>("A9", tt::tr("Rounded:"));
     window->content().make_widget<tt::toggle_widget>("B9:D9", rounded);
 
-    return gui->loop();
+    return tt::loop::main().resume();
 }

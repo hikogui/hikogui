@@ -6,6 +6,7 @@
 #include "ttauri/task.hpp"
 #include "ttauri/widgets/checkbox_widget.hpp"
 #include "ttauri/crt.hpp"
+#include "ttauri/loop.hpp"
 
 using namespace tt;
 
@@ -33,5 +34,5 @@ int tt_main(int argc, char* argv[])
 {
     auto gui = gui_system::make_unique();
     checkbox_example(*gui);
-    return gui->loop();
+    return loop::main().resume();
 }

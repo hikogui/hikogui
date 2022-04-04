@@ -10,16 +10,16 @@
 #include "../log.hpp"
 #include "../exception.hpp"
 #include "../locked_memory_allocator.hpp"
-#include "../event_queue.hpp"
+#include "../loop.hpp"
 #include <Windows.h>
 #include <mmdeviceapi.h>
 
 namespace tt::inline v1 {
 
 [[nodiscard]] std::unique_ptr<audio_system>
-audio_system::make_unique(tt::event_queue const &event_queue, std::weak_ptr<audio_system_delegate> delegate) noexcept
+audio_system::make_unique(std::weak_ptr<audio_system_delegate> delegate) noexcept
 {
-    auto tmp = std::make_unique<audio_system_aggregate>(event_queue, delegate);
+    auto tmp = std::make_unique<audio_system_aggregate>(delegate);
     tmp->init();
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
     tmp->make_audio_system<audio_system_win32>();
@@ -37,7 +37,7 @@ public:
     STDMETHOD(OnDefaultDeviceChanged)(EDataFlow flow, ERole role, LPCWSTR device_id)
     {
         auto device_id_ = audio_device_id{audio_device_id::win32, device_id};
-        _system->_event_queue.emplace([this, device_id_]() {
+        loop::main().post([this, device_id_]() {
             _system->default_device_changed(device_id_);
         });
         return S_OK;
@@ -46,7 +46,7 @@ public:
     STDMETHOD(OnDeviceAdded)(LPCWSTR device_id)
     {
         auto device_id_ = audio_device_id{audio_device_id::win32, device_id};
-        _system->_event_queue.emplace([this, device_id_]() {
+        loop::main().post([this, device_id_]() {
             this->_system->device_added(device_id_);
         });
         return S_OK;
@@ -63,7 +63,7 @@ public:
 
         tt_axiom(device_id);
         auto device_id_ = audio_device_id{audio_device_id::win32, device_id};
-        _system->_event_queue.emplace([this, device_id_]() {
+        loop::main().post([this, device_id_]() {
             this->_system->device_added(device_id_);
         });
         return S_OK;
@@ -72,7 +72,7 @@ public:
     STDMETHOD(OnDeviceStateChanged)(LPCWSTR device_id, DWORD state)
     {
         auto device_id_ = audio_device_id{audio_device_id::win32, device_id};
-        _system->_event_queue.emplace([this, device_id_]() {
+        loop::main().post([this, device_id_]() {
             this->_system->device_state_changed(device_id_);
         });
         return S_OK;
@@ -81,7 +81,7 @@ public:
     STDMETHOD(OnPropertyValueChanged)(LPCWSTR device_id, PROPERTYKEY const key)
     {
         auto device_id_ = audio_device_id{audio_device_id::win32, device_id};
-        _system->_event_queue.emplace([this, device_id_]() {
+        loop::main().post([this, device_id_]() {
             this->_system->device_property_value_changed(device_id_);
         });
         return S_OK;
@@ -106,8 +106,8 @@ private:
     audio_system_win32 *_system;
 };
 
-audio_system_win32::audio_system_win32(tt::event_queue const &event_queue, std::weak_ptr<audio_system_delegate> delegate) :
-    audio_system(event_queue, std::move(delegate))
+audio_system_win32::audio_system_win32(std::weak_ptr<audio_system_delegate> delegate) :
+    audio_system(std::move(delegate))
 {
     tt_hresult_check(CoInitializeEx(NULL, COINIT_MULTITHREADED));
 

@@ -33,12 +33,6 @@ target_sources(ttauri PRIVATE
     theme_book.cpp
     theme_book.hpp
     theme_mode.hpp
-    vertical_sync.cpp
-    vertical_sync.hpp
-    #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/vertical_sync_macos.hpp>
-    #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/vertical_sync_macos.mm>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/vertical_sync_win32.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/vertical_sync_win32.hpp>
 )
 
 if(TT_BUILD_PCH AND NOT TT_ENABLE_ANALYSIS)

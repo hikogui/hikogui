@@ -5,6 +5,7 @@
 #include "ttauri/GUI/gui_system.hpp"
 #include "ttauri/widgets/widget.hpp"
 #include "ttauri/crt.hpp"
+#include "ttauri/loop.hpp"
 
 // Every widget must inherit from tt::widget.
 class minimum_widget : public tt::widget {
@@ -72,5 +73,5 @@ int tt_main(int argc, char *argv[])
     auto gui = tt::gui_system::make_unique();
     auto window = gui->make_window(tt::tr("Minimum Custom Widget"));
     window->content().make_widget<minimum_widget>("A1");
-    return gui->loop();
+    return tt::loop::main().resume();
 }

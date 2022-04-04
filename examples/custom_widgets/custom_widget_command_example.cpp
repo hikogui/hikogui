@@ -6,6 +6,7 @@
 #include "ttauri/widgets/widget.hpp"
 #include "ttauri/crt.hpp"
 #include "ttauri/log.hpp"
+#include "ttauri/loop.hpp"
 
 // Every widget must inherit from tt::widget.
 class command_widget : public tt::widget {
@@ -146,5 +147,5 @@ int tt_main(int argc, char *argv[])
     auto window = gui->make_window(tt::tr("Custom Widget Command"));
     window->content().make_widget<command_widget>("A1");
     window->content().make_widget<command_widget>("A2");
-    return gui->loop();
+    return tt::loop::main().resume();
 }

@@ -5,6 +5,7 @@
 #include "ttauri/GUI/gui_system.hpp"
 #include "ttauri/widgets/selection_widget.hpp"
 #include "ttauri/crt.hpp"
+#include "ttauri/loop.hpp"
 
 using namespace tt;
 
@@ -28,5 +29,5 @@ int tt_main(int argc, char *argv[])
     auto close_cb = window->closing.subscribe([&] {
         window.reset();
     });
-    return gui->loop();
+    return loop::main().resume();
 }

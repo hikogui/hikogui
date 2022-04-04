@@ -12,6 +12,7 @@
 #include "../strings.hpp"
 #include "../thread.hpp"
 #include "../os_settings.hpp"
+#include "../loop.hpp"
 #include "../unicode/unicode_normalization.hpp"
 #include <windowsx.h>
 #include <dwmapi.h>
@@ -644,7 +645,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         if (last_forced_redraw + 16.7ms < current_time) {
             // During sizing the event loop is blocked.
             // Render at about 60fps.
-            gui.render(current_time);
+            loop::main().resume_once();
             last_forced_redraw = current_time;
         }
     } break;

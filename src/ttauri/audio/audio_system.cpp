@@ -11,8 +11,8 @@
 
 namespace tt::inline v1 {
 
-audio_system::audio_system(tt::event_queue const &event_queue, std::weak_ptr<audio_system_delegate> delegate) :
-    _event_queue(event_queue), _delegate(std::move(delegate))
+audio_system::audio_system(std::weak_ptr<audio_system_delegate> delegate) :
+    _delegate(std::move(delegate))
 {
 }
 

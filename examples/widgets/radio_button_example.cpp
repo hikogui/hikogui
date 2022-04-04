@@ -5,6 +5,7 @@
 #include "ttauri/GUI/gui_system.hpp"
 #include "ttauri/widgets/radio_button_widget.hpp"
 #include "ttauri/crt.hpp"
+#include "ttauri/loop.hpp"
 
 using namespace tt;
 
@@ -23,5 +24,5 @@ int tt_main(int argc, char *argv[])
 /// [Create three radio buttons]
 
     auto close_cb = window->closing.subscribe([&]{ window.reset(); });
-    return gui->loop();
+    return loop::main().resume();
 }

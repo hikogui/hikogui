@@ -167,6 +167,9 @@ target_link_libraries(ttauri PUBLIC unofficial::vulkan-memory-allocator::vulkan-
 if(APPLE)
     target_link_libraries(ttauri PUBLIC "-framework Foundation -framework AppKit")
 endif()
+if(WIN32)
+	target_link_libraries(ttauri PUBLIC "ws2_32")
+endif()
 
 target_include_directories(ttauri PUBLIC ${Vulkan_INCLUDE_DIRS})
 

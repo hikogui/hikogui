@@ -5,6 +5,7 @@
 #include "abstract_button_widget.hpp"
 #include "../GUI/theme.hpp"
 #include "../GUI/gui_system.hpp"
+#include "../loop.hpp"
 
 namespace tt::inline v1 {
 
@@ -38,7 +39,7 @@ void abstract_button_widget::activate() noexcept
         delegate->activate(*this);
     }
 
-    window.gui.run_from_event_queue([this]() {
+    loop::main().send([this]() {
         this->pressed();
     });
 }

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "wfree_fifo.hpp"
+#include <future>
 
 namespace tt::inline v1 {
 namespace detail {
@@ -13,7 +14,7 @@ class function_fifo_item {
 public:
     /** run the async item.
      */
-    virtual void run() noexcept;
+    virtual void run() noexcept = 0;
 };
 
 /**
@@ -25,7 +26,7 @@ public:
 template<typename Functor, typename... Arguments>
 class function_fifo_post_item : public function_fifo_item {
 public:
-    static_assert(std::is_invocable_v<Functors, Arguments...>);
+    static_assert(std::is_invocable_v<Functor, Arguments...>);
 
     using result_type = void;
 
@@ -54,7 +55,7 @@ private:
 template<typename Functor, typename... Arguments>
 class function_fifo_send_item : public function_fifo_item {
 public:
-    static_assert(std::is_invocable_v<Functors, Arguments...>);
+    static_assert(std::is_invocable_v<Functor, Arguments...>);
 
     using result_type = decltype(std::declval<Functor>()(std::declval<Arguments>()...));
 
@@ -78,7 +79,7 @@ public:
         }
     }
 
-    std::future<result_type> get_future() const noexcept
+    std::future<result_type> get_future() noexcept
     {
         return _promise.get_future();
     }
@@ -151,8 +152,12 @@ public:
     {
         using async_type = detail::function_fifo_send_item<std::decay_t<Func>, std::decay_t<Args>...>;
 
-        ttlet& item = _fifo.emplace<async_type>(std::forward<Func>(func), std::forward<Args>(args)...);
-        return item.get_future();
+        return _fifo.emplace_and_invoke<async_type>(
+            [](async_type& item) {
+                return item.get_future();
+            },
+            std::forward<Func>(func),
+            std::forward<Args>(args)...);
     }
 
     /** Asynchronously post a functor to the fifo to be executed later.
