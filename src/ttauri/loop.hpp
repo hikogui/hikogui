@@ -4,8 +4,9 @@
 
 #pragma once
 
-#include "async_fifo.hpp"
+#include "function_fifo.hpp"
 #include "cast.hpp"
+#include "subsystem.hpp"
 #include "net/network_event.hpp"
 #include "GUI/gui_window.hpp"
 #include <functional>
@@ -15,22 +16,77 @@
 #include <memory>
 
 namespace tt::inline v1 {
+class gui_window;
 
 class loop {
 public:
-    struct impl_type {
+    class impl_type {
+    public:
+        impl_type() : _thread_id(0) {}
+
+        virtual ~impl_type() {}
+
+        virtual void set_maximum_frame_rate(double frame_rate) noexcept = 0;
+
+        template<typename Func, typename... Args>
+        [[nodiscard]] void post(Func&& func, Args&&...args) noexcept
+        {
+            return _function_fifo.post(std::forward<Func>(func), std::forward<Args>(args)...);
+        }
+
+        template<typename Func, typename... Args>
+        [[nodiscard]] auto send(Func&& func, Args&&...args) noexcept
+        {
+            auto future = _function_fifo.send(std::forward<Func>(func), std::forward<Args>(args)...);
+            notify_has_send();
+            return future;
+        }
+
+        void add_window(std::weak_ptr<gui_window> window) noexcept
+        {
+            tt_axiom(is_same_thread());
+            _windows.push_back(std::move(window));
+        }
+
+        virtual void add_socket(int fd, network_event event_mask, std::function<void(int, network_events const&)> f) = 0;
+        virtual void remove_socket(int fd) = 0;
+        virtual int resume() noexcept = 0;
+        virtual void resume_once(bool block) noexcept = 0;
+
+    protected:
+        /** Notify the event loop that a function was added to the _function_fifo.
+         */
+        virtual void notify_has_send() noexcept = 0;
+
+        [[nodiscard]] bool is_same_thread() const noexcept
+        {
+            return _thread_id == 0 or current_thread_id() == _thread_id;
+        }
+
+        function_fifo<> _function_fifo;
+        std::optional<int> _exit_code;
+        bool _is_main = false;
+        double _maximum_frame_rate = 30.0;
+        std::chrono::nanoseconds _minimum_frame_time = std::chrono::nanoseconds(33'333'333);
+        thread_id _thread_id = 0;
+        std::vector<std::weak_ptr<gui_window>> _windows;
     };
 
     /** Construct a loop.
      *
      */
     loop();
-
-    ~loop();
+    loop(loop const&) = delete;
+    loop(loop&&) noexcept = default;
+    loop& operator=(loop const&) = delete;
+    loop& operator=(loop&&) noexcept = default;
 
     /** Create or get the main-loop.
      */
-    [[nodiscard]] tt_no_inline static loop& main() noexcept;
+    [[nodiscard]] tt_no_inline static loop& main() noexcept
+    {
+        return *start_subsystem_or_terminate(_main, nullptr, subsystem_init, subsystem_deinit);
+    }
 
     /** Set maximum frame rate.
      *
@@ -38,13 +94,88 @@ public:
      *
      * @param frame_rate The maximum frame rate that a window will be updated.
      */
-    void set_maximum_frame_rate(double frame_rate) noexcept;
+    void set_maximum_frame_rate(double frame_rate) noexcept
+    {
+        tt_axiom(_pimpl);
+        return _pimpl->set_maximum_frame_rate(frame_rate);
+    }
+
+    /** Call a function from the loop.
+     *
+     * @note It is safe to call this function from another thread.
+     * @note If the function and arguments uses a small amount of storage space and the fifo is not full,
+     *       this function is wait-free.
+     * @param f The function to call from the event-loop
+     * @param args The arguments to pass to the function.
+     */
+    template<typename Func, typename... Args>
+    [[nodiscard]] void post(Func&& func, Args&&...args) noexcept
+    {
+        tt_axiom(_pimpl);
+        return _pimpl->post(std::forward<Func>(func), std::forward<Args>(args)...);
+    }
+
+    /** Call a function from the loop.
+     *
+     * @note It is safe to call this function from another thread.
+     * @param f The function to call from the event-loop
+     * @param args The arguments to pass to the function.
+     * @return A future for the return value.
+     */
+    template<typename Func, typename... Args>
+    [[nodiscard]] auto send(Func&& func, Args&&...args) noexcept
+    {
+        tt_axiom(_pimpl);
+        return _pimpl->send(std::forward<Func>(func), std::forward<Args>(args)...);
+    }
+
+    /** Add a window to be redrawn from the event loop.
+     *
+     * @param window A reference to an existing window, ready to be redrawn.
+     */
+    void add_window(std::weak_ptr<gui_window> window) noexcept
+    {
+        tt_axiom(_pimpl);
+        return _pimpl->add_window(std::move(window));
+    }
+
+    /** Add a callback that reacts on a socket.
+     *
+     * In most cases @a mode is set to one of the following values:
+     * - error | read: Unblock when there is data available for read.
+     * - error | write: Unblock when there is buffer space available for write.
+     * - error | read | write: Unblock when there is data available for read of when there is buffer space available for write.
+     *
+     * @note Only one callback can be associated with a socket.
+     * @param fd File descriptor of the socket.
+     * @param mode The mode of how select should work with the socket.
+     * @param f The callback to call when the file descriptor unblocks.
+     */
+    void add_socket(int fd, network_event event_mask, std::function<void(int, network_events const&)> f)
+    {
+        tt_axiom(_pimpl);
+        return _pimpl->add_socket(fd, event_mask, std::move(f));
+    }
+
+    /** Remove the callback associated with a socket.
+     *
+     * @param fd The file descriptor of the socket.
+     */
+    void remove_socket(int fd)
+    {
+        tt_axiom(_pimpl);
+        return _pimpl->remove_socket(fd);
+    }
 
     /** Resume the loop on the current thread.
      *
      * @return Exit code when the loop is exited.
      */
-    int resume() noexcept;
+    int resume() noexcept
+    {
+        tt_axiom(_pimpl);
+        return _pimpl->resume();
+    }
 
     /** Resume for a single iteration.
      *
@@ -59,122 +190,29 @@ public:
      * @note This function must be called from the same thread as `resume()`.
      * @param block Allow processing to block, this is normally done only inside `resume()`.
      */
-    void resume_once(bool block = false) noexcept;
-
-    /** Add a callback that reacts on a socket.
-     *
-     * In most cases @a mode is set to one of the following values:
-     * - error | read: Unblock when there is data available for read.
-     * - error | write: Unblock when there is buffer space available for write.
-     * - error | read | write: Unblock when there is data available for read of when there is buffer space available for write.
-     *
-     * @note Only one callback can be associated with a socket.
-     * @param fd File descriptor of the socket.
-     * @param mode The mode of how select should work with the socket.
-     * @param f The callback to call when the file descriptor unblocks.
-     */
-    void add_socket(int fd, network_event event_mask, std::function<void(int, network_events const&)> f);
-
-    /** Remove the callback associated with a socket.
-     *
-     * @param fd The file descriptor of the socket.
-     */
-    bool remove_socket(int fd);
-
-    /** Call a function from the loop.
-     *
-     * @note It is safe to call this function from another thread.
-     * @note If the function and arguments uses a small amount of storage space and the fifo is not full,
-     *       this function is wait-free.
-     * @param f The function to call from the event-loop
-     * @param args The arguments to pass to the function.
-     */
-    template<typename Func, typename... Args>
-    [[nodiscard]] void post(Func&& func, Args&&...args) noexcept
+    void resume_once(bool block = false) noexcept
     {
-        return _async_fifo.post(std::forward<Func>(func), std::forward<Args>(args)...);
-    }
-
-    /** Call a function from the loop.
-     *
-     * @note It is safe to call this function from another thread.
-     * @param f The function to call from the event-loop
-     * @param args The arguments to pass to the function.
-     * @return A future for the return value.
-     */
-    template<typename Func, typename... Args>
-    [[nodiscard]] auto send(Func&& func, Args&&...args) noexcept
-    {
-        auto future = _async_fifo.send(std::forward<Func>(func), std::forward<Args>(args)...);
-        trigger_async();
-        return future;
+        tt_axiom(_pimpl);
+        return _pimpl->resume_once(block);
     }
 
 private:
-    struct socket_type {
-        int fd;
-        network_event mode;
-        std::function<void(int, network_events const &)> callback;
-    };
-
     /** Pointer to the main-loop.
      */
-    inline static std::unique_ptr<loop> _main;
+    inline static std::atomic<loop *> _main;
 
     std::unique_ptr<impl_type> _pimpl;
 
-    async_fifo<> _async_fifo;
-    std::optional<int> _exit_code;
-    bool _is_main = false;
-    double _maximum_frame_rate = 30.0;
-    std::chrono::nanoseconds _minimum_frame_time = std::chrono::nanoseconds(33'333'333);
-    thread_id _thread_id = 0;
-
-    /** Get the private operating-system specific data.
-     */
-    template<typename T>
-    T const& get_impl() const noexcept
+    static loop *subsystem_init() noexcept
     {
-        tt_axiom(_pimpl);
-        return down_cast<T const&>(*_pimpl);
+        return new loop();
     }
 
-    /** Get the private operating-system specific data.
-     */
-    template<typename T>
-    T& get_impl() noexcept
+    static void subsystem_deinit() noexcept
     {
-        tt_axiom(_pimpl);
-        return down_cast<T&>(*_pimpl);
-    }
-
-    /** Interrupt a blocking main loop to process newly added events.
-     */
-    void trigger_async() noexcept;
-
-    /** Call elapsed timers.
-     *
-     * @param deadline The deadline before all timers must be handled before moving on.
-     */
-    void handle_vsync() noexcept;
-
-    /** Handle all async calls.
-     *
-     * @param deadline The deadline before all calls must be executed before moving on.
-     */
-    void handle_async() noexcept;
-
-    /** Handle the gui events.
-     *
-     * @param deadline The deadline before all gui-events are handled before moving on.
-     */
-    void handle_gui_events() noexcept;
-
-    /** Check if the current thread is the loop's thread.
-     */
-    [[nodiscard]] bool is_same_thread() const noexcept
-    {
-        return current_thread_id() == _thread_id;
+        if (auto tmp = _main.exchange(nullptr)) {
+            delete tmp;
+        }
     }
 };
 

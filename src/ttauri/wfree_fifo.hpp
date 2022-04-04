@@ -55,10 +55,19 @@ public:
     };
 
     constexpr wfree_fifo() noexcept = default;
-    wfree_fifo(wfree_fifo const &) = delete;
-    wfree_fifo(wfree_fifo &&) = delete;
-    wfree_fifo &operator=(wfree_fifo const &) = delete;
-    wfree_fifo &operator=(wfree_fifo &&) = delete;
+    wfree_fifo(wfree_fifo const&) = delete;
+    wfree_fifo(wfree_fifo&&) = delete;
+    wfree_fifo& operator=(wfree_fifo const&) = delete;
+    wfree_fifo& operator=(wfree_fifo&&) = delete;
+
+    /** Check if fifo is empty.
+     *
+     * @note Must be called on the reader-thread.
+     */
+    [[nodiscard]] bool empty() const noexcept
+    {
+        return _head.load(std::memory_order::relaxed) == _tail;
+    }
 
     /** Take one message from the fifo slot.
      * Reads one message from the ring buffer and passes it to a call of operation.
@@ -68,12 +77,12 @@ public:
      * @return True if a message was available in the fifo.
      */
     template<typename Operation>
-    bool take_one(Operation &&operation) noexcept
+    bool take_one(Operation&& operation) noexcept
     {
         auto index = _tail;
 
         // The shift here should be eliminated by the equal shift inside the index operator.
-        auto &slot = _slots[index / slot_size];
+        auto& slot = _slots[index / slot_size];
 
         // Check if the slot.pointer is not null, this is when the writer
         // has finished writing the slot.
@@ -106,7 +115,7 @@ public:
      * @param operation A `void(value_type const &)` which is called when a message is available.
      */
     template<typename Operation>
-    void take_all(Operation const &operation) noexcept
+    void take_all(Operation const& operation) noexcept
     {
         while (take_one(operation)) {}
     }
@@ -125,7 +134,7 @@ public:
      * @param args The arguments passed to the constructor of Message.
      */
     template<typename Message, typename... Args>
-    tt_force_inline void emplace(Args &&...args) noexcept
+    tt_force_inline void emplace(Args&&...args) noexcept
     {
         // We need a new index.
         // - The index is a byte index into 64kByte of memory.
@@ -137,7 +146,7 @@ public:
         ttlet index = _head.fetch_add(slot_size, std::memory_order::relaxed);
         tt_axiom(index % slot_size == 0);
 
-        auto &slot =
+        auto& slot =
             *std::launder(std::assume_aligned<slot_size>(reinterpret_cast<slot_type *>(reinterpret_cast<char *>(this) + index)));
 
         // Calculate if the Message will fit in the slot.

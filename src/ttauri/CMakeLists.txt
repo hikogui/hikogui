@@ -76,6 +76,7 @@ target_sources(ttauri PRIVATE
     fixed.hpp
     float16.hpp
     forward_value.hpp
+	function_fifo.hpp
     gap_buffer.hpp
     generator.hpp
     global_state.hpp
