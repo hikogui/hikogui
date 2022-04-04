@@ -197,9 +197,10 @@ public:
             if (block) {
                 // 100 ms timeout happened, this should not normally happen when vsync is working.
                 tt_log_error_once("loop:error:timeout", "MsgWaitForMultipleObjects was timed-out.");
+
+                // Fallback in case the vsync thread is not running.
+                handle_vsync();
             }
-            // Fallback in case the vsync thread is not running.
-            handle_vsync();
 
         } else if (wait_r == WAIT_OBJECT_0 + _vsync_handle_idx) {
             // XXX Make sure this is not starving the win32 events.
