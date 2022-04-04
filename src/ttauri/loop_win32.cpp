@@ -88,7 +88,7 @@ public:
     ~loop_impl_win32()
     {
         // Close all socket event handles.
-        while (_handles.size() >= _socket_handle_idx) {
+        while (_handles.size() > _socket_handle_idx) {
             if (not WSACloseEvent(_handles.back())) {
                 tt_log_error("Could not clock socket event handle for socket {}. {}", _sockets.back(), get_last_error_message());
             }
@@ -362,6 +362,11 @@ private:
         // XXX handle maximum frame rate and update vsync thread
         // XXX Update active windows more often than inactive windows.
 
+        if (not _vsync_thread.joinable()) {
+            // Fallback for the vsync_time advancing when the vsync thread is not running.
+            _vsync_time.store(std::chrono::utc_clock::now());
+        }
+
         ttlet display_type = _vsync_time.load(std::memory_order::relaxed) + std::chrono::milliseconds(30);
 
         for (auto& window : _windows) {
@@ -370,7 +375,7 @@ private:
             }
         }
 
-        std::erase_if(_windows, [](auto &window) {
+        std::erase_if(_windows, [](auto& window) {
             return window.expired();
         });
     }
