@@ -16,8 +16,13 @@
 
 namespace tt::inline v1 {
 
+[[nodiscard]] bool equal_ptr(auto *p1, auto *p2) noexcept
+{
+    return static_cast<void *>(p1) == static_cast<void *>(p2);
+}
+
 template<typename T, typename U>
-void memswap(T &dst, U &src)
+void memswap(T& dst, U& src)
 {
     static_assert(sizeof(T) == sizeof(U), "memswap requires both objects of equal size");
     std::byte tmp[sizeof(T)];
@@ -140,13 +145,12 @@ void placement_move(T *src, T *src_last, T *dst)
 /** Construct a set of objects.
  */
 template<typename It, typename... Args>
-void construct(It first, It last, Args const &... args)
+void construct(It first, It last, Args const&...args)
 {
     for (auto it = first; it != last; ++it) {
         std::construct_at(std::addressof(*it), args...);
     }
 }
-
 
 /** Check if a pointer is properly aligned for the object it is pointing at.
  */
@@ -193,7 +197,7 @@ constexpr T *floor(T *ptr, std::size_t alignment) noexcept
 }
 
 template<typename T>
-inline void cleanupWeakPointers(std::vector<std::weak_ptr<T>> &v) noexcept
+inline void cleanupWeakPointers(std::vector<std::weak_ptr<T>>& v) noexcept
 {
     auto i = v.begin();
     while (i != v.end()) {
@@ -206,7 +210,7 @@ inline void cleanupWeakPointers(std::vector<std::weak_ptr<T>> &v) noexcept
 }
 
 template<typename K, typename T>
-inline void cleanupWeakPointers(std::unordered_map<K, std::weak_ptr<T>> &v) noexcept
+inline void cleanupWeakPointers(std::unordered_map<K, std::weak_ptr<T>>& v) noexcept
 {
     auto i = v.begin();
     while (i != v.end()) {
@@ -219,7 +223,7 @@ inline void cleanupWeakPointers(std::unordered_map<K, std::weak_ptr<T>> &v) noex
 }
 
 template<typename K, typename T>
-inline void cleanupWeakPointers(std::unordered_map<K, std::vector<std::weak_ptr<T>>> &v) noexcept
+inline void cleanupWeakPointers(std::unordered_map<K, std::vector<std::weak_ptr<T>>>& v) noexcept
 {
     auto i = v.begin();
     while (i != v.end()) {
@@ -233,7 +237,7 @@ inline void cleanupWeakPointers(std::unordered_map<K, std::vector<std::weak_ptr<
 }
 
 template<typename Value, typename Map, typename Key, typename... Args>
-inline std::shared_ptr<Value> try_make_shared(Map &map, Key key, Args... args)
+inline std::shared_ptr<Value> try_make_shared(Map& map, Key key, Args... args)
 {
     std::shared_ptr<Value> value;
 

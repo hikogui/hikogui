@@ -7,6 +7,7 @@
 #include "architecture.hpp"
 #include "counters.hpp"
 #include "memory.hpp"
+#include "polymorphic_optional.hpp"
 #include <type_traits>
 #include <concepts>
 #include <atomic>
@@ -24,7 +25,6 @@ namespace tt::inline v1 {
  *
  * @tparam T Base class of the value type stored in the ring buffer.
  * @tparam SlotSize Size of each slot, must be power-of-two.
- * @param Alignment Optional alignment of wfree_fifo.
  */
 template<typename T, std::size_t SlotSize>
 class alignas(SlotSize) wfree_fifo {
@@ -33,27 +33,11 @@ public:
     static_assert(SlotSize < 65536);
 
     using value_type = T;
+    using slot_type = polymorphic_optional<value_type, SlotSize, SlotSize>;
 
     static constexpr std::size_t fifo_size = 65536;
     static constexpr std::size_t slot_size = SlotSize;
     static constexpr std::size_t num_slots = fifo_size / slot_size;
-
-    struct slot_type {
-        static constexpr std::size_t buffer_size = slot_size - sizeof(value_type *);
-
-        std::atomic<value_type *> pointer = nullptr;
-        std::array<std::byte, buffer_size> buffer = {};
-
-        [[nodiscard]] std::byte *begin() noexcept
-        {
-            return buffer.data();
-        }
-
-        [[nodiscard]] std::byte *end() noexcept
-        {
-            return buffer.data() + buffer_size;
-        }
-    };
 
     constexpr wfree_fifo() noexcept = default;
     wfree_fifo(wfree_fifo const&) = delete;
@@ -74,39 +58,17 @@ public:
      * Reads one message from the ring buffer and passes it to a call of operation.
      * If no message is available this function returns without calling operation.
      *
-     * @param operation A `void(value_type const &)` which is called when a message is available.
-     * @return True if a message was available in the fifo.
+     * @param func The function to call with the value as argument if it exists.
+     * @return If empty/false the this was empty, otherwise it contains the return value of the function if any.
      */
-    template<typename Operation>
-    bool take_one(Operation&& operation) noexcept
+    template<typename Func>
+    auto take_one(Func&& func) noexcept
     {
-        auto index = _tail;
-
-        // The shift here should be eliminated by the equal shift inside the index operator.
-        auto& slot = _slots[index / slot_size];
-
-        // Check if the slot.pointer is not null, this is when the writer
-        // has finished writing the slot.
-        if (auto ptr = slot.pointer.load(std::memory_order::acquire)) {
-            std::forward<Operation>(operation)(*ptr);
-
-            // Destroy the object depending if it lives inside the ring buffer.
-            ttlet byte_ptr = reinterpret_cast<std::byte *>(ptr);
-            if (byte_ptr >= slot.begin() and byte_ptr < slot.end()) {
-                // Destroy the object inside the ring buffer.
-                std::destroy_at(ptr);
-            } else {
-                // Destroy the object on the heap.
-                delete ptr;
-            }
-
-            // We are done with the slot.
-            slot.pointer.store(nullptr, std::memory_order::release);
+        auto result = get_slot(_tail).invoke_and_reset(std::forward<Func>(func));
+        if (result) {
             _tail += slot_size;
-            return true;
-        } else {
-            return false;
         }
+        return result;
     }
 
     /** Take all message from the queue.
@@ -121,15 +83,6 @@ public:
         while (take_one(operation)) {}
     }
 
-    tt_no_inline void contended() noexcept
-    {
-        using namespace std::chrono_literals;
-
-        // If we get here, that would suck, but nothing to do about it.
-        ++global_counter<"wfree_fifo">;
-        std::this_thread::sleep_for(16ms);
-    }
-
     /** Create an message in-place on the fifo.
      *
      * @tparam Message The message type derived from value_type to be stored in a free slot.
@@ -140,86 +93,15 @@ public:
     template<typename Message, typename Func, typename... Args>
     tt_force_inline auto emplace_and_invoke(Func&& func, Args&&...args) noexcept
     {
-        using func_result = decltype(std::declval<Func>()(std::declval<Message&>()));
-
-        // We need a new index.
-        // - The index is a byte index into 64kByte of memory.
-        // - Increment index by the slot_size and the _head will overflow naturally
+        // We need a new offset.
+        // - The offset is a byte index into 64kByte of memory.
+        // - Increment offset by the slot_size and the _head will overflow naturally
         //   at the end of the fifo.
         // - We don't care about memory ordering with other writer threads. as
         //   each slot has an atomic for handling read/writer contention.
         // - We don't have to check full/empty, this is done on the slot itself.
-        ttlet index = _head.fetch_add(slot_size, std::memory_order::relaxed);
-        tt_axiom(index % slot_size == 0);
-
-        auto& slot =
-            *std::launder(std::assume_aligned<slot_size>(reinterpret_cast<slot_type *>(reinterpret_cast<char *>(this) + index)));
-
-        // Calculate if the Message will fit in the slot.
-        constexpr auto offset_within_slot = ceil(sizeof(value_type *), alignof(Message));
-        constexpr auto needed_slot_size = offset_within_slot + sizeof(Message);
-
-        if constexpr (needed_slot_size <= sizeof(slot_type)) {
-            // Wait until the slot.pointer is a nullptr.
-            // And acquire the buffer to start overwriting it.
-            // There are no other threads that will make this non-null afterwards.
-            while (slot.pointer.load(std::memory_order_acquire)) {
-                // If we get here, that would suck, but nothing to do about it.
-                [[unlikely]] contended();
-            }
-
-            constexpr auto offset_within_buffer = offset_within_slot - sizeof(value_type *);
-
-            // Overwrite the buffer with the new slot.
-            auto new_ptr = new (slot.begin() + offset_within_buffer) Message(std::forward<Args>(args)...);
-
-            if constexpr (std::is_same_v<func_result, void>) {
-                // Call the function on the newly created message
-                std::forward<Func>(func)(*new_ptr);
-
-                // Release the buffer for reading.
-                slot.pointer.store(new_ptr, std::memory_order::release);
-
-            } else {
-                // Call the function on the newly created message
-                auto tmp = std::forward<Func>(func)(*new_ptr);
-
-                // Release the buffer for reading.
-                slot.pointer.store(new_ptr, std::memory_order::release);
-                return tmp;
-            }
-
-        } else {
-            // We need a heap allocated pointer with a fully constructed object
-            // Lets do this ahead of time to let another thread have some time
-            // to release the ring-buffer-slot.
-            ttlet new_ptr = new Message(std::forward<Args>(args)...);
-            tt_axiom(new_ptr != nullptr);
-
-            // Wait until the slot.pointer is a nullptr.
-            // We don't need to acquire since we wrote into a new heap location.
-            // There are no other threads that will make this non-null afterwards.
-            while (slot.pointer.load(std::memory_order::relaxed)) {
-                // If we get here, that would suck, but nothing to do about it.
-                [[unlikely]] contended();
-            }
-
-            if constexpr (std::is_same_v<func_result, void>) {
-                // Call the function on the newly created message
-                std::forward<Func>(func)(*new_ptr);
-
-                // Release the heap for reading.
-                slot.pointer.store(new_ptr, std::memory_order::release);
-
-            } else {
-                // Call the function on the newly created message
-                auto tmp = std::forward<Func>(func)(*new_ptr);
-
-                // Release the heap for reading.
-                slot.pointer.store(new_ptr, std::memory_order::release);
-                return tmp;
-            }
-        }
+        ttlet offset = _head.fetch_add(slot_size, std::memory_order::relaxed);
+        return get_slot(offset).wait_emplace_and_invoke<Message>(std::forward<Func>(func), std::forward<Args>(args)...);
     }
 
     template<typename Message, typename... Args>
@@ -233,6 +115,16 @@ private:
     std::atomic<uint16_t> _head = 0;
     std::array<std::byte, tt::hardware_destructive_interference_size> _dummy;
     uint16_t _tail = 0;
+
+    /** Get the slot that either the _head or _tail are pointing at.
+     */
+    tt_force_inline slot_type& get_slot(uint16_t offset) noexcept
+    {
+        tt_axiom(offset % slot_size == 0);
+        // The head and tail are 16 bit offsets within the _slots, which are 
+        return *std::launder(
+            std::assume_aligned<slot_size>(reinterpret_cast<slot_type *>(reinterpret_cast<char *>(this) + offset)));
+    }
 };
 
 } // namespace tt::inline v1

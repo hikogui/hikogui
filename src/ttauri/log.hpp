@@ -6,7 +6,6 @@
 
 #include "time_stamp_count.hpp"
 #include "time_stamp_utc.hpp"
-#include "polymorphic_optional.hpp"
 #include "wfree_fifo.hpp"
 #include "atomic.hpp"
 #include "meta.hpp"

@@ -6,10 +6,13 @@
 
 #include "assert.hpp"
 #include "concepts.hpp"
+#include "memory.hpp"
 #include <array>
 #include <memory>
-#include <optional>
 #include <type_traits>
+#include <atomic>
+#include <concepts>
+#include <thread>
 
 namespace tt::inline v1 {
 
@@ -20,254 +23,314 @@ namespace tt::inline v1 {
  * the object will be allocated on the heap.
  *
  * @tparam BaseType The base type of the polymorphic value.
- * @tparam Capacity The size in bytes of the internal buffer to store
- *                  the polymorphic value.
+ * @tparam Size Total size of the polymorphic_optional internal storage.
  */
-template<typename BaseType, std::size_t Capacity>
-class polymorphic_optional {
+template<typename BaseType, std::size_t Size, std::size_t Alignment = alignof(BaseType)>
+class alignas(Alignment) polymorphic_optional {
 public:
-    using value_type = BaseType;
-    using reference = value_type &;
-    using const_reference = value_type const &;
-    using pointer = value_type *;
-    using const_pointer = value_type const *;
+    using base_type = BaseType;
+    using pointer = base_type *;
+    using const_pointer = base_type const *;
 
-    static constexpr std::size_t capacity = Capacity;
+    static_assert(std::atomic<pointer>::is_always_lock_free);
 
-    /** Destroy any contained value.
+    /** The maximum size of a value that can be placed inside the buffer of this.
      */
+    static constexpr std::size_t capacity = Size - sizeof(std::atomic<pointer>);
+
+    /** The alignment of this.
+     */
+    static constexpr std::size_t alignment = Alignment;
+
     ~polymorphic_optional()
     {
         reset();
     }
 
-    polymorphic_optional(polymorphic_optional const &other) = delete;
-    polymorphic_optional(polymorphic_optional &&other) = delete;
-    polymorphic_optional &operator=(polymorphic_optional const &other) = delete;
-    polymorphic_optional &operator=(polymorphic_optional &&other) = delete;
+    constexpr polymorphic_optional() noexcept : _pointer() {}
+    constexpr polymorphic_optional(std::nullopt_t) noexcept : polymorphic_optional() {}
 
-    /** Construct an empty value.
-     */
-    [[nodiscard]] constexpr polymorphic_optional() noexcept : _state(state::empty) {}
-
-    /** Construct an object as value.
-     *
-     * @param other An object of a sub-class of the value_type.
-     */
-    template<typename Other>
-    requires(is_different_v<Other, value_type>) [[nodiscard]] polymorphic_optional(Other &&other) noexcept
+    template<std::derived_from<base_type> Other>
+    constexpr polymorphic_optional(std::unique_ptr<Other, std::default_delete<Other>>&& other) noexcept :
+        _pointer(other.release())
     {
-        static_assert(std::is_base_of_v<value_type, std::remove_cvref_t<Other>>);
-        _state = state::empty;
-        emplace<std::remove_cvref_t<Other>>(std::forward<Other>(other));
     }
 
-    /** Assign an object.
-     *
-     * @param other An object of a sub-class of the value_type.
-     * @return reference to this.
-     */
-    template<decayed_derived_from<value_type> Other>
-    polymorphic_optional &operator=(Other &&other) noexcept
+    template<std::derived_from<base_type> Other>
+    polymorphic_optional& operator=(std::unique_ptr<Other, std::default_delete<Other>>&& other) noexcept
     {
-        emplace<std::remove_cvref_t<Other>>(std::forward<Other>(other));
+        reset();
+        _pointer.store(other.release(), std::memory_order::release);
+    }
+
+    template<std::derived_from<base_type> Other>
+    polymorphic_optional(Other&& other) noexcept : _pointer(new Other(std::forward<Other>(*other)))
+    {
+    }
+
+    template<std::derived_from<base_type> Other>
+    polymorphic_optional(Other&& other) noexcept requires(sizeof(Other) <= capacity and alignof(Other) <= alignment) :
+        _pointer(new (_buffer.data()) Other(std::forward<Other>(*other)))
+    {
+    }
+
+    template<std::derived_from<base_type> Other>
+    polymorphic_optional& operator=(Other&& other) noexcept
+    {
+        reset();
+        auto *new_ptr = new Other(std::forward<Other>(other));
+        _pointer.store(new_ptr, std::memory_order::release);
         return *this;
     }
 
-    /** Construct the contained value in-place.
-     *
-     * @tparam T The sub-class of value_type to construct.
-     * @param args The arguments used to construct the object of type O.
-     * @return reference to the constructed object.
+    template<std::derived_from<base_type> Other>
+    polymorphic_optional& operator=(Other&& other) noexcept requires(sizeof(Other) <= capacity and alignof(Other) <= alignment)
+    {
+        reset();
+        auto *new_ptr = new (_buffer.data()) Other(std::forward<Other>(other));
+        _pointer.store(new_ptr, std::memory_order::release);
+        return *this;
+    }
+
+    [[nodiscard]] bool empty(std::memory_order memory_order = std::memory_order::seq_cst) const noexcept
+    {
+        return _pointer.load(memory_order) == nullptr;
+    }
+
+    operator bool() const noexcept
+    {
+        return not empty();
+    }
+
+    template<typename Value>
+    Value& value(std::memory_order memory_order = std::memory_order::seq_cst)
+    {
+        auto *ptr = _pointer.load(memory_order);
+        if (ptr == nullptr) {
+            throw std::bad_optional_access();
+        }
+        return down_cast<Value&>(*ptr);
+    }
+
+    template<typename Value>
+    Value const& value(std::memory_order memory_order = std::memory_order::seq_cst) const
+    {
+        auto *ptr = _pointer.load(memory_order);
+        if (ptr == nullptr) {
+            throw std::bad_optional_access();
+        }
+        return down_cast<Value const&>(*ptr);
+    }
+
+    base_type *operator->() noexcept
+    {
+        return _pointer.load();
+    }
+
+    base_type const *operator->() const noexcept
+    {
+        return _pointer.load();
+    }
+
+    base_type& operator*() noexcept
+    {
+        return *_pointer.load();
+    }
+
+    base_type const& operator*() const noexcept
+    {
+        return *_pointer.load();
+    }
+
+    /** Destroys the contained value, otherwise has no effect.
      */
-    template<derived_from<value_type> T, typename... Args>
-    reference emplace(Args &&...args) noexcept
+    tt_force_inline void reset() noexcept
+    {
+        if (auto *ptr = _pointer.exchange(nullptr, std::memory_order::acquire)) {
+            if (equal_ptr(ptr, this)) {
+                std::destroy_at(ptr);
+            } else {
+                delete ptr;
+            }
+        }
+    };
+
+    template<typename Value, typename... Args>
+    tt_force_inline Value& emplace(Args&&...args) noexcept
     {
         reset();
 
-        pointer r;
-        if (sizeof(T) <= capacity) {
-            r = new (_value.buffer.data()) T(std::forward<Args>(args)...);
-            _state = state::internal;
+        if constexpr (sizeof(Value) <= capacity and alignof(Value) <= alignment) {
+            // Overwrite the buffer with the new slot.
+            auto new_ptr = new (_buffer.data()) Value(std::forward<Args>(args)...);
+            tt_axiom(equal_ptr(new_ptr, this));
+
+            _pointer.store(new_ptr, std::memory_order::release);
+            return *new_ptr;
 
         } else {
-            r = _value.pointer = new T(std::forward<Args>(args)...);
-            _state = state::external;
-        }
-        tt_axiom(r != nullptr);
-        return *r;
-    }
+            // We need a heap allocated pointer with a fully constructed object
+            // Lets do this ahead of time to let another thread have some time
+            // to release the ring-buffer-slot.
+            ttlet new_ptr = new Value(std::forward<Args>(args)...);
+            tt_axiom(new_ptr != nullptr);
 
-    /** Check whether the object contains a value.
-     *
-     * @return True if the object has a value.
-     */
-    [[nodiscard]] bool has_value() const noexcept
-    {
-        return _state != state::empty;
-    }
-
-    /** Check whether the object contains a value.
-     *
-     * @return True if the object has a value.
-     */
-    [[nodiscard]] operator bool() const noexcept
-    {
-        return has_value();
-    }
-
-    /** Destroys any contained value.
-     */
-    void reset() noexcept
-    {
-        if (_state != state::empty) {
-            [[unlikely]] reset_deep();
+            _pointer.store(new_ptr, std::memory_order::release);
+            return *new_ptr;
         }
     }
 
-    /** Returns the contained value.
+    /** Invoke a function on the value if it exists then reset.
      *
-     * @throws std::bad_optional_access when this does not contain a value.
-     * @return A reference to the contained value.
+     * @note Only one thread should call this function on an object.
+     * @param func The function to call with the value as argument if it exists.
+     * @return If empty/false the polymorphic_optional was empty, otherwise it contains the return value of the function if any.
      */
-    [[nodiscard]] const_reference value() const &noexcept
+    template<typename Func>
+    tt_force_inline auto invoke_and_reset(Func&& func) noexcept
     {
-        if (_state == state::empty) {
-            throw std::bad_optional_access();
+        using func_result = decltype(std::declval<Func>()(std::declval<base_type&>()));
+        using result_type = std::conditional_t<std::is_same_v<func_result, void>, bool, std::optional<func_result>>;
+
+        // Check if the emplace has finished.
+        if (auto ptr = _pointer.load(std::memory_order::acquire)) {
+            if constexpr (std::is_same_v<func_result, void>) {
+                if (equal_ptr(ptr, this)) {
+                    std::forward<Func>(func)(*ptr);
+                    std::destroy_at(ptr);
+
+                    // Empty after destroying the value.
+                    _pointer.store(nullptr, std::memory_order::release);
+                    return true;
+
+                } else {
+                    // Since the object is on the heap, we can empty this immediately.
+                    _pointer.store(nullptr, std::memory_order::release);
+
+                    std::forward<Func>(func)(*ptr);
+                    delete ptr;
+                    return true;
+                }
+
+            } else {
+                if (equal_ptr(ptr, this)) {
+                    auto result = std::forward<Func>(func)(*ptr);
+                    std::destroy_at(ptr);
+
+                    // Empty after destroying the value.
+                    _pointer.store(nullptr, std::memory_order::release);
+                    return result_type{std::move(result)};
+
+                } else {
+                    // Since the object is on the heap, we can empty this immediately.
+                    _pointer.store(nullptr, std::memory_order::release);
+
+                    auto result = std::forward<Func>(func)(*ptr);
+                    delete ptr;
+                    return result_type{std::move(result)};
+                }
+            }
+
+        } else {
+            return result_type{};
         }
-        return *_pointer();
     }
 
-    /** Returns the contained value.
+    /** Wait until the optional is empty, emplace a value, then invoke a function on it before committing.
      *
-     * @throws std::bad_optional_access when this does not contain a value.
-     * @return A reference to the contained value.
+     * @tparam Message The message type derived from value_type to be stored in a free slot.
+     * @param func The function to invoke on the message created on the fifo.
+     * @param args The arguments passed to the constructor of Message.
+     * @return The result of the invoked function.
      */
-    [[nodiscard]] reference value() &noexcept
+    template<typename Value, typename Func, typename... Args>
+    tt_force_inline auto wait_emplace_and_invoke(Func&& func, Args&&...args) noexcept
     {
-        if (_state == state::empty) {
-            throw std::bad_optional_access();
+        using func_result = decltype(std::declval<Func>()(std::declval<Value&>()));
+
+        if constexpr (sizeof(Value) <= capacity and alignof(Value) <= alignment) {
+            // Wait until the _pointer is a nullptr.
+            // And acquire the buffer to start overwriting it.
+            // There are no other threads that will make this non-null afterwards.
+            while (_pointer.load(std::memory_order_acquire)) {
+                // If we get here, that would suck, but nothing to do about it.
+                [[unlikely]] contended();
+            }
+
+            // Overwrite the buffer with the new slot.
+            auto new_ptr = new (_buffer.data()) Value(std::forward<Args>(args)...);
+            tt_axiom(equal_ptr(new_ptr, this));
+
+            if constexpr (std::is_same_v<func_result, void>) {
+                // Call the function on the newly created message.
+                std::forward<Func>(func)(*new_ptr);
+
+                // Release the buffer for reading.
+                _pointer.store(new_ptr, std::memory_order::release);
+
+            } else {
+                // Call the function on the newly created message
+                auto tmp = std::forward<Func>(func)(*new_ptr);
+
+                // Release the buffer for reading.
+                _pointer.store(new_ptr, std::memory_order::release);
+                return tmp;
+            }
+
+        } else {
+            // We need a heap allocated pointer with a fully constructed object
+            // Lets do this ahead of time to let another thread have some time
+            // to release the ring-buffer-slot.
+            ttlet new_ptr = new Value(std::forward<Args>(args)...);
+            tt_axiom(new_ptr != nullptr);
+
+            // Wait until the slot.pointer is a nullptr.
+            // We don't need to acquire since we wrote into a new heap location.
+            // There are no other threads that will make this non-null afterwards.
+            while (_pointer.load(std::memory_order::relaxed)) {
+                // If we get here, that would suck, but nothing to do about it.
+                [[unlikely]] contended();
+            }
+
+            if constexpr (std::is_same_v<func_result, void>) {
+                // Call the function on the newly created message
+                std::forward<Func>(func)(*new_ptr);
+
+                // Release the heap for reading.
+                _pointer.store(new_ptr, std::memory_order::release);
+
+            } else {
+                // Call the function on the newly created message
+                auto tmp = std::forward<Func>(func)(*new_ptr);
+
+                // Release the heap for reading.
+                _pointer.store(new_ptr, std::memory_order::release);
+                return tmp;
+            }
         }
-        return *_pointer();
-    }
-
-    /** Dereference the contained value.
-     *
-     * It is undefined behaviour to derefence if this does not contain a value.
-     *
-     * @return A reference to the contained value.
-     */
-    [[nodiscard]] const_reference operator*() const noexcept
-    {
-        tt_axiom(_state != state::empty);
-        return *_pointer();
-    }
-
-    /** Dereference the contained value.
-     *
-     * It is undefined behaviour to derefence if this does not contain a value.
-     *
-     * @return A reference to the contained value.
-     */
-    [[nodiscard]] reference operator*() noexcept
-    {
-        tt_axiom(_state != state::empty);
-        return *_pointer();
-    }
-
-    /** Get a pointer to the contained value.
-     *
-     * @return A pointer to the contained value, or nullptr if this doe not contain a value.
-     */
-    [[nodiscard]] const_pointer operator->() const noexcept
-    {
-        return _pointer();
-    }
-
-    /** Get a pointer to the contained value.
-     *
-     * @return A pointer to the contained value, or nullptr if this doe not contain a value.
-     */
-    [[nodiscard]] pointer operator->() noexcept
-    {
-        return _pointer();
     }
 
 private:
-    enum class state : uint8_t { empty, internal, external };
-
-    state _state;
-
-    union {
-        pointer pointer;
-        // The pointer will align the buffer properly.
-        std::array<std::byte, capacity> buffer;
-    } _value;
-
-    tt_no_inline void reset_deep() noexcept
-    {
-        if (_state == state::internal) {
-            std::destroy_at(internal_pointer());
-        } else if (_state == state::external) {
-            delete external_pointer();
-        }
-        _state = state::empty;
-    }
-
-    [[nodiscard]] const_pointer internal_pointer() const noexcept
-    {
-        tt_axiom(_state == state::internal);
-        return std::launder(reinterpret_cast<const_pointer>(_value.buffer.data()));
-    }
-
-    [[nodiscard]] pointer internal_pointer() noexcept
-    {
-        tt_axiom(_state == state::internal);
-        return std::launder(reinterpret_cast<pointer>(_value.buffer.data()));
-    }
-
-    [[nodiscard]] const_pointer external_pointer() const noexcept
-    {
-        tt_axiom(_state == state::external);
-        return std::launder(_value.pointer);
-        ;
-    }
-
-    [[nodiscard]] pointer external_pointer() noexcept
-    {
-        tt_axiom(_state == state::external);
-        return std::launder(_value.pointer);
-        ;
-    }
-
-    /** Get a pointer to the contained value.
-     *
-     * @return A pointer to the contained value, or nullptr if this doe not contain a value.
+    /** Storage for the object.
+     * The buffer is first, so that it matches the alignment of the polymorphic_optional.
      */
-    [[nodiscard]] const_pointer _pointer() const noexcept
-    {
-        if (_state == state::internal) {
-            return internal_pointer();
-        } else if (_state == state::external) {
-            return external_pointer();
-        } else {
-            return nullptr;
-        }
-    }
+    std::array<std::byte, capacity> _buffer;
 
-    /** Get a pointer to the contained value.
-     *
-     * @return A pointer to the contained value, or nullptr if this doe not contain a value.
+    /** A pointer to the value.
+     * This pointer can have 3 different states:
+     * - nullptr: empty
+     * - _buffer.data(): object is stored in the buffer.
+     * - otherwise: Object is allocated on the heap with `new`.
      */
-    [[nodiscard]] pointer _pointer() noexcept
+    std::atomic<pointer> _pointer;
+
+    tt_no_inline void contended() noexcept
     {
-        if (_state == state::internal) {
-            return internal_pointer();
-        } else if (_state == state::external) {
-            return external_pointer();
-        } else {
-            return nullptr;
-        }
+        using namespace std::chrono_literals;
+
+        // If we get here, that would suck, but nothing to do about it.
+        ++global_counter<"polymorphic_optional:contended">;
+        std::this_thread::sleep_for(16ms);
     }
 };
 

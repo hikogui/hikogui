@@ -12,6 +12,8 @@ namespace detail {
 
 class function_fifo_item {
 public:
+    virtual ~function_fifo_item() = default;
+
     /** run the async item.
      */
     virtual void run() noexcept = 0;
