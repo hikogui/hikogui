@@ -39,7 +39,7 @@ void abstract_button_widget::activate() noexcept
         delegate->activate(*this);
     }
 
-    loop::main().send([this]() {
+    loop::main().post_function([this]() {
         this->pressed();
     });
 }

@@ -104,10 +104,22 @@ public:
         return get_slot(offset).wait_emplace_and_invoke<Message>(std::forward<Func>(func), std::forward<Args>(args)...);
     }
 
+    template<typename Func, typename Object>
+    tt_force_inline auto insert_and_invoke(Func&& func, Object&& object) noexcept
+    {
+        return emplace_and_invoke<std::decay_t<Object>>(std::forward<Func>(func), std::forward<Object>(object));
+    }
+
     template<typename Message, typename... Args>
     tt_force_inline void emplace(Args&&...args) noexcept
     {
         return emplace_and_invoke<Message>([](Message&) -> void {}, std::forward<Args>(args)...);
+    }
+
+    template<typename Object>
+    tt_force_inline void insert(Object &&object) noexcept
+    {
+        return emplace<std::decay_t<Object>>(std::forward<Object>(object));
     }
 
 private:
@@ -121,7 +133,7 @@ private:
     tt_force_inline slot_type& get_slot(uint16_t offset) noexcept
     {
         tt_axiom(offset % slot_size == 0);
-        // The head and tail are 16 bit offsets within the _slots, which are 
+        // The head and tail are 16 bit offsets within the _slots, which are
         return *std::launder(
             std::assume_aligned<slot_size>(reinterpret_cast<slot_type *>(reinterpret_cast<char *>(this) + offset)));
     }

@@ -5,104 +5,21 @@
 #pragma once
 
 #include "wfree_fifo.hpp"
+#include "functional.hpp"
 #include <future>
 
 namespace tt::inline v1 {
-namespace detail {
-
-class function_fifo_item {
-public:
-    virtual ~function_fifo_item() = default;
-
-    /** run the async item.
-     */
-    virtual void run() noexcept = 0;
-};
-
-/**
- *
- * We are not using `std::function` for the storage of the functor object
- * as `std::function` may use allocation. Instead we like the functor to
- * live inside the slots of the fifo itself.
- */
-template<typename Functor, typename... Arguments>
-class function_fifo_post_item : public function_fifo_item {
-public:
-    static_assert(std::is_invocable_v<Functor, Arguments...>);
-
-    using result_type = void;
-
-    template<typename Func, typename... Args>
-    function_fifo_post_item(Func&& functor, Args&&...args) noexcept :
-        function_fifo_item(), _functor(std::forward<Func>(functor)), _arguments(std::forward<Args>(args)...)
-    {
-    }
-
-    void run() noexcept override
-    {
-        std::apply(std::move(_functor), std::move(_arguments));
-    }
-
-private:
-    Functor _functor;
-    std::tuple<Arguments...> _arguments;
-};
-
-/**
- *
- * We are not using `std::function` for the storage of the functor object
- * as `std::function` may use allocation. Instead we like the functor to
- * live inside the slots of the fifo itself.
- */
-template<typename Functor, typename... Arguments>
-class function_fifo_send_item : public function_fifo_item {
-public:
-    static_assert(std::is_invocable_v<Functor, Arguments...>);
-
-    using result_type = decltype(std::declval<Functor>()(std::declval<Arguments>()...));
-
-    template<typename Func, typename... Args>
-    function_fifo_send_item(Func&& functor, Args&&...args) noexcept :
-        function_fifo_item(), _functor(std::forward<Func>(functor)), _arguments(std::forward<Args>(args)...)
-    {
-    }
-
-    void run() noexcept override
-    {
-        try {
-            if constexpr (std::is_same_v<result_type, void>) {
-                std::apply(std::move(_functor), std::move(_arguments));
-                _promise.set_value();
-            } else {
-                _promise.set_value(std::apply(std::move(_functor), std::move(_arguments)));
-            }
-        } catch (...) {
-            _promise.set_exception(std::current_exception());
-        }
-    }
-
-    std::future<result_type> get_future() noexcept
-    {
-        return _promise.get_future();
-    }
-
-private:
-    Functor _functor;
-    std::promise<result_type> _promise;
-    std::tuple<Arguments...> _arguments;
-};
-
-} // namespace detail
 
 /** A fifo (First-in, Firts-out) for asynchronous calls.
  *
  * This fifo is used to handle asynchronous calls from an event-loop.
  *
+ * @tparam Proto The `std::function` prototype.
  * @tparam SlotSize The size in bytes of each slot. This determines the maximum
  *                  number of functions that can be stored on the fifo and if
  *                  functions can be completely stored on the fifo or are allocated on the heap.
  */
-template<std::size_t SlotSize = 64>
+template<typename Proto = void(), std::size_t SlotSize = 64>
 class function_fifo {
 public:
     constexpr function_fifo() noexcept = default;
@@ -123,10 +40,11 @@ public:
      * @retval true One async function has been taken from the fifo and run.
      * @retval false The fifo was empty.
      */
-    bool run_one() noexcept
+    template<typename... Args>
+    auto run_one(Args&&...args) noexcept
     {
-        return _fifo.take_one([](auto& item) {
-            item.run();
+        return _fifo.take_one([&args...](auto& item) {
+            return item(tt_forward(args)...);
         });
     }
 
@@ -137,6 +55,21 @@ public:
     void run_all() noexcept
     {
         while (run_one()) {}
+    }
+
+    /** Asynchronously post a functor to the fifo to be executed later.
+     *
+     * The function object and arguments are stored within the fifo and does
+     * not need allocation.
+     *
+     * @note wait-free if the function object and arguments fit in the message slot of the fifo.
+     * @param func A function object.
+     * @param args The arguments to pass to the function when called.
+     */
+    template<typename Func>
+    void add_function(Func&& func) noexcept
+    {
+        _fifo.insert(make_function<Proto>(std::forward<Func>(func)));
     }
 
     /** Asynchronously send a functor to the fifo to be executed later.
@@ -150,36 +83,17 @@ public:
      * @return A `std::future` with the result of `func`. The result type may be `void`.
      */
     template<typename Func, typename... Args>
-    auto send(Func&& func, Args&&...args) noexcept requires(std::is_invocable_v<std::decay_t<Func>, std::decay_t<Args>...>)
+    auto add_async_function(Func&& func, Args&&...args) noexcept
+        requires(std::is_invocable_v<std::decay_t<Func>, std::decay_t<Args>...>)
     {
-        using async_type = detail::function_fifo_send_item<std::decay_t<Func>, std::decay_t<Args>...>;
-
-        return _fifo.emplace_and_invoke<async_type>(
-            [](async_type& item) {
+        return _fifo.insert_and_invoke(
+            [](auto& item) {
                 return item.get_future();
             },
-            std::forward<Func>(func),
-            std::forward<Args>(args)...);
+            make_function<Proto>(std::forward<Func>(func)));
     }
 
-    /** Asynchronously post a functor to the fifo to be executed later.
-     *
-     * The function object and arguments are stored within the fifo and does
-     * not need allocation.
-     *
-     * @note wait-free if the function object and arguments fit in the message slot of the fifo.
-     * @param func A function object.
-     * @param args The arguments to pass to the function when called.
-     */
-    template<typename Func, typename... Args>
-    void post(Func&& func, Args&&...args) noexcept requires(std::is_invocable_v<std::decay_t<Func>, std::decay_t<Args>...>)
-    {
-        using async_type = detail::function_fifo_post_item<std::decay_t<Func>, std::decay_t<Args>...>;
-
-        _fifo.emplace<async_type>(std::forward<Func>(func), std::forward<Args>(args)...);
-    }
-
-private : wfree_fifo<detail::function_fifo_item, SlotSize> _fifo;
+private : wfree_fifo<function<Proto>, SlotSize> _fifo;
 };
 
 } // namespace tt::inline v1

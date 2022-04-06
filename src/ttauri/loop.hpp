@@ -28,16 +28,23 @@ public:
 
         virtual void set_maximum_frame_rate(double frame_rate) noexcept = 0;
 
-        template<typename Func, typename... Args>
-        [[nodiscard]] void post(Func&& func, Args&&...args) noexcept
+        template<typename Func>
+        [[nodiscard]] void wfree_post_function(Func&& func) noexcept
         {
-            return _function_fifo.post(std::forward<Func>(func), std::forward<Args>(args)...);
+            return _function_fifo.add_function(std::forward<Func>(func));
         }
 
-        template<typename Func, typename... Args>
-        [[nodiscard]] auto send(Func&& func, Args&&...args) noexcept
+        template<typename Func>
+        [[nodiscard]] void post_function(Func&& func) noexcept
         {
-            auto future = _function_fifo.send(std::forward<Func>(func), std::forward<Args>(args)...);
+            _function_fifo.add_function(std::forward<Func>(func));
+            notify_has_send();
+        }
+
+        template<typename Func>
+        [[nodiscard]] auto async_function(Func&& func) noexcept
+        {
+            auto future = _function_fifo.add_async_function(std::forward<Func>(func));
             notify_has_send();
             return future;
         }
@@ -95,33 +102,46 @@ public:
         return _pimpl->set_maximum_frame_rate(frame_rate);
     }
 
-    /** Call a function from the loop.
+    /** Wait-free post a function to be called from the loop.
      *
      * @note It is safe to call this function from another thread.
-     * @note If the function and arguments uses a small amount of storage space and the fifo is not full,
-     *       this function is wait-free.
-     * @param f The function to call from the event-loop
-     * @param args The arguments to pass to the function.
+     * @note The event loop is not directly notified that a new function exists
+     *       and will be delayed until after the loop has woken for other work.
+     * @note The post is only wait-free if the function fifo is not full,
+     *       and the function is small enough to fit in a slot on the fifo.
+     * @param func The function to call from the loop. The function must not take any arguments and return void.
      */
-    template<typename Func, typename... Args>
-    [[nodiscard]] void post(Func&& func, Args&&...args) noexcept
+    template<typename Func>
+    [[nodiscard]] void wfree_post_function(Func&& func) noexcept
     {
         tt_axiom(_pimpl);
-        return _pimpl->post(std::forward<Func>(func), std::forward<Args>(args)...);
+        return _pimpl->wfree_post_function(std::forward<Func>(func));
+    }
+
+    /** Post a function to be called from the loop.
+     *
+     * @note It is safe to call this function from another thread.
+     * @param func The function to call from the loop. The function must not take any arguments and return void.
+     */
+    template<typename Func>
+    [[nodiscard]] void post_function(Func&& func) noexcept
+    {
+        tt_axiom(_pimpl);
+        return _pimpl->post_function(std::forward<Func>(func));
     }
 
     /** Call a function from the loop.
      *
      * @note It is safe to call this function from another thread.
-     * @param f The function to call from the event-loop
-     * @param args The arguments to pass to the function.
-     * @return A future for the return value.
+     * @param func The function to call from the loop. The function must not take any argument,
+     *             but may return a value.
+     * @return A `std::future` for the return value.
      */
-    template<typename Func, typename... Args>
-    [[nodiscard]] auto send(Func&& func, Args&&...args) noexcept
+    template<typename Func>
+    [[nodiscard]] auto async_function(Func&& func) noexcept
     {
         tt_axiom(_pimpl);
-        return _pimpl->send(std::forward<Func>(func), std::forward<Args>(args)...);
+        return _pimpl->async_function(std::forward<Func>(func));
     }
 
     /** Add a window to be redrawn from the event loop.
