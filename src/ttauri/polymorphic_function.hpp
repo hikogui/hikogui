@@ -6,21 +6,32 @@
 
 namespace tt::inline v1 {
 
+
+/** function (polymorphic implementation).
+ *
+ * 
+ */
+template<typename T>
+class pfunction;
+
 template<typename Result, typename... Arguments>
-class polymorphic_function_base {
+class pfunction<Result(Arguments...)> {
 public:
     using result_type = Result;
 
-    virtual ~polymorphic_function_base() = default;
+    virtual ~pfunction() = default;
 
     virtual result_type operator()(Arguments... args) noexcept = 0;
+
 };
+
+namespace detail {
 
 template<typename Function, typename T>
 class polymorphic_function;
 
 template<typename Result, typename... Arguments, typename Function>
-class polymorphic_function<Result(Arguments...), Function> : public polymorphic_function_base<Result, Arguments...> {
+class polymorphic_function<Result(Arguments...), Function> : public function<Result, Arguments...> {
 public:
     using result_type = Result;
 
@@ -36,14 +47,11 @@ private:
     Function _function;
 };
 
-template<typename T, typename Func>
-polymorphic_function<T>(Func&& func)->polymorphic_function<T, std::decay_t<Func>>;
-
 template<typename Function, typename T>
-class polymorphic_async_function;
+class async_function;
 
 template<typename Result, typename... Arguments, typename Function>
-class polymorphic_async_function<Result(Arguments...), Function> : public polymorphic_function_base<void, Arguments...> {
+class async_function<Result(Arguments...), Function> : public function<void, Arguments...> {
 public:
     using result_type = Result;
 
@@ -70,7 +78,15 @@ private:
     std::promise<result_type> _promise;
 };
 
-template<typename T, typename Func>
-polymorphic_async_function<T>(Func&& func)->polymorphic_async_function<T, std::decay_t<Func>>;
+}
+
+template<typename T>
+auto make_pfunction();
+
+template<typename Result, typename... Arguments, typename Func>
+auto make_pfunction<Result(Arguments...)>(Func &&func) noexcept
+{
+
+}
 
 } // namespace tt::inline v1
