@@ -39,9 +39,7 @@ void abstract_button_widget::activate() noexcept
         delegate->activate(*this);
     }
 
-    loop::main().post_function([this]() {
-        this->pressed();
-    });
+    this->pressed();
 }
 
 widget_constraints abstract_button_widget::set_constraints_button() const noexcept

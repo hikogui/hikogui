@@ -38,10 +38,8 @@ selection_widget::selection_widget(gui_window &window, widget *parent, weak_or_u
 
     if (auto d = _delegate.lock()) {
         _delegate_cbt = d->subscribe(*this, [this] {
-            loop::main().post_function([this] {
-                repopulate_options();
-                this->request_reconstrain();
-            });
+            repopulate_options();
+            this->request_reconstrain();
         });
 
         d->init(*this);
@@ -288,6 +286,9 @@ void selection_widget::repopulate_options() noexcept
         auto menu_button = &_column_widget->make_widget<menu_button_widget>(std::move(label), selected, index);
 
         _menu_button_tokens.push_back(menu_button->pressed.subscribe([this, index] {
+            // XXX Can't remember why we need to run this from the main-loop
+            // Somehow when the menu_button is pressed, the menu_button is in a uninitialized state
+            // (although the vtable pointer is correct, which is insane since the base class is also uninitialized).
             loop::main().post_function([this, index] {
                 if (auto delegate = _delegate.lock()) {
                     delegate->set_selected(*this, index);
@@ -296,7 +297,7 @@ void selection_widget::repopulate_options() noexcept
             });
         }));
 
-        _menu_button_widgets.push_back(std::move(menu_button));
+        _menu_button_widgets.push_back(menu_button);
 
         ++index;
     }

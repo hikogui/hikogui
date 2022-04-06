@@ -420,11 +420,12 @@ private:
     {
         MSG msg = {};
         ttlet t1 = trace<"loop:gui-events">();
-        while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
+        while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE | PM_NOYIELD)) {
             ttlet t2 = trace<"loop:gui-event">();
 
             if (msg.message == WM_QUIT) {
                 _exit_code = narrow_cast<int>(msg.wParam);
+                continue;
             }
 
             TranslateMessage(&msg);
