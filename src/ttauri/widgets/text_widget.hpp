@@ -13,6 +13,7 @@
 #include "../alignment.hpp"
 #include "../i18n/translate.hpp"
 #include "../undo_stack.hpp"
+#include "../scoped_task.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -103,11 +104,11 @@ public:
         typename VerticalAlignment = tt::vertical_alignment,
         typename TextStyle = tt::theme_text_style>
     text_widget(
-        gui_window &window,
+        gui_window& window,
         widget *parent,
-        Text &&text,
-        Alignment &&alignment = tt::alignment::middle_center(),
-        TextStyle &&text_style = theme_text_style::label) noexcept :
+        Text&& text,
+        Alignment&& alignment = tt::alignment::middle_center(),
+        TextStyle&& text_style = theme_text_style::label) noexcept :
         text_widget(window, parent)
     {
         this->text = std::forward<Text>(text);
@@ -116,12 +117,12 @@ public:
     }
 
     /// @privatesection
-    widget_constraints const &set_constraints() noexcept override;
-    void set_layout(widget_layout const &layout) noexcept override;
-    void draw(draw_context const &context) noexcept override;
+    widget_constraints const& set_constraints() noexcept override;
+    void set_layout(widget_layout const& layout) noexcept override;
+    void draw(draw_context const& context) noexcept override;
     bool handle_event(tt::command command) noexcept override;
-    bool handle_event(keyboard_event const &event) noexcept override;
-    bool handle_event(mouse_event const &event) noexcept override;
+    bool handle_event(keyboard_event const& event) noexcept override;
+    bool handle_event(mouse_event const& event) noexcept override;
     hitbox hitbox_test(point3 position) const noexcept override;
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
     /// @endprivatesection
@@ -140,8 +141,9 @@ private:
 
     text_selection _selection;
 
-    utc_nanoseconds _cursor_blink_time_point = {};
+    bool _cursor_visible = false;
 
+    utc_nanoseconds _cursor_blink_time_point = {};
 
     /** The last drag mouse event.
      *
@@ -170,7 +172,7 @@ private:
 
     undo_stack<undo_type> _undo_stack = {1000};
 
-    text_widget(gui_window &window, widget *parent) noexcept;
+    text_widget(gui_window& window, widget *parent) noexcept;
 
     /** Make parent scroll views, scroll to show the current selection and cursor.
      */
@@ -191,6 +193,8 @@ private:
     void undo_push() noexcept;
     void undo() noexcept;
     void redo() noexcept;
+
+    scoped_task<> blink_cursor() noexcept;
 
     /** Fix the cursor position after cursor movement.
      *

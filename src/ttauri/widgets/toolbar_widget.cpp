@@ -79,14 +79,14 @@ bool toolbar_widget::tab_button_has_focus() const noexcept
 {
     for (ttlet &child : _left_children) {
         if (auto *c = dynamic_cast<toolbar_tab_button_widget *>(child.get())) {
-            if (c->focus and c->state() == tt::button_state::on) {
+            if (*c->focus and c->state() == tt::button_state::on) {
                 return true;
             }
         }
     }
     for (ttlet &child : _right_children) {
         if (auto *c = dynamic_cast<toolbar_tab_button_widget *>(child.get())) {
-            if (c->focus and c->state() == tt::button_state::on) {
+            if (*c->focus and c->state() == tt::button_state::on) {
                 return true;
             }
         }

@@ -47,7 +47,7 @@ text_field_widget::~text_field_widget()
 
 widget_constraints const &text_field_widget::set_constraints() noexcept
 {
-    if (_text_widget->focus) {
+    if (*_text_widget->focus) {
         // Update the optional error value from the string conversion when the text-widget has keyboard focus.
         if (auto delegate = _delegate.lock()) {
             _error_label = delegate->validate(*this, to_string(*_text));
@@ -176,9 +176,9 @@ hitbox text_field_widget::hitbox_test(point3 position) const noexcept
     if (*enabled) {
         if (not _error_label->empty()) {
             return theme().text_style(theme_text_style::error).color;
-        } else if (_text_widget->focus) {
+        } else if (*_text_widget->focus) {
             return theme().color(theme_color::accent);
-        } else if (hover) {
+        } else if (*hover) {
             return theme().color(theme_color::border, semantic_layer + 1);
         } else {
             return theme().color(theme_color::border, semantic_layer);

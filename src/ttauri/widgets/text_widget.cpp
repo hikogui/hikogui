@@ -4,6 +4,8 @@
 
 #include "text_widget.hpp"
 #include "../os_settings.hpp"
+#include "../scoped_task.hpp"
+#include "../when_any.hpp"
 #include "../GUI/gui_window.hpp"
 #include "../GUI/mouse_event.hpp"
 #include "../unicode/unicode_bidi.hpp"
@@ -64,7 +66,7 @@ void text_widget::set_layout(widget_layout const& layout) noexcept
 
 void text_widget::scroll_to_show_selection() noexcept
 {
-    if (*visible and focus) {
+    if (*visible and *focus) {
         ttlet cursor = _selection.cursor();
         ttlet char_it = _shaped_text.begin() + cursor.index();
         if (char_it < _shaped_text.end()) {
@@ -80,7 +82,7 @@ void text_widget::scroll_to_show_selection() noexcept
 //        request_redraw();
 //        co_await when_any(visible, enabled, focus);
 //
-//        if (visible and enabled and focus) {
+//        if (*visible and *enabled and focus) {
 //            // After widget gets focus turn the cursor on.
 //            _cursor_visible = true;
 //            request_redraw();
@@ -128,27 +130,27 @@ void text_widget::draw(draw_context const& context) noexcept
         request_redraw();
     }
 
-    auto cursor_visible = false;
-    if (*visible and *enabled and focus) {
+    _cursor_visible = false;
+    if (*visible and *enabled and *focus) {
         ttlet blink_interval = os_settings::cursor_blink_interval();
         if (blink_interval < 1min) {
             if (_cursor_blink_time_point == utc_nanoseconds{}) {
                 _cursor_blink_time_point = context.display_time_point;
-                cursor_visible = true;
+                _cursor_visible = true;
             } else {
                 ttlet time_since_blink_start = context.display_time_point - _cursor_blink_time_point;
                 if (time_since_blink_start < os_settings::cursor_blink_delay()) {
-                    cursor_visible = true;
+                    _cursor_visible = true;
                 } else {
                     ttlet time_within_blink_period = time_since_blink_start % blink_interval;
-                    cursor_visible = time_within_blink_period < (blink_interval / 2);
+                    _cursor_visible = time_within_blink_period < (blink_interval / 2);
                 }
             }
 
             // Drawing needs to be continues when the cursor is blinking.
             request_redraw();
         } else {
-            cursor_visible = true;
+            _cursor_visible = true;
         }
     }
 
@@ -157,7 +159,7 @@ void text_widget::draw(draw_context const& context) noexcept
 
         context.draw_text_selection(layout(), _shaped_text, _selection, theme().color(theme_color::text_select));
 
-        if (cursor_visible) {
+        if (_cursor_visible) {
             context.draw_text_cursors(
                 layout(),
                 _shaped_text,

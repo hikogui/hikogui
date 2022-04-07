@@ -55,7 +55,7 @@ tt::font_book &widget::font_book() const noexcept
 [[nodiscard]] color widget::background_color() const noexcept
 {
     if (*enabled) {
-        if (hover) {
+        if (*hover) {
             return theme().color(theme_color::fill, semantic_layer + 1);
         } else {
             return theme().color(theme_color::fill, semantic_layer);
@@ -68,7 +68,7 @@ tt::font_book &widget::font_book() const noexcept
 [[nodiscard]] color widget::foreground_color() const noexcept
 {
     if (*enabled) {
-        if (hover) {
+        if (*hover) {
             return theme().color(theme_color::border, semantic_layer + 1);
         } else {
             return theme().color(theme_color::border, semantic_layer);
@@ -81,9 +81,9 @@ tt::font_book &widget::font_book() const noexcept
 [[nodiscard]] color widget::focus_color() const noexcept
 {
     if (*enabled) {
-        if (focus) {
+        if (*focus) {
             return theme().color(theme_color::accent);
-        } else if (hover) {
+        } else if (*hover) {
             return theme().color(theme_color::border, semantic_layer + 1);
         } else {
             return theme().color(theme_color::border, semantic_layer);

@@ -58,17 +58,17 @@ public:
     observable<bool> enabled = true;
 
     /** The widget is visible.
-     * When a widget is invisible it will not be layout or drawn.
+     * When a widget is invisible it will not be laid out or drawn.
      */
     observable<bool> visible = true;
 
     /** Mouse cursor is hovering over the widget.
      */
-    bool hover = false;
+    observable<bool> hover = false;
 
     /** The widget has keyboard focus.
      */
-    bool focus = false;
+    observable<bool> focus = false;
 
     /** The draw layer of the widget.
      * The semantic layer is used mostly by the `draw()` function
