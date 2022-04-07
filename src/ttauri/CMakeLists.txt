@@ -78,6 +78,7 @@ target_sources(ttauri PRIVATE
     forward_value.hpp
 	functional.hpp
 	function_fifo.hpp
+	function_timer.hpp
     gap_buffer.hpp
     generator.hpp
     global_state.hpp

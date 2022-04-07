@@ -5,6 +5,7 @@
 #pragma once
 
 #include "function_fifo.hpp"
+#include "function_timer.hpp"
 #include "cast.hpp"
 #include "subsystem.hpp"
 #include "net/network_event.hpp"
@@ -28,25 +29,46 @@ public:
 
         virtual void set_maximum_frame_rate(double frame_rate) noexcept = 0;
 
-        template<typename Func>
-        [[nodiscard]] void wfree_post_function(Func&& func) noexcept
+        [[nodiscard]] void wfree_post_function(auto&& func) noexcept
         {
-            return _function_fifo.add_function(std::forward<Func>(func));
+            return _function_fifo.add_function(tt_forward(func));
         }
 
-        template<typename Func>
-        [[nodiscard]] void post_function(Func&& func) noexcept
+        [[nodiscard]] void post_function(auto&& func) noexcept
         {
-            _function_fifo.add_function(std::forward<Func>(func));
+            _function_fifo.add_function(tt_forward(func));
             notify_has_send();
         }
 
-        template<typename Func>
-        [[nodiscard]] auto async_function(Func&& func) noexcept
+        [[nodiscard]] auto async_function(auto&& func) noexcept
         {
-            auto future = _function_fifo.add_async_function(std::forward<Func>(func));
+            auto future = _function_fifo.add_async_function(tt_forward(func));
             notify_has_send();
             return future;
+        }
+
+        void delay_function(utc_nanoseconds time_point, auto&& func) noexcept
+        {
+            if (_function_timer.delay_function(time_point, tt_forward(func))) {
+                // Notify if the added function is the next function to call.
+                notify_has_send();
+            }
+        }
+
+        void repeat_function(std::chrono::nanoseconds period, utc_nanoseconds time_point, auto&& func) noexcept
+        {
+            if (_function_timer.repeat_function(period, time_point, tt_forward(func))) {
+                // Notify if the added function is the next function to call.
+                notify_has_send();
+            }
+        }
+
+        void repeat_function(std::chrono::nanoseconds period, auto&& func) noexcept
+        {
+            if (_function_timer.repeat_function(period, tt_forward(func))) {
+                // Notify if the added function is the next function to call.
+                notify_has_send();
+            }
         }
 
         virtual void add_window(std::weak_ptr<gui_window> window) noexcept = 0;
@@ -66,6 +88,8 @@ public:
         }
 
         function_fifo<> _function_fifo;
+        function_timer<> _function_timer;
+
         std::optional<int> _exit_code;
         bool _is_main = false;
         double _maximum_frame_rate = 30.0;
@@ -111,11 +135,10 @@ public:
      *       and the function is small enough to fit in a slot on the fifo.
      * @param func The function to call from the loop. The function must not take any arguments and return void.
      */
-    template<typename Func>
-    [[nodiscard]] void wfree_post_function(Func&& func) noexcept
+    [[nodiscard]] void wfree_post_function(auto&& func) noexcept
     {
         tt_axiom(_pimpl);
-        return _pimpl->wfree_post_function(std::forward<Func>(func));
+        return _pimpl->wfree_post_function(tt_forward(func));
     }
 
     /** Post a function to be called from the loop.
@@ -123,11 +146,10 @@ public:
      * @note It is safe to call this function from another thread.
      * @param func The function to call from the loop. The function must not take any arguments and return void.
      */
-    template<typename Func>
-    [[nodiscard]] void post_function(Func&& func) noexcept
+    [[nodiscard]] void post_function(auto&& func) noexcept
     {
         tt_axiom(_pimpl);
-        return _pimpl->post_function(std::forward<Func>(func));
+        return _pimpl->post_function(tt_forward(func));
     }
 
     /** Call a function from the loop.
@@ -137,11 +159,44 @@ public:
      *             but may return a value.
      * @return A `std::future` for the return value.
      */
-    template<typename Func>
-    [[nodiscard]] auto async_function(Func&& func) noexcept
+    [[nodiscard]] auto async_function(auto&& func) noexcept
     {
         tt_axiom(_pimpl);
-        return _pimpl->async_function(std::forward<Func>(func));
+        return _pimpl->async_function(tt_forward(func));
+    }
+
+    /** Call a function at a certain time.
+    * 
+    * @param time_point The time at which to call the function.
+    * @param func The function to be called.
+    */
+    [[nodiscard]] void delay_function(utc_nanoseconds time_point, auto&& func) noexcept
+    {
+        tt_axiom(_pimpl);
+        return _pimpl->delay_function(time_point, tt_forward(func));
+    }
+
+    /** Call a function repeatedly.
+     *
+     * @param period The period between calls to the function.
+     * @param time_point The time at which to call the function.
+     * @param func The function to be called.
+     */
+    [[nodiscard]] void repeat_function(std::chrono::nanoseconds period, utc_nanoseconds time_point, auto&& func) noexcept
+    {
+        tt_axiom(_pimpl);
+        return _pimpl->repeat_function(period, time_point, tt_forward(func));
+    }
+
+    /** Call a function repeatedly.
+     *
+     * @param period The period between calls to the function.
+     * @param func The function to be called.
+     */
+    [[nodiscard]] void repeat_function(std::chrono::nanoseconds period, auto&& func) noexcept
+    {
+        tt_axiom(_pimpl);
+        return _pimpl->repeat_function(period, tt_forward(func));
     }
 
     /** Add a window to be redrawn from the event loop.

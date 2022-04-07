@@ -54,6 +54,7 @@
 #include <utility>
 #include <stop_token>
 #include <thread>
+#include <chrono>
 
 namespace tt::inline v1 {
 
@@ -185,10 +186,20 @@ public:
 
     void resume_once(bool block) noexcept
     {
+        using namespace std::chrono_literals;
+
         tt_axiom(is_same_thread());
 
-        ttlet timeout_ms = block ? 100 : 0;
+        auto current_time = std::chrono::utc_clock::now();
+        auto timeout = std::chrono::duration_cast<std::chrono::milliseconds>(_function_timer.current_deadline() - current_time);
+
+        timeout = std::clamp(timeout, 0ms, 100ms);
+        ttlet timeout_ms = narrow<DWORD>(timeout / 1ms);
+
+        // Only handle win32 messages when blocking.
+        // Since non-blocking is called from the win32 message-pump, we do not want to re-enter the loop.
         ttlet message_mask = block ? QS_ALLINPUT : 0;
+
         ttlet wait_r =
             MsgWaitForMultipleObjects(narrow<DWORD>(_handles.size()), _handles.data(), FALSE, timeout_ms, message_mask);
 
@@ -196,13 +207,8 @@ public:
             tt_log_fatal("Failed on MsgWaitForMultipleObjects(), {}", get_last_error_message());
 
         } else if (wait_r == WAIT_TIMEOUT) {
-            if (block) {
-                // 100 ms timeout happened, this should not normally happen when vsync is working.
-                tt_log_error_once("loop:error:timeout", "MsgWaitForMultipleObjects was timed-out.");
-
-                // Fallback in case the vsync thread is not running.
-                handle_vsync();
-            }
+            // handle_functions() and handle_timers() is called after every wake-up of MsgWaitForMultipleObjects
+            ;
 
         } else if (wait_r == WAIT_OBJECT_0 + _vsync_handle_idx) {
             // XXX Make sure this is not starving the win32 events.
@@ -210,7 +216,7 @@ public:
             handle_vsync();
 
         } else if (wait_r == WAIT_OBJECT_0 + _function_handle_idx) {
-            // handle_async() is called after every wake-up of MsgWaitForMultipleObjects
+            // handle_functions() and handle_timers() is called after every wake-up of MsgWaitForMultipleObjects
             ;
 
         } else if (wait_r >= WAIT_OBJECT_0 + _socket_handle_idx and wait_r < WAIT_OBJECT_0 + _handles.size()) {
@@ -266,6 +272,9 @@ public:
         } else {
             tt_no_default();
         }
+
+        // Make sure timers are handled first, possibly they are time critical.
+        handle_timers();
 
         // When functions are added wait-free, the function-event is never triggered.
         // So handle messages after any kind of wake up.
@@ -410,6 +419,11 @@ private:
     void handle_functions() noexcept
     {
         _function_fifo.run_all();
+    }
+
+    void handle_timers() noexcept
+    {
+        _function_timer.run_all(std::chrono::utc_clock::now());
     }
 
     /** Handle the gui events.

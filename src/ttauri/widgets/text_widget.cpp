@@ -10,14 +10,14 @@
 
 namespace tt::inline v1 {
 
-text_widget::text_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
+text_widget::text_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
 {
     // clang-format off
     _text_cbt = text.subscribe([&](auto...){ request_reconstrain(); });
     // clang-format on
 }
 
-widget_constraints const &text_widget::set_constraints() noexcept
+widget_constraints const& text_widget::set_constraints() noexcept
 {
     _layout = {};
 
@@ -46,7 +46,7 @@ widget_constraints const &text_widget::set_constraints() noexcept
     }
 }
 
-void text_widget::set_layout(widget_layout const &layout) noexcept
+void text_widget::set_layout(widget_layout const& layout) noexcept
 {
     if (compare_store(_layout, layout)) {
         // clang-format off
@@ -56,12 +56,7 @@ void text_widget::set_layout(widget_layout const &layout) noexcept
             layout.rectangle().top() - _shaped_text_cap_height;
         // clang-format on
 
-        _shaped_text.layout(
-            layout.rectangle(),
-            base_line,
-            layout.sub_pixel_size,
-            layout.writing_direction,
-            *alignment);
+        _shaped_text.layout(layout.rectangle(), base_line, layout.sub_pixel_size, layout.writing_direction, *alignment);
     }
 
     scroll_to_show_selection();
@@ -78,7 +73,39 @@ void text_widget::scroll_to_show_selection() noexcept
     }
 }
 
-void text_widget::draw(draw_context const &context) noexcept
+//scoped_task<> text_widget::blink_cursor() noexcept
+//{
+//    while (true) {
+//        _cursor_visible = false;
+//        request_redraw();
+//        co_await when_any(visible, enabled, focus);
+//
+//        if (visible and enabled and focus) {
+//            // After widget gets focus turn the cursor on.
+//            _cursor_visible = true;
+//            request_redraw();
+//
+//            auto r = co_await when_any(os_settings::cursor_blink_delay(), visible, enabled, focus);
+//            if (r.index() != 0) {
+//                continue;
+//            }
+//
+//            _cursor_visible = false;
+//            request_redraw();
+//            while (true) {
+//                auto r = co_await when_any(os_settings::cursor_blink_interval(), visible, enabled, focus);
+//                if (r.index() != 0) {
+//                    continue;
+//                }
+//
+//                _cursor_visible = not _cursor_visible;
+//                request_redraw();
+//            }
+//        }
+//    }
+//}
+
+void text_widget::draw(draw_context const& context) noexcept
 {
     using namespace std::literals::chrono_literals;
 
@@ -151,7 +178,7 @@ void text_widget::undo_push() noexcept
 void text_widget::undo() noexcept
 {
     if (_undo_stack.can_undo()) {
-        ttlet &tmp = _undo_stack.undo(*text, _selection);
+        ttlet& tmp = _undo_stack.undo(*text, _selection);
         text = tmp.text;
         _selection = tmp.selection;
     }
@@ -160,7 +187,7 @@ void text_widget::undo() noexcept
 void text_widget::redo() noexcept
 {
     if (_undo_stack.can_redo()) {
-        ttlet &tmp = _undo_stack.redo();
+        ttlet& tmp = _undo_stack.redo();
         text = tmp.text;
         _selection = tmp.selection;
     }
@@ -523,7 +550,7 @@ bool text_widget::handle_event(tt::command command) noexcept
     return super::handle_event(command);
 }
 
-bool text_widget::handle_event(keyboard_event const &event) noexcept
+bool text_widget::handle_event(keyboard_event const& event) noexcept
 {
     using enum keyboard_event::Type;
 
@@ -551,7 +578,7 @@ bool text_widget::handle_event(keyboard_event const &event) noexcept
     return handled;
 }
 
-bool text_widget::handle_event(mouse_event const &event) noexcept
+bool text_widget::handle_event(mouse_event const& event) noexcept
 {
     tt_axiom(is_gui_thread());
     auto handled = super::handle_event(event);
