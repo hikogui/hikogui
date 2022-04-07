@@ -12,7 +12,7 @@
 
 namespace tt::inline v1 {
 
-text_widget::text_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
+text_widget::text_widget(gui_window& window, widget *parent) noexcept : super(window, parent), _blink_cursor(blink_cursor())
 {
     // clang-format off
     _text_cbt = text.subscribe([&](auto...){ request_reconstrain(); });
@@ -75,37 +75,37 @@ void text_widget::scroll_to_show_selection() noexcept
     }
 }
 
-//scoped_task<> text_widget::blink_cursor() noexcept
-//{
-//    while (true) {
-//        _cursor_visible = false;
-//        request_redraw();
-//        co_await when_any(visible, enabled, focus);
-//
-//        if (*visible and *enabled and focus) {
-//            // After widget gets focus turn the cursor on.
-//            _cursor_visible = true;
-//            request_redraw();
-//
-//            auto r = co_await when_any(os_settings::cursor_blink_delay(), visible, enabled, focus);
-//            if (r.index() != 0) {
-//                continue;
-//            }
-//
-//            _cursor_visible = false;
-//            request_redraw();
-//            while (true) {
-//                auto r = co_await when_any(os_settings::cursor_blink_interval(), visible, enabled, focus);
-//                if (r.index() != 0) {
-//                    continue;
-//                }
-//
-//                _cursor_visible = not _cursor_visible;
-//                request_redraw();
-//            }
-//        }
-//    }
-//}
+scoped_task<> text_widget::blink_cursor() noexcept
+{
+    while (true) {
+        _cursor_visible = false;
+        request_redraw();
+        co_await when_any(visible, enabled, focus);
+
+        if (*visible and *enabled and *focus) {
+            // After widget gets focus turn the cursor on.
+            _cursor_visible = true;
+            request_redraw();
+
+            auto r = co_await when_any(os_settings::cursor_blink_delay(), visible, enabled, focus);
+            if (not r.timeout()) {
+                continue;
+            }
+
+            _cursor_visible = false;
+            request_redraw();
+            while (true) {
+                auto r = co_await when_any(os_settings::cursor_blink_delay(), visible, enabled, focus);
+                if (not r.timeout()) {
+                    continue;
+                }
+
+                _cursor_visible = not _cursor_visible;
+                request_redraw();
+            }
+        }
+    }
+}
 
 void text_widget::draw(draw_context const& context) noexcept
 {

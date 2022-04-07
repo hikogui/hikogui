@@ -141,6 +141,8 @@ private:
 
     text_selection _selection;
 
+    scoped_task<> _blink_cursor;
+
     bool _cursor_visible = false;
 
     utc_nanoseconds _cursor_blink_time_point = {};
