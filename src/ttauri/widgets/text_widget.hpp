@@ -196,7 +196,7 @@ private:
     void undo() noexcept;
     void redo() noexcept;
 
-    scoped_task<> blink_cursor() noexcept;
+    //scoped_task<> blink_cursor() noexcept;
 
     /** Fix the cursor position after cursor movement.
      *

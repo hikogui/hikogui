@@ -37,10 +37,10 @@ struct bezier_curve {
     point2 P2; //!< Last point
 
     bezier_curve() noexcept = delete;
-    bezier_curve(bezier_curve const &other) noexcept = default;
-    bezier_curve(bezier_curve &&other) noexcept = default;
-    bezier_curve &operator=(bezier_curve const &other) noexcept = default;
-    bezier_curve &operator=(bezier_curve &&other) noexcept = default;
+    bezier_curve(bezier_curve const& other) noexcept = default;
+    bezier_curve(bezier_curve&& other) noexcept = default;
+    bezier_curve& operator=(bezier_curve const& other) noexcept = default;
+    bezier_curve& operator=(bezier_curve&& other) noexcept = default;
 
     /*! Construct a linear bezier-curve.
      */
@@ -150,30 +150,37 @@ struct bezier_curve {
     }
 
     /** Find the distance from the point to the curve.
+     *
+     * If the distances are equal between two curves, take the one with a maximum orthognality.
+     * If the orthogonality >= then the point is inside that edge.
+     * 
+     * @param P The point from which to calculate the distance to this curve.
+     * @return squared distance from curve, orthogonality.
      */
-    [[nodiscard]] float sdf_distance(point2 P) const noexcept
+    [[nodiscard]] std::pair<float, float> sdf_squared_distance(point2 P) const noexcept
     {
-        auto min_square_distance = std::numeric_limits<float>::max();
-        auto min_t = 0.0f;
-        auto min_normal = vector2{0.0f, 1.0f};
+        auto nearest_sq_distance = std::numeric_limits<float>::max();
+        auto nearest_clamped_t = 0.0f;
+        auto nearest_t = 0.0f;
+        auto nearest_vec = vector2{0.0f, 1.0f};
 
         ttlet ts = solveTForNormalsIntersectingPoint(P);
         for (auto t : ts) {
-            t = std::clamp(t, 0.0f, 1.0f);
+            ttlet clamped_t = std::clamp(t, 0.0f, 1.0f);
 
-            ttlet normal = P - pointAt(t);
-            ttlet square_distance = squared_hypot(normal);
-            if (square_distance < min_square_distance) {
-                min_square_distance = square_distance;
-                min_t = t;
-                min_normal = normal;
+            ttlet vec = P - pointAt(clamped_t);
+            ttlet sq_distance = squared_hypot(vec);
+            if (sq_distance < nearest_sq_distance) {
+                nearest_sq_distance = sq_distance;
+                nearest_t = t;
+                nearest_clamped_t = clamped_t;
+                nearest_vec = vec;
             }
         }
 
-        ttlet tangent = tangentAt(min_t);
-        ttlet distance = std::sqrt(min_square_distance);
-        ttlet sdistance = cross(tangent, min_normal) < 0.0 ? distance : -distance;
-        return sdistance;
+        ttlet tangent = tangentAt(nearest_t);
+        ttlet orthoganality = cross(normalize(tangent), normalize(nearest_vec));
+        return {nearest_sq_distance, orthoganality};
     }
 
     /*! Split a cubic bezier-curve into two cubic bezier-curve.
@@ -241,7 +248,7 @@ struct bezier_curve {
      * \param r resulting list of linear segments.
      * \param minimumFlatness minimum amount of flatness of the resulting curve segments.
      */
-    void subdivideUntilFlat_impl(std::vector<bezier_curve> &r, float const minimumFlatness) const noexcept
+    void subdivideUntilFlat_impl(std::vector<bezier_curve>& r, float const minimumFlatness) const noexcept
     {
         if (flatness() >= minimumFlatness) {
             r.push_back(*this);
@@ -286,7 +293,7 @@ struct bezier_curve {
         return {newP1, newP2};
     }
 
-    [[nodiscard]] friend bool operator==(bezier_curve const &lhs, bezier_curve const &rhs) noexcept
+    [[nodiscard]] friend bool operator==(bezier_curve const& lhs, bezier_curve const& rhs) noexcept
     {
         if (lhs.type != rhs.type) {
             return false;
@@ -300,14 +307,14 @@ struct bezier_curve {
         }
     }
 
-    [[nodiscard]] friend bezier_curve operator*(geo::transformer auto const &lhs, bezier_curve const &rhs) noexcept
+    [[nodiscard]] friend bezier_curve operator*(geo::transformer auto const& lhs, bezier_curve const& rhs) noexcept
     {
         return {rhs.type, lhs * rhs.P1, lhs * rhs.C1, lhs * rhs.C2, lhs * rhs.P2};
     }
 
     /*! Reverse direction of a curve.
      */
-    [[nodiscard]] friend bezier_curve operator~(bezier_curve const &rhs) noexcept
+    [[nodiscard]] friend bezier_curve operator~(bezier_curve const& rhs) noexcept
     {
         return {rhs.type, rhs.P2, rhs.C2, rhs.C1, rhs.P1};
     }
@@ -328,7 +335,7 @@ makeContourFromPoints(std::vector<bezier_point>::const_iterator first, std::vect
  * \param contour contour to reverse.
  * \return the reversed contour.
  */
-[[nodiscard]] std::vector<bezier_curve> makeInverseContour(std::vector<bezier_curve> const &contour) noexcept;
+[[nodiscard]] std::vector<bezier_curve> makeInverseContour(std::vector<bezier_curve> const& contour) noexcept;
 
 /*! Make a contour of Bezier curves from another contour of Bezier curves at a offset.
  * Make a new contour made out of line-segments offset from the original curve. After
@@ -341,7 +348,7 @@ makeContourFromPoints(std::vector<bezier_point>::const_iterator first, std::vect
  * \param tolerance to how curved the new contour should look.
  */
 [[nodiscard]] std::vector<bezier_curve> makeParallelContour(
-    std::vector<bezier_curve> const &contour,
+    std::vector<bezier_curve> const& contour,
     float offset,
     tt::line_join_style line_join_style,
     float tolerance) noexcept;
@@ -350,12 +357,12 @@ makeContourFromPoints(std::vector<bezier_point>::const_iterator first, std::vect
  * @param image An alpha-channel image to make opaque where pixel is inside the contours
  * @param curves All curves of path, in no particular order.
  */
-void fill(pixel_map<uint8_t> &image, std::vector<bezier_curve> const &curves) noexcept;
+void fill(pixel_map<uint8_t>& image, std::vector<bezier_curve> const& curves) noexcept;
 
 /** Fill a signed distance field image from the given contour.
  * @param image An signed-distance-field which show distance toward the closest curve
  * @param curves All curves of path, in no particular order.
  */
-void fill(pixel_map<sdf_r8> &image, std::vector<bezier_curve> const &curves) noexcept;
+void fill(pixel_map<sdf_r8>& image, std::vector<bezier_curve> const& curves) noexcept;
 
 } // namespace tt::inline v1
