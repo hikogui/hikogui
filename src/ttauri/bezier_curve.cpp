@@ -291,7 +291,8 @@ void fill(pixel_map<uint8_t>& image, std::vector<bezier_curve> const& curves) no
     for (ttlet& curve : curves) {
         ttlet[sq_distance, orthogonality] = curve.sdf_squared_distance(point);
 
-        if (abs(sq_distance - nearest_sq_distance) < 0.0001f) {
+        // square distances in glyphs run in the thousands.
+        if (abs(sq_distance - nearest_sq_distance) <= 0.01f) {
             // If the shortest distance is to a corner, use the edge that is closer.
             if (abs(orthogonality) > abs(nearest_orthogonality)) {
                 nearest_sq_distance = sq_distance;

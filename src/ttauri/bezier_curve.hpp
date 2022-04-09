@@ -161,7 +161,6 @@ struct bezier_curve {
     {
         auto nearest_sq_distance = std::numeric_limits<float>::max();
         auto nearest_clamped_t = 0.0f;
-        auto nearest_t = 0.0f;
         auto nearest_vec = vector2{0.0f, 1.0f};
 
         ttlet ts = solveTForNormalsIntersectingPoint(P);
@@ -172,13 +171,12 @@ struct bezier_curve {
             ttlet sq_distance = squared_hypot(vec);
             if (sq_distance < nearest_sq_distance) {
                 nearest_sq_distance = sq_distance;
-                nearest_t = t;
                 nearest_clamped_t = clamped_t;
                 nearest_vec = vec;
             }
         }
 
-        ttlet tangent = tangentAt(nearest_t);
+        ttlet tangent = tangentAt(nearest_clamped_t);
         ttlet orthoganality = cross(normalize(tangent), normalize(nearest_vec));
         return {nearest_sq_distance, orthoganality};
     }
