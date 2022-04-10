@@ -362,7 +362,7 @@ public:
      * @param rhs The extent.
      * @return The length of the extent.
      */
-    [[nodiscard]] constexpr friend float squared_hypot(extent const &rhs) noexcept
+    [[nodiscard]] tt_force_inline constexpr friend float squared_hypot(extent const& rhs) noexcept
     {
         tt_axiom(rhs.holds_invariant());
         return squared_hypot<element_mask>(rhs._v);

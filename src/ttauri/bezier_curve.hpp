@@ -115,7 +115,7 @@ struct bezier_curve {
      * \param t a relative distance between 0.0 (point P1) and 1.0 (point P2).
      * \return the tangent-vector at point t on the curve
      */
-    [[nodiscard]] vector2 tangentAt(float const t) const noexcept
+    [[nodiscard]] constexpr vector2 tangentAt(float const t) const noexcept
     {
         switch (type) {
         case Type::Linear: return bezierTangentAt(P1, P2, t);
@@ -139,7 +139,7 @@ struct bezier_curve {
         }
     }
 
-    [[nodiscard]] results<float, 3> solveTForNormalsIntersectingPoint(point2 P) const noexcept
+    [[nodiscard]] tt_force_inline results<float, 3> solveTForNormalsIntersectingPoint(point2 P) const noexcept
     {
         switch (type) {
         case Type::Linear: return bezierFindTForNormalsIntersectingPoint(P1, P2, P);
@@ -149,36 +149,83 @@ struct bezier_curve {
         }
     }
 
+    struct sdf_distance_result {
+        /** The vector between P and N.
+         */
+        vector2 PN;
+
+        bezier_curve const *curve = nullptr;
+
+        /** Linear position on the curve-segment, 0.0 and 1.0 are end-points.
+         */
+        float t = 0.0f;
+
+        /** The square distance between P and N.
+         */
+        float sq_distance = std::numeric_limits<float>::max();
+
+        constexpr sdf_distance_result() noexcept = default;
+        constexpr sdf_distance_result(sdf_distance_result const&) noexcept = default;
+        constexpr sdf_distance_result(sdf_distance_result&&) noexcept = default;
+        constexpr sdf_distance_result& operator=(sdf_distance_result const&) noexcept = default;
+        constexpr sdf_distance_result& operator=(sdf_distance_result&&) noexcept = default;
+        constexpr sdf_distance_result(bezier_curve const *curve) noexcept : curve(curve) {}
+
+        /** The orthogonality of the line PN and the tangent of the curve at N.
+         */
+        [[nodiscard]] tt_force_inline constexpr float orthogonality() const noexcept
+        {
+            ttlet tangent = curve->tangentAt(t);
+            return cross(normalize(tangent), normalize(PN));
+        };
+
+        [[nodiscard]] tt_force_inline float distance() const noexcept
+        {
+            return std::sqrt(sq_distance);
+        }
+
+        [[nodiscard]] tt_force_inline float signed_distance() const noexcept
+        {
+            ttlet d = distance();
+            return orthogonality() < 0.0 ? d : -d;
+        }
+
+        [[nodiscard]] tt_force_inline constexpr bool operator<(sdf_distance_result const& rhs) const noexcept
+        {
+            if (abs(sq_distance - rhs.sq_distance) < 0.01f) {
+                return abs(orthogonality()) > abs(rhs.orthogonality());
+            } else {
+                return sq_distance < rhs.sq_distance;
+            }
+        }
+    };
+
     /** Find the distance from the point to the curve.
      *
      * If the distances are equal between two curves, take the one with a maximum orthognality.
      * If the orthogonality >= then the point is inside that edge.
-     * 
+     *
      * @param P The point from which to calculate the distance to this curve.
      * @return squared distance from curve, orthogonality.
      */
-    [[nodiscard]] std::pair<float, float> sdf_squared_distance(point2 P) const noexcept
+    [[nodiscard]] sdf_distance_result sdf_distance(point2 P) const noexcept
     {
-        auto nearest_sq_distance = std::numeric_limits<float>::max();
-        auto nearest_clamped_t = 0.0f;
-        auto nearest_vec = vector2{0.0f, 1.0f};
+        auto nearest = sdf_distance_result{this};
 
         ttlet ts = solveTForNormalsIntersectingPoint(P);
         for (auto t : ts) {
-            ttlet clamped_t = std::clamp(t, 0.0f, 1.0f);
+            t = std::clamp(t, 0.0f, 1.0f);
 
-            ttlet vec = P - pointAt(clamped_t);
-            ttlet sq_distance = squared_hypot(vec);
-            if (sq_distance < nearest_sq_distance) {
-                nearest_sq_distance = sq_distance;
-                nearest_clamped_t = clamped_t;
-                nearest_vec = vec;
+            ttlet PN = P - pointAt(t);
+            ttlet sq_distance = squared_hypot(PN);
+            if (sq_distance < nearest.sq_distance) {
+                nearest.t = t;
+                nearest.PN = PN;
+                nearest.sq_distance = sq_distance;
             }
         }
 
-        ttlet tangent = tangentAt(nearest_clamped_t);
-        ttlet orthoganality = cross(normalize(tangent), normalize(nearest_vec));
-        return {nearest_sq_distance, orthoganality};
+        return nearest;
     }
 
     /*! Split a cubic bezier-curve into two cubic bezier-curve.

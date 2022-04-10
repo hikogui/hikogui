@@ -72,7 +72,7 @@ auto stddev(Iterator first, Iterator last, T mean)
 {
     ttlet init = static_cast<typename std::iterator_traits<Iterator>::value_type>(0);
 
-    ttlet sum = std::accumulate(first, last, init, [=](ttlet &acc, ttlet &value) {
+    ttlet sum = std::accumulate(first, last, init, [=](ttlet& acc, ttlet& value) {
         ttlet tmp = value - mean;
         return acc + tmp * tmp;
     });
@@ -82,19 +82,19 @@ auto stddev(Iterator first, Iterator last, T mean)
 }
 
 template<typename T>
-constexpr void inplace_max(T &a, T const &b) noexcept
+constexpr void inplace_max(T& a, T const& b) noexcept
 {
     a = std::max(a, b);
 }
 
 template<typename T>
-constexpr void inplace_min(T &a, T const &b) noexcept
+constexpr void inplace_min(T& a, T const& b) noexcept
 {
     a = std::min(a, b);
 }
 
 template<typename T>
-constexpr void inplace_clamp(T &a, T const &lo, T const &hi) noexcept
+constexpr void inplace_clamp(T& a, T const& lo, T const& hi) noexcept
 {
     tt_axiom(lo <= hi);
     a = std::clamp(a, lo, hi);
@@ -104,6 +104,13 @@ template<typename T>
 [[nodiscard]] constexpr T abs(T a) noexcept
 {
     return a < T{} ? -a : a;
+}
+
+template<std::floating_point T>
+[[nodiscard]] constexpr bool almost_equal(T a, T b) noexcept
+{
+    auto e = (a + b) * std::numeric_limits<T>::epsilon();
+    return std::abs(a - b) <= e;
 }
 
 } // namespace tt::inline v1

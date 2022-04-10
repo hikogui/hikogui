@@ -282,31 +282,22 @@ void fill(pixel_map<uint8_t>& image, std::vector<bezier_curve> const& curves) no
 
 [[nodiscard]] static float generate_sdf_r8_pixel(point2 point, std::vector<bezier_curve> const& curves) noexcept
 {
-    if (size(curves) == 0) {
+    if (curves.empty()) {
         return -std::numeric_limits<float>::max();
     }
 
-    float nearest_sq_distance = std::numeric_limits<float>::max();
-    float nearest_orthogonality = std::numeric_limits<float>::max();
-    for (ttlet& curve : curves) {
-        ttlet[sq_distance, orthogonality] = curve.sdf_squared_distance(point);
+    auto it = curves.cbegin();
+    auto nearest = (it++)->sdf_distance(point);
 
-        // square distances in glyphs run in the thousands.
-        if (abs(sq_distance - nearest_sq_distance) <= 0.01f) {
-            // If the shortest distance is to a corner, use the edge that is closer.
-            if (abs(orthogonality) > abs(nearest_orthogonality)) {
-                nearest_sq_distance = sq_distance;
-                nearest_orthogonality = orthogonality;
-            }
-        } else if (sq_distance < nearest_sq_distance) {
-            // If it is not a corner and this edge is closer.
-            nearest_sq_distance = sq_distance;
-            nearest_orthogonality = orthogonality;
+    for (; it != curves.cend(); ++it) {
+        ttlet distance = it->sdf_distance(point);
+
+        if (distance < nearest) {
+            nearest = distance;
         }
     }
 
-    ttlet distance = std::sqrt(nearest_sq_distance);
-    return nearest_orthogonality < 0.0f ? distance : -distance;
+    return nearest.signed_distance();
 }
 
 

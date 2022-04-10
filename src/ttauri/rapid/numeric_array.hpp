@@ -1480,7 +1480,7 @@ struct numeric_array {
      * @return Result of the dot product.
      */
     template<std::size_t Mask>
-    [[nodiscard]] friend constexpr T dot(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] tt_force_inline friend constexpr T dot(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
 #if defined(TT_HAS_SSE4_1)
@@ -1522,7 +1522,7 @@ struct numeric_array {
      * @return Result of the hypot-squared calculation.
      */
     template<std::size_t Mask>
-    [[nodiscard]] friend constexpr T squared_hypot(numeric_array const &rhs) noexcept
+    [[nodiscard]] tt_force_inline friend constexpr T squared_hypot(numeric_array const& rhs) noexcept
     {
         return dot<Mask>(rhs, rhs);
     }

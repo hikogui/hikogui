@@ -56,13 +56,13 @@ constexpr geo::point<D> bezierPointAt(geo::point<D> P1, geo::point<D> C1, geo::p
 }
 
 template<int D>
-inline geo::vector<D> bezierTangentAt(geo::point<D> P1, geo::point<D> P2, float t) noexcept
+constexpr geo::vector<D> bezierTangentAt(geo::point<D> P1, geo::point<D> P2, float t) noexcept
 {
     return P2 - P1;
 }
 
 template<int D>
-inline geo::vector<D> bezierTangentAt(geo::point<D> P1, geo::point<D> C, geo::point<D> P2, float t) noexcept
+constexpr geo::vector<D> bezierTangentAt(geo::point<D> P1, geo::point<D> C, geo::point<D> P2, float t) noexcept
 {
     ttlet P1_ = static_cast<f32x4>(P1);
     ttlet C_ = static_cast<f32x4>(C);
@@ -72,7 +72,7 @@ inline geo::vector<D> bezierTangentAt(geo::point<D> P1, geo::point<D> C, geo::po
 }
 
 template<int D>
-inline geo::vector<D> bezierTangentAt(geo::point<D> P1, geo::point<D> C1, geo::point<D> C2, geo::point<D> P2, float t) noexcept
+constexpr geo::vector<D> bezierTangentAt(geo::point<D> P1, geo::point<D> C1, geo::point<D> C2, geo::point<D> P2, float t) noexcept
 {
     ttlet P1_ = static_cast<f32x4>(P1);
     ttlet C1_ = static_cast<f32x4>(C1);
@@ -82,19 +82,19 @@ inline geo::vector<D> bezierTangentAt(geo::point<D> P1, geo::point<D> C1, geo::p
     return geo::vector<D>{3 * t * t * (P2_ - 3 * C2_ + 3 * C1_ - P1_) + 6 * t * (C2_ - 2 * C1_ + P1_) + 3 * (C1_ - P1_)};
 }
 
-inline results<float, 1> bezierFindT(float P1, float P2, float x) noexcept
+constexpr results<float, 1> bezierFindT(float P1, float P2, float x) noexcept
 {
     ttlet[a, b] = bezierToPolynomial(P1, P2);
     return solvePolynomial(a, b - x);
 }
 
-inline results<float, 2> bezierFindT(float P1, float C, float P2, float x) noexcept
+constexpr results<float, 2> bezierFindT(float P1, float C, float P2, float x) noexcept
 {
     ttlet[a, b, c] = bezierToPolynomial(P1, C, P2);
     return solvePolynomial(a, b, c - x);
 }
 
-inline results<float, 3> bezierFindT(float P1, float C1, float C2, float P2, float x) noexcept
+tt_force_inline constexpr results<float, 3> bezierFindT(float P1, float C1, float C2, float P2, float x) noexcept
 {
     ttlet[a, b, c, d] = bezierToPolynomial(P1, C1, C2, P2);
     return solvePolynomial(a, b, c, d - x);
@@ -104,7 +104,7 @@ inline results<float, 3> bezierFindT(float P1, float C1, float C2, float P2, flo
  * Used for finding the shortest distance from a point to a curve.
  * The shortest vector from a curve to a point is a normal.
  */
-inline results<float, 1> bezierFindTForNormalsIntersectingPoint(point2 P1, point2 P2, point2 P) noexcept
+tt_force_inline constexpr results<float, 1> bezierFindTForNormalsIntersectingPoint(point2 P1, point2 P2, point2 P) noexcept
 {
     auto t_above = dot(P - P1, P2 - P1);
     auto t_below = dot(P2 - P1, P2 - P1);
@@ -119,7 +119,8 @@ inline results<float, 1> bezierFindTForNormalsIntersectingPoint(point2 P1, point
  * Used for finding the shortest distance from a point to a curve.
  * The shortest vector from a curve to a point is a normal.
  */
-inline results<float, 3> bezierFindTForNormalsIntersectingPoint(point2 P1, point2 C, point2 P2, point2 P) noexcept
+tt_force_inline constexpr results<float, 3>
+bezierFindTForNormalsIntersectingPoint(point2 P1, point2 C, point2 P2, point2 P) noexcept
 {
     ttlet P1_ = static_cast<f32x4>(P1);
     ttlet P2_ = static_cast<f32x4>(P2);
@@ -143,7 +144,7 @@ inline results<float, 3> bezierFindTForNormalsIntersectingPoint(point2 P1, point
  * So we compare with less than to the end-anchor point to remove
  * it from the result.
  */
-inline results<float, 1> bezierFindX(point2 P1, point2 P2, float y) noexcept
+constexpr results<float, 1> bezierFindX(point2 P1, point2 P2, float y) noexcept
 {
     if (y < std::min({P1.y(), P2.y()}) || y > std::max({P1.y(), P2.y()})) {
         return {};
@@ -166,7 +167,7 @@ inline results<float, 1> bezierFindX(point2 P1, point2 P2, float y) noexcept
  * So we compare with less than to the end-anchor point to remove
  * it from the result.
  */
-inline results<float, 2> bezierFindX(point2 P1, point2 C, point2 P2, float y) noexcept
+constexpr results<float, 2> bezierFindX(point2 P1, point2 C, point2 P2, float y) noexcept
 {
     results<float, 2> r{};
 
@@ -190,7 +191,7 @@ inline results<float, 2> bezierFindX(point2 P1, point2 C, point2 P2, float y) no
  * So we compare with less than to the end-anchor point to remove
  * it from the result.
  */
-inline results<float, 3> bezierFindX(point2 P1, point2 C1, point2 C2, point2 P2, float y) noexcept
+constexpr results<float, 3> bezierFindX(point2 P1, point2 C1, point2 C2, point2 P2, float y) noexcept
 {
     results<float, 3> r{};
 
