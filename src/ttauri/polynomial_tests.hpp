@@ -12,14 +12,14 @@
 template<typename T, typename U, int N>
 double maxAbsDiff(tt::results<T, N> const &lhs, tt::results<U, N> const &rhs)
 {
-    if (lhs.count != rhs.count) {
+    if (lhs.size() != rhs.size()) {
         return std::numeric_limits<double>::infinity();
     }
 
     double maxDiff = 0.0;
-    assert(lhs.count <= lhs.maxCount);
-    for (ptrdiff_t i = 0; i < lhs.count; i++) {
-        ttlet diff = std::abs(lhs.value[i] - rhs.value[i]);
+    assert(lhs.size() <= lhs.capacity());
+    for (uint8_t i = 0; i < lhs.size(); i++) {
+        ttlet diff = std::abs(lhs[i] - rhs[i]);
         maxDiff = std::max(maxDiff, diff);
     }
     return maxDiff;

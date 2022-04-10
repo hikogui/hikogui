@@ -10,107 +10,116 @@
 
 namespace tt::inline v1 {
 
-template<typename T, int N>
-struct results {
-    static constexpr int maxCount = N;
-    using element_type = T;
-    using array_type = std::array<T, N>;
+template<typename T, std::size_t N>
+class results {
+public:
+    using value_type = T;
+    using array_type = std::array<value_type, N>;
     using const_iterator = typename array_type::const_iterator;
 
-    int count;
-    array_type value;
+    constexpr results() noexcept : _size(0), _v() {}
+    constexpr results(results const&) noexcept = default;
+    constexpr results(results&&) noexcept = default;
+    constexpr results& operator=(results const&) noexcept = default;
+    constexpr results& operator=(results&&) noexcept = default;
 
-    constexpr results() noexcept : count(0), value() {}
-
-    constexpr results(T a) noexcept : count(1), value()
+    constexpr results(value_type a) noexcept : _size(1), _v()
     {
-        value[0] = a;
+        _v[0] = a;
     }
 
-    constexpr results(T a, T b) noexcept : count(2), value()
+    constexpr results(value_type a, value_type b) noexcept : _size(2), _v()
     {
-        value[0] = a;
-        value[1] = b;
-        sort();
+        _v[0] = a;
+        _v[1] = b;
     }
 
-    constexpr results(T a, T b, T c) noexcept : count(3), value()
+    constexpr results(value_type a, value_type b, value_type c) noexcept : _size(3), _v()
     {
-        value[0] = a;
-        value[1] = b;
-        value[2] = c;
-        sort();
+        _v[0] = a;
+        _v[1] = b;
+        _v[2] = c;
     }
 
     template<int O>
-    constexpr results(results<T, O> const& other) noexcept requires(O < N) : count(other.count), value()
+    constexpr results(results<T, O> const& other) noexcept requires(O < N) : _size(other._size), _v()
     {
         if constexpr (O > 0) {
-            for (int i = 0; i < other.maxCount; i++) {
-                value[i] = other.value[i];
+            for (auto i = 0_uz; i < other._size; i++) {
+                _v[i] = other._v[i];
             }
         }
     }
 
-    constexpr int size() const noexcept
+    [[nodiscard]] constexpr std::size_t capacity() const noexcept
     {
-        return (count >= 0) ? count : 0;
+        return _capacity;
     }
 
-    constexpr bool hasInfiniteResults() const noexcept
+    [[nodiscard]] constexpr std::size_t size() const noexcept
     {
-        return count < 0;
+        return _size;
     }
 
-    constexpr const_iterator begin() const noexcept
+    [[nodiscard]] constexpr const_iterator begin() const noexcept
     {
-        return value.begin();
+        return _v.begin();
     }
 
-    constexpr const_iterator end() const noexcept
+    [[nodiscard]] constexpr const_iterator end() const noexcept
     {
-        return value.begin() + size();
+        return _v.begin() + size();
     }
 
-    constexpr void sort() noexcept
+    [[nodiscard]] constexpr value_type const& operator[](std::size_t index) const noexcept
     {
-        std::sort(value.begin(), value.begin() + size());
+        tt_axiom(index < _size);
+        return _v[index];
+    }
+
+    [[nodiscard]] constexpr value_type& operator[](std::size_t index) noexcept
+    {
+        tt_axiom(index < _size);
+        return _v[index];
     }
 
     constexpr void add(T a) noexcept
     {
-        value.at(count++) = a;
-        sort();
+        tt_axiom(_size < _capacity);
+        _v[_size++] = a;
     }
+
+    [[nodiscard]] constexpr friend results operator-(results lhs, value_type rhs) noexcept
+    {
+        // For performance reasons work on the whole array. The constructors have
+        // initialized the empty elements to 0.0f.
+        for (int i = 0; i < lhs._capacity; i++) {
+            lhs._v[i] -= rhs;
+        }
+        return lhs;
+    }
+
+private:
+    static constexpr std::size_t _capacity = N;
+
+    array_type _v;
+    std::size_t _size;
+
+    template<typename O, std::size_t M>
+    friend class results;
 };
 
-template<typename T, int N, typename U>
-constexpr results<T, N> operator-(results<T, N> lhs, U const& rhs) noexcept
-{
-    for (int i = 0; i < lhs.maxCount; i++) {
-        lhs.value[i] -= rhs;
-    }
-    return lhs;
-}
-
-template<typename T>
-constexpr results<T, 0> infinitResults() noexcept
-{
-    results<T, 0> r;
-    r.count = -1;
-    return r;
-}
 
 template<typename T, int N>
-inline std::ostream &operator<<(std::ostream &os, results<T, N> const &r)
+inline std::ostream& operator<<(std::ostream& os, results<T, N> const& r)
 {
     os << "[";
-    tt_assert(r.count <= r.maxCount);
-    for (int i = 0; i < r.count; i++) {
+    tt_assert(r.size() <= r.capacity());
+    for (auto i = 0_uz; i < r.size(); i++) {
         if (i > 0) {
             os << ", ";
         }
-        os << r.value.at(i);
+        os << r[i];
     }
     os << "]";
     return os;
@@ -135,7 +144,7 @@ tt_force_inline constexpr results<T, 1> solvePolynomial(T const& a, T const& b) 
         return {-(b / a)};
     } else if (b == 0) {
         // Any value of x is correct.
-        return infinitResults<T>();
+        return {0.0f};
     } else {
         // None of the values for x is correct.
         return {};
@@ -255,7 +264,7 @@ tt_force_inline results<T, 3> solveDepressedCubic(T const& p, T const& q) noexce
  * \f[x=\text{solveDepressedCube}(p,q)-\frac{b}{3a}\f]
  */
 template<typename T>
-tt_force_inline constexpr results<T, 3> solvePolynomial(T const &a, T const &b, T const &c, T const &d) noexcept
+tt_force_inline constexpr results<T, 3> solvePolynomial(T const& a, T const& b, T const& c, T const& d) noexcept
 {
     if (a == 0) {
         return solvePolynomial(b, c, d);
