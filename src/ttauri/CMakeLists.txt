@@ -155,8 +155,6 @@ target_sources(ttauri PRIVATE
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/thread_win32.cpp>
     thread.cpp
     thread.hpp
-    timer.cpp
-    timer.hpp
     time_stamp_count.cpp
     time_stamp_count.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/time_stamp_count_win32.cpp>

@@ -22,6 +22,9 @@ template<typename Proto = void()>
 class function_timer {
 public:
     using function_type = std::function<Proto>;
+    using token_type = std::shared_ptr<function_type>;
+    using weak_token_type = std::weak_ptr<function_type>;
+    
     using result_type = function_type::result_type;
 
     constexpr function_timer() noexcept = default;
@@ -35,8 +38,9 @@ public:
      *
      * @param time_point The time when to call the function.
      * @param func The function to be called.
+     * @return token, next to call.
      */
-    bool delay_function(utc_nanoseconds time_point, auto&& func) noexcept
+    std::pair<token_type, bool> delay_function(utc_nanoseconds time_point, auto&& func) noexcept
     {
         ttlet it = std::lower_bound(_functions.begin(), _functions.end(), time_point, [](ttlet& x, ttlet& time_point) {
             return x.time_point > time_point;
@@ -44,8 +48,9 @@ public:
 
         ttlet next_to_call = it == _functions.end();
 
-        _functions.emplace(it, time_point, std::chrono::nanoseconds::max(), tt_forward(func));
-        return next_to_call;
+        auto token = std::make_shared<function_type>(tt_forward(func));
+        _functions.emplace(it, time_point, std::chrono::nanoseconds::max(), token);
+        return {std::move(token), next_to_call};
     }
 
     /** Add a function to be called repeatedly.
@@ -53,15 +58,17 @@ public:
      * @param period The period between repeated calls
      * @param time_point The time when to call the function the first time.
      * @param func The function to be called.
+     * @return token, next to call.
      */
-    bool repeat_function(std::chrono::nanoseconds period, utc_nanoseconds time_point, auto&& func) noexcept
+    std::pair<token_type, bool> repeat_function(std::chrono::nanoseconds period, utc_nanoseconds time_point, auto&& func) noexcept
     {
         auto it = std::lower_bound(_functions.begin(), _functions.end(), time_point, [](ttlet& x, ttlet& time_point) {
             return x.time_point > time_point;
         });
 
-        it = _functions.emplace(it, time_point, period, tt_forward(func));
-        return it + 1 == _functions.end();
+        auto token = std::make_shared<function_type>(tt_forward(func));
+        it = _functions.emplace(it, time_point, period, token);
+        return {std::move(token), it + 1 == _functions.end()};
     }
 
     /** Add a function to be called repeatedly.
@@ -69,8 +76,9 @@ public:
      * @param period The period between repeated calls
      * @param time_point The time when to call the function the first time.
      * @param func The function to be called.
+     * @return token, next to call.
      */
-    bool repeat_function(std::chrono::nanoseconds period, auto&& func) noexcept
+    std::pair<token_type, bool> repeat_function(std::chrono::nanoseconds period, auto&& func) noexcept
     {
         return repeat_function(period, std::chrono::utc_clock::now(), tt_forward(func));
     }
@@ -104,7 +112,7 @@ private:
     struct timer_type {
         utc_nanoseconds time_point;
         std::chrono::nanoseconds period;
-        function_type function;
+        weak_token_type token;
 
         timer_type() noexcept = default;
         timer_type(timer_type const&) noexcept = default;
@@ -112,18 +120,18 @@ private:
         timer_type& operator=(timer_type const&) noexcept = default;
         timer_type& operator=(timer_type&&) noexcept = default;
 
-        timer_type(utc_nanoseconds time_point, std::chrono::nanoseconds period, auto&& func) noexcept :
-            time_point(time_point), period(period), function(tt_forward(func))
+        timer_type(utc_nanoseconds time_point, std::chrono::nanoseconds period, weak_token_type token) noexcept :
+            time_point(time_point), period(period), token(std::move(token))
         {
         }
 
-        timer_type(utc_nanoseconds time_point, auto&& func) noexcept :
-            timer_type(time_point, std::chrono::nanoseconds::max(), tt_forward(func))
+        timer_type(utc_nanoseconds time_point, weak_token_type token) noexcept :
+            timer_type(time_point, std::chrono::nanoseconds::max(), std::move(token))
         {
         }
 
-        timer_type(std::chrono::nanoseconds period, auto&& func) noexcept :
-            timer_type(std::chrono::utc_clock::now(), period, tt_forward(func))
+        timer_type(std::chrono::nanoseconds period, weak_token_type token) noexcept :
+            timer_type(std::chrono::utc_clock::now(), period, std::move(token))
         {
         }
 
@@ -137,7 +145,7 @@ private:
     {
         tt_axiom(not _functions.empty());
 
-        if (_functions.back().repeats()) {
+        if (_functions.back().repeats() and not _functions.back().token.expired()) {
             // When the function is repeating, calculate the new.
             auto item = std::move(_functions.back());
             _functions.pop_back();
@@ -173,13 +181,19 @@ private:
         tt_axiom(not _functions.empty());
 
         if constexpr (std::is_same_v<result_type, void>) {
-            _functions.back().function(tt_forward(args)...);
+            if (auto token = _functions.back().token.lock()) {
+                (*token)(tt_forward(args)...);
+            }
             remove_or_reinsert(current_time);
             return;
         } else {
-            auto result = _functions.back().function(tt_forward(args)...);
-            remove_or_reinsert(current_time);
-            return result;
+            if (auto token = _functions.back().token.lock()) {
+                auto result = (*token)(tt_forward(args)...);
+                remove_or_reinsert(current_time);
+                return result;
+            } else {
+                return {};
+            }
         }
     }
 

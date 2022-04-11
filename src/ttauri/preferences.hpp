@@ -4,7 +4,6 @@
 
 #include "URL.hpp"
 #include "datum.hpp"
-#include "timer.hpp"
 #include "log.hpp"
 #include "jsonpath.hpp"
 #include "observable.hpp"
@@ -200,9 +199,7 @@ private:
      */
     mutable bool _modified = false;
 
-    /** Registered timer callback.
-     */
-    timer::callback_ptr_type _check_modified_callback_ptr;
+    loop::timer_token_type _check_modified_cbt;
 
     /** List of registered items.
      */

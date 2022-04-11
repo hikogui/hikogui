@@ -9,12 +9,11 @@ namespace tt::inline v1 {
 
 [[nodiscard]] bool os_settings::subsystem_init() noexcept
 {
-    _gather_callback = timer::global().add_callback(
+    _gather_cbt = loop::timer().repeat_function(
         gather_interval,
-        [](auto...) {
+        [] {
             os_settings::gather();
-        },
-        true);
+        });
 
     return true;
 }
@@ -22,7 +21,7 @@ namespace tt::inline v1 {
 void os_settings::subsystem_deinit() noexcept
 {
     if (_started.exchange(false)) {
-        timer::global().remove_callback(_gather_callback);
+        _gather_cbt = nullptr;
     }
 }
 
@@ -48,7 +47,7 @@ void os_settings::gather() noexcept
             setting_has_changed = true;
             tt_log_info("OS language order has changed: {}", _languages);
         }
-    } catch (std::exception const &e) {
+    } catch (std::exception const& e) {
         tt_log_error("Failed to get OS language: {}", e.what());
     }
 
@@ -57,7 +56,7 @@ void os_settings::gather() noexcept
             setting_has_changed = true;
             tt_log_info("OS theme-mode has changed: {}", _theme_mode.load());
         }
-    } catch (std::exception const &e) {
+    } catch (std::exception const& e) {
         tt_log_error("Failed to get OS theme-mode: {}", e.what());
     }
 
@@ -66,7 +65,7 @@ void os_settings::gather() noexcept
             setting_has_changed = true;
             tt_log_info("OS sub-pixel orientation has changed: {}", _subpixel_orientation.load());
         }
-    } catch (std::exception const &e) {
+    } catch (std::exception const& e) {
         tt_log_error("Failed to get OS sub-pixel orientation: {}", e.what());
     }
 
@@ -75,7 +74,7 @@ void os_settings::gather() noexcept
             setting_has_changed = true;
             tt_log_info("OS double click interval has changed: {}", _double_click_interval.load());
         }
-    } catch (std::exception const &e) {
+    } catch (std::exception const& e) {
         tt_log_error("Failed to get OS double click interval: {}", e.what());
     }
 
@@ -84,7 +83,7 @@ void os_settings::gather() noexcept
             setting_has_changed = true;
             tt_log_info("OS double click distance has changed: {}", _double_click_distance.load());
         }
-    } catch (std::exception const &e) {
+    } catch (std::exception const& e) {
         tt_log_error("Failed to get OS double click distance: {}", e.what());
     }
 
@@ -93,7 +92,7 @@ void os_settings::gather() noexcept
             setting_has_changed = true;
             tt_log_info("OS keyboard repeat delay has changed: {}", _keyboard_repeat_delay.load());
         }
-    } catch (std::exception const &e) {
+    } catch (std::exception const& e) {
         tt_log_error("Failed to get OS keyboard repeat delay: {}", e.what());
     }
 
@@ -102,7 +101,7 @@ void os_settings::gather() noexcept
             setting_has_changed = true;
             tt_log_info("OS keyboard repeat interval has changed: {}", _keyboard_repeat_interval.load());
         }
-    } catch (std::exception const &e) {
+    } catch (std::exception const& e) {
         tt_log_error("Failed to get OS keyboard repeat interval: {}", e.what());
     }
 
@@ -115,7 +114,7 @@ void os_settings::gather() noexcept
                 tt_log_info("OS cursor blink interval has changed: no-blinking");
             }
         }
-    } catch (std::exception const &e) {
+    } catch (std::exception const& e) {
         tt_log_error("Failed to get OS cursor blink interval: {}", e.what());
     }
 
@@ -124,7 +123,7 @@ void os_settings::gather() noexcept
             setting_has_changed = true;
             tt_log_info("OS cursor blink delay has changed: {}", _cursor_blink_delay.load());
         }
-    } catch (std::exception const &e) {
+    } catch (std::exception const& e) {
         tt_log_error("Failed to get OS cursor blink delay: {}", e.what());
     }
 
@@ -133,7 +132,7 @@ void os_settings::gather() noexcept
             setting_has_changed = true;
             tt_log_info("OS minimum window size has changed: {}", _minimum_window_size);
         }
-    } catch (std::exception const &e) {
+    } catch (std::exception const& e) {
         tt_log_error("Failed to get OS minimum window size: {}", e.what());
     }
 
@@ -142,7 +141,7 @@ void os_settings::gather() noexcept
             setting_has_changed = true;
             tt_log_info("OS maximum window size has changed: {}", _maximum_window_size);
         }
-    } catch (std::exception const &e) {
+    } catch (std::exception const& e) {
         tt_log_error("Failed to get OS maximum window size: {}", e.what());
     }
 
@@ -160,7 +159,7 @@ void os_settings::gather() noexcept
             setting_has_changed = true;
             tt_log_info("OS primary monitor rectangle has changed: {}", _primary_monitor_rectangle);
         }
-    } catch (std::exception const &e) {
+    } catch (std::exception const& e) {
         tt_log_error("Failed to get OS primary monitor rectangle: {}", e.what());
     }
 
@@ -169,7 +168,7 @@ void os_settings::gather() noexcept
             setting_has_changed = true;
             tt_log_info("OS desktop rectangle has changed: {}", _desktop_rectangle);
         }
-    } catch (std::exception const &e) {
+    } catch (std::exception const& e) {
         tt_log_error("Failed to get OS desktop rectangle: {}", e.what());
     }
 

@@ -5,7 +5,6 @@
 #include "preferences.hpp"
 #include "codec/JSON.hpp"
 #include "file.hpp"
-#include "timer.hpp"
 #include "log.hpp"
 
 namespace tt::inline v1 {
@@ -36,7 +35,7 @@ preferences::preferences() noexcept : _location(), _data(datum::make_map()), _mo
 {
     using namespace std::chrono_literals;
 
-    _check_modified_callback_ptr = timer::global().add_callback(5s, [this](auto...) {
+    _check_modified_cbt = loop::timer().repeat_function(5s, [this](auto...) {
         this->check_modified();
     });
 }
@@ -48,7 +47,6 @@ preferences::preferences(URL location) noexcept : preferences()
 
 preferences::~preferences()
 {
-    timer::global().remove_callback(_check_modified_callback_ptr);
     save();
 }
 

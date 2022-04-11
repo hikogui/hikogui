@@ -12,7 +12,7 @@
 #include "geometry/axis_aligned_rectangle.hpp"
 #include "unfair_mutex.hpp"
 #include "subsystem.hpp"
-#include "timer.hpp"
+#include "loop.hpp"
 #include "notifier.hpp"
 #include <vector>
 #include <mutex>
@@ -182,7 +182,7 @@ private:
 
     static inline std::atomic<bool> _started = false;
     static inline unfair_mutex _mutex;
-    static inline timer::callback_ptr_type _gather_callback;
+    static inline loop::timer_token_type _gather_cbt;
     static inline utc_nanoseconds _gather_last_time;
 
     static inline notifier<void()> _notifier;

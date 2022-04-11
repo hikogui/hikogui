@@ -9,7 +9,6 @@
 #include "strings.hpp"
 #include "thread.hpp"
 #include "url_parser.hpp"
-#include "timer.hpp"
 #include "console.hpp"
 #include <format>
 #include <exception>

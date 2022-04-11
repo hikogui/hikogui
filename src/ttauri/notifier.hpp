@@ -141,6 +141,7 @@ public:
 #if TT_BUILD_TYPE == TT_BT_DEBUG
         _notifying = false;
 #endif
+        clean_up();
     }
 
     /** Post the subscribed callbacks on the current thread's event loop with the given arguments.
@@ -157,6 +158,7 @@ public:
                 }
             });
         }
+        clean_up();
     }
 
     /** Post the subscribed callbacks on the main thread's event loop with the given arguments.
@@ -173,6 +175,7 @@ public:
                 }
             });
         }
+        clean_up();
     }
 
     /** Call the subscribed callbacks with the given arguments.
@@ -188,7 +191,14 @@ public:
 private:
     /** A list of callbacks and it's associated token.
      */
-    std::vector<weak_token_type> _callbacks;
+    mutable std::vector<weak_token_type> _callbacks;
+
+    void clean_up() const noexcept
+    {
+        std::erase_if(_callbacks, [](ttlet& item) {
+            return item.expired();
+        });
+    }
 
 #if TT_BUILD_TYPE == TT_BT_DEBUG
     /** The notifier is currently calling all the callbacks.

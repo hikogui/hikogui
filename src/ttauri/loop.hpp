@@ -20,6 +20,8 @@ class gui_window;
 
 class loop {
 public:
+    using timer_token_type = function_timer<>::token_type;
+
     class impl_type {
     public:
         bool is_main = false;
@@ -48,28 +50,34 @@ public:
             return future;
         }
 
-        void delay_function(utc_nanoseconds time_point, auto&& func) noexcept
+        timer_token_type delay_function(utc_nanoseconds time_point, auto&& func) noexcept
         {
-            if (_function_timer.delay_function(time_point, tt_forward(func))) {
+            auto [token, first_to_call] = _function_timer.delay_function(time_point, tt_forward(func));
+            if (first_to_call) {
                 // Notify if the added function is the next function to call.
                 notify_has_send();
             }
+            return token;
         }
 
-        void repeat_function(std::chrono::nanoseconds period, utc_nanoseconds time_point, auto&& func) noexcept
+        timer_token_type repeat_function(std::chrono::nanoseconds period, utc_nanoseconds time_point, auto&& func) noexcept
         {
-            if (_function_timer.repeat_function(period, time_point, tt_forward(func))) {
+            auto [token, first_to_call] = _function_timer.repeat_function(period, time_point, tt_forward(func));
+            if (first_to_call) {
                 // Notify if the added function is the next function to call.
                 notify_has_send();
             }
+            return token;
         }
 
-        void repeat_function(std::chrono::nanoseconds period, auto&& func) noexcept
+        timer_token_type repeat_function(std::chrono::nanoseconds period, auto&& func) noexcept
         {
-            if (_function_timer.repeat_function(period, tt_forward(func))) {
+            auto [token, first_to_call] = _function_timer.repeat_function(period, tt_forward(func));
+            if (first_to_call) {
                 // Notify if the added function is the next function to call.
                 notify_has_send();
             }
+            return token;
         }
 
         virtual void add_window(std::weak_ptr<gui_window> window) noexcept = 0;
@@ -199,7 +207,7 @@ public:
      * @param time_point The time at which to call the function.
      * @param func The function to be called.
      */
-    [[nodiscard]] void delay_function(utc_nanoseconds time_point, auto&& func) noexcept
+    [[nodiscard]] timer_token_type delay_function(utc_nanoseconds time_point, auto&& func) noexcept
     {
         tt_axiom(_pimpl);
         return _pimpl->delay_function(time_point, tt_forward(func));
@@ -211,7 +219,8 @@ public:
      * @param time_point The time at which to call the function.
      * @param func The function to be called.
      */
-    [[nodiscard]] void repeat_function(std::chrono::nanoseconds period, utc_nanoseconds time_point, auto&& func) noexcept
+    [[nodiscard]] timer_token_type
+    repeat_function(std::chrono::nanoseconds period, utc_nanoseconds time_point, auto&& func) noexcept
     {
         tt_axiom(_pimpl);
         return _pimpl->repeat_function(period, time_point, tt_forward(func));
@@ -222,7 +231,7 @@ public:
      * @param period The period between calls to the function.
      * @param func The function to be called.
      */
-    [[nodiscard]] void repeat_function(std::chrono::nanoseconds period, auto&& func) noexcept
+    [[nodiscard]] timer_token_type repeat_function(std::chrono::nanoseconds period, auto&& func) noexcept
     {
         tt_axiom(_pimpl);
         return _pimpl->repeat_function(period, tt_forward(func));
@@ -306,6 +315,7 @@ private:
         _timer_thread = std::jthread{[](std::stop_token stop_token) {
             _timer.store(std::addressof(loop::local()), std::memory_order::release);
 
+            set_thread_name("timer");
             loop::local().resume(stop_token);
         }};
 
