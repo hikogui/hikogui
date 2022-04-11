@@ -6,6 +6,7 @@
 
 #include "required.hpp"
 #include "generator.hpp"
+#include "loop.hpp"
 #include <vector>
 #include <tuple>
 #include <functional>
@@ -32,83 +33,8 @@ public:
     using result_type = Result;
     using callback_type = std::function<Result(Args const&...)>;
 
-    /** Object that represents a `notifier` callback token.
-     *
-     * When this object is destroyed it will unsubscribe the associated callback.
-     */
-    class token_type {
-    public:
-        ~token_type()
-        {
-            if (_notifier) {
-                _notifier->remove_token(*this);
-            }
-        }
-
-        /** Default constructor.
-         * This constructor creates a empty token which is not assocciated with a callback.
-         */
-        constexpr token_type() noexcept = default;
-
-        constexpr token_type(token_type const& other) noexcept : _notifier(nullptr)
-        {
-            if (other._notifier) {
-                other._notifier->copy_token(other, *this);
-                _notifier = other._notifier;
-            }
-        }
-
-        constexpr token_type& operator=(token_type const& other) noexcept
-        {
-            tt_return_on_self_assignment(other);
-
-            if (_notifier) {
-                _notifier->remove_token(*this);
-                _notifier = nullptr;
-            }
-            if (other._notifier) {
-                other._notifier->copy_token(other, *this);
-                _notifier = other._notifier;
-            }
-            return *this;
-        }
-
-        constexpr token_type(token_type&& other) noexcept : _notifier(nullptr)
-        {
-            if (other._notifier) {
-                other._notifier->move_token(other, *this);
-                _notifier = std::exchange(other._notifier, nullptr);
-            }
-        }
-
-        constexpr token_type& operator=(token_type&& other) noexcept
-        {
-            tt_return_on_self_assignment(other);
-
-            if (_notifier) {
-                _notifier->remove_token(*this);
-                _notifier = nullptr;
-            }
-            if (other._notifier) {
-                other._notifier->move_token(other, *this);
-                _notifier = std::exchange(other._notifier, nullptr);
-            }
-            return *this;
-        }
-
-        constexpr token_type(notifier *notifier) noexcept : _notifier(notifier) {}
-
-        constexpr auto operator()(Args const&...args) noexcept
-        {
-            tt_axiom(_notifier);
-            return (*_notifier)(args...);
-        }
-
-    private:
-        notifier *_notifier = nullptr;
-
-        friend notifier;
-    };
+    using token_type = std::shared_ptr<callback_type>;
+    using weak_token_type = std::weak_ptr<callback_type>;
 
     /** An awaiter object which can wait on a notifier.
      *
@@ -174,16 +100,6 @@ public:
     notifier& operator=(notifier&&) = delete;
     notifier& operator=(notifier const&) = delete;
 
-    /** Destroys a notifier.
-     * This will empty any token that was associated with this notifier.
-     */
-    ~notifier()
-    {
-        for (auto& callback : _callbacks) {
-            const_cast<token_type *>(callback.first)->_notifier = nullptr;
-        }
-    }
-
     /** Create an awaiter that can await on this notifier.
      */
     awaiter_type operator co_await() const noexcept
@@ -201,9 +117,62 @@ public:
      */
     [[nodiscard]] token_type subscribe(std::invocable<Args...> auto&& callback) noexcept
     {
-        auto sub = token_type{this};
-        _callbacks.emplace_back(&sub, tt_forward(callback));
-        return sub;
+        auto token = std::make_shared<callback_type>(tt_forward(callback));
+        _callbacks.emplace_back(token);
+        return token;
+    }
+
+    /** Call the subscribed callbacks synchronously with the given arguments.
+     *
+     * @note This function is not reentrant.
+     * @param args The arguments to pass with the invocation of the callback
+     */
+    void call(Args const&...args) const noexcept requires(std::is_same_v<result_type, void>)
+    {
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+        tt_axiom(std::exchange(_notifying, true) == false);
+#endif
+        ttlet tmp = _callbacks;
+        for (auto& weak_callback : tmp) {
+            if (auto callback = weak_callback.lock()) {
+                (*callback)(args...);
+            }
+        }
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+        _notifying = false;
+#endif
+    }
+
+    /** Post the subscribed callbacks on the current thread's event loop with the given arguments.
+     *
+     * @note This function is not reentrant.
+     * @param args The arguments to pass with the invocation of the callback
+     */
+    void post(Args const&...args) const noexcept requires(std::is_same_v<result_type, void>)
+    {
+        for (auto& weak_callback : _callbacks) {
+            loop::local().post_function([=] {
+                if (auto callback = weak_callback.lock()) {
+                    (*callback)(args...);
+                }
+            });
+        }
+    }
+
+    /** Post the subscribed callbacks on the main thread's event loop with the given arguments.
+     *
+     * @note This function is not reentrant.
+     * @param args The arguments to pass with the invocation of the callback
+     */
+    void post_on_main(Args const&...args) const noexcept requires(std::is_same_v<result_type, void>)
+    {
+        for (auto& weak_callback : _callbacks) {
+            loop::main().post_function([=] {
+                if (auto callback = weak_callback.lock()) {
+                    (*callback)(args...);
+                }
+            });
+        }
     }
 
     /** Call the subscribed callbacks with the given arguments.
@@ -211,82 +180,21 @@ public:
      * @note This function is not reentrant.
      * @param args The arguments to pass with the invocation of the callback
      */
-    void operator()(Args const&...args) const noexcept requires(std::is_same_v<result_type, void>)
+    auto operator()(Args const&...args) const noexcept
     {
-#if TT_BUILD_TYPE == TT_BT_DEBUG
-        tt_axiom(std::exchange(_notifying, true) == false);
-#endif
-        ttlet tmp = _callbacks;
-        for (auto& callback : tmp) {
-            callback.second(args...);
-        }
-#if TT_BUILD_TYPE == TT_BT_DEBUG
-        _notifying = false;
-#endif
+        return post(args...);
     }
 
-    /** Call the subscribed callbacks with the given arguments.
-     *
-     * @note This function is not reentrant.
-     * @param args The arguments to pass with the invocation of the callback
-     * @return The result of each callback.
-     */
-    generator<result_type> operator()(Args const&...args) const noexcept requires(not std::is_same_v<result_type, void>)
-    {
-#if TT_BUILD_TYPE == TT_BT_DEBUG
-        tt_axiom(std::exchange(_notifying, true) == false);
-#endif
-        ttlet tmp = _callbacks;
-        for (auto& callback : tmp) {
-            co_yield callback.second(args...);
-        }
-#if TT_BUILD_TYPE == TT_BT_DEBUG
-        _notifying = false;
-#endif
-    }
-
-private :
+private:
     /** A list of callbacks and it's associated token.
      */
-    std::vector<std::pair<token_type const *, callback_type>>
-        _callbacks;
+    std::vector<weak_token_type> _callbacks;
+
 #if TT_BUILD_TYPE == TT_BT_DEBUG
     /** The notifier is currently calling all the callbacks.
      */
     mutable bool _notifying = false;
 #endif
-
-    /** Remove the token from the callback list.
-     */
-    void remove_token(token_type const& sub) noexcept
-    {
-        ttlet erase_count = std::erase_if(_callbacks, [&](ttlet& item) {
-            return item.first == &sub;
-        });
-        tt_axiom(erase_count == 1);
-    }
-
-    /** Handle move-assign and move-construct of a token.
-     */
-    void move_token(token_type const& sub, token_type const& new_sub) noexcept
-    {
-        ttlet it = std::find_if(_callbacks.begin(), _callbacks.end(), [&](ttlet& item) {
-            return item.first == &sub;
-        });
-        tt_axiom(it != _callbacks.end());
-        it->first = &new_sub;
-    }
-
-    /** Handle copy-assign and copy-construt of a token.
-     */
-    void copy_token(token_type const& sub, token_type const& new_sub) noexcept
-    {
-        ttlet it = std::find_if(_callbacks.begin(), _callbacks.end(), [&](ttlet& item) {
-            return item.first == &sub;
-        });
-        tt_axiom(it != _callbacks.end());
-        _callbacks.emplace_back(&new_sub, it->second);
-    }
 };
 
 } // namespace tt::inline v1

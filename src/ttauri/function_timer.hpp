@@ -26,6 +26,11 @@ public:
 
     constexpr function_timer() noexcept = default;
 
+    [[nodiscard]] constexpr bool empty() const noexcept
+    {
+        return _functions.empty();
+    }
+
     /** Add a function to be called at a certain time.
      *
      * @param time_point The time when to call the function.

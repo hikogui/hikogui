@@ -144,7 +144,7 @@ public:
         tt_axiom(is_same_thread());
     }
 
-    int resume() noexcept
+    int resume(std::stop_token stop_token) noexcept
     {
         // Once the loop is resuming, all other calls should be from the same thread.
         _thread_id = current_thread_id();
@@ -158,7 +158,7 @@ public:
             tt_log_error("GetThreadPriority() for loop failed {}", get_last_error_message());
         }
 
-        if (original_thread_priority < THREAD_PRIORITY_ABOVE_NORMAL) {
+        if (is_main and original_thread_priority < THREAD_PRIORITY_ABOVE_NORMAL) {
             if (not SetThreadPriority(thread_handle, THREAD_PRIORITY_ABOVE_NORMAL)) {
                 tt_log_error("SetThreadPriority() for loop failed {}", get_last_error_message());
             }
@@ -167,14 +167,22 @@ public:
         while (not _exit_code) {
             resume_once(true);
 
-            // XXX Also add sockets and timers before the loop exists itself.
-            if (_windows.empty() and _function_fifo.empty()) {
-                _exit_code = 0;
+            if (stop_token.stop_possible()) {
+                if (stop_token.stop_requested()) {
+                    // Stop immediately when stop is requested.
+                    _exit_code = 0;
+                }
+            } else {
+                if (_windows.empty() and _function_fifo.empty() and _function_timer.empty() and
+                    _handles.size() <= _socket_handle_idx) {
+                    // If there is not stop token, then exit when there are no more resources to wait on.
+                    _exit_code = 0;
+                }
             }
         }
 
         // Set the thread priority back to what is was before resume().
-        if (original_thread_priority < THREAD_PRIORITY_ABOVE_NORMAL) {
+        if (is_main and original_thread_priority < THREAD_PRIORITY_ABOVE_NORMAL) {
             if (not SetThreadPriority(thread_handle, original_thread_priority)) {
                 tt_log_error("SetThreadPriority() for loop failed {}", get_last_error_message());
             }
@@ -198,7 +206,7 @@ public:
 
         // Only handle win32 messages when blocking.
         // Since non-blocking is called from the win32 message-pump, we do not want to re-enter the loop.
-        ttlet message_mask = block ? QS_ALLINPUT : 0;
+        ttlet message_mask = is_main and block ? QS_ALLINPUT : 0;
 
         ttlet wait_r =
             MsgWaitForMultipleObjects(narrow<DWORD>(_handles.size()), _handles.data(), FALSE, timeout_ms, message_mask);

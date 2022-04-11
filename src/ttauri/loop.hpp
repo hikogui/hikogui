@@ -6,10 +6,9 @@
 
 #include "function_fifo.hpp"
 #include "function_timer.hpp"
-#include "cast.hpp"
 #include "subsystem.hpp"
+#include "cast.hpp"
 #include "net/network_event.hpp"
-#include "GUI/gui_window.hpp"
 #include <functional>
 #include <type_traits>
 #include <concepts>
@@ -23,6 +22,8 @@ class loop {
 public:
     class impl_type {
     public:
+        bool is_main = false;
+
         impl_type() : _thread_id(0) {}
 
         virtual ~impl_type() {}
@@ -74,7 +75,7 @@ public:
         virtual void add_window(std::weak_ptr<gui_window> window) noexcept = 0;
         virtual void add_socket(int fd, network_event event_mask, std::function<void(int, network_events const&)> f) = 0;
         virtual void remove_socket(int fd) = 0;
-        virtual int resume() noexcept = 0;
+        virtual int resume(std::stop_token stop_token) noexcept = 0;
         virtual void resume_once(bool block) noexcept = 0;
 
     protected:
@@ -91,7 +92,6 @@ public:
         function_timer<> _function_timer;
 
         std::optional<int> _exit_code;
-        bool _is_main = false;
         double _maximum_frame_rate = 30.0;
         std::chrono::nanoseconds _minimum_frame_time = std::chrono::nanoseconds(33'333'333);
         thread_id _thread_id = 0;
@@ -107,11 +107,40 @@ public:
     loop& operator=(loop const&) = delete;
     loop& operator=(loop&&) noexcept = default;
 
-    /** Create or get the main-loop.
+    /** Get or create the thread-local loop.
+     */
+    [[nodiscard]] tt_no_inline static loop& local() noexcept
+    {
+        if (not _local) {
+            _local = std::make_unique<loop>();
+        }
+        return *_local;
+    }
+
+    /** Get or create the main-loop.
+     *
+     * @note The first time main() is called must be from the main-thread.
+     *       In this case there is no race condition on the first time main() is called.
      */
     [[nodiscard]] tt_no_inline static loop& main() noexcept
     {
-        return *start_subsystem_or_terminate(_main, nullptr, subsystem_init, subsystem_deinit);
+        if (auto ptr = _main.load(std::memory_order::acquire)) {
+            return *ptr;
+        }
+
+        auto ptr = std::addressof(local());
+        ptr->_pimpl->is_main = true;
+        _main.store(ptr, std::memory_order::release);
+        return *ptr;
+    }
+
+    /** Get or create the timer event-loop.
+     *
+     * @note The first time this is called a thread is started to handle the timer events.
+     */
+    [[nodiscard]] tt_no_inline static loop& timer() noexcept
+    {
+        return *start_subsystem_or_terminate(_timer, nullptr, timer_init, timer_deinit);
     }
 
     /** Set maximum frame rate.
@@ -166,10 +195,10 @@ public:
     }
 
     /** Call a function at a certain time.
-    * 
-    * @param time_point The time at which to call the function.
-    * @param func The function to be called.
-    */
+     *
+     * @param time_point The time at which to call the function.
+     * @param func The function to be called.
+     */
     [[nodiscard]] void delay_function(utc_nanoseconds time_point, auto&& func) noexcept
     {
         tt_axiom(_pimpl);
@@ -239,12 +268,15 @@ public:
 
     /** Resume the loop on the current thread.
      *
+     * @param stop_token The thread's stop token to use to determine when to stop.
+     *                   If not stop token is given, then resume will automatically stop when there
+     *                   are no more windows, sockets, functions or timers.
      * @return Exit code when the loop is exited.
      */
-    int resume() noexcept
+    int resume(std::stop_token stop_token = {}) noexcept
     {
         tt_axiom(_pimpl);
-        return _pimpl->resume();
+        return _pimpl->resume(stop_token);
     }
 
     /** Resume for a single iteration.
@@ -267,23 +299,46 @@ public:
     }
 
 private:
+    static loop *timer_init() noexcept
+    {
+        tt_axiom(not _timer_thread.joinable());
+
+        _timer_thread = std::jthread{[](std::stop_token stop_token) {
+            _timer.store(std::addressof(loop::local()), std::memory_order::release);
+
+            loop::local().resume(stop_token);
+        }};
+
+        while (true) {
+            if (auto ptr = _timer.load(std::memory_order::relaxed)) {
+                return ptr;
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        }
+    }
+
+    static void timer_deinit() noexcept
+    {
+        if (auto ptr = _timer.exchange(nullptr, std::memory_order::acquire)) {
+            tt_axiom(_timer_thread.joinable());
+            _timer_thread.request_stop();
+            _timer_thread.join();
+        }
+    }
+
+    inline static thread_local std::unique_ptr<loop> _local;
+
     /** Pointer to the main-loop.
      */
     inline static std::atomic<loop *> _main;
 
+    /** Pointer to the timer-loop.
+     */
+    inline static std::atomic<loop *> _timer;
+
+    inline static std::jthread _timer_thread;
+
     std::unique_ptr<impl_type> _pimpl;
-
-    static loop *subsystem_init() noexcept
-    {
-        return new loop();
-    }
-
-    static void subsystem_deinit() noexcept
-    {
-        if (auto tmp = _main.exchange(nullptr)) {
-            delete tmp;
-        }
-    }
 };
 
 } // namespace tt::inline v1
