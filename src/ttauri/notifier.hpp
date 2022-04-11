@@ -122,28 +122,6 @@ public:
         return token;
     }
 
-    /** Call the subscribed callbacks synchronously with the given arguments.
-     *
-     * @note This function is not reentrant.
-     * @param args The arguments to pass with the invocation of the callback
-     */
-    void call(Args const&...args) const noexcept requires(std::is_same_v<result_type, void>)
-    {
-#if TT_BUILD_TYPE == TT_BT_DEBUG
-        tt_axiom(std::exchange(_notifying, true) == false);
-#endif
-        ttlet tmp = _callbacks;
-        for (auto& weak_callback : tmp) {
-            if (auto callback = weak_callback.lock()) {
-                (*callback)(args...);
-            }
-        }
-#if TT_BUILD_TYPE == TT_BT_DEBUG
-        _notifying = false;
-#endif
-        clean_up();
-    }
-
     /** Post the subscribed callbacks on the current thread's event loop with the given arguments.
      *
      * @note This function is not reentrant.
