@@ -17,7 +17,7 @@ selection_widget::~selection_widget()
     }
 }
 
-selection_widget::selection_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
+selection_widget::selection_widget(gui_window& window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
     super(window, parent), _delegate(std::move(delegate))
 {
     _current_label_widget = std::make_unique<label_widget>(window, this, tr("<current>"));
@@ -47,12 +47,12 @@ selection_widget::selection_widget(gui_window &window, widget *parent, weak_or_u
     }
 }
 
-selection_widget::selection_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
+selection_widget::selection_widget(gui_window& window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
     selection_widget(window, parent, weak_or_unique_ptr<delegate_type>{std::move(delegate)})
 {
 }
 
-widget_constraints const &selection_widget::set_constraints() noexcept
+widget_constraints const& selection_widget::set_constraints() noexcept
 {
     _layout = {};
 
@@ -62,7 +62,7 @@ widget_constraints const &selection_widget::set_constraints() noexcept
         max(_unknown_label_widget->set_constraints() + extra_size, _current_label_widget->set_constraints() + extra_size);
 
     ttlet overlay_constraints = _overlay_widget->set_constraints();
-    for (ttlet &child : _menu_button_widgets) {
+    for (ttlet& child : _menu_button_widgets) {
         // extra_size is already implied in the menu button widgets.
         _constraints = max(_constraints, child->constraints());
     }
@@ -79,7 +79,7 @@ widget_constraints const &selection_widget::set_constraints() noexcept
     return _constraints;
 }
 
-void selection_widget::set_layout(widget_layout const &layout) noexcept
+void selection_widget::set_layout(widget_layout const& layout) noexcept
 {
     if (compare_store(_layout, layout)) {
         _left_box_rectangle = aarectangle{0.0f, 0.0f, theme().size, layout.height()};
@@ -114,7 +114,7 @@ void selection_widget::set_layout(widget_layout const &layout) noexcept
     _current_label_widget->set_layout(layout.transform(_option_rectangle));
 }
 
-void selection_widget::draw(draw_context const &context) noexcept
+void selection_widget::draw(draw_context const& context) noexcept
 {
     if (*visible) {
         if (overlaps(context, layout())) {
@@ -131,7 +131,7 @@ void selection_widget::draw(draw_context const &context) noexcept
     }
 }
 
-bool selection_widget::handle_event(mouse_event const &event) noexcept
+bool selection_widget::handle_event(mouse_event const& event) noexcept
 {
     tt_axiom(is_gui_thread());
     auto handled = super::handle_event(event);
@@ -226,7 +226,7 @@ bool selection_widget::handle_event(command command) noexcept
 {
     tt_axiom(is_gui_thread());
 
-    for (ttlet &button : _menu_button_widgets) {
+    for (ttlet& button : _menu_button_widgets) {
         if (button->state() == button_state::on) {
             return button;
         }
@@ -277,24 +277,19 @@ void selection_widget::repopulate_options() noexcept
 
     // If any of the options has a an icon, all of the options should show the icon.
     auto show_icon = false;
-    for (ttlet &label : options) {
+    for (ttlet& label : options) {
         show_icon |= static_cast<bool>(label.icon);
     }
 
     decltype(selected) index = 0;
-    for (auto &&label : options) {
+    for (auto&& label : options) {
         auto menu_button = &_column_widget->make_widget<menu_button_widget>(std::move(label), selected, index);
 
         _menu_button_tokens.push_back(menu_button->pressed.subscribe([this, index] {
-            // XXX Can't remember why we need to run this from the main-loop
-            // Somehow when the menu_button is pressed, the menu_button is in a uninitialized state
-            // (although the vtable pointer is correct, which is insane since the base class is also uninitialized).
-            loop::main().post_function([this, index] {
-                if (auto delegate = _delegate.lock()) {
-                    delegate->set_selected(*this, index);
-                }
-                stop_selecting();
-            });
+            if (auto delegate = _delegate.lock()) {
+                delegate->set_selected(*this, index);
+            }
+            stop_selecting();
         }));
 
         _menu_button_widgets.push_back(menu_button);
@@ -313,7 +308,7 @@ void selection_widget::repopulate_options() noexcept
     }
 }
 
-void selection_widget::draw_outline(draw_context const &context) noexcept
+void selection_widget::draw_outline(draw_context const& context) noexcept
 {
     context.draw_box(
         layout(),
@@ -325,13 +320,13 @@ void selection_widget::draw_outline(draw_context const &context) noexcept
         corner_radii{theme().rounding_radius});
 }
 
-void selection_widget::draw_left_box(draw_context const &context) noexcept
+void selection_widget::draw_left_box(draw_context const& context) noexcept
 {
     ttlet corner_radii = tt::corner_radii{theme().rounding_radius, 0.0f, theme().rounding_radius, 0.0f};
     context.draw_box(layout(), translate_z(0.1f) * _left_box_rectangle, focus_color(), corner_radii);
 }
 
-void selection_widget::draw_chevrons(draw_context const &context) noexcept
+void selection_widget::draw_chevrons(draw_context const& context) noexcept
 {
     context.draw_glyph(layout(), translate_z(0.2f) * _chevrons_rectangle, label_color(), _chevrons_glyph);
 }
