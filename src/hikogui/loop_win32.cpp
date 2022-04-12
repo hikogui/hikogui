@@ -164,6 +164,7 @@ public:
             }
         }
 
+        _exit_code = {};
         while (not _exit_code) {
             resume_once(true);
 

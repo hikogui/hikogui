@@ -11,12 +11,12 @@
 using namespace std;
 using namespace hi;
 
-TEST(HikoGUIMath, SolveDepressedCubic)
+TEST(polynomial, solve_depressed_cubic)
 {
     ASSERT_RESULTS(solveDepressedCubic(6.0, -20.0), results3(2.0));
 }
 
-TEST(HikoGUIMath, SolveCubic)
+TEST(polynomial, solve_cubic)
 {
     ASSERT_RESULTS(solvePolynomial(1.0, -6.0, 14.0, -15.0), results3(3.0));
     ASSERT_RESULTS(solvePolynomial(1.0, -3.0, 3.0, -1.0), results3(1.0));
@@ -36,7 +36,7 @@ TEST(HikoGUIMath, SolveCubic)
     // ASSERT_RESULTS(solveCubic(1.0, -5.0, 8.0, -4.0), std::make_tuple(1.0, 2.0, 2.0));
 }
 
-TEST(HikoGUIMath, SolveQuadratic)
+TEST(polynomial, solve_quadratic)
 {
     ASSERT_RESULTS(solvePolynomial(1.0, -10.0, 16.0), results2(2.0, 8.0));
     ASSERT_RESULTS(solvePolynomial(18.0, -3.0, -6.0), results2(2.0f / 3.0f, -0.5));
@@ -46,7 +46,7 @@ TEST(HikoGUIMath, SolveQuadratic)
     ASSERT_RESULTS(solvePolynomial(1.0, -2.0, -3.0), results2(-1.0, 3.0));
 }
 
-TEST(HikoGUIMath, SolveLinear)
+TEST(polynomial, solve_linear)
 {
     ASSERT_RESULTS(solvePolynomial(2.0, -6.0), results1(3.0));
     ASSERT_RESULTS(solvePolynomial(3.0, 6.0), results1(-2.0));

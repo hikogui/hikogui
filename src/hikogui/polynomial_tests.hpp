@@ -5,6 +5,7 @@
 #pragma once
 
 #include "hikogui/polynomial.hpp"
+#include "hikogui/math.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
@@ -16,13 +17,18 @@ double maxAbsDiff(hi::results<T, N> const &lhs, hi::results<U, N> const &rhs)
         return std::numeric_limits<double>::infinity();
     }
 
-    double maxDiff = 0.0;
+    double max_diff = 0.0;
     assert(lhs.size() <= lhs.capacity());
-    for (uint8_t i = 0; i < lhs.size(); i++) {
-        hilet diff = std::abs(lhs[i] - rhs[i]);
-        maxDiff = std::max(maxDiff, diff);
+    for (auto i = 0_uz; i != lhs.size(); ++i) {
+        // Compare with the closest value in rhs.
+        double min_diff = std::numeric_limits<double>::infinity();
+        for (auto j = 0_uz; j != rhs.size(); ++j) {
+            hi::inplace_min(min_diff, std::abs(lhs[i] - rhs[j]));
+        }
+
+        hi::inplace_max(max_diff, min_diff);
     }
-    return maxDiff;
+    return max_diff;
 }
 
 template<typename T, typename U, int N>

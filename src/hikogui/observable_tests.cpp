@@ -23,6 +23,7 @@ TEST(observable, value)
     a_modified = false;
 
     a = 1;
+    loop::main().resume();
     ASSERT_TRUE(a_modified);
     ASSERT_EQ(*a, 1);
     a_modified = false;
@@ -51,6 +52,7 @@ TEST(observable, chain1)
 
     a = 1;
     b = 2;
+    loop::main().resume();
     ASSERT_TRUE(a_modified);
     ASSERT_TRUE(b_modified);
     ASSERT_EQ(*a, 1);
@@ -59,6 +61,7 @@ TEST(observable, chain1)
     b_modified = false;
 
     a = b;
+    loop::main().resume();
     ASSERT_TRUE(a_modified);
     ASSERT_FALSE(b_modified);
     ASSERT_EQ(*a, 2);
@@ -66,6 +69,7 @@ TEST(observable, chain1)
     a_modified = false;
 
     b = 3;
+    loop::main().resume();
     ASSERT_TRUE(a_modified);
     ASSERT_TRUE(b_modified);
     ASSERT_EQ(*a, 3);
@@ -74,6 +78,7 @@ TEST(observable, chain1)
     b_modified = false;
 
     a = 4;
+    loop::main().resume();
     ASSERT_TRUE(a_modified);
     ASSERT_TRUE(b_modified);
     ASSERT_EQ(*a, 4);
@@ -115,6 +120,7 @@ TEST(observable, chain2)
     a = 1;
     b = 2;
     c = 3;
+    loop::main().resume();
     ASSERT_TRUE(a_modified);
     ASSERT_TRUE(b_modified);
     ASSERT_TRUE(c_modified);
@@ -126,6 +132,7 @@ TEST(observable, chain2)
     c_modified = false;
 
     a = b;
+    loop::main().resume();
     ASSERT_TRUE(a_modified);
     ASSERT_FALSE(b_modified);
     ASSERT_FALSE(c_modified);
@@ -137,6 +144,7 @@ TEST(observable, chain2)
     c_modified = false;
 
     b = c;
+    loop::main().resume();
     ASSERT_TRUE(a_modified);
     ASSERT_TRUE(b_modified);
     ASSERT_FALSE(c_modified);
@@ -148,6 +156,7 @@ TEST(observable, chain2)
     c_modified = false;
 
     c = 4;
+    loop::main().resume();
     ASSERT_TRUE(a_modified);
     ASSERT_TRUE(b_modified);
     ASSERT_TRUE(c_modified);
@@ -159,6 +168,7 @@ TEST(observable, chain2)
     c_modified = false;
 
     b = 5;
+    loop::main().resume();
     ASSERT_TRUE(a_modified);
     ASSERT_TRUE(b_modified);
     ASSERT_TRUE(c_modified);
@@ -170,6 +180,7 @@ TEST(observable, chain2)
     c_modified = false;
 
     a = 6;
+    loop::main().resume();
     ASSERT_TRUE(a_modified);
     ASSERT_TRUE(b_modified);
     ASSERT_TRUE(c_modified);
@@ -214,6 +225,7 @@ TEST(observable, chain3)
     a = 1;
     b = 2;
     c = 3;
+    loop::main().resume();
     ASSERT_TRUE(a_modified);
     ASSERT_TRUE(b_modified);
     ASSERT_TRUE(c_modified);
@@ -225,6 +237,7 @@ TEST(observable, chain3)
     c_modified = false;
 
     b = c;
+    loop::main().resume();
     ASSERT_FALSE(a_modified);
     ASSERT_TRUE(b_modified);
     ASSERT_FALSE(c_modified);
@@ -236,6 +249,7 @@ TEST(observable, chain3)
     c_modified = false;
 
     a = b;
+    loop::main().resume();
     ASSERT_TRUE(a_modified);
     ASSERT_FALSE(b_modified);
     ASSERT_FALSE(c_modified);
@@ -247,6 +261,7 @@ TEST(observable, chain3)
     c_modified = false;
 
     c = 4;
+    loop::main().resume();
     ASSERT_TRUE(a_modified);
     ASSERT_TRUE(b_modified);
     ASSERT_TRUE(c_modified);
@@ -258,6 +273,7 @@ TEST(observable, chain3)
     c_modified = false;
 
     b = 5;
+    loop::main().resume();
     ASSERT_TRUE(a_modified);
     ASSERT_TRUE(b_modified);
     ASSERT_TRUE(c_modified);
@@ -269,6 +285,7 @@ TEST(observable, chain3)
     c_modified = false;
 
     a = 6;
+    loop::main().resume();
     ASSERT_TRUE(a_modified);
     ASSERT_TRUE(b_modified);
     ASSERT_TRUE(c_modified);
@@ -300,4 +317,6 @@ TEST(observable, callback)
     auto cbt2 = a.subscribe(callback2);
 
     a = 42;
+
+    loop::main().resume();
 }
