@@ -14,13 +14,13 @@ xgettext \
     --files-from=/tmp/source_files_$$.txt \
     --default-domain=demo \
     --force-po \
-    --output=data/ttauri_demo.pot \
+    --output=data/hikogui_demo.pot \
     --language=C++ \
     --keyword=tr:1g \
-    --keyword=l10p:1g,1g
+    --keyword=tr:1g,1g
 
-msginit --no-translator --input=data/ttauri_demo.pot --output-file=resources/locale/en.po
-msgmerge --update resources/locale/nl.po data/ttauri_demo.pot
+msginit --no-translator --input=data/hikogui_demo.pot --output-file=resources/locale/en.po
+msgmerge --update resources/locale/nl.po data/hikogui_demo.pot
 
 rm /tmp/source_files_$$.txt
 

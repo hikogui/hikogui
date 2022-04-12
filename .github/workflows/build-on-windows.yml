@@ -3,7 +3,7 @@
 #
 # Copyright 2021 Jens A. Koch.
 # SPDX-License-Identifier: BSL-1.0
-# This file is part of ttauri-project.
+# This file is part of hikogui.
 #
 
 name: "Build on Windows"
@@ -53,7 +53,7 @@ jobs:
           msbuild /version
           vcpkg version
 
-      # Build Artifact Name: ttauri-0.3.0-0cda6a2-MSVC19-x64-static-RelWithDebInfo
+      # Build Artifact Name: hikogui-0.3.0-0cda6a2-MSVC19-x64-static-RelWithDebInfo
       - name: ✏ Fetch Versioning Data & Set Artifact Name
         shell: pwsh
         run: |
@@ -137,30 +137,30 @@ jobs:
         run: cmake --build build --config ${{ matrix.config.BUILD_TYPE }}
 
       - name: 📦 CMake ➔ Install
-        run: cmake --install build --config ${{ matrix.config.BUILD_TYPE }} --prefix build/ttauri-%VERSION% --verbose
+        run: cmake --install build --config ${{ matrix.config.BUILD_TYPE }} --prefix build/hikogui-%VERSION% --verbose
 
       - name: ❔ CHECK important folders, to see if everything is present (after building)
         run: |
           dir build
           dir /S /B build\vcpkg_installed\${{ matrix.config.VCPKG_TARGET_TRIPLET }}
-          dir /S /B build\ttauri-%VERSION%
+          dir /S /B build\hikogui-%VERSION%
 
       # The Vulkan Runtime is normally to be found in "C:\windows\systems32", but it's not a system library on CI.
       - name: Copy Vulkan Runtime (vulkan-1.dll)
         run: |
-          copy %VULKAN_SDK%\runtime\%PLATFORM%\vulkan-1.* build\ttauri-%VERSION%\tests
-          copy %VULKAN_SDK%\runtime\%PLATFORM%\vulkan-1.* build\ttauri-%VERSION%\examples\ttauri_demo
+          copy %VULKAN_SDK%\runtime\%PLATFORM%\vulkan-1.* build\hikogui-%VERSION%\tests
+          copy %VULKAN_SDK%\runtime\%PLATFORM%\vulkan-1.* build\hikogui-%VERSION%\examples\hikogui_demo
 
       - name: ✔ ❌✔️ Test
         run: |
-          cd build\ttauri-%VERSION%\tests
+          cd build\hikogui-%VERSION%\tests
           cd
-          ttauri_tests.exe --gtest_output=xml:test_results_gtest.xml
+          hikogui_tests.exe --gtest_output=xml:test_results_gtest.xml
 
       - name: ♻ Transform Test Results (gtest ➔ junit)
         shell: pwsh
         run: |
-          cd build\ttauri-${{ env.VERSION }}\tests
+          cd build\hikogui-${{ env.VERSION }}\tests
           $xsl = New-Object System.Xml.Xsl.XslCompiledTransform
           $xsl.Load("${{ github.workspace }}\.github\gtest_to_junit.xsl")
           $xsl.Transform((Resolve-Path .\test_results_gtest.xml), "${{ github.workspace }}\test_results.xml")
@@ -192,15 +192,15 @@ jobs:
           --excluded_sources=src\*_tests.cpp                      ^
           --excluded_sources=src\*\*_tests.cpp                    ^
           --excluded_sources=build\_deps                          ^
-          --export_type=cobertura:ttauri_coverage.xml             ^
-          --working_dir=.\\build\ttauri-%VERSION%\tests           ^
-          -- ".\\build\ttauri-%VERSION%\tests\\ttauri_tests.exe"
+          --export_type=cobertura:hikogui_coverage.xml             ^
+          --working_dir=.\\build\hikogui-%VERSION%\tests           ^
+          -- ".\\build\hikogui-%VERSION%\tests\\hikogui_tests.exe"
 
       - name: 📦 🚀 Upload CodeCoverage Report to codecov.io
         if: ${{ matrix.config.BUILD_TYPE == 'Debug' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         uses: codecov/codecov-action@v2 # https://github.com/codecov/codecov-action
         with:
-          files: ./ttauri_coverage.xml
+          files: ./hikogui_coverage.xml
 
       #
       # We only upload artifacts for static builds with pre-compiled headers (TT_BUILD_PCH:ON).
@@ -212,7 +212,7 @@ jobs:
         if: ${{ matrix.config.TT_BUILD_PCH == 'ON'}}
         run: |
            cd build
-           7z a -tzip -mx9 "%ARTIFACT_NAME%.zip" ./ttauri-%VERSION%
+           7z a -tzip -mx9 "%ARTIFACT_NAME%.zip" ./hikogui-%VERSION%
 
       # To ensure that jobs don't overwrite existing artifacts, use a different "name" per job/run.
       - name: 📦 🚀 Upload Artifact

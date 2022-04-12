@@ -158,7 +158,7 @@ add_subdirectory(tools)
 # Build Target: hikogui                                     (library)
 #-------------------------------------------------------------------
 
-set_target_properties(hikogui PROPERTIES VERSION ${TTAURI_PROJECT_VERSION_SHORT} SOVERSION ${TTAURI_MAJOR_VERSION})
+set_target_properties(hikogui PROPERTIES VERSION ${HIKOGUI_PROJECT_VERSION_SHORT} SOVERSION ${HIKOGUI_MAJOR_VERSION})
 set_target_properties(hikogui PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 target_link_libraries(hikogui PUBLIC ${Vulkan_LIBRARIES})

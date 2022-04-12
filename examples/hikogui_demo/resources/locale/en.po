@@ -18,68 +18,68 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: src/application_controller.cpp:57
-msgid "ttauri_demo"
-msgstr "ttauri_demo"
+msgid "hikogui_demo"
+msgstr "hikogui_demo"
 
 #: src/audio_preferences_controller.cpp:17
 msgid "Audio device sample rate:"
-msgstr "Geluids apperaat sample snelheid:"
+msgstr "Audio device sample rate:"
 
 #: src/audio_preferences_controller.cpp:20
 msgid "Word clock sample rate:"
-msgstr "Word clock sample snelheid:"
+msgstr "Word clock sample rate:"
 
 #: src/audio_preferences_controller.cpp:23
 msgid "This is a toggle:"
-msgstr "Dit is een tokkel:"
+msgstr "This is a toggle:"
 
 #: src/audio_preferences_controller.cpp:25
 #: src/audio_preferences_controller.cpp:30
 msgid "on"
-msgstr "aan"
+msgstr "on"
 
 #: src/audio_preferences_controller.cpp:26
 msgid "off"
-msgstr "uit"
+msgstr "off"
 
 #: src/audio_preferences_controller.cpp:28
 msgid "This is disabled toggle:"
-msgstr "Dit is een uitgeschakelde tokkel:"
+msgstr "This is disabled toggle:"
 
 #: src/audio_preferences_controller.cpp:33
 msgid "Audio device:"
-msgstr "Geluids apperaat:"
+msgstr "Audio device:"
 
 #: src/audio_preferences_controller.cpp:37
 msgid "No device selected."
-msgstr "Geen apperaat geselecteerd."
+msgstr "No device selected."
 
 #: src/audio_preferences_controller.cpp:39
 msgid "This is disabled selection widget:"
-msgstr "Dit is een uitgeschakelde selectie widget:"
+msgstr "This is disabled selection widget:"
 
 #: src/audio_preferences_controller.cpp:43
 #: src/license_preferences_controller.cpp:35
 msgid "first"
-msgstr "eerste"
+msgstr "first"
 
 #: src/audio_preferences_controller.cpp:44
 msgid "The second value has a really long label"
-msgstr "De tweede waarde heeft een hele lange label"
+msgstr "The second value has a really long label"
 
 #: src/audio_preferences_controller.cpp:45
 #: src/license_preferences_controller.cpp:37
 msgid "third"
-msgstr "derde"
+msgstr "third"
 
 #: src/audio_preferences_controller.cpp:47
 #: src/license_preferences_controller.cpp:39
 msgid "Default"
-msgstr "Standard"
+msgstr "Default"
 
 #: src/audio_preferences_controller.cpp:50
 msgid "These are radio buttons:"
-msgstr "Dit zijn radio knoppen:"
+msgstr "These are radio buttons:"
 
 #: src/audio_preferences_controller.cpp:51
 msgid "Radio 1."
@@ -87,7 +87,7 @@ msgstr "Radio 1."
 
 #: src/audio_preferences_controller.cpp:54
 msgid "Radio 2, with another large label."
-msgstr "Radio 2, met een andere lange label."
+msgstr "Radio 2, with another large label."
 
 #: src/audio_preferences_controller.cpp:57
 msgid "Radio 3"
@@ -95,61 +95,60 @@ msgstr "Radio 3"
 
 #: src/license_preferences_controller.cpp:19
 msgid "These is a checkbox:"
-msgstr "Dit is a selectievakje:"
+msgstr "These is a checkbox:"
 
 #: src/license_preferences_controller.cpp:21
 msgid "true"
-msgstr "waar"
+msgstr "true"
 
 #: src/license_preferences_controller.cpp:22
 msgid "false"
-msgstr "onwaar"
+msgstr "false"
 
 #: src/license_preferences_controller.cpp:23
 msgid "other"
-msgstr "anders"
+msgstr "other"
 
 #: src/license_preferences_controller.cpp:26
 msgid "These is a disabled checkbox:"
-msgstr "Dit is een uitgeschakelde selectievakje:"
+msgstr "These is a disabled checkbox:"
 
 #: src/license_preferences_controller.cpp:28
 msgid "Checkbox, with a pretty large label."
-msgstr "Selectievakje, met een behoorlijk lange label."
+msgstr "Checkbox, with a pretty large label."
 
 #: src/license_preferences_controller.cpp:32
 msgid "This is a selection box at the bottom:"
-msgstr "Dit is een selectie box aan de onderkand:"
+msgstr "This is a selection box at the bottom:"
 
 #: src/license_preferences_controller.cpp:36
 msgid "second"
-msgstr "tweede"
+msgstr "second"
 
 #: src/main_window_controller.cpp:20
 msgid "Preferences"
-msgstr "Voorkeuren"
+msgstr "Preferences"
 
 #: src/main_window_controller.cpp:26
-msgid "TTauri Demo - Preferences"
-msgstr "TTauri Demo - Voorkeuren"
+msgid "HikoGUI Demo - Preferences"
+msgstr "HikoGUI Demo - Preferences"
 
 #: src/main_window_controller.cpp:34
 msgid "Hello 世界"
-msgstr "Hallo 世界"
+msgstr "Hello 世界"
 
 #: src/main_window_controller.cpp:36
 msgid "Hello world"
-msgstr "Hallo weereld"
+msgstr "Hello world"
 
 #: src/main_window_controller.cpp:38
 msgid "Hello earthlings"
-msgstr "Hallo aardlingen"
+msgstr "Hello earthlings"
 
 #: src/preferences_controller.cpp:19
 msgid "Audio"
-msgstr "Geluid"
+msgstr "Audio"
 
 #: src/preferences_controller.cpp:22
 msgid "License"
-msgstr "Licentie"
-
+msgstr "License"

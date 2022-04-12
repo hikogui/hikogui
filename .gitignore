@@ -378,7 +378,7 @@ MigrationBackup/
 
 # Auto-generated at build
 Doxyfile.doc
-ttauri_tests\[1\]_include.cmake
+hikogui_tests\[1\]_include.cmake
 
 Makefile
 link.txt

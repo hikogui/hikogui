@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: src/application_controller.cpp:57
-msgid "ttauri_demo"
+msgid "hikogui_demo"
 msgstr ""
 
 #: src/audio_preferences_controller.cpp:17
@@ -130,7 +130,7 @@ msgid "Preferences"
 msgstr ""
 
 #: src/main_window_controller.cpp:26
-msgid "TTauri Demo - Preferences"
+msgid "HikoGUI Demo - Preferences"
 msgstr ""
 
 #: src/main_window_controller.cpp:34

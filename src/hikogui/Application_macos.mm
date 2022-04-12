@@ -20,7 +20,6 @@ Application_macos::Application_macos(std::shared_ptr<ApplicationDelegate> delega
     Application_base(std::move(delegate), passArguments(argc, argv), nullptr, 0),
     argc(argc), argv(argv)
 {
-#if defined(TTAURI_GUI_ENABLED)
     @autoreleasepool {
         [NSApplication sharedApplication];
 
@@ -51,7 +50,6 @@ Application_macos::Application_macos(std::shared_ptr<ApplicationDelegate> delega
         
         [NSApp activateIgnoringOtherApps:YES];
     }
-#endif
 }
 
 Application_macos::~Application_macos()
