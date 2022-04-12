@@ -8,7 +8,7 @@
 #include "../GFX/pipeline_SDF_device_shared.hpp"
 #include "../loop.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 selection_widget::~selection_widget()
 {
@@ -56,13 +56,13 @@ widget_constraints const& selection_widget::set_constraints() noexcept
 {
     _layout = {};
 
-    ttlet extra_size = extent2{theme().size + theme().margin * 2.0f, theme().margin * 2.0f};
+    hilet extra_size = extent2{theme().size + theme().margin * 2.0f, theme().margin * 2.0f};
 
     _constraints =
         max(_unknown_label_widget->set_constraints() + extra_size, _current_label_widget->set_constraints() + extra_size);
 
-    ttlet overlay_constraints = _overlay_widget->set_constraints();
-    for (ttlet& child : _menu_button_widgets) {
+    hilet overlay_constraints = _overlay_widget->set_constraints();
+    for (hilet& child : _menu_button_widgets) {
         // extra_size is already implied in the menu button widgets.
         _constraints = max(_constraints, child->constraints());
     }
@@ -75,7 +75,7 @@ widget_constraints const& selection_widget::set_constraints() noexcept
         std::max(_constraints.maximum.width(), overlay_constraints.maximum.width() + extra_size.width());
     _constraints.margins = theme().margin;
 
-    tt_axiom(_constraints.holds_invariant());
+    hi_axiom(_constraints.holds_invariant());
     return _constraints;
 }
 
@@ -84,7 +84,7 @@ void selection_widget::set_layout(widget_layout const& layout) noexcept
     if (compare_store(_layout, layout)) {
         _left_box_rectangle = aarectangle{0.0f, 0.0f, theme().size, layout.height()};
         _chevrons_glyph = font_book().find_glyph(elusive_icon::ChevronUp);
-        ttlet chevrons_glyph_bbox = _chevrons_glyph.get_bounding_box();
+        hilet chevrons_glyph_bbox = _chevrons_glyph.get_bounding_box();
         _chevrons_rectangle = align(_left_box_rectangle, chevrons_glyph_bbox * theme().icon_size, alignment::middle_center());
 
         // The unknown_label is located to the right of the selection box icon.
@@ -99,14 +99,14 @@ void selection_widget::set_layout(widget_layout const& layout) noexcept
     // from the point of view of the selection widget.
     // The overlay should start on the same left edge as the selection box and the same width.
     // The height of the overlay should be the maximum height, which will show all the options.
-    ttlet overlay_width = std::clamp(
+    hilet overlay_width = std::clamp(
         layout.width() - theme().size,
         _overlay_widget->constraints().minimum.width(),
         _overlay_widget->constraints().maximum.width());
-    ttlet overlay_height = _overlay_widget->constraints().preferred.height();
-    ttlet overlay_x = theme().size;
-    ttlet overlay_y = std::round(layout.height() * 0.5f - overlay_height * 0.5f);
-    ttlet overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};
+    hilet overlay_height = _overlay_widget->constraints().preferred.height();
+    hilet overlay_x = theme().size;
+    hilet overlay_y = std::round(layout.height() * 0.5f - overlay_height * 0.5f);
+    hilet overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};
     _overlay_rectangle = make_overlay_rectangle(overlay_rectangle_request);
     _overlay_widget->set_layout(layout.transform(_overlay_rectangle, 20.0f));
 
@@ -133,7 +133,7 @@ void selection_widget::draw(draw_context const& context) noexcept
 
 bool selection_widget::handle_event(mouse_event const& event) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
     auto handled = super::handle_event(event);
 
     if (event.cause.leftButton) {
@@ -149,12 +149,12 @@ bool selection_widget::handle_event(mouse_event const& event) noexcept
 
 bool selection_widget::handle_event(command command) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
     request_relayout();
 
     if (*enabled and _has_options) {
         switch (command) {
-            using enum tt::command;
+            using enum hi::command;
         case gui_activate:
         case gui_enter:
             if (!_selecting) {
@@ -179,7 +179,7 @@ bool selection_widget::handle_event(command command) noexcept
 
 [[nodiscard]] hitbox selection_widget::hitbox_test(point3 position) const noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     if (*visible and *enabled) {
         auto r = _overlay_widget->hitbox_test_from_parent(position);
@@ -196,13 +196,13 @@ bool selection_widget::handle_event(command command) noexcept
 
 [[nodiscard]] bool selection_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
-    tt_axiom(is_gui_thread());
-    return *visible and *enabled and any(group & tt::keyboard_focus_group::normal) and _has_options;
+    hi_axiom(is_gui_thread());
+    return *visible and *enabled and any(group & hi::keyboard_focus_group::normal) and _has_options;
 }
 
 [[nodiscard]] color selection_widget::focus_color() const noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     if (*enabled and _has_options and _selecting) {
         return theme().color(theme_color::accent);
@@ -213,7 +213,7 @@ bool selection_widget::handle_event(command command) noexcept
 
 [[nodiscard]] menu_button_widget const *selection_widget::get_first_menu_button() const noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     if (ssize(_menu_button_widgets) != 0) {
         return _menu_button_widgets.front();
@@ -224,9 +224,9 @@ bool selection_widget::handle_event(command command) noexcept
 
 [[nodiscard]] menu_button_widget const *selection_widget::get_selected_menu_button() const noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
-    for (ttlet& button : _menu_button_widgets) {
+    for (hilet& button : _menu_button_widgets) {
         if (button->state() == button_state::on) {
             return button;
         }
@@ -236,7 +236,7 @@ bool selection_widget::handle_event(command command) noexcept
 
 void selection_widget::start_selecting() noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     _selecting = true;
     _overlay_widget->visible = true;
@@ -252,7 +252,7 @@ void selection_widget::start_selecting() noexcept
 
 void selection_widget::stop_selecting() noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
     _selecting = false;
     _overlay_widget->visible = false;
     request_redraw();
@@ -262,7 +262,7 @@ void selection_widget::stop_selecting() noexcept
  */
 void selection_widget::repopulate_options() noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
     _column_widget->clear();
     _menu_button_widgets.clear();
     _menu_button_tokens.clear();
@@ -277,7 +277,7 @@ void selection_widget::repopulate_options() noexcept
 
     // If any of the options has a an icon, all of the options should show the icon.
     auto show_icon = false;
-    for (ttlet& label : options) {
+    for (hilet& label : options) {
         show_icon |= static_cast<bool>(label.icon);
     }
 
@@ -322,7 +322,7 @@ void selection_widget::draw_outline(draw_context const& context) noexcept
 
 void selection_widget::draw_left_box(draw_context const& context) noexcept
 {
-    ttlet corner_radii = tt::corner_radii{theme().rounding_radius, 0.0f, theme().rounding_radius, 0.0f};
+    hilet corner_radii = hi::corner_radii{theme().rounding_radius, 0.0f, theme().rounding_radius, 0.0f};
     context.draw_box(layout(), translate_z(0.1f) * _left_box_rectangle, focus_color(), corner_radii);
 }
 
@@ -331,4 +331,4 @@ void selection_widget::draw_chevrons(draw_context const& context) noexcept
     context.draw_glyph(layout(), translate_z(0.2f) * _chevrons_rectangle, label_color(), _chevrons_glyph);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

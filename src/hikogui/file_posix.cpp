@@ -11,7 +11,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 File::File(URL const &location, AccessMode accessMode) : accessMode(accessMode), location(location)
 {
@@ -68,7 +68,7 @@ File::File(URL const &location, AccessMode accessMode) : accessMode(accessMode),
 
     int permissions = 0666;
 
-    ttlet fileName = location.nativePath();
+    hilet fileName = location.nativePath();
     if ((fileHandle = ::open(fileName.data(), openFlags, permissions)) == -1) {
         throw io_error("{}: Could not open file. '{}'", location(), get_last_error_message());
     }
@@ -91,7 +91,7 @@ void File::close()
 
 std::size_t File::fileSize(URL const &url)
 {
-    ttlet name = url.nativePath();
+    hilet name = url.nativePath();
 
     struct ::stat statbuf;
 
@@ -102,4 +102,4 @@ std::size_t File::fileSize(URL const &url)
     return narrow_cast<std::size_t>(statbuf.st_size);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

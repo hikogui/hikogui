@@ -9,7 +9,7 @@
 #include <span>
 #include <cstddef>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Read a single bit from span of bytes
  * Bits are ordered LSB first.
@@ -23,7 +23,7 @@ namespace tt::inline v1 {
     auto bit_index = index & 7;
     ++index;
 
-    tt_axiom(byte_index < buffer.size());
+    hi_axiom(byte_index < buffer.size());
     return static_cast<bool>(static_cast<uint8_t>(buffer[byte_index] >> bit_index) & 1);
 }
 
@@ -47,7 +47,7 @@ namespace tt::inline v1 {
  */
 [[nodiscard]] inline std::size_t get_bits(std::span<std::byte const> buffer, std::size_t &index, std::size_t length) noexcept
 {
-    tt_axiom(length <= sizeof(std::size_t) * CHAR_BIT);
+    hi_axiom(length <= sizeof(std::size_t) * CHAR_BIT);
 
     auto value = 0;
 
@@ -56,7 +56,7 @@ namespace tt::inline v1 {
     while (todo) {
         auto byte_index = index >> 3;
         auto bit_index = index & 7;
-        tt_axiom(byte_index < buffer.size());
+        hi_axiom(byte_index < buffer.size());
 
         auto available_bits = 8 - bit_index;
         auto nr_bits = std::min(available_bits, todo);
@@ -74,4 +74,4 @@ namespace tt::inline v1 {
     return value;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

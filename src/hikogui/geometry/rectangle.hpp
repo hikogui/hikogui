@@ -9,7 +9,7 @@
 #include "../alignment.hpp"
 #include <array>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A rectangle / parallelogram in 3D space.
  *
@@ -51,9 +51,9 @@ public:
 
     constexpr rectangle(aarectangle rhs) noexcept
     {
-        ttlet p0 = get<0>(rhs);
-        ttlet p3 = get<3>(rhs);
-        ttlet diagonal = static_cast<f32x4>(p3 - p0);
+        hilet p0 = get<0>(rhs);
+        hilet p3 = get<3>(rhs);
+        hilet diagonal = static_cast<f32x4>(p3 - p0);
 
         origin = p0;
         right = vector3{diagonal.x000()};
@@ -67,9 +67,9 @@ public:
 
     constexpr rectangle &operator=(aarectangle rhs) noexcept
     {
-        ttlet p0 = get<0>(rhs);
-        ttlet p3 = get<3>(rhs);
-        ttlet diagonal = static_cast<f32x4>(p3 - p0);
+        hilet p0 = get<0>(rhs);
+        hilet p3 = get<3>(rhs);
+        hilet diagonal = static_cast<f32x4>(p3 - p0);
 
         origin = p0;
         right = vector3{diagonal.x000()};
@@ -95,7 +95,7 @@ public:
      */
     [[nodiscard]] constexpr bool is_rectangle() const noexcept
     {
-        ttlet dp = dot(right, up);
+        hilet dp = dot(right, up);
         return -std::numeric_limits<float>::min() <= dp and dp <= std::numeric_limits<float>::min();
     }
 
@@ -105,7 +105,7 @@ public:
      */
     [[nodiscard]] constexpr bool is_axis_aligned() const noexcept
     {
-        ttlet should_be_zeroes = static_cast<f32x4>(right).yz00() | static_cast<f32x4>(up)._00xz();
+        hilet should_be_zeroes = static_cast<f32x4>(right).yz00() | static_cast<f32x4>(up)._00xz();
         return not should_be_zeroes;
     }
 
@@ -116,19 +116,19 @@ public:
         auto left_bottom = f32x4::broadcast(std::numeric_limits<float>::max());
         auto right_top = f32x4::broadcast(-std::numeric_limits<float>::max());
 
-        ttlet p0 = rhs.origin;
+        hilet p0 = rhs.origin;
         left_bottom = min(left_bottom, static_cast<f32x4>(p0));
         right_top = max(right_top, static_cast<f32x4>(p0));
 
-        ttlet p1 = p0 + rhs.right;
+        hilet p1 = p0 + rhs.right;
         left_bottom = min(left_bottom, static_cast<f32x4>(p1));
         right_top = max(right_top, static_cast<f32x4>(p1));
 
-        ttlet p2 = p0 + rhs.up;
+        hilet p2 = p0 + rhs.up;
         left_bottom = min(left_bottom, static_cast<f32x4>(p2));
         right_top = max(right_top, static_cast<f32x4>(p2));
 
-        ttlet p3 = p2 + rhs.right;
+        hilet p3 = p2 + rhs.right;
         left_bottom = min(left_bottom, static_cast<f32x4>(p3));
         right_top = max(right_top, static_cast<f32x4>(p3));
 
@@ -168,7 +168,7 @@ public:
         case 1: return get<1>(*this);
         case 2: return get<2>(*this);
         case 3: return get<3>(*this);
-        default: tt_no_default();
+        default: hi_no_default();
         }
     }
 
@@ -202,9 +202,9 @@ public:
      */
     [[nodiscard]] friend constexpr rectangle operator+(rectangle const &lhs, extent2 rhs) noexcept
     {
-        ttlet extra_right = normalize(lhs.right) * rhs.width();
-        ttlet extra_up = normalize(lhs.up) * rhs.height();
-        ttlet extra_diagonal = extra_right + extra_up;
+        hilet extra_right = normalize(lhs.right) * rhs.width();
+        hilet extra_up = normalize(lhs.up) * rhs.height();
+        hilet extra_diagonal = extra_right + extra_up;
 
         return rectangle{lhs.origin - extra_diagonal, lhs.right + 2.0f * extra_right, lhs.up + 2.0f * extra_up};
     }
@@ -224,9 +224,9 @@ public:
      */
     [[nodiscard]] friend constexpr rectangle operator-(rectangle const &lhs, extent2 rhs) noexcept
     {
-        ttlet extra_right = normalize(lhs.right) * rhs.width();
-        ttlet extra_up = normalize(lhs.up) * rhs.height();
-        ttlet extra_diagonal = extra_right + extra_up;
+        hilet extra_right = normalize(lhs.right) * rhs.width();
+        hilet extra_up = normalize(lhs.up) * rhs.height();
+        hilet extra_diagonal = extra_right + extra_up;
 
         return rectangle{lhs.origin + extra_diagonal, lhs.right - 2.0f * extra_right, lhs.up - 2.0f * extra_up};
     }
@@ -268,4 +268,4 @@ public:
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

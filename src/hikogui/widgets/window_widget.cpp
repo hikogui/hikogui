@@ -13,7 +13,7 @@
 #include "../GUI/gui_system.hpp"
 #include "../scoped_buffer.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 void window_widget::constructor_implementation() noexcept
 {
@@ -31,7 +31,7 @@ void window_widget::constructor_implementation() noexcept
     } else if (theme().operating_system == operating_system::macos) {
         _toolbar->make_widget<window_traffic_lights_widget>();
     } else {
-        tt_no_default();
+        hi_no_default();
     }
 
     _content = std::make_unique<grid_widget>(window, this, _content_delegate);
@@ -46,8 +46,8 @@ void window_widget::constructor_implementation() noexcept
 widget_constraints const &window_widget::set_constraints() noexcept
 {
     _layout = {};
-    ttlet toolbar_constraints = _toolbar->set_constraints();
-    ttlet content_constraints = _content->set_constraints();
+    hilet toolbar_constraints = _toolbar->set_constraints();
+    hilet content_constraints = _content->set_constraints();
 
     auto minimum_width = std::max(
         toolbar_constraints.margins.left() + toolbar_constraints.minimum.width() + toolbar_constraints.margins.right(),
@@ -82,8 +82,8 @@ widget_constraints const &window_widget::set_constraints() noexcept
 
     // The operating system also has a minimum and maximum size, these sizes
     // are more important than the calculated sizes.
-    ttlet minimum_window_size = os_settings::minimum_window_size();
-    ttlet maximum_window_size = os_settings::maximum_window_size();
+    hilet minimum_window_size = os_settings::minimum_window_size();
+    hilet maximum_window_size = os_settings::maximum_window_size();
 
     inplace_max(minimum_width, minimum_window_size.width());
     inplace_max(minimum_height, minimum_window_size.height());
@@ -100,8 +100,8 @@ widget_constraints const &window_widget::set_constraints() noexcept
 void window_widget::set_layout(widget_layout const &layout) noexcept
 {
     if (compare_store(_layout, layout)) {
-        ttlet toolbar_height = _toolbar->constraints().preferred.height();
-        ttlet between_margin = std::max(_toolbar->constraints().margins.bottom(), _content->constraints().margins.top());
+        hilet toolbar_height = _toolbar->constraints().preferred.height();
+        hilet between_margin = std::max(_toolbar->constraints().margins.bottom(), _content->constraints().margins.top());
 
         _toolbar_rectangle = aarectangle{
             point2{
@@ -128,33 +128,33 @@ void window_widget::draw(draw_context const &context) noexcept
 
 hitbox window_widget::hitbox_test(point3 position) const noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     constexpr float BORDER_WIDTH = 10.0f;
 
-    ttlet can_resize_w = _constraints.minimum.width() != _constraints.maximum.width();
-    ttlet can_resize_h = _constraints.minimum.height() != _constraints.maximum.height();
+    hilet can_resize_w = _constraints.minimum.width() != _constraints.maximum.width();
+    hilet can_resize_h = _constraints.minimum.height() != _constraints.maximum.height();
 
-    ttlet is_on_l_edge = position.x() <= BORDER_WIDTH;
-    ttlet is_on_r_edge = position.x() >= (layout().width() - BORDER_WIDTH);
-    ttlet is_on_b_edge = position.y() <= BORDER_WIDTH;
-    ttlet is_on_t_edge = position.y() >= (layout().height() - BORDER_WIDTH);
+    hilet is_on_l_edge = position.x() <= BORDER_WIDTH;
+    hilet is_on_r_edge = position.x() >= (layout().width() - BORDER_WIDTH);
+    hilet is_on_b_edge = position.y() <= BORDER_WIDTH;
+    hilet is_on_t_edge = position.y() >= (layout().height() - BORDER_WIDTH);
 
-    ttlet is_on_lb_corner = is_on_l_edge and is_on_b_edge;
-    ttlet is_on_rb_corner = is_on_r_edge and is_on_b_edge;
-    ttlet is_on_lt_corner = is_on_r_edge and is_on_t_edge;
-    ttlet is_on_rt_corner = is_on_l_edge and is_on_t_edge;
-    ttlet is_on_corner = is_on_lb_corner or is_on_rb_corner or is_on_lt_corner or is_on_rt_corner;
+    hilet is_on_lb_corner = is_on_l_edge and is_on_b_edge;
+    hilet is_on_rb_corner = is_on_r_edge and is_on_b_edge;
+    hilet is_on_lt_corner = is_on_r_edge and is_on_t_edge;
+    hilet is_on_rt_corner = is_on_l_edge and is_on_t_edge;
+    hilet is_on_corner = is_on_lb_corner or is_on_rb_corner or is_on_lt_corner or is_on_rt_corner;
 
-    ttlet is_on_l_resizer = can_resize_w and is_on_l_edge;
-    ttlet is_on_r_resizer = can_resize_w and is_on_r_edge;
-    ttlet is_on_b_resizer = can_resize_h and is_on_b_edge;
-    ttlet is_on_t_resizer = can_resize_h and is_on_t_edge;
+    hilet is_on_l_resizer = can_resize_w and is_on_l_edge;
+    hilet is_on_r_resizer = can_resize_w and is_on_r_edge;
+    hilet is_on_b_resizer = can_resize_h and is_on_b_edge;
+    hilet is_on_t_resizer = can_resize_h and is_on_t_edge;
 
-    ttlet is_on_lb_resizer = is_on_l_resizer and is_on_b_resizer;
-    ttlet is_on_rb_resizer = is_on_r_resizer and is_on_b_resizer;
-    ttlet is_on_lt_resizer = is_on_l_resizer and is_on_t_resizer;
-    ttlet is_on_rt_resizer = is_on_r_resizer and is_on_t_resizer;
+    hilet is_on_lb_resizer = is_on_l_resizer and is_on_b_resizer;
+    hilet is_on_rb_resizer = is_on_r_resizer and is_on_b_resizer;
+    hilet is_on_lt_resizer = is_on_l_resizer and is_on_t_resizer;
+    hilet is_on_rt_resizer = is_on_r_resizer and is_on_t_resizer;
 
     auto r = hitbox{this, position};
     if (is_on_lb_resizer) {
@@ -194,7 +194,7 @@ hitbox window_widget::hitbox_test(point3 position) const noexcept
 
 [[nodiscard]] color window_widget::background_color() noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
     return theme().color(theme_color::fill, semantic_layer);
 }
 
@@ -202,7 +202,7 @@ hitbox window_widget::hitbox_test(point3 position) const noexcept
  */
 void window_widget::set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
     _left_resize_border_has_priority = left;
     _right_resize_border_has_priority = right;
     _bottom_resize_border_has_priority = bottom;
@@ -211,16 +211,16 @@ void window_widget::set_resize_border_priority(bool left, bool right, bool botto
 
 [[nodiscard]] grid_widget &window_widget::content() noexcept
 {
-    tt_axiom(is_gui_thread());
-    tt_axiom(_content);
+    hi_axiom(is_gui_thread());
+    hi_axiom(_content);
     return *_content;
 }
 
 [[nodiscard]] toolbar_widget &window_widget::toolbar() noexcept
 {
-    tt_axiom(is_gui_thread());
-    tt_axiom(_toolbar);
+    hi_axiom(is_gui_thread());
+    hi_axiom(_toolbar);
     return *_toolbar;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

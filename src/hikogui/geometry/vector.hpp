@@ -6,7 +6,7 @@
 
 #include "../rapid/numeric_array.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 namespace geo {
 
 /** A high-level geometric vector
@@ -31,7 +31,7 @@ public:
     template<int E>
     requires(E < D) [[nodiscard]] constexpr vector(vector<E> const& other) noexcept : _v(static_cast<f32x4>(other))
     {
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     /** Construct a vector from a higher dimension vector.
@@ -43,7 +43,7 @@ public:
         for (std::size_t i = D; i != E; ++i) {
             _v[i] = 0.0f;
         }
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     /** Convert a vector to its f32x4-nummeric_array.
@@ -57,7 +57,7 @@ public:
      */
     [[nodiscard]] constexpr explicit vector(f32x4 const& other) noexcept : _v(other)
     {
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     /** Construct a empty vector / zero length.
@@ -130,14 +130,14 @@ public:
      */
     [[nodiscard]] constexpr vector operator-() const noexcept
     {
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
         return vector{-_v};
     }
 
     template<int E>
     requires(E <= D) constexpr vector& operator+=(vector<E> const& rhs) noexcept
     {
-        tt_axiom(holds_invariant() && rhs.holds_invariant());
+        hi_axiom(holds_invariant() && rhs.holds_invariant());
         _v = _v + static_cast<f32x4>(rhs);
         return *this;
     }
@@ -149,7 +149,7 @@ public:
      */
     [[nodiscard]] constexpr friend vector operator+(vector const& lhs, vector const& rhs) noexcept
     {
-        tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
+        hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return vector{lhs._v + rhs._v};
     }
 
@@ -160,7 +160,7 @@ public:
      */
     [[nodiscard]] constexpr friend vector operator-(vector const& lhs, vector const& rhs) noexcept
     {
-        tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
+        hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return vector{lhs._v - rhs._v};
     }
 
@@ -171,7 +171,7 @@ public:
      */
     [[nodiscard]] constexpr friend vector operator*(vector const& lhs, float const& rhs) noexcept
     {
-        tt_axiom(lhs.holds_invariant());
+        hi_axiom(lhs.holds_invariant());
         return vector{lhs._v * rhs};
     }
 
@@ -182,7 +182,7 @@ public:
      */
     [[nodiscard]] constexpr friend vector operator*(float const& lhs, vector const& rhs) noexcept
     {
-        tt_axiom(rhs.holds_invariant());
+        hi_axiom(rhs.holds_invariant());
         return vector{f32x4::broadcast(lhs) * rhs._v};
     }
 
@@ -193,7 +193,7 @@ public:
      */
     [[nodiscard]] constexpr friend bool operator==(vector const& lhs, vector const& rhs) noexcept
     {
-        tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
+        hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return lhs._v == rhs._v;
     }
 
@@ -203,7 +203,7 @@ public:
      */
     [[nodiscard]] constexpr friend float squared_hypot(vector const& rhs) noexcept
     {
-        tt_axiom(rhs.holds_invariant());
+        hi_axiom(rhs.holds_invariant());
         return squared_hypot<element_mask>(rhs._v);
     }
 
@@ -213,7 +213,7 @@ public:
      */
     [[nodiscard]] constexpr friend float hypot(vector const& rhs) noexcept
     {
-        tt_axiom(rhs.holds_invariant());
+        hi_axiom(rhs.holds_invariant());
         return hypot<element_mask>(rhs._v);
     }
 
@@ -223,7 +223,7 @@ public:
      */
     [[nodiscard]] constexpr friend float rcp_hypot(vector const& rhs) noexcept
     {
-        tt_axiom(rhs.holds_invariant());
+        hi_axiom(rhs.holds_invariant());
         return rcp_hypot<element_mask>(rhs._v);
     }
 
@@ -233,7 +233,7 @@ public:
      */
     [[nodiscard]] constexpr friend vector normalize(vector const& rhs) noexcept
     {
-        tt_axiom(rhs.holds_invariant());
+        hi_axiom(rhs.holds_invariant());
         return vector{normalize<element_mask>(rhs._v)};
     }
 
@@ -244,7 +244,7 @@ public:
      */
     [[nodiscard]] constexpr friend float dot(vector const& lhs, vector const& rhs) noexcept
     {
-        tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
+        hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return dot<element_mask>(lhs._v, rhs._v);
     }
 
@@ -255,7 +255,7 @@ public:
      */
     [[nodiscard]] constexpr friend float det(vector const& lhs, vector const& rhs) noexcept requires (D == 2)
     {
-        tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
+        hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return lhs.x() * rhs.y() - lhs.y() * rhs.x();
     }
 
@@ -317,7 +317,7 @@ public:
         } else if constexpr (D == 3) {
             return std::format("({}, {}, {})", rhs._v.x(), rhs._v.y(), rhs._v.z());
         } else {
-            tt_static_no_default();
+            hi_static_no_default();
         }
     }
 
@@ -338,7 +338,7 @@ private:
  */
 [[nodiscard]] constexpr vector<2> cross(vector<2> const& rhs) noexcept
 {
-    tt_axiom(rhs.holds_invariant());
+    hi_axiom(rhs.holds_invariant());
     return vector<2>{cross_2D(static_cast<f32x4>(rhs))};
 }
 
@@ -348,7 +348,7 @@ private:
  */
 [[nodiscard]] constexpr vector<2> normal(vector<2> const& rhs) noexcept
 {
-    tt_axiom(rhs.holds_invariant());
+    hi_axiom(rhs.holds_invariant());
     return normalize(cross(rhs));
 }
 
@@ -360,7 +360,7 @@ private:
 [[nodiscard]] constexpr vector<3> normal(vector<3> const& rhs, float angle) noexcept
 {
     if (angle != 0.0f) {
-        tt_not_implemented();
+        hi_not_implemented();
     }
     return normal(vector<2>{f32x4{rhs}.xy00()});
 }
@@ -375,7 +375,7 @@ private:
  */
 [[nodiscard]] constexpr float cross(vector<2> const& lhs, vector<2> const& rhs) noexcept
 {
-    tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
+    hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
     return cross_2D(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs));
 }
 
@@ -386,7 +386,7 @@ private:
  */
 [[nodiscard]] constexpr vector<3> cross(vector<3> const& lhs, vector<3> const& rhs) noexcept
 {
-    tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
+    hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
     return vector<3>{cross_3D(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs))};
 }
 
@@ -395,29 +395,29 @@ private:
 using vector2 = geo::vector<2>;
 using vector3 = geo::vector<3>;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<typename CharT>
-struct std::formatter<tt::geo::vector<2>, CharT> {
+struct std::formatter<hi::geo::vector<2>, CharT> {
     auto parse(auto& pc)
     {
         return pc.end();
     }
 
-    auto format(tt::geo::vector<2> const& t, auto& fc)
+    auto format(hi::geo::vector<2> const& t, auto& fc)
     {
         return std::vformat_to(fc.out(), "({}, {})", std::make_format_args(t.x(), t.y()));
     }
 };
 
 template<typename CharT>
-struct std::formatter<tt::geo::vector<3>, CharT> : std::formatter<float, CharT> {
+struct std::formatter<hi::geo::vector<3>, CharT> : std::formatter<float, CharT> {
     auto parse(auto& pc)
     {
         return pc.end();
     }
 
-    auto format(tt::geo::vector<3> const& t, auto& fc)
+    auto format(hi::geo::vector<3> const& t, auto& fc)
     {
         return std::vformat_to(fc.out(), "({}, {}, {})", std::make_format_args(t.x(), t.y(), t.z()));
     }

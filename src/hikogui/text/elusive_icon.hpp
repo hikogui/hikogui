@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 enum class elusive_icon : char32_t {
     AddressBook = 0xf102,

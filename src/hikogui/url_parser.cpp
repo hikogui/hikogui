@@ -9,7 +9,7 @@
 #include "memory.hpp"
 #include <numeric>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 static bool is_urlchar_scheme(char c, std::size_t i)
 {
@@ -21,7 +21,7 @@ std::string url_encode_part(std::string_view const input, std::function<bool(cha
     std::string s;
     s.reserve(input.size() + input.size() / 2);
 
-    for (ttlet c : input) {
+    for (hilet c : input) {
         if (unreserved_char_check(c)) {
             // Unreserved character.
             s += c;
@@ -44,7 +44,7 @@ std::string url_decode(std::string_view const input, bool const plus_to_space) n
 
     uint8_t value = 0;
     int8_t nibble_result;
-    for (ttlet c : input) {
+    for (hilet c : input) {
         switch (state) {
         case state_t::Idle:
             switch (c) {
@@ -84,7 +84,7 @@ std::string url_decode(std::string_view const input, bool const plus_to_space) n
             }
             break;
 
-        default: tt_no_default();
+        default: hi_no_default();
         }
     }
 
@@ -124,13 +124,13 @@ static void parse_path_split(url_parts &parts, std::vector<std::string_view> seg
         // First strip off the slash in front of the drive letter.
         segments.erase(segments.begin());
 
-        ttlet i = segments.at(0).find(':');
+        hilet i = segments.at(0).find(':');
         parts.drive = segments.at(0).substr(0, i);
         segments.at(0) = segments.at(0).substr(i + 1);
 
     } else if (segments.size() >= 1 && segments.at(0).find(':') != std::string_view::npos) {
         // A drive letter as the first segment of a path.
-        ttlet i = segments.at(0).find(':');
+        hilet i = segments.at(0).find(':');
         parts.drive = segments.at(0).substr(0, i);
         segments.at(0) = segments.at(0).substr(i + 1);
     }
@@ -157,7 +157,7 @@ static void parse_url_split(url_parts &parts, std::string_view url)
     // Find the scheme. A scheme must be at least two character
     // to differentiate it from a directory.
     for (std::size_t i = 0; i < url.size(); i++) {
-        ttlet c = url.at(i);
+        hilet c = url.at(i);
         if (c == ':' && i >= 2) {
             parts.scheme = url.substr(0, i);
             url = url.substr(i + 1);
@@ -170,14 +170,14 @@ static void parse_url_split(url_parts &parts, std::string_view url)
     }
 
     // Find the fragment.
-    ttlet fragment_i = url.rfind('#');
+    hilet fragment_i = url.rfind('#');
     if (fragment_i != url.npos) {
         parts.fragment = url.substr(fragment_i + 1);
         url = url.substr(0, fragment_i);
     }
 
     // Find the query.
-    ttlet query_i = url.rfind('?');
+    hilet query_i = url.rfind('?');
     if (query_i != url.npos) {
         parts.query = url.substr(query_i + 1);
         url = url.substr(0, query_i);
@@ -188,9 +188,9 @@ static void parse_url_split(url_parts &parts, std::string_view url)
 
 static std::size_t generate_size_guess(url_parts const &parts, bool only_path) noexcept
 {
-    ttlet path_size = parts.authority.size() + parts.drive.size() + parts.segments.size() + 10;
+    hilet path_size = parts.authority.size() + parts.drive.size() + parts.segments.size() + 10;
 
-    ttlet start_size = only_path ? path_size : path_size + parts.scheme.size() + parts.query.size() + parts.fragment.size();
+    hilet start_size = only_path ? path_size : path_size + parts.scheme.size() + parts.query.size() + parts.fragment.size();
 
     return std::accumulate(parts.segments.begin(), parts.segments.end(), start_size, [](std::size_t a, auto b) {
         return a + b.size();
@@ -275,13 +275,13 @@ url_parts parse_path(std::string_view path, std::string &encodedPath) noexcept
     parts.scheme = "file"; // string_view of char[] literal has now ownership issues.
 
     // Detect path seperator.
-    ttlet forward_count = std::count(path.begin(), path.end(), '/');
-    ttlet backward_count = std::count(path.begin(), path.end(), '\\');
+    hilet forward_count = std::count(path.begin(), path.end(), '/');
+    hilet backward_count = std::count(path.begin(), path.end(), '\\');
 
     encodedPath = (forward_count >= backward_count) ? url_encode_part(path, is_urlchar_pchar_forward) :
                                                       url_encode_part(path, is_urlchar_pchar_backward);
 
-    ttlet sep = (forward_count >= backward_count) ? '/' : '\\';
+    hilet sep = (forward_count >= backward_count) ? '/' : '\\';
 
     // Parse the path.
     parse_path_split(parts, encodedPath, sep);
@@ -340,9 +340,9 @@ url_parts concatenate_url_path(url_parts lhs, url_parts const &rhs) noexcept
 
 std::string concatenate_url_path(std::string_view const lhs, std::string_view const rhs) noexcept
 {
-    ttlet lhs_parts = parse_url(lhs);
-    ttlet rhs_parts = parse_url(rhs);
-    ttlet merged_parts = concatenate_url_path(lhs_parts, rhs_parts);
+    hilet lhs_parts = parse_url(lhs);
+    hilet rhs_parts = parse_url(rhs);
+    hilet merged_parts = concatenate_url_path(lhs_parts, rhs_parts);
     return generate_url(merged_parts);
 }
 
@@ -366,14 +366,14 @@ std::string concatenate_url_filename(url_parts lhs, std::string_view rhs) noexce
 
 std::string concatenate_url_filename(std::string_view lhs, std::string_view rhs) noexcept
 {
-    ttlet lhs_parts = parse_url(lhs);
+    hilet lhs_parts = parse_url(lhs);
     return concatenate_url_filename(lhs_parts, rhs);
 }
 
 std::string filename_from_path(std::string_view path) noexcept
 {
-    ttlet i_fwd = path.rfind('/');
-    ttlet i_bwd = path.rfind('\\');
+    hilet i_fwd = path.rfind('/');
+    hilet i_bwd = path.rfind('\\');
 
     if (i_fwd != path.npos && (i_bwd == path.npos || i_bwd < i_fwd)) {
         return std::string{path.substr(i_fwd + 1)};
@@ -384,4 +384,4 @@ std::string filename_from_path(std::string_view path) noexcept
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

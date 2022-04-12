@@ -116,22 +116,22 @@ int main(int argc, char* argv[])
     write(os, "#include <cstdint>\n\n");
 
     write(os, "extern const uint8_t {}_srd[{}];\n", identifier, input_data.size());
-    write(os, "extern tt::static_resource_item {}_sri;\n", identifier);
+    write(os, "extern hi::static_resource_item {}_sri;\n", identifier);
     write(os, "extern \"C\" {{\n");
-    write(os, "extern tt::static_resource_item const *{}_srip;\n\n", identifier);
+    write(os, "extern hi::static_resource_item const *{}_srip;\n\n", identifier);
     write(os, "}}\n");
 
     write(os, "alignas(8) const uint8_t {}_srd[{}] = {{\n", identifier, input_data.size());
     write_bytes_as_text(os, input_data);
     write(os, "}};\n\n");
 
-    write(os, "tt::static_resource_item {}_sri = {{\n", identifier);
+    write(os, "hi::static_resource_item {}_sri = {{\n", identifier);
     write(os, "    nullptr,\n");
     write(os, "    \"{}\",\n", input_filename.generic_string());
     write(os, "    {{reinterpret_cast<std::byte const *>({}_srd), {}}}\n", identifier, input_data.size());
     write(os, "}};\n\n");
 
     write(os, "extern \"C\" {{\n");
-    write(os, "tt::static_resource_item const *{}_srip = tt::static_resource_item::add(&{}_sri);\n", identifier, identifier);
+    write(os, "hi::static_resource_item const *{}_srip = hi::static_resource_item::add(&{}_sri);\n", identifier, identifier);
     write(os, "}}\n\n");
 }

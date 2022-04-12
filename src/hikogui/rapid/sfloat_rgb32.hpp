@@ -7,7 +7,7 @@
 #include "numeric_array.hpp"
 #include <algorithm>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class sfloat_rgb32 {
     // Red, Green, Blue in binary32 (native endian).
@@ -48,4 +48,4 @@ public:
     [[nodiscard]] friend bool operator==(sfloat_rgb32 const &lhs, sfloat_rgb32 const &rhs) noexcept = default;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

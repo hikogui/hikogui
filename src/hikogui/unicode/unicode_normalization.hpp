@@ -11,7 +11,7 @@
 #include <string>
 #include <string_view>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 enum class unicode_normalization_mask {
     decompose_canonical = 1 << to_underlying(unicode_decomposition_type::canonical),
@@ -88,7 +88,7 @@ enum class unicode_normalization_mask {
     case U'\r': return unicode_normalization_mask::decompose_newline_to_CRLF;
     case U'\u2029': return unicode_normalization_mask::decompose_newline_to_PS;
     case U' ': return unicode_normalization_mask::decompose_newline_to_SP;
-    default: tt_no_default();
+    default: hi_no_default();
     }
 }
 
@@ -153,4 +153,4 @@ unicode_NFKD(std::u32string_view text, unicode_normalization_mask normalization_
 std::u32string
 unicode_NFKC(std::u32string_view text, unicode_normalization_mask normalization_mask = unicode_normalization_mask::NFKD) noexcept;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

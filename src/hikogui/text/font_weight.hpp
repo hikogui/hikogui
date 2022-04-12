@@ -12,7 +12,7 @@
 #include <ostream>
 #include <array>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 enum class font_weight {
     Thin, ///< 100: Thin / Hairline
@@ -27,7 +27,7 @@ enum class font_weight {
     ExtraBlack, ///< 950: Extra-black / Ultra-black
 };
 
-inline ttlet font_weight_from_string_table = std::unordered_map<std::string, font_weight>{
+inline hilet font_weight_from_string_table = std::unordered_map<std::string, font_weight>{
     {"thin", font_weight::Thin},
     {"hairline", font_weight::Thin},
     {"ultra-light", font_weight::ExtraLight},
@@ -65,7 +65,7 @@ inline ttlet font_weight_from_string_table = std::unordered_map<std::string, fon
 
 [[nodiscard]] inline font_weight font_weight_from_string(std::string_view rhs)
 {
-    ttlet i = font_weight_from_string_table.find(to_lower(rhs));
+    hilet i = font_weight_from_string_table.find(to_lower(rhs));
     if (i == font_weight_from_string_table.end()) {
         throw parse_error(std::format("Unknown font-weight {}", rhs));
     }
@@ -85,7 +85,7 @@ inline ttlet font_weight_from_string_table = std::unordered_map<std::string, fon
     case font_weight::ExtraBold: return "ExtraBold";
     case font_weight::Black: return "Black";
     case font_weight::ExtraBlack: return "ExtraBlack";
-    default: tt_no_default();
+    default: hi_no_default();
     }
 }
 
@@ -96,14 +96,14 @@ inline ttlet font_weight_from_string_table = std::unordered_map<std::string, fon
 
 [[nodiscard]] inline char to_char(font_weight const &x) noexcept
 {
-    ttlet x_ = static_cast<int>(x);
-    tt_axiom(x_ >= 0 && x_ <= 9);
+    hilet x_ = static_cast<int>(x);
+    hi_axiom(x_ >= 0 && x_ <= 9);
     return static_cast<char>('0' + x_);
 }
 
 [[nodiscard]] constexpr int to_int(font_weight const &x) noexcept
 {
-    ttlet x_ = (static_cast<int>(x) + 1) * 100;
+    hilet x_ = (static_cast<int>(x) + 1) * 100;
     return (x_ == 1000) ? 950 : x_;
 }
 
@@ -149,18 +149,18 @@ constexpr auto font_weight_alternative_table = font_weight_alternative_table_gen
 
 [[nodiscard]] constexpr font_weight font_weight_alterative(font_weight weight, int i) noexcept
 {
-    tt_axiom(i >= 0 && i < 10);
+    hi_axiom(i >= 0 && i < 10);
     auto w = static_cast<int>(weight);
-    tt_axiom(w >= 0 && w < 10);
+    hi_axiom(w >= 0 && w < 10);
     return font_weight_alternative_table[(w * 10) + i];
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<typename CharT>
-struct std::formatter<tt::font_weight, CharT> : std::formatter<char const *, CharT> {
-    auto format(tt::font_weight const &t, auto &fc)
+struct std::formatter<hi::font_weight, CharT> : std::formatter<char const *, CharT> {
+    auto format(hi::font_weight const &t, auto &fc)
     {
-        return std::formatter<char const *, CharT>::format(tt::to_const_string(t), fc);
+        return std::formatter<char const *, CharT>::format(hi::to_const_string(t), fc);
     }
 };

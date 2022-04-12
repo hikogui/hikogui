@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <cstddef>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 namespace detail {
 
 class unicode_mask_entry {
@@ -22,8 +22,8 @@ public:
     constexpr unicode_mask_entry(char32_t first, char32_t last) noexcept :
         _value(static_cast<uint32_t>((first << size_bit) | (last - first)))
     {
-        tt_axiom(last >= first);
-        tt_axiom(last - first <= capacity());
+        hi_axiom(last >= first);
+        hi_axiom(last - first <= capacity());
     }
 
     constexpr unicode_mask_entry(unicode_mask_entry const &) noexcept = default;
@@ -147,8 +147,8 @@ public:
 
         auto lhs_it = begin(lhs._entries);
         auto rhs_it = begin(rhs._entries);
-        ttlet lhs_end = end(lhs._entries);
-        ttlet rhs_end = end(rhs._entries);
+        hilet lhs_end = end(lhs._entries);
+        hilet rhs_end = end(rhs._entries);
 
         while (lhs_it != lhs_end or rhs_it != rhs_end) {
             // clang-format off
@@ -158,8 +158,8 @@ public:
                 (lhs_it->begin() < rhs_it->begin()) ? lhs_it : rhs_it;
             // clang-format on
 
-            ttlet new_begin = r._entries.empty() ? it->begin() : std::max(r._entries.back().end(), it->begin());
-            ttlet new_end = it->end();
+            hilet new_begin = r._entries.empty() ? it->begin() : std::max(r._entries.back().end(), it->begin());
+            hilet new_end = it->end();
             if (new_begin < new_end) {
                 r._entries.emplace_back(new_begin, new_end);
                 r._size += new_end - new_begin;
@@ -198,4 +198,4 @@ private:
     entries_type _entries = {};
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

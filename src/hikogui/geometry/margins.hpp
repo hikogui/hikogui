@@ -6,7 +6,7 @@
 
 #include "../rapid/numeric_array.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class margins {
 public:
@@ -87,4 +87,4 @@ private:
     f32x4 _v;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

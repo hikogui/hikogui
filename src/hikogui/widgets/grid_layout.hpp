@@ -12,7 +12,7 @@
 #include <cstddef>
 #include <functional>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Grid layout is used to layout widgets along an axis.
  *
@@ -136,7 +136,7 @@ public:
      */
     [[nodiscard]] float get_position(std::size_t index) const noexcept
     {
-        tt_axiom(index < num_cells());
+        hi_axiom(index < num_cells());
         return get_position(_cells.begin(), _cells.begin() + index);
     }
 
@@ -148,8 +148,8 @@ public:
      */
     [[nodiscard]] float get_size(std::size_t first, std::size_t last) const noexcept
     {
-        tt_axiom(first <= last);
-        tt_axiom(last <= _cells.size());
+        hi_axiom(first <= last);
+        hi_axiom(last <= _cells.size());
         return get_size(_cells.begin() + first, _cells.begin() + last);
     }
 
@@ -192,8 +192,8 @@ public:
      */
     std::pair<float, float> get_positions(std::size_t first, std::size_t last) const noexcept
     {
-        ttlet position = get_position(first);
-        ttlet size = get_size(first, last);
+        hilet position = get_position(first);
+        hilet size = get_size(first, last);
         return {position, position + size};
     }
 
@@ -331,4 +331,4 @@ private:
     [[nodiscard]] bool holds_invariant() const noexcept;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

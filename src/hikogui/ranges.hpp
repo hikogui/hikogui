@@ -12,7 +12,7 @@
 #include <type_traits>
 #include <vector>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Make a vector from a view.
  * This function will make a vector with a copy of the elements of a view.
@@ -55,4 +55,4 @@ template<typename View>
     return r;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

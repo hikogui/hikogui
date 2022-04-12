@@ -17,7 +17,7 @@
 #include <memory>
 #include <ostream>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 enum class audio_device_state { active, disabled, not_present, unplugged };
 
@@ -114,37 +114,37 @@ public:
      *
      * @return The current configured input speaker mapping.
      */
-    [[nodiscard]] virtual tt::speaker_mapping input_speaker_mapping() const noexcept = 0;
+    [[nodiscard]] virtual hi::speaker_mapping input_speaker_mapping() const noexcept = 0;
 
     /** Set the input speaker mapping.
      *
      * @param speaker_mapping The input speaker mapping to configure the device to.
      */
-    virtual void set_input_speaker_mapping(tt::speaker_mapping speaker_mapping) noexcept = 0;
+    virtual void set_input_speaker_mapping(hi::speaker_mapping speaker_mapping) noexcept = 0;
 
     /** Speaker mapping that are available in the current configuration.
      *
      * @return A list of speaker mappings.
      */
-    [[nodiscard]] virtual std::vector<tt::speaker_mapping> available_input_speaker_mappings() const noexcept = 0;
+    [[nodiscard]] virtual std::vector<hi::speaker_mapping> available_input_speaker_mappings() const noexcept = 0;
 
     /** Get the currently configured output speaker mapping.
      *
      * @return The current configured output speaker mapping.
      */
-    [[nodiscard]] virtual tt::speaker_mapping output_speaker_mapping() const noexcept = 0;
+    [[nodiscard]] virtual hi::speaker_mapping output_speaker_mapping() const noexcept = 0;
 
     /** Set the output speaker mapping.
      *
      * @param speaker_mapping The output speaker mapping to configure the device to.
      */
-    virtual void set_output_speaker_mapping(tt::speaker_mapping speaker_mapping) noexcept = 0;
+    virtual void set_output_speaker_mapping(hi::speaker_mapping speaker_mapping) noexcept = 0;
 
     /** Speaker mapping that are available in the current configuration.
      *
      * @return A list of speaker mappings.
      */
-    [[nodiscard]] virtual std::vector<tt::speaker_mapping> available_output_speaker_mappings() const noexcept = 0;
+    [[nodiscard]] virtual std::vector<hi::speaker_mapping> available_output_speaker_mappings() const noexcept = 0;
 
     /** Start a session. Start a session, which will cause data to be stream to
      * and from the audio device and the delegate's process_audio() function to
@@ -171,13 +171,13 @@ private:
     std::shared_ptr<audio_device_delegate> delegate = {};
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 
 template<typename CharT>
-struct std::formatter<tt::audio_device_state, CharT> : std::formatter<char const *, CharT> {
-    auto format(tt::audio_device_state const &t, auto &fc)
+struct std::formatter<hi::audio_device_state, CharT> : std::formatter<char const *, CharT> {
+    auto format(hi::audio_device_state const &t, auto &fc)
     {
-        return std::formatter<char const *, CharT>::format(tt::to_const_string(t), fc);
+        return std::formatter<char const *, CharT>::format(hi::to_const_string(t), fc);
     }
 };

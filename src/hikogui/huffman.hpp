@@ -8,7 +8,7 @@
 #include <span>
 #include <vector>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<typename T>
 class huffman_tree {
@@ -39,7 +39,7 @@ public:
      */
     void add(int symbol, int code, int code_length) noexcept
     {
-        tt_axiom(code_length >= 1);
+        hi_axiom(code_length >= 1);
 
         int offset = 0;
         while (--code_length > 0) {
@@ -49,7 +49,7 @@ public:
             int value = tree[offset];
 
             // value may not be a leaf.
-            tt_axiom(value <= 0);
+            hi_axiom(value <= 0);
 
             if (value == 0) {
                 // Unused node entry. Point to the first of two new entries.
@@ -68,7 +68,7 @@ public:
         int select = code & 1;
         offset += select;
 
-        tt_axiom(tree[offset] == 0);
+        hi_axiom(tree[offset] == 0);
         tree[offset] = narrow_cast<T>(symbol + 1);
     }
 
@@ -117,7 +117,7 @@ public:
      */
     [[nodiscard]] static huffman_tree from_lengths(uint8_t const *lengths, std::size_t nr_symbols)
     {
-        tt_axiom(nr_symbols < std::numeric_limits<T>::min());
+        hi_axiom(nr_symbols < std::numeric_limits<T>::min());
 
         struct symbol_length_t {
             T symbol;
@@ -134,7 +134,7 @@ public:
         }
 
         // Sort the table based on the length of the code, followed by symbol
-        std::sort(symbol_lengths.begin(), symbol_lengths.end(), [](ttlet &a, ttlet &b) {
+        std::sort(symbol_lengths.begin(), symbol_lengths.end(), [](hilet &a, hilet &b) {
             if (a.length == b.length) {
                 return a.symbol < b.symbol;
             } else {
@@ -166,4 +166,4 @@ public:
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

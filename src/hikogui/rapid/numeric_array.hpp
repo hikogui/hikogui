@@ -44,11 +44,11 @@
 #include <bit>
 #include <climits>
 
-tt_warning_push();
+hi_warning_push();
 // C4702 unreachable code: Suppressed due intrinsics and std::is_constant_evaluated()
-tt_msvc_suppress(4702);
+hi_msvc_suppress(4702);
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<numeric_limited T, std::size_t N>
 struct numeric_array {
@@ -192,9 +192,9 @@ struct numeric_array {
 #endif
 #if defined(TT_HAS_SSE4_1)
             if constexpr (is_u8x4 and other.is_f32x4) {
-                ttlet i32_4 = _mm_cvtps_epi32(other.reg());
-                ttlet i16_8 = _mm_packs_epi32(i32_4, _mm_setzero_si128());
-                ttlet u8_16 = _mm_packus_epi16(i16_8, _mm_setzero_si128());
+                hilet i32_4 = _mm_cvtps_epi32(other.reg());
+                hilet i16_8 = _mm_packs_epi32(i32_4, _mm_setzero_si128());
+                hilet u8_16 = _mm_packus_epi16(i16_8, _mm_setzero_si128());
                 v = numeric_array{u8_16};
                 return;
             } else if constexpr (is_i64x4 and other.is_i32x4) {
@@ -692,7 +692,7 @@ struct numeric_array {
     constexpr explicit operator bool() const noexcept
     {
         if constexpr (std::is_floating_point_v<T>) {
-            ttlet ep = epsilon();
+            hilet ep = epsilon();
             // check if any of the elements is outside of epsilon range,
             return static_cast<bool>(gt(-ep, *this) | gt(*this, ep));
         } else {
@@ -703,14 +703,14 @@ struct numeric_array {
     [[nodiscard]] constexpr T const &operator[](std::size_t i) const noexcept
     {
         static_assert(std::endian::native == std::endian::little, "Indices need to be reversed on big endian machines");
-        tt_axiom(i < N);
+        hi_axiom(i < N);
         return v[i];
     }
 
     [[nodiscard]] constexpr T &operator[](std::size_t i) noexcept
     {
         static_assert(std::endian::native == std::endian::little, "Indices need to be reversed on big endian machines");
-        tt_axiom(i < N);
+        hi_axiom(i < N);
         return v[i];
     }
 
@@ -1480,7 +1480,7 @@ struct numeric_array {
      * @return Result of the dot product.
      */
     template<std::size_t Mask>
-    [[nodiscard]] tt_force_inline friend constexpr T dot(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] hi_force_inline friend constexpr T dot(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
 #if defined(TT_HAS_SSE4_1)
@@ -1522,7 +1522,7 @@ struct numeric_array {
      * @return Result of the hypot-squared calculation.
      */
     template<std::size_t Mask>
-    [[nodiscard]] tt_force_inline friend constexpr T squared_hypot(numeric_array const& rhs) noexcept
+    [[nodiscard]] hi_force_inline friend constexpr T squared_hypot(numeric_array const& rhs) noexcept
     {
         return dot<Mask>(rhs, rhs);
     }
@@ -1558,19 +1558,19 @@ struct numeric_array {
     template<std::size_t Mask>
     [[nodiscard]] friend constexpr numeric_array normalize(numeric_array const &rhs) noexcept
     {
-        tt_axiom(rhs.is_vector());
+        hi_axiom(rhs.is_vector());
 
         if (not std::is_constant_evaluated()) {
 #if defined(TT_HAS_SSE4_1)
             if constexpr (is_f32x4) {
-                ttlet rhs_ = rhs.reg();
-                ttlet tmp = _mm_mul_ps(_mm_rsqrt_ps(_mm_dp_ps(rhs_, rhs_, (Mask << 4) | 0xf)), rhs_);
+                hilet rhs_ = rhs.reg();
+                hilet tmp = _mm_mul_ps(_mm_rsqrt_ps(_mm_dp_ps(rhs_, rhs_, (Mask << 4) | 0xf)), rhs_);
                 return numeric_array{_mm_insert_ps(tmp, tmp, ~Mask & 0xf)};
             }
 #endif
         }
 
-        ttlet rcp_hypot_ = rcp_hypot<Mask>(rhs);
+        hilet rcp_hypot_ = rcp_hypot<Mask>(rhs);
 
         auto r = numeric_array{};
         for (std::size_t i = 0; i != N; ++i) {
@@ -2290,7 +2290,7 @@ struct numeric_array {
 
     [[nodiscard]] friend constexpr numeric_array operator%(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
-        ttlet div_result = floor(lhs / rhs);
+        hilet div_result = floor(lhs / rhs);
         return lhs - (div_result * rhs);
     }
 
@@ -2461,7 +2461,7 @@ struct numeric_array {
 #endif
         }
 
-        tt_axiom(N % 2 == 0);
+        hi_axiom(N % 2 == 0);
 
         auto r = numeric_array{};
 
@@ -2515,7 +2515,7 @@ struct numeric_array {
 #endif
         }
 
-        tt_axiom(N % 2 == 0);
+        hi_axiom(N % 2 == 0);
 
         auto r = numeric_array{};
 
@@ -2551,7 +2551,7 @@ struct numeric_array {
      */
     [[nodiscard]] friend constexpr numeric_array cross_2D(numeric_array const &rhs) noexcept requires(N >= 2)
     {
-        tt_axiom(rhs.z() == 0.0f && rhs.is_vector());
+        hi_axiom(rhs.z() == 0.0f && rhs.is_vector());
         return numeric_array{-rhs.y(), rhs.x()};
     }
 
@@ -2567,9 +2567,9 @@ struct numeric_array {
      */
     [[nodiscard]] friend constexpr float cross_2D(numeric_array const &lhs, numeric_array const &rhs) noexcept requires(N >= 2)
     {
-        ttlet tmp1 = rhs.yxwz();
-        ttlet tmp2 = lhs * tmp1;
-        ttlet tmp3 = hsub(tmp2, tmp2);
+        hilet tmp1 = rhs.yxwz();
+        hilet tmp2 = lhs * tmp1;
+        hilet tmp3 = hsub(tmp2, tmp2);
         return get<0>(tmp3);
     }
 
@@ -2580,13 +2580,13 @@ struct numeric_array {
     [[nodiscard]] constexpr friend numeric_array cross_3D(numeric_array const &lhs, numeric_array const &rhs) noexcept
         requires(N == 4)
     {
-        ttlet a_left = lhs.yzxw();
-        ttlet b_left = rhs.zxyw();
-        ttlet left = a_left * b_left;
+        hilet a_left = lhs.yzxw();
+        hilet b_left = rhs.zxyw();
+        hilet left = a_left * b_left;
 
-        ttlet a_right = lhs.zxyw();
-        ttlet b_right = rhs.yzxw();
-        ttlet right = a_right * b_right;
+        hilet a_right = lhs.zxyw();
+        hilet b_right = rhs.yzxw();
+        hilet right = a_right * b_right;
         return left - right;
     }
 
@@ -2651,8 +2651,8 @@ struct numeric_array {
      */
     [[nodiscard]] friend constexpr numeric_array midpoint(numeric_array const &p1, numeric_array const &p2) noexcept
     {
-        tt_axiom(p1.is_point());
-        tt_axiom(p2.is_point());
+        hi_axiom(p1.is_point());
+        hi_axiom(p2.is_point());
         return (p1 + p2) * 0.5f;
     }
 
@@ -2660,8 +2660,8 @@ struct numeric_array {
      */
     [[nodiscard]] friend constexpr numeric_array reflect_point(numeric_array const &p, numeric_array const anchor) noexcept
     {
-        tt_axiom(p.is_point());
-        tt_axiom(anchor.is_point());
+        hi_axiom(p.is_point());
+        hi_axiom(anchor.is_point());
         return anchor - (p - anchor);
     }
 
@@ -2699,13 +2699,13 @@ struct numeric_array {
             return over;
         }
 
-        ttlet over_alpha = over.wwww();
-        ttlet under_alpha = under.wwww();
+        hilet over_alpha = over.wwww();
+        hilet under_alpha = under.wwww();
 
-        ttlet over_color = over.xyz1();
-        ttlet under_color = under.xyz1();
+        hilet over_color = over.xyz1();
+        hilet under_color = under.xyz1();
 
-        ttlet output_color = over_color * over_alpha + under_color * under_alpha * (T{1} - over_alpha);
+        hilet output_color = over_color * over_alpha + under_color * under_alpha * (T{1} - over_alpha);
 
         return output_color / output_color.www1();
     }
@@ -2770,8 +2770,8 @@ struct numeric_array {
                 }
 
             } else if constexpr (is_i64x2 or is_u64x2) {
-                ttlet lhs_ = _mm_castsi128_pd(lhs.reg());
-                ttlet rhs_ = _mm_castsi128_pd(rhs.reg());
+                hilet lhs_ = _mm_castsi128_pd(lhs.reg());
+                hilet rhs_ = _mm_castsi128_pd(rhs.reg());
 
                 if constexpr (FromElement == 0 and ToElement == 0) {
                     return numeric_array{_mm_castpd_si128(_mm_shuffle_pd(rhs_, lhs_, 0b10))};
@@ -2990,15 +2990,15 @@ using f64x2 = numeric_array<double, 2>;
 using f64x4 = numeric_array<double, 4>;
 using f64x8 = numeric_array<double, 8>;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<class T, std::size_t N>
-struct std::tuple_size<tt::numeric_array<T, N>> : std::integral_constant<std::size_t, N> {
+struct std::tuple_size<hi::numeric_array<T, N>> : std::integral_constant<std::size_t, N> {
 };
 
 template<std::size_t I, class T, std::size_t N>
-struct std::tuple_element<I, tt::numeric_array<T, N>> {
+struct std::tuple_element<I, hi::numeric_array<T, N>> {
     using type = T;
 };
 
-tt_warning_pop();
+hi_warning_pop();

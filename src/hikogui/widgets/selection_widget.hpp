@@ -20,7 +20,7 @@
 #include <optional>
 #include <future>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A graphical control element that allows the user to choose only one of a
  * predefined set of mutually exclusive options.
@@ -128,4 +128,4 @@ private:
     void draw_chevrons(draw_context const &context) noexcept;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

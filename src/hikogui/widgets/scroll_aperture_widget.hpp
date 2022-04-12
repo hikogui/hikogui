@@ -6,7 +6,7 @@
 
 #include "widget.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class scroll_aperture_widget : public widget {
 public:
@@ -21,8 +21,8 @@ public:
 
     scroll_aperture_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
     {
-        tt_axiom(is_gui_thread());
-        tt_axiom(parent);
+        hi_axiom(is_gui_thread());
+        hi_axiom(parent);
 
         // The aperture-widget will not draw itself, only its selected content.
         semantic_layer = parent->semantic_layer;
@@ -40,8 +40,8 @@ public:
     template<typename Widget, typename... Args>
     Widget &make_widget(Args &&...args) noexcept
     {
-        tt_axiom(is_gui_thread());
-        tt_axiom(not _content);
+        hi_axiom(is_gui_thread());
+        hi_axiom(not _content);
 
         auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
         auto &ref = *tmp;
@@ -69,16 +69,16 @@ public:
     {
         _layout = {};
 
-        tt_axiom(_content);
-        ttlet content_constraints = _content->set_constraints();
+        hi_axiom(_content);
+        hilet content_constraints = _content->set_constraints();
 
-        ttlet minimum_size = extent2{
+        hilet minimum_size = extent2{
             content_constraints.margins.left() + content_constraints.minimum.width() + content_constraints.margins.right(),
             content_constraints.margins.top() + content_constraints.minimum.height() + content_constraints.margins.bottom()};
-        ttlet preferred_size = extent2{
+        hilet preferred_size = extent2{
             content_constraints.margins.left() + content_constraints.preferred.width() + content_constraints.margins.right(),
             content_constraints.margins.top() + content_constraints.preferred.height() + content_constraints.margins.bottom()};
-        ttlet maximum_size = extent2{
+        hilet maximum_size = extent2{
             content_constraints.margins.left() + content_constraints.maximum.width() + content_constraints.margins.right(),
             content_constraints.margins.top() + content_constraints.maximum.height() + content_constraints.margins.bottom()};
 
@@ -87,11 +87,11 @@ public:
 
     void set_layout(widget_layout const &layout) noexcept override
     {
-        ttlet content_constraints = _content->constraints();
-        ttlet margins = content_constraints.margins;
+        hilet content_constraints = _content->constraints();
+        hilet margins = content_constraints.margins;
 
         if (compare_store(_layout, layout)) {
-            ttlet preferred_size = content_constraints.preferred;
+            hilet preferred_size = content_constraints.preferred;
 
             aperture_width = layout.width() - margins.left() - margins.right();
             aperture_height = layout.height() - margins.bottom() - margins.top();
@@ -103,8 +103,8 @@ public:
         }
 
         // Make sure the offsets are limited to the scrollable area.
-        ttlet offset_x_max = std::max(*content_width - *aperture_width, 0.0f);
-        ttlet offset_y_max = std::max(*content_height - *aperture_height, 0.0f);
+        hilet offset_x_max = std::max(*content_width - *aperture_width, 0.0f);
+        hilet offset_y_max = std::max(*content_height - *aperture_height, 0.0f);
         offset_x = std::clamp(std::round(*offset_x), 0.0f, offset_x_max);
         offset_y = std::clamp(std::round(*offset_y), 0.0f, offset_y_max);
 
@@ -127,7 +127,7 @@ public:
 
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override
     {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
 
         if (*visible and *enabled) {
             auto r = _content->hitbox_test_from_parent(position);
@@ -144,15 +144,15 @@ public:
 
     bool handle_event(mouse_event const &event) noexcept override
     {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
         auto handled = super::handle_event(event);
 
         if (event.type == mouse_event::Type::Wheel) {
             handled = true;
-            ttlet new_offset_x = *offset_x + event.wheelDelta.x() * theme().scale;
-            ttlet new_offset_y = *offset_y + event.wheelDelta.y() * theme().scale;
-            ttlet max_offset_x = std::max(0.0f, *content_width - *aperture_width);
-            ttlet max_offset_y = std::max(0.0f, *content_height - *aperture_height);
+            hilet new_offset_x = *offset_x + event.wheelDelta.x() * theme().scale;
+            hilet new_offset_y = *offset_y + event.wheelDelta.y() * theme().scale;
+            hilet max_offset_x = std::max(0.0f, *content_width - *aperture_width);
+            hilet max_offset_y = std::max(0.0f, *content_height - *aperture_height);
 
             offset_x = std::clamp(new_offset_x, 0.0f, max_offset_x);
             offset_y = std::clamp(new_offset_y, 0.0f, max_offset_y);
@@ -162,7 +162,7 @@ public:
         return handled;
     }
 
-    void scroll_to_show(tt::aarectangle to_show) noexcept override
+    void scroll_to_show(hi::aarectangle to_show) noexcept override
     {
         auto safe_rectangle = intersect(_layout.rectangle(), _layout.clipping_rectangle);
         float delta_x = 0.0f;
@@ -208,4 +208,4 @@ private:
     decltype(offset_y)::token_type _offset_y_cbt;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

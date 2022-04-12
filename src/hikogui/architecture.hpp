@@ -16,7 +16,7 @@
 #include <TargetConditionals.h>
 #endif
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 #define TT_BT_DEBUG 'D'
 #define TT_BT_RELEASE 'R'
@@ -199,11 +199,11 @@ constexpr bool x86_64_v4 = true;
 constexpr bool x86_64_v4 = false;
 #endif
 
-#define tt_stringify_(x) #x
-#define tt_stringify(x) tt_stringify_(x)
+#define hi_stringify_(x) #x
+#define hi_stringify(x) hi_stringify_(x)
 
-#define tt_cat_(a, b) a ## b
-#define tt_cat(a, b) tt_cat_(a, b)
+#define hi_cat_(a, b) a ## b
+#define hi_cat(a, b) hi_cat_(a, b)
 
 #if TT_COMPILER == TT_CC_MSVC
 
@@ -211,69 +211,69 @@ constexpr bool x86_64_v4 = false;
  * 
  * This marker allows the compiler to do certain optimization.
  */
-#define tt_unreachable() __assume(0)
+#define hi_unreachable() __assume(0)
 
 /** Mark an expression as true.
  *
- * The expression inside tt_assume() can be used by the compiler
+ * The expression inside hi_assume() can be used by the compiler
  * to optimize the code (before and after) based on the fact that
  * the expression is true.
  */
-#define tt_assume(condition) __assume(condition)
+#define hi_assume(condition) __assume(condition)
 
 /** 
  */
-#define tt_force_inline __forceinline
-#define tt_no_inline __declspec(noinline)
-#define tt_restrict __restrict
-#define tt_warning_push() _Pragma("warning( push )")
-#define tt_warning_pop() _Pragma("warning( pop )")
-#define tt_msvc_pragma(a) _Pragma(a)
-#define tt_msvc_suppress(code) _Pragma(tt_stringify(warning(disable:code)))
-#define tt_clang_suppress(a)
+#define hi_force_inline __forceinline
+#define hi_no_inline __declspec(noinline)
+#define hi_restrict __restrict
+#define hi_warning_push() _Pragma("warning( push )")
+#define hi_warning_pop() _Pragma("warning( pop )")
+#define hi_msvc_pragma(a) _Pragma(a)
+#define hi_msvc_suppress(code) _Pragma(hi_stringify(warning(disable:code)))
+#define hi_clang_suppress(a)
 
 /** Attribute to export a function, class, variable in the shared library or dll.
  */
-#define tt_export __declspec(dllexport)
+#define hi_export __declspec(dllexport)
 
 #elif TT_COMPILER == TT_CC_CLANG
-#define tt_unreachable() __builtin_unreachable()
-#define tt_assume(condition) __builtin_assume(static_cast<bool>(condition))
-#define tt_force_inline inline __attribute__((always_inline))
-#define tt_no_inline __attribute__((noinline))
-#define tt_restrict __restrict__
-#define tt_warning_push() _Pragma("warning(push)")
-#define tt_warning_pop() _Pragma("warning(push)")
-#define tt_msvc_pragma(a)
-#define tt_clang_suppress(a) _Pragma(tt_stringify(clang diagnostic ignored a))
-#define tt_export
+#define hi_unreachable() __builtin_unreachable()
+#define hi_assume(condition) __builtin_assume(static_cast<bool>(condition))
+#define hi_force_inline inline __attribute__((always_inline))
+#define hi_no_inline __attribute__((noinline))
+#define hi_restrict __restrict__
+#define hi_warning_push() _Pragma("warning(push)")
+#define hi_warning_pop() _Pragma("warning(push)")
+#define hi_msvc_pragma(a)
+#define hi_clang_suppress(a) _Pragma(hi_stringify(clang diagnostic ignored a))
+#define hi_export
 
 #elif TT_COMPILER == TT_CC_GCC
-#define tt_unreachable() __builtin_unreachable()
-#define tt_assume(condition) \
+#define hi_unreachable() __builtin_unreachable()
+#define hi_assume(condition) \
     do { \
         if (!(condition)) \
-            tt_unreachable(); \
+            hi_unreachable(); \
     } while (false)
-#define tt_force_inline inline __attribute__((always_inline))
-#define tt_no_inline __attribute__((noinline))
-#define tt_restrict __restrict__
-#define tt_warning_push() _Pragma("warning(push)")
-#define tt_warning_pop() _Pragma("warning(pop)")
-#define tt_msvc_pragma(a)
-#define tt_clang_suppress(a)
+#define hi_force_inline inline __attribute__((always_inline))
+#define hi_no_inline __attribute__((noinline))
+#define hi_restrict __restrict__
+#define hi_warning_push() _Pragma("warning(push)")
+#define hi_warning_pop() _Pragma("warning(pop)")
+#define hi_msvc_pragma(a)
+#define hi_clang_suppress(a)
 #define msvc_pragma(a)
 
 #else
-#define tt_unreachable() std::terminate()
-#define tt_assume(condition) static_assert(sizeof(condition) == 1)
-#define tt_force_inline inline
-#define tt_no_inline
-#define tt_restrict
-#define tt_warning_push()
-#define tt_warning_pop()
-#define tt_msvc_pragma(a)
-#define tt_clang_suppress(a)
+#define hi_unreachable() std::terminate()
+#define hi_assume(condition) static_assert(sizeof(condition) == 1)
+#define hi_force_inline inline
+#define hi_no_inline
+#define hi_restrict
+#define hi_warning_push()
+#define hi_warning_pop()
+#define hi_msvc_pragma(a)
+#define hi_clang_suppress(a)
 #define msvc_pragma(a)
 
 #endif
@@ -322,4 +322,4 @@ using file_handle = int;
 #error "file_handle Not implemented."
 #endif
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

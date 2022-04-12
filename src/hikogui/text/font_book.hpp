@@ -19,7 +19,7 @@
 #include <new>
 #include <atomic>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** font_book keeps track of multiple fonts.
  * The font_book is instantiated during application startup
@@ -111,13 +111,13 @@ public:
 
     [[nodiscard]] glyph_ids find_glyph(elusive_icon rhs) const noexcept
     {
-        tt_axiom(_elusive_icon_font);
+        hi_axiom(_elusive_icon_font);
         return _elusive_icon_font->find_glyph(grapheme{static_cast<char32_t>(rhs)});
     }
 
     [[nodiscard]] glyph_ids find_glyph(hikogui_icon rhs) const noexcept
     {
-        tt_axiom(_hikogui_icon_font);
+        hi_axiom(_hikogui_icon_font);
         return _hikogui_icon_font->find_glyph(grapheme{static_cast<char32_t>(rhs)});
     }
 
@@ -138,7 +138,7 @@ private:
     std::vector<std::array<font const *, font_variant::max()>> font_variants;
 
     std::vector<std::unique_ptr<font>> _fonts;
-    std::vector<tt::font *> _font_ptrs;
+    std::vector<hi::font *> _font_ptrs;
 
     /** Same as family_name, but will also have resolved font families from the fallback_chain.
      * Must be cleared when a new font family is registered.
@@ -150,7 +150,7 @@ private:
      */
     mutable std::unordered_map<font_grapheme_id, glyph_ids> glyph_cache;
 
-    [[nodiscard]] std::vector<tt::font *> make_fallback_chain(font_weight weight, bool italic) noexcept;
+    [[nodiscard]] std::vector<hi::font *> make_fallback_chain(font_weight weight, bool italic) noexcept;
 
     /** Morph the set of glyphs using the font's morph tables.
      */
@@ -174,4 +174,4 @@ private:
     void create_family_name_fallback_chain() noexcept;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

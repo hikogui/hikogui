@@ -8,7 +8,7 @@
 #include "URL.hpp"
 #include <string>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Metadata for a library or application.
  */
@@ -77,4 +77,4 @@ public:
     [[nodiscard]] static metadata const &library() noexcept;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

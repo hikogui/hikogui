@@ -22,7 +22,7 @@
 #include <limits>
 #include <chrono>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A text widget.
  *
@@ -79,7 +79,7 @@ public:
 
     /** The horizontal alignment of the text inside the space of the widget.
      */
-    observable<alignment> alignment = tt::alignment::middle_center();
+    observable<alignment> alignment = hi::alignment::middle_center();
 
     /** The style of the text.
      */
@@ -100,14 +100,14 @@ public:
      */
     template<
         typename Text,
-        typename Alignment = tt::alignment,
-        typename VerticalAlignment = tt::vertical_alignment,
-        typename TextStyle = tt::theme_text_style>
+        typename Alignment = hi::alignment,
+        typename VerticalAlignment = hi::vertical_alignment,
+        typename TextStyle = hi::theme_text_style>
     text_widget(
         gui_window& window,
         widget *parent,
         Text&& text,
-        Alignment&& alignment = tt::alignment::middle_center(),
+        Alignment&& alignment = hi::alignment::middle_center(),
         TextStyle&& text_style = theme_text_style::label) noexcept :
         text_widget(window, parent)
     {
@@ -120,7 +120,7 @@ public:
     widget_constraints const& set_constraints() noexcept override;
     void set_layout(widget_layout const& layout) noexcept override;
     void draw(draw_context const& context) noexcept override;
-    bool handle_event(tt::command command) noexcept override;
+    bool handle_event(hi::command command) noexcept override;
     bool handle_event(keyboard_event const& event) noexcept override;
     bool handle_event(mouse_event const& event) noexcept override;
     hitbox hitbox_test(point3 position) const noexcept override;
@@ -228,4 +228,4 @@ private:
     void delete_word_prev() noexcept;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

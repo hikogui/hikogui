@@ -29,10 +29,10 @@ TEST(cast, up_cast_ref)
 {
     cast_tests::B t = cast_tests::B{};
 
-    cast_tests::A &a1 = tt::up_cast<cast_tests::A &>(t);
-    cast_tests::A const &a2 = tt::up_cast<cast_tests::A const &>(t);
-    cast_tests::B &b1 = tt::up_cast<cast_tests::B &>(t);
-    cast_tests::B const &b2 = tt::up_cast<cast_tests::B const &>(t);
+    cast_tests::A &a1 = hi::up_cast<cast_tests::A &>(t);
+    cast_tests::A const &a2 = hi::up_cast<cast_tests::A const &>(t);
+    cast_tests::B &b1 = hi::up_cast<cast_tests::B &>(t);
+    cast_tests::B const &b2 = hi::up_cast<cast_tests::B const &>(t);
     ASSERT_EQ(t.foo(), 5);
     ASSERT_EQ(a1.foo(), 5);
     ASSERT_EQ(a2.foo(), 5);
@@ -44,8 +44,8 @@ TEST(cast, up_cast_const_ref)
 {
     cast_tests::B const t = cast_tests::B{};
 
-    cast_tests::A const &a = tt::up_cast<cast_tests::A const &>(t);
-    cast_tests::B const &b = tt::up_cast<cast_tests::B const &>(t);
+    cast_tests::A const &a = hi::up_cast<cast_tests::A const &>(t);
+    cast_tests::B const &b = hi::up_cast<cast_tests::B const &>(t);
     ASSERT_EQ(t.foo(), 5);
     ASSERT_EQ(a.foo(), 5);
     ASSERT_EQ(b.foo(), 5);
@@ -55,10 +55,10 @@ TEST(cast, up_cast_ptr)
 {
     cast_tests::B t = cast_tests::B{};
 
-    cast_tests::A *a1 = tt::up_cast<cast_tests::A *>(&t);
-    cast_tests::A const *a2 = tt::up_cast<cast_tests::A const *>(&t);
-    cast_tests::B *b1 = tt::up_cast<cast_tests::B *>(&t);
-    cast_tests::B const *b2 = tt::up_cast<cast_tests::B const *>(&t);
+    cast_tests::A *a1 = hi::up_cast<cast_tests::A *>(&t);
+    cast_tests::A const *a2 = hi::up_cast<cast_tests::A const *>(&t);
+    cast_tests::B *b1 = hi::up_cast<cast_tests::B *>(&t);
+    cast_tests::B const *b2 = hi::up_cast<cast_tests::B const *>(&t);
     ASSERT_EQ(t.foo(), 5);
     ASSERT_EQ(a1->foo(), 5);
     ASSERT_EQ(a2->foo(), 5);
@@ -70,8 +70,8 @@ TEST(cast, up_cast_const_ptr)
 {
     cast_tests::B const t = cast_tests::B{};
 
-    cast_tests::A const *a = tt::up_cast<cast_tests::A const *>(&t);
-    cast_tests::B const *b = tt::up_cast<cast_tests::B const *>(&t);
+    cast_tests::A const *a = hi::up_cast<cast_tests::A const *>(&t);
+    cast_tests::B const *b = hi::up_cast<cast_tests::B const *>(&t);
     ASSERT_EQ(t.foo(), 5);
     ASSERT_EQ(a->foo(), 5);
     ASSERT_EQ(b->foo(), 5);
@@ -81,12 +81,12 @@ TEST(cast, up_cast_nullptr)
 {
     cast_tests::B *t = nullptr;
 
-    cast_tests::A *a1 = tt::up_cast<cast_tests::A *>(t);
-    cast_tests::A const *a2 = tt::up_cast<cast_tests::A const *>(t);
-    cast_tests::B *b1 = tt::up_cast<cast_tests::B *>(t);
-    cast_tests::B const *b2 = tt::up_cast<cast_tests::B const *>(t);
-    cast_tests::B *n1 = tt::up_cast<cast_tests::B *>(nullptr);
-    cast_tests::B const *n2 = tt::up_cast<cast_tests::B const *>(nullptr);
+    cast_tests::A *a1 = hi::up_cast<cast_tests::A *>(t);
+    cast_tests::A const *a2 = hi::up_cast<cast_tests::A const *>(t);
+    cast_tests::B *b1 = hi::up_cast<cast_tests::B *>(t);
+    cast_tests::B const *b2 = hi::up_cast<cast_tests::B const *>(t);
+    cast_tests::B *n1 = hi::up_cast<cast_tests::B *>(nullptr);
+    cast_tests::B const *n2 = hi::up_cast<cast_tests::B const *>(nullptr);
     ASSERT_EQ(t, nullptr);
     ASSERT_EQ(a1, nullptr);
     ASSERT_EQ(a2, nullptr);
@@ -100,8 +100,8 @@ TEST(cast, up_cast_const_nullptr)
 {
     cast_tests::B const *t = nullptr;
 
-    cast_tests::A const *a = tt::up_cast<cast_tests::A const *>(t);
-    cast_tests::B const *b = tt::up_cast<cast_tests::B const *>(t);
+    cast_tests::A const *a = hi::up_cast<cast_tests::A const *>(t);
+    cast_tests::B const *b = hi::up_cast<cast_tests::B const *>(t);
     ASSERT_EQ(t, nullptr);
     ASSERT_EQ(a, nullptr);
     ASSERT_EQ(b, nullptr);
@@ -112,10 +112,10 @@ TEST(cast, down_cast_ref)
     cast_tests::B tmp = cast_tests::B{};
     cast_tests::A &t = tmp;
 
-    cast_tests::A &a1 = tt::down_cast<cast_tests::A &>(t);
-    cast_tests::A const &a2 = tt::down_cast<cast_tests::A const &>(t);
-    cast_tests::B &b1 = tt::down_cast<cast_tests::B &>(t);
-    cast_tests::B const &b2 = tt::down_cast<cast_tests::B const &>(t);
+    cast_tests::A &a1 = hi::down_cast<cast_tests::A &>(t);
+    cast_tests::A const &a2 = hi::down_cast<cast_tests::A const &>(t);
+    cast_tests::B &b1 = hi::down_cast<cast_tests::B &>(t);
+    cast_tests::B const &b2 = hi::down_cast<cast_tests::B const &>(t);
     ASSERT_EQ(t.foo(), 5);
     ASSERT_EQ(a1.foo(), 5);
     ASSERT_EQ(a2.foo(), 5);
@@ -128,8 +128,8 @@ TEST(cast, down_cast_const_ref)
     cast_tests::B const tmp = cast_tests::B{};
     cast_tests::A const &t = tmp;
 
-    cast_tests::A const &a = tt::down_cast<cast_tests::A const &>(t);
-    cast_tests::B const &b = tt::down_cast<cast_tests::B const &>(t);
+    cast_tests::A const &a = hi::down_cast<cast_tests::A const &>(t);
+    cast_tests::B const &b = hi::down_cast<cast_tests::B const &>(t);
     ASSERT_EQ(t.foo(), 5);
     ASSERT_EQ(a.foo(), 5);
     ASSERT_EQ(b.foo(), 5);
@@ -140,10 +140,10 @@ TEST(cast, down_cast_ptr)
     cast_tests::B tmp = cast_tests::B{};
     cast_tests::A &t = tmp;
 
-    cast_tests::A *a1 = tt::down_cast<cast_tests::A *>(&t);
-    cast_tests::A const *a2 = tt::down_cast<cast_tests::A const *>(&t);
-    cast_tests::B *b1 = tt::down_cast<cast_tests::B *>(&t);
-    cast_tests::B const *b2 = tt::down_cast<cast_tests::B const *>(&t);
+    cast_tests::A *a1 = hi::down_cast<cast_tests::A *>(&t);
+    cast_tests::A const *a2 = hi::down_cast<cast_tests::A const *>(&t);
+    cast_tests::B *b1 = hi::down_cast<cast_tests::B *>(&t);
+    cast_tests::B const *b2 = hi::down_cast<cast_tests::B const *>(&t);
     ASSERT_EQ(t.foo(), 5);
     ASSERT_EQ(a1->foo(), 5);
     ASSERT_EQ(a2->foo(), 5);
@@ -156,8 +156,8 @@ TEST(cast, down_cast_const_ptr)
     cast_tests::B const tmp = cast_tests::B{};
     cast_tests::A const &t = tmp;
 
-    cast_tests::A const *a = tt::down_cast<cast_tests::A const *>(&t);
-    cast_tests::B const *b = tt::down_cast<cast_tests::B const *>(&t);
+    cast_tests::A const *a = hi::down_cast<cast_tests::A const *>(&t);
+    cast_tests::B const *b = hi::down_cast<cast_tests::B const *>(&t);
     ASSERT_EQ(t.foo(), 5);
     ASSERT_EQ(a->foo(), 5);
     ASSERT_EQ(b->foo(), 5);
@@ -167,12 +167,12 @@ TEST(cast, down_cast_nullptr)
 {
     cast_tests::A *t = nullptr;
 
-    cast_tests::A *a1 = tt::down_cast<cast_tests::A *>(t);
-    cast_tests::A const *a2 = tt::down_cast<cast_tests::A const *>(t);
-    cast_tests::B *b1 = tt::down_cast<cast_tests::B *>(t);
-    cast_tests::B const *b2 = tt::down_cast<cast_tests::B const *>(t);
-    cast_tests::B *n1 = tt::down_cast<cast_tests::B *>(nullptr);
-    cast_tests::B const *n2 = tt::down_cast<cast_tests::B const *>(nullptr);
+    cast_tests::A *a1 = hi::down_cast<cast_tests::A *>(t);
+    cast_tests::A const *a2 = hi::down_cast<cast_tests::A const *>(t);
+    cast_tests::B *b1 = hi::down_cast<cast_tests::B *>(t);
+    cast_tests::B const *b2 = hi::down_cast<cast_tests::B const *>(t);
+    cast_tests::B *n1 = hi::down_cast<cast_tests::B *>(nullptr);
+    cast_tests::B const *n2 = hi::down_cast<cast_tests::B const *>(nullptr);
     ASSERT_EQ(t, nullptr);
     ASSERT_EQ(a1, nullptr);
     ASSERT_EQ(a2, nullptr);
@@ -186,8 +186,8 @@ TEST(cast, down_cast_cont_nullptr)
 {
     cast_tests::A const *t = nullptr;
 
-    cast_tests::A const *a = tt::down_cast<cast_tests::A const *>(t);
-    cast_tests::B const *b = tt::down_cast<cast_tests::B const *>(t);
+    cast_tests::A const *a = hi::down_cast<cast_tests::A const *>(t);
+    cast_tests::B const *b = hi::down_cast<cast_tests::B const *>(t);
     ASSERT_EQ(t, nullptr);
     ASSERT_EQ(a, nullptr);
     ASSERT_EQ(b, nullptr);

@@ -10,7 +10,7 @@
 #include <type_traits>
 #include <Windows.h>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 file::file(URL const &location, access_mode access_mode) : _access_mode(access_mode), _location(location)
 {
@@ -72,18 +72,18 @@ file::file(URL const &location, access_mode access_mode) : _access_mode(access_m
         desiredAccess |= DELETE;
     }
 
-    ttlet fileName = _location.nativeWPath();
+    hilet fileName = _location.nativeWPath();
     if ((_file_handle =
              CreateFileW(fileName.data(), desiredAccess, shareMode, NULL, creationDisposition, flagsAndAttributes, NULL)) !=
         INVALID_HANDLE_VALUE) {
         return;
     }
 
-    ttlet error = GetLastError();
+    hilet error = GetLastError();
     if (any(_access_mode & access_mode::create_directories) and error == ERROR_PATH_NOT_FOUND and
         (creationDisposition == CREATE_ALWAYS or creationDisposition == OPEN_ALWAYS or creationDisposition == CREATE_NEW)) {
         // Retry opening the file, by first creating the directory hierarchy.
-        ttlet directory = _location.urlByRemovingFilename();
+        hilet directory = _location.urlByRemovingFilename();
         file::create_directory_hierarchy(directory);
 
         if ((_file_handle =
@@ -102,7 +102,7 @@ file::~file() noexcept
 
 void file::flush()
 {
-    tt_axiom(_file_handle);
+    hi_axiom(_file_handle);
 
     if (!FlushFileBuffers(_file_handle)) {
         throw io_error(std::format("{}: Could not flush file. '{}'", _location, get_last_error_message()));
@@ -132,7 +132,7 @@ std::size_t file::size() const
 
 std::size_t file::seek(ssize_t offset, seek_whence whence)
 {
-    tt_axiom(_file_handle);
+    hi_axiom(_file_handle);
 
     DWORD whence_;
     switch (whence) {
@@ -140,7 +140,7 @@ std::size_t file::seek(ssize_t offset, seek_whence whence)
     case begin: whence_ = FILE_BEGIN; break;
     case current: whence_ = FILE_CURRENT; break;
     case end: whence_ = FILE_END; break;
-    default: tt_no_default();
+    default: hi_no_default();
     }
 
     LARGE_INTEGER offset_;
@@ -158,7 +158,7 @@ void file::rename(URL const &destination, bool overwrite_existing)
     auto dst_filename = destination.nativeWPath();
     auto dst_filename_wsize = (dst_filename.size() + 1) * sizeof(WCHAR);
 
-    ttlet rename_info_size = narrow_cast<DWORD>(sizeof(_FILE_RENAME_INFO) + dst_filename_wsize);
+    hilet rename_info_size = narrow_cast<DWORD>(sizeof(_FILE_RENAME_INFO) + dst_filename_wsize);
 
     auto rename_info = reinterpret_cast<PFILE_RENAME_INFO>(std::malloc(rename_info_size));
     if (rename_info == nullptr) {
@@ -170,7 +170,7 @@ void file::rename(URL const &destination, bool overwrite_existing)
     rename_info->FileNameLength = narrow_cast<DWORD>(dst_filename_wsize);
     std::memcpy(rename_info->FileName, dst_filename.c_str(), dst_filename_wsize);
 
-    ttlet r = SetFileInformationByHandle(_file_handle, FileRenameInfo, rename_info, rename_info_size);
+    hilet r = SetFileInformationByHandle(_file_handle, FileRenameInfo, rename_info, rename_info_size);
     free(rename_info);
 
     if (!r) {
@@ -182,12 +182,12 @@ void file::rename(URL const &destination, bool overwrite_existing)
  */
 std::size_t file::write(std::byte const *data, std::size_t size, ssize_t offset)
 {
-    tt_axiom(size >= 0);
-    tt_axiom(_file_handle != INVALID_HANDLE_VALUE);
+    hi_axiom(size >= 0);
+    hi_axiom(_file_handle != INVALID_HANDLE_VALUE);
 
     ssize_t total_written_size = 0;
     while (size) {
-        ttlet to_write_size = static_cast<DWORD>(std::min(size, static_cast<std::size_t>(std::numeric_limits<DWORD>::max())));
+        hilet to_write_size = static_cast<DWORD>(std::min(size, static_cast<std::size_t>(std::numeric_limits<DWORD>::max())));
         DWORD written_size = 0;
 
         OVERLAPPED overlapped;
@@ -215,12 +215,12 @@ std::size_t file::write(std::byte const *data, std::size_t size, ssize_t offset)
 
 ssize_t file::read(std::byte *data, std::size_t size, ssize_t offset)
 {
-    tt_axiom(size >= 0);
-    tt_axiom(_file_handle != INVALID_HANDLE_VALUE);
+    hi_axiom(size >= 0);
+    hi_axiom(_file_handle != INVALID_HANDLE_VALUE);
 
     ssize_t total_read_size = 0;
     while (size) {
-        ttlet to_read_size = static_cast<DWORD>(std::min(size, static_cast<std::size_t>(std::numeric_limits<DWORD>::max())));
+        hilet to_read_size = static_cast<DWORD>(std::min(size, static_cast<std::size_t>(std::numeric_limits<DWORD>::max())));
         DWORD read_size = 0;
 
         OVERLAPPED overlapped;
@@ -248,12 +248,12 @@ ssize_t file::read(std::byte *data, std::size_t size, ssize_t offset)
 
 bstring file::read_bstring(std::size_t max_size, ssize_t offset)
 {
-    ttlet offset_ = offset == -1 ? get_seek() : offset;
-    ttlet size_ = std::min(max_size, this->size() - offset_);
+    hilet offset_ = offset == -1 ? get_seek() : offset;
+    hilet size_ = std::min(max_size, this->size() - offset_);
 
     auto r = bstring{};
     r.resize(size_);
-    ttlet bytes_read = read(r.data(), size_, offset_);
+    hilet bytes_read = read(r.data(), size_, offset_);
     r.resize(bytes_read);
 
     if (offset == -1) {
@@ -264,35 +264,35 @@ bstring file::read_bstring(std::size_t max_size, ssize_t offset)
 
 std::string file::read_string(std::size_t max_size)
 {
-    ttlet size_ = size();
+    hilet size_ = size();
     if (size_ > max_size) {
         throw io_error(std::format("{}: File size is larger than max_size.", _location));
     }
 
     auto r = std::string{};
     r.resize(size_);
-    ttlet bytes_read = read(r.data(), size_, 0);
+    hilet bytes_read = read(r.data(), size_, 0);
     r.resize(bytes_read);
     return r;
 }
 
 std::u8string file::read_u8string(std::size_t max_size)
 {
-    ttlet size_ = size();
+    hilet size_ = size();
     if (size_ > max_size) {
         throw io_error(std::format("{}: File size is larger than max_size.", _location));
     }
 
     auto r = std::u8string{};
     r.resize(size_);
-    ttlet bytes_read = read(r.data(), size_, 0);
+    hilet bytes_read = read(r.data(), size_, 0);
     r.resize(bytes_read);
     return r;
 }
 
 std::size_t file::file_size(URL const &url)
 {
-    ttlet name = url.nativeWPath();
+    hilet name = url.nativeWPath();
 
     WIN32_FILE_ATTRIBUTE_DATA attributes;
     if (GetFileAttributesExW(name.data(), GetFileExInfoStandard, &attributes) == 0) {
@@ -311,7 +311,7 @@ void file::create_directory(URL const &url, bool hierarchy)
         throw io_error("Cannot create a root directory.");
     }
 
-    ttlet directory_name = url.nativeWPath();
+    hilet directory_name = url.nativeWPath();
     if (CreateDirectoryW(directory_name.data(), nullptr)) {
         return;
     }
@@ -336,4 +336,4 @@ void file::create_directory_hierarchy(URL const &url)
     return create_directory(url, true);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -7,7 +7,7 @@
 #include <iostream>
 #include <string>
 
-using namespace tt::geo;
+using namespace hi::geo;
 TEST(vec, compare)
 {
     ASSERT_FALSE(vector<2>(1.0, 2.0) == vector<2>(3.0, 4.0));

@@ -5,7 +5,7 @@
 #include "overlay_widget.hpp"
 #include "../GUI/theme.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 overlay_widget::overlay_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
     super(window, parent), _delegate(std::move(delegate))
@@ -72,7 +72,7 @@ void overlay_widget::draw(draw_context const &context) noexcept
     return theme().color(theme_color::border, semantic_layer + 1);
 }
 
-void overlay_widget::scroll_to_show(tt::aarectangle rectangle) noexcept
+void overlay_widget::scroll_to_show(hi::aarectangle rectangle) noexcept
 {
     // An overlay is in an absolute position on the window,
     // so do not forward the scroll_to_show message to its parent.
@@ -86,7 +86,7 @@ void overlay_widget::draw_background(draw_context const &context) noexcept
 
 [[nodiscard]] hitbox overlay_widget::hitbox_test(point3 position) const noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     if (*visible and *enabled) {
         return _content->hitbox_test_from_parent(position);
@@ -95,4 +95,4 @@ void overlay_widget::draw_background(draw_context const &context) noexcept
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

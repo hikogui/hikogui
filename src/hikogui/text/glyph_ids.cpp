@@ -6,7 +6,7 @@
 #include "../graphic_path.hpp"
 #include "../log.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] glyph_atlas_info &glyph_ids::atlas_info() const noexcept
 {
@@ -19,11 +19,11 @@ namespace tt::inline v1 {
     auto bounding_box = aarectangle{};
 
     for (std::size_t i = 0; i < num_glyphs(); i++) {
-        ttlet glyph_id = (*this)[i];
+        hilet glyph_id = (*this)[i];
 
         graphic_path glyph_path;
         if (not font().load_glyph(glyph_id, glyph_path)) {
-            tt_log_error(
+            hi_log_error(
                 "Could not load glyph {} in font {} - {}",
                 static_cast<int>(glyph_id),
                 font().family_name,
@@ -33,7 +33,7 @@ namespace tt::inline v1 {
 
         glyph_metrics glyph_metrics;
         if (not font().load_glyph_metrics(glyph_id, glyph_metrics)) {
-            tt_log_error(
+            hi_log_error(
                 "Could not load glyph-metrics {} in font {} - {}",
                 static_cast<int>(glyph_id),
                 font().family_name,
@@ -56,11 +56,11 @@ namespace tt::inline v1 {
     auto bounding_box = aarectangle{};
 
     for (std::size_t i = 0; i < num_glyphs(); i++) {
-        ttlet glyph_id = (*this)[i];
+        hilet glyph_id = (*this)[i];
 
         glyph_metrics glyph_metrics;
         if (not font().load_glyph_metrics(glyph_id, glyph_metrics)) {
-            tt_log_error(
+            hi_log_error(
                 "Could not load glyph-metrics {} in font {} - {}",
                 static_cast<int>(glyph_id),
                 font().family_name,
@@ -77,4 +77,4 @@ namespace tt::inline v1 {
     return bounding_box;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

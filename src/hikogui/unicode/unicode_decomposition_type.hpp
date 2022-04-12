@@ -6,7 +6,7 @@
 
 #include <cstdint>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 enum class unicode_decomposition_type : uint8_t {
     canonical = 0, ///< Canonical decomposition.

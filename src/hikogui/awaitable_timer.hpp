@@ -6,7 +6,7 @@
 
 #include "chrono.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class awaitable_timer {
 public:
@@ -18,4 +18,4 @@ private:
     utc_nanoseconds _deadline;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

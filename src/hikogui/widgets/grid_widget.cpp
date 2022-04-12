@@ -7,12 +7,12 @@
 #include "../alignment.hpp"
 #include "../log.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 grid_widget::grid_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
     widget(window, parent), _delegate(std::move(delegate))
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     if (parent) {
         semantic_layer = parent->semantic_layer;
@@ -31,7 +31,7 @@ grid_widget::~grid_widget()
 
 bool grid_widget::address_in_use(std::size_t column_first, std::size_t row_first, std::size_t column_last, std::size_t row_last) const noexcept
 {
-    for (ttlet &cell : _cells) {
+    for (hilet &cell : _cells) {
         if (column_last > cell.column_first and column_first < cell.column_last and row_last > cell.row_last and
             row_first < cell.row_first) {
             return true;
@@ -47,9 +47,9 @@ widget &grid_widget::add_widget(
     std::size_t row_last,
     std::unique_ptr<widget> widget) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
     if (address_in_use(column_first, row_first, column_last, row_last)) {
-        tt_log_fatal("cell ({},{}) of grid_widget is already in use", column_first, row_first);
+        hi_log_fatal("cell ({},{}) of grid_widget is already in use", column_first, row_first);
     }
 
     auto &ref = *widget;
@@ -64,8 +64,8 @@ widget_constraints const &grid_widget::set_constraints() noexcept
     _rows.clear();
     _columns.clear();
 
-    for (ttlet &cell : _cells) {
-        ttlet cell_constraints = cell.widget->set_constraints();
+    for (hilet &cell : _cells) {
+        hilet cell_constraints = cell.widget->set_constraints();
         _rows.add_constraint(
             cell.row_first,
             cell.row_last,
@@ -101,8 +101,8 @@ void grid_widget::set_layout(widget_layout const &layout) noexcept
         _rows.layout(layout.height());
     }
 
-    for (ttlet &cell : _cells) {
-        ttlet child_rectangle = cell.rectangle(_columns, _rows, layout.height());
+    for (hilet &cell : _cells) {
+        hilet child_rectangle = cell.rectangle(_columns, _rows, layout.height());
         cell.widget->set_layout(layout.transform(child_rectangle, 0.0f));
     }
 }
@@ -110,7 +110,7 @@ void grid_widget::set_layout(widget_layout const &layout) noexcept
 void grid_widget::draw(draw_context const &context) noexcept
 {
     if (*visible) {
-        for (ttlet &cell : _cells) {
+        for (hilet &cell : _cells) {
             cell.widget->draw(context);
         }
     }
@@ -118,11 +118,11 @@ void grid_widget::draw(draw_context const &context) noexcept
 
 hitbox grid_widget::hitbox_test(point3 position) const noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     if (*visible and *enabled) {
         auto r = hitbox{};
-        for (ttlet &cell : _cells) {
+        for (hilet &cell : _cells) {
             r = cell.widget->hitbox_test_from_parent(position, r);
         }
         return r;
@@ -131,4 +131,4 @@ hitbox grid_widget::hitbox_test(point3 position) const noexcept
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

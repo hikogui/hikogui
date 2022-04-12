@@ -6,7 +6,7 @@
 
 #include "point.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class line_segment {
 public:
@@ -42,7 +42,7 @@ public:
         } else if constexpr (I == 1) {
             return _p + _v;
         } else {
-            tt_static_no_default();
+            hi_static_no_default();
         }
     }
 

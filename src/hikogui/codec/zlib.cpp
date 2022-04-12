@@ -7,7 +7,7 @@
 #include "../endian.hpp"
 #include "../placement.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct zlib_header {
     uint8_t CMF;
@@ -18,14 +18,14 @@ bstring zlib_decompress(std::span<std::byte const> bytes, std::size_t max_size)
 {
     auto offset = 0_uz;
 
-    ttlet header = make_placement_ptr<zlib_header>(bytes, offset);
+    hilet header = make_placement_ptr<zlib_header>(bytes, offset);
 
-    ttlet header_chksum = header->CMF * 256 + header->FLG;
-    tt_parse_check(header_chksum % 31 == 0, "zlib header checksum failed.");
+    hilet header_chksum = header->CMF * 256 + header->FLG;
+    hi_parse_check(header_chksum % 31 == 0, "zlib header checksum failed.");
 
-    tt_parse_check((header->CMF & 0xf) == 8, "zlib compression method must be 8");
-    tt_parse_check(((header->CMF >> 4) & 0xf) <= 7, "zlib LZ77 window too large");
-    tt_parse_check((header->FLG & 0x20) == 0, "zlib must not use a preset dictionary");
+    hi_parse_check((header->CMF & 0xf) == 8, "zlib compression method must be 8");
+    hi_parse_check(((header->CMF >> 4) & 0xf) <= 7, "zlib LZ77 window too large");
+    hi_parse_check((header->FLG & 0x20) == 0, "zlib must not use a preset dictionary");
 
     if (header->FLG & 0x20) {
         [[maybe_unused]] auto FDICT = make_placement_ptr<big_uint32_buf_t>(bytes, offset);
@@ -38,4 +38,4 @@ bstring zlib_decompress(std::span<std::byte const> bytes, std::size_t max_size)
     return r;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

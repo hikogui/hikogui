@@ -6,7 +6,7 @@
 
 #include "font_weight.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A font variant is one of 16 different fonts that can be part of a family.
  * It only contains the font-weight and if it is italic/oblique.
@@ -36,33 +36,33 @@ public:
 
     constexpr font_weight weight() const noexcept
     {
-        tt_axiom(value < max());
+        hi_axiom(value < max());
         return static_cast<font_weight>(value % half());
     }
 
     [[nodiscard]] constexpr bool italic() const noexcept
     {
-        tt_axiom(value < max());
+        hi_axiom(value < max());
         return value >= half();
     }
 
     constexpr font_variant &set_weight(font_weight rhs) noexcept
     {
         value = static_cast<uint8_t>(static_cast<int>(rhs) + (italic() ? half() : 0));
-        tt_axiom(value < max());
+        hi_axiom(value < max());
         return *this;
     }
 
     constexpr font_variant &set_italic(bool rhs) noexcept
     {
         value = static_cast<uint8_t>(static_cast<int>(weight()) + (rhs ? half() : 0));
-        tt_axiom(value < max());
+        hi_axiom(value < max());
         return *this;
     }
 
     constexpr operator int() const noexcept
     {
-        tt_axiom(value < max());
+        hi_axiom(value < max());
         return value;
     }
 
@@ -71,9 +71,9 @@ public:
      */
     constexpr font_variant alternative(int i) const noexcept
     {
-        tt_axiom(i >= 0 && i < max());
-        ttlet w = font_weight_alterative(weight(), i % half());
-        ttlet it = italic() == (i < half());
+        hi_axiom(i >= 0 && i < max());
+        hilet w = font_weight_alterative(weight(), i % half());
+        hilet it = italic() == (i < half());
         return {w, it};
     }
 
@@ -88,4 +88,4 @@ public:
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -13,7 +13,7 @@
 #undef OUT
 #include <Windows.h>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] constexpr network_event network_event_from_win32(long rhs) noexcept
 {
@@ -45,7 +45,7 @@ namespace tt::inline v1 {
     case WSAENETDOWN: return network_error::network_down;
     case WSAECONNRESET: return network_error::connection_reset;
     case WSAECONNABORTED: return network_error::connection_aborted;
-    default: tt_no_default();
+    default: hi_no_default();
     }
 }
 
@@ -68,4 +68,4 @@ namespace tt::inline v1 {
     return r;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

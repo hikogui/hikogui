@@ -8,12 +8,12 @@
 #include "../ranges.hpp"
 #include <ranges>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 widget::widget(gui_window &_window, widget *parent) noexcept :
     window(_window), parent(parent), logical_layer(0), semantic_layer(0)
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     if (parent) {
         logical_layer = parent->logical_layer + 1;
@@ -42,12 +42,12 @@ widget::~widget()
     return window.is_gui_thread();
 }
 
-tt::theme const &widget::theme() const noexcept
+hi::theme const &widget::theme() const noexcept
 {
     return window.theme;
 }
 
-tt::font_book &widget::font_book() const noexcept
+hi::font_book &widget::font_book() const noexcept
 {
     return *window.gui.font_book;
 }
@@ -133,8 +133,8 @@ void widget::request_resize() const noexcept
 
 [[nodiscard]] bool widget::handle_event(std::vector<command> const &commands) noexcept
 {
-    tt_axiom(is_gui_thread());
-    for (ttlet command : commands) {
+    hi_axiom(is_gui_thread());
+    for (hilet command : commands) {
         if (handle_event(command)) {
             return true;
         }
@@ -144,10 +144,10 @@ void widget::request_resize() const noexcept
 
 bool widget::handle_event(command command) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     switch (command) {
-        using enum tt::command;
+        using enum hi::command;
     case gui_keyboard_enter:
         focus = true;
         scroll_to_show();
@@ -177,18 +177,18 @@ bool widget::handle_event(command command) noexcept
 
 bool widget::handle_command_recursive(command command, std::vector<widget const *> const &reject_list) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     auto handled = false;
 
     for (auto *child : children()) {
         if (child) {
-            tt_axiom(child->parent == this);
+            hi_axiom(child->parent == this);
             handled |= child->handle_command_recursive(command, reject_list);
         }
     }
 
-    if (!std::ranges::any_of(reject_list, [this](ttlet &x) {
+    if (!std::ranges::any_of(reject_list, [this](hilet &x) {
             return x == this;
         })) {
         handled |= handle_event(command);
@@ -199,13 +199,13 @@ bool widget::handle_command_recursive(command command, std::vector<widget const 
 
 bool widget::handle_event(mouse_event const &event) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
     return false;
 }
 
 bool widget::handle_event(keyboard_event const &event) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
     return false;
 }
 
@@ -214,7 +214,7 @@ widget const *widget::find_next_widget(
     keyboard_focus_group group,
     keyboard_focus_direction direction) const noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     auto found = false;
 
@@ -267,7 +267,7 @@ widget const *widget::find_next_widget(
 
 [[nodiscard]] widget const *widget::find_first_widget(keyboard_focus_group group) const noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     for (auto *child : children()) {
         if (child and child->accepts_keyboard_focus(group)) {
@@ -279,7 +279,7 @@ widget const *widget::find_next_widget(
 
 [[nodiscard]] widget const *widget::find_last_widget(keyboard_focus_group group) const noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     widget *found = nullptr;
     for (auto *child : children()) {
@@ -292,19 +292,19 @@ widget const *widget::find_next_widget(
 
 [[nodiscard]] bool widget::is_first(keyboard_focus_group group) const noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
     return parent->find_first_widget(group) == this;
 }
 
 [[nodiscard]] bool widget::is_last(keyboard_focus_group group) const noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
     return parent->find_last_widget(group) == this;
 }
 
-void widget::scroll_to_show(tt::aarectangle rectangle) noexcept
+void widget::scroll_to_show(hi::aarectangle rectangle) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     if (parent) {
         parent->scroll_to_show(bounding_rectangle(_layout.to_parent * rectangle));
@@ -316,7 +316,7 @@ void widget::scroll_to_show(tt::aarectangle rectangle) noexcept
  */
 [[nodiscard]] std::vector<widget const *> widget::parent_chain() const noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     std::vector<widget const *> chain;
 
@@ -332,13 +332,13 @@ void widget::scroll_to_show(tt::aarectangle rectangle) noexcept
 
 [[nodiscard]] aarectangle widget::make_overlay_rectangle(aarectangle requested_rectangle) const noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     // Move the request_rectangle to window coordinates.
-    ttlet requested_window_rectangle = translate2{layout().window_clipping_rectangle()} * requested_rectangle;
-    ttlet window_bounds = aarectangle{window.rectangle.size()} - theme().margin;
-    ttlet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
+    hilet requested_window_rectangle = translate2{layout().window_clipping_rectangle()} * requested_rectangle;
+    hilet window_bounds = aarectangle{window.rectangle.size()} - theme().margin;
+    hilet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
     return bounding_rectangle(layout().from_window * response_window_rectangle);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

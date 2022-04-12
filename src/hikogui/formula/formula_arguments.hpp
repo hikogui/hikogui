@@ -6,7 +6,7 @@
 
 #include "formula_node.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A temporary node used during parsing.
  */
@@ -31,7 +31,7 @@ struct formula_arguments final : formula_node {
     {
         std::string s = "<args ";
         int i = 0;
-        for (ttlet &arg : args) {
+        for (hilet &arg : args) {
             if (i++ > 0) {
                 s += ", ";
             }
@@ -41,4 +41,4 @@ struct formula_arguments final : formula_node {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

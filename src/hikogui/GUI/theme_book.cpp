@@ -8,27 +8,27 @@
 #include "../trace.hpp"
 #include "../log.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 theme_book::~theme_book() {}
 
-theme_book::theme_book(tt::font_book const &font_book, std::vector<URL> const &theme_directories) noexcept : themes()
+theme_book::theme_book(hi::font_book const &font_book, std::vector<URL> const &theme_directories) noexcept : themes()
 {
-    for (ttlet &theme_directory : theme_directories) {
-        ttlet theme_directory_glob = theme_directory / "**" / "*.theme.json";
-        for (ttlet &theme_url : theme_directory_glob.urlsByScanningWithGlobPattern()) {
+    for (hilet &theme_directory : theme_directories) {
+        hilet theme_directory_glob = theme_directory / "**" / "*.theme.json";
+        for (hilet &theme_url : theme_directory_glob.urlsByScanningWithGlobPattern()) {
             auto t = trace<"theme_scan">{};
 
             try {
                 themes.push_back(std::make_unique<theme>(font_book, theme_url));
             } catch (std::exception const &e) {
-                tt_log_error("Failed parsing theme at {}. \"{}\"", theme_url, e.what());
+                hi_log_error("Failed parsing theme at {}. \"{}\"", theme_url, e.what());
             }
         }
     }
 
     if (ssize(themes) == 0) {
-        tt_log_fatal("Did not load any themes.");
+        hi_log_fatal("Did not load any themes.");
     }
 }
 
@@ -36,12 +36,12 @@ theme_book::theme_book(tt::font_book const &font_book, std::vector<URL> const &t
 {
     std::vector<std::string> names;
 
-    for (ttlet &t : themes) {
+    for (hilet &t : themes) {
         names.push_back(t->name);
     }
 
     std::sort(names.begin(), names.end());
-    ttlet new_end = std::unique(names.begin(), names.end());
+    hilet new_end = std::unique(names.begin(), names.end());
     names.erase(new_end, names.cend());
     return names;
 }
@@ -53,7 +53,7 @@ theme_book::theme_book(tt::font_book const &font_book, std::vector<URL> const &t
     theme *matching_theme = nullptr;
     theme *matching_theme_and_mode = nullptr;
 
-    for (ttlet &t : themes) {
+    for (hilet &t : themes) {
         if (t->name == name and t->mode == mode) {
             matching_theme_and_mode = t.get();
         } else if (t->name == name) {
@@ -76,8 +76,8 @@ theme_book::theme_book(tt::font_book const &font_book, std::vector<URL> const &t
     } else if (ssize(themes) > 0) {
         return *themes[0].get();
     } else {
-        tt_no_default();
+        hi_no_default();
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

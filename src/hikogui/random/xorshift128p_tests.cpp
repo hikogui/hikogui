@@ -9,11 +9,11 @@
 #include <limits>
 
 using namespace std;
-using namespace tt;
+using namespace hi;
 
 TEST(xorshift128p, compare_64_and_128_bits)
 {
-    auto r1 = tt::xorshift128p();
+    auto r1 = hi::xorshift128p();
     // Make a copy with the same seed.
     auto r2 = r1;
 

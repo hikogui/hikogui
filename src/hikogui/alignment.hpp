@@ -10,7 +10,7 @@
 #include "assert.hpp"
 #include "cast.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Vertical alignment.
  */
@@ -74,15 +74,15 @@ public:
     constexpr alignment(horizontal_alignment t, vertical_alignment v) noexcept :
         _value((to_underlying(v) << 4) | to_underlying(t))
     {
-        tt_axiom(to_underlying(v) <= 0xf);
-        tt_axiom(to_underlying(t) <= 0xf);
+        hi_axiom(to_underlying(v) <= 0xf);
+        hi_axiom(to_underlying(t) <= 0xf);
     }
 
     constexpr alignment(vertical_alignment v, horizontal_alignment t) noexcept :
         _value((to_underlying(v) << 4) | to_underlying(t))
     {
-        tt_axiom(to_underlying(v) <= 0xf);
-        tt_axiom(to_underlying(t) <= 0xf);
+        hi_axiom(to_underlying(v) <= 0xf);
+        hi_axiom(to_underlying(t) <= 0xf);
     }
 
     [[nodiscard]] static constexpr alignment top_flush() noexcept
@@ -213,4 +213,4 @@ constexpr alignment operator|(vertical_alignment lhs, horizontal_alignment rhs) 
     return alignment{lhs, rhs};
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -8,7 +8,7 @@
 #include "../GUI/theme.hpp"
 #include "../cast.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
 {
@@ -28,7 +28,7 @@ widget_constraints const &icon_widget::set_constraints() noexcept
         _glyph = {};
         _pixmap_backing = {};
 
-        if (ttlet pixmap = get_if<pixel_map<sfloat_rgba16>>(&*icon)) {
+        if (hilet pixmap = get_if<pixel_map<sfloat_rgba16>>(&*icon)) {
             _icon_type = icon_type::pixmap;
             _icon_size = extent2{narrow_cast<float>(pixmap->width()), narrow_cast<float>(pixmap->height())};
 
@@ -38,17 +38,17 @@ widget_constraints const &icon_widget::set_constraints() noexcept
                 request_reconstrain();
             }
 
-        } else if (ttlet g1 = get_if<glyph_ids>(&*icon)) {
+        } else if (hilet g1 = get_if<glyph_ids>(&*icon)) {
             _glyph = *g1;
             _icon_type = icon_type::glyph;
             _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).size * theme().scale;
 
-        } else if (ttlet g2 = get_if<elusive_icon>(&*icon)) {
+        } else if (hilet g2 = get_if<elusive_icon>(&*icon)) {
             _glyph = font_book().find_glyph(*g2);
             _icon_type = icon_type::glyph;
             _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).size * theme().scale;
 
-        } else if (ttlet g3 = get_if<hikogui_icon>(&*icon)) {
+        } else if (hilet g3 = get_if<hikogui_icon>(&*icon)) {
             _glyph = font_book().find_glyph(*g3);
             _icon_type = icon_type::glyph;
             _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).size * theme().scale;
@@ -63,8 +63,8 @@ void icon_widget::set_layout(widget_layout const &layout) noexcept
         if (_icon_type == icon_type::no or not _icon_size) {
             _icon_rectangle = {};
         } else {
-            ttlet icon_scale = scale2::uniform(_icon_size, layout.size);
-            ttlet new_icon_size = icon_scale * _icon_size;
+            hilet icon_scale = scale2::uniform(_icon_size, layout.size);
+            hilet new_icon_size = icon_scale * _icon_size;
             _icon_rectangle = align(layout.rectangle(), new_icon_size, *alignment);
         }
     }
@@ -86,9 +86,9 @@ void icon_widget::draw(draw_context const &context) noexcept
             context.draw_glyph(layout(), _icon_rectangle, theme().color(*color), _glyph);
         } break;
 
-        default: tt_no_default();
+        default: hi_no_default();
         }
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

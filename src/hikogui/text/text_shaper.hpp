@@ -20,7 +20,7 @@
 #include <vector>
 #include <tuple>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 class font_book;
 
 /** Text shaper.
@@ -82,14 +82,14 @@ public:
      * @param script The script of the text.
      */
     [[nodiscard]] text_shaper(
-        tt::font_book &font_book,
+        hi::font_book &font_book,
         gstring const &text,
         text_style const &style,
         float dpi_scale,
         unicode_script script = unicode_script::Common) noexcept;
 
     [[nodiscard]] text_shaper(
-        tt::font_book &font_book,
+        hi::font_book &font_book,
         std::string_view text,
         text_style const &style,
         float dpi_scale,
@@ -191,7 +191,7 @@ public:
         float base_line,
         extent2 sub_pixel_size,
         unicode_bidi_class writing_direction,
-        tt::alignment alignment = tt::alignment{horizontal_alignment::flush, vertical_alignment::middle},
+        hi::alignment alignment = hi::alignment{horizontal_alignment::flush, vertical_alignment::middle},
         float line_spacing = 1.0f,
         float paragraph_spacing = 1.5f) noexcept;
 
@@ -472,7 +472,7 @@ private:
         aarectangle rectangle,
         float base_line,
         extent2 sub_pixel_size,
-        tt::vertical_alignment vertical_alignment,
+        hi::vertical_alignment vertical_alignment,
         unicode_bidi_class writing_direction,
         float line_spacing,
         float paragraph_spacing) noexcept;
@@ -488,7 +488,7 @@ private:
     void position_glyphs(
         aarectangle rectangle,
         extent2 sub_pixel_size,
-        tt::horizontal_alignment horizontal_alignment,
+        hi::horizontal_alignment horizontal_alignment,
         unicode_bidi_class writing_direction) noexcept;
 
     /** Resolve the script of each character in text.
@@ -499,4 +499,4 @@ private:
     get_selection_from_break(text_cursor cursor, unicode_break_vector const &break_opportunities) const noexcept;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

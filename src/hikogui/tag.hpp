@@ -13,7 +13,7 @@
 #include <typeinfo>
 #include <typeindex>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<basic_fixed_string Head, basic_fixed_string... Tail>
 std::string tag_at_index_impl(std::size_t index) noexcept
@@ -96,4 +96,4 @@ bool has_tag(std::string needle) noexcept
     return index_of_tag<Haystack...>(needle) < sizeof...(Haystack);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

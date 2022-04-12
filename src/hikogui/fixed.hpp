@@ -11,7 +11,7 @@
 #include <limits>
 #include <concepts>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<typename T, int M>
 struct fixed {
@@ -29,12 +29,12 @@ struct fixed {
 
     explicit constexpr fixed(std::floating_point auto other) noexcept : value(static_cast<T>(other * M))
     {
-        tt_assert(other >= (std::numeric_limits<T>::min() / M) && other <= (std::numeric_limits<T>::max() / M));
+        hi_assert(other >= (std::numeric_limits<T>::min() / M) && other <= (std::numeric_limits<T>::max() / M));
     }
 
     explicit constexpr fixed(std::integral auto other) noexcept : value(static_cast<T>(other) * M)
     {
-        tt_assert(other >= (std::numeric_limits<T>::min() / M) && other <= (std::numeric_limits<T>::max() / M));
+        hi_assert(other >= (std::numeric_limits<T>::min() / M) && other <= (std::numeric_limits<T>::max() / M));
     }
 
     explicit fixed(std::string const &other) : fixed(stod(other)) {}
@@ -42,21 +42,21 @@ struct fixed {
     constexpr fixed &operator=(std::floating_point auto other) noexcept
     {
         value = static_cast<T>(other * M);
-        tt_assert(other >= (std::numeric_limits<T>::min() / M) && other <= (std::numeric_limits<T>::max() / M));
+        hi_assert(other >= (std::numeric_limits<T>::min() / M) && other <= (std::numeric_limits<T>::max() / M));
         return *this;
     }
 
     constexpr fixed &operator=(std::integral auto other) noexcept
     {
         value = static_cast<T>(other) * M;
-        tt_assert(other >= (std::numeric_limits<T>::min() / M) && other <= (std::numeric_limits<T>::max() / M));
+        hi_assert(other >= (std::numeric_limits<T>::min() / M) && other <= (std::numeric_limits<T>::max() / M));
         return *this;
     }
 
     fixed &operator=(std::string const &other)
     {
         value = static_cast<T>(stod(other) * M);
-        tt_assert(other >= (std::numeric_limits<T>::min() / M) && other <= (std::numeric_limits<T>::max() / M));
+        hi_assert(other >= (std::numeric_limits<T>::min() / M) && other <= (std::numeric_limits<T>::max() / M));
         return *this;
     }
 
@@ -117,4 +117,4 @@ struct fixed {
 
 using money = fixed<safe_int<int64_t>, 100>;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

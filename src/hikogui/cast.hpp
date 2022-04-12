@@ -11,7 +11,7 @@
 #include <concepts>
 #include <climits>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<typename T>
 [[nodiscard]] constexpr T copy(T value) noexcept
@@ -56,7 +56,7 @@ template<typename Out, base_of<std::remove_pointer_t<Out>> In>
 [[nodiscard]] constexpr Out down_cast(In *rhs) noexcept
     requires(std::is_const_v<std::remove_pointer_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_pointer_t<Out>>)
 {
-    tt_axiom(rhs == nullptr or dynamic_cast<Out>(rhs) != nullptr);
+    hi_axiom(rhs == nullptr or dynamic_cast<Out>(rhs) != nullptr);
     return static_cast<Out>(rhs);
 }
 
@@ -127,7 +127,7 @@ template<numeric Out, numeric In>
     if constexpr (type_in_range_v<Out, In>) {
         return static_cast<Out>(rhs);
     } else {
-        ttlet r = static_cast<Out>(rhs);
+        hilet r = static_cast<Out>(rhs);
 
         if (not detail::narrow_validate(r, rhs)) {
             throw std::bad_cast();
@@ -151,8 +151,8 @@ template<numeric Out, numeric In>
     if constexpr (type_in_range_v<Out, In>) {
         return static_cast<Out>(rhs);
     } else {
-        ttlet r = static_cast<Out>(rhs);
-        tt_axiom(detail::narrow_validate(r, rhs));
+        hilet r = static_cast<Out>(rhs);
+        hi_axiom(detail::narrow_validate(r, rhs));
         return r;
     }
 }
@@ -163,7 +163,7 @@ template<numeric Out, numeric In>
  */
 decltype(auto) awaitable_cast(awaitable_direct auto &&rhs) noexcept
 {
-    return tt_forward(rhs);
+    return hi_forward(rhs);
 }
 
 /** Cast a object to an directly-awaitable object.
@@ -172,7 +172,7 @@ decltype(auto) awaitable_cast(awaitable_direct auto &&rhs) noexcept
  */
 decltype(auto) awaitable_cast(awaitable_member auto &&rhs) noexcept
 {
-    return tt_forward(rhs).operator co_await();
+    return hi_forward(rhs).operator co_await();
 }
 
 /** Cast a object to an directly-awaitable object.
@@ -181,7 +181,7 @@ decltype(auto) awaitable_cast(awaitable_member auto &&rhs) noexcept
  */
 decltype(auto) awaitable_cast(awaitable_non_member auto &&rhs) noexcept
 {
-    return operator co_await(tt_forward(rhs));
+    return operator co_await(hi_forward(rhs));
 }
 
 /** Resolve the type that is directly-awaitable.
@@ -295,4 +295,4 @@ template<std::signed_integral OutType, std::unsigned_integral InType>
     return static_cast<std::underlying_type_t<decltype(rhs)>>(rhs);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

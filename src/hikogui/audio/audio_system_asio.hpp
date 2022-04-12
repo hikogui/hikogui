@@ -6,9 +6,9 @@
 
 #include "audio_system.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class audio_system_asio : public audio_system {
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

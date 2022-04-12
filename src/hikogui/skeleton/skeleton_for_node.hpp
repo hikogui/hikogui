@@ -6,7 +6,7 @@
 
 #include "skeleton_node.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct skeleton_for_node final : skeleton_node {
     std::unique_ptr<formula_node> name_expression;
@@ -59,10 +59,10 @@ struct skeleton_for_node final : skeleton_node {
         post_process_expression(context, *name_expression, location);
         post_process_expression(context, *list_expression, location);
 
-        for (ttlet &child : children) {
+        for (hilet &child : children) {
             child->post_process(context);
         }
-        for (ttlet &child : else_children) {
+        for (hilet &child : else_children) {
             child->post_process(context);
         }
     }
@@ -75,10 +75,10 @@ struct skeleton_for_node final : skeleton_node {
             throw operation_error(std::format("{}: Expecting expression returns a vector, got {}", location, list_data));
         }
 
-        ttlet output_size = context.output_size();
-        if (ttlet loop_size = list_data.size()) {
+        hilet output_size = context.output_size();
+        if (hilet loop_size = list_data.size()) {
             ssize_t loop_count = 0;
-            for (ttlet &item : list_data) {
+            for (hilet &item : list_data) {
                 try {
                     name_expression->assign_without_output(context, item);
 
@@ -132,4 +132,4 @@ struct skeleton_for_node final : skeleton_node {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -12,7 +12,7 @@
 #include <array>
 #include <algorithm>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A object that holds enum-values and strings.
  *
@@ -68,11 +68,11 @@ public:
         static_assert(sizeof...(Args) == N * 2);
         add_value_name<0>(args...);
 
-        std::sort(_by_name.begin(), _by_name.end(), [](ttlet &a, ttlet &b) {
+        std::sort(_by_name.begin(), _by_name.end(), [](hilet &a, hilet &b) {
             return a.name < b.name;
         });
 
-        std::sort(_by_value.begin(), _by_value.end(), [](ttlet &a, ttlet &b) {
+        std::sort(_by_value.begin(), _by_value.end(), [](hilet &a, hilet &b) {
             return to_underlying(a.value) < to_underlying(b.value);
         });
 
@@ -107,7 +107,7 @@ public:
      */
     [[nodiscard]] constexpr value_type at(std::string_view name) const
     {
-        if (ttlet *value = find(name)) {
+        if (hilet *value = find(name)) {
             return *value;
         } else {
             throw std::out_of_range{"enum_metadata::at"};
@@ -122,7 +122,7 @@ public:
      */
     [[nodiscard]] constexpr std::string_view const &at(value_type value) const
     {
-        if (ttlet *name = find(value)) {
+        if (hilet *name = find(value)) {
             return *name;
         } else {
             throw std::out_of_range{"enum_metadata::at"};
@@ -137,7 +137,7 @@ public:
      */
     [[nodiscard]] constexpr value_type at(std::string_view name, value_type default_value) const noexcept
     {
-        if (ttlet *value = find(name)) {
+        if (hilet *value = find(name)) {
             return *value;
         } else {
             return default_value;
@@ -152,7 +152,7 @@ public:
      */
     [[nodiscard]] constexpr std::string_view at(value_type value, std::string_view default_name) const noexcept
     {
-        if (ttlet *name = find(value)) {
+        if (hilet *name = find(value)) {
             return *name;
         } else {
             return default_name;
@@ -168,7 +168,7 @@ public:
     [[nodiscard]] constexpr value_type operator[](std::string_view name) const noexcept
     {
         auto *value = find(name);
-        tt_axiom(value != nullptr);
+        hi_axiom(value != nullptr);
         return *value;
     }
 
@@ -181,7 +181,7 @@ public:
     [[nodiscard]] constexpr std::string_view const &operator[](value_type value) const noexcept
     {
         auto *name = find(value);
-        tt_axiom(name != nullptr);
+        hi_axiom(name != nullptr);
         return *name;
     }
 
@@ -201,13 +201,13 @@ private:
     {
         if (values_are_continues) {
             // If the enum values are continues we can do an associative lookup.
-            ttlet it = _by_value.begin();
-            ttlet offset = to_underlying(it->value);
-            ttlet i = to_underlying(value) - offset;
+            hilet it = _by_value.begin();
+            hilet offset = to_underlying(it->value);
+            hilet i = to_underlying(value) - offset;
             return (i >= 0 and i < N) ? &(it + i)->name : nullptr;
 
         } else {
-            ttlet it = std::lower_bound(_by_value.begin(), _by_value.end(), value, [](ttlet &item, ttlet &key) {
+            hilet it = std::lower_bound(_by_value.begin(), _by_value.end(), value, [](hilet &item, hilet &key) {
                 return item.value < key;
             });
 
@@ -217,7 +217,7 @@ private:
 
     [[nodiscard]] constexpr value_type const *find(std::string_view name) const noexcept
     {
-        ttlet it = std::lower_bound(_by_name.begin(), _by_name.end(), name, [](ttlet &item, ttlet &key) {
+        hilet it = std::lower_bound(_by_name.begin(), _by_name.end(), name, [](hilet &item, hilet &key) {
             return item.name < key;
         });
 
@@ -248,7 +248,7 @@ private:
     [[nodiscard]] constexpr bool check_values_are_continues() const noexcept
     {
         auto check_value = to_underlying(minimum());
-        for (ttlet &item : _by_value) {
+        for (hilet &item : _by_value) {
             if (to_underlying(item.value) != check_value++) {
                 return false;
             }
@@ -260,4 +260,4 @@ private:
 template<typename T, typename... Rest>
 enum_metadata(T const &, Rest const &...) -> enum_metadata<T, (sizeof...(Rest) + 1) / 2>;
 
-} // namespace tt
+} // namespace hi

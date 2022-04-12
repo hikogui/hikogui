@@ -7,7 +7,7 @@
 #include <string>
 #include <string_view>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class semantic_version {
 public:
@@ -23,4 +23,4 @@ public:
     constexpr semantic_version(int major, int minor, int patch) noexcept : major(major), minor(minor), patch(patch) {}
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -8,7 +8,7 @@
 #include <limits>
 #include <tuple>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 enum class graphic_character_t {
     none = 0x00,
@@ -154,4 +154,4 @@ enum class graphic_character_t {
     return binary ? binary_operator_precedence(str) : std::pair<uint8_t, bool>{uint8_t{3}, false};
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

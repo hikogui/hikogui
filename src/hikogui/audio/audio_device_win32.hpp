@@ -14,7 +14,7 @@ struct IAudioEndpointVolume;
 struct IAudioMeterInformation;
 struct IAudioClient;
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /*! A class representing an audio device on the system.
  */
@@ -24,19 +24,19 @@ public:
     ~audio_device_win32();
 
     [[nodiscard]] std::string name() const noexcept override;
-    [[nodiscard]] tt::label label() const noexcept override;
+    [[nodiscard]] hi::label label() const noexcept override;
     [[nodiscard]] audio_device_state state() const noexcept override;
     [[nodiscard]] audio_direction direction() const noexcept override;
     [[nodiscard]] bool exclusive() const noexcept override;
     void set_exclusive(bool exclusive) noexcept override;
     [[nodiscard]] double sample_rate() const noexcept override;
     void set_sample_rate(double sample_rate) noexcept override;
-    [[nodiscard]] tt::speaker_mapping input_speaker_mapping() const noexcept override;
-    void set_input_speaker_mapping(tt::speaker_mapping speaker_mapping) noexcept override;
-    [[nodiscard]] std::vector<tt::speaker_mapping> available_input_speaker_mappings() const noexcept override;
-    [[nodiscard]] tt::speaker_mapping output_speaker_mapping() const noexcept override;
-    void set_output_speaker_mapping(tt::speaker_mapping speaker_mapping) noexcept override;
-    [[nodiscard]] std::vector<tt::speaker_mapping> available_output_speaker_mappings() const noexcept override;
+    [[nodiscard]] hi::speaker_mapping input_speaker_mapping() const noexcept override;
+    void set_input_speaker_mapping(hi::speaker_mapping speaker_mapping) noexcept override;
+    [[nodiscard]] std::vector<hi::speaker_mapping> available_input_speaker_mappings() const noexcept override;
+    [[nodiscard]] hi::speaker_mapping output_speaker_mapping() const noexcept override;
+    void set_output_speaker_mapping(hi::speaker_mapping speaker_mapping) noexcept override;
+    [[nodiscard]] std::vector<hi::speaker_mapping> available_output_speaker_mappings() const noexcept override;
 
     [[nodiscard]] bool supports_format(audio_stream_format const &format) const noexcept;
 
@@ -48,7 +48,7 @@ private:
     audio_direction _direction;
     bool _exclusive = false;
     double _sample_rate = 0.0;
-    tt::speaker_mapping _speaker_mapping = tt::speaker_mapping::none;
+    hi::speaker_mapping _speaker_mapping = hi::speaker_mapping::none;
     audio_stream_format _current_stream_format;
 
     IMMDevice *_device = nullptr;
@@ -79,11 +79,11 @@ private:
      * @return A supported audio_stream_format or empty.
      */
     [[nodiscard]] audio_stream_format
-    find_exclusive_stream_format(double sample_rate, tt::speaker_mapping speaker_mapping) noexcept;
+    find_exclusive_stream_format(double sample_rate, hi::speaker_mapping speaker_mapping) noexcept;
 
     /** Get the shared stream format for the device.
      */
     [[nodiscard]] audio_stream_format shared_stream_format() const;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

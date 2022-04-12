@@ -11,7 +11,7 @@
 #include <vector>
 #include <string_view>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct formula_evaluation_context {
     using scope = std::unordered_map<std::string, datum>;
@@ -67,14 +67,14 @@ struct formula_evaluation_context {
      */
     void set_output_size(ssize_t new_size) noexcept
     {
-        tt_assert(new_size > 0);
-        tt_assert(new_size <= output_size());
+        hi_assert(new_size > 0);
+        hi_assert(new_size <= output_size());
         output.resize(new_size);
     }
 
     void enable_output() noexcept
     {
-        tt_assert(output_disable_count > 0);
+        hi_assert(output_disable_count > 0);
         output_disable_count--;
     }
 
@@ -90,7 +90,7 @@ struct formula_evaluation_context {
 
     void loop_pop() noexcept
     {
-        tt_assert(ssize(loop_stack) > 0);
+        hi_assert(ssize(loop_stack) > 0);
         loop_stack.pop_back();
     }
 
@@ -102,7 +102,7 @@ struct formula_evaluation_context {
 
     void pop()
     {
-        tt_assert(local_stack.size() > 0);
+        hi_assert(local_stack.size() > 0);
         local_stack.pop_back();
         loop_pop();
     }
@@ -114,19 +114,19 @@ struct formula_evaluation_context {
 
     scope const &locals() const
     {
-        tt_axiom(has_locals());
+        hi_axiom(has_locals());
         return local_stack.back();
     }
 
     scope &locals()
     {
-        tt_axiom(has_locals());
+        hi_axiom(has_locals());
         return local_stack.back();
     }
 
     [[nodiscard]] datum const &loop_get(std::string_view name) const
     {
-        tt_axiom(name.size() > 0);
+        hi_axiom(name.size() > 0);
         if (name.back() == '$') {
             throw operation_error(std::format("Invalid loop variable '{}'", name));
         }
@@ -164,20 +164,20 @@ struct formula_evaluation_context {
 
     [[nodiscard]] datum const &get(std::string const &name) const
     {
-        tt_assert(name.size() > 0);
+        hi_assert(name.size() > 0);
 
         if (name[0] == '$') {
             return loop_get(name);
         }
 
         if (has_locals()) {
-            ttlet i = locals().find(name);
+            hilet i = locals().find(name);
             if (i != locals().end()) {
                 return i->second;
             }
         }
 
-        ttlet j = globals.find(name);
+        hilet j = globals.find(name);
         if (j != globals.end()) {
             return j->second;
         }
@@ -187,16 +187,16 @@ struct formula_evaluation_context {
 
     [[nodiscard]] datum &get(std::string const &name)
     {
-        tt_assert(name.size() > 0);
+        hi_assert(name.size() > 0);
 
         if (has_locals()) {
-            ttlet i = locals().find(name);
+            hilet i = locals().find(name);
             if (i != locals().end()) {
                 return i->second;
             }
         }
 
-        ttlet j = globals.find(name);
+        hilet j = globals.find(name);
         if (j != globals.end()) {
             return j->second;
         }
@@ -226,4 +226,4 @@ struct formula_evaluation_context {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

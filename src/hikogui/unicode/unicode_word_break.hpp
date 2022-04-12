@@ -13,7 +13,7 @@
 #include <algorithm>
 #include <vector>
 
-namespace tt::inline v1{
+namespace hi::inline v1{
 
     enum class unicode_word_break_property : uint8_t {
     Other,
@@ -95,14 +95,14 @@ private:
     using enum unicode_break_opportunity;
     using enum unicode_word_break_property;
 
-    tt_axiom(r.size() == infos.size() + 1);
+    hi_axiom(r.size() == infos.size() + 1);
 
     r.front() = yes; // WB1
     r.back() = yes; // WB2
 
     for (auto i = 1_uz; i < infos.size(); ++i) {
-        ttlet prev = infos[i - 1];
-        ttlet next = infos[i];
+        hilet prev = infos[i - 1];
+        hilet next = infos[i];
 
         r[i] = [&] () {
             if (prev == CR and next == LF) {
@@ -129,10 +129,10 @@ private:
     using enum unicode_break_opportunity;
     using enum unicode_word_break_property;
 
-    tt_axiom(r.size() == infos.size() + 1);
+    hi_axiom(r.size() == infos.size() + 1);
 
     for (auto i = 1_uz; i < infos.size(); ++i) {
-        ttlet prev = infos[i - 1];
+        hilet prev = infos[i - 1];
         auto &next = infos[i];
 
         if ((prev != Newline and prev != CR and prev != LF) and (next == Extend or next == Format or next == ZWJ)) {
@@ -151,12 +151,12 @@ private:
     using enum unicode_break_opportunity;
     using enum unicode_word_break_property;
 
-    tt_axiom(r.size() == infos.size() + 1);
+    hi_axiom(r.size() == infos.size() + 1);
 
     auto RI_count = 0_uz;
-    ttlet size = narrow<std::ptrdiff_t>(infos.size());
+    hilet size = narrow<std::ptrdiff_t>(infos.size());
     for (auto i = 0_z; i < size; ++i) {
-        ttlet &next = infos[i];
+        hilet &next = infos[i];
         if (next == Regional_Indicator) {
             ++RI_count;
         } else {
@@ -167,11 +167,11 @@ private:
             continue;
         }
 
-        tt_axiom(not next.is_skip());
+        hi_axiom(not next.is_skip());
 
         std::ptrdiff_t k;
 
-        ttlet prev = [&] {
+        hilet prev = [&] {
             for (k = i - 1; k >= 0; --k) {
                 if (not infos[k].is_skip()) {
                     return infos[k];
@@ -180,7 +180,7 @@ private:
             return unicode_word_break_info{};
         }();
 
-        ttlet prev_prev = [&] {
+        hilet prev_prev = [&] {
             for (--k; k >= 0; --k) {
                 if (not infos[k].is_skip()) {
                     return infos[k];
@@ -189,7 +189,7 @@ private:
             return unicode_word_break_info{};
         }();
 
-        ttlet next_next = [&] {
+        hilet next_next = [&] {
             for (k = i + 1; k < size; ++k) {
                 if (not infos[k].is_skip()) {
                     return infos[k];
@@ -253,8 +253,8 @@ template<typename It, typename ItEnd, typename DescriptionFunc>
 
     auto infos = std::vector<detail::unicode_word_break_info>{};
     infos.reserve(size);
-    std::transform(first, last, std::back_inserter(infos), [&] (ttlet &item) {
-        ttlet &description = description_func(item);
+    std::transform(first, last, std::back_inserter(infos), [&] (hilet &item) {
+        hilet &description = description_func(item);
         return detail::unicode_word_break_info{description.word_break_property(), description.grapheme_cluster_break() == unicode_grapheme_cluster_break::Extended_Pictographic};
         });
 

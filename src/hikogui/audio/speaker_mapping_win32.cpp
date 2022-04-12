@@ -8,7 +8,7 @@
 #include <ks.h>
 #include <ksmedia.h>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] speaker_mapping speaker_mapping_from_win32(uint32_t from)
 {
@@ -20,7 +20,7 @@ namespace tt::inline v1 {
         SPEAKER_TOP_FRONT_CENTER | SPEAKER_TOP_FRONT_RIGHT | SPEAKER_TOP_BACK_LEFT | SPEAKER_TOP_BACK_CENTER |
         SPEAKER_TOP_BACK_RIGHT;
 
-    tt_parse_check((from & ~valid_mask) == 0, "Unknown speaker locations");
+    hi_parse_check((from & ~valid_mask) == 0, "Unknown speaker locations");
 
     if (from & SPEAKER_FRONT_LEFT) {
         r |= speaker_mapping::front_left;
@@ -147,4 +147,4 @@ namespace tt::inline v1 {
     return r;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

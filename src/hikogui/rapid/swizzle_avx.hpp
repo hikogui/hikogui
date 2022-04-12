@@ -13,7 +13,7 @@
 #include <pmmintrin.h>
 #include <immintrin.h>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<ssize_t A, ssize_t B, ssize_t C, ssize_t D>
 [[nodiscard]] constexpr static int _mm_swizzle_ps_permute_mask() noexcept
@@ -119,7 +119,7 @@ template<ssize_t A, ssize_t B, ssize_t C, ssize_t D>
     } else if constexpr (not_one_mask == 0b1110) {
         numbers = _mm_set_ss(1.0f);
     } else {
-        ttlet _1111 = _mm_set_ps1(1.0f);
+        hilet _1111 = _mm_set_ps1(1.0f);
         numbers = _mm_insert_ps(_1111, _1111, not_one_mask);
     }
 
@@ -159,6 +159,6 @@ template<ssize_t A = -1, ssize_t B = -1>
     return _mm_castpd_si128(_mm_swizzle_pd<A, B>(_mm_castsi128_pd(value)));
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 #endif

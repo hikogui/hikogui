@@ -13,7 +13,7 @@
 #include <concepts>
 #include <mutex>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Class which represents an axis-aligned rectangle.
  */
@@ -35,7 +35,7 @@ public:
 
     constexpr explicit axis_aligned_rectangle(f32x4 const &other) noexcept : v(other)
     {
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     /** Create a box from the position and size.
@@ -47,7 +47,7 @@ public:
      */
     constexpr axis_aligned_rectangle(float x, float y, float width, float height) noexcept : v{x, y, x + width, y + height}
     {
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     /** Create a rectangle from the size.
@@ -56,7 +56,7 @@ public:
      */
     constexpr explicit axis_aligned_rectangle(extent2 const &extent) noexcept : v(static_cast<f32x4>(extent)._00xy())
     {
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     /** Create a rectangle from the left-bottom and right-top points.
@@ -66,9 +66,9 @@ public:
     constexpr axis_aligned_rectangle(point2 const &p0, point2 const &p3) noexcept :
         v(static_cast<f32x4>(p0).xy00() + static_cast<f32x4>(p3)._00xy())
     {
-        tt_axiom(p0.holds_invariant());
-        tt_axiom(p3.holds_invariant());
-        tt_axiom(holds_invariant());
+        hi_axiom(p0.holds_invariant());
+        hi_axiom(p3.holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     /** Create a rectangle from the size.
@@ -78,7 +78,7 @@ public:
     constexpr axis_aligned_rectangle(point2 const &p0, extent2 const &extent) noexcept :
         v(static_cast<f32x4>(p0).xyxy() + static_cast<f32x4>(extent)._00xy())
     {
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     constexpr explicit operator f32x4() const noexcept
@@ -135,7 +135,7 @@ public:
         case 1: return point2{v.zy01()};
         case 2: return point2{v.xw01()};
         case 3: return point2{v.zw01()};
-        default: tt_no_default();
+        default: hi_no_default();
         }
     }
 
@@ -151,7 +151,7 @@ public:
         } else if constexpr (I == 3) {
             return point2{rhs.v.zw01()};
         } else {
-            tt_static_no_default();
+            hi_static_no_default();
         }
     }
 
@@ -268,7 +268,7 @@ public:
             x = haystack.center() - needle.width() * 0.5f;
 
         } else {
-            tt_no_default();
+            hi_no_default();
         }
 
         float y;
@@ -282,7 +282,7 @@ public:
             y = haystack.middle() - needle.height() * 0.5f;
 
         } else {
-            tt_no_default();
+            hi_no_default();
         }
 
         return {point2{x, y}, needle};
@@ -319,7 +319,7 @@ public:
             return false;
         }
 
-        ttlet rhs_swap = rhs.v.zwxy();
+        hilet rhs_swap = rhs.v.zwxy();
 
         // lhs.p0.x > rhs.p3.x | lhs.p0.y > rhs.p3.y
         if ((gt(lhs.v, rhs_swap) & 0b0011) != 0) {
@@ -363,12 +363,12 @@ public:
      */
     [[nodiscard]] friend constexpr axis_aligned_rectangle operator*(axis_aligned_rectangle const &lhs, float rhs) noexcept
     {
-        ttlet new_extent = lhs.size() * rhs;
-        ttlet diff = vector2{new_extent} - vector2{lhs.size()};
-        ttlet offset = diff * 0.5f;
+        hilet new_extent = lhs.size() * rhs;
+        hilet diff = vector2{new_extent} - vector2{lhs.size()};
+        hilet offset = diff * 0.5f;
 
-        ttlet p0 = get<0>(lhs) - offset;
-        ttlet p3 = max(get<3>(lhs) + offset, p0);
+        hilet p0 = get<0>(lhs) - offset;
+        hilet p3 = max(get<3>(lhs) + offset, p0);
         return axis_aligned_rectangle{p0, p3};
     }
 
@@ -439,8 +439,8 @@ public:
     [[nodiscard]] friend constexpr axis_aligned_rectangle
     intersect(axis_aligned_rectangle const &lhs, axis_aligned_rectangle const &rhs) noexcept
     {
-        ttlet p0 = max(get<0>(lhs), get<0>(rhs));
-        ttlet p3 = min(get<3>(lhs), get<3>(rhs));
+        hilet p0 = max(get<0>(lhs), get<0>(rhs));
+        hilet p3 = min(get<3>(lhs), get<3>(rhs));
         if (p0.x() < p3.x() && p0.y() < p3.y()) {
             return {p0, p3};
         } else {
@@ -460,21 +460,21 @@ public:
 
     [[nodiscard]] constexpr friend float distance(axis_aligned_rectangle const &lhs, point2 const &rhs) noexcept
     {
-        ttlet lhs_ = static_cast<f32x4>(lhs);
-        ttlet rhs_ = static_cast<f32x4>(rhs);
+        hilet lhs_ = static_cast<f32x4>(lhs);
+        hilet rhs_ = static_cast<f32x4>(rhs);
         // Only (x,y) of subsequent calculations are valid, (z,w) have garbage values.
-        ttlet closest_point = max(min(rhs_, lhs_.zwzw()), lhs_);
-        ttlet v_closest_point = closest_point - rhs_;
+        hilet closest_point = max(min(rhs_, lhs_.zwzw()), lhs_);
+        hilet v_closest_point = closest_point - rhs_;
         return hypot<0b0011>(v_closest_point);
     }
 };
 
 using aarectangle = axis_aligned_rectangle;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<>
-class std::atomic<tt::axis_aligned_rectangle> {
+class std::atomic<hi::axis_aligned_rectangle> {
 public:
     static constexpr bool is_always_lock_free = false;
 
@@ -484,14 +484,14 @@ public:
     atomic &operator=(atomic const &) = default;
     atomic &operator=(atomic &&) = default;
 
-    constexpr atomic(tt::axis_aligned_rectangle const &rhs) noexcept : _value(rhs) {}
-    atomic &operator=(tt::axis_aligned_rectangle const &rhs) noexcept
+    constexpr atomic(hi::axis_aligned_rectangle const &rhs) noexcept : _value(rhs) {}
+    atomic &operator=(hi::axis_aligned_rectangle const &rhs) noexcept
     {
         store(rhs);
         return *this;
     }
 
-    operator tt::axis_aligned_rectangle() const noexcept
+    operator hi::axis_aligned_rectangle() const noexcept
     {
         return load();
     }
@@ -501,32 +501,32 @@ public:
         return is_always_lock_free;
     }
 
-    void store(tt::axis_aligned_rectangle desired, std::memory_order = std::memory_order_seq_cst) noexcept
+    void store(hi::axis_aligned_rectangle desired, std::memory_order = std::memory_order_seq_cst) noexcept
     {
-        ttlet lock = std::scoped_lock(_mutex);
+        hilet lock = std::scoped_lock(_mutex);
         _value = desired;
     }
 
-    tt::axis_aligned_rectangle load(std::memory_order = std::memory_order_seq_cst) const noexcept
+    hi::axis_aligned_rectangle load(std::memory_order = std::memory_order_seq_cst) const noexcept
     {
-        ttlet lock = std::scoped_lock(_mutex);
+        hilet lock = std::scoped_lock(_mutex);
         return _value;
     }
 
-    tt::axis_aligned_rectangle
-    exchange(tt::axis_aligned_rectangle desired, std::memory_order = std::memory_order_seq_cst) noexcept
+    hi::axis_aligned_rectangle
+    exchange(hi::axis_aligned_rectangle desired, std::memory_order = std::memory_order_seq_cst) noexcept
     {
-        ttlet lock = std::scoped_lock(_mutex);
+        hilet lock = std::scoped_lock(_mutex);
         return std::exchange(_value, desired);
     }
 
     bool compare_exchange_weak(
-        tt::axis_aligned_rectangle &expected,
-        tt::axis_aligned_rectangle desired,
+        hi::axis_aligned_rectangle &expected,
+        hi::axis_aligned_rectangle desired,
         std::memory_order,
         std::memory_order) noexcept
     {
-        ttlet lock = std::scoped_lock(_mutex);
+        hilet lock = std::scoped_lock(_mutex);
         if (_value == expected) {
             _value = desired;
             return true;
@@ -537,8 +537,8 @@ public:
     }
 
     bool compare_exchange_strong(
-        tt::axis_aligned_rectangle &expected,
-        tt::axis_aligned_rectangle desired,
+        hi::axis_aligned_rectangle &expected,
+        hi::axis_aligned_rectangle desired,
         std::memory_order success,
         std::memory_order failure) noexcept
     {
@@ -546,48 +546,48 @@ public:
     }
 
     bool compare_exchange_weak(
-        tt::axis_aligned_rectangle &expected,
-        tt::axis_aligned_rectangle desired,
+        hi::axis_aligned_rectangle &expected,
+        hi::axis_aligned_rectangle desired,
         std::memory_order order = std::memory_order_seq_cst) noexcept
     {
         return compare_exchange_weak(expected, desired, order, order);
     }
 
     bool compare_exchange_strong(
-        tt::axis_aligned_rectangle &expected,
-        tt::axis_aligned_rectangle desired,
+        hi::axis_aligned_rectangle &expected,
+        hi::axis_aligned_rectangle desired,
         std::memory_order order = std::memory_order_seq_cst) noexcept
     {
         return compare_exchange_strong(expected, desired, order, order);
     }
 
-    tt::axis_aligned_rectangle fetch_or(tt::axis_aligned_rectangle arg, std::memory_order = std::memory_order_seq_cst) noexcept
+    hi::axis_aligned_rectangle fetch_or(hi::axis_aligned_rectangle arg, std::memory_order = std::memory_order_seq_cst) noexcept
     {
-        ttlet lock = std::scoped_lock(_mutex);
+        hilet lock = std::scoped_lock(_mutex);
         auto tmp = _value;
         _value = tmp | arg;
         return tmp;
     }
 
-    tt::axis_aligned_rectangle operator|=(tt::axis_aligned_rectangle arg) noexcept
+    hi::axis_aligned_rectangle operator|=(hi::axis_aligned_rectangle arg) noexcept
     {
-        ttlet lock = std::scoped_lock(_mutex);
+        hilet lock = std::scoped_lock(_mutex);
         return _value |= arg;
     }
 
 private:
-    tt::axis_aligned_rectangle _value;
-    mutable tt::unfair_mutex _mutex;
+    hi::axis_aligned_rectangle _value;
+    mutable hi::unfair_mutex _mutex;
 };
 
 template<typename CharT>
-struct std::formatter<tt::axis_aligned_rectangle, CharT> : std::formatter<float, CharT> {
+struct std::formatter<hi::axis_aligned_rectangle, CharT> : std::formatter<float, CharT> {
     auto parse(auto &pc)
     {
         return pc.end();
     }
 
-    auto format(tt::axis_aligned_rectangle const &t, auto &fc)
+    auto format(hi::axis_aligned_rectangle const &t, auto &fc)
     {
         return std::vformat_to(fc.out(), "{}:{}", std::make_format_args(get<0>(t), t.size()));
     }

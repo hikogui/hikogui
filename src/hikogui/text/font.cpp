@@ -6,7 +6,7 @@
 #include "true_type_font.hpp"
 #include "../resource_view.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] glyph_ids font::find_glyph(grapheme g) const noexcept
 {
@@ -22,7 +22,7 @@ namespace tt::inline v1 {
 
     // First try composed normalization
     for (std::size_t i = 0; i != g.size(); ++i) {
-        if (ttlet glyph_id = find_glyph(g[i])) {
+        if (hilet glyph_id = find_glyph(g[i])) {
             r += glyph_id;
         } else {
             r.clear();
@@ -32,8 +32,8 @@ namespace tt::inline v1 {
 
     if (not r) {
         // First try decomposed normalization
-        for (ttlet c : g.decomposed()) {
-            if (ttlet glyph_id = find_glyph(c)) {
+        for (hilet c : g.decomposed()) {
+            if (hilet glyph_id = find_glyph(c)) {
                 r += glyph_id;
             } else {
                 r.clear();
@@ -45,4 +45,4 @@ namespace tt::inline v1 {
     return r;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

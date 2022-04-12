@@ -11,7 +11,7 @@
 #include <algorithm>
 #include <set>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<typename Key, typename Value>
 class range_map {
@@ -44,7 +44,7 @@ class range_map {
      */
     auto find(Key const &key) noexcept
     {
-        return std::lower_bound(items.begin(), items.end(), key, [](ttlet &a, ttlet &b) {
+        return std::lower_bound(items.begin(), items.end(), key, [](hilet &a, hilet &b) {
             return a.first < b;
         });
     }
@@ -61,35 +61,35 @@ public:
      */
     void insert(Key const &first, Key const &last, Value &&value) noexcept
     {
-        tt_assert(last > first);
+        hi_assert(last > first);
 
         // Find all (partially) overlapping items.
         auto first_ = find(first);
         auto last_ = find(last);
-        ttlet delta = std::distance(first_, last_);
-        tt_axiom(delta >= 0);
+        hilet delta = std::distance(first_, last_);
+        hi_axiom(delta >= 0);
 
-        tt_axiom(first_ != items.end());
+        hi_axiom(first_ != items.end());
         if (first_->first != first) {
             // Split the first element.
-            ttlet tmp_last = first_->last;
+            hilet tmp_last = first_->last;
             first_->last = first;
 
             first_ = items.emplace(first_ + 1, first, tmp_last, first_->values);
             last_ = first_ + delta;
         }
 
-        tt_axiom(last_ != items.end());
+        hi_axiom(last_ != items.end());
         if (last_->last != last) {
             // Split the last element.
-            ttlet tmp_first = last_->first;
+            hilet tmp_first = last_->first;
             last_->first = last;
 
             last_ = items.emplace(last_, tmp_first, last, first_->values);
             first_ = last_ - delta;
         }
 
-        tt_axiom(last_ != items.end());
+        hi_axiom(last_ != items.end());
         ++last_;
         for (auto i = first_; i != last_; ++i) {
             *i += value;
@@ -102,7 +102,7 @@ public:
     {
         std::set<
             std::shared_ptr<values>,
-            [](ttlet &lhs, ttlet &rhs) {
+            [](hilet &lhs, hilet &rhs) {
                 return *lhs < *rhs;
             }>
             values_set;
@@ -111,7 +111,7 @@ public:
         values_set.insert(p->values);
         for (auto i = p + 1; i != items.end(); p = i++) {
             // De-duplicate value-sets.
-            ttlet[deduplicated_values, dummy] = values_set.insert(i->values);
+            hilet[deduplicated_values, dummy] = values_set.insert(i->values);
             i->values = *deduplicated_values;
 
             if (can_be_merged(*p, *i)) {
@@ -130,4 +130,4 @@ public:
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

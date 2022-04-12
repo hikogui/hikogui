@@ -11,7 +11,7 @@
 #include <cmath>
 
 using namespace std;
-using namespace tt;
+using namespace hi;
 
 [[nodiscard]] static std::map<int, float> dither_test(int num_bits, float sample_value) noexcept
 {

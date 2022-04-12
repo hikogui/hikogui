@@ -3,7 +3,7 @@
 
 #include "security.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<typename Allocator>
 class secure_vector_base {
@@ -70,7 +70,7 @@ public:
     {
         resize(0);
         shrink_to_fit();
-        tt_axiom(_begin = nullptr);
+        hi_axiom(_begin = nullptr);
     }
 
     [[nodiscard]] constexpr bool empty() const noexcept
@@ -116,38 +116,38 @@ public:
     [[nodiscard]] constexpr reference operator[](size_type pos) noexcept
     {
         auto *ptr = _begin + pos;
-        tt_axiom(ptr < _end);
+        hi_axiom(ptr < _end);
         return *ptr;
     }
 
     [[nodiscard]] constexpr const_reference operator[](size_type pos) const noexcept
     {
         auto *ptr = _begin + pos;
-        tt_axiom(ptr < _end);
+        hi_axiom(ptr < _end);
         return *ptr;
     }
 
     [[nodiscard]] constexpr reference front() noexcept
     {
-        tt_axiom(not empty());
+        hi_axiom(not empty());
         return *_begin;
     }
 
     [[nodiscard]] constexpr const_reference front() const noexcept
     {
-        tt_axiom(not empty());
+        hi_axiom(not empty());
         return *_begin;
     }
 
     [[nodiscard]] constexpr reference back() noexcept
     {
-        tt_axiom(not empty());
+        hi_axiom(not empty());
         return *(_end - 1);
     }
 
     [[nodiscard]] constexpr const_reference back() const noexcept
     {
-        tt_axiom(not empty());
+        hi_axiom(not empty());
         return *(_end - 1);
     }
 
@@ -210,7 +210,7 @@ public:
     constexpr reference emplace_back(auto &&...args)
     {
         grow();
-        auto tmp = std::construct_at(_end, tt_forward(args)...);
+        auto tmp = std::construct_at(_end, hi_forward(args)...);
         ++_end;
         return *tmp;
     }
@@ -233,11 +233,11 @@ public:
 
     constexpr iterator emplace(const_iterator pos, auto &&...args)
     {
-        ttlet index = std::distance(begin(), pos);
-        ttlet n_first = &emplace_back(tt_forward(args)...);
+        hilet index = std::distance(begin(), pos);
+        hilet n_first = &emplace_back(hi_forward(args)...);
 
         // Rotate the newly back-emplaced item to it's intended position.
-        ttlet first = _begin + index;
+        hilet first = _begin + index;
         if (first != n_first) {
             std::rotate(first, n_first, _end);
         }
@@ -260,7 +260,7 @@ public:
             return;
         }
 
-        ttlet tmp = allocate(new_capacity);
+        hilet tmp = allocate(new_capacity);
         try {
             secure_unitialized_move(_begin, _end, _tmp);
             _end = tmp + size();
@@ -281,8 +281,8 @@ public:
             }
 
         } else {
-            ttlet new_capacity = size();
-            ttlet tmp = allocate(new_capacity);
+            hilet new_capacity = size();
+            hilet tmp = allocate(new_capacity);
             try {
                 secure_unitialized_move(_begin, _end, _tmp);
                 _end = tmp + size();
@@ -310,7 +310,7 @@ private:
         auto new_size = size();
         new_size = new_size ? new_size : 8;
 
-        ttlet minimum_new_size = new_size + count;
+        hilet minimum_new_size = new_size + count;
 
         while (new_size < minimum_new_size) {
             new_size += new_size >> 1;
@@ -324,7 +324,7 @@ private:
     {
         reserve(new_size);
 
-        ttlet new_end = _begin + new_size;
+        hilet new_end = _begin + new_size;
 
         if (new_end > _end) {
             // Construct the new values.

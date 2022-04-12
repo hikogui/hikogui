@@ -4,7 +4,7 @@
 
 #include "speaker_mapping.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] std::string to_string(speaker_mapping rhs) noexcept
 {
@@ -76,4 +76,4 @@ namespace tt::inline v1 {
     return r;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

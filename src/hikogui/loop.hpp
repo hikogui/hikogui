@@ -15,7 +15,7 @@
 #include <vector>
 #include <memory>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 class gui_window;
 
 class loop {
@@ -34,25 +34,25 @@ public:
 
         [[nodiscard]] void wfree_post_function(auto&& func) noexcept
         {
-            return _function_fifo.add_function(tt_forward(func));
+            return _function_fifo.add_function(hi_forward(func));
         }
 
         [[nodiscard]] void post_function(auto&& func) noexcept
         {
-            _function_fifo.add_function(tt_forward(func));
+            _function_fifo.add_function(hi_forward(func));
             notify_has_send();
         }
 
         [[nodiscard]] auto async_function(auto&& func) noexcept
         {
-            auto future = _function_fifo.add_async_function(tt_forward(func));
+            auto future = _function_fifo.add_async_function(hi_forward(func));
             notify_has_send();
             return future;
         }
 
         timer_token_type delay_function(utc_nanoseconds time_point, auto&& func) noexcept
         {
-            auto [token, first_to_call] = _function_timer.delay_function(time_point, tt_forward(func));
+            auto [token, first_to_call] = _function_timer.delay_function(time_point, hi_forward(func));
             if (first_to_call) {
                 // Notify if the added function is the next function to call.
                 notify_has_send();
@@ -62,7 +62,7 @@ public:
 
         timer_token_type repeat_function(std::chrono::nanoseconds period, utc_nanoseconds time_point, auto&& func) noexcept
         {
-            auto [token, first_to_call] = _function_timer.repeat_function(period, time_point, tt_forward(func));
+            auto [token, first_to_call] = _function_timer.repeat_function(period, time_point, hi_forward(func));
             if (first_to_call) {
                 // Notify if the added function is the next function to call.
                 notify_has_send();
@@ -72,7 +72,7 @@ public:
 
         timer_token_type repeat_function(std::chrono::nanoseconds period, auto&& func) noexcept
         {
-            auto [token, first_to_call] = _function_timer.repeat_function(period, tt_forward(func));
+            auto [token, first_to_call] = _function_timer.repeat_function(period, hi_forward(func));
             if (first_to_call) {
                 // Notify if the added function is the next function to call.
                 notify_has_send();
@@ -117,7 +117,7 @@ public:
 
     /** Get or create the thread-local loop.
      */
-    [[nodiscard]] tt_no_inline static loop& local() noexcept
+    [[nodiscard]] hi_no_inline static loop& local() noexcept
     {
         if (not _local) {
             _local = std::make_unique<loop>();
@@ -130,7 +130,7 @@ public:
      * @note The first time main() is called must be from the main-thread.
      *       In this case there is no race condition on the first time main() is called.
      */
-    [[nodiscard]] tt_no_inline static loop& main() noexcept
+    [[nodiscard]] hi_no_inline static loop& main() noexcept
     {
         if (auto ptr = _main.load(std::memory_order::acquire)) {
             return *ptr;
@@ -146,7 +146,7 @@ public:
      *
      * @note The first time this is called a thread is started to handle the timer events.
      */
-    [[nodiscard]] tt_no_inline static loop& timer() noexcept
+    [[nodiscard]] hi_no_inline static loop& timer() noexcept
     {
         return *start_subsystem_or_terminate(_timer, nullptr, timer_init, timer_deinit);
     }
@@ -159,7 +159,7 @@ public:
      */
     void set_maximum_frame_rate(double frame_rate) noexcept
     {
-        tt_axiom(_pimpl);
+        hi_axiom(_pimpl);
         return _pimpl->set_maximum_frame_rate(frame_rate);
     }
 
@@ -174,8 +174,8 @@ public:
      */
     [[nodiscard]] void wfree_post_function(auto&& func) noexcept
     {
-        tt_axiom(_pimpl);
-        return _pimpl->wfree_post_function(tt_forward(func));
+        hi_axiom(_pimpl);
+        return _pimpl->wfree_post_function(hi_forward(func));
     }
 
     /** Post a function to be called from the loop.
@@ -185,8 +185,8 @@ public:
      */
     [[nodiscard]] void post_function(auto&& func) noexcept
     {
-        tt_axiom(_pimpl);
-        return _pimpl->post_function(tt_forward(func));
+        hi_axiom(_pimpl);
+        return _pimpl->post_function(hi_forward(func));
     }
 
     /** Call a function from the loop.
@@ -198,8 +198,8 @@ public:
      */
     [[nodiscard]] auto async_function(auto&& func) noexcept
     {
-        tt_axiom(_pimpl);
-        return _pimpl->async_function(tt_forward(func));
+        hi_axiom(_pimpl);
+        return _pimpl->async_function(hi_forward(func));
     }
 
     /** Call a function at a certain time.
@@ -209,8 +209,8 @@ public:
      */
     [[nodiscard]] timer_token_type delay_function(utc_nanoseconds time_point, auto&& func) noexcept
     {
-        tt_axiom(_pimpl);
-        return _pimpl->delay_function(time_point, tt_forward(func));
+        hi_axiom(_pimpl);
+        return _pimpl->delay_function(time_point, hi_forward(func));
     }
 
     /** Call a function repeatedly.
@@ -222,8 +222,8 @@ public:
     [[nodiscard]] timer_token_type
     repeat_function(std::chrono::nanoseconds period, utc_nanoseconds time_point, auto&& func) noexcept
     {
-        tt_axiom(_pimpl);
-        return _pimpl->repeat_function(period, time_point, tt_forward(func));
+        hi_axiom(_pimpl);
+        return _pimpl->repeat_function(period, time_point, hi_forward(func));
     }
 
     /** Call a function repeatedly.
@@ -233,8 +233,8 @@ public:
      */
     [[nodiscard]] timer_token_type repeat_function(std::chrono::nanoseconds period, auto&& func) noexcept
     {
-        tt_axiom(_pimpl);
-        return _pimpl->repeat_function(period, tt_forward(func));
+        hi_axiom(_pimpl);
+        return _pimpl->repeat_function(period, hi_forward(func));
     }
 
     /** Add a window to be redrawn from the event loop.
@@ -243,7 +243,7 @@ public:
      */
     void add_window(std::weak_ptr<gui_window> window) noexcept
     {
-        tt_axiom(_pimpl);
+        hi_axiom(_pimpl);
         return _pimpl->add_window(std::move(window));
     }
 
@@ -261,7 +261,7 @@ public:
      */
     void add_socket(int fd, network_event event_mask, std::function<void(int, network_events const&)> f)
     {
-        tt_axiom(_pimpl);
+        hi_axiom(_pimpl);
         return _pimpl->add_socket(fd, event_mask, std::move(f));
     }
 
@@ -271,7 +271,7 @@ public:
      */
     void remove_socket(int fd)
     {
-        tt_axiom(_pimpl);
+        hi_axiom(_pimpl);
         return _pimpl->remove_socket(fd);
     }
 
@@ -284,7 +284,7 @@ public:
      */
     int resume(std::stop_token stop_token = {}) noexcept
     {
-        tt_axiom(_pimpl);
+        hi_axiom(_pimpl);
         return _pimpl->resume(stop_token);
     }
 
@@ -303,14 +303,14 @@ public:
      */
     void resume_once(bool block = false) noexcept
     {
-        tt_axiom(_pimpl);
+        hi_axiom(_pimpl);
         return _pimpl->resume_once(block);
     }
 
 private:
     static loop *timer_init() noexcept
     {
-        tt_axiom(not _timer_thread.joinable());
+        hi_axiom(not _timer_thread.joinable());
 
         _timer_thread = std::jthread{[](std::stop_token stop_token) {
             _timer.store(std::addressof(loop::local()), std::memory_order::release);
@@ -330,7 +330,7 @@ private:
     static void timer_deinit() noexcept
     {
         if (auto ptr = _timer.exchange(nullptr, std::memory_order::acquire)) {
-            tt_axiom(_timer_thread.joinable());
+            hi_axiom(_timer_thread.joinable());
             _timer_thread.request_stop();
             _timer_thread.join();
         }
@@ -351,4 +351,4 @@ private:
     std::unique_ptr<impl_type> _pimpl;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

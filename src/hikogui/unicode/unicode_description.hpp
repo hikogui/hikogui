@@ -18,7 +18,7 @@
 #include "../assert.hpp"
 #include "../cast.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 namespace detail {
 
 constexpr char32_t unicode_hangul_S_base = U'\uac00';
@@ -124,7 +124,7 @@ public:
 
             if (bidi_bracket_type != unicode_bidi_bracket_type::n and bidi_mirrored_glyph != char32_t{0xffff}) {
                 auto mirrored_glyph_delta = static_cast<int32_t>(bidi_mirrored_glyph) - static_cast<int32_t>(code_point);
-                tt_axiom(mirrored_glyph_delta >= bidi_mirrored_glyph_min and mirrored_glyph_delta <= bidi_mirrored_glyph_max);
+                hi_axiom(mirrored_glyph_delta >= bidi_mirrored_glyph_min and mirrored_glyph_delta <= bidi_mirrored_glyph_max);
                 _non_mark.bidi_mirrored_glyph = static_cast<uint32_t>(mirrored_glyph_delta) & bidi_mirrored_glyph_mask;
 
             } else {
@@ -138,22 +138,22 @@ public:
             _mark._reserved = 0;
         }
 
-        tt_axiom(code_point <= 0x10ffff);
-        tt_axiom(to_underlying(general_category) <= 0x1f);
-        tt_axiom(to_underlying(grapheme_cluster_break) <= 0x0f);
-        tt_axiom(to_underlying(line_break_class) <= 0x3f);
-        tt_axiom(to_underlying(word_break_property) <= 0x1f);
-        tt_axiom(to_underlying(sentence_break_property) <= 0xf);
-        tt_axiom(to_underlying(east_asian_width) <= 0x7);
-        tt_axiom(to_underlying(script) <= 0xff);
-        tt_axiom(to_underlying(bidi_class) <= 0x1f);
-        tt_axiom(to_underlying(bidi_bracket_type) <= 0x03);
-        tt_axiom(static_cast<uint32_t>(bidi_mirrored_glyph) <= 0x10ffff);
-        tt_axiom(static_cast<uint32_t>(canonical_combining_class) <= 0xff);
-        tt_axiom(to_underlying(decomposition_type) <= 0x7);
-        tt_axiom(static_cast<uint32_t>(decomposition_length) <= 0x1f);
-        tt_axiom(static_cast<uint32_t>(decomposition_index) <= 0x1f'ffff);
-        tt_axiom(static_cast<uint32_t>(non_starter_code) <= 0x3ff);
+        hi_axiom(code_point <= 0x10ffff);
+        hi_axiom(to_underlying(general_category) <= 0x1f);
+        hi_axiom(to_underlying(grapheme_cluster_break) <= 0x0f);
+        hi_axiom(to_underlying(line_break_class) <= 0x3f);
+        hi_axiom(to_underlying(word_break_property) <= 0x1f);
+        hi_axiom(to_underlying(sentence_break_property) <= 0xf);
+        hi_axiom(to_underlying(east_asian_width) <= 0x7);
+        hi_axiom(to_underlying(script) <= 0xff);
+        hi_axiom(to_underlying(bidi_class) <= 0x1f);
+        hi_axiom(to_underlying(bidi_bracket_type) <= 0x03);
+        hi_axiom(static_cast<uint32_t>(bidi_mirrored_glyph) <= 0x10ffff);
+        hi_axiom(static_cast<uint32_t>(canonical_combining_class) <= 0xff);
+        hi_axiom(to_underlying(decomposition_type) <= 0x7);
+        hi_axiom(static_cast<uint32_t>(decomposition_length) <= 0x1f);
+        hi_axiom(static_cast<uint32_t>(decomposition_index) <= 0x1f'ffff);
+        hi_axiom(static_cast<uint32_t>(non_starter_code) <= 0x3ff);
     }
 
     [[nodiscard]] static constexpr unicode_description make_unassigned(unicode_description const &other)
@@ -288,10 +288,10 @@ public:
 
         constexpr auto sign_extent_shift = 32 - bidi_mirrored_glyph_width;
 
-        ttlet mirrored_glyph_delta =
+        hilet mirrored_glyph_delta =
             static_cast<int32_t>(_non_mark.bidi_mirrored_glyph << sign_extent_shift) >> sign_extent_shift;
-        ttlet cp = code_point();
-        ttlet mirror_cp = static_cast<char32_t>(cp + mirrored_glyph_delta);
+        hilet cp = code_point();
+        hilet mirror_cp = static_cast<char32_t>(cp + mirrored_glyph_delta);
         return mirror_cp;
     }
 
@@ -377,7 +377,7 @@ public:
      */
     [[nodiscard]] constexpr size_t non_starter_code() const noexcept
     {
-        tt_axiom(is_combining_mark());
+        hi_axiom(is_combining_mark());
         return static_cast<size_t>(_mark.non_starter_code);
     }
 
@@ -512,4 +512,4 @@ private:
 
 static_assert(sizeof(unicode_description) == 16);
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

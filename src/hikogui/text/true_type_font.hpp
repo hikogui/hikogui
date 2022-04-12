@@ -11,7 +11,7 @@
 #include "../counters.hpp"
 #include <memory>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class true_type_font final : public font {
 private:
@@ -71,7 +71,7 @@ public:
     /** Get the glyph for a code-point.
      * @return glyph-index, or invalid when not found or error.
      */
-    [[nodiscard]] tt::glyph_id find_glyph(char32_t c) const noexcept override;
+    [[nodiscard]] hi::glyph_id find_glyph(char32_t c) const noexcept override;
 
     /** Load a glyph into a path.
      * The glyph is directly loaded from the font file.
@@ -80,7 +80,7 @@ public:
      * @param path The path constructed by the loader.
      * @return empty on failure, or the glyphID of the metrics to use.
      */
-    std::optional<tt::glyph_id> load_glyph(tt::glyph_id glyph_id, graphic_path &path) const noexcept override;
+    std::optional<hi::glyph_id> load_glyph(hi::glyph_id glyph_id, graphic_path &path) const noexcept override;
 
     /** Load a glyphMetrics into a path.
      * The glyph is directly loaded from the font file.
@@ -90,10 +90,10 @@ public:
      * @param lookahead_glyph_id The next glyph, used for determining kerning.
      * @return 1 on success, 0 on not implemented
      */
-    bool load_glyph_metrics(tt::glyph_id glyph_id, glyph_metrics &metrics, tt::glyph_id lookahead_glyph_id = tt::glyph_id{})
+    bool load_glyph_metrics(hi::glyph_id glyph_id, glyph_metrics &metrics, hi::glyph_id lookahead_glyph_id = hi::glyph_id{})
         const noexcept override;
 
-    [[nodiscard]] vector2 get_kerning(tt::glyph_id current_glyph, tt::glyph_id next_glyph) const noexcept override;
+    [[nodiscard]] vector2 get_kerning(hi::glyph_id current_glyph, hi::glyph_id next_glyph) const noexcept override;
 
     virtual void substitution_and_kerning(iso_639 language, iso_15924 script, std::vector<substitution_and_kerning_type> &word)
         const noexcept override
@@ -129,7 +129,7 @@ private:
             [[likely]] return;
         }
 
-        tt_axiom(url);
+        hi_axiom(url);
         view = url->loadView();
         ++global_counter<"ttf:map">;
         cache_tables();
@@ -158,21 +158,21 @@ private:
 
     /** Parse the character map to create unicode_ranges.
      */
-    [[nodiscard]] tt::unicode_mask parse_cmap_table_mask() const;
+    [[nodiscard]] hi::unicode_mask parse_cmap_table_mask() const;
 
     /** Find the glyph in the loca table.
      * called by loadGlyph()
      */
-    bool get_glyf_bytes(tt::glyph_id glyph_id, std::span<std::byte const> &bytes) const noexcept;
+    bool get_glyf_bytes(hi::glyph_id glyph_id, std::span<std::byte const> &bytes) const noexcept;
 
     /** Update the glyph metrics from the font tables.
      * called by loadGlyph()
      */
     bool update_glyph_metrics(
-        tt::glyph_id glyph_id,
+        hi::glyph_id glyph_id,
         glyph_metrics &metrics,
-        tt::glyph_id kern_glyph1_id = tt::glyph_id{},
-        tt::glyph_id kern_glyph2_id = tt::glyph_id{}) const noexcept;
+        hi::glyph_id kern_glyph1_id = hi::glyph_id{},
+        hi::glyph_id kern_glyph2_id = hi::glyph_id{}) const noexcept;
 
     bool load_simple_glyph(std::span<std::byte const> bytes, graphic_path &glyph) const noexcept;
 
@@ -185,7 +185,7 @@ private:
      *                          this value is only updated when the USE_MY_METRICS flag was set.
      */
     bool
-    load_compound_glyph(std::span<std::byte const> bytes, graphic_path &glyph, tt::glyph_id &metrics_glyph_id) const noexcept;
+    load_compound_glyph(std::span<std::byte const> bytes, graphic_path &glyph, hi::glyph_id &metrics_glyph_id) const noexcept;
 
     /** Load a compound glyph.
      * This will call loadGlyph() recursively.
@@ -194,7 +194,7 @@ private:
      * \param metricsGlyphIndex The glyph index of the glyph to use for the metrics.
      *                          this value is only updated when the USE_MY_METRICS flag was set.
      */
-    bool load_compound_glyph_metrics(std::span<std::byte const> bytes, tt::glyph_id &metrics_glyph_id) const noexcept;
+    bool load_compound_glyph_metrics(std::span<std::byte const> bytes, hi::glyph_id &metrics_glyph_id) const noexcept;
 
     /** Get the index of the glyph from the coverage table.
      *
@@ -202,7 +202,7 @@ private:
      * @param glyph The glyph to search.
      * @return Coverage-index of the glyph when found, -1 if not found, -2 on error.
      */
-    [[nodiscard]] std::ptrdiff_t get_coverage_index(std::span<std::byte const> bytes, tt::glyph_id glyph) noexcept;
+    [[nodiscard]] std::ptrdiff_t get_coverage_index(std::span<std::byte const> bytes, hi::glyph_id glyph) noexcept;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

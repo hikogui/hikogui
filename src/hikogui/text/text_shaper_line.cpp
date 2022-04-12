@@ -5,7 +5,7 @@
 #include "text_shaper_line.hpp"
 #include "../unicode/unicode_line_break.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 text_shaper_line::text_shaper_line(
     size_t line_nr,
@@ -13,7 +13,7 @@ text_shaper_line::text_shaper_line(
     iterator first,
     iterator last,
     float width,
-    tt::font_metrics const &metrics) noexcept :
+    hi::font_metrics const &metrics) noexcept :
     first(first), last(last), columns(), metrics(metrics), line_nr(line_nr), y(0.0f), width(width), last_category()
 {
     auto last_visible_it = first;
@@ -47,9 +47,9 @@ static void advance_glyphs(text_shaper_line::column_vector &columns, float y) no
 {
     auto p = point2{0.0f, y};
     for (auto it = columns.begin(); it != columns.end(); ++it) {
-        ttlet char_it = *it;
-        ttlet next_it = it + 1;
-        ttlet kerning = next_it == columns.end() ? vector2{} : char_it->get_kerning(**next_it);
+        hilet char_it = *it;
+        hilet next_it = it + 1;
+        hilet kerning = next_it == columns.end() ? vector2{} : char_it->get_kerning(**next_it);
 
         char_it->position = p;
         p += char_it->metrics.advance + kerning;
@@ -69,7 +69,7 @@ calculate_precise_width(text_shaper_line::column_vector &columns, unicode_bidi_c
             break;
         }
     }
-    ttlet left_x = (*it)->position.x();
+    hilet left_x = (*it)->position.x();
 
     auto right_x = left_x;
     auto num_white_space = 0_uz;
@@ -85,7 +85,7 @@ calculate_precise_width(text_shaper_line::column_vector &columns, unicode_bidi_c
         }
     }
 
-    ttlet width = right_x - left_x;
+    hilet width = right_x - left_x;
 
     // Adjust the offset to left align on the first visible character.
     for (auto &char_it : columns) {
@@ -97,7 +97,7 @@ calculate_precise_width(text_shaper_line::column_vector &columns, unicode_bidi_c
 
 static void move_glyphs(text_shaper_line::column_vector &columns, float offset) noexcept
 {
-    for (ttlet &char_it : columns) {
+    for (hilet &char_it : columns) {
         char_it->position.x() += offset;
     }
 }
@@ -112,14 +112,14 @@ static void move_glyphs(text_shaper_line::column_vector &columns, float offset) 
         return false;
     }
 
-    ttlet extra_space = max_line_width - visible_width;
+    hilet extra_space = max_line_width - visible_width;
     if (extra_space > max_line_width * 0.25f) {
         return false;
     }
 
-    ttlet extra_space_per_whitespace = extra_space / num_internal_white_space;
+    hilet extra_space_per_whitespace = extra_space / num_internal_white_space;
     auto offset = 0.0f;
-    for (ttlet &char_it : columns) {
+    for (hilet &char_it : columns) {
         char_it->position.x() += offset;
 
         // Add extra space for each white space in the visible part of the line. Leave the
@@ -151,7 +151,7 @@ static void align_glyphs(
     }
 
     // clang-format off
-    ttlet offset =
+    hilet offset =
         alignment == horizontal_alignment::left ? 0.0f :
         alignment == horizontal_alignment::right ? max_line_width - visible_width :
         (max_line_width - visible_width) * 0.5f;
@@ -162,7 +162,7 @@ static void align_glyphs(
 
 static void round_glyph_positions(text_shaper_line::column_vector &columns, float sub_pixel_width) noexcept
 {
-    ttlet rcp_sub_pixel_width = 1.0f / sub_pixel_width;
+    hilet rcp_sub_pixel_width = 1.0f / sub_pixel_width;
     for (auto it : columns) {
         it->position.x() = std::round(it->position.x() * rcp_sub_pixel_width) * sub_pixel_width;
     }
@@ -171,14 +171,14 @@ static void round_glyph_positions(text_shaper_line::column_vector &columns, floa
 static void create_bounding_rectangles(text_shaper_line::column_vector &columns, float y, float ascender, float descender) noexcept
 {
     for (auto it = columns.begin(); it != columns.end(); ++it) {
-        ttlet next_it = it + 1;
-        ttlet char_it = *it;
+        hilet next_it = it + 1;
+        hilet char_it = *it;
         if (next_it == columns.end()) {
             char_it->rectangle = {
                 point2{char_it->position.x(), y - descender},
                 point2{char_it->position.x() + char_it->metrics.advance.x(), y + ascender}};
         } else {
-            ttlet next_char_it = *next_it;
+            hilet next_char_it = *next_it;
             char_it->rectangle = {
                 point2{char_it->position.x(), y - descender},
                 point2{next_char_it->position.x(), y + ascender}};
@@ -192,7 +192,7 @@ void text_shaper_line::layout(horizontal_alignment alignment, float min_x, float
     advance_glyphs(columns, y);
 
     // Calculate the precise width of the line.
-    ttlet[visible_width, num_internal_white_space] = calculate_precise_width(columns, paragraph_direction);
+    hilet[visible_width, num_internal_white_space] = calculate_precise_width(columns, paragraph_direction);
 
     // Align the glyphs for a given width. But keep the left side at x=0.0.
     align_glyphs(columns, alignment, paragraph_direction, max_x - min_x, visible_width, num_internal_white_space);
@@ -221,7 +221,7 @@ void text_shaper_line::layout(horizontal_alignment alignment, float min_x, float
         return {last, false};
     }
 
-    auto column_it = std::lower_bound(columns.begin(), columns.end(), position.x(), [](ttlet &char_it, ttlet &x) {
+    auto column_it = std::lower_bound(columns.begin(), columns.end(), position.x(), [](hilet &char_it, hilet &x) {
         return char_it->rectangle.right() < x;
     });
     if (column_it == columns.end()) {
@@ -248,8 +248,8 @@ void text_shaper_line::layout(horizontal_alignment alignment, float min_x, float
         }
     }
 
-    ttlet after = (char_it->direction == unicode_bidi_class::L) == position.x() > char_it->rectangle.center();
+    hilet after = (char_it->direction == unicode_bidi_class::L) == position.x() > char_it->rectangle.center();
     return {char_it, after};
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

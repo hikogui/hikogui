@@ -5,7 +5,7 @@
 #include "hikogui/jsonpath.hpp"
 #include <gtest/gtest.h>
 
-using namespace tt;
+using namespace hi;
 
 TEST(jsonpath, parse)
 {

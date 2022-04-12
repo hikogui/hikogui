@@ -6,7 +6,7 @@
 
 #include "formula_node.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct formula_ternary_operator_node final : formula_node {
     std::unique_ptr<formula_node> lhs;
@@ -20,8 +20,8 @@ struct formula_ternary_operator_node final : formula_node {
         formula_node(std::move(location)), lhs(std::move(lhs))
     {
         formula_arguments *pair_ = dynamic_cast<formula_arguments *>(pair.get());
-        tt_assert(pair_ != nullptr);
-        tt_assert(pair_->args.size() == 2);
+        hi_assert(pair_ != nullptr);
+        hi_assert(pair_->args.size() == 2);
 
         rhs_true = std::move(pair_->args[0]);
         rhs_false = std::move(pair_->args[1]);
@@ -37,7 +37,7 @@ struct formula_ternary_operator_node final : formula_node {
 
     datum evaluate(formula_evaluation_context &context) const override
     {
-        ttlet lhs_ = lhs->evaluate(context);
+        hilet lhs_ = lhs->evaluate(context);
         if (lhs_) {
             return rhs_true->evaluate(context);
         } else {
@@ -51,4 +51,4 @@ struct formula_ternary_operator_node final : formula_node {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

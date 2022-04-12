@@ -4,7 +4,7 @@
 
 #include "audio_system_aggregate.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class audio_system_aggregate_delegate : public audio_system_delegate {
 public:
@@ -26,4 +26,4 @@ audio_system_aggregate::audio_system_aggregate(std::weak_ptr<audio_system_delega
 {
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

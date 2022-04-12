@@ -12,7 +12,7 @@
 #include <functional>
 #include <coroutine>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A notifier which can be used to call a set of registered callbacks.
  *
@@ -59,7 +59,7 @@ public:
 
         void await_suspend(std::coroutine_handle<> handle) noexcept
         {
-            tt_axiom(_notifier != nullptr);
+            hi_axiom(_notifier != nullptr);
 
             // We can use the this pointer in the callback, as `await_suspend()` is called by
             // the co-routine on the same object as `await_resume()`.
@@ -117,7 +117,7 @@ public:
      */
     [[nodiscard]] token_type subscribe(std::invocable<Args...> auto&& callback) noexcept
     {
-        auto token = std::make_shared<callback_type>(tt_forward(callback));
+        auto token = std::make_shared<callback_type>(hi_forward(callback));
         _callbacks.emplace_back(token);
         return token;
     }
@@ -173,7 +173,7 @@ private:
 
     void clean_up() const noexcept
     {
-        std::erase_if(_callbacks, [](ttlet& item) {
+        std::erase_if(_callbacks, [](hilet& item) {
             return item.expired();
         });
     }
@@ -185,4 +185,4 @@ private:
 #endif
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

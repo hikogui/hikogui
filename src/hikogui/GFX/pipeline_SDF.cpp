@@ -7,7 +7,7 @@
 #include "gfx_surface_vulkan.hpp"
 #include "gfx_device_vulkan.hpp"
 
-namespace tt::inline v1::pipeline_SDF {
+namespace hi::inline v1::pipeline_SDF {
 
 pipeline_SDF::pipeline_SDF(gfx_surface const &surface) : pipeline_vulkan(surface) {}
 
@@ -19,7 +19,7 @@ void pipeline_SDF::drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_con
 
     std::vector<vk::Buffer> tmpvertexBuffers = {vertexBuffer};
     std::vector<vk::DeviceSize> tmpOffsets = {0};
-    tt_axiom(tmpvertexBuffers.size() == tmpOffsets.size());
+    hi_axiom(tmpvertexBuffers.size() == tmpOffsets.size());
 
     vulkan_device().SDFPipeline->drawInCommandBuffer(commandBuffer);
 
@@ -51,7 +51,7 @@ void pipeline_SDF::drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_con
         pushConstants.red_subpixel_offset = vector2{0.0f, -third};
         pushConstants.blue_subpixel_offset = vector2{0.0f, third};
         break;
-    default: tt_no_default();
+    default: hi_no_default();
     }
 
     commandBuffer.pushConstants(
@@ -61,8 +61,8 @@ void pipeline_SDF::drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_con
         sizeof(push_constants),
         &pushConstants);
 
-    ttlet numberOfRectangles = vertexBufferData.size() / 4;
-    ttlet numberOfTriangles = numberOfRectangles * 2;
+    hilet numberOfRectangles = vertexBufferData.size() / 4;
+    hilet numberOfTriangles = numberOfRectangles * 2;
     vulkan_device().cmdBeginDebugUtilsLabelEXT(commandBuffer, "draw glyphs");
     commandBuffer.drawIndexed(narrow_cast<uint32_t>(numberOfTriangles * 3), 1, 0, 0, 0);
     vulkan_device().cmdEndDebugUtilsLabelEXT(commandBuffer);
@@ -109,7 +109,7 @@ std::vector<vk::DescriptorSetLayoutBinding> pipeline_SDF::createDescriptorSetLay
 
 std::vector<vk::WriteDescriptorSet> pipeline_SDF::createWriteDescriptorSet() const
 {
-    ttlet &sharedImagePipeline = vulkan_device().SDFPipeline;
+    hilet &sharedImagePipeline = vulkan_device().SDFPipeline;
 
     return {
         {
@@ -181,4 +181,4 @@ void pipeline_SDF::teardownvertexBuffers()
     vulkan_device().destroyBuffer(vertexBuffer, vertexBufferAllocation);
 }
 
-} // namespace tt::inline v1::pipeline_SDF
+} // namespace hi::inline v1::pipeline_SDF

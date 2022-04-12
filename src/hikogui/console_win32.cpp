@@ -10,7 +10,7 @@
 #include <memory>
 #include <string_view>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 void console_start() noexcept
 {
@@ -47,10 +47,10 @@ void console_start() noexcept
 
 void console_output(std::string_view text, std::ostream &output) noexcept
 {
-    tt_assert(std::addressof(output) == std::addressof(std::cout) || std::addressof(output) == std::addressof(std::cerr));
+    hi_assert(std::addressof(output) == std::addressof(std::cout) || std::addressof(output) == std::addressof(std::cerr));
 
     if (IsDebuggerPresent()) {
-        ttlet text_ = to_wstring(text);
+        hilet text_ = to_wstring(text);
         OutputDebugStringW(text_.c_str());
 
     } else {
@@ -58,4 +58,4 @@ void console_output(std::string_view text, std::ostream &output) noexcept
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -8,7 +8,7 @@
 #include "hikogui/strings.hpp"
 #include <atomic>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 static metadata library_metadata = metadata{
     "@TT_LIB_NAME@",
@@ -44,7 +44,7 @@ static unfair_mutex application_metadata_mutex;
         return application_metadata;
     }
 
-    ttlet lock = std::scoped_lock(application_metadata_mutex);
+    hilet lock = std::scoped_lock(application_metadata_mutex);
     if (application_metadata_is_set.load(std::memory_order::relaxed)) {
         return application_metadata;
     }
@@ -65,4 +65,4 @@ static unfair_mutex application_metadata_mutex;
     return application_metadata;
 }
 
-} // namespace tt
+} // namespace hi

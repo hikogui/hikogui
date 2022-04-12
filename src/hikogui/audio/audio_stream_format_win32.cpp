@@ -11,11 +11,11 @@
 #include <mmeapi.h>
 #include <bit>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] WAVEFORMATEXTENSIBLE audio_stream_format_to_win32(audio_stream_format x) noexcept
 {
-    ttlet sample_rate = narrow_cast<DWORD>(std::round(x.sample_rate));
+    hilet sample_rate = narrow_cast<DWORD>(std::round(x.sample_rate));
 
     bool extended = false;
 
@@ -62,13 +62,13 @@ namespace tt::inline v1 {
         throw parse_error("Unknown SubFormat");
     }
 
-    tt_parse_check(wave_format.Format.wBitsPerSample % 8 == 0, "wBitsPerSample is not multiple of 8");
-    tt_parse_check(wave_format.Format.wBitsPerSample > 0, "wBitsPerSample is 0");
-    tt_parse_check(wave_format.Format.wBitsPerSample <= 32, "wBitsPerSample is more than 32");
+    hi_parse_check(wave_format.Format.wBitsPerSample % 8 == 0, "wBitsPerSample is not multiple of 8");
+    hi_parse_check(wave_format.Format.wBitsPerSample > 0, "wBitsPerSample is 0");
+    hi_parse_check(wave_format.Format.wBitsPerSample <= 32, "wBitsPerSample is more than 32");
     r.sample_format.num_bytes = narrow_cast<uint8_t>(wave_format.Format.wBitsPerSample / 8);
 
-    tt_parse_check(wave_format.Samples.wValidBitsPerSample > 0, "wValidBitsPerSample is 0");
-    tt_parse_check(
+    hi_parse_check(wave_format.Samples.wValidBitsPerSample > 0, "wValidBitsPerSample is 0");
+    hi_parse_check(
         wave_format.Samples.wValidBitsPerSample <= wave_format.Format.wBitsPerSample, "wValidBitsPerSample > wBitsPerSample");
     r.sample_format.num_bits = narrow_cast<uint8_t>(wave_format.Samples.wValidBitsPerSample);
 
@@ -80,13 +80,13 @@ namespace tt::inline v1 {
 
     r.speaker_mapping = speaker_mapping_from_win32(wave_format.dwChannelMask);
     if (is_direct(r.speaker_mapping)) {
-        tt_parse_check(wave_format.Format.nChannels > 0, "nChannels is zero");
+        hi_parse_check(wave_format.Format.nChannels > 0, "nChannels is zero");
         r.speaker_mapping = make_direct_speaker_mapping(wave_format.Format.nChannels);
     } else {
-        tt_parse_check(num_channels(r.speaker_mapping) == wave_format.Format.nChannels, "dwChannelMask does not match nChannels");
+        hi_parse_check(num_channels(r.speaker_mapping) == wave_format.Format.nChannels, "dwChannelMask does not match nChannels");
     }
 
-    tt_parse_check(wave_format.Format.nSamplesPerSec > 0, "nSamplesPerSec is zero");
+    hi_parse_check(wave_format.Format.nSamplesPerSec > 0, "nSamplesPerSec is zero");
     r.sample_rate = static_cast<double>(wave_format.Format.nSamplesPerSec);
     return r;
 }
@@ -111,18 +111,18 @@ namespace tt::inline v1 {
         throw parse_error(std::format("Unsupported wFormatTag {}", wave_format.wFormatTag));
     }
 
-    tt_parse_check(wave_format.wBitsPerSample > 0, "wBitsPerSample is zero");
-    tt_parse_check(wave_format.wBitsPerSample % 8 == 0, "wBitsPerSample is not multiple of 8");
-    tt_parse_check(wave_format.wBitsPerSample <= 32, "wBitsPerSample greater than 32");
+    hi_parse_check(wave_format.wBitsPerSample > 0, "wBitsPerSample is zero");
+    hi_parse_check(wave_format.wBitsPerSample % 8 == 0, "wBitsPerSample is not multiple of 8");
+    hi_parse_check(wave_format.wBitsPerSample <= 32, "wBitsPerSample greater than 32");
     r.sample_format.num_bits = narrow_cast<uint8_t>(wave_format.wBitsPerSample);
     r.sample_format.num_guard_bits = 0;
     r.sample_format.num_bytes = narrow_cast<uint8_t>(wave_format.wBitsPerSample / 8);
     r.sample_format.endian = std::endian::native;
-    tt_parse_check(wave_format.nSamplesPerSec > 0, "nSamplesPerSec is zero");
+    hi_parse_check(wave_format.nSamplesPerSec > 0, "nSamplesPerSec is zero");
     r.sample_rate = static_cast<double>(wave_format.nSamplesPerSec);
-    tt_parse_check(wave_format.nChannels > 0, "nChannels is zero");
+    hi_parse_check(wave_format.nChannels > 0, "nChannels is zero");
     r.speaker_mapping = make_direct_speaker_mapping(wave_format.nChannels);
     return r;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

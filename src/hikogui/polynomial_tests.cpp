@@ -9,7 +9,7 @@
 #include <string>
 
 using namespace std;
-using namespace tt;
+using namespace hi;
 
 TEST(HikoGUIMath, SolveDepressedCubic)
 {

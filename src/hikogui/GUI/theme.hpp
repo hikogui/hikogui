@@ -16,7 +16,7 @@
 #include "../subsystem.hpp"
 #include <array>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 class font_book;
 
 class theme {
@@ -74,7 +74,7 @@ public:
 
     /** Open and parse a theme file.
      */
-    theme(tt::font_book const &font_book, URL const &url);
+    theme(hi::font_book const &font_book, URL const &url);
 
     /** Create a transformed copy of the theme.
     * 
@@ -88,23 +88,23 @@ public:
     */
     [[nodiscard]] theme transform(float dpi) const noexcept;
 
-    [[nodiscard]] tt::color color(theme_color theme_color, ssize_t nesting_level = 0) const noexcept;
-    [[nodiscard]] tt::text_style const &text_style(theme_text_style theme_color) const noexcept;
+    [[nodiscard]] hi::color color(theme_color theme_color, ssize_t nesting_level = 0) const noexcept;
+    [[nodiscard]] hi::text_style const &text_style(theme_text_style theme_color) const noexcept;
 
 private:
-    std::array<std::vector<tt::color>, num_theme_colors> _colors;
-    std::array<tt::text_style, num_theme_text_styles> _text_styles;
+    std::array<std::vector<hi::color>, num_theme_colors> _colors;
+    std::array<hi::text_style, num_theme_text_styles> _text_styles;
 
     [[nodiscard]] float parse_float(datum const &data, char const *object_name);
     [[nodiscard]] bool parse_bool(datum const &data, char const *object_name);
     [[nodiscard]] std::string parse_string(datum const &data, char const *object_name);
-    [[nodiscard]] tt::color parse_color_value(datum const &data);
-    [[nodiscard]] tt::color parse_color(datum const &data, char const *object_name);
-    [[nodiscard]] std::vector<tt::color> parse_color_list(datum const &data, char const *object_name);
-    [[nodiscard]] tt::text_style parse_text_style_value(tt::font_book const &font_book, datum const &data);
+    [[nodiscard]] hi::color parse_color_value(datum const &data);
+    [[nodiscard]] hi::color parse_color(datum const &data, char const *object_name);
+    [[nodiscard]] std::vector<hi::color> parse_color_list(datum const &data, char const *object_name);
+    [[nodiscard]] hi::text_style parse_text_style_value(hi::font_book const &font_book, datum const &data);
     [[nodiscard]] font_weight parse_font_weight(datum const &data, char const *object_name);
-    [[nodiscard]] tt::text_style parse_text_style(tt::font_book const &font_book, datum const &data, char const *object_name);
-    void parse(tt::font_book const &font_book, datum const &data);
+    [[nodiscard]] hi::text_style parse_text_style(hi::font_book const &font_book, datum const &data, char const *object_name);
+    void parse(hi::font_book const &font_book, datum const &data);
 
     [[nodiscard]] friend std::string to_string(theme const &rhs) noexcept
     {
@@ -117,4 +117,4 @@ private:
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

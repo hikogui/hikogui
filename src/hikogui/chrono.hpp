@@ -6,9 +6,9 @@
 
 #include <chrono>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 using utc_nanoseconds = std::chrono::utc_time<std::chrono::nanoseconds>;
 using sys_nanoseconds = std::chrono::sys_time<std::chrono::nanoseconds>;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

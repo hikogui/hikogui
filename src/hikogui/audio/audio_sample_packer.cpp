@@ -12,7 +12,7 @@
 #include <cstdint>
 #include <tuple>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 static void store_sample(
     int32_t int_sample,
@@ -37,8 +37,8 @@ static void store_sample(
 
 [[nodiscard]] static void store_samples(i8x16 int_samples, std::byte *&dst, i8x16 store_shuffle_indices, std::size_t stride) noexcept
 {
-    tt_axiom(dst != nullptr);
-    tt_axiom(stride > 0);
+    hi_axiom(dst != nullptr);
+    hi_axiom(stride > 0);
 
     // Read out the samples from the other channels, that where packed before.
     auto tmp = i8x16::load(dst);
@@ -62,9 +62,9 @@ static void store_sample(
     std::size_t num_chunks,
     std::size_t stride) noexcept
 {
-    tt_axiom(dst != nullptr);
-    tt_axiom(num_chunks > 0 and num_chunks <= 4);
-    tt_axiom(stride > 0);
+    hi_axiom(dst != nullptr);
+    hi_axiom(num_chunks > 0 and num_chunks <= 4);
+    hi_axiom(stride > 0);
 
     do {
         store_samples(int_samples, dst, store_shuffle_indices, stride);
@@ -80,7 +80,7 @@ static void store_sample(
 
 [[nodiscard]] static f32x4 load_samples(float const *&src) noexcept
 {
-    ttlet r = f32x4::load(src);
+    hilet r = f32x4::load(src);
     src += 4;
     return r;
 }
@@ -101,37 +101,37 @@ audio_sample_packer::audio_sample_packer(audio_sample_format format, std::size_t
     _align_shift = 32 - format.num_bytes * 8;
 }
 
-void audio_sample_packer::operator()(float const *tt_restrict src, std::byte *tt_restrict dst, std::size_t num_samples) const noexcept
+void audio_sample_packer::operator()(float const *hi_restrict src, std::byte *hi_restrict dst, std::size_t num_samples) const noexcept
 {
-    tt_axiom(src != nullptr);
-    tt_axiom(dst != nullptr);
+    hi_axiom(src != nullptr);
+    hi_axiom(dst != nullptr);
 
     // Calculate a conservative number of samples that can be copied quickly
     // without overflowing the dst buffer.
-    ttlet src_end = src + num_samples;
-    ttlet src_fast_end = src + _format.num_fast_quads(_stride, num_samples) * 4;
+    hilet src_end = src + num_samples;
+    hilet src_fast_end = src + _format.num_fast_quads(_stride, num_samples) * 4;
 
-    ttlet store_shuffle_indices = _store_shuffle_indices;
-    ttlet concat_shuffle_indices = _concat_shuffle_indices;
-    ttlet num_chunks_per_quad = _num_chunks_per_quad;
-    ttlet chunk_stride = _chunk_stride;
+    hilet store_shuffle_indices = _store_shuffle_indices;
+    hilet concat_shuffle_indices = _concat_shuffle_indices;
+    hilet num_chunks_per_quad = _num_chunks_per_quad;
+    hilet chunk_stride = _chunk_stride;
 
     if (_format.is_float) {
         while (src != src_fast_end) {
-            ttlet float_samples = load_samples(src);
-            ttlet int_samples = bit_cast<i8x16>(float_samples);
+            hilet float_samples = load_samples(src);
+            hilet int_samples = bit_cast<i8x16>(float_samples);
             store_samples(int_samples, dst, store_shuffle_indices, concat_shuffle_indices, num_chunks_per_quad, chunk_stride);
         }
         while (src != src_end) {
-            ttlet float_sample = load_sample(src);
-            ttlet int_sample = std::bit_cast<int32_t>(float_sample);
+            hilet float_sample = load_sample(src);
+            hilet int_sample = std::bit_cast<int32_t>(float_sample);
             store_sample(int_sample, dst, _stride, _format.num_bytes, _direction, _start_byte, _align_shift);
         }
 
     } else {
-        ttlet multiplier = _multiplier;
-        ttlet one = f32x4::broadcast(1);
-        ttlet min_one = f32x4::broadcast(-1);
+        hilet multiplier = _multiplier;
+        hilet one = f32x4::broadcast(1);
+        hilet min_one = f32x4::broadcast(-1);
 
         auto dither = _dither;
 
@@ -143,7 +143,7 @@ void audio_sample_packer::operator()(float const *tt_restrict src, std::byte *tt
             float_samples = min(float_samples, one);
             float_samples = max(float_samples, min_one);
             float_samples *= multiplier;
-            ttlet int_samples = bit_cast<i8x16>(static_cast<i32x4>(float_samples));
+            hilet int_samples = bit_cast<i8x16>(static_cast<i32x4>(float_samples));
             store_samples(int_samples, dst, store_shuffle_indices, concat_shuffle_indices, num_chunks_per_quad, chunk_stride);
         }
         while (src != src_end) {
@@ -154,7 +154,7 @@ void audio_sample_packer::operator()(float const *tt_restrict src, std::byte *tt
             float_sample = min(float_sample, one);
             float_sample = max(float_sample, min_one);
             float_sample *= multiplier;
-            ttlet int_sample = get<0>(static_cast<i32x4>(float_sample));
+            hilet int_sample = get<0>(static_cast<i32x4>(float_sample));
             store_sample(int_sample, dst, _stride, _format.num_bytes, _direction, _start_byte, _align_shift);
         }
 
@@ -162,4 +162,4 @@ void audio_sample_packer::operator()(float const *tt_restrict src, std::byte *tt
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

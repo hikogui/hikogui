@@ -9,7 +9,7 @@
 #include "../endian.hpp"
 #include <span>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Inflate compressed data using the deflate algorithm
  * `bytes` should include at least 32 bit of trailer, for the overflow check which
@@ -25,4 +25,4 @@ namespace tt::inline v1 {
  */
 bstring inflate(std::span<std::byte const> bytes, std::size_t &offset, std::size_t max_size = 0x0100'0000);
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

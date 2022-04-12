@@ -4,14 +4,14 @@
 
 #include "momentary_button_widget.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 widget_constraints const &momentary_button_widget::set_constraints() noexcept
 {
     _layout = {};
 
     // On left side a check mark, on right side short-cut. Around the label extra margin.
-    ttlet extra_size = extent2{theme().margin * 2.0f, theme().margin * 2.0f};
+    hilet extra_size = extent2{theme().margin * 2.0f, theme().margin * 2.0f};
     _constraints = set_constraints_button() + extra_size;
     _constraints.margins = theme().margin;
     return _constraints;
@@ -46,4 +46,4 @@ void momentary_button_widget::draw_label_button(draw_context const &context) noe
         corner_radii{theme().rounding_radius});
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -6,7 +6,7 @@
 
 #include "cast.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Indentation for writing out text files.
  * This type is used to pass indentation information recursivly to
@@ -86,4 +86,4 @@ private:
     int _depth;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

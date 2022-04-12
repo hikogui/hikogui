@@ -12,7 +12,7 @@
 #include <string>
 #include <iostream>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 enum class speaker_mapping : uint64_t {
     /** Direct. speakers are not assigned, and no matrix-mixing is done.
@@ -120,27 +120,27 @@ enum class speaker_mapping : uint64_t {
 
 [[nodiscard]] constexpr speaker_mapping make_direct_speaker_mapping(std::size_t num_speakers) noexcept
 {
-    tt_axiom(num_speakers <= std::numeric_limits<uint32_t>::max());
-    ttlet r = static_cast<speaker_mapping>(num_speakers << 32);
-    tt_axiom(holds_invariant(r));
+    hi_axiom(num_speakers <= std::numeric_limits<uint32_t>::max());
+    hilet r = static_cast<speaker_mapping>(num_speakers << 32);
+    hi_axiom(holds_invariant(r));
     return r;
 }
 
 [[nodiscard]] constexpr speaker_mapping operator|(speaker_mapping const &lhs, speaker_mapping const &rhs) noexcept
 {
-    tt_axiom((is_empty(lhs) or not is_direct(lhs)) and (is_empty(rhs) or not is_direct(rhs)));
+    hi_axiom((is_empty(lhs) or not is_direct(lhs)) and (is_empty(rhs) or not is_direct(rhs)));
 
-    ttlet r = static_cast<speaker_mapping>(to_underlying(lhs) | to_underlying(rhs));
-    tt_axiom(holds_invariant(r));
+    hilet r = static_cast<speaker_mapping>(to_underlying(lhs) | to_underlying(rhs));
+    hi_axiom(holds_invariant(r));
     return r;
 }
 
 [[nodiscard]] constexpr speaker_mapping operator&(speaker_mapping const &lhs, speaker_mapping const &rhs) noexcept
 {
-    tt_axiom(not is_direct(lhs) and not is_direct(rhs));
+    hi_axiom(not is_direct(lhs) and not is_direct(rhs));
 
-    ttlet r = static_cast<speaker_mapping>(to_underlying(lhs) & to_underlying(rhs));
-    tt_axiom(holds_invariant(r));
+    hilet r = static_cast<speaker_mapping>(to_underlying(lhs) & to_underlying(rhs));
+    hi_axiom(holds_invariant(r));
     return r;
 }
 
@@ -221,7 +221,7 @@ struct pickle<speaker_mapping> {
 
     [[nodiscard]] speaker_mapping decode(long long rhs) const
     {
-        tt_parse_check(rhs >= 0, "Expect speaker mapping to be encoded as a natural number, got {}.", rhs);
+        hi_parse_check(rhs >= 0, "Expect speaker mapping to be encoded as a natural number, got {}.", rhs);
         return static_cast<speaker_mapping>(rhs);
     }
 
@@ -235,4 +235,4 @@ struct pickle<speaker_mapping> {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -8,7 +8,7 @@
 #include "resource_view.hpp"
 #include <span>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /*! Map a file into virtual memory.
  */
@@ -145,4 +145,4 @@ private:
     std::size_t _offset;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

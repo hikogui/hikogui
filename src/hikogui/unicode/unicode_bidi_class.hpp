@@ -9,7 +9,7 @@
 #include "../exception.hpp"
 #include "../assert.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Bidirectional class
  * Unicode Standard Annex #9: https://unicode.org/reports/tr9/
@@ -117,8 +117,8 @@ enum class unicode_bidi_class : uint8_t {
     } else if (str == "PDI") {
         return PDI;
     } else {
-        tt_no_default();
+        hi_no_default();
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

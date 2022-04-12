@@ -7,7 +7,7 @@
 #include "matrix.hpp"
 #include "identity.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 namespace geo {
 
 template<int D>
@@ -22,12 +22,12 @@ public:
 
     [[nodiscard]] rotate(float angle, vector<3> axis) noexcept requires(D == 3) : _v()
     {
-        tt_axiom(axis.holds_invariant());
-        tt_axiom(std::abs(hypot(axis) - 1.0f) < 0.0001f);
+        hi_axiom(axis.holds_invariant());
+        hi_axiom(std::abs(hypot(axis) - 1.0f) < 0.0001f);
 
-        ttlet half_angle = angle * 0.5f;
-        ttlet C = std::cos(half_angle);
-        ttlet S = std::sin(half_angle);
+        hilet half_angle = angle * 0.5f;
+        hilet C = std::cos(half_angle);
+        hilet S = std::sin(half_angle);
 
         _v = static_cast<f32x4>(axis) * S;
         _v.w() = C;
@@ -35,9 +35,9 @@ public:
 
     [[nodiscard]] rotate(float angle) noexcept requires(D == 2) : _v()
     {
-        ttlet half_angle = angle * 0.5f;
-        ttlet C = std::cos(half_angle);
-        ttlet S = std::sin(half_angle);
+        hilet half_angle = angle * 0.5f;
+        hilet C = std::cos(half_angle);
+        hilet S = std::sin(half_angle);
 
         _v = f32x4{0.0f, 0.0f, 1.0f, 0.0f} * S;
         _v.w() = C;
@@ -59,27 +59,27 @@ public:
         //       2(zx - yw) |     2(xw + zy) | 1 - 2(yy + xx)
 
         // All multiplies.
-        ttlet x_mul = _v.xxxx() * _v;
-        ttlet y_mul = _v.yyyy() * _v;
-        ttlet z_mul = _v.zzzz() * _v;
+        hilet x_mul = _v.xxxx() * _v;
+        hilet y_mul = _v.yyyy() * _v;
+        hilet z_mul = _v.zzzz() * _v;
 
         auto twos = f32x4(-2.0f, 2.0f, 2.0f, 0.0f);
         auto one = f32x4(1.0f, 0.0f, 0.0f, 0.0f);
-        ttlet col0 = one + addsub<0b0011>(z_mul.zwxy(), y_mul.yxwz()) * twos;
+        hilet col0 = one + addsub<0b0011>(z_mul.zwxy(), y_mul.yxwz()) * twos;
         one = one.yxzw();
         twos = twos.yxzw();
-        ttlet col1 = one + addsub<0b0110>(x_mul.yxwz(), z_mul.wzyx()) * twos;
+        hilet col1 = one + addsub<0b0110>(x_mul.yxwz(), z_mul.wzyx()) * twos;
         one = one.xzyw();
         twos = twos.xzyw();
-        ttlet col2 = one + addsub<0b0101>(y_mul.wzyx(), x_mul.zwxy()) * twos;
+        hilet col2 = one + addsub<0b0101>(y_mul.wzyx(), x_mul.zwxy()) * twos;
         one = one.xywz();
         return matrix<D>{col0, col1, col2, one};
     }
 
     std::pair<float, vector<3>> angle_and_axis() const noexcept requires(D == 3)
     {
-        ttlet rcp_length = rcp_hypot<0b0111>(_v);
-        ttlet length = 1.0f / rcp_length;
+        hilet rcp_length = rcp_hypot<0b0111>(_v);
+        hilet length = 1.0f / rcp_length;
 
         return {2.0f * std::atan2(length), vector<3>{_v.xyz0() * rcp_length}};
     }
@@ -96,4 +96,4 @@ private :
 using rotate2 = geo::rotate<2>;
 using rotate3 = geo::rotate<3>;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

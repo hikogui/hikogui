@@ -8,7 +8,7 @@
 #include "../rapid/sfloat_rgba32.hpp"
 #include <vulkan/vulkan.hpp>
 
-namespace tt::inline v1::pipeline_image {
+namespace hi::inline v1::pipeline_image {
 
 /*! A vertex defining a rectangle on a window.
  * The vertex shader will convert window pixel-coordinates to normalized projection-coordinates.
@@ -43,4 +43,4 @@ struct alignas(16) vertex {
     }
 };
 
-} // namespace tt::inline v1::pipeline_image
+} // namespace hi::inline v1::pipeline_image

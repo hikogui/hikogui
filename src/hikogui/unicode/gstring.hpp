@@ -12,9 +12,9 @@
 #include <string>
 
 template<>
-struct std::char_traits<tt::grapheme> {
-    using char_type = tt::grapheme;
-    using int_type = tt::grapheme::value_type;
+struct std::char_traits<hi::grapheme> {
+    using char_type = hi::grapheme;
+    using int_type = hi::grapheme::value_type;
     using off_type = std::streamoff;
     using state_type = std::mbstate_t;
     using pos_type = std::fpos<state_type>;
@@ -122,7 +122,7 @@ struct std::char_traits<tt::grapheme> {
     }
 };
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 using gstring = std::basic_string<grapheme>;
 using gstring_view = std::basic_string_view<grapheme>;
@@ -154,7 +154,7 @@ using gstring = std::pmr::basic_string<grapheme>;
 {
     auto r = std::string{};
     r.reserve(rhs.size());
-    for (ttlet c: rhs) {
+    for (hilet c: rhs) {
         r += to_string(c);
     }
     return r;
@@ -165,27 +165,27 @@ using gstring = std::pmr::basic_string<grapheme>;
     return to_string(gstring_view{rhs});
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<>
-struct std::hash<tt::gstring> {
-    [[nodiscard]] std::size_t operator()(tt::gstring const &rhs) noexcept
+struct std::hash<hi::gstring> {
+    [[nodiscard]] std::size_t operator()(hi::gstring const &rhs) noexcept
     {
         auto r = std::hash<std::size_t>{}(rhs.size());
-        for (ttlet c: rhs) {
-            r = tt::hash_mix_two(r, std::hash<tt::grapheme>{}(c));
+        for (hilet c: rhs) {
+            r = hi::hash_mix_two(r, std::hash<hi::grapheme>{}(c));
         }
         return r;
     }
 };
 
 template<>
-struct std::hash<tt::pmr::gstring> {
-    [[nodiscard]] std::size_t operator()(tt::pmr::gstring const &rhs) noexcept
+struct std::hash<hi::pmr::gstring> {
+    [[nodiscard]] std::size_t operator()(hi::pmr::gstring const &rhs) noexcept
     {
         auto r = std::hash<std::size_t>{}(rhs.size());
-        for (ttlet c : rhs) {
-            r = tt::hash_mix_two(r, std::hash<tt::grapheme>{}(c));
+        for (hilet c : rhs) {
+            r = hi::hash_mix_two(r, std::hash<hi::grapheme>{}(c));
         }
         return r;
     }

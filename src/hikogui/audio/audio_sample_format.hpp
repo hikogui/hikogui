@@ -10,7 +10,7 @@
 #include "../rapid/numeric_array.hpp"
 #include <bit>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Audio sample format.
  * Audio samples described by this type can be in three different formats.
@@ -85,7 +85,7 @@ struct audio_sample_format {
         std::endian endian) noexcept :
         num_bytes(num_bytes), num_guard_bits(num_guard_bits), num_bits(num_bits), is_float(is_float), endian(endian)
     {
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     [[nodiscard]] static constexpr audio_sample_format float32_le() noexcept
@@ -229,4 +229,4 @@ struct audio_sample_format {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

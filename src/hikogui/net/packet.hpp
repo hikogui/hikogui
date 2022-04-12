@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A network message or stream buffer.
  */
@@ -83,7 +83,7 @@ public:
     void write(ssize_t nrBytes) noexcept
     {
         last += nrBytes;
-        tt_axiom(last <= data_end);
+        hi_axiom(last <= data_end);
     }
 
     /** Consume a read.
@@ -92,8 +92,8 @@ public:
     void read(ssize_t nrBytes) noexcept
     {
         first += nrBytes;
-        tt_axiom(first <= last);
+        hi_axiom(first <= last);
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

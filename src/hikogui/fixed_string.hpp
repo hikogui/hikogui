@@ -11,13 +11,13 @@
 #include <format>
 #include <array>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /**
  *
  * example:
  *     ```
- *     template<tt::basic_fixed_string Foo>
+ *     template<hi::basic_fixed_string Foo>
  *     class A {
  *         auto bar() {
  *             return std::string{Foo};
@@ -93,7 +93,7 @@ struct basic_fixed_string {
 
     constexpr explicit basic_fixed_string(std::basic_string_view<value_type> str) noexcept : _str{}
     {
-        tt_axiom(str.size() <= N);
+        hi_axiom(str.size() <= N);
 
         for (auto i = 0_uz; i != str.size(); ++i) {
             _str[i] = str[i];
@@ -102,7 +102,7 @@ struct basic_fixed_string {
 
     constexpr explicit basic_fixed_string(std::basic_string<value_type> const &str) noexcept : _str{}
     {
-        tt_axiom(str.size() <= N);
+        hi_axiom(str.size() <= N);
 
         for (auto i = 0_uz; i != str.size(); ++i) {
             _str[i] = str[i];
@@ -118,7 +118,7 @@ struct basic_fixed_string {
             _str[i] = str[i];
         }
         
-        tt_axiom(str[i] == value_type{});
+        hi_axiom(str[i] == value_type{});
     }
 
     operator std::basic_string_view<value_type>() const noexcept
@@ -203,11 +203,11 @@ using fixed_string = basic_fixed_string<char, N>;
 template<typename CharT, std::size_t N>
 basic_fixed_string(CharT const (&str)[N]) -> basic_fixed_string<CharT, N - 1>;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<typename T, std::size_t N, typename CharT>
-struct std::formatter<tt::basic_fixed_string<T, N>, CharT> : std::formatter<T const *, CharT> {
-    auto format(tt::basic_fixed_string<T, N> const &t, auto &fc)
+struct std::formatter<hi::basic_fixed_string<T, N>, CharT> : std::formatter<T const *, CharT> {
+    auto format(hi::basic_fixed_string<T, N> const &t, auto &fc)
     {
         return std::formatter<T const *, CharT>::format(t.data(), fc);
     }

@@ -13,7 +13,7 @@
 #include "../cast.hpp"
 #include <utility>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 enum class KeyboardState : uint8_t {
     Idle = 0x00,
@@ -55,7 +55,7 @@ struct keyboard_event {
     Type type;
     KeyboardState state;
 
-    tt::grapheme grapheme;
+    hi::grapheme grapheme;
     keyboard_key key;
 
     keyboard_event(Type type = Type::Idle) noexcept : type(type), state(), grapheme(), key() {}
@@ -67,7 +67,7 @@ struct keyboard_event {
     {
     }
 
-    keyboard_event(tt::grapheme grapheme, bool full = true) noexcept :
+    keyboard_event(hi::grapheme grapheme, bool full = true) noexcept :
         type(full ? Type::grapheme : Type::partial_grapheme), state(), grapheme(std::move(grapheme)), key()
     {
     }
@@ -83,7 +83,7 @@ struct keyboard_event {
         case Type::partial_grapheme: r += "partial_grapheme="; break;
         case Type::grapheme: r += "grapheme="; break;
         case Type::Key: r += "Key="; break;
-        default: tt_no_default();
+        default: hi_no_default();
         }
 
         if (rhs.type == Type::partial_grapheme || rhs.type == Type::grapheme) {
@@ -102,4 +102,4 @@ struct keyboard_event {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

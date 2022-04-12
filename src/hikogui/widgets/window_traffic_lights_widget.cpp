@@ -9,7 +9,7 @@
 #include <cmath>
 #include <typeinfo>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 window_traffic_lights_widget::window_traffic_lights_widget(gui_window &window, widget *parent) noexcept : super(window, parent) {}
 
@@ -18,15 +18,15 @@ widget_constraints const &window_traffic_lights_widget::set_constraints() noexce
     _layout = {};
 
     if (theme().operating_system == operating_system::windows) {
-        ttlet size = extent2{theme().large_size * 3.0f, theme().large_size};
+        hilet size = extent2{theme().large_size * 3.0f, theme().large_size};
         return _constraints = {size, size, size};
 
     } else if (theme().operating_system == operating_system::macos) {
-        ttlet size = extent2{DIAMETER * 3.0f + 2.0f * MARGIN + 2.0f * SPACING, DIAMETER + 2.0f * MARGIN};
+        hilet size = extent2{DIAMETER * 3.0f + 2.0f * MARGIN + 2.0f * SPACING, DIAMETER + 2.0f * MARGIN};
         return _constraints = {size, size, size};
 
     } else {
-        tt_no_default();
+        hi_no_default();
     }
 }
 
@@ -58,7 +58,7 @@ void window_traffic_lights_widget::set_layout(widget_layout const &layout) noexc
                 point2(MARGIN + DIAMETER + SPACING + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS),
                 extent2{DIAMETER, DIAMETER}};
         } else {
-            tt_no_default();
+            hi_no_default();
         }
 
         closeWindowGlyph = font_book().find_glyph(hikogui_icon::CloseWindow);
@@ -72,15 +72,15 @@ void window_traffic_lights_widget::set_layout(widget_layout const &layout) noexc
             maximizeWindowGlyph = font_book().find_glyph(hikogui_icon::MaximizeWindowMacOS);
             restoreWindowGlyph = font_book().find_glyph(hikogui_icon::RestoreWindowMacOS);
         } else {
-            tt_no_default();
+            hi_no_default();
         }
 
-        ttlet closeWindowGlyphBB = closeWindowGlyph.get_bounding_box();
-        ttlet minimizeWindowGlyphBB = minimizeWindowGlyph.get_bounding_box();
-        ttlet maximizeWindowGlyphBB = maximizeWindowGlyph.get_bounding_box();
-        ttlet restoreWindowGlyphBB = restoreWindowGlyph.get_bounding_box();
+        hilet closeWindowGlyphBB = closeWindowGlyph.get_bounding_box();
+        hilet minimizeWindowGlyphBB = minimizeWindowGlyph.get_bounding_box();
+        hilet maximizeWindowGlyphBB = maximizeWindowGlyph.get_bounding_box();
+        hilet restoreWindowGlyphBB = restoreWindowGlyph.get_bounding_box();
 
-        ttlet glyph_size = theme().operating_system == operating_system::macos ? 5.0f : theme().icon_size;
+        hilet glyph_size = theme().operating_system == operating_system::macos ? 5.0f : theme().icon_size;
 
         closeWindowGlyphRectangle = align(closeRectangle, closeWindowGlyphBB * glyph_size, alignment::middle_center());
         minimizeWindowGlyphRectangle = align(minimizeRectangle, minimizeWindowGlyphBB * glyph_size, alignment::middle_center());
@@ -93,17 +93,17 @@ void window_traffic_lights_widget::drawMacOS(draw_context const &drawContext) no
 {
     auto context = drawContext;
 
-    ttlet close_circle_color = (not window.active and not *hover) ? color(0.246f, 0.246f, 0.246f) :
+    hilet close_circle_color = (not window.active and not *hover) ? color(0.246f, 0.246f, 0.246f) :
         pressedClose                                      ? color(1.0f, 0.242f, 0.212f) :
                                                             color(1.0f, 0.1f, 0.082f);
     context.draw_box(layout(), closeRectangle, close_circle_color, corner_radii{RADIUS});
 
-    ttlet minimize_circle_color = (not window.active and not *hover) ? color(0.246f, 0.246f, 0.246f) :
+    hilet minimize_circle_color = (not window.active and not *hover) ? color(0.246f, 0.246f, 0.246f) :
         pressedMinimize                                      ? color(1.0f, 0.847f, 0.093f) :
                                                                color(0.784f, 0.521f, 0.021f);
     context.draw_box(layout(), minimizeRectangle, minimize_circle_color, corner_radii{RADIUS});
 
-    ttlet maximize_circle_color = (not window.active and not *hover) ? color(0.246f, 0.246f, 0.246f) :
+    hilet maximize_circle_color = (not window.active and not *hover) ? color(0.246f, 0.246f, 0.246f) :
         pressedMaximize                                      ? color(0.223f, 0.863f, 0.1f) :
                                                                color(0.082f, 0.533f, 0.024f);
 
@@ -152,7 +152,7 @@ void window_traffic_lights_widget::drawWindows(draw_context const &drawContext) 
         context.draw_box(layout(), maximizeRectangle, theme().color(theme_color::fill, semantic_layer));
     }
 
-    ttlet glyph_color = window.active ? label_color() : foreground_color();
+    hilet glyph_color = window.active ? label_color() : foreground_color();
 
     context.draw_glyph(layout(), translate_z(0.1f) * closeWindowGlyphRectangle, glyph_color, closeWindowGlyph);
     context.draw_glyph(layout(), translate_z(0.1f) * minimizeWindowGlyphRectangle, glyph_color, minimizeWindowGlyph);
@@ -173,14 +173,14 @@ void window_traffic_lights_widget::draw(draw_context const &context) noexcept
             drawWindows(context);
 
         } else {
-            tt_no_default();
+            hi_no_default();
         }
     }
 }
 
 bool window_traffic_lights_widget::handle_event(mouse_event const &event) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
     auto handled = super::handle_event(event);
 
     // Check the hover states of each button.
@@ -210,7 +210,7 @@ bool window_traffic_lights_widget::handle_event(mouse_event const &event) noexce
                 switch (window.size_state()) {
                 case gui_window_size::normal: window.set_size_state(gui_window_size::maximized); break;
                 case gui_window_size::maximized: window.set_size_state(gui_window_size::normal); break;
-                default: tt_no_default();
+                default: hi_no_default();
                 }
             }
 
@@ -234,7 +234,7 @@ bool window_traffic_lights_widget::handle_event(mouse_event const &event) noexce
 
 hitbox window_traffic_lights_widget::hitbox_test(point3 position) const noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     if (*visible and *enabled and layout().contains(position) and
         (closeRectangle.contains(position) or minimizeRectangle.contains(position) or maximizeRectangle.contains(position))) {
@@ -244,4 +244,4 @@ hitbox window_traffic_lights_widget::hitbox_test(point3 position) const noexcept
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

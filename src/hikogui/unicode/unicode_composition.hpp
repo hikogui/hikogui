@@ -6,16 +6,16 @@
 
 #include "../assert.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class unicode_composition {
 public:
     [[nodiscard]] constexpr unicode_composition(char32_t first, char32_t second, char32_t composed = 0) noexcept :
         value(static_cast<int64_t>(first) << 42 | static_cast<int64_t>(second) << 21 | static_cast<int64_t>(composed))
     {
-        tt_axiom(first <= 0x10'ffff);
-        tt_axiom(second <= 0x10'ffff);
-        tt_axiom(composed <= 0x10'ffff);
+        hi_axiom(first <= 0x10'ffff);
+        hi_axiom(second <= 0x10'ffff);
+        hi_axiom(composed <= 0x10'ffff);
     }
 
     [[nodiscard]] constexpr char32_t first() const noexcept
@@ -71,4 +71,4 @@ template<typename It>
  */
 [[nodiscard]] char32_t unicode_composition_find(char32_t first, char32_t second) noexcept;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

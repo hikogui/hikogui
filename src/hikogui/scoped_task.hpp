@@ -12,11 +12,11 @@
 #include <memory>
 #include <exception>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A scoped_task.
  *
- * Like the `tt::task` instance this implements a asynchronous co-routine task.
+ * Like the `hi::task` instance this implements a asynchronous co-routine task.
  *
  * If the `scoped_task` object is destroyed, the potentially non-completed co-routine will be destroyed as well.
  * A `scoped_task` is a move-only object.
@@ -46,7 +46,7 @@ public:
 
         void return_value(std::convertible_to<value_type> auto &&value) noexcept
         {
-            *_value_ptr = return_value_type{std::in_place_index<2>, tt_forward(value)};
+            *_value_ptr = return_value_type{std::in_place_index<2>, hi_forward(value)};
         }
 
         void unhandled_exception() noexcept
@@ -63,12 +63,12 @@ public:
                     _notifier(value_type{});
                     return {};
                 }
-                tt_no_default();
+                hi_no_default();
             case 2:
                 // Trigger the notifier with the co_return value.
                 _notifier(std::get<2>(*_value_ptr));
                 return {};
-            default: tt_no_default();
+            default: hi_no_default();
             }
         }
 
@@ -96,7 +96,7 @@ public:
     ~scoped_task()
     {
         if (_value_ptr and not completed()) {
-            tt_axiom(_coroutine);
+            hi_axiom(_coroutine);
             _coroutine.destroy();
         }
     }
@@ -145,7 +145,7 @@ public:
         switch (_value_ptr->index()) {
         case 1: std::rethrow_exception(std::get<1>(*_value_ptr));
         case 2: return std::get<2>(*_value_ptr);
-        default: tt_no_default();
+        default: hi_no_default();
         }
     }
 
@@ -166,7 +166,7 @@ public:
      */
     notifier_type::token_type subscribe(std::invocable<value_type> auto &&callback) noexcept
     {
-        return _coroutine.promise()._notifier.subscribe(tt_forward(callback));
+        return _coroutine.promise()._notifier.subscribe(hi_forward(callback));
     }
 
 private:
@@ -220,7 +220,7 @@ public:
                 // Trigger the notifier with the co_return value.
                 _notifier();
                 return {};
-            default: tt_no_default();
+            default: hi_no_default();
             }
         }
         scoped_task get_return_object() noexcept
@@ -245,7 +245,7 @@ public:
     ~scoped_task()
     {
         if (_value_ptr and not completed()) {
-            tt_axiom(_coroutine);
+            hi_axiom(_coroutine);
             _coroutine.destroy();
         }
     }
@@ -294,7 +294,7 @@ public:
         switch (_value_ptr->index()) {
         case 1: std::rethrow_exception(std::get<1>(*_value_ptr));
         case 2: return;
-        default: tt_no_default();
+        default: hi_no_default();
         }
     }
 
@@ -303,7 +303,7 @@ public:
      */
     notifier_type::token_type subscribe(std::invocable<> auto &&callback) noexcept
     {
-        return _coroutine.promise()._notifier.subscribe(tt_forward(callback));
+        return _coroutine.promise()._notifier.subscribe(hi_forward(callback));
     }
 
 private:
@@ -312,4 +312,4 @@ private:
     const_return_value_ptr_type _value_ptr;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

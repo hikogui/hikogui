@@ -38,14 +38,14 @@ You can see that the constraints are based on the constraints of the label combi
 taken from the theme. The label widget itself is based on `theme().size` and the width of the text.
 
 ```cpp
-tt::widget_constraints const &set_constraints() noexcept override
+hi::widget_constraints const &set_constraints() noexcept override
 {
     _layout = {};
 
     auto const label_constraints = _label_widget->set_constraints();
     _constraints.minimum = label_constraints.minimum;
     _constraints.preferred = label_constraints.preferred + theme().margin;
-    _constraints.maximum = label_constraints.maximum + tt::extent2{100.0f, 50.0f};
+    _constraints.maximum = label_constraints.maximum + hi::extent2{100.0f, 50.0f};
     _constraints.margin = theme().margin;
     return _constraints;
 }
@@ -85,10 +85,10 @@ may have been moved which is captured in the layout as well. As you can see the 
 passed to the child is calculated by transforming the context by the `_label_rectangle`.
 
 ```cpp
-void set_layout(tt::widget_layout const &layout) noexcept override
+void set_layout(hi::widget_layout const &layout) noexcept override
 {
     if (compare_store(_layout, layout)) {
-        _label_rectangle = align(layout.rectangle(), _label_widget->constraints().preferred, tt::alignment::middle_center);
+        _label_rectangle = align(layout.rectangle(), _label_widget->constraints().preferred, hi::alignment::middle_center);
     }
 
     _label_widget->set_layout(_label_rectangle * layout);
@@ -127,7 +127,7 @@ context-sensitive colors which are based on the current theme's colors and may c
 state of the widget, like: keyboard focus, window active & mouse hover.
 
 ```cpp
-void draw(tt::draw_context const &context) noexcept override
+void draw(hi::draw_context const &context) noexcept override
 {
     if (visible) {
         if (overlaps(context, layout())) {
@@ -137,7 +137,7 @@ void draw(tt::draw_context const &context) noexcept override
                 background_color(),
                 foreground_color(),
                 theme().border_width,
-                tt::border_side::outside,
+                hi::border_side::outside,
                 theme().rounding_radius);
         }
 
@@ -169,10 +169,10 @@ The `hitbox_test_from_parent()` will adjust the given position to the local coor
 You can also use this function to combine the `hitbox` results from several children.
 
 ```cpp
-[[nodiscard]] tt::hitbox hitbox_test(tt::point3 position) const noexcept override
+[[nodiscard]] hi::hitbox hitbox_test(hi::point3 position) const noexcept override
 {
     if (visible and enabled and layout().contains(position)) {
-        return {this, position, tt::hitbox::Type::Button};
+        return {this, position, hi::hitbox::Type::Button};
     } else {
         return {};
     }
@@ -196,7 +196,7 @@ values set. This means that any widget that will accept focus from any of those 
 will also accept keyboard focus by a mouse click.
 
 ```cpp
-[[nodiscard]] bool accepts_keyboard_focus(tt::keyboard_focus_group group) const noexcept override
+[[nodiscard]] bool accepts_keyboard_focus(hi::keyboard_focus_group group) const noexcept override
 {
     return visible and enabled and is_normal(group);
 }
@@ -214,11 +214,11 @@ The following steps are executed when a key-press is detected:
  - When the operating system determines that a key press causes a partial character being typed.
     1. The partial-grapheme keyboard event is send to the widget with keyboard focus.
     2. If the event is unhandled send it to the parent widget, until it is handled.
- - Any key event will be translated into a `tt::keyboard_key`, this event is also send before or
+ - Any key event will be translated into a `hi::keyboard_key`, this event is also send before or
    after a (partial-) grapheme event was send.
     1. The key event is send to the widget with keyboard focus.
     2. If the event is unhandled send it to the parent widget, until it is handled.
-    3. If the event is still unhandled translate the `tt::keyboard_key` into zero or more `tt::command`
+    3. If the event is still unhandled translate the `hi::keyboard_key` into zero or more `hi::command`
        using the `*.keybinds.json` files.
     4. Handle the commands in sequential order, until an command-event is handled:
        1. The command event is send to the widget with keyboard focus.
@@ -230,11 +230,11 @@ code-points where accents are composed on top of a base character. The function 
 to signify that it handled the event and that processing the event should stop.
 
 ```cpp
-bool handle_event(tt::keyboard_event const &event) noexcept
+bool handle_event(hi::keyboard_event const &event) noexcept
 {
     if (enabled) {
-        if (event.type == tt::keyboard_event::Type::grapheme) {
-            tt_log_error("User typed the letter U+{:x}.", static_cast<uint32_t>(event.grapheme.front()));
+        if (event.type == hi::keyboard_event::Type::grapheme) {
+            hi_log_error("User typed the letter U+{:x}.", static_cast<uint32_t>(event.grapheme.front()));
             return true;
         }
     }
@@ -242,7 +242,7 @@ bool handle_event(tt::keyboard_event const &event) noexcept
 }
 ```
 ### Handling mouse events
-Unlike keyboard events mouse events are not easy to directly translate into `tt::command`,
+Unlike keyboard events mouse events are not easy to directly translate into `hi::command`,
 since the position of the mouse inside the widget often determines the context. In many
 cases the handle mouse event function is used to directly translate mouse clicks in commands.
 
@@ -261,10 +261,10 @@ an accidental button-down. The function then forwards this event as a `gui_activ
 which is the same command that is being send when pressing the space-bar.
 
 ```cpp
-[[nodiscard]] bool handle_event(tt::mouse_event const &event) noexcept override
+[[nodiscard]] bool handle_event(hi::mouse_event const &event) noexcept override
 {
     if (enabled and event.is_left_button_up(_layout.rectangle())) {
-        return handle_event(tt::command::gui_activate);
+        return handle_event(hi::command::gui_activate);
     }
     return widget::handle_event(event);
 }
@@ -289,15 +289,15 @@ to a widget:
  | gui_enter          | The primary action and switch keyboard focus to the next widget.  |
 
 ```cpp
-[[nodiscard]] bool handle_event(tt::command command) noexcept override
+[[nodiscard]] bool handle_event(hi::command command) noexcept override
 {
-    if (enabled and command == tt::command::gui_activate) {
+    if (enabled and command == hi::command::gui_activate) {
         value = not value;
         return true;
 
-    } else if (enabled and command == tt::command::gui_enter) {
+    } else if (enabled and command == hi::command::gui_enter) {
         value = not value;
-        window.update_keyboard_target(tt::keyboard_focus_group::normal, tt::keyboard_focus_direction::forward);
+        window.update_keyboard_target(hi::keyboard_focus_group::normal, hi::keyboard_focus_direction::forward);
         return true;
     }
     return widget::handle_event(command);
@@ -322,7 +322,7 @@ The example function below yields the pointer to both children stored as member 
 stored in a vector.  
 
 ```cpp
-[[nodiscard]] tt::generator<widget *> children() const noexcept override
+[[nodiscard]] hi::generator<widget *> children() const noexcept override
 {
     co_yield _label_widget.get();
     co_yield _checkbox_widget.get();

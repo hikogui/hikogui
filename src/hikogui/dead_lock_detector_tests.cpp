@@ -11,7 +11,7 @@
 #include <thread>
 
 using namespace std;
-using namespace tt;
+using namespace hi;
 
 #define ASSERT_NULL(x) ASSERT_EQ(x, nullptr);
 #define ASSERT_NOT_NULL(x) ASSERT_NE(x, nullptr);

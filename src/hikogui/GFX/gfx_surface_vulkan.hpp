@@ -10,7 +10,7 @@
 #include <vk_mem_alloc.h>
 #include <optional>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 class gfx_device_vulkan;
 namespace pipeline_image {
 class pipeline_image;
@@ -142,4 +142,4 @@ private:
     std::tuple<std::size_t, extent2> get_image_count_and_size(std::size_t new_count, extent2 new_size);
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

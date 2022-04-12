@@ -11,7 +11,7 @@
 #include <cstddef>
 #include <bit>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class audio_sample_unpacker {
 public:
@@ -30,7 +30,7 @@ public:
      * @param dst A pointer to a array of floating point samples of a single channel.
      * @param num_samples Number of samples.
      */
-    void operator()(std::byte const *tt_restrict src, float *tt_restrict dst, std::size_t num_samples) const noexcept;
+    void operator()(std::byte const *hi_restrict src, float *hi_restrict dst, std::size_t num_samples) const noexcept;
 
 private:
     f32x4 _multiplier;
@@ -47,4 +47,4 @@ private:
     [[nodiscard]] std::size_t calculate_num_fast_samples(std::size_t num_samples) const noexcept;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

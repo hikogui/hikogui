@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class source_location {
 public:
@@ -50,11 +50,11 @@ private:
     char const *_function_name = nullptr;
 };
 
-#define tt_source_location_current() tt::source_location(__LINE__, 0, __FILE__, __func__)
+#define hi_source_location_current() hi::source_location(__LINE__, 0, __FILE__, __func__)
 
 inline std::string to_string(source_location const &rhs) noexcept
 {
     return std::format("{}:{}", rhs.file_name(), rhs.line());
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

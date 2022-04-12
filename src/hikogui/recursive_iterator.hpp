@@ -8,7 +8,7 @@
 #include <compare>
 #include <iterator>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** An iterator which recursively iterates through nested containers.
  * Currently only recurses through two levels of containers.
@@ -70,7 +70,7 @@ public:
      */
     [[nodiscard]] child_iterator child() const noexcept
     {
-        tt_axiom(!at_end());
+        hi_axiom(!at_end());
         return _child_it;
     }
 
@@ -143,7 +143,7 @@ public:
         }
 
         do {
-            ttlet left_in_child = std::distance(_child_it, std::end(*_parent_it));
+            hilet left_in_child = std::distance(_child_it, std::end(*_parent_it));
 
             if (left_in_child <= rhs) {
                 ++_parent_it;
@@ -169,7 +169,7 @@ public:
         }
 
         do {
-            ttlet left_in_child = !at_end() ? std::distance(std::begin(*_parent_it), _child_it) + 1 : 0;
+            hilet left_in_child = !at_end() ? std::distance(std::begin(*_parent_it), _child_it) + 1 : 0;
 
             if (left_in_child < rhs) {
                 --_parent_it;
@@ -191,7 +191,7 @@ public:
         if (lhs._parent_it != rhs._parent_it) {
             return false;
         } else if (lhs.at_end()) {
-            tt_axiom(rhs.at_end());
+            hi_axiom(rhs.at_end());
             return true;
         } else {
             return lhs._child_it == rhs._child_it;
@@ -203,7 +203,7 @@ public:
         if (lhs._parent_it != rhs._parent_it) {
             return (lhs._parent_it - rhs._parent_it) <=> 0;
         } else if (lhs.at_end()) {
-            tt_axiom(rhs.at_end());
+            hi_axiom(rhs.at_end());
             return std::strong_ordering::equal;
         } else {
             return (lhs._child_it - rhs._child_it) <=> 0;
@@ -277,4 +277,4 @@ template<typename Container>
     return recursive_iterator(end(rhs), end(rhs));
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

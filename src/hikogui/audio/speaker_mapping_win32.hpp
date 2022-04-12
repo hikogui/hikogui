@@ -6,10 +6,10 @@
 
 #include "speaker_mapping.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] speaker_mapping speaker_mapping_from_win32(uint32_t from);
 
 [[nodiscard]] uint32_t speaker_mapping_to_win32(speaker_mapping from) noexcept;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

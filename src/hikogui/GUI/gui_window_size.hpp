@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 enum class gui_window_size { normal, minimized, maximized, fullscreen };
 

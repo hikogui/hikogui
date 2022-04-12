@@ -9,18 +9,18 @@
 #include <string>
 
 using namespace std;
-using namespace tt;
+using namespace hi;
 
 TEST(urlParserTests, parsing)
 {
-    ttlet parts = parse_url("file:");
+    hilet parts = parse_url("file:");
     ASSERT_FALSE(parts.absolute);
     ASSERT_EQ(parts.segments.size(), 0);
 }
 
 TEST(urlParserTests, filenameWithDriveLetter)
 {
-    ttlet parts = parse_url("file:///C:/Program%20Files/RenderDoc/renderdoc.dll");
+    hilet parts = parse_url("file:///C:/Program%20Files/RenderDoc/renderdoc.dll");
     ASSERT_TRUE(parts.absolute);
     ASSERT_EQ(parts.scheme, "file");
     ASSERT_EQ(parts.authority, "");

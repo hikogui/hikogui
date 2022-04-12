@@ -9,7 +9,7 @@
 #include "../check.hpp"
 #include <array>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class audio_device_id {
 public:
@@ -60,7 +60,7 @@ struct pickle<audio_device_id> {
             return datum{std::move(r)};
 
         } else {
-            tt_not_implemented();
+            hi_not_implemented();
         }
     }
 
@@ -73,7 +73,7 @@ struct pickle<audio_device_id> {
         } else {
             auto t = rhs[0];
             if (t == 'w') {
-                tt_parse_check(size(rhs) <= size(r._v), "win32-audio_device_id pickle size to large {}", rhs);
+                hi_parse_check(size(rhs) <= size(r._v), "win32-audio_device_id pickle size to large {}", rhs);
 
                 r._v[0] = audio_device_id::win32;
                 auto i = 1_uz;
@@ -102,4 +102,4 @@ struct pickle<audio_device_id> {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

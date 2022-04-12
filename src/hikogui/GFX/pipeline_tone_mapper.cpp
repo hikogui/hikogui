@@ -7,7 +7,7 @@
 #include "gfx_surface_vulkan.hpp"
 #include "gfx_device_vulkan.hpp"
 
-namespace tt::inline v1::pipeline_tone_mapper {
+namespace hi::inline v1::pipeline_tone_mapper {
 
 pipeline_tone_mapper::pipeline_tone_mapper(gfx_surface const &surface) : pipeline_vulkan(surface) {}
 
@@ -32,7 +32,7 @@ std::vector<vk::PipelineShaderStageCreateInfo> pipeline_tone_mapper::createShade
 
 std::vector<vk::DescriptorSetLayoutBinding> pipeline_tone_mapper::createDescriptorSetLayoutBindings() const
 {
-    // ttlet &color_descriptor_image_infos = narrow_cast<gfx_surface_vulkan const &>(window).colorDescriptorImageInfos;
+    // hilet &color_descriptor_image_infos = narrow_cast<gfx_surface_vulkan const &>(window).colorDescriptorImageInfos;
 
     return {
         {0, // binding
@@ -43,7 +43,7 @@ std::vector<vk::DescriptorSetLayoutBinding> pipeline_tone_mapper::createDescript
 
 std::vector<vk::WriteDescriptorSet> pipeline_tone_mapper::createWriteDescriptorSet() const
 {
-    ttlet &color_descriptor_image_infos = down_cast<gfx_surface_vulkan const &>(surface).colorDescriptorImageInfos;
+    hilet &color_descriptor_image_infos = down_cast<gfx_surface_vulkan const &>(surface).colorDescriptorImageInfos;
 
     return {{
         descriptorSet,
@@ -84,4 +84,4 @@ vk::PipelineDepthStencilStateCreateInfo pipeline_tone_mapper::getPipelineDepthSt
     };
 }
 
-} // namespace tt::inline v1::pipeline_tone_mapper
+} // namespace hi::inline v1::pipeline_tone_mapper

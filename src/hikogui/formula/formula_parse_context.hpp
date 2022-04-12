@@ -9,7 +9,7 @@
 #include <vector>
 #include <string_view>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct formula_parse_context {
     using const_iterator = typename std::vector<token_t>::const_iterator;
@@ -34,8 +34,8 @@ struct formula_parse_context {
 
     formula_parse_context &operator++() noexcept
     {
-        tt_axiom(token_it != tokens.end());
-        tt_axiom(*token_it != tokenizer_name_t::End);
+        hi_axiom(token_it != tokens.end());
+        hi_axiom(*token_it != tokenizer_name_t::End);
         ++token_it;
         return *this;
     }
@@ -48,4 +48,4 @@ struct formula_parse_context {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

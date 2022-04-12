@@ -11,11 +11,11 @@
 
 using namespace std;
 using namespace std::literals;
-using namespace tt;
+using namespace hi;
 
 TEST(datum, IntOperations)
 {
-    ttlet v = datum{42};
+    hilet v = datum{42};
 
     ASSERT_EQ(static_cast<int>(v), 42);
     ASSERT_EQ(static_cast<float>(v), 42.0);
@@ -39,11 +39,11 @@ TEST(datum, IntOperations)
     ASSERT_EQ(v < 41.0, false);
     ASSERT_EQ(v < 43.0, true);
 
-    ttlet a = v + 3;
+    hilet a = v + 3;
     ASSERT_EQ(holds_alternative<long long>(a), true);
     ASSERT_EQ(a == 45, true);
 
-    ttlet b = v + 3.0;
+    hilet b = v + 3.0;
     ASSERT_EQ(holds_alternative<double>(b), true);
     ASSERT_EQ(b == 45.0, true);
 
@@ -66,13 +66,13 @@ TEST(datum, IntOperations)
 
 TEST(datum, DecimalOperations)
 {
-    ttlet v = decimal(-25);
+    hilet v = decimal(-25);
     ASSERT_EQ(static_cast<decimal>(datum{v}), v);
 }
 
 TEST(datum, NegativeIntOperations)
 {
-    ttlet v = datum{-1};
+    hilet v = datum{-1};
 
     ASSERT_EQ(static_cast<int>(v), -1);
     ASSERT_EQ(static_cast<std::string>(v), "-1"s);
@@ -80,7 +80,7 @@ TEST(datum, NegativeIntOperations)
 
 TEST(datum, FloatOperations)
 {
-    ttlet v = datum{42.0};
+    hilet v = datum{42.0};
 
     ASSERT_EQ(static_cast<int>(v), 42);
     ASSERT_EQ(static_cast<float>(v), 42.0);
@@ -100,25 +100,25 @@ TEST(datum, FloatOperations)
     ASSERT_EQ(v < 41, false);
     ASSERT_EQ(v < 43, true);
 
-    ttlet a = v + 3;
+    hilet a = v + 3;
     ASSERT_EQ(holds_alternative<double>(a), true);
     ASSERT_EQ(a == 45.0, true);
 
-    ttlet b = v + 3.0;
+    hilet b = v + 3.0;
     ASSERT_EQ(holds_alternative<double>(b), true);
     ASSERT_EQ(b == 45.0, true);
 }
 
 TEST(datum, StringOperations)
 {
-    ttlet v = datum{"Hello World"};
+    hilet v = datum{"Hello World"};
 
     ASSERT_EQ(static_cast<std::string>(v), "Hello World"s);
 }
 
 TEST(datum, ArrayOperations)
 {
-    ttlet v = datum::make_vector(11, 12, 13, 14, 15);
+    hilet v = datum::make_vector(11, 12, 13, 14, 15);
 
     ASSERT_EQ(v[0], 11);
     ASSERT_EQ(v[1], 12);

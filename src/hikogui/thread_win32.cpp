@@ -9,11 +9,11 @@
 #include <Windows.h>
 #include <Synchapi.h>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 void set_thread_name(std::string_view name)
 {
-    ttlet wname = to_wstring(name);
+    hilet wname = to_wstring(name);
     SetThreadDescription(GetCurrentThread(), wname.data());
 }
 
@@ -46,7 +46,7 @@ static DWORD_PTR mask_vec_to_int(std::vector<bool> const &rhs) noexcept
     auto process_handle = GetCurrentProcess();
 
     if (!GetProcessAffinityMask(process_handle, &process_mask, &system_mask)) {
-        tt_log_fatal("Could not get process affinity mask: {}", get_last_error_message());
+        hi_log_fatal("Could not get process affinity mask: {}", get_last_error_message());
     }
 
     return mask_int_to_vec(process_mask);
@@ -54,11 +54,11 @@ static DWORD_PTR mask_vec_to_int(std::vector<bool> const &rhs) noexcept
 
 std::vector<bool> set_thread_affinity_mask(std::vector<bool> const &mask)
 {
-    ttlet mask_ = mask_vec_to_int(mask);
+    hilet mask_ = mask_vec_to_int(mask);
 
-    ttlet thread_handle = GetCurrentThread();
+    hilet thread_handle = GetCurrentThread();
 
-    ttlet old_mask = SetThreadAffinityMask(thread_handle, mask_);
+    hilet old_mask = SetThreadAffinityMask(thread_handle, mask_);
     if (old_mask == 0) {
         throw os_error(std::format("Could not set the thread affinity. '{}'", get_last_error_message()));
     }
@@ -68,9 +68,9 @@ std::vector<bool> set_thread_affinity_mask(std::vector<bool> const &mask)
 
 [[nodiscard]] std::size_t current_cpu_id() noexcept
 {
-    ttlet index = GetCurrentProcessorNumber();
-    tt_axiom(index < 64);
+    hilet index = GetCurrentProcessorNumber();
+    hi_axiom(index < 64);
     return index;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

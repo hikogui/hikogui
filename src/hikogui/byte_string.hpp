@@ -11,7 +11,7 @@
 #include <concepts>
 #include <type_traits>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 using byteptr = std::byte *;
 using cbyteptr = std::byte const *;
@@ -109,4 +109,4 @@ using bstring_view = std::basic_string_view<std::byte, byte_char_traits>;
     return bstring{{static_cast<std::byte>(args)...}};
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

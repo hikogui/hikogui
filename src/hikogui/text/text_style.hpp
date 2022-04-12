@@ -12,7 +12,7 @@
 #include <format>
 #include <ostream>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 class font_book;
 
 struct text_style {
@@ -25,10 +25,10 @@ struct text_style {
     text_style() noexcept : family_id(), variant(), size(0.0), color(), decoration(text_decoration::None) {}
 
     text_style(
-        tt::font_family_id family_id,
-        tt::font_variant variant,
+        hi::font_family_id family_id,
+        hi::font_variant variant,
         float size,
-        tt::color color,
+        hi::color color,
         text_decoration decoration) noexcept :
         family_id(family_id), variant(variant), size(size), color(color), decoration(decoration)
     {
@@ -46,7 +46,7 @@ struct text_style {
         // return std::format("<text_style id={},v={},s={},c={},d={}>",
         //    rhs.family_id, rhs.variant, rhs.size, rhs.color, rhs.decoration
         //);
-        tt_not_implemented();
+        hi_not_implemented();
     }
 
     friend std::ostream &operator<<(std::ostream &lhs, text_style const &rhs)
@@ -55,4 +55,4 @@ struct text_style {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

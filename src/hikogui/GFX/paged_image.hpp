@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<typename T>
 class pixel_map;
@@ -56,8 +56,8 @@ struct paged_image {
 
     [[nodiscard]] constexpr std::pair<std::size_t, std::size_t> size_in_int_pages() const noexcept
     {
-        ttlet num_columns = (width + page_size - 1) / page_size;
-        ttlet num_rows = (height + page_size - 1) / page_size;
+        hilet num_columns = (width + page_size - 1) / page_size;
+        hilet num_rows = (height + page_size - 1) / page_size;
         return {num_columns, num_rows};
     }
 
@@ -77,4 +77,4 @@ struct paged_image {
     void upload(png const &image) noexcept;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -7,7 +7,7 @@
 #include "unicode_grapheme_cluster_break.hpp"
 #include "unicode_description.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct grapheme_break_state {
     unicode_grapheme_cluster_break previous = unicode_grapheme_cluster_break::Other;
@@ -57,9 +57,9 @@ void wrap_lines(auto first, auto last, float max_width, auto get_width, auto get
     float current_width = 0.0;
 
     for (auto it = first; it != last; ++it) {
-        ttlet code_point = get_code_point(*it);
-        ttlet description = unicode_description::find(code_point);
-        ttlet general_category = description->general_category();
+        hilet code_point = get_code_point(*it);
+        hilet description = unicode_description::find(code_point);
+        hilet general_category = description->general_category();
 
         if (general_category == Zp || general_category == Zl) {
             // Reset the line on existing line and paragraph separator.
@@ -86,4 +86,4 @@ void wrap_lines(auto first, auto last, float max_width, auto get_width, auto get
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

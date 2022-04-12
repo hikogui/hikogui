@@ -9,6 +9,6 @@
 
 TEST(UTF, utf8_to_utf32)
 {
-    ASSERT_EQ(tt::to_u32string("\u4e16"), std::u32string(U"\u4e16"));
-    ASSERT_EQ(tt::to_u32string("Hello \u4e16\u754c"), std::u32string(U"Hello \u4e16\u754c"));
+    ASSERT_EQ(hi::to_u32string("\u4e16"), std::u32string(U"\u4e16"));
+    ASSERT_EQ(hi::to_u32string("Hello \u4e16\u754c"), std::u32string(U"Hello \u4e16\u754c"));
 }

@@ -6,11 +6,11 @@
 #include "gfx_surface_vulkan.hpp"
 #include <ddraw.h>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] std::unique_ptr<gfx_surface> gfx_system_vulkan::make_surface(os_handle instance, void *os_window) const noexcept
 {
-    ttlet lock = std::scoped_lock(gfx_system_mutex);
+    hilet lock = std::scoped_lock(gfx_system_mutex);
 
     auto surface_create_info = vk::Win32SurfaceCreateInfoKHR{
         vk::Win32SurfaceCreateFlagsKHR(), reinterpret_cast<HINSTANCE>(instance), reinterpret_cast<HWND>(os_window)};
@@ -22,4 +22,4 @@ namespace tt::inline v1 {
     return ptr;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

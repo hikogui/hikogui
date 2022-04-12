@@ -6,7 +6,7 @@
 
 #include "skeleton_node.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct skeleton_expression_node final : skeleton_node {
     std::unique_ptr<formula_node> expression;
@@ -28,7 +28,7 @@ struct skeleton_expression_node final : skeleton_node {
 
     datum evaluate(formula_evaluation_context &context) override
     {
-        ttlet tmp = evaluate_formula_without_output(context, *expression, location);
+        hilet tmp = evaluate_formula_without_output(context, *expression, location);
         if (tmp.is_break()) {
             throw operation_error(std::format("{}: Found #break not inside a loop statement.", location));
 
@@ -41,4 +41,4 @@ struct skeleton_expression_node final : skeleton_node {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

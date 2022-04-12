@@ -10,22 +10,22 @@
 #include <ranges>
 #include <vector>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 font_book::font_book(std::vector<URL> const &font_directories)
 {
     create_family_name_fallback_chain();
 
-    for (ttlet &font_directory : font_directories) {
-        ttlet font_directory_glob = font_directory / "**" / "*.ttf";
-        for (ttlet &font_url : font_directory_glob.urlsByScanningWithGlobPattern()) {
+    for (hilet &font_directory : font_directories) {
+        hilet font_directory_glob = font_directory / "**" / "*.ttf";
+        for (hilet &font_url : font_directory_glob.urlsByScanningWithGlobPattern()) {
             auto t = trace<"font_scan">{};
 
             try {
                 register_font(font_url, false);
 
             } catch (std::exception const &e) {
-                tt_log_error("Failed parsing font at {}: \"{}\"", font_url, e.what());
+                hi_log_error("Failed parsing font at {}: \"{}\"", font_url, e.what());
             }
         }
     }
@@ -89,9 +89,9 @@ font &font_book::register_font(URL url, bool post_process)
     auto font = std::make_unique<true_type_font>(url);
     auto font_ptr = font.get();
 
-    tt_log_info("Parsed font {}: {}", url, to_string(*font));
+    hi_log_info("Parsed font {}: {}", url, to_string(*font));
 
-    ttlet font_family_id = register_family(font->family_name);
+    hilet font_family_id = register_family(font->family_name);
     font_variants[*font_family_id][font->font_variant()] = font_ptr;
 
     _fonts.emplace_back(std::move(font));
@@ -104,15 +104,15 @@ font &font_book::register_font(URL url, bool post_process)
     return *font_ptr;
 }
 
-[[nodiscard]] std::vector<tt::font *> font_book::make_fallback_chain(font_weight weight, bool italic) noexcept
+[[nodiscard]] std::vector<hi::font *> font_book::make_fallback_chain(font_weight weight, bool italic) noexcept
 {
     auto r = _font_ptrs;
 
-    std::stable_partition(begin(r), end(r), [weight, italic](ttlet &item) {
+    std::stable_partition(begin(r), end(r), [weight, italic](hilet &item) {
         return (item->italic == italic) and almost_equal(item->weight, weight);
     });
 
-    auto unicode_mask = tt::unicode_mask{};
+    auto unicode_mask = hi::unicode_mask{};
     for (auto &font : r) {
         if (not unicode_mask.contains(font->unicode_mask)) {
             // This font adds unicode code points.
@@ -134,15 +134,15 @@ void font_book::post_process() noexcept
     family_name_cache = family_names;
 
     // Sort the list of fonts based on the amount of unicode code points it supports.
-    std::sort(begin(_font_ptrs), end(_font_ptrs), [](ttlet &lhs, ttlet &rhs) {
+    std::sort(begin(_font_ptrs), end(_font_ptrs), [](hilet &lhs, hilet &rhs) {
         return lhs->unicode_mask.size() > rhs->unicode_mask.size();
     });
 
-    ttlet regular_fallback_chain = make_fallback_chain(font_weight::Regular, false);
-    ttlet bold_fallback_chain = make_fallback_chain(font_weight::Bold, false);
-    ttlet italic_fallback_chain = make_fallback_chain(font_weight::Regular, true);
+    hilet regular_fallback_chain = make_fallback_chain(font_weight::Regular, false);
+    hilet bold_fallback_chain = make_fallback_chain(font_weight::Bold, false);
+    hilet italic_fallback_chain = make_fallback_chain(font_weight::Regular, true);
 
-    tt_log_info(
+    hi_log_info(
         "Post processing fonts number={}, regular-fallback={}, bold-fallback={}, italic-fallback={}",
         size(_fonts),
         size(regular_fallback_chain),
@@ -150,11 +150,11 @@ void font_book::post_process() noexcept
         size(italic_fallback_chain));
 
     // For each font, find fallback list.
-    for (ttlet &font : _font_ptrs) {
-        auto fallback_chain = std::vector<tt::font *>{};
+    for (hilet &font : _font_ptrs) {
+        auto fallback_chain = std::vector<hi::font *>{};
 
         // Put the fonts from the same family, italic and weight first.
-        for (ttlet &fallback : _font_ptrs) {
+        for (hilet &fallback : _font_ptrs) {
             // clang-format off
             if (
                 (fallback != font) and
@@ -185,7 +185,7 @@ void font_book::post_process() noexcept
 
     auto i = family_names.find(name);
     if (i == family_names.end()) {
-        ttlet family_id = font_family_id(font_variants.size());
+        hilet family_id = font_family_id(font_variants.size());
         font_variants.emplace_back();
         family_names[name] = family_id;
 
@@ -205,16 +205,16 @@ void font_book::post_process() noexcept
 
     } else {
         auto j = family_name_fallback_chain.find("fallback");
-        tt_assert(j != family_name_fallback_chain.end());
+        hi_assert(j != family_name_fallback_chain.end());
         return j->second;
     }
 }
 
 [[nodiscard]] font_family_id font_book::find_family(std::string_view family_name) const noexcept
 {
-    ttlet original_name = to_lower(family_name);
+    hilet original_name = to_lower(family_name);
 
-    ttlet i = family_name_cache.find(original_name);
+    hilet i = family_name_cache.find(original_name);
     if (i != family_name_cache.end()) {
         return i->second;
     }
@@ -223,7 +223,7 @@ void font_book::post_process() noexcept
     while (true) {
         name = &(find_fallback_family_name(*name));
 
-        ttlet j = family_names.find(*name);
+        hilet j = family_names.find(*name);
         if (j != family_names.end()) {
             family_name_cache[original_name] = j->second;
             return j->second;
@@ -233,16 +233,16 @@ void font_book::post_process() noexcept
 
 [[nodiscard]] font const &font_book::find_font(font_family_id family_id, font_variant variant) const noexcept
 {
-    tt_assert(family_id);
-    tt_axiom(family_id >= 0 && family_id < ssize(font_variants));
-    ttlet &variants = font_variants[*family_id];
+    hi_assert(family_id);
+    hi_axiom(family_id >= 0 && family_id < ssize(font_variants));
+    hilet &variants = font_variants[*family_id];
     for (auto i = 0; i < 16; i++) {
         if (auto font = variants[variant.alternative(i)]) {
             return *font;
         }
     }
     // If a family exists, there must be at least one font variant available.
-    tt_no_default();
+    hi_no_default();
 }
 
 [[nodiscard]] font const &font_book::find_font(font_family_id family_id, font_weight weight, bool italic) const noexcept
@@ -255,7 +255,7 @@ void font_book::post_process() noexcept
     return find_font(find_family(family_name), weight, italic);
 }
 
-[[nodiscard]] glyph_ids font_book::find_glyph(tt::font const &font, grapheme g) const noexcept
+[[nodiscard]] glyph_ids font_book::find_glyph(hi::font const &font, grapheme g) const noexcept
 {
     auto key = font_grapheme_id{font, g};
 
@@ -272,7 +272,7 @@ void font_book::post_process() noexcept
     }
 
     // Scan fonts which are fallback to this.
-    for (ttlet fallback : font.fallback_chain) {
+    for (hilet fallback : font.fallback_chain) {
         if (glyph_ids = fallback->find_glyph(g)) {
             glyph_cache[key] = glyph_ids;
             return glyph_ids;
@@ -286,4 +286,4 @@ void font_book::post_process() noexcept
     return glyph_ids;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

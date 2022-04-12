@@ -10,7 +10,7 @@
 #include "../rapid/numeric_array.hpp"
 #include <span>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 enum class audio_block_state { normal, silent, corrupt };
 
@@ -71,4 +71,4 @@ public:
     audio_block_state state;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

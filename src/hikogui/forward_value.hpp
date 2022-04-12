@@ -8,7 +8,7 @@
 
 #pragma once
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Functor for forwarding an forwarding-reference to variable.
  *
@@ -82,4 +82,4 @@ struct forward_value<char const (&)[N]> {
 template<typename T>
 using forward_value_t = typename forward_value<T>::type;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

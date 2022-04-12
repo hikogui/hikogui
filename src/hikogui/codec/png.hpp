@@ -18,7 +18,7 @@
 #include <cstdint>
 #include <numeric>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class png {
 public:
@@ -100,4 +100,4 @@ private:
     u16x4 extract_pixel_from_line(std::span<std::byte const> bytes, int x) const noexcept;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

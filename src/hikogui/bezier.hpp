@@ -10,7 +10,7 @@
 #include <array>
 #include <optional>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 // B(t)=(P_{2}-P_{1})t+P_{1}
 template<typename T>
@@ -36,21 +36,21 @@ constexpr std::array<T, 4> bezierToPolynomial(T P1, T C1, T C2, T P2) noexcept
 template<int D>
 constexpr geo::point<D> bezierPointAt(geo::point<D> P1, geo::point<D> P2, float t) noexcept
 {
-    ttlet[a, b] = bezierToPolynomial(static_cast<f32x4>(P1), static_cast<f32x4>(P2));
+    hilet[a, b] = bezierToPolynomial(static_cast<f32x4>(P1), static_cast<f32x4>(P2));
     return geo::point<D>{a * t + b};
 }
 
 template<int D>
 constexpr geo::point<D> bezierPointAt(geo::point<D> P1, geo::point<D> C, geo::point<D> P2, float t) noexcept
 {
-    ttlet[a, b, c] = bezierToPolynomial(static_cast<f32x4>(P1), static_cast<f32x4>(C), static_cast<f32x4>(P2));
+    hilet[a, b, c] = bezierToPolynomial(static_cast<f32x4>(P1), static_cast<f32x4>(C), static_cast<f32x4>(P2));
     return geo::point<D>{a * t * t + b * t + c};
 }
 
 template<int D>
 constexpr geo::point<D> bezierPointAt(geo::point<D> P1, geo::point<D> C1, geo::point<D> C2, geo::point<D> P2, float t) noexcept
 {
-    ttlet[a, b, c, d] =
+    hilet[a, b, c, d] =
         bezierToPolynomial(static_cast<f32x4>(P1), static_cast<f32x4>(C1), static_cast<f32x4>(C2), static_cast<f32x4>(P2));
     return geo::point<D>{a * t * t * t + b * t * t + c * t + d};
 }
@@ -64,9 +64,9 @@ constexpr geo::vector<D> bezierTangentAt(geo::point<D> P1, geo::point<D> P2, flo
 template<int D>
 constexpr geo::vector<D> bezierTangentAt(geo::point<D> P1, geo::point<D> C, geo::point<D> P2, float t) noexcept
 {
-    ttlet P1_ = static_cast<f32x4>(P1);
-    ttlet C_ = static_cast<f32x4>(C);
-    ttlet P2_ = static_cast<f32x4>(P2);
+    hilet P1_ = static_cast<f32x4>(P1);
+    hilet C_ = static_cast<f32x4>(C);
+    hilet P2_ = static_cast<f32x4>(P2);
 
     return geo::vector<D>{2 * t * (P2_ - 2 * C_ + P1_) + 2 * (C_ - P1_)};
 }
@@ -74,29 +74,29 @@ constexpr geo::vector<D> bezierTangentAt(geo::point<D> P1, geo::point<D> C, geo:
 template<int D>
 constexpr geo::vector<D> bezierTangentAt(geo::point<D> P1, geo::point<D> C1, geo::point<D> C2, geo::point<D> P2, float t) noexcept
 {
-    ttlet P1_ = static_cast<f32x4>(P1);
-    ttlet C1_ = static_cast<f32x4>(C1);
-    ttlet C2_ = static_cast<f32x4>(C2);
-    ttlet P2_ = static_cast<f32x4>(P2);
+    hilet P1_ = static_cast<f32x4>(P1);
+    hilet C1_ = static_cast<f32x4>(C1);
+    hilet C2_ = static_cast<f32x4>(C2);
+    hilet P2_ = static_cast<f32x4>(P2);
 
     return geo::vector<D>{3 * t * t * (P2_ - 3 * C2_ + 3 * C1_ - P1_) + 6 * t * (C2_ - 2 * C1_ + P1_) + 3 * (C1_ - P1_)};
 }
 
 constexpr results<float, 1> bezierFindT(float P1, float P2, float x) noexcept
 {
-    ttlet[a, b] = bezierToPolynomial(P1, P2);
+    hilet[a, b] = bezierToPolynomial(P1, P2);
     return solvePolynomial(a, b - x);
 }
 
 constexpr results<float, 2> bezierFindT(float P1, float C, float P2, float x) noexcept
 {
-    ttlet[a, b, c] = bezierToPolynomial(P1, C, P2);
+    hilet[a, b, c] = bezierToPolynomial(P1, C, P2);
     return solvePolynomial(a, b, c - x);
 }
 
-tt_force_inline constexpr results<float, 3> bezierFindT(float P1, float C1, float C2, float P2, float x) noexcept
+hi_force_inline constexpr results<float, 3> bezierFindT(float P1, float C1, float C2, float P2, float x) noexcept
 {
-    ttlet[a, b, c, d] = bezierToPolynomial(P1, C1, C2, P2);
+    hilet[a, b, c, d] = bezierToPolynomial(P1, C1, C2, P2);
     return solvePolynomial(a, b, c, d - x);
 }
 
@@ -104,7 +104,7 @@ tt_force_inline constexpr results<float, 3> bezierFindT(float P1, float C1, floa
  * Used for finding the shortest distance from a point to a curve.
  * The shortest vector from a curve to a point is a normal.
  */
-tt_force_inline constexpr results<float, 1> bezierFindTForNormalsIntersectingPoint(point2 P1, point2 P2, point2 P) noexcept
+hi_force_inline constexpr results<float, 1> bezierFindTForNormalsIntersectingPoint(point2 P1, point2 P2, point2 P) noexcept
 {
     auto t_above = dot(P - P1, P2 - P1);
     auto t_below = dot(P2 - P1, P2 - P1);
@@ -119,21 +119,21 @@ tt_force_inline constexpr results<float, 1> bezierFindTForNormalsIntersectingPoi
  * Used for finding the shortest distance from a point to a curve.
  * The shortest vector from a curve to a point is a normal.
  */
-tt_force_inline constexpr results<float, 3>
+hi_force_inline constexpr results<float, 3>
 bezierFindTForNormalsIntersectingPoint(point2 P1, point2 C, point2 P2, point2 P) noexcept
 {
-    ttlet P1_ = static_cast<f32x4>(P1);
-    ttlet P2_ = static_cast<f32x4>(P2);
-    ttlet C_ = static_cast<f32x4>(C);
+    hilet P1_ = static_cast<f32x4>(P1);
+    hilet P2_ = static_cast<f32x4>(P2);
+    hilet C_ = static_cast<f32x4>(C);
 
-    ttlet p = P - P1;
-    ttlet p1 = C - P1;
-    ttlet p2 = vector2{P2_ - (2 * C_) + P1_};
+    hilet p = P - P1;
+    hilet p1 = C - P1;
+    hilet p2 = vector2{P2_ - (2 * C_) + P1_};
 
-    ttlet a = dot(p2, p2);
-    ttlet b = 3 * dot(p1, p2);
-    ttlet c = dot(2 * p1, p1) - dot(p2, p);
-    ttlet d = -dot(p1, p);
+    hilet a = dot(p2, p2);
+    hilet b = 3 * dot(p1, p2);
+    hilet c = dot(2 * p1, p1) - dot(p2, p);
+    hilet d = -dot(p1, p);
     return solvePolynomial(a, b, c, d);
 }
 
@@ -151,7 +151,7 @@ constexpr results<float, 1> bezierFindX(point2 P1, point2 P2, float y) noexcept
     }
 
     results<float, 1> r;
-    for (ttlet t : bezierFindT(P1.y(), P2.y(), y)) {
+    for (hilet t : bezierFindT(P1.y(), P2.y(), y)) {
         if (t >= 0.0f && t < 1.0f) {
             r.add(bezierPointAt(P1, P2, t).x());
         }
@@ -175,7 +175,7 @@ constexpr results<float, 2> bezierFindX(point2 P1, point2 C, point2 P2, float y)
         return r;
     }
 
-    for (ttlet t : bezierFindT(P1.y(), C.y(), P2.y(), y)) {
+    for (hilet t : bezierFindT(P1.y(), C.y(), P2.y(), y)) {
         if (t >= 0.0f && t <= 1.0f) {
             r.add(bezierPointAt(P1, C, P2, t).x());
         }
@@ -199,7 +199,7 @@ constexpr results<float, 3> bezierFindX(point2 P1, point2 C1, point2 C2, point2 
         return r;
     }
 
-    for (ttlet t : bezierFindT(P1.y(), C1.y(), C2.y(), P2.y(), y)) {
+    for (hilet t : bezierFindT(P1.y(), C1.y(), C2.y(), P2.y(), y)) {
         if (t >= 0.0f && t <= 1.0f) {
             r.add(bezierPointAt(P1, C1, C2, P2, t).x());
         }
@@ -222,13 +222,13 @@ inline float bezierFlatness(point2 P1, point2 P2) noexcept
 
 inline float bezierFlatness(point2 P1, point2 C, point2 P2) noexcept
 {
-    ttlet P1P2 = hypot(P2 - P1);
+    hilet P1P2 = hypot(P2 - P1);
     if (P1P2 == 0.0f) {
         return 1.0;
     }
 
-    ttlet P1C1 = hypot(C - P1);
-    ttlet C1P2 = hypot(P2 - C);
+    hilet P1C1 = hypot(C - P1);
+    hilet C1P2 = hypot(P2 - C);
     return P1P2 / (P1C1 + C1P2);
 }
 
@@ -238,21 +238,21 @@ inline float bezierFlatness(point2 P1, point2 C, point2 P2) noexcept
 
 inline float bezierFlatness(point2 P1, point2 C1, point2 C2, point2 P2) noexcept
 {
-    ttlet P1P2 = hypot(P2 - P1);
+    hilet P1P2 = hypot(P2 - P1);
     if (P1P2 == 0.0f) {
         return 1.0;
     }
 
-    ttlet P1C1 = hypot(C1 - P1);
-    ttlet C1C2 = hypot(C2 - C1);
-    ttlet C2P2 = hypot(P2 - C2);
+    hilet P1C1 = hypot(C1 - P1);
+    hilet C1C2 = hypot(C2 - C1);
+    hilet C2P2 = hypot(P2 - C2);
     return P1P2 / (P1C1 + C1C2 + C2P2);
 }
 
 inline std::pair<point2, point2> parallelLine(point2 P1, point2 P2, float distance) noexcept
 {
-    ttlet v = P2 - P1;
-    ttlet n = normal(v);
+    hilet v = P2 - P1;
+    hilet n = normal(v);
     return {P1 + n * distance, P2 + n * distance};
 }
 
@@ -261,22 +261,22 @@ inline std::pair<point2, point2> parallelLine(point2 P1, point2 P2, float distan
 inline std::optional<point2> getIntersectionPoint(point2 A1, point2 A2, point2 B1, point2 B2) noexcept
 {
     // convert points to vectors.
-    ttlet p = A1;
-    ttlet r = A2 - A1;
-    ttlet q = B1;
-    ttlet s = B2 - B1;
+    hilet p = A1;
+    hilet r = A2 - A1;
+    hilet q = B1;
+    hilet s = B2 - B1;
 
     // find t and u in:
     // p + t*r == q + us
-    ttlet crossRS = cross(r, s);
+    hilet crossRS = cross(r, s);
     if (crossRS == 0.0f) {
         // Parallel, other non, or a range of points intersect.
         return {};
 
     } else {
-        ttlet q_min_p = q - p;
-        ttlet t = cross(q_min_p, s) / crossRS;
-        ttlet u = cross(q_min_p, r) / crossRS;
+        hilet q_min_p = q - p;
+        hilet t = cross(q_min_p, s) / crossRS;
+        hilet u = cross(q_min_p, r) / crossRS;
 
         if (t >= 0.0f && t <= 1.0f && u >= 0.0f && u <= 1.0f) {
             return bezierPointAt(A1, A2, t);
@@ -292,24 +292,24 @@ inline std::optional<point2> getIntersectionPoint(point2 A1, point2 A2, point2 B
 inline std::optional<point2> getExtrapolatedIntersectionPoint(point2 A1, point2 A2, point2 B1, point2 B2) noexcept
 {
     // convert points to vectors.
-    ttlet p = A1;
-    ttlet r = A2 - A1;
-    ttlet q = B1;
-    ttlet s = B2 - B1;
+    hilet p = A1;
+    hilet r = A2 - A1;
+    hilet q = B1;
+    hilet s = B2 - B1;
 
     // find t and u in:
     // p + t*r == q + us
-    ttlet crossRS = cross(r, s);
+    hilet crossRS = cross(r, s);
     if (crossRS == 0.0f) {
         // Parallel, other non, or a range of points intersect.
         return {};
 
     } else {
-        ttlet q_min_p = q - p;
-        ttlet t = cross(q_min_p, s) / crossRS;
+        hilet q_min_p = q - p;
+        hilet t = cross(q_min_p, s) / crossRS;
 
         return bezierPointAt(A1, A2, t);
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

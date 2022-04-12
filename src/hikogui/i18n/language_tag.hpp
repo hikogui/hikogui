@@ -14,7 +14,7 @@
 #include <vector>
 #include <string_view>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** The IETF BCP 47 language tag.
  *
@@ -107,7 +107,7 @@ public:
     [[nodiscard]] generator<language_tag> canonical_variants() const noexcept
     {
         auto check = expand();
-        for (ttlet& tag : variants()) {
+        for (hilet& tag : variants()) {
             if (tag.expand() == check) {
                 co_yield tag;
             }
@@ -121,8 +121,8 @@ public:
         auto r = make_vector(variants());
 
         // And languages variants from expanded variants.
-        for (ttlet variant : variants()) {
-            for (ttlet expanded_variant : variant.expand().variants()) {
+        for (hilet variant : variants()) {
+            for (hilet expanded_variant : variant.expand().variants()) {
                 if (std::find(r.begin(), r.end(), expanded_variant) == r.end()) {
                     r.push_back(expanded_variant);
                 }
@@ -142,7 +142,7 @@ public:
     [[nodiscard]] language_tag shrink() const noexcept
     {
         auto last_variant = *this;
-        for (ttlet& variant : canonical_variants()) {
+        for (hilet& variant : canonical_variants()) {
             last_variant = variant;
         }
         return last_variant;
@@ -192,22 +192,22 @@ public:
  */
 [[nodiscard]] std::vector<language_tag> variants(std::vector<language_tag> languages);
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<>
-struct std::hash<tt::language_tag> {
-    [[nodiscard]] size_t operator()(tt::language_tag const& rhs) const noexcept
+struct std::hash<hi::language_tag> {
+    [[nodiscard]] size_t operator()(hi::language_tag const& rhs) const noexcept
     {
-        return tt::hash_mix(
-            std::hash<tt::iso_639>{}(rhs.language),
-            std::hash<tt::iso_15924>{}(rhs.script),
-            std::hash<tt::iso_3166>{}(rhs.region));
+        return hi::hash_mix(
+            std::hash<hi::iso_639>{}(rhs.language),
+            std::hash<hi::iso_15924>{}(rhs.script),
+            std::hash<hi::iso_3166>{}(rhs.region));
     }
 };
 
 template<typename CharT>
-struct std::formatter<tt::language_tag, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(tt::language_tag const& t, auto& fc)
+struct std::formatter<hi::language_tag, CharT> : std::formatter<std::string_view, CharT> {
+    auto format(hi::language_tag const& t, auto& fc)
     {
         return std::formatter<std::string_view, CharT>::format(t.to_string(), fc);
     }

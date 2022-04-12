@@ -10,7 +10,7 @@
 #include <windows.h>
 #include <winuser.h>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /**
  * GetUserPreferredUILanguages() returns at most two of the selected languages in random order
@@ -23,20 +23,20 @@ namespace tt::inline v1 {
  */
 [[nodiscard]] std::vector<language_tag> os_settings::gather_languages()
 {
-    ttlet strings = registry_read_current_user_multi_string("Control Panel\\International\\User Profile", "Languages");
+    hilet strings = registry_read_current_user_multi_string("Control Panel\\International\\User Profile", "Languages");
 
     auto r = std::vector<language_tag>{};
     r.reserve(strings.size());
-    for (ttlet &string : strings) {
+    for (hilet &string : strings) {
         r.push_back(language_tag{string});
     }
     return r;
 }
 
-[[nodiscard]] tt::theme_mode os_settings::gather_theme_mode()
+[[nodiscard]] hi::theme_mode os_settings::gather_theme_mode()
 {
     try {
-        ttlet result = registry_read_current_user_dword(
+        hilet result = registry_read_current_user_dword(
             "Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "AppsUseLightTheme");
         return result ? theme_mode::light : theme_mode::dark;
     } catch (...) {
@@ -44,7 +44,7 @@ namespace tt::inline v1 {
     }
 }
 
-[[nodiscard]] tt::subpixel_orientation os_settings::gather_subpixel_orientation()
+[[nodiscard]] hi::subpixel_orientation os_settings::gather_subpixel_orientation()
 {
     {
         BOOL has_font_smoothing;
@@ -54,7 +54,7 @@ namespace tt::inline v1 {
 
         if (has_font_smoothing == FALSE) {
             // Font smoothing is disabled.
-            return tt::subpixel_orientation::unknown;
+            return hi::subpixel_orientation::unknown;
         }
     }
 
@@ -66,7 +66,7 @@ namespace tt::inline v1 {
 
         if (font_smooth_type != FE_FONTSMOOTHINGCLEARTYPE) {
             // Font smoothing is not clear type.
-            return tt::subpixel_orientation::unknown;
+            return hi::subpixel_orientation::unknown;
         }
     }
 
@@ -78,7 +78,7 @@ namespace tt::inline v1 {
 
         if (has_clear_type == FALSE) {
             // ClearType is disabled.
-            return tt::subpixel_orientation::unknown;
+            return hi::subpixel_orientation::unknown;
         }
     }
 
@@ -90,10 +90,10 @@ namespace tt::inline v1 {
 
         if (font_smooth_orientation == FE_FONTSMOOTHINGORIENTATIONBGR) {
             // Font smoothing is not clear type.
-            return tt::subpixel_orientation::horizontal_bgr;
+            return hi::subpixel_orientation::horizontal_bgr;
         } else if (font_smooth_orientation == FE_FONTSMOOTHINGORIENTATIONRGB) {
             // Font smoothing is not clear type.
-            return tt::subpixel_orientation::horizontal_rgb;
+            return hi::subpixel_orientation::horizontal_rgb;
         } else {
             throw os_error(std::format("Unknown result from SPI_GETFONTSMOOTHINGORIENTATION: {}", font_smooth_orientation));
         }
@@ -107,17 +107,17 @@ namespace tt::inline v1 {
 
 [[nodiscard]] float os_settings::gather_double_click_distance()
 {
-    ttlet width = GetSystemMetrics(SM_CXDOUBLECLK);
+    hilet width = GetSystemMetrics(SM_CXDOUBLECLK);
     if (width <= 0) {
         throw os_error("Could not retrieve SM_CXDOUBLECLK");
     }
 
-    ttlet height = GetSystemMetrics(SM_CYDOUBLECLK);
+    hilet height = GetSystemMetrics(SM_CYDOUBLECLK);
     if (height <= 0) {
         throw os_error("Could not retrieve SM_CYDOUBLECLK");
     }
 
-    ttlet diameter = std::max(width, height);
+    hilet diameter = std::max(width, height);
     return diameter * 0.5f;
 }
 
@@ -149,7 +149,7 @@ namespace tt::inline v1 {
     // SPI_GETKEYBOARDSPEED values are between 0 (2.5 per/sec) to 31 (30 per/sec).
     constexpr auto bias = 2.5f;
     constexpr auto gain = 0.887f;
-    ttlet rate = bias + r * gain;
+    hilet rate = bias + r * gain;
     return std::chrono::duration_cast<std::chrono::milliseconds>(1000ms / rate);
 }
 
@@ -157,7 +157,7 @@ namespace tt::inline v1 {
 {
     using namespace std::literals::chrono_literals;
 
-    ttlet r = GetCaretBlinkTime();
+    hilet r = GetCaretBlinkTime();
     if (r == 0) {
         throw os_error(std::format("Could not get caret blink time: {}", get_last_error_message()));
 
@@ -178,12 +178,12 @@ namespace tt::inline v1 {
 
 [[nodiscard]] extent2 os_settings::gather_minimum_window_size()
 {
-    ttlet width = GetSystemMetrics(SM_CXMINTRACK);
+    hilet width = GetSystemMetrics(SM_CXMINTRACK);
     if (width == 0) {
         throw os_error("Could not retrieve SM_CXMINTRACK");
     }
 
-    ttlet height = GetSystemMetrics(SM_CYMINTRACK);
+    hilet height = GetSystemMetrics(SM_CYMINTRACK);
     if (height == 0) {
         throw os_error("Could not retrieve SM_CYMINTRACK");
     }
@@ -193,12 +193,12 @@ namespace tt::inline v1 {
 
 [[nodiscard]] extent2 os_settings::gather_maximum_window_size()
 {
-    ttlet width = GetSystemMetrics(SM_CXMAXTRACK);
+    hilet width = GetSystemMetrics(SM_CXMAXTRACK);
     if (width == 0) {
         throw os_error("Could not retrieve SM_CXMAXTRACK");
     }
 
-    ttlet height = GetSystemMetrics(SM_CYMAXTRACK);
+    hilet height = GetSystemMetrics(SM_CYMAXTRACK);
     if (height == 0) {
         throw os_error("Could not retrieve SM_CYMAXTRACK");
     }
@@ -208,19 +208,19 @@ namespace tt::inline v1 {
 
 [[nodiscard]] uintptr_t os_settings::gather_primary_monitor_id()
 {
-    ttlet origin = POINT{0, 0};
-    ttlet monitor = MonitorFromPoint(origin, MONITOR_DEFAULTTOPRIMARY);
+    hilet origin = POINT{0, 0};
+    hilet monitor = MonitorFromPoint(origin, MONITOR_DEFAULTTOPRIMARY);
     return std::bit_cast<uintptr_t>(monitor);
 }
 
 [[nodiscard]] aarectangle os_settings::gather_primary_monitor_rectangle()
 {
-    ttlet width = GetSystemMetrics(SM_CXSCREEN);
+    hilet width = GetSystemMetrics(SM_CXSCREEN);
     if (width == 0) {
         throw os_error("Could not retrieve SM_CXSCREEN");
     }
 
-    ttlet height = GetSystemMetrics(SM_CYSCREEN);
+    hilet height = GetSystemMetrics(SM_CYSCREEN);
     if (height == 0) {
         throw os_error("Could not retrieve SM_CYSCREEN");
     }
@@ -231,29 +231,29 @@ namespace tt::inline v1 {
 
 [[nodiscard]] aarectangle os_settings::gather_desktop_rectangle()
 {
-    ttlet primary_monitor_height = GetSystemMetrics(SM_CYSCREEN);
+    hilet primary_monitor_height = GetSystemMetrics(SM_CYSCREEN);
     if (primary_monitor_height == 0) {
         throw os_error("Could not retrieve SM_CYSCREEN");
     }
 
-    ttlet left = GetSystemMetrics(SM_XVIRTUALSCREEN);
-    ttlet top = GetSystemMetrics(SM_YVIRTUALSCREEN);
+    hilet left = GetSystemMetrics(SM_XVIRTUALSCREEN);
+    hilet top = GetSystemMetrics(SM_YVIRTUALSCREEN);
 
-    ttlet width = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+    hilet width = GetSystemMetrics(SM_CXVIRTUALSCREEN);
     if (width == 0) {
         throw os_error("Could not retrieve SM_CXVIRTUALSCREEN");
     }
 
-    ttlet height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+    hilet height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
     if (height == 0) {
         throw os_error("Could not retrieve SM_CYVIRTUALSCREEN");
     }
 
-    ttlet bottom = top + height;
+    hilet bottom = top + height;
 
     // Calculate the bottom as compared to a y-axis up coordinate system.
-    ttlet inv_bottom = primary_monitor_height - bottom; // 0, 600
+    hilet inv_bottom = primary_monitor_height - bottom; // 0, 600
     return aarectangle{narrow<float>(left), narrow<float>(inv_bottom), narrow<float>(width), narrow<float>(height)};
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -15,7 +15,7 @@
 #include <compare>
 #include <concepts>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<std::unsigned_integral T, basic_fixed_string Tag, ssize_t Max = std::numeric_limits<T>::max() - 1>
 class tagged_id {
@@ -36,13 +36,13 @@ public:
 
     constexpr explicit tagged_id(numeric_integral auto rhs) noexcept : value(narrow_cast<value_type>(rhs))
     {
-        tt_axiom(holds_invariant() and value != invalid);
+        hi_axiom(holds_invariant() and value != invalid);
     }
 
     constexpr tagged_id &operator=(numeric_integral auto rhs) noexcept
     {
         value = narrow_cast<value_type>(rhs);
-        tt_axiom(holds_invariant() and value != invalid);
+        hi_axiom(holds_invariant() and value != invalid);
         return *this;
     }
 
@@ -55,7 +55,7 @@ public:
     template<numeric_integral O>
     constexpr explicit operator O() const noexcept
     {
-        tt_axiom(value != invalid);
+        hi_axiom(value != invalid);
         return narrow_cast<O>(value);
     }
 
@@ -129,11 +129,11 @@ private:
     value_type value;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
-template<typename T, tt::basic_fixed_string Tag, tt::ssize_t Max>
-struct std::hash<tt::tagged_id<T, Tag, Max>> {
-    [[nodiscard]] constexpr std::size_t operator()(tt::tagged_id<T, Tag, Max> const &rhs) const noexcept
+template<typename T, hi::basic_fixed_string Tag, hi::ssize_t Max>
+struct std::hash<hi::tagged_id<T, Tag, Max>> {
+    [[nodiscard]] constexpr std::size_t operator()(hi::tagged_id<T, Tag, Max> const &rhs) const noexcept
     {
         return rhs.hash();
     }

@@ -13,7 +13,7 @@
 #include <map>
 #include <span>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 enum class seek_whence { begin, current, end };
 
@@ -276,4 +276,4 @@ private:
     friend class file_view;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

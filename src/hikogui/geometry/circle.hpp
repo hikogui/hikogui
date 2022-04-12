@@ -5,7 +5,7 @@
 #include "axis_aligned_rectangle.hpp"
 #include "quad.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class circle {
 public:
@@ -16,12 +16,12 @@ public:
 
     constexpr circle() noexcept : _v()
     {
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     [[nodiscard]] constexpr explicit circle(f32x4 v) noexcept : _v(v)
     {
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     [[nodiscard]] constexpr explicit operator f32x4() const noexcept
@@ -33,7 +33,7 @@ public:
         _v(f32x4{point})
     {
         _v.w() = radius;
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     [[nodiscard]] constexpr circle(aarectangle square) noexcept
@@ -42,7 +42,7 @@ public:
 
         // center=(p3 + p0)/2, radius=(p3 - p0)/2
         _v = (addsub<0b0011>(square_.zwzw(), square_.xyxy()) * 0.5f).xy0w();
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     [[nodiscard]] constexpr bool empty() const noexcept

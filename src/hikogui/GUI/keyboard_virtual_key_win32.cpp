@@ -6,7 +6,7 @@
 #include "keyboard_modifiers.hpp"
 #include <Windows.h>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 keyboard_virtual_key to_keyboard_virtual_key(int key_code, bool extended, keyboard_modifiers modifiers)
 {
@@ -140,4 +140,4 @@ keyboard_virtual_key to_keyboard_virtual_key(int key_code, bool extended, keyboa
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

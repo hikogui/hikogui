@@ -8,7 +8,7 @@
 #include "gfx_surface_state.hpp"
 #include "gfx_system_globals.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 class gfx_device;
 class gfx_system;
 
@@ -39,7 +39,7 @@ public:
 
     [[nodiscard]] gfx_device *device() const noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
         return _device;
     }
 
@@ -64,4 +64,4 @@ protected:
     virtual void teardown() = 0;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

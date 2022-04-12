@@ -10,7 +10,7 @@
 #include <typeindex>
 #include <array>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<typename T, basic_fixed_string... Tags>
 class tagged_map {
@@ -86,4 +86,4 @@ public:
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

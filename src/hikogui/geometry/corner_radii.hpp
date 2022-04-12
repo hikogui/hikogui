@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class corner_radii {
 public:
@@ -80,4 +80,4 @@ private:
     f32x4 _v;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

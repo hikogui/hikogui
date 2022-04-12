@@ -14,20 +14,20 @@
 #include "../trace.hpp"
 #include "../log.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<typename Event>
-bool gui_window::send_event_to_widget(tt::widget const *target_widget, Event const &event) noexcept
+bool gui_window::send_event_to_widget(hi::widget const *target_widget, Event const &event) noexcept
 {
     while (target_widget) {
         // Send a command in priority order to the widget.
         if constexpr (std::is_same_v<Event, mouse_event>) {
-            if (const_cast<tt::widget *>(target_widget)->handle_event(target_widget->layout().from_window * event)) {
+            if (const_cast<hi::widget *>(target_widget)->handle_event(target_widget->layout().from_window * event)) {
                 return true;
             }
 
         } else {
-            if (const_cast<tt::widget *>(target_widget)->handle_event(event)) {
+            if (const_cast<hi::widget *>(target_widget)->handle_event(event)) {
                 return true;
             }
         }
@@ -59,10 +59,10 @@ gui_window::~gui_window()
 
     try {
         surface.reset();
-        tt_log_info("Window '{}' has been properly destructed.", title);
+        hi_log_info("Window '{}' has been properly destructed.", title);
 
     } catch (std::exception const &e) {
-        tt_log_fatal("Could not properly destruct gui_window. '{}'", e.what());
+        hi_log_fatal("Could not properly destruct gui_window. '{}'", e.what());
     }
 }
 
@@ -70,7 +70,7 @@ void gui_window::init()
 {
     // This function is called just after construction in single threaded mode,
     // and therefor should not have a lock.
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     widget = std::make_unique<window_widget>(*this, title, _delegate);
     if (auto delegate = _delegate.lock()) {
@@ -79,7 +79,7 @@ void gui_window::init()
 
     // Execute a constraint check to determine initial window size.
     theme = gui.theme_book->find(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
-    ttlet new_size = widget->set_constraints().preferred;
+    hilet new_size = widget->set_constraints().preferred;
 
     // Reset the keyboard target to not focus anything.
     update_keyboard_target({});
@@ -107,17 +107,17 @@ void gui_window::init()
 
 void gui_window::set_device(gfx_device *device) noexcept
 {
-    tt_axiom(surface);
+    hi_axiom(surface);
     surface->set_device(device);
 }
 
 void gui_window::render(utc_nanoseconds display_time_point)
 {
-    ttlet t1 = trace<"window::render">();
+    hilet t1 = trace<"window::render">();
 
-    tt_axiom(is_gui_thread());
-    tt_axiom(surface);
-    tt_axiom(widget);
+    hi_axiom(is_gui_thread());
+    hi_axiom(surface);
+    hi_axiom(widget);
 
     // When a widget requests it or a window-wide event like language change
     // has happened all the widgets will be set_constraints().
@@ -129,7 +129,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
 #endif
 
     if (need_reconstrain) {
-        ttlet t2 = trace<"window::constrain">();
+        hilet t2 = trace<"window::constrain">();
 
         theme = gui.theme_book->find(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
 
@@ -147,19 +147,19 @@ void gui_window::render(utc_nanoseconds display_time_point)
     // the logic for layout and drawing becomes complicated.
     if (_resize.exchange(false)) {
         // If a widget asked for a resize, change the size of the window to the preferred size of the widgets.
-        ttlet current_size = rectangle.size();
-        ttlet new_size = widget->constraints().preferred;
+        hilet current_size = rectangle.size();
+        hilet new_size = widget->constraints().preferred;
         if (new_size != current_size) {
-            tt_log_info("A new preferred window size {} was requested by one of the widget.", new_size);
+            hi_log_info("A new preferred window size {} was requested by one of the widget.", new_size);
             set_window_size(new_size);
         }
 
     } else {
         // Check if the window size matches the minimum and maximum size of the widgets, otherwise resize.
-        ttlet current_size = rectangle.size();
-        ttlet new_size = clamp(current_size, widget->constraints().minimum, widget->constraints().maximum);
+        hilet current_size = rectangle.size();
+        hilet new_size = clamp(current_size, widget->constraints().minimum, widget->constraints().maximum);
         if (new_size != current_size and size_state() != gui_window_size::minimized) {
-            tt_log_info("The current window size {} must grow or shrink to {} to fit the widgets.", current_size, new_size);
+            hi_log_info("The current window size {} must grow or shrink to {} to fit the widgets.", current_size, new_size);
             set_window_size(new_size);
         }
     }
@@ -183,12 +183,12 @@ void gui_window::render(utc_nanoseconds display_time_point)
 #endif
 
     if (need_reconstrain or need_relayout or widget_size != rectangle.size()) {
-        ttlet t2 = trace<"window::layout">();
+        hilet t2 = trace<"window::layout">();
         widget_size = rectangle.size();
 
         // Guarantee that the layout size is always at least the minimum size.
         // We do this because it simplifies calculations if no minimum checks are necessary inside widget.
-        ttlet widget_layout_size = max(widget->constraints().minimum, widget_size);
+        hilet widget_layout_size = max(widget->constraints().minimum, widget_size);
         widget->set_layout(
             widget_layout{widget_layout_size, this->subpixel_orientation(), gui.writing_direction, display_time_point});
 
@@ -214,11 +214,11 @@ void gui_window::render(utc_nanoseconds display_time_point)
         draw_context.saturation = _animated_active.current_value();
 
         {
-            ttlet t2 = trace<"window::draw">();
+            hilet t2 = trace<"window::draw">();
             widget->draw(draw_context);
         }
         {
-            ttlet t2 = trace<"window::submit">();
+            hilet t2 = trace<"window::submit">();
             surface->render_finish(draw_context);
         }
     }
@@ -226,14 +226,14 @@ void gui_window::render(utc_nanoseconds display_time_point)
 
 void gui_window::set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept
 {
-    tt_axiom(is_gui_thread());
-    tt_axiom(widget);
+    hi_axiom(is_gui_thread());
+    hi_axiom(widget);
     return widget->set_resize_border_priority(left, right, bottom, top);
 }
 
-void gui_window::update_mouse_target(tt::widget const *new_target_widget, point2 position) noexcept
+void gui_window::update_mouse_target(hi::widget const *new_target_widget, point2 position) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     if (new_target_widget != _mouse_target_widget) {
         if (_mouse_target_widget) {
@@ -250,19 +250,19 @@ void gui_window::update_mouse_target(tt::widget const *new_target_widget, point2
     }
 }
 
-tt::keyboard_bindings const &gui_window::keyboard_bindings() const noexcept
+hi::keyboard_bindings const &gui_window::keyboard_bindings() const noexcept
 {
-    tt_axiom(gui.keyboard_bindings);
+    hi_axiom(gui.keyboard_bindings);
     return *gui.keyboard_bindings;
 }
 
-void gui_window::update_keyboard_target(tt::widget const *new_target_widget, keyboard_focus_group group) noexcept
+void gui_window::update_keyboard_target(hi::widget const *new_target_widget, keyboard_focus_group group) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     // Before we are going to make new_target_widget empty, due to the rules below;
     // capture which parents there are.
-    auto new_target_parent_chain = new_target_widget ? new_target_widget->parent_chain() : std::vector<tt::widget const *>{};
+    auto new_target_parent_chain = new_target_widget ? new_target_widget->parent_chain() : std::vector<hi::widget const *>{};
 
     // If the new target widget does not accept focus, for example when clicking
     // on a disabled widget, or empty part of a window.
@@ -293,11 +293,11 @@ void gui_window::update_keyboard_target(tt::widget const *new_target_widget, key
 }
 
 void gui_window::update_keyboard_target(
-    tt::widget const *start_widget,
+    hi::widget const *start_widget,
     keyboard_focus_group group,
     keyboard_focus_direction direction) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     auto tmp = widget->find_next_widget(start_widget, group, direction);
     if (tmp == start_widget) {
@@ -312,7 +312,7 @@ void gui_window::update_keyboard_target(keyboard_focus_group group, keyboard_foc
     update_keyboard_target(_keyboard_target_widget, group, direction);
 }
 
-bool gui_window::handle_event(tt::command command) noexcept
+bool gui_window::handle_event(hi::command command) noexcept
 {
     switch (command) {
     case command::gui_widget_next:
@@ -336,7 +336,7 @@ bool gui_window::handle_event(tt::command command) noexcept
 
 bool gui_window::send_event(mouse_event const &event) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     switch (event.type) {
     case mouse_event::Type::Exited: // Mouse left window.
@@ -345,7 +345,7 @@ bool gui_window::send_event(mouse_event const &event) noexcept
 
     case mouse_event::Type::ButtonDown:
     case mouse_event::Type::Move: {
-        ttlet hitbox = widget->hitbox_test(event.position);
+        hilet hitbox = widget->hitbox_test(event.position);
         update_mouse_target(hitbox.widget, event.position);
 
         if (event.type == mouse_event::Type::ButtonDown) {
@@ -364,7 +364,7 @@ bool gui_window::send_event(mouse_event const &event) noexcept
 
 bool gui_window::send_event(keyboard_event const &event) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     if (send_event_to_widget(_keyboard_target_widget, event)) {
         return true;
@@ -372,11 +372,11 @@ bool gui_window::send_event(keyboard_event const &event) noexcept
 
     // If the keyboard event is not handled directly, convert the key event to a command.
     if (event.type == keyboard_event::Type::Key) {
-        ttlet commands = keyboard_bindings().translate(event.key);
+        hilet commands = keyboard_bindings().translate(event.key);
 
-        ttlet handled = send_event_to_widget(_keyboard_target_widget, commands);
+        hilet handled = send_event_to_widget(_keyboard_target_widget, commands);
 
-        for (ttlet command : commands) {
+        for (hilet command : commands) {
             // Intercept the keyboard generated escape.
             // A keyboard generated escape should always remove keyboard focus.
             // The update_keyboard_target() function will send gui_keyboard_exit and a
@@ -402,4 +402,4 @@ bool gui_window::send_event(grapheme grapheme, bool full) noexcept
     return send_event(keyboard_event(grapheme, full));
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

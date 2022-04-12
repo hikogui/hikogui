@@ -11,7 +11,7 @@
 #include "../enum_metadata.hpp"
 #include <format>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** The orientation of the RGB sub-pixels of and LCD/LED panel.
  */
@@ -46,12 +46,12 @@ constexpr auto subpixel_orientation_metadata = enum_metadata{
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<typename CharT>
-struct std::formatter<tt::subpixel_orientation, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(tt::subpixel_orientation const &t, auto &fc)
+struct std::formatter<hi::subpixel_orientation, CharT> : std::formatter<std::string_view, CharT> {
+    auto format(hi::subpixel_orientation const &t, auto &fc)
     {
-        return std::formatter<std::string_view, CharT>::format(tt::subpixel_orientation_metadata[t], fc);
+        return std::formatter<std::string_view, CharT>::format(hi::subpixel_orientation_metadata[t], fc);
     }
 };

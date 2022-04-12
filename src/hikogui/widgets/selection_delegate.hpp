@@ -9,7 +9,7 @@
 #include <functional>
 #include <vector>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 class selection_widget;
 
 class selection_delegate {
@@ -24,7 +24,7 @@ public:
      */
     auto subscribe(selection_widget &sender, std::invocable<> auto &&callback) noexcept
     {
-        return _notifier.subscribe(tt_forward(callback));
+        return _notifier.subscribe(hi_forward(callback));
     }
 
     /** Called when an option is selected by the user.
@@ -43,4 +43,4 @@ protected:
     notifier<> _notifier;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

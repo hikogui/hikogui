@@ -9,11 +9,11 @@
 #include <array>
 
 using namespace std;
-using namespace tt;
+using namespace hi;
 
 #define ASSERT_TOKEN_EQ(nextToken, name, value) \
     do { \
-        ttlet expectedToken = token_t{tokenizer_name_t::name, value}; \
+        hilet expectedToken = token_t{tokenizer_name_t::name, value}; \
         ASSERT_EQ(nextToken, expectedToken); \
     } while (false)
 

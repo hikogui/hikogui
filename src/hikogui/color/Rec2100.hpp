@@ -8,7 +8,7 @@
 #include <cmath>
 #include <array>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 constexpr matrix3 Rec2100_to_XYZ = Rec2020_to_XYZ;
 
@@ -40,4 +40,4 @@ constexpr matrix3 XYZ_to_Rec2100 = XYZ_to_Rec2020;
     return std::pow((Nm2 - c1) / (c2 - c3 * Nm2), 1.0f / m1);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

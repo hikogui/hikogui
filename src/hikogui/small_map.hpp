@@ -10,7 +10,7 @@
 #include <optional>
 #include <type_traits>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<typename K, typename V, int N>
 class small_map {
@@ -36,9 +36,9 @@ public:
 
     small_map(small_map const &other)
     {
-        tt_axiom(this != &other);
+        hi_axiom(this != &other);
         _end = items.begin();
-        for (ttlet &other_item : other) {
+        for (hilet &other_item : other) {
             auto &this_item = *(_end++);
             this_item = other_item;
         }
@@ -46,7 +46,7 @@ public:
 
     small_map(small_map &&other)
     {
-        tt_axiom(this != &other);
+        hi_axiom(this != &other);
         using std::swap;
 
         _end = items.begin();
@@ -59,9 +59,9 @@ public:
 
     small_map &operator=(small_map const &other)
     {
-        tt_return_on_self_assignment(other);
+        hi_return_on_self_assignment(other);
         _end = items.begin();
-        for (ttlet &other_item : other) {
+        for (hilet &other_item : other) {
             auto &this_item = *(_end++);
             this_item = other_item;
         }
@@ -70,9 +70,9 @@ public:
 
     small_map &operator=(small_map &&other)
     {
-        tt_return_on_self_assignment(other);
+        hi_return_on_self_assignment(other);
         _end = items.begin();
-        for (ttlet &other_item : other) {
+        for (hilet &other_item : other) {
             auto &this_item = *(_end++);
             this_item = std::move(other_item);
         }
@@ -114,7 +114,7 @@ public:
 
     V get(K const &key, V const &default_value) const noexcept
     {
-        if (ttlet &value = get(key)) {
+        if (hilet &value = get(key)) {
             return *value;
         } else {
             return default_value;
@@ -160,4 +160,4 @@ public:
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

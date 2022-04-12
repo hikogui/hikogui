@@ -16,7 +16,7 @@
 #include <format>
 #include <ranges>
 
-using namespace tt;
+using namespace hi;
 
 struct unicode_bidi_test {
     std::vector<int> levels;
@@ -33,9 +33,9 @@ struct unicode_bidi_test {
     {
     }
 
-    [[nodiscard]] std::vector<tt::detail::unicode_bidi_char_info> get_input() const noexcept
+    [[nodiscard]] std::vector<hi::detail::unicode_bidi_char_info> get_input() const noexcept
     {
-        auto r = std::vector<tt::detail::unicode_bidi_char_info>{};
+        auto r = std::vector<hi::detail::unicode_bidi_char_info>{};
         auto index = 0;
         for (auto cls : input) {
             r.emplace_back(index++, cls);
@@ -64,11 +64,11 @@ struct unicode_bidi_test {
 [[nodiscard]] static std::vector<int> parse_bidi_test_levels(std::string_view line) noexcept
 {
     auto r = std::vector<int>{};
-    for (ttlet value : tt::split(tt::strip(line))) {
+    for (hilet value : hi::split(hi::strip(line))) {
         if (value == "x") {
             r.push_back(-1);
         } else {
-            r.push_back(tt::from_string<int>(value));
+            r.push_back(hi::from_string<int>(value));
         }
     }
     return r;
@@ -77,11 +77,11 @@ struct unicode_bidi_test {
 [[nodiscard]] static std::vector<int> parse_bidi_test_reorder(std::string_view line) noexcept
 {
     auto r = std::vector<int>{};
-    for (ttlet value : split(strip(line))) {
+    for (hilet value : split(strip(line))) {
         if (value == "x") {
             r.push_back(-1);
         } else {
-            r.push_back(tt::from_string<int>(value));
+            r.push_back(hi::from_string<int>(value));
         }
     }
     return r;
@@ -101,7 +101,7 @@ struct unicode_bidi_test {
         r.input.push_back(unicode_bidi_class_from_string(bidi_class_str));
     }
 
-    auto bitset = tt::from_string<int>(strip(line_s[1]), 16);
+    auto bitset = hi::from_string<int>(strip(line_s[1]), 16);
     r.test_for_auto = (bitset & 1) != 0;
     r.test_for_LTR = (bitset & 2) != 0;
     r.test_for_RTL = (bitset & 4) != 0;
@@ -111,15 +111,15 @@ struct unicode_bidi_test {
 
 generator<unicode_bidi_test> parse_bidi_test(int test_line_nr = -1)
 {
-    ttlet view = file_view(URL("file:BidiTest.txt"));
-    ttlet test_data = view.string_view();
+    hilet view = file_view(URL("file:BidiTest.txt"));
+    hilet test_data = view.string_view();
 
     auto levels = std::vector<int>{};
     auto reorder = std::vector<int>{};
 
     int line_nr = 1;
-    for (ttlet line : std::views::split(test_data, std::string_view{"\n"})) {
-        ttlet line_ = strip(line);
+    for (hilet line : std::views::split(test_data, std::string_view{"\n"})) {
+        hilet line_ = strip(line);
         if (line_.empty() || line_.starts_with("#")) {
             // Comment and empty lines.
         } else if (line_.starts_with("@Levels:")) {
@@ -145,14 +145,14 @@ TEST(unicode_bidi, bidi_test)
 {
     for (auto test : parse_bidi_test()) {
         for (auto paragraph_direction : test.get_paragraph_directions()) {
-            auto test_parameters = tt::unicode_bidi_context{};
+            auto test_parameters = hi::unicode_bidi_context{};
             test_parameters.enable_mirrored_brackets = false;
             test_parameters.enable_line_separator = false;
             // clang-format off
             test_parameters.direction_mode =
-                paragraph_direction == unicode_bidi_class::L ? tt::unicode_bidi_context::mode_type::LTR :
-                paragraph_direction == unicode_bidi_class::R ? tt::unicode_bidi_context::mode_type::RTL :
-                tt::unicode_bidi_context::mode_type::auto_LTR;
+                paragraph_direction == unicode_bidi_class::L ? hi::unicode_bidi_context::mode_type::LTR :
+                paragraph_direction == unicode_bidi_class::R ? hi::unicode_bidi_context::mode_type::RTL :
+                hi::unicode_bidi_context::mode_type::auto_LTR;
             // clang-format on
             test_parameters.move_lf_and_ps_to_end_of_line = false;
 
@@ -160,13 +160,13 @@ TEST(unicode_bidi, bidi_test)
             auto first = begin(input);
             auto last = end(input);
 
-            ttlet[new_last, paragraph_directions] = unicode_bidi_P1(first, last, test_parameters);
+            hilet[new_last, paragraph_directions] = unicode_bidi_P1(first, last, test_parameters);
             last = new_last;
 
             // We are using the index from the iterator to find embedded levels
             // in input-order. We ignore all elements that where removed by X9.
             for (auto it = first; it != last; ++it) {
-                ttlet expected_embedding_level = test.levels[it->index];
+                hilet expected_embedding_level = test.levels[it->index];
 
                 ASSERT_TRUE(expected_embedding_level == -1 || expected_embedding_level == it->embedding_level);
             }
@@ -175,7 +175,7 @@ TEST(unicode_bidi, bidi_test)
 
             auto index = 0;
             for (auto it = first; it != last; ++it, ++index) {
-                ttlet expected_input_index = test.reorder[index];
+                hilet expected_input_index = test.reorder[index];
 
                 ASSERT_TRUE(expected_input_index == -1 || expected_input_index == it->index);
             }
@@ -207,7 +207,7 @@ struct unicode_bidi_character_test {
         auto r = std::vector<input_character>{};
 
         int index = 0;
-        for (ttlet c : characters) {
+        for (hilet c : characters) {
             r.emplace_back(c, index++);
         }
 
@@ -217,17 +217,17 @@ struct unicode_bidi_character_test {
 
 [[nodiscard]] static unicode_bidi_character_test parse_bidi_character_test_line(std::string_view line, int line_nr)
 {
-    ttlet split_line = split(line, ';');
-    ttlet hex_characters = split(split_line[0]);
-    ttlet paragraph_direction = tt::from_string<int>(split_line[1]);
-    ttlet resolved_paragraph_direction = tt::from_string<int>(split_line[2]);
-    ttlet int_resolved_levels = split(split_line[3]);
-    ttlet int_resolved_order = split(split_line[4]);
+    hilet split_line = split(line, ';');
+    hilet hex_characters = split(split_line[0]);
+    hilet paragraph_direction = hi::from_string<int>(split_line[1]);
+    hilet resolved_paragraph_direction = hi::from_string<int>(split_line[2]);
+    hilet int_resolved_levels = split(split_line[3]);
+    hilet int_resolved_order = split(split_line[4]);
 
     auto r = unicode_bidi_character_test{};
     r.line_nr = line_nr;
-    std::transform(begin(hex_characters), end(hex_characters), std::back_inserter(r.characters), [](ttlet &x) {
-        return static_cast<char32_t>(tt::from_string<uint32_t>(x, 16));
+    std::transform(begin(hex_characters), end(hex_characters), std::back_inserter(r.characters), [](hilet &x) {
+        return static_cast<char32_t>(hi::from_string<uint32_t>(x, 16));
     });
 
     r.paragraph_direction = paragraph_direction == 0 ? unicode_bidi_class::L :
@@ -238,16 +238,16 @@ struct unicode_bidi_character_test {
         resolved_paragraph_direction == 1                              ? unicode_bidi_class::R :
                                                                          unicode_bidi_class::unknown;
 
-    std::transform(begin(int_resolved_levels), end(int_resolved_levels), std::back_inserter(r.resolved_levels), [](ttlet &x) {
+    std::transform(begin(int_resolved_levels), end(int_resolved_levels), std::back_inserter(r.resolved_levels), [](hilet &x) {
         if (x == "x") {
             return -1;
         } else {
-            return tt::from_string<int>(x);
+            return hi::from_string<int>(x);
         }
     });
 
-    std::transform(begin(int_resolved_order), end(int_resolved_order), std::back_inserter(r.resolved_order), [](ttlet &x) {
-        return tt::from_string<int>(x);
+    std::transform(begin(int_resolved_order), end(int_resolved_order), std::back_inserter(r.resolved_order), [](hilet &x) {
+        return hi::from_string<int>(x);
     });
 
     return r;
@@ -255,12 +255,12 @@ struct unicode_bidi_character_test {
 
 generator<unicode_bidi_character_test> parse_bidi_character_test(int test_line_nr = -1)
 {
-    ttlet view = file_view(URL("file:BidiCharacterTest.txt"));
-    ttlet test_data = view.string_view();
+    hilet view = file_view(URL("file:BidiCharacterTest.txt"));
+    hilet test_data = view.string_view();
 
     int line_nr = 1;
-    for (ttlet line : std::views::split(test_data, std::string_view{"\n"})) {
-        ttlet line_ = strip(line);
+    for (hilet line : std::views::split(test_data, std::string_view{"\n"})) {
+        hilet line_ = strip(line);
         if (line_.empty() || line_.starts_with("#")) {
             // Comment and empty lines.
         } else {
@@ -281,14 +281,14 @@ generator<unicode_bidi_character_test> parse_bidi_character_test(int test_line_n
 TEST(unicode_bidi, bidi_character_test)
 {
     for (auto test : parse_bidi_character_test()) {
-        auto test_parameters = tt::unicode_bidi_context{};
+        auto test_parameters = hi::unicode_bidi_context{};
         test_parameters.enable_mirrored_brackets = true;
         test_parameters.enable_line_separator = true;
         // clang-format off
         test_parameters.direction_mode =
-            test.paragraph_direction == unicode_bidi_class::L ? tt::unicode_bidi_context::mode_type::LTR :
-            test.paragraph_direction == unicode_bidi_class::R ? tt::unicode_bidi_context::mode_type::RTL :
-            tt::unicode_bidi_context::mode_type::auto_LTR;
+            test.paragraph_direction == unicode_bidi_class::L ? hi::unicode_bidi_context::mode_type::LTR :
+            test.paragraph_direction == unicode_bidi_class::R ? hi::unicode_bidi_context::mode_type::RTL :
+            hi::unicode_bidi_context::mode_type::auto_LTR;
         // clang-format on
         test_parameters.move_lf_and_ps_to_end_of_line = false;
 
@@ -296,13 +296,13 @@ TEST(unicode_bidi, bidi_character_test)
         auto first = begin(input);
         auto last = end(input);
 
-        ttlet[new_last, paragraph_directions] = unicode_bidi(
+        hilet[new_last, paragraph_directions] = unicode_bidi(
             first,
             last,
-            [](ttlet &x) -> decltype(auto) {
+            [](hilet &x) -> decltype(auto) {
                 return unicode_description::find(x.code_point);
             },
-            [](auto &x, ttlet &code_point) {
+            [](auto &x, hilet &code_point) {
                 x.code_point = code_point;
             },
             [](auto &x, auto bidi_class) {},
@@ -312,7 +312,7 @@ TEST(unicode_bidi, bidi_character_test)
         // We are using the index from the iterator to find embedded levels
         // in input-order. We ignore all elements that where removed by X9.
         // for (auto it = first; it != last; ++it) {
-        //    ttlet expected_embedding_level = test.levels[it->index];
+        //    hilet expected_embedding_level = test.levels[it->index];
         //
         //    ASSERT_TRUE(expected_embedding_level == -1 || expected_embedding_level == it->embedding_level);
         //}
@@ -321,7 +321,7 @@ TEST(unicode_bidi, bidi_character_test)
 
         auto index = 0;
         for (auto it = first; it != last; ++it, ++index) {
-            ttlet expected_input_index = test.resolved_order[index];
+            hilet expected_input_index = test.resolved_order[index];
 
             ASSERT_TRUE(expected_input_index == -1 || expected_input_index == it->index);
         }

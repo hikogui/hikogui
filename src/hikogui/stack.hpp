@@ -10,7 +10,7 @@
 #include "required.hpp"
 #include "cast.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A static sized stack.
  * This stack is designed around the functionality of a std::vector, except the
@@ -41,7 +41,7 @@ public:
      */
     stack(std::initializer_list<value_type> init) noexcept : _top(begin())
     {
-        for (ttlet &init_item : init) {
+        for (hilet &init_item : init) {
             push_back(init_item);
         }
     }
@@ -137,7 +137,7 @@ public:
      */
     [[nodiscard]] reference_type operator[](std::size_t index) noexcept
     {
-        tt_axiom(index < size());
+        hi_axiom(index < size());
         return *std::launder(reinterpret_cast<pointer_type>(&_buffer[index]));
     }
 
@@ -147,7 +147,7 @@ public:
      */
     [[nodiscard]] const_reference_type operator[](std::size_t index) const noexcept
     {
-        tt_axiom(index < size());
+        hi_axiom(index < size());
         return *std::launder(reinterpret_cast<pointer_type>(&_buffer[index]));
     }
 
@@ -180,7 +180,7 @@ public:
      */
     [[nodiscard]] reference_type back() noexcept
     {
-        tt_axiom(!empty());
+        hi_axiom(!empty());
         return *std::launder(reinterpret_cast<pointer_type>(_top - 1));
     }
 
@@ -189,7 +189,7 @@ public:
      */
     [[nodiscard]] const_reference_type back() const noexcept
     {
-        tt_axiom(!empty());
+        hi_axiom(!empty());
         return *std::launder(reinterpret_cast<pointer_type>(_top - 1));
     }
 
@@ -200,7 +200,7 @@ public:
     template<typename... Args>
     void emplace_back(Args &&...args) noexcept
     {
-        tt_axiom(!full());
+        hi_axiom(!full());
         new (end()) value_type(std::forward<Args>(args)...);
         ++_top;
     }
@@ -220,7 +220,7 @@ public:
      */
     void pop_back() noexcept
     {
-        tt_axiom(!empty());
+        hi_axiom(!empty());
         auto *old_item = std::launder(--_top);
         std::destroy_at(old_item);
     }
@@ -249,4 +249,4 @@ private:
     pointer_type _top;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

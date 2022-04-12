@@ -15,7 +15,7 @@
 #include <optional>
 #include <future>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** An simple GUI widget that displays an icon.
  *
@@ -36,9 +36,9 @@ public:
 
     /** Alignment of the icon inside the widget.
      */
-    observable<alignment> alignment = tt::alignment{horizontal_alignment::center, vertical_alignment::middle};
+    observable<alignment> alignment = hi::alignment{horizontal_alignment::center, vertical_alignment::middle};
 
-    template<typename Icon, typename Color = tt::theme_color>
+    template<typename Icon, typename Color = hi::theme_color>
     icon_widget(gui_window &window, widget *parent, Icon &&icon, Color &&color = theme_color::foreground) noexcept :
         icon_widget(window, parent)
     {
@@ -66,4 +66,4 @@ private:
     icon_widget(gui_window &window, widget *parent) noexcept;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

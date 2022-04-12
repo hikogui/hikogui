@@ -9,7 +9,7 @@
 
 using namespace std;
 using namespace std::literals;
-using namespace tt;
+using namespace hi;
 
 TEST(Decimal, StringConstruction)
 {
@@ -127,7 +127,7 @@ TEST(Decimal, ToString)
     ASSERT_EQ(to_string(decimal(-2, -1)), "-0.01");
 }
 
-tt_no_inline decimal test(decimal a, decimal b)
+hi_no_inline decimal test(decimal a, decimal b)
 {
     return a + b;
 }

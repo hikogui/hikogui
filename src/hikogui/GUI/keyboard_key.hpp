@@ -12,7 +12,7 @@
 #include <string_view>
 #include <unordered_map>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A key in combination with modifiers.
  * This key is based on the actual symbol on the keyboard.
@@ -41,10 +41,10 @@ public:
 
     keyboard_key(std::string_view key_combination) : modifiers(keyboard_modifiers::None), virtualKey(keyboard_virtual_key::Nul)
     {
-        ttlet modifiers_and_vkey = split(key_combination, '+');
-        tt_assert(modifiers_and_vkey.cbegin() != modifiers_and_vkey.cend());
+        hilet modifiers_and_vkey = split(key_combination, '+');
+        hi_assert(modifiers_and_vkey.cbegin() != modifiers_and_vkey.cend());
 
-        ttlet end_modifiers = modifiers_and_vkey.cend() - 1;
+        hilet end_modifiers = modifiers_and_vkey.cend() - 1;
         for (auto i = modifiers_and_vkey.cbegin(); i != end_modifiers; ++i) {
             modifiers |= to_keyboard_modifiers(*i);
         }
@@ -73,11 +73,11 @@ public:
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<>
-struct std::hash<tt::keyboard_key> {
-    [[nodiscard]] std::size_t operator()(tt::keyboard_key const &rhs) const noexcept
+struct std::hash<hi::keyboard_key> {
+    [[nodiscard]] std::size_t operator()(hi::keyboard_key const &rhs) const noexcept
     {
         return rhs.hash();
     }

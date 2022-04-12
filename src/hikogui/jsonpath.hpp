@@ -14,7 +14,7 @@
 #include <vector>
 #include <limits>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct jsonpath_root {
     [[nodiscard]] std::string string() const noexcept
@@ -81,7 +81,7 @@ struct jsonpath_names {
     {
         auto r = std::string{"["};
         auto first = true;
-        for (ttlet &name : names) {
+        for (hilet &name : names) {
             if (not first) {
                 r += ',';
             }
@@ -143,12 +143,12 @@ struct jsonpath_indices {
     {
         auto r = std::string{"["};
         auto first = true;
-        for (ttlet index : indices) {
+        for (hilet index : indices) {
             if (not first) {
                 r += ',';
             }
 
-            r += tt::to_string(index);
+            r += hi::to_string(index);
             first = false;
         }
         r += ']';
@@ -157,10 +157,10 @@ struct jsonpath_indices {
 
     [[nodiscard]] generator<std::size_t> filter(std::size_t size) const noexcept
     {
-        ttlet size_ = static_cast<ssize_t>(size);
+        hilet size_ = static_cast<ssize_t>(size);
 
-        for (ttlet index : indices) {
-            ttlet index_ = index >= 0 ? index : size_ + index;
+        for (hilet index : indices) {
+            hilet index_ = index >= 0 ? index : size_ + index;
             if (index_ >= 0 and index_ < size_) {
                 co_yield static_cast<std::size_t>(index_);
             }
@@ -207,8 +207,8 @@ struct jsonpath_slice {
      */
     [[nodiscard]] std::size_t begin(std::size_t size) const noexcept
     {
-        ttlet size_ = static_cast<ssize_t>(size);
-        ttlet begin = first >= 0 ? first : size_ + first;
+        hilet size_ = static_cast<ssize_t>(size);
+        hilet begin = first >= 0 ? first : size_ + first;
         return static_cast<std::size_t>(std::clamp(begin, 0_z, size_));
     }
 
@@ -222,17 +222,17 @@ struct jsonpath_slice {
      */
     [[nodiscard]] std::size_t end(std::size_t size) const noexcept
     {
-        ttlet size_ = static_cast<ssize_t>(size);
-        ttlet last_ = std::clamp(
+        hilet size_ = static_cast<ssize_t>(size);
+        hilet last_ = std::clamp(
             last == std::numeric_limits<ssize_t>::min() ? size_ :
                 last >= 0                               ? last :
                                                           size_ + last,
             0_z,
             size_);
 
-        ttlet first_ = begin(size);
-        ttlet distance = last_ - first_;
-        ttlet steps = distance / step;
+        hilet first_ = begin(size);
+        hilet distance = last_ - first_;
+        hilet steps = distance / step;
         return static_cast<std::size_t>(first_ + steps * step);
     }
 
@@ -273,14 +273,14 @@ using jsonpath_node = std::variant<
     auto step = 1_z;
     if (*it == tokenizer_name_t::Operator and *it == ":") {
         ++it;
-        tt_parse_check(*it == tokenizer_name_t::IntegerLiteral, "Expect integer as third slice argument, got {}.", *it);
+        hi_parse_check(*it == tokenizer_name_t::IntegerLiteral, "Expect integer as third slice argument, got {}.", *it);
         step = static_cast<ssize_t>(*it);
         ++it;
     }
 
-    tt_parse_check(*it == tokenizer_name_t::Operator and *it == "]", "Expected end of slicing operator ']', got {}.", *it);
+    hi_parse_check(*it == tokenizer_name_t::Operator and *it == "]", "Expected end of slicing operator ']', got {}.", *it);
 
-    tt_parse_check(step != 0, "Slicing operator's step must not be zero");
+    hi_parse_check(step != 0, "Slicing operator's step must not be zero");
     return jsonpath_slice{first, last, step};
 }
 
@@ -290,12 +290,12 @@ using jsonpath_node = std::variant<
 
     while (*it == tokenizer_name_t::Operator and *it == ",") {
         ++it;
-        tt_parse_check(*it == tokenizer_name_t::IntegerLiteral, "Expect integer literal after comma ',', got {}.", *it);
+        hi_parse_check(*it == tokenizer_name_t::IntegerLiteral, "Expect integer literal after comma ',', got {}.", *it);
         tmp.push_back(static_cast<ssize_t>(*it));
         ++it;
     }
 
-    tt_parse_check(*it == tokenizer_name_t::Operator and *it == "]", "Expected end of slicing operator ']', got {}.", *it);
+    hi_parse_check(*it == tokenizer_name_t::Operator and *it == "]", "Expected end of slicing operator ']', got {}.", *it);
     return tmp;
 }
 
@@ -305,12 +305,12 @@ using jsonpath_node = std::variant<
 
     while (*it == tokenizer_name_t::Operator and *it == ",") {
         ++it;
-        tt_parse_check(*it == tokenizer_name_t::StringLiteral, "Expect string literal after comma ',', got {}.", *it);
+        hi_parse_check(*it == tokenizer_name_t::StringLiteral, "Expect string literal after comma ',', got {}.", *it);
         tmp.push_back(static_cast<std::string>(*it));
         ++it;
     }
 
-    tt_parse_check(*it == tokenizer_name_t::Operator and *it == "]", "Expected end of indexing operator ']', got {}.", *it);
+    hi_parse_check(*it == tokenizer_name_t::Operator and *it == "]", "Expected end of indexing operator ']', got {}.", *it);
     return tmp;
 }
 
@@ -320,7 +320,7 @@ using jsonpath_node = std::variant<
 
     if (*it == tokenizer_name_t::Operator and *it == "*") {
         ++it;
-        tt_parse_check(*it == tokenizer_name_t::Operator and *it == "]", "Expected end of indexing operator ']', got {}.", *it);
+        hi_parse_check(*it == tokenizer_name_t::Operator and *it == "]", "Expected end of indexing operator ']', got {}.", *it);
         return jsonpath_wildcard{};
 
     } else if (*it == tokenizer_name_t::Operator and *it == ":") {
@@ -386,7 +386,7 @@ public:
     [[nodiscard]] jsonpath(std::string_view rhs) : _nodes()
     {
         auto tokens = parseTokens(rhs);
-        ttlet it_end = tokens.cend();
+        hilet it_end = tokens.cend();
         for (auto it = tokens.cbegin(); it != it_end; ++it) {
             if (*it == tokenizer_name_t::Operator and *it == ".") {
                 _nodes.emplace_back(parse_jsonpath_child_operator(it, it_end));
@@ -395,15 +395,15 @@ public:
                 _nodes.emplace_back(parse_jsonpath_indexing_operator(it, it_end));
 
             } else if (*it == tokenizer_name_t::Name and *it == "$") {
-                tt_parse_check(_nodes.empty(), "Root node '$' not at start of path.");
+                hi_parse_check(_nodes.empty(), "Root node '$' not at start of path.");
                 _nodes.emplace_back(jsonpath_root{});
 
             } else if (*it == tokenizer_name_t::Operator and *it == "@") {
-                tt_parse_check(_nodes.empty(), "Current node '@' not at start of path.");
+                hi_parse_check(_nodes.empty(), "Current node '@' not at start of path.");
                 _nodes.emplace_back(jsonpath_current{});
 
             } else if (*it == tokenizer_name_t::Name) {
-                tt_parse_check(_nodes.empty(), "Unexpected child name {}.", *it);
+                hi_parse_check(_nodes.empty(), "Unexpected child name {}.", *it);
                 _nodes.emplace_back(jsonpath_names{static_cast<std::string>(*it)});
 
             } else if (*it == tokenizer_name_t::End) {
@@ -425,9 +425,9 @@ public:
     [[nodiscard]] bool is_singular() const noexcept
     {
         auto r = true;
-        for (ttlet &node : _nodes) {
+        for (hilet &node : _nodes) {
             r &= std::visit(
-                [](ttlet &node_) {
+                [](hilet &node_) {
                     return node_.is_singular();
                 },
                 node);
@@ -473,9 +473,9 @@ public:
     [[nodiscard]] friend std::string to_string(jsonpath const &path) noexcept
     {
         auto r = std::string{};
-        for (ttlet &node : path._nodes) {
+        for (hilet &node : path._nodes) {
             r += std::visit(
-                [](ttlet &node_) {
+                [](hilet &node_) {
                     return node_.string();
                 },
                 node);
@@ -487,11 +487,11 @@ private:
     std::vector<jsonpath_node> _nodes;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<typename CharT>
-struct std::formatter<tt::jsonpath, CharT> : std::formatter<char const *, CharT> {
-    auto format(tt::jsonpath const &t, auto &fc)
+struct std::formatter<hi::jsonpath, CharT> : std::formatter<char const *, CharT> {
+    auto format(hi::jsonpath const &t, auto &fc)
     {
         return std::formatter<std::string, CharT>{}.format(to_string(t), fc);
     }

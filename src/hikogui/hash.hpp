@@ -10,7 +10,7 @@
 #include <array>
 #include <type_traits>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] constexpr std::size_t hash_mix_two(std::size_t hash1, std::size_t hash2) noexcept
 {
@@ -19,7 +19,7 @@ namespace tt::inline v1 {
     } else if constexpr (sizeof(std::size_t) == 4) {
         return hash1 + 0x9e3779b9 + (hash2 << 6) + (hash2 >> 2);
     } else {
-        tt_not_implemented();
+        hi_not_implemented();
     }
 }
 
@@ -37,4 +37,4 @@ template<typename First, typename Second, typename... Args>
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -11,7 +11,7 @@
 #include "check.hpp"
 #include <span>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<typename T>
 inline bool check_alignment(void const *ptr)
@@ -77,7 +77,7 @@ bool check_placement_ptr(std::span<Byte> bytes, std::size_t offset = 0)
 template<typename T, typename Byte>
 placement_ptr<T, Byte> make_placement_ptr(std::span<Byte> bytes, std::size_t &offset)
 {
-    tt_parse_check(check_placement_ptr<T>(bytes, offset), "Parsing beyond end of buffer");
+    hi_parse_check(check_placement_ptr<T>(bytes, offset), "Parsing beyond end of buffer");
     return placement_ptr<T, Byte>(bytes, offset);
 }
 
@@ -105,7 +105,7 @@ class placement_array {
 public:
     placement_array(std::span<Byte> bytes, std::size_t &offset, std::size_t n)
     {
-        ttlet bytes_ = bytes.data();
+        hilet bytes_ = bytes.data();
 
         _begin = bytes_ + offset;
         offset += sizeof(T) * n;
@@ -168,7 +168,7 @@ placement_array<T, Byte> unsafe_make_placement_array(std::span<Byte> bytes, std:
 template<typename T, typename Byte>
 placement_array<T, Byte> unsafe_make_placement_array(std::span<Byte> bytes, std::size_t &offset)
 {
-    ttlet n = bytes.size() / sizeof(T);
+    hilet n = bytes.size() / sizeof(T);
     return unsafe_make_placement_array<T>(bytes, offset, n);
 }
 
@@ -194,7 +194,7 @@ bool check_placement_array(std::span<Byte> bytes, std::size_t offset)
 template<typename T, typename Byte>
 placement_array<T, Byte> make_placement_array(std::span<Byte> bytes, std::size_t &offset, std::size_t n)
 {
-    tt_parse_check(check_placement_array<T>(bytes, offset, n), "Parsing beyond end of buffer");
+    hi_parse_check(check_placement_array<T>(bytes, offset, n), "Parsing beyond end of buffer");
     return placement_array<T, Byte>(bytes, offset, n);
 }
 
@@ -208,7 +208,7 @@ placement_array<T, Byte> make_placement_array(std::span<Byte> bytes, std::size_t
 template<typename T, typename Byte>
 placement_array<T, Byte> make_placement_array(std::span<Byte> bytes, std::size_t &offset)
 {
-    ttlet n = bytes.size() / ssizeof(T);
+    hilet n = bytes.size() / ssizeof(T);
     return make_placement_array<T>(bytes, offset, n);
 }
 
@@ -219,4 +219,4 @@ placement_array<T, Byte> make_placement_array(std::span<Byte> bytes, std::size_t
     return make_placement_array<T>(bytes, _offset);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

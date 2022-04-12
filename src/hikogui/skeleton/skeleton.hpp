@@ -8,7 +8,7 @@
 #include "skeleton_parse_context.hpp"
 #include "../resource_view.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] std::unique_ptr<skeleton_node> parse_skeleton(skeleton_parse_context &context);
 
@@ -27,10 +27,10 @@ parse_skeleton(URL url, std::string_view::const_iterator first, std::string_view
 
 [[nodiscard]] inline std::unique_ptr<skeleton_node> parse_skeleton(URL url)
 {
-    ttlet fv = url.loadView();
-    ttlet sv = fv->string_view();
+    hilet fv = url.loadView();
+    hilet sv = fv->string_view();
 
     return parse_skeleton(std::move(url), sv.cbegin(), sv.cend());
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -8,7 +8,7 @@
 #include <type_traits>
 #include <future>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<typename Proto>
 class function;
@@ -102,4 +102,4 @@ auto make_async_function(Func&& func)
     return detail::async_function_impl<std::decay_t<Func>, Proto>{std::forward<Func>(func)};
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -3,7 +3,7 @@
 #include "Application_macos.hpp"
 #import <Cocoa/Cocoa.h>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] static std::vector<std::string> passArguments(int argc, char const * const *argv) noexcept
 {
@@ -58,8 +58,8 @@ Application_macos::~Application_macos()
 
 void Application_macos::runFromMainLoop(std::function<void()> function)
 {
-    ttlet functionP = new std::function<void()>(std::move(function));
-    tt_assert(functionP);
+    hilet functionP = new std::function<void()>(std::move(function));
+    hi_assert(functionP);
 }
 
 int Application_macos::loop()

@@ -15,7 +15,7 @@
 #include "axis_aligned_rectangle.hpp"
 #include "../color/color.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 namespace geo {
 
 template<int D>
@@ -30,7 +30,7 @@ public:
 
     constexpr matrix() noexcept
     {
-        ttlet a = f32x4::broadcast(1.0f);
+        hilet a = f32x4::broadcast(1.0f);
         _col0 = a.x000();
         _col1 = a._0y00();
         _col2 = a._00z0();
@@ -125,7 +125,7 @@ public:
         } else if constexpr (I == 3) {
             return rhs._col3;
         } else {
-            tt_static_no_default();
+            hi_static_no_default();
         }
     }
 
@@ -166,7 +166,7 @@ public:
     template<int E>
     [[nodiscard]] constexpr auto operator*(vector<E> const &rhs) const noexcept
     {
-        tt_axiom(rhs.holds_invariant());
+        hi_axiom(rhs.holds_invariant());
         return vector<std::max(D, E)>{
             _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy() +
             _col2 * static_cast<f32x4>(rhs).zzzz()};
@@ -175,7 +175,7 @@ public:
     template<int E>
     [[nodiscard]] constexpr auto operator*(extent<E> const &rhs) const noexcept
     {
-        tt_axiom(rhs.holds_invariant());
+        hi_axiom(rhs.holds_invariant());
         return extent<std::max(D, E)>{
             _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy() +
             _col2 * static_cast<f32x4>(rhs).zzzz()};
@@ -184,7 +184,7 @@ public:
     template<int E>
     [[nodiscard]] constexpr auto operator*(point<E> const &rhs) const noexcept
     {
-        tt_axiom(rhs.holds_invariant());
+        hi_axiom(rhs.holds_invariant());
         return point<std::max(D, E)>{
             _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy() +
             _col2 * static_cast<f32x4>(rhs).zzzz() + _col3 * static_cast<f32x4>(rhs).wwww()};
@@ -222,7 +222,7 @@ public:
      */
     [[nodiscard]] constexpr auto operator*(color const &rhs) const noexcept
     {
-        tt_axiom(rhs.holds_invariant());
+        hi_axiom(rhs.holds_invariant());
         auto r = color{
             _col0 * static_cast<f32x4>(rhs).xxxx() + _col1 * static_cast<f32x4>(rhs).yyyy() +
             _col2 * static_cast<f32x4>(rhs).zzzz() + _col3};
@@ -261,40 +261,40 @@ public:
         //                  i10 * i01;
         // var c0 : Number = i20 * i31 -
         //                  i30 * i21;
-        ttlet s0c0 = _col0 * _col1.yxwz();
+        hilet s0c0 = _col0 * _col1.yxwz();
 
         // var s1 : Number = i00 * i12 -
         //                  i10 * i02;
         // var c1 : Number = i20 * i32 -
         //                  i30 * i22;
-        ttlet s1c1 = _col0 * _col2.yxwz();
-        ttlet s0c0s1c1 = hsub(s0c0, s1c1);
+        hilet s1c1 = _col0 * _col2.yxwz();
+        hilet s0c0s1c1 = hsub(s0c0, s1c1);
 
         // var s2 : Number = i00 * i13 -
         //                  i10 * i03;
         // var c2 : Number = i20 * i33 -
         //                  i30 * i23;
-        ttlet s2c2 = _col0 * _col3.yxwz();
+        hilet s2c2 = _col0 * _col3.yxwz();
 
         // var s3 : Number = i01 * i12 -
         //                  i11 * i02;
         // var c3 : Number = i21 * i32 -
         //                  i31 * i22;
-        ttlet s3c3 = _col1 * _col2.yxwz();
-        ttlet s2c2s3c3 = hsub(s2c2, s3c3);
+        hilet s3c3 = _col1 * _col2.yxwz();
+        hilet s2c2s3c3 = hsub(s2c2, s3c3);
 
         // var s4 : Number = i01 * i13 -
         //                  i11 * i03;
         // var c4 : Number = i21 * i33 -
         //                  i31 * i23;
-        ttlet s4c4 = _col1 * _col3.yxwz();
+        hilet s4c4 = _col1 * _col3.yxwz();
 
         // var s5 : Number = i02 * i13 -
         //                  i12 * i03;
         // var c5 : Number = i22 * i33 -
         //                  i32 * i23;
-        ttlet s5c5 = _col2 * _col3.yxwz();
-        ttlet s4c4s5c5 = hsub(s4c4, s5c5);
+        hilet s5c5 = _col2 * _col3.yxwz();
+        hilet s4c4s5c5 = hsub(s4c4, s5c5);
 
         // det = (s0 * c5 +
         //       -s1 * c4 +
@@ -302,26 +302,26 @@ public:
         //        s3 * c2 +
         //       -s4 * c1 +
         //        s5 * c0)
-        ttlet s0123 = s0c0s1c1.xz00() + s2c2s3c3._00xz();
-        ttlet s45__ = s4c4s5c5.xz00();
+        hilet s0123 = s0c0s1c1.xz00() + s2c2s3c3._00xz();
+        hilet s45__ = s4c4s5c5.xz00();
 
-        ttlet c5432 = s4c4s5c5.wy00() + s2c2s3c3._00wy();
-        ttlet c10__ = s0c0s1c1.wy00();
+        hilet c5432 = s4c4s5c5.wy00() + s2c2s3c3._00wy();
+        hilet c10__ = s0c0s1c1.wy00();
 
-        ttlet det_prod_half0 = neg<0b0010>(s0123 * c5432);
-        ttlet det_prod_half1 = neg<0b0001>(s45__ * c10__);
+        hilet det_prod_half0 = neg<0b0010>(s0123 * c5432);
+        hilet det_prod_half1 = neg<0b0001>(s45__ * c10__);
 
-        ttlet det_sum0 = hadd(det_prod_half0, det_prod_half1);
-        ttlet det_sum1 = hadd(det_sum0, det_sum0);
-        ttlet det = hadd(det_sum1, det_sum1).xxxx();
+        hilet det_sum0 = hadd(det_prod_half0, det_prod_half1);
+        hilet det_sum1 = hadd(det_sum0, det_sum0);
+        hilet det = hadd(det_sum1, det_sum1).xxxx();
 
         if (det.x() == 0.0f) {
             throw std::domain_error("Divide by zero");
         }
 
-        ttlet invdet = rcp(det);
+        hilet invdet = rcp(det);
 
-        ttlet t = transpose(*this);
+        hilet t = transpose(*this);
 
         //   rc     rc          rc          rc
         // m.i00 := (i11 *  c5 + i12 * -c4 + i13 *  c3) * invdet;
@@ -331,7 +331,7 @@ public:
         auto tmp_c5543 = neg<0b1010>(c5432.xxyz());
         auto tmp_c4221 = neg<0b0101>(c5432.yww0() + c10__._000x());
         auto tmp_c3100 = neg<0b1010>(c5432.z000() + c10__._0xyy());
-        ttlet inv_col0 = ((t._col1.yxxx() * tmp_c5543) + (t._col1.zzyy() * tmp_c4221) + (t._col1.wwwz() * tmp_c3100)) * invdet;
+        hilet inv_col0 = ((t._col1.yxxx() * tmp_c5543) + (t._col1.zzyy() * tmp_c4221) + (t._col1.wwwz() * tmp_c3100)) * invdet;
 
         // m.i01 := (i01 * -c5 + i02 *  c4 + i03 * -c3) * invdet;
         // m.i11 := (i00 *  c5 + i02 * -c2 + i03 *  c1) * invdet;
@@ -340,7 +340,7 @@ public:
         tmp_c5543 = -tmp_c5543;
         tmp_c4221 = -tmp_c4221;
         tmp_c3100 = -tmp_c3100;
-        ttlet inv_col1 = ((t._col0.yxxx() * tmp_c5543) + (t._col0.zzyy() * tmp_c4221) + (t._col0.wwwz() * tmp_c3100)) * invdet;
+        hilet inv_col1 = ((t._col0.yxxx() * tmp_c5543) + (t._col0.zzyy() * tmp_c4221) + (t._col0.wwwz() * tmp_c3100)) * invdet;
 
         // m.i02 := (i31 *  s5 + i32 * -s4 + i33 *  s3) * invdet;
         // m.i12 := (i30 * -s5 + i32 *  s2 + i33 * -s1) * invdet;
@@ -349,7 +349,7 @@ public:
         auto tmp_s5543 = neg<0b1010>(s45__.yyx0() + s0123._000w());
         auto tmp_s4221 = neg<0b0101>(s45__.x000() + s0123._0zzy());
         auto tmp_s3100 = neg<0b1010>(s0123.wyxx());
-        ttlet inv_col2 = ((t._col3.yxxx() * tmp_s5543) + (t._col3.zzyy() * tmp_s4221) + (t._col3.wwwz() * tmp_s3100)) * invdet;
+        hilet inv_col2 = ((t._col3.yxxx() * tmp_s5543) + (t._col3.zzyy() * tmp_s4221) + (t._col3.wwwz() * tmp_s3100)) * invdet;
 
         // m.i03 := (i21 * -s5 + i22 *  s4 + i23 * -s3) * invdet;
         // m.i13 := (i20 *  s5 + i22 * -s2 + i23 *  s1) * invdet;
@@ -358,7 +358,7 @@ public:
         tmp_s5543 = -tmp_s5543;
         tmp_s4221 = -tmp_s4221;
         tmp_s3100 = -tmp_s3100;
-        ttlet inv_col3 = ((t._col2.yxxx() * tmp_s5543) + (t._col2.zzyy() * tmp_s4221) + (t._col2.wwwz() * tmp_s3100)) * invdet;
+        hilet inv_col3 = ((t._col2.yxxx() * tmp_s5543) + (t._col2.zzyy() * tmp_s4221) + (t._col2.wwwz() * tmp_s3100)) * invdet;
 
         return {inv_col0, inv_col1, inv_col2, inv_col3};
     }
@@ -375,4 +375,4 @@ private:
 using matrix2 = geo::matrix<2>;
 using matrix3 = geo::matrix<3>;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

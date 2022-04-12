@@ -11,7 +11,7 @@
 #include <vk_mem_alloc.h>
 #include <span>
 
-namespace tt::inline v1::pipeline_box {
+namespace hi::inline v1::pipeline_box {
 
 /*! Pipeline for rendering simple box shaded quats.
  */
@@ -48,4 +48,4 @@ private:
     void teardownvertexBuffers() override;
 };
 
-} // namespace tt::inline v1::pipeline_box
+} // namespace hi::inline v1::pipeline_box

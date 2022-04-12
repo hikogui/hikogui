@@ -7,7 +7,7 @@
 #include "file.hpp"
 #include "log.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 namespace detail {
 
 preference_item_base::preference_item_base(preferences &parent, std::string_view path) noexcept : _parent(parent), _path(path)
@@ -16,14 +16,14 @@ preference_item_base::preference_item_base(preferences &parent, std::string_view
 
 void preference_item_base::load() noexcept
 {
-    ttlet value = this->_parent.read(_path);
+    hilet value = this->_parent.read(_path);
     if (value.is_undefined()) {
         this->reset();
     } else {
         try {
             this->decode(value);
         } catch (std::exception const &) {
-            tt_log_error("Could not decode preference {}, value {}", _path, value);
+            hi_log_error("Could not decode preference {}, value {}", _path, value);
             this->reset();
         }
     }
@@ -55,14 +55,14 @@ void preferences::_save() const noexcept
     try {
         auto text = format_JSON(_data);
 
-        ttlet tmp_location = _location.urlByAppendingExtension(".tmp");
-        auto file = tt::file(tmp_location, access_mode::truncate_or_create_for_write | access_mode::rename);
+        hilet tmp_location = _location.urlByAppendingExtension(".tmp");
+        auto file = hi::file(tmp_location, access_mode::truncate_or_create_for_write | access_mode::rename);
         file.write(text);
         file.flush();
         file.rename(_location, true);
 
     } catch (io_error const &e) {
-        tt_log_error("Could not save preferences to file. \"{}\"", e.what());
+        hi_log_error("Could not save preferences to file. \"{}\"", e.what());
     }
 
     _modified = false;
@@ -71,7 +71,7 @@ void preferences::_save() const noexcept
 void preferences::_load() noexcept
 {
     try {
-        auto file = tt::file(_location, access_mode::open_for_read);
+        auto file = hi::file(_location, access_mode::open_for_read);
         auto text = file.read_string();
         _data = parse_JSON(text);
 
@@ -80,11 +80,11 @@ void preferences::_load() noexcept
         }
 
     } catch (io_error const &e) {
-        tt_log_warning("Could not read preferences file. \"{}\"", e.what());
+        hi_log_warning("Could not read preferences file. \"{}\"", e.what());
         reset();
 
     } catch (parse_error const &e) {
-        tt_log_error("Could not parse preferences file. \"{}\"", e.what());
+        hi_log_error("Could not parse preferences file. \"{}\"", e.what());
         reset();
     }
 }
@@ -99,27 +99,27 @@ void preferences::reset() noexcept
 
 void preferences::save(URL location) noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    hilet lock = std::scoped_lock(mutex);
     _location = std::move(location);
     _save();
 }
 
 void preferences::save() const noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    hilet lock = std::scoped_lock(mutex);
     _save();
 }
 
 void preferences::load(URL location) noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    hilet lock = std::scoped_lock(mutex);
     _location = std::move(location);
     _load();
 }
 
 void preferences::load() noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    hilet lock = std::scoped_lock(mutex);
     _load();
 }
 
@@ -127,10 +127,10 @@ void preferences::load() noexcept
  */
 void preferences::write(jsonpath const &path, datum const value) noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    hilet lock = std::scoped_lock(mutex);
     auto *v = _data.find_one_or_create(path);
     if (v == nullptr) {
-        tt_log_fatal("Could not write '{}' to preference file '{}'", path, _location);
+        hi_log_fatal("Could not write '{}' to preference file '{}'", path, _location);
     }
 
     if (*v != value) {
@@ -143,7 +143,7 @@ void preferences::write(jsonpath const &path, datum const value) noexcept
  */
 datum preferences::read(jsonpath const &path) noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    hilet lock = std::scoped_lock(mutex);
     if (auto *r = _data.find_one(path)) {
         return *r;
     } else {
@@ -155,7 +155,7 @@ datum preferences::read(jsonpath const &path) noexcept
  */
 void preferences::remove(jsonpath const &path) noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    hilet lock = std::scoped_lock(mutex);
     if (_data.remove(path)) {
         _modified = true;
     }
@@ -163,11 +163,11 @@ void preferences::remove(jsonpath const &path) noexcept
 
 void preferences::check_modified() noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    hilet lock = std::scoped_lock(mutex);
 
     if (_modified) {
         _save();
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

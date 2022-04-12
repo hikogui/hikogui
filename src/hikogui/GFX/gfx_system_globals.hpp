@@ -7,7 +7,7 @@
 #include "../architecture.hpp"
 #include "../unfair_recursive_mutex.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class gfx_system;
 
@@ -15,4 +15,4 @@ class gfx_system;
  */
 inline unfair_recursive_mutex gfx_system_mutex;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

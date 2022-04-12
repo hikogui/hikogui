@@ -12,13 +12,13 @@
 #include <cstdlib>
 #include <algorithm>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class text_selection {
 public:
     constexpr text_selection() noexcept : _cursor(), _start_first(), _start_last(), _finish_first(), _finish_last()
     {
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     constexpr text_selection(text_selection const &) noexcept = default;
@@ -61,7 +61,7 @@ public:
 
     [[nodiscard]] constexpr bool empty() const noexcept
     {
-        ttlet[first_index, last_index] = selection_indices();
+        hilet[first_index, last_index] = selection_indices();
         return first_index >= last_index;
     }
 
@@ -72,14 +72,14 @@ public:
 
     constexpr text_selection &clear_selection(size_t size) noexcept
     {
-        ttlet new_cursor = std::min(_cursor, text_cursor{size - 1, true, size});
+        hilet new_cursor = std::min(_cursor, text_cursor{size - 1, true, size});
         return set_cursor(new_cursor);
     }
 
     constexpr text_selection &set_cursor(text_cursor new_cursor) noexcept
     {
         _cursor = _start_first = _start_last = _finish_first = _finish_last = new_cursor;
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
         return *this;
     }
 
@@ -93,7 +93,7 @@ public:
         _start_first = _finish_first = first;
         _start_last = _finish_last = last;
         _cursor = new_cursor == first ? first : last;
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     constexpr void start_selection(text_cursor new_cursor, std::pair<text_cursor, text_cursor> selection) noexcept
@@ -112,7 +112,7 @@ public:
         _finish_first = first;
         _finish_last = last;
         _cursor = first < _start_first ? first : last > _start_last ? last : drag_cursor == first ? first : last;
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     constexpr void drag_selection(text_cursor drag_cursor, std::pair<text_cursor, text_cursor> selection) noexcept
@@ -153,4 +153,4 @@ private:
     text_cursor _finish_last;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

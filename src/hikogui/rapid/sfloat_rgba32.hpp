@@ -10,7 +10,7 @@
 #include "../color/color.hpp"
 #include <algorithm>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class sfloat_rgba32 {
     // Red, Green, Blue, Alpha in binary32 (native endian).
@@ -50,4 +50,4 @@ public:
     [[nodiscard]] friend bool operator==(sfloat_rgba32 const &lhs, sfloat_rgba32 const &rhs) noexcept = default;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

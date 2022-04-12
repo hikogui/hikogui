@@ -9,7 +9,7 @@
 #include <string>
 
 using namespace std;
-using namespace tt;
+using namespace hi;
 
 TEST(grahpic_path, getBeziersOfLayer)
 {
@@ -20,7 +20,7 @@ TEST(grahpic_path, getBeziersOfLayer)
     path.lineTo(point2{1, 2});
     path.closeContour();
 
-    ttlet beziers = path.getBeziers();
+    hilet beziers = path.getBeziers();
     ASSERT_EQ(beziers.size(), 4);
     ASSERT_EQ(beziers[0], bezier_curve(point2(1, 1), point2(2, 1)));
     ASSERT_EQ(beziers[1], bezier_curve(point2(2, 1), point2(2, 2)));
@@ -37,7 +37,7 @@ TEST(grahpic_path, getbezier_pointsOfContour)
     path.lineTo(point2{1, 2});
     path.closeContour();
 
-    ttlet points = path.getbezier_pointsOfContour(0);
+    hilet points = path.getbezier_pointsOfContour(0);
     ASSERT_EQ(points.size(), 4);
     ASSERT_EQ(points[0], bezier_point(point2(1, 1), bezier_point::Type::Anchor));
     ASSERT_EQ(points[1], bezier_point(point2(2, 1), bezier_point::Type::Anchor));

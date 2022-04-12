@@ -10,7 +10,7 @@
 #include <vulkan/vulkan.hpp>
 #include <mutex>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 class gfx_device_vulkan;
 
 namespace pipeline_tone_mapper {
@@ -45,4 +45,4 @@ private:
 };
 
 } // namespace pipeline_tone_mapper
-} // namespace tt::inline v1
+} // namespace hi::inline v1

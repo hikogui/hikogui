@@ -7,7 +7,7 @@
 #include "../required.hpp"
 #include <memory>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 class gfx_surface;
 
 class pipeline {
@@ -23,4 +23,4 @@ public:
     pipeline &operator=(pipeline &&) = delete;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

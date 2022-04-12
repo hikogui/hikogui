@@ -5,14 +5,14 @@
 #include "toolbar_button_widget.hpp"
 #include "../GUI/gui_window.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 widget_constraints const &toolbar_button_widget::set_constraints() noexcept
 {
     _layout = {};
 
     // On left side a check mark, on right side short-cut. Around the label extra margin.
-    ttlet extra_size = extent2{theme().margin * 2.0f, theme().margin * 2.0f};
+    hilet extra_size = extent2{theme().margin * 2.0f, theme().margin * 2.0f};
     _constraints = set_constraints_button() + extra_size;
     _constraints.margins = 0.0f;
     return _constraints;
@@ -36,12 +36,12 @@ void toolbar_button_widget::draw(draw_context const &context) noexcept
 
 [[nodiscard]] bool toolbar_button_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
-    return *visible and *enabled and any(group & tt::keyboard_focus_group::toolbar);
+    return *visible and *enabled and any(group & hi::keyboard_focus_group::toolbar);
 }
 
 [[nodiscard]] bool toolbar_button_widget::handle_event(command command) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     if (*enabled) {
         switch (command) {
@@ -69,9 +69,9 @@ void toolbar_button_widget::draw(draw_context const &context) noexcept
 
 void toolbar_button_widget::draw_toolbar_button(draw_context const &context) noexcept
 {
-    ttlet border_color = *focus ? focus_color() : color::transparent();
+    hilet border_color = *focus ? focus_color() : color::transparent();
     context.draw_box(
         layout(), layout().rectangle(), background_color(), border_color, theme().border_width, border_side::inside);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -8,7 +8,7 @@
 #include "pixel_map.hpp"
 #include "required.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 ssize_t graphic_path::numberOfContours() const noexcept
 {
@@ -31,9 +31,9 @@ bool graphic_path::allLayersHaveSameColor() const noexcept
         return true;
     }
 
-    ttlet &firstColor = layerEndContours.front().second;
+    hilet &firstColor = layerEndContours.front().second;
 
-    for (ttlet & [ endContour, color ] : layerEndContours) {
+    for (hilet & [ endContour, color ] : layerEndContours) {
         if (color != firstColor) {
             return false;
         }
@@ -49,7 +49,7 @@ bool graphic_path::allLayersHaveSameColor() const noexcept
 
     auto r = aarectangle{points.front().p, points.front().p};
 
-    for (ttlet &point : points) {
+    for (hilet &point : points) {
         r |= point.p;
     }
 
@@ -101,12 +101,12 @@ void graphic_path::setColorOfLayer(ssize_t layerNr, color fill_color) noexcept
 
 std::pair<graphic_path, color> graphic_path::getLayer(ssize_t layerNr) const noexcept
 {
-    tt_assert(hasLayers());
+    hi_assert(hasLayers());
 
     auto path = graphic_path{};
 
-    ttlet begin = beginLayer(layerNr);
-    ttlet end = endLayer(layerNr);
+    hilet begin = beginLayer(layerNr);
+    hilet end = endLayer(layerNr);
     for (ssize_t contourNr = begin; contourNr != end; contourNr++) {
         path.addContour(beginContour(contourNr), endContour(contourNr));
     }
@@ -139,8 +139,8 @@ void graphic_path::optimizeLayers() noexcept
 
 std::vector<bezier_point> graphic_path::getbezier_pointsOfContour(ssize_t subpathNr) const noexcept
 {
-    ttlet begin = points.begin() + (subpathNr == 0 ? 0 : contourEndPoints.at(subpathNr - 1) + 1);
-    ttlet end = points.begin() + contourEndPoints.at(subpathNr) + 1;
+    hilet begin = points.begin() + (subpathNr == 0 ? 0 : contourEndPoints.at(subpathNr - 1) + 1);
+    hilet end = points.begin() + contourEndPoints.at(subpathNr) + 1;
     return std::vector(begin, end);
 }
 
@@ -151,12 +151,12 @@ std::vector<bezier_curve> graphic_path::getBeziersOfContour(ssize_t contourNr) c
 
 std::vector<bezier_curve> graphic_path::getBeziers() const noexcept
 {
-    tt_assert(!hasLayers());
+    hi_assert(!hasLayers());
 
     std::vector<bezier_curve> r;
 
     for (auto contourNr = 0; contourNr < numberOfContours(); contourNr++) {
-        ttlet beziers = getBeziersOfContour(contourNr);
+        hilet beziers = getBeziersOfContour(contourNr);
         r.insert(r.end(), beziers.begin(), beziers.end());
     }
     return r;
@@ -218,30 +218,30 @@ void graphic_path::moveTo(point2 position) noexcept
 
 void graphic_path::moveRelativeTo(vector2 direction) noexcept
 {
-    tt_assert(isContourOpen());
+    hi_assert(isContourOpen());
 
-    ttlet lastPosition = currentPosition();
+    hilet lastPosition = currentPosition();
     closeContour();
     points.emplace_back(lastPosition + direction, bezier_point::Type::Anchor);
 }
 
 void graphic_path::lineTo(point2 position) noexcept
 {
-    tt_assert(isContourOpen());
+    hi_assert(isContourOpen());
 
     points.emplace_back(position, bezier_point::Type::Anchor);
 }
 
 void graphic_path::lineRelativeTo(vector2 direction) noexcept
 {
-    tt_assert(isContourOpen());
+    hi_assert(isContourOpen());
 
     points.emplace_back(currentPosition() + direction, bezier_point::Type::Anchor);
 }
 
 void graphic_path::quadraticCurveTo(point2 controlPosition, point2 position) noexcept
 {
-    tt_assert(isContourOpen());
+    hi_assert(isContourOpen());
 
     points.emplace_back(controlPosition, bezier_point::Type::QuadraticControl);
     points.emplace_back(position, bezier_point::Type::Anchor);
@@ -249,16 +249,16 @@ void graphic_path::quadraticCurveTo(point2 controlPosition, point2 position) noe
 
 void graphic_path::quadraticCurveRelativeTo(vector2 controlDirection, vector2 direction) noexcept
 {
-    tt_assert(isContourOpen());
+    hi_assert(isContourOpen());
 
-    ttlet p = currentPosition();
+    hilet p = currentPosition();
     points.emplace_back(p + controlDirection, bezier_point::Type::QuadraticControl);
     points.emplace_back(p + direction, bezier_point::Type::Anchor);
 }
 
 void graphic_path::cubicCurveTo(point2 controlPosition1, point2 controlPosition2, point2 position) noexcept
 {
-    tt_assert(isContourOpen());
+    hi_assert(isContourOpen());
 
     points.emplace_back(controlPosition1, bezier_point::Type::CubicControl1);
     points.emplace_back(controlPosition2, bezier_point::Type::CubicControl2);
@@ -267,9 +267,9 @@ void graphic_path::cubicCurveTo(point2 controlPosition1, point2 controlPosition2
 
 void graphic_path::cubicCurveRelativeTo(vector2 controlDirection1, vector2 controlDirection2, vector2 direction) noexcept
 {
-    tt_assert(isContourOpen());
+    hi_assert(isContourOpen());
 
-    ttlet p = currentPosition();
+    hilet p = currentPosition();
     points.emplace_back(p + controlDirection1, bezier_point::Type::CubicControl1);
     points.emplace_back(p + controlDirection2, bezier_point::Type::CubicControl2);
     points.emplace_back(p + direction, bezier_point::Type::Anchor);
@@ -277,58 +277,58 @@ void graphic_path::cubicCurveRelativeTo(vector2 controlDirection1, vector2 contr
 
 void graphic_path::arcTo(float radius, point2 position) noexcept
 {
-    tt_assert(isContourOpen());
+    hi_assert(isContourOpen());
 
-    ttlet r = std::abs(radius);
-    ttlet P1 = currentPosition();
-    ttlet P2 = position;
-    ttlet Pm = midpoint(P1, P2);
+    hilet r = std::abs(radius);
+    hilet P1 = currentPosition();
+    hilet P2 = position;
+    hilet Pm = midpoint(P1, P2);
 
-    ttlet Vm2 = P2 - Pm;
+    hilet Vm2 = P2 - Pm;
 
     // Calculate the half angle between vectors P0 - C and P2 - C.
-    ttlet alpha = std::asin(hypot(Vm2) / r);
+    hilet alpha = std::asin(hypot(Vm2) / r);
 
     // Calculate the center point C. As the length of the normal of Vm2 at Pm.
-    ttlet C = Pm + normal(Vm2) * std::cos(alpha) * radius;
+    hilet C = Pm + normal(Vm2) * std::cos(alpha) * radius;
 
     // Calculate vectors from center to end points.
-    ttlet VC1 = P1 - C;
-    ttlet VC2 = P2 - C;
+    hilet VC1 = P1 - C;
+    hilet VC2 = P2 - C;
 
-    ttlet q1 = squared_hypot(VC1);
-    ttlet q2 = q1 + dot(VC1, VC2);
-    ttlet k2 = (4.0f / 3.0f) * (std::sqrt(2.0f * q1 * q2) - q2) / cross(VC1, VC2);
+    hilet q1 = squared_hypot(VC1);
+    hilet q2 = q1 + dot(VC1, VC2);
+    hilet k2 = (4.0f / 3.0f) * (std::sqrt(2.0f * q1 * q2) - q2) / cross(VC1, VC2);
 
     // Calculate the control points.
-    ttlet C1 = point2{(C.x() + VC1.x()) - k2 * VC1.y(), (C.y() + VC1.y()) + k2 * VC1.x()};
-    ttlet C2 = point2{(C.x() + VC2.x()) + k2 * VC2.y(), (C.y() + VC2.y()) - k2 * VC2.x()};
+    hilet C1 = point2{(C.x() + VC1.x()) - k2 * VC1.y(), (C.y() + VC1.y()) + k2 * VC1.x()};
+    hilet C2 = point2{(C.x() + VC2.x()) + k2 * VC2.y(), (C.y() + VC2.y()) - k2 * VC2.x()};
 
     cubicCurveTo(C1, C2, P2);
 }
 
 void graphic_path::addRectangle(aarectangle r, corner_radii corners) noexcept
 {
-    tt_assert(!isContourOpen());
+    hi_assert(!isContourOpen());
 
-    ttlet bl_radius = std::abs(corners.left_bottom());
-    ttlet br_radius = std::abs(corners.right_bottom());
-    ttlet tl_radius = std::abs(corners.left_top());
-    ttlet tr_radius = std::abs(corners.right_top());
+    hilet bl_radius = std::abs(corners.left_bottom());
+    hilet br_radius = std::abs(corners.right_bottom());
+    hilet tl_radius = std::abs(corners.left_top());
+    hilet tr_radius = std::abs(corners.right_top());
 
-    ttlet blc = get<0>(r);
-    ttlet brc = get<1>(r);
-    ttlet tlc = get<2>(r);
-    ttlet trc = get<3>(r);
+    hilet blc = get<0>(r);
+    hilet brc = get<1>(r);
+    hilet tlc = get<2>(r);
+    hilet trc = get<3>(r);
 
-    ttlet blc1 = blc + vector2{0.0f, bl_radius};
-    ttlet blc2 = blc + vector2{bl_radius, 0.0f};
-    ttlet brc1 = brc + vector2{-br_radius, 0.0f};
-    ttlet brc2 = brc + vector2{0.0f, br_radius};
-    ttlet tlc1 = tlc + vector2{tl_radius, 0.0f};
-    ttlet tlc2 = tlc + vector2{0.0f, -tl_radius};
-    ttlet trc1 = trc + vector2{0.0f, -tr_radius};
-    ttlet trc2 = trc + vector2{-tr_radius, 0.0f};
+    hilet blc1 = blc + vector2{0.0f, bl_radius};
+    hilet blc2 = blc + vector2{bl_radius, 0.0f};
+    hilet brc1 = brc + vector2{-br_radius, 0.0f};
+    hilet brc2 = brc + vector2{0.0f, br_radius};
+    hilet tlc1 = tlc + vector2{tl_radius, 0.0f};
+    hilet tlc2 = tlc + vector2{0.0f, -tl_radius};
+    hilet trc1 = trc + vector2{0.0f, -tr_radius};
+    hilet trc2 = trc + vector2{-tr_radius, 0.0f};
 
     moveTo(blc1);
     if (corners.left_bottom() > 0.0) {
@@ -363,7 +363,7 @@ void graphic_path::addRectangle(aarectangle r, corner_radii corners) noexcept
 
 void graphic_path::addCircle(point2 position, float radius) noexcept
 {
-    tt_assert(!isContourOpen());
+    hi_assert(!isContourOpen());
 
     moveTo(point2{position.x(), position.y() - radius});
     arcTo(radius, point2{position.x() + radius, position.y()});
@@ -377,7 +377,7 @@ void graphic_path::addContour(
     std::vector<bezier_point>::const_iterator const &begin,
     std::vector<bezier_point>::const_iterator const &end) noexcept
 {
-    tt_assert(!isContourOpen());
+    hi_assert(!isContourOpen());
     points.insert(points.end(), begin, end);
     closeContour();
 }
@@ -389,9 +389,9 @@ void graphic_path::addContour(std::vector<bezier_point> const &contour) noexcept
 
 void graphic_path::addContour(std::vector<bezier_curve> const &contour) noexcept
 {
-    tt_assert(!isContourOpen());
+    hi_assert(!isContourOpen());
 
-    for (ttlet &curve : contour) {
+    for (hilet &curve : contour) {
         // Don't emit the first point, the last point of the contour will wrap around.
         switch (curve.type) {
         case bezier_curve::Type::Linear: points.emplace_back(curve.P2, bezier_point::Type::Anchor); break;
@@ -404,7 +404,7 @@ void graphic_path::addContour(std::vector<bezier_curve> const &contour) noexcept
             points.emplace_back(curve.C2, bezier_point::Type::CubicControl2);
             points.emplace_back(curve.P2, bezier_point::Type::Anchor);
             break;
-        default: tt_no_default();
+        default: hi_no_default();
         }
     }
 
@@ -430,8 +430,8 @@ void graphic_path::addStroke(
 
 graphic_path graphic_path::toStroke(float strokeWidth, line_join_style line_join_style, float tolerance) const noexcept
 {
-    tt_assert(!hasLayers());
-    tt_assert(!isContourOpen());
+    hi_assert(!hasLayers());
+    hi_assert(!isContourOpen());
 
     auto r = graphic_path{};
 
@@ -439,12 +439,12 @@ graphic_path graphic_path::toStroke(float strokeWidth, line_join_style line_join
     float portOffset = -starboardOffset;
 
     for (int i = 0; i < numberOfContours(); i++) {
-        ttlet baseContour = getBeziersOfContour(i);
+        hilet baseContour = getBeziersOfContour(i);
 
-        ttlet starboardContour = makeParallelContour(baseContour, starboardOffset, line_join_style, tolerance);
+        hilet starboardContour = makeParallelContour(baseContour, starboardOffset, line_join_style, tolerance);
         r.addContour(starboardContour);
 
-        ttlet portContour = makeInverseContour(makeParallelContour(baseContour, portOffset, line_join_style, tolerance));
+        hilet portContour = makeInverseContour(makeParallelContour(baseContour, portOffset, line_join_style, tolerance));
         r.addContour(portContour);
     }
 
@@ -453,22 +453,22 @@ graphic_path graphic_path::toStroke(float strokeWidth, line_join_style line_join
 
 graphic_path &graphic_path::operator+=(graphic_path const &rhs) noexcept
 {
-    tt_assert(!isContourOpen());
-    tt_assert(!rhs.isContourOpen());
+    hi_assert(!isContourOpen());
+    hi_assert(!rhs.isContourOpen());
 
     // Left hand layer can only be open if the right hand side contains no layers.
-    tt_assert(!rhs.hasLayers() || !isLayerOpen());
+    hi_assert(!rhs.hasLayers() || !isLayerOpen());
 
-    ttlet pointOffset = ssize(points);
-    ttlet contourOffset = ssize(contourEndPoints);
+    hilet pointOffset = ssize(points);
+    hilet contourOffset = ssize(contourEndPoints);
 
     layerEndContours.reserve(layerEndContours.size() + rhs.layerEndContours.size());
-    for (ttlet & [ x, fill_color ] : rhs.layerEndContours) {
+    for (hilet & [ x, fill_color ] : rhs.layerEndContours) {
         layerEndContours.emplace_back(contourOffset + x, fill_color);
     }
 
     contourEndPoints.reserve(contourEndPoints.size() + rhs.contourEndPoints.size());
-    for (ttlet x : rhs.contourEndPoints) {
+    for (hilet x : rhs.contourEndPoints) {
         contourEndPoints.push_back(pointOffset + x);
     }
 
@@ -486,23 +486,23 @@ graphic_path graphic_path::centerScale(extent2 extent, float padding) const noex
         return {};
     }
 
-    ttlet scale = std::min(max_size.width() / bbox.width(), max_size.height() / bbox.height());
+    hilet scale = std::min(max_size.width() / bbox.width(), max_size.height() / bbox.height());
     bbox = scale2(scale) * bbox;
 
-    ttlet offset = (point2{} - get<0>(bbox)) + (extent - bbox.size()) * 0.5;
+    hilet offset = (point2{} - get<0>(bbox)) + (extent - bbox.size()) * 0.5;
 
     return (translate2(offset) * scale2(scale, scale)) * *this;
 }
 
 void composit(pixel_map<sfloat_rgba16> &dst, color color, graphic_path const &path) noexcept
 {
-    tt_assert(!path.hasLayers());
-    tt_assert(!path.isContourOpen());
+    hi_assert(!path.hasLayers());
+    hi_assert(!path.isContourOpen());
 
     auto mask = pixel_map<uint8_t>(dst.width(), dst.height());
     fill(mask);
 
-    ttlet curves = path.getBeziers();
+    hilet curves = path.getBeziers();
     fill(mask, curves);
 
     composit(dst, color, mask);
@@ -510,10 +510,10 @@ void composit(pixel_map<sfloat_rgba16> &dst, color color, graphic_path const &pa
 
 void composit(pixel_map<sfloat_rgba16> &dst, graphic_path const &src) noexcept
 {
-    tt_assert(src.hasLayers() && !src.isLayerOpen());
+    hi_assert(src.hasLayers() && !src.isLayerOpen());
 
     for (int layerNr = 0; layerNr < src.numberOfLayers(); layerNr++) {
-        ttlet[layer, fill_color] = src.getLayer(layerNr);
+        hilet[layer, fill_color] = src.getLayer(layerNr);
 
         composit(dst, fill_color, layer);
     }
@@ -524,4 +524,4 @@ void fill(pixel_map<sdf_r8> &dst, graphic_path const &path) noexcept
     fill(dst, path.getBeziers());
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

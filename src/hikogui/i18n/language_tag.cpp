@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <numeric>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct language_tag_expansion {
     std::string_view from;
@@ -1918,12 +1918,12 @@ constexpr auto language_tag_expansions = std::array{
 
 static std::optional<std::string_view> expand_language_tag(std::string_view from) noexcept
 {
-    ttlet from_lower = to_lower(from);
-    ttlet it = std::lower_bound(
+    hilet from_lower = to_lower(from);
+    hilet it = std::lower_bound(
         language_tag_expansions.begin(),
         language_tag_expansions.end(),
         std::string_view{from_lower},
-        [](ttlet& item, ttlet& value) {
+        [](hilet& item, hilet& value) {
             return item.from < value;
         });
 
@@ -1951,14 +1951,14 @@ static std::optional<std::string_view> expand_language_tag(std::string_view from
     }
     str = std::string_view{str_};
 
-    for (ttlet element : std::views::split(str, std::string_view{"-"})) {
+    for (hilet element : std::views::split(str, std::string_view{"-"})) {
         if (extension_first_char) {
             // Once inside the extensions portion of a language tag you can no
             // longer determine validity based on just the element size.
             ;
 
         } else if (not language) {
-            tt_parse_check(
+            hi_parse_check(
                 (element.size() == 2 or element.size() == 3) and is_alpha(element),
                 "First element of a language tag must be a ISO-639 2 or 3 letter language code, got '{}'",
                 str);
@@ -2050,9 +2050,9 @@ language_tag::language_tag(std::string_view str) : language(), script(), region(
 {
     auto tmp = std::vector<std::vector<language_tag>>{};
 
-    for (ttlet& language : languages) {
+    for (hilet& language : languages) {
         auto& lang_tmp = tmp.emplace_back();
-        for (ttlet& variant : language.all_variants()) {
+        for (hilet& variant : language.all_variants()) {
             lang_tmp.push_back(variant);
         }
     }
@@ -2060,7 +2060,7 @@ language_tag::language_tag(std::string_view str) : language(), script(), region(
     for (auto it = tmp.rbegin(); it != tmp.rend(); ++it) {
         // Remove duplicates in previous language-variant lists.
         for (auto jt = it + 1; jt != tmp.rend(); ++jt) {
-            for (ttlet& tag : *it) {
+            for (hilet& tag : *it) {
                 std::erase(*jt, tag);
             }
         }
@@ -2068,13 +2068,13 @@ language_tag::language_tag(std::string_view str) : language(), script(), region(
 
     auto r = std::vector<language_tag>{};
 
-    ttlet count = std::accumulate(tmp.begin(), tmp.end(), 0_uz, [](ttlet& value, ttlet& item) {
+    hilet count = std::accumulate(tmp.begin(), tmp.end(), 0_uz, [](hilet& value, hilet& item) {
         return value + item.size();
     });
     r.reserve(count);
 
-    for (ttlet& variants : tmp) {
-        for (ttlet& tag : variants) {
+    for (hilet& variants : tmp) {
+        for (hilet& tag : variants) {
             r.push_back(tag);
         }
     }
@@ -2082,4 +2082,4 @@ language_tag::language_tag(std::string_view str) : language(), script(), region(
     return r;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

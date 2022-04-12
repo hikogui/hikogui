@@ -14,7 +14,7 @@
 #include <bit>
 #include <array>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class sfloat_rgba16 {
     // Red, Green, Blue, Alpha in binary16 (native endian).
@@ -90,14 +90,14 @@ inline void fill(pixel_map<sfloat_rgba16> &image, f32x4 color) noexcept
 
 inline void composit(pixel_map<sfloat_rgba16> &under, pixel_map<sfloat_rgba16> const &over) noexcept
 {
-    tt_assert(over.height() >= under.height());
-    tt_assert(over.width() >= under.width());
+    hi_assert(over.height() >= under.height());
+    hi_assert(over.width() >= under.width());
 
     for (std::size_t rowNr = 0; rowNr != under.height(); ++rowNr) {
-        ttlet overRow = over.at(rowNr);
+        hilet overRow = over.at(rowNr);
         auto underRow = under.at(rowNr);
         for (std::size_t columnNr = 0; columnNr != under.width(); ++columnNr) {
-            ttlet &overPixel = overRow[columnNr];
+            hilet &overPixel = overRow[columnNr];
             auto &underPixel = underRow[columnNr];
 
             underPixel = composit(static_cast<f16x4>(underPixel), static_cast<f16x4>(overPixel));
@@ -107,16 +107,16 @@ inline void composit(pixel_map<sfloat_rgba16> &under, pixel_map<sfloat_rgba16> c
 
 inline void composit(pixel_map<sfloat_rgba16> &under, color over, pixel_map<uint8_t> const &mask) noexcept
 {
-    tt_assert(mask.height() >= under.height());
-    tt_assert(mask.width() >= under.width());
+    hi_assert(mask.height() >= under.height());
+    hi_assert(mask.width() >= under.width());
 
     auto maskPixel = color{1.0f, 1.0f, 1.0f, 1.0f};
 
     for (std::size_t rowNr = 0; rowNr != under.height(); ++rowNr) {
-        ttlet maskRow = mask.at(rowNr);
+        hilet maskRow = mask.at(rowNr);
         auto underRow = under.at(rowNr);
         for (std::size_t columnNr = 0; columnNr != under.width(); ++columnNr) {
-            ttlet maskValue = maskRow[columnNr] / 255.0f;
+            hilet maskValue = maskRow[columnNr] / 255.0f;
             maskPixel.a() = maskValue;
 
             auto &pixel = underRow[columnNr];
@@ -125,11 +125,11 @@ inline void composit(pixel_map<sfloat_rgba16> &under, color over, pixel_map<uint
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<>
-struct std::hash<tt::sfloat_rgba16> {
-    std::size_t operator()(tt::sfloat_rgba16 const &rhs) const noexcept
+struct std::hash<hi::sfloat_rgba16> {
+    std::size_t operator()(hi::sfloat_rgba16 const &rhs) const noexcept
     {
         return rhs.hash();
     }

@@ -10,7 +10,7 @@
 #include <type_traits>
 #include <memory>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A default button delegate.
  *
@@ -42,7 +42,7 @@ public:
      * @param off_value The value or observable-value that mean 'off'.
      */
     default_button_delegate(auto &&value, auto &&on_value, auto &&off_value) noexcept :
-        value(tt_forward(value)), on_value(tt_forward(on_value)), off_value(tt_forward(off_value))
+        value(hi_forward(value)), on_value(hi_forward(on_value)), off_value(hi_forward(off_value))
     {
         // clang-format off
         _value_cbt = this->value.subscribe([&](auto...){ this->_notifier(); });
@@ -58,7 +58,7 @@ public:
      */
     default_button_delegate(auto &&value, auto &&on_value) noexcept
         requires(can_make_defaults or button_type == button_type::radio) :
-        default_button_delegate(tt_forward(value), tt_forward(on_value), value_type{})
+        default_button_delegate(hi_forward(value), hi_forward(on_value), value_type{})
     {
     }
 
@@ -67,7 +67,7 @@ public:
      * @param value A value or observable-value used as a representation of the state.
      */
     default_button_delegate(auto &&value) noexcept requires(can_make_defaults) :
-        default_button_delegate(tt_forward(value), value_type{1}, value_type{})
+        default_button_delegate(hi_forward(value), value_type{1}, value_type{})
     {
     }
 
@@ -114,4 +114,4 @@ std::unique_ptr<button_delegate> make_unique_default_button_delegate(Value &&val
         std::forward<Value>(value), std::forward<Args>(args)...);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

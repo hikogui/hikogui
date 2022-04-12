@@ -28,12 +28,12 @@
 #include <memory>
 #include <thread>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 namespace detail {
 
 class log_message_base {
 public:
-    tt_force_inline log_message_base() noexcept = default;
+    hi_force_inline log_message_base() noexcept = default;
     virtual ~log_message_base() = default;
 
     [[nodiscard]] virtual std::string format() const noexcept = 0;
@@ -67,19 +67,19 @@ public:
     log_message& operator=(log_message const&) noexcept = default;
 
     template<typename... Args>
-    tt_force_inline log_message(Args&&...args) noexcept :
+    hi_force_inline log_message(Args&&...args) noexcept :
         _time_stamp(time_stamp_count::inplace_with_thread_id{}), _what(std::forward<Args>(args)...)
     {
     }
 
     std::string format() const noexcept override
     {
-        ttlet utc_time_point = time_stamp_utc::make(_time_stamp);
-        ttlet sys_time_point = std::chrono::clock_cast<std::chrono::system_clock>(utc_time_point);
-        ttlet local_time_point = zone->to_local(sys_time_point);
+        hilet utc_time_point = time_stamp_utc::make(_time_stamp);
+        hilet sys_time_point = std::chrono::clock_cast<std::chrono::system_clock>(utc_time_point);
+        hilet local_time_point = zone->to_local(sys_time_point);
 
-        ttlet cpu_id = _time_stamp.cpu_id();
-        ttlet thread_id = _time_stamp.thread_id();
+        hilet cpu_id = _time_stamp.cpu_id();
+        hilet thread_id = _time_stamp.thread_id();
 
         if constexpr (to_bool(Level & global_state_type::log_statistics)) {
             return std::format("{} {:2}:{:<10} {:5} {}\n", local_time_point, cpu_id, thread_id, log_level_name, _what());
@@ -119,11 +119,11 @@ public:
      * @param args Arguments to std::format.
      */
     template<global_state_type Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Args>
-    tt_force_inline void add(Args&&...args) noexcept
+    hi_force_inline void add(Args&&...args) noexcept
     {
         static_assert(std::popcount(to_underlying(Level)) == 1);
 
-        ttlet state = global_state.load(std::memory_order::relaxed);
+        hilet state = global_state.load(std::memory_order::relaxed);
         if (not to_bool(state & Level)) {
             return;
         }
@@ -149,7 +149,7 @@ public:
      * Flushing includes writing the message to a log file or displaying
      * them on the console.
      */
-    tt_no_inline void flush() noexcept;
+    hi_no_inline void flush() noexcept;
 
     /** Start the logger system.
      *
@@ -161,7 +161,7 @@ public:
     static bool start_subsystem(global_state_type log_level = global_state_type::log_level_default)
     {
         set_log_level(log_level);
-        return tt::start_subsystem(global_state_type::log_is_running, log::subsystem_init, log::subsystem_deinit);
+        return hi::start_subsystem(global_state_type::log_is_running, log::subsystem_init, log::subsystem_deinit);
     }
 
     /** Stop the logger system.
@@ -169,7 +169,7 @@ public:
      */
     static void stop_subsystem()
     {
-        return tt::stop_subsystem(log::subsystem_deinit);
+        return hi::stop_subsystem(log::subsystem_deinit);
     }
 
 private:
@@ -210,30 +210,30 @@ inline log log_global;
  */
 [[nodiscard]] std::string get_last_error_message() noexcept;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
-#define tt_log_debug(fmt, ...) ::tt::log_global.add<::tt::global_state_type::log_debug, __FILE__, __LINE__, fmt>(__VA_ARGS__)
-#define tt_log_info(fmt, ...) ::tt::log_global.add<::tt::global_state_type::log_info, __FILE__, __LINE__, fmt>(__VA_ARGS__)
-#define tt_log_statistics(fmt, ...) \
-    ::tt::log_global.add<::tt::global_state_type::log_statistics, __FILE__, __LINE__, fmt>(__VA_ARGS__)
-#define tt_log_trace(fmt, ...) ::tt::log_global.add<::tt::global_state_type::log_trace, __FILE__, __LINE__, fmt>(__VA_ARGS__)
-#define tt_log_audit(fmt, ...) ::tt::log_global.add<::tt::global_state_type::log_audit, __FILE__, __LINE__, fmt>(__VA_ARGS__)
-#define tt_log_warning(fmt, ...) ::tt::log_global.add<::tt::global_state_type::log_warning, __FILE__, __LINE__, fmt>(__VA_ARGS__)
-#define tt_log_error(fmt, ...) ::tt::log_global.add<::tt::global_state_type::log_error, __FILE__, __LINE__, fmt>(__VA_ARGS__)
-#define tt_log_fatal(fmt, ...) \
-    ::tt::log_global.add<::tt::global_state_type::log_fatal, __FILE__, __LINE__, fmt>(__VA_ARGS__); \
-    tt_debug_abort()
+#define hi_log_debug(fmt, ...) ::hi::log_global.add<::hi::global_state_type::log_debug, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+#define hi_log_info(fmt, ...) ::hi::log_global.add<::hi::global_state_type::log_info, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+#define hi_log_statistics(fmt, ...) \
+    ::hi::log_global.add<::hi::global_state_type::log_statistics, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+#define hi_log_trace(fmt, ...) ::hi::log_global.add<::hi::global_state_type::log_trace, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+#define hi_log_audit(fmt, ...) ::hi::log_global.add<::hi::global_state_type::log_audit, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+#define hi_log_warning(fmt, ...) ::hi::log_global.add<::hi::global_state_type::log_warning, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+#define hi_log_error(fmt, ...) ::hi::log_global.add<::hi::global_state_type::log_error, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+#define hi_log_fatal(fmt, ...) \
+    ::hi::log_global.add<::hi::global_state_type::log_fatal, __FILE__, __LINE__, fmt>(__VA_ARGS__); \
+    hi_debug_abort()
 
-#define tt_log_info_once(name, fmt, ...) \
+#define hi_log_info_once(name, fmt, ...) \
     do { \
         if (++global_counter<name> == 1) { \
-            ::tt::log_global.add<::tt::global_state_type::log_info, __FILE__, __LINE__, fmt>(__VA_ARGS__); \
+            ::hi::log_global.add<::hi::global_state_type::log_info, __FILE__, __LINE__, fmt>(__VA_ARGS__); \
         } \
     } while (false)
 
-#define tt_log_error_once(name, fmt, ...) \
+#define hi_log_error_once(name, fmt, ...) \
     do { \
         if (++global_counter<name> == 1) { \
-            ::tt::log_global.add<::tt::global_state_type::log_error, __FILE__, __LINE__, fmt>(__VA_ARGS__); \
+            ::hi::log_global.add<::hi::global_state_type::log_error, __FILE__, __LINE__, fmt>(__VA_ARGS__); \
         } \
     } while (false)

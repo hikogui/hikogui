@@ -15,7 +15,7 @@
 #include <ostream>
 #include <mutex>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 struct url_parts;
 class resource_view;
 
@@ -54,7 +54,7 @@ public:
 
     URL(URL const &other) noexcept : value(other.value)
     {
-        tt_axiom(&other != this);
+        hi_axiom(&other != this);
     }
     URL(URL &&other) noexcept = default;
     URL &operator=(URL const &other) noexcept
@@ -200,20 +200,20 @@ private:
     static URL _urlOfCurrentWorkingDirectory;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<>
-class std::hash<tt::URL> {
+class std::hash<hi::URL> {
 public:
-    std::size_t operator()(tt::URL const &url) const noexcept
+    std::size_t operator()(hi::URL const &url) const noexcept
     {
         return url.hash();
     }
 };
 
 template<typename CharT>
-struct std::formatter<tt::URL, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(tt::URL const &t, auto &fc)
+struct std::formatter<hi::URL, CharT> : std::formatter<std::string_view, CharT> {
+    auto format(hi::URL const &t, auto &fc)
     {
         return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
     }

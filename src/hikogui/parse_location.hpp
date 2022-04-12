@@ -10,7 +10,7 @@
 #include <iostream>
 #include <string_view>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /*! Location inside a configuration file.
  */
@@ -148,7 +148,7 @@ public:
 
     parse_location &operator+=(std::string const &s) noexcept
     {
-        for (ttlet c : s) {
+        for (hilet c : s) {
             *this += c;
         }
         return *this;
@@ -156,7 +156,7 @@ public:
 
     parse_location &operator+=(char const *s) noexcept
     {
-        while (ttlet c = *s++) {
+        while (hilet c = *s++) {
             *this += c;
         }
         return *this;
@@ -185,11 +185,11 @@ public:
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<typename CharT>
-struct std::formatter<tt::parse_location, CharT> : std::formatter<string_view, CharT> {
-    auto format(tt::parse_location t, auto &fc)
+struct std::formatter<hi::parse_location, CharT> : std::formatter<string_view, CharT> {
+    auto format(hi::parse_location t, auto &fc)
     {
         return std::formatter<string_view, CharT>::format(to_string(t), fc);
     }

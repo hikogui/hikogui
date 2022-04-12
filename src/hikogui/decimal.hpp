@@ -13,7 +13,7 @@
 #include <charconv>
 #include <ostream>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class decimal {
 private:
@@ -221,21 +221,21 @@ public:
      */
     [[nodiscard]] constexpr decimal normalize() const noexcept
     {
-        ttlet[e, m] = exponent_mantissa();
-        ttlet[e_, m_] = decimal::normalize(e, m);
+        hilet[e, m] = exponent_mantissa();
+        hilet[e_, m_] = decimal::normalize(e, m);
         return {e_, m_};
     }
 
     decimal &operator+=(decimal rhs) noexcept
     {
-        ttlet[e, lhs_m, rhs_m] = decimal::align(*this, rhs);
+        hilet[e, lhs_m, rhs_m] = decimal::align(*this, rhs);
         value = decimal::pack(e, lhs_m + rhs_m);
         return *this;
     }
 
     decimal &operator-=(decimal rhs) noexcept
     {
-        ttlet[e, lhs_m, rhs_m] = decimal::align(*this, rhs);
+        hilet[e, lhs_m, rhs_m] = decimal::align(*this, rhs);
         value = decimal::pack(e, lhs_m - rhs_m);
         return *this;
     }
@@ -253,13 +253,13 @@ public:
 public:
     [[nodiscard]] friend bool operator==(decimal lhs, decimal rhs) noexcept
     {
-        ttlet[e, lhs_m, rhs_m] = decimal::align(lhs, rhs);
+        hilet[e, lhs_m, rhs_m] = decimal::align(lhs, rhs);
         return lhs_m == rhs_m;
     }
 
     [[nodiscard]] friend auto operator<=>(decimal lhs, decimal rhs) noexcept
     {
-        ttlet[e, lhs_m, rhs_m] = decimal::align(lhs, rhs);
+        hilet[e, lhs_m, rhs_m] = decimal::align(lhs, rhs);
         return lhs_m <=> rhs_m;
     }
 
@@ -270,13 +270,13 @@ public:
 
     [[nodiscard]] friend decimal operator+(decimal lhs, decimal rhs) noexcept
     {
-        ttlet[e, lhs_m, rhs_m] = decimal::align(lhs, rhs);
+        hilet[e, lhs_m, rhs_m] = decimal::align(lhs, rhs);
         return {e, lhs_m + rhs_m};
     }
 
     [[nodiscard]] friend decimal operator-(decimal lhs, decimal rhs) noexcept
     {
-        ttlet[e, lhs_m, rhs_m] = decimal::align(lhs, rhs);
+        hilet[e, lhs_m, rhs_m] = decimal::align(lhs, rhs);
         return {e, lhs_m - rhs_m};
     }
 
@@ -313,7 +313,7 @@ public:
     [[nodiscard]] friend decimal operator/(decimal lhs, decimal rhs) noexcept
     {
         auto rhs_m = rhs.mantissa();
-        tt_axiom(rhs_m != 0);
+        hi_axiom(rhs_m != 0);
         auto rhs_e = rhs.exponent();
         auto lhs_m = lhs.mantissa();
         auto lhs_e = lhs.exponent();
@@ -325,7 +325,7 @@ public:
     [[nodiscard]] friend decimal operator%(decimal lhs, decimal rhs) noexcept
     {
         auto rhs_m = rhs.mantissa();
-        tt_axiom(rhs_m != 0);
+        hi_axiom(rhs_m != 0);
         auto rhs_e = rhs.exponent();
         auto lhs_m = lhs.mantissa();
         auto lhs_e = lhs.exponent();
@@ -459,7 +459,7 @@ private:
         while (!is_valid_mantissa(m)) {
             [[unlikely]] m /= 10;
             e++;
-            tt_assert(e <= exponent_max);
+            hi_assert(e <= exponent_max);
         }
 
         while (e > exponent_max) {
@@ -471,7 +471,7 @@ private:
             e--;
 
             // abort on overflow. This decimal does not support infinite.
-            tt_assert(is_valid_mantissa(m));
+            hi_assert(is_valid_mantissa(m));
         }
 
         while (e < exponent_min) {
@@ -534,7 +534,7 @@ private:
 
         int nr_digits = 0;
         int nr_digits_in_front_of_point = -1;
-        for (ttlet c : str) {
+        for (hilet c : str) {
             if (c >= '0' && c <= '9') {
                 mantissa_str += c;
                 nr_digits++;
@@ -565,19 +565,19 @@ private:
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<>
-struct std::hash<tt::decimal> {
-    inline std::size_t operator()(tt::decimal const &value) const
+struct std::hash<hi::decimal> {
+    inline std::size_t operator()(hi::decimal const &value) const
     {
         return value.hash();
     }
 };
 
 template<typename CharT>
-struct std::formatter<tt::decimal, CharT> : std::formatter<double, CharT> {
-    auto format(tt::decimal const &t, auto &fc)
+struct std::formatter<hi::decimal, CharT> : std::formatter<double, CharT> {
+    auto format(hi::decimal const &t, auto &fc)
     {
         return std::formatter<double, CharT>::format(static_cast<double>(t), fc);
     }

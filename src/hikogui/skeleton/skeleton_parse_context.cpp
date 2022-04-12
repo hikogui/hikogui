@@ -9,7 +9,7 @@
 #include "skeleton_string_node.hpp"
 #include "skeleton.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] bool skeleton_parse_context::append(std::unique_ptr<skeleton_node> x) noexcept
 {
@@ -24,7 +24,7 @@ skeleton_parse_context::skeleton_parse_context(URL const &url, const_iterator fi
 
 std::unique_ptr<formula_node> skeleton_parse_context::parse_expression(std::string_view end_text)
 {
-    ttlet formula_last = find_end_of_formula(index, last, end_text);
+    hilet formula_last = find_end_of_formula(index, last, end_text);
 
     auto context = formula_parse_context(index, formula_last);
 
@@ -125,12 +125,12 @@ void skeleton_parse_context::include(parse_location _location, std::unique_ptr<f
     expression->post_process(tmp_post_process_context);
 
     auto evaluation_context = formula_evaluation_context();
-    ttlet argument = expression->evaluate(evaluation_context);
+    hilet argument = expression->evaluate(evaluation_context);
 
-    ttlet current_skeleton_directory =
+    hilet current_skeleton_directory =
         _location.has_file() ? _location.file().urlByRemovingFilename() : URL::urlFromCurrentWorkingDirectory();
 
-    ttlet new_skeleton_path = current_skeleton_directory.urlByAppendingPath(static_cast<std::string>(argument));
+    hilet new_skeleton_path = current_skeleton_directory.urlByAppendingPath(static_cast<std::string>(argument));
 
     if (ssize(statement_stack) > 0) {
         if (!statement_stack.back()->append(parse_skeleton(new_skeleton_path))) {
@@ -141,4 +141,4 @@ void skeleton_parse_context::include(parse_location _location, std::unique_ptr<f
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

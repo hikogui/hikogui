@@ -6,7 +6,7 @@
 
 #include "formula_node.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct formula_call_node final : formula_node {
     std::unique_ptr<formula_node> lhs;
@@ -16,7 +16,7 @@ struct formula_call_node final : formula_node {
         formula_node(std::move(location)), lhs(std::move(lhs))
     {
         auto rhs_ = dynamic_cast<formula_arguments *>(rhs.get());
-        tt_assert(rhs_ != nullptr);
+        hi_assert(rhs_ != nullptr);
         args = std::move(rhs_->args);
     }
 
@@ -30,7 +30,7 @@ struct formula_call_node final : formula_node {
 
     datum evaluate(formula_evaluation_context &context) const override
     {
-        ttlet args_ = transform<datum::vector_type>(args, [&](ttlet &x) {
+        hilet args_ = transform<datum::vector_type>(args, [&](hilet &x) {
             return x->evaluate(context);
         });
 
@@ -47,7 +47,7 @@ struct formula_call_node final : formula_node {
             throw parse_error(std::format("Function definition does not have a name, got {}\n{}", *lhs, e.what()));
         }
 
-        for (ttlet &arg : args) {
+        for (hilet &arg : args) {
             try {
                 r.push_back(arg->get_name());
             } catch (parse_error const &e) {
@@ -62,7 +62,7 @@ struct formula_call_node final : formula_node {
     {
         auto s = std::format("({}(", *lhs);
         int i = 0;
-        for (ttlet &arg : args) {
+        for (hilet &arg : args) {
             if (i++ > 0) {
                 s += ',';
                 s += ' ';
@@ -73,4 +73,4 @@ struct formula_call_node final : formula_node {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -10,7 +10,7 @@
 #include <string>
 #include <compare>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] std::string to_string(std::chrono::year y) noexcept
 {
@@ -50,7 +50,7 @@ public:
         case 2: return std::chrono::month_day{last_month(), std::day{30}};
         case 3: return std::chrono::month_day{last_month(), std::day{30}};
         case 4: return std::chrono::month_day{last_month(), std::day{31}};
-        default: tt_no_default();
+        default: hi_no_default();
         }
     }
 
@@ -122,13 +122,13 @@ public:
 
     [[nodiscard]] constexpr std::chrono::year_month_day first() noexcept
     {
-        ttlet md = q.first();
+        hilet md = q.first();
         return std::chrono::year_month_day{y, md.month(), md.day()};
     }
 
     [[nodiscard]] constexpr std::chrono::year_month_day last() noexcept
     {
-        ttlet md = q.last();
+        hilet md = q.last();
         return std::chrono::year_month_day{y, md.month(), md.day()};
     }
 
@@ -152,4 +152,4 @@ public:
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

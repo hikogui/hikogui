@@ -10,7 +10,7 @@
 #include <string>
 
 using namespace std;
-using namespace tt;
+using namespace hi;
 
 TEST(pixel_map_tests, rotate90)
 {

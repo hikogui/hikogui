@@ -11,7 +11,7 @@
 #include <string_view>
 #include <ostream>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 enum class glob_token_type_t {
     String,
@@ -35,7 +35,7 @@ inline std::ostream &operator<<(std::ostream &lhs, glob_token_type_t const &rhs)
     case glob_token_type_t::AnyString: lhs << "AnyString"; break;
     case glob_token_type_t::AnyCharacter: lhs << "AnyCharacter"; break;
     case glob_token_type_t::AnyDirectory: lhs << "AnyDirectory"; break;
-    default: tt_no_default();
+    default: hi_no_default();
     }
     return lhs;
 }
@@ -255,8 +255,8 @@ inline glob_token_list_t parseGlob(std::string_view glob)
 
             default:
                 if (isRange) {
-                    ttlet firstCharacter = static_cast<uint8_t>(tmpString.back());
-                    ttlet lastCharacter = static_cast<uint8_t>(c);
+                    hilet firstCharacter = static_cast<uint8_t>(tmpString.back());
+                    hilet lastCharacter = static_cast<uint8_t>(c);
                     for (uint8_t character = firstCharacter + 1; character <= lastCharacter; character++) {
                         tmpString += static_cast<char>(character);
                     }
@@ -291,7 +291,7 @@ inline glob_token_list_t parseGlob(std::string_view glob)
             }
             break;
 
-        default: tt_no_default();
+        default: hi_no_default();
         }
 
         i++;
@@ -315,17 +315,17 @@ inline glob_match_result_t matchGlob(glob_token_const_iterator index, glob_token
     }
 
 #define MATCH_GLOB_RECURSE(out, next, end, str) \
-    switch (ttlet tmp = matchGlob(next, end, str)) { \
+    switch (hilet tmp = matchGlob(next, end, str)) { \
     case glob_match_result_t::No: break; \
     case glob_match_result_t::Match: return tmp; \
     case glob_match_result_t::Partial: out = tmp; break; \
-    default: tt_no_default(); \
+    default: hi_no_default(); \
     }
 
     // result may be assigned Partial by MATCH_GLOB_RECURSE.
     auto result = glob_match_result_t::No;
     bool found_slash = false;
-    ttlet next_index = index + 1;
+    hilet next_index = index + 1;
 
     switch (index->type) {
     case glob_token_type_t::String:
@@ -335,7 +335,7 @@ inline glob_match_result_t matchGlob(glob_token_const_iterator index, glob_token
         return result;
 
     case glob_token_type_t::StringList:
-        for (ttlet &value : index->values) {
+        for (hilet &value : index->values) {
             if (str.starts_with(value)) {
                 MATCH_GLOB_RECURSE(result, next_index, end, str.substr(value.size()));
             }
@@ -390,7 +390,7 @@ inline glob_match_result_t matchGlob(glob_token_const_iterator index, glob_token
         }
         return result;
 
-    default: tt_no_default();
+    default: hi_no_default();
     }
 #undef MATCH_GLOB_RECURSE
 }
@@ -412,7 +412,7 @@ inline std::string basePathOfGlob(glob_token_const_iterator first, glob_token_co
     }
 
     // Find the first place holder and don't include it as a token.
-    auto endOfBase = std::find_if_not(first, last, [](ttlet &x) {
+    auto endOfBase = std::find_if_not(first, last, [](hilet &x) {
         return x.type == glob_token_type_t::String || x.type == glob_token_type_t::Separator;
     });
 
@@ -420,7 +420,7 @@ inline std::string basePathOfGlob(glob_token_const_iterator first, glob_token_co
         // Backtrack until the last separator, and remove it.
         // Except when we included everything in the first loop because in that case there
         // are no placeholders at all and we want to include the filename.
-        endOfBase = rfind_if(first, endOfBase, [](ttlet &x) {
+        endOfBase = rfind_if(first, endOfBase, [](hilet &x) {
             return x.type == glob_token_type_t::Separator;
         });
     }
@@ -435,7 +435,7 @@ inline std::string basePathOfGlob(glob_token_const_iterator first, glob_token_co
         switch (index->type) {
         case glob_token_type_t::String: r += index->value; break;
         case glob_token_type_t::Separator: r += '/'; break;
-        default: tt_no_default();
+        default: hi_no_default();
         }
     }
     return r;
@@ -451,4 +451,4 @@ inline std::string basePathOfGlob(std::string_view glob)
     return basePathOfGlob(parseGlob(glob));
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

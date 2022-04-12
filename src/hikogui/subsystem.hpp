@@ -15,7 +15,7 @@
 #include <type_traits>
 #include <mutex>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 namespace detail {
 
 /** A list of deinit function to be called on shutdown.
@@ -29,13 +29,13 @@ inline std::vector<void (*)()> subsystem_deinit_list;
 inline unfair_recursive_mutex subsystem_mutex;
 
 template<typename T>
-requires(is_atomic_v<T>) tt_no_inline typename T::value_type start_subsystem(
+requires(is_atomic_v<T>) hi_no_inline typename T::value_type start_subsystem(
     T &check_variable,
     typename T::value_type off_value,
     typename T::value_type (*init_function)(),
     void (*deinit_function)())
 {
-    ttlet lock = std::scoped_lock(subsystem_mutex);
+    hilet lock = std::scoped_lock(subsystem_mutex);
 
     auto old_value = check_variable.load(std::memory_order::acquire);
     if (old_value != off_value) {
@@ -59,12 +59,12 @@ requires(is_atomic_v<T>) tt_no_inline typename T::value_type start_subsystem(
     return new_value;
 }
 
-tt_no_inline inline bool start_subsystem(global_state_type state_bit, bool (*init_function)(), void (*deinit_function)())
+hi_no_inline inline bool start_subsystem(global_state_type state_bit, bool (*init_function)(), void (*deinit_function)())
 {
-    tt_axiom(std::popcount(to_underlying(state_bit)) == 1);
-    ttlet lock = std::scoped_lock(subsystem_mutex);
+    hi_axiom(std::popcount(to_underlying(state_bit)) == 1);
+    hilet lock = std::scoped_lock(subsystem_mutex);
 
-    ttlet old_state = global_state.load(std::memory_order::acquire);
+    hilet old_state = global_state.load(std::memory_order::acquire);
     if (not is_system_running(old_state)) {
         // Only when the system is running can subsystems be started.
         // otherwise they have to run in degraded mode.
@@ -167,7 +167,7 @@ requires(is_atomic_v<T>) typename T::value_type start_subsystem_or_terminate(
     auto old_value = check_variable.load(std::memory_order::acquire);
     if (old_value == off_value) {
         auto tmp = detail::start_subsystem(check_variable, off_value, init_function, deinit_function);
-        tt_assert(tmp != off_value);
+        hi_assert(tmp != off_value);
         return tmp;
     } else {
         [[likely]] return old_value;
@@ -183,7 +183,7 @@ requires(is_atomic_v<T>) typename T::value_type start_subsystem_or_terminate(
  */
 inline void stop_subsystem(void (*deinit_function)())
 {
-    ttlet lock = std::scoped_lock(detail::subsystem_mutex);
+    hilet lock = std::scoped_lock(detail::subsystem_mutex);
 
     std::erase(detail::subsystem_deinit_list, deinit_function);
     return deinit_function();
@@ -219,4 +219,4 @@ inline void shutdown_system() noexcept
     detail::subsystem_mutex.unlock();
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

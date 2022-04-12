@@ -13,7 +13,7 @@
 #include <cstdlib>
 #include <algorithm>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class text_cursor {
 public:
@@ -105,4 +105,4 @@ private:
     size_t _value;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

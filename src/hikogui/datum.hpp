@@ -24,16 +24,16 @@
 #include <vector>
 #include <map>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 class datum;
 }
 
 template<>
-struct std::hash<tt::datum> {
-    [[nodiscard]] constexpr std::size_t operator()(tt::datum const &rhs) const noexcept;
+struct std::hash<hi::datum> {
+    [[nodiscard]] constexpr std::size_t operator()(hi::datum const &rhs) const noexcept;
 };
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 namespace detail {
 
 /** Promotion result.
@@ -134,25 +134,25 @@ public:
 
     [[nodiscard]] constexpr value_type const &lhs() const noexcept requires(data_is_pointer)
     {
-        tt_axiom(_is_result);
+        hi_axiom(_is_result);
         return *_lhs;
     }
 
     [[nodiscard]] constexpr value_type const &rhs() const noexcept requires(data_is_pointer)
     {
-        tt_axiom(_is_result);
+        hi_axiom(_is_result);
         return *_rhs;
     }
 
     [[nodiscard]] constexpr value_type lhs() const noexcept requires(data_is_scalar)
     {
-        tt_axiom(_is_result);
+        hi_axiom(_is_result);
         return _lhs;
     }
 
     [[nodiscard]] constexpr value_type rhs() const noexcept requires(data_is_scalar)
     {
-        tt_axiom(_is_result);
+        hi_axiom(_is_result);
         return _rhs;
     }
 
@@ -298,7 +298,7 @@ public:
 
     constexpr datum &operator=(datum const &other) noexcept
     {
-        tt_return_on_self_assignment(other);
+        hi_return_on_self_assignment(other);
 
         delete_pointer();
         _tag = other._tag;
@@ -524,7 +524,7 @@ public:
     {
         switch (_tag) {
         case tag_type::monostate: return "undefined";
-        case tag_type::floating_point: return tt::to_string(_value._double);
+        case tag_type::floating_point: return hi::to_string(_value._double);
         case tag_type::decimal: return to_string(_value._decimal);
         case tag_type::integral: return to_string(_value._long_long);
         case tag_type::boolean: return _value._bool ? "true" : "false";
@@ -536,7 +536,7 @@ public:
         case tag_type::url: return to_string(*_value._url);
         case tag_type::vector: {
             auto r = std::string{"["};
-            for (ttlet &item : *_value._vector) {
+            for (hilet &item : *_value._vector) {
                 r += repr(item);
                 r += ',';
             }
@@ -545,7 +545,7 @@ public:
         };
         case tag_type::map: {
             auto r = std::string{"{"};
-            for (ttlet &item : *_value._map) {
+            for (hilet &item : *_value._map) {
                 r += repr(item.first);
                 r += ':';
                 r += repr(item.second);
@@ -555,7 +555,7 @@ public:
             return r;
         };
         case tag_type::bstring: return base64::encode(*_value._bstring);
-        default: tt_no_default();
+        default: hi_no_default();
         }
     }
 
@@ -621,7 +621,7 @@ public:
         case tag_type::vector: return "vector";
         case tag_type::map: return "map";
         case tag_type::bstring: return "bytes";
-        default: tt_no_default();
+        default: hi_no_default();
         }
     }
 
@@ -665,33 +665,33 @@ public:
         case tag_type::string: return std::hash<std::string>{}(*_value._string);
         case tag_type::vector: {
             std::size_t r = 0;
-            for (ttlet &v : *_value._vector) {
+            for (hilet &v : *_value._vector) {
                 r = hash_mix(r, v.hash());
             }
             return r;
         }
         case tag_type::map: {
             std::size_t r = 0;
-            for (ttlet &kv : *_value._map) {
+            for (hilet &kv : *_value._map) {
                 r = hash_mix(r, kv.first.hash(), kv.second.hash());
             }
             return r;
         }
         case tag_type::url: return std::hash<URL>{}(*_value._url);
         case tag_type::bstring: return std::hash<bstring>{}(*_value._bstring);
-        default: tt_no_default();
+        default: hi_no_default();
         }
     }
 
     [[nodiscard]] constexpr std::size_t size() const
     {
-        if (ttlet *s = get_if<std::string>(*this)) {
+        if (hilet *s = get_if<std::string>(*this)) {
             return s->size();
-        } else if (ttlet *v = get_if<vector_type>(*this)) {
+        } else if (hilet *v = get_if<vector_type>(*this)) {
             return v->size();
-        } else if (ttlet *m = get_if<map_type>(*this)) {
+        } else if (hilet *m = get_if<map_type>(*this)) {
             return m->size();
-        } else if (ttlet *b = get_if<bstring>(*this)) {
+        } else if (hilet *b = get_if<bstring>(*this)) {
             return b->size();
         } else {
             throw std::domain_error(std::format("Can not evaluate {}.size()", repr(*this)));
@@ -705,7 +705,7 @@ public:
 
     [[nodiscard]] constexpr datum const &back() const
     {
-        if (ttlet *v = get_if<vector_type>(*this)) {
+        if (hilet *v = get_if<vector_type>(*this)) {
             if (v->empty()) {
                 throw std::domain_error(std::format("Empty vector {}.back()", repr(*this)));
             }
@@ -729,7 +729,7 @@ public:
 
     [[nodiscard]] constexpr datum const &front() const
     {
-        if (ttlet *v = get_if<vector_type>(*this)) {
+        if (hilet *v = get_if<vector_type>(*this)) {
             if (v->empty()) {
                 throw std::domain_error(std::format("Empty vector {}.front()", repr(*this)));
             }
@@ -753,7 +753,7 @@ public:
 
     [[nodiscard]] constexpr auto cbegin() const
     {
-        if (ttlet *v = get_if<vector_type>(*this)) {
+        if (hilet *v = get_if<vector_type>(*this)) {
             return v->cbegin();
         } else {
             throw std::domain_error(std::format("Can not evaluate {}.cbegin()", repr(*this)));
@@ -762,7 +762,7 @@ public:
 
     [[nodiscard]] constexpr auto begin() const
     {
-        if (ttlet *v = get_if<vector_type>(*this)) {
+        if (hilet *v = get_if<vector_type>(*this)) {
             return v->begin();
         } else {
             throw std::domain_error(std::format("Can not evaluate {}.begin()", repr(*this)));
@@ -771,7 +771,7 @@ public:
 
     [[nodiscard]] constexpr auto begin()
     {
-        if (ttlet *v = get_if<vector_type>(*this)) {
+        if (hilet *v = get_if<vector_type>(*this)) {
             return v->begin();
         } else {
             throw std::domain_error(std::format("Can not evaluate {}.begin()", repr(*this)));
@@ -780,7 +780,7 @@ public:
 
     [[nodiscard]] constexpr auto cend() const
     {
-        if (ttlet *v = get_if<vector_type>(*this)) {
+        if (hilet *v = get_if<vector_type>(*this)) {
             return v->cend();
         } else {
             throw std::domain_error(std::format("Can not evaluate {}.cend()", repr(*this)));
@@ -789,7 +789,7 @@ public:
 
     [[nodiscard]] constexpr auto end() const
     {
-        if (ttlet *v = get_if<vector_type>(*this)) {
+        if (hilet *v = get_if<vector_type>(*this)) {
             return v->end();
         } else {
             throw std::domain_error(std::format("Can not evaluate {}.end()", repr(*this)));
@@ -798,7 +798,7 @@ public:
 
     [[nodiscard]] constexpr auto end()
     {
-        if (ttlet *v = get_if<vector_type>(*this)) {
+        if (hilet *v = get_if<vector_type>(*this)) {
             return v->end();
         } else {
             throw std::domain_error(std::format("Can not evaluate {}.end()", repr(*this)));
@@ -809,10 +809,10 @@ public:
      */
     [[nodiscard]] constexpr vector_type keys() const
     {
-        if (ttlet *m = get_if<map_type>(*this)) {
+        if (hilet *m = get_if<map_type>(*this)) {
             auto r = vector_type{};
             r.reserve(m->size());
-            for (ttlet &kv : *m) {
+            for (hilet &kv : *m) {
                 r.push_back(kv.first);
             }
             return r;
@@ -825,10 +825,10 @@ public:
      */
     [[nodiscard]] constexpr vector_type values() const
     {
-        if (ttlet *m = get_if<map_type>(*this)) {
+        if (hilet *m = get_if<map_type>(*this)) {
             auto r = vector_type{};
             r.reserve(m->size());
-            for (ttlet &kv : *m) {
+            for (hilet &kv : *m) {
                 r.push_back(kv.second);
             }
             return r;
@@ -841,11 +841,11 @@ public:
      */
     [[nodiscard]] constexpr vector_type items() const
     {
-        if (ttlet *m = get_if<map_type>(*this)) {
+        if (hilet *m = get_if<map_type>(*this)) {
             auto r = vector_type{};
             r.reserve(m->size());
 
-            for (ttlet &item : *m) {
+            for (hilet &item : *m) {
                 r.push_back(make_vector(item.first, item.second));
             }
             return r;
@@ -941,7 +941,7 @@ public:
      */
     [[nodiscard]] datum *find_one(jsonpath const &path) noexcept
     {
-        tt_axiom(path.is_singular());
+        hi_axiom(path.is_singular());
         return find_one(path.cbegin(), path.cend(), false);
     }
 
@@ -952,7 +952,7 @@ public:
      */
     [[nodiscard]] datum *find_one_or_create(jsonpath const &path) noexcept
     {
-        tt_axiom(path.is_singular());
+        hi_axiom(path.is_singular());
         return find_one(path.cbegin(), path.cend(), true);
     }
 
@@ -963,14 +963,14 @@ public:
      */
     [[nodiscard]] datum const *find_one(jsonpath const &path) const noexcept
     {
-        tt_axiom(path.is_singular());
+        hi_axiom(path.is_singular());
         return const_cast<datum *>(this)->find_one(path.cbegin(), path.cend(), false);
     }
 
     [[nodiscard]] constexpr datum const &operator[](datum const &rhs) const
     {
         if (holds_alternative<vector_type>(*this) and holds_alternative<long long>(rhs)) {
-            ttlet &v = get<vector_type>(*this);
+            hilet &v = get<vector_type>(*this);
 
             auto index = get<long long>(rhs);
             if (index < 0) {
@@ -983,8 +983,8 @@ public:
             return v[index];
 
         } else if (holds_alternative<map_type>(*this)) {
-            ttlet &m = get<map_type>(*this);
-            ttlet it = m.find(rhs);
+            hilet &m = get<map_type>(*this);
+            hilet it = m.find(rhs);
             if (it == m.end()) {
                 throw std::overflow_error(std::format("Key {} not found in map", repr(rhs)));
             }
@@ -1100,31 +1100,31 @@ public:
 
     [[nodiscard]] friend constexpr bool operator==(datum const &lhs, datum const &rhs) noexcept
     {
-        if (ttlet doubles = promote_if<double>(lhs, rhs)) {
+        if (hilet doubles = promote_if<double>(lhs, rhs)) {
             return doubles.lhs() == doubles.rhs();
 
-        } else if (ttlet decimals = promote_if<decimal>(lhs, rhs)) {
+        } else if (hilet decimals = promote_if<decimal>(lhs, rhs)) {
             return decimals.lhs() == decimals.rhs();
 
-        } else if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
+        } else if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
             return long_longs.lhs() == long_longs.rhs();
 
-        } else if (ttlet bools = promote_if<bool>(lhs, rhs)) {
+        } else if (hilet bools = promote_if<bool>(lhs, rhs)) {
             return bools.lhs() == bools.rhs();
 
-        } else if (ttlet ymds = promote_if<std::chrono::year_month_day>(lhs, rhs)) {
+        } else if (hilet ymds = promote_if<std::chrono::year_month_day>(lhs, rhs)) {
             return ymds.lhs() == ymds.rhs();
 
-        } else if (ttlet urls = promote_if<URL>(lhs, rhs)) {
+        } else if (hilet urls = promote_if<URL>(lhs, rhs)) {
             return urls.lhs() == urls.rhs();
 
-        } else if (ttlet strings = promote_if<std::string>(lhs, rhs)) {
+        } else if (hilet strings = promote_if<std::string>(lhs, rhs)) {
             return strings.lhs() == strings.rhs();
 
-        } else if (ttlet vectors = promote_if<vector_type>(lhs, rhs)) {
+        } else if (hilet vectors = promote_if<vector_type>(lhs, rhs)) {
             return vectors.lhs() == vectors.rhs();
 
-        } else if (ttlet maps = promote_if<map_type>(lhs, rhs)) {
+        } else if (hilet maps = promote_if<map_type>(lhs, rhs)) {
             return maps.lhs() == maps.rhs();
 
         } else {
@@ -1164,34 +1164,34 @@ public:
      */
     [[nodiscard]] friend constexpr std::partial_ordering operator<=>(datum const &lhs, datum const &rhs) noexcept
     {
-        if (ttlet doubles = promote_if<double>(lhs, rhs)) {
+        if (hilet doubles = promote_if<double>(lhs, rhs)) {
             return doubles.lhs() <=> doubles.rhs();
 
-        } else if (ttlet decimals = promote_if<decimal>(lhs, rhs)) {
+        } else if (hilet decimals = promote_if<decimal>(lhs, rhs)) {
             return decimals.lhs() <=> decimals.rhs();
 
-        } else if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
+        } else if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
             return long_longs.lhs() <=> long_longs.rhs();
 
-        } else if (ttlet bools = promote_if<bool>(lhs, rhs)) {
+        } else if (hilet bools = promote_if<bool>(lhs, rhs)) {
             return bools.lhs() <=> bools.rhs();
 
-        } else if (ttlet year_month_days = promote_if<std::chrono::year_month_day>(lhs, rhs)) {
+        } else if (hilet year_month_days = promote_if<std::chrono::year_month_day>(lhs, rhs)) {
             return year_month_days.lhs() <=> year_month_days.rhs();
 
-        } else if (ttlet urls = promote_if<URL>(lhs, rhs)) {
+        } else if (hilet urls = promote_if<URL>(lhs, rhs)) {
             return urls.lhs() <=> urls.rhs();
 
-        } else if (ttlet strings = promote_if<std::string>(lhs, rhs)) {
+        } else if (hilet strings = promote_if<std::string>(lhs, rhs)) {
             return strings.lhs() <=> strings.rhs();
 
-        } else if (ttlet vectors = promote_if<vector_type>(lhs, rhs)) {
+        } else if (hilet vectors = promote_if<vector_type>(lhs, rhs)) {
             return vectors.lhs() <=> vectors.rhs();
 
-        } else if (ttlet maps = promote_if<map_type>(lhs, rhs)) {
+        } else if (hilet maps = promote_if<map_type>(lhs, rhs)) {
             return maps.lhs() <=> maps.rhs();
 
-        } else if (ttlet bstrings = promote_if<bstring>(lhs, rhs)) {
+        } else if (hilet bstrings = promote_if<bstring>(lhs, rhs)) {
             return bstrings.lhs() <=> bstrings.rhs();
 
         } else {
@@ -1211,13 +1211,13 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator-(datum const &rhs)
     {
-        if (ttlet rhs_double = get_if<double>(rhs)) {
+        if (hilet rhs_double = get_if<double>(rhs)) {
             return datum{-*rhs_double};
 
-        } else if (ttlet rhs_decimal = get_if<decimal>(rhs)) {
+        } else if (hilet rhs_decimal = get_if<decimal>(rhs)) {
             return datum{-*rhs_decimal};
 
-        } else if (ttlet rhs_long_long = get_if<long long>(rhs)) {
+        } else if (hilet rhs_long_long = get_if<long long>(rhs)) {
             return datum{-*rhs_long_long};
 
         } else {
@@ -1236,7 +1236,7 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator~(datum const &rhs)
     {
-        if (ttlet rhs_long_long = get_if<long long>(rhs)) {
+        if (hilet rhs_long_long = get_if<long long>(rhs)) {
             return datum{~*rhs_long_long};
 
         } else {
@@ -1260,19 +1260,19 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator+(datum const &lhs, datum const &rhs)
     {
-        if (ttlet doubles = promote_if<double>(lhs, rhs)) {
+        if (hilet doubles = promote_if<double>(lhs, rhs)) {
             return datum{doubles.lhs() + doubles.rhs()};
 
-        } else if (ttlet decimals = promote_if<decimal>(lhs, rhs)) {
+        } else if (hilet decimals = promote_if<decimal>(lhs, rhs)) {
             return datum{decimals.lhs() + decimals.rhs()};
 
-        } else if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
+        } else if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
             return datum{long_longs.lhs() + long_longs.rhs()};
 
-        } else if (ttlet strings = promote_if<std::string>(lhs, rhs)) {
+        } else if (hilet strings = promote_if<std::string>(lhs, rhs)) {
             return datum{strings.lhs() + strings.rhs()};
 
-        } else if (ttlet vectors = promote_if<vector_type>(lhs, rhs)) {
+        } else if (hilet vectors = promote_if<vector_type>(lhs, rhs)) {
             auto r = vectors.lhs();
             r.insert(r.end(), vectors.rhs().begin(), vectors.rhs().end());
             return datum{std::move(r)};
@@ -1295,13 +1295,13 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator-(datum const &lhs, datum const &rhs)
     {
-        if (ttlet doubles = promote_if<double>(lhs, rhs)) {
+        if (hilet doubles = promote_if<double>(lhs, rhs)) {
             return datum{doubles.lhs() - doubles.rhs()};
 
-        } else if (ttlet decimals = promote_if<decimal>(lhs, rhs)) {
+        } else if (hilet decimals = promote_if<decimal>(lhs, rhs)) {
             return datum{decimals.lhs() - decimals.rhs()};
 
-        } else if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
+        } else if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
             return datum{long_longs.lhs() - long_longs.rhs()};
 
         } else {
@@ -1322,13 +1322,13 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator*(datum const &lhs, datum const &rhs)
     {
-        if (ttlet doubles = promote_if<double>(lhs, rhs)) {
+        if (hilet doubles = promote_if<double>(lhs, rhs)) {
             return datum{doubles.lhs() * doubles.rhs()};
 
-        } else if (ttlet decimals = promote_if<decimal>(lhs, rhs)) {
+        } else if (hilet decimals = promote_if<decimal>(lhs, rhs)) {
             return datum{decimals.lhs() * decimals.rhs()};
 
-        } else if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
+        } else if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
             return datum{long_longs.lhs() * long_longs.rhs()};
 
         } else {
@@ -1351,25 +1351,25 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator/(datum const &lhs, datum const &rhs)
     {
-        if (ttlet doubles = promote_if<double>(lhs, rhs)) {
+        if (hilet doubles = promote_if<double>(lhs, rhs)) {
             if (doubles.rhs() == 0) {
                 throw std::domain_error(std::format("Divide by zero {} '/' {}", repr(lhs), repr(rhs)));
             }
             return datum{doubles.lhs() / doubles.rhs()};
 
-        } else if (ttlet decimals = promote_if<decimal>(lhs, rhs)) {
+        } else if (hilet decimals = promote_if<decimal>(lhs, rhs)) {
             if (decimals.rhs() == 0) {
                 throw std::domain_error(std::format("Divide by zero {} '/' {}", repr(lhs), repr(rhs)));
             }
             return datum{decimals.lhs() / decimals.rhs()};
 
-        } else if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
+        } else if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
             if (long_longs.rhs() == 0) {
                 throw std::domain_error(std::format("Divide by zero {} '/' {}", repr(lhs), repr(rhs)));
             }
             return datum{long_longs.lhs() / long_longs.rhs()};
 
-        } else if (ttlet urls = promote_if<URL>(lhs, rhs)) {
+        } else if (hilet urls = promote_if<URL>(lhs, rhs)) {
             return datum{urls.lhs() / urls.rhs()};
 
         } else {
@@ -1390,7 +1390,7 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator%(datum const &lhs, datum const &rhs)
     {
-        if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
+        if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
             if (long_longs.rhs() == 0) {
                 throw std::domain_error(std::format("Divide by zero {} '%' {}", repr(lhs), repr(rhs)));
             }
@@ -1413,10 +1413,10 @@ public:
      */
     [[nodiscard]] friend constexpr datum pow(datum const &lhs, datum const &rhs)
     {
-        if (ttlet doubles = promote_if<double>(lhs, rhs)) {
+        if (hilet doubles = promote_if<double>(lhs, rhs)) {
             return datum{pow(doubles.lhs(), doubles.rhs())};
 
-        } else if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
+        } else if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
             return datum{pow(long_longs.lhs(), long_longs.rhs())};
 
         } else {
@@ -1436,10 +1436,10 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator&(datum const &lhs, datum const &rhs)
     {
-        if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
+        if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
             return datum{long_longs.lhs() & long_longs.rhs()};
 
-        } else if (ttlet bools = promote_if<bool>(lhs, rhs)) {
+        } else if (hilet bools = promote_if<bool>(lhs, rhs)) {
             return datum{bools.lhs() and bools.rhs()};
 
         } else {
@@ -1459,10 +1459,10 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator|(datum const &lhs, datum const &rhs)
     {
-        if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
+        if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
             return datum{long_longs.lhs() | long_longs.rhs()};
 
-        } else if (ttlet bools = promote_if<bool>(lhs, rhs)) {
+        } else if (hilet bools = promote_if<bool>(lhs, rhs)) {
             return datum{bools.lhs() or bools.rhs()};
 
         } else {
@@ -1482,10 +1482,10 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator^(datum const &lhs, datum const &rhs)
     {
-        if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
+        if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
             return datum{long_longs.lhs() ^ long_longs.rhs()};
 
-        } else if (ttlet bools = promote_if<bool>(lhs, rhs)) {
+        } else if (hilet bools = promote_if<bool>(lhs, rhs)) {
             return datum{bools.lhs() != bools.rhs()};
 
         } else {
@@ -1507,7 +1507,7 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator<<(datum const &lhs, datum const &rhs)
     {
-        if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
+        if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
             if (long_longs.rhs() < 0 or long_longs.rhs() > (sizeof(long long) * CHAR_BIT - 1)) {
                 throw std::domain_error(std::format("Invalid shift count {} '<<' {}", repr(lhs), repr(rhs)));
             }
@@ -1531,7 +1531,7 @@ public:
      */
     [[nodiscard]] friend constexpr datum operator>>(datum const &lhs, datum const &rhs)
     {
-        if (ttlet long_longs = promote_if<long long>(lhs, rhs)) {
+        if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
             if (long_longs.rhs() < 0 or long_longs.rhs() > (sizeof(long long) * CHAR_BIT - 1)) {
                 throw std::domain_error(std::format("Invalid shift count {} '>>' {}", repr(lhs), repr(rhs)));
             }
@@ -1587,7 +1587,7 @@ public:
         case tag_type::url: return to_string(*rhs._value._url);
         case tag_type::vector: {
             auto r = std::string{"["};
-            for (ttlet &item : *rhs._value._vector) {
+            for (hilet &item : *rhs._value._vector) {
                 r += repr(item);
                 r += ',';
             }
@@ -1596,7 +1596,7 @@ public:
         };
         case tag_type::map: {
             auto r = std::string{"{"};
-            for (ttlet &item : *rhs._value._map) {
+            for (hilet &item : *rhs._value._map) {
                 r += repr(item.first);
                 r += ':';
                 r += repr(item.second);
@@ -1606,7 +1606,7 @@ public:
             return r;
         };
         case tag_type::bstring: return base64::encode(*rhs._value._bstring);
-        default: tt_no_default();
+        default: hi_no_default();
         }
     }
 
@@ -1655,7 +1655,7 @@ public:
         } else if constexpr (std::is_same_v<T, bstring>) {
             return rhs._tag == tag_type::bstring;
         } else {
-            tt_static_no_default();
+            hi_static_no_default();
         }
     }
 
@@ -1702,7 +1702,7 @@ public:
     template<typename T>
     [[nodiscard]] friend constexpr T const &get(datum const &rhs) noexcept
     {
-        tt_axiom(holds_alternative<T>(rhs));
+        hi_axiom(holds_alternative<T>(rhs));
         if constexpr (std::is_same_v<T, double>) {
             return rhs._value._double;
         } else if constexpr (std::is_same_v<T, decimal>) {
@@ -1724,7 +1724,7 @@ public:
         } else if constexpr (std::is_same_v<T, bstring>) {
             return *rhs._value._bstring;
         } else {
-            tt_static_no_default();
+            hi_static_no_default();
         }
     }
 
@@ -1739,7 +1739,7 @@ public:
     template<typename T>
     [[nodiscard]] friend constexpr T &get(datum &rhs) noexcept
     {
-        tt_axiom(holds_alternative<T>(rhs));
+        hi_axiom(holds_alternative<T>(rhs));
         if constexpr (std::is_same_v<T, double>) {
             return rhs._value._double;
         } else if constexpr (std::is_same_v<T, decimal>) {
@@ -1761,7 +1761,7 @@ public:
         } else if constexpr (std::is_same_v<T, bstring>) {
             return *rhs._value._bstring;
         } else {
-            tt_static_no_default();
+            hi_static_no_default();
         }
     }
 
@@ -1928,29 +1928,29 @@ private:
         return to_underlying(_tag) < 0;
     }
 
-    tt_no_inline void copy_pointer(datum const &other) noexcept
+    hi_no_inline void copy_pointer(datum const &other) noexcept
     {
-        tt_axiom(other.is_pointer());
+        hi_axiom(other.is_pointer());
         switch (other._tag) {
         case tag_type::string: _value._string = new std::string{*other._value._string}; return;
         case tag_type::vector: _value._vector = new vector_type{*other._value._vector}; return;
         case tag_type::map: _value._map = new map_type{*other._value._map}; return;
         case tag_type::url: _value._url = new URL{*other._value._url}; return;
         case tag_type::bstring: _value._bstring = new bstring{*other._value._bstring}; return;
-        default: tt_no_default();
+        default: hi_no_default();
         }
     }
 
-    tt_no_inline void _delete_pointer() noexcept
+    hi_no_inline void _delete_pointer() noexcept
     {
-        tt_axiom(is_pointer());
+        hi_axiom(is_pointer());
         switch (_tag) {
         case tag_type::string: delete _value._string; return;
         case tag_type::vector: delete _value._vector; return;
         case tag_type::map: delete _value._map; return;
         case tag_type::url: delete _value._url; return;
         case tag_type::bstring: delete _value._bstring; return;
-        default: tt_no_default();
+        default: hi_no_default();
         }
     }
 
@@ -1998,7 +1998,7 @@ private:
         std::vector<datum *> &r) noexcept
     {
         if (auto vector = get_if<datum::vector_type>(*this)) {
-            for (ttlet index : indices.filter(ssize(*vector))) {
+            for (hilet index : indices.filter(ssize(*vector))) {
                 (*vector)[index].find(it + 1, it_end, r);
             }
         }
@@ -2011,8 +2011,8 @@ private:
         std::vector<datum *> &r) noexcept
     {
         if (auto map = get_if<datum::map_type>(*this)) {
-            for (ttlet &name : names) {
-                ttlet name_ = datum{name};
+            for (hilet &name : names) {
+                hilet name_ = datum{name};
                 auto jt = map->find(name_);
                 if (jt != map->cend()) {
                     jt->second.find(it + 1, it_end, r);
@@ -2028,8 +2028,8 @@ private:
         std::vector<datum *> &r) noexcept
     {
         if (auto vector = get_if<datum::vector_type>(*this)) {
-            ttlet first = slice.begin(vector->size());
-            ttlet last = slice.end(vector->size());
+            hilet first = slice.begin(vector->size());
+            hilet last = slice.end(vector->size());
 
             for (auto index = first; index != last; index += slice.step) {
                 if (index >= 0 and index < vector->size()) {
@@ -2066,7 +2066,7 @@ private:
             find_slice(*slice, it, it_end, r);
 
         } else {
-            tt_no_default();
+            hi_no_default();
         }
     }
 
@@ -2077,7 +2077,7 @@ private:
         if (auto vector = get_if<datum::vector_type>(*this)) {
             auto jt = vector->begin();
             while (jt != vector->end()) {
-                ttlet match = jt->remove(it + 1, it_end);
+                hilet match = jt->remove(it + 1, it_end);
                 r |= match ? 1 : 0;
 
                 if (match == 2) {
@@ -2091,7 +2091,7 @@ private:
         } else if (auto map = get_if<datum::map_type>(*this)) {
             auto jt = map->begin();
             while (jt != map->end()) {
-                ttlet match = jt->second.remove(it + 1, it_end);
+                hilet match = jt->second.remove(it + 1, it_end);
                 r |= match ? 1 : 0;
 
                 if (match == 2) {
@@ -2112,7 +2112,7 @@ private:
         int r = 0;
 
         {
-            ttlet match = this->remove(it + 1, it_end);
+            hilet match = this->remove(it + 1, it_end);
             if (match == 2) {
                 return 2;
             }
@@ -2122,7 +2122,7 @@ private:
         if (auto vector = get_if<datum::vector_type>(*this)) {
             auto jt = vector->begin();
             while (jt != vector->end()) {
-                ttlet match = jt->remove(it, it_end);
+                hilet match = jt->remove(it, it_end);
                 r |= match ? 1 : 0;
 
                 if (match == 2) {
@@ -2136,7 +2136,7 @@ private:
         } else if (auto map = get_if<datum::map_type>(*this)) {
             auto jt = map->begin();
             while (jt != map->end()) {
-                ttlet match = jt->second.remove(it, it_end);
+                hilet match = jt->second.remove(it, it_end);
                 r |= match ? 1 : 0;
 
                 if (match == 2) {
@@ -2159,8 +2159,8 @@ private:
             int r = 0;
             std::size_t offset = 0;
 
-            for (ttlet index : indices.filter(ssize(*vector))) {
-                ttlet match = (*vector)[index - offset].remove(it + 1, it_end);
+            for (hilet index : indices.filter(ssize(*vector))) {
+                hilet match = (*vector)[index - offset].remove(it + 1, it_end);
                 r |= match ? 1 : 0;
                 if (match == 2) {
                     vector->erase(vector->begin() + (index - offset));
@@ -2181,11 +2181,11 @@ private:
         if (auto map = get_if<datum::map_type>(*this)) {
             int r = 0;
 
-            for (ttlet &name : names) {
-                ttlet name_ = datum{name};
+            for (hilet &name : names) {
+                hilet name_ = datum{name};
                 auto jt = map->find(name_);
                 if (jt != map->cend()) {
-                    ttlet match = jt->second.remove(it + 1, it_end);
+                    hilet match = jt->second.remove(it + 1, it_end);
                     r |= match ? 1 : 0;
                     if (match == 2) {
                         map->erase(jt);
@@ -2206,13 +2206,13 @@ private:
         if (auto vector = get_if<datum::vector_type>(*this)) {
             int r = 0;
 
-            ttlet first = slice.begin(vector->size());
-            ttlet last = slice.end(vector->size());
+            hilet first = slice.begin(vector->size());
+            hilet last = slice.end(vector->size());
 
             std::size_t offset = 0;
             for (auto index = first; index != last; index += slice.step) {
                 if (index >= 0 and index < vector->size()) {
-                    ttlet match = (*this)[index - offset].remove(it + 1, it_end);
+                    hilet match = (*this)[index - offset].remove(it + 1, it_end);
                     r |= match ? 1 : 0;
 
                     if (match == 2) {
@@ -2257,14 +2257,14 @@ private:
             return remove_slice(*slice, it, it_end);
 
         } else {
-            tt_no_default();
+            hi_no_default();
         }
     }
 
     [[nodiscard]] datum *
     find_one_name(datum const &name, jsonpath::const_iterator it, jsonpath::const_iterator it_end, bool create) noexcept
     {
-        tt_axiom(holds_alternative<std::string>(name));
+        hi_axiom(holds_alternative<std::string>(name));
 
         if (auto *map = get_if<map_type>(*this)) {
             auto i = map->find(name);
@@ -2321,30 +2321,30 @@ private:
         } else if (std::holds_alternative<jsonpath_current>(*it)) {
             return find_one(it + 1, it_end, create);
 
-        } else if (ttlet *indices = std::get_if<jsonpath_indices>(&*it)) {
-            tt_axiom(indices->size() == 1);
+        } else if (hilet *indices = std::get_if<jsonpath_indices>(&*it)) {
+            hi_axiom(indices->size() == 1);
             return find_one_index(indices->front(), it, it_end, create);
 
-        } else if (ttlet *names = std::get_if<jsonpath_names>(&*it)) {
-            tt_axiom(names->size() == 1);
+        } else if (hilet *names = std::get_if<jsonpath_names>(&*it)) {
+            hi_axiom(names->size() == 1);
             return find_one_name(datum{names->front()}, it, it_end, create);
 
         } else {
-            tt_no_default();
+            hi_no_default();
         }
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
-[[nodiscard]] constexpr std::size_t std::hash<tt::datum>::operator()(tt::datum const &rhs) const noexcept
+[[nodiscard]] constexpr std::size_t std::hash<hi::datum>::operator()(hi::datum const &rhs) const noexcept
 {
     return rhs.hash();
 }
 
 template<typename CharT>
-struct std::formatter<tt::datum, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(tt::datum const &t, auto &fc)
+struct std::formatter<hi::datum, CharT> : std::formatter<std::string_view, CharT> {
+    auto format(hi::datum const &t, auto &fc)
     {
         return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
     }

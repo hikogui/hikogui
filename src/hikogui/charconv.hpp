@@ -8,7 +8,7 @@
 #include <concepts>
 #include <charconv>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Convert integer to string.
  * This function bypasses std::locale.
@@ -21,11 +21,11 @@ template<std::integral T>
 {
     std::array<char, 21> buffer;
 
-    ttlet first = buffer.data();
-    ttlet last = first + buffer.size();
+    hilet first = buffer.data();
+    hilet last = first + buffer.size();
 
-    ttlet[new_last, ec] = std::to_chars(first, last, value);
-    tt_axiom(ec == std::errc{});
+    hilet[new_last, ec] = std::to_chars(first, last, value);
+    hi_axiom(ec == std::errc{});
 
     auto r = std::string{};
     std::copy(first, new_last, std::back_inserter(r));
@@ -43,11 +43,11 @@ template<std::floating_point T>
 {
     std::array<char, 128> buffer;
 
-    ttlet first = buffer.data();
-    ttlet last = first + buffer.size();
+    hilet first = buffer.data();
+    hilet last = first + buffer.size();
 
-    ttlet[new_last, ec] = std::to_chars(first, last, value, std::chars_format::general);
-    tt_axiom(ec == std::errc{});
+    hilet[new_last, ec] = std::to_chars(first, last, value, std::chars_format::general);
+    hi_axiom(ec == std::errc{});
 
     auto r = std::string{};
     std::copy(first, new_last, std::back_inserter(r));
@@ -67,10 +67,10 @@ template<std::integral T>
 {
     T value;
 
-    ttlet first = str.data();
-    ttlet last = first + ssize(str);
+    hilet first = str.data();
+    hilet last = first + ssize(str);
 
-    ttlet[new_last, ec] = std::from_chars(first, last, value, base);
+    hilet[new_last, ec] = std::from_chars(first, last, value, base);
     if (ec != std::errc{} or new_last != last) {
         throw parse_error("Can not convert string to integer");
     }
@@ -90,10 +90,10 @@ template<std::floating_point T>
 {
     T value;
 
-    ttlet first = str.data();
-    ttlet last = first + ssize(str);
+    hilet first = str.data();
+    hilet last = first + ssize(str);
 
-    ttlet[new_last, ec] = std::from_chars(first, last, value);
+    hilet[new_last, ec] = std::from_chars(first, last, value);
     if (ec != std::errc{} or new_last != last) {
         throw parse_error("Can not convert string to floating point");
     }
@@ -101,4 +101,4 @@ template<std::floating_point T>
     return value;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

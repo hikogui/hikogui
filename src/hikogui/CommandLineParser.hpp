@@ -12,7 +12,7 @@
 #include <string_view>
 #include <iostream>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A parser to parse command line arguments.
  */
@@ -80,7 +80,7 @@ public:
      */
     void print_help()
     {
-        for (ttlet &error_message : error_messages) {
+        for (hilet &error_message : error_messages) {
             std::cerr << error_message << "\n";
         }
         if (has_error()) {
@@ -89,8 +89,8 @@ public:
 
         std::cerr << synopsis << "\n";
 
-        for (ttlet &option : options) {
-            ttlet example = std::format("--{}=<{}>", option.name, option.type);
+        for (hilet &option : options) {
+            hilet example = std::format("--{}=<{}>", option.name, option.type);
             std::cerr << std::format("  {:20s}    {}\n", example, option.help);
         }
         std::cerr.flush();
@@ -116,11 +116,11 @@ public:
                 r["executable-path"] = argument;
 
             } else if (argument.starts_with("--"s)) {
-                ttlet i = argument.find('=');
+                hilet i = argument.find('=');
                 if (i == argument.npos) {
-                    ttlet option_name = argument.substr(2);
+                    hilet option_name = argument.substr(2);
 
-                    ttlet &option = std::find_if(options.begin(), options.end(), [&](auto x) {
+                    hilet &option = std::find_if(options.begin(), options.end(), [&](auto x) {
                         return x.name == option_name;
                     });
 
@@ -135,10 +135,10 @@ public:
                     }
 
                 } else {
-                    ttlet option_name = argument.substr(2, i - 2);
-                    ttlet option_value_string = argument.substr(i + 1);
+                    hilet option_name = argument.substr(2, i - 2);
+                    hilet option_value_string = argument.substr(i + 1);
 
-                    ttlet &option = std::find_if(options.begin(), options.end(), [&](auto x) {
+                    hilet &option = std::find_if(options.begin(), options.end(), [&](auto x) {
                         return x.name == option_name;
                     });
 
@@ -162,7 +162,7 @@ public:
 
                         case datum_type_t::Integer:
                             if (option->enum_conversion) {
-                                ttlet option_value_int = option->enum_conversion(option_value_string);
+                                hilet option_value_int = option->enum_conversion(option_value_string);
                                 if (option_value_int >= 0) {
                                     r[option_name] = option_value_int;
                                 } else {
@@ -172,7 +172,7 @@ public:
 
                             } else {
                                 try {
-                                    ttlet option_value_int = std::stoll(option_value_string);
+                                    hilet option_value_int = std::stoll(option_value_string);
                                     r[option_name] = option_value_int;
                                 } catch (...) {
                                     error_messages.push_back(std::format(
@@ -189,7 +189,7 @@ public:
                             r[option_name] = URL::urlFromCurrentWorkingDirectory().urlByAppendingPath(option_value_string);
                             break;
 
-                        default: tt_no_default();
+                        default: hi_no_default();
                         }
                     }
                 }
@@ -202,4 +202,4 @@ public:
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

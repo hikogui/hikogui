@@ -6,7 +6,7 @@
 
 #include "skeleton_node.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct skeleton_top_node final : skeleton_node {
     statement_vector children;
@@ -27,7 +27,7 @@ struct skeleton_top_node final : skeleton_node {
             children.back()->left_align();
         }
 
-        for (ttlet &child : children) {
+        for (hilet &child : children) {
             child->post_process(context);
         }
     }
@@ -44,11 +44,11 @@ struct skeleton_top_node final : skeleton_node {
 
     std::string string() const noexcept override
     {
-        ttlet children_str = transform<std::vector<std::string>>(children, [](ttlet &x) {
+        hilet children_str = transform<std::vector<std::string>>(children, [](hilet &x) {
             return x->string();
         });
         return std::format("<top {}>", join(children_str));
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

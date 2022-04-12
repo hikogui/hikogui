@@ -6,7 +6,7 @@
 
 #include <memory>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Class that hold either a weak_ptr or a unique_ptr
  * This class is to hold a weak_ptr, and potentially also
@@ -140,4 +140,4 @@ private:
     friend class weak_or_unique_ptr;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

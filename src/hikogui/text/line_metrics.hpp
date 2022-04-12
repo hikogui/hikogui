@@ -12,12 +12,12 @@
 #include <vector>
 #include <cstddef>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct line_metrics {
     /** The combined metrics for all the glyphs on the line.
      */
-    tt::font_metrics font_metrics;
+    hi::font_metrics font_metrics;
 
     /** The index of the first character in the text belonging to this line.
      */
@@ -69,7 +69,7 @@ struct line_metrics {
 
     constexpr line_metric(size_t index) noexcept : index(indeX) {}
 
-    void add_char(unicode_general_category category, float estimated_width, tt::font_metrics font_metrics) noexcept
+    void add_char(unicode_general_category category, float estimated_width, hi::font_metrics font_metrics) noexcept
     {
         this->category = category;
         this->estimated_width += estimated_width;
@@ -114,8 +114,8 @@ template<typename It, typename ItEnd>
         return {};
     }
 
-    ttlet y_top = first->y + first->metrics.x_height;
-    ttlet y_bottom = last->y;
+    hilet y_top = first->y + first->metrics.x_height;
+    hilet y_bottom = last->y;
     auto width = 0.0f;
     for (auto it = first; it != last; ++it) {
         width = std::max(width, it->width);
@@ -134,11 +134,11 @@ inline void update_line_metrics_offset(It first, ItEnd last) noexcept
     auto prev_it = first;
     for (auto it = prev_it + 1; it != last; ++it) {
         // Calculate the natural distance between the lines based on the font-metrics.
-        ttlet natural_line_distance = prev_it->font_metrics.descender + it->font_metrics.ascender +
+        hilet natural_line_distance = prev_it->font_metrics.descender + it->font_metrics.ascender +
             std::max(prev_it->font_metrics.line_gap, it->font_metrics.line_gap);
 
         // Multiply the natural line distance by the paragraph- or line-spacing.
-        ttlet line_distance =
+        hilet line_distance =
             natural_line_distance * (prev_it->category == unicode_general_catagory::Zp ? paragraph_spacing : line_spacing);
 
         // The lines are drawn from top to bottom, so y values are negative.
@@ -159,19 +159,19 @@ template<typename It, typename ItEnd>
         return;
     }
 
-    ttlet offset = [&] {
+    hilet offset = [&] {
         if (alignment == vertical_alignment::top) {
             return first->y;
         } else if (alignment == vertical_alignment::bottom) {
             return (last - 1)->y;
         } else {
-            ttlet num_lines = std::distance(first, last);
-            ttlet half_num_lines = num_lines / 2;
+            hilet num_lines = std::distance(first, last);
+            hilet half_num_lines = num_lines / 2;
             if (num_lines % 2 == 1) {
                 return (first + half_num_lines)->y;
             } else {
-                ttlet y0 = (first + half_num_lines - 1)->y;
-                ttlet y1 = (first + half_num_lines)->y;
+                hilet y0 = (first + half_num_lines - 1)->y;
+                hilet y1 = (first + half_num_lines)->y;
                 return std::round(std::midpoint(y0, y1));
             }
         }
@@ -180,7 +180,7 @@ template<typename It, typename ItEnd>
     // Move the lines to the new alignment.
     for (auto it = first; it != last; ++it) {
         it->y -= offset;
-        tt_axiom(std::round(it->y) == it->y);
+        hi_axiom(std::round(it->y) == it->y);
     }
 }
 
@@ -202,7 +202,7 @@ inline void replace_line_metrics(
 
     auto index = 0_uz;
     for (auto it = first; it != last; ++it, ++index) {
-        ttlet[category, char_width, font_metrics] = char_info_func(*it);
+        hilet[category, char_width, font_metrics] = char_info_func(*it);
 
         if (category == unicode_general_category::Zp or category == unicode_general_category::Zl) {
             // Found a line- or paragraph-separator.
@@ -252,4 +252,4 @@ inline void replace_line_metrics(
     update_line_metrics_vertical_alignment(lines.begin(), lines.end(), alignment);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -14,7 +14,7 @@
 #include <string_view>
 #include <memory>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 // clang-format off
 
@@ -351,7 +351,7 @@ template<typename T> struct acts_as_pointer<T *> : public std::true_type {};
 template<typename T>
 constexpr bool acts_as_pointer_v = acts_as_pointer<T>::value;
 
-#define tt_call_method(object, method, ...) \
+#define hi_call_method(object, method, ...) \
     [&]() { \
         if constexpr (acts_as_pointer_v<decltype(object)>) { \
             return object->method(__VA_ARGS__); \
@@ -410,4 +410,4 @@ struct await_resume_result {
 template<typename T>
 using await_resume_result_t = await_resume_result<T>::type;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

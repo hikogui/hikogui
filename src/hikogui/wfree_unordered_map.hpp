@@ -12,7 +12,7 @@
 #include <typeinfo>
 #include <typeindex>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<typename K, typename V>
 struct wfree_unordered_map_item {
@@ -72,13 +72,13 @@ public:
 
     static std::size_t make_hash(K const &key) noexcept
     {
-        ttlet hash = std::hash<K>{}(key);
+        hilet hash = std::hash<K>{}(key);
         return hash >= 3 ? hash : hash + 3;
     }
 
     void insert(K key, V value) noexcept
     {
-        ttlet hash = make_hash(key);
+        hilet hash = make_hash(key);
 
         auto index = hash % CAPACITY;
         while (true) {
@@ -114,7 +114,7 @@ public:
         std::vector<K> r;
         // XXX - with counting items, we could reserve capacity.
 
-        for (ttlet &item : items) {
+        for (hilet &item : items) {
             if (item.hash >= 3) {
                 r.push_back(item.key);
             }
@@ -124,7 +124,7 @@ public:
 
     V &operator[](K const &key) noexcept
     {
-        ttlet hash = make_hash(key);
+        hilet hash = make_hash(key);
 
         auto index = hash % CAPACITY;
         while (true) {
@@ -162,7 +162,7 @@ public:
 
     std::optional<V> get(K const &key) const noexcept
     {
-        ttlet hash = make_hash(key);
+        hilet hash = make_hash(key);
 
         auto index = hash % CAPACITY;
         while (true) {
@@ -186,7 +186,7 @@ public:
 
     V get(K const &key, V const &default_value) const noexcept
     {
-        if (ttlet optional_value = get(key)) {
+        if (hilet optional_value = get(key)) {
             return *optional_value;
         } else {
             return default_value;
@@ -195,7 +195,7 @@ public:
 
     std::optional<V> erase(K const &key) noexcept
     {
-        ttlet hash = make_hash(key);
+        hilet hash = make_hash(key);
 
         auto index = hash % CAPACITY;
         while (true) {
@@ -218,4 +218,4 @@ public:
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

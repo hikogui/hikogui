@@ -9,7 +9,7 @@
 #include <array>
 
 using namespace std;
-using namespace tt;
+using namespace hi;
 
 static_assert(std::numeric_limits<ubig128>::min() == 0);
 static_assert(std::numeric_limits<ubig128>::max() > 0);
@@ -189,7 +189,7 @@ TEST(BigInt, Divide)
 {
     auto t = ubig128{"3689348814741910323200"};
 
-    ttlet[quotient, remainder] = div(t, 93);
+    hilet[quotient, remainder] = div(t, 93);
 
     ASSERT_EQ(quotient, ubig128{"39670417362816240034"});
     ASSERT_EQ(remainder, 38);

@@ -21,11 +21,11 @@
 #include "../strings.hpp"
 #include "../algorithm.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 static void parse_skeleton_hash(skeleton_parse_context &context)
 {
-    ttlet &location = context.location;
+    hilet &location = context.location;
 
     if (context.starts_with("end")) {
         context.advance_over("\n");
@@ -73,7 +73,7 @@ static void parse_skeleton_hash(skeleton_parse_context &context)
                 throw parse_error(std::format("{}: Unexpected #while statement; missing #do.", location));
             }
 
-            tt_assert(context.pop());
+            hi_assert(context.pop());
         } else {
             context.push<skeleton_while_node>(location, std::move(expression));
         }
@@ -139,7 +139,7 @@ static void parse_skeleton_hash(skeleton_parse_context &context)
 
 static void parse_skeleton_dollar(skeleton_parse_context &context)
 {
-    ttlet &location = context.location;
+    hilet &location = context.location;
 
     if (*context == '{') {
         ++context;
@@ -158,7 +158,7 @@ static void parse_skeleton_dollar(skeleton_parse_context &context)
 static void parse_skeleton_escape(skeleton_parse_context &context)
 {
     for (; !context.atEOF(); ++context) {
-        ttlet c = *context;
+        hilet c = *context;
 
         switch (c) {
         case '\n': // Skip over line-feed
@@ -221,4 +221,4 @@ static void parse_skeleton_escape(skeleton_parse_context &context)
     return top;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

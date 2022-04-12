@@ -5,7 +5,7 @@
 
 #include <optional>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 class gui_system;
 
 class gui_system_delegate {
@@ -23,4 +23,4 @@ public:
     };
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

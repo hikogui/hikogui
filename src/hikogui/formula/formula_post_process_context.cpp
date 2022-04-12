@@ -5,7 +5,7 @@
 #include "formula_post_process_context.hpp"
 #include "../url_parser.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 static datum function_float(formula_evaluation_context &context, datum::vector_type const &args)
 {
@@ -103,7 +103,7 @@ static datum function_sort(formula_evaluation_context &context, datum::vector_ty
         throw operation_error(std::format("Expecting 1 argument for sort() function, got {}", args.size()));
     }
 
-    if (ttlet *v = get_if<datum::vector_type>(args[0])) {
+    if (hilet *v = get_if<datum::vector_type>(args[0])) {
         auto r = *v;
         std::sort(r.begin(), r.end());
         return datum{r};
@@ -164,7 +164,7 @@ static datum method_year(formula_evaluation_context &context, datum &self, datum
         throw operation_error(std::format("Expecting 0 arguments for .year() method, got {}", args.size()));
     }
 
-    if (ttlet *ymd = get_if<std::chrono::year_month_day>(self)) {
+    if (hilet *ymd = get_if<std::chrono::year_month_day>(self)) {
         return datum{static_cast<int>(ymd->year())};
     } else {
         throw operation_error(std::format("Expecting date type for .year() method, got {}", self.type_name()));
@@ -177,7 +177,7 @@ static datum method_quarter(formula_evaluation_context &context, datum &self, da
         throw operation_error(std::format("Expecting 0 arguments for .quarter() method, got {}", args.size()));
     }
 
-    if (ttlet *ymd = get_if<std::chrono::year_month_day>(self)) {
+    if (hilet *ymd = get_if<std::chrono::year_month_day>(self)) {
         auto month = static_cast<unsigned>(ymd->month());
         if (month >= 1 and month <= 3) {
             return datum{1};
@@ -201,7 +201,7 @@ static datum method_month(formula_evaluation_context &context, datum &self, datu
         throw operation_error(std::format("Expecting 0 arguments for .month() method, got {}", args.size()));
     }
 
-    if (ttlet *ymd = get_if<std::chrono::year_month_day>(self)) {
+    if (hilet *ymd = get_if<std::chrono::year_month_day>(self)) {
         return datum{static_cast<unsigned>(ymd->month())};
     } else {
         throw operation_error(std::format("Expecting date type for .month() method, got {}", self.type_name()));
@@ -214,7 +214,7 @@ static datum method_day(formula_evaluation_context &context, datum &self, datum:
         throw operation_error(std::format("Expecting 0 arguments for .day() method, got {}", args.size()));
     }
 
-    if (ttlet *ymd = get_if<std::chrono::year_month_day>(self)) {
+    if (hilet *ymd = get_if<std::chrono::year_month_day>(self)) {
         return datum{static_cast<unsigned>(ymd->day())};
     } else {
         throw operation_error(std::format("Expecting date type for .day() method, got {}", self.type_name()));
@@ -248,4 +248,4 @@ formula_post_process_context::filter_table formula_post_process_context::global_
     {"id", make_identifier},
     {"url", url_encode}};
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

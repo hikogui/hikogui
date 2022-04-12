@@ -10,7 +10,7 @@
 #include <cstdint>
 #include <compare>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 class widget;
 
 class hitbox {
@@ -43,14 +43,14 @@ public:
     constexpr hitbox() noexcept : widget(nullptr), _elevation(-std::numeric_limits<float>::max()), type(Type::Outside) {}
 
     constexpr hitbox(
-        tt::widget const *widget,
+        hi::widget const *widget,
         float elevation = -std::numeric_limits<float>::max(),
         Type type = Type::Default) noexcept :
         widget(widget), _elevation(elevation), type(type)
     {
     }
 
-    constexpr hitbox(tt::widget const *widget, point3 position, Type type = Type::Default) noexcept :
+    constexpr hitbox(hi::widget const *widget, point3 position, Type type = Type::Default) noexcept :
         widget(widget), _elevation(-position.z()), type(type)
     {
     }
@@ -59,7 +59,7 @@ public:
     {
         if ((lhs.widget == nullptr) == (rhs.widget == nullptr)) {
             // Either both are widgets, or both are not widgets.
-            ttlet elevation_cmp = lhs._elevation <=> rhs._elevation;
+            hilet elevation_cmp = lhs._elevation <=> rhs._elevation;
             if (elevation_cmp == 0) {
                 return static_cast<int>(lhs.type) <=> static_cast<int>(rhs.type);
             } else if (elevation_cmp < 0) {
@@ -67,7 +67,7 @@ public:
             } else if (elevation_cmp > 0) {
                 return std::strong_ordering::greater;
             } else {
-                tt_no_default();
+                hi_no_default();
             }
         } else if (lhs.widget == nullptr) {
             // If lhs is not a widget than it is less.
@@ -82,4 +82,4 @@ private:
     float _elevation;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

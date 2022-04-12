@@ -7,7 +7,7 @@
 #include "gfx_surface_vulkan.hpp"
 #include <unordered_map>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class gui_window_vulkan_macos final : public gfx_surface_vulkan {
 public:
@@ -57,7 +57,7 @@ private:
     /*! The application class will function as a main-thread trampoline for this class
      * methods that start with `mainThread`.
      */
-    friend tt::Application_macos;
+    friend hi::Application_macos;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

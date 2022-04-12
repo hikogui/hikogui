@@ -5,7 +5,7 @@
 #include <memory_resource>
 #include <array>
 
-namespace tt::inline v1::pmr {
+namespace hi::inline v1::pmr {
 
 /** A buffer with an attached memory allocator.
  */
@@ -28,4 +28,4 @@ private:
     allocator_type _pa;
 };
 
-} // namespace tt::inline v1::pmr
+} // namespace hi::inline v1::pmr

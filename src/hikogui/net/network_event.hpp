@@ -11,7 +11,7 @@
 #include <cstdint>
 #include <bit>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 enum class network_event : uint16_t {
     none = 0,
@@ -51,7 +51,7 @@ constexpr network_event& operator|=(network_event& lhs, network_event const& rhs
  */
 [[nodiscard]] constexpr size_t bit(network_event const& rhs) noexcept
 {
-    tt_axiom(std::popcount(to_underlying(rhs)) == 1);
+    hi_axiom(std::popcount(to_underlying(rhs)) == 1);
     return std::countr_zero(to_underlying(rhs));
 }
 
@@ -77,4 +77,4 @@ public:
     constexpr network_events() noexcept : events(network_event::none), errors{} {}
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -18,7 +18,7 @@
 #include <thread>
 #include <vector>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 class gfx_system;
 class vertical_sync;
 class font_book;
@@ -32,9 +32,9 @@ public:
     static inline os_handle instance;
 
     std::unique_ptr<gfx_system> gfx;
-    std::unique_ptr<tt::font_book> font_book;
-    std::unique_ptr<tt::theme_book> theme_book;
-    std::unique_ptr<tt::keyboard_bindings> keyboard_bindings;
+    std::unique_ptr<hi::font_book> font_book;
+    std::unique_ptr<hi::theme_book> theme_book;
+    std::unique_ptr<hi::keyboard_bindings> keyboard_bindings;
 
     thread_id const thread_id;
 
@@ -97,13 +97,13 @@ public:
 
     /** Create a new window.
      * @param args The arguments that are forwarded to the constructor of
-     *             `tt::gui_window_win32`.
+     *             `hi::gui_window_win32`.
      * @return A reference to the new window.
      */
     template<typename... Args>
     std::shared_ptr<gui_window> make_window(Args &&...args)
     {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
 
         // XXX abstract away the _win32 part.
         auto window = std::make_shared<gui_window_win32>(*this, std::forward<Args>(args)...);
@@ -126,9 +126,9 @@ public:
 protected:
     gui_system(
         std::unique_ptr<gfx_system> gfx,
-        std::unique_ptr<tt::font_book> font_book,
-        std::unique_ptr<tt::theme_book> theme_book,
-        std::unique_ptr<tt::keyboard_bindings> keyboard_bindings,
+        std::unique_ptr<hi::font_book> font_book,
+        std::unique_ptr<hi::theme_book> theme_book,
+        std::unique_ptr<hi::keyboard_bindings> keyboard_bindings,
         std::weak_ptr<gui_system_delegate> delegate = {}) noexcept;
 
 private:
@@ -137,7 +137,7 @@ private:
     /** The theme of the system.
      * Should never be nullptr in reality.
      */
-    tt::theme const *_theme = nullptr;
+    hi::theme const *_theme = nullptr;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

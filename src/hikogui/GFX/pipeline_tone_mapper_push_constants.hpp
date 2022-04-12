@@ -7,7 +7,7 @@
 #include "../rapid/sfloat_rg32.hpp"
 #include <vulkan/vulkan.hpp>
 
-namespace tt::inline v1::pipeline_tone_mapper {
+namespace hi::inline v1::pipeline_tone_mapper {
 
 struct push_constants {
     float saturation = 1.0;
@@ -18,4 +18,4 @@ struct push_constants {
     }
 };
 
-} // namespace tt::inline v1::pipeline_tone_mapper
+} // namespace hi::inline v1::pipeline_tone_mapper

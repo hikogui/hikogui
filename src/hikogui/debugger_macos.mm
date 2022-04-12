@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <sys/sysctl.h>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 bool debugger_is_present() noexcept
 {

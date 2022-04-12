@@ -6,7 +6,7 @@
 
 #include <cstdint>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct mouse_buttons {
     uint8_t leftButton : 1;
@@ -29,4 +29,4 @@ struct mouse_buttons {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

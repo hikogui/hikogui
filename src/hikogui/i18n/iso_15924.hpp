@@ -10,7 +10,7 @@
 #include <cstdint>
 #include <format>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** ISO-15924 script code.
  * A 4 letter title case script code:
@@ -62,11 +62,11 @@ private:
     uint16_t _v;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<>
-struct std::hash<tt::iso_15924> {
-    [[nodiscard]] size_t operator()(tt::iso_15924 const &rhs) const noexcept
+struct std::hash<hi::iso_15924> {
+    [[nodiscard]] size_t operator()(hi::iso_15924 const &rhs) const noexcept
     {
         return std::hash<uint16_t>{}(rhs.number());
     }

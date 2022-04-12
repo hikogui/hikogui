@@ -11,39 +11,39 @@
 #endif
 #include <type_traits>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 RenderDoc::RenderDoc() noexcept
 {
 #if TT_BUILD_TYPE == TT_BT_DEBUG
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
-    ttlet dll_urls = std::vector{
+    hilet dll_urls = std::vector{
         URL{"file:renderdoc.dll"},
         URL{"file:///C:/Program%20Files/RenderDoc/renderdoc.dll"},
         URL{"file:///C:/Program%20Files%20(x86)/RenderDoc/renderdoc.dll"}};
 
     HMODULE mod = nullptr;
-    for (ttlet &dll_url : dll_urls) {
-        tt_log_debug("Trying to load renderdoc.dll at: {}", dll_url.nativePath());
+    for (hilet &dll_url : dll_urls) {
+        hi_log_debug("Trying to load renderdoc.dll at: {}", dll_url.nativePath());
 
         if ((mod = LoadLibraryW(dll_url.nativeWPath().c_str()))) {
             goto found_dll;
         }
     }
-    tt_log_warning("Could not load renderdoc.dll");
+    hi_log_warning("Could not load renderdoc.dll");
     return;
 
 found_dll:
     pRENDERDOC_GetAPI RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)GetProcAddress(mod, "RENDERDOC_GetAPI");
 
     if (RENDERDOC_GetAPI == nullptr) {
-        tt_log_error("Could not find RENDERDOC_GetAPI in renderdoc.dll");
+        hi_log_error("Could not find RENDERDOC_GetAPI in renderdoc.dll");
         return;
     }
 
     int ret = RENDERDOC_GetAPI(eRENDERDOC_API_Version_1_4_1, &api);
     if (ret != 1) {
-        tt_log_error("RENDERDOC_GetAPI returns invalid value {}", ret);
+        hi_log_error("RENDERDOC_GetAPI returns invalid value {}", ret);
         api = nullptr;
     }
 
@@ -100,4 +100,4 @@ void RenderDoc::set_overlay(bool frameRate, bool frameNumber, bool captureList) 
     api_->MaskOverlayBits(and_mask, or_mask);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

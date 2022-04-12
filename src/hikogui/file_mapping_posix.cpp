@@ -9,7 +9,7 @@
 #include "required.hpp"
 #include <mutex>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 file_mapping::file_mapping(std::shared_ptr<File> const &file, std::size_t size) :
     file(file), size(size > 0 ? size : File::fileSize(file->location))
@@ -23,4 +23,4 @@ file_mapping::file_mapping(URL const &location, AccessMode accessMode, std::size
 
 file_mapping::~file_mapping() {}
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

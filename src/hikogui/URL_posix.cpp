@@ -13,7 +13,7 @@
 #include <sys/types.h>
 #include <sys/dir.h>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 std::vector<std::string> URL::filenamesByScanningDirectory(std::string_view path) noexcept
 {
@@ -44,4 +44,4 @@ std::vector<std::string> URL::filenamesByScanningDirectory(std::string_view path
     return filenames;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

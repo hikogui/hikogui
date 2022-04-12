@@ -7,7 +7,7 @@
 #include "../rapid/sfloat_rg32.hpp"
 #include <vulkan/vulkan.hpp>
 
-namespace tt::inline v1::pipeline_SDF {
+namespace hi::inline v1::pipeline_SDF {
 
 struct specialization_constants {
     float sdf_r8maxDistance;
@@ -27,4 +27,4 @@ struct specialization_constants {
     }
 };
 
-} // namespace tt::inline v1::pipeline_SDF
+} // namespace hi::inline v1::pipeline_SDF

@@ -6,7 +6,7 @@
 
 #include "formula_node.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct formula_vector_literal_node final : formula_node {
     formula_vector values;
@@ -26,7 +26,7 @@ struct formula_vector_literal_node final : formula_node {
     datum evaluate(formula_evaluation_context &context) const override
     {
         datum::vector_type r;
-        for (ttlet &value : values) {
+        for (hilet &value : values) {
             r.push_back(value->evaluate(context));
         }
         return datum{std::move(r)};
@@ -49,12 +49,12 @@ struct formula_vector_literal_node final : formula_node {
         }
 
         // Make a copy, in case of self assignment.
-        ttlet rhs_copy = rhs;
+        hilet rhs_copy = rhs;
 
         std::size_t i = 0;
         while (true) {
-            ttlet &lhs_ = values[i];
-            ttlet &rhs_ = rhs_copy[i];
+            hilet &lhs_ = values[i];
+            hilet &rhs_ = rhs_copy[i];
 
             if (++i < rhs.size()) {
                 lhs_->assign(context, rhs_);
@@ -68,7 +68,7 @@ struct formula_vector_literal_node final : formula_node {
     {
         std::string r = "[";
         int i = 0;
-        for (ttlet &value : values) {
+        for (hilet &value : values) {
             if (i++ > 0) {
                 r += ", ";
             }
@@ -78,4 +78,4 @@ struct formula_vector_literal_node final : formula_node {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

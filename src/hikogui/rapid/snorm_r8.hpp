@@ -7,7 +7,7 @@
 #include "../cast.hpp"
 #include <algorithm>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] constexpr int8_t make_snorm_r8_value(float rhs) noexcept
 {
@@ -38,4 +38,4 @@ struct snorm_r8 {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

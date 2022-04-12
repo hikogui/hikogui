@@ -7,7 +7,7 @@
 #include "widget.hpp"
 #include "overlay_delegate.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A GUI widget which may exist anywhere on a window overlaid above any other widget.
  *
@@ -61,8 +61,8 @@ public:
     template<typename Widget, typename... Args>
     Widget &make_widget(Args &&...args) noexcept
     {
-        tt_axiom(is_gui_thread());
-        tt_axiom(not _content);
+        hi_axiom(is_gui_thread());
+        hi_axiom(not _content);
 
         auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
         auto &ref = *tmp;
@@ -81,7 +81,7 @@ public:
     void draw(draw_context const &context) noexcept override;
     [[nodiscard]] color background_color() const noexcept override;
     [[nodiscard]] color foreground_color() const noexcept override;
-    void scroll_to_show(tt::aarectangle rectangle) noexcept override;
+    void scroll_to_show(hi::aarectangle rectangle) noexcept override;
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
     /// @endprivatesection
 private:
@@ -91,4 +91,4 @@ private:
     void draw_background(draw_context const &context) noexcept;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

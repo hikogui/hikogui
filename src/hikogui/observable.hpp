@@ -14,7 +14,7 @@
 #include <type_traits>
 #include <mutex>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 template<typename T>
 class observable;
 
@@ -58,9 +58,9 @@ struct observable_impl {
         {
 #if TT_BUILD_TYPE == TT_BT_DEBUG
             // Cannot open a read-write proxy when something already has a read proxy open.
-            tt_assert(actual->ro_count == 0);
+            hi_assert(actual->ro_count == 0);
             // There may only be one read-write proxy.
-            tt_assert(not std::exchange(actual->rw_count, true));
+            hi_assert(not std::exchange(actual->rw_count, true));
 #endif
         }
 
@@ -79,25 +79,25 @@ struct observable_impl {
 
         constexpr operator value_type &() const noexcept
         {
-            tt_axiom(actual);
+            hi_axiom(actual);
             return actual->value;
         }
 
         constexpr value_type *operator->() const noexcept
         {
-            tt_axiom(actual);
+            hi_axiom(actual);
             return std::addressof(actual->value);
         }
 
         constexpr value_type& operator*() const noexcept
         {
-            tt_axiom(actual);
+            hi_axiom(actual);
             return actual->value;
         }
 
         constexpr value_type *operator&() const noexcept
         {
-            tt_axiom(actual);
+            hi_axiom(actual);
             return std::addressof(actual->value);
         }
 
@@ -110,8 +110,8 @@ struct observable_impl {
         {
 #if TT_BUILD_TYPE == TT_BT_DEBUG
             if (actual) {
-                tt_assert(actual->rw_count == false);
-                tt_assert(actual->ro_count != 0);
+                hi_assert(actual->rw_count == false);
+                hi_assert(actual->ro_count != 0);
                 ++actual->ro_count;
             }
 #endif
@@ -121,8 +121,8 @@ struct observable_impl {
         {
 #if TT_BUILD_TYPE == TT_BT_DEBUG
             if (actual) {
-                tt_assert(actual->rw_count == false);
-                tt_assert(actual->ro_count != 0);
+                hi_assert(actual->rw_count == false);
+                hi_assert(actual->ro_count != 0);
             }
 #endif
         }
@@ -131,16 +131,16 @@ struct observable_impl {
         {
 #if TT_BUILD_TYPE == TT_BT_DEBUG
             if (actual) {
-                tt_assert(actual->rw_count == false);
-                tt_assert(actual->ro_count != 0);
+                hi_assert(actual->rw_count == false);
+                hi_assert(actual->ro_count != 0);
                 --actual->ro_count;
             }
 #endif
             actual = other.actual;
 #if TT_BUILD_TYPE == TT_BT_DEBUG
             if (actual) {
-                tt_assert(actual->rw_count == false);
-                tt_assert(actual->ro_count != 0);
+                hi_assert(actual->rw_count == false);
+                hi_assert(actual->ro_count != 0);
                 ++actual->ro_count;
             }
 #endif
@@ -150,8 +150,8 @@ struct observable_impl {
         {
 #if TT_BUILD_TYPE == TT_BT_DEBUG
             if (actual) {
-                tt_assert(actual->rw_count == false);
-                tt_assert(actual->ro_count != 0);
+                hi_assert(actual->rw_count == false);
+                hi_assert(actual->ro_count != 0);
                 --actual->ro_count;
             }
 #endif
@@ -162,8 +162,8 @@ struct observable_impl {
         {
 #if TT_BUILD_TYPE == TT_BT_DEBUG
             if (actual) {
-                tt_assert(actual->rw_count == true);
-                tt_assert(actual->ro_count == 0);
+                hi_assert(actual->rw_count == true);
+                hi_assert(actual->ro_count == 0);
                 actual->rw_count = false;
                 ++actual->ro_count;
             }
@@ -174,16 +174,16 @@ struct observable_impl {
         {
 #if TT_BUILD_TYPE == TT_BT_DEBUG
             if (actual) {
-                tt_assert(actual->rw_count == false);
-                tt_assert(actual->ro_count != 0);
+                hi_assert(actual->rw_count == false);
+                hi_assert(actual->ro_count != 0);
                 --actual->ro_count;
             }
 #endif
             actual = std::exchange(other.actual, nullptr);
 #if TT_BUILD_TYPE == TT_BT_DEBUG
             if (actual) {
-                tt_assert(actual->rw_count == true);
-                tt_assert(actual->ro_count == 0);
+                hi_assert(actual->rw_count == true);
+                hi_assert(actual->ro_count == 0);
                 actual->rw_count = false;
                 ++actual->ro_count;
             }
@@ -197,7 +197,7 @@ struct observable_impl {
 #if TT_BUILD_TYPE == TT_BT_DEBUG
             if (actual) {
                 // Cannot open a read-only proxy with a read-write proxy.
-                tt_assert(actual->rw_count == false);
+                hi_assert(actual->rw_count == false);
                 ++actual->ro_count;
             }
 #endif
@@ -207,8 +207,8 @@ struct observable_impl {
         {
 #if TT_BUILD_TYPE == TT_BT_DEBUG
             if (actual) {
-                tt_assert(actual->rw_count == false);
-                tt_assert(actual->ro_count != 0);
+                hi_assert(actual->rw_count == false);
+                hi_assert(actual->ro_count != 0);
                 --actual->ro_count;
             }
 #endif
@@ -216,25 +216,25 @@ struct observable_impl {
 
         constexpr operator value_type const &() const noexcept
         {
-            tt_axiom(actual);
+            hi_axiom(actual);
             return actual->value;
         }
 
         constexpr value_type const *operator->() const noexcept
         {
-            tt_axiom(actual);
+            hi_axiom(actual);
             return std::addressof(actual->value);
         }
 
         constexpr value_type const& operator*() const noexcept
         {
-            tt_axiom(actual);
+            hi_axiom(actual);
             return actual->value;
         }
 
         constexpr value_type const *operator&() const noexcept
         {
-            tt_axiom(actual);
+            hi_axiom(actual);
             return std::addressof(actual->value);
         }
 
@@ -250,7 +250,7 @@ struct observable_impl {
 
     ~observable_impl()
     {
-        tt_axiom(owners.empty());
+        hi_axiom(owners.empty());
     }
 
     observable_impl(observable_impl const&) = delete;
@@ -259,7 +259,7 @@ struct observable_impl {
     observable_impl& operator=(observable_impl&&) = delete;
 
     observable_impl() noexcept : value() {}
-    observable_impl(std::convertible_to<value_type> auto&& value) noexcept : value(tt_forward(value)) {}
+    observable_impl(std::convertible_to<value_type> auto&& value) noexcept : value(hi_forward(value)) {}
 
     proxy_type proxy() noexcept
     {
@@ -273,7 +273,7 @@ struct observable_impl {
 
     void notify_owners() const noexcept
     {
-        for (ttlet& owner : owners) {
+        for (hilet& owner : owners) {
             owner->_notifier(value);
         }
     }
@@ -284,7 +284,7 @@ struct observable_impl {
      */
     void add_owner(owner_type& owner) noexcept
     {
-        tt_axiom(std::find(owners.cbegin(), owners.cend(), &owner) == owners.cend());
+        hi_axiom(std::find(owners.cbegin(), owners.cend(), &owner) == owners.cend());
 
         owners.push_back(&owner);
     }
@@ -295,13 +295,13 @@ struct observable_impl {
      */
     void remove_owner(owner_type& owner) noexcept
     {
-        ttlet nr_erased = std::erase(owners, &owner);
-        tt_axiom(nr_erased == 1);
+        hilet nr_erased = std::erase(owners, &owner);
+        hi_axiom(nr_erased == 1);
     }
 
     void reseat_owners(std::shared_ptr<observable_impl> const& new_impl) noexcept
     {
-        tt_axiom(not owners.empty());
+        hi_axiom(not owners.empty());
 
         auto keep_this_alive = owners.front()->_pimpl;
 
@@ -406,14 +406,14 @@ public:
             return *this;
         }
 
-        tt_axiom(_pimpl);
+        hi_axiom(_pimpl);
         _pimpl->reseat_owners(other._pimpl);
         return *this;
     }
 
     token_type subscribe(std::invocable<value_type> auto&& callback) noexcept
     {
-        return _notifier.subscribe(tt_forward(callback));
+        return _notifier.subscribe(hi_forward(callback));
     }
 
     awaiter_type operator co_await() const noexcept
@@ -431,7 +431,7 @@ public:
      */
     const_proxy_type const_proxy() const noexcept
     {
-        tt_axiom(_pimpl);
+        hi_axiom(_pimpl);
         return _pimpl->const_proxy();
     }
 
@@ -445,7 +445,7 @@ public:
      */
     proxy_type proxy() const noexcept
     {
-        tt_axiom(_pimpl);
+        hi_axiom(_pimpl);
         return _pimpl->const_proxy();
     }
 
@@ -461,7 +461,7 @@ public:
      */
     proxy_type proxy() noexcept
     {
-        tt_axiom(_pimpl);
+        hi_axiom(_pimpl);
         return _pimpl->proxy();
     }
 
@@ -489,7 +489,7 @@ public:
      *
      * @param value The value to assign to the shared-value.
      */
-    observable(std::convertible_to<value_type> auto&& value) noexcept : _pimpl(std::make_shared<impl_type>(tt_forward(value)))
+    observable(std::convertible_to<value_type> auto&& value) noexcept : _pimpl(std::make_shared<impl_type>(hi_forward(value)))
     {
         _pimpl->add_owner(*this);
     }
@@ -501,8 +501,8 @@ public:
      */
     observable& operator=(std::convertible_to<value_type> auto&& value) noexcept
     {
-        tt_axiom(_pimpl);
-        *proxy() = tt_forward(value);
+        hi_axiom(_pimpl);
+        *proxy() = hi_forward(value);
         return *this;
     }
 
@@ -561,9 +561,9 @@ public:
      * @param rhs The right hand side value.
      * @return The return value of the value_type::operator+=(rhs).
      */
-    auto operator+=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a += tt_forward(b)}; })
+    auto operator+=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a += hi_forward(b)}; })
     {
-        return *proxy() += tt_forward(rhs);
+        return *proxy() += hi_forward(rhs);
     }
 
     /** Inplace subtract.
@@ -573,9 +573,9 @@ public:
      * @param rhs The right hand side value.
      * @return The return value of the value_type::operator-=(rhs).
      */
-    auto operator-=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a -= tt_forward(b)}; })
+    auto operator-=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a -= hi_forward(b)}; })
     {
-        return *proxy() -= tt_forward(rhs);
+        return *proxy() -= hi_forward(rhs);
     }
 
     /** Inplace multiply.
@@ -585,9 +585,9 @@ public:
      * @param rhs The right hand side value.
      * @return The return value of the value_type::operator*=(rhs).
      */
-    auto operator*=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a *= tt_forward(b)}; })
+    auto operator*=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a *= hi_forward(b)}; })
     {
-        return *proxy() *= tt_forward(rhs);
+        return *proxy() *= hi_forward(rhs);
     }
 
     /** Inplace divide.
@@ -597,9 +597,9 @@ public:
      * @param rhs The right hand side value.
      * @return The return value of the value_type::operator/=(rhs).
      */
-    auto operator/=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a /= tt_forward(b)}; })
+    auto operator/=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a /= hi_forward(b)}; })
     {
-        return *proxy() /= tt_forward(rhs);
+        return *proxy() /= hi_forward(rhs);
     }
 
     /** Inplace remainder.
@@ -609,9 +609,9 @@ public:
      * @param rhs The right hand side value.
      * @return The return value of the value_type::operator%=(rhs).
      */
-    auto operator%=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a %= tt_forward(b)}; })
+    auto operator%=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a %= hi_forward(b)}; })
     {
-        return *proxy() %= tt_forward(rhs);
+        return *proxy() %= hi_forward(rhs);
     }
 
     /** Inplace bitwise and.
@@ -621,9 +621,9 @@ public:
      * @param rhs The right hand side value.
      * @return The return value of the value_type::operator&=(rhs).
      */
-    auto operator&=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a &= tt_forward(b)}; })
+    auto operator&=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a &= hi_forward(b)}; })
     {
-        return *proxy() &= tt_forward(rhs);
+        return *proxy() &= hi_forward(rhs);
     }
 
     /** Inplace bitwise or.
@@ -633,9 +633,9 @@ public:
      * @param rhs The right hand side value.
      * @return The return value of the value_type::operator|=(rhs).
      */
-    auto operator|=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a |= tt_forward(b)}; })
+    auto operator|=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a |= hi_forward(b)}; })
     {
-        return *proxy() |= tt_forward(rhs);
+        return *proxy() |= hi_forward(rhs);
     }
 
     /** Inplace bitwise xor.
@@ -645,9 +645,9 @@ public:
      * @param rhs The right hand side value.
      * @return The return value of the value_type::operator^=(rhs).
      */
-    auto operator^=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a ^= tt_forward(b)}; })
+    auto operator^=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a ^= hi_forward(b)}; })
     {
-        return *proxy() ^= tt_forward(rhs);
+        return *proxy() ^= hi_forward(rhs);
     }
 
     /** Inplace shift left.
@@ -657,9 +657,9 @@ public:
      * @param rhs The right hand side value.
      * @return The return value of the value_type::operator<<=(rhs).
      */
-    auto operator<<=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a <<= tt_forward(b)}; })
+    auto operator<<=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a <<= hi_forward(b)}; })
     {
-        return *proxy() <<= tt_forward(rhs);
+        return *proxy() <<= hi_forward(rhs);
     }
 
     /** Inplace shift right.
@@ -669,9 +669,9 @@ public:
      * @param rhs The right hand side value.
      * @return The return value of the value_type::operator>>=(rhs).
      */
-    auto operator>>=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a >>= tt_forward(b)}; })
+    auto operator>>=(auto&& rhs) noexcept requires(requires(value_type a, decltype(rhs) b) { {a >>= hi_forward(b)}; })
     {
-        return *proxy() >>= tt_forward(rhs);
+        return *proxy() >>= hi_forward(rhs);
     }
 
 private : std::shared_ptr<impl_type> _pimpl;
@@ -696,4 +696,4 @@ struct observable_argument<observable<T>> {
 template<typename T>
 using observable_argument_t = typename observable_argument<T>::type;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

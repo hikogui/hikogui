@@ -8,7 +8,7 @@
 #include <numbers>
 #include <array>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<typename T, std::size_t N>
 class results {
@@ -73,19 +73,19 @@ public:
 
     [[nodiscard]] constexpr value_type const& operator[](std::size_t index) const noexcept
     {
-        tt_axiom(index < _size);
+        hi_axiom(index < _size);
         return _v[index];
     }
 
     [[nodiscard]] constexpr value_type& operator[](std::size_t index) noexcept
     {
-        tt_axiom(index < _size);
+        hi_axiom(index < _size);
         return _v[index];
     }
 
     constexpr void add(T a) noexcept
     {
-        tt_axiom(_size < _capacity);
+        hi_axiom(_size < _capacity);
         _v[_size++] = a;
     }
 
@@ -114,7 +114,7 @@ template<typename T, int N>
 inline std::ostream& operator<<(std::ostream& os, results<T, N> const& r)
 {
     os << "[";
-    tt_assert(r.size() <= r.capacity());
+    hi_assert(r.size() <= r.capacity());
     for (auto i = 0_uz; i < r.size(); i++) {
         if (i > 0) {
             os << ", ";
@@ -138,7 +138,7 @@ inline std::ostream& operator<<(std::ostream& os, results<T, N> const& r)
  * \f]
  */
 template<typename T>
-tt_force_inline constexpr results<T, 1> solvePolynomial(T const& a, T const& b) noexcept
+hi_force_inline constexpr results<T, 1> solvePolynomial(T const& a, T const& b) noexcept
 {
     if (a != 0) {
         return {-(b / a)};
@@ -165,18 +165,18 @@ tt_force_inline constexpr results<T, 1> solvePolynomial(T const& a, T const& b) 
  * \f]
  */
 template<typename T>
-tt_force_inline constexpr results<T, 2> solvePolynomial(T const& a, T const& b, T const& c) noexcept
+hi_force_inline constexpr results<T, 2> solvePolynomial(T const& a, T const& b, T const& c) noexcept
 {
     if (a == 0) {
         return solvePolynomial(b, c);
     } else {
-        ttlet D = b * b - static_cast<T>(4) * a * c;
+        hilet D = b * b - static_cast<T>(4) * a * c;
         if (D < 0) {
             return {};
         } else if (D == 0) {
             return {-b / (static_cast<T>(2) * a)};
         } else {
-            ttlet Dsqrt = sqrt(D);
+            hilet Dsqrt = sqrt(D);
             return {(-b - Dsqrt) / (static_cast<T>(2) * a), (-b + Dsqrt) / (static_cast<T>(2) * a)};
         }
     }
@@ -185,28 +185,28 @@ tt_force_inline constexpr results<T, 2> solvePolynomial(T const& a, T const& b, 
 /*! Trigonometric solution for three real roots
  */
 template<typename T>
-tt_force_inline results<T, 3> solveDepressedCubicTrig(T const& p, T const& q) noexcept
+hi_force_inline results<T, 3> solveDepressedCubicTrig(T const& p, T const& q) noexcept
 {
     constexpr T oneThird = static_cast<T>(1) / static_cast<T>(3);
     constexpr T pi2_3 = (static_cast<T>(2) / static_cast<T>(3)) * std::numbers::pi_v<T>;
     constexpr T pi4_3 = (static_cast<T>(4) / static_cast<T>(3)) * std::numbers::pi_v<T>;
 
-    ttlet U = oneThird * acos(((static_cast<T>(3) * q) / (static_cast<T>(2) * p)) * sqrt(static_cast<T>(-3) / p));
-    ttlet V = static_cast<T>(2) * sqrt(-oneThird * p);
+    hilet U = oneThird * acos(((static_cast<T>(3) * q) / (static_cast<T>(2) * p)) * sqrt(static_cast<T>(-3) / p));
+    hilet V = static_cast<T>(2) * sqrt(-oneThird * p);
 
-    ttlet t0 = V * cos(U);
-    ttlet t1 = V * cos(U - pi2_3);
-    ttlet t2 = V * cos(U - pi4_3);
+    hilet t0 = V * cos(U);
+    hilet t1 = V * cos(U - pi2_3);
+    hilet t2 = V * cos(U - pi4_3);
     return {t0, t1, t2};
 }
 
 template<typename T>
-tt_force_inline results<T, 3> solveDepressedCubicCardano(T const& p, T const& q, T const& D) noexcept
+hi_force_inline results<T, 3> solveDepressedCubicCardano(T const& p, T const& q, T const& D) noexcept
 {
-    ttlet sqrtD = sqrt(D);
-    ttlet minusHalfQ = static_cast<T>(-0.5) * q;
-    ttlet v = cbrt(minusHalfQ + sqrtD);
-    ttlet w = cbrt(minusHalfQ - sqrtD);
+    hilet sqrtD = sqrt(D);
+    hilet minusHalfQ = static_cast<T>(-0.5) * q;
+    hilet v = cbrt(minusHalfQ + sqrtD);
+    hilet w = cbrt(minusHalfQ - sqrtD);
     return {v + w};
 }
 
@@ -227,7 +227,7 @@ tt_force_inline results<T, 3> solveDepressedCubicCardano(T const& p, T const& q,
  * \f]
  */
 template<typename T>
-tt_force_inline results<T, 3> solveDepressedCubic(T const& p, T const& q) noexcept
+hi_force_inline results<T, 3> solveDepressedCubic(T const& p, T const& q) noexcept
 {
     constexpr T oneForth = static_cast<T>(1) / static_cast<T>(4);
     constexpr T oneTwentySeventh = static_cast<T>(1) / static_cast<T>(27);
@@ -236,7 +236,7 @@ tt_force_inline results<T, 3> solveDepressedCubic(T const& p, T const& q) noexce
         return {static_cast<T>(0)};
 
     } else {
-        ttlet D = oneForth * q * q + oneTwentySeventh * p * p * p;
+        hilet D = oneForth * q * q + oneTwentySeventh * p * p * p;
 
         if (D < 0 && p != 0.0) {
             // Has three real roots.
@@ -244,8 +244,8 @@ tt_force_inline results<T, 3> solveDepressedCubic(T const& p, T const& q) noexce
 
         } else if (D == 0 && p != 0.0) {
             // Has two real roots, or maybe one root
-            ttlet t0 = (static_cast<T>(3) * q) / p;
-            ttlet t1 = (static_cast<T>(-3) * q) / (static_cast<T>(2) * p);
+            hilet t0 = (static_cast<T>(3) * q) / p;
+            hilet t1 = (static_cast<T>(-3) * q) / (static_cast<T>(2) * p);
             return {t0, t1, t1};
 
         } else {
@@ -264,22 +264,22 @@ tt_force_inline results<T, 3> solveDepressedCubic(T const& p, T const& q) noexce
  * \f[x=\text{solveDepressedCube}(p,q)-\frac{b}{3a}\f]
  */
 template<typename T>
-tt_force_inline constexpr results<T, 3> solvePolynomial(T const& a, T const& b, T const& c, T const& d) noexcept
+hi_force_inline constexpr results<T, 3> solvePolynomial(T const& a, T const& b, T const& c, T const& d) noexcept
 {
     if (a == 0) {
         return solvePolynomial(b, c, d);
 
     } else {
-        ttlet p = (static_cast<T>(3) * a * c - b * b) / (static_cast<T>(3) * a * a);
-        ttlet q = (static_cast<T>(2) * b * b * b - static_cast<T>(9) * a * b * c + static_cast<T>(27) * a * a * d) /
+        hilet p = (static_cast<T>(3) * a * c - b * b) / (static_cast<T>(3) * a * a);
+        hilet q = (static_cast<T>(2) * b * b * b - static_cast<T>(9) * a * b * c + static_cast<T>(27) * a * a * d) /
             (static_cast<T>(27) * a * a * a);
 
-        ttlet r = solveDepressedCubic(p, q);
+        hilet r = solveDepressedCubic(p, q);
 
-        ttlet b_3a = b / (static_cast<T>(3) * a);
+        hilet b_3a = b / (static_cast<T>(3) * a);
 
         return r - b_3a;
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

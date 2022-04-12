@@ -14,7 +14,7 @@
 #include <memory>
 #include <array>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A wait-free multiple-producer/single-consumer fifo designed for absolute performance.
  * Because of performance reasons the ring-buffer is 64kByte.
@@ -91,7 +91,7 @@ public:
      * @return A reference to the emplaced message.
      */
     template<typename Message, typename Func, typename... Args>
-    tt_force_inline auto emplace_and_invoke(Func&& func, Args&&...args) noexcept
+    hi_force_inline auto emplace_and_invoke(Func&& func, Args&&...args) noexcept
     {
         // We need a new offset.
         // - The offset is a byte index into 64kByte of memory.
@@ -100,24 +100,24 @@ public:
         // - We don't care about memory ordering with other writer threads. as
         //   each slot has an atomic for handling read/writer contention.
         // - We don't have to check full/empty, this is done on the slot itself.
-        ttlet offset = _head.fetch_add(slot_size, std::memory_order::relaxed);
+        hilet offset = _head.fetch_add(slot_size, std::memory_order::relaxed);
         return get_slot(offset).wait_emplace_and_invoke<Message>(std::forward<Func>(func), std::forward<Args>(args)...);
     }
 
     template<typename Func, typename Object>
-    tt_force_inline auto insert_and_invoke(Func&& func, Object&& object) noexcept
+    hi_force_inline auto insert_and_invoke(Func&& func, Object&& object) noexcept
     {
         return emplace_and_invoke<std::decay_t<Object>>(std::forward<Func>(func), std::forward<Object>(object));
     }
 
     template<typename Message, typename... Args>
-    tt_force_inline void emplace(Args&&...args) noexcept
+    hi_force_inline void emplace(Args&&...args) noexcept
     {
         return emplace_and_invoke<Message>([](Message&) -> void {}, std::forward<Args>(args)...);
     }
 
     template<typename Object>
-    tt_force_inline void insert(Object &&object) noexcept
+    hi_force_inline void insert(Object &&object) noexcept
     {
         return emplace<std::decay_t<Object>>(std::forward<Object>(object));
     }
@@ -125,18 +125,18 @@ public:
 private:
     std::array<slot_type, num_slots> _slots = {}; // must be at offset 0
     std::atomic<uint16_t> _head = 0;
-    std::array<std::byte, tt::hardware_destructive_interference_size> _dummy;
+    std::array<std::byte, hi::hardware_destructive_interference_size> _dummy;
     uint16_t _tail = 0;
 
     /** Get the slot that either the _head or _tail are pointing at.
      */
-    tt_force_inline slot_type& get_slot(uint16_t offset) noexcept
+    hi_force_inline slot_type& get_slot(uint16_t offset) noexcept
     {
-        tt_axiom(offset % slot_size == 0);
+        hi_axiom(offset % slot_size == 0);
         // The head and tail are 16 bit offsets within the _slots, which are
         return *std::launder(
             std::assume_aligned<slot_size>(reinterpret_cast<slot_type *>(reinterpret_cast<char *>(this) + offset)));
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

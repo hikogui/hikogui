@@ -14,7 +14,7 @@
 #include <string_view>
 #include <tuple>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 namespace detail {
 class translate_args_base {
 public:
@@ -205,10 +205,10 @@ public:
     [[nodiscard]] std::string operator()(std::vector<language *> const &languages = os_settings::languages()) const noexcept
     {
         if (_args) {
-            auto fmt = ::tt::get_translation(_msg_id, _args->n(), languages);
+            auto fmt = ::hi::get_translation(_msg_id, _args->n(), languages);
             return _args->format(fmt);
         } else {
-            return std::string{::tt::get_translation(_msg_id, 0, languages)};
+            return std::string{::hi::get_translation(_msg_id, 0, languages)};
         }
     }
 
@@ -223,10 +223,10 @@ public:
     operator()(std::locale const &loc, std::vector<language *> const &languages = os_settings::languages()) const noexcept
     {
         if (_args) {
-            auto fmt = ::tt::get_translation(_msg_id, _args->n(), languages);
+            auto fmt = ::hi::get_translation(_msg_id, _args->n(), languages);
             return _args->format(loc, fmt);
         } else {
-            return std::string{::tt::get_translation(_msg_id, 0, languages)};
+            return std::string{::hi::get_translation(_msg_id, 0, languages)};
         }
     }
 
@@ -254,4 +254,4 @@ private:
 
 using tr = translate;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

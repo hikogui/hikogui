@@ -11,7 +11,7 @@
 #include <vector>
 #include <memory>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /*! An system of audio devices.
  * Systems are for example: Window Audio Session API (WASAPI), ASIO, Apple CoreAudio
@@ -42,4 +42,4 @@ protected:
     std::weak_ptr<audio_system_delegate> _delegate;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <type_traits>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 constexpr uint32_t float16_bias = 15;
 constexpr uint32_t float32_bias = 127;
@@ -25,7 +25,7 @@ constexpr float cvtsh_ss(uint16_t value) noexcept
     uint32_t u = value;
 
     // Extract the sign bit.
-    ttlet sign = (u >> 15) << 31;
+    hilet sign = (u >> 15) << 31;
 
     // Strip the sign bit and align the exponent/mantissa boundary to a float 32.
     u = (u << 17) >> 4;
@@ -34,7 +34,7 @@ constexpr float cvtsh_ss(uint16_t value) noexcept
     u = u + f32_to_f16_adjustment;
 
     // Get a mask of '1' bits when the half-float would be normal or infinite.
-    ttlet is_normal = u > (f32_to_f16_lowest_normal - 1);
+    hilet is_normal = u > (f32_to_f16_lowest_normal - 1);
 
     // Add the sign bit back in.
     u = u | sign;
@@ -51,13 +51,13 @@ constexpr uint16_t cvtss_sh(float value) noexcept
     auto u = std::bit_cast<uint32_t>(value);
 
     // Get the sign of the floating point number as a bit mask of the upper 17 bits.
-    ttlet sign = static_cast<uint32_t>(static_cast<int32_t>(u) >> 31) << 15;
+    hilet sign = static_cast<uint32_t>(static_cast<int32_t>(u) >> 31) << 15;
 
     // Strip sign bit.
     u = (u << 1) >> 1;
 
     // Get a mask of '1' bits when the half-float would be normal or infinite.
-    ttlet is_normal = u > (f32_to_f16_lowest_normal - 1);
+    hilet is_normal = u > (f32_to_f16_lowest_normal - 1);
 
     // Clamp the floating point number to where the half-float would be infinite.
     u = std::min(u, f32_to_f16_infinite); // SSE4.1
@@ -135,11 +135,11 @@ public:
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<>
-struct std::hash<tt::float16> {
-    std::size_t operator()(tt::float16 const &rhs) noexcept
+struct std::hash<hi::float16> {
+    std::size_t operator()(hi::float16 const &rhs) noexcept
     {
         return rhs.hash();
     }
@@ -147,8 +147,8 @@ struct std::hash<tt::float16> {
 
 
 template<>
-struct std::numeric_limits<tt::float16> {
-    using value_type = tt::float16;
+struct std::numeric_limits<hi::float16> {
+    using value_type = hi::float16;
 
     static constexpr bool is_specialized = true;
     static constexpr bool is_signed = true;
@@ -175,46 +175,46 @@ struct std::numeric_limits<tt::float16> {
 
     static constexpr value_type min() noexcept
     {
-        return tt::float16::from_uint16_t(0x0400);
+        return hi::float16::from_uint16_t(0x0400);
     }
 
     static constexpr value_type lowest() noexcept
     {
-        return tt::float16::from_uint16_t(0xfbff);
+        return hi::float16::from_uint16_t(0xfbff);
     }
 
     static constexpr value_type max() noexcept
     {
-        return tt::float16::from_uint16_t(0x7bff);
+        return hi::float16::from_uint16_t(0x7bff);
     }
 
     static constexpr value_type epsilon() noexcept
     {
-        return tt::float16::from_uint16_t(0xfbff);
+        return hi::float16::from_uint16_t(0xfbff);
     }
 
     static constexpr value_type round_error() noexcept
     {
-        return tt::float16::from_uint16_t(0x3800); // 0.5
+        return hi::float16::from_uint16_t(0x3800); // 0.5
     }
 
     static constexpr value_type infinity() noexcept
     {
-        return tt::float16::from_uint16_t(0x7c00);
+        return hi::float16::from_uint16_t(0x7c00);
     }
 
     static constexpr value_type quiet_NaN() noexcept
     {
-        return tt::float16::from_uint16_t(0x7c01);
+        return hi::float16::from_uint16_t(0x7c01);
     }
 
     static constexpr value_type signaling_NaN() noexcept
     {
-        return tt::float16::from_uint16_t(0x7e01);
+        return hi::float16::from_uint16_t(0x7e01);
     }
 
     static constexpr value_type denorm_min() noexcept
     {
-        return tt::float16::from_uint16_t(0x0001);
+        return hi::float16::from_uint16_t(0x0001);
     }
 };

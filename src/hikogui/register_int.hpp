@@ -11,7 +11,7 @@
 /** @file
  *
  * This file defines types that match the CPU's native register.
- * `tt::register_signed_long` and `tt::register_unsigned_long` are double the
+ * `hi::register_signed_long` and `hi::register_unsigned_long` are double the
  * size of a native register; the double size integers are often the results of
  * a single CPU instruction.
  *
@@ -19,20 +19,20 @@
  * the result is placed in two 64 bit register. DIV can divide a 128 bit integer in
  * two registers by a 64 bit integer, with a 64 bit integer result.
  *
- * @typedef tt::register_signed_int
+ * @typedef hi::register_signed_int
  * A signed integer with the maximum size of a scaler register.
  *
- * @typedef tt::register_unsigned_int
+ * @typedef hi::register_unsigned_int
  * A unsigned integer with the maximum size of a scaler register.
  *
- * @typedef tt::register_signed_long
+ * @typedef hi::register_signed_long
  * A signed integer twice the maximum size of a scaler register.
  *
- * @typedef tt::register_unsigned_long
+ * @typedef hi::register_unsigned_long
  * A unsigned integer twice the maximum size of a scaler register.
  */
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 #if TT_PROCESSOR == TT_CPU_X64
 using register_int = int64_t;
@@ -54,4 +54,4 @@ using register_unsigned_long = bigint<register_unsigned_int, 2, false>;
 #error "register_int missing implementation"
 #endif
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

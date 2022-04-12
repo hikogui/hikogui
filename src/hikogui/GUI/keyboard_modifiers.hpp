@@ -10,7 +10,7 @@
 #include "../cast.hpp"
 #include <cstdint>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Key modification keys pressed at the same time as another key.
  *
@@ -57,7 +57,7 @@ inline keyboard_modifiers to_keyboard_modifiers(std::string_view s)
     }
 
     // Remove the canonical trailing '+'.
-    ttlet s_lower = to_lower((s.back() == '+') ? s.substr(0, ssize(s) - 1) : s);
+    hilet s_lower = to_lower((s.back() == '+') ? s.substr(0, ssize(s) - 1) : s);
 
     if (s_lower == "shift") {
         return keyboard_modifiers::Shift;
@@ -97,20 +97,20 @@ inline std::ostream& operator<<(std::ostream& lhs, keyboard_modifiers const& rhs
     return lhs << to_string(rhs);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<>
-struct std::hash<tt::keyboard_modifiers> {
-    [[nodiscard]] std::size_t operator()(tt::keyboard_modifiers const& rhs) const noexcept
+struct std::hash<hi::keyboard_modifiers> {
+    [[nodiscard]] std::size_t operator()(hi::keyboard_modifiers const& rhs) const noexcept
     {
         return std::hash<uint8_t>{}(static_cast<uint8_t>(rhs));
     }
 };
 
 template<typename CharT>
-struct std::formatter<tt::keyboard_modifiers, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(tt::keyboard_modifiers const& t, auto& fc)
+struct std::formatter<hi::keyboard_modifiers, CharT> : std::formatter<std::string_view, CharT> {
+    auto format(hi::keyboard_modifiers const& t, auto& fc)
     {
-        return std::formatter<std::string_view, CharT>::format(tt::to_string(t), fc);
+        return std::formatter<std::string_view, CharT>::format(hi::to_string(t), fc);
     }
 };

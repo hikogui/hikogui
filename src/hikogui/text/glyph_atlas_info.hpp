@@ -7,7 +7,7 @@
 #include "../geometry/scale.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class glyph_atlas_info {
 public:
@@ -57,9 +57,9 @@ public:
         border_scale(border_scale),
         texture_coordinates(bounding_rectangle(texture_coordinate_scale * rectangle{position, size}))
     {
-        tt_axiom(position == floor(position));
-        tt_axiom(size == ceil(size));
+        hi_axiom(position == floor(position));
+        hi_axiom(size == ceil(size));
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

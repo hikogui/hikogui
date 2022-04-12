@@ -11,7 +11,7 @@
 #include <mutex>
 #include <Windows.h>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 file_view::file_view(std::shared_ptr<file_mapping> const &_file_mapping_object, std::size_t offset, std::size_t size) :
     _file_mapping_object(_file_mapping_object), _offset(offset)
@@ -19,7 +19,7 @@ file_view::file_view(std::shared_ptr<file_mapping> const &_file_mapping_object, 
     if (size == 0) {
         size = _file_mapping_object->size - _offset;
     }
-    tt_assert(_offset + size <= _file_mapping_object->size);
+    hi_assert(_offset + size <= _file_mapping_object->size);
 
     DWORD desiredAccess;
     if (any(accessMode() & access_mode::read) and any(accessMode() & access_mode::write)) {
@@ -54,12 +54,12 @@ file_view::file_view(URL const &location, access_mode accessMode, std::size_t of
 file_view::file_view(file_view const &other) noexcept :
     _file_mapping_object(other._file_mapping_object), _bytes(other._bytes), _offset(other._offset)
 {
-    tt_axiom(&other != this);
+    hi_axiom(&other != this);
 }
 
 file_view &file_view::operator=(file_view const &other) noexcept
 {
-    tt_return_on_self_assignment(other);
+    hi_return_on_self_assignment(other);
     _file_mapping_object = other._file_mapping_object;
     _offset = other._offset;
     _bytes = other._bytes;
@@ -69,12 +69,12 @@ file_view &file_view::operator=(file_view const &other) noexcept
 file_view::file_view(file_view &&other) noexcept :
     _file_mapping_object(std::move(other._file_mapping_object)), _bytes(std::move(other._bytes)), _offset(other._offset)
 {
-    tt_axiom(&other != this);
+    hi_axiom(&other != this);
 }
 
 file_view &file_view::operator=(file_view &&other) noexcept
 {
-    tt_return_on_self_assignment(other);
+    hi_return_on_self_assignment(other);
     _file_mapping_object = std::move(other._file_mapping_object);
     _offset = other._offset;
     _bytes = std::move(other._bytes);
@@ -87,7 +87,7 @@ void file_view::unmap(std::span<std::byte> *bytes) noexcept
         if (bytes->size() > 0) {
             void *data = bytes->data();
             if (!UnmapViewOfFile(data)) {
-                tt_log_error("Could not unmap view on file '{}'", get_last_error_message());
+                hi_log_error("Could not unmap view on file '{}'", get_last_error_message());
             }
         }
         delete bytes;
@@ -101,4 +101,4 @@ void file_view::flush(void *base, std::size_t size)
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

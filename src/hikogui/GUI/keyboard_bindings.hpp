@@ -12,7 +12,7 @@
 #include <unordered_map>
 #include <tuple>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class keyboard_bindings {
     struct commands_t {
@@ -35,7 +35,7 @@ class keyboard_bindings {
 
         void add_system_command(command cmd) noexcept
         {
-            ttlet i = std::find(system.cbegin(), system.cend(), cmd);
+            hilet i = std::find(system.cbegin(), system.cend(), cmd);
             if (i == system.cend()) {
                 system.push_back(cmd);
                 update_cache();
@@ -44,7 +44,7 @@ class keyboard_bindings {
 
         void add_ignored_command(command cmd) noexcept
         {
-            ttlet i = std::find(ignored.cbegin(), ignored.cend(), cmd);
+            hilet i = std::find(ignored.cbegin(), ignored.cend(), cmd);
             if (i == ignored.cend()) {
                 ignored.push_back(cmd);
                 update_cache();
@@ -53,7 +53,7 @@ class keyboard_bindings {
 
         void add_user_command(command cmd) noexcept
         {
-            ttlet i = std::find(user.cbegin(), user.cend(), cmd);
+            hilet i = std::find(user.cbegin(), user.cend(), cmd);
             if (i == user.cend()) {
                 user.push_back(cmd);
                 update_cache();
@@ -64,22 +64,22 @@ class keyboard_bindings {
         {
             cache.reserve(ssize(system) + ssize(user));
 
-            for (ttlet cmd : system) {
-                ttlet i = std::find(cache.cbegin(), cache.cend(), cmd);
+            for (hilet cmd : system) {
+                hilet i = std::find(cache.cbegin(), cache.cend(), cmd);
                 if (i == cache.cend()) {
                     cache.push_back(cmd);
                 }
             }
 
-            for (ttlet cmd : ignored) {
-                ttlet i = std::find(cache.cbegin(), cache.cend(), cmd);
+            for (hilet cmd : ignored) {
+                hilet i = std::find(cache.cbegin(), cache.cend(), cmd);
                 if (i != cache.cend()) {
                     cache.erase(i);
                 }
             }
 
-            for (ttlet cmd : user) {
-                ttlet i = std::find(cache.cbegin(), cache.cend(), cmd);
+            for (hilet cmd : user) {
+                hilet i = std::find(cache.cbegin(), cache.cend(), cmd);
                 if (i == cache.cend()) {
                     cache.push_back(cmd);
                 }
@@ -115,7 +115,7 @@ public:
     {
         static std::vector<command> empty_commands = {};
 
-        ttlet i = bindings.find(key);
+        hilet i = bindings.find(key);
         if (i != bindings.cend()) {
             return i->second.get_commands();
         } else {
@@ -143,4 +143,4 @@ public:
     // void save_user_bindings(URL url);
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

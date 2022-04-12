@@ -13,7 +13,7 @@
 #include <mutex>
 #include <format>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class language {
 public:
@@ -40,9 +40,9 @@ public:
 
     [[nodiscard]] static language *find(language_tag const &tag) noexcept
     {
-        ttlet lock = std::scoped_lock(_mutex);
+        hilet lock = std::scoped_lock(_mutex);
 
-        ttlet i = _languages.find(tag);
+        hilet i = _languages.find(tag);
         if (i != _languages.end()) {
             return i->second.get();
         } else {
@@ -52,7 +52,7 @@ public:
 
     [[nodiscard]] static language &find_or_create(language_tag const &tag) noexcept
     {
-        ttlet lock = std::scoped_lock(_mutex);
+        hilet lock = std::scoped_lock(_mutex);
 
         auto *r = find(tag);
         if (!r) {
@@ -65,13 +65,13 @@ public:
 
     [[nodiscard]] static std::vector<language *> make_languages(std::vector<language_tag> tags) noexcept
     {
-        ttlet lock = std::scoped_lock(_mutex);
+        hilet lock = std::scoped_lock(_mutex);
 
         auto variant_tags = variants(tags);
         auto r = std::vector<language *>{};
         r.reserve(variant_tags.size());
 
-        for (ttlet &tag: variant_tags) {
+        for (hilet &tag: variant_tags) {
             r.push_back(&find_or_create(tag));
         }
 
@@ -84,14 +84,14 @@ private:
     inline static std::recursive_mutex _mutex;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<typename CharT>
-struct std::formatter<std::vector<tt::language *>, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(std::vector<tt::language *> const &t, auto &fc)
+struct std::formatter<std::vector<hi::language *>, CharT> : std::formatter<std::string_view, CharT> {
+    auto format(std::vector<hi::language *> const &t, auto &fc)
     {
         auto r = std::string{};
-        for (ttlet language : t) {
+        for (hilet language : t) {
             if (not r.empty()) {
                 r += ", ";
             }

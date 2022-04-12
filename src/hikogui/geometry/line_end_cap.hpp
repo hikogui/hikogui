@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** The way two lines should be joined.
  */
@@ -18,4 +18,4 @@ enum class line_end_cap {
     round
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

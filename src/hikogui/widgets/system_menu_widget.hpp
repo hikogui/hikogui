@@ -11,7 +11,7 @@
 #include <string>
 #include <array>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class system_menu_widget final : public widget {
 public:
@@ -47,4 +47,4 @@ private:
     aarectangle _system_menu_rectangle;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -11,7 +11,7 @@
 #include "../weak_or_unique_ptr.hpp"
 #include <memory>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A GUI widget that lays out child-widgets in a grid with variable sized cells.
  *
@@ -91,14 +91,14 @@ public:
     template<typename Widget, typename... Args>
     Widget &make_widget(std::string_view address, Args &&...args)
     {
-        ttlet[column_first, row_first, column_last, row_last] = parse_spreadsheet_range(address);
+        hilet[column_first, row_first, column_last, row_last] = parse_spreadsheet_range(address);
         return make_widget<Widget>(column_first, row_first, column_last, row_last, std::forward<Args>(args)...);
     }
 
     /// @privatesection
     [[nodiscard]] generator<widget *> children() const noexcept override
     {
-        for (ttlet &cell : _cells) {
+        for (hilet &cell : _cells) {
             co_yield cell.widget.get();
         }
     }
@@ -114,14 +114,14 @@ private:
         std::size_t row_first;
         std::size_t column_last;
         std::size_t row_last;
-        std::unique_ptr<tt::widget> widget;
+        std::unique_ptr<hi::widget> widget;
 
         cell_type(
             std::size_t column_first,
             std::size_t row_first,
             std::size_t column_last,
             std::size_t row_last,
-            std::unique_ptr<tt::widget> widget) noexcept :
+            std::unique_ptr<hi::widget> widget) noexcept :
             column_first(column_first),
             row_first(row_first),
             column_last(column_last),
@@ -133,8 +133,8 @@ private:
         [[nodiscard]] aarectangle
         rectangle(grid_layout const &columns, grid_layout const &rows, float container_height) const noexcept
         {
-            ttlet[x0, x3] = columns.get_positions(column_first, column_last);
-            ttlet[y0, y3] = rows.get_positions(row_first, row_last);
+            hilet[x0, x3] = columns.get_positions(column_first, column_last);
+            hilet[y0, y3] = rows.get_positions(row_first, row_last);
 
             return {point2{x0, container_height - y3}, point2{x3, container_height - y0}};
         }
@@ -159,4 +159,4 @@ private:
         std::unique_ptr<widget> child_widget) noexcept;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

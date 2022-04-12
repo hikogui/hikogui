@@ -9,7 +9,7 @@
 #include <array>
 #include <vector>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 pipeline_vulkan::pipeline_vulkan(gfx_surface const &surface) : pipeline(surface) {}
 
@@ -18,7 +18,7 @@ pipeline_vulkan::~pipeline_vulkan() {}
 gfx_device_vulkan &pipeline_vulkan::vulkan_device() const noexcept
 {
     auto device = surface.device();
-    tt_axiom(device != nullptr);
+    hi_axiom(device != nullptr);
     return down_cast<gfx_device_vulkan &>(*device);
 }
 
@@ -39,7 +39,7 @@ void pipeline_vulkan::drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_
 
 void pipeline_vulkan::buildDescriptorSets()
 {
-    ttlet descriptorSetLayoutBindings = createDescriptorSetLayoutBindings();
+    hilet descriptorSetLayoutBindings = createDescriptorSetLayoutBindings();
 
     if (ssize(descriptorSetLayoutBindings) == 0) {
         // Make sure that there is no descriptor set.
@@ -47,14 +47,14 @@ void pipeline_vulkan::buildDescriptorSets()
         return;
     }
 
-    ttlet descriptorSetLayoutCreateInfo = vk::DescriptorSetLayoutCreateInfo{
+    hilet descriptorSetLayoutCreateInfo = vk::DescriptorSetLayoutCreateInfo{
         vk::DescriptorSetLayoutCreateFlags(),
         narrow_cast<uint32_t>(descriptorSetLayoutBindings.size()),
         descriptorSetLayoutBindings.data()};
 
     descriptorSetLayout = vulkan_device().createDescriptorSetLayout(descriptorSetLayoutCreateInfo);
 
-    ttlet descriptorPoolSizes =
+    hilet descriptorPoolSizes =
         transform<std::vector<vk::DescriptorPoolSize>>(descriptorSetLayoutBindings, [](auto x) -> vk::DescriptorPoolSize {
             return {x.descriptorType, narrow_cast<uint32_t>(x.descriptorCount)};
         });
@@ -65,9 +65,9 @@ void pipeline_vulkan::buildDescriptorSets()
          narrow_cast<uint32_t>(descriptorPoolSizes.size()),
          descriptorPoolSizes.data()});
 
-    ttlet descriptorSetLayouts = std::array{descriptorSetLayout};
+    hilet descriptorSetLayouts = std::array{descriptorSetLayout};
 
-    ttlet descriptorSets = vulkan_device().allocateDescriptorSets(
+    hilet descriptorSets = vulkan_device().allocateDescriptorSets(
         {descriptorPool, narrow_cast<uint32_t>(descriptorSetLayouts.size()), descriptorSetLayouts.data()});
 
     descriptorSet = descriptorSets.at(0);
@@ -120,7 +120,7 @@ std::vector<vk::PipelineColorBlendAttachmentState> pipeline_vulkan::getPipelineC
 
 void pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D _extent)
 {
-    tt_log_info("buildPipeline previous size ({}, {})", extent.width, extent.height);
+    hi_log_info("buildPipeline previous size ({}, {})", extent.width, extent.height);
     extent = _extent;
 
     const auto pushConstantRanges = createPushConstantRanges();
@@ -159,9 +159,9 @@ void pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSu
         1.0f,
         0.0f}};
 
-    ttlet scissor = vk::Rect2D{vk::Offset2D{0, 0}, extent};
+    hilet scissor = vk::Rect2D{vk::Offset2D{0, 0}, extent};
 
-    ttlet scissors = std::array{scissor};
+    hilet scissors = std::array{scissor};
 
     const vk::PipelineViewportStateCreateInfo pipelineViewportStateCreateInfo = {
         vk::PipelineViewportStateCreateFlags(),
@@ -194,11 +194,11 @@ void pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSu
         VK_FALSE // alphaToOneEnable
     };
 
-    ttlet pipelineDepthStencilStateCreateInfo = getPipelineDepthStencilStateCreateInfo();
+    hilet pipelineDepthStencilStateCreateInfo = getPipelineDepthStencilStateCreateInfo();
 
     /* Pre-multiplied alpha blending.
      */
-    ttlet pipelineColorBlendAttachmentStates = getPipelineColorBlendAttachmentStates();
+    hilet pipelineColorBlendAttachmentStates = getPipelineColorBlendAttachmentStates();
 
     const vk::PipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo = {
         vk::PipelineColorBlendStateCreateFlags(),
@@ -207,9 +207,9 @@ void pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSu
         narrow_cast<uint32_t>(pipelineColorBlendAttachmentStates.size()),
         pipelineColorBlendAttachmentStates.data()};
 
-    ttlet dynamicStates = std::array{vk::DynamicState::eScissor};
+    hilet dynamicStates = std::array{vk::DynamicState::eScissor};
 
-    ttlet pipelineDynamicStateInfo = vk::PipelineDynamicStateCreateInfo{
+    hilet pipelineDynamicStateInfo = vk::PipelineDynamicStateCreateInfo{
         vk::PipelineDynamicStateCreateFlags(), narrow_cast<uint32_t>(dynamicStates.size()), dynamicStates.data()};
 
     const vk::GraphicsPipelineCreateInfo graphicsPipelineCreateInfo = {
@@ -233,7 +233,7 @@ void pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSu
     };
 
     intrinsic = vulkan_device().createGraphicsPipeline(vk::PipelineCache(), graphicsPipelineCreateInfo);
-    tt_log_info("/buildPipeline new size ({}, {})", extent.width, extent.height);
+    hi_log_info("/buildPipeline new size ({}, {})", extent.width, extent.height);
 }
 
 void pipeline_vulkan::teardownPipeline()
@@ -274,4 +274,4 @@ void pipeline_vulkan::teardownForDeviceLost()
 
 void pipeline_vulkan::teardownForWindowLost() {}
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

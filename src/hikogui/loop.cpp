@@ -1,7 +1,7 @@
 
 #include "loop.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] static loop &loop::main() noexcept
 {

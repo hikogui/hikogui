@@ -8,7 +8,7 @@
 #include <tuple>
 #include <vector>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 gfx_device::gfx_device(gfx_system &system) noexcept : system(system) {}
 
@@ -16,9 +16,9 @@ gfx_device::~gfx_device() {}
 
 std::string gfx_device::string() const noexcept
 {
-    ttlet lock = std::scoped_lock(gfx_system_mutex);
+    hilet lock = std::scoped_lock(gfx_system_mutex);
 
     return std::format("{0:04x}:{1:04x} {2} {3}", vendorID, deviceID, deviceName, deviceUUID.uuid_string());
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -11,7 +11,7 @@
 
 #include <concepts>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** The number of points (typography) per inch.
  */
@@ -49,4 +49,4 @@ constexpr double points_per_inch = points_per_inch_v<double>;
  */
 constexpr double dp_per_inch = dp_per_inch_v<double>;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -17,7 +17,7 @@
 #include <vector>
 #include <mutex>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class os_settings {
 public:
@@ -28,7 +28,7 @@ public:
     [[nodiscard]] static std::vector<language_tag> language_tags() noexcept
     {
         start_subsystem();
-        ttlet lock = std::scoped_lock(_mutex);
+        hilet lock = std::scoped_lock(_mutex);
         return _language_tags;
     }
 
@@ -40,13 +40,13 @@ public:
     [[nodiscard]] static std::vector<language *> languages() noexcept
     {
         start_subsystem();
-        ttlet lock = std::scoped_lock(_mutex);
+        hilet lock = std::scoped_lock(_mutex);
         return _languages;
     }
 
     /** Get the configured light/dark theme mode
      */
-    [[nodiscard]] static tt::theme_mode theme_mode() noexcept
+    [[nodiscard]] static hi::theme_mode theme_mode() noexcept
     {
         start_subsystem();
         return _theme_mode.load(std::memory_order_relaxed);
@@ -54,7 +54,7 @@ public:
 
     /** Get the configured light/dark theme mode
      */
-    [[nodiscard]] static tt::subpixel_orientation subpixel_orientation() noexcept
+    [[nodiscard]] static hi::subpixel_orientation subpixel_orientation() noexcept
     {
         start_subsystem();
         return _subpixel_orientation.load(std::memory_order_relaxed);
@@ -122,7 +122,7 @@ public:
     [[nodiscard]] static extent2 minimum_window_size() noexcept
     {
         start_subsystem();
-        ttlet lock = std::scoped_lock(_mutex);
+        hilet lock = std::scoped_lock(_mutex);
         return _minimum_window_size;
     }
 
@@ -131,7 +131,7 @@ public:
     [[nodiscard]] static extent2 maximum_window_size() noexcept
     {
         start_subsystem();
-        ttlet lock = std::scoped_lock(_mutex);
+        hilet lock = std::scoped_lock(_mutex);
         return _maximum_window_size;
     }
 
@@ -142,7 +142,7 @@ public:
     [[nodiscard]] static aarectangle primary_monitor_rectangle() noexcept
     {
         start_subsystem();
-        ttlet lock = std::scoped_lock(_mutex);
+        hilet lock = std::scoped_lock(_mutex);
         return _primary_monitor_rectangle;
     }
 
@@ -150,7 +150,7 @@ public:
      */
     [[nodiscard]] static uintptr_t primary_monitor_id() noexcept
     {
-        tt_axiom(_started);
+        hi_axiom(_started);
         return _primary_monitor_id.load(std::memory_order::relaxed);
     }
 
@@ -161,7 +161,7 @@ public:
     [[nodiscard]] static aarectangle desktop_rectangle() noexcept
     {
         start_subsystem();
-        ttlet lock = std::scoped_lock(_mutex);
+        hilet lock = std::scoped_lock(_mutex);
         return _desktop_rectangle;
     }
 
@@ -172,8 +172,8 @@ public:
     [[nodiscard]] static auto subscribe(std::invocable<> auto &&callback) noexcept
     {
         start_subsystem();
-        ttlet lock = std::scoped_lock(_mutex);
-        return _notifier.subscribe(tt_forward(callback));
+        hilet lock = std::scoped_lock(_mutex);
+        return _notifier.subscribe(hi_forward(callback));
     }
 
 private:
@@ -189,8 +189,8 @@ private:
 
     static inline std::vector<language_tag> _language_tags = {};
     static inline std::vector<language *> _languages = {};
-    static inline std::atomic<tt::theme_mode> _theme_mode = theme_mode::dark;
-    static inline std::atomic<tt::subpixel_orientation> _subpixel_orientation = tt::subpixel_orientation::unknown;
+    static inline std::atomic<hi::theme_mode> _theme_mode = theme_mode::dark;
+    static inline std::atomic<hi::subpixel_orientation> _subpixel_orientation = hi::subpixel_orientation::unknown;
     static inline std::atomic<std::chrono::milliseconds> _double_click_interval = std::chrono::milliseconds(500);
     static inline std::atomic<float> _double_click_distance = 4.0f;
     static inline std::atomic<std::chrono::milliseconds> _keyboard_repeat_delay = std::chrono::milliseconds(250);
@@ -209,15 +209,15 @@ private:
      */
     static bool start_subsystem() noexcept
     {
-        return tt::start_subsystem(_started, false, subsystem_init, subsystem_deinit);
+        return hi::start_subsystem(_started, false, subsystem_init, subsystem_deinit);
     }
 
     [[nodiscard]] static bool subsystem_init() noexcept;
     static void subsystem_deinit() noexcept;
 
     [[nodiscard]] static std::vector<language_tag> gather_languages();
-    [[nodiscard]] static tt::theme_mode gather_theme_mode();
-    [[nodiscard]] static tt::subpixel_orientation gather_subpixel_orientation();
+    [[nodiscard]] static hi::theme_mode gather_theme_mode();
+    [[nodiscard]] static hi::subpixel_orientation gather_subpixel_orientation();
     [[nodiscard]] static std::chrono::milliseconds gather_double_click_interval();
     [[nodiscard]] static float gather_double_click_distance();
     [[nodiscard]] static std::chrono::milliseconds gather_keyboard_repeat_delay();
@@ -231,4 +231,4 @@ private:
     [[nodiscard]] static aarectangle gather_desktop_rectangle();
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

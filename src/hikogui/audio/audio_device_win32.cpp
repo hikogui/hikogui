@@ -22,7 +22,7 @@
 #include <audioclient.h>
 #include <bit>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] static WAVEFORMATEXTENSIBLE make_wave_format(
     audio_sample_format format,
@@ -30,7 +30,7 @@ namespace tt::inline v1 {
     speaker_mapping speaker_mapping,
     uint32_t sample_rate) noexcept
 {
-    tt_axiom(std::popcount(static_cast<std::size_t>(speaker_mapping)) <= num_channels);
+    hi_axiom(std::popcount(static_cast<std::size_t>(speaker_mapping)) <= num_channels);
 
     bool extended = false;
 
@@ -74,18 +74,18 @@ make_wave_format(audio_sample_format format, uint16_t num_channels, uint32_t sam
 template<typename T>
 [[nodiscard]] T get_property(IPropertyStore *property_store, REFPROPERTYKEY key)
 {
-    tt_not_implemented();
+    hi_not_implemented();
 }
 
 template<>
 [[nodiscard]] std::string get_property(IPropertyStore *property_store, REFPROPERTYKEY key)
 {
-    tt_assert(property_store != nullptr);
+    hi_assert(property_store != nullptr);
 
     PROPVARIANT property_value;
     PropVariantInit(&property_value);
 
-    tt_hresult_check(property_store->GetValue(key, &property_value));
+    hi_hresult_check(property_store->GetValue(key, &property_value));
     if (property_value.vt == VT_LPWSTR) {
         auto value_wstring = std::wstring_view(property_value.pwszVal);
         auto value_string = to_string(value_wstring);
@@ -101,12 +101,12 @@ template<>
 template<>
 [[nodiscard]] uint32_t get_property(IPropertyStore *property_store, REFPROPERTYKEY key)
 {
-    tt_assert(property_store != nullptr);
+    hi_assert(property_store != nullptr);
 
     PROPVARIANT property_value;
     PropVariantInit(&property_value);
 
-    tt_hresult_check(property_store->GetValue(key, &property_value));
+    hi_hresult_check(property_store->GetValue(key, &property_value));
     if (property_value.vt == VT_UI4) {
         auto value = narrow_cast<uint32_t>(property_value.ulVal);
         PropVariantClear(&property_value);
@@ -122,7 +122,7 @@ template<>
 {
     // Get the cross-reboot-unique-id-string of the device.
     LPWSTR device_id;
-    tt_hresult_check(device->GetId(&device_id));
+    hi_hresult_check(device->GetId(&device_id));
     auto device_id_ = audio_device_id{audio_device_id::win32, device_id};
 
     CoTaskMemFree(device_id);
@@ -131,13 +131,13 @@ template<>
 
 audio_device_win32::audio_device_win32(IMMDevice *device) : audio_device(), _device(device)
 {
-    tt_assert(_device != nullptr);
+    hi_assert(_device != nullptr);
     id = get_id(_device);
-    tt_hresult_check(_device->QueryInterface(&_end_point));
-    tt_hresult_check(_device->OpenPropertyStore(STGM_READ, &_property_store));
+    hi_hresult_check(_device->QueryInterface(&_end_point));
+    hi_hresult_check(_device->OpenPropertyStore(STGM_READ, &_property_store));
 
     if (FAILED(_device->Activate(__uuidof(IAudioClient), CLSCTX_ALL, NULL, reinterpret_cast<void **>(&_audio_client)))) {
-        tt_log_warning("Audio device {} does not have IAudioClient interface", name());
+        hi_log_warning("Audio device {} does not have IAudioClient interface", name());
         _audio_client = nullptr;
     }
 
@@ -166,7 +166,7 @@ audio_device_win32::~audio_device_win32()
     } else if (r == S_FALSE or r == AUDCLNT_E_UNSUPPORTED_FORMAT) {
         return false;
     } else {
-        tt_log_error("Failed to check format. {}", get_last_error_message());
+        hi_log_error("Failed to check format. {}", get_last_error_message());
         return false;
     }
 }
@@ -177,7 +177,7 @@ audio_device_win32::~audio_device_win32()
 }
 
 [[nodiscard]] audio_stream_format
-audio_device_win32::find_exclusive_stream_format(double sample_rate, tt::speaker_mapping speaker_mapping) noexcept
+audio_device_win32::find_exclusive_stream_format(double sample_rate, hi::speaker_mapping speaker_mapping) noexcept
 {
     return {};
 }
@@ -203,58 +203,58 @@ void audio_device_win32::set_sample_rate(double sample_rate) noexcept
     _sample_rate = sample_rate;
 }
 
-[[nodiscard]] tt::speaker_mapping audio_device_win32::input_speaker_mapping() const noexcept
+[[nodiscard]] hi::speaker_mapping audio_device_win32::input_speaker_mapping() const noexcept
 {
     switch (_direction) {
     case audio_direction::input: [[fallthrough]];
     case audio_direction::bidirectional: return _speaker_mapping;
-    case audio_direction::output: return tt::speaker_mapping::none;
-    default: tt_no_default();
+    case audio_direction::output: return hi::speaker_mapping::none;
+    default: hi_no_default();
     }
 }
 
-void audio_device_win32::set_input_speaker_mapping(tt::speaker_mapping speaker_mapping) noexcept
+void audio_device_win32::set_input_speaker_mapping(hi::speaker_mapping speaker_mapping) noexcept
 {
     switch (_direction) {
     case audio_direction::input: [[fallthrough]];
     case audio_direction::bidirectional: _speaker_mapping = speaker_mapping; break;
     case audio_direction::output: break;
-    default: tt_no_default();
+    default: hi_no_default();
     }
 }
 
-[[nodiscard]] std::vector<tt::speaker_mapping> audio_device_win32::available_input_speaker_mappings() const noexcept
+[[nodiscard]] std::vector<hi::speaker_mapping> audio_device_win32::available_input_speaker_mappings() const noexcept
 {
     return {};
 }
 
-[[nodiscard]] tt::speaker_mapping audio_device_win32::output_speaker_mapping() const noexcept
+[[nodiscard]] hi::speaker_mapping audio_device_win32::output_speaker_mapping() const noexcept
 {
     switch (_direction) {
     case audio_direction::output: [[fallthrough]];
     case audio_direction::bidirectional: return _speaker_mapping;
-    case audio_direction::input: return tt::speaker_mapping::none;
-    default: tt_no_default();
+    case audio_direction::input: return hi::speaker_mapping::none;
+    default: hi_no_default();
     }
 }
 
-void audio_device_win32::set_output_speaker_mapping(tt::speaker_mapping speaker_mapping) noexcept
+void audio_device_win32::set_output_speaker_mapping(hi::speaker_mapping speaker_mapping) noexcept
 {
     switch (_direction) {
     case audio_direction::output: [[fallthrough]];
     case audio_direction::bidirectional: _speaker_mapping = speaker_mapping; break;
     case audio_direction::input: break;
-    default: tt_no_default();
+    default: hi_no_default();
     }
 }
 
-[[nodiscard]] std::vector<tt::speaker_mapping> audio_device_win32::available_output_speaker_mappings() const noexcept
+[[nodiscard]] std::vector<hi::speaker_mapping> audio_device_win32::available_output_speaker_mappings() const noexcept
 {
     return {};
 }
 
 /*[[nodiscard]] std::optional<audio_stream_format>
-audio_device_win32::best_format(double sample_rate, tt::speaker_mapping speaker_mapping) const noexcept
+audio_device_win32::best_format(double sample_rate, hi::speaker_mapping speaker_mapping) const noexcept
 {
     constexpr auto sample_formats = std::array{
         audio_sample_format::float32(),
@@ -263,8 +263,8 @@ audio_device_win32::best_format(double sample_rate, tt::speaker_mapping speaker_
         audio_sample_format::int20(),
         audio_sample_format::int16()};
 
-    for (ttlet &sample_format : sample_formats) {
-        ttlet format = audio_stream_format{sample_format, sample_rate, speaker_mapping};
+    for (hilet &sample_format : sample_formats) {
+        hilet format = audio_stream_format{sample_format, sample_rate, speaker_mapping};
         if (supports_format(format)) {
             return format;
         }
@@ -282,8 +282,8 @@ noexcept
         audio_sample_format::int20(),
         audio_sample_format::int16()};
 
-    for (ttlet &sample_format : sample_formats) {
-        ttlet format = audio_stream_format{sample_format, sample_rate, num_channels};
+    for (hilet &sample_format : sample_formats) {
+        hilet format = audio_stream_format{sample_format, sample_rate, num_channels};
         if (supports_format(format)) {
             return format;
         }
@@ -298,7 +298,7 @@ noexcept
     auto r = std::vector<audio_stream_format>{};
     r.reserve(size(speaker_mappings) + (max_num_channels / 2) + 2);
 
-    for (ttlet &info: speaker_mappings) {
+    for (hilet &info: speaker_mappings) {
         if (auto f = best_format(sample_rate, info.mapping)) {
             r.push_back(*std::move(f));
         }
@@ -326,7 +326,7 @@ std::string audio_device_win32::name() const noexcept
     }
 }
 
-tt::label audio_device_win32::label() const noexcept
+hi::label audio_device_win32::label() const noexcept
 {
     return {elusive_icon::Speaker, tr("{}", name())};
 }
@@ -334,27 +334,27 @@ tt::label audio_device_win32::label() const noexcept
 audio_device_state audio_device_win32::state() const noexcept
 {
     DWORD state;
-    tt_hresult_check(_device->GetState(&state));
+    hi_hresult_check(_device->GetState(&state));
 
     switch (state) {
     case DEVICE_STATE_ACTIVE: return audio_device_state::active;
     case DEVICE_STATE_DISABLED: return audio_device_state::disabled;
     case DEVICE_STATE_NOTPRESENT: return audio_device_state::not_present;
     case DEVICE_STATE_UNPLUGGED: return audio_device_state::unplugged;
-    default: tt_no_default();
+    default: hi_no_default();
     }
 }
 
 audio_direction audio_device_win32::direction() const noexcept
 {
     EDataFlow data_flow;
-    tt_hresult_check(_end_point->GetDataFlow(&data_flow));
+    hi_hresult_check(_end_point->GetDataFlow(&data_flow));
 
     switch (data_flow) {
     case eRender: return audio_direction::output;
     case eCapture: return audio_direction::input;
     case eAll: return audio_direction::bidirectional;
-    default: tt_no_default();
+    default: hi_no_default();
     }
 }
 
@@ -385,11 +385,11 @@ std::string audio_device_win32::end_point_name() const noexcept
     }
 
     WAVEFORMATEX *ex;
-    tt_hresult_check(_audio_client->GetMixFormat(&ex));
-    tt_axiom(ex);
-    ttlet r = audio_stream_format_from_win32(*ex);
+    hi_hresult_check(_audio_client->GetMixFormat(&ex));
+    hi_axiom(ex);
+    hilet r = audio_stream_format_from_win32(*ex);
     CoTaskMemFree(ex);
     return r;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

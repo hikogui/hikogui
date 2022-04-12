@@ -13,18 +13,18 @@
 #include "../geometry/point.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 class font_book;
 
 class text_shaper_char {
 public:
     /** The grapheme.
      */
-    tt::grapheme grapheme;
+    hi::grapheme grapheme;
 
     /** The style of how to display the grapheme.
      */
-    tt::text_style style;
+    hi::text_style style;
 
     /** The scale to resize the font's size to match the physical display.
      */
@@ -40,13 +40,13 @@ public:
      *     for better continuation of cursive text and merging of graphemes into
      *     a ligature.
      */
-    tt::glyph_ids glyph;
+    hi::glyph_ids glyph;
 
     /** The glyph metrics of the currently glyph.
      *
      * The metrics are scaled by `scale`.
      */
-    tt::glyph_metrics metrics;
+    hi::glyph_metrics metrics;
 
     /** The line number where this character is located, counting from top to bottom line.
      */
@@ -127,21 +127,21 @@ public:
      */
     bool glyph_is_initial = false;
 
-    [[nodiscard]] text_shaper_char(tt::grapheme const &grapheme, text_style const &style, float dpi_scale) noexcept;
+    [[nodiscard]] text_shaper_char(hi::grapheme const &grapheme, text_style const &style, float dpi_scale) noexcept;
 
     /** Initialize the glyph based on the grapheme.
      *
      * @note The glyph is only initialized when `glyph_is_initial == false`.
      * @post `glyph`, `metrics` and `width` are modified. `glyph_is_initial` is set to true.
      */
-    void initialize_glyph(tt::font_book &font_book, tt::font const &font) noexcept;
+    void initialize_glyph(hi::font_book &font_book, hi::font const &font) noexcept;
 
     /** Initialize the glyph based on the grapheme.
      *
      * @note The glyph is only initialized when `glyph_is_initial == false`.
      * @post `glyph`, `metrics` and `width` are modified. `glyph_is_initial` is set to true.
      */
-    void initialize_glyph(tt::font_book &font_book) noexcept;
+    void initialize_glyph(hi::font_book &font_book) noexcept;
 
     /** Called by the bidi-algorithm to mirror glyphs.
      *
@@ -155,7 +155,7 @@ public:
 
     /** Get the scaled font metrics for this character.
      */
-    [[nodiscard]] tt::font_metrics font_metrics() const noexcept
+    [[nodiscard]] hi::font_metrics font_metrics() const noexcept
     {
         return scale * glyph.font().metrics;
     }
@@ -166,7 +166,7 @@ public:
             not next.glyph.has_num_glyphs<1>()) {
             return vector2{};
         } else {
-            ttlet kerning = glyph.font().get_kerning(glyph.get_single(), next.glyph.get_single());
+            hilet kerning = glyph.font().get_kerning(glyph.get_single(), next.glyph.get_single());
             return scale * kerning;
         }
     }
@@ -184,7 +184,7 @@ public:
 private:
     /** Load metrics based on the loaded glyph.
      */
-    void set_glyph(tt::glyph_ids &&new_glyph) noexcept;
+    void set_glyph(hi::glyph_ids &&new_glyph) noexcept;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

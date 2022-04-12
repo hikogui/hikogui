@@ -15,7 +15,7 @@
 #include <vulkan/vulkan.hpp>
 #include <mutex>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 class gfx_device_vulkan;
 template<typename T>
 class pixel_map;
@@ -71,7 +71,7 @@ struct device_shared {
      *
      * The returned pixel-map is offset by the page::border.
      */
-    tt::pixel_map<sfloat_rgba16> get_staging_pixel_map();
+    hi::pixel_map<sfloat_rgba16> get_staging_pixel_map();
 
     /** Prepare the atlas so that it can be used as a texture map by the shaders.
      */
@@ -96,7 +96,7 @@ private:
 
     /** Get a submap of the staging pixel map to draw the image in.
      */
-    tt::pixel_map<sfloat_rgba16> get_staging_pixel_map(std::size_t width, std::size_t height)
+    hi::pixel_map<sfloat_rgba16> get_staging_pixel_map(std::size_t width, std::size_t height)
     {
         return get_staging_pixel_map().submap(0, 0, width, height);
     }
@@ -140,4 +140,4 @@ private:
 };
 
 } // namespace pipeline_image
-} // namespace tt::inline v1
+} // namespace hi::inline v1

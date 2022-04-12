@@ -11,7 +11,7 @@
 #include <memory>
 #include <new>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<typename T>
 class vspan_iterator {
@@ -32,12 +32,12 @@ public:
 
     vspan_iterator(value_type *ptr) noexcept : ptr(ptr)
     {
-        tt_axiom(ptr != nullptr);
+        hi_axiom(ptr != nullptr);
     }
 
     vspan_iterator &operator=(value_type *ptr) noexcept
     {
-        tt_axiom(ptr != nullptr);
+        hi_axiom(ptr != nullptr);
         this->ptr = ptr;
         return *this;
     }
@@ -147,7 +147,7 @@ public:
 
     vspan(value_type *buffer, ssize_t nr_elements) noexcept : _begin(buffer), _end(buffer), _max(buffer + nr_elements)
     {
-        tt_axiom(nr_elements >= 0);
+        hi_axiom(nr_elements >= 0);
     }
 
     vspan(std::span<value_type> span) noexcept : _begin(span.data()), _end(span.data()), _max(span.data() + span.size()) {}
@@ -191,33 +191,33 @@ public:
 
     [[nodiscard]] value_type &operator[](std::size_t i) noexcept
     {
-        tt_axiom(i < size());
+        hi_axiom(i < size());
         return *std::launder(_begin + i);
     }
     [[nodiscard]] value_type const &operator[](std::size_t i) const noexcept
     {
-        tt_axiom(i < size());
+        hi_axiom(i < size());
         return *std::launder(_begin + i);
     }
 
     value_type &front() noexcept
     {
-        tt_axiom(_end != _begin);
+        hi_axiom(_end != _begin);
         return *std::launder(_begin);
     }
     value_type const &front() const noexcept
     {
-        tt_axiom(_end != _begin);
+        hi_axiom(_end != _begin);
         return *std::launder(_begin);
     }
     value_type &back() noexcept
     {
-        tt_axiom(_end != _begin);
+        hi_axiom(_end != _begin);
         return *std::launder(_end - 1);
     }
     value_type const &back() const noexcept
     {
-        tt_axiom(_end != _begin);
+        hi_axiom(_end != _begin);
         return *std::launder(_end - 1);
     }
 
@@ -241,7 +241,7 @@ public:
 
     void push_back(value_type const &rhs) noexcept
     {
-        tt_axiom(_end != _max);
+        hi_axiom(_end != _max);
         // Since we throw away the pointer, we have to std::launder all access to this object.
         [[maybe_unused]] value_type *ptr = new (_end) value_type(rhs);
         ++_end;
@@ -249,7 +249,7 @@ public:
 
     void push_back(value_type &&rhs) noexcept
     {
-        tt_axiom(_end != _max);
+        hi_axiom(_end != _max);
         // Since we throw away the pointer, we have to std::launder all access to this object.
         [[maybe_unused]] value_type *ptr = new (_end) value_type(std::move(rhs));
         ++_end;
@@ -258,7 +258,7 @@ public:
     template<typename... Args>
     void emplace_back(Args &&...args) noexcept
     {
-        tt_axiom(_end != _max);
+        hi_axiom(_end != _max);
         // Since we throw away the pointer, we have to std::launder all access to this object.
         [[maybe_unused]] value_type *ptr = new (_end) value_type(std::forward<Args>(args)...);
         ++_end;
@@ -266,10 +266,10 @@ public:
 
     void pop_back() noexcept
     {
-        tt_axiom(_end != _begin);
+        hi_axiom(_end != _begin);
         --_end;
         std::destroy_at(std::launder(_end));
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

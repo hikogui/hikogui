@@ -8,7 +8,7 @@
 #include "hikogui/crt.hpp"
 #include "hikogui/loop.hpp"
 
-using namespace tt;
+using namespace hi;
 
 task<void> checkbox_example(gui_system &gui)
 {
@@ -30,7 +30,7 @@ task<void> checkbox_example(gui_system &gui)
     co_await window->closing;
 }
 
-int tt_main(int argc, char* argv[])
+int hi_main(int argc, char* argv[])
 {
     auto gui = gui_system::make_unique();
     checkbox_example(*gui);

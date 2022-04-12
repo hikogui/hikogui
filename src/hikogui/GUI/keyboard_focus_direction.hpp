@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** The keyboard focus group used for finding a widget that will accept a particular focus.
  */
@@ -18,4 +18,4 @@ enum class keyboard_focus_direction {
     forward,
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

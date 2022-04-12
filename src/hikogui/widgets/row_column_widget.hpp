@@ -13,7 +13,7 @@
 #include "../geometry/axis.hpp"
 #include <memory>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A row/column widget lays out child widgets along a row or column.
  *
@@ -40,7 +40,7 @@ public:
 
     using super = widget;
     using delegate_type = row_column_delegate<Axis>;
-    static constexpr tt::axis axis = Axis;
+    static constexpr hi::axis axis = Axis;
 
     ~row_column_widget()
     {
@@ -59,7 +59,7 @@ public:
     row_column_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate = {}) noexcept :
         super(window, parent), _delegate(std::move(delegate))
     {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
 
         if (parent) {
             semantic_layer = parent->semantic_layer;
@@ -95,7 +95,7 @@ public:
      */
     void clear() noexcept
     {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
         _children.clear();
         request_reconstrain();
     }
@@ -103,7 +103,7 @@ public:
     /// @privatesection
     [[nodiscard]] generator<widget *> children() const noexcept override
     {
-        for (ttlet &child : _children) {
+        for (hilet &child : _children) {
             co_yield child.get();
         }
     }
@@ -121,12 +121,12 @@ public:
         float margin_after_thickness = 0.0f;
 
         _grid_layout.clear();
-        for (ttlet &child : _children) {
+        for (hilet &child : _children) {
             update_constraints_for_child(*child, index++, minimum_thickness, preferred_thickness, maximum_thickness, margin_before_thickness, margin_after_thickness);
         }
         _grid_layout.commit_constraints();
 
-        tt_axiom(index == ssize(_children));
+        hi_axiom(index == ssize(_children));
 
         if constexpr (axis == axis::row) {
             return _constraints = {
@@ -150,17 +150,17 @@ public:
         }
 
         ssize_t index = 0;
-        for (ttlet &child : _children) {
+        for (hilet &child : _children) {
             update_layout_for_child(*child, index++, layout);
         }
 
-        tt_axiom(index == ssize(_children));
+        hi_axiom(index == ssize(_children));
     }
 
     void draw(draw_context const &context) noexcept override
     {
         if (*visible) {
-            for (ttlet &child : _children) {
+            for (hilet &child : _children) {
                 child->draw(context);
             }
         }
@@ -168,11 +168,11 @@ public:
 
     hitbox hitbox_test(point3 position) const noexcept override
     {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
 
         if (*visible and *enabled) {
             auto r = hitbox{};
-            for (ttlet &child : _children) {
+            for (hilet &child : _children) {
                 r = child->hitbox_test_from_parent(position, r);
             }
             return r;
@@ -195,9 +195,9 @@ private:
         float &margin_before_thickness,
         float &margin_after_thickness) noexcept
     {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
 
-        ttlet &child_constraints = child.set_constraints();
+        hilet &child_constraints = child.set_constraints();
         if (axis == axis::row) {
             _grid_layout.add_constraint(
                 index,
@@ -232,11 +232,11 @@ private:
 
     void update_layout_for_child(widget &child, ssize_t index, widget_layout const &context) const noexcept
     {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
 
-        ttlet[child_position, child_length] = _grid_layout.get_position_and_size(index);
+        hilet[child_position, child_length] = _grid_layout.get_position_and_size(index);
 
-        ttlet child_rectangle = axis == axis::row ?
+        hilet child_rectangle = axis == axis::row ?
             aarectangle{child_position, 0.0f, child_length, layout().height()} :
             aarectangle{0.0f, layout().height() - child_position - child_length, layout().width(), child_length};
 
@@ -252,4 +252,4 @@ using row_widget = row_column_widget<axis::row>;
  */
 using column_widget = row_column_widget<axis::column>;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -6,7 +6,7 @@
 
 #include "formula_node.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct formula_map_literal_node final : formula_node {
     formula_vector keys;
@@ -30,12 +30,12 @@ struct formula_map_literal_node final : formula_node {
 
     datum evaluate(formula_evaluation_context &context) const override
     {
-        tt_assert(keys.size() == values.size());
+        hi_assert(keys.size() == values.size());
 
         datum::map_type r;
         for (std::size_t i = 0; i < keys.size(); i++) {
-            ttlet &key = keys[i];
-            ttlet &value = values[i];
+            hilet &key = keys[i];
+            hilet &value = values[i];
 
             r[key->evaluate(context)] = value->evaluate(context);
         }
@@ -44,12 +44,12 @@ struct formula_map_literal_node final : formula_node {
 
     std::string string() const noexcept override
     {
-        tt_assert(keys.size() == values.size());
+        hi_assert(keys.size() == values.size());
 
         std::string r = "{";
         for (std::size_t i = 0; i < keys.size(); i++) {
-            ttlet &key = keys[i];
-            ttlet &value = values[i];
+            hilet &key = keys[i];
+            hilet &value = values[i];
 
             if (i > 0) {
                 r += ", ";
@@ -62,4 +62,4 @@ struct formula_map_literal_node final : formula_node {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

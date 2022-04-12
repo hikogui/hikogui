@@ -6,7 +6,7 @@
 
 #include "skeleton_node.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct skeleton_function_node final : skeleton_node {
     std::string name;
@@ -22,7 +22,7 @@ struct skeleton_function_node final : skeleton_node {
         skeleton_node(std::move(location))
     {
         auto name_and_arguments = function_declaration_expression->get_name_and_argument_names();
-        tt_assert(name_and_arguments.size() >= 1);
+        hi_assert(name_and_arguments.size() >= 1);
 
         name = name_and_arguments[0];
         name_and_arguments.erase(name_and_arguments.begin());
@@ -54,7 +54,7 @@ struct skeleton_function_node final : skeleton_node {
         }
 
         context.push_super(super_function);
-        for (ttlet &child : children) {
+        for (hilet &child : children) {
             child->post_process(context);
         }
         context.pop_super();
@@ -81,7 +81,7 @@ struct skeleton_function_node final : skeleton_node {
             context.set(argument_names[i], arguments[i]);
         }
 
-        ttlet output_size = context.output_size();
+        hilet output_size = context.output_size();
         auto tmp = evaluate_children(context, children);
         context.pop();
 
@@ -116,4 +116,4 @@ struct skeleton_function_node final : skeleton_node {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

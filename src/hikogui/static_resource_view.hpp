@@ -10,7 +10,7 @@
 #include <cstddef>
 #include <unordered_map>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A resource that was included in the executable.
  */
@@ -69,4 +69,4 @@ private:
     std::span<std::byte const> _bytes;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

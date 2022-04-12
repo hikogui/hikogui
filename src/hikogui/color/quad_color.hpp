@@ -4,7 +4,7 @@
 
 #include "color.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class quad_color {
 public:
@@ -25,4 +25,4 @@ public:
     constexpr quad_color(color const &c) noexcept : p0(c), p1(c), p2(c), p3(c) {}
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

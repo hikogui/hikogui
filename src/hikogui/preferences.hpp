@@ -12,7 +12,7 @@
 
 #pragma once
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 class preferences;
 
 namespace detail {
@@ -72,7 +72,7 @@ protected:
     [[nodiscard]] datum encode() const noexcept override
     {
         if (*_value != _init) {
-            return tt::pickle<T>{}.encode(*_value);
+            return hi::pickle<T>{}.encode(*_value);
         } else {
             return datum{std::monostate{}};
         }
@@ -80,7 +80,7 @@ protected:
 
     void decode(datum const &data) override
     {
-        _value = tt::pickle<T>{}.decode(data);
+        _value = hi::pickle<T>{}.decode(data);
     }
 
 private:
@@ -229,4 +229,4 @@ private:
     friend class detail::preference_item;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

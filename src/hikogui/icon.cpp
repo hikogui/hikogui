@@ -5,7 +5,7 @@
 #include "icon.hpp"
 #include "codec/png.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 icon::icon(pixel_map<sfloat_rgba16> &&image) noexcept : _image(std::move(image)) {}
 
@@ -17,4 +17,4 @@ icon::icon(elusive_icon const &icon) noexcept : _image(icon) {}
 
 icon::icon(hikogui_icon const &icon) noexcept : _image(icon) {}
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

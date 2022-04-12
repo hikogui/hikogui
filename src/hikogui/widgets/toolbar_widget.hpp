@@ -10,7 +10,7 @@
 #include <memory>
 #include <ranges>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A toolbar widget is located at the top of a window and lays out its children
  * horizontally.
@@ -63,10 +63,10 @@ public:
     /// @privatesection
     [[nodiscard]] generator<widget *> children() const noexcept override
     {
-        for (ttlet &child : _left_children) {
+        for (hilet &child : _left_children) {
             co_yield child.get();
         }
-        for (ttlet &child : std::ranges::reverse_view(_right_children)) {
+        for (hilet &child : std::ranges::reverse_view(_right_children)) {
             co_yield child.get();
         }
     }
@@ -103,4 +103,4 @@ private:
     bool tab_button_has_focus() const noexcept;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

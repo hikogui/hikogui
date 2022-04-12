@@ -6,7 +6,7 @@
 
 #include "skeleton_node.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct skeleton_string_node final : skeleton_node {
     std::string text;
@@ -49,4 +49,4 @@ struct skeleton_string_node final : skeleton_node {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

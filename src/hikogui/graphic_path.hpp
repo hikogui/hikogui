@@ -14,7 +14,7 @@
 #include "rapid/sdf_r8.hpp"
 #include <vector>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct bezier_curve;
 template<typename T>
@@ -214,7 +214,7 @@ struct graphic_path {
         graphic_path const &path,
         color strokeColor,
         float strokeWidth,
-        tt::line_join_style line_join_style = line_join_style::miter,
+        hi::line_join_style line_join_style = line_join_style::miter,
         float tolerance = 0.05f) noexcept;
 
     /** Convert path to stroke-path.
@@ -260,7 +260,7 @@ struct graphic_path {
  * \param color color to composit.
  * \param mask mask where the color will be composited on the destination.
  */
-void composit(pixel_map<sfloat_rgba16> &dst, tt::color color, graphic_path const &mask) noexcept;
+void composit(pixel_map<sfloat_rgba16> &dst, hi::color color, graphic_path const &mask) noexcept;
 
 /** Composit color onto the destination image where the mask is solid.
  *
@@ -275,4 +275,4 @@ void composit(pixel_map<sfloat_rgba16> &dst, graphic_path const &mask) noexcept;
  */
 void fill(pixel_map<sdf_r8> &dst, graphic_path const &path) noexcept;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

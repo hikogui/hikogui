@@ -12,17 +12,17 @@
 #include <cstdint>
 #include <tuple>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] static int32_t
 load_sample(std::byte const *&src, std::size_t stride, int num_bytes, int direction, int start_byte, int align_shift) noexcept
 {
-    tt_axiom(src != nullptr);
-    tt_axiom(num_bytes >= 1 && num_bytes <= 4);
-    tt_axiom(direction == 1 || direction == -1);
-    tt_axiom(start_byte <= 3);
-    tt_axiom(align_shift <= 32);
-    tt_axiom(stride >= num_bytes);
+    hi_axiom(src != nullptr);
+    hi_axiom(num_bytes >= 1 && num_bytes <= 4);
+    hi_axiom(direction == 1 || direction == -1);
+    hi_axiom(start_byte <= 3);
+    hi_axiom(align_shift <= 32);
+    hi_axiom(stride >= num_bytes);
 
     auto p = src + start_byte;
 
@@ -42,8 +42,8 @@ load_sample(std::byte const *&src, std::size_t stride, int num_bytes, int direct
 
 [[nodiscard]] static i8x16 load_samples(std::byte const *&src, i8x16 load_shuffle_indices, std::size_t stride) noexcept
 {
-    tt_axiom(src != nullptr);
-    tt_axiom(stride > 0);
+    hi_axiom(src != nullptr);
+    hi_axiom(stride > 0);
 
     auto r = shuffle(i8x16::load(src), load_shuffle_indices);
     src += stride;
@@ -57,9 +57,9 @@ load_sample(std::byte const *&src, std::size_t stride, int num_bytes, int direct
     std::size_t num_chunks,
     std::size_t stride) noexcept
 {
-    tt_axiom(src != nullptr);
-    tt_axiom(num_chunks > 0 and num_chunks <= 4);
-    tt_axiom(stride > 0);
+    hi_axiom(src != nullptr);
+    hi_axiom(num_chunks > 0 and num_chunks <= 4);
+    hi_axiom(stride > 0);
 
     auto int_samples = i8x16{};
     do {
@@ -74,13 +74,13 @@ load_sample(std::byte const *&src, std::size_t stride, int num_bytes, int direct
 
 static void store_sample(float *&dst, float sample) noexcept
 {
-    tt_axiom(dst != nullptr);
+    hi_axiom(dst != nullptr);
     *(dst++) = sample;
 }
 
 static void store_samples(float *&dst, f32x4 samples) noexcept
 {
-    tt_axiom(dst != nullptr);
+    hi_axiom(dst != nullptr);
     samples.store(reinterpret_cast<std::byte *>(dst));
     dst += 4;
 }
@@ -100,44 +100,44 @@ audio_sample_unpacker::audio_sample_unpacker(audio_sample_format format, std::si
     _align_shift = 32 - format.num_bytes * 8;
 }
 
-void audio_sample_unpacker::operator()(std::byte const *tt_restrict src, float *tt_restrict dst, std::size_t num_samples)
+void audio_sample_unpacker::operator()(std::byte const *hi_restrict src, float *hi_restrict dst, std::size_t num_samples)
     const noexcept
 {
-    tt_axiom(src != nullptr);
-    tt_axiom(dst != nullptr);
+    hi_axiom(src != nullptr);
+    hi_axiom(dst != nullptr);
 
     // Calculate a conservative number of samples that can be copied quickly
     // without overflowing the src buffer.
-    ttlet dst_end = dst + num_samples;
-    ttlet dst_fast_end = dst + _format.num_fast_quads(_stride, num_samples) * 4;
+    hilet dst_end = dst + num_samples;
+    hilet dst_fast_end = dst + _format.num_fast_quads(_stride, num_samples) * 4;
 
     if (_format.is_float) {
         while (dst != dst_fast_end) {
-            ttlet int_samples =
+            hilet int_samples =
                 load_samples(src, _load_shuffle_indices, _concat_shuffle_indices, _num_chunks_per_quad, _chunk_stride);
-            ttlet float_samples = bit_cast<f32x4>(int_samples);
+            hilet float_samples = bit_cast<f32x4>(int_samples);
             store_samples(dst, float_samples);
         }
         while (dst != dst_end) {
-            ttlet int_sample = load_sample(src, _stride, _format.num_bytes, _direction, _start_byte, _align_shift);
-            ttlet float_sample = std::bit_cast<float>(int_sample);
+            hilet int_sample = load_sample(src, _stride, _format.num_bytes, _direction, _start_byte, _align_shift);
+            hilet float_sample = std::bit_cast<float>(int_sample);
             store_sample(dst, float_sample);
         }
 
     } else {
-        ttlet multiplier = _multiplier;
+        hilet multiplier = _multiplier;
         while (dst != dst_fast_end) {
-            ttlet int_samples =
+            hilet int_samples =
                 load_samples(src, _load_shuffle_indices, _concat_shuffle_indices, _num_chunks_per_quad, _chunk_stride);
-            ttlet float_samples = static_cast<f32x4>(int_samples) * multiplier;
+            hilet float_samples = static_cast<f32x4>(int_samples) * multiplier;
             store_samples(dst, float_samples);
         }
         while (dst != dst_end) {
-            ttlet int_sample = load_sample(src, _stride, _format.num_bytes, _direction, _start_byte, _align_shift);
-            ttlet float_sample = static_cast<float>(int_sample) * get<0>(multiplier);
+            hilet int_sample = load_sample(src, _stride, _format.num_bytes, _direction, _start_byte, _align_shift);
+            hilet float_sample = static_cast<float>(int_sample) * get<0>(multiplier);
             store_sample(dst, float_sample);
         }
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

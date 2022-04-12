@@ -7,7 +7,7 @@
 #include <iostream>
 #include <string>
 
-using namespace tt::geo;
+using namespace hi::geo;
 
 TEST(geometry, identity_translate)
 {

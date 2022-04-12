@@ -23,7 +23,7 @@
 #include <string>
 #include <ranges>
 
-namespace tt::inline v1{
+namespace hi::inline v1{
     class gui_window;
 struct mouse_event;
 struct keyboard_event;
@@ -111,13 +111,13 @@ public:
      *
      * @return The current theme.
      */
-    tt::theme const &theme() const noexcept;
+    hi::theme const &theme() const noexcept;
 
     /** Get the font book.
      *
      * @return The font book.
      */
-    tt::font_book &font_book() const noexcept;
+    hi::font_book &font_book() const noexcept;
 
     /** Find the widget that is under the mouse cursor.
      * This function will recursively test with visual child widgets, when
@@ -159,7 +159,7 @@ public:
      */
     [[nodiscard]] virtual bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept
     {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
         return false;
     }
 
@@ -310,7 +310,7 @@ public:
      *
      * @param rectangle The rectangle in window coordinates.
      */
-    virtual void scroll_to_show(tt::aarectangle rectangle) noexcept;
+    virtual void scroll_to_show(hi::aarectangle rectangle) noexcept;
 
     /** Scroll to show the important part of the widget.
      */
@@ -358,4 +358,4 @@ protected:
     [[nodiscard]] aarectangle make_overlay_rectangle(aarectangle requested_rectangle) const noexcept;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -9,19 +9,19 @@
 #include "subsystem.hpp"
 #include <mutex>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 static unfair_mutex_impl<false> dead_lock_detector_mutex;
 
 [[nodiscard]] void *dead_lock_detector::check_graph(void *object) noexcept
 {
-    tt_axiom(object != nullptr);
+    hi_axiom(object != nullptr);
 
-    ttlet lock = std::scoped_lock(dead_lock_detector_mutex);
+    hilet lock = std::scoped_lock(dead_lock_detector_mutex);
 
-    for (ttlet before : stack) {
+    for (hilet before : stack) {
         auto correct_order = detail::dead_lock_detector_pair{before, object};
-        ttlet reverse_order = detail::dead_lock_detector_pair{object, before};
+        hilet reverse_order = detail::dead_lock_detector_pair{object, before};
 
         if (std::binary_search(cbegin(lock_graph), cend(lock_graph), correct_order)) {
             // The object has been locked in the correct order in comparison to `before`.
@@ -34,7 +34,7 @@ static unfair_mutex_impl<false> dead_lock_detector_mutex;
         }
 
         // Insert the new 'correct' order in the sorted lock_graph.
-        ttlet it = std::upper_bound(cbegin(lock_graph), cend(lock_graph), correct_order);
+        hilet it = std::upper_bound(cbegin(lock_graph), cend(lock_graph), correct_order);
         lock_graph.insert(it, std::move(correct_order));
     }
     return nullptr;
@@ -47,9 +47,9 @@ void *dead_lock_detector::lock(void *object) noexcept
         return nullptr;
     }
 
-    tt_axiom(object != nullptr);
+    hi_axiom(object != nullptr);
 
-    for (ttlet &x : stack) {
+    for (hilet &x : stack) {
         if (object == x) {
             // `object` already locked by the current thread.
             return object;
@@ -74,7 +74,7 @@ bool dead_lock_detector::unlock(void *object) noexcept
         return true;
     }
 
-    tt_axiom(object != nullptr);
+    hi_axiom(object != nullptr);
 
     // Trying to unlock `object`, but nothing on this thread was locked.
     if (stack.empty()) {
@@ -107,24 +107,24 @@ void dead_lock_detector::clear_graph() noexcept
         return;
     }
 
-    ttlet lock = std::scoped_lock(dead_lock_detector_mutex);
+    hilet lock = std::scoped_lock(dead_lock_detector_mutex);
     lock_graph.clear();
 }
 
 void dead_lock_detector::remove_object(void *object) noexcept
 {
-    tt_axiom(object != nullptr);
+    hi_axiom(object != nullptr);
 
     if (is_system_shutting_down()) {
         // thread_local variables used by `lock_graph` do not work on MSVC when main() returns.
         return;
     }
 
-    ttlet lock = std::scoped_lock(dead_lock_detector_mutex);
+    hilet lock = std::scoped_lock(dead_lock_detector_mutex);
 
-    std::erase_if(lock_graph, [object](ttlet &item) {
+    std::erase_if(lock_graph, [object](hilet &item) {
         return item.before == object or item.after == object;
     });
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

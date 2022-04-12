@@ -6,7 +6,7 @@
 
 #include "formula_binary_operator_node.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct formula_member_node final : formula_binary_operator_node {
     mutable formula_post_process_context::method_type method;
@@ -32,7 +32,7 @@ struct formula_member_node final : formula_binary_operator_node {
     datum evaluate(formula_evaluation_context &context) const override
     {
         if (lhs->has_evaluate_xvalue()) {
-            ttlet &lhs_ = lhs->evaluate_xvalue(context);
+            hilet &lhs_ = lhs->evaluate_xvalue(context);
 
             if (!lhs_.contains(rhs_name->name)) {
                 throw operation_error(std::format("{}: Unknown attribute .{}", location, rhs_name->name));
@@ -44,7 +44,7 @@ struct formula_member_node final : formula_binary_operator_node {
             }
 
         } else {
-            ttlet lhs_ = lhs->evaluate(context);
+            hilet lhs_ = lhs->evaluate(context);
 
             if (!lhs_.contains(rhs_name->name)) {
                 throw operation_error(std::format("{}: Unknown attribute .{}", location, rhs_name->name));
@@ -83,4 +83,4 @@ struct formula_member_node final : formula_binary_operator_node {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -23,7 +23,7 @@
 #include "../widgets/widget_layout.hpp"
 #include "../vspan.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 class gfx_device;
 class gfx_device_vulkan;
 class shaped_text;
@@ -66,7 +66,7 @@ public:
 
     /** The subpixel orientation for rendering glyphs.
      */
-    tt::subpixel_orientation subpixel_orientation;
+    hi::subpixel_orientation subpixel_orientation;
 
     /** The tone-mapper's saturation.
      */
@@ -111,18 +111,18 @@ public:
         quad_color const &fill_color,
         quad_color const &border_color,
         float border_width,
-        tt::border_side border_side,
-        tt::corner_radii const &corner_radius = {}) const noexcept
+        hi::border_side border_side,
+        hi::corner_radii const &corner_radius = {}) const noexcept
     {
         // clang-format off
-        ttlet border_radius = border_width * 0.5f;
-        ttlet box_ =
-            border_side == tt::border_side::inside ? box - border_radius :
-            border_side == tt::border_side::outside ? box + border_radius :
+        hilet border_radius = border_width * 0.5f;
+        hilet box_ =
+            border_side == hi::border_side::inside ? box - border_radius :
+            border_side == hi::border_side::outside ? box + border_radius :
             box;
-        ttlet corner_radius_ =
-            border_side == tt::border_side::inside ? corner_radius - border_radius :
-            border_side == tt::border_side::outside ? corner_radius + border_radius :
+        hilet corner_radius_ =
+            border_side == hi::border_side::inside ? corner_radius - border_radius :
+            border_side == hi::border_side::outside ? corner_radius + border_radius :
             corner_radius;
         // clang-format on
 
@@ -152,18 +152,18 @@ public:
         quad_color const &fill_color,
         quad_color const &border_color,
         float border_width,
-        tt::border_side border_side,
-        tt::corner_radii const &corner_radius = {}) const noexcept
+        hi::border_side border_side,
+        hi::corner_radii const &corner_radius = {}) const noexcept
     {
         // clang-format off
-        ttlet border_radius = border_width * 0.5f;
-        ttlet box_ =
-            border_side == tt::border_side::inside ? box - border_radius :
-            border_side == tt::border_side::outside ? box + border_radius :
+        hilet border_radius = border_width * 0.5f;
+        hilet box_ =
+            border_side == hi::border_side::inside ? box - border_radius :
+            border_side == hi::border_side::outside ? box + border_radius :
             box;
-        ttlet corner_radius_ =
-            border_side == tt::border_side::inside ? corner_radius - border_radius :
-            border_side == tt::border_side::outside ? corner_radius + border_radius :
+        hilet corner_radius_ =
+            border_side == hi::border_side::inside ? corner_radius - border_radius :
+            border_side == hi::border_side::outside ? corner_radius + border_radius :
             corner_radius;
         // clang-format on
 
@@ -186,7 +186,7 @@ public:
         widget_layout const &layout,
         quad const &box,
         quad_color const &fill_color,
-        tt::corner_radii const &corner_radius = {}) const noexcept
+        hi::corner_radii const &corner_radius = {}) const noexcept
     {
         return _draw_box(
             layout.window_clipping_rectangle(),
@@ -210,7 +210,7 @@ public:
         aarectangle const &clipping_rectangle,
         quad const &box,
         quad_color const &fill_color,
-        tt::corner_radii const &corner_radius = {}) const noexcept
+        hi::corner_radii const &corner_radius = {}) const noexcept
     {
         return _draw_box(
             layout.window_clipping_rectangle(clipping_rectangle),
@@ -226,15 +226,15 @@ public:
     {
         auto right = line.direction();
 
-        ttlet radius = width * 0.5f;
-        ttlet n = normal(right, 0.0f);
-        ttlet up = n * width;
-        ttlet t = normalize(right);
+        hilet radius = width * 0.5f;
+        hilet n = normal(right, 0.0f);
+        hilet up = n * width;
+        hilet t = normalize(right);
 
         auto origin = line.origin() - n * radius;
 
         // Extend the line by the radius for rounded end-caps.
-        ttlet radius_offset = t * radius;
+        hilet radius_offset = t * radius;
         if (c1 == line_end_cap::round) {
             origin -= radius_offset;
             right += radius_offset;
@@ -268,11 +268,11 @@ public:
         line_end_cap c1 = line_end_cap::flat,
         line_end_cap c2 = line_end_cap::flat) const noexcept
     {
-        ttlet line_ = layout.to_window * line;
-        ttlet width_ = layout.to_window * width;
+        hilet line_ = layout.to_window * line;
+        hilet width_ = layout.to_window * width;
 
-        ttlet box = make_rectangle(line_, width_, c1, c2);
-        ttlet corners = make_corner_radii(width_, c1, c2);
+        hilet box = make_rectangle(line_, width_, c1, c2);
+        hilet corners = make_corner_radii(width_, c1, c2);
 
         return _draw_box(layout.window_clipping_rectangle(), box, fill_color, fill_color, 0.0f, corners);
     }
@@ -286,86 +286,86 @@ public:
         line_end_cap c1 = line_end_cap::flat,
         line_end_cap c2 = line_end_cap::flat) const noexcept
     {
-        tt_axiom(width != 0.0f);
-        ttlet line_ = layout.to_window * line;
-        ttlet width_ = layout.to_window * width;
+        hi_axiom(width != 0.0f);
+        hilet line_ = layout.to_window * line;
+        hilet width_ = layout.to_window * width;
 
-        ttlet box = make_rectangle(line_, width_, c1, c2);
-        ttlet corners = make_corner_radii(width_, c1, c2);
+        hilet box = make_rectangle(line_, width_, c1, c2);
+        hilet corners = make_corner_radii(width_, c1, c2);
 
         return _draw_box(layout.window_clipping_rectangle(clipping_rectangle), box, fill_color, fill_color, 0.0f, corners);
     }
 
-    [[nodiscard]] constexpr static rectangle make_rectangle(tt::circle const &circle) noexcept
+    [[nodiscard]] constexpr static rectangle make_rectangle(hi::circle const &circle) noexcept
     {
-        ttlet circle_ = f32x4{circle};
-        ttlet origin = point3{circle_.xyz1() - circle_.ww00()};
-        ttlet right = vector3{circle_.w000() * 2.0f};
-        ttlet up = vector3{circle_._0w00() * 2.0f};
+        hilet circle_ = f32x4{circle};
+        hilet origin = point3{circle_.xyz1() - circle_.ww00()};
+        hilet right = vector3{circle_.w000() * 2.0f};
+        hilet up = vector3{circle_._0w00() * 2.0f};
         return rectangle{origin, right, up};
     }
 
-    [[nodiscard]] constexpr static corner_radii make_corner_radii(tt::circle const &circle) noexcept
+    [[nodiscard]] constexpr static corner_radii make_corner_radii(hi::circle const &circle) noexcept
     {
         return corner_radii{f32x4{circle}.wwww()};
     }
 
-    void draw_circle(widget_layout const &layout, tt::circle const &circle, quad_color const &fill_color) const noexcept
+    void draw_circle(widget_layout const &layout, hi::circle const &circle, quad_color const &fill_color) const noexcept
     {
-        ttlet box = layout.to_window * make_rectangle(circle);
-        ttlet corners = layout.to_window * make_corner_radii(circle);
+        hilet box = layout.to_window * make_rectangle(circle);
+        hilet corners = layout.to_window * make_corner_radii(circle);
         return _draw_box(layout.window_clipping_rectangle(), box, fill_color, fill_color, 0.0f, corners);
     }
 
     void draw_circle(
         widget_layout const &layout,
         aarectangle const clipping_rectangle,
-        tt::circle const &circle,
+        hi::circle const &circle,
         quad_color const &fill_color) const
     {
-        ttlet box = layout.to_window * make_rectangle(circle);
-        ttlet corners = layout.to_window * make_corner_radii(circle);
+        hilet box = layout.to_window * make_rectangle(circle);
+        hilet corners = layout.to_window * make_corner_radii(circle);
         return _draw_box(layout.window_clipping_rectangle(clipping_rectangle), box, fill_color, fill_color, 0.0f, corners);
     }
 
     void draw_circle(
         widget_layout const &layout,
-        tt::circle const &circle,
+        hi::circle const &circle,
         quad_color const &fill_color,
         quad_color const &border_color,
         float border_width,
-        tt::border_side border_side) const noexcept
+        hi::border_side border_side) const noexcept
     {
         // clang-format off
-        ttlet circle_ =
-            border_side == tt::border_side::inside ? circle - border_width * 0.5f :
-            border_side == tt::border_side::outside ? circle + border_width * 0.5f :
+        hilet circle_ =
+            border_side == hi::border_side::inside ? circle - border_width * 0.5f :
+            border_side == hi::border_side::outside ? circle + border_width * 0.5f :
             circle;
         // clang-format on
 
-        ttlet box = layout.to_window * make_rectangle(circle_);
-        ttlet corners = layout.to_window * make_corner_radii(circle_);
+        hilet box = layout.to_window * make_rectangle(circle_);
+        hilet corners = layout.to_window * make_corner_radii(circle_);
         return _draw_box(layout.window_clipping_rectangle(), box, fill_color, border_color, border_width, corners);
     }
 
     void draw_circle(
         widget_layout const &layout,
         aarectangle const &clipping_rectangle,
-        tt::circle const &circle,
+        hi::circle const &circle,
         quad_color const &fill_color,
         quad_color const &border_color,
         float border_width,
-        tt::border_side border_side) const noexcept
+        hi::border_side border_side) const noexcept
     {
         // clang-format off
-        ttlet circle_ =
-            border_side == tt::border_side::inside ? circle - border_width * 0.5f :
-            border_side == tt::border_side::outside ? circle + border_width * 0.5f :
+        hilet circle_ =
+            border_side == hi::border_side::inside ? circle - border_width * 0.5f :
+            border_side == hi::border_side::outside ? circle + border_width * 0.5f :
             circle;
         // clang-format on
 
-        ttlet box = layout.to_window * make_rectangle(circle_);
-        ttlet corners = layout.to_window * make_corner_radii(circle_);
+        hilet box = layout.to_window * make_rectangle(circle_);
+        hilet corners = layout.to_window * make_corner_radii(circle_);
         return _draw_box(
             layout.window_clipping_rectangle(clipping_rectangle), box, fill_color, border_color, border_width, corners);
     }
@@ -558,7 +558,7 @@ public:
      * @param color The color of the selection.
      */
     void
-    draw_text_selection(widget_layout const &layout, text_shaper const &text, text_selection const &selection, tt::color color)
+    draw_text_selection(widget_layout const &layout, text_shaper const &text, text_selection const &selection, hi::color color)
         const noexcept
     {
         return _draw_text_selection(layout.window_clipping_rectangle(), layout.to_window, text, selection, color);
@@ -578,8 +578,8 @@ public:
         widget_layout const &layout,
         text_shaper const &text,
         text_cursor cursor,
-        tt::color primary_color,
-        tt::color secondary_color,
+        hi::color primary_color,
+        hi::color secondary_color,
         bool overwrite_mode,
         bool dead_character_mode) const noexcept
     {
@@ -610,7 +610,7 @@ private:
         quad_color const &fill_color,
         quad_color const &border_color,
         float border_width,
-        tt::corner_radii corner_radius) const noexcept;
+        hi::corner_radii corner_radius) const noexcept;
 
     void _draw_text(
         aarectangle const &clipping_rectangle,
@@ -629,35 +629,35 @@ private:
         matrix3 const &transform,
         text_shaper const &text,
         text_selection const &selection,
-        tt::color) const noexcept;
+        hi::color) const noexcept;
 
     void _draw_text_insertion_cursor_empty(
         aarectangle const &clipping_rectangle,
         matrix3 const &transform,
         text_shaper const &text,
-        tt::color color) const noexcept;
+        hi::color color) const noexcept;
 
     void _draw_text_insertion_cursor(
         aarectangle const &clipping_rectangle,
         matrix3 const &transform,
         text_shaper const &text,
         text_cursor cursor,
-        tt::color color,
+        hi::color color,
         bool show_flag) const noexcept;
 
     void _draw_text_overwrite_cursor(
         aarectangle const &clipping_rectangle,
         matrix3 const &transform,
         text_shaper::char_const_iterator it,
-        tt::color color) const noexcept;
+        hi::color color) const noexcept;
 
     void _draw_text_cursors(
         aarectangle const &clipping_rectangle,
         matrix3 const &transform,
         text_shaper const &text,
         text_cursor cursor,
-        tt::color primary_color,
-        tt::color secondary_color,
+        hi::color primary_color,
+        hi::color secondary_color,
         bool overwrite_mode,
         bool dead_character_mode) const noexcept;
 
@@ -667,4 +667,4 @@ private:
     [[nodiscard]] bool _draw_image(aarectangle const &clipping_rectangle, quad const &box, paged_image &image) const noexcept;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -12,7 +12,7 @@
 #include "../GFX/subpixel_orientation.hpp"
 #include "../chrono.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class widget_layout {
 public:
@@ -78,8 +78,8 @@ public:
 
     [[nodiscard]] constexpr friend bool operator==(widget_layout const &lhs, widget_layout const &rhs) noexcept
     {
-        tt_axiom((lhs.to_parent == rhs.to_parent) == (lhs.from_parent == rhs.from_parent));
-        tt_axiom((lhs.to_window == rhs.to_window) == (lhs.from_window == rhs.from_window));
+        hi_axiom((lhs.to_parent == rhs.to_parent) == (lhs.from_parent == rhs.from_parent));
+        hi_axiom((lhs.to_window == rhs.to_window) == (lhs.from_window == rhs.from_window));
 
         // clang-format on
         return
@@ -138,7 +138,7 @@ public:
      */
     constexpr widget_layout(
         extent2 window_size,
-        tt::subpixel_orientation subpixel_orientation,
+        hi::subpixel_orientation subpixel_orientation,
         unicode_bidi_class writing_direction,
         utc_nanoseconds display_time_point) noexcept :
         to_parent(),
@@ -147,7 +147,7 @@ public:
         from_window(),
         size(window_size),
         clipping_rectangle(window_size),
-        sub_pixel_size(tt::sub_pixel_size(subpixel_orientation)),
+        sub_pixel_size(hi::sub_pixel_size(subpixel_orientation)),
         writing_direction(writing_direction),
         display_time_point(display_time_point)
     {
@@ -203,4 +203,4 @@ public:
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

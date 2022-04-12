@@ -8,7 +8,7 @@
 #include <memory>
 #include <functional>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 template<axis, bool>
 class scroll_widget;
 
@@ -20,4 +20,4 @@ public:
     virtual void deinit(scroll_widget<Axis, ControlsWindow> &sender) noexcept {}
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

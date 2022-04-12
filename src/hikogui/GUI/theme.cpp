@@ -11,13 +11,13 @@
 #include "../URL.hpp"
 #include <algorithm>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
-theme::theme(tt::font_book const &font_book, URL const &url)
+theme::theme(hi::font_book const &font_book, URL const &url)
 {
     try {
-        tt_log_info("Parsing theme at {}", url);
-        ttlet data = parse_JSON(url);
+        hi_log_info("Parsing theme at {}", url);
+        hilet data = parse_JSON(url);
         parse(font_book, data);
     } catch (std::exception const &e) {
         throw io_error(std::format("{}: Could not load theme.\n{}", url, e.what()));
@@ -28,9 +28,9 @@ theme::theme(tt::font_book const &font_book, URL const &url)
 {
     auto r = *this;
 
-    tt_axiom(new_dpi != 0.0f);
-    tt_axiom(dpi != 0.0f);
-    tt_axiom(scale != 0.0f);
+    hi_axiom(new_dpi != 0.0f);
+    hi_axiom(dpi != 0.0f);
+    hi_axiom(scale != 0.0f);
 
     auto delta_scale = new_dpi / dpi;
     r.dpi = new_dpi;
@@ -49,22 +49,22 @@ theme::theme(tt::font_book const &font_book, URL const &url)
     return r;
 }
 
-[[nodiscard]] tt::color theme::color(theme_color theme_color, ssize_t nesting_level) const noexcept
+[[nodiscard]] hi::color theme::color(theme_color theme_color, ssize_t nesting_level) const noexcept
 {
-    ttlet theme_color_i = static_cast<std::size_t>(theme_color);
-    tt_axiom(theme_color_i < _colors.size());
+    hilet theme_color_i = static_cast<std::size_t>(theme_color);
+    hi_axiom(theme_color_i < _colors.size());
 
-    ttlet &shades = _colors[theme_color_i];
-    tt_axiom(not shades.empty());
+    hilet &shades = _colors[theme_color_i];
+    hi_axiom(not shades.empty());
 
     nesting_level = std::max(ssize_t{0}, nesting_level);
     return shades[nesting_level % ssize(shades)];
 }
 
-[[nodiscard]] tt::text_style const &theme::text_style(theme_text_style theme_text_style) const noexcept
+[[nodiscard]] hi::text_style const &theme::text_style(theme_text_style theme_text_style) const noexcept
 {
-    ttlet theme_text_style_i = static_cast<std::size_t>(theme_text_style);
-    tt_axiom(theme_text_style_i < _text_styles.size());
+    hilet theme_text_style_i = static_cast<std::size_t>(theme_text_style);
+    hi_axiom(theme_text_style_i < _text_styles.size());
 
     return _text_styles[theme_text_style_i];
 }
@@ -75,7 +75,7 @@ theme::theme(tt::font_book const &font_book, URL const &url)
     if (!data.contains(object_name)) {
         throw parse_error(std::format("Missing '{}'", object_name));
     }
-    ttlet object = data[object_name];
+    hilet object = data[object_name];
     if (!holds_alternative<std::string>(object)) {
         throw parse_error(std::format("'{}' attribute must be a string, got {}.", object_name, object.type_name()));
     }
@@ -88,7 +88,7 @@ theme::theme(tt::font_book const &font_book, URL const &url)
         throw parse_error(std::format("Missing '{}'", object_name));
     }
 
-    ttlet object = data[object_name];
+    hilet object = data[object_name];
     if (auto f = get_if<double>(object)) {
         return static_cast<float>(*f);
     } else {
@@ -102,7 +102,7 @@ theme::theme(tt::font_book const &font_book, URL const &url)
         throw parse_error(std::format("Missing '{}'", object_name));
     }
 
-    ttlet object = data[object_name];
+    hilet object = data[object_name];
     if (!holds_alternative<bool>(object)) {
         throw parse_error(std::format("'{}' attribute must be a boolean, got {}.", object_name, object.type_name()));
     }
@@ -116,22 +116,22 @@ theme::theme(tt::font_book const &font_book, URL const &url)
         if (data.size() != 3 && data.size() != 4) {
             throw parse_error(std::format("Expect 3 or 4 values for a color, got {}.", data));
         }
-        ttlet r = data[0];
-        ttlet g = data[1];
-        ttlet b = data[2];
-        ttlet a = data.size() == 4 ? data[3] : (holds_alternative<long long>(r) ? datum{255} : datum{1.0});
+        hilet r = data[0];
+        hilet g = data[1];
+        hilet b = data[2];
+        hilet a = data.size() == 4 ? data[3] : (holds_alternative<long long>(r) ? datum{255} : datum{1.0});
 
         if (holds_alternative<long long>(r) and holds_alternative<long long>(g) and holds_alternative<long long>(b) and
             holds_alternative<long long>(a)) {
-            ttlet r_ = get<long long>(r);
-            ttlet g_ = get<long long>(g);
-            ttlet b_ = get<long long>(b);
-            ttlet a_ = get<long long>(a);
+            hilet r_ = get<long long>(r);
+            hilet g_ = get<long long>(g);
+            hilet b_ = get<long long>(b);
+            hilet a_ = get<long long>(a);
 
-            tt_parse_check(r_ >= 0 and r_ <= 255, "integer red-color value not within 0 and 255");
-            tt_parse_check(g_ >= 0 and g_ <= 255, "integer green-color value not within 0 and 255");
-            tt_parse_check(b_ >= 0 and b_ <= 255, "integer blue-color value not within 0 and 255");
-            tt_parse_check(a_ >= 0 and a_ <= 255, "integer alpha-color value not within 0 and 255");
+            hi_parse_check(r_ >= 0 and r_ <= 255, "integer red-color value not within 0 and 255");
+            hi_parse_check(g_ >= 0 and g_ <= 255, "integer green-color value not within 0 and 255");
+            hi_parse_check(b_ >= 0 and b_ <= 255, "integer blue-color value not within 0 and 255");
+            hi_parse_check(a_ >= 0 and a_ <= 255, "integer alpha-color value not within 0 and 255");
 
             return color_from_sRGB(
                 static_cast<uint8_t>(r_), static_cast<uint8_t>(g_), static_cast<uint8_t>(b_), static_cast<uint8_t>(a_));
@@ -139,19 +139,19 @@ theme::theme(tt::font_book const &font_book, URL const &url)
         } else if (
             holds_alternative<double>(r) and holds_alternative<double>(g) and holds_alternative<double>(b) and
             holds_alternative<double>(a)) {
-            ttlet r_ = static_cast<float>(get<double>(r));
-            ttlet g_ = static_cast<float>(get<double>(g));
-            ttlet b_ = static_cast<float>(get<double>(b));
-            ttlet a_ = static_cast<float>(get<double>(a));
+            hilet r_ = static_cast<float>(get<double>(r));
+            hilet g_ = static_cast<float>(get<double>(g));
+            hilet b_ = static_cast<float>(get<double>(b));
+            hilet a_ = static_cast<float>(get<double>(a));
 
-            return tt::color(r_, g_, b_, a_);
+            return hi::color(r_, g_, b_, a_);
 
         } else {
             throw parse_error(std::format("Expect all integers or all floating point numbers in a color, got {}.", data));
         }
 
-    } else if (ttlet *color_name = get_if<std::string>(data)) {
-        ttlet color_name_ = to_lower(*color_name);
+    } else if (hilet *color_name = get_if<std::string>(data)) {
+        hilet color_name_ = to_lower(*color_name);
         if (color_name_.starts_with("#")) {
             return color_from_sRGB(color_name_);
 
@@ -163,19 +163,19 @@ theme::theme(tt::font_book const &font_book, URL const &url)
     }
 }
 
-[[nodiscard]] tt::color theme::parse_color(datum const &data, char const *object_name)
+[[nodiscard]] hi::color theme::parse_color(datum const &data, char const *object_name)
 {
     if (!data.contains(object_name)) {
         throw parse_error(std::format("Missing color '{}'", object_name));
     }
 
-    ttlet color_object = data[object_name];
+    hilet color_object = data[object_name];
 
     try {
         return parse_color_value(color_object);
     } catch (parse_error const &) {
         if (auto s = get_if<std::string>(color_object)) {
-            ttlet theme_color = theme_color_from_string(*s);
+            hilet theme_color = theme_color_from_string(*s);
             return this->color(theme_color);
         } else {
             throw;
@@ -190,12 +190,12 @@ theme::theme(tt::font_book const &font_book, URL const &url)
         throw parse_error(std::format("Missing color list '{}'", object_name));
     }
 
-    ttlet color_list_object = data[object_name];
+    hilet color_list_object = data[object_name];
     if (holds_alternative<datum::vector_type>(color_list_object) and not color_list_object.empty() and
         holds_alternative<datum::vector_type>(color_list_object[0])) {
-        auto r = std::vector<tt::color>{};
+        auto r = std::vector<hi::color>{};
         ssize_t i = 0;
-        for (ttlet &color : color_list_object) {
+        for (hilet &color : color_list_object) {
             try {
                 r.push_back(parse_color_value(color));
             } catch (parse_error const &e) {
@@ -219,7 +219,7 @@ theme::theme(tt::font_book const &font_book, URL const &url)
         throw parse_error(std::format("Missing '{}'", object_name));
     }
 
-    ttlet object = data[object_name];
+    hilet object = data[object_name];
     if (auto i = get_if<long long>(object)) {
         return font_weight_from_int(*i);
     } else if (auto s = get_if<std::string>(object)) {
@@ -229,13 +229,13 @@ theme::theme(tt::font_book const &font_book, URL const &url)
     }
 }
 
-[[nodiscard]] text_style theme::parse_text_style_value(tt::font_book const &font_book, datum const &data)
+[[nodiscard]] text_style theme::parse_text_style_value(hi::font_book const &font_book, datum const &data)
 {
     if (!holds_alternative<datum::map_type>(data)) {
         throw parse_error(std::format("Expect a text-style to be an object, got '{}'", data));
     }
 
-    tt::text_style r;
+    hi::text_style r;
 
     r.family_id = font_book.find_family(parse_string(data, "family"));
     r.size = parse_float(data, "size");
@@ -256,14 +256,14 @@ theme::theme(tt::font_book const &font_book, URL const &url)
     return r;
 }
 
-[[nodiscard]] text_style theme::parse_text_style(tt::font_book const &font_book, datum const &data, char const *object_name)
+[[nodiscard]] text_style theme::parse_text_style(hi::font_book const &font_book, datum const &data, char const *object_name)
 {
     // Extract name
     if (!data.contains(object_name)) {
         throw parse_error(std::format("Missing text-style '{}'", object_name));
     }
 
-    ttlet textStyleObject = data[object_name];
+    hilet textStyleObject = data[object_name];
     try {
         return parse_text_style_value(font_book, textStyleObject);
     } catch (parse_error const &e) {
@@ -271,13 +271,13 @@ theme::theme(tt::font_book const &font_book, URL const &url)
     }
 }
 
-void theme::parse(tt::font_book const &font_book, datum const &data)
+void theme::parse(hi::font_book const &font_book, datum const &data)
 {
-    tt_assert(holds_alternative<datum::map_type>(data));
+    hi_assert(holds_alternative<datum::map_type>(data));
 
     name = parse_string(data, "name");
 
-    ttlet mode_name = to_lower(parse_string(data, "mode"));
+    hilet mode_name = to_lower(parse_string(data, "mode"));
     if (mode_name == "light") {
         mode = theme_mode::light;
     } else if (mode_name == "dark") {
@@ -332,4 +332,4 @@ void theme::parse(tt::font_book const &font_book, datum const &data)
     label_icon_size = parse_float(data, "label-icon-size");
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

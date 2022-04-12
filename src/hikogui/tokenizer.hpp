@@ -19,7 +19,7 @@
 #include <charconv>
 #include <array>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 enum class tokenizer_name_t : uint8_t {
     NotAssigned,
@@ -54,7 +54,7 @@ constexpr char const *to_const_string(tokenizer_name_t name) noexcept
     case tokenizer_name_t::FloatLiteral: return "FloatLiteral";
     case tokenizer_name_t::Operator: return "Operator";
     case tokenizer_name_t::End: return "End";
-    default: tt_no_default();
+    default: hi_no_default();
     }
 }
 
@@ -64,10 +64,10 @@ inline std::ostream &operator<<(std::ostream &lhs, tokenizer_name_t rhs)
 }
 
 template<typename CharT>
-struct std::formatter<tt::tokenizer_name_t, CharT> : std::formatter<char const *, CharT> {
-    auto format(tt::tokenizer_name_t const &t, auto &fc)
+struct std::formatter<hi::tokenizer_name_t, CharT> : std::formatter<char const *, CharT> {
+    auto format(hi::tokenizer_name_t const &t, auto &fc)
     {
-        return std::formatter<char const *, CharT>::format(tt::to_const_string(t), fc);
+        return std::formatter<char const *, CharT>::format(hi::to_const_string(t), fc);
     }
 };
 
@@ -88,7 +88,7 @@ struct token_t {
     token_t(token_t const &other) noexcept :
         name(other.name), value(other.value), location(other.location), is_binary(other.is_binary), precedence(other.precedence)
     {
-        tt_axiom(&other != this);
+        hi_axiom(&other != this);
     }
 
     token_t(token_t &&other) noexcept :
@@ -98,12 +98,12 @@ struct token_t {
         is_binary(other.is_binary),
         precedence(other.precedence)
     {
-        tt_axiom(&other != this);
+        hi_axiom(&other != this);
     }
 
     token_t &operator=(token_t const &other) noexcept
     {
-        tt_return_on_self_assignment(other);
+        hi_return_on_self_assignment(other);
         name = other.name;
         value = other.value;
         location = other.location;
@@ -163,7 +163,7 @@ struct token_t {
     explicit operator T() const
     {
         try {
-            return tt::from_string<T>(value);
+            return hi::from_string<T>(value);
 
         } catch (...) {
             throw parse_error(std::format("Could not convert token {} to {}", *this, typeid(T).name()));
@@ -182,14 +182,14 @@ struct token_t {
 
     explicit operator std::chrono::year_month_day() const
     {
-        ttlet parts = split(value, '-');
+        hilet parts = split(value, '-');
         if (parts.size() != 3) {
             throw parse_error("Expect date to be in the format YYYY-MM-DD");
         }
 
-        ttlet year = std::chrono::year{stoi(parts[0])};
-        ttlet month = std::chrono::month{narrow_cast<unsigned int>(stoi(parts[1]))};
-        ttlet day = std::chrono::day{narrow_cast<unsigned int>(stoi(parts[2]))};
+        hilet year = std::chrono::year{stoi(parts[0])};
+        hilet month = std::chrono::month{narrow_cast<unsigned int>(stoi(parts[1]))};
+        hilet day = std::chrono::day{narrow_cast<unsigned int>(stoi(parts[2]))};
         return {year, month, day};
     }
 
@@ -225,7 +225,7 @@ struct token_t {
     }
 };
 
-using token_vector = std::vector<tt::token_t>;
+using token_vector = std::vector<hi::token_t>;
 using token_iterator = typename token_vector::iterator;
 
 template<typename T>
@@ -271,11 +271,11 @@ struct parse_result {
 [[nodiscard]] std::vector<token_t>
 parseTokens(std::string_view::const_iterator first, std::string_view::const_iterator last) noexcept;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<typename CharT>
-struct std::formatter<tt::token_t, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(tt::token_t const &t, auto &fc)
+struct std::formatter<hi::token_t, CharT> : std::formatter<std::string_view, CharT> {
+    auto format(hi::token_t const &t, auto &fc)
     {
         return std::formatter<std::string_view, CharT>::format(t.repr(), fc);
     }

@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A row of pixels.
  */
@@ -68,7 +68,7 @@ public:
      */
     [[nodiscard]] T const &at(std::size_t columnNr) const noexcept
     {
-        tt_assert(columnNr >= 0 && columnNr < _width);
+        hi_assert(columnNr >= 0 && columnNr < _width);
         return _pixels[columnNr];
     }
 
@@ -80,7 +80,7 @@ public:
      */
     [[nodiscard]] T &at(std::size_t columnNr) noexcept
     {
-        tt_assert(columnNr >= 0 && columnNr < _width);
+        hi_assert(columnNr >= 0 && columnNr < _width);
         return _pixels[columnNr];
     }
 
@@ -116,9 +116,9 @@ public:
     pixel_map(T *pixels, std::size_t width, std::size_t height, std::size_t stride) noexcept :
         _pixels(pixels), _width(width), _height(height), _stride(stride), _self_allocated(false)
     {
-        tt_assert(_stride >= _width);
-        tt_assert(_width >= 0);
-        tt_assert(_height >= 0);
+        hi_assert(_stride >= _width);
+        hi_assert(_width >= 0);
+        hi_assert(_height >= 0);
 
         if (pixels == nullptr) {
             _self_allocated = true;
@@ -171,7 +171,7 @@ public:
             _pixels = new T[_height * _stride];
 
             for (std::size_t y = 0; y != _height; ++y) {
-                ttlet src_row = other[y];
+                hilet src_row = other[y];
                 auto dst_row = (*this)[y];
                 for (std::size_t x = 0; x != _width; ++x) {
                     dst_row[x] = src_row[x];
@@ -187,7 +187,7 @@ public:
         _stride(other._stride),
         _self_allocated(other._self_allocated)
     {
-        tt_axiom(this != &other);
+        hi_axiom(this != &other);
         other._self_allocated = false;
     }
 
@@ -215,7 +215,7 @@ public:
      */
     pixel_map &operator=(pixel_map const &other)
     {
-        tt_return_on_self_assignment(other);
+        hi_return_on_self_assignment(other);
 
         _pixels = other._pixels;
         _width = other._width;
@@ -227,7 +227,7 @@ public:
             _pixels = new T[_height * _stride];
 
             for (std::size_t y = 0; y != _height; ++y) {
-                ttlet src_row = other[y];
+                hilet src_row = other[y];
                 auto dst_row = (*this)[y];
                 for (std::size_t x = 0; x != _width; ++x) {
                     dst_row[x] = src_row[x];
@@ -266,17 +266,17 @@ public:
      */
     pixel_map submap(std::size_t x, std::size_t y, std::size_t width, std::size_t height) const noexcept
     {
-        tt_axiom((x >= 0) && (y >= 0));
-        tt_assert((x + width <= _width) && (y + height <= _height));
+        hi_axiom((x >= 0) && (y >= 0));
+        hi_assert((x + width <= _width) && (y + height <= _height));
 
-        ttlet offset = y * _stride + x;
+        hilet offset = y * _stride + x;
 
         return pixel_map{_pixels + offset, width, height, _stride};
     }
 
     pixel_map submap(aarectangle rectangle) const noexcept
     {
-        tt_axiom(round(rectangle) == rectangle);
+        hi_axiom(round(rectangle) == rectangle);
         return submap(
             narrow_cast<std::size_t>(rectangle.left()),
             narrow_cast<std::size_t>(rectangle.bottom()),
@@ -296,13 +296,13 @@ public:
 
     pixel_row<T> const at(std::size_t rowNr) const noexcept
     {
-        tt_assert(rowNr < _height);
+        hi_assert(rowNr < _height);
         return (*this)[rowNr];
     }
 
     pixel_row<T> at(std::size_t rowNr) noexcept
     {
-        tt_assert(rowNr < _height);
+        hi_assert(rowNr < _height);
         return (*this)[rowNr];
     }
 
@@ -336,7 +336,7 @@ void copy(pixel_map<T> const &src, pixel_map<T> &dst) noexcept
     std::size_t height = std::min(src.height(), dst.height());
 
     for (std::size_t y = 0; y != height; ++y) {
-        ttlet src_row = src[y];
+        hilet src_row = src[y];
         auto dst_row = dst[y];
         for (std::size_t x = 0; x != width; ++x) {
             dst_row[x] = src_row[x];
@@ -382,4 +382,4 @@ void mergeMaximum(pixel_map<uint8_t> &dst, pixel_map<uint8_t> const &src) noexce
 template<typename T>
 inline void makeTransparentBorder(pixel_map<T> &pixel_map) noexcept;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

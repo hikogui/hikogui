@@ -7,31 +7,31 @@
 #include "strings.hpp"
 #include "log.hpp"
 #include <windows.h>
-tt_warning_push()
+hi_warning_push()
 // Suppress C4005 Redefinition of status macros, Microsoft disables this themselves for their internal linter.
-tt_msvc_suppress(4005)
+hi_msvc_suppress(4005)
 #include <ntstatus.h>
-tt_warning_pop()
+hi_warning_pop()
 #include <winreg.h>
 #include <Uxtheme.h>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] uint32_t registry_read_current_user_dword(std::string_view path, std::string_view name)
 {
-    ttlet wpath = tt::to_wstring(path);
-    ttlet wname = tt::to_wstring(name);
+    hilet wpath = hi::to_wstring(path);
+    hilet wname = hi::to_wstring(name);
 
     DWORD result;
     DWORD result_length = sizeof(result);
-    ttlet status = RegGetValueW(HKEY_CURRENT_USER, wpath.c_str(), wname.c_str(), RRF_RT_DWORD, NULL, &result, &result_length);
+    hilet status = RegGetValueW(HKEY_CURRENT_USER, wpath.c_str(), wname.c_str(), RRF_RT_DWORD, NULL, &result, &result_length);
 
     switch (status) {
     case ERROR_SUCCESS: break;
     case ERROR_BAD_PATHNAME:
     case ERROR_FILE_NOT_FOUND:
         throw os_error(std::format("Missing HKEY_CURRENT_USER\\{}\\{} registry entry: 0x{:08x}", path, name, status));
-    default: tt_log_fatal("Error reading HKEY_CURRENT_USER\\{}\\{} registry entry: 0x{:08x}", path, name, status);
+    default: hi_log_fatal("Error reading HKEY_CURRENT_USER\\{}\\{} registry entry: 0x{:08x}", path, name, status);
     }
 
     return static_cast<uint32_t>(result);
@@ -39,15 +39,15 @@ namespace tt::inline v1 {
 
 [[nodiscard]] std::vector<std::string> registry_read_current_user_multi_string(std::string_view path, std::string_view name)
 {
-    ttlet wpath = tt::to_wstring(path);
-    ttlet wname = tt::to_wstring(name);
+    hilet wpath = hi::to_wstring(path);
+    hilet wname = hi::to_wstring(name);
 
     wchar_t initial_buffer[64];
     wchar_t *result = initial_buffer;
     DWORD result_length = sizeof(initial_buffer);
 
     for (auto repeat = 0; repeat != 5; ++repeat) {
-        ttlet status =
+        hilet status =
             RegGetValueW(HKEY_CURRENT_USER, wpath.c_str(), wname.c_str(), RRF_RT_REG_MULTI_SZ, NULL, result, &result_length);
 
         if (status == ERROR_SUCCESS) {
@@ -68,11 +68,11 @@ namespace tt::inline v1 {
         case ERROR_BAD_PATHNAME:
         case ERROR_FILE_NOT_FOUND:
             throw os_error(std::format("Missing HKEY_CURRENT_USER\\{}\\{} registry entry: 0x{:08x}", path, name, status));
-        default: tt_log_fatal("Error reading HKEY_CURRENT_USER\\{}\\{} registry entry: 0x{:08x}", path, name, status);
+        default: hi_log_fatal("Error reading HKEY_CURRENT_USER\\{}\\{} registry entry: 0x{:08x}", path, name, status);
         }
     }
 
     throw os_error(std::format("Size requirements for HKEY_CURRENT_USER\\{}\\{} keeps changing", path, name));
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -13,7 +13,7 @@
 #include <string>
 #include <type_traits>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<typename T, typename Allocator>
 class gap_buffer;
@@ -64,7 +64,7 @@ public:
     gap_buffer(allocator_type const &allocator = allocator_type{}) noexcept :
         _begin(nullptr), _it_end(nullptr), _gap_begin(nullptr), _gap_size(0), _allocator(allocator)
     {
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     /** Construct a buffer with the given initializer list.
@@ -77,7 +77,7 @@ public:
         _allocator(allocator)
     {
         placement_copy(init.begin(), init.end(), _begin);
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     /** Copy constructor.
@@ -86,7 +86,7 @@ public:
     gap_buffer(gap_buffer const &other) noexcept :
         _begin(nullptr), _it_end(nullptr), _gap_begin(nullptr), _gap_size(0), _allocator(other._allocator)
     {
-        tt_axiom(&other != this);
+        hi_axiom(&other != this);
 
         if (other._ptr != nullptr) {
             _begin = _allocator.allocate(other.capacity());
@@ -97,7 +97,7 @@ public:
             placement_copy(other.left_begin_ptr(), other.left_end_ptr(), left_begin_ptr());
             placement_copy(other.right_begin_ptr(), other.right_end_ptr(), right_begin_ptr());
         }
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     /** Copy assignment.
@@ -108,7 +108,7 @@ public:
      */
     gap_buffer &operator=(gap_buffer const &other) noexcept
     {
-        tt_return_on_self_assignment(other);
+        hi_return_on_self_assignment(other);
 
         clear();
         if (_gap_size >= other.size()) {
@@ -131,7 +131,7 @@ public:
 
             // Allocate and copy date.
             if (other._begin != nullptr) {
-                ttlet new_capacity = other.size() + _grow_size;
+                hilet new_capacity = other.size() + _grow_size;
 
                 _begin = _allocator.allocate(new_capacity);
                 _it_end = _begin + other.size();
@@ -142,7 +142,7 @@ public:
                 placement_copy(other.right_begin_ptr(), other.right_end_ptr(), right_begin_ptr());
             }
         }
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     /** Move constructor.
@@ -155,13 +155,13 @@ public:
         _gap_size(other._gap_size),
         _allocator(other._allocator)
     {
-        tt_axiom(&other != this);
+        hi_axiom(&other != this);
 
         other._begin = nullptr;
         other._it_end = nullptr;
         other._gap_begin = nullptr;
         other._gap_size = 0;
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     /** Move assignment operator.
@@ -169,7 +169,7 @@ public:
      */
     gap_buffer &operator=(gap_buffer &&other) noexcept
     {
-        tt_return_on_self_assignment(other);
+        hi_return_on_self_assignment(other);
 
         // Clear the data inside this.
         clear();
@@ -180,7 +180,7 @@ public:
             std::swap(_it_end, other._it_end);
             std::swap(_gap_begin, other._gap_begin);
             std::swap(_gap_size, other._size);
-            tt_axiom(holds_invariant());
+            hi_axiom(holds_invariant());
             return *this;
 
         } else if (capacity() >= other.size()) {
@@ -193,11 +193,11 @@ public:
             placement_move(other.right_begin_ptr(), other.right_end_ptr(), right_begin_ptr());
 
             // Other can keep its own capacity.
-            ttlet other_capacity = other.capacity();
+            hilet other_capacity = other.capacity();
             other._it_end = other._begin;
             other._gap_begin = other._begin;
             other._gap_size = other_capacity;
-            tt_axiom(holds_invariant());
+            hi_axiom(holds_invariant());
             return *this;
 
         } else {
@@ -212,7 +212,7 @@ public:
 
             // Allocate and copy date.
             if (other._begin != nullptr) {
-                ttlet new_capacity = other.size() + _grow_size;
+                hilet new_capacity = other.size() + _grow_size;
 
                 _begin = _allocator.allocate(new_capacity);
                 _it_end = _begin + other.size();
@@ -224,11 +224,11 @@ public:
             }
 
             // Other can keep its own capacity.
-            ttlet other_capacity = other.capacity();
+            hilet other_capacity = other.capacity();
             other._it_end = other._begin;
             other._gap_begin = other._begin;
             other._gap_size = other_capacity;
-            tt_axiom(holds_invariant());
+            hi_axiom(holds_invariant());
             return *this;
         }
     }
@@ -252,7 +252,7 @@ public:
      */
     [[nodiscard]] reference operator[](size_type index) noexcept
     {
-        tt_axiom(index < size());
+        hi_axiom(index < size());
         return *get_pointer_from_index(index);
     }
 
@@ -264,7 +264,7 @@ public:
      */
     [[nodiscard]] const_reference operator[](size_type index) const noexcept
     {
-        tt_axiom(index < size());
+        hi_axiom(index < size());
         return *get_pointer_from_index(index);
     }
 
@@ -298,37 +298,37 @@ public:
 
     [[nodiscard]] reference front() noexcept
     {
-        tt_axiom(size() != 0);
+        hi_axiom(size() != 0);
         return *get_pointer_from_it_ptr(_begin);
     }
 
     [[nodiscard]] const_reference front() const noexcept
     {
-        tt_axiom(size() != 0);
+        hi_axiom(size() != 0);
         return *get_pointer_from_it_ptr(_begin);
     }
 
     [[nodiscard]] reference back() noexcept
     {
-        tt_axiom(size() != 0);
+        hi_axiom(size() != 0);
         return *get_pointer_from_it_ptr(_it_end - 1);
     }
 
     [[nodiscard]] const_reference back() const noexcept
     {
-        tt_axiom(size() != 0);
+        hi_axiom(size() != 0);
         return *get_pointer_from_it_ptr(_it_end - 1);
     }
 
     void pop_back() noexcept
     {
-        tt_axiom(size() != 0);
+        hi_axiom(size() != 0);
         erase(end() - 1);
     }
 
     void pop_front() noexcept
     {
-        tt_axiom(size() != 0);
+        hi_axiom(size() != 0);
         erase(begin());
     }
 
@@ -344,12 +344,12 @@ public:
         if (_begin) {
             std::destroy(left_begin_ptr(), left_end_ptr());
             std::destroy(right_begin_ptr(), right_end_ptr());
-            ttlet this_capacity = capacity();
+            hilet this_capacity = capacity();
             _it_end = _begin;
             _gap_begin = _begin;
             _gap_size = this_capacity;
         }
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     [[nodiscard]] std::size_t size() const noexcept
@@ -369,7 +369,7 @@ public:
 
     void reserve(std::size_t new_capacity) noexcept
     {
-        ttlet extra_capacity = static_cast<ssize_t>(new_capacity) - capacity();
+        hilet extra_capacity = static_cast<ssize_t>(new_capacity) - capacity();
         if (extra_capacity <= 0) {
             return;
         }
@@ -377,10 +377,10 @@ public:
         // Add the extra_capacity to the end of the gap.
         // LLL...RRR
         // LLL....RRR
-        ttlet new_begin = _allocator.allocate(new_capacity);
-        ttlet new_it_end = new_begin + size();
-        ttlet new_gap_begin = new_begin + left_size();
-        ttlet new_gap_size = new_capacity - size();
+        hilet new_begin = _allocator.allocate(new_capacity);
+        hilet new_it_end = new_begin + size();
+        hilet new_gap_begin = new_begin + left_size();
+        hilet new_gap_size = new_capacity - size();
 
         if (_begin != nullptr) {
             placement_move(left_begin_ptr(), left_end_ptr(), new_begin);
@@ -392,7 +392,7 @@ public:
         _it_end = new_it_end;
         _gap_begin = new_gap_begin;
         _gap_size = new_gap_size;
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     [[nodiscard]] iterator begin() noexcept
@@ -483,7 +483,7 @@ public:
 #if TT_BUILT_TYPE == TT_BT_DEBUG
         ++_version;
 #endif
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
         return *ptr;
     }
 
@@ -504,7 +504,7 @@ public:
     template<typename... Args>
     reference emplace_before(const_iterator position, Args &&...args) noexcept
     {
-        tt_axiom(position._buffer == this);
+        hi_axiom(position._buffer == this);
         set_gap_offset(position.it_rw_ptr());
         grow_to_insert(1);
 
@@ -514,7 +514,7 @@ public:
 #if TT_BUILT_TYPE == TT_BT_DEBUG
         ++_version;
 #endif
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
         return *ptr;
     }
 
@@ -556,7 +556,7 @@ public:
         while (it != first) {
             position = insert_before(position, *(--it));
         }
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
         return position;
     }
 
@@ -567,7 +567,7 @@ public:
     template<typename... Args>
     reference emplace_after(const_iterator position, Args &&...args) noexcept
     {
-        tt_axiom(position._buffer == this);
+        hi_axiom(position._buffer == this);
         set_gap_offset(position.it_rw_ptr());
         grow_to_insert(1);
 
@@ -578,7 +578,7 @@ public:
 #if TT_BUILT_TYPE == TT_BT_DEBUG
         ++_version;
 #endif
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
         return *ptr;
     }
 
@@ -616,7 +616,7 @@ public:
         for (auto it = first; it != last; ++it) {
             position_ = insert_after(position_, *it) + 1;
         }
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
         return position_;
     }
 
@@ -629,19 +629,19 @@ public:
     {
         // place the gap after the last iterator, this way we can use the
         // it_ptr directly because we don't need to skip the gap.
-        tt_axiom(first._buffer == this);
-        tt_axiom(last._buffer == this);
+        hi_axiom(first._buffer == this);
+        hi_axiom(last._buffer == this);
 
         set_gap_offset(last.it_rw_ptr());
         auto first_p = first.it_rw_ptr();
         auto last_p = last.it_rw_ptr();
-        ttlet erase_size = last_p - first_p;
+        hilet erase_size = last_p - first_p;
 
         std::destroy(first_p, last_p);
         _gap_begin = first_p;
         _gap_size += erase_size;
         _it_end -= erase_size;
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
         return iterator{this, _gap_begin};
     }
 
@@ -723,7 +723,7 @@ private:
             auto new_capacity = size() + n + narrow_cast<size_type>(_grow_size);
             reserve(ceil(new_capacity, hardware_constructive_interference_size));
         }
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     /** Get iterator from pointer.
@@ -755,7 +755,7 @@ private:
      */
     const_pointer get_const_pointer_from_it(const_pointer it_ptr) const noexcept
     {
-        tt_axiom(it_ptr >= _begin && it_ptr <= _it_end);
+        hi_axiom(it_ptr >= _begin && it_ptr <= _it_end);
 
         if (it_ptr < _gap_begin) {
             return it_ptr;
@@ -862,7 +862,7 @@ private:
         }
 
         _gap_begin = new_gap_begin;
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     template<typename IT>
@@ -908,7 +908,7 @@ public:
 #if TT_BUILT_TYPE == TT_BT_DEBUG
         _version = other._version;
 #endif
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     gap_buffer_iterator(
@@ -926,7 +926,7 @@ public:
         _version(version)
 #endif
     {
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     reference operator*() noexcept requires(!is_const)
@@ -962,7 +962,7 @@ public:
     gap_buffer_iterator &operator++() noexcept
     {
         ++_it_ptr;
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
         return *this;
     }
 
@@ -970,14 +970,14 @@ public:
     {
         auto tmp = *this;
         ++_it_ptr;
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
         return tmp;
     }
 
     gap_buffer_iterator &operator--() noexcept
     {
         --_it_ptr;
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
         return *this;
     }
 
@@ -985,21 +985,21 @@ public:
     {
         auto tmp = *this;
         --_it_ptr;
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
         return tmp;
     }
 
     gap_buffer_iterator &operator+=(difference_type n) noexcept
     {
         _it_ptr += n;
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
         return *this;
     }
 
     gap_buffer_iterator &operator-=(difference_type n) noexcept
     {
         _it_ptr -= n;
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
         return *this;
     }
 
@@ -1053,7 +1053,7 @@ private:
 #if TT_BUILT_TYPE == TT_BT_DEBUG
         _version = other._version;
 #endif
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     [[nodiscard]] T *it_ptr() const noexcept
@@ -1083,4 +1083,4 @@ private:
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

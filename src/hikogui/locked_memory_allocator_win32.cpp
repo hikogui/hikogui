@@ -7,13 +7,13 @@
 #include "memory.hpp"
 #include <Windows.h>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] std::byte *locked_memory_allocator_allocate(std::size_t n) noexcept
 {
     auto p = VirtualAlloc(NULL, n, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
     if (p == NULL) {
-        tt_log_fatal("Could not allocate locked memory. '{}'", get_last_error_message());
+        hi_log_fatal("Could not allocate locked memory. '{}'", get_last_error_message());
     }
 
     auto handle = GetCurrentProcess();
@@ -21,13 +21,13 @@ namespace tt::inline v1 {
     SIZE_T maximum_working_set_size;
 
     if (!GetProcessWorkingSetSize(handle, &minimum_working_set_size, &maximum_working_set_size)) {
-        tt_log_warning("Could not get process working set size. '{}'", get_last_error_message());
+        hi_log_warning("Could not get process working set size. '{}'", get_last_error_message());
 
     } else {
         minimum_working_set_size += ceil(n, SIZE_T{4096});
         maximum_working_set_size += ceil(n, SIZE_T{4096});
         if (!SetProcessWorkingSetSize(handle, minimum_working_set_size, maximum_working_set_size)) {
-            tt_log_warning(
+            hi_log_warning(
                 "Could not set process working set size to {}:{}. '{}'",
                 minimum_working_set_size,
                 maximum_working_set_size,
@@ -35,7 +35,7 @@ namespace tt::inline v1 {
 
         } else {
             if (!VirtualLock(p, n)) {
-                tt_log_warning("Could not lock memory. '{}'", get_last_error_message());
+                hi_log_warning("Could not lock memory. '{}'", get_last_error_message());
             }
         }
     }
@@ -45,7 +45,7 @@ namespace tt::inline v1 {
 void locked_memory_allocator_deallocate(std::byte *p, std::size_t n) noexcept
 {
     if (!VirtualUnlock(reinterpret_cast<LPVOID>(p), n)) {
-        tt_log_warning("Could not unlock memory. '{}'", get_last_error_message());
+        hi_log_warning("Could not unlock memory. '{}'", get_last_error_message());
 
     } else {
         auto handle = GetCurrentProcess();
@@ -53,13 +53,13 @@ void locked_memory_allocator_deallocate(std::byte *p, std::size_t n) noexcept
         SIZE_T maximum_working_set_size;
 
         if (!GetProcessWorkingSetSize(handle, &minimum_working_set_size, &maximum_working_set_size)) {
-            tt_log_warning("Could not get process working set size. '{}'", get_last_error_message());
+            hi_log_warning("Could not get process working set size. '{}'", get_last_error_message());
 
         } else {
             minimum_working_set_size -= ceil(n, SIZE_T{4096});
             maximum_working_set_size -= ceil(n, SIZE_T{4096});
             if (!SetProcessWorkingSetSize(handle, minimum_working_set_size, maximum_working_set_size)) {
-                tt_log_warning(
+                hi_log_warning(
                     "Could not set process working set size to {}:{}. '{}'",
                     minimum_working_set_size,
                     maximum_working_set_size,
@@ -69,8 +69,8 @@ void locked_memory_allocator_deallocate(std::byte *p, std::size_t n) noexcept
     }
 
     if (!VirtualFree(reinterpret_cast<LPVOID>(p), 0, MEM_RELEASE)) {
-        tt_log_fatal("Could not deallocate locked memory. '{}'", get_last_error_message());
+        hi_log_fatal("Could not deallocate locked memory. '{}'", get_last_error_message());
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

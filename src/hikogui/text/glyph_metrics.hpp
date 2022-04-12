@@ -8,7 +8,7 @@
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/scale.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /*! Metrics of a glyph.
  * This information is used to position glyphs next to each other
@@ -56,4 +56,4 @@ struct glyph_metrics {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

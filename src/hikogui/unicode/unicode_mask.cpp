@@ -4,7 +4,7 @@
 
 #include "unicode_mask.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] bool unicode_mask::contains(char32_t c) const noexcept
 {
@@ -21,7 +21,7 @@ namespace tt::inline v1 {
 
 [[nodiscard]] bool unicode_mask::contains_composed(grapheme g) const noexcept
 {
-    for (ttlet c : g.composed()) {
+    for (hilet c : g.composed()) {
         if (not contains(c)) {
             return false;
         }
@@ -31,7 +31,7 @@ namespace tt::inline v1 {
 
 [[nodiscard]] bool unicode_mask::contains_decomposed(grapheme g) const noexcept
 {
-    for (ttlet c : g.decomposed()) {
+    for (hilet c : g.decomposed()) {
         if (not contains(c)) {
             return false;
         }
@@ -86,14 +86,14 @@ namespace tt::inline v1 {
 
 void unicode_mask::add(char32_t first, char32_t last) noexcept
 {
-    auto it = std::lower_bound(begin(_entries), end(_entries), first, [](ttlet &item, ttlet &c) {
+    auto it = std::lower_bound(begin(_entries), end(_entries), first, [](hilet &item, hilet &c) {
         return item.begin() < c;
     });
 
     while (first != last) {
         if (it == _entries.end()) {
             // Append the items.
-            ttlet last_to_insert = std::min({last, static_cast<char32_t>(first + entry_type::capacity())});
+            hilet last_to_insert = std::min({last, static_cast<char32_t>(first + entry_type::capacity())});
 
             it = _entries.emplace(it, first, last_to_insert) + 1;
             _size += last_to_insert - first;
@@ -102,7 +102,7 @@ void unicode_mask::add(char32_t first, char32_t last) noexcept
 
         } else if (first < it->begin()) {
             // Insert the left side before the current entry.
-            ttlet last_to_insert = std::min({last, it->begin(), static_cast<char32_t>(first + entry_type::capacity())});
+            hilet last_to_insert = std::min({last, it->begin(), static_cast<char32_t>(first + entry_type::capacity())});
 
             it = _entries.emplace(it, first, last_to_insert) + 1;
             _size += last_to_insert - first;
@@ -143,7 +143,7 @@ void unicode_mask::optimize() noexcept
 
         } else if (it->end() == next_it->begin()) {
             // Current and next element are touching, optimize it.
-            ttlet to_move = std::min(it->room(), next_it->size());
+            hilet to_move = std::min(it->room(), next_it->size());
             it->add_back(to_move);
             next_it->remove_front(to_move);
 
@@ -159,10 +159,10 @@ void unicode_mask::optimize() noexcept
         // The current entry was the last element that is still in use.
         ++it;
     }
-    tt_axiom(it == end(_entries) or it->empty());
+    hi_axiom(it == end(_entries) or it->empty());
 
     _entries.erase(it, end(_entries));
-    tt_axiom(holds_invariant());
+    hi_axiom(holds_invariant());
 }
 
 void unicode_mask::shrink_to_fit() noexcept
@@ -174,7 +174,7 @@ void unicode_mask::shrink_to_fit() noexcept
 {
     std::size_t total_size = 0;
 
-    for (ttlet entry : _entries) {
+    for (hilet entry : _entries) {
         if (entry.empty()) {
             return false;
         }
@@ -189,4 +189,4 @@ void unicode_mask::shrink_to_fit() noexcept
     return true;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

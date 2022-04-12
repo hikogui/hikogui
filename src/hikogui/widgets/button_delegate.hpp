@@ -8,7 +8,7 @@
 #include <memory>
 #include <functional>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 class abstract_button_widget;
 
 class button_delegate {
@@ -23,7 +23,7 @@ public:
      */
     [[nodiscard]] auto subscribe(abstract_button_widget &sender, std::invocable<> auto &&callback) noexcept
     {
-        return _notifier.subscribe(tt_forward(callback));
+        return _notifier.subscribe(hi_forward(callback));
     }
 
     /** Called when the button is pressed by the user.
@@ -41,4 +41,4 @@ protected:
     notifier<> _notifier;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

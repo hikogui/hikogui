@@ -60,11 +60,11 @@ Here is some example code for an application with three radio buttons,
 who form a set by sharing a single `value` observable.
 
 ```
-int tt_main(int argc, char *argv[])
+int hi_main(int argc, char *argv[])
 {
     observable<int> value = 0;
 
-    auto gui = tt::gui_system::make_unique();
+    auto gui = hi::gui_system::make_unique();
     auto &window = gui.make_window(tr("Radio button example"));
     window.content().make_widget<label_widget>("A1", tr("radio buttons:"));
     window.content().make_widget<radio_button_widget>("B1", tr("one"), value, 1);

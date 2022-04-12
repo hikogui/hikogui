@@ -14,7 +14,7 @@
 #include <concepts>
 #include <thread>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Polymorphic optional.
  * This optional container can hold an polymorphic value.
@@ -144,7 +144,7 @@ public:
 
     /** Destroys the contained value, otherwise has no effect.
      */
-    tt_force_inline void reset() noexcept
+    hi_force_inline void reset() noexcept
     {
         if (auto *ptr = _pointer.exchange(nullptr, std::memory_order::acquire)) {
             if (equal_ptr(ptr, this)) {
@@ -156,14 +156,14 @@ public:
     };
 
     template<typename Value, typename... Args>
-    tt_force_inline Value& emplace(Args&&...args) noexcept
+    hi_force_inline Value& emplace(Args&&...args) noexcept
     {
         reset();
 
         if constexpr (sizeof(Value) <= capacity and alignof(Value) <= alignment) {
             // Overwrite the buffer with the new slot.
             auto new_ptr = new (_buffer.data()) Value(std::forward<Args>(args)...);
-            tt_axiom(equal_ptr(new_ptr, this));
+            hi_axiom(equal_ptr(new_ptr, this));
 
             _pointer.store(new_ptr, std::memory_order::release);
             return *new_ptr;
@@ -172,8 +172,8 @@ public:
             // We need a heap allocated pointer with a fully constructed object
             // Lets do this ahead of time to let another thread have some time
             // to release the ring-buffer-slot.
-            ttlet new_ptr = new Value(std::forward<Args>(args)...);
-            tt_axiom(new_ptr != nullptr);
+            hilet new_ptr = new Value(std::forward<Args>(args)...);
+            hi_axiom(new_ptr != nullptr);
 
             _pointer.store(new_ptr, std::memory_order::release);
             return *new_ptr;
@@ -187,7 +187,7 @@ public:
      * @return If empty/false the polymorphic_optional was empty, otherwise it contains the return value of the function if any.
      */
     template<typename Func>
-    tt_force_inline auto invoke_and_reset(Func&& func) noexcept
+    hi_force_inline auto invoke_and_reset(Func&& func) noexcept
     {
         using func_result = decltype(std::declval<Func>()(std::declval<base_type&>()));
         using result_type = std::conditional_t<std::is_same_v<func_result, void>, bool, std::optional<func_result>>;
@@ -244,7 +244,7 @@ public:
      * @return The result of the invoked function.
      */
     template<typename Value, typename Func, typename... Args>
-    tt_force_inline auto wait_emplace_and_invoke(Func&& func, Args&&...args) noexcept
+    hi_force_inline auto wait_emplace_and_invoke(Func&& func, Args&&...args) noexcept
     {
         using func_result = decltype(std::declval<Func>()(std::declval<Value&>()));
 
@@ -259,7 +259,7 @@ public:
 
             // Overwrite the buffer with the new slot.
             auto new_ptr = new (_buffer.data()) Value(std::forward<Args>(args)...);
-            tt_axiom(equal_ptr(new_ptr, this));
+            hi_axiom(equal_ptr(new_ptr, this));
 
             if constexpr (std::is_same_v<func_result, void>) {
                 // Call the function on the newly created message.
@@ -281,8 +281,8 @@ public:
             // We need a heap allocated pointer with a fully constructed object
             // Lets do this ahead of time to let another thread have some time
             // to release the ring-buffer-slot.
-            ttlet new_ptr = new Value(std::forward<Args>(args)...);
-            tt_axiom(new_ptr != nullptr);
+            hilet new_ptr = new Value(std::forward<Args>(args)...);
+            hi_axiom(new_ptr != nullptr);
 
             // Wait until the slot.pointer is a nullptr.
             // We don't need to acquire since we wrote into a new heap location.
@@ -324,7 +324,7 @@ private:
      */
     std::atomic<pointer> _pointer;
 
-    tt_no_inline void contended() noexcept
+    hi_no_inline void contended() noexcept
     {
         using namespace std::chrono_literals;
 
@@ -334,4 +334,4 @@ private:
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

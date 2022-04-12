@@ -13,7 +13,7 @@
 #include <numeric>
 #include <chrono>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 std::string format_engineering(std::chrono::nanoseconds duration)
 {
@@ -39,20 +39,20 @@ std::string format_engineering(std::chrono::nanoseconds duration)
     // With three samples gathered on the same CPU we should
     // have a TSC/UTC/TSC combination that was run inside a single time-slice.
     for (auto i = 0; i != 10; ++i) {
-        ttlet tmp_tsc1 = time_stamp_count::now();
-        ttlet tmp_tp = std::chrono::utc_clock::now();
-        ttlet tmp_tsc2 = time_stamp_count::now();
+        hilet tmp_tsc1 = time_stamp_count::now();
+        hilet tmp_tp = std::chrono::utc_clock::now();
+        hilet tmp_tsc2 = time_stamp_count::now();
 
         if (tmp_tsc1.cpu_id() != tmp_tsc2.cpu_id()) {
-            tt_log_fatal("CPU Switch detected during get_sample(), which should never happen");
+            hi_log_fatal("CPU Switch detected during get_sample(), which should never happen");
         }
 
         if (tmp_tsc1.count() > tmp_tsc2.count()) {
-            tt_log_warning("TSC skipped backwards");
+            hi_log_warning("TSC skipped backwards");
             continue;
         }
 
-        ttlet diff = tmp_tsc2.count() - tmp_tsc1.count();
+        hilet diff = tmp_tsc2.count() - tmp_tsc1.count();
 
         if (diff < shortest_diff) {
             shortest_diff = diff;
@@ -62,7 +62,7 @@ std::string format_engineering(std::chrono::nanoseconds duration)
     }
 
     if (shortest_diff == std::numeric_limits<uint64_t>::max()) {
-        tt_log_fatal("Unable to get TSC sample.");
+        hi_log_fatal("Unable to get TSC sample.");
     }
 
     tsc = shortest_tsc;
@@ -73,16 +73,16 @@ std::string format_engineering(std::chrono::nanoseconds duration)
 {
     auto i = tsc.cpu_id();
     if (i >= 0) {
-        ttlet tsc_epoch = tsc_epochs[i].load(std::memory_order::relaxed);
+        hilet tsc_epoch = tsc_epochs[i].load(std::memory_order::relaxed);
         if (tsc_epoch != utc_nanoseconds{}) {
             return tsc_epoch + tsc.time_since_epoch();
         }
     }
 
     // Fallback.
-    ttlet ref_tp = std::chrono::utc_clock::now();
-    ttlet ref_tsc = time_stamp_count::now();
-    ttlet diff_ns = ref_tsc.time_since_epoch() - tsc.time_since_epoch();
+    hilet ref_tp = std::chrono::utc_clock::now();
+    hilet ref_tsc = time_stamp_count::now();
+    hilet diff_ns = ref_tsc.time_since_epoch() - tsc.time_since_epoch();
     return ref_tp - diff_ns;
 }
 
@@ -97,7 +97,7 @@ void time_stamp_utc::subsystem_proc_frequency_calibration(std::stop_token stop_t
 
     std::array<uint64_t, 16> frequencies;
     for (auto i = 0; i != frequencies.size();) {
-        ttlet f = time_stamp_count::measure_frequency(1s);
+        hilet f = time_stamp_count::measure_frequency(1s);
         if (f != 0) {
             frequencies[i] = f;
             ++i;
@@ -108,19 +108,19 @@ void time_stamp_utc::subsystem_proc_frequency_calibration(std::stop_token stop_t
         }
     }
     std::ranges::sort(frequencies);
-    ttlet iqr_size = frequencies.size() / 2;
-    ttlet iqr_first = std::next(frequencies.cbegin(), frequencies.size() / 4);
-    ttlet iqr_last = std::next(iqr_first, iqr_size);
-    ttlet frequency = std::accumulate(iqr_first, iqr_last, uint64_t{0}) / iqr_size;
+    hilet iqr_size = frequencies.size() / 2;
+    hilet iqr_first = std::next(frequencies.cbegin(), frequencies.size() / 4);
+    hilet iqr_last = std::next(iqr_first, iqr_size);
+    hilet frequency = std::accumulate(iqr_first, iqr_last, uint64_t{0}) / iqr_size;
 
-    tt_log_info("Accurate measurement of TSC frequency result is {} Hz", frequency);
+    hi_log_info("Accurate measurement of TSC frequency result is {} Hz", frequency);
     time_stamp_count::set_frequency(frequency);
 }
 
 static void advance_cpu_thread_mask(uint64_t const &process_cpu_mask, uint64_t &thread_cpu_mask)
 {
-    tt_axiom(std::popcount(process_cpu_mask) > 0);
-    tt_axiom(std::popcount(thread_cpu_mask) == 1);
+    hi_axiom(std::popcount(process_cpu_mask) > 0);
+    hi_axiom(std::popcount(thread_cpu_mask) == 1);
 
     do {
         if ((thread_cpu_mask <<= 1) == 0) {
@@ -137,18 +137,18 @@ void time_stamp_utc::subsystem_proc(std::stop_token stop_token) noexcept
     set_thread_name("time_stamp_utc");
     subsystem_proc_frequency_calibration(stop_token);
 
-    ttlet process_cpu_mask = process_affinity_mask();
+    hilet process_cpu_mask = process_affinity_mask();
 
     std::size_t next_cpu = 0;
     while (!stop_token.stop_requested()) {
-        ttlet current_cpu = advance_thread_affinity(next_cpu);
+        hilet current_cpu = advance_thread_affinity(next_cpu);
 
         std::this_thread::sleep_for(100ms);
-        ttlet lock = std::scoped_lock(time_stamp_utc::mutex);
+        hilet lock = std::scoped_lock(time_stamp_utc::mutex);
 
         time_stamp_count tsc;
-        ttlet tp = time_stamp_utc::now(tsc);
-        tt_axiom(tsc.cpu_id() == narrow_cast<ssize_t>(current_cpu));
+        hilet tp = time_stamp_utc::now(tsc);
+        hi_axiom(tsc.cpu_id() == narrow_cast<ssize_t>(current_cpu));
 
         tsc_epochs[current_cpu].store(tp - tsc.time_since_epoch(), std::memory_order::relaxed);
     }
@@ -172,12 +172,12 @@ void time_stamp_utc::deinit_subsystem() noexcept
 
 bool time_stamp_utc::start_subsystem() noexcept
 {
-    return tt::start_subsystem(global_state_type::time_stamp_utc_is_running, init_subsystem, deinit_subsystem);
+    return hi::start_subsystem(global_state_type::time_stamp_utc_is_running, init_subsystem, deinit_subsystem);
 }
 
 void time_stamp_utc::stop_subsystem() noexcept
 {
-    return tt::stop_subsystem(deinit_subsystem);
+    return hi::stop_subsystem(deinit_subsystem);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

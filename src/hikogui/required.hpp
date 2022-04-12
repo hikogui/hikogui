@@ -13,23 +13,23 @@
 #include <string>
 #include <chrono>
 
-#ifndef ttlet
+#ifndef hilet
 /** Invariant should be the default for variables.
  *
  * C++ does have an invariant but it requires you to enter the 'const' keyword which
- * is easy to forget. Using a single keyword 'ttlet' for an invariant makes it easier to notice
+ * is easy to forget. Using a single keyword 'hilet' for an invariant makes it easier to notice
  * when you have defined a variant.
  */
-#define ttlet auto const
+#define hilet auto const
 #endif
 
-#ifndef tt_forward
+#ifndef hi_forward
 /** Forward a value, based on the decltype of the value.
  */
-#define tt_forward(x) std::forward<decltype(x)>(x)
+#define hi_forward(x) std::forward<decltype(x)>(x)
 #endif
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 
 /** Signed size/index into an array.
@@ -53,8 +53,8 @@ constexpr std::ptrdiff_t operator"" _z(unsigned long long lhs) noexcept
     return static_cast<std::ptrdiff_t>(lhs);
 }
 
-#define tt_return_on_self_assignment(other) \
+#define hi_return_on_self_assignment(other) \
     if (&(other) == this) [[unlikely]] \
         return *this;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

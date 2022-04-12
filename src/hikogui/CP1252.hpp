@@ -6,11 +6,11 @@
 
 #include <cstddef>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] constexpr char32_t CP1252_to_UTF32(char inputCharacter) noexcept
 {
-    ttlet inputCharacter_ = static_cast<uint8_t>(inputCharacter);
+    hilet inputCharacter_ = static_cast<uint8_t>(inputCharacter);
     if (inputCharacter_ <= 0x7f) {
         return inputCharacter_;
     } else if (inputCharacter_ >= 0xa0) {
@@ -54,4 +54,4 @@ namespace tt::inline v1 {
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

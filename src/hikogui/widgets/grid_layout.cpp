@@ -6,7 +6,7 @@
 #include "../required.hpp"
 #include "../math.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Grow the cells in a span.
  *
@@ -19,19 +19,19 @@ namespace tt::inline v1 {
  */
 [[nodiscard]] static float grow(auto first, auto last, float growth, auto const &predicate) noexcept
 {
-    tt_axiom(growth >= 0.0f);
+    hi_axiom(growth >= 0.0f);
 
-    auto num_cells_to_grow = std::count_if(first, last, [&predicate](ttlet &cell) {
+    auto num_cells_to_grow = std::count_if(first, last, [&predicate](hilet &cell) {
         return predicate(cell) > 0.0f;
     });
     while (growth > 0.0f and num_cells_to_grow != 0) {
         // Grow each cell
-        ttlet growth_per_cell = std::ceil(growth / num_cells_to_grow);
+        hilet growth_per_cell = std::ceil(growth / num_cells_to_grow);
 
         // In the loop we count the number of cells that can grow again in the next iteration.
         num_cells_to_grow = 0_uz;
         for (auto it = first; it != last; ++it) {
-            ttlet growth_this_cell = std::min(predicate(*it), std::min(growth_per_cell, growth));
+            hilet growth_this_cell = std::min(predicate(*it), std::min(growth_per_cell, growth));
 
             if (growth_this_cell > 0.0f) {
                 it->size += growth_this_cell;
@@ -50,7 +50,7 @@ namespace tt::inline v1 {
 static void grow(auto first, auto last, float growth) noexcept
 {
     // First grow the cells to their preferred size.
-    growth = grow(first, last, growth, [](ttlet &cell) {
+    growth = grow(first, last, growth, [](hilet &cell) {
         return cell.preferred - cell.size;
     });
     if (growth == 0.0f) {
@@ -58,7 +58,7 @@ static void grow(auto first, auto last, float growth) noexcept
     }
 
     // Next grow to cell to their maximum size.
-    growth = grow(first, last, growth, [](ttlet &cell) {
+    growth = grow(first, last, growth, [](hilet &cell) {
         return cell.maximum - cell.size;
     });
     if (growth == 0.0f) {
@@ -68,7 +68,7 @@ static void grow(auto first, auto last, float growth) noexcept
     // At this point we will need to violate the maximum size constraint of a cell.
     // First do this for cells that already have a maximum that is different from their preferred.
     // All cells where `preferred < maximum` will absorb all of the growth.
-    growth = grow(first, last, growth, [](ttlet &cell) {
+    growth = grow(first, last, growth, [](hilet &cell) {
         return cell.maximum - cell.preferred;
     });
     if (growth == 0.0f) {
@@ -76,16 +76,16 @@ static void grow(auto first, auto last, float growth) noexcept
     }
 
     // Fallback by growing all of the widgets.
-    growth = grow(first, last, growth, [growth](ttlet &cell) {
+    growth = grow(first, last, growth, [growth](hilet &cell) {
         return growth;
     });
 
-    tt_axiom(growth == 0.0f);
+    hi_axiom(growth == 0.0f);
 }
 
 void grid_layout::constrain_cells_by_singles() noexcept
 {
-    for (ttlet &constraint : _constraints) {
+    for (hilet &constraint : _constraints) {
         inplace_max(_cells[constraint.first].margin, constraint.margin_before);
         inplace_max(_cells[constraint.last].margin, constraint.margin_after);
 
@@ -97,19 +97,19 @@ void grid_layout::constrain_cells_by_singles() noexcept
     // Due to the calculations above, make sure minimum <= preferred <= maximum
     for (auto &cell : _cells) {
         cell.fix_constraint();
-        tt_axiom(cell.holds_invariant());
+        hi_axiom(cell.holds_invariant());
     }
 }
 
 [[nodiscard]] void
 grid_layout::constrain_cells_by_spans(std::function<float(grid_layout::constraint_type const &)> const &predicate) noexcept
 {
-    for (ttlet &constraint : _constraints) {
+    for (hilet &constraint : _constraints) {
         if (constraint.is_span()) {
-            ttlet first = _cells.begin() + constraint.first;
-            ttlet last = _cells.begin() + constraint.last;
-            ttlet size = get_size(first, last);
-            if (ttlet extra_size = predicate(constraint) - size; extra_size > 0.0f) {
+            hilet first = _cells.begin() + constraint.first;
+            hilet last = _cells.begin() + constraint.last;
+            hilet size = get_size(first, last);
+            if (hilet extra_size = predicate(constraint) - size; extra_size > 0.0f) {
                 grow(first, last, extra_size);
             }
         }
@@ -119,7 +119,7 @@ grid_layout::constrain_cells_by_spans(std::function<float(grid_layout::constrain
 void grid_layout::commit_constraints() noexcept
 {
     // Add one more cell to handle the end margin.
-    tt_axiom(_cells.empty());
+    hi_axiom(_cells.empty());
     _cells.resize(num_cells() + 1);
 
     constrain_cells_by_singles();
@@ -130,7 +130,7 @@ void grid_layout::commit_constraints() noexcept
     }
 
     // Calculate the minimum cell sizes based on cell spans.
-    constrain_cells_by_spans([](ttlet &constraint) {
+    constrain_cells_by_spans([](hilet &constraint) {
         return constraint.minimum;
     });
     _minimum = get_size(0, num_cells());
@@ -144,7 +144,7 @@ void grid_layout::commit_constraints() noexcept
     }
 
     // Calculate the preferred cell sizes based on cell spans.
-    constrain_cells_by_spans([](ttlet &constraint) {
+    constrain_cells_by_spans([](hilet &constraint) {
         return constraint.preferred;
     });
     _preferred = get_size(0, num_cells());
@@ -157,7 +157,7 @@ void grid_layout::commit_constraints() noexcept
     }
 
     // Calculate the maximum cell sizes based on cell spans.
-    constrain_cells_by_spans([](ttlet &constraint) {
+    constrain_cells_by_spans([](hilet &constraint) {
         return constraint.maximum;
     });
     _maximum = get_size(0, num_cells());
@@ -165,13 +165,13 @@ void grid_layout::commit_constraints() noexcept
     // Now we know the actual maximum size of cells.
     for (auto &cell : _cells) {
         cell.maximum = cell.size;
-        tt_axiom(cell.holds_invariant());
+        hi_axiom(cell.holds_invariant());
     }
 }
 
 [[nodiscard]] bool grid_layout::holds_invariant() const noexcept
 {
-    for (ttlet &constraint: _constraints) {
+    for (hilet &constraint: _constraints) {
         if (get_size(constraint.first, constraint.last) < constraint.minimum) {
             return false;
         }
@@ -181,7 +181,7 @@ void grid_layout::commit_constraints() noexcept
 
 void grid_layout::layout(float size) noexcept
 {
-    tt_axiom(size >= minimum());
+    hi_axiom(size >= minimum());
 
     // Reset layout to the minimum size.
     for (auto &cell: _cells) {
@@ -189,11 +189,11 @@ void grid_layout::layout(float size) noexcept
     }
 
     // Include the last margin.
-    if (ttlet needed_growth = size - minimum(); needed_growth > 0.0f) {
+    if (hilet needed_growth = size - minimum(); needed_growth > 0.0f) {
         grow(_cells.begin(), _cells.begin() + num_cells(), needed_growth);
     }
 
-    tt_axiom(holds_invariant());
+    hi_axiom(holds_invariant());
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

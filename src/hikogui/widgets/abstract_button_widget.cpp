@@ -7,7 +7,7 @@
 #include "../GUI/gui_system.hpp"
 #include "../loop.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 abstract_button_widget::abstract_button_widget(
     gui_window &window,
@@ -68,7 +68,7 @@ void abstract_button_widget::set_layout_button(widget_layout const &context) noe
 
 [[nodiscard]] color abstract_button_widget::background_color() const noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
     if (_pressed) {
         return theme().color(theme_color::fill, semantic_layer + 2);
     } else {
@@ -78,7 +78,7 @@ void abstract_button_widget::set_layout_button(widget_layout const &context) noe
 
 [[nodiscard]] hitbox abstract_button_widget::hitbox_test(point3 position) const noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     if (*visible and *enabled and layout().contains(position)) {
         return {this, position, hitbox::Type::Button};
@@ -89,15 +89,15 @@ void abstract_button_widget::set_layout_button(widget_layout const &context) noe
 
 [[nodiscard]] bool abstract_button_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
-    tt_axiom(is_gui_thread());
-    return *visible and *enabled and any(group & tt::keyboard_focus_group::normal);
+    hi_axiom(is_gui_thread());
+    return *visible and *enabled and any(group & hi::keyboard_focus_group::normal);
 }
 
 void activate() noexcept;
 
 [[nodiscard]] bool abstract_button_widget::handle_event(command command) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     if (*enabled) {
         switch (command) {
@@ -115,7 +115,7 @@ void activate() noexcept;
 
 [[nodiscard]] bool abstract_button_widget::handle_event(mouse_event const &event) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
     auto handled = super::handle_event(event);
 
     if (event.cause.leftButton) {
@@ -133,4 +133,4 @@ void activate() noexcept;
     return handled;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

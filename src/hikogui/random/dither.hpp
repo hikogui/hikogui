@@ -7,7 +7,7 @@
 #include "xorshift128p.hpp"
 #include "../required.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** An object that create dither values to add to samples before rounding.
  *
@@ -34,7 +34,7 @@ public:
      */
     dither(int num_bits) noexcept
     {
-        tt_axiom(num_bits > 0);
+        hi_axiom(num_bits > 0);
         auto maximum_value = static_cast<float>((1_uz << num_bits) - 1);
 
         // The maximum value from the rectangular probability density function.
@@ -92,4 +92,4 @@ private:
     unsigned char _counter = 0;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

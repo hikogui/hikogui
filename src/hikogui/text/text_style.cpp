@@ -4,6 +4,6 @@
 
 #include "text_style.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 }

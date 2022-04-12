@@ -9,7 +9,7 @@
 #include "audio_system_win32.hpp"
 #endif
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 audio_system::audio_system(std::weak_ptr<audio_system_delegate> delegate) :
     _delegate(std::move(delegate))
@@ -32,4 +32,4 @@ void audio_system::deinit() noexcept
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

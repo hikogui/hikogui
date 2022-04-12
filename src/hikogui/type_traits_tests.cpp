@@ -26,32 +26,32 @@ TEST(type_traits, decayed_base_of)
     static_assert(!std::is_base_of_v<B, A>);
     static_assert(!std::is_base_of_v<C, A>);
 
-    static_assert(tt::is_decayed_base_of_v<A, A>);
-    static_assert(tt::is_decayed_base_of_v<A, B>);
-    static_assert(tt::is_decayed_base_of_v<A, C>);
-    static_assert(!tt::is_decayed_base_of_v<B, A>);
-    static_assert(!tt::is_decayed_base_of_v<C, A>);
+    static_assert(hi::is_decayed_base_of_v<A, A>);
+    static_assert(hi::is_decayed_base_of_v<A, B>);
+    static_assert(hi::is_decayed_base_of_v<A, C>);
+    static_assert(!hi::is_decayed_base_of_v<B, A>);
+    static_assert(!hi::is_decayed_base_of_v<C, A>);
 
-    static_assert(tt::is_decayed_base_of_v<A &, A>);
-    static_assert(tt::is_decayed_base_of_v<A &, B>);
-    static_assert(tt::is_decayed_base_of_v<A &, C>);
-    static_assert(!tt::is_decayed_base_of_v<B &, A>);
-    static_assert(!tt::is_decayed_base_of_v<C &, A>);
+    static_assert(hi::is_decayed_base_of_v<A &, A>);
+    static_assert(hi::is_decayed_base_of_v<A &, B>);
+    static_assert(hi::is_decayed_base_of_v<A &, C>);
+    static_assert(!hi::is_decayed_base_of_v<B &, A>);
+    static_assert(!hi::is_decayed_base_of_v<C &, A>);
 
-    static_assert(tt::is_decayed_base_of_v<A, A &>);
-    static_assert(tt::is_decayed_base_of_v<A, B &>);
-    static_assert(tt::is_decayed_base_of_v<A, C &>);
-    static_assert(!tt::is_decayed_base_of_v<B, A &>);
-    static_assert(!tt::is_decayed_base_of_v<C, A &>);
+    static_assert(hi::is_decayed_base_of_v<A, A &>);
+    static_assert(hi::is_decayed_base_of_v<A, B &>);
+    static_assert(hi::is_decayed_base_of_v<A, C &>);
+    static_assert(!hi::is_decayed_base_of_v<B, A &>);
+    static_assert(!hi::is_decayed_base_of_v<C, A &>);
 
-    static_assert(tt::is_decayed_base_of_v<A &, A &>);
-    static_assert(tt::is_decayed_base_of_v<A &, B &>);
-    static_assert(tt::is_decayed_base_of_v<A &, C &>);
-    static_assert(!tt::is_decayed_base_of_v<B &, A &>);
-    static_assert(!tt::is_decayed_base_of_v<C &, A &>);
+    static_assert(hi::is_decayed_base_of_v<A &, A &>);
+    static_assert(hi::is_decayed_base_of_v<A &, B &>);
+    static_assert(hi::is_decayed_base_of_v<A &, C &>);
+    static_assert(!hi::is_decayed_base_of_v<B &, A &>);
+    static_assert(!hi::is_decayed_base_of_v<C &, A &>);
 }
 
-template<tt::forward_of<std::string> Text>
+template<hi::forward_of<std::string> Text>
 std::string forward_of_test_func(Text &&text)
 {
     return std::forward<Text>(text);

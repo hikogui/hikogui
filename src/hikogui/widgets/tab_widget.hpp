@@ -9,7 +9,7 @@
 #include "tab_delegate.hpp"
 #include "default_tab_delegate.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A graphical element that shows only one of a predefined set of mutually
  * exclusive child widgets.
@@ -69,7 +69,7 @@ public:
     template<typename WidgetType, typename Key, typename... Args>
     WidgetType &make_widget(Key const &key, Args &&...args)
     {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
 
         auto tmp = std::make_unique<WidgetType>(window, this, std::forward<Args>(args)...);
         auto &ref = *tmp;
@@ -84,7 +84,7 @@ public:
     /// @privatesection
     [[nodiscard]] generator<widget *> children() const noexcept override
     {
-        for (ttlet &child : _children) {
+        for (hilet &child : _children) {
             co_yield child.get();
         }
     }
@@ -111,4 +111,4 @@ private:
     [[nodiscard]] widget &selected_child() const noexcept;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

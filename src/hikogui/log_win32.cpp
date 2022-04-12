@@ -17,7 +17,7 @@
 #include <Windows.h>
 #include <debugapi.h>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] std::string get_last_error_message() noexcept
 {
@@ -40,4 +40,4 @@ namespace tt::inline v1 {
     return strip(message);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

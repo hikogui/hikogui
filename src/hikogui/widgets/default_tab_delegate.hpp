@@ -11,7 +11,7 @@
 #include <memory>
 #include <unordered_map>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<typename T>
 class default_tab_delegate : public tab_delegate {
@@ -21,7 +21,7 @@ public:
     observable<value_type> value;
     std::unordered_map<std::size_t, std::size_t> tab_indices;
 
-    default_tab_delegate(auto &&value) noexcept : value(tt_forward(value))
+    default_tab_delegate(auto &&value) noexcept : value(hi_forward(value))
     {
         _value_cbt = this->value.subscribe([&](auto...) {
             this->_notifier();
@@ -30,7 +30,7 @@ public:
 
     void add_tab(tab_widget &sender, std::size_t key, std::size_t index) noexcept override
     {
-        tt_axiom(not tab_indices.contains(key));
+        hi_axiom(not tab_indices.contains(key));
         tab_indices[key] = index;
     }
 
@@ -58,4 +58,4 @@ std::unique_ptr<tab_delegate> make_unique_default_tab_delegate(Value &&value) no
     return std::make_unique<default_tab_delegate<value_type>>(std::forward<Value>(value));
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

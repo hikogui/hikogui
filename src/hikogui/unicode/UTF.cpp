@@ -10,8 +10,8 @@
 #include <bit>
 #include <type_traits>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

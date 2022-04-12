@@ -2,7 +2,7 @@
 
 #include <array>
 
-namespace tt::inline v1::detail {
+namespace hi::inline v1::detail {
 
 constexpr auto unicode_db_non_starter_table = std::array{
 #ifndef __INTELLISENSE__

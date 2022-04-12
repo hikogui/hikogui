@@ -13,7 +13,7 @@
 #include <ostream>
 #include <concepts>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** High performance big integer implementation.
  * The bigint is a fixed width integer which will allow the compiler
@@ -61,7 +61,7 @@ struct bigint {
         }
 
         // Sign extent the most-siginificant-digit.
-        ttlet sign = rhs.is_negative() ? min1_digit : zero_digit;
+        hilet sign = rhs.is_negative() ? min1_digit : zero_digit;
         for (; i != num_digits; ++i) {
             digits[i] = sign;
         }
@@ -80,7 +80,7 @@ struct bigint {
         }
 
         // Sign extent the most-siginificant-digit.
-        ttlet sign = rhs.is_negative() ? min1_digit : zero_digit;
+        hilet sign = rhs.is_negative() ? min1_digit : zero_digit;
         for (; i != num_digits; ++i) {
             digits[i] = sign;
         }
@@ -100,7 +100,7 @@ struct bigint {
         }
 
         // Sign extent to the rest of the digits.
-        ttlet sign = value < 0 ? min1_digit : zero_digit;
+        hilet sign = value < 0 ? min1_digit : zero_digit;
         for (std::size_t i = 1; i != num_digits; ++i) {
             digits[i] = sign;
         }
@@ -119,7 +119,7 @@ struct bigint {
         }
 
         // Sign extent to the rest of the digits.
-        ttlet sign = value < 0 ? min1_digit : zero_digit;
+        hilet sign = value < 0 ? min1_digit : zero_digit;
         for (std::size_t i = 1; i != num_digits; ++i) {
             digits[i] = sign;
         }
@@ -200,7 +200,7 @@ struct bigint {
     {
         auto r = bigint<digit_type, N, S>{};
 
-        ttlet sign = is_negative() ? min1_digit : zero_digit;
+        hilet sign = is_negative() ? min1_digit : zero_digit;
         for (auto i = 0; i != N; ++i) {
             r.digits[i] = i < num_digits ? digits[i] : sign;
         }
@@ -348,15 +348,15 @@ struct bigint {
      */
     [[nodiscard]] constexpr friend bigint crc(bigint const &lhs, bigint const &rhs) noexcept requires(not is_signed)
     {
-        ttlet polynomialOrder = bsr_carry_chain(rhs.digits, rhs.num_digits);
-        tt_assert(polynomialOrder >= 0);
+        hilet polynomialOrder = bsr_carry_chain(rhs.digits, rhs.num_digits);
+        hi_assert(polynomialOrder >= 0);
 
         auto tmp = static_cast<bigint<digit_type, 2 * num_digits>>(lhs) << polynomialOrder;
         auto rhs_ = static_cast<bigint<digit_type, 2 * num_digits>>(rhs);
 
         auto tmp_highest_bit = bsr_carry_chain(tmp.digits, tmp.num_digits);
         while (tmp_highest_bit >= polynomialOrder) {
-            ttlet divident = rhs_ << (tmp_highest_bit - polynomialOrder);
+            hilet divident = rhs_ << (tmp_highest_bit - polynomialOrder);
 
             tmp ^= divident;
             tmp_highest_bit = bsr_carry_chain(tmp.digits, tmp.num_digits);
@@ -486,7 +486,7 @@ struct bigint {
 
         auto product = bigint_x3_type{quotient} * bigint_x3_type{rhs};
 
-        tt_axiom(product <= lhs);
+        hi_axiom(product <= lhs);
         auto remainder = lhs - product;
 
         int retry = 0;
@@ -549,12 +549,12 @@ using ubig128 = bigint<uint64_t, 2, false>;
 using big128 = bigint<uint64_t, 2, true>;
 using uuid = bigint<uint64_t, 2, false>;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 
 template<std::unsigned_integral DigitType, std::size_t NumDigits, bool IsSigned>
-struct std::numeric_limits<tt::bigint<DigitType, NumDigits, IsSigned>> {
-    using value_type = tt::bigint<DigitType, NumDigits, IsSigned>;
+struct std::numeric_limits<hi::bigint<DigitType, NumDigits, IsSigned>> {
+    using value_type = hi::bigint<DigitType, NumDigits, IsSigned>;
 
     static constexpr bool is_specialized = true;
     static constexpr bool is_signed = IsSigned;

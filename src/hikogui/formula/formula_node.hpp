@@ -14,7 +14,7 @@
 #include <memory>
 #include <string>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct formula_node {
     using formula_vector = std::vector<std::unique_ptr<formula_node>>;
@@ -117,11 +117,11 @@ struct formula_node {
 };
 
 template<typename CharT>
-struct std::formatter<tt::formula_node, CharT> : std::formatter<string_view, CharT> {
-    auto format(tt::formula_node const &t, auto &fc)
+struct std::formatter<hi::formula_node, CharT> : std::formatter<string_view, CharT> {
+    auto format(hi::formula_node const &t, auto &fc)
     {
         return std::formatter<string_view, CharT>::format(to_string(t), fc);
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

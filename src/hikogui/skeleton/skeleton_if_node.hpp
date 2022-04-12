@@ -6,7 +6,7 @@
 
 #include "skeleton_node.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct skeleton_if_node final : skeleton_node {
     std::vector<statement_vector> children_groups;
@@ -52,17 +52,17 @@ struct skeleton_if_node final : skeleton_node {
 
     void post_process(formula_post_process_context &context) override
     {
-        tt_assert(ssize(expressions) == ssize(formula_locations));
+        hi_assert(ssize(expressions) == ssize(formula_locations));
         for (ssize_t i = 0; i != ssize(expressions); ++i) {
             post_process_expression(context, *expressions[i], formula_locations[i]);
         }
 
-        for (ttlet &children : children_groups) {
+        for (hilet &children : children_groups) {
             if (ssize(children) > 0) {
                 children.back()->left_align();
             }
 
-            for (ttlet &child : children) {
+            for (hilet &child : children) {
                 child->post_process(context);
             }
         }
@@ -70,7 +70,7 @@ struct skeleton_if_node final : skeleton_node {
 
     datum evaluate(formula_evaluation_context &context) override
     {
-        tt_axiom(ssize(expressions) == ssize(formula_locations));
+        hi_axiom(ssize(expressions) == ssize(formula_locations));
         for (ssize_t i = 0; i != ssize(expressions); ++i) {
             if (evaluate_formula_without_output(context, *expressions[i], formula_locations[i])) {
                 return evaluate_children(context, children_groups[i]);
@@ -84,7 +84,7 @@ struct skeleton_if_node final : skeleton_node {
 
     std::string string() const noexcept override
     {
-        tt_assert(expressions.size() > 0);
+        hi_assert(expressions.size() > 0);
         std::string s = "<if ";
         s += to_string(*expressions[0]);
         s += join(transform<std::vector<std::string>>(children_groups[0], [](auto &x) {
@@ -111,4 +111,4 @@ struct skeleton_if_node final : skeleton_node {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

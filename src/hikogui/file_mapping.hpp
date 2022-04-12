@@ -8,7 +8,7 @@
 #include <memory>
 #include <unordered_map>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /*! A file mapping.
  * A file mapping maps a region of bytes to a handle.
@@ -35,7 +35,7 @@ public:
      * \param file a pointer to an open file.
      * \param size Number of bytes from the start to map.
      */
-    file_mapping(std::shared_ptr<tt::file> const &file, std::size_t size);
+    file_mapping(std::shared_ptr<hi::file> const &file, std::size_t size);
 
     /*! Map a file.
      * Map a file up to size bytes.
@@ -76,7 +76,7 @@ private:
      * \param accesssMode mode of how to access the file.
      * \return A shared pointer to a file object.
      */
-    [[nodiscard]] static std::shared_ptr<tt::file> findOrOpenFile(URL const &path, access_mode accessMode);
+    [[nodiscard]] static std::shared_ptr<hi::file> findOrOpenFile(URL const &path, access_mode accessMode);
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

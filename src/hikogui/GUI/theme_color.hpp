@@ -8,7 +8,7 @@
 #include "../exception.hpp"
 #include <array>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 enum class theme_color : unsigned char {
     blue,
@@ -105,4 +105,4 @@ constexpr auto saturated_theme_colors = std::array{
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

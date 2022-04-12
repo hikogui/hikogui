@@ -12,7 +12,7 @@
 #include <cmath>
 #include <iterator>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Transform an input container to the output container.
  * @param input Input container.
@@ -53,7 +53,7 @@ template<typename T, typename F>
 inline void erase_if(T &v, F predicate)
 {
     while (true) {
-        ttlet i = std::find_if(v.begin(), v.end(), predicate);
+        hilet i = std::find_if(v.begin(), v.end(), predicate);
         if (i == v.end()) {
             return;
         }
@@ -77,7 +77,7 @@ constexpr It rfind_if(It const first, It const last, UnaryPredicate predicate)
 template<typename It, typename UnaryPredicate>
 constexpr It rfind_if_not(It const first, It const last, UnaryPredicate predicate)
 {
-    return rfind_if(first, last, [&](ttlet &x) {
+    return rfind_if(first, last, [&](hilet &x) {
         return !predicate(x);
     });
 }
@@ -85,7 +85,7 @@ constexpr It rfind_if_not(It const first, It const last, UnaryPredicate predicat
 template<typename It, typename T>
 constexpr It rfind(It const first, It const last, T const &value)
 {
-    return rfind_if(first, last, [&](ttlet &x) {
+    return rfind_if(first, last, [&](hilet &x) {
         return x == value;
     });
 }
@@ -100,8 +100,8 @@ constexpr It rfind(It const first, It const last, T const &value)
 template<typename It, typename ItAny>
 [[nodiscard]] constexpr It find_any(It data_first, It data_last, ItAny value_first, ItAny value_last) noexcept
 {
-    return std::find_if(data_first, data_last, [value_first, value_last](ttlet &data) {
-        return std::any_of(value_first, value_last, [&data](ttlet &value) {
+    return std::find_if(data_first, data_last, [value_first, value_last](hilet &data) {
+        return std::any_of(value_first, value_last, [&data](hilet &value) {
             return data == value;
         });
     });
@@ -116,7 +116,7 @@ template<typename It, typename ItAny>
 template<typename ConstIt, typename It, typename UnaryPredicate>
 constexpr It find_cluster(ConstIt last, It start, UnaryPredicate predicate)
 {
-    ttlet cluster_id = predicate(*start);
+    hilet cluster_id = predicate(*start);
 
     for (auto i = start + 1; i != last; ++i) {
         if (predicate(*i) != cluster_id) {
@@ -135,7 +135,7 @@ constexpr It find_cluster(ConstIt last, It start, UnaryPredicate predicate)
 template<typename ConstIt, typename It, typename UnaryPredicate>
 constexpr It rfind_cluster(ConstIt first, It start, UnaryPredicate predicate)
 {
-    ttlet cluster_id = predicate(*start);
+    hilet cluster_id = predicate(*start);
 
     if (start == first) {
         return first;
@@ -152,7 +152,7 @@ constexpr It rfind_cluster(ConstIt first, It start, UnaryPredicate predicate)
         }
         --i;
     }
-    tt_unreachable();
+    hi_unreachable();
 }
 
 /** Find the begin and end of the current cluster.
@@ -265,8 +265,8 @@ auto shuffle_by_index(auto first, auto last, auto indices_first, auto indices_la
 
     std::size_t dst = 0;
     for (auto it = indices_first; it != indices_last; ++it, ++dst) {
-        ttlet index = index_op(*it);
-        tt_axiom(index < size(src_indices));
+        hilet index = index_op(*it);
+        hi_axiom(index < size(src_indices));
 
         auto src = [&src_indices, index]() {
             auto src = index;
@@ -300,7 +300,7 @@ auto shuffle_by_index(auto first, auto last, auto indices_first, auto indices_la
  */
 auto shuffle_by_index(auto first, auto last, auto indices_first, auto indices_last) noexcept
 {
-    return shuffle_by_index(first, last, indices_first, indices_last, [](ttlet &x) {
+    return shuffle_by_index(first, last, indices_first, indices_last, [](hilet &x) {
         return narrow_cast<std::size_t>(x);
     });
 }
@@ -348,4 +348,4 @@ DataIt back_strip(DataIt data_first, DataIt data_last, ValueIt value_first, Valu
     return data_first;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

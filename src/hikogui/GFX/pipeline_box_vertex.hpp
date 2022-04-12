@@ -13,7 +13,7 @@
 #include <vulkan/vulkan.hpp>
 #include <span>
 
-namespace tt::inline v1::pipeline_box {
+namespace hi::inline v1::pipeline_box {
 
 /*! A vertex defining a rectangle on a window.
  * The vertex shader will convert window pixel-coordinates to normalized projection-coordinates.
@@ -88,4 +88,4 @@ struct alignas(16) vertex {
     }
 };
 
-} // namespace tt::inline v1::pipeline_box
+} // namespace hi::inline v1::pipeline_box

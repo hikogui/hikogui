@@ -20,7 +20,7 @@
 
 #pragma comment(lib, "dwmapi")
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 static const wchar_t *win32WindowClassName = nullptr;
 static WNDCLASSW win32WindowClass = {};
@@ -33,12 +33,12 @@ static bool firstWindowHasBeenOpened = false;
 LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept
 {
     if (uMsg == WM_CREATE && lParam) {
-        ttlet createData = std::launder(std::bit_cast<CREATESTRUCT *>(lParam));
+        hilet createData = std::launder(std::bit_cast<CREATESTRUCT *>(lParam));
 
         SetLastError(0);
         auto r = SetWindowLongPtrW(hwnd, GWLP_USERDATA, std::bit_cast<LONG_PTR>(createData->lpCreateParams));
         if (r != 0 || GetLastError() != 0) {
-            tt_log_fatal("Could not set GWLP_USERDATA on window. '{}'", get_last_error_message());
+            hi_log_fatal("Could not set GWLP_USERDATA on window. '{}'", get_last_error_message());
         }
     }
 
@@ -51,7 +51,7 @@ LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
 
     auto window = std::launder(std::bit_cast<gui_window_win32 *>(window_userdata));
-    tt_axiom(window->is_gui_thread());
+    hi_axiom(window->is_gui_thread());
 
     // WM_CLOSE and WM_DESTROY will re-enter and run the destructor for `window`.
     // We can no longer call virtual functions on the `window` object.
@@ -66,7 +66,7 @@ LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         SetLastError(0);
         auto r = SetWindowLongPtrW(hwnd, GWLP_USERDATA, NULL);
         if (r == 0 || GetLastError() != 0) {
-            tt_log_fatal("Could not set GWLP_USERDATA on window. '{}'", get_last_error_message());
+            hi_log_fatal("Could not set GWLP_USERDATA on window. '{}'", get_last_error_message());
         }
 
         // Also remove the win32Window from the window, so that we don't get double DestroyWindow().
@@ -101,13 +101,13 @@ static void createWindowClass()
 void gui_window_win32::create_window(extent2 new_size)
 {
     // This function should be called during init(), and therefor should not have a lock on the window.
-    tt_assert(is_gui_thread());
+    hi_assert(is_gui_thread());
 
     createWindowClass();
 
     auto u16title = to_wstring(title.text());
 
-    tt_log_info("Create window of size {} with title '{}'", new_size, title);
+    hi_log_info("Create window of size {} with title '{}'", new_size, title);
 
     // Recommended to set the dpi-awareness before opening any window.
     SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
@@ -130,7 +130,7 @@ void gui_window_win32::create_window(extent2 new_size)
         reinterpret_cast<HINSTANCE>(gui_system::instance), // Instance handle
         this);
     if (win32Window == nullptr) {
-        tt_log_fatal("Could not open a win32 window: {}", get_last_error_message());
+        hi_log_fatal("Could not open a win32 window: {}", get_last_error_message());
     }
 
     // Now we extend the drawable area over the titlebar and and border, excluding the drop shadow.
@@ -149,12 +149,12 @@ void gui_window_win32::create_window(extent2 new_size)
         SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
 
     if (!firstWindowHasBeenOpened) {
-        ttlet win32_window_ = reinterpret_cast<HWND>(win32Window);
+        hilet win32_window_ = reinterpret_cast<HWND>(win32Window);
         switch (gui_window_size::normal) {
         case gui_window_size::normal: ShowWindow(win32_window_, SW_SHOWNORMAL); break;
         case gui_window_size::minimized: ShowWindow(win32_window_, SW_SHOWMINIMIZED); break;
         case gui_window_size::maximized: ShowWindow(win32_window_, SW_SHOWMAXIMIZED); break;
-        default: tt_no_default();
+        default: hi_no_default();
         }
         firstWindowHasBeenOpened = true;
     }
@@ -188,26 +188,26 @@ gui_window_win32::~gui_window_win32()
     try {
         if (win32Window != nullptr) {
             DestroyWindow(win32Window);
-            tt_axiom(win32Window == nullptr);
-            // tt_log_fatal("win32Window was not destroyed before Window '{}' was destructed.", title);
+            hi_axiom(win32Window == nullptr);
+            // hi_log_fatal("win32Window was not destroyed before Window '{}' was destructed.", title);
         }
 
     } catch (std::exception const &e) {
-        tt_log_fatal("Could not properly destruct gui_window_win32. '{}'", e.what());
+        hi_log_fatal("Could not properly destruct gui_window_win32. '{}'", e.what());
     }
 }
 
 void gui_window_win32::close_window()
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
     if (not PostMessageW(reinterpret_cast<HWND>(win32Window), WM_CLOSE, 0, 0)) {
-        tt_log_error("Could not send WM_CLOSE to window {}: {}", title, get_last_error_message());
+        hi_log_error("Could not send WM_CLOSE to window {}: {}", title, get_last_error_message());
     }
 }
 
 void gui_window_win32::set_size_state(gui_window_size state) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     if (_size_state == state) {
         return;
@@ -221,11 +221,11 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
     }
 
     if (state == gui_window_size::normal) {
-        ttlet left = narrow<int>(_restore_rectangle.left());
-        ttlet top = narrow<int>(_restore_rectangle.top());
-        ttlet width = narrow<int>(_restore_rectangle.width());
-        ttlet height = narrow<int>(_restore_rectangle.height());
-        ttlet inv_top = narrow<int>(os_settings::primary_monitor_rectangle().height()) - top;
+        hilet left = narrow<int>(_restore_rectangle.left());
+        hilet top = narrow<int>(_restore_rectangle.top());
+        hilet width = narrow<int>(_restore_rectangle.width());
+        hilet height = narrow<int>(_restore_rectangle.height());
+        hilet inv_top = narrow<int>(os_settings::primary_monitor_rectangle().height()) - top;
         SetWindowPos(reinterpret_cast<HWND>(win32Window), HWND_TOP, left, inv_top, width, height, 0);
         _size_state = gui_window_size::normal;
 
@@ -234,31 +234,31 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
         _size_state = gui_window_size::minimized;
 
     } else if (state == gui_window_size::maximized) {
-        ttlet workspace = workspace_rectangle();
-        ttlet max_size = widget->constraints().maximum;
+        hilet workspace = workspace_rectangle();
+        hilet max_size = widget->constraints().maximum;
 
         // Try to resize the window while keeping the toolbar in the same location.
-        ttlet width = narrow<int>(std::min(max_size.width(), workspace.width()));
-        ttlet height = narrow<int>(std::min(max_size.height(), workspace.height()));
-        ttlet left = narrow<int>(std::clamp(rectangle.left(), workspace.left(), workspace.right() - width));
-        ttlet top = narrow<int>(std::clamp(rectangle.top(), workspace.bottom() + height, workspace.top()));
-        ttlet inv_top = narrow<int>(os_settings::primary_monitor_rectangle().height()) - top;
+        hilet width = narrow<int>(std::min(max_size.width(), workspace.width()));
+        hilet height = narrow<int>(std::min(max_size.height(), workspace.height()));
+        hilet left = narrow<int>(std::clamp(rectangle.left(), workspace.left(), workspace.right() - width));
+        hilet top = narrow<int>(std::clamp(rectangle.top(), workspace.bottom() + height, workspace.top()));
+        hilet inv_top = narrow<int>(os_settings::primary_monitor_rectangle().height()) - top;
         SetWindowPos(reinterpret_cast<HWND>(win32Window), HWND_TOP, left, inv_top, width, height, 0);
         _size_state = gui_window_size::maximized;
 
     } else if (state == gui_window_size::fullscreen) {
-        ttlet fullscreen = fullscreen_rectangle();
-        ttlet max_size = widget->constraints().maximum;
+        hilet fullscreen = fullscreen_rectangle();
+        hilet max_size = widget->constraints().maximum;
         if (fullscreen.width() > max_size.width() or fullscreen.height() > max_size.height()) {
             // Do not go full screen if the widget is unable to go that large.
             return;
         }
 
-        ttlet left = narrow<int>(fullscreen.left());
-        ttlet top = narrow<int>(fullscreen.top());
-        ttlet width = narrow<int>(fullscreen.width());
-        ttlet height = narrow<int>(fullscreen.height());
-        ttlet inv_top = narrow<int>(os_settings::primary_monitor_rectangle().height()) - top;
+        hilet left = narrow<int>(fullscreen.left());
+        hilet top = narrow<int>(fullscreen.top());
+        hilet width = narrow<int>(fullscreen.width());
+        hilet height = narrow<int>(fullscreen.height());
+        hilet inv_top = narrow<int>(os_settings::primary_monitor_rectangle().height()) - top;
         SetWindowPos(reinterpret_cast<HWND>(win32Window), HWND_TOP, left, inv_top, width, height, 0);
         _size_state = gui_window_size::fullscreen;
     }
@@ -266,55 +266,55 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
 
 [[nodiscard]] aarectangle gui_window_win32::workspace_rectangle() const noexcept
 {
-    ttlet monitor = MonitorFromWindow(reinterpret_cast<HWND>(win32Window), MONITOR_DEFAULTTOPRIMARY);
+    hilet monitor = MonitorFromWindow(reinterpret_cast<HWND>(win32Window), MONITOR_DEFAULTTOPRIMARY);
     if (monitor == NULL) {
-        tt_log_error("Could not get monitor for the window.");
+        hi_log_error("Could not get monitor for the window.");
         return {0.0f, 0.0f, 1920.0f, 1080.0f};
     }
 
     MONITORINFO info;
     info.cbSize = sizeof(MONITORINFO);
     if (not GetMonitorInfo(monitor, &info)) {
-        tt_log_error("Could not get monitor info for the window.");
+        hi_log_error("Could not get monitor info for the window.");
         return {0.0f, 0.0f, 1920.0f, 1080.0f};
     }
 
-    ttlet left = narrow<float>(info.rcWork.left);
-    ttlet top = narrow<float>(info.rcWork.top);
-    ttlet right = narrow<float>(info.rcWork.right);
-    ttlet bottom = narrow<float>(info.rcWork.bottom);
-    ttlet width = right - left;
-    ttlet height = bottom - top;
-    ttlet inv_bottom = os_settings::primary_monitor_rectangle().height() - bottom;
+    hilet left = narrow<float>(info.rcWork.left);
+    hilet top = narrow<float>(info.rcWork.top);
+    hilet right = narrow<float>(info.rcWork.right);
+    hilet bottom = narrow<float>(info.rcWork.bottom);
+    hilet width = right - left;
+    hilet height = bottom - top;
+    hilet inv_bottom = os_settings::primary_monitor_rectangle().height() - bottom;
     return aarectangle{left, inv_bottom, width, height};
 }
 
 [[nodiscard]] aarectangle gui_window_win32::fullscreen_rectangle() const noexcept
 {
-    ttlet monitor = MonitorFromWindow(reinterpret_cast<HWND>(win32Window), MONITOR_DEFAULTTOPRIMARY);
+    hilet monitor = MonitorFromWindow(reinterpret_cast<HWND>(win32Window), MONITOR_DEFAULTTOPRIMARY);
     if (monitor == NULL) {
-        tt_log_error("Could not get monitor for the window.");
+        hi_log_error("Could not get monitor for the window.");
         return {0.0f, 0.0f, 1920.0f, 1080.0f};
     }
 
     MONITORINFO info;
     info.cbSize = sizeof(MONITORINFO);
     if (not GetMonitorInfo(monitor, &info)) {
-        tt_log_error("Could not get monitor info for the window.");
+        hi_log_error("Could not get monitor info for the window.");
         return {0.0f, 0.0f, 1920.0f, 1080.0f};
     }
 
-    ttlet left = narrow<float>(info.rcMonitor.left);
-    ttlet top = narrow<float>(info.rcMonitor.top);
-    ttlet right = narrow<float>(info.rcMonitor.right);
-    ttlet bottom = narrow<float>(info.rcMonitor.bottom);
-    ttlet width = right - left;
-    ttlet height = bottom - top;
-    ttlet inv_bottom = os_settings::primary_monitor_rectangle().height() - bottom;
+    hilet left = narrow<float>(info.rcMonitor.left);
+    hilet top = narrow<float>(info.rcMonitor.top);
+    hilet right = narrow<float>(info.rcMonitor.right);
+    hilet bottom = narrow<float>(info.rcMonitor.bottom);
+    hilet width = right - left;
+    hilet height = bottom - top;
+    hilet inv_bottom = os_settings::primary_monitor_rectangle().height() - bottom;
     return aarectangle{left, inv_bottom, width, height};
 }
 
-[[nodiscard]] tt::subpixel_orientation gui_window_win32::subpixel_orientation() const noexcept
+[[nodiscard]] hi::subpixel_orientation gui_window_win32::subpixel_orientation() const noexcept
 {
     // The table for viewing distance are:
     //
@@ -326,11 +326,11 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
     constexpr auto tan_half_degree = 0.00872686779075879f;
     constexpr auto viewing_distance = 20.0f;
 
-    ttlet ppd = 2 * viewing_distance * dpi * tan_half_degree;
+    hilet ppd = 2 * viewing_distance * dpi * tan_half_degree;
 
     if (ppd > 55.0f) {
         // High resolution displays do not require subpixel-aliasing.
-        return tt::subpixel_orientation::unknown;
+        return hi::subpixel_orientation::unknown;
     } else {
         // The win32 API does not have a per-monitor subpixel-orientation.
         return os_settings::subpixel_orientation();
@@ -339,18 +339,18 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
 
 void gui_window_win32::open_system_menu()
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     // Position the system menu on the left side, below the system menu button.
-    ttlet left = rectangle.left();
-    ttlet top = rectangle.top() - 30.0f;
+    hilet left = rectangle.left();
+    hilet top = rectangle.top() - 30.0f;
 
     // Convert to y-axis down coordinate system
-    ttlet inv_top = os_settings::primary_monitor_rectangle().height() - top;
+    hilet inv_top = os_settings::primary_monitor_rectangle().height() - top;
 
     // Open the system menu window and wait.
-    ttlet system_menu = GetSystemMenu(win32Window, false);
-    ttlet cmd =
+    hilet system_menu = GetSystemMenu(win32Window, false);
+    hilet cmd =
         TrackPopupMenu(system_menu, TPM_RETURNCMD, narrow_cast<int>(left), narrow_cast<int>(inv_top), 0, win32Window, NULL);
     if (cmd > 0) {
         SendMessage(win32Window, WM_SYSCOMMAND, narrow_cast<WPARAM>(cmd), LPARAM{0});
@@ -359,8 +359,8 @@ void gui_window_win32::open_system_menu()
 
 void gui_window_win32::set_window_size(extent2 new_extent)
 {
-    tt_axiom(is_gui_thread());
-    ttlet handle = reinterpret_cast<HWND>(win32Window);
+    hi_axiom(is_gui_thread());
+    hilet handle = reinterpret_cast<HWND>(win32Window);
 
     SetWindowPos(
         reinterpret_cast<HWND>(handle),
@@ -374,14 +374,14 @@ void gui_window_win32::set_window_size(extent2 new_extent)
 
 [[nodiscard]] std::string gui_window_win32::get_text_from_clipboard() const noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     auto r = std::string{};
 
-    ttlet handle = reinterpret_cast<HWND>(win32Window);
+    hilet handle = reinterpret_cast<HWND>(win32Window);
 
     if (!OpenClipboard(handle)) {
-        tt_log_error("Could not open win32 clipboard '{}'", get_last_error_message());
+        hi_log_error("Could not open win32 clipboard '{}'", get_last_error_message());
         return r;
     }
 
@@ -392,24 +392,24 @@ void gui_window_win32::set_window_size(extent2 new_extent)
         case CF_TEXT:
         case CF_OEMTEXT:
         case CF_UNICODETEXT: {
-            ttlet cb_data = GetClipboardData(CF_UNICODETEXT);
+            hilet cb_data = GetClipboardData(CF_UNICODETEXT);
             if (cb_data == nullptr) {
-                tt_log_error("Could not get clipboard data: '{}'", get_last_error_message());
+                hi_log_error("Could not get clipboard data: '{}'", get_last_error_message());
                 goto done;
             }
 
-            ttlet wstr_c = reinterpret_cast<wchar_t *>(GlobalLock(cb_data));
+            hilet wstr_c = reinterpret_cast<wchar_t *>(GlobalLock(cb_data));
             if (wstr_c == nullptr) {
-                tt_log_error("Could not lock clipboard data: '{}'", get_last_error_message());
+                hi_log_error("Could not lock clipboard data: '{}'", get_last_error_message());
                 goto done;
             }
 
-            ttlet wstr = std::wstring_view(wstr_c);
-            r = tt::to_string(wstr);
-            tt_log_debug("getTextFromClipboad '{}'", r);
+            hilet wstr = std::wstring_view(wstr_c);
+            r = hi::to_string(wstr);
+            hi_log_debug("getTextFromClipboad '{}'", r);
 
             if (!GlobalUnlock(cb_data) && GetLastError() != ERROR_SUCCESS) {
-                tt_log_error("Could not unlock clipboard data: '{}'", get_last_error_message());
+                hi_log_error("Could not unlock clipboard data: '{}'", get_last_error_message());
                 goto done;
             }
         }
@@ -420,7 +420,7 @@ void gui_window_win32::set_window_size(extent2 new_extent)
     }
 
     if (GetLastError() != ERROR_SUCCESS) {
-        tt_log_error("Could not enumerator clipboard formats: '{}'", get_last_error_message());
+        hi_log_error("Could not enumerator clipboard formats: '{}'", get_last_error_message());
     }
 
 done:
@@ -432,29 +432,29 @@ done:
 void gui_window_win32::set_text_on_clipboard(std::string str) noexcept
 {
     if (!OpenClipboard(reinterpret_cast<HWND>(win32Window))) {
-        tt_log_error("Could not open win32 clipboard '{}'", get_last_error_message());
+        hi_log_error("Could not open win32 clipboard '{}'", get_last_error_message());
         return;
     }
 
     if (!EmptyClipboard()) {
-        tt_log_error("Could not empty win32 clipboard '{}'", get_last_error_message());
+        hi_log_error("Could not empty win32 clipboard '{}'", get_last_error_message());
         goto done;
     }
 
     {
         auto str32 = to_u32string(str);
-        auto wstr = tt::to_wstring(
+        auto wstr = hi::to_wstring(
             unicode_NFC(str32, unicode_normalization_mask::NFD | unicode_normalization_mask::decompose_newline_to_CRLF));
 
         auto wstr_handle = GlobalAlloc(GMEM_MOVEABLE, (ssize(wstr) + 1) * sizeof(wchar_t));
         if (wstr_handle == nullptr) {
-            tt_log_error("Could not allocate clipboard data '{}'", get_last_error_message());
+            hi_log_error("Could not allocate clipboard data '{}'", get_last_error_message());
             goto done;
         }
 
         auto wstr_c = reinterpret_cast<wchar_t *>(GlobalLock(wstr_handle));
         if (wstr_c == nullptr) {
-            tt_log_error("Could not lock clipboard data '{}'", get_last_error_message());
+            hi_log_error("Could not lock clipboard data '{}'", get_last_error_message());
             GlobalFree(wstr_handle);
             goto done;
         }
@@ -462,14 +462,14 @@ void gui_window_win32::set_text_on_clipboard(std::string str) noexcept
         std::memcpy(wstr_c, wstr.c_str(), (ssize(wstr) + 1) * sizeof(wchar_t));
 
         if (!GlobalUnlock(wstr_handle) && GetLastError() != ERROR_SUCCESS) {
-            tt_log_error("Could not unlock clipboard data '{}'", get_last_error_message());
+            hi_log_error("Could not unlock clipboard data '{}'", get_last_error_message());
             GlobalFree(wstr_handle);
             goto done;
         }
 
         auto handle = SetClipboardData(CF_UNICODETEXT, wstr_handle);
         if (handle == nullptr) {
-            tt_log_error("Could not set clipboard data '{}'", get_last_error_message());
+            hi_log_error("Could not set clipboard data '{}'", get_last_error_message());
             GlobalFree(wstr_handle);
             goto done;
         }
@@ -481,12 +481,12 @@ done:
 
 void gui_window_win32::setOSWindowRectangleFromRECT(RECT new_rectangle) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     // Convert bottom to y-axis up coordinate system.
-    ttlet inv_bottom = os_settings::primary_monitor_rectangle().height() - new_rectangle.bottom;
+    hilet inv_bottom = os_settings::primary_monitor_rectangle().height() - new_rectangle.bottom;
 
-    ttlet new_screen_rectangle = aarectangle{
+    hilet new_screen_rectangle = aarectangle{
         narrow_cast<float>(new_rectangle.left),
         narrow_cast<float>(inv_bottom),
         narrow_cast<float>(new_rectangle.right - new_rectangle.left),
@@ -501,7 +501,7 @@ void gui_window_win32::setOSWindowRectangleFromRECT(RECT new_rectangle) noexcept
 
 void gui_window_win32::set_cursor(mouse_cursor cursor) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     if (current_mouse_cursor == cursor) {
         return;
@@ -524,7 +524,7 @@ void gui_window_win32::set_cursor(mouse_cursor cursor) noexcept
     case mouse_cursor::Default: idc = idcArrow; break;
     case mouse_cursor::Button: idc = idcHand; break;
     case mouse_cursor::TextEdit: idc = idcIBeam; break;
-    default: tt_no_default();
+    default: hi_no_default();
     }
 
     SetCursor(idc);
@@ -573,7 +573,7 @@ void gui_window_win32::set_cursor(mouse_cursor cursor) noexcept
 int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
 {
     mouse_event mouseEvent;
-    ttlet current_time = std::chrono::utc_clock::now();
+    hilet current_time = std::chrono::utc_clock::now();
 
     switch (uMsg) {
     case WM_CLOSE:
@@ -585,7 +585,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         break;
 
     case WM_CREATE: {
-        ttlet createstruct_ptr = std::launder(std::bit_cast<CREATESTRUCT *>(lParam));
+        hilet createstruct_ptr = std::launder(std::bit_cast<CREATESTRUCT *>(lParam));
         RECT new_rectangle;
         new_rectangle.left = createstruct_ptr->x;
         new_rectangle.top = createstruct_ptr->y;
@@ -597,22 +597,22 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     case WM_ERASEBKGND: return 1;
 
     case WM_PAINT: {
-        ttlet height = [this]() {
-            tt_axiom(is_gui_thread());
+        hilet height = [this]() {
+            hi_axiom(is_gui_thread());
             return rectangle.height();
         }();
 
         PAINTSTRUCT ps;
         BeginPaint(win32Window, &ps);
 
-        ttlet update_rectangle = aarectangle{
+        hilet update_rectangle = aarectangle{
             narrow_cast<float>(ps.rcPaint.left),
             narrow_cast<float>(height - ps.rcPaint.bottom),
             narrow_cast<float>(ps.rcPaint.right - ps.rcPaint.left),
             narrow_cast<float>(ps.rcPaint.bottom - ps.rcPaint.top)};
 
         {
-            tt_axiom(is_gui_thread());
+            hi_axiom(is_gui_thread());
             request_redraw(update_rectangle);
         }
 
@@ -620,14 +620,14 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     } break;
 
     case WM_NCPAINT: {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
         request_redraw();
     } break;
 
     case WM_SIZE: {
         // This is called when the operating system is changing the size of the window.
         // However we do not support maximizing by the OS.
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
         switch (wParam) {
         case SIZE_MAXIMIZED:
             ShowWindow(win32Window, SW_RESTORE);
@@ -651,9 +651,9 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     } break;
 
     case WM_SIZING: {
-        ttlet rect_ptr = std::launder(std::bit_cast<RECT *>(lParam));
+        hilet rect_ptr = std::launder(std::bit_cast<RECT *>(lParam));
         if (rect_ptr->right < rect_ptr->left or rect_ptr->bottom < rect_ptr->top) {
-            tt_log_error(
+            hi_log_error(
                 "Invalid RECT received on WM_SIZING: left={}, right={}, bottom={}, top={}",
                 rect_ptr->left,
                 rect_ptr->right,
@@ -666,9 +666,9 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     } break;
 
     case WM_MOVING: {
-        ttlet rect_ptr = std::launder(std::bit_cast<RECT *>(lParam));
+        hilet rect_ptr = std::launder(std::bit_cast<RECT *>(lParam));
         if (rect_ptr->right < rect_ptr->left or rect_ptr->bottom < rect_ptr->top) {
-            tt_log_error(
+            hi_log_error(
                 "Invalid RECT received on WM_MOVING: left={}, right={}, bottom={}, top={}",
                 rect_ptr->left,
                 rect_ptr->right,
@@ -681,7 +681,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     } break;
 
     case WM_WINDOWPOSCHANGED: {
-        ttlet windowpos_ptr = std::launder(std::bit_cast<WINDOWPOS *>(lParam));
+        hilet windowpos_ptr = std::launder(std::bit_cast<WINDOWPOS *>(lParam));
         RECT new_rectangle;
         new_rectangle.left = windowpos_ptr->x;
         new_rectangle.top = windowpos_ptr->y;
@@ -691,17 +691,17 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     } break;
 
     case WM_ENTERSIZEMOVE: {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
         if (SetTimer(win32Window, move_and_resize_timer_id, 16, NULL) != move_and_resize_timer_id) {
-            tt_log_error("Could not set timer before move/resize. {}", get_last_error_message());
+            hi_log_error("Could not set timer before move/resize. {}", get_last_error_message());
         }
         resizing = true;
     } break;
 
     case WM_EXITSIZEMOVE: {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
         if (not KillTimer(win32Window, move_and_resize_timer_id)) {
-            tt_log_error("Could not kill timer after move/resize. {}", get_last_error_message());
+            hi_log_error("Could not kill timer after move/resize. {}", get_last_error_message());
         }
         resizing = false;
         // After a manual move of the window, it is clear that the window is in normal mode.
@@ -711,7 +711,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     } break;
 
     case WM_ACTIVATE: {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
         switch (wParam) {
         case 1: // WA_ACTIVE
         case 2: // WA_CLICKACTIVE
@@ -720,17 +720,17 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         case 0: // WA_INACTIVE
             active = false;
             break;
-        default: tt_log_error("Unknown WM_ACTIVE value.");
+        default: hi_log_error("Unknown WM_ACTIVE value.");
         }
         request_reconstrain();
     } break;
 
     case WM_GETMINMAXINFO: {
-        tt_axiom(is_gui_thread());
-        tt_axiom(widget);
-        ttlet minimum_widget_size = widget->constraints().minimum;
-        ttlet maximum_widget_size = widget->constraints().maximum;
-        ttlet minmaxinfo = std::launder(std::bit_cast<MINMAXINFO *>(lParam));
+        hi_axiom(is_gui_thread());
+        hi_axiom(widget);
+        hilet minimum_widget_size = widget->constraints().minimum;
+        hilet maximum_widget_size = widget->constraints().maximum;
+        hilet minmaxinfo = std::launder(std::bit_cast<MINMAXINFO *>(lParam));
         minmaxinfo->ptMaxSize.x = narrow_cast<LONG>(maximum_widget_size.width());
         minmaxinfo->ptMaxSize.y = narrow_cast<LONG>(maximum_widget_size.height());
         minmaxinfo->ptMinTrackSize.x = narrow_cast<LONG>(minimum_widget_size.width());
@@ -778,9 +778,9 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         auto extended = (narrow_cast<uint32_t>(lParam) & 0x01000000) != 0;
         auto key_code = narrow_cast<int>(wParam);
 
-        ttlet key_state = getKeyboardState();
-        ttlet key_modifiers = getkeyboard_modifiers();
-        ttlet virtual_key = to_keyboard_virtual_key(key_code, extended, key_modifiers);
+        hilet key_state = getKeyboardState();
+        hilet key_modifiers = getkeyboard_modifiers();
+        hilet virtual_key = to_keyboard_virtual_key(key_code, extended, key_modifiers);
         if (virtual_key != keyboard_virtual_key::Nul) {
             send_event(key_state, key_modifiers, virtual_key);
         }
@@ -819,15 +819,15 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         break;
 
     case WM_NCHITTEST: {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
 
-        ttlet x = narrow_cast<float>(GET_X_LPARAM(lParam));
-        ttlet y = narrow_cast<float>(GET_Y_LPARAM(lParam));
+        hilet x = narrow_cast<float>(GET_X_LPARAM(lParam));
+        hilet y = narrow_cast<float>(GET_Y_LPARAM(lParam));
 
         // Convert to y-axis up coordinate system.
-        ttlet inv_y = os_settings::primary_monitor_rectangle().height() - y;
+        hilet inv_y = os_settings::primary_monitor_rectangle().height() - y;
 
-        ttlet hitbox_type = widget->hitbox_test(screen_to_window() * point2{x, inv_y}).type;
+        hilet hitbox_type = widget->hitbox_test(screen_to_window() * point2{x, inv_y}).type;
 
         switch (hitbox_type) {
         case hitbox::Type::BottomResizeBorder: set_cursor(mouse_cursor::None); return HTBOTTOM;
@@ -844,22 +844,22 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         case hitbox::Type::Button: set_cursor(mouse_cursor::Button); return HTCLIENT;
         case hitbox::Type::Default: set_cursor(mouse_cursor::Default); return HTCLIENT;
         case hitbox::Type::Outside: set_cursor(mouse_cursor::None); return HTCLIENT;
-        default: tt_no_default();
+        default: hi_no_default();
         }
     } break;
 
     case WM_SETTINGCHANGE:
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
         os_settings::gather();
         break;
 
     case WM_DPICHANGED: {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
         // x-axis dpi value.
         dpi = narrow_cast<float>(LOWORD(wParam));
 
         // Use the recommended rectangle to resize and reposition the window
-        ttlet new_rectangle = std::launder(reinterpret_cast<RECT *>(lParam));
+        hilet new_rectangle = std::launder(reinterpret_cast<RECT *>(lParam));
         SetWindowPos(
             win32Window,
             NULL,
@@ -870,7 +870,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
             SWP_NOZORDER | SWP_NOACTIVATE);
         request_reconstrain();
 
-        tt_log_info("DPI has changed to {}", dpi);
+        hi_log_info("DPI has changed to {}", dpi);
     } break;
 
     default: break;
@@ -882,7 +882,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
 [[nodiscard]] char32_t gui_window_win32::handle_suragates(char32_t c) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     if (c >= 0xd800 && c <= 0xdbff) {
         highSurrogate = ((c - 0xd800) << 10) + 0x10000;
@@ -897,16 +897,16 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
 [[nodiscard]] mouse_event gui_window_win32::createmouse_event(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     auto mouseEvent = mouse_event{};
     mouseEvent.timePoint = std::chrono::utc_clock::now();
 
-    ttlet x = narrow_cast<float>(GET_X_LPARAM(lParam));
-    ttlet y = narrow_cast<float>(GET_Y_LPARAM(lParam));
+    hilet x = narrow_cast<float>(GET_X_LPARAM(lParam));
+    hilet y = narrow_cast<float>(GET_Y_LPARAM(lParam));
 
     // Convert to y-axis up coordinate system, y is in window-local.
-    ttlet inv_y = rectangle.height() - y;
+    hilet inv_y = rectangle.height() - y;
 
     // On Window 7 up to and including Window10, the I-beam cursor hot-spot is 2 pixels to the left
     // of the vertical bar. But most applications do not fix this problem.
@@ -952,10 +952,10 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     case WM_MOUSEWHEEL:
     case WM_MOUSEHWHEEL:
     case WM_MOUSELEAVE: break;
-    default: tt_no_default();
+    default: hi_no_default();
     }
 
-    ttlet a_button_is_pressed = mouseEvent.down.leftButton || mouseEvent.down.middleButton || mouseEvent.down.rightButton ||
+    hilet a_button_is_pressed = mouseEvent.down.leftButton || mouseEvent.down.middleButton || mouseEvent.down.rightButton ||
         mouseEvent.down.x1Button || mouseEvent.down.x2Button;
 
     switch (uMsg) {
@@ -980,8 +980,8 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     case WM_MBUTTONDOWN:
     case WM_RBUTTONDOWN:
     case WM_XBUTTONDOWN: {
-        ttlet within_double_click_time = mouseEvent.timePoint - multi_click_time_point < os_settings::double_click_interval();
-        ttlet within_double_click_distance =
+        hilet within_double_click_time = mouseEvent.timePoint - multi_click_time_point < os_settings::double_click_interval();
+        hilet within_double_click_distance =
             hypot(mouseEvent.position - multi_click_position) < os_settings::double_click_distance();
 
         multi_click_count = within_double_click_time and within_double_click_distance ? multi_click_count + 1 : 1;
@@ -993,8 +993,8 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         mouseEvent.clickCount = multi_click_count;
 
         // Track draging past the window borders.
-        tt_axiom(win32Window != 0);
-        ttlet window_handle = reinterpret_cast<HWND>(win32Window);
+        hi_axiom(win32Window != 0);
+        hilet window_handle = reinterpret_cast<HWND>(win32Window);
 
         SetCapture(window_handle);
     } break;
@@ -1022,7 +1022,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         current_mouse_cursor = mouse_cursor::None;
         break;
 
-    default: tt_no_default();
+    default: hi_no_default();
     }
 
     // Make sure we start tracking mouse events when the mouse has entered the window again.
@@ -1030,7 +1030,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     if (!trackingMouseLeaveEvent && uMsg != WM_MOUSELEAVE) {
         auto *track_mouse_leave_event_parameters_p = &trackMouseLeaveEventParameters;
         if (!TrackMouseEvent(track_mouse_leave_event_parameters_p)) {
-            tt_log_error("Could not track leave event '{}'", get_last_error_message());
+            hi_log_error("Could not track leave event '{}'", get_last_error_message());
         }
         trackingMouseLeaveEvent = true;
     }
@@ -1045,4 +1045,4 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     return mouseEvent;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -14,7 +14,7 @@
 #include <vector>
 #include <concepts>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 template<typename T>
 class default_text_field_delegate;
 
@@ -25,7 +25,7 @@ public:
 
     observable<value_type> value;
 
-    default_text_field_delegate(auto&& value) noexcept : value(tt_forward(value))
+    default_text_field_delegate(auto&& value) noexcept : value(hi_forward(value))
     {
         _value_cbt = this->value.subscribe([&](auto...) {
             this->_notifier();
@@ -69,7 +69,7 @@ public:
 
     observable<value_type> value;
 
-    default_text_field_delegate(auto&& value) noexcept : value(tt_forward(value))
+    default_text_field_delegate(auto&& value) noexcept : value(hi_forward(value))
     {
         _value_cbt = this->value.subscribe([&](auto...) {
             this->_notifier();
@@ -112,7 +112,7 @@ default_text_field_delegate(Value&&) -> default_text_field_delegate<observable_a
 std::unique_ptr<text_field_delegate> make_unique_default_text_field_delegate(auto&& value, auto&&...args) noexcept
 {
     using value_type = observable_argument_t<std::remove_cvref_t<decltype(value)>>;
-    return std::make_unique<default_text_field_delegate<value_type>>(tt_forward(value), tt_forward(args)...);
+    return std::make_unique<default_text_field_delegate<value_type>>(hi_forward(value), hi_forward(args)...);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

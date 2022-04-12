@@ -6,7 +6,7 @@
 
 #include "../exception.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 enum class theme_text_style : unsigned char {
     label,
@@ -22,4 +22,4 @@ enum class theme_text_style : unsigned char {
 
 constexpr std::size_t num_theme_text_styles = static_cast<std::size_t>(theme_text_style::_size);
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -8,7 +8,7 @@
 #include <memory>
 #include <iterator>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 namespace detail {
 
 struct hash_map_entry_h {
@@ -163,8 +163,8 @@ public:
 
     constexpr ~hash_map()
     {
-        tt_axiom(_nodes != nullptr);
-        tt_axiom(_capacity != 0);
+        hi_axiom(_nodes != nullptr);
+        hi_axiom(_capacity != 0);
 
         std::destroy_n(_nodes, _capacity);
         std::allocator_traits<allocator_type>::deallocate(allocator, _nodes, _capacity);
@@ -175,7 +175,7 @@ public:
         return allocator;
     }
 
-    tt_no_inline constexpr void reserve(std::size_t new_capacity) noexcept
+    hi_no_inline constexpr void reserve(std::size_t new_capacity) noexcept
     {
         if (new_capacity > _capacity) {
             auto *new_nodes = std::allocator_traits<allocator_type>::allocate(allocator, new_capacity);
@@ -192,8 +192,8 @@ public:
 
     [[nodiscard]] constexpr const_iterator find(key_type const &key) const noexcept
     {
-        tt_axiom(_nodes != nullptr);
-        tt_axiom(_capacity != 0);
+        hi_axiom(_nodes != nullptr);
+        hi_axiom(_capacity != 0);
 
         auto hash = std::hash<key_type>{}(key);
         hash = hash == 0 ? 1 : hash;
@@ -213,8 +213,8 @@ public:
     template<typename K>
     [[nodiscard]] constexpr iterator find_or_create(K &&key) noexcept
     {
-        tt_axiom(_nodes != nullptr);
-        tt_axiom(_capacity != 0);
+        hi_axiom(_nodes != nullptr);
+        hi_axiom(_capacity != 0);
 
         auto hash = std::hash<key_type>{}(key);
         hash = hash == 0 ? 1 : hash;
@@ -259,7 +259,7 @@ private:
     [[no_unique_address]] allocator_type allocator;
 
     template<typename K>
-    tt_no_inline constexpr iterator or_create(node_type &node, std::size_t hash, K &&key) noexcept
+    hi_no_inline constexpr iterator or_create(node_type &node, std::size_t hash, K &&key) noexcept
     {
         grow_by(1);
         node.set(hash, std::forward<K>(key));
@@ -271,13 +271,13 @@ private:
      * This function will std::move() the keys and values from one allocation to another.
      * Also all the from nodes will be destructed, and all the to nodes will be constructed.
      */
-    tt_no_inline constexpr void move_nodes(node_type *src, std::size_t src_size, node_type *dst, std::size_t dst_size) noexcept
+    hi_no_inline constexpr void move_nodes(node_type *src, std::size_t src_size, node_type *dst, std::size_t dst_size) noexcept
     {
         auto *dst_ = std::uninitialized_value_construct_n(dst, dst_size);
 
-        ttlet src_last = src + src_size;
+        hilet src_last = src + src_size;
         for (auto src_it = src; src_it != src_last; ++src_it) {
-            ttlet hash = src_it->hash();
+            hilet hash = src_it->hash();
 
             if (hash != 0) {
                 auto hash_plus_count = hash;
@@ -298,13 +298,13 @@ private:
 
     void grow_by(std::size_t nr_entries) noexcept
     {
-        tt_axiom(_nodes != nullptr);
-        tt_axiom(_capacity != 0);
+        hi_axiom(_nodes != nullptr);
+        hi_axiom(_capacity != 0);
 
         _size += nr_entries;
 
         // 0.75 fill ratio.
-        ttlet max_size = _capacity - (_capacity >> 2);
+        hilet max_size = _capacity - (_capacity >> 2);
         if (_size > max_size) {
             // Using a growth factor of about 1.5 will allow reallocation in the holes left behind multiple
             // consecutive grows. Make the new capacity odd, to increase chance for good avalanching.
@@ -317,7 +317,7 @@ private:
 namespace pmr {
 
 template<typename Key, typename T>
-using hash_map = tt::hash_map<Key, T, std::pmr::polymorphic_allocator<tt::hash_map_entry<Key, T>>>;
+using hash_map = hi::hash_map<Key, T, std::pmr::polymorphic_allocator<hi::hash_map_entry<Key, T>>>;
 
 }
-} // namespace tt::inline v1
+} // namespace hi::inline v1

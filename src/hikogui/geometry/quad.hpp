@@ -9,7 +9,7 @@
 #include "rectangle.hpp"
 #include <tuple>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class quad {
 public:
@@ -29,7 +29,7 @@ public:
 
     constexpr quad(aarectangle const &rhs) noexcept
     {
-        ttlet tmp = f32x4{rhs};
+        hilet tmp = f32x4{rhs};
         p0 = point3{tmp.xy01()};
         p1 = point3{tmp.zy01()};
         p2 = point3{tmp.xw01()};
@@ -72,7 +72,7 @@ public:
      */
     [[nodiscard]] constexpr f32x4 edge_hypots() const noexcept
     {
-        ttlet[x, y, z, zeros] = transpose(f32x4{bottom()}, f32x4{left()}, f32x4{top()}, f32x4{right()});
+        hilet[x, y, z, zeros] = transpose(f32x4{bottom()}, f32x4{left()}, f32x4{top()}, f32x4{right()});
         return sqrt(x * x + y * y + z * z);
     }
 
@@ -83,7 +83,7 @@ public:
         case 1: return p1;
         case 2: return p2;
         case 3: return p3;
-        default: tt_no_default();
+        default: hi_no_default();
         }
     }
 
@@ -94,7 +94,7 @@ public:
         case 1: return p1;
         case 2: return p2;
         case 3: return p3;
-        default: tt_no_default();
+        default: hi_no_default();
         }
     }
 
@@ -140,30 +140,30 @@ public:
      */
     [[nodiscard]] friend constexpr std::pair<quad, f32x4> expand_and_edge_hypots(quad const &lhs, f32x4 const &rhs) noexcept
     {
-        ttlet t = f32x4{lhs.top()};
-        ttlet l = f32x4{lhs.left()};
-        ttlet b = f32x4{lhs.bottom()};
-        ttlet r = f32x4{lhs.right()};
+        hilet t = f32x4{lhs.top()};
+        hilet l = f32x4{lhs.left()};
+        hilet b = f32x4{lhs.bottom()};
+        hilet r = f32x4{lhs.right()};
 
-        ttlet[x, y, z, ones] = transpose(t, l, b, r);
-        ttlet square_lengths = x * x + y * y + z * z;
-        ttlet inv_lengths = rcp_sqrt(square_lengths);
-        ttlet norm_t = t * inv_lengths.xxxx();
-        ttlet norm_l = l * inv_lengths.yyyy();
-        ttlet norm_b = b * inv_lengths.zzzz();
-        ttlet norm_r = r * inv_lengths.wwww();
+        hilet[x, y, z, ones] = transpose(t, l, b, r);
+        hilet square_lengths = x * x + y * y + z * z;
+        hilet inv_lengths = rcp_sqrt(square_lengths);
+        hilet norm_t = t * inv_lengths.xxxx();
+        hilet norm_l = l * inv_lengths.yyyy();
+        hilet norm_b = b * inv_lengths.zzzz();
+        hilet norm_r = r * inv_lengths.wwww();
 
-        ttlet width = rhs.xxxx();
-        ttlet height = rhs.yyyy();
+        hilet width = rhs.xxxx();
+        hilet height = rhs.yyyy();
 
-        ttlet top_extra = vector3{norm_t * width};
-        ttlet left_extra = vector3{norm_l * height};
-        ttlet bottom_extra = vector3{norm_b * width};
-        ttlet right_extra = vector3{norm_r * height};
+        hilet top_extra = vector3{norm_t * width};
+        hilet left_extra = vector3{norm_l * height};
+        hilet bottom_extra = vector3{norm_b * width};
+        hilet right_extra = vector3{norm_r * height};
 
-        ttlet lengths = rcp(inv_lengths);
+        hilet lengths = rcp(inv_lengths);
 
-        ttlet rhs_times_2 = rhs + rhs;
+        hilet rhs_times_2 = rhs + rhs;
 
         return {
             quad{
@@ -210,7 +210,7 @@ public:
      */
     [[nodiscard]] friend constexpr quad operator+(quad const &lhs, extent2 const &rhs) noexcept
     {
-        ttlet[expanded_quad, new_lengths] = expand_and_edge_hypots(lhs, rhs);
+        hilet[expanded_quad, new_lengths] = expand_and_edge_hypots(lhs, rhs);
         return expanded_quad;
     }
 
@@ -229,7 +229,7 @@ public:
      */
     [[nodiscard]] friend constexpr quad operator-(quad const &lhs, extent2 const &rhs) noexcept
     {
-        ttlet[expanded_quad, new_lengths] = shrink_and_edge_hypots(lhs, rhs);
+        hilet[expanded_quad, new_lengths] = shrink_and_edge_hypots(lhs, rhs);
         return expanded_quad;
     }
 
@@ -260,4 +260,4 @@ public:
     [[nodiscard]] friend constexpr bool operator==(quad const &lhs, quad const &rhs) noexcept = default;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

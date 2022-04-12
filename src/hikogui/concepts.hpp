@@ -11,7 +11,7 @@
 #include <limits>
 #include <coroutine>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<typename T>
 concept numeric_limited = std::numeric_limits<T>::is_specialized;
@@ -56,10 +56,10 @@ template<typename BaseType, typename DerivedType>
 concept decayed_base_of = is_decayed_base_of_v<BaseType, DerivedType>;
 
 template<typename DerivedType, typename BaseType>
-concept derived_from = tt::is_derived_from_v<DerivedType, BaseType>;
+concept derived_from = hi::is_derived_from_v<DerivedType, BaseType>;
 
 template<typename DerivedType, typename BaseType>
-concept decayed_derived_from = tt::is_decayed_derived_from_v<DerivedType, BaseType>;
+concept decayed_derived_from = hi::is_decayed_derived_from_v<DerivedType, BaseType>;
 
 template<typename BaseType, typename DerivedType>
 concept strict_base_of = base_of<BaseType, DerivedType> && !std::same_as<BaseType, DerivedType>;
@@ -170,4 +170,4 @@ template<typename T>
 concept awaitable = awaitable_direct<T> or awaitable_member<T> or awaitable_non_member<T>;
 
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

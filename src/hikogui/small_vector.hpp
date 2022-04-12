@@ -7,7 +7,7 @@
 #include "required.hpp"
 #include <array>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<typename T, std::size_t N>
 class small_vector {
@@ -64,4 +64,4 @@ public:
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

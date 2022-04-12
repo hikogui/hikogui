@@ -18,7 +18,7 @@
 #include <optional>
 #include <future>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class abstract_button_widget : public widget {
 public:
@@ -48,7 +48,7 @@ public:
     template<typename Label>
     void set_label(Label const &rhs) noexcept
     {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
         on_label = rhs;
         off_label = rhs;
         other_label = rhs;
@@ -59,7 +59,7 @@ public:
      */
     [[nodiscard]] button_state state() const noexcept
     {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
         if (auto delegate = _delegate.lock()) {
             return delegate->state(*this);
         } else {
@@ -100,4 +100,4 @@ protected:
     void draw_button(draw_context const &context) noexcept;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

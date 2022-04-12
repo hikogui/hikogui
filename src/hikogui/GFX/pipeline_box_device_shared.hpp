@@ -14,7 +14,7 @@
 #include <vulkan/vulkan.hpp>
 #include <mutex>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 class gfx_device_vulkan;
 
 namespace pipeline_box {
@@ -58,4 +58,4 @@ private:
 };
 
 } // namespace pipeline_box
-} // namespace tt::inline v1
+} // namespace hi::inline v1

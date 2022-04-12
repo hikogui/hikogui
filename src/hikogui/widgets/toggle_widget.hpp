@@ -7,7 +7,7 @@
 #include "abstract_button_widget.hpp"
 #include "default_button_delegate.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A GUI widget that permits the user to make a binary choice.
  *
@@ -96,4 +96,4 @@ private:
     void draw_toggle_pip(draw_context const &context) noexcept;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

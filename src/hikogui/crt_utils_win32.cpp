@@ -11,17 +11,17 @@
 #include <Windows.h>
 #include <shellapi.h>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 static void configure_current_working_directory() noexcept
 {
     DWORD required_buffer_size = GetCurrentDirectoryW(0, nullptr);
     if (!required_buffer_size) {
-        tt_log_fatal("Could not get required buffer size.");
+        hi_log_fatal("Could not get required buffer size.");
     }
     auto current_directory = std::make_unique<wchar_t[]>(required_buffer_size);
     if (GetCurrentDirectoryW(required_buffer_size, current_directory.get()) == 0) {
-        tt_log_fatal("Could not get current directory: {}", get_last_error_message());
+        hi_log_fatal("Could not get current directory: {}", get_last_error_message());
     }
 
     URL::setUrlForCurrentWorkingDirectory(URL::urlFromWPath(current_directory.get()));
@@ -42,15 +42,15 @@ std::pair<int, char **> crt_start(int, char **, void *instance, int show_cmd)
     char **argv = new char *[wargc + 2];
     int argc = 0;
     for (; argc != wargc; ++argc) {
-        argv[argc] = tt::make_cstr(tt::to_string(std::wstring(wargv[argc])));
+        argv[argc] = hi::make_cstr(hi::to_string(std::wstring(wargv[argc])));
     }
     LocalFree(wargv);
 
     // Pass nShowCmd as a the second command line argument.
     if (show_cmd == 3) {
-        argv[argc++] = tt::make_cstr("--window-state=maximize");
+        argv[argc++] = hi::make_cstr("--window-state=maximize");
     } else if (show_cmd == 0 || show_cmd == 2 || show_cmd == 6 || show_cmd == 7 || show_cmd == 11) {
-        argv[argc++] = tt::make_cstr("--window-state=minimize");
+        argv[argc++] = hi::make_cstr("--window-state=minimize");
     }
 
     // Add a nullptr to the end of the argument list.
@@ -62,21 +62,21 @@ std::pair<int, char **> crt_start(int, char **, void *instance, int show_cmd)
     try {
         detail::log_message_base::zone = std::chrono::get_tzdb().current_zone();
     } catch (std::runtime_error const &e) {
-        tt_log_error("Could not get current time zone: \"{}\"", e.what());
+        hi_log_error("Could not get current time zone: \"{}\"", e.what());
     }
 
     // Make sure the console is in a valid state to write text to it.
-    tt::console_start();
-    tt::time_stamp_count::start_subsystem();
-    tt::start_system();
+    hi::console_start();
+    hi::time_stamp_count::start_subsystem();
+    hi::start_system();
 
-    tt::gui_system::instance = instance;
+    hi::gui_system::instance = instance;
     return {argc, argv};
 }
 
 int crt_finish(int argc, char **argv, int exit_code)
 {
-    tt::shutdown_system();
+    hi::shutdown_system();
 
     for (auto i = 0; i != argc; ++i) {
         delete[] argv[i];
@@ -85,4 +85,4 @@ int crt_finish(int argc, char **argv, int exit_code)
     return exit_code;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

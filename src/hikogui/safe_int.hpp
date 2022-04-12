@@ -12,7 +12,7 @@
 #include <limits>
 #include <concepts>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 enum class on_overflow_t {
     //! On overflow throw an exception.
@@ -54,9 +54,9 @@ T safe_handle_overflow(T value, bool overflow, bool is_positive) noexcept(OnOver
             throw std::overflow_error("integer overflow");
         }
     } else if constexpr (OnOverflow == on_overflow_t::Assert) {
-        tt_assert(!overflow);
+        hi_assert(!overflow);
     } else if constexpr (OnOverflow == on_overflow_t::Axiom) {
-        tt_axiom(!overflow);
+        hi_axiom(!overflow);
     } else if constexpr (OnOverflow == on_overflow_t::Saturate) {
         if (overflow) {
             [[unlikely]] value = is_positive ? std::numeric_limits<T>::max() : std::numeric_limits<T>::min();
@@ -70,7 +70,7 @@ T safe_convert(U const &rhs) noexcept(OnOverflow != on_overflow_t::Throw)
 {
     T r;
     // Optimized away when is_same_v<T,U>
-    ttlet overflow = convert_overflow(rhs, &r);
+    hilet overflow = convert_overflow(rhs, &r);
     return safe_handle_overflow<T, OnOverflow>(r, overflow, rhs >= 0);
 }
 
@@ -78,10 +78,10 @@ template<on_overflow_t OnOverflow, typename T, typename U>
 make_promote_t<T, U> safe_add(T const &lhs, U const &rhs) noexcept(OnOverflow != on_overflow_t::Throw)
 {
     make_promote_t<T, U> r;
-    ttlet lhs_ = static_cast<make_promote_t<T, U>>(lhs);
-    ttlet rhs_ = static_cast<make_promote_t<T, U>>(rhs);
+    hilet lhs_ = static_cast<make_promote_t<T, U>>(lhs);
+    hilet rhs_ = static_cast<make_promote_t<T, U>>(rhs);
 
-    ttlet overflow = add_overflow(lhs_, rhs_, &r);
+    hilet overflow = add_overflow(lhs_, rhs_, &r);
     return safe_handle_overflow<T, OnOverflow>(r, overflow, rhs_ >= 0);
 }
 
@@ -89,10 +89,10 @@ template<on_overflow_t OnOverflow, typename T, typename U>
 make_promote_t<T, U> safe_sub(T const &lhs, U const &rhs) noexcept(OnOverflow != on_overflow_t::Throw)
 {
     make_promote_t<T, U> r;
-    ttlet lhs_ = static_cast<make_promote_t<T, U>>(lhs);
-    ttlet rhs_ = static_cast<make_promote_t<T, U>>(rhs);
+    hilet lhs_ = static_cast<make_promote_t<T, U>>(lhs);
+    hilet rhs_ = static_cast<make_promote_t<T, U>>(rhs);
 
-    ttlet overflow = sub_overflow(lhs_, rhs_, &r);
+    hilet overflow = sub_overflow(lhs_, rhs_, &r);
     return safe_handle_overflow<T, OnOverflow>(r, overflow, rhs_ >= 0);
 }
 
@@ -100,10 +100,10 @@ template<on_overflow_t OnOverflow, typename T, typename U>
 make_promote_t<T, U> safe_mul(T const &lhs, U const &rhs) noexcept(OnOverflow != on_overflow_t::Throw)
 {
     make_promote_t<T, U> r;
-    ttlet lhs_ = static_cast<make_promote_t<T, U>>(lhs);
-    ttlet rhs_ = static_cast<make_promote_t<T, U>>(rhs);
+    hilet lhs_ = static_cast<make_promote_t<T, U>>(lhs);
+    hilet rhs_ = static_cast<make_promote_t<T, U>>(rhs);
 
-    ttlet overflow = mul_overflow(lhs_, rhs_, &r);
+    hilet overflow = mul_overflow(lhs_, rhs_, &r);
     return safe_handle_overflow<T, OnOverflow>(r, overflow, rhs_ >= 0);
 }
 
@@ -252,137 +252,137 @@ using xuint32_t = safe_int<uint32_t, on_overflow_t::Axiom>;
 using xuint16_t = safe_int<uint16_t, on_overflow_t::Axiom>;
 using xuint8_t = safe_int<uint8_t, on_overflow_t::Axiom>;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<>
-class std::numeric_limits<tt::safe_int<signed long long, tt::on_overflow_t::Saturate>> :
+class std::numeric_limits<hi::safe_int<signed long long, hi::on_overflow_t::Saturate>> :
     public std::numeric_limits<signed long long> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<signed long, tt::on_overflow_t::Saturate>> : public std::numeric_limits<signed long> {
+class std::numeric_limits<hi::safe_int<signed long, hi::on_overflow_t::Saturate>> : public std::numeric_limits<signed long> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<signed int, tt::on_overflow_t::Saturate>> : public std::numeric_limits<signed int> {
+class std::numeric_limits<hi::safe_int<signed int, hi::on_overflow_t::Saturate>> : public std::numeric_limits<signed int> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<signed short, tt::on_overflow_t::Saturate>> : public std::numeric_limits<signed short> {
+class std::numeric_limits<hi::safe_int<signed short, hi::on_overflow_t::Saturate>> : public std::numeric_limits<signed short> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<signed char, tt::on_overflow_t::Saturate>> : public std::numeric_limits<signed char> {
+class std::numeric_limits<hi::safe_int<signed char, hi::on_overflow_t::Saturate>> : public std::numeric_limits<signed char> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<unsigned long long, tt::on_overflow_t::Saturate>> :
+class std::numeric_limits<hi::safe_int<unsigned long long, hi::on_overflow_t::Saturate>> :
     public std::numeric_limits<unsigned long long> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<unsigned long, tt::on_overflow_t::Saturate>> : public std::numeric_limits<unsigned long> {
+class std::numeric_limits<hi::safe_int<unsigned long, hi::on_overflow_t::Saturate>> : public std::numeric_limits<unsigned long> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<unsigned int, tt::on_overflow_t::Saturate>> : public std::numeric_limits<unsigned int> {
+class std::numeric_limits<hi::safe_int<unsigned int, hi::on_overflow_t::Saturate>> : public std::numeric_limits<unsigned int> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<unsigned short, tt::on_overflow_t::Saturate>> :
+class std::numeric_limits<hi::safe_int<unsigned short, hi::on_overflow_t::Saturate>> :
     public std::numeric_limits<unsigned short> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<unsigned char, tt::on_overflow_t::Saturate>> : public std::numeric_limits<unsigned char> {
+class std::numeric_limits<hi::safe_int<unsigned char, hi::on_overflow_t::Saturate>> : public std::numeric_limits<unsigned char> {
 };
 
 template<>
-class std::numeric_limits<tt::safe_int<signed long long, tt::on_overflow_t::Assert>> :
+class std::numeric_limits<hi::safe_int<signed long long, hi::on_overflow_t::Assert>> :
     public std::numeric_limits<signed long long> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<signed long, tt::on_overflow_t::Assert>> : public std::numeric_limits<signed long> {
+class std::numeric_limits<hi::safe_int<signed long, hi::on_overflow_t::Assert>> : public std::numeric_limits<signed long> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<signed int, tt::on_overflow_t::Assert>> : public std::numeric_limits<signed int> {
+class std::numeric_limits<hi::safe_int<signed int, hi::on_overflow_t::Assert>> : public std::numeric_limits<signed int> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<signed short, tt::on_overflow_t::Assert>> : public std::numeric_limits<signed short> {
+class std::numeric_limits<hi::safe_int<signed short, hi::on_overflow_t::Assert>> : public std::numeric_limits<signed short> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<signed char, tt::on_overflow_t::Assert>> : public std::numeric_limits<signed char> {
+class std::numeric_limits<hi::safe_int<signed char, hi::on_overflow_t::Assert>> : public std::numeric_limits<signed char> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<unsigned long long, tt::on_overflow_t::Assert>> :
+class std::numeric_limits<hi::safe_int<unsigned long long, hi::on_overflow_t::Assert>> :
     public std::numeric_limits<unsigned long long> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<unsigned long, tt::on_overflow_t::Assert>> : public std::numeric_limits<unsigned long> {
+class std::numeric_limits<hi::safe_int<unsigned long, hi::on_overflow_t::Assert>> : public std::numeric_limits<unsigned long> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<unsigned int, tt::on_overflow_t::Assert>> : public std::numeric_limits<unsigned int> {
+class std::numeric_limits<hi::safe_int<unsigned int, hi::on_overflow_t::Assert>> : public std::numeric_limits<unsigned int> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<unsigned short, tt::on_overflow_t::Assert>> : public std::numeric_limits<unsigned short> {
+class std::numeric_limits<hi::safe_int<unsigned short, hi::on_overflow_t::Assert>> : public std::numeric_limits<unsigned short> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<unsigned char, tt::on_overflow_t::Assert>> : public std::numeric_limits<unsigned char> {
+class std::numeric_limits<hi::safe_int<unsigned char, hi::on_overflow_t::Assert>> : public std::numeric_limits<unsigned char> {
 };
 
 template<>
-class std::numeric_limits<tt::safe_int<signed long long, tt::on_overflow_t::Throw>> :
+class std::numeric_limits<hi::safe_int<signed long long, hi::on_overflow_t::Throw>> :
     public std::numeric_limits<signed long long> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<signed long, tt::on_overflow_t::Throw>> : public std::numeric_limits<signed long> {
+class std::numeric_limits<hi::safe_int<signed long, hi::on_overflow_t::Throw>> : public std::numeric_limits<signed long> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<signed int, tt::on_overflow_t::Throw>> : public std::numeric_limits<signed int> {
+class std::numeric_limits<hi::safe_int<signed int, hi::on_overflow_t::Throw>> : public std::numeric_limits<signed int> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<signed short, tt::on_overflow_t::Throw>> : public std::numeric_limits<signed short> {
+class std::numeric_limits<hi::safe_int<signed short, hi::on_overflow_t::Throw>> : public std::numeric_limits<signed short> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<signed char, tt::on_overflow_t::Throw>> : public std::numeric_limits<signed char> {
+class std::numeric_limits<hi::safe_int<signed char, hi::on_overflow_t::Throw>> : public std::numeric_limits<signed char> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<unsigned long long, tt::on_overflow_t::Throw>> :
+class std::numeric_limits<hi::safe_int<unsigned long long, hi::on_overflow_t::Throw>> :
     public std::numeric_limits<unsigned long long> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<unsigned long, tt::on_overflow_t::Throw>> : public std::numeric_limits<unsigned long> {
+class std::numeric_limits<hi::safe_int<unsigned long, hi::on_overflow_t::Throw>> : public std::numeric_limits<unsigned long> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<unsigned int, tt::on_overflow_t::Throw>> : public std::numeric_limits<unsigned int> {
+class std::numeric_limits<hi::safe_int<unsigned int, hi::on_overflow_t::Throw>> : public std::numeric_limits<unsigned int> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<unsigned short, tt::on_overflow_t::Throw>> : public std::numeric_limits<unsigned short> {
+class std::numeric_limits<hi::safe_int<unsigned short, hi::on_overflow_t::Throw>> : public std::numeric_limits<unsigned short> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<unsigned char, tt::on_overflow_t::Throw>> : public std::numeric_limits<unsigned char> {
+class std::numeric_limits<hi::safe_int<unsigned char, hi::on_overflow_t::Throw>> : public std::numeric_limits<unsigned char> {
 };
 
 template<>
-class std::numeric_limits<tt::safe_int<signed long long, tt::on_overflow_t::Axiom>> :
+class std::numeric_limits<hi::safe_int<signed long long, hi::on_overflow_t::Axiom>> :
     public std::numeric_limits<signed long long> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<signed long, tt::on_overflow_t::Axiom>> : public std::numeric_limits<signed long> {
+class std::numeric_limits<hi::safe_int<signed long, hi::on_overflow_t::Axiom>> : public std::numeric_limits<signed long> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<signed int, tt::on_overflow_t::Axiom>> : public std::numeric_limits<signed int> {
+class std::numeric_limits<hi::safe_int<signed int, hi::on_overflow_t::Axiom>> : public std::numeric_limits<signed int> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<signed short, tt::on_overflow_t::Axiom>> : public std::numeric_limits<signed short> {
+class std::numeric_limits<hi::safe_int<signed short, hi::on_overflow_t::Axiom>> : public std::numeric_limits<signed short> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<signed char, tt::on_overflow_t::Axiom>> : public std::numeric_limits<signed char> {
+class std::numeric_limits<hi::safe_int<signed char, hi::on_overflow_t::Axiom>> : public std::numeric_limits<signed char> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<unsigned long long, tt::on_overflow_t::Axiom>> :
+class std::numeric_limits<hi::safe_int<unsigned long long, hi::on_overflow_t::Axiom>> :
     public std::numeric_limits<unsigned long long> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<unsigned long, tt::on_overflow_t::Axiom>> : public std::numeric_limits<unsigned long> {
+class std::numeric_limits<hi::safe_int<unsigned long, hi::on_overflow_t::Axiom>> : public std::numeric_limits<unsigned long> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<unsigned int, tt::on_overflow_t::Axiom>> : public std::numeric_limits<unsigned int> {
+class std::numeric_limits<hi::safe_int<unsigned int, hi::on_overflow_t::Axiom>> : public std::numeric_limits<unsigned int> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<unsigned short, tt::on_overflow_t::Axiom>> : public std::numeric_limits<unsigned short> {
+class std::numeric_limits<hi::safe_int<unsigned short, hi::on_overflow_t::Axiom>> : public std::numeric_limits<unsigned short> {
 };
 template<>
-class std::numeric_limits<tt::safe_int<unsigned char, tt::on_overflow_t::Axiom>> : public std::numeric_limits<unsigned char> {
+class std::numeric_limits<hi::safe_int<unsigned char, hi::on_overflow_t::Axiom>> : public std::numeric_limits<unsigned char> {
 };

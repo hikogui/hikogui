@@ -9,19 +9,19 @@
 #include "../exception.hpp"
 #include <array>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 using enum unicode_script;
 
 struct iso_15924_info {
     fixed_string<4> code4;
     fixed_string<4> code4_open_type;
-    tt::unicode_script unicode_script;
+    hi::unicode_script unicode_script;
     uint16_t number;
 
     constexpr iso_15924_info(
         char const (&code4)[5],
         char const (&code4_open_type)[5],
-        tt::unicode_script unicode_script,
+        hi::unicode_script unicode_script,
         uint16_t number) noexcept :
         code4{to_title(basic_fixed_string(code4))}, code4_open_type{code4_open_type}, unicode_script(unicode_script), number(number)
     {
@@ -29,7 +29,7 @@ struct iso_15924_info {
 
     constexpr iso_15924_info() noexcept : iso_15924_info("zzzz", Unknown, 999) {}
 
-    constexpr iso_15924_info(char const (&code4)[5], tt::unicode_script unicode_script, uint16_t number) noexcept :
+    constexpr iso_15924_info(char const (&code4)[5], hi::unicode_script unicode_script, uint16_t number) noexcept :
         iso_15924_info(code4, code4, unicode_script, number)
     {
     }
@@ -255,7 +255,7 @@ constexpr auto iso_15924_code4_by_number_init() noexcept
 {
     auto r = std::array<fixed_string<4>, 1000>{};
 
-    for (ttlet &info : iso_15924_infos) {
+    for (hilet &info : iso_15924_infos) {
         r[info.number] = info.code4;
     }
 
@@ -266,7 +266,7 @@ constexpr auto iso_15924_code4_open_type_by_number_init() noexcept
 {
     auto r = std::array<fixed_string<4>, 1000>{};
 
-    for (ttlet &info : iso_15924_infos) {
+    for (hilet &info : iso_15924_infos) {
         r[info.number] = info.code4_open_type;
     }
 
@@ -281,7 +281,7 @@ constexpr auto iso_15924_number_by_unicode_script_init() noexcept
         item = 0;
     }
 
-    for (ttlet &info : iso_15924_infos) {
+    for (hilet &info : iso_15924_infos) {
         r[to_underlying(info.unicode_script)] = info.number;
     }
 
@@ -297,7 +297,7 @@ constexpr auto iso_15924_number_by_code4_init() noexcept
     for (auto i = 0_uz; i != iso_15924_infos.size(); ++i) {
         r[i] = {iso_15924_infos[i].code4, iso_15924_infos[i].number};
     }
-    std::sort(r.begin(), r.end(), [](ttlet &a, ttlet &b) {
+    std::sort(r.begin(), r.end(), [](hilet &a, hilet &b) {
         return a.first < b.first;
     });
 
@@ -309,7 +309,7 @@ constexpr auto iso_15924_code4_open_type_by_number = iso_15924_code4_open_type_b
 constexpr auto iso_15924_number_by_unicode_script = iso_15924_number_by_unicode_script_init();
 constexpr auto iso_15924_number_by_code4 = iso_15924_number_by_code4_init();
 
-iso_15924::iso_15924(tt::unicode_script const &script) noexcept : _v(iso_15924_number_by_unicode_script[to_underlying(script)]) {}
+iso_15924::iso_15924(hi::unicode_script const &script) noexcept : _v(iso_15924_number_by_unicode_script[to_underlying(script)]) {}
 
 iso_15924::iso_15924(std::string_view code4)
 {
@@ -317,10 +317,10 @@ iso_15924::iso_15924(std::string_view code4)
         throw parse_error(std::format("Invalid script '{}'", code4));
     }
 
-    ttlet code4_ = to_title(fixed_string<4>{code4});
+    hilet code4_ = to_title(fixed_string<4>{code4});
 
-    ttlet it = std::lower_bound(
-        iso_15924_number_by_code4.begin(), iso_15924_number_by_code4.end(), code4_, [](ttlet &item, ttlet &value) {
+    hilet it = std::lower_bound(
+        iso_15924_number_by_code4.begin(), iso_15924_number_by_code4.end(), code4_, [](hilet &item, hilet &value) {
             return item.first < value;
         });
 
@@ -333,14 +333,14 @@ iso_15924::iso_15924(std::string_view code4)
 
 [[nodiscard]] std::string_view iso_15924::code4() const noexcept
 {
-    tt_axiom(_v < 1000);
+    hi_axiom(_v < 1000);
     return static_cast<std::string_view>(iso_15924_code4_by_number[_v]);
 }
 
 [[nodiscard]] std::string_view iso_15924::code4_open_type() const noexcept
 {
-    tt_axiom(_v < 1000);
+    hi_axiom(_v < 1000);
     return static_cast<std::string_view>(iso_15924_code4_open_type_by_number[_v]);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

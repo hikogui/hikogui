@@ -12,13 +12,13 @@
 #include "../loop.hpp"
 #include <chrono>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 gui_system::gui_system(
     std::unique_ptr<gfx_system> gfx,
-    std::unique_ptr<tt::font_book> font_book,
-    std::unique_ptr<tt::theme_book> theme_book,
-    std::unique_ptr<tt::keyboard_bindings> keyboard_bindings,
+    std::unique_ptr<hi::font_book> font_book,
+    std::unique_ptr<hi::theme_book> theme_book,
+    std::unique_ptr<hi::keyboard_bindings> keyboard_bindings,
     std::weak_ptr<gui_system_delegate> delegate) noexcept :
     gfx(std::move(gfx)),
     font_book(std::move(font_book)),
@@ -37,7 +37,7 @@ gui_system::~gui_system()
 
 std::shared_ptr<gui_window> gui_system::add_window(std::shared_ptr<gui_window> window)
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     auto device = gfx->find_best_device_for_surface(*(window->surface));
     if (!device) {
@@ -49,4 +49,4 @@ std::shared_ptr<gui_window> gui_system::add_window(std::shared_ptr<gui_window> w
     return std::move(window);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

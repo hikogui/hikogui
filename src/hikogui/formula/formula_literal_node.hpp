@@ -6,7 +6,7 @@
 
 #include "formula_node.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct formula_literal_node final : formula_node {
     datum value;
@@ -24,4 +24,4 @@ struct formula_literal_node final : formula_node {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

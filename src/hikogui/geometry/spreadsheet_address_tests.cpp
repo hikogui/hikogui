@@ -7,7 +7,7 @@
 #include <iostream>
 
 using namespace std;
-using namespace tt;
+using namespace hi;
 
 TEST(spreadsheet_address, parse_absolute_spreadsheet_address)
 {

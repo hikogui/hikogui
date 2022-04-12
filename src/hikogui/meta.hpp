@@ -6,7 +6,7 @@
 
 #include <type_traits>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 // template<typename T, typename Head, typename... Tail>
 // constexpr std::size_t count_type_if(std::size_t count = 0) {

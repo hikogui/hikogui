@@ -1,7 +1,7 @@
 #include "gui_system_vulkan_macos.hpp"
 #include "Window.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 gui_system_vulkan_macos::gui_system_vulkan_macos(gui_systemDelegate *delegate) :
     gui_system_vulkan(delegate, { VK_EXT_METAL_SURFACE_EXTENSION_NAME })
@@ -23,7 +23,7 @@ gui_system_vulkan_macos::~gui_system_vulkan_macos()
 
 std::shared_ptr<Window> gui_system_vulkan_win32::createWindow(std::shared_ptr<Window::Delegate> windowDelegate, const std::string &title)
 {
-    std::scoped_lock lock(tt::mutex);
+    std::scoped_lock lock(hi::mutex);
 
     auto window = std::make_shared<gui_window_win32>(windowDelegate, title);
     getShared<gui_system>()->add(window);
@@ -33,7 +33,7 @@ std::shared_ptr<Window> gui_system_vulkan_win32::createWindow(std::shared_ptr<Wi
 
 CVReturn gui_system_vulkan_win32::updateAndRenderLoop(CVDisplayLinkRef displayLink, const CVTimeStamp* now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* target)
 {
-    scoped_lock lock(tt::mutex);
+    scoped_lock lock(hi::mutex);
 
     auto self = static_cast<gui_system_vulkan_win32 *>(target);
 

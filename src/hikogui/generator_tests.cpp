@@ -8,7 +8,7 @@
 #include <string>
 
 using namespace std;
-using namespace tt;
+using namespace hi;
 
 generator<int> my_generator()
 {

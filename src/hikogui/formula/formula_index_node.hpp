@@ -6,7 +6,7 @@
 
 #include "formula_binary_operator_node.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct formula_index_node final : formula_binary_operator_node {
     formula_index_node(parse_location location, std::unique_ptr<formula_node> lhs, std::unique_ptr<formula_node> rhs) :
@@ -47,4 +47,4 @@ struct formula_index_node final : formula_binary_operator_node {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

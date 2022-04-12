@@ -8,7 +8,7 @@
 #include "thread.hpp"
 #include <thread>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** An unfair recursive-mutex
  * This is a fast implementation of a recursive-mutex which does not fairly
@@ -52,7 +52,7 @@ public:
     unfair_recursive_mutex() = default;
     ~unfair_recursive_mutex() = default;
 
-    /** This function should be used in tt_axiom() to check if the lock is held by current thread.
+    /** This function should be used in hi_axiom() to check if the lock is held by current thread.
      *
      * @return The number of recursive locks the current thread has taken.
      * @retval 0 The current thread does not have a lock, or no-thread have a lock.
@@ -78,14 +78,14 @@ public:
     [[nodiscard]] bool try_lock() noexcept
     {
         // FIRST | OWNER | OTHER
-        ttlet thread_id = current_thread_id();
+        hilet thread_id = current_thread_id();
 
         // The following load() is:
         // - valid-and-equal to thread_id when the OWNER has the lock.
         // - zero or valid-and-not-equal to thread_id when this is an OTHER thread.
         if (owner.load(std::memory_order::acquire) == thread_id) {
             // FIRST | OWNER
-            tt_axiom(count != 0);
+            hi_axiom(count != 0);
             ++count;
 
             // OWNER
@@ -93,9 +93,9 @@ public:
 
         } else if (mutex.try_lock()) { // OTHER (inside the if expression)
             // FIRST
-            tt_axiom(count == 0);
+            hi_axiom(count == 0);
             count = 1;
-            tt_axiom(owner == 0);
+            hi_axiom(owner == 0);
             owner.store(thread_id, std::memory_order::release);
 
             return true;
@@ -125,14 +125,14 @@ public:
     void lock() noexcept
     {
         // FIRST | OWNER | OTHER
-        ttlet thread_id = current_thread_id();
+        hilet thread_id = current_thread_id();
 
         // The following load() is:
         // - valid-and-equal to thread_id when the OWNER has the lock.
         // - zero or valid-and-not-equal to thread_id when this is an OTHER thread.
         if (owner.load(std::memory_order::acquire) == thread_id) {
             // FIRST | OWNER
-            tt_axiom(count != 0);
+            hi_axiom(count != 0);
             ++count;
 
             // OWNER
@@ -142,9 +142,9 @@ public:
             mutex.lock();
 
             // FIRST
-            tt_axiom(count == 0);
+            hi_axiom(count == 0);
             count = 1;
-            tt_axiom(owner == 0);
+            hi_axiom(owner == 0);
             owner.store(thread_id, std::memory_order::release);
         }
     }
@@ -154,7 +154,7 @@ public:
         // FIRST | OWNER
 
         // Unlock must be called on the thread that locked the mutex
-        tt_axiom(recurse_lock_count());
+        hi_axiom(recurse_lock_count());
 
         if (--count == 0) {
             // FIRST
@@ -171,4 +171,4 @@ public:
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

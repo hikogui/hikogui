@@ -11,7 +11,7 @@
 struct HWND__;
 using HWND = HWND__ *;
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class gui_window_win32 final : public gui_window {
 public:
@@ -32,7 +32,7 @@ public:
     void set_size_state(gui_window_size state) noexcept override;
     [[nodiscard]] aarectangle workspace_rectangle() const noexcept override;
     [[nodiscard]] aarectangle fullscreen_rectangle() const noexcept override;
-    [[nodiscard]] tt::subpixel_orientation subpixel_orientation() const noexcept override;
+    [[nodiscard]] hi::subpixel_orientation subpixel_orientation() const noexcept override;
     void open_system_menu() override;
     void set_window_size(extent2 extent) override;
     [[nodiscard]] std::string get_text_from_clipboard() const noexcept override;
@@ -60,4 +60,4 @@ private:
     friend LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

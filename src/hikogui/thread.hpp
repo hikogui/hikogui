@@ -16,7 +16,7 @@
 #include <chrono>
 #include <bit>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Set the name of the current thread.
  * This function will set the name of the thread so that it is available
@@ -102,4 +102,4 @@ std::size_t advance_thread_affinity(std::size_t &cpu) noexcept;
  */
 [[nodiscard]] std::size_t current_cpu_id() noexcept;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -12,7 +12,7 @@
 #include <memory>
 #include <thread>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** An unfair mutex
  * This is a fast implementation of a mutex which does not fairly arbitrate
@@ -53,14 +53,14 @@ public:
     void lock() noexcept
     {
         if constexpr (UseDeadLockDetector) {
-            ttlet other = dead_lock_detector::lock(this);
+            hilet other = dead_lock_detector::lock(this);
             // *this mutex is already locked.
-            tt_axiom(other != this);
+            hi_axiom(other != this);
             // Potential dead-lock because of different ordering with other.
-            tt_axiom(other == nullptr); 
+            hi_axiom(other == nullptr); 
         }
 
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
 
         // Switch to 1 means there are no waiters.
         semaphore_value_type expected = 0;
@@ -68,7 +68,7 @@ public:
             [[unlikely]] lock_contended(expected);
         }
 
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     /**
@@ -81,29 +81,29 @@ public:
     [[nodiscard]] bool try_lock() noexcept
     {
         if constexpr (UseDeadLockDetector) {
-            ttlet other = dead_lock_detector::lock(this);
+            hilet other = dead_lock_detector::lock(this);
             // *this mutex is already locked.
-            tt_axiom(other != this);
+            hi_axiom(other != this);
             // Potential dead-lock because of different ordering with other.
-            tt_axiom(other == nullptr);
+            hi_axiom(other == nullptr);
         }
 
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
 
         // Switch to 1 means there are no waiters.
         semaphore_value_type expected = 0;
         if (!semaphore.compare_exchange_strong(expected, 1, std::memory_order::acquire)) {
-            tt_axiom(holds_invariant());
+            hi_axiom(holds_invariant());
 
             if constexpr (UseDeadLockDetector) {
                 // *this mutex is locked out-of-order from the order of being locked.
-                tt_axiom(dead_lock_detector::unlock(this));
+                hi_axiom(dead_lock_detector::unlock(this));
             }
 
             [[unlikely]] return false;
         }
 
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
         return true;
     }
 
@@ -111,10 +111,10 @@ public:
     {
         if constexpr (UseDeadLockDetector) {
             // *this mutex is locked out-of-order from the order of being locked.
-            tt_axiom(dead_lock_detector::unlock(this));
+            hi_axiom(dead_lock_detector::unlock(this));
         }
 
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
 
         if (semaphore.fetch_sub(1, std::memory_order::relaxed) != 1) {
             [[unlikely]] semaphore.store(0, std::memory_order::release);
@@ -124,7 +124,7 @@ public:
             atomic_thread_fence(std::memory_order::release);
         }
 
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
 private:
@@ -142,21 +142,21 @@ private:
         return semaphore.load(std::memory_order::relaxed) <= 2;
     }
 
-    tt_no_inline void lock_contended(semaphore_value_type expected) noexcept
+    hi_no_inline void lock_contended(semaphore_value_type expected) noexcept
     {
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
 
         do {
-            ttlet should_wait = expected == 2;
+            hilet should_wait = expected == 2;
 
             // Set to 2 when we are waiting.
             expected = 1;
             if (should_wait || semaphore.compare_exchange_strong(expected, 2)) {
-                tt_axiom(holds_invariant());
+                hi_axiom(holds_invariant());
                 semaphore.wait(2);
             }
 
-            tt_axiom(holds_invariant());
+            hi_axiom(holds_invariant());
             // Set to 2 when acquiring the lock, so that during unlock we wake other waiting threads.
             expected = 0;
         } while (!semaphore.compare_exchange_strong(expected, 2));
@@ -169,4 +169,4 @@ using unfair_mutex = unfair_mutex_impl<true>;
 using unfair_mutex = unfair_mutex_impl<false>;
 #endif
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

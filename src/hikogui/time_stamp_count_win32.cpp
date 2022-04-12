@@ -3,6 +3,6 @@
 #include <Windows.h>
 #include <profileapi.h>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 }

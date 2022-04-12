@@ -9,7 +9,7 @@
 #include "../URL.hpp"
 #include <array>
 
-namespace tt::inline v1::pipeline_tone_mapper {
+namespace hi::inline v1::pipeline_tone_mapper {
 
 device_shared::device_shared(gfx_device_vulkan const &device) : device(device)
 {
@@ -20,7 +20,7 @@ device_shared::~device_shared() {}
 
 void device_shared::destroy(gfx_device_vulkan *vulkanDevice)
 {
-    tt_axiom(vulkanDevice);
+    hi_axiom(vulkanDevice);
 
     teardownShaders(vulkanDevice);
 }
@@ -42,10 +42,10 @@ void device_shared::buildShaders()
 
 void device_shared::teardownShaders(gfx_device_vulkan *vulkanDevice)
 {
-    tt_axiom(vulkanDevice);
+    hi_axiom(vulkanDevice);
 
     vulkanDevice->destroy(vertexShaderModule);
     vulkanDevice->destroy(fragmentShaderModule);
 }
 
-} // namespace tt::inline v1::pipeline_tone_mapper
+} // namespace hi::inline v1::pipeline_tone_mapper

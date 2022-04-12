@@ -7,7 +7,7 @@
 
 #pragma once
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Exception thrown during parsing on an error.
  * This exception is often thrown due to an error in the syntax
@@ -86,4 +86,4 @@ public:
     using std::runtime_error::runtime_error;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

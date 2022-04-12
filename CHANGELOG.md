@@ -25,7 +25,7 @@ of improving the application developer's view of the API.
    - Improved performance of counters.
    - Improved performance of tracing.
    - Logging is now done in local time.
-   - Replaced `tt::hires_utc_clock` with
+   - Replaced `hi::hires_utc_clock` with
      `std::chrono::utc_time<std::chrono::nanoseconds>`
    - Reimplemented CPU-timestamp-counter conversion using
      `std::chrono::utc_clock`.
@@ -33,9 +33,9 @@ of improving the application developer's view of the API.
    - Implemented JSON-path for selecting values in a JSON file.
    - Reimplemented a robust UTF-8, UTF-16, UTF-32 codec for properly
      handling invalid encoded text strings.
-   - Reimplemented dynamic data type `tt::datum`.
-   - Implement `tt::pickle` system to convert between custom types and
-     `tt::datum`.
+   - Reimplemented dynamic data type `hi::datum`.
+   - Implement `hi::pickle` system to convert between custom types and
+     `hi::datum`.
    - Reimplemented observables with better automatic ownership model and
      better callback handling.
    - Multiple preference-files may now be opened at the same time.

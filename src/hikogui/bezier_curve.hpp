@@ -18,7 +18,7 @@
 #include <limits>
 #include <algorithm>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct bezier_point;
 
@@ -104,7 +104,7 @@ struct bezier_curve {
         case Type::Linear: return bezierPointAt(P1, P2, t);
         case Type::Quadratic: return bezierPointAt(P1, C1, P2, t);
         case Type::Cubic: return bezierPointAt(P1, C1, C2, P2, t);
-        default: tt_no_default();
+        default: hi_no_default();
         }
     }
 
@@ -121,7 +121,7 @@ struct bezier_curve {
         case Type::Linear: return bezierTangentAt(P1, P2, t);
         case Type::Quadratic: return bezierTangentAt(P1, C1, P2, t);
         case Type::Cubic: return bezierTangentAt(P1, C1, C2, P2, t);
-        default: tt_no_default();
+        default: hi_no_default();
         }
     }
 
@@ -135,17 +135,17 @@ struct bezier_curve {
         case Type::Linear: return bezierFindX(P1, P2, y);
         case Type::Quadratic: return bezierFindX(P1, C1, P2, y);
         case Type::Cubic: return bezierFindX(P1, C1, C2, P2, y);
-        default: tt_no_default();
+        default: hi_no_default();
         }
     }
 
-    [[nodiscard]] tt_force_inline results<float, 3> solveTForNormalsIntersectingPoint(point2 P) const noexcept
+    [[nodiscard]] hi_force_inline results<float, 3> solveTForNormalsIntersectingPoint(point2 P) const noexcept
     {
         switch (type) {
         case Type::Linear: return bezierFindTForNormalsIntersectingPoint(P1, P2, P);
         case Type::Quadratic: return bezierFindTForNormalsIntersectingPoint(P1, C1, P2, P);
-        case Type::Cubic: tt_no_default();
-        default: tt_no_default();
+        case Type::Cubic: hi_no_default();
+        default: hi_no_default();
         }
     }
 
@@ -173,24 +173,24 @@ struct bezier_curve {
 
         /** The orthogonality of the line PN and the tangent of the curve at N.
          */
-        [[nodiscard]] tt_force_inline constexpr float orthogonality() const noexcept
+        [[nodiscard]] hi_force_inline constexpr float orthogonality() const noexcept
         {
-            ttlet tangent = curve->tangentAt(t);
+            hilet tangent = curve->tangentAt(t);
             return cross(normalize(tangent), normalize(PN));
         };
 
-        [[nodiscard]] tt_force_inline float distance() const noexcept
+        [[nodiscard]] hi_force_inline float distance() const noexcept
         {
             return std::sqrt(sq_distance);
         }
 
-        [[nodiscard]] tt_force_inline float signed_distance() const noexcept
+        [[nodiscard]] hi_force_inline float signed_distance() const noexcept
         {
-            ttlet d = distance();
+            hilet d = distance();
             return orthogonality() < 0.0 ? d : -d;
         }
 
-        [[nodiscard]] tt_force_inline constexpr bool operator<(sdf_distance_result const& rhs) const noexcept
+        [[nodiscard]] hi_force_inline constexpr bool operator<(sdf_distance_result const& rhs) const noexcept
         {
             if (abs(sq_distance - rhs.sq_distance) < 0.01f) {
                 return abs(orthogonality()) > abs(rhs.orthogonality());
@@ -212,12 +212,12 @@ struct bezier_curve {
     {
         auto nearest = sdf_distance_result{this};
 
-        ttlet ts = solveTForNormalsIntersectingPoint(P);
+        hilet ts = solveTForNormalsIntersectingPoint(P);
         for (auto t : ts) {
             t = std::clamp(t, 0.0f, 1.0f);
 
-            ttlet PN = P - pointAt(t);
-            ttlet sq_distance = squared_hypot(PN);
+            hilet PN = P - pointAt(t);
+            hilet sq_distance = squared_hypot(PN);
             if (sq_distance < nearest.sq_distance) {
                 nearest.t = t;
                 nearest.PN = PN;
@@ -235,14 +235,14 @@ struct bezier_curve {
      */
     [[nodiscard]] std::pair<bezier_curve, bezier_curve> cubicSplit(float const t) const noexcept
     {
-        ttlet outerA = bezier_curve{P1, C1};
-        ttlet outerBridge = bezier_curve{C1, C2};
-        ttlet outerB = bezier_curve{C2, P2};
+        hilet outerA = bezier_curve{P1, C1};
+        hilet outerBridge = bezier_curve{C1, C2};
+        hilet outerB = bezier_curve{C2, P2};
 
-        ttlet innerA = bezier_curve{outerA.pointAt(t), outerBridge.pointAt(t)};
-        ttlet innerB = bezier_curve{outerBridge.pointAt(t), outerB.pointAt(t)};
+        hilet innerA = bezier_curve{outerA.pointAt(t), outerBridge.pointAt(t)};
+        hilet innerB = bezier_curve{outerBridge.pointAt(t), outerB.pointAt(t)};
 
-        ttlet newPoint = bezier_curve{innerA.pointAt(t), innerB.pointAt(t)}.pointAt(t);
+        hilet newPoint = bezier_curve{innerA.pointAt(t), innerB.pointAt(t)}.pointAt(t);
 
         return {{P1, outerA.pointAt(t), innerA.pointAt(t), newPoint}, {newPoint, innerB.pointAt(t), outerB.pointAt(t), P2}};
     }
@@ -254,10 +254,10 @@ struct bezier_curve {
      */
     [[nodiscard]] std::pair<bezier_curve, bezier_curve> quadraticSplit(float const t) const noexcept
     {
-        ttlet outerA = bezier_curve{P1, C1};
-        ttlet outerB = bezier_curve{C1, P2};
+        hilet outerA = bezier_curve{P1, C1};
+        hilet outerB = bezier_curve{C1, P2};
 
-        ttlet newPoint = bezier_curve{outerA.pointAt(t), outerB.pointAt(t)}.pointAt(t);
+        hilet newPoint = bezier_curve{outerA.pointAt(t), outerB.pointAt(t)}.pointAt(t);
 
         return {{P1, outerA.pointAt(t), newPoint}, {newPoint, outerB.pointAt(t), P2}};
     }
@@ -269,7 +269,7 @@ struct bezier_curve {
      */
     [[nodiscard]] std::pair<bezier_curve, bezier_curve> linearSplit(float const t) const noexcept
     {
-        ttlet newPoint = pointAt(t);
+        hilet newPoint = pointAt(t);
 
         return {{P1, newPoint}, {newPoint, P2}};
     }
@@ -285,7 +285,7 @@ struct bezier_curve {
         case Type::Linear: return linearSplit(t);
         case Type::Quadratic: return quadraticSplit(t);
         case Type::Cubic: return cubicSplit(t);
-        default: tt_no_default();
+        default: hi_no_default();
         }
     }
 
@@ -298,7 +298,7 @@ struct bezier_curve {
         if (flatness() >= minimumFlatness) {
             r.push_back(*this);
         } else {
-            ttlet[a, b] = split(0.5f);
+            hilet[a, b] = split(0.5f);
             a.subdivideUntilFlat_impl(r, minimumFlatness);
             b.subdivideUntilFlat_impl(r, minimumFlatness);
         }
@@ -324,7 +324,7 @@ struct bezier_curve {
         case Type::Linear: return bezierFlatness(P1, P2);
         case Type::Quadratic: return bezierFlatness(P1, C1, P2);
         case Type::Cubic: return bezierFlatness(P1, C1, C2, P2);
-        default: tt_no_default();
+        default: hi_no_default();
         }
     }
 
@@ -348,7 +348,7 @@ struct bezier_curve {
         case bezier_curve::Type::Quadratic: return (lhs.P1 == rhs.P1) && (lhs.C1 == rhs.C1) && (lhs.P2 == rhs.P2);
         case bezier_curve::Type::Cubic:
             return (lhs.P1 == rhs.P1) && (lhs.C1 == rhs.C1) && (lhs.C2 == rhs.C2) && (lhs.P2 == rhs.P2);
-        default: tt_no_default();
+        default: hi_no_default();
         }
     }
 
@@ -395,7 +395,7 @@ makeContourFromPoints(std::vector<bezier_point>::const_iterator first, std::vect
 [[nodiscard]] std::vector<bezier_curve> makeParallelContour(
     std::vector<bezier_curve> const& contour,
     float offset,
-    tt::line_join_style line_join_style,
+    hi::line_join_style line_join_style,
     float tolerance) noexcept;
 
 /** Fill a linear gray scale image by filling a curve with anti-aliasing.
@@ -410,4 +410,4 @@ void fill(pixel_map<uint8_t>& image, std::vector<bezier_curve> const& curves) no
  */
 void fill(pixel_map<sdf_r8>& image, std::vector<bezier_curve> const& curves) noexcept;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

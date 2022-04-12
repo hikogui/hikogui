@@ -9,7 +9,7 @@
 #include "concepts.hpp"
 #include <cmath>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A type that gets animated between two values.
  */
@@ -49,7 +49,7 @@ public:
      */
     [[nodiscard]] bool is_animating() const noexcept
     {
-        tt_axiom(initialized);
+        hi_axiom(initialized);
         return progress() < 1.0f;
     }
 
@@ -57,7 +57,7 @@ public:
      */
     value_type current_value() const noexcept
     {
-        tt_axiom(initialized);
+        hi_axiom(initialized);
         return std::lerp(_old_value, _new_value, progress());
     }
 
@@ -73,10 +73,10 @@ private:
     {
         using namespace std::chrono_literals;
 
-        ttlet dt = _current_time - _start_time;
-        ttlet p = static_cast<float>(dt / 1ms) / static_cast<float>(_animation_duration / 1ms);
+        hilet dt = _current_time - _start_time;
+        hilet p = static_cast<float>(dt / 1ms) / static_cast<float>(_animation_duration / 1ms);
         return std::clamp(p, 0.0f, 1.0f);
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

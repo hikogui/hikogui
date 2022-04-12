@@ -21,7 +21,7 @@ namespace {
 
 struct test_type {
     std::u32string code_points;
-    std::vector<tt::unicode_break_opportunity> expected;
+    std::vector<hi::unicode_break_opportunity> expected;
     std::string comment;
     int line_nr;
 };
@@ -30,25 +30,25 @@ static std::optional<test_type> parse_test_line(std::string_view line, int line_
 {
     auto r = test_type{};
 
-    ttlet split_line = tt::split(line, "\t#");
+    hilet split_line = hi::split(line, "\t#");
     if (split_line.size() < 2) {
         return {};
     }
     r.comment = std::format("{}: {}", line_nr, split_line[1]);
     r.line_nr = line_nr;
 
-    ttlet columns = tt::split(split_line[0]);
+    hilet columns = hi::split(split_line[0]);
     if (columns.size() < 2) {
         return {};
     }
 
-    for (ttlet column : columns) {
+    for (hilet column : columns) {
         if (column == "") {
             // Empty.
         } else if (column == "\xc3\xb7") {
-            r.expected.push_back(tt::unicode_break_opportunity::yes);
+            r.expected.push_back(hi::unicode_break_opportunity::yes);
         } else if (column == "\xc3\x97") {
-            r.expected.push_back(tt::unicode_break_opportunity::no);
+            r.expected.push_back(hi::unicode_break_opportunity::no);
         } else {
             auto code_point = static_cast<char32_t>(std::stoi(std::string(column), nullptr, 16));
             r.code_points += code_point;
@@ -58,14 +58,14 @@ static std::optional<test_type> parse_test_line(std::string_view line, int line_
     return {std::move(r)};
 }
 
-static tt::generator<test_type> parse_tests(std::string_view filename)
+static hi::generator<test_type> parse_tests(std::string_view filename)
 {
-    ttlet view = tt::file_view(tt::URL(filename));
-    ttlet test_data = view.string_view();
+    hilet view = hi::file_view(hi::URL(filename));
+    hilet test_data = view.string_view();
 
     int line_nr = 1;
-    for (ttlet line : std::views::split(test_data, std::string_view{"\n"})) {
-        if (ttlet optional_test = parse_test_line(line, line_nr)) {
+    for (hilet line : std::views::split(test_data, std::string_view{"\n"})) {
+        if (hilet optional_test = parse_test_line(line, line_nr)) {
             co_yield *optional_test;
         }
         line_nr++;
@@ -76,10 +76,10 @@ static tt::generator<test_type> parse_tests(std::string_view filename)
 
 TEST(unicode_break, word_break)
 {
-    for (ttlet &test : parse_tests("WordBreakTest.txt")) {
-        ttlet result =
-            tt::unicode_word_break(test.code_points.begin(), test.code_points.end(), [](ttlet code_point) -> decltype(auto) {
-                return tt::unicode_description::find(code_point);
+    for (hilet &test : parse_tests("WordBreakTest.txt")) {
+        hilet result =
+            hi::unicode_word_break(test.code_points.begin(), test.code_points.end(), [](hilet code_point) -> decltype(auto) {
+                return hi::unicode_description::find(code_point);
             });
 
         ASSERT_EQ(test.expected, result) << test.comment;
@@ -88,10 +88,10 @@ TEST(unicode_break, word_break)
 
 TEST(unicode_break, sentence_break)
 {
-    for (ttlet &test : parse_tests("SentenceBreakTest.txt")) {
-        ttlet result =
-            tt::unicode_sentence_break(test.code_points.begin(), test.code_points.end(), [](ttlet code_point) -> decltype(auto) {
-                return tt::unicode_description::find(code_point);
+    for (hilet &test : parse_tests("SentenceBreakTest.txt")) {
+        hilet result =
+            hi::unicode_sentence_break(test.code_points.begin(), test.code_points.end(), [](hilet code_point) -> decltype(auto) {
+                return hi::unicode_description::find(code_point);
             });
 
         ASSERT_EQ(test.expected, result) << test.comment;
@@ -100,16 +100,16 @@ TEST(unicode_break, sentence_break)
 
 TEST(unicode_break, line_break)
 {
-    for (ttlet &test : parse_tests("LineBreakTest.txt")) {
+    for (hilet &test : parse_tests("LineBreakTest.txt")) {
         auto result =
-            tt::unicode_line_break(test.code_points.begin(), test.code_points.end(), [](ttlet code_point) -> decltype(auto) {
-                return tt::unicode_description::find(code_point);
+            hi::unicode_line_break(test.code_points.begin(), test.code_points.end(), [](hilet code_point) -> decltype(auto) {
+                return hi::unicode_description::find(code_point);
             });
 
         // The algorithm produces mandatory-break in the result, but LineBreakTest.txt only has break/no-break.
         for (auto &x : result) {
-            if (x == tt::unicode_break_opportunity::mandatory) {
-                x = tt::unicode_break_opportunity::yes;
+            if (x == hi::unicode_break_opportunity::mandatory) {
+                x = hi::unicode_break_opportunity::yes;
             }
         }
 

@@ -6,23 +6,23 @@
 #include <array>
 #include <cstdint>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] ssize_t time_stamp_count::cpu_id_fallback() const noexcept
 {
     auto aux_value_ = _mm_set1_epi32(_aux);
 
-    ttlet num_aux_values = _num_aux_values.load(std::memory_order_acquire);
-    tt_axiom(_aux_values.size() == _cpu_ids.size());
-    tt_axiom(num_aux_values < _aux_values.size());
+    hilet num_aux_values = _num_aux_values.load(std::memory_order_acquire);
+    hi_axiom(_aux_values.size() == _cpu_ids.size());
+    hi_axiom(num_aux_values < _aux_values.size());
 
     for (std::size_t i = 0; i < num_aux_values; i += 4) {
-        ttlet row = _mm_loadu_si128(reinterpret_cast<__m128i const *>(_aux_values.data() + i));
-        ttlet row_result = _mm_cmpeq_epi32(row, aux_value_);
-        ttlet row_result_ = _mm_castsi128_ps(row_result);
-        ttlet row_result_mask = _mm_movemask_ps(row_result_);
+        hilet row = _mm_loadu_si128(reinterpret_cast<__m128i const *>(_aux_values.data() + i));
+        hilet row_result = _mm_cmpeq_epi32(row, aux_value_);
+        hilet row_result_ = _mm_castsi128_ps(row_result);
+        hilet row_result_mask = _mm_movemask_ps(row_result_);
         if (static_cast<bool>(row_result_mask)) {
-            ttlet j = i + std::countr_zero(static_cast<unsigned int>(row_result_mask));
+            hilet j = i + std::countr_zero(static_cast<unsigned int>(row_result_mask));
             if (j < num_aux_values) {
                 return _cpu_ids[j];
             }
@@ -55,7 +55,7 @@ namespace tt::inline v1 {
     if (tsc1._aux != tsc2._aux) {
         // This must never happen, as we set the thread affinity to a single CPU
         // if this happens something is seriously wrong.
-        tt_log_fatal("CPU Switch detected when measuring the TSC frequency.");
+        hi_log_fatal("CPU Switch detected when measuring the TSC frequency.");
     }
 
     if (tsc1.count() >= tsc2.count()) {
@@ -63,7 +63,7 @@ namespace tt::inline v1 {
         // the CPUs are started and synchronized. It may also happen to a CPU that
         // was hot-swapped while the computer is running, in that case the CPU
         // should not be running applications yet.
-        tt_log_fatal("TSC Did not advance during measuring its frequency.");
+        hi_log_fatal("TSC Did not advance during measuring its frequency.");
     }
 
     if (tp1 >= tp2) {
@@ -74,7 +74,7 @@ namespace tt::inline v1 {
     // Calculate the frequency by dividing the delta-tsc by the duration.
     // We scale both the delta-tsc and duration by 1'000'000'000 before the
     // division. The duration is scaled by 1'000'000'000 by dividing by 1ns.
-    ttlet[delta_tsc_lo, delta_tsc_hi] = mul_carry(tsc2.count() - tsc1.count(), uint64_t{1'000'000'000});
+    hilet[delta_tsc_lo, delta_tsc_hi] = mul_carry(tsc2.count() - tsc1.count(), uint64_t{1'000'000'000});
     auto duration = narrow_cast<uint64_t>((tp2 - tp1) / 1ns);
     return wide_div(delta_tsc_lo, delta_tsc_hi, duration);
 }
@@ -96,7 +96,7 @@ void time_stamp_count::populate_aux_values() noexcept
         _aux_values[i] = tsc._aux;
         _cpu_ids[i] = current_cpu;
         _num_aux_values.store(i + 1, std::memory_order::release);
-        tt_log_info("Found CPU {} with TSC:AUX {}.", current_cpu, tsc._aux);
+        hi_log_info("Found CPU {} with TSC:AUX {}.", current_cpu, tsc._aux);
 
         if ((tsc._aux & 0xfff) != current_cpu) {
             aux_is_cpu_id = false;
@@ -106,7 +106,7 @@ void time_stamp_count::populate_aux_values() noexcept
 
     _aux_is_cpu_id.store(aux_is_cpu_id, std::memory_order_relaxed);
     if (aux_is_cpu_id) {
-        tt_log_info("Use fast time_stamp_count.cpu_id() implementation.");
+        hi_log_info("Use fast time_stamp_count.cpu_id() implementation.");
     }
 
     // Set the thread affinity back to the original.
@@ -125,18 +125,18 @@ void time_stamp_count::configure_frequency() noexcept
     uint64_t frequency = 0;
     uint64_t num_samples = 0;
     for (int i = 0; i != 4; ++i) {
-        ttlet f = time_stamp_count::measure_frequency(25ms);
+        hilet f = time_stamp_count::measure_frequency(25ms);
         if (f != 0) {
             frequency += f;
             ++num_samples;
         }
     }
     if (num_samples == 0) {
-        tt_log_fatal("Unable the measure the frequency of the TSC. The UTC time did not advance.");
+        hi_log_fatal("Unable the measure the frequency of the TSC. The UTC time did not advance.");
     }
     frequency /= num_samples;
 
-    tt_log_info("The measured frequency of the TSC is {} Hz.", frequency);
+    hi_log_info("The measured frequency of the TSC is {} Hz.", frequency);
     time_stamp_count::set_frequency(frequency);
 }
 
@@ -146,4 +146,4 @@ void time_stamp_count::start_subsystem() noexcept
     populate_aux_values();
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

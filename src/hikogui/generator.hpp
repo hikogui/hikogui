@@ -11,7 +11,7 @@
 #include <memory_resource>
 #include "arguments.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A return value for a generator-function.
  * A generator-function is a coroutine which co_yields zero or more values.
@@ -216,13 +216,13 @@ public:
 
     generator(generator &&other) noexcept : _coroutine{other._coroutine}
     {
-        tt_axiom(&other != this);
+        hi_axiom(&other != this);
         other._coroutine = {};
     }
 
     generator &operator=(generator &&other) noexcept
     {
-        tt_return_on_self_assignment(other);
+        hi_return_on_self_assignment(other);
         if (_coroutine) {
             _coroutine.destroy();
         }
@@ -255,8 +255,8 @@ private:
 namespace pmr {
 
 template<typename T>
-using generator = tt::generator<T, std::pmr::polymorphic_allocator<>>;
+using generator = hi::generator<T, std::pmr::polymorphic_allocator<>>;
 
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

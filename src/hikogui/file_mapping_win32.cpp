@@ -10,9 +10,9 @@
 #include <mutex>
 #include <Windows.h>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
-file_mapping::file_mapping(std::shared_ptr<tt::file> const &file, std::size_t size) :
+file_mapping::file_mapping(std::shared_ptr<hi::file> const &file, std::size_t size) :
     file(file), size(size > 0 ? size : file::file_size(file->_location))
 {
     DWORD protect;
@@ -46,9 +46,9 @@ file_mapping::~file_mapping()
 {
     if (mapHandle != nullptr) {
         if (!CloseHandle(mapHandle)) {
-            tt_log_fatal("Could not close file mapping object on file '{}'", get_last_error_message());
+            hi_log_fatal("Could not close file mapping object on file '{}'", get_last_error_message());
         }
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

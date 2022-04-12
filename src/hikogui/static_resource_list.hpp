@@ -10,7 +10,7 @@
 #include <atomic>
 #include <optional>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 struct static_resource_item;
 
 /** The start of the list of static resource items.
@@ -50,11 +50,11 @@ struct static_resource_item {
      * @param new_item A pointer to the new item to be added to the list.
      * @return A pointer to the previous item, should be stored into a static global variable.
      */
-    [[nodiscard]] tt_no_inline static static_resource_item const *add(static_resource_item *new_item) noexcept
+    [[nodiscard]] hi_no_inline static static_resource_item const *add(static_resource_item *new_item) noexcept
     {
-        tt_axiom(new_item != nullptr);
+        hi_axiom(new_item != nullptr);
         return new_item->next = static_resource_list.exchange(new_item);
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

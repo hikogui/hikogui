@@ -6,7 +6,7 @@
 #include "../GUI/gui_window.hpp"
 #include "../GUI/gui_system.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 label_widget::label_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
 {
@@ -42,14 +42,14 @@ widget_constraints const &label_widget::set_constraints() noexcept
 
     // Translate the text of the label during reconstrain as this is triggered when the system language changes.
     _text_widget->text = to_gstring(label->text());
-    ttlet &text_constraints = _text_widget->set_constraints();
-    ttlet &icon_constraints = _icon_widget->set_constraints();
+    hilet &text_constraints = _text_widget->set_constraints();
+    hilet &icon_constraints = _icon_widget->set_constraints();
 
-    ttlet label_size = text_constraints.preferred;
-    ttlet icon_size = icon_constraints.preferred;
+    hilet label_size = text_constraints.preferred;
+    hilet icon_size = icon_constraints.preferred;
 
-    ttlet has_text = label_size.width() > 0.0f;
-    ttlet has_icon = icon_size.width() > 0.0f;
+    hilet has_text = label_size.width() > 0.0f;
+    hilet has_icon = icon_size.width() > 0.0f;
 
     _inner_margin = (has_text and has_icon) ? theme().margin : 0.0f;
 
@@ -66,7 +66,7 @@ widget_constraints const &label_widget::set_constraints() noexcept
         }
     }();
 
-    ttlet size = [&] {
+    hilet size = [&] {
         if (has_icon) {
             if (*alignment != horizontal_alignment::center and *alignment != horizontal_alignment::justified) {
                 // If the icon is on the left or right, add the icon to the width.
@@ -96,46 +96,46 @@ void label_widget::set_layout(widget_layout const &layout) noexcept
     if (compare_store(_layout, layout)) {
         _text_rectangle = aarectangle{};
         if (*alignment == horizontal_alignment::left) {
-            ttlet text_width = layout.width() - _icon_size - _inner_margin;
+            hilet text_width = layout.width() - _icon_size - _inner_margin;
             _text_rectangle = {_icon_size + _inner_margin, 0.0f, text_width, layout.height()};
 
         } else if (*alignment == horizontal_alignment::right) {
-            ttlet text_width = layout.width() - _icon_size - _inner_margin;
+            hilet text_width = layout.width() - _icon_size - _inner_margin;
             _text_rectangle = {0.0f, 0.0f, text_width, layout.height()};
 
         } else if (*alignment == vertical_alignment::top) {
-            ttlet text_height = layout.height() - _icon_size - _inner_margin;
+            hilet text_height = layout.height() - _icon_size - _inner_margin;
             _text_rectangle = {0.0f, 0.0f, layout.width(), text_height};
 
         } else if (*alignment == vertical_alignment::bottom) {
-            ttlet text_height = layout.height() - _icon_size - _inner_margin;
+            hilet text_height = layout.height() - _icon_size - _inner_margin;
             _text_rectangle = {0.0f, _icon_size + _inner_margin, layout.width(), text_height};
 
         } else {
             _text_rectangle = layout.rectangle();
         }
 
-        ttlet icon_pos = [&] {
-            if (*alignment == tt::alignment::top_left()) {
+        hilet icon_pos = [&] {
+            if (*alignment == hi::alignment::top_left()) {
                 return point2{0.0f, layout.height() - _icon_size};
-            } else if (*alignment == tt::alignment::top_right()) {
+            } else if (*alignment == hi::alignment::top_right()) {
                 return point2{layout.width() - _icon_size, layout.height() - _icon_size};
             } else if (*alignment == vertical_alignment::top) {
                 return point2{(layout.width() - _icon_size) / 2.0f, layout.height() - _icon_size};
-            } else if (*alignment == tt::alignment::bottom_left()) {
+            } else if (*alignment == hi::alignment::bottom_left()) {
                 return point2{0.0f, 0.0f};
-            } else if (*alignment == tt::alignment::bottom_right()) {
+            } else if (*alignment == hi::alignment::bottom_right()) {
                 return point2{layout.width() - _icon_size, 0.0f};
             } else if (*alignment == vertical_alignment::bottom) {
                 return point2{(layout.width() - _icon_size) / 2.0f, 0.0f};
-            } else if (*alignment == tt::alignment::middle_left()) {
+            } else if (*alignment == hi::alignment::middle_left()) {
                 return point2{0.0f, (layout.height() - _icon_size) / 2.0f};
-            } else if (*alignment == tt::alignment::middle_right()) {
+            } else if (*alignment == hi::alignment::middle_right()) {
                 return point2{layout.width() - _icon_size, (layout.height() - _icon_size)};
             } else if (*alignment == vertical_alignment::middle) {
                 return point2{(layout.width() - _icon_size) / 2.0f, (layout.height() - _icon_size)};
             } else {
-                tt_no_default();
+                hi_no_default();
             }
         }();
         _icon_rectangle = aarectangle{icon_pos, extent2{_icon_size, _icon_size}};
@@ -156,7 +156,7 @@ void label_widget::draw(draw_context const &context) noexcept
 
 [[nodiscard]] hitbox label_widget::hitbox_test(point3 position) const noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     if (*visible) {
         return _text_widget->hitbox_test_from_parent(position);
@@ -165,4 +165,4 @@ void label_widget::draw(draw_context const &context) noexcept
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

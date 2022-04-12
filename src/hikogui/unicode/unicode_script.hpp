@@ -9,7 +9,7 @@
 
 #include <cstdint>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 enum class unicode_script: uint8_t {
     Unknown,

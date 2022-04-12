@@ -10,7 +10,7 @@
 #include "geometry/transform.hpp"
 #include <vector>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /*! A point or control-point on contour of bezier curves.
  * The bezier curves can be linear (a line), quadratic or cubic.
@@ -43,14 +43,14 @@ struct bezier_point {
     {
         std::vector<bezier_point> r;
 
-        tt_axiom((end - begin) >= 2);
+        hi_axiom((end - begin) >= 2);
 
         auto prev_it = end - 1;
         auto prev_prev_it = end - 2;
         for (auto it = begin; it != end; it++) {
             switch (it->type) {
             case bezier_point::Type::Anchor:
-                tt_axiom(prev_it->type != bezier_point::Type::CubicControl1);
+                hi_axiom(prev_it->type != bezier_point::Type::CubicControl1);
                 r.push_back(*it);
                 break;
 
@@ -59,7 +59,7 @@ struct bezier_point {
                     r.emplace_back(midpoint(prev_it->p, it->p), bezier_point::Type::Anchor);
 
                 } else {
-                    tt_axiom(prev_it->type == bezier_point::Type::Anchor);
+                    hi_axiom(prev_it->type == bezier_point::Type::Anchor);
                 }
                 r.push_back(*it);
                 break;
@@ -68,16 +68,16 @@ struct bezier_point {
 
             case bezier_point::Type::CubicControl2:
                 if (prev_it->type == bezier_point::Type::Anchor) {
-                    tt_axiom(prev_prev_it->type == bezier_point::Type::CubicControl2);
+                    hi_axiom(prev_prev_it->type == bezier_point::Type::CubicControl2);
 
                     r.emplace_back(reflect(prev_prev_it->p, prev_it->p), bezier_point::Type::CubicControl1);
                 } else {
-                    tt_axiom(prev_it->type == bezier_point::Type::CubicControl1);
+                    hi_axiom(prev_it->type == bezier_point::Type::CubicControl1);
                 }
                 r.push_back(*it);
                 break;
 
-            default: tt_no_default();
+            default: hi_no_default();
             }
 
             prev_prev_it = prev_it;
@@ -93,7 +93,7 @@ struct bezier_point {
         }
 
         // The result did not contain an anchor.
-        tt_no_default();
+        hi_no_default();
     }
 
     [[nodiscard]] friend bool operator==(bezier_point const &lhs, bezier_point const &rhs) noexcept
@@ -109,4 +109,4 @@ struct bezier_point {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

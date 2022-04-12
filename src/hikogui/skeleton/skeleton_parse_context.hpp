@@ -11,7 +11,7 @@
 #include <string_view>
 #include <optional>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct skeleton_node;
 
@@ -53,7 +53,7 @@ struct skeleton_parse_context {
 
     skeleton_parse_context &operator++() noexcept
     {
-        tt_axiom(!atEOF());
+        hi_axiom(!atEOF());
         location += *index;
         ++index;
         return *this;
@@ -145,4 +145,4 @@ struct skeleton_parse_context {
     void include(parse_location location, std::unique_ptr<formula_node> expression);
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

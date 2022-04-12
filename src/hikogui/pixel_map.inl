@@ -5,7 +5,7 @@
 
 #include "pixel_map.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<int KERNEL_SIZE, typename KERNEL>
 inline void horizontalFilterRow(pixel_row<uint8_t> row, KERNEL kernel) noexcept
@@ -17,7 +17,7 @@ inline void horizontalFilterRow(pixel_row<uint8_t> row, KERNEL kernel) noexcept
 
     // Start beyond the left pixel. Then lookahead upto
     // the point we can start the kernel.
-    ttlet leftEdgeValue = row[0];
+    hilet leftEdgeValue = row[0];
     for (; x < 0; x++) {
         values <<= 8;
 
@@ -31,7 +31,7 @@ inline void horizontalFilterRow(pixel_row<uint8_t> row, KERNEL kernel) noexcept
 
     // Execute the kernel on all the pixels upto the right edge.
     // The values are still looked up ahead.
-    ttlet lastX = row.width - LOOK_AHEAD_SIZE;
+    hilet lastX = row.width - LOOK_AHEAD_SIZE;
     for (; x < lastX; x++) {
         values <<= 8;
         values |= row[LOOK_AHEAD_SIZE + x];
@@ -40,7 +40,7 @@ inline void horizontalFilterRow(pixel_row<uint8_t> row, KERNEL kernel) noexcept
     }
 
     // Finish up to the right edge.
-    ttlet rightEdgeValue = row[row.width - 1];
+    hilet rightEdgeValue = row[row.width - 1];
     for (; x < row.width; x++) {
         values <<= 8;
         values |= rightEdgeValue;
@@ -86,8 +86,8 @@ inline void rotate90(pixel_map<T> &dst, pixel_map<T> const &src) noexcept
     assert(dst.height() >= src.width());
 
     for (int rowNr = 0; rowNr < src.height(); rowNr++) {
-        ttlet row = src.at(rowNr);
-        ttlet dstColumnNr = src.height() - rowNr - 1;
+        hilet row = src.at(rowNr);
+        hilet dstColumnNr = src.height() - rowNr - 1;
         auto dstRowNr = 0;
         for (int columnNr = 0; columnNr < row.width(); columnNr++) {
             dst[dstRowNr++][dstColumnNr] = row[columnNr];
@@ -102,8 +102,8 @@ inline void rotate270(pixel_map<T> &dst, pixel_map<T> const &src) noexcept
     assert(dst.height() >= src.width());
 
     for (int rowNr = 0; rowNr < src.height(); rowNr++) {
-        ttlet row = src.at(rowNr);
-        ttlet dstColumnNr = rowNr;
+        hilet row = src.at(rowNr);
+        hilet dstColumnNr = rowNr;
         auto dstRowNr = row.width() - 1;
         for (int columnNr = 0; columnNr < row.width(); columnNr++) {
             dst[dstRowNr--][dstColumnNr] = row[columnNr];

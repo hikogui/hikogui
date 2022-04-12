@@ -12,7 +12,7 @@
 #include <unistd.h>
 #include <mach-o/dyld.h>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 URL URL::urlFromCurrentWorkingDirectory() noexcept
 {
@@ -23,7 +23,7 @@ URL URL::urlFromCurrentWorkingDirectory() noexcept
             // Directory no longer exists.
             return URL("none:");
         default:
-            tt_no_default();
+            hi_no_default();
         }
     }
     return URL::urlFromPath(currentDirectory);
@@ -41,7 +41,7 @@ URL URL::urlFromExecutableFile() noexcept
         executablePath = new char[executablePathLength];
 
         if (_NSGetExecutablePath(executablePath, &executablePathLength) == -1) {
-            tt_no_default();
+            hi_no_default();
         }
     }
 

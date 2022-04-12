@@ -14,7 +14,7 @@
 #include <cstddef>
 #include <span>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Compatible with version 1.1, all offsets start at the beginning of this header.
  */

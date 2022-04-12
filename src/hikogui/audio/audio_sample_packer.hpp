@@ -12,7 +12,7 @@
 #include <cstddef>
 #include <bit>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class audio_sample_packer {
 public:
@@ -32,7 +32,7 @@ public:
      * @param dst A pointer to a byte array to store the packed samples into.
      * @param num_samples Number of samples.
      */
-    void operator()(float const *tt_restrict src, std::byte *tt_restrict dst, std::size_t num_samples) const noexcept;
+    void operator()(float const *hi_restrict src, std::byte *hi_restrict dst, std::size_t num_samples) const noexcept;
 
 private:
     i8x16 _store_shuffle_indices;
@@ -48,4 +48,4 @@ private:
     int _align_shift;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

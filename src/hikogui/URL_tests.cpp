@@ -10,11 +10,11 @@
 
 using namespace std;
 using namespace std::literals;
-using namespace tt;
+using namespace hi;
 
 TEST(URLTests, parsing)
 {
-    ttlet a = URL("scheme://user:password@hostname:1234/path1/path2?query#fragment");
+    hilet a = URL("scheme://user:password@hostname:1234/path1/path2?query#fragment");
 
     ASSERT_EQ(a.scheme(), "scheme");
     ASSERT_EQ(a.isAbsolute(), true);
@@ -26,16 +26,16 @@ TEST(URLTests, parsing)
 
 TEST(URLTests, relativePath)
 {
-    ttlet a = URL("file:foo/bar.txt");
+    hilet a = URL("file:foo/bar.txt");
 
     ASSERT_EQ(a.path(), "foo/bar.txt");
 }
 
 TEST(URLTests, glob1)
 {
-    ttlet executableDirectory = URL::urlFromExecutableDirectory();
+    hilet executableDirectory = URL::urlFromExecutableDirectory();
 
-    ttlet txt_file_glob = executableDirectory.urlByAppendingPath("*.txt");
+    hilet txt_file_glob = executableDirectory.urlByAppendingPath("*.txt");
     auto txt_files = txt_file_glob.urlsByScanningWithGlobPattern();
 
     ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) {
@@ -48,9 +48,9 @@ TEST(URLTests, glob1)
 
 TEST(URLTests, glob2)
 {
-    ttlet executableDirectory = URL::urlFromExecutableDirectory();
+    hilet executableDirectory = URL::urlFromExecutableDirectory();
 
-    ttlet txt_file_glob = executableDirectory.urlByAppendingPath("**/*.txt");
+    hilet txt_file_glob = executableDirectory.urlByAppendingPath("**/*.txt");
     auto txt_files = txt_file_glob.urlsByScanningWithGlobPattern();
 
     ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) {

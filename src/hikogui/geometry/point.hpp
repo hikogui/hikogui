@@ -9,7 +9,7 @@
 #include "extent.hpp"
 #include <format>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 namespace geo {
 
 /** A high-level geometric point
@@ -34,7 +34,7 @@ public:
     template<int E>
     requires(E < D) [[nodiscard]] constexpr point(point<E> const &other) noexcept : _v(static_cast<f32x4>(other))
     {
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     /** Construct a point from a lower dimension point.
@@ -42,7 +42,7 @@ public:
     [[nodiscard]] constexpr point(point<2> const &other, float z) noexcept requires(D == 3) : _v(static_cast<f32x4>(other))
     {
         _v.z() = z;
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
 
@@ -55,14 +55,14 @@ public:
         for (std::size_t i = D; i != E; ++i) {
             _v[i] = 0.0f;
         }
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     /** Convert a point to its f32x4-nummeric_array.
      */
     [[nodiscard]] constexpr explicit operator f32x4() const noexcept
     {
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
         return _v;
     }
 
@@ -70,7 +70,7 @@ public:
      */
     [[nodiscard]] constexpr explicit point(f32x4 const &other) noexcept : _v(other)
     {
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     /** Construct a point at the origin of the coordinate system.
@@ -141,7 +141,7 @@ public:
     template<int E>
     requires(E <= D) constexpr point &operator+=(vector<E> const &rhs) noexcept
     {
-        tt_axiom(holds_invariant() && rhs.holds_invariant());
+        hi_axiom(holds_invariant() && rhs.holds_invariant());
         _v = _v + static_cast<f32x4>(rhs);
         return *this;
     }
@@ -149,7 +149,7 @@ public:
     template<int E>
     requires(E <= D) constexpr point &operator-=(vector<E> const &rhs) noexcept
     {
-        tt_axiom(holds_invariant() && rhs.holds_invariant());
+        hi_axiom(holds_invariant() && rhs.holds_invariant());
         _v = _v - static_cast<f32x4>(rhs);
         return *this;
     }
@@ -162,7 +162,7 @@ public:
     template<int E>
     [[nodiscard]] constexpr friend auto operator+(point const &lhs, vector<E> const &rhs) noexcept
     {
-        tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
+        hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return point<std::max(D, E)>{lhs._v + static_cast<f32x4>(rhs)};
     }
 
@@ -174,7 +174,7 @@ public:
     template<int E>
     [[nodiscard]] constexpr friend auto operator+(vector<E> const &rhs, point const &lhs) noexcept
     {
-        tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
+        hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return point<std::max(D, E)>{lhs._v + static_cast<f32x4>(rhs)};
     }
 
@@ -186,7 +186,7 @@ public:
     template<int E>
     [[nodiscard]] constexpr friend auto operator-(point const &lhs, vector<E> const &rhs) noexcept
     {
-        tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
+        hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return point<std::max(D, E)>{lhs._v - static_cast<f32x4>(rhs)};
     }
 
@@ -197,7 +197,7 @@ public:
      */
     [[nodiscard]] constexpr friend vector<D> operator-(point const &lhs, point const &rhs) noexcept
     {
-        tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
+        hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return vector<D>{lhs._v - rhs._v};
     }
 
@@ -208,7 +208,7 @@ public:
      */
     [[nodiscard]] constexpr friend bool operator==(point const &lhs, point const &rhs) noexcept
     {
-        tt_axiom(lhs.holds_invariant() && rhs.holds_invariant());
+        hi_axiom(lhs.holds_invariant() && rhs.holds_invariant());
         return lhs._v == rhs._v;
     }
 
@@ -271,7 +271,7 @@ public:
      */
     [[nodiscard]] friend constexpr point ceil(point const &lhs, extent2 rhs) noexcept
     {
-        ttlet rhs_ = f32x4{rhs}.xy11();
+        hilet rhs_ = f32x4{rhs}.xy11();
         return point{ceil(f32x4{lhs} / rhs_) * rhs_};
     }
 
@@ -279,7 +279,7 @@ public:
      */
     [[nodiscard]] friend constexpr point floor(point const &lhs, extent2 rhs) noexcept
     {
-        ttlet rhs_ = f32x4{rhs}.xy11();
+        hilet rhs_ = f32x4{rhs}.xy11();
         return point{floor(f32x4{lhs} / rhs_) * rhs_};
     }
 
@@ -303,7 +303,7 @@ public:
         } else if constexpr (D == 3) {
             return std::format("<{}, {}, {}>", rhs._v.x(), rhs._v.y(), rhs._v.z());
         } else {
-            tt_static_no_default();
+            hi_static_no_default();
         }
     }
 
@@ -321,29 +321,29 @@ private:
 using point2 = geo::point<2>;
 using point3 = geo::point<3>;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<typename CharT>
-struct std::formatter<tt::geo::point<2>, CharT> {
+struct std::formatter<hi::geo::point<2>, CharT> {
     auto parse(auto &pc)
     {
         return pc.end();
     }
 
-    auto format(tt::geo::point<2> const &t, auto &fc)
+    auto format(hi::geo::point<2> const &t, auto &fc)
     {
         return std::vformat_to(fc.out(), "<{}, {}>", std::make_format_args(t.x(), t.y()));
     }
 };
 
 template<typename CharT>
-struct std::formatter<tt::geo::point<3>, CharT> : std::formatter<float, CharT> {
+struct std::formatter<hi::geo::point<3>, CharT> : std::formatter<float, CharT> {
     auto parse(auto &pc)
     {
         return pc.end();
     }
 
-    auto format(tt::geo::point<3> const &t, auto &fc)
+    auto format(hi::geo::point<3> const &t, auto &fc)
     {
         return std::vformat_to(fc.out(), "<{}, {}, {}>", std::make_format_args(t.x(), t.y(), t.z()));
     }

@@ -7,7 +7,7 @@
 #include "translation.hpp"
 #include "../tokenizer.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 ///** Return the plarity index.
 //*/
@@ -20,13 +20,13 @@ namespace tt::inline v1 {
 //    context.set_local("n", n);
 //
 //    if (plural_expression) {
-//        ttlet result = plural_expression->evaluate(context);
+//        hilet result = plural_expression->evaluate(context);
 //        if (result.is_bool()) {
 //            return static_cast<bool>(result) ? 1 : 0;
 //        } else if (result.is_integer()) {
 //            return static_cast<ssize_t>(result);
 //        } else {
-//            tt_log_error("Language {}: plurality expression with value {} results in non-bool or non-integer type but {}",
+//            hi_log_error("Language {}: plurality expression with value {} results in non-bool or non-integer type but {}",
 //                name, n, result.type_name()
 //            );
 //            // Plural expression failure, use english rules.
@@ -90,7 +90,7 @@ namespace tt::inline v1 {
             if (auto result = parseLine(token)) {
                 token = result.next_token;
 
-                ttlet[name, index, value] = *result;
+                hilet[name, index, value] = *result;
                 if (name == "msgctxt") {
                     r.msgctxt = value;
 
@@ -117,7 +117,7 @@ namespace tt::inline v1 {
         } else if ((*token == tokenizer_name_t::Name) && (*token == "msgstr")) {
             if (auto result = parseLine(token)) {
                 token = result.next_token;
-                ttlet[name, index, value] = *result;
+                hilet[name, index, value] = *result;
 
                 while (ssize(r.msgstr) <= index) {
                     r.msgstr.push_back({});
@@ -136,7 +136,7 @@ namespace tt::inline v1 {
 
 static void parse_po_header(po_translations &r, std::string const &header)
 {
-    for (ttlet &line : split(header, '\n')) {
+    for (hilet &line : split(header, '\n')) {
         if (ssize(line) == 0) {
             // Skip empty header lines.
             continue;
@@ -147,14 +147,14 @@ static void parse_po_header(po_translations &r, std::string const &header)
             throw parse_error(std::format("Unknown header '{}'", line));
         }
 
-        ttlet name = split_line.front();
+        hilet name = split_line.front();
         split_line.erase(split_line.begin());
-        ttlet value = join(split_line, ":");
+        hilet value = join(split_line, ":");
 
         if (name == "Language") {
             r.language = language_tag{strip(value)};
         } else if (name == "Plural-Forms") {
-            ttlet plural_split = split(value, ';');
+            hilet plural_split = split(value, ';');
         }
     }
 }
@@ -164,7 +164,7 @@ static void parse_po_header(po_translations &r, std::string const &header)
     po_translations r;
 
     auto tokens = parseTokens(text);
-    tt_axiom(tokens.back() == tokenizer_name_t::End);
+    hi_axiom(tokens.back() == tokenizer_name_t::End);
 
     auto token = tokens.begin();
     while (*token != tokenizer_name_t::End) {
@@ -188,8 +188,8 @@ static void parse_po_header(po_translations &r, std::string const &header)
 
 [[nodiscard]] po_translations parse_po(URL const &url)
 {
-    ttlet text = url.loadView();
+    hilet text = url.loadView();
     return parse_po(text->string_view());
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -6,7 +6,7 @@
 
 #pragma once
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** The state of a button.
  */
@@ -29,4 +29,4 @@ enum class button_state {
     other
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

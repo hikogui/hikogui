@@ -14,7 +14,7 @@
 #include <bit>
 #include <concepts>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<std::unsigned_integral T>
 [[nodiscard]] T byte_swap(T x) noexcept
@@ -27,7 +27,7 @@ template<std::unsigned_integral T>
     } else if constexpr (sizeof(T) == sizeof(uint16_t)) {
         return static_cast<T>(__builtin_bswap16(static_cast<uint16_t>(x)));
     } else {
-        tt_no_default();
+        hi_no_default();
     }
 #elif TT_COMPILER == TT_CC_MSVC
     if constexpr (sizeof(T) == sizeof(uint64_t)) {
@@ -37,7 +37,7 @@ template<std::unsigned_integral T>
     } else if constexpr (sizeof(T) == sizeof(unsigned short)) {
         return static_cast<T>(_byteswap_ushort(static_cast<unsigned short>(x)));
     } else {
-        tt_no_default();
+        hi_no_default();
     }
 #else
 #error "Byteswap not implemented for this compiler."
@@ -62,7 +62,7 @@ template<std::floating_point T>
         utmp = byte_swap(utmp);
         return std::bit_cast<double>(x);
     } else {
-        tt_no_default();
+        hi_no_default();
     }
 }
 
@@ -177,4 +177,4 @@ using native_int64_buf_at = endian_buf_t<int64_t, std::endian::native>;
 using native_int32_buf_at = endian_buf_t<int32_t, std::endian::native>;
 using native_int16_buf_at = endian_buf_t<int16_t, std::endian::native>;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

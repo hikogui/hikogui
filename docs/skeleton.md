@@ -22,8 +22,8 @@ definition.
 
 ## Expressions
 
-The `tt::datum` class is used for holding and operating on all the data while executing
-an expression of the HikoGUI template language. A `tt::datum` class can hold the following types:
+The `hi::datum` class is used for holding and operating on all the data while executing
+an expression of the HikoGUI template language. A `hi::datum` class can hold the following types:
  * Undefined
  * None
  * Boolean
@@ -308,7 +308,7 @@ Operations available that work on a string:
 
 ### Vector
 
-A list of `tt::datum` objects.
+A list of `hi::datum` objects.
 
 Syntax: '[' ( expression ( ',' expression )* ','? )? ']'
 
@@ -332,7 +332,7 @@ Operations available that work on a vector:
 
 ### Map
 
-A unordered map of key / value pairs; both `tt::datum` objects.
+A unordered map of key / value pairs; both `hi::datum` objects.
 
 Syntax: '{' ( expression ':' expression ( ',' expression ':' expression )* ','? )? '}'
 

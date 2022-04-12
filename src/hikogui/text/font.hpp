@@ -25,7 +25,7 @@
 #include <map>
 #include <string>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /*! A font.
  * This class has information on how to shape text and
@@ -57,17 +57,17 @@ public:
      */
     std::string features;
 
-    tt::unicode_mask unicode_mask;
+    hi::unicode_mask unicode_mask;
 
     /** The metrics of a font.
      *
      * @note: unit is 'em'.
      */
-    tt::font_metrics metrics;
+    hi::font_metrics metrics;
 
     /** List of fonts to use as a fallback for this font.
      */
-    std::vector<tt::font *> fallback_chain;
+    std::vector<hi::font *> fallback_chain;
 
     font() = default;
     virtual ~font() = default;
@@ -85,12 +85,12 @@ public:
     /** Get the glyph for a code-point.
      * @return glyph-id, or invalid when not found or error.
      */
-    [[nodiscard]] virtual tt::glyph_id find_glyph(char32_t c) const noexcept = 0;
+    [[nodiscard]] virtual hi::glyph_id find_glyph(char32_t c) const noexcept = 0;
 
     /** Get the glyphs for a grapheme.
      * @return a set of glyph-ids, or invalid when not found or error.
      */
-    [[nodiscard]] tt::glyph_ids find_glyph(grapheme g) const noexcept;
+    [[nodiscard]] hi::glyph_ids find_glyph(grapheme g) const noexcept;
 
     /*! Load a glyph into a path.
      * The glyph is directly loaded from the font file.
@@ -99,7 +99,7 @@ public:
      * \param path The path constructed by the loader.
      * \return empty on failure, or the glyphID of the metrics to use.
      */
-    virtual std::optional<tt::glyph_id> load_glyph(tt::glyph_id glyph_id, graphic_path &path) const noexcept = 0;
+    virtual std::optional<hi::glyph_id> load_glyph(hi::glyph_id glyph_id, graphic_path &path) const noexcept = 0;
 
     /*! Load a glyph into a path.
      * The glyph is directly loaded from the font file.
@@ -110,9 +110,9 @@ public:
      * \return true on success, false on error.
      */
     virtual bool load_glyph_metrics(
-        tt::glyph_id glyph_id,
+        hi::glyph_id glyph_id,
         glyph_metrics &metrics,
-        tt::glyph_id lookahead_glyph_id = tt::glyph_id{}) const noexcept = 0;
+        hi::glyph_id lookahead_glyph_id = hi::glyph_id{}) const noexcept = 0;
 
     /** Get the kerning between two glyphs.
      *
@@ -120,7 +120,7 @@ public:
      * @param next_glyph The glyph on the right
      * @return The vector to add to the advance of the current_glyph.
      */
-    [[nodiscard]] virtual vector2 get_kerning(tt::glyph_id current_glyph, tt::glyph_id next_glyph) const noexcept = 0;
+    [[nodiscard]] virtual vector2 get_kerning(hi::glyph_id current_glyph, hi::glyph_id next_glyph) const noexcept = 0;
 
     struct substitution_and_kerning_type {
         /** The glyph.
@@ -153,7 +153,7 @@ public:
     glyph_atlas_info &atlas_info(glyph_ids const &glyphs) const noexcept
     {
         if (glyphs.has_num_glyphs<1>()) [[likely]] {
-            ttlet index = static_cast<std::size_t>(get<0>(glyphs));
+            hilet index = static_cast<std::size_t>(get<0>(glyphs));
             if (index >= _single_glyph_atlas_table.size()) [[unlikely]] {
                 _single_glyph_atlas_table.resize(index + 1);
             }
@@ -189,11 +189,11 @@ private:
     mutable hash_map<glyph_ids, glyph_atlas_info> _multi_glyph_atlas_table;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<typename CharT>
-struct std::formatter<tt::font, CharT> : formatter<std::string_view, CharT> {
-    auto format(tt::font const &t, auto &fc)
+struct std::formatter<hi::font, CharT> : formatter<std::string_view, CharT> {
+    auto format(hi::font const &t, auto &fc)
     {
         return formatter<string_view, CharT>::format(to_string(t), fc);
     }

@@ -8,7 +8,7 @@
 #include <iostream>
 #include <format>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 enum class dialog_type { ok, yes_no, yes_no_cancel };
 
@@ -36,4 +36,4 @@ void dialog_ok(std::string_view title, std::string_view message) noexcept
     return dialog(dialog_type::yes_no_cancel, title, message);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

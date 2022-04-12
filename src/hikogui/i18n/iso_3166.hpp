@@ -9,7 +9,7 @@
 #include "../check.hpp"
 #include "../strings.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** ISO-3166 country code.
  */
@@ -24,7 +24,7 @@ public:
 
     constexpr iso_3166(uint16_t number) : _v(number)
     {
-        tt_parse_check(number <= 999, "ISO-3166 number must be between 0 and 999, got {}", number);
+        hi_parse_check(number <= 999, "ISO-3166 number must be between 0 and 999, got {}", number);
     }
 
     iso_3166(std::string_view str);
@@ -54,11 +54,11 @@ private:
     uint16_t _v;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<>
-struct std::hash<tt::iso_3166> {
-    [[nodiscard]] size_t operator()(tt::iso_3166 const& rhs) const noexcept
+struct std::hash<hi::iso_3166> {
+    [[nodiscard]] size_t operator()(hi::iso_3166 const& rhs) const noexcept
     {
         return std::hash<uint16_t>{}(rhs.number());
     }

@@ -10,7 +10,7 @@
 #include <string_view>
 #include <ostream>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 enum class command {
     unknown,
@@ -147,4 +147,4 @@ constexpr command to_command(std::string_view name) noexcept
     return command_metadata.at(name, command::unknown);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

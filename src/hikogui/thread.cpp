@@ -8,7 +8,7 @@
 #include "GUI/gui_system.hpp"
 #include <bit>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 std::vector<bool> set_thread_affinity(std::size_t cpu_id)
 {
@@ -21,7 +21,7 @@ std::vector<bool> set_thread_affinity(std::size_t cpu_id)
 std::size_t advance_thread_affinity(std::size_t &cpu) noexcept
 {
     auto available_cpus = process_affinity_mask();
-    tt_axiom(cpu < available_cpus.size());
+    hi_axiom(cpu < available_cpus.size());
 
     ssize_t selected_cpu = -1;
     do {
@@ -45,4 +45,4 @@ std::size_t advance_thread_affinity(std::size_t &cpu) noexcept
     return narrow_cast<std::size_t>(selected_cpu);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

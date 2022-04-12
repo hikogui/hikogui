@@ -13,12 +13,12 @@
 * ```
 * #define foo1(a) bar(a)
 * #define foo2(a, b) bar(a, b)
-* #define foo(...) tt_get_overloaded_macro2(__VA_ARGS__, foo2, foo1)(__VA_ARGS__)
+* #define foo(...) hi_get_overloaded_macro2(__VA_ARGS__, foo2, foo1)(__VA_ARGS__)
 * ```
  */
-#define tt_get_overloaded_macro2(_1, _2, name, ...) name
+#define hi_get_overloaded_macro2(_1, _2, name, ...) name
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Compare then store if there was a change.
  * @return true if a store was executed.
@@ -45,4 +45,4 @@ template<typename T, typename U>
     return lhs.exchange(rhs, std::memory_order::relaxed) != rhs;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

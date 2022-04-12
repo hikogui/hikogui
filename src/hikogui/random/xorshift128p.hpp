@@ -9,7 +9,7 @@
 #include "../required.hpp"
 #include <random>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** xorshift128+
  */
@@ -35,7 +35,7 @@ public:
     [[nodiscard]] uint64_t next() noexcept
     {
         auto s = _state[0];
-        ttlet t = _state[1];
+        hilet t = _state[1];
 
         s ^= s << 23; // a
         s ^= s >> 17; // b
@@ -107,4 +107,4 @@ private:
     u64x2 _state;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

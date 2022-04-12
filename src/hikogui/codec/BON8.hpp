@@ -12,7 +12,7 @@
 #include <cstddef>
 #include <string>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 namespace detail {
 constexpr auto BON8_code_array_count0 = uint8_t{0x80};
 constexpr auto BON8_code_array_count1 = uint8_t{0x81};
@@ -230,8 +230,8 @@ public:
     {
         open_string = false;
 
-        ttlet f32 = static_cast<float>(value);
-        ttlet f32_64 = static_cast<double>(f32);
+        hilet f32 = static_cast<float>(value);
+        hilet f32_64 = static_cast<double>(f32);
 
         if (value == -1.0) {
             output += static_cast<std::byte>(BON8_code_float_min_one);
@@ -307,8 +307,8 @@ public:
         } else {
             int multi_byte = 0;
 
-            for (ttlet _c : value) {
-                ttlet c = static_cast<uint8_t>(_c);
+            for (hilet _c : value) {
+                hilet c = static_cast<uint8_t>(_c);
 
                 if constexpr (build_type::current == build_type::debug) {
                     if (multi_byte == 0) {
@@ -319,18 +319,18 @@ public:
                         } else if (c >= 0xf0 and c <= 0xf7) {
                             multi_byte = 3;
                         } else {
-                            tt_assert(c <= 0x7f);
+                            hi_assert(c <= 0x7f);
                         }
 
                     } else {
-                        tt_assert(c >= 0x80 and c <= 0xbf);
+                        hi_assert(c >= 0x80 and c <= 0xbf);
                         --multi_byte;
                     }
                 }
 
                 output += static_cast<std::byte>(c);
             }
-            tt_axiom(multi_byte == 0);
+            hi_axiom(multi_byte == 0);
 
             open_string = true;
         }
@@ -375,7 +375,7 @@ public:
             output += static_cast<std::byte>(BON8_code_array);
         }
 
-        for (ttlet &item : items) {
+        for (hilet &item : items) {
             add(item);
         }
 
@@ -402,7 +402,7 @@ public:
             output += static_cast<std::byte>(BON8_code_object);
         }
 
-        for (ttlet &item : items) {
+        for (hilet &item : items) {
             if (auto *s = get_if<std::string>(item.first)) {
                 add(*s);
             } else {
@@ -451,12 +451,12 @@ void BON8_encoder::add(datum const &value)
  */
 [[nodiscard]] int BON8_multibyte_count(cbyteptr ptr, cbyteptr last)
 {
-    ttlet c0 = static_cast<uint8_t>(*ptr);
+    hilet c0 = static_cast<uint8_t>(*ptr);
     int count = c0 <= 0xdf ? 2 : c0 <= 0xef ? 3 : 4;
 
-    tt_parse_check(ptr + count <= last, "Incomplete Multi-byte character at end of buffer");
+    hi_parse_check(ptr + count <= last, "Incomplete Multi-byte character at end of buffer");
 
-    ttlet c1 = static_cast<uint8_t>(*(ptr + 1));
+    hilet c1 = static_cast<uint8_t>(*(ptr + 1));
     return (c1 < 0x80 or c1 > 0xbf) ? -count : count;
 }
 
@@ -470,38 +470,38 @@ void BON8_encoder::add(datum const &value)
  */
 [[nodiscard]] datum decode_BON8_int(cbyteptr &ptr, cbyteptr last, int count)
 {
-    tt_axiom(count == 4 || count == 8);
+    hi_axiom(count == 4 || count == 8);
 
     auto u64 = uint64_t{0};
     for (int i = 0; i != count; ++i) {
-        tt_parse_check(ptr != last, "Incomplete signed integer at end of buffer");
+        hi_parse_check(ptr != last, "Incomplete signed integer at end of buffer");
         u64 <<= 8;
         u64 |= static_cast<uint64_t>(*(ptr++));
     }
 
     if (count == 4) {
-        ttlet u32 = static_cast<uint32_t>(u64);
-        ttlet i32 = static_cast<int32_t>(u32);
+        hilet u32 = static_cast<uint32_t>(u64);
+        hilet i32 = static_cast<int32_t>(u32);
         return datum{i32};
     } else {
-        ttlet i64 = static_cast<int64_t>(u64);
+        hilet i64 = static_cast<int64_t>(u64);
         return datum{i64};
     }
 }
 
 [[nodiscard]] datum decode_BON8_float(cbyteptr &ptr, cbyteptr last, int count)
 {
-    tt_axiom(count == 4 || count == 8);
+    hi_axiom(count == 4 || count == 8);
 
     auto u64 = uint64_t{0};
     for (int i = 0; i != count; ++i) {
-        tt_parse_check(ptr != last, "Incomplete signed integer at end of buffer");
+        hi_parse_check(ptr != last, "Incomplete signed integer at end of buffer");
         u64 <<= 8;
         u64 |= static_cast<uint64_t>(*(ptr++));
     }
 
     if (count == 4) {
-        ttlet u32 = static_cast<uint32_t>(u64);
+        hilet u32 = static_cast<uint32_t>(u64);
         float f32;
         std::memcpy(&f32, &u32, sizeof(f32));
         return datum{f32};
@@ -553,7 +553,7 @@ void BON8_encoder::add(datum const &value)
 
         } else {
             auto key = decode_BON8(ptr, last);
-            tt_parse_check(holds_alternative<std::string>(key), "Key in object is not a string");
+            hi_parse_check(holds_alternative<std::string>(key), "Key in object is not a string");
 
             auto value = decode_BON8(ptr, last);
             map.emplace(std::move(key), std::move(value));
@@ -569,7 +569,7 @@ void BON8_encoder::add(datum const &value)
 
     while (count--) {
         auto key = decode_BON8(ptr, last);
-        tt_parse_check(holds_alternative<std::string>(key), "Key in object is not a string");
+        hi_parse_check(holds_alternative<std::string>(key), "Key in object is not a string");
 
         auto value = decode_BON8(ptr, last);
         map.emplace(std::move(key), std::move(value));
@@ -579,11 +579,11 @@ void BON8_encoder::add(datum const &value)
 
 [[nodiscard]] long long decode_BON8_UTF8_like_int(cbyteptr &ptr, cbyteptr last, int count) noexcept
 {
-    tt_axiom(count >= 2 && count <= 4);
-    tt_axiom(ptr != last);
-    ttlet c0 = static_cast<uint8_t>(*(ptr++));
+    hi_axiom(count >= 2 && count <= 4);
+    hi_axiom(ptr != last);
+    hilet c0 = static_cast<uint8_t>(*(ptr++));
 
-    ttlet mask = uint8_t{0b0111'1111} >> count;
+    hilet mask = uint8_t{0b0111'1111} >> count;
     auto value = static_cast<long long>(c0 & mask);
     if (count == 2) {
         // The two byte sequence starts with 0xc2, leaving only 30 entries in the first byte.
@@ -591,9 +591,9 @@ void BON8_encoder::add(datum const &value)
     }
 
     // The second byte determines the sign, and adds 6 or 7 bits to the number.
-    tt_axiom(ptr != last);
-    ttlet c1 = static_cast<uint8_t>(*(ptr++));
-    ttlet is_positive = c1 <= 0x7f;
+    hi_axiom(ptr != last);
+    hilet c1 = static_cast<uint8_t>(*(ptr++));
+    hilet is_positive = c1 <= 0x7f;
     if (is_positive) {
         value <<= 7;
         value |= static_cast<long long>(c1);
@@ -604,12 +604,12 @@ void BON8_encoder::add(datum const &value)
 
     switch (count) {
     case 4:
-        tt_axiom(ptr != last);
+        hi_axiom(ptr != last);
         value <<= 8;
         value |= static_cast<int>(*(ptr++));
         [[fallthrough]];
     case 3:
-        tt_axiom(ptr != last);
+        hi_axiom(ptr != last);
         value <<= 8;
         value |= static_cast<int>(*(ptr++));
         [[fallthrough]];
@@ -621,7 +621,7 @@ void BON8_encoder::add(datum const &value)
         case 2: return value + 40;
         case 3: return value + 3880;
         case 4: return value + 528168;
-        default: tt_no_default();
+        default: hi_no_default();
         }
 
     } else {
@@ -629,7 +629,7 @@ void BON8_encoder::add(datum const &value)
         case 2: return -(value + 11);
         case 3: return -(value + 1931);
         case 4: return -(value + 264075);
-        default: tt_no_default();
+        default: hi_no_default();
         }
     }
 }
@@ -639,7 +639,7 @@ void BON8_encoder::add(datum const &value)
     std::string str;
 
     while (ptr != last) {
-        ttlet c = static_cast<uint8_t>(*ptr);
+        hilet c = static_cast<uint8_t>(*ptr);
 
         if (c == BON8_code_eot) {
             // End of string found, return the current string.
@@ -652,7 +652,7 @@ void BON8_encoder::add(datum const &value)
             continue;
 
         } else if (c >= 0xc2 && c <= 0xf7) {
-            ttlet count = BON8_multibyte_count(ptr, last);
+            hilet count = BON8_multibyte_count(ptr, last);
             if (count > 0) {
                 // Multibyte UTF-8 code-point, The count includes the first code-unit.
                 for (int i = 0; i != count; ++i) {
@@ -710,7 +710,7 @@ void BON8_encoder::add(datum const &value)
                     return datum{~static_cast<int>(c - BON8_code_negative_s)};
 
                 } else {
-                    tt_no_default();
+                    hi_no_default();
                 }
             }
         }
@@ -763,4 +763,4 @@ void BON8_encoder::add(datum const &value)
     return encoder.get();
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

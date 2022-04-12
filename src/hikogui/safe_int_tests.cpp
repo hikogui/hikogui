@@ -9,13 +9,13 @@
 #include <limits>
 
 using namespace std;
-using namespace tt;
+using namespace hi;
 
 TEST(SafeIntTests, Add)
 {
     tint64_t r;
 
-    ttlet minimum = tint64_t{numeric_limits<int64_t>::min()};
+    hilet minimum = tint64_t{numeric_limits<int64_t>::min()};
 
     ASSERT_THROW(r = minimum + minimum, std::overflow_error);
 }

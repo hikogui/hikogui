@@ -17,7 +17,7 @@
 #include <vector>
 #include <optional>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Parse a JSON string.
  * @param text The text to parse.
@@ -29,7 +29,7 @@ namespace tt::inline v1 {
  * @param file URL pointing to the file to parse.
  * @return A datum representing the parsed object.
  */
-[[nodiscard]] datum parse_JSON(tt::URL const &file);
+[[nodiscard]] datum parse_JSON(hi::URL const &file);
 
 /** Dump an datum object into a JSON string.
  * @param root datum-object to serialize
@@ -37,4 +37,4 @@ namespace tt::inline v1 {
  */
 [[nodiscard]] std::string format_JSON(datum const &root);
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -5,7 +5,7 @@
 #include "register_int.hpp"
 #include "interval.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 constexpr auto bounds_test = interval<register_long>{1, 5};
 
@@ -65,7 +65,7 @@ struct bound_integer {
     {
         bound_integer r;
         r.value = static_cast<value_type>(other);
-        tt_axiom(r.holds_invariant);
+        hi_axiom(r.holds_invariant);
         return r;
     }
 
@@ -77,7 +77,7 @@ struct bound_integer {
                 throw std::overflow_error("bound_integer(std::integral)");
             }
         }
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     constexpr bound_integer &operator=(numeric_limited auto other) noexcept(bounds.range_contains_type<decltype(other)>())
@@ -88,7 +88,7 @@ struct bound_integer {
             }
         }
         value = static_cast<value_type>(value);
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
         return *this;
     }
 
@@ -101,7 +101,7 @@ struct bound_integer {
                 throw std::overflow_error("bound_integer(bound_integer)");
             }
         }
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     template<bound_type OtherBound>
@@ -113,7 +113,7 @@ struct bound_integer {
             }
         }
         value = static_cast<value_type>(other._value);
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
         return *this;
     }
 
@@ -397,4 +397,4 @@ struct bound_integer {
 //    constexpr long long value = long_long_from_chars<Chars...>();
 //    return bound_integer_underlying<value, value>{value};
 //}
-} // namespace tt::inline v1
+} // namespace hi::inline v1

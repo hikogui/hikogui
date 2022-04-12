@@ -7,7 +7,7 @@
 #include "architecture.hpp"
 #include "generator.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct cmdline_short_option {
     char32_t option;
@@ -59,7 +59,7 @@ using cmdline_option = std::variant<cmline_executable, cmdline_short_option, cmd
 template<typename It>
 generator<cmdln_option> command_line_parser(It first, It last, std::string_view options_with_arguments)
 {
-    ttlet options_with_arguments_ = tt::to_u32string(options_with_arguments);
+    hilet options_with_arguments_ = hi::to_u32string(options_with_arguments);
     auto it = first;
 
     if (it != last) {
@@ -79,29 +79,29 @@ generator<cmdln_option> command_line_parser(It first, It last, std::string_view 
 
         } else if (it->starts_with("--")) {
             // Long-option
-            ttlet eq_index = it->find('=');
+            hilet eq_index = it->find('=');
             if (eq_index == std::string::npos) {
                 // Long-option without argument
                 co_yield cmdln_long_option{it->substr(2), {}};
 
             } else {
                 // Long-option with argument in same token.
-                tt_axiom(eq_index >= 2);
-                ttlet name_length = eq_index - 2;
+                hi_axiom(eq_index >= 2);
+                hilet name_length = eq_index - 2;
                 co_yield cmdln_long_option(it->substr(2, name_length), it->substr(eq_index + 1));
             }
 
         } else if (it.front() == '-' || it.front() == '+') {
             // List of short-options.
             // Short options are processed as UTF-32 units.
-            ttlet token = to_u32string(*it);
-            ttlet first_c = std::next(begin(token));
-            ttlet last_c = end(token);
+            hilet token = to_u32string(*it);
+            hilet first_c = std::next(begin(token));
+            hilet last_c = end(token);
             negative = it.front() == '+';
 
             for (auto jt = first_c; jt != last_c; ++jt) {
-                ttlet c = *jt;
-                auto name = tt::to_string(std::u32string(1, c));
+                hilet c = *jt;
+                auto name = hi::to_string(std::u32string(1, c));
 
                 if (options_with_arguments_.find(c) == std::u32string::npos) {
                     // Option without argument
@@ -113,7 +113,7 @@ generator<cmdln_option> command_line_parser(It first, It last, std::string_view 
 
                 } else {
                     // Option with argument, where the argument is inside this token
-                    auto argument = tt::to_string(std::u32string(std::next(jt), last_c));
+                    auto argument = hi::to_string(std::u32string(std::next(jt), last_c));
                     co_yield cmdln_short_option(c, std::move(argument));
                     break;
                 }
@@ -141,7 +141,7 @@ public:
     std::string long_option;
     std::string argument_name;
     std::string description;
-    tt::notifier<void(std::string_view argument)> notifier;
+    hi::notifier<void(std::string_view argument)> notifier;
 
     /**
      *
@@ -165,7 +165,7 @@ public:
     constexpr command_line_option(std::string_view option_help)
     {
         auto it = begin(option_help);
-        ttlet last = end(option_help);
+        hilet last = end(option_help);
     }
 
     static char32_t parse_short_option(std::string_view::iterator &it, std::string_view::iterator last)
@@ -205,4 +205,4 @@ private:
     std::vector<command_line_option> _options = {};
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

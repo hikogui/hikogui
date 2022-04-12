@@ -14,7 +14,7 @@
 #include <type_traits>
 #include <string.h>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] bool equal_ptr(auto *p1, auto *p2) noexcept
 {
@@ -44,7 +44,7 @@ void memswap(T& dst, U& src)
 template<typename InputIt, typename T>
 T *placement_copy(InputIt src, T *dst)
 {
-    tt_axiom(dst != nullptr);
+    hi_axiom(dst != nullptr);
     return new (dst) T(*src);
 }
 
@@ -55,8 +55,8 @@ T *placement_copy(InputIt src, T *dst)
 template<typename InputIt, typename T>
 void placement_copy(InputIt src_first, InputIt src_last, T *dst_first)
 {
-    tt_axiom(src_first != dst_first);
-    tt_axiom(src_last >= src_first);
+    hi_axiom(src_first != dst_first);
+    hi_axiom(src_last >= src_first);
 
     auto src = src_first;
     auto dst = dst_first;
@@ -81,8 +81,8 @@ void placement_copy(InputIt src_first, InputIt src_last, T *dst_first)
 template<typename T>
 T *placement_move(T *src, T *dst)
 {
-    tt_axiom(src != nullptr);
-    tt_axiom(dst != nullptr);
+    hi_axiom(src != nullptr);
+    hi_axiom(dst != nullptr);
 
     auto dst_ = new (dst) T(std::move(*src));
     std::destroy_at(src);
@@ -101,7 +101,7 @@ T *placement_move(T *src, T *dst)
 template<typename T>
 void placement_move_within_array(T *src_first, T *src_last, T *dst_first)
 {
-    tt_axiom(src_last >= src_first);
+    hi_axiom(src_last >= src_first);
 
     if (src_first < dst_first) {
         auto dst_last = dst_first + (src_last - src_first);
@@ -135,7 +135,7 @@ void placement_move_within_array(T *src_first, T *src_last, T *dst_first)
 template<typename T>
 void placement_move(T *src, T *src_last, T *dst)
 {
-    tt_axiom(src_last >= src);
+    hi_axiom(src_last >= src);
 
     while (src != src_last) {
         placement_move(src++, dst++);
@@ -185,14 +185,14 @@ constexpr T ceil(T value, T alignment) noexcept
 template<typename T>
 constexpr T *ceil(T *ptr, std::size_t alignment) noexcept
 {
-    ttlet aligned_byte_offset = ceil(reinterpret_cast<uintptr_t>(ptr), static_cast<uintptr_t>(alignment));
+    hilet aligned_byte_offset = ceil(reinterpret_cast<uintptr_t>(ptr), static_cast<uintptr_t>(alignment));
     return reinterpret_cast<T *>(aligned_byte_offset);
 }
 
 template<typename T>
 constexpr T *floor(T *ptr, std::size_t alignment) noexcept
 {
-    ttlet aligned_byte_offset = floor(reinterpret_cast<uintptr_t>(ptr), static_cast<uintptr_t>(alignment));
+    hilet aligned_byte_offset = floor(reinterpret_cast<uintptr_t>(ptr), static_cast<uintptr_t>(alignment));
     return reinterpret_cast<T *>(aligned_byte_offset);
 }
 
@@ -241,7 +241,7 @@ inline std::shared_ptr<Value> try_make_shared(Map& map, Key key, Args... args)
 {
     std::shared_ptr<Value> value;
 
-    ttlet i = map.find(key);
+    hilet i = map.find(key);
     if (i == map.end()) {
         value = std::make_shared<Value>(std::forward<Args>(args)...);
         map.insert_or_assign(key, value);
@@ -263,18 +263,18 @@ inline std::shared_ptr<Value> try_make_shared(Map& map, Key key, Args... args)
  */
 inline uint64_t ptr_to_uint48(auto *ptr) noexcept
 {
-    tt_axiom(static_cast<uint64_t>(ptr) % 16 == 0);
+    hi_axiom(static_cast<uint64_t>(ptr) % 16 == 0);
 
     if constexpr (processor::current == processor::x64) {
         // Only the bottom 48 bits are needed.
-        tt_axiom(
+        hi_axiom(
             (static_cast<uint64_t>(ptr) & 0xffff'8000'0000'0000) == 0 ||
             (static_cast<uint64_t>(ptr) & 0xffff'8000'0000'0000) == 0xffff'8000'0000'0000);
         return (static_cast<uint64_t>(ptr) << 16) >> 16;
 
     } else if constexpr (processor::current == processor::arm) {
         // The top 8 bits may contain a tag.
-        tt_axiom(
+        hi_axiom(
             (static_cast<uint64_t>(ptr) & 0x00ff'8000'0000'0000) == 0 ||
             (static_cast<uint64_t>(ptr) & 0x00ff'8000'0000'0000) == 0x00ff'8000'0000'0000);
 
@@ -288,7 +288,7 @@ inline uint64_t ptr_to_uint48(auto *ptr) noexcept
         return key ^ u64;
 
     } else {
-        tt_static_no_default();
+        hi_static_no_default();
     }
 }
 
@@ -305,7 +305,7 @@ inline uint64_t ptr_to_uint48(auto *ptr) noexcept
 template<typename T>
 T *uint48_to_ptr(uint64_t x) noexcept
 {
-    tt_axiom((x >> 48) == 0);
+    hi_axiom((x >> 48) == 0);
 
     if constexpr (processor::current == processor::x64) {
         // Shift the upper bits away and sign extend the upper 16 bits.
@@ -323,8 +323,8 @@ T *uint48_to_ptr(uint64_t x) noexcept
         return reinterpret_cast<T *>(key ^ static_cast<uint64_t>(i64));
 
     } else {
-        tt_static_no_default();
+        hi_static_no_default();
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

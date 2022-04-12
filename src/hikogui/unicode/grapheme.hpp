@@ -11,7 +11,7 @@
 #include <string>
 #include <cstddef>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A grapheme, what a user thinks a character is.
  *
@@ -135,7 +135,7 @@ struct grapheme {
      */
     [[nodiscard]] constexpr std::size_t size() const noexcept
     {
-        ttlet size_ = value & 0x7;
+        hilet size_ = value & 0x7;
         return size_ <= 5 ? size_ : 5;
     }
 
@@ -154,13 +154,13 @@ struct grapheme {
      */
     [[nodiscard]] constexpr char32_t operator[](size_t i) const noexcept
     {
-        tt_axiom(i < size());
+        hi_axiom(i < size());
 
         if (i == 0) {
             return static_cast<char32_t>(value >> 43);
 
         } else {
-            ttlet shift = (4 - i) * 10 + 3;
+            hilet shift = (4 - i) * 10 + 3;
             return detail::unicode_db_non_starter_table[(value >> shift) & 0x3ff];
         }
     }
@@ -230,7 +230,7 @@ struct grapheme {
 
     [[nodiscard]] friend std::string to_string(grapheme const &rhs) noexcept
     {
-        return tt::to_string(rhs.composed());
+        return hi::to_string(rhs.composed());
     }
 
     [[nodiscard]] friend std::u32string to_u32string(grapheme const &rhs) noexcept
@@ -239,12 +239,12 @@ struct grapheme {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<>
-struct std::hash<tt::grapheme> {
-    [[nodiscard]] std::size_t operator()(tt::grapheme const &rhs) const noexcept
+struct std::hash<hi::grapheme> {
+    [[nodiscard]] std::size_t operator()(hi::grapheme const &rhs) const noexcept
     {
-        return std::hash<tt::grapheme::value_type>{}(rhs.value);
+        return std::hash<hi::grapheme::value_type>{}(rhs.value);
     }
 };

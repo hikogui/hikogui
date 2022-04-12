@@ -9,7 +9,7 @@
 #include <optional>
 #include "../label.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 class text_field_widget;
 
 class text_field_delegate {
@@ -22,7 +22,7 @@ public:
 
     auto subscribe(text_field_widget &sender, std::invocable<> auto &&callback) noexcept
     {
-        return _notifier.subscribe(tt_forward(callback));
+        return _notifier.subscribe(hi_forward(callback));
     }
 
     /** Validate the text field.
@@ -60,4 +60,4 @@ protected:
     notifier<> _notifier;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -20,7 +20,7 @@
 #include <mutex>
 #include <unordered_map>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 template<typename T>
 class pixel_map;
 class mat;
@@ -143,7 +143,7 @@ private:
     /**
      * @return The Atlas rectangle and true if a new glyph was added to the atlas.
      */
-    tt_force_inline std::pair<glyph_atlas_info const *, bool> get_glyph_from_atlas(glyph_ids const &glyph) noexcept
+    hi_force_inline std::pair<glyph_atlas_info const *, bool> get_glyph_from_atlas(glyph_ids const &glyph) noexcept
     {
         auto &info = glyph.atlas_info();
 
@@ -158,4 +158,4 @@ private:
 };
 
 } // namespace pipeline_SDF
-} // namespace tt::inline v1
+} // namespace hi::inline v1

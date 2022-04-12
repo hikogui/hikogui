@@ -8,12 +8,12 @@
 #include <string>
 
 using namespace std;
-using namespace tt;
+using namespace hi;
 
 TEST(String, Split)
 {
-    ttlet result = split("path1/path2", '/');
-    ttlet check_value = std::vector<std::string>{"path1", "path2"};
+    hilet result = split("path1/path2", '/');
+    hilet check_value = std::vector<std::string>{"path1", "path2"};
     ASSERT_EQ(result, check_value);
 }
 

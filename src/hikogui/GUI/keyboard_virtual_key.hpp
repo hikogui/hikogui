@@ -10,7 +10,7 @@
 #include "../strings.hpp"
 #include <unordered_map>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 enum class keyboard_virtual_key : uint8_t {
     Nul,
@@ -148,7 +148,7 @@ enum class keyboard_virtual_key : uint8_t {
     MediaPlayPause,
 };
 
-inline ttlet string_to_keyboard_virtual_key_table = std::unordered_map<std::string, keyboard_virtual_key>{
+inline hilet string_to_keyboard_virtual_key_table = std::unordered_map<std::string, keyboard_virtual_key>{
     {"0", keyboard_virtual_key::_0},
     {"1", keyboard_virtual_key::_1},
     {"2", keyboard_virtual_key::_2},
@@ -278,8 +278,8 @@ inline ttlet string_to_keyboard_virtual_key_table = std::unordered_map<std::stri
 
 inline keyboard_virtual_key to_keyboard_virtual_key(std::string_view s)
 {
-    ttlet lower_s = to_lower(s);
-    ttlet i = string_to_keyboard_virtual_key_table.find(lower_s);
+    hilet lower_s = to_lower(s);
+    hilet i = string_to_keyboard_virtual_key_table.find(lower_s);
     if (i != string_to_keyboard_virtual_key_table.cend()) {
         return i->second;
     }
@@ -416,7 +416,7 @@ constexpr char const *to_const_string(keyboard_virtual_key key) noexcept
     case keyboard_virtual_key::VolumeMute: return "volume-mute";
     case keyboard_virtual_key::VolumeUp: return "volume-up";
     case keyboard_virtual_key::VolumeDown: return "volume-down";
-    default: tt_no_default();
+    default: hi_no_default();
     }
 }
 
@@ -430,20 +430,20 @@ inline std::ostream &operator<<(std::ostream &lhs, keyboard_virtual_key const &r
     return lhs << to_string(rhs);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<>
-struct std::hash<tt::keyboard_virtual_key> {
-    [[nodiscard]] std::size_t operator()(tt::keyboard_virtual_key rhs) const noexcept
+struct std::hash<hi::keyboard_virtual_key> {
+    [[nodiscard]] std::size_t operator()(hi::keyboard_virtual_key rhs) const noexcept
     {
         return std::hash<uint8_t>{}(static_cast<uint8_t>(rhs));
     }
 };
 
 template<typename CharT>
-struct std::formatter<tt::keyboard_virtual_key, CharT> : std::formatter<char const *, CharT> {
-    auto format(tt::keyboard_virtual_key const &t, auto &fc)
+struct std::formatter<hi::keyboard_virtual_key, CharT> : std::formatter<char const *, CharT> {
+    auto format(hi::keyboard_virtual_key const &t, auto &fc)
     {
-        return std::formatter<char const *, CharT>::format(tt::to_const_string(t), fc);
+        return std::formatter<char const *, CharT>::format(hi::to_const_string(t), fc);
     }
 };

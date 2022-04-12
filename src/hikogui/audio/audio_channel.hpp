@@ -6,7 +6,7 @@
 
 #include "audio_direction.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class audio_channel {
 public:
@@ -53,4 +53,4 @@ public:
     [[nodiscard]] float rms(std::size_t num_samples) noexcept;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

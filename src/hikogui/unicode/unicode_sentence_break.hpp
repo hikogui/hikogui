@@ -9,7 +9,7 @@
 
 #include <tuple>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 enum class unicode_sentence_break_property : uint8_t {
     Other,
@@ -82,14 +82,14 @@ private:
     using enum unicode_break_opportunity;
     using enum unicode_sentence_break_property;
 
-    tt_axiom(r.size() == infos.size() + 1);
+    hi_axiom(r.size() == infos.size() + 1);
 
     r.front() = yes; // SB1
     r.back() = yes; // SB2
 
     for (auto i = 1_uz; i < infos.size(); ++i) {
-        ttlet prev = infos[i - 1];
-        ttlet next = infos[i];
+        hilet prev = infos[i - 1];
+        hilet next = infos[i];
 
         r[i] = [&] () {
             if (prev == CR and next == LF) {
@@ -110,10 +110,10 @@ private:
     using enum unicode_break_opportunity;
     using enum unicode_sentence_break_property;
 
-    tt_axiom(r.size() == infos.size() + 1);
+    hi_axiom(r.size() == infos.size() + 1);
 
     for (auto i = 1_uz; i < infos.size(); ++i) {
-        ttlet prev = infos[i - 1];
+        hilet prev = infos[i - 1];
         auto &next = infos[i];
 
         if ((not is_ParaSep(prev) and prev != CR and prev != LF) and (next == Extend or next == Format)) {
@@ -132,19 +132,19 @@ private:
     using enum unicode_break_opportunity;
     using enum unicode_sentence_break_property;
 
-    tt_axiom(r.size() == infos.size() + 1);
+    hi_axiom(r.size() == infos.size() + 1);
 
     for (auto i = 0_z; i < std::ssize(infos); ++i) {
-        ttlet &next = infos[i];
+        hilet &next = infos[i];
         if (r[i] != unassigned) {
             continue;
         }
 
-        tt_axiom(not next.is_skip());
+        hi_axiom(not next.is_skip());
 
         std::ptrdiff_t k;
 
-        ttlet prev = [&] {
+        hilet prev = [&] {
             for (k = i - 1; k >= 0; --k) {
                 if (not infos[k].is_skip()) {
                     return infos[k];
@@ -153,7 +153,7 @@ private:
             return unicode_sentence_break_info{};
         }();
 
-        ttlet prev_prev = [&] {
+        hilet prev_prev = [&] {
             for (--k; k >= 0; --k) {
                 if (not infos[k].is_skip()) {
                     return infos[k];
@@ -167,7 +167,7 @@ private:
         // 1 - ends in ParSep
         // 2 - includes SP
         // 4 - includes Close
-        ttlet [prefix, close_sp_par_found] = [&]() {
+        hilet [prefix, close_sp_par_found] = [&]() {
             using enum unicode_break_opportunity;
 
             auto found = 0;
@@ -214,11 +214,11 @@ private:
             }
             return std::make_pair(unicode_sentence_break_info{}, 0);
         }();
-        ttlet optional_close = (close_sp_par_found & 3) == 0;
-        ttlet optional_close_sp = (close_sp_par_found & 1) == 0;
-        ttlet optional_close_sp_par = true;
+        hilet optional_close = (close_sp_par_found & 3) == 0;
+        hilet optional_close_sp = (close_sp_par_found & 1) == 0;
+        hilet optional_close_sp_par = true;
 
-        ttlet end_in_lower = [&]{
+        hilet end_in_lower = [&]{
             for (auto j = i; j < std::ssize(infos); ++j) {
                 if (not infos[j].is_skip()) {
                     if (infos[j] == Lower) {
@@ -270,8 +270,8 @@ template<typename It, typename ItEnd, typename DescriptionFunc>
 
     auto infos = std::vector<detail::unicode_sentence_break_info>{};
     infos.reserve(size);
-    std::transform(first, last, std::back_inserter(infos), [&] (ttlet &item) {
-        ttlet &description = description_func(item);
+    std::transform(first, last, std::back_inserter(infos), [&] (hilet &item) {
+        hilet &description = description_func(item);
         return detail::unicode_sentence_break_info{description.sentence_break_property()};
         });
 

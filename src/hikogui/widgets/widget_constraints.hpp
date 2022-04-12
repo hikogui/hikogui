@@ -7,7 +7,7 @@
 #include "../geometry/extent.hpp"
 #include "../geometry/margins.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class widget_constraints {
 public:
@@ -21,10 +21,10 @@ public:
     constexpr widget_constraints(widget_constraints &&) noexcept = default;
     constexpr widget_constraints &operator=(widget_constraints const &) noexcept = default;
     constexpr widget_constraints &operator=(widget_constraints &&) noexcept = default;
-    constexpr widget_constraints(extent2 minimum, extent2 preferred, extent2 maximum, tt::margins margins = tt::margins{}) noexcept :
+    constexpr widget_constraints(extent2 minimum, extent2 preferred, extent2 maximum, hi::margins margins = hi::margins{}) noexcept :
         minimum(minimum), preferred(preferred), maximum(maximum), margins(margins)
     {
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     [[nodiscard]] constexpr bool holds_invariant() noexcept
@@ -62,4 +62,4 @@ public:
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

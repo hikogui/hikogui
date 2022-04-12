@@ -18,7 +18,7 @@
 #include <x86intrin.h>
 #endif
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /**
  * Since Window's 10 QueryPerformanceCounter() counts at only 10MHz which
@@ -47,7 +47,7 @@ public:
             uint32_t tmp;
             _count = __rdtscp(&tmp);
         } else {
-            tt_not_implemented();
+            hi_not_implemented();
         }
     }
 
@@ -58,7 +58,7 @@ public:
         if constexpr (processor::current == processor::x64) {
             _count = __rdtscp(&_aux);
         } else {
-            tt_not_implemented();
+            hi_not_implemented();
         }
     }
 
@@ -72,7 +72,7 @@ public:
             _count = __rdtscp(&_aux);
             _thread_id = __readgsdword(NT_TIB_CurrentThreadID);
         } else {
-            tt_not_implemented();
+            hi_not_implemented();
         }
     }
 
@@ -126,7 +126,7 @@ public:
     {
         using namespace std::chrono_literals;
 
-        ttlet[lo, hi] = mul_carry(count, _period.load(std::memory_order::relaxed));
+        hilet[lo, hi] = mul_carry(count, _period.load(std::memory_order::relaxed));
         return 1ns * static_cast<int64_t>((hi << 32) | (lo >> 32));
     }
 
@@ -214,4 +214,4 @@ private:
     static void configure_frequency() noexcept;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

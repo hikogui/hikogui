@@ -10,7 +10,7 @@
 #include "../geometry/transform.hpp"
 #include <chrono>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct mouse_event {
     enum class Type { None, Entered, Exited, Move, Drag, ButtonDown, ButtonUp, Wheel };
@@ -105,7 +105,7 @@ struct mouse_event {
         case ButtonDown: type_s = "down"; break;
         case ButtonUp: type_s = "up"; break;
         case Wheel: type_s = "wheel"; break;
-        default: tt_no_default();
+        default: hi_no_default();
         }
 
         return std::format("<mouse {} {}>", type_s, rhs.position);
@@ -117,4 +117,4 @@ struct mouse_event {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

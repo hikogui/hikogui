@@ -14,14 +14,14 @@
 #include <optional>
 #include <future>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<axis Axis>
 class scroll_bar_widget final : public widget {
 public:
     using super = widget;
 
-    static constexpr tt::axis axis = Axis;
+    static constexpr hi::axis axis = Axis;
 
     observable<float> offset;
     observable<float> aperture;
@@ -66,7 +66,7 @@ public:
         _layout = layout;
 
         // Calculate the position of the slider.
-        ttlet slider_offset = *offset * travel_vs_hidden_content_ratio();
+        hilet slider_offset = *offset * travel_vs_hidden_content_ratio();
         if constexpr (axis == axis::vertical) {
             _slider_rectangle = aarectangle{0.0f, slider_offset, layout.width(), slider_length()};
         } else {
@@ -84,7 +84,7 @@ public:
 
     hitbox hitbox_test(point3 position) const noexcept override
     {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
 
         if (*visible and *enabled and layout().contains(position) and _slider_rectangle.contains(position)) {
             return {this, position};
@@ -95,7 +95,7 @@ public:
 
     [[nodiscard]] bool handle_event(mouse_event const &event) noexcept
     {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
         auto handled = super::handle_event(event);
 
         if (event.cause.leftButton) {
@@ -111,9 +111,9 @@ public:
             case Drag: {
                 // The distance the slider has to move relative to the slider position at the
                 // start of the drag.
-                ttlet slider_movement = axis == axis::vertical ? event.delta().y() : event.delta().x();
-                ttlet content_movement = slider_movement * hidden_content_vs_travel_ratio();
-                ttlet new_offset = _offset_before_drag + content_movement;
+                hilet slider_movement = axis == axis::vertical ? event.delta().y() : event.delta().x();
+                hilet content_movement = slider_movement * hidden_content_vs_travel_ratio();
+                hilet new_offset = _offset_before_drag + content_movement;
                 offset = clamp_offset(new_offset);
             } break;
 
@@ -157,22 +157,22 @@ private:
     */
     [[nodiscard]] float clamp_offset(float new_offset) const noexcept
     {
-        ttlet scrollable_distance = std::max(0.0f, *content - *aperture);
+        hilet scrollable_distance = std::max(0.0f, *content - *aperture);
         return std::clamp(new_offset, 0.0f, scrollable_distance);
     }
 
     [[nodiscard]] float rail_length() const noexcept
     {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
         return axis == axis::vertical ? layout().height() : layout().width();
     }
 
     [[nodiscard]] float slider_length() const noexcept
     {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
 
-        ttlet content_aperture_ratio = *content != 0.0f ? *aperture / *content : 1.0f;
-        ttlet rail_length_ = rail_length();
+        hilet content_aperture_ratio = *content != 0.0f ? *aperture / *content : 1.0f;
+        hilet rail_length_ = rail_length();
         return std::clamp(rail_length_ * content_aperture_ratio, theme().size * 2.0f, rail_length_);
     }
 
@@ -180,7 +180,7 @@ private:
      */
     [[nodiscard]] float slider_travel_range() const noexcept
     {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
         return rail_length() - slider_length();
     }
 
@@ -188,7 +188,7 @@ private:
      */
     [[nodiscard]] float hidden_content() const noexcept
     {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
         return *content - *aperture;
     }
 
@@ -198,9 +198,9 @@ private:
      */
     [[nodiscard]] float hidden_content_vs_travel_ratio() const noexcept
     {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
 
-        ttlet _slider_travel_range = slider_travel_range();
+        hilet _slider_travel_range = slider_travel_range();
         return _slider_travel_range != 0.0f ? hidden_content() / _slider_travel_range : 0.0f;
     }
 
@@ -210,23 +210,23 @@ private:
      */
     [[nodiscard]] float travel_vs_hidden_content_ratio() const noexcept
     {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
 
-        ttlet _hidden_content = hidden_content();
+        hilet _hidden_content = hidden_content();
         return _hidden_content != 0.0f ? slider_travel_range() / _hidden_content : 0.0f;
     }
 
     void draw_rails(draw_context const &context) noexcept
     {
-        ttlet corner_radii =
-            axis == axis::vertical ? tt::corner_radii{layout().width() * 0.5f} : tt::corner_radii{layout().height() * 0.5f};
+        hilet corner_radii =
+            axis == axis::vertical ? hi::corner_radii{layout().width() * 0.5f} : hi::corner_radii{layout().height() * 0.5f};
         context.draw_box(layout(), layout().rectangle(), background_color(), corner_radii);
     }
 
     void draw_slider(draw_context const &context) noexcept
     {
-        ttlet corner_radii = axis == axis::vertical ? tt::corner_radii{_slider_rectangle.width() * 0.5f} :
-                                                       tt::corner_radii{_slider_rectangle.height() * 0.5f};
+        hilet corner_radii = axis == axis::vertical ? hi::corner_radii{_slider_rectangle.width() * 0.5f} :
+                                                       hi::corner_radii{_slider_rectangle.height() * 0.5f};
 
         context.draw_box(layout(), translate_z(0.1f) * _slider_rectangle, foreground_color(), corner_radii);
     }
@@ -235,4 +235,4 @@ private:
 using horizontal_scroll_bar_widget = scroll_bar_widget<axis::horizontal>;
 using vertical_scroll_bar_widget = scroll_bar_widget<axis::vertical>;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

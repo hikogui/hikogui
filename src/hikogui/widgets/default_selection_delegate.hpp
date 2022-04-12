@@ -11,7 +11,7 @@
 #include <memory>
 #include <vector>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<typename T>
 class default_selection_delegate : public selection_delegate {
@@ -23,7 +23,7 @@ public:
     observable<value_type> off_value;
 
     default_selection_delegate(auto &&options, auto &&value, auto &&off_value) noexcept :
-        options(tt_forward(options)), value(tt_forward(value)), off_value(tt_forward(off_value))
+        options(hi_forward(options)), value(hi_forward(value)), off_value(hi_forward(off_value))
     {
         // clang-format off
         _options_cbt = this->options.subscribe([&](auto...){ this->_notifier(); });
@@ -33,7 +33,7 @@ public:
     }
 
     default_selection_delegate(auto &&option_list, auto &&value) noexcept :
-        default_selection_delegate(tt_forward(option_list), tt_forward(value), value_type{})
+        default_selection_delegate(hi_forward(option_list), hi_forward(value), value_type{})
     {
     }
 
@@ -83,4 +83,4 @@ make_unique_default_selection_delegate(OptionList &&option_list, Value &&value, 
         std::forward<OptionList>(option_list), std::forward<Value>(value), std::forward<Args>(args)...);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

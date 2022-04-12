@@ -8,7 +8,7 @@
 #include "functional.hpp"
 #include <future>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A fifo (First-in, Firts-out) for asynchronous calls.
  *
@@ -44,7 +44,7 @@ public:
     auto run_one(Args&&...args) noexcept
     {
         return _fifo.take_one([&args...](auto& item) {
-            return item(tt_forward(args)...);
+            return item(hi_forward(args)...);
         });
     }
 
@@ -96,4 +96,4 @@ public:
 private : wfree_fifo<function<Proto>, SlotSize> _fifo;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

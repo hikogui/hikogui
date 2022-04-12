@@ -11,7 +11,7 @@
 #include <cmath>
 #include <array>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 constexpr matrix3 sRGB_to_XYZ =
     matrix3{0.41239080f, 0.35758434f, 0.18048079f, 0.21263901f, 0.71516868f, 0.07219232f, 0.01933082f, 0.11919478f, 0.95053215f};
@@ -117,4 +117,4 @@ inline auto sRGB_gamma8_to_linear16_table = sRGB_gamma8_to_linear16_table_genera
     return color_from_sRGB(r, g, b, a);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

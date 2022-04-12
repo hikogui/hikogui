@@ -21,7 +21,7 @@
 #pragma intrinsic(_mul128)
 #endif
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<typename T, typename U>
 inline bool convert_overflow(T x, U *r)
@@ -56,9 +56,9 @@ inline bool add_overflow(T lhs, T rhs, T *r)
 
     } else {
         // LEA,XOR,XOR,TEST,JS
-        ttlet lhs_ = static_cast<std::make_unsigned_t<T>>(lhs);
-        ttlet rhs_ = static_cast<std::make_unsigned_t<T>>(rhs);
-        ttlet r_ = lhs_ + rhs_;
+        hilet lhs_ = static_cast<std::make_unsigned_t<T>>(lhs);
+        hilet rhs_ = static_cast<std::make_unsigned_t<T>>(rhs);
+        hilet r_ = lhs_ + rhs_;
         *r = static_cast<T>(r_);
         return ((lhs ^ *r) & (rhs ^ *r)) < 0;
     }
@@ -80,9 +80,9 @@ inline bool sub_overflow(T lhs, T rhs, T *r)
 
     } else {
         // SUB, NOT, XOR, XOR, TEST, JL
-        ttlet lhs_ = static_cast<std::make_unsigned_t<T>>(lhs);
-        ttlet rhs_ = static_cast<std::make_unsigned_t<T>>(rhs);
-        ttlet r_ = lhs_ - rhs_;
+        hilet lhs_ = static_cast<std::make_unsigned_t<T>>(lhs);
+        hilet rhs_ = static_cast<std::make_unsigned_t<T>>(rhs);
+        hilet r_ = lhs_ - rhs_;
         *r = static_cast<T>(r_);
         return ((lhs ^ rhs) & (~rhs ^ *r)) < 0;
     }
@@ -115,15 +115,15 @@ inline bool mul_overflow(T lhs, T rhs, T *r)
 
     } else if constexpr (sizeof(T) <= (sizeof(make_intmax_t<T>) / 2)) {
         // MOVSX, MOVSX, IMUL, MOVSX, CMP, JNE
-        ttlet lhs_ = static_cast<make_intmax_t<T>>(lhs);
-        ttlet rhs_ = static_cast<make_intmax_t<T>>(rhs);
-        ttlet r_ = lhs_ * rhs_;
+        hilet lhs_ = static_cast<make_intmax_t<T>>(lhs);
+        hilet rhs_ = static_cast<make_intmax_t<T>>(rhs);
+        hilet r_ = lhs_ * rhs_;
         *r = static_cast<T>(r_);
         return *r != r_;
 
     } else {
-        tt_not_implemented();
+        hi_not_implemented();
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

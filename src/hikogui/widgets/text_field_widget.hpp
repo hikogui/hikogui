@@ -17,7 +17,7 @@
 #include <optional>
 #include <future>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A single line text field.
  *
@@ -126,4 +126,4 @@ private:
     void draw_background_box(draw_context const &context) const noexcept;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

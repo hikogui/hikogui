@@ -6,7 +6,7 @@
 
 #include "skeleton_node.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct skeleton_do_node final : skeleton_node {
     statement_vector children;
@@ -46,14 +46,14 @@ struct skeleton_do_node final : skeleton_node {
 
         post_process_expression(context, *expression, location);
 
-        for (ttlet &child : children) {
+        for (hilet &child : children) {
             child->post_process(context);
         }
     }
 
     datum evaluate(formula_evaluation_context &context) override
     {
-        ttlet output_size = context.output_size();
+        hilet output_size = context.output_size();
 
         ssize_t loop_count = 0;
         do {
@@ -76,7 +76,7 @@ struct skeleton_do_node final : skeleton_node {
 
     std::string string() const noexcept override
     {
-        tt_assert(expression);
+        hi_assert(expression);
         std::string s = "<do ";
         s += join(transform<std::vector<std::string>>(children, [](auto &x) {
             return to_string(*x);
@@ -87,4 +87,4 @@ struct skeleton_do_node final : skeleton_node {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -12,17 +12,17 @@
 #include "utils.hpp"
 #include <exception>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Assert if expression is true.
  * Independent of built type this macro will always check and abort on fail.
  *
  * @param expression The expression to test.
  */
-#define tt_assert(expression) \
+#define hi_assert(expression) \
     do { \
         if (not(expression)) { \
-            tt_debug_abort(); \
+            hi_debug_abort(); \
         } \
     } while (false)
 
@@ -32,7 +32,7 @@ namespace tt::inline v1 {
  * @param x The expression to test
  * @param y The value to return from the current function.
  */
-#define tt_assert_or_return(x, y) \
+#define hi_assert_or_return(x, y) \
     if (!(x)) { \
         [[unlikely]] return y; \
     }
@@ -44,12 +44,12 @@ namespace tt::inline v1 {
  *
  * @param expression The expression that is true.
  */
-#define tt_axiom(expression) tt_assert(expression)
+#define hi_axiom(expression) hi_assert(expression)
 
 /** This part of the code should not be reachable, unless a programming bug.
  * This function should be used in unreachable else statements or switch-default labels,
  */
-#define tt_no_default() [[unlikely]] tt_debug_abort()
+#define hi_no_default() [[unlikely]] hi_debug_abort()
 
 #else
 /** Specify an axiom; an expression that is true.
@@ -58,18 +58,18 @@ namespace tt::inline v1 {
  *
  * @param expression The expression that is true.
  */
-#define tt_axiom(expression) tt_assume(expression)
+#define hi_axiom(expression) hi_assume(expression)
 
 /** This part of the code should not be reachable, unless a programming bug.
  * This function should be used in unreachable else statements or switch-default labels,
  */
-#define tt_no_default() tt_unreachable()
+#define hi_no_default() hi_unreachable()
 #endif
 
 /** This part of the code should not be reachable, unless a programming bug.
  * This function should be used in unreachable constexpr else statements.
  */
-#define tt_static_no_default() \
+#define hi_static_no_default() \
     []<bool Flag = false>() \
     { \
         static_assert(Flag); \
@@ -79,13 +79,13 @@ namespace tt::inline v1 {
 /** This part of the code has not been implemented yet.
  * This aborts the program.
  */
-#define tt_not_implemented() [[unlikely]] tt_debug_abort();
+#define hi_not_implemented() [[unlikely]] hi_debug_abort();
 
 /** This part of the code has not been implemented yet.
  * This function should be used in unreachable constexpr else statements.
  */
-#define tt_static_not_implemented() tt_static_no_default()
+#define hi_static_not_implemented() hi_static_no_default()
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 #endif

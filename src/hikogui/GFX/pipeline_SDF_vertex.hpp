@@ -10,7 +10,7 @@
 #include "../rapid/sfloat_rgb32.hpp"
 #include <vulkan/vulkan.hpp>
 
-namespace tt::inline v1::pipeline_SDF {
+namespace hi::inline v1::pipeline_SDF {
 
 /*! A vertex defining a rectangle on a window.
  * The vertex shader will convert window pixel-coordinates to normalized projection-coordinates.
@@ -28,7 +28,7 @@ struct vertex {
     //! The color of the glyph.
     sfloat_rgba16 color;
 
-    vertex(point3 position, aarectangle clippingRectangle, point3 textureCoord, tt::color color) noexcept :
+    vertex(point3 position, aarectangle clippingRectangle, point3 textureCoord, hi::color color) noexcept :
         position(position), clippingRectangle(clippingRectangle), textureCoord(textureCoord), color(color)
     {
     }
@@ -48,4 +48,4 @@ struct vertex {
     }
 };
 
-} // namespace tt::inline v1::pipeline_SDF
+} // namespace hi::inline v1::pipeline_SDF

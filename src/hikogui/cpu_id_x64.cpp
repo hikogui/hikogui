@@ -4,11 +4,11 @@
 
 #include "cpu_id.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct {
 };
 
-tt_cpu_id(
+hi_cpu_id(
 
-}; // namespace tt::inline v1
+}; // namespace hi::inline v1

@@ -11,7 +11,7 @@ enum class continues_type {
     maybe
 };
 
-constexpr auto continues_type_names = tt::enum_metadata{
+constexpr auto continues_type_names = hi::enum_metadata{
     continues_type::on, "on",
     continues_type::off, "off",
     continues_type::maybe, "maybe",
@@ -73,7 +73,7 @@ enum class offset_type {
     on,
 };
 
-constexpr auto offset_type_names = tt::enum_metadata{
+constexpr auto offset_type_names = hi::enum_metadata{
     offset_type::on,
     "on",
     offset_type::off,
@@ -139,7 +139,7 @@ enum class discontinues_type {
     on = 1,
 };
 
-constexpr auto discontinues_type_names = tt::enum_metadata{
+constexpr auto discontinues_type_names = hi::enum_metadata{
     discontinues_type::on,
     "on",
     discontinues_type::off,

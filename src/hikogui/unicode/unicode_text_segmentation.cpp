@@ -6,14 +6,14 @@
 #include "unicode_description.hpp"
 #include "../required.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] static bool breaks_grapheme(unicode_grapheme_cluster_break cluster_break, grapheme_break_state &state) noexcept
 {
     using enum unicode_grapheme_cluster_break;
 
-    ttlet lhs = state.previous;
-    ttlet rhs = cluster_break;
+    hilet lhs = state.previous;
+    hilet rhs = cluster_break;
 
     enum class break_state {
         unknown,
@@ -30,9 +30,9 @@ namespace tt::inline v1 {
 
     state.first_character = false;
 
-    ttlet GB3 = (lhs == CR) && (rhs == LF);
-    ttlet GB4 = (lhs == Control) || (lhs == CR) || (lhs == LF);
-    ttlet GB5 = (rhs == Control) || (rhs == CR) || (rhs == LF);
+    hilet GB3 = (lhs == CR) && (rhs == LF);
+    hilet GB4 = (lhs == Control) || (lhs == CR) || (lhs == LF);
+    hilet GB5 = (rhs == Control) || (rhs == CR) || (rhs == LF);
     if (break_state == break_state::unknown) {
         if (GB3) {
             break_state = break_state::dont_break;
@@ -41,21 +41,21 @@ namespace tt::inline v1 {
         }
     }
 
-    ttlet GB6 = (lhs == L) && ((rhs == L) || (rhs == V) || (rhs == LV) | (rhs == LVT));
-    ttlet GB7 = ((lhs == LV) || (lhs == V)) && ((rhs == V) || (rhs == T));
-    ttlet GB8 = ((lhs == LVT) || (lhs == T)) && (rhs == T);
+    hilet GB6 = (lhs == L) && ((rhs == L) || (rhs == V) || (rhs == LV) | (rhs == LVT));
+    hilet GB7 = ((lhs == LV) || (lhs == V)) && ((rhs == V) || (rhs == T));
+    hilet GB8 = ((lhs == LVT) || (lhs == T)) && (rhs == T);
     if ((break_state == break_state::unknown) && (GB6 || GB7 || GB8)) {
         break_state = break_state::dont_break;
     }
 
-    ttlet GB9 = ((rhs == Extend) || (rhs == ZWJ));
-    ttlet GB9a = (rhs == SpacingMark);
-    ttlet GB9b = (lhs == Prepend);
+    hilet GB9 = ((rhs == Extend) || (rhs == ZWJ));
+    hilet GB9a = (rhs == SpacingMark);
+    hilet GB9b = (lhs == Prepend);
     if ((break_state == break_state::unknown) & (GB9 || GB9a || GB9b)) {
         break_state = break_state::dont_break;
     }
 
-    ttlet GB11 = state.in_extended_pictograph && (lhs == ZWJ) && (rhs == Extended_Pictographic);
+    hilet GB11 = state.in_extended_pictograph && (lhs == ZWJ) && (rhs == Extended_Pictographic);
     if ((break_state == break_state::unknown) && GB11) {
         break_state = break_state::dont_break;
     }
@@ -66,7 +66,7 @@ namespace tt::inline v1 {
         state.in_extended_pictograph = false;
     }
 
-    ttlet GB12_13 = (lhs == Regional_Indicator) && (rhs == Regional_Indicator) && ((state.RI_count % 2) == 1);
+    hilet GB12_13 = (lhs == Regional_Indicator) && (rhs == Regional_Indicator) && ((state.RI_count % 2) == 1);
     if ((break_state == break_state::unknown) && (GB12_13)) {
         break_state = break_state::dont_break;
     }
@@ -91,4 +91,4 @@ namespace tt::inline v1 {
     return breaks_grapheme(unicode_description::find(code_point).grapheme_cluster_break(), state);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -8,7 +8,7 @@
 #include <coroutine>
 #include <type_traits>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<typename T>
 class task;
@@ -19,12 +19,12 @@ struct task_promise_base {
 
     void return_void() noexcept
     {
-        tt_no_default();
+        hi_no_default();
     }
 
     void return_value(std::convertible_to<T> auto &&value) noexcept
     {
-        _value = tt_forward(value);
+        _value = hi_forward(value);
     }
 };
 
@@ -87,4 +87,4 @@ private:
     handle_type _coroutine;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

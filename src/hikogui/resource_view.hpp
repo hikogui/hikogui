@@ -10,7 +10,7 @@
 #include <cstddef>
 #include <string_view>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 class URL;
 
 /** A read-only memory mapping of a resource.
@@ -51,4 +51,4 @@ public:
     [[nodiscard]] virtual std::byte const *data() const noexcept = 0;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

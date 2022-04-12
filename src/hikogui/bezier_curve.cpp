@@ -8,7 +8,7 @@
 #include "memory.hpp"
 #include <optional>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 static constexpr bezier_curve::Color operator++(bezier_curve::Color& lhs, int) noexcept
 {
@@ -20,7 +20,7 @@ static constexpr bezier_curve::Color operator++(bezier_curve::Color& lhs, int) n
 std::vector<bezier_curve>
 makeContourFromPoints(std::vector<bezier_point>::const_iterator begin, std::vector<bezier_point>::const_iterator end) noexcept
 {
-    ttlet points = bezier_point::normalizePoints(begin, end);
+    hilet points = bezier_point::normalizePoints(begin, end);
 
     std::vector<bezier_curve> r;
 
@@ -30,7 +30,7 @@ makeContourFromPoints(std::vector<bezier_point>::const_iterator begin, std::vect
     auto C2 = point2{};
 
     auto color = bezier_curve::Color::Yellow;
-    for (ttlet& point : points) {
+    for (hilet& point : points) {
         switch (point.type) {
         case bezier_point::Type::Anchor:
             switch (type) {
@@ -53,7 +53,7 @@ makeContourFromPoints(std::vector<bezier_point>::const_iterator begin, std::vect
                 P1 = point.p;
                 type = bezier_curve::Type::Linear;
                 break;
-            default: tt_no_default();
+            default: hi_no_default();
             }
             break;
         case bezier_point::Type::QuadraticControl:
@@ -66,9 +66,9 @@ makeContourFromPoints(std::vector<bezier_point>::const_iterator begin, std::vect
             break;
         case bezier_point::Type::CubicControl2:
             C2 = point.p;
-            tt_assert(type == bezier_curve::Type::Cubic);
+            hi_assert(type == bezier_curve::Type::Cubic);
             break;
-        default: tt_no_default();
+        default: hi_no_default();
         }
     }
 
@@ -99,8 +99,8 @@ std::vector<bezier_curve> makeParallelContour(
     float tolerance) noexcept
 {
     auto contourAtOffset = std::vector<bezier_curve>{};
-    for (ttlet& curve : contour) {
-        for (ttlet& flatCurve : curve.subdivideUntilFlat(tolerance)) {
+    for (hilet& curve : contour) {
+        for (hilet& flatCurve : curve.subdivideUntilFlat(tolerance)) {
             contourAtOffset.push_back(flatCurve.toParallelLine(offset));
         }
     }
@@ -109,7 +109,7 @@ std::vector<bezier_curve> makeParallelContour(
     // This needs to be repaired.
     std::optional<point2> intersectPoint;
     auto r = std::vector<bezier_curve>{};
-    for (ttlet& curve : contourAtOffset) {
+    for (hilet& curve : contourAtOffset) {
         if (r.size() == 0) {
             r.push_back(curve);
 
@@ -151,9 +151,9 @@ static std::vector<float> solveCurvesXByY(std::vector<bezier_curve> const& v, fl
     std::vector<float> r;
     r.reserve(v.size());
 
-    for (ttlet& curve : v) {
-        ttlet xValues = curve.solveXByY(y);
-        for (ttlet x : xValues) {
+    for (hilet& curve : v) {
+        hilet xValues = curve.solveXByY(y);
+        for (hilet x : xValues) {
             r.push_back(x);
         }
     }
@@ -168,7 +168,7 @@ static std::optional<std::vector<std::pair<float, float>>> getFillSpansAtY(std::
     std::sort(xValues.begin(), xValues.end());
 
     // End-to-end connected curves will yield duplicate values.
-    ttlet uniqueEnd = std::unique(xValues.begin(), xValues.end());
+    hilet uniqueEnd = std::unique(xValues.begin(), xValues.end());
 
     // After removing duplicates, we should end up with pairs of x values.
     std::size_t const uniqueValueCount = (uniqueEnd - xValues.begin());
@@ -190,7 +190,7 @@ static std::optional<std::vector<std::pair<float, float>>> getFillSpansAtY(std::
 
 static void fillPartialPixels(pixel_row<uint8_t> row, ssize_t const i, float const startX, float const endX) noexcept
 {
-    ttlet pixelCoverage = std::clamp(endX, i + 0.0f, i + 1.0f) - std::clamp(startX, i + 0.0f, i + 1.0f);
+    hilet pixelCoverage = std::clamp(endX, i + 0.0f, i + 1.0f) - std::clamp(startX, i + 0.0f, i + 1.0f);
 
     auto& pixel = row[i];
     pixel = static_cast<uint8_t>(std::min(pixelCoverage * 51.0f + pixel, 255.0f));
@@ -199,23 +199,23 @@ static void fillPartialPixels(pixel_row<uint8_t> row, ssize_t const i, float con
 static void fillFullPixels(pixel_row<uint8_t> row, ssize_t const start, ssize_t const size) noexcept
 {
     if (size < 16) {
-        ttlet end = start + size;
+        hilet end = start + size;
         for (ssize_t i = start; i < end; i++) {
             row[i] += 0x33;
         }
     } else {
         auto u8p = &row[start];
-        ttlet u8end = u8p + size;
+        hilet u8end = u8p + size;
 
         // First add 51 to all pixels up to the alignment.
-        ttlet alignedStart = tt::ceil(u8p, sizeof(uint64_t));
+        hilet alignedStart = hi::ceil(u8p, sizeof(uint64_t));
         while (u8p < alignedStart) {
             *(u8p++) += 0x33;
         }
 
         // add 51 for each pixel, 8 pixels at a time.
         auto u64p = reinterpret_cast<uint64_t *>(u8p);
-        ttlet u64end = reinterpret_cast<uint64_t *>(tt::floor(u8end, sizeof(uint64_t)));
+        hilet u64end = reinterpret_cast<uint64_t *>(hi::floor(u8end, sizeof(uint64_t)));
         while (u64p < u64end) {
             *(u64p++) += 0x3333333333333333ULL;
         }
@@ -237,12 +237,12 @@ static void fillRowSpan(pixel_row<uint8_t> row, float const startX, float const 
         return;
     }
 
-    ttlet startX_int = narrow_cast<std::size_t>(startX);
-    ttlet endXplusOne = endX + 1.0f;
-    ttlet endX_int = narrow_cast<std::size_t>(endXplusOne);
-    ttlet startColumn = std::max(startX_int, std::size_t{0});
-    ttlet endColumn = std::min(endX_int, row.width());
-    ttlet nrColumns = endColumn - startColumn;
+    hilet startX_int = narrow_cast<std::size_t>(startX);
+    hilet endXplusOne = endX + 1.0f;
+    hilet endX_int = narrow_cast<std::size_t>(endXplusOne);
+    hilet startColumn = std::max(startX_int, std::size_t{0});
+    hilet endColumn = std::min(endX_int, row.width());
+    hilet nrColumns = endColumn - startColumn;
 
     if (nrColumns == 1) {
         fillPartialPixels(row, startColumn, startX, endX);
@@ -264,9 +264,9 @@ static void fillRow(pixel_row<uint8_t> row, std::size_t rowY, std::vector<bezier
         }
 
         if (optionalSpans) {
-            ttlet& spans = optionalSpans.value();
+            hilet& spans = optionalSpans.value();
 
-            for (ttlet& span : spans) {
+            for (hilet& span : spans) {
                 fillRowSpan(row, span.first, span.second);
             }
         }
@@ -290,7 +290,7 @@ void fill(pixel_map<uint8_t>& image, std::vector<bezier_curve> const& curves) no
     auto nearest = (it++)->sdf_distance(point);
 
     for (; it != curves.cend(); ++it) {
-        ttlet distance = it->sdf_distance(point);
+        hilet distance = it->sdf_distance(point);
 
         if (distance < nearest) {
             nearest = distance;
@@ -313,4 +313,4 @@ void fill(pixel_map<sdf_r8>& image, std::vector<bezier_curve> const& curves) noe
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

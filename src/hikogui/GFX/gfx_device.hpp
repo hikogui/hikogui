@@ -14,7 +14,7 @@
 #include <mutex>
 #include <tuple>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 class gfx_system;
 
 /*! A gfx_device that handles a set of windows.
@@ -50,4 +50,4 @@ public:
     virtual void log_memory_usage() const noexcept {}
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

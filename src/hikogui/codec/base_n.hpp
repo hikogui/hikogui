@@ -17,7 +17,7 @@
 
 #pragma once
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 namespace detail {
 
 struct base_n_alphabet {
@@ -78,7 +78,7 @@ struct base_n_alphabet {
      */
     constexpr char char_from_int(int8_t x) const noexcept
     {
-        tt_axiom(x < radix);
+        hi_axiom(x < radix);
         return char_from_int_table[x];
     }
 
@@ -151,7 +151,7 @@ public:
 
         while (ptr != last) {
             // Construct a block in big endian.
-            ttlet shift = 8 * ((bytes_per_block - 1) - byte_index_in_block);
+            hilet shift = 8 * ((bytes_per_block - 1) - byte_index_in_block);
             block |= static_cast<long long>(*(ptr++)) << shift;
 
             if (++byte_index_in_block == bytes_per_block) {
@@ -204,7 +204,7 @@ public:
         long long block = 0;
 
         for (; ptr != last; ++ptr) {
-            ttlet digit = int_from_char<long long>(*ptr);
+            hilet digit = int_from_char<long long>(*ptr);
             if (digit == -1) {
                 // Whitespace is ignored.
                 continue;
@@ -239,7 +239,7 @@ public:
     {
         auto r = bstring{};
         auto i = decode(begin(str), end(str), std::back_inserter(r));
-        tt_parse_check(i == end(str), "base-n encoded string not completely decoded");
+        hi_parse_check(i == end(str), "base-n encoded string not completely decoded");
         return r;
     }
 
@@ -247,16 +247,16 @@ private:
     template<typename ItOut>
     static void encode_block(long long block, long long nr_bytes, ItOut output) noexcept
     {
-        ttlet padding = bytes_per_block - nr_bytes;
+        hilet padding = bytes_per_block - nr_bytes;
 
         // Construct a block in little-endian, using easy division/modulo.
         auto char_block = std::string{};
         for (long long i = 0; i != chars_per_block; ++i) {
-            ttlet v = block % radix;
+            hilet v = block % radix;
             block /= radix;
 
             if (i < padding) {
-                tt_assume(v != 0);
+                hi_assume(v != 0);
                 if (padding_char != 0) {
                     char_block += padding_char;
                 }
@@ -272,7 +272,7 @@ private:
     template<typename ItOut>
     static constexpr void decode_block(long long block, long long nr_chars, ItOut output)
     {
-        ttlet padding = chars_per_block - nr_chars;
+        hilet padding = chars_per_block - nr_chars;
 
         if (block and bytes_per_block == padding) {
             throw parse_error("Invalid number of character to decode.");
@@ -280,8 +280,8 @@ private:
 
         // Construct a block in little-endian, using easy division/modulo.
         for (long long i = 0; i != (bytes_per_block - padding); ++i) {
-            ttlet shift = 8 * ((bytes_per_block - 1) - i);
-            ttlet byte = static_cast<std::byte>((block >> shift) & 0xff);
+            hilet shift = 8 * ((bytes_per_block - 1) - i);
+            hilet byte = static_cast<std::byte>((block >> shift) & 0xff);
 
             *(output++) = byte;
         }
@@ -301,4 +301,4 @@ using base64url = base_n<detail::base64url_rfc4648_alphabet, 4, 3>;
 using base85 = base_n<detail::base85_rfc1924_alphabet, 5, 4>;
 using ascii85 = base_n<detail::base85_btoa_alphabet, 5, 4>;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

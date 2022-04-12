@@ -12,7 +12,7 @@
 #include "text/hikogui_icon.hpp"
 #include <variant>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** An image, in different formats.
  */
@@ -47,31 +47,31 @@ public:
     }
 
     template<typename T>
-    [[nodiscard]] friend bool holds_alternative(tt::icon const &icon) noexcept
+    [[nodiscard]] friend bool holds_alternative(hi::icon const &icon) noexcept
     {
         return std::holds_alternative<T>(icon._image);
     }
 
     template<typename T>
-    [[nodiscard]] friend T const &get(tt::icon const &icon) noexcept
+    [[nodiscard]] friend T const &get(hi::icon const &icon) noexcept
     {
         return std::get<T>(icon._image);
     }
 
     template<typename T>
-    [[nodiscard]] friend T &get(tt::icon &icon) noexcept
+    [[nodiscard]] friend T &get(hi::icon &icon) noexcept
     {
         return std::get<T>(icon._image);
     }
 
     template<typename T>
-    [[nodiscard]] friend std::add_pointer_t<T const> get_if(tt::icon const *icon) noexcept
+    [[nodiscard]] friend std::add_pointer_t<T const> get_if(hi::icon const *icon) noexcept
     {
         return std::get_if<T>(&icon->_image);
     }
 
     template<typename T>
-    [[nodiscard]] friend std::add_pointer_t<T> get_if(tt::icon *icon) noexcept
+    [[nodiscard]] friend std::add_pointer_t<T> get_if(hi::icon *icon) noexcept
     {
         return std::get_if<T>(&icon->_image);
     }
@@ -84,4 +84,4 @@ private:
     friend class stencil;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

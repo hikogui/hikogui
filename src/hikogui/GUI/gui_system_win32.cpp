@@ -12,24 +12,24 @@
 #include "../log.hpp"
 #include <memory>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] std::unique_ptr<gui_system> gui_system::make_unique(std::weak_ptr<gui_system_delegate> delegate) noexcept
 {
-    auto font_book = std::make_unique<tt::font_book>(std::vector<URL>{URL::urlFromSystemfontDirectory()});
+    auto font_book = std::make_unique<hi::font_book>(std::vector<URL>{URL::urlFromSystemfontDirectory()});
     font_book->register_elusive_icon_font(URL("resource:elusiveicons-webfont.ttf"));
     font_book->register_hikogui_icon_font(URL("resource:hikogui_icons.ttf"));
     font_book->post_process();
 
-    auto theme_book = std::make_unique<tt::theme_book>(*font_book, std::vector<URL>{URL::urlFromResourceDirectory() / "themes"});
+    auto theme_book = std::make_unique<hi::theme_book>(*font_book, std::vector<URL>{URL::urlFromResourceDirectory() / "themes"});
 
-    auto gfx_system = std::make_unique<tt::gfx_system_vulkan>();
+    auto gfx_system = std::make_unique<hi::gfx_system_vulkan>();
 
-    auto keyboard_bindings = std::make_unique<tt::keyboard_bindings>();
+    auto keyboard_bindings = std::make_unique<hi::keyboard_bindings>();
     try {
         keyboard_bindings->load_bindings(URL{"resource:win32.keybinds.json"}, true);
     } catch (std::exception const &e) {
-        tt_log_fatal("Could not load keyboard bindings. \"{}\"", e.what());
+        hi_log_fatal("Could not load keyboard bindings. \"{}\"", e.what());
     }
 
     auto r = std::make_unique<gui_system_win32>(
@@ -44,9 +44,9 @@ namespace tt::inline v1 {
 
 gui_system_win32::gui_system_win32(
     std::unique_ptr<gfx_system> gfx,
-    std::unique_ptr<tt::font_book> font_book,
-    std::unique_ptr<tt::theme_book> theme_book,
-    std::unique_ptr<tt::keyboard_bindings> keyboard_bindings,
+    std::unique_ptr<hi::font_book> font_book,
+    std::unique_ptr<hi::theme_book> theme_book,
+    std::unique_ptr<hi::keyboard_bindings> keyboard_bindings,
     std::weak_ptr<gui_system_delegate> delegate) :
     gui_system(
         std::move(gfx),
@@ -57,4 +57,4 @@ gui_system_win32::gui_system_win32(
 {
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

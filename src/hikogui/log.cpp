@@ -18,21 +18,21 @@
 #include <chrono>
 #include <thread>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 void log::log_thread_main(std::stop_token stop_token) noexcept
 {
     using namespace std::chrono_literals;
 
     set_thread_name("log");
-    tt_log_info("log thread started");
+    hi_log_info("log thread started");
 
     auto counter_statistics_deadline = std::chrono::utc_clock::now() + 1min;
 
     while (not stop_token.stop_requested()) {
         log_global.flush();
 
-        ttlet now = std::chrono::utc_clock::now();
+        hilet now = std::chrono::utc_clock::now();
         if (now >= counter_statistics_deadline) {
             counter_statistics_deadline = now + 1min;
             detail::counter::log();
@@ -41,7 +41,7 @@ void log::log_thread_main(std::stop_token stop_token) noexcept
         std::this_thread::sleep_for(100ms);
     }
 
-    tt_log_info("log thread finished");
+    hi_log_info("log thread finished");
 }
 
 void log::subsystem_deinit() noexcept
@@ -78,14 +78,14 @@ void log::write(std::string const &str) const noexcept
 
 void log::flush() noexcept
 {
-    ttlet t = trace<"log_flush">{};
+    hilet t = trace<"log_flush">{};
 
     bool wrote_message;
     do {
         std::unique_ptr<detail::log_message_base> copy_of_message;
 
         {
-            ttlet lock = std::scoped_lock(_mutex);
+            hilet lock = std::scoped_lock(_mutex);
 
             wrote_message = _fifo.take_one([&copy_of_message](auto &message) {
                 copy_of_message = message.make_unique_copy();
@@ -93,10 +93,10 @@ void log::flush() noexcept
         }
 
         if (wrote_message) {
-            tt_axiom(copy_of_message);
+            hi_axiom(copy_of_message);
             write(copy_of_message->format());
         }
     } while (wrote_message);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

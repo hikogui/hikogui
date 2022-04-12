@@ -11,7 +11,7 @@
 #include <string_view>
 #include <optional>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct skeleton_node {
     using statement_vector = typename std::vector<std::unique_ptr<skeleton_node>>;
@@ -65,7 +65,7 @@ struct skeleton_node {
      */
     [[nodiscard]] virtual datum evaluate(formula_evaluation_context &context)
     {
-        tt_no_default();
+        hi_no_default();
     }
 
     [[nodiscard]] std::string evaluate_output(formula_evaluation_context &context)
@@ -151,8 +151,8 @@ struct skeleton_node {
 
     [[nodiscard]] static datum evaluate_children(formula_evaluation_context &context, statement_vector const &children)
     {
-        for (ttlet &child : children) {
-            ttlet tmp = child->evaluate(context);
+        for (hilet &child : children) {
+            hilet tmp = child->evaluate(context);
             if (!tmp.is_undefined()) {
                 return tmp;
             }
@@ -161,4 +161,4 @@ struct skeleton_node {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

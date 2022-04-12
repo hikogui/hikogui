@@ -15,7 +15,7 @@
 #include "../geometry/translate.hpp"
 #include <array>
 
-namespace tt::inline v1::pipeline_SDF {
+namespace hi::inline v1::pipeline_SDF {
 
 device_shared::device_shared(gfx_device_vulkan const &device) : device(device)
 {
@@ -27,7 +27,7 @@ device_shared::~device_shared() {}
 
 void device_shared::destroy(gfx_device_vulkan *vulkanDevice)
 {
-    tt_axiom(vulkanDevice);
+    hi_axiom(vulkanDevice);
 
     teardownShaders(vulkanDevice);
     teardownAtlas(vulkanDevice);
@@ -55,7 +55,7 @@ void device_shared::destroy(gfx_device_vulkan *vulkanDevice)
         atlasAllocationMaxHeight = 0;
 
         if (atlas_allocation_position.z() >= atlasMaximumNrImages) {
-            tt_log_fatal("pipeline_SDF atlas overflow, too many glyphs in use.");
+            hi_log_fatal("pipeline_SDF atlas overflow, too many glyphs in use.");
         }
 
         if (atlas_allocation_position.z() >= atlasTextures.size()) {
@@ -104,7 +104,7 @@ void device_shared::prepareStagingPixmapForDrawing()
 
 void device_shared::prepare_atlas_for_rendering()
 {
-    ttlet lock = std::scoped_lock(gfx_system_mutex);
+    hilet lock = std::scoped_lock(gfx_system_mutex);
     for (auto &atlasTexture : atlasTextures) {
         atlasTexture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eShaderReadOnlyOptimal);
     }
@@ -128,25 +128,25 @@ void device_shared::prepare_atlas_for_rendering()
  */
 void device_shared::add_glyph_to_atlas(glyph_ids const &glyph, glyph_atlas_info &info) noexcept
 {
-    ttlet[glyph_path, glyph_bounding_box] = glyph.get_path_and_bounding_box();
+    hilet[glyph_path, glyph_bounding_box] = glyph.get_path_and_bounding_box();
 
-    ttlet draw_scale = scale2{drawfontSize, drawfontSize};
-    ttlet draw_bounding_box = draw_scale * glyph_bounding_box;
+    hilet draw_scale = scale2{drawfontSize, drawfontSize};
+    hilet draw_bounding_box = draw_scale * glyph_bounding_box;
 
     // We will draw the font at a fixed size into the texture. And we need a border for the texture to
     // allow proper bi-linear interpolation on the edges.
 
     // Determine the size of the image in the atlas.
     // This is the bounding box sized to the fixed font size and a border
-    ttlet draw_offset = point2{drawBorder, drawBorder} - get<0>(draw_bounding_box);
-    ttlet draw_extent = draw_bounding_box.size() + 2.0f * drawBorder;
-    ttlet image_size = ceil(draw_extent);
+    hilet draw_offset = point2{drawBorder, drawBorder} - get<0>(draw_bounding_box);
+    hilet draw_extent = draw_bounding_box.size() + 2.0f * drawBorder;
+    hilet image_size = ceil(draw_extent);
 
     // Transform the path to the scale of the fixed font size and drawing the bounding box inside the image.
-    ttlet draw_path = (translate2{draw_offset} * draw_scale) * glyph_path;
+    hilet draw_path = (translate2{draw_offset} * draw_scale) * glyph_path;
 
     // Draw glyphs into staging buffer of the atlas and upload it to the correct position in the atlas.
-    ttlet lock = std::scoped_lock(gfx_system_mutex);
+    hilet lock = std::scoped_lock(gfx_system_mutex);
     prepareStagingPixmapForDrawing();
     info = allocate_rect(image_size, image_size / draw_bounding_box.size());
     auto pixmap = stagingTexture.pixel_map.submap(aarectangle{info.size});
@@ -167,9 +167,9 @@ bool device_shared::place_vertices(
     glyph_ids const &glyphs,
     quad_color colors) noexcept
 {
-    ttlet[atlas_rect, glyph_was_added] = get_glyph_from_atlas(glyphs);
+    hilet[atlas_rect, glyph_was_added] = get_glyph_from_atlas(glyphs);
 
-    ttlet box_with_border = scale_from_center(box, atlas_rect->border_scale);
+    hilet box_with_border = scale_from_center(box, atlas_rect->border_scale);
 
     auto image_index = atlas_rect->position.z();
     auto t0 = point3(get<0>(atlas_rect->texture_coordinates), image_index);
@@ -212,7 +212,7 @@ void device_shared::buildShaders()
 
 void device_shared::teardownShaders(gfx_device_vulkan *vulkanDevice)
 {
-    tt_axiom(vulkanDevice);
+    hi_axiom(vulkanDevice);
 
     vulkanDevice->destroy(vertexShaderModule);
     vulkanDevice->destroy(fragmentShaderModule);
@@ -220,7 +220,7 @@ void device_shared::teardownShaders(gfx_device_vulkan *vulkanDevice)
 
 void device_shared::addAtlasImage()
 {
-    ttlet current_image_index = atlasTextures.size();
+    hilet current_image_index = atlasTextures.size();
 
     // Create atlas image
     vk::ImageCreateInfo const imageCreateInfo = {
@@ -243,17 +243,17 @@ void device_shared::addAtlasImage()
     allocationCreateInfo.pUserData = const_cast<char *>(allocation_name.c_str());
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-    ttlet[atlasImage, atlasImageAllocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
+    hilet[atlasImage, atlasImageAllocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
     device.setDebugUtilsObjectNameEXT(atlasImage, allocation_name.c_str());
 
-    ttlet clearValue = vk::ClearColorValue{std::array{-1.0f, -1.0f, -1.0f, -1.0f}};
-    ttlet clearRange = std::array{vk::ImageSubresourceRange{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}};
+    hilet clearValue = vk::ClearColorValue{std::array{-1.0f, -1.0f, -1.0f, -1.0f}};
+    hilet clearRange = std::array{vk::ImageSubresourceRange{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}};
 
     device.transition_layout(
         atlasImage, imageCreateInfo.format, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
     device.clearColorImage(atlasImage, vk::ImageLayout::eTransferDstOptimal, clearValue, clearRange);
 
-    ttlet atlasImageView = device.createImageView(
+    hilet atlasImageView = device.createImageView(
         {vk::ImageViewCreateFlags(),
          atlasImage,
          vk::ImageViewType::e2D,
@@ -301,15 +301,15 @@ void device_shared::buildAtlas()
     allocationCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
     allocationCreateInfo.pUserData = const_cast<char *>("sdf-pipeline staging image");
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-    ttlet[image, allocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
+    hilet[image, allocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
     device.setDebugUtilsObjectNameEXT(image, "sdf-pipeline staging image");
-    ttlet data = device.mapMemory<sdf_r8>(allocation);
+    hilet data = device.mapMemory<sdf_r8>(allocation);
 
     stagingTexture = {
         image,
         allocation,
         vk::ImageView(),
-        tt::pixel_map<sdf_r8>{data.data(), imageCreateInfo.extent.width, imageCreateInfo.extent.height}};
+        hi::pixel_map<sdf_r8>{data.data(), imageCreateInfo.extent.width, imageCreateInfo.extent.height}};
 
     vk::SamplerCreateInfo const samplerCreateInfo = {
         vk::SamplerCreateFlags(),
@@ -341,7 +341,7 @@ void device_shared::buildAtlas()
 
 void device_shared::teardownAtlas(gfx_device_vulkan *vulkanDevice)
 {
-    tt_axiom(vulkanDevice);
+    hi_axiom(vulkanDevice);
 
     vulkanDevice->destroy(atlasSampler);
 
@@ -355,4 +355,4 @@ void device_shared::teardownAtlas(gfx_device_vulkan *vulkanDevice)
     vulkanDevice->destroyImage(stagingTexture.image, stagingTexture.allocation);
 }
 
-} // namespace tt::inline v1::pipeline_SDF
+} // namespace hi::inline v1::pipeline_SDF

@@ -11,7 +11,7 @@
 #include <array>
 #include <tuple>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class trace_base {
 public:
@@ -47,7 +47,7 @@ public:
             log();
         }
 
-        ttlet current_time_stamp = time_stamp_count{time_stamp_count::inplace{}};
+        hilet current_time_stamp = time_stamp_count{time_stamp_count::inplace{}};
         global_counter<Tag>.add_duration(current_time_stamp.count() - _time_stamp.count());
     }
 
@@ -64,7 +64,7 @@ public:
         // XXX Use type erase to store the type of the value and a pointer
         // to the location of the value on the stack.
 
-        tt_axiom(size < NumItems);
+        hi_axiom(size < NumItems);
         items[size++] = {key, datum{std::forward<T>(value)}};
     }
 
@@ -84,7 +84,7 @@ public:
             log();
         }
 
-        ttlet current_time_stamp = time_stamp_count{time_stamp_count::inplace{}};
+        hilet current_time_stamp = time_stamp_count{time_stamp_count::inplace{}};
         global_counter<Tag>.add_duration(current_time_stamp.count() - _time_stamp.count());
     }
 
@@ -96,4 +96,4 @@ public:
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

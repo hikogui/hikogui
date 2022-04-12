@@ -12,7 +12,7 @@
 
 struct IMMDeviceEnumerator;
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class audio_system_win32_notification_client;
 
@@ -35,7 +35,7 @@ public:
     {
         auto r = std::vector<audio_device *>{};
         r.reserve(size(_devices));
-        for (ttlet &device : _devices) {
+        for (hilet &device : _devices) {
             r.push_back(device.get());
         }
         return r;
@@ -58,13 +58,13 @@ private:
     IMMDeviceEnumerator *_device_enumerator;
     audio_system_win32_notification_client *_notification_client;
 
-    void default_device_changed(tt::audio_device_id const &device_id) noexcept;
-    void device_added(tt::audio_device_id const &device_id) noexcept;
-    void device_removed(tt::audio_device_id const &device_id) noexcept;
-    void device_state_changed(tt::audio_device_id const &device_id) noexcept;
-    void device_property_value_changed(tt::audio_device_id const &device_id) noexcept;
+    void default_device_changed(hi::audio_device_id const &device_id) noexcept;
+    void device_added(hi::audio_device_id const &device_id) noexcept;
+    void device_removed(hi::audio_device_id const &device_id) noexcept;
+    void device_state_changed(hi::audio_device_id const &device_id) noexcept;
+    void device_property_value_changed(hi::audio_device_id const &device_id) noexcept;
 
     friend audio_system_win32_notification_client;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

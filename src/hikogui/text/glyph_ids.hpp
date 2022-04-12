@@ -17,7 +17,7 @@
 #include <cstdint>
 #include <functional>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 class font;
 
 namespace detail {
@@ -63,7 +63,7 @@ public:
 
     constexpr void set_num_graphemes(std::size_t num_graphemes) noexcept
     {
-        tt_axiom(num_graphemes <= 0xf);
+        hi_axiom(num_graphemes <= 0xf);
         _num_graphemes = static_cast<uint8_t>(num_graphemes);
     }
 
@@ -90,14 +90,14 @@ public:
 
     [[nodiscard]] constexpr glyph_id const &operator[](std::size_t i) const noexcept
     {
-        tt_axiom(i < _num_glyphs);
+        hi_axiom(i < _num_glyphs);
         return _glyphs[i];
     }
 
     template<std::size_t I>
     [[nodiscard]] constexpr friend glyph_id get(glyph_ids_long const &rhs) noexcept
     {
-        tt_axiom(I < rhs._num_glyphs);
+        hi_axiom(I < rhs._num_glyphs);
         return std::get<I>(rhs._glyphs);
     }
 
@@ -142,7 +142,7 @@ public:
 
     constexpr glyph_ids &operator=(glyph_ids const &other) noexcept
     {
-        tt_return_on_self_assignment(other);
+        hi_return_on_self_assignment(other);
 
         _font = other._font;
         if (is_long()) {
@@ -177,19 +177,19 @@ public:
      *
      * @param font The font to be used for this glyph_ids.
      */
-    constexpr glyph_ids(tt::font const &font) noexcept : _font(&font), _ptr(make_ptr(1)) {}
+    constexpr glyph_ids(hi::font const &font) noexcept : _font(&font), _ptr(make_ptr(1)) {}
 
     /** Get the font for this glyph_ids object.
      */
     [[nodiscard]] constexpr font const &font() const noexcept
     {
-        tt_axiom(_font);
+        hi_axiom(_font);
         return *_font;
     }
 
     /** Set the font for this glyph_ids object.
      */
-    void set_font(tt::font const &font) noexcept
+    void set_font(hi::font const &font) noexcept
     {
         _font = &font;
     }
@@ -241,7 +241,7 @@ public:
      */
     [[nodiscard]] constexpr glyph_id get_single() const noexcept
     {
-        tt_axiom(has_num_glyphs<1>());
+        hi_axiom(has_num_glyphs<1>());
         return get_glyph(1);
     }
 
@@ -262,7 +262,7 @@ public:
         if (is_long()) {
             _ptr->set_num_graphemes(num_graphemes);
         } else {
-            tt_axiom(num_graphemes <= num_graphemes_mask);
+            hi_axiom(num_graphemes <= num_graphemes_mask);
             _ptr = make_ptr(
                 (make_value(_ptr) & ~(num_graphemes_mask << num_graphemes_shift)) | (num_graphemes << num_graphemes_shift));
         }
@@ -300,7 +300,7 @@ public:
      */
     [[nodiscard]] constexpr glyph_id operator[](std::size_t index) const noexcept
     {
-        tt_axiom(index < num_glyphs());
+        hi_axiom(index < num_glyphs());
 
         if (is_long()) {
             return (*_ptr)[index];
@@ -322,8 +322,8 @@ public:
 
     [[nodiscard]] constexpr friend bool operator==(glyph_ids const &lhs, glyph_ids const &rhs) noexcept
     {
-        ttlet lhs_value = make_value(lhs._ptr);
-        ttlet rhs_value = make_value(rhs._ptr);
+        hilet lhs_value = make_value(lhs._ptr);
+        hilet rhs_value = make_value(rhs._ptr);
 
         if (lhs._font != rhs._font) {
             return false;
@@ -358,7 +358,7 @@ private:
     static constexpr std::size_t num_graphemes_shift = 4;
     static constexpr std::size_t num_graphemes_mask = 15;
 
-    tt::font const *_font;
+    hi::font const *_font;
 
     /** A pointer to a list of glyphs.
      *
@@ -375,15 +375,15 @@ private:
 
     [[nodiscard]] constexpr void increment_num_glyphs() noexcept
     {
-        tt_axiom(is_short());
-        tt_axiom(short_num_glyphs() < num_glyphs_mask);
+        hi_axiom(is_short());
+        hi_axiom(short_num_glyphs() < num_glyphs_mask);
 
         _ptr = make_ptr(make_value(_ptr) + (1 << num_glyphs_shift));
     }
 
     [[nodiscard]] constexpr glyph_id get_glyph(std::size_t index) const noexcept
     {
-        tt_axiom(is_short());
+        hi_axiom(is_short());
 
         auto shift = (index + 1) * 16;
         return glyph_id{(make_value(_ptr) >> shift) & 0xffff};
@@ -391,7 +391,7 @@ private:
 
     constexpr void set_glyph(std::size_t i, glyph_id id) noexcept
     {
-        tt_axiom(is_short());
+        hi_axiom(is_short());
 
         auto shift = (i + 1) * 16;
         auto mask = std::size_t{0xffff} << shift;
@@ -400,7 +400,7 @@ private:
 
     [[nodiscard]] constexpr std::size_t short_num_glyphs() const noexcept
     {
-        tt_axiom(is_short());
+        hi_axiom(is_short());
         return (make_value(_ptr) >> num_glyphs_shift) & num_glyphs_mask;
     }
 
@@ -425,11 +425,11 @@ private:
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<>
-struct std::hash<tt::glyph_ids> {
-    [[nodiscard]] constexpr std::size_t operator()(tt::glyph_ids const &rhs) const noexcept
+struct std::hash<hi::glyph_ids> {
+    [[nodiscard]] constexpr std::size_t operator()(hi::glyph_ids const &rhs) const noexcept
     {
         return rhs.hash();
     }

@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class packet_buffer {
     std::list<packet> packets;
@@ -49,7 +49,7 @@ public:
      */
     std::span<std::byte> getNewpacket(ssize_t nrBytes) noexcept
     {
-        tt_assert(!closed());
+        hi_assert(!closed());
         packets.emplace_back(nrBytes);
         return {packets.back().end(), nrBytes};
     }
@@ -59,7 +59,7 @@ public:
      */
     std::span<std::byte> getpacket(ssize_t nrBytes) noexcept
     {
-        tt_assert(!closed());
+        hi_assert(!closed());
         if (packets.empty() || (packets.back().writeSize() < nrBytes)) {
             packets.emplace_back(nrBytes);
         }
@@ -75,7 +75,7 @@ public:
      */
     void write(ssize_t nrBytes, bool push = true) noexcept
     {
-        tt_assert(!closed());
+        hi_assert(!closed());
         packets.back().write(nrBytes);
         if (push) {
             packets.back().push();
@@ -101,7 +101,7 @@ public:
             }
 
             // Check if we can merge packets.
-            tt_assert(packets.front().size() >= nrBytes);
+            hi_assert(packets.front().size() >= nrBytes);
 
             // Merge data from next packet.
         }
@@ -120,7 +120,7 @@ public:
         ssize_t byteNr = 0;
         ssize_t i = 0;
         while (packetNr < nrpackets()) {
-            tt_parse_check(byteNr < nrBytes, "New-line not found within {} bytes", nrBytes);
+            hi_parse_check(byteNr < nrBytes, "New-line not found within {} bytes", nrBytes);
 
             if (i == ssize(packets[packetNr])) {
                 // Advance to next packet.
@@ -128,10 +128,10 @@ public:
                 i = 0;
             }
 
-            ttlet c = packets[packetNr][i] if (c == '\n' || c == '\0')
+            hilet c = packets[packetNr][i] if (c == '\n' || c == '\0')
             {
                 // Found end-of-line
-                ttlet bspan = peek(byteNr + 1);
+                hilet bspan = peek(byteNr + 1);
                 return {reinterpret_cast<char *>(bspan.data(), byteNr + 1};
             }
             ++i;
@@ -153,16 +153,16 @@ public:
         peekBuffer.clear();
 
         while (nrBytes) {
-            ttlet packet_size = ssize(packets.front());
+            hilet packet_size = ssize(packets.front());
             if (nrBytes >= packet_size) {
                 packets.pop_front();
             } else {
                 packets.front().read(nrBytes);
-                tt_axiom(ssize(packets.front()) > 0);
+                hi_axiom(ssize(packets.front()) > 0);
             }
             nrBytes -= ssize(packets_size);
         }
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

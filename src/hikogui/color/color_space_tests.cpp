@@ -7,7 +7,7 @@
 #include <iostream>
 #include <string>
 
-using namespace tt;
+using namespace hi;
 
 #define ASSERT_NEAR_VEC(lhs, rhs, abs_err) ASSERT_TRUE(hypot<0b1111>(lhs - rhs) < abs_err)
 

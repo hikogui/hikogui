@@ -10,7 +10,7 @@
 #include <vk_mem_alloc.h>
 #include <span>
 
-namespace tt::inline v1::pipeline_tone_mapper {
+namespace hi::inline v1::pipeline_tone_mapper {
 
 /*! Pipeline for rendering simple flat shaded quats.
  */
@@ -37,4 +37,4 @@ protected:
     vk::PipelineDepthStencilStateCreateInfo getPipelineDepthStencilStateCreateInfo() const override;
 };
 
-} // namespace tt::inline v1::pipeline_tone_mapper
+} // namespace hi::inline v1::pipeline_tone_mapper

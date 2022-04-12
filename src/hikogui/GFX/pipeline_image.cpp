@@ -6,7 +6,7 @@
 #include "pipeline_image_device_shared.hpp"
 #include "gfx_device_vulkan.hpp"
 
-namespace tt::inline v1::pipeline_image {
+namespace hi::inline v1::pipeline_image {
 
 pipeline_image::pipeline_image(gfx_surface const &surface) : pipeline_vulkan(surface) {}
 
@@ -19,7 +19,7 @@ void pipeline_image::drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_c
 
     std::vector<vk::Buffer> tmpvertexBuffers = {vertexBuffer};
     std::vector<vk::DeviceSize> tmpOffsets = {0};
-    tt_axiom(tmpvertexBuffers.size() == tmpOffsets.size());
+    hi_axiom(tmpvertexBuffers.size() == tmpOffsets.size());
 
     vulkan_device().imagePipeline->draw_in_command_buffer(commandBuffer);
 
@@ -36,8 +36,8 @@ void pipeline_image::drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_c
         sizeof(push_constants),
         &pushConstants);
 
-    ttlet numberOfRectangles = vertexBufferData.size() / 4;
-    ttlet numberOfTriangles = numberOfRectangles * 2;
+    hilet numberOfRectangles = vertexBufferData.size() / 4;
+    hilet numberOfTriangles = numberOfRectangles * 2;
     vulkan_device().cmdBeginDebugUtilsLabelEXT(commandBuffer, "draw images");
     commandBuffer.drawIndexed(narrow_cast<uint32_t>(numberOfTriangles * 3), 1, 0, 0, 0);
     vulkan_device().cmdEndDebugUtilsLabelEXT(commandBuffer);
@@ -63,7 +63,7 @@ std::vector<vk::DescriptorSetLayoutBinding> pipeline_image::createDescriptorSetL
 
 std::vector<vk::WriteDescriptorSet> pipeline_image::createWriteDescriptorSet() const
 {
-    ttlet &sharedImagePipeline = vulkan_device().imagePipeline;
+    hilet &sharedImagePipeline = vulkan_device().imagePipeline;
 
     return {
         {
@@ -134,4 +134,4 @@ void pipeline_image::teardownvertexBuffers()
     vulkan_device().destroyBuffer(vertexBuffer, vertexBufferAllocation);
 }
 
-} // namespace tt::inline v1::pipeline_image
+} // namespace hi::inline v1::pipeline_image

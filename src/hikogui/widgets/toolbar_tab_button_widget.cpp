@@ -5,14 +5,14 @@
 #include "toolbar_tab_button_widget.hpp"
 #include "../GUI/gui_window.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 widget_constraints const &toolbar_tab_button_widget::set_constraints() noexcept
 {
     _layout = {};
 
     // On left side a check mark, on right side short-cut. Around the label extra margin.
-    ttlet extra_size = extent2{theme().margin * 2.0f, theme().margin};
+    hilet extra_size = extent2{theme().margin * 2.0f, theme().margin};
     return _constraints = set_constraints_button() + extra_size;
 }
 
@@ -43,12 +43,12 @@ void toolbar_tab_button_widget::request_redraw() const noexcept
 
 [[nodiscard]] bool toolbar_tab_button_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
-    return *visible and *enabled and any(group & tt::keyboard_focus_group::toolbar);
+    return *visible and *enabled and any(group & hi::keyboard_focus_group::toolbar);
 }
 
 [[nodiscard]] bool toolbar_tab_button_widget::handle_event(command command) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     if (*enabled) {
         switch (command) {
@@ -78,16 +78,16 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const &cont
 {
     // Draw the outline of the button across the clipping rectangle to clip the
     // bottom of the outline.
-    ttlet offset = theme().margin + theme().border_width;
-    ttlet outline_rectangle = aarectangle{0.0f, -offset, layout().width(), layout().height() + offset};
+    hilet offset = theme().margin + theme().border_width;
+    hilet outline_rectangle = aarectangle{0.0f, -offset, layout().width(), layout().height() + offset};
 
     // The focus line will be drawn by the parent widget (toolbar_widget) at 0.5.
-    ttlet button_z = *focus ? translate_z(0.6f) : translate_z(0.0f);
+    hilet button_z = *focus ? translate_z(0.6f) : translate_z(0.0f);
 
     auto button_color = (*hover or state() == button_state::on) ? theme().color(theme_color::fill, semantic_layer - 1) :
                                                                  theme().color(theme_color::fill, semantic_layer);
 
-    ttlet corner_radii = tt::corner_radii{0.0f, 0.0f, theme().rounding_radius, theme().rounding_radius};
+    hilet corner_radii = hi::corner_radii{0.0f, 0.0f, theme().rounding_radius, theme().rounding_radius};
     context.draw_box(
         layout(),
         button_z * outline_rectangle,
@@ -98,4 +98,4 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const &cont
         corner_radii);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

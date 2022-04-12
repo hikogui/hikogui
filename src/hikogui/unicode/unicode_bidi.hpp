@@ -7,7 +7,7 @@
 #include "unicode_bidi_class.hpp"
 #include "unicode_description.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct unicode_bidi_context {
     enum class mode_type : uint8_t { LTR, RTL, auto_LTR, auto_RTL };
@@ -98,7 +98,7 @@ static void unicode_bidi_L4(
     SetTextDirection set_text_direction) noexcept
 {
     for (auto it = first; it != last; ++it, ++output_it) {
-        ttlet text_direction = it->embedding_level % 2 == 0 ? unicode_bidi_class::L : unicode_bidi_class::R;
+        hilet text_direction = it->embedding_level % 2 == 0 ? unicode_bidi_class::L : unicode_bidi_class::R;
         set_text_direction(*output_it, text_direction);
         if (it->direction == unicode_bidi_class::R && it->description->bidi_bracket_type() != unicode_bidi_bracket_type::n) {
             set_code_point(*output_it, it->description->bidi_mirrored_glyph());
@@ -157,7 +157,7 @@ std::pair<It, std::vector<unicode_bidi_class>> unicode_bidi(
     }
 
     auto [proxy_last, paragraph_directions] = detail::unicode_bidi_P1(begin(proxy), end(proxy), context);
-    last = shuffle_by_index(first, last, begin(proxy), proxy_last, [](ttlet &item) {
+    last = shuffle_by_index(first, last, begin(proxy), proxy_last, [](hilet &item) {
         return item.index;
     });
 
@@ -183,10 +183,10 @@ std::pair<It, std::vector<unicode_bidi_class>> unicode_bidi(
 template<typename It, typename EndIt, typename DescriptionFunc>
 It unicode_bidi_control_filter(It first, EndIt last, DescriptionFunc const &description_func)
 {
-    return std::remove_if(first, last, [&](ttlet &item) {
+    return std::remove_if(first, last, [&](hilet &item) {
         return is_control(description_func(item).bidi_class());
     });
 }
 
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

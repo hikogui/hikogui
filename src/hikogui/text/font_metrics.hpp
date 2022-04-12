@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** The metrics of a font.
  *
@@ -77,4 +77,4 @@ struct font_metrics {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

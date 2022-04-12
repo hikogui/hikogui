@@ -7,7 +7,7 @@
 #include "../rapid/sfloat_rg32.hpp"
 #include <vulkan/vulkan.hpp>
 
-namespace tt::inline v1::pipeline_SDF {
+namespace hi::inline v1::pipeline_SDF {
 
 struct push_constants {
     sfloat_rg32 window_extent = extent2{0.0, 0.0};
@@ -22,4 +22,4 @@ struct push_constants {
     }
 };
 
-} // namespace tt::inline v1::pipeline_SDF
+} // namespace hi::inline v1::pipeline_SDF

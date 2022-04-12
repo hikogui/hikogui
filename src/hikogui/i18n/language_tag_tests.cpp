@@ -9,10 +9,10 @@
 #include <sstream>
 #include <string>
 
-using tag = tt::language_tag;
+using tag = hi::language_tag;
 using namespace std::literals;
 
-tt_warning_push() tt_msvc_suppress(4834)
+hi_warning_push() hi_msvc_suppress(4834)
 
     TEST(language_tag, parse)
 {
@@ -36,12 +36,12 @@ tt_warning_push() tt_msvc_suppress(4834)
     // "x-bcde" user-defined extension is ignored.
     ASSERT_EQ(tag::parse("nl-Cyrl-NL-x-bcde").to_string(), "nl-Cyrl-NL");
 
-    ASSERT_THROW(tag::parse("x-NL"), tt::parse_error);
-    ASSERT_THROW(tag::parse("xxxx-NL"), tt::parse_error);
+    ASSERT_THROW(tag::parse("x-NL"), hi::parse_error);
+    ASSERT_THROW(tag::parse("xxxx-NL"), hi::parse_error);
     // "Food" script does not exist.
-    ASSERT_THROW(tag::parse("nl-Food-NL"), tt::parse_error);
+    ASSERT_THROW(tag::parse("nl-Food-NL"), hi::parse_error);
     // Region "AA" does not exist.
-    ASSERT_THROW(tag::parse("nl-Latn-AA"), tt::parse_error);
+    ASSERT_THROW(tag::parse("nl-Latn-AA"), hi::parse_error);
 }
 TEST(language_tag, construct)
 {
@@ -65,12 +65,12 @@ TEST(language_tag, construct)
     // "x-bcde" user-defined extension is ignored.
     ASSERT_EQ(tag{"nl-Cyrl-NL-x-bcde"}.to_string(), "nl-Cyrl-NL");
 
-    ASSERT_THROW(tag{"x-NL"}, tt::parse_error);
-    ASSERT_THROW(tag{"xxxx-NL"}, tt::parse_error);
+    ASSERT_THROW(tag{"x-NL"}, hi::parse_error);
+    ASSERT_THROW(tag{"xxxx-NL"}, hi::parse_error);
     // "Food" script does not exist.
-    ASSERT_THROW(tag{"nl-Food-NL"}, tt::parse_error);
+    ASSERT_THROW(tag{"nl-Food-NL"}, hi::parse_error);
     // Region "AA" does not exist.
-    ASSERT_THROW(tag{"nl-Latn-AA"}, tt::parse_error);
+    ASSERT_THROW(tag{"nl-Latn-AA"}, hi::parse_error);
 }
 
 TEST(language_tag, shrink)
@@ -105,26 +105,26 @@ TEST(language_tag, variants)
 {
     auto nl_Latn_NL_expected =
         std::vector<tag>{tag::parse("nl-Latn-NL"), tag::parse("nl-NL"), tag::parse("nl-Latn"), tag::parse("nl")};
-    ASSERT_EQ(tt::make_vector(tag::parse("nl-Latn-NL").variants()), nl_Latn_NL_expected);
+    ASSERT_EQ(hi::make_vector(tag::parse("nl-Latn-NL").variants()), nl_Latn_NL_expected);
 
     auto nl_NL_expected = std::vector<tag>{tag::parse("nl-NL"), tag::parse("nl")};
-    ASSERT_EQ(tt::make_vector(tag::parse("nl-NL").variants()), nl_NL_expected);
+    ASSERT_EQ(hi::make_vector(tag::parse("nl-NL").variants()), nl_NL_expected);
 
     auto nl_Latn_expected = std::vector<tag>{tag::parse("nl-Latn"), tag::parse("nl")};
-    ASSERT_EQ(tt::make_vector(tag::parse("nl-Latn").variants()), nl_Latn_expected);
+    ASSERT_EQ(hi::make_vector(tag::parse("nl-Latn").variants()), nl_Latn_expected);
 
     auto nl_expected = std::vector<tag>{tag::parse("nl")};
-    ASSERT_EQ(tt::make_vector(tag::parse("nl").variants()), nl_expected);
+    ASSERT_EQ(hi::make_vector(tag::parse("nl").variants()), nl_expected);
 }
 
 TEST(language_tag, canonical_variants)
 {
     auto nl_Latn_NL_expected =
         std::vector<tag>{tag::parse("nl-Latn-NL"), tag::parse("nl-NL"), tag::parse("nl-Latn"), tag::parse("nl")};
-    ASSERT_EQ(tt::make_vector(tag::parse("nl-Latn-NL").canonical_variants()), nl_Latn_NL_expected);
+    ASSERT_EQ(hi::make_vector(tag::parse("nl-Latn-NL").canonical_variants()), nl_Latn_NL_expected);
 
     auto nl_Latn_BE_expected = std::vector<tag>{tag::parse("nl-Latn-BE"), tag::parse("nl-BE")};
-    ASSERT_EQ(tt::make_vector(tag::parse("nl-Latn-BE").canonical_variants()), nl_Latn_BE_expected);
+    ASSERT_EQ(hi::make_vector(tag::parse("nl-Latn-BE").canonical_variants()), nl_Latn_BE_expected);
 }
 
 TEST(language_tag, all_variants)
@@ -170,4 +170,4 @@ TEST(language_tag, variant_vector)
     ASSERT_EQ(variants(test), expected);
 }
 
-tt_warning_pop()
+hi_warning_pop()

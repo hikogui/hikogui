@@ -25,21 +25,21 @@
 #include <Windows.h>
 #include <memory>
 
-class my_preferences : public tt::preferences {
+class my_preferences : public hi::preferences {
 public:
-    tt::observable<tt::audio_device_id> audio_output_device_id;
-    tt::observable<bool> audio_output_exclusive;
-    tt::observable<double> audio_output_sample_rate;
-    tt::observable<tt::speaker_mapping> audio_output_speaker_mapping;
+    hi::observable<hi::audio_device_id> audio_output_device_id;
+    hi::observable<bool> audio_output_exclusive;
+    hi::observable<double> audio_output_sample_rate;
+    hi::observable<hi::speaker_mapping> audio_output_speaker_mapping;
 
-    tt::observable<int> tab_index = 1;
-    tt::observable<bool> toggle_value;
-    tt::observable<int> radio_value = 0;
-    tt::observable<std::vector<std::pair<tt::audio_device_id, tt::label>>> _audio_device_list;
+    hi::observable<int> tab_index = 1;
+    hi::observable<bool> toggle_value;
+    hi::observable<int> radio_value = 0;
+    hi::observable<std::vector<std::pair<hi::audio_device_id, hi::label>>> _audio_device_list;
 
-    tt::observable<std::string> selected_theme;
+    hi::observable<std::string> selected_theme;
 
-    my_preferences(tt::URL url) : tt::preferences(std::move(url))
+    my_preferences(hi::URL url) : hi::preferences(std::move(url))
     {
         add("audio_output_device_id", audio_output_device_id);
         add("audio_output_exclusive", audio_output_exclusive);
@@ -51,9 +51,9 @@ public:
     }
 };
 
-tt::scoped_task<> init_audio_tab(tt::grid_widget &grid, my_preferences &preferences) noexcept
+hi::scoped_task<> init_audio_tab(hi::grid_widget &grid, my_preferences &preferences) noexcept
 {
-    using namespace tt;
+    using namespace hi;
 
     // grid.make_widget<label_widget>("A1", tr("Audio device:"));
     // grid.make_widget<selection_widget>("B1", _audio_device_list, audio_output_device_id);
@@ -64,16 +64,16 @@ tt::scoped_task<> init_audio_tab(tt::grid_widget &grid, my_preferences &preferen
     co_await std::suspend_always{};
 }
 
-tt::scoped_task<> init_theme_tab(tt::grid_widget &grid, my_preferences &preferences) noexcept
+hi::scoped_task<> init_theme_tab(hi::grid_widget &grid, my_preferences &preferences) noexcept
 {
-    using namespace tt;
+    using namespace hi;
 
-    tt::observable<std::vector<std::pair<std::string, tt::label>>> theme_list;
+    hi::observable<std::vector<std::pair<std::string, hi::label>>> theme_list;
 
     {
         auto &theme_book = *grid.window.gui.theme_book;
         auto proxy = theme_list.proxy();
-        for (ttlet &name : theme_book.theme_names()) {
+        for (hilet &name : theme_book.theme_names()) {
             proxy->emplace_back(name, tr{name});
         }
     }
@@ -84,9 +84,9 @@ tt::scoped_task<> init_theme_tab(tt::grid_widget &grid, my_preferences &preferen
     co_await std::suspend_always{};
 }
 
-tt::scoped_task<> init_license_tab(tt::grid_widget &grid, my_preferences &preferences) noexcept
+hi::scoped_task<> init_license_tab(hi::grid_widget &grid, my_preferences &preferences) noexcept
 {
-    using namespace tt;
+    using namespace hi;
 
     grid.make_widget<label_widget>(
         "A1", tr("This is a \xd7\x9c\xd6\xb0\xd7\x9e\xd6\xb7\xd7\xaa\xd6\xb5\xd7\x92.\nAnd another sentence. One more:"));
@@ -120,9 +120,9 @@ tt::scoped_task<> init_license_tab(tt::grid_widget &grid, my_preferences &prefer
     co_await std::suspend_always{};
 }
 
-tt::task<> preferences_window(tt::gui_system &gui, my_preferences &preferences)
+hi::task<> preferences_window(hi::gui_system &gui, my_preferences &preferences)
 {
-    using namespace tt;
+    using namespace hi;
 
     auto window_label = label{URL{"resource:hikogui_demo.png"}, tr("Preferences")};
     auto window = gui.make_window(window_label);
@@ -144,24 +144,24 @@ tt::task<> preferences_window(tt::gui_system &gui, my_preferences &preferences)
     co_await window->closing;
 }
 
-tt::task<> main_window(tt::gui_system &gui, my_preferences &preferences)
+hi::task<> main_window(hi::gui_system &gui, my_preferences &preferences)
 {
-    using namespace tt;
+    using namespace hi;
 
     auto window_label = label{URL{"resource:hikogui_demo.png"}, tr("HikoGUI demo")};
     auto window = gui.make_window(window_label);
 
     auto preferences_label = label{elusive_icon::Wrench, tr("Preferences")};
-    ttlet &preferences_button = window->toolbar().make_widget<tt::toolbar_button_widget>(preferences_label);
+    hilet &preferences_button = window->toolbar().make_widget<hi::toolbar_button_widget>(preferences_label);
 
     auto &column = window->content().make_widget<column_widget>("A1");
     column.make_widget<toggle_widget>(preferences.toggle_value);
-    ttlet &hello_world_button = column.make_widget<momentary_button_widget>(tr("Hello world"));
+    hilet &hello_world_button = column.make_widget<momentary_button_widget>(tr("Hello world"));
 
-    ttlet &vma_dump_button = column.make_widget<momentary_button_widget>(tr("vma\ncalculate stats"));
+    hilet &vma_dump_button = column.make_widget<momentary_button_widget>(tr("vma\ncalculate stats"));
 
     while (true) {
-        ttlet result =
+        hilet result =
             co_await when_any(preferences_button.pressed, vma_dump_button.pressed, hello_world_button.pressed, preferences.toggle_value, window->closing);
 
         if (result == preferences_button.pressed) {
@@ -171,23 +171,23 @@ tt::task<> main_window(tt::gui_system &gui, my_preferences &preferences)
             gui.gfx->log_memory_usage();
 
         } else if (result == hello_world_button.pressed) {
-            tt_log_info("Hello World");
+            hi_log_info("Hello World");
 
         } else if (result == preferences.toggle_value) {
-            tt_log_info("Toggle value {}", get<bool>(result));
+            hi_log_info("Toggle value {}", get<bool>(result));
 
         } else if (result == window->closing) {
             co_return;
 
         } else {
-            tt_no_default();
+            hi_no_default();
         }
     }
 }
 
-int tt_main(int argc, char *argv[])
+int hi_main(int argc, char *argv[])
 {
-    using namespace tt;
+    using namespace hi;
 
     // Set the version at the very beginning, because file system paths depend on it.
     auto &m = metadata::application();

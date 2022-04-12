@@ -12,7 +12,7 @@
 #include <type_traits>
 #include <concepts>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 namespace detail {
 
 template<typename CharT>
@@ -89,7 +89,7 @@ template<typename ToCharT, typename FromCharT>
     requires(sizeof(FromCharT) == 1 and sizeof(ToCharT) > 1)
 {
     std::size_t r = 0;
-    for (ttlet c : rhs) {
+    for (hilet c : rhs) {
         if ((c & 0xc0) != 0x80) {
             ++r;
         }
@@ -102,7 +102,7 @@ template<typename ToCharT, typename FromCharT>
     requires(sizeof(FromCharT) > 1 and sizeof(ToCharT) == 1)
 {
     std::size_t r = 0;
-    for (ttlet c : rhs) {
+    for (hilet c : rhs) {
         if (c < 0x80) {
             ++r;
         } else if (c < 0x800) {
@@ -125,13 +125,13 @@ template<typename ToCharT, typename FromCharT>
     r.reserve(guess_num_code_units<ToCharT>(rhs));
 
     auto it = begin(rhs);
-    ttlet last = end(rhs);
+    hilet last = end(rhs);
 
     uint32_t code_point = 0;
     int todo = 0;
     int num = 0;
     while (it != last) {
-        ttlet c = static_cast<uint8_t>(*it);
+        hilet c = static_cast<uint8_t>(*it);
 
         if (todo == 0) {
             ++it;
@@ -203,12 +203,12 @@ template<typename ToCharT, typename FromCharT>
     r.reserve(guess_num_code_units<ToCharT>(rhs));
 
     auto it = begin(rhs);
-    ttlet last = end(rhs);
+    hilet last = end(rhs);
 
     uint32_t code_point = 0;
     int todo = 0;
     while (it != last) {
-        ttlet c = *it;
+        hilet c = *it;
 
         if (todo == 0) {
             ++it;
@@ -261,7 +261,7 @@ template<typename ToCharT, typename FromCharT>
     auto r = std::basic_string<ToCharT>{};
     r.reserve(guess_num_code_units<ToCharT>(rhs));
 
-    for (ttlet c : rhs) {
+    for (hilet c : rhs) {
         append_code_point(r, static_cast<uint32_t>(c));
     }
 
@@ -281,7 +281,7 @@ template<typename It>
 [[nodiscard]] constexpr std::endian guess_utf16_endianess(It first, It last, std::endian default_guess)
 {
     static_assert(sizeof(*first) == 1, "Expecting an array of 8-bit characters");
-    ttlet num_words = narrow_cast<std::size_t>(std::distance(first, last) / 2);
+    hilet num_words = narrow_cast<std::size_t>(std::distance(first, last) / 2);
 
     if (not num_words) {
         return default_guess;
@@ -289,8 +289,8 @@ template<typename It>
 
     // Check for BOM.
     {
-        ttlet c0 = static_cast<uint8_t>(*first);
-        ttlet c1 = static_cast<uint8_t>(*(first + 1));
+        hilet c0 = static_cast<uint8_t>(*first);
+        hilet c1 = static_cast<uint8_t>(*(first + 1));
         if (c0 == 0xfe && c1 == 0xff) {
             return std::endian::big;
         } else if (c1 == 0xfe and c0 == 0xff) {
@@ -303,8 +303,8 @@ template<typename It>
     std::size_t count1 = 0;
     auto it = first;
     for (auto i = 0; i != num_words; ++i) {
-        ttlet c0 = static_cast<uint8_t>(*(it++));
-        ttlet c1 = static_cast<uint8_t>(*(it++));
+        hilet c0 = static_cast<uint8_t>(*(it++));
+        hilet c1 = static_cast<uint8_t>(*(it++));
 
         if (c0 == 0 and c0 != c1) {
             ++count0;
@@ -328,7 +328,7 @@ template<typename It>
 template<typename FromChar>
 [[nodiscard]] constexpr std::string to_string(std::basic_string_view<FromChar> rhs) noexcept
 {
-    tt_static_not_implemented();
+    hi_static_not_implemented();
 }
 
 template<std::same_as<char16_t> FromChar>
@@ -360,7 +360,7 @@ template<std::same_as<wchar_t> FromChar>
 template<typename FromChar>
 [[nodiscard]] constexpr std::u16string to_u16string(std::basic_string_view<FromChar> rhs) noexcept
 {
-    tt_static_not_implemented();
+    hi_static_not_implemented();
 }
 
 template<std::same_as<char> FromChar>
@@ -392,7 +392,7 @@ template<std::same_as<wchar_t> FromChar>
 template<typename FromChar>
 [[nodiscard]] constexpr std::u32string to_u32string(std::basic_string_view<FromChar> rhs) noexcept
 {
-    tt_static_not_implemented();
+    hi_static_not_implemented();
 }
 
 template<std::same_as<char> FromChar>
@@ -424,7 +424,7 @@ template<std::same_as<wchar_t> FromChar>
 template<typename FromChar>
 [[nodiscard]] constexpr std::wstring to_wstring(std::basic_string_view<FromChar> rhs) noexcept
 {
-    tt_static_not_implemented();
+    hi_static_not_implemented();
 }
 
 template<std::same_as<char> FromChar>
@@ -493,4 +493,4 @@ template<typename FromChar>
     return to_wstring(std::basic_string_view<FromChar>(rhs));
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

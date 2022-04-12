@@ -10,7 +10,7 @@
 #include "../vspan.hpp"
 #include <vk_mem_alloc.h>
 
-namespace tt::inline v1::pipeline_image {
+namespace hi::inline v1::pipeline_image {
 
 /*! Pipeline for rendering backings of widgets.
  * Maintains texture map atlas and sharing for all views.
@@ -49,4 +49,4 @@ private:
     void teardownvertexBuffers() override;
 };
 
-} // namespace tt::inline v1::pipeline_image
+} // namespace hi::inline v1::pipeline_image

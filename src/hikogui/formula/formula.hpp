@@ -11,7 +11,7 @@
 #include <string_view>
 #include <memory>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Parse an formula.
  * Parses an formula until EOF, ')', ',', '}'
@@ -51,4 +51,4 @@ std::string_view::const_iterator find_end_of_formula(
     std::string_view::const_iterator last,
     std::string_view terminating_string);
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

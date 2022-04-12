@@ -9,7 +9,7 @@
 
 #include <tuple>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Start the hikogui system.
  *
@@ -63,4 +63,4 @@ inline std::pair<int, char **> crt_start(int argc, char **argv)
  */
 int crt_finish(int argc, char **argv, int exit_code);
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

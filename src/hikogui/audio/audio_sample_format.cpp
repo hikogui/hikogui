@@ -4,7 +4,7 @@
 
 #include "audio_sample_format.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] float audio_sample_format::pack_multiplier() const noexcept
 {
@@ -30,7 +30,7 @@ namespace tt::inline v1 {
 [[nodiscard]] std::size_t audio_sample_format::num_samples_per_chunk(std::size_t stride) const noexcept
 {
     auto r = narrow_cast<int>(std::bit_floor((((16u - num_bytes) / stride) & 3) + 1));
-    tt_axiom(r == 1 || r == 2 || r == 4);
+    hi_axiom(r == 1 || r == 2 || r == 4);
     return r;
 }
 
@@ -46,7 +46,7 @@ namespace tt::inline v1 {
 
 [[nodiscard]] std::size_t audio_sample_format::num_fast_quads(std::size_t stride, std::size_t num_samples) const noexcept
 {
-    ttlet src_buffer_size = (num_samples - 1) * stride + num_bytes;
+    hilet src_buffer_size = (num_samples - 1) * stride + num_bytes;
     if (src_buffer_size < 16) {
         return 0;
     }
@@ -57,25 +57,25 @@ namespace tt::inline v1 {
 
 [[nodiscard]] i8x16 audio_sample_format::load_shuffle_indices(std::size_t stride) const noexcept
 {
-    ttlet num_samples = num_samples_per_chunk(stride);
+    hilet num_samples = num_samples_per_chunk(stride);
 
     // Indices set to -1 result in a zero after a byte shuffle.
     auto r = i8x16::broadcast(-1);
     for (int sample_nr = 0; sample_nr != num_samples; ++sample_nr) {
-        ttlet sample_src_offset = sample_nr * stride;
+        hilet sample_src_offset = sample_nr * stride;
 
         // Offset the samples to the highest elements in the i32x4 vector.
         // By shifting the samples from high to low together with 'OR' we can
         // concatenate 1, 2, or 4 loads into a single 4 samples vector.
         // Where the sample in the lowest index is the first sample in memory.
-        ttlet sample_dst_offset = (sample_nr + (4 - num_samples)) * 4;
+        hilet sample_dst_offset = (sample_nr + (4 - num_samples)) * 4;
 
         // Bytes are ordered least to most significant.
         for (int byte_nr = 0; byte_nr != num_bytes; ++byte_nr) {
-            ttlet src_offset = sample_src_offset + (endian == std::endian::little ? byte_nr : num_bytes - byte_nr - 1);
+            hilet src_offset = sample_src_offset + (endian == std::endian::little ? byte_nr : num_bytes - byte_nr - 1);
 
             // Offset the bytes so they become aligned to the left.
-            ttlet dst_offset = sample_dst_offset + byte_nr + (4 - num_bytes);
+            hilet dst_offset = sample_dst_offset + byte_nr + (4 - num_bytes);
 
             r[dst_offset] = narrow_cast<int8_t>(src_offset);
         }
@@ -86,25 +86,25 @@ namespace tt::inline v1 {
 
 [[nodiscard]] i8x16 audio_sample_format::store_shuffle_indices(std::size_t stride) const noexcept
 {
-    ttlet num_samples = num_samples_per_chunk(stride);
+    hilet num_samples = num_samples_per_chunk(stride);
 
     // Indices set to -1 result in a zero after a byte shuffle.
     auto r = i8x16::broadcast(-1);
     for (int sample_nr = 0; sample_nr != num_samples; ++sample_nr) {
-        ttlet sample_dst_offset = sample_nr * stride;
+        hilet sample_dst_offset = sample_nr * stride;
 
         // Offset the samples to the lowest elements in the i32x4 vector.
         // By shifting the samples from high to low we can extract 1, 2, or 4 stores
         // from a single 4 samples vector.
         // Where the sample at the lowest index becomes the first sample in memory.
-        ttlet sample_src_offset = sample_nr * 4;
+        hilet sample_src_offset = sample_nr * 4;
 
         // Bytes are ordered least to most significant.
         for (int byte_nr = 0; byte_nr != num_bytes; ++byte_nr) {
-            ttlet dst_offset = sample_dst_offset + (endian == std::endian::little ? byte_nr : num_bytes - byte_nr - 1);
+            hilet dst_offset = sample_dst_offset + (endian == std::endian::little ? byte_nr : num_bytes - byte_nr - 1);
 
             // Offset the bytes so they become aligned to the left.
-            ttlet src_offset = sample_src_offset + byte_nr + (4 - num_bytes);
+            hilet src_offset = sample_src_offset + byte_nr + (4 - num_bytes);
 
             r[dst_offset] = narrow_cast<int8_t>(src_offset);
         }
@@ -115,12 +115,12 @@ namespace tt::inline v1 {
 
 [[nodiscard]] i8x16 audio_sample_format::concat_shuffle_indices(std::size_t stride) const noexcept
 {
-    ttlet num_samples = num_samples_per_chunk(stride);
+    hilet num_samples = num_samples_per_chunk(stride);
 
     // The bytes are shifted right.
-    ttlet byte_shift = (4 - num_samples) * 4;
+    hilet byte_shift = (4 - num_samples) * 4;
 
     return i8x16::byte_srl_shuffle_indices(narrow_cast<unsigned int>(byte_shift));
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -13,7 +13,7 @@
 #include "log.hpp"
 #include <regex>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 URL URL::_urlOfCurrentWorkingDirectory;
 
@@ -47,7 +47,7 @@ std::string URL::fragment() const noexcept
 
 std::string URL::filename() const noexcept
 {
-    ttlet parts = parse_url(value);
+    hilet parts = parse_url(value);
     if (parts.segments.size() > 0) {
         return url_decode(parts.segments.back());
     } else {
@@ -75,14 +75,14 @@ std::string URL::nativeDirectory() const noexcept
 
 std::string URL::extension() const noexcept
 {
-    ttlet fn = filename();
-    ttlet i = fn.rfind('.');
+    hilet fn = filename();
+    hilet i = fn.rfind('.');
     return fn.substr((i != fn.npos) ? (i + 1) : fn.size());
 }
 
 std::vector<std::string> URL::pathSegments() const noexcept
 {
-    ttlet parts = parse_url(value);
+    hilet parts = parse_url(value);
     return transform<std::vector<std::string>>(parts.segments, [](auto x) {
         return url_decode(x);
     });
@@ -120,9 +120,9 @@ bool URL::isRootDirectory() const noexcept
 
 URL URL::urlByAppendingPath(URL const &other) const noexcept
 {
-    ttlet this_parts = parse_url(value);
-    ttlet other_parts = parse_url(other.value);
-    ttlet new_parts = concatenate_url_path(this_parts, other_parts);
+    hilet this_parts = parse_url(value);
+    hilet other_parts = parse_url(other.value);
+    hilet new_parts = concatenate_url_path(this_parts, other_parts);
     return URL(new_parts);
 }
 
@@ -158,8 +158,8 @@ URL URL::urlByAppendingPath(wchar_t const *other) const noexcept
 
 [[nodiscard]] URL URL::urlByAppendingExtension(std::string_view other) const noexcept
 {
-    ttlet this_parts = parse_url(value);
-    ttlet new_url = concatenate_url_filename(this_parts, other);
+    hilet this_parts = parse_url(value);
+    hilet new_url = concatenate_url_filename(this_parts, other);
     return URL(new_url);
 }
 
@@ -184,9 +184,9 @@ URL URL::urlByRemovingFilename() const noexcept
 
 static void urlsByRecursiveScanning(std::string const &base, glob_token_list_t const &glob, std::vector<URL> &result) noexcept
 {
-    for (ttlet &filename : URL::filenamesByScanningDirectory(base)) {
+    for (hilet &filename : URL::filenamesByScanningDirectory(base)) {
         if (filename.back() == '/') {
-            ttlet directory = std::string_view(filename.data(), filename.size() - 1);
+            hilet directory = std::string_view(filename.data(), filename.size() - 1);
             auto recursePath = base + "/";
             recursePath += directory;
 
@@ -195,7 +195,7 @@ static void urlsByRecursiveScanning(std::string const &base, glob_token_list_t c
             }
 
         } else {
-            ttlet finalPath = base + '/' + filename;
+            hilet finalPath = base + '/' + filename;
             if (matchGlob(glob, finalPath) == glob_match_result_t::Match) {
                 result.push_back(URL::urlFromPath(finalPath));
             }
@@ -205,8 +205,8 @@ static void urlsByRecursiveScanning(std::string const &base, glob_token_list_t c
 
 std::vector<URL> URL::urlsByScanningWithGlobPattern() const noexcept
 {
-    ttlet glob = parseGlob(path());
-    ttlet basePath = basePathOfGlob(glob);
+    hilet glob = parseGlob(path());
+    hilet basePath = basePathOfGlob(glob);
 
     std::vector<URL> urls;
     urlsByRecursiveScanning(basePath, glob, urls);
@@ -216,7 +216,7 @@ std::vector<URL> URL::urlsByScanningWithGlobPattern() const noexcept
 URL URL::urlFromPath(std::string_view const path) noexcept
 {
     std::string tmp;
-    ttlet parts = parse_path(path, tmp);
+    hilet parts = parse_path(path, tmp);
     return URL(parts);
 }
 
@@ -268,19 +268,19 @@ std::unique_ptr<resource_view> URL::loadView() const
     if (scheme() == "resource") {
         try {
             auto view = static_resource_view::loadView(filename());
-            tt_log_info("Loaded resource {} from executable.", *this);
+            hi_log_info("Loaded resource {} from executable.", *this);
             return view;
 
         } catch (key_error const &) {
-            ttlet absoluteLocation = URL::urlFromResourceDirectory() / *this;
+            hilet absoluteLocation = URL::urlFromResourceDirectory() / *this;
             auto view = file_view::loadView(absoluteLocation);
-            tt_log_info("Loaded resource {} from filesystem at {}.", *this, absoluteLocation);
+            hi_log_info("Loaded resource {} from filesystem at {}.", *this, absoluteLocation);
             return view;
         }
 
     } else if (scheme() == "file" or scheme() == "") {
         auto view = file_view::loadView(*this);
-        tt_log_info("Loaded resource {} from filesystem.", *this);
+        hi_log_info("Loaded resource {} from filesystem.", *this);
         return view;
 
     } else {
@@ -288,4 +288,4 @@ std::unique_ptr<resource_view> URL::loadView() const
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

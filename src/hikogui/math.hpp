@@ -26,7 +26,7 @@
 #include <immintrin.h>
 #endif
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 constexpr long long pow10_table[20]{
     1LL,
@@ -52,17 +52,17 @@ constexpr long long pow10_table[20]{
 
 constexpr long long pow10ll(int x) noexcept
 {
-    tt_axiom(x >= 0 && x <= 18);
+    hi_axiom(x >= 0 && x <= 18);
     return pow10_table[x];
 }
 
 template<typename Iterator>
 auto mean(Iterator first, Iterator last)
 {
-    ttlet init = static_cast<typename std::iterator_traits<Iterator>::value_type>(0);
+    hilet init = static_cast<typename std::iterator_traits<Iterator>::value_type>(0);
 
-    ttlet sum = std::reduce(first, last, init);
-    ttlet count = static_cast<decltype(sum)>(std::distance(first, last));
+    hilet sum = std::reduce(first, last, init);
+    hilet count = static_cast<decltype(sum)>(std::distance(first, last));
 
     return count > 0.0 ? sum / count : sum;
 }
@@ -70,14 +70,14 @@ auto mean(Iterator first, Iterator last)
 template<typename Iterator, typename T>
 auto stddev(Iterator first, Iterator last, T mean)
 {
-    ttlet init = static_cast<typename std::iterator_traits<Iterator>::value_type>(0);
+    hilet init = static_cast<typename std::iterator_traits<Iterator>::value_type>(0);
 
-    ttlet sum = std::accumulate(first, last, init, [=](ttlet& acc, ttlet& value) {
-        ttlet tmp = value - mean;
+    hilet sum = std::accumulate(first, last, init, [=](hilet& acc, hilet& value) {
+        hilet tmp = value - mean;
         return acc + tmp * tmp;
     });
 
-    ttlet count = static_cast<decltype(sum)>(std::distance(first, last));
+    hilet count = static_cast<decltype(sum)>(std::distance(first, last));
     return count > 0.0 ? sum / count : sum;
 }
 
@@ -96,7 +96,7 @@ constexpr void inplace_min(T& a, T const& b) noexcept
 template<typename T>
 constexpr void inplace_clamp(T& a, T const& lo, T const& hi) noexcept
 {
-    tt_axiom(lo <= hi);
+    hi_axiom(lo <= hi);
     a = std::clamp(a, lo, hi);
 }
 
@@ -113,4 +113,4 @@ template<std::floating_point T>
     return std::abs(a - b) <= e;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

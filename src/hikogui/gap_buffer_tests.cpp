@@ -9,7 +9,7 @@
 #include <iostream>
 
 using namespace std;
-using namespace tt;
+using namespace hi;
 
 TEST(gap_buffer, default_constructor)
 {
@@ -147,11 +147,11 @@ TEST(gap_buffer, erase)
 
     while (!tmp.empty()) {
         // Get a semi random number indexing into the current gap_buffer and vector.
-        ttlet size = tmp.size();
-        ttlet index = hash_mix_two(size, size) % size;
+        hilet size = tmp.size();
+        hilet index = hash_mix_two(size, size) % size;
 
-        ttlet tmp_i = tmp.erase(tmp.begin() + index);
-        ttlet e_i = e.erase(e.begin() + index);
+        hilet tmp_i = tmp.erase(tmp.begin() + index);
+        hilet e_i = e.erase(e.begin() + index);
 
         ASSERT_EQ(std::distance(tmp.begin(), tmp_i), std::distance(e.begin(), e_i));
         ASSERT_EQ(tmp, e);
@@ -160,7 +160,7 @@ TEST(gap_buffer, erase)
 
 TEST(gap_buffer, insert_after_clear)
 {
-    ttlet start_size = 500;
+    hilet start_size = 500;
     auto [tmp, e] = gap_buffer_test_initial_data(start_size);
     ASSERT_EQ(tmp, e);
 
@@ -169,8 +169,8 @@ TEST(gap_buffer, insert_after_clear)
     ASSERT_EQ(tmp, e);
 
     // Capacity is not allowed to shrink after clear().
-    ttlet tmp_cap = tmp.capacity();
-    ttlet e_cap = e.capacity();
+    hilet tmp_cap = tmp.capacity();
+    hilet e_cap = e.capacity();
     ASSERT_TRUE(tmp_cap >= start_size);
     ASSERT_TRUE(e_cap >= start_size);
 
@@ -191,7 +191,7 @@ TEST(gap_buffer, insert_after_clear)
 
 TEST(gap_buffer, insert_after_reserve)
 {
-    ttlet start_size = 500;
+    hilet start_size = 500;
 
     auto tmp = gap_buffer<int>{};
     auto e = std::vector<int>{};
@@ -201,8 +201,8 @@ TEST(gap_buffer, insert_after_reserve)
     e.reserve(start_size);
     ASSERT_EQ(tmp, e);
 
-    ttlet tmp_cap = tmp.capacity();
-    ttlet e_cap = e.capacity();
+    hilet tmp_cap = tmp.capacity();
+    hilet e_cap = e.capacity();
     ASSERT_TRUE(tmp_cap >= start_size);
     ASSERT_TRUE(e_cap >= start_size);
 

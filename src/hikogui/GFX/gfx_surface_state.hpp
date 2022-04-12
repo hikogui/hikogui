@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 enum class gfx_surface_state {
     no_window, ///< The window was destroyed, the device will drop the window on the next render cycle.

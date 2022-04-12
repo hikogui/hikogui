@@ -4,7 +4,7 @@
 
 #include "JSON.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct parse_context_t {
     std::string_view::const_iterator text_begin;
@@ -125,7 +125,7 @@ struct parse_context_t {
         return {std::move(value), token};
     } break;
     case tokenizer_name_t::Name: {
-        ttlet name = static_cast<std::string>(*token++);
+        hilet name = static_cast<std::string>(*token++);
         if (name == "true") {
             return {datum{true}, token};
         } else if (name == "false") {
@@ -153,7 +153,7 @@ struct parse_context_t {
 
     datum root;
 
-    tt_axiom(tokens.back() == tokenizer_name_t::End);
+    hi_axiom(tokens.back() == tokenizer_name_t::End);
     parse_context_t context;
     context.text_begin = text.begin();
 
@@ -179,19 +179,19 @@ struct parse_context_t {
     return parse_JSON(url.loadView()->string_view());
 }
 
-static void format_JSON_impl(datum const &value, std::string &result, tt::indent indent = {})
+static void format_JSON_impl(datum const &value, std::string &result, hi::indent indent = {})
 {
     if (holds_alternative<nullptr_t>(value)) {
         result += "null";
-    } else if (ttlet *b = get_if<bool>(value)) {
+    } else if (hilet *b = get_if<bool>(value)) {
         result += *b ? "true" : "false";
-    } else if (ttlet *i = get_if<long long>(value)) {
-        result += tt::to_string(*i);
-    } else if (ttlet *f = get_if<double>(value)) {
-        result += tt::to_string(*f);
-    } else if (ttlet *s = get_if<std::string>(value)) {
+    } else if (hilet *i = get_if<long long>(value)) {
+        result += hi::to_string(*i);
+    } else if (hilet *f = get_if<double>(value)) {
+        result += hi::to_string(*f);
+    } else if (hilet *s = get_if<std::string>(value)) {
         result += '"';
-        for (ttlet c : *s) {
+        for (hilet c : *s) {
             switch (c) {
             case '\n':
                 result += '\\';
@@ -218,9 +218,9 @@ static void format_JSON_impl(datum const &value, std::string &result, tt::indent
         }
         result += '"';
 
-    } else if (ttlet *u = get_if<URL>(value)) {
+    } else if (hilet *u = get_if<URL>(value)) {
         result += '"';
-        for (ttlet c : to_string(*u)) {
+        for (hilet c : to_string(*u)) {
             switch (c) {
             case '\n':
                 result += '\\';
@@ -247,7 +247,7 @@ static void format_JSON_impl(datum const &value, std::string &result, tt::indent
         }
         result += '"';
 
-    } else if (ttlet *v = get_if<datum::vector_type>(value)) {
+    } else if (hilet *v = get_if<datum::vector_type>(value)) {
         result += indent;
         result += '[';
         result += '\n';
@@ -265,7 +265,7 @@ static void format_JSON_impl(datum const &value, std::string &result, tt::indent
         result += '\n';
         result += indent;
         result += ']';
-    } else if (ttlet *m = get_if<datum::map_type>(value)) {
+    } else if (hilet *m = get_if<datum::map_type>(value)) {
         result += indent;
         result += '{';
         result += '\n';
@@ -287,7 +287,7 @@ static void format_JSON_impl(datum const &value, std::string &result, tt::indent
         result += indent;
         result += '}';
     } else {
-        tt_no_default();
+        hi_no_default();
     }
 }
 
@@ -298,4 +298,4 @@ static void format_JSON_impl(datum const &value, std::string &result, tt::indent
     r += '\n';
     return r;
 }
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -21,7 +21,7 @@
 #include <memory>
 #include <mutex>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 namespace detail {
 
 class counter {
@@ -34,13 +34,13 @@ public:
      */
     [[nodiscard]] static counter *get_if(std::string const &name) noexcept
     {
-        ttlet lock = std::scoped_lock(_mutex);
-        ttlet &map_ = _map.get_or_make();
-        ttlet it = map_.find(name);
+        hilet lock = std::scoped_lock(_mutex);
+        hilet &map_ = _map.get_or_make();
+        hilet it = map_.find(name);
         if (it == map_.cend()) {
             return nullptr;
         } else {
-            tt_axiom(it->second);
+            hi_axiom(it->second);
             return it->second;
         }
     }
@@ -59,10 +59,10 @@ public:
 
     static void log() noexcept
     {
-        ttlet lock = std::scoped_lock(_mutex);
+        hilet lock = std::scoped_lock(_mutex);
         log_header();
-        for (ttlet & [ string, counter ] : _map.get_or_make()) {
-            tt_axiom(counter);
+        for (hilet & [ string, counter ] : _map.get_or_make()) {
+            hi_axiom(counter);
             counter->log(string);
         }
     }
@@ -102,7 +102,7 @@ public:
         fetch_min(_duration_min, duration, std::memory_order::relaxed);
 
         // Combine duration with count in a single atomic.
-        tt_axiom(duration <= (std::numeric_limits<uint64_t>::max() >> 10));
+        hi_axiom(duration <= (std::numeric_limits<uint64_t>::max() >> 10));
         duration <<= 16;
         ++duration;
         _duration_avg.fetch_add(duration, std::memory_order::relaxed);
@@ -135,7 +135,7 @@ class tagged_counter : public counter {
 public:
     tagged_counter() noexcept : counter()
     {
-        ttlet lock = std::scoped_lock(_mutex);
+        hilet lock = std::scoped_lock(_mutex);
         _map.get_or_make()[std::string{Tag}] = this;
     }
 };
@@ -150,4 +150,4 @@ inline detail::tagged_counter<Tag> global_counter;
     return detail::counter::get_if(name);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

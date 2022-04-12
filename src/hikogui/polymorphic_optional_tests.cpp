@@ -38,7 +38,7 @@ struct C : public A {
 }
 TEST(polymorphic_optional, assignment)
 {
-    std::array<tt::polymorphic_optional<polymorphic_optional_tests::A, sizeof(polymorphic_optional_tests::C)>, 3> values;
+    std::array<hi::polymorphic_optional<polymorphic_optional_tests::A, sizeof(polymorphic_optional_tests::C)>, 3> values;
 
     static_assert(std::is_base_of_v<polymorphic_optional_tests::A, polymorphic_optional_tests::B>);
 

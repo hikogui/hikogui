@@ -13,7 +13,7 @@
 #include <Windows.h>
 #include <ShlObj_core.h>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /*! Convenience function for SHGetKnownFolderPath().
  *  Retrieves a full path of a known folder identified by the folder's KNOWNFOLDERID.
@@ -26,7 +26,7 @@ static URL get_folder_by_id(const KNOWNFOLDERID &folder_id) noexcept
 {
     PWSTR path = nullptr;
     if (SHGetKnownFolderPath(folder_id, 0, nullptr, &path) != S_OK) {
-        tt_log_fatal("Could not get known folder path.");
+        hi_log_fatal("Could not get known folder path.");
     }
     URL folder = URL::urlFromWPath(path);
     CoTaskMemFree(path);
@@ -48,7 +48,7 @@ URL URL::urlFromExecutableFile() noexcept
             buffer_size *= 2;
         }
     }
-    tt_log_fatal("Could not get executable path. It exceeds the buffer length of 32768 chars.");
+    hi_log_fatal("Could not get executable path. It exceeds the buffer length of 32768 chars.");
 }
 
 URL URL::urlFromResourceDirectory() noexcept
@@ -89,7 +89,7 @@ std::vector<std::string> URL::filenamesByScanningDirectory(std::string_view path
     std::vector<std::string> filenames;
     WIN32_FIND_DATAW fileData;
 
-    ttlet findHandle = FindFirstFileW(URL::nativeWPathFromPath(searchPath).data(), &fileData);
+    hilet findHandle = FindFirstFileW(URL::nativeWPathFromPath(searchPath).data(), &fileData);
     if (findHandle == INVALID_HANDLE_VALUE) {
         return filenames;
     }
@@ -113,4 +113,4 @@ std::vector<std::string> URL::filenamesByScanningDirectory(std::string_view path
     return filenames;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

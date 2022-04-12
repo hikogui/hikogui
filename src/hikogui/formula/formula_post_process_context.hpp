@@ -14,7 +14,7 @@
 #include <string>
 #include <string_view>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct formula_post_process_context {
     using filter_type = std::function<std::string(std::string_view)>;
@@ -41,12 +41,12 @@ struct formula_post_process_context {
             }
         }
 
-        ttlet i = functions.find(name);
+        hilet i = functions.find(name);
         if (i != functions.end()) {
             return i->second;
         }
 
-        ttlet j = global_functions.find(name);
+        hilet j = global_functions.find(name);
         if (j != global_functions.end()) {
             return j->second;
         }
@@ -74,7 +74,7 @@ struct formula_post_process_context {
 
     [[nodiscard]] filter_type get_filter(std::string const &name) const noexcept
     {
-        ttlet i = global_filters.find(name);
+        hilet i = global_filters.find(name);
         if (i != global_filters.end()) {
             return i->second;
         }
@@ -84,7 +84,7 @@ struct formula_post_process_context {
 
     [[nodiscard]] method_type get_method(std::string const &name) const noexcept
     {
-        ttlet i = global_methods.find(name);
+        hilet i = global_methods.find(name);
         if (i != global_methods.end()) {
             return i->second;
         }
@@ -93,4 +93,4 @@ struct formula_post_process_context {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

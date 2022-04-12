@@ -18,7 +18,7 @@
 #include <tuple>
 #include <chrono>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 namespace detail {
 
 template<awaitable_direct T>
@@ -49,7 +49,7 @@ public:
     when_any_result(std::in_place_index_t<I>, Awaiter const& awaiter, Result&&...result) noexcept :
         _result{std::in_place_index<I + 1>, std::forward<Result>(result)...}, _awaiters{std::in_place_index<I + 1>, awaiter}
     {
-        tt_axiom(_result.index() == _awaiters.index());
+        hi_axiom(_result.index() == _awaiters.index());
     }
 
     [[nodiscard]] bool timeout() const noexcept requires(HasTimeout)
@@ -100,7 +100,7 @@ private:
             if constexpr (I + 1 < std::variant_size_v<awaiter_type>) {
                 return compare_equal<I + 1>(rhs);
             } else {
-                tt_no_default();
+                hi_no_default();
             }
         } else {
             using get_type = std::decay_t<decltype(get<I>(_awaiters))>;
@@ -133,7 +133,7 @@ public:
      *
      * @param others The awaitable to wait for.
      */
-    when_any(awaitable auto&&...others) noexcept : _awaiters(awaitable_cast(tt_forward(others))...) {}
+    when_any(awaitable auto&&...others) noexcept : _awaiters(awaitable_cast(hi_forward(others))...) {}
 
     /** Construct a `when_any` object from the given awaitables.
      *
@@ -146,7 +146,7 @@ public:
      * @param others The awaitable to wait for.
      */
     template<typename Rep, typename Period>
-    when_any(std::chrono::duration<Rep, Period> timeout, awaitable auto&&...others) noexcept : when_any(awaitable_timer{timeout}, tt_forward(others)...)
+    when_any(std::chrono::duration<Rep, Period> timeout, awaitable auto&&...others) noexcept : when_any(awaitable_timer{timeout}, hi_forward(others)...)
     {
     }
 
@@ -243,4 +243,4 @@ when_any(Others&&...) -> when_any<false, awaitable_cast_type_t<Others>...>;
 template<typename Rep, typename Period, awaitable... Others>
 when_any(std::chrono::duration<Rep, Period>, Others&&...) -> when_any<true, awaitable_timer, awaitable_cast_type_t<Others>...>;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

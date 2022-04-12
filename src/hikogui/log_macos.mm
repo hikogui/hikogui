@@ -16,7 +16,7 @@
 #include <ostream>
 #include <chrono>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 std::string get_last_error_message()
 {

@@ -10,7 +10,7 @@
 #include "../check.hpp"
 #include <array>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct iso_3166_info {
     fixed_string<2> code2;
@@ -281,7 +281,7 @@ constexpr auto iso_3166_code2_by_number_init() noexcept
         r[i] = "ZZ";
     }
 
-    for (ttlet& info : iso_3166_infos) {
+    for (hilet& info : iso_3166_infos) {
         r[info.number] = info.code2;
     }
     return r;
@@ -294,7 +294,7 @@ constexpr auto iso_3166_code3_by_number_init() noexcept
         r[i] = "ZZZ";
     }
 
-    for (ttlet& info : iso_3166_infos) {
+    for (hilet& info : iso_3166_infos) {
         r[info.number] = info.code3;
     }
     return r;
@@ -307,11 +307,11 @@ constexpr auto iso_3166_number_by_code2_init() noexcept
 
     auto r = std::array<type, size>{};
     for (auto i = 0_uz; i != iso_3166_infos.size(); ++i) {
-        ttlet& info = iso_3166_infos[i];
+        hilet& info = iso_3166_infos[i];
         r[i] = {info.code2, info.number};
     }
 
-    std::sort(r.begin(), r.end(), [](ttlet& a, ttlet& b) {
+    std::sort(r.begin(), r.end(), [](hilet& a, hilet& b) {
         return a.first < b.first;
     });
     return r;
@@ -324,11 +324,11 @@ constexpr auto iso_3166_number_by_code3_init() noexcept
 
     auto r = std::array<type, size>{};
     for (auto i = 0_uz; i != iso_3166_infos.size(); ++i) {
-        ttlet& info = iso_3166_infos[i];
+        hilet& info = iso_3166_infos[i];
         r[i] = {info.code3, info.number};
     }
 
-    std::sort(r.begin(), r.end(), [](ttlet& a, ttlet& b) {
+    std::sort(r.begin(), r.end(), [](hilet& a, hilet& b) {
         return a.first < b.first;
     });
     return r;
@@ -343,20 +343,20 @@ iso_3166::iso_3166(std::string_view str)
 {
     if (is_digit(str)) {
         _v = from_string<uint16_t>(str);
-        tt_parse_check(_v < 1000, "ISO-3166 number must be between 000 and 999, got '{}'", _v);
+        hi_parse_check(_v < 1000, "ISO-3166 number must be between 000 and 999, got '{}'", _v);
 
     } else if (str.size() == 2) {
         auto str_up = to_upper(str);
 
-        ttlet it = std::lower_bound(
+        hilet it = std::lower_bound(
             iso_3166_number_by_code2.begin(),
             iso_3166_number_by_code2.end(),
             fixed_string<2>{str_up},
-            [](ttlet& item, ttlet& value) {
+            [](hilet& item, hilet& value) {
                 return item.first < value;
             });
 
-        tt_parse_check(
+        hi_parse_check(
             it != iso_3166_number_by_code2.end() and it->first == str_up,
             "Could not find ISO-3166 2 letter language code '{}'",
             str);
@@ -366,15 +366,15 @@ iso_3166::iso_3166(std::string_view str)
     } else if (str.size() == 3) {
         auto str_up = to_upper(str);
 
-        ttlet it = std::lower_bound(
+        hilet it = std::lower_bound(
             iso_3166_number_by_code3.begin(),
             iso_3166_number_by_code3.end(),
             fixed_string<3>{str_up},
-            [](ttlet& item, ttlet& value) {
+            [](hilet& item, hilet& value) {
                 return item.first < value;
             });
 
-        tt_parse_check(
+        hi_parse_check(
             it != iso_3166_number_by_code3.end() and it->first == str_up,
             "Could not find ISO-3166 3 letter language code '{}'",
             str);
@@ -388,14 +388,14 @@ iso_3166::iso_3166(std::string_view str)
 
 [[nodiscard]] std::string_view iso_3166::code2() const noexcept
 {
-    tt_axiom(_v < 1000);
+    hi_axiom(_v < 1000);
     return iso_3166_code2_by_number[_v];
 }
 
 [[nodiscard]] std::string_view iso_3166::code3() const noexcept
 {
-    tt_axiom(_v < 1000);
+    hi_axiom(_v < 1000);
     return iso_3166_code3_by_number[_v];
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

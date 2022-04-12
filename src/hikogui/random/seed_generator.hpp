@@ -9,7 +9,7 @@
 #include <random>
 #include <concepts>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class seed_generator {
 public:
@@ -25,7 +25,7 @@ public:
     template<typename T>
     [[nodiscard]] T next() noexcept
     {
-        tt_no_default();
+        hi_no_default();
     }
 
     template<>
@@ -100,4 +100,4 @@ private:
     std::random_device _device;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

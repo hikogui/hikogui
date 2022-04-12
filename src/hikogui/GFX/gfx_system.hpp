@@ -13,7 +13,7 @@
 #include <thread>
 #include <vector>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 class gfx_surface;
 
 /** Graphics system
@@ -41,7 +41,7 @@ public:
     [[nodiscard]] virtual std::unique_ptr<gfx_surface> make_surface(os_handle instance, void *os_window) const noexcept = 0;
 
     void log_memory_usage() const noexcept {
-        for (ttlet &device: devices) {
+        for (hilet &device: devices) {
             device->log_memory_usage();
         }
     }
@@ -49,4 +49,4 @@ public:
     gfx_device *find_best_device_for_surface(gfx_surface const &surface);
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

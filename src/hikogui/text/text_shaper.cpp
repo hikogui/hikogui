@@ -14,17 +14,17 @@
 #include <algorithm>
 #include <cmath>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 static void layout_lines_vertical_spacing(text_shaper::line_vector &lines, float line_spacing, float paragraph_spacing) noexcept
 {
-    tt_axiom(not lines.empty());
+    hi_axiom(not lines.empty());
 
     auto prev = lines.begin();
     prev->y = 0.0f;
     for (auto it = prev + 1; it != lines.end(); ++it) {
-        ttlet height = prev->metrics.descender + std::max(prev->metrics.line_gap, it->metrics.line_gap) + it->metrics.ascender;
-        ttlet spacing = prev->last_category == unicode_general_category::Zp ? paragraph_spacing : line_spacing;
+        hilet height = prev->metrics.descender + std::max(prev->metrics.line_gap, it->metrics.line_gap) + it->metrics.ascender;
+        hilet spacing = prev->last_category == unicode_general_category::Zp ? paragraph_spacing : line_spacing;
         // Lines advance downward on the y-axis.
         it->y = prev->y - spacing * height;
         prev = it;
@@ -39,7 +39,7 @@ static void layout_lines_vertical_alignment(
     float max_y,
     float sub_pixel_height) noexcept
 {
-    tt_axiom(not lines.empty());
+    hi_axiom(not lines.empty());
 
     // Calculate the y-adjustment needed to position the base-line of the text to y=0
     auto adjustment = [&]() {
@@ -50,7 +50,7 @@ static void layout_lines_vertical_alignment(
             return -lines.back().y;
 
         } else {
-            ttlet mp_index = lines.size() / 2;
+            hilet mp_index = lines.size() / 2;
             if (lines.size() % 2 == 1) {
                 return -lines[mp_index].y;
 
@@ -73,7 +73,7 @@ static void layout_lines_vertical_alignment(
     }
 
     // Reposition the lines, and round to sub-pixel boundary.
-    ttlet rcp_sub_pixel_height = 1.0f / sub_pixel_height;
+    hilet rcp_sub_pixel_height = 1.0f / sub_pixel_height;
     for (auto &line : lines) {
         line.y = std::round((line.y + adjustment) * rcp_sub_pixel_height) * sub_pixel_height;
     }
@@ -88,13 +88,13 @@ static void layout_lines_vertical_alignment(
 static void
 bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, unicode_bidi_class writing_direction) noexcept
 {
-    tt_axiom(not lines.empty());
+    hi_axiom(not lines.empty());
 
     // Create a list of all character indices.
     auto char_its = std::vector<text_shaper::char_iterator>{};
     // Make room for implicit line-separators.
     char_its.reserve(text.size() + lines.size());
-    for (ttlet &line : lines) {
+    for (hilet &line : lines) {
         // Add all the characters of a line.
         for (auto it = line.first; it != line.last; ++it) {
             char_its.push_back(it);
@@ -113,10 +113,10 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
     } else if (writing_direction == unicode_bidi_class::R) {
         context.direction_mode = unicode_bidi_context::mode_type::auto_RTL;
     } else {
-        tt_no_default();
+        hi_no_default();
     }
 
-    ttlet[char_its_last, paragraph_directions] = unicode_bidi(
+    hilet[char_its_last, paragraph_directions] = unicode_bidi(
         char_its.begin(),
         char_its.end(),
         [&](text_shaper::char_const_iterator it) -> decltype(auto) {
@@ -127,7 +127,7 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
             }
         },
         [&](text_shaper::char_iterator it, char32_t code_point) {
-            tt_axiom(it != text.end());
+            hi_axiom(it != text.end());
             it->replace_glyph(code_point);
         },
         [&](text_shaper::char_iterator it, unicode_bidi_class direction) {
@@ -143,32 +143,32 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
     // Add the paragraph direction for each line.
     auto par_it = paragraph_directions.cbegin();
     for (auto &line : lines) {
-        tt_axiom(par_it != paragraph_directions.cend());
+        hi_axiom(par_it != paragraph_directions.cend());
         line.paragraph_direction = *par_it;
         if (line.last_category == unicode_general_category::Zp) {
             par_it++;
         }
     }
-    tt_axiom(par_it <= paragraph_directions.cend());
+    hi_axiom(par_it <= paragraph_directions.cend());
 
     // Add the character indices for each line in display order.
     auto line_it = lines.begin();
     line_it->columns.clear();
     auto column_nr = 0_uz;
-    for (ttlet char_it : char_its) {
+    for (hilet char_it : char_its) {
         if (char_it == text.end()) {
             // Ignore the virtual line separators.
             continue;
         } else if (char_it >= line_it->last) {
             // Skip to the next line.
-            tt_axiom(line_it->columns.size() <= narrow_cast<size_t>(std::distance(line_it->first, line_it->last)));
+            hi_axiom(line_it->columns.size() <= narrow_cast<size_t>(std::distance(line_it->first, line_it->last)));
             ++line_it;
             line_it->columns.clear();
             column_nr = 0_uz;
         }
-        tt_axiom(line_it != lines.end());
-        tt_axiom(char_it >= line_it->first);
-        tt_axiom(char_it < line_it->last);
+        hi_axiom(line_it != lines.end());
+        hi_axiom(char_it >= line_it->first);
+        hi_axiom(char_it < line_it->last);
         line_it->columns.push_back(char_it);
 
         // Assign line_nr and column_nr, for quick back referencing.
@@ -178,46 +178,46 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
 
     // All of the characters in the text must be positioned.
     for (auto &c : text) {
-        tt_axiom(c.line_nr != std::numeric_limits<size_t>::max() and c.column_nr != std::numeric_limits<size_t>::max());
+        hi_axiom(c.line_nr != std::numeric_limits<size_t>::max() and c.column_nr != std::numeric_limits<size_t>::max());
     }
 }
 
 [[nodiscard]] text_shaper::text_shaper(
-    tt::font_book &font_book,
+    hi::font_book &font_book,
     gstring const &text,
     text_style const &style,
     float dpi_scale,
     unicode_script script) noexcept :
     _font_book(&font_book), _dpi_scale(dpi_scale), _script(script)
 {
-    ttlet &font = font_book.find_font(style.family_id, style.variant);
+    hilet &font = font_book.find_font(style.family_id, style.variant);
     _initial_line_metrics = (style.size * dpi_scale) * font.metrics;
 
     _text.reserve(text.size());
-    for (ttlet &c : text) {
-        ttlet clean_c = c == '\n' ? grapheme{unicode_PS} : c;
+    for (hilet &c : text) {
+        hilet clean_c = c == '\n' ? grapheme{unicode_PS} : c;
 
         auto &tmp = _text.emplace_back(clean_c, style, dpi_scale);
         tmp.initialize_glyph(font_book, font);
     }
 
-    _line_break_opportunities = unicode_line_break(_text.begin(), _text.end(), [](ttlet &c) -> decltype(auto) {
-        tt_axiom(c.description != nullptr);
+    _line_break_opportunities = unicode_line_break(_text.begin(), _text.end(), [](hilet &c) -> decltype(auto) {
+        hi_axiom(c.description != nullptr);
         return *c.description;
     });
 
     _line_break_widths.reserve(text.size());
-    for (ttlet &c : _text) {
+    for (hilet &c : _text) {
         _line_break_widths.push_back(is_visible(c.description->general_category()) ? c.width : -c.width);
     }
 
-    _word_break_opportunities = unicode_word_break(_text.begin(), _text.end(), [](ttlet &c) -> decltype(auto) {
-        tt_axiom(c.description != nullptr);
+    _word_break_opportunities = unicode_word_break(_text.begin(), _text.end(), [](hilet &c) -> decltype(auto) {
+        hi_axiom(c.description != nullptr);
         return *c.description;
     });
 
-    _sentence_break_opportunities = unicode_sentence_break(_text.begin(), _text.end(), [](ttlet &c) -> decltype(auto) {
-        tt_axiom(c.description != nullptr);
+    _sentence_break_opportunities = unicode_sentence_break(_text.begin(), _text.end(), [](hilet &c) -> decltype(auto) {
+        hi_axiom(c.description != nullptr);
         return *c.description;
     });
 
@@ -238,12 +238,12 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
     aarectangle rectangle,
     float base_line,
     extent2 sub_pixel_size,
-    tt::vertical_alignment vertical_alignment,
+    hi::vertical_alignment vertical_alignment,
     unicode_bidi_class writing_direction,
     float line_spacing,
     float paragraph_spacing) noexcept
 {
-    ttlet line_sizes = unicode_line_break(_line_break_opportunities, _line_break_widths, rectangle.width());
+    hilet line_sizes = unicode_line_break(_line_break_opportunities, _line_break_widths, rectangle.width());
 
     auto r = text_shaper::line_vector{};
     r.reserve(line_sizes.size());
@@ -251,12 +251,12 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
     auto char_it = _text.begin();
     auto width_it = _line_break_widths.begin();
     auto line_nr = 0_uz;
-    for (ttlet line_size : line_sizes) {
-        tt_axiom(line_size > 0);
-        ttlet char_eol = char_it + line_size;
-        ttlet width_eol = width_it + line_size;
+    for (hilet line_size : line_sizes) {
+        hi_axiom(line_size > 0);
+        hilet char_eol = char_it + line_size;
+        hilet width_eol = width_it + line_size;
 
-        ttlet line_width = unicode_line_break_width(width_it, width_eol);
+        hilet line_width = unicode_line_break_width(width_it, width_eol);
         r.emplace_back(line_nr++, _text.begin(), char_it, char_eol, line_width, _initial_line_metrics);
 
         char_it = char_eol;
@@ -278,10 +278,10 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
 void text_shaper::position_glyphs(
     aarectangle rectangle,
     extent2 sub_pixel_size,
-    tt::horizontal_alignment horizontal_alignment,
+    hi::horizontal_alignment horizontal_alignment,
     unicode_bidi_class writing_direction) noexcept
 {
-    tt_axiom(not _lines.empty());
+    hi_axiom(not _lines.empty());
 
     // The bidi algorithm will reorder the characters on each line, and mirror the brackets in the text when needed.
     bidi_algorithm(_lines, _text, writing_direction);
@@ -296,7 +296,7 @@ void text_shaper::resolve_script() noexcept
     // Find the first script in the text if no script is found use the text_shaper's default script.
     auto first_script = _script;
     for (auto &c : _text) {
-        ttlet script = c.description->script();
+        hilet script = c.description->script();
         if (script != unicode_script::Common or script == unicode_script::Unknown or script == unicode_script::Inherited) {
             first_script = script;
             break;
@@ -317,7 +317,7 @@ void text_shaper::resolve_script() noexcept
 
         c.script = c.description->script();
         if (c.script == unicode_script::Common or c.script == unicode_script::Unknown) {
-            ttlet bracket_type = c.description->bidi_bracket_type();
+            hilet bracket_type = c.description->bidi_bracket_type();
             // clang-format off
             c.script =
                 bracket_type == unicode_bidi_bracket_type::o ? previous_script :
@@ -346,18 +346,18 @@ void text_shaper::resolve_script() noexcept
 
 [[nodiscard]] std::pair<aarectangle, float> text_shaper::bounding_rectangle(
     float maximum_line_width,
-    tt::vertical_alignment vertical_alignment,
+    hi::vertical_alignment vertical_alignment,
     float line_spacing,
     float paragraph_spacing) noexcept
 {
-    ttlet rectangle = aarectangle{
+    hilet rectangle = aarectangle{
         point2{0.0f, std::numeric_limits<float>::lowest()}, point2{maximum_line_width, std::numeric_limits<float>::max()}};
     constexpr auto base_line = 0.0f;
     constexpr auto sub_pixel_size = extent2{1.0f, 1.0f};
 
-    ttlet lines = make_lines(
+    hilet lines = make_lines(
         rectangle, base_line, sub_pixel_size, vertical_alignment, unicode_bidi_class::L, line_spacing, paragraph_spacing);
-    tt_axiom(not lines.empty());
+    hi_axiom(not lines.empty());
 
     auto max_width = 0.0f;
     for (auto &line : lines) {
@@ -365,14 +365,14 @@ void text_shaper::resolve_script() noexcept
     }
 
     // clang-format off
-    ttlet cap_height =
+    hilet cap_height =
         vertical_alignment == vertical_alignment::bottom ? lines.back().metrics.cap_height :
         vertical_alignment == vertical_alignment::top ? lines.front().metrics.cap_height :
         lines[lines.size() / 2].metrics.cap_height;
     // clang-format on
 
-    ttlet max_y = lines.front().y + std::ceil(lines.front().metrics.ascender);
-    ttlet min_y = lines.back().y - std::ceil(lines.back().metrics.descender);
+    hilet max_y = lines.front().y + std::ceil(lines.front().metrics.ascender);
+    hilet min_y = lines.back().y - std::ceil(lines.back().metrics.descender);
     return {aarectangle{point2{0.0f, min_y}, point2{std::ceil(max_width), max_y}}, cap_height};
 }
 
@@ -381,14 +381,14 @@ void text_shaper::resolve_script() noexcept
     float base_line,
     extent2 sub_pixel_size,
     unicode_bidi_class writing_direction,
-    tt::alignment alignment,
+    hi::alignment alignment,
     float line_spacing,
     float paragraph_spacing) noexcept
 {
     _rectangle = rectangle;
     _lines = make_lines(
         rectangle, base_line, sub_pixel_size, alignment.vertical(), writing_direction, line_spacing, paragraph_spacing);
-    tt_axiom(not _lines.empty());
+    hi_axiom(not _lines.empty());
     position_glyphs(rectangle, sub_pixel_size, alignment.text(), writing_direction);
 }
 
@@ -405,7 +405,7 @@ void text_shaper::resolve_script() noexcept
 
 [[nodiscard]] text_shaper::char_const_iterator text_shaper::get_it(size_t column_nr, size_t line_nr) const noexcept
 {
-    tt_axiom(not _lines.empty());
+    hi_axiom(not _lines.empty());
 
     if (static_cast<ptrdiff_t>(line_nr) < 0) {
         return begin();
@@ -413,12 +413,12 @@ void text_shaper::resolve_script() noexcept
         return end();
     }
 
-    ttlet left_of_line = static_cast<ptrdiff_t>(column_nr) < 0;
-    ttlet right_of_line = column_nr >= _lines[line_nr].size();
+    hilet left_of_line = static_cast<ptrdiff_t>(column_nr) < 0;
+    hilet right_of_line = column_nr >= _lines[line_nr].size();
 
     if (left_of_line or right_of_line) {
-        ttlet ltr = _lines[line_nr].paragraph_direction == unicode_bidi_class::L;
-        ttlet go_up = left_of_line == ltr;
+        hilet ltr = _lines[line_nr].paragraph_direction == unicode_bidi_class::L;
+        hilet go_up = left_of_line == ltr;
         if (go_up) {
             // Go to line above.
             if (static_cast<ptrdiff_t>(--line_nr) < 0) {
@@ -449,7 +449,7 @@ void text_shaper::resolve_script() noexcept
     if (it != end()) {
         return {it->column_nr, it->line_nr};
     } else {
-        tt_axiom(not _lines.empty());
+        hi_axiom(not _lines.empty());
         return {_lines.size() - 1, _lines.back().size()};
     }
 }
@@ -507,22 +507,22 @@ void text_shaper::resolve_script() noexcept
 
 [[nodiscard]] bool text_shaper::is_on_left(text_cursor cursor) const noexcept
 {
-    ttlet it = get_it(cursor);
+    hilet it = get_it(cursor);
     if (it != end()) {
         return (it->direction == unicode_bidi_class::L) == cursor.before();
     } else {
-        tt_axiom(begin() == end());
+        hi_axiom(begin() == end());
         return true;
     }
 }
 
 [[nodiscard]] bool text_shaper::is_on_right(text_cursor cursor) const noexcept
 {
-    ttlet it = get_it(cursor);
+    hilet it = get_it(cursor);
     if (it != end()) {
         return (it->direction == unicode_bidi_class::L) == cursor.after();
     } else {
-        tt_axiom(begin() == end());
+        hi_axiom(begin() == end());
         return true;
     }
 }
@@ -533,12 +533,12 @@ void text_shaper::resolve_script() noexcept
         return {};
     }
 
-    ttlet line_it = std::ranges::min_element(_lines, std::ranges::less{}, [position](ttlet &line) {
+    hilet line_it = std::ranges::min_element(_lines, std::ranges::less{}, [position](hilet &line) {
         return std::abs(line.y - position.y());
     });
 
     if (line_it != _lines.end()) {
-        ttlet[char_it, after] = line_it->get_nearest(position);
+        hilet[char_it, after] = line_it->get_nearest(position);
         return {narrow<size_t>(std::distance(_text.begin(), char_it)), after, size()};
     } else {
         return {};
@@ -547,13 +547,13 @@ void text_shaper::resolve_script() noexcept
 
 [[nodiscard]] text_shaper::char_const_iterator text_shaper::move_left_char(text_shaper::char_const_iterator it) const noexcept
 {
-    ttlet[column_nr, line_nr] = get_column_line(it);
+    hilet[column_nr, line_nr] = get_column_line(it);
     return get_it(column_nr - 1, line_nr);
 }
 
 [[nodiscard]] text_shaper::char_const_iterator text_shaper::move_right_char(text_shaper::char_const_iterator it) const noexcept
 {
-    ttlet[column_nr, line_nr] = get_column_line(it);
+    hilet[column_nr, line_nr] = get_column_line(it);
     return get_it(column_nr + 1, line_nr);
 }
 
@@ -603,12 +603,12 @@ void text_shaper::resolve_script() noexcept
     }
 
     if (std::isnan(x)) {
-        ttlet char_it = get_it(cursor);
-        tt_axiom(char_it != _text.end());
+        hilet char_it = get_it(cursor);
+        hi_axiom(char_it != _text.end());
         x = is_on_left(cursor) ? char_it->rectangle.left() : char_it->rectangle.right();
     }
 
-    ttlet[new_char_it, after] = _lines[line_nr].get_nearest(point2{x, 0.0f});
+    hilet[new_char_it, after] = _lines[line_nr].get_nearest(point2{x, 0.0f});
     return get_before_cursor(new_char_it);
 }
 
@@ -625,11 +625,11 @@ void text_shaper::resolve_script() noexcept
 
     if (std::isnan(x)) {
         auto char_it = get_it(cursor);
-        tt_axiom(char_it < _text.end());
+        hi_axiom(char_it < _text.end());
         x = is_on_left(cursor) ? char_it->rectangle.left() : char_it->rectangle.right();
     }
 
-    ttlet[new_char_it, after] = _lines[line_nr].get_nearest(point2{x, 0.0f});
+    hilet[new_char_it, after] = _lines[line_nr].get_nearest(point2{x, 0.0f});
     return get_before_cursor(new_char_it);
 }
 
@@ -663,15 +663,15 @@ void text_shaper::resolve_script() noexcept
 
 [[nodiscard]] text_cursor text_shaper::move_begin_line(text_cursor cursor) const noexcept
 {
-    ttlet[column_nr, line_nr] = get_column_line(cursor);
-    ttlet &line = _lines[line_nr];
+    hilet[column_nr, line_nr] = get_column_line(cursor);
+    hilet &line = _lines[line_nr];
     return get_before_cursor(line.first);
 }
 
 [[nodiscard]] text_cursor text_shaper::move_end_line(text_cursor cursor) const noexcept
 {
-    ttlet[column_nr, line_nr] = get_column_line(cursor);
-    ttlet &line = _lines[line_nr];
+    hilet[column_nr, line_nr] = get_column_line(cursor);
+    hilet &line = _lines[line_nr];
 
     auto it = line.last;
     while (it != line.first) {
@@ -691,7 +691,7 @@ void text_shaper::resolve_script() noexcept
     } else if (cursor.index() != 0) {
         cursor = {cursor.index() - 1, false, size()};
     }
-    ttlet[first, last] = select_sentence(cursor);
+    hilet[first, last] = select_sentence(cursor);
     return first.before_neighbor(size());
 }
 
@@ -702,7 +702,7 @@ void text_shaper::resolve_script() noexcept
     } else if (cursor.index() != _text.size() - 1) {
         cursor = {cursor.index() + 1, true, size()};
     }
-    ttlet[first, last] = select_sentence(cursor);
+    hilet[first, last] = select_sentence(cursor);
     return last.before_neighbor(size());
 }
 
@@ -713,7 +713,7 @@ void text_shaper::resolve_script() noexcept
     } else if (cursor.index() != 0) {
         cursor = {cursor.index() - 1, false, size()};
     }
-    ttlet[first, last] = select_paragraph(cursor);
+    hilet[first, last] = select_paragraph(cursor);
     return first.before_neighbor(size());
 }
 
@@ -724,7 +724,7 @@ void text_shaper::resolve_script() noexcept
     } else if (cursor.index() != _text.size() - 1) {
         cursor = {cursor.index() + 1, true, size()};
     }
-    ttlet[first, last] = select_paragraph(cursor);
+    hilet[first, last] = select_paragraph(cursor);
     return last.before_neighbor(size());
 }
 
@@ -752,14 +752,14 @@ text_shaper::get_selection_from_break(text_cursor cursor, unicode_break_vector c
     // In the algorithm below we search before and after the character that the cursor is at.
     // We do not use the before/after differentiation.
 
-    ttlet first_index = [&]() {
+    hilet first_index = [&]() {
         auto i = cursor.index();
         while (break_opportunities[i] == unicode_break_opportunity::no) {
             --i;
         }
         return i;
     }();
-    ttlet last_index = [&]() {
+    hilet last_index = [&]() {
         auto i = cursor.index();
         while (break_opportunities[i + 1] == unicode_break_opportunity::no) {
             ++i;
@@ -772,7 +772,7 @@ text_shaper::get_selection_from_break(text_cursor cursor, unicode_break_vector c
 
 [[nodiscard]] std::pair<text_cursor, text_cursor> text_shaper::select_char(text_cursor cursor) const noexcept
 {
-    ttlet index = cursor.index();
+    hilet index = cursor.index();
     return {get_before_cursor(index), get_after_cursor(index)};
 }
 
@@ -788,7 +788,7 @@ text_shaper::get_selection_from_break(text_cursor cursor, unicode_break_vector c
 
 [[nodiscard]] std::pair<text_cursor, text_cursor> text_shaper::select_paragraph(text_cursor cursor) const noexcept
 {
-    ttlet first_index = [&]() {
+    hilet first_index = [&]() {
         auto i = cursor.index();
         while (i > 0) {
             if (_text[i - 1].description->general_category() == unicode_general_category::Zp) {
@@ -798,7 +798,7 @@ text_shaper::get_selection_from_break(text_cursor cursor, unicode_break_vector c
         }
         return i;
     }();
-    ttlet last_index = [&]() {
+    hilet last_index = [&]() {
         auto i = cursor.index();
         while (i < _text.size()) {
             if (_text[i].description->general_category() == unicode_general_category::Zp) {
@@ -821,4 +821,4 @@ text_shaper::get_selection_from_break(text_cursor cursor, unicode_break_vector c
     return {{}, get_end_cursor()};
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

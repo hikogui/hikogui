@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 enum class hikogui_icon : char32_t {
     MinimizeWindow = 0xf301,

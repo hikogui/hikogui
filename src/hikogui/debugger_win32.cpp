@@ -8,7 +8,7 @@
 #include <Windows.h>
 #include <debugapi.h>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 void prepare_debug_break() noexcept
 {
@@ -41,4 +41,4 @@ void prepare_debug_break() noexcept
 }
 
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

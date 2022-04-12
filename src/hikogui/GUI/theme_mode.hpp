@@ -10,7 +10,7 @@
 #include <string>
 #include <ostream>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 enum class theme_mode { light, dark };
 
@@ -26,12 +26,12 @@ inline std::ostream &operator<<(std::ostream &lhs, theme_mode rhs)
     return lhs << theme_mode_metadata[rhs];
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<typename CharT>
-struct std::formatter<tt::theme_mode, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(tt::theme_mode const &t, auto &fc)
+struct std::formatter<hi::theme_mode, CharT> : std::formatter<std::string_view, CharT> {
+    auto format(hi::theme_mode const &t, auto &fc)
     {
-        return std::formatter<std::string_view, CharT>::format(tt::theme_mode_metadata[t], fc);
+        return std::formatter<std::string_view, CharT>::format(hi::theme_mode_metadata[t], fc);
     }
 };

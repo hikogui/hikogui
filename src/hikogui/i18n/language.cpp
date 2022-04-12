@@ -9,21 +9,21 @@
 #include "../log.hpp"
 #include <format>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 language::language(language_tag tag) noexcept : tag(std::move(tag)), plurality_func()
 {
     // XXX std::format is unable to find language_tag::operator<<
     auto po_url = URL(std::format("resource:locale/{}.po", this->tag));
 
-    tt_log_info("Loading language {} catalog {}", this->tag, po_url);
+    hi_log_info("Loading language {} catalog {}", this->tag, po_url);
 
     try {
         add_translation(parse_po(po_url), *this);
 
     } catch (std::exception const &e) {
-        tt_log_warning("Could not load language catalog {}: \"{}\"", this->tag, e.what());
+        hi_log_warning("Could not load language catalog {}: \"{}\"", this->tag, e.what());
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

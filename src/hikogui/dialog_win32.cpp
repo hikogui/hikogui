@@ -8,7 +8,7 @@
 #include <Windows.h>
 #include <WinUser.h>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 bool dialog(dialog_type type, std::string_view title, std::string_view text)
 {
@@ -29,12 +29,12 @@ bool dialog(dialog_type type, std::string_view title, std::string_view text)
         type_ = MB_APPLMODAL | MB_YESNOCANCEL | MB_ICONWARNING;
         break;
 
-    default: tt_no_default();
+    default: hi_no_default();
     }
 
-    ttlet title_ = tt::to_wstring(title);
-    ttlet text_ = tt::to_wstring(text);
-    ttlet r = MessageBoxW(nullptr, text_.c_str(), title_.c_str(), type_);
+    hilet title_ = hi::to_wstring(title);
+    hilet text_ = hi::to_wstring(text);
+    hilet r = MessageBoxW(nullptr, text_.c_str(), title_.c_str(), type_);
 
     switch (r) {
     case IDABORT:
@@ -43,8 +43,8 @@ bool dialog(dialog_type type, std::string_view title, std::string_view text)
     case IDOK:
     case IDYES: return true;
     case IDNO: return false;
-    default: tt_no_default();
+    default: hi_no_default();
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

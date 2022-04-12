@@ -8,7 +8,7 @@
 #include <vector>
 #include <cstddef>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 template<typename T>
 class undo_stack {
@@ -35,7 +35,7 @@ public:
     template<typename... Args>
     [[nodiscard]] constexpr value_type const &undo(Args &&...args) noexcept
     {
-        tt_axiom(can_undo());
+        hi_axiom(can_undo());
         if (_first_undo) {
             // On the first undo, we need to emplace the last state. So that redo
             // will be able to get back to state before the undo.
@@ -54,7 +54,7 @@ public:
 
     [[nodiscard]] constexpr value_type const &redo() const noexcept
     {
-        tt_axiom(can_redo());
+        hi_axiom(can_redo());
         return _stack[++_cursor];
     }
 
@@ -67,7 +67,7 @@ private:
     template<forward_of<value_type> Value>
     constexpr void push(Value &&value) noexcept
     {
-        tt_axiom(_cursor <= _stack.size());
+        hi_axiom(_cursor <= _stack.size());
         _stack.erase(_stack.begin() + _cursor, _stack.end());
 
         if (_stack.size() > _max_depth) {

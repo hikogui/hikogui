@@ -9,7 +9,7 @@
 #include <type_traits>
 #include <bit>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 enum class global_state_type : uint64_t {
     log_debug = 0x01,
@@ -68,11 +68,11 @@ enum class global_state_type : uint64_t {
     return to_bool(rhs & global_state_type::system_is_shutting_down);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<>
-struct std::atomic<tt::global_state_type> {
-    using value_type = tt::global_state_type;
+struct std::atomic<hi::global_state_type> {
+    using value_type = hi::global_state_type;
     using atomic_type = std::atomic<underlying_type_t<value_type>>;
     atomic_type v;
 
@@ -93,7 +93,7 @@ struct std::atomic<tt::global_state_type> {
 
     void store(value_type desired, std::memory_order order = std::memory_order::seq_cst) noexcept
     {
-        return v.store(tt::to_underlying(desired), order);
+        return v.store(hi::to_underlying(desired), order);
     }
 
     [[nodiscard]] value_type load(std::memory_order order = std::memory_order::seq_cst) const noexcept
@@ -103,14 +103,14 @@ struct std::atomic<tt::global_state_type> {
 
     [[nodiscard]] value_type exchange(value_type desired, std::memory_order order = std::memory_order::seq_cst) noexcept
     {
-        return static_cast<value_type>(v.exchange(tt::to_underlying(desired), order));
+        return static_cast<value_type>(v.exchange(hi::to_underlying(desired), order));
     }
 
     [[nodiscard]] bool
     compare_exchange_weak(value_type &expected, value_type desired, std::memory_order success, std::memory_order failure) noexcept
     {
         return v.compare_exchange_weak(
-            reinterpret_cast<underlying_type_t<value_type> &>(expected), tt::to_underlying(desired), success, failure);
+            reinterpret_cast<underlying_type_t<value_type> &>(expected), hi::to_underlying(desired), success, failure);
     }
 
     [[nodiscard]] bool
@@ -126,7 +126,7 @@ struct std::atomic<tt::global_state_type> {
         std::memory_order failure) noexcept
     {
         return v.compare_exchange_weak(
-            reinterpret_cast<underlying_type_t<value_type> &>(expected), tt::to_underlying(desired), success, failure);
+            reinterpret_cast<underlying_type_t<value_type> &>(expected), hi::to_underlying(desired), success, failure);
     }
 
     [[nodiscard]] bool compare_exchange_strong(
@@ -139,12 +139,12 @@ struct std::atomic<tt::global_state_type> {
 
     value_type fetch_and(value_type arg, std::memory_order order = std::memory_order::seq_cst) noexcept
     {
-        return static_cast<value_type>(v.fetch_and(tt::to_underlying(arg), order));
+        return static_cast<value_type>(v.fetch_and(hi::to_underlying(arg), order));
     }
 
     value_type fetch_or(value_type arg, std::memory_order order = std::memory_order::seq_cst) noexcept
     {
-        return static_cast<value_type>(v.fetch_or(tt::to_underlying(arg), order));
+        return static_cast<value_type>(v.fetch_or(hi::to_underlying(arg), order));
     }
 
     operator value_type() const noexcept
@@ -169,7 +169,7 @@ struct std::atomic<tt::global_state_type> {
     }
 };
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** The global state of the hikogui framework.
  *
@@ -195,7 +195,7 @@ inline std::atomic<global_state_type> global_state = global_state_type::log_leve
 [[nodiscard]] inline void set_log_level(global_state_type log_level) noexcept
 {
     // Only the log_* bits should be set.
-    tt_axiom(not to_bool(log_level & ~global_state_type::log_mask));
+    hi_axiom(not to_bool(log_level & ~global_state_type::log_mask));
 
     // First enable bits, then disable bits.
     global_state |= log_level;
@@ -209,7 +209,7 @@ inline std::atomic<global_state_type> global_state = global_state_type::log_leve
  */
 inline bool global_state_disable(global_state_type subsystem, std::memory_order order = std::memory_order::seq_cst) noexcept
 {
-    tt_axiom(std::popcount(to_underlying(subsystem)) == 1);
+    hi_axiom(std::popcount(to_underlying(subsystem)) == 1);
     return to_bool(global_state.fetch_and(~subsystem, order) & subsystem);
 }
 
@@ -220,8 +220,8 @@ inline bool global_state_disable(global_state_type subsystem, std::memory_order 
  */
 inline bool global_state_enable(global_state_type subsystem, std::memory_order order = std::memory_order::seq_cst) noexcept
 {
-    tt_axiom(std::popcount(to_underlying(subsystem)) == 1);
+    hi_axiom(std::popcount(to_underlying(subsystem)) == 1);
     return to_bool(global_state.fetch_or(subsystem, order) & subsystem);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

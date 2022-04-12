@@ -8,26 +8,26 @@
 #include "../geometry/matrix.hpp"
 #include "../geometry/scale.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] constexpr matrix3
 color_primaries_to_RGBtoXYZ(float wx, float wy, float rx, float ry, float gx, float gy, float bx, float by) noexcept
 {
-    ttlet w = vector3{wx, wy, 1.0f - wx - wy};
-    ttlet r = vector3{rx, ry, 1.0f - rx - ry};
-    ttlet g = vector3{gx, gy, 1.0f - gx - gy};
-    ttlet b = vector3{bx, by, 1.0f - bx - by};
+    hilet w = vector3{wx, wy, 1.0f - wx - wy};
+    hilet r = vector3{rx, ry, 1.0f - rx - ry};
+    hilet g = vector3{gx, gy, 1.0f - gx - gy};
+    hilet b = vector3{bx, by, 1.0f - bx - by};
 
     // Calculate white point's tristimulus values from coordinates
-    ttlet W = vector3{1.0f * (w.x() / w.y()), 1.0f, 1.0f * (w.z() / w.y())};
+    hilet W = vector3{1.0f * (w.x() / w.y()), 1.0f, 1.0f * (w.z() / w.y())};
 
     // C is the chromaticity matrix.
-    ttlet C = matrix3{r, g, b};
+    hilet C = matrix3{r, g, b};
 
     // solve tristimulus sums.
-    ttlet S = scale3{~C * W};
+    hilet S = scale3{~C * W};
 
     return C * S;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

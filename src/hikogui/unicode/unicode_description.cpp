@@ -5,7 +5,7 @@
 #include "unicode_db.hpp"
 #include <exception>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 static unicode_description const &Replacement_Character_unicode_description = unicode_description::find(U'\ufffd');
 static unicode_description const &CJK_Ideograph_Extension_A_unicode_description = unicode_description::find(U'\u3400');
@@ -30,8 +30,8 @@ static unicode_description const &Plane_16_Private_Use_unicode_description = uni
 
 [[nodiscard]] unicode_description const &unicode_description::find(char32_t code_point) noexcept
 {
-    ttlet first = cbegin(detail::unicode_db_description_table);
-    ttlet last = cend(detail::unicode_db_description_table);
+    hilet first = cbegin(detail::unicode_db_description_table);
+    hilet last = cend(detail::unicode_db_description_table);
 
     uint32_t code_point_ = static_cast<uint32_t>(code_point) << code_point_shift;
     auto it = std::lower_bound(first, last, code_point_, [](auto const &item, auto const &value) {
@@ -102,4 +102,4 @@ static unicode_description const &Plane_16_Private_Use_unicode_description = uni
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

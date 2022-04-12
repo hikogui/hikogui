@@ -14,7 +14,7 @@
 #include <algorithm>
 #include <compare>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Interval arithmetic.
  *
@@ -51,7 +51,7 @@ public:
             v[0] = std::numeric_limits<value_type>::min();
             v[1] = -std::numeric_limits<value_type>::max();
         }
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     /** Construct an interval from a lower and upper bounds.
@@ -61,7 +61,7 @@ public:
      */
     [[nodiscard]] constexpr interval(value_type lower, value_type upper) noexcept : v(lower, -upper)
     {
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     /** Construct an interval from a bound_type value.
@@ -73,7 +73,7 @@ public:
     {
         interval r;
         r.v = bounds;
-        tt_axiom(r.holds_invariant());
+        hi_axiom(r.holds_invariant());
         return r;
     }
 
@@ -169,14 +169,14 @@ public:
 
     [[nodiscard]] constexpr interval operator*(interval const &rhs) const noexcept
     {
-        ttlet ge_zero = ge(v, bound_type{});
-        ttlet lt_zero = ~ge_zero;
+        hilet ge_zero = ge(v, bound_type{});
+        hilet lt_zero = ~ge_zero;
 
-        ttlet ac = (ge_zero & rhs.v.xx()) | (lt_zero & -rhs.v.yy());
-        ttlet db = (ge_zero & rhs.v.yy()) | (lt_zero & -rhs.v.xx());
+        hilet ac = (ge_zero & rhs.v.xx()) | (lt_zero & -rhs.v.yy());
+        hilet db = (ge_zero & rhs.v.yy()) | (lt_zero & -rhs.v.xx());
 
-        ttlet ac_mul = ac * v;
-        ttlet db_mul = db * v;
+        hilet ac_mul = ac * v;
+        hilet db_mul = db * v;
 
         return raw(min(ac_mul, db_mul.yx()));
     }
@@ -185,7 +185,7 @@ public:
      */
     [[nodiscard]] constexpr interval positive_mul(interval const &rhs) const noexcept
     {
-        tt_axiom(v[0] >= 0 and rhs.v[0] >= 0);
+        hi_axiom(v[0] >= 0 and rhs.v[0] >= 0);
 
         return raw(v * neg<0b10>(rhs.v));
     }
@@ -197,14 +197,14 @@ public:
             return interval{};
         }
 
-        ttlet rhs_ge_zero = ge(rhs.v, bound_type{});
-        ttlet rhs_lt_zero = ~rhs_ge_zero;
+        hilet rhs_ge_zero = ge(rhs.v, bound_type{});
+        hilet rhs_lt_zero = ~rhs_ge_zero;
 
-        ttlet b_ma = (rhs_ge_zero & v.yy()) | (rhs_lt_zero & -v.xx());
-        ttlet a_mb = -b_ma.yx();
+        hilet b_ma = (rhs_ge_zero & v.yy()) | (rhs_lt_zero & -v.xx());
+        hilet a_mb = -b_ma.yx();
 
-        ttlet a_mb_mul = a_mb / rhs.v;
-        ttlet b_ma_mul = b_ma / rhs.v;
+        hilet a_mb_mul = a_mb / rhs.v;
+        hilet b_ma_mul = b_ma / rhs.v;
 
         return raw(min(a_mb, b_ma));
     }
@@ -217,7 +217,7 @@ public:
         }
 
         // In C++ the sign of the modulo operator's result is the same as the left operand.
-        ttlet rhs_abs = abs(rhs);
+        hilet rhs_abs = abs(rhs);
         if (v[0] > 0) {
             return rhs_abs;
         } else if (v[1] > 0) {
@@ -247,7 +247,7 @@ public:
 
     [[nodiscard]] friend constexpr interval square(interval const &rhs) noexcept
     {
-        ttlet abs_rhs = abs(rhs);
+        hilet abs_rhs = abs(rhs);
         return abs_rhs.positive_mul(abs_rhs);
     }
 
@@ -308,4 +308,4 @@ public:
 using finterval = interval<float>;
 using dinterval = interval<double>;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

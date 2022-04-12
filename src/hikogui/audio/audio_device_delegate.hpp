@@ -6,7 +6,7 @@
 
 #include "audio_block.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class audio_device_delegate {
 public:
@@ -22,4 +22,4 @@ public:
     virtual void process_audio() noexcept = 0;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -8,7 +8,7 @@
 #include <iostream>
 #include <format>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Initialize the console.
  */
@@ -29,6 +29,6 @@ void console_output(std::string_view text, std::ostream &output = std::cout) noe
  *
  * @param text The text to display on the console.
  */
-#define tt_print(fmt, ...) console_output(std::format(fmt __VA_OPT__(, ) __VA_ARGS__))
+#define hi_print(fmt, ...) console_output(std::format(fmt __VA_OPT__(, ) __VA_ARGS__))
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -10,19 +10,19 @@
 #include "hikogui/log.hpp"
 #include "hikogui/loop.hpp"
 
-using namespace tt;
+using namespace hi;
 
-int tt_main(int argc, char *argv[])
+int hi_main(int argc, char *argv[])
 {
     auto gui = gui_system::make_unique();
     auto window = gui->make_window(tr("Label example"));
 
     // Start the logger system, so logging is done asynchronously.
-    tt::log::start_subsystem(tt::global_state_type::log_level_info);
-    tt::time_stamp_count::start_subsystem();
+    hi::log::start_subsystem(hi::global_state_type::log_level_info);
+    hi::time_stamp_count::start_subsystem();
 
     // Startup renderdoc for debugging
-    auto render_doc = tt::RenderDoc();
+    auto render_doc = hi::RenderDoc();
 
     auto latin_text = std::string(
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
@@ -79,7 +79,7 @@ int tt_main(int argc, char *argv[])
 
     auto text = to_gstring(latin_text + "\n" + mixed_rtl_text + "\n" + mixed_ltr_text + "\n" + hebrew_text);
 
-    auto &tw = window->content().make_widget<text_widget>("A1", text, tt::alignment::top_justified());
+    auto &tw = window->content().make_widget<text_widget>("A1", text, hi::alignment::top_justified());
     tw.edit_mode = text_widget::edit_mode_type::fully_editable;
 
     auto close_cb = window->closing.subscribe([&] {

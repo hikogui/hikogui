@@ -7,29 +7,29 @@
 #include "../command.hpp"
 #include "../log.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 void keyboard_bindings::load_bindings(URL url, bool system_binding)
 {
-    ttlet data = parse_JSON(url);
+    hilet data = parse_JSON(url);
 
     try {
-        tt_parse_check(data.contains("bindings"), "Missing key 'bindings' at top level.");
+        hi_parse_check(data.contains("bindings"), "Missing key 'bindings' at top level.");
 
-        ttlet binding_list = data["bindings"];
-        tt_parse_check(
+        hilet binding_list = data["bindings"];
+        hi_parse_check(
             holds_alternative<datum::vector_type>(binding_list), "Expecting array value for key 'bindings' at top level.");
 
-        for (ttlet &binding : binding_list) {
-            tt_parse_check(holds_alternative<datum::map_type>(binding), "Expecting object for a binding, got {}", binding);
+        for (hilet &binding : binding_list) {
+            hi_parse_check(holds_alternative<datum::map_type>(binding), "Expecting object for a binding, got {}", binding);
 
-            tt_parse_check(
+            hi_parse_check(
                 binding.contains("key") && binding.contains("command"),
                 "Expecting required 'key' and 'command' for a binding, got {}",
                 binding);
 
-            ttlet key_name = static_cast<std::string>(binding["key"]);
-            ttlet key = keyboard_key(key_name);
+            hilet key_name = static_cast<std::string>(binding["key"]);
+            hilet key = keyboard_key(key_name);
 
             auto command_name = static_cast<std::string>(binding["command"]);
 
@@ -59,4 +59,4 @@ void keyboard_bindings::load_bindings(URL url, bool system_binding)
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

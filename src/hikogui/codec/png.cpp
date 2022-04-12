@@ -10,7 +10,7 @@
 #include "../color/Rec2100.hpp"
 #include "../color/color_space.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct PNGHeader {
     uint8_t signature[8];
@@ -52,19 +52,19 @@ struct sRGB {
 
 void png::read_header(std::span<std::byte const> bytes, std::size_t &offset)
 {
-    ttlet png_header = make_placement_ptr<PNGHeader>(bytes, offset);
+    hilet png_header = make_placement_ptr<PNGHeader>(bytes, offset);
 
-    ttlet valid_signature = png_header->signature[0] == 137 && png_header->signature[1] == 80 && png_header->signature[2] == 78 &&
+    hilet valid_signature = png_header->signature[0] == 137 && png_header->signature[1] == 80 && png_header->signature[2] == 78 &&
         png_header->signature[3] == 71 && png_header->signature[4] == 13 && png_header->signature[5] == 10 &&
         png_header->signature[6] == 26 && png_header->signature[7] == 10;
 
-    tt_parse_check(valid_signature, "invalid PNG file signature");
+    hi_parse_check(valid_signature, "invalid PNG file signature");
 }
 
 void png::generate_sRGB_transfer_function() noexcept
 {
-    ttlet value_range = _bit_depth == 8 ? 256 : 65536;
-    ttlet value_range_f = narrow_cast<float>(value_range);
+    hilet value_range = _bit_depth == 8 ? 256 : 65536;
+    hilet value_range_f = narrow_cast<float>(value_range);
     for (int i = 0; i != value_range; ++i) {
         auto u = narrow_cast<float>(i) / value_range_f;
         _transfer_function.push_back(sRGB_gamma_to_linear(u));
@@ -76,8 +76,8 @@ void png::generate_Rec2100_transfer_function() noexcept
     // SDR brightness is 80 cd/m2. Rec2100/PQ brightness is 10,000 cd/m2.
     constexpr float hdr_multiplier = 10'000.0f / 80.0f;
 
-    ttlet value_range = _bit_depth == 8 ? 256 : 65536;
-    ttlet value_range_f = narrow_cast<float>(value_range);
+    hilet value_range = _bit_depth == 8 ? 256 : 65536;
+    hilet value_range_f = narrow_cast<float>(value_range);
     for (int i = 0; i != value_range; ++i) {
         auto u = narrow_cast<float>(i) / value_range_f;
         _transfer_function.push_back(Rec2100_gamma_to_linear(u) * hdr_multiplier);
@@ -86,8 +86,8 @@ void png::generate_Rec2100_transfer_function() noexcept
 
 void png::generate_gamma_transfer_function(float gamma) noexcept
 {
-    ttlet value_range = _bit_depth == 8 ? 256 : 65536;
-    ttlet value_range_f = narrow_cast<float>(value_range);
+    hilet value_range = _bit_depth == 8 ? 256 : 65536;
+    hilet value_range_f = narrow_cast<float>(value_range);
     for (int i = 0; i != value_range; ++i) {
         auto u = narrow_cast<float>(i) / value_range_f;
         _transfer_function.push_back(powf(u, gamma));
@@ -96,7 +96,7 @@ void png::generate_gamma_transfer_function(float gamma) noexcept
 
 void png::read_IHDR(std::span<std::byte const> bytes)
 {
-    ttlet ihdr = make_placement_ptr<IHDR>(bytes);
+    hilet ihdr = make_placement_ptr<IHDR>(bytes);
 
     _width = ihdr->width.value();
     _height = ihdr->height.value();
@@ -106,18 +106,18 @@ void png::read_IHDR(std::span<std::byte const> bytes)
     _filter_method = ihdr->filter_method;
     _interlace_method = ihdr->interlace_method;
 
-    tt_parse_check(_width <= 16384, "PNG width too large.");
-    tt_parse_check(_height <= 16384, "PNG height too large.");
-    tt_parse_check(_bit_depth == 8 || _bit_depth == 16, "PNG only bit depth of 8 or 16 is implemented.");
-    tt_parse_check(_compression_method == 0, "Only deflate/inflate compression is allowed.");
-    tt_parse_check(_filter_method == 0, "Only adaptive filtering is allowed.");
-    tt_parse_check(_interlace_method == 0, "Only non interlaced PNG are implemented.");
+    hi_parse_check(_width <= 16384, "PNG width too large.");
+    hi_parse_check(_height <= 16384, "PNG height too large.");
+    hi_parse_check(_bit_depth == 8 || _bit_depth == 16, "PNG only bit depth of 8 or 16 is implemented.");
+    hi_parse_check(_compression_method == 0, "Only deflate/inflate compression is allowed.");
+    hi_parse_check(_filter_method == 0, "Only adaptive filtering is allowed.");
+    hi_parse_check(_interlace_method == 0, "Only non interlaced PNG are implemented.");
 
     _is_palletted = (_color_type & 1) != 0;
     _is_color = (_color_type & 2) != 0;
     _has_alpha = (_color_type & 4) != 0;
-    tt_parse_check((_color_type & 0xf8) == 0, "Invalid color type");
-    tt_parse_check(!_is_palletted, "Paletted images are not supported");
+    hi_parse_check((_color_type & 0xf8) == 0, "Invalid color type");
+    hi_parse_check(!_is_palletted, "Paletted images are not supported");
 
     if (_is_palletted) {
         _samples_per_pixel = 1;
@@ -136,9 +136,9 @@ void png::read_IHDR(std::span<std::byte const> bytes)
 
 void png::read_cHRM(std::span<std::byte const> bytes)
 {
-    ttlet chrm = make_placement_ptr<cHRM>(bytes);
+    hilet chrm = make_placement_ptr<cHRM>(bytes);
 
-    ttlet color_to_XYZ = color_primaries_to_RGBtoXYZ(
+    hilet color_to_XYZ = color_primaries_to_RGBtoXYZ(
         narrow_cast<float>(chrm->white_point_x.value()) / 100'000.0f,
         narrow_cast<float>(chrm->white_point_y.value()) / 100'000.0f,
         narrow_cast<float>(chrm->red_x.value()) / 100'000.0f,
@@ -153,18 +153,18 @@ void png::read_cHRM(std::span<std::byte const> bytes)
 
 void png::read_gAMA(std::span<std::byte const> bytes)
 {
-    ttlet gama = make_placement_ptr<gAMA>(bytes);
-    ttlet gamma = narrow_cast<float>(gama->gamma.value()) / 100'000.0f;
-    tt_parse_check(gamma != 0.0f, "Gamma value can not be zero");
+    hilet gama = make_placement_ptr<gAMA>(bytes);
+    hilet gamma = narrow_cast<float>(gama->gamma.value()) / 100'000.0f;
+    hi_parse_check(gamma != 0.0f, "Gamma value can not be zero");
 
     generate_gamma_transfer_function(1.0f / gamma);
 }
 
 void png::read_sRGB(std::span<std::byte const> bytes)
 {
-    ttlet srgb = make_placement_ptr<sRGB>(bytes);
-    ttlet rendering_intent = srgb->rendering_intent;
-    tt_parse_check(rendering_intent <= 3, "Invalid rendering intent");
+    hilet srgb = make_placement_ptr<sRGB>(bytes);
+    hilet rendering_intent = srgb->rendering_intent;
+    hi_parse_check(rendering_intent <= 3, "Invalid rendering intent");
 
     _color_to_sRGB = geo::identity();
     generate_sRGB_transfer_function();
@@ -209,10 +209,10 @@ void png::read_chunks(std::span<std::byte const> bytes, std::size_t &offset)
     bool has_IEND = false;
 
     while (!has_IEND) {
-        ttlet header = make_placement_ptr<ChunkHeader>(bytes, offset);
-        ttlet length = narrow_cast<ssize_t>(header->length.value());
-        tt_parse_check(length < 0x8000'0000, "Chunk length must be smaller than 2GB");
-        tt_parse_check(offset + length + ssizeof(uint32_t) <= bytes.size(), "Chuck extents beyond file.");
+        hilet header = make_placement_ptr<ChunkHeader>(bytes, offset);
+        hilet length = narrow_cast<ssize_t>(header->length.value());
+        hi_parse_check(length < 0x8000'0000, "Chunk length must be smaller than 2GB");
+        hi_parse_check(offset + length + ssizeof(uint32_t) <= bytes.size(), "Chuck extents beyond file.");
 
         switch (fourcc(header->type)) {
         case fourcc("IDAT"): _idat_chunk_data.push_back(bytes.subspan(offset, length)); break;
@@ -234,10 +234,10 @@ void png::read_chunks(std::span<std::byte const> bytes, std::size_t &offset)
 
         // Skip over the data, and extract the crc32.
         offset += length;
-        [[maybe_unused]] ttlet crc = make_placement_ptr<big_uint32_buf_t>(bytes, offset);
+        [[maybe_unused]] hilet crc = make_placement_ptr<big_uint32_buf_t>(bytes, offset);
     }
 
-    tt_parse_check(!IHDR_bytes.empty(), "Missing IHDR chunk.");
+    hi_parse_check(!IHDR_bytes.empty(), "Missing IHDR chunk.");
     read_IHDR(IHDR_bytes);
     if (!cHRM_bytes.empty()) {
         read_cHRM(cHRM_bytes);
@@ -269,7 +269,7 @@ png::png(std::unique_ptr<resource_view> view) : _view(std::move(view))
 {
     std::size_t offset = 0;
 
-    ttlet bytes = _view->bytes();
+    hilet bytes = _view->bytes();
     read_header(bytes, offset);
     read_chunks(bytes, offset);
 }
@@ -280,14 +280,14 @@ bstring png::decompress_IDATs(std::size_t image_data_size) const
         return zlib_decompress(_idat_chunk_data[0], image_data_size);
     } else {
         // Merge all idat chunks together.
-        ttlet compressed_data_size =
-            std::accumulate(_idat_chunk_data.cbegin(), _idat_chunk_data.cend(), ssize_t{0}, [](ttlet &a, ttlet &b) {
+        hilet compressed_data_size =
+            std::accumulate(_idat_chunk_data.cbegin(), _idat_chunk_data.cend(), ssize_t{0}, [](hilet &a, hilet &b) {
                 return a + ssize(b);
             });
 
         bstring compressed_data;
         compressed_data.reserve(compressed_data_size);
-        for (ttlet &chunk_data : _idat_chunk_data) {
+        for (hilet &chunk_data : _idat_chunk_data) {
             std::copy(chunk_data.begin(), chunk_data.end(), std::back_inserter(compressed_data));
         }
 
@@ -391,8 +391,8 @@ static uint16_t get_sample(std::span<std::byte const> bytes, ssize_t &offset, bo
 
 u16x4 png::extract_pixel_from_line(std::span<std::byte const> bytes, int x) const noexcept
 {
-    tt_axiom(_bit_depth == 8 || _bit_depth == 16);
-    tt_axiom(!_is_palletted);
+    hi_axiom(_bit_depth == 8 || _bit_depth == 16);
+    hi_axiom(!_is_palletted);
 
     uint16_t r = 0;
     uint16_t g = 0;
@@ -418,15 +418,15 @@ u16x4 png::extract_pixel_from_line(std::span<std::byte const> bytes, int x) cons
 
 void png::data_to_image_line(std::span<std::byte const> bytes, pixel_row<sfloat_rgba16> &line) const noexcept
 {
-    ttlet alpha_mul = _bit_depth == 16 ? 1.0f / 65535.0f : 1.0f / 255.0f;
+    hilet alpha_mul = _bit_depth == 16 ? 1.0f / 65535.0f : 1.0f / 255.0f;
     for (int x = 0; x != _width; ++x) {
-        ttlet value = extract_pixel_from_line(bytes, x);
+        hilet value = extract_pixel_from_line(bytes, x);
 
-        ttlet linear_RGB =
+        hilet linear_RGB =
             f32x4{_transfer_function[value.x()], _transfer_function[value.y()], _transfer_function[value.z()], 1.0f};
 
-        ttlet linear_sRGB_color = _color_to_sRGB * linear_RGB;
-        ttlet alpha = static_cast<float>(value.w()) * alpha_mul;
+        hilet linear_sRGB_color = _color_to_sRGB * linear_RGB;
+        hilet alpha = static_cast<float>(value.w()) * alpha_mul;
 
         // pre-multiply the alpha for use in texture-maps.
         line[x] = linear_sRGB_color * alpha;
@@ -449,10 +449,10 @@ void png::data_to_image(bstring bytes, pixel_map<sfloat_rgba16> &image) const no
 void png::decode_image(pixel_map<sfloat_rgba16> &image) const
 {
     // There is a filter selection byte in front of every line.
-    ttlet image_data_size = _stride * _height;
+    hilet image_data_size = _stride * _height;
 
     auto image_data = decompress_IDATs(image_data_size);
-    tt_parse_check(ssize(image_data) == image_data_size, "Uncompressed image data has incorrect size.");
+    hi_parse_check(ssize(image_data) == image_data_size, "Uncompressed image data has incorrect size.");
 
     unfilter_lines(image_data);
 
@@ -461,10 +461,10 @@ void png::decode_image(pixel_map<sfloat_rgba16> &image) const
 
 pixel_map<sfloat_rgba16> png::load(URL const &url)
 {
-    ttlet png_data = png(url);
+    hilet png_data = png(url);
     auto image = pixel_map<sfloat_rgba16>{png_data.width(), png_data.height()};
     png_data.decode_image(image);
     return image;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

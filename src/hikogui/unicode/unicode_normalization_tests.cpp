@@ -16,7 +16,7 @@
 #endif
 
 using namespace std;
-using namespace tt;
+using namespace hi;
 
 /*! A test defined in NormalizationTests.txt.
  *
@@ -57,7 +57,7 @@ std::u32string parseNormalizationTest_column(std::string_view column)
     std::u32string r;
 
     auto codePointStrings = split(column);
-    for (ttlet codePointString : codePointStrings) {
+    for (hilet codePointString : codePointStrings) {
         auto codePoint = static_cast<char32_t>(std::stoi(std::string(codePointString), nullptr, 16));
         r += codePoint;
     }
@@ -66,11 +66,11 @@ std::u32string parseNormalizationTest_column(std::string_view column)
 
 std::optional<NormalizationTest> parseNormalizationTest_line(std::string_view line)
 {
-    ttlet split_line = split(line, '#');
+    hilet split_line = split(line, '#');
     if (split_line.size() < 2) {
         return {};
     }
-    ttlet columns = split(split_line[0], ';');
+    hilet columns = split(split_line[0], ';');
     if (columns.size() < 6) {
         return {};
     }
@@ -88,12 +88,12 @@ std::optional<NormalizationTest> parseNormalizationTest_line(std::string_view li
 
 std::vector<NormalizationTest> parseNormalizationTests()
 {
-    ttlet view = file_view(URL("file:NormalizationTest.txt"));
-    ttlet test_data = view.string_view();
+    hilet view = file_view(URL("file:NormalizationTest.txt"));
+    hilet test_data = view.string_view();
 
     std::vector<NormalizationTest> r;
-    for (ttlet line : split(test_data, '\n')) {
-        if (ttlet optionalTest = parseNormalizationTest_line(line)) {
+    for (hilet line : split(test_data, '\n')) {
+        if (hilet optionalTest = parseNormalizationTest_line(line)) {
             r.push_back(*optionalTest);
         }
     }
@@ -135,13 +135,13 @@ protected:
 
 TEST_F(unicode_normalization, unicode_NFC_colon)
 {
-    ASSERT_TRUE(unicode_NFC(tt::to_u32string("Audio device:")) == tt::to_u32string("Audio device:"));
-    ASSERT_TRUE(unicode_NFD(tt::to_u32string("Audio device:")) == tt::to_u32string("Audio device:"));
+    ASSERT_TRUE(unicode_NFC(hi::to_u32string("Audio device:")) == hi::to_u32string("Audio device:"));
+    ASSERT_TRUE(unicode_NFD(hi::to_u32string("Audio device:")) == hi::to_u32string("Audio device:"));
 }
 
 TEST_F(unicode_normalization, toNFC_c1)
 {
-    for (ttlet &test : normalizationTests) {
+    for (hilet &test : normalizationTests) {
         ASSERT_TRUE(unicode_NFC(test.c1) == test.c2) << test.comment;
     }
 }
@@ -149,28 +149,28 @@ TEST_F(unicode_normalization, toNFC_c1)
 #if defined(RUN_ALL_TESTS)
 TEST_F(unicode_normalization, toNFC_c2)
 {
-    for (ttlet &test : normalizationTests) {
+    for (hilet &test : normalizationTests) {
         ASSERT_TRUE(unicode_NFC(test.c2) == test.c2) << test.comment;
     }
 }
 
 TEST_F(unicode_normalization, toNFC_c3)
 {
-    for (ttlet &test : normalizationTests) {
+    for (hilet &test : normalizationTests) {
         ASSERT_TRUE(unicode_NFC(test.c3) == test.c2) << test.comment;
     }
 }
 
 TEST_F(unicode_normalization, toNFC_c4)
 {
-    for (ttlet &test : normalizationTests) {
+    for (hilet &test : normalizationTests) {
         ASSERT_TRUE(unicode_NFC(test.c4) == test.c4) << test.comment;
     }
 }
 
 TEST_F(unicode_normalization, toNFC_c5)
 {
-    for (ttlet &test : normalizationTests) {
+    for (hilet &test : normalizationTests) {
         ASSERT_TRUE(unicode_NFC(test.c5) == test.c4) << test.comment;
     }
 }
@@ -178,7 +178,7 @@ TEST_F(unicode_normalization, toNFC_c5)
 
 TEST_F(unicode_normalization, toNFKC_c1)
 {
-    for (ttlet &test : normalizationTests) {
+    for (hilet &test : normalizationTests) {
         ASSERT_TRUE(unicode_NFKC(test.c1) == test.c4) << test.comment;
     }
 }
@@ -186,28 +186,28 @@ TEST_F(unicode_normalization, toNFKC_c1)
 #if defined(RUN_ALL_TESTS)
 TEST_F(unicode_normalization, toNFKC_c2)
 {
-    for (ttlet &test : normalizationTests) {
+    for (hilet &test : normalizationTests) {
         ASSERT_TRUE(unicode_NFKC(test.c2) == test.c4) << test.comment;
     }
 }
 
 TEST_F(unicode_normalization, toNFKC_c3)
 {
-    for (ttlet &test : normalizationTests) {
+    for (hilet &test : normalizationTests) {
         ASSERT_TRUE(unicode_NFKC(test.c3) == test.c4) << test.comment;
     }
 }
 
 TEST_F(unicode_normalization, toNFKC_c4)
 {
-    for (ttlet &test : normalizationTests) {
+    for (hilet &test : normalizationTests) {
         ASSERT_TRUE(unicode_NFKC(test.c4) == test.c4) << test.comment;
     }
 }
 
 TEST_F(unicode_normalization, toNFKC_c5)
 {
-    for (ttlet &test : normalizationTests) {
+    for (hilet &test : normalizationTests) {
         ASSERT_TRUE(unicode_NFKC(test.c5) == test.c4) << test.comment;
     }
 }
@@ -215,7 +215,7 @@ TEST_F(unicode_normalization, toNFKC_c5)
 
 TEST_F(unicode_normalization, toNFD_c1)
 {
-    for (ttlet &test : normalizationTests) {
+    for (hilet &test : normalizationTests) {
         ASSERT_TRUE(unicode_NFD(test.c1) == test.c3) << test.comment;
     }
 }
@@ -223,28 +223,28 @@ TEST_F(unicode_normalization, toNFD_c1)
 #if defined(RUN_ALL_TESTS)
 TEST_F(unicode_normalization, toNFD_c2)
 {
-    for (ttlet &test : normalizationTests) {
+    for (hilet &test : normalizationTests) {
         ASSERT_TRUE(unicode_NFD(test.c2) == test.c3) << test.comment;
     }
 }
 
 TEST_F(unicode_normalization, toNFD_c3)
 {
-    for (ttlet &test : normalizationTests) {
+    for (hilet &test : normalizationTests) {
         ASSERT_TRUE(unicode_NFD(test.c3) == test.c3) << test.comment;
     }
 }
 
 TEST_F(unicode_normalization, toNFD_c4)
 {
-    for (ttlet &test : normalizationTests) {
+    for (hilet &test : normalizationTests) {
         ASSERT_TRUE(unicode_NFD(test.c4) == test.c5) << test.comment;
     }
 }
 
 TEST_F(unicode_normalization, toNFD_c5)
 {
-    for (ttlet &test : normalizationTests) {
+    for (hilet &test : normalizationTests) {
         ASSERT_TRUE(unicode_NFD(test.c5) == test.c5) << test.comment;
     }
 }
@@ -252,7 +252,7 @@ TEST_F(unicode_normalization, toNFD_c5)
 
 TEST_F(unicode_normalization, toNFKD_c1)
 {
-    for (ttlet &test : normalizationTests) {
+    for (hilet &test : normalizationTests) {
         ASSERT_TRUE(unicode_NFKD(test.c1) == test.c5) << test.comment;
     }
 }
@@ -260,28 +260,28 @@ TEST_F(unicode_normalization, toNFKD_c1)
 #if defined(RUN_ALL_TESTS)
 TEST_F(unicode_normalization, toNFKD_c2)
 {
-    for (ttlet &test : normalizationTests) {
+    for (hilet &test : normalizationTests) {
         ASSERT_TRUE(unicode_NFKD(test.c2) == test.c5) << test.comment;
     }
 }
 
 TEST_F(unicode_normalization, toNFKD_c3)
 {
-    for (ttlet &test : normalizationTests) {
+    for (hilet &test : normalizationTests) {
         ASSERT_TRUE(unicode_NFKD(test.c3) == test.c5) << test.comment;
     }
 }
 
 TEST_F(unicode_normalization, toNFKD_c4)
 {
-    for (ttlet &test : normalizationTests) {
+    for (hilet &test : normalizationTests) {
         ASSERT_TRUE(unicode_NFKD(test.c4) == test.c5) << test.comment;
     }
 }
 
 TEST_F(unicode_normalization, toNFKD_c5)
 {
-    for (ttlet &test : normalizationTests) {
+    for (hilet &test : normalizationTests) {
         ASSERT_TRUE(unicode_NFKD(test.c5) == test.c5) << test.comment;
     }
 }
@@ -291,27 +291,27 @@ TEST_F(unicode_normalization, toNFKD_c5)
 TEST_F(unicode_normalization, Invariant)
 {
     auto previouslyTestedCodePoints = std::vector<bool>(0x11'0000, false);
-    for (ttlet &test : normalizationTests) {
-        for (ttlet &c : test.c1) {
+    for (hilet &test : normalizationTests) {
+        for (hilet &c : test.c1) {
             previouslyTestedCodePoints[c] = true;
         }
-        for (ttlet &c : test.c2) {
+        for (hilet &c : test.c2) {
             previouslyTestedCodePoints[c] = true;
         }
-        for (ttlet &c : test.c3) {
+        for (hilet &c : test.c3) {
             previouslyTestedCodePoints[c] = true;
         }
-        for (ttlet &c : test.c4) {
+        for (hilet &c : test.c4) {
             previouslyTestedCodePoints[c] = true;
         }
-        for (ttlet &c : test.c5) {
+        for (hilet &c : test.c5) {
             previouslyTestedCodePoints[c] = true;
         }
     }
 
     for (char32_t i = 0; i < previouslyTestedCodePoints.size(); i++) {
         if (!previouslyTestedCodePoints[i]) {
-            ttlet str = std::u32string(1, i);
+            hilet str = std::u32string(1, i);
 
             ASSERT_TRUE(unicode_NFD(str) == str) << "NFD code-point: " << static_cast<int>(i);
             ASSERT_TRUE(unicode_NFC(str) == str) << "NFC code-point: " << static_cast<int>(i);

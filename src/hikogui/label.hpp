@@ -12,7 +12,7 @@
 #include <type_traits>
 #include <memory>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A label consisting of localizable text and an icon.
  *
@@ -28,7 +28,7 @@ class label {
 public:
     /** The icon.
      */
-    tt::icon icon;
+    hi::icon icon;
 
     /** Localizable text.
      * The text in this field is not yet translated nor formatted.
@@ -39,7 +39,7 @@ public:
      * @param icon The icon.
      * @param text The text.
      */
-    label(tt::icon icon, tr text) noexcept : icon(std::move(icon)), text(std::move(text)) {}
+    label(hi::icon icon, tr text) noexcept : icon(std::move(icon)), text(std::move(text)) {}
 
     /** Construct a new label from text.
      * @param text The text.
@@ -49,7 +49,7 @@ public:
     /** Construct a new label from an icon.
      * @param icon The icon.
      */
-    label(tt::icon icon) noexcept : icon(std::move(icon)), text() {}
+    label(hi::icon icon) noexcept : icon(std::move(icon)), text() {}
 
     /** Construct a empty label.
      */
@@ -93,11 +93,11 @@ public:
 private:
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1
 
 template<typename CharT>
-struct std::formatter<tt::label, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(tt::label const &t, auto &fc)
+struct std::formatter<hi::label, CharT> : std::formatter<std::string_view, CharT> {
+    auto format(hi::label const &t, auto &fc)
     {
         return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
     }

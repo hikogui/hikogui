@@ -7,7 +7,7 @@
 #include <memory>
 #include <functional>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 class tab_widget;
 
 class tab_delegate {
@@ -20,7 +20,7 @@ public:
      */
     auto subscribe(tab_widget &sender, std::invocable<> auto &&callback) noexcept
     {
-        return _notifier.subscribe(tt_forward(callback));
+        return _notifier.subscribe(hi_forward(callback));
     }
 
     virtual void add_tab(tab_widget &sender, std::size_t key, std::size_t index) noexcept {}
@@ -34,4 +34,4 @@ protected:
     notifier<> _notifier;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

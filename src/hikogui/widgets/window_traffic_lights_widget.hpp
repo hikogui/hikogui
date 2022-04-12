@@ -10,7 +10,7 @@
 #include <string>
 #include <array>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class window_traffic_lights_widget final : public widget {
 public:
@@ -58,4 +58,4 @@ private:
     void drawWindows(draw_context const &context) noexcept;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

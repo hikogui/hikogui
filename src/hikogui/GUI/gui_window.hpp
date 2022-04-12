@@ -25,7 +25,7 @@
 #include <memory>
 #include <mutex>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 class gfx_device;
 class gfx_system;
 class gfx_surface;
@@ -87,7 +87,7 @@ public:
     /** Theme to use to draw the widgets on this window.
      * The sizes and colors of the theme have already been adjusted to the window's state and dpi.
      */
-    tt::theme theme = {};
+    hi::theme theme = {};
 
     /** The size of the widget.
      */
@@ -127,7 +127,7 @@ public:
 
     /** Get the keyboard binding.
      */
-    tt::keyboard_bindings const &keyboard_bindings() const noexcept;
+    hi::keyboard_bindings const &keyboard_bindings() const noexcept;
 
     /** Request a rectangle on the window to be redrawn
      */
@@ -140,7 +140,7 @@ public:
      */
     void request_redraw() noexcept
     {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
         request_redraw(aarectangle{rectangle.size()});
     }
 
@@ -170,8 +170,8 @@ public:
      */
     [[nodiscard]] grid_widget &content() noexcept
     {
-        tt_axiom(is_gui_thread());
-        tt_axiom(widget);
+        hi_axiom(is_gui_thread());
+        hi_axiom(widget);
         return widget->content();
     }
 
@@ -181,8 +181,8 @@ public:
      */
     [[nodiscard]] toolbar_widget &toolbar() noexcept
     {
-        tt_axiom(is_gui_thread());
-        tt_axiom(widget);
+        hi_axiom(is_gui_thread());
+        hi_axiom(widget);
         return widget->toolbar();
     }
 
@@ -211,7 +211,7 @@ public:
      */
     virtual aarectangle fullscreen_rectangle() const noexcept = 0;
 
-    virtual tt::subpixel_orientation subpixel_orientation() const noexcept = 0;
+    virtual hi::subpixel_orientation subpixel_orientation() const noexcept = 0;
 
     /** Get the size-state of the window.
      */
@@ -238,7 +238,7 @@ public:
      */
     virtual void set_text_on_clipboard(std::string str) noexcept = 0;
 
-    void update_mouse_target(tt::widget const *new_target_widget, point2 position = {}) noexcept;
+    void update_mouse_target(hi::widget const *new_target_widget, point2 position = {}) noexcept;
 
     /** Change the keyboard focus to the given widget.
      * If the group of the widget is incorrect then no widget will be in focus.
@@ -246,7 +246,7 @@ public:
      * @param widget The new widget to focus, or empty to remove all keyboard focus.
      * @param group The group the widget must belong to.
      */
-    void update_keyboard_target(tt::widget const *widget, keyboard_focus_group group = keyboard_focus_group::normal) noexcept;
+    void update_keyboard_target(hi::widget const *widget, keyboard_focus_group group = keyboard_focus_group::normal) noexcept;
 
     /** Change the keyboard focus to the previous or next widget from the given widget.
      * This function will find the closest widget from the given widget which belongs to the given
@@ -257,7 +257,7 @@ public:
      * @param direction The direction to search in, or current to select the current widget.
      */
     void
-    update_keyboard_target(tt::widget const *widget, keyboard_focus_group group, keyboard_focus_direction direction) noexcept;
+    update_keyboard_target(hi::widget const *widget, keyboard_focus_group group, keyboard_focus_direction direction) noexcept;
 
     /** Change the keyboard focus to the given, previous or next widget.
      * This function will find the closest widget from the current widget which belongs to the given
@@ -317,11 +317,11 @@ protected:
     /** Handle command event.
      * This function is called when no widget has handled the command.
      */
-    [[nodiscard]] virtual bool handle_event(tt::command command) noexcept;
+    [[nodiscard]] virtual bool handle_event(hi::command command) noexcept;
 
-    [[nodiscard]] virtual bool handle_event(std::vector<tt::command> const &commands) noexcept
+    [[nodiscard]] virtual bool handle_event(std::vector<hi::command> const &commands) noexcept
     {
-        for (ttlet command : commands) {
+        for (hilet command : commands) {
             if (handle_event(command)) {
                 return true;
             }
@@ -370,18 +370,18 @@ private:
      * Since any mouse event will change the target this is used
      * to check if the target has changed, to send exit events to the previous mouse target.
      */
-    tt::widget const *_mouse_target_widget = nullptr;
+    hi::widget const *_mouse_target_widget = nullptr;
 
     /** Target of the keyboard
      * widget where keyboard events are sent to.
      */
-    tt::widget const *_keyboard_target_widget = nullptr;
+    hi::widget const *_keyboard_target_widget = nullptr;
 
     /** Called when a widget is being destructed.
      * This removes internal references to widgets.
      * Particularly the mouse and keyboard targets.
      */
-    void widget_is_destructing(tt::widget const *sender) noexcept
+    void widget_is_destructing(hi::widget const *sender) noexcept
     {
         if (_mouse_target_widget == sender) {
             _mouse_target_widget = nullptr;
@@ -400,9 +400,9 @@ private:
      *  - The window itself.
      */
     template<typename Event>
-    bool send_event_to_widget(tt::widget const *target_widget, Event const &event) noexcept;
+    bool send_event_to_widget(hi::widget const *target_widget, Event const &event) noexcept;
 
     friend class widget;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -7,7 +7,7 @@
 #include "../geometry/corner_radii.hpp"
 #include <algorithm>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class int_abgr8_pack {
     uint32_t v = 0;
@@ -43,4 +43,4 @@ public:
     [[nodiscard]] constexpr friend bool operator==(int_abgr8_pack const &lhs, int_abgr8_pack const &rhs) noexcept = default;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

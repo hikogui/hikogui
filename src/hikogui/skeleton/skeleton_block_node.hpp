@@ -6,7 +6,7 @@
 
 #include "skeleton_node.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct skeleton_block_node final : skeleton_node {
     std::string name;
@@ -44,10 +44,10 @@ struct skeleton_block_node final : skeleton_node {
         }
 
         function = context.get_function(name);
-        tt_assert(function);
+        hi_assert(function);
 
         context.push_super(super_function);
-        for (ttlet &child : children) {
+        for (hilet &child : children) {
             child->post_process(context);
         }
         context.pop_super();
@@ -109,4 +109,4 @@ struct skeleton_block_node final : skeleton_node {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

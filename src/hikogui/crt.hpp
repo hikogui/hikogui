@@ -6,7 +6,7 @@
  * CRT - Main entry point of a hikogui program.
  *
  * This header file will abstract the entry point for a program
- * for different operating systems, and call the `tt_main()` function
+ * for different operating systems, and call the `hi_main()` function
  * that should be defined as a portable entry point of the program.
  *
  * This header should be included only once by a only a single
@@ -31,13 +31,13 @@
  * @param argv A nullptr terminated list of pointers to null terminated strings.
  * @return Exit code.
  */
-int tt_main(int argc, char *argv[]);
+int hi_main(int argc, char *argv[]);
 
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include <Windows.h>
 
 /** Windows entry-point.
- * This function will call `tt_main()`.
+ * This function will call `hi_main()`.
  *
  * It will use GetCommandLineW() to retrieve the command line in Unicode.
  *
@@ -52,9 +52,9 @@ int WINAPI WinMain(
     [[maybe_unused]] _In_ LPSTR lpCmdLine,
     _In_ int nShowCmd)
 {
-    auto [argc, argv] = tt::crt_start(hInstance, nShowCmd);
-    ttlet r = tt_main(argc, argv);
-    return tt::crt_finish(argc, argv, r);
+    auto [argc, argv] = hi::crt_start(hInstance, nShowCmd);
+    hilet r = hi_main(argc, argv);
+    return hi::crt_finish(argc, argv, r);
 }
 
 #else

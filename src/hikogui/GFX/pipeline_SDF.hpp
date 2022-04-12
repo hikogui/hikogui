@@ -11,7 +11,7 @@
 #include <vk_mem_alloc.h>
 #include <span>
 
-namespace tt::inline v1::pipeline_SDF {
+namespace hi::inline v1::pipeline_SDF {
 
 /*! Pipeline for rendering backings of widgets.
  * Maintains texture map atlases and sharing for all views.
@@ -51,4 +51,4 @@ private:
     void teardownvertexBuffers() override;
 };
 
-} // namespace tt::inline v1::pipeline_SDF
+} // namespace hi::inline v1::pipeline_SDF

@@ -10,7 +10,7 @@
 #include <list>
 
 using namespace std;
-using namespace tt;
+using namespace hi;
 
 template<typename T>
 class int_carry_test : public ::testing::Test {

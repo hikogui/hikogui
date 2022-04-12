@@ -9,12 +9,12 @@
 #include <string>
 
 using namespace std;
-using namespace tt;
+using namespace hi;
 
 TEST(file_view, read)
 {
-    ttlet view = file_view(URL("file:file_view.txt"));
+    hilet view = file_view(URL("file:file_view.txt"));
 
-    ttlet *test = reinterpret_cast<char const *>(view.bytes().data());
+    hilet *test = reinterpret_cast<char const *>(view.bytes().data());
     ASSERT_TRUE(strncmp(test, "The quick brown", 15) == 0);
 }

@@ -7,16 +7,16 @@
 #include "hikogui/crt.hpp"
 #include "hikogui/loop.hpp"
 
-// Every widget must inherit from tt::widget.
-class minimum_widget : public tt::widget {
+// Every widget must inherit from hi::widget.
+class minimum_widget : public hi::widget {
 public:
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
-    minimum_widget(tt::gui_window &window, tt::widget *parent) noexcept : widget(window, parent) {}
+    minimum_widget(hi::gui_window &window, hi::widget *parent) noexcept : widget(window, parent) {}
 
     // The set_constraints() function is called when the window is first initialized,
     // or when a widget wants to change its constraints.
-    tt::widget_constraints const &set_constraints() noexcept override
+    hi::widget_constraints const &set_constraints() noexcept override
     {
         // Almost all widgets will reset the `_layout` variable here so that it will
         // trigger the calculations in `set_layout()` as well.
@@ -36,42 +36,42 @@ public:
     // a widget wants to change the internal layout.
     //
     // NOTE: The size of the layout may be larger than the maximum constraints of this widget.
-    void set_layout(tt::widget_layout const &layout) noexcept override
+    void set_layout(hi::widget_layout const &layout) noexcept override
     {
         // Update the `_layout` with the new context, in this case we want to do some
         // calculations when the size of the widget was changed.
         if (compare_store(_layout, layout)) {
             // Here we can do some semi-expensive calculations which must be done when resizing the widget.
             // In this case we make two rectangles which are used in the `draw()` function.
-            _left_rectangle = tt::aarectangle{tt::extent2{layout.width() / 2, layout.height()}};
-            _right_rectangle = tt::aarectangle{tt::point2{layout.width() / 2, 0.0}, _left_rectangle.size()};
+            _left_rectangle = hi::aarectangle{hi::extent2{layout.width() / 2, layout.height()}};
+            _right_rectangle = hi::aarectangle{hi::point2{layout.width() / 2, 0.0}, _left_rectangle.size()};
         }
     }
 
     // The `draw()` function is called when all or part of the window requires redrawing.
     // This may happen when showing the window for the first time, when the operating-system
     // requests a (partial) redraw, or when a widget requests a redraw of itself.
-    void draw(tt::draw_context const &context) noexcept override
+    void draw(hi::draw_context const &context) noexcept override
     {
         // We only need to draw the widget when it is visible and when the visible area of
         // the widget overlaps with the scissor-rectangle (partial redraw) of the drawing context.
         if (*visible and overlaps(context, layout())) {
             // Draw two boxes matching the rectangles calculated during set_layout().
             // The actual RGB colors are taken from the current theme.
-            context.draw_box(_layout, _left_rectangle, theme().color(tt::theme_color::indigo));
-            context.draw_box(_layout, _right_rectangle, theme().color(tt::theme_color::blue));
+            context.draw_box(_layout, _left_rectangle, theme().color(hi::theme_color::indigo));
+            context.draw_box(_layout, _right_rectangle, theme().color(hi::theme_color::blue));
         }
     }
 
 private:
-    tt::aarectangle _left_rectangle;
-    tt::aarectangle _right_rectangle;
+    hi::aarectangle _left_rectangle;
+    hi::aarectangle _right_rectangle;
 };
 
-int tt_main(int argc, char *argv[])
+int hi_main(int argc, char *argv[])
 {
-    auto gui = tt::gui_system::make_unique();
-    auto window = gui->make_window(tt::tr("Minimum Custom Widget"));
+    auto gui = hi::gui_system::make_unique();
+    auto window = gui->make_window(hi::tr("Minimum Custom Widget"));
     window->content().make_widget<minimum_widget>("A1");
-    return tt::loop::main().resume();
+    return hi::loop::main().resume();
 }

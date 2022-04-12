@@ -7,7 +7,7 @@
 #include "../GUI/gui_window.hpp"
 #include "../GUI/gui_system.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 text_field_widget::text_field_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
     super(window, parent), _delegate(std::move(delegate)), _text()
@@ -20,7 +20,7 @@ text_field_widget::text_field_widget(gui_window &window, widget *parent, weak_or
     }
 
     _scroll_widget = std::make_unique<scroll_widget<axis::none, false>>(window, this);
-    _text_widget = &_scroll_widget->make_widget<text_widget>(_text, tt::alignment::middle_flush());
+    _text_widget = &_scroll_widget->make_widget<text_widget>(_text, hi::alignment::middle_flush());
     _text_widget->edit_mode = text_widget::edit_mode_type::line_editable;
 
     _error_label_widget =
@@ -63,9 +63,9 @@ widget_constraints const &text_field_widget::set_constraints() noexcept
     _layout = {};
 
     auto size = extent2{};
-    auto margins = tt::margins{theme().margin};
+    auto margins = hi::margins{theme().margin};
 
-    ttlet text_constraints = _scroll_widget->set_constraints();
+    hilet text_constraints = _scroll_widget->set_constraints();
     size.width() += 100.0f;
     size.height() += text_constraints.margins.top();
     size.height() += text_constraints.preferred.height();
@@ -73,7 +73,7 @@ widget_constraints const &text_field_widget::set_constraints() noexcept
 
     _error_label_widget->visible = not _error_label->empty();
     if (*_error_label_widget->visible) {
-        ttlet error_label_constraints = _error_label_widget->set_constraints();
+        hilet error_label_constraints = _error_label_widget->set_constraints();
         size.width() += error_label_constraints.preferred.width();
         size.height() += error_label_constraints.margins.top();
         size.height() += error_label_constraints.preferred.height();
@@ -114,9 +114,9 @@ void text_field_widget::draw(draw_context const &context) noexcept
     }
 }
 
-bool text_field_widget::handle_event(tt::command command) noexcept
+bool text_field_widget::handle_event(hi::command command) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     if (*enabled) {
         switch (command) {
@@ -150,7 +150,7 @@ bool text_field_widget::handle_event(tt::command command) noexcept
 
 hitbox text_field_widget::hitbox_test(point3 position) const noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     if (*visible and *enabled) {
         auto r = hitbox{};
@@ -201,7 +201,7 @@ void text_field_widget::revert(bool force) noexcept
 
 void text_field_widget::commit(bool force) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
     if (*continues or force) {
         auto text = to_string(*_text);
 
@@ -222,11 +222,11 @@ void text_field_widget::commit(bool force) noexcept
 
 void text_field_widget::draw_background_box(draw_context const &context) const noexcept
 {
-    ttlet corner_radii = tt::corner_radii{0.0f, 0.0f, theme().rounding_radius, theme().rounding_radius};
+    hilet corner_radii = hi::corner_radii{0.0f, 0.0f, theme().rounding_radius, theme().rounding_radius};
     context.draw_box(_layout, _text_rectangle, background_color(), corner_radii);
 
-    ttlet line = line_segment(get<0>(_text_rectangle), get<1>(_text_rectangle));
+    hilet line = line_segment(get<0>(_text_rectangle), get<1>(_text_rectangle));
     context.draw_line(_layout, translate3{0.0f, 0.5f, 0.1f} * line, theme().border_width, focus_color());
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -21,13 +21,13 @@ example:
  - On MacOS the CRT can tell the OS that the application can restore itself
    fully after being killed by the OS.
 
-The second task is to call developer supplied `tt_main()` with cross platform
+The second task is to call developer supplied `hi_main()` with cross platform
 compatible parameters. On Windows 10 this means that the wide-string argument
 list is unquoted, un-escaped and split into separate UTF-8 encoded arguments.
 
 Application setup
 -----------------
-The application set begins when the developer defined `tt_main()`
+The application set begins when the developer defined `hi_main()`
 is called by the CRT.
 
 This is the part of the application where the developer can configure hikogui

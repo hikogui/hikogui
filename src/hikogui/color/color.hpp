@@ -6,7 +6,7 @@
 
 #include "../rapid/numeric_array.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** This is a RGBA floating point color.
  * The color can be converted between different color spaces using the matrix-class.
@@ -43,7 +43,7 @@ public:
 
     [[nodiscard]] constexpr explicit color(f16x4 const &other) noexcept : _v(other)
     {
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     [[nodiscard]] constexpr explicit color(f32x4 const &other) noexcept : color(static_cast<f16x4>(other)) {}
@@ -147,4 +147,4 @@ private:
     f16x4 _v;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

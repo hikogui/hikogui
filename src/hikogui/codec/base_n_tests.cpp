@@ -10,7 +10,7 @@
 #include <iostream>
 
 using namespace std;
-using namespace tt;
+using namespace hi;
 
 TEST(base_n, base16_encode)
 {

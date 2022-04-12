@@ -6,7 +6,7 @@
 
 #include "skeleton_node.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct skeleton_while_node final : skeleton_node {
     statement_vector children;
@@ -32,14 +32,14 @@ struct skeleton_while_node final : skeleton_node {
         }
 
         post_process_expression(context, *expression, location);
-        for (ttlet &child : children) {
+        for (hilet &child : children) {
             child->post_process(context);
         }
     }
 
     datum evaluate(formula_evaluation_context &context) override
     {
-        ttlet output_size = context.output_size();
+        hilet output_size = context.output_size();
 
         ssize_t loop_count = 0;
         while (evaluate_formula_without_output(context, *expression, location)) {
@@ -70,4 +70,4 @@ struct skeleton_while_node final : skeleton_node {
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

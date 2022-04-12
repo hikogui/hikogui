@@ -6,7 +6,7 @@
 
 #include "matrix.hpp"
 
-namespace tt::inline v1::geo {
+namespace hi::inline v1::geo {
 
 class identity {
 public:
@@ -67,4 +67,4 @@ public:
     }
 };
 
-} // namespace tt::inline v1::geo
+} // namespace hi::inline v1::geo

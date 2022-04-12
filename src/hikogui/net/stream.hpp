@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class Socketstream {
 protected:
@@ -42,4 +42,4 @@ public:
     [[nodiscard]] virtual void handleReadyToWriteEvent();
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

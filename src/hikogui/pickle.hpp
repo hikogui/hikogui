@@ -11,7 +11,7 @@
 #include <string>
 #include <limits>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Encode and decode a type to and from a UTF-8 string.
  *
@@ -114,4 +114,4 @@ struct pickle<std::string> {
 };
 
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

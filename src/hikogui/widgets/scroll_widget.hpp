@@ -11,7 +11,7 @@
 #include "../GUI/gui_window.hpp"
 #include "../geometry/axis.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** The scroll widget allows a content widget to be shown in less space than is
  * required.
@@ -46,7 +46,7 @@ public:
     using super = widget;
     using delegate_type = scroll_delegate<Axis, ControlsWindow>;
 
-    static constexpr tt::axis axis = Axis;
+    static constexpr hi::axis axis = Axis;
     static constexpr bool controls_window = ControlsWindow;
 
     ~scroll_widget()
@@ -66,8 +66,8 @@ public:
     scroll_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate = {}) noexcept :
         super(window, parent), _delegate(std::move(delegate))
     {
-        tt_axiom(is_gui_thread());
-        tt_axiom(parent);
+        hi_axiom(is_gui_thread());
+        hi_axiom(parent);
 
         // The scroll-widget will not draw itself, only its selected content.
         semantic_layer = parent->semantic_layer;
@@ -109,9 +109,9 @@ public:
     widget_constraints const &set_constraints() noexcept override
     {
         _layout = {};
-        ttlet aperture_constraints = _aperture->set_constraints();
-        ttlet horizontal_constraints = _horizontal_scroll_bar->set_constraints();
-        ttlet vertical_constraints = _vertical_scroll_bar->set_constraints();
+        hilet aperture_constraints = _aperture->set_constraints();
+        hilet horizontal_constraints = _horizontal_scroll_bar->set_constraints();
+        hilet vertical_constraints = _vertical_scroll_bar->set_constraints();
 
         _constraints = aperture_constraints;
 
@@ -147,23 +147,23 @@ public:
         if (compare_store(_layout, layout)) {
             _horizontal_scroll_bar->visible = _aperture->x_axis_scrolls() and any(axis & axis::horizontal);
             _vertical_scroll_bar->visible = _aperture->y_axis_scrolls() and any(axis & axis::vertical);
-            ttlet both_bars_visible = *_horizontal_scroll_bar->visible and *_vertical_scroll_bar->visible;
+            hilet both_bars_visible = *_horizontal_scroll_bar->visible and *_vertical_scroll_bar->visible;
 
-            ttlet vertical_scroll_bar_width = _vertical_scroll_bar->constraints().preferred.width();
-            ttlet horizontal_scroll_bar_height = _horizontal_scroll_bar->constraints().preferred.height();
+            hilet vertical_scroll_bar_width = _vertical_scroll_bar->constraints().preferred.width();
+            hilet horizontal_scroll_bar_height = _horizontal_scroll_bar->constraints().preferred.height();
 
             // The aperture size grows to fill the size of the layout.
-            ttlet aperture_size = extent2{
+            hilet aperture_size = extent2{
                 *_vertical_scroll_bar->visible ? layout.width() - vertical_scroll_bar_width : layout.width(),
                 *_horizontal_scroll_bar->visible ? layout.height() - horizontal_scroll_bar_height : layout.height()};
-            ttlet aperture_offset = point2{0.0f, *_horizontal_scroll_bar->visible ? horizontal_scroll_bar_height : 0.0f};
+            hilet aperture_offset = point2{0.0f, *_horizontal_scroll_bar->visible ? horizontal_scroll_bar_height : 0.0f};
             _aperture_rectangle = aarectangle{aperture_offset, aperture_size};
 
             // The length of the scroll-bar is the full length of the widget, or just the length of the aperture depending
             // if the counter-part scroll-bar is visible.
-            ttlet horizontal_scroll_bar_size =
+            hilet horizontal_scroll_bar_size =
                 extent2{both_bars_visible ? aperture_size.width() : layout.width(), horizontal_scroll_bar_height};
-            ttlet vertical_scroll_bar_size =
+            hilet vertical_scroll_bar_size =
                 extent2{vertical_scroll_bar_width, both_bars_visible ? aperture_size.height() : layout.height()};
 
             _vertical_scroll_bar_rectangle = aarectangle{
@@ -198,7 +198,7 @@ public:
 
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override
     {
-        tt_axiom(is_gui_thread());
+        hi_axiom(is_gui_thread());
 
         if (*visible and *enabled) {
             auto r = _aperture->hitbox_test_from_parent(position);
@@ -234,4 +234,4 @@ using vertical_scroll_widget = scroll_widget<axis::vertical, ControlsWindow>;
 template<bool ControlsWindow = false>
 using horizontal_scroll_widget = scroll_widget<axis::horizontal, ControlsWindow>;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

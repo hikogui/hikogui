@@ -11,7 +11,7 @@
 #include "../alignment.hpp"
 #include <vector>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class text_shaper_line {
 public:
@@ -89,7 +89,7 @@ public:
         iterator first,
         iterator last,
         float width,
-        tt::font_metrics const &metrics) noexcept;
+        hi::font_metrics const &metrics) noexcept;
 
     [[nodiscard]] constexpr size_t size() const noexcept
     {
@@ -108,7 +108,7 @@ public:
 
     iterator operator[](size_t index) const noexcept
     {
-        tt_axiom(index < columns.size());
+        hi_axiom(index < columns.size());
         return columns[index];
     }
 

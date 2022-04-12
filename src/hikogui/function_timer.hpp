@@ -11,7 +11,7 @@
 #include <chrono>
 #include <functional>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** A time that calls functions.
  *
@@ -42,13 +42,13 @@ public:
      */
     std::pair<token_type, bool> delay_function(utc_nanoseconds time_point, auto&& func) noexcept
     {
-        ttlet it = std::lower_bound(_functions.begin(), _functions.end(), time_point, [](ttlet& x, ttlet& time_point) {
+        hilet it = std::lower_bound(_functions.begin(), _functions.end(), time_point, [](hilet& x, hilet& time_point) {
             return x.time_point > time_point;
         });
 
-        ttlet next_to_call = it == _functions.end();
+        hilet next_to_call = it == _functions.end();
 
-        auto token = std::make_shared<function_type>(tt_forward(func));
+        auto token = std::make_shared<function_type>(hi_forward(func));
         _functions.emplace(it, time_point, std::chrono::nanoseconds::max(), token);
         return {std::move(token), next_to_call};
     }
@@ -62,11 +62,11 @@ public:
      */
     std::pair<token_type, bool> repeat_function(std::chrono::nanoseconds period, utc_nanoseconds time_point, auto&& func) noexcept
     {
-        auto it = std::lower_bound(_functions.begin(), _functions.end(), time_point, [](ttlet& x, ttlet& time_point) {
+        auto it = std::lower_bound(_functions.begin(), _functions.end(), time_point, [](hilet& x, hilet& time_point) {
             return x.time_point > time_point;
         });
 
-        auto token = std::make_shared<function_type>(tt_forward(func));
+        auto token = std::make_shared<function_type>(hi_forward(func));
         it = _functions.emplace(it, time_point, period, token);
         return {std::move(token), it + 1 == _functions.end()};
     }
@@ -80,7 +80,7 @@ public:
      */
     std::pair<token_type, bool> repeat_function(std::chrono::nanoseconds period, auto&& func) noexcept
     {
-        return repeat_function(period, std::chrono::utc_clock::now(), tt_forward(func));
+        return repeat_function(period, std::chrono::utc_clock::now(), hi_forward(func));
     }
 
     /** Get the deadline of the next function to call.
@@ -143,7 +143,7 @@ private:
 
     void remove_or_reinsert(utc_nanoseconds current_time) noexcept
     {
-        tt_axiom(not _functions.empty());
+        hi_axiom(not _functions.empty());
 
         if (_functions.back().repeats() and not _functions.back().token.expired()) {
             // When the function is repeating, calculate the new.
@@ -158,7 +158,7 @@ private:
             }
 
             // Reinsert the function in the sorted list of functions.
-            ttlet it = std::lower_bound(_functions.begin(), _functions.end(), item.time_point, [](ttlet& x, ttlet& time_point) {
+            hilet it = std::lower_bound(_functions.begin(), _functions.end(), item.time_point, [](hilet& x, hilet& time_point) {
                 return x.time_point > time_point;
             });
 
@@ -178,17 +178,17 @@ private:
      */
     result_type run_one(utc_nanoseconds current_time, auto&&...args)
     {
-        tt_axiom(not _functions.empty());
+        hi_axiom(not _functions.empty());
 
         if constexpr (std::is_same_v<result_type, void>) {
             if (auto token = _functions.back().token.lock()) {
-                (*token)(tt_forward(args)...);
+                (*token)(hi_forward(args)...);
             }
             remove_or_reinsert(current_time);
             return;
         } else {
             if (auto token = _functions.back().token.lock()) {
-                auto result = (*token)(tt_forward(args)...);
+                auto result = (*token)(hi_forward(args)...);
                 remove_or_reinsert(current_time);
                 return result;
             } else {
@@ -202,4 +202,4 @@ private:
     std::vector<timer_type> _functions;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

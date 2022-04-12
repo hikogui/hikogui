@@ -15,7 +15,7 @@
 #include <optional>
 #include <future>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** The GUI widget displays and lays out text together with an icon.
  *
@@ -55,7 +55,7 @@ public:
      *  - `alignment::middle_center`: text drawn across a large icon. Should only be
      *    used with a `pixmap` icon.
      */
-    observable<alignment> alignment = tt::alignment{horizontal_alignment::right, vertical_alignment::middle};
+    observable<alignment> alignment = hi::alignment{horizontal_alignment::right, vertical_alignment::middle};
 
     /** The text style to display the label's text in and color of the label's (non-color) icon.
      */
@@ -78,12 +78,12 @@ public:
      * @param text_style The text style of the label, and color of non-color
      *                   icons.
      */
-    template<typename Label, typename Alignment = tt::alignment, typename TextStyle = tt::theme_text_style>
+    template<typename Label, typename Alignment = hi::alignment, typename TextStyle = hi::theme_text_style>
     label_widget(
         gui_window &window,
         widget *parent,
         Label &&label,
-        Alignment &&alignment = tt::alignment::middle_right(),
+        Alignment &&alignment = hi::alignment::middle_right(),
         TextStyle &&text_style = theme_text_style::label) noexcept :
         label_widget(window, parent)
     {
@@ -119,4 +119,4 @@ private:
     label_widget(gui_window &window, widget *parent) noexcept;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

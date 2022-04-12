@@ -9,7 +9,7 @@
 #include <thread>
 #include <chrono>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Lock-free fetch-then-max operation on an atomic.
  */
@@ -59,7 +59,7 @@ public:
 
     atomic_unique_ptr &operator=(atomic_unique_ptr &&other) noexcept
     {
-        tt_return_on_self_assignment(other);
+        hi_return_on_self_assignment(other);
 
         delete _pointer.exchange(other._pointer.exchange(nullptr));
         return *this;
@@ -121,4 +121,4 @@ private:
     std::atomic<pointer> _pointer;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

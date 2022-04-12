@@ -7,7 +7,7 @@
 #include "abstract_button_widget.hpp"
 #include "default_button_delegate.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 class toolbar_button_widget final : public abstract_button_widget {
 public:
@@ -46,4 +46,4 @@ private:
     void draw_toolbar_button(draw_context const &context) noexcept;
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

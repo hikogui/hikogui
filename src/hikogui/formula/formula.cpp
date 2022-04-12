@@ -64,7 +64,7 @@
 #include <functional>
 #include <limits>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 static std::unique_ptr<formula_node>
 parse_formula_1(formula_parse_context &context, std::unique_ptr<formula_node> lhs, uint8_t min_precedence);
@@ -161,7 +161,7 @@ static std::unique_ptr<formula_node> parse_operation_formula(
  */
 static std::unique_ptr<formula_node> parse_primary_formula(formula_parse_context &context)
 {
-    ttlet &location = context->location;
+    hilet &location = context->location;
 
     switch (context->name) {
     case tokenizer_name_t::IntegerLiteral:
@@ -259,9 +259,9 @@ static std::unique_ptr<formula_node> parse_primary_formula(formula_parse_context
             return std::make_unique<formula_map_literal_node>(location, std::move(keys), std::move(values));
 
         } else {
-            ttlet unary_op = *context;
+            hilet unary_op = *context;
             ++context;
-            ttlet[precedence, left_to_right] = operator_precedence(unary_op, false);
+            hilet[precedence, left_to_right] = operator_precedence(unary_op, false);
             auto subformula = parse_formula_1(context, parse_primary_formula(context), precedence);
             return parse_operation_formula(context, {}, unary_op, std::move(subformula));
         }
@@ -360,8 +360,8 @@ parse_formula_1(formula_parse_context &context, std::unique_ptr<formula_node> lh
     }
 
     while (lookahead_precedence >= min_precedence) {
-        ttlet op = lookahead;
-        ttlet op_precedence = lookahead_precedence;
+        hilet op = lookahead;
+        hilet op_precedence = lookahead_precedence;
         ++context;
 
         std::unique_ptr<formula_node> rhs;
@@ -442,4 +442,4 @@ std::string_view::const_iterator find_end_of_formula(
     return last;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

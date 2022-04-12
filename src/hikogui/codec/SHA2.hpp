@@ -12,7 +12,7 @@
 #include <cstdint>
 #include <span>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 namespace detail::SHA2 {
 
 template<typename T>
@@ -39,16 +39,16 @@ struct state {
         case 5: return f;
         case 6: return g;
         case 7: return h;
-        default: tt_no_default();
+        default: hi_no_default();
         }
     }
 
     [[nodiscard]] constexpr std::byte get_byte(std::size_t i) const noexcept
     {
-        tt_axiom(i < 8 * sizeof(T));
-        ttlet word_nr = i / sizeof(T);
-        ttlet byte_nr = i % sizeof(T);
-        ttlet word = get_word(word_nr);
+        hi_axiom(i < 8 * sizeof(T));
+        hilet word_nr = i / sizeof(T);
+        hilet byte_nr = i % sizeof(T);
+        hilet word = get_word(word_nr);
         return static_cast<std::byte>(word >> (sizeof(T) - 1 - byte_nr) * 8);
     }
 
@@ -86,11 +86,11 @@ struct block {
 
     constexpr void set_byte(std::size_t i, std::byte value) noexcept
     {
-        ttlet word_nr = i / sizeof(T);
-        ttlet byte_nr = i % sizeof(T);
+        hilet word_nr = i / sizeof(T);
+        hilet byte_nr = i % sizeof(T);
         auto &word = v[word_nr];
 
-        ttlet valueT = static_cast<T>(static_cast<uint8_t>(value));
+        hilet valueT = static_cast<T>(static_cast<uint8_t>(value));
         word |= valueT << (sizeof(T) - 1 - byte_nr) * 8;
     }
 
@@ -229,9 +229,9 @@ class SHA2 {
 
     static constexpr state_type round(state_type const &tmp, T K, T W) noexcept
     {
-        ttlet T1 = tmp.h + S1(tmp.e) + Ch(tmp.e, tmp.f, tmp.g) + K + W;
+        hilet T1 = tmp.h + S1(tmp.e) + Ch(tmp.e, tmp.f, tmp.g) + K + W;
 
-        ttlet T2 = S0(tmp.a) + Maj(tmp.a, tmp.b, tmp.c);
+        hilet T2 = S0(tmp.a) + Maj(tmp.a, tmp.b, tmp.c);
 
         return {T1 + T2, tmp.a, tmp.b, tmp.c, tmp.d + T1, tmp.e, tmp.f, tmp.g};
     }
@@ -244,7 +244,7 @@ class SHA2 {
         }
 
         for (std::size_t i = 16; i != nr_rounds; ++i) {
-            ttlet W_ = s1(W[i - 2]) + W[i - 7] + s0(W[i - 15]) + W[i - 16];
+            hilet W_ = s1(W[i - 2]) + W[i - 7] + s0(W[i - 15]) + W[i - 16];
 
             tmp = round(tmp, K(i), W_);
 
@@ -262,14 +262,14 @@ class SHA2 {
 
     constexpr void pad() noexcept
     {
-        tt_axiom(overflow_it != overflow.end());
+        hi_axiom(overflow_it != overflow.end());
 
         // Add the terminating '1' bit.
         *(overflow_it++) = std::byte{0x80};
 
         // Complete the current block if there is not enough room
         // for the length in this block.
-        ttlet overflow_left = overflow.end() - overflow_it;
+        hilet overflow_left = overflow.end() - overflow_it;
         if (overflow_left < pad_length_of_length) {
             while (overflow_it != overflow.end()) {
                 *(overflow_it++) = std::byte{0x00};
@@ -279,7 +279,7 @@ class SHA2 {
         }
 
         // Pad until the start of length.
-        ttlet overflow_length_start = overflow.end() - pad_length_of_length;
+        hilet overflow_length_start = overflow.end() - pad_length_of_length;
         while (overflow_it != overflow_length_start) {
             *(overflow_it++) = std::byte{0x00};
         }
@@ -333,36 +333,36 @@ public:
 
     constexpr SHA2 &add(bstring const &str, bool finish = true) noexcept
     {
-        ttlet first = str.data();
-        ttlet last = first + str.size();
+        hilet first = str.data();
+        hilet last = first + str.size();
         return add(first, last, finish);
     }
 
     constexpr SHA2 &add(bstring_view str, bool finish = true) noexcept
     {
-        ttlet first = str.data();
-        ttlet last = first + str.size();
+        hilet first = str.data();
+        hilet last = first + str.size();
         return add(first, last, finish);
     }
 
     constexpr SHA2 &add(std::string const &str, bool finish = true) noexcept
     {
-        ttlet first = reinterpret_cast<std::byte const *>(str.data());
-        ttlet last = first + str.size();
+        hilet first = reinterpret_cast<std::byte const *>(str.data());
+        hilet last = first + str.size();
         return add(first, last, finish);
     }
 
     constexpr SHA2 &add(std::string_view str, bool finish = true) noexcept
     {
-        ttlet first = reinterpret_cast<std::byte const *>(str.data());
-        ttlet last = first + str.size();
+        hilet first = reinterpret_cast<std::byte const *>(str.data());
+        hilet last = first + str.size();
         return add(first, last, finish);
     }
 
     constexpr void add(std::span<std::byte const> str, bool finish = true) noexcept
     {
-        ttlet first = reinterpret_cast<std::byte const *>(str.data());
-        ttlet last = first + str.size();
+        hilet first = reinterpret_cast<std::byte const *>(str.data());
+        hilet last = first + str.size();
         add(first, last, finish);
     }
 
@@ -456,4 +456,4 @@ public:
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

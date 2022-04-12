@@ -5,7 +5,7 @@
 #include "pipeline_image_texture_map.hpp"
 #include "gfx_device_vulkan.hpp"
 
-namespace tt::inline v1::pipeline_image {
+namespace hi::inline v1::pipeline_image {
 
 void texture_map::transitionLayout(const gfx_device_vulkan &device, vk::Format format, vk::ImageLayout nextLayout)
 {
@@ -15,4 +15,4 @@ void texture_map::transitionLayout(const gfx_device_vulkan &device, vk::Format f
     }
 }
 
-} // namespace tt::inline v1::pipeline_image
+} // namespace hi::inline v1::pipeline_image

@@ -9,7 +9,7 @@
 #include "../file_view.hpp"
 #include <cstddef>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 bstring zlib_decompress(std::span<std::byte const> bytes, std::size_t max_size = 0x01000000);
 
@@ -18,4 +18,4 @@ inline bstring zlib_decompress(URL const &url, std::size_t max_size = 0x01000000
     return zlib_decompress(file_view(url), max_size);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

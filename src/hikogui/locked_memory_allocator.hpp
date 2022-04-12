@@ -7,7 +7,7 @@
 #include <type_traits>
 #include <cstddef>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] std::byte *locked_memory_allocator_allocate(std::size_t n) noexcept;
 
@@ -46,4 +46,4 @@ public:
     }
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

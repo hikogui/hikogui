@@ -8,7 +8,7 @@
 #include "../huffman.hpp"
 #include <array>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 static void inflate_copy_block(std::span<std::byte const> bytes, std::size_t &bit_offset, std::size_t max_size, bstring &r)
 {
@@ -17,8 +17,8 @@ static void inflate_copy_block(std::span<std::byte const> bytes, std::size_t &bi
     auto LEN = make_placement_ptr<little_uint16_buf_t>(bytes, offset);
     [[maybe_unused]] auto NLEN = make_placement_ptr<little_uint16_buf_t>(bytes, offset);
 
-    tt_parse_check((offset + LEN->value()) <= bytes.size(), "input buffer overrun");
-    tt_parse_check((r.size() + LEN->value()) <= max_size, "output buffer overrun");
+    hi_parse_check((offset + LEN->value()) <= bytes.size(), "input buffer overrun");
+    hi_parse_check((r.size() + LEN->value()) <= max_size, "output buffer overrun");
     r.append(&bytes[offset], LEN->value());
 
     bit_offset = offset * 8;
@@ -110,12 +110,12 @@ static void inflate_block(
         // - 15 bits maximum huffman code.
         // -  5 bits extra length.
         // -  7 bits rounding up to byte.
-        tt_parse_check(((bit_offset + 27) >> 3) <= bytes.size(), "Input buffer overrun");
+        hi_parse_check(((bit_offset + 27) >> 3) <= bytes.size(), "Input buffer overrun");
 
         auto literal_symbol = literal_tree.get_symbol(bytes, bit_offset);
 
         if (literal_symbol <= 255) {
-            tt_parse_check(r.size() < max_size, "Output buffer overrun");
+            hi_parse_check(r.size() < max_size, "Output buffer overrun");
             r.push_back(static_cast<std::byte>(literal_symbol));
 
         } else if (literal_symbol == 256) {
@@ -124,21 +124,21 @@ static void inflate_block(
 
         } else {
             auto length = inflate_decode_length(bytes, bit_offset, literal_symbol);
-            tt_parse_check(r.size() + length <= max_size, "Output buffer overrun");
+            hi_parse_check(r.size() + length <= max_size, "Output buffer overrun");
 
             // Test only every get_symbol, the trailer is at least 32 bits (Checksum)
             // - 15 bits maximum huffman code.
             // -  7 bits rounding up to byte.
-            tt_parse_check(((bit_offset + 22) >> 3) <= bytes.size(), "Input buffer overrun");
+            hi_parse_check(((bit_offset + 22) >> 3) <= bytes.size(), "Input buffer overrun");
             auto distance_symbol = distance_tree.get_symbol(bytes, bit_offset);
 
             // Test only every inflate_decode_distance, the trailer is at least 32 bits (Checksum)
             // - 13 bits extra length.
             // -  7 bits rounding up to byte.
-            tt_parse_check(((bit_offset + 20) >> 3) <= bytes.size(), "Input buffer overrun");
+            hi_parse_check(((bit_offset + 20) >> 3) <= bytes.size(), "Input buffer overrun");
             auto distance = inflate_decode_distance(bytes, bit_offset, distance_symbol);
 
-            tt_parse_check(distance <= r.size(), "Distance beyond start of decompressed data");
+            hi_parse_check(distance <= r.size(), "Distance beyond start of decompressed data");
             auto src_i = r.size() - distance;
             for (auto i = 0; i != length; ++i) {
                 r.push_back(r[src_i++]);
@@ -187,11 +187,11 @@ inflate_code_lengths(std::span<std::byte const> bytes, std::size_t &bit_offset, 
     // The symbols are in different order in the table.
     constexpr auto symbols = std::array<int16_t,19>{16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
 
-    tt_parse_check(((bit_offset + (3 * static_cast<std::size_t>(nr_symbols)) + 7) >> 3) <= bytes.size(), "Input buffer overrun");
+    hi_parse_check(((bit_offset + (3 * static_cast<std::size_t>(nr_symbols)) + 7) >> 3) <= bytes.size(), "Input buffer overrun");
 
     auto lengths = std::vector<uint8_t>(symbols.size(), 0);
     for (auto i = 0_uz; i != nr_symbols; ++i) {
-        ttlet symbol = symbols[i];
+        hilet symbol = symbols[i];
         lengths[symbol] = static_cast<uint8_t>(get_bits(bytes, bit_offset, 3));
     }
     return huffman_tree<int16_t>::from_lengths(std::move(lengths));
@@ -212,7 +212,7 @@ std::vector<uint8_t> inflate_lengths(
         // -  7 bits maximum huffman code.
         // -  7 bits extra length.
         // -  7 bits rounding up to byte.
-        tt_parse_check(((bit_offset + 21) >> 3) <= bytes.size(), "Input buffer overrun");
+        hi_parse_check(((bit_offset + 21) >> 3) <= bytes.size(), "Input buffer overrun");
         auto symbol = code_length_tree.get_symbol(bytes, bit_offset);
 
         switch (symbol) {
@@ -246,19 +246,19 @@ void inflate_dynamic_block(std::span<std::byte const> bytes, std::size_t &bit_of
     // Test all lengths, the trailer is at least 32 bits (Checksum)
     // - 14 bits lengths
     // -  7 bits rounding up to byte.
-    tt_parse_check(((bit_offset + 21) >> 3) <= bytes.size(), "Input buffer overrun");
-    ttlet HLIT = get_bits(bytes, bit_offset, 5);
-    ttlet HDIST = get_bits(bytes, bit_offset, 5);
-    ttlet HCLEN = get_bits(bytes, bit_offset, 4);
+    hi_parse_check(((bit_offset + 21) >> 3) <= bytes.size(), "Input buffer overrun");
+    hilet HLIT = get_bits(bytes, bit_offset, 5);
+    hilet HDIST = get_bits(bytes, bit_offset, 5);
+    hilet HCLEN = get_bits(bytes, bit_offset, 4);
 
-    ttlet code_length_tree = inflate_code_lengths(bytes, bit_offset, HCLEN + 4);
+    hilet code_length_tree = inflate_code_lengths(bytes, bit_offset, HCLEN + 4);
 
-    ttlet lengths = inflate_lengths(bytes, bit_offset, HLIT + HDIST + 258, code_length_tree);
-    tt_parse_check(lengths[256] != 0, "The end-of-block symbol must be in the table");
+    hilet lengths = inflate_lengths(bytes, bit_offset, HLIT + HDIST + 258, code_length_tree);
+    hi_parse_check(lengths[256] != 0, "The end-of-block symbol must be in the table");
 
-    ttlet lengths_ptr = lengths.data();
-    ttlet literal_tree = huffman_tree<int16_t>::from_lengths(lengths_ptr, HLIT + 257);
-    ttlet distance_tree = huffman_tree<int16_t>::from_lengths(&lengths_ptr[HLIT + 257], HDIST + 1);
+    hilet lengths_ptr = lengths.data();
+    hilet literal_tree = huffman_tree<int16_t>::from_lengths(lengths_ptr, HLIT + 257);
+    hilet distance_tree = huffman_tree<int16_t>::from_lengths(&lengths_ptr[HLIT + 257], HDIST + 1);
 
     inflate_block(bytes, bit_offset, max_size, literal_tree, distance_tree, r);
 }
@@ -274,10 +274,10 @@ bstring inflate(std::span<std::byte const> bytes, std::size_t &offset, std::size
         // Test all lengths, the trailer is at least 32 bits (Checksum)
         // - 3 bits header
         // - 7 bits rounding up to byte.
-        tt_parse_check(((bit_offset + 10) >> 3) <= bytes.size(), "Input buffer overrun");
+        hi_parse_check(((bit_offset + 10) >> 3) <= bytes.size(), "Input buffer overrun");
 
         BFINAL = get_bit(bytes, bit_offset);
-        ttlet BTYPE = get_bits(bytes, bit_offset, 2);
+        hilet BTYPE = get_bits(bytes, bit_offset, 2);
 
         switch (BTYPE) {
         case 0: inflate_copy_block(bytes, bit_offset, max_size, r); break;
@@ -292,4 +292,4 @@ bstring inflate(std::span<std::byte const> bytes, std::size_t &offset, std::size
     return r;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

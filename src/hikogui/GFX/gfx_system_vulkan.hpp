@@ -7,7 +7,7 @@
 #include "gfx_system.hpp"
 #include <vulkan/vulkan.hpp>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 /** Vulkan gfx_device controller.
  * Manages Vulkan device and a set of Windows.
@@ -58,13 +58,13 @@ public:
 
     vk::DispatchLoaderDynamic loader() const noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
         return _loader;
     }
 
     void destroySurfaceKHR(vk::SurfaceKHR surface)
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
         intrinsic.destroySurfaceKHR(surface);
     }
 
@@ -75,4 +75,4 @@ public:
         void *pUserData);
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

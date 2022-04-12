@@ -6,7 +6,7 @@
 #include "unicode_normalization.hpp"
 #include "unicode_description.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] static grapheme::value_type make_grapheme(std::u32string_view code_points) noexcept
 {
@@ -23,8 +23,8 @@ namespace tt::inline v1 {
         // Add the non-starter code-points.
         auto i = 1_uz;
         for (; i != 5 and it != code_points.end(); ++i, ++it) {
-            ttlet &description = unicode_description::find(*it);
-            ttlet shift = (4 - i) * 10 + 3;
+            hilet &description = unicode_description::find(*it);
+            hilet shift = (4 - i) * 10 + 3;
             value |= static_cast<grapheme::value_type>(description.non_starter_code()) << shift;
         }
     }
@@ -63,7 +63,7 @@ grapheme &grapheme::operator=(std::u32string_view code_points) noexcept
         return false;
     }
 
-    ttlet &description = unicode_description::find(get<0>(*this));
+    hilet &description = unicode_description::find(get<0>(*this));
     if (is_C(description)) {
         return false;
     }
@@ -73,4 +73,4 @@ grapheme &grapheme::operator=(std::u32string_view code_points) noexcept
     return true;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

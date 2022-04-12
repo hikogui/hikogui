@@ -9,7 +9,7 @@
 #include <chrono>
 #include <cstring>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 static bool hasFoundationExtensions(const std::vector<const char *> &requiredExtensions)
 {
@@ -30,19 +30,19 @@ static std::vector<const char *> filter_available_layers(std::vector<const char 
 {
     auto available_layers = vk::enumerateInstanceLayerProperties();
 
-    tt_log_info("Available vulkan layers:");
+    hi_log_info("Available vulkan layers:");
     auto r = std::vector<const char *>{};
-    for (ttlet &available_layer : available_layers) {
-        ttlet layer_name = std::string{available_layer.layerName.data()};
+    for (hilet &available_layer : available_layers) {
+        hilet layer_name = std::string{available_layer.layerName.data()};
 
-        ttlet it = std::find(begin(requested_layers), end(requested_layers), layer_name);
+        hilet it = std::find(begin(requested_layers), end(requested_layers), layer_name);
 
         if (it != end(requested_layers)) {
             // Use the *it, because the lifetime of its `char const *` is still available after the function call.
             r.push_back(*it);
-            tt_log_info("  * {}", layer_name);
+            hi_log_info("  * {}", layer_name);
         } else {
-            tt_log_info("    {}", layer_name);
+            hi_log_info("    {}", layer_name);
         }
     }
     return r;
@@ -58,8 +58,8 @@ gfx_system_vulkan::gfx_system_vulkan() : gfx_system()
     if constexpr (operating_system::current == operating_system::windows) {
         requiredExtensions = {VK_KHR_WIN32_SURFACE_EXTENSION_NAME};
     } else {
-        tt_not_implemented();
-        // XXX tt_static_not_implemented();
+        hi_not_implemented();
+        // XXX hi_static_not_implemented();
     }
 
     applicationInfo = vk::ApplicationInfo(
@@ -95,7 +95,7 @@ gfx_system_vulkan::gfx_system_vulkan() : gfx_system()
     }
 
     if constexpr (build_type::current == build_type::debug) {
-        ttlet requested_layers = std::vector<char const *>{
+        hilet requested_layers = std::vector<char const *>{
             "VK_LAYER_KHRONOS_validation",
             //"VK_LAYER_LUNARG_api_dump"
         };
@@ -106,7 +106,7 @@ gfx_system_vulkan::gfx_system_vulkan() : gfx_system()
     instanceCreateInfo.setEnabledLayerCount(narrow_cast<uint32_t>(requiredLayers.size()));
     instanceCreateInfo.setPpEnabledLayerNames(requiredLayers.data());
 
-    tt_log_info("Creating Vulkan instance.");
+    hi_log_info("Creating Vulkan instance.");
     intrinsic = vk_create_instance_no_asan(instanceCreateInfo);
 
 #if (VK_HEADER_VERSION == 97)
@@ -118,7 +118,7 @@ gfx_system_vulkan::gfx_system_vulkan() : gfx_system()
 
 gfx_system_vulkan::~gfx_system_vulkan()
 {
-    ttlet lock = std::scoped_lock(gfx_system_mutex);
+    hilet lock = std::scoped_lock(gfx_system_mutex);
     if constexpr (build_type::current == build_type::debug) {
         intrinsic.destroy(debugUtilsMessager, nullptr, loader());
     }
@@ -126,7 +126,7 @@ gfx_system_vulkan::~gfx_system_vulkan()
 
 void gfx_system_vulkan::init() noexcept(false)
 {
-    ttlet lock = std::scoped_lock(gfx_system_mutex);
+    hilet lock = std::scoped_lock(gfx_system_mutex);
 
     if constexpr (build_type::current == build_type::debug) {
         debugUtilsMessager = intrinsic.createDebugUtilsMessengerEXT(
@@ -156,24 +156,24 @@ VkBool32 gfx_system_vulkan::debugUtilsMessageCallback(
     auto message = std::string_view(pCallbackData->pMessage);
 
     if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
-        tt_log_info("Vulkan: {}", message);
+        hi_log_info("Vulkan: {}", message);
 
     } else if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
-        tt_log_warning("Vulkan: {}", message);
+        hi_log_warning("Vulkan: {}", message);
 
     } else if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
         if (message.starts_with("Failed to open dynamic library")) {
             // Steelseries mouse driver will inject:
             // C:\ProgramData\obs-studio-hook\graphics-hook{32,64}.dll
             // One of them will always fail to load.
-            tt_log_warning("Vulkan: {}", pCallbackData->pMessage);
+            hi_log_warning("Vulkan: {}", pCallbackData->pMessage);
 
         } else {
-            tt_log_error("Vulkan: {}", pCallbackData->pMessage);
+            hi_log_error("Vulkan: {}", pCallbackData->pMessage);
         }
     }
 
     return VK_FALSE;
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

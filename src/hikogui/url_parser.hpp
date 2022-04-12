@@ -10,7 +10,7 @@
 #include <vector>
 #include <functional>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 constexpr char native_path_seperator = (operating_system::current == operating_system::windows) ? '\\' : '/';
 
@@ -154,4 +154,4 @@ std::string concatenate_url_filename(std::string_view lhs, std::string_view rhs)
  */
 std::string filename_from_path(std::string_view path) noexcept;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

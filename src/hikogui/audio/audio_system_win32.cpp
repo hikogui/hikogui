@@ -14,7 +14,7 @@
 #include <Windows.h>
 #include <mmdeviceapi.h>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 [[nodiscard]] std::unique_ptr<audio_system>
 audio_system::make_unique(std::weak_ptr<audio_system_delegate> delegate) noexcept
@@ -61,7 +61,7 @@ public:
         // 2. We need to copy device_id which has an unbounded size.
         // 3. Allocating a string blocks.
 
-        tt_axiom(device_id);
+        hi_axiom(device_id);
         auto device_id_ = audio_device_id{audio_device_id::win32, device_id};
         loop::main().wfree_post_function([this, device_id_]() {
             this->_system->device_added(device_id_);
@@ -89,17 +89,17 @@ public:
 
     STDMETHOD(QueryInterface)(REFIID iid, void **object)
     {
-        tt_no_default();
+        hi_no_default();
     }
 
     STDMETHOD_(ULONG, AddRef)()
     {
-        tt_no_default();
+        hi_no_default();
     }
 
     STDMETHOD_(ULONG, Release)()
     {
-        tt_no_default();
+        hi_no_default();
     }
 
 private:
@@ -109,11 +109,11 @@ private:
 audio_system_win32::audio_system_win32(std::weak_ptr<audio_system_delegate> delegate) :
     audio_system(std::move(delegate))
 {
-    tt_hresult_check(CoInitializeEx(NULL, COINIT_MULTITHREADED));
+    hi_hresult_check(CoInitializeEx(NULL, COINIT_MULTITHREADED));
 
-    tt_hresult_check(CoCreateInstance(
+    hi_hresult_check(CoCreateInstance(
         CLSID_MMDeviceEnumerator, NULL, CLSCTX_ALL, IID_IMMDeviceEnumerator, reinterpret_cast<LPVOID *>(&_device_enumerator)));
-    tt_assert(_device_enumerator != nullptr);
+    hi_assert(_device_enumerator != nullptr);
 
     _notification_client = new audio_system_win32_notification_client(this);
 
@@ -139,20 +139,20 @@ void audio_system_win32::init() noexcept
 void audio_system_win32::update_device_list() noexcept
 {
     IMMDeviceCollection *device_collection;
-    tt_hresult_check(_device_enumerator->EnumAudioEndpoints(
+    hi_hresult_check(_device_enumerator->EnumAudioEndpoints(
         eAll, DEVICE_STATE_ACTIVE | DEVICE_STATE_DISABLED | DEVICE_STATE_UNPLUGGED, &device_collection));
-    tt_assert(device_collection != nullptr);
+    hi_assert(device_collection != nullptr);
 
     UINT number_of_devices;
-    tt_hresult_check(device_collection->GetCount(&number_of_devices));
+    hi_hresult_check(device_collection->GetCount(&number_of_devices));
 
     auto old_devices = _devices;
     _devices.clear();
     for (UINT i = 0; i < number_of_devices; i++) {
         IMMDevice *win32_device;
-        tt_hresult_check(device_collection->Item(i, &win32_device));
+        hi_hresult_check(device_collection->Item(i, &win32_device));
 
-        ttlet device_id = audio_device_win32::get_id(win32_device);
+        hilet device_id = audio_device_win32::get_id(win32_device);
 
         auto it = std::find_if(old_devices.begin(), old_devices.end(), [&device_id](auto &item) {
             return item->id == device_id;
@@ -166,7 +166,7 @@ void audio_system_win32::update_device_list() noexcept
 
         } else {
             auto device = std::allocate_shared<audio_device_win32>(locked_memory_allocator<audio_device_win32>{}, win32_device);
-            // tt_log_info(
+            // hi_log_info(
             //    "Found audio device \"{}\", state={}, channels={}, speakers={}",
             //    device->name(),
             //    device->state(),
@@ -181,9 +181,9 @@ void audio_system_win32::update_device_list() noexcept
     // Any devices in old_devices that are left over will be deallocated.
 }
 
-void audio_system_win32::default_device_changed(tt::audio_device_id const &device_id) noexcept {}
+void audio_system_win32::default_device_changed(hi::audio_device_id const &device_id) noexcept {}
 
-void audio_system_win32::device_added(tt::audio_device_id const &device_id) noexcept
+void audio_system_win32::device_added(hi::audio_device_id const &device_id) noexcept
 {
     update_device_list();
     if (auto delegate = _delegate.lock()) {
@@ -191,7 +191,7 @@ void audio_system_win32::device_added(tt::audio_device_id const &device_id) noex
     }
 }
 
-void audio_system_win32::device_removed(tt::audio_device_id const &device_id) noexcept
+void audio_system_win32::device_removed(hi::audio_device_id const &device_id) noexcept
 {
     update_device_list();
     if (auto delegate = _delegate.lock()) {
@@ -199,18 +199,18 @@ void audio_system_win32::device_removed(tt::audio_device_id const &device_id) no
     }
 }
 
-void audio_system_win32::device_state_changed(tt::audio_device_id const &device_id) noexcept
+void audio_system_win32::device_state_changed(hi::audio_device_id const &device_id) noexcept
 {
     if (auto delegate = _delegate.lock()) {
         delegate->audio_device_list_changed(*this);
     }
 }
 
-void audio_system_win32::device_property_value_changed(tt::audio_device_id const &device_id) noexcept
+void audio_system_win32::device_property_value_changed(hi::audio_device_id const &device_id) noexcept
 {
     if (auto delegate = _delegate.lock()) {
         delegate->audio_device_list_changed(*this);
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

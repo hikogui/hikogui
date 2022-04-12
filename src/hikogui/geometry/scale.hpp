@@ -9,7 +9,7 @@
 #include "translate.hpp"
 #include "extent.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 namespace geo {
 
 template<int D>
@@ -24,7 +24,7 @@ public:
 
     [[nodiscard]] constexpr explicit operator f32x4() const noexcept
     {
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
         return _v;
     }
 
@@ -40,18 +40,18 @@ public:
 
     [[nodiscard]] constexpr explicit scale(f32x4 const &v) noexcept : _v(v)
     {
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     template<int E>
     requires(E <= D) [[nodiscard]] constexpr explicit scale(vector<E> const &v) noexcept : _v(static_cast<f32x4>(v).xyz1())
     {
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
     }
 
     [[nodiscard]] constexpr operator matrix<D>() const noexcept
     {
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
         return matrix<D>{_v.x000(), _v._0y00(), _v._00z0(), _v._000w()};
     }
 
@@ -75,44 +75,44 @@ public:
     template<int E, int F>
     requires(E <= D && F <= D) [[nodiscard]] static constexpr scale uniform(extent<E> src_extent, extent<F> dst_extent) noexcept
     {
-        tt_axiom(
+        hi_axiom(
             dst_extent.width() != 0.0f && src_extent.width() != 0.0f && dst_extent.height() != 0.0f &&
             src_extent.height() != 0.0f);
 
         if constexpr (D == 2) {
-            ttlet non_uniform_scale = static_cast<f32x4>(dst_extent).xyxy() / static_cast<f32x4>(src_extent).xyxy();
-            ttlet uniform_scale = std::min(non_uniform_scale.x(), non_uniform_scale.y());
+            hilet non_uniform_scale = static_cast<f32x4>(dst_extent).xyxy() / static_cast<f32x4>(src_extent).xyxy();
+            hilet uniform_scale = std::min(non_uniform_scale.x(), non_uniform_scale.y());
             return scale{uniform_scale};
 
         } else if constexpr (D == 3) {
-            tt_axiom(dst_extent.z() != 0.0f && src_extent.z() != 0.0f);
-            ttlet non_uniform_scale = static_cast<f32x4>(dst_extent).xyzx() / static_cast<f32x4>(src_extent).xyzx();
-            ttlet uniform_scale = std::min({non_uniform_scale.x(), non_uniform_scale.y(), non_uniform_scale.z()});
+            hi_axiom(dst_extent.z() != 0.0f && src_extent.z() != 0.0f);
+            hilet non_uniform_scale = static_cast<f32x4>(dst_extent).xyzx() / static_cast<f32x4>(src_extent).xyzx();
+            hilet uniform_scale = std::min({non_uniform_scale.x(), non_uniform_scale.y(), non_uniform_scale.z()});
             return scale{uniform_scale};
 
         } else {
-            tt_static_no_default();
+            hi_static_no_default();
         }
     }
 
     template<int E>
     [[nodiscard]] constexpr vector<E> operator*(vector<E> const &rhs) const noexcept
     {
-        tt_axiom(holds_invariant() && rhs.holds_invariant());
+        hi_axiom(holds_invariant() && rhs.holds_invariant());
         return vector<E>{_v * static_cast<f32x4>(rhs)};
     }
 
     template<int E>
     [[nodiscard]] constexpr extent<E> operator*(extent<E> const &rhs) const noexcept
     {
-        tt_axiom(holds_invariant() && rhs.holds_invariant());
+        hi_axiom(holds_invariant() && rhs.holds_invariant());
         return extent<E>{_v * static_cast<f32x4>(rhs)};
     }
 
     template<int E>
     [[nodiscard]] constexpr point<E> operator*(point<E> const &rhs) const noexcept
     {
-        tt_axiom(holds_invariant() && rhs.holds_invariant());
+        hi_axiom(holds_invariant() && rhs.holds_invariant());
         return point<E>{_v * static_cast<f32x4>(rhs)};
     }
 
@@ -143,10 +143,10 @@ public:
      */
     [[nodiscard]] friend constexpr quad scale_from_center(quad const &lhs, scale const &rhs) noexcept requires(D == 2)
     {
-        ttlet top_extra = (lhs.top() * rhs._v.x() - lhs.top()) * 0.5f;
-        ttlet bottom_extra = (lhs.bottom() * rhs._v.x() - lhs.bottom()) * 0.5f;
-        ttlet left_extra = (lhs.left() * rhs._v.y() - lhs.left()) * 0.5f;
-        ttlet right_extra = (lhs.right() * rhs._v.y() - lhs.right()) * 0.5f;
+        hilet top_extra = (lhs.top() * rhs._v.x() - lhs.top()) * 0.5f;
+        hilet bottom_extra = (lhs.bottom() * rhs._v.x() - lhs.bottom()) * 0.5f;
+        hilet left_extra = (lhs.left() * rhs._v.y() - lhs.left()) * 0.5f;
+        hilet right_extra = (lhs.right() * rhs._v.y() - lhs.right()) * 0.5f;
 
         return {
             lhs.p0 - bottom_extra - left_extra,
@@ -157,21 +157,21 @@ public:
 
     [[nodiscard]] constexpr scale operator*(identity const &) const noexcept
     {
-        tt_axiom(holds_invariant());
+        hi_axiom(holds_invariant());
         return *this;
     }
 
     template<int E>
     [[nodiscard]] constexpr auto operator*(scale<E> const &rhs) const noexcept
     {
-        tt_axiom(holds_invariant() && rhs.holds_invariant());
+        hi_axiom(holds_invariant() && rhs.holds_invariant());
         return scale<std::max(D, E)>{_v * static_cast<f32x4>(rhs)};
     }
 
     template<int E>
     [[nodiscard]] constexpr bool operator==(scale<E> const &rhs) const noexcept
     {
-        tt_axiom(holds_invariant() && rhs.holds_invariant());
+        hi_axiom(holds_invariant() && rhs.holds_invariant());
         return _v == static_cast<f32x4>(rhs);
     }
 
@@ -190,16 +190,16 @@ private:
 
 [[nodiscard]] constexpr scale<2> operator/(extent<2> const &lhs, extent<2> const &rhs) noexcept
 {
-    tt_axiom(rhs._v.x() != 0.0f);
-    tt_axiom(rhs._v.y() != 0.0f);
+    hi_axiom(rhs._v.x() != 0.0f);
+    hi_axiom(rhs._v.y() != 0.0f);
     return scale<2>{lhs._v.xy11() / rhs._v.xy11()};
 }
 
 [[nodiscard]] constexpr scale<3> operator/(extent<3> const &lhs, extent<3> const &rhs) noexcept
 {
-    tt_axiom(rhs._v.x() != 0.0f);
-    tt_axiom(rhs._v.y() != 0.0f);
-    tt_axiom(rhs._v.z() != 0.0f);
+    hi_axiom(rhs._v.x() != 0.0f);
+    hi_axiom(rhs._v.y() != 0.0f);
+    hi_axiom(rhs._v.z() != 0.0f);
     return scale<3>{lhs._v.xyz1() / rhs._v.xyz1()};
 }
 
@@ -207,9 +207,9 @@ template<int D>
 [[nodiscard]] constexpr matrix<D>
 matrix<D>::uniform(aarectangle src_rectangle, aarectangle dst_rectangle, alignment alignment) noexcept
 {
-    ttlet scale = tt::geo::scale<D>::uniform(src_rectangle.size(), dst_rectangle.size());
-    ttlet scaled_rectangle = scale * src_rectangle;
-    ttlet translation = translate<D>::align(scaled_rectangle, dst_rectangle, alignment);
+    hilet scale = hi::geo::scale<D>::uniform(src_rectangle.size(), dst_rectangle.size());
+    hilet scaled_rectangle = scale * src_rectangle;
+    hilet translation = translate<D>::align(scaled_rectangle, dst_rectangle, alignment);
     return translation * scale;
 }
 
@@ -218,4 +218,4 @@ matrix<D>::uniform(aarectangle src_rectangle, aarectangle dst_rectangle, alignme
 using scale2 = geo::scale<2>;
 using scale3 = geo::scale<3>;
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

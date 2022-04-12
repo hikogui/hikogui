@@ -8,9 +8,9 @@
 #include "hikogui/crt.hpp"
 #include "hikogui/loop.hpp"
 
-using namespace tt;
+using namespace hi;
 
-int tt_main(int argc, char* argv[])
+int hi_main(int argc, char* argv[])
 {
     auto gui = gui_system::make_unique();
     auto window = gui->make_window(tr("tab example"));

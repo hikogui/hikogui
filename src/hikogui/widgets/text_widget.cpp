@@ -10,7 +10,7 @@
 #include "../GUI/mouse_event.hpp"
 #include "../unicode/unicode_bidi.hpp"
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 text_widget::text_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
 //, _blink_cursor(blink_cursor())
@@ -25,10 +25,10 @@ widget_constraints const& text_widget::set_constraints() noexcept
     _layout = {};
 
     _shaped_text = text_shaper{font_book(), *text, theme().text_style(*text_style), theme().scale};
-    ttlet[shaped_text_rectangle, cap_height] =
+    hilet[shaped_text_rectangle, cap_height] =
         _shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity(), alignment->vertical());
     _shaped_text_cap_height = cap_height;
-    ttlet shaped_text_size = shaped_text_rectangle.size();
+    hilet shaped_text_size = shaped_text_rectangle.size();
 
     _selection.clear_selection(_shaped_text.size());
 
@@ -37,10 +37,10 @@ widget_constraints const& text_widget::set_constraints() noexcept
         return _constraints = {shaped_text_size, shaped_text_size, shaped_text_size, theme().margin};
     } else {
         // Allow the text to be 550.0f pixels wide.
-        ttlet[preferred_shaped_text_rectangle, dummy] = _shaped_text.bounding_rectangle(550.0f, alignment->vertical());
-        ttlet preferred_shaped_text_size = preferred_shaped_text_rectangle.size();
+        hilet[preferred_shaped_text_rectangle, dummy] = _shaped_text.bounding_rectangle(550.0f, alignment->vertical());
+        hilet preferred_shaped_text_size = preferred_shaped_text_rectangle.size();
 
-        ttlet height = std::max(shaped_text_size.height(), preferred_shaped_text_size.height());
+        hilet height = std::max(shaped_text_size.height(), preferred_shaped_text_size.height());
         return _constraints = {
                    extent2{preferred_shaped_text_size.width(), height},
                    extent2{preferred_shaped_text_size.width(), height},
@@ -53,7 +53,7 @@ void text_widget::set_layout(widget_layout const& layout) noexcept
 {
     if (compare_store(_layout, layout)) {
         // clang-format off
-        ttlet base_line =
+        hilet base_line =
             *alignment == vertical_alignment::bottom ? layout.rectangle().bottom() :
             *alignment == vertical_alignment::middle ? layout.rectangle().middle() - _shaped_text_cap_height * 0.5f :
             layout.rectangle().top() - _shaped_text_cap_height;
@@ -68,8 +68,8 @@ void text_widget::set_layout(widget_layout const& layout) noexcept
 void text_widget::scroll_to_show_selection() noexcept
 {
     if (*visible and *focus) {
-        ttlet cursor = _selection.cursor();
-        ttlet char_it = _shaped_text.begin() + cursor.index();
+        hilet cursor = _selection.cursor();
+        hilet char_it = _shaped_text.begin() + cursor.index();
         if (char_it < _shaped_text.end()) {
             scroll_to_show(char_it->rectangle);
         }
@@ -133,17 +133,17 @@ void text_widget::draw(draw_context const& context) noexcept
 
     _cursor_visible = false;
     if (*visible and *enabled and *focus) {
-        ttlet blink_interval = os_settings::cursor_blink_interval();
+        hilet blink_interval = os_settings::cursor_blink_interval();
         if (blink_interval < 1min) {
             if (_cursor_blink_time_point == utc_nanoseconds{}) {
                 _cursor_blink_time_point = context.display_time_point;
                 _cursor_visible = true;
             } else {
-                ttlet time_since_blink_start = context.display_time_point - _cursor_blink_time_point;
+                hilet time_since_blink_start = context.display_time_point - _cursor_blink_time_point;
                 if (time_since_blink_start < os_settings::cursor_blink_delay()) {
                     _cursor_visible = true;
                 } else {
-                    ttlet time_within_blink_period = time_since_blink_start % blink_interval;
+                    hilet time_within_blink_period = time_since_blink_start % blink_interval;
                     _cursor_visible = time_within_blink_period < (blink_interval / 2);
                 }
             }
@@ -181,7 +181,7 @@ void text_widget::undo_push() noexcept
 void text_widget::undo() noexcept
 {
     if (_undo_stack.can_undo()) {
-        ttlet& tmp = _undo_stack.undo(*text, _selection);
+        hilet& tmp = _undo_stack.undo(*text, _selection);
         text = tmp.text;
         _selection = tmp.selection;
     }
@@ -190,7 +190,7 @@ void text_widget::undo() noexcept
 void text_widget::redo() noexcept
 {
     if (_undo_stack.can_redo()) {
-        ttlet& tmp = _undo_stack.redo();
+        hilet& tmp = _undo_stack.redo();
         text = tmp.text;
         _selection = tmp.selection;
     }
@@ -198,7 +198,7 @@ void text_widget::redo() noexcept
 
 [[nodiscard]] gstring_view text_widget::selected_text() const noexcept
 {
-    ttlet[first, last] = _selection.selection_indices();
+    hilet[first, last] = _selection.selection_indices();
 
     return gstring_view{*text}.substr(first, last - first);
 }
@@ -215,7 +215,7 @@ void text_widget::replace_selection(gstring replacement) noexcept
     undo_push();
 
     auto text_proxy = text.proxy();
-    ttlet[first, last] = _selection.selection_indices();
+    hilet[first, last] = _selection.selection_indices();
     text_proxy->replace(first, last - first, replacement);
 
     _selection = text_cursor{first + replacement.size() - 1, true, text_proxy->size()};
@@ -224,13 +224,13 @@ void text_widget::replace_selection(gstring replacement) noexcept
 
 void text_widget::add_character(grapheme c, add_type mode) noexcept
 {
-    ttlet original_cursor = _selection.cursor();
+    hilet original_cursor = _selection.cursor();
     auto original_grapheme = grapheme{char32_t{0xffff}};
 
     if (_selection.empty() and _overwrite_mode and original_cursor.before()) {
         original_grapheme = (*text)[original_cursor.index()];
 
-        ttlet[first, last] = _shaped_text.select_char(original_cursor);
+        hilet[first, last] = _shaped_text.select_char(original_cursor);
         _selection.drag_selection(last);
     }
     replace_selection(gstring{c});
@@ -248,8 +248,8 @@ void text_widget::add_character(grapheme c, add_type mode) noexcept
 void text_widget::delete_dead_character() noexcept
 {
     if (_has_dead_character) {
-        tt_axiom(_selection.cursor().before());
-        tt_axiom(_selection.cursor().index() < text->size());
+        hi_axiom(_selection.cursor().before());
+        hi_axiom(_selection.cursor().index() < text->size());
         if (_has_dead_character.valid()) {
             (*text.proxy())[_selection.cursor().index()] = _has_dead_character;
         } else {
@@ -265,7 +265,7 @@ void text_widget::delete_character_next() noexcept
         auto cursor = _selection.cursor();
         cursor = cursor.before_neighbor(_shaped_text.size());
 
-        ttlet[first, last] = _shaped_text.select_char(cursor);
+        hilet[first, last] = _shaped_text.select_char(cursor);
         _selection.drag_selection(last);
     }
 
@@ -278,7 +278,7 @@ void text_widget::delete_character_prev() noexcept
         auto cursor = _selection.cursor();
         cursor = cursor.after_neighbor(_shaped_text.size());
 
-        ttlet[first, last] = _shaped_text.select_char(cursor);
+        hilet[first, last] = _shaped_text.select_char(cursor);
         _selection.drag_selection(first);
     }
 
@@ -291,7 +291,7 @@ void text_widget::delete_word_next() noexcept
         auto cursor = _selection.cursor();
         cursor = cursor.before_neighbor(_shaped_text.size());
 
-        ttlet[first, last] = _shaped_text.select_word(cursor);
+        hilet[first, last] = _shaped_text.select_word(cursor);
         _selection.drag_selection(last);
     }
 
@@ -304,7 +304,7 @@ void text_widget::delete_word_prev() noexcept
         auto cursor = _selection.cursor();
         cursor = cursor.after_neighbor(_shaped_text.size());
 
-        ttlet[first, last] = _shaped_text.select_word(cursor);
+        hilet[first, last] = _shaped_text.select_word(cursor);
         _selection.drag_selection(first);
     }
 
@@ -318,15 +318,15 @@ void text_widget::reset_state(char const *states) noexcept
         case 'D': delete_dead_character(); break;
         case 'X': _vertical_movement_x = std::numeric_limits<float>::quiet_NaN(); break;
         case 'B': _cursor_blink_time_point = {}; break;
-        default: tt_no_default();
+        default: hi_no_default();
         }
         ++states;
     }
 }
 
-bool text_widget::handle_event(tt::command command) noexcept
+bool text_widget::handle_event(hi::command command) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
     request_relayout();
 
     if (*enabled) {
@@ -348,7 +348,7 @@ bool text_widget::handle_event(tt::command command) noexcept
 
         case command::text_edit_copy:
             reset_state("BDX");
-            if (ttlet selected_text_ = selected_text(); not selected_text_.empty()) {
+            if (hilet selected_text_ = selected_text(); not selected_text_.empty()) {
                 window.set_text_on_clipboard(to_string(selected_text_));
             }
             return true;
@@ -557,7 +557,7 @@ bool text_widget::handle_event(keyboard_event const& event) noexcept
 {
     using enum keyboard_event::Type;
 
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
     request_relayout();
 
     auto handled = super::handle_event(event);
@@ -583,7 +583,7 @@ bool text_widget::handle_event(keyboard_event const& event) noexcept
 
 bool text_widget::handle_event(mouse_event const& event) noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
     auto handled = super::handle_event(event);
     if (*edit_mode == edit_mode_type::fixed) {
         return handled;
@@ -596,7 +596,7 @@ bool text_widget::handle_event(mouse_event const& event) noexcept
             return true;
         }
 
-        ttlet cursor = _shaped_text.get_nearest_cursor(event.position);
+        hilet cursor = _shaped_text.get_nearest_cursor(event.position);
 
         switch (event.type) {
             using enum mouse_event::Type;
@@ -673,7 +673,7 @@ bool text_widget::handle_event(mouse_event const& event) noexcept
 
 hitbox text_widget::hitbox_test(point3 position) const noexcept
 {
-    tt_axiom(is_gui_thread());
+    hi_axiom(is_gui_thread());
 
     if (*visible and *enabled and layout().contains(position)) {
         switch (*edit_mode) {
@@ -695,4 +695,4 @@ hitbox text_widget::hitbox_test(point3 position) const noexcept
     return *visible and *enabled and any(group & normal) and (*edit_mode == line_editable or *edit_mode == fully_editable);
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

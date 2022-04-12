@@ -14,7 +14,7 @@
 #include <cstddef>
 #include <span>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 
 struct coverage_format1 {
     big_int16_buf_t coverage_format;
@@ -32,19 +32,19 @@ struct coverage_format2_range {
     big_int16_buf_t start_coverage_index;
 };
 
-[[nodiscard]] std::ptrdiff_t true_type_font::get_coverage_index(std::span<std::byte const> bytes, tt::glyph_id glyph_id) noexcept
+[[nodiscard]] std::ptrdiff_t true_type_font::get_coverage_index(std::span<std::byte const> bytes, hi::glyph_id glyph_id) noexcept
 {
     std::size_t offset = 0;
 
-    tt_assert_or_return(glyph_id >= 0 && glyph_id < num_glyphs, -2);
+    hi_assert_or_return(glyph_id >= 0 && glyph_id < num_glyphs, -2);
 
-    tt_assert_or_return(check_placement_ptr<coverage_format1>(bytes, offset), -2);
-    ttlet header1 = unsafe_make_placement_ptr<coverage_format1>(bytes, offset);
+    hi_assert_or_return(check_placement_ptr<coverage_format1>(bytes, offset), -2);
+    hilet header1 = unsafe_make_placement_ptr<coverage_format1>(bytes, offset);
     if (header1->coverage_format == 1) {
-        tt_assert_or_return(check_placement_array<big_uint16_buf_t>(bytes, offset, header1->glyph_count), -2);
-        ttlet table = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, header1->glyph_count);
+        hi_assert_or_return(check_placement_array<big_uint16_buf_t>(bytes, offset, header1->glyph_count), -2);
+        hilet table = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, header1->glyph_count);
 
-        ttlet it = std::lower_bound(table.begin(), table.end(), glyph_id, [](ttlet &item, ttlet &value) {
+        hilet it = std::lower_bound(table.begin(), table.end(), glyph_id, [](hilet &item, hilet &value) {
             return item < *value;
         });
 
@@ -56,13 +56,13 @@ struct coverage_format2_range {
 
     } else if (header1->coverage_format == 2) {
         offset = 0;
-        tt_assert_or_return(check_placement_ptr<coverage_format2>(bytes, offset), -2);
-        ttlet header2 = unsafe_make_placement_ptr<coverage_format2>(bytes, offset);
+        hi_assert_or_return(check_placement_ptr<coverage_format2>(bytes, offset), -2);
+        hilet header2 = unsafe_make_placement_ptr<coverage_format2>(bytes, offset);
 
-        tt_assert_or_return(check_placement_array<coverage_format2_range>(bytes, offset, header2->range_count), -2);
-        ttlet table = unsafe_make_placement_array<coverage_format2_range>(bytes, offset, header2->range_count);
+        hi_assert_or_return(check_placement_array<coverage_format2_range>(bytes, offset, header2->range_count), -2);
+        hilet table = unsafe_make_placement_array<coverage_format2_range>(bytes, offset, header2->range_count);
 
-        ttlet it = std::lower_bound(table.begin(), table.end(), glyph_id, [](ttlet &item, ttlet &value) {
+        hilet it = std::lower_bound(table.begin(), table.end(), glyph_id, [](hilet &item, hilet &value) {
             return item.end_glyph_id < *value;
         });
 
@@ -77,4 +77,4 @@ struct coverage_format2_range {
     }
 }
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

@@ -14,7 +14,7 @@
 #include <vulkan/vulkan.hpp>
 #include <vk_mem_alloc.h>
 
-namespace tt::inline v1 {
+namespace hi::inline v1 {
 class URL;
 
 class gfx_device_vulkan final : public gfx_device {
@@ -147,32 +147,32 @@ public:
     template<typename T>
     std::span<T> mapMemory(const VmaAllocation &allocation) const
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
 
         void *mapping;
-        ttlet result = static_cast<vk::Result>(vmaMapMemory(allocator, allocation, &mapping));
+        hilet result = static_cast<vk::Result>(vmaMapMemory(allocator, allocation, &mapping));
 
         VmaAllocationInfo allocationInfo;
         vmaGetAllocationInfo(allocator, allocation, &allocationInfo);
 
         // Should we launder the pointer? The GPU has created the objects, not the C++ application.
         T *mappingT = reinterpret_cast<T *>(mapping);
-        ttlet mappingSpan = std::span<T>(mappingT, allocationInfo.size / sizeof(T));
+        hilet mappingSpan = std::span<T>(mappingT, allocationInfo.size / sizeof(T));
 
-        return vk::createResultValue(result, mappingSpan, "tt::gfx_device_vulkan::mapMemory");
+        return vk::createResultValue(result, mappingSpan, "hi::gfx_device_vulkan::mapMemory");
     }
 
     void unmapMemory(const VmaAllocation &allocation) const;
 
     void flushAllocation(const VmaAllocation &allocation, VkDeviceSize offset, VkDeviceSize size) const
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
 
-        ttlet alignment = physicalProperties.limits.nonCoherentAtomSize;
+        hilet alignment = physicalProperties.limits.nonCoherentAtomSize;
 
-        ttlet alignedOffset = (offset / alignment) * alignment;
-        ttlet adjustedSize = size + (offset - alignedOffset);
-        ttlet alignedSize = ((adjustedSize + (alignment - 1)) / alignment) * alignment;
+        hilet alignedOffset = (offset / alignment) * alignment;
+        hilet adjustedSize = size + (offset - alignedOffset);
+        hilet alignedSize = ((adjustedSize + (alignment - 1)) / alignment) * alignment;
 
         vmaFlushAllocation(allocator, allocation, alignedOffset, alignedSize);
     }
@@ -185,13 +185,13 @@ public:
 
     void waitIdle() const
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.waitIdle();
     }
 
     vk::Result waitForFences(vk::ArrayProxy<const vk::Fence> fences, vk::Bool32 waitAll, uint64_t timeout) const
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.waitForFences(fences, waitAll, timeout);
     }
 
@@ -202,13 +202,13 @@ public:
         vk::Fence fence,
         uint32_t *pImageIndex) const
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.acquireNextImageKHR(swapchain, timeout, semaphore, fence, pImageIndex);
     }
 
     void resetFences(vk::ArrayProxy<const vk::Fence> fences) const
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.resetFences(fences);
     }
 
@@ -217,37 +217,37 @@ public:
         const vk::AllocationCallbacks *pAllocator,
         vk::SwapchainKHR *pSwapchain) const
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.createSwapchainKHR(pCreateInfo, pAllocator, pSwapchain);
     }
 
     std::vector<vk::Image> getSwapchainImagesKHR(vk::SwapchainKHR swapchain) const
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.getSwapchainImagesKHR(swapchain);
     }
 
     vk::ImageView createImageView(const vk::ImageViewCreateInfo &createInfo) const
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.createImageView(createInfo);
     }
 
     vk::Framebuffer createFramebuffer(const vk::FramebufferCreateInfo &createInfo) const
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.createFramebuffer(createInfo);
     }
 
     vk::RenderPass createRenderPass(const vk::RenderPassCreateInfo &createInfo) const
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.createRenderPass(createInfo);
     }
 
     vk::Extent2D getRenderAreaGranularity(const vk::RenderPass &render_pass) const noexcept
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
         vk::Extent2D r;
         intrinsic.getRenderAreaGranularity(render_pass, &r);
         return r;
@@ -255,55 +255,55 @@ public:
 
     vk::Semaphore createSemaphore(const vk::SemaphoreCreateInfo &createInfo) const
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.createSemaphore(createInfo);
     }
 
     vk::Fence createFence(const vk::FenceCreateInfo &createInfo) const
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.createFence(createInfo);
     }
 
     vk::DescriptorSetLayout createDescriptorSetLayout(const vk::DescriptorSetLayoutCreateInfo &createInfo) const
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.createDescriptorSetLayout(createInfo);
     }
 
     vk::DescriptorPool createDescriptorPool(const vk::DescriptorPoolCreateInfo &createInfo) const
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.createDescriptorPool(createInfo);
     }
 
     vk::PipelineLayout createPipelineLayout(const vk::PipelineLayoutCreateInfo &createInfo) const
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.createPipelineLayout(createInfo);
     }
 
     vk::Pipeline createGraphicsPipeline(vk::PipelineCache pipelineCache, const vk::GraphicsPipelineCreateInfo &createInfo) const
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.createGraphicsPipeline(pipelineCache, createInfo).value;
     }
 
     vk::Sampler createSampler(const vk::SamplerCreateInfo &createInfo) const
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.createSampler(createInfo);
     }
 
     std::vector<vk::DescriptorSet> allocateDescriptorSets(const vk::DescriptorSetAllocateInfo &allocateInfo) const
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.allocateDescriptorSets(allocateInfo);
     }
 
     std::vector<vk::CommandBuffer> allocateCommandBuffers(const vk::CommandBufferAllocateInfo &allocateInfo) const
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.allocateCommandBuffers(allocateInfo);
     }
 
@@ -311,13 +311,13 @@ public:
         vk::ArrayProxy<const vk::WriteDescriptorSet> descriptorWrites,
         vk::ArrayProxy<const vk::CopyDescriptorSet> descriptorCopies) const
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.updateDescriptorSets(descriptorWrites, descriptorCopies);
     }
 
     void freeCommandBuffers(vk::CommandPool commandPool, vk::ArrayProxy<const vk::CommandBuffer> commandBuffers) const
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.freeCommandBuffers(commandPool, commandBuffers);
     }
 
@@ -358,13 +358,13 @@ public:
     template<typename T>
     void destroy(T x) const
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
         intrinsic.destroy(x);
     }
 
     vk::SurfaceCapabilitiesKHR getSurfaceCapabilitiesKHR(vk::SurfaceKHR surface) const
     {
-        tt_axiom(gfx_system_mutex.recurse_lock_count());
+        hi_axiom(gfx_system_mutex.recurse_lock_count());
         return physicalIntrinsic.getSurfaceCapabilitiesKHR(surface);
     }
 
@@ -383,4 +383,4 @@ private:
     void destroy_quad_index_buffer();
 };
 
-} // namespace tt::inline v1
+} // namespace hi::inline v1

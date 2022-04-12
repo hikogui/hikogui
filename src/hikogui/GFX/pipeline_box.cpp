@@ -6,7 +6,7 @@
 #include "pipeline_box_device_shared.hpp"
 #include "gfx_device_vulkan.hpp"
 
-namespace tt::inline v1::pipeline_box {
+namespace hi::inline v1::pipeline_box {
 
 pipeline_box::pipeline_box(gfx_surface const &surface) : pipeline_vulkan(surface) {}
 
@@ -18,7 +18,7 @@ void pipeline_box::drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_con
 
     std::vector<vk::Buffer> tmpvertexBuffers = {vertexBuffer};
     std::vector<vk::DeviceSize> tmpOffsets = {0};
-    tt_axiom(tmpvertexBuffers.size() == tmpOffsets.size());
+    hi_axiom(tmpvertexBuffers.size() == tmpOffsets.size());
 
     vulkan_device().boxPipeline->drawInCommandBuffer(commandBuffer);
 
@@ -33,8 +33,8 @@ void pipeline_box::drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_con
         sizeof(push_constants),
         &pushConstants);
 
-    ttlet numberOfRectangles = vertexBufferData.size() / 4;
-    ttlet numberOfTriangles = numberOfRectangles * 2;
+    hilet numberOfRectangles = vertexBufferData.size() / 4;
+    hilet numberOfTriangles = numberOfRectangles * 2;
 
     vulkan_device().cmdBeginDebugUtilsLabelEXT(commandBuffer, "draw boxes");
     commandBuffer.drawIndexed(narrow_cast<uint32_t>(numberOfTriangles * 3), 1, 0, 0, 0);
@@ -102,4 +102,4 @@ void pipeline_box::teardownvertexBuffers()
     vulkan_device().destroyBuffer(vertexBuffer, vertexBufferAllocation);
 }
 
-} // namespace tt::inline v1::pipeline_box
+} // namespace hi::inline v1::pipeline_box

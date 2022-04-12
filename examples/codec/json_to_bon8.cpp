@@ -18,19 +18,19 @@ int usage()
     return 2;
 }
 
-int tt_main(int argc, char* argv[])
+int hi_main(int argc, char* argv[])
 {
     if (argc != 3) {
         return usage();
     }
-    auto json_filename = tt::URL(argv[1]);
-    auto bon8_filename = tt::URL(argv[2]);
+    auto json_filename = hi::URL(argv[1]);
+    auto bon8_filename = hi::URL(argv[2]);
 
     auto json_view = json_filename.loadView();
     auto json_data = json_view->string_view();
-    auto data = tt::parse_JSON(json_data);
+    auto data = hi::parse_JSON(json_data);
 
-    auto bon8_file = tt::file(bon8_filename, tt::access_mode::truncate_or_create_for_write);
+    auto bon8_file = hi::file(bon8_filename, hi::access_mode::truncate_or_create_for_write);
     auto bon8_data = encode_BON8(data);
     bon8_file.write(bon8_data);
     bon8_file.close();
