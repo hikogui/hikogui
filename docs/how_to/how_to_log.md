@@ -4,7 +4,7 @@ How To Log, Count and Trace
 Logging text
 ------------
 
-Logging is done using the `tt_log_*()` macros. The argument is a
+Logging is done using the `hi_log_*()` macros. The argument is a
 format string, followed by values to format. The arguments are
 near identical to std::format().
 
@@ -12,29 +12,29 @@ near identical to std::format().
 int i = 5;
 float f = 42.0;
 
-tt_log_info("This logs a integer {} and a float {}.", i, f);
+hi_log_info("This logs a integer {} and a float {}.", i, f);
 ```
 
 This example will format and print the text, together with the
 cpu-id, thread-id, filename, line-number and the current date
-and time when the `tt_log_info()` macro was executed.
+and time when the `hi_log_info()` macro was executed.
 
 There are several log levels:
 
  | Level      | Macro              | Desription                                                                   |
  |:---------- |:------------------ |:---------------------------------------------------------------------------- |
- | fatal      | `tt_log_fatal()`   | Errors that causes harm, including data corruption.                          |
- | error      | `tt_log_error()`   | Errors that causes functionality to not be available.                        |
- | warning    | `tt_log_warning()` | Errors which the application can ignore or solve itself.                     |
- | info       | `tt_log_info()`    | Information possibly useful for a user to fix problems with the application. |
- | debug      | `tt_log_debug()`   | Information possibly useful for a developer.                                 |
- | audit      | `tt_log_audit()`   | Information required for the business or regulatory reasons.                 |
+ | fatal      | `hi_log_fatal()`   | Errors that causes harm, including data corruption.                          |
+ | error      | `hi_log_error()`   | Errors that causes functionality to not be available.                        |
+ | warning    | `hi_log_warning()` | Errors which the application can ignore or solve itself.                     |
+ | info       | `hi_log_info()`    | Information possibly useful for a user to fix problems with the application. |
+ | debug      | `hi_log_debug()`   | Information possibly useful for a developer.                                 |
+ | audit      | `hi_log_audit()`   | Information required for the business or regulatory reasons.                 |
  | statistics | `global_counter<>` | Statistical information for counters and durations.                          |
  | trace      | `trace<>()`        | Debug information about a transaction that was aborted by an exception.      |
 
 
 ### Asynchronous logging
-By default logging is done synchronously, meaning that the `tt_log_*()`
+By default logging is done synchronously, meaning that the `hi_log_*()`
 macros will block until the log entry is written to console and log files.
 
 Logging synchronously is quite slow, but maybe useful if you do not want
@@ -46,11 +46,11 @@ fifo to the console and log files.
 
 ```cpp
 // Start the logger-thread and change the log level.
-tt::log::start_subsystem(tt::global_state_type::log_level_info);
+hi::log::start_subsystem(hi::global_state_type::log_level_info);
 ```
 
 ### Wait-free logging
-The `tt_log_*()` macros can log wait-free when all the following conditions
+The `hi_log_*()` macros can log wait-free when all the following conditions
 are met:
 
  - The logger-thread must be started to enable asynchronous logging.
@@ -60,11 +60,11 @@ are met:
 
 ### Accurate timestamps
 By default the timestamps in the log are an estimate of when the
-`tt_log_*()` function where executed. For more accurate and precise
+`hi_log_*()` function where executed. For more accurate and precise
 timestamps you will need to start the `time_stamp_count` subsystem.
 
 ```cpp
-tt::time_stamp_count::start_subsystem();
+hi::time_stamp_count::start_subsystem();
 ```
 
 To make logging quick, the timestamp is taken from the CPU's
@@ -91,17 +91,17 @@ The following line of code increments a counter, the "my counter"
 is the name you can give to a counter.
 
 ```cpp
-++tt::global_counter<"my counter">;
+++hi::global_counter<"my counter">;
 ```
 
-The `tt::log::start_subsystem()` function should be called to display these counters
+The `hi::log::start_subsystem()` function should be called to display these counters
 on a per minute interval.
 
 Tracing
 -------
-Tracing of transactions is done using the `tt::trace<>` type.
-A trace records how long the instance of a `tt::trace` stays alive and
-logs information when a `tt::trace` is unwound by an exception being thrown.
+Tracing of transactions is done using the `hi::trace<>` type.
+A trace records how long the instance of a `hi::trace` stays alive and
+logs information when a `hi::trace` is unwound by an exception being thrown.
 
 In the following example the trace object is used to gather statistics on the
 "doing calculations" function. How often it is called and; the minimum, maximum
@@ -109,7 +109,7 @@ In the following example the trace object is used to gather statistics on the
 
 ```cpp
 void doing_calculations {
-    auto t = tt::trace<"doing calculations">{};
+    auto t = hi::trace<"doing calculations">{};
 
     // Do calculations here.
 }
@@ -122,7 +122,7 @@ can use the following example:
 void do_transaction(uint64_t user_id, uint64_t transaction_id)
 {
     // The '2' is used for the number of slots of information.
-    auto t = tt::trace<"do transaction", 2>{};
+    auto t = hi::trace<"do transaction", 2>{};
     t.set("user_id", user_id);
     t.set("transaction_id", transaction_id);
 

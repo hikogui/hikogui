@@ -36,7 +36,7 @@ The swap-chain of the window will consist of RGBA images, with the format
 that can be handled by the operating system. This may be a 8-bit sRGB color
 space format or an extended float 16 sRGB.
 
-TTauri will use alpha blender to render the user interface on top of the swap
+HikoGUI will use alpha blender to render the user interface on top of the swap
 chain. This means an application can use render an image into the swap-chain before
 this. See the hole-punch shader on how to set the alpha channel on a region.
 

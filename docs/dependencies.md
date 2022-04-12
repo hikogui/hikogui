@@ -15,7 +15,7 @@ Optional development dependencies are:
 Policy for adding dependencies
 ------------------------------
 
-To make ttauri easy to integrate in your own application we try to limit
+To make hikogui easy to integrate in your own application we try to limit
 the number of dependencies to the absolute minimum.
 
  - We will allow libraries to be included which implement a preview of an

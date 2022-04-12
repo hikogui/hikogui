@@ -1,14 +1,14 @@
 How to draw
 ===========
 
-Drawing is done through the `tt::draw_context` object that is passed to
-`tt::widget::draw()` when drawing a frame. The `tt::draw_context` has
+Drawing is done through the `hi::draw_context` object that is passed to
+`hi::widget::draw()` when drawing a frame. The `hi::draw_context` has
 several `draw_*()` member functions that allows drawing of shapes,
 glyphs, text and images.
 
 The first argument to those `draw_*()` functions is an reference to the
-widget's `tt::widget_layout` object. This object was stored by the
-`tt::widget::set_layout()` function and contains the to-window
+widget's `hi::widget_layout` object. This object was stored by the
+`hi::widget::set_layout()` function and contains the to-window
 transformation matrix and clipping rectangle used when drawing.
 
 The second optional argument is an axis-aligned clipping rectangle
@@ -30,7 +30,7 @@ when you read "pixel" without an explicit qualifier it is meant to be "virtual p
 
 ### Corners
 
-The order of the corners in the `tt::quad`, `tt::quad_color` and `tt::corner_radii` are always:
+The order of the corners in the `hi::quad`, `hi::quad_color` and `hi::corner_radii` are always:
  - left-bottom,
  - right-bottom,
  - left-top and
@@ -38,7 +38,7 @@ The order of the corners in the `tt::quad`, `tt::quad_color` and `tt::corner_rad
 
 ### Edges
 
-The order of in the `tt::margins` are always;
+The order of in the `hi::margins` are always;
  - bottom
  - left
  - top
@@ -52,18 +52,18 @@ Drawing shapes
 In the example below we draw a rectangle with a border and rounded corners:
 
 ```
-void draw(tt::draw_context const &context) noexcept override
+void draw(hi::draw_context const &context) noexcept override
 {
-    auto const polygon = tt::quad{
+    auto const polygon = hi::quad{
         point3{10.0f, 10.0f, 0.0f},
         point3{60.0f, 10.0f, 0.0f},
         point3{10.0f, 60.0f, 0.0f},
         point3{60.0f, 60.0f, 0.0f}};
-    auto const red = tt::color{1.0f, 0.0f, 0.0f, 1.0f};
-    auto const blue = tt::color{1.0f, 0.0f, 0.0f, 1.0f};
+    auto const red = hi::color{1.0f, 0.0f, 0.0f, 1.0f};
+    auto const blue = hi::color{1.0f, 0.0f, 0.0f, 1.0f};
     auto const border_width = 2.0f
-    auto const corners = tt::corner_radii{3.0f, 3.0f, 3.0f, 3.0f};
-    context.draw_box(_layout, polygon, red, blue, border_width, tt::border_side::inside, corners);
+    auto const corners = hi::corner_radii{3.0f, 3.0f, 3.0f, 3.0f};
+    context.draw_box(_layout, polygon, red, blue, border_width, hi::border_side::inside, corners);
 }
 ```
 
@@ -81,17 +81,17 @@ for anti-aliasing.
 In the example below we draw a circle with a border:
 
 ```
-void draw(tt::draw_context const &context) noexcept override
+void draw(hi::draw_context const &context) noexcept override
 {
-    auto const polygon = tt::circle{point3{35.0f, 35.0f, 0.0f}, 25.0f};
-    auto const red = tt::color{1.0f, 0.0f, 0.0f, 1.0f};
+    auto const polygon = hi::circle{point3{35.0f, 35.0f, 0.0f}, 25.0f};
+    auto const red = hi::color{1.0f, 0.0f, 0.0f, 1.0f};
     auto const border_width = 2.0f
-    context.draw_circle(_layout, polygon, line_width, red, tt::line_end_cap::round, tt::line_end_cap::round);
+    context.draw_circle(_layout, polygon, line_width, red, hi::line_end_cap::round, hi::line_end_cap::round);
 }
 ```
 
-`tt::draw_context::draw_circle()` is a convenience-function for
-`tt::draw_context::draw_box()` A circle is a square with rounded corners
+`hi::draw_context::draw_circle()` is a convenience-function for
+`hi::draw_context::draw_box()` A circle is a square with rounded corners
 with the corner diameter set to the height/width of the square.
 
 When drawing circles among rectangular objects it is recommended to
@@ -104,20 +104,20 @@ be the same size and aligned to the flat edges of the rectangles.
 In the example below we draw a line with rounded end points:
 
 ```
-void draw(tt::draw_context const &context) noexcept override
+void draw(hi::draw_context const &context) noexcept override
 {
-    auto const line = tt::line{
+    auto const line = hi::line{
         point3{10.0f, 10.0f, 0.0f},
         point3{50.0f, 50.0f, 0.0f}};
-    auto const red = tt::color{1.0f, 0.0f, 0.0f, 1.0f};
-    auto const blue = tt::color{1.0f, 0.0f, 0.0f, 1.0f};
+    auto const red = hi::color{1.0f, 0.0f, 0.0f, 1.0f};
+    auto const blue = hi::color{1.0f, 0.0f, 0.0f, 1.0f};
     auto const line_width = 2.0f
-    context.draw_line(_layout, line, red, blue, border_width, tt::border_side::inside);
+    context.draw_line(_layout, line, red, blue, border_width, hi::border_side::inside);
 }
 ```
 
-`tt::draw_context::draw_line()` is a convenience-function for
-`tt::draw_context::draw_box()` A line is a thin rectangle with rounded corners
+`hi::draw_context::draw_line()` is a convenience-function for
+`hi::draw_context::draw_box()` A line is a thin rectangle with rounded corners
 with the corner diameter set to the width of the line.
 
 When drawing horizontal or vertical lines you may want to position the line so
@@ -136,25 +136,25 @@ There are three steps for drawing an image:
 Here we load the `mars3.png` file from a resource directory from the constructor:
 
 ```cpp
-drawing_widget(tt::gui_window &window, tt::widget *parent) noexcept :
-    widget(window, parent), _image(tt::URL("resource:mars3.png")) {}
+drawing_widget(hi::gui_window &window, hi::widget *parent) noexcept :
+    widget(window, parent), _image(hi::URL("resource:mars3.png")) {}
 ```
 
-During `set_constraints()`  we try to construct a `tt::paged_image`. In the
+During `set_constraints()`  we try to construct a `hi::paged_image`. In the
 `set_constraints()` function this may fail when the window is still being created;
 therefor we keep reconstraining until it succeeds.
 
-This version of the `tt::paged_image{}` constructor also directly uploads the
-image to the GPU. It is also possible to make a `tt::paged_image` with just
+This version of the `hi::paged_image{}` constructor also directly uploads the
+image to the GPU. It is also possible to make a `hi::paged_image` with just
 a width and a height and then upload the image at a later time.
 
 
 ```cpp
-tt::widget_constraints const &set_constraints() noexcept override
+hi::widget_constraints const &set_constraints() noexcept override
 {
     _layout = {};
     if (_image_was_modified.exchange(false)) {
-        if (not (_image_backing = tt::paged_image{window.surface.get(), _image})) {
+        if (not (_image_backing = hi::paged_image{window.surface.get(), _image})) {
             // Could not get an image, retry.
             _image_was_modified = true;
             request_reconstrain();

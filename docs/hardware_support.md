@@ -1,7 +1,7 @@
 Hardware Support
 ================
 
-The default build of ttauri supports the following hardware requirements.
+The default build of hikogui supports the following hardware requirements.
 
  - Graphics:
     * Vulkan-1.1
@@ -49,7 +49,7 @@ This is a table for microarchitecture for each compiler.
 
 Graphic cards
 -------------
-TTauri uses vulkan-1.1 API as a minimum.
+HikoGUI uses vulkan-1.1 API as a minimum.
 
 The oldest graphics cards supporting vulkan-1.1:
  - **NVidia**: GeForce 600 (Kepler)

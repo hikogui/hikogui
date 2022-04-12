@@ -4,7 +4,7 @@
 # Copyright 2021 Ching Chow, Jens A. Koch.
 #
 # Taken from: https://github.community/t/delete-old-workflow-results/
-# This file is part of https://github.com/ttauri-project/ttauri
+# This file is part of https://github.com/hikogui/hikogui
 
 name: Clean Workflow Runs
 

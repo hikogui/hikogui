@@ -1,4 +1,4 @@
-TTauri time handling
+HikoGUI time handling
 ====================
 
 High resolution UTC

@@ -1,9 +1,9 @@
 {
     "name": "@TT_LIB_NAME@",
-    "display-name": "TTauri Library",
+    "display-name": "HikoGUI Library",
     "version": "@TT_LIB_VERSION@",
     "license": "@TT_LIB_LICENSE@",
     "homepage": "@TT_LIB_HOMEPAGE@",
     "description": "@TT_LIB_DESCRIPTION@",
-    "vendor": "TTauri Project"
+    "vendor": "HikoGUI"
 }

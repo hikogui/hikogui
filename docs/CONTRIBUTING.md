@@ -1,17 +1,17 @@
-Contributing to the TTauri project
+Contributing to the HikoGUI project
 ==================================
 
 Issues
 ------
 
 When you want to suggest a new feature, an improvement or file a bug
-report you can do so through an [issue](https://github.com/ttauri-project/ttauri/issues).
+report you can do so through an [issue](https://github.com/hikogui/hikogui/issues).
 
-The easiest way to contribute is by reporting issues with ttauri.
-When reporting an issue with ttauri, make sure to clearly state:
+The easiest way to contribute is by reporting issues with hikogui.
+When reporting an issue with hikogui, make sure to clearly state:
 
  - The machine setup: "Windows 10 with RenderDoc installed."
- - The steps to reproduce: "I build ttauri in x64-MSVC-Debug, then run ttauri\_demo from Visual Studio"
+ - The steps to reproduce: "I build hikogui in x64-MSVC-Debug, then run hikogui\_demo from Visual Studio"
  - The outcome you expected: "I expected to see log messages in the Output window"
  - The actual outcome: "I get no output at all" or "I get a exception at line 123 of log.hpp"
 
@@ -37,7 +37,7 @@ to this, don't worry about this :smile:
 Install
 -------
 
-Here is a description on how to install for the development of ttauri.
+Here is a description on how to install for the development of hikogui.
 
 ### Windows 10
 
@@ -50,7 +50,7 @@ Installation requirements:
      - Test Adapter for Google Test
      - Windows 10 SDK
    - Alternatively, you can import our Visual Studio installation configuration file
-     ([.vsconfig](https://github.com/ttauri-project/ttauri/blob/main/.github/.vsconfig))
+     ([.vsconfig](https://github.com/hikogui/hikogui/blob/main/.github/.vsconfig))
      to configure the required workload and component selection.
  - git from <https://git-scm.com>
  - vcpkg from <https://github.com/microsoft/vcpkg> (see below for instructions)
@@ -67,15 +67,15 @@ c:\tools\vcpkg> bootstrap-vcpkg.bat
 c:\tools\vcpkg> vcpkg integrate install --feature-flags=manifests
 ```
 
-To clone ttauri:
+To clone hikogui:
 
 ```
-c:\Users\Tjienta\Projects> git clone https://github.com/ttauri-project/ttauri
+c:\Users\Tjienta\Projects> git clone https://github.com/hikogui/hikogui
 ```
 
 #### Visual Studio 2019
 
-You can open ttauri directly in Visual Studio using the
+You can open hikogui directly in Visual Studio using the
 "[open folder](https://docs.microsoft.com/en-us/cpp/build/open-folder-projects-cpp?view=msvc-160)" method.
 
 Since it is a large project you may have to wait a minute before Visual Studio is finished with fully loading the project.
@@ -90,10 +90,10 @@ Once it is loaded you will see a selection box with a set of build configuration
 
 Select the x64-MSVC-Debug and use the following menu items to build the project:
 
- - Project / Generate Cache for ttauri
+ - Project / Generate Cache for hikogui
  - Build / Build All
 
-After building you can select "ttauri\_demo.exe" from "Select Startup Item..." next to the run-button. Then
+After building you can select "hikogui\_demo.exe" from "Select Startup Item..." next to the run-button. Then
 press that button to run the debug build (with the debugger attached).
 
 You may also want to read the following about how to use CMake projects with visual studio:
@@ -119,7 +119,7 @@ c:\build>cmake --build .
 
 ### Gentoo Linux
 
-**Note: TTauri does not currently build fully on Linux.**
+**Note: HikoGUI does not currently build fully on Linux.**
 
 The following packages need to be installed:
 
@@ -131,8 +131,8 @@ The following packages need to be installed:
 Since the vulkan sdk is part of gentoo it will be installed in `/usr`.
 
 ```
-ttauri> mkdir build
-ttauri> cd build
+hikogui> mkdir build
+hikogui> cd build
 build> export VCPKG_ROOT=~/src/vcpkg
 build> export VULKAN_SDK=/usr
 build> $VCPKG_ROOT/vcpkg integrate install --feature-flags=manifests
@@ -143,11 +143,11 @@ build> cmake --build .
 Debugging with RenderDoc
 ------------------------
 
-Debug builds of ttauri are linked against the RenderDoc API. Which means
-that once an ttauri-application is started you can "Attach to running process"
+Debug builds of hikogui are linked against the RenderDoc API. Which means
+that once an hikogui-application is started you can "Attach to running process"
 and select the application there.
 
-Since a ttauri-application tries to reduce the amount of window redraws; the
+Since a hikogui-application tries to reduce the amount of window redraws; the
 application may not show on this list, or you are unable to capture a frame
 or the frame is not captured. You can force a redraw by selecting the
 application window, or mouse-over the window.
@@ -155,14 +155,14 @@ application window, or mouse-over the window.
 Testing the demo application
 ----------------------------
 
-There is a demo application included with the releases of ttauri.
+There is a demo application included with the releases of hikogui.
 
 It would be nice if people could test if this application will work on their computers.
 And when there is a crash to create a mini-dump and send the mini-dump to the discord channel
 "#demo-mini-dumps" <https://discord.gg/7e8pFTsujw> together with the version number
-of the ttauri release.
+of the hikogui release.
 
-To make crash mini-dump when the ttauri demo application crashes create the following registry key
+To make crash mini-dump when the hikogui demo application crashes create the following registry key
 
 `Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps`
 
@@ -176,5 +176,5 @@ Code of Conduct
 ---------------
 
 This project and everyone participating in it is governed by the
-[TTauri Code of Conduct](https://github.com/ttauri-project/ttauri/blob/main/docs/CODE_OF_CONDUCT.md)
+[HikoGUI Code of Conduct](https://github.com/hikogui/hikogui/blob/main/docs/CODE_OF_CONDUCT.md)
 

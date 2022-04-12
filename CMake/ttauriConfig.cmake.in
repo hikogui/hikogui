@@ -1,8 +1,0 @@
-@PACKAGE_INIT@
-
-find_package(unofficial-vulkan-memory-allocator CONFIG REQUIRED)
-find_package(Vulkan REQUIRED)
-
-include("${CMAKE_CURRENT_LIST_DIR}/ttauriTargets.cmake")
-
-check_required_components(ttauri)

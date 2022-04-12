@@ -4,14 +4,14 @@ UCDDIR="data/ucd"
 
 if [ ! -e ${UCDDIR}/UnicodeData.txt ]
 then
-    echo "This script must be run from the ttauri root"
+    echo "This script must be run from the HikoGUI root"
     exit 2
 fi
 
 
 python tools/unicode_data_generator.py \
-    --output=src/ttauri/unicode/unicode_db.hpp \
-    --output-non-starter=src/ttauri/unicode/unicode_db_non_starter.hpp \
+    --output=src/hikogui/unicode/unicode_db.hpp \
+    --output-non-starter=src/hikogui/unicode/unicode_db_non_starter.hpp \
     --unicode-data=${UCDDIR}/UnicodeData.txt \
     --emoji-data=${UCDDIR}/emoji-data.txt \
     --composition-exclusions=${UCDDIR}/CompositionExclusions.txt \

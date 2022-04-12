@@ -399,7 +399,7 @@ def writeUnicodeNonStarterData(filename, non_starters):
 
     fd.write('#include <array>\n\n')
 
-    fd.write('namespace tt::inline v1::detail {\n\n')
+    fd.write('namespace hi::inline v1::detail {\n\n')
 
     fd.write('constexpr auto unicode_db_non_starter_table = std::array{\n')
     fd.write('#ifndef __INTELLISENSE__\n')
@@ -434,7 +434,7 @@ def writeUnicodeData(filename, descriptions, compositions, decompositions):
     fd.write('#include "unicode_description.hpp"\n')
     fd.write('#include <array>\n\n')
 
-    fd.write('namespace tt::inline v1::detail {\n\n')
+    fd.write('namespace hi::inline v1::detail {\n\n')
 
     fd.write('#define TTXD unicode_description\n')
     fd.write('#define TTXGC unicode_general_category\n')

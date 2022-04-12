@@ -1,13 +1,5 @@
 #!/usr/bin/env python3
 
-# [Apollo]GUI> git rev-parse --abbrev-ref HEAD
-# master
-# [Apollo]GUI> git describe --long --tags --abbrev=40 --match='v[0-9]*' --dirty
-# v1.0.0-0-g5afbb1b9d5b4793fc4c6506e9f9bbe59fe6ea2a0-dirty
-# [Apollo]GUI> git remote -v
-# origin	git@github-tj.com:tjienta/TTauri.git (fetch)
-# origin	git@github-tj.com:tjienta/TTauri.git (push)
-
 import os
 import subprocess
 
