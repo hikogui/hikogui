@@ -23,7 +23,7 @@ target_sources(hikogui PRIVATE
     skeleton_while_node.hpp
 )
 
-if(TT_BUILD_TESTS)
+if(HI_BUILD_TESTS)
     target_sources(hikogui_tests PRIVATE
         skeleton_tests.cpp
     )

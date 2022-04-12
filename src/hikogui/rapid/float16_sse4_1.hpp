@@ -4,20 +4,20 @@
 
 #pragma once
 
-#if defined(TT_HAS_SSE4_1)
+#if defined(HI_HAS_SSE4_1)
 #include <smmintrin.h> // SSE4.1
 #include <ammintrin.h> // SSE4A
 #endif
-#if defined(TT_HAS_SSSE3)
+#if defined(HI_HAS_SSSE3)
 #include <tmmintrin.h> // SSSE3
 #endif
-#if defined(TT_HAS_SSE3)
+#if defined(HI_HAS_SSE3)
 #include <pmmintrin.h> // SSE3
 #endif
-#if defined(TT_HAS_SSE2)
+#if defined(HI_HAS_SSE2)
 #include <emmintrin.h> // SSE2
 #endif
-#if defined(TT_HAS_SSE)
+#if defined(HI_HAS_SSE)
 #include <xmmintrin.h> // SSE
 #endif
 #include "../required.hpp"

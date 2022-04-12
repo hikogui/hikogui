@@ -21,7 +21,7 @@ audio_system::make_unique(std::weak_ptr<audio_system_delegate> delegate) noexcep
 {
     auto tmp = std::make_unique<audio_system_aggregate>(delegate);
     tmp->init();
-#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
     tmp->make_audio_system<audio_system_win32>();
 #endif
     return tmp;

@@ -15,7 +15,7 @@ target_sources(hikogui PRIVATE
     uint_abgr8_pack.hpp
 )
 
-if(TT_BUILD_TESTS)
+if(HI_BUILD_TESTS)
     target_sources(hikogui_tests PRIVATE
         numeric_array_tests.cpp
     )

@@ -37,7 +37,7 @@ namespace hi::inline v1 {
         [[unlikely]] return y; \
     }
 
-#if TT_BUILD_TYPE == TT_BT_DEBUG
+#if HI_BUILD_TYPE == HI_BT_DEBUG
 /** Specify an axiom; an expression that is true.
  * An axiom is checked in debug mode, and is used as an optimization
  * in release mode.

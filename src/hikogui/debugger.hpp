@@ -12,7 +12,7 @@ namespace hi::inline v1 {
 
 void prepare_debug_break() noexcept;
 
-#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
 
 #define hi_debug_break() \
     ::hi::prepare_debug_break(); \

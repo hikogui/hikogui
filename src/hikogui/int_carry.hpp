@@ -15,10 +15,10 @@
 #include <tuple>
 #include <concepts>
 
-#if TT_COMPILER == TT_CC_MSVC
+#if HI_COMPILER == HI_CC_MSVC
 #include <intrin.h>
 #endif
-#if TT_PROCESSOR == TT_CPU_X64
+#if HI_PROCESSOR == HI_CPU_X64
 #include <immintrin.h>
 #endif
 
@@ -135,7 +135,7 @@ hi_force_inline constexpr std::pair<T, T> add_carry(T lhs, T rhs, T carry = T{0}
         return {static_cast<T>(r), static_cast<T>(r >> num_bits)};
 
     } else if (not std::is_constant_evaluated()) {
-#if TT_COMPILER == TT_CC_MSVC
+#if HI_COMPILER == HI_CC_MSVC
         uint64_t r;
         hilet c = _addcarry_u64(static_cast<unsigned char>(carry), lhs, rhs, &r);
         return {r, static_cast<T>(c)};
@@ -172,7 +172,7 @@ hi_force_inline constexpr std::pair<T, T> mul_carry(T lhs, T rhs, T carry = T{0}
         return {static_cast<T>(r), static_cast<T>(r >> num_bits)};
 
     } else if (not std::is_constant_evaluated()) {
-#if TT_COMPILER == TT_CC_MSVC
+#if HI_COMPILER == HI_CC_MSVC
         if constexpr (sizeof(T) == 8) {
             uint64_t hi = 0;
             uint64_t lo = _umul128(lhs, rhs, &hi);
@@ -247,11 +247,11 @@ hi_force_inline constexpr T wide_div(T lhs_lo, T lhs_hi, T rhs) noexcept
         return narrow_cast<uint32_t>(lhs / rhs);
 
     } else if constexpr (sizeof(T) == 8) {
-#if TT_COMPILER == TT_CC_MSVC
+#if HI_COMPILER == HI_CC_MSVC
         uint64_t remainder;
         return _udiv128(lhs_hi, lhs_lo, rhs, &remainder);
 
-#elif TT_COMPILER == TT_CC_CLANG || TT_COMPILER == TT_CC_GCC
+#elif HI_COMPILER == HI_CC_CLANG || HI_COMPILER == HI_CC_GCC
         hilet lhs = static_cast<__uint128_t>(lhs_hi) << 64 | static_cast<__uint128_t>(lhs_lo);
         return narrow_cast<uint64_t>(lhs / rhs);
 #else

@@ -36,7 +36,7 @@ target_sources(hikogui PRIVATE
     UTF.hpp
 )
 
-if(TT_BUILD_TESTS)
+if(HI_BUILD_TESTS)
     target_sources(hikogui_tests PRIVATE
         unicode_bidi_tests.cpp
         unicode_break_tests.cpp

@@ -7,9 +7,9 @@
 #include "architecture.hpp"
 #include <array>
 
-#if TT_COMPILER == TT_CC_MSVC
+#if HI_COMPILER == HI_CC_MSVC
 #include <intrin.h>
-#elif TT_COMPILER == TT_CC_GCC || TT_COMPILER == TT_CC_CLANG
+#elif HI_COMPILER == HI_CC_GCC || HI_COMPILER == HI_CC_CLANG
 #include <cpuid.h>
 #else
 #error "Unsuported compiler for x64 cpu_id"
@@ -17,7 +17,7 @@
 
 namespace hi::inline v1 {
 
-#if TT_COMPILER == TT_CC_MSVC
+#if HI_COMPILER == HI_CC_MSVC
 std::array<uint32_t, 4> cpu_id_x64_result cpu_id_x64(uint32_t cpu_id_leaf)
 {
     std::array<int, 4> info;
@@ -31,7 +31,7 @@ std::array<uint32_t, 4> cpu_id_x64_result cpu_id_x64(uint32_t cpu_id_leaf)
     return r;
 }
 
-#elif TT_COMPILER == TT_CC_GCC || TT_COMPILER == TT_CC_CLANG
+#elif HI_COMPILER == HI_CC_GCC || HI_COMPILER == HI_CC_CLANG
 std::array<uint32_t, 4> cpu_id_x64_result cpu_id_x64(uint32_t cpu_id_leaf)
 {
     std::array<uint32_t, 4> r;

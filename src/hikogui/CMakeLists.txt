@@ -38,41 +38,41 @@ target_sources(hikogui PRIVATE
     chrono.hpp
     concepts.hpp
     console.hpp
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/console_win32.cpp>
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/console_win32.cpp>
     command.hpp
     CommandLineParser.hpp
     counters.cpp
     counters.hpp
     CP1252.hpp
     #cpu_id.hpp
-    #$<${TT_X64}:${CMAKE_CURRENT_SOURCE_DIR}/cpu_id_x64.cpp>
+    #$<${HI_X64}:${CMAKE_CURRENT_SOURCE_DIR}/cpu_id_x64.cpp>
     crt.hpp
     crt_utils.hpp
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/crt_utils_win32.cpp>
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/crt_utils_win32.cpp>
     date.hpp
     datum.hpp
     dead_lock_detector.cpp
     dead_lock_detector.hpp
     debugger.hpp
-    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/debugger_macos.mm>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/debugger_win32.cpp>
+    $<${HI_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/debugger_macos.mm>
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/debugger_win32.cpp>
     decimal.hpp
     dialog.hpp
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/dialog_win32.cpp>
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/dialog_win32.cpp>
     endian.hpp
     enum_metadata.hpp
     exception.hpp
     file.hpp
-    $<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/file_posix.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/file_win32.cpp>
+    $<${HI_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/file_posix.cpp>
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/file_win32.cpp>
     file_mapping.cpp
     file_mapping.hpp
-    $<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/file_mapping_posix.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/file_mapping_win32.cpp>
+    $<${HI_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/file_mapping_posix.cpp>
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/file_mapping_win32.cpp>
     file_view.cpp
     file_view.hpp
-    $<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/file_view_posix.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/file_view_win32.cpp>
+    $<${HI_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/file_view_posix.cpp>
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/file_view_win32.cpp>
     fixed.hpp
     float16.hpp
     forward_value.hpp
@@ -94,13 +94,13 @@ target_sources(hikogui PRIVATE
     jsonpath.hpp
     label.hpp
     locked_memory_allocator.hpp
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/locked_memory_allocator_win32.cpp>
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/locked_memory_allocator_win32.cpp>
     log.cpp
     log.hpp
-    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/log_macos.mm>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/log_win32.cpp>
+    $<${HI_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/log_macos.mm>
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/log_win32.cpp>
 	loop.hpp
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/loop_win32.cpp>
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/loop_win32.cpp>
     math.hpp
     memory.hpp
     meta.hpp
@@ -113,7 +113,7 @@ target_sources(hikogui PRIVATE
     operator.hpp
     os_settings.cpp
     os_settings.hpp
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/os_settings_win32.cpp>
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/os_settings_win32.cpp>
     architecture.hpp
     parse_location.hpp
     preferences.cpp
@@ -130,8 +130,8 @@ target_sources(hikogui PRIVATE
     range_map.hpp
     ranges.hpp
     recursive_iterator.hpp
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32.hpp>
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32.cpp>
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32.hpp>
     required.hpp
     range_map.hpp
     resource_view.hpp
@@ -151,13 +151,13 @@ target_sources(hikogui PRIVATE
     tagged_id.hpp
     tagged_map.hpp
     task.hpp
-    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/thread_macos.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/thread_win32.cpp>
+    $<${HI_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/thread_macos.cpp>
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/thread_win32.cpp>
     thread.cpp
     thread.hpp
     time_stamp_count.cpp
     time_stamp_count.hpp
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/time_stamp_count_win32.cpp>
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/time_stamp_count_win32.cpp>
     time_stamp_utc.cpp
     time_stamp_utc.hpp
     tokenizer.cpp
@@ -170,9 +170,9 @@ target_sources(hikogui PRIVATE
     unfair_recursive_mutex.hpp
     URL.cpp
     URL.hpp
-    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/URL_macos.mm>
-    $<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/URL_posix.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/URL_win32.cpp>
+    $<${HI_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/URL_macos.mm>
+    $<${HI_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/URL_posix.cpp>
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/URL_win32.cpp>
     url_parser.cpp
     url_parser.hpp
     utils.hpp
@@ -183,7 +183,7 @@ target_sources(hikogui PRIVATE
     wfree_unordered_map.hpp
 )
 
-if(TT_BUILD_PCH AND NOT TT_ENABLE_ANALYSIS)
+if(HI_BUILD_PCH AND NOT HI_ENABLE_ANALYSIS)
     target_precompile_headers(hikogui PRIVATE
         assert.hpp
         counters.hpp
@@ -199,7 +199,7 @@ if(TT_BUILD_PCH AND NOT TT_ENABLE_ANALYSIS)
     )
 endif()
 
-if(TT_BUILD_TESTS)
+if(HI_BUILD_TESTS)
     target_sources(hikogui_tests PRIVATE
         algorithm_tests.cpp
         bezier_curve_tests.cpp
@@ -241,7 +241,7 @@ if(TT_BUILD_TESTS)
 endif()
 
 
-if(TT_BUILD_TESTS AND TT_BUILD_PCH AND NOT TT_ENABLE_ANALYSIS)
+if(HI_BUILD_TESTS AND HI_BUILD_PCH AND NOT HI_ENABLE_ANALYSIS)
     target_precompile_headers(hikogui_tests PRIVATE
         assert.hpp
         counters.hpp

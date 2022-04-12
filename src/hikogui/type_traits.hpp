@@ -203,7 +203,7 @@ template<std::size_t N> struct make_uintxx {};
  */
 template<std::size_t N> struct make_floatxx {};
 
-#if (TT_COMPILER == TT_CC_CLANG || TT_COMPILER == TT_CC_GCC) && (TT_PROCESSOR == TT_CPU_X64)
+#if (HI_COMPILER == HI_CC_CLANG || HI_COMPILER == HI_CC_GCC) && (HI_PROCESSOR == HI_CPU_X64)
 template<> struct has_intxx<128> : public std::true_type {};
 template<> struct has_uintxx<128> : public std::true_type {};
 template<> struct make_intxx<128> { using type = __int128; };

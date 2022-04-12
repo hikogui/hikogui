@@ -8,7 +8,7 @@
 #include "memory.hpp"
 #include "assert.hpp"
 
-#if TT_COMPILER == TT_CC_MSVC
+#if HI_COMPILER == HI_CC_MSVC
 #include <stdlib.h>
 #endif
 #include <bit>
@@ -19,7 +19,7 @@ namespace hi::inline v1 {
 template<std::unsigned_integral T>
 [[nodiscard]] T byte_swap(T x) noexcept
 {
-#if TT_COMPILER == TT_CC_CLANG || TT_COMPILER == TT_CC_GCC
+#if HI_COMPILER == HI_CC_CLANG || HI_COMPILER == HI_CC_GCC
     if constexpr (sizeof(T) == sizeof(uint64_t)) {
         return static_cast<T>(__builtin_bswap64(static_cast<uint64_t>(x)));
     } else if constexpr (sizeof(T) == sizeof(uint32_t)) {
@@ -29,7 +29,7 @@ template<std::unsigned_integral T>
     } else {
         hi_no_default();
     }
-#elif TT_COMPILER == TT_CC_MSVC
+#elif HI_COMPILER == HI_CC_MSVC
     if constexpr (sizeof(T) == sizeof(uint64_t)) {
         return static_cast<T>(_byteswap_uint64(static_cast<uint64_t>(x)));
     } else if constexpr (sizeof(T) == sizeof(unsigned long)) {

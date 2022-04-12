@@ -12,11 +12,11 @@
 #include <type_traits>
 #include <cmath>
 
-#if TT_PROCESSOR == TT_CPU_X64
+#if HI_PROCESSOR == HI_CPU_X64
 #include <immintrin.h>
 #endif
 
-#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
 #include <intrin.h>
 #pragma intrinsic(_mul128)
 #endif

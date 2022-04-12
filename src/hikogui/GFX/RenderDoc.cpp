@@ -6,7 +6,7 @@
 #include "../log.hpp"
 #include "../URL.hpp"
 #include <renderdoc/renderdoc_app.h>
-#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
 #include <Windows.h>
 #endif
 #include <type_traits>
@@ -15,8 +15,8 @@ namespace hi::inline v1 {
 
 RenderDoc::RenderDoc() noexcept
 {
-#if TT_BUILD_TYPE == TT_BT_DEBUG
-#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+#if HI_BUILD_TYPE == HI_BT_DEBUG
+#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
     hilet dll_urls = std::vector{
         URL{"file:renderdoc.dll"},
         URL{"file:///C:/Program%20Files/RenderDoc/renderdoc.dll"},

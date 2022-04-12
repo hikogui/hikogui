@@ -18,182 +18,182 @@
 
 namespace hi::inline v1 {
 
-#define TT_BT_DEBUG 'D'
-#define TT_BT_RELEASE 'R'
+#define HI_BT_DEBUG 'D'
+#define HI_BT_RELEASE 'R'
 
 #if defined(NDEBUG)
-#define TT_BUILD_TYPE TT_BT_RELEASE
+#define HI_BUILD_TYPE HI_BT_RELEASE
 #else
-#define TT_BUILD_TYPE TT_BT_DEBUG
+#define HI_BUILD_TYPE HI_BT_DEBUG
 #endif
 
 enum class build_type {
-    debug = TT_BT_DEBUG,
-    release = TT_BT_RELEASE,
+    debug = HI_BT_DEBUG,
+    release = HI_BT_RELEASE,
 
-    current = TT_BUILD_TYPE
+    current = HI_BUILD_TYPE
 };
 
-#define TT_OS_WINDOWS 'W'
-#define TT_OS_MACOS 'A'
-#define TT_OS_MOBILE 'M'
-#define TT_OS_OTHER 'O'
+#define HI_OS_WINDOWS 'W'
+#define HI_OS_MACOS 'A'
+#define HI_OS_MOBILE 'M'
+#define HI_OS_OTHER 'O'
 
 #if defined(_WIN32)
-#define TT_OPERATING_SYSTEM TT_OS_WINDOWS
+#define HI_OPERATING_SYSTEM HI_OS_WINDOWS
 #elif defined(TARGET_OS_MAC) && !defined(TARGET_OS_IPHONE)
-#define TT_OPERATING_SYSTEM TT_OS_MACOS
+#define HI_OPERATING_SYSTEM HI_OS_MACOS
 #elif defined(TARGET_OS_IPHONE) || defined(__ANDROID__)
-#define TT_OPERATING_SYSTEM TT_OS_MOBILE
+#define HI_OPERATING_SYSTEM HI_OS_MOBILE
 #else
-#define TT_OPERATING_SYSTEM TT_OS_OTHER
+#define HI_OPERATING_SYSTEM HI_OS_OTHER
 #endif
 
 enum class operating_system {
-    windows = TT_OS_WINDOWS,
-    macos = TT_OS_MACOS,
-    mobile = TT_OS_MOBILE,
-    other = TT_OS_OTHER,
+    windows = HI_OS_WINDOWS,
+    macos = HI_OS_MACOS,
+    mobile = HI_OS_MOBILE,
+    other = HI_OS_OTHER,
 
-    current = TT_OPERATING_SYSTEM
+    current = HI_OPERATING_SYSTEM
 };
 
-#define TT_CC_MSVC 'm'
-#define TT_CC_GCC 'g'
-#define TT_CC_CLANG 'c'
+#define HI_CC_MSVC 'm'
+#define HI_CC_GCC 'g'
+#define HI_CC_CLANG 'c'
 
 #if defined(__clang__)
-#define TT_COMPILER TT_CC_CLANG
+#define HI_COMPILER HI_CC_CLANG
 #elif defined(_MSC_BUILD)
-#define TT_COMPILER TT_CC_MSVC
+#define HI_COMPILER HI_CC_MSVC
 #elif defined(__GNUC__)
-#define TT_COMPILER TT_CC_GCC
+#define HI_COMPILER HI_CC_GCC
 #else
 #error "Could not detect the compiler."
 #endif
 
 enum class compiler {
-    msvc = TT_CC_MSVC,
-    gcc = TT_CC_GCC,
-    clang = TT_CC_CLANG,
+    msvc = HI_CC_MSVC,
+    gcc = HI_CC_GCC,
+    clang = HI_CC_CLANG,
 
-    current = TT_COMPILER
+    current = HI_COMPILER
 };
 
-#define TT_CPU_X64 'i'
-#define TT_CPU_ARM 'a'
-#define TT_CPU_UNKNOWN 'u'
+#define HI_CPU_X64 'i'
+#define HI_CPU_ARM 'a'
+#define HI_CPU_UNKNOWN 'u'
 
 #if defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64) || defined(_M_AMD64)
-#define TT_PROCESSOR TT_CPU_X64
+#define HI_PROCESSOR HI_CPU_X64
 #elif defined(__arm__) || defined(_M_ARM)
-#define TT_PROCESSOR TT_CPU_ARM
+#define HI_PROCESSOR HI_CPU_ARM
 #else
-#define TT_PROCESSOR TT_CPU_UNKNOWN
+#define HI_PROCESSOR HI_CPU_UNKNOWN
 #endif
 
 enum class processor {
-    x64 = TT_CPU_X64,
-    arm = TT_CPU_ARM,
-    unknown = TT_CPU_UNKNOWN,
+    x64 = HI_CPU_X64,
+    arm = HI_CPU_ARM,
+    unknown = HI_CPU_UNKNOWN,
 
-    current = TT_PROCESSOR
+    current = HI_PROCESSOR
 };
 
-#if TT_PROCESSOR == TT_CPU_X64
+#if HI_PROCESSOR == HI_CPU_X64
 #if defined(__AVX512BW__) && defined(__AVX512CD__) && defined(__AVX512DQ__) && defined(__AVX512F__) && defined(__AVX512VL__)
-#define TT_X86_64_V4 1
-#define TT_X86_64_V3 1
-#define TT_X86_64_V2_5 1
-#define TT_X86_64_V2 1
-#define TT_X86_64_V1 1
-#define TT_HAS_SSE
-#define TT_HAS_SSE2
-#define TT_HAS_SSE3
-#define TT_HAS_SSE4_1
-#define TT_HAS_SSE4_2
-#define TT_HAS_SSSE3
-#define TT_HAS_AVX
-#define TT_HAS_AVX2
-#define TT_HAS_BMI1
-#define TT_HAS_BMI2
-#define TT_HAS_AVX512F
-#define TT_HAS_AVX512BW
-#define TT_HAS_AVX512CD
-#define TT_HAS_AVX512DQ
-#define TT_HAS_AVX512VL
+#define HI_X86_64_V4 1
+#define HI_X86_64_V3 1
+#define HI_X86_64_V2_5 1
+#define HI_X86_64_V2 1
+#define HI_X86_64_V1 1
+#define HI_HAS_SSE
+#define HI_HAS_SSE2
+#define HI_HAS_SSE3
+#define HI_HAS_SSE4_1
+#define HI_HAS_SSE4_2
+#define HI_HAS_SSSE3
+#define HI_HAS_AVX
+#define HI_HAS_AVX2
+#define HI_HAS_BMI1
+#define HI_HAS_BMI2
+#define HI_HAS_AVX512F
+#define HI_HAS_AVX512BW
+#define HI_HAS_AVX512CD
+#define HI_HAS_AVX512DQ
+#define HI_HAS_AVX512VL
 
 #elif defined(__AVX2__)
-#define TT_X86_64_V3 1
-#define TT_X86_64_V2_5 1
-#define TT_X86_64_V2 1
-#define TT_X86_64_V1 1
-#define TT_HAS_SSE
-#define TT_HAS_SSE2
-#define TT_HAS_SSE3
-#define TT_HAS_SSE4_1
-#define TT_HAS_SSE4_2
-#define TT_HAS_SSSE3
-#define TT_HAS_AVX
-#define TT_HAS_AVX2
-#define TT_HAS_BMI1
-#define TT_HAS_BMI2
+#define HI_X86_64_V3 1
+#define HI_X86_64_V2_5 1
+#define HI_X86_64_V2 1
+#define HI_X86_64_V1 1
+#define HI_HAS_SSE
+#define HI_HAS_SSE2
+#define HI_HAS_SSE3
+#define HI_HAS_SSE4_1
+#define HI_HAS_SSE4_2
+#define HI_HAS_SSSE3
+#define HI_HAS_AVX
+#define HI_HAS_AVX2
+#define HI_HAS_BMI1
+#define HI_HAS_BMI2
 
 #elif defined(__AVX__)
-#define TT_X86_64_V2_5 1
-#define TT_X86_64_V2 1
-#define TT_X86_64_V1 1
-#define TT_HAS_SSE
-#define TT_HAS_SSE2
-#define TT_HAS_SSE3
-#define TT_HAS_SSE4_1
-#define TT_HAS_SSE4_2
-#define TT_HAS_SSSE3
-#define TT_HAS_AVX
+#define HI_X86_64_V2_5 1
+#define HI_X86_64_V2 1
+#define HI_X86_64_V1 1
+#define HI_HAS_SSE
+#define HI_HAS_SSE2
+#define HI_HAS_SSE3
+#define HI_HAS_SSE4_1
+#define HI_HAS_SSE4_2
+#define HI_HAS_SSSE3
+#define HI_HAS_AVX
 
 // x86_64_v2 can not be selected in MSVC, but can be in gcc and clang.
 #elif defined(__SSE4_2__) && defined(__SSSE3__)
-#define TT_X86_64_V2 1
-#define TT_X86_64_V1 1
-#define TT_HAS_SSE
-#define TT_HAS_SSE2
-#define TT_HAS_SSE3
-#define TT_HAS_SSE4_1
-#define TT_HAS_SSE4_2
-#define TT_HAS_SSSE3
+#define HI_X86_64_V2 1
+#define HI_X86_64_V1 1
+#define HI_HAS_SSE
+#define HI_HAS_SSE2
+#define HI_HAS_SSE3
+#define HI_HAS_SSE4_1
+#define HI_HAS_SSE4_2
+#define HI_HAS_SSSE3
 
 #else
-#define TT_X86_64_V1 1
-#define TT_HAS_SSE
-#define TT_HAS_SSE2
+#define HI_X86_64_V1 1
+#define HI_HAS_SSE
+#define HI_HAS_SSE2
 #endif
 #endif
 
-#if defined(TT_X86_64_V1)
+#if defined(HI_X86_64_V1)
 constexpr bool x86_64_v1 = true;
 #else
 constexpr bool x86_64_v1 = false;
 #endif
 
-#if defined(TT_X86_64_V2)
+#if defined(HI_X86_64_V2)
 constexpr bool x86_64_v2 = true;
 #else
 constexpr bool x86_64_v2 = false;
 #endif
 
-#if defined(TT_X86_64_V2_5)
+#if defined(HI_X86_64_V2_5)
 constexpr bool x86_64_v2_5 = true;
 #else
 constexpr bool x86_64_v2_5 = false;
 #endif
 
-#if defined(TT_X86_64_V3)
+#if defined(HI_X86_64_V3)
 constexpr bool x86_64_v3 = true;
 #else
 constexpr bool x86_64_v3 = false;
 #endif
 
-#if defined(TT_X86_64_V4)
+#if defined(HI_X86_64_V4)
 constexpr bool x86_64_v4 = true;
 #else
 constexpr bool x86_64_v4 = false;
@@ -205,7 +205,7 @@ constexpr bool x86_64_v4 = false;
 #define hi_cat_(a, b) a ## b
 #define hi_cat(a, b) hi_cat_(a, b)
 
-#if TT_COMPILER == TT_CC_MSVC
+#if HI_COMPILER == HI_CC_MSVC
 
 /** Marker to tell the compiler that this line will never be executed.
  * 
@@ -236,7 +236,7 @@ constexpr bool x86_64_v4 = false;
  */
 #define hi_export __declspec(dllexport)
 
-#elif TT_COMPILER == TT_CC_CLANG
+#elif HI_COMPILER == HI_CC_CLANG
 #define hi_unreachable() __builtin_unreachable()
 #define hi_assume(condition) __builtin_assume(static_cast<bool>(condition))
 #define hi_force_inline inline __attribute__((always_inline))
@@ -248,7 +248,7 @@ constexpr bool x86_64_v4 = false;
 #define hi_clang_suppress(a) _Pragma(hi_stringify(clang diagnostic ignored a))
 #define hi_export
 
-#elif TT_COMPILER == TT_CC_GCC
+#elif HI_COMPILER == HI_CC_GCC
 #define hi_unreachable() __builtin_unreachable()
 #define hi_assume(condition) \
     do { \
@@ -278,7 +278,7 @@ constexpr bool x86_64_v4 = false;
 
 #endif
 
-#if TT_PROCESSOR == TT_CPU_X64
+#if HI_PROCESSOR == HI_CPU_X64
 /** Minimum offset between two objects to avoid false sharing. Guaranteed to be at least alignof(std::max_align_t)
  * Part of c++17 but never implemented by clang or gcc.
  */
@@ -288,7 +288,7 @@ constexpr std::size_t hardware_destructive_interference_size = 128;
  * Part of c++17 but never implemented by clang or gcc.
  */
 constexpr std::size_t hardware_constructive_interference_size = 64;
-#elif TT_PROCESSOR == TT_CPU_ARM
+#elif HI_PROCESSOR == HI_CPU_ARM
 /** Minimum offset between two objects to avoid false sharing. Guaranteed to be at least alignof(std::max_align_t)
  * Part of c++17 but never implemented by clang or gcc.
  */
@@ -299,22 +299,22 @@ constexpr std::size_t hardware_destructive_interference_size = 64;
  */
 constexpr std::size_t hardware_constructive_interference_size = 64;
 
-#elif TT_PROCESSOR == TT_CPU_UNKNOWN
+#elif HI_PROCESSOR == HI_CPU_UNKNOWN
 constexpr std::size_t hardware_destructive_interference_size = 128;
 constexpr std::size_t hardware_constructive_interference_size = 64;
 #else
 #error "Missing implementation of hardware_destructive_interference_size and hardware_constructive_interference_size"
 #endif
 
-#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
 using os_handle = void *;
 using file_handle = os_handle;
 
-#elif TT_OPERATING_SYSTEM == TT_OS_MACOS
+#elif HI_OPERATING_SYSTEM == HI_OS_MACOS
 using os_handle = int;
 using file_handle = int;
 
-#elif TT_OPERATING_SYSTEM == TT_OS_LINUX
+#elif HI_OPERATING_SYSTEM == HI_OS_LINUX
 using os_handle = int;
 using file_handle = int;
 

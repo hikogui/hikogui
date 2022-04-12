@@ -19,10 +19,10 @@
 #include <concepts>
 #include <algorithm>
 
-#if TT_COMPILER == TT_CC_MSVC
+#if HI_COMPILER == HI_CC_MSVC
 #include <intrin.h>
 #endif
-#if TT_PROCESSOR == TT_CPU_X64
+#if HI_PROCESSOR == HI_CPU_X64
 #include <immintrin.h>
 #endif
 

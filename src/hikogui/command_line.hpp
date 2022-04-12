@@ -189,7 +189,7 @@ public:
  */
 class command_line {
 public:
-#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
     void parse();
 #else
     void parse(int argc, char **argv);

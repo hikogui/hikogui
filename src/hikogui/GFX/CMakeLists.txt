@@ -19,9 +19,9 @@ target_sources(hikogui PRIVATE
     gfx_system_globals.hpp
     gfx_system_vulkan.cpp
     gfx_system_vulkan.hpp
-    #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/gfx_system_vulkan_macos.hpp>
-    #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/fgx_system_vulkan_macos.mm>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gfx_system_vulkan_win32.cpp>
+    #$<${HI_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/gfx_system_vulkan_macos.hpp>
+    #$<${HI_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/fgx_system_vulkan_macos.mm>
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gfx_system_vulkan_win32.cpp>
     paged_image.cpp
     paged_image.hpp
     pipeline.cpp
@@ -70,7 +70,7 @@ target_sources(hikogui PRIVATE
     VulkanMemoryAllocator.cpp
 )
 
-if(TT_BUILD_PCH AND NOT TT_ENABLE_ANALYSIS)
+if(HI_BUILD_PCH AND NOT HI_ENABLE_ANALYSIS)
     target_precompile_headers(hikogui PRIVATE
         gfx_system.hpp
         gfx_system_vulkan.hpp

@@ -1,9 +1,31 @@
 Change log
 ==========
 
-0.6
------------
- * The project is renamed from ttauri to HikoGUI.
+0.6 Dizzy Donkey
+----------------
+The changes in this version are pretty random, but there is a theme
+of improving how to create custom widgets.
+
+ * The ttauri project is renamed to HikoGUI.
+ * The drawing API is more consistent and capable; for example adding
+   color gradients, convex quads and allowing glyphs to be overlapped.
+ * New text-shaper and text widget which handles bidirectional text,
+   with bidirectional-double cursors, multiple paragraphs, and sharper
+   rendering by scaling and positioning to sub-pixel boundaries.
+ * Improved grid widget which now supports row- and column-spans.
+ * New grapheme-cluster type that can be used inside std::basic_string.
+ * An central API to retrieve user-settings from the operating system,
+   including a notifier for the application to directly react on changes.
+ * DPI scaling is implemented by scaling the measurements of a theme.
+ * Multi-monitor support for positioning and maximizing.
+ * co-routine `task` and `scoped_task` which can await on notifiers and
+   observables to handle complex user interface interactions and window
+   ownership.
+ * New blocking main event-loop with more accurate vertical-sync support;
+   improving animations even in debug builds.
+ * Improved localization support with language_tags that have access to
+   ISO-codes for language, script and region.
+ 
 
 0.5.1 Bad Butterfly
 -------------------

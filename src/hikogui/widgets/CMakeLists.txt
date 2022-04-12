@@ -40,8 +40,8 @@ target_sources(hikogui PRIVATE
     selection_delegate.hpp
     selection_widget.cpp
     selection_widget.hpp
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/system_menu_widget.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/system_menu_widget.hpp>
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/system_menu_widget.cpp>
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/system_menu_widget.hpp>
     tab_delegate.hpp
     tab_widget.cpp
     tab_widget.hpp
@@ -68,7 +68,7 @@ target_sources(hikogui PRIVATE
     window_widget.hpp
 )
 
-if(TT_BUILD_PCH AND NOT TT_ENABLE_ANALYSIS)
+if(HI_BUILD_PCH AND NOT HI_ENABLE_ANALYSIS)
     target_precompile_headers(hikogui PRIVATE
         checkbox_widget.hpp
         grid_widget.hpp

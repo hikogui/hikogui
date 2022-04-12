@@ -480,7 +480,7 @@ public:
         auto ptr = new (right_begin_ptr() - 1) value_type(std::forward<Args>(args)...);
         ++_it_end;
         --_gap_size;
-#if TT_BUILT_TYPE == TT_BT_DEBUG
+#if HI_BUILT_TYPE == HI_BT_DEBUG
         ++_version;
 #endif
         hi_axiom(holds_invariant());
@@ -511,7 +511,7 @@ public:
         auto ptr = new (right_begin_ptr() - 1) value_type(std::forward<Args>(args)...);
         ++_it_end;
         --_gap_size;
-#if TT_BUILT_TYPE == TT_BT_DEBUG
+#if HI_BUILT_TYPE == HI_BT_DEBUG
         ++_version;
 #endif
         hi_axiom(holds_invariant());
@@ -575,7 +575,7 @@ public:
         ++_it_end;
         ++_gap_begin;
         --_gap_size;
-#if TT_BUILT_TYPE == TT_BT_DEBUG
+#if HI_BUILT_TYPE == HI_BT_DEBUG
         ++_version;
 #endif
         hi_axiom(holds_invariant());
@@ -703,7 +703,7 @@ private:
      */
     size_type _gap_size;
 
-#if TT_BUILT_TYPE == TT_BT_DEBUG
+#if HI_BUILT_TYPE == HI_BT_DEBUG
     std::size_t _version = 0;
 #endif
 
@@ -905,7 +905,7 @@ public:
     gap_buffer_iterator(gap_buffer_iterator<value_type> const &other) noexcept requires(is_const) :
         _buffer(other._buffer), _it_ptr(other._it_ptr)
     {
-#if TT_BUILT_TYPE == TT_BT_DEBUG
+#if HI_BUILT_TYPE == HI_BT_DEBUG
         _version = other._version;
 #endif
         hi_axiom(holds_invariant());
@@ -914,14 +914,14 @@ public:
     gap_buffer_iterator(
         gap_buffer_type *buffer,
         T *it_ptr
-#if TT_BUILT_TYPE == TT_BT_DEBUG
+#if HI_BUILT_TYPE == HI_BT_DEBUG
         ,
         std::size_t version
 #endif
         ) noexcept :
         _buffer(buffer),
         _it_ptr(it_ptr)
-#if TT_BUILT_TYPE == TT_BT_DEBUG
+#if HI_BUILT_TYPE == HI_BT_DEBUG
         ,
         _version(version)
 #endif
@@ -1043,14 +1043,14 @@ public:
 private:
     gap_buffer_type *_buffer;
     T *_it_ptr;
-#if TT_BUILT_TYPE == TT_BT_DEBUG
+#if HI_BUILT_TYPE == HI_BT_DEBUG
     std::size_t _version;
 #endif
 
     [[nodiscard]] gap_buffer_iterator(gap_buffer_iterator<value_type const> const &other) noexcept requires(!is_const) :
         _buffer(const_cast<gap_buffer_type *>(other._buffer)), _it_ptr(const_cast<T *>(other._it_ptr))
     {
-#if TT_BUILT_TYPE == TT_BT_DEBUG
+#if HI_BUILT_TYPE == HI_BT_DEBUG
         _version = other._version;
 #endif
         hi_axiom(holds_invariant());
@@ -1069,7 +1069,7 @@ private:
     [[nodiscard]] bool holds_invariant() const noexcept
     {
         return _buffer and _it_ptr >= _buffer->_begin and _it_ptr <= _buffer->_it_end
-#if TT_BUILT_TYPE == TT_BT_DEBUG
+#if HI_BUILT_TYPE == HI_BT_DEBUG
             and _version == _buffer->_version
 #endif
             ;

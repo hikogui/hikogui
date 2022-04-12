@@ -6,7 +6,7 @@
 #include "window_traffic_lights_widget.hpp"
 #include "toolbar_widget.hpp"
 #include "grid_widget.hpp"
-#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
 #include "system_menu_widget.hpp"
 #endif
 #include "../GUI/gui_window.hpp"
@@ -20,7 +20,7 @@ void window_widget::constructor_implementation() noexcept
     _toolbar = std::make_unique<toolbar_widget>(window, this);
 
     if (theme().operating_system == operating_system::windows) {
-#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
         _system_menu = &_toolbar->make_widget<system_menu_widget>();
         _title_cbt = title.subscribe([this](auto...) {
             this->_system_menu->icon = this->title->icon;

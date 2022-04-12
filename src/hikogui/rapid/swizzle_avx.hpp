@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../architecture.hpp"
-#if defined(TT_HAS_AVX)
+#if defined(HI_HAS_AVX)
 
 #include <emmintrin.h>
 #include <smmintrin.h>

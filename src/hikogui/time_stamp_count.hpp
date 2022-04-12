@@ -12,9 +12,9 @@
 #include <array>
 #include <cstdint>
 
-#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
 #include <intrin.h>
-#elif TT_OPERATING_SYSTEM == TT_OS_LINUX
+#elif HI_OPERATING_SYSTEM == HI_OS_LINUX
 #include <x86intrin.h>
 #endif
 

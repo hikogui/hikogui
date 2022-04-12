@@ -67,7 +67,7 @@ private:
 
     aarectangle _toolbar_rectangle;
     std::unique_ptr<toolbar_widget> _toolbar;
-#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
     system_menu_widget *_system_menu = nullptr;
 #endif
 

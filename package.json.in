@@ -1,9 +1,9 @@
 {
-    "name": "@TT_LIB_NAME@",
+    "name": "@HI_LIB_NAME@",
     "display-name": "HikoGUI Library",
-    "version": "@TT_LIB_VERSION@",
-    "license": "@TT_LIB_LICENSE@",
-    "homepage": "@TT_LIB_HOMEPAGE@",
-    "description": "@TT_LIB_DESCRIPTION@",
+    "version": "@HI_LIB_VERSION@",
+    "license": "@HI_LIB_LICENSE@",
+    "homepage": "@HI_LIB_HOMEPAGE@",
+    "description": "@HI_LIB_DESCRIPTION@",
     "vendor": "HikoGUI"
 }
