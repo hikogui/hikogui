@@ -2,7 +2,7 @@
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-target_sources(ttauri PRIVATE
+target_sources(hikogui PRIVATE
     abstract_button_widget.cpp
     abstract_button_widget.hpp
     button_delegate.hpp
@@ -69,7 +69,7 @@ target_sources(ttauri PRIVATE
 )
 
 if(TT_BUILD_PCH AND NOT TT_ENABLE_ANALYSIS)
-    target_precompile_headers(ttauri PRIVATE
+    target_precompile_headers(hikogui PRIVATE
         checkbox_widget.hpp
         grid_widget.hpp
         label_widget.hpp

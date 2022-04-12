@@ -20,7 +20,7 @@ namespace tt::inline v1 {
  *   - Fixed point PCM, a more generic format than signed integers which has
  *     some head-room/guard bits above normalized signed integers. The Q8.23 fixed integer
  *     format is used by iOS as a sample format.
- *   - Floating point PCM, the floating point format used internally in ttauri,
+ *   - Floating point PCM, the floating point format used internally in hikogui,
  *     useful for doing calculations in.
  *
  * Sample values are aligned to the most significant bits of the container described by

@@ -2,8 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "ttauri/URL.hpp"
-#include "ttauri/algorithm.hpp"
+#include "hikogui/URL.hpp"
+#include "hikogui/algorithm.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
@@ -42,7 +42,7 @@ TEST(URLTests, glob1)
         return x.path().ends_with("file_view.txt"s);
     }));
     ASSERT_FALSE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) {
-        return x.path().ends_with("TTauri_Foundation.lib"s);
+        return x.path().ends_with("HikoGUI_Foundation.lib"s);
     }));
 }
 

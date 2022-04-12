@@ -3,7 +3,7 @@
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 
-target_sources(ttauri PRIVATE
+target_sources(hikogui PRIVATE
     grapheme.cpp
     grapheme.hpp
     gstring.cpp
@@ -37,7 +37,7 @@ target_sources(ttauri PRIVATE
 )
 
 if(TT_BUILD_TESTS)
-    target_sources(ttauri_tests PRIVATE
+    target_sources(hikogui_tests PRIVATE
         unicode_bidi_tests.cpp
         unicode_break_tests.cpp
         unicode_text_segmentation_tests.cpp

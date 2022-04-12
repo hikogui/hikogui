@@ -25,7 +25,7 @@ constexpr auto points_per_inch_v = T{72.0};
  *  - MacOS: 72 dp/inch
  *  - Android: 160 dp/inch (80 double dp/inch)
  *
- * The Android dp size is almost halfway between win32 and MacOS, which we will use for ttauri.
+ * The Android dp size is almost halfway between win32 and MacOS, which we will use for hikogui.
  */
 template<std::floating_point T>
 constexpr auto dp_per_inch_v = T{80.0};

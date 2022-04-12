@@ -2,9 +2,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "ttauri/datum.hpp"
-#include "ttauri/exception.hpp"
-#include "ttauri/codec/JSON.hpp"
+#include "hikogui/datum.hpp"
+#include "hikogui/exception.hpp"
+#include "hikogui/codec/JSON.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

@@ -9,7 +9,7 @@
 #include "font_grapheme_id.hpp"
 #include "glyph_ids.hpp"
 #include "elusive_icon.hpp"
-#include "ttauri_icon.hpp"
+#include "hikogui_icon.hpp"
 #include "../unicode/grapheme.hpp"
 #include "../URL.hpp"
 #include "../alignment.hpp"
@@ -49,9 +49,9 @@ public:
         _elusive_icon_font = &register_font(url, false);
     }
 
-    void register_ttauri_icon_font(URL url)
+    void register_hikogui_icon_font(URL url)
     {
-        _ttauri_icon_font = &register_font(url, false);
+        _hikogui_icon_font = &register_font(url, false);
     }
 
     /** Post process font_book
@@ -115,15 +115,15 @@ public:
         return _elusive_icon_font->find_glyph(grapheme{static_cast<char32_t>(rhs)});
     }
 
-    [[nodiscard]] glyph_ids find_glyph(ttauri_icon rhs) const noexcept
+    [[nodiscard]] glyph_ids find_glyph(hikogui_icon rhs) const noexcept
     {
-        tt_axiom(_ttauri_icon_font);
-        return _ttauri_icon_font->find_glyph(grapheme{static_cast<char32_t>(rhs)});
+        tt_axiom(_hikogui_icon_font);
+        return _hikogui_icon_font->find_glyph(grapheme{static_cast<char32_t>(rhs)});
     }
 
 private:
     font const *_elusive_icon_font = nullptr;
-    font const *_ttauri_icon_font = nullptr;
+    font const *_hikogui_icon_font = nullptr;
 
     /** Table of font_family_ids index using the family-name.
      */

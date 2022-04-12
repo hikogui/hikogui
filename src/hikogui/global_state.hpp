@@ -171,10 +171,10 @@ struct std::atomic<tt::global_state_type> {
 
 namespace tt::inline v1 {
 
-/** The global state of the ttauri framework.
+/** The global state of the hikogui framework.
  *
  * This variable contains state in use by multiple systems
- * inside ttauri. This is done so that this variable is likely
+ * inside hikogui. This is done so that this variable is likely
  * to be in a cache line and may stay in a register.
  *
  * In many cases using std::memory_order::relaxed loads are enough of a

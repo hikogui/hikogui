@@ -19,7 +19,7 @@ add_subdirectory(widgets)
 
 configure_file(metadata.cpp.in metadata.cpp @ONLY)
 
-target_sources(ttauri PRIVATE
+target_sources(hikogui PRIVATE
     alignment.hpp
     algorithm.hpp
     arguments.hpp
@@ -184,7 +184,7 @@ target_sources(ttauri PRIVATE
 )
 
 if(TT_BUILD_PCH AND NOT TT_ENABLE_ANALYSIS)
-    target_precompile_headers(ttauri PRIVATE
+    target_precompile_headers(hikogui PRIVATE
         assert.hpp
         counters.hpp
         datum.hpp
@@ -200,7 +200,7 @@ if(TT_BUILD_PCH AND NOT TT_ENABLE_ANALYSIS)
 endif()
 
 if(TT_BUILD_TESTS)
-    target_sources(ttauri_tests PRIVATE
+    target_sources(hikogui_tests PRIVATE
         algorithm_tests.cpp
         bezier_curve_tests.cpp
         bigint_tests.cpp
@@ -242,7 +242,7 @@ endif()
 
 
 if(TT_BUILD_TESTS AND TT_BUILD_PCH AND NOT TT_ENABLE_ANALYSIS)
-    target_precompile_headers(ttauri_tests PRIVATE
+    target_precompile_headers(hikogui_tests PRIVATE
         assert.hpp
         counters.hpp
         datum.hpp

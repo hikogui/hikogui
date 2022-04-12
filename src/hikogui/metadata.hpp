@@ -69,9 +69,9 @@ public:
      */
     [[nodiscard]] static metadata &application() noexcept;
 
-    /** The global ttauri-library metadata.
+    /** The global hikogui-library metadata.
      *
-     * This returns a reference to the metadata of the current ttauri library.
+     * This returns a reference to the metadata of the current hikogui library.
      * It may be useful for an application to read the version number.
      */
     [[nodiscard]] static metadata const &library() noexcept;

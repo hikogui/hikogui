@@ -2,7 +2,7 @@
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-target_sources(ttauri PRIVATE
+target_sources(hikogui PRIVATE
     base_n.hpp
     gzip.cpp
     gzip.hpp
@@ -20,7 +20,7 @@ target_sources(ttauri PRIVATE
 )
 
 if(TT_BUILD_TESTS)
-    target_sources(ttauri_tests PRIVATE
+    target_sources(hikogui_tests PRIVATE
         BON8_tests.cpp
         JSON_tests.cpp
         gzip_tests.cpp

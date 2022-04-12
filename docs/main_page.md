@@ -1,7 +1,7 @@
-TTauri {#mainpage}
+HikoGUI {#mainpage}
 ==================
 
-TTauri is a cross platform C++ GUI library.
+HikoGUI is a cross platform C++ GUI library.
 
 Manuals
 -------
@@ -61,7 +61,7 @@ previous sub-pass.
 Performance
 -----------
 
-TTauri is designed for low latency interactive applications.
+HikoGUI is designed for low latency interactive applications.
 
 For this reason we have the following design considerations:
 

@@ -17,7 +17,7 @@ of improving the application developer's view of the API.
 
  * Removing the singletons of gui\_system, gfx\_system, audio\_system,
    vertical\_sync, theme\_book, font\_book, keyboard\_bindings and
-   preferences. These are no longer owned by the ttauri library, instead
+   preferences. These are no longer owned by the hikogui library, instead
    they may be owned by local variables in the application.
  * Improve performance of the font-book by letting the application hold a
    reference to individual fonts directly.
@@ -47,7 +47,7 @@ of improving the application developer's view of the API.
 0.4.0 Lovely Lizard
 -------------------
 This version is focused on making it practical for application developers to
-start using the TTauri framework to create GUI application.
+start using the HikoGUI framework to create GUI application.
 
 For this reason a lot of work has gone into improving the consistency between
 widgets and adding documentation and example code.
@@ -79,11 +79,11 @@ Here are some of the important changes for this release:
 0.3.0 Fancy Frog
 ----------------
 In this version we concentrated on making it easy for developers
-to install ttauri as a dependency for their own projects through vcpkg.
+to install hikogui as a dependency for their own projects through vcpkg.
 
 Here are some of the important changes for this release:
  * Removed the embedded dependencies and instead making them installable via vcpkg.
- * Made a vcpkg ttauri-port so that ttauri can be used as a dependency.
+ * Made a vcpkg hikogui-port so that hikogui can be used as a dependency.
  * We've made several API usability improvements, such as:
    - making the widget's coordinate system relative to the widget;
    - now using high level geometric types such as vector, point and color in as many places as possible;

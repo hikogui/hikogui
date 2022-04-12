@@ -4,7 +4,7 @@ Information reporting
 Exceptions
 ----------
 
-TTauri will internally use many of the exceptions of the standard library.
+HikoGUI will internally use many of the exceptions of the standard library.
 The library also includes its own exceptions. These exceptions work the same
 as standard library exceptions, except that the constructor works like
 std::format for easy construction of the 'what' string.

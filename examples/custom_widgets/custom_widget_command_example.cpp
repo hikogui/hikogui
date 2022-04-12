@@ -2,11 +2,11 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "ttauri/GUI/gui_system.hpp"
-#include "ttauri/widgets/widget.hpp"
-#include "ttauri/crt.hpp"
-#include "ttauri/log.hpp"
-#include "ttauri/loop.hpp"
+#include "hikogui/GUI/gui_system.hpp"
+#include "hikogui/widgets/widget.hpp"
+#include "hikogui/crt.hpp"
+#include "hikogui/log.hpp"
+#include "hikogui/loop.hpp"
 
 // Every widget must inherit from tt::widget.
 class command_widget : public tt::widget {

@@ -1,4 +1,4 @@
-TTauri Geometry System
+HikoGUI Geometry System
 ======================
 
 Low level geometry types

@@ -2,14 +2,14 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "ttauri/unicode/unicode_word_break.hpp"
-#include "ttauri/unicode/unicode_sentence_break.hpp"
-#include "ttauri/unicode/unicode_line_break.hpp"
-#include "ttauri/unicode/unicode_description.hpp"
-#include "ttauri/file_view.hpp"
-#include "ttauri/strings.hpp"
-#include "ttauri/generator.hpp"
-#include "ttauri/ranges.hpp"
+#include "hikogui/unicode/unicode_word_break.hpp"
+#include "hikogui/unicode/unicode_sentence_break.hpp"
+#include "hikogui/unicode/unicode_line_break.hpp"
+#include "hikogui/unicode/unicode_description.hpp"
+#include "hikogui/file_view.hpp"
+#include "hikogui/strings.hpp"
+#include "hikogui/generator.hpp"
+#include "hikogui/ranges.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

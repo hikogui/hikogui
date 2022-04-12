@@ -71,7 +71,7 @@ private:
      *
      * This function looks for a supported stream format when the device is used in exclusive-mode.
      * The prototype consists of a sample-rate and speaker mapping. From this the best sample format
-     * is selected: int24 -> float32 -> int20 -> int16. int24 is selected above float, so that ttauri
+     * is selected: int24 -> float32 -> int20 -> int16. int24 is selected above float, so that hikogui
      * will handle dithering.
      *
      * @param sample_rate The sample rate selected by the user.

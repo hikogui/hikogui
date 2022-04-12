@@ -1,5 +1,5 @@
 
-target_sources(ttauri PRIVATE
+target_sources(hikogui PRIVATE
     axis.hpp
     axis_aligned_rectangle.cpp
     axis_aligned_rectangle.hpp
@@ -22,7 +22,7 @@ target_sources(ttauri PRIVATE
 )
 
 if(TT_BUILD_TESTS)
-    target_sources(ttauri_tests PRIVATE
+    target_sources(hikogui_tests PRIVATE
         identity_tests.cpp
         matrix_tests.cpp
         point_tests.cpp

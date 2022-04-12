@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-/** @file Utilities for starting and stopping a ttauri application.
+/** @file Utilities for starting and stopping a hikogui application.
  */
 
 #pragma once
@@ -11,9 +11,9 @@
 
 namespace tt::inline v1 {
 
-/** Start the ttauri system.
+/** Start the hikogui system.
  *
- * This function will do a minimum amount of setup for the ttauri system.
+ * This function will do a minimum amount of setup for the hikogui system.
  *
  * @param argc Number of arguments received from main().
  * @param argv The argument received from main().
@@ -24,9 +24,9 @@ namespace tt::inline v1 {
  */
 std::pair<int, char **> crt_start(int argc, char **argv, void *instance, int show_cmd);
 
-/** Start the ttauri system.
+/** Start the hikogui system.
  *
- * This function will do a minimum amount of setup for the ttauri system.
+ * This function will do a minimum amount of setup for the hikogui system.
  *
  * @param instance A handle to the GUI instance of the operating system
  * @param show_cmd Information on how to open the first window.
@@ -38,9 +38,9 @@ inline std::pair<int, char **> crt_start(void *instance, int show_cmd)
     return crt_start(0, nullptr, instance, show_cmd);
 }
 
-/** Start the ttauri system.
+/** Start the hikogui system.
  *
- * This function will do a minimum amount of setup for the ttauri system.
+ * This function will do a minimum amount of setup for the hikogui system.
  *
  * @param argc Number of arguments received from main().
  * @param argv The argument received from main().
@@ -52,9 +52,9 @@ inline std::pair<int, char **> crt_start(int argc, char **argv)
     return crt_start(argc, argv, nullptr, 0);
 }
 
-/** Finish the ttauri system.
+/** Finish the hikogui system.
  *
- * This function will cleanly shutdown the ttauri system.
+ * This function will cleanly shutdown the hikogui system.
  *
  * @param argc The normalized number of arguments received from `crt_start()`.
  * @param argv The normalized arguments received from `crt_start()`.

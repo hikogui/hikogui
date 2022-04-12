@@ -1,8 +1,8 @@
 {
-  "name": "ttauri",
+  "name": "hikogui",
   "version": "0.5.1",
   "description": "A portable, low latency, retained-mode GUI framework written in C++.",
-  "homepage": "https://github.com/ttauri-project/ttauri",
+  "homepage": "https://github.com/hikogui/hikogui",
   "license": "BSL-1.0",
   "supports": "windows & x64",
   "dependencies": [

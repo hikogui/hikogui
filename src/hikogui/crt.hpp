@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 /** @file crt.hpp
- * CRT - Main entry point of a ttauri program.
+ * CRT - Main entry point of a hikogui program.
  *
  * This header file will abstract the entry point for a program
  * for different operating systems, and call the `tt_main()` function

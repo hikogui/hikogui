@@ -13,10 +13,10 @@ There are 5 main phases of the application lifetime:
 
 CRT Start
 ---------
-There are two main tasks for the ttauri's CRT:
+There are two main tasks for the hikogui's CRT:
 
 Configure the operating system's API for compatibility with the
-ttauri library. In most cases this means turning off backward-compatibility, for
+hikogui library. In most cases this means turning off backward-compatibility, for
 example:
  - On MacOS the CRT can tell the OS that the application can restore itself
    fully after being killed by the OS.
@@ -30,6 +30,6 @@ Application setup
 The application set begins when the developer defined `tt_main()`
 is called by the CRT.
 
-This is the part of the application where the developer can configure ttauri
+This is the part of the application where the developer can configure hikogui
 and initialize subsystems before the main loop is entered.
 

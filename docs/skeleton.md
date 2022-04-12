@@ -1,4 +1,4 @@
-# TTauri Stencil Template Language
+# HikoGUI Stencil Template Language
 
 This template language was designed for code generation for different programming languages
 including HTML. The language was inspired by makotemplates.org, but with
@@ -23,7 +23,7 @@ definition.
 ## Expressions
 
 The `tt::datum` class is used for holding and operating on all the data while executing
-an expression of the TTauri template language. A `tt::datum` class can hold the following types:
+an expression of the HikoGUI template language. A `tt::datum` class can hold the following types:
  * Undefined
  * None
  * Boolean
@@ -443,8 +443,8 @@ The filename is an expression, this expression is evaluated during parsing.
 When the filename argument is relative, the file is located relative to the current file.
 
 
-It is recommended that the included files have the `.tti` (TTauri Include) extension,
-and top-level template files have the `.ttt` (TTauri Template) extension.
+It is recommended that the included files have the `.tti` (HikoGUI Include) extension,
+and top-level template files have the `.ttt` (HikoGUI Template) extension.
 
 Warning: There is no protection against including a file multiple times or recursively.
 

@@ -2,7 +2,7 @@
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-target_sources(ttauri PRIVATE
+target_sources(hikogui PRIVATE
     draw_context.cpp
     draw_context.hpp
     gfx_device.cpp
@@ -71,7 +71,7 @@ target_sources(ttauri PRIVATE
 )
 
 if(TT_BUILD_PCH AND NOT TT_ENABLE_ANALYSIS)
-    target_precompile_headers(ttauri PRIVATE
+    target_precompile_headers(hikogui PRIVATE
         gfx_system.hpp
         gfx_system_vulkan.hpp
     )

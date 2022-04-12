@@ -109,8 +109,8 @@ int main(int argc, char* argv[])
     auto const output_path = std::filesystem::path(argv[2]);
     auto os = open_output(output_path); // lgtm[cpp/path-injection]
 
-    write(os, "#include \"ttauri/static_resource_list.hpp\"\n");
-    write(os, "#include \"ttauri/architecture.hpp\"\n");
+    write(os, "#include \"hikogui/static_resource_list.hpp\"\n");
+    write(os, "#include \"hikogui/architecture.hpp\"\n");
     write(os, "#include <span>\n");
     write(os, "#include <cstddef>\n");
     write(os, "#include <cstdint>\n\n");

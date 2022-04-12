@@ -11,7 +11,7 @@ namespace tt::inline v1 {
 /** This is a RGBA floating point color.
  * The color can be converted between different color spaces using the matrix-class.
  *
- * But in most cases in the application and ttauri library this color would be in
+ * But in most cases in the application and hikogui library this color would be in
  * the tsRGBA color space. This color space is compatible with the sRGB standard
  * IEC 61966-2-1:1999.
  *

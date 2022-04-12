@@ -18,7 +18,7 @@ namespace tt::inline v1 {
 {
     auto font_book = std::make_unique<tt::font_book>(std::vector<URL>{URL::urlFromSystemfontDirectory()});
     font_book->register_elusive_icon_font(URL("resource:elusiveicons-webfont.ttf"));
-    font_book->register_ttauri_icon_font(URL("resource:ttauri_icons.ttf"));
+    font_book->register_hikogui_icon_font(URL("resource:hikogui_icons.ttf"));
     font_book->post_process();
 
     auto theme_book = std::make_unique<tt::theme_book>(*font_book, std::vector<URL>{URL::urlFromResourceDirectory() / "themes"});

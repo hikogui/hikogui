@@ -1,5 +1,5 @@
 
-target_sources(ttauri PRIVATE
+target_sources(hikogui PRIVATE
     color.hpp
     color_space.hpp
     sRGB.hpp
@@ -10,7 +10,7 @@ target_sources(ttauri PRIVATE
 )
 
 if(TT_BUILD_TESTS)
-    target_sources(ttauri_tests PRIVATE
+    target_sources(hikogui_tests PRIVATE
         color_space_tests.cpp
     )
 endif()

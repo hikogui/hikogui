@@ -2,11 +2,11 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "ttauri/GUI/gui_system.hpp"
-#include "ttauri/task.hpp"
-#include "ttauri/widgets/checkbox_widget.hpp"
-#include "ttauri/crt.hpp"
-#include "ttauri/loop.hpp"
+#include "hikogui/GUI/gui_system.hpp"
+#include "hikogui/task.hpp"
+#include "hikogui/widgets/checkbox_widget.hpp"
+#include "hikogui/crt.hpp"
+#include "hikogui/loop.hpp"
 
 using namespace tt;
 

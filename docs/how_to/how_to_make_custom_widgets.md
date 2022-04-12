@@ -154,7 +154,7 @@ When you want your widget to receive mouse events you will first need to overrid
 the `widget::hitbox_test()` function. This function is called by the operating
 system to determine the type of cursor and if the window can be dragged or resized at that position.
 
-ttauri at the same time uses this function to determine if this widget is directly underneath the
+hikogui at the same time uses this function to determine if this widget is directly underneath the
 mouse cursor; at the highest elevation. It will then send mouse events directly to the widget, and
 continue to track drag and exit events when the mouse leaves the widget.
 

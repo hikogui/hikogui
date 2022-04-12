@@ -2,7 +2,7 @@
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-target_sources(ttauri PRIVATE
+target_sources(hikogui PRIVATE
     audio_block.hpp
     audio_channel.hpp
     audio_device.cpp
@@ -39,7 +39,7 @@ target_sources(ttauri PRIVATE
 )
 
 if(TT_BUILD_TESTS)
-    target_sources(ttauri_tests PRIVATE
+    target_sources(hikogui_tests PRIVATE
         audio_sample_unpacker_tests.cpp
         audio_sample_packer_tests.cpp
     )

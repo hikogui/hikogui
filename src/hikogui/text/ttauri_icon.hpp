@@ -6,7 +6,7 @@
 
 namespace tt::inline v1 {
 
-enum class ttauri_icon : char32_t {
+enum class hikogui_icon : char32_t {
     MinimizeWindow = 0xf301,
     MaximizeWindowMS = 0xf302,
     RestoreWindowMS = 0xf303,

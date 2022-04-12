@@ -9,7 +9,7 @@
 #include "rapid/sfloat_rgba16.hpp"
 #include "text/glyph_ids.hpp"
 #include "text/elusive_icon.hpp"
-#include "text/ttauri_icon.hpp"
+#include "text/hikogui_icon.hpp"
 #include <variant>
 
 namespace tt::inline v1 {
@@ -22,7 +22,7 @@ public:
     icon(pixel_map<sfloat_rgba16> &&image) noexcept;
     icon(glyph_ids const &glyph) noexcept;
     icon(elusive_icon const &icon) noexcept;
-    icon(ttauri_icon const &icon) noexcept;
+    icon(hikogui_icon const &icon) noexcept;
 
     constexpr icon() noexcept : _image(std::monostate{}) {}
 
@@ -77,7 +77,7 @@ public:
     }
 
 private:
-    using image_type = std::variant<std::monostate, elusive_icon, ttauri_icon, glyph_ids, pixel_map<sfloat_rgba16>>;
+    using image_type = std::variant<std::monostate, elusive_icon, hikogui_icon, glyph_ids, pixel_map<sfloat_rgba16>>;
 
     image_type _image;
 

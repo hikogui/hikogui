@@ -1,4 +1,4 @@
 
-target_sources(ttauri_demo PRIVATE
+target_sources(hikogui_demo PRIVATE
     main.cpp
 )

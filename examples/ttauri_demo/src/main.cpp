@@ -1,27 +1,27 @@
 
-#include "ttauri/GFX/RenderDoc.hpp"
-#include "ttauri/GFX/gfx_system.hpp"
-#include "ttauri/GUI/gui_system.hpp"
-#include "ttauri/GUI/theme_book.hpp"
-#include "ttauri/audio/audio_system.hpp"
-#include "ttauri/widgets/toolbar_button_widget.hpp"
-#include "ttauri/widgets/momentary_button_widget.hpp"
-#include "ttauri/widgets/row_column_widget.hpp"
-#include "ttauri/widgets/selection_widget.hpp"
-#include "ttauri/widgets/toggle_widget.hpp"
-#include "ttauri/widgets/checkbox_widget.hpp"
-#include "ttauri/widgets/radio_button_widget.hpp"
-#include "ttauri/widgets/text_field_widget.hpp"
-#include "ttauri/widgets/tab_widget.hpp"
-#include "ttauri/widgets/toolbar_tab_button_widget.hpp"
-#include "ttauri/log.hpp"
-#include "ttauri/crt.hpp"
-#include "ttauri/time_stamp_count.hpp"
-#include "ttauri/metadata.hpp"
-#include "ttauri/preferences.hpp"
-#include "ttauri/when_any.hpp"
-#include "ttauri/task.hpp"
-#include "ttauri/loop.hpp"
+#include "hikogui/GFX/RenderDoc.hpp"
+#include "hikogui/GFX/gfx_system.hpp"
+#include "hikogui/GUI/gui_system.hpp"
+#include "hikogui/GUI/theme_book.hpp"
+#include "hikogui/audio/audio_system.hpp"
+#include "hikogui/widgets/toolbar_button_widget.hpp"
+#include "hikogui/widgets/momentary_button_widget.hpp"
+#include "hikogui/widgets/row_column_widget.hpp"
+#include "hikogui/widgets/selection_widget.hpp"
+#include "hikogui/widgets/toggle_widget.hpp"
+#include "hikogui/widgets/checkbox_widget.hpp"
+#include "hikogui/widgets/radio_button_widget.hpp"
+#include "hikogui/widgets/text_field_widget.hpp"
+#include "hikogui/widgets/tab_widget.hpp"
+#include "hikogui/widgets/toolbar_tab_button_widget.hpp"
+#include "hikogui/log.hpp"
+#include "hikogui/crt.hpp"
+#include "hikogui/time_stamp_count.hpp"
+#include "hikogui/metadata.hpp"
+#include "hikogui/preferences.hpp"
+#include "hikogui/when_any.hpp"
+#include "hikogui/task.hpp"
+#include "hikogui/loop.hpp"
 #include <Windows.h>
 #include <memory>
 
@@ -124,7 +124,7 @@ tt::task<> preferences_window(tt::gui_system &gui, my_preferences &preferences)
 {
     using namespace tt;
 
-    auto window_label = label{URL{"resource:ttauri_demo.png"}, tr("Preferences")};
+    auto window_label = label{URL{"resource:hikogui_demo.png"}, tr("Preferences")};
     auto window = gui.make_window(window_label);
 
     window->toolbar().make_widget<toolbar_tab_button_widget>(
@@ -148,7 +148,7 @@ tt::task<> main_window(tt::gui_system &gui, my_preferences &preferences)
 {
     using namespace tt;
 
-    auto window_label = label{URL{"resource:ttauri_demo.png"}, tr("TTauri demo")};
+    auto window_label = label{URL{"resource:hikogui_demo.png"}, tr("HikoGUI demo")};
     auto window = gui.make_window(window_label);
 
     auto preferences_label = label{elusive_icon::Wrench, tr("Preferences")};
@@ -191,8 +191,8 @@ int tt_main(int argc, char *argv[])
 
     // Set the version at the very beginning, because file system paths depend on it.
     auto &m = metadata::application();
-    m.name = "ttauri-demo";
-    m.display_name = "TTauri Demo";
+    m.name = "hikogui-demo";
+    m.display_name = "HikoGUI Demo";
     m.vendor = metadata::library().vendor;
     m.version = metadata::library().version;
 

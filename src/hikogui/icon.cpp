@@ -15,6 +15,6 @@ icon::icon(URL const &url) : icon(png::load(url)) {}
 
 icon::icon(elusive_icon const &icon) noexcept : _image(icon) {}
 
-icon::icon(ttauri_icon const &icon) noexcept : _image(icon) {}
+icon::icon(hikogui_icon const &icon) noexcept : _image(icon) {}
 
 } // namespace tt::inline v1

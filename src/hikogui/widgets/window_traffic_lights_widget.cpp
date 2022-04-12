@@ -61,16 +61,16 @@ void window_traffic_lights_widget::set_layout(widget_layout const &layout) noexc
             tt_no_default();
         }
 
-        closeWindowGlyph = font_book().find_glyph(ttauri_icon::CloseWindow);
-        minimizeWindowGlyph = font_book().find_glyph(ttauri_icon::MinimizeWindow);
+        closeWindowGlyph = font_book().find_glyph(hikogui_icon::CloseWindow);
+        minimizeWindowGlyph = font_book().find_glyph(hikogui_icon::MinimizeWindow);
 
         if (theme().operating_system == operating_system::windows) {
-            maximizeWindowGlyph = font_book().find_glyph(ttauri_icon::MaximizeWindowMS);
-            restoreWindowGlyph = font_book().find_glyph(ttauri_icon::RestoreWindowMS);
+            maximizeWindowGlyph = font_book().find_glyph(hikogui_icon::MaximizeWindowMS);
+            restoreWindowGlyph = font_book().find_glyph(hikogui_icon::RestoreWindowMS);
 
         } else if (theme().operating_system == operating_system::macos) {
-            maximizeWindowGlyph = font_book().find_glyph(ttauri_icon::MaximizeWindowMacOS);
-            restoreWindowGlyph = font_book().find_glyph(ttauri_icon::RestoreWindowMacOS);
+            maximizeWindowGlyph = font_book().find_glyph(hikogui_icon::MaximizeWindowMacOS);
+            restoreWindowGlyph = font_book().find_glyph(hikogui_icon::RestoreWindowMacOS);
         } else {
             tt_no_default();
         }

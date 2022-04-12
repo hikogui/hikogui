@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "ttauri/polynomial.hpp"
+#include "hikogui/polynomial.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

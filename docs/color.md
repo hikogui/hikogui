@@ -1,6 +1,6 @@
 Color
 =====
-This document describes how color is used in the ttauri library.
+This document describes how color is used in the hikogui library.
 
 Usage of color spaces
 ---------------------
@@ -15,7 +15,7 @@ Usage of color spaces
  | swap chain       | sRGB\*| uint8\* | pre-multiplied |
 
 ### PNG decoding
-TTauri's PNG decoder will create an image of float16 RGBA values
+HikoGUI's PNG decoder will create an image of float16 RGBA values
 in the tsRGB color space. The rgb values in the resulting image are
 pre-multiplied by the alpha.
 
@@ -27,7 +27,7 @@ sRGB color space and transfer function is implied if color space
 information is not available in the PNG data.
 
 ### Theme files
-The colors in ttauri's theme file may be edited by users, there
+The colors in hikogui's theme file may be edited by users, there
 are three different ways of specifying colors.
 
  | Format                        | Color space |
@@ -86,7 +86,7 @@ tYUV/tLUV related color space
 The tLUV color space is used for mixing background and foreground
 colors for anti-aliasing text, where the perceived line width is
 an important attribute. For more detailed information see:
-[The trouble with anti-aliasing](https://www.ttauri-project.org/2021/03/30/the-trouble-with-anti-aliasing.html)
+[The trouble with anti-aliasing](https://hikogui.org/2021/03/30/the-trouble-with-anti-aliasing.html)
 
 Conversion from tRGB to tYUV/tLUV:
 

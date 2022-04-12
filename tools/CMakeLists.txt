@@ -1,5 +1,5 @@
 
-project(ttauri_utilities C)
+project(hikogui_utilities C)
 
 #-------------------------------------------------------------------
 # Build Target: embed_static_resource                   (executable)

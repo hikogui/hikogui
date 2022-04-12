@@ -85,7 +85,7 @@ static void createWindowClass()
 {
     if (!win32WindowClassIsRegistered) {
         // Register the window class.
-        win32WindowClassName = L"TTauri Window Class";
+        win32WindowClassName = L"HikoGUI Window Class";
 
         std::memset(&win32WindowClass, 0, sizeof(WNDCLASSW));
         win32WindowClass.style = CS_DBLCLKS;

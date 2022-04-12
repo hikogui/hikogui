@@ -1,5 +1,5 @@
 
-target_sources(ttauri PRIVATE
+target_sources(hikogui PRIVATE
     float16_sse4_1.hpp
     int_abgr8_pack.hpp
     numeric_array.hpp
@@ -16,7 +16,7 @@ target_sources(ttauri PRIVATE
 )
 
 if(TT_BUILD_TESTS)
-    target_sources(ttauri_tests PRIVATE
+    target_sources(hikogui_tests PRIVATE
         numeric_array_tests.cpp
     )
 endif()

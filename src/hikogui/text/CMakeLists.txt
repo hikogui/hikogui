@@ -3,7 +3,7 @@
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 
-target_sources(ttauri PRIVATE
+target_sources(hikogui PRIVATE
     elusive_icon.hpp
     font.cpp
     font.hpp
@@ -32,11 +32,11 @@ target_sources(ttauri PRIVATE
     true_type_font_coverage.cpp
     true_type_font.cpp
     true_type_font.hpp
-    ttauri_icon.hpp
+    hikogui_icon.hpp
 )
 
 #if(TT_BUILD_TESTS)
-#    target_sources(ttauri_tests PRIVATE
+#    target_sources(hikogui_tests PRIVATE
 #    )
 #endif()
 #

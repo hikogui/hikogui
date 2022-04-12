@@ -46,7 +46,7 @@ enum class border_side {
     outside
 };
 
-/** Draw context for drawing using the TTauri shaders.
+/** Draw context for drawing using the HikoGUI shaders.
  */
 class draw_context {
 public:
