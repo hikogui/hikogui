@@ -19,7 +19,7 @@ target_sources(hikogui PRIVATE
     BON8.cpp
 )
 
-if(TT_BUILD_TESTS)
+if(HI_BUILD_TESTS)
     target_sources(hikogui_tests PRIVATE
         BON8_tests.cpp
         JSON_tests.cpp

@@ -9,7 +9,7 @@ target_sources(hikogui PRIVATE
     sRGB.hpp
 )
 
-if(TT_BUILD_TESTS)
+if(HI_BUILD_TESTS)
     target_sources(hikogui_tests PRIVATE
         color_space_tests.cpp
     )

@@ -21,7 +21,7 @@ target_sources(hikogui PRIVATE
     vector.hpp
 )
 
-if(TT_BUILD_TESTS)
+if(HI_BUILD_TESTS)
     target_sources(hikogui_tests PRIVATE
         identity_tests.cpp
         matrix_tests.cpp

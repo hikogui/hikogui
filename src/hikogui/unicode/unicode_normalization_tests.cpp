@@ -11,7 +11,7 @@
 #include <span>
 #include <format>
 
-#if TT_BUILD_TYPE == TT_BT_RELEASE
+#if HI_BUILD_TYPE == HI_BT_RELEASE
 #define RUN_ALL_TESTS 1
 #endif
 

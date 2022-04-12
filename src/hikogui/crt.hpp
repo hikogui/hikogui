@@ -23,7 +23,7 @@
 #include "required.hpp"
 #include "crt_utils.hpp"
 
-#if not defined(TT_CRT_NO_MAIN)
+#if not defined(HI_CRT_NO_MAIN)
 
 /** Main entry-point.
  *
@@ -33,7 +33,7 @@
  */
 int hi_main(int argc, char *argv[]);
 
-#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
 #include <Windows.h>
 
 /** Windows entry-point.

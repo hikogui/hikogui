@@ -178,7 +178,7 @@ private:
         });
     }
 
-#if TT_BUILD_TYPE == TT_BT_DEBUG
+#if HI_BUILD_TYPE == HI_BT_DEBUG
     /** The notifier is currently calling all the callbacks.
      */
     mutable bool _notifying = false;

@@ -11,13 +11,13 @@
 namespace hi::inline v1 {
 
 static metadata library_metadata = metadata{
-    "@TT_LIB_NAME@",
-    "@TT_LIB_DISPLAY_NAME@",
-    "@TT_LIB_VENDOR@",
+    "@HI_LIB_NAME@",
+    "@HI_LIB_DISPLAY_NAME@",
+    "@HI_LIB_VENDOR@",
     semantic_version{@PROJECT_VERSION_MAJOR@, @PROJECT_VERSION_MINOR@, @PROJECT_VERSION_PATCH@},
-    "@TT_LIB_LICENSE@",
-    URL{"@TT_LIB_HOMEPAGE"},
-    "@TT_LIB_DESCRIPTION@"
+    "@HI_LIB_LICENSE@",
+    URL{"@HI_LIB_HOMEPAGE"},
+    "@HI_LIB_DESCRIPTION@"
 };
 
 static metadata application_metadata = metadata{

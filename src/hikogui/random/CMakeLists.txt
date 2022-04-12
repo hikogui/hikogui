@@ -7,7 +7,7 @@ target_sources(hikogui PRIVATE
     xorshift128p.hpp
 )
 
-if(TT_BUILD_TESTS)
+if(HI_BUILD_TESTS)
     target_sources(hikogui_tests PRIVATE
         dither_tests.cpp
         xorshift128p_tests.cpp

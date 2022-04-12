@@ -12,9 +12,9 @@ target_sources(hikogui PRIVATE
     gui_window.hpp
     gui_window_delegate.hpp
     gui_window_size.hpp
-    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/gui_window_vulkan_macos.hpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gui_window_win32.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gui_window_win32.hpp>
+    $<${HI_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/gui_window_vulkan_macos.hpp>
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gui_window_win32.cpp>
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gui_window_win32.hpp>
     hitbox.hpp
     keyboard_bindings.cpp
     keyboard_bindings.hpp
@@ -22,7 +22,7 @@ target_sources(hikogui PRIVATE
     keyboard_key.hpp
     keyboard_modifiers.hpp
     keyboard_virtual_key.hpp
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/keyboard_virtual_key_win32.cpp>
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/keyboard_virtual_key_win32.cpp>
     keyboard_focus_direction.hpp
     keyboard_focus_group.hpp
     mouse_buttons.hpp
@@ -35,7 +35,7 @@ target_sources(hikogui PRIVATE
     theme_mode.hpp
 )
 
-if(TT_BUILD_PCH AND NOT TT_ENABLE_ANALYSIS)
+if(HI_BUILD_PCH AND NOT HI_ENABLE_ANALYSIS)
     target_precompile_headers(hikogui PRIVATE
         gui_system.hpp
         gui_system_win32.hpp

@@ -34,12 +34,12 @@
 
 namespace hi::inline v1 {
 
-#if TT_PROCESSOR == TT_CPU_X64
+#if HI_PROCESSOR == HI_CPU_X64
 using register_int = int64_t;
 using register_signed_int = int64_t;
 using register_unsigned_int = uint64_t;
 
-#if TT_COMPILER == TT_CC_CLANG || TT_COMPILER == TT_CC_GCC
+#if HI_COMPILER == HI_CC_CLANG || HI_COMPILER == HI_CC_GCC
 using register_long = __int128_t;
 using register_signed_long = __int128_t;
 using register_unsigned_long = unsigned __int128_t;

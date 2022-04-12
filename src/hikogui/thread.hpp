@@ -6,7 +6,7 @@
 
 #include "required.hpp"
 #include "architecture.hpp"
-#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
 #include <intrin.h>
 #endif
 #include <thread>
@@ -26,13 +26,13 @@ namespace hi::inline v1 {
  */
 void set_thread_name(std::string_view name);
 
-#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
 constexpr std::size_t maximum_num_cpus = 64;
-#elif TT_OPERATING_SYSTEM == TT_OS_LINUX || TT_OPERATING_SYSTEM == TT_OS_MACOS
+#elif HI_OPERATING_SYSTEM == HI_OS_LINUX || HI_OPERATING_SYSTEM == HI_OS_MACOS
 constexpr std::size_t maximum_num_cpus = CPU_SETSIZE;
 #endif
 
-#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
 using thread_id = uint32_t;
 #else
 using thread_id = uint64_t;
@@ -46,7 +46,7 @@ inline thread_local thread_id current_thread_id_dummy = 0;
  */
 [[nodiscard]] inline thread_id current_thread_id() noexcept
 {
-#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
     // Thread IDs on Win32 are guaranteed to be not zero.
     constexpr uint64_t NT_TIB_CurrentThreadID = 0x48;
     return __readgsdword(NT_TIB_CurrentThreadID);

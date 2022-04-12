@@ -13,12 +13,12 @@ include(SetupCompiler)
 #-------------------------------------------------------------------
 
 option(BUILD_SHARED_LIBS    "Build shared libraries"            OFF)
-option(TT_BUILD_EXAMPLES    "Build example applications"         ON)
-option(TT_BUILD_TESTS       "Build tests"                        ON)
-option(TT_BUILD_PCH         "Build precompiled headers"          ON)
-option(TT_INSTALL           "Generate installation target"       ON)
-option(TT_ENABLE_ANALYSIS   "Compile using -analyze"            OFF)
-option(TT_ENABLE_ASAN       "Compile using address sanitizer"   OFF)
+option(HI_BUILD_EXAMPLES    "Build example applications"         ON)
+option(HI_BUILD_TESTS       "Build tests"                        ON)
+option(HI_BUILD_PCH         "Build precompiled headers"          ON)
+option(HI_INSTALL           "Generate installation target"       ON)
+option(HI_ENABLE_ANALYSIS   "Compile using -analyze"            OFF)
+option(HI_ENABLE_ASAN       "Compile using address sanitizer"   OFF)
 
 #-------------------------------------------------------------------
 # Project
@@ -32,38 +32,38 @@ endif()
 
 # vcpkg.json is the primary source for version data
 file(READ ${CMAKE_SOURCE_DIR}/vcpkg.json VCPKG_JSON_STRING)
-string(JSON TT_LIB_NAME     GET ${VCPKG_JSON_STRING} "name")
-string(JSON TT_LIB_VERSION  GET ${VCPKG_JSON_STRING} "version")
-string(JSON TT_LIB_LICENSE  GET ${VCPKG_JSON_STRING} "license")
-string(JSON TT_LIB_DESC     GET ${VCPKG_JSON_STRING} "description")
-string(JSON TT_LIB_HOMEPAGE GET ${VCPKG_JSON_STRING} "homepage")
+string(JSON HI_LIB_NAME     GET ${VCPKG_JSON_STRING} "name")
+string(JSON HI_LIB_VERSION  GET ${VCPKG_JSON_STRING} "version")
+string(JSON HI_LIB_LICENSE  GET ${VCPKG_JSON_STRING} "license")
+string(JSON HI_LIB_DESC     GET ${VCPKG_JSON_STRING} "description")
+string(JSON HI_LIB_HOMEPAGE GET ${VCPKG_JSON_STRING} "homepage")
 
 configure_file("package.json.in" "package.json" @ONLY)
 file(READ ${CMAKE_CURRENT_BINARY_DIR}/package.json PACKAGE_JSON_STRING)
-string(JSON TT_LIB_DISPLAY_NAME GET ${PACKAGE_JSON_STRING} "display-name")
-string(JSON TT_LIB_VENDOR GET ${PACKAGE_JSON_STRING} "vendor")
+string(JSON HI_LIB_DISPLAY_NAME GET ${PACKAGE_JSON_STRING} "display-name")
+string(JSON HI_LIB_VENDOR GET ${PACKAGE_JSON_STRING} "vendor")
 
-project(${TT_LIB_NAME} VERSION ${TT_LIB_VERSION} LANGUAGES ${LANGUAGES})
+project(${HI_LIB_NAME} VERSION ${HI_LIB_VERSION} LANGUAGES ${LANGUAGES})
 
 #-------------------------------------------------------------------
 # Define Constants
 #-------------------------------------------------------------------
 
-set(TT_WIN32 0)
-set(TT_MACOS 0)
-set(TT_POSIX 0)
-set(TT_X64 0)
+set(HI_WIN32 0)
+set(HI_MACOS 0)
+set(HI_POSIX 0)
+set(HI_X64 0)
 
 if (APPLE)
-    set(TT_MACOS 1)
-    set(TT_POSIX 1)
+    set(HI_MACOS 1)
+    set(HI_POSIX 1)
 elseif (WIN32)
-    set(TT_WIN32 1)
+    set(HI_WIN32 1)
 endif()
 
 set(x64_list x86 X86 amd64 AMD64)
 if (${CMAKE_SYSTEM_PROCESSOR} IN_LIST x64_list)
-    set(TT_X64 1)
+    set(HI_X64 1)
 endif()
 
 #-------------------------------------------------------------------
@@ -98,7 +98,7 @@ endif()
 #
 # GoogleTest - non-vcpkg, directly build from externals
 #
-if(TT_BUILD_TESTS)
+if(HI_BUILD_TESTS)
     set(INSTALL_GTEST OFF CACHE INTERNAL "Don't install gtest")
     set(BUILD_GMOCK OFF CACHE INTERNAL "Don't build gmock")
     FetchContent_Declare(googletest GIT_REPOSITORY https://github.com/google/googletest.git GIT_TAG release-1.11.0)
@@ -139,7 +139,7 @@ endif()
 add_library(hikogui)
 add_library(hikogui::hikogui ALIAS hikogui)
 
-if(TT_BUILD_TESTS)
+if(HI_BUILD_TESTS)
     add_executable(hikogui_tests)
 endif()
 
@@ -307,11 +307,11 @@ elseif (MSVC)
         target_compile_options(hikogui PUBLIC -JMC)
     endif()
 
-    if(TT_ENABLE_ASAN)
+    if(HI_ENABLE_ASAN)
         target_compile_options(hikogui PUBLIC -fsanitize=address)
     endif()
 
-    if(TT_ENABLE_ANALYSIS)
+    if(HI_ENABLE_ANALYSIS)
         target_compile_options(hikogui PUBLIC -analyze)
 
         #target_compile_options(hikogui PUBLIC -analyze:ruleset ${CMAKE_CURRENT_SOURCE_DIR}/AllRules.ruleset)
@@ -445,7 +445,7 @@ install(FILES
 # Build Target: hikogui_tests                            (executable)
 #-------------------------------------------------------------------
 
-if(TT_BUILD_TESTS)
+if(HI_BUILD_TESTS)
 
     enable_testing()
 
@@ -453,8 +453,8 @@ if(TT_BUILD_TESTS)
 
     target_include_directories(hikogui_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
-    if(TT_BUILD_PCH)
-        if(NOT TT_ENABLE_ANALYSIS)
+    if(HI_BUILD_PCH)
+        if(NOT HI_ENABLE_ANALYSIS)
             target_precompile_headers(hikogui_tests PRIVATE <gtest/gtest.h>)
         endif()
     endif()
@@ -476,7 +476,7 @@ endif()
 #-------------------------------------------------------------------
 # Installation Rules: hikogui_tests                      (executable)
 #-------------------------------------------------------------------
-if(TT_BUILD_TESTS)
+if(HI_BUILD_TESTS)
     install(TARGETS hikogui_tests DESTINATION tests)
     install(DIRECTORY tests/data/ DESTINATION tests)
     if (BUILD_SHARED_LIBS)
@@ -487,7 +487,7 @@ endif()
 #-------------------------------------------------------------------
 # Build examples
 #-------------------------------------------------------------------
-if(TT_BUILD_EXAMPLES)
+if(HI_BUILD_EXAMPLES)
     add_subdirectory(examples/hikogui_demo)
     add_subdirectory(examples/widgets)
     add_subdirectory(examples/custom_widgets)
@@ -500,11 +500,11 @@ endif()
 
 show_build_target_properties(hikogui)
 
-if(TT_BUILD_EXAMPLES)
+if(HI_BUILD_EXAMPLES)
     show_build_target_properties(hikogui_demo)
 endif()
 
-if(TT_BUILD_TESTS)
+if(HI_BUILD_TESTS)
     show_build_target_properties(hikogui_tests)
 endif()
 
