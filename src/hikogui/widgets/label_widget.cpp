@@ -19,14 +19,14 @@ label_widget::label_widget(gui_window &window, widget *parent) noexcept : super(
 
     _text_style_cbt = text_style.subscribe([this](auto...) {
         switch (*text_style) {
-        case theme_text_style::label: _icon_widget->color = theme_color::foreground; break;
-        case theme_text_style::small_label: _icon_widget->color = theme_color::foreground; break;
-        case theme_text_style::warning: _icon_widget->color = theme_color::orange; break;
-        case theme_text_style::error: _icon_widget->color = theme_color::red; break;
-        case theme_text_style::help: _icon_widget->color = theme_color::indigo; break;
-        case theme_text_style::placeholder: _icon_widget->color = theme_color::gray; break;
-        case theme_text_style::link: _icon_widget->color = theme_color::blue; break;
-        default: _icon_widget->color = theme_color::foreground;
+        case theme_text_style::label: _icon_widget->color = color::foreground(); break;
+        case theme_text_style::small_label: _icon_widget->color = color::foreground(); break;
+        case theme_text_style::warning: _icon_widget->color = color::orange(); break;
+        case theme_text_style::error: _icon_widget->color = color::red(); break;
+        case theme_text_style::help: _icon_widget->color = color::indigo(); break;
+        case theme_text_style::placeholder: _icon_widget->color = color::gray(); break;
+        case theme_text_style::link: _icon_widget->color = color::blue(); break;
+        default: _icon_widget->color = color::foreground();
         }
     });
 

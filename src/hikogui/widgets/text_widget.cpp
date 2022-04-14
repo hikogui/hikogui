@@ -158,15 +158,15 @@ void text_widget::draw(draw_context const& context) noexcept
     if (*visible and overlaps(context, layout())) {
         context.draw_text(layout(), _shaped_text);
 
-        context.draw_text_selection(layout(), _shaped_text, _selection, theme().color(theme_color::text_select));
+        context.draw_text_selection(layout(), _shaped_text, _selection, theme().color(semantic_color::text_select));
 
         if (_cursor_visible) {
             context.draw_text_cursors(
                 layout(),
                 _shaped_text,
                 _selection.cursor(),
-                theme().color(theme_color::primary_cursor),
-                theme().color(theme_color::secondary_cursor),
+                theme().color(semantic_color::primary_cursor),
+                theme().color(semantic_color::secondary_cursor),
                 _overwrite_mode,
                 static_cast<bool>(_has_dead_character));
         }

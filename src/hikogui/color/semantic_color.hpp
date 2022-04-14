@@ -37,7 +37,7 @@ enum class semantic_color : unsigned char {
 };
 
 // clang-format off
-constexpr auto semanti_color_metadata = enum_metadata{
+constexpr auto semantic_color_metadata = enum_metadata{
     semantic_color::blue, "blue",
     semantic_color::green, "green",
     semantic_color::indigo, "indigo",
@@ -59,7 +59,7 @@ constexpr auto semanti_color_metadata = enum_metadata{
     semantic_color::accent, "accent",
     semantic_color::text_select, "text-select",
     semantic_color::primary_cursor, "primary-cursor",
-    semantic_color::secondary_cursor, "seccondary-cursor",
+    semantic_color::secondary_cursor, "secondary-cursor",
 };
 
 // clang-format on

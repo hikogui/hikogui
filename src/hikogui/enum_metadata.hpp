@@ -35,6 +35,13 @@ public:
      */
     bool values_are_continues;
 
+    /** Get the number of enum values.
+     */
+    [[nodiscard]] constexpr size_t size() const noexcept
+    {
+        return count;
+    }
+
     /** Get the minimum value.
      */
     [[nodiscard]] constexpr value_type minimum() const noexcept

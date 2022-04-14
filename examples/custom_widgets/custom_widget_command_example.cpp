@@ -47,7 +47,7 @@ public:
     // In this case the background color is 'teal' when the value of the widget is true.
     [[nodiscard]] hi::color background_color() const noexcept override
     {
-        return *value ? theme().color(hi::theme_color::green) : widget::background_color();
+        return *value ? theme().color(hi::semantic_color::green) : widget::background_color();
     }
 
     // The `draw()` function is called when all or part of the window requires redrawing.

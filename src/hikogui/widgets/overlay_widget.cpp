@@ -64,12 +64,12 @@ void overlay_widget::draw(draw_context const &context) noexcept
 
 [[nodiscard]] color overlay_widget::background_color() const noexcept
 {
-    return theme().color(theme_color::fill, semantic_layer + 1);
+    return theme().color(semantic_color::fill, semantic_layer + 1);
 }
 
 [[nodiscard]] color overlay_widget::foreground_color() const noexcept
 {
-    return theme().color(theme_color::border, semantic_layer + 1);
+    return theme().color(semantic_color::border, semantic_layer + 1);
 }
 
 void overlay_widget::scroll_to_show(hi::aarectangle rectangle) noexcept
