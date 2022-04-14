@@ -26,6 +26,7 @@ target_sources(hikogui PRIVATE
     animator.hpp
     assert.hpp
     atomic.hpp
+	awaitable_timer.hpp
     bezier.hpp
     bezier_curve.cpp
     bezier_curve.hpp

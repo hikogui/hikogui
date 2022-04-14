@@ -134,6 +134,8 @@ private:
         text_selection selection;
     };
 
+    enum class cursor_state_type { off, on, busy, none };
+
     text_shaper _shaped_text;
     float _shaped_text_cap_height;
 
@@ -143,9 +145,8 @@ private:
 
     scoped_task<> _blink_cursor;
 
-    bool _cursor_visible = false;
-
-    utc_nanoseconds _cursor_blink_time_point = {};
+    observable<cursor_state_type> _cursor_state = cursor_state_type::none;
+    decltype(_cursor_state)::token_type _cursor_state_cbt;
 
     /** The last drag mouse event.
      *
@@ -196,7 +197,7 @@ private:
     void undo() noexcept;
     void redo() noexcept;
 
-    //scoped_task<> blink_cursor() noexcept;
+    scoped_task<> blink_cursor() noexcept;
 
     /** Fix the cursor position after cursor movement.
      *
