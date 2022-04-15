@@ -70,7 +70,7 @@ void abstract_button_widget::set_layout_button(widget_layout const &context) noe
 {
     hi_axiom(is_gui_thread());
     if (_pressed) {
-        return theme().color(theme_color::fill, semantic_layer + 2);
+        return theme().color(semantic_color::fill, semantic_layer + 2);
     } else {
         return super::background_color();
     }

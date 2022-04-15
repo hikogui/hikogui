@@ -195,7 +195,7 @@ hitbox window_widget::hitbox_test(point3 position) const noexcept
 [[nodiscard]] color window_widget::background_color() noexcept
 {
     hi_axiom(is_gui_thread());
-    return theme().color(theme_color::fill, semantic_layer);
+    return theme().color(semantic_color::fill, semantic_layer);
 }
 
 /** Defining on which edges the resize handle has priority over widget at a higher layer.

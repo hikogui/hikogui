@@ -56,12 +56,12 @@ hi::font_book &widget::font_book() const noexcept
 {
     if (*enabled) {
         if (*hover) {
-            return theme().color(theme_color::fill, semantic_layer + 1);
+            return theme().color(semantic_color::fill, semantic_layer + 1);
         } else {
-            return theme().color(theme_color::fill, semantic_layer);
+            return theme().color(semantic_color::fill, semantic_layer);
         }
     } else {
-        return theme().color(theme_color::fill, semantic_layer - 1);
+        return theme().color(semantic_color::fill, semantic_layer - 1);
     }
 }
 
@@ -69,12 +69,12 @@ hi::font_book &widget::font_book() const noexcept
 {
     if (*enabled) {
         if (*hover) {
-            return theme().color(theme_color::border, semantic_layer + 1);
+            return theme().color(semantic_color::border, semantic_layer + 1);
         } else {
-            return theme().color(theme_color::border, semantic_layer);
+            return theme().color(semantic_color::border, semantic_layer);
         }
     } else {
-        return theme().color(theme_color::border, semantic_layer - 1);
+        return theme().color(semantic_color::border, semantic_layer - 1);
     }
 }
 
@@ -82,23 +82,23 @@ hi::font_book &widget::font_book() const noexcept
 {
     if (*enabled) {
         if (*focus) {
-            return theme().color(theme_color::accent);
+            return theme().color(semantic_color::accent);
         } else if (*hover) {
-            return theme().color(theme_color::border, semantic_layer + 1);
+            return theme().color(semantic_color::border, semantic_layer + 1);
         } else {
-            return theme().color(theme_color::border, semantic_layer);
+            return theme().color(semantic_color::border, semantic_layer);
         }
     } else {
-        return theme().color(theme_color::border, semantic_layer - 1);
+        return theme().color(semantic_color::border, semantic_layer - 1);
     }
 }
 
 [[nodiscard]] color widget::accent_color() const noexcept
 {
     if (*enabled) {
-        return theme().color(theme_color::accent);
+        return theme().color(semantic_color::accent);
     } else {
-        return theme().color(theme_color::border, semantic_layer - 1);
+        return theme().color(semantic_color::border, semantic_layer - 1);
     }
 }
 
@@ -107,7 +107,7 @@ hi::font_book &widget::font_book() const noexcept
     if (*enabled) {
         return theme().text_style(theme_text_style::label).color;
     } else {
-        return theme().color(theme_color::border, semantic_layer - 1);
+        return theme().color(semantic_color::border, semantic_layer - 1);
     }
 }
 

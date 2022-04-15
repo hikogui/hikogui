@@ -7,7 +7,7 @@
 
 namespace hi::inline v1 {
 
-widget_constraints const &toolbar_tab_button_widget::set_constraints() noexcept
+widget_constraints const& toolbar_tab_button_widget::set_constraints() noexcept
 {
     _layout = {};
 
@@ -16,7 +16,7 @@ widget_constraints const &toolbar_tab_button_widget::set_constraints() noexcept
     return _constraints = set_constraints_button() + extra_size;
 }
 
-void toolbar_tab_button_widget::set_layout(widget_layout const &layout) noexcept
+void toolbar_tab_button_widget::set_layout(widget_layout const& layout) noexcept
 {
     if (compare_store(_layout, layout)) {
         _label_rectangle =
@@ -25,7 +25,7 @@ void toolbar_tab_button_widget::set_layout(widget_layout const &layout) noexcept
     set_layout_button(layout);
 }
 
-void toolbar_tab_button_widget::draw(draw_context const &context) noexcept
+void toolbar_tab_button_widget::draw(draw_context const& context) noexcept
 {
     if (*visible and overlaps(context, layout())) {
         draw_toolbar_tab_button(context);
@@ -74,7 +74,7 @@ void toolbar_tab_button_widget::request_redraw() const noexcept
     return super::handle_event(command);
 }
 
-void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const &context) noexcept
+void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const& context) noexcept
 {
     // Draw the outline of the button across the clipping rectangle to clip the
     // bottom of the outline.
@@ -84,8 +84,11 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const &cont
     // The focus line will be drawn by the parent widget (toolbar_widget) at 0.5.
     hilet button_z = *focus ? translate_z(0.6f) : translate_z(0.0f);
 
-    auto button_color = (*hover or state() == button_state::on) ? theme().color(theme_color::fill, semantic_layer - 1) :
-                                                                 theme().color(theme_color::fill, semantic_layer);
+    // clang-format off
+    auto button_color = (*hover or state() == button_state::on) ?
+        theme().color(semantic_color::fill, semantic_layer - 1) :
+        theme().color(semantic_color::fill, semantic_layer);
+    // clang-format on
 
     hilet corner_radii = hi::corner_radii{0.0f, 0.0f, theme().rounding_radius, theme().rounding_radius};
     context.draw_box(

@@ -58,8 +58,8 @@ public:
         if (*visible and overlaps(context, layout())) {
             // Draw two boxes matching the rectangles calculated during set_layout().
             // The actual RGB colors are taken from the current theme.
-            context.draw_box(_layout, _left_rectangle, theme().color(hi::theme_color::indigo));
-            context.draw_box(_layout, _right_rectangle, theme().color(hi::theme_color::blue));
+            context.draw_box(_layout, _left_rectangle, theme().color(hi::semantic_color::indigo));
+            context.draw_box(_layout, _right_rectangle, theme().color(hi::semantic_color::blue));
         }
     }
 

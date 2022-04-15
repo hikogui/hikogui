@@ -13,13 +13,13 @@
 
 namespace hi::inline v1 {
 
-theme::theme(hi::font_book const &font_book, URL const &url)
+theme::theme(hi::font_book const& font_book, URL const& url)
 {
     try {
         hi_log_info("Parsing theme at {}", url);
         hilet data = parse_JSON(url);
         parse(font_book, data);
-    } catch (std::exception const &e) {
+    } catch (std::exception const& e) {
         throw io_error(std::format("{}: Could not load theme.\n{}", url, e.what()));
     }
 }
@@ -49,27 +49,38 @@ theme::theme(hi::font_book const &font_book, URL const &url)
     return r;
 }
 
-[[nodiscard]] hi::color theme::color(theme_color theme_color, ssize_t nesting_level) const noexcept
+[[nodiscard]] hi::color theme::color(hi::semantic_color original_color, ssize_t nesting_level) const noexcept
 {
-    hilet theme_color_i = static_cast<std::size_t>(theme_color);
+    hilet theme_color_i = static_cast<std::size_t>(original_color);
     hi_axiom(theme_color_i < _colors.size());
 
-    hilet &shades = _colors[theme_color_i];
+    hilet& shades = _colors[theme_color_i];
     hi_axiom(not shades.empty());
 
     nesting_level = std::max(ssize_t{0}, nesting_level);
     return shades[nesting_level % ssize(shades)];
 }
 
-[[nodiscard]] hi::text_style const &theme::text_style(theme_text_style theme_text_style) const noexcept
+[[nodiscard]] hi::color theme::color(hi::color original_color, ssize_t nesting_level) const noexcept
+{
+    if (original_color.is_semantic_color()) {
+        return color(static_cast<semantic_color>(original_color), nesting_level);
+    } else {
+        return original_color;
+    }
+}
+
+[[nodiscard]] hi::text_style theme::text_style(theme_text_style theme_text_style) const noexcept
 {
     hilet theme_text_style_i = static_cast<std::size_t>(theme_text_style);
     hi_axiom(theme_text_style_i < _text_styles.size());
 
-    return _text_styles[theme_text_style_i];
+    auto text_style = _text_styles[theme_text_style_i];
+    text_style.color = color(text_style.color, 0);
+    return text_style;
 }
 
-[[nodiscard]] std::string theme::parse_string(datum const &data, char const *object_name)
+[[nodiscard]] std::string theme::parse_string(datum const& data, char const *object_name)
 {
     // Extract name
     if (!data.contains(object_name)) {
@@ -82,7 +93,7 @@ theme::theme(hi::font_book const &font_book, URL const &url)
     return static_cast<std::string>(object);
 }
 
-[[nodiscard]] float theme::parse_float(datum const &data, char const *object_name)
+[[nodiscard]] float theme::parse_float(datum const& data, char const *object_name)
 {
     if (!data.contains(object_name)) {
         throw parse_error(std::format("Missing '{}'", object_name));
@@ -96,7 +107,7 @@ theme::theme(hi::font_book const &font_book, URL const &url)
     }
 }
 
-[[nodiscard]] bool theme::parse_bool(datum const &data, char const *object_name)
+[[nodiscard]] bool theme::parse_bool(datum const& data, char const *object_name)
 {
     if (!data.contains(object_name)) {
         throw parse_error(std::format("Missing '{}'", object_name));
@@ -110,7 +121,7 @@ theme::theme(hi::font_book const &font_book, URL const &url)
     return static_cast<bool>(object);
 }
 
-[[nodiscard]] color theme::parse_color_value(datum const &data)
+[[nodiscard]] color theme::parse_color_value(datum const& data)
 {
     if (holds_alternative<datum::vector_type>(data)) {
         if (data.size() != 3 && data.size() != 4) {
@@ -163,7 +174,7 @@ theme::theme(hi::font_book const &font_book, URL const &url)
     }
 }
 
-[[nodiscard]] hi::color theme::parse_color(datum const &data, char const *object_name)
+[[nodiscard]] hi::color theme::parse_color(datum const& data, char const *object_name)
 {
     if (!data.contains(object_name)) {
         throw parse_error(std::format("Missing color '{}'", object_name));
@@ -173,17 +184,16 @@ theme::theme(hi::font_book const &font_book, URL const &url)
 
     try {
         return parse_color_value(color_object);
-    } catch (parse_error const &) {
+    } catch (parse_error const&) {
         if (auto s = get_if<std::string>(color_object)) {
-            hilet theme_color = theme_color_from_string(*s);
-            return this->color(theme_color);
+            return hi::color{semantic_color_from_string(*s)};
         } else {
             throw;
         }
     }
 }
 
-[[nodiscard]] std::vector<color> theme::parse_color_list(datum const &data, char const *object_name)
+[[nodiscard]] std::vector<color> theme::parse_color_list(datum const& data, char const *object_name)
 {
     // Extract name
     if (!data.contains(object_name)) {
@@ -195,10 +205,10 @@ theme::theme(hi::font_book const &font_book, URL const &url)
         holds_alternative<datum::vector_type>(color_list_object[0])) {
         auto r = std::vector<hi::color>{};
         ssize_t i = 0;
-        for (hilet &color : color_list_object) {
+        for (hilet& color : color_list_object) {
             try {
                 r.push_back(parse_color_value(color));
-            } catch (parse_error const &e) {
+            } catch (parse_error const& e) {
                 throw parse_error(std::format("Could not parse {}nd entry of color list '{}'\n{}", i + 1, object_name, e.what()));
             }
         }
@@ -207,13 +217,13 @@ theme::theme(hi::font_book const &font_book, URL const &url)
     } else {
         try {
             return {parse_color_value(data[object_name])};
-        } catch (parse_error const &e) {
+        } catch (parse_error const& e) {
             throw parse_error(std::format("Could not parse color '{}'\n{}", object_name, e.what()));
         }
     }
 }
 
-[[nodiscard]] font_weight theme::parse_font_weight(datum const &data, char const *object_name)
+[[nodiscard]] font_weight theme::parse_font_weight(datum const& data, char const *object_name)
 {
     if (!data.contains(object_name)) {
         throw parse_error(std::format("Missing '{}'", object_name));
@@ -229,7 +239,7 @@ theme::theme(hi::font_book const &font_book, URL const &url)
     }
 }
 
-[[nodiscard]] text_style theme::parse_text_style_value(hi::font_book const &font_book, datum const &data)
+[[nodiscard]] text_style theme::parse_text_style_value(hi::font_book const& font_book, datum const& data)
 {
     if (!holds_alternative<datum::map_type>(data)) {
         throw parse_error(std::format("Expect a text-style to be an object, got '{}'", data));
@@ -256,7 +266,7 @@ theme::theme(hi::font_book const &font_book, URL const &url)
     return r;
 }
 
-[[nodiscard]] text_style theme::parse_text_style(hi::font_book const &font_book, datum const &data, char const *object_name)
+[[nodiscard]] text_style theme::parse_text_style(hi::font_book const& font_book, datum const& data, char const *object_name)
 {
     // Extract name
     if (!data.contains(object_name)) {
@@ -266,12 +276,12 @@ theme::theme(hi::font_book const &font_book, URL const &url)
     hilet textStyleObject = data[object_name];
     try {
         return parse_text_style_value(font_book, textStyleObject);
-    } catch (parse_error const &e) {
+    } catch (parse_error const& e) {
         throw parse_error(std::format("Could not parse text-style '{}'\n{}", object_name, e.what()));
     }
 }
 
-void theme::parse(hi::font_book const &font_book, datum const &data)
+void theme::parse(hi::font_book const& font_book, datum const& data)
 {
     hi_assert(holds_alternative<datum::map_type>(data));
 
@@ -286,36 +296,34 @@ void theme::parse(hi::font_book const &font_book, datum const &data)
         throw parse_error(std::format("Attribute 'mode' must be \"light\" or \"dark\", got \"{}\".", mode_name));
     }
 
-    std::get<to_underlying(theme_color::blue)>(_colors) = parse_color_list(data, "blue");
-    std::get<to_underlying(theme_color::green)>(_colors) = parse_color_list(data, "green");
-    std::get<to_underlying(theme_color::indigo)>(_colors) = parse_color_list(data, "indigo");
-    std::get<to_underlying(theme_color::orange)>(_colors) = parse_color_list(data, "orange");
-    std::get<to_underlying(theme_color::pink)>(_colors) = parse_color_list(data, "pink");
-    std::get<to_underlying(theme_color::purple)>(_colors) = parse_color_list(data, "purple");
-    std::get<to_underlying(theme_color::red)>(_colors) = parse_color_list(data, "red");
-    std::get<to_underlying(theme_color::teal)>(_colors) = parse_color_list(data, "teal");
-    std::get<to_underlying(theme_color::yellow)>(_colors) = parse_color_list(data, "yellow");
+    std::get<to_underlying(semantic_color::blue)>(_colors) = parse_color_list(data, "blue");
+    std::get<to_underlying(semantic_color::green)>(_colors) = parse_color_list(data, "green");
+    std::get<to_underlying(semantic_color::indigo)>(_colors) = parse_color_list(data, "indigo");
+    std::get<to_underlying(semantic_color::orange)>(_colors) = parse_color_list(data, "orange");
+    std::get<to_underlying(semantic_color::pink)>(_colors) = parse_color_list(data, "pink");
+    std::get<to_underlying(semantic_color::purple)>(_colors) = parse_color_list(data, "purple");
+    std::get<to_underlying(semantic_color::red)>(_colors) = parse_color_list(data, "red");
+    std::get<to_underlying(semantic_color::teal)>(_colors) = parse_color_list(data, "teal");
+    std::get<to_underlying(semantic_color::yellow)>(_colors) = parse_color_list(data, "yellow");
 
-    std::get<to_underlying(theme_color::gray)>(_colors) = parse_color_list(data, "gray");
-    std::get<to_underlying(theme_color::gray2)>(_colors) = parse_color_list(data, "gray2");
-    std::get<to_underlying(theme_color::gray3)>(_colors) = parse_color_list(data, "gray3");
-    std::get<to_underlying(theme_color::gray4)>(_colors) = parse_color_list(data, "gray4");
-    std::get<to_underlying(theme_color::gray5)>(_colors) = parse_color_list(data, "gray5");
-    std::get<to_underlying(theme_color::gray6)>(_colors) = parse_color_list(data, "gray6");
+    std::get<to_underlying(semantic_color::gray)>(_colors) = parse_color_list(data, "gray");
+    std::get<to_underlying(semantic_color::gray2)>(_colors) = parse_color_list(data, "gray2");
+    std::get<to_underlying(semantic_color::gray3)>(_colors) = parse_color_list(data, "gray3");
+    std::get<to_underlying(semantic_color::gray4)>(_colors) = parse_color_list(data, "gray4");
+    std::get<to_underlying(semantic_color::gray5)>(_colors) = parse_color_list(data, "gray5");
+    std::get<to_underlying(semantic_color::gray6)>(_colors) = parse_color_list(data, "gray6");
 
-    std::get<to_underlying(theme_color::foreground)>(_colors) = parse_color_list(data, "foreground-color");
-    std::get<to_underlying(theme_color::border)>(_colors) = parse_color_list(data, "border-color");
-    std::get<to_underlying(theme_color::fill)>(_colors) = parse_color_list(data, "fill-color");
-    std::get<to_underlying(theme_color::accent)>(_colors) = parse_color_list(data, "accent-color");
-    std::get<to_underlying(theme_color::text_select)>(_colors) = parse_color_list(data, "text-select-color");
-    std::get<to_underlying(theme_color::primary_cursor)>(_colors) = parse_color_list(data, "primary-cursor-color");
-    std::get<to_underlying(theme_color::secondary_cursor)>(_colors) = parse_color_list(data, "secondary-cursor-color");
+    std::get<to_underlying(semantic_color::foreground)>(_colors) = parse_color_list(data, "foreground-color");
+    std::get<to_underlying(semantic_color::border)>(_colors) = parse_color_list(data, "border-color");
+    std::get<to_underlying(semantic_color::fill)>(_colors) = parse_color_list(data, "fill-color");
+    std::get<to_underlying(semantic_color::accent)>(_colors) = parse_color_list(data, "accent-color");
+    std::get<to_underlying(semantic_color::text_select)>(_colors) = parse_color_list(data, "text-select-color");
+    std::get<to_underlying(semantic_color::primary_cursor)>(_colors) = parse_color_list(data, "primary-cursor-color");
+    std::get<to_underlying(semantic_color::secondary_cursor)>(_colors) = parse_color_list(data, "secondary-cursor-color");
 
     std::get<to_underlying(theme_text_style::label)>(_text_styles) = parse_text_style(font_book, data, "label-style");
-    std::get<to_underlying(theme_text_style::small_label)>(_text_styles) =
-        parse_text_style(font_book, data, "small-label-style");
-    std::get<to_underlying(theme_text_style::warning)>(_text_styles) =
-        parse_text_style(font_book, data, "warning-label-style");
+    std::get<to_underlying(theme_text_style::small_label)>(_text_styles) = parse_text_style(font_book, data, "small-label-style");
+    std::get<to_underlying(theme_text_style::warning)>(_text_styles) = parse_text_style(font_book, data, "warning-label-style");
     std::get<to_underlying(theme_text_style::error)>(_text_styles) = parse_text_style(font_book, data, "error-label-style");
     std::get<to_underlying(theme_text_style::help)>(_text_styles) = parse_text_style(font_book, data, "help-label-style");
     std::get<to_underlying(theme_text_style::placeholder)>(_text_styles) =
