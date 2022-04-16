@@ -118,6 +118,7 @@ public:
     [[nodiscard]] token_type subscribe(std::invocable<Args...> auto&& callback) noexcept
     {
         auto token = std::make_shared<callback_type>(hi_forward(callback));
+        hilet lock = std::scoped_lock(_mutex);
         _callbacks.emplace_back(token);
         return token;
     }
@@ -129,14 +130,11 @@ public:
      */
     void post(Args const&...args) const noexcept requires(std::is_same_v<result_type, void>)
     {
-        for (auto& weak_callback : _callbacks) {
-            loop::local().post_function([=] {
-                if (auto callback = weak_callback.lock()) {
-                    (*callback)(args...);
-                }
+        handle_callbacks([&](token_type token) {
+            loop::local().post_function([=]{
+                (*token)(args...);
             });
-        }
-        clean_up();
+        });
     }
 
     /** Post the subscribed callbacks on the main thread's event loop with the given arguments.
@@ -146,14 +144,11 @@ public:
      */
     void post_on_main(Args const&...args) const noexcept requires(std::is_same_v<result_type, void>)
     {
-        for (auto& weak_callback : _callbacks) {
-            loop::main().post_function([=] {
-                if (auto callback = weak_callback.lock()) {
-                    (*callback)(args...);
-                }
+        handle_callbacks([&](token_type token) {
+            loop::main().post_function([=]{
+                (*token)(args...);
             });
-        }
-        clean_up();
+        });
     }
 
     /** Call the subscribed callbacks with the given arguments.
@@ -167,22 +162,34 @@ public:
     }
 
 private:
+    /** Mutex to manage the callbacks.
+     */
+    mutable unfair_mutex _mutex;
+
     /** A list of callbacks and it's associated token.
      */
     mutable std::vector<weak_token_type> _callbacks;
 
-    void clean_up() const noexcept
+    void handle_callbacks(auto &&func)
     {
-        std::erase_if(_callbacks, [](hilet& item) {
-            return item.expired();
-        });
-    }
+        hilet lock = std::scoped_lock(_mutex);
 
-#if HI_BUILD_TYPE == HI_BT_DEBUG
-    /** The notifier is currently calling all the callbacks.
-     */
-    mutable bool _notifying = false;
-#endif
+        auto it = _callbacks.begin();
+        auto last = _callbacks.end();
+
+        while (it != last) {
+            if (auto token = it->lock()) {
+                func(std::move(token));
+                ++it;
+                
+            } else {
+                std::swap(*it, *(last - 1));
+                --last;
+            }
+        }
+
+        _callbacks.erase(last, _callbacks.end());
+    }
 };
 
 } // namespace hi::inline v1
