@@ -76,44 +76,44 @@
     "secondary-cursor-color": [31, 105,   30],
 
     "small-label-style": {
-        "family": "Corbel",
+        "family": "Times New Roman",
         "weight": "Normal",
         "size": 10.0,
         "color": "foreground"
     },
 
     "label-style": {
-        "family": "Corbel",
+        "family": "Times New Roman",
         "weight": "Regular",
         "size": 12.0,
         "color": "foreground"
     },
     "warning-label-style": {
-        "family": "Corbel",
+        "family": "Times New Roman",
         "weight": "Regular",
         "size": 12.0,
         "color": "foreground"
     },
     "error-label-style": {
-        "family": "Corbel",
+        "family": "Times New Roman",
         "weight": "Regular",
         "size": 12.0,
         "color": "red"
     },
     "help-label-style": {
-        "family": "Corbel",
+        "family": "Times New Roman",
         "weight": "Regular",
         "size": 12.0,
         "color": [88, 86, 214]
     },
     "placeholder-label-style": {
-        "family": "Corbel",
+        "family": "Times New Roman",
         "weight": "Regular",
         "size": 12.0,
         "color": [142, 142, 147]
     },
     "link-label-style": {
-        "family": "Corbel",
+        "family": "Times New Roman",
         "weight": "Regular",
         "size": 12.0,
         "color": [0, 122, 255]
