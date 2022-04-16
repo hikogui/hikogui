@@ -274,7 +274,7 @@ struct observable_impl {
     void notify_owners() const noexcept
     {
         for (hilet& owner : owners) {
-            owner->_notifier(value);
+            owner->_notifier.post(value);
         }
     }
 
@@ -308,7 +308,7 @@ struct observable_impl {
         for (auto owner : owners) {
             owner->_pimpl = new_impl;
             new_impl->owners.push_back(owner);
-            owner->_notifier(value);
+            owner->_notifier.post(value);
         }
         owners.clear();
     }

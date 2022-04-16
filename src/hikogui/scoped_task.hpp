@@ -44,7 +44,7 @@ public:
         notifier_type _notifier;
         return_value_ptr_type _value_ptr;
 
-        void return_value(std::convertible_to<value_type> auto &&value) noexcept
+        void return_value(std::convertible_to<value_type> auto&& value) noexcept
         {
             *_value_ptr = return_value_type{std::in_place_index<2>, hi_forward(value)};
         }
@@ -56,19 +56,28 @@ public:
 
         std::suspend_never final_suspend() noexcept
         {
-            switch (_value_ptr->index()) {
-            case 1:
-                // We need to trigger the notifier on an exception too.
-                if constexpr (std::is_default_constructible_v<value_type>) {
-                    _notifier(value_type{});
+            // We need to trigger the notifier on an exception too.
+            if constexpr (std::is_default_constructible_v<value_type>) {
+                switch (_value_ptr->index()) {
+                case 1:
+                    // We need to trigger the notifier on an exception too.
+                    _notifier.post(value_type{});
                     return {};
+                case 2:
+                    // Trigger the notifier with the co_return value.
+                    _notifier.post(std::get<2>(*_value_ptr));
+                    return {};
+                default: hi_no_default();
                 }
-                hi_no_default();
-            case 2:
-                // Trigger the notifier with the co_return value.
-                _notifier(std::get<2>(*_value_ptr));
-                return {};
-            default: hi_no_default();
+
+            } else {
+                switch (_value_ptr->index()) {
+                case 2:
+                    // Trigger the notifier with the co_return value.
+                    _notifier.post(std::get<2>(*_value_ptr));
+                    return {};
+                default: hi_no_default();
+                }
             }
         }
 
@@ -105,16 +114,16 @@ public:
 
     // scoped_task can not be copied because it tracks if the co-routine must be destroyed by the
     // shared_ptr to the value shared between scoped_task and the promise.
-    scoped_task(scoped_task const &) = delete;
-    scoped_task &operator=(scoped_task const &) = delete;
+    scoped_task(scoped_task const&) = delete;
+    scoped_task& operator=(scoped_task const&) = delete;
 
-    scoped_task(scoped_task &&other) noexcept
+    scoped_task(scoped_task&& other) noexcept
     {
         _coroutine = std::exchange(other._coroutine, {});
         _value_ptr = std::exchange(other._value_ptr, {});
     }
 
-    scoped_task &operator=(scoped_task &&other) noexcept
+    scoped_task& operator=(scoped_task&& other) noexcept
     {
         _coroutine = std::exchange(other._coroutine, {});
         _value_ptr = std::exchange(other._value_ptr, {});
@@ -140,7 +149,7 @@ public:
      * @note It is undefined behavior to call this function if the co-routine is incomplete.
      * @throws The exception thrown from the co-routine.
      */
-    [[nodiscard]] value_type const &value() const
+    [[nodiscard]] value_type const& value() const
     {
         switch (_value_ptr->index()) {
         case 1: std::rethrow_exception(std::get<1>(*_value_ptr));
@@ -154,7 +163,7 @@ public:
      * @note It is undefined behavior to call this function if the co-routine is incomplete.
      * @throws The exception thrown from the co-routine.
      */
-    [[nodiscard]] value_type const &operator*() const
+    [[nodiscard]] value_type const& operator*() const
     {
         return value();
     }
@@ -164,7 +173,7 @@ public:
      * @param callback The callback to call when the co-routine executed co_return. If co_return
      *                 has a non-void expression then the callback must accept the expression as an argument.
      */
-    notifier_type::token_type subscribe(std::invocable<value_type> auto &&callback) noexcept
+    notifier_type::token_type subscribe(std::invocable<value_type> auto&& callback) noexcept
     {
         return _coroutine.promise()._notifier.subscribe(hi_forward(callback));
     }
@@ -214,11 +223,11 @@ public:
             switch (_value_ptr->index()) {
             case 1:
                 // Trigger the notifier on exception.
-                _notifier();
+                _notifier.post();
                 return {};
             case 2:
                 // Trigger the notifier with the co_return value.
-                _notifier();
+                _notifier.post();
                 return {};
             default: hi_no_default();
             }
@@ -251,16 +260,16 @@ public:
     }
 
     scoped_task() = default;
-    scoped_task(scoped_task const &) = delete;
-    scoped_task &operator=(scoped_task const &) = delete;
+    scoped_task(scoped_task const&) = delete;
+    scoped_task& operator=(scoped_task const&) = delete;
 
-    scoped_task(scoped_task &&other) noexcept
+    scoped_task(scoped_task&& other) noexcept
     {
         _coroutine = std::exchange(other._coroutine, {});
         _value_ptr = std::exchange(other._value_ptr, {});
     }
 
-    scoped_task &operator=(scoped_task &&other) noexcept
+    scoped_task& operator=(scoped_task&& other) noexcept
     {
         _coroutine = std::exchange(other._coroutine, {});
         _value_ptr = std::exchange(other._value_ptr, {});
@@ -301,7 +310,7 @@ public:
     /**
      * @sa scoped_task<>::subscribe()
      */
-    notifier_type::token_type subscribe(std::invocable<> auto &&callback) noexcept
+    notifier_type::token_type subscribe(std::invocable<> auto&& callback) noexcept
     {
         return _coroutine.promise()._notifier.subscribe(hi_forward(callback));
     }

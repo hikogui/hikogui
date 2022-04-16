@@ -173,7 +173,7 @@ void os_settings::gather() noexcept
     }
 
     if (setting_has_changed) {
-        _notifier();
+        _notifier.post();
     }
 }
 

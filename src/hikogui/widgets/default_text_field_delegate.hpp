@@ -72,7 +72,7 @@ public:
     default_text_field_delegate(auto&& value) noexcept : value(hi_forward(value))
     {
         _value_cbt = this->value.subscribe([&](auto...) {
-            this->_notifier();
+            this->_notifier.post();
         });
     }
 

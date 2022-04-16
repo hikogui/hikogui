@@ -26,9 +26,9 @@ public:
         options(hi_forward(options)), value(hi_forward(value)), off_value(hi_forward(off_value))
     {
         // clang-format off
-        _options_cbt = this->options.subscribe([&](auto...){ this->_notifier(); });
-        _value_cbt = this->value.subscribe([&](auto...){ this->_notifier(); });
-        _off_value_cbt = this->off_value.subscribe([&](auto...){ this->_notifier(); });
+        _options_cbt = this->options.subscribe([&](auto...){ this->_notifier.post(); });
+        _value_cbt = this->value.subscribe([&](auto...){ this->_notifier.post(); });
+        _off_value_cbt = this->off_value.subscribe([&](auto...){ this->_notifier.post(); });
         // clang-format on
     }
 
