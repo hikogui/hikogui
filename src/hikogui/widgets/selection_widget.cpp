@@ -205,7 +205,7 @@ bool selection_widget::handle_event(command command) noexcept
     hi_axiom(is_gui_thread());
 
     if (*enabled and _has_options and _selecting) {
-        return theme().color(theme_color::accent);
+        return theme().color(semantic_color::accent);
     } else {
         return super::focus_color();
     }

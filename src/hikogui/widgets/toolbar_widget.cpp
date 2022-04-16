@@ -99,7 +99,7 @@ void toolbar_widget::draw(draw_context const &context) noexcept
 {
     if (*visible) {
         if (overlaps(context, layout())) {
-            context.draw_box(layout(), layout().rectangle(), theme().color(theme_color::fill, semantic_layer + 1));
+            context.draw_box(layout(), layout().rectangle(), theme().color(semantic_color::fill, semantic_layer + 1));
 
             if (tab_button_has_focus()) {
                 // Draw the line at a higher elevation, so that the tab buttons can draw above or below the focus
@@ -198,9 +198,9 @@ widget &toolbar_widget::add_widget(horizontal_alignment alignment, std::unique_p
 [[nodiscard]] color toolbar_widget::focus_color() const noexcept
 {
     if (*enabled) {
-        return theme().color(theme_color::accent);
+        return theme().color(semantic_color::accent);
     } else {
-        return theme().color(theme_color::border, semantic_layer - 1);
+        return theme().color(semantic_color::border, semantic_layer - 1);
     }
 }
 
