@@ -12,8 +12,9 @@ constexpr and easily to vectorize by the optimizer.
 
 ### f32x4
 
-The `f32x4` is an `numeric_array<float,4>` many of the operations on a `f32x4`
-are hand optimized using the intel intrinsics on SSE registers.
+The `f32x4` is an `numeric_array<float,4>`.
+
+Many of the operations on a `f32x4` are hand optimized using the intel intrinsics on SSE registers.
 
 High level geometry type
 ------------------------
@@ -36,27 +37,27 @@ Both `point2` and `point3` are implemented as a `f32x4` homogeneous 4D coordinat
 
 ### geo::extent<D>
 
-An extend is a width, height and depth.
+An extent is a width, height and depth.
 
-A extent can be transformed like a vector.
+An extent can be transformed like a vector.
 
 Both `extent2` and `extent3` are implemented as a `f32x4` homogeneous 4D coordinate with w = 0.0.
 
 ### corner\_shapes
 
-Corner shapes are 4 floating point numbers one for the corner in the left-bottom, right-bottom,
+Corner shapes are 4 floating point numbers, one for the corner in the left-bottom, right-bottom,
 left-top and right-top corner. Each number has the following meaning:
 
- - 0.0 Sharp corner,
- - >0.0 Radius of a rounded corner,
- - <0.0 Radius of a cut corner.
+ - `0.0` Sharp corner,
+ - `>0.0` Radius of a rounded corner,
+ - `<0.0` Radius of a cut corner.
 
 ### color
 
-A 4D red, green, blue and alpha values. A `color` can be transformed like a `vector3`, in this
-case the alpha value is ignored and copied into the result.
+A 4D red, green, blue and alpha value. A `color` can be transformed like a `vector3`.
+In this case, the alpha value is ignored and copied into the result.
 
-For more information see: [color](color.md).
+For more information, see: [color](color.md).
 
 ### rectangle
 
@@ -65,28 +66,26 @@ A `rectangle` is a closed plane in three dimensions.
 A `rectangle` can be transformed like a `point3`.
 
 It should be implemented as a `point3` in the left-bottom corner and two `vector3`s to the upper and right corners.
-However it is currently implemented as 4 points one for each corner.
+However, it is currently implemented as 4 points, one for each corner.
 
-### axis\_aligned\_rectangle
+### axis_aligned_rectangle
 
 The `axis_aligned_rectangle` class is a 2D axis-aligned rectangle.
 
-When transforming an axis aligned rectangle in 3D or with rotation the result will be a normal `rectangle`.
+When transforming an axis aligned rectangle in 3D or with rotation, the result will be a normal `rectangle`.
 A rectangle can be converted back to an `axis_aligned_rectangle`, as a bounding rectangle around the transformed rectangle.
 
-a `axis_aligned_rectangle` is implemented as a `f32x4` where:
+An `axis_aligned_rectangle` is implemented as a `f32x4` where:
 
- - x - left-bottom point x.
- - y - left-bottom point y.
- - z - right-top point x.
- - w - right-top point y.
+ - `x`: left-bottom point x
+ - `y`: left-bottom point y
+ - `z`: right-top point x
+ - `w`: right-top point y
 
 Transformation types
 --------------------
 
 ### geo::identity
-
-An identity transform does not
 
 ### geo::translate<D>
 
@@ -97,7 +96,7 @@ An identity transform does not
 ### geo::matrix<D>
 
 The `mat` class is a 4x4 homogeneous transformation matrix in column-major
-order. Internally this a `vec` for each column.
+order. Internally, this a `vec` for each column.
 
 Vector * matrix multiplications are performed as if the vector is a column.
 
@@ -119,6 +118,7 @@ This is true for:
 ### Window and Widget-surface coordinates
 
 The coordinates in a window and widgets  are in pixels.
+
 With the center of the left bottom pixel having the coordinates (0.5, 0.5).
 
 The alignment of borders to pixels is the responsibility of the
@@ -129,18 +129,19 @@ integer coordinates; the rectangle, border and pixel will share the same edge.
 
 ### Window depth
 
-Z-coordinate for a window is between 0.0 (far) to 100.0 (near).
+Z-coordinate for a window is between `0.0` (far) to `100.0` (near).
+
 For better precision we use a reverse-z method, to combine
 1/z together with float with linear precision.
 
- - The window-widget is set to depth 0.0.
- - Each nested widget, which needs to draw itself, is 1.0 nearer.
+ - The window-widget is set to depth `0.0`.
+ - Each nested widget, which needs to draw itself, is `1.0` nearer.
  - Widgets which extends across other widgets, such as a combo-box-widget
-   will be 25.0 nearer.
+   will be `25.0` nearer.
 
 ### Image coordinates
 
-The coordinates in a image are in pixels. With the center of the left bottom
+The coordinates in an image are in pixels. With the center of the left bottom
 pixel having the coordinates (0.5, 0.5).
 
 ### Path coordinates
@@ -160,30 +161,31 @@ Corners
 
 Corners are enumerated as follows:
 
- - 0: near bottom left
- - 1: near bottom right
- - 2: near top left
- - 3: near top right
- - 4: far bottom left
- - 5: far bottom right
- - 6: far top left
- - 7: far top right
+ - `0`: near bottom left
+ - `1`: near bottom right
+ - `2`: near top left
+ - `3`: near top right
+ - `4`: far bottom left
+ - `5`: far bottom right
+ - `6`: far top left
+ - `7`: far top right
 
 When corners are packed in a 4D vector:
 
- - x = bottom-left
- - y = bottom-right
- - z = top-left
- - w = top-right
+ - `x`: bottom-left
+ - `y`: bottom-right
+ - `z`: top-left
+ - `w`: top-right
 
 Edges
 -----
 
 When edges are packed in a 4D vector:
- - x = bottom-edge
- - y = left-edge
- - z = top-edge
- - w = right-edge
+
+ - `x`: bottom-edge
+ - `y`: left-edge
+ - `z`: top-edge
+ - `w`: right-edge
 
 Triangles
 ---------
@@ -194,11 +196,12 @@ Quads
 -----
 
 Quads are defined as two front facing triangles.
-The vertex index order is: 0, 1, 2, 2, 1, 3
+
+The vertex index order is: `0, 1, 2, 2, 1, 3`.
 
 As illustrated below:
 
-```
+```text
 2 <--- 3
 | \    ^
 |  \ B |
@@ -206,4 +209,3 @@ As illustrated below:
 v    \ |
 0 ---> 1
 ```
-

@@ -11,9 +11,7 @@ Professional audio interfaces may have the ability to synchronize their
 clock to an external clock. This allows multiple audio interfaces to
 share a clock, inside a clock-domain.
 
-
-On MacOS these clocks are
-configurable through the API.
+On MacOS these clocks are configurable through the API.
 
 Example sample-clocks:
  - **Internal**: This is the internal oscillator, usally these internal clocks
@@ -29,5 +27,4 @@ Example sample-clocks:
  - **Firewire** Firewire audio interface can use the clock of the firewire
    interface, multiple audio interfaces connected on the same bus can
    synchronize through this.
-
 

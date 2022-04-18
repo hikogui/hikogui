@@ -6,13 +6,15 @@ The default build of hikogui supports the following hardware requirements.
  - Graphics:
     * Vulkan-1.1
  - Processors:
-    * Intel/AMD x86-64-v2.5: Sandry Bridge, Jaguar / Bulldozer
+    * Intel/AMD x86-64-v2.5: Sandy Bridge, Jaguar / Bulldozer
 
 Processors
 ----------
 
 ### x86-64-v2.5
+
 The minimum CPU requirement:
+
  - **Intel**: Sandy Bridge (Gen2)
  - **AMD**: Jaguar / Bulldozer
 
@@ -26,7 +28,7 @@ Here is a table of microarchitecture levels and the included instruction extensi
  | x86-64-v3       | AVX2 BMI1 BMI2 F16C FMA LZCNT MOVBE                  |
  | x86-64-v4       | AVX512F AVX512BW AVX512CD AVX512DQ AVX512VL          |
 
-Here is a table of first CPU from Intel and AMD that supports these microarchitecture levels.
+Here is a table of the first CPU from Intel and AMD that supports these microarchitecture levels.
 
  | Level           | Intel            | AMD                  |
  |:--------------- |:---------------- |:-------------------- |
@@ -47,13 +49,12 @@ This is a table for microarchitecture for each compiler.
  | x86-64-v4       | /arch:AVX512  | -march=x86-64-v4                          |
 
 
-Graphic cards
+Graphic Cards
 -------------
-HikoGUI uses vulkan-1.1 API as a minimum.
+HikoGUI uses Vulkan-1.1 API as a minimum.
 
-The oldest graphics cards supporting vulkan-1.1:
+The oldest graphics cards supporting Vulkan-1.1 are:
+
  - **NVidia**: GeForce 600 (Kepler)
  - **AMD**: HD 7000 (TeraScale 2)
  - **Intel**: HD 500 (Gen9 SkyLake)
-
-
