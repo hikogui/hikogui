@@ -5,7 +5,6 @@
 #pragma once
 
 #include "theme_mode.hpp"
-#include "theme_color.hpp"
 #include "theme_text_style.hpp"
 #include "../required.hpp"
 #include "../text/text_style.hpp"
@@ -88,11 +87,12 @@ public:
     */
     [[nodiscard]] theme transform(float dpi) const noexcept;
 
-    [[nodiscard]] hi::color color(theme_color theme_color, ssize_t nesting_level = 0) const noexcept;
-    [[nodiscard]] hi::text_style const &text_style(theme_text_style theme_color) const noexcept;
+    [[nodiscard]] hi::color color(hi::semantic_color original_color, ssize_t nesting_level = 0) const noexcept;
+    [[nodiscard]] hi::color color(hi::color original_color, ssize_t nesting_level = 0) const noexcept;
+    [[nodiscard]] hi::text_style text_style(theme_text_style theme_color) const noexcept;
 
 private:
-    std::array<std::vector<hi::color>, num_theme_colors> _colors;
+    std::array<std::vector<hi::color>, semantic_color_metadata.size()> _colors;
     std::array<hi::text_style, num_theme_text_styles> _text_styles;
 
     [[nodiscard]] float parse_float(datum const &data, char const *object_name);

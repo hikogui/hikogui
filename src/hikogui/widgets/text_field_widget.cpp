@@ -177,15 +177,15 @@ hitbox text_field_widget::hitbox_test(point3 position) const noexcept
         if (not _error_label->empty()) {
             return theme().text_style(theme_text_style::error).color;
         } else if (*_text_widget->focus) {
-            return theme().color(theme_color::accent);
+            return theme().color(semantic_color::accent);
         } else if (*hover) {
-            return theme().color(theme_color::border, semantic_layer + 1);
+            return theme().color(semantic_color::border, semantic_layer + 1);
         } else {
-            return theme().color(theme_color::border, semantic_layer);
+            return theme().color(semantic_color::border, semantic_layer);
         }
 
     } else {
-        return theme().color(theme_color::border, semantic_layer - 1);
+        return theme().color(semantic_color::border, semantic_layer - 1);
     }
 }
 

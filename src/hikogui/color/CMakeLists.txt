@@ -6,6 +6,7 @@ target_sources(hikogui PRIVATE
     Rec2020.hpp
     Rec2100.hpp
     quad_color.hpp
+	semantic_color.hpp
     sRGB.hpp
 )
 

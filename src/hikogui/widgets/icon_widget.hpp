@@ -6,7 +6,6 @@
 
 #include "widget.hpp"
 #include "../GFX/paged_image.hpp"
-#include "../GUI/theme_color.hpp"
 #include "../alignment.hpp"
 #include "../icon.hpp"
 #include <memory>
@@ -32,14 +31,14 @@ public:
 
     /** The color a non-color icon will be displayed with.
      */
-    observable<theme_color> color = theme_color::foreground;
+    observable<color> color = color::foreground();
 
     /** Alignment of the icon inside the widget.
      */
     observable<alignment> alignment = hi::alignment{horizontal_alignment::center, vertical_alignment::middle};
 
-    template<typename Icon, typename Color = hi::theme_color>
-    icon_widget(gui_window &window, widget *parent, Icon &&icon, Color &&color = theme_color::foreground) noexcept :
+    template<typename Icon, typename Color = hi::color>
+    icon_widget(gui_window& window, widget *parent, Icon&& icon, Color&& color = color::foreground()) noexcept :
         icon_widget(window, parent)
     {
         this->icon = std::forward<Icon>(icon);
