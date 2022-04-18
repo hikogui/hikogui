@@ -30,19 +30,19 @@ def format_char32(x):
         return "U'\\U{:08x}'".format(x)
 
 class Composition (object):
-    def __init__(self, description, startCodePoint, secondCodePoint, combinedCodePoint):
+    def __init__(self, description, startcode_point, secondcode_point, combinedcode_point):
         self.description = description
-        self.startCodePoint = startCodePoint
-        self.secondCodePoint = secondCodePoint
-        self.combinedCodePoint = combinedCodePoint
+        self.startcode_point = startcode_point
+        self.secondcode_point = secondcode_point
+        self.combinedcode_point = combinedcode_point
 
     def serialize(self):
-        s = "TTXC{"
-        s += format_char32(self.startCodePoint)
+        s = "HIXC{"
+        s += format_char32(self.startcode_point)
         s += ","
-        s += format_char32(self.secondCodePoint)
+        s += format_char32(self.secondcode_point)
         s += ","
-        s += format_char32(self.combinedCodePoint)
+        s += format_char32(self.combinedcode_point)
         s += "}"
         return s
 
@@ -61,8 +61,9 @@ class Decomposition (object):
         return ",".join([format_char32(x) for x in self.decomposition])
 
 class UnicodeDescription (object):
-    def __init__(self, codePoint, generalCategory, decomposition, decomposition_type, canonical_combining_class, bidiClass, bidiMirrored):
-        self.codePoint = codePoint;
+    def __init__(self, code_point, generalCategory, decomposition, decomposition_type, canonical_combining_class, bidiClass, bidiMirrored):
+        self.code_point = code_point
+        self.chunk_id = None
         self.generalCategory = generalCategory
         self.graphemeClusterBreak = "Other"
         self.bidiClass = bidiClass
@@ -82,43 +83,43 @@ class UnicodeDescription (object):
         self.script = "Unknown"
 
     def serialize(self):
-        s = "TTXD{"
+        s = "HIXD{"
 
         # Generic character information
-        s += format_char32(self.codePoint)
-        s += ", TTXGC::{}".format(self.generalCategory)
-        s += ", TTXGU::{}".format(self.graphemeClusterBreak)
-        s += ", TTXLB::{}".format(self.lineBreakClass)
-        s += ", TTXWB::{}".format(self.word_break_property)
-        s += ", TTXSB::{}".format(self.sentence_break_property)
-        s += ", TTXEA::{}".format(self.eastAsianWidth)
-        s += ", TTXSC::{}".format(self.script)
+        s += format_char32(self.code_point)
+        s += ", HIXGC::{}".format(self.generalCategory)
+        s += ", HIXGU::{}".format(self.graphemeClusterBreak)
+        s += ", HIXLB::{}".format(self.lineBreakClass)
+        s += ", HIXWB::{}".format(self.word_break_property)
+        s += ", HIXSB::{}".format(self.sentence_break_property)
+        s += ", HIXEA::{}".format(self.eastAsianWidth)
+        s += ", HIXSC::{}".format(self.script)
 
         # Bidirection algorithm
-        s += ", TTXBC::{}".format(self.bidiClass)
+        s += ", HIXBC::{}".format(self.bidiClass)
         if self.bidiBracketType == "n":
-            s += ", TTXBB::m" if self.bidiMirrored else ", TTXBB::n"
+            s += ", HIXBB::m" if self.bidiMirrored else ", HIXBB::n"
         else:
-            s += ", TTXBB::{}".format(self.bidiBracketType)
+            s += ", HIXBB::{}".format(self.bidiBracketType)
         s += ", " + format_char32(self.bidiMirroredGlyph)
 
         # Composition / Decomposition
         if self.decomposition_type == "canonical":
-            s += ", TTXDT::canonical"
+            s += ", HIXDT::canonical"
         elif self.decomposition_type == "font":
-            s += ", TTXDT::font"
+            s += ", HIXDT::font"
         elif self.decomposition_type == "noBreak":
-            s += ", TTXDT::no_break"
+            s += ", HIXDT::no_break"
         elif self.decomposition_type in ("initial", "medial", "final", "isolated"):
-            s += ", TTXDT::arabic"
+            s += ", HIXDT::arabic"
         elif self.decomposition_type == "circle":
-            s += ", TTXDT::circle"
+            s += ", HIXDT::circle"
         elif self.decomposition_type in ("super", "sub", "fraction"):
-            s += ", TTXDT::math"
+            s += ", HIXDT::math"
         elif self.decomposition_type in ("vertical", "wide", "narrow", "small", "square"):
-            s += ", TTXDT::asian"
+            s += ", HIXDT::asian"
         elif self.decomposition_type == "compat":
-            s += ", TTXDT::compat"
+            s += ", HIXDT::compat"
         else:
             raise RuntimeError("Unknown decomposition_type '{}'".format(self.decomposition_type))
 
@@ -148,13 +149,13 @@ def parseGraphemeBreakProperty(filename, descriptions):
 
         columns = [x.strip() for x in line.split(";")]
 
-        codePoints = [int(x, 16) for x in columns[0].split("..")]
-        if len(codePoints) == 1:
-            codePoints.append(codePoints[0])
+        code_points = [int(x, 16) for x in columns[0].split("..")]
+        if len(code_points) == 1:
+            code_points.append(code_points[0])
 
-        for codePoint in range(codePoints[0], codePoints[1] + 1):
-            if codePoint in descriptions:
-                descriptions[codePoint].graphemeClusterBreak = columns[1]
+        for code_point in range(code_points[0], code_points[1] + 1):
+            if code_point in descriptions:
+                descriptions[code_point].graphemeClusterBreak = columns[1]
 
 def parseEmojiData(filename, descriptions):
     for line in open(filename, encoding="utf-8"):
@@ -165,15 +166,15 @@ def parseEmojiData(filename, descriptions):
 
         columns = [x.strip() for x in line.split(";")]
         
-        codePointRange = [int(x, 16) for x in columns[0].split("..")]
-        if len(codePointRange) == 1:
-            codePointRange.append(codePointRange[0])
+        code_pointRange = [int(x, 16) for x in columns[0].split("..")]
+        if len(code_pointRange) == 1:
+            code_pointRange.append(code_pointRange[0])
 
         emojiType = columns[1]
         if emojiType == "Extended_Pictographic":
-            for codePoint in range(codePointRange[0], codePointRange[1] + 1):
-                if codePoint in descriptions:
-                    descriptions[codePoint].graphemeClusterBreak = "Extended_Pictographic"
+            for code_point in range(code_pointRange[0], code_pointRange[1] + 1):
+                if code_point in descriptions:
+                    descriptions[code_point].graphemeClusterBreak = "Extended_Pictographic"
 
 def parseCompositionExclusions(filename):
     compositionExclusions = set()
@@ -183,8 +184,8 @@ def parseCompositionExclusions(filename):
         if line == "":
             continue
     
-        codePoint = int(line.strip(), 16)
-        compositionExclusions.add(codePoint)
+        code_point = int(line.strip(), 16)
+        compositionExclusions.add(code_point)
 
     return compositionExclusions
 
@@ -196,9 +197,9 @@ def parseBidiBrackets(filename, descriptions):
             continue
     
         columns = [x.strip() for x in line.split(";")]
-        codePoint = int(columns[0], 16)
+        code_point = int(columns[0], 16)
         bidiBracketType = columns[2]
-        descriptions[codePoint].bidiBracketType = bidiBracketType
+        descriptions[code_point].bidiBracketType = bidiBracketType
 
 def parseBidiMirroring(filename, descriptions):
     for line in open(filename, encoding="utf-8"):
@@ -208,9 +209,9 @@ def parseBidiMirroring(filename, descriptions):
             continue
     
         columns = [x.strip() for x in line.split(";")]
-        codePoint = int(columns[0], 16)
+        code_point = int(columns[0], 16)
         bidiMirrorredGlyph = int(columns[1], 16)
-        descriptions[codePoint].bidiMirroredGlyph = bidiMirrorredGlyph
+        descriptions[code_point].bidiMirroredGlyph = bidiMirrorredGlyph
 
 def parseLineBreak(filename, descriptions):
     for line in open(filename, encoding="utf-8"):
@@ -221,14 +222,14 @@ def parseLineBreak(filename, descriptions):
 
         columns = [x.strip() for x in line.split(";")]
         
-        codePointRange = [int(x, 16) for x in columns[0].split("..")]
-        if len(codePointRange) == 1:
-            codePointRange.append(codePointRange[0])
+        code_pointRange = [int(x, 16) for x in columns[0].split("..")]
+        if len(code_pointRange) == 1:
+            code_pointRange.append(code_pointRange[0])
 
         lineBreakClass = columns[1]
-        for codePoint in range(codePointRange[0], codePointRange[1] + 1):
-            if codePoint in descriptions:
-                descriptions[codePoint].lineBreakClass = lineBreakClass
+        for code_point in range(code_pointRange[0], code_pointRange[1] + 1):
+            if code_point in descriptions:
+                descriptions[code_point].lineBreakClass = lineBreakClass
 
 def parse_word_break_property(filename, descriptions):
     for line in open(filename, encoding="utf-8"):
@@ -276,14 +277,14 @@ def parseEastAsianWidth(filename, descriptions):
 
         columns = [x.strip() for x in line.split(";")]
         
-        codePointRange = [int(x, 16) for x in columns[0].split("..")]
-        if len(codePointRange) == 1:
-            codePointRange.append(codePointRange[0])
+        code_pointRange = [int(x, 16) for x in columns[0].split("..")]
+        if len(code_pointRange) == 1:
+            code_pointRange.append(code_pointRange[0])
 
         eastAsianWidth = columns[1]
-        for codePoint in range(codePointRange[0], codePointRange[1] + 1):
-            if codePoint in descriptions:
-                descriptions[codePoint].eastAsianWidth = eastAsianWidth
+        for code_point in range(code_pointRange[0], code_pointRange[1] + 1):
+            if code_point in descriptions:
+                descriptions[code_point].eastAsianWidth = eastAsianWidth
 
 def parseScripts(filename, descriptions):
     for line in open(filename, encoding="utf-8"):
@@ -294,14 +295,14 @@ def parseScripts(filename, descriptions):
 
         columns = [x.strip() for x in line.split(";")]
         
-        codePointRange = [int(x, 16) for x in columns[0].split("..")]
-        if len(codePointRange) == 1:
-            codePointRange.append(codePointRange[0])
+        code_pointRange = [int(x, 16) for x in columns[0].split("..")]
+        if len(code_pointRange) == 1:
+            code_pointRange.append(code_pointRange[0])
 
         script = columns[1]
-        for codePoint in range(codePointRange[0], codePointRange[1] + 1):
-            if codePoint in descriptions:
-                descriptions[codePoint].script = script
+        for code_point in range(code_pointRange[0], code_pointRange[1] + 1):
+            if code_point in descriptions:
+                descriptions[code_point].script = script
 
 def parseUnicodeData(filename):
     descriptions = {}
@@ -326,7 +327,7 @@ def parseUnicodeData(filename):
             decomposition = [int(x, 16) for x in decomposition.split(" ")]
 
         description = UnicodeDescription(
-            codePoint=int(columns[0], 16),
+            code_point=int(columns[0], 16),
             generalCategory=columns[2],
             decomposition=decomposition,
             decomposition_type=decomposition_type,
@@ -335,7 +336,7 @@ def parseUnicodeData(filename):
             bidiMirrored=columns[9] == "Y"
         )
 
-        descriptions[description.codePoint] = description
+        descriptions[description.code_point] = description
 
     return descriptions
 
@@ -343,7 +344,7 @@ def isCanonicalComposition(description, composition_exclusions):
     return (
         len(description.decomposition) == 2 and
         description.decomposition_type == "canonical" and
-        description.codePoint not in composition_exclusions and
+        description.code_point not in composition_exclusions and
         description.decompositionStartsWithStart
     )
 
@@ -354,13 +355,13 @@ def extractCompositions(descriptions, composition_exclusions):
             description.compositionIsCanonical = True;
             composition = Composition(
                 description=description,
-                startCodePoint=description.decomposition[0],
-                secondCodePoint=description.decomposition[1],
-                combinedCodePoint=description.codePoint
+                startcode_point=description.decomposition[0],
+                secondcode_point=description.decomposition[1],
+                combinedcode_point=description.code_point
             )
             compositions.append(composition)
 
-    compositions.sort(key=lambda x: (x.startCodePoint, x.secondCodePoint))
+    compositions.sort(key=lambda x: (x.startcode_point, x.secondcode_point))
     return compositions
 
 def extractOtherDecompositions(descriptions, composition_exclusions):
@@ -380,7 +381,7 @@ def extractNonStarters(descriptions):
     for description in descriptions:
         if description.canonical_combining_class != 0:
             description.non_starter_code = len(non_starters)
-            non_starters.append(description.codePoint)
+            non_starters.append(description.code_point)
 
     return non_starters
 
@@ -436,40 +437,87 @@ def writeUnicodeData(filename, descriptions, compositions, decompositions):
 
     fd.write('namespace hi::inline v1::detail {\n\n')
 
-    fd.write('#define TTXD unicode_description\n')
-    fd.write('#define TTXGC unicode_general_category\n')
-    fd.write('#define TTXBC unicode_bidi_class\n')
-    fd.write('#define TTXBB unicode_bidi_bracket_type\n')
-    fd.write('#define TTXGU unicode_grapheme_cluster_break\n')
-    fd.write('#define TTXLB unicode_line_break_class\n')
-    fd.write('#define TTXWB unicode_word_break_property\n')
-    fd.write('#define TTXSB unicode_sentence_break_property\n')
-    fd.write('#define TTXEA unicode_east_asian_width\n')
-    fd.write('#define TTXSC unicode_script\n')
-    fd.write('#define TTXDT unicode_decomposition_type\n')
+    fd.write('#define HIXD unicode_description\n')
+    fd.write('#define HIXGC unicode_general_category\n')
+    fd.write('#define HIXBC unicode_bidi_class\n')
+    fd.write('#define HIXBB unicode_bidi_bracket_type\n')
+    fd.write('#define HIXGU unicode_grapheme_cluster_break\n')
+    fd.write('#define HIXLB unicode_line_break_class\n')
+    fd.write('#define HIXWB unicode_word_break_property\n')
+    fd.write('#define HIXSB unicode_sentence_break_property\n')
+    fd.write('#define HIXEA unicode_east_asian_width\n')
+    fd.write('#define HIXSC unicode_script\n')
+    fd.write('#define HIXDT unicode_decomposition_type\n')
+    fd.write("#define HIXFILL HIXD{U'\\ufffd', HIXGC::So, HIXGU::Other, HIXLB::AI, HIXWB::Other, HIXSB::Other, HIXEA::A, HIXSC::Common, HIXBC::ON, HIXBB::n, U'\\uffff', HIXDT::canonical, false, 0, 0, 0, 0}\n")
     fd.write('constexpr auto unicode_db_description_table = std::array{\n')
     fd.write('#ifndef __INTELLISENSE__\n')
-    for i, description in enumerate(descriptions):
-        if i < len(descriptions) - 1:
-            fd.write('    {},\n'.format(description.serialize()))
-        else:
-            fd.write('#endif\n')
-            fd.write('    {}\n'.format(description.serialize()))
+
+    chunk_indices = {}
+
+    chunk_id = -1
+    chunk_start = -1
+    chunk_offset = 32
+    for description in descriptions:
+        start = description.code_point >> 5
+        offset = description.code_point & 0x1f
+
+        if start > chunk_start:
+            for i in range(chunk_offset, 32):
+                fd.write("    HIXFILL,\n")
+
+            chunk_id = chunk_id + 1
+            chunk_start = start
+            chunk_offset = 0
+            chunk_indices[chunk_start] = chunk_id
+
+        for i in range(chunk_offset, offset):
+            fd.write("    HIXFILL,\n")
+
+        fd.write('    {},\n'.format(description.serialize()))
+        chunk_offset = offset + 1
+
+    # Complete the last chunk.
+    for i in range(chunk_offset, 32):
+        fd.write("    HIXFILL,\n")
+
+    # Add the replacement chunk
+    replacement_chunk_id = chunk_id + 1
+    for i in range(31):
+        fd.write("    HIXFILL,\n")
+    fd.write("#endif\n")
+    fd.write("    HIXFILL\n")
 
     fd.write('};\n\n')
-    fd.write('#undef TTXD\n')
-    fd.write('#undef TTXDT\n')
-    fd.write('#undef TTXGC\n')
-    fd.write('#undef TTXBC\n')
-    fd.write('#undef TTXBB\n')
-    fd.write('#undef TTXGU\n')
-    fd.write('#undef TTXLB\n')
-    fd.write('#undef TTXWB\n')
-    fd.write('#undef TTXSB\n')
-    fd.write('#undef TTXEA\n')
-    fd.write('#undef TTXSC\n')
+    fd.write('#undef HIXD\n')
+    fd.write('#undef HIXDT\n')
+    fd.write('#undef HIXGC\n')
+    fd.write('#undef HIXBC\n')
+    fd.write('#undef HIXBB\n')
+    fd.write('#undef HIXGU\n')
+    fd.write('#undef HIXLB\n')
+    fd.write('#undef HIXWB\n')
+    fd.write('#undef HIXSB\n')
+    fd.write('#undef HIXEA\n')
+    fd.write('#undef HIXSC\n')
+    fd.write('#undef HIXFILL\n')
 
-    fd.write('#define TTXC unicode_composition\n')
+    fd.write("\n")
+    fd.write("constexpr auto unicode_chunk_index_table = std::array<uint16_t,0x8800>{\n")
+    fd.write('#ifndef __INTELLISENSE__\n    ')
+    for i in range(0x8800):
+        fd.write("{}".format(chunk_indices.get(i, replacement_chunk_id)))
+
+        if i == 0x87fe:
+            fd.write(",\n#endif\n    ")
+        elif i == 0x87ff:
+            fd.write("\n")
+        elif i % 16 == 15:
+            fd.write(",\n    ")
+        else:
+            fd.write(", ")
+    fd.write("};\n")
+
+    fd.write('#define HIXC unicode_composition\n')
     fd.write('constexpr auto unicode_db_composition_table = std::array{\n')
     fd.write('#ifndef __INTELLISENSE__\n')
     for i, composition in enumerate(compositions):
@@ -480,7 +528,7 @@ def writeUnicodeData(filename, descriptions, compositions, decompositions):
             fd.write('    {}\n'.format(composition.serialize()))
 
     fd.write('};\n\n')
-    fd.write('#undef TTXC\n')
+    fd.write('#undef HIXC\n')
 
     decomposition_characters = []
     for decomposition in decompositions:
@@ -504,19 +552,19 @@ def writeUnicodeData(filename, descriptions, compositions, decompositions):
 def checkDecompositionsForStartWithStart(descriptions):
     for description in descriptions.values():
         if len(description.decomposition) >= 1:
-            firstDecompositionCodePoint = description.decomposition[0]
-            if firstDecompositionCodePoint in descriptions:
-                firstDecompositionCodePointDescription = descriptions[description.decomposition[0]]
-                description.decompositionStartsWithStart = (firstDecompositionCodePointDescription.canonical_combining_class == 0)
+            firstDecompositioncode_point = description.decomposition[0]
+            if firstDecompositioncode_point in descriptions:
+                firstDecompositioncode_pointDescription = descriptions[description.decomposition[0]]
+                description.decompositionStartsWithStart = (firstDecompositioncode_pointDescription.canonical_combining_class == 0)
             else:
-                #raise RuntimeError("Missing %x" % (firstDecompositionCodePoint))
+                #raise RuntimeError("Missing %x" % (firstDecompositioncode_point))
                 description.decompositionStartsWithStart = True
 
 def get_max_mirror_delta(descriptions):
     max_mirror_delta = 0
     for description in descriptions:
         if (description.bidiBracketType != 'n' or description.bidiMirrored) and description.bidiMirroredGlyph != 0xffff:
-            delta = description.bidiMirroredGlyph - description.codePoint
+            delta = description.bidiMirroredGlyph - description.code_point
             if max_mirror_delta < abs(delta):
                 max_mirror_delta = abs(delta)
 
@@ -537,7 +585,7 @@ def main():
     parseBidiMirroring(options.bidi_mirroring_path, descriptions)
 
     checkDecompositionsForStartWithStart(descriptions)
-    descriptions = sorted(descriptions.values(), key=lambda x: x.codePoint)
+    descriptions = sorted(descriptions.values(), key=lambda x: x.code_point)
 
     compositions = extractCompositions(descriptions, composition_exclusions)
     decompositions = extractOtherDecompositions(descriptions, composition_exclusions)

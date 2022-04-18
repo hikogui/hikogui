@@ -79,10 +79,10 @@ constexpr char32_t unicode_PS = U'\u2029';
 class unicode_description {
 public:
     constexpr unicode_description() noexcept = default;
-    unicode_description(unicode_description const &) = delete;
-    unicode_description &operator=(unicode_description const &) = delete;
-    constexpr unicode_description(unicode_description &&) noexcept = default;
-    constexpr unicode_description &operator=(unicode_description &&) noexcept = default;
+    unicode_description(unicode_description const&) = delete;
+    unicode_description& operator=(unicode_description const&) = delete;
+    constexpr unicode_description(unicode_description&&) noexcept = default;
+    constexpr unicode_description& operator=(unicode_description&&) noexcept = default;
 
     [[nodiscard]] constexpr unicode_description(
         char32_t code_point,
@@ -156,7 +156,7 @@ public:
         hi_axiom(static_cast<uint32_t>(non_starter_code) <= 0x3ff);
     }
 
-    [[nodiscard]] static constexpr unicode_description make_unassigned(unicode_description const &other)
+    [[nodiscard]] static constexpr unicode_description make_unassigned(unicode_description const& other)
     {
         auto r = unicode_description{};
         r._general_info = other._general_info;
@@ -185,6 +185,11 @@ public:
     [[nodiscard]] constexpr char32_t code_point() const noexcept
     {
         return static_cast<char32_t>((_general_info >> code_point_shift) & code_point_mask);
+    }
+
+    [[nodiscard]] constexpr bool is_replacement_character() const noexcept
+    {
+        return code_point() == U'\ufffd';
     }
 
     /** The general category of this code-point.
@@ -391,58 +396,58 @@ public:
      * @param code_point The code point to look up.
      * @return a const reference to the unicode_description entry.
      */
-    [[nodiscard]] static unicode_description const &find(char32_t code_point) noexcept;
+    [[nodiscard]] static unicode_description const& find(char32_t code_point) noexcept;
 
-    [[nodiscard]] friend bool operator==(unicode_description const &lhs, unicode_general_category const &rhs) noexcept
+    [[nodiscard]] friend bool operator==(unicode_description const& lhs, unicode_general_category const& rhs) noexcept
     {
         return lhs.general_category() == rhs;
     }
 
-    [[nodiscard]] friend bool operator==(unicode_description const &lhs, unicode_decomposition_type const &rhs) noexcept
+    [[nodiscard]] friend bool operator==(unicode_description const& lhs, unicode_decomposition_type const& rhs) noexcept
     {
         return lhs.decomposition_type() == rhs;
     }
 
-    [[nodiscard]] friend bool operator==(unicode_description const &lhs, unicode_bidi_bracket_type const &rhs) noexcept
+    [[nodiscard]] friend bool operator==(unicode_description const& lhs, unicode_bidi_bracket_type const& rhs) noexcept
     {
         return lhs.bidi_bracket_type() == rhs;
     }
 
-    [[nodiscard]] friend bool operator==(unicode_description const &lhs, unicode_bidi_class const &rhs) noexcept
+    [[nodiscard]] friend bool operator==(unicode_description const& lhs, unicode_bidi_class const& rhs) noexcept
     {
         return lhs.bidi_class() == rhs;
     }
-    [[nodiscard]] friend bool operator==(unicode_description const &lhs, unicode_east_asian_width const &rhs) noexcept
+    [[nodiscard]] friend bool operator==(unicode_description const& lhs, unicode_east_asian_width const& rhs) noexcept
     {
         return lhs.east_asian_width() == rhs;
     }
 
-    [[nodiscard]] friend bool operator==(unicode_description const &lhs, unicode_sentence_break_property const &rhs) noexcept
+    [[nodiscard]] friend bool operator==(unicode_description const& lhs, unicode_sentence_break_property const& rhs) noexcept
     {
         return lhs.sentence_break_property() == rhs;
     }
 
-    [[nodiscard]] friend bool operator==(unicode_description const &lhs, unicode_line_break_class const &rhs) noexcept
+    [[nodiscard]] friend bool operator==(unicode_description const& lhs, unicode_line_break_class const& rhs) noexcept
     {
         return lhs.line_break_class() == rhs;
     }
 
-    [[nodiscard]] friend bool operator==(unicode_description const &lhs, unicode_word_break_property const &rhs) noexcept
+    [[nodiscard]] friend bool operator==(unicode_description const& lhs, unicode_word_break_property const& rhs) noexcept
     {
         return lhs.word_break_property() == rhs;
     }
 
-    [[nodiscard]] friend bool operator==(unicode_description const &lhs, unicode_grapheme_cluster_break const &rhs) noexcept
+    [[nodiscard]] friend bool operator==(unicode_description const& lhs, unicode_grapheme_cluster_break const& rhs) noexcept
     {
         return lhs.grapheme_cluster_break() == rhs;
     }
 
-    [[nodiscard]] friend bool operator==(unicode_description const &lhs, char32_t const &rhs) noexcept
+    [[nodiscard]] friend bool operator==(unicode_description const& lhs, char32_t const& rhs) noexcept
     {
         return lhs.code_point() == rhs;
     }
 
-    [[nodiscard]] friend bool is_C(unicode_description const &rhs) noexcept
+    [[nodiscard]] friend bool is_C(unicode_description const& rhs) noexcept
     {
         return is_C(rhs.general_category());
     }
