@@ -85,7 +85,6 @@ public:
     constexpr unicode_description& operator=(unicode_description&&) noexcept = default;
 
     [[nodiscard]] constexpr unicode_description(
-        char32_t code_point,
         unicode_general_category general_category,
         unicode_grapheme_cluster_break grapheme_cluster_break,
         unicode_line_break_class line_break_class,
@@ -102,12 +101,10 @@ public:
         uint8_t decomposition_length,
         uint32_t decomposition_index,
         uint16_t non_starter_code) noexcept :
-        _general_info(
-            (static_cast<uint32_t>(code_point) << code_point_shift) |
-            (static_cast<uint32_t>(general_category) << general_category_shift) |
-            (static_cast<uint32_t>(grapheme_cluster_break) << grapheme_cluster_break_shift) |
-            (static_cast<uint32_t>(is_canonical_composition) << is_canonical_composition_shift) |
-            (static_cast<uint32_t>(canonical_combining_class != 0) << is_combining_mark_shift)),
+        _general_category(to_underlying(general_category)),
+        _grapheme_cluster_break(to_underlying(grapheme_cluster_break)),
+        _is_canonical_composition(static_cast<uint32_t>(is_canonical_composition)),
+        _is_combining_mark(static_cast<uint32_t>(canonical_combining_class != 0)),
         _bidi_class(to_underlying(bidi_class)),
         _east_asian_width(static_cast<uint32_t>(east_asian_width)),
         _line_break_class(to_underlying(line_break_class)),
@@ -121,15 +118,7 @@ public:
         if (canonical_combining_class == 0) {
             _non_mark.bidi_bracket_type = static_cast<uint32_t>(bidi_bracket_type);
             _non_mark.script = static_cast<uint32_t>(script);
-
-            if (bidi_bracket_type != unicode_bidi_bracket_type::n and bidi_mirrored_glyph != char32_t{0xffff}) {
-                auto mirrored_glyph_delta = static_cast<int32_t>(bidi_mirrored_glyph) - static_cast<int32_t>(code_point);
-                hi_axiom(mirrored_glyph_delta >= bidi_mirrored_glyph_min and mirrored_glyph_delta <= bidi_mirrored_glyph_max);
-                _non_mark.bidi_mirrored_glyph = static_cast<uint32_t>(mirrored_glyph_delta) & bidi_mirrored_glyph_mask;
-
-            } else {
-                _non_mark.bidi_mirrored_glyph = bidi_mirrored_glyph_null;
-            }
+            _non_mark.bidi_mirrored_glyph = static_cast<uint32_t>(bidi_mirrored_glyph);
             _non_mark._reserved = 0;
 
         } else {
@@ -138,7 +127,6 @@ public:
             _mark._reserved = 0;
         }
 
-        hi_axiom(code_point <= 0x10ffff);
         hi_axiom(to_underlying(general_category) <= 0x1f);
         hi_axiom(to_underlying(grapheme_cluster_break) <= 0x0f);
         hi_axiom(to_underlying(line_break_class) <= 0x3f);
@@ -159,7 +147,11 @@ public:
     [[nodiscard]] static constexpr unicode_description make_unassigned(unicode_description const& other)
     {
         auto r = unicode_description{};
-        r._general_info = other._general_info;
+        r._general_category = to_underlying(unicode_general_category::Cn);
+        r._grapheme_cluster_break = other._grapheme_cluster_break;
+        r._is_canonical_composition = other._is_canonical_composition;
+        r._is_combining_mark = other._is_combining_mark;
+
         r._bidi_class = other._bidi_class;
         if (other.is_combining_mark()) {
             r._mark = other._mark;
@@ -173,23 +165,7 @@ public:
         r._decomposition_index = other._decomposition_index;
         r._decomposition_type = other._decomposition_type;
         r._decomposition_length = other._decomposition_length;
-
-        r._general_info &= ~(general_category_mask << general_category_shift);
-        r._general_info |= static_cast<uint32_t>(to_underlying(unicode_general_category::Cn)) << general_category_shift;
         return r;
-    }
-
-    /** The code point of the description.
-     * @return The code_point of the description.
-     */
-    [[nodiscard]] constexpr char32_t code_point() const noexcept
-    {
-        return static_cast<char32_t>((_general_info >> code_point_shift) & code_point_mask);
-    }
-
-    [[nodiscard]] constexpr bool is_replacement_character() const noexcept
-    {
-        return code_point() == U'\ufffd';
     }
 
     /** The general category of this code-point.
@@ -200,7 +176,7 @@ public:
      */
     [[nodiscard]] constexpr unicode_general_category general_category() const noexcept
     {
-        return static_cast<unicode_general_category>((_general_info >> general_category_shift) & general_category_mask);
+        return static_cast<unicode_general_category>(_general_category);
     }
 
     /** The grapheme cluster break of this code-point.
@@ -211,18 +187,17 @@ public:
      */
     [[nodiscard]] constexpr unicode_grapheme_cluster_break grapheme_cluster_break() const noexcept
     {
-        return static_cast<unicode_grapheme_cluster_break>(
-            (_general_info >> grapheme_cluster_break_shift) & grapheme_cluster_break_mask);
+        return static_cast<unicode_grapheme_cluster_break>(_grapheme_cluster_break);
     }
 
     [[nodiscard]] constexpr bool is_canonical_composition() const noexcept
     {
-        return static_cast<bool>((_general_info >> is_canonical_composition_shift) & is_canonical_composition_mask);
+        return static_cast<bool>(_is_canonical_composition);
     }
 
     [[nodiscard]] constexpr bool is_combining_mark() const noexcept
     {
-        return static_cast<bool>((_general_info >> is_combining_mark_shift) & is_combining_mark_mask);
+        return static_cast<bool>(_is_combining_mark);
     }
 
     [[nodiscard]] constexpr unicode_line_break_class line_break_class() const noexcept
@@ -287,17 +262,10 @@ public:
      */
     [[nodiscard]] constexpr char32_t bidi_mirrored_glyph() const noexcept
     {
-        if (bidi_bracket_type() == unicode_bidi_bracket_type::n or _non_mark.bidi_mirrored_glyph == bidi_mirrored_glyph_null) {
-            return 0xffff;
+        if (bidi_bracket_type() == unicode_bidi_bracket_type::n) {
+            return char32_t{0xffff};
         }
-
-        constexpr auto sign_extent_shift = 32 - bidi_mirrored_glyph_width;
-
-        hilet mirrored_glyph_delta =
-            static_cast<int32_t>(_non_mark.bidi_mirrored_glyph << sign_extent_shift) >> sign_extent_shift;
-        hilet cp = code_point();
-        hilet mirror_cp = static_cast<char32_t>(cp + mirrored_glyph_delta);
-        return mirror_cp;
+        return static_cast<char32_t>(_non_mark.bidi_mirrored_glyph);
     }
 
     /** This character has a canonical decomposition.
@@ -442,51 +410,28 @@ public:
         return lhs.grapheme_cluster_break() == rhs;
     }
 
-    [[nodiscard]] friend bool operator==(unicode_description const& lhs, char32_t const& rhs) noexcept
-    {
-        return lhs.code_point() == rhs;
-    }
-
     [[nodiscard]] friend bool is_C(unicode_description const& rhs) noexcept
     {
         return is_C(rhs.general_category());
     }
 
 private:
-    static constexpr uint32_t code_point_shift = 11;
-    static constexpr uint32_t code_point_mask = 0x1f'ffff;
-    static constexpr uint32_t general_category_shift = 6;
-    static constexpr uint32_t general_category_mask = 0x1f;
-    static constexpr uint32_t grapheme_cluster_break_shift = 2;
-    static constexpr uint32_t grapheme_cluster_break_mask = 0xf;
-    static constexpr uint32_t is_canonical_composition_shift = 1;
-    static constexpr uint32_t is_canonical_composition_mask = 0x1;
-    static constexpr uint32_t is_combining_mark_shift = 0;
-    static constexpr uint32_t is_combining_mark_mask = 0x1;
-
-    static constexpr uint32_t bidi_mirrored_glyph_mask = 0x1fff;
-    static constexpr uint32_t bidi_mirrored_glyph_width = std::bit_width(bidi_mirrored_glyph_mask);
-    static constexpr int32_t bidi_mirrored_glyph_max = static_cast<int32_t>(bidi_mirrored_glyph_mask >> 1);
-    static constexpr int32_t bidi_mirrored_glyph_min = -bidi_mirrored_glyph_max;
-    static constexpr uint32_t bidi_mirrored_glyph_null =
-        static_cast<uint32_t>(bidi_mirrored_glyph_min - 1) & bidi_mirrored_glyph_mask;
-
     // 1st dword
-    // We don't use bit-fields so we can do binary-search without needing shift- & and-operations
-    // code_point must be in msb for correct binary search.
-    // [31:11] code-point
-    // [10:6] general category
-    // [5:2] grapheme cluster break
-    // [1] is_canonical_composition
-    // [0] is_combining_mark
-    uint32_t _general_info;
-
-    // 2nd dword
+    uint32_t _general_category : 5;
+    uint32_t _grapheme_cluster_break : 4;
+    uint32_t _is_canonical_composition : 1;
+    uint32_t _is_combining_mark : 1;
     uint32_t _bidi_class : 5;
     uint32_t _word_break_property : 5;
     uint32_t _line_break_class : 6;
     uint32_t _sentence_break_property : 4;
-    uint32_t _word2_reserved : 12 = 0;
+    uint32_t _word1_reserved : 1 = 0;
+
+    // 2nd dword
+    uint32_t _decomposition_index : 21;
+    uint32_t _decomposition_type : 3;
+    uint32_t _decomposition_length : 5;
+    uint32_t _east_asian_width : 3;
 
     struct mark_type {
         uint32_t canonical_combining_class : 8;
@@ -495,10 +440,10 @@ private:
     };
 
     struct non_mark_type {
-        uint32_t bidi_mirrored_glyph : 13;
+        uint32_t bidi_mirrored_glyph : 21;
         uint32_t bidi_bracket_type : 2;
         uint32_t script : 8;
-        uint32_t _reserved : 9;
+        uint32_t _reserved : 1;
     };
 
     // 3rd dword
@@ -509,10 +454,7 @@ private:
     };
 
     // 4th dword
-    uint32_t _decomposition_index : 21;
-    uint32_t _decomposition_type : 3;
-    uint32_t _decomposition_length : 5;
-    uint32_t _east_asian_width : 3;
+    uint32_t _word4_reserved : 32 = 0;
 };
 
 static_assert(sizeof(unicode_description) == 16);

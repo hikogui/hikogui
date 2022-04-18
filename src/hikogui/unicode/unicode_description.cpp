@@ -37,7 +37,7 @@ static unicode_description const& Plane_16_Private_Use_unicode_description = uni
     hilet chunk_index = detail::unicode_chunk_index_table[code_point >> 5];
     hilet &description = detail::unicode_db_description_table[(wide_cast<size_t>(chunk_index) << 5) | (code_point & 0x1f)];
 
-    if (not description.is_replacement_character()) {
+    if (description != unicode_general_category::Cn) {
         return description;
     }
 
@@ -97,7 +97,7 @@ static unicode_description const& Plane_16_Private_Use_unicode_description = uni
         return Plane_16_Private_Use_unicode_description;
 
     } else {
-        return description;
+        return Replacement_Character_unicode_description;
     }
 }
 

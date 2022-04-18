@@ -49,13 +49,13 @@ struct unicode_bidi_char_info {
      */
     unicode_bidi_class bidi_class;
 
-    [[nodiscard]] unicode_bidi_char_info(std::size_t index, unicode_description const &description) noexcept :
+    [[nodiscard]] unicode_bidi_char_info(std::size_t index, char32_t code_point, unicode_description const *description) noexcept :
         index(index),
-        description(&description),
-        code_point(description.code_point()),
+        description(description),
+        code_point(code_point),
         embedding_level(0),
-        direction(description.bidi_class()),
-        bidi_class(description.bidi_class())
+        direction(description->bidi_class()),
+        bidi_class(description->bidi_class())
     {
     }
 
@@ -153,7 +153,8 @@ std::pair<It, std::vector<unicode_bidi_class>> unicode_bidi(
 
     std::size_t index = 0;
     for (auto it = first; it != last; ++it) {
-        proxy.emplace_back(index++, get_description(*it));
+        hilet[code_point, description_ptr] = get_description(*it);
+        proxy.emplace_back(index++, code_point, description_ptr);
     }
 
     auto [proxy_last, paragraph_directions] = detail::unicode_bidi_P1(begin(proxy), end(proxy), context);

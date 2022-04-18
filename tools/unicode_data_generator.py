@@ -83,11 +83,10 @@ class UnicodeDescription (object):
         self.script = "Unknown"
 
     def serialize(self):
-        s = "HIXD{"
+        s = "HIXD{{/* U+{:04X} */ ".format(self.code_point)
 
         # Generic character information
-        s += format_char32(self.code_point)
-        s += ", HIXGC::{}".format(self.generalCategory)
+        s += "HIXGC::{}".format(self.generalCategory)
         s += ", HIXGU::{}".format(self.graphemeClusterBreak)
         s += ", HIXLB::{}".format(self.lineBreakClass)
         s += ", HIXWB::{}".format(self.word_break_property)
@@ -448,7 +447,7 @@ def writeUnicodeData(filename, descriptions, compositions, decompositions):
     fd.write('#define HIXEA unicode_east_asian_width\n')
     fd.write('#define HIXSC unicode_script\n')
     fd.write('#define HIXDT unicode_decomposition_type\n')
-    fd.write("#define HIXFILL HIXD{U'\\ufffd', HIXGC::So, HIXGU::Other, HIXLB::AI, HIXWB::Other, HIXSB::Other, HIXEA::A, HIXSC::Common, HIXBC::ON, HIXBB::n, U'\\uffff', HIXDT::canonical, false, 0, 0, 0, 0}\n")
+    fd.write("#define HIXFILL HIXD{HIXGC::Cn, HIXGU::Other, HIXLB::AI, HIXWB::Other, HIXSB::Other, HIXEA::A, HIXSC::Common, HIXBC::ON, HIXBB::n, U'\\uffff', HIXDT::canonical, false, 0, 0, 0, 0}\n")
     fd.write('constexpr auto unicode_db_description_table = std::array{\n')
     fd.write('#ifndef __INTELLISENSE__\n')
 
