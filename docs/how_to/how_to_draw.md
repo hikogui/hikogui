@@ -3,10 +3,10 @@ How to draw
 
 Drawing is done through the `hi::draw_context` object that is passed to
 `hi::widget::draw()` when drawing a frame. The `hi::draw_context` has
-several `draw_*()` member functions that allows drawing of shapes,
+several `draw_*()` member functions that allow you to draw shapes,
 glyphs, text and images.
 
-The first argument to those `draw_*()` functions is an reference to the
+The first argument to those `draw_*()` functions is a reference to the
 widget's `hi::widget_layout` object. This object was stored by the
 `hi::widget::set_layout()` function and contains the to-window
 transformation matrix and clipping rectangle used when drawing.
@@ -22,15 +22,16 @@ Concepts
 
 The coordinate system for drawing is relative to the widget, including the elevation where the rectangle
 is drawn on the z-buffer. The origin of the coordinate system is in the left-bottom corner of the pixel
-in the left-bottom corner of the widget. The axes extent to the right, up and toward the user. 
+in the left-bottom corner of the widget. The axes extend to the right, up and toward the user.
 
 The coordinates, widths and radii are in virtual pixels. On high resolution displays
 there will be an integer scaling factor to map the virtual pixels onto physical pixels. In this library
-when you read "pixel" without an explicit qualifier it is meant to be "virtual pixels".
+when you read "pixel" without an explicit qualifier, it is meant to be "virtual pixels".
 
 ### Corners
 
 The order of the corners in the `hi::quad`, `hi::quad_color` and `hi::corner_radii` are always:
+
  - left-bottom,
  - right-bottom,
  - left-top and
@@ -38,7 +39,8 @@ The order of the corners in the `hi::quad`, `hi::quad_color` and `hi::corner_rad
 
 ### Edges
 
-The order of in the `hi::margins` are always;
+The order of in the `hi::margins` are always:
+
  - bottom
  - left
  - top
@@ -51,7 +53,7 @@ Drawing shapes
 
 In the example below we draw a rectangle with a border and rounded corners:
 
-```
+```cpp
 void draw(hi::draw_context const &context) noexcept override
 {
     auto const polygon = hi::quad{
@@ -67,20 +69,19 @@ void draw(hi::draw_context const &context) noexcept override
 }
 ```
 
-To get the rectangle to align to edges of pixels you want to specify the quad
-as integer coordinates; and for the border side to specify either `inside` or `outside`
+To get the rectangle to align to edges of pixels, you want to specify the quad
+as integer coordinates; and for the border side to specify either `inside` or `outside`,
 this will yield sharp borders.
 
 The actual polygon send to the GPU is extended to include the part
 of the border that falls outside the polygon and an extra physical pixel
 for anti-aliasing.
 
-
 ### Drawing circles
 
 In the example below we draw a circle with a border:
 
-```
+```cpp
 void draw(hi::draw_context const &context) noexcept override
 {
     auto const polygon = hi::circle{point3{35.0f, 35.0f, 0.0f}, 25.0f};
@@ -94,16 +95,16 @@ void draw(hi::draw_context const &context) noexcept override
 `hi::draw_context::draw_box()` A circle is a square with rounded corners
 with the corner diameter set to the height/width of the square.
 
-When drawing circles among rectangular objects it is recommended to
+When drawing circles among rectangular objects, it is recommended to
 draw the circle at a 1-3% larger radius, so that the shape seems to
-be the same size and aligned to the flat edges of the rectangles. 
+be the same size and aligned to the flat edges of the rectangles.
 
 
 ### Drawing lines
 
 In the example below we draw a line with rounded end points:
 
-```
+```cpp
 void draw(hi::draw_context const &context) noexcept override
 {
     auto const line = hi::line{
@@ -120,7 +121,7 @@ void draw(hi::draw_context const &context) noexcept override
 `hi::draw_context::draw_box()` A line is a thin rectangle with rounded corners
 with the corner diameter set to the width of the line.
 
-When drawing horizontal or vertical lines you may want to position the line so
+When drawing horizontal or vertical lines, you may want to position the line so
 that it goes through the center of the pixels to get a sharp line. The
 origin of the coordinate system is in the left-bottom corner of the most left
 bottom pixel of a widget.
@@ -142,12 +143,11 @@ drawing_widget(hi::gui_window &window, hi::widget *parent) noexcept :
 
 During `set_constraints()`  we try to construct a `hi::paged_image`. In the
 `set_constraints()` function this may fail when the window is still being created;
-therefor we keep reconstraining until it succeeds.
+therefor, we keep reconstraining until it succeeds.
 
 This version of the `hi::paged_image{}` constructor also directly uploads the
 image to the GPU. It is also possible to make a `hi::paged_image` with just
 a width and a height and then upload the image at a later time.
-
 
 ```cpp
 hi::widget_constraints const &set_constraints() noexcept override

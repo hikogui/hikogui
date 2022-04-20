@@ -1,29 +1,30 @@
 # HikoGUI Stencil Template Language
 
 This template language was designed for code generation for different programming languages
-including HTML. The language was inspired by makotemplates.org, but with
-a simpler data model making it more easy to do more complicated stuff.
+including HTML. The language was inspired by [makotemplates.org](https://www.makotemplates.org/), but with
+a simpler data model making it easier to do more complicated stuff.
 
 ## Data model
 
 All assignments at the top level of a file will be added to the global scope.
 All assignments inside an included file are also made to the global scope.
 
-Inside functions all assignments are done in the local scope of the function.
+Inside functions, all assignments are done in the local scope of the function.
 
 Loops do not introduce a new scope, all assignments within a loop will therefor be in either
-the global or local scope depending where the loop is defined. Some special read-only names
+the global or local scope, depending where the loop is defined. Some special read-only names
 prefixed with one or more '$' characters are available inside the loop.
 
 Functions and blocks exist in a special global scope which only contains functions.
 `#function` or `#block` definitions which appear later in a file will override a previous
-definition. By calling `super()` from within a `#function` or `#block` you can call its previous
+definition. By calling `super()` from within a `#function` or `#block` you can call the previous
 definition.
 
 ## Expressions
 
 The `hi::datum` class is used for holding and operating on all the data while executing
 an expression of the HikoGUI template language. A `hi::datum` class can hold the following types:
+
  * Undefined
  * None
  * Boolean
@@ -98,10 +99,11 @@ Syntax: `name '(' ( expression ( ',' expression )* ','? )? ')'`
 
 ### String filter
 
-The string filter binary operator '!' implicitly converts the left hand side expression
+The string filter binary operator '!' implicitly converts the left-hand side expression
 to a string, and passes this string through the filter `name`, yielding a new string.
 
 Built in filters:
+
  * `html`: html-encode the string.
  * `xml`: xml-encode the string.
  * `url`: url-encode the string.
@@ -109,15 +111,15 @@ Built in filters:
 
 ### Assignment
 
-An assignment operator is different from inplace-operations. An inplace-operation will
+An assignment operator is different from an inplace-operation. An inplace-operation will
 modify a value of an existing variable. An assignment operator will create or replace
 a variable at the current scope.
 
 The current scope is either the local scope of the function where the expression is located. Or
-in the global scope if the expression is located at the top level (outside of a function) of a template.
-control flow will not intruduce new scopes.
+in the global scope, if the expression is located at the top level (outside a function) of a template.
+Control flow will not introduce new scopes.
 
-An assignment done in the local-scope will hide variables in global scope with the same name.
+An assignment done in the local-scope will hide variables in the global scope with the same name.
 
 Assignment can be done on multiple variables at the same time, by unpacking into a vector literal.
 
@@ -134,7 +136,7 @@ Syntax: `null`
 ### Undefined
 
 Used by the system to denote a *nothing* value. This will be used
-temporarily when indexing a vector or map on a non existing key which may then be replaced
+temporarily when indexing a vector or map on a non-existing key which may then be replaced
 with a new value.
 
 Syntax: `undefined`
@@ -145,7 +147,8 @@ Syntax: `true` or `false`
 
 Explicit conversion: `boolean()`
 
-Operations available that work on a boolean (all datum will be implicitly converted to a boolean):
+Operations available that work on a boolean (all datums will be implicitly converted to a boolean):
+
  - `not boolean -> boolean`
  - `boolean and boolean -> boolean`
  - `boolean or boolean -> boolean`
@@ -165,6 +168,7 @@ Syntax: `[+-]?(0[bBoOdDxX])?[0-9a-fA-F']+`
 Explicit conversion: `integer()`
 
 Operations available that work on a integer:
+
  - `+ integer -> integer`
  - `- integer -> integer`
  - `++ integer -> integer`
@@ -207,6 +211,7 @@ No literal available.
 Explicit conversion: `decimal()`
 
 Operations available that work on a decimal float (integer are implicitly converted to decimal):
+
  - `+ decimal -> decimal`
  - `- decimal -> decimal`
  - `decimal + decimal -> decimal`
@@ -231,7 +236,6 @@ Operations available that work on a decimal float (integer are implicitly conver
  - `floor(decimal)`
  - `ceil(decimal)`
 
-
 ### Float
 
 A binary floating point format in the form `mantissa + 2**exponent`.
@@ -241,6 +245,7 @@ Syntax: `[0-9]+.[0-9]*([eE][-]?[0-9]+)?` or `[0-9]*.[0-9]+([eE][-]?[0-9]+)?`
 Explicit conversion: `float()`
 
 Operations available that work on a binary float (integer and decimals are implicitly converted to float):
+
  - `+ float -> float`
  - `- float -> float`
  - `float + float -> float`
@@ -264,6 +269,7 @@ Operations available that work on a binary float (integer and decimals are impli
 Syntax: `"([^"]|\\")*"`
 
 The literal string may include escape sequences:
+
  - `\"` A literal double quote
  - `\n` A literal line feed
  - `\r` A literal carriage return
@@ -273,6 +279,7 @@ The literal string may include escape sequences:
 Explicit conversion can be done using the `string()` function.
 
 Operations available that work on a string:
+
  - `string + string -> string`
  - `string == string -> boolean`
  - `string != string -> boolean`
@@ -287,6 +294,7 @@ Operations available that work on a string:
     All datums are implicitly converted to a string.
 
 Available filters:
+
  - `url` For text that needs to be encoded inside a URL.
  - `xml` For text that needs to be encoded inside a XML or HTML document.
 
@@ -297,6 +305,7 @@ No literal available.
 Explicit conversion: `url()`
 
 Operations available that work on a string:
+
  - `url / url -> url`
  - `url / string -> url`
  - `url == url -> boolean`
@@ -315,6 +324,7 @@ Syntax: '[' ( expression ( ',' expression )* ','? )? ']'
 No explicit conversion available.
 
 Operations available that work on a vector:
+
  - `vector + vector -> vector`
  - `vector == vector -> boolean`
  - `vector != vector -> boolean`
@@ -337,6 +347,7 @@ A unordered map of key / value pairs; both `hi::datum` objects.
 Syntax: '{' ( expression ':' expression ( ',' expression ':' expression )* ','? )? '}'
 
 Operations available that work on a map:
+
  - `map + map -> map`
  - `map == map -> boolean`
  - `map != map -> boolean`
@@ -351,27 +362,29 @@ Operations available that work on a map:
  - `values(map) -> vector`
  - `items(map) -> vector[key, value]`
 
-
 ## Escape, Statements and placeholders
 
 Statements and placeholders are used to generate text.
 
-To make it so generated text will not include unexpected white space the following rules apply:
- * White-spaces in front of a statement are removed up to the last new-line.
- * The white-spaces and the linefeed after a statement is removed.
+To make it so generated text will not include unexpected white space, the following rules apply:
+
+ * White-spaces, in front of a statement, are removed up to the last new-line.
+ * The white-spaces and the linefeed after a statement are removed.
  * An escape can remove a new-line.
- * Text (including trailing white-spaces) are kept in front of a statement.
+ * Text (including trailing white-spaces) is kept in front of a statement.
 
 ### Escape sequences
 
 The backslash is used to escape:
+
  - End of line, mostly used for formatting inside loops.
  - The `$` dollar character used in placeholders.
  - The `#` hash character used in template statements.
  - The `\` backslash itself.
 
 Example:
-```
+
+```text
 This placeholder is suppressed: \${12 + 24}
 This backslash is suppressed: \\${12 + 24}
 This line\
@@ -379,7 +392,8 @@ feed is suppressed.
 ```
 
 Result:
-```
+
+```text
 This placeholder is suppressed: ${12 + 24}
 This backslash is suppressed: \36
 This linefeed is suppressed.
@@ -393,12 +407,14 @@ This string will then be inserted into the text.
 Syntax: '${' expression '}'
 
 Example:
-```
+
+```text
 ${12 + 24}
 ```
 
 Result:
-```
+
+```text
 36
 ```
 
@@ -407,9 +423,9 @@ Result:
 Expressions can be evaluated as statements themselves. This is mostly useful for
 doing assignment, modifying data or calling functions with side effects.
 
-Expression statement will add text to the output.
+An expression statement will add text to the output.
 
-At the top-level assignments are done in global scope. Inside functions and blocks assignments
+At the top-level, assignments are done in global scope. Inside functions and blocks assignments
 are done in the local scope, even if the name already exists in the global scope.
 Loops do not introduce scopes.
 
@@ -418,15 +434,17 @@ Syntax: '#' expression
 If the expression starts with a keyword such as `if`, `while`, `return`, etc. A white space should be inserted
 between the '#' and the expression.
 
-Example
-```
+Example:
+
+```text
 #foo = 42
 # [foo, bar] = [foo + 2, 2]
 ${foo} ${bar}
 ```
 
 Result:
-```
+
+```text
 44 2
 ```
 
@@ -442,7 +460,6 @@ the data model chapter.
 The filename is an expression, this expression is evaluated during parsing.
 When the filename argument is relative, the file is located relative to the current file.
 
-
 It is recommended that the included files have the `.tti` (HikoGUI Include) extension,
 and top-level template files have the `.ttt` (HikoGUI Template) extension.
 
@@ -451,29 +468,33 @@ Warning: There is no protection against including a file multiple times or recur
 Syntax: `'#include' url-expression`
 
 Example:
-```
+
+```text
 #include "foo.tti"
 ```
 
 Result:
-```
+
+```text
 This is the contents of foo.tti.
 ```
 
 ### If statement
 
-Conditional `#if` statement, with optional `#elif` statments and optional end `#else` statement.
-The expression in the `#elif` statements are only evaluated if the result of the previous `#if` or `#elif`
-expressions where `false`.
+Conditional `#if` statement, with optional `#elif` statements and optional end `#else` statement.
+The expression in the `#elif` statements are only evaluated, if the result of the previous `#if` or `#elif`
+expressions were `false`.
 
 Syntax:
+
  - `'#if' boolean-expression '\n'`
  - `'#elif' boolean-expression '\n'`
  - `'#else' '\n'`
  - `'#end' '\n'`
 
 Example:
-```
+
+```text
 # foo = 5
 
 #if foo == 2
@@ -488,18 +509,19 @@ Foo is ${foo}.
 ```
 
 Result:
-```
+
+```text
 Foo is 5.
 ```
 
 ### For loop
 
-A for loop iterates over the result of an the expression. Each iteration-result is
+A for loop iterates over the result of an expression. Each iteration-result is
 assigned to the name in front of the `in` keyword, optionally the iteration-result is
 unpacked into multiple names.
 
 It is possible to loop over strings, vectors and maps. A string will yield a single character string
-on each iterations. A vector will yield a value on each iteration. A map will yield a vector with a key
+on each iteration. A vector will yield a value on each iteration. A map will yield a vector with a key
 and value on each iteration, sorted by key.
 
 When unpacking multiple names, the number of names must match the size of the vector that was yielded
@@ -508,7 +530,8 @@ on each iteration.
 The `#else` part of the for loop is only executed when the result of the expression
 has zero items.
 
-Inside the loop extra variables are available for convenience:
+Inside the loop, extra variables are available for convenience:
+
  - `$i` or `$count` integer index of the iteration
  - `$size` or `$length` integer index of the iteration
  - `$first` is true if this is the first iteration
@@ -516,12 +539,14 @@ Inside the loop extra variables are available for convenience:
  - The extra variables created by an outer loop are prefixed with an extra `$`.
 
 Syntax:
+
  - `'#for' name ( ',' name )* 'in' expression '\n'`
  - `'#else' '\n'`
  - `'#end' '\n'`
 
 Example:
-```
+
+```text
 #for x in [1, 2, "hello"]
 The value of x is ${x}.
 #else
@@ -530,7 +555,8 @@ The list was empty.
 ```
 
 Result:
-```
+
+```text
 The value of x is 1.
 The value of x is 2.
 The value of x is hello.
@@ -541,16 +567,19 @@ The value of x is hello.
 A while loop executes a block multiple times until the expression yields `false`.
 
 Inside the loop extra variables are available for convenience:
+
  - `$i` or `$count` integer index of the iteration
  - `$first` is true if this is the first iteration
  - The extra variables created by an outer loop are prefixed with an extra `$`.
 
 Syntax:
+
  - `'#while' boolean-expression '\n'`
  - `'#end' '\n'`
 
 Example:
-```
+
+```text
 # i = 0
 #while i < 3
 Iteration ${i}.
@@ -559,7 +588,8 @@ Iteration ${i}.
 ```
 
 Result:
-```
+
+```text
 Iteration 0.
 Iteration 1.
 Iteration 2.
@@ -569,16 +599,18 @@ Iteration 2.
 
 A do-while loop executes a block at least once until the expression yields `false`.
 
-Inside the loop extra variables are available for convenience:
+Inside the loop, extra variables are available for convenience:
+
  - `$i` or `$count` integer index of the iteration
  - `$first` is true if this is the first iteration
  - The extra variables created by an outer loop are prefixed with an extra `$`
 
 Syntax:
+
  - `'#do' '\n'`
  - `'#while' boolean-expression '\n'`
 
-```
+```text
 # i = 0
 #do
 Iteration ${i}.
@@ -587,22 +619,26 @@ Iteration ${i}.
 ```
 
 Result:
-```
+
+```text
 Iteration 0.
 ```
 
 ### Continue and Break
 
 Stop executing of a block inside a loop, then:
+
  - *continue* with the next iteration of the loop or
  - *break* out of the loop
 
 Syntax:
+
  - `'#continue' '\n'`
  - `'#break' '\n'`
 
 Example:
-```
+
+```text
 #for x in ["foo", "bar", "baz"]
     #if x == "bar"
         #continue
@@ -617,7 +653,8 @@ The value of y is ${y}.
 ```
 
 Result:
-```
+
+```text
 The value of x is foo.
 The value of x is baz.
 The value of y is foo.
@@ -637,11 +674,13 @@ This functionality together with the `#include` statement can be used for
 as a simple form of object-oriented-polymorphism.
 
 Syntax:
+
  - `'#function' name '(' ( name ( ',' name )* ','? )? ')' '\n'`
  - `'#end' '\n'`
 
 Example:
-```
+
+```text
 #function foo(x)
 foo is ${x}.
 #end
@@ -654,7 +693,8 @@ ${foo(42)}
 ```
 
 Result:
-```
+
+```text
 bar is foo is 42.
 .
 ```
@@ -666,7 +706,8 @@ Return data from a function
 Syntax: `'#return' expression '\n'`
 
 Example:
-```
+
+```text
 #function foo()
     #return 42
 #end
@@ -675,7 +716,8 @@ ${foo + 3}
 ```
 
 Result:
-```
+
+```text
 45
 ```
 
@@ -684,17 +726,19 @@ Result:
 A block is like a function without arguments which is automatically evaluated
 where it was first defined. A block can only return textual-output.
 
-Like a function a block can be overridden by another block definition with the
+Like a function, a block can be overridden by another block definition with the
 same name. The previously defined block is available as `super()`. This functionality
-together with the `#include` statement can be used for as a simple form of
+together with the `#include` statement, can be used for as a simple form of
 object-oriented-polymorphism.
 
 Syntax:
+
  - `'#block' name '\n'`
  - `'#end'`
 
 Example:
-```
+
+```text
 1
 #block foo
 foo
@@ -707,7 +751,8 @@ bar
 ```
 
 Result:
-```
+
+```text
 1
 bar
 2

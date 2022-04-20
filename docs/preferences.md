@@ -2,7 +2,7 @@ Application Preferences
 =======================
 
 The preferences of an application are loaded and saved into a JSON file.
-Whenever a configuration values is modified the preferences are automatically saved.
+Whenever a configuration value is modified, the preferences are automatically saved.
 
 Command Line
 ------------
