@@ -45,7 +45,7 @@ this->token = other.some_notifier([this]{ this->handle_callback(); })
 
 ### Triggering
 Triggering is done by using the `hi::notifier::post()` or `hi::notifier::post_on_main()` functions
-which post the subscribed functions on the local or main event-loops.
+which post the subscribed functions on the local- or main-event loops.
 
 ### Awaiting
 
