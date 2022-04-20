@@ -99,7 +99,7 @@ void activate() noexcept;
 {
     hi_axiom(is_gui_thread());
 
-    switch (event.type) {
+    switch (event.type()) {
     case gui_event_type::gui_activate:
         if (*enabled) {
             activate();
@@ -116,17 +116,17 @@ void activate() noexcept;
         break;
 
     case gui_event_type::mouse_down:
-        if (*enabled and event.mouse.cause.left_button) {
+        if (*enabled and event.mouse().cause.left_button) {
             _pressed = true;
             request_redraw();
             return true;
         }
 
     case gui_event_type::mouse_up:
-        if (*enabled and event.mouse.cause.left_button) {
+        if (*enabled and event.mouse().cause.left_button) {
             _pressed = false;
 
-            if (layout().rectangle().contains(event.mouse.position)) {
+            if (layout().rectangle().contains(event.mouse().position)) {
                 handle_event(gui_event_type::gui_activate);
             }
             request_redraw();

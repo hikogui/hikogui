@@ -180,21 +180,21 @@ void window_traffic_lights_widget::draw(draw_context const& context) noexcept
 
 bool window_traffic_lights_widget::handle_event(gui_event const& event) noexcept
 {
-    switch (event.type) {
+    switch (event.type()) {
     case gui_event_type::mouse_move:
     case gui_event_type::mouse_drag: {
         // Check the hover states of each button.
         auto state_has_changed = false;
-        state_has_changed |= compare_store(hoverClose, closeRectangle.contains(event.mouse.position));
-        state_has_changed |= compare_store(hoverMinimize, minimizeRectangle.contains(event.mouse.position));
-        state_has_changed |= compare_store(hoverMaximize, maximizeRectangle.contains(event.mouse.position));
+        state_has_changed |= compare_store(hoverClose, closeRectangle.contains(event.mouse().position));
+        state_has_changed |= compare_store(hoverMinimize, minimizeRectangle.contains(event.mouse().position));
+        state_has_changed |= compare_store(hoverMaximize, maximizeRectangle.contains(event.mouse().position));
         if (state_has_changed) {
             request_redraw();
         }
     } break;
 
     case gui_event_type::mouse_down:
-        if (event.mouse.cause.left_button) {
+        if (event.mouse().cause.left_button) {
             request_redraw();
             pressedClose = hoverClose;
             pressedMinimize = hoverMinimize;
@@ -204,7 +204,7 @@ bool window_traffic_lights_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case gui_event_type::mouse_up:
-        if (event.mouse.cause.left_button) {
+        if (event.mouse().cause.left_button) {
             if (pressedClose and hoverClose) {
                 window.close_window();
             }

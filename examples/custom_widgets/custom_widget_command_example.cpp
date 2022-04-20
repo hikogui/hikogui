@@ -100,7 +100,7 @@ public:
     // Override the handle_event(command) to handle high level commands.
     [[nodiscard]] bool handle_event(hi::gui_event const& event) noexcept override
     {
-        switch (event.type) {
+        switch (event.type()) {
         case hi::gui_event_type::gui_activate:
             if (*enabled) {
                 // Handle activate, by default the "spacebar" causes this command.
@@ -119,7 +119,7 @@ public:
             break;
 
         case hi::gui_event_type::keyboard_grapheme:
-            hi_log_error("User typed the letter U+{:x}.", static_cast<uint32_t>(get<0>(event.grapheme)));
+            hi_log_error("User typed the letter U+{:x}.", static_cast<uint32_t>(get<0>(event.grapheme())));
             return true;
 
         case hi::gui_event_type::mouse_up:

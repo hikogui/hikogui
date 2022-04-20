@@ -96,9 +96,9 @@ public:
     [[nodiscard]] bool handle_event(gui_event const& event) noexcept
     {
         hilet handled = [&] {
-            switch (event.type) {
+            switch (event.type()) {
             case gui_event_type::mouse_down:
-                if (event.mouse.cause.left_button) {
+                if (event.mouse().cause.left_button) {
                     // Record the original scroll-position before the drag starts.
                     _offset_before_drag = *offset;
                     return true;
@@ -107,7 +107,7 @@ public:
                 }
 
             case gui_event_type::mouse_drag:
-                if (event.mouse.cause.left_button) {
+                if (event.mouse().cause.left_button) {
                     // The distance the slider has to move relative to the slider position at the
                     // start of the drag.
                     hilet slider_movement = axis == axis::vertical ? event.drag_delta().y() : event.drag_delta().x();

@@ -116,7 +116,7 @@ public:
         auto r = std::vector<gui_event>{event};
 
         if (event == gui_event_type::keyboard_down) {
-            hilet i = bindings.find(keyboard_key{event.keyboard_modifiers, event.key});
+            hilet i = bindings.find(keyboard_key{event.keyboard_modifiers, event.key()});
             if (i != bindings.cend()) {
                 hilet &events = i->second.get_events();
                 r.insert(r.cend(), events.cbegin(), events.cend());

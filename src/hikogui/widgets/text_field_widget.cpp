@@ -116,7 +116,7 @@ void text_field_widget::draw(draw_context const& context) noexcept
 
 bool text_field_widget::handle_event(gui_event const& event) noexcept
 {
-    switch (event.type) {
+    switch (event.type()) {
     case gui_event_type::gui_cancel:
         if (*enabled) {
             revert(true);

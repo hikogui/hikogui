@@ -133,9 +133,9 @@ void selection_widget::draw(draw_context const& context) noexcept
 
 bool selection_widget::handle_event(gui_event const& event) noexcept
 {
-    switch (event.type) {
+    switch (event.type()) {
     case gui_event_type::mouse_up:
-        if (*enabled and _has_options and layout().rectangle().contains(event.mouse.position)) {
+        if (*enabled and _has_options and layout().rectangle().contains(event.mouse().position)) {
             return handle_event(gui_event_type::gui_activate);
         }
         return true;

@@ -899,7 +899,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 {
     hi_axiom(is_gui_thread());
 
-    auto r = gui_event{};
+    auto r = gui_event{gui_event_type::mouse_move};
     r.keyboard_modifiers = get_keyboard_modifiers();
     r.keyboard_state = get_keyboard_state();
 
@@ -911,41 +911,41 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
     // On Window 7 up to and including Window10, the I-beam cursor hot-spot is 2 pixels to the left
     // of the vertical bar. But most applications do not fix this problem.
-    r.mouse.position = point2{x, inv_y};
-    r.mouse.wheel_delta = {};
+    r.mouse().position = point2{x, inv_y};
+    r.mouse().wheel_delta = {};
     if (uMsg == WM_MOUSEWHEEL) {
-        r.mouse.wheel_delta.y() = narrow_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA * 10.0f;
+        r.mouse().wheel_delta.y() = narrow_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA * 10.0f;
     } else if (uMsg == WM_MOUSEHWHEEL) {
-        r.mouse.wheel_delta.x() = narrow_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA * 10.0f;
+        r.mouse().wheel_delta.x() = narrow_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA * 10.0f;
     }
 
     // Track which buttons are down, in case the application wants to track multiple buttons being pressed down.
-    r.mouse.down.left_button = (GET_KEYSTATE_WPARAM(wParam) & MK_LBUTTON) > 0;
-    r.mouse.down.middle_button = (GET_KEYSTATE_WPARAM(wParam) & MK_MBUTTON) > 0;
-    r.mouse.down.right_button = (GET_KEYSTATE_WPARAM(wParam) & MK_RBUTTON) > 0;
-    r.mouse.down.x1_button = (GET_KEYSTATE_WPARAM(wParam) & MK_XBUTTON1) > 0;
-    r.mouse.down.x2_button = (GET_KEYSTATE_WPARAM(wParam) & MK_XBUTTON2) > 0;
+    r.mouse().down.left_button = (GET_KEYSTATE_WPARAM(wParam) & MK_LBUTTON) > 0;
+    r.mouse().down.middle_button = (GET_KEYSTATE_WPARAM(wParam) & MK_MBUTTON) > 0;
+    r.mouse().down.right_button = (GET_KEYSTATE_WPARAM(wParam) & MK_RBUTTON) > 0;
+    r.mouse().down.x1_button = (GET_KEYSTATE_WPARAM(wParam) & MK_XBUTTON1) > 0;
+    r.mouse().down.x2_button = (GET_KEYSTATE_WPARAM(wParam) & MK_XBUTTON2) > 0;
 
     // Check which buttons caused the mouse event.
     switch (uMsg) {
     case WM_LBUTTONUP:
     case WM_LBUTTONDOWN:
-    case WM_LBUTTONDBLCLK: r.mouse.cause.left_button = true; break;
+    case WM_LBUTTONDBLCLK: r.mouse().cause.left_button = true; break;
     case WM_RBUTTONUP:
     case WM_RBUTTONDOWN:
-    case WM_RBUTTONDBLCLK: r.mouse.cause.right_button = true; break;
+    case WM_RBUTTONDBLCLK: r.mouse().cause.right_button = true; break;
     case WM_MBUTTONUP:
     case WM_MBUTTONDOWN:
-    case WM_MBUTTONDBLCLK: r.mouse.cause.middle_button = true; break;
+    case WM_MBUTTONDBLCLK: r.mouse().cause.middle_button = true; break;
     case WM_XBUTTONUP:
     case WM_XBUTTONDOWN:
     case WM_XBUTTONDBLCLK:
-        r.mouse.cause.x1_button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON1) > 0;
-        r.mouse.cause.x2_button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON2) > 0;
+        r.mouse().cause.x1_button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON1) > 0;
+        r.mouse().cause.x2_button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON2) > 0;
         break;
     case WM_MOUSEMOVE:
-        if (mouse_button_event.type == gui_event_type::mouse_down) {
-            r.mouse.cause = mouse_button_event.mouse.cause;
+        if (mouse_button_event == gui_event_type::mouse_down) {
+            r.mouse().cause = mouse_button_event.mouse().cause;
         }
         break;
     case WM_MOUSEWHEEL:
@@ -954,17 +954,19 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     default: hi_no_default();
     }
 
-    hilet a_button_is_pressed = r.mouse.down.left_button or r.mouse.down.middle_button or r.mouse.down.right_button or
-        r.mouse.down.x1_button or r.mouse.down.x2_button;
+    hilet a_button_is_pressed = r.mouse().down.left_button or r.mouse().down.middle_button or r.mouse().down.right_button or
+        r.mouse().down.x1_button or r.mouse().down.x2_button;
 
     switch (uMsg) {
     case WM_LBUTTONUP:
     case WM_MBUTTONUP:
     case WM_RBUTTONUP:
     case WM_XBUTTONUP:
-        r.type = gui_event_type::mouse_up;
-        r.mouse.down_position = mouse_button_event.mouse.down_position;
-        r.mouse.click_count = 0;
+        r.set_type(gui_event_type::mouse_up);
+        if (mouse_button_event) {
+            r.mouse().down_position = mouse_button_event.mouse().down_position;
+        }
+        r.mouse().click_count = 0;
 
         if (!a_button_is_pressed) {
             ReleaseCapture();
@@ -981,15 +983,15 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     case WM_XBUTTONDOWN: {
         hilet within_double_click_time = r.time_point - multi_click_time_point < os_settings::double_click_interval();
         hilet within_double_click_distance =
-            hypot(r.mouse.position - multi_click_position) < os_settings::double_click_distance();
+            hypot(r.mouse().position - multi_click_position) < os_settings::double_click_distance();
 
         multi_click_count = within_double_click_time and within_double_click_distance ? multi_click_count + 1 : 1;
         multi_click_time_point = r.time_point;
-        multi_click_position = r.mouse.position;
+        multi_click_position = r.mouse().position;
 
-        r.type = gui_event_type::mouse_down;
-        r.mouse.down_position = r.mouse.position;
-        r.mouse.click_count = multi_click_count;
+        r.set_type(gui_event_type::mouse_down);
+        r.mouse().down_position = r.mouse().position;
+        r.mouse().click_count = multi_click_count;
 
         // Track draging past the window borders.
         hi_axiom(win32Window != 0);
@@ -999,19 +1001,23 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     } break;
 
     case WM_MOUSEWHEEL:
-    case WM_MOUSEHWHEEL: r.type = gui_event_type::mouse_wheel; break;
+    case WM_MOUSEHWHEEL: r.set_type(gui_event_type::mouse_wheel); break;
 
     case WM_MOUSEMOVE: {
         // XXX Make sure the mouse is moved enough for this to cause a drag event.
-        r.type = a_button_is_pressed ? gui_event_type::mouse_drag : gui_event_type::mouse_move;
-        r.mouse.down_position = mouse_button_event.mouse.down_position;
-        r.mouse.click_count = mouse_button_event.mouse.click_count;
+        r.set_type(a_button_is_pressed ? gui_event_type::mouse_drag : gui_event_type::mouse_move);
+        if (mouse_button_event) {
+            r.mouse().down_position = mouse_button_event.mouse().down_position;
+            r.mouse().click_count = mouse_button_event.mouse().click_count;
+        }
     } break;
 
     case WM_MOUSELEAVE:
-        r.type = gui_event_type::mouse_exit_window;
-        r.mouse.down_position = mouse_button_event.mouse.down_position;
-        r.mouse.click_count = 0;
+        r.set_type(gui_event_type::mouse_exit_window);
+        if (mouse_button_event) {
+            r.mouse().down_position = mouse_button_event.mouse().down_position;
+        }
+        r.mouse().click_count = 0;
 
         // After this event we need to ask win32 to track the mouse again.
         tracking_mouse_leave_event = false;

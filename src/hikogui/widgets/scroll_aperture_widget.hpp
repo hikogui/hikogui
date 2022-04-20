@@ -147,8 +147,8 @@ public:
         hi_axiom(is_gui_thread());
 
         if (event == gui_event_type::mouse_wheel) {
-            hilet new_offset_x = *offset_x + event.mouse.wheel_delta.x() * theme().scale;
-            hilet new_offset_y = *offset_y + event.mouse.wheel_delta.y() * theme().scale;
+            hilet new_offset_x = *offset_x + event.mouse().wheel_delta.x() * theme().scale;
+            hilet new_offset_y = *offset_y + event.mouse().wheel_delta.y() * theme().scale;
             hilet max_offset_x = std::max(0.0f, *content_width - *aperture_width);
             hilet max_offset_y = std::max(0.0f, *content_height - *aperture_height);
 

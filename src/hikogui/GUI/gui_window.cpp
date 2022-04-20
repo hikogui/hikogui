@@ -283,7 +283,7 @@ void gui_window::update_keyboard_target(keyboard_focus_group group, keyboard_foc
 
 bool gui_window::handle_event(gui_event const &event) noexcept
 {
-    switch (event.type) {
+    switch (event.type()) {
     case gui_event_type::gui_widget_next:
         update_keyboard_target(_keyboard_target_widget, keyboard_focus_group::normal, keyboard_focus_direction::forward);
         return true;
@@ -305,17 +305,17 @@ bool gui_window::process_event(gui_event const &event) noexcept
 {
     hi_axiom(is_gui_thread());
 
-    auto events = std::vector<gui_event>{};
+    auto events = std::vector<gui_event>{event};
 
-    switch (event.type) {
+    switch (event.type()) {
     case gui_event_type::mouse_exit_window: // Mouse left window.
         update_mouse_target({});
         break;
 
     case gui_event_type::mouse_down:
     case gui_event_type::mouse_move: {
-        hilet hitbox = widget->hitbox_test(event.mouse.position);
-        update_mouse_target(hitbox.widget, event.mouse.position);
+        hilet hitbox = widget->hitbox_test(event.mouse().position);
+        update_mouse_target(hitbox.widget, event.mouse().position);
 
         if (event == gui_event_type::mouse_down) {
             update_keyboard_target(hitbox.widget, keyboard_focus_group::all);

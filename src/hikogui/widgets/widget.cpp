@@ -135,7 +135,7 @@ bool widget::handle_event(gui_event const &event) noexcept
 {
     hi_axiom(is_gui_thread());
 
-    switch (event.type) {
+    switch (event.type()) {
         using enum hi::gui_event_type;
     case keyboard_enter:
         focus = true;

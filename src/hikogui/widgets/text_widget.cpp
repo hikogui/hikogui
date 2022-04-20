@@ -122,7 +122,7 @@ void text_widget::draw(draw_context const& context) noexcept
             // The last drag mouse event was stored in window coordinate to compensate for scrolling, translate it
             // back to local coordinates before handling the mouse event again.
             auto new_mouse_event = _last_drag_mouse_event;
-            new_mouse_event.mouse.position = point2{_layout.from_window * _last_drag_mouse_event.mouse.position};
+            new_mouse_event.mouse().position = point2{_layout.from_window * _last_drag_mouse_event.mouse().position};
 
             // When mouse is dragging a selection, start continues redraw and scroll parent views to display the selection.
             text_widget::handle_event(new_mouse_event);
@@ -311,15 +311,15 @@ bool text_widget::handle_event(gui_event const& event) noexcept
 
     if (*enabled) {
         auto is_handled = [&] {
-            switch (event.type) {
+            switch (event.type()) {
             case gui_event_type::keyboard_grapheme:
                 reset_state("BDX");
-                add_character(event.grapheme, add_type::append);
+                add_character(event.grapheme(), add_type::append);
                 return true;
 
             case gui_event_type::keyboard_partial_grapheme:
                 reset_state("BDX");
-                add_character(event.grapheme, add_type::dead);
+                add_character(event.grapheme(), add_type::dead);
                 return true;
 
             case gui_event_type::text_mode_insert:
@@ -554,8 +554,8 @@ bool text_widget::handle_event(gui_event const& event) noexcept
 
             case gui_event_type::mouse_down:
                 if (*edit_mode != edit_mode_type::fixed) {
-                    hilet cursor = _shaped_text.get_nearest_cursor(event.mouse.position);
-                    switch (event.mouse.click_count) {
+                    hilet cursor = _shaped_text.get_nearest_cursor(event.mouse().position);
+                    switch (event.mouse().click_count) {
                     case 1:
                         reset_state("BDX");
                         _selection = cursor;
@@ -587,8 +587,8 @@ bool text_widget::handle_event(gui_event const& event) noexcept
 
             case gui_event_type::mouse_drag:
                 if (*edit_mode != edit_mode_type::fixed) {
-                    hilet cursor = _shaped_text.get_nearest_cursor(event.mouse.position);
-                    switch (event.mouse.click_count) {
+                    hilet cursor = _shaped_text.get_nearest_cursor(event.mouse().position);
+                    switch (event.mouse().click_count) {
                     case 1:
                         reset_state("BDX");
                         _selection.drag_selection(cursor);
@@ -612,7 +612,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
                     // Normally mouse positions are kept in the local coordinate system, but scrolling
                     // causes this coordinate system to shift, so translate it to the window coordinate system here.
                     _last_drag_mouse_event = event;
-                    _last_drag_mouse_event.mouse.position = point2{_layout.to_window * event.mouse.position};
+                    _last_drag_mouse_event.mouse().position = point2{_layout.to_window * event.mouse().position};
                     request_redraw();
                     return true;
                 } else {return false;}
