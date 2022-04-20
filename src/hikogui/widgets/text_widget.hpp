@@ -6,7 +6,7 @@
 
 #include "widget.hpp"
 #include "../GUI/theme_text_style.hpp"
-#include "../GUI/mouse_event.hpp"
+#include "../GUI/gui_event.hpp"
 #include "../text/text_selection.hpp"
 #include "../text/text_shaper.hpp"
 #include "../observable.hpp"
@@ -120,9 +120,7 @@ public:
     widget_constraints const& set_constraints() noexcept override;
     void set_layout(widget_layout const& layout) noexcept override;
     void draw(draw_context const& context) noexcept override;
-    bool handle_event(hi::command command) noexcept override;
-    bool handle_event(keyboard_event const& event) noexcept override;
-    bool handle_event(mouse_event const& event) noexcept override;
+    bool handle_event(gui_event const& event) noexcept override;
     hitbox hitbox_test(point3 position) const noexcept override;
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
     /// @endprivatesection
@@ -154,7 +152,7 @@ private:
      * even in absent of new mouse events. This must be done to get
      * continues scrolling to work during dragging.
      */
-    mouse_event _last_drag_mouse_event = {};
+    gui_event _last_drag_mouse_event = {};
 
     /** When to cause the next mouse drag event repeat.
      */

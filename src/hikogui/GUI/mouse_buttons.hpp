@@ -9,22 +9,18 @@
 namespace hi::inline v1 {
 
 struct mouse_buttons {
-    uint8_t leftButton : 1;
-    uint8_t middleButton : 1;
-    uint8_t rightButton : 1;
-    uint8_t x1Button : 1;
-    uint8_t x2Button : 1;
-    uint8_t controlKey : 1;
-    uint8_t shiftKey : 1;
+    uint8_t left_button : 1;
+    uint8_t middle_button : 1;
+    uint8_t right_button : 1;
+    uint8_t x1_button : 1;
+    uint8_t x2_button : 1;
 
-    mouse_buttons() noexcept :
-        leftButton(false),
-        middleButton(false),
-        rightButton(false),
-        x1Button(false),
-        x2Button(false),
-        controlKey(false),
-        shiftKey(false)
+    constexpr mouse_buttons() noexcept :
+        left_button(false),
+        middle_button(false),
+        right_button(false),
+        x1_button(false),
+        x2_button(false)
     {
     }
 };

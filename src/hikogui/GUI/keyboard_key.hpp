@@ -32,14 +32,14 @@ class keyboard_key {
     keyboard_virtual_key virtualKey;
 
 public:
-    constexpr keyboard_key() noexcept : modifiers(keyboard_modifiers::None), virtualKey(keyboard_virtual_key::Nul) {}
+    constexpr keyboard_key() noexcept : modifiers(keyboard_modifiers::none), virtualKey(keyboard_virtual_key::Nul) {}
 
     constexpr keyboard_key(keyboard_modifiers modifiers, keyboard_virtual_key key) noexcept :
         modifiers(modifiers), virtualKey(key)
     {
     }
 
-    keyboard_key(std::string_view key_combination) : modifiers(keyboard_modifiers::None), virtualKey(keyboard_virtual_key::Nul)
+    keyboard_key(std::string_view key_combination) : modifiers(keyboard_modifiers::none), virtualKey(keyboard_virtual_key::Nul)
     {
         hilet modifiers_and_vkey = split(key_combination, '+');
         hi_assert(modifiers_and_vkey.cbegin() != modifiers_and_vkey.cend());

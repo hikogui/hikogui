@@ -46,32 +46,34 @@ void toolbar_tab_button_widget::request_redraw() const noexcept
     return *visible and *enabled and any(group & hi::keyboard_focus_group::toolbar);
 }
 
-[[nodiscard]] bool toolbar_tab_button_widget::handle_event(command command) noexcept
+[[nodiscard]] bool toolbar_tab_button_widget::handle_event(gui_event const& event) noexcept
 {
-    hi_axiom(is_gui_thread());
-
-    if (*enabled) {
-        switch (command) {
-        case command::gui_toolbar_next:
-            if (!is_last(keyboard_focus_group::toolbar)) {
-                window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
-                return true;
-            }
-            break;
-
-        case command::gui_toolbar_prev:
-            if (!is_first(keyboard_focus_group::toolbar)) {
-                window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::backward);
-                return true;
-            }
-            break;
-        case command::gui_sysmenu_open: window.open_system_menu(); return true;
-
-        default:;
+    switch (event.type) {
+    case gui_event_type::gui_toolbar_next:
+        if (*enabled and not is_last(keyboard_focus_group::toolbar)) {
+            window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
+            return true;
         }
+        break;
+
+    case gui_event_type::gui_toolbar_prev:
+        if (*enabled and not is_first(keyboard_focus_group::toolbar)) {
+            window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::backward);
+            return true;
+        }
+        break;
+
+    case gui_event_type::gui_sysmenu_open:
+        if (*enabled) {
+            window.open_system_menu();
+            return true;
+        }
+        break;
+
+    default:;
     }
 
-    return super::handle_event(command);
+    return super::handle_event(event);
 }
 
 void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const& context) noexcept

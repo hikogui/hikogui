@@ -9,7 +9,7 @@
 
 namespace hi::inline v1 {
 
-text_field_widget::text_field_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
+text_field_widget::text_field_widget(gui_window& window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
     super(window, parent), _delegate(std::move(delegate)), _text()
 {
     if (auto d = _delegate.lock()) {
@@ -33,7 +33,7 @@ text_field_widget::text_field_widget(gui_window &window, widget *parent, weak_or
     // clang-format on
 }
 
-text_field_widget::text_field_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
+text_field_widget::text_field_widget(gui_window& window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
     text_field_widget(window, parent, weak_or_unique_ptr<delegate_type>{std::move(delegate)})
 {
 }
@@ -45,7 +45,7 @@ text_field_widget::~text_field_widget()
     }
 }
 
-widget_constraints const &text_field_widget::set_constraints() noexcept
+widget_constraints const& text_field_widget::set_constraints() noexcept
 {
     if (*_text_widget->focus) {
         // Update the optional error value from the string conversion when the text-widget has keyboard focus.
@@ -85,7 +85,7 @@ widget_constraints const &text_field_widget::set_constraints() noexcept
     return _constraints = {size, size, size, theme().margin};
 }
 
-void text_field_widget::set_layout(widget_layout const &layout) noexcept
+void text_field_widget::set_layout(widget_layout const& layout) noexcept
 {
     if (compare_store(_layout, layout)) {
         if (*_error_label_widget->visible) {
@@ -104,7 +104,7 @@ void text_field_widget::set_layout(widget_layout const &layout) noexcept
     _scroll_widget->set_layout(layout.transform(_text_rectangle));
 }
 
-void text_field_widget::draw(draw_context const &context) noexcept
+void text_field_widget::draw(draw_context const& context) noexcept
 {
     if (*visible and overlaps(context, layout())) {
         draw_background_box(context);
@@ -114,38 +114,44 @@ void text_field_widget::draw(draw_context const &context) noexcept
     }
 }
 
-bool text_field_widget::handle_event(hi::command command) noexcept
+bool text_field_widget::handle_event(gui_event const& event) noexcept
 {
-    hi_axiom(is_gui_thread());
-
-    if (*enabled) {
-        switch (command) {
-        case command::gui_cancel:
+    switch (event.type) {
+    case gui_event_type::gui_cancel:
+        if (*enabled) {
             revert(true);
             request_reconstrain();
             return true;
+        }
+        break;
 
-        case command::gui_enter:
+    case gui_event_type::gui_enter:
+        if (*enabled) {
             commit(true);
             request_reconstrain();
             this->window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::forward);
             return true;
+        }
+        break;
 
-        case command::gui_keyboard_enter:
+    case gui_event_type::keyboard_enter:
+        if (*enabled) {
             revert(true);
             request_reconstrain();
             // More processing of the gui_keyboard_enter command is required.
-            break;
+        }
+        break;
 
-        case command::gui_keyboard_exit:
+    case gui_event_type::keyboard_exit:
+        if (*enabled) {
             commit(true);
             request_reconstrain();
             // More processing of the gui_keyboard_exit command is required.
-            break;
         }
+        break;
     }
 
-    return super::handle_event(command);
+    return super::handle_event(event);
 }
 
 hitbox text_field_widget::hitbox_test(point3 position) const noexcept
@@ -220,7 +226,7 @@ void text_field_widget::commit(bool force) noexcept
     }
 }
 
-void text_field_widget::draw_background_box(draw_context const &context) const noexcept
+void text_field_widget::draw_background_box(draw_context const& context) const noexcept
 {
     hilet corner_radii = hi::corner_radii{0.0f, 0.0f, theme().rounding_radius, theme().rounding_radius};
     context.draw_box(_layout, _text_rectangle, background_color(), corner_radii);

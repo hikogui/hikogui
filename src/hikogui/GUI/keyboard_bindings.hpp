@@ -5,9 +5,9 @@
 #pragma once
 
 #include "keyboard_key.hpp"
+#include "gui_event.hpp"
 #include "../URL.hpp"
 #include "../architecture.hpp"
-#include "../command.hpp"
 #include "../subsystem.hpp"
 #include <unordered_map>
 #include <tuple>
@@ -17,23 +17,23 @@ namespace hi::inline v1 {
 class keyboard_bindings {
     struct commands_t {
         /** Loading bindings from system-binding-file. */
-        std::vector<command> system = {};
+        std::vector<gui_event_type> system = {};
 
         /** Ignored system bindings loaded from user-binding-file. */
-        std::vector<command> ignored = {};
+        std::vector<gui_event_type> ignored = {};
 
         /** Added bindings loaded from user-binding-file. */
-        std::vector<command> user = {};
+        std::vector<gui_event_type> user = {};
 
         /** Combined system-/ignored-/added-commands. */
-        std::vector<command> cache = {};
+        std::vector<gui_event> cache = {};
 
-        [[nodiscard]] std::vector<command> const &get_commands() const noexcept
+        [[nodiscard]] std::vector<gui_event> const& get_events() const noexcept
         {
             return cache;
         }
 
-        void add_system_command(command cmd) noexcept
+        void add_system_command(gui_event_type cmd) noexcept
         {
             hilet i = std::find(system.cbegin(), system.cend(), cmd);
             if (i == system.cend()) {
@@ -42,7 +42,7 @@ class keyboard_bindings {
             }
         }
 
-        void add_ignored_command(command cmd) noexcept
+        void add_ignored_command(gui_event_type cmd) noexcept
         {
             hilet i = std::find(ignored.cbegin(), ignored.cend(), cmd);
             if (i == ignored.cend()) {
@@ -51,7 +51,7 @@ class keyboard_bindings {
             }
         }
 
-        void add_user_command(command cmd) noexcept
+        void add_user_command(gui_event_type cmd) noexcept
         {
             hilet i = std::find(user.cbegin(), user.cend(), cmd);
             if (i == user.cend()) {
@@ -67,7 +67,7 @@ class keyboard_bindings {
             for (hilet cmd : system) {
                 hilet i = std::find(cache.cbegin(), cache.cend(), cmd);
                 if (i == cache.cend()) {
-                    cache.push_back(cmd);
+                    cache.emplace_back(cmd);
                 }
             }
 
@@ -81,7 +81,7 @@ class keyboard_bindings {
             for (hilet cmd : user) {
                 hilet i = std::find(cache.cbegin(), cache.cend(), cmd);
                 if (i == cache.cend()) {
-                    cache.push_back(cmd);
+                    cache.emplace_back(cmd);
                 }
             }
         }
@@ -94,33 +94,36 @@ class keyboard_bindings {
 public:
     keyboard_bindings() noexcept : bindings() {}
 
-    void add_system_binding(keyboard_key key, command command) noexcept
+    void add_system_binding(keyboard_key key, gui_event_type command) noexcept
     {
         bindings[key].add_system_command(command);
     }
 
-    void add_ignored_binding(keyboard_key key, command command) noexcept
+    void add_ignored_binding(keyboard_key key, gui_event_type command) noexcept
     {
         bindings[key].add_ignored_command(command);
     }
 
-    void add_user_binding(keyboard_key key, command command) noexcept
+    void add_user_binding(keyboard_key key, gui_event_type command) noexcept
     {
         bindings[key].add_user_command(command);
     }
 
     /** translate a key press in the empty-context to a command.
      */
-    [[nodiscard]] std::vector<command> const &translate(keyboard_key key) const noexcept
+    [[nodiscard]] std::vector<gui_event> translate(gui_event event) const noexcept
     {
-        static std::vector<command> empty_commands = {};
+        auto r = std::vector<gui_event>{event};
 
-        hilet i = bindings.find(key);
-        if (i != bindings.cend()) {
-            return i->second.get_commands();
-        } else {
-            return empty_commands;
+        if (event == gui_event_type::keyboard_down) {
+            hilet i = bindings.find(keyboard_key{event.keyboard_modifiers, event.key});
+            if (i != bindings.cend()) {
+                hilet &events = i->second.get_events();
+                r.insert(r.cend(), events.cbegin(), events.cend());
+            }
         }
+
+        return r;
     }
 
     /** Clear all bindings.

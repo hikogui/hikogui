@@ -9,11 +9,11 @@
 #include "../GUI/hitbox.hpp"
 #include "../GUI/keyboard_focus_direction.hpp"
 #include "../GUI/keyboard_focus_group.hpp"
+#include "../GUI/gui_event_type.hpp"
 #include "../geometry/extent.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/transform.hpp"
 #include "../observable.hpp"
-#include "../command.hpp"
 #include "../chrono.hpp"
 #include "../generator.hpp"
 #include "widget_constraints.hpp"
@@ -23,10 +23,8 @@
 #include <string>
 #include <ranges>
 
-namespace hi::inline v1{
-    class gui_window;
-struct mouse_event;
-struct keyboard_event;
+namespace hi::inline v1 {
+class gui_window;
 class font_book;
 
 /** An interactive graphical object as part of the user-interface.
@@ -41,7 +39,7 @@ class widget {
 public:
     /** Convenient reference to the Window.
      */
-    gui_window &window;
+    gui_window& window;
 
     /** Pointer to the parent widget.
      * May be a nullptr only when this is the top level widget.
@@ -97,13 +95,13 @@ public:
 
     /*! Constructor for creating sub views.
      */
-    widget(gui_window &window, widget *parent) noexcept;
+    widget(gui_window& window, widget *parent) noexcept;
 
     virtual ~widget();
-    widget(const widget &) = delete;
-    widget &operator=(const widget &) = delete;
-    widget(widget &&) = delete;
-    widget &operator=(widget &&) = delete;
+    widget(const widget&) = delete;
+    widget& operator=(const widget&) = delete;
+    widget(widget&&) = delete;
+    widget& operator=(widget&&) = delete;
 
     [[nodiscard]] bool is_gui_thread() const noexcept;
 
@@ -111,13 +109,13 @@ public:
      *
      * @return The current theme.
      */
-    hi::theme const &theme() const noexcept;
+    hi::theme const& theme() const noexcept;
 
     /** Get the font book.
      *
      * @return The font book.
      */
-    hi::font_book &font_book() const noexcept;
+    hi::font_book& font_book() const noexcept;
 
     /** Find the widget that is under the mouse cursor.
      * This function will recursively test with visual child widgets, when
@@ -132,11 +130,11 @@ public:
     }
 
     /** Call hitbox_test from a parent widget.
-    *
-    * This function will transform the position from parent coordinates to local coordinates.
-    *
-    * @param position The coordinate of the mouse local to the parent widget.
-    */
+     *
+     * This function will transform the position from parent coordinates to local coordinates.
+     *
+     * @param position The coordinate of the mouse local to the parent widget.
+     */
     [[nodiscard]] virtual hitbox hitbox_test_from_parent(point3 position) const noexcept
     {
         return hitbox_test(_layout.from_parent * position);
@@ -174,9 +172,9 @@ public:
      * @post This function will change what is returned by `widget::minimum_size()`, `widget::preferred_size()`
      *       and `widget::maximum_size()`.
      */
-    virtual widget_constraints const &set_constraints() noexcept = 0;
+    virtual widget_constraints const& set_constraints() noexcept = 0;
 
-    widget_constraints const &constraints() const noexcept
+    widget_constraints const& constraints() const noexcept
     {
         return _constraints;
     }
@@ -193,11 +191,11 @@ public:
      * @param context The layout context for this child.
      * @return The new size of the widget, should be a copy of the new_size parameter.
      */
-    virtual void set_layout(widget_layout const &layout) noexcept = 0;
+    virtual void set_layout(widget_layout const& layout) noexcept = 0;
 
     /** Get the current layout for this widget.
      */
-    widget_layout const &layout() const noexcept
+    widget_layout const& layout() const noexcept
     {
         return _layout;
     }
@@ -216,7 +214,7 @@ public:
      *
      * @param context The context to where the widget will draw.
      */
-    virtual void draw(draw_context const &context) noexcept = 0;
+    virtual void draw(draw_context const& context) noexcept = 0;
 
     /** Request the widget to be redrawn on the next frame.
      */
@@ -238,42 +236,18 @@ public:
      * If a widget does not fully handle a command it should pass the
      * command to the super class' `handle_event()`.
      */
-    [[nodiscard]] virtual bool handle_event(command command) noexcept;
-
-    [[nodiscard]] virtual bool handle_event(std::vector<command> const &commands) noexcept;
+    [[nodiscard]] virtual bool handle_event(gui_event const& event) noexcept;
 
     /** Handle command recursive.
      * Handle a command and pass it to each child.
      *
-     * @param command The command to handle by this widget.
+     * @param event The command to handle by this widget.
      * @param reject_list The widgets that should ignore this command
      * @return True when the command was handled by this widget or recursed child.
      */
-    virtual bool handle_command_recursive(command command, std::vector<widget const *> const &reject_list = std::vector<widget const *>{}) noexcept;
-
-    /*! Handle mouse event.
-     * Called by the operating system to show the position and button state of the mouse.
-     * This is called very often so it must be made efficient.
-     * This function is also used to determine the mouse cursor.
-     *
-     * In most cased overriding methods should call the super's `handle_event()` at the
-     * start of the function, to detect `hover`.
-     *
-     * When this method does not handle the event the window will call `handle_event()`
-     * on the widget's parent.
-     *
-     * @param event The mouse event, positions are in window coordinates.
-     * @return If this widget has handled the mouse event.
-     */
-    [[nodiscard]] virtual bool handle_event(mouse_event const &event) noexcept;
-
-    /** Handle keyboard event.
-     * Called by the operating system when editing text, or entering special keys
-     *
-     * @param event The keyboard event.
-     * @return If this widget has handled the keyboard event.
-     */
-    [[nodiscard]] virtual bool handle_event(keyboard_event const &event) noexcept;
+    virtual bool handle_event_recursive(
+        gui_event const& event,
+        std::vector<widget const *> const& reject_list = std::vector<widget const *>{}) noexcept;
 
     /** Find the next widget that handles keyboard focus.
      * This recursively looks for the current keyboard widget, then returns the next (or previous) widget

@@ -159,10 +159,10 @@ void gui_window_win32::create_window(extent2 new_size)
         firstWindowHasBeenOpened = true;
     }
 
-    trackMouseLeaveEventParameters.cbSize = sizeof(trackMouseLeaveEventParameters);
-    trackMouseLeaveEventParameters.dwFlags = TME_LEAVE;
-    trackMouseLeaveEventParameters.hwndTrack = reinterpret_cast<HWND>(win32Window);
-    trackMouseLeaveEventParameters.dwHoverTime = HOVER_DEFAULT;
+    track_mouse_leave_event_parameters.cbSize = sizeof(track_mouse_leave_event_parameters);
+    track_mouse_leave_event_parameters.dwFlags = TME_LEAVE;
+    track_mouse_leave_event_parameters.hwndTrack = reinterpret_cast<HWND>(win32Window);
+    track_mouse_leave_event_parameters.dwHoverTime = HOVER_DEFAULT;
 
     ShowWindow(reinterpret_cast<HWND>(win32Window), SW_SHOW);
 
@@ -175,8 +175,8 @@ void gui_window_win32::create_window(extent2 new_size)
     surface = gui.gfx->make_surface(gui_system::instance, win32Window);
 }
 
-gui_window_win32::gui_window_win32(gui_system &gui, label const &title, std::weak_ptr<gui_window_delegate> delegate) noexcept :
-    gui_window(gui, title, std::move(delegate)), trackMouseLeaveEventParameters()
+gui_window_win32::gui_window_win32(gui_system& gui, label const& title, std::weak_ptr<gui_window_delegate> delegate) noexcept :
+    gui_window(gui, title, std::move(delegate)), track_mouse_leave_event_parameters()
 {
     using namespace std::chrono_literals;
 
@@ -192,7 +192,7 @@ gui_window_win32::~gui_window_win32()
             // hi_log_fatal("win32Window was not destroyed before Window '{}' was destructed.", title);
         }
 
-    } catch (std::exception const &e) {
+    } catch (std::exception const& e) {
         hi_log_fatal("Could not properly destruct gui_window_win32. '{}'", e.what());
     }
 }
@@ -530,39 +530,39 @@ void gui_window_win32::set_cursor(mouse_cursor cursor) noexcept
     SetCursor(idc);
 }
 
-[[nodiscard]] keyboard_modifiers gui_window_win32::getkeyboard_modifiers() noexcept
+[[nodiscard]] keyboard_modifiers gui_window_win32::get_keyboard_modifiers() noexcept
 {
-    auto r = keyboard_modifiers::None;
+    auto r = keyboard_modifiers::none;
 
     if ((static_cast<uint16_t>(GetAsyncKeyState(VK_SHIFT)) & 0x8000) != 0) {
-        r |= keyboard_modifiers::Shift;
+        r |= keyboard_modifiers::shift;
     }
     if ((static_cast<uint16_t>(GetAsyncKeyState(VK_CONTROL)) & 0x8000) != 0) {
-        r |= keyboard_modifiers::Control;
+        r |= keyboard_modifiers::control;
     }
     if ((static_cast<uint16_t>(GetAsyncKeyState(VK_MENU)) & 0x8000) != 0) {
-        r |= keyboard_modifiers::Alt;
+        r |= keyboard_modifiers::alt;
     }
     if ((static_cast<uint16_t>(GetAsyncKeyState(VK_LWIN)) & 0x8000) != 0 ||
         (static_cast<uint16_t>(GetAsyncKeyState(VK_RWIN)) & 0x8000) != 0) {
-        r |= keyboard_modifiers::Super;
+        r |= keyboard_modifiers::super;
     }
 
     return r;
 }
 
-[[nodiscard]] KeyboardState gui_window_win32::getKeyboardState() noexcept
+[[nodiscard]] keyboard_state gui_window_win32::get_keyboard_state() noexcept
 {
-    auto r = KeyboardState::Idle;
+    auto r = keyboard_state::idle;
 
     if (GetKeyState(VK_CAPITAL) != 0) {
-        r |= KeyboardState::CapsLock;
+        r |= keyboard_state::caps_lock;
     }
     if (GetKeyState(VK_NUMLOCK) != 0) {
-        r |= KeyboardState::NumLock;
+        r |= keyboard_state::num_lock;
     }
     if (GetKeyState(VK_SCROLL) != 0) {
-        r |= KeyboardState::ScrollLock;
+        r |= keyboard_state::scroll_lock;
     }
     return r;
 }
@@ -572,7 +572,7 @@ void gui_window_win32::set_cursor(mouse_cursor cursor) noexcept
  */
 int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
 {
-    mouse_event mouseEvent;
+    gui_event mouse_event;
     hilet current_time = std::chrono::utc_clock::now();
 
     switch (uMsg) {
@@ -743,18 +743,18 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         if (auto c = static_cast<char32_t>(wParam); c == UNICODE_NOCHAR) {
             // Tell the 3rd party keyboard handler application that we support WM_UNICHAR.
             return 1;
+
         } else if (c >= 0x20) {
-            auto keyboardEvent = keyboard_event();
-            keyboardEvent.type = keyboard_event::Type::grapheme;
-            keyboardEvent.grapheme = c;
-            send_event(keyboardEvent);
+            if (auto g = grapheme{c}; g.valid()) {
+                process_event(gui_event{gui_event_type::keyboard_grapheme, g});
+            }
         }
     } break;
 
     case WM_DEADCHAR:
         if (auto c = handle_suragates(static_cast<char32_t>(wParam))) {
             if (auto g = grapheme{c}; g.valid()) {
-                send_event(g, false);
+                process_event(gui_event{gui_event_type::keyboard_partial_grapheme, g});
             }
         }
         break;
@@ -762,14 +762,14 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     case WM_CHAR: {
         if (auto c = handle_suragates(static_cast<char32_t>(wParam))) {
             if (auto g = grapheme{c}; g.valid()) {
-                send_event(g);
+                process_event(gui_event{gui_event_type::keyboard_grapheme, g});
             }
         }
     } break;
 
     case WM_SYSCOMMAND: {
         if (wParam == SC_KEYMENU) {
-            send_event(KeyboardState::Idle, keyboard_modifiers::None, keyboard_virtual_key::Menu);
+            process_event(gui_event{gui_event_type::keyboard_down, keyboard_virtual_key::Menu});
             return 0;
         }
     } break;
@@ -778,11 +778,11 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         auto extended = (narrow_cast<uint32_t>(lParam) & 0x01000000) != 0;
         auto key_code = narrow_cast<int>(wParam);
 
-        hilet key_state = getKeyboardState();
-        hilet key_modifiers = getkeyboard_modifiers();
+        hilet key_state = get_keyboard_state();
+        hilet key_modifiers = get_keyboard_modifiers();
         hilet virtual_key = to_keyboard_virtual_key(key_code, extended, key_modifiers);
         if (virtual_key != keyboard_virtual_key::Nul) {
-            send_event(key_state, key_modifiers, virtual_key);
+            process_event(gui_event{gui_event_type::keyboard_down, virtual_key, key_modifiers, key_state});
         }
     } break;
 
@@ -801,7 +801,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     case WM_MOUSEWHEEL:
     case WM_MOUSEHWHEEL:
     case WM_MOUSEMOVE:
-    case WM_MOUSELEAVE: send_event(createmouse_event(uMsg, wParam, lParam)); break;
+    case WM_MOUSELEAVE: process_event(create_mouse_event(uMsg, wParam, lParam)); break;
 
     case WM_NCCALCSIZE:
         if (wParam == TRUE) {
@@ -885,22 +885,23 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     hi_axiom(is_gui_thread());
 
     if (c >= 0xd800 && c <= 0xdbff) {
-        highSurrogate = ((c - 0xd800) << 10) + 0x10000;
+        high_surrogate = ((c - 0xd800) << 10) + 0x10000;
         return 0;
 
     } else if (c >= 0xdc00 && c <= 0xdfff) {
-        c = highSurrogate ? highSurrogate | (c - 0xdc00) : 0xfffd;
+        c = high_surrogate ? high_surrogate | (c - 0xdc00) : 0xfffd;
     }
-    highSurrogate = 0;
+    high_surrogate = 0;
     return c;
 }
 
-[[nodiscard]] mouse_event gui_window_win32::createmouse_event(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
+[[nodiscard]] gui_event gui_window_win32::create_mouse_event(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
 {
     hi_axiom(is_gui_thread());
 
-    auto mouseEvent = mouse_event{};
-    mouseEvent.timePoint = std::chrono::utc_clock::now();
+    auto r = gui_event{};
+    r.keyboard_modifiers = get_keyboard_modifiers();
+    r.keyboard_state = get_keyboard_state();
 
     hilet x = narrow_cast<float>(GET_X_LPARAM(lParam));
     hilet y = narrow_cast<float>(GET_Y_LPARAM(lParam));
@@ -910,43 +911,41 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
     // On Window 7 up to and including Window10, the I-beam cursor hot-spot is 2 pixels to the left
     // of the vertical bar. But most applications do not fix this problem.
-    mouseEvent.position = point2{x, inv_y};
-    mouseEvent.wheelDelta = {};
+    r.mouse.position = point2{x, inv_y};
+    r.mouse.wheel_delta = {};
     if (uMsg == WM_MOUSEWHEEL) {
-        mouseEvent.wheelDelta.y() = narrow_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA * 10.0f;
+        r.mouse.wheel_delta.y() = narrow_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA * 10.0f;
     } else if (uMsg == WM_MOUSEHWHEEL) {
-        mouseEvent.wheelDelta.x() = narrow_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA * 10.0f;
+        r.mouse.wheel_delta.x() = narrow_cast<float>(GET_WHEEL_DELTA_WPARAM(wParam)) / WHEEL_DELTA * 10.0f;
     }
 
     // Track which buttons are down, in case the application wants to track multiple buttons being pressed down.
-    mouseEvent.down.controlKey = (GET_KEYSTATE_WPARAM(wParam) & MK_CONTROL) > 0;
-    mouseEvent.down.leftButton = (GET_KEYSTATE_WPARAM(wParam) & MK_LBUTTON) > 0;
-    mouseEvent.down.middleButton = (GET_KEYSTATE_WPARAM(wParam) & MK_MBUTTON) > 0;
-    mouseEvent.down.rightButton = (GET_KEYSTATE_WPARAM(wParam) & MK_RBUTTON) > 0;
-    mouseEvent.down.shiftKey = (GET_KEYSTATE_WPARAM(wParam) & MK_SHIFT) > 0;
-    mouseEvent.down.x1Button = (GET_KEYSTATE_WPARAM(wParam) & MK_XBUTTON1) > 0;
-    mouseEvent.down.x2Button = (GET_KEYSTATE_WPARAM(wParam) & MK_XBUTTON2) > 0;
+    r.mouse.down.left_button = (GET_KEYSTATE_WPARAM(wParam) & MK_LBUTTON) > 0;
+    r.mouse.down.middle_button = (GET_KEYSTATE_WPARAM(wParam) & MK_MBUTTON) > 0;
+    r.mouse.down.right_button = (GET_KEYSTATE_WPARAM(wParam) & MK_RBUTTON) > 0;
+    r.mouse.down.x1_button = (GET_KEYSTATE_WPARAM(wParam) & MK_XBUTTON1) > 0;
+    r.mouse.down.x2_button = (GET_KEYSTATE_WPARAM(wParam) & MK_XBUTTON2) > 0;
 
     // Check which buttons caused the mouse event.
     switch (uMsg) {
     case WM_LBUTTONUP:
     case WM_LBUTTONDOWN:
-    case WM_LBUTTONDBLCLK: mouseEvent.cause.leftButton = true; break;
+    case WM_LBUTTONDBLCLK: r.mouse.cause.left_button = true; break;
     case WM_RBUTTONUP:
     case WM_RBUTTONDOWN:
-    case WM_RBUTTONDBLCLK: mouseEvent.cause.rightButton = true; break;
+    case WM_RBUTTONDBLCLK: r.mouse.cause.right_button = true; break;
     case WM_MBUTTONUP:
     case WM_MBUTTONDOWN:
-    case WM_MBUTTONDBLCLK: mouseEvent.cause.middleButton = true; break;
+    case WM_MBUTTONDBLCLK: r.mouse.cause.middle_button = true; break;
     case WM_XBUTTONUP:
     case WM_XBUTTONDOWN:
     case WM_XBUTTONDBLCLK:
-        mouseEvent.cause.x1Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON1) > 0;
-        mouseEvent.cause.x2Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON2) > 0;
+        r.mouse.cause.x1_button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON1) > 0;
+        r.mouse.cause.x2_button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON2) > 0;
         break;
     case WM_MOUSEMOVE:
-        if (mouseButtonEvent.type == mouse_event::Type::ButtonDown) {
-            mouseEvent.cause = mouseButtonEvent.cause;
+        if (mouse_button_event.type == gui_event_type::mouse_down) {
+            r.mouse.cause = mouse_button_event.mouse.cause;
         }
         break;
     case WM_MOUSEWHEEL:
@@ -955,17 +954,17 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     default: hi_no_default();
     }
 
-    hilet a_button_is_pressed = mouseEvent.down.leftButton || mouseEvent.down.middleButton || mouseEvent.down.rightButton ||
-        mouseEvent.down.x1Button || mouseEvent.down.x2Button;
+    hilet a_button_is_pressed = r.mouse.down.left_button or r.mouse.down.middle_button or r.mouse.down.right_button or
+        r.mouse.down.x1_button or r.mouse.down.x2_button;
 
     switch (uMsg) {
     case WM_LBUTTONUP:
     case WM_MBUTTONUP:
     case WM_RBUTTONUP:
     case WM_XBUTTONUP:
-        mouseEvent.type = mouse_event::Type::ButtonUp;
-        mouseEvent.downPosition = mouseButtonEvent.downPosition;
-        mouseEvent.clickCount = 0;
+        r.type = gui_event_type::mouse_up;
+        r.mouse.down_position = mouse_button_event.mouse.down_position;
+        r.mouse.click_count = 0;
 
         if (!a_button_is_pressed) {
             ReleaseCapture();
@@ -980,17 +979,17 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     case WM_MBUTTONDOWN:
     case WM_RBUTTONDOWN:
     case WM_XBUTTONDOWN: {
-        hilet within_double_click_time = mouseEvent.timePoint - multi_click_time_point < os_settings::double_click_interval();
+        hilet within_double_click_time = r.time_point - multi_click_time_point < os_settings::double_click_interval();
         hilet within_double_click_distance =
-            hypot(mouseEvent.position - multi_click_position) < os_settings::double_click_distance();
+            hypot(r.mouse.position - multi_click_position) < os_settings::double_click_distance();
 
         multi_click_count = within_double_click_time and within_double_click_distance ? multi_click_count + 1 : 1;
-        multi_click_time_point = mouseEvent.timePoint;
-        multi_click_position = mouseEvent.position;
+        multi_click_time_point = r.time_point;
+        multi_click_position = r.mouse.position;
 
-        mouseEvent.type = mouse_event::Type::ButtonDown;
-        mouseEvent.downPosition = mouseEvent.position;
-        mouseEvent.clickCount = multi_click_count;
+        r.type = gui_event_type::mouse_down;
+        r.mouse.down_position = r.mouse.position;
+        r.mouse.click_count = multi_click_count;
 
         // Track draging past the window borders.
         hi_axiom(win32Window != 0);
@@ -1000,22 +999,22 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     } break;
 
     case WM_MOUSEWHEEL:
-    case WM_MOUSEHWHEEL: mouseEvent.type = mouse_event::Type::Wheel; break;
+    case WM_MOUSEHWHEEL: r.type = gui_event_type::mouse_wheel; break;
 
     case WM_MOUSEMOVE: {
         // XXX Make sure the mouse is moved enough for this to cause a drag event.
-        mouseEvent.type = a_button_is_pressed ? mouse_event::Type::Drag : mouse_event::Type::Move;
-        mouseEvent.downPosition = mouseButtonEvent.downPosition;
-        mouseEvent.clickCount = mouseButtonEvent.clickCount;
+        r.type = a_button_is_pressed ? gui_event_type::mouse_drag : gui_event_type::mouse_move;
+        r.mouse.down_position = mouse_button_event.mouse.down_position;
+        r.mouse.click_count = mouse_button_event.mouse.click_count;
     } break;
 
     case WM_MOUSELEAVE:
-        mouseEvent.type = mouse_event::Type::Exited;
-        mouseEvent.downPosition = mouseButtonEvent.downPosition;
-        mouseEvent.clickCount = 0;
+        r.type = gui_event_type::mouse_exit_window;
+        r.mouse.down_position = mouse_button_event.mouse.down_position;
+        r.mouse.click_count = 0;
 
         // After this event we need to ask win32 to track the mouse again.
-        trackingMouseLeaveEvent = false;
+        tracking_mouse_leave_event = false;
 
         // Force current_mouse_cursor to None so that the Window is in a fresh
         // state when the mouse reenters it.
@@ -1027,22 +1026,21 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
     // Make sure we start tracking mouse events when the mouse has entered the window again.
     // So that once the mouse leaves the window we receive a WM_MOUSELEAVE event.
-    if (!trackingMouseLeaveEvent && uMsg != WM_MOUSELEAVE) {
-        auto *track_mouse_leave_event_parameters_p = &trackMouseLeaveEventParameters;
-        if (!TrackMouseEvent(track_mouse_leave_event_parameters_p)) {
+    if (not tracking_mouse_leave_event and uMsg != WM_MOUSELEAVE) {
+        auto *track_mouse_leave_event_parameters_p = &track_mouse_leave_event_parameters;
+        if (not TrackMouseEvent(track_mouse_leave_event_parameters_p)) {
             hi_log_error("Could not track leave event '{}'", get_last_error_message());
         }
-        trackingMouseLeaveEvent = true;
+        tracking_mouse_leave_event = true;
     }
 
     // Remember the last time a button was pressed or released, so that we can convert
     // a move into a drag event.
-    if (mouseEvent.type == mouse_event::Type::ButtonDown || mouseEvent.type == mouse_event::Type::ButtonUp ||
-        mouseEvent.type == mouse_event::Type::Exited) {
-        mouseButtonEvent = mouseEvent;
+    if (r == gui_event_type::mouse_down or r == gui_event_type::mouse_up or r == gui_event_type::mouse_exit_window) {
+        mouse_button_event = r;
     }
 
-    return mouseEvent;
+    return r;
 }
 
 } // namespace hi::inline v1

@@ -131,40 +131,29 @@ void widget::request_resize() const noexcept
     window.request_resize();
 }
 
-[[nodiscard]] bool widget::handle_event(std::vector<command> const &commands) noexcept
-{
-    hi_axiom(is_gui_thread());
-    for (hilet command : commands) {
-        if (handle_event(command)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool widget::handle_event(command command) noexcept
+bool widget::handle_event(gui_event const &event) noexcept
 {
     hi_axiom(is_gui_thread());
 
-    switch (command) {
-        using enum hi::command;
-    case gui_keyboard_enter:
+    switch (event.type) {
+        using enum hi::gui_event_type;
+    case keyboard_enter:
         focus = true;
         scroll_to_show();
         request_redraw();
         return true;
 
-    case gui_keyboard_exit:
+    case keyboard_exit:
         focus = false;
         request_redraw();
         return true;
 
-    case gui_mouse_enter:
+    case mouse_enter:
         hover = true;
         request_redraw();
         return true;
 
-    case gui_mouse_exit:
+    case mouse_exit:
         hover = false;
         request_redraw();
         return true;
@@ -175,7 +164,7 @@ bool widget::handle_event(command command) noexcept
     return false;
 }
 
-bool widget::handle_command_recursive(command command, std::vector<widget const *> const &reject_list) noexcept
+bool widget::handle_event_recursive(gui_event const &event, std::vector<widget const *> const &reject_list) noexcept
 {
     hi_axiom(is_gui_thread());
 
@@ -184,29 +173,17 @@ bool widget::handle_command_recursive(command command, std::vector<widget const 
     for (auto *child : children()) {
         if (child) {
             hi_axiom(child->parent == this);
-            handled |= child->handle_command_recursive(command, reject_list);
+            handled |= child->handle_event_recursive(event, reject_list);
         }
     }
 
     if (!std::ranges::any_of(reject_list, [this](hilet &x) {
             return x == this;
         })) {
-        handled |= handle_event(command);
+        handled |= handle_event(event);
     }
 
     return handled;
-}
-
-bool widget::handle_event(mouse_event const &event) noexcept
-{
-    hi_axiom(is_gui_thread());
-    return false;
-}
-
-bool widget::handle_event(keyboard_event const &event) noexcept
-{
-    hi_axiom(is_gui_thread());
-    return false;
 }
 
 widget const *widget::find_next_widget(

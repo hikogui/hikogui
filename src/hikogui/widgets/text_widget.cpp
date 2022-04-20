@@ -7,7 +7,6 @@
 #include "../scoped_task.hpp"
 #include "../when_any.hpp"
 #include "../GUI/gui_window.hpp"
-#include "../GUI/mouse_event.hpp"
 #include "../unicode/unicode_bidi.hpp"
 
 namespace hi::inline v1 {
@@ -123,7 +122,7 @@ void text_widget::draw(draw_context const& context) noexcept
             // The last drag mouse event was stored in window coordinate to compensate for scrolling, translate it
             // back to local coordinates before handling the mouse event again.
             auto new_mouse_event = _last_drag_mouse_event;
-            new_mouse_event.position = point2{_layout.from_window * _last_drag_mouse_event.position};
+            new_mouse_event.mouse.position = point2{_layout.from_window * _last_drag_mouse_event.mouse.position};
 
             // When mouse is dragging a selection, start continues redraw and scroll parent views to display the selection.
             text_widget::handle_event(new_mouse_event);
@@ -305,21 +304,31 @@ void text_widget::reset_state(char const *states) noexcept
     }
 }
 
-bool text_widget::handle_event(hi::command command) noexcept
+bool text_widget::handle_event(gui_event const& event) noexcept
 {
     hi_axiom(is_gui_thread());
     request_relayout();
 
     if (*enabled) {
-        auto is_handled = [command,this] {
-            switch (command) {
-            case command::text_mode_insert:
+        auto is_handled = [&] {
+            switch (event.type) {
+            case gui_event_type::keyboard_grapheme:
+                reset_state("BDX");
+                add_character(event.grapheme, add_type::append);
+                return true;
+
+            case gui_event_type::keyboard_partial_grapheme:
+                reset_state("BDX");
+                add_character(event.grapheme, add_type::dead);
+                return true;
+
+            case gui_event_type::text_mode_insert:
                 reset_state("BDX");
                 _overwrite_mode = not _overwrite_mode;
                 fix_cursor_position();
                 return true;
 
-            case command::text_edit_paste:
+            case gui_event_type::text_edit_paste:
                 reset_state("BDX");
                 if (*edit_mode == edit_mode_type::line_editable) {
                     replace_selection(to_gstring(window.get_text_from_clipboard(), U' '));
@@ -328,30 +337,30 @@ bool text_widget::handle_event(hi::command command) noexcept
                 }
                 return true;
 
-            case command::text_edit_copy:
+            case gui_event_type::text_edit_copy:
                 reset_state("BDX");
                 if (hilet selected_text_ = selected_text(); not selected_text_.empty()) {
                     window.set_text_on_clipboard(to_string(selected_text_));
                 }
                 return true;
 
-            case command::text_edit_cut:
+            case gui_event_type::text_edit_cut:
                 reset_state("BDX");
                 window.set_text_on_clipboard(to_string(selected_text()));
                 replace_selection(gstring{});
                 return true;
 
-            case command::text_undo:
+            case gui_event_type::text_undo:
                 reset_state("BDX");
                 undo();
                 return true;
 
-            case command::text_redo:
+            case gui_event_type::text_redo:
                 reset_state("BDX");
                 redo();
                 return true;
 
-            case command::text_insert_line:
+            case gui_event_type::text_insert_line:
                 if (*edit_mode == edit_mode_type::fully_editable) {
                     reset_state("BDX");
                     add_character(grapheme{unicode_PS}, add_type::append);
@@ -360,7 +369,7 @@ bool text_widget::handle_event(hi::command command) noexcept
                     return false;
                 }
 
-            case command::text_insert_line_up:
+            case gui_event_type::text_insert_line_up:
                 if (*edit_mode == edit_mode_type::fully_editable) {
                     reset_state("BDX");
                     _selection = _shaped_text.move_begin_paragraph(_selection.cursor());
@@ -370,7 +379,7 @@ bool text_widget::handle_event(hi::command command) noexcept
                     return false;
                 }
 
-            case command::text_insert_line_down:
+            case gui_event_type::text_insert_line_down:
                 if (*edit_mode == edit_mode_type::fully_editable) {
                     reset_state("BDX");
                     _selection = _shaped_text.move_end_paragraph(_selection.cursor());
@@ -380,159 +389,235 @@ bool text_widget::handle_event(hi::command command) noexcept
                     return false;
                 }
 
-            case command::text_delete_char_next:
+            case gui_event_type::text_delete_char_next:
                 reset_state("BDX");
                 delete_character_next();
                 return true;
 
-            case command::text_delete_char_prev:
+            case gui_event_type::text_delete_char_prev:
                 reset_state("BDX");
                 delete_character_prev();
                 return true;
 
-            case command::text_delete_word_next:
+            case gui_event_type::text_delete_word_next:
                 reset_state("BDX");
                 delete_word_next();
                 return true;
 
-            case command::text_delete_word_prev:
+            case gui_event_type::text_delete_word_prev:
                 reset_state("BDX");
                 delete_word_prev();
                 return true;
 
-            case command::text_cursor_left_char:
+            case gui_event_type::text_cursor_left_char:
                 reset_state("BDX");
                 _selection = _shaped_text.move_left_char(_selection.cursor(), _overwrite_mode);
                 return true;
 
-            case command::text_cursor_right_char:
+            case gui_event_type::text_cursor_right_char:
                 reset_state("BDX");
                 _selection = _shaped_text.move_right_char(_selection.cursor(), _overwrite_mode);
                 return true;
 
-            case command::text_cursor_down_char:
+            case gui_event_type::text_cursor_down_char:
                 reset_state("BD");
                 _selection = _shaped_text.move_down_char(_selection.cursor(), _vertical_movement_x);
                 return true;
 
-            case command::text_cursor_up_char:
+            case gui_event_type::text_cursor_up_char:
                 reset_state("BD");
                 _selection = _shaped_text.move_up_char(_selection.cursor(), _vertical_movement_x);
                 return true;
 
-            case command::text_cursor_left_word:
+            case gui_event_type::text_cursor_left_word:
                 reset_state("BDX");
                 _selection = _shaped_text.move_left_word(_selection.cursor(), _overwrite_mode);
                 return true;
 
-            case command::text_cursor_right_word:
+            case gui_event_type::text_cursor_right_word:
                 reset_state("BDX");
                 _selection = _shaped_text.move_right_word(_selection.cursor(), _overwrite_mode);
                 return true;
 
-            case command::text_cursor_begin_line:
+            case gui_event_type::text_cursor_begin_line:
                 reset_state("BDX");
                 _selection = _shaped_text.move_begin_line(_selection.cursor());
                 return true;
 
-            case command::text_cursor_end_line:
+            case gui_event_type::text_cursor_end_line:
                 reset_state("BDX");
                 _selection = _shaped_text.move_end_line(_selection.cursor());
                 return true;
 
-            case command::text_cursor_begin_sentence:
+            case gui_event_type::text_cursor_begin_sentence:
                 reset_state("BDX");
                 _selection = _shaped_text.move_begin_sentence(_selection.cursor());
                 return true;
 
-            case command::text_cursor_end_sentence:
+            case gui_event_type::text_cursor_end_sentence:
                 reset_state("BDX");
                 _selection = _shaped_text.move_end_sentence(_selection.cursor());
                 return true;
 
-            case command::text_cursor_begin_document:
+            case gui_event_type::text_cursor_begin_document:
                 reset_state("BDX");
                 _selection = _shaped_text.move_begin_document(_selection.cursor());
                 return true;
 
-            case command::text_cursor_end_document:
+            case gui_event_type::text_cursor_end_document:
                 reset_state("BDX");
                 _selection = _shaped_text.move_end_document(_selection.cursor());
                 return true;
 
-            case command::gui_cancel:
+            case gui_event_type::gui_cancel:
                 reset_state("BDX");
                 _selection.clear_selection(_shaped_text.size());
                 return true;
 
-            case command::text_select_left_char:
+            case gui_event_type::text_select_left_char:
                 reset_state("BDX");
                 _selection.drag_selection(_shaped_text.move_left_char(_selection.cursor(), false));
                 return true;
 
-            case command::text_select_right_char:
+            case gui_event_type::text_select_right_char:
                 reset_state("BDX");
                 _selection.drag_selection(_shaped_text.move_right_char(_selection.cursor(), false));
                 return true;
 
-            case command::text_select_down_char:
+            case gui_event_type::text_select_down_char:
                 reset_state("BD");
                 _selection.drag_selection(_shaped_text.move_down_char(_selection.cursor(), _vertical_movement_x));
                 return true;
 
-            case command::text_select_up_char:
+            case gui_event_type::text_select_up_char:
                 reset_state("BD");
                 _selection.drag_selection(_shaped_text.move_up_char(_selection.cursor(), _vertical_movement_x));
                 return true;
 
-            case command::text_select_left_word:
+            case gui_event_type::text_select_left_word:
                 reset_state("BDX");
                 _selection.drag_selection(_shaped_text.move_left_word(_selection.cursor(), false));
                 return true;
 
-            case command::text_select_right_word:
+            case gui_event_type::text_select_right_word:
                 reset_state("BDX");
                 _selection.drag_selection(_shaped_text.move_right_word(_selection.cursor(), false));
                 return true;
 
-            case command::text_select_begin_line:
+            case gui_event_type::text_select_begin_line:
                 reset_state("BDX");
                 _selection.drag_selection(_shaped_text.move_begin_line(_selection.cursor()));
                 return true;
 
-            case command::text_select_end_line:
+            case gui_event_type::text_select_end_line:
                 reset_state("BDX");
                 _selection.drag_selection(_shaped_text.move_end_line(_selection.cursor()));
                 return true;
 
-            case command::text_select_begin_sentence:
+            case gui_event_type::text_select_begin_sentence:
                 reset_state("BDX");
                 _selection.drag_selection(_shaped_text.move_begin_sentence(_selection.cursor()));
                 return true;
 
-            case command::text_select_end_sentence:
+            case gui_event_type::text_select_end_sentence:
                 reset_state("BDX");
                 _selection.drag_selection(_shaped_text.move_end_sentence(_selection.cursor()));
                 return true;
 
-            case command::text_select_begin_document:
+            case gui_event_type::text_select_begin_document:
                 reset_state("BDX");
                 _selection.drag_selection(_shaped_text.move_begin_document(_selection.cursor()));
                 return true;
 
-            case command::text_select_end_document:
+            case gui_event_type::text_select_end_document:
                 reset_state("BDX");
                 _selection.drag_selection(_shaped_text.move_end_document(_selection.cursor()));
                 return true;
 
-            case command::text_select_document:
+            case gui_event_type::text_select_document:
                 reset_state("BDX");
                 _selection = _shaped_text.move_begin_document(_selection.cursor());
                 _selection.drag_selection(_shaped_text.move_end_document(_selection.cursor()));
                 return true;
 
-            default:
-                return false;
+            case gui_event_type::mouse_up:
+                if (*edit_mode != edit_mode_type::fixed) {
+                    // Stop the continues redrawing during dragging.
+                    // Also reset the time, so on drag-start it will initialize the time, which will
+                    // cause a smooth startup of repeating.
+                    _last_drag_mouse_event = {};
+                    _last_drag_mouse_event_next_repeat = {};
+                    return true;
+                } else {
+                    return false;
+                }
+
+            case gui_event_type::mouse_down:
+                if (*edit_mode != edit_mode_type::fixed) {
+                    hilet cursor = _shaped_text.get_nearest_cursor(event.mouse.position);
+                    switch (event.mouse.click_count) {
+                    case 1:
+                        reset_state("BDX");
+                        _selection = cursor;
+                        break;
+                    case 2:
+                        reset_state("BDX");
+                        _selection.start_selection(cursor, _shaped_text.select_word(cursor));
+                        break;
+                    case 3:
+                        reset_state("BDX");
+                        _selection.start_selection(cursor, _shaped_text.select_sentence(cursor));
+                        break;
+                    case 4:
+                        reset_state("BDX");
+                        _selection.start_selection(cursor, _shaped_text.select_paragraph(cursor));
+                        break;
+                    case 5:
+                        reset_state("BDX");
+                        _selection.start_selection(cursor, _shaped_text.select_document(cursor));
+                        break;
+                    default:;
+                    }
+
+                    request_redraw();
+                    return true;
+                } else {
+                    return false;
+                }
+
+            case gui_event_type::mouse_drag:
+                if (*edit_mode != edit_mode_type::fixed) {
+                    hilet cursor = _shaped_text.get_nearest_cursor(event.mouse.position);
+                    switch (event.mouse.click_count) {
+                    case 1:
+                        reset_state("BDX");
+                        _selection.drag_selection(cursor);
+                        break;
+                    case 2:
+                        reset_state("BDX");
+                        _selection.drag_selection(cursor, _shaped_text.select_word(cursor));
+                        break;
+                    case 3:
+                        reset_state("BDX");
+                        _selection.drag_selection(cursor, _shaped_text.select_sentence(cursor));
+                        break;
+                    case 4:
+                        reset_state("BDX");
+                        _selection.drag_selection(cursor, _shaped_text.select_paragraph(cursor));
+                        break;
+                    default:;
+                    }
+
+                    // Drag events must be repeated, so that dragging is continues when it causes scrolling.
+                    // Normally mouse positions are kept in the local coordinate system, but scrolling
+                    // causes this coordinate system to shift, so translate it to the window coordinate system here.
+                    _last_drag_mouse_event = event;
+                    _last_drag_mouse_event.mouse.position = point2{_layout.to_window * event.mouse.position};
+                    request_redraw();
+                    return true;
+                } else {return false;}
+
+            default: return false;
             }
         }();
 
@@ -544,125 +629,7 @@ bool text_widget::handle_event(hi::command command) noexcept
         }
     }
 
-    return super::handle_event(command);
-}
-
-bool text_widget::handle_event(keyboard_event const& event) noexcept
-{
-    using enum keyboard_event::Type;
-
-    hi_axiom(is_gui_thread());
-    request_relayout();
-
-    auto handled = super::handle_event(event);
-
-    if (*enabled) {
-        switch (event.type) {
-        case grapheme:
-            reset_state("BDX");
-            add_character(event.grapheme, add_type::append);
-            return true;
-
-        case partial_grapheme:
-            reset_state("BDX");
-            add_character(event.grapheme, add_type::dead);
-            return true;
-
-        default:;
-        }
-    }
-
-    return handled;
-}
-
-bool text_widget::handle_event(mouse_event const& event) noexcept
-{
-    hi_axiom(is_gui_thread());
-    auto handled = super::handle_event(event);
-    if (*edit_mode == edit_mode_type::fixed) {
-        return handled;
-    }
-
-    if (event.cause.leftButton) {
-        handled = true;
-
-        if (not *enabled) {
-            return true;
-        }
-
-        hilet cursor = _shaped_text.get_nearest_cursor(event.position);
-
-        switch (event.type) {
-            using enum mouse_event::Type;
-        case ButtonUp:
-            // Stop the continues redrawing during dragging.
-            // Also reset the time, so on drag-start it will initialize the time, which will
-            // cause a smooth startup of repeating.
-            _last_drag_mouse_event = {};
-            _last_drag_mouse_event_next_repeat = {};
-            break;
-
-        case ButtonDown:
-            switch (event.clickCount) {
-            case 1:
-                reset_state("BDX");
-                _selection = cursor;
-                break;
-            case 2:
-                reset_state("BDX");
-                _selection.start_selection(cursor, _shaped_text.select_word(cursor));
-                break;
-            case 3:
-                reset_state("BDX");
-                _selection.start_selection(cursor, _shaped_text.select_sentence(cursor));
-                break;
-            case 4:
-                reset_state("BDX");
-                _selection.start_selection(cursor, _shaped_text.select_paragraph(cursor));
-                break;
-            case 5:
-                reset_state("BDX");
-                _selection.start_selection(cursor, _shaped_text.select_document(cursor));
-                break;
-            default:;
-            }
-
-            request_redraw();
-            break;
-
-        case Drag:
-            switch (event.clickCount) {
-            case 1:
-                reset_state("BDX");
-                _selection.drag_selection(cursor);
-                break;
-            case 2:
-                reset_state("BDX");
-                _selection.drag_selection(cursor, _shaped_text.select_word(cursor));
-                break;
-            case 3:
-                reset_state("BDX");
-                _selection.drag_selection(cursor, _shaped_text.select_sentence(cursor));
-                break;
-            case 4:
-                reset_state("BDX");
-                _selection.drag_selection(cursor, _shaped_text.select_paragraph(cursor));
-                break;
-            default:;
-            }
-
-            // Drag events must be repeated, so that dragging is continues when it causes scrolling.
-            // Normally mouse positions are kept in the local coordinate system, but scrolling
-            // causes this coordinate system to shift, so translate it to the window coordinate system here.
-            _last_drag_mouse_event = event;
-            _last_drag_mouse_event.position = point2{_layout.to_window * event.position};
-            request_redraw();
-            break;
-
-        default:;
-        }
-    }
-    return handled;
+    return super::handle_event(event);
 }
 
 hitbox text_widget::hitbox_test(point3 position) const noexcept
