@@ -305,7 +305,10 @@ bool gui_window::process_event(gui_event const &event) noexcept
 {
     hi_axiom(is_gui_thread());
 
-    auto events = std::vector<gui_event>{event};
+    // This is a static so that this events vector does not need to be allocate for each mouse move event.
+    static auto events = std::vector<gui_event>{};
+    events.clear();
+    events.push_back(event);
 
     switch (event.type()) {
     case gui_event_type::mouse_exit_window: // Mouse left window.
@@ -322,12 +325,13 @@ bool gui_window::process_event(gui_event const &event) noexcept
         }
     } break;
 
-    case gui_event_type::keyboard_down: events = keyboard_bindings().translate(event); break;
+    case gui_event_type::keyboard_down: keyboard_bindings().translate(event, events); break;
 
     default:;
     }
 
-    hilet handled = send_events_to_widget(_mouse_target_widget, events);
+    hilet target_widget = event.is_mouse_event() ? _mouse_target_widget : _keyboard_target_widget;
+    hilet handled = send_events_to_widget(target_widget, events);
 
     // Intercept the keyboard generated escape.
     // A keyboard generated escape should always remove keyboard focus.

@@ -110,20 +110,19 @@ public:
     }
 
     /** translate a key press in the empty-context to a command.
+     *
+     * @param event The event to look up in the bindings.
+     * @param [in,out]events The event list to append the bindings to when found.
      */
-    [[nodiscard]] std::vector<gui_event> translate(gui_event event) const noexcept
+    [[nodiscard]] void translate(gui_event event, std::vector<gui_event>& events) const noexcept
     {
-        auto r = std::vector<gui_event>{event};
-
         if (event == gui_event_type::keyboard_down) {
             hilet i = bindings.find(keyboard_key{event.keyboard_modifiers, event.key()});
             if (i != bindings.cend()) {
-                hilet &events = i->second.get_events();
-                r.insert(r.cend(), events.cbegin(), events.cend());
+                hilet& new_events = i->second.get_events();
+                events.insert(events.cend(), new_events.cbegin(), new_events.cend());
             }
         }
-
-        return r;
     }
 
     /** Clear all bindings.
