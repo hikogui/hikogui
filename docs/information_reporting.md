@@ -4,8 +4,8 @@ Information reporting
 Exceptions
 ----------
 
-HikoGUI will internally use many of the exceptions of the standard library.
-The library also includes its own exceptions. These exceptions work the same
+HikoGUI uses many of the exceptions provided by the standard library.
+But the library also includes its own exceptions. These exceptions work the same
 as standard library exceptions, except that the constructor works like
 std::format for easy construction of the 'what' string.
 
@@ -32,7 +32,7 @@ Assertions
    such as default labels of switch statements, or unreachable else
    blocks.
  - `hi_static_no_default()`: Used in unreachable constexpr else blocks.
- - `hi_not_implemented()`: Added when functionality should exist, but
+ - `hi_not_implemented()`: Added when functionality should exist, but is not implemented, yet.
 
 Counting
 --------
@@ -52,7 +52,7 @@ if time is spend inside the trace. Extra information may be included with
 the trace for debugging purpose.
 
 A lot of care is taken for this function to be efficient and may be used
-in a lot of places in the code. It uses thread\_local storage. And it
+in a lot of places in the code. It uses thread_local storage. And it
 will be slightly more expensive than counting.
 
 The average and accumulated time spend inside a trace is logged every minute.

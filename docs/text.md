@@ -60,6 +60,7 @@ Text shaping
 ------------
 
 Features:
+
  - Each character may have a separate text-style.
  - Font fallback for characters not found in the selected font/
  - Word wrapping. (UAX #14 Unicode line breaking algorithm)
@@ -78,6 +79,7 @@ The text-widget is used by almost every widget to draw text. This same widget
 is also has full capabilities for text editing.
 
 Features:
+
  - Insert and overwrite mode.
  - Dead-key visualization, shows the character of the dead-key which will be
    replaced by the composed character.
@@ -89,8 +91,4 @@ Features:
    - Primary/Secondary; LTR/RTL cursors.
  - Undo, Redo
  - Copy, Cut & Paste
-
-
-
-
 

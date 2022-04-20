@@ -33,7 +33,7 @@ Window
 ------
 
 The swap-chain of the window will consist of RGBA images, with the format
-that can be handled by the operating system. This may be a 8-bit sRGB color
+that can be handled by the operating system. This may be an 8-bit sRGB color
 space format or an extended float 16 sRGB.
 
 HikoGUI will use alpha blender to render the user interface on top of the swap
@@ -45,7 +45,7 @@ Single pass, five sub-passes
 
 The whole render architecture is using a single pass with five sub-passes.
 
-By using a single pass the shader of the sub-passes are able to efficiently
+By using a single pass, the shader of the sub-passes are able to efficiently
 read from the frame-buffer. This frame buffer can be ephemeral and be located
 completely in fast on-GPU-chip memory. This will make rendering on mobile
 GPUs a lot more efficient compared to multi-pass architectures.
@@ -72,15 +72,14 @@ Text Shaping
  3. Find the closest matching font compared to the font-style.
  4. Open the matching font.
  5. Lookup glyphs matching the code points from the grapheme's
- 6. If next grapheme's style is the same, then try looking up the code-points in the current font, otherwise start at 1.
- 7. Otherwise start at 1. with the next grapheme.
+ 6. If the next grapheme's style is the same, then try looking up the code-points in the current font, otherwise start at `1`.
+ 7. Otherwise, start at `1` with the next grapheme.
 
 A grapheme's code point is looked up into the code-point-to-fonts table.
 The returned fonts are then matched with the font-style of the grapheme.
 
 This font is cached based on the style, and any code point is first checked with this
 cached font. If the code point is not found then the full lookup is done.
-
 
 Themes
 ------
