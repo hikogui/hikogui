@@ -25,7 +25,7 @@ public:
     using token_type = std::shared_ptr<function_type>;
     using weak_token_type = std::weak_ptr<function_type>;
     
-    using result_type = function_type::result_type;
+    using result_type = hi_typename function_type::result_type;
 
     constexpr function_timer() noexcept = default;
 

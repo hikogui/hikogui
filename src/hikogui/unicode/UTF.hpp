@@ -329,6 +329,7 @@ template<typename FromChar>
 [[nodiscard]] constexpr std::string to_string(std::basic_string_view<FromChar> rhs) noexcept
 {
     hi_static_not_implemented();
+    return std::string{};
 }
 
 template<std::same_as<char16_t> FromChar>
@@ -361,6 +362,7 @@ template<typename FromChar>
 [[nodiscard]] constexpr std::u16string to_u16string(std::basic_string_view<FromChar> rhs) noexcept
 {
     hi_static_not_implemented();
+    return std::u16string{};
 }
 
 template<std::same_as<char> FromChar>
@@ -393,6 +395,7 @@ template<typename FromChar>
 [[nodiscard]] constexpr std::u32string to_u32string(std::basic_string_view<FromChar> rhs) noexcept
 {
     hi_static_not_implemented();
+    return std::u32string{};
 }
 
 template<std::same_as<char> FromChar>
@@ -425,6 +428,7 @@ template<typename FromChar>
 [[nodiscard]] constexpr std::wstring to_wstring(std::basic_string_view<FromChar> rhs) noexcept
 {
     hi_static_not_implemented();
+    return std::wstring{};
 }
 
 template<std::same_as<char> FromChar>

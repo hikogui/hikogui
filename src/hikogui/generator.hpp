@@ -27,7 +27,7 @@ template<typename T, typename Allocator = std::allocator<std::byte>>
 class generator {
 public:
     static_assert(
-        std::is_same_v<std::allocator_traits<Allocator>::value_type, std::byte>,
+        std::is_same_v<typename std::allocator_traits<Allocator>::value_type, std::byte>,
         "Allocator's value_type must be std::byte");
     using allocator_type = Allocator;
     using value_type = T;

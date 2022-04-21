@@ -38,9 +38,9 @@ public:
     [[nodiscard]] constexpr friend point3 get(line_segment const &rhs) noexcept
     {
         if constexpr (I == 0) {
-            return _p;
+            return rhs._p;
         } else if constexpr (I == 1) {
-            return _p + _v;
+            return rhs._p + rhs._v;
         } else {
             hi_static_no_default();
         }

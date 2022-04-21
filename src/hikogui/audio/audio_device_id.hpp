@@ -18,8 +18,7 @@ public:
     static constexpr char macos = 2;
     static constexpr char asio = 3;
 
-    audio_device_id() noexcept : _v{} {}
-
+    constexpr audio_device_id() noexcept = default;
     audio_device_id(char type, wchar_t const *id) noexcept;
     constexpr audio_device_id(audio_device_id const &) noexcept = default;
     constexpr audio_device_id(audio_device_id &&) noexcept = default;

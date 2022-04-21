@@ -30,7 +30,12 @@ class datum;
 
 template<>
 struct std::hash<hi::datum> {
-    [[nodiscard]] constexpr std::size_t operator()(hi::datum const &rhs) const noexcept;
+    [[nodiscard]] constexpr std::size_t operator()(hi::datum const& rhs) const noexcept;
+};
+
+template<typename CharT>
+struct std::formatter<hi::datum, CharT> : std::formatter<std::string, CharT> {
+    auto format(hi::datum const& t, auto& fc) const -> decltype(std::formatter<std::string, CharT>{}.format(std::string{}, fc));
 };
 
 namespace hi::inline v1 {
@@ -65,10 +70,10 @@ public:
 
     constexpr datum_promotion_result() noexcept = default;
 
-    datum_promotion_result(datum_promotion_result const &) = delete;
-    datum_promotion_result &operator=(datum_promotion_result const &) = delete;
+    datum_promotion_result(datum_promotion_result const&) = delete;
+    datum_promotion_result& operator=(datum_promotion_result const&) = delete;
 
-    constexpr datum_promotion_result(datum_promotion_result &&other) noexcept :
+    constexpr datum_promotion_result(datum_promotion_result&& other) noexcept :
         _lhs(other._lhs),
         _rhs(other._rhs),
         _is_result(other._is_result),
@@ -77,7 +82,7 @@ public:
     {
     }
 
-    constexpr datum_promotion_result &operator=(datum_promotion_result &&other) noexcept
+    constexpr datum_promotion_result& operator=(datum_promotion_result&& other) noexcept
     {
         clear();
         _lhs = other.lhs;
@@ -100,14 +105,14 @@ public:
         _is_result = true;
     }
 
-    constexpr void set(value_type const &lhs, value_type const &rhs) noexcept requires(data_is_pointer)
+    constexpr void set(value_type const& lhs, value_type const& rhs) noexcept requires(data_is_pointer)
     {
         _lhs = &lhs;
         _rhs = &rhs;
         _is_result = true;
     }
 
-    constexpr void set(value_type &&lhs, value_type const &rhs) noexcept requires(data_is_pointer)
+    constexpr void set(value_type&& lhs, value_type const& rhs) noexcept requires(data_is_pointer)
     {
         _lhs = new value_type(std::move(lhs));
         _rhs = &rhs;
@@ -115,7 +120,7 @@ public:
         _owns_lhs = true;
     }
 
-    constexpr void set(value_type const &lhs, value_type &&rhs) noexcept requires(data_is_pointer)
+    constexpr void set(value_type const& lhs, value_type&& rhs) noexcept requires(data_is_pointer)
     {
         _lhs = &lhs;
         _rhs = new value_type(std::move(rhs));
@@ -123,7 +128,7 @@ public:
         _owns_rhs = true;
     }
 
-    constexpr void set(value_type &&lhs, value_type &&rhs) noexcept requires(data_is_pointer)
+    constexpr void set(value_type&& lhs, value_type&& rhs) noexcept requires(data_is_pointer)
     {
         _lhs = new value_type(std::move(lhs));
         _rhs = new value_type(std::move(rhs));
@@ -132,13 +137,13 @@ public:
         _owns_rhs = true;
     }
 
-    [[nodiscard]] constexpr value_type const &lhs() const noexcept requires(data_is_pointer)
+    [[nodiscard]] constexpr value_type const& lhs() const noexcept requires(data_is_pointer)
     {
         hi_axiom(_is_result);
         return *_lhs;
     }
 
-    [[nodiscard]] constexpr value_type const &rhs() const noexcept requires(data_is_pointer)
+    [[nodiscard]] constexpr value_type const& rhs() const noexcept requires(data_is_pointer)
     {
         hi_axiom(_is_result);
         return *_rhs;
@@ -215,19 +220,42 @@ public:
     struct continue_type {
     };
 
+    /** Promote two datum-arguments to a common type.
+     *
+     * @tparam To Type to promote to.
+     * @param lhs The left hand side.
+     * @param rhs The right hand side.
+     */
+    template<typename To>
+    [[nodiscard]] friend constexpr auto promote_if(datum const& lhs, datum const& rhs) noexcept
+    {
+        auto r = detail::datum_promotion_result<To>{};
+        if (holds_alternative<To>(lhs) and holds_alternative<To>(rhs)) {
+            r.set(get<To>(lhs), get<To>(rhs));
+
+        } else if (holds_alternative<To>(lhs) and promotable_to<To>(rhs)) {
+            r.set(get<To>(lhs), static_cast<To>(rhs));
+
+        } else if (promotable_to<To>(lhs) and holds_alternative<To>(rhs)) {
+            r.set(static_cast<To>(lhs), get<To>(rhs));
+        }
+
+        return r;
+    }
+
     constexpr ~datum() noexcept
     {
         delete_pointer();
     }
 
-    constexpr datum(datum const &other) noexcept : _tag(other._tag), _value(other._value)
+    constexpr datum(datum const& other) noexcept : _tag(other._tag), _value(other._value)
     {
         if (other.is_pointer()) {
             copy_pointer(other);
         }
     }
 
-    constexpr datum(datum &&other) noexcept : _tag(other._tag), _value(other._value)
+    constexpr datum(datum&& other) noexcept : _tag(other._tag), _value(other._value)
     {
         other._tag = tag_type::monostate;
         other._value._long_long = 0;
@@ -260,13 +288,13 @@ public:
     explicit datum(bstring value) noexcept : _tag(tag_type::bstring), _value(new bstring{std::move(value)}) {}
 
     template<typename... Args>
-    [[nodiscard]] static datum make_vector(Args const &...args) noexcept
+    [[nodiscard]] static datum make_vector(Args const&...args) noexcept
     {
         return datum{vector_type{datum{args}...}};
     }
 
     template<typename Key, typename Value, typename... Args>
-    [[nodiscard]] static void populate_map(map_type &r, Key const &key, Value const &value, Args const &...args) noexcept
+    static void populate_map(map_type& r, Key const& key, Value const& value, Args const&...args) noexcept
     {
         r.insert(std::pair<datum, datum>{datum{key}, datum{value}});
         if constexpr (sizeof...(Args) > 0) {
@@ -275,7 +303,7 @@ public:
     }
 
     template<typename... Args>
-    [[nodiscard]] static datum make_map(Args const &...args) noexcept
+    [[nodiscard]] static datum make_map(Args const&...args) noexcept
     {
         static_assert(sizeof...(Args) % 2 == 0, "Expect key value pairs for the arguments of make_map()");
 
@@ -296,7 +324,7 @@ public:
         return datum{continue_type{}};
     }
 
-    constexpr datum &operator=(datum const &other) noexcept
+    constexpr datum& operator=(datum const& other) noexcept
     {
         hi_return_on_self_assignment(other);
 
@@ -309,14 +337,14 @@ public:
         return *this;
     }
 
-    constexpr datum &operator=(datum &&other) noexcept
+    constexpr datum& operator=(datum&& other) noexcept
     {
         std::swap(_tag, other._tag);
         std::swap(_value, other._value);
         return *this;
     }
 
-    constexpr datum &operator=(std::floating_point auto value) noexcept(sizeof(value) <= 4)
+    constexpr datum& operator=(std::floating_point auto value) noexcept(sizeof(value) <= 4)
     {
         delete_pointer();
         _tag = tag_type::floating_point;
@@ -324,7 +352,7 @@ public:
         return *this;
     }
 
-    constexpr datum &operator=(numeric_integral auto value) noexcept(sizeof(value) <= 4)
+    constexpr datum& operator=(numeric_integral auto value) noexcept(sizeof(value) <= 4)
     {
         delete_pointer();
         _tag = tag_type::integral;
@@ -332,14 +360,14 @@ public:
         return *this;
     }
 
-    constexpr datum &operator=(decimal value)
+    constexpr datum& operator=(decimal value)
     {
         delete_pointer();
         _tag = tag_type::decimal;
         _value = value;
         return *this;
     }
-    constexpr datum &operator=(bool value) noexcept
+    constexpr datum& operator=(bool value) noexcept
     {
         delete_pointer();
         _tag = tag_type::boolean;
@@ -347,7 +375,7 @@ public:
         return *this;
     }
 
-    constexpr datum &operator=(std::chrono::year_month_day value) noexcept
+    constexpr datum& operator=(std::chrono::year_month_day value) noexcept
     {
         delete_pointer();
         _tag = tag_type::year_month_day;
@@ -355,7 +383,7 @@ public:
         return *this;
     }
 
-    constexpr datum &operator=(std::monostate) noexcept
+    constexpr datum& operator=(std::monostate) noexcept
     {
         delete_pointer();
         _tag = tag_type::monostate;
@@ -363,7 +391,7 @@ public:
         return *this;
     }
 
-    constexpr datum &operator=(nullptr_t) noexcept
+    constexpr datum& operator=(nullptr_t) noexcept
     {
         delete_pointer();
         _tag = tag_type::null;
@@ -371,7 +399,7 @@ public:
         return *this;
     }
 
-    datum &operator=(std::string value) noexcept
+    datum& operator=(std::string value) noexcept
     {
         delete_pointer();
         _tag = tag_type::string;
@@ -379,7 +407,7 @@ public:
         return *this;
     }
 
-    datum &operator=(char const *value) noexcept
+    datum& operator=(char const *value) noexcept
     {
         delete_pointer();
         _tag = tag_type::string;
@@ -387,7 +415,7 @@ public:
         return *this;
     }
 
-    datum &operator=(std::string_view value) noexcept
+    datum& operator=(std::string_view value) noexcept
     {
         delete_pointer();
         _tag = tag_type::string;
@@ -395,7 +423,7 @@ public:
         return *this;
     }
 
-    datum &operator=(vector_type value) noexcept
+    datum& operator=(vector_type value) noexcept
     {
         delete_pointer();
         _tag = tag_type::vector;
@@ -403,7 +431,7 @@ public:
         return *this;
     }
 
-    datum &operator=(map_type value) noexcept
+    datum& operator=(map_type value) noexcept
     {
         delete_pointer();
         _tag = tag_type::map;
@@ -411,7 +439,7 @@ public:
         return *this;
     }
 
-    datum &operator=(URL value) noexcept
+    datum& operator=(URL value) noexcept
     {
         delete_pointer();
         _tag = tag_type::url;
@@ -419,7 +447,7 @@ public:
         return *this;
     }
 
-    datum &operator=(bstring value) noexcept
+    datum& operator=(bstring value) noexcept
     {
         delete_pointer();
         _tag = tag_type::bstring;
@@ -430,29 +458,46 @@ public:
     constexpr explicit operator bool() const noexcept
     {
         switch (_tag) {
-        case tag_type::floating_point: return static_cast<bool>(get<double>(*this));
-        case tag_type::decimal: return static_cast<bool>(get<decimal>(*this));
-        case tag_type::boolean: return get<bool>(*this);
-        case tag_type::integral: return static_cast<bool>(get<long long>(*this));
-        case tag_type::year_month_day: return true;
-        case tag_type::string: return not get<std::string>(*this).empty();
-        case tag_type::vector: return not get<vector_type>(*this).empty();
-        case tag_type::map: return not get<map_type>(*this).empty();
-        case tag_type::url: return not get<URL>(*this).empty();
-        case tag_type::bstring: return not get<bstring>(*this).empty();
-        default: return false;
+        case tag_type::floating_point:
+            return static_cast<bool>(get<double>(*this));
+        case tag_type::decimal:
+            return static_cast<bool>(get<decimal>(*this));
+        case tag_type::boolean:
+            return get<bool>(*this);
+        case tag_type::integral:
+            return static_cast<bool>(get<long long>(*this));
+        case tag_type::year_month_day:
+            return true;
+        case tag_type::string:
+            return not get<std::string>(*this).empty();
+        case tag_type::vector:
+            return not get<vector_type>(*this).empty();
+        case tag_type::map:
+            return not get<map_type>(*this).empty();
+        case tag_type::url:
+            return not get<URL>(*this).empty();
+        case tag_type::bstring:
+            return not get<bstring>(*this).empty();
+        default:
+            return false;
         }
     }
 
     [[nodiscard]] constexpr bool empty() const
     {
         switch (_tag) {
-        case tag_type::string: return get<std::string>(*this).empty();
-        case tag_type::vector: return get<vector_type>(*this).empty();
-        case tag_type::map: return get<map_type>(*this).empty();
-        case tag_type::url: return get<URL>(*this).empty();
-        case tag_type::bstring: return get<bstring>(*this).empty();
-        default: throw std::domain_error(std::format("Type {} can not be checked for empty", *this));
+        case tag_type::string:
+            return get<std::string>(*this).empty();
+        case tag_type::vector:
+            return get<vector_type>(*this).empty();
+        case tag_type::map:
+            return get<map_type>(*this).empty();
+        case tag_type::url:
+            return get<URL>(*this).empty();
+        case tag_type::bstring:
+            return get<bstring>(*this).empty();
+        default:
+            throw std::domain_error(std::format("Type {} can not be checked for empty", *this));
         }
     }
 
@@ -460,22 +505,32 @@ public:
     constexpr explicit operator T() const
     {
         switch (_tag) {
-        case tag_type::floating_point: return static_cast<T>(get<double>(*this));
-        case tag_type::integral: return static_cast<T>(get<long long>(*this));
-        case tag_type::decimal: return static_cast<T>(get<decimal>(*this));
-        case tag_type::boolean: return static_cast<T>(get<bool>(*this));
-        default: throw std::domain_error(std::format("Can't convert {} to floating point", *this));
+        case tag_type::floating_point:
+            return static_cast<T>(get<double>(*this));
+        case tag_type::integral:
+            return static_cast<T>(get<long long>(*this));
+        case tag_type::decimal:
+            return static_cast<T>(get<decimal>(*this));
+        case tag_type::boolean:
+            return static_cast<T>(get<bool>(*this));
+        default:
+            throw std::domain_error(std::format("Can't convert {} to floating point", *this));
         }
     }
 
     constexpr explicit operator decimal() const
     {
         switch (_tag) {
-        case tag_type::floating_point: return decimal(get<double>(*this));
-        case tag_type::integral: return decimal(get<long long>(*this));
-        case tag_type::decimal: return get<decimal>(*this);
-        case tag_type::boolean: return decimal(get<bool>(*this));
-        default: throw std::domain_error(std::format("Can't convert {} to floating point", *this));
+        case tag_type::floating_point:
+            return decimal(get<double>(*this));
+        case tag_type::integral:
+            return decimal(get<long long>(*this));
+        case tag_type::decimal:
+            return get<decimal>(*this);
+        case tag_type::boolean:
+            return decimal(get<bool>(*this));
+        default:
+            throw std::domain_error(std::format("Can't convert {} to floating point", *this));
         }
     }
 
@@ -485,7 +540,8 @@ public:
         if (auto f = get_if<double>(*this)) {
             errno = 0;
             auto r = std::round(*f);
-            if (errno == EDOM or errno == ERANGE or r < std::numeric_limits<T>::min() or r > std::numeric_limits<T>::max()) {
+            if (errno == EDOM or errno == ERANGE or r < narrow<double>(std::numeric_limits<T>::min()) or
+                r > narrow<double>(std::numeric_limits<T>::max())) {
                 throw std::overflow_error("double to integral");
             }
             return static_cast<T>(r);
@@ -523,39 +579,54 @@ public:
     explicit operator std::string() const noexcept
     {
         switch (_tag) {
-        case tag_type::monostate: return "undefined";
-        case tag_type::floating_point: return hi::to_string(_value._double);
-        case tag_type::decimal: return to_string(_value._decimal);
-        case tag_type::integral: return to_string(_value._long_long);
-        case tag_type::boolean: return _value._bool ? "true" : "false";
-        case tag_type::year_month_day: return std::format("{:%Y-%m-%d}", _value._year_month_day);
-        case tag_type::null: return "null";
-        case tag_type::flow_break: return "break";
-        case tag_type::flow_continue: return "continue";
-        case tag_type::string: return *_value._string;
-        case tag_type::url: return to_string(*_value._url);
-        case tag_type::vector: {
-            auto r = std::string{"["};
-            for (hilet &item : *_value._vector) {
-                r += repr(item);
-                r += ',';
-            }
-            r += ']';
-            return r;
-        };
-        case tag_type::map: {
-            auto r = std::string{"{"};
-            for (hilet &item : *_value._map) {
-                r += repr(item.first);
-                r += ':';
-                r += repr(item.second);
-                r += ',';
-            }
-            r += '}';
-            return r;
-        };
-        case tag_type::bstring: return base64::encode(*_value._bstring);
-        default: hi_no_default();
+        case tag_type::monostate:
+            return "undefined";
+        case tag_type::floating_point:
+            return hi::to_string(_value._double);
+        case tag_type::decimal:
+            return to_string(_value._decimal);
+        case tag_type::integral:
+            return to_string(_value._long_long);
+        case tag_type::boolean:
+            return _value._bool ? "true" : "false";
+        case tag_type::year_month_day:
+            return std::format("{:%Y-%m-%d}", _value._year_month_day);
+        case tag_type::null:
+            return "null";
+        case tag_type::flow_break:
+            return "break";
+        case tag_type::flow_continue:
+            return "continue";
+        case tag_type::string:
+            return *_value._string;
+        case tag_type::url:
+            return to_string(*_value._url);
+        case tag_type::vector:
+            {
+                auto r = std::string{"["};
+                for (hilet& item : *_value._vector) {
+                    r += repr(item);
+                    r += ',';
+                }
+                r += ']';
+                return r;
+            };
+        case tag_type::map:
+            {
+                auto r = std::string{"{"};
+                for (hilet& item : *_value._map) {
+                    r += repr(item.first);
+                    r += ':';
+                    r += repr(item.second);
+                    r += ',';
+                }
+                r += '}';
+                return r;
+            };
+        case tag_type::bstring:
+            return base64::encode(*_value._bstring);
+        default:
+            hi_no_default();
         }
     }
 
@@ -611,17 +682,28 @@ public:
     [[nodiscard]] constexpr char const *type_name() const noexcept
     {
         switch (_tag) {
-        case tag_type::floating_point: return "float";
-        case tag_type::decimal: return "decimal";
-        case tag_type::integral: return "int";
-        case tag_type::boolean: return "bool";
-        case tag_type::year_month_day: return "date";
-        case tag_type::string: return "string";
-        case tag_type::url: return "url";
-        case tag_type::vector: return "vector";
-        case tag_type::map: return "map";
-        case tag_type::bstring: return "bytes";
-        default: hi_no_default();
+        case tag_type::floating_point:
+            return "float";
+        case tag_type::decimal:
+            return "decimal";
+        case tag_type::integral:
+            return "int";
+        case tag_type::boolean:
+            return "bool";
+        case tag_type::year_month_day:
+            return "date";
+        case tag_type::string:
+            return "string";
+        case tag_type::url:
+            return "url";
+        case tag_type::vector:
+            return "vector";
+        case tag_type::map:
+            return "map";
+        case tag_type::bstring:
+            return "bytes";
+        default:
+            hi_no_default();
         }
     }
 
@@ -648,38 +730,49 @@ public:
         return _tag == tag_type::flow_continue;
     }
 
-    [[nodiscard]] constexpr std::size_t hash() const noexcept
+    [[nodiscard]] std::size_t hash() const noexcept
     {
         switch (_tag) {
-        case tag_type::floating_point: return std::hash<double>{}(_value._double);
-        case tag_type::decimal: return std::hash<decimal>{}(_value._decimal);
-        case tag_type::integral: return std::hash<long long>{}(_value._long_long);
-        case tag_type::boolean: return std::hash<bool>{}(_value._bool);
-        case tag_type::year_month_day: {
-            uint32_t r = 0;
-            r |= static_cast<uint32_t>(static_cast<int>(_value._year_month_day.year())) << 16;
-            r |= static_cast<uint32_t>(static_cast<unsigned>(_value._year_month_day.month())) << 8;
-            r |= static_cast<uint32_t>(static_cast<unsigned>(_value._year_month_day.day()));
-            return std::hash<uint32_t>{}(r);
-        }
-        case tag_type::string: return std::hash<std::string>{}(*_value._string);
-        case tag_type::vector: {
-            std::size_t r = 0;
-            for (hilet &v : *_value._vector) {
-                r = hash_mix(r, v.hash());
+        case tag_type::floating_point:
+            return std::hash<double>{}(_value._double);
+        case tag_type::decimal:
+            return std::hash<decimal>{}(_value._decimal);
+        case tag_type::integral:
+            return std::hash<long long>{}(_value._long_long);
+        case tag_type::boolean:
+            return std::hash<bool>{}(_value._bool);
+        case tag_type::year_month_day:
+            {
+                uint32_t r = 0;
+                r |= static_cast<uint32_t>(static_cast<int>(_value._year_month_day.year())) << 16;
+                r |= static_cast<uint32_t>(static_cast<unsigned>(_value._year_month_day.month())) << 8;
+                r |= static_cast<uint32_t>(static_cast<unsigned>(_value._year_month_day.day()));
+                return std::hash<uint32_t>{}(r);
             }
-            return r;
-        }
-        case tag_type::map: {
-            std::size_t r = 0;
-            for (hilet &kv : *_value._map) {
-                r = hash_mix(r, kv.first.hash(), kv.second.hash());
+        case tag_type::string:
+            return std::hash<std::string>{}(*_value._string);
+        case tag_type::vector:
+            {
+                std::size_t r = 0;
+                for (hilet& v : *_value._vector) {
+                    r = hash_mix(r, v.hash());
+                }
+                return r;
             }
-            return r;
-        }
-        case tag_type::url: return std::hash<URL>{}(*_value._url);
-        case tag_type::bstring: return std::hash<bstring>{}(*_value._bstring);
-        default: hi_no_default();
+        case tag_type::map:
+            {
+                std::size_t r = 0;
+                for (hilet& kv : *_value._map) {
+                    r = hash_mix(r, kv.first.hash(), kv.second.hash());
+                }
+                return r;
+            }
+        case tag_type::url:
+            return std::hash<URL>{}(*_value._url);
+        case tag_type::bstring:
+            return std::hash<bstring>{}(*_value._bstring);
+        default:
+            hi_no_default();
         }
     }
 
@@ -698,12 +791,12 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr friend std::size_t size(datum const &rhs)
+    [[nodiscard]] constexpr friend std::size_t size(datum const& rhs)
     {
         return rhs.size();
     }
 
-    [[nodiscard]] constexpr datum const &back() const
+    [[nodiscard]] constexpr datum const& back() const
     {
         if (hilet *v = get_if<vector_type>(*this)) {
             if (v->empty()) {
@@ -715,7 +808,7 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr datum &back()
+    [[nodiscard]] constexpr datum& back()
     {
         if (auto *v = get_if<vector_type>(*this)) {
             if (v->empty()) {
@@ -727,7 +820,7 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr datum const &front() const
+    [[nodiscard]] constexpr datum const& front() const
     {
         if (hilet *v = get_if<vector_type>(*this)) {
             if (v->empty()) {
@@ -739,7 +832,7 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr datum &front()
+    [[nodiscard]] constexpr datum& front()
     {
         if (auto *v = get_if<vector_type>(*this)) {
             if (v->empty()) {
@@ -807,12 +900,12 @@ public:
 
     /** Get the sorted list of keys of a map.
      */
-    [[nodiscard]] constexpr vector_type keys() const
+    [[nodiscard]] vector_type keys() const
     {
         if (hilet *m = get_if<map_type>(*this)) {
             auto r = vector_type{};
             r.reserve(m->size());
-            for (hilet &kv : *m) {
+            for (hilet& kv : *m) {
                 r.push_back(kv.first);
             }
             return r;
@@ -823,12 +916,12 @@ public:
 
     /** Get the list of values of a map.
      */
-    [[nodiscard]] constexpr vector_type values() const
+    [[nodiscard]] vector_type values() const
     {
         if (hilet *m = get_if<map_type>(*this)) {
             auto r = vector_type{};
             r.reserve(m->size());
-            for (hilet &kv : *m) {
+            for (hilet& kv : *m) {
                 r.push_back(kv.second);
             }
             return r;
@@ -839,13 +932,13 @@ public:
 
     /** Get key value pairs of items of a map sorted by the key.
      */
-    [[nodiscard]] constexpr vector_type items() const
+    [[nodiscard]] vector_type items() const
     {
         if (hilet *m = get_if<map_type>(*this)) {
             auto r = vector_type{};
             r.reserve(m->size());
 
-            for (hilet &item : *m) {
+            for (hilet& item : *m) {
                 r.push_back(make_vector(item.first, item.second));
             }
             return r;
@@ -854,7 +947,7 @@ public:
         }
     }
 
-    constexpr void push_back(datum const &rhs)
+    constexpr void push_back(datum const& rhs)
     {
         if (auto *v = get_if<vector_type>(*this)) {
             return v->push_back(rhs);
@@ -863,7 +956,7 @@ public:
         }
     }
 
-    constexpr void push_back(datum &&rhs)
+    constexpr void push_back(datum&& rhs)
     {
         if (auto *v = get_if<vector_type>(*this)) {
             return v->push_back(std::move(rhs));
@@ -873,7 +966,7 @@ public:
     }
 
     template<typename Arg>
-    constexpr void push_back(Arg &&arg)
+    constexpr void push_back(Arg&& arg)
     {
         push_back(datum{std::forward<Arg>(arg)});
     }
@@ -890,7 +983,7 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr bool contains(datum const &rhs) const
+    [[nodiscard]] constexpr bool contains(datum const& rhs) const
     {
         if (auto *m = get_if<map_type>(*this)) {
             return m->contains(rhs);
@@ -900,19 +993,19 @@ public:
     }
 
     template<typename Arg>
-    [[nodiscard]] constexpr bool contains(Arg const &arg) const
+    [[nodiscard]] constexpr bool contains(Arg const& arg) const
     {
         return contains(datum{arg});
     }
 
-    [[nodiscard]] std::vector<datum *> find(jsonpath const &path) noexcept
+    [[nodiscard]] std::vector<datum *> find(jsonpath const& path) noexcept
     {
         auto r = std::vector<datum *>{};
         find(path.cbegin(), path.cend(), r);
         return r;
     }
 
-    [[nodiscard]] std::vector<datum const *> find(jsonpath const &path) const noexcept
+    [[nodiscard]] std::vector<datum const *> find(jsonpath const& path) const noexcept
     {
         auto tmp = std::vector<datum *>{};
         const_cast<datum *>(this)->find(path.cbegin(), path.cend(), tmp);
@@ -929,7 +1022,7 @@ public:
      * @param path A json path to remove.
      * @return true if one or more objects where removed.
      */
-    [[nodiscard]] bool remove(jsonpath const &path) noexcept
+    [[nodiscard]] bool remove(jsonpath const& path) noexcept
     {
         return static_cast<bool>(remove(path.cbegin(), path.cend()));
     }
@@ -939,7 +1032,7 @@ public:
      * @param path The json path to use to find an object. Path must be singular.
      * @return A pointer to the object found, or nullptr.
      */
-    [[nodiscard]] datum *find_one(jsonpath const &path) noexcept
+    [[nodiscard]] datum *find_one(jsonpath const& path) noexcept
     {
         hi_axiom(path.is_singular());
         return find_one(path.cbegin(), path.cend(), false);
@@ -950,7 +1043,7 @@ public:
      * @param path The json path to use to find an object. Path must be singular.
      * @return A pointer to the object found, or nullptr.
      */
-    [[nodiscard]] datum *find_one_or_create(jsonpath const &path) noexcept
+    [[nodiscard]] datum *find_one_or_create(jsonpath const& path) noexcept
     {
         hi_axiom(path.is_singular());
         return find_one(path.cbegin(), path.cend(), true);
@@ -961,16 +1054,16 @@ public:
      * @param path The json path to use to find an object. Path must be singular.
      * @return A pointer to the object found, or nullptr.
      */
-    [[nodiscard]] datum const *find_one(jsonpath const &path) const noexcept
+    [[nodiscard]] datum const *find_one(jsonpath const& path) const noexcept
     {
         hi_axiom(path.is_singular());
         return const_cast<datum *>(this)->find_one(path.cbegin(), path.cend(), false);
     }
 
-    [[nodiscard]] constexpr datum const &operator[](datum const &rhs) const
+    [[nodiscard]] datum const& operator[](datum const& rhs) const
     {
         if (holds_alternative<vector_type>(*this) and holds_alternative<long long>(rhs)) {
-            hilet &v = get<vector_type>(*this);
+            hilet& v = get<vector_type>(*this);
 
             auto index = get<long long>(rhs);
             if (index < 0) {
@@ -983,7 +1076,7 @@ public:
             return v[index];
 
         } else if (holds_alternative<map_type>(*this)) {
-            hilet &m = get<map_type>(*this);
+            hilet& m = get<map_type>(*this);
             hilet it = m.find(rhs);
             if (it == m.end()) {
                 throw std::overflow_error(std::format("Key {} not found in map", repr(rhs)));
@@ -996,10 +1089,10 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr datum &operator[](datum const &rhs)
+    [[nodiscard]] constexpr datum& operator[](datum const& rhs)
     {
         if (holds_alternative<vector_type>(*this) and holds_alternative<long long>(rhs)) {
-            auto &v = get<vector_type>(*this);
+            auto& v = get<vector_type>(*this);
 
             auto index = get<long long>(rhs);
             if (index < 0) {
@@ -1012,7 +1105,7 @@ public:
             return v[index];
 
         } else if (holds_alternative<map_type>(*this)) {
-            auto &m = get<map_type>(*this);
+            auto& m = get<map_type>(*this);
             return m[rhs];
 
         } else {
@@ -1020,17 +1113,17 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr datum const &operator[](auto const &rhs) const
+    [[nodiscard]] constexpr datum const& operator[](auto const& rhs) const
     {
         return (*this)[datum{rhs}];
     }
 
-    [[nodiscard]] constexpr datum &operator[](auto const &rhs)
+    [[nodiscard]] constexpr datum& operator[](auto const& rhs)
     {
         return (*this)[datum{rhs}];
     }
 
-    [[nodiscard]] constexpr datum &operator++()
+    [[nodiscard]] constexpr datum& operator++()
     {
         if (holds_alternative<long long>(*this)) {
             ++_value._long_long;
@@ -1040,7 +1133,7 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr datum &operator--()
+    [[nodiscard]] constexpr datum& operator--()
     {
         if (holds_alternative<long long>(*this)) {
             --_value._long_long;
@@ -1071,7 +1164,7 @@ public:
         }
     }
 
-    constexpr datum &operator+=(auto const &rhs)
+    constexpr datum& operator+=(auto const& rhs)
     {
         if (holds_alternative<vector_type>(*this)) {
             push_back(rhs);
@@ -1082,7 +1175,7 @@ public:
     }
 
 #define X(op, inner_op) \
-    constexpr datum &operator op(auto const &rhs) \
+    constexpr datum& operator op(auto const& rhs) \
     { \
         return (*this) = (*this)inner_op rhs; \
     }
@@ -1098,7 +1191,7 @@ public:
     X(>>=, >>)
 #undef X
 
-    [[nodiscard]] friend constexpr bool operator==(datum const &lhs, datum const &rhs) noexcept
+    [[nodiscard]] friend constexpr bool operator==(datum const& lhs, datum const& rhs) noexcept
     {
         if (hilet doubles = promote_if<double>(lhs, rhs)) {
             return doubles.lhs() == doubles.rhs();
@@ -1162,7 +1255,7 @@ public:
      *    + flow_break = 8,
      *
      */
-    [[nodiscard]] friend constexpr std::partial_ordering operator<=>(datum const &lhs, datum const &rhs) noexcept
+    [[nodiscard]] friend constexpr std::partial_ordering operator<=>(datum const& lhs, datum const& rhs) noexcept
     {
         if (hilet doubles = promote_if<double>(lhs, rhs)) {
             return doubles.lhs() <=> doubles.rhs();
@@ -1209,7 +1302,7 @@ public:
      * @param lhs The right-hand-side operand of the operation.
      * @return The result of the operation.
      */
-    [[nodiscard]] friend constexpr datum operator-(datum const &rhs)
+    [[nodiscard]] friend constexpr datum operator-(datum const& rhs)
     {
         if (hilet rhs_double = get_if<double>(rhs)) {
             return datum{-*rhs_double};
@@ -1234,7 +1327,7 @@ public:
      * @param lhs The right-hand-side operand of the operation.
      * @return The result of the operation.
      */
-    [[nodiscard]] friend constexpr datum operator~(datum const &rhs)
+    [[nodiscard]] friend constexpr datum operator~(datum const& rhs)
     {
         if (hilet rhs_long_long = get_if<long long>(rhs)) {
             return datum{~*rhs_long_long};
@@ -1258,7 +1351,7 @@ public:
      * @param lhs The right-hand-side operand of the operation.
      * @return The result of the operation.
      */
-    [[nodiscard]] friend constexpr datum operator+(datum const &lhs, datum const &rhs)
+    [[nodiscard]] friend constexpr datum operator+(datum const& lhs, datum const& rhs)
     {
         if (hilet doubles = promote_if<double>(lhs, rhs)) {
             return datum{doubles.lhs() + doubles.rhs()};
@@ -1293,7 +1386,7 @@ public:
      * @param lhs The right-hand-side operand of the operation.
      * @return The result of the operation.
      */
-    [[nodiscard]] friend constexpr datum operator-(datum const &lhs, datum const &rhs)
+    [[nodiscard]] friend constexpr datum operator-(datum const& lhs, datum const& rhs)
     {
         if (hilet doubles = promote_if<double>(lhs, rhs)) {
             return datum{doubles.lhs() - doubles.rhs()};
@@ -1320,7 +1413,7 @@ public:
      * @param lhs The right-hand-side operand of the operation.
      * @return The result of the operation.
      */
-    [[nodiscard]] friend constexpr datum operator*(datum const &lhs, datum const &rhs)
+    [[nodiscard]] friend constexpr datum operator*(datum const& lhs, datum const& rhs)
     {
         if (hilet doubles = promote_if<double>(lhs, rhs)) {
             return datum{doubles.lhs() * doubles.rhs()};
@@ -1349,7 +1442,7 @@ public:
      * @param lhs The right-hand-side operand of the operation.
      * @return The result of the operation.
      */
-    [[nodiscard]] friend constexpr datum operator/(datum const &lhs, datum const &rhs)
+    [[nodiscard]] friend constexpr datum operator/(datum const& lhs, datum const& rhs)
     {
         if (hilet doubles = promote_if<double>(lhs, rhs)) {
             if (doubles.rhs() == 0) {
@@ -1388,7 +1481,7 @@ public:
      * @param lhs The right-hand-side operand of the operation.
      * @return The result of the operation.
      */
-    [[nodiscard]] friend constexpr datum operator%(datum const &lhs, datum const &rhs)
+    [[nodiscard]] friend constexpr datum operator%(datum const& lhs, datum const& rhs)
     {
         if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
             if (long_longs.rhs() == 0) {
@@ -1411,7 +1504,7 @@ public:
      * @param lhs The right-hand-side operand of the operation.
      * @return The result of the operation.
      */
-    [[nodiscard]] friend constexpr datum pow(datum const &lhs, datum const &rhs)
+    [[nodiscard]] friend constexpr datum pow(datum const& lhs, datum const& rhs)
     {
         if (hilet doubles = promote_if<double>(lhs, rhs)) {
             return datum{pow(doubles.lhs(), doubles.rhs())};
@@ -1434,7 +1527,7 @@ public:
      * @param lhs The right-hand-side operand of the operation.
      * @return The result of the operation.
      */
-    [[nodiscard]] friend constexpr datum operator&(datum const &lhs, datum const &rhs)
+    [[nodiscard]] friend constexpr datum operator&(datum const& lhs, datum const& rhs)
     {
         if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
             return datum{long_longs.lhs() & long_longs.rhs()};
@@ -1457,7 +1550,7 @@ public:
      * @param lhs The right-hand-side operand of the operation.
      * @return The result of the operation.
      */
-    [[nodiscard]] friend constexpr datum operator|(datum const &lhs, datum const &rhs)
+    [[nodiscard]] friend constexpr datum operator|(datum const& lhs, datum const& rhs)
     {
         if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
             return datum{long_longs.lhs() | long_longs.rhs()};
@@ -1480,7 +1573,7 @@ public:
      * @param lhs The right-hand-side operand of the operation.
      * @return The result of the operation.
      */
-    [[nodiscard]] friend constexpr datum operator^(datum const &lhs, datum const &rhs)
+    [[nodiscard]] friend constexpr datum operator^(datum const& lhs, datum const& rhs)
     {
         if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
             return datum{long_longs.lhs() ^ long_longs.rhs()};
@@ -1505,7 +1598,7 @@ public:
      * @param lhs The right-hand-side operand of the operation.
      * @return The result of the operation.
      */
-    [[nodiscard]] friend constexpr datum operator<<(datum const &lhs, datum const &rhs)
+    [[nodiscard]] friend constexpr datum operator<<(datum const& lhs, datum const& rhs)
     {
         if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
             if (long_longs.rhs() < 0 or long_longs.rhs() > (sizeof(long long) * CHAR_BIT - 1)) {
@@ -1529,7 +1622,7 @@ public:
      * @param lhs The right-hand-side operand of the operation.
      * @return The result of the operation.
      */
-    [[nodiscard]] friend constexpr datum operator>>(datum const &lhs, datum const &rhs)
+    [[nodiscard]] friend constexpr datum operator>>(datum const& lhs, datum const& rhs)
     {
         if (hilet long_longs = promote_if<long long>(lhs, rhs)) {
             if (long_longs.rhs() < 0 or long_longs.rhs() > (sizeof(long long) * CHAR_BIT - 1)) {
@@ -1542,17 +1635,17 @@ public:
         }
     }
 
-    friend std::ostream &operator<<(std::ostream &lhs, datum const &rhs)
+    friend std::ostream& operator<<(std::ostream& lhs, datum const& rhs)
     {
         return lhs << to_string(rhs);
     }
 
 #define X(op) \
-    [[nodiscard]] friend constexpr auto operator op(datum const &lhs, auto const &rhs) noexcept(noexcept(lhs op datum{rhs})) \
+    [[nodiscard]] friend constexpr auto operator op(datum const& lhs, auto const& rhs) \
     { \
         return lhs op datum{rhs}; \
     } \
-    [[nodiscard]] friend constexpr auto operator op(auto const &lhs, datum const &rhs) noexcept(noexcept(datum{lhs} op rhs)) \
+    [[nodiscard]] friend constexpr auto operator op(auto const& lhs, datum const& rhs) \
     { \
         return datum{lhs} op rhs; \
     }
@@ -1571,48 +1664,63 @@ public:
 
         /** Get the string representation of the value.
          */
-        [[nodiscard]] friend std::string repr(datum const &rhs) noexcept
+        [[nodiscard]] friend std::string repr(datum const& rhs) noexcept
     {
         switch (rhs._tag) {
-        case tag_type::monostate: return "undefined";
-        case tag_type::floating_point: return std::format("{:.1f}", rhs._value._double);
-        case tag_type::decimal: return to_string(rhs._value._decimal);
-        case tag_type::integral: return std::format("{}", rhs._value._long_long);
-        case tag_type::boolean: return rhs._value._bool ? "true" : "false";
-        case tag_type::year_month_day: return std::format("{:%Y-%m-%d}", rhs._value._year_month_day);
-        case tag_type::null: return "null";
-        case tag_type::flow_break: return "break";
-        case tag_type::flow_continue: return "continue";
-        case tag_type::string: return std::format("\"{}\"", *rhs._value._string);
-        case tag_type::url: return to_string(*rhs._value._url);
-        case tag_type::vector: {
-            auto r = std::string{"["};
-            for (hilet &item : *rhs._value._vector) {
-                r += repr(item);
-                r += ',';
-            }
-            r += ']';
-            return r;
-        };
-        case tag_type::map: {
-            auto r = std::string{"{"};
-            for (hilet &item : *rhs._value._map) {
-                r += repr(item.first);
-                r += ':';
-                r += repr(item.second);
-                r += ',';
-            }
-            r += '}';
-            return r;
-        };
-        case tag_type::bstring: return base64::encode(*rhs._value._bstring);
-        default: hi_no_default();
+        case tag_type::monostate:
+            return "undefined";
+        case tag_type::floating_point:
+            return std::format("{:.1f}", rhs._value._double);
+        case tag_type::decimal:
+            return to_string(rhs._value._decimal);
+        case tag_type::integral:
+            return std::format("{}", rhs._value._long_long);
+        case tag_type::boolean:
+            return rhs._value._bool ? "true" : "false";
+        case tag_type::year_month_day:
+            return std::format("{:%Y-%m-%d}", rhs._value._year_month_day);
+        case tag_type::null:
+            return "null";
+        case tag_type::flow_break:
+            return "break";
+        case tag_type::flow_continue:
+            return "continue";
+        case tag_type::string:
+            return std::format("\"{}\"", *rhs._value._string);
+        case tag_type::url:
+            return to_string(*rhs._value._url);
+        case tag_type::vector:
+            {
+                auto r = std::string{"["};
+                for (hilet& item : *rhs._value._vector) {
+                    r += repr(item);
+                    r += ',';
+                }
+                r += ']';
+                return r;
+            };
+        case tag_type::map:
+            {
+                auto r = std::string{"{"};
+                for (hilet& item : *rhs._value._map) {
+                    r += repr(item.first);
+                    r += ':';
+                    r += repr(item.second);
+                    r += ',';
+                }
+                r += '}';
+                return r;
+            };
+        case tag_type::bstring:
+            return base64::encode(*rhs._value._bstring);
+        default:
+            hi_no_default();
         }
     }
 
     /** Get the string representation of the value.
      */
-    [[nodiscard]] friend std::string to_string(datum const &rhs) noexcept
+    [[nodiscard]] friend std::string to_string(datum const& rhs) noexcept
     {
         return static_cast<std::string>(rhs);
     }
@@ -1624,7 +1732,7 @@ public:
      * @return True if the value-type matches the template parameter @a T
      */
     template<typename T>
-    [[nodiscard]] friend constexpr bool holds_alternative(datum const &rhs) noexcept
+    [[nodiscard]] friend constexpr bool holds_alternative(datum const& rhs) noexcept
     {
         if constexpr (std::is_same_v<T, double>) {
             return rhs._tag == tag_type::floating_point;
@@ -1673,7 +1781,7 @@ public:
      * @param rhs The value to promote.
      */
     template<typename To>
-    [[nodiscard]] friend constexpr bool promotable_to(datum const &rhs) noexcept
+    [[nodiscard]] friend constexpr bool promotable_to(datum const& rhs) noexcept
     {
         if constexpr (std::is_same_v<To, double>) {
             return holds_alternative<double>(rhs) or holds_alternative<decimal>(rhs) or holds_alternative<long long>(rhs) or
@@ -1700,7 +1808,7 @@ public:
      * @return A copy of the value in the datum.
      */
     template<typename T>
-    [[nodiscard]] friend constexpr T const &get(datum const &rhs) noexcept
+    [[nodiscard]] friend constexpr T const& get(datum const& rhs) noexcept
     {
         hi_axiom(holds_alternative<T>(rhs));
         if constexpr (std::is_same_v<T, double>) {
@@ -1737,7 +1845,7 @@ public:
      * @return A copy of the value in the datum.
      */
     template<typename T>
-    [[nodiscard]] friend constexpr T &get(datum &rhs) noexcept
+    [[nodiscard]] friend constexpr T& get(datum& rhs) noexcept
     {
         hi_axiom(holds_alternative<T>(rhs));
         if constexpr (std::is_same_v<T, double>) {
@@ -1774,7 +1882,7 @@ public:
      * @return A pointer to the value, or nullptr.
      */
     template<typename T>
-    [[nodiscard]] friend constexpr T *get_if(datum &rhs) noexcept
+    [[nodiscard]] friend constexpr T *get_if(datum& rhs) noexcept
     {
         if (holds_alternative<T>(rhs)) {
             return &get<T>(rhs);
@@ -1792,7 +1900,7 @@ public:
      * @return A pointer to the value, or nullptr.
      */
     template<typename T>
-    [[nodiscard]] friend constexpr T const *get_if(datum const &rhs) noexcept
+    [[nodiscard]] friend constexpr T const *get_if(datum const& rhs) noexcept
     {
         if (holds_alternative<T>(rhs)) {
             return &get<T>(rhs);
@@ -1811,7 +1919,7 @@ public:
      * @return A pointer to the value, or nullptr.
      */
     template<typename T>
-    [[nodiscard]] friend T *get_if(datum &rhs, jsonpath const &path) noexcept
+    [[nodiscard]] friend T *get_if(datum& rhs, jsonpath const& path) noexcept
     {
         if (auto *value = rhs.find_one(path)) {
             if (holds_alternative<T>(*value)) {
@@ -1834,9 +1942,9 @@ public:
      * @return A pointer to the value, or nullptr.
      */
     template<typename T>
-    [[nodiscard]] friend T const *get_if(datum const &rhs, jsonpath const &path) noexcept
+    [[nodiscard]] friend T const *get_if(datum const& rhs, jsonpath const& path) noexcept
     {
-        if (auto *value = const_cast<datum &>(rhs).find_one(path)) {
+        if (auto *value = const_cast<datum&>(rhs).find_one(path)) {
             if (holds_alternative<T>(*value)) {
                 return &get<T>(*value);
             } else {
@@ -1845,29 +1953,6 @@ public:
         } else {
             return nullptr;
         }
-    }
-
-    /** Promote two datum-arguments to a common type.
-     *
-     * @tparam To Type to promote to.
-     * @param lhs The left hand side.
-     * @param rhs The right hand side.
-     */
-    template<typename To>
-    [[nodiscard]] friend constexpr auto promote_if(datum const &lhs, datum const &rhs) noexcept
-    {
-        auto r = detail::datum_promotion_result<To>{};
-        if (holds_alternative<To>(lhs) and holds_alternative<To>(rhs)) {
-            r.set(get<To>(lhs), get<To>(rhs));
-
-        } else if (holds_alternative<To>(lhs) and promotable_to<To>(rhs)) {
-            r.set(get<To>(lhs), static_cast<To>(rhs));
-
-        } else if (promotable_to<To>(lhs) and holds_alternative<To>(rhs)) {
-            r.set(static_cast<To>(lhs), get<To>(rhs));
-        }
-
-        return r;
     }
 
 private:
@@ -1928,16 +2013,27 @@ private:
         return to_underlying(_tag) < 0;
     }
 
-    hi_no_inline void copy_pointer(datum const &other) noexcept
+    hi_no_inline void copy_pointer(datum const& other) noexcept
     {
         hi_axiom(other.is_pointer());
         switch (other._tag) {
-        case tag_type::string: _value._string = new std::string{*other._value._string}; return;
-        case tag_type::vector: _value._vector = new vector_type{*other._value._vector}; return;
-        case tag_type::map: _value._map = new map_type{*other._value._map}; return;
-        case tag_type::url: _value._url = new URL{*other._value._url}; return;
-        case tag_type::bstring: _value._bstring = new bstring{*other._value._bstring}; return;
-        default: hi_no_default();
+        case tag_type::string:
+            _value._string = new std::string{*other._value._string};
+            return;
+        case tag_type::vector:
+            _value._vector = new vector_type{*other._value._vector};
+            return;
+        case tag_type::map:
+            _value._map = new map_type{*other._value._map};
+            return;
+        case tag_type::url:
+            _value._url = new URL{*other._value._url};
+            return;
+        case tag_type::bstring:
+            _value._bstring = new bstring{*other._value._bstring};
+            return;
+        default:
+            hi_no_default();
         }
     }
 
@@ -1945,12 +2041,23 @@ private:
     {
         hi_axiom(is_pointer());
         switch (_tag) {
-        case tag_type::string: delete _value._string; return;
-        case tag_type::vector: delete _value._vector; return;
-        case tag_type::map: delete _value._map; return;
-        case tag_type::url: delete _value._url; return;
-        case tag_type::bstring: delete _value._bstring; return;
-        default: hi_no_default();
+        case tag_type::string:
+            delete _value._string;
+            return;
+        case tag_type::vector:
+            delete _value._vector;
+            return;
+        case tag_type::map:
+            delete _value._map;
+            return;
+        case tag_type::url:
+            delete _value._url;
+            return;
+        case tag_type::bstring:
+            delete _value._bstring;
+            return;
+        default:
+            hi_no_default();
         }
     }
 
@@ -1961,41 +2068,41 @@ private:
         }
     }
 
-    void find_wildcard(jsonpath::const_iterator it, jsonpath::const_iterator it_end, std::vector<datum *> &r) noexcept
+    void find_wildcard(jsonpath::const_iterator it, jsonpath::const_iterator it_end, std::vector<datum *>& r) noexcept
     {
         if (auto vector = get_if<datum::vector_type>(*this)) {
-            for (auto &item : *vector) {
+            for (auto& item : *vector) {
                 item.find(it + 1, it_end, r);
             }
 
         } else if (auto map = get_if<datum::map_type>(*this)) {
-            for (auto &item : *map) {
+            for (auto& item : *map) {
                 item.second.find(it + 1, it_end, r);
             }
         }
     }
 
-    void find_descend(jsonpath::const_iterator it, jsonpath::const_iterator it_end, std::vector<datum *> &r) noexcept
+    void find_descend(jsonpath::const_iterator it, jsonpath::const_iterator it_end, std::vector<datum *>& r) noexcept
     {
         this->find(it + 1, it_end, r);
 
         if (auto vector = get_if<datum::vector_type>(*this)) {
-            for (auto &item : *vector) {
+            for (auto& item : *vector) {
                 item.find(it, it_end, r);
             }
 
         } else if (auto map = get_if<datum::map_type>(*this)) {
-            for (auto &item : *map) {
+            for (auto& item : *map) {
                 item.second.find(it, it_end, r);
             }
         }
     }
 
     void find_indices(
-        jsonpath_indices const &indices,
+        jsonpath_indices const& indices,
         jsonpath::const_iterator it,
         jsonpath::const_iterator it_end,
-        std::vector<datum *> &r) noexcept
+        std::vector<datum *>& r) noexcept
     {
         if (auto vector = get_if<datum::vector_type>(*this)) {
             for (hilet index : indices.filter(ssize(*vector))) {
@@ -2005,13 +2112,13 @@ private:
     }
 
     void find_names(
-        jsonpath_names const &names,
+        jsonpath_names const& names,
         jsonpath::const_iterator it,
         jsonpath::const_iterator it_end,
-        std::vector<datum *> &r) noexcept
+        std::vector<datum *>& r) noexcept
     {
         if (auto map = get_if<datum::map_type>(*this)) {
-            for (hilet &name : names) {
+            for (hilet& name : names) {
                 hilet name_ = datum{name};
                 auto jt = map->find(name_);
                 if (jt != map->cend()) {
@@ -2022,10 +2129,10 @@ private:
     }
 
     void find_slice(
-        jsonpath_slice const &slice,
+        jsonpath_slice const& slice,
         jsonpath::const_iterator it,
         jsonpath::const_iterator it_end,
-        std::vector<datum *> &r) noexcept
+        std::vector<datum *>& r) noexcept
     {
         if (auto vector = get_if<datum::vector_type>(*this)) {
             hilet first = slice.begin(vector->size());
@@ -2039,7 +2146,7 @@ private:
         }
     }
 
-    void find(jsonpath::const_iterator it, jsonpath::const_iterator it_end, std::vector<datum *> &r) noexcept
+    void find(jsonpath::const_iterator it, jsonpath::const_iterator it_end, std::vector<datum *>& r) noexcept
     {
         if (it == it_end) {
             r.push_back(this);
@@ -2153,7 +2260,7 @@ private:
     }
 
     [[nodiscard]] int
-    remove_indices(jsonpath_indices const &indices, jsonpath::const_iterator it, jsonpath::const_iterator it_end) noexcept
+    remove_indices(jsonpath_indices const& indices, jsonpath::const_iterator it, jsonpath::const_iterator it_end) noexcept
     {
         if (auto vector = get_if<datum::vector_type>(*this)) {
             int r = 0;
@@ -2176,12 +2283,12 @@ private:
     }
 
     [[nodiscard]] int
-    remove_names(jsonpath_names const &names, jsonpath::const_iterator it, jsonpath::const_iterator it_end) noexcept
+    remove_names(jsonpath_names const& names, jsonpath::const_iterator it, jsonpath::const_iterator it_end) noexcept
     {
         if (auto map = get_if<datum::map_type>(*this)) {
             int r = 0;
 
-            for (hilet &name : names) {
+            for (hilet& name : names) {
                 hilet name_ = datum{name};
                 auto jt = map->find(name_);
                 if (jt != map->cend()) {
@@ -2201,7 +2308,7 @@ private:
     }
 
     [[nodiscard]] int
-    remove_slice(jsonpath_slice const &slice, jsonpath::const_iterator it, jsonpath::const_iterator it_end) noexcept
+    remove_slice(jsonpath_slice const& slice, jsonpath::const_iterator it, jsonpath::const_iterator it_end) noexcept
     {
         if (auto vector = get_if<datum::vector_type>(*this)) {
             int r = 0;
@@ -2262,7 +2369,7 @@ private:
     }
 
     [[nodiscard]] datum *
-    find_one_name(datum const &name, jsonpath::const_iterator it, jsonpath::const_iterator it_end, bool create) noexcept
+    find_one_name(datum const& name, jsonpath::const_iterator it, jsonpath::const_iterator it_end, bool create) noexcept
     {
         hi_axiom(holds_alternative<std::string>(name));
 
@@ -2337,15 +2444,14 @@ private:
 
 } // namespace hi::inline v1
 
-[[nodiscard]] constexpr std::size_t std::hash<hi::datum>::operator()(hi::datum const &rhs) const noexcept
+[[nodiscard]] constexpr std::size_t std::hash<hi::datum>::operator()(hi::datum const& rhs) const noexcept
 {
     return rhs.hash();
 }
 
 template<typename CharT>
-struct std::formatter<hi::datum, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(hi::datum const &t, auto &fc)
-    {
-        return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
-    }
-};
+auto std::formatter<hi::datum, CharT>::format(hi::datum const& t, auto& fc) const
+    -> decltype(std::formatter<std::string, CharT>{}.format(std::string{}, fc))
+{
+    return std::formatter<std::string, CharT>{}.format(to_string(t), fc);
+}

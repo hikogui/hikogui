@@ -408,6 +408,6 @@ struct await_resume_result {
  * This is type return type of the `await_resume()` member function.
  */
 template<typename T>
-using await_resume_result_t = await_resume_result<T>::type;
+using await_resume_result_t = hi_typename await_resume_result<T>::type;
 
 } // namespace hi::inline v1

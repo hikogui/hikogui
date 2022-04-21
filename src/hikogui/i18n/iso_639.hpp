@@ -24,6 +24,54 @@ namespace hi::inline v1 {
  */
 class iso_639 {
 public:
+    /** Set the letter at a specific position.
+     *
+     * @tparam I index
+     * @param rhs The language code to change.
+     * @param c The character to set. a-z, A-Z, 0-5 or nul.
+     */
+    template<std::size_t I>
+    constexpr friend iso_639& set(iso_639& rhs, char c)
+    {
+        hi_parse_check(
+            c == 0 or (c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or (c >= '1' and c <= '5'),
+            "Must be letters or the digits between '1' and '5', or nul");
+
+        // clang-format off
+        uint16_t x =
+            (c >= 'a' and c <= 'z') ? c - 'a' + 1 :
+            (c >= 'A' and c <= 'Z') ? c - 'A' + 1 :
+            (c >= '1' and c <= '5') ? c - '1' + 27 :
+            0;
+        // clang-format on
+
+        hi_axiom(x <= 0x1f);
+        constexpr auto shift = I * 5;
+        rhs._v &= ~(0x1f << shift);
+        rhs._v |= x << shift;
+        return rhs;
+    }
+
+        /** Get the letter at a specific position.
+     *
+     * @tparam I index
+     * @param rhs The language code read from.
+     * @return The character at index, a-z, 0-5 or nul.
+     */
+    template<std::size_t I>
+    [[nodiscard]] constexpr friend char get(iso_639 const& rhs) noexcept
+    {
+        constexpr auto shift = I * 5;
+        auto x = (rhs._v >> shift) & 0x1f;
+        if (x == 0) {
+            return 0;
+        } else if (x <= 26) {
+            return 'a' + static_cast<char>(x - 1);
+        } else {
+            return '1' + static_cast<char>(x - 27);
+        }
+    }
+
     constexpr iso_639(iso_639 const&) noexcept = default;
     constexpr iso_639(iso_639&&) noexcept = default;
     constexpr iso_639& operator=(iso_639 const&) noexcept = default;
@@ -109,54 +157,6 @@ public:
     /** Compare two language codes.
      */
     [[nodiscard]] constexpr friend auto operator<=>(iso_639 const& lhs, iso_639 const& rhs) noexcept = default;
-
-    /** Set the letter at a specific position.
-     *
-     * @tparam I index
-     * @param rhs The language code to change.
-     * @param c The character to set. a-z, A-Z, 0-5 or nul.
-     */
-    template<std::size_t I>
-    constexpr friend iso_639& set(iso_639& rhs, char c)
-    {
-        hi_parse_check(
-            c == 0 or (c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z') or (c >= '1' and c <= '5'),
-            "Must be letters or the digits between '1' and '5', or nul");
-
-        // clang-format off
-        uint16_t x =
-            (c >= 'a' and c <= 'z') ? c - 'a' + 1 :
-            (c >= 'A' and c <= 'Z') ? c - 'A' + 1 :
-            (c >= '1' and c <= '5') ? c - '1' + 27 :
-            0;
-        // clang-format on
-
-        hi_axiom(x <= 0x1f);
-        constexpr auto shift = I * 5;
-        rhs._v &= ~(0x1f << shift);
-        rhs._v |= x << shift;
-        return rhs;
-    }
-
-    /** Get the letter at a specific position.
-     *
-     * @tparam I index
-     * @param rhs The language code read from.
-     * @return The character at index, a-z, 0-5 or nul.
-     */
-    template<std::size_t I>
-    [[nodiscard]] constexpr friend char get(iso_639 const& rhs) noexcept
-    {
-        constexpr auto shift = I * 5;
-        auto x = (rhs._v >> shift) & 0x1f;
-        if (x == 0) {
-            return 0;
-        } else if (x <= 26) {
-            return 'a' + static_cast<char>(x - 1);
-        } else {
-            return '1' + static_cast<char>(x - 27);
-        }
-    }
 
 private:
     /**

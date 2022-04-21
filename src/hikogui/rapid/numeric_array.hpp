@@ -594,11 +594,11 @@ struct numeric_array {
                 return Other{_mm_castsi128_pd(rhs.reg())};
             } else if constexpr (Other::is_f64x2 and is_f32x4) {
                 return Other{_mm_castps_pd(rhs.reg())};
-            } else if constexpr (std::is_integral_v<Other::value_type> and is_f32x4) {
+            } else if constexpr (std::is_integral_v<typename Other::value_type> and is_f32x4) {
                 return Other{_mm_castps_si128(rhs.reg())};
-            } else if constexpr (std::is_integral_v<Other::value_type> and is_f64x2) {
+            } else if constexpr (std::is_integral_v<typename Other::value_type> and is_f64x2) {
                 return Other{_mm_castpd_si128(rhs.reg())};
-            } else if constexpr (std::is_integral_v<Other::value_type> and std::is_integral_v<T>) {
+            } else if constexpr (std::is_integral_v<typename Other::value_type> and std::is_integral_v<T>) {
                 return Other{rhs.reg()};
             }
 #endif

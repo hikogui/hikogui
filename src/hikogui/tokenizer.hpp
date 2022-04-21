@@ -41,35 +41,59 @@ enum class tokenizer_name_t : uint8_t {
 constexpr char const *to_const_string(tokenizer_name_t name) noexcept
 {
     switch (name) {
-    case tokenizer_name_t::NotAssigned: return "NotAssigned";
-    case tokenizer_name_t::ErrorInvalidCharacter: return "ErrorInvalidCharacter";
-    case tokenizer_name_t::ErrorEOTInBlockComment: return "ErrorEOTInBlockComment";
-    case tokenizer_name_t::ErrorEOTInString: return "ErrorEOTInString";
-    case tokenizer_name_t::ErrorLFInString: return "ErrorLFInString";
-    case tokenizer_name_t::Name: return "Name";
-    case tokenizer_name_t::StringLiteral: return "StringLiteral";
-    case tokenizer_name_t::IntegerLiteral: return "IntegerLiteral";
-    case tokenizer_name_t::DateLiteral: return "DateLiteral";
-    case tokenizer_name_t::TimeLiteral: return "TimeLiteral";
-    case tokenizer_name_t::FloatLiteral: return "FloatLiteral";
-    case tokenizer_name_t::Operator: return "Operator";
-    case tokenizer_name_t::End: return "End";
-    default: hi_no_default();
+    case tokenizer_name_t::NotAssigned:
+        return "NotAssigned";
+    case tokenizer_name_t::ErrorInvalidCharacter:
+        return "ErrorInvalidCharacter";
+    case tokenizer_name_t::ErrorEOTInBlockComment:
+        return "ErrorEOTInBlockComment";
+    case tokenizer_name_t::ErrorEOTInString:
+        return "ErrorEOTInString";
+    case tokenizer_name_t::ErrorLFInString:
+        return "ErrorLFInString";
+    case tokenizer_name_t::Name:
+        return "Name";
+    case tokenizer_name_t::StringLiteral:
+        return "StringLiteral";
+    case tokenizer_name_t::IntegerLiteral:
+        return "IntegerLiteral";
+    case tokenizer_name_t::DateLiteral:
+        return "DateLiteral";
+    case tokenizer_name_t::TimeLiteral:
+        return "TimeLiteral";
+    case tokenizer_name_t::FloatLiteral:
+        return "FloatLiteral";
+    case tokenizer_name_t::Operator:
+        return "Operator";
+    case tokenizer_name_t::End:
+        return "End";
+    default:
+        hi_no_default();
     }
 }
 
-inline std::ostream &operator<<(std::ostream &lhs, tokenizer_name_t rhs)
+inline std::ostream& operator<<(std::ostream& lhs, tokenizer_name_t rhs)
 {
     return lhs << to_const_string(rhs);
 }
 
+class token_t;
+} // namespace hi::inline v1
+
 template<typename CharT>
 struct std::formatter<hi::tokenizer_name_t, CharT> : std::formatter<char const *, CharT> {
-    auto format(hi::tokenizer_name_t const &t, auto &fc)
+    auto format(hi::tokenizer_name_t const& t, auto& fc) const
     {
-        return std::formatter<char const *, CharT>::format(hi::to_const_string(t), fc);
+        return std::formatter<char const *, CharT>{}.format(hi::to_const_string(t), fc);
     }
 };
+
+template<typename CharT>
+struct std::formatter<hi::token_t, CharT> : std::formatter<std::string_view, CharT> {
+    auto format(hi::token_t const& t, auto& fc) const -> decltype(std::formatter<char const *, CharT>{}.format("", fc));
+};
+
+namespace hi::inline v1 {
 
 struct token_t {
     tokenizer_name_t name;
@@ -85,13 +109,13 @@ struct token_t {
     {
     }
 
-    token_t(token_t const &other) noexcept :
+    token_t(token_t const& other) noexcept :
         name(other.name), value(other.value), location(other.location), is_binary(other.is_binary), precedence(other.precedence)
     {
         hi_axiom(&other != this);
     }
 
-    token_t(token_t &&other) noexcept :
+    token_t(token_t&& other) noexcept :
         name(other.name),
         value(std::move(other.value)),
         location(std::move(other.location)),
@@ -101,7 +125,7 @@ struct token_t {
         hi_axiom(&other != this);
     }
 
-    token_t &operator=(token_t const &other) noexcept
+    token_t& operator=(token_t const& other) noexcept
     {
         hi_return_on_self_assignment(other);
         name = other.name;
@@ -112,7 +136,7 @@ struct token_t {
         return *this;
     }
 
-    token_t &operator=(token_t &&other) noexcept
+    token_t& operator=(token_t&& other) noexcept
     {
         // Self-assignment is allowed.
         using std::move;
@@ -204,22 +228,22 @@ struct token_t {
         return r;
     }
 
-    friend inline std::ostream &operator<<(std::ostream &lhs, token_t const &rhs)
+    friend inline std::ostream& operator<<(std::ostream& lhs, token_t const& rhs)
     {
         return lhs << rhs.repr();
     }
 
-    [[nodiscard]] friend bool operator==(token_t const &lhs, token_t const &rhs) noexcept
+    [[nodiscard]] friend bool operator==(token_t const& lhs, token_t const& rhs) noexcept
     {
         return (lhs.name == rhs.name) && (lhs.value == rhs.value);
     }
 
-    [[nodiscard]] friend bool operator==(token_t const &lhs, tokenizer_name_t const &rhs) noexcept
+    [[nodiscard]] friend bool operator==(token_t const& lhs, tokenizer_name_t const& rhs) noexcept
     {
         return lhs.name == rhs;
     }
 
-    [[nodiscard]] friend bool operator==(token_t const &lhs, const char *rhs) noexcept
+    [[nodiscard]] friend bool operator==(token_t const& lhs, const char *rhs) noexcept
     {
         return lhs.value == rhs;
     }
@@ -236,14 +260,14 @@ struct parse_result {
 
     parse_result() noexcept : found(false), value(), next_token() {}
 
-    parse_result(T const &value, token_iterator next_token) : found(true), value(value), next_token(next_token) {}
+    parse_result(T const& value, token_iterator next_token) : found(true), value(value), next_token(next_token) {}
 
     operator bool() const noexcept
     {
         return found;
     }
 
-    T const &operator*() const noexcept
+    T const& operator*() const noexcept
     {
         return value;
     }
@@ -274,9 +298,8 @@ parseTokens(std::string_view::const_iterator first, std::string_view::const_iter
 } // namespace hi::inline v1
 
 template<typename CharT>
-struct std::formatter<hi::token_t, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(hi::token_t const &t, auto &fc)
-    {
-        return std::formatter<std::string_view, CharT>::format(t.repr(), fc);
-    }
-};
+auto std::formatter<hi::token_t, CharT>::format(hi::token_t const& t, auto& fc) const
+    -> decltype(std::formatter<char const *, CharT>{}.format("", fc))
+{
+    return std::formatter<std::string_view, CharT>{}.format(t.repr(), fc);
+}

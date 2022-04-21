@@ -32,12 +32,12 @@ public:
 
         virtual void set_maximum_frame_rate(double frame_rate) noexcept = 0;
 
-        [[nodiscard]] void wfree_post_function(auto&& func) noexcept
+        void wfree_post_function(auto&& func) noexcept
         {
             return _function_fifo.add_function(hi_forward(func));
         }
 
-        [[nodiscard]] void post_function(auto&& func) noexcept
+        void post_function(auto&& func) noexcept
         {
             _function_fifo.add_function(hi_forward(func));
             notify_has_send();
@@ -172,7 +172,7 @@ public:
      *       and the function is small enough to fit in a slot on the fifo.
      * @param func The function to call from the loop. The function must not take any arguments and return void.
      */
-    [[nodiscard]] void wfree_post_function(auto&& func) noexcept
+    void wfree_post_function(auto&& func) noexcept
     {
         hi_axiom(_pimpl);
         return _pimpl->wfree_post_function(hi_forward(func));
@@ -183,7 +183,7 @@ public:
      * @note It is safe to call this function from another thread.
      * @param func The function to call from the loop. The function must not take any arguments and return void.
      */
-    [[nodiscard]] void post_function(auto&& func) noexcept
+    void post_function(auto&& func) noexcept
     {
         hi_axiom(_pimpl);
         return _pimpl->post_function(hi_forward(func));
