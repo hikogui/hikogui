@@ -93,7 +93,7 @@ public:
         }
     }
 
-    [[nodiscard]] bool handle_event(gui_event const& event) noexcept
+    bool handle_event(gui_event const& event) noexcept
     {
         hilet handled = [&] {
             switch (event.type()) {

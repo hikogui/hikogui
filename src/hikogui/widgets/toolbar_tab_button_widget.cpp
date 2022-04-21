@@ -46,7 +46,7 @@ void toolbar_tab_button_widget::request_redraw() const noexcept
     return *visible and *enabled and any(group & hi::keyboard_focus_group::toolbar);
 }
 
-[[nodiscard]] bool toolbar_tab_button_widget::handle_event(gui_event const& event) noexcept
+bool toolbar_tab_button_widget::handle_event(gui_event const& event) noexcept
 {
     switch (event.type()) {
     case gui_event_type::gui_toolbar_next:

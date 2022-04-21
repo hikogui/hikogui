@@ -95,7 +95,7 @@ void abstract_button_widget::set_layout_button(widget_layout const& context) noe
 
 void activate() noexcept;
 
-[[nodiscard]] bool abstract_button_widget::handle_event(gui_event const& event) noexcept
+bool abstract_button_widget::handle_event(gui_event const& event) noexcept
 {
     hi_axiom(is_gui_thread());
 

@@ -56,7 +56,7 @@ void menu_button_widget::draw(draw_context const& context) noexcept
     return *visible and *enabled and any(group & hi::keyboard_focus_group::menu);
 }
 
-[[nodiscard]] bool menu_button_widget::handle_event(gui_event const& event) noexcept
+bool menu_button_widget::handle_event(gui_event const& event) noexcept
 {
     switch (event.type()) {
     case gui_event_type::gui_menu_next:

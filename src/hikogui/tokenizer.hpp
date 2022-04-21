@@ -77,7 +77,7 @@ inline std::ostream& operator<<(std::ostream& lhs, tokenizer_name_t rhs)
     return lhs << to_const_string(rhs);
 }
 
-class token_t;
+struct token_t;
 } // namespace hi::inline v1
 
 template<typename CharT>

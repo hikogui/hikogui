@@ -236,7 +236,7 @@ public:
      * If a widget does not fully handle a command it should pass the
      * command to the super class' `handle_event()`.
      */
-    [[nodiscard]] virtual bool handle_event(gui_event const& event) noexcept;
+    virtual bool handle_event(gui_event const& event) noexcept;
 
     /** Handle command recursive.
      * Handle a command and pass it to each child.

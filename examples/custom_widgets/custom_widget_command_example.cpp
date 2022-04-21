@@ -98,7 +98,7 @@ public:
     }
 
     // Override the handle_event(command) to handle high level commands.
-    [[nodiscard]] bool handle_event(hi::gui_event const& event) noexcept override
+    bool handle_event(hi::gui_event const& event) noexcept override
     {
         switch (event.type()) {
         case hi::gui_event_type::gui_activate:

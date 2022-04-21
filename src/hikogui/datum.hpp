@@ -30,7 +30,7 @@ class datum;
 
 template<>
 struct std::hash<hi::datum> {
-    [[nodiscard]] constexpr std::size_t operator()(hi::datum const& rhs) const noexcept;
+    [[nodiscard]] std::size_t operator()(hi::datum const& rhs) const noexcept;
 };
 
 template<typename CharT>
@@ -2444,7 +2444,7 @@ private:
 
 } // namespace hi::inline v1
 
-[[nodiscard]] constexpr std::size_t std::hash<hi::datum>::operator()(hi::datum const& rhs) const noexcept
+[[nodiscard]] inline std::size_t std::hash<hi::datum>::operator()(hi::datum const& rhs) const noexcept
 {
     return rhs.hash();
 }
