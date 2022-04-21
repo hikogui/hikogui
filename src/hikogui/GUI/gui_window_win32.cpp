@@ -151,10 +151,17 @@ void gui_window_win32::create_window(extent2 new_size)
     if (!firstWindowHasBeenOpened) {
         hilet win32_window_ = reinterpret_cast<HWND>(win32Window);
         switch (gui_window_size::normal) {
-        case gui_window_size::normal: ShowWindow(win32_window_, SW_SHOWNORMAL); break;
-        case gui_window_size::minimized: ShowWindow(win32_window_, SW_SHOWMINIMIZED); break;
-        case gui_window_size::maximized: ShowWindow(win32_window_, SW_SHOWMAXIMIZED); break;
-        default: hi_no_default();
+        case gui_window_size::normal:
+            ShowWindow(win32_window_, SW_SHOWNORMAL);
+            break;
+        case gui_window_size::minimized:
+            ShowWindow(win32_window_, SW_SHOWMINIMIZED);
+            break;
+        case gui_window_size::maximized:
+            ShowWindow(win32_window_, SW_SHOWMAXIMIZED);
+            break;
+        default:
+            hi_no_default();
         }
         firstWindowHasBeenOpened = true;
     }
@@ -391,28 +398,29 @@ void gui_window_win32::set_window_size(extent2 new_extent)
         switch (format) {
         case CF_TEXT:
         case CF_OEMTEXT:
-        case CF_UNICODETEXT: {
-            hilet cb_data = GetClipboardData(CF_UNICODETEXT);
-            if (cb_data == nullptr) {
-                hi_log_error("Could not get clipboard data: '{}'", get_last_error_message());
-                goto done;
-            }
+        case CF_UNICODETEXT:
+            {
+                hilet cb_data = GetClipboardData(CF_UNICODETEXT);
+                if (cb_data == nullptr) {
+                    hi_log_error("Could not get clipboard data: '{}'", get_last_error_message());
+                    goto done;
+                }
 
-            hilet wstr_c = reinterpret_cast<wchar_t *>(GlobalLock(cb_data));
-            if (wstr_c == nullptr) {
-                hi_log_error("Could not lock clipboard data: '{}'", get_last_error_message());
-                goto done;
-            }
+                hilet wstr_c = reinterpret_cast<wchar_t *>(GlobalLock(cb_data));
+                if (wstr_c == nullptr) {
+                    hi_log_error("Could not lock clipboard data: '{}'", get_last_error_message());
+                    goto done;
+                }
 
-            hilet wstr = std::wstring_view(wstr_c);
-            r = hi::to_string(wstr);
-            hi_log_debug("getTextFromClipboad '{}'", r);
+                hilet wstr = std::wstring_view(wstr_c);
+                r = hi::to_string(wstr);
+                hi_log_debug("getTextFromClipboad '{}'", r);
 
-            if (!GlobalUnlock(cb_data) && GetLastError() != ERROR_SUCCESS) {
-                hi_log_error("Could not unlock clipboard data: '{}'", get_last_error_message());
-                goto done;
+                if (!GlobalUnlock(cb_data) && GetLastError() != ERROR_SUCCESS) {
+                    hi_log_error("Could not unlock clipboard data: '{}'", get_last_error_message());
+                    goto done;
+                }
             }
-        }
             goto done;
 
         default:;
@@ -520,11 +528,20 @@ void gui_window_win32::set_cursor(mouse_cursor cursor) noexcept
 
     auto idc = idcNo;
     switch (cursor) {
-    case mouse_cursor::None: idc = idcAppStarting; break;
-    case mouse_cursor::Default: idc = idcArrow; break;
-    case mouse_cursor::Button: idc = idcHand; break;
-    case mouse_cursor::TextEdit: idc = idcIBeam; break;
-    default: hi_no_default();
+    case mouse_cursor::None:
+        idc = idcAppStarting;
+        break;
+    case mouse_cursor::Default:
+        idc = idcArrow;
+        break;
+    case mouse_cursor::Button:
+        idc = idcHand;
+        break;
+    case mouse_cursor::TextEdit:
+        idc = idcIBeam;
+        break;
+    default:
+        hi_no_default();
     }
 
     SetCursor(idc);
@@ -584,172 +601,205 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         // WM_DESTROY is handled inside `_windowProc` since it has to deal with lifetime of `this`.
         break;
 
-    case WM_CREATE: {
-        hilet createstruct_ptr = std::launder(std::bit_cast<CREATESTRUCT *>(lParam));
-        RECT new_rectangle;
-        new_rectangle.left = createstruct_ptr->x;
-        new_rectangle.top = createstruct_ptr->y;
-        new_rectangle.right = createstruct_ptr->x + createstruct_ptr->cx;
-        new_rectangle.bottom = createstruct_ptr->y + createstruct_ptr->cy;
-        setOSWindowRectangleFromRECT(new_rectangle);
-    } break;
+    case WM_CREATE:
+        {
+            hilet createstruct_ptr = std::launder(std::bit_cast<CREATESTRUCT *>(lParam));
+            RECT new_rectangle;
+            new_rectangle.left = createstruct_ptr->x;
+            new_rectangle.top = createstruct_ptr->y;
+            new_rectangle.right = createstruct_ptr->x + createstruct_ptr->cx;
+            new_rectangle.bottom = createstruct_ptr->y + createstruct_ptr->cy;
+            setOSWindowRectangleFromRECT(new_rectangle);
+        }
+        break;
 
-    case WM_ERASEBKGND: return 1;
+    case WM_ERASEBKGND:
+        return 1;
 
-    case WM_PAINT: {
-        hilet height = [this]() {
-            hi_axiom(is_gui_thread());
-            return rectangle.height();
-        }();
+    case WM_PAINT:
+        {
+            hilet height = [this]() {
+                hi_axiom(is_gui_thread());
+                return rectangle.height();
+            }();
 
-        PAINTSTRUCT ps;
-        BeginPaint(win32Window, &ps);
+            PAINTSTRUCT ps;
+            BeginPaint(win32Window, &ps);
 
-        hilet update_rectangle = aarectangle{
-            narrow_cast<float>(ps.rcPaint.left),
-            narrow_cast<float>(height - ps.rcPaint.bottom),
-            narrow_cast<float>(ps.rcPaint.right - ps.rcPaint.left),
-            narrow_cast<float>(ps.rcPaint.bottom - ps.rcPaint.top)};
+            hilet update_rectangle = aarectangle{
+                narrow_cast<float>(ps.rcPaint.left),
+                narrow_cast<float>(height - ps.rcPaint.bottom),
+                narrow_cast<float>(ps.rcPaint.right - ps.rcPaint.left),
+                narrow_cast<float>(ps.rcPaint.bottom - ps.rcPaint.top)};
 
+            {
+                hi_axiom(is_gui_thread());
+                request_redraw(update_rectangle);
+            }
+
+            EndPaint(win32Window, &ps);
+        }
+        break;
+
+    case WM_NCPAINT:
         {
             hi_axiom(is_gui_thread());
-            request_redraw(update_rectangle);
+            request_redraw();
         }
+        break;
 
-        EndPaint(win32Window, &ps);
-    } break;
-
-    case WM_NCPAINT: {
-        hi_axiom(is_gui_thread());
-        request_redraw();
-    } break;
-
-    case WM_SIZE: {
-        // This is called when the operating system is changing the size of the window.
-        // However we do not support maximizing by the OS.
-        hi_axiom(is_gui_thread());
-        switch (wParam) {
-        case SIZE_MAXIMIZED:
-            ShowWindow(win32Window, SW_RESTORE);
-            set_size_state(gui_window_size::maximized);
-            break;
-        case SIZE_MINIMIZED: _size_state = gui_window_size::minimized; break;
-        case SIZE_RESTORED: _size_state = gui_window_size::normal; break;
-        default: break;
-        }
-    } break;
-
-    case WM_TIMER: {
-        using namespace std::chrono_literals;
-
-        if (last_forced_redraw + 16.7ms < current_time) {
-            // During sizing the event loop is blocked.
-            // Render at about 60fps.
-            loop::main().resume_once();
-            last_forced_redraw = current_time;
-        }
-    } break;
-
-    case WM_SIZING: {
-        hilet rect_ptr = std::launder(std::bit_cast<RECT *>(lParam));
-        if (rect_ptr->right < rect_ptr->left or rect_ptr->bottom < rect_ptr->top) {
-            hi_log_error(
-                "Invalid RECT received on WM_SIZING: left={}, right={}, bottom={}, top={}",
-                rect_ptr->left,
-                rect_ptr->right,
-                rect_ptr->bottom,
-                rect_ptr->top);
-
-        } else {
-            setOSWindowRectangleFromRECT(*rect_ptr);
-        }
-    } break;
-
-    case WM_MOVING: {
-        hilet rect_ptr = std::launder(std::bit_cast<RECT *>(lParam));
-        if (rect_ptr->right < rect_ptr->left or rect_ptr->bottom < rect_ptr->top) {
-            hi_log_error(
-                "Invalid RECT received on WM_MOVING: left={}, right={}, bottom={}, top={}",
-                rect_ptr->left,
-                rect_ptr->right,
-                rect_ptr->bottom,
-                rect_ptr->top);
-
-        } else {
-            setOSWindowRectangleFromRECT(*rect_ptr);
-        }
-    } break;
-
-    case WM_WINDOWPOSCHANGED: {
-        hilet windowpos_ptr = std::launder(std::bit_cast<WINDOWPOS *>(lParam));
-        RECT new_rectangle;
-        new_rectangle.left = windowpos_ptr->x;
-        new_rectangle.top = windowpos_ptr->y;
-        new_rectangle.right = windowpos_ptr->x + windowpos_ptr->cx;
-        new_rectangle.bottom = windowpos_ptr->y + windowpos_ptr->cy;
-        setOSWindowRectangleFromRECT(new_rectangle);
-    } break;
-
-    case WM_ENTERSIZEMOVE: {
-        hi_axiom(is_gui_thread());
-        if (SetTimer(win32Window, move_and_resize_timer_id, 16, NULL) != move_and_resize_timer_id) {
-            hi_log_error("Could not set timer before move/resize. {}", get_last_error_message());
-        }
-        resizing = true;
-    } break;
-
-    case WM_EXITSIZEMOVE: {
-        hi_axiom(is_gui_thread());
-        if (not KillTimer(win32Window, move_and_resize_timer_id)) {
-            hi_log_error("Could not kill timer after move/resize. {}", get_last_error_message());
-        }
-        resizing = false;
-        // After a manual move of the window, it is clear that the window is in normal mode.
-        _restore_rectangle = rectangle;
-        _size_state = gui_window_size::normal;
-        request_redraw();
-    } break;
-
-    case WM_ACTIVATE: {
-        hi_axiom(is_gui_thread());
-        switch (wParam) {
-        case 1: // WA_ACTIVE
-        case 2: // WA_CLICKACTIVE
-            active = true;
-            break;
-        case 0: // WA_INACTIVE
-            active = false;
-            break;
-        default: hi_log_error("Unknown WM_ACTIVE value.");
-        }
-        request_reconstrain();
-    } break;
-
-    case WM_GETMINMAXINFO: {
-        hi_axiom(is_gui_thread());
-        hi_axiom(widget);
-        hilet minimum_widget_size = widget->constraints().minimum;
-        hilet maximum_widget_size = widget->constraints().maximum;
-        hilet minmaxinfo = std::launder(std::bit_cast<MINMAXINFO *>(lParam));
-        minmaxinfo->ptMaxSize.x = narrow_cast<LONG>(maximum_widget_size.width());
-        minmaxinfo->ptMaxSize.y = narrow_cast<LONG>(maximum_widget_size.height());
-        minmaxinfo->ptMinTrackSize.x = narrow_cast<LONG>(minimum_widget_size.width());
-        minmaxinfo->ptMinTrackSize.y = narrow_cast<LONG>(minimum_widget_size.height());
-        minmaxinfo->ptMaxTrackSize.x = narrow_cast<LONG>(maximum_widget_size.width());
-        minmaxinfo->ptMaxTrackSize.y = narrow_cast<LONG>(maximum_widget_size.height());
-    } break;
-
-    case WM_UNICHAR: {
-        if (auto c = static_cast<char32_t>(wParam); c == UNICODE_NOCHAR) {
-            // Tell the 3rd party keyboard handler application that we support WM_UNICHAR.
-            return 1;
-
-        } else if (c >= 0x20) {
-            if (auto g = grapheme{c}; g.valid()) {
-                process_event(gui_event{gui_event_type::keyboard_grapheme, g});
+    case WM_SIZE:
+        {
+            // This is called when the operating system is changing the size of the window.
+            // However we do not support maximizing by the OS.
+            hi_axiom(is_gui_thread());
+            switch (wParam) {
+            case SIZE_MAXIMIZED:
+                ShowWindow(win32Window, SW_RESTORE);
+                set_size_state(gui_window_size::maximized);
+                break;
+            case SIZE_MINIMIZED:
+                _size_state = gui_window_size::minimized;
+                break;
+            case SIZE_RESTORED:
+                _size_state = gui_window_size::normal;
+                break;
+            default:
+                break;
             }
         }
-    } break;
+        break;
+
+    case WM_TIMER:
+        {
+            using namespace std::chrono_literals;
+
+            if (last_forced_redraw + 16.7ms < current_time) {
+                // During sizing the event loop is blocked.
+                // Render at about 60fps.
+                loop::main().resume_once();
+                last_forced_redraw = current_time;
+            }
+        }
+        break;
+
+    case WM_SIZING:
+        {
+            hilet rect_ptr = std::launder(std::bit_cast<RECT *>(lParam));
+            if (rect_ptr->right < rect_ptr->left or rect_ptr->bottom < rect_ptr->top) {
+                hi_log_error(
+                    "Invalid RECT received on WM_SIZING: left={}, right={}, bottom={}, top={}",
+                    rect_ptr->left,
+                    rect_ptr->right,
+                    rect_ptr->bottom,
+                    rect_ptr->top);
+
+            } else {
+                setOSWindowRectangleFromRECT(*rect_ptr);
+            }
+        }
+        break;
+
+    case WM_MOVING:
+        {
+            hilet rect_ptr = std::launder(std::bit_cast<RECT *>(lParam));
+            if (rect_ptr->right < rect_ptr->left or rect_ptr->bottom < rect_ptr->top) {
+                hi_log_error(
+                    "Invalid RECT received on WM_MOVING: left={}, right={}, bottom={}, top={}",
+                    rect_ptr->left,
+                    rect_ptr->right,
+                    rect_ptr->bottom,
+                    rect_ptr->top);
+
+            } else {
+                setOSWindowRectangleFromRECT(*rect_ptr);
+            }
+        }
+        break;
+
+    case WM_WINDOWPOSCHANGED:
+        {
+            hilet windowpos_ptr = std::launder(std::bit_cast<WINDOWPOS *>(lParam));
+            RECT new_rectangle;
+            new_rectangle.left = windowpos_ptr->x;
+            new_rectangle.top = windowpos_ptr->y;
+            new_rectangle.right = windowpos_ptr->x + windowpos_ptr->cx;
+            new_rectangle.bottom = windowpos_ptr->y + windowpos_ptr->cy;
+            setOSWindowRectangleFromRECT(new_rectangle);
+        }
+        break;
+
+    case WM_ENTERSIZEMOVE:
+        {
+            hi_axiom(is_gui_thread());
+            if (SetTimer(win32Window, move_and_resize_timer_id, 16, NULL) != move_and_resize_timer_id) {
+                hi_log_error("Could not set timer before move/resize. {}", get_last_error_message());
+            }
+            resizing = true;
+        }
+        break;
+
+    case WM_EXITSIZEMOVE:
+        {
+            hi_axiom(is_gui_thread());
+            if (not KillTimer(win32Window, move_and_resize_timer_id)) {
+                hi_log_error("Could not kill timer after move/resize. {}", get_last_error_message());
+            }
+            resizing = false;
+            // After a manual move of the window, it is clear that the window is in normal mode.
+            _restore_rectangle = rectangle;
+            _size_state = gui_window_size::normal;
+            request_redraw();
+        }
+        break;
+
+    case WM_ACTIVATE:
+        {
+            hi_axiom(is_gui_thread());
+            switch (wParam) {
+            case 1: // WA_ACTIVE
+            case 2: // WA_CLICKACTIVE
+                active = true;
+                break;
+            case 0: // WA_INACTIVE
+                active = false;
+                break;
+            default:
+                hi_log_error("Unknown WM_ACTIVE value.");
+            }
+            request_reconstrain();
+        }
+        break;
+
+    case WM_GETMINMAXINFO:
+        {
+            hi_axiom(is_gui_thread());
+            hi_axiom(widget);
+            hilet minimum_widget_size = widget->constraints().minimum;
+            hilet maximum_widget_size = widget->constraints().maximum;
+            hilet minmaxinfo = std::launder(std::bit_cast<MINMAXINFO *>(lParam));
+            minmaxinfo->ptMaxSize.x = narrow_cast<LONG>(maximum_widget_size.width());
+            minmaxinfo->ptMaxSize.y = narrow_cast<LONG>(maximum_widget_size.height());
+            minmaxinfo->ptMinTrackSize.x = narrow_cast<LONG>(minimum_widget_size.width());
+            minmaxinfo->ptMinTrackSize.y = narrow_cast<LONG>(minimum_widget_size.height());
+            minmaxinfo->ptMaxTrackSize.x = narrow_cast<LONG>(maximum_widget_size.width());
+            minmaxinfo->ptMaxTrackSize.y = narrow_cast<LONG>(maximum_widget_size.height());
+        }
+        break;
+
+    case WM_UNICHAR:
+        {
+            if (auto c = static_cast<char32_t>(wParam); c == UNICODE_NOCHAR) {
+                // Tell the 3rd party keyboard handler application that we support WM_UNICHAR.
+                return 1;
+
+            } else if (c >= 0x20) {
+                if (auto g = grapheme{c}; g.valid()) {
+                    process_event(gui_event{gui_event_type::keyboard_grapheme, g});
+                }
+            }
+        }
+        break;
 
     case WM_DEADCHAR:
         if (auto c = handle_suragates(static_cast<char32_t>(wParam))) {
@@ -759,32 +809,40 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         }
         break;
 
-    case WM_CHAR: {
-        if (auto c = handle_suragates(static_cast<char32_t>(wParam))) {
-            if (auto g = grapheme{c}; g.valid()) {
-                process_event(gui_event{gui_event_type::keyboard_grapheme, g});
+    case WM_CHAR:
+        {
+            if (auto c = handle_suragates(static_cast<char32_t>(wParam))) {
+                if (auto g = grapheme{c}; g.valid()) {
+                    process_event(gui_event{gui_event_type::keyboard_grapheme, g});
+                }
             }
         }
-    } break;
+        break;
 
-    case WM_SYSCOMMAND: {
-        if (wParam == SC_KEYMENU) {
-            process_event(gui_event{gui_event_type::keyboard_down, keyboard_virtual_key::Menu});
-            return 0;
+    case WM_SYSCOMMAND:
+        {
+            if (wParam == SC_KEYMENU) {
+                process_event(gui_event{gui_event_type::keyboard_down, keyboard_virtual_key::Menu});
+                return 0;
+            }
         }
-    } break;
+        break;
 
-    case WM_KEYDOWN: {
-        auto extended = (narrow_cast<uint32_t>(lParam) & 0x01000000) != 0;
-        auto key_code = narrow_cast<int>(wParam);
+    case WM_KEYDOWN:
+    case WM_KEYUP:
+        {
+            auto extended = (narrow_cast<uint32_t>(lParam) & 0x01000000) != 0;
+            auto key_code = narrow_cast<int>(wParam);
 
-        hilet key_state = get_keyboard_state();
-        hilet key_modifiers = get_keyboard_modifiers();
-        hilet virtual_key = to_keyboard_virtual_key(key_code, extended, key_modifiers);
-        if (virtual_key != keyboard_virtual_key::Nul) {
-            process_event(gui_event{gui_event_type::keyboard_down, virtual_key, key_modifiers, key_state});
+            hilet key_modifiers = get_keyboard_modifiers();
+            hilet virtual_key = to_keyboard_virtual_key(key_code, extended, key_modifiers);
+            if (virtual_key != keyboard_virtual_key::Nul) {
+                hilet key_state = get_keyboard_state();
+                hilet event_type = uMsg == WM_KEYDOWN ? gui_event_type::keyboard_down : gui_event_type::keyboard_up;
+                process_event(gui_event{event_type, virtual_key, key_modifiers, key_state});
+            }
         }
-    } break;
+        break;
 
     case WM_LBUTTONDOWN:
     case WM_MBUTTONDOWN:
@@ -801,7 +859,9 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     case WM_MOUSEWHEEL:
     case WM_MOUSEHWHEEL:
     case WM_MOUSEMOVE:
-    case WM_MOUSELEAVE: process_event(create_mouse_event(uMsg, wParam, lParam)); break;
+    case WM_MOUSELEAVE:
+        process_event(create_mouse_event(uMsg, wParam, lParam));
+        break;
 
     case WM_NCCALCSIZE:
         if (wParam == TRUE) {
@@ -818,62 +878,96 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
         break;
 
-    case WM_NCHITTEST: {
-        hi_axiom(is_gui_thread());
+    case WM_NCHITTEST:
+        {
+            hi_axiom(is_gui_thread());
 
-        hilet x = narrow_cast<float>(GET_X_LPARAM(lParam));
-        hilet y = narrow_cast<float>(GET_Y_LPARAM(lParam));
+            hilet x = narrow_cast<float>(GET_X_LPARAM(lParam));
+            hilet y = narrow_cast<float>(GET_Y_LPARAM(lParam));
 
-        // Convert to y-axis up coordinate system.
-        hilet inv_y = os_settings::primary_monitor_rectangle().height() - y;
+            // Convert to y-axis up coordinate system.
+            hilet inv_y = os_settings::primary_monitor_rectangle().height() - y;
 
-        hilet hitbox_type = widget->hitbox_test(screen_to_window() * point2{x, inv_y}).type;
+            hilet hitbox_type = widget->hitbox_test(screen_to_window() * point2{x, inv_y}).type;
 
-        switch (hitbox_type) {
-        case hitbox::Type::BottomResizeBorder: set_cursor(mouse_cursor::None); return HTBOTTOM;
-        case hitbox::Type::TopResizeBorder: set_cursor(mouse_cursor::None); return HTTOP;
-        case hitbox::Type::LeftResizeBorder: set_cursor(mouse_cursor::None); return HTLEFT;
-        case hitbox::Type::RightResizeBorder: set_cursor(mouse_cursor::None); return HTRIGHT;
-        case hitbox::Type::BottomLeftResizeCorner: set_cursor(mouse_cursor::None); return HTBOTTOMLEFT;
-        case hitbox::Type::BottomRightResizeCorner: set_cursor(mouse_cursor::None); return HTBOTTOMRIGHT;
-        case hitbox::Type::TopLeftResizeCorner: set_cursor(mouse_cursor::None); return HTTOPLEFT;
-        case hitbox::Type::TopRightResizeCorner: set_cursor(mouse_cursor::None); return HTTOPRIGHT;
-        case hitbox::Type::ApplicationIcon: set_cursor(mouse_cursor::None); return HTSYSMENU;
-        case hitbox::Type::MoveArea: set_cursor(mouse_cursor::None); return HTCAPTION;
-        case hitbox::Type::TextEdit: set_cursor(mouse_cursor::TextEdit); return HTCLIENT;
-        case hitbox::Type::Button: set_cursor(mouse_cursor::Button); return HTCLIENT;
-        case hitbox::Type::Default: set_cursor(mouse_cursor::Default); return HTCLIENT;
-        case hitbox::Type::Outside: set_cursor(mouse_cursor::None); return HTCLIENT;
-        default: hi_no_default();
+            switch (hitbox_type) {
+            case hitbox::Type::BottomResizeBorder:
+                set_cursor(mouse_cursor::None);
+                return HTBOTTOM;
+            case hitbox::Type::TopResizeBorder:
+                set_cursor(mouse_cursor::None);
+                return HTTOP;
+            case hitbox::Type::LeftResizeBorder:
+                set_cursor(mouse_cursor::None);
+                return HTLEFT;
+            case hitbox::Type::RightResizeBorder:
+                set_cursor(mouse_cursor::None);
+                return HTRIGHT;
+            case hitbox::Type::BottomLeftResizeCorner:
+                set_cursor(mouse_cursor::None);
+                return HTBOTTOMLEFT;
+            case hitbox::Type::BottomRightResizeCorner:
+                set_cursor(mouse_cursor::None);
+                return HTBOTTOMRIGHT;
+            case hitbox::Type::TopLeftResizeCorner:
+                set_cursor(mouse_cursor::None);
+                return HTTOPLEFT;
+            case hitbox::Type::TopRightResizeCorner:
+                set_cursor(mouse_cursor::None);
+                return HTTOPRIGHT;
+            case hitbox::Type::ApplicationIcon:
+                set_cursor(mouse_cursor::None);
+                return HTSYSMENU;
+            case hitbox::Type::MoveArea:
+                set_cursor(mouse_cursor::None);
+                return HTCAPTION;
+            case hitbox::Type::TextEdit:
+                set_cursor(mouse_cursor::TextEdit);
+                return HTCLIENT;
+            case hitbox::Type::Button:
+                set_cursor(mouse_cursor::Button);
+                return HTCLIENT;
+            case hitbox::Type::Default:
+                set_cursor(mouse_cursor::Default);
+                return HTCLIENT;
+            case hitbox::Type::Outside:
+                set_cursor(mouse_cursor::None);
+                return HTCLIENT;
+            default:
+                hi_no_default();
+            }
         }
-    } break;
+        break;
 
     case WM_SETTINGCHANGE:
         hi_axiom(is_gui_thread());
         os_settings::gather();
         break;
 
-    case WM_DPICHANGED: {
-        hi_axiom(is_gui_thread());
-        // x-axis dpi value.
-        dpi = narrow_cast<float>(LOWORD(wParam));
+    case WM_DPICHANGED:
+        {
+            hi_axiom(is_gui_thread());
+            // x-axis dpi value.
+            dpi = narrow_cast<float>(LOWORD(wParam));
 
-        // Use the recommended rectangle to resize and reposition the window
-        hilet new_rectangle = std::launder(reinterpret_cast<RECT *>(lParam));
-        SetWindowPos(
-            win32Window,
-            NULL,
-            new_rectangle->left,
-            new_rectangle->top,
-            new_rectangle->right - new_rectangle->left,
-            new_rectangle->bottom - new_rectangle->top,
-            SWP_NOZORDER | SWP_NOACTIVATE);
-        request_reconstrain();
+            // Use the recommended rectangle to resize and reposition the window
+            hilet new_rectangle = std::launder(reinterpret_cast<RECT *>(lParam));
+            SetWindowPos(
+                win32Window,
+                NULL,
+                new_rectangle->left,
+                new_rectangle->top,
+                new_rectangle->right - new_rectangle->left,
+                new_rectangle->bottom - new_rectangle->top,
+                SWP_NOZORDER | SWP_NOACTIVATE);
+            request_reconstrain();
 
-        hi_log_info("DPI has changed to {}", dpi);
-    } break;
+            hi_log_info("DPI has changed to {}", dpi);
+        }
+        break;
 
-    default: break;
+    default:
+        break;
     }
 
     // Let DefWindowProc() handle it.
@@ -930,13 +1024,19 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     switch (uMsg) {
     case WM_LBUTTONUP:
     case WM_LBUTTONDOWN:
-    case WM_LBUTTONDBLCLK: r.mouse().cause.left_button = true; break;
+    case WM_LBUTTONDBLCLK:
+        r.mouse().cause.left_button = true;
+        break;
     case WM_RBUTTONUP:
     case WM_RBUTTONDOWN:
-    case WM_RBUTTONDBLCLK: r.mouse().cause.right_button = true; break;
+    case WM_RBUTTONDBLCLK:
+        r.mouse().cause.right_button = true;
+        break;
     case WM_MBUTTONUP:
     case WM_MBUTTONDOWN:
-    case WM_MBUTTONDBLCLK: r.mouse().cause.middle_button = true; break;
+    case WM_MBUTTONDBLCLK:
+        r.mouse().cause.middle_button = true;
+        break;
     case WM_XBUTTONUP:
     case WM_XBUTTONDOWN:
     case WM_XBUTTONDBLCLK:
@@ -950,8 +1050,10 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         break;
     case WM_MOUSEWHEEL:
     case WM_MOUSEHWHEEL:
-    case WM_MOUSELEAVE: break;
-    default: hi_no_default();
+    case WM_MOUSELEAVE:
+        break;
+    default:
+        hi_no_default();
     }
 
     hilet a_button_is_pressed = r.mouse().down.left_button or r.mouse().down.middle_button or r.mouse().down.right_button or
@@ -980,37 +1082,43 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     case WM_LBUTTONDOWN:
     case WM_MBUTTONDOWN:
     case WM_RBUTTONDOWN:
-    case WM_XBUTTONDOWN: {
-        hilet within_double_click_time = r.time_point - multi_click_time_point < os_settings::double_click_interval();
-        hilet within_double_click_distance =
-            hypot(r.mouse().position - multi_click_position) < os_settings::double_click_distance();
+    case WM_XBUTTONDOWN:
+        {
+            hilet within_double_click_time = r.time_point - multi_click_time_point < os_settings::double_click_interval();
+            hilet within_double_click_distance =
+                hypot(r.mouse().position - multi_click_position) < os_settings::double_click_distance();
 
-        multi_click_count = within_double_click_time and within_double_click_distance ? multi_click_count + 1 : 1;
-        multi_click_time_point = r.time_point;
-        multi_click_position = r.mouse().position;
+            multi_click_count = within_double_click_time and within_double_click_distance ? multi_click_count + 1 : 1;
+            multi_click_time_point = r.time_point;
+            multi_click_position = r.mouse().position;
 
-        r.set_type(gui_event_type::mouse_down);
-        r.mouse().down_position = r.mouse().position;
-        r.mouse().click_count = multi_click_count;
+            r.set_type(gui_event_type::mouse_down);
+            r.mouse().down_position = r.mouse().position;
+            r.mouse().click_count = multi_click_count;
 
-        // Track draging past the window borders.
-        hi_axiom(win32Window != 0);
-        hilet window_handle = reinterpret_cast<HWND>(win32Window);
+            // Track draging past the window borders.
+            hi_axiom(win32Window != 0);
+            hilet window_handle = reinterpret_cast<HWND>(win32Window);
 
-        SetCapture(window_handle);
-    } break;
+            SetCapture(window_handle);
+        }
+        break;
 
     case WM_MOUSEWHEEL:
-    case WM_MOUSEHWHEEL: r.set_type(gui_event_type::mouse_wheel); break;
+    case WM_MOUSEHWHEEL:
+        r.set_type(gui_event_type::mouse_wheel);
+        break;
 
-    case WM_MOUSEMOVE: {
-        // XXX Make sure the mouse is moved enough for this to cause a drag event.
-        r.set_type(a_button_is_pressed ? gui_event_type::mouse_drag : gui_event_type::mouse_move);
-        if (mouse_button_event) {
-            r.mouse().down_position = mouse_button_event.mouse().down_position;
-            r.mouse().click_count = mouse_button_event.mouse().click_count;
+    case WM_MOUSEMOVE:
+        {
+            // XXX Make sure the mouse is moved enough for this to cause a drag event.
+            r.set_type(a_button_is_pressed ? gui_event_type::mouse_drag : gui_event_type::mouse_move);
+            if (mouse_button_event) {
+                r.mouse().down_position = mouse_button_event.mouse().down_position;
+                r.mouse().click_count = mouse_button_event.mouse().click_count;
+            }
         }
-    } break;
+        break;
 
     case WM_MOUSELEAVE:
         r.set_type(gui_event_type::mouse_exit_window);
@@ -1027,7 +1135,8 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         current_mouse_cursor = mouse_cursor::None;
         break;
 
-    default: hi_no_default();
+    default:
+        hi_no_default();
     }
 
     // Make sure we start tracking mouse events when the mouse has entered the window again.

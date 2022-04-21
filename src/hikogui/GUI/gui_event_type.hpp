@@ -17,6 +17,7 @@ enum class gui_event_type {
 
     // raw-keyboard-events
     keyboard_down,
+    keyboard_up,
     keyboard_grapheme,
     keyboard_partial_grapheme,
     keyboard_enter,

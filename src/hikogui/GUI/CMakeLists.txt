@@ -5,6 +5,7 @@
 target_sources(hikogui PRIVATE
     gui_event.hpp
     gui_event_type.hpp
+    gui_event_variant.hpp
     gui_system.cpp
     gui_system.hpp
     gui_system_delegate.hpp

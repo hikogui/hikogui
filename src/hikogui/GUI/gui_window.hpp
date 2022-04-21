@@ -313,8 +313,6 @@ protected:
      */
     virtual void create_window(extent2 new_size) = 0;
 
-    [[nodiscard]] virtual bool handle_event(gui_event const& event) noexcept;
-
     /** Process the event.
      *
      * This is called by the event handler to start processing events.

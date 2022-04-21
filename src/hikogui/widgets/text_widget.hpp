@@ -136,6 +136,7 @@ private:
 
     text_shaper _shaped_text;
     float _shaped_text_cap_height;
+    float _base_line;
 
     decltype(text)::token_type _text_cbt;
 
@@ -145,6 +146,10 @@ private:
 
     observable<cursor_state_type> _cursor_state = cursor_state_type::none;
     decltype(_cursor_state)::token_type _cursor_state_cbt;
+
+    /** After layout request scroll from the parent widgets.
+     */
+    bool _request_scroll = false;
 
     /** The last drag mouse event.
      *
@@ -179,6 +184,8 @@ private:
      */
     void scroll_to_show_selection() noexcept;
 
+    void request_scroll() noexcept;
+
     /** Reset states.
      *
      * Possible states:
@@ -212,7 +219,7 @@ private:
         fix_cursor_position(_shaped_text.size());
     }
 
-    void replace_selection(gstring replacement) noexcept;
+    void replace_selection(gstring const &replacement) noexcept;
 
     /** Add a character to the text.
      *

@@ -281,27 +281,7 @@ void gui_window::update_keyboard_target(keyboard_focus_group group, keyboard_foc
     update_keyboard_target(_keyboard_target_widget, group, direction);
 }
 
-bool gui_window::handle_event(gui_event const &event) noexcept
-{
-    switch (event.type()) {
-    case gui_event_type::gui_widget_next:
-        update_keyboard_target(_keyboard_target_widget, keyboard_focus_group::normal, keyboard_focus_direction::forward);
-        return true;
-    case gui_event_type::gui_widget_prev:
-        update_keyboard_target(_keyboard_target_widget, keyboard_focus_group::normal, keyboard_focus_direction::backward);
-        return true;
-    case gui_event_type::gui_toolbar_open:
-        update_keyboard_target(widget.get(), keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
-        return true;
-    case gui_event_type::text_edit_copy:
-        // Widgets, other than the current keyboard target may have text selected and can handle the command::text_edit_copy.
-        widget->handle_event_recursive(gui_event_type::text_edit_copy);
-        return true;
-    }
-    return false;
-}
-
-bool gui_window::process_event(gui_event const &event) noexcept
+bool gui_window::process_event(gui_event const& event) noexcept
 {
     hi_axiom(is_gui_thread());
 
@@ -316,21 +296,25 @@ bool gui_window::process_event(gui_event const &event) noexcept
         break;
 
     case gui_event_type::mouse_down:
-    case gui_event_type::mouse_move: {
-        hilet hitbox = widget->hitbox_test(event.mouse().position);
-        update_mouse_target(hitbox.widget, event.mouse().position);
+    case gui_event_type::mouse_move:
+        {
+            hilet hitbox = widget->hitbox_test(event.mouse().position);
+            update_mouse_target(hitbox.widget, event.mouse().position);
 
-        if (event == gui_event_type::mouse_down) {
-            update_keyboard_target(hitbox.widget, keyboard_focus_group::all);
+            if (event == gui_event_type::mouse_down) {
+                update_keyboard_target(hitbox.widget, keyboard_focus_group::all);
+            }
         }
-    } break;
+        break;
 
-    case gui_event_type::keyboard_down: keyboard_bindings().translate(event, events); break;
+    case gui_event_type::keyboard_down:
+        keyboard_bindings().translate(event, events);
+        break;
 
     default:;
     }
 
-    hilet target_widget = event.is_mouse_event() ? _mouse_target_widget : _keyboard_target_widget;
+    hilet target_widget = event.variant() == gui_event_variant::mouse ? _mouse_target_widget : _keyboard_target_widget;
     hilet handled = send_events_to_widget(target_widget, events);
 
     // Intercept the keyboard generated escape.
@@ -360,12 +344,6 @@ bool gui_window::send_events_to_widget(hi::widget const *target_widget, std::vec
         target_widget = target_widget->parent;
     }
 
-    // If none of the widgets has handled any of the events, let the window handle the events.
-    for (hilet& event : events) {
-        if (handle_event(event)) {
-            return true;
-        }
-    }
     return false;
 }
 

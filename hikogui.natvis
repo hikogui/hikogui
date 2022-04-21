@@ -196,4 +196,10 @@
     <Type Name="hi::v1::label_widget">
         <DisplayString>{{ label_widget {label} }}</DisplayString>
     </Type>
+    <Type Name="hi::v1::gui_event">
+        <DisplayString Condition="_type == hi::v1::gui_event_type::keyboard_grapheme">{_type,en}: {_grapheme}</DisplayString>
+        <DisplayString Condition="_type == hi::v1::gui_event_type::keyboard_partial_grapheme">{_type,en}: {_grapheme}</DisplayString>
+        <DisplayString Condition="_type == hi::v1::gui_event_type::mouse_move">{_type,en}, {_mouse.position}</DisplayString>
+        <DisplayString>{_type,en}</DisplayString>
+    </Type>
 </AutoVisualizer>

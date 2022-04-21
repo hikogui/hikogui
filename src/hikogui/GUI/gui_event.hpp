@@ -5,6 +5,7 @@
 #pragma once
 
 #include "gui_event_type.hpp"
+#include "gui_event_variant.hpp"
 #include "keyboard_virtual_key.hpp"
 #include "keyboard_state.hpp"
 #include "keyboard_modifiers.hpp"
@@ -75,7 +76,7 @@ public:
         utc_nanoseconds time_point,
         hi::keyboard_modifiers keyboard_modifiers,
         hi::keyboard_state keyboard_state) noexcept :
-        time_point(time_point), keyboard_modifiers(keyboard_modifiers), keyboard_state(keyboard_state)
+        _type(gui_event_type::none), time_point(time_point), keyboard_modifiers(keyboard_modifiers), keyboard_state(keyboard_state)
     {
         set_type(type);
     }
@@ -93,7 +94,7 @@ public:
     gui_event(gui_event_type type, hi::grapheme grapheme) noexcept :
         gui_event(type, std::chrono::utc_clock::now(), keyboard_modifiers::none, keyboard_state::idle)
     {
-        hi_axiom(is_grapheme_event());
+        hi_axiom(variant() == gui_event_variant::grapheme);
         this->grapheme() = grapheme;
     }
 
@@ -104,7 +105,7 @@ public:
         hi::keyboard_state keyboard_state = keyboard_state::idle) noexcept :
         gui_event(type, std::chrono::utc_clock::now(), keyboard_modifiers, keyboard_state)
     {
-        hi_axiom(is_keyboard_event());
+        hi_axiom(variant() == gui_event_variant::keyboard);
         this->key() = key;
     }
 
@@ -125,63 +126,76 @@ public:
         return _type;
     }
 
+    /** Change the type of the gui_event.
+     *
+     * @note If the variant changes of this event the associated data is cleared.
+     * @param type The new type for the gui_event.
+     */
     [[nodiscard]] constexpr void set_type(gui_event_type type) noexcept
     {
-        hilet was_mouse_event = is_mouse_event();
-        hilet was_grapheme_event = is_grapheme_event();
-        hilet was_keyboard_event = is_keyboard_event();
+        hilet previous_variant = variant();
 
         _type = type;
-        if (is_mouse_event() and not was_mouse_event) {
-            _mouse = {};
-
-        } else if (is_grapheme_event() and not was_grapheme_event) {
-            _grapheme = hi::grapheme{};
-
-        } else if (is_keyboard_event() and not was_keyboard_event) {
-            _key = {};
+        if (previous_variant != variant()) {
+            switch (variant()) {
+            case gui_event_variant::mouse:
+                _mouse = {};
+                break;
+            case gui_event_variant::grapheme:
+                _grapheme = hi::grapheme{};
+                break;
+            case gui_event_variant::keyboard:
+                _key = {};
+                break;
+            default:;
+            }
         }
     }
 
     [[nodiscard]] mouse_event_data& mouse() noexcept
     {
-        hi_axiom(is_mouse_event());
+        hi_axiom(variant() == gui_event_variant::mouse);
         return _mouse;
     }
 
     [[nodiscard]] mouse_event_data const& mouse() const noexcept
     {
-        hi_axiom(is_mouse_event());
+        hi_axiom(variant() == gui_event_variant::mouse);
         return _mouse;
     }
 
     [[nodiscard]] keyboard_virtual_key& key() noexcept
     {
-        hi_axiom(is_keyboard_event());
+        hi_axiom(variant() == gui_event_variant::keyboard);
         return _key;
     }
 
     [[nodiscard]] keyboard_virtual_key const& key() const noexcept
     {
-        hi_axiom(is_keyboard_event());
+        hi_axiom(variant() == gui_event_variant::keyboard);
         return _key;
     }
 
     [[nodiscard]] hi::grapheme& grapheme() noexcept
     {
-        hi_axiom(is_grapheme_event());
+        hi_axiom(variant() == gui_event_variant::grapheme);
         return _grapheme;
     }
 
     [[nodiscard]] hi::grapheme const& grapheme() const noexcept
     {
-        hi_axiom(is_grapheme_event());
+        hi_axiom(variant() == gui_event_variant::grapheme);
         return _grapheme;
     }
 
     [[nodiscard]] constexpr bool operator==(gui_event_type event_type) const noexcept
     {
         return type() == event_type;
+    }
+
+    [[nodiscard]] constexpr bool operator==(gui_event_variant event_variant) const noexcept
+    {
+        return variant() == event_variant;
     }
 
     [[nodiscard]] constexpr bool empty() const noexcept
@@ -194,41 +208,9 @@ public:
         return not empty();
     }
 
-    [[nodiscard]] constexpr bool is_mouse_event() const noexcept
+    [[nodiscard]] constexpr gui_event_variant variant() const noexcept
     {
-        using enum gui_event_type;
-        if (type() == mouse_move or type() == mouse_drag or type() == mouse_down or type() == mouse_up or type() == mouse_wheel or
-            type() == mouse_exit or type() == mouse_enter or type() == mouse_exit_window) {
-            hi_axiom(not is_grapheme_event());
-            hi_axiom(not is_keyboard_event());
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    [[nodiscard]] constexpr bool is_grapheme_event() const noexcept
-    {
-        using enum gui_event_type;
-        if (type() == keyboard_grapheme or type() == keyboard_partial_grapheme) {
-            hi_axiom(not is_mouse_event());
-            hi_axiom(not is_keyboard_event());
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    [[nodiscard]] constexpr bool is_keyboard_event() const noexcept
-    {
-        using enum gui_event_type;
-        if (type() == keyboard_down) {
-            hi_axiom(not is_mouse_event());
-            hi_axiom(not is_grapheme_event());
-            return true;
-        } else {
-            return false;
-        }
+        return to_gui_event_variant(type());
     }
 
     /** Check if this event is for a left-button-up event while the mouse pointer is in the given area.
@@ -250,7 +232,7 @@ public:
     [[nodiscard]] constexpr friend gui_event operator*(geo::transformer auto const& transform, gui_event const& rhs) noexcept
     {
         auto r = rhs;
-        if (rhs.is_mouse_event()) {
+        if (rhs == gui_event_variant::mouse) {
             r.mouse().position = point2{transform * rhs.mouse().position};
             r.mouse().down_position = point2{transform * rhs.mouse().down_position};
             r.mouse().wheel_delta = vector2{transform * rhs.mouse().wheel_delta};
