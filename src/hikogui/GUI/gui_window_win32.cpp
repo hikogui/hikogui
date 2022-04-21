@@ -501,7 +501,7 @@ void gui_window_win32::setOSWindowRectangleFromRECT(RECT new_rectangle) noexcept
         narrow_cast<float>(new_rectangle.bottom - new_rectangle.top)};
 
     if (rectangle.size() != new_screen_rectangle.size()) {
-        request_relayout();
+        request_relayout(this);
     }
 
     rectangle = new_screen_rectangle;
@@ -767,7 +767,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
             default:
                 hi_log_error("Unknown WM_ACTIVE value.");
             }
-            request_reconstrain();
+            request_reconstrain(this);
         }
         break;
 
@@ -960,7 +960,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
                 new_rectangle->right - new_rectangle->left,
                 new_rectangle->bottom - new_rectangle->top,
                 SWP_NOZORDER | SWP_NOACTIVATE);
-            request_reconstrain();
+            request_reconstrain(this);
 
             hi_log_info("DPI has changed to {}", dpi);
         }

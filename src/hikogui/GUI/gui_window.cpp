@@ -60,12 +60,12 @@ void gui_window::init()
     // For changes in setting on the OS we should reconstrain/layout/redraw the window
     // For example when the language or theme changes.
     _setting_change_token = os_settings::subscribe([this] {
-        this->request_reconstrain();
+        this->request_reconstrain(this);
     });
 
     // Subscribe on theme changes.
     _selected_theme_token = gui.selected_theme.subscribe([this](auto...) {
-        this->request_reconstrain();
+        this->request_reconstrain(this);
     });
 
     // Delegate has been called, layout of widgets has been calculated for the
@@ -94,7 +94,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
 
     // When a widget requests it or a window-wide event like language change
     // has happened all the widgets will be set_constraints().
-    auto need_reconstrain = _reconstrain.exchange(false, std::memory_order_relaxed);
+    auto need_reconstrain = _reconstrain.exchange(nullptr, std::memory_order_relaxed);
 
 #if 0
     // For performance checks force reconstrain.
@@ -118,7 +118,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     //
     // Make sure the widget does have its window rectangle match the constraints, otherwise
     // the logic for layout and drawing becomes complicated.
-    if (_resize.exchange(false)) {
+    if (_resize.exchange(nullptr, std::memory_order::relaxed)) {
         // If a widget asked for a resize, change the size of the window to the preferred size of the widgets.
         hilet current_size = rectangle.size();
         hilet new_size = widget->constraints().preferred;
@@ -148,7 +148,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     surface->update(rectangle.size());
 
     // Make sure the widget's layout is updated before draw, but after window resize.
-    auto need_relayout = _relayout.exchange(false, std::memory_order_relaxed);
+    auto need_relayout = _relayout.exchange(nullptr, std::memory_order_relaxed);
 
 #if 0
     // For performance checks force relayout.

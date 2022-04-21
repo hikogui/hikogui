@@ -118,17 +118,17 @@ void widget::request_redraw() const noexcept
 
 void widget::request_relayout() const noexcept
 {
-    window.request_relayout();
+    window.request_relayout(this);
 }
 
 void widget::request_reconstrain() const noexcept
 {
-    window.request_reconstrain();
+    window.request_reconstrain(this);
 }
 
 void widget::request_resize() const noexcept
 {
-    window.request_resize();
+    window.request_resize(this);
 }
 
 bool widget::handle_event(gui_event const &event) noexcept

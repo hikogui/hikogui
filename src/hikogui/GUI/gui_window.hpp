@@ -143,19 +143,19 @@ public:
         request_redraw(aarectangle{rectangle.size()});
     }
 
-    void request_relayout() noexcept
+    void request_relayout(void const *w) noexcept
     {
-        _relayout.store(true, std::memory_order::relaxed);
+        _relayout.store(w, std::memory_order::relaxed);
     }
 
-    void request_reconstrain() noexcept
+    void request_reconstrain(void const *w) noexcept
     {
-        _reconstrain.store(true, std::memory_order::relaxed);
+        _reconstrain.store(w, std::memory_order::relaxed);
     }
 
-    void request_resize() noexcept
+    void request_resize(void const *w) noexcept
     {
-        _resize.store(true, std::memory_order::relaxed);
+        _resize.store(w, std::memory_order::relaxed);
     }
 
     /** Update window.
@@ -283,9 +283,9 @@ protected:
     std::weak_ptr<delegate_type> _delegate;
 
     std::atomic<aarectangle> _redraw_rectangle = aarectangle{};
-    std::atomic<bool> _relayout = true;
-    std::atomic<bool> _reconstrain = true;
-    std::atomic<bool> _resize = true;
+    std::atomic<void const *> _relayout = nullptr;
+    std::atomic<void const *> _reconstrain = nullptr;
+    std::atomic<void const *> _resize = nullptr;
 
     /** Current size state of the window.
      */
