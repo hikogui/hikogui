@@ -83,7 +83,7 @@ enum class gui_event_type {
     gui_toolbar_next,
     gui_toolbar_prev,
     gui_activate,
-    gui_enter,
+    gui_activate_next,
     gui_cancel,
 };
 
