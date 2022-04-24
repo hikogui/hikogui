@@ -9,7 +9,7 @@
 #include "../GUI/hitbox.hpp"
 #include "../GUI/keyboard_focus_direction.hpp"
 #include "../GUI/keyboard_focus_group.hpp"
-#include "../GUI/gui_event_type.hpp"
+#include "../GUI/gui_event.hpp"
 #include "../geometry/extent.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/transform.hpp"
