@@ -31,7 +31,6 @@ public:
     void set_layout(widget_layout const &layout) noexcept override;
     void draw(draw_context const &context) noexcept override;
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
-    bool handle_event(gui_event const& event) noexcept override;
     // @endprivatesection
 private:
     template<typename Label>

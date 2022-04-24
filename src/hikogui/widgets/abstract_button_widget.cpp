@@ -107,20 +107,13 @@ bool abstract_button_widget::handle_event(gui_event const& event) noexcept
         }
         break;
 
-    case gui_event_type::gui_enter:
-        if (*enabled) {
-            activate();
-            window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::forward);
-            return true;
-        }
-        break;
-
     case gui_event_type::mouse_down:
         if (*enabled and event.mouse().cause.left_button) {
             _pressed = true;
             request_redraw();
             return true;
         }
+        break;
 
     case gui_event_type::mouse_up:
         if (*enabled and event.mouse().cause.left_button) {
@@ -132,6 +125,7 @@ bool abstract_button_widget::handle_event(gui_event const& event) noexcept
             request_redraw();
             return true;
         }
+        break;
 
     default:;
     }

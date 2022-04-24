@@ -330,6 +330,15 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         using enum edit_mode_type;
         using enum gui_event_type;
 
+    case gui_widget_next:
+    case gui_widget_prev:
+    case keyboard_exit:
+        // When the next widget is selected due to pressing the Tab key the text should be committed.
+        // The `text_widget` does not handle gui_activate, so it will be forwarded to parent widgets,
+        // such as `text_field_widget` which does.
+        window.process_event(gui_event_type::gui_activate);
+        return super::handle_event(event);
+
     case keyboard_grapheme:
         if (*enabled and *edit_mode >= line_editable) {
             reset_state("BDX");

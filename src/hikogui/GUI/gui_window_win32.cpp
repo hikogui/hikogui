@@ -589,6 +589,8 @@ void gui_window_win32::set_cursor(mouse_cursor cursor) noexcept
  */
 int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
 {
+    using namespace std::chrono_literals;
+
     gui_event mouse_event;
     hilet current_time = std::chrono::utc_clock::now();
 
@@ -642,44 +644,36 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         break;
 
     case WM_NCPAINT:
-        {
-            hi_axiom(is_gui_thread());
-            request_redraw();
-        }
+        hi_axiom(is_gui_thread());
+        request_redraw();
         break;
 
     case WM_SIZE:
-        {
-            // This is called when the operating system is changing the size of the window.
-            // However we do not support maximizing by the OS.
-            hi_axiom(is_gui_thread());
-            switch (wParam) {
-            case SIZE_MAXIMIZED:
-                ShowWindow(win32Window, SW_RESTORE);
-                set_size_state(gui_window_size::maximized);
-                break;
-            case SIZE_MINIMIZED:
-                _size_state = gui_window_size::minimized;
-                break;
-            case SIZE_RESTORED:
-                _size_state = gui_window_size::normal;
-                break;
-            default:
-                break;
-            }
+        // This is called when the operating system is changing the size of the window.
+        // However we do not support maximizing by the OS.
+        hi_axiom(is_gui_thread());
+        switch (wParam) {
+        case SIZE_MAXIMIZED:
+            ShowWindow(win32Window, SW_RESTORE);
+            set_size_state(gui_window_size::maximized);
+            break;
+        case SIZE_MINIMIZED:
+            _size_state = gui_window_size::minimized;
+            break;
+        case SIZE_RESTORED:
+            _size_state = gui_window_size::normal;
+            break;
+        default:
+            break;
         }
         break;
 
     case WM_TIMER:
-        {
-            using namespace std::chrono_literals;
-
-            if (last_forced_redraw + 16.7ms < current_time) {
-                // During sizing the event loop is blocked.
-                // Render at about 60fps.
-                loop::main().resume_once();
-                last_forced_redraw = current_time;
-            }
+        if (last_forced_redraw + 16.7ms < current_time) {
+            // During sizing the event loop is blocked.
+            // Render at about 60fps.
+            loop::main().resume_once();
+            last_forced_redraw = current_time;
         }
         break;
 
@@ -730,45 +724,39 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         break;
 
     case WM_ENTERSIZEMOVE:
-        {
-            hi_axiom(is_gui_thread());
-            if (SetTimer(win32Window, move_and_resize_timer_id, 16, NULL) != move_and_resize_timer_id) {
-                hi_log_error("Could not set timer before move/resize. {}", get_last_error_message());
-            }
-            resizing = true;
+        hi_axiom(is_gui_thread());
+        if (SetTimer(win32Window, move_and_resize_timer_id, 16, NULL) != move_and_resize_timer_id) {
+            hi_log_error("Could not set timer before move/resize. {}", get_last_error_message());
         }
+        resizing = true;
         break;
 
     case WM_EXITSIZEMOVE:
-        {
-            hi_axiom(is_gui_thread());
-            if (not KillTimer(win32Window, move_and_resize_timer_id)) {
-                hi_log_error("Could not kill timer after move/resize. {}", get_last_error_message());
-            }
-            resizing = false;
-            // After a manual move of the window, it is clear that the window is in normal mode.
-            _restore_rectangle = rectangle;
-            _size_state = gui_window_size::normal;
-            request_redraw();
+        hi_axiom(is_gui_thread());
+        if (not KillTimer(win32Window, move_and_resize_timer_id)) {
+            hi_log_error("Could not kill timer after move/resize. {}", get_last_error_message());
         }
+        resizing = false;
+        // After a manual move of the window, it is clear that the window is in normal mode.
+        _restore_rectangle = rectangle;
+        _size_state = gui_window_size::normal;
+        request_redraw();
         break;
 
     case WM_ACTIVATE:
-        {
-            hi_axiom(is_gui_thread());
-            switch (wParam) {
-            case 1: // WA_ACTIVE
-            case 2: // WA_CLICKACTIVE
-                active = true;
-                break;
-            case 0: // WA_INACTIVE
-                active = false;
-                break;
-            default:
-                hi_log_error("Unknown WM_ACTIVE value.");
-            }
-            request_reconstrain(this);
+        hi_axiom(is_gui_thread());
+        switch (wParam) {
+        case 1: // WA_ACTIVE
+        case 2: // WA_CLICKACTIVE
+            active = true;
+            break;
+        case 0: // WA_INACTIVE
+            active = false;
+            break;
+        default:
+            hi_log_error("Unknown WM_ACTIVE value.");
         }
+        request_reconstrain(this);
         break;
 
     case WM_GETMINMAXINFO:
@@ -788,16 +776,12 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         break;
 
     case WM_UNICHAR:
-        {
-            if (auto c = static_cast<char32_t>(wParam); c == UNICODE_NOCHAR) {
-                // Tell the 3rd party keyboard handler application that we support WM_UNICHAR.
-                return 1;
+        if (auto c = static_cast<char32_t>(wParam); c == UNICODE_NOCHAR) {
+            // Tell the 3rd party keyboard handler application that we support WM_UNICHAR.
+            return 1;
 
-            } else if (c >= 0x20) {
-                if (auto g = grapheme{c}; g.valid()) {
-                    process_event(gui_event{gui_event_type::keyboard_grapheme, g});
-                }
-            }
+        } else if (auto g = grapheme{c}; g.valid()) {
+            process_event(gui_event{gui_event_type::keyboard_grapheme, g});
         }
         break;
 
@@ -810,33 +794,35 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         break;
 
     case WM_CHAR:
-        {
-            if (auto c = handle_suragates(static_cast<char32_t>(wParam))) {
-                if (auto g = grapheme{c}; g.valid()) {
-                    process_event(gui_event{gui_event_type::keyboard_grapheme, g});
-                }
+        if (auto c = handle_suragates(static_cast<char32_t>(wParam))) {
+            if (auto g = grapheme{c}; g.valid()) {
+                process_event(gui_event{gui_event_type::keyboard_grapheme, g});
             }
         }
         break;
 
     case WM_SYSCOMMAND:
-        {
-            if (wParam == SC_KEYMENU) {
-                process_event(gui_event{gui_event_type::keyboard_down, keyboard_virtual_key::Menu});
-                return 0;
-            }
+        if (wParam == SC_KEYMENU) {
+            keymenu_pressed = true;
+            process_event(gui_event{gui_event_type::keyboard_down, keyboard_virtual_key::menu});
+            return 0;
         }
         break;
 
     case WM_KEYDOWN:
     case WM_KEYUP:
         {
-            auto extended = (narrow_cast<uint32_t>(lParam) & 0x01000000) != 0;
-            auto key_code = narrow_cast<int>(wParam);
-
+            hilet extended = (narrow_cast<uint32_t>(lParam) & 0x01000000) != 0;
+            hilet key_code = narrow_cast<int>(wParam);
             hilet key_modifiers = get_keyboard_modifiers();
-            hilet virtual_key = to_keyboard_virtual_key(key_code, extended, key_modifiers);
-            if (virtual_key != keyboard_virtual_key::Nul) {
+            auto virtual_key = to_keyboard_virtual_key(key_code, extended, key_modifiers);
+
+            if (std::exchange(keymenu_pressed, false) and uMsg == WM_KEYDOWN and virtual_key == keyboard_virtual_key::space) {
+                // On windows, Alt followed by Space opens the menu of the window, which is called the system menu.
+                virtual_key = keyboard_virtual_key::sysmenu;
+            }
+
+            if (virtual_key != keyboard_virtual_key::nul) {
                 hilet key_state = get_keyboard_state();
                 hilet event_type = uMsg == WM_KEYDOWN ? gui_event_type::keyboard_down : gui_event_type::keyboard_up;
                 process_event(gui_event{event_type, virtual_key, key_modifiers, key_state});
@@ -860,6 +846,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     case WM_MOUSEHWHEEL:
     case WM_MOUSEMOVE:
     case WM_MOUSELEAVE:
+        keymenu_pressed = false;
         process_event(create_mouse_event(uMsg, wParam, lParam));
         break;
 

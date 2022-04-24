@@ -277,6 +277,16 @@ public:
         return ~window_to_screen();
     }
 
+    /** Process the event.
+     *
+     * This is called by the event handler to start processing events.
+     * The events are translated and then uses `send_event_to_widget()` to send the
+     * events to the widgets in some priority ordering.
+     * 
+     * It may also be called from within the `event_handle()` of widgets.
+     */
+    bool process_event(gui_event const& event) noexcept;
+
 protected:
     static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
 
@@ -312,14 +322,6 @@ protected:
      * @pre title and extent must be set.
      */
     virtual void create_window(extent2 new_size) = 0;
-
-    /** Process the event.
-     *
-     * This is called by the event handler to start processing events.
-     * The events are translated and then uses `send_event_to_widget()` to send the
-     * events to the widgets in some priority ordering.
-     */
-    bool process_event(gui_event const& event) noexcept;
 
 private:
     notifier<>::token_type _setting_change_token;

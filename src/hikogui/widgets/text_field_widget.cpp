@@ -30,6 +30,7 @@ text_field_widget::text_field_widget(gui_window& window, widget *parent, weak_or
     _continues_cbt = continues.subscribe([&](auto...){ request_reconstrain(); });
     _text_style_cbt = text_style.subscribe([&](auto...){ request_reconstrain(); });
     _text_cbt = _text.subscribe([&](auto...){ request_reconstrain(); });
+    _error_label_cbt = _error_label.subscribe([&](auto...){ request_reconstrain(); });
     // clang-format on
 }
 
@@ -120,35 +121,18 @@ bool text_field_widget::handle_event(gui_event const& event) noexcept
     case gui_event_type::gui_cancel:
         if (*enabled) {
             revert(true);
-            request_reconstrain();
             return true;
         }
         break;
 
-    case gui_event_type::gui_enter:
+    case gui_event_type::gui_activate:
         if (*enabled) {
             commit(true);
-            request_reconstrain();
-            this->window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::forward);
-            return true;
+            return super::handle_event(event);
         }
         break;
 
-    case gui_event_type::keyboard_enter:
-        if (*enabled) {
-            revert(true);
-            request_reconstrain();
-            // More processing of the gui_keyboard_enter command is required.
-        }
-        break;
-
-    case gui_event_type::keyboard_exit:
-        if (*enabled) {
-            commit(true);
-            request_reconstrain();
-            // More processing of the gui_keyboard_exit command is required.
-        }
-        break;
+    default:;
     }
 
     return super::handle_event(event);

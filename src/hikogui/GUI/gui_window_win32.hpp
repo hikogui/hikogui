@@ -49,6 +49,8 @@ private:
     point2 multi_click_position;
     uint8_t multi_click_count;
 
+    bool keymenu_pressed = false;
+
     void setOSWindowRectangleFromRECT(RECT aarectangle) noexcept;
 
     [[nodiscard]] keyboard_state get_keyboard_state() noexcept;

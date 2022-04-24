@@ -39,36 +39,6 @@ void toolbar_button_widget::draw(draw_context const& context) noexcept
     return *visible and *enabled and any(group & hi::keyboard_focus_group::toolbar);
 }
 
-bool toolbar_button_widget::handle_event(gui_event const& event) noexcept
-{
-    switch (event.type()) {
-    case gui_event_type::gui_toolbar_next:
-        if (*enabled and not is_last(keyboard_focus_group::toolbar)) {
-            window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
-            return true;
-        }
-        break;
-
-    case gui_event_type::gui_toolbar_prev:
-        if (*enabled and not is_first(keyboard_focus_group::toolbar)) {
-            window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::backward);
-            return true;
-        }
-        break;
-
-    case gui_event_type::gui_sysmenu_open:
-        if (*enabled) {
-            window.open_system_menu();
-            return true;
-        }
-        break;
-
-    default:;
-    }
-
-    return super::handle_event(event);
-}
-
 void toolbar_button_widget::draw_toolbar_button(draw_context const& context) noexcept
 {
     hilet border_color = *focus ? focus_color() : color::transparent();

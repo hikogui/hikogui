@@ -182,49 +182,67 @@ bool window_traffic_lights_widget::handle_event(gui_event const& event) noexcept
 {
     switch (event.type()) {
     case gui_event_type::mouse_move:
-    case gui_event_type::mouse_drag: {
-        // Check the hover states of each button.
-        auto state_has_changed = false;
-        state_has_changed |= compare_store(hoverClose, closeRectangle.contains(event.mouse().position));
-        state_has_changed |= compare_store(hoverMinimize, minimizeRectangle.contains(event.mouse().position));
-        state_has_changed |= compare_store(hoverMaximize, maximizeRectangle.contains(event.mouse().position));
-        if (state_has_changed) {
-            request_redraw();
+    case gui_event_type::mouse_drag:
+        {
+            // Check the hover states of each button.
+            auto state_has_changed = false;
+            state_has_changed |= compare_store(hoverClose, closeRectangle.contains(event.mouse().position));
+            state_has_changed |= compare_store(hoverMinimize, minimizeRectangle.contains(event.mouse().position));
+            state_has_changed |= compare_store(hoverMaximize, maximizeRectangle.contains(event.mouse().position));
+            if (state_has_changed) {
+                request_redraw();
+            }
         }
-    } break;
+        break;
+
+    case gui_event_type::mouse_exit:
+        hoverClose = false;
+        hoverMinimize = false;
+        hoverMaximize = false;
+        request_redraw();
+        return super::handle_event(event);
 
     case gui_event_type::mouse_down:
         if (event.mouse().cause.left_button) {
+            if (closeRectangle.contains(event.mouse().position)) {
+                pressedClose = true;
+
+            } else if (minimizeRectangle.contains(event.mouse().position)) {
+                pressedMinimize = true;
+
+            } else if (maximizeRectangle.contains(event.mouse().position)) {
+                pressedMaximize = true;
+            }
             request_redraw();
-            pressedClose = hoverClose;
-            pressedMinimize = hoverMinimize;
-            pressedMaximize = hoverMaximize;
             return true;
         }
         break;
 
     case gui_event_type::mouse_up:
         if (event.mouse().cause.left_button) {
-            if (pressedClose and hoverClose) {
-                window.close_window();
-            }
-
-            if (pressedMinimize and hoverMinimize) {
-                window.set_size_state(gui_window_size::minimized);
-            }
-
-            if (pressedMaximize and hoverMaximize) {
-                switch (window.size_state()) {
-                case gui_window_size::normal: window.set_size_state(gui_window_size::maximized); break;
-                case gui_window_size::maximized: window.set_size_state(gui_window_size::normal); break;
-                default: hi_no_default();
-                }
-            }
-
-            request_redraw();
             pressedClose = false;
             pressedMinimize = false;
             pressedMaximize = false;
+            request_redraw();
+
+            if (closeRectangle.contains(event.mouse().position)) {
+                window.close_window();
+
+            } else if (minimizeRectangle.contains(event.mouse().position)) {
+                window.set_size_state(gui_window_size::minimized);
+
+            } else if (maximizeRectangle.contains(event.mouse().position)) {
+                switch (window.size_state()) {
+                case gui_window_size::normal:
+                    window.set_size_state(gui_window_size::maximized);
+                    break;
+                case gui_window_size::maximized:
+                    window.set_size_state(gui_window_size::normal);
+                    break;
+                default:
+                    hi_no_default();
+                }
+            }
             return true;
         }
         break;

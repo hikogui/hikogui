@@ -332,6 +332,11 @@ bool gui_window::process_event(gui_event const& event) noexcept
 
 bool gui_window::send_events_to_widget(hi::widget const *target_widget, std::vector<gui_event> const& events) noexcept
 {
+    if (not target_widget) {
+        // If there was no target, send the event to the window's widget.
+        target_widget = widget.get();
+    }
+
     while (target_widget) {
         // Each widget will try to handle the first event it can.
         for (hilet& event : events) {

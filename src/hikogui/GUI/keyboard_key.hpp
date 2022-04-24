@@ -29,17 +29,17 @@ class keyboard_key {
      *
      * The following non-printable ASCII characters are used
      */
-    keyboard_virtual_key virtualKey;
+    keyboard_virtual_key virtual_key;
 
 public:
-    constexpr keyboard_key() noexcept : modifiers(keyboard_modifiers::none), virtualKey(keyboard_virtual_key::Nul) {}
+    constexpr keyboard_key() noexcept : modifiers(keyboard_modifiers::none), virtual_key(keyboard_virtual_key::nul) {}
 
     constexpr keyboard_key(keyboard_modifiers modifiers, keyboard_virtual_key key) noexcept :
-        modifiers(modifiers), virtualKey(key)
+        modifiers(modifiers), virtual_key(key)
     {
     }
 
-    keyboard_key(std::string_view key_combination) : modifiers(keyboard_modifiers::none), virtualKey(keyboard_virtual_key::Nul)
+    keyboard_key(std::string_view key_combination) : modifiers(keyboard_modifiers::none), virtual_key(keyboard_virtual_key::nul)
     {
         hilet modifiers_and_vkey = split(key_combination, '+');
         hi_assert(modifiers_and_vkey.cbegin() != modifiers_and_vkey.cend());
@@ -49,22 +49,22 @@ public:
             modifiers |= to_keyboard_modifiers(*i);
         }
 
-        virtualKey = to_keyboard_virtual_key(modifiers_and_vkey.back());
+        virtual_key = to_keyboard_virtual_key(modifiers_and_vkey.back());
     }
 
     std::size_t hash() const noexcept
     {
-        return hash_mix(modifiers, virtualKey);
+        return hash_mix(modifiers, virtual_key);
     }
 
     [[nodiscard]] friend bool operator==(keyboard_key const &lhs, keyboard_key const &rhs) noexcept
     {
-        return lhs.modifiers == rhs.modifiers && lhs.virtualKey == rhs.virtualKey;
+        return lhs.modifiers == rhs.modifiers && lhs.virtual_key == rhs.virtual_key;
     }
 
     [[nodiscard]] friend std::string to_string(keyboard_key const &rhs) noexcept
     {
-        return std::format("{}{}", rhs.modifiers, rhs.virtualKey);
+        return std::format("{}{}", rhs.modifiers, rhs.virtual_key);
     }
 
     friend std::ostream &operator<<(std::ostream &lhs, keyboard_key const &rhs)

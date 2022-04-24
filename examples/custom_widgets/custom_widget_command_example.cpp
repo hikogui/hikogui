@@ -16,7 +16,7 @@ public:
 
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
-    command_widget(hi::gui_window& window, hi::widget *parent) noexcept : widget(window, parent)
+    command_widget(hi::gui_window& window, hi::widget *parent) noexcept : hi::widget(window, parent)
     {
         // To visually show the change in value the widget needs to be redrawn.
         _value_cbt = value.subscribe([&](auto...) {
@@ -105,15 +105,6 @@ public:
             if (*enabled) {
                 // Handle activate, by default the "spacebar" causes this command.
                 value = not *value;
-                return true;
-            }
-            break;
-
-        case hi::gui_event_type::gui_enter:
-            if (*enabled) {
-                // Handle the enter command, this will activate then set the keyboard focus to the next normal widget.
-                value = not *value;
-                window.update_keyboard_target(hi::keyboard_focus_group::normal, hi::keyboard_focus_direction::forward);
                 return true;
             }
             break;

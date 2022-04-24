@@ -10,7 +10,7 @@
 
 namespace hi::inline v1 {
 
-widget::widget(gui_window &_window, widget *parent) noexcept :
+widget::widget(gui_window& _window, widget *parent) noexcept :
     window(_window), parent(parent), logical_layer(0), semantic_layer(0)
 {
     hi_axiom(is_gui_thread());
@@ -23,7 +23,7 @@ widget::widget(gui_window &_window, widget *parent) noexcept :
     // clang-format off
     _enabled_cbt = enabled.subscribe([&](auto...){ request_redraw(); });
     _visible_cbt = visible.subscribe([&](auto...){ request_reconstrain(); });
-    // clang-format off
+    // clang-format on
 
     _constraints.minimum = extent2::nan();
     _constraints.preferred = extent2::nan();
@@ -42,12 +42,12 @@ widget::~widget()
     return window.is_gui_thread();
 }
 
-hi::theme const &widget::theme() const noexcept
+hi::theme const& widget::theme() const noexcept
 {
     return window.theme;
 }
 
-hi::font_book &widget::font_book() const noexcept
+hi::font_book& widget::font_book() const noexcept
 {
     return *window.gui.font_book;
 }
@@ -131,7 +131,7 @@ void widget::request_resize() const noexcept
     window.request_resize(this);
 }
 
-bool widget::handle_event(gui_event const &event) noexcept
+bool widget::handle_event(gui_event const& event) noexcept
 {
     hi_axiom(is_gui_thread());
 
@@ -158,13 +158,39 @@ bool widget::handle_event(gui_event const &event) noexcept
         request_redraw();
         return true;
 
+    case gui_widget_next:
+        window.update_keyboard_target(this, keyboard_focus_group::normal, keyboard_focus_direction::forward);
+        return true;
+
+    case gui_widget_prev:
+        window.update_keyboard_target(this, keyboard_focus_group::normal, keyboard_focus_direction::backward);
+        return true;
+
+    case gui_activate_next:
+        window.process_event(gui_activate);
+        return window.process_event(gui_widget_next);
+
+    case gui_event_type::gui_toolbar_next:
+        if (*enabled and accepts_keyboard_focus(keyboard_focus_group::toolbar) and not is_last(keyboard_focus_group::toolbar)) {
+            window.update_keyboard_target(this, keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
+            return true;
+        }
+        break;
+
+    case gui_event_type::gui_toolbar_prev:
+        if (*enabled and accepts_keyboard_focus(keyboard_focus_group::toolbar) and not is_first(keyboard_focus_group::toolbar)) {
+            window.update_keyboard_target(this, keyboard_focus_group::toolbar, keyboard_focus_direction::backward);
+            return true;
+        }
+        break;
+
     default:;
     }
 
     return false;
 }
 
-bool widget::handle_event_recursive(gui_event const &event, std::vector<widget const *> const &reject_list) noexcept
+bool widget::handle_event_recursive(gui_event const& event, std::vector<widget const *> const& reject_list) noexcept
 {
     hi_axiom(is_gui_thread());
 
@@ -177,7 +203,7 @@ bool widget::handle_event_recursive(gui_event const &event, std::vector<widget c
         }
     }
 
-    if (!std::ranges::any_of(reject_list, [this](hilet &x) {
+    if (!std::ranges::any_of(reject_list, [this](hilet& x) {
             return x == this;
         })) {
         handled |= handle_event(event);

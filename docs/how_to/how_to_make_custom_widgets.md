@@ -301,7 +301,7 @@ bool handle_event(hi::gui_event const& event) noexcept override
             return true;
         }
     }
-    return super::handle_event(event);;
+    return super::handle_event(event);
 }
 ```
 
@@ -323,8 +323,7 @@ Here are several example command events:
  - `file_*`: Commands for loading, saving files.
 
 
-In the example below the widget listens to both `gui_activate` and `gui_activate_next`,
-On `gui_activate_next` it will also get the window the select the next & normal widget:
+In the example below the widget listens to `gui_activate`:
 
 ```cpp
 bool handle_event(hi::gui_event const& event) noexcept override
@@ -333,14 +332,6 @@ bool handle_event(hi::gui_event const& event) noexcept override
     case hi::gui_event_type::gui_activate:
         if (*enabled) {
             value = not *value;
-            return true;
-        }
-        break;
-
-    case hi::gui_event_type::gui_activate_next:
-        if (*enabled) {
-            value = not *value;
-            window.update_keyboard_target(hi::keyboard_focus_group::normal, hi::keyboard_focus_direction::forward);
             return true;
         }
         break;

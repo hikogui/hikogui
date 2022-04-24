@@ -140,8 +140,10 @@ bool selection_widget::handle_event(gui_event const& event) noexcept
         }
         return true;
 
+    case gui_event_type::gui_activate_next:
+        // Handle gui_active_next so that the next widget will NOT get keyboard focus.
+        // The previously selected item needs the get keyboard focus instead.
     case gui_event_type::gui_activate:
-    case gui_event_type::gui_enter:
         if (*enabled and _has_options and not _selecting) {
             start_selecting();
         } else {
