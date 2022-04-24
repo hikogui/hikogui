@@ -46,34 +46,6 @@ void toolbar_tab_button_widget::request_redraw() const noexcept
     return *visible and *enabled and any(group & hi::keyboard_focus_group::toolbar);
 }
 
-[[nodiscard]] bool toolbar_tab_button_widget::handle_event(command command) noexcept
-{
-    hi_axiom(is_gui_thread());
-
-    if (*enabled) {
-        switch (command) {
-        case command::gui_toolbar_next:
-            if (!is_last(keyboard_focus_group::toolbar)) {
-                window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
-                return true;
-            }
-            break;
-
-        case command::gui_toolbar_prev:
-            if (!is_first(keyboard_focus_group::toolbar)) {
-                window.update_keyboard_target(keyboard_focus_group::toolbar, keyboard_focus_direction::backward);
-                return true;
-            }
-            break;
-        case command::gui_sysmenu_open: window.open_system_menu(); return true;
-
-        default:;
-        }
-    }
-
-    return super::handle_event(command);
-}
-
 void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const& context) noexcept
 {
     // Draw the outline of the button across the clipping rectangle to clip the

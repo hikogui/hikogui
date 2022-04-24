@@ -18,11 +18,11 @@ namespace hi::inline v1 {
  * control of the keyboard, therefor it is not in the list of keyboard modifiers here.
  */
 enum class keyboard_modifiers : uint8_t {
-    None = 0x00,
-    Shift = 0x01, ///< The shift key is being held.
-    Control = 0x02, ///< The control key is being held.
-    Alt = 0x04, ///< The alt-key, option-key or meta-key is being held.
-    Super = 0x08, ///< The windows-key, key-key or super-key is being held.
+    none = 0x00,
+    shift = 0x01, ///< The shift key is being held.
+    control = 0x02, ///< The control key is being held.
+    alt = 0x04, ///< The alt-key, option-key or meta-key is being held.
+    super = 0x08, ///< The windows-key, key-key or super-key is being held.
 };
 
 [[nodiscard]] constexpr keyboard_modifiers operator|(keyboard_modifiers const& lhs, keyboard_modifiers const& rhs) noexcept
@@ -60,13 +60,13 @@ inline keyboard_modifiers to_keyboard_modifiers(std::string_view s)
     hilet s_lower = to_lower((s.back() == '+') ? s.substr(0, ssize(s) - 1) : s);
 
     if (s_lower == "shift") {
-        return keyboard_modifiers::Shift;
+        return keyboard_modifiers::shift;
     } else if (s_lower == "control" || s_lower == "ctrl" || s_lower == "cntr") {
-        return keyboard_modifiers::Control;
+        return keyboard_modifiers::control;
     } else if (s_lower == "alt" || s_lower == "option" || s_lower == "meta") {
-        return keyboard_modifiers::Alt;
+        return keyboard_modifiers::alt;
     } else if (s_lower == "windows" || s_lower == "win" || s_lower == "command" || s_lower == "cmd" || s_lower == "super") {
-        return keyboard_modifiers::Super;
+        return keyboard_modifiers::super;
     } else {
         throw parse_error(std::format("Unknown keyboard modifier '{}'", s));
     }
@@ -76,16 +76,16 @@ inline std::string to_string(keyboard_modifiers modifiers)
 {
     auto r = std::string{};
 
-    if (any(modifiers & keyboard_modifiers::Shift)) {
+    if (any(modifiers & keyboard_modifiers::shift)) {
         r += "shift+";
     }
-    if (any(modifiers & keyboard_modifiers::Control)) {
+    if (any(modifiers & keyboard_modifiers::control)) {
         r += "control+";
     }
-    if (any(modifiers & keyboard_modifiers::Alt)) {
+    if (any(modifiers & keyboard_modifiers::alt)) {
         r += "alt+";
     }
-    if (any(modifiers & keyboard_modifiers::Super)) {
+    if (any(modifiers & keyboard_modifiers::super)) {
         r += "super+";
     }
 

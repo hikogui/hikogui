@@ -21,7 +21,7 @@ and time when the `hi_log_info()` macro was executed.
 
 There are several log levels:
 
- | Level      | Macro              | Desription                                                                   |
+ | Level      | Macro              | Description                                                                   |
  |:---------- |:------------------ |:---------------------------------------------------------------------------- |
  | fatal      | `hi_log_fatal()`   | Errors that causes harm, including data corruption.                          |
  | error      | `hi_log_error()`   | Errors that causes functionality to not be available.                        |
@@ -32,8 +32,8 @@ There are several log levels:
  | statistics | `global_counter<>` | Statistical information for counters and durations.                          |
  | trace      | `trace<>()`        | Debug information about a transaction that was aborted by an exception.      |
 
-
 ### Asynchronous logging
+
 By default logging is done synchronously, meaning that the `hi_log_*()`
 macros will block until the log entry is written to console and log files.
 
@@ -50,6 +50,7 @@ hi::log::start_subsystem(hi::global_state_type::log_level_info);
 ```
 
 ### Wait-free logging
+
 The `hi_log_*()` macros can log wait-free when all the following conditions
 are met:
 
@@ -59,6 +60,7 @@ are met:
  - The format-arguments are together not more than: 32 bytes.
 
 ### Accurate timestamps
+
 By default the timestamps in the log are an estimate of when the
 `hi_log_*()` function where executed. For more accurate and precise
 timestamps you will need to start the `time_stamp_count` subsystem.
@@ -75,7 +77,7 @@ After calibration the timestamps in the log are kept close to the
 real-time clock, while having an extremely good resolution between
 log entries that have been taken on the same-CPU.
 
-```
+```text
 Date       Time              CPU Thread     Level Message         Source-filename       Line
 ---------- ------------------ -- -----      ----- --------------- --------------------- ----
 2021-09-28 12:55:15.424435377  7:15112      error This is a test. (gui_window_win32.cpp:536)
@@ -83,6 +85,7 @@ Date       Time              CPU Thread     Level Message         Source-filenam
 
 Wait-free counting
 ------------------
+
 Instead of logging, you may want to count how often a line of
 code is executed. This is a pretty cheap and wait-free operation,
 on x86-64 this is done with a single locked-increment/add instruction.
@@ -99,6 +102,7 @@ on a per minute interval.
 
 Tracing
 -------
+
 Tracing of transactions is done using the `hi::trace<>` type.
 A trace records how long the instance of a `hi::trace` stays alive and
 logs information when a `hi::trace` is unwound by an exception being thrown.

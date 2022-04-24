@@ -3,6 +3,9 @@
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 target_sources(hikogui PRIVATE
+    gui_event.hpp
+    gui_event_type.hpp
+    gui_event_variant.hpp
     gui_system.cpp
     gui_system.hpp
     gui_system_delegate.hpp
@@ -18,7 +21,6 @@ target_sources(hikogui PRIVATE
     hitbox.hpp
     keyboard_bindings.cpp
     keyboard_bindings.hpp
-    keyboard_event.hpp
     keyboard_key.hpp
     keyboard_modifiers.hpp
     keyboard_virtual_key.hpp
@@ -27,7 +29,6 @@ target_sources(hikogui PRIVATE
     keyboard_focus_group.hpp
     mouse_buttons.hpp
     mouse_cursor.hpp
-    mouse_event.hpp
     theme.cpp
     theme.hpp
     theme_book.cpp

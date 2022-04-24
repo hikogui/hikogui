@@ -8,426 +8,303 @@
 #include "../required.hpp"
 #include "../exception.hpp"
 #include "../strings.hpp"
+#include "../enum_metadata.hpp"
 #include <unordered_map>
 
 namespace hi::inline v1 {
 
 enum class keyboard_virtual_key : uint8_t {
-    Nul,
+    nul = 0,
 
-    A,
-    B,
-    C,
-    D,
-    E,
-    F,
-    G,
-    H,
-    I,
-    J,
-    K,
-    L,
-    M,
-    N,
-    O,
-    P,
-    Q,
-    R,
-    S,
-    T,
-    U,
-    V,
-    W,
-    X,
-    Y,
-    Z,
+    A = 'a',
+    B = 'b',
+    C = 'c',
+    D = 'd',
+    E = 'e',
+    F = 'f',
+    G = 'g',
+    H = 'h',
+    I = 'i',
+    J = 'j',
+    K = 'k',
+    L = 'l',
+    M = 'm',
+    N = 'n',
+    O = 'o',
+    P = 'p',
+    Q = 'q',
+    R = 'r',
+    S = 's',
+    T = 't',
+    U = 'u',
+    V = 'v',
+    W = 'w',
+    X = 'x',
+    Y = 'y',
+    Z = 'z',
 
-    _0,
-    _1,
-    _2,
-    _3,
-    _4,
-    _5,
-    _6,
-    _7,
-    _8,
-    _9,
+    _0 = '0',
+    _1 = '1',
+    _2 = '2',
+    _3 = '3',
+    _4 = '4',
+    _5 = '5',
+    _6 = '6',
+    _7 = '7',
+    _8 = '8',
+    _9 = '9',
 
-    Plus,
-    Minus,
-    Star,
-    Slash,
-    Percent,
-    Tilde,
-    Ampersant,
-    Pipe,
-    Caret,
-    Less,
-    Equal,
-    Greater,
-    OpenParentheses,
-    CloseParentheses,
-    OpenBracket,
-    CloseBracket,
-    OpenBrace,
-    CloseBrace,
-    Period,
-    Comma,
-    Colon,
-    SemiColon,
-    Bang,
-    Question,
-    Space,
-    Tab,
-    Enter,
-    Backtick,
-    Quote,
-    DoubleQuote,
-    At,
-    Hash,
-    Dollar,
-    Underscore,
-    Backslash,
+    plus = '+',
+    minus = '-',
+    star = '*',
+    slash = '/',
+    percent = '%',
+    tilde = '~',
+    ampersant = '&',
+    pipe = '|',
+    caret = '^',
+    less = '<',
+    equal = '=',
+    greater = '>',
+    open_parentheses = '(',
+    close_parentheses = ')',
+    open_bracket = '[',
+    close_bracket = ']',
+    open_brace = '{',
+    close_brace = '}',
+    period = '.',
+    comma = ',',
+    colon = ':',
+    semi_colon = ';',
+    bang = '!',
+    question = '?',
+    space = ' ',
+    tab = '\t',
+    enter = '\n',
+    backtick = '`',
+    quote = '\'',
+    double_quote = '"',
+    at = '@',
+    hash = '#',
+    dollar = '$',
+    underscore = '_',
+    backslash = '\\',
 
-    Left,
-    Right,
-    Up,
-    Down,
-    PageUp,
-    PageDown,
-    Home,
-    End,
-    Backspace,
-    Insert,
-    Delete,
-    Clear,
-    Escape,
+    F1 = 'A',
+    F2 = 'B',
+    F3 = 'C',
+    F4 = 'D',
+    F5 = 'E',
+    F6 = 'F',
+    F7 = 'G',
+    F8 = 'H',
+    F9 = 'I',
+    F10 = 'J',
+    F11 = 'K',
+    F12 = 'L',
+    F13 = 'M',
+    F14 = 'N',
+    F15 = 'O',
+    F16 = 'P',
+    F17 = 'Q',
+    F18 = 'R',
+    F19 = 'S',
+    F20 = 'T',
+    F21 = 'U',
+    F22 = 'V',
+    F23 = 'W',
+    F24 = 'X',
 
-    PrintScreen,
-    PauseBreak,
-    Menu,
+    home = 0x02, // ASCII start-of-text
+    end = 0x03, // ASCII end-of-text
+    backspace = 0x08, // ASCII backspace
+    clear = 0x0c, // ASCII form-feed
+    insert = 0x1a, // ASCII substitute
+    escape = 0x1b, // ASCII escape
+    _delete = 0x7f, // ASCII delete
 
-    F1,
-    F2,
-    F3,
-    F4,
-    F5,
-    F6,
-    F7,
-    F8,
-    F9,
-    F10,
-    F11,
-    F12,
-    F13,
-    F14,
-    F15,
-    F16,
-    F17,
-    F18,
-    F19,
-    F20,
-    F21,
-    F22,
-    F23,
-    F24,
+    left = 0x80,
+    right,
+    up,
+    down,
+    page_up,
+    page_down,
 
-    BrowserBack,
-    BrowserForward,
-    BrowserRefresh,
-    BrowserStop,
-    BrowserSearch,
-    BrowserFavorites,
-    BrowserHome,
-    VolumeMute,
-    VolumeUp,
-    VolumeDown,
-    MediaNextTrack,
-    MediaPrevTrack,
-    MediaStop,
-    MediaPlayPause,
+    menu,
+    print_screen,
+    pause_break,
+    sysmenu,
+
+    media_next_track,
+    media_prev_track,
+    media_stop,
+    media_play_pause,
+
+    volume_mute,
+    volume_up,
+    volume_down,
+
+    browser_back,
+    browser_forward,
+    browser_home,
+    browser_refresh,
+    browser_stop,
+    browser_search,
+    browser_favorites,
 };
 
-inline hilet string_to_keyboard_virtual_key_table = std::unordered_map<std::string, keyboard_virtual_key>{
-    {"0", keyboard_virtual_key::_0},
-    {"1", keyboard_virtual_key::_1},
-    {"2", keyboard_virtual_key::_2},
-    {"3", keyboard_virtual_key::_3},
-    {"4", keyboard_virtual_key::_4},
-    {"5", keyboard_virtual_key::_5},
-    {"6", keyboard_virtual_key::_6},
-    {"7", keyboard_virtual_key::_7},
-    {"8", keyboard_virtual_key::_8},
-    {"9", keyboard_virtual_key::_9},
-    {"a", keyboard_virtual_key::A},
-    {"b", keyboard_virtual_key::B},
-    {"c", keyboard_virtual_key::C},
-    {"d", keyboard_virtual_key::D},
-    {"e", keyboard_virtual_key::E},
-    {"f", keyboard_virtual_key::F},
-    {"g", keyboard_virtual_key::G},
-    {"h", keyboard_virtual_key::H},
-    {"i", keyboard_virtual_key::I},
-    {"j", keyboard_virtual_key::J},
-    {"k", keyboard_virtual_key::K},
-    {"l", keyboard_virtual_key::L},
-    {"m", keyboard_virtual_key::M},
-    {"n", keyboard_virtual_key::N},
-    {"o", keyboard_virtual_key::O},
-    {"p", keyboard_virtual_key::P},
-    {"q", keyboard_virtual_key::Q},
-    {"r", keyboard_virtual_key::R},
-    {"s", keyboard_virtual_key::S},
-    {"t", keyboard_virtual_key::T},
-    {"u", keyboard_virtual_key::U},
-    {"v", keyboard_virtual_key::V},
-    {"w", keyboard_virtual_key::W},
-    {"x", keyboard_virtual_key::X},
-    {"y", keyboard_virtual_key::Y},
-    {"z", keyboard_virtual_key::Z},
-    {"plus", keyboard_virtual_key::Plus},
-    {"-", keyboard_virtual_key::Minus},
-    {"*", keyboard_virtual_key::Star},
-    {"/", keyboard_virtual_key::Slash},
-    {"%", keyboard_virtual_key::Percent},
-    {"~", keyboard_virtual_key::Tilde},
-    {"&", keyboard_virtual_key::Ampersant},
-    {"|", keyboard_virtual_key::Pipe},
-    {"^", keyboard_virtual_key::Caret},
-    {"<", keyboard_virtual_key::Less},
-    {"=", keyboard_virtual_key::Equal},
-    {">", keyboard_virtual_key::Greater},
-    {"(", keyboard_virtual_key::OpenParentheses},
-    {")", keyboard_virtual_key::CloseParentheses},
-    {"[", keyboard_virtual_key::OpenBracket},
-    {"]", keyboard_virtual_key::CloseBracket},
-    {"{", keyboard_virtual_key::OpenBrace},
-    {"}", keyboard_virtual_key::CloseBrace},
-    {"backslash", keyboard_virtual_key::Backslash},
-    {".", keyboard_virtual_key::Period},
-    {",", keyboard_virtual_key::Comma},
-    {":", keyboard_virtual_key::Colon},
-    {";", keyboard_virtual_key::SemiColon},
-    {"!", keyboard_virtual_key::Bang},
-    {"?", keyboard_virtual_key::Question},
-    {"space", keyboard_virtual_key::Space},
-    {"tab", keyboard_virtual_key::Tab},
-    {"enter", keyboard_virtual_key::Enter},
-    {"`", keyboard_virtual_key::Backtick},
-    {"quote", keyboard_virtual_key::Quote},
-    {"dquote", keyboard_virtual_key::DoubleQuote},
-    {"@", keyboard_virtual_key::At},
-    {"#", keyboard_virtual_key::Hash},
-    {"$", keyboard_virtual_key::Dollar},
-    {"_", keyboard_virtual_key::Underscore},
-    {"left", keyboard_virtual_key::Left},
-    {"right", keyboard_virtual_key::Right},
-    {"up", keyboard_virtual_key::Up},
-    {"down", keyboard_virtual_key::Down},
-    {"pageup", keyboard_virtual_key::PageUp},
-    {"pagedown", keyboard_virtual_key::PageDown},
-    {"home", keyboard_virtual_key::Home},
-    {"end", keyboard_virtual_key::End},
-    {"backspace", keyboard_virtual_key::Backspace},
-    {"insert", keyboard_virtual_key::Insert},
-    {"delete", keyboard_virtual_key::Delete},
-    {"clear", keyboard_virtual_key::Clear},
-    {"escape", keyboard_virtual_key::Escape},
-    {"print", keyboard_virtual_key::PrintScreen},
-    {"pause", keyboard_virtual_key::PauseBreak},
-    {"menu", keyboard_virtual_key::Menu},
-    {"f1", keyboard_virtual_key::F1},
-    {"f2", keyboard_virtual_key::F2},
-    {"f3", keyboard_virtual_key::F3},
-    {"f4", keyboard_virtual_key::F4},
-    {"f5", keyboard_virtual_key::F5},
-    {"f6", keyboard_virtual_key::F6},
-    {"f7", keyboard_virtual_key::F7},
-    {"f8", keyboard_virtual_key::F8},
-    {"f9", keyboard_virtual_key::F9},
-    {"f10", keyboard_virtual_key::F10},
-    {"f11", keyboard_virtual_key::F11},
-    {"f12", keyboard_virtual_key::F12},
-    {"f13", keyboard_virtual_key::F13},
-    {"f14", keyboard_virtual_key::F14},
-    {"f15", keyboard_virtual_key::F15},
-    {"f16", keyboard_virtual_key::F16},
-    {"f17", keyboard_virtual_key::F17},
-    {"f18", keyboard_virtual_key::F18},
-    {"f19", keyboard_virtual_key::F19},
-    {"f20", keyboard_virtual_key::F20},
-    {"f21", keyboard_virtual_key::F21},
-    {"f22", keyboard_virtual_key::F22},
-    {"f23", keyboard_virtual_key::F23},
-    {"f24", keyboard_virtual_key::F24},
-    {"media-next", keyboard_virtual_key::MediaNextTrack},
-    {"media-prev", keyboard_virtual_key::MediaPrevTrack},
-    {"media-stop", keyboard_virtual_key::MediaStop},
-    {"media-play", keyboard_virtual_key::MediaPlayPause},
-    {"browser-back", keyboard_virtual_key::BrowserBack},
-    {"browser-forward", keyboard_virtual_key::BrowserForward},
-    {"browser-refresh", keyboard_virtual_key::BrowserRefresh},
-    {"browser-stop", keyboard_virtual_key::BrowserStop},
-    {"browser-search", keyboard_virtual_key::BrowserSearch},
-    {"browser-favorites", keyboard_virtual_key::BrowserFavorites},
-    {"browser-home", keyboard_virtual_key::BrowserHome},
-    {"volume-mute", keyboard_virtual_key::VolumeMute},
-    {"volume-up", keyboard_virtual_key::VolumeUp},
-    {"volume-down", keyboard_virtual_key::VolumeDown},
+// clang-format off
+constexpr auto keyboard_virtual_key_metadata = enum_metadata{
+    keyboard_virtual_key::nul, "nul",
+    keyboard_virtual_key::A, "a",
+    keyboard_virtual_key::B, "b",
+    keyboard_virtual_key::C, "c",
+    keyboard_virtual_key::D, "d",
+    keyboard_virtual_key::E, "e",
+    keyboard_virtual_key::F, "f",
+    keyboard_virtual_key::G, "g",
+    keyboard_virtual_key::H, "h",
+    keyboard_virtual_key::I, "i",
+    keyboard_virtual_key::J, "j",
+    keyboard_virtual_key::K, "k",
+    keyboard_virtual_key::L, "l",
+    keyboard_virtual_key::M, "m",
+    keyboard_virtual_key::N, "n",
+    keyboard_virtual_key::O, "o",
+    keyboard_virtual_key::P, "p",
+    keyboard_virtual_key::Q, "q",
+    keyboard_virtual_key::R, "r",
+    keyboard_virtual_key::S, "s",
+    keyboard_virtual_key::T, "t",
+    keyboard_virtual_key::U, "u",
+    keyboard_virtual_key::V, "v",
+    keyboard_virtual_key::W, "w",
+    keyboard_virtual_key::X, "x",
+    keyboard_virtual_key::Y, "y",
+    keyboard_virtual_key::Z, "z",
+    keyboard_virtual_key::_0, "0",
+    keyboard_virtual_key::_1, "1",
+    keyboard_virtual_key::_2, "2",
+    keyboard_virtual_key::_3, "3",
+    keyboard_virtual_key::_4, "4",
+    keyboard_virtual_key::_5, "5",
+    keyboard_virtual_key::_6, "6",
+    keyboard_virtual_key::_7, "7",
+    keyboard_virtual_key::_8, "8",
+    keyboard_virtual_key::_9, "9",
+    keyboard_virtual_key::plus, "plus",
+    keyboard_virtual_key::minus, "-",
+    keyboard_virtual_key::star, "*",
+    keyboard_virtual_key::slash, "/",
+    keyboard_virtual_key::percent, "%",
+    keyboard_virtual_key::tilde, "~",
+    keyboard_virtual_key::ampersant, "&",
+    keyboard_virtual_key::pipe, "|",
+    keyboard_virtual_key::caret, "^",
+    keyboard_virtual_key::less, "<",
+    keyboard_virtual_key::equal, "=",
+    keyboard_virtual_key::greater, ">",
+    keyboard_virtual_key::open_parentheses, "(",
+    keyboard_virtual_key::close_parentheses, ")",
+    keyboard_virtual_key::open_bracket, "[",
+    keyboard_virtual_key::close_bracket, "]",
+    keyboard_virtual_key::open_brace, "{",
+    keyboard_virtual_key::close_brace, "}",
+    keyboard_virtual_key::period, ".",
+    keyboard_virtual_key::comma, ",",
+    keyboard_virtual_key::colon, ":",
+    keyboard_virtual_key::semi_colon, ";",
+    keyboard_virtual_key::bang, "!",
+    keyboard_virtual_key::question, "?",
+    keyboard_virtual_key::space, "space",
+    keyboard_virtual_key::tab, "tab",
+    keyboard_virtual_key::enter, "enter",
+    keyboard_virtual_key::backtick, "`",
+    keyboard_virtual_key::quote, "quote",
+    keyboard_virtual_key::double_quote, "dquote",
+    keyboard_virtual_key::at, "@",
+    keyboard_virtual_key::hash, "#",
+    keyboard_virtual_key::dollar, "$",
+    keyboard_virtual_key::underscore, "_",
+    keyboard_virtual_key::backslash, "backslash",
+    keyboard_virtual_key::F1, "f1",
+    keyboard_virtual_key::F2, "f2",
+    keyboard_virtual_key::F3, "f3",
+    keyboard_virtual_key::F4, "f4",
+    keyboard_virtual_key::F5, "f5",
+    keyboard_virtual_key::F6, "f6",
+    keyboard_virtual_key::F7, "f7",
+    keyboard_virtual_key::F8, "f8",
+    keyboard_virtual_key::F9, "f9",
+    keyboard_virtual_key::F10, "f10",
+    keyboard_virtual_key::F11, "f11",
+    keyboard_virtual_key::F12, "f12",
+    keyboard_virtual_key::F13, "f13",
+    keyboard_virtual_key::F14, "f14",
+    keyboard_virtual_key::F15, "f15",
+    keyboard_virtual_key::F16, "f16",
+    keyboard_virtual_key::F17, "f17",
+    keyboard_virtual_key::F18, "f18",
+    keyboard_virtual_key::F19, "f19",
+    keyboard_virtual_key::F20, "f20",
+    keyboard_virtual_key::F21, "f21",
+    keyboard_virtual_key::F22, "f22",
+    keyboard_virtual_key::F23, "f23",
+    keyboard_virtual_key::F24, "f24",
+    keyboard_virtual_key::home, "home",
+    keyboard_virtual_key::end, "end",
+    keyboard_virtual_key::backspace, "backspace",
+    keyboard_virtual_key::clear, "clear",
+    keyboard_virtual_key::insert, "insert",
+    keyboard_virtual_key::escape, "escape",
+    keyboard_virtual_key::_delete, "delete",
+    keyboard_virtual_key::left, "left",
+    keyboard_virtual_key::right, "right",
+    keyboard_virtual_key::up, "up",
+    keyboard_virtual_key::down, "down",
+    keyboard_virtual_key::page_up, "page-up",
+    keyboard_virtual_key::page_down, "page-down",
+    keyboard_virtual_key::menu, "menu",
+    keyboard_virtual_key::sysmenu, "sysmenu",
+    keyboard_virtual_key::print_screen, "print-screen",
+    keyboard_virtual_key::pause_break, "pause-break",
+    keyboard_virtual_key::media_next_track, "media-next",
+    keyboard_virtual_key::media_prev_track, "media-prev",
+    keyboard_virtual_key::media_stop, "media-stop",
+    keyboard_virtual_key::media_play_pause, "media-play",
+    keyboard_virtual_key::volume_mute, "volume-mute",
+    keyboard_virtual_key::volume_up, "volume-up",
+    keyboard_virtual_key::volume_down, "volume-down",
+    keyboard_virtual_key::browser_back, "browser-back",
+    keyboard_virtual_key::browser_forward, "browser-forward",
+    keyboard_virtual_key::browser_home, "browser-home",
+    keyboard_virtual_key::browser_refresh, "browser-refresh",
+    keyboard_virtual_key::browser_stop, "browser-stop",
+    keyboard_virtual_key::browser_search, "browser-search",
+    keyboard_virtual_key::browser_favorites, "browser-favorites"
 };
+// clang-format on
 
-inline keyboard_virtual_key to_keyboard_virtual_key(std::string_view s)
+constexpr keyboard_virtual_key to_keyboard_virtual_key(std::string_view s)
 {
-    hilet lower_s = to_lower(s);
-    hilet i = string_to_keyboard_virtual_key_table.find(lower_s);
-    if (i != string_to_keyboard_virtual_key_table.cend()) {
-        return i->second;
-    }
-    throw parse_error(std::format("Could not find virtual key '{}'", s));
+    return keyboard_virtual_key_metadata[s];
 }
 
 keyboard_virtual_key to_keyboard_virtual_key(int key_code, bool extended, keyboard_modifiers modifiers);
 
-constexpr char const *to_const_string(keyboard_virtual_key key) noexcept
+constexpr std::string_view to_string_view(keyboard_virtual_key key) noexcept
 {
-    switch (key) {
-    case keyboard_virtual_key::_0: return "0";
-    case keyboard_virtual_key::_1: return "1";
-    case keyboard_virtual_key::_2: return "2";
-    case keyboard_virtual_key::_3: return "3";
-    case keyboard_virtual_key::_4: return "4";
-    case keyboard_virtual_key::_5: return "5";
-    case keyboard_virtual_key::_6: return "6";
-    case keyboard_virtual_key::_7: return "7";
-    case keyboard_virtual_key::_8: return "8";
-    case keyboard_virtual_key::_9: return "9";
-    case keyboard_virtual_key::A: return "a";
-    case keyboard_virtual_key::B: return "b";
-    case keyboard_virtual_key::C: return "c";
-    case keyboard_virtual_key::D: return "d";
-    case keyboard_virtual_key::E: return "e";
-    case keyboard_virtual_key::F: return "f";
-    case keyboard_virtual_key::G: return "g";
-    case keyboard_virtual_key::H: return "h";
-    case keyboard_virtual_key::I: return "i";
-    case keyboard_virtual_key::J: return "j";
-    case keyboard_virtual_key::K: return "k";
-    case keyboard_virtual_key::L: return "l";
-    case keyboard_virtual_key::M: return "m";
-    case keyboard_virtual_key::N: return "n";
-    case keyboard_virtual_key::O: return "o";
-    case keyboard_virtual_key::P: return "p";
-    case keyboard_virtual_key::Q: return "q";
-    case keyboard_virtual_key::R: return "r";
-    case keyboard_virtual_key::S: return "s";
-    case keyboard_virtual_key::T: return "t";
-    case keyboard_virtual_key::U: return "u";
-    case keyboard_virtual_key::V: return "v";
-    case keyboard_virtual_key::W: return "w";
-    case keyboard_virtual_key::X: return "x";
-    case keyboard_virtual_key::Y: return "y";
-    case keyboard_virtual_key::Z: return "z";
-    case keyboard_virtual_key::Plus: return "plus";
-    case keyboard_virtual_key::Minus: return "-";
-    case keyboard_virtual_key::Star: return "*";
-    case keyboard_virtual_key::Slash: return "/";
-    case keyboard_virtual_key::Percent: return "%";
-    case keyboard_virtual_key::Tilde: return "~";
-    case keyboard_virtual_key::Ampersant: return "&";
-    case keyboard_virtual_key::Pipe: return "|";
-    case keyboard_virtual_key::Caret: return "^";
-    case keyboard_virtual_key::Less: return "<";
-    case keyboard_virtual_key::Equal: return "=";
-    case keyboard_virtual_key::Greater: return ">";
-    case keyboard_virtual_key::OpenParentheses: return "(";
-    case keyboard_virtual_key::CloseParentheses: return ")";
-    case keyboard_virtual_key::OpenBracket: return "[";
-    case keyboard_virtual_key::CloseBracket: return "]";
-    case keyboard_virtual_key::OpenBrace: return "{";
-    case keyboard_virtual_key::CloseBrace: return "}";
-    case keyboard_virtual_key::Backslash: return "backslash";
-    case keyboard_virtual_key::Period: return ".";
-    case keyboard_virtual_key::Comma: return ",";
-    case keyboard_virtual_key::Colon: return ":";
-    case keyboard_virtual_key::SemiColon: return ";";
-    case keyboard_virtual_key::Bang: return "!";
-    case keyboard_virtual_key::Question: return "?";
-    case keyboard_virtual_key::Space: return "space";
-    case keyboard_virtual_key::Tab: return "tab";
-    case keyboard_virtual_key::Enter: return "enter";
-    case keyboard_virtual_key::Backtick: return "`";
-    case keyboard_virtual_key::Quote: return "quote";
-    case keyboard_virtual_key::DoubleQuote: return "dquote";
-    case keyboard_virtual_key::At: return "@";
-    case keyboard_virtual_key::Hash: return "#";
-    case keyboard_virtual_key::Dollar: return "$";
-    case keyboard_virtual_key::Underscore: return "_";
-    case keyboard_virtual_key::Left: return "left";
-    case keyboard_virtual_key::Right: return "right";
-    case keyboard_virtual_key::Up: return "up";
-    case keyboard_virtual_key::Down: return "down";
-    case keyboard_virtual_key::PageUp: return "pageup";
-    case keyboard_virtual_key::PageDown: return "pagedown";
-    case keyboard_virtual_key::Home: return "home";
-    case keyboard_virtual_key::End: return "end";
-    case keyboard_virtual_key::Backspace: return "backspace";
-    case keyboard_virtual_key::Insert: return "insert";
-    case keyboard_virtual_key::Delete: return "delete";
-    case keyboard_virtual_key::Clear: return "clear";
-    case keyboard_virtual_key::Escape: return "escape";
-    case keyboard_virtual_key::PrintScreen: return "print";
-    case keyboard_virtual_key::PauseBreak: return "pause";
-    case keyboard_virtual_key::Menu: return "menu";
-    case keyboard_virtual_key::F1: return "f1";
-    case keyboard_virtual_key::F2: return "f2";
-    case keyboard_virtual_key::F3: return "f3";
-    case keyboard_virtual_key::F4: return "f4";
-    case keyboard_virtual_key::F5: return "f5";
-    case keyboard_virtual_key::F6: return "f6";
-    case keyboard_virtual_key::F7: return "f7";
-    case keyboard_virtual_key::F8: return "f8";
-    case keyboard_virtual_key::F9: return "f9";
-    case keyboard_virtual_key::F10: return "f10";
-    case keyboard_virtual_key::F11: return "f11";
-    case keyboard_virtual_key::F12: return "f12";
-    case keyboard_virtual_key::F13: return "f13";
-    case keyboard_virtual_key::F14: return "f14";
-    case keyboard_virtual_key::F15: return "f15";
-    case keyboard_virtual_key::F16: return "f16";
-    case keyboard_virtual_key::F17: return "f17";
-    case keyboard_virtual_key::F18: return "f18";
-    case keyboard_virtual_key::F19: return "f19";
-    case keyboard_virtual_key::F20: return "f20";
-    case keyboard_virtual_key::F21: return "f21";
-    case keyboard_virtual_key::F22: return "f22";
-    case keyboard_virtual_key::F23: return "f23";
-    case keyboard_virtual_key::F24: return "f24";
-    case keyboard_virtual_key::MediaNextTrack: return "media-next";
-    case keyboard_virtual_key::MediaPrevTrack: return "media-prev";
-    case keyboard_virtual_key::MediaStop: return "media-stop";
-    case keyboard_virtual_key::MediaPlayPause: return "media-play";
-    case keyboard_virtual_key::BrowserBack: return "browser-back";
-    case keyboard_virtual_key::BrowserForward: return "browser-forward";
-    case keyboard_virtual_key::BrowserRefresh: return "browser-refresh";
-    case keyboard_virtual_key::BrowserStop: return "browser-stop";
-    case keyboard_virtual_key::BrowserSearch: return "browser-search";
-    case keyboard_virtual_key::BrowserFavorites: return "browser-favourite";
-    case keyboard_virtual_key::BrowserHome: return "browser-home";
-    case keyboard_virtual_key::VolumeMute: return "volume-mute";
-    case keyboard_virtual_key::VolumeUp: return "volume-up";
-    case keyboard_virtual_key::VolumeDown: return "volume-down";
-    default: hi_no_default();
-    }
+    return keyboard_virtual_key_metadata[key];
 }
 
 inline std::string to_string(keyboard_virtual_key key) noexcept
 {
-    return std::string{to_const_string(key)};
+    return std::string{to_string_view(key)};
 }
 
-inline std::ostream &operator<<(std::ostream &lhs, keyboard_virtual_key const &rhs)
+inline std::ostream& operator<<(std::ostream& lhs, keyboard_virtual_key const& rhs)
 {
-    return lhs << to_string(rhs);
+    return lhs << to_string_view(rhs);
 }
 
 } // namespace hi::inline v1
@@ -441,9 +318,9 @@ struct std::hash<hi::keyboard_virtual_key> {
 };
 
 template<typename CharT>
-struct std::formatter<hi::keyboard_virtual_key, CharT> : std::formatter<char const *, CharT> {
-    auto format(hi::keyboard_virtual_key const &t, auto &fc)
+struct std::formatter<hi::keyboard_virtual_key, CharT> : std::formatter<std::string_view, CharT> {
+    auto format(hi::keyboard_virtual_key const& t, auto& fc)
     {
-        return std::formatter<char const *, CharT>::format(hi::to_const_string(t), fc);
+        return std::formatter<std::string_view, CharT>{}.format(hi::to_string_view(t), fc);
     }
 };

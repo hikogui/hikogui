@@ -61,9 +61,8 @@ public:
                 // We need to trigger the notifier on an exception too.
                 if constexpr (std::is_default_constructible_v<value_type>) {
                     _notifier(value_type{});
-                    return {};
                 }
-                hi_no_default();
+                return {};
             case 2:
                 // Trigger the notifier with the co_return value.
                 _notifier(std::get<2>(*_value_ptr));

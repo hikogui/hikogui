@@ -16,15 +16,17 @@ public:
 
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
-    command_widget(hi::gui_window &window, hi::widget *parent) noexcept : widget(window, parent)
+    command_widget(hi::gui_window& window, hi::widget *parent) noexcept : hi::widget(window, parent)
     {
         // To visually show the change in value the widget needs to be redrawn.
-        _value_cbt = value.subscribe([&](auto...){ request_redraw(); });
+        _value_cbt = value.subscribe([&](auto...) {
+            request_redraw();
+        });
     }
 
     // The set_constraints() function is called when the window is first initialized,
     // or when a widget wants to change its constraints.
-    hi::widget_constraints const &set_constraints() noexcept override
+    hi::widget_constraints const& set_constraints() noexcept override
     {
         // Reset _layout so that the set_layout() calculations will be triggered.
         _layout = {};
@@ -37,7 +39,7 @@ public:
     // a widget wants to change the internal layout.
     //
     // NOTE: The size of the layout may be larger than the maximum constraints of this widget.
-    void set_layout(hi::widget_layout const &layout) noexcept override
+    void set_layout(hi::widget_layout const& layout) noexcept override
     {
         // Update the `_layout` with the new context.
         if (compare_store(_layout, layout)) {}
@@ -53,7 +55,7 @@ public:
     // The `draw()` function is called when all or part of the window requires redrawing.
     // This may happen when showing the window for the first time, when the operating-system
     // requests a (partial) redraw, or when a widget requests a redraw of itself.
-    void draw(hi::draw_context const &context) noexcept override
+    void draw(hi::draw_context const& context) noexcept override
     {
         // We only need to draw the widget when it is visible and when the visible area of
         // the widget overlaps with the scissor-rectangle (partial redraw) of the drawing context.
@@ -96,45 +98,32 @@ public:
     }
 
     // Override the handle_event(command) to handle high level commands.
-    [[nodiscard]] bool handle_event(hi::command command) noexcept override
+    bool handle_event(hi::gui_event const& event) noexcept override
     {
-        if (*enabled and command == hi::command::gui_activate) {
-            // Handle activate, by default the "spacebar" causes this command.
-            value = not *value;
+        switch (event.type()) {
+        case hi::gui_event_type::gui_activate:
+            if (*enabled) {
+                // Handle activate, by default the "spacebar" causes this command.
+                value = not *value;
+                return true;
+            }
+            break;
+
+        case hi::gui_event_type::keyboard_grapheme:
+            hi_log_error("User typed the letter U+{:x}.", static_cast<uint32_t>(get<0>(event.grapheme())));
             return true;
 
-        } else if (*enabled and command == hi::command::gui_enter) {
-            // Handle the enter command, this will activate then set the keyboard focus to the next normal widget.
-            value = not *value;
-            window.update_keyboard_target(hi::keyboard_focus_group::normal, hi::keyboard_focus_direction::forward);
-            return true;
+        case hi::gui_event_type::mouse_up:
+            if (*enabled and event.is_left_button_up(_layout.rectangle())) {
+                return handle_event(hi::gui_event_type::gui_activate);
+            }
+            break;
+
+        default:;
         }
 
         // The default handle_event() will handle hovering and auto-scrolling.
-        return widget::handle_event(command);
-    }
-
-    // Override the mouse event to handle the left click.
-    [[nodiscard]] bool handle_event(hi::mouse_event const &event) noexcept override
-    {
-        if (*enabled and event.is_left_button_up(_layout.rectangle())) {
-            // Forward the left click as a gui_activate command.
-            return handle_event(hi::command::gui_activate);
-        }
-
-        // The default handle_event() doesn't do anything, but should still be called.
         return widget::handle_event(event);
-    }
-
-    bool handle_event(hi::keyboard_event const &event) noexcept
-    {
-        if (*enabled) {
-            if (event.type == hi::keyboard_event::Type::grapheme) {
-                hi_log_error("User typed the letter U+{:x}.", static_cast<uint32_t>(get<0>(event.grapheme)));
-                return true;
-            }
-        }
-        return false;
     }
 
 private:

@@ -373,7 +373,7 @@ private:
      */
     detail::glyph_ids_long *_ptr;
 
-    [[nodiscard]] constexpr void increment_num_glyphs() noexcept
+    constexpr void increment_num_glyphs() noexcept
     {
         hi_axiom(is_short());
         hi_axiom(short_num_glyphs() < num_glyphs_mask);

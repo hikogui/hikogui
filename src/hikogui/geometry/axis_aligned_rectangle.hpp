@@ -479,10 +479,10 @@ public:
     static constexpr bool is_always_lock_free = false;
 
     constexpr atomic() noexcept = default;
-    atomic(atomic const &) = default;
-    atomic(atomic &&) = default;
-    atomic &operator=(atomic const &) = default;
-    atomic &operator=(atomic &&) = default;
+    atomic(atomic const &) = delete;
+    atomic(atomic&&) = delete;
+    atomic& operator=(atomic const&) = delete;
+    atomic& operator=(atomic&&) = delete;
 
     constexpr atomic(hi::axis_aligned_rectangle const &rhs) noexcept : _value(rhs) {}
     atomic &operator=(hi::axis_aligned_rectangle const &rhs) noexcept

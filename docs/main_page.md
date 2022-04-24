@@ -7,7 +7,7 @@ Manuals
 -------
  - [How to use widgets](how_to/how_to_use_widgets.md)
  - [How to log](how_to/how_to_log.md)
- - [How to use preferences](how_to/how_to_use_preferences.md) 
+ - [How to use preferences](how_to/how_to_use_preferences.md)
  - [How to make custom widgets](how_to/how_to_make_custom_widgets.md) ![new](media/images/new.png)
  - [How to draw](how_to/how_to_draw.md) ![new](media/images/new.png)
 
@@ -46,9 +46,9 @@ This primitive can be used to draw different shapes, like:
 
 Glyphs are drawn by the GPU using a signed-distance-field shader.
 This shader is able to render glyphs with subpixel-anti-aliasing
-without using a post processing filter.
+without using a post-processing filter.
 
-Glyphs are lazily and asynchronous added to the texture-atlas
+Glyphs are lazily and asynchronous, added to the texture-atlas
 when needed. By adding the glyphs as signed distance fields to
 the texture atlas a glyph needs to be added only once to be usable
 for displaying at any size.
@@ -63,11 +63,11 @@ Performance
 
 HikoGUI is designed for low latency interactive applications.
 
-For this reason we have the following design considerations:
+For this reason, we have the following design considerations:
 
  - Widgets need to be able to animate at 60 fps.
  - CPU and GPU usage when drawing at 60 fps need to remain low.
- - Monitorred data needs to be reflected in the user interface
+ - Monitored data needs to be reflected in the user interface
    with at most one frame delay.
  - During drawing the widget can use predictive algorithms to
    determine what should be shown to the user at the display time.

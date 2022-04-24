@@ -47,8 +47,10 @@ template<global_state_type Level, basic_fixed_string SourceFile, int SourceLine,
 class log_message : public log_message_base {
 public:
     static_assert(std::popcount(to_underlying(Level)) == 1);
-    static_assert(std::is_same_v<decltype(SourceFile)::value_type, char>, "SourceFile must be a basic_fixed_string<char>");
-    static_assert(std::is_same_v<decltype(Fmt)::value_type, char>, "Fmt must be a basic_fixed_string<char>");
+    static_assert(
+        std::is_same_v<typename decltype(SourceFile)::value_type, char>,
+        "SourceFile must be a basic_fixed_string<char>");
+    static_assert(std::is_same_v<typename decltype(Fmt)::value_type, char>, "Fmt must be a basic_fixed_string<char>");
 
     // clang-format off
     static constexpr char const *log_level_name =

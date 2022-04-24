@@ -41,7 +41,7 @@ public:
         _v[2] = c;
     }
 
-    template<int O>
+    template<std::size_t O>
     constexpr results(results<T, O> const& other) noexcept requires(O < N) : _size(other._size), _v()
     {
         if constexpr (O > 0) {
@@ -93,7 +93,7 @@ public:
     {
         // For performance reasons work on the whole array. The constructors have
         // initialized the empty elements to 0.0f.
-        for (int i = 0; i < lhs._capacity; i++) {
+        for (auto i = 0_uz; i < lhs._capacity; i++) {
             lhs._v[i] -= rhs;
         }
         return lhs;
@@ -110,7 +110,7 @@ private:
 };
 
 
-template<typename T, int N>
+template<typename T, std::size_t N>
 inline std::ostream& operator<<(std::ostream& os, results<T, N> const& r)
 {
     os << "[";

@@ -119,11 +119,11 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
     hilet[char_its_last, paragraph_directions] = unicode_bidi(
         char_its.begin(),
         char_its.end(),
-        [&](text_shaper::char_const_iterator it) -> decltype(auto) {
+        [&](text_shaper::char_const_iterator it) {
             if (it != text.end()) {
-                return *it->description;
+                return std::make_pair(it->grapheme[0], it->description);
             } else {
-                return unicode_description::find(unicode_LS);
+                return std::make_pair(unicode_LS, &unicode_description::find(unicode_LS));
             }
         },
         [&](text_shaper::char_iterator it, char32_t code_point) {

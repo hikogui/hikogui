@@ -223,4 +223,26 @@ void window_widget::set_resize_border_priority(bool left, bool right, bool botto
     return *_toolbar;
 }
 
+bool window_widget::handle_event(gui_event const& event) noexcept
+{
+    switch (event.type()) {
+    case gui_event_type::gui_toolbar_open:
+        window.update_keyboard_target(this, keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
+        return true;
+
+    case gui_event_type::gui_sysmenu_open:
+        if (*enabled) {
+            window.open_system_menu();
+            return true;
+        }
+        break;
+
+    case gui_event_type::text_edit_copy:
+        // Widgets, other than the current keyboard target may have text selected and can handle the command::text_edit_copy.
+        handle_event_recursive(gui_event_type::text_edit_copy);
+        return true;
+    }
+    return super::handle_event(event);
+}
+
 } // namespace hi::inline v1

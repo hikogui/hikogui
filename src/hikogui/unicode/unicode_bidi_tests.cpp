@@ -299,8 +299,8 @@ TEST(unicode_bidi, bidi_character_test)
         hilet[new_last, paragraph_directions] = unicode_bidi(
             first,
             last,
-            [](hilet &x) -> decltype(auto) {
-                return unicode_description::find(x.code_point);
+            [](hilet &x) {
+                return std::make_pair(x.code_point, &unicode_description::find(x.code_point));
             },
             [](auto &x, hilet &code_point) {
                 x.code_point = code_point;

@@ -235,6 +235,8 @@ constexpr bool x86_64_v4 = false;
 /** Attribute to export a function, class, variable in the shared library or dll.
  */
 #define hi_export __declspec(dllexport)
+#define hi_typename
+#define hi_constexpr constexpr
 
 #elif HI_COMPILER == HI_CC_CLANG
 #define hi_unreachable() __builtin_unreachable()
@@ -244,9 +246,14 @@ constexpr bool x86_64_v4 = false;
 #define hi_restrict __restrict__
 #define hi_warning_push() _Pragma("warning(push)")
 #define hi_warning_pop() _Pragma("warning(push)")
-#define hi_msvc_pragma(a)
+#define hi_msvc_suppress(code)
 #define hi_clang_suppress(a) _Pragma(hi_stringify(clang diagnostic ignored a))
 #define hi_export
+
+// Clang does not implement down with typename
+#define hi_typename typename
+// Clang misses constexpr on std:: types.
+#define hi_constexpr
 
 #elif HI_COMPILER == HI_CC_GCC
 #define hi_unreachable() __builtin_unreachable()
@@ -263,6 +270,7 @@ constexpr bool x86_64_v4 = false;
 #define hi_msvc_pragma(a)
 #define hi_clang_suppress(a)
 #define msvc_pragma(a)
+#define hi_typename
 
 #else
 #define hi_unreachable() std::terminate()
@@ -275,6 +283,7 @@ constexpr bool x86_64_v4 = false;
 #define hi_msvc_pragma(a)
 #define hi_clang_suppress(a)
 #define msvc_pragma(a)
+#define hi_typename
 
 #endif
 

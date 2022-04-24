@@ -121,7 +121,7 @@ struct basic_fixed_string {
         hi_axiom(str[i] == value_type{});
     }
 
-    operator std::basic_string_view<value_type>() const noexcept
+    constexpr operator std::basic_string_view<value_type>() const noexcept
     {
         return std::basic_string_view<value_type>{_str.data(), size()};
     }

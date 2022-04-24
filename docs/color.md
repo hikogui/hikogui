@@ -1,5 +1,6 @@
 Color
 =====
+
 This document describes how color is used in the hikogui library.
 
 Usage of color spaces
@@ -15,6 +16,7 @@ Usage of color spaces
  | swap chain       | sRGB\*| uint8\* | pre-multiplied |
 
 ### PNG decoding
+
 HikoGUI's PNG decoder will create an image of float16 RGBA values
 in the tsRGB color space. The rgb values in the resulting image are
 pre-multiplied by the alpha.
@@ -27,6 +29,7 @@ sRGB color space and transfer function is implied if color space
 information is not available in the PNG data.
 
 ### Theme files
+
 The colors in hikogui's theme file may be edited by users, there
 are three different ways of specifying colors.
 
@@ -37,6 +40,7 @@ are three different ways of specifying colors.
  | 3 or 4 floating point numbers | tsRGB       |
 
 ### Swap chain
+
 The swap chain images are the ones that are presented to the
 desktop compositor.
 
@@ -48,10 +52,11 @@ compositor is able to handle HDR/high gamut in the tsRGB format.
 
 tsRGB color space
 -----------------
+
 The tsRGB color space is actually very common but never explicitly named.
 Here are examples of very simular color spaces:
 
- - _scRGB_, specified for 16 bit biased and scaled integers 
+ - _scRGB_, specified for 16 bit biased and scaled integers
    with a range between -0.5 and 7.5. Often used outside of this spec as
    float16 or float32 with extended range.
  - _Extended-sRGB_, specified with a non-linear transfer function that is
@@ -83,6 +88,7 @@ of the color must be greater or equal to zero.
 
 tYUV/tLUV related color space
 -----------------------------
+
 The tLUV color space is used for mixing background and foreground
 colors for anti-aliasing text, where the perceived line width is
 an important attribute. For more detailed information see:
@@ -111,6 +117,7 @@ The color types
 ---------------
 
 ### color
+
 The `color` type is a 32 bit floating point 3D RGB vector + alpha scalar.
 
 The RGB values are linear and may comprise the complete floating point range,
@@ -122,11 +129,15 @@ Depending on where the colors are used the RGB values are pre-multiplied by
 the alpha value, for example: inside fragment shaders, images and frame buffers.
 
 ### matrix3
-A color conversion matrix can be stored in the `matrix3` type. And a `color`
-value can be transformed by a `matrix3`. This transformation ignores and preserves
-the alpha value.
+
+A color conversion matrix can be stored in the `matrix3` type.
+
+A `color` value can be transformed by a `matrix3`.
+
+The transformation ignores and preserves the alpha value.
 
 ### color storage
+
 Color format types are used in vertex arrays and images when communicating with the GPU.
 
 The types have the following syntax: `numeric-type` \_ `color-components` [ \_pack ]
@@ -143,6 +154,7 @@ The types have the following syntax: `numeric-type` \_ `color-components` [ \_pa
  | srgb  | Non-linear sRGB format for the RGB component, the alpha remains linear.  |
 
 #### Color components
+
 The color components are the lower case letters: r, g, b & a. The ordering of the letters describe
 the order of the color components in memory. A number describes the number of bits of each component
 before it.
@@ -161,11 +173,11 @@ Here are a few examples of components:
  | a2bgr10     | 2 bit alpha, 10 bits per component blue, green & red  |
 
 #### Packing
-If the format is non-packed, then each each color component must be 8, 16, 32 or 64 bits in size.
+
+If the format is non-packed, then each color component must be 8, 16, 32 or 64 bits in size.
 Each color component is stored in memory in native-byte-order, and the components are ordered
 with in increasing memory addresses.
 
 If the format is packed, then the color components are packed together in a single integer.
-The color components are packed inside the integer from msb to lsb.
-The integer are 8, 16, 32, 64 or 128 bits in size. The integer is stored in memory in native-byte-order.
-
+The color components are packed inside the integer from `msb` to `lsb`.
+The integers are 8, 16, 32, 64 or 128 bits in size. The integer is stored in memory in native-byte-order.

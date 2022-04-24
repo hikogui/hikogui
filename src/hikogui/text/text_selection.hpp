@@ -70,6 +70,19 @@ public:
         return not empty();
     }
 
+    /** Clamp the selection to the size of the text.
+     */
+    constexpr text_selection &clamp(size_t size) noexcept
+    {
+        hilet max_cursor = text_cursor{size - 1, true, size};
+        inplace_min(_cursor, max_cursor);
+        inplace_min(_start_first, max_cursor);
+        inplace_min(_start_last, max_cursor);
+        inplace_min(_finish_first, max_cursor);
+        inplace_min(_finish_last, max_cursor);
+        return *this;
+    }
+
     constexpr text_selection &clear_selection(size_t size) noexcept
     {
         hilet new_cursor = std::min(_cursor, text_cursor{size - 1, true, size});

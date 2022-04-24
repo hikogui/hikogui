@@ -85,7 +85,6 @@ public:
     void draw(draw_context const &context) noexcept override;
     void request_redraw() const noexcept override;
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
-    [[nodiscard]] bool handle_event(command command) noexcept override;
     // @endprivatesection
 private:
     template<typename Label>
