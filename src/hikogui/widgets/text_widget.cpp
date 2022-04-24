@@ -7,7 +7,6 @@
 #include "../scoped_task.hpp"
 #include "../when_any.hpp"
 #include "../GUI/gui_window.hpp"
-#include "../GUI/mouse_event.hpp"
 #include "../unicode/unicode_bidi.hpp"
 
 namespace hi::inline v1 {
@@ -32,7 +31,7 @@ widget_constraints const& text_widget::set_constraints() noexcept
     _shaped_text_cap_height = cap_height;
     hilet shaped_text_size = shaped_text_rectangle.size();
 
-    _selection.clear_selection(_shaped_text.size());
+    _selection.clamp(text->size());
 
     if (*edit_mode == edit_mode_type::line_editable) {
         // In line-edit mode the text should not wrap.
@@ -55,16 +54,16 @@ void text_widget::set_layout(widget_layout const& layout) noexcept
 {
     if (compare_store(_layout, layout)) {
         // clang-format off
-        hilet base_line =
+        _base_line =
             *alignment == vertical_alignment::bottom ? layout.rectangle().bottom() :
             *alignment == vertical_alignment::middle ? layout.rectangle().middle() - _shaped_text_cap_height * 0.5f :
             layout.rectangle().top() - _shaped_text_cap_height;
         // clang-format on
 
-        _shaped_text.layout(layout.rectangle(), base_line, layout.sub_pixel_size, layout.writing_direction, *alignment);
+        _shaped_text.layout(layout.rectangle(), _base_line, layout.sub_pixel_size, layout.writing_direction, *alignment);
 
         // Update scroll position every time the text or layout has changed.
-        scroll_to_show_selection();
+        _request_scroll = true;
     }
 }
 
@@ -77,6 +76,14 @@ void text_widget::scroll_to_show_selection() noexcept
             scroll_to_show(char_it->rectangle);
         }
     }
+}
+
+void text_widget::request_scroll() noexcept
+{
+    // At a minimum we need to request a redraw so that
+    // `scroll_to_show_selection()` is called on the next frame.
+    _request_scroll = true;
+    request_redraw();
 }
 
 scoped_task<> text_widget::blink_cursor() noexcept
@@ -99,7 +106,8 @@ scoped_task<> text_widget::blink_cursor() noexcept
                 co_await when_any(os_settings::cursor_blink_interval() / 2, visible, enabled, focus);
                 break;
 
-            default: _cursor_state = cursor_state_type::busy;
+            default:
+                _cursor_state = cursor_state_type::busy;
             }
 
         } else {
@@ -113,6 +121,11 @@ void text_widget::draw(draw_context const& context) noexcept
 {
     using namespace std::literals::chrono_literals;
 
+    // After potential reconstrain and relayout, updating the shaped-text, ask the parent window to scroll if needed.
+    if (std::exchange(_request_scroll, false)) {
+        scroll_to_show_selection();
+    }
+
     if (_last_drag_mouse_event) {
         if (_last_drag_mouse_event_next_repeat == utc_nanoseconds{}) {
             _last_drag_mouse_event_next_repeat = context.display_time_point + os_settings::keyboard_repeat_delay();
@@ -123,7 +136,7 @@ void text_widget::draw(draw_context const& context) noexcept
             // The last drag mouse event was stored in window coordinate to compensate for scrolling, translate it
             // back to local coordinates before handling the mouse event again.
             auto new_mouse_event = _last_drag_mouse_event;
-            new_mouse_event.position = point2{_layout.from_window * _last_drag_mouse_event.position};
+            new_mouse_event.mouse().position = point2{_layout.from_window * _last_drag_mouse_event.mouse().position};
 
             // When mouse is dragging a selection, start continues redraw and scroll parent views to display the selection.
             text_widget::handle_event(new_mouse_event);
@@ -187,16 +200,15 @@ void text_widget::fix_cursor_position(size_t size) noexcept
     }
 }
 
-void text_widget::replace_selection(gstring replacement) noexcept
+void text_widget::replace_selection(gstring const& replacement) noexcept
 {
     undo_push();
 
-    auto text_proxy = text.proxy();
     hilet[first, last] = _selection.selection_indices();
-    text_proxy->replace(first, last - first, replacement);
+    text.proxy()->replace(first, last - first, replacement);
 
-    _selection = text_cursor{first + replacement.size() - 1, true, text_proxy->size()};
-    fix_cursor_position(text_proxy->size());
+    _selection = text_cursor{first + replacement.size() - 1, true, text->size()};
+    fix_cursor_position(text->size());
 }
 
 void text_widget::add_character(grapheme c, add_type mode) noexcept
@@ -292,318 +304,423 @@ void text_widget::reset_state(char const *states) noexcept
 {
     while (*states != 0) {
         switch (*states) {
-        case 'D': delete_dead_character(); break;
-        case 'X': _vertical_movement_x = std::numeric_limits<float>::quiet_NaN(); break;
+        case 'D':
+            delete_dead_character();
+            break;
+        case 'X':
+            _vertical_movement_x = std::numeric_limits<float>::quiet_NaN();
+            break;
         case 'B':
             if (*_cursor_state == cursor_state_type::on or *_cursor_state == cursor_state_type::off) {
                 _cursor_state = cursor_state_type::busy;
             }
             break;
-        default: hi_no_default();
+        default:
+            hi_no_default();
         }
         ++states;
     }
 }
 
-bool text_widget::handle_event(hi::command command) noexcept
+bool text_widget::handle_event(gui_event const& event) noexcept
 {
     hi_axiom(is_gui_thread());
-    request_relayout();
 
-    if (*enabled) {
-        auto is_handled = [command,this] {
-            switch (command) {
-            case command::text_mode_insert:
-                reset_state("BDX");
-                _overwrite_mode = not _overwrite_mode;
-                fix_cursor_position();
-                return true;
+    switch (event.type()) {
+        using enum edit_mode_type;
+        using enum gui_event_type;
 
-            case command::text_edit_paste:
-                reset_state("BDX");
-                if (*edit_mode == edit_mode_type::line_editable) {
-                    replace_selection(to_gstring(window.get_text_from_clipboard(), U' '));
-                } else {
-                    replace_selection(to_gstring(window.get_text_from_clipboard()));
-                }
-                return true;
+    case gui_widget_next:
+    case gui_widget_prev:
+    case keyboard_exit:
+        // When the next widget is selected due to pressing the Tab key the text should be committed.
+        // The `text_widget` does not handle gui_activate, so it will be forwarded to parent widgets,
+        // such as `text_field_widget` which does.
+        window.process_event(gui_event_type::gui_activate);
+        return super::handle_event(event);
 
-            case command::text_edit_copy:
-                reset_state("BDX");
-                if (hilet selected_text_ = selected_text(); not selected_text_.empty()) {
-                    window.set_text_on_clipboard(to_string(selected_text_));
-                }
-                return true;
+    case keyboard_grapheme:
+        if (*enabled and *edit_mode >= line_editable) {
+            reset_state("BDX");
+            add_character(event.grapheme(), add_type::append);
+            return true;
+        }
+        break;
 
-            case command::text_edit_cut:
-                reset_state("BDX");
-                window.set_text_on_clipboard(to_string(selected_text()));
-                replace_selection(gstring{});
-                return true;
+    case keyboard_partial_grapheme:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            add_character(event.grapheme(), add_type::dead);
+            return true;
+        }
+        break;
 
-            case command::text_undo:
-                reset_state("BDX");
-                undo();
-                return true;
+    case text_mode_insert:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            _overwrite_mode = not _overwrite_mode;
+            fix_cursor_position();
+            return true;
+        }
+        break;
 
-            case command::text_redo:
-                reset_state("BDX");
-                redo();
-                return true;
+    case text_edit_paste:
+        if (*enabled and *edit_mode == edit_mode_type::line_editable) {
+            reset_state("BDX");
+            replace_selection(to_gstring(window.get_text_from_clipboard(), U' '));
+            return true;
 
-            case command::text_insert_line:
-                if (*edit_mode == edit_mode_type::fully_editable) {
-                    reset_state("BDX");
-                    add_character(grapheme{unicode_PS}, add_type::append);
-                    return true;
-                } else {
-                    return false;
-                }
+        } else if (*enabled and *edit_mode == edit_mode_type::fully_editable) {
+            reset_state("BDX");
+            replace_selection(to_gstring(window.get_text_from_clipboard()));
+            return true;
+        }
+        break;
 
-            case command::text_insert_line_up:
-                if (*edit_mode == edit_mode_type::fully_editable) {
-                    reset_state("BDX");
-                    _selection = _shaped_text.move_begin_paragraph(_selection.cursor());
-                    add_character(grapheme{unicode_PS}, add_type::insert);
-                    return true;
-                } else {
-                    return false;
-                }
-
-            case command::text_insert_line_down:
-                if (*edit_mode == edit_mode_type::fully_editable) {
-                    reset_state("BDX");
-                    _selection = _shaped_text.move_end_paragraph(_selection.cursor());
-                    add_character(grapheme{unicode_PS}, add_type::insert);
-                    return true;
-                } else {
-                    return false;
-                }
-
-            case command::text_delete_char_next:
-                reset_state("BDX");
-                delete_character_next();
-                return true;
-
-            case command::text_delete_char_prev:
-                reset_state("BDX");
-                delete_character_prev();
-                return true;
-
-            case command::text_delete_word_next:
-                reset_state("BDX");
-                delete_word_next();
-                return true;
-
-            case command::text_delete_word_prev:
-                reset_state("BDX");
-                delete_word_prev();
-                return true;
-
-            case command::text_cursor_left_char:
-                reset_state("BDX");
-                _selection = _shaped_text.move_left_char(_selection.cursor(), _overwrite_mode);
-                return true;
-
-            case command::text_cursor_right_char:
-                reset_state("BDX");
-                _selection = _shaped_text.move_right_char(_selection.cursor(), _overwrite_mode);
-                return true;
-
-            case command::text_cursor_down_char:
-                reset_state("BD");
-                _selection = _shaped_text.move_down_char(_selection.cursor(), _vertical_movement_x);
-                return true;
-
-            case command::text_cursor_up_char:
-                reset_state("BD");
-                _selection = _shaped_text.move_up_char(_selection.cursor(), _vertical_movement_x);
-                return true;
-
-            case command::text_cursor_left_word:
-                reset_state("BDX");
-                _selection = _shaped_text.move_left_word(_selection.cursor(), _overwrite_mode);
-                return true;
-
-            case command::text_cursor_right_word:
-                reset_state("BDX");
-                _selection = _shaped_text.move_right_word(_selection.cursor(), _overwrite_mode);
-                return true;
-
-            case command::text_cursor_begin_line:
-                reset_state("BDX");
-                _selection = _shaped_text.move_begin_line(_selection.cursor());
-                return true;
-
-            case command::text_cursor_end_line:
-                reset_state("BDX");
-                _selection = _shaped_text.move_end_line(_selection.cursor());
-                return true;
-
-            case command::text_cursor_begin_sentence:
-                reset_state("BDX");
-                _selection = _shaped_text.move_begin_sentence(_selection.cursor());
-                return true;
-
-            case command::text_cursor_end_sentence:
-                reset_state("BDX");
-                _selection = _shaped_text.move_end_sentence(_selection.cursor());
-                return true;
-
-            case command::text_cursor_begin_document:
-                reset_state("BDX");
-                _selection = _shaped_text.move_begin_document(_selection.cursor());
-                return true;
-
-            case command::text_cursor_end_document:
-                reset_state("BDX");
-                _selection = _shaped_text.move_end_document(_selection.cursor());
-                return true;
-
-            case command::gui_cancel:
-                reset_state("BDX");
-                _selection.clear_selection(_shaped_text.size());
-                return true;
-
-            case command::text_select_left_char:
-                reset_state("BDX");
-                _selection.drag_selection(_shaped_text.move_left_char(_selection.cursor(), false));
-                return true;
-
-            case command::text_select_right_char:
-                reset_state("BDX");
-                _selection.drag_selection(_shaped_text.move_right_char(_selection.cursor(), false));
-                return true;
-
-            case command::text_select_down_char:
-                reset_state("BD");
-                _selection.drag_selection(_shaped_text.move_down_char(_selection.cursor(), _vertical_movement_x));
-                return true;
-
-            case command::text_select_up_char:
-                reset_state("BD");
-                _selection.drag_selection(_shaped_text.move_up_char(_selection.cursor(), _vertical_movement_x));
-                return true;
-
-            case command::text_select_left_word:
-                reset_state("BDX");
-                _selection.drag_selection(_shaped_text.move_left_word(_selection.cursor(), false));
-                return true;
-
-            case command::text_select_right_word:
-                reset_state("BDX");
-                _selection.drag_selection(_shaped_text.move_right_word(_selection.cursor(), false));
-                return true;
-
-            case command::text_select_begin_line:
-                reset_state("BDX");
-                _selection.drag_selection(_shaped_text.move_begin_line(_selection.cursor()));
-                return true;
-
-            case command::text_select_end_line:
-                reset_state("BDX");
-                _selection.drag_selection(_shaped_text.move_end_line(_selection.cursor()));
-                return true;
-
-            case command::text_select_begin_sentence:
-                reset_state("BDX");
-                _selection.drag_selection(_shaped_text.move_begin_sentence(_selection.cursor()));
-                return true;
-
-            case command::text_select_end_sentence:
-                reset_state("BDX");
-                _selection.drag_selection(_shaped_text.move_end_sentence(_selection.cursor()));
-                return true;
-
-            case command::text_select_begin_document:
-                reset_state("BDX");
-                _selection.drag_selection(_shaped_text.move_begin_document(_selection.cursor()));
-                return true;
-
-            case command::text_select_end_document:
-                reset_state("BDX");
-                _selection.drag_selection(_shaped_text.move_end_document(_selection.cursor()));
-                return true;
-
-            case command::text_select_document:
-                reset_state("BDX");
-                _selection = _shaped_text.move_begin_document(_selection.cursor());
-                _selection.drag_selection(_shaped_text.move_end_document(_selection.cursor()));
-                return true;
-
-            default:
-                return false;
+    case text_edit_copy:
+        if (*enabled and *edit_mode >= edit_mode_type::selectable) {
+            reset_state("BDX");
+            if (hilet selected_text_ = selected_text(); not selected_text_.empty()) {
+                window.set_text_on_clipboard(to_string(selected_text_));
             }
-        }();
-
-        // Any kind of cursor movement requires the scroll view to relayout.
-        scroll_to_show_selection();
-
-        if (is_handled) {
             return true;
         }
-    }
+        break;
 
-    return super::handle_event(command);
-}
-
-bool text_widget::handle_event(keyboard_event const& event) noexcept
-{
-    using enum keyboard_event::Type;
-
-    hi_axiom(is_gui_thread());
-    request_relayout();
-
-    auto handled = super::handle_event(event);
-
-    if (*enabled) {
-        switch (event.type) {
-        case grapheme:
+    case text_edit_cut:
+        if (*enabled and *edit_mode >= edit_mode_type::selectable) {
             reset_state("BDX");
-            add_character(event.grapheme, add_type::append);
+            window.set_text_on_clipboard(to_string(selected_text()));
+            if (*edit_mode >= edit_mode_type::line_editable) {
+                replace_selection(gstring{});
+            }
             return true;
+        }
+        break;
 
-        case partial_grapheme:
+    case text_undo:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
             reset_state("BDX");
-            add_character(event.grapheme, add_type::dead);
-            return true;
-
-        default:;
-        }
-    }
-
-    return handled;
-}
-
-bool text_widget::handle_event(mouse_event const& event) noexcept
-{
-    hi_axiom(is_gui_thread());
-    auto handled = super::handle_event(event);
-    if (*edit_mode == edit_mode_type::fixed) {
-        return handled;
-    }
-
-    if (event.cause.leftButton) {
-        handled = true;
-
-        if (not *enabled) {
+            undo();
             return true;
         }
+        break;
 
-        hilet cursor = _shaped_text.get_nearest_cursor(event.position);
+    case text_redo:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            redo();
+            return true;
+        }
+        break;
 
-        switch (event.type) {
-            using enum mouse_event::Type;
-        case ButtonUp:
+    case text_insert_line:
+        if (*enabled and *edit_mode == edit_mode_type::fully_editable) {
+            reset_state("BDX");
+            add_character(grapheme{unicode_PS}, add_type::append);
+            return true;
+        }
+        break;
+
+    case text_insert_line_up:
+        if (*enabled and *edit_mode == edit_mode_type::fully_editable) {
+            reset_state("BDX");
+            _selection = _shaped_text.move_begin_paragraph(_selection.cursor());
+            add_character(grapheme{unicode_PS}, add_type::insert);
+            return true;
+        }
+        break;
+
+    case text_insert_line_down:
+        if (*enabled and *edit_mode == edit_mode_type::fully_editable) {
+            reset_state("BDX");
+            _selection = _shaped_text.move_end_paragraph(_selection.cursor());
+            add_character(grapheme{unicode_PS}, add_type::insert);
+            return true;
+        }
+        break;
+
+    case text_delete_char_next:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            delete_character_next();
+            return true;
+        }
+        break;
+
+    case text_delete_char_prev:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            delete_character_prev();
+            return true;
+        }
+        break;
+
+    case text_delete_word_next:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            delete_word_next();
+            return true;
+        }
+        break;
+
+    case text_delete_word_prev:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            delete_word_prev();
+            return true;
+        }
+        break;
+
+    case text_cursor_left_char:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            _selection = _shaped_text.move_left_char(_selection.cursor(), _overwrite_mode);
+            request_scroll();
+            return true;
+        }
+        break;
+
+    case text_cursor_right_char:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            _selection = _shaped_text.move_right_char(_selection.cursor(), _overwrite_mode);
+            request_scroll();
+            return true;
+        }
+        break;
+
+    case text_cursor_down_char:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BD");
+            _selection = _shaped_text.move_down_char(_selection.cursor(), _vertical_movement_x);
+            request_scroll();
+            return true;
+        }
+        break;
+
+    case text_cursor_up_char:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BD");
+            _selection = _shaped_text.move_up_char(_selection.cursor(), _vertical_movement_x);
+            request_scroll();
+            return true;
+        }
+        break;
+
+    case text_cursor_left_word:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            _selection = _shaped_text.move_left_word(_selection.cursor(), _overwrite_mode);
+            request_scroll();
+            return true;
+        }
+        break;
+
+    case text_cursor_right_word:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            _selection = _shaped_text.move_right_word(_selection.cursor(), _overwrite_mode);
+            request_scroll();
+            return true;
+        }
+        break;
+
+    case text_cursor_begin_line:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            _selection = _shaped_text.move_begin_line(_selection.cursor());
+            request_scroll();
+            return true;
+        }
+        break;
+
+    case text_cursor_end_line:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            _selection = _shaped_text.move_end_line(_selection.cursor());
+            request_scroll();
+            return true;
+        }
+        break;
+
+    case text_cursor_begin_sentence:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            _selection = _shaped_text.move_begin_sentence(_selection.cursor());
+            request_scroll();
+            return true;
+        }
+        break;
+
+    case text_cursor_end_sentence:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            _selection = _shaped_text.move_end_sentence(_selection.cursor());
+            request_scroll();
+            return true;
+        }
+        break;
+
+    case text_cursor_begin_document:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            _selection = _shaped_text.move_begin_document(_selection.cursor());
+            request_scroll();
+            return true;
+        }
+        break;
+
+    case text_cursor_end_document:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            _selection = _shaped_text.move_end_document(_selection.cursor());
+            request_scroll();
+            return true;
+        }
+        break;
+
+    case gui_cancel:
+        if (*enabled and *edit_mode >= edit_mode_type::selectable) {
+            reset_state("BDX");
+            _selection.clear_selection(_shaped_text.size());
+            return true;
+        }
+        break;
+
+    case text_select_left_char:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            _selection.drag_selection(_shaped_text.move_left_char(_selection.cursor(), false));
+            request_scroll();
+            return true;
+        }
+        break;
+
+    case text_select_right_char:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            _selection.drag_selection(_shaped_text.move_right_char(_selection.cursor(), false));
+            request_scroll();
+            return true;
+        }
+        break;
+
+    case text_select_down_char:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BD");
+            _selection.drag_selection(_shaped_text.move_down_char(_selection.cursor(), _vertical_movement_x));
+            request_scroll();
+            return true;
+        }
+        break;
+
+    case text_select_up_char:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BD");
+            _selection.drag_selection(_shaped_text.move_up_char(_selection.cursor(), _vertical_movement_x));
+            request_scroll();
+            return true;
+        }
+        break;
+
+    case text_select_left_word:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            _selection.drag_selection(_shaped_text.move_left_word(_selection.cursor(), false));
+            request_scroll();
+            return true;
+        }
+        break;
+
+    case text_select_right_word:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            _selection.drag_selection(_shaped_text.move_right_word(_selection.cursor(), false));
+            request_scroll();
+            return true;
+        }
+        break;
+
+    case text_select_begin_line:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            _selection.drag_selection(_shaped_text.move_begin_line(_selection.cursor()));
+            request_scroll();
+            return true;
+        }
+        break;
+
+    case text_select_end_line:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            _selection.drag_selection(_shaped_text.move_end_line(_selection.cursor()));
+            request_scroll();
+            return true;
+        }
+        break;
+
+    case text_select_begin_sentence:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            _selection.drag_selection(_shaped_text.move_begin_sentence(_selection.cursor()));
+            request_scroll();
+            return true;
+        }
+        break;
+
+    case text_select_end_sentence:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            _selection.drag_selection(_shaped_text.move_end_sentence(_selection.cursor()));
+            request_scroll();
+            return true;
+        }
+        break;
+
+    case text_select_begin_document:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            _selection.drag_selection(_shaped_text.move_begin_document(_selection.cursor()));
+            request_scroll();
+            return true;
+        }
+        break;
+
+    case text_select_end_document:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            _selection.drag_selection(_shaped_text.move_end_document(_selection.cursor()));
+            request_scroll();
+            return true;
+        }
+        break;
+
+    case text_select_document:
+        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+            reset_state("BDX");
+            _selection = _shaped_text.move_begin_document(_selection.cursor());
+            _selection.drag_selection(_shaped_text.move_end_document(_selection.cursor()));
+            request_scroll();
+            return true;
+        }
+        break;
+
+    case mouse_up:
+        if (*enabled and *edit_mode >= edit_mode_type::selectable) {
             // Stop the continues redrawing during dragging.
             // Also reset the time, so on drag-start it will initialize the time, which will
             // cause a smooth startup of repeating.
             _last_drag_mouse_event = {};
             _last_drag_mouse_event_next_repeat = {};
-            break;
+            return true;
+        }
+        break;
 
-        case ButtonDown:
-            switch (event.clickCount) {
+    case mouse_down:
+        if (*enabled and *edit_mode >= edit_mode_type::selectable) {
+            hilet cursor = _shaped_text.get_nearest_cursor(event.mouse().position);
+            switch (event.mouse().click_count) {
             case 1:
                 reset_state("BDX");
                 _selection = cursor;
@@ -627,11 +744,16 @@ bool text_widget::handle_event(mouse_event const& event) noexcept
             default:;
             }
 
-            request_redraw();
-            break;
+            request_relayout();
+            request_scroll();
+            return true;
+        }
+        break;
 
-        case Drag:
-            switch (event.clickCount) {
+    case mouse_drag:
+        if (*enabled and *edit_mode >= edit_mode_type::selectable) {
+            hilet cursor = _shaped_text.get_nearest_cursor(event.mouse().position);
+            switch (event.mouse().click_count) {
             case 1:
                 reset_state("BDX");
                 _selection.drag_selection(cursor);
@@ -655,14 +777,16 @@ bool text_widget::handle_event(mouse_event const& event) noexcept
             // Normally mouse positions are kept in the local coordinate system, but scrolling
             // causes this coordinate system to shift, so translate it to the window coordinate system here.
             _last_drag_mouse_event = event;
-            _last_drag_mouse_event.position = point2{_layout.to_window * event.position};
+            _last_drag_mouse_event.mouse().position = point2{_layout.to_window * event.mouse().position};
             request_redraw();
-            break;
-
-        default:;
+            return true;
         }
+        break;
+
+    default:;
     }
-    return handled;
+
+    return super::handle_event(event);
 }
 
 hitbox text_widget::hitbox_test(point3 position) const noexcept
@@ -671,10 +795,14 @@ hitbox text_widget::hitbox_test(point3 position) const noexcept
 
     if (*visible and *enabled and layout().contains(position)) {
         switch (*edit_mode) {
-        case edit_mode_type::selectable: return hitbox{this, position, hitbox::Type::Default};
-        case edit_mode_type::line_editable: return hitbox{this, position, hitbox::Type::TextEdit};
-        case edit_mode_type::fully_editable: return hitbox{this, position, hitbox::Type::TextEdit};
-        default: return hitbox{};
+        case edit_mode_type::selectable:
+            return hitbox{this, position, hitbox::Type::Default};
+        case edit_mode_type::line_editable:
+            return hitbox{this, position, hitbox::Type::TextEdit};
+        case edit_mode_type::fully_editable:
+            return hitbox{this, position, hitbox::Type::TextEdit};
+        default:
+            return hitbox{};
         }
     } else {
         return hitbox{};

@@ -56,7 +56,6 @@ public:
 
         std::suspend_never final_suspend() noexcept
         {
-            // We need to trigger the notifier on an exception too.
             if constexpr (std::is_default_constructible_v<value_type>) {
                 switch (_value_ptr->index()) {
                 case 1:

@@ -18,7 +18,7 @@ namespace hi::inline v1 {
 template<basic_fixed_string Fmt, typename... Values>
 class delayed_format {
 public:
-    static_assert(std::is_same_v<decltype(Fmt)::value_type, char>, "Fmt must be a basic_fixed_string<char>");
+    static_assert(std::is_same_v<typename decltype(Fmt)::value_type, char>, "Fmt must be a basic_fixed_string<char>");
 
     delayed_format(delayed_format &&) noexcept = default;
     delayed_format(delayed_format const &) noexcept = default;
@@ -66,17 +66,14 @@ private:
     template<typename... Args>
     static std::string format_wrapper(Args const &...args)
     {
-        return std::format(Fmt, args...);
+        return std::format(static_cast<std::string_view>(Fmt), args...);
     }
 
     template<typename... Args>
     static std::string format_locale_wrapper(std::locale const &loc, Args const &...args)
     {
-        return std::format(loc, Fmt, args...);
+        return std::format(loc, static_cast<std::string_view>(Fmt), args...);
     }
 };
-
-template<basic_fixed_string Fmt, typename... Args>
-delayed_format(Args &&...) -> delayed_format<Fmt, forward_value_t<Args>...>;
 
 } // namespace hi::inline v1

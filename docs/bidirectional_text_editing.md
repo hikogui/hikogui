@@ -25,14 +25,14 @@ Use cases: curses in mixed bidi text
 
 ### Paragraph direction L
 ```
- <a  b  D  C :             <a  b  C  D 
-  a> b  D  C                a> b  C  D 
-  a <b  D  C                a <b  C  D 
-  a  b> D  C:               a  b> C  D 
+ <a  b  D  C :             <a  b  C  D
+  a> b  D  C                a> b  C  D
+  a <b  D  C                a <b  C  D
+  a  b> D  C:               a  b> C  D
   a  b <D  C:               a  b  C  D>
-  a  b  D> C                a  b  C <D 
-  a  b  D <C                a  b  C> D 
-  a  b: D  C>               a  b >C  D 
+  a  b  D> C                a  b  C <D
+  a  b  D <C                a  b  C> D
+  a  b: D  C>               a  b >C  D
 
  <a  b  D  C  e  f :            <a  b  C  D  e  f
   a> b  D  C  e  f               a> b  C  D  e  f
@@ -50,14 +50,14 @@ Use cases: curses in mixed bidi text
 
 ### Paragraph direction R
 ```
-: c  d  B  A>             <A  B  c  d 
-  c  d  B <A               A> B  c  d 
-  c  d  B> A               A <B  c  d 
- :c  d <B  A               A  B> c  d 
+: c  d  B  A>             <A  B  c  d
+  c  d  B <A               A> B  c  d
+  c  d  B> A               A <B  c  d
+ :c  d <B  A               A  B> c  d
  :c  d> B  A               A  B  c  d>
-  c <d  B  A               A  B  c <d 
-  c> d  B  A               A  B  c> d 
- <c  d: B  A               A  B <c  d 
+  c <d  B  A               A  B  c <d
+  c> d  B  A               A  B  c> d
+ <c  d: B  A               A  B <c  d
 
 : F  E  c  d  B  A>             <A  B  c  d  E  F
   D  E  c  d  B <A               A> B  c  d  E  F
@@ -82,5 +82,3 @@ on which side of the character the cursor is.
 Encode as an unsigned integer plus a before/after bit.
 
 If the text is empty then the cursor is 0:before.
-
-

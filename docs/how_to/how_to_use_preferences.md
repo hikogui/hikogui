@@ -57,7 +57,7 @@ struct hi::pickle<foo_type> {
 };
 
 hi::observable<foo_type> foo;
-preferences.add("foo", foo); 
+preferences.add("foo", foo);
 
 hi_log_info("old: {}", foo->one);
 foo->one += 1;

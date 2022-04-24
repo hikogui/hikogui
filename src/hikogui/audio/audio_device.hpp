@@ -31,7 +31,7 @@ constexpr auto audio_device_state_metadata = enum_metadata{
 // clang-format on
 
 
-[[nodiscard]] inline std::string_view to_string(audio_device_state const &rhs) noexcept
+[[nodiscard]] constexpr std::string_view to_string(audio_device_state const &rhs) noexcept
 {
     return audio_device_state_metadata[rhs];
 }
@@ -176,8 +176,8 @@ private:
 
 template<typename CharT>
 struct std::formatter<hi::audio_device_state, CharT> : std::formatter<char const *, CharT> {
-    auto format(hi::audio_device_state const &t, auto &fc)
+    auto format(hi::audio_device_state const &t, auto &fc) const
     {
-        return std::formatter<char const *, CharT>::format(hi::to_const_string(t), fc);
+        return std::formatter<char const *, CharT>{}.format(hi::to_string(t), fc);
     }
 };

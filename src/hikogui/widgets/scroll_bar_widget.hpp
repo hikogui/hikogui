@@ -5,7 +5,7 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../GUI/mouse_event.hpp"
+#include "../GUI/gui_event.hpp"
 #include "../geometry/axis.hpp"
 #include "../observable.hpp"
 #include <memory>
@@ -28,7 +28,7 @@ public:
     observable<float> content;
 
     template<typename Content, typename Aperture, typename Offset>
-    scroll_bar_widget(gui_window &window, widget *parent, Content &&content, Aperture &&aperture, Offset &&offset) noexcept :
+    scroll_bar_widget(gui_window& window, widget *parent, Content&& content, Aperture&& aperture, Offset&& offset) noexcept :
         widget(window, parent),
         content(std::forward<Content>(content)),
         aperture(std::forward<Aperture>(aperture)),
@@ -43,7 +43,7 @@ public:
 
     ~scroll_bar_widget() {}
 
-    widget_constraints const &set_constraints() noexcept override
+    widget_constraints const& set_constraints() noexcept override
     {
         _layout = {};
 
@@ -61,7 +61,7 @@ public:
         }
     }
 
-    void set_layout(widget_layout const &layout) noexcept override
+    void set_layout(widget_layout const& layout) noexcept override
     {
         _layout = layout;
 
@@ -74,7 +74,7 @@ public:
         }
     }
 
-    void draw(draw_context const &context) noexcept override
+    void draw(draw_context const& context) noexcept override
     {
         if (*visible and overlaps(context, layout())) {
             draw_rails(context);
@@ -93,34 +93,33 @@ public:
         }
     }
 
-    [[nodiscard]] bool handle_event(mouse_event const &event) noexcept
+    bool handle_event(gui_event const& event) noexcept
     {
-        hi_axiom(is_gui_thread());
-        auto handled = super::handle_event(event);
-
-        if (event.cause.leftButton) {
-            handled = true;
-
-            switch (event.type) {
-                using enum mouse_event::Type;
-            case ButtonDown:
+        switch (event.type()) {
+        case gui_event_type::mouse_down:
+            if (event.mouse().cause.left_button) {
                 // Record the original scroll-position before the drag starts.
                 _offset_before_drag = *offset;
-                break;
+                return true;
+            }
+            break;
 
-            case Drag: {
+        case gui_event_type::mouse_drag:
+            if (event.mouse().cause.left_button) {
                 // The distance the slider has to move relative to the slider position at the
                 // start of the drag.
-                hilet slider_movement = axis == axis::vertical ? event.delta().y() : event.delta().x();
+                hilet slider_movement = axis == axis::vertical ? event.drag_delta().y() : event.drag_delta().x();
                 hilet content_movement = slider_movement * hidden_content_vs_travel_ratio();
                 hilet new_offset = _offset_before_drag + content_movement;
                 offset = clamp_offset(new_offset);
-            } break;
-
-            default:;
+                return true;
             }
+            break;
+
+        default:;
         }
-        return handled;
+
+        return super::handle_event(event);
     }
 
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override
@@ -152,9 +151,9 @@ private:
     typename decltype(offset)::token_type _offset_cbt;
 
     /** Create a new offset value.
-    * 
-    * Clamp the new offset value by the amount of scrollable distance.
-    */
+     *
+     * Clamp the new offset value by the amount of scrollable distance.
+     */
     [[nodiscard]] float clamp_offset(float new_offset) const noexcept
     {
         hilet scrollable_distance = std::max(0.0f, *content - *aperture);
@@ -216,17 +215,17 @@ private:
         return _hidden_content != 0.0f ? slider_travel_range() / _hidden_content : 0.0f;
     }
 
-    void draw_rails(draw_context const &context) noexcept
+    void draw_rails(draw_context const& context) noexcept
     {
         hilet corner_radii =
             axis == axis::vertical ? hi::corner_radii{layout().width() * 0.5f} : hi::corner_radii{layout().height() * 0.5f};
         context.draw_box(layout(), layout().rectangle(), background_color(), corner_radii);
     }
 
-    void draw_slider(draw_context const &context) noexcept
+    void draw_slider(draw_context const& context) noexcept
     {
         hilet corner_radii = axis == axis::vertical ? hi::corner_radii{_slider_rectangle.width() * 0.5f} :
-                                                       hi::corner_radii{_slider_rectangle.height() * 0.5f};
+                                                      hi::corner_radii{_slider_rectangle.height() * 0.5f};
 
         context.draw_box(layout(), translate_z(0.1f) * _slider_rectangle, foreground_color(), corner_radii);
     }

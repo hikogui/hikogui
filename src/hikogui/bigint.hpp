@@ -351,8 +351,8 @@ struct bigint {
         hilet polynomialOrder = bsr_carry_chain(rhs.digits, rhs.num_digits);
         hi_assert(polynomialOrder >= 0);
 
-        auto tmp = static_cast<bigint<digit_type, 2 * num_digits>>(lhs) << polynomialOrder;
-        auto rhs_ = static_cast<bigint<digit_type, 2 * num_digits>>(rhs);
+        auto tmp = static_cast<bigint<digit_type, 2 * num_digits, is_signed>>(lhs) << polynomialOrder;
+        auto rhs_ = static_cast<bigint<digit_type, 2 * num_digits, is_signed>>(rhs);
 
         auto tmp_highest_bit = bsr_carry_chain(tmp.digits, tmp.num_digits);
         while (tmp_highest_bit >= polynomialOrder) {
@@ -582,15 +582,15 @@ struct std::numeric_limits<hi::bigint<DigitType, NumDigits, IsSigned>> {
     static constexpr value_type min() noexcept
     {
         auto r = value_type{};
-        constexpr auto smin = std::numeric_limits<value_type::signed_digit_type>::min();
-        constexpr auto umin = std::numeric_limits<value_type::digit_type>::min();
+        constexpr auto smin = std::numeric_limits<typename value_type::signed_digit_type>::min();
+        constexpr auto umin = std::numeric_limits<typename value_type::digit_type>::min();
 
         for (std::size_t i = 0; i != value_type::num_digits; ++i) {
             r.digits[i] = umin;
         }
 
         if constexpr (value_type::is_signed and value_type::num_digits > 0) {
-            r.digits[value_type::num_digits - 1] = static_cast<value_type::digit_type>(smin);
+            r.digits[value_type::num_digits - 1] = static_cast<hi_typename value_type::digit_type>(smin);
         }
 
         return r;
@@ -604,8 +604,8 @@ struct std::numeric_limits<hi::bigint<DigitType, NumDigits, IsSigned>> {
     static constexpr value_type max() noexcept
     {
         auto r = value_type{};
-        constexpr auto smax = std::numeric_limits<value_type::signed_digit_type>::max();
-        constexpr auto umax = std::numeric_limits<value_type::digit_type>::max();
+        constexpr auto smax = std::numeric_limits<typename value_type::signed_digit_type>::max();
+        constexpr auto umax = std::numeric_limits<typename value_type::digit_type>::max();
 
         for (std::size_t i = 0; i != value_type::num_digits; ++i) {
             r.digits[i] = umax;

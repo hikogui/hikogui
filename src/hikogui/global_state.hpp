@@ -79,10 +79,10 @@ struct std::atomic<hi::global_state_type> {
     static constexpr bool is_always_lock_free = atomic_type::is_always_lock_free;
 
     constexpr atomic() noexcept = default;
-    constexpr atomic(atomic const &) = default;
-    constexpr atomic(atomic &&) = default;
-    constexpr atomic &operator=(atomic const &) = default;
-    constexpr atomic &operator=(atomic &&) = default;
+    atomic(atomic const &) = delete;
+    atomic(atomic&&) = delete;
+    atomic& operator=(atomic const&) = delete;
+    atomic& operator=(atomic&&) = delete;
 
     constexpr atomic(value_type desired) noexcept : v(to_underlying(desired)) {}
 
@@ -192,7 +192,7 @@ inline std::atomic<global_state_type> global_state = global_state_type::log_leve
     return is_system_shutting_down(global_state.load(std::memory_order::relaxed));
 }
 
-[[nodiscard]] inline void set_log_level(global_state_type log_level) noexcept
+inline void set_log_level(global_state_type log_level) noexcept
 {
     // Only the log_* bits should be set.
     hi_axiom(not to_bool(log_level & ~global_state_type::log_mask));

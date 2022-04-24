@@ -55,7 +55,7 @@ getter/setter member functions names will not alias with the variables.
 Private or protected member functions may have the "\_" prefix when they
 implement the functionality of a public function of the same name.
 
-Macros, because they do not belong to a namespace, are prefixed with the prefix "tt\_".
+Macros, because they do not belong to a namespace, are prefixed with the prefix "hi\_".
 
 The suffix "\_" may be used when a new variable needs to be introduced
 when only its type has changed using casting or conversion.
@@ -63,6 +63,7 @@ If more than one such variable is needed the name of the type should be appended
 
 Getters and Setters
 -------------------
+
 I prefer public member variables. In case a member variable must be protected or
 private due to class-invariance then we may add a getter or a setter.
 
@@ -75,9 +76,11 @@ setter is not needed.
 
 Initializing variables
 ----------------------
+
 I would like to see an assignment operator `=` with every variable initialization.
 Here are some examples that are acceptable:
-```
+
+```cpp
 auto foo = foo_type{init_value};
 auto foo = foo_type(init_value);
 foo_type foo = foo_type{init_value};
@@ -86,7 +89,8 @@ foo_type foo = init_value;
 ```
 
 Please do NOT use the following variable initialization as I find it difficult to read:
-```
+
+```cpp
 foo_type foo(init_value);
 ```
 
@@ -95,10 +99,10 @@ Global variables
 
 Singletons (classes that can only be instantiated once) are discouraged.
 
-Instead add a static-member-function to the class, which returns a reference to an instance
+Instead, add a static-member-function to the class, which returns a reference to an instance
 of that class. When there is only one such member, call it `global()`.
 
-In certain cases these `global()` member functions have to initialize a subsystem and/or make
+In certain cases, these `global()` member functions have to initialize a subsystem and/or make
 sure that it is not being allocated during system shutdown. The `system_status` will
 help with correctly instantiating and closing down of subsystems,
 
@@ -112,7 +116,7 @@ variable would be a mutex named `mutex`.
 Two phase construction
 ----------------------
 
-When a polymorphic class needs polymorphic initialization and destruction it should
+When a polymorphic class needs polymorphic initialization and destruction, it should
 add the following two virtual functions:
 
  - virtual void `init()`
@@ -138,8 +142,7 @@ The managed object will call into the delegate to send messages and retrieve inf
 The managed object should hold a `std::weak_ptr` to the base class of the delegate. This allows the
 delegate to be deallocated with the managed object functioning.
 
-When calling function into the delegate the first argument `sender` should be a reference to the managed
-object.
+When calling the delegate, the first argument `sender` should be a reference to the managed object.
 
 Delegates should at least have the following two function to handle the lifetime of the managed object:
 
@@ -147,7 +150,7 @@ Delegates should at least have the following two function to handle the lifetime
  - virtual void deinit(managed\_object &sender)
 
 The two functions mirror the two phase construction and are often called from `init()` and `deinit()` of the managed
-object. However they may be called from the constructor and destructor of the object as well.
+object. However, they may be called from the constructor and destructor of the object as well.
 
 Subsystems
 ----------

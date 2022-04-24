@@ -13,10 +13,10 @@ namespace hi::inline v1 {
 
 class seed_generator {
 public:
-    seed_generator(seed_generator const &) noexcept = default;
-    seed_generator(seed_generator &&) noexcept = default;
-    seed_generator &operator=(seed_generator const &) noexcept = default;
-    seed_generator &operator=(seed_generator &&) noexcept = default;
+    seed_generator(seed_generator const &) noexcept = delete;
+    seed_generator(seed_generator&&) noexcept = delete;
+    seed_generator& operator=(seed_generator const&) noexcept = delete;
+    seed_generator& operator=(seed_generator&&) noexcept = delete;
 
     [[nodiscard]] seed_generator() noexcept : _device(std::random_device{}) {}
 

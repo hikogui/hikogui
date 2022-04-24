@@ -10,7 +10,7 @@
 namespace hi::inline v1 {
 
 abstract_button_widget::abstract_button_widget(
-    gui_window &window,
+    gui_window& window,
     widget *parent,
     weak_or_unique_ptr<delegate_type> delegate) noexcept :
     super(window, parent), _delegate(std::move(delegate))
@@ -47,14 +47,14 @@ widget_constraints abstract_button_widget::set_constraints_button() const noexce
     return max(_on_label_widget->set_constraints(), _off_label_widget->set_constraints(), _other_label_widget->set_constraints());
 }
 
-void abstract_button_widget::draw_button(draw_context const &context) noexcept
+void abstract_button_widget::draw_button(draw_context const& context) noexcept
 {
     _on_label_widget->draw(context);
     _off_label_widget->draw(context);
     _other_label_widget->draw(context);
 }
 
-void abstract_button_widget::set_layout_button(widget_layout const &context) noexcept
+void abstract_button_widget::set_layout_button(widget_layout const& context) noexcept
 {
     auto state_ = state();
     _on_label_widget->visible = state_ == button_state::on;
@@ -95,42 +95,42 @@ void abstract_button_widget::set_layout_button(widget_layout const &context) noe
 
 void activate() noexcept;
 
-[[nodiscard]] bool abstract_button_widget::handle_event(command command) noexcept
+bool abstract_button_widget::handle_event(gui_event const& event) noexcept
 {
     hi_axiom(is_gui_thread());
 
-    if (*enabled) {
-        switch (command) {
-        case command::gui_activate: activate(); return true;
-        case command::gui_enter:
-            activate();
-            window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::forward);
-            return true;
-        default:;
-        }
-    }
-
-    return super::handle_event(command);
-}
-
-[[nodiscard]] bool abstract_button_widget::handle_event(mouse_event const &event) noexcept
-{
-    hi_axiom(is_gui_thread());
-    auto handled = super::handle_event(event);
-
-    if (event.cause.leftButton) {
-        handled = true;
+    switch (event.type()) {
+    case gui_event_type::gui_activate:
         if (*enabled) {
-            if (compare_store(_pressed, static_cast<bool>(event.down.leftButton))) {
-                request_redraw();
-            }
-
-            if (event.type == mouse_event::Type::ButtonUp && layout().rectangle().contains(event.position)) {
-                handled |= handle_event(command::gui_activate);
-            }
+            activate();
+            return true;
         }
+        break;
+
+    case gui_event_type::mouse_down:
+        if (*enabled and event.mouse().cause.left_button) {
+            _pressed = true;
+            request_redraw();
+            return true;
+        }
+        break;
+
+    case gui_event_type::mouse_up:
+        if (*enabled and event.mouse().cause.left_button) {
+            _pressed = false;
+
+            if (layout().rectangle().contains(event.mouse().position)) {
+                handle_event(gui_event_type::gui_activate);
+            }
+            request_redraw();
+            return true;
+        }
+        break;
+
+    default:;
     }
-    return handled;
+
+    return super::handle_event(event);
 }
 
 } // namespace hi::inline v1

@@ -131,50 +131,38 @@ void selection_widget::draw(draw_context const& context) noexcept
     }
 }
 
-bool selection_widget::handle_event(mouse_event const& event) noexcept
+bool selection_widget::handle_event(gui_event const& event) noexcept
 {
-    hi_axiom(is_gui_thread());
-    auto handled = super::handle_event(event);
-
-    if (event.cause.leftButton) {
-        handled = true;
-        if (*enabled and _has_options) {
-            if (event.type == mouse_event::Type::ButtonUp && layout().rectangle().contains(event.position)) {
-                handle_event(command::gui_activate);
-            }
+    switch (event.type()) {
+    case gui_event_type::mouse_up:
+        if (*enabled and _has_options and layout().rectangle().contains(event.mouse().position)) {
+            return handle_event(gui_event_type::gui_activate);
         }
-    }
-    return handled;
-}
+        return true;
 
-bool selection_widget::handle_event(command command) noexcept
-{
-    hi_axiom(is_gui_thread());
-    request_relayout();
-
-    if (*enabled and _has_options) {
-        switch (command) {
-            using enum hi::command;
-        case gui_activate:
-        case gui_enter:
-            if (!_selecting) {
-                start_selecting();
-            } else {
-                stop_selecting();
-            }
-            return true;
-
-        case gui_cancel:
-            if (_selecting) {
-                stop_selecting();
-            }
-            return true;
-
-        default:;
+    case gui_event_type::gui_activate_next:
+        // Handle gui_active_next so that the next widget will NOT get keyboard focus.
+        // The previously selected item needs the get keyboard focus instead.
+    case gui_event_type::gui_activate:
+        if (*enabled and _has_options and not _selecting) {
+            start_selecting();
+        } else {
+            stop_selecting();
         }
+        request_relayout();
+        return true;
+
+    case gui_event_type::gui_cancel:
+        if (*enabled and _has_options and _selecting) {
+            stop_selecting();
+        }
+        request_relayout();
+        return true;
+
+    default:;
     }
 
-    return super::handle_event(command);
+    return super::handle_event(event);
 }
 
 [[nodiscard]] hitbox selection_widget::hitbox_test(point3 position) const noexcept

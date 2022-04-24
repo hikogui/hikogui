@@ -11,9 +11,9 @@
 
 namespace hi::inline v1 {
 
-window_traffic_lights_widget::window_traffic_lights_widget(gui_window &window, widget *parent) noexcept : super(window, parent) {}
+window_traffic_lights_widget::window_traffic_lights_widget(gui_window& window, widget *parent) noexcept : super(window, parent) {}
 
-widget_constraints const &window_traffic_lights_widget::set_constraints() noexcept
+widget_constraints const& window_traffic_lights_widget::set_constraints() noexcept
 {
     _layout = {};
 
@@ -30,7 +30,7 @@ widget_constraints const &window_traffic_lights_widget::set_constraints() noexce
     }
 }
 
-void window_traffic_lights_widget::set_layout(widget_layout const &layout) noexcept
+void window_traffic_lights_widget::set_layout(widget_layout const& layout) noexcept
 {
     if (compare_store(_layout, layout)) {
         auto extent = layout.size;
@@ -89,23 +89,23 @@ void window_traffic_lights_widget::set_layout(widget_layout const &layout) noexc
     }
 }
 
-void window_traffic_lights_widget::drawMacOS(draw_context const &drawContext) noexcept
+void window_traffic_lights_widget::drawMacOS(draw_context const& drawContext) noexcept
 {
     auto context = drawContext;
 
     hilet close_circle_color = (not window.active and not *hover) ? color(0.246f, 0.246f, 0.246f) :
-        pressedClose                                      ? color(1.0f, 0.242f, 0.212f) :
-                                                            color(1.0f, 0.1f, 0.082f);
+        pressedClose                                              ? color(1.0f, 0.242f, 0.212f) :
+                                                                    color(1.0f, 0.1f, 0.082f);
     context.draw_box(layout(), closeRectangle, close_circle_color, corner_radii{RADIUS});
 
     hilet minimize_circle_color = (not window.active and not *hover) ? color(0.246f, 0.246f, 0.246f) :
-        pressedMinimize                                      ? color(1.0f, 0.847f, 0.093f) :
-                                                               color(0.784f, 0.521f, 0.021f);
+        pressedMinimize                                              ? color(1.0f, 0.847f, 0.093f) :
+                                                                       color(0.784f, 0.521f, 0.021f);
     context.draw_box(layout(), minimizeRectangle, minimize_circle_color, corner_radii{RADIUS});
 
     hilet maximize_circle_color = (not window.active and not *hover) ? color(0.246f, 0.246f, 0.246f) :
-        pressedMaximize                                      ? color(0.223f, 0.863f, 0.1f) :
-                                                               color(0.082f, 0.533f, 0.024f);
+        pressedMaximize                                              ? color(0.223f, 0.863f, 0.1f) :
+                                                                       color(0.082f, 0.533f, 0.024f);
 
     context.draw_box(layout(), maximizeRectangle, maximize_circle_color, corner_radii{RADIUS});
 
@@ -124,7 +124,7 @@ void window_traffic_lights_widget::drawMacOS(draw_context const &drawContext) no
     }
 }
 
-void window_traffic_lights_widget::drawWindows(draw_context const &drawContext) noexcept
+void window_traffic_lights_widget::drawWindows(draw_context const& drawContext) noexcept
 {
     auto context = drawContext;
 
@@ -163,7 +163,7 @@ void window_traffic_lights_widget::drawWindows(draw_context const &drawContext) 
     }
 }
 
-void window_traffic_lights_widget::draw(draw_context const &context) noexcept
+void window_traffic_lights_widget::draw(draw_context const& context) noexcept
 {
     if (*visible and overlaps(context, layout())) {
         if (theme().operating_system == operating_system::macos) {
@@ -178,58 +178,78 @@ void window_traffic_lights_widget::draw(draw_context const &context) noexcept
     }
 }
 
-bool window_traffic_lights_widget::handle_event(mouse_event const &event) noexcept
+bool window_traffic_lights_widget::handle_event(gui_event const& event) noexcept
 {
-    hi_axiom(is_gui_thread());
-    auto handled = super::handle_event(event);
+    switch (event.type()) {
+    case gui_event_type::mouse_move:
+    case gui_event_type::mouse_drag:
+        {
+            // Check the hover states of each button.
+            auto state_has_changed = false;
+            state_has_changed |= compare_store(hoverClose, closeRectangle.contains(event.mouse().position));
+            state_has_changed |= compare_store(hoverMinimize, minimizeRectangle.contains(event.mouse().position));
+            state_has_changed |= compare_store(hoverMaximize, maximizeRectangle.contains(event.mouse().position));
+            if (state_has_changed) {
+                request_redraw();
+            }
+        }
+        break;
 
-    // Check the hover states of each button.
-    auto stateHasChanged = false;
-    stateHasChanged |= compare_store(hoverClose, closeRectangle.contains(event.position));
-    stateHasChanged |= compare_store(hoverMinimize, minimizeRectangle.contains(event.position));
-    stateHasChanged |= compare_store(hoverMaximize, maximizeRectangle.contains(event.position));
-    if (stateHasChanged) {
+    case gui_event_type::mouse_exit:
+        hoverClose = false;
+        hoverMinimize = false;
+        hoverMaximize = false;
         request_redraw();
-    }
+        return super::handle_event(event);
 
-    if (event.cause.leftButton) {
-        handled = true;
+    case gui_event_type::mouse_down:
+        if (event.mouse().cause.left_button) {
+            if (closeRectangle.contains(event.mouse().position)) {
+                pressedClose = true;
 
-        switch (event.type) {
-            using enum mouse_event::Type;
-        case ButtonUp:
-            if (pressedClose && hoverClose) {
-                window.close_window();
+            } else if (minimizeRectangle.contains(event.mouse().position)) {
+                pressedMinimize = true;
+
+            } else if (maximizeRectangle.contains(event.mouse().position)) {
+                pressedMaximize = true;
             }
-
-            if (pressedMinimize && hoverMinimize) {
-                window.set_size_state(gui_window_size::minimized);
-            }
-
-            if (pressedMaximize && hoverMaximize) {
-                switch (window.size_state()) {
-                case gui_window_size::normal: window.set_size_state(gui_window_size::maximized); break;
-                case gui_window_size::maximized: window.set_size_state(gui_window_size::normal); break;
-                default: hi_no_default();
-                }
-            }
-
             request_redraw();
+            return true;
+        }
+        break;
+
+    case gui_event_type::mouse_up:
+        if (event.mouse().cause.left_button) {
             pressedClose = false;
             pressedMinimize = false;
             pressedMaximize = false;
-            break;
-
-        case ButtonDown:
             request_redraw();
-            pressedClose = hoverClose;
-            pressedMinimize = hoverMinimize;
-            pressedMaximize = hoverMaximize;
-            break;
-        }
-    }
 
-    return handled;
+            if (closeRectangle.contains(event.mouse().position)) {
+                window.close_window();
+
+            } else if (minimizeRectangle.contains(event.mouse().position)) {
+                window.set_size_state(gui_window_size::minimized);
+
+            } else if (maximizeRectangle.contains(event.mouse().position)) {
+                switch (window.size_state()) {
+                case gui_window_size::normal:
+                    window.set_size_state(gui_window_size::maximized);
+                    break;
+                case gui_window_size::maximized:
+                    window.set_size_state(gui_window_size::normal);
+                    break;
+                default:
+                    hi_no_default();
+                }
+            }
+            return true;
+        }
+        break;
+
+    default:;
+    }
+    return super::handle_event(event);
 }
 
 hitbox window_traffic_lights_widget::hitbox_test(point3 position) const noexcept
