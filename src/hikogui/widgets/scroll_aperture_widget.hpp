@@ -142,15 +142,13 @@ public:
         }
     }
 
-    bool handle_event(mouse_event const &event) noexcept override
+    bool handle_event(gui_event const &event) noexcept override
     {
         hi_axiom(is_gui_thread());
-        auto handled = super::handle_event(event);
 
-        if (event.type == mouse_event::Type::Wheel) {
-            handled = true;
-            hilet new_offset_x = *offset_x + event.wheelDelta.x() * theme().scale;
-            hilet new_offset_y = *offset_y + event.wheelDelta.y() * theme().scale;
+        if (event == gui_event_type::mouse_wheel) {
+            hilet new_offset_x = *offset_x + event.mouse().wheel_delta.x() * theme().scale;
+            hilet new_offset_y = *offset_y + event.mouse().wheel_delta.y() * theme().scale;
             hilet max_offset_x = std::max(0.0f, *content_width - *aperture_width);
             hilet max_offset_y = std::max(0.0f, *content_height - *aperture_height);
 
@@ -158,8 +156,9 @@ public:
             offset_y = std::clamp(new_offset_y, 0.0f, max_offset_y);
             request_relayout();
             return true;
+        } else {
+            return super::handle_event(event);
         }
-        return handled;
     }
 
     void scroll_to_show(hi::aarectangle to_show) noexcept override

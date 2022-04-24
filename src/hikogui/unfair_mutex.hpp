@@ -33,17 +33,17 @@ template<bool UseDeadLockDetector>
 class unfair_mutex_impl {
 public:
     constexpr unfair_mutex_impl() noexcept {}
-    unfair_mutex_impl(unfair_mutex_impl const &) = delete;
-    unfair_mutex_impl(unfair_mutex_impl &&) = delete;
-    unfair_mutex_impl &operator=(unfair_mutex_impl const &) = delete;
-    unfair_mutex_impl &operator=(unfair_mutex_impl &&) = delete;
+    unfair_mutex_impl(unfair_mutex_impl const&) = delete;
+    unfair_mutex_impl(unfair_mutex_impl&&) = delete;
+    unfair_mutex_impl& operator=(unfair_mutex_impl const&) = delete;
+    unfair_mutex_impl& operator=(unfair_mutex_impl&&) = delete;
 
-    ~unfair_mutex_impl() requires(UseDeadLockDetector)
+    ~unfair_mutex_impl()
     {
-        dead_lock_detector::remove_object(this);
+        if constexpr (UseDeadLockDetector) {
+            dead_lock_detector::remove_object(this);
+        }
     }
-
-    ~unfair_mutex_impl() = default;
 
     bool is_locked() const noexcept
     {
@@ -57,7 +57,7 @@ public:
             // *this mutex is already locked.
             hi_axiom(other != this);
             // Potential dead-lock because of different ordering with other.
-            hi_axiom(other == nullptr); 
+            hi_axiom(other == nullptr);
         }
 
         hi_axiom(holds_invariant());

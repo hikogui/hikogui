@@ -40,7 +40,6 @@ target_sources(hikogui PRIVATE
     concepts.hpp
     console.hpp
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/console_win32.cpp>
-    command.hpp
     CommandLineParser.hpp
     counters.cpp
     counters.hpp

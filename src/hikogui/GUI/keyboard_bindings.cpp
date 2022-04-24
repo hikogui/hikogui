@@ -4,7 +4,7 @@
 
 #include "keyboard_bindings.hpp"
 #include "../codec/JSON.hpp"
-#include "../command.hpp"
+#include "gui_event_type.hpp"
 #include "../log.hpp"
 
 namespace hi::inline v1 {
@@ -40,8 +40,8 @@ void keyboard_bindings::load_bindings(URL url, bool system_binding)
                 command_name = command_name.substr(1);
             }
 
-            auto command = to_command(command_name);
-            if (command == command::unknown) {
+            auto command = to_gui_event_type(command_name);
+            if (command == gui_event_type::none) {
                 throw parse_error(std::format("Could not parse command '{}'", command_name));
             }
 

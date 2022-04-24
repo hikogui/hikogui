@@ -79,8 +79,7 @@ public:
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept final;
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
     void activate() noexcept;
-    [[nodiscard]] bool handle_event(command command) noexcept override;
-    [[nodiscard]] bool handle_event(mouse_event const &event) noexcept final;
+    bool handle_event(gui_event const& event) noexcept override;
     /// @endprivatesection
 protected:
     aarectangle _label_rectangle;

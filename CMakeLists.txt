@@ -188,7 +188,11 @@ target_include_directories(hikogui PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/src)
 #
 if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     # Set the execution character encoding to UTF-8
-    target_compile_options(hikogui PUBLIC -fexec-charset=UTF-8)
+    if (MSVC)
+        target_compile_options(hikogui PUBLIC -utf-8)
+    else()
+        target_compile_options(hikogui PUBLIC -fexec-charset=UTF-8)
+    endif()
 
     # Clang will complain about __builtin_assume even on constexpr functions and operators,
     # this warning is absolutely useless.

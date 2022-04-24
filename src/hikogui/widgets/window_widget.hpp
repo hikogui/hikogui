@@ -22,7 +22,7 @@ public:
     observable<label> title;
 
     template<typename Title>
-    window_widget(gui_window &window, Title &&title, std::weak_ptr<delegate_type> delegate = {}) noexcept :
+    window_widget(gui_window& window, Title&& title, std::weak_ptr<delegate_type> delegate = {}) noexcept :
         super(window, nullptr), title(std::forward<Title>(title)), _content_delegate(std::move(delegate))
     {
         constructor_implementation();
@@ -38,13 +38,13 @@ public:
      * @see grid_widget
      * @return A reference to a grid_widget.
      */
-    [[nodiscard]] grid_widget &content() noexcept;
+    [[nodiscard]] grid_widget& content() noexcept;
 
     /** Get a reference to window's toolbar widget.
      * @see toolbar_widget
      * @return A reference to a toolbar_widget.
      */
-    [[nodiscard]] toolbar_widget &toolbar() noexcept;
+    [[nodiscard]] toolbar_widget& toolbar() noexcept;
 
     /** Defining on which edges the resize handle has priority over widget at a higher layer.
      */
@@ -52,10 +52,11 @@ public:
 
     /// @privatesection
     [[nodiscard]] generator<widget *> children() const noexcept override;
-    widget_constraints const &set_constraints() noexcept override;
-    void set_layout(widget_layout const &layout) noexcept;
-    void draw(draw_context const &context) noexcept override;
+    widget_constraints const& set_constraints() noexcept override;
+    void set_layout(widget_layout const& layout) noexcept;
+    void draw(draw_context const& context) noexcept override;
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
+    bool handle_event(gui_event const& event) noexcept override;
     /// @endprivatesection
 private:
     decltype(title)::token_type _title_cbt;

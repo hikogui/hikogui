@@ -198,9 +198,7 @@ struct awaitable_cast_type {
  * This function may use `operator co_await()` to retrieve the actual awaitable type.
  */
 template<awaitable T>
-using awaitable_cast_type_t = awaitable_cast_type<T>::type;
-
-
+using awaitable_cast_type_t = hi_typename awaitable_cast_type<T>::type;
 
 /** Return the low half of the input value.
  */

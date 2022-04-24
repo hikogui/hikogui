@@ -41,21 +41,23 @@ public:
 private:
     static constexpr UINT_PTR move_and_resize_timer_id = 2;
 
-    TRACKMOUSEEVENT trackMouseLeaveEventParameters;
-    bool trackingMouseLeaveEvent = false;
-    char32_t highSurrogate = 0;
-    mouse_event mouseButtonEvent;
+    TRACKMOUSEEVENT track_mouse_leave_event_parameters;
+    bool tracking_mouse_leave_event = false;
+    char32_t high_surrogate = 0;
+    gui_event mouse_button_event;
     utc_nanoseconds multi_click_time_point;
     point2 multi_click_position;
-    int multi_click_count;
+    uint8_t multi_click_count;
+
+    bool keymenu_pressed = false;
 
     void setOSWindowRectangleFromRECT(RECT aarectangle) noexcept;
 
-    [[nodiscard]] KeyboardState getKeyboardState() noexcept;
-    [[nodiscard]] keyboard_modifiers getkeyboard_modifiers() noexcept;
+    [[nodiscard]] keyboard_state get_keyboard_state() noexcept;
+    [[nodiscard]] keyboard_modifiers get_keyboard_modifiers() noexcept;
 
     [[nodiscard]] char32_t handle_suragates(char32_t c) noexcept;
-    [[nodiscard]] mouse_event createmouse_event(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept;
+    [[nodiscard]] gui_event create_mouse_event(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept;
 
     friend LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept;
 };

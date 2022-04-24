@@ -9,7 +9,7 @@
 
 namespace hi::inline v1 {
 
-widget_constraints const &menu_button_widget::set_constraints() noexcept
+widget_constraints const& menu_button_widget::set_constraints() noexcept
 {
     _layout = {};
 
@@ -24,7 +24,7 @@ widget_constraints const &menu_button_widget::set_constraints() noexcept
     return _constraints;
 }
 
-void menu_button_widget::set_layout(widget_layout const &layout) noexcept
+void menu_button_widget::set_layout(widget_layout const& layout) noexcept
 {
     if (compare_store(_layout, layout)) {
         hilet inside_rectangle = layout.rectangle() - theme().margin;
@@ -42,7 +42,7 @@ void menu_button_widget::set_layout(widget_layout const &layout) noexcept
     set_layout_button(layout);
 }
 
-void menu_button_widget::draw(draw_context const &context) noexcept
+void menu_button_widget::draw(draw_context const& context) noexcept
 {
     if (*visible and overlaps(context, layout())) {
         draw_menu_button(context);
@@ -53,49 +53,48 @@ void menu_button_widget::draw(draw_context const &context) noexcept
 
 [[nodiscard]] bool menu_button_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
-    return *visible and* enabled and any(group & hi::keyboard_focus_group::menu);
+    return *visible and *enabled and any(group & hi::keyboard_focus_group::menu);
 }
 
-[[nodiscard]] bool menu_button_widget::handle_event(command command) noexcept
+bool menu_button_widget::handle_event(gui_event const& event) noexcept
 {
-    hi_axiom(is_gui_thread());
+    switch (event.type()) {
+    case gui_event_type::gui_menu_next:
+        if (*enabled and not is_last(keyboard_focus_group::menu)) {
+            window.update_keyboard_target(keyboard_focus_group::menu, keyboard_focus_direction::forward);
+            return true;
+        }
+        break;
 
-    if (*enabled) {
-        switch (command) {
-        case command::gui_menu_next:
-            if (!is_last(keyboard_focus_group::menu)) {
-                window.update_keyboard_target(keyboard_focus_group::menu, keyboard_focus_direction::forward);
-                return true;
-            }
-            break;
+    case gui_event_type::gui_menu_prev:
+        if (*enabled and not is_first(keyboard_focus_group::menu)) {
+            window.update_keyboard_target(keyboard_focus_group::menu, keyboard_focus_direction::backward);
+            return true;
+        }
+        break;
 
-        case command::gui_menu_prev:
-            if (!is_first(keyboard_focus_group::menu)) {
-                window.update_keyboard_target(keyboard_focus_group::menu, keyboard_focus_direction::backward);
-                return true;
-            }
-            break;
-
-        case command::gui_activate:
+    case gui_event_type::gui_activate:
+        if (*enabled) {
             activate();
             window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::forward);
             window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::backward);
             return true;
-
-        default:;
         }
+        break;
+
+    default:;
     }
 
-    return super::handle_event(command);
+    return super::handle_event(event);
 }
 
-void menu_button_widget::draw_menu_button(draw_context const &context) noexcept
+void menu_button_widget::draw_menu_button(draw_context const& context) noexcept
 {
     hilet border_color = *focus ? focus_color() : color::transparent();
     context.draw_box(layout(), layout().rectangle(), background_color(), border_color, theme().border_width, border_side::inside);
 }
 
-void menu_button_widget::draw_check_mark(draw_context const &context) noexcept
+void menu_button_widget::draw_check_mark(draw_context const& context) noexcept
 {
     auto state_ = state();
 

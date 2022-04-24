@@ -304,11 +304,14 @@ struct observable_impl {
         hi_axiom(not owners.empty());
 
         auto keep_this_alive = owners.front()->_pimpl;
+        hilet values_are_same = keep_this_alive->value == new_impl->value;
 
         for (auto owner : owners) {
             owner->_pimpl = new_impl;
             new_impl->owners.push_back(owner);
-            owner->_notifier(value);
+            if (not values_are_same) {
+                owner->_notifier(value);
+            }
         }
         owners.clear();
     }

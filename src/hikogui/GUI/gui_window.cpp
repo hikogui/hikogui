@@ -16,34 +16,7 @@
 
 namespace hi::inline v1 {
 
-template<typename Event>
-bool gui_window::send_event_to_widget(hi::widget const *target_widget, Event const &event) noexcept
-{
-    while (target_widget) {
-        // Send a command in priority order to the widget.
-        if constexpr (std::is_same_v<Event, mouse_event>) {
-            if (const_cast<hi::widget *>(target_widget)->handle_event(target_widget->layout().from_window * event)) {
-                return true;
-            }
-
-        } else {
-            if (const_cast<hi::widget *>(target_widget)->handle_event(event)) {
-                return true;
-            }
-        }
-
-        // Forward the keyboard event to the parent of the target.
-        target_widget = target_widget->parent;
-    }
-
-    // If non of the widget has handled the command, let the window handle the command.
-    if (handle_event(event)) {
-        return true;
-    }
-    return false;
-}
-
-gui_window::gui_window(gui_system &gui, label const &title, std::weak_ptr<gui_window_delegate> delegate) noexcept :
+gui_window::gui_window(gui_system& gui, label const& title, std::weak_ptr<gui_window_delegate> delegate) noexcept :
     gui(gui), title(title), _delegate(std::move(delegate))
 {
 }
@@ -61,7 +34,7 @@ gui_window::~gui_window()
         surface.reset();
         hi_log_info("Window '{}' has been properly destructed.", title);
 
-    } catch (std::exception const &e) {
+    } catch (std::exception const& e) {
         hi_log_fatal("Could not properly destruct gui_window. '{}'", e.what());
     }
 }
@@ -87,12 +60,12 @@ void gui_window::init()
     // For changes in setting on the OS we should reconstrain/layout/redraw the window
     // For example when the language or theme changes.
     _setting_change_token = os_settings::subscribe([this] {
-        this->request_reconstrain();
+        this->request_reconstrain(this);
     });
 
     // Subscribe on theme changes.
     _selected_theme_token = gui.selected_theme.subscribe([this](auto...) {
-        this->request_reconstrain();
+        this->request_reconstrain(this);
     });
 
     // Delegate has been called, layout of widgets has been calculated for the
@@ -121,7 +94,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
 
     // When a widget requests it or a window-wide event like language change
     // has happened all the widgets will be set_constraints().
-    auto need_reconstrain = _reconstrain.exchange(false, std::memory_order_relaxed);
+    auto need_reconstrain = _reconstrain.exchange(nullptr, std::memory_order_relaxed);
 
 #if 0
     // For performance checks force reconstrain.
@@ -145,7 +118,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     //
     // Make sure the widget does have its window rectangle match the constraints, otherwise
     // the logic for layout and drawing becomes complicated.
-    if (_resize.exchange(false)) {
+    if (_resize.exchange(nullptr, std::memory_order::relaxed)) {
         // If a widget asked for a resize, change the size of the window to the preferred size of the widgets.
         hilet current_size = rectangle.size();
         hilet new_size = widget->constraints().preferred;
@@ -175,7 +148,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
     surface->update(rectangle.size());
 
     // Make sure the widget's layout is updated before draw, but after window resize.
-    auto need_relayout = _relayout.exchange(false, std::memory_order_relaxed);
+    auto need_relayout = _relayout.exchange(nullptr, std::memory_order_relaxed);
 
 #if 0
     // For performance checks force relayout.
@@ -237,20 +210,16 @@ void gui_window::update_mouse_target(hi::widget const *new_target_widget, point2
 
     if (new_target_widget != _mouse_target_widget) {
         if (_mouse_target_widget) {
-            if (!send_event_to_widget(_mouse_target_widget, mouse_event::exited())) {
-                send_event_to_widget(_mouse_target_widget, std::vector{command::gui_mouse_exit});
-            }
+            send_events_to_widget(_mouse_target_widget, std::vector{gui_event{gui_event_type::mouse_exit}});
         }
         _mouse_target_widget = new_target_widget;
         if (new_target_widget) {
-            if (!send_event_to_widget(new_target_widget, mouse_event::entered(position))) {
-                send_event_to_widget(new_target_widget, std::vector{command::gui_mouse_enter});
-            }
+            send_events_to_widget(_mouse_target_widget, std::vector{gui_event::make_mouse_enter(position)});
         }
     }
 }
 
-hi::keyboard_bindings const &gui_window::keyboard_bindings() const noexcept
+hi::keyboard_bindings const& gui_window::keyboard_bindings() const noexcept
 {
     hi_axiom(gui.keyboard_bindings);
     return *gui.keyboard_bindings;
@@ -278,17 +247,17 @@ void gui_window::update_keyboard_target(hi::widget const *new_target_widget, key
 
     // When there is a new target, tell the current widget that the keyboard focus was exited.
     if (new_target_widget and _keyboard_target_widget) {
-        send_event_to_widget(_keyboard_target_widget, std::vector{command::gui_keyboard_exit});
+        send_events_to_widget(_keyboard_target_widget, std::vector{gui_event{gui_event_type::keyboard_exit}});
         _keyboard_target_widget = nullptr;
     }
 
     // Tell "escape" to all the widget that are not parents of the new widget
-    widget->handle_command_recursive(command::gui_cancel, new_target_parent_chain);
+    widget->handle_event_recursive(gui_event_type::gui_cancel, new_target_parent_chain);
 
     // Tell the new widget that keyboard focus was entered.
     if (new_target_widget) {
         _keyboard_target_widget = new_target_widget;
-        send_event_to_widget(new_target_widget, std::vector{command::gui_keyboard_enter});
+        send_events_to_widget(new_target_widget, std::vector{gui_event{gui_event_type::keyboard_enter}});
     }
 }
 
@@ -312,94 +281,75 @@ void gui_window::update_keyboard_target(keyboard_focus_group group, keyboard_foc
     update_keyboard_target(_keyboard_target_widget, group, direction);
 }
 
-bool gui_window::handle_event(hi::command command) noexcept
-{
-    switch (command) {
-    case command::gui_widget_next:
-        update_keyboard_target(_keyboard_target_widget, keyboard_focus_group::normal, keyboard_focus_direction::forward);
-        return true;
-    case command::gui_widget_prev:
-        update_keyboard_target(_keyboard_target_widget, keyboard_focus_group::normal, keyboard_focus_direction::backward);
-        return true;
-    case command::gui_toolbar_open:
-        update_keyboard_target(widget.get(), keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
-        return true;
-    case command::text_edit_copy:
-        // Widgets, other than the current keyboard target may have text selected and can handle the command::text_edit_copy.
-        widget->handle_command_recursive(command::text_edit_copy);
-        return true;
-
-    default:;
-    }
-    return false;
-}
-
-bool gui_window::send_event(mouse_event const &event) noexcept
+bool gui_window::process_event(gui_event const& event) noexcept
 {
     hi_axiom(is_gui_thread());
 
-    switch (event.type) {
-    case mouse_event::Type::Exited: // Mouse left window.
+    // This is a static so that this events vector does not need to be allocate for each mouse move event.
+    static auto events = std::vector<gui_event>{};
+    events.clear();
+    events.push_back(event);
+
+    switch (event.type()) {
+    case gui_event_type::mouse_exit_window: // Mouse left window.
         update_mouse_target({});
         break;
 
-    case mouse_event::Type::ButtonDown:
-    case mouse_event::Type::Move: {
-        hilet hitbox = widget->hitbox_test(event.position);
-        update_mouse_target(hitbox.widget, event.position);
+    case gui_event_type::mouse_down:
+    case gui_event_type::mouse_move:
+        {
+            hilet hitbox = widget->hitbox_test(event.mouse().position);
+            update_mouse_target(hitbox.widget, event.mouse().position);
 
-        if (event.type == mouse_event::Type::ButtonDown) {
-            update_keyboard_target(hitbox.widget, keyboard_focus_group::all);
+            if (event == gui_event_type::mouse_down) {
+                update_keyboard_target(hitbox.widget, keyboard_focus_group::all);
+            }
         }
-    } break;
+        break;
+
+    case gui_event_type::keyboard_down:
+        keyboard_bindings().translate(event, events);
+        break;
+
     default:;
     }
 
-    if (send_event_to_widget(_mouse_target_widget, event)) {
-        return true;
+    hilet target_widget = event.variant() == gui_event_variant::mouse ? _mouse_target_widget : _keyboard_target_widget;
+    hilet handled = send_events_to_widget(target_widget, events);
+
+    // Intercept the keyboard generated escape.
+    // A keyboard generated escape should always remove keyboard focus.
+    // The update_keyboard_target() function will send gui_keyboard_exit and a
+    // potential duplicate gui_cancel messages to all widgets that need it.
+    for (hilet event_ : events) {
+        if (event_ == gui_event_type::gui_cancel) {
+            update_keyboard_target({}, keyboard_focus_group::all);
+        }
     }
 
-    return false;
+    return handled;
 }
 
-bool gui_window::send_event(keyboard_event const &event) noexcept
+bool gui_window::send_events_to_widget(hi::widget const *target_widget, std::vector<gui_event> const& events) noexcept
 {
-    hi_axiom(is_gui_thread());
-
-    if (send_event_to_widget(_keyboard_target_widget, event)) {
-        return true;
+    if (not target_widget) {
+        // If there was no target, send the event to the window's widget.
+        target_widget = widget.get();
     }
 
-    // If the keyboard event is not handled directly, convert the key event to a command.
-    if (event.type == keyboard_event::Type::Key) {
-        hilet commands = keyboard_bindings().translate(event.key);
-
-        hilet handled = send_event_to_widget(_keyboard_target_widget, commands);
-
-        for (hilet command : commands) {
-            // Intercept the keyboard generated escape.
-            // A keyboard generated escape should always remove keyboard focus.
-            // The update_keyboard_target() function will send gui_keyboard_exit and a
-            // potential duplicate gui_cancel messages to all widgets that need it.
-            if (command == command::gui_cancel) {
-                update_keyboard_target({}, keyboard_focus_group::all);
+    while (target_widget) {
+        // Each widget will try to handle the first event it can.
+        for (hilet& event : events) {
+            if (const_cast<hi::widget *>(target_widget)->handle_event(target_widget->layout().from_window * event)) {
+                return true;
             }
         }
 
-        return handled;
+        // Forward the events to the parent of the target.
+        target_widget = target_widget->parent;
     }
 
     return false;
-}
-
-bool gui_window::send_event(KeyboardState _state, keyboard_modifiers modifiers, keyboard_virtual_key key) noexcept
-{
-    return send_event(keyboard_event(_state, modifiers, key));
-}
-
-bool gui_window::send_event(grapheme grapheme, bool full) noexcept
-{
-    return send_event(keyboard_event(grapheme, full));
 }
 
 } // namespace hi::inline v1

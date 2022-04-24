@@ -8,8 +8,7 @@
 #include "gui_window_delegate.hpp"
 #include "mouse_cursor.hpp"
 #include "hitbox.hpp"
-#include "mouse_event.hpp"
-#include "keyboard_event.hpp"
+#include "gui_event.hpp"
 #include "keyboard_focus_direction.hpp"
 #include "keyboard_focus_group.hpp"
 #include "theme.hpp"
@@ -41,7 +40,7 @@ class gui_window {
 public:
     using delegate_type = gui_window_delegate;
 
-    gui_system &gui;
+    gui_system& gui;
 
     std::unique_ptr<gfx_surface> surface;
 
@@ -102,14 +101,14 @@ public:
      */
     notifier<void()> closing;
 
-    gui_window(gui_system &gui, label const &title, std::weak_ptr<delegate_type> delegate = {}) noexcept;
+    gui_window(gui_system& gui, label const& title, std::weak_ptr<delegate_type> delegate = {}) noexcept;
 
     virtual ~gui_window();
 
-    gui_window(gui_window const &) = delete;
-    gui_window &operator=(gui_window const &) = delete;
-    gui_window(gui_window &&) = delete;
-    gui_window &operator=(gui_window &&) = delete;
+    gui_window(gui_window const&) = delete;
+    gui_window& operator=(gui_window const&) = delete;
+    gui_window(gui_window&&) = delete;
+    gui_window& operator=(gui_window&&) = delete;
 
     /** 2 phase constructor.
      * Must be called directly after the constructor on the same thread,
@@ -127,7 +126,7 @@ public:
 
     /** Get the keyboard binding.
      */
-    hi::keyboard_bindings const &keyboard_bindings() const noexcept;
+    hi::keyboard_bindings const& keyboard_bindings() const noexcept;
 
     /** Request a rectangle on the window to be redrawn
      */
@@ -144,19 +143,19 @@ public:
         request_redraw(aarectangle{rectangle.size()});
     }
 
-    void request_relayout() noexcept
+    void request_relayout(void const *w) noexcept
     {
-        _relayout.store(true, std::memory_order::relaxed);
+        _relayout.store(w, std::memory_order::relaxed);
     }
 
-    void request_reconstrain() noexcept
+    void request_reconstrain(void const *w) noexcept
     {
-        _reconstrain.store(true, std::memory_order::relaxed);
+        _reconstrain.store(w, std::memory_order::relaxed);
     }
 
-    void request_resize() noexcept
+    void request_resize(void const *w) noexcept
     {
-        _resize.store(true, std::memory_order::relaxed);
+        _resize.store(w, std::memory_order::relaxed);
     }
 
     /** Update window.
@@ -168,7 +167,7 @@ public:
      * @see grid_widget
      * @return A reference to a grid_widget.
      */
-    [[nodiscard]] grid_widget &content() noexcept
+    [[nodiscard]] grid_widget& content() noexcept
     {
         hi_axiom(is_gui_thread());
         hi_axiom(widget);
@@ -179,7 +178,7 @@ public:
      * @see toolbar_widget
      * @return A reference to a toolbar_widget.
      */
-    [[nodiscard]] toolbar_widget &toolbar() noexcept
+    [[nodiscard]] toolbar_widget& toolbar() noexcept
     {
         hi_axiom(is_gui_thread());
         hi_axiom(widget);
@@ -278,15 +277,25 @@ public:
         return ~window_to_screen();
     }
 
+    /** Process the event.
+     *
+     * This is called by the event handler to start processing events.
+     * The events are translated and then uses `send_event_to_widget()` to send the
+     * events to the widgets in some priority ordering.
+     * 
+     * It may also be called from within the `event_handle()` of widgets.
+     */
+    bool process_event(gui_event const& event) noexcept;
+
 protected:
     static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
 
     std::weak_ptr<delegate_type> _delegate;
 
     std::atomic<aarectangle> _redraw_rectangle = aarectangle{};
-    std::atomic<bool> _relayout = true;
-    std::atomic<bool> _reconstrain = true;
-    std::atomic<bool> _resize = true;
+    std::atomic<void const *> _relayout = nullptr;
+    std::atomic<void const *> _reconstrain = nullptr;
+    std::atomic<void const *> _resize = nullptr;
 
     /** Current size state of the window.
      */
@@ -313,54 +322,6 @@ protected:
      * @pre title and extent must be set.
      */
     virtual void create_window(extent2 new_size) = 0;
-
-    /** Handle command event.
-     * This function is called when no widget has handled the command.
-     */
-    [[nodiscard]] virtual bool handle_event(hi::command command) noexcept;
-
-    [[nodiscard]] virtual bool handle_event(std::vector<hi::command> const &commands) noexcept
-    {
-        for (hilet command : commands) {
-            if (handle_event(command)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /** Handle mouse event.
-     * This function is called when no widget has handled the mouse event.
-     */
-    [[nodiscard]] virtual bool handle_event(mouse_event const &event) noexcept
-    {
-        return false;
-    }
-
-    /** Handle keyboard event.
-     * This function is called when no widget has handled the keyboard event.
-     */
-    [[nodiscard]] virtual bool handle_event(keyboard_event const &event) noexcept
-    {
-        return false;
-    }
-
-    /** Send Mouse event.
-     * Called by the operating system to show the position of the mouse.
-     * This is called very often so it must be made efficient.
-     * Most often this function is used to determine the mouse cursor.
-     */
-    bool send_event(mouse_event const &event) noexcept;
-
-    /*! Handle keyboard event.
-     * Called by the operating system to show the character that was entered
-     * or special key that was used.
-     */
-    bool send_event(keyboard_event const &event) noexcept;
-
-    bool send_event(KeyboardState _state, keyboard_modifiers modifiers, keyboard_virtual_key key) noexcept;
-
-    bool send_event(grapheme grapheme, bool full = true) noexcept;
 
 private:
     notifier<>::token_type _setting_change_token;
@@ -399,8 +360,7 @@ private:
      *  - The parents of the widget up to and including the root widget.
      *  - The window itself.
      */
-    template<typename Event>
-    bool send_event_to_widget(hi::widget const *target_widget, Event const &event) noexcept;
+    bool send_events_to_widget(hi::widget const *target_widget, std::vector<gui_event> const& events) noexcept;
 
     friend class widget;
 };
