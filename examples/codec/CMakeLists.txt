@@ -9,7 +9,7 @@ add_custom_target(codec_example_resources
     hikogui
 )
 
-add_executable(json_to_bon8 WIN32 MACOSX_BUNDLE)
+add_executable(json_to_bon8 EXCLUDE_FROM_ALL WIN32 MACOSX_BUNDLE)
 target_sources(json_to_bon8 PRIVATE json_to_bon8.cpp)
 target_link_libraries(json_to_bon8 PRIVATE hikogui)
 target_include_directories(json_to_bon8 PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)

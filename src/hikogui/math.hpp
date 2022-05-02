@@ -113,4 +113,32 @@ template<std::floating_point T>
     return std::abs(a - b) <= e;
 }
 
+/** Broadcast a value to all the elements of the type.
+ */
+template<typename T>
+struct broadcast {};
+
+template<std::integral T>
+struct broadcast<T> {
+    using value_type = T;
+    using element_type = T;
+
+    [[nodiscard]] constexpr T operator()(T value) noexcept
+    {
+        return value;
+    }
+};
+
+template<std::floating_point T>
+struct broadcast<T> {
+    using value_type = T;
+    using element_type = T;
+
+    [[nodiscard]] constexpr T operator()(T value) noexcept
+    {
+        return value;
+    }
+};
+
+
 } // namespace hi::inline v1

@@ -139,6 +139,7 @@ target_sources(hikogui PRIVATE
     semantic_version.hpp
     scoped_buffer.hpp
     scoped_task.hpp
+    sip_hash.hpp
     source_location.hpp
     small_map.hpp
     small_vector.hpp
@@ -231,6 +232,7 @@ if(HI_BUILD_TESTS)
         polynomial_tests.cpp
         ranges_tests.cpp
         safe_int_tests.cpp
+        sip_hash_tests.cpp
         small_map_tests.cpp
         strings_tests.cpp
         tokenizer_tests.cpp
