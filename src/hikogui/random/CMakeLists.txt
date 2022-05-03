@@ -4,12 +4,15 @@
 
 target_sources(hikogui PRIVATE
     dither.hpp
+    seed.hpp
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/seed_win32.cpp>
     xorshift128p.hpp
 )
 
 if(HI_BUILD_TESTS)
     target_sources(hikogui_tests PRIVATE
         dither_tests.cpp
+        seed_tests.cpp
         xorshift128p_tests.cpp
     )
 endif()

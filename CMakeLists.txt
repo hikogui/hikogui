@@ -170,6 +170,7 @@ endif()
 if(WIN32)
 	target_link_libraries(hikogui PUBLIC "ws2_32")
 	target_link_libraries(hikogui PUBLIC "DXGI")
+	target_link_libraries(hikogui PUBLIC "bcrypt")
 endif()
 
 target_include_directories(hikogui PUBLIC ${Vulkan_INCLUDE_DIRS})

@@ -1,9 +1,33 @@
 
 #include "rapid/numeric_array.hpp"
+#include "random/seed.hpp"
 #include "math.hpp"
 #include "endian.hpp"
 
 namespace hi::inline v1 {
+namespace detail {
+
+struct sip_hash_seed_type {
+    u64x4 k0_x4;
+    u64x4 k1_x4;
+    u64x2 k0_x2;
+    u64x2 k1_x2;
+    uint64_t k0_x1;
+    uint64_t k1_x1;
+
+    sip_hash_seed_type(u64x4 k0, u64x4 k1) noexcept :
+        k0_x4(k0), k1_x4(k1), k0_x2{k0.x(), k0.y()}, k1_x2{k1.x(), k1.y()}, k0_x1{k0.x()}, k1_x1{k1.x()}
+    {
+    }
+
+    sip_hash_seed_type() noexcept : sip_hash_seed_type(seed<u64x4>{}(), seed<u64x4>{}()) {}
+};
+
+inline auto sip_hash_seed = sip_hash_seed_type();
+
+struct sip_hash_seed_tag {};
+
+} // namespace detail
 
 template<typename T, size_t C, size_t D>
 class sip_hash {
@@ -14,6 +38,25 @@ public:
     constexpr sip_hash(sip_hash&&) noexcept = default;
     constexpr sip_hash& operator=(sip_hash const&) noexcept = default;
     constexpr sip_hash& operator=(sip_hash&&) noexcept = default;
+
+    sip_hash(detail::sip_hash_seed_tag) noexcept requires(std::is_same_v<value_type, uint64_t>) :
+        sip_hash(detail::sip_hash_seed.k0_x1, detail::sip_hash_seed.k1_x1)
+    {
+    }
+
+    sip_hash(detail::sip_hash_seed_tag) noexcept requires(std::is_same_v<value_type, u64x2>) :
+        sip_hash(detail::sip_hash_seed.k0_x2, detail::sip_hash_seed.k1_x2)
+    {
+    }
+
+    sip_hash(detail::sip_hash_seed_tag) noexcept requires(std::is_same_v<value_type, u64x4>) :
+        sip_hash(detail::sip_hash_seed.k0_x4, detail::sip_hash_seed.k1_x4)
+    {
+    }
+
+    /** Create a sip_hash initialized with the global initialized key.
+     */
+    sip_hash() noexcept;
 
     constexpr sip_hash(value_type k0, value_type k1) noexcept :
         _v0(k0 ^ broadcast<value_type>{}(0x736f6d6570736575)),
@@ -116,7 +159,7 @@ private:
             _round(v0, v1, v2, v3);
         }
         v0 ^= m_;
-        
+
         _v0 = v0;
         _v1 = v1;
         _v2 = v2;
@@ -139,7 +182,17 @@ private:
     }
 };
 
-using sip_hash24 = sip_hash<uint64_t,2,4>;
-using sip_hash24x2 = sip_hash<u64x2,2,4>;
+namespace detail {
+template<typename T, size_t C, size_t D>
+static inline sip_hash sip_hash_prototype = sip_hash<T, C, D>(sip_hash_seed_tag{});
+}
+
+template<typename T, size_t C, size_t D>
+sip_hash<T,C,D>::sip_hash() noexcept : sip_hash(detail::sip_hash_prototype<T,C,D>) {}
+
+
+using sip_hash24 = sip_hash<uint64_t, 2, 4>;
+using sip_hash24x2 = sip_hash<u64x2, 2, 4>;
+using sip_hash24x4 = sip_hash<u64x4, 2, 4>;
 
 } // namespace hi::inline v1
