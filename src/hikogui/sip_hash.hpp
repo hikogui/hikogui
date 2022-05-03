@@ -25,7 +25,8 @@ struct sip_hash_seed_type {
 
 inline auto sip_hash_seed = sip_hash_seed_type();
 
-struct sip_hash_seed_tag {};
+struct sip_hash_seed_tag {
+};
 
 } // namespace detail
 
@@ -66,32 +67,55 @@ public:
         _m(0),
         _b(0)
     {
+#if HI_BUILT_TYPE == HI_BT_DEBUG
+        _debug_state = debug_state_type::idle;
+#endif
     }
 
     [[nodiscard]] value_type finish() noexcept
     {
-        auto tmp_m = (_b & 7) == 0 ? 0 : _m;
+#if HI_BUILT_TYPE == HI_BT_DEBUG
+        hi_axiom(_debug_state < debug_state_type::finalized);
+        _debug_state = debug_state_type::finalized;
+#endif
+
+        auto v0 = _v0;
+        auto v1 = _v1;
+        auto v2 = _v2;
+        auto v3 = _v3;
+        auto m = _m;
+        auto b = _b;
 
         // Add the length modulo 256 to the end of the last block.
-        tmp_m |= static_cast<uint64_t>(_b) << 56;
-        _compress(tmp_m);
-        return _finalize();
+        m |= static_cast<uint64_t>(b) << 56;
+        _compress(v0, v1, v2, v3, m);
+        _finalize(v0, v1, v2, v3);
+
+        return v0 ^ v1 ^ v2 ^ v3;
     }
 
     void add(void const *data, size_t size) noexcept
     {
+#if HI_BUILT_TYPE == HI_BT_DEBUG
+        hi_axiom(_debug_state <= debug_state_type::partial);
+        _debug_state = debug_state_type::partial;
+#endif
         auto todo = size;
-        auto tmp_m = _m;
-
         auto *src = reinterpret_cast<char const *>(data);
+
+        auto v0 = _v0;
+        auto v1 = _v1;
+        auto v2 = _v2;
+        auto v3 = _v3;
+        auto m = _m;
 
         // If a partial 64-bit word was already submitted, complete that word.
         if (hilet offset = _b & 7) {
             hilet num_bytes = std::min(8_uz - offset, size);
-            unaligned_load_le(tmp_m, src, num_bytes, offset);
+            unaligned_load_le(m, src, num_bytes, offset);
 
             if (offset + num_bytes == 8) {
-                _compress(std::exchange(tmp_m, 0));
+                _compress(v0, v1, v2, v3, std::exchange(m, 0));
             }
 
             todo -= num_bytes;
@@ -100,19 +124,70 @@ public:
 
         // Now we can compress 64 bits at a time.
         while (todo >= 8) {
-            unaligned_load_le(tmp_m, src);
+            unaligned_load_le(m, src);
             src += 8;
             todo -= 8;
-            _compress(std::exchange(tmp_m, 0));
+            _compress(v0, v1, v2, v3, std::exchange(m, 0));
         }
 
         // Add the incomplete word in the state, to be compressed later.
         if (todo) {
-            unaligned_load_le(tmp_m, src, todo);
+            unaligned_load_le(m, src, todo);
         }
 
-        _m = tmp_m;
+        _v0 = v0;
+        _v1 = v1;
+        _v2 = v2;
+        _v3 = v3;
+        _m = m;
         _b = static_cast<uint8_t>(_b + size);
+    }
+
+    /** Hash a complete message.
+     *
+     * This function is significantly faster than using `add()` and `finish()`.
+     *
+     * @param data The data to hash.
+     * @param size The size of the data in bytes.
+     * @return The value of the hash.
+     * @note The `sip_hash` instance can be reused when using this function
+     */
+    [[nodiscard]] value_type complete_message(void const *data, size_t size) const noexcept
+    {
+        auto *src = reinterpret_cast<char const *>(data);
+
+
+#if HI_BUILT_TYPE == HI_BT_DEBUG
+        hi_axiom(_debug_state == debug_state_type::idle);
+#endif
+
+        auto v0 = _v0;
+        auto v1 = _v1;
+        auto v2 = _v2;
+        auto v3 = _v3;
+        uint64_t m;
+
+        for (auto block_count = size / 8; block_count > 0; --block_count, src += 8) {
+            unaligned_load_le(m, src);
+            _compress(v0, v1, v2, v3, m);
+        }
+
+        // The length, and 0 to 7 of the last bytes from the src.
+        m = wide_cast<uint64_t>(size & 0xff) << 56;
+        unaligned_load_le(m, src, size & 7);
+        _compress(v0, v1, v2, v3, m);
+        _finalize(v0, v1, v2, v3);
+
+        return v0 ^ v1 ^ v2 ^ v3;
+    }
+
+    /** Hash a complete message.
+     *
+     * @see complete_message()
+     */
+    [[nodiscard]] value_type operator()(void const *data, size_t size) const noexcept
+    {
+        return complete_message(data, size);
     }
 
 private:
@@ -123,8 +198,12 @@ private:
 
     uint64_t _m;
     uint8_t _b;
+#if HI_BUILT_TYPE == HI_BT_DEBUG
+    enum class debug_state_type : uint8_t { idle, full, partial, finalized };
+    state_type _debug_state;
+#endif
 
-    static constexpr void _round(value_type& v0, value_type& v1, value_type& v2, value_type& v3) noexcept
+    hi_force_inline static constexpr void _round(value_type& v0, value_type& v1, value_type& v2, value_type& v3) noexcept
     {
         using std::rotl;
 
@@ -145,40 +224,23 @@ private:
         v2 = rotl(v2, 32);
     }
 
-    constexpr void _compress(uint64_t m) noexcept
+    static constexpr void _compress(value_type& v0, value_type& v1, value_type& v2, value_type& v3, uint64_t m) noexcept
     {
         hilet m_ = broadcast<value_type>{}(m);
-
-        auto v0 = _v0;
-        auto v1 = _v1;
-        auto v2 = _v2;
-        auto v3 = _v3;
 
         v3 ^= m_;
         for (auto i = 0_uz; i != C; ++i) {
             _round(v0, v1, v2, v3);
         }
         v0 ^= m_;
-
-        _v0 = v0;
-        _v1 = v1;
-        _v2 = v2;
-        _v3 = v3;
     }
 
-    [[nodiscard]] constexpr value_type _finalize() const noexcept
+    static constexpr void _finalize(value_type& v0, value_type& v1, value_type& v2, value_type& v3) noexcept
     {
-        auto v0 = _v0;
-        auto v1 = _v1;
-        auto v2 = _v2;
-        auto v3 = _v3;
-
         v2 ^= broadcast<value_type>{}(0xff);
         for (auto i = 0_uz; i != D; ++i) {
             _round(v0, v1, v2, v3);
         }
-
-        return v0 ^ v1 ^ v2 ^ v3;
     }
 };
 
@@ -188,8 +250,9 @@ static inline sip_hash sip_hash_prototype = sip_hash<T, C, D>(sip_hash_seed_tag{
 }
 
 template<typename T, size_t C, size_t D>
-sip_hash<T,C,D>::sip_hash() noexcept : sip_hash(detail::sip_hash_prototype<T,C,D>) {}
-
+sip_hash<T, C, D>::sip_hash() noexcept : sip_hash(detail::sip_hash_prototype<T, C, D>)
+{
+}
 
 using sip_hash24 = sip_hash<uint64_t, 2, 4>;
 using sip_hash24x2 = sip_hash<u64x2, 2, 4>;

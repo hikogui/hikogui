@@ -95,6 +95,22 @@ TEST(sip_hash, standard_vectors_x1)
     }
 }
 
+TEST(sip_hash, standard_vectors_x1_complete_message)
+{
+    std::array<uint8_t, 64> message;
+
+    for (uint8_t i = 0; i != 64; ++i) {
+        message[i] = i;
+    }
+
+    auto sh = hi::sip_hash24{0x0706050403020100, 0x0f0e0d0c0b0a0908};
+    for (size_t i = 0; i != 64; ++i) {
+        auto r = sh(message.data(), i);
+
+        ASSERT_EQ(r, results[i]) << std::format("test vector: {}", i);
+    }
+}
+
 TEST(sip_hash, standard_vectors_x2)
 {
     std::array<uint8_t, 64> message;
