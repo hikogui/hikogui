@@ -99,6 +99,7 @@ target_sources(hikogui PRIVATE
     log.hpp
     $<${HI_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/log_macos.mm>
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/log_win32.cpp>
+    long_tagged_id.hpp
 	loop.hpp
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/loop_win32.cpp>
     math.hpp

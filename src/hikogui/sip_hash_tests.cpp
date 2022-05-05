@@ -86,7 +86,7 @@ TEST(sip_hash, standard_vectors_x1)
     }
 
     for (size_t i = 0; i != 64; ++i) {
-        auto sh = hi::sip_hash24{0x0706050403020100, 0x0f0e0d0c0b0a0908};
+        auto sh = hi::_sip_hash24{0x0706050403020100, 0x0f0e0d0c0b0a0908};
 
         sh.add(message.data(), i);
         auto r = sh.finish();
@@ -103,7 +103,7 @@ TEST(sip_hash, standard_vectors_x1_complete_message)
         message[i] = i;
     }
 
-    auto sh = hi::sip_hash24{0x0706050403020100, 0x0f0e0d0c0b0a0908};
+    auto sh = hi::_sip_hash24{0x0706050403020100, 0x0f0e0d0c0b0a0908};
     for (size_t i = 0; i != 64; ++i) {
         auto r = sh(message.data(), i);
 
@@ -121,7 +121,7 @@ TEST(sip_hash, standard_vectors_x2)
 
     for (size_t i = 0; i != 64; ++i) {
         auto sh =
-            hi::sip_hash24x2{hi::broadcast<hi::u64x2>{}(0x0706050403020100), hi::broadcast<hi::u64x2>{}(0x0f0e0d0c0b0a0908)};
+            hi::_sip_hash24x2{hi::broadcast<hi::u64x2>{}(0x0706050403020100), hi::broadcast<hi::u64x2>{}(0x0f0e0d0c0b0a0908)};
 
         sh.add(message.data(), i);
         auto r = sh.finish();
@@ -141,7 +141,7 @@ TEST(sip_hash, standard_vectors_x4)
 
     for (size_t i = 0; i != 64; ++i) {
         auto sh =
-            hi::sip_hash24x2{hi::broadcast<hi::u64x2>{}(0x0706050403020100), hi::broadcast<hi::u64x2>{}(0x0f0e0d0c0b0a0908)};
+            hi::_sip_hash24x2{hi::broadcast<hi::u64x2>{}(0x0706050403020100), hi::broadcast<hi::u64x2>{}(0x0f0e0d0c0b0a0908)};
 
         sh.add(message.data(), i);
         auto r = sh.finish();
@@ -159,23 +159,23 @@ TEST(sip_hash, global)
         message[i] = i;
     }
 
-    auto sh1 = hi::sip_hash24{};
+    auto sh1 = hi::_sip_hash24{};
     sh1.add(message.data(), 9);
     auto r1 = sh1.finish();
 
-    auto sh2 = hi::sip_hash24{};
+    auto sh2 = hi::_sip_hash24{};
     sh2.add(message.data(), 9);
     auto r2 = sh2.finish();
 
-    auto sh3 = hi::sip_hash24x2{};
+    auto sh3 = hi::_sip_hash24x2{};
     sh3.add(message.data(), 9);
     auto r3 = sh3.finish();
 
-    auto sh4 = hi::sip_hash24x4{};
+    auto sh4 = hi::_sip_hash24x4{};
     sh4.add(message.data(), 9);
     auto r4 = sh4.finish();
 
-    auto sh5 = hi::sip_hash24x4{};
+    auto sh5 = hi::_sip_hash24x4{};
     sh5.add(message.data(), 9);
     auto r5 = sh5.finish();
 

@@ -156,7 +156,6 @@ public:
     {
         auto *src = reinterpret_cast<char const *>(data);
 
-
 #if HI_BUILT_TYPE == HI_BT_DEBUG
         hi_axiom(_debug_state == debug_state_type::idle);
 #endif
@@ -254,8 +253,109 @@ sip_hash<T, C, D>::sip_hash() noexcept : sip_hash(detail::sip_hash_prototype<T, 
 {
 }
 
-using sip_hash24 = sip_hash<uint64_t, 2, 4>;
-using sip_hash24x2 = sip_hash<u64x2, 2, 4>;
-using sip_hash24x4 = sip_hash<u64x4, 2, 4>;
+using _sip_hash24 = sip_hash<uint64_t, 2, 4>;
+using _sip_hash24x2 = sip_hash<u64x2, 2, 4>;
+using _sip_hash24x4 = sip_hash<u64x4, 2, 4>;
 
+template<typename T>
+struct sip_hash24 {
+    [[nodiscard]] uint64_t operator()(T const& value) const noexcept
+    {
+        hi_static_not_implemented();
+    }
+};
+
+template<typename T>
+struct sip_hash24x2 {
+    [[nodiscard]] u64x2 operator()(T const& value) const noexcept
+    {
+        hi_static_not_implemented();
+    }
+};
+
+template<typename T>
+struct sip_hash24x4 {
+    [[nodiscard]] u64x4 operator()(T const& value) const noexcept
+    {
+        hi_static_not_implemented();
+    }
+};
+
+template<typename T>
+requires(std::has_unique_object_representations_v<T> and not std::is_pointer_v<T>) struct sip_hash24<T> {
+    [[nodiscard]] uint64_t operator()(T const& value) const noexcept
+    {
+        return _sip_hash24{}(&value, sizeof(value));
+    }
+};
+
+template<typename T>
+requires(std::has_unique_object_representations_v<T> and not std::is_pointer_v<T>) struct sip_hash24x2<T> {
+    [[nodiscard]] u64x2 operator()(T const& value) const noexcept
+    {
+        return _sip_hash24x2{}(&value, sizeof(value));
+    }
+};
+
+template<typename T>
+requires(std::has_unique_object_representations_v<T> and not std::is_pointer_v<T>) struct sip_hash24x4<T> {
+    [[nodiscard]] u64x4 operator()(T const& value) const noexcept
+    {
+        return _sip_hash24x4{}(&value, sizeof(value));
+    }
+};
+
+template<>
+struct sip_hash24<wchar_t const *> {
+    [[nodiscard]] uint64_t operator()(wchar_t const *str) const noexcept
+    {
+        hilet length = wcslen(str);
+        return _sip_hash24{}(str, length * sizeof(wchar_t));
+    }
+};
+
+template<>
+struct sip_hash24x2<wchar_t const *> {
+    [[nodiscard]] u64x2 operator()(wchar_t const *str) const noexcept
+    {
+        hilet length = wcslen(str);
+        return _sip_hash24x2{}(str, length * sizeof(wchar_t));
+    }
+};
+
+template<>
+struct sip_hash24x4<wchar_t const *> {
+    [[nodiscard]] u64x4 operator()(wchar_t const *str) const noexcept
+    {
+        hilet length = wcslen(str);
+        return _sip_hash24x4{}(str, length * sizeof(wchar_t));
+    }
+};
+
+template<>
+struct sip_hash24<wchar_t *> {
+    [[nodiscard]] uint64_t operator()(wchar_t const *str) const noexcept
+    {
+        hilet length = wcslen(str);
+        return _sip_hash24{}(str, length * sizeof(wchar_t));
+    }
+};
+
+template<>
+struct sip_hash24x2<wchar_t *> {
+    [[nodiscard]] u64x2 operator()(wchar_t const *str) const noexcept
+    {
+        hilet length = wcslen(str);
+        return _sip_hash24x2{}(str, length * sizeof(wchar_t));
+    }
+};
+
+template<>
+struct sip_hash24x4<wchar_t *> {
+    [[nodiscard]] u64x4 operator()(wchar_t const *str) const noexcept
+    {
+        hilet length = wcslen(str);
+        return _sip_hash24x4{}(str, length * sizeof(wchar_t));
+    }
+};
 } // namespace hi::inline v1

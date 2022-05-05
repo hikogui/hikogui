@@ -8,6 +8,7 @@
 #include "audio_stream_format_win32.hpp"
 #include "speaker_mapping.hpp"
 #include "speaker_mapping_win32.hpp"
+#include "audio_system_id.hpp"
 #include "../log.hpp"
 #include "../strings.hpp"
 #include "../exception.hpp"
@@ -123,7 +124,7 @@ template<>
     // Get the cross-reboot-unique-id-string of the device.
     LPWSTR device_id;
     hi_hresult_check(device->GetId(&device_id));
-    auto device_id_ = audio_device_id{audio_device_id::win32, device_id};
+    auto device_id_ = audio_device_id{audio_system_id::win32, device_id};
 
     CoTaskMemFree(device_id);
     return device_id_;

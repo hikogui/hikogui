@@ -6,6 +6,7 @@
 #include "audio_device_win32.hpp"
 #include "audio_system_aggregate.hpp"
 #include "audio_device_id.hpp"
+#include "audio_system_id.hpp"
 #include "../required.hpp"
 #include "../log.hpp"
 #include "../exception.hpp"
@@ -36,7 +37,7 @@ public:
 
     STDMETHOD(OnDefaultDeviceChanged)(EDataFlow flow, ERole role, LPCWSTR device_id)
     {
-        auto device_id_ = audio_device_id{audio_device_id::win32, device_id};
+        auto device_id_ = audio_device_id{audio_system_id::win32, device_id};
         loop::main().wfree_post_function([this, device_id_]() {
             _system->default_device_changed(device_id_);
         });
@@ -45,7 +46,7 @@ public:
 
     STDMETHOD(OnDeviceAdded)(LPCWSTR device_id)
     {
-        auto device_id_ = audio_device_id{audio_device_id::win32, device_id};
+        auto device_id_ = audio_device_id{audio_system_id::win32, device_id};
         loop::main().wfree_post_function([this, device_id_]() {
             this->_system->device_added(device_id_);
         });
@@ -62,7 +63,7 @@ public:
         // 3. Allocating a string blocks.
 
         hi_axiom(device_id);
-        auto device_id_ = audio_device_id{audio_device_id::win32, device_id};
+        auto device_id_ = audio_device_id{audio_system_id::win32, device_id};
         loop::main().wfree_post_function([this, device_id_]() {
             this->_system->device_added(device_id_);
         });
@@ -71,7 +72,7 @@ public:
 
     STDMETHOD(OnDeviceStateChanged)(LPCWSTR device_id, DWORD state)
     {
-        auto device_id_ = audio_device_id{audio_device_id::win32, device_id};
+        auto device_id_ = audio_device_id{audio_system_id::win32, device_id};
         loop::main().wfree_post_function([this, device_id_]() {
             this->_system->device_state_changed(device_id_);
         });
@@ -80,7 +81,7 @@ public:
 
     STDMETHOD(OnPropertyValueChanged)(LPCWSTR device_id, PROPERTYKEY const key)
     {
-        auto device_id_ = audio_device_id{audio_device_id::win32, device_id};
+        auto device_id_ = audio_device_id{audio_system_id::win32, device_id};
         loop::main().wfree_post_function([this, device_id_]() {
             this->_system->device_property_value_changed(device_id_);
         });

@@ -11,7 +11,6 @@ target_sources(hikogui PRIVATE
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_device_win32.cpp>
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_device_win32.hpp>
     audio_device_id.hpp
-    audio_device_id.cpp
     audio_device_delegate.hpp
     audio_stream_config.hpp
     audio_stream_format.hpp
