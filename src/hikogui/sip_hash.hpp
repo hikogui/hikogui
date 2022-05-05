@@ -263,6 +263,12 @@ struct sip_hash24 {
     {
         hi_static_not_implemented();
     }
+
+    [[nodiscard]] uint64_t operator()(T const& value) const noexcept
+        requires(std::has_unique_object_representations_v<T> and not std::is_pointer_v<T>)
+    {
+        return _sip_hash24{}(&value, sizeof(value));
+    }
 };
 
 template<typename T>
@@ -270,6 +276,12 @@ struct sip_hash24x2 {
     [[nodiscard]] u64x2 operator()(T const& value) const noexcept
     {
         hi_static_not_implemented();
+    }
+
+    [[nodiscard]] u64x2 operator()(T const& value) const noexcept
+        requires(std::has_unique_object_representations_v<T> and not std::is_pointer_v<T>)
+    {
+        return _sip_hash24x2{}(&value, sizeof(value));
     }
 };
 
@@ -279,27 +291,9 @@ struct sip_hash24x4 {
     {
         hi_static_not_implemented();
     }
-};
 
-template<typename T>
-requires(std::has_unique_object_representations_v<T> and not std::is_pointer_v<T>) struct sip_hash24<T> {
-    [[nodiscard]] uint64_t operator()(T const& value) const noexcept
-    {
-        return _sip_hash24{}(&value, sizeof(value));
-    }
-};
-
-template<typename T>
-requires(std::has_unique_object_representations_v<T> and not std::is_pointer_v<T>) struct sip_hash24x2<T> {
-    [[nodiscard]] u64x2 operator()(T const& value) const noexcept
-    {
-        return _sip_hash24x2{}(&value, sizeof(value));
-    }
-};
-
-template<typename T>
-requires(std::has_unique_object_representations_v<T> and not std::is_pointer_v<T>) struct sip_hash24x4<T> {
     [[nodiscard]] u64x4 operator()(T const& value) const noexcept
+        requires(std::has_unique_object_representations_v<T> and not std::is_pointer_v<T>)
     {
         return _sip_hash24x4{}(&value, sizeof(value));
     }

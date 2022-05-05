@@ -62,7 +62,7 @@ struct pickle {
             return r;
 
         } else {
-            throw parse_error(std::format("Expecting std::string to be encoded as a string, got {}", rhs));
+            throw parse_error(std::format("Expecting std::string to be encoded as a base64-string, got {}", rhs));
         }
     }
 };

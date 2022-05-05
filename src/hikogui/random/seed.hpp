@@ -33,11 +33,12 @@ void generate_seed(void *ptr, size_t size);
  */
 template<typename T>
 struct seed {
-};
-
-template<typename T>
-requires(std::has_unique_object_representations_v<T>) struct seed<T> {
     [[nodiscard]] T operator()() const
+    {
+        hi_not_implemented();
+    }
+
+    [[nodiscard]] T operator()() const requires(std::has_unique_object_representations_v<T> and not std::is_pointer_v<T>)
     {
         auto buffer = std::array<uint8_t, sizeof(T)>{};
         generate_seed(buffer.data(), buffer.size());
