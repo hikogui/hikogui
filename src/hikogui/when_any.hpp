@@ -177,7 +177,6 @@ public:
 private:
     std::tuple<Ts...> _awaiters;
     std::tuple<scoped_task<await_resume_result_t<Ts>>...> _tasks;
-    // std::tuple<typename notifier<detail::when_any_result_element_t<Ts>>::token_type...> _task_cbts;
     std::tuple<typename notifier<void(await_resume_result_t<Ts>)>::token_type...> _task_cbts;
     value_type _value;
 
@@ -192,7 +191,7 @@ private:
     {
         auto& task = std::get<I>(_tasks) = _await_suspend_task(std::get<I>(_awaiters));
 
-        if (task.completed()) {
+        if (task.done()) {
             using arg_type = await_resume_result_t<decltype(std::get<I>(_awaiters))>;
 
             if constexpr (std::is_same_v<arg_type, void>) {

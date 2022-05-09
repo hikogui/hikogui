@@ -5,17 +5,13 @@
 #pragma once
 
 #include "audio_system.hpp"
-#include "audio_system_delegate.hpp"
-#include "audio_device_id.hpp"
 #include "../wfree_fifo.hpp"
 #include <memory>
 
 struct IMMDeviceEnumerator;
 
 namespace hi::inline v1 {
-
 class audio_system_win32_notification_client;
-
 class audio_system_win32;
 
 struct audio_system_win32_event {
@@ -26,22 +22,15 @@ class audio_system_win32 : public audio_system {
 public:
     using super = audio_system;
 
-    audio_system_win32(std::weak_ptr<audio_system_delegate> delegate);
-    ~audio_system_win32();
+    audio_system_win32();
+    virtual ~audio_system_win32();
 
-    void init() noexcept override;
-
-    [[nodiscard]] std::vector<audio_device *> devices() noexcept override
+    [[nodiscard]] generator<audio_device *> devices() noexcept override
     {
-        auto r = std::vector<audio_device *>{};
-        r.reserve(size(_devices));
         for (hilet &device : _devices) {
-            r.push_back(device.get());
+            co_yield device.get();
         }
-        return r;
     }
-
-    void update_device_list() noexcept;
 
 private:
     /** The devices that are part of the audio system.
@@ -56,15 +45,13 @@ private:
     std::vector<std::shared_ptr<audio_device>> _devices;
 
     IMMDeviceEnumerator *_device_enumerator;
-    audio_system_win32_notification_client *_notification_client;
+    std::unique_ptr<audio_system_win32_notification_client> _notification_client;
 
-    void default_device_changed(hi::audio_device_id const &device_id) noexcept;
-    void device_added(hi::audio_device_id const &device_id) noexcept;
-    void device_removed(hi::audio_device_id const &device_id) noexcept;
-    void device_state_changed(hi::audio_device_id const &device_id) noexcept;
-    void device_property_value_changed(hi::audio_device_id const &device_id) noexcept;
+    /** Before clients are notified, this function is called to update the device list.
+     */
+    void update_device_list() noexcept;
 
-    friend audio_system_win32_notification_client;
+    friend class audio_system_win32_notification_client;
 };
 
 } // namespace hi::inline v1

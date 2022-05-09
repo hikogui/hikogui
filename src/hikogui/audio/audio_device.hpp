@@ -10,7 +10,6 @@
 #include "audio_channel.hpp"
 #include "audio_direction.hpp"
 #include "speaker_mapping.hpp"
-#include "audio_device_id.hpp"
 #include "../label.hpp"
 #include "../enum_metadata.hpp"
 #include <string>
@@ -56,7 +55,7 @@ public:
 
     /** The nonephemeral unique id that for an audio device on the system.
      */
-    audio_device_id id;
+    [[nodiscard]] std::string const &id() const noexcept { return _id; }
 
     /** Get a user friendly name of the audio device.
      * This is a combination of the name of the device and
@@ -167,8 +166,8 @@ public:
      */
     // virtual void stop_stream() noexcept = 0;
 
-private:
-    std::shared_ptr<audio_device_delegate> delegate = {};
+protected:
+    std::string _id;
 };
 
 } // namespace hi::inline v1

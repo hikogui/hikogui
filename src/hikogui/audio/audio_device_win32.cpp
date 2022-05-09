@@ -8,7 +8,6 @@
 #include "audio_stream_format_win32.hpp"
 #include "speaker_mapping.hpp"
 #include "speaker_mapping_win32.hpp"
-#include "audio_system_id.hpp"
 #include "../log.hpp"
 #include "../strings.hpp"
 #include "../exception.hpp"
@@ -119,12 +118,16 @@ template<>
     }
 }
 
-[[nodiscard]] audio_device_id audio_device_win32::get_id(IMMDevice *device) noexcept
+[[nodiscard]] std::string audio_device_win32::get_device_id(IMMDevice *device)
 {
+    hi_assert(device);
+
     // Get the cross-reboot-unique-id-string of the device.
     LPWSTR device_id;
     hi_hresult_check(device->GetId(&device_id));
-    auto device_id_ = audio_device_id{audio_system_id::win32, device_id};
+    hi_assert(device_id);
+
+    auto device_id_ = std::string{"win32:"} + hi::to_string(device_id);
 
     CoTaskMemFree(device_id);
     return device_id_;
@@ -133,7 +136,7 @@ template<>
 audio_device_win32::audio_device_win32(IMMDevice *device) : audio_device(), _device(device)
 {
     hi_assert(_device != nullptr);
-    id = get_id(_device);
+    _id = get_device_id(_device);
     hi_hresult_check(_device->QueryInterface(&_end_point));
     hi_hresult_check(_device->OpenPropertyStore(STGM_READ, &_property_store));
 

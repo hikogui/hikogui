@@ -23,6 +23,15 @@ public:
     audio_device_win32(IMMDevice *device);
     ~audio_device_win32();
 
+    /** Get the device id for the given win32 audio end-point.
+    * 
+    * @param device The win32 device instance to get the device id from.
+    * @return A device id as string, to differentiate with asio it will start with "win32:"
+    * @throws io_error When the device id could not be retrieved.
+     */
+    [[nodiscard]] static std::string get_device_id(IMMDevice *device);
+
+    /// @beginprivatemethods
     [[nodiscard]] std::string name() const noexcept override;
     [[nodiscard]] hi::label label() const noexcept override;
     [[nodiscard]] audio_device_state state() const noexcept override;
@@ -37,13 +46,8 @@ public:
     [[nodiscard]] hi::speaker_mapping output_speaker_mapping() const noexcept override;
     void set_output_speaker_mapping(hi::speaker_mapping speaker_mapping) noexcept override;
     [[nodiscard]] std::vector<hi::speaker_mapping> available_output_speaker_mappings() const noexcept override;
-
     [[nodiscard]] bool supports_format(audio_stream_format const &format) const noexcept;
-
-    /** Get the device id for the given win32 audio end-point.
-     */
-    [[nodiscard]] static audio_device_id get_id(IMMDevice *device) noexcept;
-
+    /// @endprivatemethods
 private:
     audio_direction _direction;
     bool _exclusive = false;
@@ -55,6 +59,7 @@ private:
     IMMEndpoint *_end_point = nullptr;
     IPropertyStore *_property_store = nullptr;
     IAudioClient *_audio_client = nullptr;
+
 
     /** Get a user friendly name of the audio device.
      * This is the name of the audio device itself, such as

@@ -63,13 +63,19 @@ public:
 
             // We can use the this pointer in the callback, as `await_suspend()` is called by
             // the co-routine on the same object as `await_resume()`.
-            _cbt = _notifier->subscribe([this, handle](Args const&...args) {
+            _cbt = _notifier->subscribe_once([this, handle](Args const&...args) {
+                // Copy the arguments received from the notifier into the awaitable object
+                // So that it can be read using `await_resume()`.
                 _args = {args...};
+
+                // Resume the co-routine.
                 handle.resume();
             });
         }
 
-        constexpr void await_resume() const noexcept requires(sizeof...(Args) == 0) {}
+        constexpr void await_resume() const noexcept requires(sizeof...(Args) == 0)
+        {
+        }
 
         constexpr auto await_resume() const noexcept requires(sizeof...(Args) == 1)
         {
@@ -118,7 +124,24 @@ public:
     [[nodiscard]] token_type subscribe(std::invocable<Args...> auto&& callback) noexcept
     {
         auto token = std::make_shared<callback_type>(hi_forward(callback));
-        _callbacks.emplace_back(token);
+        _callbacks.emplace_back(token, false);
+        return token;
+    }
+
+    /** Add a callback to the notifier, which can only trigger once.
+     * Ownership of the callback belongs with the caller of `subscribe()`. The
+     * caller will receive a token, a move-only RAII object that will unsubscribe the callback
+     * when the token is destroyed.
+     * 
+     * The callback is also automatically unsubscribed after being triggered once.
+     *
+     * @param callback_ptr A shared_ptr to a callback function.
+     * @return A RAII object which when destroyed will unsubscribe the callback.
+     */
+    [[nodiscard]] token_type subscribe_once(std::invocable<Args...> auto&& callback) noexcept
+    {
+        auto token = std::make_shared<callback_type>(hi_forward(callback));
+        _callbacks.emplace_back(token, true);
         return token;
     }
 
@@ -129,12 +152,20 @@ public:
      */
     void post(Args const&...args) const noexcept requires(std::is_same_v<result_type, void>)
     {
-        for (auto& weak_callback : _callbacks) {
+        for (auto& [weak_callback, once] : _callbacks) {
             loop::local().post_function([=] {
                 if (auto callback = weak_callback.lock()) {
                     (*callback)(args...);
                 }
             });
+
+            // If the callback should only be triggered once, like inside an awaitable.
+            // Then reset the weak_ptr in _callbacks so that it will be cleaned up.
+            // In the lambda above the weak_ptr is copied first so that it callback will get executed
+            // as long as the shared_ptr's use count does not go to zero.
+            if (once) {
+                weak_callback.reset();
+            }
         }
         clean_up();
     }
@@ -146,12 +177,20 @@ public:
      */
     void post_on_main(Args const&...args) const noexcept requires(std::is_same_v<result_type, void>)
     {
-        for (auto& weak_callback : _callbacks) {
+        for (auto& [weak_callback, once] : _callbacks) {
             loop::main().post_function([=] {
                 if (auto callback = weak_callback.lock()) {
                     (*callback)(args...);
                 }
             });
+
+            // If the callback should only be triggered once, like inside an awaitable.
+            // Then reset the weak_ptr in _callbacks so that it will be cleaned up.
+            // In the lambda above the weak_ptr is copied first so that it callback will get executed
+            // as long as the shared_ptr's use count does not go to zero.
+            if (once) {
+                weak_callback.reset();
+            }
         }
         clean_up();
     }
@@ -169,12 +208,13 @@ public:
 private:
     /** A list of callbacks and it's associated token.
      */
-    mutable std::vector<weak_token_type> _callbacks;
+    mutable std::vector<std::pair<weak_token_type, bool>> _callbacks;
 
     void clean_up() const noexcept
     {
+        // Cleanup all callbacks that have expired, or when they may only be triggered once.
         std::erase_if(_callbacks, [](hilet& item) {
-            return item.expired();
+            return item.first.expired();
         });
     }
 
