@@ -14,6 +14,7 @@
 #include "hikogui/widgets/text_field_widget.hpp"
 #include "hikogui/widgets/tab_widget.hpp"
 #include "hikogui/widgets/toolbar_tab_button_widget.hpp"
+#include "hikogui/widgets/audio_device_widget.hpp"
 #include "hikogui/log.hpp"
 #include "hikogui/crt.hpp"
 #include "hikogui/time_stamp_count.hpp"
@@ -32,6 +33,11 @@ public:
     hi::observable<double> audio_output_sample_rate;
     hi::observable<hi::speaker_mapping> audio_output_speaker_mapping;
 
+        hi::observable<std::string> audio_input_device_id;
+    hi::observable<bool> audio_input_exclusive;
+        hi::observable<double> audio_input_sample_rate;
+    hi::observable<hi::speaker_mapping> audio_input_speaker_mapping;
+
     hi::observable<int> tab_index = 1;
     hi::observable<bool> toggle_value;
     hi::observable<int> radio_value = 0;
@@ -44,37 +50,29 @@ public:
         add("audio_output_device_id", audio_output_device_id);
         add("audio_output_exclusive", audio_output_exclusive);
         add("audio_output_sample_rate", audio_output_sample_rate);
+        add("audio_input_device_id", audio_input_device_id);
+        add("audio_input_exclusive", audio_input_exclusive);
+        add("audio_input_sample_rate", audio_input_sample_rate);
         add("tab_index", tab_index);
         add("toggle_value", toggle_value);
         add("radio_value", radio_value);
         add("selected_theme", selected_theme);
     }
-
-    [[nodiscard]] hi::scoped_task<> sync_audio_device_list(hi::audio_system& audio) noexcept
-    {
-        while (true) {
-            {
-                auto proxy = _audio_device_list.proxy();
-                proxy->clear();
-                for (auto device : audio.devices()) {
-                    if (device->state() == hi::audio_device_state::active) {
-                        proxy->emplace_back(device->id(), device->label());
-                    }
-                }
-            }
-
-            co_await audio;
-        }
-    }
 };
 
-hi::scoped_task<> init_audio_tab(hi::grid_widget& grid, my_preferences& preferences) noexcept
+hi::scoped_task<> init_audio_tab(hi::grid_widget& grid, my_preferences& preferences, hi::audio_system &audio_system) noexcept
 {
     using namespace hi;
 
-    grid.make_widget<label_widget>("A1", tr("Audio device:"));
-    grid.make_widget<selection_widget>("B1", preferences._audio_device_list, preferences.audio_output_device_id);
+    grid.make_widget<label_widget>("A1", tr("Input audio device:"));
+    auto &input_config = grid.make_widget<audio_device_widget>("B1", audio_system);
+    input_config.direction = audio_direction::input;
+    input_config.device_id = preferences.audio_input_device_id;
 
+    grid.make_widget<label_widget>("A2", tr("Output audio device:"));
+    auto& output_config = grid.make_widget<audio_device_widget>("B2", audio_system);
+    output_config.direction = audio_direction::output;
+    output_config.device_id = preferences.audio_output_device_id;
 
     co_await std::suspend_always{};
 }
@@ -138,7 +136,7 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
     co_await std::suspend_always{};
 }
 
-hi::task<> preferences_window(hi::gui_system& gui, my_preferences& preferences)
+hi::task<> preferences_window(hi::gui_system& gui, my_preferences& preferences, hi::audio_system &audio_system)
 {
     using namespace hi;
 
@@ -154,14 +152,14 @@ hi::task<> preferences_window(hi::gui_system& gui, my_preferences& preferences)
     auto& license_tab_grid = tabs.make_widget<scroll_widget<axis::both, true>>(1).make_widget<grid_widget>();
     auto& theme_tab_grid = tabs.make_widget<grid_widget>(2);
 
-    auto audio_tab = init_audio_tab(audio_tab_grid, preferences);
+    auto audio_tab = init_audio_tab(audio_tab_grid, preferences, audio_system);
     auto license_tab = init_license_tab(license_tab_grid, preferences);
     auto theme_tab = init_theme_tab(theme_tab_grid, preferences);
 
     co_await window->closing;
 }
 
-hi::task<> main_window(hi::gui_system& gui, my_preferences& preferences)
+hi::task<> main_window(hi::gui_system& gui, my_preferences& preferences, hi::audio_system &audio_system)
 {
     using namespace hi;
 
@@ -186,7 +184,7 @@ hi::task<> main_window(hi::gui_system& gui, my_preferences& preferences)
             window->closing);
 
         if (result == preferences_button.pressed) {
-            preferences_window(gui, preferences);
+            preferences_window(gui, preferences, audio_system);
 
         } else if (result == vma_dump_button.pressed) {
             gui.gfx->log_memory_usage();
@@ -227,10 +225,9 @@ int hi_main(int argc, char *argv[])
     auto gui = gui_system::make_unique();
     gui->selected_theme = preferences.selected_theme;
 
-    auto audio = audio_system::make_unique();
-    auto sync_audio_device_list_task = preferences.sync_audio_device_list(*audio);
+    auto audio_system = hi::audio_system::make_unique();
 
-    main_window(*gui, preferences);
+    main_window(*gui, preferences, *audio_system);
     return loop::main().resume();
 }
 

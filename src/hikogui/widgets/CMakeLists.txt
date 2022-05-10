@@ -5,6 +5,8 @@
 target_sources(hikogui PRIVATE
     abstract_button_widget.cpp
     abstract_button_widget.hpp
+    audio_device_widget.cpp
+    audio_device_widget.hpp
     button_delegate.hpp
     button_state.hpp
     button_type.hpp

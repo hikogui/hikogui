@@ -7,6 +7,7 @@
 #include "required.hpp"
 #include "notifier.hpp"
 #include "counters.hpp"
+#include "awaitable_timer.hpp"
 #include <coroutine>
 #include <type_traits>
 #include <memory>

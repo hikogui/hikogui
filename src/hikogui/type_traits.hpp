@@ -394,20 +394,4 @@ struct is_forward_of<T, T &> : public std::true_type {
 template<typename T, typename Forward>
 constexpr bool is_forward_of_v = is_forward_of<T, Forward>::value;
 
-/** Get the result type of an awaitable.
- *
- * This is type return type of the `await_resume()` member function.
- */
-template<typename T>
-struct await_resume_result {
-    using type = decltype(std::declval<T>().await_resume());
-};
-
-/** Get the result type of an awaitable.
- *
- * This is type return type of the `await_resume()` member function.
- */
-template<typename T>
-using await_resume_result_t = hi_typename await_resume_result<T>::type;
-
 } // namespace hi::inline v1
