@@ -5,6 +5,7 @@
 #pragma once
 
 #include "required.hpp"
+#include "architecture.hpp"
 #include <coroutine>
 #include <type_traits>
 
