@@ -13,7 +13,7 @@ include(SetupCompiler)
 #-------------------------------------------------------------------
 
 option(BUILD_SHARED_LIBS    "Build shared libraries"            OFF)
-option(HI_BUILD_EXAMPLES    "Build example applications"         ON)
+option(HI_BUILD_EXAMPLES    "Build example applications"        OFF)
 option(HI_BUILD_TESTS       "Build tests"                        ON)
 option(HI_BUILD_PCH         "Build precompiled headers"          ON)
 option(HI_INSTALL           "Generate installation target"       ON)
@@ -170,6 +170,7 @@ endif()
 if(WIN32)
 	target_link_libraries(hikogui PUBLIC "ws2_32")
 	target_link_libraries(hikogui PUBLIC "DXGI")
+	target_link_libraries(hikogui PUBLIC "bcrypt")
 endif()
 
 target_include_directories(hikogui PUBLIC ${Vulkan_INCLUDE_DIRS})
@@ -496,6 +497,13 @@ if(HI_BUILD_EXAMPLES)
     add_subdirectory(examples/widgets)
     add_subdirectory(examples/custom_widgets)
     add_subdirectory(examples/codec)
+else()
+    # By default examples marked with EXCLUDE_FROM_ALL will not be build by
+    # `make all`, which is also what Visual Studio uses to improve compilation speed.
+    add_subdirectory(examples/hikogui_demo EXCLUDE_FROM_ALL)
+    add_subdirectory(examples/widgets EXCLUDE_FROM_ALL)
+    add_subdirectory(examples/custom_widgets EXCLUDE_FROM_ALL)
+    add_subdirectory(examples/codec EXCLUDE_FROM_ALL)
 endif()
 
 #-------------------------------------------------------------------

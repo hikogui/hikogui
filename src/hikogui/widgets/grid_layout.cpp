@@ -80,7 +80,8 @@ static void grow(auto first, auto last, float growth) noexcept
         return growth;
     });
 
-    hi_axiom(growth == 0.0f);
+    // Either there are no widgets, or the widgets together have grown so the result is zero.
+    hi_axiom(first == last or growth == 0.0f);
 }
 
 void grid_layout::constrain_cells_by_singles() noexcept

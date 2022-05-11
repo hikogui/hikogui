@@ -140,8 +140,6 @@ bool text_field_widget::handle_event(gui_event const& event) noexcept
 
 hitbox text_field_widget::hitbox_test(point3 position) const noexcept
 {
-    hi_axiom(is_gui_thread());
-
     if (*visible and *enabled) {
         auto r = hitbox{};
         r = _scroll_widget->hitbox_test_from_parent(position, r);

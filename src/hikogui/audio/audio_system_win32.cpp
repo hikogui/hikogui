@@ -5,7 +5,6 @@
 #include "audio_system_win32.hpp"
 #include "audio_device_win32.hpp"
 #include "audio_system_aggregate.hpp"
-#include "audio_device_id.hpp"
 #include "../required.hpp"
 #include "../log.hpp"
 #include "../exception.hpp"
@@ -16,14 +15,11 @@
 
 namespace hi::inline v1 {
 
-[[nodiscard]] std::unique_ptr<audio_system>
-audio_system::make_unique(std::weak_ptr<audio_system_delegate> delegate) noexcept
+[[nodiscard]] std::unique_ptr<audio_system> audio_system::make_unique() noexcept
 {
-    auto tmp = std::make_unique<audio_system_aggregate>(delegate);
-    tmp->init();
-#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
-    tmp->make_audio_system<audio_system_win32>();
-#endif
+    auto tmp = std::make_unique<audio_system_aggregate>();
+    tmp->add_child(std::make_unique<audio_system_win32>());
+    // Possibly add asio here as well.
     return tmp;
 }
 
@@ -36,18 +32,18 @@ public:
 
     STDMETHOD(OnDefaultDeviceChanged)(EDataFlow flow, ERole role, LPCWSTR device_id)
     {
-        auto device_id_ = audio_device_id{audio_device_id::win32, device_id};
-        loop::main().wfree_post_function([this, device_id_]() {
-            _system->default_device_changed(device_id_);
+        loop::main().wfree_post_function([this]() {
+            _system->update_device_list();
+            _system->_notifier();
         });
         return S_OK;
     }
 
     STDMETHOD(OnDeviceAdded)(LPCWSTR device_id)
     {
-        auto device_id_ = audio_device_id{audio_device_id::win32, device_id};
-        loop::main().wfree_post_function([this, device_id_]() {
-            this->_system->device_added(device_id_);
+        loop::main().wfree_post_function([this]() {
+            _system->update_device_list();
+            _system->_notifier();
         });
         return S_OK;
     }
@@ -62,27 +58,27 @@ public:
         // 3. Allocating a string blocks.
 
         hi_axiom(device_id);
-        auto device_id_ = audio_device_id{audio_device_id::win32, device_id};
-        loop::main().wfree_post_function([this, device_id_]() {
-            this->_system->device_added(device_id_);
+        loop::main().wfree_post_function([this]() {
+            _system->update_device_list();
+            _system->_notifier();
         });
         return S_OK;
     }
 
     STDMETHOD(OnDeviceStateChanged)(LPCWSTR device_id, DWORD state)
     {
-        auto device_id_ = audio_device_id{audio_device_id::win32, device_id};
-        loop::main().wfree_post_function([this, device_id_]() {
-            this->_system->device_state_changed(device_id_);
+        loop::main().wfree_post_function([this]() {
+            _system->update_device_list();
+            _system->_notifier();
         });
         return S_OK;
     }
 
     STDMETHOD(OnPropertyValueChanged)(LPCWSTR device_id, PROPERTYKEY const key)
     {
-        auto device_id_ = audio_device_id{audio_device_id::win32, device_id};
-        loop::main().wfree_post_function([this, device_id_]() {
-            this->_system->device_property_value_changed(device_id_);
+        loop::main().wfree_post_function([this]() {
+            _system->update_device_list();
+            _system->_notifier();
         });
         return S_OK;
     }
@@ -106,56 +102,69 @@ private:
     audio_system_win32 *_system;
 };
 
-audio_system_win32::audio_system_win32(std::weak_ptr<audio_system_delegate> delegate) :
-    audio_system(std::move(delegate))
+audio_system_win32::audio_system_win32() :
+    super(), _notification_client(std::make_unique<audio_system_win32_notification_client>(this))
 {
     hi_hresult_check(CoInitializeEx(NULL, COINIT_MULTITHREADED));
 
     hi_hresult_check(CoCreateInstance(
         CLSID_MMDeviceEnumerator, NULL, CLSCTX_ALL, IID_IMMDeviceEnumerator, reinterpret_cast<LPVOID *>(&_device_enumerator)));
-    hi_assert(_device_enumerator != nullptr);
+    hi_assert(_device_enumerator);
 
-    _notification_client = new audio_system_win32_notification_client(this);
+    _device_enumerator->RegisterEndpointNotificationCallback(_notification_client.get());
 
-    _device_enumerator->RegisterEndpointNotificationCallback(_notification_client);
+    // Start with enumerating the devices.
+    update_device_list();
 }
 
 audio_system_win32::~audio_system_win32()
 {
-    _device_enumerator->UnregisterEndpointNotificationCallback(_notification_client);
-    delete _notification_client;
-    _device_enumerator->Release();
-}
-
-void audio_system_win32::init() noexcept
-{
-    audio_system::init();
-    update_device_list();
-    if (auto delegate = _delegate.lock()) {
-        delegate->audio_device_list_changed(*this);
+    if (_device_enumerator) {
+        _device_enumerator->UnregisterEndpointNotificationCallback(_notification_client.get());
+        _device_enumerator->Release();
     }
 }
 
 void audio_system_win32::update_device_list() noexcept
 {
     IMMDeviceCollection *device_collection;
-    hi_hresult_check(_device_enumerator->EnumAudioEndpoints(
-        eAll, DEVICE_STATE_ACTIVE | DEVICE_STATE_DISABLED | DEVICE_STATE_UNPLUGGED, &device_collection));
-    hi_assert(device_collection != nullptr);
+    if (FAILED(_device_enumerator->EnumAudioEndpoints(
+            eAll, DEVICE_STATE_ACTIVE | DEVICE_STATE_DISABLED | DEVICE_STATE_UNPLUGGED, &device_collection))) {
+        hi_log_error("EnumAudioEndpoints() failed: {}", get_last_error_message());
+        return;
+    }
+    hi_assert(device_collection);
 
     UINT number_of_devices;
-    hi_hresult_check(device_collection->GetCount(&number_of_devices));
+    if (FAILED(device_collection->GetCount(&number_of_devices))) {
+        hi_log_error("EnumAudioEndpoints()->GetCount() failed: {}", get_last_error_message());
+        device_collection->Release();
+        return;
+    }
 
     auto old_devices = _devices;
     _devices.clear();
     for (UINT i = 0; i < number_of_devices; i++) {
         IMMDevice *win32_device;
-        hi_hresult_check(device_collection->Item(i, &win32_device));
+        if (FAILED(device_collection->Item(i, &win32_device))) {
+            hi_log_error("EnumAudioEndpoints()->Item({}) failed: {}", i, get_last_error_message());
+            device_collection->Release();
+            return;
+        }
+        hi_assert(win32_device);
 
-        hilet device_id = audio_device_win32::get_id(win32_device);
+        auto win32_device_id = std::string{};
+        try {
+            win32_device_id = audio_device_win32::get_device_id(win32_device);
+        } catch (std::exception const& e) {
+            hi_log_error("EnumAudioEndpoints()->Item({})->GetId failed: {}", e.what());
+            device_collection->Release();
+            win32_device->Release();
+            return;
+        }
 
-        auto it = std::find_if(old_devices.begin(), old_devices.end(), [&device_id](auto &item) {
-            return item->id == device_id;
+        auto it = std::find_if(old_devices.begin(), old_devices.end(), [&win32_device_id](auto& item) {
+            return item->id() == win32_device_id;
         });
 
         if (it != old_devices.end()) {
@@ -177,40 +186,6 @@ void audio_system_win32::update_device_list() noexcept
     }
 
     device_collection->Release();
-
-    // Any devices in old_devices that are left over will be deallocated.
-}
-
-void audio_system_win32::default_device_changed(hi::audio_device_id const &device_id) noexcept {}
-
-void audio_system_win32::device_added(hi::audio_device_id const &device_id) noexcept
-{
-    update_device_list();
-    if (auto delegate = _delegate.lock()) {
-        delegate->audio_device_list_changed(*this);
-    }
-}
-
-void audio_system_win32::device_removed(hi::audio_device_id const &device_id) noexcept
-{
-    update_device_list();
-    if (auto delegate = _delegate.lock()) {
-        delegate->audio_device_list_changed(*this);
-    }
-}
-
-void audio_system_win32::device_state_changed(hi::audio_device_id const &device_id) noexcept
-{
-    if (auto delegate = _delegate.lock()) {
-        delegate->audio_device_list_changed(*this);
-    }
-}
-
-void audio_system_win32::device_property_value_changed(hi::audio_device_id const &device_id) noexcept
-{
-    if (auto delegate = _delegate.lock()) {
-        delegate->audio_device_list_changed(*this);
-    }
 }
 
 } // namespace hi::inline v1

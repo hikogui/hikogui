@@ -9,6 +9,7 @@
 #include "../cast.hpp"
 #include "../type_traits.hpp"
 #include "../float16.hpp"
+#include "../math.hpp"
 
 #if defined(HI_HAS_AVX)
 #include "swizzle_avx.hpp"
@@ -123,7 +124,7 @@ struct numeric_array {
 
     container_type v;
 
-    constexpr numeric_array() noexcept : v()
+    constexpr numeric_array() noexcept
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX)
@@ -1181,6 +1182,13 @@ struct numeric_array {
         return r;
     }
 
+    /** Blend two numeric arrays.
+    * 
+    * @tparam Mask One bit for each element selects; 0: lhs, 1: rhs.
+    * @param lhs The left hand side
+    * @param rhs The right hand side
+    * @return The blended array.
+    */
     template<std::size_t Mask>
     [[nodiscard]] friend constexpr numeric_array blend(numeric_array const &lhs, numeric_array const &rhs) noexcept
     {
@@ -1188,6 +1196,9 @@ struct numeric_array {
 #if defined(HI_HAS_AVX2)
             if constexpr (is_i32x8) {
                 return numeric_array{_mm256_blend_epi32(lhs.reg(), rhs.reg(), Mask)};
+            } else if constexpr (is_i64x2 or is_u64x2) {
+                constexpr auto mask_x2 = ((Mask & 1) ? 0b0011 : 0) | ((Mask & 2) ? 0b1100 : 0);
+                return numeric_array{_mm_blend_epi32(lhs.reg(), rhs.reg(), mask_x2)};
             } else if constexpr (is_i32x4 or is_u32x4) {
                 return numeric_array{_mm_blend_epi32(lhs.reg(), rhs.reg(), Mask)};
             } else if constexpr (is_i16x16 or is_u16x16) {
@@ -1912,7 +1923,33 @@ struct numeric_array {
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator|(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    /** Rotate left.
+     *
+     * @note It is undefined behavior if: rhs <= 0 or rhs >= sizeof(value_type) * CHAR_BIT.
+     */
+    [[nodiscard]] friend constexpr numeric_array rotl(numeric_array const& lhs, unsigned int rhs) noexcept
+    {
+        hi_axiom(rhs > 0 and rhs < sizeof(value_type) * CHAR_BIT);
+
+        hilet remainder = narrow<unsigned int>(sizeof(value_type) * CHAR_BIT - rhs);
+
+        return (lhs << rhs) | (lhs >> remainder);
+    }
+
+    /** Rotate right.
+     *
+     * @note It is undefined behavior if: rhs <= 0 or rhs >= sizeof(value_type) * CHAR_BIT.
+     */
+    [[nodiscard]] friend constexpr numeric_array rotr(numeric_array const& lhs, unsigned int rhs) noexcept
+    {
+        hi_axiom(rhs > 0 and rhs < sizeof(value_type) * CHAR_BIT);
+
+        hilet remainder = narrow<unsigned int>(sizeof(value_type) * CHAR_BIT - rhs);
+
+        return (lhs >> rhs) | (lhs << remainder);
+    }
+
+    [[nodiscard]] friend constexpr numeric_array operator|(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX2)
@@ -2989,6 +3026,17 @@ using f64x1 = numeric_array<double, 1>;
 using f64x2 = numeric_array<double, 2>;
 using f64x4 = numeric_array<double, 4>;
 using f64x8 = numeric_array<double, 8>;
+
+template<typename T, size_t N>
+struct broadcast<numeric_array<T, N>> {
+    using value_type = numeric_array<T, N>;
+    using element_type = T;
+
+    [[nodiscard]] constexpr value_type operator()(element_type value) noexcept
+    {
+        return value_type::broadcast(value);
+    }
+};
 
 } // namespace hi::inline v1
 

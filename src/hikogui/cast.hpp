@@ -157,49 +157,6 @@ template<numeric Out, numeric In>
     }
 }
 
-/** Cast a object to an directly-awaitable object.
- *
- * This function may use `operator co_await()` to retrieve the actual awaitable.
- */
-decltype(auto) awaitable_cast(awaitable_direct auto &&rhs) noexcept
-{
-    return hi_forward(rhs);
-}
-
-/** Cast a object to an directly-awaitable object.
- *
- * This function may use `operator co_await()` to retrieve the actual awaitable.
- */
-decltype(auto) awaitable_cast(awaitable_member auto &&rhs) noexcept
-{
-    return hi_forward(rhs).operator co_await();
-}
-
-/** Cast a object to an directly-awaitable object.
- *
- * This function may use `operator co_await()` to retrieve the actual awaitable.
- */
-decltype(auto) awaitable_cast(awaitable_non_member auto &&rhs) noexcept
-{
-    return operator co_await(hi_forward(rhs));
-}
-
-/** Resolve the type that is directly-awaitable.
- *
- * This function may use `operator co_await()` to retrieve the actual awaitable type.
- */
-template<awaitable T>
-struct awaitable_cast_type {
-    using type = std::remove_cvref_t<decltype(awaitable_cast(std::declval<T>()))>;
-};
-
-/** Resolve the type that is directly-awaitable.
- *
- * This function may use `operator co_await()` to retrieve the actual awaitable type.
- */
-template<awaitable T>
-using awaitable_cast_type_t = hi_typename awaitable_cast_type<T>::type;
-
 /** Return the low half of the input value.
  */
 template<std::unsigned_integral OutType, std::unsigned_integral InType>

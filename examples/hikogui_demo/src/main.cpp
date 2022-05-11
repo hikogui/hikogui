@@ -14,6 +14,7 @@
 #include "hikogui/widgets/text_field_widget.hpp"
 #include "hikogui/widgets/tab_widget.hpp"
 #include "hikogui/widgets/toolbar_tab_button_widget.hpp"
+#include "hikogui/widgets/audio_device_widget.hpp"
 #include "hikogui/log.hpp"
 #include "hikogui/crt.hpp"
 #include "hikogui/time_stamp_count.hpp"
@@ -27,15 +28,20 @@
 
 class my_preferences : public hi::preferences {
 public:
-    hi::observable<hi::audio_device_id> audio_output_device_id;
+    hi::observable<std::string> audio_output_device_id;
     hi::observable<bool> audio_output_exclusive;
     hi::observable<double> audio_output_sample_rate;
     hi::observable<hi::speaker_mapping> audio_output_speaker_mapping;
 
+        hi::observable<std::string> audio_input_device_id;
+    hi::observable<bool> audio_input_exclusive;
+        hi::observable<double> audio_input_sample_rate;
+    hi::observable<hi::speaker_mapping> audio_input_speaker_mapping;
+
     hi::observable<int> tab_index = 1;
     hi::observable<bool> toggle_value;
     hi::observable<int> radio_value = 0;
-    hi::observable<std::vector<std::pair<hi::audio_device_id, hi::label>>> _audio_device_list;
+    hi::observable<std::vector<std::pair<std::string, hi::label>>> _audio_device_list;
 
     hi::observable<std::string> selected_theme;
 
@@ -44,6 +50,9 @@ public:
         add("audio_output_device_id", audio_output_device_id);
         add("audio_output_exclusive", audio_output_exclusive);
         add("audio_output_sample_rate", audio_output_sample_rate);
+        add("audio_input_device_id", audio_input_device_id);
+        add("audio_input_exclusive", audio_input_exclusive);
+        add("audio_input_sample_rate", audio_input_sample_rate);
         add("tab_index", tab_index);
         add("toggle_value", toggle_value);
         add("radio_value", radio_value);
@@ -51,29 +60,33 @@ public:
     }
 };
 
-hi::scoped_task<> init_audio_tab(hi::grid_widget &grid, my_preferences &preferences) noexcept
+hi::scoped_task<> init_audio_tab(hi::grid_widget& grid, my_preferences& preferences, hi::audio_system &audio_system) noexcept
 {
     using namespace hi;
 
-    // grid.make_widget<label_widget>("A1", tr("Audio device:"));
-    // grid.make_widget<selection_widget>("B1", _audio_device_list, audio_output_device_id);
+    grid.make_widget<label_widget>("A1", tr("Input audio device:"));
+    auto &input_config = grid.make_widget<audio_device_widget>("B1", audio_system);
+    input_config.direction = audio_direction::input;
+    input_config.device_id = preferences.audio_input_device_id;
 
-    grid.make_widget<label_widget>("A2", tr("Sample Rate:"));
-    grid.make_widget<text_field_widget>("B2", preferences.audio_output_sample_rate);
+    grid.make_widget<label_widget>("A2", tr("Output audio device:"));
+    auto& output_config = grid.make_widget<audio_device_widget>("B2", audio_system);
+    output_config.direction = audio_direction::output;
+    output_config.device_id = preferences.audio_output_device_id;
 
     co_await std::suspend_always{};
 }
 
-hi::scoped_task<> init_theme_tab(hi::grid_widget &grid, my_preferences &preferences) noexcept
+hi::scoped_task<> init_theme_tab(hi::grid_widget& grid, my_preferences& preferences) noexcept
 {
     using namespace hi;
 
     hi::observable<std::vector<std::pair<std::string, hi::label>>> theme_list;
 
     {
-        auto &theme_book = *grid.window.gui.theme_book;
+        auto& theme_book = *grid.window.gui.theme_book;
         auto proxy = theme_list.proxy();
-        for (hilet &name : theme_book.theme_names()) {
+        for (hilet& name : theme_book.theme_names()) {
             proxy->emplace_back(name, tr{name});
         }
     }
@@ -84,19 +97,19 @@ hi::scoped_task<> init_theme_tab(hi::grid_widget &grid, my_preferences &preferen
     co_await std::suspend_always{};
 }
 
-hi::scoped_task<> init_license_tab(hi::grid_widget &grid, my_preferences &preferences) noexcept
+hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& preferences) noexcept
 {
     using namespace hi;
 
     grid.make_widget<label_widget>(
         "A1", tr("This is a \xd7\x9c\xd6\xb0\xd7\x9e\xd6\xb7\xd7\xaa\xd6\xb5\xd7\x92.\nAnd another sentence. One more:"));
-    auto &toggle = grid.make_widget<toggle_widget>("B1", preferences.toggle_value);
+    auto& toggle = grid.make_widget<toggle_widget>("B1", preferences.toggle_value);
     toggle.on_label = tr("true");
     toggle.off_label = tr("false");
     toggle.other_label = tr("other");
 
     grid.make_widget<label_widget>("A2", tr("These is a disabled checkbox:"));
-    auto &checkbox2 = grid.make_widget<checkbox_widget>("B2", preferences.radio_value, 2, 0);
+    auto& checkbox2 = grid.make_widget<checkbox_widget>("B2", preferences.radio_value, 2, 0);
     checkbox2.on_label = tr("Checkbox, with a pretty large label.");
     checkbox2.enabled = preferences.toggle_value;
 
@@ -114,37 +127,39 @@ hi::scoped_task<> init_license_tab(hi::grid_widget &grid, my_preferences &prefer
         std::pair{5, label{tr("six")}},
         std::pair{6, label{tr("seven")}}};
     grid.make_widget<label_widget>("A6", tr("This is a selection box at the bottom:"));
-    auto &selection3 = grid.make_widget<selection_widget>("B6", option_list, preferences.radio_value);
+    auto& selection3 = grid.make_widget<selection_widget>("B6", option_list, preferences.radio_value);
     selection3.enabled = preferences.toggle_value;
+
+    grid.make_widget<label_widget>("A7", tr("Sample Rate:"));
+    grid.make_widget<text_field_widget>("B7", preferences.audio_output_sample_rate);
 
     co_await std::suspend_always{};
 }
 
-hi::task<> preferences_window(hi::gui_system &gui, my_preferences &preferences)
+hi::task<> preferences_window(hi::gui_system& gui, my_preferences& preferences, hi::audio_system &audio_system)
 {
     using namespace hi;
 
     auto window_label = label{URL{"resource:hikogui_demo.png"}, tr("Preferences")};
     auto window = gui.make_window(window_label);
 
-    window->toolbar().make_widget<toolbar_tab_button_widget>(
-        label{elusive_icon::Speaker, tr("Audio")}, preferences.tab_index, 0);
+    window->toolbar().make_widget<toolbar_tab_button_widget>(label{elusive_icon::Speaker, tr("Audio")}, preferences.tab_index, 0);
     window->toolbar().make_widget<toolbar_tab_button_widget>(label{elusive_icon::Key, tr("License")}, preferences.tab_index, 1);
     window->toolbar().make_widget<toolbar_tab_button_widget>(label{elusive_icon::Brush, tr("Theme")}, preferences.tab_index, 2);
 
-    auto &tabs = window->content().make_widget<tab_widget>("A1", preferences.tab_index);
-    auto &audio_tab_grid = tabs.make_widget<grid_widget>(0);
-    auto &license_tab_grid = tabs.make_widget<scroll_widget<axis::both, true>>(1).make_widget<grid_widget>();
-    auto &theme_tab_grid = tabs.make_widget<grid_widget>(2);
+    auto& tabs = window->content().make_widget<tab_widget>("A1", preferences.tab_index);
+    auto& audio_tab_grid = tabs.make_widget<grid_widget>(0);
+    auto& license_tab_grid = tabs.make_widget<scroll_widget<axis::both, true>>(1).make_widget<grid_widget>();
+    auto& theme_tab_grid = tabs.make_widget<grid_widget>(2);
 
-    auto audio_tab = init_audio_tab(audio_tab_grid, preferences);
+    auto audio_tab = init_audio_tab(audio_tab_grid, preferences, audio_system);
     auto license_tab = init_license_tab(license_tab_grid, preferences);
     auto theme_tab = init_theme_tab(theme_tab_grid, preferences);
 
     co_await window->closing;
 }
 
-hi::task<> main_window(hi::gui_system &gui, my_preferences &preferences)
+hi::task<> main_window(hi::gui_system& gui, my_preferences& preferences, hi::audio_system &audio_system)
 {
     using namespace hi;
 
@@ -152,20 +167,24 @@ hi::task<> main_window(hi::gui_system &gui, my_preferences &preferences)
     auto window = gui.make_window(window_label);
 
     auto preferences_label = label{elusive_icon::Wrench, tr("Preferences")};
-    hilet &preferences_button = window->toolbar().make_widget<hi::toolbar_button_widget>(preferences_label);
+    hilet& preferences_button = window->toolbar().make_widget<hi::toolbar_button_widget>(preferences_label);
 
-    auto &column = window->content().make_widget<column_widget>("A1");
+    auto& column = window->content().make_widget<column_widget>("A1");
     column.make_widget<toggle_widget>(preferences.toggle_value);
-    hilet &hello_world_button = column.make_widget<momentary_button_widget>(tr("Hello world"));
+    hilet& hello_world_button = column.make_widget<momentary_button_widget>(tr("Hello world"));
 
-    hilet &vma_dump_button = column.make_widget<momentary_button_widget>(tr("vma\ncalculate stats"));
+    hilet& vma_dump_button = column.make_widget<momentary_button_widget>(tr("vma\ncalculate stats"));
 
     while (true) {
-        hilet result =
-            co_await when_any(preferences_button.pressed, vma_dump_button.pressed, hello_world_button.pressed, preferences.toggle_value, window->closing);
+        hilet result = co_await when_any(
+            preferences_button.pressed,
+            vma_dump_button.pressed,
+            hello_world_button.pressed,
+            preferences.toggle_value,
+            window->closing);
 
         if (result == preferences_button.pressed) {
-            preferences_window(gui, preferences);
+            preferences_window(gui, preferences, audio_system);
 
         } else if (result == vma_dump_button.pressed) {
             gui.gfx->log_memory_usage();
@@ -190,7 +209,7 @@ int hi_main(int argc, char *argv[])
     using namespace hi;
 
     // Set the version at the very beginning, because file system paths depend on it.
-    auto &m = metadata::application();
+    auto& m = metadata::application();
     m.name = "hikogui-demo";
     m.display_name = "HikoGUI Demo";
     m.vendor = metadata::library().vendor;
@@ -205,9 +224,10 @@ int hi_main(int argc, char *argv[])
 
     auto gui = gui_system::make_unique();
     gui->selected_theme = preferences.selected_theme;
-    //auto audio = audio_system::make_unique(gui->event_queue());
 
-    main_window(*gui, preferences);
+    auto audio_system = hi::audio_system::make_unique();
+
+    main_window(*gui, preferences, *audio_system);
     return loop::main().resume();
 }
 

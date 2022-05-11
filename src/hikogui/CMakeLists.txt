@@ -26,6 +26,8 @@ target_sources(hikogui PRIVATE
     animator.hpp
     assert.hpp
     atomic.hpp
+    awaitable.hpp
+    awaitable_timer.cpp
 	awaitable_timer.hpp
     bezier.hpp
     bezier_curve.cpp
@@ -99,6 +101,7 @@ target_sources(hikogui PRIVATE
     log.hpp
     $<${HI_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/log_macos.mm>
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/log_win32.cpp>
+    long_tagged_id.hpp
 	loop.hpp
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/loop_win32.cpp>
     math.hpp
@@ -139,6 +142,7 @@ target_sources(hikogui PRIVATE
     semantic_version.hpp
     scoped_buffer.hpp
     scoped_task.hpp
+    sip_hash.hpp
     source_location.hpp
     small_map.hpp
     small_vector.hpp
@@ -231,6 +235,7 @@ if(HI_BUILD_TESTS)
         polynomial_tests.cpp
         ranges_tests.cpp
         safe_int_tests.cpp
+        sip_hash_tests.cpp
         small_map_tests.cpp
         strings_tests.cpp
         tokenizer_tests.cpp

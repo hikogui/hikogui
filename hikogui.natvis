@@ -65,7 +65,13 @@
             <ExpandedItem Condition="static_cast&lt;size_t&gt;(_ptr) &amp; 1 == 0">_ptr->_glyphs</ExpandedItem>
         </Expand>
     </Type>
-    <Type Name="hi::v1::numeric_array&lt;*,4&gt;">
+    <Type Name="hi::v1::numeric_array&lt;*,2&gt;">
+        <DisplayString>{v[0],g}, {v[1],g}</DisplayString>
+        <Expand>
+            <Item Name="[x]">v[0],g</Item>
+            <Item Name="[y]">v[1],g</Item>
+        </Expand>
+    </Type>    <Type Name="hi::v1::numeric_array&lt;*,4&gt;">
         <DisplayString>{v[0],g}, {v[1],g}, {v[2],g}, {v[3],g}</DisplayString>
         <Expand>
             <Item Name="[x]">v[0],g</Item>

@@ -7,7 +7,17 @@
 #include "architecture.hpp"
 #include "memory.hpp"
 #include "assert.hpp"
+#include "cast.hpp"
 
+#ifdef HI_HAS_SSE
+#include <immintrin.h>
+#endif
+#ifdef HI_HAS_SSE2
+#include <emmintrin.h>
+#endif
+#ifdef HI_HAS_SSE4_1
+#include <smmintrin.h>
+#endif
 #if HI_COMPILER == HI_CC_MSVC
 #include <stdlib.h>
 #endif
@@ -176,5 +186,65 @@ using native_uint16_buf_at = endian_buf_t<uint16_t, std::endian::native>;
 using native_int64_buf_at = endian_buf_t<int64_t, std::endian::native>;
 using native_int32_buf_at = endian_buf_t<int32_t, std::endian::native>;
 using native_int16_buf_at = endian_buf_t<int16_t, std::endian::native>;
+
+
+
+/** Load data from memory.
+ *
+ * @param [out] r The return value, overwrites all bits in the value at @a offset.
+ * @param src The memory location to read the data from.
+ */
+template<std::unsigned_integral T>
+hi_force_inline void unaligned_load_le(T& r, void const *src) noexcept
+{
+#ifdef HI_HAS_SSE4_1
+    if constexpr (sizeof(T) == 8) {
+        r = _mm_extract_epi64(_mm_loadu_si64(src), 0);
+    } else if constexpr (sizeof(T) == 4) {
+        r = _mm_extract_epi32(_mm_loadu_si32(src), 0);
+    } else if constexpr (sizeof(T) == 2) {
+        r = _mm_extract_epi16(_mm_loadu_si16(src), 0);
+    } else if constexpr (sizeof(T) == 1) {
+        r = *reinterpret_cast<uint8_t const*>(src);
+    } else {
+        hi_static_no_default();
+    }
+#else
+    auto src_ = reinterpret_cast<uint8_t const *>(src);
+
+    auto i = 8;
+    auto tmp = T{};
+    while (--i) {
+        tmp <<= CHAR_BIT;
+        tmp |= *src_++;
+    }
+    r = byte_swap(tmp);
+#endif
+}
+
+/** Load data from memory.
+ *
+ * @param [in,out] r The return value, overwrites the bits in the value at @a offset.
+ * @param src The memory location to read the data from.
+ * @param size The number of bytes to load.
+ * @param offset Byte offset in @a r where the bits are overwritten
+ * @note It is undefined behavior to load bytes beyond the boundary of @r.
+ */
+template<std::unsigned_integral T>
+hi_force_inline void unaligned_load_le(T& r, void const *src, size_t size, size_t offset = 0) noexcept
+{
+    hi_axiom(offset < sizeof(T));
+    hi_axiom(size <= sizeof(T));
+    hi_axiom(size + offset <= sizeof(T));
+
+    auto src_ = reinterpret_cast<uint8_t const *>(src);
+
+    hilet first = offset * CHAR_BIT;
+    hilet last = (first + size) * CHAR_BIT;
+
+    for (auto i = first; i != last; i += CHAR_BIT) {
+        r |= wide_cast<T>(*src_++) << i;
+    }
+}
 
 } // namespace hi::inline v1

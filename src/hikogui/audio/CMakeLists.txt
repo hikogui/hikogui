@@ -10,8 +10,6 @@ target_sources(hikogui PRIVATE
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_device_asio.hpp>
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_device_win32.cpp>
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_device_win32.hpp>
-    audio_device_id.hpp
-    audio_device_id.cpp
     audio_device_delegate.hpp
     audio_stream_config.hpp
     audio_stream_format.hpp
@@ -19,12 +17,10 @@ target_sources(hikogui PRIVATE
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_stream_format_win32.hpp>
     audio_system.cpp
     audio_system.hpp
-    audio_system_aggregate.cpp
     audio_system_aggregate.hpp
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_system_asio.hpp>
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_system_win32.cpp>
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_system_win32.hpp>
-    audio_system_delegate.hpp
     audio_sample_format.cpp
     audio_sample_format.hpp
     audio_sample_unpacker.cpp

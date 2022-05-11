@@ -7,8 +7,7 @@
 #include "required.hpp"
 #include "scoped_task.hpp"
 #include "notifier.hpp"
-#include "concepts.hpp"
-#include "type_traits.hpp"
+#include "awaitable.hpp"
 #include "awaitable_timer.hpp"
 #include <coroutine>
 #include <cstddef>
@@ -33,7 +32,7 @@ using when_any_result_element_t = when_any_result_element<T>::type;
 
 /** Result of the `when_any` awaitable.
  */
-template<bool HasTimeout, typename... Ts>
+template<typename... Ts>
 class when_any_result {
 public:
     using result_type = std::variant<std::monostate, detail::when_any_result_element_t<Ts>...>;
@@ -52,11 +51,6 @@ public:
         hi_axiom(_result.index() == _awaiters.index());
     }
 
-    [[nodiscard]] bool timeout() const noexcept requires(HasTimeout)
-    {
-        return index() == 0;
-    }
-
     /** The index of the awaitable that was triggered.
      *
      * @return The index of the argument of when_any(), this includes the timeout parameter.
@@ -70,7 +64,7 @@ public:
      */
     [[nodiscard]] bool operator==(awaitable auto const& rhs) const noexcept
     {
-        return compare_equal<1>(awaitable_cast(rhs));
+        return compare_equal<1>(awaitable_cast<std::decay_t<decltype(rhs)>>{}(rhs));
     }
 
     /** Get the value returned by the awaitable that triggered `when_any`.
@@ -117,11 +111,12 @@ private:
 
 /** An awaitable that waits for any of the given awaitables to complete.
  *
+ * @tparam Ts Awaitable types.
  */
-template<bool HasTimeout, typename... Ts>
+template<typename... Ts>
 class when_any {
 public:
-    using value_type = when_any_result<HasTimeout, Ts...>;
+    using value_type = when_any_result<Ts...>;
 
     /** Construct a `when_any` object from the given awaitables.
      *
@@ -133,22 +128,7 @@ public:
      *
      * @param others The awaitable to wait for.
      */
-    when_any(awaitable auto&&...others) noexcept : _awaiters(awaitable_cast(hi_forward(others))...) {}
-
-    /** Construct a `when_any` object from the given awaitables.
-     *
-     * The arguments may be of the following types:
-     *  - An object which can be directly used as an awaitable. Having the member functions:
-     *    `await_ready()`, `await_suspend()` and `await_resume()` and `was_triggered()`.
-     *  - An object that has a `operator co_await()` member function.
-     *  - An object that has a `operator co_await()` free function.
-     *
-     * @param others The awaitable to wait for.
-     */
-    template<typename Rep, typename Period>
-    when_any(std::chrono::duration<Rep, Period> timeout, awaitable auto&&...others) noexcept : when_any(awaitable_timer{timeout}, hi_forward(others)...)
-    {
-    }
+    when_any(awaitable auto&&...others) noexcept : _awaiters(awaitable_cast<std::decay_t<decltype(others)>>{}(hi_forward(others))...) {}
 
     ~when_any() {}
 
@@ -177,7 +157,6 @@ public:
 private:
     std::tuple<Ts...> _awaiters;
     std::tuple<scoped_task<await_resume_result_t<Ts>>...> _tasks;
-    // std::tuple<typename notifier<detail::when_any_result_element_t<Ts>>::token_type...> _task_cbts;
     std::tuple<typename notifier<void(await_resume_result_t<Ts>)>::token_type...> _task_cbts;
     value_type _value;
 
@@ -192,7 +171,7 @@ private:
     {
         auto& task = std::get<I>(_tasks) = _await_suspend_task(std::get<I>(_awaiters));
 
-        if (task.completed()) {
+        if (task.done()) {
             using arg_type = await_resume_result_t<decltype(std::get<I>(_awaiters))>;
 
             if constexpr (std::is_same_v<arg_type, void>) {
@@ -233,14 +212,11 @@ private:
         }
     }
 
-    template<bool HasTimeout, typename... Args>
+    template<typename... Args>
     friend class when_any;
 };
 
 template<awaitable... Others>
-when_any(Others&&...) -> when_any<false, awaitable_cast_type_t<Others>...>;
-
-template<typename Rep, typename Period, awaitable... Others>
-when_any(std::chrono::duration<Rep, Period>, Others&&...) -> when_any<true, awaitable_timer, awaitable_cast_type_t<Others>...>;
+when_any(Others&&...) -> when_any<awaitable_cast_t<std::decay_t<Others>>...>;
 
 } // namespace hi::inline v1
