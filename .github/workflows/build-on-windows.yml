@@ -28,8 +28,8 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - { OS: windows-2022, BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: OFF, COMPILER: "VC17", JOB_NAME: "VC17 | x64-win-static | Release"}
-          - { OS: windows-2022, BUILD_TYPE: Debug,          VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON,  COMPILER: "VC17", JOB_NAME: "VC17 | x64-win-static | Debug"  }
+          - { OS: windows-2022, BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, HI_BUILD_PCH: OFF, COMPILER: "VC17", JOB_NAME: "VC17 | x64-win-static | Release"}
+          - { OS: windows-2022, BUILD_TYPE: Debug,          VCPKG_TARGET_TRIPLET: x64-windows-static, HI_BUILD_PCH: ON,  COMPILER: "VC17", JOB_NAME: "VC17 | x64-win-static | Debug"  }
 
     env:
       PLATFORM: x64
@@ -126,11 +126,12 @@ jobs:
           if "${{ matrix.config.COMPILER }}" == "VC17"; set "GENERATOR=Visual Studio 17 2022"
           echo %GENERATOR%
           mkdir build && cd build
-          cmake -G "%GENERATOR%" -A ${{ env.PLATFORM }} ..                                  ^
-                -DCMAKE_BUILD_TYPE=${{ matrix.config.BUILD_TYPE }}                          ^
-                -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake            ^
-                -DVCPKG_TARGET_TRIPLET=${{ matrix.config.VCPKG_TARGET_TRIPLET }}            ^
-                -DTT_BUILD_PCH=${{ matrix.config.TT_BUILD_PCH }}                            ^
+          cmake -G "%GENERATOR%" -A ${{ env.PLATFORM }} .. ^
+                -DCMAKE_BUILD_TYPE=${{ matrix.config.BUILD_TYPE }} ^
+                -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake ^
+                -DVCPKG_TARGET_TRIPLET=${{ matrix.config.VCPKG_TARGET_TRIPLET }} ^
+                -DHI_BUILD_PCH=${{ matrix.config.HI_BUILD_PCH }} ^
+                -DHI_BUILD_EXAMPLES=ON ^
                 -DCMAKE_VERBOSE_MAKEFILE=ON
 
       - name: 🙏 CMake ➔ Build
@@ -165,7 +166,7 @@ jobs:
           $xsl.Load("${{ github.workspace }}\.github\gtest_to_junit.xsl")
           $xsl.Transform((Resolve-Path .\test_results_gtest.xml), "${{ github.workspace }}\test_results.xml")
           cd ${{ github.workspace }}
-          ren test_results.xml test_results_${{ matrix.config.COMPILER }}_${{ matrix.config.VCPKG_TARGET_TRIPLET }}_PCH_${{ matrix.config.TT_BUILD_PCH }}.xml
+          ren test_results.xml test_results_${{ matrix.config.COMPILER }}_${{ matrix.config.VCPKG_TARGET_TRIPLET }}_PCH_${{ matrix.config.HI_BUILD_PCH }}.xml
 
       # We upload multiple files into the same artifact file (zip).
       # Each file is differently named by adding the job name of the matrix as a suffix.
@@ -188,12 +189,12 @@ jobs:
       - name: 📑 Generate CodeCoverage Report
         if: ${{ matrix.config.BUILD_TYPE == 'Debug' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         run: |
-          .\bin\coverage\OpenCppCoverage.exe --sources=src        ^
-          --excluded_sources=src\*_tests.cpp                      ^
-          --excluded_sources=src\*\*_tests.cpp                    ^
-          --excluded_sources=build\_deps                          ^
-          --export_type=cobertura:hikogui_coverage.xml             ^
-          --working_dir=.\\build\hikogui-%VERSION%\tests           ^
+          .\bin\coverage\OpenCppCoverage.exe --sources=src ^
+          --excluded_sources=src\*_tests.cpp ^
+          --excluded_sources=src\*\*_tests.cpp ^
+          --excluded_sources=build\_deps ^
+          --export_type=cobertura:hikogui_coverage.xml ^
+          --working_dir=.\\build\hikogui-%VERSION%\tests ^
           -- ".\\build\hikogui-%VERSION%\tests\\hikogui_tests.exe"
 
       - name: 📦 🚀 Upload CodeCoverage Report to codecov.io
@@ -203,23 +204,23 @@ jobs:
           files: ./hikogui_coverage.xml
 
       #
-      # We only upload artifacts for static builds with pre-compiled headers (TT_BUILD_PCH:ON).
+      # We only upload artifacts for static builds with pre-compiled headers (HI_BUILD_PCH:ON).
       #
 
       # Double ZIP issue: https://github.com/actions/upload-artifact#zipped-artifact-downloads
       # We can either zip an already zipped file; or send all files to a zip service, possibly creating a 503.
       - name: 📦 Package
-        if: ${{ matrix.config.TT_BUILD_PCH == 'ON'}}
+        if: ${{ matrix.config.HI_BUILD_PCH == 'ON'}}
         run: |
            cd build
            7z a -tzip -mx9 "%ARTIFACT_NAME%.zip" ./hikogui-%VERSION%
 
       # To ensure that jobs don't overwrite existing artifacts, use a different "name" per job/run.
       - name: 📦 🚀 Upload Artifact
-        if: ${{ matrix.config.TT_BUILD_PCH == 'ON'}}
+        if: ${{ matrix.config.HI_BUILD_PCH == 'ON'}}
         uses: actions/upload-artifact@v2 # https://github.com/actions/upload-artifact
         with:
-          name: ${{ env.ARTIFACT_NAME }}-PCH-${{ matrix.config.TT_BUILD_PCH }}
+          name: ${{ env.ARTIFACT_NAME }}-PCH-${{ matrix.config.HI_BUILD_PCH }}
           path: build/${{ env.ARTIFACT_NAME }}.zip
 
 # ---------------------------------------------------------------------------------------
