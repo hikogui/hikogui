@@ -21,6 +21,13 @@ namespace hi::inline v1 {
 
 /** An awaitable that waits for any of the given awaitables to complete.
  *
+ * The return value of awaiting on `when_any` is a `std::variant` of the return
+ * values of the given awaitables. If an awaitable has `void` as return type then
+ * it will be converted to a `std::monotype` so that is can be used in the `std::variant`.
+ * 
+ * The `index()` of the `std::variant` return type will match the index of the `when_any()`
+ * constructor argument of the triggered awaitable.
+ * 
  * @tparam Ts Awaitable types.
  */
 template<typename... Ts>
@@ -32,9 +39,10 @@ public:
      *
      * The arguments may be of the following types:
      *  - An object which can be directly used as an awaitable. Having the member functions:
-     *    `await_ready()`, `await_suspend()` and `await_resume()` and `was_triggered()`.
+     *    `await_ready()`, `await_suspend()` and `await_resume()`.
      *  - An object that has a `operator co_await()` member function.
      *  - An object that has a `operator co_await()` free function.
+     *  - An object that can be converted using the `awaitable_cast` functor.
      *
      * @param others The awaitable to wait for.
      */

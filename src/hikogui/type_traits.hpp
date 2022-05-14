@@ -370,31 +370,37 @@ constexpr bool type_in_range_v = std::numeric_limits<Out>::digits >= std::numeri
     (std::numeric_limits<Out>::is_signed == std::numeric_limits<In>::is_signed or std::numeric_limits<Out>::is_signed);
 
 /** True if T is a forwarded type of OfType.
-* 
-* ```
-* template<forward_of<std::string> Text>
-* std::string foo(Text &&text) {
-*   return std::forward<Text>(text);
-* }
-* ```
+ *
+ * ```
+ * template<forward_of<std::string> Text>
+ * std::string foo(Text &&text) {
+ *   return std::forward<Text>(text);
+ * }
+ * ```
  */
 template<typename T, typename Forward>
-struct is_forward_of : public std::false_type {};
-
-template<typename T>
-struct is_forward_of<T, T> : public std::true_type {};
-
-template<typename T>
-struct is_forward_of<T, T const &> : public std::true_type {
+struct is_forward_of : public std::false_type {
 };
 
 template<typename T>
-struct is_forward_of<T, T &> : public std::true_type {
+struct is_forward_of<T, T> : public std::true_type {
+};
+
+template<typename T>
+struct is_forward_of<T, T const&> : public std::true_type {
+};
+
+template<typename T>
+struct is_forward_of<T, T&> : public std::true_type {
 };
 
 template<typename T, typename Forward>
 constexpr bool is_forward_of_v = is_forward_of<T, Forward>::value;
 
+/** Decays types for use as elements in std::variant.
+ *
+ * @tparam T type to be decayed, or when `void` converted to `std::monostate`.
+ */
 template<typename T>
 struct variant_decay {
     using type = std::decay_t<T>;
@@ -405,6 +411,8 @@ struct variant_decay<void> {
     using type = std::monostate;
 };
 
+/** @see variant_decay
+ */
 template<typename T>
 using variant_decay_t = variant_decay<T>::type;
 
