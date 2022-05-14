@@ -6,6 +6,7 @@
 #include "../GFX/pipeline_box_device_shared.hpp"
 #include "../GFX/pipeline_image_device_shared.hpp"
 #include "../GFX/pipeline_SDF_device_shared.hpp"
+#include "../GFX/pipeline_alpha_device_shared.hpp"
 #include "../GFX/paged_image.hpp"
 #include "../GFX/gfx_device_vulkan.hpp"
 #include "../text/text_shaper.hpp"
@@ -31,6 +32,17 @@ draw_context::draw_context(
     _image_vertices->clear();
     _sdf_vertices->clear();
     _alpha_vertices->clear();
+}
+
+void draw_context::_override_alpha(aarectangle const& clipping_rectangle, quad box, float alpha) const noexcept
+{
+    if (_alpha_vertices->full()) {
+        // Too many boxes where added, just don't draw them anymore.
+        ++global_counter<"override_alpha::overflow">;
+        return;
+    }
+
+    pipeline_alpha::device_shared::place_vertices(*_alpha_vertices, clipping_rectangle, box, alpha);
 }
 
 void draw_context::_draw_box(
