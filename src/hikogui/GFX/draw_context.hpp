@@ -7,6 +7,7 @@
 #include "pipeline_box_vertex.hpp"
 #include "pipeline_image_vertex.hpp"
 #include "pipeline_SDF_vertex.hpp"
+#include "pipeline_alpha_vertex.hpp"
 #include "subpixel_orientation.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/matrix.hpp"
@@ -84,9 +85,10 @@ public:
 
     draw_context(
         gfx_device_vulkan &device,
-        vspan<pipeline_box::vertex> &boxVertices,
-        vspan<pipeline_image::vertex> &imageVertices,
-        vspan<pipeline_SDF::vertex> &sdfVertices) noexcept;
+        vspan<pipeline_box::vertex> &box_vertices,
+        vspan<pipeline_image::vertex> &image_vertices,
+        vspan<pipeline_SDF::vertex>& sdf_vertices,
+        vspan<pipeline_alpha::vertex>& alpha_vertices) noexcept;
 
     /** Check if the draw_context should be used for rendering.
      */
@@ -603,6 +605,7 @@ private:
     vspan<pipeline_box::vertex> *_box_vertices;
     vspan<pipeline_image::vertex> *_image_vertices;
     vspan<pipeline_SDF::vertex> *_sdf_vertices;
+    vspan<pipeline_alpha::vertex> *_alpha_vertices;
 
     void _draw_box(
         aarectangle const &clipping_rectangle,

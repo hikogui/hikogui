@@ -8,6 +8,7 @@
 #include "pipeline_box.hpp"
 #include "pipeline_image.hpp"
 #include "pipeline_SDF.hpp"
+#include "pipeline_alpha.hpp"
 #include "pipeline_tone_mapper.hpp"
 #include "../widgets/window_widget.hpp"
 #include "../trace.hpp"
@@ -16,7 +17,7 @@
 
 namespace hi::inline v1 {
 
-gfx_surface_vulkan::gfx_surface_vulkan(gfx_system &system, vk::SurfaceKHR surface) : gfx_surface(system), intrinsic(surface) {}
+gfx_surface_vulkan::gfx_surface_vulkan(gfx_system& system, vk::SurfaceKHR surface) : gfx_surface(system), intrinsic(surface) {}
 
 gfx_surface_vulkan::~gfx_surface_vulkan()
 {
@@ -40,11 +41,11 @@ void gfx_surface_vulkan::set_device(gfx_device *device) noexcept
     _graphics_queue = &device_->get_graphics_queue(*this);
 }
 
-gfx_device_vulkan &gfx_surface_vulkan::vulkan_device() const noexcept
+gfx_device_vulkan& gfx_surface_vulkan::vulkan_device() const noexcept
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
     hi_axiom(_device != nullptr);
-    return down_cast<gfx_device_vulkan &>(*_device);
+    return down_cast<gfx_device_vulkan&>(*_device);
 }
 
 void gfx_surface_vulkan::init()
@@ -52,10 +53,11 @@ void gfx_surface_vulkan::init()
     hilet lock = std::scoped_lock(gfx_system_mutex);
 
     gfx_surface::init();
-    boxPipeline = std::make_unique<pipeline_box::pipeline_box>(*this);
-    imagePipeline = std::make_unique<pipeline_image::pipeline_image>(*this);
-    SDFPipeline = std::make_unique<pipeline_SDF::pipeline_SDF>(*this);
-    toneMapperPipeline = std::make_unique<pipeline_tone_mapper::pipeline_tone_mapper>(*this);
+    box_pipeline = std::make_unique<pipeline_box::pipeline_box>(*this);
+    image_pipeline = std::make_unique<pipeline_image::pipeline_image>(*this);
+    SDF_pipeline = std::make_unique<pipeline_SDF::pipeline_SDF>(*this);
+    alpha_pipeline = std::make_unique<pipeline_alpha::pipeline_alpha>(*this);
+    tone_mapper_pipeline = std::make_unique<pipeline_tone_mapper::pipeline_tone_mapper>(*this);
 }
 
 [[nodiscard]] extent2 gfx_surface_vulkan::size() const noexcept
@@ -87,7 +89,8 @@ std::optional<uint32_t> gfx_surface_vulkan::acquireNextImageFromSwapchain()
     // hi_log_debug("acquireNextImage {}", frameBufferIndex);
 
     switch (result) {
-    case vk::Result::eSuccess: return {frameBufferIndex};
+    case vk::Result::eSuccess:
+        return {frameBufferIndex};
 
     case vk::Result::eSuboptimalKHR:
         hi_log_info("acquireNextImageKHR() eSuboptimalKHR");
@@ -109,7 +112,8 @@ std::optional<uint32_t> gfx_surface_vulkan::acquireNextImageFromSwapchain()
         hi_log_info("acquireNextImageKHR() eTimeout");
         return {};
 
-    default: throw gui_error(std::format("Unknown result from acquireNextImageKHR(). '{}'", to_string(result)));
+    default:
+        throw gui_error(std::format("Unknown result from acquireNextImageKHR(). '{}'", to_string(result)));
     }
 }
 
@@ -134,22 +138,24 @@ void gfx_surface_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Sema
              presentImageIndices.data()});
 
         switch (result) {
-        case vk::Result::eSuccess: return;
+        case vk::Result::eSuccess:
+            return;
 
         case vk::Result::eSuboptimalKHR:
             hi_log_info("presentKHR() eSuboptimalKHR");
             loss = gfx_surface_loss::swapchain_lost;
             return;
 
-        default: throw gui_error(std::format("Unknown result from presentKHR(). '{}'", to_string(result)));
+        default:
+            throw gui_error(std::format("Unknown result from presentKHR(). '{}'", to_string(result)));
         }
 
-    } catch (vk::OutOfDateKHRError const &) {
+    } catch (vk::OutOfDateKHRError const&) {
         hi_log_info("presentKHR() eErrorOutOfDateKHR");
         loss = gfx_surface_loss::swapchain_lost;
         return;
 
-    } catch (vk::SurfaceLostKHRError const &) {
+    } catch (vk::SurfaceLostKHRError const&) {
         hi_log_info("presentKHR() eErrorSurfaceLostKHR");
         loss = gfx_surface_loss::surface_lost;
         return;
@@ -163,10 +169,11 @@ void gfx_surface_vulkan::build(extent2 new_size)
 
     if (state == gfx_surface_state::has_window) {
         if (_device) {
-            boxPipeline->buildForNewDevice();
-            imagePipeline->buildForNewDevice();
-            SDFPipeline->buildForNewDevice();
-            toneMapperPipeline->buildForNewDevice();
+            box_pipeline->buildForNewDevice();
+            image_pipeline->buildForNewDevice();
+            SDF_pipeline->buildForNewDevice();
+            alpha_pipeline->buildForNewDevice();
+            tone_mapper_pipeline->buildForNewDevice();
             state = gfx_surface_state::has_device;
         }
     }
@@ -176,10 +183,11 @@ void gfx_surface_vulkan::build(extent2 new_size)
             loss = gfx_surface_loss::device_lost;
             return;
         }
-        boxPipeline->buildForNewSurface();
-        imagePipeline->buildForNewSurface();
-        SDFPipeline->buildForNewSurface();
-        toneMapperPipeline->buildForNewSurface();
+        box_pipeline->buildForNewSurface();
+        image_pipeline->buildForNewSurface();
+        SDF_pipeline->buildForNewSurface();
+        alpha_pipeline->buildForNewSurface();
+        tone_mapper_pipeline->buildForNewSurface();
         state = gfx_surface_state::has_surface;
     }
 
@@ -207,18 +215,20 @@ void gfx_surface_vulkan::build(extent2 new_size)
             buildFramebuffers(); // Framebuffer required render passes.
             buildCommandBuffers();
             buildSemaphores();
-            hi_axiom(boxPipeline);
-            hi_axiom(imagePipeline);
-            hi_axiom(SDFPipeline);
-            hi_axiom(toneMapperPipeline);
-            boxPipeline->buildForNewSwapchain(renderPass, 0, swapchainImageExtent);
-            imagePipeline->buildForNewSwapchain(renderPass, 1, swapchainImageExtent);
-            SDFPipeline->buildForNewSwapchain(renderPass, 2, swapchainImageExtent);
-            toneMapperPipeline->buildForNewSwapchain(renderPass, 3, swapchainImageExtent);
+            hi_axiom(box_pipeline);
+            hi_axiom(image_pipeline);
+            hi_axiom(SDF_pipeline);
+            hi_axiom(alpha_pipeline);
+            hi_axiom(tone_mapper_pipeline);
+            box_pipeline->buildForNewSwapchain(renderPass, 0, swapchainImageExtent);
+            image_pipeline->buildForNewSwapchain(renderPass, 1, swapchainImageExtent);
+            SDF_pipeline->buildForNewSwapchain(renderPass, 2, swapchainImageExtent);
+            alpha_pipeline->buildForNewSwapchain(renderPass, 3, swapchainImageExtent);
+            tone_mapper_pipeline->buildForNewSwapchain(renderPass, 4, swapchainImageExtent);
 
             state = gfx_surface_state::has_swapchain;
 
-        } catch (vk::SurfaceLostKHRError const &) {
+        } catch (vk::SurfaceLostKHRError const&) {
             // During swapchain build we lost the surface.
             // This state will cause the swapchain to be teardown.
             loss = gfx_surface_loss::surface_lost;
@@ -234,10 +244,11 @@ void gfx_surface_vulkan::teardown()
     if (state == gfx_surface_state::has_swapchain and loss >= gfx_surface_loss::swapchain_lost) {
         hi_log_info("Tearing down because the window lost the swapchain.");
         waitIdle();
-        toneMapperPipeline->teardownForSwapchainLost();
-        SDFPipeline->teardownForSwapchainLost();
-        imagePipeline->teardownForSwapchainLost();
-        boxPipeline->teardownForSwapchainLost();
+        tone_mapper_pipeline->teardownForSwapchainLost();
+        alpha_pipeline->teardownForSwapchainLost();
+        SDF_pipeline->teardownForSwapchainLost();
+        image_pipeline->teardownForSwapchainLost();
+        box_pipeline->teardownForSwapchainLost();
         teardownSemaphores();
         teardownCommandBuffers();
         teardownFramebuffers();
@@ -248,30 +259,33 @@ void gfx_surface_vulkan::teardown()
 
     if (state == gfx_surface_state::has_surface and loss >= gfx_surface_loss::surface_lost) {
         hi_log_info("Tearing down because the window lost the drawable surface.");
-        toneMapperPipeline->teardownForSurfaceLost();
-        SDFPipeline->teardownForSurfaceLost();
-        imagePipeline->teardownForSurfaceLost();
-        boxPipeline->teardownForSurfaceLost();
+        tone_mapper_pipeline->teardownForSurfaceLost();
+        alpha_pipeline->teardownForSurfaceLost();
+        SDF_pipeline->teardownForSurfaceLost();
+        image_pipeline->teardownForSurfaceLost();
+        box_pipeline->teardownForSurfaceLost();
         teardownSurface();
         state = gfx_surface_state::has_device;
     }
 
     if (state == gfx_surface_state::has_device and loss >= gfx_surface_loss::device_lost) {
         hi_log_info("Tearing down because the window lost the vulkan device.");
-        toneMapperPipeline->teardownForDeviceLost();
-        SDFPipeline->teardownForDeviceLost();
-        imagePipeline->teardownForDeviceLost();
-        boxPipeline->teardownForDeviceLost();
+        tone_mapper_pipeline->teardownForDeviceLost();
+        alpha_pipeline->teardownForDeviceLost();
+        SDF_pipeline->teardownForDeviceLost();
+        image_pipeline->teardownForDeviceLost();
+        box_pipeline->teardownForDeviceLost();
         teardownDevice();
         state = gfx_surface_state::has_window;
     }
 
     if (state == gfx_surface_state::has_window and loss >= gfx_surface_loss::window_lost) {
         hi_log_info("Tearing down because the window doesn't exist anymore.");
-        toneMapperPipeline->teardownForWindowLost();
-        SDFPipeline->teardownForWindowLost();
-        imagePipeline->teardownForWindowLost();
-        boxPipeline->teardownForWindowLost();
+        tone_mapper_pipeline->teardownForWindowLost();
+        alpha_pipeline->teardownForWindowLost();
+        SDF_pipeline->teardownForWindowLost();
+        image_pipeline->teardownForWindowLost();
+        box_pipeline->teardownForWindowLost();
         state = gfx_surface_state::no_window;
     }
     loss = gfx_surface_loss::none;
@@ -300,9 +314,10 @@ draw_context gfx_surface_vulkan::render_start(aarectangle redraw_rectangle)
 
     auto r = draw_context{
         *down_cast<gfx_device_vulkan *>(_device),
-        boxPipeline->vertexBufferData,
-        imagePipeline->vertexBufferData,
-        SDFPipeline->vertexBufferData};
+        box_pipeline->vertexBufferData,
+        image_pipeline->vertexBufferData,
+        SDF_pipeline->vertexBufferData,
+        alpha_pipeline->vertexBufferData};
 
     // Bail out when the window is not yet ready to be rendered, or if there is nothing to render.
     if (state != gfx_surface_state::has_swapchain or not redraw_rectangle) {
@@ -320,13 +335,13 @@ draw_context gfx_surface_vulkan::render_start(aarectangle redraw_rectangle)
     r.frame_buffer_index = narrow<size_t>(*optional_frame_buffer_index);
 
     // Record which part of the image will be redrawn on the current swapchain image.
-    auto &current_image = swapchain_image_infos.at(r.frame_buffer_index);
+    auto& current_image = swapchain_image_infos.at(r.frame_buffer_index);
     current_image.redraw_rectangle = redraw_rectangle;
 
     // Calculate the scissor rectangle, from the combined redraws of the complete swapchain.
     // We need to do this so that old redraws are also executed in the current swapchain image.
     r.scissor_rectangle = ceil(
-        std::accumulate(swapchain_image_infos.cbegin(), swapchain_image_infos.cend(), aarectangle{}, [](hilet &sum, hilet &item) {
+        std::accumulate(swapchain_image_infos.cbegin(), swapchain_image_infos.cend(), aarectangle{}, [](hilet& sum, hilet& item) {
             return sum | item.redraw_rectangle;
         }));
 
@@ -339,11 +354,11 @@ draw_context gfx_surface_vulkan::render_start(aarectangle redraw_rectangle)
     return r;
 }
 
-void gfx_surface_vulkan::render_finish(draw_context const &context)
+void gfx_surface_vulkan::render_finish(draw_context const& context)
 {
     hilet lock = std::scoped_lock(gfx_system_mutex);
 
-    auto &current_image = swapchain_image_infos.at(context.frame_buffer_index);
+    auto& current_image = swapchain_image_infos.at(context.frame_buffer_index);
 
     fill_command_buffer(current_image, context);
     submitCommandBuffer();
@@ -358,7 +373,7 @@ void gfx_surface_vulkan::render_finish(draw_context const &context)
     teardown();
 }
 
-void gfx_surface_vulkan::fill_command_buffer(swapchain_image_info &current_image, draw_context const &context)
+void gfx_surface_vulkan::fill_command_buffer(swapchain_image_info& current_image, draw_context const& context)
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -414,13 +429,15 @@ void gfx_surface_vulkan::fill_command_buffer(swapchain_image_info &current_image
         {renderPass, current_image.frame_buffer, render_area, narrow_cast<uint32_t>(clearValues.size()), clearValues.data()},
         vk::SubpassContents::eInline);
 
-    boxPipeline->drawInCommandBuffer(commandBuffer, context);
+    box_pipeline->drawInCommandBuffer(commandBuffer, context);
     commandBuffer.nextSubpass(vk::SubpassContents::eInline);
-    imagePipeline->drawInCommandBuffer(commandBuffer, context);
+    image_pipeline->drawInCommandBuffer(commandBuffer, context);
     commandBuffer.nextSubpass(vk::SubpassContents::eInline);
-    SDFPipeline->drawInCommandBuffer(commandBuffer, context);
+    SDF_pipeline->drawInCommandBuffer(commandBuffer, context);
     commandBuffer.nextSubpass(vk::SubpassContents::eInline);
-    toneMapperPipeline->drawInCommandBuffer(commandBuffer, context);
+    alpha_pipeline->drawInCommandBuffer(commandBuffer, context);
+    commandBuffer.nextSubpass(vk::SubpassContents::eInline);
+    tone_mapper_pipeline->drawInCommandBuffer(commandBuffer, context);
 
     commandBuffer.endRenderPass();
     commandBuffer.end();
@@ -522,11 +539,14 @@ gfx_surface_loss gfx_surface_vulkan::buildSwapchain(std::size_t new_count, exten
 
     vk::Result const result = vulkan_device().createSwapchainKHR(&swapchainCreateInfo, nullptr, &swapchain);
     switch (result) {
-    case vk::Result::eSuccess: break;
+    case vk::Result::eSuccess:
+        break;
 
-    case vk::Result::eErrorSurfaceLostKHR: return gfx_surface_loss::surface_lost;
+    case vk::Result::eErrorSurfaceLostKHR:
+        return gfx_surface_loss::surface_lost;
 
-    default: throw gui_error(std::format("Unknown result from createSwapchainKHR(). '{}'", to_string(result)));
+    default:
+        throw gui_error(std::format("Unknown result from createSwapchainKHR(). '{}'", to_string(result)));
     }
 
     hi_log_info("Finished building swap chain");
@@ -659,7 +679,7 @@ void gfx_surface_vulkan::teardownFramebuffers()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
-    for (auto &info : swapchain_image_infos) {
+    for (auto& info : swapchain_image_infos) {
         vulkan_device().destroy(info.frame_buffer);
         vulkan_device().destroy(info.image_view);
     }
@@ -675,8 +695,9 @@ void gfx_surface_vulkan::teardownFramebuffers()
  *
  * One pass, with 4 subpasses:
  *  1. box shader: to color-attachment+depth
- *  2. image shader: to color-attachmen+depth
- *  3. sdf shader: to color-attachmne+depth
+ *  2. image shader: to color-attachment+depth
+ *  3. sdf shader: to color-attachment+depth
+ *  4. alpha shader: to color-attachment+depth
  *  4. tone-mapper: color-input-attachment to swapchain-attachment.
  *
  * Rendering is done on a float-16 RGBA color-attachment.
@@ -730,48 +751,59 @@ void gfx_surface_vulkan::buildRenderPasses()
     hilet swapchain_attachment_references = std::array{vk::AttachmentReference{2, vk::ImageLayout::eColorAttachmentOptimal}};
 
     hilet subpass_descriptions = std::array{
-        vk::SubpassDescription{// Subpass 0 Box
-                               vk::SubpassDescriptionFlags(),
-                               vk::PipelineBindPoint::eGraphics,
-                               0, // inputAttchmentReferencesCount
-                               nullptr, // inputAttachmentReferences
-                               narrow_cast<uint32_t>(color_attachment_references.size()),
-                               color_attachment_references.data(),
-                               nullptr, // resolveAttachments
-                               &depth_attachment_reference
+        vk::SubpassDescription{
+            vk::SubpassDescriptionFlags(), // Subpass 0 Box
+            vk::PipelineBindPoint::eGraphics,
+            0, // inputAttchmentReferencesCount
+            nullptr, // inputAttachmentReferences
+            narrow_cast<uint32_t>(color_attachment_references.size()),
+            color_attachment_references.data(),
+            nullptr, // resolveAttachments
+            &depth_attachment_reference
 
         },
-        vk::SubpassDescription{// Subpass 1 Image
-                               vk::SubpassDescriptionFlags(),
-                               vk::PipelineBindPoint::eGraphics,
-                               0, // inputAttchmentReferencesCount
-                               nullptr, // inputAttachmentReferences
-                               narrow_cast<uint32_t>(color_attachment_references.size()),
-                               color_attachment_references.data(),
-                               nullptr, // resolveAttachments
-                               &depth_attachment_reference
+        vk::SubpassDescription{
+            vk::SubpassDescriptionFlags(), // Subpass 1 Image
+            vk::PipelineBindPoint::eGraphics,
+            0, // inputAttchmentReferencesCount
+            nullptr, // inputAttachmentReferences
+            narrow_cast<uint32_t>(color_attachment_references.size()),
+            color_attachment_references.data(),
+            nullptr, // resolveAttachments
+            &depth_attachment_reference
 
         },
-        vk::SubpassDescription{// Subpass 2 SDF
-                               vk::SubpassDescriptionFlags(),
-                               vk::PipelineBindPoint::eGraphics,
-                               0,
-                               nullptr,
-                               narrow_cast<uint32_t>(color_attachment_references.size()),
-                               color_attachment_references.data(),
-                               nullptr, // resolveAttachments
-                               &depth_attachment_reference
+        vk::SubpassDescription{
+            vk::SubpassDescriptionFlags(), // Subpass 2 SDF
+            vk::PipelineBindPoint::eGraphics,
+            0,
+            nullptr,
+            narrow_cast<uint32_t>(color_attachment_references.size()),
+            color_attachment_references.data(),
+            nullptr, // resolveAttachments
+            &depth_attachment_reference
 
         },
-        vk::SubpassDescription{// Subpass 3 tone-mapper
-                               vk::SubpassDescriptionFlags(),
-                               vk::PipelineBindPoint::eGraphics,
-                               narrow_cast<uint32_t>(color_input_attachment_references.size()),
-                               color_input_attachment_references.data(),
-                               narrow_cast<uint32_t>(swapchain_attachment_references.size()),
-                               swapchain_attachment_references.data(),
-                               nullptr,
-                               nullptr}};
+        vk::SubpassDescription{
+            vk::SubpassDescriptionFlags(), // Subpass 3 alpha
+            vk::PipelineBindPoint::eGraphics,
+            0,
+            nullptr,
+            narrow_cast<uint32_t>(color_attachment_references.size()),
+            color_attachment_references.data(),
+            nullptr, // resolveAttachments
+            &depth_attachment_reference
+
+        },
+        vk::SubpassDescription{
+            vk::SubpassDescriptionFlags(), // Subpass 4 tone-mapper
+            vk::PipelineBindPoint::eGraphics,
+            narrow_cast<uint32_t>(color_input_attachment_references.size()),
+            color_input_attachment_references.data(),
+            narrow_cast<uint32_t>(swapchain_attachment_references.size()),
+            swapchain_attachment_references.data(),
+            nullptr,
+            nullptr}};
 
     hilet subpass_dependency = std::array{
         vk::SubpassDependency{
@@ -809,9 +841,18 @@ void gfx_surface_vulkan::buildRenderPasses()
             vk::AccessFlagBits::eColorAttachmentWrite,
             vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eInputAttachmentRead,
             vk::DependencyFlagBits::eByRegion},
-        // Subpass 3: Tone mapping color to swapchain.
+        // Subpass 3: Render alpha polygons to color+depth with alpha override
         vk::SubpassDependency{
             3,
+            4,
+            vk::PipelineStageFlagBits::eColorAttachmentOutput,
+            vk::PipelineStageFlagBits::eFragmentShader,
+            vk::AccessFlagBits::eColorAttachmentWrite,
+            vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eInputAttachmentRead,
+            vk::DependencyFlagBits::eByRegion},
+        // Subpass 4: Tone mapping color to swapchain.
+        vk::SubpassDependency{
+            4,
             VK_SUBPASS_EXTERNAL,
             vk::PipelineStageFlagBits::eColorAttachmentOutput,
             vk::PipelineStageFlagBits::eBottomOfPipe,
@@ -885,7 +926,7 @@ void gfx_surface_vulkan::teardownSurface()
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
-    down_cast<gfx_system_vulkan &>(system).destroySurfaceKHR(intrinsic);
+    down_cast<gfx_system_vulkan&>(system).destroySurfaceKHR(intrinsic);
 }
 
 void gfx_surface_vulkan::teardownDevice()

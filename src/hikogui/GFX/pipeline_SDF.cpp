@@ -21,7 +21,7 @@ void pipeline_SDF::drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_con
     std::vector<vk::DeviceSize> tmpOffsets = {0};
     hi_axiom(tmpvertexBuffers.size() == tmpOffsets.size());
 
-    vulkan_device().SDFPipeline->drawInCommandBuffer(commandBuffer);
+    vulkan_device().SDF_pipeline->drawInCommandBuffer(commandBuffer);
 
     commandBuffer.bindVertexBuffers(0, tmpvertexBuffers, tmpOffsets);
 
@@ -70,7 +70,7 @@ void pipeline_SDF::drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_con
 
 std::vector<vk::PipelineShaderStageCreateInfo> pipeline_SDF::createShaderStages() const
 {
-    return vulkan_device().SDFPipeline->shaderStages;
+    return vulkan_device().SDF_pipeline->shaderStages;
 }
 
 /* Dual-source alpha blending which allows subpixel anti-aliasing.
@@ -109,7 +109,7 @@ std::vector<vk::DescriptorSetLayoutBinding> pipeline_SDF::createDescriptorSetLay
 
 std::vector<vk::WriteDescriptorSet> pipeline_SDF::createWriteDescriptorSet() const
 {
-    hilet &sharedImagePipeline = vulkan_device().SDFPipeline;
+    hilet& sharedImagePipeline = vulkan_device().SDF_pipeline;
 
     return {
         {
@@ -137,7 +137,7 @@ std::vector<vk::WriteDescriptorSet> pipeline_SDF::createWriteDescriptorSet() con
 
 ssize_t pipeline_SDF::getDescriptorSetVersion() const
 {
-    return ssize(vulkan_device().SDFPipeline->atlasTextures);
+    return ssize(vulkan_device().SDF_pipeline->atlasTextures);
 }
 
 std::vector<vk::PushConstantRange> pipeline_SDF::createPushConstantRanges() const

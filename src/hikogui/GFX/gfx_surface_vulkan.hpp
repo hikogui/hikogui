@@ -21,6 +21,9 @@ class pipeline_box;
 namespace pipeline_SDF {
 class pipeline_SDF;
 }
+namespace pipeline_alpha {
+class pipeline_alpha;
+}
 namespace pipeline_tone_mapper {
 class pipeline_tone_mapper;
 }
@@ -68,10 +71,11 @@ public:
     vk::Semaphore renderFinishedSemaphore;
     vk::Fence renderFinishedFence;
 
-    std::unique_ptr<pipeline_image::pipeline_image> imagePipeline;
-    std::unique_ptr<pipeline_box::pipeline_box> boxPipeline;
-    std::unique_ptr<pipeline_SDF::pipeline_SDF> SDFPipeline;
-    std::unique_ptr<pipeline_tone_mapper::pipeline_tone_mapper> toneMapperPipeline;
+    std::unique_ptr<pipeline_image::pipeline_image> image_pipeline;
+    std::unique_ptr<pipeline_box::pipeline_box> box_pipeline;
+    std::unique_ptr<pipeline_SDF::pipeline_SDF> SDF_pipeline;
+    std::unique_ptr<pipeline_alpha::pipeline_alpha> alpha_pipeline;
+    std::unique_ptr<pipeline_tone_mapper::pipeline_tone_mapper> tone_mapper_pipeline;
 
     gfx_surface_vulkan(gfx_system &system, vk::SurfaceKHR surface);
     ~gfx_surface_vulkan();

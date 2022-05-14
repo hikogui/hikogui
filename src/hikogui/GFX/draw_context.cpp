@@ -14,27 +14,30 @@
 namespace hi::inline v1 {
 
 draw_context::draw_context(
-    gfx_device_vulkan &device,
-    vspan<pipeline_box::vertex> &boxVertices,
-    vspan<pipeline_image::vertex> &imageVertices,
-    vspan<pipeline_SDF::vertex> &sdfVertices) noexcept :
+    gfx_device_vulkan& device,
+    vspan<pipeline_box::vertex>& box_vertices,
+    vspan<pipeline_image::vertex>& image_vertices,
+    vspan<pipeline_SDF::vertex>& sdf_vertices,
+    vspan<pipeline_alpha::vertex>& alpha_vertices) noexcept :
     device(device),
     frame_buffer_index(std::numeric_limits<size_t>::max()),
     scissor_rectangle(),
-    _box_vertices(&boxVertices),
-    _image_vertices(&imageVertices),
-    _sdf_vertices(&sdfVertices)
+    _box_vertices(&box_vertices),
+    _image_vertices(&image_vertices),
+    _sdf_vertices(&sdf_vertices),
+    _alpha_vertices(&alpha_vertices)
 {
     _box_vertices->clear();
     _image_vertices->clear();
     _sdf_vertices->clear();
+    _alpha_vertices->clear();
 }
 
 void draw_context::_draw_box(
-    aarectangle const &clipping_rectangle,
+    aarectangle const& clipping_rectangle,
     quad box,
-    quad_color const &fill_color,
-    quad_color const &border_color,
+    quad_color const& fill_color,
+    quad_color const& border_color,
     float border_width,
     hi::corner_radii corner_radius) const noexcept
 {
@@ -49,7 +52,7 @@ void draw_context::_draw_box(
 }
 
 [[nodiscard]] bool
-draw_context::_draw_image(aarectangle const &clipping_rectangle, quad const &box, paged_image &image) const noexcept
+draw_context::_draw_image(aarectangle const& clipping_rectangle, quad const& box, paged_image& image) const noexcept
 {
     hi_axiom(_image_vertices != nullptr);
 
@@ -57,19 +60,19 @@ draw_context::_draw_image(aarectangle const &clipping_rectangle, quad const &box
         return false;
     }
 
-    hilet pipeline = down_cast<gfx_device_vulkan &>(device).imagePipeline.get();
+    hilet pipeline = down_cast<gfx_device_vulkan&>(device).image_pipeline.get();
     pipeline->place_vertices(*_image_vertices, clipping_rectangle, box, image);
     return true;
 }
 
 void draw_context::_draw_glyph(
-    aarectangle const &clipping_rectangle,
-    quad const &box,
-    quad_color const &color,
-    glyph_ids const &glyph) const noexcept
+    aarectangle const& clipping_rectangle,
+    quad const& box,
+    quad_color const& color,
+    glyph_ids const& glyph) const noexcept
 {
     hi_axiom(_sdf_vertices != nullptr);
-    hilet pipeline = down_cast<gfx_device_vulkan &>(device).SDFPipeline.get();
+    hilet pipeline = down_cast<gfx_device_vulkan&>(device).SDF_pipeline.get();
 
     if (_sdf_vertices->full()) {
         _draw_box(clipping_rectangle, box, hi::color{1.0f, 0.0f, 1.0f}, hi::color{}, 0.0f, {});
@@ -85,16 +88,16 @@ void draw_context::_draw_glyph(
 }
 
 void draw_context::_draw_text(
-    aarectangle const &clipping_rectangle,
-    matrix3 const &transform,
-    text_shaper const &text,
+    aarectangle const& clipping_rectangle,
+    matrix3 const& transform,
+    text_shaper const& text,
     std::optional<quad_color> text_color) const noexcept
 {
     hi_axiom(_sdf_vertices != nullptr);
-    hilet pipeline = down_cast<gfx_device_vulkan &>(device).SDFPipeline.get();
+    hilet pipeline = down_cast<gfx_device_vulkan&>(device).SDF_pipeline.get();
 
     auto atlas_was_updated = false;
-    for (hilet &c : text) {
+    for (hilet& c : text) {
         hilet box = translate2{c.position} * c.metrics.bounding_rectangle;
         hilet color = text_color ? *text_color : quad_color{c.style.color};
 
@@ -117,10 +120,10 @@ void draw_context::_draw_text(
 }
 
 void draw_context::_draw_text_selection(
-    aarectangle const &clipping_rectangle,
-    matrix3 const &transform,
-    text_shaper const &text,
-    text_selection const &selection,
+    aarectangle const& clipping_rectangle,
+    matrix3 const& transform,
+    text_shaper const& text,
+    text_selection const& selection,
     hi::color color) const noexcept
 {
     hilet[first, last] = selection.selection_indices();
@@ -136,14 +139,14 @@ void draw_context::_draw_text_selection(
 }
 
 void draw_context::_draw_text_insertion_cursor_empty(
-    aarectangle const &clipping_rectangle,
-    matrix3 const &transform,
-    text_shaper const &text,
+    aarectangle const& clipping_rectangle,
+    matrix3 const& transform,
+    text_shaper const& text,
     hi::color color) const noexcept
 {
     hilet maximum_left = std::round(text.rectangle().left() - 0.5f);
     hilet maximum_right = std::round(text.rectangle().right() - 0.5f);
-    hilet &only_line = text.lines()[0];
+    hilet& only_line = text.lines()[0];
 
     hilet bottom = std::floor(only_line.rectangle.bottom());
     hilet top = std::ceil(only_line.rectangle.top());
@@ -154,9 +157,9 @@ void draw_context::_draw_text_insertion_cursor_empty(
 }
 
 void draw_context::_draw_text_insertion_cursor(
-    aarectangle const &clipping_rectangle,
-    matrix3 const &transform,
-    text_shaper const &text,
+    aarectangle const& clipping_rectangle,
+    matrix3 const& transform,
+    text_shaper const& text,
     text_cursor cursor,
     hi::color color,
     bool show_flag) const noexcept
@@ -165,7 +168,7 @@ void draw_context::_draw_text_insertion_cursor(
     hilet maximum_right = std::round(text.rectangle().right() - 0.5f);
 
     hilet it = text.get_it(cursor);
-    hilet &line = text.lines()[it->line_nr];
+    hilet& line = text.lines()[it->line_nr];
     hilet ltr = it->direction == unicode_bidi_class::L;
     hilet on_right = ltr == cursor.after();
 
@@ -180,7 +183,7 @@ void draw_context::_draw_text_insertion_cursor(
     if (cursor.after() and end_of_line and next_line_nr < text.lines().size()) {
         // The cursor is after the last character on the line,
         // the cursor should appear at the start of the next line.
-        hilet &next_line = text.lines()[next_line_nr];
+        hilet& next_line = text.lines()[next_line_nr];
 
         bottom = std::floor(next_line.rectangle.bottom());
         top = std::ceil(next_line.rectangle.top());
@@ -204,8 +207,8 @@ void draw_context::_draw_text_insertion_cursor(
 }
 
 void draw_context::_draw_text_overwrite_cursor(
-    aarectangle const &clipping_rectangle,
-    matrix3 const &transform,
+    aarectangle const& clipping_rectangle,
+    matrix3 const& transform,
     text_shaper::char_const_iterator it,
     hi::color color) const noexcept
 {
@@ -214,9 +217,9 @@ void draw_context::_draw_text_overwrite_cursor(
 }
 
 void draw_context::_draw_text_cursors(
-    aarectangle const &clipping_rectangle,
-    matrix3 const &transform,
-    text_shaper const &text,
+    aarectangle const& clipping_rectangle,
+    matrix3 const& transform,
+    text_shaper const& text,
     text_cursor primary_cursor,
     hi::color primary_color,
     hi::color secondary_color,

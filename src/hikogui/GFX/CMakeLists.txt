@@ -28,6 +28,14 @@ target_sources(hikogui PRIVATE
     pipeline.hpp
     pipeline_vulkan.cpp
     pipeline_vulkan.hpp
+    pipeline_alpha.cpp
+    pipeline_alpha.frag
+    pipeline_alpha.hpp
+    pipeline_alpha.vert
+    pipeline_alpha_device_shared.cpp
+    pipeline_alpha_device_shared.hpp
+    pipeline_alpha_push_constants.hpp
+    pipeline_alpha_vertex.hpp
     pipeline_box.cpp
     pipeline_box.frag
     pipeline_box.hpp

@@ -15,7 +15,7 @@ void pipeline_tone_mapper::drawInCommandBuffer(vk::CommandBuffer commandBuffer, 
 {
     pipeline_vulkan::drawInCommandBuffer(commandBuffer, context);
 
-    vulkan_device().toneMapperPipeline->drawInCommandBuffer(commandBuffer);
+    vulkan_device().tone_mapper_pipeline->drawInCommandBuffer(commandBuffer);
 
     _push_constants.saturation = context.saturation;
     commandBuffer.pushConstants(pipelineLayout, vk::ShaderStageFlagBits::eFragment, 0, sizeof(push_constants), &_push_constants);
@@ -27,7 +27,7 @@ void pipeline_tone_mapper::drawInCommandBuffer(vk::CommandBuffer commandBuffer, 
 
 std::vector<vk::PipelineShaderStageCreateInfo> pipeline_tone_mapper::createShaderStages() const
 {
-    return vulkan_device().toneMapperPipeline->shaderStages;
+    return vulkan_device().tone_mapper_pipeline->shaderStages;
 }
 
 std::vector<vk::DescriptorSetLayoutBinding> pipeline_tone_mapper::createDescriptorSetLayoutBindings() const

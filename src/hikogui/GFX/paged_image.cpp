@@ -34,7 +34,7 @@ paged_image::paged_image(gfx_surface const *surface, std::size_t width, std::siz
         hilet &vulkan_device = down_cast<gfx_device_vulkan &>(*device);
 
         hilet[num_columns, num_rows] = size_in_int_pages();
-        this->pages = vulkan_device.imagePipeline->allocate_pages(num_columns * num_rows);
+        this->pages = vulkan_device.image_pipeline->allocate_pages(num_columns * num_rows);
     }
 }
 
@@ -71,7 +71,7 @@ paged_image &paged_image::operator=(paged_image &&other) noexcept
 
     // If the old image had pages, free them.
     if (hilet vulkan_device = down_cast<gfx_device_vulkan *>(device)) {
-        vulkan_device->imagePipeline->free_pages(pages);
+        vulkan_device->image_pipeline->free_pages(pages);
     }
 
     state = other.state.exchange(state_type::uninitialized);
@@ -85,7 +85,7 @@ paged_image &paged_image::operator=(paged_image &&other) noexcept
 paged_image::~paged_image()
 {
     if (hilet vulkan_device = down_cast<gfx_device_vulkan *>(device)) {
-        vulkan_device->imagePipeline->free_pages(pages);
+        vulkan_device->image_pipeline->free_pages(pages);
     }
 }
 
@@ -98,9 +98,9 @@ void paged_image::upload(png const &image) noexcept
 
         state = state_type::drawing;
 
-        auto staging_image = vulkan_device->imagePipeline->get_staging_pixel_map(image.width(), image.height());
+        auto staging_image = vulkan_device->image_pipeline->get_staging_pixel_map(image.width(), image.height());
         image.decode_image(staging_image);
-        vulkan_device->imagePipeline->update_atlas_with_staging_pixel_map(*this);
+        vulkan_device->image_pipeline->update_atlas_with_staging_pixel_map(*this);
 
         state = state_type::uploaded;
     }
@@ -115,9 +115,9 @@ void paged_image::upload(pixel_map<sfloat_rgba16> const &image) noexcept
 
         state = state_type::drawing;
 
-        auto staging_image = vulkan_device->imagePipeline->get_staging_pixel_map(image.width(), image.height());
+        auto staging_image = vulkan_device->image_pipeline->get_staging_pixel_map(image.width(), image.height());
         copy(image, staging_image);
-        vulkan_device->imagePipeline->update_atlas_with_staging_pixel_map(*this);
+        vulkan_device->image_pipeline->update_atlas_with_staging_pixel_map(*this);
 
         state = state_type::uploaded;
     }

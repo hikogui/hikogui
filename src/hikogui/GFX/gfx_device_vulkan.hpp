@@ -10,6 +10,7 @@
 #include "pipeline_image_device_shared.hpp"
 #include "pipeline_box_device_shared.hpp"
 #include "pipeline_SDF_device_shared.hpp"
+#include "pipeline_alpha_device_shared.hpp"
 #include "pipeline_tone_mapper_device_shared.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vk_mem_alloc.h>
@@ -78,10 +79,11 @@ public:
     vk::Buffer quadIndexBuffer;
     VmaAllocation quadIndexBufferAllocation = {};
 
-    std::unique_ptr<pipeline_box::device_shared> boxPipeline;
-    std::unique_ptr<pipeline_image::device_shared> imagePipeline;
-    std::unique_ptr<pipeline_SDF::device_shared> SDFPipeline;
-    std::unique_ptr<pipeline_tone_mapper::device_shared> toneMapperPipeline;
+    std::unique_ptr<pipeline_box::device_shared> box_pipeline;
+    std::unique_ptr<pipeline_image::device_shared> image_pipeline;
+    std::unique_ptr<pipeline_SDF::device_shared> SDF_pipeline;
+    std::unique_ptr<pipeline_alpha::device_shared> alpha_pipeline;
+    std::unique_ptr<pipeline_tone_mapper::device_shared> tone_mapper_pipeline;
 
     /*! List if extension required on this device.
      */

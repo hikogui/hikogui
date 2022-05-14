@@ -360,6 +360,8 @@ add_shader(hikogui_shader_objects
     src/hikogui/GFX/pipeline_box.frag
     src/hikogui/GFX/pipeline_SDF.vert
     src/hikogui/GFX/pipeline_SDF.frag
+    src/hikogui/GFX/pipeline_alpha.vert
+    src/hikogui/GFX/pipeline_alpha.frag
     src/hikogui/GFX/pipeline_tone_mapper.vert
     src/hikogui/GFX/pipeline_tone_mapper.frag
 )
