@@ -32,6 +32,8 @@ target_sources(hikogui PRIVATE
     speaker_mapping.hpp
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/speaker_mapping_win32.cpp>
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/speaker_mapping_win32.hpp>
+    #$<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/win32_wave_device.cpp>
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/win32_wave_device.hpp>
 )
 
 if(HI_BUILD_TESTS)

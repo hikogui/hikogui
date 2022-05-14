@@ -13,6 +13,7 @@
 #include <string>
 #include <string_view>
 #include <memory>
+#include <variant>
 
 namespace hi::inline v1 {
 
@@ -393,5 +394,18 @@ struct is_forward_of<T, T &> : public std::true_type {
 
 template<typename T, typename Forward>
 constexpr bool is_forward_of_v = is_forward_of<T, Forward>::value;
+
+template<typename T>
+struct variant_decay {
+    using type = std::decay_t<T>;
+};
+
+template<>
+struct variant_decay<void> {
+    using type = std::monostate;
+};
+
+template<typename T>
+using variant_decay_t = variant_decay<T>::type;
 
 } // namespace hi::inline v1

@@ -8,12 +8,17 @@
 #include "audio_stream_format_win32.hpp"
 #include "speaker_mapping.hpp"
 #include "speaker_mapping_win32.hpp"
+#include "win32_wave_device.hpp"
 #include "../log.hpp"
 #include "../strings.hpp"
 #include "../exception.hpp"
 #include "../cast.hpp"
 #include <Windows.h>
+
+#include <mmsystem.h>
 #include <mmreg.h>
+#include <mmeapi.h>
+#include <mmddk.h>
 #include <propsys.h>
 #include <initguid.h>
 #include <functiondiscoverykeys_devpkey.h>
@@ -127,26 +132,38 @@ template<>
     hi_hresult_check(device->GetId(&device_id));
     hi_assert(device_id);
 
-    auto device_id_ = std::string{"win32:"} + hi::to_string(device_id);
+    auto device_id_ = hi::to_string(device_id);
 
     CoTaskMemFree(device_id);
     return device_id_;
 }
 
-audio_device_win32::audio_device_win32(IMMDevice *device) : audio_device(), _device(device)
+audio_device_win32::audio_device_win32(IMMDevice *device) :
+    audio_device(), _previous_state(audio_device_state::uninitialized), _device(device), _audio_client(nullptr)
 {
     hi_assert(_device != nullptr);
-    _id = get_device_id(_device);
+    _end_point_id = get_device_id(_device);
+    _id = std::string{"win32:"} + _end_point_id;
     hi_hresult_check(_device->QueryInterface(&_end_point));
     hi_hresult_check(_device->OpenPropertyStore(STGM_READ, &_property_store));
 
-    if (FAILED(_device->Activate(__uuidof(IAudioClient), CLSCTX_ALL, NULL, reinterpret_cast<void **>(&_audio_client)))) {
-        hi_log_warning("Audio device {} does not have IAudioClient interface", name());
-        _audio_client = nullptr;
+    EDataFlow data_flow;
+    hi_hresult_check(_end_point->GetDataFlow(&data_flow));
+    switch (data_flow) {
+    case eRender:
+        _direction = audio_direction::output;
+        break;
+    case eCapture:
+        _direction = audio_direction::input;
+        break;
+    case eAll:
+        _direction = audio_direction::bidirectional;
+        break;
+    default:
+        hi_no_default();
     }
 
-    // By setting exclusivity to false at the start the audio stream format is initialized properly.
-    set_exclusive(false);
+    update_state();
 }
 
 audio_device_win32::~audio_device_win32()
@@ -160,7 +177,52 @@ audio_device_win32::~audio_device_win32()
     }
 }
 
-[[nodiscard]] bool audio_device_win32::supports_format(audio_stream_format const &format) const noexcept
+void audio_device_win32::update_state() noexcept
+{
+    auto new_state = state();
+
+    // Log the correct message.
+    if (_previous_state == audio_device_state::uninitialized) {
+        hi_log_info(" * Found new audio device '{}' {} ({})", name(), id(), state());
+
+    } else if (_previous_state != new_state) {
+        hi_log_info(" * Audio device changed state '{}' {} ({})", name(), id(), state());
+    }
+
+    // Start and stop the audio device depending if it was enabled/disabled for some reason.
+    if (_previous_state == audio_device_state::active and new_state != audio_device_state::active) {
+        _audio_client->Release();
+        _audio_client = nullptr;
+
+    } else if (_previous_state != audio_device_state::active and new_state == audio_device_state::active) {
+        if (FAILED(_device->Activate(__uuidof(IAudioClient), CLSCTX_ALL, NULL, reinterpret_cast<void **>(&_audio_client)))) {
+            hi_log_error("Audio device {} does not have IAudioClient interface", name());
+            _audio_client = nullptr;
+        }
+
+        update_supported_formats();
+
+        // By setting exclusivity to false at the start the audio stream format is initialized properly.
+        set_exclusive(false);
+    }
+    _previous_state = new_state;
+}
+
+void audio_device_win32::update_supported_formats() noexcept
+{
+    // https://stackoverflow.com/questions/50396224/how-to-get-audio-formats-supported-by-physical-device-winapi-windows
+    // https://github.com/EddieRingle/portaudio/blob/master/src/os/win/pa_win_wdmks_utils.c
+    // https://docs.microsoft.com/en-us/previous-versions/ff561658(v=vs.85)
+
+    try {
+        auto wave_device = win32_wave_device::find_matching_end_point(direction(), _end_point_id);
+        //auto device_interface = wave_device.open_device_interface();
+
+    } catch (...) {
+    }
+}
+
+[[nodiscard]] bool audio_device_win32::supports_format(audio_stream_format const& format) const noexcept
 {
     auto format_ = audio_stream_format_to_win32(format);
 
@@ -209,21 +271,30 @@ void audio_device_win32::set_sample_rate(double sample_rate) noexcept
 
 [[nodiscard]] hi::speaker_mapping audio_device_win32::input_speaker_mapping() const noexcept
 {
-    switch (_direction) {
-    case audio_direction::input: [[fallthrough]];
-    case audio_direction::bidirectional: return _speaker_mapping;
-    case audio_direction::output: return hi::speaker_mapping::none;
-    default: hi_no_default();
+    switch (direction()) {
+    case audio_direction::input:
+        [[fallthrough]];
+    case audio_direction::bidirectional:
+        return _speaker_mapping;
+    case audio_direction::output:
+        return hi::speaker_mapping::none;
+    default:
+        hi_no_default();
     }
 }
 
 void audio_device_win32::set_input_speaker_mapping(hi::speaker_mapping speaker_mapping) noexcept
 {
-    switch (_direction) {
-    case audio_direction::input: [[fallthrough]];
-    case audio_direction::bidirectional: _speaker_mapping = speaker_mapping; break;
-    case audio_direction::output: break;
-    default: hi_no_default();
+    switch (direction()) {
+    case audio_direction::input:
+        [[fallthrough]];
+    case audio_direction::bidirectional:
+        _speaker_mapping = speaker_mapping;
+        break;
+    case audio_direction::output:
+        break;
+    default:
+        hi_no_default();
     }
 }
 
@@ -234,21 +305,30 @@ void audio_device_win32::set_input_speaker_mapping(hi::speaker_mapping speaker_m
 
 [[nodiscard]] hi::speaker_mapping audio_device_win32::output_speaker_mapping() const noexcept
 {
-    switch (_direction) {
-    case audio_direction::output: [[fallthrough]];
-    case audio_direction::bidirectional: return _speaker_mapping;
-    case audio_direction::input: return hi::speaker_mapping::none;
-    default: hi_no_default();
+    switch (direction()) {
+    case audio_direction::output:
+        [[fallthrough]];
+    case audio_direction::bidirectional:
+        return _speaker_mapping;
+    case audio_direction::input:
+        return hi::speaker_mapping::none;
+    default:
+        hi_no_default();
     }
 }
 
 void audio_device_win32::set_output_speaker_mapping(hi::speaker_mapping speaker_mapping) noexcept
 {
-    switch (_direction) {
-    case audio_direction::output: [[fallthrough]];
-    case audio_direction::bidirectional: _speaker_mapping = speaker_mapping; break;
-    case audio_direction::input: break;
-    default: hi_no_default();
+    switch (direction()) {
+    case audio_direction::output:
+        [[fallthrough]];
+    case audio_direction::bidirectional:
+        _speaker_mapping = speaker_mapping;
+        break;
+    case audio_direction::input:
+        break;
+    default:
+        hi_no_default();
     }
 }
 
@@ -325,7 +405,7 @@ std::string audio_device_win32::name() const noexcept
 {
     try {
         return get_property<std::string>(_property_store, PKEY_Device_FriendlyName);
-    } catch (io_error const &) {
+    } catch (io_error const&) {
         return "<unknown name>";
     }
 }
@@ -341,32 +421,29 @@ audio_device_state audio_device_win32::state() const noexcept
     hi_hresult_check(_device->GetState(&state));
 
     switch (state) {
-    case DEVICE_STATE_ACTIVE: return audio_device_state::active;
-    case DEVICE_STATE_DISABLED: return audio_device_state::disabled;
-    case DEVICE_STATE_NOTPRESENT: return audio_device_state::not_present;
-    case DEVICE_STATE_UNPLUGGED: return audio_device_state::unplugged;
-    default: hi_no_default();
+    case DEVICE_STATE_ACTIVE:
+        return audio_device_state::active;
+    case DEVICE_STATE_DISABLED:
+        return audio_device_state::disabled;
+    case DEVICE_STATE_NOTPRESENT:
+        return audio_device_state::not_present;
+    case DEVICE_STATE_UNPLUGGED:
+        return audio_device_state::unplugged;
+    default:
+        hi_no_default();
     }
 }
 
 audio_direction audio_device_win32::direction() const noexcept
 {
-    EDataFlow data_flow;
-    hi_hresult_check(_end_point->GetDataFlow(&data_flow));
-
-    switch (data_flow) {
-    case eRender: return audio_direction::output;
-    case eCapture: return audio_direction::input;
-    case eAll: return audio_direction::bidirectional;
-    default: hi_no_default();
-    }
+    return _direction;
 }
 
 std::string audio_device_win32::device_name() const noexcept
 {
     try {
         return get_property<std::string>(_property_store, PKEY_DeviceInterface_FriendlyName);
-    } catch (io_error const &) {
+    } catch (io_error const&) {
         return "<unknown device name>";
     }
 }
@@ -375,7 +452,7 @@ std::string audio_device_win32::end_point_name() const noexcept
 {
     try {
         return get_property<std::string>(_property_store, PKEY_Device_DeviceDesc);
-    } catch (io_error const &) {
+    } catch (io_error const&) {
         return "<unknown end point name>";
     }
 }

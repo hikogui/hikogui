@@ -127,6 +127,8 @@ audio_system_win32::~audio_system_win32()
 
 void audio_system_win32::update_device_list() noexcept
 {
+    hi_log_info("Updating audio device list:");
+
     IMMDeviceCollection *device_collection;
     if (FAILED(_device_enumerator->EnumAudioEndpoints(
             eAll, DEVICE_STATE_ACTIVE | DEVICE_STATE_DISABLED | DEVICE_STATE_UNPLUGGED, &device_collection))) {
@@ -155,7 +157,7 @@ void audio_system_win32::update_device_list() noexcept
 
         auto win32_device_id = std::string{};
         try {
-            win32_device_id = audio_device_win32::get_device_id(win32_device);
+            win32_device_id = std::string{"win32:"} + audio_device_win32::get_device_id(win32_device);
         } catch (std::exception const& e) {
             hi_log_error("EnumAudioEndpoints()->Item({})->GetId failed: {}", e.what());
             device_collection->Release();
@@ -172,6 +174,9 @@ void audio_system_win32::update_device_list() noexcept
             win32_device->Release();
             _devices.push_back(std::move(*it));
             old_devices.erase(it);
+
+            // Let the audio device them self see if anything has changed in their own state.
+            _devices.back()->update_state();
 
         } else {
             auto device = std::allocate_shared<audio_device_win32>(locked_memory_allocator<audio_device_win32>{}, win32_device);
