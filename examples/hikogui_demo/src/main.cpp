@@ -183,22 +183,22 @@ hi::task<> main_window(hi::gui_system& gui, my_preferences& preferences, hi::aud
             preferences.toggle_value,
             window->closing);
 
-        if (result == preferences_button.pressed) {
+        switch (result.index()) {
+        case 0:
             preferences_window(gui, preferences, audio_system);
-
-        } else if (result == vma_dump_button.pressed) {
+            break;
+        case 1:
             gui.gfx->log_memory_usage();
-
-        } else if (result == hello_world_button.pressed) {
+            break;
+        case 2:
             hi_log_info("Hello World");
-
-        } else if (result == preferences.toggle_value) {
+            break;
+        case 3:
             hi_log_info("Toggle value {}", get<bool>(result));
-
-        } else if (result == window->closing) {
+            break;
+        case 4:
             co_return;
-
-        } else {
+        default:
             hi_no_default();
         }
     }

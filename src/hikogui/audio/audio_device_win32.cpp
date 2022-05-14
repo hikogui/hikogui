@@ -215,7 +215,7 @@ void audio_device_win32::update_supported_formats() noexcept
     // https://docs.microsoft.com/en-us/previous-versions/ff561658(v=vs.85)
 
     try {
-        auto wave_device = win32_wave_device::find_matching_end_point(direction(), _end_point_id);
+        //auto wave_device = win32_wave_device::find_matching_end_point(direction(), _end_point_id);
         //auto device_interface = wave_device.open_device_interface();
 
     } catch (...) {
