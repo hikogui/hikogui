@@ -27,7 +27,7 @@ public:
     pipeline_image(pipeline_image &&) = delete;
     pipeline_image &operator=(pipeline_image &&) = delete;
 
-    void drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_context const &context) override;
+    void draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const &context) override;
 
 protected:
     push_constants pushConstants;
@@ -45,8 +45,8 @@ protected:
     std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const override;
 
 private:
-    void buildvertexBuffers() override;
-    void teardownvertexBuffers() override;
+    void build_vertex_buffers() override;
+    void teardown_vertex_buffers() override;
 };
 
 } // namespace hi::inline v1::pipeline_image

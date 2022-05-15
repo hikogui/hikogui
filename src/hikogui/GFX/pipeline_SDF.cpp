@@ -11,9 +11,9 @@ namespace hi::inline v1::pipeline_SDF {
 
 pipeline_SDF::pipeline_SDF(gfx_surface const &surface) : pipeline_vulkan(surface) {}
 
-void pipeline_SDF::drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_context const &context)
+void pipeline_SDF::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
 {
-    pipeline_vulkan::drawInCommandBuffer(commandBuffer, context);
+    pipeline_vulkan::draw_in_command_buffer(commandBuffer, context);
 
     vulkan_device().flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof(vertex));
 
@@ -155,7 +155,7 @@ std::vector<vk::VertexInputAttributeDescription> pipeline_SDF::createVertexInput
     return vertex::inputAttributeDescriptions();
 }
 
-void pipeline_SDF::buildvertexBuffers()
+void pipeline_SDF::build_vertex_buffers()
 {
     using vertexIndexType = uint16_t;
     constexpr ssize_t numberOfVertices = 1 << (sizeof(vertexIndexType) * CHAR_BIT);
@@ -175,7 +175,7 @@ void pipeline_SDF::buildvertexBuffers()
     vertexBufferData = vulkan_device().mapMemory<vertex>(vertexBufferAllocation);
 }
 
-void pipeline_SDF::teardownvertexBuffers()
+void pipeline_SDF::teardown_vertex_buffers()
 {
     vulkan_device().unmapMemory(vertexBufferAllocation);
     vulkan_device().destroyBuffer(vertexBuffer, vertexBufferAllocation);

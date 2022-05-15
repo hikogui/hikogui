@@ -22,7 +22,7 @@ gfx_device_vulkan &pipeline_vulkan::vulkan_device() const noexcept
     return down_cast<gfx_device_vulkan &>(*device);
 }
 
-void pipeline_vulkan::drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_context const &context)
+void pipeline_vulkan::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const &context)
 {
     commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, intrinsic);
 
@@ -37,7 +37,7 @@ void pipeline_vulkan::drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_
     }
 }
 
-void pipeline_vulkan::buildDescriptorSets()
+void pipeline_vulkan::build_descriptor_sets()
 {
     hilet descriptorSetLayoutBindings = createDescriptorSetLayoutBindings();
 
@@ -74,7 +74,7 @@ void pipeline_vulkan::buildDescriptorSets()
     descriptorSetVersion = 0;
 }
 
-void pipeline_vulkan::teardownDescriptorSets()
+void pipeline_vulkan::teardown_descriptor_sets()
 {
     if (!descriptorSet) {
         return;
@@ -118,7 +118,7 @@ std::vector<vk::PipelineColorBlendAttachmentState> pipeline_vulkan::getPipelineC
              vk::ColorComponentFlagBits::eA}};
 }
 
-void pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D _extent)
+void pipeline_vulkan::build_pipeline(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D _extent)
 {
     hi_log_info("buildPipeline previous size ({}, {})", extent.width, extent.height);
     extent = _extent;
@@ -236,42 +236,35 @@ void pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSu
     hi_log_info("/buildPipeline new size ({}, {})", extent.width, extent.height);
 }
 
-void pipeline_vulkan::teardownPipeline()
+void pipeline_vulkan::teardown_pipeline()
 {
     vulkan_device().destroy(intrinsic);
     vulkan_device().destroy(pipelineLayout);
 }
 
-void pipeline_vulkan::buildForNewDevice() {}
-
-void pipeline_vulkan::buildForNewSurface() {}
-
-void pipeline_vulkan::buildForNewSwapchain(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D _extent)
+void pipeline_vulkan::build_for_new_device()
 {
-    if (!buffersInitialized) {
-        buildvertexBuffers();
-        buffersInitialized = true;
-    }
+    build_vertex_buffers();
+}
+
+void pipeline_vulkan::teardown_for_device_lost()
+{
+    teardown_vertex_buffers();
+}
+
+void pipeline_vulkan::build_for_new_swapchain(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D _extent)
+{
     // Input attachments described by the descriptor set will change when a
     // new swap chain is created.
-    buildDescriptorSets();
-    buildPipeline(renderPass, renderSubpass, _extent);
+    build_descriptor_sets();
+    build_pipeline(renderPass, renderSubpass, _extent);
 }
 
-void pipeline_vulkan::teardownForSwapchainLost()
+void pipeline_vulkan::teardown_for_swapchain_lost()
 {
-    teardownPipeline();
-    teardownDescriptorSets();
+    teardown_pipeline();
+    teardown_descriptor_sets();
 }
 
-void pipeline_vulkan::teardownForSurfaceLost() {}
-
-void pipeline_vulkan::teardownForDeviceLost()
-{
-    teardownvertexBuffers();
-    buffersInitialized = false;
-}
-
-void pipeline_vulkan::teardownForWindowLost() {}
 
 } // namespace hi::inline v1

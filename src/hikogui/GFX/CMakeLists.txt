@@ -24,7 +24,6 @@ target_sources(hikogui PRIVATE
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gfx_system_vulkan_win32.cpp>
     paged_image.cpp
     paged_image.hpp
-    pipeline.cpp
     pipeline.hpp
     pipeline_vulkan.cpp
     pipeline_vulkan.hpp

@@ -25,9 +25,9 @@ std::vector<vk::PipelineColorBlendAttachmentState> pipeline_alpha::getPipelineCo
          vk::ColorComponentFlagBits::eA}};
 }
 
-void pipeline_alpha::drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_context const &context)
+void pipeline_alpha::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
 {
-    pipeline_vulkan::drawInCommandBuffer(commandBuffer, context);
+    pipeline_vulkan::draw_in_command_buffer(commandBuffer, context);
 
     vulkan_device().flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof(vertex));
 
@@ -91,7 +91,7 @@ std::vector<vk::VertexInputAttributeDescription> pipeline_alpha::createVertexInp
     return vertex::inputAttributeDescriptions();
 }
 
-void pipeline_alpha::buildvertexBuffers()
+void pipeline_alpha::build_vertex_buffers()
 {
     using vertexIndexType = uint16_t;
     constexpr ssize_t numberOfVertices = 1 << (sizeof(vertexIndexType) * CHAR_BIT);
@@ -111,7 +111,7 @@ void pipeline_alpha::buildvertexBuffers()
     vertexBufferData = vulkan_device().mapMemory<vertex>(vertexBufferAllocation);
 }
 
-void pipeline_alpha::teardownvertexBuffers()
+void pipeline_alpha::teardown_vertex_buffers()
 {
     vulkan_device().unmapMemory(vertexBufferAllocation);
     vulkan_device().destroyBuffer(vertexBuffer, vertexBufferAllocation);

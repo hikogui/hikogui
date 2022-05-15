@@ -11,6 +11,7 @@
 namespace hi::inline v1 {
 class gfx_device;
 class gfx_system;
+class gfx_surface_delegate;
 
 class gfx_surface {
 public:
@@ -58,8 +59,23 @@ public:
     [[nodiscard]] virtual draw_context render_start(aarectangle redraw_rectangle) = 0;
     virtual void render_finish(draw_context const &context) = 0;
 
+    void add_delegate(gfx_surface_delegate *delegate) noexcept
+    {
+        hi_axiom(delegate);
+        _delegates.push_back(delegate);
+    }
+
+    void remove_delegate(gfx_surface_delegate *delegate) noexcept
+    {
+        hi_axiom(delegate);
+        hilet count = std::erase(_delegates, delegate);
+        hi_axiom(count == 1);
+    }
+
 protected:
     gfx_device *_device = nullptr;
+
+    std::vector<gfx_surface_delegate *> _delegates;
 
     virtual void teardown() = 0;
 };

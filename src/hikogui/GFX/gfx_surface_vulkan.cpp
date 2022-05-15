@@ -104,7 +104,7 @@ std::optional<uint32_t> gfx_surface_vulkan::acquireNextImageFromSwapchain()
 
     case vk::Result::eErrorSurfaceLostKHR:
         hi_log_info("acquireNextImageKHR() eErrorSurfaceLostKHR");
-        loss = gfx_surface_loss::surface_lost;
+        loss = gfx_surface_loss::window_lost;
         return {};
 
     case vk::Result::eTimeout:
@@ -157,7 +157,7 @@ void gfx_surface_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Sema
 
     } catch (vk::SurfaceLostKHRError const&) {
         hi_log_info("presentKHR() eErrorSurfaceLostKHR");
-        loss = gfx_surface_loss::surface_lost;
+        loss = gfx_surface_loss::window_lost;
         return;
     }
 }
@@ -169,29 +169,20 @@ void gfx_surface_vulkan::build(extent2 new_size)
 
     if (state == gfx_surface_state::has_window) {
         if (_device) {
-            box_pipeline->buildForNewDevice();
-            image_pipeline->buildForNewDevice();
-            SDF_pipeline->buildForNewDevice();
-            alpha_pipeline->buildForNewDevice();
-            tone_mapper_pipeline->buildForNewDevice();
+            if (vulkan_device().score(*this) <= 0) {
+                loss = gfx_surface_loss::device_lost;
+                return;
+            }
+            box_pipeline->build_for_new_device();
+            image_pipeline->build_for_new_device();
+            SDF_pipeline->build_for_new_device();
+            alpha_pipeline->build_for_new_device();
+            tone_mapper_pipeline->build_for_new_device();
             state = gfx_surface_state::has_device;
         }
     }
 
     if (state == gfx_surface_state::has_device) {
-        if (!buildSurface()) {
-            loss = gfx_surface_loss::device_lost;
-            return;
-        }
-        box_pipeline->buildForNewSurface();
-        image_pipeline->buildForNewSurface();
-        SDF_pipeline->buildForNewSurface();
-        alpha_pipeline->buildForNewSurface();
-        tone_mapper_pipeline->buildForNewSurface();
-        state = gfx_surface_state::has_surface;
-    }
-
-    if (state == gfx_surface_state::has_surface) {
         try {
             hilet[clamped_count, clamped_size] = get_image_count_and_size(defaultNumberOfSwapchainImages, new_size);
             if (not new_size) {
@@ -220,18 +211,18 @@ void gfx_surface_vulkan::build(extent2 new_size)
             hi_axiom(SDF_pipeline);
             hi_axiom(alpha_pipeline);
             hi_axiom(tone_mapper_pipeline);
-            box_pipeline->buildForNewSwapchain(renderPass, 0, swapchainImageExtent);
-            image_pipeline->buildForNewSwapchain(renderPass, 1, swapchainImageExtent);
-            SDF_pipeline->buildForNewSwapchain(renderPass, 2, swapchainImageExtent);
-            alpha_pipeline->buildForNewSwapchain(renderPass, 3, swapchainImageExtent);
-            tone_mapper_pipeline->buildForNewSwapchain(renderPass, 4, swapchainImageExtent);
+            box_pipeline->build_for_new_swapchain(renderPass, 0, swapchainImageExtent);
+            image_pipeline->build_for_new_swapchain(renderPass, 1, swapchainImageExtent);
+            SDF_pipeline->build_for_new_swapchain(renderPass, 2, swapchainImageExtent);
+            alpha_pipeline->build_for_new_swapchain(renderPass, 3, swapchainImageExtent);
+            tone_mapper_pipeline->build_for_new_swapchain(renderPass, 4, swapchainImageExtent);
 
             state = gfx_surface_state::has_swapchain;
 
         } catch (vk::SurfaceLostKHRError const&) {
             // During swapchain build we lost the surface.
             // This state will cause the swapchain to be teardown.
-            loss = gfx_surface_loss::surface_lost;
+            loss = gfx_surface_loss::window_lost;
             return;
         }
     }
@@ -244,48 +235,32 @@ void gfx_surface_vulkan::teardown()
     if (state == gfx_surface_state::has_swapchain and loss >= gfx_surface_loss::swapchain_lost) {
         hi_log_info("Tearing down because the window lost the swapchain.");
         waitIdle();
-        tone_mapper_pipeline->teardownForSwapchainLost();
-        alpha_pipeline->teardownForSwapchainLost();
-        SDF_pipeline->teardownForSwapchainLost();
-        image_pipeline->teardownForSwapchainLost();
-        box_pipeline->teardownForSwapchainLost();
+        tone_mapper_pipeline->teardown_for_swapchain_lost();
+        alpha_pipeline->teardown_for_swapchain_lost();
+        SDF_pipeline->teardown_for_swapchain_lost();
+        image_pipeline->teardown_for_swapchain_lost();
+        box_pipeline->teardown_for_swapchain_lost();
         teardownSemaphores();
         teardownCommandBuffers();
         teardownFramebuffers();
         teardownRenderPasses();
         teardownSwapchain();
-        state = gfx_surface_state::has_surface;
-    }
-
-    if (state == gfx_surface_state::has_surface and loss >= gfx_surface_loss::surface_lost) {
-        hi_log_info("Tearing down because the window lost the drawable surface.");
-        tone_mapper_pipeline->teardownForSurfaceLost();
-        alpha_pipeline->teardownForSurfaceLost();
-        SDF_pipeline->teardownForSurfaceLost();
-        image_pipeline->teardownForSurfaceLost();
-        box_pipeline->teardownForSurfaceLost();
-        teardownSurface();
         state = gfx_surface_state::has_device;
     }
 
     if (state == gfx_surface_state::has_device and loss >= gfx_surface_loss::device_lost) {
         hi_log_info("Tearing down because the window lost the vulkan device.");
-        tone_mapper_pipeline->teardownForDeviceLost();
-        alpha_pipeline->teardownForDeviceLost();
-        SDF_pipeline->teardownForDeviceLost();
-        image_pipeline->teardownForDeviceLost();
-        box_pipeline->teardownForDeviceLost();
+        tone_mapper_pipeline->teardown_for_device_lost();
+        alpha_pipeline->teardown_for_device_lost();
+        SDF_pipeline->teardown_for_device_lost();
+        image_pipeline->teardown_for_device_lost();
+        box_pipeline->teardown_for_device_lost();
         teardownDevice();
         state = gfx_surface_state::has_window;
     }
 
     if (state == gfx_surface_state::has_window and loss >= gfx_surface_loss::window_lost) {
         hi_log_info("Tearing down because the window doesn't exist anymore.");
-        tone_mapper_pipeline->teardownForWindowLost();
-        alpha_pipeline->teardownForWindowLost();
-        SDF_pipeline->teardownForWindowLost();
-        image_pipeline->teardownForWindowLost();
-        box_pipeline->teardownForWindowLost();
         state = gfx_surface_state::no_window;
     }
     loss = gfx_surface_loss::none;
@@ -429,15 +404,15 @@ void gfx_surface_vulkan::fill_command_buffer(swapchain_image_info& current_image
         {renderPass, current_image.frame_buffer, render_area, narrow_cast<uint32_t>(clearValues.size()), clearValues.data()},
         vk::SubpassContents::eInline);
 
-    box_pipeline->drawInCommandBuffer(commandBuffer, context);
+    box_pipeline->draw_in_command_buffer(commandBuffer, context);
     commandBuffer.nextSubpass(vk::SubpassContents::eInline);
-    image_pipeline->drawInCommandBuffer(commandBuffer, context);
+    image_pipeline->draw_in_command_buffer(commandBuffer, context);
     commandBuffer.nextSubpass(vk::SubpassContents::eInline);
-    SDF_pipeline->drawInCommandBuffer(commandBuffer, context);
+    SDF_pipeline->draw_in_command_buffer(commandBuffer, context);
     commandBuffer.nextSubpass(vk::SubpassContents::eInline);
-    alpha_pipeline->drawInCommandBuffer(commandBuffer, context);
+    alpha_pipeline->draw_in_command_buffer(commandBuffer, context);
     commandBuffer.nextSubpass(vk::SubpassContents::eInline);
-    tone_mapper_pipeline->drawInCommandBuffer(commandBuffer, context);
+    tone_mapper_pipeline->draw_in_command_buffer(commandBuffer, context);
 
     commandBuffer.endRenderPass();
     commandBuffer.end();
@@ -543,7 +518,7 @@ gfx_surface_loss gfx_surface_vulkan::buildSwapchain(std::size_t new_count, exten
         break;
 
     case vk::Result::eErrorSurfaceLostKHR:
-        return gfx_surface_loss::surface_lost;
+        return gfx_surface_loss::window_lost;
 
     default:
         throw gui_error(std::format("Unknown result from createSwapchainKHR(). '{}'", to_string(result)));
