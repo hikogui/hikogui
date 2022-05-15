@@ -11,6 +11,7 @@
 #include <optional>
 
 namespace hi::inline v1 {
+class gfx_surface_delegate_vulkan;
 class gfx_device_vulkan;
 namespace pipeline_image {
 class pipeline_image;
@@ -97,16 +98,24 @@ public:
     [[nodiscard]] draw_context render_start(aarectangle redraw_rectangle) override;
     void render_finish(draw_context const& context) override;
 
+    void add_delegate(gfx_surface_delegate *delegate) noexcept override;
+    void remove_delegate(gfx_surface_delegate *delegate) noexcept override;
+
 protected:
     void teardown() noexcept override;
     void build(extent2 new_size) noexcept;
 
 private:
+    struct delegate_type {
+        gfx_surface_delegate_vulkan *delegate;
+        vk::Semaphore semaphore;
+    };
+
+    std::vector<delegate_type> _delegates;
+
     gfx_queue_vulkan const *_graphics_queue;
     gfx_queue_vulkan const *_present_queue;
     extent2 _render_area_granularity;
-
-    std::vector<vk::Semaphore> _delegate_semaphores;
 
     gfx_surface_loss build_for_new_device() noexcept;
     gfx_surface_loss build_for_new_swapchain(extent2 new_size) noexcept;

@@ -49,6 +49,51 @@ gfx_device_vulkan& gfx_surface_vulkan::vulkan_device() const noexcept
     return down_cast<gfx_device_vulkan&>(*_device);
 }
 
+void gfx_surface_vulkan::add_delegate(gfx_surface_delegate *delegate) noexcept
+{
+    hi_axiom(delegate);
+    auto& delegate_info =
+        _delegates.emplace_back(down_cast<gfx_surface_delegate_vulkan *>(delegate), vulkan_device().createSemaphore());
+
+    if (state >= gfx_surface_state::has_device) {
+        auto& vulkan_device_ = vulkan_device();
+        auto& vulkan_system = down_cast<gfx_system_vulkan&>(vulkan_device_.system);
+        auto& graphics_queue = vulkan_device_.get_graphics_queue(*this);
+
+        delegate_info.delegate->build_for_new_device(
+            vulkan_device_.allocator, vulkan_system.intrinsic, vulkan_device_.intrinsic, graphics_queue.queue);
+    }
+    if (state >= gfx_surface_state::has_swapchain) {
+        auto image_views = std::vector<vk::ImageView>{};
+        image_views.reserve(swapchain_image_infos.size());
+        for (hilet& image_info : swapchain_image_infos) {
+            image_views.push_back(image_info.image_view);
+        }
+
+        delegate_info.delegate->build_for_new_swapchain(image_views, swapchainImageExtent, swapchainImageFormat);
+    }
+}
+
+void gfx_surface_vulkan::remove_delegate(gfx_surface_delegate *delegate) noexcept
+{
+    hi_axiom(delegate);
+    auto it = std::find_if(_delegates.begin(), _delegates.end(), [delegate](hilet& item) {
+        return item.delegate == delegate;
+    });
+
+    if (state >= gfx_surface_state::has_swapchain) {
+        it->delegate->teardown_for_swapchain_lost();
+    }
+    if (state >= gfx_surface_state::has_device) {
+        it->delegate->teardown_for_device_lost();
+    }
+    if (state >= gfx_surface_state::has_window) {
+        it->delegate->teardown_for_window_lost();
+    }
+
+    _delegates.erase(it);
+}
+
 void gfx_surface_vulkan::init()
 {
     hilet lock = std::scoped_lock(gfx_system_mutex);
@@ -178,11 +223,10 @@ gfx_surface_loss gfx_surface_vulkan::build_for_new_device() noexcept
 
     auto& vulkan_system = down_cast<gfx_system_vulkan&>(vulkan_device_.system);
     auto& graphics_queue = vulkan_device_.get_graphics_queue(*this);
-    for (auto *delegate : _delegates) {
+    for (auto [delegate, semaphore] : _delegates) {
         hi_axiom(delegate);
-        auto *vulkan_delegate = down_cast<gfx_surface_delegate_vulkan *>(delegate);
 
-        vulkan_delegate->build_for_new_device(
+        delegate->build_for_new_device(
             vulkan_device_.allocator, vulkan_system.intrinsic, vulkan_device_.intrinsic, graphics_queue.queue);
     }
 
@@ -231,10 +275,9 @@ gfx_surface_loss gfx_surface_vulkan::build_for_new_swapchain(extent2 new_size) n
             image_views.push_back(image_info.image_view);
         }
 
-        for (auto *delegate : _delegates) {
+        for (auto [delegate, semaphore] : _delegates) {
             hi_axiom(delegate);
-            auto *vulkan_delegate = down_cast<gfx_surface_delegate_vulkan *>(delegate);
-            vulkan_delegate->build_for_new_swapchain(image_views, swapchainImageExtent, swapchainImageFormat);
+            delegate->build_for_new_swapchain(image_views, swapchainImageExtent, swapchainImageFormat);
         }
 
         return gfx_surface_loss::none;
@@ -278,7 +321,7 @@ void gfx_surface_vulkan::teardown_for_swapchain_lost() noexcept
     hi_log_info("Tearing down because the window lost the swapchain.");
     wait_idle();
 
-    for (auto *delegate : _delegates) {
+    for (auto [delegate, semaphore] : _delegates) {
         hi_axiom(delegate);
         delegate->teardown_for_swapchain_lost();
     }
@@ -298,7 +341,7 @@ void gfx_surface_vulkan::teardown_for_swapchain_lost() noexcept
 void gfx_surface_vulkan::teardown_for_device_lost() noexcept
 {
     hi_log_info("Tearing down because the window lost the vulkan device.");
-    for (auto *delegate : _delegates) {
+    for (auto [delegate, semaphore] : _delegates) {
         hi_axiom(delegate);
         delegate->teardown_for_device_lost();
     }
@@ -312,7 +355,7 @@ void gfx_surface_vulkan::teardown_for_device_lost() noexcept
 
 void gfx_surface_vulkan::teardown_for_window_lost() noexcept
 {
-    for (auto *delegate : _delegates) {
+    for (auto [delegate, semaphore] : _delegates) {
         hi_axiom(delegate);
         delegate->teardown_for_window_lost();
     }
@@ -414,24 +457,12 @@ void gfx_surface_vulkan::render_finish(draw_context const& context)
         vk::Offset2D{narrow<int32_t>(context.scissor_rectangle.left()), narrow<int32_t>(context.scissor_rectangle.bottom())},
         vk::Extent2D{narrow<uint32_t>(context.scissor_rectangle.width()), narrow<uint32_t>(context.scissor_rectangle.height())}};
 
-    while (_delegate_semaphores.size() < _delegates.size()) {
-        _delegate_semaphores.push_back(vulkan_device().createSemaphore());
-    }
-    while (_delegate_semaphores.size() > _delegates.size()) {
-        vulkan_device().destroy(_delegate_semaphores.back());
-        _delegate_semaphores.pop_back();
-    }
-
     // Start the first delegate when the swapchain-image becomes available.
     auto start_semaphore = imageAvailableSemaphore;
-    for (auto i = 0_uz; i != _delegates.size(); ++i) {
-        auto *delegate = _delegates[i];
+    for (auto [delegate, end_semaphore] : _delegates) {
         hi_axiom(delegate);
 
-        hilet end_semaphore = _delegate_semaphores[i];
-
-        auto *vulkan_delegate = down_cast<gfx_surface_delegate_vulkan *>(delegate);
-        vulkan_delegate->draw(context.frame_buffer_index, render_area, start_semaphore, end_semaphore);
+        delegate->draw(narrow<uint32_t>(context.frame_buffer_index), render_area, start_semaphore, end_semaphore);
         start_semaphore = end_semaphore;
     }
 
