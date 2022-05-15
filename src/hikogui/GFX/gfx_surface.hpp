@@ -77,7 +77,7 @@ protected:
 
     std::vector<gfx_surface_delegate *> _delegates;
 
-    virtual void teardown() = 0;
+    virtual void teardown() noexcept = 0;
 };
 
 } // namespace hi::inline v1

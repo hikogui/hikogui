@@ -14,10 +14,6 @@ namespace hi::inline v1 {
 
 class gfx_surface_delegate_vulkan : public gfx_surface_delegate {
 public:
-    /** The vulkan device is going to be teared-down.
-     */
-    virtual void device_teardown() noexcept = 0;
-
     /** The vulkan device has been initialized.
      *
      * This function is called when either the device has just been build, or when the widget
@@ -25,16 +21,8 @@ public:
      *
      * The device may be rebuild when the vulkan device disconnects.
      */
-    virtual void device_setup(vk::Instance instance, vk::Device device, vk::Queue graphics_queue) noexcept = 0;
-
-    /** The swap-chain is going to be teared-down.
-     *
-     * This function is called just before the swap-chain is being teared down.
-     *
-     * This requires the destruction of any references to the swap-chain's image views, including
-     * the frame-buffers created during `swapchain_build()`.
-     */
-    virtual void swapchain_teardown() noexcept = 0;
+    virtual void
+    build_for_new_device(VmaAllocator allocator, vk::Instance instance, vk::Device device, vk::Queue graphics_queue) noexcept = 0;
 
     /** The swap-chain has been build.
      *
@@ -45,9 +33,9 @@ public:
      *
      * @param views The list of swap-chain image views.
      * @param size The size of the images in the swap-chain.
-     * @param format The pixel format of the images in the swap-chain.
+     * @param format The pixel format and color space of the images in the swap-chain.
      */
-    virtual void swapchain_setup(std::vector<vk::ImageView> views, vk::Extent2d size, vk::Format format) noexcept = 0;
+    virtual void build_for_new_swapchain(std::vector<vk::ImageView> const &views, vk::Extent2D size, vk::SurfaceFormatKHR format) noexcept = 0;
 
     /** Draw using vulkan API.
      *
@@ -57,10 +45,9 @@ public:
      * @param start The semaphore used to signal when the @a image_view is ready to be drawn.
      * @param finish The semaphore used to signal when the HikoGUI overlay is drawn onto the @a image_view.
      */
-    virtual void draw_vulkan(
+    virtual void draw(
         uint32_t swapchain_index,
-        aarectangle clipping_rectangle,
-        aarectangle render_area,
+        vk::Rect2D render_area,
         vk::Semaphore start,
         vk::Semaphore finish) noexcept = 0;
 };

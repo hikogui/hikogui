@@ -20,6 +20,10 @@ class URL;
 
 class gfx_device_vulkan final : public gfx_device {
 public:
+    vk::PhysicalDevice physicalIntrinsic;
+    vk::Device intrinsic;
+    VmaAllocator allocator;
+
     vk::PhysicalDeviceType deviceType = vk::PhysicalDeviceType::eOther;
     vk::PhysicalDeviceProperties physicalProperties;
 
@@ -255,7 +259,7 @@ public:
         return r;
     }
 
-    vk::Semaphore createSemaphore(const vk::SemaphoreCreateInfo &createInfo) const
+    vk::Semaphore createSemaphore(const vk::SemaphoreCreateInfo& createInfo = vk::SemaphoreCreateInfo{}) const
     {
         hi_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.createSemaphore(createInfo);
@@ -372,10 +376,6 @@ public:
 
     void log_memory_usage() const noexcept override;
 
-protected:
-    vk::PhysicalDevice physicalIntrinsic;
-    vk::Device intrinsic;
-    VmaAllocator allocator;
 
 private:
     [[nodiscard]] std::vector<vk::DeviceQueueCreateInfo> make_device_queue_create_infos() const noexcept;

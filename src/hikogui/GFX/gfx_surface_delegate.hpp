@@ -12,11 +12,23 @@ public:
     constexpr gfx_surface_delegate() noexcept = default;
     gfx_surface_delegate(gfx_surface_delegate const&) = delete;
     gfx_surface_delegate(gfx_surface_delegate&&) = delete;
-    gfx_surface_delegate &operator=(gfx_surface_delegate const&) = delete;
-    gfx_surface_delegate &operator=(gfx_surface_delegate&&) = delete;
+    gfx_surface_delegate& operator=(gfx_surface_delegate const&) = delete;
+    gfx_surface_delegate& operator=(gfx_surface_delegate&&) = delete;
 
+    /** The swap-chain is going to be teared-down.
+     *
+     * This function is called just before the swap-chain is being teared down.
+     *
+     * This requires the destruction of any references to the swap-chain's image views, including
+     * the frame-buffers created during `swapchain_build()`.
+     */
+    virtual void teardown_for_swapchain_lost() noexcept {}
 
+    /** The vulkan device is going to be teared-down.
+     */
+    virtual void teardown_for_device_lost() noexcept {}
+
+    virtual void teardown_for_window_lost() noexcept {}
 };
 
-
-}
+} // namespace hi::inline v1
