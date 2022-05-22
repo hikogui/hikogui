@@ -51,7 +51,6 @@ target_sources(hikogui PRIVATE
     crt.hpp
     crt_utils.hpp
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/crt_utils_win32.cpp>
-    date.hpp
     datum.hpp
     dead_lock_detector.cpp
     dead_lock_detector.hpp
@@ -185,6 +184,7 @@ target_sources(hikogui PRIVATE
     when_any.hpp
     wfree_fifo.hpp
     wfree_unordered_map.hpp
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/win32_headers.hpp>
 )
 
 if(HI_BUILD_PCH AND NOT HI_ENABLE_ANALYSIS)

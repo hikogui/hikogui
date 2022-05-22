@@ -11,11 +11,11 @@ namespace hi::inline v1::pipeline_tone_mapper {
 
 pipeline_tone_mapper::pipeline_tone_mapper(gfx_surface const &surface) : pipeline_vulkan(surface) {}
 
-void pipeline_tone_mapper::drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_context const &context)
+void pipeline_tone_mapper::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
 {
-    pipeline_vulkan::drawInCommandBuffer(commandBuffer, context);
+    pipeline_vulkan::draw_in_command_buffer(commandBuffer, context);
 
-    vulkan_device().toneMapperPipeline->drawInCommandBuffer(commandBuffer);
+    vulkan_device().tone_mapper_pipeline->drawInCommandBuffer(commandBuffer);
 
     _push_constants.saturation = context.saturation;
     commandBuffer.pushConstants(pipelineLayout, vk::ShaderStageFlagBits::eFragment, 0, sizeof(push_constants), &_push_constants);
@@ -27,7 +27,7 @@ void pipeline_tone_mapper::drawInCommandBuffer(vk::CommandBuffer commandBuffer, 
 
 std::vector<vk::PipelineShaderStageCreateInfo> pipeline_tone_mapper::createShaderStages() const
 {
-    return vulkan_device().toneMapperPipeline->shaderStages;
+    return vulkan_device().tone_mapper_pipeline->shaderStages;
 }
 
 std::vector<vk::DescriptorSetLayoutBinding> pipeline_tone_mapper::createDescriptorSetLayoutBindings() const

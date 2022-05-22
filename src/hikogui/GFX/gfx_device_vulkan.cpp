@@ -183,14 +183,16 @@ gfx_device_vulkan::~gfx_device_vulkan()
     try {
         hilet lock = std::scoped_lock(gfx_system_mutex);
 
-        toneMapperPipeline->destroy(this);
-        toneMapperPipeline = nullptr;
-        SDFPipeline->destroy(this);
-        SDFPipeline = nullptr;
-        imagePipeline->destroy(this);
-        imagePipeline = nullptr;
-        boxPipeline->destroy(this);
-        boxPipeline = nullptr;
+        tone_mapper_pipeline->destroy(this);
+        tone_mapper_pipeline = nullptr;
+        alpha_pipeline->destroy(this);
+        alpha_pipeline = nullptr;
+        SDF_pipeline->destroy(this);
+        SDF_pipeline = nullptr;
+        image_pipeline->destroy(this);
+        image_pipeline = nullptr;
+        box_pipeline->destroy(this);
+        box_pipeline = nullptr;
 
         destroy_quad_index_buffer();
 
@@ -529,10 +531,11 @@ void gfx_device_vulkan::initialize_device()
     initialize_queues(device_queue_create_infos);
     initialize_quad_index_buffer();
 
-    boxPipeline = std::make_unique<pipeline_box::device_shared>(*this);
-    imagePipeline = std::make_unique<pipeline_image::device_shared>(*this);
-    SDFPipeline = std::make_unique<pipeline_SDF::device_shared>(*this);
-    toneMapperPipeline = std::make_unique<pipeline_tone_mapper::device_shared>(*this);
+    box_pipeline = std::make_unique<pipeline_box::device_shared>(*this);
+    image_pipeline = std::make_unique<pipeline_image::device_shared>(*this);
+    SDF_pipeline = std::make_unique<pipeline_SDF::device_shared>(*this);
+    alpha_pipeline = std::make_unique<pipeline_alpha::device_shared>(*this);
+    tone_mapper_pipeline = std::make_unique<pipeline_tone_mapper::device_shared>(*this);
 }
 
 void gfx_device_vulkan::initialize_quad_index_buffer()

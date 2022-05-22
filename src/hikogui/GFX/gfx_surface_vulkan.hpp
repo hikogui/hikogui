@@ -11,6 +11,7 @@
 #include <optional>
 
 namespace hi::inline v1 {
+class gfx_surface_delegate_vulkan;
 class gfx_device_vulkan;
 namespace pipeline_image {
 class pipeline_image;
@@ -20,6 +21,9 @@ class pipeline_box;
 }
 namespace pipeline_SDF {
 class pipeline_SDF;
+}
+namespace pipeline_alpha {
+class pipeline_alpha;
 }
 namespace pipeline_tone_mapper {
 class pipeline_tone_mapper;
@@ -68,68 +72,90 @@ public:
     vk::Semaphore renderFinishedSemaphore;
     vk::Fence renderFinishedFence;
 
-    std::unique_ptr<pipeline_image::pipeline_image> imagePipeline;
-    std::unique_ptr<pipeline_box::pipeline_box> boxPipeline;
-    std::unique_ptr<pipeline_SDF::pipeline_SDF> SDFPipeline;
-    std::unique_ptr<pipeline_tone_mapper::pipeline_tone_mapper> toneMapperPipeline;
+    std::unique_ptr<pipeline_image::pipeline_image> image_pipeline;
+    std::unique_ptr<pipeline_box::pipeline_box> box_pipeline;
+    std::unique_ptr<pipeline_SDF::pipeline_SDF> SDF_pipeline;
+    std::unique_ptr<pipeline_alpha::pipeline_alpha> alpha_pipeline;
+    std::unique_ptr<pipeline_tone_mapper::pipeline_tone_mapper> tone_mapper_pipeline;
 
-    gfx_surface_vulkan(gfx_system &system, vk::SurfaceKHR surface);
+    gfx_surface_vulkan(gfx_system& system, vk::SurfaceKHR surface);
     ~gfx_surface_vulkan();
 
-    gfx_surface_vulkan(const gfx_surface_vulkan &) = delete;
-    gfx_surface_vulkan &operator=(const gfx_surface_vulkan &) = delete;
-    gfx_surface_vulkan(gfx_surface_vulkan &&) = delete;
-    gfx_surface_vulkan &operator=(gfx_surface_vulkan &&) = delete;
+    gfx_surface_vulkan(const gfx_surface_vulkan&) = delete;
+    gfx_surface_vulkan& operator=(const gfx_surface_vulkan&) = delete;
+    gfx_surface_vulkan(gfx_surface_vulkan&&) = delete;
+    gfx_surface_vulkan& operator=(gfx_surface_vulkan&&) = delete;
 
     void init() override;
 
     void set_device(gfx_device *device) noexcept override;
 
-    gfx_device_vulkan &vulkan_device() const noexcept;
+    gfx_device_vulkan& vulkan_device() const noexcept;
     [[nodiscard]] extent2 size() const noexcept override;
 
     void update(extent2 new_size) noexcept override;
 
     [[nodiscard]] draw_context render_start(aarectangle redraw_rectangle) override;
-    void render_finish(draw_context const &context) override;
+    void render_finish(draw_context const& context) override;
+
+    void add_delegate(gfx_surface_delegate *delegate) noexcept override;
+    void remove_delegate(gfx_surface_delegate *delegate) noexcept override;
 
 protected:
-    void teardown() override;
+    void teardown() noexcept override;
+    void build(extent2 new_size) noexcept;
 
 private:
+    struct delegate_type {
+        gfx_surface_delegate_vulkan *delegate;
+        vk::Semaphore semaphore;
+    };
+
+    std::vector<delegate_type> _delegates;
+
     gfx_queue_vulkan const *_graphics_queue;
     gfx_queue_vulkan const *_present_queue;
     extent2 _render_area_granularity;
 
-    void build(extent2 new_size);
+    gfx_surface_loss build_for_new_device() noexcept;
+    gfx_surface_loss build_for_new_swapchain(extent2 new_size) noexcept;
 
-    std::optional<uint32_t> acquireNextImageFromSwapchain();
-    void presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore renderFinishedSemaphore);
+    void teardown_for_swapchain_lost() noexcept;
+    void teardown_for_device_lost() noexcept;
+    void teardown_for_window_lost() noexcept;
 
-    void fill_command_buffer(swapchain_image_info &current_image, draw_context const &context);
-    void submitCommandBuffer();
+    std::optional<uint32_t> acquire_next_image_from_swapchain();
+    void present_image_to_queue(uint32_t frameBufferIndex, vk::Semaphore renderFinishedSemaphore);
 
-    bool readSurfaceExtent(extent2 minimum_size, extent2 maximum_size);
-    bool checkSurfaceExtent();
+    /**
+     * @param current_image Information about the swapchain-image to be rendered.
+     * @param context The drawing context.
+     */
+    void fill_command_buffer(swapchain_image_info& current_image, draw_context const& context);
 
-    void buildDevice();
-    void buildSemaphores();
-    void teardownSemaphores();
-    gfx_surface_loss buildSwapchain(std::size_t new_count, extent2 new_size);
-    void teardownSwapchain();
-    void buildCommandBuffers();
-    void teardownCommandBuffers();
-    void buildRenderPasses();
-    void teardownRenderPasses();
-    void buildFramebuffers();
-    void teardownFramebuffers();
-    void buildPipelines();
-    void teardownPipelines();
-    bool buildSurface();
-    void teardownSurface();
-    void teardownDevice();
+    /** Submit the command buffer updated with fill command buffer.
+     *
+     * @param delegate_semaphore The semaphore of the last delegate to trigger writing into the swapchain-image.
+     */
+    void submit_command_buffer(vk::Semaphore delegate_semaphore);
 
-    void waitIdle();
+    bool read_surface_extent(extent2 minimum_size, extent2 maximum_size);
+    bool check_surface_extent();
+
+    void build_semaphores();
+    void teardown_semaphores();
+    gfx_surface_loss build_swapchain(std::size_t new_count, extent2 new_size);
+    void teardown_swapchain();
+    void build_command_buffers();
+    void teardown_command_buffers();
+    void build_render_passes();
+    void teardown_render_passes();
+    void build_frame_buffers();
+    void teardown_frame_buffers();
+    void build_pipelines();
+    void teardown_pipelines();
+
+    void wait_idle();
 
     /** Get the image size and image count from the Vulkan surface.
      *

@@ -171,6 +171,8 @@ if(WIN32)
 	target_link_libraries(hikogui PUBLIC "ws2_32")
 	target_link_libraries(hikogui PUBLIC "DXGI")
 	target_link_libraries(hikogui PUBLIC "bcrypt")
+	target_link_libraries(hikogui PUBLIC "winmm")
+	target_link_libraries(hikogui PUBLIC "dwmapi")
 endif()
 
 target_include_directories(hikogui PUBLIC ${Vulkan_INCLUDE_DIRS})
@@ -360,6 +362,8 @@ add_shader(hikogui_shader_objects
     src/hikogui/GFX/pipeline_box.frag
     src/hikogui/GFX/pipeline_SDF.vert
     src/hikogui/GFX/pipeline_SDF.frag
+    src/hikogui/GFX/pipeline_alpha.vert
+    src/hikogui/GFX/pipeline_alpha.frag
     src/hikogui/GFX/pipeline_tone_mapper.vert
     src/hikogui/GFX/pipeline_tone_mapper.frag
 )

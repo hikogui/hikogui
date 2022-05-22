@@ -9,6 +9,7 @@
 #include "audio_stream_config.hpp"
 #include "audio_channel.hpp"
 #include "audio_direction.hpp"
+#include "audio_device_state.hpp"
 #include "speaker_mapping.hpp"
 #include "../label.hpp"
 #include "../enum_metadata.hpp"
@@ -17,28 +18,6 @@
 #include <ostream>
 
 namespace hi::inline v1 {
-
-enum class audio_device_state { active, disabled, not_present, unplugged };
-
-// clang-format off
-constexpr auto audio_device_state_metadata = enum_metadata{
-    audio_device_state::active, "active",
-    audio_device_state::disabled, "disabled",
-    audio_device_state::not_present, "not_present",
-    audio_device_state::unplugged, "unplugged",
-};
-// clang-format on
-
-
-[[nodiscard]] constexpr std::string_view to_string(audio_device_state const &rhs) noexcept
-{
-    return audio_device_state_metadata[rhs];
-}
-
-inline std::ostream &operator<<(std::ostream &lhs, audio_device_state const &rhs)
-{
-    return lhs << audio_device_state_metadata[rhs];
-}
 
 /** A set of audio channels which can be rendered and/or captures at the same time.
  * On win32 this would be Audio Endpoint gfx_device, which can either render or capture
@@ -68,6 +47,12 @@ public:
      * the name of the end-point, plus an icon for the driver architecture.
      */
     [[nodiscard]] virtual label label() const noexcept = 0;
+
+    /** Update the internal state based on the audio device.
+    * 
+    * This function is called by the audio-system when a device change was detected.
+    */
+    virtual void update_state() noexcept = 0;
 
     /** Get the current state of the audio device.
      */
@@ -171,12 +156,3 @@ protected:
 };
 
 } // namespace hi::inline v1
-
-
-template<typename CharT>
-struct std::formatter<hi::audio_device_state, CharT> : std::formatter<char const *, CharT> {
-    auto format(hi::audio_device_state const &t, auto &fc) const
-    {
-        return std::formatter<char const *, CharT>{}.format(hi::to_string(t), fc);
-    }
-};

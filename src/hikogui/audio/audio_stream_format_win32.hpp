@@ -5,8 +5,6 @@
 #pragma once
 
 #include "audio_stream_format.hpp"
-#include <Windows.h>
-#include <mmreg.h>
 
 namespace hi::inline v1 {
 

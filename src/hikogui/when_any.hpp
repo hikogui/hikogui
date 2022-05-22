@@ -18,113 +18,31 @@
 #include <chrono>
 
 namespace hi::inline v1 {
-namespace detail {
-
-template<awaitable_direct T>
-struct when_any_result_element {
-    using type = std::conditional_t<std::is_same_v<await_resume_result_t<T>, void>, std::monostate, await_resume_result_t<T>>;
-};
-
-template<awaitable_direct T>
-using when_any_result_element_t = when_any_result_element<T>::type;
-
-} // namespace detail
-
-/** Result of the `when_any` awaitable.
- */
-template<typename... Ts>
-class when_any_result {
-public:
-    using result_type = std::variant<std::monostate, detail::when_any_result_element_t<Ts>...>;
-    using awaiter_type = std::variant<std::monostate, Ts...>;
-
-    when_any_result() noexcept = default;
-    when_any_result(when_any_result const&) noexcept = default;
-    when_any_result(when_any_result&&) noexcept = default;
-    when_any_result& operator=(when_any_result const&) noexcept = default;
-    when_any_result& operator=(when_any_result&&) noexcept = default;
-
-    template<std::size_t I, typename Awaiter, typename... Result>
-    when_any_result(std::in_place_index_t<I>, Awaiter const& awaiter, Result&&...result) noexcept :
-        _result{std::in_place_index<I + 1>, std::forward<Result>(result)...}, _awaiters{std::in_place_index<I + 1>, awaiter}
-    {
-        hi_axiom(_result.index() == _awaiters.index());
-    }
-
-    /** The index of the awaitable that was triggered.
-     *
-     * @return The index of the argument of when_any(), this includes the timeout parameter.
-     */
-    [[nodiscard]] std::size_t index() const noexcept
-    {
-        return _result.index() - 1;
-    }
-
-    /** Comparison to check if the awaitable was the one that triggered `when_any`.
-     */
-    [[nodiscard]] bool operator==(awaitable auto const& rhs) const noexcept
-    {
-        return compare_equal<1>(awaitable_cast<std::decay_t<decltype(rhs)>>{}(rhs));
-    }
-
-    /** Get the value returned by the awaitable that triggered `when_any`.
-     */
-    template<typename T>
-    friend auto& get(when_any_result const& rhs) noexcept
-    {
-        return std::get<T>(rhs._result);
-    }
-
-    /** Get the value returned by the awaitable that triggered `when_any`.
-     */
-    template<std::size_t I>
-    friend auto& get(when_any_result const& rhs) noexcept
-    {
-        return std::get<I + 1>(rhs._result);
-    }
-
-private:
-    result_type _result;
-    awaiter_type _awaiters;
-
-    template<size_t I>
-    [[nodiscard]] bool compare_equal(awaitable_direct auto const& rhs) const noexcept
-    {
-        if (I != _awaiters.index()) {
-            if constexpr (I + 1 < std::variant_size_v<awaiter_type>) {
-                return compare_equal<I + 1>(rhs);
-            } else {
-                hi_no_default();
-            }
-        } else {
-            using get_type = std::decay_t<decltype(get<I>(_awaiters))>;
-            using cmp_type = std::decay_t<decltype(rhs)>;
-
-            if constexpr (std::is_same_v<get_type, cmp_type>) {
-                return std::get<I>(_awaiters) == rhs;
-            } else {
-                return false;
-            }
-        }
-    }
-};
 
 /** An awaitable that waits for any of the given awaitables to complete.
  *
+ * The return value of awaiting on `when_any` is a `std::variant` of the return
+ * values of the given awaitables. If an awaitable has `void` as return type then
+ * it will be converted to a `std::monotype` so that is can be used in the `std::variant`.
+ * 
+ * The `index()` of the `std::variant` return type will match the index of the `when_any()`
+ * constructor argument of the triggered awaitable.
+ * 
  * @tparam Ts Awaitable types.
  */
 template<typename... Ts>
 class when_any {
 public:
-    using value_type = when_any_result<Ts...>;
+    using value_type = std::variant<variant_decay_t<await_resume_result_t<Ts>>...>;
 
     /** Construct a `when_any` object from the given awaitables.
      *
      * The arguments may be of the following types:
      *  - An object which can be directly used as an awaitable. Having the member functions:
-     *    `await_ready()`, `await_suspend()` and `await_resume()` and `was_triggered()`.
+     *    `await_ready()`, `await_suspend()` and `await_resume()`.
      *  - An object that has a `operator co_await()` member function.
      *  - An object that has a `operator co_await()` free function.
+     *  - An object that can be converted using the `awaitable_cast` functor.
      *
      * @param others The awaitable to wait for.
      */
@@ -151,19 +69,30 @@ public:
 
     value_type await_resume() noexcept
     {
-        return _value;
+        hi_axiom(_value);
+        return *_value;
     }
 
 private:
     std::tuple<Ts...> _awaiters;
     std::tuple<scoped_task<await_resume_result_t<Ts>>...> _tasks;
     std::tuple<typename notifier<void(await_resume_result_t<Ts>)>::token_type...> _task_cbts;
-    value_type _value;
+    std::optional<value_type> _value;
 
     template<awaitable_direct Awaiter>
     static scoped_task<await_resume_result_t<Awaiter>> _await_suspend_task(Awaiter& awaiter)
     {
         co_return co_await awaiter;
+    }
+
+    template<std::size_t I>
+    void _destroy_tasks() noexcept
+    {
+        std::get<I>(_task_cbts) = {};
+        std::get<I>(_tasks) = {};
+        if constexpr (I + 1 < sizeof...(Ts)) {
+            _destroy_tasks<I + 1>();
+        }
     }
 
     template<std::size_t I>
@@ -175,10 +104,11 @@ private:
             using arg_type = await_resume_result_t<decltype(std::get<I>(_awaiters))>;
 
             if constexpr (std::is_same_v<arg_type, void>) {
-                _value = {std::in_place_index<I>, std::get<I>(_awaiters)};
+                _value = value_type{std::in_place_index<I>, std::monostate{}};
             } else {
-                _value = {std::in_place_index<I>, std::get<I>(_awaiters), task.value()};
+                _value = value_type{std::in_place_index<I>, task.value()};
             }
+            _destroy_tasks<0>();
             return true;
 
         } else if constexpr (I + 1 < sizeof...(Ts)) {
@@ -196,13 +126,15 @@ private:
 
         if constexpr (std::is_same_v<arg_type, void>) {
             std::get<I>(_task_cbts) = std::get<I>(_tasks).subscribe([this, handle]() {
-                this->_value = {std::in_place_index<I>, std::get<I>(_awaiters)};
+                this->_value = value_type{std::in_place_index<I>, std::monostate{}};
+                this->_destroy_tasks<0>();
                 handle.resume();
             });
 
         } else {
             std::get<I>(_task_cbts) = std::get<I>(_tasks).subscribe([this, handle](arg_type const& arg) {
-                this->_value = {std::in_place_index<I>, std::get<I>(_awaiters), arg};
+                this->_value = value_type{std::in_place_index<I>, arg};
+                this->_destroy_tasks<0>();
                 handle.resume();
             });
         }

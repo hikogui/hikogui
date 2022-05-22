@@ -87,11 +87,6 @@ public:
             return _args;
         }
 
-        [[nodiscard]] bool operator==(awaiter_type const& rhs) const noexcept
-        {
-            return _notifier == rhs._notifier;
-        }
-
     private:
         notifier *_notifier = nullptr;
         token_type _cbt;
