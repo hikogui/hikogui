@@ -6,12 +6,6 @@
 
 #include "network_event.hpp"
 #include "../assert.hpp"
-#define IN
-#define OUT
-#include <WinSock2.h>
-#undef IN
-#undef OUT
-#include <Windows.h>
 
 namespace hi::inline v1 {
 

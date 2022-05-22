@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../cast.hpp"
+#include "../enum_metadata.hpp"
 
 namespace hi::inline v1 {
 
@@ -25,4 +26,21 @@ enum class audio_direction : unsigned char { none = 0b00, input = 0b01, output =
     return static_cast<bool>(to_underlying(rhs));
 }
 
+// clang-format off
+constexpr auto audio_direction_metadata = enum_metadata{
+    audio_direction::none, "none",
+    audio_direction::input, "input",
+    audio_direction::output, "output",
+    audio_direction::bidirectional, "bidirectional"
+};
+// clang-format on
+
 }
+
+template<typename CharT>
+struct std::formatter<hi::audio_direction, CharT> : std::formatter<std::string_view, CharT> {
+    auto format(hi::audio_direction const& t, auto& fc)
+    {
+        return std::formatter<std::string_view, CharT>::format(hi::audio_direction_metadata[t], fc);
+    }
+};

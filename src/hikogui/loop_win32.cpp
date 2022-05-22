@@ -34,6 +34,8 @@
  *
  */
 
+#include "win32_headers.hpp"
+
 #include "loop.hpp"
 #include "counters.hpp"
 #include "trace.hpp"
@@ -42,14 +44,6 @@
 #include "GUI/gui_window.hpp"
 #include "net/network_event.hpp"
 #include "net/network_event_win32.hpp"
-#define IN
-#define OUT
-#include <WinSock2.h>
-#undef IN
-#undef OUT
-#include <Windows.h>
-#include <synchapi.h>
-#include <dxgi.h>
 #include <vector>
 #include <utility>
 #include <stop_token>

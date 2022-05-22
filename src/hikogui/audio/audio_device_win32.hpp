@@ -74,6 +74,8 @@ private:
      */
     std::string end_point_name() const noexcept;
 
+    GUID pin_category() const noexcept;
+
     /** Get the legacy waveIn or waveOut id.
      *
      * The waveIn/waveOut id are required to get access to the audio device driver

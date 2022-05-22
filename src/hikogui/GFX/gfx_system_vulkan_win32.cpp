@@ -2,9 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#include "../win32_headers.hpp"
+
 #include "gfx_system_vulkan.hpp"
 #include "gfx_surface_vulkan.hpp"
-#include <ddraw.h>
 
 namespace hi::inline v1 {
 

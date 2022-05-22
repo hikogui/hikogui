@@ -23,7 +23,6 @@
 #include "hikogui/when_any.hpp"
 #include "hikogui/task.hpp"
 #include "hikogui/loop.hpp"
-#include <Windows.h>
 #include <memory>
 
 class my_preferences : public hi::preferences {

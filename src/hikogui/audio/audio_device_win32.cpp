@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#include "../win32_headers.hpp"
+
 #include "audio_device_win32.hpp"
 #include "audio_sample_format.hpp"
 #include "audio_stream_format.hpp"
@@ -13,18 +15,6 @@
 #include "../strings.hpp"
 #include "../exception.hpp"
 #include "../cast.hpp"
-#include <Windows.h>
-
-#include <mmsystem.h>
-#include <mmreg.h>
-#include <mmeapi.h>
-#include <mmddk.h>
-#include <propsys.h>
-#include <initguid.h>
-#include <functiondiscoverykeys_devpkey.h>
-#include <mmdeviceapi.h>
-#include <endpointvolume.h>
-#include <audioclient.h>
 #include <bit>
 
 namespace hi::inline v1 {
@@ -114,6 +104,26 @@ template<>
     hi_hresult_check(property_store->GetValue(key, &property_value));
     if (property_value.vt == VT_UI4) {
         auto value = narrow_cast<uint32_t>(property_value.ulVal);
+        PropVariantClear(&property_value);
+        return value;
+
+    } else {
+        PropVariantClear(&property_value);
+        throw io_error(std::format("Unexpected property value type {}.", static_cast<int>(property_value.vt)));
+    }
+}
+
+template<>
+[[nodiscard]] GUID get_property(IPropertyStore *property_store, REFPROPERTYKEY key)
+{
+    hi_assert(property_store != nullptr);
+
+    PROPVARIANT property_value;
+    PropVariantInit(&property_value);
+
+    hi_hresult_check(property_store->GetValue(key, &property_value));
+    if (property_value.vt == VT_CLSID) {
+        auto value = static_cast<GUID>(*property_value.puuid);
         PropVariantClear(&property_value);
         return value;
 
@@ -215,9 +225,38 @@ void audio_device_win32::update_supported_formats() noexcept
     // https://docs.microsoft.com/en-us/previous-versions/ff561658(v=vs.85)
 
     try {
-        //auto wave_device = win32_wave_device::find_matching_end_point(direction(), _end_point_id);
-        //auto device_interface = wave_device.open_device_interface();
+        auto wave_device = win32_wave_device::find_matching_end_point(direction(), _end_point_id);
+        auto device_interface = wave_device.open_device_interface();
 
+        for (auto pin_nr : device_interface.find_streaming_pins(direction())) {
+            hi_log_info("    * Found streaming-pin {}", pin_nr);
+
+            for (auto *format_range :
+                 device_interface.get_pin_properties<KSDATARANGE>(pin_nr, KSPROPERTY_PIN_DATARANGES)) {
+                if (IsEqualGUID(format_range->MajorFormat, KSDATAFORMAT_TYPE_AUDIO)) {
+                    auto is_pcm = false;
+                    auto is_float = false;
+
+                    is_pcm |= IsEqualGUID(format_range->SubFormat, KSDATAFORMAT_SUBTYPE_PCM);
+                    is_float |= IsEqualGUID(format_range->SubFormat, KSDATAFORMAT_SUBTYPE_IEEE_FLOAT);
+                    is_float |= is_pcm |= IsEqualGUID(format_range->SubFormat, KSDATAFORMAT_SUBTYPE_WILDCARD);
+                    if (is_pcm or is_float) {
+                        auto *audio_format_range = reinterpret_cast<KSDATARANGE_AUDIO const *>(format_range);
+
+                        hi_log_info(
+                            "      * ch={}, bits={}-{} fmt={}, rate={}-{}",
+                            audio_format_range->MaximumChannels,
+                            audio_format_range->MinimumBitsPerSample,
+                            audio_format_range->MaximumBitsPerSample,
+                            is_pcm and is_float ? "*" :
+                                is_pcm          ? "pcm" :
+                                                  "float",
+                            audio_format_range->MinimumSampleFrequency,
+                            audio_format_range->MaximumSampleFrequency);
+                    }
+                }
+            }
+        }
     } catch (...) {
     }
 }
@@ -454,6 +493,16 @@ std::string audio_device_win32::end_point_name() const noexcept
         return get_property<std::string>(_property_store, PKEY_Device_DeviceDesc);
     } catch (io_error const&) {
         return "<unknown end point name>";
+    }
+}
+
+GUID audio_device_win32::pin_category() const noexcept
+{
+    try {
+        return get_property<GUID>(_property_store, PKEY_AudioEndpoint_Association);
+    } catch (io_error const& e) {
+        hi_log_error("Could not get pin-category for audio end-point {}: {}", name(), e.what());
+        return {};
     }
 }
 

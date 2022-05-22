@@ -127,13 +127,21 @@ public:
         // Disallow co_await in generator coroutines.
         void await_transform() = delete;
 
-        [[noreturn]] static void unhandled_exception()
+        void unhandled_exception() noexcept
         {
-            throw;
+            _exception = std::current_exception();
+        }
+
+        void rethrow()
+        {
+            if (auto ptr = std::exchange(_exception, nullptr)) {
+                std::rethrow_exception(ptr);
+            }
         }
 
     private:
-        std::optional<value_type> _value;
+        std::optional<value_type> _value = {};
+        std::exception_ptr _exception = nullptr;
     };
 
     using handle_type = std::coroutine_handle<promise_type>;
@@ -168,6 +176,7 @@ public:
         iterator &operator++()
         {
             _coroutine.resume();
+            _coroutine.promise().rethrow();
             return *this;
         }
 
@@ -175,6 +184,7 @@ public:
         {
             auto tmp = value_proxy(**this);
             _coroutine.resume();
+            _coroutine.promise().rethrow();
             return tmp;
         }
 
@@ -237,6 +247,7 @@ public:
     {
         if (_coroutine) {
             _coroutine.resume();
+            _coroutine.promise().rethrow();
         }
         return iterator{_coroutine};
     }

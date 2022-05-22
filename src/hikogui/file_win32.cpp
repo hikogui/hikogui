@@ -2,13 +2,14 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#include "win32_headers.hpp"
+
 #include "file.hpp"
 #include "log.hpp"
 #include "exception.hpp"
 #include "strings.hpp"
 #include "cast.hpp"
 #include <type_traits>
-#include <Windows.h>
 
 namespace hi::inline v1 {
 
