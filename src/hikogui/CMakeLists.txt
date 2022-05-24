@@ -58,6 +58,7 @@ target_sources(hikogui PRIVATE
     $<${HI_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/debugger_macos.mm>
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/debugger_win32.cpp>
     decimal.hpp
+    defer.hpp
     dialog.hpp
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/dialog_win32.cpp>
     endian.hpp
@@ -214,6 +215,7 @@ if(HI_BUILD_TESTS)
         datum_tests.cpp
         dead_lock_detector_tests.cpp
         decimal_tests.cpp
+        defer_tests.cpp
         enum_metadata_tests.cpp
         exceptions_tests.cpp
         file_view_tests.cpp
