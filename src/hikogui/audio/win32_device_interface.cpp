@@ -138,19 +138,18 @@ win32_device_interface::~win32_device_interface()
             auto *format_range_ = reinterpret_cast<KSDATARANGE_AUDIO const *>(format_range);
             hilet num_bits_first = format_range_->MinimumBitsPerSample;
             hilet num_bits_last = format_range_->MaximumBitsPerSample + 1;
-            hilet min_channels = narrow<uint16_t>(1);
-            hilet max_channels = narrow<uint16_t>(format_range_->MaximumChannels);
+            hilet num_channels = narrow<uint16_t>(format_range_->MaximumChannels);
             hilet min_sample_rate = narrow<uint32_t>(format_range_->MinimumSampleFrequency);
             hilet max_sample_rate = narrow<uint32_t>(format_range_->MaximumSampleFrequency);
 
-            auto has_sint = false;
+            auto has_int = false;
             auto has_float = false;
             if (IsEqualGUID(format_range->SubFormat, KSDATAFORMAT_SUBTYPE_PCM)) {
-                has_sint = true;
+                has_int = true;
             } else if (IsEqualGUID(format_range->SubFormat, KSDATAFORMAT_SUBTYPE_IEEE_FLOAT)) {
                 has_float = true;
             } else if (IsEqualGUID(format_range->SubFormat, KSDATAFORMAT_SUBTYPE_WILDCARD)) {
-                has_sint = true;
+                has_int = true;
                 has_float = true;
             }
 
@@ -158,14 +157,14 @@ win32_device_interface::~win32_device_interface()
             // the audio-format-range discretized them. Very likely the audio device driver will be lying.
             for (auto num_bits = num_bits_first; num_bits != num_bits_last; ++num_bits) {
                 hilet num_bytes = narrow<uint8_t>((num_bits + 7) / 8);
-                if (has_sint) {
+                if (has_int) {
                     hilet num_minor_bits = narrow<uint8_t>(num_bits - 1);
                     hilet sample_format = pcm_format{false, std::endian::native, true, num_bytes, 0, num_minor_bits};
-                    co_yield audio_format_range{sample_format, min_sample_rate, max_sample_rate, min_channels, max_channels};
+                    co_yield audio_format_range{sample_format, num_channels, min_sample_rate, max_sample_rate};
                 }
                 if (has_float and num_bits == 32) {
                     hilet sample_format = pcm_format{true, std::endian::native, true, num_bytes, 8, 23};
-                    co_yield audio_format_range{sample_format, min_sample_rate, max_sample_rate, min_channels, max_channels};
+                    co_yield audio_format_range{sample_format, num_channels, min_sample_rate, max_sample_rate};
                 }
             }
         }

@@ -14,66 +14,53 @@
 
 namespace hi::inline v1 {
 
-[[nodiscard]] int win32_use_extensible(audio_stream_format x) noexcept
+[[nodiscard]] static bool win32_use_extensible(audio_stream_format x) noexcept
 {
-    int extensible = 0;
-
     if (num_channels(x.speaker_mapping) > 2) {
         // According to the specification we SHOULD use extensible with more than two channels.
         // However technically there is no reason to do so.
         // And not all audio device drivers can handle extensible.
-        inplace_max(extensible, 1);
+        return true;
     }
 
     if (x.format.num_bytes() * 8 != x.format.num_bits()) {
         // According to the specification we SHOULD use extensible when less bits are used.
         // However technically there is no reason to do so.
         // And not all audio device drivers can handle extensible.
-        inplace_max(extensible, 1);
+        return true;
     }
 
     if (not is_direct(x.speaker_mapping)) {
         // If we have an non-direct speaker mapping we MUST use extensible as it requires the
         // extra dwChannelMask field.
-        inplace_max(extensible, 2);
+        return true;
     }
 
-    return extensible;
+    return false;
 }
 
 [[nodiscard]] WAVEFORMATEXTENSIBLE audio_stream_format_to_win32(audio_stream_format x) noexcept
 {
-    hilet sample_rate = narrow_cast<DWORD>(std::round(x.sample_rate));
+    WAVEFORMATEXTENSIBLE r;
 
-    bool extended = false;
-
-    // legacy format can only handle mono or stereo.
-    extended |= num_channels(x.speaker_mapping) > 2;
-
-    // Legacy format can only handle bits equal to container size.
-    extended |= (x.format.num_bytes() * 8) != x.format.num_bits();
-
-    // Legacy format can only handle direct channel map. This allows you to select legacy
-    // mono and stereo for old device drivers.
-    extended |= not is_direct(x.speaker_mapping);
-
-    // Legacy format can only be PCM-8, PCM-16 or PCM-float-32.
-    if (x.format.floating_point()) {
-        extended |= x.format.num_bytes() == 4;
+    if (win32_use_extensible(x)) {
+        r.Format.wFormatTag = WAVE_FORMAT_EXTENSIBLE;
+        // difference between sizeof(WAVEFORMATEXT) and sizeof(WAVEFORMATEXTENSIBLE).
+        // But API documentation says it must be "22".
+        r.Format.cbSize = 22;
     } else {
-        // extended |= x.format.num_bytes() > 2;
+        r.Format.wFormatTag = x.format.floating_point() ? WAVE_FORMAT_IEEE_FLOAT : WAVE_FORMAT_PCM;
+        r.Format.cbSize = 0;
     }
 
-    WAVEFORMATEXTENSIBLE r;
-    r.Format.wFormatTag = extended ? WAVE_FORMAT_EXTENSIBLE :
-        x.format.floating_point()  ? WAVE_FORMAT_IEEE_FLOAT :
-                                     WAVE_FORMAT_PCM;
+    // These are the fields of WAVEFORMATEXT.
     r.Format.nChannels = narrow_cast<WORD>(num_channels(x.speaker_mapping));
-    r.Format.nSamplesPerSec = sample_rate;
-    r.Format.nAvgBytesPerSec = narrow_cast<DWORD>(sample_rate * num_channels(x.speaker_mapping) * x.format.num_bytes());
+    r.Format.nSamplesPerSec = narrow_cast<DWORD>(std::round(x.sample_rate));
+    r.Format.nAvgBytesPerSec = narrow_cast<DWORD>(x.sample_rate * num_channels(x.speaker_mapping) * x.format.num_bytes());
     r.Format.nBlockAlign = narrow_cast<WORD>(num_channels(x.speaker_mapping) * x.format.num_bytes());
     r.Format.wBitsPerSample = narrow_cast<WORD>(x.format.num_bytes() * 8);
-    r.Format.cbSize = extended ? (sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX)) : 0;
+
+    // These are the fields of WAVEFORMATEXTENSIBLE which are ignored for WAVEFORMATEXT.
     r.Samples.wValidBitsPerSample = narrow_cast<WORD>(x.format.num_bits());
     r.dwChannelMask = speaker_mapping_to_win32(x.speaker_mapping);
     r.SubFormat = x.format.floating_point() ? KSDATAFORMAT_SUBTYPE_IEEE_FLOAT : KSDATAFORMAT_SUBTYPE_PCM;

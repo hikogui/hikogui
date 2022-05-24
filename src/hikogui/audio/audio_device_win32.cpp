@@ -182,6 +182,27 @@ void audio_device_win32::update_supported_formats() noexcept
     }
 }
 
+constexpr auto common_sample_rates = std::array{
+    uint32_t{8000},
+    uint32_t{16000},
+    uint32_t{32000},
+    uint32_t{44100},
+    uint32_t{47952},
+    uint32_t{48000},
+    uint32_t{48048},
+    uint32_t{88200},
+    uint32_t{95904},
+    uint32_t{96000},
+    uint32_t{96096},
+    uint32_t{176400},
+    uint32_t{191808},
+    uint32_t{192000},
+    uint32_t{192192},
+    uint32_t{352800},
+    uint32_t{383616},
+    uint32_t{384000},
+    uint32_t{384384}};
+
 [[nodiscard]] generator<audio_format_range> audio_device_win32::get_format_ranges() const noexcept
 {
     try {
@@ -190,14 +211,35 @@ void audio_device_win32::update_supported_formats() noexcept
 
         for (hilet& format_range : device_interface.get_format_ranges(direction())) {
             // The device may have returned a range of bit-depths or a even a wild-card for float/integer.
-            // Check if the pcm_format works together with max_channels and min_sample_rate.
-            // We don't actually know min_channels, but the device should have given the correct max_channels.
-            // We use the min_sample_rate, since there is a high chance that this is correct with max_channels.
-            if (not supports_format(format_range.simple_format())) {
-                continue;
-            }
+            // Check if the pcm_format works together with the min_sample_rate.
+            auto format = format_range.begin();
 
-            co_yield format_range;
+            if (supports_format(format)) {
+                // The device supports the lowest sample rate.
+
+                if (format_range.min_sample_rate != format_range.max_sample_rate) {
+                    ++format.sample_rate;
+                    if (supports_format(format)) {
+                        // Device seems to handle 1Hz granularity.
+                        co_yield format_range;
+
+                    } else {
+                        // The device was lying that it could handle the full range of sample rates.
+                        // Look for specific sample rates and create separate format ranges.
+
+                        for (auto sample_rate : common_sample_rates) {
+                            format.sample_rate = sample_rate;
+                            if (format_range.min_sample_rate <= sample_rate and sample_rate <= format_range.max_sample_rate and
+                                supports_format(format)) {
+                                co_yield audio_format_range{
+                                    format_range.format, format_range.num_channels, sample_rate, sample_rate};
+                            }
+                        }
+                    }
+                } else {
+                    co_yield format_range;
+                }
+            }
         }
     } catch (...) {
     }
@@ -205,17 +247,20 @@ void audio_device_win32::update_supported_formats() noexcept
 
 [[nodiscard]] bool audio_device_win32::supports_format(audio_stream_format const& format) const noexcept
 {
-    auto format_ = audio_stream_format_to_win32(format);
+    auto name_ = name();
 
-    auto r = _audio_client->IsFormatSupported(AUDCLNT_SHAREMODE_EXCLUSIVE, reinterpret_cast<WAVEFORMATEX *>(&format_), NULL);
-    if (r == S_OK) {
+    auto format_ = audio_stream_format_to_win32(format);
+    switch (
+        _audio_client->IsFormatSupported(AUDCLNT_SHAREMODE_EXCLUSIVE, reinterpret_cast<WAVEFORMATEX const *>(&format_), NULL)) {
+    case S_OK:
         return true;
-    } else if (r == S_FALSE or r == AUDCLNT_E_UNSUPPORTED_FORMAT) {
-        return false;
-    } else {
+    case S_FALSE:
+    case AUDCLNT_E_UNSUPPORTED_FORMAT:
+        break;
+    default:
         hi_log_error("Failed to check format. {}", get_last_error_message());
-        return false;
     }
+    return false;
 }
 
 [[nodiscard]] bool audio_device_win32::exclusive() const noexcept

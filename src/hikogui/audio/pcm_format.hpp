@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "../assert.hpp"
 #include <bit>
 #include <cstdint>
 #include <string>

@@ -12,10 +12,9 @@ namespace hi::inline v1 {
 class audio_format_range {
 public:
     pcm_format format = {};
+    uint16_t num_channels = 0;
     uint32_t min_sample_rate = 0;
     uint32_t max_sample_rate = 0;
-    uint16_t min_channels = 0;
-    uint16_t max_channels = 0;
 
     constexpr audio_format_range() noexcept = default;
     constexpr audio_format_range(audio_format_range&&) noexcept = default;
@@ -26,15 +25,13 @@ public:
 
     constexpr audio_format_range(
         pcm_format format,
+        uint16_t num_channels,
         uint32_t min_sample_rate,
-        uint32_t max_sample_rate,
-        uint16_t min_channels,
-        uint16_t max_channels) noexcept :
+        uint32_t max_sample_rate) noexcept :
         format(format),
+        num_channels(num_channels),
         min_sample_rate(min_sample_rate),
-        max_sample_rate(max_sample_rate),
-        min_channels(min_channels),
-        max_channels(max_channels)
+        max_sample_rate(max_sample_rate)
     {
     }
 
@@ -51,10 +48,9 @@ public:
     [[nodiscard]] friend std::string to_string(audio_format_range const& rhs) noexcept
     {
         return std::format(
-            "format={}, ch={}:{}, rate={}:{}",
+            "format={}, ch={}, rate={}:{}",
             rhs.format,
-            rhs.min_channels,
-            rhs.max_channels,
+            rhs.num_channels,
             rhs.min_sample_rate,
             rhs.max_sample_rate);
     }
@@ -66,9 +62,9 @@ public:
      *
      * @return A stream-format with the minimum sample rate and maximum channels.
      */
-    [[nodiscard]] audio_stream_format simple_format() const noexcept
+    [[nodiscard]] audio_stream_format begin() const noexcept
     {
-        return audio_stream_format(format, min_sample_rate, make_direct_speaker_mapping(max_channels));
+        return audio_stream_format(format, min_sample_rate, make_direct_speaker_mapping(num_channels));
     }
 };
 
