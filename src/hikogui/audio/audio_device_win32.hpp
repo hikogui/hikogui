@@ -6,6 +6,8 @@
 
 #include "audio_device.hpp"
 #include "audio_stream_format.hpp"
+#include "audio_format_range.hpp"
+#include "../generator.hpp"
 
 struct IMMDevice;
 struct IPropertyStore;
@@ -104,6 +106,8 @@ private:
     /** Get the shared stream format for the device.
      */
     [[nodiscard]] audio_stream_format shared_stream_format() const;
+
+    [[nodiscard]] generator<audio_format_range> get_format_ranges() const noexcept;
 };
 
 } // namespace hi::inline v1

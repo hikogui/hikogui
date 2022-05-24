@@ -19,53 +19,6 @@
 
 namespace hi::inline v1 {
 
-[[nodiscard]] static WAVEFORMATEXTENSIBLE make_wave_format(
-    audio_sample_format format,
-    uint16_t num_channels,
-    speaker_mapping speaker_mapping,
-    uint32_t sample_rate) noexcept
-{
-    hi_axiom(std::popcount(static_cast<std::size_t>(speaker_mapping)) <= num_channels);
-
-    bool extended = false;
-
-    // legacy format can only handle mono or stereo.
-    extended |= num_channels > 2;
-
-    // Legacy format can only handle bits equal to container size.
-    extended |= (format.num_bytes * 8) != (format.num_guard_bits + format.num_bits + 1);
-
-    // Legacy format can only handle direct channel map. This allows you to select legacy
-    // mono and stereo for old device drivers.
-    extended |= speaker_mapping != speaker_mapping::direct;
-
-    // Legacy format can only be PCM-8, PCM-16 or PCM-float-32.
-    if (format.is_float) {
-        extended |= format.num_bytes == 4;
-    } else {
-        extended |= format.num_bytes <= 2;
-    }
-
-    WAVEFORMATEXTENSIBLE r;
-    r.Format.wFormatTag = extended ? WAVE_FORMAT_EXTENSIBLE : format.is_float ? WAVE_FORMAT_IEEE_FLOAT : WAVE_FORMAT_PCM;
-    r.Format.nChannels = num_channels;
-    r.Format.nSamplesPerSec = sample_rate;
-    r.Format.nAvgBytesPerSec = narrow_cast<DWORD>(sample_rate * num_channels * format.num_bytes);
-    r.Format.nBlockAlign = narrow_cast<WORD>(num_channels * format.num_bytes);
-    r.Format.wBitsPerSample = narrow_cast<WORD>(format.num_bytes * 8);
-    r.Format.cbSize = extended ? (sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX)) : 0;
-    r.Samples.wValidBitsPerSample = narrow_cast<WORD>(format.num_guard_bits + format.num_bits + 1);
-    r.dwChannelMask = speaker_mapping_to_win32(speaker_mapping);
-    r.SubFormat = format.is_float ? KSDATAFORMAT_SUBTYPE_IEEE_FLOAT : KSDATAFORMAT_SUBTYPE_PCM;
-    return r;
-}
-
-[[nodiscard]] static WAVEFORMATEXTENSIBLE
-make_wave_format(audio_sample_format format, uint16_t num_channels, uint32_t sample_rate) noexcept
-{
-    return make_wave_format(format, num_channels, speaker_mapping::direct, sample_rate);
-}
-
 template<typename T>
 [[nodiscard]] T get_property(IPropertyStore *property_store, REFPROPERTYKEY key)
 {
@@ -224,38 +177,27 @@ void audio_device_win32::update_supported_formats() noexcept
     // https://github.com/EddieRingle/portaudio/blob/master/src/os/win/pa_win_wdmks_utils.c
     // https://docs.microsoft.com/en-us/previous-versions/ff561658(v=vs.85)
 
+    for (hilet& format_range : get_format_ranges()) {
+        hi_log_info("      * {}", format_range);
+    }
+}
+
+[[nodiscard]] generator<audio_format_range> audio_device_win32::get_format_ranges() const noexcept
+{
     try {
         auto wave_device = win32_wave_device::find_matching_end_point(direction(), _end_point_id);
         auto device_interface = wave_device.open_device_interface();
 
-        for (auto pin_nr : device_interface.find_streaming_pins(direction())) {
-            hi_log_info("    * Found streaming-pin {}", pin_nr);
-
-            for (auto *format_range :
-                 device_interface.get_pin_properties<KSDATARANGE>(pin_nr, KSPROPERTY_PIN_DATARANGES)) {
-                if (IsEqualGUID(format_range->MajorFormat, KSDATAFORMAT_TYPE_AUDIO)) {
-                    auto is_pcm = false;
-                    auto is_float = false;
-
-                    is_pcm |= IsEqualGUID(format_range->SubFormat, KSDATAFORMAT_SUBTYPE_PCM);
-                    is_float |= IsEqualGUID(format_range->SubFormat, KSDATAFORMAT_SUBTYPE_IEEE_FLOAT);
-                    is_float |= is_pcm |= IsEqualGUID(format_range->SubFormat, KSDATAFORMAT_SUBTYPE_WILDCARD);
-                    if (is_pcm or is_float) {
-                        auto *audio_format_range = reinterpret_cast<KSDATARANGE_AUDIO const *>(format_range);
-
-                        hi_log_info(
-                            "      * ch={}, bits={}-{} fmt={}, rate={}-{}",
-                            audio_format_range->MaximumChannels,
-                            audio_format_range->MinimumBitsPerSample,
-                            audio_format_range->MaximumBitsPerSample,
-                            is_pcm and is_float ? "*" :
-                                is_pcm          ? "pcm" :
-                                                  "float",
-                            audio_format_range->MinimumSampleFrequency,
-                            audio_format_range->MaximumSampleFrequency);
-                    }
-                }
+        for (hilet& format_range : device_interface.get_format_ranges(direction())) {
+            // The device may have returned a range of bit-depths or a even a wild-card for float/integer.
+            // Check if the pcm_format works together with max_channels and min_sample_rate.
+            // We don't actually know min_channels, but the device should have given the correct max_channels.
+            // We use the min_sample_rate, since there is a high chance that this is correct with max_channels.
+            if (not supports_format(format_range.simple_format())) {
+                continue;
             }
+
+            co_yield format_range;
         }
     } catch (...) {
     }

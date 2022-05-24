@@ -15,11 +15,6 @@
 namespace hi::inline v1 {
 
 enum class speaker_mapping : uint64_t {
-    /** Direct. speakers are not assigned, and no matrix-mixing is done.
-     * Upper 32 bits contains the number of channels.
-     */
-    direct = 0x0'0000,
-
     front_left = 0x0'0001,
     front_right = 0x0'0002,
     front_center = 0x0'0004,
@@ -40,16 +35,16 @@ enum class speaker_mapping : uint64_t {
     top_back_right = 0x2'0000,
 
     // A couple of isolated channel definitions
-    none = direct,
-    iso_0 = direct | (0ULL << 32),
-    iso_1 = direct | (1ULL << 32),
-    iso_2 = direct | (2ULL << 32),
-    iso_3 = direct | (3ULL << 32),
-    iso_4 = direct | (4ULL << 32),
-    iso_5 = direct | (5ULL << 32),
-    iso_6 = direct | (6ULL << 32),
-    iso_7 = direct | (7ULL << 32),
-    iso_8 = direct | (8ULL << 32),
+    iso_0 = 0ULL << 32,
+    iso_1 = 1ULL << 32,
+    iso_2 = 2ULL << 32,
+    iso_3 = 3ULL << 32,
+    iso_4 = 4ULL << 32,
+    iso_5 = 5ULL << 32,
+    iso_6 = 6ULL << 32,
+    iso_7 = 7ULL << 32,
+    iso_8 = 8ULL << 32,
+    none = iso_0,
 
     // Standard
     mono_1_0 = front_center,
