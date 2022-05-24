@@ -1,13 +1,20 @@
 
 
-#include "../required.hpp"
+#include "required.hpp"
 #include <type_traits>
+#include <concepts>
 
 #pragma once
 
 namespace hi::inline v1 {
 
-template<typename T>
+/** Defer execution of a lambda to the end of the scope.
+* 
+* c++ guarantees the destruction of local objects in a compound statement (block)
+* at the closing brace, in reverse order of declaration. This means that multiple
+* `defer` instances will call their lambdas in reverse order of declaration as well.
+*/
+template<std::invocable<> T>
 class defer {
 public:
     defer() = delete;
@@ -16,8 +23,8 @@ public:
     defer &operator=(defer &&) = delete;
     defer &operator=(defer const &) = delete;
 
-    template<typename Func>
-    constexpr defer(Func &&func) noexcept : _func(std::forward<Func>(func)) {}
+    template<std::invocable<> Func>
+    [[nodiscard]] constexpr defer(Func &&func) noexcept : _func(std::forward<Func>(func)) {}
 
     constexpr ~defer()
     {
@@ -28,7 +35,7 @@ private:
     T _func;
 };
 
-template<typename Func>
+template<std::invocable<> Func>
 defer(Func &&) -> defer<std::remove_cvref_t<Func>>;
 
 }

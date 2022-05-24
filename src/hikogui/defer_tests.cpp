@@ -1,8 +1,9 @@
-
-
+// Copyright Take Vos 2022.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "defer.hpp"
-
+#include <gtest/gtest.h>
 
 TEST(defer, early_out)
 {
@@ -10,7 +11,7 @@ TEST(defer, early_out)
     int b = 0;
 
     do {
-        hilet d_a = defer([&]{ a = 42; });
+        hilet d_a = hi::defer([&]{ a = 42; });
         ASSERT_EQ(a, 0);
 
         // If will be taken.
@@ -18,7 +19,7 @@ TEST(defer, early_out)
             break;
         }
 
-        hilet d_b = defer([&]{ b = a + 1; });
+        hilet d_b = hi::defer([&]{ b = a + 1; });
     } while (false);
 
     ASSERT_EQ(a, 42);
@@ -31,7 +32,7 @@ TEST(defer, fully)
     int b = 0;
 
     do {
-        hilet d_a = defer([&]{ a = 42; });
+        hilet d_a = hi::defer([&]{ a = 42; });
         ASSERT_EQ(a, 0);
 
         // If will NOT be taken.
@@ -39,7 +40,7 @@ TEST(defer, fully)
             break;
         }
 
-        hilet d_b = defer([&]{ b = a + 5; });
+        hilet d_b = hi::defer([&]{ b = a + 5; });
         ASSERT_EQ(b, 0);
     } while (false);
 

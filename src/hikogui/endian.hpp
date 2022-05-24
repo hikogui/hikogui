@@ -8,6 +8,7 @@
 #include "memory.hpp"
 #include "assert.hpp"
 #include "cast.hpp"
+#include "concepts.hpp"
 
 #ifdef HI_HAS_SSE
 #include <immintrin.h>
@@ -187,7 +188,33 @@ using native_int64_buf_at = endian_buf_t<int64_t, std::endian::native>;
 using native_int32_buf_at = endian_buf_t<int32_t, std::endian::native>;
 using native_int16_buf_at = endian_buf_t<int16_t, std::endian::native>;
 
+/** Load an integer from unaligned memory in native byte-order.
+ */
+template<numeric T>
+hi_force_inline T load(void const *src) noexcept
+{
+#if HI_COMPILER == HI_CC_MSVC
+    return *reinterpret_cast<__unaligned T const *>(src);
+#else
+#error "missing implementation for load()"
+#endif
+}
 
+/** Load an integer from unaligned memory in little-endian byte-order.
+ */
+template<numeric T>
+hi_force_inline T load_le(void const *src) noexcept
+{
+    return little_to_native(load<T>(src));
+}
+
+/** Load an integer from unaligned memory in big-endian byte-order.
+ */
+template<numeric T>
+hi_force_inline T load_be(void const *src) noexcept
+{
+    return big_to_native(load<T>(src));
+}
 
 /** Load data from memory.
  *

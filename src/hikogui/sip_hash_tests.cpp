@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <array>
+#include <string_view>
 
 // clang-format off
 auto results = std::array<uint64_t, 64>{
@@ -77,7 +78,7 @@ auto results = std::array<uint64_t, 64>{
 };
 // clang-format on
 
-TEST(sip_hash, standard_vectors_x1)
+TEST(sip_hash, standard_vectors)
 {
     std::array<uint8_t, 64> message;
 
@@ -95,7 +96,7 @@ TEST(sip_hash, standard_vectors_x1)
     }
 }
 
-TEST(sip_hash, standard_vectors_x1_complete_message)
+TEST(sip_hash, standard_vectors_complete_message)
 {
     std::array<uint8_t, 64> message;
 
@@ -111,51 +112,11 @@ TEST(sip_hash, standard_vectors_x1_complete_message)
     }
 }
 
-TEST(sip_hash, standard_vectors_x2)
-{
-    std::array<uint8_t, 64> message;
-
-    for (uint8_t i = 0; i != 64; ++i) {
-        message[i] = i;
-    }
-
-    for (size_t i = 0; i != 64; ++i) {
-        auto sh =
-            hi::_sip_hash24x2{hi::broadcast<hi::u64x2>{}(0x0706050403020100), hi::broadcast<hi::u64x2>{}(0x0f0e0d0c0b0a0908)};
-
-        sh.add(message.data(), i);
-        auto r = sh.finish();
-
-        ASSERT_EQ(r.x(), results[i]) << std::format("test vector: {}", i);
-        ASSERT_EQ(r.y(), results[i]) << std::format("test vector: {}", i);
-    }
-}
-
-TEST(sip_hash, standard_vectors_x4)
-{
-    std::array<uint8_t, 64> message;
-
-    for (uint8_t i = 0; i != 64; ++i) {
-        message[i] = i;
-    }
-
-    for (size_t i = 0; i != 64; ++i) {
-        auto sh =
-            hi::_sip_hash24x2{hi::broadcast<hi::u64x2>{}(0x0706050403020100), hi::broadcast<hi::u64x2>{}(0x0f0e0d0c0b0a0908)};
-
-        sh.add(message.data(), i);
-        auto r = sh.finish();
-
-        ASSERT_EQ(r.x(), results[i]) << std::format("test vector: {}", i);
-        ASSERT_EQ(r.y(), results[i]) << std::format("test vector: {}", i);
-    }
-}
-
 TEST(sip_hash, global)
 {
-    std::array<uint8_t, 64> message;
+    std::array<char, 64> message;
 
-    for (uint8_t i = 0; i != 64; ++i) {
+    for (char i = 0; i != 64; ++i) {
         message[i] = i;
     }
 
@@ -163,26 +124,7 @@ TEST(sip_hash, global)
     sh1.add(message.data(), 9);
     auto r1 = sh1.finish();
 
-    auto sh2 = hi::_sip_hash24{};
-    sh2.add(message.data(), 9);
-    auto r2 = sh2.finish();
-
-    auto sh3 = hi::_sip_hash24x2{};
-    sh3.add(message.data(), 9);
-    auto r3 = sh3.finish();
-
-    auto sh4 = hi::_sip_hash24x4{};
-    sh4.add(message.data(), 9);
-    auto r4 = sh4.finish();
-
-    auto sh5 = hi::_sip_hash24x4{};
-    sh5.add(message.data(), 9);
-    auto r5 = sh5.finish();
+    auto r2 = hi::sip_hash24<std::string_view>{}(std::string_view{message.data(), 9});
 
     ASSERT_EQ(r1, r2);
-    ASSERT_EQ(r1, r3.x());
-    ASSERT_EQ(r1, r4.x());
-    ASSERT_EQ(r3.y(), r4.y());
-    ASSERT_EQ(r4.z(), r5.z());
-    ASSERT_EQ(r4.w(), r5.w());
 }

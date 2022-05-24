@@ -3027,17 +3027,6 @@ using f64x2 = numeric_array<double, 2>;
 using f64x4 = numeric_array<double, 4>;
 using f64x8 = numeric_array<double, 8>;
 
-template<typename T, size_t N>
-struct broadcast<numeric_array<T, N>> {
-    using value_type = numeric_array<T, N>;
-    using element_type = T;
-
-    [[nodiscard]] constexpr value_type operator()(element_type value) noexcept
-    {
-        return value_type::broadcast(value);
-    }
-};
-
 } // namespace hi::inline v1
 
 template<class T, std::size_t N>
