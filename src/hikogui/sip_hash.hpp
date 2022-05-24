@@ -1,26 +1,23 @@
 
-#include "rapid/numeric_array.hpp"
 #include "random/seed.hpp"
-#include "math.hpp"
 #include "endian.hpp"
+#include <string_view>
+#include <string>
+#include <span>
 
 namespace hi::inline v1 {
 namespace detail {
 
 struct sip_hash_seed_type {
-    u64x4 k0_x4;
-    u64x4 k1_x4;
-    u64x2 k0_x2;
-    u64x2 k1_x2;
-    uint64_t k0_x1;
-    uint64_t k1_x1;
+    uint64_t k0;
+    uint64_t k1;
 
-    sip_hash_seed_type(u64x4 k0, u64x4 k1) noexcept :
-        k0_x4(k0), k1_x4(k1), k0_x2{k0.x(), k0.y()}, k1_x2{k1.x(), k1.y()}, k0_x1{k0.x()}, k1_x1{k1.x()}
+    sip_hash_seed_type(uint64_t k0, uint64_t k1) noexcept :
+        k0(k0), k1(k1)
     {
     }
 
-    sip_hash_seed_type() noexcept : sip_hash_seed_type(seed<u64x4>{}(), seed<u64x4>{}()) {}
+    sip_hash_seed_type() noexcept : sip_hash_seed_type(seed<uint64_t>{}(), seed<uint64_t>{}()) {}
 };
 
 inline auto sip_hash_seed = sip_hash_seed_type();
@@ -30,28 +27,16 @@ struct sip_hash_seed_tag {
 
 } // namespace detail
 
-template<typename T, size_t C, size_t D>
+template<size_t C, size_t D>
 class sip_hash {
 public:
-    using value_type = T;
-
     constexpr sip_hash(sip_hash const&) noexcept = default;
     constexpr sip_hash(sip_hash&&) noexcept = default;
     constexpr sip_hash& operator=(sip_hash const&) noexcept = default;
     constexpr sip_hash& operator=(sip_hash&&) noexcept = default;
 
-    sip_hash(detail::sip_hash_seed_tag) noexcept requires(std::is_same_v<value_type, uint64_t>) :
-        sip_hash(detail::sip_hash_seed.k0_x1, detail::sip_hash_seed.k1_x1)
-    {
-    }
-
-    sip_hash(detail::sip_hash_seed_tag) noexcept requires(std::is_same_v<value_type, u64x2>) :
-        sip_hash(detail::sip_hash_seed.k0_x2, detail::sip_hash_seed.k1_x2)
-    {
-    }
-
-    sip_hash(detail::sip_hash_seed_tag) noexcept requires(std::is_same_v<value_type, u64x4>) :
-        sip_hash(detail::sip_hash_seed.k0_x4, detail::sip_hash_seed.k1_x4)
+    sip_hash(detail::sip_hash_seed_tag) noexcept :
+        sip_hash(detail::sip_hash_seed.k0, detail::sip_hash_seed.k1)
     {
     }
 
@@ -59,11 +44,11 @@ public:
      */
     sip_hash() noexcept;
 
-    constexpr sip_hash(value_type k0, value_type k1) noexcept :
-        _v0(k0 ^ broadcast<value_type>{}(0x736f6d6570736575)),
-        _v1(k1 ^ broadcast<value_type>{}(0x646f72616e646f6d)),
-        _v2(k0 ^ broadcast<value_type>{}(0x6c7967656e657261)),
-        _v3(k1 ^ broadcast<value_type>{}(0x7465646279746573)),
+    constexpr sip_hash(uint64_t k0, uint64_t k1) noexcept :
+        _v0(k0 ^ 0x736f6d6570736575),
+        _v1(k1 ^ 0x646f72616e646f6d),
+        _v2(k0 ^ 0x6c7967656e657261),
+        _v3(k1 ^ 0x7465646279746573),
         _m(0),
         _b(0)
     {
@@ -72,7 +57,7 @@ public:
 #endif
     }
 
-    [[nodiscard]] value_type finish() noexcept
+    [[nodiscard]] uint64_t finish() noexcept
     {
 #if HI_BUILT_TYPE == HI_BT_DEBUG
         hi_axiom(_debug_state < debug_state_type::finalized);
@@ -124,7 +109,7 @@ public:
 
         // Now we can compress 64 bits at a time.
         while (todo >= 8) {
-            unaligned_load_le(m, src);
+            m = load_le<uint64_t>(src);
             src += 8;
             todo -= 8;
             _compress(v0, v1, v2, v3, std::exchange(m, 0));
@@ -152,7 +137,7 @@ public:
      * @return The value of the hash.
      * @note The `sip_hash` instance can be reused when using this function
      */
-    [[nodiscard]] value_type complete_message(void const *data, size_t size) const noexcept
+    [[nodiscard]] uint64_t complete_message(void const *data, size_t size) const noexcept
     {
         auto *src = reinterpret_cast<char const *>(data);
 
@@ -167,7 +152,7 @@ public:
         uint64_t m;
 
         for (auto block_count = size / 8; block_count > 0; --block_count, src += 8) {
-            unaligned_load_le(m, src);
+            m = load_le<uint64_t>(src);
             _compress(v0, v1, v2, v3, m);
         }
 
@@ -184,16 +169,16 @@ public:
      *
      * @see complete_message()
      */
-    [[nodiscard]] value_type operator()(void const *data, size_t size) const noexcept
+    [[nodiscard]] uint64_t operator()(void const *data, size_t size) const noexcept
     {
         return complete_message(data, size);
     }
 
 private:
-    value_type _v0;
-    value_type _v1;
-    value_type _v2;
-    value_type _v3;
+    uint64_t _v0;
+    uint64_t _v1;
+    uint64_t _v2;
+    uint64_t _v3;
 
     uint64_t _m;
     uint8_t _b;
@@ -202,30 +187,28 @@ private:
     state_type _debug_state;
 #endif
 
-    hi_force_inline static constexpr void _round(value_type& v0, value_type& v1, value_type& v2, value_type& v3) noexcept
+    hi_force_inline static constexpr void _round(uint64_t& v0, uint64_t& v1, uint64_t& v2, uint64_t& v3) noexcept
     {
-        using std::rotl;
-
         v0 += v1;
         v2 += v3;
-        v1 = rotl(v1, 13);
-        v3 = rotl(v3, 16);
+        v1 = std::rotl(v1, 13);
+        v3 = std::rotl(v3, 16);
         v1 ^= v0;
         v3 ^= v2;
-        v0 = rotl(v0, 32);
+        v0 = std::rotl(v0, 32);
 
         v0 += v3;
         v2 += v1;
-        v1 = rotl(v1, 17);
-        v3 = rotl(v3, 21);
+        v1 = std::rotl(v1, 17);
+        v3 = std::rotl(v3, 21);
         v1 ^= v2;
         v3 ^= v0;
-        v2 = rotl(v2, 32);
+        v2 = std::rotl(v2, 32);
     }
 
-    static constexpr void _compress(value_type& v0, value_type& v1, value_type& v2, value_type& v3, uint64_t m) noexcept
+    static constexpr void _compress(uint64_t& v0, uint64_t& v1, uint64_t& v2, uint64_t& v3, uint64_t m) noexcept
     {
-        hilet m_ = broadcast<value_type>{}(m);
+        hilet m_ = m;
 
         v3 ^= m_;
         for (auto i = 0_uz; i != C; ++i) {
@@ -234,9 +217,9 @@ private:
         v0 ^= m_;
     }
 
-    static constexpr void _finalize(value_type& v0, value_type& v1, value_type& v2, value_type& v3) noexcept
+    static constexpr void _finalize(uint64_t& v0, uint64_t& v1, uint64_t& v2, uint64_t& v3) noexcept
     {
-        v2 ^= broadcast<value_type>{}(0xff);
+        v2 ^= 0xff;
         for (auto i = 0_uz; i != D; ++i) {
             _round(v0, v1, v2, v3);
         }
@@ -244,112 +227,71 @@ private:
 };
 
 namespace detail {
-template<typename T, size_t C, size_t D>
-static inline sip_hash sip_hash_prototype = sip_hash<T, C, D>(sip_hash_seed_tag{});
+template<size_t C, size_t D>
+static inline sip_hash sip_hash_prototype = sip_hash<C, D>(sip_hash_seed_tag{});
 }
 
-template<typename T, size_t C, size_t D>
-sip_hash<T, C, D>::sip_hash() noexcept : sip_hash(detail::sip_hash_prototype<T, C, D>)
+template<size_t C, size_t D>
+sip_hash<C, D>::sip_hash() noexcept : sip_hash(detail::sip_hash_prototype<C, D>)
 {
 }
 
-using _sip_hash24 = sip_hash<uint64_t, 2, 4>;
-using _sip_hash24x2 = sip_hash<u64x2, 2, 4>;
-using _sip_hash24x4 = sip_hash<u64x4, 2, 4>;
+using _sip_hash24 = sip_hash<2, 4>;
 
 template<typename T>
 struct sip_hash24 {
-    [[nodiscard]] uint64_t operator()(T const& value) const noexcept
+    [[nodiscard]] uint64_t operator()(T const& rhs) const noexcept
     {
         hi_static_not_implemented();
     }
 
-    [[nodiscard]] uint64_t operator()(T const& value) const noexcept
+    [[nodiscard]] uint64_t operator()(T const& rhs) const noexcept
         requires(std::has_unique_object_representations_v<T> and not std::is_pointer_v<T>)
     {
-        return _sip_hash24{}(&value, sizeof(value));
+        return _sip_hash24{}(&rhs, sizeof(rhs));
+    }
+};
+
+template<typename CharT, typename CharTrait>
+struct sip_hash24<std::basic_string_view<CharT,CharTrait>> {
+    [[nodiscard]] uint64_t operator()(std::basic_string_view<CharT, CharTrait> const& rhs) const noexcept
+    {
+        return _sip_hash24{}(rhs.data(), rhs.size());
+    }
+};
+
+template<typename CharT, typename CharTrait>
+struct sip_hash24<std::basic_string<CharT, CharTrait>> {
+    [[nodiscard]] uint64_t operator()(std::basic_string<CharT, CharTrait> const& rhs) const noexcept
+    {
+        return _sip_hash24{}(rhs.data(), rhs.size());
     }
 };
 
 template<typename T>
-struct sip_hash24x2 {
-    [[nodiscard]] u64x2 operator()(T const& value) const noexcept
+struct sip_hash24<std::span<T>> {
+    [[nodiscard]] uint64_t operator()(std::span<T> const& rhs) const noexcept
     {
-        hi_static_not_implemented();
-    }
-
-    [[nodiscard]] u64x2 operator()(T const& value) const noexcept
-        requires(std::has_unique_object_representations_v<T> and not std::is_pointer_v<T>)
-    {
-        return _sip_hash24x2{}(&value, sizeof(value));
-    }
-};
-
-template<typename T>
-struct sip_hash24x4 {
-    [[nodiscard]] u64x4 operator()(T const& value) const noexcept
-    {
-        hi_static_not_implemented();
-    }
-
-    [[nodiscard]] u64x4 operator()(T const& value) const noexcept
-        requires(std::has_unique_object_representations_v<T> and not std::is_pointer_v<T>)
-    {
-        return _sip_hash24x4{}(&value, sizeof(value));
+        return _sip_hash24{}(rhs.data(), rhs.size());
     }
 };
 
 template<>
-struct sip_hash24<wchar_t const *> {
-    [[nodiscard]] uint64_t operator()(wchar_t const *str) const noexcept
+struct sip_hash24<char *> {
+    [[nodiscard]] uint64_t operator()(char const *rhs) const noexcept
     {
-        hilet length = wcslen(str);
-        return _sip_hash24{}(str, length * sizeof(wchar_t));
-    }
-};
-
-template<>
-struct sip_hash24x2<wchar_t const *> {
-    [[nodiscard]] u64x2 operator()(wchar_t const *str) const noexcept
-    {
-        hilet length = wcslen(str);
-        return _sip_hash24x2{}(str, length * sizeof(wchar_t));
-    }
-};
-
-template<>
-struct sip_hash24x4<wchar_t const *> {
-    [[nodiscard]] u64x4 operator()(wchar_t const *str) const noexcept
-    {
-        hilet length = wcslen(str);
-        return _sip_hash24x4{}(str, length * sizeof(wchar_t));
+        hilet length = strlen(rhs);
+        return _sip_hash24{}(rhs, length * sizeof(char));
     }
 };
 
 template<>
 struct sip_hash24<wchar_t *> {
-    [[nodiscard]] uint64_t operator()(wchar_t const *str) const noexcept
+    [[nodiscard]] uint64_t operator()(wchar_t const *rhs) const noexcept
     {
-        hilet length = wcslen(str);
-        return _sip_hash24{}(str, length * sizeof(wchar_t));
+        hilet length = wcslen(rhs);
+        return _sip_hash24{}(rhs, length * sizeof(wchar_t));
     }
 };
 
-template<>
-struct sip_hash24x2<wchar_t *> {
-    [[nodiscard]] u64x2 operator()(wchar_t const *str) const noexcept
-    {
-        hilet length = wcslen(str);
-        return _sip_hash24x2{}(str, length * sizeof(wchar_t));
-    }
-};
-
-template<>
-struct sip_hash24x4<wchar_t *> {
-    [[nodiscard]] u64x4 operator()(wchar_t const *str) const noexcept
-    {
-        hilet length = wcslen(str);
-        return _sip_hash24x4{}(str, length * sizeof(wchar_t));
-    }
-};
 } // namespace hi::inline v1
