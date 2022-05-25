@@ -139,6 +139,7 @@ private:
     float _base_line;
 
     decltype(text)::token_type _text_cbt;
+    decltype(text_style)::token_type _text_style_cbt;
 
     text_selection _selection;
 
@@ -179,6 +180,12 @@ private:
     undo_stack<undo_type> _undo_stack = {1000};
 
     text_widget(gui_window& window, widget *parent) noexcept;
+
+    /** Update the shaped text.
+    * 
+    * This function must be called synchronously whenever the text, style or theme changes.
+    */
+    void update_shaped_text() noexcept;
 
     /** Make parent scroll views, scroll to show the current selection and cursor.
      */

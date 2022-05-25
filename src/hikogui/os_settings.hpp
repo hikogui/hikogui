@@ -21,6 +21,9 @@ namespace hi::inline v1 {
 
 class os_settings {
 public:
+    using notifier_type = notifier<>;
+    using token_type = notifier_type::token_type;
+
     /** Get the language tags for the configured languages.
      *
      * @return A list of language tags in order of priority.
@@ -169,14 +172,14 @@ public:
      */
     static void gather() noexcept;
 
-    [[nodiscard]] static auto subscribe(callback_flags flags, std::invocable<> auto&& callback) noexcept
+    [[nodiscard]] static token_type subscribe(callback_flags flags, std::invocable<> auto&& callback) noexcept
     {
         start_subsystem();
         hilet lock = std::scoped_lock(_mutex);
         return _notifier.subscribe(flags, hi_forward(callback));
     }
 
-    [[nodiscard]] static auto subscribe(std::invocable<> auto&& callback) noexcept
+    [[nodiscard]] static token_type subscribe(std::invocable<> auto&& callback) noexcept
     {
         return subscribe(callback_flags::synchronous, hi_forward(callback));
     }
@@ -190,7 +193,7 @@ private:
     static inline loop::timer_token_type _gather_cbt;
     static inline utc_nanoseconds _gather_last_time;
 
-    static inline notifier<void()> _notifier;
+    static inline notifier_type _notifier;
 
     static inline std::vector<language_tag> _language_tags = {};
     static inline std::vector<language *> _languages = {};
