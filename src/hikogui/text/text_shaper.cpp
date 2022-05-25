@@ -466,17 +466,17 @@ void text_shaper::resolve_script() noexcept
 
 [[nodiscard]] text_cursor text_shaper::get_end_cursor() const noexcept
 {
-    return {size() - 1, true, size()};
+    return text_cursor{size() - 1, true}.resize(size());
 }
 
 [[nodiscard]] text_cursor text_shaper::get_before_cursor(size_t index) const noexcept
 {
-    return {index, false, size()};
+    return text_cursor{index, false}.resize(size());
 }
 
 [[nodiscard]] text_cursor text_shaper::get_after_cursor(size_t index) const noexcept
 {
-    return {index, true, size()};
+    return text_cursor{index, true}.resize(size());
 }
 
 [[nodiscard]] text_cursor text_shaper::get_left_cursor(text_shaper::char_const_iterator it) const noexcept
@@ -539,7 +539,7 @@ void text_shaper::resolve_script() noexcept
 
     if (line_it != _lines.end()) {
         hilet[char_it, after] = line_it->get_nearest(position);
-        return {narrow<size_t>(std::distance(_text.begin(), char_it)), after, size()};
+        return {narrow<size_t>(std::distance(_text.begin(), char_it)), after};
     } else {
         return {};
     }
@@ -687,9 +687,9 @@ void text_shaper::resolve_script() noexcept
 [[nodiscard]] text_cursor text_shaper::move_begin_sentence(text_cursor cursor) const noexcept
 {
     if (cursor.after()) {
-        cursor = {cursor.index(), false, size()};
+        cursor = {cursor.index(), false};
     } else if (cursor.index() != 0) {
-        cursor = {cursor.index() - 1, false, size()};
+        cursor = {cursor.index() - 1, false};
     }
     hilet[first, last] = select_sentence(cursor);
     return first.before_neighbor(size());
@@ -698,9 +698,9 @@ void text_shaper::resolve_script() noexcept
 [[nodiscard]] text_cursor text_shaper::move_end_sentence(text_cursor cursor) const noexcept
 {
     if (cursor.before()) {
-        cursor = {cursor.index(), true, size()};
+        cursor = {cursor.index(), true};
     } else if (cursor.index() != _text.size() - 1) {
-        cursor = {cursor.index() + 1, true, size()};
+        cursor = {cursor.index() + 1, true};
     }
     hilet[first, last] = select_sentence(cursor);
     return last.before_neighbor(size());
@@ -709,9 +709,9 @@ void text_shaper::resolve_script() noexcept
 [[nodiscard]] text_cursor text_shaper::move_begin_paragraph(text_cursor cursor) const noexcept
 {
     if (cursor.after()) {
-        cursor = {cursor.index(), false, size()};
+        cursor = {cursor.index(), false};
     } else if (cursor.index() != 0) {
-        cursor = {cursor.index() - 1, false, size()};
+        cursor = {cursor.index() - 1, false};
     }
     hilet[first, last] = select_paragraph(cursor);
     return first.before_neighbor(size());
@@ -720,9 +720,9 @@ void text_shaper::resolve_script() noexcept
 [[nodiscard]] text_cursor text_shaper::move_end_paragraph(text_cursor cursor) const noexcept
 {
     if (cursor.before()) {
-        cursor = {cursor.index(), true, size()};
+        cursor = {cursor.index(), true};
     } else if (cursor.index() != _text.size() - 1) {
-        cursor = {cursor.index() + 1, true, size()};
+        cursor = {cursor.index() + 1, true};
     }
     hilet[first, last] = select_paragraph(cursor);
     return last.before_neighbor(size());

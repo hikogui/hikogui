@@ -139,6 +139,7 @@ private:
     float _base_line;
 
     decltype(text)::token_type _text_cbt;
+    decltype(text_style)::token_type _text_style_cbt;
 
     text_selection _selection;
 
@@ -180,6 +181,12 @@ private:
 
     text_widget(gui_window& window, widget *parent) noexcept;
 
+    /** Update the shaped text.
+    * 
+    * This function must be called synchronously whenever the text, style or theme changes.
+    */
+    void update_shaped_text() noexcept;
+
     /** Make parent scroll views, scroll to show the current selection and cursor.
      */
     void scroll_to_show_selection() noexcept;
@@ -205,19 +212,8 @@ private:
     scoped_task<> blink_cursor() noexcept;
 
     /** Fix the cursor position after cursor movement.
-     *
-     * @param Size of the text.
      */
-    void fix_cursor_position(size_t size) noexcept;
-
-    /** Fix the cursor position after cursor movement.
-     *
-     * @note uses size of _shaped_text.
-     */
-    void fix_cursor_position() noexcept
-    {
-        fix_cursor_position(_shaped_text.size());
-    }
+    void fix_cursor_position() noexcept;
 
     void replace_selection(gstring const &replacement) noexcept;
 

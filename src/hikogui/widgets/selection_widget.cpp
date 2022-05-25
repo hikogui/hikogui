@@ -37,7 +37,7 @@ selection_widget::selection_widget(gui_window& window, widget *parent, weak_or_u
     // clang-format on
 
     if (auto d = _delegate.lock()) {
-        _delegate_cbt = d->subscribe(*this, [this] {
+        _delegate_cbt = d->subscribe(*this, callback_flags::main, [this] {
             repopulate_options();
             this->request_reconstrain();
         });
@@ -273,7 +273,7 @@ void selection_widget::repopulate_options() noexcept
     for (auto&& label : options) {
         auto menu_button = &_column_widget->make_widget<menu_button_widget>(std::move(label), selected, index);
 
-        _menu_button_tokens.push_back(menu_button->pressed.subscribe([this, index] {
+        _menu_button_tokens.push_back(menu_button->pressed.subscribe(callback_flags::main, [this, index] {
             if (auto delegate = _delegate.lock()) {
                 delegate->set_selected(*this, index);
             }

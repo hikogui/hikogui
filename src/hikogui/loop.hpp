@@ -85,15 +85,17 @@ public:
         virtual int resume(std::stop_token stop_token) noexcept = 0;
         virtual void resume_once(bool block) noexcept = 0;
 
+        [[nodiscard]] bool on_thread() const noexcept
+        {
+            // Some functions check on_thread() while resume() has not been called yet.
+            // calling functions outside of the loop's thread if the loop is not being resumed is valid.
+            return _thread_id == 0 or current_thread_id() == _thread_id;
+        }
+
     protected:
         /** Notify the event loop that a function was added to the _function_fifo.
          */
         virtual void notify_has_send() noexcept = 0;
-
-        [[nodiscard]] bool is_same_thread() const noexcept
-        {
-            return _thread_id == 0 or current_thread_id() == _thread_id;
-        }
 
         function_fifo<> _function_fifo;
         function_timer<> _function_timer;
@@ -304,6 +306,16 @@ public:
     {
         hi_axiom(_pimpl);
         return _pimpl->resume_once(block);
+    }
+
+    /** Check if the current thread is the same as the loop's thread.
+     *
+     * The loop's thread is the thread that calls resume().
+     */
+    [[nodiscard]] bool on_thread() const noexcept
+    {
+        hi_axiom(_pimpl);
+        return _pimpl->on_thread();
     }
 
 private:

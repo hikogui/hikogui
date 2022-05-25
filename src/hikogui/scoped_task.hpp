@@ -153,9 +153,19 @@ public:
      * @param callback The callback to call when the co-routine executed co_return. If co_return
      *                 has a non-void expression then the callback must accept the expression as an argument.
      */
+    notifier_type::token_type subscribe(callback_flags flags, std::invocable<value_type> auto&& callback) noexcept
+    {
+        return _coroutine.promise().notifier.subscribe(flags, hi_forward(callback));
+    }
+
+    /** Subscribe a callback for when the co-routine is completed.
+     *
+     * @param callback The callback to call when the co-routine executed co_return. If co_return
+     *                 has a non-void expression then the callback must accept the expression as an argument.
+     */
     notifier_type::token_type subscribe(std::invocable<value_type> auto&& callback) noexcept
     {
-        return _coroutine.promise().notifier.subscribe(hi_forward(callback));
+        return subscribe(callback_flags::synchronous, hi_forward(callback));
     }
 
 private:
@@ -260,11 +270,19 @@ public:
     }
 
     /**
-     * @sa scoped_task<>::subscribe()
+     * @sa notifier<>::subscribe()
+     */
+    notifier_type::token_type subscribe(callback_flags flags, std::invocable<> auto&& callback) noexcept
+    {
+        return _coroutine.promise().notifier.subscribe(flags, hi_forward(callback));
+    }
+
+    /**
+     * @sa notifier<>::subscribe()
      */
     notifier_type::token_type subscribe(std::invocable<> auto&& callback) noexcept
     {
-        return _coroutine.promise().notifier.subscribe(hi_forward(callback));
+        return subscribe(callback_flags::synchronous, hi_forward(callback));
     }
 
 private:
