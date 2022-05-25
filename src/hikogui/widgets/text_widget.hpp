@@ -205,19 +205,8 @@ private:
     scoped_task<> blink_cursor() noexcept;
 
     /** Fix the cursor position after cursor movement.
-     *
-     * @param Size of the text.
      */
-    void fix_cursor_position(size_t size) noexcept;
-
-    /** Fix the cursor position after cursor movement.
-     *
-     * @note uses size of _shaped_text.
-     */
-    void fix_cursor_position() noexcept
-    {
-        fix_cursor_position(_shaped_text.size());
-    }
+    void fix_cursor_position() noexcept;
 
     void replace_selection(gstring const &replacement) noexcept;
 

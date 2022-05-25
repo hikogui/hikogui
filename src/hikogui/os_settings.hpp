@@ -169,11 +169,16 @@ public:
      */
     static void gather() noexcept;
 
-    [[nodiscard]] static auto subscribe(std::invocable<> auto &&callback) noexcept
+    [[nodiscard]] static auto subscribe(callback_flags flags, std::invocable<> auto&& callback) noexcept
     {
         start_subsystem();
         hilet lock = std::scoped_lock(_mutex);
-        return _notifier.subscribe(hi_forward(callback));
+        return _notifier.subscribe(flags, hi_forward(callback));
+    }
+
+    [[nodiscard]] static auto subscribe(std::invocable<> auto&& callback) noexcept
+    {
+        return subscribe(callback_flags::synchronous, hi_forward(callback));
     }
 
 private:

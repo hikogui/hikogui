@@ -16,15 +16,21 @@ namespace hi::inline v1 {
 
 class text_selection {
 public:
-    constexpr text_selection() noexcept : _cursor(), _start_first(), _start_last(), _finish_first(), _finish_last()
-    {
-        hi_axiom(holds_invariant());
-    }
+    constexpr text_selection() noexcept = default;
+    constexpr text_selection(text_selection const&) noexcept = default;
+    constexpr text_selection(text_selection&&) noexcept = default;
+    constexpr text_selection& operator=(text_selection const&) noexcept = default;
+    constexpr text_selection& operator=(text_selection&&) noexcept = default;
 
-    constexpr text_selection(text_selection const &) noexcept = default;
-    constexpr text_selection(text_selection &&) noexcept = default;
-    constexpr text_selection &operator=(text_selection const &) noexcept = default;
-    constexpr text_selection &operator=(text_selection &&) noexcept = default;
+    constexpr text_selection& resize(size_t size) noexcept
+    {
+        _cursor.resize(size);
+        _start_first.resize(size);
+        _start_last.resize(size);
+        _finish_first.resize(size);
+        _finish_last.resize(size);
+        return *this;
+    }
 
     constexpr text_cursor cursor() const noexcept
     {
@@ -65,38 +71,24 @@ public:
         return first_index >= last_index;
     }
 
-    constexpr operator bool() const noexcept
+    constexpr explicit operator bool() const noexcept
     {
         return not empty();
     }
 
-    /** Clamp the selection to the size of the text.
-     */
-    constexpr text_selection &clamp(size_t size) noexcept
+    constexpr text_selection& clear_selection(size_t size) noexcept
     {
-        hilet max_cursor = text_cursor{size - 1, true, size};
-        inplace_min(_cursor, max_cursor);
-        inplace_min(_start_first, max_cursor);
-        inplace_min(_start_last, max_cursor);
-        inplace_min(_finish_first, max_cursor);
-        inplace_min(_finish_last, max_cursor);
-        return *this;
+        return set_cursor(_cursor.resize(size));
     }
 
-    constexpr text_selection &clear_selection(size_t size) noexcept
-    {
-        hilet new_cursor = std::min(_cursor, text_cursor{size - 1, true, size});
-        return set_cursor(new_cursor);
-    }
-
-    constexpr text_selection &set_cursor(text_cursor new_cursor) noexcept
+    constexpr text_selection& set_cursor(text_cursor new_cursor) noexcept
     {
         _cursor = _start_first = _start_last = _finish_first = _finish_last = new_cursor;
         hi_axiom(holds_invariant());
         return *this;
     }
 
-    constexpr text_selection &operator=(text_cursor const &rhs) noexcept
+    constexpr text_selection& operator=(text_cursor const& rhs) noexcept
     {
         return set_cursor(rhs);
     }
@@ -133,7 +125,7 @@ public:
         return drag_selection(drag_cursor, selection.first, selection.second);
     }
 
-    [[nodiscard]] constexpr friend bool operator==(text_selection const &, text_selection const &) noexcept = default;
+    [[nodiscard]] constexpr friend bool operator==(text_selection const&, text_selection const&) noexcept = default;
 
 private:
     [[nodiscard]] constexpr bool holds_invariant() const noexcept

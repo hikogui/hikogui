@@ -414,9 +414,14 @@ public:
         return *this;
     }
 
+    token_type subscribe(callback_flags flags, std::invocable<value_type> auto&& callback) noexcept
+    {
+        return _notifier.subscribe(flags, hi_forward(callback));
+    }
+
     token_type subscribe(std::invocable<value_type> auto&& callback) noexcept
     {
-        return _notifier.subscribe(hi_forward(callback));
+        return _notifier.subscribe(callback_flags::synchronous, hi_forward(callback));
     }
 
     awaiter_type operator co_await() const noexcept

@@ -34,7 +34,7 @@ public:
      *
      * Due to complicated threading and callback function interactions
      * audio devices are not destroyed until application shutdown.
-     * 
+     *
      * @return A generator-coroutine object that can be iterated over.
      */
     [[nodiscard]] virtual generator<audio_device *> devices() noexcept = 0;
@@ -43,9 +43,18 @@ public:
      *
      * @return A callback token, a RAII object which when destroyed removes the subscription.
      */
-    token_type subscribe(auto&& func) noexcept
+    token_type subscribe(callback_flags flags, std::invocable<> auto&& func) noexcept
     {
-        return _notifier.subscribe(hi_forward(func));
+        return _notifier.subscribe(flags, hi_forward(func));
+    }
+
+    /** Subscribe a function to be called when the device list changes.
+     *
+     * @return A callback token, a RAII object which when destroyed removes the subscription.
+     */
+    token_type subscribe(std::invocable<> auto&& func) noexcept
+    {
+        return subscribe(callback_flags::synchronous, hi_forward(func));
     }
 
     auto operator co_await() noexcept

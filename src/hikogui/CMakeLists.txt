@@ -37,6 +37,8 @@ target_sources(hikogui PRIVATE
     bits.hpp
     bound_integer.hpp
     byte_string.hpp
+    callback_flags.hpp
+    cast.hpp
     check.hpp
     chrono.hpp
     concepts.hpp

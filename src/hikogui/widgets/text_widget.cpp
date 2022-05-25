@@ -31,7 +31,7 @@ widget_constraints const& text_widget::set_constraints() noexcept
     _shaped_text_cap_height = cap_height;
     hilet shaped_text_size = shaped_text_rectangle.size();
 
-    _selection.clamp(text->size());
+    _selection.resize(text->size());
 
     if (*edit_mode == edit_mode_type::line_editable) {
         // In line-edit mode the text should not wrap.
@@ -193,11 +193,13 @@ void text_widget::redo() noexcept
     return gstring_view{*text}.substr(first, last - first);
 }
 
-void text_widget::fix_cursor_position(size_t size) noexcept
+void text_widget::fix_cursor_position() noexcept
 {
+    hilet size = text->size();
     if (_overwrite_mode and _selection.empty() and _selection.cursor().after()) {
         _selection = _selection.cursor().before_neighbor(size);
     }
+    _selection.resize(size);
 }
 
 void text_widget::replace_selection(gstring const& replacement) noexcept
@@ -207,8 +209,8 @@ void text_widget::replace_selection(gstring const& replacement) noexcept
     hilet[first, last] = _selection.selection_indices();
     text.proxy()->replace(first, last - first, replacement);
 
-    _selection = text_cursor{first + replacement.size() - 1, true, text->size()};
-    fix_cursor_position(text->size());
+    _selection = text_cursor{first + replacement.size() - 1, true};
+    fix_cursor_position();
 }
 
 void text_widget::add_character(grapheme c, add_type mode) noexcept

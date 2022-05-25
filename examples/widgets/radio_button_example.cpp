@@ -15,14 +15,16 @@ int hi_main(int argc, char *argv[])
     auto window = gui->make_window(tr("Radio button example"));
     window->content().make_widget<label_widget>("A1", tr("radio buttons:"));
 
-/// [Create three radio buttons]
+    /// [Create three radio buttons]
     observable<int> value = 0;
 
     window->content().make_widget<radio_button_widget>("B1", tr("one"), value, 1);
     window->content().make_widget<radio_button_widget>("B2", tr("two"), value, 2);
     window->content().make_widget<radio_button_widget>("B3", tr("three"), value, 3);
-/// [Create three radio buttons]
+    /// [Create three radio buttons]
 
-    auto close_cb = window->closing.subscribe([&]{ window.reset(); });
+    auto close_cb = window->closing.subscribe([&] {
+        window.reset();
+    });
     return loop::main().resume();
 }
