@@ -6,6 +6,8 @@
 
 #include "pcm_format.hpp"
 #include "audio_stream_format.hpp"
+#include "surround_mode.hpp"
+#include <compare>
 
 namespace hi::inline v1 {
 
@@ -15,6 +17,7 @@ public:
     uint16_t num_channels = 0;
     uint32_t min_sample_rate = 0;
     uint32_t max_sample_rate = 0;
+    surround_mode surround_mode_mask = surround_mode::none;
 
     constexpr audio_format_range() noexcept = default;
     constexpr audio_format_range(audio_format_range&&) noexcept = default;
@@ -23,15 +26,39 @@ public:
     constexpr audio_format_range& operator=(audio_format_range const&) noexcept = default;
     [[nodiscard]] constexpr friend bool operator==(audio_format_range const&, audio_format_range const&) noexcept = default;
 
+    [[nodiscard]] constexpr friend auto operator<=>(audio_format_range const& lhs, audio_format_range const& rhs) noexcept
+    {
+        if (auto tmp = lhs.num_channels <=> rhs.num_channels; tmp != std::strong_ordering::equal) {
+            return tmp;
+        }
+        if (auto tmp = lhs.min_sample_rate <=> rhs.min_sample_rate; tmp != std::strong_ordering::equal) {
+            return tmp;
+        }
+        if (auto tmp = lhs.surround_mode_mask <=> rhs.surround_mode_mask; tmp != std::strong_ordering::equal) {
+            return tmp;
+        }
+        return lhs.format <=> rhs.format;
+    }
+
+    [[nodiscard]] constexpr friend bool
+    equal_except_bit_depth(audio_format_range const& lhs, audio_format_range const& rhs) noexcept
+    {
+        return std::tie(lhs.num_channels, lhs.min_sample_rate, lhs.max_sample_rate, lhs.surround_mode_mask) ==
+            std::tie(rhs.num_channels, rhs.min_sample_rate, rhs.max_sample_rate, rhs.surround_mode_mask) and
+            equal_except_bit_depth(lhs.format, rhs.format);
+    }
+
     constexpr audio_format_range(
         pcm_format format,
         uint16_t num_channels,
         uint32_t min_sample_rate,
-        uint32_t max_sample_rate) noexcept :
+        uint32_t max_sample_rate,
+        surround_mode surround_mode_mask) noexcept :
         format(format),
         num_channels(num_channels),
         min_sample_rate(min_sample_rate),
-        max_sample_rate(max_sample_rate)
+        max_sample_rate(max_sample_rate),
+        surround_mode_mask(surround_mode_mask)
     {
     }
 
@@ -48,23 +75,12 @@ public:
     [[nodiscard]] friend std::string to_string(audio_format_range const& rhs) noexcept
     {
         return std::format(
-            "format={}, ch={}, rate={}:{}",
+            "format={}, ch={}, rate={}:{}, surround={}",
             rhs.format,
             rhs.num_channels,
             rhs.min_sample_rate,
-            rhs.max_sample_rate);
-    }
-
-    /** Get a format matching this range that is likely working.
-     *
-     * The audio device driver was probably lying about its capabilities. This
-     * function returns a format that most likely will actually work.
-     *
-     * @return A stream-format with the minimum sample rate and maximum channels.
-     */
-    [[nodiscard]] audio_stream_format begin() const noexcept
-    {
-        return audio_stream_format(format, min_sample_rate, make_direct_speaker_mapping(num_channels));
+            rhs.max_sample_rate,
+            rhs.surround_mode_mask);
     }
 };
 

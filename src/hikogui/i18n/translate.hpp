@@ -29,7 +29,7 @@ public:
      * @patam loc The locale to use when formatting.
      * @param fmt The format string.
      */
-    [[nodiscard]] virtual std::string format(std::locale const &loc, std::string_view fmt) const noexcept = 0;
+    [[nodiscard]] virtual std::string format(std::locale const& loc, std::string_view fmt) const noexcept = 0;
 
     /** The numeric value of the first numeric argument.
      * @return The numeric value of the first numeric argument or zero.
@@ -40,9 +40,9 @@ public:
      */
     [[nodiscard]] virtual std::unique_ptr<translate_args_base> unique_copy() const noexcept = 0;
 
-    [[nodiscard]] virtual bool equal_to(translate_args_base const &rhs) const noexcept = 0;
+    [[nodiscard]] virtual bool equal_to(translate_args_base const& rhs) const noexcept = 0;
 
-    [[nodiscard]] bool friend operator==(translate_args_base const &lhs, translate_args_base const &rhs) noexcept
+    [[nodiscard]] bool friend operator==(translate_args_base const& lhs, translate_args_base const& rhs) noexcept
     {
         return lhs.equal_to(rhs);
     }
@@ -55,10 +55,10 @@ public:
 template<typename... Values>
 class translate_args : public translate_args_base {
 public:
-    translate_args(translate_args &&) noexcept = default;
-    translate_args(translate_args const &) noexcept = default;
-    translate_args &operator=(translate_args &&) noexcept = default;
-    translate_args &operator=(translate_args const &) noexcept = default;
+    translate_args(translate_args&&) noexcept = default;
+    translate_args(translate_args const&) noexcept = default;
+    translate_args& operator=(translate_args&&) noexcept = default;
+    translate_args& operator=(translate_args const&) noexcept = default;
 
     /** Construct a translate arguments.
      *
@@ -73,7 +73,7 @@ public:
      * @param args The parameters to std::format excluding format string and locale.
      */
     template<typename... Args>
-    translate_args(Args const &...args) noexcept : _values(args...)
+    translate_args(Args const&...args) noexcept : _values(args...)
     {
     }
 
@@ -82,7 +82,7 @@ public:
         return std::make_unique<translate_args>(*this);
     }
 
-    [[nodiscard]] virtual bool equal_to(translate_args_base const &rhs) const noexcept override
+    [[nodiscard]] virtual bool equal_to(translate_args_base const& rhs) const noexcept override
     {
         if (auto *rhs_ = dynamic_cast<translate_args const *>(&rhs)) {
             return _values == rhs_->_values;
@@ -93,12 +93,12 @@ public:
 
     [[nodiscard]] std::string format(std::string_view fmt) const noexcept override
     {
-        return std::apply(format_wrapper<Values const &...>, std::tuple_cat(std::tuple{fmt}, _values));
+        return std::apply(format_wrapper<Values const&...>, std::tuple_cat(std::tuple{fmt}, _values));
     }
 
-    [[nodiscard]] std::string format(std::locale const &loc, std::string_view fmt) const noexcept override
+    [[nodiscard]] std::string format(std::locale const& loc, std::string_view fmt) const noexcept override
     {
-        return std::apply(format_locale_wrapper<Values const &...>, std::tuple_cat(std::tuple{loc, fmt}, _values));
+        return std::apply(format_locale_wrapper<Values const&...>, std::tuple_cat(std::tuple{loc, fmt}, _values));
     }
 
     template<std::size_t I>
@@ -124,20 +124,20 @@ private:
     std::tuple<Values...> _values;
 
     template<typename... Args>
-    static std::string format_wrapper(std::string_view fmt, Args const &...args)
+    static std::string format_wrapper(std::string_view fmt, Args const&...args)
     {
         return std::vformat(fmt, std::make_format_args(args...));
     }
 
     template<typename... Args>
-    static std::string format_locale_wrapper(std::locale const &loc, std::string_view fmt, Args const &...args)
+    static std::string format_locale_wrapper(std::locale const& loc, std::string_view fmt, Args const&...args)
     {
         return std::vformat(loc, fmt, std::make_format_args(args...));
     }
 };
 
 template<typename... Args>
-translate_args(Args &&...) -> translate_args<forward_value_t<Args>...>;
+translate_args(Args&&...) -> translate_args<forward_value_t<Args>...>;
 
 } // namespace detail
 
@@ -151,17 +151,40 @@ class translate {
 public:
     /** Construct an empty message.
      */
-    constexpr translate() noexcept : _msg_id(), _args(nullptr) {}
+    constexpr translate() noexcept : _msg_id(), _args(nullptr), _has_args(false) {}
 
-    translate(translate &&) noexcept = default;
-    translate &operator=(translate &&) noexcept = default;
+    constexpr translate(translate&& other) noexcept :
+        _msg_id(std::move(other._msg_id)), _args(nullptr), _has_args(other._has_args)
+    {
+        if (_has_args) {
+            _args = std::move(other._args);
+        }
+    }
 
-    translate(translate const &other) noexcept : _msg_id(other._msg_id), _args(other._args ? other._args->unique_copy() : nullptr) {}
+    constexpr translate& operator=(translate&& other) noexcept
+    {
+        _msg_id = std::move(other._msg_id);
+        _has_args = other._has_args;
+        if (_has_args) {
+            _args = std::move(other._args);
+        }
+        return *this;
+    }
 
-    translate &operator=(translate const &other) noexcept
+    constexpr translate(translate const& other) noexcept : _msg_id(other._msg_id), _args(nullptr), _has_args(other._has_args)
+    {
+        if (_has_args) {
+            _args = other._args->unique_copy();
+        }
+    }
+
+    constexpr translate& operator=(translate const& other) noexcept
     {
         _msg_id = other._msg_id;
-        _args = other._args ? other._args->unique_copy() : nullptr;
+        _has_args = other._has_args;
+        if (_has_args) {
+            _args = other._args->unique_copy();
+        }
         return *this;
     }
 
@@ -186,13 +209,27 @@ public:
      *               database or, when not found, as-is. The msg_id may contain
      *               placeholders using the `std::format` format. Plurality is
      *               based on the first `std::integral` arguments.
+     */
+    constexpr translate(std::string_view msg_id) noexcept : _msg_id(msg_id), _args(nullptr), _has_args(false) {}
+
+    /** Construct a localizable message.
+     *
+     * It is recommended to use the parentheses form of the constructor so that
+     * it will look like a function which is recognized by the `gettext` tool.
+     *
+     * @param msg_id A English string that is looked up in the translation
+     *               database or, when not found, as-is. The msg_id may contain
+     *               placeholders using the `std::format` format. Plurality is
+     *               based on the first `std::integral` arguments.
      * @param args Arguments passed to `std::format`. The arguments are copied
      *             into the `translate` object and used when formatting the
      *             translated string.
      */
-    template<typename... Args>
-    translate(std::string_view msg_id, Args const &...args) noexcept :
-        _msg_id(msg_id), _args(sizeof...(Args) ? std::make_unique<detail::translate_args<forward_value_t<Args>...>>(args...) : nullptr)
+    template<typename FirstArg, typename... Args>
+    translate(std::string_view msg_id, FirstArg const& first_arg, Args const&...args) noexcept :
+        _msg_id(msg_id),
+        _args(std::make_unique<detail::translate_args<forward_value_t<FirstArg>, forward_value_t<Args>...>>(first_arg, args...)),
+        _has_args(true)
     {
     }
 
@@ -202,9 +239,9 @@ public:
      * @param languages A list of languages to search for translations.
      * @return The translated and formatted message.
      */
-    [[nodiscard]] std::string operator()(std::vector<language *> const &languages = os_settings::languages()) const noexcept
+    [[nodiscard]] std::string operator()(std::vector<language *> const& languages = os_settings::languages()) const noexcept
     {
-        if (_args) {
+        if (_has_args) {
             auto fmt = ::hi::get_translation(_msg_id, _args->n(), languages);
             return _args->format(fmt);
         } else {
@@ -220,7 +257,7 @@ public:
      * @return The translated and formatted message.
      */
     [[nodiscard]] std::string
-    operator()(std::locale const &loc, std::vector<language *> const &languages = os_settings::languages()) const noexcept
+    operator()(std::locale const& loc, std::vector<language *> const& languages = os_settings::languages()) const noexcept
     {
         if (_args) {
             auto fmt = ::hi::get_translation(_msg_id, _args->n(), languages);
@@ -236,20 +273,23 @@ public:
      * @param rhs A localizable message.
      * @return True if both messages are equal.
      */
-    [[nodiscard]] friend bool operator==(translate const &lhs, translate const &rhs) noexcept
+    [[nodiscard]] constexpr friend bool operator==(translate const& lhs, translate const& rhs) noexcept
     {
-        if (lhs._args == rhs._args) {
-            return lhs._msg_id == rhs._msg_id;
-        } else if (lhs._args and rhs._args) {
-            return lhs._msg_id == rhs._msg_id and *lhs._args == *rhs._args;
-        } else {
+        if (lhs._has_args != rhs._has_args) {
             return false;
         }
+
+        if (lhs._has_args and *lhs._args != *rhs._args) {
+            return false;
+        }
+
+        return lhs._msg_id == rhs._msg_id;
     }
 
 private:
     std::string _msg_id;
     std::unique_ptr<detail::translate_args_base> _args;
+    bool _has_args;
 };
 
 using tr = translate;

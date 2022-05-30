@@ -21,6 +21,31 @@ public:
     constexpr pcm_format& operator=(pcm_format const&) noexcept = default;
     [[nodiscard]] friend constexpr bool operator==(pcm_format const&, pcm_format const&) noexcept = default;
 
+    [[nodiscard]] friend constexpr auto operator<=>(pcm_format const &lhs, pcm_format const &rhs) noexcept
+    {
+        if (auto tmp = lhs._floating_point <=> rhs._floating_point; tmp != std::strong_ordering::equal) {
+            return tmp;
+        }
+        if (auto tmp = lhs._num_major_bits <=> rhs._num_major_bits; tmp != std::strong_ordering::equal) {
+            return tmp;
+        }
+        if (auto tmp = lhs._num_minor_bits <=> rhs._num_minor_bits; tmp != std::strong_ordering::equal) {
+            return tmp;
+        }
+        if (auto tmp = lhs._num_bytes <=> rhs._num_bytes; tmp != std::strong_ordering::equal) {
+            return tmp;
+        }
+        if (auto tmp = lhs._lsb <=> rhs._lsb; tmp != std::strong_ordering::equal) {
+            return tmp;
+        }
+        return lhs._lsb <=> rhs._lsb;
+    }
+
+    [[nodiscard]] constexpr friend bool equal_except_bit_depth(pcm_format const& lhs, pcm_format const& rhs) noexcept
+    {
+        return lhs._floating_point == rhs._floating_point;
+    }
+
     /** Construct a PCM format.
      *
      * @param floating_point True when format is in floating-point, false if format is in fixed-point/signed-integer.

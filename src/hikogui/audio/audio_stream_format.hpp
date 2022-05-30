@@ -15,6 +15,7 @@ namespace hi::inline v1 {
 struct audio_stream_format {
     pcm_format format = {};
     uint32_t sample_rate = 0;
+    uint16_t num_channels = 0;
     hi::speaker_mapping speaker_mapping = hi::speaker_mapping::none;
 
     constexpr audio_stream_format() noexcept = default;
@@ -26,8 +27,9 @@ struct audio_stream_format {
     [[nodiscard]] constexpr audio_stream_format(
         pcm_format format,
         uint32_t sample_rate,
-        hi::speaker_mapping speaker_mapping) noexcept :
-        format(format), sample_rate(sample_rate), speaker_mapping(speaker_mapping)
+        uint16_t num_channels,
+        hi::speaker_mapping speaker_mapping = hi::speaker_mapping::none) noexcept :
+        format(format), sample_rate(sample_rate), num_channels(num_channels), speaker_mapping(speaker_mapping)
     {
     }
 
@@ -39,6 +41,14 @@ struct audio_stream_format {
     constexpr explicit operator bool() const noexcept
     {
         return not empty();
+    }
+
+    [[nodiscard]] constexpr bool holds_invariant() const noexcept
+    {
+        if (popcount(speaker_mapping) != 0 and num_channels != popcount(speaker_mapping)) {
+            return false;
+        }
+        return true;
     }
 };
 

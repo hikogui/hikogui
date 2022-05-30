@@ -14,23 +14,9 @@
 
 namespace hi::inline v1 {
 
-[[nodiscard]] static bool win32_use_extensible(audio_stream_format x) noexcept
+[[nodiscard]] bool win32_use_extensible(audio_stream_format x) noexcept
 {
-    if (num_channels(x.speaker_mapping) > 2) {
-        // According to the specification we SHOULD use extensible with more than two channels.
-        // However technically there is no reason to do so.
-        // And not all audio device drivers can handle extensible.
-        return true;
-    }
-
-    if (x.format.num_bytes() * 8 != x.format.num_bits()) {
-        // According to the specification we SHOULD use extensible when less bits are used.
-        // However technically there is no reason to do so.
-        // And not all audio device drivers can handle extensible.
-        return true;
-    }
-
-    if (not is_direct(x.speaker_mapping)) {
+    if (any(x.speaker_mapping)) {
         // If we have an non-direct speaker mapping we MUST use extensible as it requires the
         // extra dwChannelMask field.
         return true;
@@ -39,11 +25,14 @@ namespace hi::inline v1 {
     return false;
 }
 
-[[nodiscard]] WAVEFORMATEXTENSIBLE audio_stream_format_to_win32(audio_stream_format x) noexcept
+[[nodiscard]] WAVEFORMATEXTENSIBLE audio_stream_format_to_win32(audio_stream_format x, bool extensible) noexcept
 {
+    hi_axiom(x.holds_invariant());
+    hi_axiom(not win32_use_extensible(x) or extensible);
+
     WAVEFORMATEXTENSIBLE r;
 
-    if (win32_use_extensible(x)) {
+    if (extensible) {
         r.Format.wFormatTag = WAVE_FORMAT_EXTENSIBLE;
         // difference between sizeof(WAVEFORMATEXT) and sizeof(WAVEFORMATEXTENSIBLE).
         // But API documentation says it must be "22".
@@ -54,10 +43,10 @@ namespace hi::inline v1 {
     }
 
     // These are the fields of WAVEFORMATEXT.
-    r.Format.nChannels = narrow_cast<WORD>(num_channels(x.speaker_mapping));
+    r.Format.nChannels = narrow_cast<WORD>(x.num_channels);
     r.Format.nSamplesPerSec = narrow_cast<DWORD>(std::round(x.sample_rate));
-    r.Format.nAvgBytesPerSec = narrow_cast<DWORD>(x.sample_rate * num_channels(x.speaker_mapping) * x.format.num_bytes());
-    r.Format.nBlockAlign = narrow_cast<WORD>(num_channels(x.speaker_mapping) * x.format.num_bytes());
+    r.Format.nAvgBytesPerSec = narrow_cast<DWORD>(x.sample_rate * x.num_channels * x.format.num_bytes());
+    r.Format.nBlockAlign = narrow_cast<WORD>(x.num_channels * x.format.num_bytes());
     r.Format.wBitsPerSample = narrow_cast<WORD>(x.format.num_bytes() * 8);
 
     // These are the fields of WAVEFORMATEXTENSIBLE which are ignored for WAVEFORMATEXT.
@@ -90,13 +79,11 @@ namespace hi::inline v1 {
         throw parse_error("Unknown SubFormat");
     }
 
+    hi_parse_check(wave_format.Format.nChannels > 0, "nChannels is zero");
+    r.num_channels = wave_format.Format.nChannels;
+
     r.speaker_mapping = speaker_mapping_from_win32(wave_format.dwChannelMask);
-    if (is_direct(r.speaker_mapping)) {
-        hi_parse_check(wave_format.Format.nChannels > 0, "nChannels is zero");
-        r.speaker_mapping = make_direct_speaker_mapping(wave_format.Format.nChannels);
-    } else {
-        hi_parse_check(num_channels(r.speaker_mapping) == wave_format.Format.nChannels, "dwChannelMask does not match nChannels");
-    }
+    hi_parse_check(popcount(r.speaker_mapping) == 0 or popcount(r.speaker_mapping) == r.num_channels, "nChannels is zero");
 
     hi_parse_check(wave_format.Format.nSamplesPerSec > 0, "nSamplesPerSec is zero");
     r.sample_rate = narrow<uint32_t>(wave_format.Format.nSamplesPerSec);
@@ -132,7 +119,11 @@ namespace hi::inline v1 {
     }
 
     r.sample_rate = narrow<uint32_t>(wave_format.nSamplesPerSec);
-    r.speaker_mapping = make_direct_speaker_mapping(wave_format.nChannels);
+
+    hi_parse_check(wave_format.nChannels > 0, "nChannels is zero");
+    r.num_channels = wave_format.nChannels;
+
+    r.speaker_mapping = speaker_mapping::none;
     return r;
 }
 

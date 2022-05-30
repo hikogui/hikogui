@@ -160,11 +160,13 @@ win32_device_interface::~win32_device_interface()
                 if (has_int) {
                     hilet num_minor_bits = narrow<uint8_t>(num_bits - 1);
                     hilet sample_format = pcm_format{false, std::endian::native, true, num_bytes, 0, num_minor_bits};
-                    co_yield audio_format_range{sample_format, num_channels, min_sample_rate, max_sample_rate};
+                    co_yield audio_format_range{
+                        sample_format, num_channels, min_sample_rate, max_sample_rate, surround_mode::none};
                 }
                 if (has_float and num_bits == 32) {
                     hilet sample_format = pcm_format{true, std::endian::native, true, num_bytes, 8, 23};
-                    co_yield audio_format_range{sample_format, num_channels, min_sample_rate, max_sample_rate};
+                    co_yield audio_format_range{
+                        sample_format, num_channels, min_sample_rate, max_sample_rate, surround_mode::none};
                 }
             }
         }

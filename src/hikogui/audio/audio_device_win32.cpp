@@ -208,40 +208,71 @@ constexpr auto common_sample_rates = std::array{
     try {
         auto wave_device = win32_wave_device::find_matching_end_point(direction(), _end_point_id);
         auto device_interface = wave_device.open_device_interface();
+        auto format_ranges = make_vector(device_interface.get_format_ranges(direction()));
+        auto tmp = std::vector<audio_format_range>{};
 
-        for (hilet& format_range : device_interface.get_format_ranges(direction())) {
-            // The device may have returned a range of bit-depths or a even a wild-card for float/integer.
-            // Check if the pcm_format works together with the min_sample_rate.
-            auto format = format_range.begin();
+        auto first = format_ranges.begin();
+        auto last = format_ranges.end();
 
-            if (supports_format(format)) {
-                // The device supports the lowest sample rate.
+        // Split the ranged sample rates into individual sample rates.
+        auto it = first;
+        while (it != last) {
+            hilet format = audio_stream_format{it->format, it->min_sample_rate, it->num_channels};
 
-                if (format_range.min_sample_rate != format_range.max_sample_rate) {
-                    ++format.sample_rate;
-                    if (supports_format(format)) {
-                        // Device seems to handle 1Hz granularity.
-                        co_yield format_range;
+            // Eliminate bit-depths that are not supported.
+            if (not supports_format(format)) {
+                last = unordered_remove(first, last, it);
+                continue;
+            }
 
-                    } else {
-                        // The device was lying that it could handle the full range of sample rates.
-                        // Look for specific sample rates and create separate format ranges.
+            // Check the speaker mapping capability at this bit-depth and sample rate.
+            it->surround_mode_mask = surround_mode::none;
+            for (hilet mode : enumerate_surround_modes()) {
+                auto surround_format = format;
+                surround_format.speaker_mapping = to_speaker_mapping(mode);
+                surround_format.num_channels = narrow<uint16_t>(popcount(surround_format.speaker_mapping));
 
-                        for (auto sample_rate : common_sample_rates) {
-                            format.sample_rate = sample_rate;
-                            if (format_range.min_sample_rate <= sample_rate and sample_rate <= format_range.max_sample_rate and
-                                supports_format(format)) {
-                                co_yield audio_format_range{
-                                    format_range.format, format_range.num_channels, sample_rate, sample_rate};
-                            }
-                        }
-                    }
-                } else {
-                    co_yield format_range;
+                if (surround_format.num_channels <= it->num_channels and supports_format(surround_format)) {
+                    it->surround_mode_mask |= mode;
                 }
             }
+
+            auto odd_rate_format = format;
+            ++odd_rate_format.sample_rate;
+            if (not supports_format(odd_rate_format)) {
+                // The device was lying that it could handle the full range of sample rates.
+                // Look for specific sample rates and create separate format ranges.
+                for (auto sample_rate : common_sample_rates) {
+                    auto common_rate_format = format;
+                    common_rate_format.sample_rate = sample_rate;
+
+                    if (it->min_sample_rate <= sample_rate and sample_rate <= it->max_sample_rate and
+                        supports_format(common_rate_format)) {
+                        tmp.emplace_back(it->format, it->num_channels, sample_rate, sample_rate, it->surround_mode_mask);
+                    }
+                }
+
+                last = unordered_remove(first, last, it);
+                continue;
+            }
+
+            ++it;
         }
-    } catch (...) {
+        format_ranges.erase(last, format_ranges.end());
+        format_ranges.insert(format_ranges.cend(), tmp.cbegin(), tmp.cend());
+
+        std::sort(format_ranges.begin(), format_ranges.end(), std::greater{});
+        last = std::unique(format_ranges.begin(), format_ranges.end(), [](hilet& lhs, hilet& rhs) {
+            return equal_except_bit_depth(lhs, rhs);
+        });
+        format_ranges.erase(last, format_ranges.end());
+
+        for (auto& format_range : format_ranges) {
+            co_yield format_range;
+        }
+
+    } catch (std::exception const& e) {
+        hi_log_error("get_format_ranges() on audio device {}: {}", name(), e.what());
     }
 }
 
@@ -249,17 +280,36 @@ constexpr auto common_sample_rates = std::array{
 {
     auto name_ = name();
 
-    auto format_ = audio_stream_format_to_win32(format);
-    switch (
-        _audio_client->IsFormatSupported(AUDCLNT_SHAREMODE_EXCLUSIVE, reinterpret_cast<WAVEFORMATEX const *>(&format_), NULL)) {
-    case S_OK:
-        return true;
-    case S_FALSE:
-    case AUDCLNT_E_UNSUPPORTED_FORMAT:
-        break;
-    default:
-        hi_log_error("Failed to check format. {}", get_last_error_message());
+    if (not win32_use_extensible(format)) {
+        // First try the simple format.
+        auto format_ = audio_stream_format_to_win32(format, false);
+        switch (_audio_client->IsFormatSupported(
+            AUDCLNT_SHAREMODE_EXCLUSIVE, reinterpret_cast<WAVEFORMATEX const *>(&format_), NULL)) {
+        case S_OK:
+            return true;
+        case S_FALSE:
+        case AUDCLNT_E_UNSUPPORTED_FORMAT:
+            break;
+        default:
+            hi_log_error("Failed to check format. {}", get_last_error_message());
+        }
     }
+
+    // Always check the extensible format as fallback.
+    {
+        auto format_ = audio_stream_format_to_win32(format, true);
+        switch (_audio_client->IsFormatSupported(
+            AUDCLNT_SHAREMODE_EXCLUSIVE, reinterpret_cast<WAVEFORMATEX const *>(&format_), NULL)) {
+        case S_OK:
+            return true;
+        case S_FALSE:
+        case AUDCLNT_E_UNSUPPORTED_FORMAT:
+            break;
+        default:
+            hi_log_error("Failed to check format. {}", get_last_error_message());
+        }
+    }
+
     return false;
 }
 
