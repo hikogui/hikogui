@@ -84,7 +84,7 @@ struct base_n_alphabet {
 
     constexpr int8_t int_from_char(char c) const noexcept
     {
-        return int_from_char_table[static_cast<std::size_t>(c)];
+        return int_from_char_table[static_cast<uint8_t>(c)];
     }
 };
 
