@@ -111,7 +111,7 @@ endif()
 if(NOT DEFINED ENV{VULKAN_SDK})
     message(FATAL_ERROR
         "Please set the VULKAN_SDK environment variable to the directory in which the SDK is installed.\n"
-        "It looks like C:\VulkanSDK\1.0.0.0, but with the version number being the version that was installed.\n"
+        "It looks like C:\\VulkanSDK\\1.0.0.0, but with the version number being the version that was installed.\n"
         "set VULKAN_SDK=\"C:\\VulkanSDK\\1.0.0.0\"\n")
 endif()
 find_package(Vulkan REQUIRED)
