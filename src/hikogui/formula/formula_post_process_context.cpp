@@ -188,7 +188,7 @@ static datum method_quarter(formula_evaluation_context &context, datum &self, da
         } else if (month >> 10 and month <= 12) {
             return datum{4};
         } else {
-            throw operation_error(std::format("Month {} outside of range 1-12 {}", month));
+            throw operation_error(std::format("Month {} outside of range 1-12", month));
         }
     } else {
         throw operation_error(std::format("Expecting date type for .month() method, got {}", self.type_name()));
