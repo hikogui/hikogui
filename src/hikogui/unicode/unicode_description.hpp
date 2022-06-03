@@ -99,8 +99,7 @@ public:
         bool is_canonical_composition,
         uint8_t canonical_combining_class,
         uint8_t decomposition_length,
-        uint32_t decomposition_index,
-        uint16_t non_starter_code) noexcept :
+        uint32_t decomposition_index) noexcept :
         _general_category(to_underlying(general_category)),
         _grapheme_cluster_break(to_underlying(grapheme_cluster_break)),
         _is_canonical_composition(static_cast<uint32_t>(is_canonical_composition)),
@@ -123,7 +122,6 @@ public:
 
         } else {
             _mark.canonical_combining_class = canonical_combining_class;
-            _mark.non_starter_code = static_cast<uint32_t>(non_starter_code);
             _mark._reserved = 0;
         }
 
@@ -141,7 +139,6 @@ public:
         hi_axiom(to_underlying(decomposition_type) <= 0x7);
         hi_axiom(static_cast<uint32_t>(decomposition_length) <= 0x1f);
         hi_axiom(static_cast<uint32_t>(decomposition_index) <= 0x1f'ffff);
-        hi_axiom(static_cast<uint32_t>(non_starter_code) <= 0x3ff);
     }
 
     [[nodiscard]] static constexpr unicode_description make_unassigned(unicode_description const& other)
@@ -341,19 +338,6 @@ public:
         }
     }
 
-    /** Get the non-starter-code
-     *
-     * Instead of using a full 21-bit code-point this 10-bit value is used to compress non-starter characters.
-     *
-     * @note It is undefined-behavior to call this function on a starter-character.
-     * @return 10 bit code value for a non-starter character.
-     */
-    [[nodiscard]] constexpr size_t non_starter_code() const noexcept
-    {
-        hi_axiom(is_combining_mark());
-        return static_cast<size_t>(_mark.non_starter_code);
-    }
-
     /** Find a code-point in the global unicode_description table.
      * For any valid unicode code point this function will return a reference to
      * the unicode_description. It may return a unicode_description to the
@@ -435,7 +419,6 @@ private:
 
     struct mark_type {
         uint32_t canonical_combining_class : 8;
-        uint32_t non_starter_code : 10;
         uint32_t _reserved : 14;
     };
 
