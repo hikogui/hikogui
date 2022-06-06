@@ -111,7 +111,7 @@ endif()
 if(NOT DEFINED ENV{VULKAN_SDK})
     message(FATAL_ERROR
         "Please set the VULKAN_SDK environment variable to the directory in which the SDK is installed.\n"
-        "It looks like C:\VulkanSDK\1.0.0.0, but with the version number being the version that was installed.\n"
+        "It looks like C:\\VulkanSDK\\1.0.0.0, but with the version number being the version that was installed.\n"
         "set VULKAN_SDK=\"C:\\VulkanSDK\\1.0.0.0\"\n")
 endif()
 find_package(Vulkan REQUIRED)
@@ -295,6 +295,12 @@ elseif (MSVC)
 
     # C4648: standard attribute 'no_unique_address' is ignored
     target_compile_options(hikogui PUBLIC -wd4648)
+
+    # C28020: The expression '0<=_Param_(1)&&_Param_(1)<=256-1' is not true at this call.
+    # False positives in base_n, where the index is static_cast<uint8_t>().
+    # The bug (since 2020) in the compiler seem to have been triggered in unrelated code.
+    # https://developercommunity.visualstudio.com/t/c28020-false-positives/923103
+    target_compile_options(hikogui PUBLIC -wd28020)
 
     # C4744: 'x' has different type in 'foo.cpp' and 'bar.cpp':
     #        'struct (8 bytes)' and '__declspec(align(8)) struct (8 bytes)' [foobar.vcxproj]

@@ -44,6 +44,7 @@
 #include <concepts>
 #include <bit>
 #include <climits>
+#include <utility>
 
 hi_warning_push();
 // C4702 unreachable code: Suppressed due intrinsics and std::is_constant_evaluated()
@@ -2722,7 +2723,16 @@ struct numeric_array {
         }
 
         auto r = std::array<numeric_array, N>{};
-        transpose_detail<0, Columns...>(columns..., r);
+        auto f = [&r, &columns...]<std::size_t ...Ints>(std::index_sequence<Ints...>) {
+            auto tf = [&r](auto i, auto v) {
+                for (std::size_t j = 0; j != N; ++j) {
+                    r[j][i] = v[j];
+                }
+                return 0;
+            };
+            static_cast<void>((tf(Ints, columns) +...));
+        };
+        f(std::make_index_sequence<sizeof...(columns)>{});
         return r;
     }
 
@@ -2936,18 +2946,6 @@ struct numeric_array {
 #undef SWIZZLE_3D_GEN1
 #undef SWIZZLE_3D_GEN2
 #undef SWIZZLE_2D_GEN1
-
-    template<int I, typename First, typename... Rest>
-    friend constexpr void transpose_detail(First const &first, Rest const &...rest, std::array<numeric_array, N> &r) noexcept
-    {
-        for (std::size_t j = 0; j != N; ++j) {
-            r[j][I] = first[j];
-        }
-
-        if constexpr (sizeof...(Rest) != 0) {
-            transpose_detail<I + 1, Rest...>(rest..., r);
-        }
-    }
 
     template<ssize_t I, ssize_t FirstElement, ssize_t... RestElements>
     constexpr void swizzle_detail(numeric_array &r) const noexcept
