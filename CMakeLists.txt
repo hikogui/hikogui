@@ -296,6 +296,12 @@ elseif (MSVC)
     # C4648: standard attribute 'no_unique_address' is ignored
     target_compile_options(hikogui PUBLIC -wd4648)
 
+    # C28020: The expression '0<=_Param_(1)&&_Param_(1)<=256-1' is not true at this call.
+    # False positives in base_n, where the index is static_cast<uint8_t>().
+    # The bug (since 2020) in the compiler seem to have been triggered in unrelated code.
+    # https://developercommunity.visualstudio.com/t/c28020-false-positives/923103
+    target_compile_options(hikogui PUBLIC -wd28020)
+
     # C4744: 'x' has different type in 'foo.cpp' and 'bar.cpp':
     #        'struct (8 bytes)' and '__declspec(align(8)) struct (8 bytes)' [foobar.vcxproj]
     # Bug in linker where atomic variables defined in a header file and used in two .cpp files be
