@@ -3,14 +3,6 @@ HikoGUI GUI library [![Build on Windows](https://github.com/hikogui/hikogui/acti
 
 Broken toolchains
 -----------------
-### Visual Studio 17.2 and 17.3 are broken
-
-Currently only Visual Studio 17.1 can compile HikoGUI.
-
-Visual Studio 17.2 and Visual Studio 17.3 preview where released with a known bug in the compiler:
-
- * [C1001 type and non-type template and parameter packs](https://developercommunity.visualstudio.com/t/C1001-type-and-non-type-template-and-par/1695615)
-
 ### Currently C++20 vcpkg builds are broken
 
 Due to future changes to the C++20 standard involving ABI changes in
