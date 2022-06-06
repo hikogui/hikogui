@@ -11,7 +11,6 @@ fi
 
 python tools/unicode_data_generator.py \
     --output=src/hikogui/unicode/unicode_db.hpp \
-    --output-non-starter=src/hikogui/unicode/unicode_db_non_starter.hpp \
     --unicode-data=${UCDDIR}/UnicodeData.txt \
     --emoji-data=${UCDDIR}/emoji-data.txt \
     --composition-exclusions=${UCDDIR}/CompositionExclusions.txt \

@@ -88,7 +88,7 @@ template<typename Out, base_of<std::remove_reference_t<Out>> In>
 
 /** Cast a number to a type that will be able to represent all values without loss of precision.
  */
-template<numeric Out, numeric In>
+template<arithmetic Out, arithmetic In>
 [[nodiscard]] constexpr Out wide_cast(In rhs) noexcept requires(type_in_range_v<Out, In>)
 {
     return static_cast<Out>(rhs);

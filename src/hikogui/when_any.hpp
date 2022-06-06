@@ -24,10 +24,10 @@ namespace hi::inline v1 {
  * The return value of awaiting on `when_any` is a `std::variant` of the return
  * values of the given awaitables. If an awaitable has `void` as return type then
  * it will be converted to a `std::monotype` so that is can be used in the `std::variant`.
- * 
+ *
  * The `index()` of the `std::variant` return type will match the index of the `when_any()`
  * constructor argument of the triggered awaitable.
- * 
+ *
  * @tparam Ts Awaitable types.
  */
 template<typename... Ts>
@@ -46,7 +46,10 @@ public:
      *
      * @param others The awaitable to wait for.
      */
-    when_any(awaitable auto&&...others) noexcept : _awaiters(awaitable_cast<std::decay_t<decltype(others)>>{}(hi_forward(others))...) {}
+    when_any(awaitable auto&&...others) noexcept :
+        _awaiters(awaitable_cast<std::decay_t<decltype(others)>>{}(hi_forward(others))...)
+    {
+    }
 
     ~when_any() {}
 
@@ -125,18 +128,20 @@ private:
         using arg_type = await_resume_result_t<decltype(std::get<I>(_awaiters))>;
 
         if constexpr (std::is_same_v<arg_type, void>) {
-            std::get<I>(_task_cbts) = std::get<I>(_tasks).subscribe([this, handle]() {
-                this->_value = value_type{std::in_place_index<I>, std::monostate{}};
-                this->_destroy_tasks<0>();
-                handle.resume();
-            });
+            std::get<I>(_task_cbts) =
+                std::get<I>(_tasks).subscribe(callback_flags::main | callback_flags::once, [this, handle]() {
+                    this->_value = value_type{std::in_place_index<I>, std::monostate{}};
+                    this->_destroy_tasks<0>();
+                    handle.resume();
+                });
 
         } else {
-            std::get<I>(_task_cbts) = std::get<I>(_tasks).subscribe([this, handle](arg_type const& arg) {
-                this->_value = value_type{std::in_place_index<I>, arg};
-                this->_destroy_tasks<0>();
-                handle.resume();
-            });
+            std::get<I>(_task_cbts) =
+                std::get<I>(_tasks).subscribe(callback_flags::main | callback_flags::once, [this, handle](arg_type const& arg) {
+                    this->_value = value_type{std::in_place_index<I>, arg};
+                    this->_destroy_tasks<0>();
+                    handle.resume();
+                });
         }
 
         if constexpr (I + 1 < sizeof...(Ts)) {

@@ -20,9 +20,14 @@ public:
     virtual void init(text_field_widget const &sender) noexcept {}
     virtual void deinit(text_field_widget const &sender) noexcept {}
 
-    auto subscribe(text_field_widget &sender, std::invocable<> auto &&callback) noexcept
+    auto subscribe(text_field_widget& sender, callback_flags flags, std::invocable<> auto&& callback) noexcept
     {
-        return _notifier.subscribe(hi_forward(callback));
+        return _notifier.subscribe(flags, hi_forward(callback));
+    }
+
+    auto subscribe(text_field_widget& sender, std::invocable<> auto&& callback) noexcept
+    {
+        return subscribe(sender, callback_flags::synchronous, hi_forward(callback));
     }
 
     /** Validate the text field.

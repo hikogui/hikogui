@@ -13,25 +13,35 @@ namespace hi::inline v1 {
 
 text_widget::text_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
 {
-    // clang-format off
-    _text_cbt = text.subscribe([&](auto...){ request_reconstrain(); });
+    _text_cbt = text.subscribe([&](auto...) {
+        update_shaped_text();
+        request_reconstrain();
+    });
+    _text_style_cbt = text_style.subscribe([&](auto...) {
+        update_shaped_text();
+        request_reconstrain();
+    });
+
     _cursor_state_cbt = _cursor_state.subscribe([&](auto...){ request_redraw(); });
-    // clang-format on
 
     _blink_cursor = blink_cursor();
+}
+
+void text_widget::update_shaped_text() noexcept
+{
+    _selection.resize(text->size());
+    _shaped_text = text_shaper{font_book(), *text, theme().text_style(*text_style), theme().scale};
 }
 
 widget_constraints const& text_widget::set_constraints() noexcept
 {
     _layout = {};
 
-    _shaped_text = text_shaper{font_book(), *text, theme().text_style(*text_style), theme().scale};
+    update_shaped_text();
     hilet[shaped_text_rectangle, cap_height] =
         _shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity(), alignment->vertical());
     _shaped_text_cap_height = cap_height;
     hilet shaped_text_size = shaped_text_rectangle.size();
-
-    _selection.clamp(text->size());
 
     if (*edit_mode == edit_mode_type::line_editable) {
         // In line-edit mode the text should not wrap.
@@ -193,11 +203,13 @@ void text_widget::redo() noexcept
     return gstring_view{*text}.substr(first, last - first);
 }
 
-void text_widget::fix_cursor_position(size_t size) noexcept
+void text_widget::fix_cursor_position() noexcept
 {
+    hilet size = text->size();
     if (_overwrite_mode and _selection.empty() and _selection.cursor().after()) {
         _selection = _selection.cursor().before_neighbor(size);
     }
+    _selection.resize(size);
 }
 
 void text_widget::replace_selection(gstring const& replacement) noexcept
@@ -207,8 +219,8 @@ void text_widget::replace_selection(gstring const& replacement) noexcept
     hilet[first, last] = _selection.selection_indices();
     text.proxy()->replace(first, last - first, replacement);
 
-    _selection = text_cursor{first + replacement.size() - 1, true, text->size()};
-    fix_cursor_position(text->size());
+    _selection = text_cursor{first + replacement.size() - 1, true};
+    fix_cursor_position();
 }
 
 void text_widget::add_character(grapheme c, add_type mode) noexcept
