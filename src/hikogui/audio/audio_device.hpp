@@ -13,6 +13,7 @@
 #include "speaker_mapping.hpp"
 #include "../label.hpp"
 #include "../enum_metadata.hpp"
+#include "../loop.hpp"
 #include <string>
 #include <memory>
 #include <ostream>
@@ -34,13 +35,20 @@ public:
 
     /** The nonephemeral unique id that for an audio device on the system.
      */
-    [[nodiscard]] std::string const &id() const noexcept { return _id; }
+    [[nodiscard]] std::string const& id() const noexcept
+    {
+        return _id;
+    }
 
     /** Get a user friendly name of the audio device.
      * This is a combination of the name of the device and
      * the name of the end-point.
      */
-    [[nodiscard]] virtual std::string name() const noexcept = 0;
+    [[nodiscard]] std::string name() const noexcept
+    {
+        hi_axiom(loop::main().on_thread());
+        return _name;
+    }
 
     /** Get a user friendly label of the audio device.
      * This is a combination of the name of the device and
@@ -49,9 +57,9 @@ public:
     [[nodiscard]] virtual label label() const noexcept = 0;
 
     /** Update the internal state based on the audio device.
-    * 
-    * This function is called by the audio-system when a device change was detected.
-    */
+     *
+     * This function is called by the audio-system when a device change was detected.
+     */
     virtual void update_state() noexcept = 0;
 
     /** Get the current state of the audio device.
@@ -153,6 +161,7 @@ public:
 
 protected:
     std::string _id;
+    std::string _name;
 };
 
 } // namespace hi::inline v1

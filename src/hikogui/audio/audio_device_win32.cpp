@@ -142,6 +142,10 @@ audio_device_win32::~audio_device_win32()
 
 void audio_device_win32::update_state() noexcept
 {
+    hi_axiom(loop::main().on_thread());
+
+    _name = end_point_name();
+
     auto new_state = state();
 
     // Log the correct message.
@@ -205,7 +209,7 @@ constexpr auto common_sample_rates = std::array{
 
 [[nodiscard]] generator<audio_format_range> audio_device_win32::get_format_ranges() const noexcept
 {
-    try {
+    //try {
         auto wave_device = win32_wave_device::find_matching_end_point(direction(), _end_point_id);
         auto device_interface = wave_device.open_device_interface();
         auto format_ranges = make_vector(device_interface.get_format_ranges(direction()));
@@ -271,15 +275,13 @@ constexpr auto common_sample_rates = std::array{
             co_yield format_range;
         }
 
-    } catch (std::exception const& e) {
-        hi_log_error("get_format_ranges() on audio device {}: {}", name(), e.what());
-    }
+    //} catch (std::exception const& e) {
+    //    hi_log_error("get_format_ranges() on audio device {}: {}", name(), e.what());
+    //}
 }
 
 [[nodiscard]] bool audio_device_win32::supports_format(audio_stream_format const& format) const noexcept
 {
-    auto name_ = name();
-
     if (not win32_use_extensible(format)) {
         // First try the simple format.
         auto format_ = audio_stream_format_to_win32(format, false);
@@ -477,15 +479,6 @@ noexcept
     return r;
 }*/
 
-std::string audio_device_win32::name() const noexcept
-{
-    try {
-        return get_property<std::string>(_property_store, PKEY_Device_FriendlyName);
-    } catch (io_error const&) {
-        return "<unknown name>";
-    }
-}
-
 hi::label audio_device_win32::label() const noexcept
 {
     return {elusive_icon::Speaker, tr("{}", name())};
@@ -515,6 +508,15 @@ audio_direction audio_device_win32::direction() const noexcept
     return _direction;
 }
 
+std::string audio_device_win32::end_point_name() const noexcept
+{
+    try {
+        return get_property<std::string>(_property_store, PKEY_Device_FriendlyName);
+    } catch (io_error const&) {
+        return "<unknown name>";
+    }
+}
+
 std::string audio_device_win32::device_name() const noexcept
 {
     try {
@@ -524,7 +526,7 @@ std::string audio_device_win32::device_name() const noexcept
     }
 }
 
-std::string audio_device_win32::end_point_name() const noexcept
+std::string audio_device_win32::end_point_description() const noexcept
 {
     try {
         return get_property<std::string>(_property_store, PKEY_Device_DeviceDesc);

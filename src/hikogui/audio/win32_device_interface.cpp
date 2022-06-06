@@ -135,13 +135,6 @@ win32_device_interface::~win32_device_interface()
 {
     for (auto *format_range : get_pin_properties<KSDATARANGE>(pin_nr, KSPROPERTY_PIN_DATARANGES)) {
         if (IsEqualGUID(format_range->MajorFormat, KSDATAFORMAT_TYPE_AUDIO)) {
-            auto *format_range_ = reinterpret_cast<KSDATARANGE_AUDIO const *>(format_range);
-            hilet num_bits_first = format_range_->MinimumBitsPerSample;
-            hilet num_bits_last = format_range_->MaximumBitsPerSample + 1;
-            hilet num_channels = narrow<uint16_t>(format_range_->MaximumChannels);
-            hilet min_sample_rate = narrow<uint32_t>(format_range_->MinimumSampleFrequency);
-            hilet max_sample_rate = narrow<uint32_t>(format_range_->MaximumSampleFrequency);
-
             auto has_int = false;
             auto has_float = false;
             if (IsEqualGUID(format_range->SubFormat, KSDATAFORMAT_SUBTYPE_PCM)) {
@@ -151,14 +144,63 @@ win32_device_interface::~win32_device_interface()
             } else if (IsEqualGUID(format_range->SubFormat, KSDATAFORMAT_SUBTYPE_WILDCARD)) {
                 has_int = true;
                 has_float = true;
+            } else {
+                // The scarlett returns KSDATAFORMAT_SUBTYPE_ANALOGUE for one of the pins,
+                // we can't filter scarlet for the proper streaming-pin.
+                continue;
             }
+
+            hilet *format_range_ = reinterpret_cast<KSDATARANGE_AUDIO const *>(format_range);
+            if (format_range_->MinimumBitsPerSample > 64) {
+                hi_log_error(
+                    "Bad KSDATARANGE_AUDIO MinimumBitsPerSample == {} for device {}",
+                    format_range_->MinimumBitsPerSample,
+                    _device_name);
+                continue;
+            }
+            if (format_range_->MaximumBitsPerSample > 64) {
+                hi_log_error(
+                    "Bad KSDATARANGE_AUDIO MaximumBitsPerSample == {} for device {}",
+                    format_range_->MaximumBitsPerSample,
+                    _device_name);
+                continue;
+            }
+            if (format_range_->MinimumBitsPerSample > format_range_->MaximumBitsPerSample) {
+                hi_log_error(
+                    "Bad KSDATARANGE_AUDIO MinimumBitsPerSample == {}, MaximumBitsPerSample {} for device {}",
+                    format_range_->MinimumBitsPerSample,
+                    format_range_->MaximumBitsPerSample,
+                    _device_name);
+                continue;
+            }
+
+            if (format_range_->MaximumChannels > std::numeric_limits<uint16_t>::max()) {
+                hi_log_error(
+                    "Bad KSDATARANGE_AUDIO MaximumChannels == {} for device {}", format_range_->MaximumChannels, _device_name);
+                continue;
+            }
+
+            if (format_range_->MinimumSampleFrequency > format_range_->MaximumSampleFrequency) {
+                hi_log_error(
+                    "Bad KSDATARANGE_AUDIO MinimumSampleFrequency == {}, MaximumSampleFrequency {} for device {}",
+                    format_range_->MinimumSampleFrequency,
+                    format_range_->MaximumSampleFrequency,
+                    _device_name);
+                continue;
+            }
+
+            hilet num_bits_first = format_range_->MinimumBitsPerSample;
+            hilet num_bits_last = format_range_->MaximumBitsPerSample;
+            hilet num_channels = narrow_cast<uint16_t>(format_range_->MaximumChannels);
+            hilet min_sample_rate = narrow_cast<uint32_t>(format_range_->MinimumSampleFrequency);
+            hilet max_sample_rate = narrow_cast<uint32_t>(format_range_->MaximumSampleFrequency);
 
             // There are only very few sample-formats that a device will actually support, therefor
             // the audio-format-range discretized them. Very likely the audio device driver will be lying.
-            for (auto num_bits = num_bits_first; num_bits != num_bits_last; ++num_bits) {
-                hilet num_bytes = narrow<uint8_t>((num_bits + 7) / 8);
+            for (auto num_bits = num_bits_first; num_bits <= num_bits_last; ++num_bits) {
+                hilet num_bytes = narrow_cast<uint8_t>((num_bits + 7) / 8);
                 if (has_int) {
-                    hilet num_minor_bits = narrow<uint8_t>(num_bits - 1);
+                    hilet num_minor_bits = narrow_cast<uint8_t>(num_bits - 1);
                     hilet sample_format = pcm_format{false, std::endian::native, true, num_bytes, 0, num_minor_bits};
                     co_yield audio_format_range{
                         sample_format, num_channels, min_sample_rate, max_sample_rate, surround_mode::none};
