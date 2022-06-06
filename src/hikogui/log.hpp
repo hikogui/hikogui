@@ -214,28 +214,33 @@ inline log log_global;
 
 } // namespace hi::inline v1
 
-#define hi_log_debug(fmt, ...) ::hi::log_global.add<::hi::global_state_type::log_debug, __FILE__, __LINE__, fmt>(__VA_ARGS__)
-#define hi_log_info(fmt, ...) ::hi::log_global.add<::hi::global_state_type::log_info, __FILE__, __LINE__, fmt>(__VA_ARGS__)
-#define hi_log_statistics(fmt, ...) \
-    ::hi::log_global.add<::hi::global_state_type::log_statistics, __FILE__, __LINE__, fmt>(__VA_ARGS__)
-#define hi_log_trace(fmt, ...) ::hi::log_global.add<::hi::global_state_type::log_trace, __FILE__, __LINE__, fmt>(__VA_ARGS__)
-#define hi_log_audit(fmt, ...) ::hi::log_global.add<::hi::global_state_type::log_audit, __FILE__, __LINE__, fmt>(__VA_ARGS__)
-#define hi_log_warning(fmt, ...) ::hi::log_global.add<::hi::global_state_type::log_warning, __FILE__, __LINE__, fmt>(__VA_ARGS__)
-#define hi_log_error(fmt, ...) ::hi::log_global.add<::hi::global_state_type::log_error, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+// XXX compiler bug? requires expression always evaluated to true.
+#define hi_log(level, fmt, ...) \
+    static_assert( \
+        requires { std::format(fmt __VA_OPT__(, ) __VA_ARGS__); }, "hi::log: Format string does not match argument types"); \
+    ::hi::log_global.add<level, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+
+#define hi_log_debug(fmt, ...) hi_log(::hi::global_state_type::log_debug, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define hi_log_info(fmt, ...) hi_log(::hi::global_state_type::log_info, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define hi_log_statistics(fmt, ...) hi_log(::hi::global_state_type::log_statistics, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define hi_log_trace(fmt, ...) hi_log(::hi::global_state_type::log_trace, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define hi_log_audit(fmt, ...) hi_log(::hi::global_state_type::log_audit, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define hi_log_warning(fmt, ...) hi_log(::hi::global_state_type::log_warning, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define hi_log_error(fmt, ...) hi_log(::hi::global_state_type::log_error, fmt __VA_OPT__(, ) __VA_ARGS__)
 #define hi_log_fatal(fmt, ...) \
-    ::hi::log_global.add<::hi::global_state_type::log_fatal, __FILE__, __LINE__, fmt>(__VA_ARGS__); \
+    hi_log(::hi::global_state_type::log_fatal, fmt __VA_OPT__(, ) __VA_ARGS__); \
     hi_debug_abort()
 
 #define hi_log_info_once(name, fmt, ...) \
     do { \
         if (++global_counter<name> == 1) { \
-            ::hi::log_global.add<::hi::global_state_type::log_info, __FILE__, __LINE__, fmt>(__VA_ARGS__); \
+            hi_log(::hi::global_state_type::log_info, fmt __VA_OPT__(, ) __VA_ARGS__); \
         } \
     } while (false)
 
 #define hi_log_error_once(name, fmt, ...) \
     do { \
         if (++global_counter<name> == 1) { \
-            ::hi::log_global.add<::hi::global_state_type::log_error, __FILE__, __LINE__, fmt>(__VA_ARGS__); \
+            hi_log(::hi::global_state_type::log_error, fmt __VA_OPT__(, ) __VA_ARGS__); \
         } \
     } while (false)

@@ -159,7 +159,7 @@ void audio_system_win32::update_device_list() noexcept
         try {
             win32_device_id = std::string{"win32:"} + audio_device_win32::get_device_id(win32_device);
         } catch (std::exception const& e) {
-            hi_log_error("EnumAudioEndpoints()->Item({})->GetId failed: {}", e.what());
+            hi_log_error("EnumAudioEndpoints()->Item({})->get_device_id failed: {}", i, e.what());
             device_collection->Release();
             win32_device->Release();
             return;
