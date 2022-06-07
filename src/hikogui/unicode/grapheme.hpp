@@ -165,7 +165,7 @@ struct grapheme {
      */
     constexpr explicit grapheme(char32_t code_point) noexcept : value((static_cast<value_type>(code_point) << 1) | 1)
     {
-        hi_axiom(code_point <= 0x10ffff and code_point != 0xffff);
+        hi_axiom(code_point <= 0x10ffff);
     }
 
     constexpr explicit grapheme(char ascii_char) noexcept : value((static_cast<value_type>(ascii_char) << 1) | 1)

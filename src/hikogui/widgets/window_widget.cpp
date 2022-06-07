@@ -236,11 +236,6 @@ bool window_widget::handle_event(gui_event const& event) noexcept
             return true;
         }
         break;
-
-    case gui_event_type::text_edit_copy:
-        // Widgets, other than the current keyboard target may have text selected and can handle the command::text_edit_copy.
-        handle_event_recursive(gui_event_type::text_edit_copy);
-        return true;
     }
     return super::handle_event(event);
 }

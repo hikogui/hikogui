@@ -99,7 +99,7 @@ void text_widget::request_scroll() noexcept
 scoped_task<> text_widget::blink_cursor() noexcept
 {
     while (true) {
-        if (*visible and *enabled and *focus) {
+        if (*visible and *enabled and *focus and *edit_mode >= edit_mode_type::line_editable) {
             switch (*_cursor_state) {
             case cursor_state_type::busy:
                 _cursor_state = cursor_state_type::on;
@@ -826,7 +826,17 @@ hitbox text_widget::hitbox_test(point3 position) const noexcept
     using enum edit_mode_type;
     using enum keyboard_focus_group;
 
-    return *visible and *enabled and any(group & normal) and (*edit_mode == line_editable or *edit_mode == fully_editable);
+    switch (*edit_mode) {
+    case fixed:
+        return false;
+    case selectable:
+        return *visible and *enabled and any(group & mouse);
+    case line_editable:
+    case fully_editable:
+        return *visible and *enabled and any(group & normal);
+    default:
+        hi_no_default();
+    }
 }
 
 } // namespace hi::inline v1
