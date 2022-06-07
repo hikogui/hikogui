@@ -27,7 +27,7 @@ namespace hi::inline v1 {
 
     auto r = std::vector<language_tag>{};
     r.reserve(strings.size());
-    for (hilet &string : strings) {
+    for (hilet& string : strings) {
         r.push_back(language_tag{string});
     }
     return r;
@@ -85,7 +85,8 @@ namespace hi::inline v1 {
     {
         UINT font_smooth_orientation;
         if (not SystemParametersInfoW(SPI_GETFONTSMOOTHINGORIENTATION, 0, &font_smooth_orientation, 0)) {
-            throw os_error(std::format("Could not get system parameter SPI_GETFONTSMOOTHINGORIENTATION: {}", get_last_error_message()));
+            throw os_error(
+                std::format("Could not get system parameter SPI_GETFONTSMOOTHINGORIENTATION: {}", get_last_error_message()));
         }
 
         if (font_smooth_orientation == FE_FONTSMOOTHINGORIENTATIONBGR) {
@@ -98,6 +99,13 @@ namespace hi::inline v1 {
             throw os_error(std::format("Unknown result from SPI_GETFONTSMOOTHINGORIENTATION: {}", font_smooth_orientation));
         }
     }
+}
+
+[[nodiscard]] bool os_settings::gather_uniform_HDR()
+{
+    // Microsoft Windows 10 switches display mode when getting a HDR surface
+    // The switching causes all application to display using a different color and brightness calibration.
+    return false;
 }
 
 [[nodiscard]] std::chrono::milliseconds os_settings::gather_double_click_interval()
