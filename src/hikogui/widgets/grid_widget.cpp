@@ -109,7 +109,7 @@ void grid_widget::set_layout(widget_layout const &layout) noexcept
 
 void grid_widget::draw(draw_context const &context) noexcept
 {
-    if (*visible) {
+    if (*mode > widget_mode::invisible) {
         for (hilet &cell : _cells) {
             cell.widget->draw(context);
         }
@@ -120,7 +120,7 @@ hitbox grid_widget::hitbox_test(point3 position) const noexcept
 {
     hi_axiom(is_gui_thread());
 
-    if (*visible and *enabled) {
+    if (*mode >= widget_mode::partial) {
         auto r = hitbox{};
         for (hilet &cell : _cells) {
             r = cell.widget->hitbox_test_from_parent(position, r);

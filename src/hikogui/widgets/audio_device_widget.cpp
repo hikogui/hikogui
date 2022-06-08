@@ -56,14 +56,14 @@ void audio_device_widget::set_layout(widget_layout const& layout) noexcept
 
 void audio_device_widget::draw(draw_context const& context) noexcept
 {
-    if (*visible and overlaps(context, layout())) {
+    if (*mode > widget_mode::invisible and overlaps(context, layout())) {
         _grid_widget->draw(context);
     }
 }
 
 hitbox audio_device_widget::hitbox_test(point3 position) const noexcept
 {
-    if (*visible and *enabled) {
+    if (*mode >= widget_mode::partial) {
         auto r = hitbox{};
         r = _grid_widget->hitbox_test_from_parent(position, r);
         return r;
@@ -74,7 +74,7 @@ hitbox audio_device_widget::hitbox_test(point3 position) const noexcept
 
 [[nodiscard]] bool audio_device_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
-    if (*visible and *enabled) {
+    if (*mode >= widget_mode::partial) {
         return _grid_widget->accepts_keyboard_focus(group);
     } else {
         return false;
