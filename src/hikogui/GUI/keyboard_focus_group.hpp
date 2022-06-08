@@ -25,11 +25,15 @@ enum class keyboard_focus_group {
      */
     toolbar = 4,
 
+    /** A widget that only accepts keyboard focus from mouse clicks.
+     */
+    mouse = 8,
+
     /** Used for selecting any widget that can accept keyboard focus.
      * This is used for selecting a widget of group normal, menu or toolbar using
      * the mouse.
      */
-    all = normal | menu | toolbar,
+    all = normal | menu | toolbar | mouse,
 };
 
 [[nodiscard]] constexpr keyboard_focus_group operator&(keyboard_focus_group const &lhs, keyboard_focus_group const &rhs) noexcept
