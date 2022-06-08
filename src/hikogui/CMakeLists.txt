@@ -79,6 +79,7 @@ target_sources(hikogui PRIVATE
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/file_view_win32.cpp>
     fixed.hpp
     float16.hpp
+    format_check.hpp
     forward_value.hpp
 	functional.hpp
 	function_fifo.hpp
@@ -223,6 +224,7 @@ if(HI_BUILD_TESTS)
         file_view_tests.cpp
         fixed_string_tests.cpp
         float16_tests.cpp
+        format_check_tests.cpp
         forward_value_tests.cpp
         gap_buffer_tests.cpp
         generator_tests.cpp

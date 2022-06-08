@@ -18,6 +18,7 @@
 #include "URL.hpp"
 #include "unfair_mutex.hpp"
 #include "debugger.hpp"
+#include "format_check.hpp"
 #include <chrono>
 #include <format>
 #include <string>
@@ -214,10 +215,8 @@ inline log log_global;
 
 } // namespace hi::inline v1
 
-// XXX compiler bug? requires expression always evaluated to true.
 #define hi_log(level, fmt, ...) \
-    static_assert( \
-        requires { std::format(fmt __VA_OPT__(, ) __VA_ARGS__); }, "hi::log: Format string does not match argument types"); \
+    hi_format_check(fmt __VA_OPT__(, ) __VA_ARGS__); \
     ::hi::log_global.add<level, __FILE__, __LINE__, fmt>(__VA_ARGS__)
 
 #define hi_log_debug(fmt, ...) hi_log(::hi::global_state_type::log_debug, fmt __VA_OPT__(, ) __VA_ARGS__)
