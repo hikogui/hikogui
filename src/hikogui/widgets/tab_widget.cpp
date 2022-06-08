@@ -57,7 +57,7 @@ widget_constraints const &tab_widget::set_constraints() noexcept
     }
 
     for (hilet &child : _children) {
-        child->visible = child.get() == &selected_child_;
+        child->mode = child.get() == &selected_child_ ? widget_mode::enabled : widget_mode::invisible;
     }
 
     return _constraints = selected_child_.set_constraints();
@@ -68,7 +68,7 @@ void tab_widget::set_layout(widget_layout const &layout) noexcept
     _layout = layout;
 
     for (hilet &child : _children) {
-        if (*child->visible) {
+        if (*child->mode > widget_mode::invisible) {
             child->set_layout(layout);
         }
     }
@@ -76,7 +76,7 @@ void tab_widget::set_layout(widget_layout const &layout) noexcept
 
 void tab_widget::draw(draw_context const &context) noexcept
 {
-    if (*visible) {
+    if (*mode > widget_mode::invisible) {
         for (hilet &child : _children) {
             child->draw(context);
         }
@@ -87,7 +87,7 @@ void tab_widget::draw(draw_context const &context) noexcept
 {
     hi_axiom(is_gui_thread());
 
-    if (*visible and *enabled) {
+    if (*mode >= widget_mode::partial) {
         auto r = hitbox{};
         for (hilet &child : _children) {
             r = child->hitbox_test_from_parent(position, r);

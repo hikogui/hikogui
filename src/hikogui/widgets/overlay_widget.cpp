@@ -54,7 +54,7 @@ void overlay_widget::set_layout(widget_layout const &layout) noexcept
 
 void overlay_widget::draw(draw_context const &context) noexcept
 {
-    if (*visible) {
+    if (*mode > widget_mode::invisible) {
         if (overlaps(context, layout())) {
             draw_background(context);
         }
@@ -88,7 +88,7 @@ void overlay_widget::draw_background(draw_context const &context) noexcept
 {
     hi_axiom(is_gui_thread());
 
-    if (*visible and *enabled) {
+    if (*mode >= widget_mode::partial) {
         return _content->hitbox_test_from_parent(position);
     } else {
         return {};

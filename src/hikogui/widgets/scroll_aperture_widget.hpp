@@ -120,7 +120,7 @@ public:
 
     void draw(draw_context const &context) noexcept
     {
-        if (*visible) {
+        if (*mode > widget_mode::invisible) {
             _content->draw(context);
         }
     }
@@ -129,7 +129,7 @@ public:
     {
         hi_axiom(is_gui_thread());
 
-        if (*visible and *enabled) {
+        if (*mode >= widget_mode::partial) {
             auto r = _content->hitbox_test_from_parent(position);
 
             if (layout().contains(position)) {

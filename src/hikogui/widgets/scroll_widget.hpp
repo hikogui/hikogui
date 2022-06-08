@@ -63,7 +63,7 @@ public:
      * @param delegate An optional delegate can be used to populate the scroll widget
      *                 during initialization.
      */
-    scroll_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate = {}) noexcept :
+    scroll_widget(gui_window& window, widget *parent, std::weak_ptr<delegate_type> delegate = {}) noexcept :
         super(window, parent), _delegate(std::move(delegate))
     {
         hi_axiom(is_gui_thread());
@@ -93,7 +93,7 @@ public:
      * @return A reference to the widget that was created.
      */
     template<typename Widget, typename... Args>
-    Widget &make_widget(Args &&...args) noexcept
+    Widget& make_widget(Args&&...args) noexcept
     {
         return _aperture->make_widget<Widget>(std::forward<Args>(args)...);
     }
@@ -106,7 +106,7 @@ public:
         co_yield _horizontal_scroll_bar.get();
     }
 
-    widget_constraints const &set_constraints() noexcept override
+    widget_constraints const& set_constraints() noexcept override
     {
         _layout = {};
         hilet aperture_constraints = _aperture->set_constraints();
@@ -142,29 +142,32 @@ public:
         return _constraints;
     }
 
-    void set_layout(widget_layout const &layout) noexcept override
+    void set_layout(widget_layout const& layout) noexcept override
     {
         if (compare_store(_layout, layout)) {
-            _horizontal_scroll_bar->visible = _aperture->x_axis_scrolls() and any(axis & axis::horizontal);
-            _vertical_scroll_bar->visible = _aperture->y_axis_scrolls() and any(axis & axis::vertical);
-            hilet both_bars_visible = *_horizontal_scroll_bar->visible and *_vertical_scroll_bar->visible;
+            hilet horizontal_visible = _aperture->x_axis_scrolls() and any(axis & axis::horizontal);
+            hilet vertical_visible = _aperture->y_axis_scrolls() and any(axis & axis::vertical);
+            hilet both_visible = horizontal_visible and vertical_visible;
+
+            _horizontal_scroll_bar->mode = horizontal_visible ? widget_mode::enabled : widget_mode::invisible;
+            _vertical_scroll_bar->mode = vertical_visible ? widget_mode::enabled : widget_mode::invisible;
 
             hilet vertical_scroll_bar_width = _vertical_scroll_bar->constraints().preferred.width();
             hilet horizontal_scroll_bar_height = _horizontal_scroll_bar->constraints().preferred.height();
 
             // The aperture size grows to fill the size of the layout.
             hilet aperture_size = extent2{
-                *_vertical_scroll_bar->visible ? layout.width() - vertical_scroll_bar_width : layout.width(),
-                *_horizontal_scroll_bar->visible ? layout.height() - horizontal_scroll_bar_height : layout.height()};
-            hilet aperture_offset = point2{0.0f, *_horizontal_scroll_bar->visible ? horizontal_scroll_bar_height : 0.0f};
+                vertical_visible ? layout.width() - vertical_scroll_bar_width : layout.width(),
+                horizontal_visible ? layout.height() - horizontal_scroll_bar_height : layout.height()};
+            hilet aperture_offset = point2{0.0f, horizontal_visible ? horizontal_scroll_bar_height : 0.0f};
             _aperture_rectangle = aarectangle{aperture_offset, aperture_size};
 
             // The length of the scroll-bar is the full length of the widget, or just the length of the aperture depending
             // if the counter-part scroll-bar is visible.
             hilet horizontal_scroll_bar_size =
-                extent2{both_bars_visible ? aperture_size.width() : layout.width(), horizontal_scroll_bar_height};
+                extent2{both_visible ? aperture_size.width() : layout.width(), horizontal_scroll_bar_height};
             hilet vertical_scroll_bar_size =
-                extent2{vertical_scroll_bar_width, both_bars_visible ? aperture_size.height() : layout.height()};
+                extent2{vertical_scroll_bar_width, both_visible ? aperture_size.height() : layout.height()};
 
             _vertical_scroll_bar_rectangle = aarectangle{
                 point2{layout.width() - vertical_scroll_bar_size.width(), layout.height() - vertical_scroll_bar_size.height()},
@@ -174,22 +177,22 @@ public:
 
             if constexpr (controls_window) {
                 window.set_resize_border_priority(
-                    true, not *_vertical_scroll_bar->visible, not *_horizontal_scroll_bar->visible, true);
+                    true, not vertical_visible, not horizontal_visible, true);
             }
         }
 
         _aperture->set_layout(layout.transform(_aperture_rectangle));
-        if (*_vertical_scroll_bar->visible) {
+        if (*_vertical_scroll_bar->mode > widget_mode::invisible) {
             _vertical_scroll_bar->set_layout(layout.transform(_vertical_scroll_bar_rectangle));
         }
-        if (*_horizontal_scroll_bar->visible) {
+        if (*_horizontal_scroll_bar->mode > widget_mode::invisible) {
             _horizontal_scroll_bar->set_layout(layout.transform(_horizontal_scroll_bar_rectangle));
         }
     }
 
-    void draw(draw_context const &context) noexcept
+    void draw(draw_context const& context) noexcept
     {
-        if (*visible) {
+        if (*mode > widget_mode::invisible) {
             _vertical_scroll_bar->draw(context);
             _horizontal_scroll_bar->draw(context);
             _aperture->draw(context);
@@ -200,7 +203,7 @@ public:
     {
         hi_axiom(is_gui_thread());
 
-        if (*visible and *enabled) {
+        if (*mode >= widget_mode::partial) {
             auto r = _aperture->hitbox_test_from_parent(position);
             r = _horizontal_scroll_bar->hitbox_test_from_parent(position, r);
             r = _vertical_scroll_bar->hitbox_test_from_parent(position, r);

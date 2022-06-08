@@ -65,6 +65,7 @@ target_sources(hikogui PRIVATE
     widget.hpp
     widget_constraints.hpp
     widget_layout.hpp
+    widget_mode.hpp
     window_traffic_lights_widget.cpp
     window_traffic_lights_widget.hpp
     window_widget.cpp

@@ -13,6 +13,8 @@ namespace hi::inline v1 {
 
 text_widget::text_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
 {
+    mode = widget_mode::select;
+
     _text_cbt = text.subscribe([&](auto...) {
         update_shaped_text();
         request_reconstrain();
@@ -22,7 +24,9 @@ text_widget::text_widget(gui_window& window, widget *parent) noexcept : super(wi
         request_reconstrain();
     });
 
-    _cursor_state_cbt = _cursor_state.subscribe([&](auto...){ request_redraw(); });
+    _cursor_state_cbt = _cursor_state.subscribe([&](auto...) {
+        request_redraw();
+    });
 
     _blink_cursor = blink_cursor();
 }
@@ -43,7 +47,7 @@ widget_constraints const& text_widget::set_constraints() noexcept
     _shaped_text_cap_height = cap_height;
     hilet shaped_text_size = shaped_text_rectangle.size();
 
-    if (*edit_mode == edit_mode_type::line_editable) {
+    if (*mode == widget_mode::partial) {
         // In line-edit mode the text should not wrap.
         return _constraints = {shaped_text_size, shaped_text_size, shaped_text_size, theme().margin};
     } else {
@@ -79,7 +83,7 @@ void text_widget::set_layout(widget_layout const& layout) noexcept
 
 void text_widget::scroll_to_show_selection() noexcept
 {
-    if (*visible and *focus) {
+    if (*mode > widget_mode::invisible and *focus) {
         hilet cursor = _selection.cursor();
         hilet char_it = _shaped_text.begin() + cursor.index();
         if (char_it < _shaped_text.end()) {
@@ -99,21 +103,21 @@ void text_widget::request_scroll() noexcept
 scoped_task<> text_widget::blink_cursor() noexcept
 {
     while (true) {
-        if (*visible and *enabled and *focus and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= widget_mode::partial and *focus) {
             switch (*_cursor_state) {
             case cursor_state_type::busy:
                 _cursor_state = cursor_state_type::on;
-                co_await when_any(os_settings::cursor_blink_delay(), visible, enabled, focus);
+                co_await when_any(os_settings::cursor_blink_delay(), mode, focus);
                 break;
 
             case cursor_state_type::on:
                 _cursor_state = cursor_state_type::off;
-                co_await when_any(os_settings::cursor_blink_interval() / 2, visible, enabled, focus);
+                co_await when_any(os_settings::cursor_blink_interval() / 2, mode, focus);
                 break;
 
             case cursor_state_type::off:
                 _cursor_state = cursor_state_type::on;
-                co_await when_any(os_settings::cursor_blink_interval() / 2, visible, enabled, focus);
+                co_await when_any(os_settings::cursor_blink_interval() / 2, mode, focus);
                 break;
 
             default:
@@ -122,7 +126,7 @@ scoped_task<> text_widget::blink_cursor() noexcept
 
         } else {
             _cursor_state = cursor_state_type::none;
-            co_await when_any(visible, enabled, focus);
+            co_await when_any(mode, focus);
         }
     }
 }
@@ -155,7 +159,7 @@ void text_widget::draw(draw_context const& context) noexcept
         request_redraw();
     }
 
-    if (*visible and overlaps(context, layout())) {
+    if (*mode > widget_mode::invisible and overlaps(context, layout())) {
         context.draw_text(layout(), _shaped_text);
 
         context.draw_text_selection(layout(), _shaped_text, _selection, theme().color(semantic_color::text_select));
@@ -223,7 +227,7 @@ void text_widget::replace_selection(gstring const& replacement) noexcept
     fix_cursor_position();
 }
 
-void text_widget::add_character(grapheme c, add_type mode) noexcept
+void text_widget::add_character(grapheme c, add_type keyboard_mode) noexcept
 {
     hilet original_cursor = _selection.cursor();
     auto original_grapheme = grapheme{char32_t{0xffff}};
@@ -236,11 +240,11 @@ void text_widget::add_character(grapheme c, add_type mode) noexcept
     }
     replace_selection(gstring{c});
 
-    if (mode == add_type::insert) {
+    if (keyboard_mode == add_type::insert) {
         // The character was inserted, put the cursor back where it was.
         _selection = original_cursor;
 
-    } else if (mode == add_type::dead) {
+    } else if (keyboard_mode == add_type::dead) {
         _selection = original_cursor.before_neighbor(text->size());
         _has_dead_character = original_grapheme;
     }
@@ -339,8 +343,8 @@ bool text_widget::handle_event(gui_event const& event) noexcept
     hi_axiom(is_gui_thread());
 
     switch (event.type()) {
-        using enum edit_mode_type;
         using enum gui_event_type;
+        using enum widget_mode;
 
     case gui_widget_next:
     case gui_widget_prev:
@@ -352,7 +356,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         return super::handle_event(event);
 
     case keyboard_grapheme:
-        if (*enabled and *edit_mode >= line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             add_character(event.grapheme(), add_type::append);
             return true;
@@ -360,7 +364,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case keyboard_partial_grapheme:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             add_character(event.grapheme(), add_type::dead);
             return true;
@@ -368,7 +372,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_mode_insert:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             _overwrite_mode = not _overwrite_mode;
             fix_cursor_position();
@@ -377,12 +381,12 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_edit_paste:
-        if (*enabled and *edit_mode == edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             replace_selection(to_gstring(window.get_text_from_clipboard(), U' '));
             return true;
 
-        } else if (*enabled and *edit_mode == edit_mode_type::fully_editable) {
+        } else if (*mode >= enabled) {
             reset_state("BDX");
             replace_selection(to_gstring(window.get_text_from_clipboard()));
             return true;
@@ -390,7 +394,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_edit_copy:
-        if (*enabled and *edit_mode >= edit_mode_type::selectable) {
+        if (*mode >= select) {
             reset_state("BDX");
             if (hilet selected_text_ = selected_text(); not selected_text_.empty()) {
                 window.set_text_on_clipboard(to_string(selected_text_));
@@ -400,10 +404,10 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_edit_cut:
-        if (*enabled and *edit_mode >= edit_mode_type::selectable) {
+        if (*mode >= select) {
             reset_state("BDX");
             window.set_text_on_clipboard(to_string(selected_text()));
-            if (*edit_mode >= edit_mode_type::line_editable) {
+            if (*mode >= partial) {
                 replace_selection(gstring{});
             }
             return true;
@@ -411,7 +415,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_undo:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             undo();
             return true;
@@ -419,7 +423,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_redo:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             redo();
             return true;
@@ -427,7 +431,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_insert_line:
-        if (*enabled and *edit_mode == edit_mode_type::fully_editable) {
+        if (*mode >= enabled) {
             reset_state("BDX");
             add_character(grapheme{unicode_PS}, add_type::append);
             return true;
@@ -435,7 +439,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_insert_line_up:
-        if (*enabled and *edit_mode == edit_mode_type::fully_editable) {
+        if (*mode >= enabled) {
             reset_state("BDX");
             _selection = _shaped_text.move_begin_paragraph(_selection.cursor());
             add_character(grapheme{unicode_PS}, add_type::insert);
@@ -444,7 +448,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_insert_line_down:
-        if (*enabled and *edit_mode == edit_mode_type::fully_editable) {
+        if (*mode >= enabled) {
             reset_state("BDX");
             _selection = _shaped_text.move_end_paragraph(_selection.cursor());
             add_character(grapheme{unicode_PS}, add_type::insert);
@@ -453,7 +457,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_delete_char_next:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             delete_character_next();
             return true;
@@ -461,7 +465,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_delete_char_prev:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             delete_character_prev();
             return true;
@@ -469,7 +473,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_delete_word_next:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             delete_word_next();
             return true;
@@ -477,7 +481,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_delete_word_prev:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             delete_word_prev();
             return true;
@@ -485,7 +489,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_cursor_left_char:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             _selection = _shaped_text.move_left_char(_selection.cursor(), _overwrite_mode);
             request_scroll();
@@ -494,7 +498,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_cursor_right_char:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             _selection = _shaped_text.move_right_char(_selection.cursor(), _overwrite_mode);
             request_scroll();
@@ -503,7 +507,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_cursor_down_char:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BD");
             _selection = _shaped_text.move_down_char(_selection.cursor(), _vertical_movement_x);
             request_scroll();
@@ -512,7 +516,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_cursor_up_char:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BD");
             _selection = _shaped_text.move_up_char(_selection.cursor(), _vertical_movement_x);
             request_scroll();
@@ -521,7 +525,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_cursor_left_word:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             _selection = _shaped_text.move_left_word(_selection.cursor(), _overwrite_mode);
             request_scroll();
@@ -530,7 +534,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_cursor_right_word:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             _selection = _shaped_text.move_right_word(_selection.cursor(), _overwrite_mode);
             request_scroll();
@@ -539,7 +543,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_cursor_begin_line:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             _selection = _shaped_text.move_begin_line(_selection.cursor());
             request_scroll();
@@ -548,7 +552,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_cursor_end_line:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             _selection = _shaped_text.move_end_line(_selection.cursor());
             request_scroll();
@@ -557,7 +561,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_cursor_begin_sentence:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             _selection = _shaped_text.move_begin_sentence(_selection.cursor());
             request_scroll();
@@ -566,7 +570,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_cursor_end_sentence:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             _selection = _shaped_text.move_end_sentence(_selection.cursor());
             request_scroll();
@@ -575,7 +579,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_cursor_begin_document:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             _selection = _shaped_text.move_begin_document(_selection.cursor());
             request_scroll();
@@ -584,7 +588,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_cursor_end_document:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             _selection = _shaped_text.move_end_document(_selection.cursor());
             request_scroll();
@@ -593,7 +597,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case gui_cancel:
-        if (*enabled and *edit_mode >= edit_mode_type::selectable) {
+        if (*mode >= select) {
             reset_state("BDX");
             _selection.clear_selection(_shaped_text.size());
             return true;
@@ -601,7 +605,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_select_left_char:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             _selection.drag_selection(_shaped_text.move_left_char(_selection.cursor(), false));
             request_scroll();
@@ -610,7 +614,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_select_right_char:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             _selection.drag_selection(_shaped_text.move_right_char(_selection.cursor(), false));
             request_scroll();
@@ -619,7 +623,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_select_down_char:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BD");
             _selection.drag_selection(_shaped_text.move_down_char(_selection.cursor(), _vertical_movement_x));
             request_scroll();
@@ -628,7 +632,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_select_up_char:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BD");
             _selection.drag_selection(_shaped_text.move_up_char(_selection.cursor(), _vertical_movement_x));
             request_scroll();
@@ -637,7 +641,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_select_left_word:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             _selection.drag_selection(_shaped_text.move_left_word(_selection.cursor(), false));
             request_scroll();
@@ -646,7 +650,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_select_right_word:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             _selection.drag_selection(_shaped_text.move_right_word(_selection.cursor(), false));
             request_scroll();
@@ -655,7 +659,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_select_begin_line:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             _selection.drag_selection(_shaped_text.move_begin_line(_selection.cursor()));
             request_scroll();
@@ -664,7 +668,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_select_end_line:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             _selection.drag_selection(_shaped_text.move_end_line(_selection.cursor()));
             request_scroll();
@@ -673,7 +677,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_select_begin_sentence:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             _selection.drag_selection(_shaped_text.move_begin_sentence(_selection.cursor()));
             request_scroll();
@@ -682,7 +686,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_select_end_sentence:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             _selection.drag_selection(_shaped_text.move_end_sentence(_selection.cursor()));
             request_scroll();
@@ -691,7 +695,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_select_begin_document:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             _selection.drag_selection(_shaped_text.move_begin_document(_selection.cursor()));
             request_scroll();
@@ -700,7 +704,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_select_end_document:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             _selection.drag_selection(_shaped_text.move_end_document(_selection.cursor()));
             request_scroll();
@@ -709,7 +713,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case text_select_document:
-        if (*enabled and *edit_mode >= edit_mode_type::line_editable) {
+        if (*mode >= partial) {
             reset_state("BDX");
             _selection = _shaped_text.move_begin_document(_selection.cursor());
             _selection.drag_selection(_shaped_text.move_end_document(_selection.cursor()));
@@ -719,7 +723,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case mouse_up:
-        if (*enabled and *edit_mode >= edit_mode_type::selectable) {
+        if (*mode >= select) {
             // Stop the continues redrawing during dragging.
             // Also reset the time, so on drag-start it will initialize the time, which will
             // cause a smooth startup of repeating.
@@ -730,7 +734,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case mouse_down:
-        if (*enabled and *edit_mode >= edit_mode_type::selectable) {
+        if (*mode >= select) {
             hilet cursor = _shaped_text.get_nearest_cursor(event.mouse().position);
             switch (event.mouse().click_count) {
             case 1:
@@ -763,7 +767,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         break;
 
     case mouse_drag:
-        if (*enabled and *edit_mode >= edit_mode_type::selectable) {
+        if (*mode >= select) {
             hilet cursor = _shaped_text.get_nearest_cursor(event.mouse().position);
             switch (event.mouse().click_count) {
             case 1:
@@ -805,15 +809,14 @@ hitbox text_widget::hitbox_test(point3 position) const noexcept
 {
     hi_axiom(is_gui_thread());
 
-    if (*visible and *enabled and layout().contains(position)) {
-        switch (*edit_mode) {
-        case edit_mode_type::selectable:
+    if (layout().contains(position)) {
+        if (*mode >= widget_mode::partial) {
+            return hitbox{this, position, hitbox::Type::TextEdit};
+
+        } else if (*mode >= widget_mode::select) {
             return hitbox{this, position, hitbox::Type::Default};
-        case edit_mode_type::line_editable:
-            return hitbox{this, position, hitbox::Type::TextEdit};
-        case edit_mode_type::fully_editable:
-            return hitbox{this, position, hitbox::Type::TextEdit};
-        default:
+
+        } else {
             return hitbox{};
         }
     } else {
@@ -823,19 +826,12 @@ hitbox text_widget::hitbox_test(point3 position) const noexcept
 
 [[nodiscard]] bool text_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
-    using enum edit_mode_type;
-    using enum keyboard_focus_group;
-
-    switch (*edit_mode) {
-    case fixed:
+    if (*mode >= widget_mode::partial) {
+        return any(group & keyboard_focus_group::normal);
+    } else if (*mode >= widget_mode::select) {
+        return any(group & keyboard_focus_group::mouse);
+    } else {
         return false;
-    case selectable:
-        return *visible and *enabled and any(group & mouse);
-    case line_editable:
-    case fully_editable:
-        return *visible and *enabled and any(group & normal);
-    default:
-        hi_no_default();
     }
 }
 

@@ -124,7 +124,7 @@ The `draw_context::draw_*()` methods all accept the layout as the first argument
 to the draw function to be in the local coordinate system. In certain cases, a widget may want to make a copy of the layout
 to temporarily change the clipping rectangle.
 
-In the example below, you can see that only when a widget is `visible` should the widget and its children be drawn.
+In the example below, you can see that only when a widget is visible should the widget and its children be drawn.
 The `overlap()` check compared the context's `scissor_rectangle` with the layout's `redraw_rectangle` only when they
 partially or fully overlap should a widget draw its internals.
 
@@ -135,7 +135,7 @@ state of the widget, like: keyboard focus, window active & mouse hover.
 ```cpp
 void draw(hi::draw_context const &context) noexcept override
 {
-    if (visible) {
+    if (*mode > hi::widget_mode::invisible) {
         if (overlaps(context, layout())) {
             context.draw_box(
                 _layout,
@@ -176,7 +176,7 @@ You can also use this function to combine the `hitbox` results from several chil
 ```cpp
 [[nodiscard]] hi::hitbox hitbox_test(hi::point3 position) const noexcept override
 {
-    if (visible and enabled and layout().contains(position)) {
+    if (*mode >= hi::widget_mode::partial and layout().contains(position)) {
         return {this, position, hi::hitbox::Type::Button};
     } else {
         return {};
@@ -205,7 +205,7 @@ will also accept keyboard focus by a mouse click.
 ```cpp
 [[nodiscard]] bool accepts_keyboard_focus(hi::keyboard_focus_group group) const noexcept override
 {
-    return visible and enabled and is_normal(group);
+    return *mode >= hi::widget_mode::partial and is_normal(group);
 }
 ```
 
@@ -250,7 +250,7 @@ bool handle_event(hi::gui_event const& event) noexcept
 {
     switch (event.type()) {
     case hi::gui_event_type::keyboard_grapheme:
-        if (*enabled) {
+        if (*mode >= hi::widget_mode::partial) {
             hi_log_info("User typed the letter U+{:x}.", static_cast<uint32_t>(event.grapheme().front()));
             return true;
         }
@@ -296,7 +296,7 @@ bool handle_event(hi::gui_event const& event) noexcept override
 {
     switch (event.type()) {
     case hi::gui_event_type::mouse_down:
-        if (*enabled and event.mouse().cause.left_button) {
+        if (*mode >= hi::widget_mode::partial and event.mouse().cause.left_button) {
             hi_log_info("Mouse was clicked {} times in a row", event.mouse().click_count);
             return true;
         }
@@ -330,7 +330,7 @@ bool handle_event(hi::gui_event const& event) noexcept override
 {
     switch (event.type()) {
     case hi::gui_event_type::gui_activate:
-        if (*enabled) {
+        if (*mode >= widget_mode::partial) {
             value = not *value;
             return true;
         }

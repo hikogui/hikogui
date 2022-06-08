@@ -120,7 +120,7 @@ void window_widget::set_layout(widget_layout const &layout) noexcept
 
 void window_widget::draw(draw_context const &context) noexcept
 {
-    if (*visible) {
+    if (*mode > widget_mode::invisible) {
         _toolbar->draw(context);
         _content->draw(context);
     }
@@ -231,7 +231,7 @@ bool window_widget::handle_event(gui_event const& event) noexcept
         return true;
 
     case gui_event_type::gui_sysmenu_open:
-        if (*enabled) {
+        if (*mode >= widget_mode::partial) {
             window.open_system_menu();
             return true;
         }

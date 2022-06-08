@@ -21,7 +21,7 @@ text_field_widget::text_field_widget(gui_window& window, widget *parent, weak_or
 
     _scroll_widget = std::make_unique<scroll_widget<axis::none, false>>(window, this);
     _text_widget = &_scroll_widget->make_widget<text_widget>(_text, hi::alignment::middle_flush());
-    _text_widget->edit_mode = text_widget::edit_mode_type::line_editable;
+    _text_widget->mode = widget_mode::partial;
 
     _error_label_widget =
         std::make_unique<label_widget>(window, this, _error_label, alignment::top_left(), theme_text_style::error);
@@ -72,8 +72,10 @@ widget_constraints const& text_field_widget::set_constraints() noexcept
     size.height() += text_constraints.preferred.height();
     size.height() += text_constraints.margins.bottom();
 
-    _error_label_widget->visible = not _error_label->empty();
-    if (*_error_label_widget->visible) {
+    if (_error_label->empty()) {
+        _error_label_widget->mode = widget_mode::invisible;
+    } else {
+        _error_label_widget->mode = widget_mode::display;
         hilet error_label_constraints = _error_label_widget->set_constraints();
         size.width() += error_label_constraints.preferred.width();
         size.height() += error_label_constraints.margins.top();
@@ -89,7 +91,7 @@ widget_constraints const& text_field_widget::set_constraints() noexcept
 void text_field_widget::set_layout(widget_layout const& layout) noexcept
 {
     if (compare_store(_layout, layout)) {
-        if (*_error_label_widget->visible) {
+        if (*_error_label_widget->mode > widget_mode::invisible) {
             _error_label_rectangle =
                 aarectangle{0.0f, 0.0f, layout.rectangle().width(), _error_label_widget->constraints().preferred.height()};
 
@@ -99,7 +101,7 @@ void text_field_widget::set_layout(widget_layout const& layout) noexcept
         }
     }
 
-    if (*_error_label_widget->visible) {
+    if (*_error_label_widget->mode > widget_mode::invisible) {
         _error_label_widget->set_layout(layout.transform(_error_label_rectangle));
     }
     _scroll_widget->set_layout(layout.transform(_text_rectangle));
@@ -107,7 +109,7 @@ void text_field_widget::set_layout(widget_layout const& layout) noexcept
 
 void text_field_widget::draw(draw_context const& context) noexcept
 {
-    if (*visible and overlaps(context, layout())) {
+    if (*mode > widget_mode::invisible and overlaps(context, layout())) {
         draw_background_box(context);
 
         _scroll_widget->draw(context);
@@ -119,14 +121,14 @@ bool text_field_widget::handle_event(gui_event const& event) noexcept
 {
     switch (event.type()) {
     case gui_event_type::gui_cancel:
-        if (*enabled) {
+        if (*mode >= widget_mode::partial) {
             revert(true);
             return true;
         }
         break;
 
     case gui_event_type::gui_activate:
-        if (*enabled) {
+        if (*mode >= widget_mode::partial) {
             commit(true);
             return super::handle_event(event);
         }
@@ -140,7 +142,7 @@ bool text_field_widget::handle_event(gui_event const& event) noexcept
 
 hitbox text_field_widget::hitbox_test(point3 position) const noexcept
 {
-    if (*visible and *enabled) {
+    if (*mode >= widget_mode::partial) {
         auto r = hitbox{};
         r = _scroll_widget->hitbox_test_from_parent(position, r);
         r = _error_label_widget->hitbox_test_from_parent(position, r);
@@ -152,7 +154,7 @@ hitbox text_field_widget::hitbox_test(point3 position) const noexcept
 
 [[nodiscard]] bool text_field_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
-    if (*visible and *enabled) {
+    if (*mode >= widget_mode::partial) {
         return _scroll_widget->accepts_keyboard_focus(group);
     } else {
         return false;
@@ -161,7 +163,7 @@ hitbox text_field_widget::hitbox_test(point3 position) const noexcept
 
 [[nodiscard]] color text_field_widget::focus_color() const noexcept
 {
-    if (*enabled) {
+    if (*mode >= widget_mode::partial) {
         if (not _error_label->empty()) {
             return theme().text_style(theme_text_style::error).color;
         } else if (*_text_widget->focus) {

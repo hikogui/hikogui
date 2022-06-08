@@ -53,26 +53,6 @@ class text_widget final : public widget {
 public:
     using super = widget;
 
-    /** Mode of the text-widget.
-     */
-    enum class edit_mode_type {
-        /** Text is fixed.
-         */
-        fixed,
-
-        /** Text is selectable and copyable.
-         */
-        selectable,
-
-        /** Can edit single lines.
-         */
-        line_editable,
-
-        /** Text is editable.
-         */
-        fully_editable
-    };
-
     /** The text to be displayed.
      */
     observable<gstring> text;
@@ -84,10 +64,6 @@ public:
     /** The style of the text.
      */
     observable<theme_text_style> text_style = theme_text_style::label;
-
-    /** The edit-mode.
-     */
-    observable<edit_mode_type> edit_mode = edit_mode_type::selectable;
 
     /** Construct a text widget.
      *
