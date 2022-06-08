@@ -61,10 +61,6 @@ public:
      */
     observable<theme_text_style> text_style = theme_text_style::label;
 
-    /** The edit-mode of the embedded text widget.
-     */
-    observable<text_widget::edit_mode_type> edit_mode = text_widget::edit_mode_type::selectable;
-
     /** Construct a label widget.
      *
      * @see `label_widget::alignment`

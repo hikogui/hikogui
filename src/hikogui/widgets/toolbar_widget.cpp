@@ -97,7 +97,7 @@ bool toolbar_widget::tab_button_has_focus() const noexcept
 
 void toolbar_widget::draw(draw_context const &context) noexcept
 {
-    if (*visible) {
+    if (*mode > widget_mode::invisible) {
         if (overlaps(context, layout())) {
             context.draw_box(layout(), layout().rectangle(), theme().color(semantic_color::fill, semantic_layer + 1));
 
@@ -123,7 +123,7 @@ hitbox toolbar_widget::hitbox_test(point3 position) const noexcept
     hi_axiom(is_gui_thread());
 
     // By default the toolbar is used for dragging the window.
-    if (*visible and *enabled) {
+    if (*mode >= widget_mode::partial) {
         auto r = layout().contains(position) ? hitbox{this, position, hitbox::Type::MoveArea} : hitbox{};
 
         for (hilet &child : _left_children) {
@@ -197,7 +197,7 @@ widget &toolbar_widget::add_widget(horizontal_alignment alignment, std::unique_p
 
 [[nodiscard]] color toolbar_widget::focus_color() const noexcept
 {
-    if (*enabled) {
+    if (*mode >= widget_mode::partial) {
         return theme().color(semantic_color::accent);
     } else {
         return theme().color(semantic_color::border, semantic_layer - 1);

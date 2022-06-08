@@ -1,18 +1,4 @@
 {"bindings": [
-    // General GUI
-    {"key": "space",            "command": "gui_activate"},
-    {"key": "enter",            "command": "gui_activate_next"},
-    {"key": "enter",            "command": "gui_activate"},
-    {"key": "escape",           "command": "gui_cancel"},
-    {"key": "tab",              "command": "gui_widget_next"},
-    {"key": "shift+tab",        "command": "gui_widget_prev"},
-    {"key": "sysmenu",          "command": "gui_sysmenu_open"},
-    {"key": "menu",             "command": "gui_toolbar_open"},
-    {"key": "left",             "command": "gui_toolbar_prev"},
-    {"key": "right",            "command": "gui_toolbar_next"},
-    {"key": "up",               "command": "gui_menu_prev"},
-    {"key": "down",             "command": "gui_menu_next"},
-
     // General text editing
     {"key": "ctrl+x",           "command": "text_edit_cut"},
     {"key": "shift+delete",     "command": "text_edit_cut"},
@@ -72,5 +58,19 @@
     //{"key": "shift+ctrl+]",     "command": "text_select_bracket_match"},
     //{"key": "shift+pageup",     "command": "text_select_page_up"},
     //{"key": "shift+pagedown",   "command": "text_select_page_down"},
-    {"key": "ctrl+a",           "command": "text_select_document"}
+    {"key": "ctrl+a",           "command": "text_select_document"},
+
+    // General GUI
+    {"key": "space",            "command": "gui_activate"},
+    {"key": "enter",            "command": "gui_activate_next"},
+    {"key": "enter",            "command": "gui_activate"},
+    {"key": "escape",           "command": "gui_cancel"},
+    {"key": "tab",              "command": "gui_widget_next"},
+    {"key": "shift+tab",        "command": "gui_widget_prev"},
+    {"key": "sysmenu",          "command": "gui_sysmenu_open"},
+    {"key": "menu",             "command": "gui_toolbar_open"},
+    {"key": "left",             "command": "gui_toolbar_prev"},
+    {"key": "right",            "command": "gui_toolbar_next"},
+    {"key": "up",               "command": "gui_menu_prev"},
+    {"key": "down",             "command": "gui_menu_next"},
 ]}

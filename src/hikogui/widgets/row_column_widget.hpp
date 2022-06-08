@@ -159,7 +159,7 @@ public:
 
     void draw(draw_context const &context) noexcept override
     {
-        if (*visible) {
+        if (*mode > widget_mode::invisible) {
             for (hilet &child : _children) {
                 child->draw(context);
             }
@@ -170,7 +170,7 @@ public:
     {
         hi_axiom(is_gui_thread());
 
-        if (*visible and *enabled) {
+        if (*mode >= widget_mode::partial) {
             auto r = hitbox{};
             for (hilet &child : _children) {
                 r = child->hitbox_test_from_parent(position, r);

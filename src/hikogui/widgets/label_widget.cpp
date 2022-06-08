@@ -10,12 +10,14 @@ namespace hi::inline v1 {
 
 label_widget::label_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
 {
+    mode = widget_mode::select;
+
     _icon_widget = std::make_unique<icon_widget>(window, this, label->icon);
     _icon_widget->alignment = alignment;
     _text_widget = std::make_unique<text_widget>(window, this, to_gstring(label->text()));
     _text_widget->alignment = alignment;
     _text_widget->text_style = text_style;
-    _text_widget->edit_mode = edit_mode;
+    _text_widget->mode = mode;
 
     _text_style_cbt = text_style.subscribe([this](auto...) {
         switch (*text_style) {
@@ -148,7 +150,7 @@ void label_widget::set_layout(widget_layout const &layout) noexcept
 
 void label_widget::draw(draw_context const &context) noexcept
 {
-    if (*visible and overlaps(context, layout())) {
+    if (*mode > widget_mode::invisible and overlaps(context, layout())) {
         _icon_widget->draw(context);
         _text_widget->draw(context);
     }
@@ -158,7 +160,7 @@ void label_widget::draw(draw_context const &context) noexcept
 {
     hi_axiom(is_gui_thread());
 
-    if (*visible) {
+    if (*mode > widget_mode::invisible) {
         return _text_widget->hitbox_test_from_parent(position);
     } else {
         return {};

@@ -14,7 +14,7 @@ public:
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
     template<typename Label>
-    widget_with_child(hi::gui_window &window, hi::widget *parent, Label &&label) noexcept : widget(window, parent)
+    widget_with_child(hi::gui_window& window, hi::widget *parent, Label&& label) noexcept : widget(window, parent)
     {
         // Our child widget is a `label_widget` which requires a label to be passed as an third argument.
         // We use a templated argument to forward the label into the `label_widget`.
@@ -23,7 +23,7 @@ public:
 
     // The set_constraints() function is called when the window is first initialized,
     // or when a widget wants to change its constraints.
-    hi::widget_constraints const &set_constraints() noexcept override
+    hi::widget_constraints const& set_constraints() noexcept override
     {
         // Almost all widgets will reset the `_layout` variable here so that it will
         // trigger the calculations in `set_layout()` as well.
@@ -44,7 +44,7 @@ public:
     // a widget wants to change the internal layout.
     //
     // NOTE: The size of the layout may be larger than the maximum constraints of this widget.
-    void set_layout(hi::widget_layout const &layout) noexcept override
+    void set_layout(hi::widget_layout const& layout) noexcept override
     {
         // Update the `_layout` with the new context, in this case we want to do some
         // calculations when the size of the widget was changed.
@@ -62,9 +62,9 @@ public:
     // The `draw()` function is called when all or part of the window requires redrawing.
     // This may happen when showing the window for the first time, when the operating-system
     // requests a (partial) redraw, or when a widget requests a redraw of itself.
-    void draw(hi::draw_context const &context) noexcept override
+    void draw(hi::draw_context const& context) noexcept override
     {
-        if (*visible) {
+        if (*mode > hi::widget_mode::invisible) {
             // We only need to draw the widget when it is visible and when the visible area of
             // the widget overlaps with the scissor-rectangle (partial redraw) of the drawing context.
             if (overlaps(context, layout())) {
@@ -114,5 +114,10 @@ int hi_main(int argc, char *argv[])
     auto gui = hi::gui_system::make_unique();
     auto window = gui->make_window(hi::tr("Widget with child"));
     window->content().make_widget<widget_with_child>("A1", hi::tr("Widget with child"));
+
+    auto close_cbt = window->closing.subscribe(hi::callback_flags::main, [&] {
+        window = {};
+    });
+
     return hi::loop::main().resume();
 }

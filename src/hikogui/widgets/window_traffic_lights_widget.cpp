@@ -165,7 +165,7 @@ void window_traffic_lights_widget::drawWindows(draw_context const& drawContext) 
 
 void window_traffic_lights_widget::draw(draw_context const& context) noexcept
 {
-    if (*visible and overlaps(context, layout())) {
+    if (*mode > widget_mode::invisible and overlaps(context, layout())) {
         if (theme().operating_system == operating_system::macos) {
             drawMacOS(context);
 
@@ -256,7 +256,7 @@ hitbox window_traffic_lights_widget::hitbox_test(point3 position) const noexcept
 {
     hi_axiom(is_gui_thread());
 
-    if (*visible and *enabled and layout().contains(position) and
+    if (*mode >= widget_mode::partial and layout().contains(position) and
         (closeRectangle.contains(position) or minimizeRectangle.contains(position) or maximizeRectangle.contains(position))) {
         return hitbox{this, position, hitbox::Type::Button};
     } else {

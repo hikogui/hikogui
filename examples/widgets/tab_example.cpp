@@ -34,7 +34,7 @@ int hi_main(int argc, char* argv[])
     window->toolbar().make_widget<toolbar_tab_button_widget>(tr("three"), value, 2);
     /// [Create three toolbar tab buttons]
 
-    auto close_cb = window->closing.subscribe([&] {
+    auto close_cb = window->closing.subscribe(hi::callback_flags::main, [&] {
         window.reset();
     });
     return loop::main().resume();
