@@ -21,11 +21,22 @@ widget_constraints const &radio_button_widget::set_constraints() noexcept
 void radio_button_widget::set_layout(widget_layout const &layout) noexcept
 {
     if (compare_store(_layout, layout)) {
-        _button_rectangle = align(layout.rectangle(), _button_size, alignment::middle_left());
+        if (*alignment == horizontal_alignment::left or *alignment == horizontal_alignment::right) {
+            _button_rectangle = round(align(layout.rectangle(), _button_size, *alignment));
+        } else {
+            hi_not_implemented();
+        }
 
-        hilet label_x = _button_rectangle.right() + theme().margin;
-        hilet label_width = layout.width() - label_x;
-        _label_rectangle = aarectangle{label_x, 0.0f, label_width, layout.height()};
+        hilet label_width = layout.width() - (_button_rectangle.width() + theme().margin);
+        if (*alignment == horizontal_alignment::left) {
+            hilet label_left = _button_rectangle.right() + theme().margin;
+            _label_rectangle = aarectangle{label_left, 0.0f, label_width, layout.height()};
+
+        } else if (*alignment == horizontal_alignment::right) {
+            _label_rectangle = aarectangle{0.0f, 0.0f, label_width, layout.height()};
+        } else {
+            hi_not_implemented();
+        }
 
         _pip_rectangle = align(_button_rectangle, extent2{theme().icon_size, theme().icon_size}, alignment::middle_center());
     }
