@@ -26,6 +26,16 @@ public:
      */
     constexpr widget_baseline(float priority, float gain, float bias) noexcept : _priority(priority), _gain(gain), _bias(bias) {}
 
+    [[nodiscard]] constexpr bool empty() const noexcept
+    {
+        return _priority == 0.0f;
+    }
+
+    explicit operator bool() const noexcept
+    {
+        return not empty();
+    }
+
     /** Calculate the absolute base-line.
      *
      * @param height The height of the widget.

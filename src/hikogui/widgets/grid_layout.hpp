@@ -7,6 +7,7 @@
 #include "../required.hpp"
 #include "../assert.hpp"
 #include "../math.hpp"
+#include "widget_baseline.hpp"
 #include <tuple>
 #include <vector>
 #include <cstddef>
@@ -55,10 +56,10 @@ public:
         float maximum,
         float margin_before,
         float margin_after,
-        float cap_height = 0.0f) noexcept
+        widget_baseline baseline = widget_baseline{}) noexcept
     {
         _num_cells = std::max(_num_cells, last);
-        _constraints.emplace_back(first, last, minimum, preferred, maximum, margin_before, margin_after, cap_height);
+        _constraints.emplace_back(first, last, minimum, preferred, maximum, margin_before, margin_after, baseline);
     }
 
     /** Add a constraint for a widget.
@@ -77,9 +78,9 @@ public:
         float maximum,
         float margin_before,
         float margin_after,
-        float cap_height = 0.0f) noexcept
+        widget_baseline baseline = widget_baseline{}) noexcept
     {
-        return add_constraint(index, index + 1, minimum, preferred, maximum, margin_before, margin_after, cap_height);
+        return add_constraint(index, index + 1, minimum, preferred, maximum, margin_before, margin_after, baseline);
     }
 
     /** Commit all the constraints.
@@ -223,6 +224,16 @@ public:
         return get_positions(index, index + 1);
     }
 
+    [[nodiscard]] widget_baseline get_baseline(std::size_t first, std::size_t last) const noexcept
+    {
+        for (auto i = first; i != last; ++i) {
+            if (_cells[i].baseline) {
+                return _cells[i].baseline;
+            }
+        }
+        return {};
+    }
+
 private:
     struct constraint_type {
         std::size_t first;
@@ -232,7 +243,7 @@ private:
         float maximum;
         float margin_before;
         float margin_after;
-        float cap_height;
+        widget_baseline baseline;
 
         [[nodiscard]] bool is_single_cell() const noexcept
         {
@@ -266,9 +277,9 @@ private:
          */
         float maximum;
 
-        /** The cap height of this cell.
+        /** The baseline of this cell.
          */
-        float cap_height;
+        widget_baseline baseline;
 
         cell_type() noexcept :
             size(0.0f),
@@ -276,7 +287,7 @@ private:
             minimum(0.0f),
             preferred(0.0f),
             maximum(std::numeric_limits<float>::infinity()),
-            cap_height(0.0f)
+            baseline(baseline)
         {
         }
 

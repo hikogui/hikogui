@@ -85,7 +85,7 @@ widget_constraints const& text_field_widget::set_constraints() noexcept
         inplace_max(margins.bottom(), error_label_constraints.margins.bottom());
     }
 
-    return _constraints = {size, size, size, theme().margin};
+    return _constraints = {size, size, size, theme().margin, widget_baseline{1.0f, 0.5f, theme().cap_height * -0.5f}};
 }
 
 void text_field_widget::set_layout(widget_layout const& layout) noexcept

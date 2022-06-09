@@ -157,10 +157,9 @@ public:
      * @param line_spacing The scaling of the spacing between lines.
      * @param paragraph_spacing The scaling of the spacing between paragraphs.
      * @return The rectangle surrounding the text, cap-height. The rectangle excludes ascenders & descenders, as if
-     *         each line is x-height. y = 0 of the rectangle is at the base-line of the text. The returned cap-height is for the
-     *         line which is at y = 0.
+     *         each line is x-height. y = 0 of the rectangle is at the base-line of the text.
      */
-    [[nodiscard]] std::pair<aarectangle, float> bounding_rectangle(
+    [[nodiscard]] aarectangle bounding_rectangle(
         float maximum_line_width,
         vertical_alignment alignment,
         float line_spacing = 1.0f,

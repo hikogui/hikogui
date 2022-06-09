@@ -11,6 +11,7 @@
 #include "../unicode/unicode_bidi_class.hpp"
 #include "../GFX/subpixel_orientation.hpp"
 #include "../chrono.hpp"
+#include "widget_baseline.hpp"
 
 namespace hi::inline v1 {
 
@@ -70,25 +71,25 @@ public:
      */
     utc_nanoseconds display_time_point;
 
-    constexpr widget_layout(widget_layout const &) noexcept = default;
-    constexpr widget_layout(widget_layout &&) noexcept = default;
-    constexpr widget_layout &operator=(widget_layout const &) noexcept = default;
-    constexpr widget_layout &operator=(widget_layout &&) noexcept = default;
+    /** The base-line in widget local y-coordinate.
+     */
+    float baseline;
+
+    constexpr widget_layout(widget_layout const&) noexcept = default;
+    constexpr widget_layout(widget_layout&&) noexcept = default;
+    constexpr widget_layout& operator=(widget_layout const&) noexcept = default;
+    constexpr widget_layout& operator=(widget_layout&&) noexcept = default;
     constexpr widget_layout() noexcept = default;
 
-    [[nodiscard]] constexpr friend bool operator==(widget_layout const &lhs, widget_layout const &rhs) noexcept
+    [[nodiscard]] constexpr friend bool operator==(widget_layout const& lhs, widget_layout const& rhs) noexcept
     {
         hi_axiom((lhs.to_parent == rhs.to_parent) == (lhs.from_parent == rhs.from_parent));
         hi_axiom((lhs.to_window == rhs.to_window) == (lhs.from_window == rhs.from_window));
 
         // clang-format on
-        return
-            lhs.size == rhs.size and
-            lhs.to_parent == rhs.to_parent and
-            lhs.to_window == rhs.to_window and
-            lhs.clipping_rectangle == rhs.clipping_rectangle and
-            lhs.sub_pixel_size == rhs.sub_pixel_size and
-            lhs.writing_direction == rhs.writing_direction;
+        return lhs.size == rhs.size and lhs.to_parent == rhs.to_parent and lhs.to_window == rhs.to_window and
+            lhs.clipping_rectangle == rhs.clipping_rectangle and lhs.sub_pixel_size == rhs.sub_pixel_size and
+            lhs.writing_direction == rhs.writing_direction and lhs.baseline == rhs.baseline;
         // clang-format off
     }
 
@@ -149,7 +150,8 @@ public:
         clipping_rectangle(window_size),
         sub_pixel_size(hi::sub_pixel_size(subpixel_orientation)),
         writing_direction(writing_direction),
-        display_time_point(display_time_point)
+        display_time_point(display_time_point),
+        baseline()
     {
     }
 
@@ -158,10 +160,11 @@ public:
      * @param child_rectangle The location and size of the child widget, relative to the current widget.
      * @param elevation The elevation of the child widget, relative to the current widget.
      * @param new_clipping_rectangle The new clipping rectangle of the child widget, relative to the current widget.
+     * @param new_baseline The baseline to use by the child widget.
      * @return A new widget_layout for use by the child widget.
      */
     [[nodiscard]] constexpr widget_layout
-    transform(aarectangle const &child_rectangle, float elevation, aarectangle new_clipping_rectangle) const noexcept
+    transform(aarectangle const &child_rectangle, float elevation, aarectangle new_clipping_rectangle, widget_baseline new_baseline = widget_baseline{}) const noexcept
     {
         auto to_parent3 = translate3{child_rectangle, elevation};
         auto from_parent3 = ~to_parent3;
@@ -176,6 +179,11 @@ public:
         r.sub_pixel_size = this->sub_pixel_size;
         r.writing_direction = this->writing_direction;
         r.display_time_point = this->display_time_point;
+        if (new_baseline.empty()) {
+            r.baseline = this->baseline - child_rectangle.bottom();
+        } else {
+            r.baseline = new_baseline.absolute(child_rectangle.height());
+        }
         return r;
     }
 
@@ -185,9 +193,9 @@ public:
      * @param elevation The relative elevation of the child widget compared to the current widget.
      * @return A new widget_layout for use by the child widget.
      */
-    [[nodiscard]] constexpr widget_layout transform(aarectangle const &child_rectangle, float elevation = 1.0f) const noexcept
+    [[nodiscard]] constexpr widget_layout transform(aarectangle const &child_rectangle, float elevation = 1.0f, widget_baseline baseline = widget_baseline{}) const noexcept
     {
-        return transform(child_rectangle, elevation, child_rectangle + redraw_overhang);
+        return transform(child_rectangle, elevation, child_rectangle + redraw_overhang, baseline);
     }
 
     /** Override e context with the new clipping rectangle.
