@@ -73,7 +73,8 @@ widget_constraints const &grid_widget::set_constraints() noexcept
             cell_constraints.preferred.height(),
             cell_constraints.maximum.height(),
             cell_constraints.margins.top(),
-            cell_constraints.margins.bottom());
+            cell_constraints.margins.bottom(), 
+            cell_constraints.cap_height);
 
         _columns.add_constraint(
             cell.column_first,

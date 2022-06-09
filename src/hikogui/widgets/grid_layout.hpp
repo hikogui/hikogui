@@ -21,10 +21,10 @@ namespace hi::inline v1 {
  */
 class grid_layout {
 public:
-    grid_layout(grid_layout const &) = delete;
-    grid_layout(grid_layout &&) = delete;
-    grid_layout &operator=(grid_layout const &) = delete;
-    grid_layout &operator=(grid_layout &&) = delete;
+    grid_layout(grid_layout const&) = delete;
+    grid_layout(grid_layout&&) = delete;
+    grid_layout& operator=(grid_layout const&) = delete;
+    grid_layout& operator=(grid_layout&&) = delete;
 
     grid_layout() noexcept {}
 
@@ -47,10 +47,18 @@ public:
      * @param margin_before The space between this widget and other widgets.
      * @param margin_after The space between this widget and other widgets.
      */
-    void add_constraint(std::size_t first, std::size_t last, float minimum, float preferred, float maximum, float margin_before, float margin_after) noexcept
+    void add_constraint(
+        std::size_t first,
+        std::size_t last,
+        float minimum,
+        float preferred,
+        float maximum,
+        float margin_before,
+        float margin_after,
+        float cap_height = 0.0f) noexcept
     {
         _num_cells = std::max(_num_cells, last);
-        _constraints.emplace_back(first, last, minimum, preferred, maximum, margin_before, margin_after);
+        _constraints.emplace_back(first, last, minimum, preferred, maximum, margin_before, margin_after, cap_height);
     }
 
     /** Add a constraint for a widget.
@@ -62,9 +70,16 @@ public:
      * @param margin_before The space between this widget and other widgets.
      * @param margin_after The space between this widget and other widgets.
      */
-    void add_constraint(std::size_t index, float minimum, float preferred, float maximum, float margin_before, float margin_after) noexcept
+    void add_constraint(
+        std::size_t index,
+        float minimum,
+        float preferred,
+        float maximum,
+        float margin_before,
+        float margin_after,
+        float cap_height = 0.0f) noexcept
     {
-        return add_constraint(index, index + 1, minimum, preferred, maximum, margin_before, margin_after);
+        return add_constraint(index, index + 1, minimum, preferred, maximum, margin_before, margin_after, cap_height);
     }
 
     /** Commit all the constraints.
@@ -217,6 +232,7 @@ private:
         float maximum;
         float margin_before;
         float margin_after;
+        float cap_height;
 
         [[nodiscard]] bool is_single_cell() const noexcept
         {
@@ -250,8 +266,17 @@ private:
          */
         float maximum;
 
+        /** The cap height of this cell.
+         */
+        float cap_height;
+
         cell_type() noexcept :
-            size(0.0f), margin(0.0f), minimum(0.0f), preferred(0.0f), maximum(std::numeric_limits<float>::infinity())
+            size(0.0f),
+            margin(0.0f),
+            minimum(0.0f),
+            preferred(0.0f),
+            maximum(std::numeric_limits<float>::infinity()),
+            cap_height(0.0f)
         {
         }
 
@@ -261,7 +286,7 @@ private:
             inplace_clamp(preferred, minimum, maximum);
         }
 
-        void set_constraint(constraint_type const &constraint) noexcept
+        void set_constraint(constraint_type const& constraint) noexcept
         {
             inplace_max(minimum, constraint.minimum);
             inplace_max(preferred, constraint.preferred);
@@ -327,7 +352,7 @@ private:
     }
 
     void constrain_cells_by_singles() noexcept;
-    void constrain_cells_by_spans(std::function<float(constraint_type const &)> const &predicate) noexcept;
+    void constrain_cells_by_spans(std::function<float(constraint_type const&)> const& predicate) noexcept;
     [[nodiscard]] bool holds_invariant() const noexcept;
 };
 

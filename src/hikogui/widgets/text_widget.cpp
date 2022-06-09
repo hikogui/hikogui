@@ -44,12 +44,11 @@ widget_constraints const& text_widget::set_constraints() noexcept
     update_shaped_text();
     hilet[shaped_text_rectangle, cap_height] =
         _shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity(), alignment->vertical());
-    _shaped_text_cap_height = cap_height;
     hilet shaped_text_size = shaped_text_rectangle.size();
 
     if (*mode == widget_mode::partial) {
         // In line-edit mode the text should not wrap.
-        return _constraints = {shaped_text_size, shaped_text_size, shaped_text_size, theme().margin};
+        return _constraints = {shaped_text_size, shaped_text_size, shaped_text_size, theme().margin, cap_height};
     } else {
         // Allow the text to be 550.0f pixels wide.
         hilet[preferred_shaped_text_rectangle, dummy] = _shaped_text.bounding_rectangle(550.0f, alignment->vertical());
@@ -60,7 +59,8 @@ widget_constraints const& text_widget::set_constraints() noexcept
                    extent2{preferred_shaped_text_size.width(), height},
                    extent2{preferred_shaped_text_size.width(), height},
                    extent2{shaped_text_size.width(), height},
-                   theme().margin};
+                   theme().margin,
+                   cap_height};
     }
 }
 
@@ -70,8 +70,8 @@ void text_widget::set_layout(widget_layout const& layout) noexcept
         // clang-format off
         _base_line =
             *alignment == vertical_alignment::bottom ? layout.rectangle().bottom() :
-            *alignment == vertical_alignment::middle ? layout.rectangle().middle() - _shaped_text_cap_height * 0.5f :
-            layout.rectangle().top() - _shaped_text_cap_height;
+            *alignment == vertical_alignment::middle ? layout.rectangle().middle() - _constraints.cap_height * 0.5f :
+            layout.rectangle().top() - _constraints.cap_height;
         // clang-format on
 
         _shaped_text.layout(layout.rectangle(), _base_line, layout.sub_pixel_size, layout.writing_direction, *alignment);

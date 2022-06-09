@@ -63,6 +63,7 @@ target_sources(hikogui PRIVATE
     vulkan_widget.hpp
     widget.cpp
     widget.hpp
+    widget_baseline.hpp
     widget_constraints.hpp
     widget_layout.hpp
     widget_mode.hpp
