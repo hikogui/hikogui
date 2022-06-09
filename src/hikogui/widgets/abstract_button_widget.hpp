@@ -37,9 +37,9 @@ public:
      */
     observable<label> other_label = tr("other");
 
-    /** The alignment of the on/off/other label.
+    /** The alignment of the button and on/off/other label.
      */
-    observable<alignment> label_alignment;
+    observable<alignment> alignment;
 
     notifier<void()> pressed;
 
