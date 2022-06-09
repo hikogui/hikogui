@@ -8,18 +8,18 @@
 
 namespace hi::inline v1 {
 
-checkbox_widget::checkbox_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
+checkbox_widget::checkbox_widget(gui_window& window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
     super(window, parent, std::move(delegate))
 {
-    label_alignment = alignment::middle_left();
+    alignment = alignment::top_left();
 }
 
-checkbox_widget::checkbox_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
+checkbox_widget::checkbox_widget(gui_window& window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
     checkbox_widget(window, parent, weak_or_unique_ptr<delegate_type>{delegate})
 {
 }
 
-widget_constraints const &checkbox_widget::set_constraints() noexcept
+widget_constraints const& checkbox_widget::set_constraints() noexcept
 {
     _layout = {};
     _button_size = {theme().size, theme().size};
@@ -30,14 +30,25 @@ widget_constraints const &checkbox_widget::set_constraints() noexcept
     return _constraints;
 }
 
-void checkbox_widget::set_layout(widget_layout const &layout) noexcept
+void checkbox_widget::set_layout(widget_layout const& layout) noexcept
 {
     if (compare_store(_layout, layout)) {
-        _button_rectangle = align(layout.rectangle(), _button_size, alignment::middle_left());
+        if (*alignment == horizontal_alignment::left or *alignment == horizontal_alignment::right) {
+            _button_rectangle = round(align(layout.rectangle(), _button_size, *alignment));
+        } else {
+            hi_not_implemented();
+        }
 
-        hilet label_x = _button_rectangle.right() + theme().margin;
-        hilet label_width = layout.width() - label_x;
-        _label_rectangle = aarectangle{label_x, 0.0f, label_width, layout.height()};
+        hilet label_width = layout.width() - (_button_rectangle.width() + theme().margin);
+        if (*alignment == horizontal_alignment::left) {
+            hilet label_left = _button_rectangle.right() + theme().margin;
+            _label_rectangle = aarectangle{label_left, 0.0f, label_width, layout.height()};
+
+        } else if (*alignment == horizontal_alignment::right) {
+            _label_rectangle = aarectangle{0.0f, 0.0f, label_width, layout.height()};
+        } else {
+            hi_not_implemented();
+        }
 
         _check_glyph = font_book().find_glyph(elusive_icon::Ok);
         hilet check_glyph_bb = _check_glyph.get_bounding_box();
@@ -50,7 +61,7 @@ void checkbox_widget::set_layout(widget_layout const &layout) noexcept
     set_layout_button(layout);
 }
 
-void checkbox_widget::draw(draw_context const &context) noexcept
+void checkbox_widget::draw(draw_context const& context) noexcept
 {
     if (*mode > widget_mode::invisible and overlaps(context, layout())) {
         draw_check_box(context);
@@ -59,12 +70,12 @@ void checkbox_widget::draw(draw_context const &context) noexcept
     }
 }
 
-void checkbox_widget::draw_check_box(draw_context const &context) noexcept
+void checkbox_widget::draw_check_box(draw_context const& context) noexcept
 {
     context.draw_box(layout(), _button_rectangle, background_color(), focus_color(), theme().border_width, border_side::inside);
 }
 
-void checkbox_widget::draw_check_mark(draw_context const &context) noexcept
+void checkbox_widget::draw_check_mark(draw_context const& context) noexcept
 {
     auto state_ = state();
 
