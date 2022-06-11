@@ -19,6 +19,7 @@
 #include "unfair_mutex.hpp"
 #include "debugger.hpp"
 #include "format_check.hpp"
+#include "thread.hpp"
 #include <chrono>
 #include <format>
 #include <string>
@@ -83,15 +84,16 @@ public:
 
         hilet cpu_id = _time_stamp.cpu_id();
         hilet thread_id = _time_stamp.thread_id();
+        hilet thread_name = get_thread_nae(thread_id);
 
         if constexpr (to_bool(Level & global_state_type::log_statistics)) {
-            return std::format("{} {:2}:{:<10} {:5} {}\n", local_time_point, cpu_id, thread_id, log_level_name, _what());
+            return std::format("{} {}({}) {:5} {}\n", local_time_point, thread_name, cpu_id, log_level_name, _what());
         } else {
             return std::format(
-                "{} {:2}:{:<10} {:5} {} ({}:{})\n",
+                "{} {}({}) {:5} {} ({}:{})\n",
                 local_time_point,
+                thread_name,
                 cpu_id,
-                thread_id,
                 log_level_name,
                 _what(),
                 URL::urlFromPath(SourceFile).filename(),

@@ -8,13 +8,38 @@
 #include "strings.hpp"
 #include "log.hpp"
 #include "exception.hpp"
+#include "unfair_mutex.hpp"
+#include <mutex>
+#include <string>
+#include <unordered_map>
+#include <format>
 
 namespace hi::inline v1 {
 
-void set_thread_name(std::string_view name)
+static auto thread_names = std::unordered_map<thread_id, std::string>{};
+static unfair_mutex thread_names_mutex = {};
+
+void set_thread_name(std::string_view name) noexcept
 {
     hilet wname = to_wstring(name);
     SetThreadDescription(GetCurrentThread(), wname.data());
+
+    auto name_ = std::string{name};
+    auto id = get_thread_id();
+
+    hilet lock = std::scoped_lock(thread_names_mutex);
+    thread_names.emplace(id, std::move(name_);
+}
+
+[[nodiscard]] std::string get_thread_name(thread_id id) noexcept
+{
+    hilet lock = std::scoped_lock(thread_names_mutex);
+    hilet it = thread_names.find(id);
+    if (it != thread_names.end()) {
+        return *it;
+    } else {
+        return std::format("<{}>", id);
+    }
 }
 
 static std::vector<bool> mask_int_to_vec(DWORD_PTR rhs) noexcept

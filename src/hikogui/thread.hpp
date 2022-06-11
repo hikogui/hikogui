@@ -18,13 +18,6 @@
 
 namespace hi::inline v1 {
 
-/** Set the name of the current thread.
- * This function will set the name of the thread so that it is available
- * by the operating system and debugger.
- *
- * Every thread should call this function exactly once.
- */
-void set_thread_name(std::string_view name);
 
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
 constexpr std::size_t maximum_num_cpus = 64;
@@ -55,6 +48,25 @@ inline thread_local thread_id current_thread_id_dummy = 0;
     return reinterpret_cast<uint64_t>(&current_thread_id_dummy);
 #endif
 }
+
+/** Set the name of the current thread.
+ * This function will set the name of the thread so that it is available
+ * by the operating system and debugger.
+ *
+ * Every thread should call this function exactly once.
+ */
+void set_thread_name(std::string_view name) noexcept;
+
+/** Get the thread name of a thread id.
+ *
+ * This function is designed to be reasonably fast, so that it can be used
+ * in the logger thread.
+ *
+ * @note Can only read names that where set using set_thread_name().
+ * @param id The thread id.
+ * @return Name of the thread set with `set_hread_name()`. Or the numeric thread-id as string.
+ */
+[[nodiscard]] std::string get_thread_name(thread_id id) noexcept;
 
 /** Get the current process CPU affinity mask.
  *
