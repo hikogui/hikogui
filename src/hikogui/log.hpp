@@ -84,7 +84,7 @@ public:
 
         hilet cpu_id = _time_stamp.cpu_id();
         hilet thread_id = _time_stamp.thread_id();
-        hilet thread_name = get_thread_nae(thread_id);
+        hilet thread_name = get_thread_name(thread_id);
 
         if constexpr (to_bool(Level & global_state_type::log_statistics)) {
             return std::format("{} {}({}) {:5} {}\n", local_time_point, thread_name, cpu_id, log_level_name, _what());
