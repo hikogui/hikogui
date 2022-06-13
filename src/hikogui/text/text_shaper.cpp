@@ -344,7 +344,7 @@ void text_shaper::resolve_script() noexcept
     }
 }
 
-[[nodiscard]] std::pair<aarectangle, float> text_shaper::bounding_rectangle(
+[[nodiscard]] aarectangle text_shaper::bounding_rectangle(
     float maximum_line_width,
     hi::vertical_alignment vertical_alignment,
     float line_spacing,
@@ -364,16 +364,9 @@ void text_shaper::resolve_script() noexcept
         inplace_max(max_width, line.width);
     }
 
-    // clang-format off
-    hilet cap_height =
-        vertical_alignment == vertical_alignment::bottom ? lines.back().metrics.cap_height :
-        vertical_alignment == vertical_alignment::top ? lines.front().metrics.cap_height :
-        lines[lines.size() / 2].metrics.cap_height;
-    // clang-format on
-
     hilet max_y = lines.front().y + std::ceil(lines.front().metrics.ascender);
     hilet min_y = lines.back().y - std::ceil(lines.back().metrics.descender);
-    return {aarectangle{point2{0.0f, min_y}, point2{std::ceil(max_width), max_y}}, cap_height};
+    return aarectangle{point2{0.0f, min_y}, point2{std::ceil(max_width), max_y}};
 }
 
 [[nodiscard]] void text_shaper::layout(

@@ -90,6 +90,10 @@ void grid_layout::constrain_cells_by_singles() noexcept
         inplace_max(_cells[constraint.first].margin, constraint.margin_before);
         inplace_max(_cells[constraint.last].margin, constraint.margin_after);
 
+        for (auto i = constraint.first; i != constraint.last; ++i) {
+            inplace_max(_cells[i].baseline, constraint.baseline);
+        }
+
         if (constraint.is_single_cell()) {
             _cells[constraint.first].set_constraint(constraint);
         }

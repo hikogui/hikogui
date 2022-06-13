@@ -45,6 +45,8 @@ theme::theme(hi::font_book const& font_book, URL const& url)
     r.icon_size = std::round(delta_scale * icon_size);
     r.large_icon_size = std::round(delta_scale * large_icon_size);
     r.label_icon_size = std::round(delta_scale * label_icon_size);
+    // Cap height is not rounded, since the text-shaper will align the text to sub-pixel boundaries.
+    r.cap_height = delta_scale * cap_height;
 
     return r;
 }
@@ -338,6 +340,8 @@ void theme::parse(hi::font_book const& font_book, datum const& data)
     icon_size = parse_float(data, "icon-size");
     large_icon_size = parse_float(data, "large-icon-size");
     label_icon_size = parse_float(data, "label-icon-size");
+
+    cap_height = std::get<to_underlying(theme_text_style::label)>(_text_styles).cap_height(font_book);
 }
 
 } // namespace hi::inline v1

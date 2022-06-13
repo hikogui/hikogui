@@ -15,6 +15,7 @@ widget_constraints const &radio_button_widget::set_constraints() noexcept
     hilet extra_size = extent2{theme().margin + _button_size.width(), 0.0f};
     _constraints = max(set_constraints_button() + extra_size, _button_size);
     _constraints.margins = theme().margin;
+    _constraints.baseline = widget_baseline{0.5f, alignment->vertical(), theme().cap_height, theme().size};
     return _constraints;
 }
 

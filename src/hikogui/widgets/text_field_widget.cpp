@@ -63,46 +63,56 @@ widget_constraints const& text_field_widget::set_constraints() noexcept
 
     _layout = {};
 
-    auto size = extent2{};
     auto margins = hi::margins{theme().margin};
 
-    hilet text_constraints = _scroll_widget->set_constraints();
-    size.width() += 100.0f;
-    size.height() += text_constraints.margins.top();
-    size.height() += text_constraints.preferred.height();
-    size.height() += text_constraints.margins.bottom();
+    hilet scroll_width = 100.0f;
+    _text_constraints = _scroll_widget->set_constraints();
 
+    hilet box_size = extent2{
+        _text_constraints.margins.left() + scroll_width + _text_constraints.margins.right(),
+        _text_constraints.margins.top() + _text_constraints.preferred.height() + _text_constraints.margins.bottom()};
+
+    auto size = box_size;
     if (_error_label->empty()) {
         _error_label_widget->mode = widget_mode::invisible;
+        _error_label_constraints = {};
+
     } else {
         _error_label_widget->mode = widget_mode::display;
-        hilet error_label_constraints = _error_label_widget->set_constraints();
-        size.width() += error_label_constraints.preferred.width();
-        size.height() += error_label_constraints.margins.top();
-        size.height() += error_label_constraints.preferred.height();
-        inplace_max(margins.left(), error_label_constraints.margins.left());
-        inplace_max(margins.right(), error_label_constraints.margins.right());
-        inplace_max(margins.bottom(), error_label_constraints.margins.bottom());
+        _error_label_constraints = _error_label_widget->set_constraints();
+        inplace_max(size.width(), _error_label_constraints.preferred.width());
+        size.height() += _error_label_constraints.margins.top() + _error_label_constraints.preferred.height();
+        inplace_max(margins.left(), _error_label_constraints.margins.left());
+        inplace_max(margins.right(), _error_label_constraints.margins.right());
+        inplace_max(margins.bottom(), _error_label_constraints.margins.bottom());
     }
 
-    return _constraints = {size, size, size, theme().margin};
+    return _constraints = {
+               size,
+               size,
+               size,
+               theme().margin,
+               widget_baseline{0.5f, vertical_alignment::top, theme().cap_height, box_size.height()}};
 }
 
 void text_field_widget::set_layout(widget_layout const& layout) noexcept
 {
     if (compare_store(_layout, layout)) {
+        hilet box_size = extent2{
+            layout.width(),
+            _text_constraints.margins.top() + _text_constraints.preferred.height() + _text_constraints.margins.bottom()};
+
+        _box_rectangle = aarectangle{point2{0.0f, layout.height() - box_size.height()}, box_size};
+        _text_rectangle = _box_rectangle - theme().border_width;
+
         if (*_error_label_widget->mode > widget_mode::invisible) {
             _error_label_rectangle =
-                aarectangle{0.0f, 0.0f, layout.rectangle().width(), _error_label_widget->constraints().preferred.height()};
-
-            _text_rectangle = aarectangle{point2{0.0f, _error_label_rectangle.height()}, get<3>(layout.rectangle())};
-        } else {
-            _text_rectangle = layout.rectangle();
+                aarectangle{0.0f, 0.0f, layout.rectangle().width(), _error_label_constraints.preferred.height()};
         }
     }
 
     if (*_error_label_widget->mode > widget_mode::invisible) {
-        _error_label_widget->set_layout(layout.transform(_error_label_rectangle));
+        _error_label_widget->set_layout(layout.transform(_error_label_rectangle, _error_label_constraints.baseline));
     }
     _scroll_widget->set_layout(layout.transform(_text_rectangle));
 }
@@ -213,9 +223,9 @@ void text_field_widget::commit(bool force) noexcept
 void text_field_widget::draw_background_box(draw_context const& context) const noexcept
 {
     hilet corner_radii = hi::corner_radii{0.0f, 0.0f, theme().rounding_radius, theme().rounding_radius};
-    context.draw_box(_layout, _text_rectangle, background_color(), corner_radii);
+    context.draw_box(_layout, _box_rectangle, background_color(), corner_radii);
 
-    hilet line = line_segment(get<0>(_text_rectangle), get<1>(_text_rectangle));
+    hilet line = line_segment(get<0>(_box_rectangle), get<1>(_box_rectangle));
     context.draw_line(_layout, translate3{0.0f, 0.5f, 0.1f} * line, theme().border_width, focus_color());
 }
 

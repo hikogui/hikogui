@@ -42,17 +42,23 @@ widget_constraints const& text_widget::set_constraints() noexcept
     _layout = {};
 
     update_shaped_text();
-    hilet[shaped_text_rectangle, cap_height] =
-        _shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity(), alignment->vertical());
-    _shaped_text_cap_height = cap_height;
+    hilet shaped_text_rectangle = _shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity(), alignment->vertical());
     hilet shaped_text_size = shaped_text_rectangle.size();
+
+    // clang-format off
+    hilet baseline =
+        *alignment == vertical_alignment::top ? widget_baseline{0.1f, 1.0f, theme().cap_height * -1.0f} :
+        *alignment == vertical_alignment::middle ? widget_baseline{0.1f, 0.5f, theme().cap_height * -0.5f} :
+        widget_baseline{0.1f, 0.0f, 0.0f};
+    // clang-format on
 
     if (*mode == widget_mode::partial) {
         // In line-edit mode the text should not wrap.
-        return _constraints = {shaped_text_size, shaped_text_size, shaped_text_size, theme().margin};
+        return _constraints = {shaped_text_size, shaped_text_size, shaped_text_size, theme().margin, baseline};
+
     } else {
         // Allow the text to be 550.0f pixels wide.
-        hilet[preferred_shaped_text_rectangle, dummy] = _shaped_text.bounding_rectangle(550.0f, alignment->vertical());
+        hilet preferred_shaped_text_rectangle = _shaped_text.bounding_rectangle(550.0f, alignment->vertical());
         hilet preferred_shaped_text_size = preferred_shaped_text_rectangle.size();
 
         hilet height = std::max(shaped_text_size.height(), preferred_shaped_text_size.height());
@@ -60,21 +66,15 @@ widget_constraints const& text_widget::set_constraints() noexcept
                    extent2{preferred_shaped_text_size.width(), height},
                    extent2{preferred_shaped_text_size.width(), height},
                    extent2{shaped_text_size.width(), height},
-                   theme().margin};
+                   theme().margin,
+                   baseline};
     }
 }
 
 void text_widget::set_layout(widget_layout const& layout) noexcept
 {
     if (compare_store(_layout, layout)) {
-        // clang-format off
-        _base_line =
-            *alignment == vertical_alignment::bottom ? layout.rectangle().bottom() :
-            *alignment == vertical_alignment::middle ? layout.rectangle().middle() - _shaped_text_cap_height * 0.5f :
-            layout.rectangle().top() - _shaped_text_cap_height;
-        // clang-format on
-
-        _shaped_text.layout(layout.rectangle(), _base_line, layout.sub_pixel_size, layout.writing_direction, *alignment);
+        _shaped_text.layout(layout.rectangle(), layout.baseline, layout.sub_pixel_size, layout.writing_direction, *alignment);
 
         // Update scroll position every time the text or layout has changed.
         _request_scroll = true;
