@@ -74,7 +74,7 @@ widget_constraints const& selection_widget::set_constraints() noexcept
     _constraints.maximum.width() =
         std::max(_constraints.maximum.width(), overlay_constraints.maximum.width() + extra_size.width());
     _constraints.margins = theme().margin;
-
+    _constraints.baseline = widget_baseline{0.9f, vertical_alignment::middle, theme().cap_height};
     hi_axiom(_constraints.holds_invariant());
     return _constraints;
 }

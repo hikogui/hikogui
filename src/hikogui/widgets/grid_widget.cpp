@@ -73,7 +73,8 @@ widget_constraints const &grid_widget::set_constraints() noexcept
             cell_constraints.preferred.height(),
             cell_constraints.maximum.height(),
             cell_constraints.margins.top(),
-            cell_constraints.margins.bottom());
+            cell_constraints.margins.bottom(), 
+            cell_constraints.baseline);
 
         _columns.add_constraint(
             cell.column_first,
@@ -103,7 +104,8 @@ void grid_widget::set_layout(widget_layout const &layout) noexcept
 
     for (hilet &cell : _cells) {
         hilet child_rectangle = cell.rectangle(_columns, _rows, layout.height());
-        cell.widget->set_layout(layout.transform(child_rectangle, 0.0f));
+        hilet child_baseline = cell.baseline(_rows);
+        cell.widget->set_layout(layout.transform(child_rectangle, 0.0f, child_baseline));
     }
 }
 

@@ -27,6 +27,7 @@ widget_constraints const& checkbox_widget::set_constraints() noexcept
 
     _constraints = max(set_constraints_button() + extra_size, _button_size);
     _constraints.margins = theme().margin;
+    _constraints.baseline = widget_baseline{0.5f, alignment->vertical(), theme().cap_height, theme().size}; 
     return _constraints;
 }
 

@@ -49,6 +49,8 @@ struct text_style {
         hi_not_implemented();
     }
 
+    [[nodiscard]] float cap_height(font_book const &font_book) const noexcept;
+
     friend std::ostream &operator<<(std::ostream &lhs, text_style const &rhs)
     {
         return lhs << to_string(rhs);

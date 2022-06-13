@@ -111,7 +111,6 @@ private:
     enum class cursor_state_type { off, on, busy, none };
 
     text_shaper _shaped_text;
-    float _shaped_text_cap_height;
     float _base_line;
 
     decltype(text)::token_type _text_cbt;

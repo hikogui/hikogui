@@ -62,6 +62,10 @@ public:
      */
     float label_icon_size = 15.0f;
 
+    /** The height of capital letters of the default text-style.
+     */
+    float cap_height = 8.6f;
+
     std::string name;
     theme_mode mode = theme_mode::light;
 
