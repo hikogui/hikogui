@@ -26,12 +26,7 @@ widget_constraints const &toggle_widget::set_constraints() noexcept
     hilet extra_size = extent2{theme().margin + _button_size.width(), 0.0f};
     _constraints = max(set_constraints_button() + extra_size, _button_size);
     _constraints.margins = theme().margin;
-    // clang-format off
-    _constraints.baseline =
-        *alignment == vertical_alignment::top ? widget_baseline{0.5f, 1.0f, theme().size * -0.5f + theme().cap_height * -0.5f} :
-        *alignment == vertical_alignment::middle ? widget_baseline{0.5f, 0.5f, theme().cap_height * -0.5f}:
-        widget_baseline{0.5f, 0.0f, theme().size * 0.5f + theme().cap_height * -0.5f};
-    // clang-format on
+    _constraints.baseline = widget_baseline{0.5f, alignment->vertical(), theme().cap_height, theme().size};
     return _constraints;
 }
 

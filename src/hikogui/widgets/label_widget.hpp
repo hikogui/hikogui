@@ -108,8 +108,10 @@ private:
     decltype(text_style)::token_type _text_style_cbt;
 
     aarectangle _icon_rectangle;
+    widget_constraints _icon_constraints;
     std::unique_ptr<icon_widget> _icon_widget;
     aarectangle _text_rectangle;
+    widget_constraints _text_constraints;
     std::unique_ptr<text_widget> _text_widget;
 
     label_widget(gui_window &window, widget *parent) noexcept;

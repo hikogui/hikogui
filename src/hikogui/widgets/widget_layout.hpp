@@ -193,9 +193,19 @@ public:
      * @param elevation The relative elevation of the child widget compared to the current widget.
      * @return A new widget_layout for use by the child widget.
      */
-    [[nodiscard]] constexpr widget_layout transform(aarectangle const &child_rectangle, float elevation = 1.0f, widget_baseline baseline = widget_baseline{}) const noexcept
+    [[nodiscard]] constexpr widget_layout transform(aarectangle const &child_rectangle, float elevation = 1.0f, widget_baseline new_baseline = widget_baseline{}) const noexcept
     {
-        return transform(child_rectangle, elevation, child_rectangle + redraw_overhang, baseline);
+        return transform(child_rectangle, elevation, child_rectangle + redraw_overhang, new_baseline);
+    }
+
+    /** Create a new widget_layout for the child widget.
+     *
+     * @param child_rectangle The location and size of the child widget, relative to the current widget.
+     * @return A new widget_layout for use by the child widget.
+     */
+    [[nodiscard]] constexpr widget_layout transform(aarectangle const &child_rectangle, widget_baseline new_baseline) const noexcept
+    {
+        return transform(child_rectangle, 1.0f, child_rectangle + redraw_overhang, new_baseline);
     }
 
     /** Override e context with the new clipping rectangle.

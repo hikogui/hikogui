@@ -54,7 +54,7 @@ public:
             max(lhs.preferred, rhs.preferred),
             max(lhs.maximum, rhs.maximum),
             max(lhs.margins, rhs.margins),
-            max(lhs.baseline, rhs.baseline)};
+            std::max(lhs.baseline, rhs.baseline)};
     }
 
     [[nodiscard]] friend constexpr widget_constraints max(widget_constraints const& lhs, extent2 const& rhs) noexcept

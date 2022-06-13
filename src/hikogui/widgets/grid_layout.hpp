@@ -234,6 +234,11 @@ public:
         return {};
     }
 
+    [[nodiscard]] widget_baseline get_baseline(std::size_t index) const noexcept
+    {
+        return get_baseline(index, index + 1);
+    }
+
 private:
     struct constraint_type {
         std::size_t first;

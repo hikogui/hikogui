@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "../alignment.hpp"
+
 namespace hi::inline v1 {
 
 /** The base-line of a widget on which to set the text and graphics.
@@ -19,12 +21,45 @@ public:
 
     /** Construct a widget base-line.
      *
+     * @param priority The priority of the widget for dictating the baseline.
+     * @param alignment The alignment of the widget.
+     * @param cap_height The capital height of the default label font.
+     * @param graphic_height The height of the graphics of the widget where the text is beside or inside.
+     */
+    constexpr widget_baseline(
+        float priority,
+        vertical_alignment alignment,
+        float cap_height,
+        float graphic_height = 0.0f) noexcept :
+        _priority(priority)
+    {
+        if (alignment == vertical_alignment::top) {
+            _gain = 1.0f;
+            _bias = graphic_height * -0.5f + cap_height * -0.5f;
+        } else if (alignment == vertical_alignment::middle) {
+            _gain = 0.5f;
+            _bias = cap_height * -0.5f;
+        } else if (alignment == vertical_alignment::bottom) {
+            _gain = 0.5f;
+            _bias = graphic_height * 0.5f + cap_height * -0.5f;
+        } else {
+            hi_no_default();
+        }
+    }
+
+    /** Construct a widget base-line.
+     *
      * @param priority How sure a widget is that its base-line should be used.
      *                 0.0: bad, 0.1: text label, 0.5 small widget, 1.0 large widget.
      * @param gain The relative position of the base-line compared to the height of the widget.
      * @param bias The absolute offset of the base-line.
      */
     constexpr widget_baseline(float priority, float gain, float bias) noexcept : _priority(priority), _gain(gain), _bias(bias) {}
+
+    [[nodiscard]] constexpr auto friend operator<=>(widget_baseline const& lhs, widget_baseline const& rhs) noexcept
+    {
+        return lhs._priority <=> rhs._priority;
+    }
 
     [[nodiscard]] constexpr bool empty() const noexcept
     {
@@ -44,13 +79,6 @@ public:
     [[nodiscard]] constexpr float absolute(float height) const noexcept
     {
         return height * _gain + _bias;
-    }
-
-    /** Get the base-line of highest priority.
-     */
-    [[nodiscard]] constexpr friend widget_baseline max(widget_baseline const& lhs, widget_baseline const& rhs) noexcept
-    {
-        return lhs._priority > rhs._priority ? lhs : rhs;
     }
 
 private:
