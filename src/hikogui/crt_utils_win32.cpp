@@ -10,6 +10,7 @@
 #include "subsystem.hpp"
 #include "console.hpp"
 #include "log.hpp"
+#include "thread.hpp"
 
 namespace hi::inline v1 {
 
@@ -29,6 +30,8 @@ static void configure_current_working_directory() noexcept
 
 std::pair<int, char **> crt_start(int, char **, void *instance, int show_cmd)
 {
+    set_thread_name("main");
+
     // lpCmdLine does not handle UTF-8 command line properly.
     // So use GetCommandLineW() to get wide string arguments.
     // CommandLineToArgW properly unescapes the command line
