@@ -18,7 +18,6 @@
 
 namespace hi::inline v1 {
 
-
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
 constexpr std::size_t maximum_num_cpus = 64;
 #elif HI_OPERATING_SYSTEM == HI_OS_LINUX || HI_OPERATING_SYSTEM == HI_OS_MACOS
