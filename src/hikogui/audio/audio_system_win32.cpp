@@ -127,6 +127,7 @@ audio_system_win32::~audio_system_win32()
 
 void audio_system_win32::update_device_list() noexcept
 {
+    hi_axiom(loop::main().on_thread());
     hi_log_info("Updating audio device list:");
 
     IMMDeviceCollection *device_collection;

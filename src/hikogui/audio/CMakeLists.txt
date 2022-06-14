@@ -30,6 +30,7 @@ target_sources(hikogui PRIVATE
     pcm_format.hpp
     speaker_mapping.cpp
     speaker_mapping.hpp
+    surround_mode.hpp
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/speaker_mapping_win32.cpp>
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/speaker_mapping_win32.hpp>
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/win32_device_interface.cpp>

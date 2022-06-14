@@ -5,6 +5,7 @@
 #pragma once
 
 #include "audio_direction.hpp"
+#include "audio_format_range.hpp"
 #include "../generator.hpp"
 #include "../exception.hpp"
 #include "../log.hpp"
@@ -20,11 +21,22 @@ public:
     [[nodiscard]] ULONG pin_count() const noexcept;
     [[nodiscard]] std::string pin_name(ULONG pin_nr) const noexcept;
 
-    [[nodiscard]] generator<ULONG> find_streaming_pins(audio_direction direction);
+    [[nodiscard]] generator<ULONG> find_streaming_pins(audio_direction direction) const noexcept;
 
     [[nodiscard]] GUID pin_category(ULONG pin_nr) const noexcept;
 
     [[nodiscard]] KSPIN_COMMUNICATION pin_communication(ULONG pin_nr) const noexcept;
+
+    [[nodiscard]] generator<audio_format_range> get_format_ranges(ULONG pin_nr) const noexcept;
+
+    /** Get all the audio formats supported by this device.
+     *
+     * @note The audio device is very likely lying about its capabilities, the resulting
+     *       formats should be filtered through `IAudioClient::IsFormatSupported()`.
+     * @param direction The audio direction for which the formats will be enumerated.
+     * @return A set of audio format ranges that this audio device supports.
+     */
+    [[nodiscard]] generator<audio_format_range> get_format_ranges(audio_direction direction) const noexcept;
 
     template<typename T>
     [[nodiscard]] generator<T const *> get_pin_properties(ULONG pin_id, KSPROPERTY_PIN property) const
@@ -47,9 +59,9 @@ public:
     }
 
     /**
-    * 
-    * @note KSDATARANGE is same as KSDATAFORMAT.
-    */
+     *
+     * @note KSDATARANGE is same as KSDATAFORMAT.
+     */
     template<>
     [[nodiscard]] generator<KSDATARANGE const *> get_pin_properties(ULONG pin_id, KSPROPERTY_PIN property) const
     {
@@ -166,8 +178,6 @@ private:
 
         return hi::to_string(r);
     }
-
-    
 
     [[nodiscard]] bool is_streaming_interface(ULONG pin_nr) const noexcept;
 
