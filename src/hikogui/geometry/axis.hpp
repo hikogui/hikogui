@@ -33,7 +33,7 @@ enum class axis : unsigned char {
 
 [[nodiscard]] constexpr bool any(axis const &rhs) noexcept
 {
-    return static_cast<bool>(static_cast<unsigned char>(rhs));
+    return to_bool(static_cast<unsigned char>(rhs));
 }
 
 } // namespace hi::inline v1

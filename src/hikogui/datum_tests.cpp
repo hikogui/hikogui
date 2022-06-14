@@ -20,7 +20,7 @@ TEST(datum, IntOperations)
     ASSERT_EQ(static_cast<int>(v), 42);
     ASSERT_EQ(static_cast<float>(v), 42.0);
     ASSERT_EQ(static_cast<std::string>(v), "42"s);
-    ASSERT_EQ(static_cast<bool>(v), true);
+    ASSERT_EQ(to_bool(v), true);
 
     ASSERT_EQ(holds_alternative<long long>(v), true);
     ASSERT_EQ(holds_alternative<double>(v), false);
@@ -88,7 +88,7 @@ TEST(datum, FloatOperations)
     ASSERT_EQ(to_string(v), "42"s);
     ASSERT_EQ(std::format("{}", v), "42"s);
     ASSERT_EQ(repr(v), "42.0"s);
-    ASSERT_EQ(static_cast<bool>(v), true);
+    ASSERT_EQ(to_bool(v), true);
 
     ASSERT_EQ(v == 42.0, true);
     ASSERT_EQ(v < 42.0, false);

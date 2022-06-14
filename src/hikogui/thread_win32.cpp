@@ -41,7 +41,7 @@ static std::vector<bool> mask_int_to_vec(DWORD_PTR rhs) noexcept
 
     r.resize(64);
     for (std::size_t i = 0; i != r.size(); ++i) {
-        r[i] = static_cast<bool>(rhs & (DWORD_PTR{1} << i));
+        r[i] = to_bool(rhs & (DWORD_PTR{1} << i));
     }
 
     return r;

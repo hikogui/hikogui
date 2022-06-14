@@ -22,7 +22,7 @@ namespace hi::inline v1 {
 template<typename T>
 inline bool check_alignment(void const *ptr) noexcept
 {
-    return reinterpret_cast<ptrdiff_t>(ptr) % alignof(T) == 0;
+    return std::bit_cast<uintptr_t>(ptr) % alignof(T) == 0;
 }
 
 template<typename T, typename Byte>

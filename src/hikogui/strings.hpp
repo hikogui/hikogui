@@ -21,6 +21,12 @@
 #include <cstdlib>
 #include <bit>
 
+hi_warning_push();
+// C26409: Avoid calling new and delete explicitly, use std::make_unique<T> instead (r.11).
+// make_cstr() is used for arguments passed to tt_main() for compatibility we need to create
+// those using new/delete.
+hi_msvc_suppress(26409);
+
 namespace hi::inline v1 {
 
 [[nodiscard]] constexpr bool is_upper(char c) noexcept
@@ -285,10 +291,10 @@ namespace hi::inline v1 {
 [[nodiscard]] inline std::string fourcc_to_string(uint32_t x) noexcept
 {
     char c_str[5];
-    c_str[0] = static_cast<char>((x >> 24) & 0xff);
-    c_str[1] = static_cast<char>((x >> 16) & 0xff);
-    c_str[2] = static_cast<char>((x >> 8) & 0xff);
-    c_str[3] = static_cast<char>(x & 0xff);
+    c_str[0] = narrow_cast<char>((x >> 24) & 0xff);
+    c_str[1] = narrow_cast<char>((x >> 16) & 0xff);
+    c_str[2] = narrow_cast<char>((x >> 8) & 0xff);
+    c_str[3] = narrow_cast<char>(x & 0xff);
     c_str[4] = 0;
 
     return {c_str};
@@ -410,14 +416,14 @@ template<typename CharT>
 
     if (list.size() > 1) {
         std::size_t final_size = (list.size() - 1) * joiner.size();
-        for (hilet &item : list) {
+        for (hilet item : list) {
             final_size += item.size();
         }
         r.reserve(final_size);
     }
 
     int64_t i = 0;
-    for (hilet &item : list) {
+    for (hilet item : list) {
         if (i++ > 0) {
             r += joiner;
         }
@@ -507,7 +513,7 @@ constexpr auto to_array_without_last(T(&&rhs)[N]) noexcept
             throw parse_error("Could not find terminating zero of a string.");
         }
 
-        auto ws = std::wstring_view{first, narrow_cast<std::size_t>(it_zero - first)};
+        hilet ws = std::wstring_view{first, narrow_cast<std::size_t>(it_zero - first)};
         if (ws.empty()) {
             // The list is terminated with an empty string.
             break;
@@ -549,3 +555,5 @@ constexpr auto to_array_without_last(T(&&rhs)[N]) noexcept
 }
 
 } // namespace hi::inline v1
+
+hi_warning_pop();

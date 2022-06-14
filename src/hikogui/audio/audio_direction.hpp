@@ -23,7 +23,7 @@ enum class audio_direction : unsigned char { none = 0b00, input = 0b01, output =
 
 [[nodiscard]] constexpr bool any(audio_direction const &rhs) noexcept
 {
-    return static_cast<bool>(to_underlying(rhs));
+    return to_bool(to_underlying(rhs));
 }
 
 // clang-format off

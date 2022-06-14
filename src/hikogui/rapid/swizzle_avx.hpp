@@ -117,7 +117,7 @@ template<ssize_t A, ssize_t B, ssize_t C, ssize_t D>
         swizzled = value;
     }
 
-    __m128 numbers;
+    __m128 numbers = _mm_undefined_ps();
     if constexpr (not_one_mask == 0b0000) {
         numbers = _mm_set_ps1(1.0f);
     } else if constexpr (not_one_mask == 0b1111) {
@@ -129,7 +129,7 @@ template<ssize_t A, ssize_t B, ssize_t C, ssize_t D>
         numbers = _mm_insert_ps(_1111, _1111, not_one_mask);
     }
 
-    __m128 result;
+    __m128 result = _mm_undefined_ps();
     if constexpr (number_mask == 0b0000) {
         result = swizzled;
     } else if constexpr (number_mask == 0b1111) {

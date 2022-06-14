@@ -44,7 +44,7 @@ constexpr network_event& operator|=(network_event& lhs, network_event const& rhs
 
 [[nodiscard]] constexpr bool any(network_event const& rhs) noexcept
 {
-    return static_cast<bool>(to_underlying(rhs));
+    return to_bool(to_underlying(rhs));
 }
 
 /** Get the bit index of the single bit of the network_event mask.

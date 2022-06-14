@@ -63,7 +63,7 @@ public:
 
     [[nodiscard]] bool has_file() const noexcept
     {
-        return static_cast<bool>(_file);
+        return to_bool(_file);
     }
 
     [[nodiscard]] URL file() const noexcept

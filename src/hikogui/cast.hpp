@@ -19,13 +19,12 @@ hi_msvc_suppress(26472);
 // a negative value. Use gsl::narrow_cast or gsl::naroow instead to guard against undefined behavior and potential data loss
 // (es.46).
 // This file implements narrow_cast().
-hi_msvc_suppress(26467)
+hi_msvc_suppress(26467);
 // C26496: The variable 'r' does not change after construction, mark it as const (con.4).
 // False positive
-hi_msvc_suppress(26496)
+hi_msvc_suppress(26496);
 
 namespace hi::inline v1 {
-
 template<typename T>
 [[nodiscard]] constexpr T copy(T value) noexcept
 {
@@ -52,7 +51,7 @@ template<typename Out>
 /** Cast a reference to a class to its base class or itself.
  */
 template<typename Out, std::derived_from<std::remove_reference_t<Out>> In>
-[[nodiscard]] constexpr Out up_cast(In &rhs) noexcept requires(
+[[nodiscard]] constexpr Out up_cast(In& rhs) noexcept requires(
     std::is_const_v<std::remove_reference_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_reference_t<Out>>)
 {
     return static_cast<Out>(rhs);
@@ -93,7 +92,7 @@ template<typename Out>
  * @return A reference to the same object with a new type.
  */
 template<typename Out, base_of<std::remove_reference_t<Out>> In>
-[[nodiscard]] constexpr Out down_cast(In &rhs) noexcept requires(
+[[nodiscard]] constexpr Out down_cast(In& rhs) noexcept requires(
     std::is_const_v<std::remove_reference_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_reference_t<Out>>)
 {
     return static_cast<Out>(rhs);
@@ -107,24 +106,25 @@ template<arithmetic Out, arithmetic In>
     return static_cast<Out>(rhs);
 }
 
-namespace detail {
-
-template<numeric Out, numeric In>
-[[nodiscard]] constexpr bool narrow_validate(Out out, In in) noexcept
+namespace detail
 {
-    // in- and out-value compares the same, after converting out-value back to in-type.
-    auto r = (in == static_cast<In>(out));
 
-    // If the types have different signs we need to do an extra test to make sure the actual sign
-    // of the values are the same as well.
-    if constexpr (std::numeric_limits<Out>::is_signed != std::numeric_limits<In>::is_signed) {
-        r &= (in < In{}) == (out < Out{});
+    template<arithmetic Out, arithmetic In>
+    [[nodiscard]] constexpr bool narrow_validate(Out out, In in) noexcept
+    {
+        // in- and out-value compares the same, after converting out-value back to in-type.
+        auto r = (in == static_cast<In>(out));
+
+        // If the types have different signs we need to do an extra test to make sure the actual sign
+        // of the values are the same as well.
+        if constexpr (std::numeric_limits<Out>::is_signed != std::numeric_limits<In>::is_signed) {
+            r &= (in < In{}) == (out < Out{});
+        }
+
+        return r;
     }
 
-    return r;
-}
-
-}
+} // namespace detail
 
 /** Cast numeric values without loss of precision.
  *
@@ -134,7 +134,7 @@ template<numeric Out, numeric In>
  * @return The value casted to a different type without loss of precision.
  * @throws std::bad_cast when the value could not be casted without loss of precision.
  */
-template<numeric Out, numeric In>
+template<arithmetic Out, arithmetic In>
 [[nodiscard]] constexpr Out narrow(In rhs) noexcept(type_in_range_v<Out, In>)
 {
     if constexpr (type_in_range_v<Out, In>) {
@@ -158,7 +158,7 @@ template<numeric Out, numeric In>
  * @param rhs The value to cast.
  * @return The value casted to a different type without loss of precision.
  */
-template<numeric Out, numeric In>
+template<arithmetic Out, arithmetic In>
 [[nodiscard]] constexpr Out narrow_cast(In rhs) noexcept
 {
     if constexpr (type_in_range_v<Out, In>) {
@@ -269,9 +269,10 @@ template<std::signed_integral OutType, std::unsigned_integral InType>
     return static_cast<std::underlying_type_t<decltype(rhs)>>(rhs);
 }
 
-[[nodiscard]] constexpr bool to_bool(arithmetic auto rhs) noexcept
+template<typename T>
+[[nodiscard]] constexpr bool to_bool(T &&rhs) noexcept requires(requires(T &&x) { static_cast<bool>(std::forward<T>(x)); })
 {
-    return static_cast<bool>(rhs);
+    return static_cast<bool>(std::forward<T>(rhs));
 }
 
 } // namespace hi::inline v1

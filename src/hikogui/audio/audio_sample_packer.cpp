@@ -159,7 +159,7 @@ void audio_sample_packer::operator()(float const *hi_restrict src, std::byte *hi
             store_samples(int_samples, dst, store_shuffle_indices, concat_shuffle_indices, num_chunks_per_quad, chunk_stride);
         }
         while (src != src_end) {
-            auto dither_value = dither.next();
+            hilet dither_value = dither.next();
 
             auto float_sample = f32x4::broadcast(load_sample(src));
             float_sample += dither_value;

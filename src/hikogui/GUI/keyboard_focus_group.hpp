@@ -48,7 +48,7 @@ enum class keyboard_focus_group {
 
 [[nodiscard]] constexpr bool any(keyboard_focus_group group) noexcept
 {
-    return static_cast<bool>(to_underlying(group));
+    return to_bool(to_underlying(group));
 }
 
 } // namespace hi::inline v1

@@ -107,7 +107,7 @@ public:
 
     [[nodiscard]] constexpr bool after() const noexcept
     {
-        return static_cast<bool>(_value & 1);
+        return to_bool(_value & 1);
     }
 
     [[nodiscard]] constexpr bool before() const noexcept

@@ -228,7 +228,7 @@ constexpr surround_mode& operator|=(surround_mode& lhs, surround_mode const& rhs
 
 [[nodiscard]] constexpr bool any(surround_mode const& rhs) noexcept
 {
-    return static_cast<bool>(to_underlying(rhs));
+    return to_bool(to_underlying(rhs));
 }
 
 [[nodiscard]] constexpr speaker_mapping to_speaker_mapping(surround_mode const& rhs) noexcept

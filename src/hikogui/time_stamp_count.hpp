@@ -159,7 +159,7 @@ public:
 
     static void set_frequency(uint64_t frequency) noexcept
     {
-        auto period = (uint64_t{1'000'000'000} << 32) / frequency;
+        hilet period = (uint64_t{1'000'000'000} << 32) / frequency;
         _period.store(period, std::memory_order_relaxed);
     }
 

@@ -120,8 +120,8 @@ void audio_sample_unpacker::operator()(std::byte const *hi_restrict src, float *
 
     // Calculate a conservative number of samples that can be copied quickly
     // without overflowing the src buffer.
-    auto *const dst_end = dst + num_samples;
-    auto *const dst_fast_end = dst + _format.num_fast_quads(_stride, num_samples) * 4;
+    auto const *const dst_end = dst + num_samples;
+    auto const *const dst_fast_end = dst + _format.num_fast_quads(_stride, num_samples) * 4;
 
     if (_format.is_float) {
         while (dst != dst_fast_end) {

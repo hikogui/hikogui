@@ -51,7 +51,7 @@ bool operator>=(access_mode const& lhs, access_mode const& rhs) = delete;
 
 [[nodiscard]] constexpr bool any(access_mode const& rhs) noexcept
 {
-    return static_cast<bool>(to_underlying(rhs));
+    return to_bool(to_underlying(rhs));
 }
 
 /** True if all bits on rhs are set in lhs.
@@ -135,7 +135,7 @@ public:
      */
     std::size_t write(void const *data, std::size_t size, ssize_t offset = -1)
     {
-        return write(reinterpret_cast<std::byte const *>(data), size, offset);
+        return write(static_cast<std::byte const *>(data), size, offset);
     }
 
     /** Write data to a file.
@@ -210,7 +210,7 @@ public:
 
     ssize_t read(void *data, std::size_t size, ssize_t offset = -1)
     {
-        return read(reinterpret_cast<std::byte *>(data), size, offset);
+        return read(static_cast<std::byte *>(data), size, offset);
     }
 
     /** Read bytes from the file.

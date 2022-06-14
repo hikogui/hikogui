@@ -38,7 +38,7 @@ public:
             "Must be letters or the digits between '1' and '5', or nul");
 
         // clang-format off
-        uint16_t x =
+        uint16_t const x =
             (c >= 'a' and c <= 'z') ? c - 'a' + 1 :
             (c >= 'A' and c <= 'Z') ? c - 'A' + 1 :
             (c >= '1' and c <= '5') ? c - '1' + 27 :
@@ -62,13 +62,13 @@ public:
     [[nodiscard]] constexpr friend char get(iso_639 const& rhs) noexcept
     {
         constexpr auto shift = I * 5;
-        auto x = (rhs._v >> shift) & 0x1f;
+        hilet x = (rhs._v >> shift) & 0x1f;
         if (x == 0) {
             return 0;
         } else if (x <= 26) {
-            return 'a' + static_cast<char>(x - 1);
+            return 'a' + narrow_cast<char>(x - 1);
         } else {
-            return '1' + static_cast<char>(x - 27);
+            return '1' + narrow_cast<char>(x - 27);
         }
     }
 
@@ -104,7 +104,7 @@ public:
      */
     [[nodiscard]] constexpr std::size_t size() const noexcept
     {
-        auto tmp = _v & 0x7fff;
+        hilet tmp = _v & 0x7fff;
         // clang-format off
         return
             tmp == 0 ? 0 :

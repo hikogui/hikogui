@@ -92,7 +92,7 @@
 
 #if defined(__clang__)
 #define hi_unreachable() __builtin_unreachable()
-#define hi_assume(condition) __builtin_assume(static_cast<bool>(condition))
+#define hi_assume(condition) __builtin_assume(to_bool(condition))
 #define hi_force_inline inline __attribute__((always_inline))
 #define hi_no_inline __attribute__((noinline))
 #define hi_restrict __restrict__

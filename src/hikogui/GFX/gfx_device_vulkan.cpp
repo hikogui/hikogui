@@ -391,9 +391,9 @@ int gfx_device_vulkan::score(gfx_surface const &surface) const
     bool device_has_compute = false;
     bool device_shares_graphics_and_present = false;
     for (hilet &queue : _queues) {
-        hilet has_present = static_cast<bool>(physicalIntrinsic.getSurfaceSupportKHR(queue.family_queue_index, surface_));
-        hilet has_graphics = static_cast<bool>(queue.flags & vk::QueueFlagBits::eGraphics);
-        hilet has_compute = static_cast<bool>(queue.flags & vk::QueueFlagBits::eCompute);
+        hilet has_present = to_bool(physicalIntrinsic.getSurfaceSupportKHR(queue.family_queue_index, surface_));
+        hilet has_graphics = to_bool(queue.flags & vk::QueueFlagBits::eGraphics);
+        hilet has_compute = to_bool(queue.flags & vk::QueueFlagBits::eCompute);
 
         device_has_graphics |= has_graphics;
         device_has_present |= has_present;

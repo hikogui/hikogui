@@ -106,8 +106,8 @@ hi_force_inline constexpr results<float, 3> bezierFindT(float P1, float C1, floa
  */
 hi_force_inline constexpr results<float, 1> bezierFindTForNormalsIntersectingPoint(point2 P1, point2 P2, point2 P) noexcept
 {
-    auto t_above = dot(P - P1, P2 - P1);
-    auto t_below = dot(P2 - P1, P2 - P1);
+    hilet t_above = dot(P - P1, P2 - P1);
+    hilet t_below = dot(P2 - P1, P2 - P1);
     if (t_below == 0.0) {
         [[unlikely]] return {};
     } else {
