@@ -6,6 +6,8 @@
 
 #include "audio_device.hpp"
 #include "audio_stream_format.hpp"
+#include "audio_format_range.hpp"
+#include "../generator.hpp"
 
 struct IMMDevice;
 struct IPropertyStore;
@@ -33,7 +35,6 @@ public:
 
     /// @beginprivatemethods
     void update_state() noexcept override;
-    [[nodiscard]] std::string name() const noexcept override;
     [[nodiscard]] hi::label label() const noexcept override;
     [[nodiscard]] audio_device_state state() const noexcept override;
     [[nodiscard]] audio_direction direction() const noexcept override;
@@ -63,16 +64,18 @@ private:
     IPropertyStore *_property_store = nullptr;
     IAudioClient *_audio_client = nullptr;
 
+    [[nodiscard]] std::string end_point_name() const noexcept;
+
     /** Get a user friendly name of the audio device.
      * This is the name of the audio device itself, such as
      * "Realtek High Definition Audio".
      */
-    std::string device_name() const noexcept;
+    [[nodiscard]] std::string device_name() const noexcept;
 
-    /** Get a user friendly name of the audio end-point device.
+    /** Get a user friendly description of the audio end-point device.
      * This is the name of the end point, such as "Microphone".
      */
-    std::string end_point_name() const noexcept;
+    [[nodiscard]] std::string end_point_description() const noexcept;
 
     GUID pin_category() const noexcept;
 
@@ -104,6 +107,8 @@ private:
     /** Get the shared stream format for the device.
      */
     [[nodiscard]] audio_stream_format shared_stream_format() const;
+
+    [[nodiscard]] generator<audio_format_range> get_format_ranges() const noexcept;
 };
 
 } // namespace hi::inline v1

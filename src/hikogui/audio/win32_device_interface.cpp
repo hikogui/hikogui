@@ -98,30 +98,128 @@ win32_device_interface::~win32_device_interface()
     }
 
     // Check if the dataflow direction of the pin is in the opposite-direction of the end-point.
-    hilet flow = get_pin_property<KSPIN_DATAFLOW>(pin_nr, KSPROPERTY_PIN_DATAFLOW);
-    if (direction == audio_direction::input and flow != KSPIN_DATAFLOW_OUT) {
-        return false;
-    } else if (direction == audio_direction::output and flow != KSPIN_DATAFLOW_IN) {
-        return false;
+    switch (get_pin_property<KSPIN_DATAFLOW>(pin_nr, KSPROPERTY_PIN_DATAFLOW)) {
+    case KSPIN_DATAFLOW_OUT:
+        if (direction != audio_direction::input and direction != audio_direction::bidirectional) {
+            return false;
+        }
+        break;
+    case KSPIN_DATAFLOW_IN:
+        if (direction != audio_direction::output and direction != audio_direction::bidirectional) {
+            return false;
+        }
+        break;
+    default:
+        hi_no_default();
     }
 
-    // Check if the communication channel direction is correct for a streaming-pin.
-    //hilet communication = pin_communication(pin_nr);
-    //if (communication != KSPIN_COMMUNICATION_SINK and communication != KSPIN_COMMUNICATION_BOTH) {
-    //    return false;
-    //}
+    // Modern device drivers seem no longer to support directly streaming samples through this API, therefor those pins
+    // can no longer communicate at all, but can still be interrogated for the audio formats it supports.
+    // The Scarlett 2i2 has streaming pins that can be interrogated but are KSPIN_COMMUNICATION_NONE.
+    // Therefor the old examples on the web that check for KSPROPERTY_PIN_COMMUNICATION are no longer valid.
 
     return true;
 }
 
-[[nodiscard]] generator<ULONG> win32_device_interface::find_streaming_pins(audio_direction direction)
+[[nodiscard]] generator<ULONG> win32_device_interface::find_streaming_pins(audio_direction direction) const noexcept
 {
-    hi_axiom(direction != audio_direction::bidirectional and direction != audio_direction::none);
-
     hilet num_pins = pin_count();
     for (ULONG pin_nr = 0; pin_nr != num_pins; ++pin_nr) {
         if (is_streaming_pin(pin_nr, direction)) {
             co_yield pin_nr;
+        }
+    }
+}
+
+[[nodiscard]] generator<audio_format_range> win32_device_interface::get_format_ranges(ULONG pin_nr) const noexcept
+{
+    for (auto *format_range : get_pin_properties<KSDATARANGE>(pin_nr, KSPROPERTY_PIN_DATARANGES)) {
+        if (IsEqualGUID(format_range->MajorFormat, KSDATAFORMAT_TYPE_AUDIO)) {
+            auto has_int = false;
+            auto has_float = false;
+            if (IsEqualGUID(format_range->SubFormat, KSDATAFORMAT_SUBTYPE_PCM)) {
+                has_int = true;
+            } else if (IsEqualGUID(format_range->SubFormat, KSDATAFORMAT_SUBTYPE_IEEE_FLOAT)) {
+                has_float = true;
+            } else if (IsEqualGUID(format_range->SubFormat, KSDATAFORMAT_SUBTYPE_WILDCARD)) {
+                has_int = true;
+                has_float = true;
+            } else {
+                // The scarlett returns KSDATAFORMAT_SUBTYPE_ANALOGUE for one of the pins,
+                // we can't filter scarlet for the proper streaming-pin.
+                continue;
+            }
+
+            hilet *format_range_ = reinterpret_cast<KSDATARANGE_AUDIO const *>(format_range);
+            if (format_range_->MinimumBitsPerSample > 64) {
+                hi_log_error(
+                    "Bad KSDATARANGE_AUDIO MinimumBitsPerSample == {} for device {}",
+                    format_range_->MinimumBitsPerSample,
+                    _device_name);
+                continue;
+            }
+            if (format_range_->MaximumBitsPerSample > 64) {
+                hi_log_error(
+                    "Bad KSDATARANGE_AUDIO MaximumBitsPerSample == {} for device {}",
+                    format_range_->MaximumBitsPerSample,
+                    _device_name);
+                continue;
+            }
+            if (format_range_->MinimumBitsPerSample > format_range_->MaximumBitsPerSample) {
+                hi_log_error(
+                    "Bad KSDATARANGE_AUDIO MinimumBitsPerSample == {}, MaximumBitsPerSample {} for device {}",
+                    format_range_->MinimumBitsPerSample,
+                    format_range_->MaximumBitsPerSample,
+                    _device_name);
+                continue;
+            }
+
+            if (format_range_->MaximumChannels > std::numeric_limits<uint16_t>::max()) {
+                hi_log_error(
+                    "Bad KSDATARANGE_AUDIO MaximumChannels == {} for device {}", format_range_->MaximumChannels, _device_name);
+                continue;
+            }
+
+            if (format_range_->MinimumSampleFrequency > format_range_->MaximumSampleFrequency) {
+                hi_log_error(
+                    "Bad KSDATARANGE_AUDIO MinimumSampleFrequency == {}, MaximumSampleFrequency {} for device {}",
+                    format_range_->MinimumSampleFrequency,
+                    format_range_->MaximumSampleFrequency,
+                    _device_name);
+                continue;
+            }
+
+            hilet num_bits_first = format_range_->MinimumBitsPerSample;
+            hilet num_bits_last = format_range_->MaximumBitsPerSample;
+            hilet num_channels = narrow_cast<uint16_t>(format_range_->MaximumChannels);
+            hilet min_sample_rate = narrow_cast<uint32_t>(format_range_->MinimumSampleFrequency);
+            hilet max_sample_rate = narrow_cast<uint32_t>(format_range_->MaximumSampleFrequency);
+
+            // There are only very few sample-formats that a device will actually support, therefor
+            // the audio-format-range discretized them. Very likely the audio device driver will be lying.
+            for (auto num_bits = num_bits_first; num_bits <= num_bits_last; ++num_bits) {
+                hilet num_bytes = narrow_cast<uint8_t>((num_bits + 7) / 8);
+                if (has_int) {
+                    hilet num_minor_bits = narrow_cast<uint8_t>(num_bits - 1);
+                    hilet sample_format = pcm_format{false, std::endian::native, true, num_bytes, 0, num_minor_bits};
+                    co_yield audio_format_range{
+                        sample_format, num_channels, min_sample_rate, max_sample_rate, surround_mode::none};
+                }
+                if (has_float and num_bits == 32) {
+                    hilet sample_format = pcm_format{true, std::endian::native, true, num_bytes, 8, 23};
+                    co_yield audio_format_range{
+                        sample_format, num_channels, min_sample_rate, max_sample_rate, surround_mode::none};
+                }
+            }
+        }
+    }
+}
+
+[[nodiscard]] generator<audio_format_range> win32_device_interface::get_format_ranges(audio_direction direction) const noexcept
+{
+    for (auto pin_nr : find_streaming_pins(direction)) {
+        for (hilet& range : get_format_ranges(pin_nr)) {
+            co_yield range;
         }
     }
 }
@@ -145,6 +243,5 @@ win32_device_interface::~win32_device_interface()
         return KSPIN_COMMUNICATION_NONE;
     }
 }
-
 
 } // namespace hi::inline v1

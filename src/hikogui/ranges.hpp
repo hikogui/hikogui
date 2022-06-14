@@ -46,12 +46,15 @@ template<std::ranges::sized_range View>
  * This function will make a vector by copying the elements of a view.
  */
 template<typename View>
-[[nodiscard]] auto make_vector(View &&view) noexcept
+[[nodiscard]] auto make_vector(View &&view)
 {
     auto r = std::vector<typename View::value_type>{};
-    auto first = begin(view);
-    auto last = end(view);
-    std::ranges::copy(first, last, std::back_inserter(r));
+    for (auto it = begin(view); it != end(view); ++it) {
+        r.push_back(*it);
+    }
+    //auto first = begin(view);
+    //auto last = end(view);
+    //std::ranges::copy(first, last, std::back_inserter(r));
     return r;
 }
 

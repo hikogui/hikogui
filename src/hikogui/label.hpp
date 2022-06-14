@@ -49,7 +49,7 @@ public:
     /** Construct a new label from an icon.
      * @param icon The icon.
      */
-    label(hi::icon icon) noexcept : icon(std::move(icon)), text() {}
+    constexpr label(hi::icon icon) noexcept : icon(std::move(icon)), text() {}
 
     /** Construct a empty label.
      */

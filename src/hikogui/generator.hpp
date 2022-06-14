@@ -10,6 +10,7 @@
 #include <memory>
 #include <memory_resource>
 #include "arguments.hpp"
+#include "assert.hpp"
 
 namespace hi::inline v1 {
 
@@ -100,7 +101,7 @@ public:
             return *_value;
         }
 
-        static std::suspend_always initial_suspend() noexcept
+        static std::suspend_never initial_suspend() noexcept
         {
             return {};
         }
@@ -175,6 +176,7 @@ public:
          */
         iterator &operator++()
         {
+            hi_axiom(not at_end());
             _coroutine.resume();
             _coroutine.promise().rethrow();
             return *this;
@@ -183,6 +185,7 @@ public:
         value_proxy operator++(int)
         {
             auto tmp = value_proxy(**this);
+            hi_axiom(not at_end());
             _coroutine.resume();
             _coroutine.promise().rethrow();
             return tmp;
@@ -192,19 +195,26 @@ public:
          */
         value_type const &operator*() const
         {
+            hi_axiom(not at_end());
             return _coroutine.promise().value();
         }
 
-        value_type const *operator->() const
+        value_type const *operator->() const noexcept
         {
+            hi_axiom(not at_end());
             return std::addressof(_coroutine.promise().value());
+        }
+
+        [[nodiscard]] bool at_end() const noexcept
+        {
+            return (not _coroutine) or _coroutine.done();
         }
 
         /** Check if the generator-function has finished.
          */
-        [[nodiscard]] bool operator==(std::default_sentinel_t) const
+        [[nodiscard]] bool operator==(std::default_sentinel_t) const noexcept
         {
-            return (not _coroutine) or _coroutine.done();
+            return at_end();
         }
 
     private:
@@ -224,10 +234,8 @@ public:
     generator(const generator &) = delete;
     generator &operator=(const generator &) = delete;
 
-    generator(generator &&other) noexcept : _coroutine{other._coroutine}
+    generator(generator &&other) noexcept : _coroutine{std::exchange(other._coroutine, {})}
     {
-        hi_axiom(&other != this);
-        other._coroutine = {};
     }
 
     generator &operator=(generator &&other) noexcept
@@ -236,8 +244,7 @@ public:
         if (_coroutine) {
             _coroutine.destroy();
         }
-        _coroutine = other._coroutine;
-        other._coroutine = {};
+        _coroutine = std::exchange(other._coroutine, {});
         return *this;
     }
 
@@ -245,10 +252,6 @@ public:
      */
     iterator begin()
     {
-        if (_coroutine) {
-            _coroutine.resume();
-            _coroutine.promise().rethrow();
-        }
         return iterator{_coroutine};
     }
 
