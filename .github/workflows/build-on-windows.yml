@@ -291,7 +291,6 @@ jobs:
           Remove-Item -Recurse -Force "installerResources"
           Remove-Item -Recurse -Force "Licenses"
           Remove-Item -Recurse -Force "Templates"
-          Remove-Item -Recurse -Force "Tools"
           Remove-Item -Recurse -Force "Source"
           Remove-Item .\maintenancetool.*, .\components.xml, .\network.xml, .\installer.dat, .\InstallationLog.txt
           "Folder size after: {0:N2} MB" -f ((ls . -r | Measure-Object -Property Length -Sum).Sum / 1MB)
