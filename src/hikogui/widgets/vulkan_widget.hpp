@@ -40,7 +40,7 @@ public:
 
     void draw(hi::draw_context const& context) noexcept override
     {
-        if (*visible and overlaps(context, layout())) {
+        if (*mode > widget_mode::invisible and overlaps(context, layout())) {
             context.make_hole(_layout, _layout.rectangle());
 
             draw_vulkan(aarectangle{_layout.to_window * _layout.rectangle()}, context.scissor_rectangle);

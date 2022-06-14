@@ -279,8 +279,22 @@ gfx_device_vulkan::~gfx_device_vulkan()
         }
 
         switch (surface_format.format) {
-        case vk::Format::eR16G16B16A16Sfloat: surface_format_score += 12; break;
-        case vk::Format::eR16G16B16Sfloat: surface_format_score += 11; break;
+        case vk::Format::eR16G16B16A16Sfloat: 
+            if (os_settings::uniform_HDR()) {
+                surface_format_score += 12;
+            } else {
+                // XXX add override for application that require HDR.
+                surface_format_score -= 100;
+            }
+            break;
+        case vk::Format::eR16G16B16Sfloat:
+            if (os_settings::uniform_HDR()) {
+                surface_format_score += 11;
+            } else {
+                // XXX add override for application that require HDR.
+                surface_format_score -= 100;
+            }
+            break;
         case vk::Format::eA2B10G10R10UnormPack32:
             // This is a wire format for HDR, the GPU will not automatically convert linear shader-space to this wire format.
             surface_format_score -= 100;

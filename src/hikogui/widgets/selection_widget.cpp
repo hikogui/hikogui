@@ -21,14 +21,14 @@ selection_widget::selection_widget(gui_window& window, widget *parent, weak_or_u
     super(window, parent), _delegate(std::move(delegate))
 {
     _current_label_widget = std::make_unique<label_widget>(window, this, tr("<current>"));
-    _current_label_widget->visible = false;
+    _current_label_widget->mode = widget_mode::invisible;
     _current_label_widget->alignment = alignment::middle_left();
     _unknown_label_widget = std::make_unique<label_widget>(window, this, unknown_label);
     _unknown_label_widget->alignment = alignment::middle_left();
     _unknown_label_widget->text_style = theme_text_style::placeholder;
 
     _overlay_widget = std::make_unique<overlay_widget>(window, this);
-    _overlay_widget->visible = false;
+    _overlay_widget->mode = widget_mode::invisible;
     _scroll_widget = &_overlay_widget->make_widget<vertical_scroll_widget<>>();
     _column_widget = &_scroll_widget->make_widget<column_widget>();
 
@@ -74,7 +74,7 @@ widget_constraints const& selection_widget::set_constraints() noexcept
     _constraints.maximum.width() =
         std::max(_constraints.maximum.width(), overlay_constraints.maximum.width() + extra_size.width());
     _constraints.margins = theme().margin;
-
+    _constraints.baseline = widget_baseline{0.9f, vertical_alignment::middle, theme().cap_height};
     hi_axiom(_constraints.holds_invariant());
     return _constraints;
 }
@@ -116,7 +116,7 @@ void selection_widget::set_layout(widget_layout const& layout) noexcept
 
 void selection_widget::draw(draw_context const& context) noexcept
 {
-    if (*visible) {
+    if (*mode > widget_mode::invisible) {
         if (overlaps(context, layout())) {
             draw_outline(context);
             draw_left_box(context);
@@ -135,7 +135,7 @@ bool selection_widget::handle_event(gui_event const& event) noexcept
 {
     switch (event.type()) {
     case gui_event_type::mouse_up:
-        if (*enabled and _has_options and layout().rectangle().contains(event.mouse().position)) {
+        if (*mode >= widget_mode::partial and _has_options and layout().rectangle().contains(event.mouse().position)) {
             return handle_event(gui_event_type::gui_activate);
         }
         return true;
@@ -144,7 +144,7 @@ bool selection_widget::handle_event(gui_event const& event) noexcept
         // Handle gui_active_next so that the next widget will NOT get keyboard focus.
         // The previously selected item needs the get keyboard focus instead.
     case gui_event_type::gui_activate:
-        if (*enabled and _has_options and not _selecting) {
+        if (*mode >= widget_mode::partial and _has_options and not _selecting) {
             start_selecting();
         } else {
             stop_selecting();
@@ -153,7 +153,7 @@ bool selection_widget::handle_event(gui_event const& event) noexcept
         return true;
 
     case gui_event_type::gui_cancel:
-        if (*enabled and _has_options and _selecting) {
+        if (*mode >= widget_mode::partial and _has_options and _selecting) {
             stop_selecting();
         }
         request_relayout();
@@ -169,7 +169,7 @@ bool selection_widget::handle_event(gui_event const& event) noexcept
 {
     hi_axiom(is_gui_thread());
 
-    if (*visible and *enabled) {
+    if (*mode >= widget_mode::partial) {
         auto r = _overlay_widget->hitbox_test_from_parent(position);
 
         if (layout().contains(position)) {
@@ -185,14 +185,14 @@ bool selection_widget::handle_event(gui_event const& event) noexcept
 [[nodiscard]] bool selection_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
     hi_axiom(is_gui_thread());
-    return *visible and *enabled and any(group & hi::keyboard_focus_group::normal) and _has_options;
+    return *mode >= widget_mode::partial and any(group & hi::keyboard_focus_group::normal) and _has_options;
 }
 
 [[nodiscard]] color selection_widget::focus_color() const noexcept
 {
     hi_axiom(is_gui_thread());
 
-    if (*enabled and _has_options and _selecting) {
+    if (*mode >= widget_mode::partial and _has_options and _selecting) {
         return theme().color(semantic_color::accent);
     } else {
         return super::focus_color();
@@ -227,7 +227,7 @@ void selection_widget::start_selecting() noexcept
     hi_axiom(is_gui_thread());
 
     _selecting = true;
-    _overlay_widget->visible = true;
+    _overlay_widget->mode = widget_mode::enabled;
     if (auto selected_menu_button = get_selected_menu_button()) {
         this->window.update_keyboard_target(selected_menu_button, keyboard_focus_group::menu);
 
@@ -242,7 +242,7 @@ void selection_widget::stop_selecting() noexcept
 {
     hi_axiom(is_gui_thread());
     _selecting = false;
-    _overlay_widget->visible = false;
+    _overlay_widget->mode = widget_mode::invisible;
     request_redraw();
 }
 
@@ -286,13 +286,13 @@ void selection_widget::repopulate_options() noexcept
     }
 
     if (selected == -1) {
-        _unknown_label_widget->visible = true;
-        _current_label_widget->visible = false;
+        _unknown_label_widget->mode = widget_mode::display;
+        _current_label_widget->mode = widget_mode::invisible;
 
     } else {
-        _unknown_label_widget->visible = false;
+        _unknown_label_widget->mode = widget_mode::invisible;
         _current_label_widget->label = options[selected];
-        _current_label_widget->visible = true;
+        _current_label_widget->mode = widget_mode::display;
     }
 }
 

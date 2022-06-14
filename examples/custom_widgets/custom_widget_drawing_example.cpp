@@ -247,7 +247,7 @@ public:
 
         // We only need to draw the widget when it is visible and when the visible area of
         // the widget overlaps with the scissor-rectangle (partial redraw) of the drawing context.
-        if (*visible and overlaps(context, layout())) {
+        if (*mode > hi::widget_mode::invisible and overlaps(context, layout())) {
             switch (*drawing) {
             case drawing_type::box:
                 context.draw_box(
@@ -366,5 +366,8 @@ int hi_main(int argc, char *argv[])
     window->content().make_widget<hi::label_widget>("A9", hi::tr("Rounded:"));
     window->content().make_widget<hi::toggle_widget>("B9:D9", rounded);
 
+    auto close_cbt = window->closing.subscribe(hi::callback_flags::main, [&] {
+        window = {};
+    });
     return hi::loop::main().resume();
 }

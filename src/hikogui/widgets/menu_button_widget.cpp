@@ -44,7 +44,7 @@ void menu_button_widget::set_layout(widget_layout const& layout) noexcept
 
 void menu_button_widget::draw(draw_context const& context) noexcept
 {
-    if (*visible and overlaps(context, layout())) {
+    if (*mode > widget_mode::invisible and overlaps(context, layout())) {
         draw_menu_button(context);
         draw_check_mark(context);
         draw_button(context);
@@ -53,28 +53,28 @@ void menu_button_widget::draw(draw_context const& context) noexcept
 
 [[nodiscard]] bool menu_button_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
-    return *visible and *enabled and any(group & hi::keyboard_focus_group::menu);
+    return *mode >= widget_mode::partial and any(group & hi::keyboard_focus_group::menu);
 }
 
 bool menu_button_widget::handle_event(gui_event const& event) noexcept
 {
     switch (event.type()) {
     case gui_event_type::gui_menu_next:
-        if (*enabled and not is_last(keyboard_focus_group::menu)) {
+        if (*mode >= widget_mode::partial and not is_last(keyboard_focus_group::menu)) {
             window.update_keyboard_target(keyboard_focus_group::menu, keyboard_focus_direction::forward);
             return true;
         }
         break;
 
     case gui_event_type::gui_menu_prev:
-        if (*enabled and not is_first(keyboard_focus_group::menu)) {
+        if (*mode >= widget_mode::partial and not is_first(keyboard_focus_group::menu)) {
             window.update_keyboard_target(keyboard_focus_group::menu, keyboard_focus_direction::backward);
             return true;
         }
         break;
 
     case gui_event_type::gui_activate:
-        if (*enabled) {
+        if (*mode >= widget_mode::partial) {
             activate();
             window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::forward);
             window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::backward);

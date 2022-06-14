@@ -27,7 +27,7 @@ void momentary_button_widget::set_layout(widget_layout const &layout) noexcept
 
 void momentary_button_widget::draw(draw_context const &context) noexcept
 {
-    if (*visible and overlaps(context, layout())) {
+    if (*mode > widget_mode::invisible and overlaps(context, layout())) {
         draw_label_button(context);
         draw_button(context);
     }

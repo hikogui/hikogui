@@ -397,8 +397,8 @@ public:
     [[nodiscard]] friend constexpr axis_aligned_rectangle round(axis_aligned_rectangle const &rhs) noexcept
     {
         auto p0 = round(get<0>(rhs));
-        auto p3 = round(get<3>(rhs));
-        return axis_aligned_rectangle{p0, p3};
+        auto size = round(rhs.size());
+        return axis_aligned_rectangle{p0, size};
     }
 
     /** Round rectangle by expanding to pixel edge.

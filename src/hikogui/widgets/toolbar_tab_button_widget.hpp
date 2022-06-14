@@ -95,7 +95,7 @@ private:
         weak_or_unique_ptr<delegate_type> delegate) noexcept :
         super(window, parent, std::move(delegate))
     {
-        label_alignment = alignment::top_center();
+        alignment = alignment::top_center();
         set_label(std::forward<Label>(label));
     }
 

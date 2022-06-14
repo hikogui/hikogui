@@ -27,7 +27,7 @@ void toolbar_tab_button_widget::set_layout(widget_layout const& layout) noexcept
 
 void toolbar_tab_button_widget::draw(draw_context const& context) noexcept
 {
-    if (*visible and overlaps(context, layout())) {
+    if (*mode > widget_mode::invisible and overlaps(context, layout())) {
         draw_toolbar_tab_button(context);
         draw_button(context);
     }
@@ -43,7 +43,7 @@ void toolbar_tab_button_widget::request_redraw() const noexcept
 
 [[nodiscard]] bool toolbar_tab_button_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
-    return *visible and *enabled and any(group & hi::keyboard_focus_group::toolbar);
+    return *mode >= widget_mode::partial and any(group & hi::keyboard_focus_group::toolbar);
 }
 
 void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const& context) noexcept

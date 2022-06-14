@@ -55,15 +55,11 @@ public:
      *  - `alignment::middle_center`: text drawn across a large icon. Should only be
      *    used with a `pixmap` icon.
      */
-    observable<alignment> alignment = hi::alignment{horizontal_alignment::right, vertical_alignment::middle};
+    observable<alignment> alignment = hi::alignment::top_right();
 
     /** The text style to display the label's text in and color of the label's (non-color) icon.
      */
     observable<theme_text_style> text_style = theme_text_style::label;
-
-    /** The edit-mode of the embedded text widget.
-     */
-    observable<text_widget::edit_mode_type> edit_mode = text_widget::edit_mode_type::selectable;
 
     /** Construct a label widget.
      *
@@ -83,7 +79,7 @@ public:
         gui_window &window,
         widget *parent,
         Label &&label,
-        Alignment &&alignment = hi::alignment::middle_right(),
+        Alignment &&alignment = hi::alignment::top_right(),
         TextStyle &&text_style = theme_text_style::label) noexcept :
         label_widget(window, parent)
     {
@@ -112,8 +108,10 @@ private:
     decltype(text_style)::token_type _text_style_cbt;
 
     aarectangle _icon_rectangle;
+    widget_constraints _icon_constraints;
     std::unique_ptr<icon_widget> _icon_widget;
     aarectangle _text_rectangle;
+    widget_constraints _text_constraints;
     std::unique_ptr<text_widget> _text_widget;
 
     label_widget(gui_window &window, widget *parent) noexcept;

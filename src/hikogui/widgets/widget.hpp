@@ -18,6 +18,7 @@
 #include "../generator.hpp"
 #include "widget_constraints.hpp"
 #include "widget_layout.hpp"
+#include "widget_mode.hpp"
 #include <memory>
 #include <vector>
 #include <string>
@@ -50,15 +51,10 @@ public:
      */
     std::string id;
 
-    /** The widget is enabled.
-     * When a widget is disabled it is drawn in gray and will not react to user input.
+    /** The widget mode.
+     * The current visibility and interactivity of a widget.
      */
-    observable<bool> enabled = true;
-
-    /** The widget is visible.
-     * When a widget is invisible it will not be laid out or drawn.
-     */
-    observable<bool> visible = true;
+    observable<widget_mode> mode = widget_mode::enabled;
 
     /** Mouse cursor is hovering over the widget.
      */
@@ -312,8 +308,7 @@ protected:
     widget_constraints _constraints;
     widget_layout _layout;
 
-    decltype(enabled)::token_type _enabled_cbt;
-    decltype(visible)::token_type _visible_cbt;
+    decltype(mode)::token_type _mode_cbt;
 
     [[nodiscard]] virtual generator<widget *> children() const noexcept
     {

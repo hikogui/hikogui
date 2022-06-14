@@ -59,7 +59,7 @@ public:
     {
         // We only need to draw the widget when it is visible and when the visible area of
         // the widget overlaps with the scissor-rectangle (partial redraw) of the drawing context.
-        if (*visible and overlaps(context, layout())) {
+        if (*mode > hi::widget_mode::invisible and overlaps(context, layout())) {
             // When drawing this box we use the widget's background_color() and focus_color().
             // These colors are context sensitive; for example focus_color() checks if the widget is enabled,
             // has keyboard focus and the window is active.
@@ -78,7 +78,7 @@ public:
     [[nodiscard]] bool accepts_keyboard_focus(hi::keyboard_focus_group group) const noexcept override
     {
         // This widget will react to "normal" tab/shift-tab keys and mouse clicks to focus the widget.
-        return *enabled and any(group & hi::keyboard_focus_group::normal);
+        return *mode >= hi::widget_mode::partial and any(group & hi::keyboard_focus_group::normal);
     }
 
     // Override this function when your widget needs to be controllable by mouse interaction.
@@ -86,11 +86,11 @@ public:
     {
         // Check if the (mouse) position is within the visual-area of the widget.
         // The hit_rectangle is the _layout.rectangle() intersected with the _layout.clipping_rectangle.
-        if (*visible and *enabled and layout().contains(position)) {
+        if (*mode >= hi::widget_mode::partial and layout().contains(position)) {
             // The `this` argument allows the gui_window to forward mouse events to handle_event(mouse) of this widget.
             // The `position` argument is used to handle widgets that are visually overlapping, widgets with higher elevation
             // get priority. When this widget is enabled it should show a button-cursor, otherwise just the normal arrow.
-            return {this, position, *enabled ? hi::hitbox::Type::Button : hi::hitbox::Type::Default};
+            return {this, position, *mode >= hi::widget_mode::partial ? hi::hitbox::Type::Button : hi::hitbox::Type::Default};
 
         } else {
             return {};
@@ -102,7 +102,7 @@ public:
     {
         switch (event.type()) {
         case hi::gui_event_type::gui_activate:
-            if (*enabled) {
+            if (*mode >= hi::widget_mode::partial) {
                 // Handle activate, by default the "spacebar" causes this command.
                 value = not *value;
                 return true;
@@ -114,7 +114,7 @@ public:
             return true;
 
         case hi::gui_event_type::mouse_up:
-            if (*enabled and event.is_left_button_up(_layout.rectangle())) {
+            if (*mode >= hi::widget_mode::partial and event.is_left_button_up(_layout.rectangle())) {
                 return handle_event(hi::gui_event_type::gui_activate);
             }
             break;
@@ -136,5 +136,9 @@ int hi_main(int argc, char *argv[])
     auto window = gui->make_window(hi::tr("Custom Widget Command"));
     window->content().make_widget<command_widget>("A1");
     window->content().make_widget<command_widget>("A2");
+
+    auto close_cbt = window->closing.subscribe(hi::callback_flags::main, [&]{
+        window = {};
+    });
     return hi::loop::main().resume();
 }

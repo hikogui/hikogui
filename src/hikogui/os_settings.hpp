@@ -63,6 +63,22 @@ public:
         return _subpixel_orientation.load(std::memory_order_relaxed);
     }
 
+    /** Whether SDR and HDR application can coexists on the same display.
+     *
+     * Microsoft Windows 10 and at least early versions of Windows 11 will
+     * have set this to false, because if an application opens a HDR surface
+     * it will switch the display mode to HDR, this switching may cause a
+     * significant change in color and brightness of the display, including
+     * other (SDR) applications that where already running. This would be
+     * surprising for most users and we can not expect users to have calibrated
+     * colors to match HDR with SDR.
+     */
+    [[nodiscard]] static bool uniform_HDR() noexcept
+    {
+        start_subsystem();
+        return _uniform_HDR;
+    }
+
     /** Get the mouse double click interval.
      */
     [[nodiscard]] static std::chrono::milliseconds double_click_interval() noexcept
@@ -198,6 +214,7 @@ private:
     static inline std::vector<language_tag> _language_tags = {};
     static inline std::vector<language *> _languages = {};
     static inline std::atomic<hi::theme_mode> _theme_mode = theme_mode::dark;
+    static inline std::atomic<bool> _uniform_HDR = false;
     static inline std::atomic<hi::subpixel_orientation> _subpixel_orientation = hi::subpixel_orientation::unknown;
     static inline std::atomic<std::chrono::milliseconds> _double_click_interval = std::chrono::milliseconds(500);
     static inline std::atomic<float> _double_click_distance = 4.0f;
@@ -226,6 +243,7 @@ private:
     [[nodiscard]] static std::vector<language_tag> gather_languages();
     [[nodiscard]] static hi::theme_mode gather_theme_mode();
     [[nodiscard]] static hi::subpixel_orientation gather_subpixel_orientation();
+    [[nodiscard]] static bool gather_uniform_HDR();
     [[nodiscard]] static std::chrono::milliseconds gather_double_click_interval();
     [[nodiscard]] static float gather_double_click_distance();
     [[nodiscard]] static std::chrono::milliseconds gather_keyboard_repeat_delay();
