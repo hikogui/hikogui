@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../assert.hpp"
+#include "../cast.hpp"
 #include <bit>
 #include <cstdint>
 #include <string>

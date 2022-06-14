@@ -292,7 +292,7 @@ private:
             minimum(0.0f),
             preferred(0.0f),
             maximum(std::numeric_limits<float>::infinity()),
-            baseline(baseline)
+            baseline()
         {
         }
 
