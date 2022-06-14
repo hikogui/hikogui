@@ -49,6 +49,9 @@
 hi_warning_push();
 // C4702 unreachable code: Suppressed due intrinsics and std::is_constant_evaluated()
 hi_msvc_suppress(4702);
+// C26490: Don't use reinterpret_cast (type.1).
+// Needed for casting pointers to or from SSE registers.
+hi_msvc_suppress(26490);
 
 namespace hi::inline v1 {
 

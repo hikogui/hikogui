@@ -90,12 +90,12 @@ public:
         return {_line + 1, _column + 1};
     }
 
-    void set_file(std::shared_ptr<URL> file)
+    void set_file(std::shared_ptr<URL> file) noexcept
     {
         _file = std::move(file);
     }
 
-    void set_file(URL file)
+    void set_file(URL file) noexcept
     {
         _file = std::make_shared<URL>(std::move(file));
     }
@@ -156,6 +156,7 @@ public:
 
     parse_location &operator+=(char const *s) noexcept
     {
+        hi_axiom(s != nullptr);
         while (hilet c = *s++) {
             *this += c;
         }

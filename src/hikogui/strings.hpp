@@ -19,6 +19,7 @@
 #include <tuple>
 #include <type_traits>
 #include <cstdlib>
+#include <bit>
 
 namespace hi::inline v1 {
 
@@ -255,16 +256,30 @@ namespace hi::inline v1 {
 
 [[nodiscard]] constexpr uint32_t fourcc(char const txt[5]) noexcept
 {
-    return (
-        (static_cast<uint32_t>(txt[0]) << 24) | (static_cast<uint32_t>(txt[1]) << 16) | (static_cast<uint32_t>(txt[2]) << 8) |
-        static_cast<uint32_t>(txt[3]));
+    hi_axiom(txt != nullptr);
+    auto r = uint32_t{};
+    r |= std::bit_cast<uint8_t>(txt[0]);
+    r <<= 8;
+    r |= std::bit_cast<uint8_t>(txt[1]);
+    r <<= 8;
+    r |= std::bit_cast<uint8_t>(txt[2]);
+    r <<= 8;
+    r |= std::bit_cast<uint8_t>(txt[3]);
+    return r;
 }
 
 [[nodiscard]] constexpr uint32_t fourcc(uint8_t const *txt) noexcept
 {
-    return (
-        (static_cast<uint32_t>(txt[0]) << 24) | (static_cast<uint32_t>(txt[1]) << 16) | (static_cast<uint32_t>(txt[2]) << 8) |
-        static_cast<uint32_t>(txt[3]));
+    hi_axiom(txt != nullptr);
+    auto r = uint32_t{};
+    r |= std::bit_cast<uint8_t>(txt[0]);
+    r <<= 8;
+    r |= std::bit_cast<uint8_t>(txt[1]);
+    r <<= 8;
+    r |= std::bit_cast<uint8_t>(txt[2]);
+    r <<= 8;
+    r |= std::bit_cast<uint8_t>(txt[3]);
+    return r;
 }
 
 [[nodiscard]] inline std::string fourcc_to_string(uint32_t x) noexcept

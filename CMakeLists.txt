@@ -347,13 +347,43 @@ elseif (MSVC)
         #target_compile_options(hikogui PUBLIC -analyze:ruleset ${CMAKE_CURRENT_SOURCE_DIR}/AllRules.ruleset)
 
         # The Core Guidelines checker, not so useful for real programs.
-        #target_compile_options(hikogui PUBLIC -analyze:plugin EspXEngine.dll)
+        message(NOTICE "The following environment variables need to be set for the core guidelines checker to work:")
+        message(NOTICE "    esp.extensions=cppcorecheck.dll")
+        message(NOTICE "    esp.annotationbuildlevel=ignore")
+        message(NOTICE "    CAExcludePath=C:\\VulkanSDK;C:\\Program Files")
+        message(NOTICE "")
+        target_compile_options(hikogui PUBLIC -analyze:plugin EspXEngine.dll)
+
+        # C26440: Function '...' can be declared 'noexcept' (f.6).
+        # It requires lambda function to also be declared 'noexcept' that makes the code messy.
+        target_compile_options(hikogui PUBLIC -wd26440)
+
+        # C26446: Prefer to use gsl::at() instead of unchecked subscript operator (bounds.4).
+        # This rule makes applications slow.
+        target_compile_options(hikogui PUBLIC -wd26446)
+
+        # C26447: The function is declared 'noexcept' but calls function '...' which may throw exceptions (f.6).
+        # Since c++20 std::terminate will be called on throw.
+        target_compile_options(hikogui PUBLIC -wd26447)
+
+        # C26481: Don't use pointer arithmetic. Use span instead (bounds.1).
+        # False positive everywhere std::format() is used.
+        target_compile_options(hikogui PUBLIC -wd26481)
+
+        # C26482: Only index into arrays using constant expressions (bounds.2).
+        # This rule makes it so you can not use a variable to index into an array.
+        target_compile_options(hikogui PUBLIC -wd26482)
+
+        # C26821: For '...', consider using gsl::span instead of std::span to guarantee runtime bounds safety (gsl.view).
+        # This rule makes applications slow.
+        target_compile_options(hikogui PUBLIC -wd26821)
 
         # C28020: The expression '0<=_Param_(1)&&_Param_(1)<=256-1' is not true at this call.
         # False positives in base_n, where the index is static_cast<uint8_t>().
         # The bug (since 2020) in the compiler seem to have been triggered in unrelated code.
         # https://developercommunity.visualstudio.com/t/c28020-false-positives/923103
         target_compile_options(hikogui PUBLIC -wd28020)
+
     endif()
 endif()
 

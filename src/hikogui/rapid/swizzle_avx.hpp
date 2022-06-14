@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "../required.hpp"
 #include "../architecture.hpp"
 #if defined(HI_HAS_AVX)
 
@@ -13,15 +14,20 @@
 #include <pmmintrin.h>
 #include <immintrin.h>
 
+hi_warning_push();
+// C26818: Switch statement does not cover all cases. Consider adding a 'default' label (es.79).
+// False positive.
+hi_msvc_suppress(26818)
+
 namespace hi::inline v1 {
 
 template<ssize_t A, ssize_t B, ssize_t C, ssize_t D>
 [[nodiscard]] constexpr static int _mm_swizzle_ps_permute_mask() noexcept
 {
-    static_assert(A >= -3 && A < 4);
-    static_assert(B >= -3 && B < 4);
-    static_assert(C >= -3 && C < 4);
-    static_assert(D >= -3 && D < 4);
+    static_assert(A >= -3 and A < 4);
+    static_assert(B >= -3 and B < 4);
+    static_assert(C >= -3 and C < 4);
+    static_assert(D >= -3 and D < 4);
 
     int r = 0;
     switch (A) {
@@ -160,5 +166,7 @@ template<ssize_t A = -1, ssize_t B = -1>
 }
 
 } // namespace hi::inline v1
+
+hi_warning_pop();
 
 #endif

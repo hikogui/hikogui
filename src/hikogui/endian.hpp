@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "required.hpp"
 #include "architecture.hpp"
 #include "memory.hpp"
 #include "assert.hpp"
@@ -24,6 +25,12 @@
 #endif
 #include <bit>
 #include <concepts>
+
+hi_warning_push();
+// C26472: Don't use a static_cast for arithmetic conversions. Use brace initialization, gsl::narrow_cast or gsl::narrow
+// (type.1).
+// static_cast are used to cheaply cast integers to unsigned and back, for byteswapping.
+hi_msvc_suppress(26472)
 
 namespace hi::inline v1 {
 
@@ -275,3 +282,5 @@ hi_force_inline void unaligned_load_le(T& r, void const *src, size_t size, size_
 }
 
 } // namespace hi::inline v1
+
+hi_warning_pop();

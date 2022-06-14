@@ -11,6 +11,19 @@
 #include <concepts>
 #include <climits>
 
+hi_warning_push();
+// C26472: Don't use static_cast for arithmetic conversions, Use brace initialization, gsl::narrow_cast or gsl::narrow (type.1).
+// This file implements narrow_cast().
+hi_msvc_suppress(26472);
+// C26467: Converting from floating point to unsigned integral types results in non-portable code if the double/float has
+// a negative value. Use gsl::narrow_cast or gsl::naroow instead to guard against undefined behavior and potential data loss
+// (es.46).
+// This file implements narrow_cast().
+hi_msvc_suppress(26467)
+// C26496: The variable 'r' does not change after construction, mark it as const (con.4).
+// False positive
+hi_msvc_suppress(26496)
+
 namespace hi::inline v1 {
 
 template<typename T>
@@ -157,6 +170,12 @@ template<numeric Out, numeric In>
     }
 }
 
+template<std::integral Out, std::integral In>
+[[nodiscard]] constexpr Out truncate(In rhs) noexcept
+{
+    return static_cast<Out>(rhs);
+}
+
 /** Return the low half of the input value.
  */
 template<std::unsigned_integral OutType, std::unsigned_integral InType>
@@ -250,4 +269,11 @@ template<std::signed_integral OutType, std::unsigned_integral InType>
     return static_cast<std::underlying_type_t<decltype(rhs)>>(rhs);
 }
 
+[[nodiscard]] constexpr bool to_bool(arithmetic auto rhs) noexcept
+{
+    return static_cast<bool>(rhs);
+}
+
 } // namespace hi::inline v1
+
+hi_warning_pop();

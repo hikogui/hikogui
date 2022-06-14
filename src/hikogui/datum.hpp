@@ -24,6 +24,14 @@
 #include <vector>
 #include <map>
 
+hi_warning_push();
+// C26476: Expression/symbol '...' uses a naked union '...' with multiple type pointers: Use variant instead (type.7.).
+// This implements `datum` which is simular to a std::variant.
+hi_msvc_suppress(26476)
+// C26409: Avoid calling new and delete explicitly, use std::make_unique<T> instead (r.11).
+// This implements `datum` which implements RAII for large objects.
+hi_msvc_suppress(26409)
+
 namespace hi::inline v1 {
 class datum;
 }
@@ -2455,3 +2463,5 @@ auto std::formatter<hi::datum, CharT>::format(hi::datum const& t, auto& fc) cons
 {
     return std::formatter<std::string, CharT>{}.format(to_string(t), fc);
 }
+
+hi_warning_pop();
