@@ -10,6 +10,8 @@
 
 namespace hi::inline v1 {
 
+/** Memory allocator which will securely clear the memory when deallocated.
+ */
 template<typename T>
 class secure_memory_allocator {
 public:

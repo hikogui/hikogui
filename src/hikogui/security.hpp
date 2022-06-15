@@ -5,33 +5,49 @@
 
 namespace tt::inline v1 {
 
+/** Securely clear memory.
+ *
+ * This function uses an operating system service for erasing memory securely.
+ *
+ * @param ptr The pointer to the memory to clear.
+ * @param size The number of bytes to clear.
+ */
 void secure_clear(void *ptr, size_t size) noexcept;
 
-constexpr void secure_clear(trivially_copyable auto &object) noexcept
+/** Securely clear an object.
+ *
+ * This function uses an operating system service for erasing memory securely.
+ *
+ * @param object The object to securely clear to zeroes.
+ */
+void secure_clear(trivially_copyable auto &object) noexcept
 {
-    if (std::is_constant_evaluated()) {
-        object = std::bit_cast(std::array<char,sizeof(object)>{});
-    } else {
-        secure_clear(&object, sizeof(object));
-    }
+    secure_clear(&object, sizeof(object));
 }
 
+/** Securely clear a set of objects.
+ *
+ * This function uses an operating system service for erasing memory securely.
+ *
+ * @param first An iterator pointing to the first object to clear.
+ * @param last An iterator pointing to one beyond to clear.
+ */
 template<typename It>
-constexpr void secure_clear(It first, It last) noexcept
+void secure_clear(It first, It last) noexcept
 {
     using value_type = decltype(*first);
 
-    if (std::is_constant_evaluated()) {
+    if constexpr (requires { std::distance(first, last); }) {
+        secure_clear(std::addressof(*first), std::distance(first, last) * sizeof(value_type));
+
+    } else {
         for (auto it = first; it != last; ++it) {
             secure_clear(*it);
         }
-    } else {
-        secure_clear(std::addressof(*first), std::distance(first, last) * sizeof(value_type));
     }
 }
 
-
-constexpr void secure_destroy_at(auto *p)
+void secure_destroy_at(auto *p)
 {
     std::destroy_at(p);
     secure_clear(*p);
@@ -46,7 +62,7 @@ constexpr void secure_destroy_at(auto *p)
  * @param last An iterator to beyond the last object.
  */
 template<typename It>
-constexpr void secure_destroy(It first, It last)
+void secure_destroy(It first, It last)
 {
     std::destroy(first, last);
     secure_clear(first, last);
