@@ -92,7 +92,7 @@ jobs:
         run: call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
 
       - name: 🔽 Update VCPKG
-        if: matric.config.PACKAGER == 'vcpkg'
+        if: matrix.config.PACKAGER == 'vcpkg'
         run: |
           cd C:\vcpkg
           git pull --quiet
@@ -101,7 +101,7 @@ jobs:
           vcpkg version
 
       - name: 🎯 Cache VCPKG
-        if: matric.config.PACKAGER == 'vcpkg'
+        if: matrix.config.PACKAGER == 'vcpkg'
         id: cache-vcpkg
         uses: actions/cache@v1 # https://github.com/actions/cache
         with:
@@ -112,7 +112,7 @@ jobs:
             cache-windows-vcpkg-${{ matrix.config.VCPKG_TARGET_TRIPLET }}
 
       - name: ✏ CMake ➔ Configure (with vcpkg)
-        if: matric.config.PACKAGER == 'vcpkg'
+        if: matrix.config.PACKAGER == 'vcpkg'
         run: |
           if "${{ matrix.config.COMPILER }}" == "VC17"; set "GENERATOR=Visual Studio 17 2022"
           echo %GENERATOR%
@@ -126,7 +126,7 @@ jobs:
                 -DCMAKE_VERBOSE_MAKEFILE=ON
 
       - name: ✏ CMake ➔ Configure (with FetchContent)
-        if: matric.config.PACKAGER != 'vcpkg'
+        if: matrix.config.PACKAGER != 'vcpkg'
         run: |
           if "${{ matrix.config.COMPILER }}" == "VC17"; set "GENERATOR=Visual Studio 17 2022"
           echo %GENERATOR%
