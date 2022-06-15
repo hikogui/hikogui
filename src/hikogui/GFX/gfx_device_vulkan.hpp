@@ -13,7 +13,7 @@
 #include "pipeline_alpha_device_shared.hpp"
 #include "pipeline_tone_mapper_device_shared.hpp"
 #include <vulkan/vulkan.hpp>
-#include <vk_mem_alloc.h>
+#include <vma/vk_mem_alloc.h>
 
 namespace hi::inline v1 {
 class URL;

@@ -116,22 +116,9 @@ if(NOT DEFINED ENV{VULKAN_SDK})
         "set VULKAN_SDK=\"C:\\VulkanSDK\\1.0.0.0\"\n")
 endif()
 find_package(Vulkan REQUIRED)
-
-#
-# Vulkan Memory Allocator
-#
-if(VCPKG_TOOLCHAIN)
-    find_package(unofficial-vulkan-memory-allocator CONFIG REQUIRED)
-else()
-    FetchContent_Declare(VulkanMemoryAllocator GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator GIT_TAG v2.3.0)
-    FetchContent_MakeAvailable(VulkanMemoryAllocator)
-    add_library(unofficial::vulkan-memory-allocator::vulkan-memory-allocator INTERFACE IMPORTED)
-    set_target_properties(
-        unofficial::vulkan-memory-allocator::vulkan-memory-allocator
-        PROPERTIES
-        INTERFACE_INCLUDE_DIRECTORIES "${vulkanmemoryallocator_SOURCE_DIR}/src")
+if(NOT EXISTS "${Vulkan_INCLUDE_DIRS}/vma")
+    message(FATAL_ERROR "Please make sure to include VMA (Vulkan Memory Allocator) with the installation of VulkanSDK.\n")
 endif()
-
 
 #-------------------------------------------------------------------
 # Setup Build Targets
@@ -175,7 +162,6 @@ endif()
 
 # Add the Vulkan libraries.
 target_link_libraries(hikogui PUBLIC ${Vulkan_LIBRARIES})
-target_link_libraries(hikogui PUBLIC unofficial::vulkan-memory-allocator::vulkan-memory-allocator)
 target_include_directories(hikogui PUBLIC ${Vulkan_INCLUDE_DIRS})
 if (WIN32)
     # Add vulkan win32 surface support.

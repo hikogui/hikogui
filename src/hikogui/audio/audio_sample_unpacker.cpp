@@ -49,7 +49,7 @@ load_sample(std::byte const *&src, std::size_t stride, int num_bytes, int direct
     r <<= align_shift;
 
     src += stride;
-    return narrow_cast<int32_t>(r);
+    return truncate<int32_t>(r);
 }
 
 [[nodiscard]] static i8x16 load_samples(std::byte const *&src, i8x16 load_shuffle_indices, std::size_t stride) noexcept

@@ -6,7 +6,6 @@
   "license": "BSL-1.0",
   "supports": "windows & x64",
   "dependencies": [
-    "vulkan",
-    "vulkan-memory-allocator"
+    "vulkan"
   ]
 }

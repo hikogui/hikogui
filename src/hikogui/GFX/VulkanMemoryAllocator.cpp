@@ -19,6 +19,6 @@ hi_msvc_suppress(4703);
 hi_msvc_suppress(4189);
 
 #define VMA_IMPLEMENTATION
-#include <vk_mem_alloc.h>
+#include <vma/vk_mem_alloc.h>
 
 hi_warning_pop();

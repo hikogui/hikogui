@@ -8,7 +8,7 @@
 #include "pipeline_box_push_constants.hpp"
 #include "pipeline_box_vertex.hpp"
 #include "../vspan.hpp"
-#include <vk_mem_alloc.h>
+#include <vma/vk_mem_alloc.h>
 #include <span>
 
 namespace hi::inline v1::pipeline_box {
