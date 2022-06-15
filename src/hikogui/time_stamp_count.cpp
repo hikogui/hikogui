@@ -21,7 +21,7 @@ namespace hi::inline v1 {
         hilet row_result = _mm_cmpeq_epi32(row, aux_value_);
         hilet row_result_ = _mm_castsi128_ps(row_result);
         hilet row_result_mask = _mm_movemask_ps(row_result_);
-        if (static_cast<bool>(row_result_mask)) {
+        if (to_bool(row_result_mask)) {
             hilet j = i + std::countr_zero(static_cast<unsigned int>(row_result_mask));
             if (j < num_aux_values) {
                 return _cpu_ids[j];

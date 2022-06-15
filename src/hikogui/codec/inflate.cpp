@@ -112,7 +112,7 @@ static void inflate_block(
         // -  7 bits rounding up to byte.
         hi_parse_check(((bit_offset + 27) >> 3) <= bytes.size(), "Input buffer overrun");
 
-        auto literal_symbol = literal_tree.get_symbol(bytes, bit_offset);
+        hilet literal_symbol = literal_tree.get_symbol(bytes, bit_offset);
 
         if (literal_symbol <= 255) {
             hi_parse_check(r.size() < max_size, "Output buffer overrun");
@@ -123,20 +123,20 @@ static void inflate_block(
             return;
 
         } else {
-            auto length = inflate_decode_length(bytes, bit_offset, literal_symbol);
+            hilet length = inflate_decode_length(bytes, bit_offset, literal_symbol);
             hi_parse_check(r.size() + length <= max_size, "Output buffer overrun");
 
             // Test only every get_symbol, the trailer is at least 32 bits (Checksum)
             // - 15 bits maximum huffman code.
             // -  7 bits rounding up to byte.
             hi_parse_check(((bit_offset + 22) >> 3) <= bytes.size(), "Input buffer overrun");
-            auto distance_symbol = distance_tree.get_symbol(bytes, bit_offset);
+            hilet distance_symbol = distance_tree.get_symbol(bytes, bit_offset);
 
             // Test only every inflate_decode_distance, the trailer is at least 32 bits (Checksum)
             // - 13 bits extra length.
             // -  7 bits rounding up to byte.
             hi_parse_check(((bit_offset + 20) >> 3) <= bytes.size(), "Input buffer overrun");
-            auto distance = inflate_decode_distance(bytes, bit_offset, distance_symbol);
+            hilet distance = inflate_decode_distance(bytes, bit_offset, distance_symbol);
 
             hi_parse_check(distance <= r.size(), "Distance beyond start of decompressed data");
             auto src_i = r.size() - distance;
@@ -192,7 +192,7 @@ inflate_code_lengths(std::span<std::byte const> bytes, std::size_t &bit_offset, 
     auto lengths = std::vector<uint8_t>(symbols.size(), 0);
     for (auto i = 0_uz; i != nr_symbols; ++i) {
         hilet symbol = symbols[i];
-        lengths[symbol] = static_cast<uint8_t>(get_bits(bytes, bit_offset, 3));
+        lengths[symbol] = narrow_cast<uint8_t>(get_bits(bytes, bit_offset, 3));
     }
     return huffman_tree<int16_t>::from_lengths(std::move(lengths));
 }
@@ -213,7 +213,7 @@ std::vector<uint8_t> inflate_lengths(
         // -  7 bits extra length.
         // -  7 bits rounding up to byte.
         hi_parse_check(((bit_offset + 21) >> 3) <= bytes.size(), "Input buffer overrun");
-        auto symbol = code_length_tree.get_symbol(bytes, bit_offset);
+        hilet symbol = code_length_tree.get_symbol(bytes, bit_offset);
 
         switch (symbol) {
         case 16: {
@@ -257,6 +257,7 @@ void inflate_dynamic_block(std::span<std::byte const> bytes, std::size_t &bit_of
     hi_parse_check(lengths[256] != 0, "The end-of-block symbol must be in the table");
 
     hilet lengths_ptr = lengths.data();
+    hi_axiom(lengths_ptr != nullptr);
     hilet literal_tree = huffman_tree<int16_t>::from_lengths(lengths_ptr, HLIT + 257);
     hilet distance_tree = huffman_tree<int16_t>::from_lengths(&lengths_ptr[HLIT + 257], HDIST + 1);
 
@@ -269,7 +270,7 @@ bstring inflate(std::span<std::byte const> bytes, std::size_t &offset, std::size
 
     auto r = bstring{};
 
-    bool BFINAL;
+    auto BFINAL = false;
     do {
         // Test all lengths, the trailer is at least 32 bits (Checksum)
         // - 3 bits header

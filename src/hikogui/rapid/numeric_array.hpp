@@ -49,6 +49,9 @@
 hi_warning_push();
 // C4702 unreachable code: Suppressed due intrinsics and std::is_constant_evaluated()
 hi_msvc_suppress(4702);
+// C26490: Don't use reinterpret_cast (type.1).
+// Needed for casting pointers to or from SSE registers.
+hi_msvc_suppress(26490);
 
 namespace hi::inline v1 {
 
@@ -696,9 +699,9 @@ struct numeric_array {
         if constexpr (std::is_floating_point_v<T>) {
             hilet ep = epsilon();
             // check if any of the elements is outside of epsilon range,
-            return static_cast<bool>(gt(-ep, *this) | gt(*this, ep));
+            return to_bool(gt(-ep, *this) | gt(*this, ep));
         } else {
-            return static_cast<bool>(ne(*this, T{0}));
+            return to_bool(ne(*this, T{0}));
         }
     }
 
@@ -1174,7 +1177,7 @@ struct numeric_array {
 
         auto r = numeric_array{};
         for (std::size_t i = 0; i != N; ++i) {
-            if (static_cast<bool>((Mask >> i) & 1)) {
+            if (to_bool((Mask >> i) & 1)) {
                 r.v[i] = T{0};
             } else {
                 r.v[i] = rhs.v[i];
@@ -1238,7 +1241,7 @@ struct numeric_array {
 
         auto r = numeric_array{};
         for (std::size_t i = 0; i != N; ++i) {
-            r[i] = static_cast<bool>((Mask >> i) & 1) ? rhs[i] : lhs[i];
+            r[i] = to_bool((Mask >> i) & 1) ? rhs[i] : lhs[i];
         }
         return r;
     }
@@ -1506,7 +1509,7 @@ struct numeric_array {
 
         auto r = T{};
         for (std::size_t i = 0; i != N; ++i) {
-            if (static_cast<bool>(Mask & (1_uz << i))) {
+            if (to_bool(Mask & (1_uz << i))) {
                 r += lhs.v[i] * rhs.v[i];
             }
         }
@@ -1586,7 +1589,7 @@ struct numeric_array {
 
         auto r = numeric_array{};
         for (std::size_t i = 0; i != N; ++i) {
-            if (static_cast<bool>(Mask & (1_uz << i))) {
+            if (to_bool(Mask & (1_uz << i))) {
                 r.v[i] = rhs.v[i] * rcp_hypot_;
             }
         }

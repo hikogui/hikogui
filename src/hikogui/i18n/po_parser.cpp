@@ -22,7 +22,7 @@ namespace hi::inline v1 {
 //    if (plural_expression) {
 //        hilet result = plural_expression->evaluate(context);
 //        if (result.is_bool()) {
-//            return static_cast<bool>(result) ? 1 : 0;
+//            return to_bool(result) ? 1 : 0;
 //        } else if (result.is_integer()) {
 //            return static_cast<ssize_t>(result);
 //        } else {

@@ -16,7 +16,8 @@ namespace hi::inline v1 {
         auto max_value = (1_uz << num_bits) - 1;
 
         // Align left inside an int32_t.
-        max_value <<= 31 - num_bits - num_guard_bits;
+        hi_axiom(num_bits + num_guard_bits <= 31);
+        max_value <<= narrow_cast<size_t>(31 - num_bits - num_guard_bits);
 
         return narrow_cast<float>(max_value);
     }
@@ -51,7 +52,7 @@ namespace hi::inline v1 {
         return 0;
     }
 
-    auto num_chunks = (src_buffer_size - 16) / chunk_stride(stride) + 1;
+    hilet num_chunks = (src_buffer_size - 16) / chunk_stride(stride) + 1;
     return num_chunks / num_chunks_per_quad(stride);
 }
 

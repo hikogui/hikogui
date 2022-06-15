@@ -17,6 +17,14 @@
 #include <cstdint>
 #include <functional>
 
+hi_warning_push();
+// C26401: Do not delete a raw pointer that is not an owner<T> (i.11).
+// False positive, ~glyph_ids::glyph_ids() is owner of glyphs_ids::_ptr.
+hi_msvc_suppress(26401)
+// C26409: Avoid calling new and delete explicitly, use std::make_unique<T> instead (r.11).
+// glyph_ids implements a container.
+hi_msvc_suppress(26409)
+
 namespace hi::inline v1 {
 class font;
 
@@ -64,7 +72,7 @@ public:
     constexpr void set_num_graphemes(std::size_t num_graphemes) noexcept
     {
         hi_axiom(num_graphemes <= 0xf);
-        _num_graphemes = static_cast<uint8_t>(num_graphemes);
+        _num_graphemes = narrow_cast<uint8_t>(num_graphemes);
     }
 
     [[nodiscard]] constexpr std::size_t hash() const noexcept
@@ -406,7 +414,7 @@ private:
 
     [[nodiscard]] constexpr bool is_short() const noexcept
     {
-        return static_cast<bool>(make_value(_ptr) & 1);
+        return to_bool(make_value(_ptr) & 1);
     }
 
     [[nodiscard]] constexpr bool is_long() const noexcept

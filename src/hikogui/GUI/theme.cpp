@@ -120,7 +120,7 @@ theme::theme(hi::font_book const& font_book, URL const& url)
         throw parse_error(std::format("'{}' attribute must be a boolean, got {}.", object_name, object.type_name()));
     }
 
-    return static_cast<bool>(object);
+    return to_bool(object);
 }
 
 [[nodiscard]] color theme::parse_color_value(datum const& data)

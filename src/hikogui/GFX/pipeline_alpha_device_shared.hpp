@@ -10,7 +10,7 @@
 #include "../color/color.hpp"
 #include "../color/quad_color.hpp"
 #include "../geometry/corner_radii.hpp"
-#include <vk_mem_alloc.h>
+#include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>
 

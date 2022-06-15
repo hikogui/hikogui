@@ -39,27 +39,27 @@ enum class callback_flags {
 
 [[nodiscard]] constexpr bool is_once(callback_flags const &rhs) noexcept
 {
-    return static_cast<bool>(to_underlying(rhs) & to_underlying(callback_flags::once));
+    return to_bool(to_underlying(rhs) & to_underlying(callback_flags::once));
 }
 
 [[nodiscard]] constexpr bool is_synchronous(callback_flags const& rhs) noexcept
 {
-    return static_cast<bool>((to_underlying(rhs) & 0xff) == to_underlying(callback_flags::synchronous));
+    return to_bool((to_underlying(rhs) & 0xff) == to_underlying(callback_flags::synchronous));
 }
 
 [[nodiscard]] constexpr bool is_local(callback_flags const& rhs) noexcept
 {
-    return static_cast<bool>((to_underlying(rhs) & 0xff) == to_underlying(callback_flags::local));
+    return to_bool((to_underlying(rhs) & 0xff) == to_underlying(callback_flags::local));
 }
 
 [[nodiscard]] constexpr bool is_main(callback_flags const& rhs) noexcept
 {
-    return static_cast<bool>((to_underlying(rhs) & 0xff) == to_underlying(callback_flags::main));
+    return to_bool((to_underlying(rhs) & 0xff) == to_underlying(callback_flags::main));
 }
 
 [[nodiscard]] constexpr bool is_timer(callback_flags const& rhs) noexcept
 {
-    return static_cast<bool>((to_underlying(rhs) & 0xff) == to_underlying(callback_flags::timer));
+    return to_bool((to_underlying(rhs) & 0xff) == to_underlying(callback_flags::timer));
 }
 
 }

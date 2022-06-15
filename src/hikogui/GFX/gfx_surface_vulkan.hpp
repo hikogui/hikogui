@@ -7,7 +7,7 @@
 #include "gfx_surface.hpp"
 #include "gfx_queue_vulkan.hpp"
 #include <vulkan/vulkan.hpp>
-#include <vk_mem_alloc.h>
+#include <vma/vk_mem_alloc.h>
 #include <optional>
 
 namespace hi::inline v1 {

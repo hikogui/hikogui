@@ -83,7 +83,7 @@ enum class speaker_mapping : uint32_t {
 
 [[nodiscard]] constexpr bool any(speaker_mapping const &rhs) noexcept
 {
-    return static_cast<bool>(to_underlying(rhs));
+    return to_bool(to_underlying(rhs));
 }
 
 [[nodiscard]] constexpr unsigned int popcount(speaker_mapping const &rhs) noexcept

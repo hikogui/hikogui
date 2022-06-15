@@ -189,12 +189,12 @@ public:
 
     [[nodiscard]] constexpr bool is_canonical_composition() const noexcept
     {
-        return static_cast<bool>(_is_canonical_composition);
+        return to_bool(_is_canonical_composition);
     }
 
     [[nodiscard]] constexpr bool is_combining_mark() const noexcept
     {
-        return static_cast<bool>(_is_combining_mark);
+        return to_bool(_is_combining_mark);
     }
 
     [[nodiscard]] constexpr unicode_line_break_class line_break_class() const noexcept

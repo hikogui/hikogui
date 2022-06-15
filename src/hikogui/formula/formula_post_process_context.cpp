@@ -49,7 +49,7 @@ static datum function_boolean(formula_evaluation_context &context, datum::vector
         throw operation_error(std::format("Expecting 1 argument for boolean() function, got {}", args.size()));
     }
 
-    return datum{static_cast<bool>(args[0])};
+    return datum{to_bool(args[0])};
 }
 
 static datum function_url(formula_evaluation_context &context, datum::vector_type const &args)

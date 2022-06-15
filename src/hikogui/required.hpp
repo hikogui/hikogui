@@ -80,6 +80,81 @@
  */
 #define hi_for_each(macro, ...) __VA_OPT__(hi_expand(hi_for_each_helper(macro, __VA_ARGS__)))
 
+#define hi_stringify_(x) #x
+#define hi_stringify(x) hi_stringify_(x)
+
+#define hi_cat_(a, b) a##b
+#define hi_cat(a, b) hi_cat_(a, b)
+
+#define hi_return_on_self_assignment(other) \
+    if (&(other) == this) [[unlikely]] \
+        return *this;
+
+#if defined(__clang__)
+#define hi_unreachable() __builtin_unreachable()
+#define hi_assume(condition) __builtin_assume(to_bool(condition))
+#define hi_force_inline inline __attribute__((always_inline))
+#define hi_no_inline __attribute__((noinline))
+#define hi_restrict __restrict__
+#define hi_warning_push() _Pragma("warning(push)")
+#define hi_warning_pop() _Pragma("warning(push)")
+#define hi_msvc_suppress(code)
+#define hi_clang_suppress(a) _Pragma(hi_stringify(clang diagnostic ignored a))
+#define hi_export
+#define hi_typename typename
+#define hi_constexpr
+
+#elif defined(_MSC_BUILD)
+#define hi_unreachable() __assume(0)
+#define hi_assume(condition) __assume(condition)
+#define hi_force_inline __forceinline
+#define hi_no_inline __declspec(noinline)
+#define hi_restrict __restrict
+#define hi_warning_push() _Pragma("warning( push )")
+#define hi_warning_pop() _Pragma("warning( pop )")
+#define hi_msvc_pragma(a) _Pragma(a)
+#define hi_msvc_suppress(code) _Pragma(hi_stringify(warning(disable : code)))
+#define hi_clang_suppress(a)
+#define hi_export __declspec(dllexport)
+#define hi_typename
+#define hi_constexpr constexpr
+
+#elif defined(__GNUC__)
+#define hi_unreachable() __builtin_unreachable()
+#define hi_assume(condition) \
+    do { \
+        if (!(condition)) \
+            hi_unreachable(); \
+    } while (false)
+#define hi_force_inline inline __attribute__((always_inline))
+#define hi_no_inline __attribute__((noinline))
+#define hi_restrict __restrict__
+#define hi_warning_push() _Pragma("warning(push)")
+#define hi_warning_pop() _Pragma("warning(pop)")
+#define hi_msvc_pragma(a)
+#define hi_clang_suppress(a)
+#define msvc_pragma(a)
+#define hi_typename
+
+#else
+#define hi_unreachable() std::terminate()
+#define hi_assume(condition) static_assert(sizeof(condition) == 1)
+#define hi_force_inline inline
+#define hi_no_inline
+#define hi_restrict
+#define hi_warning_push()
+#define hi_warning_pop()
+#define hi_msvc_pragma(a)
+#define hi_clang_suppress(a)
+#define msvc_pragma(a)
+#define hi_typename
+#endif
+
+hi_warning_push();
+// C26472: Don't use static_cast for arithmetic conversions, Use brace initialization, gsl::narrow_cast or gsl::narrow (type.1).
+// We do not have access to narrow_cast in this file.
+hi_msvc_suppress(26472);
+
 namespace hi::inline v1 {
 
 /** Signed size/index into an array.
@@ -103,8 +178,6 @@ constexpr std::ptrdiff_t operator"" _z(unsigned long long lhs) noexcept
     return static_cast<std::ptrdiff_t>(lhs);
 }
 
-#define hi_return_on_self_assignment(other) \
-    if (&(other) == this) [[unlikely]] \
-        return *this;
-
 } // namespace hi::inline v1
+
+hi_warning_pop();

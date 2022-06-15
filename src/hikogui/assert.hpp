@@ -2,14 +2,12 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef ASSERT_HPP
-#define ASSERT_HPP
-
 #pragma once
 
 #include "architecture.hpp"
 #include "debugger.hpp"
 #include "utils.hpp"
+#include "required.hpp"
 #include <exception>
 
 namespace hi::inline v1 {
@@ -87,5 +85,3 @@ namespace hi::inline v1 {
 #define hi_static_not_implemented() hi_static_no_default()
 
 } // namespace hi::inline v1
-
-#endif

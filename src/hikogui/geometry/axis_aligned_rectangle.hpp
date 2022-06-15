@@ -257,7 +257,7 @@ public:
     [[nodiscard]] friend constexpr axis_aligned_rectangle
     align(axis_aligned_rectangle haystack, extent2 needle, alignment alignment) noexcept
     {
-        float x;
+        auto x = 0.0f;
         if (alignment == horizontal_alignment::left) {
             x = haystack.left();
 
@@ -271,7 +271,7 @@ public:
             hi_no_default();
         }
 
-        float y;
+        auto y = 0.0f;
         if (alignment == vertical_alignment::bottom) {
             y = haystack.bottom();
 
@@ -396,8 +396,8 @@ public:
 
     [[nodiscard]] friend constexpr axis_aligned_rectangle round(axis_aligned_rectangle const &rhs) noexcept
     {
-        auto p0 = round(get<0>(rhs));
-        auto size = round(rhs.size());
+        hilet p0 = round(get<0>(rhs));
+        hilet size = round(rhs.size());
         return axis_aligned_rectangle{p0, size};
     }
 
@@ -405,8 +405,8 @@ public:
      */
     [[nodiscard]] friend constexpr axis_aligned_rectangle ceil(axis_aligned_rectangle const &rhs) noexcept
     {
-        auto p0 = floor(get<0>(rhs));
-        auto p3 = ceil(get<3>(rhs));
+        hilet p0 = floor(get<0>(rhs));
+        hilet p3 = ceil(get<3>(rhs));
         return axis_aligned_rectangle{p0, p3};
     }
 
@@ -414,8 +414,8 @@ public:
      */
     [[nodiscard]] friend constexpr axis_aligned_rectangle ceil(axis_aligned_rectangle const &lhs, extent2 const &rhs) noexcept
     {
-        auto p0 = floor(get<0>(lhs), rhs);
-        auto p3 = ceil(get<3>(lhs), rhs);
+        hilet p0 = floor(get<0>(lhs), rhs);
+        hilet p3 = ceil(get<3>(lhs), rhs);
         return axis_aligned_rectangle{p0, p3};
     }
 
@@ -423,8 +423,8 @@ public:
      */
     [[nodiscard]] friend constexpr axis_aligned_rectangle floor(axis_aligned_rectangle const &rhs) noexcept
     {
-        auto p0 = ceil(get<0>(rhs));
-        auto p3 = floor(get<3>(rhs));
+        hilet p0 = ceil(get<0>(rhs));
+        hilet p3 = floor(get<3>(rhs));
         return axis_aligned_rectangle{p0, p3};
     }
 

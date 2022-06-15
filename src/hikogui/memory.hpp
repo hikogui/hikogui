@@ -14,6 +14,11 @@
 #include <type_traits>
 #include <string.h>
 
+hi_warning_push();
+// C26474: Don't cast between pointer types when the conversion could be implicit (type.1).
+// False positive, template with potential two different pointer types.
+hi_msvc_suppress(26474);
+
 namespace hi::inline v1 {
 
 [[nodiscard]] bool equal_ptr(auto *p1, auto *p2) noexcept
@@ -327,6 +332,6 @@ T *uint48_to_ptr(uint64_t x) noexcept
     }
 }
 
-
-
 } // namespace hi::inline v1
+
+hi_warning_pop();

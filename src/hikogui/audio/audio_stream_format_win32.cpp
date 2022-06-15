@@ -12,6 +12,11 @@
 #include "../check.hpp"
 #include <bit>
 
+hi_warning_push();
+// C26490: Don't use reinterpret_cast (type.1).
+// Must reinterpret_cast WAVEFORMATEXTENSIBLE.
+hi_msvc_suppress(26490);
+
 namespace hi::inline v1 {
 
 [[nodiscard]] bool win32_use_extensible(audio_stream_format x) noexcept
@@ -30,7 +35,7 @@ namespace hi::inline v1 {
     hi_axiom(x.holds_invariant());
     hi_axiom(not win32_use_extensible(x) or extensible);
 
-    WAVEFORMATEXTENSIBLE r;
+    auto r = WAVEFORMATEXTENSIBLE{};
 
     if (extensible) {
         r.Format.wFormatTag = WAVE_FORMAT_EXTENSIBLE;
@@ -128,3 +133,5 @@ namespace hi::inline v1 {
 }
 
 } // namespace hi::inline v1
+
+hi_warning_pop();

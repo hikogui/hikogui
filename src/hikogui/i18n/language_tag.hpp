@@ -106,7 +106,7 @@ public:
      */
     [[nodiscard]] generator<language_tag> canonical_variants() const noexcept
     {
-        auto check = expand();
+        hilet check = expand();
         for (hilet& tag : variants()) {
             if (tag.expand() == check) {
                 co_yield tag;
