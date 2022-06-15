@@ -7,19 +7,13 @@
 #
 
 name: "Build on Windows"
-
 on: [push, pull_request]
-
 jobs:
 
 # ---------------------------------------------------------------------------------------
 
   build-and-test:
-
-# ---------------------------------------------------------------------------------------
-
     name: ${{ matrix.config.JOB_NAME }}
-    needs: install-vulkan-sdk-and-runtime
     # https://github.com/actions/virtual-environments/blob/main/images/win/Windows2019-Readme.md
     # https://github.com/actions/virtual-environments/blob/main/images/win/Windows2022-Readme.md
     runs-on: ${{ matrix.config.OS }}
@@ -68,13 +62,30 @@ jobs:
           echo "ARTIFACT_NAME=$($ARTIFACT_NAME)" >> $env:GITHUB_ENV
           echo "VERSION=$($VERSION)" >> $env:GITHUB_ENV
 
+      - name: 📝 Get Vulkan SDK version number
+        id: vulkan-version
+        uses: hikogui/install-vulkan-sdk-action/sdk-version@v3
+
       - name: 🎯 Cache VULKAN SDK & Runtime
         id: cache-vulkan
-        uses: actions/cache@v1 # https://github.com/actions/cache
+        uses: actions/cache@v1
         with:
-          path: ${{ env.VULKAN_SDK }}
-          key: use-wrong-cache-key-to-trigger-partial-matching-of-restore-keys
-          restore-keys: cache-windows-vulkan
+          path: ${{steps.vulkan-version.outputs.VULKAN_SDK}}
+          key: cache-windows-vulkan-${{steps.vulkan-version.outputs.VULKAN_VERSION}}
+
+      - name: 🔽 Install Vulkan SDK
+        if: steps.cache-vulkan.outputs.cache-hit != 'true'
+        uses: hikogui/install-vulkan-sdk-action/install-sdk@v3
+        with:
+          VULKAN_VERSION: ${{steps.vulkan-version.outputs.VULKAN_VERSION}}
+          VULKAN_SDK: ${{steps.vulkan-version.outputs.VULKAN_SDK}}
+
+      - name: 📝 Set VULKAN_SDK
+        shell: pwsh
+        run: |
+          echo "VULKAN_SDK=${{steps.vulkan-version.outputs.VULKAN_SDK}}" >> $env:GITHUB_ENV
+          dir ${{env.VULKAN_SDK}}\Bin
+          dir ${{env.VULKAN_SDK}}\runtime\${{env.PLATFORM}}
 
       - name: 🔽 Install Visual Studio 16 2019 - Components for C++, CMake, Win10SDK
         if: matrix.config.COMPILER == 'VC16'
@@ -225,87 +236,7 @@ jobs:
 
 # ---------------------------------------------------------------------------------------
 
-  install-vulkan-sdk-and-runtime:
-
-# ---------------------------------------------------------------------------------------
-
-    name: "Install Vulkan SDK"
-    runs-on: windows-latest
-    if: success() || failure() # don't run job, if skipped
-    defaults:
-      run:
-        shell: cmd
-
-    outputs:
-      VULKAN_SDK: ${{ steps.vulkan-output.outputs.VULKAN_SDK }}
-
-    steps:
-
-      - name: 📥 Set latest VULKAN_VERSION as environment variable
-        shell: pwsh
-        run: |
-          echo 'VULKAN_VERSION<<EOF' >> $env:GITHUB_ENV
-          curl https://vulkan.lunarg.com/sdk/latest/windows.txt >> $env:GITHUB_ENV
-          echo 'EOF' >> $env:GITHUB_ENV
-
-      - name: 📥 Setup Environment Variables
-        shell: pwsh
-        run: |
-          echo VULKAN_SDK=C:\VulkanSDK\${{ env.VULKAN_VERSION }} >> $env:GITHUB_ENV
-          $env:BASE_URL="https://sdk.lunarg.com/sdk/download/${{ env.VULKAN_VERSION }}/windows"
-          echo VULKAN_SDK_URL=$env:BASE_URL/VulkanSDK-${{ env.VULKAN_VERSION }}-Installer.exe?Human=true >> $env:GITHUB_ENV
-          echo VULKAN_RUN_URL=$env:BASE_URL/vulkan-runtime-components.zip?Human=true >> $env:GITHUB_ENV
-
-      - name: 🎯 Cache VULKAN SDK & Runtime
-        id: cache-vulkan
-        uses: actions/cache@v1 # https://github.com/actions/cache
-        with:
-          path: ${{ env.VULKAN_SDK }}
-          key: cache-windows-vulkan-${{ env.VULKAN_VERSION }}
-
-      - name: 🔽 Install VULKAN_SDK
-        if: steps.cache-vulkan.outputs.cache-hit != 'true'
-        run: |
-          curl -L --silent --show-error --output VulkanSDK.exe %VULKAN_SDK_URL%
-          VulkanSDK.exe in com.lunarg.vulkan.core --accept-licenses --default-answer --confirm-command --root %VULKAN_SDK%
-
-      - name: 🔽 Install VULKAN Runtime (➔ vulkan-1.dll)
-        if: steps.cache-vulkan.outputs.cache-hit != 'true'
-        run: |
-          curl -L --silent --show-error --output vulkan-runtime.zip %VULKAN_RUN_URL%
-          7z e vulkan-runtime.zip -o%VULKAN_SDK%\runtime\x64 */x64
-
-      - name: ❔ CHECK important folders, to see if everything is present (after downloading)
-        if: steps.cache-vulkan.outputs.cache-hit != 'true'
-        run: |
-          dir /S /B ${{ env.VULKAN_SDK }}
-
-      - name: ✂ Reduce VULKAN_SDK size before caching
-        if: steps.cache-vulkan.outputs.cache-hit != 'true'
-        shell: pwsh
-        run: |
-          cd ${{ env.VULKAN_SDK }}
-          "Folder size before: {0:N2} MB" -f ((ls . -r | Measure-Object -Property Length -Sum).Sum / 1MB)
-          Remove-Item -Recurse -Force "Demos"
-          Remove-Item -Recurse -Force "Helpers"
-          Remove-Item -Recurse -Force "installerResources"
-          Remove-Item -Recurse -Force "Licenses"
-          Remove-Item -Recurse -Force "Templates"
-          Remove-Item -Recurse -Force "Source"
-          Remove-Item .\maintenancetool.*, .\components.xml, .\network.xml, .\installer.dat, .\InstallationLog.txt
-          "Folder size after: {0:N2} MB" -f ((ls . -r | Measure-Object -Property Length -Sum).Sum / 1MB)
-
-      - name: 📤 Set outputs
-        id: vulkan-output
-        run: |
-         echo ::set-output name=VULKAN_SDK::${{ env.VULKAN_SDK }}
-
-# ---------------------------------------------------------------------------------------
-
   publish-test-results:
-
-# ---------------------------------------------------------------------------------------
-
     # Only publish test results, when the action runs in your repository's context.
     # In other words: this disables publishing tests results from pull requests.
     # PR test results are published from the standalone workflow "publish-PR-test-results.yml".
@@ -316,7 +247,6 @@ jobs:
     if: always() && ( github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository )
 
     steps:
-
       - name: 🔽 Download Artifacts
         uses: actions/download-artifact@v2 # https://github.com/actions/download-artifact
         with:
