@@ -334,7 +334,7 @@ struct bezier_curve {
      */
     [[nodiscard]] bezier_curve toParallelLine(float const offset) const noexcept
     {
-        auto [newP1, newP2] = parallelLine(P1, P2, offset);
+        hilet[newP1, newP2] = parallelLine(P1, P2, offset);
         return {newP1, newP2};
     }
 

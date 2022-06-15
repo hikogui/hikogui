@@ -46,25 +46,17 @@ class resource_view;
  */
 class URL {
 public:
+    constexpr ~URL() = default;
     constexpr URL() noexcept = default;
+    constexpr URL(URL const &) noexcept = default;
+    constexpr URL(URL &&) noexcept = default;
+    constexpr URL &operator=(URL const &) noexcept = default;
+    constexpr URL &operator=(URL &&) noexcept = default;
+
     explicit URL(std::string_view url);
     explicit URL(char const *url);
-    explicit URL(std::string const &url);
-    explicit URL(url_parts const &parts);
-
-    URL(URL const &other) noexcept : value(other.value)
-    {
-        hi_axiom(&other != this);
-    }
-    URL(URL &&other) noexcept = default;
-    URL &operator=(URL const &other) noexcept
-    {
-        // Self-assignment is allowed.
-        value = other.value;
-        return *this;
-    }
-
-    URL &operator=(URL &&other) noexcept = default;
+    explicit URL(std::string const& url);
+    explicit URL(url_parts const& parts);
 
     explicit operator bool() const noexcept
     {

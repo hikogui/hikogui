@@ -15,7 +15,7 @@
 #include "../geometry/scale.hpp"
 #include "../geometry/transform.hpp"
 #include "../color/quad_color.hpp"
-#include <vk_mem_alloc.h>
+#include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>
 #include <unordered_map>

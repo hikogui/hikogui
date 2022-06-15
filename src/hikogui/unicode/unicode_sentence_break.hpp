@@ -51,7 +51,7 @@ public:
 
     [[nodiscard]] constexpr bool is_skip() const noexcept
     {
-        return static_cast<bool>(_value & 0x40);
+        return to_bool(_value & 0x40);
     }
 
     [[nodiscard]] constexpr friend bool operator==(unicode_sentence_break_info const &lhs, unicode_sentence_break_property const &rhs) noexcept

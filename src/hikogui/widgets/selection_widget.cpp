@@ -266,7 +266,7 @@ void selection_widget::repopulate_options() noexcept
     // If any of the options has a an icon, all of the options should show the icon.
     auto show_icon = false;
     for (hilet& label : options) {
-        show_icon |= static_cast<bool>(label.icon);
+        show_icon |= to_bool(label.icon);
     }
 
     decltype(selected) index = 0;

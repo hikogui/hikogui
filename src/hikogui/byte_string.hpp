@@ -4,12 +4,18 @@
 
 #pragma once
 
+#include "required.hpp"
 #include <cstddef>
 #include <string>
 #include <string_view>
 #include <cstring>
 #include <concepts>
 #include <type_traits>
+
+hi_warning_push()
+// C26490: Don't use reinterpret_cast (type.1).
+// Need to call strlen() and friends with a `char *`.
+hi_msvc_suppress(26490)
 
 namespace hi::inline v1 {
 
@@ -39,34 +45,34 @@ public:
         return static_cast<uint8_t>(a) < static_cast<uint8_t>(b);
     }
 
-    static std::byte *assign(std::byte *p, std::size_t count, char_type a)
+    static std::byte *assign(std::byte *p, std::size_t count, char_type a) noexcept
     {
-        return reinterpret_cast<std::byte *>(std::memset(p, static_cast<uint8_t>(a), count));
+        return static_cast<std::byte *>(std::memset(p, static_cast<uint8_t>(a), count));
     }
 
-    static std::byte *move(std::byte *dest, std::byte const *src, std::size_t count)
+    static std::byte *move(std::byte *dest, std::byte const *src, std::size_t count) noexcept
     {
-        return reinterpret_cast<std::byte *>(std::memmove(dest, src, count));
+        return static_cast<std::byte *>(std::memmove(dest, src, count));
     }
 
-    static std::byte *copy(std::byte *dest, std::byte const *src, std::size_t count)
+    static std::byte *copy(std::byte *dest, std::byte const *src, std::size_t count) noexcept
     {
-        return reinterpret_cast<std::byte *>(std::memcpy(dest, src, count));
+        return static_cast<std::byte *>(std::memcpy(dest, src, count));
     }
 
-    static int compare(std::byte const *a, std::byte const *b, std::size_t count)
+    static int compare(std::byte const *a, std::byte const *b, std::size_t count) noexcept
     {
         return std::memcmp(a, b, count);
     }
 
-    static std::size_t length(std::byte const *s)
+    static std::size_t length(std::byte const *s) noexcept
     {
         return std::strlen(reinterpret_cast<char const *>(s));
     }
 
-    static std::byte const *find(std::byte const *s, std::size_t count, std::byte const &ch)
+    static std::byte const *find(std::byte const *s, std::size_t count, std::byte const &ch) noexcept
     {
-        return reinterpret_cast<std::byte const *>(
+        return static_cast<std::byte const *>(
             std::memchr(reinterpret_cast<char const *>(s), static_cast<uint8_t>(ch), count));
     }
 
@@ -110,3 +116,5 @@ using bstring_view = std::basic_string_view<std::byte, byte_char_traits>;
 }
 
 } // namespace hi::inline v1
+
+hi_warning_pop();

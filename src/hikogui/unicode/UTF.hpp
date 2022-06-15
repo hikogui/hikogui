@@ -22,25 +22,25 @@ template<typename CharT>
 constexpr void append_code_point(std::basic_string<CharT> &r, uint32_t code_point) noexcept requires(sizeof(CharT) == 1)
 {
     if (code_point < 0x80) {
-        r += static_cast<CharT>(code_point);
+        r += truncate<CharT>(code_point);
     } else if (code_point < 0x800) {
-        r += static_cast<CharT>((code_point >> 6) | 0xc0);
-        r += static_cast<CharT>((code_point & 0x3f) | 0x80);
+        r += truncate<CharT>((code_point >> 6) | 0xc0);
+        r += truncate<CharT>((code_point & 0x3f) | 0x80);
     } else if (code_point < 0xd800) {
-        r += static_cast<CharT>((code_point >> 12) | 0xe0);
-        r += static_cast<CharT>(((code_point >> 6) & 0x3f) | 0x80);
-        r += static_cast<CharT>((code_point & 0x3f) | 0x80);
+        r += truncate<CharT>((code_point >> 12) | 0xe0);
+        r += truncate<CharT>(((code_point >> 6) & 0x3f) | 0x80);
+        r += truncate<CharT>((code_point & 0x3f) | 0x80);
     } else if (code_point < 0xe000) {
         append_code_point(r, 0xfffd);
     } else if (code_point < 0x1'0000) {
-        r += static_cast<CharT>((code_point >> 12) | 0xe0);
-        r += static_cast<CharT>(((code_point >> 6) & 0x3f) | 0x80);
-        r += static_cast<CharT>((code_point & 0x3f) | 0x80);
+        r += truncate<CharT>((code_point >> 12) | 0xe0);
+        r += truncate<CharT>(((code_point >> 6) & 0x3f) | 0x80);
+        r += truncate<CharT>((code_point & 0x3f) | 0x80);
     } else if (code_point < 0x11'0000) {
-        r += static_cast<CharT>((code_point >> 18) | 0xf0);
-        r += static_cast<CharT>(((code_point >> 12) & 0x3f) | 0x80);
-        r += static_cast<CharT>(((code_point >> 6) & 0x3f) | 0x80);
-        r += static_cast<CharT>((code_point & 0x3f) | 0x80);
+        r += truncate<CharT>((code_point >> 18) | 0xf0);
+        r += truncate<CharT>(((code_point >> 12) & 0x3f) | 0x80);
+        r += truncate<CharT>(((code_point >> 6) & 0x3f) | 0x80);
+        r += truncate<CharT>((code_point & 0x3f) | 0x80);
     } else {
         append_code_point(r, 0xfffd);
     }
@@ -50,15 +50,15 @@ template<typename CharT>
 constexpr void append_code_point(std::basic_string<CharT> &r, uint32_t code_point) noexcept requires(sizeof(CharT) == 2)
 {
     if (code_point < 0xd800) {
-        r += static_cast<CharT>(code_point);
+        r += truncate<CharT>(code_point);
     } else if (code_point < 0xe000) {
         append_code_point(r, 0xfffd);
     } else if (code_point < 0x1'0000) {
-        r += static_cast<CharT>(code_point);
+        r += truncate<CharT>(code_point);
     } else if (code_point < 0x11'0000) {
         code_point -= 0x1'0000;
-        r += static_cast<CharT>(0xd800 + (code_point >> 10));
-        r += static_cast<CharT>(0xdc00 + (code_point & 0x3ff));
+        r += truncate<CharT>(0xd800 + (code_point >> 10));
+        r += truncate<CharT>(0xdc00 + (code_point & 0x3ff));
     } else {
         append_code_point(r, 0xfffd);
     }
@@ -68,11 +68,11 @@ template<typename CharT>
 constexpr void append_code_point(std::basic_string<CharT> &r, uint32_t code_point) noexcept requires(sizeof(CharT) == 4)
 {
     if (code_point < 0xd800) {
-        r += static_cast<char32_t>(code_point);
+        r += truncate<CharT>(code_point);
     } else if (code_point < 0xe000) {
         append_code_point(r, 0xfffd);
     } else if (code_point < 0x11'0000) {
-        r += static_cast<char32_t>(code_point);
+        r += truncate<CharT>(code_point);
     } else {
         append_code_point(r, 0xfffd);
     }
@@ -131,7 +131,7 @@ template<typename ToCharT, typename FromCharT>
     int todo = 0;
     int num = 0;
     while (it != last) {
-        hilet c = static_cast<uint8_t>(*it);
+        hilet c = std::bit_cast<uint8_t>(*it);
 
         if (todo == 0) {
             ++it;
@@ -289,8 +289,8 @@ template<typename It>
 
     // Check for BOM.
     {
-        hilet c0 = static_cast<uint8_t>(*first);
-        hilet c1 = static_cast<uint8_t>(*(first + 1));
+        hilet c0 = std::bit_cast<uint8_t>(*first);
+        hilet c1 = std::bit_cast<uint8_t>(*(first + 1));
         if (c0 == 0xfe && c1 == 0xff) {
             return std::endian::big;
         } else if (c1 == 0xfe and c0 == 0xff) {
@@ -303,8 +303,8 @@ template<typename It>
     std::size_t count1 = 0;
     auto it = first;
     for (auto i = 0; i != num_words; ++i) {
-        hilet c0 = static_cast<uint8_t>(*(it++));
-        hilet c1 = static_cast<uint8_t>(*(it++));
+        hilet c0 = std::bit_cast<uint8_t>(*(it++));
+        hilet c1 = std::bit_cast<uint8_t>(*(it++));
 
         if (c0 == 0 and c0 != c1) {
             ++count0;

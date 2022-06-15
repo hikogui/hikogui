@@ -326,7 +326,7 @@ void widget::scroll_to_show(hi::aarectangle rectangle) noexcept
 
     if (auto w = this) {
         chain.push_back(w);
-        while (static_cast<bool>(w = w->parent)) {
+        while (to_bool(w = w->parent)) {
             chain.push_back(w);
         }
     }

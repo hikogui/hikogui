@@ -25,9 +25,12 @@ public:
     public:
         bool is_main = false;
 
-        impl_type() : _thread_id(0) {}
-
+        impl_type() = default;
         virtual ~impl_type() {}
+        impl_type(impl_type const&) = delete;
+        impl_type(impl_type&&) = delete;
+        impl_type& operator=(impl_type const&) = delete;
+        impl_type& operator=(impl_type&&) = delete;
 
         virtual void set_maximum_frame_rate(double frame_rate) noexcept = 0;
 
@@ -100,7 +103,7 @@ public:
         function_fifo<> _function_fifo;
         function_timer<> _function_timer;
 
-        std::optional<int> _exit_code;
+        std::optional<int> _exit_code = {};
         double _maximum_frame_rate = 30.0;
         std::chrono::nanoseconds _minimum_frame_time = std::chrono::nanoseconds(33'333'333);
         thread_id _thread_id = 0;
@@ -340,7 +343,7 @@ private:
 
     static void timer_deinit() noexcept
     {
-        if (auto ptr = _timer.exchange(nullptr, std::memory_order::acquire)) {
+        if (hilet ptr = _timer.exchange(nullptr, std::memory_order::acquire)) {
             hi_axiom(_timer_thread.joinable());
             _timer_thread.request_stop();
             _timer_thread.join();

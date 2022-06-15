@@ -65,7 +65,7 @@ template<std::floating_point T>
 template<std::integral T>
 [[nodiscard]] T from_string(std::string_view str, int base = 10)
 {
-    T value;
+    auto value = T{};
 
     hilet first = str.data();
     hilet last = first + ssize(str);

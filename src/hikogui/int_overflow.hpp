@@ -92,7 +92,7 @@ inline bool sub_overflow(T lhs, T rhs, T *r)
  * @return true when the multiplication overflowed.
  */
 template<typename T>
-inline bool mul_overflow(T lhs, T rhs, T *r)
+inline bool mul_overflow(T lhs, T rhs, T *r) noexcept
 {
     static_assert(std::is_integral_v<T>, "mul_overflow() requires integral arguments.");
 

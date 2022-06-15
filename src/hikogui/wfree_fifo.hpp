@@ -125,7 +125,7 @@ public:
 private:
     std::array<slot_type, num_slots> _slots = {}; // must be at offset 0
     std::atomic<uint16_t> _head = 0;
-    std::array<std::byte, hi::hardware_destructive_interference_size> _dummy;
+    std::array<std::byte, hi::hardware_destructive_interference_size> _dummy = {};
     uint16_t _tail = 0;
 
     /** Get the slot that either the _head or _tail are pointing at.

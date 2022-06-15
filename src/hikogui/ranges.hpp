@@ -48,6 +48,9 @@ template<std::ranges::sized_range View>
 template<typename View>
 [[nodiscard]] auto make_vector(View &&view)
 {
+    using std::begin;
+    using std::end;
+
     auto r = std::vector<typename View::value_type>{};
     for (auto it = begin(view); it != end(view); ++it) {
         r.push_back(*it);
