@@ -156,16 +156,17 @@ public:
         hi_axiom(gfx_system_mutex.recurse_lock_count());
 
         void *mapping;
-        hilet result = static_cast<vk::Result>(vmaMapMemory(allocator, allocation, &mapping));
+        hilet result = vk::Result{vmaMapMemory(allocator, allocation, &mapping)};
+        if (result != vk::Result::eSuccess) {
+            throw gui_error(std::format("vmaMapMemory failed {}", to_string(result)));
+        }
 
         VmaAllocationInfo allocationInfo;
         vmaGetAllocationInfo(allocator, allocation, &allocationInfo);
 
         // Should we launder the pointer? The GPU has created the objects, not the C++ application.
         T *mappingT = reinterpret_cast<T *>(mapping);
-        hilet mappingSpan = std::span<T>(mappingT, allocationInfo.size / sizeof(T));
-
-        return vk::createResultValue(result, mappingSpan, "hi::gfx_device_vulkan::mapMemory");
+        return std::span<T>{mappingT, allocationInfo.size / sizeof(T)};
     }
 
     void unmapMemory(const VmaAllocation &allocation) const;
