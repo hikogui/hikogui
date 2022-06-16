@@ -18,7 +18,7 @@ hi_warning_push();
 hi_warning_ignore_msvc(26401);
 // C26409: Avoid calling new and delete explicitly, use std::make_unique<T> instead (r.11).
 // pixel map may be a container for pixel data.
-hi_warning_ignore_msvc(26401);
+hi_warning_ignore_msvc(26409);
 
 namespace hi::inline v1 {
 

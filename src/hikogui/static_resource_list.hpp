@@ -5,6 +5,7 @@
 #pragma once
 
 #include "assert.hpp"
+#include "void_span.hpp"
 #include <span>
 #include <cstddef>
 #include <atomic>
