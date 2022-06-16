@@ -1393,7 +1393,7 @@ bool true_type_font::load_glyph_metrics(hi::glyph_id glyph_id, hi::glyph_metrics
 
     hilet entries = make_placement_array<SFNTEntry>(bytes, offset, header->numTables.value());
 
-    hilet tag = fourcc(table_name);
+    hilet tag = fourcc_from_cstr(table_name);
     auto it = std::lower_bound(cbegin(entries), cend(entries), tag, [](auto const &entry, auto const &tag) {
         return entry.tag < tag;
     });

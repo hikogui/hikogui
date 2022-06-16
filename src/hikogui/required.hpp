@@ -98,8 +98,8 @@
 #define hi_restrict __restrict__
 #define hi_warning_push() _Pragma("warning(push)")
 #define hi_warning_pop() _Pragma("warning(push)")
-#define hi_msvc_suppress(code)
-#define hi_clang_suppress(a) _Pragma(hi_stringify(clang diagnostic ignored a))
+#define hi_warning_ignore_msvc(code)
+#define hi_warning_ignore_clang(a) _Pragma(hi_stringify(clang diagnostic ignored a))
 #define hi_export
 #define hi_typename typename
 #define hi_constexpr
@@ -113,8 +113,8 @@
 #define hi_warning_push() _Pragma("warning( push )")
 #define hi_warning_pop() _Pragma("warning( pop )")
 #define hi_msvc_pragma(a) _Pragma(a)
-#define hi_msvc_suppress(code) _Pragma(hi_stringify(warning(disable : code)))
-#define hi_clang_suppress(a)
+#define hi_warning_ignore_msvc(code) _Pragma(hi_stringify(warning(disable : code)))
+#define hi_warning_ignore_clang(a)
 #define hi_export __declspec(dllexport)
 #define hi_typename
 #define hi_constexpr constexpr
@@ -132,7 +132,7 @@
 #define hi_warning_push() _Pragma("warning(push)")
 #define hi_warning_pop() _Pragma("warning(pop)")
 #define hi_msvc_pragma(a)
-#define hi_clang_suppress(a)
+#define hi_warning_ignore_clang(a)
 #define msvc_pragma(a)
 #define hi_typename
 
@@ -145,7 +145,7 @@
 #define hi_warning_push()
 #define hi_warning_pop()
 #define hi_msvc_pragma(a)
-#define hi_clang_suppress(a)
+#define hi_warning_ignore_clang(a)
 #define msvc_pragma(a)
 #define hi_typename
 #endif
@@ -153,7 +153,7 @@
 hi_warning_push();
 // C26472: Don't use static_cast for arithmetic conversions, Use brace initialization, gsl::narrow_cast or gsl::narrow (type.1).
 // We do not have access to narrow_cast in this file.
-hi_msvc_suppress(26472);
+hi_warning_ignore_msvc(26472);
 
 namespace hi::inline v1 {
 

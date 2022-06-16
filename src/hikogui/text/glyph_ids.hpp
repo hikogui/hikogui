@@ -20,10 +20,10 @@
 hi_warning_push();
 // C26401: Do not delete a raw pointer that is not an owner<T> (i.11).
 // False positive, ~glyph_ids::glyph_ids() is owner of glyphs_ids::_ptr.
-hi_msvc_suppress(26401)
+hi_warning_ignore_msvc(26401)
 // C26409: Avoid calling new and delete explicitly, use std::make_unique<T> instead (r.11).
 // glyph_ids implements a container.
-hi_msvc_suppress(26409)
+hi_warning_ignore_msvc(26409)
 
 namespace hi::inline v1 {
 class font;

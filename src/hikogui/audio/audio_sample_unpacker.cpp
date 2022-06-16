@@ -15,13 +15,13 @@
 hi_warning_push();
 // C26481: Don't use pointer arithmetic. Use span instead (bounds.1).
 // These are low level functions working directly through pointers.
-hi_msvc_suppress(26481)
+hi_warning_ignore_msvc(26481)
 // C26429: Symbol '...' is never tested for nullness, it can be marked as not_null (f.23).
 // False positive on several lines.
-hi_msvc_suppress(26429)
+hi_warning_ignore_msvc(26429)
 // C26490: Don't use reinterpret_cast (type.1).
 // Need to convert pointers for storing/loading data to and from memory.
-hi_msvc_suppress(26490)
+hi_warning_ignore_msvc(26490)
 
 namespace hi::inline v1 {
 

@@ -12,7 +12,7 @@
 using tag = hi::language_tag;
 using namespace std::literals;
 
-hi_warning_push() hi_msvc_suppress(4834)
+hi_warning_push() hi_warning_ignore_msvc(4834)
 
     TEST(language_tag, parse)
 {

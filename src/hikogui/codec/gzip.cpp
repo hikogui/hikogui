@@ -11,7 +11,7 @@
 hi_warning_push();
 // C26481: Don't use pointer arithmetic. Use span instead (bounds.1).
 // False positive, this file does not do any pointer arithmetic.
-hi_msvc_suppress(26481)
+hi_warning_ignore_msvc(26481)
 
 namespace hi::inline v1 {
 

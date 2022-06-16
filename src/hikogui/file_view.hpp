@@ -8,21 +8,30 @@
 #include "resource_view.hpp"
 #include <span>
 
+hi_warning_push();
+// C26490: Don't use reinterpret_cast (type.1).
+// We need to convert bytes to chars to get a string_view from the byte buffer.
+hi_warning_ignore_msvc(26490);
+
 namespace hi::inline v1 {
 
 /*! Map a file into virtual memory.
  */
 class file_view : public resource_view {
 public:
-    file_view(std::shared_ptr<file_mapping> const &mappingObject, std::size_t offset, std::size_t size);
-    file_view(URL const &location, access_mode accessMode = access_mode::open_for_read, std::size_t offset = 0, std::size_t size = 0);
+    file_view(std::shared_ptr<file_mapping> const& mappingObject, std::size_t offset, std::size_t size);
+    file_view(
+        URL const& location,
+        access_mode accessMode = access_mode::open_for_read,
+        std::size_t offset = 0,
+        std::size_t size = 0);
     ~file_view() = default;
 
     file_view() = delete;
-    file_view(file_view const &other) noexcept;
-    file_view(file_view &&other) noexcept;
-    file_view &operator=(file_view const &other) noexcept;
-    file_view &operator=(file_view &&other) noexcept;
+    file_view(file_view const& other) noexcept;
+    file_view(file_view&& other) noexcept;
+    file_view& operator=(file_view const& other) noexcept;
+    file_view& operator=(file_view&& other) noexcept;
 
     /*! Access mode of the opened file.
      */
@@ -33,7 +42,7 @@ public:
 
     /*! URL location to the file.
      */
-    [[nodiscard]] URL const &location() const noexcept
+    [[nodiscard]] URL const& location() const noexcept
     {
         return _file_mapping_object->location();
     }
@@ -103,7 +112,7 @@ public:
     /*! Load a view of a resource.
      * This is used when the resource that needs to be opened is a file.
      */
-    [[nodiscard]] static std::unique_ptr<resource_view> loadView(URL const &location)
+    [[nodiscard]] static std::unique_ptr<resource_view> loadView(URL const& location)
     {
         return std::make_unique<file_view>(location);
     }
@@ -127,7 +136,7 @@ private:
      * \return A shared-pointer to file mapping object.
      */
     [[nodiscard]] static std::shared_ptr<file_mapping>
-    findOrCreateFileMappingObject(URL const &path, access_mode accessMode, std::size_t size);
+    findOrCreateFileMappingObject(URL const& path, access_mode accessMode, std::size_t size);
 
 private:
     /*! pointer to a file mapping object.
@@ -146,3 +155,5 @@ private:
 };
 
 } // namespace hi::inline v1
+
+hi_warning_pop();
