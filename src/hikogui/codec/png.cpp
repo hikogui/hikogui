@@ -269,7 +269,7 @@ png::png(std::unique_ptr<resource_view> view) : _view(std::move(view))
 {
     std::size_t offset = 0;
 
-    hilet bytes = _view->bytes();
+    hilet bytes = as_bstring_view(*_view);
     read_header(bytes, offset);
     read_chunks(bytes, offset);
 }

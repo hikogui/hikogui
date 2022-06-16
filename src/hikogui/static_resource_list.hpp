@@ -22,13 +22,13 @@ inline std::atomic<static_resource_item const *> static_resource_list = nullptr;
 struct static_resource_item {
     static_resource_item const *next;
     char const *filename;
-    std::span<std::byte const> bytes;
+    const_void_span bytes;
 
     /** Search for a static resource item.
      * @param filename The filename of the resource to search for.
      * @return A byte-span, or an empty byte-span when not found.
      */
-    [[nodiscard]] static std::span<std::byte const> find(std::string_view filename) noexcept
+    [[nodiscard]] static const_void_span find(std::string_view filename) noexcept
     {
         for (auto ptr = static_resource_list.load(); ptr != nullptr; ptr = ptr->next) {
             if (filename == ptr->filename) {

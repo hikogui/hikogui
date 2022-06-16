@@ -6,6 +6,7 @@
 
 #include "file_mapping.hpp"
 #include "resource_view.hpp"
+#include "void_span.hpp"
 #include <span>
 
 hi_warning_push();
@@ -17,7 +18,7 @@ namespace hi::inline v1 {
 
 /*! Map a file into virtual memory.
  */
-class file_view : public resource_view {
+class file_view : public writable_resource_view {
 public:
     file_view(std::shared_ptr<file_mapping> const& mappingObject, std::size_t offset, std::size_t size);
     file_view(
@@ -54,53 +55,18 @@ public:
         return _offset;
     }
 
-    /*! Number of bytes which is mapped to memory.
-     */
-    [[nodiscard]] std::size_t size() const noexcept override
-    {
-        return _bytes->size();
-    }
-
-    /*! Pointer to the mapping into memory.
-     */
-    [[nodiscard]] std::byte *data() noexcept
-    {
-        return _bytes->data();
-    }
-
-    /*! Pointer to the mapping into memory.
-     */
-    [[nodiscard]] std::byte const *data() const noexcept override
-    {
-        return _bytes->data();
-    }
-
     /*! Span to the mapping into memory.
      */
-    [[nodiscard]] std::span<std::byte> bytes() noexcept
+    [[nodiscard]] void_span writable_span() noexcept override
     {
         return *_bytes;
     }
 
     /*! Span to the mapping into memory.
      */
-    [[nodiscard]] std::span<std::byte const> bytes() const noexcept override
+    [[nodiscard]] const_void_span span() const noexcept override
     {
         return *_bytes;
-    }
-
-    /*! String view to the mapping into memory.
-     */
-    [[nodiscard]] std::string_view string_view() noexcept
-    {
-        return std::string_view{reinterpret_cast<char *>(data()), size()};
-    }
-
-    /*! String view to the mapping into memory.
-     */
-    [[nodiscard]] std::string_view string_view() const noexcept override
-    {
-        return std::string_view{reinterpret_cast<char const *>(data()), size()};
     }
 
     /** Flush changes in memory to the open file.
@@ -124,7 +90,7 @@ private:
      *
      * \param bytes The bytes to unmap.
      */
-    static void unmap(std::span<std::byte> *bytes) noexcept;
+    static void unmap(void_span *bytes) noexcept;
 
     /*! Open a file mapping object.
      * File mapping objects are cached and will be shared by file_views.
@@ -147,7 +113,7 @@ private:
      * The shared_ptr to _bytes allows the file_view to be copied while pointing
      * to the same memory map. This shared_ptr will use the private unmap().
      */
-    std::shared_ptr<std::span<std::byte>> _bytes;
+    std::shared_ptr<void_span> _bytes;
 
     /*! The offset into the file which is mapped to memory.
      */

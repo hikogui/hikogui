@@ -89,7 +89,7 @@ std::optional<NormalizationTest> parseNormalizationTest_line(std::string_view li
 std::vector<NormalizationTest> parseNormalizationTests()
 {
     hilet view = file_view(URL("file:NormalizationTest.txt"));
-    hilet test_data = view.string_view();
+    hilet test_data = as_string_view(view);
 
     std::vector<NormalizationTest> r;
     for (hilet line : split(test_data, '\n')) {
