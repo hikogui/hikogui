@@ -292,7 +292,7 @@ public:
         if (is_long()) {
             *_ptr += id;
 
-        } else if (auto index = short_num_glyphs(); index < num_glyphs_mask) {
+        } else if (hilet index = short_num_glyphs(); index < num_glyphs_mask) {
             increment_num_glyphs();
             set_glyph(index, id);
 
@@ -393,7 +393,7 @@ private:
     {
         hi_axiom(is_short());
 
-        auto shift = (index + 1) * 16;
+        hilet shift = (index + 1) * 16;
         return glyph_id{(make_value(_ptr) >> shift) & 0xffff};
     }
 
@@ -401,8 +401,8 @@ private:
     {
         hi_axiom(is_short());
 
-        auto shift = (i + 1) * 16;
-        auto mask = std::size_t{0xffff} << shift;
+        hilet shift = (i + 1) * 16;
+        hilet mask = std::size_t{0xffff} << shift;
         _ptr = make_ptr((make_value(_ptr) & ~mask) | (static_cast<std::size_t>(id) << shift));
     }
 

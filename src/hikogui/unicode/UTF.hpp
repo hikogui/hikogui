@@ -262,7 +262,7 @@ template<typename ToCharT, typename FromCharT>
     r.reserve(guess_num_code_units<ToCharT>(rhs));
 
     for (hilet c : rhs) {
-        append_code_point(r, static_cast<uint32_t>(c));
+        append_code_point(r, truncate<uint32_t>(c));
     }
 
     return r;

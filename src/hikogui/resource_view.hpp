@@ -35,20 +35,6 @@ public:
     /** Get a span to the memory mapping.
      */
     [[nodiscard]] virtual const_void_span span() const noexcept = 0;
-
-    /** Size of the memory mapping.
-     */
-    [[nodiscard]] std::size_t size() const noexcept
-    {
-        return span().size();
-    }
-
-    /** Pointer to the memory mapping.
-     */
-    [[nodiscard]] void const *data() const noexcept
-    {
-        return span().data();
-    }
 };
 
 class writable_resource_view : public resource_view {
@@ -56,13 +42,6 @@ public:
     /** Get a span to the memory mapping.
      */
     [[nodiscard]] virtual void_span writable_span() noexcept = 0;
-
-    /** Pointer to the memory mapping.
-     */
-    [[nodiscard]] void *writable_data() noexcept
-    {
-        return writable_span().data();
-    }
 };
 
 /** Get a span to the memory mapping.

@@ -154,6 +154,8 @@ translate_args(Args&&...) -> translate_args<forward_value_t<Args>...>;
  */
 class translate {
 public:
+    ~translate() = default;
+
     /** Construct an empty message.
      */
     constexpr translate() noexcept : _msg_id(), _args(nullptr), _has_args(false) {}
@@ -294,6 +296,8 @@ public:
 private:
     std::string _msg_id;
     std::unique_ptr<detail::translate_args_base> _args;
+    // Technically we could check _args for nullptr. However to get this working
+    // with constexpr constructor we need a way to disable the std::unique_ptr.
     bool _has_args;
 };
 

@@ -12,6 +12,14 @@
 #include <string>
 #include <vector>
 
+hi_warning_push();
+// C26401: Do not delete a raw pointer that is not an owner<T> (i.11).
+// pixel map may be a container for pixel data.
+hi_warning_ignore_msvc(26401);
+// C26409: Avoid calling new and delete explicitly, use std::make_unique<T> instead (r.11).
+// pixel map may be a container for pixel data.
+hi_warning_ignore_msvc(26401);
+
 namespace hi::inline v1 {
 
 /** A row of pixels.
@@ -383,3 +391,5 @@ template<typename T>
 inline void makeTransparentBorder(pixel_map<T> &pixel_map) noexcept;
 
 } // namespace hi::inline v1
+
+hi_warning_pop();

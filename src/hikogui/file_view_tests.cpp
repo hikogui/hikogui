@@ -15,6 +15,6 @@ TEST(file_view, read)
 {
     hilet view = file_view(URL("file:file_view.txt"));
 
-    hilet *test = reinterpret_cast<char const *>(view.data());
+    hilet *test = reinterpret_cast<char const *>(view.span().data());
     ASSERT_TRUE(strncmp(test, "The quick brown", 15) == 0);
 }
