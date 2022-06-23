@@ -9,17 +9,32 @@ then
 fi
 
 
-python tools/unicode_data_generator.py \
+python tools/generate_unicode_data.py \
     --output=src/hikogui/unicode/unicode_db.hpp \
-    --unicode-data=${UCDDIR}/UnicodeData.txt \
-    --emoji-data=${UCDDIR}/emoji-data.txt \
-    --composition-exclusions=${UCDDIR}/CompositionExclusions.txt \
-    --grapheme-break-property=${UCDDIR}/GraphemeBreakProperty.txt \
+    --output-template=tools/ucd/unicode_db.hpp.psp \
     --bidi-brackets=${UCDDIR}/BidiBrackets.txt \
     --bidi-mirroring=${UCDDIR}/BidiMirroring.txt \
-    --line-break=${UCDDIR}/LineBreak.txt \
-    --word-break=${UCDDIR}/WordBreakProperty.txt \
-    --sentence-break=${UCDDIR}/SentenceBreakProperty.txt \
+    --composition-exclusions=${UCDDIR}/CompositionExclusions.txt \
     --east-asian-width=${UCDDIR}/EastAsianWidth.txt \
-    --scripts=${UCDDIR}/Scripts.txt
+    --emoji-data=${UCDDIR}/emoji-data.txt \
+    --grapheme-break-property=${UCDDIR}/GraphemeBreakProperty.txt \
+    --line-break=${UCDDIR}/LineBreak.txt \
+    --scripts=${UCDDIR}/Scripts.txt \
+    --sentence-break-property=${UCDDIR}/SentenceBreakProperty.txt \
+    --unicode-data=${UCDDIR}/UnicodeData.txt \
+    --word-break-property=${UCDDIR}/WordBreakProperty.txt
+
+#python tools/unicode_data_generator.py \
+#    --output=src/hikogui/unicode/unicode_db.hpp \
+#    --unicode-data=${UCDDIR}/UnicodeData.txt \
+#    --emoji-data=${UCDDIR}/emoji-data.txt \
+#    --composition-exclusions=${UCDDIR}/CompositionExclusions.txt \
+#    --grapheme-break-property=${UCDDIR}/GraphemeBreakProperty.txt \
+#    --bidi-brackets=${UCDDIR}/BidiBrackets.txt \
+#    --bidi-mirroring=${UCDDIR}/BidiMirroring.txt \
+#    --line-break=${UCDDIR}/LineBreak.txt \
+#    --word-break=${UCDDIR}/WordBreakProperty.txt \
+#    --sentence-break=${UCDDIR}/SentenceBreakProperty.txt \
+#    --east-asian-width=${UCDDIR}/EastAsianWidth.txt \
+#    --scripts=${UCDDIR}/Scripts.txt
 

@@ -1,22 +1,13 @@
 
-import parse_ucd
-import description
+from .ucd_parser import parse_ucd
 
-def parse_emoji_data(filename):
+def parse_emoji_data(filename, descriptions):
     for columns in parse_ucd(filename):
         code_points = columns[0]
         t = columns[1]
 
-        if t == "Emoji":
-        emoji = columns[1] == "Y"
-        emoji_presentation = columns[2] == "Y"
-        emoji_modifier = columns[3] == "Y"
-        emoji_modifier_base = columns[4] == "Y"
-        emoji_component = columns[5] == "Y"
-        extended_pictographic = columns[6] == "Y"
-
         for code_point in code_points:
-            d = description.descriptions[code_point]
+            d = descriptions[code_point]
             if t == "Emoji":
                 d.emoji = True
             elif t == "Emoji_Presentation":

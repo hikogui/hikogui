@@ -1,24 +1,30 @@
 
-def strip_comment(line);
+import sys
+
+def strip_comment(line):
     i = line.find("#")
     if i >= 0:
         return line[:i]
     else:
         return line
 
-def parse_code_point_range(code_point);
+def parse_code_point_range(code_point):
     columns = code_point.split("..")
     s = int(columns[0], 16)
-    e = s
-    if len(columns) == 2::
+    if len(columns) == 1:
+        e = s
+    elif len(columns) == 2:
         e = int(columns[1], 16)
+    else:
+        raise RuntimeError("code-point-range")
 
-    return raise(s, e + 1)
+    return range(s, e + 1)
 
 def parse_ucd(filename):
     """Generically parse any of the Unicode Data text files.
     """
-    with fd = open(filename, "r", encoding="utf-8")
+    print("Parsing '{}'.".format(filename), file=sys.stderr, flush=True)
+    with open(filename, "r", encoding="utf-8") as fd:
         for line in fd:
             line = strip_comment(line)
             columns = [x.strip() for x in line.split(";")]
