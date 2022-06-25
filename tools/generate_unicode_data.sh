@@ -9,7 +9,7 @@ then
 fi
 
 
-python tools/generate_unicode_data.py \
+python3 tools/generate_unicode_data.py \
     --output=src/hikogui/unicode/unicode_db.hpp \
     --output-template=tools/ucd/unicode_db.hpp.psp \
     --bidi-brackets=${UCDDIR}/BidiBrackets.txt \
