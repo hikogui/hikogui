@@ -9,9 +9,15 @@ then
 fi
 
 
-python3 tools/generate_unicode_data.py \
-    --output=src/hikogui/unicode/unicode_db.hpp \
-    --output-template=tools/ucd/unicode_db.hpp.psp \
+python tools/generate_unicode_data.py \
+    --compositions-template=tools/ucd/ucd_compositions.hpp.psp \
+    --compositions-output=src/hikogui/unicode/ucd_compositions.hpp \
+    --decompositions-template=tools/ucd/ucd_decompositions.hpp.psp \
+    --decompositions-output=src/hikogui/unicode/ucd_decompositions.hpp \
+    --index-template=tools/ucd/ucd_index.hpp.psp \
+    --index-output=src/hikogui/unicode/ucd_index.hpp \
+    --descriptions-template=tools/ucd/ucd_descriptions.hpp.psp \
+    --descriptions-output=src/hikogui/unicode/ucd_descriptions.hpp \
     --bidi-brackets=${UCDDIR}/BidiBrackets.txt \
     --bidi-mirroring=${UCDDIR}/BidiMirroring.txt \
     --composition-exclusions=${UCDDIR}/CompositionExclusions.txt \

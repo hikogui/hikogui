@@ -38,7 +38,7 @@ class description (object):
         self.word_break = "Other"
 
         # LineBreak.txt
-        self.line_break = "Other"
+        self.line_break = "XX"
 
         # Scripts.txt
         self.script = "Zzzz"
@@ -86,6 +86,25 @@ class description (object):
             self.emoji_component == other.emoji_component and
             self.extended_pictographic == other.extended_pictographic
         )
+
+    def instantiation(self):
+        s = "XD{"
+        s += "XGC::{}, ".format(self.general_category)
+        s += "XGB::{}, ".format(self.grapheme_cluster_break if not self.extended_pictographic else "Extended_Pictographic")
+        s += "XLB::{}, ".format(self.line_break)
+        s += "XWB::{}, ".format(self.word_break)
+        s += "XSB::{}, ".format(self.sentence_break)
+        s += "XEA::{}, ".format(self.east_asian_width)
+        s += "XSC::{}, ".format(self.script)
+        s += "XBC::{}, ".format(self.bidi_class)
+        s += "XBB::{}, ".format(self.bidi_paired_bracket_type)
+        s += "0x{:x}, ".format(self.bidi_mirroring_glyph if self.bidi_mirroring_glyph is not None else 0xffff)
+        s += "{}, ".format(self.canonical_combining_class)
+        s += "XDT::{}, ".format(self.decomposition_type if self.decomposition_type != "final" else "_final")
+        s += "0x{:x}, ".format(self.g_decomposition_index)
+        s += "0x{:x}, ".format(self.g_composition_index + 1 if self.g_composition_index is not None else 0)
+        s += "}"
+        return s
 
 def initialize_descriptions():
     """Initialize a table with description for all 0x110000 code-points.

@@ -49,6 +49,7 @@ struct NormalizationTest {
     std::u32string c3;
     std::u32string c4;
     std::u32string c5;
+    size_t line_nr;
     std::string comment;
 };
 
@@ -64,7 +65,7 @@ std::u32string parseNormalizationTest_column(std::string_view column)
     return r;
 }
 
-std::optional<NormalizationTest> parseNormalizationTest_line(std::string_view line)
+std::optional<NormalizationTest> parseNormalizationTest_line(std::string_view line, size_t line_nr)
 {
     hilet split_line = split(line, '#');
     if (split_line.size() < 2) {
@@ -81,7 +82,8 @@ std::optional<NormalizationTest> parseNormalizationTest_line(std::string_view li
     r.c3 = parseNormalizationTest_column(columns[2]);
     r.c4 = parseNormalizationTest_column(columns[3]);
     r.c5 = parseNormalizationTest_column(columns[4]);
-    r.comment = split_line[1];
+    r.line_nr = line_nr;
+    r.comment = std::format("{}: {}", line_nr, split_line[1]);
 
     return r;
 }
@@ -92,8 +94,9 @@ std::vector<NormalizationTest> parseNormalizationTests()
     hilet test_data = view.string_view();
 
     std::vector<NormalizationTest> r;
+    size_t line_nr = 0;
     for (hilet line : split(test_data, '\n')) {
-        if (hilet optionalTest = parseNormalizationTest_line(line)) {
+        if (hilet optionalTest = parseNormalizationTest_line(line, ++line_nr)) {
             r.push_back(*optionalTest);
         }
     }
@@ -287,7 +290,7 @@ TEST_F(unicode_normalization, toNFKD_c5)
 }
 #endif
 
-#if defined(RUN_ALL_TESTS)
+//#if defined(RUN_ALL_TESTS)
 TEST_F(unicode_normalization, Invariant)
 {
     auto previouslyTestedCodePoints = std::vector<bool>(0x11'0000, false);
@@ -320,4 +323,4 @@ TEST_F(unicode_normalization, Invariant)
         }
     }
 }
-#endif
+//#endif

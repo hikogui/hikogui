@@ -50,6 +50,8 @@ def make_composition_table(descriptions):
     r = []
     for first_cp in keys:
         mappings = compositions[first_cp]
+        mappings.sort()
+
         d = descriptions[first_cp]
         d.g_composition_index = len(r)
 

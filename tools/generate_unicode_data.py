@@ -7,8 +7,14 @@ import struct
 
 def parse_options():
     parser = argparse.ArgumentParser(description='Build c++ source files from Unicode ucd text files.')
-    parser.add_argument("--output", dest="output_path", action="store", required=True)
-    parser.add_argument("--output-template", dest="output_template_path", action="store", required=True)
+    parser.add_argument("--compositions-output", dest="compositions_output_path", action="store", required=True)
+    parser.add_argument("--compositions-template", dest="compositions_template_path", action="store", required=True)
+    parser.add_argument("--decompositions-output", dest="decompositions_output_path", action="store", required=True)
+    parser.add_argument("--decompositions-template", dest="decompositions_template_path", action="store", required=True)
+    parser.add_argument("--index-output", dest="index_output_path", action="store", required=True)
+    parser.add_argument("--index-template", dest="index_template_path", action="store", required=True)
+    parser.add_argument("--descriptions-output", dest="descriptions_output_path", action="store", required=True)
+    parser.add_argument("--descriptions-template", dest="descriptions_template_path", action="store", required=True)
 
     parser.add_argument("--bidi-brackets", dest="bidi_brackets_path", action="store", required=True)
     parser.add_argument("--bidi-mirroring", dest="bidi_mirroring_path", action="store", required=True)
@@ -45,14 +51,10 @@ def main():
 
     indices, chunks = ucd.deduplicate_chunks(descriptions)
 
-    text = ucd.generate_output(
-        options.output_template_path,
-        indices=indices,
-        chunks=chunks,
-        compositions=compositions,
-        decompositions=decompositions)
-
-    open(options.output_path, "w", encoding="utf-8").write(text)
+    ucd.generate_output(options.compositions_template_path, options.compositions_output_path, compositions=compositions)
+    ucd.generate_output(options.decompositions_template_path, options.decompositions_output_path, decompositions=decompositions)
+    ucd.generate_output(options.index_template_path, options.index_output_path, indices=indices)
+    ucd.generate_output(options.descriptions_template_path, options.descriptions_output_path, chunks=chunks)
 
 if __name__ == "__main__":
     main()
