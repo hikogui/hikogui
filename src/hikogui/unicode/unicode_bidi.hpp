@@ -101,7 +101,7 @@ static void unicode_bidi_L4(
         hilet text_direction = it->embedding_level % 2 == 0 ? unicode_bidi_class::L : unicode_bidi_class::R;
         set_text_direction(*output_it, text_direction);
         if (it->direction == unicode_bidi_class::R && it->description->bidi_bracket_type() != unicode_bidi_bracket_type::n) {
-            set_code_point(*output_it, it->description->bidi_mirrored_glyph());
+            set_code_point(*output_it, it->description->bidi_mirroring_glyph());
         }
     }
 }

@@ -65,10 +65,10 @@ enum class unicode_line_break_class : uint8_t {
     NU, // Numeric Digits Form numeric expressions for line breaking purposes
     PO, // Postfix Numeric. Do not break following a numeric expression
     PR, // Prefix Numeric. Do not break in front of a numeric expression
-    SY, // Symbols Allowing Break After / Prevent a break before, and allow a break after Other Characters
+    SY, // Symbols Allowing Break After / Prevent a break before, and allow a break after XX Characters
 
     AI, // Ambiguous (Alphabetic or Ideographic) Characters with Ambiguous East Asian Width Act like AL when the resolved EAW
-        // is N; otherwise, act as ID
+        // is N; XXwise, act as ID
     AL, // Alphabetic Alphabets and regular symbols Are alphabetic characters or symbols that are used with alphabetic
         // characters
     CJ, // Conditional Japanese Starter Small kana Treat as NS or ID for strict or normal breaking.
@@ -84,7 +84,7 @@ enum class unicode_line_break_class : uint8_t {
     V, // Jamo Conjoining jamo Form Korean syllable blocks
     JT, // Hangul
     T, // Jamo Conjoining jamo Form Korean syllable blocks
-    RI, // Regional Indicator REGIONAL INDICATOR SYMBOL LETTER A..Z Keep pairs together.For pairs, break before and after other
+    RI, // Regional Indicator REGIONAL INDICATOR SYMBOL LETTER A..Z Keep pairs together.For pairs, break before and after XX
         // classes
     SA, // Complex Context Dependent(South East Asian) South East Asian :Thai,Lao,Khmer Provide a line break opportunity
         // contingent on additional, language - specific context analysis

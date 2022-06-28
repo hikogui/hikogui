@@ -13,9 +13,9 @@
 #include <algorithm>
 #include <vector>
 
-namespace hi::inline v1{
+namespace hi::inline v1 {
 
-    enum class unicode_word_break_property : uint8_t {
+enum class unicode_word_break_property : uint8_t {
     Other,
     CR,
     LF,
@@ -41,17 +41,18 @@ namespace detail {
 
 class unicode_word_break_info {
 public:
-    constexpr unicode_word_break_info() noexcept : _value(0)
-    {}
-    constexpr unicode_word_break_info(unicode_word_break_info const &) noexcept = default;
-    constexpr unicode_word_break_info(unicode_word_break_info &&) noexcept = default;
-    constexpr unicode_word_break_info &operator=(unicode_word_break_info const &) noexcept = default;
-    constexpr unicode_word_break_info &operator=(unicode_word_break_info &&) noexcept = default;
+    constexpr unicode_word_break_info() noexcept : _value(0) {}
+    constexpr unicode_word_break_info(unicode_word_break_info const&) noexcept = default;
+    constexpr unicode_word_break_info(unicode_word_break_info&&) noexcept = default;
+    constexpr unicode_word_break_info& operator=(unicode_word_break_info const&) noexcept = default;
+    constexpr unicode_word_break_info& operator=(unicode_word_break_info&&) noexcept = default;
 
-    constexpr unicode_word_break_info(unicode_word_break_property const &word_break_property, bool pictographic) noexcept : _value(to_underlying(word_break_property) | (static_cast<uint8_t>(pictographic) << 7))
-    {}
+    constexpr unicode_word_break_info(unicode_word_break_property const& word_break_property, bool pictographic) noexcept :
+        _value(to_underlying(word_break_property) | (static_cast<uint8_t>(pictographic) << 7))
+    {
+    }
 
-    constexpr unicode_word_break_info &make_skip() noexcept
+    constexpr unicode_word_break_info& make_skip() noexcept
     {
         _value |= 0x40;
         return *this;
@@ -67,19 +68,21 @@ public:
         return to_bool(_value & 0x80);
     }
 
-    [[nodiscard]] constexpr friend bool operator==(unicode_word_break_info const &lhs, unicode_word_break_property const &rhs) noexcept
+    [[nodiscard]] constexpr friend bool
+    operator==(unicode_word_break_info const& lhs, unicode_word_break_property const& rhs) noexcept
     {
         return (lhs._value & 0x3f) == to_underlying(rhs);
     }
 
-    [[nodiscard]] constexpr friend bool operator==(unicode_word_break_info const &, unicode_word_break_info const &) noexcept = default;
+    [[nodiscard]] constexpr friend bool
+    operator==(unicode_word_break_info const&, unicode_word_break_info const&) noexcept = default;
 
-    [[nodiscard]] constexpr friend bool is_AHLetter(unicode_word_break_info const &rhs) noexcept
+    [[nodiscard]] constexpr friend bool is_AHLetter(unicode_word_break_info const& rhs) noexcept
     {
         return rhs == unicode_word_break_property::ALetter or rhs == unicode_word_break_property::Hebrew_Letter;
     }
 
-    [[nodiscard]] constexpr friend bool is_MidNumLetQ(unicode_word_break_info const &rhs) noexcept
+    [[nodiscard]] constexpr friend bool is_MidNumLetQ(unicode_word_break_info const& rhs) noexcept
     {
         return rhs == unicode_word_break_property::MidNumLet or rhs == unicode_word_break_property::Single_Quote;
     }
@@ -88,9 +91,8 @@ private:
     uint8_t _value;
 };
 
-[[nodiscard]] inline void unicode_word_break_WB1_WB3d(
-    unicode_break_vector &r,
-    std::vector<unicode_word_break_info> &infos) noexcept
+[[nodiscard]] inline void
+unicode_word_break_WB1_WB3d(unicode_break_vector& r, std::vector<unicode_word_break_info>& infos) noexcept
 {
     using enum unicode_break_opportunity;
     using enum unicode_word_break_property;
@@ -104,7 +106,7 @@ private:
         hilet prev = infos[i - 1];
         hilet next = infos[i];
 
-        r[i] = [&] () {
+        r[i] = [&]() {
             if (prev == CR and next == LF) {
                 return no; // WB3
             } else if (prev == Newline or prev == CR or prev == LF) {
@@ -122,9 +124,7 @@ private:
     }
 }
 
-[[nodiscard]] inline void unicode_word_break_WB4(
-    unicode_break_vector &r,
-    std::vector<unicode_word_break_info> &infos) noexcept
+[[nodiscard]] inline void unicode_word_break_WB4(unicode_break_vector& r, std::vector<unicode_word_break_info>& infos) noexcept
 {
     using enum unicode_break_opportunity;
     using enum unicode_word_break_property;
@@ -133,7 +133,7 @@ private:
 
     for (auto i = 1_uz; i < infos.size(); ++i) {
         hilet prev = infos[i - 1];
-        auto &next = infos[i];
+        auto& next = infos[i];
 
         if ((prev != Newline and prev != CR and prev != LF) and (next == Extend or next == Format or next == ZWJ)) {
             if (r[i] == unassigned) {
@@ -144,9 +144,8 @@ private:
     }
 }
 
-[[nodiscard]] inline void unicode_word_break_WB5_WB999(
-    unicode_break_vector &r,
-    std::vector<unicode_word_break_info> &infos) noexcept
+[[nodiscard]] inline void
+unicode_word_break_WB5_WB999(unicode_break_vector& r, std::vector<unicode_word_break_info>& infos) noexcept
 {
     using enum unicode_break_opportunity;
     using enum unicode_word_break_property;
@@ -156,7 +155,7 @@ private:
     auto RI_count = 0_uz;
     hilet size = narrow<std::ptrdiff_t>(infos.size());
     for (auto i = 0_z; i < size; ++i) {
-        hilet &next = infos[i];
+        hilet& next = infos[i];
         if (next == Regional_Indicator) {
             ++RI_count;
         } else {
@@ -198,7 +197,7 @@ private:
             return unicode_word_break_info{};
         }();
 
-        r[i] = [&] () {
+        r[i] = [&]() {
             if (is_AHLetter(prev) and is_AHLetter(next)) {
                 return no; // WB5
             } else if (is_AHLetter(prev) and (next == MidLetter or is_MidNumLetQ(next)) and is_AHLetter(next_next)) {
@@ -223,7 +222,8 @@ private:
                 return no; // WB12
             } else if (prev == Katakana and next == Katakana) {
                 return no; // WB13
-            } else if ((is_AHLetter(prev) or prev == Numeric or prev == Katakana or prev == ExtendNumLet) and next == ExtendNumLet) {
+            } else if (
+                (is_AHLetter(prev) or prev == Numeric or prev == Katakana or prev == ExtendNumLet) and next == ExtendNumLet) {
                 return no; // WB13a
             } else if (prev == ExtendNumLet and (is_AHLetter(next) or next == Numeric or next == Katakana)) {
                 return no; // WB13b
@@ -236,27 +236,29 @@ private:
     }
 }
 
-}
+} // namespace detail
 
 /** The unicode word break algorithm UAX#29
-*
-* @param first An iterator to the first character.
-* @param last An iterator to the last character.
-* @param description_func A function to get a reference to unicode_description from a character.
-* @return A list of unicode_break_opportunity.
+ *
+ * @param first An iterator to the first character.
+ * @param last An iterator to the last character.
+ * @param description_func A function to get a reference to unicode_description from a character.
+ * @return A list of unicode_break_opportunity.
  */
 template<typename It, typename ItEnd, typename DescriptionFunc>
-[[nodiscard]] inline unicode_break_vector unicode_word_break(It first, ItEnd last, DescriptionFunc const &description_func)
+[[nodiscard]] inline unicode_break_vector unicode_word_break(It first, ItEnd last, DescriptionFunc const& description_func)
 {
     auto size = narrow<size_t>(std::distance(first, last));
     auto r = unicode_break_vector{size + 1, unicode_break_opportunity::unassigned};
 
     auto infos = std::vector<detail::unicode_word_break_info>{};
     infos.reserve(size);
-    std::transform(first, last, std::back_inserter(infos), [&] (hilet &item) {
-        hilet &description = description_func(item);
-        return detail::unicode_word_break_info{description.word_break_property(), description.grapheme_cluster_break() == unicode_grapheme_cluster_break::Extended_Pictographic};
-        });
+    std::transform(first, last, std::back_inserter(infos), [&](hilet& item) {
+        hilet& description = description_func(item);
+        return detail::unicode_word_break_info{
+            description.word_break_property(),
+            description.grapheme_cluster_break() == unicode_grapheme_cluster_break::Extended_Pictographic};
+    });
 
     detail::unicode_word_break_WB1_WB3d(r, infos);
     detail::unicode_word_break_WB4(r, infos);
@@ -264,4 +266,4 @@ template<typename It, typename ItEnd, typename DescriptionFunc>
     return r;
 }
 
-}
+} // namespace hi::inline v1

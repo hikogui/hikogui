@@ -497,12 +497,12 @@ static std::vector<unicode_bidi_bracket_pair> unicode_bidi_BD16(unicode_bidi_iso
                 } else {
                     // If there is a canonical equivalent of the opening bracket, find it's mirrored glyph
                     // to compare with the closing bracket.
-                    auto mirrored_glyph = it->description->bidi_mirrored_glyph();
+                    auto mirrored_glyph = it->description->bidi_mirroring_glyph();
                     auto canonical_equivalent = it->description->canonical_equivalent();
                     if (canonical_equivalent != U'\uffff') {
                         hilet& canonical_equivalent_description = unicode_description::find(canonical_equivalent);
                         hi_axiom(canonical_equivalent_description.bidi_bracket_type() == unicode_bidi_bracket_type::o);
-                        mirrored_glyph = canonical_equivalent_description.bidi_mirrored_glyph();
+                        mirrored_glyph = canonical_equivalent_description.bidi_mirroring_glyph();
                     }
 
                     stack.emplace_back(it, mirrored_glyph);
