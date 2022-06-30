@@ -1,10 +1,12 @@
-
-
+// Copyright Take Vos 2022.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
 #include <memory>
 #include <atomic>
+#include <map>
 
 namespace hi::inline v1 {
 
@@ -18,26 +20,26 @@ namespace hi::inline v1 {
  * Another use case is for `text_style` objects which only hold an index while
  * the `actual_text_style`  objects are stored in the stable_set.
  */
-template<typename Key, typename Compare = std::less<T>>
+template<typename Key, typename Compare = std::less<Key>>
 class stable_set {
 public:
-    using key_type = Key
+    using key_type = Key;
     using value_type = Key;
     using size_type = size_t;
     using difference_type = ptrdiff_t;
     using key_compare = Compare;
     using value_compare = Compare;
-    using reference = value_type const &;
-    using const_reference = value_type const &;
+    using reference = value_type const&;
+    using const_reference = value_type const&;
     using pointer = value_type const *;
     using const_pointer = value_type const *;
 
     ~stable_set() = default;
     constexpr stable_set() noexcept = default;
-    stable_set(stable_set const &) = delete;
-    stable_set(stable_set &&) = delete;
-    stable_set &operator=(stable_set const &) = delete;
-    stable_set &operator=(stable_set &&) = delete;
+    stable_set(stable_set const&) = delete;
+    stable_set(stable_set&&) = delete;
+    stable_set& operator=(stable_set const&) = delete;
+    stable_set& operator=(stable_set&&) = delete;
 
     [[nodiscard]] size_t size() const noexcept
     {
@@ -78,11 +80,11 @@ public:
      * @return The index where the object was added, or where the object already was in the set.
      */
     template<typename Arg>
-    [[nodiscard]] size_t emplace(Arg &&arg) noexcept requires(std::is_same_v<std::decay_t<Arg>, value_type>)
+    [[nodiscard]] size_t emplace(Arg&& arg) noexcept requires(std::is_same_v<std::decay_t<Arg>, value_type>)
     {
         hilet lock = std::scoped_lock(_mutex);
 
-        hilet [it, is_inserted] = _map.emplace(std::forward<Arg>(arg), _vector.size()});
+        hilet[it, is_inserted] = _map.emplace(std::forward<Arg>(arg), _vector.size());
         if (is_inserted) {
             _vector.push_back(std::addressof(it->first));
         }
@@ -90,6 +92,7 @@ public:
     }
 
 private:
+    // clang-format sucks.
     using map_type = std::map<value_type, size_t, Compare>;
     using vector_type = std::vector<const_pointer>;
 
@@ -97,7 +100,4 @@ private:
     map_type _map;
     mutable unfair_mutex _mutex;
 };
-
-
-}
-
+} // namespace hi::inline v1

@@ -78,7 +78,7 @@ struct std::char_traits<hi::grapheme> {
     static constexpr std::size_t length(char_type const *s) noexcept
     {
         std::size_t i = 0;
-        while (s[i].value != 0) {
+        while (not s[i].empty()) {
             ++i;
         }
         return i;
@@ -97,13 +97,13 @@ struct std::char_traits<hi::grapheme> {
     static constexpr char_type to_char_type(int_type c) noexcept
     {
         char_type r;
-        r.value = c;
+        r._value = c;
         return r;
     }
 
     static constexpr int_type to_int_type(char_type c) noexcept
     {
-        return c.value;
+        return c._value;
     }
 
     static constexpr bool eq_int_type(int_type c1, int_type c2) noexcept
@@ -113,12 +113,12 @@ struct std::char_traits<hi::grapheme> {
 
     static constexpr int_type eof() noexcept
     {
-        return 0;
+        return 0x1f'ffff;
     }
 
     static constexpr int_type not_eof(int_type e) noexcept
     {
-        return e != 0 ? e : 1;
+        return e != 0x1f'ffff ? e : 0;
     }
 };
 
