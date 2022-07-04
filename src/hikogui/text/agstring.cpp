@@ -6,9 +6,4 @@
 
 namespace hi::inline v1 {
 
-[[nodiscard]] agstring to_agstring(std::gstring rhs, text_style styles) noexcept
-{
-    
-}
-
 } // namespace hi::inline v1

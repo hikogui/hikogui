@@ -8,6 +8,7 @@
 #include "text_decoration.hpp"
 #include "font_family_id.hpp"
 #include "text_phrasing.hpp"
+#include "semantic_text_style.hpp"
 #include "../color/color.hpp"
 #include "../i18n/iso_15924.hpp"
 #include "../i18n/iso_639.hpp"
@@ -29,15 +30,48 @@ struct text_sub_style {
     iso_15924 script_filter;
 
     font_family_id family_id;
-    color color;
+    ::hi::color color;
     float size;
     font_variant variant;
     text_decoration decoration;
 
     text_sub_style() noexcept = default;
 
-    [[nodiscard]] friend bool operator==(text_sub_style const&, text_sub_style const&) noexcept = default;
-    [[nodiscard]] friend auto operator<=>(text_sub_style const&, text_sub_style const&) noexcept = default;
+    text_sub_style(
+        text_phrasing_mask phrasing_mask,
+        iso_639 language_filter,
+        iso_15924 script_filter,
+        font_family_id family_id,
+        font_variant variant,
+        float size,
+        ::hi::color color,
+        text_decoration decoration) noexcept :
+        phrasing_mask(phrasing_mask),
+        language_filter(language_filter),
+        script_filter(script_filter),
+        family_id(family_id),
+        color(color),
+        size(size),
+        variant(variant),
+        decoration(decoration)
+    {
+    }
+
+    [[nodiscard]] size_t hash() const noexcept
+    {
+        auto r = 0_uz;
+        r ^= std::hash<text_phrasing_mask>{}(phrasing_mask);
+        r ^= std::hash<iso_639>{}(language_filter);
+        r ^= std::hash<iso_15924>{}(script_filter);
+        r ^= std::hash<font_family_id>{}(family_id);
+        r ^= std::hash<hi::color>{}(color);
+        r ^= std::hash<float>{}(size);
+        r ^= std::hash<font_variant>{}(variant);
+        r ^= std::hash<text_decoration>{}(decoration);
+        return r;
+    }
+
+    [[nodiscard]] float cap_height(font_book const& font_book) const noexcept;
 
     [[nodiscard]] bool matches(text_phrasing phrasing, iso_639 language, iso_15924 script) const noexcept
     {
@@ -52,7 +86,21 @@ struct text_sub_style {
         }
         return true;
     }
+
+    [[nodiscard]] friend bool operator==(text_sub_style const&, text_sub_style const&) noexcept = default;
 };
+
+} // namespace hi::inline v1
+
+template<>
+struct std::hash<hi::text_sub_style> {
+    [[nodiscard]] size_t operator()(hi::text_sub_style const& rhs) const noexcept
+    {
+        return rhs.hash();
+    }
+};
+
+namespace hi::inline v1::detail {
 
 struct text_style_impl {
     using value_type = text_sub_style;
@@ -82,6 +130,15 @@ struct text_style_impl {
         return not empty();
     }
 
+    [[nodiscard]] size_t hash() const noexcept
+    {
+        auto r = 0_uz;
+        for (hilet& sub_style : _sub_styles) {
+            r ^= std::hash<text_sub_style>{}(sub_style);
+        }
+        return r;
+    }
+
     [[nodiscard]] reference back() const noexcept
     {
         return _sub_styles.back();
@@ -98,26 +155,34 @@ struct text_style_impl {
     }
 
     [[nodiscard]] constexpr friend bool operator==(text_style_impl const&, text_style_impl const&) noexcept = default;
+};
 
-    [[nodiscard]] constexpr friend auto operator<=>(text_style_impl const& lhs, text_style_impl const& rhs) noexcept
+} // namespace hi::inline v1::detail
+
+template<>
+struct std::hash<hi::detail::text_style_impl> {
+    [[nodiscard]] size_t operator()(hi::detail::text_style_impl const& rhs) const noexcept
     {
-        return std::lexicographical_compare_three_way(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+        return rhs.hash();
     }
 };
 
-inline auto text_style_impls = stable_set<text_style_impl>{};
+namespace hi::inline v1 {
+namespace detail {
+inline auto text_styles = stable_set<text_style_impl>{};
+}
 
 class text_style {
 public:
     using int_type = uint16_t;
 
-    text_style() : _value(0xffff) {}
+    constexpr text_style() : _value(0xffff) {}
 
-    text_style(semantic_text_style rhs) noexcept : _value(0xff00 + to_underlying(rhs)) {}
+    constexpr text_style(semantic_text_style rhs) noexcept : _value(0xff00 + to_underlying(rhs)) {}
 
     text_style(std::vector<text_sub_style> rhs) noexcept
     {
-        hilet index = text_style_impls.emplace(std::move(rhs));
+        hilet index = detail::text_styles.emplace(std::move(rhs));
         if (index < 0xff00) {
             _value = narrow_cast<uint16_t>(index);
         } else {
@@ -127,21 +192,32 @@ public:
         }
     }
 
-    [[nodiscard]] bool empty() const noexcept
+    [[nodiscard]] constexpr bool empty() const noexcept
     {
         return _value == 0xffff;
     }
 
-    explicit operator bool() const noexcept
+    constexpr explicit operator bool() const noexcept
     {
         return not empty();
+    }
+
+    [[nodiscard]] constexpr bool is_semantic() const noexcept
+    {
+        hi_axiom(not empty());
+        return _value >= 0xff00;
+    }
+
+    constexpr explicit operator semantic_text_style() const noexcept
+    {
+        return static_cast<semantic_text_style>(narrow_cast<std::underlying_type_t<semantic_text_style>>(_value - 0xff00));
     }
 
     text_sub_style const *operator->() const noexcept
     {
         hi_axiom(not empty());
         if (_value < 0xff00) {
-            return std::addressof(text_style_impls[_value].back());
+            return std::addressof(detail::text_styles[_value].back());
         } else {
             hi_not_implemented();
         }
@@ -151,9 +227,18 @@ public:
     {
         hi_axiom(not empty());
         if (_value < 0xff00) {
-            return text_style_impls[_value].back();
+            return detail::text_styles[_value].back();
         } else {
             hi_not_implemented();
+        }
+    }
+
+    text_sub_style const& sub_style(text_phrasing phrasing, iso_639 language, iso_15924 script) const noexcept
+    {
+        for (hilet& style : detail::text_styles[_value]) {
+            if (style.matches(phrasing, language, script)) {
+                return style;
+            }
         }
     }
 

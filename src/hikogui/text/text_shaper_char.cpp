@@ -24,7 +24,7 @@ void text_shaper_char::set_glyph(hi::glyph_ids &&new_glyph) noexcept
     glyph = std::move(new_glyph);
     auto glyph_metrics = hi::glyph_metrics{};
     if (glyph.font().load_glyph_metrics(glyph[0], glyph_metrics)) {
-        scale = glyph.font().metrics.round_scale(dpi_scale * style.size);
+        scale = glyph.font().metrics.round_scale(dpi_scale * style->size);
         metrics = scale * glyph_metrics;
     } else {
         // Failed to load metrics, due to corrupt font file.
@@ -44,7 +44,7 @@ void text_shaper_char::initialize_glyph(hi::font_book &font_book, hi::font const
 
 void text_shaper_char::initialize_glyph(hi::font_book &font_book) noexcept
 {
-    return initialize_glyph(font_book, font_book.find_font(style.family_id, style.variant));
+    return initialize_glyph(font_book, font_book.find_font(style->family_id, style->variant));
 }
 
 void text_shaper_char::replace_glyph(char32_t code_point) noexcept

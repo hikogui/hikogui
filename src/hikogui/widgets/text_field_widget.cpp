@@ -175,7 +175,7 @@ hitbox text_field_widget::hitbox_test(point3 position) const noexcept
 {
     if (*mode >= widget_mode::partial) {
         if (not _error_label->empty()) {
-            return theme().text_style(semantic_text_style::error).color;
+            return theme().text_style(semantic_text_style::error)->color;
         } else if (*_text_widget->focus) {
             return theme().color(semantic_color::accent);
         } else if (*hover) {

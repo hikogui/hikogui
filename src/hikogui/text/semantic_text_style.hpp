@@ -4,22 +4,22 @@
 
 #pragma once
 
-#include "../exception.hpp"
+#include "../enum_metadata.hpp"
 
 namespace hi::inline v1 {
 
-enum class semantic_text_style : unsigned char {
-    label,
-    small_label,
-    warning,
-    error,
-    help,
-    placeholder,
-    link,
+enum class semantic_text_style : unsigned char { label, small_label, warning, error, help, placeholder, link };
 
-    _size
+// clang-format off
+constexpr auto semantic_text_style_metadata = enum_metadata{
+    semantic_text_style::label, "label",
+    semantic_text_style::small_label, "small-label",
+    semantic_text_style::warning, "warning",
+    semantic_text_style::error, "error",
+    semantic_text_style::help, "help",
+    semantic_text_style::placeholder, "placeholder",
+    semantic_text_style::link, "link",
 };
-
-constexpr std::size_t num_semantic_text_styles = static_cast<std::size_t>(semantic_text_style::_size);
+// clang-format on
 
 } // namespace hi::inline v1

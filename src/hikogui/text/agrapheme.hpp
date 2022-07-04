@@ -22,48 +22,44 @@ struct agrapheme {
      */
     value_type _value;
 
-    [[nodiscard]] friend bool operator==(agrapheme const &lhs, agrapheme const &rhs) noexcept = default;
+    [[nodiscard]] constexpr friend bool operator==(agrapheme const &lhs, agrapheme const &rhs) noexcept = default;
 
-    [[nodiscard]] friend auto operator<=>(agrapheme const &lhs, agrapheme const &rhs) noexcept
+    [[nodiscard]] constexpr friend std::partial_ordering operator<=>(agrapheme const &lhs, agrapheme const &rhs) noexcept
     {
-        if (hilet r = lhs.grapheme() <=> rhs.grapheme(); r != std::strong_ordering::equal) {
-            return r;
-        }
-        if (hilet r = lhs.phrasing() <=> rhs.phrasing(); r != std::strong_ordering::equal) {
-            return r;
-        }
-        if (hilet r = lhs.language() <=> rhs.language(); r != std::strong_ordering::equal) {
-            return r;
-        }
-        return lhs.style() <=> rhs.style();
+        return lhs.grapheme() <=> rhs.grapheme();
     }
 
-    [[nodiscard]] bool empty() const noexcept
+    [[nodiscard]] constexpr bool empty() const noexcept
     {
         return grapheme().empty();
     }
 
-    explicit operator bool() const noexcept
+    constexpr explicit operator bool() const noexcept
     {
         return not empty();
     }
 
-    [[nodiscard]] hi::grapheme grapheme() const noexcept
+    [[nodiscard]] size_t hash() const noexcept
+    {
+        return std::hash<value_type>{}(_value);
+    }
+
+    [[nodiscard]] constexpr hi::grapheme grapheme() const noexcept
     {
         return std::bit_cast<hi::grapheme>(truncate<uint32_t>(_value >> 43));
     }
 
-    [[nodiscard]] text_phrasing phrasing() const noexcept
+    [[nodiscard]] constexpr text_phrasing phrasing() const noexcept
     {
         return static_cast<text_phrasing>((_value >> 39) & 0xf);
     }
 
-    [[nodiscard]] iso_639 language() const noexcept
+    [[nodiscard]] constexpr iso_639 language() const noexcept
     {
         return std::bit_cast<iso_639>(truncate<uint16_t>(_value >> 16));
     }
 
-    [[nodiscard]] text_style style() const noexcept
+    [[nodiscard]] constexpr text_style style() const noexcept
     {
         return std::bit_cast<text_style>(truncate<uint16_t>(_value));
     }
@@ -76,3 +72,10 @@ struct agrapheme {
 
 }
 
+template<>
+struct std::hash<hi::agrapheme> {
+    [[nodiscard]] size_t operator()(hi::agrapheme const &rhs) const noexcept
+    {
+        return rhs.hash();
+    }
+};

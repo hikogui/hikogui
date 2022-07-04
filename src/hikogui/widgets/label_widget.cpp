@@ -76,7 +76,7 @@ widget_constraints const& label_widget::set_constraints() noexcept
             if (*alignment == horizontal_alignment::center or *alignment == horizontal_alignment::justified) {
                 return theme().large_icon_size;
             } else {
-                return std::ceil(theme().text_style(*text_style).size * theme().scale);
+                return std::ceil(theme().text_style(*text_style)->size * theme().scale);
             }
         } else {
             return 0.0f;

@@ -7,6 +7,7 @@
 #include <memory>
 #include <atomic>
 #include <map>
+#include <unordered_map>
 #include <functional>
 
 namespace hi::inline v1 {
@@ -21,15 +22,17 @@ namespace hi::inline v1 {
  * Another use case is for `text_style` objects which only hold an index while
  * the `actual_text_style`  objects are stored in the stable_set.
  */
-template<typename Key, typename Compare = std::less<Key>>
+template<typename Key>
 class stable_set {
 public:
-    using key_type = Key;
     using value_type = Key;
     using size_type = size_t;
+    using map_type = std::conditional_t<
+        std::is_default_constructible<std::hash<Key>>::value,
+        std::unordered_map<Key, size_type>,
+        std::map<Key, size_type>>;
+    using key_type = Key;
     using difference_type = ptrdiff_t;
-    using key_compare = Compare;
-    using value_compare = Compare;
     using reference = value_type const&;
     using const_reference = value_type const&;
     using pointer = value_type const *;
@@ -102,7 +105,7 @@ public:
      * @return The index where the object was added, or where the object already was in the set.
      */
     template<typename... Args>
-    [[nodiscard]] size_t emplace(Args&&... args) noexcept
+    [[nodiscard]] size_t emplace(Args&&...args) noexcept
     {
         hilet lock = std::scoped_lock(_mutex);
 
@@ -115,7 +118,6 @@ public:
 
 private:
     // clang-format sucks.
-    using map_type = std::map<value_type, size_t, Compare>;
     using vector_type = std::vector<const_pointer>;
 
     vector_type _vector;

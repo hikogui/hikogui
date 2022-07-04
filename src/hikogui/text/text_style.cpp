@@ -7,10 +7,10 @@
 
 namespace hi::inline v1 {
 
-    [[nodiscard]] float text_style::cap_height(font_book const& font_book) const noexcept
-    {
-        hilet &font = font_book.find_font(family_id, variant);
-        return font.metrics.cap_height * size;
-    }
-
+[[nodiscard]] float text_sub_style::cap_height(font_book const& font_book) const noexcept
+{
+    hilet& font = font_book.find_font(family_id, variant);
+    return font.metrics.cap_height * size;
 }
+
+} // namespace hi::inline v1

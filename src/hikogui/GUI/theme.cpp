@@ -53,10 +53,7 @@ theme::theme(hi::font_book const& font_book, URL const& url)
 
 [[nodiscard]] hi::color theme::color(hi::semantic_color original_color, ssize_t nesting_level) const noexcept
 {
-    hilet theme_color_i = static_cast<std::size_t>(original_color);
-    hi_axiom(theme_color_i < _colors.size());
-
-    hilet& shades = _colors[theme_color_i];
+    hilet& shades = _colors[to_underlying(original_color)];
     hi_axiom(not shades.empty());
 
     nesting_level = std::max(ssize_t{0}, nesting_level);
@@ -65,7 +62,7 @@ theme::theme(hi::font_book const& font_book, URL const& url)
 
 [[nodiscard]] hi::color theme::color(hi::color original_color, ssize_t nesting_level) const noexcept
 {
-    if (original_color.is_semantic_color()) {
+    if (original_color.is_semantic()) {
         return color(static_cast<semantic_color>(original_color), nesting_level);
     } else {
         return original_color;
@@ -74,12 +71,16 @@ theme::theme(hi::font_book const& font_book, URL const& url)
 
 [[nodiscard]] hi::text_style theme::text_style(semantic_text_style semantic_text_style) const noexcept
 {
-    hilet semantic_text_style_i = static_cast<std::size_t>(semantic_text_style);
-    hi_axiom(semantic_text_style_i < _text_styles.size());
+    return _text_styles[to_underlying(semantic_text_style)];
+}
 
-    auto text_style = _text_styles[semantic_text_style_i];
-    text_style.color = color(text_style.color, 0);
-    return text_style;
+[[nodiscard]] hi::text_style theme::text_style(hi::text_style original_style) const noexcept
+{
+    if (original_style.is_semantic()) {
+        return text_style(static_cast<semantic_text_style>(original_style));
+    } else {
+        return original_style;
+    }
 }
 
 [[nodiscard]] std::string theme::parse_string(datum const& data, char const *object_name)
@@ -247,25 +248,37 @@ theme::theme(hi::font_book const& font_book, URL const& url)
         throw parse_error(std::format("Expect a text-style to be an object, got '{}'", data));
     }
 
-    hi::text_style r;
+    hilet family_id = font_book.find_family(parse_string(data, "family"));
+    hilet size = parse_float(data, "size");
 
-    r.family_id = font_book.find_family(parse_string(data, "family"));
-    r.size = parse_float(data, "size");
-
+    auto variant = font_variant{};
     if (data.contains("weight")) {
-        r.variant.set_weight(parse_font_weight(data, "weight"));
+        variant.set_weight(parse_font_weight(data, "weight"));
     } else {
-        r.variant.set_weight(font_weight::Regular);
+        variant.set_weight(font_weight::Regular);
     }
 
     if (data.contains("italic")) {
-        r.variant.set_italic(parse_bool(data, "italic"));
+        variant.set_italic(parse_bool(data, "italic"));
     } else {
-        r.variant.set_italic(false);
+        variant.set_italic(false);
     }
 
-    r.color = parse_color(data, "color");
-    return r;
+    // resolve semantic color.
+    hilet color = this->color(parse_color(data, "color"), 0);
+
+    auto sub_styles = std::vector<text_sub_style>{};
+    sub_styles.emplace_back(
+        text_phrasing_mask::all,
+        iso_639{},
+        iso_15924{},
+        family_id,
+        variant,
+        size,
+        color,
+        text_decoration{}
+    );
+    return hi::text_style(sub_styles);
 }
 
 [[nodiscard]] text_style theme::parse_text_style(hi::font_book const& font_book, datum const& data, char const *object_name)
@@ -341,7 +354,7 @@ void theme::parse(hi::font_book const& font_book, datum const& data)
     large_icon_size = parse_float(data, "large-icon-size");
     label_icon_size = parse_float(data, "label-icon-size");
 
-    cap_height = std::get<to_underlying(semantic_text_style::label)>(_text_styles).cap_height(font_book);
+    cap_height = std::get<to_underlying(semantic_text_style::label)>(_text_styles)->cap_height(font_book);
 }
 
 } // namespace hi::inline v1

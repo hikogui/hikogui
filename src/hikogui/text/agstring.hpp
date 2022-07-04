@@ -134,26 +134,6 @@ namespace pmr {
 using agstring = std::pmr::basic_string<agrapheme>;
 }
 
-/** Convert a UTF-32 string to a grapheme-string.
- *
- * @param rhs The UTF-32 string to convert.
- * @param new_line_char The new_line_character to use.
- * @return A grapheme-string.
- */
-[[nodiscard]] agstring to_agstring(agstring_view rhs, text_style style, iso_639 language, text_phrasing phrasing = text_phrasing::regular) noexcept;
-
-/** Convert a UTF-8 string to a grapheme-string.
- *
- * @param rhs The UTF-8 string to convert.
- * @param new_line_char The new_line_character to use.
- * @return A grapheme-string.
- */
-[[nodiscard]] inline gstring
-to_gstring(std::string_view rhs, char32_t new_line_char = U'\u2029', text_style_group const& styles) noexcept
-{
-    return to_agstring(to_gstring(to_u32string(rhs), new_line_char), styles);
-}
-
 } // namespace hi::inline v1
 
 template<>

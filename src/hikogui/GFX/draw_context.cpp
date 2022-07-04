@@ -111,7 +111,7 @@ void draw_context::_draw_text(
     auto atlas_was_updated = false;
     for (hilet& c : text) {
         hilet box = translate2{c.position} * c.metrics.bounding_rectangle;
-        hilet color = text_color ? *text_color : quad_color{c.style.color};
+        hilet color = text_color ? *text_color : quad_color{c.style->color};
 
         hi_axiom(c.description != nullptr);
         if (not is_visible(c.description->general_category())) {
