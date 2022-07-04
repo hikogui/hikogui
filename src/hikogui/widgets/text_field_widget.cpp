@@ -24,7 +24,7 @@ text_field_widget::text_field_widget(gui_window& window, widget *parent, weak_or
     _text_widget->mode = widget_mode::partial;
 
     _error_label_widget =
-        std::make_unique<label_widget>(window, this, _error_label, alignment::top_left(), theme_text_style::error);
+        std::make_unique<label_widget>(window, this, _error_label, alignment::top_left(), semantic_text_style::error);
 
     // clang-format off
     _continues_cbt = continues.subscribe([&](auto...){ request_reconstrain(); });
@@ -175,7 +175,7 @@ hitbox text_field_widget::hitbox_test(point3 position) const noexcept
 {
     if (*mode >= widget_mode::partial) {
         if (not _error_label->empty()) {
-            return theme().text_style(theme_text_style::error).color;
+            return theme().text_style(semantic_text_style::error)->color;
         } else if (*_text_widget->focus) {
             return theme().color(semantic_color::accent);
         } else if (*hover) {

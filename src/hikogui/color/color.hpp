@@ -72,14 +72,14 @@ public:
         _v.w() = float16(1.0f);
     }
 
-    [[nodiscard]] constexpr bool is_semantic_color() const noexcept
+    [[nodiscard]] constexpr bool is_semantic() const noexcept
     {
         return (_v.x().get() & 0xf900) == 0xf900;
     }
 
     constexpr explicit operator semantic_color() const noexcept
     {
-        hi_axiom(is_semantic_color());
+        hi_axiom(is_semantic());
         return static_cast<semantic_color>(_v.x().get() & 0xff);
     }
 
@@ -121,6 +121,11 @@ public:
     [[nodiscard]] static constexpr color black() noexcept
     {
         return {0.0f, 0.0f, 0.0f, 1.0f};
+    }
+
+    [[nodiscard]] size_t hash() const noexcept
+    {
+        return std::hash<uint64_t>{}(std::bit_cast<uint64_t>(_v));
     }
 
     [[nodiscard]] constexpr float16& r() noexcept
@@ -194,3 +199,11 @@ private:
 };
 
 } // namespace hi::inline v1
+
+template<>
+struct std::hash<hi::color> {
+    [[nodiscard]] size_t operator()(hi::color const &rhs) const noexcept
+    {
+        return rhs.hash();
+    }
+};

@@ -5,8 +5,8 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../GUI/theme_text_style.hpp"
 #include "../GUI/gui_event.hpp"
+#include "../text/semantic_text_style.hpp"
 #include "../text/text_selection.hpp"
 #include "../text/text_shaper.hpp"
 #include "../observable.hpp"
@@ -63,7 +63,7 @@ public:
 
     /** The style of the text.
      */
-    observable<theme_text_style> text_style = theme_text_style::label;
+    observable<semantic_text_style> text_style = semantic_text_style::label;
 
     /** Construct a text widget.
      *
@@ -78,13 +78,13 @@ public:
         typename Text,
         typename Alignment = hi::alignment,
         typename VerticalAlignment = hi::vertical_alignment,
-        typename TextStyle = hi::theme_text_style>
+        typename TextStyle = hi::semantic_text_style>
     text_widget(
         gui_window& window,
         widget *parent,
         Text&& text,
         Alignment&& alignment = hi::alignment::middle_center(),
-        TextStyle&& text_style = theme_text_style::label) noexcept :
+        TextStyle&& text_style = semantic_text_style::label) noexcept :
         text_widget(window, parent)
     {
         this->text = std::forward<Text>(text);

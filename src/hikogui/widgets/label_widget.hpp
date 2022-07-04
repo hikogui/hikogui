@@ -59,7 +59,7 @@ public:
 
     /** The text style to display the label's text in and color of the label's (non-color) icon.
      */
-    observable<theme_text_style> text_style = theme_text_style::label;
+    observable<semantic_text_style> text_style = semantic_text_style::label;
 
     /** Construct a label widget.
      *
@@ -74,13 +74,13 @@ public:
      * @param text_style The text style of the label, and color of non-color
      *                   icons.
      */
-    template<typename Label, typename Alignment = hi::alignment, typename TextStyle = hi::theme_text_style>
+    template<typename Label, typename Alignment = hi::alignment, typename TextStyle = hi::semantic_text_style>
     label_widget(
         gui_window &window,
         widget *parent,
         Label &&label,
         Alignment &&alignment = hi::alignment::top_right(),
-        TextStyle &&text_style = theme_text_style::label) noexcept :
+        TextStyle &&text_style = semantic_text_style::label) noexcept :
         label_widget(window, parent)
     {
         this->label = std::forward<Label>(label);

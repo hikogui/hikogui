@@ -64,7 +64,7 @@ public:
 
     /** The style of the text.
      */
-    observable<theme_text_style> text_style = theme_text_style::label;
+    observable<semantic_text_style> text_style = semantic_text_style::label;
 
     virtual ~text_field_widget();
 

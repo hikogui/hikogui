@@ -190,8 +190,8 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
     unicode_script script) noexcept :
     _font_book(&font_book), _dpi_scale(dpi_scale), _script(script)
 {
-    hilet &font = font_book.find_font(style.family_id, style.variant);
-    _initial_line_metrics = (style.size * dpi_scale) * font.metrics;
+    hilet& font = font_book.find_font(style->family_id, style->variant);
+    _initial_line_metrics = (style->size * dpi_scale) * font.metrics;
 
     _text.reserve(text.size());
     for (hilet &c : text) {

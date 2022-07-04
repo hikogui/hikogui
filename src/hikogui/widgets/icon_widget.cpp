@@ -41,17 +41,17 @@ widget_constraints const &icon_widget::set_constraints() noexcept
         } else if (hilet g1 = get_if<glyph_ids>(&*icon)) {
             _glyph = *g1;
             _icon_type = icon_type::glyph;
-            _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).size * theme().scale;
+            _icon_size = _glyph.get_bounding_box().size() * theme().text_style(semantic_text_style::label)->size * theme().scale;
 
         } else if (hilet g2 = get_if<elusive_icon>(&*icon)) {
             _glyph = font_book().find_glyph(*g2);
             _icon_type = icon_type::glyph;
-            _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).size * theme().scale;
+            _icon_size = _glyph.get_bounding_box().size() * theme().text_style(semantic_text_style::label)->size * theme().scale;
 
         } else if (hilet g3 = get_if<hikogui_icon>(&*icon)) {
             _glyph = font_book().find_glyph(*g3);
             _icon_type = icon_type::glyph;
-            _icon_size = _glyph.get_bounding_box().size() * theme().text_style(theme_text_style::label).size * theme().scale;
+            _icon_size = _glyph.get_bounding_box().size() * theme().text_style(semantic_text_style::label)->size * theme().scale;
         }
     }
     return _constraints = {extent2{0.0f, 0.0f}, _icon_size, _icon_size, theme().margin};
