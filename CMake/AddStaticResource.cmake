@@ -26,6 +26,6 @@ function(target_static_resource TARGET)
 
         # Make sure the variable is included in the final executable so that it will be initialized.
         string(MAKE_C_IDENTIFIER "${INPUT_FILENAME}" SYMBOL_NAME)
-        target_link_options(${TARGET} PUBLIC "-include:${SYMBOL_NAME}_srip")
+        target_link_options(${TARGET} PUBLIC "/include:${SYMBOL_NAME}_srip")
     endforeach()
 endfunction()
