@@ -27,7 +27,7 @@ int hi_main(int argc, char* argv[])
     auto bon8_filename = hi::URL(argv[2]);
 
     auto json_view = json_filename.loadView();
-    auto json_data = json_view->string_view();
+    auto json_data = as_string_view(*json_view);
     auto data = hi::parse_JSON(json_data);
 
     auto bon8_file = hi::file(bon8_filename, hi::access_mode::truncate_or_create_for_write);

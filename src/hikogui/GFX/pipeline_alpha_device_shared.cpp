@@ -30,7 +30,7 @@ void device_shared::drawInCommandBuffer(vk::CommandBuffer& commandBuffer)
     commandBuffer.bindIndexBuffer(device.quadIndexBuffer, 0, vk::IndexType::eUint16);
 }
 
-void device_shared::place_vertices(vspan<vertex>& vertices, aarectangle clipping_rectangle, quad box, float alpha)
+void device_shared::place_vertices(vector_span<vertex>& vertices, aarectangle clipping_rectangle, quad box, float alpha)
 {
     hilet clipping_rectangle_ = sfloat_rgba32{clipping_rectangle};
 

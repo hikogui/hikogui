@@ -11,6 +11,11 @@
 #include <cmath>
 #include <array>
 
+hi_warning_push();
+// C26426: Global initializer calls a non-constexpr function '...' (i.22).
+// std::pow() is not constexpr and needed to fill in the gamma conversion tables.
+hi_warning_ignore_msvc(26426);
+
 namespace hi::inline v1 {
 
 constexpr matrix3 sRGB_to_XYZ =
@@ -50,7 +55,7 @@ constexpr matrix3 XYZ_to_sRGB = matrix3{
     std::array<uint8_t, 65536> r{};
 
     for (int i = 0; i != 65536; ++i) {
-        r[i] = static_cast<uint8_t>(
+        r[i] = truncate<uint8_t>(
             std::clamp(sRGB_linear_to_gamma(float16::from_uint16_t(narrow_cast<uint16_t>(i))), 0.0f, 1.0f) * 255.0f);
     }
 
@@ -118,3 +123,5 @@ inline auto sRGB_gamma8_to_linear16_table = sRGB_gamma8_to_linear16_table_genera
 }
 
 } // namespace hi::inline v1
+
+hi_warning_pop();

@@ -7,7 +7,7 @@
 #include "pipeline_vulkan.hpp"
 #include "pipeline_SDF_push_constants.hpp"
 #include "pipeline_SDF_vertex.hpp"
-#include "../vspan.hpp"
+#include "../vector_span.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <span>
 
@@ -18,7 +18,7 @@ namespace hi::inline v1::pipeline_SDF {
  */
 class pipeline_SDF : public pipeline_vulkan {
 public:
-    vspan<vertex> vertexBufferData;
+    vector_span<vertex> vertexBufferData;
 
     pipeline_SDF(gfx_surface const &surface);
     ~pipeline_SDF(){};

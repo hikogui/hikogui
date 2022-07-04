@@ -27,13 +27,13 @@
 hi_warning_push();
 // C26476: Expression/symbol '...' uses a naked union '...' with multiple type pointers: Use variant instead (type.7.).
 // This implements `datum` which is simular to a std::variant.
-hi_msvc_suppress(26476)
+hi_warning_ignore_msvc(26476)
 // C26409: Avoid calling new and delete explicitly, use std::make_unique<T> instead (r.11).
 // This implements `datum` which implements RAII for large objects.
-hi_msvc_suppress(26409)
+hi_warning_ignore_msvc(26409)
 // C26492: Don't use const_cast to cast away const or volatile (type.3).
 // Needed until c++23 deducing this.
-hi_msvc_suppress(26492)
+hi_warning_ignore_msvc(26492)
 
 namespace hi::inline v1 {
 class datum;

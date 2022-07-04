@@ -188,6 +188,8 @@ requires(is_atomic_v<T>) typename T::value_type start_subsystem_or_terminate(
  */
 inline void stop_subsystem(void (*deinit_function)())
 {
+    hi_axiom(deinit_function != nullptr);
+
     hilet lock = std::scoped_lock(detail::subsystem_mutex);
 
     std::erase(detail::subsystem_deinit_list, deinit_function);
@@ -215,6 +217,7 @@ inline void shutdown_system() noexcept
 
     while (!detail::subsystem_deinit_list.empty()) {
         auto deinit = std::move(detail::subsystem_deinit_list.back());
+        hi_axiom(deinit != nullptr);
         detail::subsystem_deinit_list.pop_back();
 
         detail::subsystem_mutex.unlock();

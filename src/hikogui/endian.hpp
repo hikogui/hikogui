@@ -30,7 +30,7 @@ hi_warning_push();
 // C26472: Don't use a static_cast for arithmetic conversions. Use brace initialization, gsl::narrow_cast or gsl::narrow
 // (type.1).
 // static_cast are used to cheaply cast integers to unsigned and back, for byteswapping.
-hi_msvc_suppress(26472)
+hi_warning_ignore_msvc(26472)
 
 namespace hi::inline v1 {
 

@@ -123,33 +123,7 @@ public:
      * @return The number of bytes written.
      * @throw io_error
      */
-    std::size_t write(std::byte const *data, std::size_t size, ssize_t offset = -1);
-
-    /** Write data to a file.
-     *
-     * @param data Pointer to data to be written.
-     * @param size The number of bytes to write.
-     * @param offset The offset in the file to write, or -1 when writing in the current seek location.
-     * @return The number of bytes written.
-     * @throw io_error
-     */
-    std::size_t write(void const *data, std::size_t size, ssize_t offset = -1)
-    {
-        return write(static_cast<std::byte const *>(data), size, offset);
-    }
-
-    /** Write data to a file.
-     *
-     * @param data Pointer to data to be written.
-     * @param size The number of bytes to write.
-     * @param offset The offset in the file to write, or -1 when writing in the current seek location.
-     * @return The number of bytes written.
-     * @throw io_error
-     */
-    ssize_t write(char const *data, std::size_t size, ssize_t offset = -1)
-    {
-        return write(reinterpret_cast<std::byte const *>(data), size, offset);
-    }
+    std::size_t write(void const *data, std::size_t size, ssize_t offset = -1);
 
     /** Write data to a file.
      *
@@ -206,12 +180,7 @@ public:
      * @return The number of bytes read.
      * @throw io_error
      */
-    ssize_t read(std::byte *data, std::size_t size, ssize_t offset = -1);
-
-    ssize_t read(void *data, std::size_t size, ssize_t offset = -1)
-    {
-        return read(static_cast<std::byte *>(data), size, offset);
-    }
+    ssize_t read(void *data, std::size_t size, ssize_t offset = -1);
 
     /** Read bytes from the file.
      *

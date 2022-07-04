@@ -17,7 +17,7 @@
 hi_warning_push();
 // C26818: Switch statement does not cover all cases. Consider adding a 'default' label (es.79).
 // False positive.
-hi_msvc_suppress(26818)
+hi_warning_ignore_msvc(26818)
 
 namespace hi::inline v1 {
 

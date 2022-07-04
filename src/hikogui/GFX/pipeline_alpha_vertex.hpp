@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../vspan.hpp"
+#include "../vector_span.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../rapid/sfloat_rgba16.hpp"
 #include "../rapid/sfloat_rgba32.hpp"

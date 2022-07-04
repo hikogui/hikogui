@@ -12,7 +12,7 @@
 hi_warning_push();
 // C26490: Don't use reinterpret_cast
 // Need it for allow the use of enum in an atomic operation.
-hi_msvc_suppress(26490);
+hi_warning_ignore_msvc(26490);
 
 namespace hi::inline v1 {
 enum class global_state_type : uint64_t {

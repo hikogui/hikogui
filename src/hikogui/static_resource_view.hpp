@@ -30,24 +30,9 @@ public:
         return 0;
     }
 
-    [[nodiscard]] std::size_t size() const noexcept override
-    {
-        return _bytes.size();
-    }
-
-    [[nodiscard]] std::byte const *data() const noexcept override
-    {
-        return _bytes.data();
-    }
-
-    [[nodiscard]] std::span<std::byte const> bytes() const noexcept override
+    [[nodiscard]] const_void_span span() const noexcept override
     {
         return _bytes;
-    }
-
-    [[nodiscard]] std::string_view string_view() const noexcept override
-    {
-        return {reinterpret_cast<char const *>(data()), size()};
     }
 
     [[nodiscard]] static std::unique_ptr<resource_view> loadView(std::string const &location)
@@ -62,11 +47,11 @@ public:
      * @return A span to the constant byte array.
      * @exception key_error Thrown when static resource could not be found.
      */
-    static std::span<std::byte const> get_static_resource(std::string const &filename);
+    static const_void_span get_static_resource(std::string const &filename);
 
 private:
     // Borrowed reference from a byte array inside StaticResources.
-    std::span<std::byte const> _bytes;
+    const_void_span _bytes;
 };
 
 } // namespace hi::inline v1

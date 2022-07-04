@@ -14,7 +14,7 @@
 namespace hi::inline v1 {
 
 template<typename T>
-class vspan_iterator {
+class vector_span_iterator {
 public:
     using value_type = T;
     using difference_type = ssize_t;
@@ -23,19 +23,19 @@ private:
     value_type *ptr;
 
 public:
-    vspan_iterator() noexcept : ptr(nullptr) {}
-    vspan_iterator(vspan_iterator const &other) noexcept = default;
-    vspan_iterator(vspan_iterator &&other) noexcept = default;
-    vspan_iterator &operator=(vspan_iterator const &other) noexcept = default;
-    vspan_iterator &operator=(vspan_iterator &&other) noexcept = default;
-    ~vspan_iterator() = default;
+    vector_span_iterator() noexcept : ptr(nullptr) {}
+    vector_span_iterator(vector_span_iterator const &other) noexcept = default;
+    vector_span_iterator(vector_span_iterator &&other) noexcept = default;
+    vector_span_iterator &operator=(vector_span_iterator const &other) noexcept = default;
+    vector_span_iterator &operator=(vector_span_iterator &&other) noexcept = default;
+    ~vector_span_iterator() = default;
 
-    vspan_iterator(value_type *ptr) noexcept : ptr(ptr)
+    vector_span_iterator(value_type *ptr) noexcept : ptr(ptr)
     {
         hi_axiom(ptr != nullptr);
     }
 
-    vspan_iterator &operator=(value_type *ptr) noexcept
+    vector_span_iterator &operator=(value_type *ptr) noexcept
     {
         hi_axiom(ptr != nullptr);
         this->ptr = ptr;
@@ -67,75 +67,75 @@ public:
         return *std::launder(ptr + i);
     }
 
-    vspan_iterator &operator++() noexcept
+    vector_span_iterator &operator++() noexcept
     {
         ++ptr;
         return *this;
     }
-    vspan_iterator operator++(int) noexcept
+    vector_span_iterator operator++(int) noexcept
     {
         auto tmp = *this;
         ++ptr;
         return tmp;
     }
-    vspan_iterator &operator--() noexcept
+    vector_span_iterator &operator--() noexcept
     {
         --ptr;
         return *this;
     }
-    vspan_iterator operator--(int) noexcept
+    vector_span_iterator operator--(int) noexcept
     {
         auto tmp = *this;
         --ptr;
         return tmp;
     }
 
-    vspan_iterator &operator+=(ssize_t rhs) noexcept
+    vector_span_iterator &operator+=(ssize_t rhs) noexcept
     {
         ptr += rhs;
         return *this;
     }
-    vspan_iterator &operator-=(ssize_t rhs) noexcept
+    vector_span_iterator &operator-=(ssize_t rhs) noexcept
     {
         ptr -= rhs;
         return *this;
     }
 
-    [[nodiscard]] friend bool operator==(vspan_iterator const &lhs, vspan_iterator const &rhs) noexcept
+    [[nodiscard]] friend bool operator==(vector_span_iterator const &lhs, vector_span_iterator const &rhs) noexcept
     {
         return lhs.ptr == rhs.ptr;
     }
 
-    [[nodiscard]] friend auto operator<=>(vspan_iterator const &lhs, vspan_iterator const &rhs) noexcept
+    [[nodiscard]] friend auto operator<=>(vector_span_iterator const &lhs, vector_span_iterator const &rhs) noexcept
     {
         return lhs.ptr <=> rhs.ptr;
     }
 
-    [[nodiscard]] friend vspan_iterator operator+(vspan_iterator const &lhs, ssize_t rhs) noexcept
+    [[nodiscard]] friend vector_span_iterator operator+(vector_span_iterator const &lhs, ssize_t rhs) noexcept
     {
-        return vspan_iterator{lhs.ptr + rhs};
+        return vector_span_iterator{lhs.ptr + rhs};
     }
-    [[nodiscard]] friend vspan_iterator operator-(vspan_iterator const &lhs, ssize_t rhs) noexcept
+    [[nodiscard]] friend vector_span_iterator operator-(vector_span_iterator const &lhs, ssize_t rhs) noexcept
     {
-        return vspan_iterator{lhs.ptr - rhs};
+        return vector_span_iterator{lhs.ptr - rhs};
     }
-    [[nodiscard]] friend vspan_iterator operator+(ssize_t lhs, vspan_iterator const &rhs) noexcept
+    [[nodiscard]] friend vector_span_iterator operator+(ssize_t lhs, vector_span_iterator const &rhs) noexcept
     {
-        return vspan_iterator{lhs + rhs.ptr};
+        return vector_span_iterator{lhs + rhs.ptr};
     }
 
-    [[nodiscard]] friend difference_type operator-(vspan_iterator const &lhs, vspan_iterator const &rhs) noexcept
+    [[nodiscard]] friend difference_type operator-(vector_span_iterator const &lhs, vector_span_iterator const &rhs) noexcept
     {
         return lhs.ptr - rhs.ptr;
     }
 };
 
 template<typename T>
-class vspan {
+class vector_span {
 public:
     using value_type = T;
-    using iterator = vspan_iterator<value_type>;
-    using const_iterator = vspan_iterator<value_type const>;
+    using iterator = vector_span_iterator<value_type>;
+    using const_iterator = vector_span_iterator<value_type const>;
 
 private:
     value_type *_begin;
@@ -143,20 +143,20 @@ private:
     value_type *_max;
 
 public:
-    vspan() noexcept : _begin(nullptr), _end(nullptr), _max(nullptr) {}
+    vector_span() noexcept : _begin(nullptr), _end(nullptr), _max(nullptr) {}
 
-    vspan(value_type *buffer, ssize_t nr_elements) noexcept : _begin(buffer), _end(buffer), _max(buffer + nr_elements)
+    vector_span(value_type *buffer, ssize_t nr_elements) noexcept : _begin(buffer), _end(buffer), _max(buffer + nr_elements)
     {
         hi_axiom(nr_elements >= 0);
     }
 
-    vspan(std::span<value_type> span) noexcept : _begin(span.data()), _end(span.data()), _max(span.data() + span.size()) {}
+    vector_span(std::span<value_type> span) noexcept : _begin(span.data()), _end(span.data()), _max(span.data() + span.size()) {}
 
-    vspan(vspan const &other) = default;
-    vspan(vspan &&other) = default;
-    vspan &operator=(vspan const &other) = default;
-    vspan &operator=(vspan &&other) = default;
-    ~vspan() = default;
+    vector_span(vector_span const &other) = default;
+    vector_span(vector_span &&other) = default;
+    vector_span &operator=(vector_span const &other) = default;
+    vector_span &operator=(vector_span &&other) = default;
+    ~vector_span() = default;
 
     [[nodiscard]] iterator begin() noexcept
     {

@@ -61,7 +61,7 @@ static std::optional<test_type> parse_test_line(std::string_view line, int line_
 static hi::generator<test_type> parse_tests(std::string_view filename)
 {
     hilet view = hi::file_view(hi::URL(filename));
-    hilet test_data = view.string_view();
+    hilet test_data = as_string_view(view);
 
     int line_nr = 1;
     for (hilet line : std::views::split(test_data, std::string_view{"\n"})) {

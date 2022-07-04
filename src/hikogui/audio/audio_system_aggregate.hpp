@@ -12,7 +12,7 @@ class audio_system_aggregate : public audio_system {
 public:
     using super = audio_system;
 
-    audio_system_aggregate() : super() {}
+    audio_system_aggregate() = default;
     virtual ~audio_system_aggregate() {}
 
     [[nodiscard]] generator<audio_device *> devices() noexcept override

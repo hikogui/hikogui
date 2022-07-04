@@ -941,7 +941,7 @@ vk::ShaderModule gfx_device_vulkan::loadShader(URL const& shaderObjectLocation) 
 {
     // no lock, only local variable.
 
-    return loadShader(*shaderObjectLocation.loadView());
+    return loadShader(as_span<std::byte const>(*shaderObjectLocation.loadView()));
 }
 
 void gfx_device_vulkan::setDebugUtilsObjectNameEXT(vk::DebugUtilsObjectNameInfoEXT const& name_info) const

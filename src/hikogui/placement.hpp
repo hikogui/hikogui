@@ -15,7 +15,7 @@ hi_warning_push();
 // C26492: Don't use const_cast to cast away const or volatile (type.3).
 // placement new requires non-const pointer, even if the non-constructor initializer doesn't
 // modify the memory.
-hi_msvc_suppress(26492)
+hi_warning_ignore_msvc(26492)
 
 namespace hi::inline v1 {
 
