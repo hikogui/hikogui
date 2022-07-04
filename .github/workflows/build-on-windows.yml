@@ -7,19 +7,13 @@
 #
 
 name: "Build on Windows"
-
 on: [push, pull_request]
-
 jobs:
 
 # ---------------------------------------------------------------------------------------
 
   build-and-test:
-
-# ---------------------------------------------------------------------------------------
-
     name: ${{ matrix.config.JOB_NAME }}
-    needs: install-vulkan-sdk-and-runtime
     # https://github.com/actions/virtual-environments/blob/main/images/win/Windows2019-Readme.md
     # https://github.com/actions/virtual-environments/blob/main/images/win/Windows2022-Readme.md
     runs-on: ${{ matrix.config.OS }}
@@ -28,13 +22,12 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - { OS: windows-2022, BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: OFF, COMPILER: "VC17", JOB_NAME: "VC17 | x64-win-static | Release"}
-          - { OS: windows-2022, BUILD_TYPE: Debug,          VCPKG_TARGET_TRIPLET: x64-windows-static, TT_BUILD_PCH: ON,  COMPILER: "VC17", JOB_NAME: "VC17 | x64-win-static | Debug"  }
+          - { OS: windows-2022, PACKAGER: fetch, BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, HI_BUILD_PCH: OFF, COMPILER: "VC17", JOB_NAME: "VC17 | x64-win-static | Release"}
+          - { OS: windows-2022, PACKAGER: fetch, BUILD_TYPE: Debug,          VCPKG_TARGET_TRIPLET: x64-windows-static, HI_BUILD_PCH: ON,  COMPILER: "VC17", JOB_NAME: "VC17 | x64-win-static | Debug"  }
 
     env:
       PLATFORM: x64
       VCPKG_ROOT: C:\vcpkg
-      VULKAN_SDK: ${{ needs.install-vulkan-sdk-and-runtime.outputs.VULKAN_SDK }}
 
     defaults:
       run:
@@ -68,28 +61,31 @@ jobs:
           echo "ARTIFACT_NAME=$($ARTIFACT_NAME)" >> $env:GITHUB_ENV
           echo "VERSION=$($VERSION)" >> $env:GITHUB_ENV
 
+      - name: 📝 Get Vulkan SDK version number
+        id: vulkan-version
+        uses: hikogui/install-vulkan-sdk-action/sdk-version@v3
+
       - name: 🎯 Cache VULKAN SDK & Runtime
         id: cache-vulkan
-        uses: actions/cache@v1 # https://github.com/actions/cache
+        uses: actions/cache@v1
         with:
-          path: ${{ env.VULKAN_SDK }}
-          key: use-wrong-cache-key-to-trigger-partial-matching-of-restore-keys
-          restore-keys: cache-windows-vulkan
+          path: ${{steps.vulkan-version.outputs.VULKAN_SDK}}
+          key: cache-windows-vulkan-${{steps.vulkan-version.outputs.VULKAN_VERSION}}-2
 
-      - name: 🔽 Install Visual Studio 16 2019 - Components for C++, CMake, Win10SDK
-        if: matrix.config.COMPILER == 'VC16'
+      - name: 🔽 Install Vulkan SDK
+        if: steps.cache-vulkan.outputs.cache-hit != 'true'
+        uses: hikogui/install-vulkan-sdk-action/install-sdk@v3
+        with:
+          VULKAN_VERSION: ${{steps.vulkan-version.outputs.VULKAN_VERSION}}
+          VULKAN_SDK: ${{steps.vulkan-version.outputs.VULKAN_SDK}}
+
+      - name: 📝 Set VULKAN_SDK
         shell: pwsh
         run: |
-          $VSConfig = Resolve-Path ".\.github\.vsconfig" | select -ExpandProperty Path
-          cd "C:\Program Files (x86)\Microsoft Visual Studio\Installer\"
-          $InstallPath = "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise"
-          $Arguments = ('/c', "vs_installer.exe", 'modify', '--installPath', "$InstallPath", '--config', "$VSConfig", '--quiet', '--norestart', '--nocache')
-          $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
-          $process.ExitCode
-
-      - name: 📥 Setup VC16 Environment (➔ vcvarsall)
-        if: matrix.config.COMPILER == 'VC16'
-        run: call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" %PLATFORM%
+          echo "VULKAN_SDK=${{steps.vulkan-version.outputs.VULKAN_SDK}}" >> $env:GITHUB_ENV
+          dir ${{env.VULKAN_SDK}}\Include
+          dir ${{env.VULKAN_SDK}}\Bin
+          dir ${{env.VULKAN_SDK}}\runtime\${{env.PLATFORM}}
 
       # https://github.com/actions/virtual-environments/blob/main/images/win/Windows2022-Readme.md#visual-studio-enterprise-2022
       - name: 📥 Setup VC17 Environment (→ vcvars64)
@@ -97,6 +93,7 @@ jobs:
         run: call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
 
       - name: 🔽 Update VCPKG
+        if: matrix.config.PACKAGER == 'vcpkg'
         run: |
           cd C:\vcpkg
           git pull --quiet
@@ -105,6 +102,7 @@ jobs:
           vcpkg version
 
       - name: 🎯 Cache VCPKG
+        if: matrix.config.PACKAGER == 'vcpkg'
         id: cache-vcpkg
         uses: actions/cache@v1 # https://github.com/actions/cache
         with:
@@ -114,23 +112,30 @@ jobs:
             cache-windows-vcpkg-${{ matrix.config.VCPKG_TARGET_TRIPLET }}-${{ github.ref }}
             cache-windows-vcpkg-${{ matrix.config.VCPKG_TARGET_TRIPLET }}
 
-      - name: ❔ CHECK important folders, to see if everything is present (before building)
+      - name: ✏ CMake ➔ Configure (with vcpkg)
+        if: matrix.config.PACKAGER == 'vcpkg'
         run: |
-          dir %VULKAN_SDK%\Bin
-          dir %VULKAN_SDK%\runtime\%PLATFORM%
-          dir %LocalAppData%\vcpkg
-
-      - name: ✏ CMake ➔ Configure (including VCPKG ➔ Install Dependencies)
-        run: |
-          if "${{ matrix.config.COMPILER }}" == "VC16"; set "GENERATOR=Visual Studio 16 2019"
           if "${{ matrix.config.COMPILER }}" == "VC17"; set "GENERATOR=Visual Studio 17 2022"
           echo %GENERATOR%
           mkdir build && cd build
-          cmake -G "%GENERATOR%" -A ${{ env.PLATFORM }} ..                                  ^
-                -DCMAKE_BUILD_TYPE=${{ matrix.config.BUILD_TYPE }}                          ^
-                -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake            ^
-                -DVCPKG_TARGET_TRIPLET=${{ matrix.config.VCPKG_TARGET_TRIPLET }}            ^
-                -DTT_BUILD_PCH=${{ matrix.config.TT_BUILD_PCH }}                            ^
+          cmake -G "%GENERATOR%" -A ${{ env.PLATFORM }} .. ^
+                -DCMAKE_BUILD_TYPE=${{ matrix.config.BUILD_TYPE }} ^
+                -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake ^
+                -DVCPKG_TARGET_TRIPLET=${{ matrix.config.VCPKG_TARGET_TRIPLET }} ^
+                -DHI_BUILD_PCH=${{ matrix.config.HI_BUILD_PCH }} ^
+                -DHI_BUILD_EXAMPLES=ON ^
+                -DCMAKE_VERBOSE_MAKEFILE=ON
+
+      - name: ✏ CMake ➔ Configure (with FetchContent)
+        if: matrix.config.PACKAGER != 'vcpkg'
+        run: |
+          if "${{ matrix.config.COMPILER }}" == "VC17"; set "GENERATOR=Visual Studio 17 2022"
+          echo %GENERATOR%
+          mkdir build && cd build
+          cmake -G "%GENERATOR%" -A ${{ env.PLATFORM }} .. ^
+                -DCMAKE_BUILD_TYPE=${{ matrix.config.BUILD_TYPE }} ^
+                -DHI_BUILD_PCH=${{ matrix.config.HI_BUILD_PCH }} ^
+                -DHI_BUILD_EXAMPLES=ON ^
                 -DCMAKE_VERBOSE_MAKEFILE=ON
 
       - name: 🙏 CMake ➔ Build
@@ -165,7 +170,7 @@ jobs:
           $xsl.Load("${{ github.workspace }}\.github\gtest_to_junit.xsl")
           $xsl.Transform((Resolve-Path .\test_results_gtest.xml), "${{ github.workspace }}\test_results.xml")
           cd ${{ github.workspace }}
-          ren test_results.xml test_results_${{ matrix.config.COMPILER }}_${{ matrix.config.VCPKG_TARGET_TRIPLET }}_PCH_${{ matrix.config.TT_BUILD_PCH }}.xml
+          ren test_results.xml test_results_${{ matrix.config.COMPILER }}_${{ matrix.config.VCPKG_TARGET_TRIPLET }}_PCH_${{ matrix.config.HI_BUILD_PCH }}.xml
 
       # We upload multiple files into the same artifact file (zip).
       # Each file is differently named by adding the job name of the matrix as a suffix.
@@ -188,12 +193,12 @@ jobs:
       - name: 📑 Generate CodeCoverage Report
         if: ${{ matrix.config.BUILD_TYPE == 'Debug' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         run: |
-          .\bin\coverage\OpenCppCoverage.exe --sources=src        ^
-          --excluded_sources=src\*_tests.cpp                      ^
-          --excluded_sources=src\*\*_tests.cpp                    ^
-          --excluded_sources=build\_deps                          ^
-          --export_type=cobertura:hikogui_coverage.xml             ^
-          --working_dir=.\\build\hikogui-%VERSION%\tests           ^
+          .\bin\coverage\OpenCppCoverage.exe --sources=src ^
+          --excluded_sources=src\*_tests.cpp ^
+          --excluded_sources=src\*\*_tests.cpp ^
+          --excluded_sources=build\_deps ^
+          --export_type=cobertura:hikogui_coverage.xml ^
+          --working_dir=.\\build\hikogui-%VERSION%\tests ^
           -- ".\\build\hikogui-%VERSION%\tests\\hikogui_tests.exe"
 
       - name: 📦 🚀 Upload CodeCoverage Report to codecov.io
@@ -203,109 +208,28 @@ jobs:
           files: ./hikogui_coverage.xml
 
       #
-      # We only upload artifacts for static builds with pre-compiled headers (TT_BUILD_PCH:ON).
+      # We only upload artifacts for static builds with pre-compiled headers (HI_BUILD_PCH:ON).
       #
 
       # Double ZIP issue: https://github.com/actions/upload-artifact#zipped-artifact-downloads
       # We can either zip an already zipped file; or send all files to a zip service, possibly creating a 503.
       - name: 📦 Package
-        if: ${{ matrix.config.TT_BUILD_PCH == 'ON'}}
+        if: ${{ matrix.config.HI_BUILD_PCH == 'ON'}}
         run: |
            cd build
            7z a -tzip -mx9 "%ARTIFACT_NAME%.zip" ./hikogui-%VERSION%
 
       # To ensure that jobs don't overwrite existing artifacts, use a different "name" per job/run.
       - name: 📦 🚀 Upload Artifact
-        if: ${{ matrix.config.TT_BUILD_PCH == 'ON'}}
+        if: ${{ matrix.config.HI_BUILD_PCH == 'ON'}}
         uses: actions/upload-artifact@v2 # https://github.com/actions/upload-artifact
         with:
-          name: ${{ env.ARTIFACT_NAME }}-PCH-${{ matrix.config.TT_BUILD_PCH }}
+          name: ${{ env.ARTIFACT_NAME }}-PCH-${{ matrix.config.HI_BUILD_PCH }}
           path: build/${{ env.ARTIFACT_NAME }}.zip
 
 # ---------------------------------------------------------------------------------------
 
-  install-vulkan-sdk-and-runtime:
-
-# ---------------------------------------------------------------------------------------
-
-    name: "Install Vulkan SDK"
-    runs-on: windows-latest
-    if: success() || failure() # don't run job, if skipped
-    defaults:
-      run:
-        shell: cmd
-
-    outputs:
-      VULKAN_SDK: ${{ steps.vulkan-output.outputs.VULKAN_SDK }}
-
-    steps:
-
-      - name: 📥 Set latest VULKAN_VERSION as environment variable
-        shell: pwsh
-        run: |
-          echo 'VULKAN_VERSION<<EOF' >> $env:GITHUB_ENV
-          curl https://vulkan.lunarg.com/sdk/latest/windows.txt >> $env:GITHUB_ENV
-          echo 'EOF' >> $env:GITHUB_ENV
-
-      - name: 📥 Setup Environment Variables
-        shell: pwsh
-        run: |
-          echo VULKAN_SDK=C:\VulkanSDK\${{ env.VULKAN_VERSION }} >> $env:GITHUB_ENV
-          $env:BASE_URL="https://sdk.lunarg.com/sdk/download/${{ env.VULKAN_VERSION }}/windows"
-          echo VULKAN_SDK_URL=$env:BASE_URL/VulkanSDK-${{ env.VULKAN_VERSION }}-Installer.exe?Human=true >> $env:GITHUB_ENV
-          echo VULKAN_RUN_URL=$env:BASE_URL/vulkan-runtime-components.zip?Human=true >> $env:GITHUB_ENV
-
-      - name: 🎯 Cache VULKAN SDK & Runtime
-        id: cache-vulkan
-        uses: actions/cache@v1 # https://github.com/actions/cache
-        with:
-          path: ${{ env.VULKAN_SDK }}
-          key: cache-windows-vulkan-${{ env.VULKAN_VERSION }}
-
-      - name: 🔽 Install VULKAN_SDK
-        if: steps.cache-vulkan.outputs.cache-hit != 'true'
-        run: |
-          curl -L --silent --show-error --output VulkanSDK.exe %VULKAN_SDK_URL%
-          VulkanSDK.exe in com.lunarg.vulkan.core --accept-licenses --default-answer --confirm-command --root %VULKAN_SDK%
-
-      - name: 🔽 Install VULKAN Runtime (➔ vulkan-1.dll)
-        if: steps.cache-vulkan.outputs.cache-hit != 'true'
-        run: |
-          curl -L --silent --show-error --output vulkan-runtime.zip %VULKAN_RUN_URL%
-          7z e vulkan-runtime.zip -o%VULKAN_SDK%\runtime\x64 */x64
-
-      - name: ❔ CHECK important folders, to see if everything is present (after downloading)
-        if: steps.cache-vulkan.outputs.cache-hit != 'true'
-        run: |
-          dir /S /B ${{ env.VULKAN_SDK }}
-
-      - name: ✂ Reduce VULKAN_SDK size before caching
-        if: steps.cache-vulkan.outputs.cache-hit != 'true'
-        shell: pwsh
-        run: |
-          cd ${{ env.VULKAN_SDK }}
-          "Folder size before: {0:N2} MB" -f ((ls . -r | Measure-Object -Property Length -Sum).Sum / 1MB)
-          Remove-Item -Recurse -Force "Demos"
-          Remove-Item -Recurse -Force "Helpers"
-          Remove-Item -Recurse -Force "installerResources"
-          Remove-Item -Recurse -Force "Licenses"
-          Remove-Item -Recurse -Force "Templates"
-          Remove-Item -Recurse -Force "Tools"
-          Remove-Item -Recurse -Force "Source"
-          Remove-Item .\maintenancetool.*, .\components.xml, .\network.xml, .\installer.dat, .\InstallationLog.txt
-          "Folder size after: {0:N2} MB" -f ((ls . -r | Measure-Object -Property Length -Sum).Sum / 1MB)
-
-      - name: 📤 Set outputs
-        id: vulkan-output
-        run: |
-         echo ::set-output name=VULKAN_SDK::${{ env.VULKAN_SDK }}
-
-# ---------------------------------------------------------------------------------------
-
   publish-test-results:
-
-# ---------------------------------------------------------------------------------------
-
     # Only publish test results, when the action runs in your repository's context.
     # In other words: this disables publishing tests results from pull requests.
     # PR test results are published from the standalone workflow "publish-PR-test-results.yml".
@@ -316,7 +240,6 @@ jobs:
     if: always() && ( github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository )
 
     steps:
-
       - name: 🔽 Download Artifacts
         uses: actions/download-artifact@v2 # https://github.com/actions/download-artifact
         with:

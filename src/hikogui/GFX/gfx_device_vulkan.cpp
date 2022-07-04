@@ -183,14 +183,16 @@ gfx_device_vulkan::~gfx_device_vulkan()
     try {
         hilet lock = std::scoped_lock(gfx_system_mutex);
 
-        toneMapperPipeline->destroy(this);
-        toneMapperPipeline = nullptr;
-        SDFPipeline->destroy(this);
-        SDFPipeline = nullptr;
-        imagePipeline->destroy(this);
-        imagePipeline = nullptr;
-        boxPipeline->destroy(this);
-        boxPipeline = nullptr;
+        tone_mapper_pipeline->destroy(this);
+        tone_mapper_pipeline = nullptr;
+        alpha_pipeline->destroy(this);
+        alpha_pipeline = nullptr;
+        SDF_pipeline->destroy(this);
+        SDF_pipeline = nullptr;
+        image_pipeline->destroy(this);
+        image_pipeline = nullptr;
+        box_pipeline->destroy(this);
+        box_pipeline = nullptr;
 
         destroy_quad_index_buffer();
 
@@ -271,26 +273,60 @@ gfx_device_vulkan::~gfx_device_vulkan()
         auto surface_format_score = 0;
 
         switch (surface_format.colorSpace) {
-        case vk::ColorSpaceKHR::eSrgbNonlinear: surface_format_score += 1; break;
-        case vk::ColorSpaceKHR::eExtendedSrgbNonlinearEXT: surface_format_score += 10; break;
+        case vk::ColorSpaceKHR::eSrgbNonlinear:
+            surface_format_score += 1;
+            break;
+        case vk::ColorSpaceKHR::eExtendedSrgbNonlinearEXT:
+            surface_format_score += 10;
+            break;
         default:;
         }
 
         switch (surface_format.format) {
-        case vk::Format::eR16G16B16A16Sfloat: surface_format_score += 12; break;
-        case vk::Format::eR16G16B16Sfloat: surface_format_score += 11; break;
+        case vk::Format::eR16G16B16A16Sfloat:
+            if (os_settings::uniform_HDR()) {
+                surface_format_score += 12;
+            } else {
+                // XXX add override for application that require HDR.
+                surface_format_score -= 100;
+            }
+            break;
+        case vk::Format::eR16G16B16Sfloat:
+            if (os_settings::uniform_HDR()) {
+                surface_format_score += 11;
+            } else {
+                // XXX add override for application that require HDR.
+                surface_format_score -= 100;
+            }
+            break;
         case vk::Format::eA2B10G10R10UnormPack32:
             // This is a wire format for HDR, the GPU will not automatically convert linear shader-space to this wire format.
             surface_format_score -= 100;
             break;
-        case vk::Format::eR8G8B8A8Srgb: surface_format_score += 4; break;
-        case vk::Format::eB8G8R8A8Srgb: surface_format_score += 4; break;
-        case vk::Format::eR8G8B8Srgb: surface_format_score += 3; break;
-        case vk::Format::eB8G8R8Srgb: surface_format_score += 3; break;
-        case vk::Format::eB8G8R8A8Unorm: surface_format_score += 2; break;
-        case vk::Format::eR8G8B8A8Unorm: surface_format_score += 2; break;
-        case vk::Format::eB8G8R8Unorm: surface_format_score += 1; break;
-        case vk::Format::eR8G8B8Unorm: surface_format_score += 1; break;
+        case vk::Format::eR8G8B8A8Srgb:
+            surface_format_score += 4;
+            break;
+        case vk::Format::eB8G8R8A8Srgb:
+            surface_format_score += 4;
+            break;
+        case vk::Format::eR8G8B8Srgb:
+            surface_format_score += 3;
+            break;
+        case vk::Format::eB8G8R8Srgb:
+            surface_format_score += 3;
+            break;
+        case vk::Format::eB8G8R8A8Unorm:
+            surface_format_score += 2;
+            break;
+        case vk::Format::eR8G8B8A8Unorm:
+            surface_format_score += 2;
+            break;
+        case vk::Format::eB8G8R8Unorm:
+            surface_format_score += 1;
+            break;
+        case vk::Format::eR8G8B8Unorm:
+            surface_format_score += 1;
+            break;
         default:;
         }
 
@@ -324,16 +360,23 @@ gfx_device_vulkan::~gfx_device_vulkan()
         int present_mode_score = 0;
 
         switch (present_mode) {
-        case vk::PresentModeKHR::eImmediate: present_mode_score += 1; break;
-        case vk::PresentModeKHR::eFifo: present_mode_score += 1; break;
-        case vk::PresentModeKHR::eFifoRelaxed: present_mode_score += 2; break;
+        case vk::PresentModeKHR::eImmediate:
+            present_mode_score += 1;
+            break;
+        case vk::PresentModeKHR::eFifo:
+            present_mode_score += 1;
+            break;
+        case vk::PresentModeKHR::eFifoRelaxed:
+            present_mode_score += 2;
+            break;
         case vk::PresentModeKHR::eMailbox:
             // Mailbox is preferred since neither acquire and present calls will block.
             // Our main event loop will already block on vsync, and we want the render calls to
             // return immediately even on failure, to keep latency on the event-loop to a minimum.
             present_mode_score += 3;
             break;
-        default: continue;
+        default:
+            continue;
         }
 
         if (score) {
@@ -380,9 +423,9 @@ int gfx_device_vulkan::score(gfx_surface const& surface) const
     bool device_has_compute = false;
     bool device_shares_graphics_and_present = false;
     for (hilet& queue : _queues) {
-        hilet has_present = static_cast<bool>(physicalIntrinsic.getSurfaceSupportKHR(queue.family_queue_index, surface_));
-        hilet has_graphics = static_cast<bool>(queue.flags & vk::QueueFlagBits::eGraphics);
-        hilet has_compute = static_cast<bool>(queue.flags & vk::QueueFlagBits::eCompute);
+        hilet has_present = to_bool(physicalIntrinsic.getSurfaceSupportKHR(queue.family_queue_index, surface_));
+        hilet has_graphics = to_bool(queue.flags & vk::QueueFlagBits::eGraphics);
+        hilet has_compute = to_bool(queue.flags & vk::QueueFlagBits::eCompute);
 
         device_has_graphics |= has_graphics;
         device_has_present |= has_present;
@@ -434,11 +477,21 @@ int gfx_device_vulkan::score(gfx_surface const& surface) const
     auto device_type_score = 0;
     hilet properties = physicalIntrinsic.getProperties();
     switch (properties.deviceType) {
-    case vk::PhysicalDeviceType::eCpu: device_type_score = 1; break;
-    case vk::PhysicalDeviceType::eOther: device_type_score = 1; break;
-    case vk::PhysicalDeviceType::eVirtualGpu: device_type_score = 2; break;
-    case vk::PhysicalDeviceType::eIntegratedGpu: device_type_score = 3; break;
-    case vk::PhysicalDeviceType::eDiscreteGpu: device_type_score = 4; break;
+    case vk::PhysicalDeviceType::eCpu:
+        device_type_score = 1;
+        break;
+    case vk::PhysicalDeviceType::eOther:
+        device_type_score = 1;
+        break;
+    case vk::PhysicalDeviceType::eVirtualGpu:
+        device_type_score = 2;
+        break;
+    case vk::PhysicalDeviceType::eIntegratedGpu:
+        device_type_score = 3;
+        break;
+    case vk::PhysicalDeviceType::eDiscreteGpu:
+        device_type_score = 4;
+        break;
     }
     hi_log_info(" - device-type={}, score={}", vk::to_string(properties.deviceType), device_type_score);
     total_score += device_type_score;
@@ -532,10 +585,11 @@ void gfx_device_vulkan::initialize_device()
     initialize_queues(device_queue_create_infos);
     initialize_quad_index_buffer();
 
-    boxPipeline = std::make_unique<pipeline_box::device_shared>(*this);
-    imagePipeline = std::make_unique<pipeline_image::device_shared>(*this);
-    SDFPipeline = std::make_unique<pipeline_SDF::device_shared>(*this);
-    toneMapperPipeline = std::make_unique<pipeline_tone_mapper::device_shared>(*this);
+    box_pipeline = std::make_unique<pipeline_box::device_shared>(*this);
+    image_pipeline = std::make_unique<pipeline_image::device_shared>(*this);
+    SDF_pipeline = std::make_unique<pipeline_SDF::device_shared>(*this);
+    alpha_pipeline = std::make_unique<pipeline_alpha::device_shared>(*this);
+    tone_mapper_pipeline = std::make_unique<pipeline_tone_mapper::device_shared>(*this);
 }
 
 void gfx_device_vulkan::initialize_quad_index_buffer()
@@ -587,13 +641,26 @@ void gfx_device_vulkan::initialize_quad_index_buffer()
             hilet rectangleBase = rectangleNr * 4;
 
             switch (vertexInRectangle) {
-            case 0: stagingvertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 0); break;
-            case 1: stagingvertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 1); break;
-            case 2: stagingvertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 2); break;
-            case 3: stagingvertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 2); break;
-            case 4: stagingvertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 1); break;
-            case 5: stagingvertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 3); break;
-            default: hi_no_default();
+            case 0:
+                stagingvertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 0);
+                break;
+            case 1:
+                stagingvertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 1);
+                break;
+            case 2:
+                stagingvertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 2);
+                break;
+            case 3:
+                stagingvertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 2);
+                break;
+            case 4:
+                stagingvertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 1);
+                break;
+            case 5:
+                stagingvertexIndexBufferData[i] = narrow_cast<vertex_index_type>(rectangleBase + 3);
+                break;
+            default:
+                hi_no_default();
             }
         }
         flushAllocation(stagingvertexIndexBufferAllocation, 0, VK_WHOLE_SIZE);
@@ -643,12 +710,14 @@ std::pair<vk::Buffer, VmaAllocation> gfx_device_vulkan::createBuffer(
     VmaAllocation allocation;
 
     hilet bufferCreateInfo_ = static_cast<VkBufferCreateInfo>(bufferCreateInfo);
-    hilet result = static_cast<vk::Result>(
-        vmaCreateBuffer(allocator, &bufferCreateInfo_, &allocationCreateInfo, &buffer, &allocation, nullptr));
+    hilet result =
+        vk::Result{vmaCreateBuffer(allocator, &bufferCreateInfo_, &allocationCreateInfo, &buffer, &allocation, nullptr)};
 
-    std::pair<vk::Buffer, VmaAllocation> const value = {buffer, allocation};
+    if (result != vk::Result::eSuccess) {
+        throw gui_error(std::format("vmaCreateBuffer() failed {}", to_string(result)));
+    }
 
-    return vk::createResultValue(result, value, "hi::gfx_device_vulkan::createBuffer");
+    return {buffer, allocation};
 }
 
 void gfx_device_vulkan::destroyBuffer(const vk::Buffer& buffer, const VmaAllocation& allocation) const
@@ -668,12 +737,13 @@ std::pair<vk::Image, VmaAllocation> gfx_device_vulkan::createImage(
     VmaAllocation allocation;
 
     hilet imageCreateInfo_ = static_cast<VkImageCreateInfo>(imageCreateInfo);
-    hilet result = static_cast<vk::Result>(
-        vmaCreateImage(allocator, &imageCreateInfo_, &allocationCreateInfo, &image, &allocation, nullptr));
+    hilet result = vk::Result{vmaCreateImage(allocator, &imageCreateInfo_, &allocationCreateInfo, &image, &allocation, nullptr)};
 
-    std::pair<vk::Image, VmaAllocation> const value = {image, allocation};
+    if (result != vk::Result::eSuccess) {
+        throw gui_error(std::format("vmaCreateImage() failed {}", to_string(result)));
+    }
 
-    return vk::createResultValue(result, value, "hi::gfx_device_vulkan::createImage");
+    return {image, allocation};
 }
 
 void gfx_device_vulkan::destroyImage(const vk::Image& image, const VmaAllocation& allocation) const
@@ -730,18 +800,22 @@ void gfx_device_vulkan::endSingleTimeCommands(vk::CommandBuffer commandBuffer) c
 static std::pair<vk::AccessFlags, vk::PipelineStageFlags> access_and_stage_from_layout(vk::ImageLayout layout) noexcept
 {
     switch (layout) {
-    case vk::ImageLayout::eUndefined: return {vk::AccessFlags(), vk::PipelineStageFlagBits::eTopOfPipe};
+    case vk::ImageLayout::eUndefined:
+        return {vk::AccessFlags(), vk::PipelineStageFlagBits::eTopOfPipe};
 
     // GPU Texture Maps
-    case vk::ImageLayout::eTransferDstOptimal: return {vk::AccessFlagBits::eTransferWrite, vk::PipelineStageFlagBits::eTransfer};
+    case vk::ImageLayout::eTransferDstOptimal:
+        return {vk::AccessFlagBits::eTransferWrite, vk::PipelineStageFlagBits::eTransfer};
 
     case vk::ImageLayout::eShaderReadOnlyOptimal:
         return {vk::AccessFlagBits::eShaderRead, vk::PipelineStageFlagBits::eFragmentShader};
 
     // CPU Staging texture maps
-    case vk::ImageLayout::eGeneral: return {vk::AccessFlagBits::eHostWrite, vk::PipelineStageFlagBits::eHost};
+    case vk::ImageLayout::eGeneral:
+        return {vk::AccessFlagBits::eHostWrite, vk::PipelineStageFlagBits::eHost};
 
-    case vk::ImageLayout::eTransferSrcOptimal: return {vk::AccessFlagBits::eTransferRead, vk::PipelineStageFlagBits::eTransfer};
+    case vk::ImageLayout::eTransferSrcOptimal:
+        return {vk::AccessFlagBits::eTransferRead, vk::PipelineStageFlagBits::eTransfer};
 
     // If we are explicitly transferring an image for ePresentSrcKHR, then we are doing this
     // because we want to reuse the swapchain images in subsequent rendering. Make sure it
@@ -751,7 +825,8 @@ static std::pair<vk::AccessFlags, vk::PipelineStageFlags> access_and_stage_from_
             vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite,
             vk::PipelineStageFlagBits::eColorAttachmentOutput};
 
-    default: hi_no_default();
+    default:
+        hi_no_default();
     }
 }
 
@@ -869,7 +944,7 @@ vk::ShaderModule gfx_device_vulkan::loadShader(URL const& shaderObjectLocation) 
 {
     // no lock, only local variable.
 
-    return loadShader(*shaderObjectLocation.loadView());
+    return loadShader(as_span<std::byte const>(*shaderObjectLocation.loadView()));
 }
 
 void gfx_device_vulkan::setDebugUtilsObjectNameEXT(vk::DebugUtilsObjectNameInfoEXT const& name_info) const

@@ -2,13 +2,15 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#include "win32_headers.hpp"
+
 #include "file.hpp"
 #include "log.hpp"
 #include "exception.hpp"
 #include "strings.hpp"
 #include "cast.hpp"
+#include "memory.hpp"
 #include <type_traits>
-#include <Windows.h>
 
 namespace hi::inline v1 {
 
@@ -180,7 +182,7 @@ void file::rename(URL const &destination, bool overwrite_existing)
 
 /*! Write data to a file.
  */
-std::size_t file::write(std::byte const *data, std::size_t size, ssize_t offset)
+std::size_t file::write(void const *data, std::size_t size, ssize_t offset)
 {
     hi_axiom(size >= 0);
     hi_axiom(_file_handle != INVALID_HANDLE_VALUE);
@@ -202,7 +204,7 @@ std::size_t file::write(std::byte const *data, std::size_t size, ssize_t offset)
             break;
         }
 
-        data += written_size;
+        advance_bytes(data, written_size);
         if (offset != -1) {
             offset += written_size;
         }
@@ -213,7 +215,7 @@ std::size_t file::write(std::byte const *data, std::size_t size, ssize_t offset)
     return total_written_size;
 }
 
-ssize_t file::read(std::byte *data, std::size_t size, ssize_t offset)
+ssize_t file::read(void *data, std::size_t size, ssize_t offset)
 {
     hi_axiom(size >= 0);
     hi_axiom(_file_handle != INVALID_HANDLE_VALUE);
@@ -235,7 +237,7 @@ ssize_t file::read(std::byte *data, std::size_t size, ssize_t offset)
             break;
         }
 
-        data += read_size;
+        advance_bytes(data, read_size);
         if (offset != -1) {
             offset += read_size;
         }

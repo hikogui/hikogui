@@ -13,6 +13,7 @@
 #include <string>
 #include <string_view>
 #include <memory>
+#include <variant>
 
 namespace hi::inline v1 {
 
@@ -369,45 +370,50 @@ constexpr bool type_in_range_v = std::numeric_limits<Out>::digits >= std::numeri
     (std::numeric_limits<Out>::is_signed == std::numeric_limits<In>::is_signed or std::numeric_limits<Out>::is_signed);
 
 /** True if T is a forwarded type of OfType.
-* 
-* ```
-* template<forward_of<std::string> Text>
-* std::string foo(Text &&text) {
-*   return std::forward<Text>(text);
-* }
-* ```
+ *
+ * ```
+ * template<forward_of<std::string> Text>
+ * std::string foo(Text &&text) {
+ *   return std::forward<Text>(text);
+ * }
+ * ```
  */
 template<typename T, typename Forward>
-struct is_forward_of : public std::false_type {};
-
-template<typename T>
-struct is_forward_of<T, T> : public std::true_type {};
-
-template<typename T>
-struct is_forward_of<T, T const &> : public std::true_type {
+struct is_forward_of : public std::false_type {
 };
 
 template<typename T>
-struct is_forward_of<T, T &> : public std::true_type {
+struct is_forward_of<T, T> : public std::true_type {
+};
+
+template<typename T>
+struct is_forward_of<T, T const&> : public std::true_type {
+};
+
+template<typename T>
+struct is_forward_of<T, T&> : public std::true_type {
 };
 
 template<typename T, typename Forward>
 constexpr bool is_forward_of_v = is_forward_of<T, Forward>::value;
 
-/** Get the result type of an awaitable.
+/** Decays types for use as elements in std::variant.
  *
- * This is type return type of the `await_resume()` member function.
+ * @tparam T type to be decayed, or when `void` converted to `std::monostate`.
  */
 template<typename T>
-struct await_resume_result {
-    using type = decltype(std::declval<T>().await_resume());
+struct variant_decay {
+    using type = std::decay_t<T>;
 };
 
-/** Get the result type of an awaitable.
- *
- * This is type return type of the `await_resume()` member function.
+template<>
+struct variant_decay<void> {
+    using type = std::monostate;
+};
+
+/** @see variant_decay
  */
 template<typename T>
-using await_resume_result_t = hi_typename await_resume_result<T>::type;
+using variant_decay_t = variant_decay<T>::type;
 
 } // namespace hi::inline v1

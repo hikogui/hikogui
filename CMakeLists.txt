@@ -13,12 +13,14 @@ include(SetupCompiler)
 #-------------------------------------------------------------------
 
 option(BUILD_SHARED_LIBS    "Build shared libraries"            OFF)
-option(HI_BUILD_EXAMPLES    "Build example applications"         ON)
-option(HI_BUILD_TESTS       "Build tests"                        ON)
-option(HI_BUILD_PCH         "Build precompiled headers"          ON)
-option(HI_INSTALL           "Generate installation target"       ON)
 option(HI_ENABLE_ANALYSIS   "Compile using -analyze"            OFF)
 option(HI_ENABLE_ASAN       "Compile using address sanitizer"   OFF)
+
+include(CMakeDependentOption)
+cmake_dependent_option(HI_BUILD_EXAMPLES "Build example applications"   OFF "NOT HI_ENABLE_ANALYSIS" ON)
+cmake_dependent_option(HI_BUILD_TESTS    "Build tests"                  ON  "NOT HI_ENABLE_ANALYSIS" OFF)
+cmake_dependent_option(HI_INSTALL        "Generate installation target" ON  "NOT HI_ENABLE_ANALYSIS" OFF)
+cmake_dependent_option(HI_BUILD_PCH      "Build precompiled headers"    ON  "NOT HI_ENABLE_ANALYSIS" OFF)
 
 #-------------------------------------------------------------------
 # Project
@@ -87,9 +89,6 @@ include(AddStaticResource)
 include(AddShader)
 include(ShowBuildTargetProperties)
 include(FetchContent)
-if(WIN32)
-    include(GetWindowsNtVersion)
-endif()
 
 #-------------------------------------------------------------------
 # Find Dependencies
@@ -111,26 +110,17 @@ endif()
 if(NOT DEFINED ENV{VULKAN_SDK})
     message(FATAL_ERROR
         "Please set the VULKAN_SDK environment variable to the directory in which the SDK is installed.\n"
-        "It looks like C:\VulkanSDK\1.0.0.0, but with the version number being the version that was installed.\n"
+        "It looks like C:\\VulkanSDK\\1.0.0.0, but with the version number being the version that was installed.\n"
         "set VULKAN_SDK=\"C:\\VulkanSDK\\1.0.0.0\"\n")
 endif()
 find_package(Vulkan REQUIRED)
 
 #
-# Vulkan Memory Allocator
+# Vulkan Memory Allocator - installed as part of Vulkan SDK headers
 #
-if(VCPKG_TOOLCHAIN)
-    find_package(unofficial-vulkan-memory-allocator CONFIG REQUIRED)
-else()
-    FetchContent_Declare(VulkanMemoryAllocator GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator GIT_TAG v2.3.0)
-    FetchContent_MakeAvailable(VulkanMemoryAllocator)
-    add_library(unofficial::vulkan-memory-allocator::vulkan-memory-allocator INTERFACE IMPORTED)
-    set_target_properties(
-        unofficial::vulkan-memory-allocator::vulkan-memory-allocator
-        PROPERTIES
-        INTERFACE_INCLUDE_DIRECTORIES "${vulkanmemoryallocator_SOURCE_DIR}/src")
+if(NOT EXISTS "${Vulkan_INCLUDE_DIRS}/vma")
+    message(FATAL_ERROR "Please make sure to include VMA (Vulkan Memory Allocator) with the installation of VulkanSDK.\n")
 endif()
-
 
 #-------------------------------------------------------------------
 # Setup Build Targets
@@ -161,18 +151,42 @@ add_subdirectory(tools)
 set_target_properties(hikogui PROPERTIES VERSION ${HIKOGUI_PROJECT_VERSION_SHORT} SOVERSION ${HIKOGUI_MAJOR_VERSION})
 set_target_properties(hikogui PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
-target_link_libraries(hikogui PUBLIC ${Vulkan_LIBRARIES})
-target_link_libraries(hikogui PUBLIC unofficial::vulkan-memory-allocator::vulkan-memory-allocator)
-
 if(APPLE)
     target_link_libraries(hikogui PUBLIC "-framework Foundation -framework AppKit")
 endif()
 if(WIN32)
 	target_link_libraries(hikogui PUBLIC "ws2_32")
 	target_link_libraries(hikogui PUBLIC "DXGI")
+	target_link_libraries(hikogui PUBLIC "bcrypt")
+	target_link_libraries(hikogui PUBLIC "winmm")
+	target_link_libraries(hikogui PUBLIC "dwmapi")
 endif()
 
+# Add the Vulkan libraries.
+target_link_libraries(hikogui PUBLIC ${Vulkan_LIBRARIES})
 target_include_directories(hikogui PUBLIC ${Vulkan_INCLUDE_DIRS})
+if (WIN32)
+    # Add vulkan win32 surface support.
+    target_compile_definitions(hikogui PUBLIC -DVK_USE_PLATFORM_WIN32_KHR)
+
+    # vulkan.h will include the windows headers, so we must define all sorts of stuff on the command line.
+    target_compile_definitions(hikogui PUBLIC -DUNICODE)
+    target_compile_definitions(hikogui PUBLIC -D_UNICODE)
+    target_compile_definitions(hikogui PUBLIC -D_CRT_SECURE_NO_WARNINGS)
+    target_compile_definitions(hikogui PUBLIC -DNOMINMAX)
+    target_compile_definitions(hikogui PUBLIC -DWIN32_LEAN_AND_MEAN)
+
+    # Minimum Windows 10.
+    target_compile_definitions(hikogui PUBLIC -DWINVER=0x0a00)
+    target_compile_definitions(hikogui PUBLIC -D_WIN32_WINNT=0x0a00)
+    # winrt will include experimental headers that can not be turned off.
+    #target_compile_definitions(hikogui PUBLIC -D_SILENCE_CLANG_COROUTINE_MESSAGE)
+
+elseif (APPLE)
+    # Add vulkan apple's Metal surface support.
+    target_compile_definitions(hikogui PUBLIC -DVK_USE_PLATFORM_METAL_EXT)
+endif()
+
 
 target_include_directories(hikogui PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
@@ -297,7 +311,7 @@ elseif (MSVC)
     #        'struct (8 bytes)' and '__declspec(align(8)) struct (8 bytes)' [foobar.vcxproj]
     # Bug in linker where atomic variables defined in a header file and used in two .cpp files be
     # interpreted as different types. Microsoft knows about the bug for many years.
-    target_link_options(hikogui PUBLIC "-ignore:4744")
+    target_link_options(hikogui PUBLIC "/ignore:4744")
 
     if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
         # Enable Security Development Lifecycle checks.
@@ -321,30 +335,44 @@ elseif (MSVC)
         #target_compile_options(hikogui PUBLIC -analyze:ruleset ${CMAKE_CURRENT_SOURCE_DIR}/AllRules.ruleset)
 
         # The Core Guidelines checker, not so useful for real programs.
-        #target_compile_options(hikogui PUBLIC -analyze:plugin EspXEngine.dll)
+        message(NOTICE "The following environment variables need to be set for the core guidelines checker to work:")
+        message(NOTICE "    esp.extensions=cppcorecheck.dll")
+        message(NOTICE "    esp.annotationbuildlevel=ignore")
+        message(NOTICE "    CAExcludePath=C:\\VulkanSDK;C:\\Program Files")
+        message(NOTICE "")
+        target_compile_options(hikogui PUBLIC -analyze:plugin EspXEngine.dll)
+
+        # C26440: Function '...' can be declared 'noexcept' (f.6).
+        # It requires lambda function to also be declared 'noexcept' that makes the code messy.
+        target_compile_options(hikogui PUBLIC -wd26440)
+
+        # C26446: Prefer to use gsl::at() instead of unchecked subscript operator (bounds.4).
+        # This rule makes applications slow.
+        target_compile_options(hikogui PUBLIC -wd26446)
+
+        # C26447: The function is declared 'noexcept' but calls function '...' which may throw exceptions (f.6).
+        # Since c++20 std::terminate will be called on throw.
+        target_compile_options(hikogui PUBLIC -wd26447)
+
+        # C26481: Don't use pointer arithmetic. Use span instead (bounds.1).
+        # False positive everywhere std::format() is used.
+        target_compile_options(hikogui PUBLIC -wd26481)
+
+        # C26482: Only index into arrays using constant expressions (bounds.2).
+        # This rule makes it so you can not use a variable to index into an array.
+        target_compile_options(hikogui PUBLIC -wd26482)
+
+        # C26821: For '...', consider using gsl::span instead of std::span to guarantee runtime bounds safety (gsl.view).
+        # This rule makes applications slow.
+        target_compile_options(hikogui PUBLIC -wd26821)
+
+        # C28020: The expression '0<=_Param_(1)&&_Param_(1)<=256-1' is not true at this call.
+        # False positives in base_n, where the index is static_cast<uint8_t>().
+        # The bug (since 2020) in the compiler seem to have been triggered in unrelated code.
+        # https://developercommunity.visualstudio.com/t/c28020-false-positives/923103
+        target_compile_options(hikogui PUBLIC -wd28020)
+
     endif()
-endif()
-
-if (WIN32)
-    # Add vulkan win32 surface support.
-    target_compile_definitions(hikogui PUBLIC -DVK_USE_PLATFORM_WIN32_KHR)
-
-    # Set defines to compile a win32 application.
-	target_compile_options(hikogui PUBLIC -D_WIN64 -DUNICODE -D_UNICODE -D_CRT_SECURE_NO_WARNINGS)
-
-    # winrt will include experimental headers that can not be turned off.
-    #target_compile_options(hikogui PUBLIC -D_SILENCE_CLANG_COROUTINE_MESSAGE)
-
-    # Make sure that Windows.h doesn't include all kind of weird things.
-    target_compile_options(hikogui PUBLIC -DNOMINMAX -DWIN32_LEAN_AND_MEAN)
-
-    # define the version of the windows header files to use
-    get_windows_ntversion(winnt_version)
-    target_compile_options(hikogui PUBLIC -D_WIN32_WINNT=${winnt_version})
-
-elseif (APPLE)
-    # Add vulkan apple's Metal surface support.
-    target_compile_definitions(hikogui PUBLIC -DVK_USE_PLATFORM_METAL_EXT)
 endif()
 
 #-------------------------------------------------------------------
@@ -359,6 +387,8 @@ add_shader(hikogui_shader_objects
     src/hikogui/GFX/pipeline_box.frag
     src/hikogui/GFX/pipeline_SDF.vert
     src/hikogui/GFX/pipeline_SDF.frag
+    src/hikogui/GFX/pipeline_alpha.vert
+    src/hikogui/GFX/pipeline_alpha.frag
     src/hikogui/GFX/pipeline_tone_mapper.vert
     src/hikogui/GFX/pipeline_tone_mapper.frag
 )
@@ -496,6 +526,13 @@ if(HI_BUILD_EXAMPLES)
     add_subdirectory(examples/widgets)
     add_subdirectory(examples/custom_widgets)
     add_subdirectory(examples/codec)
+else()
+    # By default examples marked with EXCLUDE_FROM_ALL will not be build by
+    # `make all`, which is also what Visual Studio uses to improve compilation speed.
+    add_subdirectory(examples/hikogui_demo EXCLUDE_FROM_ALL)
+    add_subdirectory(examples/widgets EXCLUDE_FROM_ALL)
+    add_subdirectory(examples/custom_widgets EXCLUDE_FROM_ALL)
+    add_subdirectory(examples/codec EXCLUDE_FROM_ALL)
 endif()
 
 #-------------------------------------------------------------------

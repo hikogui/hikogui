@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#include "../win32_headers.hpp"
+
 #include "gui_window_win32.hpp"
 #include "gui_system.hpp"
 #include "keyboard_virtual_key.hpp"
@@ -14,11 +16,7 @@
 #include "../os_settings.hpp"
 #include "../loop.hpp"
 #include "../unicode/unicode_normalization.hpp"
-#include <windowsx.h>
-#include <dwmapi.h>
 #include <new>
-
-#pragma comment(lib, "dwmapi")
 
 namespace hi::inline v1 {
 

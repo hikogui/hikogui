@@ -2,103 +2,125 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "unicode_db.hpp"
-#include <exception>
+#include "ucd_index.hpp"
+#include "ucd_descriptions.hpp"
+#include "ucd_compositions.hpp"
+#include "ucd_decompositions.hpp"
+#include "unicode_description.hpp"
+#include "../cast.hpp"
 
 namespace hi::inline v1 {
 
-static unicode_description const& Replacement_Character_unicode_description = unicode_description::find(U'\ufffd');
-static unicode_description const& CJK_Ideograph_Extension_A_unicode_description = unicode_description::find(U'\u3400');
-static unicode_description const& CJK_Ideograph_unicode_description = unicode_description::find(U'\u4e00');
-static unicode_description const& Hangul_Syllable_LV_unicode_description = unicode_description::find(U'\uac00');
-static unicode_description const& Hangul_Syllable_LVT_unicode_description = unicode_description::find(U'\ud7a3');
-static unicode_description const& Non_Private_Use_High_Surrogate_unicode_description =
-    unicode_description::find(char32_t{0xd800});
-static unicode_description const& Private_Use_High_Surrogate_unicode_description = unicode_description::find(char32_t{0xdb80});
-static unicode_description const& Low_Surrogate_unicode_description = unicode_description::find(char32_t{0xdc00});
-static unicode_description const& Private_Use_unicode_description = unicode_description::find(U'\ue000');
-static unicode_description const& Tangut_Ideograph_unicode_description = unicode_description::find(U'\U00017000');
-static unicode_description Extended_Pictographic_description =
-    unicode_description::make_unassigned(unicode_description::find(U'\U0001f000'));
-static unicode_description const& CJK_Ideograph_Extension_B_unicode_description = unicode_description::find(U'\U00020000');
-static unicode_description const& CJK_Ideograph_Extension_C_unicode_description = unicode_description::find(U'\U0002a700');
-static unicode_description const& CJK_Ideograph_Extension_D_unicode_description = unicode_description::find(U'\U0002b740');
-static unicode_description const& CJK_Ideograph_Extension_E_unicode_description = unicode_description::find(U'\U0002b820');
-static unicode_description const& CJK_Ideograph_Extension_F_unicode_description = unicode_description::find(U'\U0002ceb0');
-static unicode_description const& Plane_15_Private_Use_unicode_description = unicode_description::find(U'\U000f0000');
-static unicode_description const& Plane_16_Private_Use_unicode_description = unicode_description::find(U'\U00100000');
-
 [[nodiscard]] unicode_description const& unicode_description::find(char32_t code_point) noexcept
 {
-    if (code_point > 0x10'ffff) {
-        return Replacement_Character_unicode_description;
+    hi_axiom(code_point <= 0x10'ffff);
+
+    auto index = wide_cast<size_t>(ucd_index[code_point >> 5]);
+    index <<= 5;
+    index |= code_point & 0x1f;
+    return ucd_descriptions[index];
+}
+
+[[nodiscard]] std::u32string unicode_description::decompose() const noexcept
+{
+    constexpr uint64_t mask = 0x1f'ffff;
+
+    auto r = std::u32string{};
+    if (_decomposition_index <= 0x10'ffff) {
+        r += truncate<char32_t>(_decomposition_index);
+
+    } else if (_decomposition_index < 0x1f'ffff) {
+        auto index = _decomposition_index - 0x11'0000;
+
+        uint64_t tmp = 0;
+        do {
+            hi_axiom(index < ucd_decompositions.size());
+            tmp = ucd_decompositions[index++];
+            
+            // Entry 0[20:0]
+            if (auto c = truncate<char32_t>(tmp & mask); c != mask) {
+                r += c;
+            } else {
+                goto done;                
+            }
+            tmp >>= 21;
+
+            // Entry 0[41:21]
+            if (auto c = truncate<char32_t>(tmp & mask); c != mask) {
+                r += c;
+            } else {
+                goto done;
+            }
+            tmp >>= 21;
+
+            // Entry 0[62:42]
+            if (auto c = truncate<char32_t>(tmp & mask); c != mask) {
+                r += c;
+            } else {
+                goto done;
+            }
+            tmp >>= 21;
+
+            // Continue if 0[63] == '0'.
+        } while (tmp == 0);
     }
 
-    hilet chunk_index = detail::unicode_chunk_index_table[code_point >> 5];
-    hilet &description = detail::unicode_db_description_table[(wide_cast<size_t>(chunk_index) << 5) | (code_point & 0x1f)];
+done:
+    return r;
+}
 
-    if (description != unicode_general_category::Cn) {
-        return description;
+[[nodiscard]] char32_t unicode_description::compose(char32_t other) const noexcept
+{
+    constexpr uint64_t mask = 0x1f'ffff;
+
+    if (_composition_index == 0) {
+        return 0xffff;
     }
 
-    // XXX Merge these if statements into the actual description table.
-    if (code_point >= U'\u3400' && code_point <= U'\u4db5') {
-        return CJK_Ideograph_Extension_A_unicode_description;
+    auto index = _composition_index - 1;
 
-    } else if (code_point >= U'\u4e00' && code_point <= U'\u9fef') {
-        return CJK_Ideograph_unicode_description;
-
-    } else if (code_point >= U'\uac00' && code_point < U'\ud7a3') {
-        if (is_hangul_LV_part(code_point)) {
-            return Hangul_Syllable_LV_unicode_description;
-        } else if (is_hangul_LVT_part(code_point)) {
-            return Hangul_Syllable_LVT_unicode_description;
+    uint64_t tmp = 0;
+    do {
+        // Entry 0[20:0] and 0[41:21], 0[63] == '-'.
+        hi_axiom(index < ucd_compositions.size());
+        tmp = ucd_compositions[index++];
+        if (hilet c = truncate<char32_t>(tmp & mask); c <= other) {
+            tmp >>= 21;
+            if (c == other) {
+                return truncate<char32_t>(tmp & mask);
+            }
         } else {
-            return Replacement_Character_unicode_description;
+            return 0xffff;
         }
+        tmp >>= 21;
 
-    } else if (code_point >= char32_t{0xd800} && code_point <= char32_t{0xdb7f}) {
-        return Non_Private_Use_High_Surrogate_unicode_description;
+        // Entry 0[62:42] and 1[20:0], 0[63] == '-'.
+        if (hilet c = truncate<char32_t>(tmp & mask); c <= other) {
+            hi_axiom(index < ucd_compositions.size());
+            tmp = ucd_compositions[index++];
+            if (c == other) {
+                return truncate<char32_t>(tmp & mask);
+            }
+        } else {
+            return 0xffff;
+        }
+        tmp >>= 21;
+        
+        // Entry 1[41:21] and 1[62:42]
+        if (hilet c = truncate<char32_t>(tmp & mask); c <= other) {
+            tmp >>= 21;
+            if (c == other) {
+                return truncate<char32_t>(tmp & mask);
+            }
+        } else {
+            return 0xffff;
+        }
+        tmp >>= 21;
 
-    } else if (code_point >= char32_t{0xdb80} && code_point <= char32_t{0xdbff}) {
-        return Private_Use_High_Surrogate_unicode_description;
+        // Continue if 1[63] == '0'.
+    } while (tmp == 0);
 
-    } else if (code_point >= char32_t{0xdc00} && code_point <= char32_t{0xdfff}) {
-        return Low_Surrogate_unicode_description;
-
-    } else if (code_point >= U'\ue000' && code_point <= U'\uf8ff') {
-        return Private_Use_unicode_description;
-
-    } else if (code_point >= U'\U00017000' && code_point <= U'\U000187f7') {
-        return Tangut_Ideograph_unicode_description;
-
-    } else if (code_point >= U'\U0001f000' and code_point <= U'\U0001fffd') {
-        return Extended_Pictographic_description;
-
-    } else if (code_point >= U'\U00020000' && code_point <= U'\U0002a6d6') {
-        return CJK_Ideograph_Extension_B_unicode_description;
-
-    } else if (code_point >= U'\U0002a700' && code_point <= U'\U0002b734') {
-        return CJK_Ideograph_Extension_C_unicode_description;
-
-    } else if (code_point >= U'\U0002b740' && code_point <= U'\U0002b81d') {
-        return CJK_Ideograph_Extension_D_unicode_description;
-
-    } else if (code_point >= U'\U0002b820' && code_point <= U'\U0002cea1') {
-        return CJK_Ideograph_Extension_E_unicode_description;
-
-    } else if (code_point >= U'\U0002ceb0' && code_point <= U'\U0002ebe0') {
-        return CJK_Ideograph_Extension_F_unicode_description;
-
-    } else if (code_point >= U'\U000f0000' && code_point <= U'\U000ffffd') {
-        return Plane_15_Private_Use_unicode_description;
-
-    } else if (code_point >= U'\U00100000' && code_point <= U'\U0010fffd') {
-        return Plane_16_Private_Use_unicode_description;
-
-    } else {
-        return Replacement_Character_unicode_description;
-    }
+    return 0xffff;
 }
 
 } // namespace hi::inline v1

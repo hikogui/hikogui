@@ -23,6 +23,9 @@ Windows 10
    - Windows 10 SDK
  - **git** from: <https://git-scm.com/>
  - The **Vulkan SDK** from: <https://www.lunarg.com/vulkan-sdk/>
+   with the following options installed:
+   - The Vulkan SDK Core (Always Installed)
+   - Vulkan Memory Allocator header.
  - optional: **vcpkg** from: <https://github.com/microsoft/vcpkg>
  - optional: **RenderDoc** (for Vulkan debugging) from: <https://renderdoc.org/>
  - optional: **Doxygen** (for documentation generation) from: <https://www.doxygen.nl/>

@@ -10,6 +10,7 @@
 #include <concepts>
 #include <limits>
 #include <coroutine>
+#include <chrono>
 
 namespace hi::inline v1 {
 
@@ -123,51 +124,5 @@ concept scoped_enum = std::is_enum_v<T>;
 
 template<typename Forward, typename T>
 concept forward_of = is_forward_of_v<T, Forward>;
-
-
-/** Check if type can be directly co_await on.
- *
- * The type needs to have the following member functions:
- *  `await_ready()`, `await_suspend()` and `await_resume()`.
- */
-template<typename T>
-concept awaitable_direct = requires(T a, std::coroutine_handle<> b)
-{
-    // clang-format off
-    { a.await_ready() } -> std::convertible_to<bool>;
-    a.await_suspend(b);
-    a.await_resume();
-    // clang-format on
-};
-
-/** Check if type can be indirectly co_await on.
- *
- * The type needs to implement member function `operator co_await()`.
- */
-template<typename T>
-concept awaitable_member = requires(T a)
-{
-    {a.operator co_await()};
-};
-
-/** Check if type can be indirectly co_await on.
- *
- * The type needs to implement free function `operator co_await()`.
- */
-template<typename T>
-concept awaitable_non_member = requires(T a)
-{
-    {operator co_await(static_cast<T &&>(a))};
-};
-
-/** Check if type can be directly or indirectly co_await on.
- *
- * The type needs to have the following member functions:
- *  `await_ready()`, `await_suspend()` and `await_resume()`.
- * Or implement `operator co_await()`.
- */
-template<typename T>
-concept awaitable = awaitable_direct<T> or awaitable_member<T> or awaitable_non_member<T>;
-
 
 } // namespace hi::inline v1

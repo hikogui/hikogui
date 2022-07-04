@@ -6,8 +6,8 @@
 
 #include "pipeline_vulkan.hpp"
 #include "pipeline_tone_mapper_push_constants.hpp"
-#include "../vspan.hpp"
-#include <vk_mem_alloc.h>
+#include "../vector_span.hpp"
+#include <vma/vk_mem_alloc.h>
 #include <span>
 
 namespace hi::inline v1::pipeline_tone_mapper {
@@ -24,7 +24,7 @@ public:
     pipeline_tone_mapper(pipeline_tone_mapper &&) = delete;
     pipeline_tone_mapper &operator=(pipeline_tone_mapper &&) = delete;
 
-    void drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_context const &context) override;
+    void draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context) override;
 
 protected:
     push_constants _push_constants;

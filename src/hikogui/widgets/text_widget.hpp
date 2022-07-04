@@ -5,8 +5,8 @@
 #pragma once
 
 #include "widget.hpp"
-#include "../GUI/theme_text_style.hpp"
 #include "../GUI/gui_event.hpp"
+#include "../text/semantic_text_style.hpp"
 #include "../text/text_selection.hpp"
 #include "../text/text_shaper.hpp"
 #include "../observable.hpp"
@@ -53,26 +53,6 @@ class text_widget final : public widget {
 public:
     using super = widget;
 
-    /** Mode of the text-widget.
-     */
-    enum class edit_mode_type {
-        /** Text is fixed.
-         */
-        fixed,
-
-        /** Text is selectable and copyable.
-         */
-        selectable,
-
-        /** Can edit single lines.
-         */
-        line_editable,
-
-        /** Text is editable.
-         */
-        fully_editable
-    };
-
     /** The text to be displayed.
      */
     observable<gstring> text;
@@ -83,11 +63,7 @@ public:
 
     /** The style of the text.
      */
-    observable<theme_text_style> text_style = theme_text_style::label;
-
-    /** The edit-mode.
-     */
-    observable<edit_mode_type> edit_mode = edit_mode_type::selectable;
+    observable<semantic_text_style> text_style = semantic_text_style::label;
 
     /** Construct a text widget.
      *
@@ -102,13 +78,13 @@ public:
         typename Text,
         typename Alignment = hi::alignment,
         typename VerticalAlignment = hi::vertical_alignment,
-        typename TextStyle = hi::theme_text_style>
+        typename TextStyle = hi::semantic_text_style>
     text_widget(
         gui_window& window,
         widget *parent,
         Text&& text,
         Alignment&& alignment = hi::alignment::middle_center(),
-        TextStyle&& text_style = theme_text_style::label) noexcept :
+        TextStyle&& text_style = semantic_text_style::label) noexcept :
         text_widget(window, parent)
     {
         this->text = std::forward<Text>(text);
@@ -135,10 +111,10 @@ private:
     enum class cursor_state_type { off, on, busy, none };
 
     text_shaper _shaped_text;
-    float _shaped_text_cap_height;
     float _base_line;
 
     decltype(text)::token_type _text_cbt;
+    decltype(text_style)::token_type _text_style_cbt;
 
     text_selection _selection;
 
@@ -180,6 +156,12 @@ private:
 
     text_widget(gui_window& window, widget *parent) noexcept;
 
+    /** Update the shaped text.
+    * 
+    * This function must be called synchronously whenever the text, style or theme changes.
+    */
+    void update_shaped_text() noexcept;
+
     /** Make parent scroll views, scroll to show the current selection and cursor.
      */
     void scroll_to_show_selection() noexcept;
@@ -205,19 +187,8 @@ private:
     scoped_task<> blink_cursor() noexcept;
 
     /** Fix the cursor position after cursor movement.
-     *
-     * @param Size of the text.
      */
-    void fix_cursor_position(size_t size) noexcept;
-
-    /** Fix the cursor position after cursor movement.
-     *
-     * @note uses size of _shaped_text.
-     */
-    void fix_cursor_position() noexcept
-    {
-        fix_cursor_position(_shaped_text.size());
-    }
+    void fix_cursor_position() noexcept;
 
     void replace_selection(gstring const &replacement) noexcept;
 

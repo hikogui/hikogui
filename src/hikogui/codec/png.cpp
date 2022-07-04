@@ -175,7 +175,7 @@ static std::string read_string(std::span<std::byte const> bytes)
     std::string r;
 
     for (ssize_t i = 0; i != ssize(bytes); ++i) {
-        auto c = static_cast<char>(bytes[i]);
+        hilet c = static_cast<char>(bytes[i]);
         if (c == 0) {
             return r;
         } else {
@@ -269,7 +269,7 @@ png::png(std::unique_ptr<resource_view> view) : _view(std::move(view))
 {
     std::size_t offset = 0;
 
-    hilet bytes = _view->bytes();
+    hilet bytes = as_bstring_view(*_view);
     read_header(bytes, offset);
     read_chunks(bytes, offset);
 }
@@ -287,7 +287,7 @@ bstring png::decompress_IDATs(std::size_t image_data_size) const
 
         bstring compressed_data;
         compressed_data.reserve(compressed_data_size);
-        for (hilet &chunk_data : _idat_chunk_data) {
+        for (hilet chunk_data : _idat_chunk_data) {
             std::copy(chunk_data.begin(), chunk_data.end(), std::back_inserter(compressed_data));
         }
 
@@ -298,7 +298,7 @@ bstring png::decompress_IDATs(std::size_t image_data_size) const
 void png::unfilter_line_sub(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept
 {
     for (int i = 0; i != _bytes_per_line; ++i) {
-        int j = i - _bytes_per_pixel;
+        hilet j = i - _bytes_per_pixel;
 
         uint8_t prev_raw = j >= 0 ? line[j] : 0;
         line[i] += prev_raw;
@@ -315,7 +315,7 @@ void png::unfilter_line_up(std::span<uint8_t> line, std::span<uint8_t const> pre
 void png::unfilter_line_average(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept
 {
     for (int i = 0; i != _bytes_per_line; ++i) {
-        int j = i - _bytes_per_pixel;
+        hilet j = i - _bytes_per_pixel;
 
         uint8_t prev_raw = j >= 0 ? line[j] : 0;
         line[i] += (prev_raw + prev_line[i]) / 2;
@@ -324,32 +324,32 @@ void png::unfilter_line_average(std::span<uint8_t> line, std::span<uint8_t const
 
 static uint8_t paeth_predictor(uint8_t _a, uint8_t _b, uint8_t _c) noexcept
 {
-    auto a = static_cast<int>(_a);
-    auto b = static_cast<int>(_b);
-    auto c = static_cast<int>(_c);
+    hilet a = static_cast<int>(_a);
+    hilet b = static_cast<int>(_b);
+    hilet c = static_cast<int>(_c);
 
-    auto p = a + b - c;
-    auto pa = std::abs(p - a);
-    auto pb = std::abs(p - b);
-    auto pc = std::abs(p - c);
+    hilet p = a + b - c;
+    hilet pa = std::abs(p - a);
+    hilet pb = std::abs(p - b);
+    hilet pc = std::abs(p - c);
 
     if (pa <= pb && pa <= pc) {
-        return static_cast<uint8_t>(a);
+        return narrow_cast<uint8_t>(a);
     } else if (pb <= pc) {
-        return static_cast<uint8_t>(b);
+        return narrow_cast<uint8_t>(b);
     } else {
-        return static_cast<uint8_t>(c);
+        return narrow_cast<uint8_t>(c);
     }
 }
 
 void png::unfilter_line_paeth(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept
 {
     for (int i = 0; i != _bytes_per_line; ++i) {
-        int j = i - _bytes_per_pixel;
+        hilet j = i - _bytes_per_pixel;
 
-        uint8_t up = prev_line[i];
-        uint8_t left = j >= 0 ? line[j] : 0;
-        uint8_t left_up = j >= 0 ? prev_line[j] : 0;
+        uint8_t const up = prev_line[i];
+        uint8_t const left = j >= 0 ? line[j] : 0;
+        uint8_t const left_up = j >= 0 ? prev_line[j] : 0;
         line[i] += paeth_predictor(left, up, left_up);
     }
 }
@@ -368,12 +368,12 @@ void png::unfilter_line(std::span<uint8_t> line, std::span<uint8_t const> prev_l
 
 void png::unfilter_lines(bstring &image_data) const
 {
-    auto image_bytes = std::span(reinterpret_cast<uint8_t *>(image_data.data()), ssize(image_data));
-    auto zero_line = bstring(_bytes_per_line, std::byte{0});
+    hilet image_bytes = std::span(reinterpret_cast<uint8_t *>(image_data.data()), image_data.size());
+    auto zero_line = std::vector<uint8_t>(_bytes_per_line, uint8_t{0});
 
-    auto prev_line = std::span(reinterpret_cast<uint8_t *>(zero_line.data()), ssize(zero_line));
-    for (int y = 0; y != _height; ++y) {
-        auto line = image_bytes.subspan(y * _stride, _stride);
+    auto prev_line = std::span(zero_line.data(), zero_line.size());
+    for (auto y = 0_uz; y != _height; ++y) {
+        hilet line = image_bytes.subspan(y * _stride, _stride);
         unfilter_line(line, prev_line);
         prev_line = line.subspan(1, _bytes_per_line);
     }

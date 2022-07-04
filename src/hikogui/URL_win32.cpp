@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#include "win32_headers.hpp"
+
 #include "URL.hpp"
 #include "strings.hpp"
 #include "required.hpp"
@@ -9,9 +11,6 @@
 #include "log.hpp"
 #include "metadata.hpp"
 #include <regex>
-
-#include <Windows.h>
-#include <ShlObj_core.h>
 
 namespace hi::inline v1 {
 

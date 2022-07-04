@@ -10,16 +10,14 @@ enum class gfx_surface_state {
     no_window, ///< The window was destroyed, the device will drop the window on the next render cycle.
     has_window, ///< The initial state: The surface is associated with a window
     has_device, ///< The surface has been associated with a device to use for rendering.
-    has_surface, ///< The surface has a physical surface to render on.
     has_swapchain, ///< Images to render on to display on the surface are created.
 };
 
 enum class gfx_surface_loss {
     none, ///< Everything is running normally.
     swapchain_lost, ///< The window was resized, the swapchain needs to be rebuild and can not be rendered on.
-    surface_lost, ///< The Vulkan surface on the window was destroyed.
     device_lost, ///< The device was lost, but the window could move to a new device, or the device can be recreated.
-    window_lost, ///< The window was destroyed, need to cleanup.
+    window_lost, ///< The surface or window was destroyed, need to cleanup.
 };
 
 }

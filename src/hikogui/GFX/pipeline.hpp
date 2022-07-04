@@ -14,7 +14,7 @@ class pipeline {
 public:
     gfx_surface const &surface;
 
-    pipeline(gfx_surface const &surface);
+    pipeline(gfx_surface const &surface) : surface(surface) {}
 
     virtual ~pipeline() = default;
     pipeline(const pipeline &) = delete;

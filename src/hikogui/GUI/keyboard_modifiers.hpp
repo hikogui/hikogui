@@ -42,7 +42,7 @@ constexpr keyboard_modifiers& operator|=(keyboard_modifiers& lhs, keyboard_modif
 
 [[nodiscard]] constexpr bool any(keyboard_modifiers const& rhs) noexcept
 {
-    return static_cast<bool>(to_underlying(rhs));
+    return to_bool(to_underlying(rhs));
 }
 
 bool operator>=(keyboard_modifiers const& lhs, keyboard_modifiers const& rhs) = delete;

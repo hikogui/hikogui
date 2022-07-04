@@ -7,8 +7,8 @@
 #include "pipeline_vulkan.hpp"
 #include "pipeline_box_push_constants.hpp"
 #include "pipeline_box_vertex.hpp"
-#include "../vspan.hpp"
-#include <vk_mem_alloc.h>
+#include "../vector_span.hpp"
+#include <vma/vk_mem_alloc.h>
 #include <span>
 
 namespace hi::inline v1::pipeline_box {
@@ -17,7 +17,7 @@ namespace hi::inline v1::pipeline_box {
  */
 class pipeline_box : public pipeline_vulkan {
 public:
-    vspan<vertex> vertexBufferData;
+    vector_span<vertex> vertexBufferData;
 
     pipeline_box(gfx_surface const &surface);
     ~pipeline_box(){};
@@ -27,7 +27,7 @@ public:
     pipeline_box(pipeline_box &&) = delete;
     pipeline_box &operator=(pipeline_box &&) = delete;
 
-    void drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_context const &context) override;
+    void draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context) override;
 
 protected:
     push_constants pushConstants;
@@ -44,8 +44,8 @@ protected:
     std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const override;
 
 private:
-    void buildvertexBuffers() override;
-    void teardownvertexBuffers() override;
+    void build_vertex_buffers() override;
+    void teardown_vertex_buffers() override;
 };
 
 } // namespace hi::inline v1::pipeline_box

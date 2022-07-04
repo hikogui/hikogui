@@ -410,6 +410,12 @@ public:
         return extent{floor(static_cast<f32x4>(rhs))};
     }
 
+    [[nodiscard]] constexpr friend extent round(extent const &rhs) noexcept
+    {
+        hi_axiom(rhs.holds_invariant());
+        return extent{round(static_cast<f32x4>(rhs))};
+    }
+
     [[nodiscard]] constexpr friend extent min(extent const &lhs, extent const &rhs) noexcept
     {
         return extent{min(static_cast<f32x4>(lhs), static_cast<f32x4>(rhs))};

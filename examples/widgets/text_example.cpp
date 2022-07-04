@@ -80,9 +80,9 @@ int hi_main(int argc, char *argv[])
     auto text = to_gstring(latin_text + "\n" + mixed_rtl_text + "\n" + mixed_ltr_text + "\n" + hebrew_text);
 
     auto &tw = window->content().make_widget<text_widget>("A1", text, hi::alignment::top_justified());
-    tw.edit_mode = text_widget::edit_mode_type::fully_editable;
+    tw.mode = hi::widget_mode::enabled;
 
-    auto close_cb = window->closing.subscribe([&] {
+    auto close_cb = window->closing.subscribe(hi::callback_flags::main, [&] {
         window.reset();
     });
     return loop::main().resume();

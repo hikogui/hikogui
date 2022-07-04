@@ -14,6 +14,11 @@
 #include <memory>
 #include <array>
 
+hi_warning_push();
+// C26490: Don't use reinterpret_cast (type.1).
+// Implementing a container.
+hi_warning_ignore_msvc(26490);
+
 namespace hi::inline v1 {
 
 /** A wait-free multiple-producer/single-consumer fifo designed for absolute performance.
@@ -125,7 +130,7 @@ public:
 private:
     std::array<slot_type, num_slots> _slots = {}; // must be at offset 0
     std::atomic<uint16_t> _head = 0;
-    std::array<std::byte, hi::hardware_destructive_interference_size> _dummy;
+    std::array<std::byte, hi::hardware_destructive_interference_size> _dummy = {};
     uint16_t _tail = 0;
 
     /** Get the slot that either the _head or _tail are pointing at.
@@ -140,3 +145,5 @@ private:
 };
 
 } // namespace hi::inline v1
+
+hi_warning_pop();

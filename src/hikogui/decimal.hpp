@@ -7,11 +7,13 @@
 #include "exception.hpp"
 #include "int_overflow.hpp"
 #include "math.hpp"
+#include "cast.hpp"
 #include <limits>
 #include <string_view>
 #include <string>
 #include <charconv>
 #include <ostream>
+#include <bit>
 
 namespace hi::inline v1 {
 
@@ -29,10 +31,10 @@ public:
     constexpr static int exponent_min = -128;
 
     constexpr decimal() noexcept : value(0) {}
-    constexpr decimal(decimal const &other) noexcept = default;
-    constexpr decimal(decimal &&other) noexcept = default;
-    constexpr decimal &operator=(decimal const &other) noexcept = default;
-    constexpr decimal &operator=(decimal &&other) noexcept = default;
+    constexpr decimal(decimal const& other) noexcept = default;
+    constexpr decimal(decimal&& other) noexcept = default;
+    constexpr decimal& operator=(decimal const& other) noexcept = default;
+    constexpr decimal& operator=(decimal&& other) noexcept = default;
 
     constexpr decimal(int exponent, long long mantissa) noexcept : value(decimal::pack(exponent, mantissa)) {}
 
@@ -52,63 +54,63 @@ public:
     constexpr decimal(unsigned short x) : decimal(0, static_cast<signed long long>(x)) {}
     constexpr decimal(unsigned char x) : decimal(0, static_cast<signed long long>(x)) {}
 
-    constexpr decimal &operator=(std::pair<int, long long> other) noexcept
+    constexpr decimal& operator=(std::pair<int, long long> other) noexcept
     {
         value = decimal::pack(other.first, other.second);
         return *this;
     }
-    decimal &operator=(std::string_view str) noexcept
+    decimal& operator=(std::string_view str) noexcept
     {
         return *this = to_exponent_mantissa(str);
     }
-    constexpr decimal &operator=(double other) noexcept
+    constexpr decimal& operator=(double other) noexcept
     {
         return *this = to_exponent_mantissa(other);
     }
-    constexpr decimal &operator=(float other) noexcept
+    constexpr decimal& operator=(float other) noexcept
     {
         return *this = to_exponent_mantissa(other);
     }
-    constexpr decimal &operator=(signed long long other) noexcept
+    constexpr decimal& operator=(signed long long other) noexcept
     {
         value = decimal::pack(0, other);
         return *this;
     }
-    constexpr decimal &operator=(signed long other) noexcept
+    constexpr decimal& operator=(signed long other) noexcept
     {
-        return *this = static_cast<signed long long>(other);
+        return *this = narrow_cast<signed long long>(other);
     }
-    constexpr decimal &operator=(signed int other) noexcept
+    constexpr decimal& operator=(signed int other) noexcept
     {
-        return *this = static_cast<signed long long>(other);
+        return *this = narrow_cast<signed long long>(other);
     }
-    constexpr decimal &operator=(signed short other) noexcept
+    constexpr decimal& operator=(signed short other) noexcept
     {
-        return *this = static_cast<signed long long>(other);
+        return *this = narrow_cast<signed long long>(other);
     }
-    constexpr decimal &operator=(signed char other) noexcept
+    constexpr decimal& operator=(signed char other) noexcept
     {
-        return *this = static_cast<signed long long>(other);
+        return *this = narrow_cast<signed long long>(other);
     }
-    constexpr decimal &operator=(unsigned long long other) noexcept
+    constexpr decimal& operator=(unsigned long long other) noexcept
     {
-        return *this = static_cast<signed long long>(other);
+        return *this = narrow_cast<signed long long>(other);
     }
-    constexpr decimal &operator=(unsigned long other) noexcept
+    constexpr decimal& operator=(unsigned long other) noexcept
     {
-        return *this = static_cast<signed long long>(other);
+        return *this = narrow_cast<signed long long>(other);
     }
-    constexpr decimal &operator=(unsigned int other) noexcept
+    constexpr decimal& operator=(unsigned int other) noexcept
     {
-        return *this = static_cast<signed long long>(other);
+        return *this = narrow_cast<signed long long>(other);
     }
-    constexpr decimal &operator=(unsigned short other) noexcept
+    constexpr decimal& operator=(unsigned short other) noexcept
     {
-        return *this = static_cast<signed long long>(other);
+        return *this = narrow_cast<signed long long>(other);
     }
-    constexpr decimal &operator=(unsigned char other) noexcept
+    constexpr decimal& operator=(unsigned char other) noexcept
     {
-        return *this = static_cast<signed long long>(other);
+        return *this = narrow_cast<signed long long>(other);
     }
 
     explicit operator signed long long() const noexcept
@@ -187,7 +189,7 @@ public:
 
     std::size_t hash() const noexcept
     {
-        auto v = this->normalize();
+        hilet v = this->normalize();
         return std::hash<uint64_t>{}(v.value);
     }
 
@@ -197,7 +199,7 @@ public:
      */
     [[nodiscard]] constexpr int exponent() const noexcept
     {
-        return static_cast<int8_t>(value);
+        return truncate<int8_t>(value);
     }
 
     /** Extract mantissa from value.
@@ -206,7 +208,7 @@ public:
      */
     [[nodiscard]] constexpr long long mantissa() const noexcept
     {
-        return static_cast<int64_t>(value) >> 8;
+        return truncate<int64_t>(value) >> exponent_bits;
     }
 
     [[nodiscard]] constexpr std::pair<int, long long> exponent_mantissa() const noexcept
@@ -226,26 +228,26 @@ public:
         return {e_, m_};
     }
 
-    decimal &operator+=(decimal rhs) noexcept
+    decimal& operator+=(decimal rhs) noexcept
     {
         hilet[e, lhs_m, rhs_m] = decimal::align(*this, rhs);
         value = decimal::pack(e, lhs_m + rhs_m);
         return *this;
     }
 
-    decimal &operator-=(decimal rhs) noexcept
+    decimal& operator-=(decimal rhs) noexcept
     {
         hilet[e, lhs_m, rhs_m] = decimal::align(*this, rhs);
         value = decimal::pack(e, lhs_m - rhs_m);
         return *this;
     }
 
-    decimal &operator*=(decimal rhs) noexcept
+    decimal& operator*=(decimal rhs) noexcept
     {
         return *this = *this * rhs;
     }
 
-    decimal &operator/=(decimal rhs) noexcept
+    decimal& operator/=(decimal rhs) noexcept
     {
         return *this = *this / rhs;
     }
@@ -312,9 +314,9 @@ public:
 
     [[nodiscard]] friend decimal operator/(decimal lhs, decimal rhs) noexcept
     {
-        auto rhs_m = rhs.mantissa();
+        hilet rhs_m = rhs.mantissa();
         hi_axiom(rhs_m != 0);
-        auto rhs_e = rhs.exponent();
+        hilet rhs_e = rhs.exponent();
         auto lhs_m = lhs.mantissa();
         auto lhs_e = lhs.exponent();
 
@@ -324,9 +326,9 @@ public:
 
     [[nodiscard]] friend decimal operator%(decimal lhs, decimal rhs) noexcept
     {
-        auto rhs_m = rhs.mantissa();
+        hilet rhs_m = rhs.mantissa();
         hi_axiom(rhs_m != 0);
-        auto rhs_e = rhs.exponent();
+        hilet rhs_e = rhs.exponent();
         auto lhs_m = lhs.mantissa();
         auto lhs_e = lhs.exponent();
 
@@ -336,16 +338,16 @@ public:
 
     [[nodiscard]] friend std::string to_string(decimal x) noexcept
     {
-        auto [e, m] = x.exponent_mantissa();
+        hilet[e, m] = x.exponent_mantissa();
         auto s = std::to_string(std::abs(m));
 
-        auto decimal_position = -e;
-        auto leading_zeros = (decimal_position - ssize(s)) + 1;
+        hilet decimal_position = -e;
+        hilet leading_zeros = (decimal_position - ssize(s)) + 1;
         if (leading_zeros > 0) {
             s.insert(0, leading_zeros, '0');
         }
 
-        auto trailing_zeros = e;
+        hilet trailing_zeros = e;
         if (trailing_zeros > 0) {
             s.append(trailing_zeros, '0');
         }
@@ -361,7 +363,7 @@ public:
         return s;
     }
 
-    friend std::ostream &operator<<(std::ostream &lhs, decimal rhs)
+    friend std::ostream& operator<<(std::ostream& lhs, decimal rhs)
     {
         return lhs << to_string(rhs);
     }
@@ -483,7 +485,7 @@ private:
             e++;
         }
 
-        return static_cast<uint64_t>(m) << exponent_bits | static_cast<uint8_t>(e);
+        return std::bit_cast<uint64_t>(narrow_cast<int64_t>(m) << exponent_bits) | std::bit_cast<uint8_t>(narrow_cast<int8_t>(e));
     }
 
     [[nodiscard]] static std::pair<int, long long> to_exponent_mantissa(double x) noexcept
@@ -491,14 +493,14 @@ private:
         uint64_t x_;
         std::memcpy(&x_, &x, sizeof(x_));
 
-        auto e2 = static_cast<int>((x_ << 1) >> 53) - 1023 - 52;
-        auto m = static_cast<long long>((x_ << 12) >> 12);
+        auto e2 = narrow_cast<int>((x_ << 1) >> 53) - 1023 - 52;
+        auto m = narrow_cast<long long>((x_ << 12) >> 12);
         if (e2 > (-1023 - 52)) {
             // Add leading '1'.
             m |= (1LL << 52);
         }
 
-        if (static_cast<int64_t>(x_) < 0) {
+        if (narrow_cast<int64_t>(x_) < 0) {
             m = -m;
         }
 
@@ -554,7 +556,7 @@ private:
         auto first = mantissa_str.data();
         auto last = first + mantissa_str.size();
         long long mantissa;
-        auto result = std::from_chars(first, last, mantissa, 10);
+        hilet result = std::from_chars(first, last, mantissa, 10);
         if (result.ptr == first) {
             throw parse_error(std::format("Could not parse mantissa '{}'", mantissa_str));
         } else if (result.ec == std::errc::result_out_of_range) {
@@ -569,7 +571,7 @@ private:
 
 template<>
 struct std::hash<hi::decimal> {
-    inline std::size_t operator()(hi::decimal const &value) const
+    inline std::size_t operator()(hi::decimal const& value) const noexcept
     {
         return value.hash();
     }
@@ -577,7 +579,7 @@ struct std::hash<hi::decimal> {
 
 template<typename CharT>
 struct std::formatter<hi::decimal, CharT> : std::formatter<double, CharT> {
-    auto format(hi::decimal const &t, auto &fc)
+    auto format(hi::decimal const& t, auto& fc)
     {
         return std::formatter<double, CharT>::format(static_cast<double>(t), fc);
     }

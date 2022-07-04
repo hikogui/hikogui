@@ -6,11 +6,11 @@
 
 #include "../required.hpp"
 #include "../geometry/rectangle.hpp"
-#include "../vspan.hpp"
+#include "../vector_span.hpp"
 #include "../color/color.hpp"
 #include "../color/quad_color.hpp"
 #include "../geometry/corner_radii.hpp"
-#include <vk_mem_alloc.h>
+#include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>
 
@@ -44,7 +44,7 @@ struct device_shared final {
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
 
     static void place_vertices(
-        vspan<vertex> &vertices,
+        vector_span<vertex> &vertices,
         aarectangle clipping_rectangle,
         quad box,
         quad_color fill_colors,

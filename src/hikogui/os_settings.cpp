@@ -69,6 +69,15 @@ void os_settings::gather() noexcept
         hi_log_error("Failed to get OS sub-pixel orientation: {}", e.what());
     }
 
+        try {
+        if (compare_store(_uniform_HDR, gather_uniform_HDR())) {
+            setting_has_changed = true;
+            hi_log_info("OS uniform-HDR has changed: {}", _uniform_HDR.load());
+        }
+    } catch (std::exception const& e) {
+        hi_log_error("Failed to get OS uniform-HDR: {}", e.what());
+    }
+
     try {
         if (compare_store(_double_click_interval, gather_double_click_interval())) {
             setting_has_changed = true;

@@ -10,18 +10,18 @@ namespace hi::inline v1::pipeline_image {
 
 pipeline_image::pipeline_image(gfx_surface const &surface) : pipeline_vulkan(surface) {}
 
-void pipeline_image::drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_context const &context)
+void pipeline_image::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const& context)
 {
-    pipeline_vulkan::drawInCommandBuffer(commandBuffer, context);
+    pipeline_vulkan::draw_in_command_buffer(commandBuffer, context);
 
     vulkan_device().flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof(vertex));
-    vulkan_device().imagePipeline->prepare_atlas_for_rendering();
+    vulkan_device().image_pipeline->prepare_atlas_for_rendering();
 
     std::vector<vk::Buffer> tmpvertexBuffers = {vertexBuffer};
     std::vector<vk::DeviceSize> tmpOffsets = {0};
     hi_axiom(tmpvertexBuffers.size() == tmpOffsets.size());
 
-    vulkan_device().imagePipeline->draw_in_command_buffer(commandBuffer);
+    vulkan_device().image_pipeline->draw_in_command_buffer(commandBuffer);
 
     commandBuffer.bindVertexBuffers(0, tmpvertexBuffers, tmpOffsets);
 
@@ -45,7 +45,7 @@ void pipeline_image::drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_c
 
 std::vector<vk::PipelineShaderStageCreateInfo> pipeline_image::createShaderStages() const
 {
-    return vulkan_device().imagePipeline->shader_stages;
+    return vulkan_device().image_pipeline->shader_stages;
 }
 
 std::vector<vk::DescriptorSetLayoutBinding> pipeline_image::createDescriptorSetLayoutBindings() const
@@ -63,7 +63,7 @@ std::vector<vk::DescriptorSetLayoutBinding> pipeline_image::createDescriptorSetL
 
 std::vector<vk::WriteDescriptorSet> pipeline_image::createWriteDescriptorSet() const
 {
-    hilet &sharedImagePipeline = vulkan_device().imagePipeline;
+    hilet &sharedImagePipeline = vulkan_device().image_pipeline;
 
     return {
         {
@@ -90,7 +90,7 @@ std::vector<vk::WriteDescriptorSet> pipeline_image::createWriteDescriptorSet() c
 
 ssize_t pipeline_image::getDescriptorSetVersion() const
 {
-    return ssize(vulkan_device().imagePipeline->atlas_textures);
+    return ssize(vulkan_device().image_pipeline->atlas_textures);
 }
 
 std::vector<vk::PushConstantRange> pipeline_image::createPushConstantRanges() const
@@ -108,7 +108,7 @@ std::vector<vk::VertexInputAttributeDescription> pipeline_image::createVertexInp
     return vertex::inputAttributeDescriptions();
 }
 
-void pipeline_image::buildvertexBuffers()
+void pipeline_image::build_vertex_buffers()
 {
     using vertexIndexType = uint16_t;
     constexpr ssize_t numberOfVertices = 1 << (sizeof(vertexIndexType) * CHAR_BIT);
@@ -128,7 +128,7 @@ void pipeline_image::buildvertexBuffers()
     vertexBufferData = vulkan_device().mapMemory<vertex>(vertexBufferAllocation);
 }
 
-void pipeline_image::teardownvertexBuffers()
+void pipeline_image::teardown_vertex_buffers()
 {
     vulkan_device().unmapMemory(vertexBufferAllocation);
     vulkan_device().destroyBuffer(vertexBuffer, vertexBufferAllocation);

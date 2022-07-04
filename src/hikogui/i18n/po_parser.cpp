@@ -22,7 +22,7 @@ namespace hi::inline v1 {
 //    if (plural_expression) {
 //        hilet result = plural_expression->evaluate(context);
 //        if (result.is_bool()) {
-//            return static_cast<bool>(result) ? 1 : 0;
+//            return to_bool(result) ? 1 : 0;
 //        } else if (result.is_integer()) {
 //            return static_cast<ssize_t>(result);
 //        } else {
@@ -189,7 +189,7 @@ static void parse_po_header(po_translations &r, std::string const &header)
 [[nodiscard]] po_translations parse_po(URL const &url)
 {
     hilet text = url.loadView();
-    return parse_po(text->string_view());
+    return parse_po(as_string_view(*text));
 }
 
 } // namespace hi::inline v1

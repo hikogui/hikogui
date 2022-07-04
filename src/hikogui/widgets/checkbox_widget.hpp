@@ -6,6 +6,7 @@
 
 #include "abstract_button_widget.hpp"
 #include "default_button_delegate.hpp"
+#include "../log.hpp"
 
 namespace hi::inline v1 {
 

@@ -6,6 +6,8 @@
 
 #include "audio_device.hpp"
 #include "audio_stream_format.hpp"
+#include "audio_format_range.hpp"
+#include "../generator.hpp"
 
 struct IMMDevice;
 struct IPropertyStore;
@@ -23,7 +25,16 @@ public:
     audio_device_win32(IMMDevice *device);
     ~audio_device_win32();
 
-    [[nodiscard]] std::string name() const noexcept override;
+    /** Get the device id for the given win32 audio end-point.
+     *
+     * @param device The win32 device instance to get the device id from.
+     * @return A device id as string, to differentiate with asio it will start with "win32:"
+     * @throws io_error When the device id could not be retrieved.
+     */
+    [[nodiscard]] static std::string get_device_id(IMMDevice *device);
+
+    /// @beginprivatemethods
+    void update_state() noexcept override;
     [[nodiscard]] hi::label label() const noexcept override;
     [[nodiscard]] audio_device_state state() const noexcept override;
     [[nodiscard]] audio_direction direction() const noexcept override;
@@ -37,14 +48,11 @@ public:
     [[nodiscard]] hi::speaker_mapping output_speaker_mapping() const noexcept override;
     void set_output_speaker_mapping(hi::speaker_mapping speaker_mapping) noexcept override;
     [[nodiscard]] std::vector<hi::speaker_mapping> available_output_speaker_mappings() const noexcept override;
-
-    [[nodiscard]] bool supports_format(audio_stream_format const &format) const noexcept;
-
-    /** Get the device id for the given win32 audio end-point.
-     */
-    [[nodiscard]] static audio_device_id get_id(IMMDevice *device) noexcept;
-
+    [[nodiscard]] bool supports_format(audio_stream_format const& format) const noexcept;
+    /// @endprivatemethods
 private:
+    std::string _end_point_id;
+    audio_device_state _previous_state;
     audio_direction _direction;
     bool _exclusive = false;
     double _sample_rate = 0.0;
@@ -56,16 +64,31 @@ private:
     IPropertyStore *_property_store = nullptr;
     IAudioClient *_audio_client = nullptr;
 
+    [[nodiscard]] std::string end_point_name() const noexcept;
+
     /** Get a user friendly name of the audio device.
      * This is the name of the audio device itself, such as
      * "Realtek High Definition Audio".
      */
-    std::string device_name() const noexcept;
+    [[nodiscard]] std::string device_name() const noexcept;
 
-    /** Get a user friendly name of the audio end-point device.
+    /** Get a user friendly description of the audio end-point device.
      * This is the name of the end point, such as "Microphone".
      */
-    std::string end_point_name() const noexcept;
+    [[nodiscard]] std::string end_point_description() const noexcept;
+
+    GUID pin_category() const noexcept;
+
+    /** Get the legacy waveIn or waveOut id.
+     *
+     * The waveIn/waveOut id are required to get access to the audio device driver
+     * to query the formats that it supports.
+     */
+    unsigned int wave_id() const;
+
+    /** Query the audio device through the driver to determine the supported formats.
+     */
+    void update_supported_formats() noexcept;
 
     /** Find a stream format based on the prototype_stream_format.
      *
@@ -84,6 +107,8 @@ private:
     /** Get the shared stream format for the device.
      */
     [[nodiscard]] audio_stream_format shared_stream_format() const;
+
+    [[nodiscard]] generator<audio_format_range> get_format_ranges() const noexcept;
 };
 
 } // namespace hi::inline v1

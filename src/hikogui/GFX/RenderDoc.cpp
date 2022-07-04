@@ -2,13 +2,12 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#include "../win32_headers.hpp"
+
 #include "RenderDoc.hpp"
 #include "../log.hpp"
 #include "../URL.hpp"
 #include <renderdoc/renderdoc_app.h>
-#if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
-#include <Windows.h>
-#endif
 #include <type_traits>
 
 namespace hi::inline v1 {

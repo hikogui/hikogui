@@ -64,9 +64,11 @@ private:
     std::weak_ptr<delegate_type> _content_delegate;
 
     aarectangle _content_rectangle;
+    widget_constraints _content_constraints;
     std::unique_ptr<grid_widget> _content;
 
     aarectangle _toolbar_rectangle;
+    widget_constraints _toolbar_constraints;
     std::unique_ptr<toolbar_widget> _toolbar;
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
     system_menu_widget *_system_menu = nullptr;

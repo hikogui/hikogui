@@ -5,6 +5,8 @@
 target_sources(hikogui PRIVATE
     abstract_button_widget.cpp
     abstract_button_widget.hpp
+    audio_device_widget.cpp
+    audio_device_widget.hpp
     button_delegate.hpp
     button_state.hpp
     button_type.hpp
@@ -58,10 +60,13 @@ target_sources(hikogui PRIVATE
     toolbar_tab_button_widget.hpp
     toolbar_widget.cpp
     toolbar_widget.hpp
+    vulkan_widget.hpp
     widget.cpp
     widget.hpp
+    widget_baseline.hpp
     widget_constraints.hpp
     widget_layout.hpp
+    widget_mode.hpp
     window_traffic_lights_widget.cpp
     window_traffic_lights_widget.hpp
     window_widget.cpp

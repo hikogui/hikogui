@@ -24,7 +24,7 @@ int hi_main(int argc, char *argv[])
     tb.other_label = tr("other");
 /// [Create a toggle]
 
-    auto close_cb = window->closing.subscribe([&] {
+    auto close_cb = window->closing.subscribe(hi::callback_flags::main, [&] {
         window.reset();
     });
     return loop::main().resume();

@@ -55,7 +55,7 @@ public:
     {
         // We only need to draw the widget when it is visible and when the visible area of
         // the widget overlaps with the scissor-rectangle (partial redraw) of the drawing context.
-        if (*visible and overlaps(context, layout())) {
+        if (*mode > hi::widget_mode::invisible and overlaps(context, layout())) {
             // Draw two boxes matching the rectangles calculated during set_layout().
             // The actual RGB colors are taken from the current theme.
             context.draw_box(_layout, _left_rectangle, theme().color(hi::semantic_color::indigo));
@@ -73,5 +73,9 @@ int hi_main(int argc, char *argv[])
     auto gui = hi::gui_system::make_unique();
     auto window = gui->make_window(hi::tr("Minimum Custom Widget"));
     window->content().make_widget<minimum_widget>("A1");
+
+    auto close_cbt = window->closing.subscribe(hi::callback_flags::main, [&] {
+        window = {};
+    });
     return hi::loop::main().resume();
 }

@@ -34,6 +34,11 @@ public:
     constexpr font_variant(font_weight weight) noexcept : font_variant(weight, false) {}
     constexpr font_variant(bool italic) noexcept : font_variant(font_weight::Regular, italic) {}
 
+    [[nodiscard]] size_t hash() const noexcept
+    {
+        return std::hash<uint8_t>{}(value);
+    }
+
     constexpr font_weight weight() const noexcept
     {
         hi_axiom(value < max());
@@ -89,3 +94,11 @@ public:
 };
 
 } // namespace hi::inline v1
+
+template<>
+struct std::hash<hi::font_variant> {
+    [[nodiscard]] size_t operator()(hi::font_variant const &rhs) const noexcept
+    {
+        return rhs.hash();
+    }
+};

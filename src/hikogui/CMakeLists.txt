@@ -26,6 +26,8 @@ target_sources(hikogui PRIVATE
     animator.hpp
     assert.hpp
     atomic.hpp
+    awaitable.hpp
+    awaitable_timer.cpp
 	awaitable_timer.hpp
     bezier.hpp
     bezier_curve.cpp
@@ -35,6 +37,8 @@ target_sources(hikogui PRIVATE
     bits.hpp
     bound_integer.hpp
     byte_string.hpp
+    callback_flags.hpp
+    cast.hpp
     check.hpp
     chrono.hpp
     concepts.hpp
@@ -49,7 +53,6 @@ target_sources(hikogui PRIVATE
     crt.hpp
     crt_utils.hpp
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/crt_utils_win32.cpp>
-    date.hpp
     datum.hpp
     dead_lock_detector.cpp
     dead_lock_detector.hpp
@@ -57,6 +60,7 @@ target_sources(hikogui PRIVATE
     $<${HI_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/debugger_macos.mm>
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/debugger_win32.cpp>
     decimal.hpp
+    defer.hpp
     dialog.hpp
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/dialog_win32.cpp>
     endian.hpp
@@ -75,6 +79,7 @@ target_sources(hikogui PRIVATE
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/file_view_win32.cpp>
     fixed.hpp
     float16.hpp
+    format_check.hpp
     forward_value.hpp
 	functional.hpp
 	function_fifo.hpp
@@ -99,6 +104,7 @@ target_sources(hikogui PRIVATE
     log.hpp
     $<${HI_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/log_macos.mm>
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/log_win32.cpp>
+    long_tagged_id.hpp
 	loop.hpp
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/loop_win32.cpp>
     math.hpp
@@ -139,6 +145,7 @@ target_sources(hikogui PRIVATE
     semantic_version.hpp
     scoped_buffer.hpp
     scoped_task.hpp
+    sip_hash.hpp
     source_location.hpp
     small_map.hpp
     small_vector.hpp
@@ -176,11 +183,13 @@ target_sources(hikogui PRIVATE
     url_parser.cpp
     url_parser.hpp
     utils.hpp
-    vspan.hpp
+    vector_span.hpp
+    void_span.hpp
     weak_or_unique_ptr.hpp
     when_any.hpp
     wfree_fifo.hpp
     wfree_unordered_map.hpp
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/win32_headers.hpp>
 )
 
 if(HI_BUILD_PCH AND NOT HI_ENABLE_ANALYSIS)
@@ -210,11 +219,13 @@ if(HI_BUILD_TESTS)
         datum_tests.cpp
         dead_lock_detector_tests.cpp
         decimal_tests.cpp
+        defer_tests.cpp
         enum_metadata_tests.cpp
         exceptions_tests.cpp
         file_view_tests.cpp
         fixed_string_tests.cpp
         float16_tests.cpp
+        format_check_tests.cpp
         forward_value_tests.cpp
         gap_buffer_tests.cpp
         generator_tests.cpp
@@ -232,6 +243,7 @@ if(HI_BUILD_TESTS)
         polynomial_tests.cpp
         ranges_tests.cpp
         safe_int_tests.cpp
+        sip_hash_tests.cpp
         small_map_tests.cpp
         strings_tests.cpp
         tokenizer_tests.cpp

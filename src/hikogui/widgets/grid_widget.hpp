@@ -138,6 +138,11 @@ private:
 
             return {point2{x0, container_height - y3}, point2{x3, container_height - y0}};
         }
+
+        [[nodiscard]] widget_baseline baseline(grid_layout const &rows) const noexcept
+        {
+            return rows.get_baseline(row_first, row_last);
+        }
     };
 
     std::vector<cell_type> _cells;

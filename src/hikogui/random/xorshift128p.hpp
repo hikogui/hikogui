@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "seed_generator.hpp"
+#include "seed.hpp"
 #include "../rapid/numeric_array.hpp"
 #include "../required.hpp"
 #include <random>
@@ -22,9 +22,12 @@ public:
 
     [[nodiscard]] constexpr explicit xorshift128p(u64x2 new_state) noexcept : _state(new_state) {}
 
-    [[nodiscard]] explicit xorshift128p(seed_generator &sg) noexcept : _state(sg.next_not_zero<u64x2>()) {}
-
-    [[nodiscard]] xorshift128p() noexcept : _state(seed_generator{}.next_not_zero<u64x2>()) {}
+    [[nodiscard]] xorshift128p() noexcept : _state{}
+    {
+        while (_state.x() == 0 or _state.y() == 0) {
+            _state = seed<u64x2>{}();
+        }
+    }
 
     template<typename T>
     [[nodiscard]] T next() noexcept;
@@ -68,7 +71,7 @@ public:
         s ^= (s >> 17);
 
         // scalar: x ^= y_ ^ (y_ >> 26)
-        auto tmp = s ^ t ^ (t >> 26);
+        hilet tmp = s ^ t ^ (t >> 26);
 
         // scalar: auto x_ = x;
         // scalar: t.y() = tmp.x();

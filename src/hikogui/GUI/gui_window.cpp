@@ -285,10 +285,7 @@ bool gui_window::process_event(gui_event const& event) noexcept
 {
     hi_axiom(is_gui_thread());
 
-    // This is a static so that this events vector does not need to be allocate for each mouse move event.
-    static auto events = std::vector<gui_event>{};
-    events.clear();
-    events.push_back(event);
+    auto events = std::vector<gui_event>{event};
 
     switch (event.type()) {
     case gui_event_type::mouse_exit_window: // Mouse left window.

@@ -96,56 +96,22 @@ struct std::formatter<hi::token_t, CharT> : std::formatter<std::string_view, Cha
 namespace hi::inline v1 {
 
 struct token_t {
-    tokenizer_name_t name;
+    tokenizer_name_t name = tokenizer_name_t::NotAssigned;
     std::string value;
-    parse_location location;
-    bool is_binary;
-    int precedence;
+    parse_location location = {};
+    bool is_binary = false;
+    int precedence = 0;
 
-    token_t() noexcept : name(tokenizer_name_t::NotAssigned), value(), location(), is_binary(false), precedence(0) {}
+    constexpr ~token_t() = default;
+    constexpr token_t() noexcept = default;
+    constexpr token_t(token_t const& other) noexcept = default;
+    constexpr token_t(token_t&& other) noexcept = default;
+    constexpr token_t& operator=(token_t const& other) noexcept = default;
+    constexpr token_t& operator=(token_t&& other) noexcept = default;
 
     token_t(tokenizer_name_t name, std::string value) noexcept :
         name(name), value(std::move(value)), location(), is_binary(false), precedence(0)
     {
-    }
-
-    token_t(token_t const& other) noexcept :
-        name(other.name), value(other.value), location(other.location), is_binary(other.is_binary), precedence(other.precedence)
-    {
-        hi_axiom(&other != this);
-    }
-
-    token_t(token_t&& other) noexcept :
-        name(other.name),
-        value(std::move(other.value)),
-        location(std::move(other.location)),
-        is_binary(other.is_binary),
-        precedence(other.precedence)
-    {
-        hi_axiom(&other != this);
-    }
-
-    token_t& operator=(token_t const& other) noexcept
-    {
-        hi_return_on_self_assignment(other);
-        name = other.name;
-        value = other.value;
-        location = other.location;
-        is_binary = other.is_binary;
-        precedence = other.precedence;
-        return *this;
-    }
-
-    token_t& operator=(token_t&& other) noexcept
-    {
-        // Self-assignment is allowed.
-        using std::move;
-        name = move(other.name);
-        value = move(other.value);
-        location = move(other.location);
-        is_binary = move(other.is_binary);
-        precedence = move(other.precedence);
-        return *this;
     }
 
     operator bool() const noexcept

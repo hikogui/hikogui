@@ -7,6 +7,7 @@
 #include "required.hpp"
 #include "notifier.hpp"
 #include "counters.hpp"
+#include "awaitable_timer.hpp"
 #include <coroutine>
 #include <type_traits>
 #include <memory>
@@ -27,63 +28,43 @@ template<typename T = void>
 class scoped_task {
 public:
     using value_type = T;
-
-    /** The return value type.
-     * This value is shared between the promise and the scoped_task.
-     * The variant has three different states:
-     *  - 0: co-routine has not completed.
-     *  - 1: co-routine caught an uncaught exception.
-     *  - 2: co-routine is completed with a value.
-     */
-    using return_value_type = std::variant<std::monostate, std::exception_ptr, value_type>;
-    using return_value_ptr_type = std::shared_ptr<return_value_type>;
-    using const_return_value_ptr_type = std::shared_ptr<return_value_type const>;
     using notifier_type = notifier<void(value_type)>;
 
     struct promise_type {
-        notifier_type _notifier;
-        return_value_ptr_type _value_ptr;
+        notifier_type notifier;
+        std::optional<value_type> value = {};
+        std::exception_ptr exception = nullptr;
 
-        void return_value(std::convertible_to<value_type> auto&& value) noexcept
+        void return_value(std::convertible_to<value_type> auto&& new_value) noexcept
         {
-            *_value_ptr = return_value_type{std::in_place_index<2>, hi_forward(value)};
+            value = hi_forward(new_value);
         }
 
         void unhandled_exception() noexcept
         {
-            *_value_ptr = return_value_type{std::in_place_index<1>, std::current_exception()};
+            exception = std::current_exception();
         }
 
-        std::suspend_never final_suspend() noexcept
+        std::suspend_always final_suspend() noexcept
         {
-            if constexpr (std::is_default_constructible_v<value_type>) {
-                switch (_value_ptr->index()) {
-                case 1:
-                    // We need to trigger the notifier on an exception too.
-                    _notifier.post(value_type{});
-                    return {};
-                case 2:
-                    // Trigger the notifier with the co_return value.
-                    _notifier.post(std::get<2>(*_value_ptr));
-                    return {};
-                default: hi_no_default();
-                }
+            if (value) {
+                // Trigger the notifier with the co_return value.
+                notifier(*value);
 
             } else {
-                switch (_value_ptr->index()) {
-                case 2:
-                    // Trigger the notifier with the co_return value.
-                    _notifier.post(std::get<2>(*_value_ptr));
-                    return {};
-                default: hi_no_default();
+                // Notify also in case of exception.
+                hi_axiom(exception);
+                if constexpr (std::is_default_constructible_v<value_type>) {
+                    notifier(value_type{});
                 }
             }
+
+            return {};
         }
 
         scoped_task get_return_object() noexcept
         {
-            _value_ptr = std::make_shared<return_value_type>();
-            return scoped_task{handle_type::from_promise(*this), _value_ptr};
+            return scoped_task{handle_type::from_promise(*this)};
         }
 
         /** Before we enter the coroutine, allow the caller to set the callback.
@@ -96,15 +77,11 @@ public:
 
     using handle_type = std::coroutine_handle<promise_type>;
 
-    scoped_task(handle_type coroutine, const_return_value_ptr_type value_ptr) noexcept :
-        _coroutine(coroutine), _value_ptr(std::move(value_ptr))
-    {
-    }
+    scoped_task(handle_type coroutine) noexcept : _coroutine(coroutine) {}
 
     ~scoped_task()
     {
-        if (_value_ptr and not completed()) {
-            hi_axiom(_coroutine);
+        if (_coroutine) {
             _coroutine.destroy();
         }
     }
@@ -119,28 +96,27 @@ public:
     scoped_task(scoped_task&& other) noexcept
     {
         _coroutine = std::exchange(other._coroutine, {});
-        _value_ptr = std::exchange(other._value_ptr, {});
     }
 
     scoped_task& operator=(scoped_task&& other) noexcept
     {
         _coroutine = std::exchange(other._coroutine, {});
-        _value_ptr = std::exchange(other._value_ptr, {});
         return *this;
     }
 
     /** Check if the co-routine has completed.
      */
-    [[nodiscard]] bool completed() const noexcept
+    [[nodiscard]] bool done() const noexcept
     {
-        return _value_ptr->index() != 0;
+        hi_axiom(_coroutine);
+        return _coroutine.done();
     }
 
     /** Check if the co-routine has completed.
      */
     explicit operator bool() const noexcept
     {
-        return completed();
+        return done();
     }
 
     /** Get the return value returned from co_return.
@@ -150,10 +126,15 @@ public:
      */
     [[nodiscard]] value_type const& value() const
     {
-        switch (_value_ptr->index()) {
-        case 1: std::rethrow_exception(std::get<1>(*_value_ptr));
-        case 2: return std::get<2>(*_value_ptr);
-        default: hi_no_default();
+        hi_axiom(done());
+
+        hilet& promise = _coroutine.promise();
+        if (promise.value) {
+            return *promise.value;
+
+        } else {
+            hi_axiom(promise.exception);
+            std::rethrow_exception(promise.exception);
         }
     }
 
@@ -172,15 +153,24 @@ public:
      * @param callback The callback to call when the co-routine executed co_return. If co_return
      *                 has a non-void expression then the callback must accept the expression as an argument.
      */
+    notifier_type::token_type subscribe(callback_flags flags, std::invocable<value_type> auto&& callback) noexcept
+    {
+        return _coroutine.promise().notifier.subscribe(flags, hi_forward(callback));
+    }
+
+    /** Subscribe a callback for when the co-routine is completed.
+     *
+     * @param callback The callback to call when the co-routine executed co_return. If co_return
+     *                 has a non-void expression then the callback must accept the expression as an argument.
+     */
     notifier_type::token_type subscribe(std::invocable<value_type> auto&& callback) noexcept
     {
-        return _coroutine.promise()._notifier.subscribe(hi_forward(callback));
+        return subscribe(callback_flags::synchronous, hi_forward(callback));
     }
 
 private:
     // Optional value type
     handle_type _coroutine;
-    const_return_value_ptr_type _value_ptr;
 };
 
 /**
@@ -190,51 +180,28 @@ template<>
 class scoped_task<void> {
 public:
     using value_type = void;
-
-    /** The return value type.
-     * This value is shared between the promise and the scoped_task.
-     * The variant has three different states:
-     *  - 0: co-routine has not completed.
-     *  - 1: co-routine caught an uncaught exception.
-     *  - 2: co-routine is completed.
-     */
-    using return_value_type = std::variant<std::monostate, std::exception_ptr, std::monostate>;
-    using return_value_ptr_type = std::shared_ptr<return_value_type>;
-    using const_return_value_ptr_type = std::shared_ptr<return_value_type const>;
-    using notifier_type = notifier<void()>;
+    using notifier_type = notifier<>;
 
     struct promise_type {
-        notifier_type _notifier;
-        return_value_ptr_type _value_ptr;
+        notifier_type notifier;
+        std::exception_ptr exception = nullptr;
 
-        void return_void() noexcept
-        {
-            *_value_ptr = return_value_type{std::in_place_index<2>};
-        }
+        void return_void() noexcept {}
 
         void unhandled_exception() noexcept
         {
-            *_value_ptr = return_value_type{std::in_place_index<1>, std::current_exception()};
+            exception = std::current_exception();
         }
 
-        std::suspend_never final_suspend() noexcept
+        std::suspend_always final_suspend() noexcept
         {
-            switch (_value_ptr->index()) {
-            case 1:
-                // Trigger the notifier on exception.
-                _notifier.post();
-                return {};
-            case 2:
-                // Trigger the notifier with the co_return value.
-                _notifier.post();
-                return {};
-            default: hi_no_default();
-            }
+            notifier();
+            return {};
         }
+
         scoped_task get_return_object() noexcept
         {
-            _value_ptr = std::make_shared<return_value_type>();
-            return scoped_task{handle_type::from_promise(*this), _value_ptr};
+            return scoped_task{handle_type::from_promise(*this)};
         }
 
         std::suspend_never initial_suspend() noexcept
@@ -245,15 +212,11 @@ public:
 
     using handle_type = std::coroutine_handle<promise_type>;
 
-    scoped_task(handle_type coroutine, const_return_value_ptr_type value_ptr) noexcept :
-        _coroutine(coroutine), _value_ptr(std::move(value_ptr))
-    {
-    }
+    scoped_task(handle_type coroutine) noexcept : _coroutine(coroutine) {}
 
     ~scoped_task()
     {
-        if (_value_ptr and not completed()) {
-            hi_axiom(_coroutine);
+        if (_coroutine) {
             _coroutine.destroy();
         }
     }
@@ -265,22 +228,21 @@ public:
     scoped_task(scoped_task&& other) noexcept
     {
         _coroutine = std::exchange(other._coroutine, {});
-        _value_ptr = std::exchange(other._value_ptr, {});
     }
 
     scoped_task& operator=(scoped_task&& other) noexcept
     {
         _coroutine = std::exchange(other._coroutine, {});
-        _value_ptr = std::exchange(other._value_ptr, {});
         return *this;
     }
 
     /**
      * @sa scoped_task<>::completed()
      */
-    [[nodiscard]] bool completed() const noexcept
+    [[nodiscard]] bool done() const noexcept
     {
-        return _value_ptr->index() != 0;
+        hi_axiom(_coroutine);
+        return _coroutine.done();
     }
 
     /**
@@ -288,7 +250,7 @@ public:
      */
     explicit operator bool() const noexcept
     {
-        return completed();
+        return done();
     }
 
     /** Get the return value returned from co_return.
@@ -299,25 +261,33 @@ public:
      */
     void value() const
     {
-        switch (_value_ptr->index()) {
-        case 1: std::rethrow_exception(std::get<1>(*_value_ptr));
-        case 2: return;
-        default: hi_no_default();
+        hi_axiom(done());
+
+        hilet& promise = _coroutine.promise();
+        if (promise.exception) {
+            std::rethrow_exception(promise.exception);
         }
     }
 
     /**
-     * @sa scoped_task<>::subscribe()
+     * @sa notifier<>::subscribe()
+     */
+    notifier_type::token_type subscribe(callback_flags flags, std::invocable<> auto&& callback) noexcept
+    {
+        return _coroutine.promise().notifier.subscribe(flags, hi_forward(callback));
+    }
+
+    /**
+     * @sa notifier<>::subscribe()
      */
     notifier_type::token_type subscribe(std::invocable<> auto&& callback) noexcept
     {
-        return _coroutine.promise()._notifier.subscribe(hi_forward(callback));
+        return subscribe(callback_flags::synchronous, hi_forward(callback));
     }
 
 private:
     // Optional value type
     handle_type _coroutine;
-    const_return_value_ptr_type _value_ptr;
 };
 
 } // namespace hi::inline v1

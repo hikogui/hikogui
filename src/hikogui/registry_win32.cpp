@@ -6,14 +6,7 @@
 #include "exception.hpp"
 #include "strings.hpp"
 #include "log.hpp"
-#include <windows.h>
-hi_warning_push()
-// Suppress C4005 Redefinition of status macros, Microsoft disables this themselves for their internal linter.
-hi_msvc_suppress(4005)
-#include <ntstatus.h>
-hi_warning_pop()
-#include <winreg.h>
-#include <Uxtheme.h>
+#include "win32_headers.hpp"
 
 namespace hi::inline v1 {
 

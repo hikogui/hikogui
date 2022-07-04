@@ -8,6 +8,7 @@
 #include "assert.hpp"
 #include "datum.hpp"
 #include "concepts.hpp"
+#include "codec/base_n.hpp"
 #include <string>
 #include <limits>
 
@@ -25,7 +26,17 @@ struct pickle {
      * @param rhs The value to encode
      * @return The encoded value as a string.
      */
-    [[nodiscard]] datum encode(T const &rhs) const noexcept;
+    [[nodiscard]] datum encode(T const& rhs) const noexcept
+    {
+        hi_static_not_implemented();
+    }
+
+    [[nodiscard]] datum encode(T const& rhs) const noexcept
+        requires(std::has_unique_object_representations_v<T> and not std::is_pointer_v<T>)
+    {
+        auto *rhs_ = reinterpret_cast<std::byte const *>(&rhs);
+        return datum{base64::encode({rhs_, sizeof(rhs_)})};
+    }
 
     /** Decode a UTF-8 string into a value of a given type.
      *
@@ -33,12 +44,32 @@ struct pickle {
      * @return The decoded value.
      * @throws parse_error When the decoded value is incorrect.
      */
-    [[nodiscard]] T decode(datum rhs) const;
+    [[nodiscard]] T decode(datum rhs) const
+    {
+        hi_static_not_implemented();
+    }
+
+    [[nodiscard]] T decode(datum rhs) const requires(std::has_unique_object_representations_v<T> and not std::is_pointer_v<T>)
+    {
+        if (auto *b = get_if<std::string>(rhs)) {
+            auto tmp = base64::decode(*b);
+            if (tmp.size() != sizeof(T)) {
+                throw parse_error(std::format("Length of base64 encoded object is {}, expected length {}", tmp.size(), sizeof(T)));
+            }
+
+            auto r = T{};
+            std::memcpy(&r, tmp.data(), sizeof(T));
+            return r;
+
+        } else {
+            throw parse_error(std::format("Expecting std::string to be encoded as a base64-string, got {}", rhs));
+        }
+    }
 };
 
 template<numeric_integral T>
 struct pickle<T> {
-    [[nodiscard]] datum encode(T const &rhs) const noexcept
+    [[nodiscard]] datum encode(T const& rhs) const noexcept
     {
         return datum{rhs};
     }
@@ -58,7 +89,7 @@ struct pickle<T> {
 
 template<std::floating_point T>
 struct pickle<T> {
-    [[nodiscard]] datum encode(T const &rhs) const noexcept
+    [[nodiscard]] datum encode(T const& rhs) const noexcept
     {
         return datum{rhs};
     }
@@ -79,7 +110,7 @@ struct pickle<T> {
 
 template<>
 struct pickle<bool> {
-    [[nodiscard]] datum encode(bool const &rhs) const noexcept
+    [[nodiscard]] datum encode(bool const& rhs) const noexcept
     {
         return datum{rhs};
     }
@@ -97,7 +128,7 @@ struct pickle<bool> {
 
 template<>
 struct pickle<std::string> {
-    [[nodiscard]] datum encode(std::string const &rhs) const noexcept
+    [[nodiscard]] datum encode(std::string const& rhs) const noexcept
     {
         return datum{rhs};
     }

@@ -36,7 +36,7 @@ void system_menu_widget::set_layout(widget_layout const &layout) noexcept
 
 void system_menu_widget::draw(draw_context const &context) noexcept
 {
-    if (*visible and overlaps(context, layout())) {
+    if (*mode > widget_mode::invisible and overlaps(context, layout())) {
         _icon_widget->draw(context);
     }
 }
@@ -45,7 +45,7 @@ hitbox system_menu_widget::hitbox_test(point3 position) const noexcept
 {
     hi_axiom(is_gui_thread());
 
-    if (*visible and *enabled and layout().contains(position)) {
+    if (*mode >= widget_mode::partial and layout().contains(position)) {
         // Only the top-left square should return ApplicationIcon, leave
         // the reset to the toolbar implementation.
         return {this, position, hitbox::Type::ApplicationIcon};

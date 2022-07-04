@@ -190,8 +190,8 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
     unicode_script script) noexcept :
     _font_book(&font_book), _dpi_scale(dpi_scale), _script(script)
 {
-    hilet &font = font_book.find_font(style.family_id, style.variant);
-    _initial_line_metrics = (style.size * dpi_scale) * font.metrics;
+    hilet& font = font_book.find_font(style->family_id, style->variant);
+    _initial_line_metrics = (style->size * dpi_scale) * font.metrics;
 
     _text.reserve(text.size());
     for (hilet &c : text) {
@@ -297,7 +297,7 @@ void text_shaper::resolve_script() noexcept
     auto first_script = _script;
     for (auto &c : _text) {
         hilet script = c.description->script();
-        if (script != unicode_script::Common or script == unicode_script::Unknown or script == unicode_script::Inherited) {
+        if (script != unicode_script::Common or script == unicode_script::Zzzz or script == unicode_script::Inherited) {
             first_script = script;
             break;
         }
@@ -316,7 +316,7 @@ void text_shaper::resolve_script() noexcept
         }
 
         c.script = c.description->script();
-        if (c.script == unicode_script::Common or c.script == unicode_script::Unknown) {
+        if (c.script == unicode_script::Common or c.script == unicode_script::Zzzz) {
             hilet bracket_type = c.description->bidi_bracket_type();
             // clang-format off
             c.script =
@@ -344,7 +344,7 @@ void text_shaper::resolve_script() noexcept
     }
 }
 
-[[nodiscard]] std::pair<aarectangle, float> text_shaper::bounding_rectangle(
+[[nodiscard]] aarectangle text_shaper::bounding_rectangle(
     float maximum_line_width,
     hi::vertical_alignment vertical_alignment,
     float line_spacing,
@@ -364,16 +364,9 @@ void text_shaper::resolve_script() noexcept
         inplace_max(max_width, line.width);
     }
 
-    // clang-format off
-    hilet cap_height =
-        vertical_alignment == vertical_alignment::bottom ? lines.back().metrics.cap_height :
-        vertical_alignment == vertical_alignment::top ? lines.front().metrics.cap_height :
-        lines[lines.size() / 2].metrics.cap_height;
-    // clang-format on
-
     hilet max_y = lines.front().y + std::ceil(lines.front().metrics.ascender);
     hilet min_y = lines.back().y - std::ceil(lines.back().metrics.descender);
-    return {aarectangle{point2{0.0f, min_y}, point2{std::ceil(max_width), max_y}}, cap_height};
+    return aarectangle{point2{0.0f, min_y}, point2{std::ceil(max_width), max_y}};
 }
 
 [[nodiscard]] void text_shaper::layout(
@@ -466,17 +459,17 @@ void text_shaper::resolve_script() noexcept
 
 [[nodiscard]] text_cursor text_shaper::get_end_cursor() const noexcept
 {
-    return {size() - 1, true, size()};
+    return text_cursor{size() - 1, true}.resize(size());
 }
 
 [[nodiscard]] text_cursor text_shaper::get_before_cursor(size_t index) const noexcept
 {
-    return {index, false, size()};
+    return text_cursor{index, false}.resize(size());
 }
 
 [[nodiscard]] text_cursor text_shaper::get_after_cursor(size_t index) const noexcept
 {
-    return {index, true, size()};
+    return text_cursor{index, true}.resize(size());
 }
 
 [[nodiscard]] text_cursor text_shaper::get_left_cursor(text_shaper::char_const_iterator it) const noexcept
@@ -539,7 +532,7 @@ void text_shaper::resolve_script() noexcept
 
     if (line_it != _lines.end()) {
         hilet[char_it, after] = line_it->get_nearest(position);
-        return {narrow<size_t>(std::distance(_text.begin(), char_it)), after, size()};
+        return {narrow<size_t>(std::distance(_text.begin(), char_it)), after};
     } else {
         return {};
     }
@@ -687,9 +680,9 @@ void text_shaper::resolve_script() noexcept
 [[nodiscard]] text_cursor text_shaper::move_begin_sentence(text_cursor cursor) const noexcept
 {
     if (cursor.after()) {
-        cursor = {cursor.index(), false, size()};
+        cursor = {cursor.index(), false};
     } else if (cursor.index() != 0) {
-        cursor = {cursor.index() - 1, false, size()};
+        cursor = {cursor.index() - 1, false};
     }
     hilet[first, last] = select_sentence(cursor);
     return first.before_neighbor(size());
@@ -698,9 +691,9 @@ void text_shaper::resolve_script() noexcept
 [[nodiscard]] text_cursor text_shaper::move_end_sentence(text_cursor cursor) const noexcept
 {
     if (cursor.before()) {
-        cursor = {cursor.index(), true, size()};
+        cursor = {cursor.index(), true};
     } else if (cursor.index() != _text.size() - 1) {
-        cursor = {cursor.index() + 1, true, size()};
+        cursor = {cursor.index() + 1, true};
     }
     hilet[first, last] = select_sentence(cursor);
     return last.before_neighbor(size());
@@ -709,9 +702,9 @@ void text_shaper::resolve_script() noexcept
 [[nodiscard]] text_cursor text_shaper::move_begin_paragraph(text_cursor cursor) const noexcept
 {
     if (cursor.after()) {
-        cursor = {cursor.index(), false, size()};
+        cursor = {cursor.index(), false};
     } else if (cursor.index() != 0) {
-        cursor = {cursor.index() - 1, false, size()};
+        cursor = {cursor.index() - 1, false};
     }
     hilet[first, last] = select_paragraph(cursor);
     return first.before_neighbor(size());
@@ -720,9 +713,9 @@ void text_shaper::resolve_script() noexcept
 [[nodiscard]] text_cursor text_shaper::move_end_paragraph(text_cursor cursor) const noexcept
 {
     if (cursor.before()) {
-        cursor = {cursor.index(), true, size()};
+        cursor = {cursor.index(), true};
     } else if (cursor.index() != _text.size() - 1) {
-        cursor = {cursor.index() + 1, true, size()};
+        cursor = {cursor.index() + 1, true};
     }
     hilet[first, last] = select_paragraph(cursor);
     return last.before_neighbor(size());

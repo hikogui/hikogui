@@ -161,7 +161,7 @@ aarectangle device_shared::get_bounding_box(glyph_ids const &glyphs) const noexc
 }
 
 bool device_shared::place_vertices(
-    vspan<vertex> &vertices,
+    vector_span<vertex> &vertices,
     aarectangle const &clipping_rectangle,
     quad const &box,
     glyph_ids const &glyphs,
