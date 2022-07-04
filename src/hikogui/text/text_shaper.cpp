@@ -297,7 +297,7 @@ void text_shaper::resolve_script() noexcept
     auto first_script = _script;
     for (auto &c : _text) {
         hilet script = c.description->script();
-        if (script != unicode_script::Common or script == unicode_script::Unknown or script == unicode_script::Inherited) {
+        if (script != unicode_script::Common or script == unicode_script::Zzzz or script == unicode_script::Inherited) {
             first_script = script;
             break;
         }
@@ -316,7 +316,7 @@ void text_shaper::resolve_script() noexcept
         }
 
         c.script = c.description->script();
-        if (c.script == unicode_script::Common or c.script == unicode_script::Unknown) {
+        if (c.script == unicode_script::Common or c.script == unicode_script::Zzzz) {
             hilet bracket_type = c.description->bidi_bracket_type();
             // clang-format off
             c.script =

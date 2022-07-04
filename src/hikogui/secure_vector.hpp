@@ -209,8 +209,8 @@ public:
 
     constexpr reference emplace_back(auto &&...args)
     {
-        grow();
-        auto tmp = std::construct_at(_end, hi_forward(args)...);
+        grow(1);
+        auto tmp = std::construct_at(_end, tt_forward(args)...);
         ++_end;
         return *tmp;
     }
@@ -305,18 +305,31 @@ private:
         return _end == _bound;
     }
 
+    /** Increase the capacity.
+     *
+     * This function will use a growth factor of 1.5 for increasing
+     * the capacity if the @a count element will not fit the current allocation.
+     *
+     * Growth when pushing back a single element each time:
+     * - 0, 1, 2, 3, 4, 6, 9, 13, ...
+     */
     constexpr void grow(size_t count) const noexcept
     {
-        auto new_size = size();
-        new_size = new_size ? new_size : 8;
-
-        hilet minimum_new_size = new_size + count;
-
-        while (new_size < minimum_new_size) {
-            new_size += new_size >> 1;
+        if (_end + count <= _bound) {
+            return;
         }
 
-        resize(new_size);
+        ttlet minimum_new_capacity = size() + count;
+
+        // Growth factor 1.5, slightly lower than the ideal golden ratio.
+        auto new_capacity = capacity();
+        new_capacity += new_capacity >> 1;
+
+        if (new_capacity < minimum_new_capacity) {
+            reserve(minimum_new_capacity);
+        } else {
+            reserve(new_capacity);
+        }
     }
 
     template<typename... Args>

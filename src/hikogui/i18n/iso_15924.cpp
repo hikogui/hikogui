@@ -27,7 +27,7 @@ struct iso_15924_info {
     {
     }
 
-    constexpr iso_15924_info() noexcept : iso_15924_info("zzzz", Unknown, 999) {}
+    constexpr iso_15924_info() noexcept : iso_15924_info("zzzz", Zzzz, 999) {}
 
     constexpr iso_15924_info(char const (&code4)[5], hi::unicode_script unicode_script, uint16_t number) noexcept :
         iso_15924_info(code4, code4, unicode_script, number)
@@ -249,7 +249,7 @@ constexpr std::array iso_15924_infos = {
     iso_15924_info{"zxxx", Unwritten_Documents, 997},
     iso_15924_info{"zyyy", "DFLT", Common, 998},
 #endif
-    iso_15924_info{"zzzz", Unknown, 999}};
+    iso_15924_info{"zzzz", Zzzz, 999}};
 
 constexpr auto iso_15924_code4_by_number_init() noexcept
 {
