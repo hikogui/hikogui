@@ -35,7 +35,7 @@ struct agrapheme {
         if (hilet r = lhs.language() <=> rhs.language(); r != std::strong_ordering::equal) {
             return r;
         }
-        return lhs.style_group() <=> rhs.style_group();
+        return lhs.style() <=> rhs.style();
     }
 
     [[nodiscard]] bool empty() const noexcept
@@ -68,9 +68,9 @@ struct agrapheme {
         return std::bit_cast<text_style>(truncate<uint16_t>(_value));
     }
 
-    [[nodiscard]] text_sub_style sub_style() const noexcept
+    [[nodiscard]] text_sub_style sub_style(iso_15924 script = iso_15924{}) const noexcept
     {
-        return style().sub_style(phrasing(), language(), grapheme().script());
+        return style().sub_style(phrasing(), language(), script);
     }
 };
 

@@ -4,6 +4,9 @@
 
 
 target_sources(hikogui PRIVATE
+    agrapheme.hpp
+    agstring.cpp
+    agstring.hpp
     elusive_icon.hpp
     font.cpp
     font.hpp

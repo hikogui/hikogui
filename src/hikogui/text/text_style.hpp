@@ -7,13 +7,46 @@
 #include "font_variant.hpp"
 #include "text_decoration.hpp"
 #include "font_family_id.hpp"
+#include "text_phrasing.hpp"
 #include "../color/color.hpp"
+#include "../i18n/iso_15924.hpp"
+#include "../i18n/iso_639.hpp"
 #include "../numbers.hpp"
 #include <format>
 #include <ostream>
 
 namespace hi::inline v1 {
 class font_book;
+
+class text_sub_style {
+public:
+
+    [[nodiscard]] bool matches(text_phrasing phrasing, iso_639 language, iso_15924 script) const noexcept
+    {
+        if (not to_bool(_phrasing_mask & to_text_phrasing_mask(phrasing)) {
+            return false;
+        }
+        if (_language_filter and language and _language_filter != language) {
+            return false;
+        }
+        if (_script_filter and script and _script_filter != script) {
+            return false;
+        }
+        return true;
+    }
+
+private:
+    text_phrasing_mask _phrasing_mask;
+    iso_639 _language_filter;
+    iso_15924 _script_filter;
+
+    font_family_id _family_id;
+    font_variant _variant;
+    float _size;
+    color _color;
+    text_decoration _decoration;
+};
+
 
 struct text_style {
     font_family_id family_id;

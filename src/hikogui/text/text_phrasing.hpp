@@ -9,7 +9,7 @@
 namespace hi::inline v1 {
 
 enum class text_phrasing {
-    regular, 
+    regular,
     emphesis,
     strong,
     code,
@@ -42,7 +42,6 @@ constexpr auto text_phrasing_metadata = enum_metadata{
 };
 // clang-format on
 
-
 enum class text_phrasing_mask {
     regular = 1 << to_underlying(text_phrasing::regular),
     emphesis = 1 << to_underlying(text_phrasing::emphesis),
@@ -59,12 +58,25 @@ enum class text_phrasing_mask {
     unarticulated = 1 << to_underlying(text_phrasing::unarticulated),
 };
 
-[[nodiscard]] constexpr text_phrasing_mask to_text_phrasing_mask(text_phrasing const &rhs) noexcept
+[[nodiscard]] constexpr text_phrasing_mask to_text_phrasing_mask(text_phrasing const& rhs) noexcept
 {
-    hi_axiom(to_underlying(rhs) < sizeof (text_phrasing_mask) * CHAR_BIT);
+    hi_axiom(to_underlying(rhs) < sizeof(text_phrasing_mask) * CHAR_BIT);
     return static_cast<text_phrasing_mask>(1 << to_underlying(rhs));
-
 }
 
+[[nodiscard]] constexpr text_phrasing_mask operator&(text_phrasing_mask const& lhs, text_phrasing_mask const& rhs) noexcept
+{
+    return static_cast<text_phrasing_mask>(to_underlying(lhs) & to_underlying(rhs));
 }
 
+[[nodiscard]] constexpr text_phrasing_mask operator|(text_phrasing_mask const& lhs, text_phrasing_mask const& rhs) noexcept
+{
+    return static_cast<text_phrasing_mask>(to_underlying(lhs) | to_underlying(rhs));
+}
+
+[[nodiscard]] constexpr bool to_bool(text_phrasing_mask const& rhs) noexcept
+{
+    return to_bool(to_underlying(rhs));
+}
+
+} // namespace hi::inline v1

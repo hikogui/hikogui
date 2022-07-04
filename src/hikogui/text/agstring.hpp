@@ -5,6 +5,7 @@
 #pragma once
 
 #include "agrapheme.hpp"
+#include "../unicode/gstring.hpp"
 #include "../required.hpp"
 #include "../strings.hpp"
 #include "../hash.hpp"
@@ -20,7 +21,7 @@ struct std::char_traits<hi::agrapheme> {
     using pos_type = std::fpos<state_type>;
     using comparison_category = std::strong_ordering;
 
-    static constexpr void assign(char_type &r, char_type const &a) noexcept
+    static constexpr void assign(char_type& r, char_type const& a) noexcept
     {
         r = a;
     }
@@ -84,7 +85,7 @@ struct std::char_traits<hi::agrapheme> {
         return i;
     }
 
-    static constexpr char_type const *find(const char_type *p, std::size_t count, const char_type &ch) noexcept
+    static constexpr char_type const *find(const char_type *p, std::size_t count, const char_type& ch) noexcept
     {
         for (std::size_t i = 0; i != count; ++i, ++p) {
             if (*p == ch) {
@@ -139,15 +140,16 @@ using agstring = std::pmr::basic_string<agrapheme>;
  * @param new_line_char The new_line_character to use.
  * @return A grapheme-string.
  */
-[[nodiscard]] agstring to_agstring(std::agstring_view rhs, text_style_group const &styles) noexcept;
+[[nodiscard]] agstring to_agstring(agstring_view rhs, text_style style, iso_639 language, text_phrasing phrasing = text_phrasing::regular) noexcept;
 
 /** Convert a UTF-8 string to a grapheme-string.
-* 
-* @param rhs The UTF-8 string to convert.
-* @param new_line_char The new_line_character to use.
-* @return A grapheme-string.
+ *
+ * @param rhs The UTF-8 string to convert.
+ * @param new_line_char The new_line_character to use.
+ * @return A grapheme-string.
  */
-[[nodiscard]] inline gstring to_gstring(std::string_view rhs, char32_t new_line_char = U'\u2029', text_style_group const &styles) noexcept
+[[nodiscard]] inline gstring
+to_gstring(std::string_view rhs, char32_t new_line_char = U'\u2029', text_style_group const& styles) noexcept
 {
     return to_agstring(to_gstring(to_u32string(rhs), new_line_char), styles);
 }
@@ -156,19 +158,7 @@ using agstring = std::pmr::basic_string<agrapheme>;
 
 template<>
 struct std::hash<hi::agstring> {
-    [[nodiscard]] std::size_t operator()(hi::agstring const &rhs) noexcept
-    {
-        auto r = std::hash<std::size_t>{}(rhs.size());
-        for (hilet c: rhs) {
-            r = hi::hash_mix_two(r, std::hash<hi::agrapheme>{}(c));
-        }
-        return r;
-    }
-};
-
-template<>
-struct std::hash<hi::pmr::agstring> {
-    [[nodiscard]] std::size_t operator()(hi::pmr::agstring const &rhs) noexcept
+    [[nodiscard]] std::size_t operator()(hi::agstring const& rhs) noexcept
     {
         auto r = std::hash<std::size_t>{}(rhs.size());
         for (hilet c : rhs) {
@@ -178,3 +168,14 @@ struct std::hash<hi::pmr::agstring> {
     }
 };
 
+template<>
+struct std::hash<hi::pmr::agstring> {
+    [[nodiscard]] std::size_t operator()(hi::pmr::agstring const& rhs) noexcept
+    {
+        auto r = std::hash<std::size_t>{}(rhs.size());
+        for (hilet c : rhs) {
+            r = hi::hash_mix_two(r, std::hash<hi::agrapheme>{}(c));
+        }
+        return r;
+    }
+};
