@@ -235,6 +235,7 @@ if(HI_BUILD_TESTS)
         int_overflow_tests.cpp
         jsonpath_tests.cpp
         math_tests.cpp
+        notifier_tests.cpp
         graphic_path_tests.cpp
         observable_tests.cpp
         pixel_map_tests.cpp
