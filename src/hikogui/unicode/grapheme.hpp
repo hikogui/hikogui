@@ -18,11 +18,6 @@
 #include <algorithm>
 #include <bit>
 
-hi_warning_push();
-// C26490: Don't use reinterpret_cast (type.1).
-// Using it to improve performance by removing an pointer indirection.
-hi_msvc_suppress(26490);
-
 namespace hi::inline v1 {
 namespace detail {
 
@@ -215,8 +210,6 @@ struct grapheme {
      */
     [[nodiscard]] std::u32string decomposed() const noexcept;
 
-    // The default equality works in combination with long-graphemes, since long-graphemes have stable and unique pointer
-    // values.
     /** Compare equivalence of two graphemes.
      */
     [[nodiscard]] friend constexpr bool operator==(grapheme const&, grapheme const&) noexcept = default;
@@ -269,4 +262,3 @@ struct std::hash<hi::grapheme> {
     }
 };
 
-hi_warning_pop();

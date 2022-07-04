@@ -15,10 +15,10 @@
 hi_warning_push();
 // C26481: Don't use pointer arithmetic. Use span instead.
 // These are low-level functions working directly on pointers, sorry.
-hi_msvc_suppress(26481);
+hi_warning_ignore_msvc(26481);
 // C26429: Symbol '...' is never tested for nullness, it can be marked as not_null (f.23).
 // False positive on several lines.
-hi_msvc_suppress(26429);
+hi_warning_ignore_msvc(26429);
 
 namespace hi::inline v1 {
 

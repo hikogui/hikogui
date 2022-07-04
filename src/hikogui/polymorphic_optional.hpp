@@ -18,10 +18,10 @@
 hi_warning_push();
 // C26432: If you define or delete any default operation in the type '...', define or delete them all (c.21).
 // False positive. The copy/move assignment/constructors are templated
-hi_msvc_suppress(26432);
+hi_warning_ignore_msvc(26432);
 // C26495: Variable '...' is uninitialized. Always initialize a member variable (type.6).
 // For performance reasons polymorphic_optional::_buffer must remain uninitialized.
-hi_msvc_suppress(26495);
+hi_warning_ignore_msvc(26495);
 
 namespace hi::inline v1 {
 

@@ -6,7 +6,7 @@
 
 #include "../required.hpp"
 #include "../geometry/rectangle.hpp"
-#include "../vspan.hpp"
+#include "../vector_span.hpp"
 #include "../color/color.hpp"
 #include "../color/quad_color.hpp"
 #include "../geometry/corner_radii.hpp"
@@ -43,7 +43,7 @@ struct device_shared final {
 
     void drawInCommandBuffer(vk::CommandBuffer& commandBuffer);
 
-    static void place_vertices(vspan<vertex>& vertices, aarectangle clipping_rectangle, quad box, float alpha);
+    static void place_vertices(vector_span<vertex>& vertices, aarectangle clipping_rectangle, quad box, float alpha);
 
 private:
     void buildShaders();

@@ -15,7 +15,7 @@
 hi_warning_push()
 // C26490: Don't use reinterpret_cast (type.1).
 // Need to call strlen() and friends with a `char *`.
-hi_msvc_suppress(26490)
+hi_warning_ignore_msvc(26490)
 
 namespace hi::inline v1 {
 

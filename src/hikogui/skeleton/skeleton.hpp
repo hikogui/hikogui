@@ -28,7 +28,7 @@ parse_skeleton(URL url, std::string_view::const_iterator first, std::string_view
 [[nodiscard]] inline std::unique_ptr<skeleton_node> parse_skeleton(URL url)
 {
     hilet fv = url.loadView();
-    hilet sv = fv->string_view();
+    hilet sv = as_string_view(*fv);
 
     return parse_skeleton(std::move(url), sv.cbegin(), sv.cend());
 }

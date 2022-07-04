@@ -269,7 +269,7 @@ png::png(std::unique_ptr<resource_view> view) : _view(std::move(view))
 {
     std::size_t offset = 0;
 
-    hilet bytes = _view->bytes();
+    hilet bytes = as_bstring_view(*_view);
     read_header(bytes, offset);
     read_chunks(bytes, offset);
 }
@@ -368,11 +368,11 @@ void png::unfilter_line(std::span<uint8_t> line, std::span<uint8_t const> prev_l
 
 void png::unfilter_lines(bstring &image_data) const
 {
-    hilet image_bytes = std::span(reinterpret_cast<uint8_t *>(image_data.data()), ssize(image_data));
-    auto zero_line = bstring(_bytes_per_line, std::byte{0});
+    hilet image_bytes = std::span(reinterpret_cast<uint8_t *>(image_data.data()), image_data.size());
+    auto zero_line = std::vector<uint8_t>(_bytes_per_line, uint8_t{0});
 
-    auto prev_line = std::span(reinterpret_cast<uint8_t *>(zero_line.data()), ssize(zero_line));
-    for (int y = 0; y != _height; ++y) {
+    auto prev_line = std::span(zero_line.data(), zero_line.size());
+    for (auto y = 0_uz; y != _height; ++y) {
         hilet line = image_bytes.subspan(y * _stride, _stride);
         unfilter_line(line, prev_line);
         prev_line = line.subspan(1, _bytes_per_line);

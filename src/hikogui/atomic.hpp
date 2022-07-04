@@ -9,6 +9,11 @@
 #include <thread>
 #include <chrono>
 
+hi_warning_push();
+// C26403: Reset or explicitly delete and owner<T> pointer '...' (r.3).: ...
+// The static analyser is very confused about the get_or_make() function.
+hi_warning_ignore_msvc(26403);
+
 namespace hi::inline v1 {
 
 /** Lock-free fetch-then-max operation on an atomic.
@@ -122,3 +127,5 @@ private:
 };
 
 } // namespace hi::inline v1
+
+hi_warning_pop();

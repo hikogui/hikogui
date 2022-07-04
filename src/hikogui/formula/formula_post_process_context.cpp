@@ -113,7 +113,7 @@ static datum function_sort(formula_evaluation_context &context, datum::vector_ty
     }
 }
 
-static datum method_contains(formula_evaluation_context &context, datum &self, datum::vector_type const &args)
+static datum method_contains(formula_evaluation_context &context, datum const &self, datum::vector_type const &args)
 {
     if (args.size() != 1) {
         throw operation_error(std::format("Expecting 1 argument for .contains() method, got {}", args.size()));

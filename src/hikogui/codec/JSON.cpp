@@ -176,7 +176,7 @@ struct parse_context_t {
 
 [[nodiscard]] datum parse_JSON(URL const &url)
 {
-    return parse_JSON(url.loadView()->string_view());
+    return parse_JSON(as_string_view(*url.loadView()));
 }
 
 static void format_JSON_impl(datum const &value, std::string &result, hi::indent indent = {})

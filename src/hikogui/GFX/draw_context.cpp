@@ -16,10 +16,10 @@ namespace hi::inline v1 {
 
 draw_context::draw_context(
     gfx_device_vulkan& device,
-    vspan<pipeline_box::vertex>& box_vertices,
-    vspan<pipeline_image::vertex>& image_vertices,
-    vspan<pipeline_SDF::vertex>& sdf_vertices,
-    vspan<pipeline_alpha::vertex>& alpha_vertices) noexcept :
+    vector_span<pipeline_box::vertex>& box_vertices,
+    vector_span<pipeline_image::vertex>& image_vertices,
+    vector_span<pipeline_SDF::vertex>& sdf_vertices,
+    vector_span<pipeline_alpha::vertex>& alpha_vertices) noexcept :
     device(device),
     frame_buffer_index(std::numeric_limits<size_t>::max()),
     scissor_rectangle(),

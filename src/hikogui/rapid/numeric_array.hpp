@@ -48,10 +48,10 @@
 
 hi_warning_push();
 // C4702 unreachable code: Suppressed due intrinsics and std::is_constant_evaluated()
-hi_msvc_suppress(4702);
+hi_warning_ignore_msvc(4702);
 // C26490: Don't use reinterpret_cast (type.1).
 // Needed for casting pointers to or from SSE registers.
-hi_msvc_suppress(26490);
+hi_warning_ignore_msvc(26490);
 
 namespace hi::inline v1 {
 
@@ -165,13 +165,13 @@ struct numeric_array {
         }
     }
 
-    constexpr numeric_array(numeric_array const &rhs) noexcept = default;
-    constexpr numeric_array(numeric_array &&rhs) noexcept = default;
-    constexpr numeric_array &operator=(numeric_array const &rhs) noexcept = default;
-    constexpr numeric_array &operator=(numeric_array &&rhs) noexcept = default;
+    constexpr numeric_array(numeric_array const& rhs) noexcept = default;
+    constexpr numeric_array(numeric_array&& rhs) noexcept = default;
+    constexpr numeric_array& operator=(numeric_array const& rhs) noexcept = default;
+    constexpr numeric_array& operator=(numeric_array&& rhs) noexcept = default;
 
     template<numeric_limited U, std::size_t M>
-    [[nodiscard]] constexpr explicit numeric_array(numeric_array<U, M> const &other) noexcept : v()
+    [[nodiscard]] constexpr explicit numeric_array(numeric_array<U, M> const& other) noexcept : v()
     {
         if (!std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX)
@@ -258,7 +258,7 @@ struct numeric_array {
     }
 
     template<numeric_limited U, std::size_t M>
-    [[nodiscard]] constexpr explicit numeric_array(numeric_array<U, M> const &other1, numeric_array<U, M> const &other2) noexcept
+    [[nodiscard]] constexpr explicit numeric_array(numeric_array<U, M> const& other1, numeric_array<U, M> const& other2) noexcept
         :
         v()
     {
@@ -310,7 +310,7 @@ struct numeric_array {
         }
     }
 
-    [[nodiscard]] constexpr explicit numeric_array(T const &x) noexcept : v()
+    [[nodiscard]] constexpr explicit numeric_array(T const& x) noexcept : v()
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_SSE)
@@ -323,7 +323,7 @@ struct numeric_array {
         get<0>(v) = x;
     }
 
-    [[nodiscard]] constexpr explicit numeric_array(T const &x, T const &y) noexcept requires(N >= 2) : v()
+    [[nodiscard]] constexpr explicit numeric_array(T const& x, T const& y) noexcept requires(N >= 2) : v()
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_SSE2)
@@ -337,7 +337,7 @@ struct numeric_array {
         get<1>(v) = y;
     }
 
-    [[nodiscard]] constexpr explicit numeric_array(T const &x, T const &y, T const &z) noexcept requires(N >= 3) : v()
+    [[nodiscard]] constexpr explicit numeric_array(T const& x, T const& y, T const& z) noexcept requires(N >= 3) : v()
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_SSE2)
@@ -352,7 +352,7 @@ struct numeric_array {
         get<2>(v) = z;
     }
 
-    [[nodiscard]] constexpr explicit numeric_array(T const &x, T const &y, T const &z, T const &w) noexcept requires(N >= 4) : v()
+    [[nodiscard]] constexpr explicit numeric_array(T const& x, T const& y, T const& z, T const& w) noexcept requires(N >= 4) : v()
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_SSE2)
@@ -421,9 +421,9 @@ struct numeric_array {
         }
     }
 
-    [[nodiscard]] numeric_array(std::array<T, N> const &rhs) noexcept : v(rhs) {}
+    [[nodiscard]] numeric_array(std::array<T, N> const& rhs) noexcept : v(rhs) {}
 
-    numeric_array &operator=(std::array<T, N> const &rhs) noexcept
+    numeric_array& operator=(std::array<T, N> const& rhs) noexcept
     {
         v = rhs;
         return *this;
@@ -461,42 +461,42 @@ struct numeric_array {
 #endif
 
 #if defined(HI_HAS_SSE2)
-    [[nodiscard]] explicit numeric_array(__m128i const &rhs) noexcept requires(std::is_integral_v<T> and sizeof(T) * N == 16)
+    [[nodiscard]] explicit numeric_array(__m128i const& rhs) noexcept requires(std::is_integral_v<T> and sizeof(T) * N == 16)
     {
         _mm_storeu_si128(reinterpret_cast<__m128i *>(v.data()), rhs);
     }
 #endif
 
 #if defined(HI_HAS_SSE4_1)
-    [[nodiscard]] explicit numeric_array(__m128i const &rhs) noexcept requires(is_f16x4) :
+    [[nodiscard]] explicit numeric_array(__m128i const& rhs) noexcept requires(is_f16x4) :
         v(std::bit_cast<decltype(v)>(_mm_extract_epi64(rhs, 0)))
     {
     }
 #endif
 
 #if defined(HI_HAS_SSE4_1)
-    [[nodiscard]] explicit numeric_array(__m128i const &rhs) noexcept requires(is_u8x4) :
+    [[nodiscard]] explicit numeric_array(__m128i const& rhs) noexcept requires(is_u8x4) :
         v(std::bit_cast<decltype(v)>(_mm_extract_epi32(rhs, 0)))
     {
     }
 #endif
 
 #if defined(HI_HAS_SSE2)
-    [[nodiscard]] explicit numeric_array(__m128 const &rhs) noexcept requires(is_f32x4)
+    [[nodiscard]] explicit numeric_array(__m128 const& rhs) noexcept requires(is_f32x4)
     {
         _mm_storeu_ps(v.data(), rhs);
     }
 #endif
 
 #if defined(HI_HAS_SSE2)
-    [[nodiscard]] explicit numeric_array(__m128d const &rhs) noexcept requires(is_f64x2)
+    [[nodiscard]] explicit numeric_array(__m128d const& rhs) noexcept requires(is_f64x2)
     {
         _mm_storeu_pd(v.data(), rhs);
     }
 #endif
 
 #if defined(HI_HAS_SSE2)
-    numeric_array &operator=(__m128i const &rhs) noexcept requires(std::is_integral_v<T> and sizeof(T) * N == 16)
+    numeric_array& operator=(__m128i const& rhs) noexcept requires(std::is_integral_v<T> and sizeof(T) * N == 16)
     {
         _mm_storeu_si128(reinterpret_cast<__m128i *>(v.data()), rhs);
         return *this;
@@ -504,7 +504,7 @@ struct numeric_array {
 #endif
 
 #if defined(HI_HAS_SSE2)
-    numeric_array &operator=(__m128 const &rhs) noexcept requires(is_f32x4)
+    numeric_array& operator=(__m128 const& rhs) noexcept requires(is_f32x4)
     {
         _mm_storeu_ps(v.data(), rhs);
         return *this;
@@ -512,7 +512,7 @@ struct numeric_array {
 #endif
 
 #if defined(HI_HAS_SSE2)
-    numeric_array &operator=(__m128d const &rhs) noexcept requires(is_f64x2)
+    numeric_array& operator=(__m128d const& rhs) noexcept requires(is_f64x2)
     {
         _mm_storeu_pd(v.data(), rhs);
         return *this;
@@ -541,28 +541,28 @@ struct numeric_array {
 #endif
 
 #if defined(HI_HAS_AVX)
-    [[nodiscard]] explicit numeric_array(__m256i const &rhs) noexcept requires(std::is_integral_v<T> and sizeof(T) * N == 32)
+    [[nodiscard]] explicit numeric_array(__m256i const& rhs) noexcept requires(std::is_integral_v<T> and sizeof(T) * N == 32)
     {
         _mm256_storeu_si256(reinterpret_cast<__m256i *>(v.data()), rhs);
     }
 #endif
 
 #if defined(HI_HAS_AVX)
-    [[nodiscard]] explicit numeric_array(__m256 const &rhs) noexcept requires(is_f32x8)
+    [[nodiscard]] explicit numeric_array(__m256 const& rhs) noexcept requires(is_f32x8)
     {
         _mm256_storeu_ps(v.data(), rhs);
     }
 #endif
 
 #if defined(HI_HAS_AVX)
-    [[nodiscard]] explicit numeric_array(__m256d const &rhs) noexcept requires(is_f64x4)
+    [[nodiscard]] explicit numeric_array(__m256d const& rhs) noexcept requires(is_f64x4)
     {
         _mm256_storeu_pd(v.data(), rhs);
     }
 #endif
 
 #if defined(HI_HAS_AVX)
-    numeric_array &operator=(__m256i const &rhs) noexcept requires(std::is_integral_v<T> and sizeof(T) * N == 32)
+    numeric_array& operator=(__m256i const& rhs) noexcept requires(std::is_integral_v<T> and sizeof(T) * N == 32)
     {
         _mm256_storeu_si256(reinterpret_cast<__m256i *>(v.data()), rhs);
         return *this;
@@ -570,7 +570,7 @@ struct numeric_array {
 #endif
 
 #if defined(HI_HAS_AVX)
-    numeric_array &operator=(__m256 const &rhs) noexcept requires(is_f32x8)
+    numeric_array& operator=(__m256 const& rhs) noexcept requires(is_f32x8)
     {
         _mm256_storeu_ps(v.data(), rhs);
         return *this;
@@ -578,7 +578,7 @@ struct numeric_array {
 #endif
 
 #if defined(HI_HAS_AVX)
-    numeric_array &operator=(__m256d const &rhs) noexcept requires(is_f64x4)
+    numeric_array& operator=(__m256d const& rhs) noexcept requires(is_f64x4)
     {
         _mm256_storeu_pd(v.data(), rhs);
         return *this;
@@ -586,7 +586,7 @@ struct numeric_array {
 #endif
 
     template<typename Other>
-    [[nodiscard]] constexpr friend Other bit_cast(numeric_array const &rhs) noexcept
+    [[nodiscard]] constexpr friend Other bit_cast(numeric_array const& rhs) noexcept
         requires(sizeof(Other) == sizeof(container_type))
     {
         if (not std::is_constant_evaluated()) {
@@ -705,14 +705,14 @@ struct numeric_array {
         }
     }
 
-    [[nodiscard]] constexpr T const &operator[](std::size_t i) const noexcept
+    [[nodiscard]] constexpr T const& operator[](std::size_t i) const noexcept
     {
         static_assert(std::endian::native == std::endian::little, "Indices need to be reversed on big endian machines");
         hi_axiom(i < N);
         return v[i];
     }
 
-    [[nodiscard]] constexpr T &operator[](std::size_t i) noexcept
+    [[nodiscard]] constexpr T& operator[](std::size_t i) noexcept
     {
         static_assert(std::endian::native == std::endian::little, "Indices need to be reversed on big endian machines");
         hi_axiom(i < N);
@@ -814,202 +814,202 @@ struct numeric_array {
         return a() == T{0};
     }
 
-    [[nodiscard]] constexpr T const &x() const noexcept requires(N >= 1)
+    [[nodiscard]] constexpr T const& x() const noexcept requires(N >= 1)
     {
         return std::get<0>(v);
     }
 
-    [[nodiscard]] constexpr T const &y() const noexcept requires(N >= 2)
+    [[nodiscard]] constexpr T const& y() const noexcept requires(N >= 2)
     {
         return std::get<1>(v);
     }
 
-    [[nodiscard]] constexpr T const &z() const noexcept requires(N >= 3)
+    [[nodiscard]] constexpr T const& z() const noexcept requires(N >= 3)
     {
         return std::get<2>(v);
     }
 
-    [[nodiscard]] constexpr T const &w() const noexcept requires(N >= 4)
+    [[nodiscard]] constexpr T const& w() const noexcept requires(N >= 4)
     {
         return std::get<3>(v);
     }
 
-    [[nodiscard]] constexpr T &x() noexcept requires(N >= 1)
+    [[nodiscard]] constexpr T& x() noexcept requires(N >= 1)
     {
         return std::get<0>(v);
     }
 
-    [[nodiscard]] constexpr T &y() noexcept requires(N >= 2)
+    [[nodiscard]] constexpr T& y() noexcept requires(N >= 2)
     {
         return std::get<1>(v);
     }
 
-    [[nodiscard]] constexpr T &z() noexcept requires(N >= 3)
+    [[nodiscard]] constexpr T& z() noexcept requires(N >= 3)
     {
         return std::get<2>(v);
     }
 
-    [[nodiscard]] constexpr T &w() noexcept requires(N >= 4)
+    [[nodiscard]] constexpr T& w() noexcept requires(N >= 4)
     {
         return std::get<3>(v);
     }
 
-    [[nodiscard]] constexpr T const &r() const noexcept requires(N >= 1)
+    [[nodiscard]] constexpr T const& r() const noexcept requires(N >= 1)
     {
         return std::get<0>(v);
     }
 
-    [[nodiscard]] constexpr T const &g() const noexcept requires(N >= 2)
+    [[nodiscard]] constexpr T const& g() const noexcept requires(N >= 2)
     {
         return std::get<1>(v);
     }
 
-    [[nodiscard]] constexpr T const &b() const noexcept requires(N >= 3)
+    [[nodiscard]] constexpr T const& b() const noexcept requires(N >= 3)
     {
         return std::get<2>(v);
     }
 
-    [[nodiscard]] constexpr T const &a() const noexcept requires(N >= 4)
+    [[nodiscard]] constexpr T const& a() const noexcept requires(N >= 4)
     {
         return std::get<3>(v);
     }
 
-    [[nodiscard]] constexpr T &r() noexcept requires(N >= 1)
+    [[nodiscard]] constexpr T& r() noexcept requires(N >= 1)
     {
         return std::get<0>(v);
     }
 
-    [[nodiscard]] constexpr T &g() noexcept requires(N >= 2)
+    [[nodiscard]] constexpr T& g() noexcept requires(N >= 2)
     {
         return std::get<1>(v);
     }
 
-    [[nodiscard]] constexpr T &b() noexcept requires(N >= 3)
+    [[nodiscard]] constexpr T& b() noexcept requires(N >= 3)
     {
         return std::get<2>(v);
     }
 
-    [[nodiscard]] constexpr T &a() noexcept requires(N >= 4)
+    [[nodiscard]] constexpr T& a() noexcept requires(N >= 4)
     {
         return std::get<3>(v);
     }
 
-    [[nodiscard]] constexpr T const &width() const noexcept requires(N >= 1)
+    [[nodiscard]] constexpr T const& width() const noexcept requires(N >= 1)
     {
         return std::get<0>(v);
     }
 
-    [[nodiscard]] constexpr T const &height() const noexcept requires(N >= 2)
+    [[nodiscard]] constexpr T const& height() const noexcept requires(N >= 2)
     {
         return std::get<1>(v);
     }
 
-    [[nodiscard]] constexpr T const &depth() const noexcept requires(N >= 3)
+    [[nodiscard]] constexpr T const& depth() const noexcept requires(N >= 3)
     {
         return std::get<2>(v);
     }
 
-    [[nodiscard]] constexpr T &width() noexcept requires(N >= 1)
+    [[nodiscard]] constexpr T& width() noexcept requires(N >= 1)
     {
         return std::get<0>(v);
     }
 
-    [[nodiscard]] constexpr T &height() noexcept requires(N >= 2)
+    [[nodiscard]] constexpr T& height() noexcept requires(N >= 2)
     {
         return std::get<1>(v);
     }
 
-    [[nodiscard]] constexpr T &depth() noexcept requires(N >= 3)
+    [[nodiscard]] constexpr T& depth() noexcept requires(N >= 3)
     {
         return std::get<2>(v);
     }
 
-    constexpr numeric_array &operator<<=(unsigned int rhs) noexcept
+    constexpr numeric_array& operator<<=(unsigned int rhs) noexcept
     {
         return *this = *this << rhs;
     }
 
-    constexpr numeric_array &operator>>=(unsigned int rhs) noexcept
+    constexpr numeric_array& operator>>=(unsigned int rhs) noexcept
     {
         return *this = *this >> rhs;
     }
 
-    constexpr numeric_array &operator|=(numeric_array const &rhs) noexcept
+    constexpr numeric_array& operator|=(numeric_array const& rhs) noexcept
     {
         return *this = *this | rhs;
     }
 
-    constexpr numeric_array &operator|=(T const &rhs) noexcept
+    constexpr numeric_array& operator|=(T const& rhs) noexcept
     {
         return *this = *this | rhs;
     }
 
-    constexpr numeric_array &operator&=(numeric_array const &rhs) noexcept
+    constexpr numeric_array& operator&=(numeric_array const& rhs) noexcept
     {
         return *this = *this & rhs;
     }
 
-    constexpr numeric_array &operator&=(T const &rhs) noexcept
+    constexpr numeric_array& operator&=(T const& rhs) noexcept
     {
         return *this = *this & rhs;
     }
 
-    constexpr numeric_array &operator^=(numeric_array const &rhs) noexcept
+    constexpr numeric_array& operator^=(numeric_array const& rhs) noexcept
     {
         return *this = *this ^ rhs;
     }
 
-    constexpr numeric_array &operator^=(T const &rhs) noexcept
+    constexpr numeric_array& operator^=(T const& rhs) noexcept
     {
         return *this = *this ^ rhs;
     }
 
-    constexpr numeric_array &operator+=(numeric_array const &rhs) noexcept
+    constexpr numeric_array& operator+=(numeric_array const& rhs) noexcept
     {
         return *this = *this + rhs;
     }
 
-    constexpr numeric_array &operator+=(T const &rhs) noexcept
+    constexpr numeric_array& operator+=(T const& rhs) noexcept
     {
         return *this = *this + rhs;
     }
 
-    constexpr numeric_array &operator-=(numeric_array const &rhs) noexcept
+    constexpr numeric_array& operator-=(numeric_array const& rhs) noexcept
     {
         return *this = *this - rhs;
     }
 
-    constexpr numeric_array &operator-=(T const &rhs) noexcept
+    constexpr numeric_array& operator-=(T const& rhs) noexcept
     {
         return *this = *this - rhs;
     }
 
-    constexpr numeric_array &operator*=(numeric_array const &rhs) noexcept
+    constexpr numeric_array& operator*=(numeric_array const& rhs) noexcept
     {
         return *this = *this * rhs;
     }
 
-    constexpr numeric_array &operator*=(T const &rhs) noexcept
+    constexpr numeric_array& operator*=(T const& rhs) noexcept
     {
         return *this = *this * rhs;
     }
 
-    constexpr numeric_array &operator/=(numeric_array const &rhs) noexcept
+    constexpr numeric_array& operator/=(numeric_array const& rhs) noexcept
     {
         return *this = *this / rhs;
     }
 
-    constexpr numeric_array &operator/=(T const &rhs) noexcept
+    constexpr numeric_array& operator/=(T const& rhs) noexcept
     {
         return *this = *this / rhs;
     }
 
-    constexpr numeric_array &operator%=(numeric_array const &rhs) noexcept
+    constexpr numeric_array& operator%=(numeric_array const& rhs) noexcept
     {
         return *this = *this % rhs;
     }
 
-    constexpr numeric_array &operator%=(T const &rhs) noexcept
+    constexpr numeric_array& operator%=(T const& rhs) noexcept
     {
         return *this = *this % rhs;
     }
@@ -1022,7 +1022,7 @@ struct numeric_array {
      * @tparam I Index into the array
      */
     template<std::size_t I>
-    [[nodiscard]] friend constexpr T &get(numeric_array &rhs) noexcept
+    [[nodiscard]] friend constexpr T& get(numeric_array& rhs) noexcept
     {
         static_assert(I < N, "Index out of bounds");
         return std::get<I>(rhs.v);
@@ -1034,7 +1034,7 @@ struct numeric_array {
      *           or the special indices: -1 yields a literal 0, -2 yields a literal 1.
      */
     template<ssize_t I>
-    [[nodiscard]] friend constexpr T get(numeric_array &&rhs) noexcept
+    [[nodiscard]] friend constexpr T get(numeric_array&& rhs) noexcept
     {
         static_assert(std::endian::native == std::endian::little, "Indices need to be reversed on big endian machines");
         static_assert(I >= -2 && I < narrow_cast<ssize_t>(N), "Index out of bounds");
@@ -1054,7 +1054,7 @@ struct numeric_array {
      * @return The value extracted.
      */
     template<std::size_t I>
-    [[nodiscard]] constexpr friend T extract(numeric_array const &rhs) noexcept
+    [[nodiscard]] constexpr friend T extract(numeric_array const& rhs) noexcept
     {
         static_assert(I < N);
 
@@ -1109,7 +1109,7 @@ struct numeric_array {
      * @return The vector with the inserted value.
      */
     template<std::size_t I, std::size_t ZeroMask = 0>
-    [[nodiscard]] constexpr friend numeric_array insert(numeric_array const &lhs, T rhs) noexcept
+    [[nodiscard]] constexpr friend numeric_array insert(numeric_array const& lhs, T rhs) noexcept
         requires(is_f32x4 or is_i32x4 or is_u32x4)
     {
         static_assert(I < N);
@@ -1144,7 +1144,7 @@ struct numeric_array {
      *           or the special indices: -1 yields a literal 0, -2 yields a literal 1.
      */
     template<ssize_t I>
-    [[nodiscard]] friend constexpr T get(numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr T get(numeric_array const& rhs) noexcept
     {
         static_assert(std::endian::native == std::endian::little, "Indices need to be reversed on big endian machines");
         static_assert(I >= -2 && I < narrow_cast<ssize_t>(N), "Index out of bounds");
@@ -1187,14 +1187,14 @@ struct numeric_array {
     }
 
     /** Blend two numeric arrays.
-    * 
-    * @tparam Mask One bit for each element selects; 0: lhs, 1: rhs.
-    * @param lhs The left hand side
-    * @param rhs The right hand side
-    * @return The blended array.
-    */
+     *
+     * @tparam Mask One bit for each element selects; 0: lhs, 1: rhs.
+     * @param lhs The left hand side
+     * @param rhs The right hand side
+     * @return The blended array.
+     */
     template<std::size_t Mask>
-    [[nodiscard]] friend constexpr numeric_array blend(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array blend(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX2)
@@ -1248,7 +1248,7 @@ struct numeric_array {
 
     /** Blend the values using a dynamic mask.
      */
-    [[nodiscard]] friend constexpr numeric_array blend(numeric_array const &a, numeric_array const &b, numeric_array const &mask)
+    [[nodiscard]] friend constexpr numeric_array blend(numeric_array const& a, numeric_array const& b, numeric_array const& mask)
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX2)
@@ -1303,12 +1303,12 @@ struct numeric_array {
         return blend<Mask>(rhs, -rhs);
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator-(numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array operator-(numeric_array const& rhs) noexcept
     {
         return T{0} - rhs;
     }
 
-    [[nodiscard]] friend constexpr numeric_array abs(numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array abs(numeric_array const& rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX2)
@@ -1341,7 +1341,7 @@ struct numeric_array {
         return max(rhs, -rhs);
     }
 
-    [[nodiscard]] friend constexpr numeric_array rcp(numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array rcp(numeric_array const& rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX)
@@ -1359,7 +1359,7 @@ struct numeric_array {
         return T{1} / rhs;
     }
 
-    [[nodiscard]] friend constexpr numeric_array sqrt(numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array sqrt(numeric_array const& rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX)
@@ -1388,7 +1388,7 @@ struct numeric_array {
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array rcp_sqrt(numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array rcp_sqrt(numeric_array const& rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX)
@@ -1406,7 +1406,7 @@ struct numeric_array {
         return rcp(sqrt(rhs));
     }
 
-    [[nodiscard]] friend constexpr numeric_array floor(numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array floor(numeric_array const& rhs) noexcept
         requires(std::is_floating_point_v<value_type>)
     {
         if (not std::is_constant_evaluated()) {
@@ -1433,7 +1433,7 @@ struct numeric_array {
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array ceil(numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array ceil(numeric_array const& rhs) noexcept
         requires(std::is_floating_point_v<value_type>)
     {
         if (not std::is_constant_evaluated()) {
@@ -1460,7 +1460,7 @@ struct numeric_array {
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array round(numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array round(numeric_array const& rhs) noexcept
         requires(std::is_floating_point_v<value_type>)
     {
         if (not std::is_constant_evaluated()) {
@@ -1495,7 +1495,7 @@ struct numeric_array {
      * @return Result of the dot product.
      */
     template<std::size_t Mask>
-    [[nodiscard]] hi_force_inline friend constexpr T dot(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] hi_force_inline friend constexpr T dot(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_SSE4_1)
@@ -1524,7 +1524,7 @@ struct numeric_array {
      * @return Result of the hypot calculation.
      */
     template<std::size_t Mask>
-    [[nodiscard]] friend constexpr T hypot(numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr T hypot(numeric_array const& rhs) noexcept
     {
         return std::sqrt(dot<Mask>(rhs, rhs));
     }
@@ -1549,7 +1549,7 @@ struct numeric_array {
      * @return Result of the hypot-squared calculation.
      */
     template<std::size_t Mask>
-    [[nodiscard]] friend constexpr T rcp_hypot(numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr T rcp_hypot(numeric_array const& rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_SSE4_1)
@@ -1571,7 +1571,7 @@ struct numeric_array {
      * @return The normalized vector.
      */
     template<std::size_t Mask>
-    [[nodiscard]] friend constexpr numeric_array normalize(numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array normalize(numeric_array const& rhs) noexcept
     {
         hi_axiom(rhs.is_vector());
 
@@ -1596,15 +1596,17 @@ struct numeric_array {
         return r;
     }
 
-    [[nodiscard]] friend constexpr std::size_t eq(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr std::size_t eq(numeric_array const& lhs, numeric_array const& rhs) noexcept
         requires(N <= sizeof(std::size_t) * CHAR_BIT)
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX2)
             if constexpr (is_i64x4 or is_u64x4) {
-                return static_cast<std::size_t>(_mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpeq_epi64(lhs.reg(), rhs.reg()))));
+                return static_cast<std::size_t>(
+                    _mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpeq_epi64(lhs.reg(), rhs.reg()))));
             } else if constexpr (is_i32x8 or is_u32x8) {
-                return static_cast<std::size_t>(_mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpeq_epi32(lhs.reg(), rhs.reg()))));
+                return static_cast<std::size_t>(
+                    _mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpeq_epi32(lhs.reg(), rhs.reg()))));
             } else if constexpr (is_i8x32 or is_u8x32) {
                 return static_cast<std::size_t>(_mm256_movemask_epi8(_mm256_cmpeq_epi8(lhs.reg(), rhs.reg())));
             }
@@ -1644,7 +1646,7 @@ struct numeric_array {
         return r;
     }
 
-    [[nodiscard]] friend constexpr std::size_t ne(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr std::size_t ne(numeric_array const& lhs, numeric_array const& rhs) noexcept
         requires(N <= sizeof(std::size_t) * CHAR_BIT)
     {
         if (not std::is_constant_evaluated()) {
@@ -1671,15 +1673,17 @@ struct numeric_array {
         return eq(lhs, rhs) ^ not_mask;
     }
 
-    [[nodiscard]] friend constexpr std::size_t gt(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr std::size_t gt(numeric_array const& lhs, numeric_array const& rhs) noexcept
         requires(N <= sizeof(std::size_t) * CHAR_BIT)
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX2)
             if constexpr (is_i64x4) {
-                return static_cast<std::size_t>(_mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpgt_epi64(lhs.reg(), rhs.reg()))));
+                return static_cast<std::size_t>(
+                    _mm256_movemask_pd(_mm256_castsi256_pd(_mm256_cmpgt_epi64(lhs.reg(), rhs.reg()))));
             } else if constexpr (is_i32x8) {
-                return static_cast<std::size_t>(_mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpgt_epi32(lhs.reg(), rhs.reg()))));
+                return static_cast<std::size_t>(
+                    _mm256_movemask_ps(_mm256_castsi256_ps(_mm256_cmpgt_epi32(lhs.reg(), rhs.reg()))));
             } else if constexpr (is_i8x32) {
                 return static_cast<std::size_t>(_mm256_movemask_epi8(_mm256_cmpgt_epi8(lhs.reg(), rhs.reg())));
             }
@@ -1719,7 +1723,7 @@ struct numeric_array {
         return r;
     }
 
-    [[nodiscard]] friend constexpr std::size_t lt(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr std::size_t lt(numeric_array const& lhs, numeric_array const& rhs) noexcept
         requires(N <= sizeof(std::size_t) * CHAR_BIT)
     {
         if (not std::is_constant_evaluated()) {
@@ -1750,7 +1754,7 @@ struct numeric_array {
         return gt(rhs, lhs);
     }
 
-    [[nodiscard]] friend constexpr std::size_t ge(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr std::size_t ge(numeric_array const& lhs, numeric_array const& rhs) noexcept
         requires(N <= sizeof(std::size_t) * CHAR_BIT)
     {
         if (not std::is_constant_evaluated()) {
@@ -1777,7 +1781,7 @@ struct numeric_array {
         return gt(lhs, rhs) | eq(lhs, rhs);
     }
 
-    [[nodiscard]] friend constexpr std::size_t le(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr std::size_t le(numeric_array const& lhs, numeric_array const& rhs) noexcept
         requires(N <= sizeof(std::size_t) * CHAR_BIT)
     {
         if (not std::is_constant_evaluated()) {
@@ -1804,7 +1808,7 @@ struct numeric_array {
         return gt(rhs, lhs) | eq(rhs, lhs);
     }
 
-    [[nodiscard]] friend constexpr numeric_array gt_mask(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array gt_mask(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_SSE4_2)
@@ -1838,12 +1842,12 @@ struct numeric_array {
         return r;
     }
 
-    [[nodiscard]] friend constexpr bool operator==(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr bool operator==(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
         return not ne(lhs, rhs);
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator<<(numeric_array const &lhs, unsigned int rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array operator<<(numeric_array const& lhs, unsigned int rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX2)
@@ -1881,7 +1885,7 @@ struct numeric_array {
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator>>(numeric_array const &lhs, unsigned int rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array operator>>(numeric_array const& lhs, unsigned int rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX2)
@@ -2001,17 +2005,17 @@ struct numeric_array {
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator|(numeric_array const &lhs, T const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array operator|(numeric_array const& lhs, T const& rhs) noexcept
     {
         return lhs | broadcast(rhs);
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator|(T const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array operator|(T const& lhs, numeric_array const& rhs) noexcept
     {
         return broadcast(lhs) | rhs;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator&(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array operator&(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX2)
@@ -2056,17 +2060,17 @@ struct numeric_array {
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator&(numeric_array const &lhs, T const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array operator&(numeric_array const& lhs, T const& rhs) noexcept
     {
         return lhs & broadcast(rhs);
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator&(T const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array operator&(T const& lhs, numeric_array const& rhs) noexcept
     {
         return broadcast(lhs) & rhs;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator^(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array operator^(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX2)
@@ -2111,17 +2115,17 @@ struct numeric_array {
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator^(numeric_array const &lhs, T const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array operator^(numeric_array const& lhs, T const& rhs) noexcept
     {
         return lhs ^ broadcast(rhs);
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator^(T const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array operator^(T const& lhs, numeric_array const& rhs) noexcept
     {
         return broadcast(lhs) ^ rhs;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator+(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array operator+(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX2)
@@ -2169,17 +2173,17 @@ struct numeric_array {
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator+(numeric_array const &lhs, T const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array operator+(numeric_array const& lhs, T const& rhs) noexcept
     {
         return lhs + broadcast(rhs);
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator+(T const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array operator+(T const& lhs, numeric_array const& rhs) noexcept
     {
         return broadcast(lhs) + rhs;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator-(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array operator-(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX2)
@@ -2227,17 +2231,17 @@ struct numeric_array {
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator-(numeric_array const &lhs, T const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array operator-(numeric_array const& lhs, T const& rhs) noexcept
     {
         return lhs - broadcast(rhs);
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator-(T const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array operator-(T const& lhs, numeric_array const& rhs) noexcept
     {
         return broadcast(lhs) - rhs;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator*(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array operator*(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX2)
@@ -2280,17 +2284,17 @@ struct numeric_array {
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator*(numeric_array const &lhs, T const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array operator*(numeric_array const& lhs, T const& rhs) noexcept
     {
         return lhs * broadcast(rhs);
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator*(T const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array operator*(T const& lhs, numeric_array const& rhs) noexcept
     {
         return broadcast(lhs) * rhs;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator/(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array operator/(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX)
@@ -2319,33 +2323,33 @@ struct numeric_array {
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator/(numeric_array const &lhs, T const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array operator/(numeric_array const& lhs, T const& rhs) noexcept
     {
         return lhs / broadcast(rhs);
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator/(T const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array operator/(T const& lhs, numeric_array const& rhs) noexcept
     {
         return broadcast(lhs) / rhs;
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator%(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array operator%(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
         hilet div_result = floor(lhs / rhs);
         return lhs - (div_result * rhs);
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator%(numeric_array const &lhs, T const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array operator%(numeric_array const& lhs, T const& rhs) noexcept
     {
         return lhs % broadcast(rhs);
     }
 
-    [[nodiscard]] friend constexpr numeric_array operator%(T const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array operator%(T const& lhs, numeric_array const& rhs) noexcept
     {
         return broadcast(lhs) % rhs;
     }
 
-    [[nodiscard]] friend constexpr numeric_array min(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array min(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX2)
@@ -2404,7 +2408,7 @@ struct numeric_array {
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array max(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array max(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX2)
@@ -2464,12 +2468,12 @@ struct numeric_array {
     }
 
     [[nodiscard]] friend constexpr numeric_array
-    clamp(numeric_array const &lhs, numeric_array const &low, numeric_array const &high) noexcept
+    clamp(numeric_array const& lhs, numeric_array const& low, numeric_array const& high) noexcept
     {
         return min(max(lhs, low), high);
     }
 
-    [[nodiscard]] friend constexpr numeric_array hadd(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array hadd(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX2)
@@ -2523,7 +2527,7 @@ struct numeric_array {
         return r;
     }
 
-    [[nodiscard]] friend constexpr numeric_array hsub(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array hsub(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_AVX2)
@@ -2582,7 +2586,7 @@ struct numeric_array {
      * @tparam Mask bit mask where '1' means to add, '0' means to subtract.
      */
     template<std::size_t Mask>
-    [[nodiscard]] friend constexpr numeric_array addsub(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array addsub(numeric_array const& lhs, numeric_array const& rhs) noexcept
     {
         constexpr std::size_t not_mask = (1 << N) - 1;
         return lhs + neg<Mask ^ not_mask>(rhs);
@@ -2590,7 +2594,7 @@ struct numeric_array {
 
     /** Calculate the 2D normal on a 2D vector.
      */
-    [[nodiscard]] friend constexpr numeric_array cross_2D(numeric_array const &rhs) noexcept requires(N >= 2)
+    [[nodiscard]] friend constexpr numeric_array cross_2D(numeric_array const& rhs) noexcept requires(N >= 2)
     {
         hi_axiom(rhs.z() == 0.0f && rhs.is_vector());
         return numeric_array{-rhs.y(), rhs.x()};
@@ -2598,7 +2602,7 @@ struct numeric_array {
 
     /** Calculate the 2D unit-normal on a 2D vector.
      */
-    [[nodiscard]] friend constexpr numeric_array normal_2D(numeric_array const &rhs) noexcept requires(N >= 2)
+    [[nodiscard]] friend constexpr numeric_array normal_2D(numeric_array const& rhs) noexcept requires(N >= 2)
     {
         return normalize<0b0011>(cross_2D(rhs));
     }
@@ -2606,7 +2610,7 @@ struct numeric_array {
     /** Calculate the cross-product between two 2D vectors.
      * a.x * b.y - a.y * b.x
      */
-    [[nodiscard]] friend constexpr float cross_2D(numeric_array const &lhs, numeric_array const &rhs) noexcept requires(N >= 2)
+    [[nodiscard]] friend constexpr float cross_2D(numeric_array const& lhs, numeric_array const& rhs) noexcept requires(N >= 2)
     {
         hilet tmp1 = rhs.yxwz();
         hilet tmp2 = lhs * tmp1;
@@ -2618,7 +2622,7 @@ struct numeric_array {
     // y=a.z*b.x - a.x*b.z
     // z=a.x*b.y - a.y*b.x
     // w=a.w*b.w - a.w*b.w
-    [[nodiscard]] constexpr friend numeric_array cross_3D(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] constexpr friend numeric_array cross_3D(numeric_array const& lhs, numeric_array const& rhs) noexcept
         requires(N == 4)
     {
         hilet a_left = lhs.yzxw();
@@ -2665,7 +2669,7 @@ struct numeric_array {
 
     /** Shuffle a 16x byte array, using the indices from the right-hand-side.
      */
-    [[nodiscard]] friend constexpr numeric_array shuffle(numeric_array const &lhs, numeric_array const &rhs) noexcept
+    [[nodiscard]] friend constexpr numeric_array shuffle(numeric_array const& lhs, numeric_array const& rhs) noexcept
         requires(std::is_integral_v<value_type>)
     {
         if (!std::is_constant_evaluated()) {
@@ -2690,7 +2694,7 @@ struct numeric_array {
 
     /** Find a point at the midpoint between two points.
      */
-    [[nodiscard]] friend constexpr numeric_array midpoint(numeric_array const &p1, numeric_array const &p2) noexcept
+    [[nodiscard]] friend constexpr numeric_array midpoint(numeric_array const& p1, numeric_array const& p2) noexcept
     {
         hi_axiom(p1.is_point());
         hi_axiom(p2.is_point());
@@ -2699,15 +2703,19 @@ struct numeric_array {
 
     /** Find the point on the other side and at the same distance of an anchor-point.
      */
-    [[nodiscard]] friend constexpr numeric_array reflect_point(numeric_array const &p, numeric_array const anchor) noexcept
+    [[nodiscard]] friend constexpr numeric_array reflect_point(numeric_array const& p, numeric_array const anchor) noexcept
     {
         hi_axiom(p.is_point());
         hi_axiom(anchor.is_point());
         return anchor - (p - anchor);
     }
 
+    hi_warning_push();
+    // C26494 Variable '...' is uninitialized. Always initialize an object (type.5).
+    // Internal to _MM_TRANSPOSE4_PS
+    hi_warning_ignore_msvc(26494);
     template<typename... Columns>
-    [[nodiscard]] friend constexpr std::array<numeric_array, N> transpose(Columns const &...columns) noexcept
+    [[nodiscard]] friend constexpr std::array<numeric_array, N> transpose(Columns const&...columns) noexcept
     {
         static_assert(sizeof...(Columns) == N, "Can only transpose square matrices");
 
@@ -2726,20 +2734,22 @@ struct numeric_array {
         }
 
         auto r = std::array<numeric_array, N>{};
-        auto f = [&r, &columns...]<std::size_t ...Ints>(std::index_sequence<Ints...>) {
+        auto f = [&r, &columns... ]<std::size_t... Ints>(std::index_sequence<Ints...>)
+        {
             auto tf = [&r](auto i, auto v) {
                 for (std::size_t j = 0; j != N; ++j) {
                     r[j][i] = v[j];
                 }
                 return 0;
             };
-            static_cast<void>((tf(Ints, columns) +...));
+            static_cast<void>((tf(Ints, columns) + ...));
         };
         f(std::make_index_sequence<sizeof...(columns)>{});
         return r;
     }
+    hi_warning_pop();
 
-    [[nodiscard]] constexpr friend numeric_array composit(numeric_array const &under, numeric_array const &over) noexcept
+    [[nodiscard]] constexpr friend numeric_array composit(numeric_array const& under, numeric_array const& over) noexcept
         requires(N == 4 && std::is_floating_point_v<T>)
     {
         if (over.is_transparent()) {
@@ -2760,13 +2770,13 @@ struct numeric_array {
         return output_color / output_color.www1();
     }
 
-    [[nodiscard]] constexpr friend numeric_array composit(numeric_array const &under, numeric_array const &over) noexcept
+    [[nodiscard]] constexpr friend numeric_array composit(numeric_array const& under, numeric_array const& over) noexcept
         requires(is_f16x4)
     {
         return numeric_array{composit(static_cast<numeric_array<float, 4>>(under), static_cast<numeric_array<float, 4>>(over))};
     }
 
-    [[nodiscard]] friend std::string to_string(numeric_array const &rhs) noexcept
+    [[nodiscard]] friend std::string to_string(numeric_array const& rhs) noexcept
     {
         auto r = std::string{};
 
@@ -2781,7 +2791,7 @@ struct numeric_array {
         return r;
     }
 
-    friend std::ostream &operator<<(std::ostream &lhs, numeric_array const &rhs)
+    friend std::ostream& operator<<(std::ostream& lhs, numeric_array const& rhs)
     {
         return lhs << to_string(rhs);
     }
@@ -2791,7 +2801,7 @@ struct numeric_array {
      * It also can clear any of the elements to zero.
      */
     template<std::size_t FromElement, std::size_t ToElement>
-    [[nodiscard]] constexpr friend numeric_array insert(numeric_array const &lhs, numeric_array const &rhs)
+    [[nodiscard]] constexpr friend numeric_array insert(numeric_array const& lhs, numeric_array const& rhs)
     {
         auto r = numeric_array{};
 
@@ -2951,7 +2961,7 @@ struct numeric_array {
 #undef SWIZZLE_2D_GEN1
 
     template<ssize_t I, ssize_t FirstElement, ssize_t... RestElements>
-    constexpr void swizzle_detail(numeric_array &r) const noexcept
+    constexpr void swizzle_detail(numeric_array& r) const noexcept
     {
         static_assert(I < narrow_cast<ssize_t>(N));
         static_assert(FirstElement >= -2 && FirstElement < narrow_cast<ssize_t>(N), "Index out of bounds");
