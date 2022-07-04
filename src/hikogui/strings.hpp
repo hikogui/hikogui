@@ -25,7 +25,7 @@ hi_warning_push();
 // C26409: Avoid calling new and delete explicitly, use std::make_unique<T> instead (r.11).
 // make_cstr() is used for arguments passed to tt_main() for compatibility we need to create
 // those using new/delete.
-hi_msvc_suppress(26409);
+hi_warning_ignore_msvc(26409);
 
 namespace hi::inline v1 {
 
@@ -101,7 +101,7 @@ namespace hi::inline v1 {
 
 [[nodiscard]] constexpr bool is_digit(std::string_view str) noexcept
 {
-    for (hilet c: str) {
+    for (hilet c : str) {
         if (not is_digit(c)) {
             return false;
         }
@@ -260,44 +260,47 @@ namespace hi::inline v1 {
     return r;
 }
 
-[[nodiscard]] constexpr uint32_t fourcc(char const txt[5]) noexcept
+template<typename T, size_t N>
+[[nodiscard]] constexpr uint32_t fourcc(T const (&txt)[N]) noexcept requires(sizeof(T) == 1 and (N == 4 or N == 5))
 {
-    hi_axiom(txt != nullptr);
     auto r = uint32_t{};
-    r |= std::bit_cast<uint8_t>(txt[0]);
+    r |= truncate<uint8_t>(txt[0]);
     r <<= 8;
-    r |= std::bit_cast<uint8_t>(txt[1]);
+    r |= truncate<uint8_t>(txt[1]);
     r <<= 8;
-    r |= std::bit_cast<uint8_t>(txt[2]);
+    r |= truncate<uint8_t>(txt[2]);
     r <<= 8;
-    r |= std::bit_cast<uint8_t>(txt[3]);
+    r |= truncate<uint8_t>(txt[3]);
+
+    if constexpr (N == 5) {
+        hi_axiom(txt[4] == 0);
+    }
     return r;
 }
 
-[[nodiscard]] constexpr uint32_t fourcc(uint8_t const *txt) noexcept
+template<typename T>
+[[nodiscard]] constexpr uint32_t fourcc_from_cstr(T const *txt) noexcept requires(sizeof(T) == 1)
 {
     hi_axiom(txt != nullptr);
     auto r = uint32_t{};
-    r |= std::bit_cast<uint8_t>(txt[0]);
+    r |= truncate<uint8_t>(txt[0]);
     r <<= 8;
-    r |= std::bit_cast<uint8_t>(txt[1]);
+    r |= truncate<uint8_t>(txt[1]);
     r <<= 8;
-    r |= std::bit_cast<uint8_t>(txt[2]);
+    r |= truncate<uint8_t>(txt[2]);
     r <<= 8;
-    r |= std::bit_cast<uint8_t>(txt[3]);
+    r |= truncate<uint8_t>(txt[3]);
     return r;
 }
 
 [[nodiscard]] inline std::string fourcc_to_string(uint32_t x) noexcept
 {
-    char c_str[5];
-    c_str[0] = narrow_cast<char>((x >> 24) & 0xff);
-    c_str[1] = narrow_cast<char>((x >> 16) & 0xff);
-    c_str[2] = narrow_cast<char>((x >> 8) & 0xff);
-    c_str[3] = narrow_cast<char>(x & 0xff);
-    c_str[4] = 0;
-
-    return {c_str};
+    auto r = std::string{};
+    r += truncate<char>((x >> 24) & 0xff);
+    r += truncate<char>((x >> 16) & 0xff);
+    r += truncate<char>((x >> 8) & 0xff);
+    r += truncate<char>(x & 0xff);
+    return r;
 }
 
 constexpr std::size_t string_size(sizeable auto str) noexcept
@@ -312,7 +315,7 @@ constexpr std::size_t string_size(auto str) noexcept
 
 template<typename FirstNeedle, typename... Needles>
 [[nodiscard]] std::pair<std::size_t, std::size_t>
-string_find_any(std::string_view haystack, std::size_t pos, FirstNeedle const &first_needle, Needles const &...needles) noexcept
+string_find_any(std::string_view haystack, std::size_t pos, FirstNeedle const& first_needle, Needles const&...needles) noexcept
 {
     using std::size;
 
@@ -336,7 +339,7 @@ string_find_any(std::string_view haystack, std::size_t pos, FirstNeedle const &f
 }
 
 template<typename StringType, typename... Needles>
-[[nodiscard]] std::vector<StringType> _split(std::string_view haystack, Needles const &...needles) noexcept
+[[nodiscard]] std::vector<StringType> _split(std::string_view haystack, Needles const&...needles) noexcept
 {
     auto r = std::vector<StringType>{};
 
@@ -352,7 +355,7 @@ template<typename StringType, typename... Needles>
 }
 
 template<typename... Needles>
-[[nodiscard]] std::vector<std::string> split(std::string_view haystack, Needles const &...needles) noexcept
+[[nodiscard]] std::vector<std::string> split(std::string_view haystack, Needles const&...needles) noexcept
 {
     return _split<std::string>(haystack, needles...);
 }
@@ -363,7 +366,7 @@ template<typename... Needles>
 }
 
 template<typename... Needles>
-[[nodiscard]] std::vector<std::string_view> split_view(std::string_view haystack, Needles const &...needles) noexcept
+[[nodiscard]] std::vector<std::string_view> split_view(std::string_view haystack, Needles const&...needles) noexcept
 {
     return _split<std::string_view>(haystack, needles...);
 }
@@ -375,20 +378,20 @@ template<typename... Needles>
 
 template<typename CharT>
 [[nodiscard]] std::basic_string<CharT>
-join(std::vector<std::basic_string<CharT>> const &list, std::basic_string_view<CharT> const joiner = {}) noexcept
+join(std::vector<std::basic_string<CharT>> const& list, std::basic_string_view<CharT> const joiner = {}) noexcept
 {
     std::string r;
 
     if (list.size() > 1) {
         std::size_t final_size = (list.size() - 1) * joiner.size();
-        for (hilet &item : list) {
+        for (hilet& item : list) {
             final_size += item.size();
         }
         r.reserve(final_size);
     }
 
     std::size_t i = 0;
-    for (hilet &item : list) {
+    for (hilet& item : list) {
         if (i++ != 0) {
             r += joiner;
         }
@@ -399,18 +402,18 @@ join(std::vector<std::basic_string<CharT>> const &list, std::basic_string_view<C
 
 template<typename CharT>
 [[nodiscard]] std::basic_string<CharT>
-join(std::vector<std::basic_string<CharT>> const &list, std::basic_string<CharT> const &joiner) noexcept
+join(std::vector<std::basic_string<CharT>> const& list, std::basic_string<CharT> const& joiner) noexcept
 {
     return join(list, std::basic_string_view<CharT>{joiner});
 }
 
 template<typename CharT>
-[[nodiscard]] std::basic_string<CharT> join(std::vector<std::basic_string<CharT>> const &list, CharT const *joiner) noexcept
+[[nodiscard]] std::basic_string<CharT> join(std::vector<std::basic_string<CharT>> const& list, CharT const *joiner) noexcept
 {
     return join(list, std::basic_string_view<CharT>{joiner});
 }
 
-[[nodiscard]] inline std::string join(std::vector<std::string_view> const &list, std::string_view const joiner = {}) noexcept
+[[nodiscard]] inline std::string join(std::vector<std::string_view> const& list, std::string_view const joiner = {}) noexcept
 {
     std::string r;
 
@@ -442,10 +445,17 @@ template<typename It>
 
     for (; begin != end; begin++) {
         switch (*begin) {
-        case '\n': line++; [[fallthrough]];
-        case '\r': column = 1; break;
-        case '\t': column = ((((column - 1) / 8) + 1) * 8) + 1; break;
-        default: column++;
+        case '\n':
+            line++;
+            [[fallthrough]];
+        case '\r':
+            column = 1;
+            break;
+        case '\t':
+            column = ((((column - 1) / 8) + 1) * 8) + 1;
+            break;
+        default:
+            column++;
         }
     }
     return {line, column};
@@ -549,7 +559,7 @@ constexpr auto to_array_without_last(T(&&rhs)[N]) noexcept
 /** Copy a std::string to new memory.
  * The caller will have to delete [] return value.
  */
-[[nodiscard]] inline char *make_cstr(std::string const &s) noexcept
+[[nodiscard]] inline char *make_cstr(std::string const& s) noexcept
 {
     return make_cstr(s.c_str(), s.size());
 }

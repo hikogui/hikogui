@@ -14,40 +14,20 @@ namespace hi::inline v1 {
  */
 class indent {
 public:
+    [[nodiscard]] constexpr ~indent() noexcept = default;
+    [[nodiscard]] constexpr indent() noexcept = default;
+    [[nodiscard]] constexpr indent(indent const& other) noexcept = default;
+    [[nodiscard]] constexpr indent(indent&& other) noexcept = default;
+    [[nodiscard]] constexpr indent& operator=(indent const& other) noexcept = default;
+    [[nodiscard]] constexpr indent& operator=(indent&& other) noexcept = default;
+
     /** Constructor
      * This constructor will start indentation at depth 0.
      *
      * @param spaces Number of spaces per indentation.
      * @param space Character used for indentation.
      */
-    [[nodiscard]] constexpr indent(int spaces = 4, char space = ' ') noexcept : _space(space), _spaces(spaces), _depth(0) {}
-
-    [[nodiscard]] constexpr indent(indent const &other) noexcept :
-        _space(other._space), _spaces(other._spaces), _depth(other._depth)
-    {
-    }
-
-    [[nodiscard]] constexpr indent(indent &&other) noexcept : _space(other._space), _spaces(other._spaces), _depth(other._depth)
-    {
-    }
-
-    [[nodiscard]] constexpr indent &operator=(indent const &other) noexcept
-    {
-        // Self-assignment is allowed.
-        _space = other._space;
-        _spaces = other._spaces;
-        _depth = other._depth;
-        return *this;
-    }
-
-    [[nodiscard]] constexpr indent &operator=(indent &&other) noexcept
-    {
-        // Self-assignment is allowed.
-        _space = other._space;
-        _spaces = other._spaces;
-        _depth = other._depth;
-        return *this;
-    }
+    [[nodiscard]] constexpr indent(int spaces, char space = ' ') noexcept : _space(space), _spaces(spaces), _depth(0) {}
 
     /** String conversion operator.
      */
@@ -81,9 +61,9 @@ public:
     }
 
 private:
-    char _space;
-    int _spaces;
-    int _depth;
+    char _space = ' ';
+    int _spaces = 4;
+    int _depth = 0;
 };
 
 } // namespace hi::inline v1

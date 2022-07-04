@@ -37,8 +37,8 @@ file_view::file_view(std::shared_ptr<file_mapping> const &_file_mapping_object, 
         throw io_error("{}: Could not map view of file. '{}'", location(), get_last_error_message());
     }
 
-    auto *bytes_ptr = new std::span<std::byte>(static_cast<std::byte *>(data), size);
-    _bytes = std::shared_ptr<std::span<std::byte>>(bytes_ptr, file_view::unmap);
+    auto *bytes_ptr = new void_span(data, size);
+    _bytes = std::shared_ptr<void_span>(bytes_ptr, file_view::unmap);
 }
 
 file_view::file_view(URL const &location, AccessMode accessMode, std::size_t offset, std::size_t size) :
@@ -76,7 +76,7 @@ file_view &file_view::operator=(file_view &&other) noexcept
     return *this;
 }
 
-void file_view::unmap(std::span<std::byte> *bytes) noexcept
+void file_view::unmap(void_span *bytes) noexcept
 {
     if (bytes != nullptr) {
         if (!bytes->empty()) {

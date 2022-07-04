@@ -189,7 +189,7 @@ static void parse_po_header(po_translations &r, std::string const &header)
 [[nodiscard]] po_translations parse_po(URL const &url)
 {
     hilet text = url.loadView();
-    return parse_po(text->string_view());
+    return parse_po(as_string_view(*text));
 }
 
 } // namespace hi::inline v1

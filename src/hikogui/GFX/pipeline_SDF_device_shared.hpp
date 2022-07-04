@@ -10,7 +10,7 @@
 #include "../text/glyph_atlas_info.hpp"
 #include "../required.hpp"
 #include "../log.hpp"
-#include "../vspan.hpp"
+#include "../vector_span.hpp"
 #include "../geometry/rectangle.hpp"
 #include "../geometry/scale.hpp"
 #include "../geometry/transform.hpp"
@@ -126,7 +126,7 @@ struct device_shared final {
      * @return True is atlas was updated.
      */
     bool place_vertices(
-        vspan<vertex> &vertices,
+        vector_span<vertex> &vertices,
         aarectangle const &clipping_rectangle,
         quad const &box,
         glyph_ids const &glyphs,

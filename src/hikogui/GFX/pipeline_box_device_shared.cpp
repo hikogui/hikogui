@@ -31,7 +31,7 @@ void device_shared::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
 }
 
 void device_shared::place_vertices(
-    vspan<vertex> &vertices,
+    vector_span<vertex> &vertices,
     aarectangle clipping_rectangle,
     quad box,
     quad_color fill_colors,

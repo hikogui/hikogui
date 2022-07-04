@@ -17,10 +17,11 @@ option(HI_ENABLE_ANALYSIS   "Compile using -analyze"            OFF)
 option(HI_ENABLE_ASAN       "Compile using address sanitizer"   OFF)
 
 include(CMakeDependentOption)
-cmake_dependent_option(HI_BUILD_EXAMPLES "Build example applications" OFF "NOT HI_ENABLE_ANALYSIS" ON)
-cmake_dependent_option(HI_BUILD_TESTS "Build tests" ON "NOT HI_ENABLE_ANALYSIS" OFF)
-cmake_dependent_option(HI_INSTALL "Generate installation target" ON "NOT HI_ENABLE_ANALYSIS" OFF)
-cmake_dependent_option(HI_BUILD_PCH "Build precompiled headers" ON "NOT HI_ENABLE_ANALYSIS" OFF)
+cmake_dependent_option(HI_BUILD_EXAMPLES "Build example applications"   OFF "NOT HI_ENABLE_ANALYSIS" ON)
+cmake_dependent_option(HI_BUILD_TESTS    "Build tests"                  ON  "NOT HI_ENABLE_ANALYSIS" OFF)
+cmake_dependent_option(HI_INSTALL        "Generate installation target" ON  "NOT HI_ENABLE_ANALYSIS" OFF)
+cmake_dependent_option(HI_BUILD_PCH      "Build precompiled headers"    ON  "NOT HI_ENABLE_ANALYSIS" OFF)
+
 #-------------------------------------------------------------------
 # Project
 #-------------------------------------------------------------------
@@ -88,9 +89,6 @@ include(AddStaticResource)
 include(AddShader)
 include(ShowBuildTargetProperties)
 include(FetchContent)
-if(WIN32)
-    include(GetWindowsNtVersion)
-endif()
 
 #-------------------------------------------------------------------
 # Find Dependencies
@@ -116,6 +114,10 @@ if(NOT DEFINED ENV{VULKAN_SDK})
         "set VULKAN_SDK=\"C:\\VulkanSDK\\1.0.0.0\"\n")
 endif()
 find_package(Vulkan REQUIRED)
+
+#
+# Vulkan Memory Allocator - installed as part of Vulkan SDK headers
+#
 if(NOT EXISTS "${Vulkan_INCLUDE_DIRS}/vma")
     message(FATAL_ERROR "Please make sure to include VMA (Vulkan Memory Allocator) with the installation of VulkanSDK.\n")
 endif()
@@ -309,7 +311,7 @@ elseif (MSVC)
     #        'struct (8 bytes)' and '__declspec(align(8)) struct (8 bytes)' [foobar.vcxproj]
     # Bug in linker where atomic variables defined in a header file and used in two .cpp files be
     # interpreted as different types. Microsoft knows about the bug for many years.
-    target_link_options(hikogui PUBLIC "-ignore:4744")
+    target_link_options(hikogui PUBLIC "/ignore:4744")
 
     if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
         # Enable Security Development Lifecycle checks.

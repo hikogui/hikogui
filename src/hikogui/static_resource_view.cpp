@@ -13,7 +13,7 @@ static_resource_view::static_resource_view(std::string const &filename) :
 {
 }
 
-std::span<std::byte const> static_resource_view::get_static_resource(std::string const &filename)
+const_void_span static_resource_view::get_static_resource(std::string const &filename)
 {
     auto r = static_resource_item::find(filename);
     if (r.empty()) {

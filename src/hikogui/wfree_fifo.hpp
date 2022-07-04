@@ -14,6 +14,11 @@
 #include <memory>
 #include <array>
 
+hi_warning_push();
+// C26490: Don't use reinterpret_cast (type.1).
+// Implementing a container.
+hi_warning_ignore_msvc(26490);
+
 namespace hi::inline v1 {
 
 /** A wait-free multiple-producer/single-consumer fifo designed for absolute performance.
@@ -140,3 +145,5 @@ private:
 };
 
 } // namespace hi::inline v1
+
+hi_warning_pop();

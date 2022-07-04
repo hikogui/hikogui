@@ -343,7 +343,7 @@ private:
 
     static void timer_deinit() noexcept
     {
-        if (hilet ptr = _timer.exchange(nullptr, std::memory_order::acquire)) {
+        if (auto const * const ptr = _timer.exchange(nullptr, std::memory_order::acquire)) {
             hi_axiom(_timer_thread.joinable());
             _timer_thread.request_stop();
             _timer_thread.join();
