@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "grapheme.hpp"
+#include "agrapheme.hpp"
 #include "../required.hpp"
 #include "../strings.hpp"
 #include "../hash.hpp"
@@ -12,9 +12,9 @@
 #include <string>
 
 template<>
-struct std::char_traits<hi::grapheme> {
-    using char_type = hi::grapheme;
-    using int_type = hi::grapheme::value_type;
+struct std::char_traits<hi::agrapheme> {
+    using char_type = hi::agrapheme;
+    using int_type = hi::agrapheme::value_type;
     using off_type = std::streamoff;
     using state_type = std::mbstate_t;
     using pos_type = std::fpos<state_type>;
@@ -113,24 +113,24 @@ struct std::char_traits<hi::grapheme> {
 
     static constexpr int_type eof() noexcept
     {
-        // An empty grapheme has all 21 bits to '1'.
-        return 0x1f'ffff;
+        // The empty grapheme has all 21 bit '1'.
+        return 0x1f'ffffULL << 43;
     }
 
     static constexpr int_type not_eof(int_type e) noexcept
     {
-        // When e is eof return the replacement character.
-        return e == eof() ? 0xfffd : e;
+        // Return the replacement-char if e is eof.
+        return e == eof() ? (0xfffdULL << 43) : e;
     }
 };
 
 namespace hi::inline v1 {
 
-using gstring = std::basic_string<grapheme>;
-using gstring_view = std::basic_string_view<grapheme>;
+using agstring = std::basic_string<agrapheme>;
+using agstring_view = std::basic_string_view<agrapheme>;
 
 namespace pmr {
-using gstring = std::pmr::basic_string<grapheme>;
+using agstring = std::pmr::basic_string<agrapheme>;
 }
 
 /** Convert a UTF-32 string to a grapheme-string.
@@ -139,7 +139,7 @@ using gstring = std::pmr::basic_string<grapheme>;
  * @param new_line_char The new_line_character to use.
  * @return A grapheme-string.
  */
-[[nodiscard]] gstring to_gstring(std::u32string_view rhs, char32_t new_line_char = U'\u2029') noexcept;
+[[nodiscard]] agstring to_agstring(std::agstring_view rhs, text_style_group const &styles) noexcept;
 
 /** Convert a UTF-8 string to a grapheme-string.
 * 
@@ -147,47 +147,32 @@ using gstring = std::pmr::basic_string<grapheme>;
 * @param new_line_char The new_line_character to use.
 * @return A grapheme-string.
  */
-[[nodiscard]] inline gstring to_gstring(std::string_view rhs, char32_t new_line_char = U'\u2029') noexcept
+[[nodiscard]] inline gstring to_gstring(std::string_view rhs, char32_t new_line_char = U'\u2029', text_style_group const &styles) noexcept
 {
-    return to_gstring(to_u32string(rhs), new_line_char);
-}
-
-[[nodiscard]] inline std::string to_string(gstring_view rhs) noexcept
-{
-    auto r = std::string{};
-    r.reserve(rhs.size());
-    for (hilet c: rhs) {
-        r += to_string(c);
-    }
-    return r;
-}
-
-[[nodiscard]] inline std::string to_string(gstring const &rhs) noexcept
-{
-    return to_string(gstring_view{rhs});
+    return to_agstring(to_gstring(to_u32string(rhs), new_line_char), styles);
 }
 
 } // namespace hi::inline v1
 
 template<>
-struct std::hash<hi::gstring> {
-    [[nodiscard]] std::size_t operator()(hi::gstring const &rhs) noexcept
+struct std::hash<hi::agstring> {
+    [[nodiscard]] std::size_t operator()(hi::agstring const &rhs) noexcept
     {
         auto r = std::hash<std::size_t>{}(rhs.size());
         for (hilet c: rhs) {
-            r = hi::hash_mix_two(r, std::hash<hi::grapheme>{}(c));
+            r = hi::hash_mix_two(r, std::hash<hi::agrapheme>{}(c));
         }
         return r;
     }
 };
 
 template<>
-struct std::hash<hi::pmr::gstring> {
-    [[nodiscard]] std::size_t operator()(hi::pmr::gstring const &rhs) noexcept
+struct std::hash<hi::pmr::agstring> {
+    [[nodiscard]] std::size_t operator()(hi::pmr::agstring const &rhs) noexcept
     {
         auto r = std::hash<std::size_t>{}(rhs.size());
         for (hilet c : rhs) {
-            r = hi::hash_mix_two(r, std::hash<hi::grapheme>{}(c));
+            r = hi::hash_mix_two(r, std::hash<hi::agrapheme>{}(c));
         }
         return r;
     }
