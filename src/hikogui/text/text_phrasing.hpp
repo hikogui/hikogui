@@ -5,6 +5,7 @@
 #include "../required.hpp"
 #include "../cast.hpp"
 #include "../enum_metadata.hpp"
+#include <cstdint>
 
 namespace hi::inline v1 {
 
@@ -42,7 +43,7 @@ constexpr auto text_phrasing_metadata = enum_metadata{
 };
 // clang-format on
 
-enum class text_phrasing_mask {
+enum class text_phrasing_mask : uint16_t {
     regular = 1 << to_underlying(text_phrasing::regular),
     emphesis = 1 << to_underlying(text_phrasing::emphesis),
     strong = 1 << to_underlying(text_phrasing::strong),
@@ -56,6 +57,9 @@ enum class text_phrasing_mask {
     math = 1 << to_underlying(text_phrasing::math),
     example = 1 << to_underlying(text_phrasing::example),
     unarticulated = 1 << to_underlying(text_phrasing::unarticulated),
+
+    all = regular | emphesis | strong | code | abbreviation | bold | italic | citation | keyboard | mark | math | example |
+        unarticulated
 };
 
 [[nodiscard]] constexpr text_phrasing_mask to_text_phrasing_mask(text_phrasing const& rhs) noexcept
@@ -72,6 +76,11 @@ enum class text_phrasing_mask {
 [[nodiscard]] constexpr text_phrasing_mask operator|(text_phrasing_mask const& lhs, text_phrasing_mask const& rhs) noexcept
 {
     return static_cast<text_phrasing_mask>(to_underlying(lhs) | to_underlying(rhs));
+}
+
+[[nodiscard]] constexpr bool all(text_phrasing_mask const& rhs) noexcept
+{
+    return (rhs & text_phrasing_mask::all) == text_phrasing_mask::all;
 }
 
 [[nodiscard]] constexpr bool to_bool(text_phrasing_mask const& rhs) noexcept

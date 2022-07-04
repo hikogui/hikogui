@@ -25,7 +25,7 @@ selection_widget::selection_widget(gui_window& window, widget *parent, weak_or_u
     _current_label_widget->alignment = alignment::middle_left();
     _unknown_label_widget = std::make_unique<label_widget>(window, this, unknown_label);
     _unknown_label_widget->alignment = alignment::middle_left();
-    _unknown_label_widget->text_style = theme_text_style::placeholder;
+    _unknown_label_widget->text_style = semantic_text_style::placeholder;
 
     _overlay_widget = std::make_unique<overlay_widget>(window, this);
     _overlay_widget->mode = widget_mode::invisible;

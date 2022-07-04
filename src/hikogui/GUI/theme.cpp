@@ -72,12 +72,12 @@ theme::theme(hi::font_book const& font_book, URL const& url)
     }
 }
 
-[[nodiscard]] hi::text_style theme::text_style(theme_text_style theme_text_style) const noexcept
+[[nodiscard]] hi::text_style theme::text_style(semantic_text_style semantic_text_style) const noexcept
 {
-    hilet theme_text_style_i = static_cast<std::size_t>(theme_text_style);
-    hi_axiom(theme_text_style_i < _text_styles.size());
+    hilet semantic_text_style_i = static_cast<std::size_t>(semantic_text_style);
+    hi_axiom(semantic_text_style_i < _text_styles.size());
 
-    auto text_style = _text_styles[theme_text_style_i];
+    auto text_style = _text_styles[semantic_text_style_i];
     text_style.color = color(text_style.color, 0);
     return text_style;
 }
@@ -323,14 +323,14 @@ void theme::parse(hi::font_book const& font_book, datum const& data)
     std::get<to_underlying(semantic_color::primary_cursor)>(_colors) = parse_color_list(data, "primary-cursor-color");
     std::get<to_underlying(semantic_color::secondary_cursor)>(_colors) = parse_color_list(data, "secondary-cursor-color");
 
-    std::get<to_underlying(theme_text_style::label)>(_text_styles) = parse_text_style(font_book, data, "label-style");
-    std::get<to_underlying(theme_text_style::small_label)>(_text_styles) = parse_text_style(font_book, data, "small-label-style");
-    std::get<to_underlying(theme_text_style::warning)>(_text_styles) = parse_text_style(font_book, data, "warning-label-style");
-    std::get<to_underlying(theme_text_style::error)>(_text_styles) = parse_text_style(font_book, data, "error-label-style");
-    std::get<to_underlying(theme_text_style::help)>(_text_styles) = parse_text_style(font_book, data, "help-label-style");
-    std::get<to_underlying(theme_text_style::placeholder)>(_text_styles) =
+    std::get<to_underlying(semantic_text_style::label)>(_text_styles) = parse_text_style(font_book, data, "label-style");
+    std::get<to_underlying(semantic_text_style::small_label)>(_text_styles) = parse_text_style(font_book, data, "small-label-style");
+    std::get<to_underlying(semantic_text_style::warning)>(_text_styles) = parse_text_style(font_book, data, "warning-label-style");
+    std::get<to_underlying(semantic_text_style::error)>(_text_styles) = parse_text_style(font_book, data, "error-label-style");
+    std::get<to_underlying(semantic_text_style::help)>(_text_styles) = parse_text_style(font_book, data, "help-label-style");
+    std::get<to_underlying(semantic_text_style::placeholder)>(_text_styles) =
         parse_text_style(font_book, data, "placeholder-label-style");
-    std::get<to_underlying(theme_text_style::link)>(_text_styles) = parse_text_style(font_book, data, "link-label-style");
+    std::get<to_underlying(semantic_text_style::link)>(_text_styles) = parse_text_style(font_book, data, "link-label-style");
 
     margin = parse_float(data, "margin");
     border_width = parse_float(data, "border-width");
@@ -341,7 +341,7 @@ void theme::parse(hi::font_book const& font_book, datum const& data)
     large_icon_size = parse_float(data, "large-icon-size");
     label_icon_size = parse_float(data, "label-icon-size");
 
-    cap_height = std::get<to_underlying(theme_text_style::label)>(_text_styles).cap_height(font_book);
+    cap_height = std::get<to_underlying(semantic_text_style::label)>(_text_styles).cap_height(font_book);
 }
 
 } // namespace hi::inline v1

@@ -21,25 +21,25 @@ label_widget::label_widget(gui_window& window, widget *parent) noexcept : super(
 
     _text_style_cbt = text_style.subscribe([this](auto...) {
         switch (*text_style) {
-        case theme_text_style::label:
+        case semantic_text_style::label:
             _icon_widget->color = color::foreground();
             break;
-        case theme_text_style::small_label:
+        case semantic_text_style::small_label:
             _icon_widget->color = color::foreground();
             break;
-        case theme_text_style::warning:
+        case semantic_text_style::warning:
             _icon_widget->color = color::orange();
             break;
-        case theme_text_style::error:
+        case semantic_text_style::error:
             _icon_widget->color = color::red();
             break;
-        case theme_text_style::help:
+        case semantic_text_style::help:
             _icon_widget->color = color::indigo();
             break;
-        case theme_text_style::placeholder:
+        case semantic_text_style::placeholder:
             _icon_widget->color = color::gray();
             break;
-        case theme_text_style::link:
+        case semantic_text_style::link:
             _icon_widget->color = color::blue();
             break;
         default:

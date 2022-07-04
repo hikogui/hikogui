@@ -21,6 +21,8 @@ target_sources(hikogui PRIVATE
     glyph_ids.cpp
     glyph_ids.hpp
     glyph_metrics.hpp
+    line_metrics.hpp
+    semantic_text_style.hpp
     text_cursor.hpp
     text_decoration.hpp
     text_selection.hpp

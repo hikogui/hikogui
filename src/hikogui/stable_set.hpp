@@ -7,6 +7,7 @@
 #include <memory>
 #include <atomic>
 #include <map>
+#include <functional>
 
 namespace hi::inline v1 {
 
@@ -70,7 +71,7 @@ public:
         return *_vector[index];
     }
 
-    /** Emplace an object into the stable-set.
+    /** Insert an object into the stable-set.
      *
      * Forward the given object into the set and return the index where it was inserted.
      * If the object is already in the set then the index is returned where it was located, and
@@ -80,11 +81,32 @@ public:
      * @return The index where the object was added, or where the object already was in the set.
      */
     template<typename Arg>
-    [[nodiscard]] size_t emplace(Arg&& arg) noexcept requires(std::is_same_v<std::decay_t<Arg>, value_type>)
+    [[nodiscard]] size_t insert(Arg&& arg) noexcept requires(std::is_same_v<std::decay_t<Arg>, value_type>)
     {
         hilet lock = std::scoped_lock(_mutex);
 
         hilet[it, is_inserted] = _map.emplace(std::forward<Arg>(arg), _vector.size());
+        if (is_inserted) {
+            _vector.push_back(std::addressof(it->first));
+        }
+        return it->second;
+    }
+
+    /** Emplace an object into the stable-set.
+     *
+     * Create a new object into the set and return the index where it was inserted.
+     * If an equivalent object is already in the set then the index is returned where it was located, and
+     * the temporary created object is destroyed.
+     *
+     * @param arg The arguments to pass to the constructor of the value_type.
+     * @return The index where the object was added, or where the object already was in the set.
+     */
+    template<typename... Args>
+    [[nodiscard]] size_t emplace(Args&&... args) noexcept
+    {
+        hilet lock = std::scoped_lock(_mutex);
+
+        hilet[it, is_inserted] = _map.emplace(value_type{std::forward<Args>(args)...}, _vector.size());
         if (is_inserted) {
             _vector.push_back(std::addressof(it->first));
         }

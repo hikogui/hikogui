@@ -104,7 +104,7 @@ hi::font_book& widget::font_book() const noexcept
 [[nodiscard]] color widget::label_color() const noexcept
 {
     if (*mode >= widget_mode::partial) {
-        return theme().text_style(theme_text_style::label).color;
+        return theme().text_style(semantic_text_style::label).color;
     } else {
         return theme().color(semantic_color::border, semantic_layer - 1);
     }

@@ -22,7 +22,7 @@ grapheme::grapheme(composed_t, std::u32string_view code_points) noexcept
         break;
 
     default:
-        hilet index = detail::long_graphemes.emplace(std::u32string{code_points});
+        hilet index = detail::long_graphemes.insert(std::u32string{code_points});
         if (index < 0x0e'ffff) {
             _value = index + 0x11'0000;
         } else {
