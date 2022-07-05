@@ -186,19 +186,21 @@ jobs:
         with:
           files: ./hikogui_coverage.xml
 
-      # Double ZIP issue: https://github.com/actions/upload-artifact#zipped-artifact-downloads
-      # We can either zip an already zipped file; or send all files to a zip service, possibly creating a 503.
-      - name: 📦 Package
-        run: |
-           cd build
-           7z a -tzip -mx9 "${{env.ARTIFACT_NAME}}.zip" ./hikogui-${{env.VERSION}}
-
-      # To ensure that jobs don't overwrite existing artifacts, use a different "name" per job/run.
-      - name: 📦 🚀 Upload Artifact
-        uses: actions/upload-artifact@v2 # https://github.com/actions/upload-artifact
-        with:
-          name: ${{env.ARTIFACT_NAME}}
-          path: build/${{env.ARTIFACT_NAME}}.zip
+    # In the future we can do this when building dynamic libraries without whole-program-optimization.
+    #
+    #  # Double ZIP issue: https://github.com/actions/upload-artifact#zipped-artifact-downloads
+    #  # We can either zip an already zipped file; or send all files to a zip service, possibly creating a 503.
+    #  - name: 📦 Package
+    #    run: |
+    #       cd build
+    #       7z a -tzip -mx9 "${{env.ARTIFACT_NAME}}.zip" ./hikogui-${{env.VERSION}}
+    #
+    #  # To ensure that jobs don't overwrite existing artifacts, use a different "name" per job/run.
+    #  - name: 📦 🚀 Upload Artifact
+    #    uses: actions/upload-artifact@v2 # https://github.com/actions/upload-artifact
+    #    with:
+    #      name: ${{env.ARTIFACT_NAME}}
+    #      path: build/${{env.ARTIFACT_NAME}}.zip
 
 # ---------------------------------------------------------------------------------------
 
