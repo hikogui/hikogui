@@ -18,17 +18,17 @@ TEST(notifier, local)
 
     auto n = notifier{};
 
-    auto a_cbt = n.subscribe([&] {
+    auto a_cbt = n.subscribe(callback_flags::local, [&] {
         ++a;
     });
 
-    auto b_cbt = n.subscribe([&] {
+    auto b_cbt = n.subscribe(callback_flags::local, [&] {
         ++b;
     });
 
     // Post the functions to the local event-loop.
     // The two functions are not called immediately, not until the event-loop is resumed.
-    n.post();
+    n();
     ASSERT_EQ(a, 0);
     ASSERT_EQ(b, 0);
 
@@ -44,11 +44,11 @@ TEST(notifier, local_unsubscribe)
 
     auto n = notifier{};
 
-    auto a_cbt = n.subscribe([&] {
+    auto a_cbt = n.subscribe(callback_flags::local, [&] {
         ++a;
     });
 
-    auto b_cbt = n.subscribe([&] {
+    auto b_cbt = n.subscribe(callback_flags::local, [&] {
         ++b;
     });
 
@@ -56,7 +56,7 @@ TEST(notifier, local_unsubscribe)
     a_cbt = {};
 
     // Post the callbacks to the local event-loop.
-    n.post();
+    n();
     ASSERT_EQ(a, 0);
     ASSERT_EQ(b, 0);
 
@@ -90,15 +90,15 @@ TEST(notifier, local_coroutine)
 
     // Post the callbacks to the local event-loop.
     // The coroutine will not continue until the event loop is resumed.
-    n.post();
+    n();
     ASSERT_EQ(a, 1);
     ASSERT_EQ(b, 0);
-    ASSERT_FALSE(cr.completed());
+    ASSERT_FALSE(cr.done());
 
     loop::local().resume_once();
 
     // Now the coroutine has continued and completed.
     ASSERT_EQ(a, 1);
     ASSERT_EQ(b, 1);
-    ASSERT_TRUE(cr.completed());
+    ASSERT_TRUE(cr.done());
 }
