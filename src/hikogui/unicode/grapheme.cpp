@@ -6,6 +6,7 @@
 #include "unicode_normalization.hpp"
 #include "unicode_description.hpp"
 #include "../log.hpp"
+#include "../cast.hpp"
 #include <mutex>
 
 namespace hi::inline v1 {
@@ -24,7 +25,7 @@ grapheme::grapheme(composed_t, std::u32string_view code_points) noexcept
     default:
         hilet index = detail::long_graphemes.insert(std::u32string{code_points});
         if (index < 0x0e'ffff) {
-            _value = index + 0x11'0000;
+            _value = narrow_cast<value_type>(index + 0x11'0000);
         } else {
             // Can't use index 0x1f'ffff as it means empty.
             [[unlikely]] hi_log_error_once("grapheme::error::too-many", "Too many long graphemes encoded, replacing with U+fffd");
