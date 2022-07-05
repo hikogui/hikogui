@@ -67,12 +67,14 @@ private:
     static std::string format_wrapper(Args const &...args)
     {
         return std::format(static_cast<std::string_view>(Fmt), args...);
+        //return std::vformat(static_cast<std::string_view>(Fmt), std::make_format_args(args...));
     }
 
     template<typename... Args>
     static std::string format_locale_wrapper(std::locale const &loc, Args const &...args)
     {
         return std::format(loc, static_cast<std::string_view>(Fmt), args...);
+        //return std::vformat(loc, static_cast<std::string_view>(Fmt), std::make_format_args(args...));
     }
 };
 

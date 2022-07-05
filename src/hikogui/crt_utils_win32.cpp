@@ -2,14 +2,15 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#include "win32_headers.hpp"
+
 #include "crt_utils.hpp"
 #include "GUI/gui_system.hpp"
 #include "URL.hpp"
 #include "subsystem.hpp"
 #include "console.hpp"
 #include "log.hpp"
-#include <Windows.h>
-#include <shellapi.h>
+#include "thread.hpp"
 
 namespace hi::inline v1 {
 
@@ -29,6 +30,8 @@ static void configure_current_working_directory() noexcept
 
 std::pair<int, char **> crt_start(int, char **, void *instance, int show_cmd)
 {
+    set_thread_name("main");
+
     // lpCmdLine does not handle UTF-8 command line properly.
     // So use GetCommandLineW() to get wide string arguments.
     // CommandLineToArgW properly unescapes the command line

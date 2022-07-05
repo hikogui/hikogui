@@ -15,7 +15,7 @@ TEST(observable, value)
     bool a_modified = false;
 
     observable<int> a;
-    auto a_cbt = a.subscribe([&a_modified](auto...) {
+    auto a_cbt = a.subscribe(callback_flags::local, [&a_modified](auto...) {
         a_modified = true;
     });
     ASSERT_FALSE(a_modified);
@@ -36,10 +36,10 @@ TEST(observable, chain1)
 
     observable<int> a;
     observable<int> b;
-    auto a_cbt = a.subscribe([&a_modified](auto...) {
+    auto a_cbt = a.subscribe(callback_flags::local, [&a_modified](auto...) {
         a_modified = true;
     });
-    auto b_cbt = b.subscribe([&b_modified](auto...) {
+    auto b_cbt = b.subscribe(callback_flags::local, [&b_modified](auto...) {
         b_modified = true;
     });
 
@@ -97,13 +97,13 @@ TEST(observable, chain2)
     observable<int> b;
     observable<int> c;
 
-    auto a_cbt = a.subscribe([&a_modified](auto...) {
+    auto a_cbt = a.subscribe(callback_flags::local, [&a_modified](auto...) {
         a_modified = true;
     });
-    auto b_cbt = b.subscribe([&b_modified](auto...) {
+    auto b_cbt = b.subscribe(callback_flags::local, [&b_modified](auto...) {
         b_modified = true;
     });
-    auto c_cbt = c.subscribe([&c_modified](auto...) {
+    auto c_cbt = c.subscribe(callback_flags::local, [&c_modified](auto...) {
         c_modified = true;
     });
 
@@ -202,13 +202,13 @@ TEST(observable, chain3)
     observable<int> b;
     observable<int> c;
 
-    auto a_cbt = a.subscribe([&a_modified](auto...) {
+    auto a_cbt = a.subscribe(callback_flags::local, [&a_modified](auto...) {
         a_modified = true;
     });
-    auto b_cbt = b.subscribe([&b_modified](auto...) {
+    auto b_cbt = b.subscribe(callback_flags::local, [&b_modified](auto...) {
         b_modified = true;
     });
-    auto c_cbt = c.subscribe([&c_modified](auto...) {
+    auto c_cbt = c.subscribe(callback_flags::local, [&c_modified](auto...) {
         c_modified = true;
     });
 
@@ -313,8 +313,8 @@ TEST(observable, callback)
 
     // This tests if we can both subscribe a callback that accepts the
     // argument by value or by const reference.
-    auto cbt1 = a.subscribe(callback1);
-    auto cbt2 = a.subscribe(callback2);
+    auto cbt1 = a.subscribe(callback_flags::local, callback1);
+    auto cbt2 = a.subscribe(callback_flags::local, callback2);
 
     a = 42;
 

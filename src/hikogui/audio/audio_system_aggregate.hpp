@@ -12,41 +12,34 @@ class audio_system_aggregate : public audio_system {
 public:
     using super = audio_system;
 
-    audio_system_aggregate(std::weak_ptr<audio_system_delegate> delegate);
+    audio_system_aggregate() = default;
+    virtual ~audio_system_aggregate() {}
 
-    [[nodiscard]] std::vector<audio_device *> devices() noexcept override
+    [[nodiscard]] generator<audio_device *> devices() noexcept override
     {
-        auto r = std::vector<audio_device *>{};
         for (auto &child : _children) {
-            auto tmp = child->devices();
-            std::move(tmp.begin(), tmp.end(), std::back_inserter(r));
+            for (auto device: child.system->devices()) {
+                co_yield device;
+            }
         }
-        return r;
     }
 
-    template<typename T, typename... Args>
-    audio_system &make_audio_system(Args &&...args)
+    void add_child(std::unique_ptr<audio_system> new_child)
     {
-        auto new_audio_system = std::make_unique<T>(_aggregate_delegate, std::forward<Args>(args)...);
-        auto new_audio_system_ptr = new_audio_system.get();
+        auto new_cbt = new_child->subscribe([this] {
+            _notifier();
+        });
 
-        new_audio_system->init();
-        _children.push_back(std::move(new_audio_system));
-
-        if (auto delegate = _delegate.lock()) {
-            delegate->audio_device_list_changed(*this);
-        }
-        return *new_audio_system_ptr;
+        _children.emplace_back(std::move(new_child), std::move(new_cbt));
     }
 
 private:
-    std::vector<std::unique_ptr<audio_system>> _children;
+    struct child_type {
+        std::unique_ptr<audio_system> system;
+        audio_system::token_type cbt;
+    };
 
-    /** The child audio systems take a weak_ptr to the aggregate_delegate.
-     */
-    std::shared_ptr<audio_system_delegate> _aggregate_delegate;
-
-    friend class audio_system_aggregate_delegate;
+    std::vector<child_type> _children;
 };
 
 } // namespace hi::inline v1

@@ -43,7 +43,7 @@ struct formula_evaluation_context {
     std::vector<loop_info> loop_stack;
     scope globals;
 
-    formula_evaluation_context(){};
+    formula_evaluation_context() noexcept = default;
 
     /** Write data to the output.
      */

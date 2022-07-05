@@ -24,6 +24,17 @@
 #include <vector>
 #include <map>
 
+hi_warning_push();
+// C26476: Expression/symbol '...' uses a naked union '...' with multiple type pointers: Use variant instead (type.7.).
+// This implements `datum` which is simular to a std::variant.
+hi_warning_ignore_msvc(26476)
+// C26409: Avoid calling new and delete explicitly, use std::make_unique<T> instead (r.11).
+// This implements `datum` which implements RAII for large objects.
+hi_warning_ignore_msvc(26409)
+// C26492: Don't use const_cast to cast away const or volatile (type.3).
+// Needed until c++23 deducing this.
+hi_warning_ignore_msvc(26492)
+
 namespace hi::inline v1 {
 class datum;
 }
@@ -268,12 +279,12 @@ public:
     constexpr explicit datum(break_type) noexcept : _tag(tag_type::flow_break), _value(0) {}
     constexpr explicit datum(bool value) noexcept : _tag(tag_type::boolean), _value(value) {}
     constexpr explicit datum(std::floating_point auto value) noexcept :
-        _tag(tag_type::floating_point), _value(static_cast<double>(value))
+        _tag(tag_type::floating_point), _value(narrow_cast<double>(value))
     {
     }
 
     constexpr explicit datum(numeric_integral auto value) noexcept :
-        _tag(tag_type::integral), _value(static_cast<long long>(value))
+        _tag(tag_type::integral), _value(narrow_cast<long long>(value))
     {
     }
 
@@ -459,13 +470,13 @@ public:
     {
         switch (_tag) {
         case tag_type::floating_point:
-            return static_cast<bool>(get<double>(*this));
+            return to_bool(get<double>(*this));
         case tag_type::decimal:
-            return static_cast<bool>(get<decimal>(*this));
+            return to_bool(get<decimal>(*this));
         case tag_type::boolean:
             return get<bool>(*this);
         case tag_type::integral:
-            return static_cast<bool>(get<long long>(*this));
+            return to_bool(get<long long>(*this));
         case tag_type::year_month_day:
             return true;
         case tag_type::string:
@@ -539,28 +550,28 @@ public:
     {
         if (auto f = get_if<double>(*this)) {
             errno = 0;
-            auto r = std::round(*f);
+            hilet r = std::round(*f);
             if (errno == EDOM or errno == ERANGE or r < narrow<double>(std::numeric_limits<T>::min()) or
                 r > narrow<double>(std::numeric_limits<T>::max())) {
                 throw std::overflow_error("double to integral");
             }
-            return static_cast<T>(r);
+            return narrow_cast<T>(r);
 
         } else if (auto i = get_if<long long>(*this)) {
             if (*i < std::numeric_limits<T>::min() or *i > std::numeric_limits<T>::max()) {
                 throw std::overflow_error("long long to integral");
             }
-            return static_cast<T>(*i);
+            return narrow_cast<T>(*i);
 
         } else if (auto d = get_if<decimal>(*this)) {
-            auto r = static_cast<long long>(*d);
+            hilet r = static_cast<long long>(*d);
             if (r < std::numeric_limits<T>::min() or r > std::numeric_limits<T>::max()) {
                 throw std::overflow_error("decimal to integral");
             }
-            return static_cast<T>(r);
+            return narrow_cast<T>(r);
 
         } else if (auto b = get_if<bool>(*this)) {
-            return static_cast<T>(*b);
+            return narrow_cast<T>(*b);
 
         } else {
             throw std::domain_error(std::format("Can't convert {} to an integral", repr(*this)));
@@ -744,9 +755,9 @@ public:
         case tag_type::year_month_day:
             {
                 uint32_t r = 0;
-                r |= static_cast<uint32_t>(static_cast<int>(_value._year_month_day.year())) << 16;
-                r |= static_cast<uint32_t>(static_cast<unsigned>(_value._year_month_day.month())) << 8;
-                r |= static_cast<uint32_t>(static_cast<unsigned>(_value._year_month_day.day()));
+                r |= narrow_cast<uint32_t>(static_cast<int>(_value._year_month_day.year())) << 16;
+                r |= narrow_cast<uint32_t>(static_cast<unsigned>(_value._year_month_day.month())) << 8;
+                r |= narrow_cast<uint32_t>(static_cast<unsigned>(_value._year_month_day.day()));
                 return std::hash<uint32_t>{}(r);
             }
         case tag_type::string:
@@ -1024,7 +1035,7 @@ public:
      */
     [[nodiscard]] bool remove(jsonpath const& path) noexcept
     {
-        return static_cast<bool>(remove(path.cbegin(), path.cend()));
+        return to_bool(remove(path.cbegin(), path.cend()));
     }
 
     /** Find a object by path.
@@ -1989,8 +2000,8 @@ private:
         URL *_url;
         bstring *_bstring;
 
-        constexpr value_type(numeric_integral auto value) noexcept : _long_long(static_cast<long long>(value)) {}
-        constexpr value_type(std::floating_point auto value) noexcept : _double(static_cast<double>(value)) {}
+        constexpr value_type(numeric_integral auto value) noexcept : _long_long(narrow_cast<long long>(value)) {}
+        constexpr value_type(std::floating_point auto value) noexcept : _double(narrow_cast<double>(value)) {}
         constexpr value_type(decimal value) noexcept : _decimal(value) {}
         constexpr value_type(bool value) noexcept : _bool(value) {}
         constexpr value_type(std::chrono::year_month_day value) noexcept : _year_month_day(value) {}
@@ -2455,3 +2466,5 @@ auto std::formatter<hi::datum, CharT>::format(hi::datum const& t, auto& fc) cons
 {
     return std::formatter<std::string, CharT>{}.format(to_string(t), fc);
 }
+
+hi_warning_pop();

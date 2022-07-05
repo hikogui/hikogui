@@ -18,6 +18,8 @@
 #include "URL.hpp"
 #include "unfair_mutex.hpp"
 #include "debugger.hpp"
+#include "format_check.hpp"
+#include "thread.hpp"
 #include <chrono>
 #include <format>
 #include <string>
@@ -82,15 +84,16 @@ public:
 
         hilet cpu_id = _time_stamp.cpu_id();
         hilet thread_id = _time_stamp.thread_id();
+        hilet thread_name = get_thread_name(thread_id);
 
         if constexpr (to_bool(Level & global_state_type::log_statistics)) {
-            return std::format("{} {:2}:{:<10} {:5} {}\n", local_time_point, cpu_id, thread_id, log_level_name, _what());
+            return std::format("{} {}({}) {:5} {}\n", local_time_point, thread_name, cpu_id, log_level_name, _what());
         } else {
             return std::format(
-                "{} {:2}:{:<10} {:5} {} ({}:{})\n",
+                "{} {}({}) {:5} {} ({}:{})\n",
                 local_time_point,
+                thread_name,
                 cpu_id,
-                thread_id,
                 log_level_name,
                 _what(),
                 URL::urlFromPath(SourceFile).filename(),
@@ -214,28 +217,31 @@ inline log log_global;
 
 } // namespace hi::inline v1
 
-#define hi_log_debug(fmt, ...) ::hi::log_global.add<::hi::global_state_type::log_debug, __FILE__, __LINE__, fmt>(__VA_ARGS__)
-#define hi_log_info(fmt, ...) ::hi::log_global.add<::hi::global_state_type::log_info, __FILE__, __LINE__, fmt>(__VA_ARGS__)
-#define hi_log_statistics(fmt, ...) \
-    ::hi::log_global.add<::hi::global_state_type::log_statistics, __FILE__, __LINE__, fmt>(__VA_ARGS__)
-#define hi_log_trace(fmt, ...) ::hi::log_global.add<::hi::global_state_type::log_trace, __FILE__, __LINE__, fmt>(__VA_ARGS__)
-#define hi_log_audit(fmt, ...) ::hi::log_global.add<::hi::global_state_type::log_audit, __FILE__, __LINE__, fmt>(__VA_ARGS__)
-#define hi_log_warning(fmt, ...) ::hi::log_global.add<::hi::global_state_type::log_warning, __FILE__, __LINE__, fmt>(__VA_ARGS__)
-#define hi_log_error(fmt, ...) ::hi::log_global.add<::hi::global_state_type::log_error, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+#define hi_log(level, fmt, ...) \
+    hi_format_check(fmt __VA_OPT__(, ) __VA_ARGS__); \
+    ::hi::log_global.add<level, __FILE__, __LINE__, fmt>(__VA_ARGS__)
+
+#define hi_log_debug(fmt, ...) hi_log(::hi::global_state_type::log_debug, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define hi_log_info(fmt, ...) hi_log(::hi::global_state_type::log_info, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define hi_log_statistics(fmt, ...) hi_log(::hi::global_state_type::log_statistics, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define hi_log_trace(fmt, ...) hi_log(::hi::global_state_type::log_trace, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define hi_log_audit(fmt, ...) hi_log(::hi::global_state_type::log_audit, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define hi_log_warning(fmt, ...) hi_log(::hi::global_state_type::log_warning, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define hi_log_error(fmt, ...) hi_log(::hi::global_state_type::log_error, fmt __VA_OPT__(, ) __VA_ARGS__)
 #define hi_log_fatal(fmt, ...) \
-    ::hi::log_global.add<::hi::global_state_type::log_fatal, __FILE__, __LINE__, fmt>(__VA_ARGS__); \
+    hi_log(::hi::global_state_type::log_fatal, fmt __VA_OPT__(, ) __VA_ARGS__); \
     hi_debug_abort()
 
 #define hi_log_info_once(name, fmt, ...) \
     do { \
         if (++global_counter<name> == 1) { \
-            ::hi::log_global.add<::hi::global_state_type::log_info, __FILE__, __LINE__, fmt>(__VA_ARGS__); \
+            hi_log(::hi::global_state_type::log_info, fmt __VA_OPT__(, ) __VA_ARGS__); \
         } \
     } while (false)
 
 #define hi_log_error_once(name, fmt, ...) \
     do { \
         if (++global_counter<name> == 1) { \
-            ::hi::log_global.add<::hi::global_state_type::log_error, __FILE__, __LINE__, fmt>(__VA_ARGS__); \
+            hi_log(::hi::global_state_type::log_error, fmt __VA_OPT__(, ) __VA_ARGS__); \
         } \
     } while (false)

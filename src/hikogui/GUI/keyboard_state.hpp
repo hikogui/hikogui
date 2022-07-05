@@ -32,7 +32,7 @@ bool operator>=(keyboard_state const& lhs, keyboard_state const& rhs) = delete;
 
 [[nodiscard]] constexpr bool any(keyboard_state const& rhs) noexcept
 {
-    return static_cast<bool>(to_underlying(rhs));
+    return to_bool(to_underlying(rhs));
 }
 
 }

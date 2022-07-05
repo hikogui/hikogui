@@ -9,6 +9,7 @@
 #include "../resource_view.hpp"
 #include "../URL.hpp"
 #include "../counters.hpp"
+#include "../cast.hpp"
 #include <memory>
 
 namespace hi::inline v1 {
@@ -65,7 +66,7 @@ public:
 
     [[nodiscard]] bool loaded() const noexcept override
     {
-        return static_cast<bool>(view);
+        return to_bool(view);
     }
 
     /** Get the glyph for a code-point.

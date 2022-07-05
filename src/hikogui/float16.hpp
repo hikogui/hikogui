@@ -5,8 +5,14 @@
 #pragma once
 
 #include "required.hpp"
+#include "architecture.hpp"
 #include <cstdint>
 #include <type_traits>
+
+hi_warning_push();
+// C26472: Don't use static_cast for arithmetic conversions, Use brace initialization, gsl::narrow_cast or gsl::narrow (type.1).
+// static_cast here is used to extract bits and cause sign-extension.
+hi_warning_ignore_msvc(26472);
 
 namespace hi::inline v1 {
 
@@ -218,3 +224,5 @@ struct std::numeric_limits<hi::float16> {
         return hi::float16::from_uint16_t(0x0001);
     }
 };
+
+hi_warning_pop();

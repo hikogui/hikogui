@@ -11,6 +11,7 @@
 namespace hi::inline v1 {
 class gfx_device;
 class gfx_system;
+class gfx_surface_delegate;
 
 class gfx_surface {
 public:
@@ -58,10 +59,20 @@ public:
     [[nodiscard]] virtual draw_context render_start(aarectangle redraw_rectangle) = 0;
     virtual void render_finish(draw_context const &context) = 0;
 
+    /** Add a delegate to handle extra rendering.
+    * 
+    * The delegate can render underneath the HikoGUI user interface.
+    */
+    virtual void add_delegate(gfx_surface_delegate *delegate) noexcept = 0;
+
+    /** Remove a delegate
+     */
+    virtual void remove_delegate(gfx_surface_delegate *delegate) noexcept = 0;
+
 protected:
     gfx_device *_device = nullptr;
 
-    virtual void teardown() = 0;
+    virtual void teardown() noexcept = 0;
 };
 
 } // namespace hi::inline v1

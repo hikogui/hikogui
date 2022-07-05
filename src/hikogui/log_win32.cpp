@@ -2,6 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#include "win32_headers.hpp"
+
 #include "log.hpp"
 #include "trace.hpp"
 #include "required.hpp"
@@ -14,8 +16,6 @@
 #include <iostream>
 #include <ostream>
 #include <chrono>
-#include <Windows.h>
-#include <debugapi.h>
 
 namespace hi::inline v1 {
 

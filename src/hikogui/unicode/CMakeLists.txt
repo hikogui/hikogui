@@ -8,15 +8,15 @@ target_sources(hikogui PRIVATE
     grapheme.hpp
     gstring.cpp
     gstring.hpp
-    unicode_db.hpp
-    unicode_db_non_starter.hpp
+    ucd_compositions.hpp
+    ucd_decompositions.hpp
+    ucd_index.hpp
+    ucd_descriptions.hpp
     unicode_bidi.cpp
     unicode_bidi.hpp
     unicode_bidi_bracket_type.hpp
     unicode_bidi_class.hpp
     unicode_break_opportunity.hpp
-    unicode_composition.cpp
-    unicode_composition.hpp
     unicode_decomposition_type.hpp
     unicode_description.cpp
     unicode_description.hpp

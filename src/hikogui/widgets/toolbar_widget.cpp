@@ -9,7 +9,7 @@
 
 namespace hi::inline v1 {
 
-toolbar_widget::toolbar_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
+toolbar_widget::toolbar_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
 {
     hi_axiom(is_gui_thread());
 
@@ -19,7 +19,7 @@ toolbar_widget::toolbar_widget(gui_window &window, widget *parent) noexcept : su
     }
 }
 
-widget_constraints const &toolbar_widget::set_constraints() noexcept
+widget_constraints const& toolbar_widget::set_constraints() noexcept
 {
     _layout = {};
     _grid_layout.clear();
@@ -27,15 +27,16 @@ widget_constraints const &toolbar_widget::set_constraints() noexcept
     auto shared_height = 0.0f;
     auto shared_top_margin = 0.0f;
     auto shared_bottom_margin = 0.0f;
-    for (hilet &child : _left_children) {
-        update_constraints_for_child(*child, index++, shared_height, shared_top_margin, shared_bottom_margin);
+    auto shared_baseline = widget_baseline{};
+    for (hilet& child : _left_children) {
+        update_constraints_for_child(*child, index++, shared_height, shared_top_margin, shared_bottom_margin, shared_baseline);
     }
 
     // Add a space between the left and right widgets.
     _grid_layout.add_constraint(index++, theme().large_size, theme().large_size, 32767.0f, 0.0f, 0.0f);
 
-    for (hilet &child : std::views::reverse(_right_children)) {
-        update_constraints_for_child(*child, index++, shared_height, shared_top_margin, shared_bottom_margin);
+    for (hilet& child : std::views::reverse(_right_children)) {
+        update_constraints_for_child(*child, index++, shared_height, shared_top_margin, shared_bottom_margin, shared_baseline);
     }
 
     hi_axiom(index == ssize(_left_children) + 1 + ssize(_right_children));
@@ -50,10 +51,11 @@ widget_constraints const &toolbar_widget::set_constraints() noexcept
     hilet maximum_width = _grid_layout.maximum() + _grid_layout.margin_before() + _grid_layout.margin_after();
     hilet height = shared_height + _inner_margins.top() + _inner_margins.bottom();
 
-    return _constraints = {{minimum_width, height}, {preferred_width, height}, {maximum_width, height}};
+    return _constraints = {
+               {minimum_width, height}, {preferred_width, height}, {maximum_width, height}, margins{}, shared_baseline};
 }
 
-void toolbar_widget::set_layout(widget_layout const &layout) noexcept
+void toolbar_widget::set_layout(widget_layout const& layout) noexcept
 {
     // Clip directly around the toolbar, so that tab buttons looks proper.
     if (compare_store(_layout, layout)) {
@@ -61,14 +63,14 @@ void toolbar_widget::set_layout(widget_layout const &layout) noexcept
     }
 
     ssize_t index = 0;
-    for (hilet &child : _left_children) {
+    for (hilet& child : _left_children) {
         update_layout_for_child(*child, index++, layout);
     }
 
     // Skip over the cell between left and right children.
     index++;
 
-    for (hilet &child : std::views::reverse(_right_children)) {
+    for (hilet& child : std::views::reverse(_right_children)) {
         update_layout_for_child(*child, index++, layout);
     }
 
@@ -77,14 +79,14 @@ void toolbar_widget::set_layout(widget_layout const &layout) noexcept
 
 bool toolbar_widget::tab_button_has_focus() const noexcept
 {
-    for (hilet &child : _left_children) {
+    for (hilet& child : _left_children) {
         if (auto *c = dynamic_cast<toolbar_tab_button_widget *>(child.get())) {
             if (*c->focus and c->state() == hi::button_state::on) {
                 return true;
             }
         }
     }
-    for (hilet &child : _right_children) {
+    for (hilet& child : _right_children) {
         if (auto *c = dynamic_cast<toolbar_tab_button_widget *>(child.get())) {
             if (*c->focus and c->state() == hi::button_state::on) {
                 return true;
@@ -95,9 +97,9 @@ bool toolbar_widget::tab_button_has_focus() const noexcept
     return false;
 }
 
-void toolbar_widget::draw(draw_context const &context) noexcept
+void toolbar_widget::draw(draw_context const& context) noexcept
 {
-    if (*visible) {
+    if (*mode > widget_mode::invisible) {
         if (overlaps(context, layout())) {
             context.draw_box(layout(), layout().rectangle(), theme().color(semantic_color::fill, semantic_layer + 1));
 
@@ -109,10 +111,10 @@ void toolbar_widget::draw(draw_context const &context) noexcept
             }
         }
 
-        for (hilet &child : _left_children) {
+        for (hilet& child : _left_children) {
             child->draw(context);
         }
-        for (hilet &child : _right_children) {
+        for (hilet& child : _right_children) {
             child->draw(context);
         }
     }
@@ -123,15 +125,15 @@ hitbox toolbar_widget::hitbox_test(point3 position) const noexcept
     hi_axiom(is_gui_thread());
 
     // By default the toolbar is used for dragging the window.
-    if (*visible and *enabled) {
+    if (*mode >= widget_mode::partial) {
         auto r = layout().contains(position) ? hitbox{this, position, hitbox::Type::MoveArea} : hitbox{};
 
-        for (hilet &child : _left_children) {
+        for (hilet& child : _left_children) {
             hi_axiom(child);
             r = child->hitbox_test_from_parent(position, r);
         }
 
-        for (hilet &child : _right_children) {
+        for (hilet& child : _right_children) {
             hi_axiom(child);
             r = child->hitbox_test_from_parent(position, r);
         }
@@ -143,11 +145,12 @@ hitbox toolbar_widget::hitbox_test(point3 position) const noexcept
 }
 
 void toolbar_widget::update_constraints_for_child(
-    widget &child,
+    widget& child,
     ssize_t index,
-    float &shared_height,
-    float &shared_top_margin,
-    float &shared_bottom_margin) noexcept
+    float& shared_height,
+    float& shared_top_margin,
+    float& shared_bottom_margin,
+    widget_baseline &shared_baseline) noexcept
 {
     hi_axiom(is_gui_thread());
 
@@ -163,9 +166,10 @@ void toolbar_widget::update_constraints_for_child(
     inplace_max(shared_height, child_constraints.preferred.height());
     inplace_max(shared_top_margin, child_constraints.margins.top());
     inplace_max(shared_bottom_margin, child_constraints.margins.bottom());
+    inplace_max(shared_baseline, child_constraints.baseline);
 }
 
-void toolbar_widget::update_layout_for_child(widget &child, ssize_t index, widget_layout const &context) const noexcept
+void toolbar_widget::update_layout_for_child(widget& child, ssize_t index, widget_layout const& context) const noexcept
 {
     hi_axiom(is_gui_thread());
 
@@ -182,14 +186,19 @@ void toolbar_widget::update_layout_for_child(widget &child, ssize_t index, widge
     child.set_layout(context.transform(child_rectangle, 1.0f, child_clipping_rectangle));
 }
 
-widget &toolbar_widget::add_widget(horizontal_alignment alignment, std::unique_ptr<widget> widget) noexcept
+widget& toolbar_widget::add_widget(horizontal_alignment alignment, std::unique_ptr<widget> widget) noexcept
 {
-    auto &ref = *widget;
+    auto& ref = *widget;
     switch (alignment) {
         using enum horizontal_alignment;
-    case left: _left_children.push_back(std::move(widget)); break;
-    case right: _right_children.push_back(std::move(widget)); break;
-    default: hi_no_default();
+    case left:
+        _left_children.push_back(std::move(widget));
+        break;
+    case right:
+        _right_children.push_back(std::move(widget));
+        break;
+    default:
+        hi_no_default();
     }
 
     return ref;
@@ -197,7 +206,7 @@ widget &toolbar_widget::add_widget(horizontal_alignment alignment, std::unique_p
 
 [[nodiscard]] color toolbar_widget::focus_color() const noexcept
 {
-    if (*enabled) {
+    if (*mode >= widget_mode::partial) {
         return theme().color(semantic_color::accent);
     } else {
         return theme().color(semantic_color::border, semantic_layer - 1);

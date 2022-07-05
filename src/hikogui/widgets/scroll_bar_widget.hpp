@@ -76,7 +76,7 @@ public:
 
     void draw(draw_context const& context) noexcept override
     {
-        if (*visible and overlaps(context, layout())) {
+        if (*mode > widget_mode::invisible and overlaps(context, layout())) {
             draw_rails(context);
             draw_slider(context);
         }
@@ -86,7 +86,7 @@ public:
     {
         hi_axiom(is_gui_thread());
 
-        if (*visible and *enabled and layout().contains(position) and _slider_rectangle.contains(position)) {
+        if (*mode >= widget_mode::partial and layout().contains(position) and _slider_rectangle.contains(position)) {
             return {this, position};
         } else {
             return {};

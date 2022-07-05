@@ -10,6 +10,7 @@
 #include <memory>
 #include <memory_resource>
 #include "arguments.hpp"
+#include "assert.hpp"
 
 namespace hi::inline v1 {
 
@@ -23,73 +24,13 @@ namespace hi::inline v1 {
  * The incrementing the iterator will resume the generator-function until
  * the generator-function co_yields another value.
  */
-template<typename T, typename Allocator = std::allocator<std::byte>>
+template<typename T>
 class generator {
 public:
-    static_assert(
-        std::is_same_v<typename std::allocator_traits<Allocator>::value_type, std::byte>,
-        "Allocator's value_type must be std::byte");
-    using allocator_type = Allocator;
     using value_type = T;
 
     class promise_type {
     public:
-        struct allocator_info {
-            allocator_type *allocator;
-            std::size_t size;
-        };
-
-        void operator delete(void *ptr)
-        {
-            if (ptr) {
-                auto *ptr_ = reinterpret_cast<std::byte *>(ptr) - sizeof(allocator_info);
-                auto *info_ptr = std::launder(reinterpret_cast<allocator_info *>(ptr_));
-                auto info = *info_ptr;
-                std::destroy_at(info_ptr);
-
-                if constexpr (std::allocator_traits<allocator_type>::is_always_equal::value) {
-                    auto allocator = allocator_type{};
-                    std::allocator_traits<allocator_type>::deallocate(allocator, ptr_, info.size);
-                } else {
-                    std::allocator_traits<allocator_type>::deallocate(*(info.allocator), ptr_, info.size);
-                }
-            }
-        }
-
-        [[nodiscard]] static void *simple_new(std::size_t size)
-        {
-            auto size_plus_info = size + sizeof(allocator_info);
-
-            // Prefix the allocated memory with the allocated size.
-            auto allocator = allocator_type{};
-            auto *ptr = std::allocator_traits<allocator_type>::allocate(allocator, size_plus_info);
-            [[maybe_unused]] auto *info = new (ptr) allocator_info(nullptr, size_plus_info);
-            return ptr + sizeof(allocator_info);
-        }
-
-        [[nodiscard]] static void *allocator_new(std::size_t size, allocator_type &allocator)
-        {
-            auto size_plus_info = size + sizeof(allocator_info);
-
-            // Allocator is in the trailing argument, because coroutines can be methods
-            // and the first argument would be `this`.
-            // Prefix the allocated memory with a pointer to the allocator and the allocated size.
-            auto *ptr = std::allocator_traits<allocator_type>::allocate(allocator, size_plus_info);
-            [[maybe_unused]] auto *info = new (ptr) allocator_info(&allocator, size_plus_info);
-            return ptr + sizeof(allocator_info);
-        }
-
-        template<typename... Args>
-        void *operator new(std::size_t size, Args &&...args)
-        {
-            if constexpr (std::allocator_traits<allocator_type>::is_always_equal::value) {
-                // This is just a coroutine with arguments.
-                return promise_type::simple_new(size);
-            } else {
-                return promise_type::allocator_new(size, get_last_argument(args...));
-            }
-        }
-
         generator get_return_object()
         {
             return generator{handle_type::from_promise(*this)};
@@ -100,7 +41,7 @@ public:
             return *_value;
         }
 
-        static std::suspend_always initial_suspend() noexcept
+        static std::suspend_never initial_suspend() noexcept
         {
             return {};
         }
@@ -127,13 +68,21 @@ public:
         // Disallow co_await in generator coroutines.
         void await_transform() = delete;
 
-        [[noreturn]] static void unhandled_exception()
+        void unhandled_exception() noexcept
         {
-            throw;
+            _exception = std::current_exception();
+        }
+
+        void rethrow()
+        {
+            if (auto ptr = std::exchange(_exception, nullptr)) {
+                std::rethrow_exception(ptr);
+            }
         }
 
     private:
-        std::optional<value_type> _value;
+        std::optional<value_type> _value = {};
+        std::exception_ptr _exception = nullptr;
     };
 
     using handle_type = std::coroutine_handle<promise_type>;
@@ -167,14 +116,18 @@ public:
          */
         iterator &operator++()
         {
+            hi_axiom(not at_end());
             _coroutine.resume();
+            _coroutine.promise().rethrow();
             return *this;
         }
 
         value_proxy operator++(int)
         {
             auto tmp = value_proxy(**this);
+            hi_axiom(not at_end());
             _coroutine.resume();
+            _coroutine.promise().rethrow();
             return tmp;
         }
 
@@ -182,19 +135,26 @@ public:
          */
         value_type const &operator*() const
         {
+            hi_axiom(not at_end());
             return _coroutine.promise().value();
         }
 
-        value_type const *operator->() const
+        value_type const *operator->() const noexcept
         {
+            hi_axiom(not at_end());
             return std::addressof(_coroutine.promise().value());
+        }
+
+        [[nodiscard]] bool at_end() const noexcept
+        {
+            return (not _coroutine) or _coroutine.done();
         }
 
         /** Check if the generator-function has finished.
          */
-        [[nodiscard]] bool operator==(std::default_sentinel_t) const
+        [[nodiscard]] bool operator==(std::default_sentinel_t) const noexcept
         {
-            return (not _coroutine) or _coroutine.done();
+            return at_end();
         }
 
     private:
@@ -214,10 +174,8 @@ public:
     generator(const generator &) = delete;
     generator &operator=(const generator &) = delete;
 
-    generator(generator &&other) noexcept : _coroutine{other._coroutine}
+    generator(generator &&other) noexcept : _coroutine{std::exchange(other._coroutine, {})}
     {
-        hi_axiom(&other != this);
-        other._coroutine = {};
     }
 
     generator &operator=(generator &&other) noexcept
@@ -226,8 +184,7 @@ public:
         if (_coroutine) {
             _coroutine.destroy();
         }
-        _coroutine = other._coroutine;
-        other._coroutine = {};
+        _coroutine = std::exchange(other._coroutine, {});
         return *this;
     }
 
@@ -235,9 +192,6 @@ public:
      */
     iterator begin()
     {
-        if (_coroutine) {
-            _coroutine.resume();
-        }
         return iterator{_coroutine};
     }
 
@@ -251,12 +205,5 @@ public:
 private:
     handle_type _coroutine;
 };
-
-namespace pmr {
-
-template<typename T>
-using generator = hi::generator<T, std::pmr::polymorphic_allocator<>>;
-
-}
 
 } // namespace hi::inline v1

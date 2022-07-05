@@ -7,6 +7,7 @@
 #include "pipeline_box_vertex.hpp"
 #include "pipeline_image_vertex.hpp"
 #include "pipeline_SDF_vertex.hpp"
+#include "pipeline_alpha_vertex.hpp"
 #include "subpixel_orientation.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/matrix.hpp"
@@ -21,7 +22,7 @@
 #include "../color/color.hpp"
 #include "../color/quad_color.hpp"
 #include "../widgets/widget_layout.hpp"
-#include "../vspan.hpp"
+#include "../vector_span.hpp"
 
 namespace hi::inline v1 {
 class gfx_device;
@@ -50,7 +51,7 @@ enum class border_side {
  */
 class draw_context {
 public:
-    gfx_device_vulkan &device;
+    gfx_device_vulkan& device;
 
     /** The frame buffer index of the image we are currently rendering.
      */
@@ -76,17 +77,18 @@ public:
      */
     utc_nanoseconds display_time_point;
 
-    draw_context(draw_context const &rhs) noexcept = default;
-    draw_context(draw_context &&rhs) noexcept = default;
-    draw_context &operator=(draw_context const &rhs) noexcept = default;
-    draw_context &operator=(draw_context &&rhs) noexcept = default;
+    draw_context(draw_context const& rhs) noexcept = default;
+    draw_context(draw_context&& rhs) noexcept = default;
+    draw_context& operator=(draw_context const& rhs) noexcept = default;
+    draw_context& operator=(draw_context&& rhs) noexcept = default;
     ~draw_context() = default;
 
     draw_context(
-        gfx_device_vulkan &device,
-        vspan<pipeline_box::vertex> &boxVertices,
-        vspan<pipeline_image::vertex> &imageVertices,
-        vspan<pipeline_SDF::vertex> &sdfVertices) noexcept;
+        gfx_device_vulkan& device,
+        vector_span<pipeline_box::vertex>& box_vertices,
+        vector_span<pipeline_image::vertex>& image_vertices,
+        vector_span<pipeline_SDF::vertex>& sdf_vertices,
+        vector_span<pipeline_alpha::vertex>& alpha_vertices) noexcept;
 
     /** Check if the draw_context should be used for rendering.
      */
@@ -106,13 +108,13 @@ public:
      * @param corner_radius The corner radii of each corner of the box.
      */
     void draw_box(
-        widget_layout const &layout,
-        quad const &box,
-        quad_color const &fill_color,
-        quad_color const &border_color,
+        widget_layout const& layout,
+        quad const& box,
+        quad_color const& fill_color,
+        quad_color const& border_color,
         float border_width,
         hi::border_side border_side,
-        hi::corner_radii const &corner_radius = {}) const noexcept
+        hi::corner_radii const& corner_radius = {}) const noexcept
     {
         // clang-format off
         hilet border_radius = border_width * 0.5f;
@@ -146,14 +148,14 @@ public:
      * @param corner_radius The corner radii of each corner of the box.
      */
     void draw_box(
-        widget_layout const &layout,
-        aarectangle const &clipping_rectangle,
-        quad const &box,
-        quad_color const &fill_color,
-        quad_color const &border_color,
+        widget_layout const& layout,
+        aarectangle const& clipping_rectangle,
+        quad const& box,
+        quad_color const& fill_color,
+        quad_color const& border_color,
         float border_width,
         hi::border_side border_side,
-        hi::corner_radii const &corner_radius = {}) const noexcept
+        hi::corner_radii const& corner_radius = {}) const noexcept
     {
         // clang-format off
         hilet border_radius = border_width * 0.5f;
@@ -183,10 +185,10 @@ public:
      * @param corner_radius The corner radii of each corner of the box.
      */
     void draw_box(
-        widget_layout const &layout,
-        quad const &box,
-        quad_color const &fill_color,
-        hi::corner_radii const &corner_radius = {}) const noexcept
+        widget_layout const& layout,
+        quad const& box,
+        quad_color const& fill_color,
+        hi::corner_radii const& corner_radius = {}) const noexcept
     {
         return _draw_box(
             layout.window_clipping_rectangle(),
@@ -206,11 +208,11 @@ public:
      * @param corner_radius The corner radii of each corner of the box.
      */
     void draw_box(
-        widget_layout const &layout,
-        aarectangle const &clipping_rectangle,
-        quad const &box,
-        quad_color const &fill_color,
-        hi::corner_radii const &corner_radius = {}) const noexcept
+        widget_layout const& layout,
+        aarectangle const& clipping_rectangle,
+        quad const& box,
+        quad_color const& fill_color,
+        hi::corner_radii const& corner_radius = {}) const noexcept
     {
         return _draw_box(
             layout.window_clipping_rectangle(clipping_rectangle),
@@ -222,7 +224,7 @@ public:
     }
 
     [[nodiscard]] constexpr static rectangle
-    make_rectangle(line_segment const &line, float width, line_end_cap c1, line_end_cap c2) noexcept
+    make_rectangle(line_segment const& line, float width, line_end_cap c1, line_end_cap c2) noexcept
     {
         auto right = line.direction();
 
@@ -261,10 +263,10 @@ public:
     }
 
     void draw_line(
-        widget_layout const &layout,
-        line_segment const &line,
+        widget_layout const& layout,
+        line_segment const& line,
         float width,
-        quad_color const &fill_color,
+        quad_color const& fill_color,
         line_end_cap c1 = line_end_cap::flat,
         line_end_cap c2 = line_end_cap::flat) const noexcept
     {
@@ -278,11 +280,11 @@ public:
     }
 
     void draw_line(
-        widget_layout const &layout,
-        aarectangle const &clipping_rectangle,
-        line_segment const &line,
+        widget_layout const& layout,
+        aarectangle const& clipping_rectangle,
+        line_segment const& line,
         float width,
-        quad_color const &fill_color,
+        quad_color const& fill_color,
         line_end_cap c1 = line_end_cap::flat,
         line_end_cap c2 = line_end_cap::flat) const noexcept
     {
@@ -296,7 +298,7 @@ public:
         return _draw_box(layout.window_clipping_rectangle(clipping_rectangle), box, fill_color, fill_color, 0.0f, corners);
     }
 
-    [[nodiscard]] constexpr static rectangle make_rectangle(hi::circle const &circle) noexcept
+    [[nodiscard]] constexpr static rectangle make_rectangle(hi::circle const& circle) noexcept
     {
         hilet circle_ = f32x4{circle};
         hilet origin = point3{circle_.xyz1() - circle_.ww00()};
@@ -305,12 +307,12 @@ public:
         return rectangle{origin, right, up};
     }
 
-    [[nodiscard]] constexpr static corner_radii make_corner_radii(hi::circle const &circle) noexcept
+    [[nodiscard]] constexpr static corner_radii make_corner_radii(hi::circle const& circle) noexcept
     {
         return corner_radii{f32x4{circle}.wwww()};
     }
 
-    void draw_circle(widget_layout const &layout, hi::circle const &circle, quad_color const &fill_color) const noexcept
+    void draw_circle(widget_layout const& layout, hi::circle const& circle, quad_color const& fill_color) const noexcept
     {
         hilet box = layout.to_window * make_rectangle(circle);
         hilet corners = layout.to_window * make_corner_radii(circle);
@@ -318,10 +320,10 @@ public:
     }
 
     void draw_circle(
-        widget_layout const &layout,
+        widget_layout const& layout,
         aarectangle const clipping_rectangle,
-        hi::circle const &circle,
-        quad_color const &fill_color) const
+        hi::circle const& circle,
+        quad_color const& fill_color) const
     {
         hilet box = layout.to_window * make_rectangle(circle);
         hilet corners = layout.to_window * make_corner_radii(circle);
@@ -329,10 +331,10 @@ public:
     }
 
     void draw_circle(
-        widget_layout const &layout,
-        hi::circle const &circle,
-        quad_color const &fill_color,
-        quad_color const &border_color,
+        widget_layout const& layout,
+        hi::circle const& circle,
+        quad_color const& fill_color,
+        quad_color const& border_color,
         float border_width,
         hi::border_side border_side) const noexcept
     {
@@ -349,11 +351,11 @@ public:
     }
 
     void draw_circle(
-        widget_layout const &layout,
-        aarectangle const &clipping_rectangle,
-        hi::circle const &circle,
-        quad_color const &fill_color,
-        quad_color const &border_color,
+        widget_layout const& layout,
+        aarectangle const& clipping_rectangle,
+        hi::circle const& circle,
+        quad_color const& fill_color,
+        quad_color const& border_color,
         float border_width,
         hi::border_side border_side) const noexcept
     {
@@ -378,7 +380,7 @@ public:
      * @return True when the image was drawn, false if the image is not ready yet.
      *         Widgets may want to request a redraw if the image is not ready.
      */
-    [[nodiscard]] bool draw_image(widget_layout const &layout, quad const &box, paged_image &image) const noexcept
+    [[nodiscard]] bool draw_image(widget_layout const& layout, quad const& box, paged_image& image) const noexcept
     {
         return _draw_image(layout.window_clipping_rectangle(), layout.to_window * box, image);
     }
@@ -393,7 +395,7 @@ public:
      *         Widgets may want to request a redraw if the image is not ready.
      */
     [[nodiscard]] bool
-    draw_image(widget_layout const &layout, aarectangle const &clipping_rectangle, quad const &box, paged_image &image)
+    draw_image(widget_layout const& layout, aarectangle const& clipping_rectangle, quad const& box, paged_image& image)
         const noexcept
     {
         return _draw_image(layout.window_clipping_rectangle(clipping_rectangle), layout.to_window * box, image);
@@ -406,7 +408,7 @@ public:
      * @param color The color that the glyph should be drawn in.
      * @param glyph The glyphs to draw.
      */
-    void draw_glyph(widget_layout const &layout, quad const &box, quad_color const &color, glyph_ids const &glyph) const noexcept
+    void draw_glyph(widget_layout const& layout, quad const& box, quad_color const& color, glyph_ids const& glyph) const noexcept
     {
         return _draw_glyph(layout.window_clipping_rectangle(), layout.to_window * box, color, glyph);
     }
@@ -420,11 +422,11 @@ public:
      * @param glyph The glyphs to draw.
      */
     void draw_glyph(
-        widget_layout const &layout,
+        widget_layout const& layout,
         aarectangle clipping_rectangle,
-        quad const &box,
-        quad_color const &color,
-        glyph_ids const &glyph) const noexcept
+        quad const& box,
+        quad_color const& color,
+        glyph_ids const& glyph) const noexcept
     {
         return _draw_glyph(layout.window_clipping_rectangle(clipping_rectangle), layout.to_window * box, color, glyph);
     }
@@ -436,7 +438,7 @@ public:
      * @param color Text-color overriding the colors from the shaped_text.
      * @param text The shaped text to draw.
      */
-    void draw_text(widget_layout const &layout, matrix3 const &transform, quad_color const &color, shaped_text const &text)
+    void draw_text(widget_layout const& layout, matrix3 const& transform, quad_color const& color, shaped_text const& text)
         const noexcept
     {
         return _draw_text(layout.window_clipping_rectangle(), layout.to_window * transform, text, color);
@@ -451,11 +453,11 @@ public:
      * @param text The shaped text to draw.
      */
     void draw_text(
-        widget_layout const &layout,
-        aarectangle const &clipping_rectangle,
-        matrix3 const &transform,
-        quad_color const &color,
-        shaped_text const &text) const noexcept
+        widget_layout const& layout,
+        aarectangle const& clipping_rectangle,
+        matrix3 const& transform,
+        quad_color const& color,
+        shaped_text const& text) const noexcept
     {
         return _draw_text(layout.window_clipping_rectangle(clipping_rectangle), layout.to_window * transform, text, color);
     }
@@ -466,7 +468,7 @@ public:
      * @param transform How to transform the shaped text relative to layout.
      * @param text The shaped text to draw.
      */
-    void draw_text(widget_layout const &layout, matrix3 const &transform, shaped_text const &text) const noexcept
+    void draw_text(widget_layout const& layout, matrix3 const& transform, shaped_text const& text) const noexcept
     {
         return _draw_text(layout.window_clipping_rectangle(), layout.to_window * transform, text);
     }
@@ -478,7 +480,7 @@ public:
      * @param color Text-color overriding the colors from the shaped_text.
      * @param text The shaped text to draw.
      */
-    void draw_text(widget_layout const &layout, matrix3 const &transform, quad_color const &color, text_shaper const &text)
+    void draw_text(widget_layout const& layout, matrix3 const& transform, quad_color const& color, text_shaper const& text)
         const noexcept
     {
         return _draw_text(layout.window_clipping_rectangle(), layout.to_window * transform, text, color);
@@ -490,7 +492,7 @@ public:
      * @param color Text-color overriding the colors from the shaped_text.
      * @param text The shaped text to draw.
      */
-    void draw_text(widget_layout const &layout, quad_color const &color, text_shaper const &text) const noexcept
+    void draw_text(widget_layout const& layout, quad_color const& color, text_shaper const& text) const noexcept
     {
         return _draw_text(layout.window_clipping_rectangle(), layout.to_window, text, color);
     }
@@ -504,11 +506,11 @@ public:
      * @param text The shaped text to draw.
      */
     void draw_text(
-        widget_layout const &layout,
-        aarectangle const &clipping_rectangle,
-        matrix3 const &transform,
-        quad_color const &color,
-        text_shaper const &text) const noexcept
+        widget_layout const& layout,
+        aarectangle const& clipping_rectangle,
+        matrix3 const& transform,
+        quad_color const& color,
+        text_shaper const& text) const noexcept
     {
         return _draw_text(layout.window_clipping_rectangle(clipping_rectangle), layout.to_window * transform, text, color);
     }
@@ -521,10 +523,10 @@ public:
      * @param text The shaped text to draw.
      */
     void draw_text(
-        widget_layout const &layout,
-        aarectangle const &clipping_rectangle,
-        quad_color const &color,
-        text_shaper const &text) const noexcept
+        widget_layout const& layout,
+        aarectangle const& clipping_rectangle,
+        quad_color const& color,
+        text_shaper const& text) const noexcept
     {
         return _draw_text(layout.window_clipping_rectangle(clipping_rectangle), layout.to_window, text, color);
     }
@@ -535,7 +537,7 @@ public:
      * @param transform How to transform the shaped text relative to layout.
      * @param text The shaped text to draw.
      */
-    void draw_text(widget_layout const &layout, matrix3 const &transform, text_shaper const &text) const noexcept
+    void draw_text(widget_layout const& layout, matrix3 const& transform, text_shaper const& text) const noexcept
     {
         return _draw_text(layout.window_clipping_rectangle(), layout.to_window * transform, text);
     }
@@ -545,7 +547,7 @@ public:
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
      * @param text The shaped text to draw.
      */
-    void draw_text(widget_layout const &layout, text_shaper const &text) const noexcept
+    void draw_text(widget_layout const& layout, text_shaper const& text) const noexcept
     {
         return _draw_text(layout.window_clipping_rectangle(), layout.to_window, text);
     }
@@ -558,7 +560,7 @@ public:
      * @param color The color of the selection.
      */
     void
-    draw_text_selection(widget_layout const &layout, text_shaper const &text, text_selection const &selection, hi::color color)
+    draw_text_selection(widget_layout const& layout, text_shaper const& text, text_selection const& selection, hi::color color)
         const noexcept
     {
         return _draw_text_selection(layout.window_clipping_rectangle(), layout.to_window, text, selection, color);
@@ -575,8 +577,8 @@ public:
      * @param dead_character_mode If true draw the dead-character cursor. The dead_character_mode overrides all other cursors.
      */
     void draw_text_cursors(
-        widget_layout const &layout,
-        text_shaper const &text,
+        widget_layout const& layout,
+        text_shaper const& text,
         text_cursor cursor,
         hi::color primary_color,
         hi::color secondary_color,
@@ -594,77 +596,93 @@ public:
             dead_character_mode);
     }
 
-    [[nodiscard]] friend bool overlaps(draw_context const &context, widget_layout const &layout) noexcept
+    /** Make a hole in the user interface.
+     *
+     * This function makes a hole in the user-interface so that fragments written in the
+     * swap-chain before the GUI is drawn will be visible.
+     *
+     * @param layout The layout of the widget.
+     * @param box The box in local coordinates of the widget.
+     */
+    void make_hole(widget_layout const& layout, quad const& box) const noexcept
+    {
+        return _override_alpha(layout.window_clipping_rectangle(), layout.to_window * box, 0.0f);
+    }
+
+    [[nodiscard]] friend bool overlaps(draw_context const& context, widget_layout const& layout) noexcept
     {
         return overlaps(context.scissor_rectangle, layout.window_clipping_rectangle());
     }
 
 private:
-    vspan<pipeline_box::vertex> *_box_vertices;
-    vspan<pipeline_image::vertex> *_image_vertices;
-    vspan<pipeline_SDF::vertex> *_sdf_vertices;
+    vector_span<pipeline_box::vertex> *_box_vertices;
+    vector_span<pipeline_image::vertex> *_image_vertices;
+    vector_span<pipeline_SDF::vertex> *_sdf_vertices;
+    vector_span<pipeline_alpha::vertex> *_alpha_vertices;
+
+    void _override_alpha(aarectangle const& clipping_rectangle, quad box, float alpha) const noexcept;
 
     void _draw_box(
-        aarectangle const &clipping_rectangle,
+        aarectangle const& clipping_rectangle,
         quad box,
-        quad_color const &fill_color,
-        quad_color const &border_color,
+        quad_color const& fill_color,
+        quad_color const& border_color,
         float border_width,
         hi::corner_radii corner_radius) const noexcept;
 
     void _draw_text(
-        aarectangle const &clipping_rectangle,
-        matrix3 const &transform,
-        shaped_text const &text,
+        aarectangle const& clipping_rectangle,
+        matrix3 const& transform,
+        shaped_text const& text,
         std::optional<quad_color> color = {}) const noexcept;
 
     void _draw_text(
-        aarectangle const &clipping_rectangle,
-        matrix3 const &transform,
-        text_shaper const &text,
+        aarectangle const& clipping_rectangle,
+        matrix3 const& transform,
+        text_shaper const& text,
         std::optional<quad_color> color = {}) const noexcept;
 
     void _draw_text_selection(
-        aarectangle const &clipping_rectangle,
-        matrix3 const &transform,
-        text_shaper const &text,
-        text_selection const &selection,
+        aarectangle const& clipping_rectangle,
+        matrix3 const& transform,
+        text_shaper const& text,
+        text_selection const& selection,
         hi::color) const noexcept;
 
     void _draw_text_insertion_cursor_empty(
-        aarectangle const &clipping_rectangle,
-        matrix3 const &transform,
-        text_shaper const &text,
+        aarectangle const& clipping_rectangle,
+        matrix3 const& transform,
+        text_shaper const& text,
         hi::color color) const noexcept;
 
     void _draw_text_insertion_cursor(
-        aarectangle const &clipping_rectangle,
-        matrix3 const &transform,
-        text_shaper const &text,
+        aarectangle const& clipping_rectangle,
+        matrix3 const& transform,
+        text_shaper const& text,
         text_cursor cursor,
         hi::color color,
         bool show_flag) const noexcept;
 
     void _draw_text_overwrite_cursor(
-        aarectangle const &clipping_rectangle,
-        matrix3 const &transform,
+        aarectangle const& clipping_rectangle,
+        matrix3 const& transform,
         text_shaper::char_const_iterator it,
         hi::color color) const noexcept;
 
     void _draw_text_cursors(
-        aarectangle const &clipping_rectangle,
-        matrix3 const &transform,
-        text_shaper const &text,
+        aarectangle const& clipping_rectangle,
+        matrix3 const& transform,
+        text_shaper const& text,
         text_cursor cursor,
         hi::color primary_color,
         hi::color secondary_color,
         bool overwrite_mode,
         bool dead_character_mode) const noexcept;
 
-    void _draw_glyph(aarectangle const &clipping_rectangle, quad const &box, quad_color const &color, glyph_ids const &glyph)
+    void _draw_glyph(aarectangle const& clipping_rectangle, quad const& box, quad_color const& color, glyph_ids const& glyph)
         const noexcept;
 
-    [[nodiscard]] bool _draw_image(aarectangle const &clipping_rectangle, quad const &box, paged_image &image) const noexcept;
+    [[nodiscard]] bool _draw_image(aarectangle const& clipping_rectangle, quad const& box, paged_image& image) const noexcept;
 };
 
 } // namespace hi::inline v1

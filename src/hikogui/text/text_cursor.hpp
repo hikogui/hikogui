@@ -15,36 +15,56 @@
 
 namespace hi::inline v1 {
 
+/** A cursor-position in text.
+ *
+ * The cursor position takes into account the index of the character
+ * and if it is in front or behind this character. This allows for more
+ * detailed positioning inside bidirectional text.
+ *
+ */
 class text_cursor {
 public:
-    constexpr text_cursor() noexcept : _value(0) {}
-    constexpr text_cursor(text_cursor const &) noexcept = default;
-    constexpr text_cursor(text_cursor &&) noexcept = default;
-    constexpr text_cursor &operator=(text_cursor const &) noexcept = default;
-    constexpr text_cursor &operator=(text_cursor &&) noexcept = default;
+    constexpr text_cursor() noexcept = default;
+    constexpr text_cursor(text_cursor const&) noexcept = default;
+    constexpr text_cursor(text_cursor&&) noexcept = default;
+    constexpr text_cursor& operator=(text_cursor const&) noexcept = default;
+    constexpr text_cursor& operator=(text_cursor&&) noexcept = default;
+    [[nodiscard]] constexpr friend bool operator==(text_cursor const&, text_cursor const&) = default;
+    [[nodiscard]] constexpr friend auto operator<=>(text_cursor const&, text_cursor const&) = default;
+
+    /** Set the text size.
+     *
+     * This function will clamp the cursor position inside the actual text.
+     * It should be called before the cursor position is used to select characters
+     * in a text.
+     *
+     * The cursor position after this function will be:
+     * - In the same position if the character still exists in the text.
+     * - After the last character in the text if the text is non-empty.
+     * - Before the first character in the text if the text is empty.
+     *
+     * @param The size of the text string that this cursor points into.
+     */
+    constexpr text_cursor& resize(size_t size) & noexcept
+    {
+        inplace_min(_value, max_value(size));
+        return *this;
+    }
+
+    constexpr text_cursor resize(size_t size) && noexcept
+    {
+        inplace_min(_value, max_value(size));
+        return *this;
+    }
+
 
     /** Create a new text cursor.
-    * 
-    * @param index The character where the cursor is.
-    * @param after True if the cursor is after the character, false if the cursor is before the character
-    * @param size The size of the text, used to check for overflow.
-    */
-    constexpr text_cursor(size_t index, bool after, size_t size) noexcept
+     *
+     * @param index The character where the cursor is.
+     * @param after True if the cursor is after the character, false if the cursor is before the character
+     */
+    constexpr text_cursor(size_t index, bool after) noexcept
     {
-        if (size == 0) {
-            // Special case, when size is zero, the cursor is before the non-existing first character.
-            index = 0;
-            after = false;
-        } else if (static_cast<ptrdiff_t>(index) < 0) {
-            // Underflow.
-            index = 0;
-            after = false;
-        } else if (index >= size) {
-            // Overflow.
-            index = size - 1;
-            after = true;
-        }
-
         _value = (index << 1) | static_cast<size_t>(after);
     }
 
@@ -56,11 +76,8 @@ public:
      */
     [[nodiscard]] constexpr text_cursor neighbor(size_t size) const noexcept
     {
-        if (before()) {
-            return {index() - 1, true, size};
-        } else {
-            return {index() + 1, false, size};
-        }
+        auto r = before() ? text_cursor{index() - 1, true} : text_cursor{index() + 1, false};
+        return r.resize(size);
     }
 
     [[nodiscard]] constexpr text_cursor after_neighbor(size_t size) const noexcept
@@ -80,7 +97,7 @@ public:
 
     [[nodiscard]] constexpr bool end_of_text(size_t size) const noexcept
     {
-        return size == 0 or (index() == size - 1 and after()) or index() >= size;
+        return _value >= max_value(size);
     }
 
     [[nodiscard]] constexpr size_t index() const noexcept
@@ -90,7 +107,7 @@ public:
 
     [[nodiscard]] constexpr bool after() const noexcept
     {
-        return static_cast<bool>(_value & 1);
+        return to_bool(_value & 1);
     }
 
     [[nodiscard]] constexpr bool before() const noexcept
@@ -98,11 +115,32 @@ public:
         return not after();
     }
 
-    [[nodiscard]] constexpr friend bool operator==(text_cursor const &, text_cursor const &) = default;
-    [[nodiscard]] constexpr friend auto operator<=>(text_cursor const &, text_cursor const &) = default;
-
 private:
-    size_t _value;
+    /** Get the max value of the cursor for the text size.
+    * 
+    * @param size The size of text in number of characters.
+    * @return The maximum value that _value may have.
+    */
+    [[nodiscard]] constexpr static size_t max_value(size_t size) noexcept
+    {
+        if (size) {
+            size <<= 1;
+            --size;
+        }
+        return size;
+    }
+
+    /**
+     *
+     * Bits:
+     *  - [n:1] The index of the character.
+     *  - [0] '1': cursor behind character. '0' cursor in front of character
+     *
+     * If zero then this is in front of the first character in the text;
+     * zero can therefor be used as a cursor position in an empty text.
+     *
+     */
+    size_t _value = 0;
 };
 
 } // namespace hi::inline v1

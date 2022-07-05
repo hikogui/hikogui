@@ -29,15 +29,17 @@ inline std::vector<void (*)()> subsystem_deinit_list;
 inline unfair_recursive_mutex subsystem_mutex;
 
 template<typename T>
-requires(is_atomic_v<T>) hi_no_inline typename T::value_type start_subsystem(
-    T &check_variable,
+hi_no_inline typename T::value_type start_subsystem(
+    T& check_variable,
     typename T::value_type off_value,
     typename T::value_type (*init_function)(),
-    void (*deinit_function)())
+    void (*deinit_function)()) requires(is_atomic_v<T>)
 {
+    hi_axiom(init_function != nullptr);
+    hi_axiom(deinit_function != nullptr);
     hilet lock = std::scoped_lock(subsystem_mutex);
 
-    auto old_value = check_variable.load(std::memory_order::acquire);
+    hilet old_value = check_variable.load(std::memory_order::acquire);
     if (old_value != off_value) {
         // In the short time before the lock the subsystem became available.
         return old_value;
@@ -62,6 +64,9 @@ requires(is_atomic_v<T>) hi_no_inline typename T::value_type start_subsystem(
 hi_no_inline inline bool start_subsystem(global_state_type state_bit, bool (*init_function)(), void (*deinit_function)())
 {
     hi_axiom(std::popcount(to_underlying(state_bit)) == 1);
+    hi_axiom(init_function != nullptr);
+    hi_axiom(deinit_function != nullptr);
+
     hilet lock = std::scoped_lock(subsystem_mutex);
 
     hilet old_state = global_state.load(std::memory_order::acquire);
@@ -101,7 +106,7 @@ hi_no_inline inline bool start_subsystem(global_state_type state_bit, bool (*ini
  */
 template<typename T>
 typename T::value_type start_subsystem(
-    T &check_variable,
+    T& check_variable,
     typename T::value_type off_value,
     typename T::value_type (*init_function)(),
     void (*deinit_function)()) requires(is_atomic_v<T>)
@@ -109,7 +114,7 @@ typename T::value_type start_subsystem(
     // We can do a relaxed load, if:
     //  - off_value, then we will lock before writing check_variable and memory order will be guaranteed
     //  - not off_value, The system is started. If the subsystem is turning off we can't deal with that anyway.
-    auto old_value = check_variable.load(std::memory_order::relaxed);
+    hilet old_value = check_variable.load(std::memory_order::relaxed);
     if (old_value == off_value) {
         return detail::start_subsystem(check_variable, off_value, init_function, deinit_function);
     } else {
@@ -159,7 +164,7 @@ inline bool start_subsystem(global_state_type state_bit, bool (*init_function)()
  */
 template<typename T>
 requires(is_atomic_v<T>) typename T::value_type start_subsystem_or_terminate(
-    T &check_variable,
+    T& check_variable,
     typename T::value_type off_value,
     typename T::value_type (*init_function)(),
     void (*deinit_function)())
@@ -183,6 +188,8 @@ requires(is_atomic_v<T>) typename T::value_type start_subsystem_or_terminate(
  */
 inline void stop_subsystem(void (*deinit_function)())
 {
+    hi_axiom(deinit_function != nullptr);
+
     hilet lock = std::scoped_lock(detail::subsystem_mutex);
 
     std::erase(detail::subsystem_deinit_list, deinit_function);
@@ -210,6 +217,7 @@ inline void shutdown_system() noexcept
 
     while (!detail::subsystem_deinit_list.empty()) {
         auto deinit = std::move(detail::subsystem_deinit_list.back());
+        hi_axiom(deinit != nullptr);
         detail::subsystem_deinit_list.pop_back();
 
         detail::subsystem_mutex.unlock();

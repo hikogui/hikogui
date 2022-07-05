@@ -4,12 +4,11 @@
 
 #include "unicode_normalization.hpp"
 #include "unicode_description.hpp"
-#include "unicode_composition.hpp"
 #include "unicode_decomposition_type.hpp"
-#include "unicode_db.hpp"
 #include "../assert.hpp"
 #include "../required.hpp"
 #include <string>
+#include <algorithm>
 
 namespace hi::inline v1 {
 
@@ -26,6 +25,7 @@ static void unicode_decompose(char32_t code_point, unicode_normalization_mask ma
         code_point == unicode_LS or // Line Separator, U+2028
         code_point == unicode_PS) // Paragraph Separator, U+2029
     ) {
+        // Canonical combining class will be zero, so we can ignore it here.
         hilet paragraph_type = mask & unicode_normalization_mask::decompose_newline;
         if (paragraph_type == unicode_normalization_mask::decompose_newline_to_LF) {
             r += U'\n';
@@ -42,47 +42,14 @@ static void unicode_decompose(char32_t code_point, unicode_normalization_mask ma
         // Control characters are dropped. (no operation)
         // This must come after checking for new-line which themselves are control characters.
 
-    } else if (any(mask & unicode_normalization_mask::decompose_hangul) and is_hangul_syllable(code_point)) {
-        hilet S_index = code_point - detail::unicode_hangul_S_base;
-        hilet L_index = static_cast<char32_t>(S_index / detail::unicode_hangul_N_count);
-        hilet V_index = static_cast<char32_t>((S_index % detail::unicode_hangul_N_count) / detail::unicode_hangul_T_count);
-        hilet T_index = static_cast<char32_t>(S_index % detail::unicode_hangul_T_count);
-
-        unicode_decompose(detail::unicode_hangul_L_base + L_index, mask, r);
-        unicode_decompose(detail::unicode_hangul_V_base + V_index, mask, r);
-
-        if (T_index > 0) {
-            unicode_decompose(detail::unicode_hangul_T_base + T_index, mask, r);
-        }
-
     } else if (any(mask & description.decomposition_type())) {
-        if (description.decomposition_length() == 0) {
-            r += code_point | (static_cast<char32_t>(description.canonical_combining_class()) << 24);
-
-        } else if (description.decomposition_length() == 1) {
-            unicode_decompose(static_cast<char32_t>(description.decomposition_index()), mask, r);
-
-        } else if (description.is_canonical_composition() && description.decomposition_length() == 2) {
-            hi_axiom(description.decomposition_index() < size(detail::unicode_db_composition_table));
-            hilet &composition = detail::unicode_db_composition_table[description.decomposition_index()];
-
-            unicode_decompose(composition.first(), mask, r);
-            unicode_decompose(composition.second(), mask, r);
-
-        } else {
-            hi_axiom(
-                description.decomposition_index() + description.decomposition_length() <=
-                size(detail::unicode_db_decomposition_table));
-
-            auto it = begin(detail::unicode_db_decomposition_table) + description.decomposition_index();
-
-            for (std::size_t i = 0; i != description.decomposition_length(); ++i) {
-                unicode_decompose(*(it++), mask, r);
-            }
+        for (hilet c : description.decompose()) {
+            unicode_decompose(c, mask, r);
         }
 
     } else {
-        r += code_point | (static_cast<char32_t>(description.canonical_combining_class()) << 24);
+        hilet ccc = description.canonical_combining_class();
+        r += code_point | (wide_cast<char32_t>(ccc) << 24);
     }
 }
 
@@ -102,20 +69,8 @@ unicode_compose(char32_t first, char32_t second, unicode_normalization_mask comp
     if (any(composition_mask & unicode_normalization_mask::compose_CRLF) and first == U'\r' and second == U'\n') {
         return U'\n';
 
-    } else if (
-        any(composition_mask & unicode_normalization_mask::compose_hangul) and is_hangul_L_part(first) and is_hangul_V_part(second)) {
-        hilet L_index = first - detail::unicode_hangul_L_base;
-        hilet V_index = second - detail::unicode_hangul_V_base;
-        hilet LV_index = L_index * detail::unicode_hangul_N_count + V_index * detail::unicode_hangul_T_count;
-        return detail::unicode_hangul_S_base + LV_index;
-
-    } else if (
-        any(composition_mask & unicode_normalization_mask::compose_hangul) and is_hangul_LV_part(first) and is_hangul_T_part(second)) {
-        hilet T_index = second - detail::unicode_hangul_T_base;
-        return first + T_index;
-
     } else {
-        return unicode_composition_find(first, second);
+        return unicode_description::find(first).compose(second);
     }
 }
 

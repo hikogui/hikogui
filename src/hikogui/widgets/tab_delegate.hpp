@@ -18,12 +18,19 @@ public:
 
     /** Subscribe a callback for notifying the widget of a data change.
      */
-    auto subscribe(tab_widget &sender, std::invocable<> auto &&callback) noexcept
+    auto subscribe(tab_widget& sender, callback_flags flags, std::invocable<> auto&& callback) noexcept
     {
-        return _notifier.subscribe(hi_forward(callback));
+        return _notifier.subscribe(flags, hi_forward(callback));
     }
 
-    virtual void add_tab(tab_widget &sender, std::size_t key, std::size_t index) noexcept {}
+    /** Subscribe a callback for notifying the widget of a data change.
+     */
+    auto subscribe(tab_widget& sender, std::invocable<> auto&& callback) noexcept
+    {
+        return subscribe(sender, callback_flags::synchronous, hi_forward(callback));
+    }
+
+    virtual void add_tab(tab_widget& sender, std::size_t key, std::size_t index) noexcept {}
 
     virtual ssize_t index(tab_widget &sender) noexcept
     {

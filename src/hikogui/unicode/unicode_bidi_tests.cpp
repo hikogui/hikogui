@@ -112,22 +112,22 @@ struct unicode_bidi_test {
 generator<unicode_bidi_test> parse_bidi_test(int test_line_nr = -1)
 {
     hilet view = file_view(URL("file:BidiTest.txt"));
-    hilet test_data = view.string_view();
+    hilet test_data = as_string_view(view);
 
     auto levels = std::vector<int>{};
     auto reorder = std::vector<int>{};
 
     int line_nr = 1;
-    for (hilet line : std::views::split(test_data, std::string_view{"\n"})) {
-        hilet line_ = strip(line);
-        if (line_.empty() || line_.starts_with("#")) {
+    for (hilet line_view : std::views::split(test_data, std::string_view{"\n"})) {
+        hilet line = strip(std::string_view{line_view.begin(), line_view.end()});
+        if (line.empty() || line.starts_with("#")) {
             // Comment and empty lines.
-        } else if (line_.starts_with("@Levels:")) {
-            levels = parse_bidi_test_levels(line_.substr(8));
-        } else if (line_.starts_with("@Reorder:")) {
-            reorder = parse_bidi_test_reorder(line_.substr(9));
+        } else if (line.starts_with("@Levels:")) {
+            levels = parse_bidi_test_levels(line.substr(8));
+        } else if (line.starts_with("@Reorder:")) {
+            reorder = parse_bidi_test_reorder(line.substr(9));
         } else {
-            auto data = parse_bidi_test_data_line(line_, levels, reorder, line_nr);
+            auto data = parse_bidi_test_data_line(line, levels, reorder, line_nr);
             if (test_line_nr == -1 || line_nr == test_line_nr) {
                 co_yield data;
             }
@@ -256,15 +256,15 @@ struct unicode_bidi_character_test {
 generator<unicode_bidi_character_test> parse_bidi_character_test(int test_line_nr = -1)
 {
     hilet view = file_view(URL("file:BidiCharacterTest.txt"));
-    hilet test_data = view.string_view();
+    hilet test_data = as_string_view(view);
 
     int line_nr = 1;
-    for (hilet line : std::views::split(test_data, std::string_view{"\n"})) {
-        hilet line_ = strip(line);
-        if (line_.empty() || line_.starts_with("#")) {
+    for (hilet line_view : std::views::split(test_data, std::string_view{"\n"})) {
+        hilet line = strip(std::string_view{line_view.begin(), line_view.end()});
+        if (line.empty() || line.starts_with("#")) {
             // Comment and empty lines.
         } else {
-            auto data = parse_bidi_character_test_line(line_, line_nr);
+            auto data = parse_bidi_character_test_line(line, line_nr);
             if (test_line_nr == -1 || line_nr == test_line_nr) {
                 co_yield data;
             }

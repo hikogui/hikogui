@@ -251,3 +251,11 @@ private:
 };
 
 } // namespace hi::inline v1
+
+template<typename CharT>
+struct std::formatter<hi::gui_event, CharT> : std::formatter<std::string_view, CharT> {
+    auto format(hi::gui_event const& t, auto& fc)
+    {
+        return std::formatter<std::string_view, CharT>::format(hi::gui_event_type_metadata[t.type()], fc);
+    }
+};

@@ -9,8 +9,12 @@
 #include <type_traits>
 #include <bit>
 
-namespace hi::inline v1 {
+hi_warning_push();
+// C26490: Don't use reinterpret_cast
+// Need it for allow the use of enum in an atomic operation.
+hi_warning_ignore_msvc(26490);
 
+namespace hi::inline v1 {
 enum class global_state_type : uint64_t {
     log_debug = 0x01,
     log_info = 0x02,
@@ -55,7 +59,7 @@ enum class global_state_type : uint64_t {
 
 [[nodiscard]] constexpr bool to_bool(global_state_type rhs) noexcept
 {
-    return static_cast<bool>(to_underlying(rhs));
+    return to_bool(to_underlying(rhs));
 }
 
 [[nodiscard]] constexpr bool is_system_running(global_state_type rhs) noexcept
@@ -79,7 +83,7 @@ struct std::atomic<hi::global_state_type> {
     static constexpr bool is_always_lock_free = atomic_type::is_always_lock_free;
 
     constexpr atomic() noexcept = default;
-    atomic(atomic const &) = delete;
+    atomic(atomic const&) = delete;
     atomic(atomic&&) = delete;
     atomic& operator=(atomic const&) = delete;
     atomic& operator=(atomic&&) = delete;
@@ -107,30 +111,30 @@ struct std::atomic<hi::global_state_type> {
     }
 
     [[nodiscard]] bool
-    compare_exchange_weak(value_type &expected, value_type desired, std::memory_order success, std::memory_order failure) noexcept
+    compare_exchange_weak(value_type& expected, value_type desired, std::memory_order success, std::memory_order failure) noexcept
     {
         return v.compare_exchange_weak(
-            reinterpret_cast<underlying_type_t<value_type> &>(expected), hi::to_underlying(desired), success, failure);
+            reinterpret_cast<underlying_type_t<value_type>&>(expected), hi::to_underlying(desired), success, failure);
     }
 
     [[nodiscard]] bool
-    compare_exchange_weak(value_type &expected, value_type desired, std::memory_order order = std::memory_order::seq_cst) noexcept
+    compare_exchange_weak(value_type& expected, value_type desired, std::memory_order order = std::memory_order::seq_cst) noexcept
     {
         return compare_exchange_weak(expected, desired, order, order);
     }
 
     [[nodiscard]] bool compare_exchange_strong(
-        value_type &expected,
+        value_type& expected,
         value_type desired,
         std::memory_order success,
         std::memory_order failure) noexcept
     {
         return v.compare_exchange_weak(
-            reinterpret_cast<underlying_type_t<value_type> &>(expected), hi::to_underlying(desired), success, failure);
+            reinterpret_cast<underlying_type_t<value_type>&>(expected), hi::to_underlying(desired), success, failure);
     }
 
     [[nodiscard]] bool compare_exchange_strong(
-        value_type &expected,
+        value_type& expected,
         value_type desired,
         std::memory_order order = std::memory_order::seq_cst) noexcept
     {
@@ -225,3 +229,5 @@ inline bool global_state_enable(global_state_type subsystem, std::memory_order o
 }
 
 } // namespace hi::inline v1
+
+hi_warning_pop();

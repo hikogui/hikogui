@@ -34,6 +34,8 @@
  *
  */
 
+#include "win32_headers.hpp"
+
 #include "loop.hpp"
 #include "counters.hpp"
 #include "trace.hpp"
@@ -42,14 +44,6 @@
 #include "GUI/gui_window.hpp"
 #include "net/network_event.hpp"
 #include "net/network_event_win32.hpp"
-#define IN
-#define OUT
-#include <WinSock2.h>
-#undef IN
-#undef OUT
-#include <Windows.h>
-#include <synchapi.h>
-#include <dxgi.h>
 #include <vector>
 #include <utility>
 #include <stop_token>
@@ -118,12 +112,12 @@ public:
 
     void set_maximum_frame_rate(double frame_rate) noexcept override
     {
-        hi_axiom(is_same_thread());
+        hi_axiom(on_thread());
     }
 
     void add_window(std::weak_ptr<gui_window> window) noexcept override
     {
-        hi_axiom(is_same_thread());
+        hi_axiom(on_thread());
         _windows.push_back(std::move(window));
 
         // Startup the vsync thread once there is a window.
@@ -136,12 +130,12 @@ public:
 
     void add_socket(int fd, network_event event_mask, std::function<void(int, network_events const&)> f) override
     {
-        hi_axiom(is_same_thread());
+        hi_axiom(on_thread());
     }
 
     void remove_socket(int fd) override
     {
-        hi_axiom(is_same_thread());
+        hi_axiom(on_thread());
     }
 
     int resume(std::stop_token stop_token) noexcept
@@ -197,7 +191,7 @@ public:
     {
         using namespace std::chrono_literals;
 
-        hi_axiom(is_same_thread());
+        hi_axiom(on_thread());
 
         auto current_time = std::chrono::utc_clock::now();
         auto timeout = std::chrono::duration_cast<std::chrono::milliseconds>(_function_timer.current_deadline() - current_time);

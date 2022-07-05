@@ -80,7 +80,8 @@ static void grow(auto first, auto last, float growth) noexcept
         return growth;
     });
 
-    hi_axiom(growth == 0.0f);
+    // Either there are no widgets, or the widgets together have grown so the result is zero.
+    hi_axiom(first == last or growth == 0.0f);
 }
 
 void grid_layout::constrain_cells_by_singles() noexcept
@@ -88,6 +89,10 @@ void grid_layout::constrain_cells_by_singles() noexcept
     for (hilet &constraint : _constraints) {
         inplace_max(_cells[constraint.first].margin, constraint.margin_before);
         inplace_max(_cells[constraint.last].margin, constraint.margin_after);
+
+        for (auto i = constraint.first; i != constraint.last; ++i) {
+            inplace_max(_cells[i].baseline, constraint.baseline);
+        }
 
         if (constraint.is_single_cell()) {
             _cells[constraint.first].set_constraint(constraint);

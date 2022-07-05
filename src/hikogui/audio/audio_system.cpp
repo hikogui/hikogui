@@ -11,25 +11,5 @@
 
 namespace hi::inline v1 {
 
-audio_system::audio_system(std::weak_ptr<audio_system_delegate> delegate) :
-    _delegate(std::move(delegate))
-{
-}
-
-audio_system::~audio_system() {}
-
-void audio_system::init() noexcept
-{
-    if (auto delegate = _delegate.lock()) {
-        delegate->init(*this);
-    }
-}
-
-void audio_system::deinit() noexcept
-{
-    if (auto delegate = _delegate.lock()) {
-        delegate->deinit(*this);
-    }
-}
 
 } // namespace hi::inline v1

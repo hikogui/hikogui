@@ -380,7 +380,7 @@ void device_shared::teardown_atlas(gfx_device_vulkan *vulkan_device)
 }
 
 void device_shared::place_vertices(
-    vspan<vertex> &vertices,
+    vector_span<vertex> &vertices,
     aarectangle const &clipping_rectangle,
     quad const &box,
     paged_image const &image) noexcept

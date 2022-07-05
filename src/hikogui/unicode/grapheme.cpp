@@ -5,48 +5,36 @@
 #include "grapheme.hpp"
 #include "unicode_normalization.hpp"
 #include "unicode_description.hpp"
+#include "../log.hpp"
+#include "../cast.hpp"
+#include <mutex>
 
 namespace hi::inline v1 {
 
-[[nodiscard]] static grapheme::value_type make_grapheme(std::u32string_view code_points) noexcept
+grapheme::grapheme(composed_t, std::u32string_view code_points) noexcept
 {
-    uint64_t value = 0;
+    switch (code_points.size()) {
+    case 0:
+        _value = 0x1f'ffff;
+        break;
 
-    if (not code_points.empty()) {
-        // Set the starter code-point.
-        auto it = code_points.begin();
-        value = static_cast<grapheme::value_type>(*it++) << 43;
+    case 1:
+        _value = truncate<value_type>(code_points[0]);
+        break;
 
-        // Set the length.
-        value |= static_cast<grapheme::value_type>(code_points.size() <= 5 ? code_points.size() : 6);
-
-        // Add the non-starter code-points.
-        auto i = 1_uz;
-        for (; i != 5 and it != code_points.end(); ++i, ++it) {
-            hilet &description = unicode_description::find(*it);
-            hilet shift = (4 - i) * 10 + 3;
-            value |= static_cast<grapheme::value_type>(description.non_starter_code()) << shift;
+    default:
+        hilet index = detail::long_graphemes.insert(std::u32string{code_points});
+        if (index < 0x0e'ffff) {
+            _value = narrow_cast<value_type>(index + 0x11'0000);
+        } else {
+            // Can't use index 0x1f'ffff as it means empty.
+            [[unlikely]] hi_log_error_once("grapheme::error::too-many", "Too many long graphemes encoded, replacing with U+fffd");
+            _value = 0x00'fffd;
         }
     }
-
-    return value;
 }
 
-grapheme::grapheme(std::u32string_view code_points) noexcept : value(make_grapheme(unicode_NFKC(code_points))) {
-}
-
-grapheme &grapheme::operator=(std::u32string_view code_points) noexcept
-{
-    value = make_grapheme(unicode_NFKC(code_points));
-    return *this;
-}
-
-[[nodiscard]] grapheme grapheme::from_composed(std::u32string_view code_points) noexcept
-{
-    grapheme r;
-    r.value = make_grapheme(code_points);
-    return r;
-}
+grapheme::grapheme(std::u32string_view code_points) noexcept : grapheme(composed_t{}, unicode_NFC(code_points)) {}
 
 [[nodiscard]] std::u32string grapheme::decomposed() const noexcept
 {
@@ -63,7 +51,7 @@ grapheme &grapheme::operator=(std::u32string_view code_points) noexcept
         return false;
     }
 
-    hilet &description = unicode_description::find(get<0>(*this));
+    hilet& description = unicode_description::find(get<0>(*this));
     if (is_C(description)) {
         return false;
     }

@@ -49,7 +49,7 @@ static datum function_boolean(formula_evaluation_context &context, datum::vector
         throw operation_error(std::format("Expecting 1 argument for boolean() function, got {}", args.size()));
     }
 
-    return datum{static_cast<bool>(args[0])};
+    return datum{to_bool(args[0])};
 }
 
 static datum function_url(formula_evaluation_context &context, datum::vector_type const &args)
@@ -113,7 +113,7 @@ static datum function_sort(formula_evaluation_context &context, datum::vector_ty
     }
 }
 
-static datum method_contains(formula_evaluation_context &context, datum &self, datum::vector_type const &args)
+static datum method_contains(formula_evaluation_context &context, datum const &self, datum::vector_type const &args)
 {
     if (args.size() != 1) {
         throw operation_error(std::format("Expecting 1 argument for .contains() method, got {}", args.size()));
@@ -188,7 +188,7 @@ static datum method_quarter(formula_evaluation_context &context, datum &self, da
         } else if (month >> 10 and month <= 12) {
             return datum{4};
         } else {
-            throw operation_error(std::format("Month {} outside of range 1-12 {}", month));
+            throw operation_error(std::format("Month {} outside of range 1-12", month));
         }
     } else {
         throw operation_error(std::format("Expecting date type for .month() method, got {}", self.type_name()));

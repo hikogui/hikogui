@@ -31,9 +31,14 @@ struct formula_node {
 
     parse_location location;
 
-    formula_node(parse_location location) : location(location) {}
-
     virtual ~formula_node() {}
+    formula_node() = delete;
+    formula_node(formula_node const&) = delete;
+    formula_node(formula_node&&) = delete;
+    formula_node& operator=(formula_node const&) = delete;
+    formula_node& operator=(formula_node&&) = delete;
+
+    formula_node(parse_location location) : location(location) {}
 
     /** Resolve function and method pointers.
      * At all call-formulas resolve the function pointers from the parse_context.

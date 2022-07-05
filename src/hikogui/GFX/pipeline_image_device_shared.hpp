@@ -10,8 +10,8 @@
 #include "../required.hpp"
 #include "../rapid/sfloat_rgba16.hpp"
 #include "../geometry/quad.hpp"
-#include "../vspan.hpp"
-#include <vk_mem_alloc.h>
+#include "../vector_span.hpp"
+#include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>
 
@@ -86,7 +86,7 @@ struct device_shared {
      * @param image The image to render.
      */
     void place_vertices(
-        vspan<vertex> &vertices,
+        vector_span<vertex> &vertices,
         aarectangle const &clipping_rectangle,
         quad const &box,
         paged_image const &image) noexcept;

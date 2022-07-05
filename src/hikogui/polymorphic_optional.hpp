@@ -7,12 +7,21 @@
 #include "assert.hpp"
 #include "concepts.hpp"
 #include "memory.hpp"
+#include "required.hpp"
 #include <array>
 #include <memory>
 #include <type_traits>
 #include <atomic>
 #include <concepts>
 #include <thread>
+
+hi_warning_push();
+// C26432: If you define or delete any default operation in the type '...', define or delete them all (c.21).
+// False positive. The copy/move assignment/constructors are templated
+hi_warning_ignore_msvc(26432);
+// C26495: Variable '...' is uninitialized. Always initialize a member variable (type.6).
+// For performance reasons polymorphic_optional::_buffer must remain uninitialized.
+hi_warning_ignore_msvc(26495);
 
 namespace hi::inline v1 {
 
@@ -47,7 +56,7 @@ public:
         reset();
     }
 
-    constexpr polymorphic_optional() noexcept : _pointer() {}
+    constexpr polymorphic_optional() noexcept = default;
     constexpr polymorphic_optional(std::nullopt_t) noexcept : polymorphic_optional() {}
 
     template<std::derived_from<base_type> Other>
@@ -322,7 +331,7 @@ private:
      * - _buffer.data(): object is stored in the buffer.
      * - otherwise: Object is allocated on the heap with `new`.
      */
-    std::atomic<pointer> _pointer;
+    std::atomic<pointer> _pointer = nullptr;
 
     hi_no_inline void contended() noexcept
     {
@@ -335,3 +344,5 @@ private:
 };
 
 } // namespace hi::inline v1
+
+hi_warning_pop();

@@ -27,18 +27,14 @@ public:
 
     gfx_device_vulkan &vulkan_device() const noexcept;
 
-    virtual void drawInCommandBuffer(vk::CommandBuffer commandBuffer, draw_context const &context);
+    virtual void draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_context const &context);
 
-    void buildForNewDevice();
-    void teardownForDeviceLost();
-    void buildForNewSurface();
-    void teardownForSurfaceLost();
-    void buildForNewSwapchain(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D extent);
-    void teardownForSwapchainLost();
-    void teardownForWindowLost();
+    void build_for_new_device();
+    void teardown_for_device_lost();
+    void build_for_new_swapchain(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D extent);
+    void teardown_for_swapchain_lost();
 
 protected:
-    bool buffersInitialized = false;
     vk::DescriptorSet descriptorSet;
     ssize_t descriptorSetVersion = 0;
     vk::Extent2D extent;
@@ -66,12 +62,12 @@ protected:
     virtual vk::PipelineDepthStencilStateCreateInfo getPipelineDepthStencilStateCreateInfo() const;
     virtual std::vector<vk::PipelineColorBlendAttachmentState> getPipelineColorBlendAttachmentStates() const;
 
-    virtual void buildvertexBuffers(){};
-    virtual void teardownvertexBuffers(){};
-    virtual void buildDescriptorSets();
-    virtual void teardownDescriptorSets();
-    virtual void buildPipeline(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D extent);
-    virtual void teardownPipeline();
+    virtual void build_vertex_buffers(){};
+    virtual void teardown_vertex_buffers(){};
+    virtual void build_descriptor_sets();
+    virtual void teardown_descriptor_sets();
+    virtual void build_pipeline(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D extent);
+    virtual void teardown_pipeline();
 };
 
 } // namespace hi::inline v1

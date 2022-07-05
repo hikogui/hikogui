@@ -64,7 +64,7 @@ public:
 
     /** The style of the text.
      */
-    observable<theme_text_style> text_style = theme_text_style::label;
+    observable<semantic_text_style> text_style = semantic_text_style::label;
 
     virtual ~text_field_widget();
 
@@ -102,18 +102,25 @@ private:
      */
     text_widget *_text_widget = nullptr;
 
+
     /** The text edited by the _text_widget.
      */
     observable<gstring> _text;
 
+    /** The rectangle where the box is displayed, inwhich the text is displayed.
+    */
+    aarectangle _box_rectangle;
+
     /** The rectangle where the text is displayed.
      */
     aarectangle _text_rectangle;
+    widget_constraints _text_constraints;
 
     /** An error string to show to the user.
      */
     observable<label> _error_label;
     aarectangle _error_label_rectangle;
+    widget_constraints _error_label_constraints;
     std::unique_ptr<label_widget> _error_label_widget;
 
     typename decltype(continues)::token_type _continues_cbt;

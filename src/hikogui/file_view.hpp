@@ -6,23 +6,33 @@
 
 #include "file_mapping.hpp"
 #include "resource_view.hpp"
+#include "void_span.hpp"
 #include <span>
+
+hi_warning_push();
+// C26490: Don't use reinterpret_cast (type.1).
+// We need to convert bytes to chars to get a string_view from the byte buffer.
+hi_warning_ignore_msvc(26490);
 
 namespace hi::inline v1 {
 
 /*! Map a file into virtual memory.
  */
-class file_view : public resource_view {
+class file_view : public writable_resource_view {
 public:
-    file_view(std::shared_ptr<file_mapping> const &mappingObject, std::size_t offset, std::size_t size);
-    file_view(URL const &location, access_mode accessMode = access_mode::open_for_read, std::size_t offset = 0, std::size_t size = 0);
+    file_view(std::shared_ptr<file_mapping> const& mappingObject, std::size_t offset, std::size_t size);
+    file_view(
+        URL const& location,
+        access_mode accessMode = access_mode::open_for_read,
+        std::size_t offset = 0,
+        std::size_t size = 0);
     ~file_view() = default;
 
     file_view() = delete;
-    file_view(file_view const &other) noexcept;
-    file_view(file_view &&other) noexcept;
-    file_view &operator=(file_view const &other) noexcept;
-    file_view &operator=(file_view &&other) noexcept;
+    file_view(file_view const& other) noexcept;
+    file_view(file_view&& other) noexcept;
+    file_view& operator=(file_view const& other) noexcept;
+    file_view& operator=(file_view&& other) noexcept;
 
     /*! Access mode of the opened file.
      */
@@ -33,7 +43,7 @@ public:
 
     /*! URL location to the file.
      */
-    [[nodiscard]] URL const &location() const noexcept
+    [[nodiscard]] URL const& location() const noexcept
     {
         return _file_mapping_object->location();
     }
@@ -45,53 +55,18 @@ public:
         return _offset;
     }
 
-    /*! Number of bytes which is mapped to memory.
-     */
-    [[nodiscard]] std::size_t size() const noexcept override
-    {
-        return _bytes->size();
-    }
-
-    /*! Pointer to the mapping into memory.
-     */
-    [[nodiscard]] std::byte *data() noexcept
-    {
-        return _bytes->data();
-    }
-
-    /*! Pointer to the mapping into memory.
-     */
-    [[nodiscard]] std::byte const *data() const noexcept override
-    {
-        return _bytes->data();
-    }
-
     /*! Span to the mapping into memory.
      */
-    [[nodiscard]] std::span<std::byte> bytes() noexcept
+    [[nodiscard]] void_span writable_span() noexcept override
     {
         return *_bytes;
     }
 
     /*! Span to the mapping into memory.
      */
-    [[nodiscard]] std::span<std::byte const> bytes() const noexcept override
+    [[nodiscard]] const_void_span span() const noexcept override
     {
         return *_bytes;
-    }
-
-    /*! String view to the mapping into memory.
-     */
-    [[nodiscard]] std::string_view string_view() noexcept
-    {
-        return std::string_view{reinterpret_cast<char *>(data()), size()};
-    }
-
-    /*! String view to the mapping into memory.
-     */
-    [[nodiscard]] std::string_view string_view() const noexcept override
-    {
-        return std::string_view{reinterpret_cast<char const *>(data()), size()};
     }
 
     /** Flush changes in memory to the open file.
@@ -103,7 +78,7 @@ public:
     /*! Load a view of a resource.
      * This is used when the resource that needs to be opened is a file.
      */
-    [[nodiscard]] static std::unique_ptr<resource_view> loadView(URL const &location)
+    [[nodiscard]] static std::unique_ptr<resource_view> loadView(URL const& location)
     {
         return std::make_unique<file_view>(location);
     }
@@ -115,7 +90,7 @@ private:
      *
      * \param bytes The bytes to unmap.
      */
-    static void unmap(std::span<std::byte> *bytes) noexcept;
+    static void unmap(void_span *bytes) noexcept;
 
     /*! Open a file mapping object.
      * File mapping objects are cached and will be shared by file_views.
@@ -127,7 +102,7 @@ private:
      * \return A shared-pointer to file mapping object.
      */
     [[nodiscard]] static std::shared_ptr<file_mapping>
-    findOrCreateFileMappingObject(URL const &path, access_mode accessMode, std::size_t size);
+    findOrCreateFileMappingObject(URL const& path, access_mode accessMode, std::size_t size);
 
 private:
     /*! pointer to a file mapping object.
@@ -138,7 +113,7 @@ private:
      * The shared_ptr to _bytes allows the file_view to be copied while pointing
      * to the same memory map. This shared_ptr will use the private unmap().
      */
-    std::shared_ptr<std::span<std::byte>> _bytes;
+    std::shared_ptr<void_span> _bytes;
 
     /*! The offset into the file which is mapped to memory.
      */
@@ -146,3 +121,5 @@ private:
 };
 
 } // namespace hi::inline v1
+
+hi_warning_pop();

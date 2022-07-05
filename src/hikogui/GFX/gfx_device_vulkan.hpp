@@ -10,15 +10,20 @@
 #include "pipeline_image_device_shared.hpp"
 #include "pipeline_box_device_shared.hpp"
 #include "pipeline_SDF_device_shared.hpp"
+#include "pipeline_alpha_device_shared.hpp"
 #include "pipeline_tone_mapper_device_shared.hpp"
 #include <vulkan/vulkan.hpp>
-#include <vk_mem_alloc.h>
+#include <vma/vk_mem_alloc.h>
 
 namespace hi::inline v1 {
 class URL;
 
 class gfx_device_vulkan final : public gfx_device {
 public:
+    vk::PhysicalDevice physicalIntrinsic;
+    vk::Device intrinsic;
+    VmaAllocator allocator;
+
     vk::PhysicalDeviceType deviceType = vk::PhysicalDeviceType::eOther;
     vk::PhysicalDeviceProperties physicalProperties;
 
@@ -78,10 +83,11 @@ public:
     vk::Buffer quadIndexBuffer;
     VmaAllocation quadIndexBufferAllocation = {};
 
-    std::unique_ptr<pipeline_box::device_shared> boxPipeline;
-    std::unique_ptr<pipeline_image::device_shared> imagePipeline;
-    std::unique_ptr<pipeline_SDF::device_shared> SDFPipeline;
-    std::unique_ptr<pipeline_tone_mapper::device_shared> toneMapperPipeline;
+    std::unique_ptr<pipeline_box::device_shared> box_pipeline;
+    std::unique_ptr<pipeline_image::device_shared> image_pipeline;
+    std::unique_ptr<pipeline_SDF::device_shared> SDF_pipeline;
+    std::unique_ptr<pipeline_alpha::device_shared> alpha_pipeline;
+    std::unique_ptr<pipeline_tone_mapper::device_shared> tone_mapper_pipeline;
 
     /*! List if extension required on this device.
      */
@@ -150,16 +156,17 @@ public:
         hi_axiom(gfx_system_mutex.recurse_lock_count());
 
         void *mapping;
-        hilet result = static_cast<vk::Result>(vmaMapMemory(allocator, allocation, &mapping));
+        hilet result = vk::Result{vmaMapMemory(allocator, allocation, &mapping)};
+        if (result != vk::Result::eSuccess) {
+            throw gui_error(std::format("vmaMapMemory failed {}", to_string(result)));
+        }
 
         VmaAllocationInfo allocationInfo;
         vmaGetAllocationInfo(allocator, allocation, &allocationInfo);
 
         // Should we launder the pointer? The GPU has created the objects, not the C++ application.
         T *mappingT = reinterpret_cast<T *>(mapping);
-        hilet mappingSpan = std::span<T>(mappingT, allocationInfo.size / sizeof(T));
-
-        return vk::createResultValue(result, mappingSpan, "hi::gfx_device_vulkan::mapMemory");
+        return std::span<T>{mappingT, allocationInfo.size / sizeof(T)};
     }
 
     void unmapMemory(const VmaAllocation &allocation) const;
@@ -253,7 +260,7 @@ public:
         return r;
     }
 
-    vk::Semaphore createSemaphore(const vk::SemaphoreCreateInfo &createInfo) const
+    vk::Semaphore createSemaphore(const vk::SemaphoreCreateInfo& createInfo = vk::SemaphoreCreateInfo{}) const
     {
         hi_axiom(gfx_system_mutex.recurse_lock_count());
         return intrinsic.createSemaphore(createInfo);
@@ -370,10 +377,6 @@ public:
 
     void log_memory_usage() const noexcept override;
 
-protected:
-    vk::PhysicalDevice physicalIntrinsic;
-    vk::Device intrinsic;
-    VmaAllocator allocator;
 
 private:
     [[nodiscard]] std::vector<vk::DeviceQueueCreateInfo> make_device_queue_create_infos() const noexcept;

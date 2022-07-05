@@ -7,6 +7,7 @@
 #include "required.hpp"
 #include "generator.hpp"
 #include "loop.hpp"
+#include "callback_flags.hpp"
 #include <vector>
 #include <tuple>
 #include <functional>
@@ -31,10 +32,10 @@ public:
     static_assert(std::is_same_v<Result, void>, "Result of a notifier must be void.");
 
     using result_type = Result;
-    using callback_type = std::function<Result(Args const&...)>;
+    using function_type = std::function<Result(Args const&...)>;
 
-    using token_type = std::shared_ptr<callback_type>;
-    using weak_token_type = std::weak_ptr<callback_type>;
+    using token_type = std::shared_ptr<function_type>;
+    using weak_token_type = std::weak_ptr<function_type>;
 
     /** An awaiter object which can wait on a notifier.
      *
@@ -63,8 +64,12 @@ public:
 
             // We can use the this pointer in the callback, as `await_suspend()` is called by
             // the co-routine on the same object as `await_resume()`.
-            _cbt = _notifier->subscribe([this, handle](Args const&...args) {
+            _cbt = _notifier->subscribe(callback_flags::main | callback_flags::once, [this, handle](Args const&...args) {
+                // Copy the arguments received from the notifier into the awaitable object
+                // So that it can be read using `await_resume()`.
                 _args = {args...};
+
+                // Resume the co-routine.
                 handle.resume();
             });
         }
@@ -81,13 +86,7 @@ public:
             return _args;
         }
 
-        [[nodiscard]] bool operator==(awaiter_type const& rhs) const noexcept
-        {
-            return _notifier == rhs._notifier;
-        }
-
-    private:
-        notifier *_notifier = nullptr;
+    private : notifier *_notifier = nullptr;
         token_type _cbt;
         std::tuple<Args...> _args;
     };
@@ -115,45 +114,16 @@ public:
      * @param callback_ptr A shared_ptr to a callback function.
      * @return A RAII object which when destroyed will unsubscribe the callback.
      */
-    [[nodiscard]] token_type subscribe(std::invocable<Args...> auto&& callback) noexcept
+    [[nodiscard]] token_type subscribe(callback_flags flags, std::invocable<Args...> auto&& callback) noexcept
     {
-        auto token = std::make_shared<callback_type>(hi_forward(callback));
-        _callbacks.emplace_back(token);
+        auto token = std::make_shared<function_type>(hi_forward(callback));
+        _callbacks.emplace_back(token, flags);
         return token;
     }
 
-    /** Post the subscribed callbacks on the current thread's event loop with the given arguments.
-     *
-     * @note This function is not reentrant.
-     * @param args The arguments to pass with the invocation of the callback
-     */
-    void post(Args const&...args) const noexcept requires(std::is_same_v<result_type, void>)
+    [[nodiscard]] token_type subscribe(std::invocable<Args...> auto&& callback) noexcept
     {
-        for (auto& weak_callback : _callbacks) {
-            loop::local().post_function([=] {
-                if (auto callback = weak_callback.lock()) {
-                    (*callback)(args...);
-                }
-            });
-        }
-        clean_up();
-    }
-
-    /** Post the subscribed callbacks on the main thread's event loop with the given arguments.
-     *
-     * @note This function is not reentrant.
-     * @param args The arguments to pass with the invocation of the callback
-     */
-    void post_on_main(Args const&...args) const noexcept requires(std::is_same_v<result_type, void>)
-    {
-        for (auto& weak_callback : _callbacks) {
-            loop::main().post_function([=] {
-                if (auto callback = weak_callback.lock()) {
-                    (*callback)(args...);
-                }
-            });
-        }
-        clean_up();
+        return subscribe(callback_flags::synchronous, hi_forward(callback));
     }
 
     /** Call the subscribed callbacks with the given arguments.
@@ -161,18 +131,78 @@ public:
      * @note This function is not reentrant.
      * @param args The arguments to pass with the invocation of the callback
      */
-    auto operator()(Args const&...args) const noexcept
+    void operator()(Args const&...args) const noexcept
     {
-        return post(args...);
+        for (auto& callback : _callbacks) {
+            if (is_synchronous(callback.flags)) {
+                if (auto func = callback.lock()) {
+                    (*func)(args...);
+                }
+
+            } else if (is_local(callback.flags)) {
+                loop::local().post_function([=] {
+                    if (auto func = callback.lock()) {
+                        (*func)(args...);
+                    }
+                });
+
+            } else if (is_main(callback.flags)) {
+                loop::main().post_function([=] {
+                    if (auto func = callback.lock()) {
+                        (*func)(args...);
+                    }
+                });
+
+            } else if (is_timer(callback.flags)) {
+                loop::timer().post_function([=] {
+                    if (auto func = callback.lock()) {
+                        (*func)(args...);
+                    }
+                });
+
+            } else {
+                hi_no_default();
+            }
+
+            // If the callback should only be triggered once, like inside an awaitable.
+            // Then reset the weak_ptr in _callbacks so that it will be cleaned up.
+            // In the lambda above the weak_ptr is copied first so that it callback will get executed
+            // as long as the shared_ptr's use count does not go to zero.
+            if (is_once(callback.flags)) {
+                callback.reset();
+            }
+        }
+        clean_up();
     }
 
 private:
+    struct callback_type {
+        weak_token_type token;
+        callback_flags flags;
+
+        [[nodiscard]] bool expired() const noexcept
+        {
+            return token.expired();
+        }
+
+        void reset() noexcept
+        {
+            token.reset();
+        }
+
+        [[nodiscard]] token_type lock() const noexcept
+        {
+            return token.lock();
+        }
+    };
+
     /** A list of callbacks and it's associated token.
      */
-    mutable std::vector<weak_token_type> _callbacks;
+    mutable std::vector<callback_type> _callbacks;
 
     void clean_up() const noexcept
     {
+        // Cleanup all callbacks that have expired, or when they may only be triggered once.
         std::erase_if(_callbacks, [](hilet& item) {
             return item.expired();
         });

@@ -20,10 +20,9 @@ widget::widget(gui_window& _window, widget *parent) noexcept :
         semantic_layer = parent->semantic_layer + 1;
     }
 
-    // clang-format off
-    _enabled_cbt = enabled.subscribe([&](auto...){ request_redraw(); });
-    _visible_cbt = visible.subscribe([&](auto...){ request_reconstrain(); });
-    // clang-format on
+    _mode_cbt = mode.subscribe([&](auto...) {
+        request_reconstrain();
+    });
 
     _constraints.minimum = extent2::nan();
     _constraints.preferred = extent2::nan();
@@ -54,7 +53,7 @@ hi::font_book& widget::font_book() const noexcept
 
 [[nodiscard]] color widget::background_color() const noexcept
 {
-    if (*enabled) {
+    if (*mode >= widget_mode::partial) {
         if (*hover) {
             return theme().color(semantic_color::fill, semantic_layer + 1);
         } else {
@@ -67,7 +66,7 @@ hi::font_book& widget::font_book() const noexcept
 
 [[nodiscard]] color widget::foreground_color() const noexcept
 {
-    if (*enabled) {
+    if (*mode >= widget_mode::partial) {
         if (*hover) {
             return theme().color(semantic_color::border, semantic_layer + 1);
         } else {
@@ -80,7 +79,7 @@ hi::font_book& widget::font_book() const noexcept
 
 [[nodiscard]] color widget::focus_color() const noexcept
 {
-    if (*enabled) {
+    if (*mode >= widget_mode::partial) {
         if (*focus) {
             return theme().color(semantic_color::accent);
         } else if (*hover) {
@@ -95,7 +94,7 @@ hi::font_book& widget::font_book() const noexcept
 
 [[nodiscard]] color widget::accent_color() const noexcept
 {
-    if (*enabled) {
+    if (*mode >= widget_mode::partial) {
         return theme().color(semantic_color::accent);
     } else {
         return theme().color(semantic_color::border, semantic_layer - 1);
@@ -104,8 +103,8 @@ hi::font_book& widget::font_book() const noexcept
 
 [[nodiscard]] color widget::label_color() const noexcept
 {
-    if (*enabled) {
-        return theme().text_style(theme_text_style::label).color;
+    if (*mode >= widget_mode::partial) {
+        return theme().text_style(semantic_text_style::label)->color;
     } else {
         return theme().color(semantic_color::border, semantic_layer - 1);
     }
@@ -171,14 +170,16 @@ bool widget::handle_event(gui_event const& event) noexcept
         return window.process_event(gui_widget_next);
 
     case gui_event_type::gui_toolbar_next:
-        if (*enabled and accepts_keyboard_focus(keyboard_focus_group::toolbar) and not is_last(keyboard_focus_group::toolbar)) {
+        if (*mode >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::toolbar) and
+            not is_last(keyboard_focus_group::toolbar)) {
             window.update_keyboard_target(this, keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
             return true;
         }
         break;
 
     case gui_event_type::gui_toolbar_prev:
-        if (*enabled and accepts_keyboard_focus(keyboard_focus_group::toolbar) and not is_first(keyboard_focus_group::toolbar)) {
+        if (*mode >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::toolbar) and
+            not is_first(keyboard_focus_group::toolbar)) {
             window.update_keyboard_target(this, keyboard_focus_group::toolbar, keyboard_focus_direction::backward);
             return true;
         }
@@ -325,7 +326,7 @@ void widget::scroll_to_show(hi::aarectangle rectangle) noexcept
 
     if (auto w = this) {
         chain.push_back(w);
-        while (static_cast<bool>(w = w->parent)) {
+        while (to_bool(w = w->parent)) {
             chain.push_back(w);
         }
     }
