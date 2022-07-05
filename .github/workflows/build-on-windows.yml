@@ -89,7 +89,7 @@ jobs:
       # https://github.com/actions/virtual-environments/blob/main/images/win/Windows2022-Readme.md#visual-studio-enterprise-2022
       - name: 📥 Setup VC17 Environment (→ vcvars64)
         if: matrix.config.COMPILER == 'VC17'
-        run: call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        run: echo "VCVARS=C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" >> $env::GITHUB_ENV
 
       - name: 🔽 Update VCPKG
         if: matrix.config.PACKAGER == 'vcpkg'
@@ -101,7 +101,9 @@ jobs:
           vcpkg version
 
       - name: ✏ CMake ➔ Configure
-        run: cmake --preset=${{ matrix.config.CMAKE_PRESET }}
+        run: |
+          call %VCVARS%
+          cmake --preset=${{ matrix.config.CMAKE_PRESET }}
 
       - name: 🙏 CMake ➔ Build
         run: cmake --build build

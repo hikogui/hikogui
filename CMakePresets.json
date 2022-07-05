@@ -42,6 +42,7 @@
         },
         {
             "name": "x64-MSVC-Debug-ASAN",
+            "hidden": true,
             "inherits": "x64-MSVC-Debug",
             "cacheVariables": {
                 "HI_ENABLE_ASAN": "ON"
