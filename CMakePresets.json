@@ -107,13 +107,19 @@
             "name": "ZI-x64-MSVC-Release",
             "inherits": "x64-MSVC-Release",
             "binaryDir": "build",
-            "cacheVariables": { "CMAKE_INSTALL_PREFIX": "install" }
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "install",
+                "HI_BUILD_EXAMPLES": "ON"
+            }
         },
         {
             "name": "ZI-x64-MSVC-Debug",
             "inherits": "x64-MSVC-Debug",
             "binaryDir": "build",
-            "cacheVariables": { "CMAKE_INSTALL_PREFIX": "install" }
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "install",
+                "HI_BUILD_EXAMPLES": "ON"
+            }
         }
     ]
 }
