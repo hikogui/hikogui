@@ -249,7 +249,7 @@ theme::theme(hi::font_book const& font_book, URL const& url)
     }
 
     hilet family_id = font_book.find_family(parse_string(data, "family"));
-    hilet size = parse_float(data, "size");
+    hilet font_size = parse_float(data, "size");
 
     auto variant = font_variant{};
     if (data.contains("weight")) {
@@ -269,15 +269,7 @@ theme::theme(hi::font_book const& font_book, URL const& url)
 
     auto sub_styles = std::vector<text_sub_style>{};
     sub_styles.emplace_back(
-        text_phrasing_mask::all,
-        iso_639{},
-        iso_15924{},
-        family_id,
-        variant,
-        size,
-        color,
-        text_decoration{}
-    );
+        text_phrasing_mask::all, iso_639{}, iso_15924{}, family_id, variant, font_size, color, text_decoration{});
     return hi::text_style(sub_styles);
 }
 
@@ -337,8 +329,10 @@ void theme::parse(hi::font_book const& font_book, datum const& data)
     std::get<to_underlying(semantic_color::secondary_cursor)>(_colors) = parse_color_list(data, "secondary-cursor-color");
 
     std::get<to_underlying(semantic_text_style::label)>(_text_styles) = parse_text_style(font_book, data, "label-style");
-    std::get<to_underlying(semantic_text_style::small_label)>(_text_styles) = parse_text_style(font_book, data, "small-label-style");
-    std::get<to_underlying(semantic_text_style::warning)>(_text_styles) = parse_text_style(font_book, data, "warning-label-style");
+    std::get<to_underlying(semantic_text_style::small_label)>(_text_styles) =
+        parse_text_style(font_book, data, "small-label-style");
+    std::get<to_underlying(semantic_text_style::warning)>(_text_styles) =
+        parse_text_style(font_book, data, "warning-label-style");
     std::get<to_underlying(semantic_text_style::error)>(_text_styles) = parse_text_style(font_book, data, "error-label-style");
     std::get<to_underlying(semantic_text_style::help)>(_text_styles) = parse_text_style(font_book, data, "help-label-style");
     std::get<to_underlying(semantic_text_style::placeholder)>(_text_styles) =

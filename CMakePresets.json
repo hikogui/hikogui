@@ -1,0 +1,104 @@
+{
+    "version": 2,
+    "configurePresets": [
+        {
+            "name": "x64-Windows",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "$env{USERPROFILE}\\CMakeBuilds\\${sourceDirName}\\build\\${presetName}",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "$env{USERPROFILE}\\CMakeBuilds\\${sourceDirName}\\install\\${presetName}",
+                "CMAKE_VERBOSE_MAKEFILE": "ON",
+                "VCPKG_TARGET_TRIPLET": "x64-windows-static",
+                "BUILD_SHARED_LIBS": "OFF"
+            },
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "vendor": {
+                "microsoft.com/VisualStudioSettings/CMake/1.0": {
+                    "hostOS": [ "Windows" ]
+                }
+            }
+        },
+        {
+            "name": "x64-MSVC-Debug",
+            "inherits": "x64-Windows",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_VERBOSE_MAKEFILE": "ON",
+                "CMAKE_CXX_COMPILER": "cl"
+            },
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "vendor": {
+                "microsoft.com/VisualStudioSettings/CMake/1.0": {
+                    "intelliSenseMode": "windows-msvc-x64"
+                }
+            }
+        },
+        {
+            "name": "x64-MSVC-Debug-ASAN",
+            "inherits": "x64-MSVC-Debug",
+            "cacheVariables": {
+                "HI_ENABLE_ASAN": "ON"
+            }
+        },
+        {
+            "name": "x64-MSVC-Analysis",
+            "inherits": "x64-MSVC-Debug",
+            "cacheVariables": {
+                "HI_ENABLE_ANALYSIS": "ON"
+            }
+        },
+        {
+            "name": "x64-MSVC-ReleaseWithDebugInfo",
+            "inherits": "x64-Windows",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "CMAKE_CXX_COMPILER": "cl",
+                "HI_BUILD_PCH": "OFF"
+            },
+            "vendor": {
+                "microsoft.com/VisualStudioSettings/CMake/1.0": {
+                    "intelliSenseMode": "windows-msvc-x64"
+                }
+            }
+        },
+        {
+            "name": "x64-MSVC-Release",
+            "inherits": "x64-MSVC-ReleaseWithDebugInfo",
+            "cacheVariables": {
+                "HI_BUILD_EXAMPLES": "ON"
+            }
+        },
+
+        {
+            "name": "x64-Clang-Debug",
+            "inherits": "x64-MSVC-Debug",
+            "cacheVariables": {
+                "CMAKE_CXX_COMPILER": "clang-cl"
+            },
+            "vendor": {
+                "microsoft.com/VisualStudioSettings/CMake/1.0": {
+                    "intelliSenseMode": "windows-clang-x64"
+                }
+            }
+        },
+        {
+            "name": "x64-Clang-ReleaseWithDebugInfo",
+            "inherits": "x64-MSVC-ReleaseWithDebugInfo",
+            "cacheVariables": {
+                "CMAKE_CXX_COMPILER": "clang-cl"
+            },
+            "vendor": {
+                "microsoft.com/VisualStudioSettings/CMake/1.0": {
+                    "intelliSenseMode": "windows-clang-x64"
+                }
+            }
+        }
+    ]
+}
