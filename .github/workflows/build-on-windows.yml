@@ -95,6 +95,7 @@ jobs:
       - name: 🔽 Update VCPKG
         if: matrix.config.PACKAGER == 'vcpkg'
         run: |
+          call %VCVARS%
           cd C:\vcpkg
           git pull --quiet
           bootstrap-vcpkg.bat -disableMetrics
@@ -103,7 +104,7 @@ jobs:
 
       - name: ✏ CMake ➔ Configure
         run: |
-          call %VCVARS%
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           cmake --preset=${{ matrix.config.CMAKE_PRESET }}
 
       - name: 🙏 CMake ➔ Build
