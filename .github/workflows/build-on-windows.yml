@@ -13,16 +13,31 @@ jobs:
 # ---------------------------------------------------------------------------------------
 
   build-and-test:
-    name: ${{ matrix.config.JOB_NAME }}
+    name: ${{ matrix.config.NAME }}
     # https://github.com/actions/virtual-environments/blob/main/images/win/Windows2022-Readme.md
     runs-on: ${{ matrix.config.OS }}
 
     strategy:
       fail-fast: false
       matrix:
+        # Each entry in config has a:
+        # - NAME: The name used as the suffix in files, directories and artifacts.
+        # - OS: The operating system to run the job on.
+        # - VCPKG_TARGET_TRIPLET: The vcpkg target triplet, or empty if cmake should use fetch.
+        # - CMAKE_PRESET: The cmake preset to load.
         config:
-          - { OS: windows-2022, PACKAGER: fetch, BUILD_TYPE: Release, CMAKE_PRESET: ZI-x64-MSVC-Release, COMPILER: "VC17", JOB_NAME: "VC17 | x64-win-static | Release"}
-          - { OS: windows-2022, PACKAGER: fetch, BUILD_TYPE: Debug, CMAKE_PRESET: ZI-x64-MSVC-Debug, COMPILER: "VC17", JOB_NAME: "VC17 | x64-win-static | Debug"  }
+          - {
+              NAME: "vc17-x64",
+              OS: windows-2022,
+              VCPKG_TARGET_TRIPLET: "",
+              CMAKE_PRESET: ZI-x64-MSVC-Release
+            }
+          - {
+              NAME: "vc17-x64-debug",
+              OS: windows-2022,
+              VCPKG_TARGET_TRIPLET: "",
+              CMAKE_PRESET: ZI-x64-MSVC-Debug
+            }
 
     env:
       PLATFORM: x64
@@ -52,10 +67,7 @@ jobs:
           $NAME=$(jq -r .name vcpkg.json)
           $VERSION=$(jq -r .version vcpkg.json)
           $SHORT_HASH=$($env:GITHUB_SHA.substring(0,7))
-          $COMPILER="${{ matrix.config.COMPILER }}"
-          $TRIPLET="${{ matrix.config.VCPKG_TARGET_TRIPLET }}"
-          $BUILD_TYPE="${{ matrix.config.BUILD_TYPE }}"
-          $ARTIFACT_NAME="$NAME-$VERSION-$SHORT_HASH-$COMPILER-$TRIPLET-$BUILD_TYPE"
+          $ARTIFACT_NAME="$NAME-$VERSION-$SHORT_HASH-${{matrix.config.NAME}}"
           echo "Artifact Name:" $ARTIFACT_NAME
           echo "ARTIFACT_NAME=$($ARTIFACT_NAME)" >> $env:GITHUB_ENV
           echo "VERSION=$($VERSION)" >> $env:GITHUB_ENV
@@ -86,28 +98,23 @@ jobs:
           dir ${{env.VULKAN_SDK}}\Bin
           dir ${{env.VULKAN_SDK}}\runtime\${{env.PLATFORM}}
 
-      # https://github.com/actions/virtual-environments/blob/main/images/win/Windows2022-Readme.md#visual-studio-enterprise-2022
-      #- name: 📥 Setup VC17 Environment (→ vcvars64)
-      #  if: matrix.config.COMPILER == 'VC17'
-      #  run: echo "VCVARS=C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" >> $env::GITHUB_ENV
-
       - name: Set up Visual Studio shell
         uses: egor-tensin/vs-shell@v2
         with:
           arch: x64
 
       - name: 🔽 Update VCPKG
-        if: matrix.config.PACKAGER == 'vcpkg'
+        if: matrix.config.VCPKG_TARGET_TRIPLET != ''
         run: |
           cd C:\vcpkg
           git pull --quiet
           bootstrap-vcpkg.bat -disableMetrics
-          vcpkg integrate install --triplet=${{ matrix.config.VCPKG_TARGET_TRIPLET }} --feature-flags=manifests
+          vcpkg integrate install --triplet=${{matrix.config.VCPKG_TARGET_TRIPLET}} --feature-flags=manifests
           vcpkg version
 
       - name: ✏ CMake ➔ Configure
         run: |
-          cmake --preset=${{ matrix.config.CMAKE_PRESET }}
+          cmake --preset=${{matrix.config.CMAKE_PRESET}}
 
       - name: 🙏 CMake ➔ Build
         run: |
@@ -115,35 +122,34 @@ jobs:
 
       - name: 📦 CMake ➔ Install
         run: |
-          cmake --install build --prefix build/hikogui-%VERSION% --verbose
+          cmake --install build --prefix build/hikogui-${{env.VERSION}} --verbose
 
       - name: ❔ CHECK important folders, to see if everything is present (after building)
         run: |
           dir build
-          dir /S /B build\vcpkg_installed\${{ matrix.config.VCPKG_TARGET_TRIPLET }}
-          dir /S /B build\hikogui-%VERSION%
+          dir /S /B build\hikogui-${{env.VERSION}}
 
       # The Vulkan Runtime is normally to be found in "C:\windows\systems32", but it's not a system library on CI.
       - name: Copy Vulkan Runtime (vulkan-1.dll)
         run: |
-          copy %VULKAN_SDK%\runtime\%PLATFORM%\vulkan-1.* build\hikogui-%VERSION%\tests
-          copy %VULKAN_SDK%\runtime\%PLATFORM%\vulkan-1.* build\hikogui-%VERSION%\examples\hikogui_demo
+          copy ${{env.VULKAN_SDK}}\runtime\${{env.PLATFORM}}\vulkan-1.* build\hikogui-${{env.VERSION}}\tests
+          copy ${{env.VULKAN_SDK}}\runtime\${{env.PLATFORM}}\vulkan-1.* build\hikogui-${{env.VERSION}}\examples\hikogui_demo
 
       - name: ✔ ❌✔️ Test
         run: |
-          cd build\hikogui-%VERSION%\tests
+          cd build\hikogui-${{ env.VERSION }}\tests
           cd
           hikogui_tests.exe --gtest_output=xml:test_results_gtest.xml
 
       - name: ♻ Transform Test Results (gtest ➔ junit)
         shell: pwsh
         run: |
-          cd build\hikogui-${{ env.VERSION }}\tests
+          cd build\hikogui-${{env.VERSION}}\tests
           $xsl = New-Object System.Xml.Xsl.XslCompiledTransform
-          $xsl.Load("${{ github.workspace }}\.github\gtest_to_junit.xsl")
-          $xsl.Transform((Resolve-Path .\test_results_gtest.xml), "${{ github.workspace }}\test_results.xml")
+          $xsl.Load("${{github.workspace}}\.github\gtest_to_junit.xsl")
+          $xsl.Transform((Resolve-Path .\test_results_gtest.xml), "${{github.workspace}}\test_results.xml")
           cd ${{ github.workspace }}
-          ren test_results.xml test_results_${{ matrix.config.COMPILER }}_${{ matrix.config.VCPKG_TARGET_TRIPLET }}_PCH_${{ matrix.config.HI_BUILD_PCH }}.xml
+          ren test_results.xml test_results_${{matrix.config.NAME}}.xml
 
       # We upload multiple files into the same artifact file (zip).
       # Each file is differently named by adding the job name of the matrix as a suffix.
@@ -157,48 +163,42 @@ jobs:
           path: test_results_*.xml
 
       - name: 🔽 Install 'OpenCppCoverage' and 'codecov.io Report Uploader'
-        if: ${{ matrix.config.BUILD_TYPE == 'Debug' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        if: ${{ endsWith(matrix.config.NAME, '-debug') && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         run: |
           curl -L -O https://github.com/OpenCppCoverage/OpenCppCoverage/releases/download/release-0.9.9.0/OpenCppCoverageSetup-x64-0.9.9.0.exe
           OpenCppCoverageSetup-x64-0.9.9.0.exe /VERYSILENT /DIR=.\bin\coverage
           curl -L https://uploader.codecov.io/latest/windows/codecov.exe --output bin\coverage\codecov.exe
 
       - name: 📑 Generate CodeCoverage Report
-        if: ${{ matrix.config.BUILD_TYPE == 'Debug' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        if: ${{ endsWith(matrix.config.NAME, '-debug') && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         run: |
           .\bin\coverage\OpenCppCoverage.exe --sources=src ^
           --excluded_sources=src\*_tests.cpp ^
           --excluded_sources=src\*\*_tests.cpp ^
           --excluded_sources=build\_deps ^
           --export_type=cobertura:hikogui_coverage.xml ^
-          --working_dir=.\\build\hikogui-%VERSION%\tests ^
-          -- ".\\build\hikogui-%VERSION%\tests\\hikogui_tests.exe"
+          --working_dir=.\\build\hikogui-${{env.VERSION}}\tests ^
+          -- ".\\build\hikogui-${{env.VERSION}}\tests\\hikogui_tests.exe"
 
       - name: 📦 🚀 Upload CodeCoverage Report to codecov.io
-        if: ${{ matrix.config.BUILD_TYPE == 'Debug' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        if: ${{ endsWith(matrix.config.NAME, '-debug') && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         uses: codecov/codecov-action@v2 # https://github.com/codecov/codecov-action
         with:
           files: ./hikogui_coverage.xml
 
-      #
-      # We only upload artifacts for static builds with pre-compiled headers (HI_BUILD_PCH:ON).
-      #
-
       # Double ZIP issue: https://github.com/actions/upload-artifact#zipped-artifact-downloads
       # We can either zip an already zipped file; or send all files to a zip service, possibly creating a 503.
       - name: 📦 Package
-        if: ${{ matrix.config.HI_BUILD_PCH == 'ON'}}
         run: |
            cd build
-           7z a -tzip -mx9 "%ARTIFACT_NAME%.zip" ./hikogui-%VERSION%
+           7z a -tzip -mx9 "${{env.ARTIFACT_NAME}}.zip" ./hikogui-${{env.VERSION}}
 
       # To ensure that jobs don't overwrite existing artifacts, use a different "name" per job/run.
       - name: 📦 🚀 Upload Artifact
-        if: ${{ matrix.config.HI_BUILD_PCH == 'ON'}}
         uses: actions/upload-artifact@v2 # https://github.com/actions/upload-artifact
         with:
-          name: ${{ env.ARTIFACT_NAME }}-PCH-${{ matrix.config.HI_BUILD_PCH }}
-          path: build/${{ env.ARTIFACT_NAME }}.zip
+          name: ${{env.ARTIFACT_NAME}}
+          path: build/${{env.ARTIFACT_NAME}}.zip
 
 # ---------------------------------------------------------------------------------------
 
