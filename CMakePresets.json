@@ -78,6 +78,7 @@
 
         {
             "name": "x64-Clang-Debug",
+            "hidden": true,
             "inherits": "x64-MSVC-Debug",
             "cacheVariables": {
                 "CMAKE_CXX_COMPILER": "clang-cl"
@@ -90,6 +91,7 @@
         },
         {
             "name": "x64-Clang-ReleaseWithDebugInfo",
+            "hidden": true,
             "inherits": "x64-MSVC-ReleaseWithDebugInfo",
             "cacheVariables": {
                 "CMAKE_CXX_COMPILER": "clang-cl"
@@ -99,6 +101,18 @@
                     "intelliSenseMode": "windows-clang-x64"
                 }
             }
+        },
+        {
+            "name": "ZI-x64-MSVC-Release",
+            "inherits": "x64-MSVC-Release",
+            "binaryDir": "build",
+            "cacheVariables": { "CMAKE_INSTALL_PREFIX": "install" }
+        },
+        {
+            "name": "ZI-x64-MSVC-Debug",
+            "inherits": "x64-MSVC-Debug",
+            "binaryDir": "build",
+            "cacheVariables": { "CMAKE_INSTALL_PREFIX": "install" }
         }
     ]
 }

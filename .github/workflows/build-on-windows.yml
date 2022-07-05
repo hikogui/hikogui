@@ -14,7 +14,6 @@ jobs:
 
   build-and-test:
     name: ${{ matrix.config.JOB_NAME }}
-    # https://github.com/actions/virtual-environments/blob/main/images/win/Windows2019-Readme.md
     # https://github.com/actions/virtual-environments/blob/main/images/win/Windows2022-Readme.md
     runs-on: ${{ matrix.config.OS }}
 
@@ -22,8 +21,8 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - { OS: windows-2022, PACKAGER: fetch, BUILD_TYPE: RelWithDebInfo, VCPKG_TARGET_TRIPLET: x64-windows-static, HI_BUILD_PCH: OFF, COMPILER: "VC17", JOB_NAME: "VC17 | x64-win-static | Release"}
-          - { OS: windows-2022, PACKAGER: fetch, BUILD_TYPE: Debug,          VCPKG_TARGET_TRIPLET: x64-windows-static, HI_BUILD_PCH: ON,  COMPILER: "VC17", JOB_NAME: "VC17 | x64-win-static | Debug"  }
+          - { OS: windows-2022, PACKAGER: fetch, BUILD_TYPE: Release, CMAKE_PRESET: ZI-x64-MSVC-Release, COMPILER: "VC17", JOB_NAME: "VC17 | x64-win-static | Release"}
+          - { OS: windows-2022, PACKAGER: fetch, BUILD_TYPE: Debug, CMAKE_PRESET: ZI-x64-MSVC-Debug, COMPILER: "VC17", JOB_NAME: "VC17 | x64-win-static | Debug"  }
 
     env:
       PLATFORM: x64
@@ -101,48 +100,14 @@ jobs:
           vcpkg integrate install --triplet=${{ matrix.config.VCPKG_TARGET_TRIPLET }} --feature-flags=manifests
           vcpkg version
 
-      - name: 🎯 Cache VCPKG
-        if: matrix.config.PACKAGER == 'vcpkg'
-        id: cache-vcpkg
-        uses: actions/cache@v1 # https://github.com/actions/cache
-        with:
-          path: ~\AppData\Local\vcpkg
-          key: cache-windows-vcpkg-${{ matrix.config.VCPKG_TARGET_TRIPLET }}-${{ github.ref }}-${{ github.run_number }}
-          restore-keys: |
-            cache-windows-vcpkg-${{ matrix.config.VCPKG_TARGET_TRIPLET }}-${{ github.ref }}
-            cache-windows-vcpkg-${{ matrix.config.VCPKG_TARGET_TRIPLET }}
-
-      - name: ✏ CMake ➔ Configure (with vcpkg)
-        if: matrix.config.PACKAGER == 'vcpkg'
-        run: |
-          if "${{ matrix.config.COMPILER }}" == "VC17"; set "GENERATOR=Visual Studio 17 2022"
-          echo %GENERATOR%
-          mkdir build && cd build
-          cmake -G "%GENERATOR%" -A ${{ env.PLATFORM }} .. ^
-                -DCMAKE_BUILD_TYPE=${{ matrix.config.BUILD_TYPE }} ^
-                -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake ^
-                -DVCPKG_TARGET_TRIPLET=${{ matrix.config.VCPKG_TARGET_TRIPLET }} ^
-                -DHI_BUILD_PCH=${{ matrix.config.HI_BUILD_PCH }} ^
-                -DHI_BUILD_EXAMPLES=ON ^
-                -DCMAKE_VERBOSE_MAKEFILE=ON
-
-      - name: ✏ CMake ➔ Configure (with FetchContent)
-        if: matrix.config.PACKAGER != 'vcpkg'
-        run: |
-          if "${{ matrix.config.COMPILER }}" == "VC17"; set "GENERATOR=Visual Studio 17 2022"
-          echo %GENERATOR%
-          mkdir build && cd build
-          cmake -G "%GENERATOR%" -A ${{ env.PLATFORM }} .. ^
-                -DCMAKE_BUILD_TYPE=${{ matrix.config.BUILD_TYPE }} ^
-                -DHI_BUILD_PCH=${{ matrix.config.HI_BUILD_PCH }} ^
-                -DHI_BUILD_EXAMPLES=ON ^
-                -DCMAKE_VERBOSE_MAKEFILE=ON
+      - name: ✏ CMake ➔ Configure
+        run: cmake --preset=${{ matrix.config.CMAKE_PRESET }}
 
       - name: 🙏 CMake ➔ Build
-        run: cmake --build build --config ${{ matrix.config.BUILD_TYPE }}
+        run: cmake --build build
 
       - name: 📦 CMake ➔ Install
-        run: cmake --install build --config ${{ matrix.config.BUILD_TYPE }} --prefix build/hikogui-%VERSION% --verbose
+        run: cmake --install build --prefix build/hikogui-%VERSION% --verbose
 
       - name: ❔ CHECK important folders, to see if everything is present (after building)
         run: |
