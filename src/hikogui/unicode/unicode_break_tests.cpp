@@ -64,7 +64,8 @@ static hi::generator<test_type> parse_tests(std::string_view filename)
     hilet test_data = as_string_view(view);
 
     int line_nr = 1;
-    for (hilet line : std::views::split(test_data, std::string_view{"\n"})) {
+    for (hilet line_view : std::views::split(test_data, std::string_view{"\n"})) {
+        hilet line = std::string_view{line_view.begin(), line_view.end()};
         if (hilet optional_test = parse_test_line(line, line_nr)) {
             co_yield *optional_test;
         }

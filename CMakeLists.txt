@@ -148,6 +148,8 @@ add_subdirectory(tools)
 # Build Target: hikogui                                     (library)
 #-------------------------------------------------------------------
 
+target_compile_features(hikogui PUBLIC cxx_std_20)
+
 set_target_properties(hikogui PROPERTIES VERSION ${HIKOGUI_PROJECT_VERSION_SHORT} SOVERSION ${HIKOGUI_MAJOR_VERSION})
 set_target_properties(hikogui PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
@@ -179,8 +181,6 @@ if (WIN32)
     # Minimum Windows 10.
     target_compile_definitions(hikogui PUBLIC -DWINVER=0x0a00)
     target_compile_definitions(hikogui PUBLIC -D_WIN32_WINNT=0x0a00)
-    # winrt will include experimental headers that can not be turned off.
-    #target_compile_definitions(hikogui PUBLIC -D_SILENCE_CLANG_COROUTINE_MESSAGE)
 
 elseif (APPLE)
     # Add vulkan apple's Metal surface support.
@@ -234,13 +234,6 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     endif()
 
 elseif (MSVC)
-
-    if(${CMAKE_VERSION} VERSION_LESS "3.21.0")
-        target_compile_features(hikogui PUBLIC cxx_std_20)
-    else()
-        # CMake uses the incorrect /std:c++20 on MSVC when cxx_std_20 is used.
-        target_compile_features(hikogui PUBLIC cxx_std_23)
-    endif()
 
     # Turn on a lot of warnings by default.
     target_compile_options(hikogui PUBLIC -W4)
