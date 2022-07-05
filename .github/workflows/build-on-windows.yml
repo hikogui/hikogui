@@ -95,7 +95,7 @@ jobs:
       - name: 🔽 Update VCPKG
         if: matrix.config.PACKAGER == 'vcpkg'
         run: |
-          call %VCVARS%
+          call "${{ env.VCVARS }}"
           cd C:\vcpkg
           git pull --quiet
           bootstrap-vcpkg.bat -disableMetrics
@@ -104,14 +104,18 @@ jobs:
 
       - name: ✏ CMake ➔ Configure
         run: |
-          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          call "${{ env.VCVARS }}"
           cmake --preset=${{ matrix.config.CMAKE_PRESET }}
 
       - name: 🙏 CMake ➔ Build
-        run: cmake --build build
+        run: |
+          call "${{ env.VCVARS }}"
+          cmake --build build
 
       - name: 📦 CMake ➔ Install
-        run: cmake --install build --prefix build/hikogui-%VERSION% --verbose
+        run: |
+          call "${{ env.VCVARS }}"
+          cmake --install build --prefix build/hikogui-%VERSION% --verbose
 
       - name: ❔ CHECK important folders, to see if everything is present (after building)
         run: |
