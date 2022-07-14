@@ -188,6 +188,7 @@ target_sources(hikogui PRIVATE
     weak_or_unique_ptr.hpp
     when_any.hpp
     wfree_fifo.hpp
+    wfree_idle_count.hpp
     wfree_unordered_map.hpp
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/win32_headers.hpp>
 )
