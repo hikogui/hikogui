@@ -16,20 +16,21 @@ namespace hi::inline v1 {
  *
  * A reader thread.
  * ```cpp
- * idle_count.read_lock();
+ * auto lock = std::scoped_lock(idle_count);
  * ... read protected data ...
- * idle_count.read_unlock();
  * ```
  *
  * A write thread.
  * ```cpp
- * idle_count.write_lock();
+ * idle_count.lock();
  * ... write protected data ...
- * auto version = idle_count.write_unlock();
+ * auto old_version = idle_count.version();
+ * idle_count.unlock();
  *
  * ... wait some time ...
  * 
- * if (idle_count.is_seen(version)) {
+ * auto new_version = idle_count.expanded_version(version);
+ * if (new_version > old_version) {
  *   // All threads now see the new data.
  *   ... Delete old data ...
  * }
@@ -53,21 +54,11 @@ public:
         return to_bool(_lock_count.load(std::memory_order::relaxed));
     }
 
-    /** Start the critical section for reading.
+    /** Start the critical section.
      *
      * @note lock is allowed to be called reentered.
      */
-    hi_force_inline void read_lock() noexcept
-    {
-        auto lock_count = _lock_count.fetch_add(1, std::memory_order::acquire);
-        hi_axiom(lock_count != std::numeric_limits<uint32_t>::max());
-    }
-
-    /** Start the critical section for writing.
-     *
-     * @note lock is allowed to be called reentered.
-     */
-    hi_force_inline void write_lock() noexcept
+    hi_force_inline void lock() noexcept
     {
         auto lock_count = _lock_count.fetch_add(1, std::memory_order::acquire);
         hi_axiom(lock_count != std::numeric_limits<uint32_t>::max());
@@ -77,55 +68,28 @@ public:
      *
      * @note It is undefined behavior to call unlock() when not holding the lock.
      */
-    hi_force_inline void read_unlock() noexcept
+    hi_force_inline void unlock() noexcept
     {
         auto lock_count = _lock_count.fetch_sub(1, std::memory_order::release);
         hi_axiom(lock_count != 0);
         if (lock_count == 1) {
             // No one is locking, increment the idle count.
-            _idle_count.fetch_add(1, std::memory_order::relaxed);
+            _version.fetch_add(1, std::memory_order::relaxed);
         }
     }
 
-    /** End the critical section.
+    /** Get the current idle-count.
      *
-     * @note It is undefined behavior to call unlock() when not holding the lock.
-     * @return A opaque version number used to determine if the write is seen by all threads.
+     * @return The number of times the critcal section became idle, modulo 2^23.
      */
-    [[nodiscard]] hi_force_inline uint32_t write_unlock() noexcept
+    hi_force_inline uint64_t operator*() const noexcept
     {
-        // The idle count does not change while the lock_count is non-zero.
-        auto version = _idle_count.load(std::memory_order::release);
-
-        auto lock_count = _lock_count.fetch_sub(1, std::memory_order::release);
-        hi_axiom(lock_count != 0);
-        if (lock_count == 1) {
-            // No one is locking, increment the idle count.
-            _idle_count.fetch_add(1, std::memory_order::relaxed);
-        }
-
-        return version;
-    }
-
-    /** Check if all threads are seeing the updated data.
-     *
-     * @param version The version number returned by `write_unlock()`.
-     * @param memory_order The memory order used (default: release).
-     * @return true when all threads will see the updated data.
-     */
-    [[nodiscard]] hi_force_inline bool is_seen(uint32_t version) const noexcept
-    {
-        auto current_count = wide_cast<uint64_t>(_idle_count.load(std::memory_order::acquire));
-        hilet carry = truncate<uint64_t>(current_count < version);
-        current_count |= carry << 32;
-
-        hi_axiom(current_count >= version);
-        return to_bool(current_count - version);
+        return _version.load(std::memory_order::acquire);
     }
 
 private:
-    std::atomic<uint32_t> _lock_count = 0;
-    std::atomic<uint32_t> _idle_count = 0;
+    std::atomic<uint64_t> _version = 0;
+    std::atomic<uint64_t> _lock_count = 0;
 };
 
 } // namespace hi::inline v1
