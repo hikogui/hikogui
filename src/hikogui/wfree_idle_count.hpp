@@ -38,7 +38,7 @@ namespace hi::inline v1 {
  */
 class wfree_idle_count {
 public:
-    constexpr wfree_idle_count() = default;
+    constexpr wfree_idle_count() noexcept = default;
     ~wfree_idle_count() = default;
     wfree_idle_count(wfree_idle_count const&) = delete;
     wfree_idle_count(wfree_idle_count&&) = delete;
