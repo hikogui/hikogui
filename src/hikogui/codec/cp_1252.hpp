@@ -64,6 +64,9 @@ struct char_encoder<"cp-1252"> {
     template<bool Write>
     [[nodiscard]] constexpr char_encoder_result write(char32_t code_point, char_type *ptr, size_t size) const noexcept
     {
+        hi_axiom(code_point < 0x11'0000);
+        hi_axiom(not(code_point >= 0xd800 and code_point < 0xe000));
+
         // clang-format off
         if (code_point < 0x80 or (code_point >= 0xa0 and code_point < 0x0100)) {
             if constexpr (Write) {

@@ -9,45 +9,26 @@
 namespace hi::inline v1 {
 
 template<>
-struct char_encoder<"utf-16"> {
-    using char_type = char16_t;
+struct char_encoder<"utf-32"> {
+    using char_type = char32_t;
 
     [[nodiscard]] constexpr char_encoder_result read(char_type const *ptr, size_t size) const noexcept
     {
         hi_axiom(size != 0);
 
         if (auto cu = *ptr; cu < 0xd800) {
-            return {wide_cast<char32_t>(cu), 1};
+            return cu;
 
-        } else if (cu < 0xdc00) {
-            auto cp = cu & 0x03ff;
-            if (size < 2) {
-                // first surrogate at end of string.
-                return {0xfffd, 1, false};
-
-            } else {
-                cu = *++ptr;
-                if (cu < 0xdc00) {
-                    // unpaired surrogate.
-                    return {0xfffd, 1, false};
-
-                } else if (cu < 0xe000) {
-                    cp <<= 10;
-                    cp |= cu & 0x03ff;
-                    cp += 0x01'0000;
-                    return {cp, 2};
-
-                } else {
-                    // unpaired surrogate.
-                    return {0xfffd, 1, false};
-                }
-            }
         } else if (cu < 0xe000) {
-            // Invalid low surrogate.
+            // Surrogates
             return {0xfffd, 1, false};
 
+        } else if (cu < 0x11'0000) {
+            return cu;
+
         } else {
-            return {cu, 1};
+            // Out-of-range
+            return {0xfffd, 1, false};
         }
     }
 
@@ -57,28 +38,21 @@ struct char_encoder<"utf-16"> {
         hi_axiom(code_point <= 0x10'ffff);
         hi_axiom(not(code_point >= 0xd800 and code_point < 0xe000));
 
-        if (auto tmp = truncate<int32_t>(code_point) - 0x1'0000; tmp >= 0) {
-            if constexpr (Write) {
-                ptr[1] = truncate<char16_t>((tmp & 0x3ff) + 0xdc00);
-                tmp >>= 10;
-                ptr[0] = truncate<char16_t>(tmp + 0xd800);
-            }
-            return 2;
-
-        } else {
-            if constexpr (Write) {
-                ptr[0] = truncate<char16_t>(code_point);
-            }
-            return 1;
-        }
+        *ptr = code_point;
+        return 1;
     }
 
 #if defined(HI_HAS_SSE2)
     hi_force_inline __m128i read_ascii_chunk16(char_type const *ptr) const noexcept
     {
         // Load the UTF-16 data.
-        auto lo = _mm_loadu_si128(reinterpret_cast<__m128i const *>(ptr));
-        auto hi = _mm_loadu_si128(reinterpret_cast<__m128i const *>(ptr + 8));
+        auto c0 = _mm_loadu_si128(reinterpret_cast<__m128i const *>(ptr));
+        auto c1 = _mm_loadu_si128(reinterpret_cast<__m128i const *>(ptr + 4));
+        auto c2 = _mm_loadu_si128(reinterpret_cast<__m128i const *>(ptr + 8));
+        auto c3 = _mm_loadu_si128(reinterpret_cast<__m128i const *>(ptr + 12));
+
+        auto lo = _mm_packs_epi32(c0, c1);
+        auto hi = _mm_packs_epi32(c2, c3);
 
         // To get _mm_packus_epi16() to work we need to prepare the data as follows:
         //  - bit 15 must be '0'.
@@ -107,8 +81,15 @@ struct char_encoder<"utf-16"> {
         auto lo = _mm_unpacklo_epi8(chunk, zero);
         auto hi = _mm_unpackhi_epi8(chunk, zero);
 
-        _mm_storeu_si128(reinterpret_cast<__m128i *>(ptr), lo);
-        _mm_storeu_si128(reinterpret_cast<__m128i *>(ptr + 8), hi);
+        auto c0 = _mm_unpacklo_epi8(lo, zero);
+        auto c1 = _mm_unpackhi_epi8(lo, zero);
+        auto c2 = _mm_unpacklo_epi8(hi, zero);
+        auto c3 = _mm_unpackhi_epi8(hi, zero);
+
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(ptr), c0);
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(ptr + 4), c1);
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(ptr + 8), c2);
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(ptr + 12), c3);
     }
 #endif
 };
