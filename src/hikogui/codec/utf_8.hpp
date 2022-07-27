@@ -10,7 +10,7 @@
 namespace hi::inline v1 {
 
 template<>
-class char_encoder<"utf-8"> {
+struct char_encoder<"utf-8"> {
     using char_type = char8_t;
     using fallback_encoder_type = char_encoder<"cp-1252">;
     using fallback_char_type = fallback_encoder_type::char_type;
@@ -78,20 +78,20 @@ class char_encoder<"utf-8"> {
     template<bool Write>
     [[nodiscard]] constexpr char_encoder_result write(char32_t code_point, char_type *ptr, size_t size) const noexcept
     {
-        hi_axiom(c < 0x11'0000);
-        hi_axiom(not(c >= 0xd800 and c < 0xe000));
+        hi_axiom(code_point < 0x11'0000);
+        hi_axiom(not(code_point >= 0xd800 and code_point < 0xe000));
 
-        auto length = truncate<uint8_t>((c > 0x7f) + (c > 0x7ff) + (c > 0xffff));
+        auto length = truncate<uint8_t>((code_point > 0x7f) + (code_point > 0x7ff) + (code_point > 0xffff));
         if constexpr (Write) {
             if (auto i = length) {
                 do {
-                    ptr[i] = truncate<char8_t>((c & 0x3f) | 0x80);
-                    c >>= 6;
+                    ptr[i] = truncate<char8_t>((code_point & 0x3f) | 0x80);
+                    code_point >>= 6;
                 } while (--i);
 
-                c |= 0x780 >> length;
+                code_point |= 0x780 >> length;
             }
-            ptr[0] = truncate<char8_t>(c);
+            ptr[0] = truncate<char8_t>(code_point);
         }
         return length + 1;
     }
@@ -104,7 +104,7 @@ class char_encoder<"utf-8"> {
 
     hi_force_inline void write_ascii_chunk16(__m128i chunk, char_type *ptr) const noexcept
     {
-        return _mm_storeu_si128(reinterpret_cast<__m128i *>(ptr), chunk);
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(ptr), chunk);
     }
 #endif
 };

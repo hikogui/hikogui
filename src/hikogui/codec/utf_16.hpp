@@ -111,3 +111,5 @@ struct char_encoder<"utf-16"> {
     }
 #endif
 };
+
+} // namespace hi::inline v1

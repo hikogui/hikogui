@@ -14,8 +14,10 @@
 namespace hi::inline v1 {
 
 template<>
-class char_encoder<"cp_1252"> {
-    [[nodiscard]] constexpr char_encoder_result read(char const *ptr, size_t size) const noexcept
+struct char_encoder<"cp-1252"> {
+    using char_type = char;
+
+    [[nodiscard]] constexpr char_encoder_result read(char_type const *ptr, size_t size) const noexcept
     {
         // clang-format off
         hi_axiom(size != 0);
@@ -60,7 +62,7 @@ class char_encoder<"cp_1252"> {
     }
 
     template<bool Write>
-    [[nodiscard]] constexpr char_encoder_result write(char32_t code_point, char *ptr, size_t size) const noexcept
+    [[nodiscard]] constexpr char_encoder_result write(char32_t code_point, char_type *ptr, size_t size) const noexcept
     {
         // clang-format off
         if (code_point < 0x80 or (code_point >= 0xa0 and code_point < 0x0100)) {
@@ -113,7 +115,7 @@ class char_encoder<"cp_1252"> {
             }();
 
             if constexpr (Write) {
-                *ptr = truncate<char>(c);
+                *ptr = truncate<char_type>(c);
             }
             return {0, 1, valid};
         }
@@ -121,14 +123,14 @@ class char_encoder<"cp_1252"> {
     }
 
 #if defined(HI_HAS_SSE2)
-    hi_force_inline __m128i read_ascii_chunk16(char const *ptr) const noexcept
+    hi_force_inline __m128i read_ascii_chunk16(char_type const *ptr) const noexcept
     {
         return _mm_loadu_si128(reinterpret_cast<__m128i const *>(ptr));
     }
 
-    hi_force_inline void write_ascii_chunk16(__m128i chunk, char *ptr) const noexcept
+    hi_force_inline void write_ascii_chunk16(__m128i chunk, char_type *ptr) const noexcept
     {
-        return _mm_storeu_si128(reinterpret_cast<__m128i *>(ptr), chunk);
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(ptr), chunk);
     }
 #endif
 };

@@ -77,7 +77,7 @@ private:
 };
 
 template<fixed_string From, fixed_string To>
-class char_converter {
+struct char_converter {
 public:
     using from_encoder_type = char_encoder<From>;
     using to_encoder_type = char_encoder<To>;
