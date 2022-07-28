@@ -52,3 +52,18 @@ TEST(ascii, identity_copy)
         }
     }
 }
+
+TEST(ascii, identity_invalid_chars)
+{
+    for (auto i = 0_uz; i != invalid_tst.size(); ++i) {
+        for (auto j = i; j != invalid_tst.size(); ++j) {
+            auto test = invalid_tst.substr(i, j - i);
+            auto expected = invalid_exp.substr(i, j - i);
+
+            auto result = char_converter<"ascii", "ascii">{}.convert(test);
+
+            // Check for short-string-optimization.
+            ASSERT_EQ(expected, result);
+        }
+    }
+}
