@@ -10,17 +10,17 @@
 namespace hi::inline v1 {
 
 template<>
-struct char_encoder<"utf-8"> {
+struct char_map<"utf-8"> {
     using char_type = char8_t;
-    using fallback_encoder_type = char_encoder<"cp-1252">;
+    using fallback_encoder_type = char_map<"cp-1252">;
     using fallback_char_type = fallback_encoder_type::char_type;
 
-    [[nodiscard]] hi_no_inline constexpr char_encoder_result read_fallback(char_type const *ptr, size_t size) const noexcept
+    [[nodiscard]] hi_no_inline constexpr char_map_result read_fallback(char_type const *ptr, size_t size) const noexcept
     {
         return fallback_encoder_type{}.read(reinterpret_cast<fallback_char_type const *>(ptr), size).make_invalid();
     }
 
-    [[nodiscard]] constexpr char_encoder_result read(char_type const *ptr, size_t size) const noexcept
+    [[nodiscard]] constexpr char_map_result read(char_type const *ptr, size_t size) const noexcept
     {
         hi_axiom(size > 0);
 
@@ -76,7 +76,7 @@ struct char_encoder<"utf-8"> {
     };
 
     template<bool Write>
-    [[nodiscard]] constexpr char_encoder_result write(char32_t code_point, char_type *ptr, size_t size) const noexcept
+    [[nodiscard]] constexpr char_map_result write(char32_t code_point, char_type *ptr) const noexcept
     {
         hi_axiom(code_point < 0x11'0000);
         hi_axiom(not(code_point >= 0xd800 and code_point < 0xe000));

@@ -14,10 +14,10 @@
 namespace hi::inline v1 {
 
 template<>
-struct char_encoder<"cp-1252"> {
+struct char_map<"cp-1252"> {
     using char_type = char;
 
-    [[nodiscard]] constexpr char_encoder_result read(char_type const *ptr, size_t size) const noexcept
+    [[nodiscard]] constexpr char_map_result read(char_type const *ptr, size_t size) const noexcept
     {
         // clang-format off
         hi_axiom(size != 0);
@@ -62,7 +62,7 @@ struct char_encoder<"cp-1252"> {
     }
 
     template<bool Write>
-    [[nodiscard]] constexpr char_encoder_result write(char32_t code_point, char_type *ptr, size_t size) const noexcept
+    [[nodiscard]] constexpr char_map_result write(char32_t code_point, char_type *ptr) const noexcept
     {
         hi_axiom(code_point < 0x11'0000);
         hi_axiom(not(code_point >= 0xd800 and code_point < 0xe000));

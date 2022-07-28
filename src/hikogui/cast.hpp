@@ -106,6 +106,14 @@ template<arithmetic Out, arithmetic In>
     return static_cast<Out>(rhs);
 }
 
+/** Cast a number to a type that will be able to represent all values without loss of precision.
+ */
+template<arithmetic Out>
+[[nodiscard]] constexpr Out wide_cast(bool rhs) noexcept
+{
+    return static_cast<Out>(rhs);
+}
+
 namespace detail
 {
 

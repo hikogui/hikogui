@@ -14,23 +14,17 @@
 namespace hi::inline v1 {
 
 template<>
-struct char_encoder<"ascii"> {
+struct char_map<"iso-8859-1"> {
     using char_type = char;
 
-    [[nodiscard]] constexpr char_encoder_result read(char_type const *ptr, size_t size) const noexcept
+    [[nodiscard]] constexpr char_map_result read(char_type const *ptr, size_t size) const noexcept
     {
         hi_axiom(size != 0);
-        
-        hilet c = truncate<uint8_t>(*ptr);
-        if (c < 0x80) {
-            return c;
-        } else {
-            return {0xfffd, 1, false};
-        }
+        return *ptr;
     }
 
     template<bool Write>
-    [[nodiscard]] constexpr char_encoder_result write(char32_t code_point, char_type *ptr, size_t size) const noexcept
+    [[nodiscard]] constexpr char_map_result write(char32_t code_point, char_type *ptr) const noexcept
     {
         hi_axiom(code_point < 0x11'0000);
         hi_axiom(not(code_point >= 0xd800 and code_point < 0xe000));

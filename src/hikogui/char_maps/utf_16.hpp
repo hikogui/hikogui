@@ -9,10 +9,10 @@
 namespace hi::inline v1 {
 
 template<>
-struct char_encoder<"utf-16"> {
+struct char_map<"utf-16"> {
     using char_type = char16_t;
 
-    [[nodiscard]] constexpr char_encoder_result read(char_type const *ptr, size_t size) const noexcept
+    [[nodiscard]] constexpr char_map_result read(char_type const *ptr, size_t size) const noexcept
     {
         hi_axiom(size != 0);
 
@@ -52,7 +52,7 @@ struct char_encoder<"utf-16"> {
     }
 
     template<bool Write>
-    [[nodiscard]] constexpr char_encoder_result write(char32_t code_point, char_type *ptr, size_t size) const noexcept
+    [[nodiscard]] constexpr char_map_result write(char32_t code_point, char_type *ptr) const noexcept
     {
         hi_axiom(code_point <= 0x10'ffff);
         hi_axiom(not(code_point >= 0xd800 and code_point < 0xe000));
