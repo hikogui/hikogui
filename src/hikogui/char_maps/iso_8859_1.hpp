@@ -17,24 +17,34 @@ template<>
 struct char_map<"iso-8859-1"> {
     using char_type = char;
 
-    [[nodiscard]] constexpr char_map_result read(char_type const *ptr, size_t size) const noexcept
+    [[nodiscard]] constexpr std::pair<char32_t, bool> read(char_type const *& ptr, char_type const *last) const noexcept
     {
-        hi_axiom(size != 0);
-        return *ptr;
+        hi_axiom(ptr != last);
+        return {char_cast<char32_t>(*ptr++), true};
     }
 
-    template<bool Write>
-    [[nodiscard]] constexpr char_map_result write(char32_t code_point, char_type *ptr) const noexcept
+    [[nodiscard]] constexpr std::pair<uint8_t, bool> size(char32_t code_point) const noexcept
     {
         hi_axiom(code_point < 0x11'0000);
         hi_axiom(not(code_point >= 0xd800 and code_point < 0xe000));
 
         if (code_point < 0x0100) {
-            *ptr = truncate<char>(code_point);
-            return {0, 1};
+            return {uint8_t{1}, true};
+
         } else {
-            *ptr = '?';
-            return {0, 1, false};
+            return {uint8_t{1}, false};
+        }
+    }
+
+    constexpr void write(char32_t code_point, char_type *& ptr) const noexcept
+    {
+        hi_axiom(code_point < 0x11'0000);
+        hi_axiom(not(code_point >= 0xd800 and code_point < 0xe000));
+
+        if (code_point < 0x0100) {
+            *ptr++ = char_cast<char>(code_point);
+        } else {
+            *ptr++ = '?';
         }
     }
 

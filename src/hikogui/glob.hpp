@@ -257,8 +257,8 @@ inline glob_token_list_t parseGlob(std::string_view glob)
                 if (isRange) {
                     hilet firstCharacter = static_cast<uint8_t>(tmpString.back());
                     hilet lastCharacter = static_cast<uint8_t>(c);
-                    for (uint8_t character = firstCharacter + 1; character <= lastCharacter; character++) {
-                        tmpString += static_cast<char>(character);
+                    for (uint8_t tmp_c = firstCharacter + 1; tmp_c <= lastCharacter; tmp_c++) {
+                        tmpString += static_cast<char>(tmp_c);
                     }
                 } else {
                     tmpString += c;

@@ -15,5 +15,6 @@ target_sources(hikogui PRIVATE
 if(HI_BUILD_TESTS)
     target_sources(hikogui_tests PRIVATE
         ascii_tests.cpp
+        iso_8859_1_tests.cpp
     )
 endif()

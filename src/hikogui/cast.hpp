@@ -114,23 +114,22 @@ template<arithmetic Out>
     return static_cast<Out>(rhs);
 }
 
-namespace detail
+namespace detail {
+
+template<arithmetic Out, arithmetic In>
+[[nodiscard]] constexpr bool narrow_validate(Out out, In in) noexcept
 {
+    // in- and out-value compares the same, after converting out-value back to in-type.
+    auto r = (in == static_cast<In>(out));
 
-    template<arithmetic Out, arithmetic In>
-    [[nodiscard]] constexpr bool narrow_validate(Out out, In in) noexcept
-    {
-        // in- and out-value compares the same, after converting out-value back to in-type.
-        auto r = (in == static_cast<In>(out));
-
-        // If the types have different signs we need to do an extra test to make sure the actual sign
-        // of the values are the same as well.
-        if constexpr (std::numeric_limits<Out>::is_signed != std::numeric_limits<In>::is_signed) {
-            r &= (in < In{}) == (out < Out{});
-        }
-
-        return r;
+    // If the types have different signs we need to do an extra test to make sure the actual sign
+    // of the values are the same as well.
+    if constexpr (std::numeric_limits<Out>::is_signed != std::numeric_limits<In>::is_signed) {
+        r &= (in < In{}) == (out < Out{});
     }
+
+    return r;
+}
 
 } // namespace detail
 
@@ -182,6 +181,27 @@ template<std::integral Out, arithmetic In>
 [[nodiscard]] constexpr Out truncate(In rhs) noexcept
 {
     return static_cast<Out>(rhs);
+}
+
+/** Cast a character.
+ *
+ * @note @a rhs value after casting to unsigned, must fit in the output type.
+ * @tparam Out the output type, must be one of char, wchar, char8_t, char16_t, char32_t.
+ * @tparam In An signed (automatically truncated to unsigned) or unsigned integer or one
+ *         of the character type.s
+ * @param rhs The value of the character.
+ * @return The unchanged character value of the output type.
+ */
+template<character Out, std::integral In>
+[[nodiscard]] constexpr Out char_cast(In rhs) noexcept
+{
+    using rhs_unsigned_type = std::conditional_t<std::is_same_v<In, std::byte>, uint8_t, std::make_unsigned_t<In>>;
+    using out_unsigned_type = std::make_unsigned_t<Out>;
+
+    // We cast to unsigned of the same type, so that we don't accidentally sign extent 'char'.
+    auto rhs_unsigned = static_cast<rhs_unsigned_type>(rhs);
+    auto out_unsigned = narrow_cast<out_unsigned_type>(rhs_unsigned);
+    return static_cast<Out>(out_unsigned);
 }
 
 /** Return the low half of the input value.
@@ -278,7 +298,7 @@ template<std::signed_integral OutType, std::unsigned_integral InType>
 }
 
 template<typename T>
-[[nodiscard]] constexpr bool to_bool(T &&rhs) noexcept requires(requires(T &&x) { static_cast<bool>(std::forward<T>(x)); })
+[[nodiscard]] constexpr bool to_bool(T&& rhs) noexcept requires(requires(T&& x) { static_cast<bool>(std::forward<T>(x)); })
 {
     return static_cast<bool>(std::forward<T>(rhs));
 }

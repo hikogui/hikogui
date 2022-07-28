@@ -22,7 +22,7 @@ struct char_map<"ascii"> {
     {
         hi_axiom(ptr != last);
 
-        hilet c = truncate<uint8_t>(*ptr++);
+        hilet c = char_cast<char32_t>(*ptr++);
         if (c < 0x80) {
             return {c, true};
         } else {
@@ -43,13 +43,13 @@ struct char_map<"ascii"> {
         }
     }
 
-    [[nodiscard]] constexpr void write(char32_t code_point, char_type *&ptr) const noexcept
+    constexpr void write(char32_t code_point, char_type *&ptr) const noexcept
     {
         hi_axiom(code_point < 0x11'0000);
         hi_axiom(not(code_point >= 0xd800 and code_point < 0xe000));
 
         if (code_point < 0x80) {
-            *ptr++ = truncate<char>(code_point);
+            *ptr++ = char_cast<char>(code_point);
 
         } else {
             *ptr++ = '?';
