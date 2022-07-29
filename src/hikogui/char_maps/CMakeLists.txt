@@ -4,7 +4,7 @@
 
 target_sources(hikogui PRIVATE
     ascii.hpp
-    char_encoding.hpp
+    char_converter.hpp
     cp_1252.hpp
     iso_8859_1.hpp
     utf_8.hpp

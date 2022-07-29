@@ -17,11 +17,11 @@ namespace hi::inline v1 {
 /** Character encoder/decoder template.
  *
  * Implementations have to define these optional methods:
- *  - `[[nodiscard]] constexpr char_map_result read(char_type const *ptr, size_t size) const noexcept`
- *  - `template<bool Write> [[nodiscard]] constexpr char_map_result write(char32_t code_point, char_type *ptr, size_t size)
- *     const noexcept`
- *  - `[[nodiscard]] __m128i read_ascii_chunk16(char_type const *ptr) noexcept`
- *  - `void write_ascii_chunk16(__m128i chunk, char_type *ptr) const noexcept`
+ *  - `read()`
+ *  - `size()`
+ *  - `write()`
+ *  - `read_ascii_chunk16()`
+ *  - `write_ascii_chunk16()`
  *
  * Implementations are required to add the following types:
  *  - char_type
@@ -31,6 +31,43 @@ namespace hi::inline v1 {
  */
 template<basic_fixed_string Encoding>
 struct char_map {
+    /** @fn constexpr std::pair<char32_t, bool> read(char_type const *& ptr, char_type const *last) const noexcept
+     * @brief Read a single code-point.
+     * @param [in,out]ptr Pointer to the first code-unit of the code-point to read.
+     *        on return the pointer will point beyond the last code-unit of the code-point that was read.
+     * @param last A pointer pointing one beyond the string.
+     * @return (code-point, valid) The function will always return a code-point,
+     *         even if there was a parse error, in this case `valid` is false.
+     */
+
+    /** @fn constexpr std::pair<uint8_t, bool> size(char32_t code_point) const noexcept
+     * @brief Get how many code-unit are required to encode the code-point
+     * @param code_point The code-point to encode.
+     * @return (count, valid) If the code-point can not be encoded `valid` will be false,
+     *                        end count will contain the number of code-unit needed to
+     *                        encode a replacement character.
+     */
+
+    /** @fn constexpr void write(char32_t code_point, char_type *&ptr) const noexcept
+     * @brief Encode a single code-unit.
+     * @param code_point The code-point to encode.
+     * @param [in,out]ptr The pointer where the code-units will be written. On return
+     *                    will contain the pointer beyond where the code-units where written.
+     *                    It is undefined behavior if the ptr does not point to a valid buffer
+     *                    where all the code-units can be written to.
+     */
+
+    /** @fn __m128i read_ascii_chunk16(char_type const *ptr) const noexcept
+     * @brief Read a chunk of ascii characters.
+     * @param ptr A pointer to the first character of a chunk of 16 characters.
+     * @return 16 bytes in a register, bit 7 must be '1' if the character is not ASCII.
+     */
+
+    /** @fn void write_ascii_chunk16(__m128i chunk, char_type *ptr) const noexcept
+     * @brief Write a chunk of ascii characters.
+     * @param chunk A chunk of 16 ascii characters. bit 7 is always '0'.
+     * @param ptr The pointer to the first code-unit where the ASCII characters must be written to.
+     */
 };
 
 template<basic_fixed_string From, basic_fixed_string To>
