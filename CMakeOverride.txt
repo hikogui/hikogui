@@ -1,6 +1,7 @@
 
 # By default cmake does not make optimized binaries when building "RelWithDebInfo" using the MSVC compiler.
 # It will only make optimized binaries when making a "Release" build, however those don't have debugging symbols.
+# Referencing: https://gitlab.kitware.com/cmake/cmake/-/issues/20812
 #
 # This CMakeOverride.txt will change the default compiler options for the "RelWithDebInfo" to make a fully
 # optimized executable like when building with "Release" but with included debugging symbols.
@@ -88,7 +89,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   #
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT           "-Zi -O2 -Ob3 -GL -DNDEBUG")
   set(CMAKE_C_FLAGS_RELWITHDEBINFO_INIT             "-Zi -O2 -Ob3 -GL -DNDEBUG")
-  set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO_INIT    "-INCREMENTAL:NO -LTCG -debug")
-  set(CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO_INIT "-INCREMENTAL:NO -LTCG -debug")
-  set(CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO_INIT "-INCREMENTAL:NO -LTCG -debug")
+  set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO_INIT    "-INCREMENTAL:NO -LTCG -DEBUG:FASTLINK")
+  set(CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO_INIT "-INCREMENTAL:NO -LTCG -DEBUG:FASTLINK")
+  set(CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO_INIT "-INCREMENTAL:NO -LTCG -DEBUG:FASTLINK")
 endif()

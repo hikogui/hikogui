@@ -15,3 +15,8 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	target_compile_options(embed_static_resource PRIVATE -DUNICODE -D_UNICODE -DNOMINMAX -D_CRT_SECURE_NO_WARNINGS)
 endif()
 
+# disable debug info (do not create PDB)
+target_compile_options(embed_static_resource PRIVATE
+    "$<$<CONFIG:Release,RelWithDebInfo>:-DEBUG:NONE>")
+target_link_options(embed_static_resource PRIVATE
+    "$<$<CONFIG:Release,RelWithDebInfo>:-DEBUG:NONE>")
