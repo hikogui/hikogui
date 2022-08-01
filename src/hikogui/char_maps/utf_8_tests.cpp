@@ -95,27 +95,30 @@ TEST(char_maps_utf_8, identity_copy)
     }
 }
 
-
 TEST(char_maps_utf_8, identity_invalid_chars)
 {
-    hilet invalid_tst = std::u8string{
-        u8"abcdefghijklmnopqrstuvwxy\xd800zA\U00012345BCD\xd800\U00012345E\xdc00\U00012345FGHIJKLMNOPQRSTUVWXY\xdc00Z0123456789"};
-    hilet invalid_exp = std::u8string{
-        u8"abcdefghijklmnopqrstuvwxy\ufffdzA\U00012345BCD\ufffd\U00012345E\ufffd\U00012345FGHIJKLMNOPQRSTUVWXY\ufffdZ0123456789"};
+    //                                   ascii                 invalid overlong    surrogate       short   short
+    hilet invalid_tst_ = std::string{"abcdefghijklmnopqrstuvwxy\xfezAG\xe0\x80\x80H\xed\xa0\xadIJK\xe0LMNO\xe0\x80P"};
+    //                                                            fallback repl   repl     fallback  repl
+    hilet invalid_exp = std::u8string{u8"abcdefghijklmnopqrstuvwxy\u00fezAG\ufffdH\ufffdIJK\u00e0LMNO\ufffdP"};
+
+    // MSVC bug: https://developercommunity.visualstudio.com/t/escape-sequences-in-unicode-string-literals-are-ov/260684
+    // hex-escape are treated as code-points (wrong) instead of code-units (correct)
+    auto invalid_tst = std::u8string{};
+    for (auto i = 0_uz; i != invalid_tst_.size(); ++i) {
+        invalid_tst += char_cast<char8_t>(invalid_tst_[i]);
+    }
 
     for (auto i = 0_uz; i != invalid_tst.size(); ++i) {
-        for (auto j = i; j != invalid_tst.size(); ++j) {
-            auto test = invalid_tst.substr(i, j - i);
-            if (not valid_split(test)) {
-                continue;
-            }
-
-            auto expected = invalid_exp.substr(i, j - i);
-
-            auto result = char_converter<"utf-8", "utf-8">{}.convert(test);
-
-            // Check for short-string-optimization.
-            ASSERT_EQ(expected, result);
+        auto test = invalid_tst.substr(0, i);
+        if (not valid_split(test)) {
+            continue;
         }
+
+        auto result = char_converter<"utf-8", "utf-8">{}.convert(test);
+        auto expected = invalid_exp.substr(0, result.size());
+
+        // Check for short-string-optimization.
+        ASSERT_EQ(expected, result);
     }
 }
