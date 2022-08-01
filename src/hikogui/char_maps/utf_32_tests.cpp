@@ -6,15 +6,28 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <format>
+#include <random>
 
 using namespace std;
 using namespace hi;
 
+static char32_t random_char() noexcept
+{
+    static auto rand = std::mt19937();
+    static auto dist = std::uniform_int_distribution(0, 0x10'f7ff);
+
+    auto c = char_cast<char32_t>(dist(rand));
+    if (c >= 0xd800 and c < 0xe000) {
+        c += 0x800;
+    }
+    return c;
+}
+
 TEST(char_maps_utf_32, identity_move)
 {
     auto identity_tst = std::u32string{};
-    for (auto i = 0_uz; i != 500; ++i) {
-        identity_tst += char_cast<char32_t>(i);
+    for (auto i = 0_uz; i != 100; ++i) {
+        identity_tst += char_cast<char32_t>(random_char());
     }
 
     for (auto i = 0_uz; i != identity_tst.size(); ++i) {
@@ -40,8 +53,8 @@ TEST(char_maps_utf_32, identity_move)
 TEST(char_maps_utf_32, identity_copy)
 {
     auto identity_tst = std::u32string{};
-    for (auto i = 0_uz; i != 500; ++i) {
-        identity_tst += char_cast<char32_t>(i);
+    for (auto i = 0_uz; i != 100; ++i) {
+        identity_tst += char_cast<char32_t>(random_char());
     }
 
     for (auto i = 0_uz; i != identity_tst.size(); ++i) {

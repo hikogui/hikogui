@@ -17,6 +17,7 @@ if(HI_BUILD_TESTS)
         ascii_tests.cpp
         cp_1252_tests.cpp
         iso_8859_1_tests.cpp
+        utf_16_tests.cpp
         utf_32_tests.cpp
     )
 endif()

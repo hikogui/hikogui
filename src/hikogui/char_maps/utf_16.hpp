@@ -12,64 +12,61 @@ template<>
 struct char_map<"utf-16"> {
     using char_type = char16_t;
 
-    [[nodiscard]] constexpr char_map_result read(char_type const *ptr, size_t size) const noexcept
+    [[nodiscard]] constexpr std::pair<char32_t, bool> read(char_type const *& ptr, char_type const *last) const noexcept
     {
-        hi_axiom(size != 0);
+        hi_axiom(ptr != last);
 
-        if (auto cu = *ptr; cu < 0xd800) {
-            return {wide_cast<char32_t>(cu), 1};
+        if (auto cu = *ptr++; cu < 0xd800) {
+            return {char_cast<char32_t>(cu), true};
 
         } else if (cu < 0xdc00) {
-            auto cp = cu & 0x03ff;
-            if (size < 2) {
+            if (ptr == last) {
                 // first surrogate at end of string.
-                return {0xfffd, 1, false};
+                return {0xfffd, false};
 
             } else {
-                cu = *++ptr;
-                if (cu < 0xdc00) {
-                    // unpaired surrogate.
-                    return {0xfffd, 1, false};
-
-                } else if (cu < 0xe000) {
+                auto cp = char_cast<char32_t>(cu & 0x03ff);
+                cu = *ptr;
+                if (cu >= 0xdc00 and cu < 0xe000) {
+                    ++ptr;
                     cp <<= 10;
                     cp |= cu & 0x03ff;
                     cp += 0x01'0000;
-                    return {cp, 2};
+                    return {cp, true};
 
                 } else {
                     // unpaired surrogate.
-                    return {0xfffd, 1, false};
+                    return {0xfffd, false};
                 }
             }
+
         } else if (cu < 0xe000) {
             // Invalid low surrogate.
-            return {0xfffd, 1, false};
+            return {0xfffd, false};
 
         } else {
-            return {cu, 1};
+            return {cu, true};
         }
     }
 
-    template<bool Write>
-    [[nodiscard]] constexpr char_map_result write(char32_t code_point, char_type *ptr) const noexcept
+    [[nodiscard]] constexpr std::pair<uint8_t, bool> size(char32_t code_point) const noexcept
+    {
+        hi_axiom(code_point < 0x11'0000);
+        hi_axiom(not(code_point >= 0xd800 and code_point < 0xe000));
+        return {truncate<uint8_t>((code_point >= 0x01'0000) + 1), true};
+    }
+
+    constexpr void write(char32_t code_point, char_type *& ptr) const noexcept
     {
         hi_axiom(code_point <= 0x10'ffff);
         hi_axiom(not(code_point >= 0xd800 and code_point < 0xe000));
 
         if (auto tmp = truncate<int32_t>(code_point) - 0x1'0000; tmp >= 0) {
-            if constexpr (Write) {
-                ptr[1] = truncate<char16_t>((tmp & 0x3ff) + 0xdc00);
-                tmp >>= 10;
-                ptr[0] = truncate<char16_t>(tmp + 0xd800);
-            }
-            return 2;
+            *ptr++ = char_cast<char16_t>((tmp >> 10) + 0xd800);
+            *ptr++ = char_cast<char16_t>((tmp & 0x3ff) + 0xdc00);
 
         } else {
-            if constexpr (Write) {
-                ptr[0] = truncate<char16_t>(code_point);
-            }
-            return 1;
+            *ptr++ = char_cast<char16_t>(code_point);
         }
     }
 
@@ -86,8 +83,8 @@ struct char_map<"utf-16"> {
 
         // Positive numbers -> 0b0000'0000
         // Negative numbers -> 0b1000'0000
-        auto sign_lo = _mm_sra_epi16(lo, 15);
-        auto sign_hi = _mm_sra_epi16(hi, 15);
+        auto sign_lo = _mm_srai_epi16(lo, 15);
+        auto sign_hi = _mm_srai_epi16(hi, 15);
         auto sign = _mm_packs_epi16(sign_lo, sign_hi);
 
         // ASCII            -> 0b0ccc'cccc
