@@ -7,6 +7,7 @@ target_sources(hikogui PRIVATE
     char_converter.hpp
     cp_1252.hpp
     iso_8859_1.hpp
+    random_char.hpp
     utf_8.hpp
     utf_16.hpp
     utf_32.hpp
@@ -17,6 +18,7 @@ if(HI_BUILD_TESTS)
         ascii_tests.cpp
         cp_1252_tests.cpp
         iso_8859_1_tests.cpp
+        utf_8_tests.cpp
         utf_16_tests.cpp
         utf_32_tests.cpp
     )

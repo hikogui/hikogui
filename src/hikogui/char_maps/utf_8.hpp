@@ -6,6 +6,7 @@
 
 #include "char_converter.hpp"
 #include "cp_1252.hpp"
+#include <bit>
 
 namespace hi::inline v1 {
 
@@ -17,64 +18,73 @@ struct char_map<"utf-8"> {
 
     [[nodiscard]] constexpr std::pair<char32_t, bool> read_fallback(char_type const *& ptr, char_type const *last) const noexcept
     {
-        hilet [code_point, valid] = fallback_encoder_type{}.read(reinterpret_cast<fallback_char_type const *&>(ptr), last);
+        hilet[code_point, valid] = fallback_encoder_type{}.read(
+            reinterpret_cast<fallback_char_type const *&>(ptr), reinterpret_cast<fallback_char_type const *>(last));
         return {code_point, false};
     }
 
     [[nodiscard]] constexpr std::pair<char32_t, bool> read(char_type const *& ptr, char_type const *last) const noexcept
     {
-        hi_axiom(size > 0);
+        hi_axiom(ptr != last);
 
-        auto cu = *ptr;
-        if (not to_bool(cu & 0x80)) {
+        auto cu = *ptr++;
+        if (not to_bool(cu & 0x80)) [[likely]] {
             // ASCII character.
-            ++ptr;
             return {char_cast<char32_t>(cu), true};
 
-        } else if (size < 2 or (cu & 0xc0) == 0x80) {
+        } else if (ptr == last or (cu & 0xc0) == 0x80) [[unlikely]] {
             // A non-ASCII character at the end of string.
             // or an unexpected continuation code-unit should be treated as CP-1252.
-            return read_fallback(ptr, size);
+            --ptr;
+            return read_fallback(ptr, last);
 
         } else {
-            auto length = std::countl_ones(cu);
+            auto length = narrow_cast<uint8_t>(std::countl_one(char_cast<uint8_t>(cu)));
+            auto todo = length - 2;
             hi_axiom(length >= 2);
 
             // First part of the code-point.
             auto cp = char_cast<char32_t>(cu & (0x7f >> length));
 
             // Read the first continuation code-unit which is always here.
-            cu = *++ptr;
+            cu = *ptr++;
             cp <<= 6;
             cp |= cu & 0x3f;
-            if (cu & 0xc0 != 0x80) {
+            if ((cu & 0xc0) != 0x80) [[unlikely]] {
                 // If the second code-unit is not a UTF-8 continuation character, treat the first
                 // code-unit as if it was CP-1252.
-                return read_fallback(ptr, size);
+                ptr -= 2;
+                return read_fallback(ptr, last);
 
-            } else if (length >= size) {
+            } else if (todo >= std::distance(ptr, last)) [[unlikely]] {
                 // If there is a start and a continuation code-unit in a row we consider this to be UTF-8 encoded.
                 // So at this point any errors are replaced with 0xfffd.
+                ptr = last;
                 return {0xfffd, false};
+            }
+
+            while (todo--) {
+                cu = *ptr++;
+                cp <<= 6;
+                cp |= cu & 0x3f;
+                if ((cu & 0xc0) != 0x80) [[unlikely]] {
+                    // Unexpected end of sequence.
+                    --ptr;
+                    return {0xfffd, false};
+                }
             }
 
             auto valid = true;
-            auto i = length - 2;
-            while (i--) {
-                cu = *++ptr;
-                cp <<= 6;
-                cp |= cu & 0x3f;
-                valid &= (cu & 0xc0) == 0x80;
-            }
-
+            // Valid range.
             valid &= cp < 0x11'0000;
+            // Not a surrogate.
             valid &= cp < 0xd800 or cp >= 0xe000;
-            valid &= length == (cp >= 0x80 and cp < 0x0800) ? 2 : (cp >= 0x0800 and cp < 0x01'0000) ? 3 : 4;
-
-            if (not valid) {
-                // Invalid encoding, or invalid code-point replace with 0xfffd.
+            // Not overlong encoded.
+            valid &= length == narrow_cast<uint8_t>((cp > 0x7f) + (cp > 0x7ff) + (cp > 0xffff) + 1);
+            if (not valid) [[unlikely]] {
                 return {0xfffd, false};
             }
+            return {cp, true};
         }
     };
 
@@ -83,10 +93,10 @@ struct char_map<"utf-8"> {
         hi_axiom(code_point < 0x11'0000);
         hi_axiom(not(code_point >= 0xd800 and code_point < 0xe000));
 
-        return {truncate<uint8_t>((code_point > 0x7f) + (code_point > 0x7ff) + (code_point > 0xffff)) + 1, true{
+        return {narrow_cast<uint8_t>((code_point > 0x7f) + (code_point > 0x7ff) + (code_point > 0xffff) + 1), true};
     }
 
-    constexpr void write(char32_t code_point, char_type *&ptr) const noexcept
+    constexpr void write(char32_t code_point, char_type *& ptr) const noexcept
     {
         hi_axiom(code_point < 0x11'0000);
         hi_axiom(not(code_point >= 0xd800 and code_point < 0xe000));

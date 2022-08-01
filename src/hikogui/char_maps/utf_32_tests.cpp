@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "utf_32.hpp"
+#include "random_char.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <format>
@@ -11,17 +12,6 @@
 using namespace std;
 using namespace hi;
 
-static char32_t random_char() noexcept
-{
-    static auto rand = std::mt19937();
-    static auto dist = std::uniform_int_distribution(0, 0x10'f7ff);
-
-    auto c = char_cast<char32_t>(dist(rand));
-    if (c >= 0xd800 and c < 0xe000) {
-        c += 0x800;
-    }
-    return c;
-}
 
 TEST(char_maps_utf_32, identity_move)
 {
