@@ -71,10 +71,8 @@ TEST(char_maps_utf_32, identity_copy)
 
 TEST(char_maps_utf_32, identity_invalid_chars)
 {
+    hilet invalid_tst = std::u32string{U"abcdefghijklmnopqrstuvwxy\xd800zABCDEFGHIJKLMNOPQRSTUVWXY\x00110000Z0123456789"};
     hilet invalid_exp = std::u32string{U"abcdefghijklmnopqrstuvwxy\ufffdzABCDEFGHIJKLMNOPQRSTUVWXY\ufffdZ0123456789"};
-    auto invalid_tst = invalid_exp;
-    invalid_tst[25] = 0xd800; // Surrogate.
-    invalid_tst[52] = 0x11'0000; // Beyond.
 
     for (auto i = 0_uz; i != invalid_tst.size(); ++i) {
         for (auto j = i; j != invalid_tst.size(); ++j) {
