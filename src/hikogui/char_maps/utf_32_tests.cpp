@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "ascii.hpp"
+#include "utf_32.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <format>
@@ -10,14 +10,11 @@
 using namespace std;
 using namespace hi;
 
-static auto invalid_tst = std::string{"abcdefghijklmnopqrstuvwxy\x80zABCDEFGHIJKLMNOPQRSTUVWXY\xffZ0123456789"};
-static auto invalid_exp = std::string{"abcdefghijklmnopqrstuvwxy?zABCDEFGHIJKLMNOPQRSTUVWXY?Z0123456789"};
-
-TEST(char_maps_ascii, identity_move)
+TEST(char_maps_utf_32, identity_move)
 {
-    auto identity_tst = std::string{};
-    for (auto i = 0_uz; i != 128; ++i) {
-        identity_tst += char_cast<char>(i);
+    auto identity_tst = std::u32string{};
+    for (auto i = 0_uz; i != 500; ++i) {
+        identity_tst += char_cast<char32_t>(i);
     }
 
     for (auto i = 0_uz; i != identity_tst.size(); ++i) {
@@ -26,13 +23,13 @@ TEST(char_maps_ascii, identity_move)
 
             auto test = original;
             auto *test_ptr = test.data();
-            auto result = char_converter<"ascii", "ascii">{}.convert(std::move(test));
+            auto result = char_converter<"utf-32", "utf-32">{}.convert(std::move(test));
             auto *result_ptr = result.data();
 
             // Check for short-string-optimization.
             if (original.size() > sizeof(std::string)) {
                 // Check if the string was properly moved.
-                ASSERT_EQ(test_ptr, result_ptr) << std::format("original = '{}', result = '{}'", original, result);
+                ASSERT_EQ(test_ptr, result_ptr) << i << j;
             } else {
                 ASSERT_EQ(original, result);
             }
@@ -40,18 +37,18 @@ TEST(char_maps_ascii, identity_move)
     }
 }
 
-TEST(char_maps_ascii, identity_copy)
+TEST(char_maps_utf_32, identity_copy)
 {
-    auto identity_tst = std::string{};
-    for (auto i = 0_uz; i != 128; ++i) {
-        identity_tst += char_cast<char>(i);
+    auto identity_tst = std::u32string{};
+    for (auto i = 0_uz; i != 500; ++i) {
+        identity_tst += char_cast<char32_t>(i);
     }
 
     for (auto i = 0_uz; i != identity_tst.size(); ++i) {
         for (auto j = i; j != identity_tst.size(); ++j) {
             auto test = identity_tst.substr(i, j - i);
 
-            auto result = char_converter<"ascii", "ascii">{}.convert(test);
+            auto result = char_converter<"utf-32", "utf-32">{}.convert(test);
 
             // Check for short-string-optimization.
             ASSERT_EQ(test, result);
@@ -59,14 +56,19 @@ TEST(char_maps_ascii, identity_copy)
     }
 }
 
-TEST(char_maps_ascii, identity_invalid_chars)
+TEST(char_maps_utf_32, identity_invalid_chars)
 {
+    hilet invalid_exp = std::u32string{U"abcdefghijklmnopqrstuvwxy\ufffdzABCDEFGHIJKLMNOPQRSTUVWXY\ufffdZ0123456789"};
+    auto invalid_tst = invalid_exp;
+    invalid_tst[25] = 0xd800; // Surrogate.
+    invalid_tst[52] = 0x11'0000; // Beyond.
+
     for (auto i = 0_uz; i != invalid_tst.size(); ++i) {
         for (auto j = i; j != invalid_tst.size(); ++j) {
             auto test = invalid_tst.substr(i, j - i);
             auto expected = invalid_exp.substr(i, j - i);
 
-            auto result = char_converter<"ascii", "ascii">{}.convert(test);
+            auto result = char_converter<"utf-32", "utf-32">{}.convert(test);
 
             // Check for short-string-optimization.
             ASSERT_EQ(expected, result);

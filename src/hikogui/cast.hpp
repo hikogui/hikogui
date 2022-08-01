@@ -185,22 +185,23 @@ template<std::integral Out, arithmetic In>
 
 /** Cast a character.
  *
- * @note @a rhs value after casting to unsigned, must fit in the output type.
- * @tparam Out the output type, must be one of char, wchar, char8_t, char16_t, char32_t.
- * @tparam In An signed (automatically truncated to unsigned) or unsigned integer or one
- *         of the character type.s
+ * Both the input and output types are interpreted as unsigned values, even if
+ * they are signed values. For example `char` may be either signed or unsigned,
+ * but you have to treat those as unsigned values.
+ * 
+ * @note @a rhs value after casting, must fit in the output type.
  * @param rhs The value of the character.
- * @return The unchanged character value of the output type.
+ * @return The casted value.
  */
 template<std::integral Out, std::integral In>
 [[nodiscard]] constexpr Out char_cast(In rhs) noexcept
 {
-    using in_unsigned_type = std::conditional_t<std::is_same_v<In, std::byte>, uint8_t, std::make_unsigned_t<In>>;
-    using out_unsigned_type = std::conditional_t<std::is_same_v<Out, std::byte>, uint8_t, std::make_unsigned_t<Out>>;
+    using in_unsigned_type = std::make_unsigned_t<In>;
+    using out_unsigned_type = std::make_unsigned_t<Out>;
 
     // We cast to unsigned of the same type, so that we don't accidentally sign extent 'char'.
-    auto rhs_unsigned = static_cast<rhs_unsigned_type>(rhs);
-    auto out_unsigned = narrow_cast<out_unsigned_type>(rhs_unsigned);
+    auto in_unsigned = static_cast<in_unsigned_type>(rhs);
+    auto out_unsigned = narrow_cast<out_unsigned_type>(in_unsigned);
     return static_cast<Out>(out_unsigned);
 }
 

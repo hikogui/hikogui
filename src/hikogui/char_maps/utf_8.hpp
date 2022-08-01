@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "char_encoding.hpp"
+#include "char_converter.hpp"
 #include "cp_1252.hpp"
 
 namespace hi::inline v1 {

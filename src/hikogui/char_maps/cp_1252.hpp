@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "char_encoding.hpp"
+#include "char_converter.hpp"
 #include "../cast.hpp"
 #include "../required.hpp"
 #include "../architecture.hpp"
@@ -12,6 +12,71 @@
 #include <utility>
 
 namespace hi::inline v1 {
+namespace detail {
+
+constexpr auto cp_1252_make_table_0000_02DC() noexcept
+{
+    auto r = std::array<uint8_t, 0x02dd>{};
+    for (auto i = 0x0; i != 0x2dd; ++i) {
+        r[i] = 0x3f; // '?'
+    }
+    for (auto i = 0_uz; i != 0x80; ++i) {
+        r[i] = char_cast<uint8_t>(i);
+    }
+    r[0x81] = 0x81;
+    r[0x8d] = 0x8d;
+    r[0x8f] = 0x8f;
+    r[0x90] = 0x90;
+    r[0x9d] = 0x9d;
+    for (auto i = 0xa0; i != 0x100; ++i) {
+        r[i] = char_cast<uint8_t>(i);
+    }
+
+    r[0x192] = 0x83;
+    r[0x2c6] = 0x88;
+    r[0x160] = 0x8a;
+    r[0x152] = 0x8c;
+    r[0x17d] = 0x8e;
+
+    r[0x2dc] = 0x98;
+    r[0x161] = 0x9a;
+    r[0x153] = 0x9c;
+    r[0x17e] = 0x9e;
+    r[0x178] = 0x9f;
+
+    return r;
+}
+
+constexpr auto cp_1252_make_table_2000_2122() noexcept
+{
+    auto r = std::array<uint8_t, 0x123>{};
+    for (auto i = 0x0; i != 0x123; ++i) {
+        r[i] = 0x3f; // '?'
+    }
+
+    r[0xac] = 0x80;
+    r[0x1a] = 0x82;
+    r[0x1e] = 0x84;
+    r[0x26] = 0x85;
+    r[0x20] = 0x86;
+    r[0x21] = 0x87;
+    r[0x30] = 0x89;
+    r[0x39] = 0x8b;
+
+    r[0x18] = 0x91;
+    r[0x19] = 0x92;
+    r[0x1c] = 0x93;
+    r[0x1d] = 0x94;
+    r[0x22] = 0x95;
+    r[0x13] = 0x96;
+    r[0x14] = 0x97;
+    r[0x122] = 0x99;
+    r[0x3a] = 0x9b;
+
+    return r;
+}
+
+} // namespace detail
 
 template<>
 struct char_map<"cp-1252"> {
@@ -20,7 +85,7 @@ struct char_map<"cp-1252"> {
     [[nodiscard]] constexpr std::pair<char32_t, bool> read(char_type const *& ptr, char_type const *last) const noexcept
     {
         // clang-format off
-        hi_axiom(size != 0);
+        hi_axiom(ptr != last);
         hilet c = char_cast<char8_t>(*ptr++);
         switch (c) {
         case 0x80: return {0x20ac, true};
@@ -36,7 +101,7 @@ struct char_map<"cp-1252"> {
         case 0x8a: return {0x0160, true};
         case 0x8b: return {0x2039, true};
         case 0x8c: return {0x0152, true};
-        case 0x8d: return {0x8e, true};
+        case 0x8d: return {0x8d, true};
         case 0x8e: return {0x017d, true};
         case 0x8f: return {0x8f, true};
 
@@ -53,7 +118,7 @@ struct char_map<"cp-1252"> {
         case 0x9a: return {0x0161, true};
         case 0x9b: return {0x203a, true};
         case 0x9c: return {0x0153, true};
-        case 0x9d: return {0x9e, true};
+        case 0x9d: return {0x9d, true};
         case 0x9e: return {0x017e, true};
         case 0x9f: return {0x0178, true};
         default: return {c, true};
@@ -61,56 +126,29 @@ struct char_map<"cp-1252"> {
         // clang-format on
     }
 
+    constexpr static auto range_0000_02DC = detail::cp_1252_make_table_0000_02DC();
+    constexpr static auto range_2000_2122 = detail::cp_1252_make_table_2000_2122();
+
     [[nodiscard]] constexpr std::pair<uint8_t, bool> size(char32_t code_point) const noexcept
     {
         hi_axiom(code_point < 0x11'0000);
         hi_axiom(not(code_point >= 0xd800 and code_point < 0xe000));
 
-        // clang-format off
-        if (code_point < 0x80 or (code_point >= 0xa0 and code_point < 0x0100)) {
-            return {1, true};
+        if (code_point < 0x2dd) {
+            if (code_point == 0x3f) {
+                return {uint8_t{1}, true};
+            } else {
+                return {uint8_t{1}, range_0000_02DC[code_point] != 0x3f};
+            }
+        } else if (code_point < 0x2000) {
+            return {uint8_t{1}, false};
+
+        } else if (code_point < 0x2123) {
+            return {uint8_t{1}, range_2000_2122[code_point - 0x2000] != 0x3f};
 
         } else {
-            switch (code_point) {
-            case 0x20ac:
-            case 0x81:
-            case 0x201a:
-            case 0x0192:
-            case 0x201e:
-            case 0x2026:
-            case 0x2020:
-            case 0x2021:
-            case 0x02c6:
-            case 0x2030:
-            case 0x0160:
-            case 0x2039:
-            case 0x0152:
-            case 0x8d:
-            case 0x017d:
-            case 0x8f:
-
-            case 0x90:
-            case 0x2018:
-            case 0x2019:
-            case 0x201c:
-            case 0x201d:
-            case 0x2022:
-            case 0x2013:
-            case 0x2014:
-            case 0x02dc:
-            case 0x2122:
-            case 0x0161:
-            case 0x203a:
-            case 0x0153:
-            case 0x9d:
-            case 0x017e:
-            case 0x0178:
-                return {1, true};
-            default:
-                return {1, false};
-            }
+            return {uint8_t{1}, false};
         }
-        // clang-format on
     }
 
     constexpr void write(char32_t code_point, char_type *& ptr) const noexcept
@@ -118,53 +156,18 @@ struct char_map<"cp-1252"> {
         hi_axiom(code_point < 0x11'0000);
         hi_axiom(not(code_point >= 0xd800 and code_point < 0xe000));
 
-        // clang-format off
-        if (code_point < 0x80 or (code_point >= 0xa0 and code_point < 0x0100)) {
-            *ptr++ = char_cast<char_type>(code_point);
+        if (code_point < 0x2dd) {
+            *ptr++ = char_cast<char_type>(range_0000_02DC[code_point]);
+
+        } else if (code_point < 0x2000) {
+            *ptr++ = char_cast<char_type>(0x3f);
+
+        } else if (code_point < 0x2123) {
+            *ptr++ = char_cast<char_type>(range_2000_2122[code_point - 0x2000]);
 
         } else {
-            *ptr++ = [&] -> char_type {
-                switch (cp) {
-                case 0x20ac: return 0x80;
-                case 0x81: return 0x81;
-                case 0x201a: return 0x82;
-                case 0x0192: return 0x83;
-                case 0x201e: return 0x84;
-                case 0x2026: return 0x85;
-                case 0x2020: return 0x86;
-                case 0x2021: return 0x87;
-                case 0x02c6: return 0x88;
-                case 0x2030: return 0x89;
-                case 0x0160: return 0x8a;
-                case 0x2039: return 0x8b;
-                case 0x0152: return 0x8c;
-                case 0x8d: return 0x8d;
-                case 0x017d: return 0x8e;
-                case 0x8f: return 0x8f;
-
-                case 0x90: return 0x90;
-                case 0x2018: return 0x91;
-                case 0x2019: return 0x92;
-                case 0x201c: return 0x93;
-                case 0x201d: return 0x94;
-                case 0x2022: return 0x95;
-                case 0x2013: return 0x96;
-                case 0x2014: return 0x97;
-                case 0x02dc: return 0x9a;
-                case 0x2122: return 0x9b;
-                case 0x0161: return 0x9a;
-                case 0x203a: return 0x9b;
-                case 0x0153: return 0x9c;
-                case 0x9d: return 0x9d;
-                case 0x017e: return 0x9e;
-                case 0x0178: return 0x9f;
-                default:
-                    valid = false;
-                    return '?';
-                }
-            }();
+            *ptr++ = char_cast<char_type>(0x3f);
         }
-        // clang-format on
     }
 
 #if defined(HI_HAS_SSE2)
@@ -181,4 +184,3 @@ struct char_map<"cp-1252"> {
 };
 
 } // namespace hi::inline v1
-
