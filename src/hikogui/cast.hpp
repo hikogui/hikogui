@@ -192,11 +192,11 @@ template<std::integral Out, arithmetic In>
  * @param rhs The value of the character.
  * @return The unchanged character value of the output type.
  */
-template<character Out, std::integral In>
+template<std::integral Out, std::integral In>
 [[nodiscard]] constexpr Out char_cast(In rhs) noexcept
 {
-    using rhs_unsigned_type = std::conditional_t<std::is_same_v<In, std::byte>, uint8_t, std::make_unsigned_t<In>>;
-    using out_unsigned_type = std::make_unsigned_t<Out>;
+    using in_unsigned_type = std::conditional_t<std::is_same_v<In, std::byte>, uint8_t, std::make_unsigned_t<In>>;
+    using out_unsigned_type = std::conditional_t<std::is_same_v<Out, std::byte>, uint8_t, std::make_unsigned_t<Out>>;
 
     // We cast to unsigned of the same type, so that we don't accidentally sign extent 'char'.
     auto rhs_unsigned = static_cast<rhs_unsigned_type>(rhs);

@@ -30,9 +30,6 @@ template<typename T>
 concept numeric_unsigned_integral = is_numeric_unsigned_integral_v<T>;
 
 template<typename T>
-concept character = is_character_v<T>;
-
-template<typename T>
 concept arithmetic = std::is_arithmetic_v<T>;
 
 template<typename T>
