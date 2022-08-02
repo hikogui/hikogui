@@ -18,11 +18,17 @@ template<>
 struct char_map<"ascii"> {
     using char_type = char;
 
-    [[nodiscard]] constexpr std::pair<char32_t, bool> read(char_type const *& ptr, char_type const *last) const noexcept
+    [[nodiscard]] constexpr std::endian guess_endian(void const *ptr, size_t size, std::endian endian) const noexcept
     {
-        hi_axiom(ptr != last);
+        return std::endian::native;
+    }
 
-        hilet c = char_cast<char32_t>(*ptr++);
+    template<typename It, typename EndIt>
+    [[nodiscard]] constexpr std::pair<char32_t, bool> read(It& it, EndIt last) const noexcept
+    {
+        hi_axiom(it != last);
+
+        hilet c = char_cast<char32_t>(*it++);
         if (c < 0x80) {
             return {c, true};
         } else {
@@ -43,28 +49,31 @@ struct char_map<"ascii"> {
         }
     }
 
-    constexpr void write(char32_t code_point, char_type *&ptr) const noexcept
+    template<typename It>
+    constexpr void write(char32_t code_point, It& dst) const noexcept
     {
         hi_axiom(code_point < 0x11'0000);
         hi_axiom(not(code_point >= 0xd800 and code_point < 0xe000));
 
         if (code_point < 0x80) {
-            *ptr++ = char_cast<char>(code_point);
+            *dst++ = char_cast<char>(code_point);
 
         } else {
-            *ptr++ = '?';
+            *dst++ = '?';
         }
     }
 
 #if defined(HI_HAS_SSE2)
-    hi_force_inline __m128i read_ascii_chunk16(char_type const *ptr) const noexcept
+    template<typename It>
+    hi_force_inline __m128i read_ascii_chunk16(It it) const noexcept
     {
-        return _mm_loadu_si128(reinterpret_cast<__m128i const *>(ptr));
+        return _mm_loadu_si128(reinterpret_cast<__m128i const *>(std::addressof(*it)));
     }
 
-    hi_force_inline void write_ascii_chunk16(__m128i chunk, char_type *ptr) const noexcept
+    template<typename It>
+    hi_force_inline void write_ascii_chunk16(__m128i chunk, It dst) const noexcept
     {
-        _mm_storeu_si128(reinterpret_cast<__m128i *>(ptr), chunk);
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(std::addressof(*dst)), chunk);
     }
 #endif
 };

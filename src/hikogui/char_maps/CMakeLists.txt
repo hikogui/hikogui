@@ -8,6 +8,7 @@ target_sources(hikogui PRIVATE
     cp_1252.hpp
     iso_8859_1.hpp
     random_char.hpp
+    to_string.hpp
     utf_8.hpp
     utf_16.hpp
     utf_32.hpp

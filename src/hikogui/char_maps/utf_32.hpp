@@ -12,11 +12,43 @@ template<>
 struct char_map<"utf-32"> {
     using char_type = char32_t;
 
-    [[nodiscard]] constexpr std::pair<char32_t, bool> read(char_type const *& ptr, char_type const *last) const noexcept
+    [[nodiscard]] std::endian guess_endian(void const *ptr, size_t size, std::endian endian) const noexcept
     {
-        hi_axiom(ptr != last);
+        hi_axiom(ptr != nullptr);
+        auto *ptr_ = reinterpret_cast<uint8_t const *>(ptr);
 
-        if (auto cu = *ptr++; cu < 0xd800) {
+        if (size < 4) {
+            return std::endian::native;
+        } else {
+            // Check for BOM.
+            if (ptr_[0] == 0x00 and ptr_[1] == 0x00 and ptr_[2] == 0xfe and ptr_[3] == 0xff) {
+                return std::endian::big;
+            } else if (ptr_[0] == 0xff and ptr_[1] == 0xfe and ptr_[2] == 0x00 and ptr_[3] == 0x00) {
+                return std::endian::little;
+            }
+
+            // Check for sequences of zeros.
+            auto count = std::array<size_t,4>{};
+            for (auto i = 0; i != size; ++i) {
+                count[i % 4] = ptr_[i] == 0 ? count[i % 4] + 1 : 0;
+
+                if (i % 4 == 0 and count[0] >= 8) {
+                    return std::endian::big;
+                } else if (i % 4 == 3 and count[3] >= 8) {
+                    return std::endian::little;
+                }
+            }
+
+            return endian;
+        }
+    }
+
+    template<typename It, typename EndIt>
+    [[nodiscard]] constexpr std::pair<char32_t, bool> read(It& it, EndIt last) const noexcept
+    {
+        hi_axiom(it != last);
+
+        if (auto cu = *it++; cu < 0xd800) {
             return {cu, true};
 
         } else if (cu < 0xe000) {
@@ -39,22 +71,27 @@ struct char_map<"utf-32"> {
         return {uint8_t{1}, true};
     }
 
-    constexpr void write(char32_t code_point, char_type *& ptr) const noexcept
+    template<typename It>
+    constexpr void write(char32_t code_point, It& dst) const noexcept
     {
         hi_axiom(code_point < 0x11'0000);
         hi_axiom(not(code_point >= 0xd800 and code_point < 0xe000));
 
-        *ptr++ = code_point;
+        *dst++ = code_point;
     }
 
 #if defined(HI_HAS_SSE2)
-    hi_force_inline __m128i read_ascii_chunk16(char_type const *ptr) const noexcept
+    template<typename It>
+    hi_force_inline __m128i read_ascii_chunk16(It it) const noexcept
     {
         // Load the UTF-16 data.
-        hilet c0 = _mm_loadu_si128(reinterpret_cast<__m128i const *>(ptr));
-        hilet c1 = _mm_loadu_si128(reinterpret_cast<__m128i const *>(ptr + 4));
-        hilet c2 = _mm_loadu_si128(reinterpret_cast<__m128i const *>(ptr + 8));
-        hilet c3 = _mm_loadu_si128(reinterpret_cast<__m128i const *>(ptr + 12));
+        hilet c0 = _mm_loadu_si128(reinterpret_cast<__m128i const *>(std::addressof(*it)));
+        it += 4;
+        hilet c1 = _mm_loadu_si128(reinterpret_cast<__m128i const *>(std::addressof(*it)));
+        it += 4;
+        hilet c2 = _mm_loadu_si128(reinterpret_cast<__m128i const *>(std::addressof(*it)));
+        it += 4;
+        hilet c3 = _mm_loadu_si128(reinterpret_cast<__m128i const *>(std::addressof(*it)));
 
         hilet lo = _mm_packs_epi32(c0, c1);
         hilet hi = _mm_packs_epi32(c2, c3);
@@ -80,7 +117,8 @@ struct char_map<"utf-32"> {
         return _mm_or_si128(chunk, sign);
     }
 
-    hi_force_inline void write_ascii_chunk16(__m128i chunk, char_type *ptr) const noexcept
+    template<typename It>
+    hi_force_inline void write_ascii_chunk16(__m128i chunk, It dst) const noexcept
     {
         hilet zero = _mm_setzero_si128();
         hilet lo = _mm_unpacklo_epi8(chunk, zero);
@@ -91,10 +129,13 @@ struct char_map<"utf-32"> {
         hilet c2 = _mm_unpacklo_epi8(hi, zero);
         hilet c3 = _mm_unpackhi_epi8(hi, zero);
 
-        _mm_storeu_si128(reinterpret_cast<__m128i *>(ptr), c0);
-        _mm_storeu_si128(reinterpret_cast<__m128i *>(ptr + 4), c1);
-        _mm_storeu_si128(reinterpret_cast<__m128i *>(ptr + 8), c2);
-        _mm_storeu_si128(reinterpret_cast<__m128i *>(ptr + 12), c3);
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(std::addressof(*dst)), c0);
+        dst += 4;
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(std::addressof(*dst)), c1);
+        dst += 4;
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(std::addressof(*dst)), c2);
+        dst += 4;
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(std::addressof(*dst)), c3);
     }
 #endif
 };

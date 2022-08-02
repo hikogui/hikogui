@@ -12,23 +12,52 @@ template<>
 struct char_map<"utf-16"> {
     using char_type = char16_t;
 
-    [[nodiscard]] constexpr std::pair<char32_t, bool> read(char_type const *& ptr, char_type const *last) const noexcept
+    [[nodiscard]] std::endian guess_endian(void const *ptr, size_t size, std::endian endian) const noexcept
     {
-        hi_axiom(ptr != last);
+        hi_axiom(ptr != nullptr);
+        auto *ptr_ = reinterpret_cast<uint8_t const *>(ptr);
 
-        if (auto cu = *ptr++; cu < 0xd800) {
+        if (size < 2) { 
+            return std::endian::native;
+        } else {
+            // Check for BOM.
+            if (ptr_[0] == 0xfe and ptr_[1] == 0xff) {
+                return std::endian::big;
+            } else if (ptr_[0] == 0xff and ptr_[1] == 0xfe) {
+                return std::endian::little;
+            }
+
+            // Check for sequences of zeros.
+            auto count = std::array<size_t, 2>{};
+            for (auto i = 0; i != size; ++i) {
+                count[i % 2] = ptr_[i] == 0 ? count[i % 2] + 1 : 0;
+                if (count[i % 2] >= 8) {
+                    return i % 2 == 0 ? std::endian::big : std::endian::little;
+                }
+            }
+
+            return endian;
+        }
+    }
+
+    template<typename It, typename EndIt>
+    [[nodiscard]] constexpr std::pair<char32_t, bool> read(It &it, EndIt last) const noexcept
+    {
+        hi_axiom(it != last);
+
+        if (auto cu = *it++; cu < 0xd800) {
             return {char_cast<char32_t>(cu), true};
 
         } else if (cu < 0xdc00) {
-            if (ptr == last) {
+            if (it == last) {
                 // first surrogate at end of string.
                 return {0xfffd, false};
 
             } else {
                 auto cp = char_cast<char32_t>(cu & 0x03ff);
-                cu = *ptr;
+                cu = *it;
                 if (cu >= 0xdc00 and cu < 0xe000) {
-                    ++ptr;
+                    ++it;
                     cp <<= 10;
                     cp |= cu & 0x03ff;
                     cp += 0x01'0000;
@@ -56,26 +85,29 @@ struct char_map<"utf-16"> {
         return {truncate<uint8_t>((code_point >= 0x01'0000) + 1), true};
     }
 
-    constexpr void write(char32_t code_point, char_type *& ptr) const noexcept
+    template<typename It>
+    constexpr void write(char32_t code_point, It& dst) const noexcept
     {
         hi_axiom(code_point <= 0x10'ffff);
         hi_axiom(not(code_point >= 0xd800 and code_point < 0xe000));
 
         if (auto tmp = truncate<int32_t>(code_point) - 0x1'0000; tmp >= 0) {
-            *ptr++ = char_cast<char16_t>((tmp >> 10) + 0xd800);
-            *ptr++ = char_cast<char16_t>((tmp & 0x3ff) + 0xdc00);
+            *dst++ = char_cast<char16_t>((tmp >> 10) + 0xd800);
+            *dst++ = char_cast<char16_t>((tmp & 0x3ff) + 0xdc00);
 
         } else {
-            *ptr++ = char_cast<char16_t>(code_point);
+            *dst++ = char_cast<char16_t>(code_point);
         }
     }
 
 #if defined(HI_HAS_SSE2)
-    hi_force_inline __m128i read_ascii_chunk16(char_type const *ptr) const noexcept
+    template<typename It>
+    hi_force_inline __m128i read_ascii_chunk16(It it) const noexcept
     {
         // Load the UTF-16 data.
-        auto lo = _mm_loadu_si128(reinterpret_cast<__m128i const *>(ptr));
-        auto hi = _mm_loadu_si128(reinterpret_cast<__m128i const *>(ptr + 8));
+        auto lo = _mm_loadu_si128(reinterpret_cast<__m128i const *>(std::addressof(*it)));
+        it += 8;
+        auto hi = _mm_loadu_si128(reinterpret_cast<__m128i const *>(std::addressof(*it)));
 
         // To get _mm_packus_epi16() to work we need to prepare the data as follows:
         //  - bit 15 must be '0'.
@@ -98,14 +130,16 @@ struct char_map<"utf-16"> {
         return _mm_or_si128(chunk, sign);
     }
 
-    hi_force_inline void write_ascii_chunk16(__m128i chunk, char_type *ptr) const noexcept
+    template<typename It>
+    hi_force_inline void write_ascii_chunk16(__m128i chunk, It dst) const noexcept
     {
         auto zero = _mm_setzero_si128();
         auto lo = _mm_unpacklo_epi8(chunk, zero);
         auto hi = _mm_unpackhi_epi8(chunk, zero);
 
-        _mm_storeu_si128(reinterpret_cast<__m128i *>(ptr), lo);
-        _mm_storeu_si128(reinterpret_cast<__m128i *>(ptr + 8), hi);
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(std::addressof(*dst)), lo);
+        dst += 8;
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(std::addressof(*dst)), hi);
     }
 #endif
 };

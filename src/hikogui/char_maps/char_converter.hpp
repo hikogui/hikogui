@@ -6,6 +6,7 @@
 
 #include "../fixed_string.hpp"
 #include "../memory.hpp"
+#include "../endian.hpp"
 #include <string>
 #include <string_view>
 #if defined(HI_HAS_SSE2)
@@ -77,28 +78,99 @@ public:
     using to_encoder_type = char_map<To>;
     using from_char_type = from_encoder_type::char_type;
     using to_char_type = to_encoder_type::char_type;
+    using from_string_type = std::basic_string<from_char_type>;
+    using to_string_type = std::basic_string<to_char_type>;
 
-    [[nodiscard]] constexpr std::basic_string<to_char_type> convert(std::basic_string_view<from_char_type> str) noexcept
+    template<typename OutRange, typename InRange>
+    [[nodiscard]] constexpr OutRange convert(InRange&& src) const noexcept
     {
-        hilet[size, valid] = _size(str.data(), str.data() + str.size());
+        using std::cbegin;
+        using std::cend;
+        using std::begin;
+        using std::end;
 
-        auto r = std::basic_string<to_char_type>(size, to_char_type{});
-        _convert(str.data(), str.data() + str.size(), r.data());
+        hilet[size, valid] = _size(cbegin(src), cend(src));
+
+        auto r = OutRange{};
+        if constexpr (From == To and std::is_same_v<InRange, OutRange>) {
+            if (valid) {
+                r = std::forward<InRange>(src);
+                // If and identity conversion is requested and the src is valid, then shortcut by return the src.
+                return r;
+            }
+        }
+
+        if (size == 0) {
+            return r;
+        }
+
+        r.resize(size);
+        if (From == To and valid) {
+            hi_axiom(size != 0);
+
+            using std::size;
+            std::memcpy(std::addressof(*begin(r)), std::addressof(*cbegin(src)), size(src) * sizeof(from_char_type));
+        } else {
+            _convert(cbegin(src), cend(src), begin(r));
+        }
         return r;
     }
 
-    [[nodiscard]] constexpr std::basic_string<to_char_type> convert(std::basic_string<from_char_type>&& str) noexcept
+    template<typename OutRange, typename It, typename EndIt>
+    [[nodiscard]] constexpr OutRange convert(It first, EndIt last) const noexcept
     {
-        hilet[size, valid] = _size(str.data(), str.data() + str.size());
+        using std::begin;
 
-        if (From == To and valid) {
-            // Short-cut if the input string is valid.
-            return str;
+        hilet[size, valid] = _size(first, last);
+        auto r = OutRange{};
+        if (size == 0) {
+           return r;
         }
 
-        auto r = std::basic_string<to_char_type>(size, to_char_type{});
-        _convert(str.data(), str.data() + str.size(), r.data());
+        r.resize(size);
+        if (From == To and valid) {
+            hi_axiom(size != 0);
+
+            std::memcpy(std::addressof(*begin(r)), std::addressof(*first), std::distance(first, last) * sizeof(from_char_type));
+        } else {
+            _convert(first, last, begin(r));
+        }
         return r;
+    }
+
+    template<typename OutRange = std::basic_string<to_char_type>>
+    [[nodiscard]] OutRange read(void const *ptr, size_t size, std::endian endian = std::endian::native) noexcept
+    {
+        hi_axiom(ptr != nullptr);
+
+        hilet num_chars = size / sizeof(from_char_type);
+
+        endian = from_encoder_type{}.guess_endian(ptr, size, endian);
+        if (endian == std::endian::native) {
+            if (floor(ptr, sizeof(from_char_type)) == ptr) {
+                return convert<OutRange>(
+                    reinterpret_cast<from_char_type const *>(ptr), reinterpret_cast<from_char_type const *>(ptr) + num_chars);
+            } else {
+                auto tmp = std::basic_string<from_char_type>{};
+                tmp.resize(num_chars);
+                std::memcpy(std::addressof(*tmp.begin()), ptr, num_chars * sizeof(from_char_type));
+                return convert<OutRange>(std::move(tmp));
+            }
+        } else {
+            auto tmp = std::basic_string<from_char_type>{};
+            tmp.resize(num_chars);
+            std::memcpy(std::addressof(*tmp.begin()), ptr, num_chars * sizeof(from_char_type));
+            for (auto &c: tmp) {
+                c = byte_swap(c);
+            }
+            return convert<OutRange>(std::move(tmp));
+        }
+    }
+
+    template<typename InRange>
+    [[nodiscard]] constexpr to_string_type operator()(InRange&& src) const noexcept
+    {
+        return convert<to_string_type>(std::forward<InRange>(src));
     }
 
 private:
@@ -108,32 +180,26 @@ private:
     using chunk16_type = void;
 #endif
 
-    constexpr static bool _has_read_ascii_chunk16 = requires(from_char_type const *src)
-    {
-        from_encoder_type{}.read_ascii_chunk16(src);
-    };
+    constexpr static bool _has_read_ascii_chunk16 = true;
+    constexpr static bool _has_write_ascii_chunk16 = true;
 
-    constexpr static bool _has_write_ascii_chunk16 = requires(to_char_type * dst)
-    {
-        to_encoder_type{}.write_ascii_chunk16(chunk16_type{}, dst);
-    };
-
-    [[nodiscard]] constexpr void _size_ascii(from_char_type const *& ptr, from_char_type const *last, size_t &count) const noexcept
+    template<typename It, typename EndIt>
+    [[nodiscard]] constexpr void _size_ascii(It& it, EndIt last, size_t& count) const noexcept
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_SSE2)
             if constexpr (_has_read_ascii_chunk16 and _has_write_ascii_chunk16) {
-                while (ptr + 16 < last) {
-                    hilet chunk = from_encoder_type{}.read_ascii_chunk16(ptr);
+                while (std::distance(it, last) >= 16) {
+                    hilet chunk = from_encoder_type{}.read_ascii_chunk16(it);
                     hilet ascii_mask = _mm_movemask_epi8(chunk);
                     if (ascii_mask) {
                         // This chunk contains non-ASCII characters.
                         auto partial_count = std::countr_zero(truncate<uint16_t>(ascii_mask));
-                        ptr += partial_count;
+                        it += partial_count;
                         count += partial_count;
                         break;
                     }
-                    ptr += 16;
+                    it += 16;
                     count += 16;
                 }
             }
@@ -141,12 +207,13 @@ private:
         }
     }
 
-    void _convert_ascii(from_char_type const *& src, from_char_type const *src_last, to_char_type *&dst) const noexcept
+    template<typename SrcIt, typename SrcEndIt, typename DstIt>
+    void _convert_ascii(SrcIt& src, SrcEndIt src_last, DstIt& dst) const noexcept
     {
         if (not std::is_constant_evaluated()) {
 #if defined(HI_HAS_SSE2)
             if constexpr (_has_read_ascii_chunk16 and _has_write_ascii_chunk16) {
-                while (src + 16 < src_last) {
+                while (std::distance(src, src_last) >= 16) {
                     hilet chunk = from_encoder_type{}.read_ascii_chunk16(src);
                     hilet ascii_mask = _mm_movemask_epi8(chunk);
                     if (ascii_mask) {
@@ -163,20 +230,21 @@ private:
         }
     }
 
-    [[nodiscard]] constexpr std::pair<size_t, bool> _size(from_char_type const *ptr, from_char_type const *last) const noexcept
+    template<typename It, typename EndIt>
+    [[nodiscard]] constexpr std::pair<size_t, bool> _size(It it, EndIt last) const noexcept
     {
         auto count = 0_uz;
         auto valid = true;
         while (true) {
             // This loop toggles between converting chunks of ASCII characters and converting
             // a single non-ASCII character.
-            _size_ascii(ptr, last, count);
+            _size_ascii(it, last, count);
 
-            if (ptr == last) {
+            if (it == last) {
                 break;
             }
 
-            hilet[code_point, read_valid] = from_encoder_type{}.read(ptr, last);
+            hilet[code_point, read_valid] = from_encoder_type{}.read(it, last);
             valid &= read_valid;
 
             hilet[write_count, write_valid] = to_encoder_type{}.size(code_point);
@@ -187,7 +255,8 @@ private:
         return {count, valid};
     }
 
-    void _convert(from_char_type const *src, from_char_type const *src_last, to_char_type *dst) const noexcept
+    template<typename SrcIt, typename SrcEndIt, typename DstIt>
+    void _convert(SrcIt src, SrcEndIt src_last, DstIt dst) const noexcept
     {
         while (true) {
             // This loop toggles between converting chunks of ASCII characters and converting

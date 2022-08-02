@@ -56,7 +56,7 @@ TEST(char_maps_utf_16, identity_move)
 
             auto test = original;
             auto *test_ptr = test.data();
-            auto result = char_converter<"utf-16", "utf-16">{}.convert(std::move(test));
+            auto result = char_converter<"utf-16", "utf-16">{}(std::move(test));
             auto *result_ptr = result.data();
 
             // Check for short-string-optimization.
@@ -84,7 +84,7 @@ TEST(char_maps_utf_16, identity_copy)
                 continue;
             }
 
-            auto result = char_converter<"utf-16", "utf-16">{}.convert(test);
+            auto result = char_converter<"utf-16", "utf-16">{}(test);
 
             // Check for short-string-optimization.
             ASSERT_EQ(test, result);
@@ -109,7 +109,7 @@ TEST(char_maps_utf_16, identity_invalid_chars)
 
             auto expected = invalid_exp.substr(i, j - i);
 
-            auto result = char_converter<"utf-16", "utf-16">{}.convert(test);
+            auto result = char_converter<"utf-16", "utf-16">{}(test);
 
             // Check for short-string-optimization.
             ASSERT_EQ(expected, result);

@@ -26,7 +26,7 @@ TEST(char_maps_ascii, identity_move)
 
             auto test = original;
             auto *test_ptr = test.data();
-            auto result = char_converter<"ascii", "ascii">{}.convert(std::move(test));
+            auto result = char_converter<"ascii", "ascii">{}(std::move(test));
             auto *result_ptr = result.data();
 
             // Check for short-string-optimization.
@@ -51,7 +51,7 @@ TEST(char_maps_ascii, identity_copy)
         for (auto j = i; j != identity_tst.size(); ++j) {
             auto test = identity_tst.substr(i, j - i);
 
-            auto result = char_converter<"ascii", "ascii">{}.convert(test);
+            auto result = char_converter<"ascii", "ascii">{}(test);
 
             // Check for short-string-optimization.
             ASSERT_EQ(test, result);
@@ -66,7 +66,7 @@ TEST(char_maps_ascii, identity_invalid_chars)
             auto test = invalid_tst.substr(i, j - i);
             auto expected = invalid_exp.substr(i, j - i);
 
-            auto result = char_converter<"ascii", "ascii">{}.convert(test);
+            auto result = char_converter<"ascii", "ascii">{}(test);
 
             // Check for short-string-optimization.
             ASSERT_EQ(expected, result);

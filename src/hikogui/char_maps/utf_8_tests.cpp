@@ -59,7 +59,7 @@ TEST(char_maps_utf_8, identity_move)
 
             auto test = original;
             auto *test_ptr = test.data();
-            auto result = char_converter<"utf-8", "utf-8">{}.convert(std::move(test));
+            auto result = char_converter<"utf-8", "utf-8">{}.convert<std::u8string>(std::move(test));
             auto *result_ptr = result.data();
 
             // Check for short-string-optimization.
@@ -87,7 +87,7 @@ TEST(char_maps_utf_8, identity_copy)
                 continue;
             }
 
-            auto result = char_converter<"utf-8", "utf-8">{}.convert(test);
+            auto result = char_converter<"utf-8", "utf-8">{}.convert<std::u8string>(test);
 
             // Check for short-string-optimization.
             ASSERT_EQ(test, result);
@@ -115,7 +115,7 @@ TEST(char_maps_utf_8, identity_invalid_chars)
             continue;
         }
 
-        auto result = char_converter<"utf-8", "utf-8">{}.convert(test);
+        auto result = char_converter<"utf-8", "utf-8">{}.convert<std::u8string>(test);
         auto expected = invalid_exp.substr(0, result.size());
 
         // Check for short-string-optimization.

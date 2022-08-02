@@ -3,7 +3,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "true_type_font.hpp"
-#include "../unicode/UTF.hpp"
 #include "../geometry/vector.hpp"
 #include "../geometry/point.hpp"
 #include "../placement.hpp"
@@ -663,30 +662,7 @@ static std::optional<std::string> getStringFromNameTable(
     case 0: // Unicode, encoded as UTF-16LE or UTF-16BE (BE is default guess).
         if (languageID == 0 || languageID == 0xffff) { // Language independent.
             hi_parse_check(lengthInBytes % 2 == 0, "Length in bytes of a name must be multiple of two");
-            hilet lengthInWords = lengthInBytes / 2;
-
-            std::byte const *src = bytes.data() + offset;
-            std::byte const *src_last = src + lengthInBytes;
-            hilet src_endian = guess_utf16_endianess(src, src_last, std::endian::big);
-
-            auto name = std::u16string{};
-            name.reserve(lengthInWords);
-
-            if (src_endian == std::endian::little) {
-                while (src != src_last) {
-                    auto lo = *(src++);
-                    auto hi = *(src++);
-                    name += (static_cast<char16_t>(hi) << 8) | static_cast<char16_t>(lo);
-                }
-            } else {
-                while (src != src_last) {
-                    auto hi = *(src++);
-                    auto lo = *(src++);
-                    name += (static_cast<char16_t>(hi) << 8) | static_cast<char16_t>(lo);
-                }
-            }
-
-            return hi::to_string(name);
+            return char_converter<"utf-16", "utf-8">{}.read(bytes.data() + offset, lengthInBytes, std::endian::big);
         }
         break;
 

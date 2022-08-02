@@ -317,7 +317,7 @@ iso_15924::iso_15924(std::string_view code4)
         throw parse_error(std::format("Invalid script '{}'", code4));
     }
 
-    hilet code4_ = to_title(fixed_string<4>{code4});
+    hilet code4_ = to_title(code4);
 
     hilet it = std::lower_bound(
         iso_15924_number_by_code4.begin(), iso_15924_number_by_code4.end(), code4_, [](hilet &item, hilet &value) {

@@ -82,11 +82,17 @@ template<>
 struct char_map<"cp-1252"> {
     using char_type = char;
 
-    [[nodiscard]] constexpr std::pair<char32_t, bool> read(char_type const *& ptr, char_type const *last) const noexcept
+    [[nodiscard]] constexpr std::endian guess_endian(void const *ptr, size_t size, std::endian endian) const noexcept
+    {
+        return std::endian::native;
+    }
+
+    template<typename It, typename EndIt>
+    [[nodiscard]] constexpr std::pair<char32_t, bool> read(It& it, EndIt last) const noexcept
     {
         // clang-format off
-        hi_axiom(ptr != last);
-        hilet c = char_cast<char8_t>(*ptr++);
+        hi_axiom(it != last);
+        hilet c = char_cast<char8_t>(*it++);
         switch (c) {
         case 0x80: return {0x20ac, true};
         case 0x81: return {0x81, true};
@@ -151,34 +157,37 @@ struct char_map<"cp-1252"> {
         }
     }
 
-    constexpr void write(char32_t code_point, char_type *& ptr) const noexcept
+    template<typename It>
+    constexpr void write(char32_t code_point, It& dst) const noexcept
     {
         hi_axiom(code_point < 0x11'0000);
         hi_axiom(not(code_point >= 0xd800 and code_point < 0xe000));
 
         if (code_point < 0x2dd) {
-            *ptr++ = char_cast<char_type>(range_0000_02DC[code_point]);
+            *dst++ = char_cast<char_type>(range_0000_02DC[code_point]);
 
         } else if (code_point < 0x2000) {
-            *ptr++ = char_cast<char_type>(0x3f);
+            *dst++ = char_cast<char_type>(0x3f);
 
         } else if (code_point < 0x2123) {
-            *ptr++ = char_cast<char_type>(range_2000_2122[code_point - 0x2000]);
+            *dst++ = char_cast<char_type>(range_2000_2122[code_point - 0x2000]);
 
         } else {
-            *ptr++ = char_cast<char_type>(0x3f);
+            *dst++ = char_cast<char_type>(0x3f);
         }
     }
 
 #if defined(HI_HAS_SSE2)
-    hi_force_inline __m128i read_ascii_chunk16(char_type const *ptr) const noexcept
+    template<typename It>
+    hi_force_inline __m128i read_ascii_chunk16(It it) const noexcept
     {
-        return _mm_loadu_si128(reinterpret_cast<__m128i const *>(ptr));
+        return _mm_loadu_si128(reinterpret_cast<__m128i const *>(std::addressof(*it)));
     }
 
-    hi_force_inline void write_ascii_chunk16(__m128i chunk, char_type *ptr) const noexcept
+    template<typename It>
+    hi_force_inline void write_ascii_chunk16(__m128i chunk, It dst) const noexcept
     {
-        _mm_storeu_si128(reinterpret_cast<__m128i *>(ptr), chunk);
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(std::addressof(*dst)), chunk);
     }
 #endif
 };

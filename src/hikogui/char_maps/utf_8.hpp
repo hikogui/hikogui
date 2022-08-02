@@ -12,31 +12,37 @@ namespace hi::inline v1 {
 
 template<>
 struct char_map<"utf-8"> {
-    using char_type = char8_t;
+    using char_type = char;
     using fallback_encoder_type = char_map<"cp-1252">;
     using fallback_char_type = fallback_encoder_type::char_type;
 
-    [[nodiscard]] constexpr std::pair<char32_t, bool> read_fallback(char_type const *& ptr, char_type const *last) const noexcept
+    [[nodiscard]] constexpr std::endian guess_endian(void const *ptr, size_t size, std::endian endian) const noexcept
     {
-        hilet[code_point, valid] = fallback_encoder_type{}.read(
-            reinterpret_cast<fallback_char_type const *&>(ptr), reinterpret_cast<fallback_char_type const *>(last));
+        return std::endian::native;
+    }
+
+    template<typename It, typename EndIt>
+    [[nodiscard]] constexpr std::pair<char32_t, bool> read_fallback(It& it, EndIt last) const noexcept
+    {
+        hilet[code_point, valid] = fallback_encoder_type{}.read(it, last);
         return {code_point, false};
     }
 
-    [[nodiscard]] constexpr std::pair<char32_t, bool> read(char_type const *& ptr, char_type const *last) const noexcept
+    template<typename It, typename EndIt>
+    [[nodiscard]] constexpr std::pair<char32_t, bool> read(It& it, EndIt last) const noexcept
     {
-        hi_axiom(ptr != last);
+        hi_axiom(it != last);
 
-        auto cu = *ptr++;
+        auto cu = *it++;
         if (not to_bool(cu & 0x80)) [[likely]] {
             // ASCII character.
             return {char_cast<char32_t>(cu), true};
 
-        } else if (ptr == last or (cu & 0xc0) == 0x80) [[unlikely]] {
+        } else if (it == last or (cu & 0xc0) == 0x80) [[unlikely]] {
             // A non-ASCII character at the end of string.
             // or an unexpected continuation code-unit should be treated as CP-1252.
-            --ptr;
-            return read_fallback(ptr, last);
+            --it;
+            return read_fallback(it, last);
 
         } else {
             auto length = narrow_cast<uint8_t>(std::countl_one(char_cast<uint8_t>(cu)));
@@ -47,29 +53,29 @@ struct char_map<"utf-8"> {
             auto cp = char_cast<char32_t>(cu & (0x7f >> length));
 
             // Read the first continuation code-unit which is always here.
-            cu = *ptr++;
+            cu = *it++;
             cp <<= 6;
             cp |= cu & 0x3f;
             if ((cu & 0xc0) != 0x80) [[unlikely]] {
                 // If the second code-unit is not a UTF-8 continuation character, treat the first
                 // code-unit as if it was CP-1252.
-                ptr -= 2;
-                return read_fallback(ptr, last);
+                it -= 2;
+                return read_fallback(it, last);
 
-            } else if (todo >= std::distance(ptr, last)) [[unlikely]] {
+            } else if (todo >= std::distance(it, last)) [[unlikely]] {
                 // If there is a start and a continuation code-unit in a row we consider this to be UTF-8 encoded.
                 // So at this point any errors are replaced with 0xfffd.
-                ptr = last;
+                it = last;
                 return {0xfffd, false};
             }
 
             while (todo--) {
-                cu = *ptr++;
+                cu = *it++;
                 cp <<= 6;
                 cp |= cu & 0x3f;
                 if ((cu & 0xc0) != 0x80) [[unlikely]] {
                     // Unexpected end of sequence.
-                    --ptr;
+                    --it;
                     return {0xfffd, false};
                 }
             }
@@ -96,7 +102,8 @@ struct char_map<"utf-8"> {
         return {narrow_cast<uint8_t>((code_point > 0x7f) + (code_point > 0x7ff) + (code_point > 0xffff) + 1), true};
     }
 
-    constexpr void write(char32_t code_point, char_type *& ptr) const noexcept
+    template<typename It>
+    constexpr void write(char32_t code_point, It &dst) const noexcept
     {
         hi_axiom(code_point < 0x11'0000);
         hi_axiom(not(code_point >= 0xd800 and code_point < 0xe000));
@@ -104,25 +111,27 @@ struct char_map<"utf-8"> {
         auto length = truncate<uint8_t>((code_point > 0x7f) + (code_point > 0x7ff) + (code_point > 0xffff));
         if (auto i = length) {
             do {
-                ptr[i] = truncate<char8_t>((code_point & 0x3f) | 0x80);
+                dst[i] = truncate<char8_t>((code_point & 0x3f) | 0x80);
                 code_point >>= 6;
             } while (--i);
 
             code_point |= 0x780 >> length;
         }
-        ptr[0] = truncate<char8_t>(code_point);
-        ptr += length + 1;
+        dst[0] = truncate<char8_t>(code_point);
+        dst += length + 1;
     }
 
 #if defined(HI_HAS_SSE2)
-    hi_force_inline __m128i read_ascii_chunk16(char_type const *ptr) const noexcept
+    template<typename It>
+    hi_force_inline __m128i read_ascii_chunk16(It it) const noexcept
     {
-        return _mm_loadu_si128(reinterpret_cast<__m128i const *>(ptr));
+        return _mm_loadu_si128(reinterpret_cast<__m128i const *>(std::addressof(*it)));
     }
 
-    hi_force_inline void write_ascii_chunk16(__m128i chunk, char_type *ptr) const noexcept
+    template<typename It>
+    hi_force_inline void write_ascii_chunk16(__m128i chunk, It dst) const noexcept
     {
-        _mm_storeu_si128(reinterpret_cast<__m128i *>(ptr), chunk);
+        _mm_storeu_si128(reinterpret_cast<__m128i *>(std::addressof(*dst)), chunk);
     }
 #endif
 };

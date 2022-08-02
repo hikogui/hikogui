@@ -24,7 +24,7 @@ TEST(char_maps_iso_8859_1, identity_move)
 
             auto test = original;
             auto *test_ptr = test.data();
-            auto result = char_converter<"iso-8859-1", "iso-8859-1">{}.convert(std::move(test));
+            auto result = char_converter<"iso-8859-1", "iso-8859-1">{}(std::move(test));
             auto *result_ptr = result.data();
 
             // Check for short-string-optimization.
@@ -49,7 +49,7 @@ TEST(char_maps_iso_8859_1, identity_copy)
         for (auto j = i; j != identity_tst.size(); ++j) {
             auto test = identity_tst.substr(i, j - i);
 
-            auto result = char_converter<"iso-8859-1", "iso-8859-1">{}.convert(test);
+            auto result = char_converter<"iso-8859-1", "iso-8859-1">{}(test);
 
             // Check for short-string-optimization.
             ASSERT_EQ(test, result);

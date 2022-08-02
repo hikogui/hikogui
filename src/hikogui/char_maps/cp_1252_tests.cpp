@@ -23,7 +23,7 @@ TEST(char_maps_cp_1252, identity_move)
 
             auto test = original;
             auto *test_ptr = test.data();
-            auto result = char_converter<"cp-1252", "cp-1252">{}.convert(std::move(test));
+            auto result = char_converter<"cp-1252", "cp-1252">{}(std::move(test));
             auto *result_ptr = result.data();
 
             // Check for short-string-optimization.
@@ -48,7 +48,7 @@ TEST(char_maps_cp_1252, identity_copy)
         for (auto j = i; j != identity_tst.size(); ++j) {
             auto test = identity_tst.substr(i, j - i);
 
-            auto result = char_converter<"cp-1252", "cp-1252">{}.convert(test);
+            auto result = char_converter<"cp-1252", "cp-1252">{}(test);
 
             // Check for short-string-optimization.
             ASSERT_EQ(test, result);
