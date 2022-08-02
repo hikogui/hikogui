@@ -7,6 +7,7 @@
 #include "../cast.hpp"
 #include "../fixed_string.hpp"
 #include "../exception.hpp"
+#include "../strings.hpp"
 #include <array>
 
 namespace hi::inline v1 {
