@@ -32,8 +32,6 @@ target_sources(hikogui PRIVATE
     unicode_text_segmentation.cpp
     unicode_text_segmentation.hpp
     unicode_word_break.hpp
-    UTF.cpp
-    UTF.hpp
 )
 
 if(HI_BUILD_TESTS)
@@ -42,6 +40,5 @@ if(HI_BUILD_TESTS)
         unicode_break_tests.cpp
         unicode_text_segmentation_tests.cpp
         unicode_normalization_tests.cpp
-        UTF_tests.cpp
     )
 endif()

@@ -351,7 +351,7 @@ iso_3166::iso_3166(std::string_view str)
         hilet it = std::lower_bound(
             iso_3166_number_by_code2.begin(),
             iso_3166_number_by_code2.end(),
-            fixed_string<2>{str_up},
+            str_up,
             [](hilet& item, hilet& value) {
                 return item.first < value;
             });
@@ -369,7 +369,7 @@ iso_3166::iso_3166(std::string_view str)
         hilet it = std::lower_bound(
             iso_3166_number_by_code3.begin(),
             iso_3166_number_by_code3.end(),
-            fixed_string<3>{str_up},
+            str_up,
             [](hilet& item, hilet& value) {
                 return item.first < value;
             });

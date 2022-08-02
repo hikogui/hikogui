@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "char_maps/to_string.hpp"
 #include "algorithm.hpp"
 #include "cast.hpp"
 #include "required.hpp"
@@ -11,7 +12,6 @@
 #include "architecture.hpp"
 #include "concepts.hpp"
 #include "exception.hpp"
-#include "unicode/UTF.hpp"
 #include <string>
 #include <string_view>
 #include <iterator>
@@ -148,6 +148,55 @@ namespace hi::inline v1 {
 
     for (hilet c : str) {
         r += to_upper(c);
+    }
+
+    return r;
+}
+
+/** Convert the current string to using title case.
+ *
+ * This function does not do full unicode case conversion;
+ * only ASCII letters [a-zA-Z] will be modified.
+ */
+[[nodiscard]] constexpr std::string to_title(std::string_view rhs) noexcept
+{
+    auto r = std::string{rhs};
+
+    bool first = true;
+    for (auto& c : r) {
+        if (first) {
+            c = to_upper(c);
+            first = false;
+        } else if (c == ' ') {
+            first = true;
+        } else {
+            c = to_lower(c);
+        }
+    }
+
+    return r;
+}
+
+/** Convert the current string to using title case.
+ *
+ * This function does not do full unicode case conversion;
+ * only ASCII letters [a-zA-Z] will be modified.
+ */
+template<size_t N>
+[[nodiscard]] constexpr basic_fixed_string<char, N> to_title(basic_fixed_string<char, N> const &rhs) noexcept
+{
+    auto r = rhs;
+
+    bool first = true;
+    for (auto &c: r) {
+        if (first) {
+            c = to_upper(c);
+            first = false;
+        } else if (c == ' ') {
+            first = true;
+        } else {
+            c = to_lower(c);
+        }
     }
 
     return r;

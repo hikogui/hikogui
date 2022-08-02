@@ -6,7 +6,7 @@
 
 #include "dialog.hpp"
 #include "exception.hpp"
-#include "unicode/UTF.hpp"
+#include "strings.hpp"
 
 namespace hi::inline v1 {
 
