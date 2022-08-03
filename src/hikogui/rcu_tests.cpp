@@ -63,10 +63,12 @@ TEST(rcu, write_while_read)
     ASSERT_EQ(*ptr5, 5);
     ASSERT_EQ(object.version(), 1);
     object.read_unlock();
+    // The version does not increment while a lock is being held.
     ASSERT_EQ(object.version(), 1);
 
     object.read_unlock();
     ASSERT_EQ(object.version(), 2);
+    // The capacity does not change when just reading.
     ASSERT_EQ(object.capacity(), 2);
 
     // Reset will assign nullptr.
