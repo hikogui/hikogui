@@ -1,5 +1,6 @@
-
-
+// Copyright Take Vos 2022.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
@@ -9,7 +10,6 @@
 #include <tuple>
 
 namespace hi::inline v1 {
-
 
 /** Read-copy-update.
  *
@@ -27,13 +27,13 @@ public:
      * @note The initial rcu will be a nullptr.
      * @param allocator The allocator to use.
      */
-    constexpr rcu(allocator_type allocator = allocator_type{}) noexcept _allocator(allocator)
+    constexpr rcu(allocator_type allocator = allocator_type{}) noexcept : _allocator(allocator) {}
 
     ~rcu() = default;
-    rcu(rcu const &) = delete;
-    rcu(rcu &&) = delete;
-    rcu &operator=(rcu const &) = delete;
-    rcu &operator=(rcu &&) = delete;
+    rcu(rcu const&) = delete;
+    rcu(rcu&&) = delete;
+    rcu& operator=(rcu const&) = delete;
+    rcu& operator=(rcu&&) = delete;
 
     /** Lock the rcu pointer for reading.
      */
@@ -63,9 +63,9 @@ public:
         _idle_count.unlock();
     }
 
-    /** Dereference the rcu-pointer.
+    /** get the rcu-pointer.
      */
-    value_type const *dereference() noexcept
+    value_type const *get() noexcept
     {
         return _ptr.load(std::memory_order::acquire);
     }
@@ -75,7 +75,7 @@ public:
      * @note This function is unsafe you must follow the rules in
      *       https://github.com/torvalds/linux/blob/master/Documentation/RCU/rcu_dereference.rst
      */
-    value_type const *unsafe_dereference() noexcept
+    value_type const *unsafe_get() noexcept
     {
 #if defined(__alpha__) or defined(__alpha) or defined(_M_ALPHA)
         return _ptr.load(std::memory_order::acquire);
@@ -91,6 +91,14 @@ public:
     [[nodiscard]] uint64_t version() const noexcept
     {
         return *_idle_count;
+    }
+
+    /** Number of object that are currently allocated.
+     */
+    [[nodiscard]] size_t capacity() const noexcept
+    {
+        hilet lock = std::scoped_lock(_old_ptrs_mutex);
+        return _old_ptrs.size() + not empty();
     }
 
     /** Exchange the rcu-pointers.
@@ -110,7 +118,7 @@ public:
     {
         hilet *allocation = std::allocator_traits<allocator_type>::allocate(_allocator, 1);
         read_lock();
-        hilet *new_ptr = std::construct_at(allocation, *dereference());
+        hilet *new_ptr = std::construct_at(allocation, *get());
         read_unlock();
         return new_ptr;
     }
@@ -125,18 +133,18 @@ public:
      *
      * @param args The arguments passed to the constructor of the value.
      */
-    tempate<typename... Args>
-    void emplace(Args &&... args) noexcept
+    template<typename... Args>
+    void emplace(Args&&...args) noexcept
     {
-        hilet *allocation = std::allocator_traits<allocator_type>::allocate(_allocator, 1);
-        hilet *new_ptr = std::construct_at(allocation, std::forward<Args>(args)...);
+        auto *const allocation = std::allocator_traits<allocator_type>::allocate(_allocator, 1);
+        auto *const new_ptr = std::construct_at(allocation, std::forward<Args>(args)...);
 
         write_lock();
-        hilet *old_ptr = exchange(new_ptr);
-        hilet old_version = version()t;
+        auto *const old_ptr = exchange(new_ptr);
+        hilet old_version = version();
         write_unlock();
 
-        manage_versions(old_version, old_ptr);
+        add_old_copy(old_version, old_ptr);
     }
 
     [[nodiscard]] bool empty() const noexcept
@@ -152,19 +160,18 @@ public:
     void reset() noexcept
     {
         write_lock();
-        hilet *old_ptr = _ptr.exchange(nullptr, std::memory_order::release);
+        auto *const old_ptr = _ptr.exchange(nullptr, std::memory_order::release);
         hilet old_version = *_idle_count;
         write_unlock();
 
-        add_old_version(old_version, old_ptr);
+        add_old_copy(old_version, old_ptr);
     }
 
-    rcu &operator=(nullptr_t) noexcept
+    rcu& operator=(nullptr_t) noexcept
     {
         reset();
         return *this;
     }
-
 
     /** Add an old copy.
      *
@@ -188,14 +195,13 @@ public:
 
         // Destroy all objects from previous idle-count versions.
         auto it = _old_ptrs.begin();
-        while (it !=  _old_ptrs.end() and it->first < new_version) {
+        while (it != _old_ptrs.end() and it->first < new_version) {
             std::destroy_at(it->second);
             std::allocator_traits<allocator_type>::deallocate(_allocator, it->second, 1);
             ++it;
         }
-        _old_ptrs.erase(_old_ptrs.begin, it);
+        _old_ptrs.erase(_old_ptrs.begin(), it);
     }
-
 
 private:
     std::atomic<value_type *> _ptr = nullptr;
@@ -203,7 +209,7 @@ private:
 
     allocator_type _allocator;
     mutable unfair_mutex _old_ptrs_mutex;
-    std::vector<std::pair<uint64_t,value_type *> _old_ptrs;
+    std::vector<std::pair<uint64_t, value_type *>> _old_ptrs;
 };
 
 template<typename RCU>
@@ -212,7 +218,7 @@ public:
     using rcu_type = RCU;
     using value_type = rcu_type::value_type;
 
-    rcu_read(RCU &rcu) noexcept : _rcu(rcu)
+    rcu_read(RCU& rcu) noexcept : _rcu(rcu)
     {
         _rcu.read_lock();
         _ptr = _rcu.get();
@@ -227,42 +233,38 @@ public:
 
     constexpr rcu_read() noexcept = default;
 
-    rcu_read(rcu_read const &other) noexcept :
-        _rcu(other._rcu), _ptr(other._ptr)
+    rcu_read(rcu_read const& other) noexcept : _rcu(other._rcu), _ptr(other._ptr)
     {
         _rcu.read_lock();
     }
 
-    rcu_read(rcu_read &&other) noexcept :
-        _rcu(std::exchange(other._rcu, nullptr), _ptr(std::exchange(other._ptr, nullptr)
-    {
-     
+    rcu_read(rcu_read&& other) noexcept : _rcu(std::exchange(other._rcu, nullptr)), _ptr(std::exchange(other._ptr, nullptr)) {}
 
-    rcu_read &operator=(rcu_read const &other)
+    rcu_read& operator=(rcu_read const& other)
     {
-       if (_rcu != other._rcu) {
-           if (other._rcu) {
-               other._rcu->read_lock();
-           }
-           if (_rcu) {
-               _rcu->read_unlock();
-           }
-       }
-           
-       _rcu = other._rcu;
-       _ptr = other._ptr;
-       _rcu.read_lock();
-       return *this;
+        if (_rcu != other._rcu) {
+            if (other._rcu) {
+                other._rcu->read_lock();
+            }
+            if (_rcu) {
+                _rcu->read_unlock();
+            }
+        }
+
+        _rcu = other._rcu;
+        _ptr = other._ptr;
+        _rcu.read_lock();
+        return *this;
     }
 
-    rcu_read &operator=(rcu_read &&other) noexcept
+    rcu_read& operator=(rcu_read&& other) noexcept
     {
         if (_rcu and _rcu != other._rcu) {
             _rcu->read_unlock();
         }
 
         _rcu = std::exchange(other._rcu, nullptr);
-        _prr = std::exchange(other._ptr, nullptr);
+        _ptr = std::exchange(other._ptr, nullptr);
         return *this;
     }
 
@@ -271,7 +273,7 @@ public:
         return _ptr;
     }
 
-    [[nodiscard]] constexpr value_type const &operator*() const noexcept
+    [[nodiscard]] constexpr value_type const& operator*() const noexcept
     {
         hi_axiom(_ptr);
         return *_ptr;
@@ -300,18 +302,16 @@ public:
         _rcu = nullptr;
     }
 
-    rcu_read &operator=(nullptr_t) noexcept
+    rcu_read& operator=(nullptr_t) noexcept
     {
         reset();
         return *this;
     }
 
-
 private:
     rcu_type *_rcu = nullptr;
     value_type const *_ptr = nullptr;
 };
-
 
 template<typename RCU>
 class rcu_write {
@@ -319,9 +319,7 @@ public:
     using rcu_type = RCU;
     using value_type = rcu_type::value_type;
 
-    rcu_write(rcu_type const &rcu) noexcept : _rcu(rcu), _ptr(rcu.copy())
-    {
-    }
+    rcu_write(rcu_type const& rcu) noexcept : _rcu(rcu), _ptr(rcu.copy()) {}
 
     ~rcu_write()
     {
@@ -329,19 +327,16 @@ public:
     }
 
     constexpr rcu_write() noexcept = default;
-    rcu_write(rcu_write const &) = delete;
-    rcu_write &operator=(rcu_write const &) = delete;
+    rcu_write(rcu_write const&) = delete;
+    rcu_write& operator=(rcu_write const&) = delete;
 
-    rcu_write(rcu_write &&other) noexcept :
-        _rcu(std::exchange(other._rcu, nullptr), _ptr(std::exchange(other._ptr, nullptr)
-    {
-    }
+    rcu_write(rcu_write&& other) noexcept : _rcu(std::exchange(other._rcu, nullptr)), _ptr(std::exchange(other._ptr, nullptr)) {}
 
-    rcu_write &operator=(rcu_write &&other) noexcept
+    rcu_write& operator=(rcu_write&& other) noexcept
     {
         reset();
-        _rcu = std::exhcnage(other._rcu, nullptr);
-        _ptr = std::exhcnage(other._ptr, nullptr);
+        _rcu = std::exchange(other._rcu, nullptr);
+        _ptr = std::exchange(other._ptr, nullptr);
         return *this;
     }
 
@@ -375,7 +370,7 @@ public:
         }
     }
 
-    rcu_write &operator=(nullptr_t) noexcept
+    rcu_write& operator=(nullptr_t) noexcept
     {
         reset();
     }
@@ -383,9 +378,6 @@ public:
 private:
     rcu_type *_rcu = nullptr;
     value_type *_ptr = nullptr;
-}
+};
 
-
-
-
-
+} // namespace hi::inline v1

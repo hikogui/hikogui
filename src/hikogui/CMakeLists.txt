@@ -135,6 +135,7 @@ target_sources(hikogui PRIVATE
     polynomial.hpp
     range_map.hpp
     ranges.hpp
+    rcu.hpp
     recursive_iterator.hpp
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32.cpp>
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32.hpp>
@@ -243,6 +244,7 @@ if(HI_BUILD_TESTS)
         polymorphic_optional_tests.cpp
         polynomial_tests.cpp
         ranges_tests.cpp
+        rcu_tests.cpp
         safe_int_tests.cpp
         sip_hash_tests.cpp
         small_map_tests.cpp
