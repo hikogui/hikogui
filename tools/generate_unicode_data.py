@@ -1,9 +1,5 @@
-
 import ucd
-import sys
-import os.path
 import argparse
-import struct
 
 def parse_options():
     parser = argparse.ArgumentParser(description='Build c++ source files from Unicode ucd text files.')

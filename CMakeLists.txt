@@ -498,6 +498,9 @@ if(HI_BUILD_TESTS)
             ${CMAKE_CURRENT_BINARY_DIR}
     )
 
+    set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+    set_target_properties(gtest      PROPERTIES FOLDER extern)
+    set_target_properties(gtest_main PROPERTIES FOLDER extern)
 endif()
 
 #-------------------------------------------------------------------

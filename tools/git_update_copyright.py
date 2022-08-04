@@ -2,7 +2,6 @@
 
 import subprocess
 import sys
-import re
 import datetime
 
 copyright_reference = [
@@ -39,7 +38,7 @@ def format_years(years):
     for year in sorted(list(years)):
         if len(year_ranges) == 0 or not year_ranges[-1].add_year(year):
             year_ranges.append(YearRange(year))
-    
+
     return ", ".join(str(x) for x in year_ranges)
 
 class Commit (object):
