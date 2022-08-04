@@ -8,6 +8,7 @@
 #include "unfair_mutex.hpp"
 #include <vector>
 #include <tuple>
+#include <mutex>
 
 namespace hi::inline v1 {
 
