@@ -25,6 +25,7 @@
 #endif
 #include <bit>
 #include <concepts>
+#include <cstring.hpp>
 
 hi_warning_push();
 // C26472: Don't use a static_cast for arithmetic conversions. Use brace initialization, gsl::narrow_cast or gsl::narrow
@@ -198,13 +199,9 @@ using native_int16_buf_at = endian_buf_t<int16_t, std::endian::native>;
 /** Load an integer from unaligned memory in native byte-order.
  */
 template<numeric T>
-hi_force_inline T load(void const *src) noexcept
+[[nodiscard]] hi_force_inline T load(void const *src) noexcept
 {
-#if HI_COMPILER == HI_CC_MSVC
-    return *reinterpret_cast<__unaligned T const *>(src);
-#else
-#error "missing implementation for load()"
-#endif
+    return load(reinterpret_cast<uint8_t const *>(src));
 }
 
 /** Load an integer from unaligned memory in little-endian byte-order.
