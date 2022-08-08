@@ -118,9 +118,9 @@ public:
         std::allocator_traits<allocator_type>::deallocate(_allocator, old_ptr, 1);
     }
 
-    /** Write a copied value.
+    /** Commit the copied value.
      */
-    void write(value_type *new_ptr) const noexcept
+    void commit(value_type *new_ptr) const noexcept
     {
         lock();
         auto *old_ptr = exchange(new_ptr);
