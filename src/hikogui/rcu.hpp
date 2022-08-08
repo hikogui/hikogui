@@ -38,28 +38,14 @@ public:
 
     /** Lock the rcu pointer for reading.
      */
-    void read_lock() noexcept
+    void lock() noexcept
     {
         _idle_count.lock();
     }
 
     /** Unlock the rcu pointer for reading.
      */
-    void read_unlock() noexcept
-    {
-        _idle_count.unlock();
-    }
-
-    /** Lock the rcu pointer for writing.
-     */
-    void write_lock() noexcept
-    {
-        _idle_count.lock();
-    }
-
-    /** Unlock the rcu pointer for writing.
-     */
-    void write_unlock() noexcept
+    void unlock() noexcept
     {
         _idle_count.unlock();
     }
@@ -118,10 +104,29 @@ public:
     [[nodiscard]] value_type *copy() const noexcept
     {
         hilet *allocation = std::allocator_traits<allocator_type>::allocate(_allocator, 1);
-        read_lock();
+        lock();
         hilet *new_ptr = std::construct_at(allocation, *get());
-        read_unlock();
+        unlock();
         return new_ptr;
+    }
+
+    /** Abort a copy.
+     */
+    void abort(value_type *old_ptr) const noexcept
+    {
+        std::destroy_at(old_ptr);
+        std::allocator_traits<allocator_type>::deallocate(_allocator, old_ptr, 1);
+    }
+
+    /** Write a copied value.
+     */
+    void write(value_type *new_ptr) const noexcept
+    {
+        lock();
+        auto *old_ptr = exchange(new_ptr);
+        auto old_version = version();
+        unlock();
+        add_old_copy(old_version, old_ptr);
     }
 
     /** Emplace a new value.
@@ -140,10 +145,10 @@ public:
         auto *const allocation = std::allocator_traits<allocator_type>::allocate(_allocator, 1);
         auto *const new_ptr = std::construct_at(allocation, std::forward<Args>(args)...);
 
-        write_lock();
+        lock();
         auto *const old_ptr = exchange(new_ptr);
         hilet old_version = version();
-        write_unlock();
+        unlock();
 
         add_old_copy(old_version, old_ptr);
     }
@@ -160,10 +165,10 @@ public:
 
     void reset() noexcept
     {
-        write_lock();
+        lock();
         auto *const old_ptr = _ptr.exchange(nullptr, std::memory_order::release);
         hilet old_version = *_idle_count;
-        write_unlock();
+        unlock();
 
         add_old_copy(old_version, old_ptr);
     }
@@ -221,14 +226,14 @@ public:
 
     rcu_read(RCU& rcu) noexcept : _rcu(rcu)
     {
-        _rcu.read_lock();
+        _rcu.lock();
         _ptr = _rcu.get();
     }
 
     ~rcu_read()
     {
         if (_rcu) {
-            _rcu.read_unlock();
+            _rcu.unlock();
         }
     }
 
@@ -236,7 +241,7 @@ public:
 
     rcu_read(rcu_read const& other) noexcept : _rcu(other._rcu), _ptr(other._ptr)
     {
-        _rcu.read_lock();
+        _rcu.lock();
     }
 
     rcu_read(rcu_read&& other) noexcept : _rcu(std::exchange(other._rcu, nullptr)), _ptr(std::exchange(other._ptr, nullptr)) {}
@@ -245,10 +250,10 @@ public:
     {
         if (_rcu != other._rcu) {
             if (other._rcu) {
-                other._rcu->read_lock();
+                other._rcu->lock();
             }
             if (_rcu) {
-                _rcu->read_unlock();
+                _rcu->unlock();
             }
         }
 
@@ -261,7 +266,7 @@ public:
     rcu_read& operator=(rcu_read&& other) noexcept
     {
         if (_rcu and _rcu != other._rcu) {
-            _rcu->read_unlock();
+            _rcu->unlock();
         }
 
         _rcu = std::exchange(other._rcu, nullptr);
@@ -298,7 +303,7 @@ public:
     void reset() noexcept
     {
         if (_rcu) {
-            _rcu.read_unlock();
+            _rcu.unlock();
         }
         _rcu = nullptr;
     }
@@ -359,10 +364,10 @@ public:
     void reset() noexcept
     {
         if (_rcu) {
-            _rcu.write_lock();
+            _rcu.lock();
             hilet *old_ptr = _rcu.exchange(_ptr);
             hilet *old_version = rcu.version();
-            _rcu.write_unlock();
+            _rcu.unlock();
 
             _rcu.add_old_copy(old_version, old_ptr);
             _rcu.cleanup();
