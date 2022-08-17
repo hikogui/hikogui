@@ -153,37 +153,48 @@ public:
         value_type const *_value = nullptr;
     };
 
-    template<typename In>
-    shared_state_cursor(shared_state_cursor<In> *parent, std::function<value_type *(shared_state_cursor_base *)> get) noexcept :
-        _parent(parent), _get(std::move(get))
+    shared_state_cursor(shared_state_base *state, std::shared_ptr<shared_state_path> path) noexcept :
+        _state(state), _path(std::move(path))
     {
     }
 
-    const_proxy read() const noexcept
+    [[nodiscard]] const_proxy read() const noexcept
     {
         _state->lock();
         return {_state, static_cast<value_type *>(_path->get(_state->read()))};
     }
 
-    proxy copy() const noexcept
+    [[nodiscard]] proxy copy() const noexcept
     {
         void *const ptr = _state->copy();
         return {_state, _path, ptr, static_cast<value_type *>(_path->get(ptr))};
     }
 
-    std::shared_ptr<shared_state_path> path() const noexcept
+    [[nodiscard]] std::shared_ptr<shared_state_path> path() const noexcept
     {
         return _path;
     }
 
-    token_type subscribe(callback_flags flags, function_type callback) noexcept
+    [[nodiscard]] token_type subscribe(callback_flags flags, function_type callback) noexcept
     {
         return _state->subscribe(_path->path(), flags, callback);
     }
 
+    [[nodiscard]] auto operator[](auto const& index) noexcept requires(requires() { std::declval<value_tpe>{}[index]; })
+    {
+        using out_type = decltype(std::declval<value_tpe>{}[index]);
+        return shared_state_cursor<out_type>{_state, make_shared_state_path_index(_path, std::forward<Index>(index))};
+    }
+
+    template<typename Out>
+    [[nodiscard]] shared_state_cursor<Out> by_name(std::string_view const& name) noexcept
+    {
+        return {_state, make_shared_state_path_name(_path, name)};
+    }
+
 private:
-    std::shared_ptr<shared_state_path> _path;
-    shared_state_base *_state;
+    shared_state_base *_state = nullptr;
+    std::shared_ptr<shared_state_path> _path = nullptr;
 };
 
 } // namespace hi::inline v1

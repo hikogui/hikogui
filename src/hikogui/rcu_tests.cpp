@@ -24,13 +24,13 @@ TEST(rcu, read)
     ASSERT_FALSE(object.empty());
     ASSERT_EQ(object.capacity(), 1);
 
-    object.read_lock();
+    object.lock();
     auto ptr = object.get();
     ASSERT_NE(ptr, nullptr);
     ASSERT_EQ(*ptr, 42);
     ASSERT_EQ(object.version(), 1);
 
-    object.read_unlock();
+    object.unlock();
     ASSERT_EQ(object.version(), 2);
 }
 
@@ -47,7 +47,7 @@ TEST(rcu, write_while_read)
     ASSERT_FALSE(object.empty());
     ASSERT_EQ(object.capacity(), 1);
 
-    object.read_lock();
+    object.lock();
     auto ptr42 = object.get();
     ASSERT_NE(ptr42, nullptr);
     ASSERT_EQ(*ptr42, 42);
@@ -57,16 +57,16 @@ TEST(rcu, write_while_read)
     ASSERT_EQ(object.version(), 1);
     ASSERT_EQ(object.capacity(), 2);
 
-    object.read_lock();
+    object.lock();
     auto ptr5 = object.get();
     ASSERT_NE(ptr5, nullptr);
     ASSERT_EQ(*ptr5, 5);
     ASSERT_EQ(object.version(), 1);
-    object.read_unlock();
+    object.unlock();
     // The version does not increment while a lock is being held.
     ASSERT_EQ(object.version(), 1);
 
-    object.read_unlock();
+    object.unlock();
     ASSERT_EQ(object.version(), 2);
     // The capacity does not change when just reading.
     ASSERT_EQ(object.capacity(), 2);
