@@ -2,6 +2,7 @@
 #pragma once
 
 #include "../memory.hpp"
+#include "../type_traits.hpp"
 #include <cstddef>
 #include <memory>
 #include <functional>
@@ -21,7 +22,7 @@ public:
         std::shared_ptr<shared_state_path> parent,
         std::string_view name,
         std::function<void *(void *)> get) noexcept :
-        _parent(std::move(parent)), _path(parent->_path + name), _get(std::move(get_lambda))
+        _parent(std::move(parent)), _path(parent->_path + std::string{name}), _get(std::move(get))
     {
     }
 
@@ -30,7 +31,7 @@ public:
         return _get(_parent->get(state_value));
     }
 
-    [[nodiscard]] constexpr std::string const &path() const noexcept
+    [[nodiscard]] constexpr std::string const& path() const noexcept
     {
         return _path;
     }
@@ -51,21 +52,22 @@ private:
     std::function<void *(void *)> _get;
 };
 
-template<typename ParentValueType>
-std::shared_ptr<shared_state_path>
-make_shared_state_path_name(std::shared_ptr<shared_state_path> parent, member_offset offset, std::string_view name) noexcept
+template<typename ParentValueType, basic_fixed_string Name>
+std::shared_ptr<shared_state_path> make_by_name(std::shared_ptr<shared_state_path> parent) noexcept
 {
-    return std::make_shared<shared_state_path>(std::move(parent), std::format(".{}", name), [](void *parent_value) -> void * {
-        return advance_bytes(parent_value, offset);
-    });
+    return std::make_shared<shared_state_path>(
+        std::move(parent), std::format(".{}", Name), [](void *parent_value) -> void * {
+            return std::addressof(selector<ParentValueType>{}.get<Name>(*static_cast<ParentValueType *>(parent_value)));
+        });
 }
 
 template<typename ParentValueType, typename Index>
-std::shared_ptr<shared_state_path> make_shared_state_path_index(std::shared_ptr<shared_state_path> parent, Index index) noexcept
+std::shared_ptr<shared_state_path> make_by_index(std::shared_ptr<shared_state_path> parent, Index const& index) noexcept
 {
-    return std::make_shared<shared_state_path>(std::move(parent), std::format("[{}]", index), [](void *parent_value) -> void * {
-        return std::addressof((*static_cast<ParentValueType *> parent_value)[index]);
-    });
+    return std::make_shared<shared_state_path>(
+        std::move(parent), std::format("[{}]", index), [index](void *parent_value) -> void * {
+            return std::addressof((*static_cast<ParentValueType *>(parent_value))[index]);
+        });
 }
 
 } // namespace hi::inline v1

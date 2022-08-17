@@ -416,4 +416,37 @@ struct variant_decay<void> {
 template<typename T>
 using variant_decay_t = variant_decay<T>::type;
 
+/** This selector allows access to member variable by name.
+ *
+ * An application may add a specialization for `selector` for its own type.
+ * The specialization should add a templated function `get()` to give access to members
+ * based on the template parameter.
+ *
+ * The prototype of the `get()` function are as follows:
+ *  - `template<basic_fixed_string> auto &get(T &) const noexcept`
+ *  - `template<basic_fixed_string> auto const &get(T const &) const noexcept`
+ *
+ * Here is an example how to specialize `hi::selector` for the `my::simple` type:
+ * 
+ * ```cpp
+ * namespace my {
+ * struct simple { int foo; std::string bar; };
+ * }
+ * 
+ * template<>
+ * struct hi::selector<my::simple> {
+ *     template<hi::basic_fixed_string> auto &get(my::simple &) const noexcept;
+ *     template<hi::basic_fixed_string> auto const &get(my::simple const &) const noexcept;
+ * 
+ *     template<> auto &get<"foo">(my::simple &rhs) const noexcept { return rhs.foo; }
+ *     template<> auto const &get<"foo">(my::simple const &rhs) const noexcept { return rhs.foo; }
+ *     template<> auto &get<"bar">(my::simple &rhs) const noexcept { return rhs.bar; }
+ *     template<> auto const &get<"bar">(my::simple const &rhs) const noexcept { return rhs.bar; }
+ * };
+ * ```
+ */
+template<typename T>
+struct selector {
+};
+
 } // namespace hi::inline v1
