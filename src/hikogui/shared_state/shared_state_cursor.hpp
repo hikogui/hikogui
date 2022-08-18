@@ -170,31 +170,38 @@ public:
         return {_state, _path, ptr, static_cast<value_type *>(_path->get(ptr))};
     }
 
-    [[nodiscard]] std::shared_ptr<shared_state_path> path() const noexcept
-    {
-        return _path;
-    }
-
     [[nodiscard]] token_type subscribe(callback_flags flags, function_type callback) noexcept
     {
         return _state->subscribe(_path->path(), flags, callback);
     }
 
-    [[nodiscard]] auto operator[](auto const& index) noexcept requires(requires() { std::declval<value_tpe>{}[index]; })
+    template<basic_fixed_string Name>
+    [[nodiscard]] auto by_name() const noexcept
     {
-        using out_type = decltype(std::declval<value_tpe>{}[index]);
-        return shared_state_cursor<out_type>{_state, make_shared_state_path_index(_path, std::forward<Index>(index))};
+        using output_type = decltype(selector<value_type>{}.get<Name>(std::declval<value_type>()));
+        return shared_state_cursor<output_type>{_state, _path.by_name<value_type, Name>()};
     }
 
-    template<typename Out>
-    [[nodiscard]] shared_state_cursor<Out> by_name(std::string_view const& name) noexcept
+    [[nodiscard]] auto by_index(auto const &index) const noexcept
     {
-        return {_state, make_shared_state_path_name(_path, name)};
+        using output_type = decltype(std::declval<value_tpe>{}[index]);
+        return shared_state_cursor<output_type>{_state, _path.by_index<value_type>(index)};
+    }
+
+    [[nodiscard]] auto by_index(auto const &index) const noexcept
+    {
+        using output_type = decltype(std::declval<value_tpe>{}[index]);
+        return shared_state_cursor<output_type>{_state, _path.by_index<value_type>(index)};
+    }
+
+    [[nodiscard]] auto operator[](auto const& index) noexcept requires(requires() { std::declval<value_tpe>{}[index]; })
+    {
+        return by_index(index);
     }
 
 private:
     shared_state_base *_state = nullptr;
-    std::shared_ptr<shared_state_path> _path = nullptr;
+    shared_state_path _path = {};
 };
 
 } // namespace hi::inline v1
