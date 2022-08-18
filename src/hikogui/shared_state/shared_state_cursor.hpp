@@ -1,11 +1,16 @@
+// Copyright Take Vos 2022.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
-#include "shared_state_path.hpp"
-#include "shared_state.hpp"
+#include "shared_state_base.hpp"
 #include "../assert.hpp"
 #include "../memory.hpp"
+#include "../fixed_string.hpp"
 #include <cstddef>
+#include <functional>
+#include <string>
 
 namespace hi::inline v1 {
 
@@ -20,8 +25,9 @@ public:
     public:
         ~proxy() noexcept
         {
-            if (_rcu_ptr) {
-                _state->commit(_rcu_ptr, _path.path());
+            if (_base) {
+                hi_axiom(_cursor);
+                _cursor->commit(_base);
             }
         }
 
@@ -29,66 +35,65 @@ public:
         proxy& operator=(proxy const&) = delete;
 
         proxy(proxy&& other) noexcept :
-            _state(std::exchange(other._state, nullptr)),
-            _path(std::exchange(other._path, nullptr)),
-            _rcu_ptr(std::exchange(other._rcu_ptr, nullptr)),
+            _cursor(std::exchange(other._cursor, nullptr)),
+            _base(std::exchange(other._base, nullptr)),
             _value(std::exchange(other._value, nullptr))
         {
         }
 
         proxy& operator=(proxy&& other) noexcept
         {
-            if (_rcu_ptr) {
-                _state->commit(rcu_ptr, _path.path());
+            if (_base) {
+                hi_axiom(_cursor);
+                _cursor->commit(_base);
             }
-            _state = std::exchange(other._state, nullptr);
-            _path = std::exchange(other._path, nullptr);
-            _rcu_ptr = std::exchange(other._rcu_ptr, nullptr);
+            _cursor = std::exchange(other._cursor, nullptr);
+            _base = std::exchange(other._base, nullptr);
             _value = std::exchange(other._value, nullptr);
         }
 
         constexpr proxy() noexcept = default;
 
-        proxy(shared_state_base *state, std::shared_ptr<shared_state_path> path, void *rcu_ptr, value_type *value) noexcept :
-            _state(state), _path(std::move(path)), _rcu_ptr(rcu_ptr), _value(value)
+        proxy(shared_state_cursor const *cursor, void *base, value_type *value) noexcept :
+            _cursor(cursor), _base(base), _value(value)
         {
-            hi_axiom(_state);
-            hi_axiom(_path);
-            hi_axiom(_rcu_ptr);
+            hi_axiom(_cursor);
+            hi_axiom(_base);
             hi_axiom(_value);
         }
 
         value_type& operator*() noexcept
         {
-            hi_axiom(_rcu_ptr);
+            hi_axiom(_base);
             hi_axiom(_value);
             return *_value;
         }
 
         value_type *operator->() noexcept
         {
-            hi_axiom(_rcu_ptr);
+            hi_axiom(_base);
             return _value;
         }
 
         void commit() noexcept
         {
-            if (auto tmp = std::exchange(_rcu_ptr, nullptr)) {
-                _state->commit(_rcu_ptr, _path.path());
+            if (auto tmp = std::exchange(_base, nullptr)) {
+                hi_axiom(_cursor);
+                _cursor->commit(tmp);
             }
         }
 
         void abort() noexcept
         {
-            if (auto tmp = std::exchange(_rcu_ptr, nullptr)) {
-                _state->abort(_rcu_ptr);
+            if (auto tmp = std::exchange(_base, nullptr)) {
+                hi_axiom(_cursor);
+                _cursor->abort(tmp);
             }
         }
 
     private:
-        shared_state_base *_state = nullptr;
-        shared_ptr<shared_state_path> _path = nullptr;
-        void *_rcu_ptr = nullptr;
+        shared_state_cursor const *_cursor = nullptr;
+        void *_base = nullptr;
         value_type *_value = nullptr;
     };
 
@@ -96,112 +101,132 @@ public:
     public:
         ~const_proxy() noexcept
         {
-            if (_state) {
-                _state->unlock();
+            if (_value) {
+                hi_axiom(_cursor);
+                _cursor->unlock();
             }
         }
 
-        const_proxy(const_proxy const& other) noexcept : _state(other._state), _value(other._value)
+        const_proxy(const_proxy const& other) noexcept : _cursor(other._cursor), _value(other._value)
         {
-            if (_state) {
-                _state->lock();
+            if (_value) {
+                hi_axiom(_cursor);
+                _cursor->lock();
             }
         }
 
         const_proxy& operator=(const_proxy const& other) noexcept
         {
-            if (_state) {
-                _state->unlock();
+            if (_value) {
+                hi_axiom(_cursor);
+                _cursor->unlock();
             }
-            _state = other._state;
+            _cursor = other._cursor;
             _value = other._value;
-            if (_state) {
-                _state->lock();
+            if (_value) {
+                hi_axiom(_cursor);
+                _cursor->lock();
             }
         }
 
         const_proxy(const_proxy&& other) noexcept :
-            _state(std::exchange(other._state, nullptr)), _value(std::exchange(other._value, nullptr))
+            _cursor(std::exchange(other._cursor, nullptr)), _value(std::exchange(other._value, nullptr))
         {
         }
 
         const_proxy& operator=(const_proxy&& other) noexcept
         {
-            if (_state) {
-                _state->unlock();
+            if (_value) {
+                hi_axiom(_cursor);
+                _cursor->unlock();
             }
-            _state = std::exchange(other._state, nullptr);
+            _cursor = std::exchange(other._cursor, nullptr);
             _value = std::exchange(other._value, nullptr);
         }
 
         constexpr const_proxy() noexcept = default;
-        const_proxy(shared_state_base *state, value_type const *value) noexcept : _state(state), _value(value) {}
+        const_proxy(shared_state_cursor const *cursor, value_type const *value) noexcept : _cursor(cursor), _value(value) {}
 
         [[nodiscard]] value_type const& operator*() const noexcept
         {
-            hi_axiom(_rcu_ptr);
+            hi_axiom(_cursor);
+            hi_axiom(_value);
             return *_value;
         }
 
         [[nodiscard]] value_type const *operator->() const noexcept
         {
+            hi_axiom(_cursor);
+            hi_axiom(_value);
             return _value;
         }
 
     private:
-        shared_state_base *_state = nullptr;
+        shared_state_cursor const *_cursor = nullptr;
         value_type const *_value = nullptr;
     };
 
-    shared_state_cursor(shared_state_base *state, std::shared_ptr<shared_state_path> path) noexcept :
-        _state(state), _path(std::move(path))
+    shared_state_cursor(shared_state_base *state, std::string &&path, std::function<void *(void *)> &&converter) noexcept :
+        _state(state), _path(std::move(path)), _convert(std::move(converter))
     {
     }
 
-    [[nodiscard]] const_proxy read() const noexcept
+    const_proxy read() && = delete;
+    proxy copy() && = delete;
+
+    [[nodiscard]] const_proxy read() const & noexcept
     {
         _state->lock();
-        return {_state, static_cast<value_type *>(_path->get(_state->read()))};
+        return {this, static_cast<value_type const *>(_convert(const_cast<void *>(_state->read())))};
     }
 
-    [[nodiscard]] proxy copy() const noexcept
+    [[nodiscard]] proxy copy() const & noexcept
     {
         void *const ptr = _state->copy();
-        return {_state, _path, ptr, static_cast<value_type *>(_path->get(ptr))};
+        return {this, ptr, static_cast<value_type *>(_convert(ptr))};
     }
 
     [[nodiscard]] token_type subscribe(callback_flags flags, function_type callback) noexcept
     {
-        return _state->subscribe(_path->path(), flags, callback);
+        return _state->subscribe(_path, flags, callback);
+    }
+
+    [[nodiscard]] auto operator[](auto const& index) const noexcept requires(requires() { std::declval<value_type>()[index]; })
+    {
+        using result_type = std::decay_t<decltype(std::declval<value_type>()[index])>;
+
+        return shared_state_cursor<result_type>{
+            _state, std::format("{}[{}]", _path, index), [convert = this->_convert, index](void *base) -> void * {
+                return std::addressof((*static_cast<value_type *>(convert(base)))[index]);
+            }};
     }
 
     template<basic_fixed_string Name>
-    [[nodiscard]] auto by_name() const noexcept
+    [[nodiscard]] auto _() const noexcept
     {
-        using output_type = decltype(selector<value_type>{}.get<Name>(std::declval<value_type>()));
-        return shared_state_cursor<output_type>{_state, _path.by_name<value_type, Name>()};
-    }
+        using result_type = std::decay_t<decltype(selector<value_type>{}.get<Name>(std::declval<value_type &>()))>;
 
-    [[nodiscard]] auto by_index(auto const &index) const noexcept
-    {
-        using output_type = decltype(std::declval<value_tpe>{}[index]);
-        return shared_state_cursor<output_type>{_state, _path.by_index<value_type>(index)};
-    }
-
-    [[nodiscard]] auto by_index(auto const &index) const noexcept
-    {
-        using output_type = decltype(std::declval<value_tpe>{}[index]);
-        return shared_state_cursor<output_type>{_state, _path.by_index<value_type>(index)};
-    }
-
-    [[nodiscard]] auto operator[](auto const& index) noexcept requires(requires() { std::declval<value_tpe>{}[index]; })
-    {
-        return by_index(index);
+        return shared_state_cursor<result_type>{
+            _state, std::format("{}.{}", _path, Name), [convert=this->_convert](void *base) -> void * {
+                return std::addressof(selector<value_type>{}.get<Name>(*static_cast<value_type *>(convert(base))));
+            }};
     }
 
 private:
     shared_state_base *_state = nullptr;
-    shared_state_path _path = {};
+    std::string _path = {};
+    std::function<void *(void *)> _convert = {};
+
+    void unlock() const noexcept
+    {
+        _state->unlock();
+    }
+
+    void commit(void *base) const noexcept
+    {
+        _state->commit(base, _path);
+    }
+
 };
 
 } // namespace hi::inline v1

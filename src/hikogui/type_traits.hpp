@@ -430,7 +430,10 @@ using variant_decay_t = variant_decay<T>::type;
  * 
  * ```cpp
  * namespace my {
- * struct simple { int foo; std::string bar; };
+ * struct simple {
+ *     int foo;
+ *     std::string bar;
+ * };
  * }
  * 
  * template<>

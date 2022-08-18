@@ -49,7 +49,6 @@ TEST(type_traits, decayed_base_of)
     static_assert(!hi::is_decayed_base_of_v<C&, A&>);
 }
 
-
 namespace my {
 struct simple {
     int foo;

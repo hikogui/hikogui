@@ -38,21 +38,21 @@ public:
 
     /** Lock the rcu pointer for reading.
      */
-    void lock() noexcept
+    void lock() const noexcept
     {
         _idle_count.lock();
     }
 
     /** Unlock the rcu pointer for reading.
      */
-    void unlock() noexcept
+    void unlock() const noexcept
     {
         _idle_count.unlock();
     }
 
     /** get the rcu-pointer.
      */
-    value_type const *get() noexcept
+    value_type const *get() const noexcept
     {
         return _ptr.load(std::memory_order::acquire);
     }
@@ -103,9 +103,9 @@ public:
      */
     [[nodiscard]] value_type *copy() const noexcept
     {
-        hilet *allocation = std::allocator_traits<allocator_type>::allocate(_allocator, 1);
+        auto *allocation = std::allocator_traits<allocator_type>::allocate(_allocator, 1);
         lock();
-        hilet *new_ptr = std::construct_at(allocation, *get());
+        auto *new_ptr = std::construct_at(allocation, *get());
         unlock();
         return new_ptr;
     }
@@ -120,7 +120,7 @@ public:
 
     /** Commit the copied value.
      */
-    void commit(value_type *new_ptr) const noexcept
+    void commit(value_type *new_ptr) noexcept
     {
         lock();
         auto *old_ptr = exchange(new_ptr);
@@ -213,7 +213,7 @@ private:
     std::atomic<value_type *> _ptr = nullptr;
     mutable wfree_idle_count _idle_count;
 
-    allocator_type _allocator;
+    mutable allocator_type _allocator;
     mutable unfair_mutex _old_ptrs_mutex;
     std::vector<std::pair<uint64_t, value_type *>> _old_ptrs;
 };

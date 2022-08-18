@@ -6,11 +6,10 @@
 target_sources(hikogui PRIVATE
     shared_state.hpp
     shared_state_cursor.hpp
-    shared_state_path.hpp
 )
 
 if(HI_BUILD_TESTS)
     target_sources(hikogui_tests PRIVATE
-        shared_state_path_tests.cpp
+        shared_state_tests.cpp
     )
 endif()

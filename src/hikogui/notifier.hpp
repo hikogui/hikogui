@@ -86,7 +86,8 @@ public:
             return _args;
         }
 
-    private : notifier *_notifier = nullptr;
+    private:
+        notifier *_notifier = nullptr;
         token_type _cbt;
         std::tuple<Args...> _args;
     };
@@ -94,10 +95,10 @@ public:
     /** Create a notifier.
      */
     constexpr notifier() noexcept = default;
-    notifier(notifier&&) = delete;
-    notifier(notifier const&) = delete;
-    notifier& operator=(notifier&&) = delete;
-    notifier& operator=(notifier const&) = delete;
+    constexpr notifier(notifier&&) noexcept = default;
+    constexpr notifier(notifier const&) noexcept = default;
+    constexpr notifier& operator=(notifier&&) noexcept = default;
+    constexpr notifier& operator=(notifier const&) noexcept = default;
 
     /** Create an awaiter that can await on this notifier.
      */

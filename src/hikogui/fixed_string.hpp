@@ -73,6 +73,11 @@ struct basic_fixed_string {
         return N;
     }
 
+    [[nodiscard]] constexpr value_type const *data() const noexcept
+    {
+        return _str.data();
+    }
+
     [[nodiscard]] constexpr auto begin() noexcept
     {
         return _str.begin();
@@ -82,8 +87,6 @@ struct basic_fixed_string {
     {
         return _str.begin() + size();
     }
-
-    
 
     [[nodiscard]] constexpr bool operator==(basic_fixed_string const& rhs) const noexcept = default;
     [[nodiscard]] constexpr auto operator<=>(basic_fixed_string const& rhs) const noexcept = default;

@@ -17,7 +17,7 @@ TEST(rcu, read)
     ASSERT_EQ(object.version(), 0);
     ASSERT_TRUE(object.empty());
     ASSERT_EQ(object.capacity(), 0);
-    ASSERT_EQ(object.read(), nullptr);
+    ASSERT_EQ(object.get(), nullptr);
 
     object.emplace(42);
     ASSERT_EQ(object.version(), 1);
@@ -39,7 +39,7 @@ TEST(rcu, write_while_read)
     auto object = rcu<int>{};
     ASSERT_EQ(object.version(), 0);
     ASSERT_TRUE(object.empty());
-    ASSERT_EQ(object.read(), nullptr);
+    ASSERT_EQ(object.get(), nullptr);
     ASSERT_EQ(object.capacity(), 0);
 
     object.emplace(42);
@@ -48,7 +48,7 @@ TEST(rcu, write_while_read)
     ASSERT_EQ(object.capacity(), 1);
 
     object.lock();
-    auto ptr42 = object.read();
+    auto ptr42 = object.get();
     ASSERT_NE(ptr42, nullptr);
     ASSERT_EQ(*ptr42, 42);
     ASSERT_EQ(object.version(), 1);
@@ -58,7 +58,7 @@ TEST(rcu, write_while_read)
     ASSERT_EQ(object.capacity(), 2);
 
     object.lock();
-    auto ptr5 = object.read();
+    auto ptr5 = object.get();
     ASSERT_NE(ptr5, nullptr);
     ASSERT_EQ(*ptr5, 5);
     ASSERT_EQ(object.version(), 1);
