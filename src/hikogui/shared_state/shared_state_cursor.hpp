@@ -6,11 +6,11 @@
 
 #include "shared_state_base.hpp"
 #include "../assert.hpp"
-#include "../memory.hpp"
 #include "../fixed_string.hpp"
 #include <cstddef>
 #include <functional>
 #include <string>
+#include <memory>
 
 namespace hi::inline v1 {
 

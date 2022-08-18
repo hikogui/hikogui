@@ -205,6 +205,12 @@ template<std::integral Out, std::integral In>
     return static_cast<Out>(out_unsigned);
 }
 
+template<std::integral Out>
+[[nodiscard]] constexpr Out char_cast(std::byte rhs) noexcept
+{
+    return char_cast<Out>(static_cast<uint8_t>(rhs));
+}
+
 /** Return the low half of the input value.
  */
 template<std::unsigned_integral OutType, std::unsigned_integral InType>
