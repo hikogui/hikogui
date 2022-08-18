@@ -73,11 +73,6 @@ struct basic_fixed_string {
         return N;
     }
 
-    [[nodiscard]] constexpr value_type const *data() const noexcept
-    {
-        return _str.data();
-    }
-
     [[nodiscard]] constexpr auto begin() noexcept
     {
         return _str.begin();
@@ -131,9 +126,9 @@ basic_fixed_string(CharT const (&str)[N]) -> basic_fixed_string<CharT, N - 1>;
 } // namespace hi::inline v1
 
 template<typename T, std::size_t N, typename CharT>
-struct std::formatter<hi::basic_fixed_string<T, N>, CharT> : std::formatter<T const *, CharT> {
+struct std::formatter<hi::basic_fixed_string<T, N>, CharT> : std::formatter<std::basic_string_view<T>, CharT> {
     auto format(hi::basic_fixed_string<T, N> const& t, auto& fc)
     {
-        return std::formatter<T const *, CharT>::format(t.data(), fc);
+        return std::formatter<std::basic_string_view<T>, CharT>::format(static_cast<std::basic_string_view<T>>(t), fc);
     }
 };

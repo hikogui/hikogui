@@ -34,7 +34,7 @@ public:
 
     [[nodiscard]] shared_state_cursor<value_type> cursor() const& noexcept
     {
-        return {const_cast<shared_state *>(this), std::string{}, [](void *base) -> void * {
+        return {const_cast<shared_state *>(this), "/", [](void *base) -> void * {
                     return base;
                 }};
     }

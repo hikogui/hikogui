@@ -196,7 +196,7 @@ public:
         using result_type = std::decay_t<decltype(std::declval<value_type>()[index])>;
 
         return shared_state_cursor<result_type>{
-            _state, std::format("{}[{}]", _path, index), [convert = this->_convert, index](void *base) -> void * {
+            _state, std::format("{}[{}]/", _path, index), [convert = this->_convert, index](void *base) -> void * {
                 return std::addressof((*static_cast<value_type *>(convert(base)))[index]);
             }};
     }
@@ -207,7 +207,7 @@ public:
         using result_type = std::decay_t<decltype(selector<value_type>{}.get<Name>(std::declval<value_type &>()))>;
 
         return shared_state_cursor<result_type>{
-            _state, std::format("{}.{}", _path, Name), [convert=this->_convert](void *base) -> void * {
+            _state, std::format("{}{}/", _path, Name), [convert=this->_convert](void *base) -> void * {
                 return std::addressof(selector<value_type>{}.get<Name>(*static_cast<value_type *>(convert(base))));
             }};
     }
@@ -227,6 +227,10 @@ private:
         _state->commit(base, _path);
     }
 
+    void abort(void *base) const noexcept
+    {
+        _state->abort(base);
+    }
 };
 
 } // namespace hi::inline v1

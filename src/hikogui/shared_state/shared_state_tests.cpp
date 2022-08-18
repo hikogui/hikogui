@@ -74,6 +74,7 @@ TEST(shared_state, notify)
     auto b_cursor = a_cursor._<"b">();
     auto foo_cursor = b_cursor._<"foo">();
     auto bar_cursor = b_cursor._<"bar">();
+    auto barD_cursor = b_cursor._<"bar">();
     auto baz_cursor = a_cursor._<"baz">();
     auto baz0_cursor = baz_cursor[0];
     auto baz1_cursor = baz_cursor[1];
@@ -82,6 +83,7 @@ TEST(shared_state, notify)
     auto b_count = 0;
     auto foo_count = 0;
     auto bar_count = 0;
+    auto barD_count = 0;
     auto baz_count = 0;
     auto baz0_count = 0;
     auto baz1_count = 0;
@@ -91,6 +93,7 @@ TEST(shared_state, notify)
     auto b_cbt = b_cursor.subscribe(hi::callback_flags::synchronous, [&] { ++b_count; });
     auto foo_cbt = foo_cursor.subscribe(hi::callback_flags::synchronous, [&] { ++foo_count; });
     auto bar_cbt = bar_cursor.subscribe(hi::callback_flags::synchronous, [&] { ++bar_count; });
+    auto barD_cbt = barD_cursor.subscribe(hi::callback_flags::synchronous, [&] { ++barD_count; });
     auto baz_cbt = baz_cursor.subscribe(hi::callback_flags::synchronous, [&] { ++baz_count; });
     auto baz0_cbt = baz0_cursor.subscribe(hi::callback_flags::synchronous, [&] { ++baz0_count; });
     auto baz1_cbt = baz1_cursor.subscribe(hi::callback_flags::synchronous, [&] { ++baz1_count; });
@@ -102,6 +105,7 @@ TEST(shared_state, notify)
     ASSERT_EQ(b_count, 1);
     ASSERT_EQ(foo_count, 1);
     ASSERT_EQ(bar_count, 1);
+    ASSERT_EQ(barD_count, 1);
     ASSERT_EQ(baz_count, 1);
     ASSERT_EQ(baz0_count, 1);
     ASSERT_EQ(baz1_count, 1);
@@ -112,6 +116,7 @@ TEST(shared_state, notify)
     ASSERT_EQ(b_count, 2);
     ASSERT_EQ(foo_count, 2);
     ASSERT_EQ(bar_count, 2);
+    ASSERT_EQ(barD_count, 2);
     ASSERT_EQ(baz_count, 1);
     ASSERT_EQ(baz0_count, 1);
     ASSERT_EQ(baz1_count, 1);
@@ -122,6 +127,7 @@ TEST(shared_state, notify)
     ASSERT_EQ(b_count, 2);
     ASSERT_EQ(foo_count, 2);
     ASSERT_EQ(bar_count, 3);
+    ASSERT_EQ(barD_count, 3);
     ASSERT_EQ(baz_count, 1);
     ASSERT_EQ(baz0_count, 1);
     ASSERT_EQ(baz1_count, 1);
@@ -133,6 +139,7 @@ TEST(shared_state, notify)
     ASSERT_EQ(b_count, 2);
     ASSERT_EQ(foo_count, 2);
     ASSERT_EQ(bar_count, 3);
+    ASSERT_EQ(barD_count, 3);
     ASSERT_EQ(baz_count, 2);
     ASSERT_EQ(baz0_count, 2);
     ASSERT_EQ(baz1_count, 2);
@@ -143,7 +150,63 @@ TEST(shared_state, notify)
     ASSERT_EQ(b_count, 2);
     ASSERT_EQ(foo_count, 2);
     ASSERT_EQ(bar_count, 3);
+    ASSERT_EQ(barD_count, 3);
     ASSERT_EQ(baz_count, 2);
     ASSERT_EQ(baz0_count, 3);
     ASSERT_EQ(baz1_count, 2);
+}
+
+TEST(shared_state, commit_abort)
+{
+    auto state = hi::shared_state<A>{};
+    state.emplace(B{"hello world", 42}, std::vector<int>{5, 15});
+
+    auto a_cursor = state.cursor();
+    auto b_cursor = a_cursor._<"b">();
+    auto foo_cursor = b_cursor._<"foo">();
+
+    auto a_count = 0;
+    auto b_count = 0;
+    auto foo_count = 0;
+
+    // clang-format off
+    auto a_cbt = a_cursor.subscribe(hi::callback_flags::synchronous, [&] { ++a_count; });
+    auto b_cbt = b_cursor.subscribe(hi::callback_flags::synchronous, [&] { ++b_count; });
+    auto foo_cbt = foo_cursor.subscribe(hi::callback_flags::synchronous, [&] { ++foo_count; });
+    // clang-format on
+
+    // Commit on end-of-scope.
+    {
+        auto foo_proxy = foo_cursor.copy();
+        *foo_proxy = "1";
+        ASSERT_EQ(*foo_cursor.read(), "hello world");
+    }
+    ASSERT_EQ(*foo_cursor.read(), "1");
+    ASSERT_EQ(a_count, 0);
+    ASSERT_EQ(b_count, 0);
+    ASSERT_EQ(foo_count, 1);
+
+    // Early commit.
+    {
+        auto foo_proxy = foo_cursor.copy();
+        *foo_proxy = "2";
+        ASSERT_EQ(*foo_cursor.read(), "1");
+        foo_proxy.commit();
+        ASSERT_EQ(*foo_cursor.read(), "2");
+    }
+    ASSERT_EQ(a_count, 0);
+    ASSERT_EQ(b_count, 0);
+    ASSERT_EQ(foo_count, 2);
+
+    // Early abort.
+    {
+        auto foo_proxy = foo_cursor.copy();
+        *foo_proxy = "3";
+        ASSERT_EQ(*foo_cursor.read(), "2");
+        foo_proxy.abort();
+        ASSERT_EQ(*foo_cursor.read(), "2");
+    }
+    ASSERT_EQ(a_count, 0);
+    ASSERT_EQ(b_count, 0);
+    ASSERT_EQ(foo_count, 2);
 }
