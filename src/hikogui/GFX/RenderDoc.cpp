@@ -14,7 +14,7 @@ namespace hi::inline v1 {
 
 RenderDoc::RenderDoc() noexcept
 {
-#if HI_BUILD_TYPE == HI_BT_DEBUG
+#ifndef NDEBUG
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
     hilet dll_urls = std::vector{
         URL{"file:renderdoc.dll"},

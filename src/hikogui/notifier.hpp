@@ -209,7 +209,7 @@ private:
         });
     }
 
-#if HI_BUILD_TYPE == HI_BT_DEBUG
+#ifndef NDEBUG
     /** The notifier is currently calling all the callbacks.
      */
     mutable bool _notifying = false;

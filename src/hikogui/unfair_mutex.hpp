@@ -163,7 +163,7 @@ private:
     }
 };
 
-#if HI_BUILD_TYPE == HI_BT_DEBUG
+#ifndef NDEBUG
 using unfair_mutex = unfair_mutex_impl<true>;
 #else
 using unfair_mutex = unfair_mutex_impl<false>;

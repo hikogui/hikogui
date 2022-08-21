@@ -18,22 +18,6 @@
 
 namespace hi::inline v1 {
 
-#define HI_BT_DEBUG 'D'
-#define HI_BT_RELEASE 'R'
-
-#if defined(NDEBUG)
-#define HI_BUILD_TYPE HI_BT_RELEASE
-#else
-#define HI_BUILD_TYPE HI_BT_DEBUG
-#endif
-
-enum class build_type {
-    debug = HI_BT_DEBUG,
-    release = HI_BT_RELEASE,
-
-    current = HI_BUILD_TYPE
-};
-
 #define HI_OS_WINDOWS 'W'
 #define HI_OS_MACOS 'A'
 #define HI_OS_MOBILE 'M'

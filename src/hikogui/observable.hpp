@@ -39,7 +39,7 @@ struct observable_impl {
         constexpr proxy_type& operator=(proxy_type&& other) noexcept
         {
             if (actual) {
-#if HI_BUILD_TYPE == HI_BT_DEBUG
+#ifndef NDEBUG
                 // This proxy will not be used anymore, so notifier_owners may cause new proxies to be opened.
                 actual->rw_count = false;
 #endif
@@ -56,7 +56,7 @@ struct observable_impl {
 
         constexpr proxy_type(observable_impl *actual) noexcept : actual(actual), old_value(actual->value)
         {
-#if HI_BUILD_TYPE == HI_BT_DEBUG
+#ifndef NDEBUG
             // Cannot open a read-write proxy when something already has a read proxy open.
             hi_assert(actual->ro_count == 0);
             // There may only be one read-write proxy.
@@ -67,7 +67,7 @@ struct observable_impl {
         constexpr ~proxy_type()
         {
             if (actual) {
-#if HI_BUILD_TYPE == HI_BT_DEBUG
+#ifndef NDEBUG
                 // This proxy will not be used anymore, so notifier_owners may cause new proxies to be opened.
                 actual->rw_count = false;
 #endif
@@ -108,7 +108,7 @@ struct observable_impl {
     struct const_proxy_type {
         constexpr const_proxy_type(const_proxy_type const& other) noexcept : actual(other.actual)
         {
-#if HI_BUILD_TYPE == HI_BT_DEBUG
+#ifndef NDEBUG
             if (actual) {
                 hi_assert(actual->rw_count == false);
                 hi_assert(actual->ro_count != 0);
@@ -119,7 +119,7 @@ struct observable_impl {
 
         constexpr const_proxy_type(const_proxy_type&& other) noexcept : actual(std::exchange(other.actual, nullptr))
         {
-#if HI_BUILD_TYPE == HI_BT_DEBUG
+#ifndef NDEBUG
             if (actual) {
                 hi_assert(actual->rw_count == false);
                 hi_assert(actual->ro_count != 0);
@@ -129,7 +129,7 @@ struct observable_impl {
 
         constexpr const_proxy_type& operator=(const_proxy_type const& other) noexcept
         {
-#if HI_BUILD_TYPE == HI_BT_DEBUG
+#ifndef NDEBUG
             if (actual) {
                 hi_assert(actual->rw_count == false);
                 hi_assert(actual->ro_count != 0);
@@ -137,7 +137,7 @@ struct observable_impl {
             }
 #endif
             actual = other.actual;
-#if HI_BUILD_TYPE == HI_BT_DEBUG
+#ifndef NDEBUG
             if (actual) {
                 hi_assert(actual->rw_count == false);
                 hi_assert(actual->ro_count != 0);
@@ -148,7 +148,7 @@ struct observable_impl {
 
         constexpr const_proxy_type& operator=(const_proxy_type&& other) noexcept
         {
-#if HI_BUILD_TYPE == HI_BT_DEBUG
+#ifndef NDEBUG
             if (actual) {
                 hi_assert(actual->rw_count == false);
                 hi_assert(actual->ro_count != 0);
@@ -160,7 +160,7 @@ struct observable_impl {
 
         constexpr const_proxy_type(proxy_type&& other) noexcept : actual(std::exchange(other.actual, nullptr))
         {
-#if HI_BUILD_TYPE == HI_BT_DEBUG
+#ifndef NDEBUG
             if (actual) {
                 hi_assert(actual->rw_count == true);
                 hi_assert(actual->ro_count == 0);
@@ -172,7 +172,7 @@ struct observable_impl {
 
         constexpr const_proxy_type& operator=(proxy_type&& other) noexcept
         {
-#if HI_BUILD_TYPE == HI_BT_DEBUG
+#ifndef NDEBUG
             if (actual) {
                 hi_assert(actual->rw_count == false);
                 hi_assert(actual->ro_count != 0);
@@ -180,7 +180,7 @@ struct observable_impl {
             }
 #endif
             actual = std::exchange(other.actual, nullptr);
-#if HI_BUILD_TYPE == HI_BT_DEBUG
+#ifndef NDEBUG
             if (actual) {
                 hi_assert(actual->rw_count == true);
                 hi_assert(actual->ro_count == 0);
@@ -194,7 +194,7 @@ struct observable_impl {
 
         constexpr const_proxy_type(observable_impl *actual) noexcept : actual(actual)
         {
-#if HI_BUILD_TYPE == HI_BT_DEBUG
+#ifndef NDEBUG
             if (actual) {
                 // Cannot open a read-only proxy with a read-write proxy.
                 hi_assert(actual->rw_count == false);
@@ -205,7 +205,7 @@ struct observable_impl {
 
         constexpr ~const_proxy_type()
         {
-#if HI_BUILD_TYPE == HI_BT_DEBUG
+#ifndef NDEBUG
             if (actual) {
                 hi_assert(actual->rw_count == false);
                 hi_assert(actual->ro_count != 0);
@@ -243,7 +243,7 @@ struct observable_impl {
 
     value_type value;
     std::vector<owner_type *> owners;
-#if HI_BUILD_TYPE == HI_BT_DEBUG
+#ifndef NDEBUG
     size_t ro_count = 0;
     bool rw_count = false;
 #endif
