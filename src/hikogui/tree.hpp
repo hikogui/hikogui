@@ -1,9 +1,11 @@
-
+// Copyright Take Vos 2022.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
-#include <memory>
-
+#include "required.hpp"
+#include <map>
 
 namespace hi::inline v1 {
 
@@ -17,133 +19,274 @@ template<typename Key, typename T, typename Compare = std::less<Key>>
 class tree {
 public:
     using key_type = Key;
-    using mapped_type = T;
+    using value_type = T;
 
-    using map_type = std::map<key_type, element_type>;
+    using map_type = std::map<key_type, value_type>;
     using iterator = map_type::iterator;
     using const_iterator = map_type::const_iterator;
 
-    // XXX c++23 multiple argument index operator
-    template<typename KeyIt, typename KeyEndIt, typename... Args>
-    value_type &operator()(KeyIt key_first, KeyEndIt key_last) noexcept
+    /** Find or create the node and return the value of the node.
+     *
+     * XXX c++23 multiple argument index operator
+     * @param path_first The iterator to the first element of the path of the node to get the value of.
+     * @param path_last The iterator beyond the last element of the path of the node to get the value of.
+     * @return A reference to the value.
+     */
+    value_type& operator()(auto path_first, auto path_last) noexcept
     {
-        return find_or_create(key_first, key_last)->value;
+        auto *ptr = find_or_create(key_first, key_last)->value;
+        hi_axiom(ptr != nullptr);
+        return ptr->value;
     }
 
-    // XXX c++23 multiple argument index operator
-    template<typename KeyIt, typename KeyEndIt, typename... Args>
-    value_type const &operator()(KeyIt key_first, KeyEndIt key_last) const noexcept
+    /** Find the node and return the value of the node.
+     *
+     * XXX c++23 multiple argument index operator
+     * @note It is undefined behavior to call this function if the path does not exist in the tree.
+     * @param path_first The iterator to the first element of the path of the node to get the value of.
+     * @param path_last The iterator beyond the last element of the path of the node to get the value of.
+     * @return A reference to the value.
+     */
+    value_type const& operator()(auto path_first, auto path_last) const noexcept
     {
-        return const_cast<tree *>(this)->operator()(key_first, key_last);
+        auto *ptr = find(key_first, key_last, [](value_type const &) -> void {});
+        hi_axiom(ptr != nullptr);
+        return ptr->value;
     }
 
-    template<typename KeyRange>
-    value_type &operator[](KeyRange const &key) noexcept
+    /** Find or create the node and return the value of the node.
+     *
+     * @param path The path of the node to get the value of.
+     * @return A reference to the value.
+     */
+    value_type& operator[](auto const& key) noexcept
     {
         using std::cbegin;
         using std::cend;
         return this->operator()(cbegin(key), cend(key));
     }
 
-    template<typename KeyRange>
-    value_type const &operator[](KeyRange const &key) const noexcept
+    /** Find the node and return the value of the node.
+     *
+     * @note It is undefined behavior to call this function if the path does not exist in the tree.
+     * @param path The path of the node to get the value of.
+     * @return A reference to the value.
+     */
+    value_type const& operator[](auto const& path) const noexcept
     {
-        return const_cast<tree *>(this)->operator[](key);
+        using std::cbegin;
+        using std::cend;
+        return this->operator()(cbegin(path), cend(path));
     }
 
     /* Walk the tree from the node pointed to by the path.
      *
      * @param path_first The first element of the path to the start node.
      * @param path_last On beyond the last element of the path to the start node.
-     * @param func The function to execute on the 
+     * @param func The function `(value_type &) -> void` to execute on the
      */
-    template<typename It, typename EndIt, typename Func>
-    void walk(It path_first, EndIt path_last, Func const &func) noexcept
+    void walk(auto path_first, auto path_last, auto&& func) noexcept
     {
-        if (auto element = find(path_first, path_last)) {
+        if (auto element = find(path_first, path_last, [](value_type&) -> void {})) {
+            walk(element, hi_forward(func));
+        }
+    }
+
+    /* Walk the tree from the node pointed to by the path.
+     *
+     * @param path_first The first element of the path to the start node.
+     * @param path_last On beyond the last element of the path to the start node.
+     * @param func The function `(value_type const &) -> void` to execute on the
+     */
+    void walk(auto path_first, auto path_last, auto&& func) const noexcept
+    {
+        if (auto element = find(path_first, path_last, [](value_type const&) -> void {})) {
+            walk(element, hi_forward(func));
+        }
+    }
+
+    /* Walk the tree from the node pointed to by the path.
+     *
+     * @param path The path (range) to the start node.
+     * @param func The function `(value_type &) -> void` to execute on the
+     */
+    void walk(auto const& key, auto&& func) noexcept
+    {
+        using std::cbegin;
+        using std::cend;
+        return walk(cbegin(key), cend(key), hi_forward(func));
+    }
+
+    /* Walk the tree from the node pointed to by the path.
+     *
+     * @param path The path (range) to the start node.
+     * @param func The function `(value_type const &) -> void` to execute on the
+     */
+    void walk(auto const& key, auto&& func) const noexcept
+    {
+        using std::cbegin;
+        using std::cend;
+        return walk(cbegin(key), cend(key), hi_forward(func));
+    }
+
+    /** Walk the tree starting at path, and also for each node along the path.
+     *
+     * @param path_first The iterator pointing to the first element of the path; of the node to start walking.
+     * @param path_last The iterator pointing beyond the last element of the path.
+     * @param func The function `(value_type &) -> void` to call on each child node recursively at the start of
+     *             the path, and along the nodes of the path.
+     */
+    void walk_including_path(auto path_first, auto path_last, auto const& func) noexcept
+    {
+        if (auto element = find(path_first, path_last, func)) {
             walk(element, func);
         }
     }
 
-    template<typename KeyRange, typename Func>
-    void walk(KeyRange const &key, Func const &func) noexcept
+    /** Walk the tree starting at path, and also for each node along the path.
+     *
+     * @param path_first The iterator pointing to the first element of the path; of the node to start walking.
+     * @param path_last The iterator pointing beyond the last element of the path.
+     * @param func The function `(value_type const &) -> void` to call on each child node recursively at the start of
+     *             the path, and along the nodes of the path.
+     */
+    void walk_including_path(auto path_first, auto path_last, auto const& func) const noexcept
     {
-        using std::cbegin;
-        using std::cend;
-        if (auto element = find(cbegin(key), cend(key))) {
+        if (auto element = find(path_first, path_last, func)) {
             walk(element, func);
         }
     }
 
-    template<typename KeyIt, typename KeyEndIt, typename Func>
-    void walk_including_path(KeyIt key_first, KeyEndIt key_last, Func const &func) noexcept
-    {
-        auto *element = &_root;
-        for (auto key = key_first; key != key_last; ++key) {
-            element = &element->children[*key];
-            func(element->value);
-        }
-
-        walk(element, func);
-    }
-
-    template<typename KeyRange, typename Func>
-    void walk_including_path(KeyRange const &key, Func const &func) noexcept
+    /** Walk the tree starting at path, and also for each node along the path.
+     *
+     * @param path The path (range) of the node to start walking.
+     * @param func The function `(value_type &) -> void` to call on each child node recursively at the start of
+     *             the path, and along the nodes of the path.
+     */
+    void walk_including_path(auto const& path, auto&& func) noexcept
     {
         using std::cbegin;
         using std::cend;
-        if (auto element = find(cbegin(key), cend(key))) {
-            walk_from_root(element, func);
-        }
+        return walk_including_path(cbegin(path), cend(path), hi_forward(func));
     }
 
-    template<typename Func>
-    void walk(Func const &func) noexcept
+    /** Walk the tree starting at path, and also for each node along the path.
+     *
+     * @param path The path (range) of the node to start walking.
+     * @param func The function `(value_type const &) -> void` to call on each child node recursively at the start of
+     *             the path, and along the nodes of the path.
+     */
+    void walk_including_path(auto const& path, auto&& func) const noexcept
     {
-        walk(&_root, func);
+        using std::cbegin;
+        using std::cend;
+        return walk_including_path(cbegin(path), cend(path), hi_forward(func));
+    }
+
+    /** Walk the full tree.
+     *
+     * @param func The function `(value_type &) -> void` to call for each node in the tree.
+     */
+    void walk(auto&& func) noexcept
+    {
+        walk(&_root, hi_forward(func));
+    }
+
+    /** Walk the full tree.
+     *
+     * @param func The function `(value_type const &) -> void` to call for each node in the tree.
+     */
+    void walk(auto&& func) const noexcept
+    {
+        walk(&_root, hi_forward(func));
     }
 
 private:
-    struct element_type {
+    struct node_type {
         value_type value;
         map_type children;
     };
 
-    element_type _root;
+    node_type _root;
 
-    template<typename KeyIt, typename KeyEndIt>
-    element_type *find(KeyIt key_first, KeyEndIt key_last) noexcept
+    /** Find the node at the end of the given path.
+     *
+     * @param path_first The iterator to the first element of the path.
+     * @param path_last The iterator to one beyond the last element of the path.
+     * @param func The function `(value_type &) -> void` to call on each node along the path, excluding the node at
+     *             at the last element of the path.
+     */
+    [[nodiscard]] constexpr node_type *find(auto path_first, auto path_last, auto const& func) noexcept
     {
-        auto *element = &_root;
-        for (auto key = key_first; key != key_last; ++key) {
-            if (auto it = element->children.find(*key); it != element->children.end()) {
-                element = &it->second;
+        auto *node = &_root;
+        for (auto path_it = path_first; path_it != path_last; ++path_it) {
+            func(node);
+
+            if (auto node_it = node->children.find(*path_it); node_it != element->children.end()) {
+                node = &node_it->second;
             } else {
                 return nullptr;
             }
         }
-        return element;
+        return node;
     }
 
-    template<typename KeyIt, typename KeyEndIt>
-    element_type *find_or_create(KeyIt key_first, KeyEndIt key_last) noexcept
+    /** Find the node at the end of the given path.
+     *
+     * @param path_first The iterator to the first element of the path.
+     * @param path_last The iterator to one beyond the last element of the path.
+     * @param func The function `(value_type const &) -> void` to call on each node along the path, excluding the node at
+     *             at the last element of the path.
+     */
+    [[nodiscard]] constexpr node_type *find(auto path_first, auto path_last, auto const& func) const noexcept
     {
-        auto *element = &_root;
-        for (auto key = key_first; key != key_last; ++key) {
-            element = &element->childrent[*key];
+        auto *node = &_root;
+        for (auto path_it = path_first; path_it != path_last; ++path_it) {
+            func(node);
+
+            if (auto node_it = node->children.find(*path_it); node_it != element->children.end()) {
+                node = &node_it->second;
+            } else {
+                return nullptr;
+            }
         }
-        return element;
+        return node;
     }
 
-    template<typename Func>
-    void walk(element_type *element, Func const &func) noexcept
+    [[nodiscard]] constexpr node_type *find_or_create(auto path_first, auto path_last) noexcept
     {
-        for (auto &child: element->children) {
+        auto *node = &_root;
+        for (auto path_it = path_first; path_it != path_last; ++path_it) {
+            node = &node->children[*path_it];
+        }
+        return node;
+    }
+
+    /** Call a function on all the child-nodes recursively from the given node.
+     *
+     * @param node The start node.
+     * @param func The function `(value_type &) -> void` to be called for each node.
+     */
+    constexpr void walk(node_type *node, auto const& func) noexcept
+    {
+        for (auto& child : node->children) {
+            func(child.value);
+            walk(&child);
+        }
+    }
+
+    /** Call a function on all the child-nodes recursively from the given node.
+     *
+     * @param node The start node.
+     * @param func The function `(value_type const &) -> void` to be called for each node.
+     */
+    constexpr void walk(node_type const *node, auto const& func) const noexcept
+    {
+        for (auto& child : node->children) {
             func(child.value);
             walk(&child);
         }
     }
 };
 
-}
-
+} // namespace hi::inline v1
