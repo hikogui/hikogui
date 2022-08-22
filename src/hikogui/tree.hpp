@@ -7,7 +7,13 @@
 
 namespace hi::inline v1 {
 
-template<typename Key, typename T, typename Compare = std::less<Key>, typename Allocator = std::allocator<std::pair<const Key, T>>>
+/** A tree container.
+ *
+ * @tparam Key They key type to index into each level of the tree.
+ * @tparam T The value that is stored into each node.
+ * @tparam Compare The comparison to use with the key used in `std::map`.
+ */
+template<typename Key, typename T, typename Compare = std::less<Key>>
 class tree {
 public:
     using key_type = Key;
@@ -45,10 +51,16 @@ public:
         return const_cast<tree *>(this)->operator[](key);
     }
 
-    template<typename KeyIt, typename KeyEndIt, typename Func>
-    void walk(KeyIt key_first, KeyEndIt key_last, Func const &func) noexcept
+    /* Walk the tree from the node pointed to by the path.
+     *
+     * @param path_first The first element of the path to the start node.
+     * @param path_last On beyond the last element of the path to the start node.
+     * @param func The function to execute on the 
+     */
+    template<typename It, typename EndIt, typename Func>
+    void walk(It path_first, EndIt path_last, Func const &func) noexcept
     {
-        if (auto element = find(key_first, key_last)) {
+        if (auto element = find(path_first, path_last)) {
             walk(element, func);
         }
     }
@@ -64,7 +76,7 @@ public:
     }
 
     template<typename KeyIt, typename KeyEndIt, typename Func>
-    void walk_from_root(KeyIt key_first, KeyEndIt key_last, Func const &func) noexcept
+    void walk_including_path(KeyIt key_first, KeyEndIt key_last, Func const &func) noexcept
     {
         auto *element = &_root;
         for (auto key = key_first; key != key_last; ++key) {
@@ -76,7 +88,7 @@ public:
     }
 
     template<typename KeyRange, typename Func>
-    void walk_from_root(KeyRange const &key, Func const &func) noexcept
+    void walk_including_path(KeyRange const &key, Func const &func) noexcept
     {
         using std::cbegin;
         using std::cend;
