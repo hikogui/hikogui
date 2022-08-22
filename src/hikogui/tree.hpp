@@ -21,10 +21,6 @@ public:
     using key_type = Key;
     using value_type = T;
 
-    using map_type = std::map<key_type, value_type>;
-    using iterator = map_type::iterator;
-    using const_iterator = map_type::const_iterator;
-
     /** Find or create the node and return the value of the node.
      *
      * XXX c++23 multiple argument index operator
@@ -34,7 +30,7 @@ public:
      */
     value_type& operator()(auto path_first, auto path_last) noexcept
     {
-        auto *ptr = find_or_create(key_first, key_last)->value;
+        auto *ptr = find_or_create(path_first, path_last);
         hi_axiom(ptr != nullptr);
         return ptr->value;
     }
@@ -49,7 +45,7 @@ public:
      */
     value_type const& operator()(auto path_first, auto path_last) const noexcept
     {
-        auto *ptr = find(key_first, key_last, [](value_type const &) -> void {});
+        auto *ptr = find(path_first, path_last, [](value_type const&) -> void {});
         hi_axiom(ptr != nullptr);
         return ptr->value;
     }
@@ -88,7 +84,7 @@ public:
     void walk(auto path_first, auto path_last, auto&& func) noexcept
     {
         if (auto element = find(path_first, path_last, [](value_type&) -> void {})) {
-            walk(element, hi_forward(func));
+            _walk(element, hi_forward(func));
         }
     }
 
@@ -101,7 +97,7 @@ public:
     void walk(auto path_first, auto path_last, auto&& func) const noexcept
     {
         if (auto element = find(path_first, path_last, [](value_type const&) -> void {})) {
-            walk(element, hi_forward(func));
+            _walk(element, hi_forward(func));
         }
     }
 
@@ -139,7 +135,7 @@ public:
     void walk_including_path(auto path_first, auto path_last, auto const& func) noexcept
     {
         if (auto element = find(path_first, path_last, func)) {
-            walk(element, func);
+            _walk(element, func);
         }
     }
 
@@ -153,7 +149,7 @@ public:
     void walk_including_path(auto path_first, auto path_last, auto const& func) const noexcept
     {
         if (auto element = find(path_first, path_last, func)) {
-            walk(element, func);
+            _walk(element, func);
         }
     }
 
@@ -189,7 +185,7 @@ public:
      */
     void walk(auto&& func) noexcept
     {
-        walk(&_root, hi_forward(func));
+        _walk(std::addressof(_root), hi_forward(func));
     }
 
     /** Walk the full tree.
@@ -198,13 +194,13 @@ public:
      */
     void walk(auto&& func) const noexcept
     {
-        walk(&_root, hi_forward(func));
+        _walk(std::addressof(_root), hi_forward(func));
     }
 
 private:
     struct node_type {
         value_type value;
-        map_type children;
+        std::map<key_type, node_type> children;
     };
 
     node_type _root;
@@ -220,9 +216,9 @@ private:
     {
         auto *node = &_root;
         for (auto path_it = path_first; path_it != path_last; ++path_it) {
-            func(node);
+            func(node->value);
 
-            if (auto node_it = node->children.find(*path_it); node_it != element->children.end()) {
+            if (auto node_it = node->children.find(*path_it); node_it != node->children.end()) {
                 node = &node_it->second;
             } else {
                 return nullptr;
@@ -238,14 +234,14 @@ private:
      * @param func The function `(value_type const &) -> void` to call on each node along the path, excluding the node at
      *             at the last element of the path.
      */
-    [[nodiscard]] constexpr node_type *find(auto path_first, auto path_last, auto const& func) const noexcept
+    [[nodiscard]] constexpr node_type const *find(auto path_first, auto path_last, auto const& func) const noexcept
     {
-        auto *node = &_root;
+        node_type const *node = std::addressof(_root);
         for (auto path_it = path_first; path_it != path_last; ++path_it) {
-            func(node);
+            func(node->value);
 
-            if (auto node_it = node->children.find(*path_it); node_it != element->children.end()) {
-                node = &node_it->second;
+            if (auto node_it = node->children.find(*path_it); node_it != node->children.end()) {
+                node = std::addressof(node_it->second);
             } else {
                 return nullptr;
             }
@@ -267,11 +263,11 @@ private:
      * @param node The start node.
      * @param func The function `(value_type &) -> void` to be called for each node.
      */
-    constexpr void walk(node_type *node, auto const& func) noexcept
+    constexpr void _walk(node_type *node, auto const& func) noexcept
     {
+        func(node->value);
         for (auto& child : node->children) {
-            func(child.value);
-            walk(&child);
+            _walk(&child.second, func);
         }
     }
 
@@ -280,11 +276,11 @@ private:
      * @param node The start node.
      * @param func The function `(value_type const &) -> void` to be called for each node.
      */
-    constexpr void walk(node_type const *node, auto const& func) const noexcept
+    constexpr void _walk(node_type const *node, auto const& func) const noexcept
     {
+        func(node->value);
         for (auto& child : node->children) {
-            func(child.value);
-            walk(&child);
+            _walk(&child.second, func);
         }
     }
 };

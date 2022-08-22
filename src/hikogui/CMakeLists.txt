@@ -174,6 +174,7 @@ target_sources(hikogui PRIVATE
     tokenizer.hpp
     trace.cpp
     trace.hpp
+    tree.hpp
     type_traits.hpp
     undo_stack.hpp
     unfair_mutex.hpp
@@ -252,6 +253,7 @@ if(HI_BUILD_TESTS)
         small_map_tests.cpp
         strings_tests.cpp
         tokenizer_tests.cpp
+        tree_tests.cpp
         type_traits_tests.cpp
         url_parser_tests.cpp
         URL_tests.cpp
