@@ -37,8 +37,7 @@ struct hi::selector<A> {
 
 TEST(shared_state, read)
 {
-    auto state = hi::shared_state<A>{};
-    state.emplace(B{"hello world", 42}, std::vector<int>{5, 15});
+    auto state = hi::shared_state<A>{B{"hello world", 42}, std::vector<int>{5, 15}};
 
     auto a_cursor = state.cursor();
     auto baz_cursor = state._<"baz">();
@@ -67,8 +66,7 @@ TEST(shared_state, read)
 
 TEST(shared_state, notify)
 {
-    auto state = hi::shared_state<A>{};
-    state.emplace(B{"hello world", 42}, std::vector<int>{5, 15});
+    auto state = hi::shared_state<A>{B{"hello world", 42}, std::vector<int>{5, 15}};
 
     auto a_cursor = state.cursor();
     auto b_cursor = a_cursor._<"b">();
@@ -158,8 +156,7 @@ TEST(shared_state, notify)
 
 TEST(shared_state, commit_abort)
 {
-    auto state = hi::shared_state<A>{};
-    state.emplace(B{"hello world", 42}, std::vector<int>{5, 15});
+    auto state = hi::shared_state<A>{B{"hello world", 42}, std::vector<int>{5, 15}};
 
     auto a_cursor = state.cursor();
     auto b_cursor = a_cursor._<"b">();

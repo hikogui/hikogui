@@ -52,14 +52,14 @@ public:
         _m(0),
         _b(0)
     {
-#if HI_BUILT_TYPE == HI_BT_DEBUG
+#ifndef NDEBUG
         _debug_state = debug_state_type::idle;
 #endif
     }
 
     [[nodiscard]] uint64_t finish() noexcept
     {
-#if HI_BUILT_TYPE == HI_BT_DEBUG
+#ifndef NDEBUG
         hi_axiom(_debug_state < debug_state_type::finalized);
         _debug_state = debug_state_type::finalized;
 #endif
@@ -81,7 +81,7 @@ public:
 
     void add(void const *data, size_t size) noexcept
     {
-#if HI_BUILT_TYPE == HI_BT_DEBUG
+#ifndef NDEBUG
         hi_axiom(_debug_state <= debug_state_type::partial);
         _debug_state = debug_state_type::partial;
 #endif
@@ -141,7 +141,7 @@ public:
     {
         auto *src = reinterpret_cast<char const *>(data);
 
-#if HI_BUILT_TYPE == HI_BT_DEBUG
+#ifndef NDEBUG
         hi_axiom(_debug_state == debug_state_type::idle);
 #endif
 
@@ -182,9 +182,9 @@ private:
 
     uint64_t _m;
     uint8_t _b;
-#if HI_BUILT_TYPE == HI_BT_DEBUG
+#ifndef NDEBUG
     enum class debug_state_type : uint8_t { idle, full, partial, finalized };
-    state_type _debug_state;
+    debug_state_type _debug_state;
 #endif
 
     hi_force_inline static constexpr void _round(uint64_t& v0, uint64_t& v1, uint64_t& v2, uint64_t& v3) noexcept
