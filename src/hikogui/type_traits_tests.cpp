@@ -9,6 +9,7 @@
 #include <iostream>
 #include <string>
 #include <limits>
+#include <utility>
 
 class A {};
 
@@ -47,6 +48,17 @@ TEST(type_traits, decayed_base_of)
     static_assert(hi::is_decayed_base_of_v<A&, C&>);
     static_assert(!hi::is_decayed_base_of_v<B&, A&>);
     static_assert(!hi::is_decayed_base_of_v<C&, A&>);
+}
+
+TEST(type_traits, forward_of)
+{
+    static_assert(hi::is_forward_of_v<std::string, std::string>);
+    static_assert(hi::is_forward_of_v<std::string const &, std::string>);
+
+    static_assert(hi::is_forward_of_v<std::hash<int>, size_t(int)>);
+    static_assert(hi::is_forward_of_v<std::function<size_t(int)>, size_t(int)>);
+    static_assert(hi::is_forward_of_v<std::function<size_t(int)> const&, size_t(int)>);
+    static_assert(hi::is_forward_of_v<decltype([](int) -> size_t { return 1;}) const&, size_t(int)>);
 }
 
 namespace my {

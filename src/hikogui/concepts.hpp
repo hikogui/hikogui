@@ -122,7 +122,24 @@ concept scalar = std::is_scalar_v<T>;
 template<typename T>
 concept scoped_enum = std::is_enum_v<T>;
 
-template<typename Forward, typename T>
-concept forward_of = is_forward_of_v<T, Forward>;
+/** True if T is a forwarded type of Forward.
+ *
+ * ```
+ * template<forward_of<std::string> Text>
+ * std::string foo(Text &&text) {
+ *   return std::forward<Text>(text);
+ * }
+ * ```
+ * 
+ * ```
+ * template<forward_of<void(int)> Function>
+ * std::function<void(int)> foo(Function &&function) {
+ *   return std::forward<Function>(function);
+ * }
+ * ```
+
+ */
+template<typename Context, typename Expected>
+concept forward_of = is_forward_of_v<Context, Expected>;
 
 } // namespace hi::inline v1

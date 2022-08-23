@@ -378,24 +378,17 @@ constexpr bool type_in_range_v = std::numeric_limits<Out>::digits >= std::numeri
  * }
  * ```
  */
-template<typename T, typename Forward>
-struct is_forward_of : public std::false_type {
+template<typename Context, typename Expected>
+struct is_forward_of : std::conditional_t<std::is_same_v<std::decay_t<Context>, Expected>, std::true_type, std::false_type> {
 };
 
-template<typename T>
-struct is_forward_of<T, T> : public std::true_type {
+template<typename Context, typename Result, typename... Args>
+struct is_forward_of<Context, Result(Args...)> :
+    std::conditional_t<std::is_invocable_r_v<Result, Context, Args...>, std::true_type, std::false_type> {
 };
 
-template<typename T>
-struct is_forward_of<T, T const&> : public std::true_type {
-};
-
-template<typename T>
-struct is_forward_of<T, T&> : public std::true_type {
-};
-
-template<typename T, typename Forward>
-constexpr bool is_forward_of_v = is_forward_of<T, Forward>::value;
+template<typename Context, typename Expected>
+constexpr bool is_forward_of_v = is_forward_of<Context, Expected>::value;
 
 /** Decays types for use as elements in std::variant.
  *
@@ -427,7 +420,7 @@ using variant_decay_t = variant_decay<T>::type;
  *  - `template<basic_fixed_string> auto const &get(T const &) const noexcept`
  *
  * Here is an example how to specialize `hi::selector` for the `my::simple` type:
- * 
+ *
  * ```cpp
  * namespace my {
  * struct simple {
@@ -435,12 +428,12 @@ using variant_decay_t = variant_decay<T>::type;
  *     std::string bar;
  * };
  * }
- * 
+ *
  * template<>
  * struct hi::selector<my::simple> {
  *     template<hi::basic_fixed_string> auto &get(my::simple &) const noexcept;
  *     template<hi::basic_fixed_string> auto const &get(my::simple const &) const noexcept;
- * 
+ *
  *     template<> auto &get<"foo">(my::simple &rhs) const noexcept { return rhs.foo; }
  *     template<> auto const &get<"foo">(my::simple const &rhs) const noexcept { return rhs.foo; }
  *     template<> auto &get<"bar">(my::simple &rhs) const noexcept { return rhs.bar; }

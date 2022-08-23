@@ -7,6 +7,7 @@
 #include "rcu.hpp"
 #include "notifier.hpp"
 #include "tree.hpp"
+#include "concepts.hpp"
 #include <string_view>
 #include <string>
 #include <memory>
@@ -433,22 +434,12 @@ public:
     constexpr shared_state_cursor& operator=(shared_state_cursor const&) noexcept = default;
     constexpr shared_state_cursor& operator=(shared_state_cursor&&) noexcept = default;
 
-    constexpr shared_state_cursor() noexcept :
-        _state(std::make_shared<detail::shared_state_impl<value_type>>()), _path{{"/"}}, _convert([](void *base) {
-            return base;
-        })
-    {
-    }
-
-    constexpr shared_state_cursor(value_type const& rhs) noexcept :
-        _state(std::make_shared<detail::shared_state_impl<value_type>>(rhs)), _path{{"/"}}, _convert([](void *base) {
-            return base;
-        })
-    {
-    }
-
-    constexpr shared_state_cursor(value_type&& rhs) noexcept :
-        _state(std::make_shared<detail::shared_state_impl<value_type>>(std::move(rhs))), _path{{"/"}}, _convert([](void *base) {
+    /** Create a shared_state_cursor linked to an anonymous shared-state.
+     */
+    constexpr shared_state_cursor(auto&&...args) noexcept :
+        _state(std::make_shared<detail::shared_state_impl<value_type>>(hi_forward(args)...)),
+        _path{{"/"}},
+        _convert([](void *base) {
             return base;
         })
     {
@@ -469,7 +460,7 @@ public:
         return *read();
     }
 
-    const_proxy operator->() const &noexcept
+    const_proxy operator->() const& noexcept
     {
         return read();
     }
@@ -528,10 +519,10 @@ private:
     std::function<void *(void *)> _convert = {};
 
     shared_state_cursor(
-        std::shared_ptr<detail::shared_state_base> state,
-        path_type path,
-        std::function<void *(void *)> converter) noexcept :
-        _state(std::move(state)), _path(std::move(path)), _convert(std::move(converter))
+        forward_of<std::shared_ptr<detail::shared_state_base>> auto&& state,
+        forward_of<path_type> auto&& path,
+        forward_of<void *(void *)> auto&& converter) noexcept :
+        _state(hi_forward(state)), _path(hi_forward(path)), _convert(hi_forward(converter))
     {
     }
 
