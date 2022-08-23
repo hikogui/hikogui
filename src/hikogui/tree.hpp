@@ -5,6 +5,7 @@
 #pragma once
 
 #include "required.hpp"
+#include "assert.hpp"
 #include <map>
 
 namespace hi::inline v1 {
@@ -20,6 +21,13 @@ class tree {
 public:
     using key_type = Key;
     using value_type = T;
+
+    constexpr ~tree() = default;
+    constexpr tree(tree const&) noexcept = default;
+    constexpr tree(tree&&) noexcept = default;
+    constexpr tree& operator=(tree const&) noexcept = default;
+    constexpr tree& operator=(tree&&) noexcept = default;
+    constexpr tree() noexcept = default;
 
     /** Find or create the node and return the value of the node.
      *

@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
+#include <array>
 
 static auto make_test()
 {

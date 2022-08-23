@@ -12,7 +12,6 @@ add_subdirectory(GFX)
 add_subdirectory(GUI)
 add_subdirectory(random)
 add_subdirectory(rapid)
-add_subdirectory(shared_state)
 add_subdirectory(skeleton)
 add_subdirectory(i18n)
 add_subdirectory(unicode)
@@ -148,6 +147,7 @@ target_sources(hikogui PRIVATE
     semantic_version.hpp
     scoped_buffer.hpp
     scoped_task.hpp
+    shared_state.hpp
     sip_hash.hpp
     source_location.hpp
     small_map.hpp
@@ -249,6 +249,7 @@ if(HI_BUILD_TESTS)
         ranges_tests.cpp
         rcu_tests.cpp
         safe_int_tests.cpp
+        shared_state_tests.cpp
         sip_hash_tests.cpp
         small_map_tests.cpp
         strings_tests.cpp
