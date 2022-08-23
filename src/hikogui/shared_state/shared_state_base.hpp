@@ -5,8 +5,8 @@
 #pragma once
 
 #include "../notifier.hpp"
-#include <string_view>
-#include <map>
+#include "../tree.hpp"
+#include <string>
 
 namespace hi::inline v1 {
 
@@ -24,7 +24,7 @@ public:
     constexpr shared_state_base() noexcept = default;
 
 protected:
-    std::map<std::string, notifier_type> _notifiers;
+    tree<std::string, notifier_type> _notifiers;
 
     [[nodiscard]] virtual void const *read() noexcept = 0;
     [[nodiscard]] virtual void *copy() noexcept = 0;
@@ -33,17 +33,17 @@ protected:
     virtual void lock() noexcept = 0;
     virtual void unlock() noexcept = 0;
 
-    [[nodiscard]] token_type subscribe(std::string const& path, callback_flags flags, function_type function) noexcept
+    [[nodiscard]] token_type subscribe(auto const& path, callback_flags flags, function_type function) noexcept
     {
-        auto [it, inserted] = _notifiers.emplace(path, notifier_type{});
-        return it->second.subscribe(flags, std::move(function));
+        auto &notifier = _notifiers[path];
+        return notifier.subscribe(flags, std::move(function));
     }
 
-    void notify(std::string const& path) noexcept
+    void notify(auto const& path) noexcept
     {
-        for (auto it = _notifiers.lower_bound(path); it != _notifiers.end() and it->first.starts_with(path); ++it) {
-            it->second();
-        }
+        _notifiers.walk_including_path(path, [](notifier_type &notifier) {
+            notifier();
+        });
     }
 
     template<typename O>

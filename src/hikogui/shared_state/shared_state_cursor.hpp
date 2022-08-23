@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <functional>
 #include <string>
+#include <vector>
 #include <memory>
 
 namespace hi::inline v1 {
@@ -21,8 +22,19 @@ public:
     using token_type = shared_state_base::token_type;
     using function_type = shared_state_base::function_type;
 
+    /** A proxy object of the shared_state_cursor.
+     *
+     * The proxy is a RAII object that manages a transaction with the
+     * shared-state as a whole, while giving access to only a sub-object
+     * of the shared-state.
+     */ 
     class proxy {
     public:
+        /** Commits and destruct the proxy object.
+         *
+         * If `commit()` or `abort()` are called or the proxy object
+         * is empty then the destructor does not commit the changes.
+         */
         ~proxy() noexcept
         {
             if (_base) {
@@ -52,16 +64,16 @@ public:
             _value = std::exchange(other._value, nullptr);
         }
 
+        /** Construct an empty proxy object.
+         */
         constexpr proxy() noexcept = default;
 
-        proxy(shared_state_cursor const *cursor, void *base, value_type *value) noexcept :
-            _cursor(cursor), _base(base), _value(value)
-        {
-            hi_axiom(_cursor);
-            hi_axiom(_base);
-            hi_axiom(_value);
-        }
-
+        /** Derefence the value.
+         *
+         * This function allows reads and modification to the value
+         *
+         * @note It is undefined behavior to call this function after calling `commit()` or `abort()`
+         */
         value_type& operator*() noexcept
         {
             hi_axiom(_base);
@@ -69,12 +81,25 @@ public:
             return *_value;
         }
 
+        /** Pointer derefence the value.
+         *
+         * This function allows reads and modification to the value, including
+         * calling member functions on the value.
+         *
+         * @note It is undefined behavior to call this function after calling `commit()` or `abort()`
+         */
         value_type *operator->() noexcept
         {
             hi_axiom(_base);
             return _value;
         }
 
+        /** Commit the changes to the value early.
+         *
+         * Calling this function allows to commit earlier than the destructor.
+         *
+         * @note It is undefined behavior to change the value after commiting.
+         */
         void commit() noexcept
         {
             if (auto tmp = std::exchange(_base, nullptr)) {
@@ -83,6 +108,12 @@ public:
             }
         }
 
+        /** Revert any changes to the value.
+         *
+         * Calling this function allows to abort any changes in the value.
+         *
+         * @note It is undefined behavior to change the value after aborting.
+         */
         void abort() noexcept
         {
             if (auto tmp = std::exchange(_base, nullptr)) {
@@ -95,6 +126,24 @@ public:
         shared_state_cursor const *_cursor = nullptr;
         void *_base = nullptr;
         value_type *_value = nullptr;
+
+        /** Create a proxy object.
+         *
+         * @param cursor a pointer to the cursor.
+         * @param base a pointer to the dereference rcu-object from the shared_state.
+         *             This is needed to commit or abort the shared_state as a whole.
+         * @param value a pointer to the sub-object of the shared_state that the cursor
+         *              is pointing to.
+         */
+        proxy(shared_state_cursor const *cursor, void *base, value_type *value) noexcept :
+            _cursor(cursor), _base(base), _value(value)
+        {
+            hi_axiom(_cursor);
+            hi_axiom(_base);
+            hi_axiom(_value);
+        }
+
+        friend class shared_state_cursor;
     };
 
     class const_proxy {
@@ -145,7 +194,6 @@ public:
         }
 
         constexpr const_proxy() noexcept = default;
-        const_proxy(shared_state_cursor const *cursor, value_type const *value) noexcept : _cursor(cursor), _value(value) {}
 
         [[nodiscard]] value_type const& operator*() const noexcept
         {
@@ -164,12 +212,11 @@ public:
     private:
         shared_state_cursor const *_cursor = nullptr;
         value_type const *_value = nullptr;
-    };
 
-    shared_state_cursor(shared_state_base *state, std::string &&path, std::function<void *(void *)> &&converter) noexcept :
-        _state(state), _path(std::move(path)), _convert(std::move(converter))
-    {
-    }
+        const_proxy(shared_state_cursor const *cursor, value_type const *value) noexcept : _cursor(cursor), _value(value) {}
+
+        friend class shared_state_cursor;
+    };
 
     const_proxy read() && = delete;
     proxy copy() && = delete;
@@ -195,27 +242,36 @@ public:
     {
         using result_type = std::decay_t<decltype(std::declval<value_type>()[index])>;
 
+        auto new_path = _path;
+        new_path.push_back(std::format("[{}]", index));
         return shared_state_cursor<result_type>{
-            _state, std::format("{}[{}]/", _path, index), [convert = this->_convert, index](void *base) -> void * {
+            _state, std::move(new_path), [convert = this->_convert, index](void *base) -> void * {
                 return std::addressof((*static_cast<value_type *>(convert(base)))[index]);
             }};
     }
 
     template<basic_fixed_string Name>
-    [[nodiscard]] auto _() const noexcept
+    [[nodiscard]] auto get() const noexcept
     {
         using result_type = std::decay_t<decltype(selector<value_type>{}.get<Name>(std::declval<value_type &>()))>;
 
+        auto new_path = _path;
+        new_path.push_back(std::string{Name});
         return shared_state_cursor<result_type>{
-            _state, std::format("{}{}/", _path, Name), [convert=this->_convert](void *base) -> void * {
+            _state, std::move(new_path), [convert=this->_convert](void *base) -> void * {
                 return std::addressof(selector<value_type>{}.get<Name>(*static_cast<value_type *>(convert(base))));
             }};
     }
 
 private:
     shared_state_base *_state = nullptr;
-    std::string _path = {};
+    std::vector<std::string> _path = {};
     std::function<void *(void *)> _convert = {};
+
+    shared_state_cursor(shared_state_base *state, std::vector<std::string> &&path, std::function<void *(void *)> &&converter) noexcept :
+        _state(state), _path(std::move(path)), _convert(std::move(converter))
+    {
+    }
 
     void unlock() const noexcept
     {
@@ -231,6 +287,8 @@ private:
     {
         _state->abort(base);
     }
+
+    friend shared_state<value_type>;
 };
 
 } // namespace hi::inline v1

@@ -9,7 +9,6 @@
 #include "../rcu.hpp"
 #include "../notifier.hpp"
 #include <string_view>
-#include <map>
 
 namespace hi::inline v1 {
 
@@ -42,40 +41,63 @@ public:
 
     ~shared_state() = default;
 
+    /** Construct the shared state and initialize the value.
+     *
+     * @param args The arguments passed to the constructor of the value.
+     */
     template<typename... Args>
     constexpr shared_state(Args &&... args) noexcept : _rcu()
     {
         _rcu.emplace(std::forward<Args>(args)...);
     }
 
+    // clang-format off
     shared_state_cursor<value_type> cursor() && = delete;
-
     [[nodiscard]] auto operator[](auto const& index) && = delete;
+    template<basic_fixed_string Name> [[nodiscard]] auto _() && = delete;
+    // clang-format on
 
-    template<basic_fixed_string Name>
-    [[nodiscard]] auto _() && = delete;
-
+    /** Get a cursor to the value.
+     *
+     * This function returns a cursor to the value object.
+     * The cursor is used to start read or write transactions or create other cursors.
+     *
+     * @return The new cursor pointing to the value object.
+     */
     [[nodiscard]] shared_state_cursor<value_type> cursor() const& noexcept
     {
-        return {const_cast<shared_state *>(this), "/", [](void *base) -> void * {
+        auto new_path = std::vector<std::string>{{"/"}};
+        return {const_cast<shared_state *>(this), std::move(new_path), [](void *base) -> void * {
                     return base;
                 }};
     }
 
+    /** Get a cursor to a sub-object of value accessed by the index operator.
+     *
+     * @param index The index used with the index operator of the value.
+     * @return The new cursor pointing to a sub-object of the value.
+     */
     [[nodiscard]] auto operator[](auto const& index) const& noexcept
+        requires requires { cursor()[index]; }
     {
         return cursor()[index];
     }
 
+    /** Get a cursor to a member variable of the value.
+     *
+     * @note This requires the specialization of `hi::selector<value_type>`.
+     * @tparam Name the name of the member variable of the value.
+     * @return The new cursor pointing to the member variable of the value
+     */
     template<basic_fixed_string Name>
-    [[nodiscard]] auto _() const& noexcept
+    [[nodiscard]] auto get() const& noexcept
     {
-        return cursor()._<Name>();
+        return cursor().get<Name>();
     }
 
 private:
     rcu<value_type> _rcu;
-    std::atomic<bool> _writing;
+    unfair_mutex _write_mutex;
 
     [[nodiscard]] void const *read() noexcept override
     {
@@ -84,27 +106,21 @@ private:
 
     [[nodiscard]] void *copy() noexcept override
     {
-#ifndef NDEBUG
-        hi_assert(_writing.exchange(true, std::memory_order::acquire) == false);
-#endif
+        _write_mutex.lock();
         return _rcu.copy();
     }
 
     void commit(void *ptr, std::string const& path) noexcept override
     {
         _rcu.commit(static_cast<value_type *>(ptr));
+        _write_mutex.unlock();
         notify(path);
-#ifndef NDEBUG
-        hi_assert(_writing.exchange(false, std::memory_order::acquire) == true);
-#endif
     }
 
     void abort(void *ptr) noexcept override
     {
         _rcu.abort(static_cast<value_type *>(ptr));
-#ifndef NDEBUG
-        hi_assert(_writing.exchange(false, std::memory_order::acquire) == true);
-#endif
+        _write_mutex.unlock();
     }
 
     void lock() noexcept override
