@@ -264,11 +264,13 @@ public:
     }
 
 private:
+    using path_type = std::vector<std::string>;
+
     shared_state_base *_state = nullptr;
-    std::vector<std::string> _path = {};
+    path_type _path = {};
     std::function<void *(void *)> _convert = {};
 
-    shared_state_cursor(shared_state_base *state, std::vector<std::string> &&path, std::function<void *(void *)> &&converter) noexcept :
+    shared_state_cursor(shared_state_base *state, path_type &&path, std::function<void *(void *)> &&converter) noexcept :
         _state(state), _path(std::move(path)), _convert(std::move(converter))
     {
     }
@@ -288,7 +290,11 @@ private:
         _state->abort(base);
     }
 
-    friend shared_state<value_type>;
+    template<typename O>
+    friend class shared_state;
+
+    template<typename O>
+    friend class shared_state_cursor;
 };
 
 } // namespace hi::inline v1

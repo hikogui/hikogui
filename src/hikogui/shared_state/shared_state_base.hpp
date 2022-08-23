@@ -24,22 +24,24 @@ public:
     constexpr shared_state_base() noexcept = default;
 
 protected:
+    using path_type = std::vector<std::string>;
+
     tree<std::string, notifier_type> _notifiers;
 
     [[nodiscard]] virtual void const *read() noexcept = 0;
     [[nodiscard]] virtual void *copy() noexcept = 0;
-    virtual void commit(void *ptr, std::string const& path) noexcept = 0;
+    virtual void commit(void *ptr, path_type const& path) noexcept = 0;
     virtual void abort(void *ptr) noexcept = 0;
     virtual void lock() noexcept = 0;
     virtual void unlock() noexcept = 0;
 
-    [[nodiscard]] token_type subscribe(auto const& path, callback_flags flags, function_type function) noexcept
+    [[nodiscard]] token_type subscribe(path_type const& path, callback_flags flags, function_type function) noexcept
     {
         auto &notifier = _notifiers[path];
         return notifier.subscribe(flags, std::move(function));
     }
 
-    void notify(auto const& path) noexcept
+    void notify(path_type const& path) noexcept
     {
         _notifiers.walk_including_path(path, [](notifier_type &notifier) {
             notifier();

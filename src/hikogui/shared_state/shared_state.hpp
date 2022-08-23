@@ -96,6 +96,8 @@ public:
     }
 
 private:
+    using path_type = std::vector<std::string>;
+
     rcu<value_type> _rcu;
     unfair_mutex _write_mutex;
 
@@ -110,7 +112,7 @@ private:
         return _rcu.copy();
     }
 
-    void commit(void *ptr, std::string const& path) noexcept override
+    void commit(void *ptr, path_type const& path) noexcept override
     {
         _rcu.commit(static_cast<value_type *>(ptr));
         _write_mutex.unlock();
