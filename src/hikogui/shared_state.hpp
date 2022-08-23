@@ -21,9 +21,9 @@ namespace detail {
 
 class shared_state_base : public std::enable_shared_from_this<shared_state_base> {
 public:
-    using notifier_type = notifier<>;
+    using notifier_type = notifier<void(void const *, void const *)>;
     using token_type = notifier_type::token_type;
-    using function_type = notifier_type::function_type;
+    using function_proto = notifier_type::function_proto;
 
     constexpr virtual ~shared_state_base() = default;
     shared_state_base(shared_state_base const&) = delete;
@@ -38,22 +38,23 @@ protected:
     tree<std::string, notifier_type> _notifiers;
 
     [[nodiscard]] virtual void const *read() noexcept = 0;
-    [[nodiscard]] virtual void *copy() noexcept = 0;
-    virtual void commit(void *ptr, path_type const& path) noexcept = 0;
-    virtual void abort(void *ptr) noexcept = 0;
+    [[nodiscard]] virtual std::pair<void const *, void *> old_and_copy() noexcept = 0;
+    virtual void commit(void const *old_ptr, void *new_ptr, path_type const& path) noexcept = 0;
+    virtual void abort(void *new_ptr) noexcept = 0;
     virtual void lock() noexcept = 0;
     virtual void unlock() noexcept = 0;
 
-    [[nodiscard]] token_type subscribe(path_type const& path, callback_flags flags, function_type function) noexcept
+    [[nodiscard]] token_type
+    subscribe(path_type const& path, callback_flags flags, forward_of<function_proto> auto&& function) noexcept
     {
         auto& notifier = _notifiers[path];
-        return notifier.subscribe(flags, std::move(function));
+        return notifier.subscribe(flags, hi_forward(function));
     }
 
-    void notify(path_type const& path) noexcept
+    void notify(void const *old_ptr, void const *new_ptr, path_type const& path) noexcept
     {
-        _notifiers.walk_including_path(path, [](notifier_type& notifier) {
-            notifier();
+        _notifiers.walk_including_path(path, [old_ptr, new_ptr](notifier_type const& notifier) {
+            notifier(old_ptr, new_ptr);
         });
     }
 
@@ -131,22 +132,25 @@ private:
         return _rcu.get();
     }
 
-    [[nodiscard]] void *copy() noexcept override
+    [[nodiscard]] std::pair<void const *, void *> old_and_copy() noexcept override
     {
         _write_mutex.lock();
-        return _rcu.copy();
+        lock();
+        return _rcu.old_and_copy();
     }
 
-    void commit(void *ptr, path_type const& path) noexcept override
+    void commit(void const *old_ptr, void *new_ptr, path_type const& path) noexcept override
     {
-        _rcu.commit(static_cast<value_type *>(ptr));
+        _rcu.commit(static_cast<value_type *>(new_ptr));
+        notify(old_ptr, new_ptr, path);
+        unlock();
         _write_mutex.unlock();
-        notify(path);
     }
 
-    void abort(void *ptr) noexcept override
+    void abort(void *new_ptr) noexcept override
     {
-        _rcu.abort(static_cast<value_type *>(ptr));
+        _rcu.abort(static_cast<value_type *>(new_ptr));
+        unlock();
         _write_mutex.unlock();
     }
 
@@ -229,8 +233,9 @@ template<typename T>
 class shared_state_cursor {
 public:
     using value_type = T;
-    using token_type = detail::shared_state_base::token_type;
-    using function_type = detail::shared_state_base::function_type;
+    using notifier_type = notifier<void(value_type const&, value_type const&)>;
+    using token_type = notifier_type::token_type;
+    using function_proto = notifier_type::function_proto;
 
     /** A proxy object of the shared_state_cursor.
      *
@@ -247,9 +252,9 @@ public:
          */
         ~proxy() noexcept
         {
-            if (_base) {
+            if (_new_base) {
                 hi_axiom(_cursor);
-                _cursor->commit(_base);
+                _cursor->commit(_old_base, _new_base);
             }
         }
 
@@ -258,19 +263,21 @@ public:
 
         proxy(proxy&& other) noexcept :
             _cursor(std::exchange(other._cursor, nullptr)),
-            _base(std::exchange(other._base, nullptr)),
+            _old_base(std::exchange(other._old_base, nullptr)),
+            _new_base(std::exchange(other._new_base, nullptr)),
             _value(std::exchange(other._value, nullptr))
         {
         }
 
         proxy& operator=(proxy&& other) noexcept
         {
-            if (_base) {
+            if (_new_base) {
                 hi_axiom(_cursor);
-                _cursor->commit(_base);
+                _cursor->commit(_old_base, _new_base);
             }
             _cursor = std::exchange(other._cursor, nullptr);
-            _base = std::exchange(other._base, nullptr);
+            _old_base = std::exchange(other._old_base, nullptr);
+            _new_base = std::exchange(other._new_base, nullptr);
             _value = std::exchange(other._value, nullptr);
         }
 
@@ -286,7 +293,7 @@ public:
          */
         value_type& operator*() noexcept
         {
-            hi_axiom(_base);
+            hi_axiom(_new_base);
             hi_axiom(_value);
             return *_value;
         }
@@ -300,7 +307,7 @@ public:
          */
         value_type *operator->() noexcept
         {
-            hi_axiom(_base);
+            hi_axiom(_new_base);
             return _value;
         }
 
@@ -312,9 +319,10 @@ public:
          */
         void commit() noexcept
         {
-            if (auto tmp = std::exchange(_base, nullptr)) {
+            auto tmp_new_base = std::exchange(_new_base, nullptr);
+            if (tmp_new_base) {
                 hi_axiom(_cursor);
-                _cursor->commit(tmp);
+                _cursor->commit(_old_base, tmp_new_base);
             }
         }
 
@@ -326,15 +334,17 @@ public:
          */
         void abort() noexcept
         {
-            if (auto tmp = std::exchange(_base, nullptr)) {
+            auto tmp_new_base = std::exchange(_new_base, nullptr);
+            if (tmp_new_base) {
                 hi_axiom(_cursor);
-                _cursor->abort(tmp);
+                _cursor->abort(tmp_new_base);
             }
         }
 
     private:
         shared_state_cursor const *_cursor = nullptr;
-        void *_base = nullptr;
+        void const *_old_base = nullptr;
+        void *_new_base = nullptr;
         value_type *_value = nullptr;
 
         /** Create a proxy object.
@@ -345,11 +355,12 @@ public:
          * @param value a pointer to the sub-object of the shared_state that the cursor
          *              is pointing to.
          */
-        proxy(shared_state_cursor const *cursor, void *base, value_type *value) noexcept :
-            _cursor(cursor), _base(base), _value(value)
+        proxy(shared_state_cursor const *cursor, void const *old_base, void *new_base, value_type *value) noexcept :
+            _cursor(cursor), _old_base(old_base), _new_base(new_base), _value(value)
         {
             hi_axiom(_cursor);
-            hi_axiom(_base);
+            hi_axiom(_old_base);
+            hi_axiom(_new_base);
             hi_axiom(_value);
         }
 
@@ -439,6 +450,7 @@ public:
     constexpr shared_state_cursor(auto&&...args) noexcept :
         _state(std::make_shared<detail::shared_state_impl<value_type>>(hi_forward(args)...)),
         _path{{"/"}},
+        _state_cbt(_state->subscribe(_path, callback_flags::synchronous, make_notify_callback())),
         _convert([](void *base) {
             return base;
         })
@@ -452,7 +464,7 @@ public:
     [[nodiscard]] const_proxy read() const& noexcept
     {
         _state->lock();
-        return {this, static_cast<value_type const *>(_convert(const_cast<void *>(_state->read())))};
+        return {this, convert(_state->read())};
     }
 
     value_type operator*() const noexcept
@@ -467,8 +479,8 @@ public:
 
     [[nodiscard]] proxy copy() const& noexcept
     {
-        void *const ptr = _state->copy();
-        return {this, ptr, static_cast<value_type *>(_convert(ptr))};
+        auto [old_base, new_base] = _state->old_and_copy();
+        return {this, old_base, new_base, convert(new_base)};
     }
 
     shared_state_cursor& operator=(value_type const& rhs) noexcept
@@ -481,9 +493,9 @@ public:
         *copy() = std::move(rhs);
     }
 
-    [[nodiscard]] token_type subscribe(callback_flags flags, function_type callback) noexcept
+    [[nodiscard]] token_type subscribe(callback_flags flags, forward_of<function_proto> auto&& callback) noexcept
     {
-        return _state->subscribe(_path, flags, callback);
+        return _notifier.subscribe(flags, hi_forward(callback));
     }
 
     [[nodiscard]] auto operator[](auto const& index) const noexcept requires(requires() { std::declval<value_type>()[index]; })
@@ -493,8 +505,8 @@ public:
         auto new_path = _path;
         new_path.push_back(std::format("[{}]", index));
         return shared_state_cursor<result_type>{
-            _state, std::move(new_path), [convert = this->_convert, index](void *base) -> void * {
-                return std::addressof((*static_cast<value_type *>(convert(base)))[index]);
+            _state, std::move(new_path), [convert_copy = this->_convert, index](void *base) -> void * {
+                return std::addressof((*static_cast<value_type *>(convert_copy(base)))[index]);
             }};
     }
 
@@ -506,8 +518,8 @@ public:
         auto new_path = _path;
         new_path.push_back(std::string{Name});
         return shared_state_cursor<result_type>{
-            _state, std::move(new_path), [convert = this->_convert](void *base) -> void * {
-                return std::addressof(selector<value_type>{}.get<Name>(*static_cast<value_type *>(convert(base))));
+            _state, std::move(new_path), [convert_copy = this->_convert](void *base) -> void * {
+                return std::addressof(selector<value_type>{}.get<Name>(*static_cast<value_type *>(convert_copy(base))));
             }};
     }
 
@@ -516,13 +528,18 @@ private:
 
     std::shared_ptr<detail::shared_state_base> _state = {};
     path_type _path = {};
+    detail::shared_state_base::token_type _state_cbt = {};
     std::function<void *(void *)> _convert = {};
+    notifier_type _notifier;
 
     shared_state_cursor(
         forward_of<std::shared_ptr<detail::shared_state_base>> auto&& state,
         forward_of<path_type> auto&& path,
         forward_of<void *(void *)> auto&& converter) noexcept :
-        _state(hi_forward(state)), _path(hi_forward(path)), _convert(hi_forward(converter))
+        _state(hi_forward(state)),
+        _path(hi_forward(path)),
+        _state_cbt(_state->subscribe(_path, callback_flags::synchronous, make_notify_callback())),
+        _convert(hi_forward(converter))
     {
     }
 
@@ -531,14 +548,31 @@ private:
         _state->unlock();
     }
 
-    void commit(void *base) const noexcept
+    void commit(void const *old_base, void *new_base) const noexcept
     {
-        _state->commit(base, _path);
+        _state->commit(old_base, new_base, _path);
     }
 
     void abort(void *base) const noexcept
     {
         _state->abort(base);
+    }
+
+    value_type *convert(void *base) const noexcept
+    {
+        return static_cast<value_type *>(_convert(base));
+    }
+
+    value_type const *convert(void const *base) const noexcept
+    {
+        return static_cast<value_type const *>(_convert(const_cast<void *>(base)));
+    }
+
+    [[nodiscard]] auto make_notify_callback() const noexcept
+    {
+        return [this](void const *old_base, void const *new_base) {
+            return _notifier(*convert(old_base), *convert(new_base));
+        };
     }
 
     template<typename O>

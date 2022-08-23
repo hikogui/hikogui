@@ -32,7 +32,8 @@ public:
     static_assert(std::is_same_v<Result, void>, "Result of a notifier must be void.");
 
     using result_type = Result;
-    using function_type = std::function<Result(Args const&...)>;
+    using function_proto = Result(Args...);
+    using function_type = std::function<function_proto>;
 
     using token_type = std::shared_ptr<function_type>;
     using weak_token_type = std::weak_ptr<function_type>;

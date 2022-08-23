@@ -110,15 +110,29 @@ public:
         return new_ptr;
     }
 
-    /** Abort a copy.
+    /** Get old value and a copy of the value.
+    * 
+    * @note Before calling this function lock the RCU.
      */
-    void abort(value_type *old_ptr) const noexcept
+    [[nodiscard]] std::pair<value_type const *, value_type *> old_and_copy() const noexcept
     {
-        std::destroy_at(old_ptr);
-        std::allocator_traits<allocator_type>::deallocate(_allocator, old_ptr, 1);
+        auto allocation = std::allocator_traits<allocator_type>::allocate(_allocator, 1);
+        auto old_ptr = get();
+        auto new_ptr = std::construct_at(allocation, *old_ptr);
+        return {old_ptr, new_ptr};
+    }
+
+    /** Abort a copy.
+     * @note This version must be used in combination with `copy()`.
+     */
+    void abort(value_type *new_ptr) const noexcept
+    {
+        std::destroy_at(new_ptr);
+        std::allocator_traits<allocator_type>::deallocate(_allocator, new_ptr, 1);
     }
 
     /** Commit the copied value.
+     * @note This version must be used in combination with `copy()`.
      */
     void commit(value_type *new_ptr) noexcept
     {

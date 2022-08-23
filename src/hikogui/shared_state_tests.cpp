@@ -87,14 +87,14 @@ TEST(shared_state, notify)
     auto baz1_count = 0;
 
     // clang-format off
-    auto a_cbt = a_cursor.subscribe(hi::callback_flags::synchronous, [&] { ++a_count; });
-    auto b_cbt = b_cursor.subscribe(hi::callback_flags::synchronous, [&] { ++b_count; });
-    auto foo_cbt = foo_cursor.subscribe(hi::callback_flags::synchronous, [&] { ++foo_count; });
-    auto bar_cbt = bar_cursor.subscribe(hi::callback_flags::synchronous, [&] { ++bar_count; });
-    auto barD_cbt = barD_cursor.subscribe(hi::callback_flags::synchronous, [&] { ++barD_count; });
-    auto baz_cbt = baz_cursor.subscribe(hi::callback_flags::synchronous, [&] { ++baz_count; });
-    auto baz0_cbt = baz0_cursor.subscribe(hi::callback_flags::synchronous, [&] { ++baz0_count; });
-    auto baz1_cbt = baz1_cursor.subscribe(hi::callback_flags::synchronous, [&] { ++baz1_count; });
+    auto a_cbt = a_cursor.subscribe(hi::callback_flags::synchronous, [&](auto...) { ++a_count; });
+    auto b_cbt = b_cursor.subscribe(hi::callback_flags::synchronous, [&](auto...) { ++b_count; });
+    auto foo_cbt = foo_cursor.subscribe(hi::callback_flags::synchronous, [&](auto...) { ++foo_count; });
+    auto bar_cbt = bar_cursor.subscribe(hi::callback_flags::synchronous, [&](auto...) { ++bar_count; });
+    auto barD_cbt = barD_cursor.subscribe(hi::callback_flags::synchronous, [&](auto...) { ++barD_count; });
+    auto baz_cbt = baz_cursor.subscribe(hi::callback_flags::synchronous, [&](auto...) { ++baz_count; });
+    auto baz0_cbt = baz0_cursor.subscribe(hi::callback_flags::synchronous, [&](auto...) { ++baz0_count; });
+    auto baz1_cbt = baz1_cursor.subscribe(hi::callback_flags::synchronous, [&](auto...) { ++baz1_count; });
     // clang-format on
 
     {
@@ -219,10 +219,10 @@ TEST(shared_state, commit_abort)
     auto baz_count = 0;
 
     // clang-format off
-    auto a_cbt = a_cursor.subscribe(hi::callback_flags::synchronous, [&] { ++a_count; });
-    auto b_cbt = b_cursor.subscribe(hi::callback_flags::synchronous, [&] { ++b_count; });
-    auto foo_cbt = foo_cursor.subscribe(hi::callback_flags::synchronous, [&] { ++foo_count; });
-    auto baz_cbt = baz_cursor.subscribe(hi::callback_flags::synchronous, [&] { ++baz_count; });
+    auto a_cbt = a_cursor.subscribe(hi::callback_flags::synchronous, [&](auto...) { ++a_count; });
+    auto b_cbt = b_cursor.subscribe(hi::callback_flags::synchronous, [&](auto...) { ++b_count; });
+    auto foo_cbt = foo_cursor.subscribe(hi::callback_flags::synchronous, [&](auto...) { ++foo_count; });
+    auto baz_cbt = baz_cursor.subscribe(hi::callback_flags::synchronous, [&](auto...) { ++baz_count; });
     // clang-format on
 
     // Commit on end-of-scope.
