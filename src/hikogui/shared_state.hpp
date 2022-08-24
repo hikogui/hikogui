@@ -15,7 +15,7 @@
 namespace hi::inline v1 {
 
 template<typename T>
-class shared_state_cursor;
+class shared_cursor;
 
 namespace detail {
 
@@ -59,31 +59,9 @@ protected:
     }
 
     template<typename O>
-    friend class ::hi::shared_state_cursor;
+    friend class ::hi::shared_cursor;
 };
 
-/** Shared state of an application.
- *
- * The shared state of an application that can be manipulated by the GUI,
- * preference and other systems.
- *
- * A `shared_cursor` selects a member or indexed element from the shared state,
- * or from another cursor. You can `.read()` or `.copy()` the value pointed to
- * by the cursor to read and manipulate the shared-data.
- *
- * Both `.read()` and `.copy()` take the full shared-state as a whole not allowing
- * other threads to have write access to this reference or copy. A copy will be
- * automatically committed, or may be aborted as well.
- *
- * lifetime:
- * - The lifetime of `shared_cursor` must be within the lifetime of `shared_state`.
- * - The lifetime of `shared_cursor::proxy` must be within the lifetime of `shared_cursor`.
- * - The lifetime of `shared_cursor::const_proxy` must be within the lifetime of `shared_cursor`.
- * - Although `shared_cursor` are created from another `shared_cursor` they internally do not
- *   refer to each other so their lifetime are not connected.
- *
- * @tparam T type used as the shared state.
- */
 template<typename T>
 class shared_state_impl final : public shared_state_base {
 public:
@@ -108,7 +86,7 @@ public:
      *
      * @return The new cursor pointing to the value object.
      */
-    [[nodiscard]] shared_state_cursor<value_type> cursor() const& noexcept
+    [[nodiscard]] shared_cursor<value_type> cursor() const& noexcept
     {
         // clang-format off
         return {
@@ -167,6 +145,28 @@ private:
 
 } // namespace detail
 
+/** Shared state of an application.
+ *
+ * The shared state of an application that can be manipulated by the GUI,
+ * preference and other systems.
+ *
+ * A `shared_cursor` selects a member or indexed element from the shared state,
+ * or from another cursor. You can `.read()` or `.copy()` the value pointed to
+ * by the cursor to read and manipulate the shared-data.
+ *
+ * Both `.read()` and `.copy()` take the full shared-state as a whole not allowing
+ * other threads to have write access to this reference or copy. A copy will be
+ * automatically committed, or may be aborted as well.
+ *
+ * lifetime:
+ * - The lifetime of `shared_cursor` will extend the lifetime of `shared_state`.
+ * - The lifetime of `shared_cursor::proxy` must be within the lifetime of `shared_cursor`.
+ * - The lifetime of `shared_cursor::const_proxy` must be within the lifetime of `shared_cursor`.
+ * - Although `shared_cursor` are created from another `shared_cursor` they internally do not
+ *   refer to each other so their lifetime are not connected.
+ *
+ * @tparam T type used as the shared state.
+ */
 template<typename T>
 class shared_state {
 public:
@@ -195,7 +195,7 @@ public:
      *
      * @return The new cursor pointing to the value object.
      */
-    [[nodiscard]] shared_state_cursor<value_type> cursor() const noexcept
+    [[nodiscard]] shared_cursor<value_type> cursor() const noexcept
     {
         return _pimpl->cursor();
     }
@@ -229,15 +229,23 @@ private:
     std::shared_ptr<detail::shared_state_impl<value_type>> _pimpl;
 };
 
+/** A cursor pointing to the whole or part of a shared_state.
+ *
+ * A cursor will point to a shared_state that was created, or possibly
+ * an anonymous shared_state, which is created when a shared_cursor is created
+ * as empty.
+ *
+ * @tparam T The type of cursor.
+ */
 template<typename T>
-class shared_state_cursor {
+class shared_cursor {
 public:
     using value_type = T;
     using notifier_type = notifier<void(value_type const&, value_type const&)>;
     using token_type = notifier_type::token_type;
     using function_proto = notifier_type::function_proto;
 
-    /** A proxy object of the shared_state_cursor.
+    /** A proxy object of the shared_cursor.
      *
      * The proxy is a RAII object that manages a transaction with the
      * shared-state as a whole, while giving access to only a sub-object
@@ -342,7 +350,7 @@ public:
         }
 
     private:
-        shared_state_cursor const *_cursor = nullptr;
+        shared_cursor const *_cursor = nullptr;
         void const *_old_base = nullptr;
         void *_new_base = nullptr;
         value_type *_value = nullptr;
@@ -355,7 +363,7 @@ public:
          * @param value a pointer to the sub-object of the shared_state that the cursor
          *              is pointing to.
          */
-        proxy(shared_state_cursor const *cursor, void const *old_base, void *new_base, value_type *value) noexcept :
+        proxy(shared_cursor const *cursor, void const *old_base, void *new_base, value_type *value) noexcept :
             _cursor(cursor), _old_base(old_base), _new_base(new_base), _value(value)
         {
             hi_axiom(_cursor);
@@ -364,7 +372,7 @@ public:
             hi_axiom(_value);
         }
 
-        friend class shared_state_cursor;
+        friend class shared_cursor;
     };
 
     class const_proxy {
@@ -431,23 +439,82 @@ public:
         }
 
     private:
-        shared_state_cursor const *_cursor = nullptr;
+        shared_cursor const *_cursor = nullptr;
         value_type const *_value = nullptr;
 
-        const_proxy(shared_state_cursor const *cursor, value_type const *value) noexcept : _cursor(cursor), _value(value) {}
+        const_proxy(shared_cursor const *cursor, value_type const *value) noexcept : _cursor(cursor), _value(value) {}
 
-        friend class shared_state_cursor;
+        friend class shared_cursor;
     };
 
-    constexpr ~shared_state_cursor() = default;
-    constexpr shared_state_cursor(shared_state_cursor const&) noexcept = default;
-    constexpr shared_state_cursor(shared_state_cursor&&) noexcept = default;
-    constexpr shared_state_cursor& operator=(shared_state_cursor const&) noexcept = default;
-    constexpr shared_state_cursor& operator=(shared_state_cursor&&) noexcept = default;
+    constexpr ~shared_cursor() = default;
 
-    /** Create a shared_state_cursor linked to an anonymous shared-state.
+    /** Copy construct.
+     *
+     * @note callback subscriptions are not copied.
+     * @param other The other shared_cursor.
      */
-    constexpr shared_state_cursor(auto&&...args) noexcept :
+    constexpr shared_cursor(shared_cursor const& other) noexcept :
+        _state(other._state),
+        _path(other._path),
+        _convert(other._convert)
+        _notifier()
+    {
+        update_state_callback();
+    }
+
+    /** Copy assign.
+     *
+     * @note callback subscriptions remain unchanged and are not copied.
+     * @param other The other shared_cursor.
+     * @return this
+     */
+    constexpr shared_cursor& operator=(shared_cursor const& other) noexcept
+    {
+        _state = other._state;
+        _path = other._path;
+        _convert = other._convert;
+        // callback subscriptions remain unchanged.
+        update_state_callback();
+        return *this;
+    }
+
+    /** Move construct.
+     *
+     * @note callback subscriptions are not copied.
+     * @param other The other shared_cursor.
+     */
+    constexpr shared_cursor(shared_cursor&& other) noexcept :
+        _state(std::move(other._state)),
+        _path(std::move(other._path)),
+        _convert(std::move(other._convert)),
+        _notifier()
+    {
+        update_state_callback();
+        other.reset();
+    }
+
+    /** Move assign.
+     *
+     * @note Callback subscriptions remain unchanged and are not moved.
+     * @note The other shared cursor will be attached to the anonymous state.
+     * @param other The other shared_cursor.
+     * @return this
+     */
+    constexpr shared_cursor& operator=(shared_cursor&&other) noexcept
+    {
+        _state = std::move(other._state);
+        _path = std::move(other._path);
+        _convert = std::move(other._convert);
+        // callback subscriptons remain unchanged.
+        update_state_callback();
+        other.reset();
+        return *this;
+    }
+
+    /** Create a shared_cursor linked to an anonymous shared-state.
+     */
+    constexpr shared_cursor(auto&&...args) noexcept :
         _state(std::make_shared<detail::shared_state_impl<value_type>>(hi_forward(args)...)),
         _path{{"/"}},
         _state_cbt(_state->subscribe(_path, callback_flags::synchronous, make_notify_callback())),
@@ -455,6 +522,16 @@ public:
             return base;
         })
     {
+    }
+
+    void reset() noexcept
+    {
+        _state(std::make_shared<detail::shared_state_impl<value_type>>(hi_forward(args)...)),
+        _path{{"/"}},
+        _convert([](void *base) {
+            return base;
+        })
+        update_state_callback();
     }
 
     const_proxy read() && = delete;
@@ -483,12 +560,12 @@ public:
         return {this, old_base, new_base, convert(new_base)};
     }
 
-    shared_state_cursor& operator=(value_type const& rhs) noexcept
+    shared_cursor& operator=(value_type const& rhs) noexcept
     {
         *copy() = rhs;
     }
 
-    shared_state_cursor& operator=(value_type&& rhs) noexcept
+    shared_cursor& operator=(value_type&& rhs) noexcept
     {
         *copy() = std::move(rhs);
     }
@@ -504,7 +581,7 @@ public:
 
         auto new_path = _path;
         new_path.push_back(std::format("[{}]", index));
-        return shared_state_cursor<result_type>{
+        return shared_cursor<result_type>{
             _state, std::move(new_path), [convert_copy = this->_convert, index](void *base) -> void * {
                 return std::addressof((*static_cast<value_type *>(convert_copy(base)))[index]);
             }};
@@ -517,7 +594,7 @@ public:
 
         auto new_path = _path;
         new_path.push_back(std::string{Name});
-        return shared_state_cursor<result_type>{
+        return shared_cursor<result_type>{
             _state, std::move(new_path), [convert_copy = this->_convert](void *base) -> void * {
                 return std::addressof(selector<value_type>{}.get<Name>(*static_cast<value_type *>(convert_copy(base))));
             }};
@@ -532,7 +609,7 @@ private:
     std::function<void *(void *)> _convert = {};
     notifier_type _notifier;
 
-    shared_state_cursor(
+    shared_cursor(
         forward_of<std::shared_ptr<detail::shared_state_base>> auto&& state,
         forward_of<path_type> auto&& path,
         forward_of<void *(void *)> auto&& converter) noexcept :
@@ -568,18 +645,21 @@ private:
         return static_cast<value_type const *>(_convert(const_cast<void *>(base)));
     }
 
-    [[nodiscard]] auto make_notify_callback() const noexcept
+    void update_state_callback() const noexcept
     {
-        return [this](void const *old_base, void const *new_base) {
-            return _notifier(*convert(old_base), *convert(new_base));
-        };
+        _state_cbt = _state->subscribe(
+            _path,
+            callback_flags::synchronous,
+            [this](void const *old_base, void const *new_base) {
+                return _notifier(*convert(old_base), *convert(new_base));
+            });
     }
 
     template<typename O>
     friend class detail::shared_state_impl;
 
     template<typename O>
-    friend class shared_state_cursor;
+    friend class shared_cursor;
 };
 
 } // namespace hi::inline v1
