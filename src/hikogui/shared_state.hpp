@@ -15,7 +15,7 @@
 namespace hi::inline v1 {
 
 template<typename T>
-class shared_cursor;
+class observer;
 
 namespace detail {
 
@@ -59,7 +59,7 @@ protected:
     }
 
     template<typename O>
-    friend class ::hi::shared_cursor;
+    friend class ::hi::observer;
 };
 
 template<typename T>
@@ -79,14 +79,14 @@ public:
         _rcu.emplace(std::forward<Args>(args)...);
     }
 
-    /** Get a cursor to the value.
+    /** Get a observer to the value.
      *
-     * This function returns a cursor to the value object.
-     * The cursor is used to start read or write transactions or create other cursors.
+     * This function returns a observer to the value object.
+     * The observer is used to start read or write transactions or create other observers.
      *
-     * @return The new cursor pointing to the value object.
+     * @return The new observer pointing to the value object.
      */
-    [[nodiscard]] shared_cursor<value_type> cursor() const& noexcept
+    [[nodiscard]] observer<value_type> observer() const& noexcept
     {
         // clang-format off
         return {
@@ -150,19 +150,19 @@ private:
  * The shared state of an application that can be manipulated by the GUI,
  * preference and other systems.
  *
- * A `shared_cursor` selects a member or indexed element from the shared state,
- * or from another cursor. You can `.read()` or `.copy()` the value pointed to
- * by the cursor to read and manipulate the shared-data.
+ * A `observer` selects a member or indexed element from the shared state,
+ * or from another observer. You can `.read()` or `.copy()` the value pointed to
+ * by the observer to read and manipulate the shared-data.
  *
  * Both `.read()` and `.copy()` take the full shared-state as a whole not allowing
  * other threads to have write access to this reference or copy. A copy will be
  * automatically committed, or may be aborted as well.
  *
  * lifetime:
- * - The lifetime of `shared_cursor` will extend the lifetime of `shared_state`.
- * - The lifetime of `shared_cursor::proxy` must be within the lifetime of `shared_cursor`.
- * - The lifetime of `shared_cursor::const_proxy` must be within the lifetime of `shared_cursor`.
- * - Although `shared_cursor` are created from another `shared_cursor` they internally do not
+ * - The lifetime of `observer` will extend the lifetime of `shared_state`.
+ * - The lifetime of `observer::proxy` must be within the lifetime of `observer`.
+ * - The lifetime of `observer::const_proxy` must be within the lifetime of `observer`.
+ * - Although `observer` are created from another `observer` they internally do not
  *   refer to each other so their lifetime are not connected.
  *
  * @tparam T type used as the shared state.
@@ -188,110 +188,134 @@ public:
     {
     }
 
-    /** Get a cursor to the value.
+    /** Get a observer to the value.
      *
-     * This function returns a cursor to the value object.
-     * The cursor is used to start read or write transactions or create other cursors.
+     * This function returns a observer to the value object.
+     * The observer is used to start read or write transactions or create other observers.
      *
-     * @return The new cursor pointing to the value object.
+     * @return The new observer pointing to the value object.
      */
-    [[nodiscard]] shared_cursor<value_type> cursor() const noexcept
+    [[nodiscard]] observer<value_type> observer() const noexcept
     {
-        return _pimpl->cursor();
+        return _pimpl->observer();
     }
 
     // clang-format off
-    /** Get a cursor to a sub-object of value accessed by the index operator.
+    /** Get a observer to a sub-object of value accessed by the index operator.
      *
      * @param index The index used with the index operator of the value.
-     * @return The new cursor pointing to a sub-object of the value.
+     * @return The new observer pointing to a sub-object of the value.
      */
     [[nodiscard]] auto operator[](auto const& index) const& noexcept
-        requires requires { cursor()[index]; }
+        requires requires { observer()[index]; }
     {
-        return cursor()[index];
+        return observer()[index];
     }
     // clang-format on
 
-    /** Get a cursor to a member variable of the value.
+    /** Get a observer to a member variable of the value.
      *
      * @note This requires the specialization of `hi::selector<value_type>`.
      * @tparam Name the name of the member variable of the value.
-     * @return The new cursor pointing to the member variable of the value
+     * @return The new observer pointing to the member variable of the value
      */
     template<basic_fixed_string Name>
     [[nodiscard]] auto get() const& noexcept
     {
-        return cursor().get<Name>();
+        return observer().get<Name>();
     }
 
 private:
     std::shared_ptr<detail::shared_state_impl<value_type>> _pimpl;
 };
 
-/** A cursor pointing to the whole or part of a shared_state.
+namespace detail {
+
+/** A observer pointing to the whole or part of a shared_state.
  *
- * A cursor will point to a shared_state that was created, or possibly
- * an anonymous shared_state, which is created when a shared_cursor is created
+ * A observer will point to a shared_state that was created, or possibly
+ * an anonymous shared_state, which is created when a observer is created
  * as empty.
  *
- * @tparam T The type of cursor.
+ * @tparam T The type of observer.
  */
-template<typename T>
-class shared_cursor {
+template<typename T, bool IsMutable>
+class observer {
 public:
+    constexpr static bool is_mutable = IsMutable;
+
     using value_type = T;
     using notifier_type = notifier<void(value_type const&, value_type const&)>;
     using token_type = notifier_type::token_type;
     using function_proto = notifier_type::function_proto;
 
-    /** A proxy object of the shared_cursor.
+    /** A proxy object of the observer.
      *
      * The proxy is a RAII object that manages a transaction with the
      * shared-state as a whole, while giving access to only a sub-object
      * of the shared-state.
+     *
+     * @tparam IsWriting The proxy is being used to write
      */
-    class proxy {
+    template<bool IsWriting>
+    class _proxy {
     public:
+        constexpr static bool is_writing = IsWriting;
+
         /** Commits and destruct the proxy object.
          *
          * If `commit()` or `abort()` are called or the proxy object
          * is empty then the destructor does not commit the changes.
          */
-        ~proxy() noexcept
+        ~_proxy() noexcept
         {
-            if (_new_base) {
-                hi_axiom(_cursor);
-                _cursor->commit(_old_base, _new_base);
-            }
+            _commit();
         }
 
-        proxy(proxy const&) = delete;
-        proxy& operator=(proxy const&) = delete;
+        _proxy(_proxy const&) = delete;
+        _proxy& operator=(_proxy const&) = delete;
 
-        proxy(proxy&& other) noexcept :
-            _cursor(std::exchange(other._cursor, nullptr)),
+        _proxy(_proxy const&) noexcept requires (not is_writing) :
+            _observer(other._observer),
+            _old_base(nullptr),
+            _new_base(other._new_base),
+            _value(other._value)
+        {
+            _observer.lock();
+        }
+
+        _proxy& operator=(_proxy const&) noexcept requires (not is_writing)
+        {
+            _commit();
+            _observer = other._observer;
+            _old_base = nullptr;
+            _new_base = other._new_base;
+            _value = other._value;
+            _observer.lock();
+            return *this;
+        };
+
+        _proxy(_proxy&& other) noexcept :
+            _observer(std::exchange(other._observer, nullptr)),
             _old_base(std::exchange(other._old_base, nullptr)),
             _new_base(std::exchange(other._new_base, nullptr)),
             _value(std::exchange(other._value, nullptr))
         {
         }
 
-        proxy& operator=(proxy&& other) noexcept
+        _proxy& operator=(_proxy&& other) noexcept
         {
-            if (_new_base) {
-                hi_axiom(_cursor);
-                _cursor->commit(_old_base, _new_base);
-            }
-            _cursor = std::exchange(other._cursor, nullptr);
+            _commit();
+            _observer = std::exchange(other._observer, nullptr);
             _old_base = std::exchange(other._old_base, nullptr);
             _new_base = std::exchange(other._new_base, nullptr);
             _value = std::exchange(other._value, nullptr);
+            return *this;
         }
 
         /** Construct an empty proxy object.
          */
-        constexpr proxy() noexcept = default;
+        constexpr _proxy() noexcept = default;
 
         /** Derefence the value.
          *
@@ -301,8 +325,7 @@ public:
          */
         value_type& operator*() noexcept
         {
-            hi_axiom(_new_base);
-            hi_axiom(_value);
+            hi_axiom(_value != nullptr);
             return *_value;
         }
 
@@ -315,7 +338,7 @@ public:
          */
         value_type *operator->() noexcept
         {
-            hi_axiom(_new_base);
+            hi_axiom(_value != nullptr);
             return _value;
         }
 
@@ -327,11 +350,8 @@ public:
          */
         void commit() noexcept
         {
-            auto tmp_new_base = std::exchange(_new_base, nullptr);
-            if (tmp_new_base) {
-                hi_axiom(_cursor);
-                _cursor->commit(_old_base, tmp_new_base);
-            }
+            _commit();
+            _observer = nullptr;
         }
 
         /** Revert any changes to the value.
@@ -342,119 +362,75 @@ public:
          */
         void abort() noexcept
         {
-            auto tmp_new_base = std::exchange(_new_base, nullptr);
-            if (tmp_new_base) {
-                hi_axiom(_cursor);
-                _cursor->abort(tmp_new_base);
-            }
+            _abort();
+            _observer = nullptr;
         }
 
     private:
-        shared_cursor const *_cursor = nullptr;
+        observer const *_observer = nullptr;
         void const *_old_base = nullptr;
         void *_new_base = nullptr;
         value_type *_value = nullptr;
 
         /** Create a proxy object.
          *
-         * @param cursor a pointer to the cursor.
-         * @param base a pointer to the dereference rcu-object from the shared_state.
+         * @param observer a pointer to the observer.
+         * @param old_base A pointer to the old_base which holds the previous value used to create the new_base.
+         *                 For a const_proxy this must be a nullptr.
+         * @param new_base a pointer to the dereference rcu-object from the shared_state.
          *             This is needed to commit or abort the shared_state as a whole.
-         * @param value a pointer to the sub-object of the shared_state that the cursor
+         * @param value a pointer to the sub-object of the shared_state that the observer
          *              is pointing to.
          */
-        proxy(shared_cursor const *cursor, void const *old_base, void *new_base, value_type *value) noexcept :
-            _cursor(cursor), _old_base(old_base), _new_base(new_base), _value(value)
+        _proxy(observer const *observer, void const *old_base, void *new_base, value_type *value) noexcept :
+            _observer(observer), _old_base(old_base), _new_base(new_base), _value(value)
         {
-            hi_axiom(_cursor);
-            hi_axiom(_old_base);
-            hi_axiom(_new_base);
-            hi_axiom(_value);
+            hi_axiom(_observer != nullptr);
+            if constexpr (is_writing) {
+                hi_axiom(_old_base != nullptr);
+            } else {
+                hi_axiom(_old_base == nullptr);
+            }
+            hi_axiom(_new_base != nullptr);
+            hi_axiom(_value != nullptr);
         }
 
-        friend class shared_cursor;
+        void _commit() noexcept
+        {
+            if (_observer != nullptr) {
+                if constexpr (is_writing) {
+                    _observer->commit(_old_base, _new_base);
+                } else {
+                    _observer->unlock();
+                }
+            }
+        }
+
+        void _abort() noexcept
+        {
+            if (_observer != nullptr) {
+                if constexpr (is_writing) {
+                    _observer->abort(_new_base);
+                } else {
+                    _observer->unlock();
+                }
+            }
+        }
+
+        friend class observer;
     };
 
-    class const_proxy {
-    public:
-        ~const_proxy() noexcept
-        {
-            if (_value) {
-                hi_axiom(_cursor);
-                _cursor->unlock();
-            }
-        }
+    using proxy = _proxy<true>;
+    using const_proxy = _proxy<false>;
 
-        const_proxy(const_proxy const& other) noexcept : _cursor(other._cursor), _value(other._value)
-        {
-            if (_value) {
-                hi_axiom(_cursor);
-                _cursor->lock();
-            }
-        }
-
-        const_proxy& operator=(const_proxy const& other) noexcept
-        {
-            if (_value) {
-                hi_axiom(_cursor);
-                _cursor->unlock();
-            }
-            _cursor = other._cursor;
-            _value = other._value;
-            if (_value) {
-                hi_axiom(_cursor);
-                _cursor->lock();
-            }
-        }
-
-        const_proxy(const_proxy&& other) noexcept :
-            _cursor(std::exchange(other._cursor, nullptr)), _value(std::exchange(other._value, nullptr))
-        {
-        }
-
-        const_proxy& operator=(const_proxy&& other) noexcept
-        {
-            if (_value) {
-                hi_axiom(_cursor);
-                _cursor->unlock();
-            }
-            _cursor = std::exchange(other._cursor, nullptr);
-            _value = std::exchange(other._value, nullptr);
-        }
-
-        constexpr const_proxy() noexcept = default;
-
-        [[nodiscard]] value_type const& operator*() const noexcept
-        {
-            hi_axiom(_cursor);
-            hi_axiom(_value);
-            return *_value;
-        }
-
-        [[nodiscard]] value_type const *operator->() const noexcept
-        {
-            hi_axiom(_cursor);
-            hi_axiom(_value);
-            return _value;
-        }
-
-    private:
-        shared_cursor const *_cursor = nullptr;
-        value_type const *_value = nullptr;
-
-        const_proxy(shared_cursor const *cursor, value_type const *value) noexcept : _cursor(cursor), _value(value) {}
-
-        friend class shared_cursor;
-    };
-
-    constexpr ~shared_cursor() = default;
+    constexpr ~observer() = default;
 
     /** Copy construct.
      *
      * @note callback subscriptions are not copied.
-     * @param other The other shared_cursor.
+     * @param other The other observer.
      */
-    constexpr shared_cursor(shared_cursor const& other) noexcept :
+    constexpr observer(observer const& other) noexcept :
         _state(other._state),
         _path(other._path),
         _convert(other._convert)
@@ -466,10 +442,10 @@ public:
     /** Copy assign.
      *
      * @note callback subscriptions remain unchanged and are not copied.
-     * @param other The other shared_cursor.
+     * @param other The other observer.
      * @return this
      */
-    constexpr shared_cursor& operator=(shared_cursor const& other) noexcept
+    constexpr observer& operator=(observer const& other) noexcept
     {
         _state = other._state;
         _path = other._path;
@@ -482,9 +458,9 @@ public:
     /** Move construct.
      *
      * @note callback subscriptions are not copied.
-     * @param other The other shared_cursor.
+     * @param other The other observer.
      */
-    constexpr shared_cursor(shared_cursor&& other) noexcept :
+    constexpr observer(observer&& other) noexcept :
         _state(std::move(other._state)),
         _path(std::move(other._path)),
         _convert(std::move(other._convert)),
@@ -497,11 +473,11 @@ public:
     /** Move assign.
      *
      * @note Callback subscriptions remain unchanged and are not moved.
-     * @note The other shared cursor will be attached to the anonymous state.
-     * @param other The other shared_cursor.
+     * @note The other shared observer will be attached to the anonymous state.
+     * @param other The other observer.
      * @return this
      */
-    constexpr shared_cursor& operator=(shared_cursor&&other) noexcept
+    constexpr observer& operator=(observer&&other) noexcept
     {
         _state = std::move(other._state);
         _path = std::move(other._path);
@@ -512,9 +488,9 @@ public:
         return *this;
     }
 
-    /** Create a shared_cursor linked to an anonymous shared-state.
+    /** Create a observer linked to an anonymous shared-state.
      */
-    constexpr shared_cursor(auto&&...args) noexcept :
+    constexpr observer(auto&&...args) noexcept :
         _state(std::make_shared<detail::shared_state_impl<value_type>>(hi_forward(args)...)),
         _path{{"/"}},
         _state_cbt(_state->subscribe(_path, callback_flags::synchronous, make_notify_callback())),
@@ -541,7 +517,8 @@ public:
     [[nodiscard]] const_proxy read() const& noexcept
     {
         _state->lock();
-        return {this, convert(_state->read())};
+        auto new_base = _state->read();
+        return {this, nullptr, new_base, convert(new_base)};
     }
 
     value_type operator*() const noexcept
@@ -560,12 +537,12 @@ public:
         return {this, old_base, new_base, convert(new_base)};
     }
 
-    shared_cursor& operator=(value_type const& rhs) noexcept
+    observer& operator=(value_type const& rhs) noexcept
     {
         *copy() = rhs;
     }
 
-    shared_cursor& operator=(value_type&& rhs) noexcept
+    observer& operator=(value_type&& rhs) noexcept
     {
         *copy() = std::move(rhs);
     }
@@ -581,7 +558,7 @@ public:
 
         auto new_path = _path;
         new_path.push_back(std::format("[{}]", index));
-        return shared_cursor<result_type>{
+        return observer<result_type>{
             _state, std::move(new_path), [convert_copy = this->_convert, index](void *base) -> void * {
                 return std::addressof((*static_cast<value_type *>(convert_copy(base)))[index]);
             }};
@@ -594,7 +571,7 @@ public:
 
         auto new_path = _path;
         new_path.push_back(std::string{Name});
-        return shared_cursor<result_type>{
+        return observer<result_type>{
             _state, std::move(new_path), [convert_copy = this->_convert](void *base) -> void * {
                 return std::addressof(selector<value_type>{}.get<Name>(*static_cast<value_type *>(convert_copy(base))));
             }};
@@ -609,7 +586,7 @@ private:
     std::function<void *(void *)> _convert = {};
     notifier_type _notifier;
 
-    shared_cursor(
+    observer(
         forward_of<std::shared_ptr<detail::shared_state_base>> auto&& state,
         forward_of<path_type> auto&& path,
         forward_of<void *(void *)> auto&& converter) noexcept :
@@ -659,7 +636,15 @@ private:
     friend class detail::shared_state_impl;
 
     template<typename O>
-    friend class shared_cursor;
+    friend class observer;
 };
+
+}
+
+template<typename T>
+using observer = detail::observer<T,true>;
+
+template<typename T>
+using const_observer = detail::observer<T,false>;
 
 } // namespace hi::inline v1
