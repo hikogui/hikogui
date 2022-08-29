@@ -9,6 +9,7 @@
 #include <vector>
 #include <tuple>
 #include <mutex>
+#include <memory>
 
 namespace hi::inline v1 {
 
@@ -99,27 +100,27 @@ public:
         return _ptr.exchange(ptr, std::memory_order::release);
     }
 
-    /** Create a copy of the value.
-     */
-    [[nodiscard]] value_type *copy() const noexcept
-    {
-        auto *allocation = std::allocator_traits<allocator_type>::allocate(_allocator, 1);
-        lock();
-        auto *new_ptr = std::construct_at(allocation, *get());
-        unlock();
-        return new_ptr;
-    }
-
     /** Get old value and a copy of the value.
     * 
     * @note Before calling this function lock the RCU.
      */
-    [[nodiscard]] std::pair<value_type const *, value_type *> old_and_copy() const noexcept
+    [[nodiscard]] value_type *copy(value_type const *old_ptr) const noexcept
     {
-        auto allocation = std::allocator_traits<allocator_type>::allocate(_allocator, 1);
-        auto old_ptr = get();
-        auto new_ptr = std::construct_at(allocation, *old_ptr);
-        return {old_ptr, new_ptr};
+        hi_axiom(old_ptr != nullptr);
+        value_type *new_ptr = std::allocator_traits<allocator_type>::allocate(_allocator, 1);
+        std::allocator_traits<allocator_type>::construct(_allocator, new_ptr, *old_ptr);
+        return std::launder(new_ptr);
+    }
+
+    /** Create a copy of the value.
+     */
+    [[nodiscard]] value_type *copy() const noexcept
+    {
+        auto *new_ptr = std::allocator_traits<allocator_type>::allocate(_allocator, 1);
+        lock();
+        std::allocator_traits<allocator_type>::construct(_allocator, new_ptr, *get());
+        unlock();
+        return std::launder(new_ptr);
     }
 
     /** Abort a copy.
@@ -127,7 +128,7 @@ public:
      */
     void abort(value_type *new_ptr) const noexcept
     {
-        std::destroy_at(new_ptr);
+        std::allocator_traits<allocator_type>::destroy(_allocator, new_ptr);
         std::allocator_traits<allocator_type>::deallocate(_allocator, new_ptr, 1);
     }
 
@@ -153,11 +154,10 @@ public:
      *
      * @param args The arguments passed to the constructor of the value.
      */
-    template<typename... Args>
-    void emplace(Args&&...args) noexcept
+    void emplace(auto&&...args) noexcept
     {
-        auto *const allocation = std::allocator_traits<allocator_type>::allocate(_allocator, 1);
-        auto *const new_ptr = std::construct_at(allocation, std::forward<Args>(args)...);
+        value_type *const new_ptr = std::allocator_traits<allocator_type>::allocate(_allocator, 1);
+        std::allocator_traits<allocator_type>::construct(_allocator, new_ptr, hi_forward(args)...);
 
         lock();
         auto *const old_ptr = exchange(new_ptr);
@@ -216,7 +216,7 @@ public:
         // Destroy all objects from previous idle-count versions.
         auto it = _old_ptrs.begin();
         while (it != _old_ptrs.end() and it->first < new_version) {
-            std::destroy_at(it->second);
+            std::allocator_traits<allocator_type>::destroy(_allocator, it->second);
             std::allocator_traits<allocator_type>::deallocate(_allocator, it->second, 1);
             ++it;
         }

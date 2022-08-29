@@ -10,11 +10,15 @@
 struct B {
     std::string foo;
     int bar;
+
+    [[nodiscard]] friend bool operator==(B const &, B const &) noexcept = default;
 };
 
 struct A {
     B b;
     std::vector<int> baz;
+
+    [[nodiscard]] friend bool operator==(A const&, A const&) noexcept = default;
 };
 
 // clang-format off
@@ -39,7 +43,7 @@ TEST(shared_state, read)
 {
     auto state = hi::shared_state<A>{B{"hello world", 42}, std::vector<int>{5, 15}};
 
-    auto a_cursor = state.cursor();
+    auto a_cursor = state.observer();
     auto baz_cursor = state.get<"baz">();
     auto baz0_cursor = state.get<"baz">()[0];
     auto baz1_cursor = baz_cursor[1];
@@ -68,7 +72,7 @@ TEST(shared_state, notify)
 {
     auto state = hi::shared_state<A>{B{"hello world", 42}, std::vector<int>{5, 15}};
 
-    auto a_cursor = state.cursor();
+    auto a_cursor = state.observer();
     auto b_cursor = a_cursor.get<"b">();
     auto foo_cursor = b_cursor.get<"foo">();
     auto bar_cursor = b_cursor.get<"bar">();
@@ -208,7 +212,7 @@ TEST(shared_state, commit_abort)
 {
     auto state = hi::shared_state<A>{B{"hello world", 42}, std::vector<int>{5, 15}};
 
-    auto a_cursor = state.cursor();
+    auto a_cursor = state.observer();
     auto b_cursor = a_cursor.get<"b">();
     auto foo_cursor = b_cursor.get<"foo">();
     auto baz_cursor = a_cursor.get<"baz">();

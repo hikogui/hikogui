@@ -14,36 +14,96 @@
 
 namespace hi::inline v1 {
 
-template<typename T>
-class observer;
-
 namespace detail {
+template<typename, bool>
+class observer;
+}
 
-class shared_state_base : public std::enable_shared_from_this<shared_state_base> {
-public:
+/** An abstract observable object.
+ *
+ * This type is referenced by `observer`s
+ */
+class observable : public std::enable_shared_from_this<observable> {
+private:
+    /** The type of the notifier used to notify changes to the value of the observable.
+     */
     using notifier_type = notifier<void(void const *, void const *)>;
+
+public:
+    /** The token returned by `subscribe()`.
+     */
     using token_type = notifier_type::token_type;
+
+    /** The type of the callback that can be subscribed.
+     */
     using function_proto = notifier_type::function_proto;
 
-    constexpr virtual ~shared_state_base() = default;
-    shared_state_base(shared_state_base const&) = delete;
-    shared_state_base(shared_state_base&&) = delete;
-    shared_state_base& operator=(shared_state_base const&) = delete;
-    shared_state_base& operator=(shared_state_base&&) = delete;
-    constexpr shared_state_base() noexcept = default;
-
-protected:
+    /** The type of the path used for notifying observers.
+     */
     using path_type = std::vector<std::string>;
 
-    tree<std::string, notifier_type> _notifiers;
+    constexpr virtual ~observable() = default;
+    observable(observable const&) = delete;
+    observable(observable&&) = delete;
+    observable& operator=(observable const&) = delete;
+    observable& operator=(observable&&) = delete;
+    constexpr observable() noexcept = default;
 
-    [[nodiscard]] virtual void const *read() noexcept = 0;
-    [[nodiscard]] virtual std::pair<void const *, void *> old_and_copy() noexcept = 0;
-    virtual void commit(void const *old_ptr, void *new_ptr, path_type const& path) noexcept = 0;
-    virtual void abort(void *new_ptr) noexcept = 0;
-    virtual void lock() noexcept = 0;
-    virtual void unlock() noexcept = 0;
+    /** Get a pointer to the current value.
+     *
+     * @note `read()` does not `read_lock()` the observable and should be done before `read()`.
+     * @return A const pointer to the value. The `observer` should cast this to a pointer to the value-type.
+     */
+    [[nodiscard]] virtual void const *read() const noexcept = 0;
 
+    /** Allocate and make a copy of the value.
+     *
+     * @note `copy()` does not `write_lock()` the observable and should be done before `read()`.
+     * @param A pointer to the value that was `read()`.
+     * @return A pointer to a newly allocated copy of the value.
+     */
+    [[nodiscard]] virtual void *copy(void const *ptr) const noexcept = 0;
+
+    /** Commit the modified copy.
+     *
+     * @note `commit()` does not `write_unlock()`.
+     * @param ptr A pointer to the modified new value returned by `copy()`.
+     */
+    virtual void commit(void *ptr) noexcept = 0;
+
+    /** Abort the modified copy.
+     *
+     * @note `abort()` does not `write_unlock()`.
+     * @param ptr A pointer to the modified new value returned by `copy()`.
+     */
+    virtual void abort(void *ptr) const noexcept = 0;
+
+    /** Lock for reading.
+     */
+    virtual void read_lock() const noexcept = 0;
+
+    /** Unlock for reading.
+     */
+    virtual void read_unlock() const noexcept = 0;
+
+    /** Lock for writing.
+     */
+    virtual void write_lock() const noexcept = 0;
+
+    /** Unlock for writing.
+     */
+    virtual void write_unlock() const noexcept = 0;
+
+    /** Subscribe a callback with the observer.
+     *
+     * @param path The path within the observable-value that being watched.
+     * @param flags The way the callback should be called.
+     * @param function The function to be called when the watched observable-value changes.
+     *                 The function has two `void *` arguments to the old value and the new value.
+     *                 It is the task of the observer to cast the `void *` to the actual value-type.
+     * @return A token which will extend the lifetime of the function. When the token is destroyed
+     *         the function will be unsubscribed.
+     */
     [[nodiscard]] token_type
     subscribe(path_type const& path, callback_flags flags, forward_of<function_proto> auto&& function) noexcept
     {
@@ -51,30 +111,43 @@ protected:
         return notifier.subscribe(flags, hi_forward(function));
     }
 
-    void notify(void const *old_ptr, void const *new_ptr, path_type const& path) noexcept
+    /** Called by a observer to notify all observers that the value has changed.
+     *
+     * The @a path argument is used to determine which of the subscribed callback will be called.
+     *  - All callbacks which are a prefix of @a path.
+     *  - All callbacks which have @a path as a prefix.
+     *
+     * @param old_ptr The pointer to the old value.
+     * @param new_ptr The pointer to the new value.
+     * @param path The path of the observed-value that was modified.
+     */
+    void notify(void const *old_ptr, void const *new_ptr, path_type const& path) const noexcept
     {
         _notifiers.walk_including_path(path, [old_ptr, new_ptr](notifier_type const& notifier) {
             notifier(old_ptr, new_ptr);
         });
     }
 
-    template<typename O>
-    friend class ::hi::observer;
+private:
+    tree<std::string, notifier_type> _notifiers;
+
+    template<typename, bool>
+    friend class detail::observer;
 };
 
 template<typename T>
-class shared_state_impl final : public shared_state_base {
+class observable_value final : public observable {
 public:
     using value_type = T;
 
-    ~shared_state_impl() = default;
+    ~observable_value() = default;
 
     /** Construct the shared state and initialize the value.
      *
      * @param args The arguments passed to the constructor of the value.
      */
     template<typename... Args>
-    constexpr shared_state_impl(Args&&...args) noexcept : _rcu()
+    constexpr observable_value(Args&&...args) noexcept : _rcu()
     {
         _rcu.emplace(std::forward<Args>(args)...);
     }
@@ -86,12 +159,12 @@ public:
      *
      * @return The new observer pointing to the value object.
      */
-    [[nodiscard]] observer<value_type> observer() const& noexcept
+    [[nodiscard]] detail::observer<value_type, true> observer() const& noexcept
     {
         // clang-format off
         return {
-            const_cast<shared_state_impl *>(this)->shared_from_this(),
-            std::vector<std::string>{{"/"}},
+            std::const_pointer_cast<observable>(this->shared_from_this()),
+            path_type{},
             [](void *base) -> void * {
                 return base;
             }
@@ -100,50 +173,53 @@ public:
     }
 
 private:
-    using path_type = std::vector<std::string>;
+    using path_type = observable::path_type;
 
     rcu<value_type> _rcu;
-    unfair_mutex _write_mutex;
+    mutable unfair_mutex _write_mutex;
 
-    [[nodiscard]] void const *read() noexcept override
+    [[nodiscard]] void const *read() const noexcept override
     {
         return _rcu.get();
     }
 
-    [[nodiscard]] std::pair<void const *, void *> old_and_copy() noexcept override
+    [[nodiscard]] void *copy(void const *ptr) const noexcept override
     {
-        _write_mutex.lock();
-        lock();
-        return _rcu.old_and_copy();
+        return _rcu.copy(static_cast<value_type const *>(ptr));
     }
 
-    void commit(void const *old_ptr, void *new_ptr, path_type const& path) noexcept override
+    void commit(void *ptr) noexcept override
     {
-        _rcu.commit(static_cast<value_type *>(new_ptr));
-        notify(old_ptr, new_ptr, path);
-        unlock();
-        _write_mutex.unlock();
+        _rcu.commit(static_cast<value_type *>(ptr));
     }
 
-    void abort(void *new_ptr) noexcept override
+    void abort(void *ptr) const noexcept override
     {
-        _rcu.abort(static_cast<value_type *>(new_ptr));
-        unlock();
-        _write_mutex.unlock();
+        _rcu.abort(static_cast<value_type *>(ptr));
     }
 
-    void lock() noexcept override
+    void read_lock() const noexcept override
     {
         _rcu.lock();
     }
 
-    void unlock() noexcept override
+    void read_unlock() const noexcept override
     {
         _rcu.unlock();
     }
-};
 
-} // namespace detail
+    void write_lock() const noexcept override
+    {
+        _write_mutex.lock();
+        read_lock();
+    }
+
+    void write_unlock() const noexcept override
+    {
+        read_unlock();
+        _write_mutex.unlock();
+    }
+};
 
 /** Shared state of an application.
  *
@@ -184,7 +260,7 @@ public:
      */
     template<typename... Args>
     constexpr shared_state(Args&&...args) noexcept :
-        _pimpl(std::make_shared<detail::shared_state_impl<value_type>>(std::forward<Args>(args)...))
+        _pimpl(std::make_shared<observable_value<value_type>>(std::forward<Args>(args)...))
     {
     }
 
@@ -195,7 +271,7 @@ public:
      *
      * @return The new observer pointing to the value object.
      */
-    [[nodiscard]] observer<value_type> observer() const noexcept
+    [[nodiscard]] detail::observer<value_type, true> observer() const noexcept
     {
         return _pimpl->observer();
     }
@@ -226,15 +302,15 @@ public:
     }
 
 private:
-    std::shared_ptr<detail::shared_state_impl<value_type>> _pimpl;
+    std::shared_ptr<observable_value<value_type>> _pimpl;
 };
 
 namespace detail {
 
-/** A observer pointing to the whole or part of a shared_state.
+/** A observer pointing to the whole or part of a observable.
  *
- * A observer will point to a shared_state that was created, or possibly
- * an anonymous shared_state, which is created when a observer is created
+ * A observer will point to a observable that was created, or possibly
+ * an anonymous observable, which is created when a observer is created
  * as empty.
  *
  * @tparam T The type of observer.
@@ -248,6 +324,7 @@ public:
     using notifier_type = notifier<void(value_type const&, value_type const&)>;
     using token_type = notifier_type::token_type;
     using function_proto = notifier_type::function_proto;
+    using path_type = observable::path_type;
 
     /** A proxy object of the observer.
      *
@@ -262,6 +339,14 @@ public:
     public:
         constexpr static bool is_writing = IsWriting;
 
+        using void_pointer = std::conditional_t<is_writing, void *, void const *>;
+        using const_void_pointer = void const *;
+
+        using reference = std::conditional_t<is_writing, value_type&, value_type const&>;
+        using const_reference = value_type const&;
+        using pointer = std::conditional_t<is_writing, value_type *, value_type const *>;
+        using const_pointer = value_type const *;
+
         /** Commits and destruct the proxy object.
          *
          * If `commit()` or `abort()` are called or the proxy object
@@ -275,23 +360,20 @@ public:
         _proxy(_proxy const&) = delete;
         _proxy& operator=(_proxy const&) = delete;
 
-        _proxy(_proxy const&) noexcept requires (not is_writing) :
-            _observer(other._observer),
-            _old_base(nullptr),
-            _new_base(other._new_base),
-            _value(other._value)
+        _proxy(_proxy const& other) noexcept requires(not is_writing) :
+            _observer(other._observer), _old_base(nullptr), _new_base(other._new_base), _value(other._value)
         {
-            _observer.lock();
+            _observer->read_lock();
         }
 
-        _proxy& operator=(_proxy const&) noexcept requires (not is_writing)
+        _proxy& operator=(_proxy const& other) noexcept requires(not is_writing)
         {
             _commit();
             _observer = other._observer;
             _old_base = nullptr;
             _new_base = other._new_base;
             _value = other._value;
-            _observer.lock();
+            _observer->read_lock();
             return *this;
         };
 
@@ -317,26 +399,51 @@ public:
          */
         constexpr _proxy() noexcept = default;
 
-        /** Derefence the value.
+        /** Dereference the value.
          *
          * This function allows reads and modification to the value
          *
          * @note It is undefined behavior to call this function after calling `commit()` or `abort()`
          */
-        value_type& operator*() noexcept
+        reference operator*() noexcept
         {
             hi_axiom(_value != nullptr);
             return *_value;
         }
 
-        /** Pointer derefence the value.
+        /** Dereference the value.
+         *
+         * This function allows reads and modification to the value
+         *
+         * @note It is undefined behavior to call this function after calling `commit()` or `abort()`
+         */
+        const_reference operator*() const noexcept
+        {
+            hi_axiom(_value != nullptr);
+            return *_value;
+        }
+
+        /** Pointer dereference the value.
          *
          * This function allows reads and modification to the value, including
          * calling member functions on the value.
          *
          * @note It is undefined behavior to call this function after calling `commit()` or `abort()`
          */
-        value_type *operator->() noexcept
+        pointer operator->() noexcept
+        {
+            hi_axiom(_value != nullptr);
+            return _value;
+        }
+
+        /** Pointer dereference the value.
+         *
+         * This function allows reads and modification to the value, including
+         * calling member functions on the value.
+         *
+         * @note It is undefined behavior to call this function after calling `commit()` or `abort()`
+         */
+        const_pointer operator->() const noexcept
         {
             hi_axiom(_value != nullptr);
             return _value;
@@ -346,12 +453,15 @@ public:
          *
          * Calling this function allows to commit earlier than the destructor.
          *
-         * @note It is undefined behavior to change the value after commiting.
+         * @note It is undefined behavior to change the value after committing.
          */
         void commit() noexcept
         {
             _commit();
             _observer = nullptr;
+#ifndef NDEBUG
+            _value = nullptr;
+#endif
         }
 
         /** Revert any changes to the value.
@@ -364,13 +474,16 @@ public:
         {
             _abort();
             _observer = nullptr;
+#ifndef NDEBUG
+            _value = nullptr;
+#endif
         }
 
     private:
         observer const *_observer = nullptr;
-        void const *_old_base = nullptr;
-        void *_new_base = nullptr;
-        value_type *_value = nullptr;
+        const_void_pointer _old_base = nullptr;
+        void_pointer _new_base = nullptr;
+        pointer _value = nullptr;
 
         /** Create a proxy object.
          *
@@ -382,7 +495,7 @@ public:
          * @param value a pointer to the sub-object of the shared_state that the observer
          *              is pointing to.
          */
-        _proxy(observer const *observer, void const *old_base, void *new_base, value_type *value) noexcept :
+        _proxy(observer const *observer, const_void_pointer old_base, void_pointer new_base, pointer value) noexcept :
             _observer(observer), _old_base(old_base), _new_base(new_base), _value(value)
         {
             hi_axiom(_observer != nullptr);
@@ -401,7 +514,7 @@ public:
                 if constexpr (is_writing) {
                     _observer->commit(_old_base, _new_base);
                 } else {
-                    _observer->unlock();
+                    _observer->read_unlock();
                 }
             }
         }
@@ -412,7 +525,7 @@ public:
                 if constexpr (is_writing) {
                     _observer->abort(_new_base);
                 } else {
-                    _observer->unlock();
+                    _observer->read_unlock();
                 }
             }
         }
@@ -420,23 +533,66 @@ public:
         friend class observer;
     };
 
-    using proxy = _proxy<true>;
+    using proxy = std::conditional_t<is_mutable, _proxy<true>, void>;
     using const_proxy = _proxy<false>;
 
     constexpr ~observer() = default;
+
+    observer(
+        forward_of<std::shared_ptr<observable>> auto&& observed,
+        forward_of<path_type> auto&& path,
+        forward_of<void *(void *)> auto&& converter) noexcept :
+        _observed(hi_forward(observed)), _path(hi_forward(path)), _convert(hi_forward(converter)), _notifier()
+    {
+        update_state_callback();
+    }
+
+    /** Create a observer linked to an anonymous observed-value.
+     */
+    constexpr observer(forward_of<value_type> auto&& value) noexcept :
+        observer(std::make_shared<observable_value<value_type>>(hi_forward(value)), path_type{}, [](void *base) {
+            return base;
+        })
+    {
+    }
 
     /** Copy construct.
      *
      * @note callback subscriptions are not copied.
      * @param other The other observer.
      */
-    constexpr observer(observer const& other) noexcept :
-        _state(other._state),
-        _path(other._path),
-        _convert(other._convert)
-        _notifier()
+    constexpr observer(observer const& other) noexcept : observer(other._observed, other._path, other._convert) {}
+
+    /** Move construct.
+     *
+     * @note callback subscriptions are not copied.
+     * @param other The other observer.
+     */
+    constexpr observer(observer&& other) noexcept :
+        observer(std::move(other._observed), std::move(other._path), std::move(other._convert))
     {
-        update_state_callback();
+        other.reset();
+    }
+
+    /** Copy construct.
+     *
+     * @note callback subscriptions are not copied.
+     * @param other The other observer.
+     */
+    constexpr observer(observer<value_type, true> const& other) noexcept requires(not is_mutable) :
+        observer(other._observed, other._path, other._convert)
+    {
+    }
+
+    /** Move construct.
+     *
+     * @note callback subscriptions are not copied.
+     * @param other The other observer.
+     */
+    constexpr observer(observer<value_type, true>&& other) noexcept requires(not is_mutable) :
+        observer(std::move(other._observed), std::move(other._path), std::move(other._convert))
+    {
+        other.reset();
     }
 
     /** Copy assign.
@@ -447,27 +603,12 @@ public:
      */
     constexpr observer& operator=(observer const& other) noexcept
     {
-        _state = other._state;
+        _observed = other._observed;
         _path = other._path;
         _convert = other._convert;
         // callback subscriptions remain unchanged.
         update_state_callback();
         return *this;
-    }
-
-    /** Move construct.
-     *
-     * @note callback subscriptions are not copied.
-     * @param other The other observer.
-     */
-    constexpr observer(observer&& other) noexcept :
-        _state(std::move(other._state)),
-        _path(std::move(other._path)),
-        _convert(std::move(other._convert)),
-        _notifier()
-    {
-        update_state_callback();
-        other.reset();
     }
 
     /** Move assign.
@@ -477,52 +618,76 @@ public:
      * @param other The other observer.
      * @return this
      */
-    constexpr observer& operator=(observer&&other) noexcept
+    constexpr observer& operator=(observer&& other) noexcept
     {
-        _state = std::move(other._state);
+        _observed = std::move(other._observed);
         _path = std::move(other._path);
         _convert = std::move(other._convert);
-        // callback subscriptons remain unchanged.
+        // callback subscriptions remain unchanged.
         update_state_callback();
         other.reset();
         return *this;
     }
 
-    /** Create a observer linked to an anonymous shared-state.
+    /** Copy assign.
+     *
+     * @note callback subscriptions remain unchanged and are not copied.
+     * @param other The other observer.
+     * @return this
      */
-    constexpr observer(auto&&...args) noexcept :
-        _state(std::make_shared<detail::shared_state_impl<value_type>>(hi_forward(args)...)),
-        _path{{"/"}},
-        _state_cbt(_state->subscribe(_path, callback_flags::synchronous, make_notify_callback())),
-        _convert([](void *base) {
-            return base;
-        })
+    constexpr observer& operator=(observer<value_type, true> const& other) noexcept requires(not is_mutable)
     {
+        _observed = other._observed;
+        _path = other._path;
+        _convert = other._convert;
+        // callback subscriptions remain unchanged.
+        update_state_callback();
+        return *this;
+    }
+
+    /** Move assign.
+     *
+     * @note Callback subscriptions remain unchanged and are not moved.
+     * @note The other shared observer will be attached to the anonymous state.
+     * @param other The other observer.
+     * @return this
+     */
+    constexpr observer& operator=(observer<value_type, true>&& other) noexcept requires(not is_mutable)
+    {
+        _observed = std::move(other._observed);
+        _path = std::move(other._path);
+        _convert = std::move(other._convert);
+        // callback subscriptions remain unchanged.
+        update_state_callback();
+        other.reset();
+        return *this;
     }
 
     void reset() noexcept
     {
-        _state(std::make_shared<detail::shared_state_impl<value_type>>(hi_forward(args)...)),
-        _path{{"/"}},
-        _convert([](void *base) {
+        _observed = std::make_shared<observable_value<value_type>>();
+        _path = {};
+        _convert = [](void *base) {
             return base;
-        })
+        };
         update_state_callback();
     }
 
     const_proxy read() && = delete;
-    proxy copy() && = delete;
+    proxy copy() && requires(is_mutable) = delete;
     const_proxy operator->() && = delete;
 
     [[nodiscard]] const_proxy read() const& noexcept
     {
-        _state->lock();
-        auto new_base = _state->read();
-        return {this, nullptr, new_base, convert(new_base)};
+        _observed->read_lock();
+        auto new_base = _observed->read();
+        return const_proxy{this, nullptr, new_base, convert(new_base)};
     }
 
     value_type operator*() const noexcept
     {
+        // This returns a copy of the dereferenced value of the proxy.
+        // The proxy's lifetime will be extended for the copy to be made.
         return *read();
     }
 
@@ -531,20 +696,29 @@ public:
         return read();
     }
 
-    [[nodiscard]] proxy copy() const& noexcept
+    [[nodiscard]] proxy copy() const& noexcept requires(is_mutable)
     {
-        auto [old_base, new_base] = _state->old_and_copy();
-        return {this, old_base, new_base, convert(new_base)};
+        _observed->write_lock();
+        void const *old_base = _observed->read();
+        void *new_base = _observed->copy(old_base);
+
+        static_assert(std::is_same_v<decltype(this), observer const *>);
+        static_assert(std::is_same_v<decltype(old_base), void const *>);
+        static_assert(std::is_same_v<decltype(new_base), void *>);
+        static_assert(std::is_same_v<decltype(convert(new_base)), value_type *>);
+        return proxy(this, old_base, new_base, convert(new_base));
     }
 
-    observer& operator=(value_type const& rhs) noexcept
+    observer& operator=(value_type const& rhs) noexcept requires(is_mutable)
     {
         *copy() = rhs;
+        return *this;
     }
 
-    observer& operator=(value_type&& rhs) noexcept
+    observer& operator=(value_type&& rhs) noexcept requires(is_mutable)
     {
         *copy() = std::move(rhs);
+        return *this;
     }
 
     [[nodiscard]] token_type subscribe(callback_flags flags, forward_of<function_proto> auto&& callback) noexcept
@@ -558,9 +732,9 @@ public:
 
         auto new_path = _path;
         new_path.push_back(std::format("[{}]", index));
-        return observer<result_type>{
-            _state, std::move(new_path), [convert_copy = this->_convert, index](void *base) -> void * {
-                return std::addressof((*static_cast<value_type *>(convert_copy(base)))[index]);
+        return detail::observer<result_type, is_mutable>{
+            _observed, std::move(new_path), [convert_copy = this->_convert, index](void *base) -> void * {
+                return std::addressof((*std::launder(static_cast<value_type *>(convert_copy(base))))[index]);
             }};
     }
 
@@ -571,80 +745,79 @@ public:
 
         auto new_path = _path;
         new_path.push_back(std::string{Name});
-        return observer<result_type>{
-            _state, std::move(new_path), [convert_copy = this->_convert](void *base) -> void * {
-                return std::addressof(selector<value_type>{}.get<Name>(*static_cast<value_type *>(convert_copy(base))));
-            }};
+        // clang-format off
+        return detail::observer<result_type, is_mutable>(
+            _observed, std::move(new_path), [convert_copy = this->_convert](void *base) -> void * {
+                return std::addressof(selector<value_type>{}.get<Name>(
+                    *std::launder(static_cast<value_type *>(convert_copy(base)))));
+            });
+        // clang-format on
     }
 
 private:
-    using path_type = std::vector<std::string>;
-
-    std::shared_ptr<detail::shared_state_base> _state = {};
+    std::shared_ptr<observable> _observed = {};
     path_type _path = {};
-    detail::shared_state_base::token_type _state_cbt = {};
+    observable::token_type _observed_cbt = {};
     std::function<void *(void *)> _convert = {};
     notifier_type _notifier;
 
-    observer(
-        forward_of<std::shared_ptr<detail::shared_state_base>> auto&& state,
-        forward_of<path_type> auto&& path,
-        forward_of<void *(void *)> auto&& converter) noexcept :
-        _state(hi_forward(state)),
-        _path(hi_forward(path)),
-        _state_cbt(_state->subscribe(_path, callback_flags::synchronous, make_notify_callback())),
-        _convert(hi_forward(converter))
+    void read_unlock() const noexcept
     {
+        _observed->read_unlock();
     }
 
-    void unlock() const noexcept
+    void commit(void const *old_base, void *new_base) const noexcept requires(is_mutable)
     {
-        _state->unlock();
+        // Only commit and notify when the value has actually changed.
+        auto *old_value = convert(old_base);
+        auto *new_value = convert(new_base);
+        if (*old_value != *new_value) {
+            _observed->commit(new_base);
+            _observed->notify(old_base, new_base, _path);
+        } else {
+            _observed->abort(new_base);
+        }
+        _observed->write_unlock();
     }
 
-    void commit(void const *old_base, void *new_base) const noexcept
+    void abort(void *base) const noexcept requires(is_mutable)
     {
-        _state->commit(old_base, new_base, _path);
+        _observed->abort(base);
+        _observed->write_unlock();
     }
 
-    void abort(void *base) const noexcept
+    value_type *convert(void *base) const noexcept requires(is_mutable)
     {
-        _state->abort(base);
-    }
-
-    value_type *convert(void *base) const noexcept
-    {
-        return static_cast<value_type *>(_convert(base));
+        return std::launder(static_cast<value_type *>(_convert(base)));
     }
 
     value_type const *convert(void const *base) const noexcept
     {
-        return static_cast<value_type const *>(_convert(const_cast<void *>(base)));
+        return std::launder(static_cast<value_type const *>(_convert(const_cast<void *>(base))));
     }
 
-    void update_state_callback() const noexcept
+    void update_state_callback() noexcept
     {
-        _state_cbt = _state->subscribe(
-            _path,
-            callback_flags::synchronous,
-            [this](void const *old_base, void const *new_base) {
+        _observed_cbt =
+            _observed->subscribe(_path, callback_flags::synchronous, [this](void const *old_base, void const *new_base) {
                 return _notifier(*convert(old_base), *convert(new_base));
             });
     }
 
-    template<typename O>
-    friend class detail::shared_state_impl;
+    template<typename>
+    friend class observable_value;
 
-    template<typename O>
+    // It is possible to make sub-observables and `observer` to `const_observer`.
+    template<typename, bool>
     friend class observer;
 };
 
-}
+} // namespace detail
 
 template<typename T>
-using observer = detail::observer<T,true>;
+using observer = detail::observer<T, true>;
 
 template<typename T>
-using const_observer = detail::observer<T,false>;
+using const_observer = detail::observer<T, false>;
 
 } // namespace hi::inline v1
