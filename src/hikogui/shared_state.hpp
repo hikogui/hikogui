@@ -142,6 +142,15 @@ public:
 
     ~observable_value() = default;
 
+    /** Construct the shared state and default initialize the value.
+     *
+     * @param args The arguments passed to the constructor of the value.
+     */
+    constexpr observable_value() noexcept : _rcu()
+    {
+        _rcu.emplace(value_type{});
+    }
+
     /** Construct the shared state and initialize the value.
      *
      * @param args The arguments passed to the constructor of the value.
@@ -547,12 +556,27 @@ public:
         update_state_callback();
     }
 
+    /** Create a observer linked to an anonymous default initialized observed-value.
+     */
+    constexpr observer() noexcept :
+        observer(
+            std::make_shared<observable_value<value_type>>(),
+            path_type{},
+            [](void *base) {
+                return base;
+            })
+    {
+    }
+
     /** Create a observer linked to an anonymous observed-value.
      */
     constexpr observer(forward_of<value_type> auto&& value) noexcept :
-        observer(std::make_shared<observable_value<value_type>>(hi_forward(value)), path_type{}, [](void *base) {
-            return base;
-        })
+        observer(
+            std::make_shared<observable_value<value_type>>(hi_forward(value)),
+            path_type{},
+            [](void *base) {
+                return base;
+            })
     {
     }
 

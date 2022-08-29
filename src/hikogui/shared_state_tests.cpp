@@ -279,3 +279,297 @@ TEST(shared_state, commit_abort)
     ASSERT_EQ(foo_count, 0);
     ASSERT_EQ(baz_count, 0);
 }
+
+TEST(shared_state, value)
+{
+    bool a_modified = false;
+
+    hi::observer<int> a;
+    auto a_cbt = a.subscribe(hi::callback_flags::synchronous, [&a_modified](auto...) {
+        a_modified = true;
+    });
+    ASSERT_FALSE(a_modified);
+    ASSERT_EQ(*a, 0);
+    a_modified = false;
+
+    a = 1;
+    ASSERT_TRUE(a_modified);
+    ASSERT_EQ(*a, 1);
+    a_modified = false;
+}
+
+TEST(shared_state, chain1)
+{
+    bool a_modified = false;
+    bool b_modified = false;
+
+    hi::observer<int> a;
+    hi::observer<int> b;
+    auto a_cbt = a.subscribe(hi::callback_flags::synchronous, [&a_modified](auto...) {
+        a_modified = true;
+    });
+    auto b_cbt = b.subscribe(hi::callback_flags::synchronous, [&b_modified](auto...) {
+        b_modified = true;
+    });
+
+    ASSERT_FALSE(a_modified);
+    ASSERT_FALSE(b_modified);
+    ASSERT_EQ(*a, 0);
+    ASSERT_EQ(*b, 0);
+    a_modified = false;
+    b_modified = false;
+
+    a = 1;
+    b = 2;
+    ASSERT_TRUE(a_modified);
+    ASSERT_TRUE(b_modified);
+    ASSERT_EQ(*a, 1);
+    ASSERT_EQ(*b, 2);
+    a_modified = false;
+    b_modified = false;
+
+    a = b;
+    ASSERT_TRUE(a_modified);
+    ASSERT_FALSE(b_modified);
+    ASSERT_EQ(*a, 2);
+    ASSERT_EQ(*b, 2);
+    a_modified = false;
+
+    b = 3;
+    ASSERT_TRUE(a_modified);
+    ASSERT_TRUE(b_modified);
+    ASSERT_EQ(*a, 3);
+    ASSERT_EQ(*b, 3);
+    a_modified = false;
+    b_modified = false;
+
+    a = 4;
+    ASSERT_TRUE(a_modified);
+    ASSERT_TRUE(b_modified);
+    ASSERT_EQ(*a, 4);
+    ASSERT_EQ(*b, 4);
+    a_modified = false;
+    b_modified = false;
+}
+
+TEST(shared_state, chain2)
+{
+    bool a_modified = false;
+    bool b_modified = false;
+    bool c_modified = false;
+
+    hi::observer<int> a;
+    hi::observer<int> b;
+    hi::observer<int> c;
+
+    auto a_cbt = a.subscribe(hi::callback_flags::synchronous, [&a_modified](auto...) {
+        a_modified = true;
+    });
+    auto b_cbt = b.subscribe(hi::callback_flags::synchronous, [&b_modified](auto...) {
+        b_modified = true;
+    });
+    auto c_cbt = c.subscribe(hi::callback_flags::synchronous, [&c_modified](auto...) {
+        c_modified = true;
+    });
+
+    ASSERT_FALSE(a_modified);
+    ASSERT_FALSE(b_modified);
+    ASSERT_FALSE(c_modified);
+    ASSERT_EQ(*a, 0);
+    ASSERT_EQ(*b, 0);
+    ASSERT_EQ(*c, 0);
+    a_modified = false;
+    b_modified = false;
+    c_modified = false;
+
+    a = 1;
+    b = 2;
+    c = 3;
+    ASSERT_TRUE(a_modified);
+    ASSERT_TRUE(b_modified);
+    ASSERT_TRUE(c_modified);
+    ASSERT_EQ(*a, 1);
+    ASSERT_EQ(*b, 2);
+    ASSERT_EQ(*c, 3);
+    a_modified = false;
+    b_modified = false;
+    c_modified = false;
+
+    a = b;
+    ASSERT_TRUE(a_modified);
+    ASSERT_FALSE(b_modified);
+    ASSERT_FALSE(c_modified);
+    ASSERT_EQ(*a, 2);
+    ASSERT_EQ(*b, 2);
+    ASSERT_EQ(*c, 3);
+    a_modified = false;
+    b_modified = false;
+    c_modified = false;
+
+    b = c;
+    ASSERT_TRUE(a_modified);
+    ASSERT_TRUE(b_modified);
+    ASSERT_FALSE(c_modified);
+    ASSERT_EQ(*a, 3);
+    ASSERT_EQ(*b, 3);
+    ASSERT_EQ(*c, 3);
+    a_modified = false;
+    b_modified = false;
+    c_modified = false;
+
+    c = 4;
+    ASSERT_TRUE(a_modified);
+    ASSERT_TRUE(b_modified);
+    ASSERT_TRUE(c_modified);
+    ASSERT_EQ(*a, 4);
+    ASSERT_EQ(*b, 4);
+    ASSERT_EQ(*c, 4);
+    a_modified = false;
+    b_modified = false;
+    c_modified = false;
+
+    b = 5;
+    ASSERT_TRUE(a_modified);
+    ASSERT_TRUE(b_modified);
+    ASSERT_TRUE(c_modified);
+    ASSERT_EQ(*a, 5);
+    ASSERT_EQ(*b, 5);
+    ASSERT_EQ(*c, 5);
+    a_modified = false;
+    b_modified = false;
+    c_modified = false;
+
+    a = 6;
+    ASSERT_TRUE(a_modified);
+    ASSERT_TRUE(b_modified);
+    ASSERT_TRUE(c_modified);
+    ASSERT_EQ(*a, 6);
+    ASSERT_EQ(*b, 6);
+    ASSERT_EQ(*c, 6);
+    a_modified = false;
+    b_modified = false;
+    c_modified = false;
+}
+
+TEST(shared_state, chain3)
+{
+    bool a_modified = false;
+    bool b_modified = false;
+    bool c_modified = false;
+
+    hi::observer<int> a;
+    hi::observer<int> b;
+    hi::observer<int> c;
+
+    auto a_cbt = a.subscribe(hi::callback_flags::synchronous, [&a_modified](auto...) {
+        a_modified = true;
+    });
+    auto b_cbt = b.subscribe(hi::callback_flags::synchronous, [&b_modified](auto...) {
+        b_modified = true;
+    });
+    auto c_cbt = c.subscribe(hi::callback_flags::synchronous, [&c_modified](auto...) {
+        c_modified = true;
+    });
+
+    ASSERT_FALSE(a_modified);
+    ASSERT_FALSE(b_modified);
+    ASSERT_FALSE(c_modified);
+    ASSERT_EQ(*a, 0);
+    ASSERT_EQ(*b, 0);
+    ASSERT_EQ(*c, 0);
+    a_modified = false;
+    b_modified = false;
+    c_modified = false;
+
+    a = 1;
+    b = 2;
+    c = 3;
+    ASSERT_TRUE(a_modified);
+    ASSERT_TRUE(b_modified);
+    ASSERT_TRUE(c_modified);
+    ASSERT_EQ(*a, 1);
+    ASSERT_EQ(*b, 2);
+    ASSERT_EQ(*c, 3);
+    a_modified = false;
+    b_modified = false;
+    c_modified = false;
+
+    b = c;
+    ASSERT_FALSE(a_modified);
+    ASSERT_TRUE(b_modified);
+    ASSERT_FALSE(c_modified);
+    ASSERT_EQ(*a, 1);
+    ASSERT_EQ(*b, 3);
+    ASSERT_EQ(*c, 3);
+    a_modified = false;
+    b_modified = false;
+    c_modified = false;
+
+    a = b;
+    ASSERT_TRUE(a_modified);
+    ASSERT_FALSE(b_modified);
+    ASSERT_FALSE(c_modified);
+    ASSERT_EQ(*a, 3);
+    ASSERT_EQ(*b, 3);
+    ASSERT_EQ(*c, 3);
+    a_modified = false;
+    b_modified = false;
+    c_modified = false;
+
+    c = 4;
+    ASSERT_TRUE(a_modified);
+    ASSERT_TRUE(b_modified);
+    ASSERT_TRUE(c_modified);
+    ASSERT_EQ(*a, 4);
+    ASSERT_EQ(*b, 4);
+    ASSERT_EQ(*c, 4);
+    a_modified = false;
+    b_modified = false;
+    c_modified = false;
+
+    b = 5;
+    ASSERT_TRUE(a_modified);
+    ASSERT_TRUE(b_modified);
+    ASSERT_TRUE(c_modified);
+    ASSERT_EQ(*a, 5);
+    ASSERT_EQ(*b, 5);
+    ASSERT_EQ(*c, 5);
+    a_modified = false;
+    b_modified = false;
+    c_modified = false;
+
+    a = 6;
+    ASSERT_TRUE(a_modified);
+    ASSERT_TRUE(b_modified);
+    ASSERT_TRUE(c_modified);
+    ASSERT_EQ(*a, 6);
+    ASSERT_EQ(*b, 6);
+    ASSERT_EQ(*c, 6);
+    a_modified = false;
+    b_modified = false;
+    c_modified = false;
+}
+
+void callback1(int old_value, int new_value)
+{
+    ASSERT_EQ(old_value, 1);
+    ASSERT_EQ(new_value, 42);
+}
+
+void callback2(int const &old_value, int const& new_value)
+{
+    ASSERT_EQ(old_value, 1);
+    ASSERT_EQ(new_value, 42);
+}
+
+TEST(shared_state, callback)
+{
+    auto a = hi::observer<int>{1};
+
+    // This tests if we can both subscribe a callback that accepts the
+    // argument by value or by const reference.
+    auto cbt1 = a.subscribe(hi::callback_flags::synchronous, callback1);
+    auto cbt2 = a.subscribe(hi::callback_flags::synchronous, callback2);
+
+    a = 42;
+}

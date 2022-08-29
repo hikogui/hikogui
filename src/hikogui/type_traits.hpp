@@ -333,35 +333,25 @@ template<typename First, typename Second>
 using use_first_t = use_first<First,Second>;
 
 template<typename T>
-struct acts_as_pointer : public std::false_type {};
+struct smart_pointer_traits {
+    constexpr static bool value = false;
+    using type = void;
+};
 
-template<typename T> struct acts_as_pointer<std::shared_ptr<T>> : public std::true_type {};
-template<typename T> struct acts_as_pointer<std::shared_ptr<T> &&> : public std::true_type {};
-template<typename T> struct acts_as_pointer<std::shared_ptr<T> &> : public std::true_type {};
-template<typename T> struct acts_as_pointer<std::shared_ptr<T> const &> : public std::true_type {};
-template<typename T> struct acts_as_pointer<std::weak_ptr<T>> : public std::true_type {};
-template<typename T> struct acts_as_pointer<std::weak_ptr<T> &&> : public std::true_type {};
-template<typename T> struct acts_as_pointer<std::weak_ptr<T> &> : public std::true_type {};
-template<typename T> struct acts_as_pointer<std::weak_ptr<T> const &> : public std::true_type {};
-template<typename T> struct acts_as_pointer<std::unique_ptr<T>> : public std::true_type {};
-template<typename T> struct acts_as_pointer<std::unique_ptr<T> &&> : public std::true_type {};
-template<typename T> struct acts_as_pointer<std::unique_ptr<T> &> : public std::true_type {};
-template<typename T> struct acts_as_pointer<std::unique_ptr<T> const &> : public std::true_type {};
-template<typename T> struct acts_as_pointer<T *> : public std::true_type {};
+template<typename T> struct smart_pointer_traits<std::shared_ptr<T>> {constexpr static bool value = true; using type = T;};
+template<typename T> struct smart_pointer_traits<std::weak_ptr<T>> {constexpr static bool value = true; using type = T;};
+template<typename T> struct smart_pointer_traits<std::unique_ptr<T>> {constexpr static bool value = true; using type = T;};
+template<typename T> struct smart_pointer_traits<T *> {constexpr static bool value = true; using type = T;};
 
-template<typename T>
-constexpr bool acts_as_pointer_v = acts_as_pointer<T>::value;
 
 #define hi_call_method(object, method, ...) \
     [&]() { \
-        if constexpr (acts_as_pointer_v<decltype(object)>) { \
+        if constexpr (smart_pointer_traits<std::decay_t<decltype(object)>>::value) { \
             return object->method(__VA_ARGS__); \
         } else { \
             return object.method(__VA_ARGS__); \
         } \
     }()
-
-// clang-format on
 
 /** All values of numeric type `In` can be represented without loss of precision by numeric type `Out`.
  */
@@ -379,7 +369,19 @@ constexpr bool type_in_range_v = std::numeric_limits<Out>::digits >= std::numeri
  * ```
  */
 template<typename Context, typename Expected>
-struct is_forward_of : std::conditional_t<std::is_same_v<std::decay_t<Context>, Expected>, std::true_type, std::false_type> {
+struct is_forward_of :
+    std::conditional_t<
+        std::is_same_v<std::decay_t<Context>, Expected> or std::is_base_of_v<Expected, std::decay_t<Context>>,
+        std::true_type,
+        std::false_type> {
+};
+
+template<typename Context, typename Expected>
+struct is_forward_of<Context, std::shared_ptr<Expected>> :
+    std::conditional_t<
+        smart_pointer_traits<std::decay_t<Context>>::value and
+        is_forward_of<typename smart_pointer_traits<std::decay_t<Context>>::type, Expected>::value,
+        std::true_type, std::false_type> {
 };
 
 template<typename Context, typename Result, typename... Args>
