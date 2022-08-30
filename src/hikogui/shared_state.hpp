@@ -170,15 +170,7 @@ public:
      */
     [[nodiscard]] detail::observer<value_type, true> observer() const& noexcept
     {
-        // clang-format off
-        return {
-            std::const_pointer_cast<observable>(this->shared_from_this()),
-            path_type{},
-            [](void *base) -> void * {
-                return base;
-            }
-        };
-        // clang-format on
+        return {std::const_pointer_cast<observable>(this->shared_from_this())};
     }
 
 private:
@@ -333,6 +325,7 @@ public:
     using notifier_type = notifier<void(value_type const&, value_type const&)>;
     using token_type = notifier_type::token_type;
     using function_proto = notifier_type::function_proto;
+    using awaiter_type = notifier_type::awaiter_type;
     using path_type = observable::path_type;
 
     /** A proxy object of the observer.
@@ -488,6 +481,126 @@ public:
 #endif
         }
 
+        // clang-format off
+
+        // prefix operators
+#define X(op) \
+        template<typename Rhs> \
+        decltype(auto) operator op() noexcept \
+            requires is_writing and requires(value_type& a) { op a; } \
+        { \
+            return op (*_value); \
+        }
+    
+        X(++)
+        X(--)
+#undef X
+    
+        // suffix operators
+#define X(op) \
+        template<typename Rhs> \
+        auto operator op(int) noexcept \
+            requires is_writing and requires(value_type& a) { a op; } \
+        { \
+            return (*_value) op; \
+        }
+    
+        X(++)
+        X(--)
+#undef X
+    
+        // inplace operators
+#define X(op) \
+        template<typename Rhs> \
+        decltype(auto) operator op(Rhs const& rhs) noexcept \
+            requires is_writing and requires(value_type& a, Rhs const& b) { a op b; } \
+        { \
+            return (*_value) op rhs; \
+        }
+    
+        X(+=)
+        X(-=)
+        X(*=)
+        X(/=)
+        X(%=)
+        X(&=)
+        X(|=)
+        X(^=)
+        X(<<=)
+        X(>>=)
+#undef X
+    
+        // mono operators
+#define X(op) \
+        template<typename Rhs> \
+        auto operator op() const noexcept \
+            requires requires(value_type const& a) { op a; } \
+        { \
+            return op (*_value); \
+        }
+    
+        X(-)
+        X(+)
+        X(~)
+        X(!)
+#undef X
+    
+        // binary operators
+#define X(op) \
+        template<typename Rhs> \
+        auto operator op(Rhs const& rhs) const noexcept \
+            requires requires(value_type const& a, Rhs const& b) { a op b; } \
+        { \
+            return (*_value) op rhs; \
+        }
+    
+        X(==)
+        X(<=>)
+        X(+)
+        X(-)
+        X(*)
+        X(/)
+        X(%)
+        X(&)
+        X(|)
+        X(^)
+        X(<<)
+        X(>>)
+#undef X
+    
+        // call operator
+        template<typename... Args>
+        auto operator()(Args &&... args) const noexcept
+            requires requires(value_type const & a, Args &&...args) { a(std::forward<Args>(args)...); }
+        {
+            return (*_value)(std::forward<Args>(args)...);
+        }
+    
+        template<typename... Args>
+        auto operator()(Args &&... args) noexcept
+            requires is_writing and requires(value_type & a, Args &&...args) { a(std::forward<Args>(args)...); }
+        {
+            return (*_value)(std::forward<Args>(args)...);
+        }
+        
+        // index operator
+        // XXX c++23
+        template<typename Arg>
+        auto operator[](Arg && arg) const noexcept
+            requires requires(value_type const & a, Arg &&arg) { a[std::forward<Arg>(arg)]; }
+        {
+            return (*_value)[std::forward<Arg>(arg)];
+        }
+
+        template<typename Arg>
+        auto operator[](Arg && arg) noexcept
+            requires is_writing and requires(value_type & a, Arg &&arg) { a[std::forward<Arg>(arg)]; }
+        {
+            return (*_value)[std::forward<Arg>(arg)];
+        }
+
+        // clang-format on
+
     private:
         observer const *_observer = nullptr;
         const_void_pointer _old_base = nullptr;
@@ -547,36 +660,25 @@ public:
 
     constexpr ~observer() = default;
 
-    observer(
-        forward_of<std::shared_ptr<observable>> auto&& observed,
-        forward_of<path_type> auto&& path,
-        forward_of<void *(void *)> auto&& converter) noexcept :
-        _observed(hi_forward(observed)), _path(hi_forward(path)), _convert(hi_forward(converter)), _notifier()
+    /** Create an observer from an observable.
+     *
+     * @param observed The `observable` which will be observed by this observer.
+     */
+    observer(forward_of<std::shared_ptr<observable>> auto&& observed) noexcept :
+        observer(hi_forward(observed), path_type{}, [](void *base) {
+            return base;
+        })
     {
-        update_state_callback();
     }
 
     /** Create a observer linked to an anonymous default initialized observed-value.
      */
-    constexpr observer() noexcept :
-        observer(
-            std::make_shared<observable_value<value_type>>(),
-            path_type{},
-            [](void *base) {
-                return base;
-            })
-    {
-    }
+    constexpr observer() noexcept : observer(std::make_shared<observable_value<value_type>>()) {}
 
     /** Create a observer linked to an anonymous observed-value.
      */
     constexpr observer(forward_of<value_type> auto&& value) noexcept :
-        observer(
-            std::make_shared<observable_value<value_type>>(hi_forward(value)),
-            path_type{},
-            [](void *base) {
-                return base;
-            })
+        observer(std::make_shared<observable_value<value_type>>(hi_forward(value)))
     {
     }
 
@@ -627,11 +729,27 @@ public:
      */
     constexpr observer& operator=(observer const& other) noexcept
     {
-        _observed = other._observed;
+        // Get the old-value to notify with.
+        _observed->read_lock();
+        void const *old_base = _observed->read();
+        value_type const *old_value = convert(old_base);
+
+        // Replace the observer.
+        auto old_observed = std::exchange(_observed, other._observed);
         _path = other._path;
         _convert = other._convert;
-        // callback subscriptions remain unchanged.
+
+        // Get the new-value to notify with.
+        _observed->read_lock();
+        void const *new_base = _observed->read();
+        value_type const *new_value = convert(new_base);
+
+        // Rewire the callback subscriptions and notify listeners to this observer.
         update_state_callback();
+        _notifier(*old_value, *new_value);
+
+        _observed->read_unlock();
+        old_observed->read_unlock();
         return *this;
     }
 
@@ -644,12 +762,28 @@ public:
      */
     constexpr observer& operator=(observer&& other) noexcept
     {
-        _observed = std::move(other._observed);
+        // Get the old-value to notify with.
+        _observed->read_lock();
+        void const *old_base = _observed->read();
+        value_type const *old_value = convert(old_base);
+
+        // Replace the observer.
+        auto old_observed = std::exchange(_observed, std::move(other._observed));
         _path = std::move(other._path);
         _convert = std::move(other._convert);
-        // callback subscriptions remain unchanged.
-        update_state_callback();
         other.reset();
+
+        // Get the new-value to notify with.
+        _observed->read_lock();
+        void const *new_base = _observed->read();
+        value_type const *new_value = convert(new_base);
+
+        // Rewire the callback subscriptions and notify listeners to this observer.
+        update_state_callback();
+        _notifier(*old_value, *new_value);
+
+        _observed->read_unlock();
+        old_observed->read_unlock();
         return *this;
     }
 
@@ -661,11 +795,27 @@ public:
      */
     constexpr observer& operator=(observer<value_type, true> const& other) noexcept requires(not is_mutable)
     {
-        _observed = other._observed;
+        // Get the old-value to notify with.
+        _observed->read_lock();
+        void const *old_base = _observed->read();
+        value_type const *old_value = convert(old_base);
+
+        // Replace the observer.
+        auto old_observed = std::exchange(_observed, other._observed);
         _path = other._path;
         _convert = other._convert;
-        // callback subscriptions remain unchanged.
+
+        // Get the new-value to notify with.
+        _observed->read_lock();
+        void const *new_base = _observed->read();
+        value_type const *new_value = convert(new_base);
+
+        // Rewire the callback subscriptions and notify listeners to this observer.
         update_state_callback();
+        _notifier(*old_value, *new_value);
+
+        _observed->read_unlock();
+        old_observed->read_unlock();
         return *this;
     }
 
@@ -678,15 +828,35 @@ public:
      */
     constexpr observer& operator=(observer<value_type, true>&& other) noexcept requires(not is_mutable)
     {
-        _observed = std::move(other._observed);
+        // Get the old-value to notify with.
+        _observed->read_lock();
+        void const *old_base = _observed->read();
+        value_type const *old_value = convert(old_base);
+
+        // Replace the observer.
+        auto old_observed = std::exchange(_observed, std::move(other._observed));
         _path = std::move(other._path);
         _convert = std::move(other._convert);
-        // callback subscriptions remain unchanged.
-        update_state_callback();
         other.reset();
+
+        // Get the new-value to notify with.
+        _observed->read_lock();
+        void const *new_base = _observed->read();
+        value_type const *new_value = convert(new_base);
+
+        // Rewire the callback subscriptions and notify listeners to this observer.
+        update_state_callback();
+        _notifier(*old_value, *new_value);
+
+        _observed->read_unlock();
+        old_observed->read_unlock();
         return *this;
     }
 
+    /** Reset the observer.
+     *
+     * This will link the observer with an anonymous observable with a default initialized value.
+     */
     void reset() noexcept
     {
         _observed = std::make_shared<observable_value<value_type>>();
@@ -697,60 +867,53 @@ public:
         update_state_callback();
     }
 
-    const_proxy read() && = delete;
-    proxy copy() && requires(is_mutable) = delete;
-    const_proxy operator->() && = delete;
-
+    /** Read the observed value.
+     *
+     * @return A const-proxy object used to access the data being observed.
+     */
     [[nodiscard]] const_proxy read() const& noexcept
     {
         _observed->read_lock();
         auto new_base = _observed->read();
         return const_proxy{this, nullptr, new_base, convert(new_base)};
     }
+    const_proxy read() && = delete;
 
-    value_type operator*() const noexcept
-    {
-        // This returns a copy of the dereferenced value of the proxy.
-        // The proxy's lifetime will be extended for the copy to be made.
-        return *read();
-    }
-
-    const_proxy operator->() const& noexcept
-    {
-        return read();
-    }
-
+    /** Make a copy of the observed value for modification.
+     *
+     * @return A proxy object used to modify the data being observed.
+     */
     [[nodiscard]] proxy copy() const& noexcept requires(is_mutable)
     {
         _observed->write_lock();
         void const *old_base = _observed->read();
         void *new_base = _observed->copy(old_base);
-
-        static_assert(std::is_same_v<decltype(this), observer const *>);
-        static_assert(std::is_same_v<decltype(old_base), void const *>);
-        static_assert(std::is_same_v<decltype(new_base), void *>);
-        static_assert(std::is_same_v<decltype(convert(new_base)), value_type *>);
         return proxy(this, old_base, new_base, convert(new_base));
     }
+    proxy copy() && requires(is_mutable) = delete;
 
-    observer& operator=(value_type const& rhs) noexcept requires(is_mutable)
+    /** Subscribe a callback to this observer.
+     *
+     * @param flags The callback flags on how to call the function.
+     * @param function The function used as callback in the form `void(value_type const &old_value, value_type const &new_value)`
+     * @return A callback-token used to extend the lifetime of the callback function.
+     */
+    [[nodiscard]] token_type subscribe(callback_flags flags, forward_of<function_proto> auto&& function) noexcept
     {
-        *copy() = rhs;
-        return *this;
+        return _notifier.subscribe(flags, hi_forward(function));
     }
 
-    observer& operator=(value_type&& rhs) noexcept requires(is_mutable)
+    awaiter_type operator co_await() const noexcept
     {
-        *copy() = std::move(rhs);
-        return *this;
+        return _notifier.operator co_await();
     }
 
-    [[nodiscard]] token_type subscribe(callback_flags flags, forward_of<function_proto> auto&& callback) noexcept
-    {
-        return _notifier.subscribe(flags, hi_forward(callback));
-    }
-
-    [[nodiscard]] auto operator[](auto const& index) const noexcept requires(requires() { std::declval<value_type>()[index]; })
+    /** Create a sub-observer by indexing into the value.
+     *
+     * @param index The index into the value being observed.
+     * @return A new sub-observer which monitors the selected sub-value.
+     */
+    [[nodiscard]] auto get(auto const& index) const noexcept requires(requires() { std::declval<value_type>()[index]; })
     {
         using result_type = std::decay_t<decltype(std::declval<value_type>()[index])>;
 
@@ -762,6 +925,12 @@ public:
             }};
     }
 
+    /** Create a sub-observer by selecting a member-variable of the value.
+     *
+     * @note This function requires the `hi::selector` type-trait to be implemented for `value_type`.
+     * @tparam Name The name of the member-variable of value.
+     * @return A new sub-observer which monitors the member of value.
+     */
     template<basic_fixed_string Name>
     [[nodiscard]] auto get() const noexcept
     {
@@ -778,12 +947,168 @@ public:
         // clang-format on
     }
 
+    //
+    // Convenient functions / operators working on temporary proxies.
+    //
+
+    /** Copy-assign a new value to the observed value.
+     */
+    observer& operator=(value_type const& rhs) noexcept requires(is_mutable)
+    {
+        *copy() = rhs;
+        return *this;
+    }
+
+    /** Move-assign a new value to the observed value.
+     */
+    observer& operator=(value_type&& rhs) noexcept requires(is_mutable)
+    {
+        *copy() = std::move(rhs);
+        return *this;
+    }
+
+    /** Get a copy of the value being observed.
+     */
+    value_type operator*() const noexcept
+    {
+        // This returns a copy of the dereferenced value of the proxy.
+        // The proxy's lifetime will be extended for the copy to be made.
+        return *read();
+    }
+
+    /** Constant pointer-to-member of the value being observed.
+     */
+    const_proxy operator->() const& noexcept
+    {
+        return read();
+    }
+    const_proxy operator->() && = delete;
+
+    // clang-format off
+
+    // prefix operators
+#define X(op) \
+    template<typename Rhs> \
+    observer& operator op() noexcept \
+        requires is_mutable and requires(value_type& a) { op a; } \
+    { \
+        op *copy(); \
+        return *this; \
+    }
+
+    X(++)
+    X(--)
+#undef X
+
+    // suffix operators
+#define X(op) \
+    template<typename Rhs> \
+    auto operator op(int) noexcept \
+        requires is_mutable and requires(value_type& a) { a op; } \
+    { \
+        return *copy() op; \
+    }
+
+    X(++)
+    X(--)
+#undef X
+
+    // inplace operators
+#define X(op) \
+    template<typename Rhs> \
+    observer& operator op(Rhs const& rhs) noexcept \
+        requires is_mutable and requires(value_type& a, Rhs const& b) { a op b; } \
+    { \
+        *copy() op rhs; \
+        return *this; \
+    }
+
+    X(+=)
+    X(-=)
+    X(*=)
+    X(/=)
+    X(%=)
+    X(&=)
+    X(|=)
+    X(^=)
+    X(<<=)
+    X(>>=)
+#undef X
+
+    // mono operators
+#define X(op) \
+    template<typename Rhs> \
+    auto operator op() const noexcept \
+        requires requires(value_type const& a) { op a; } \
+    { \
+        return op *read(); \
+    }
+
+    X(-)
+    X(+)
+    X(~)
+    X(!)
+#undef X
+
+    // binary operators
+#define X(op) \
+    template<typename Rhs> \
+    auto operator op(Rhs const& rhs) const noexcept \
+        requires requires(value_type const& a, Rhs const& b) { a op b; } \
+    { \
+        return *read() op rhs; \
+    }
+
+    X(==)
+    X(<=>)
+    X(+)
+    X(-)
+    X(*)
+    X(/)
+    X(%)
+    X(&)
+    X(|)
+    X(^)
+    X(<<)
+    X(>>)
+#undef X
+
+    // call operator
+    template<typename... Args>
+    auto operator()(Args &&... args) const noexcept
+        requires requires(value_type const & a, Args &&...args) { a(std::forward<Args>(args)...); }
+    {
+        return (*read())(std::forward<Args>(args)...);
+    }
+
+    // index operator
+    // XXX c++23
+    template<typename Arg>
+    auto operator[](Arg && arg) const noexcept
+        requires requires(value_type const & a, Arg &&arg) { a[std::forward<Arg>(arg)]; }
+    {
+        return (*read())[std::forward<Arg>(arg)];
+    }
+
+    // clang-format on
+
 private:
     std::shared_ptr<observable> _observed = {};
     path_type _path = {};
     observable::token_type _observed_cbt = {};
     std::function<void *(void *)> _convert = {};
     notifier_type _notifier;
+
+    /** Construct an observer from an observable.
+     */
+    observer(
+        forward_of<std::shared_ptr<observable>> auto&& observed,
+        forward_of<path_type> auto&& path,
+        forward_of<void *(void *)> auto&& converter) noexcept :
+        _observed(hi_forward(observed)), _path(hi_forward(path)), _convert(hi_forward(converter)), _notifier()
+    {
+        update_state_callback();
+    }
 
     void read_unlock() const noexcept
     {

@@ -45,8 +45,8 @@ TEST(shared_state, read)
 
     auto a_cursor = state.observer();
     auto baz_cursor = state.get<"baz">();
-    auto baz0_cursor = state.get<"baz">()[0];
-    auto baz1_cursor = baz_cursor[1];
+    auto baz0_cursor = state.get<"baz">().get(0);
+    auto baz1_cursor = baz_cursor.get(1);
     auto b_cursor = a_cursor.get<"b">();
     auto foo_cursor = state.get<"b">().get<"foo">();
     auto bar_cursor = b_cursor.get<"bar">();
@@ -78,8 +78,8 @@ TEST(shared_state, notify)
     auto bar_cursor = b_cursor.get<"bar">();
     auto barD_cursor = b_cursor.get<"bar">();
     auto baz_cursor = a_cursor.get<"baz">();
-    auto baz0_cursor = baz_cursor[0];
-    auto baz1_cursor = baz_cursor[1];
+    auto baz0_cursor = baz_cursor.get(0);
+    auto baz1_cursor = baz_cursor.get(1);
 
     auto a_count = 0;
     auto b_count = 0;
@@ -407,10 +407,10 @@ TEST(shared_state, chain2)
     c_modified = false;
 
     b = c;
-    ASSERT_TRUE(a_modified);
+    ASSERT_FALSE(a_modified);
     ASSERT_TRUE(b_modified);
     ASSERT_FALSE(c_modified);
-    ASSERT_EQ(*a, 3);
+    ASSERT_EQ(*a, 2);
     ASSERT_EQ(*b, 3);
     ASSERT_EQ(*c, 3);
     a_modified = false;
@@ -418,10 +418,10 @@ TEST(shared_state, chain2)
     c_modified = false;
 
     c = 4;
-    ASSERT_TRUE(a_modified);
+    ASSERT_FALSE(a_modified);
     ASSERT_TRUE(b_modified);
     ASSERT_TRUE(c_modified);
-    ASSERT_EQ(*a, 4);
+    ASSERT_EQ(*a, 2);
     ASSERT_EQ(*b, 4);
     ASSERT_EQ(*c, 4);
     a_modified = false;
@@ -429,10 +429,10 @@ TEST(shared_state, chain2)
     c_modified = false;
 
     b = 5;
-    ASSERT_TRUE(a_modified);
+    ASSERT_FALSE(a_modified);
     ASSERT_TRUE(b_modified);
     ASSERT_TRUE(c_modified);
-    ASSERT_EQ(*a, 5);
+    ASSERT_EQ(*a, 2);
     ASSERT_EQ(*b, 5);
     ASSERT_EQ(*c, 5);
     a_modified = false;
@@ -441,11 +441,11 @@ TEST(shared_state, chain2)
 
     a = 6;
     ASSERT_TRUE(a_modified);
-    ASSERT_TRUE(b_modified);
-    ASSERT_TRUE(c_modified);
+    ASSERT_FALSE(b_modified);
+    ASSERT_FALSE(c_modified);
     ASSERT_EQ(*a, 6);
-    ASSERT_EQ(*b, 6);
-    ASSERT_EQ(*c, 6);
+    ASSERT_EQ(*b, 5);
+    ASSERT_EQ(*c, 5);
     a_modified = false;
     b_modified = false;
     c_modified = false;
@@ -572,4 +572,16 @@ TEST(shared_state, callback)
     auto cbt2 = a.subscribe(hi::callback_flags::synchronous, callback2);
 
     a = 42;
+}
+
+TEST(shared_state, convenience_operators)
+{
+    auto a = hi::observer<int>{};
+    ASSERT_EQ(a, 0);
+
+    a = 1;
+    ASSERT_EQ(a, 1);
+
+    a += 2;
+    ASSERT_EQ(a, 3);
 }

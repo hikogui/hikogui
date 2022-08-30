@@ -421,28 +421,28 @@ struct is_forward_of :
 template<typename Context, typename Expected>
 struct is_forward_of<Context, std::shared_ptr<Expected>> :
     std::conditional_t<
-        std::is_convertible_v<Context, std::shared_ptr<Expected>>
+        std::is_convertible_v<Context, std::shared_ptr<Expected>>,
         std::true_type,
         std::false_type> {};
 
 template<typename Context, typename Expected>
 struct is_forward_of<Context, std::weak_ptr<Expected>> :
     std::conditional_t<
-        std::is_convertible_v<Context, std::weak_ptr<Expected>>
+        std::is_convertible_v<Context, std::weak_ptr<Expected>>,
         std::true_type,
         std::false_type> {};
 
 template<typename Context, typename Expected>
 struct is_forward_of<Context, std::unique_ptr<Expected>> :
     std::conditional_t<
-        std::is_convertible_v<Context, std::unique_ptr<Expected>>
+        std::is_convertible_v<Context, std::unique_ptr<Expected>>,
         std::true_type,
         std::false_type> {};
 
 template<typename Context, typename Expected>
 struct is_forward_of<Context, Expected *> :
     std::conditional_t<
-        std::is_convertible_v<Context, Expected *>
+        std::is_convertible_v<Context, Expected *>,
         std::true_type,
         std::false_type> {};
 

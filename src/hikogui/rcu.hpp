@@ -117,7 +117,7 @@ public:
      */
     [[nodiscard]] value_type *copy(value_type const *ptr) const noexcept
     {
-        hi_axiom(old_ptr != nullptr);
+        hi_axiom(ptr != nullptr);
         value_type *new_ptr = std::allocator_traits<allocator_type>::allocate(_allocator, 1);
         std::allocator_traits<allocator_type>::construct(_allocator, new_ptr, *ptr);
         return std::launder(new_ptr);
@@ -146,8 +146,8 @@ public:
      */
     void abort(value_type *ptr) const noexcept
     {
-        std::allocator_traits<allocator_type>::destroy(_allocator, new_ptr);
-        std::allocator_traits<allocator_type>::deallocate(_allocator, new_ptr, 1);
+        std::allocator_traits<allocator_type>::destroy(_allocator, ptr);
+        std::allocator_traits<allocator_type>::deallocate(_allocator, ptr, 1);
     }
 
     /** Commit the copied value.
@@ -157,7 +157,7 @@ public:
     void commit(value_type *ptr) noexcept
     {
         lock();
-        auto *old_ptr = exchange(new_ptr);
+        auto *old_ptr = exchange(ptr);
         auto old_version = version();
         unlock();
         add_old_copy(old_version, old_ptr);
