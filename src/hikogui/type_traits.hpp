@@ -332,9 +332,19 @@ struct use_first {
 template<typename First, typename Second>
 using use_first_t = use_first<First,Second>;
 
+/** Smart pointer traits.
+ *
+ * @note Applications may make specializations for their own types.
+ * @param T the type.
+ */
 template<typename T>
 struct smart_pointer_traits {
+    /** If true this is a pointer or shared_ptr.
+     */
     constexpr static bool value = false;
+
+    /** The type the pointer points to.
+     */
     using type = void;
 };
 
@@ -343,7 +353,13 @@ template<typename T> struct smart_pointer_traits<std::weak_ptr<T>> {constexpr st
 template<typename T> struct smart_pointer_traits<std::unique_ptr<T>> {constexpr static bool value = true; using type = T;};
 template<typename T> struct smart_pointer_traits<T *> {constexpr static bool value = true; using type = T;};
 
-
+/** Call a method on a reference or a pointer object.
+ *
+ * @param object A reference or pointer to an object with a method.
+ * @param method The name of the method to call.
+ * @param ... Argument passed to the method.
+ * @return The return value of the method.
+ */
 #define hi_call_method(object, method, ...) \
     [&]() { \
         if constexpr (smart_pointer_traits<std::decay_t<decltype(object)>>::value) { \
@@ -359,14 +375,39 @@ template<typename Out, typename In>
 constexpr bool type_in_range_v = std::numeric_limits<Out>::digits >= std::numeric_limits<In>::digits and
     (std::numeric_limits<Out>::is_signed == std::numeric_limits<In>::is_signed or std::numeric_limits<Out>::is_signed);
 
-/** True if T is a forwarded type of OfType.
+/** Is context a form of the expected type.
+ *
+ * The context matched the expected type when:
+ *  - expected is a non-reference type and the decayed context is the same type, or derrived from expected.
+ *  - expected is a pointer, shared_ptr, weak_ptr or unique_ptr and the context can be convertible to expected.
+ *  - expected is in the form of `Result(Arguments...)` and the context can be convertible to expected.
+ *
+ * Examples of `forward_of` concept which is created from `is_forward_of`:
  *
  * ```
- * template<forward_of<std::string> Text>
- * std::string foo(Text &&text) {
- *   return std::forward<Text>(text);
+ * void foo(forward_of<std::string> auto &&text) {
+ *     bar(std::forward<decltype(text)>(text));
+ * }
+
+ * void foo(forward_of<std::shared_ptr<std::string>> auto &&ptr) {
+ *     bar(std::forward<decltype(text)>(ptr));
+ * }
+ *
+ * void foo(forward_of<std::unique_ptr<std::string>> auto &&ptr) {
+ *     bar(std::forward<decltype(text)>(ptr));
+ * }
+ *
+ * void foo(forward_of<std::string *> auto &&ptr) {
+ *     bar(std::forward<decltype(text)>(ptr));
+ * }
+ *
+ * void foo(forward_of<void(std::string)> auto &&func) {
+ *     bar(std::forward<decltype(func)>(func));
  * }
  * ```
+ *
+ * @tparam Context The template argument of a forwarding function argument.
+ * @tparam Expected The type expected that matched a decayed-context.
  */
 template<typename Context, typename Expected>
 struct is_forward_of :
@@ -374,15 +415,36 @@ struct is_forward_of :
         std::is_same_v<std::decay_t<Context>, Expected> or std::is_base_of_v<Expected, std::decay_t<Context>>,
         std::true_type,
         std::false_type> {
+    static_assert(not std::is_reference_v<Expected>, "Template argument Expected must be a non-reference type.");
 };
 
 template<typename Context, typename Expected>
 struct is_forward_of<Context, std::shared_ptr<Expected>> :
     std::conditional_t<
-        smart_pointer_traits<std::decay_t<Context>>::value and
-        is_forward_of<typename smart_pointer_traits<std::decay_t<Context>>::type, Expected>::value,
-        std::true_type, std::false_type> {
-};
+        std::is_convertible_v<Context, std::shared_ptr<Expected>>
+        std::true_type,
+        std::false_type> {};
+
+template<typename Context, typename Expected>
+struct is_forward_of<Context, std::weak_ptr<Expected>> :
+    std::conditional_t<
+        std::is_convertible_v<Context, std::weak_ptr<Expected>>
+        std::true_type,
+        std::false_type> {};
+
+template<typename Context, typename Expected>
+struct is_forward_of<Context, std::unique_ptr<Expected>> :
+    std::conditional_t<
+        std::is_convertible_v<Context, std::unique_ptr<Expected>>
+        std::true_type,
+        std::false_type> {};
+
+template<typename Context, typename Expected>
+struct is_forward_of<Context, Expected *> :
+    std::conditional_t<
+        std::is_convertible_v<Context, Expected *>
+        std::true_type,
+        std::false_type> {};
 
 template<typename Context, typename Result, typename... Args>
 struct is_forward_of<Context, Result(Args...)> :
