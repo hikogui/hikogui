@@ -550,15 +550,13 @@ TEST(shared_state, chain3)
     c_modified = false;
 }
 
-void callback1(int old_value, int new_value)
+void callback1(int new_value)
 {
-    ASSERT_EQ(old_value, 1);
     ASSERT_EQ(new_value, 42);
 }
 
-void callback2(int const &old_value, int const& new_value)
+void callback2(int const& new_value)
 {
-    ASSERT_EQ(old_value, 1);
     ASSERT_EQ(new_value, 42);
 }
 

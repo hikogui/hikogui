@@ -20,7 +20,7 @@ class observable : public std::enable_shared_from_this<observable> {
 public:
     /** The type of the notifier used to notify changes to the value of the observable.
      */
-    using notifier_type = notifier<void(void const *, void const *)>;
+    using notifier_type = notifier<void(void const *)>;
 
     /** The token returned by `subscribe()`.
      */
@@ -109,14 +109,13 @@ public:
      *  - All callbacks which are a prefix of @a path.
      *  - All callbacks which have @a path as a prefix.
      *
-     * @param old_ptr The pointer to the old value.
-     * @param new_ptr The pointer to the new value.
+     * @param ptr The pointer to the value.
      * @param path The path of the observed-value that was modified.
      */
-    void notify(void const *old_ptr, void const *new_ptr, path_type const& path) const noexcept
+    void notify(void const *ptr, path_type const& path) const noexcept
     {
-        _notifiers.walk_including_path(path, [old_ptr, new_ptr](notifier_type const& notifier) {
-            notifier(old_ptr, new_ptr);
+        _notifiers.walk_including_path(path, [ptr](notifier_type const& notifier) {
+            notifier(ptr);
         });
     }
 

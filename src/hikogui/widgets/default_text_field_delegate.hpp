@@ -71,7 +71,7 @@ public:
 
     default_text_field_delegate(auto&& value) noexcept : value(hi_forward(value))
     {
-        _value_cbt = this->value.subscribe([&](auto...) {
+        _value_cbt = this->value.subscribe(callback_flags::local, [&](auto...) {
             this->_notifier();
         });
     }

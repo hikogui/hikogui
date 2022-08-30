@@ -25,7 +25,7 @@ void window_widget::constructor_implementation() noexcept
         _title_cbt = title.subscribe(callback_flags::local, [this](auto...) {
             this->_system_menu->icon = this->title->icon;
         });
-        (*_title_cbt)(*title, *title);
+        (*_title_cbt)(*title);
 #endif
         _toolbar->make_widget<window_traffic_lights_widget, horizontal_alignment::right>();
     } else if (theme().operating_system == operating_system::macos) {

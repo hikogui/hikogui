@@ -80,11 +80,11 @@ hi::scoped_task<> init_theme_tab(hi::grid_widget& grid, my_preferences& preferen
 {
     using namespace hi;
 
-    hi::observable<std::vector<std::pair<std::string, hi::label>>> theme_list;
+    hi::observer<std::vector<std::pair<std::string, hi::label>>> theme_list;
 
     {
         auto& theme_book = *grid.window.gui.theme_book;
-        auto proxy = theme_list.proxy();
+        auto proxy = theme_list.copy();
         for (hilet& name : theme_book.theme_names()) {
             proxy->emplace_back(name, tr{name});
         }
@@ -130,7 +130,7 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
     grid.make_widget<label_widget>("A7", tr("Sample Rate:"));
     grid.make_widget<text_field_widget>("B7", preferences.audio_output_sample_rate);
 
-    auto toggle_value_cbt = preferences.toggle_value.subscribe([&](bool value) {
+    auto toggle_value_cbt = preferences.toggle_value.subscribe(callback_flags::local, [&](bool value) {
         checkbox2.mode = value ? widget_mode::enabled : widget_mode::disabled;
         selection3.mode = value ? widget_mode::enabled : widget_mode::disabled;
     });

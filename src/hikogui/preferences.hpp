@@ -54,7 +54,7 @@ public:
     preference_item(preferences& parent, std::string_view path, observer<T> const& value, T init) noexcept :
         preference_item_base(parent, path), _value(value), _init(std::move(init))
     {
-        _value_cbt = _value.subscribe([this](auto...) {
+        _value_cbt = _value.subscribe(callback_flags::local, [this](auto...) {
             if (auto tmp = this->encode(); not holds_alternative<std::monostate>(tmp)) {
                 this->_parent.write(_path, this->encode());
             } else {

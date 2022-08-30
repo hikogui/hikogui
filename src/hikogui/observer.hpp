@@ -23,7 +23,7 @@ template<typename T>
 class observer {
 public:
     using value_type = T;
-    using notifier_type = notifier<void(value_type, value_type)>;
+    using notifier_type = notifier<void(value_type)>;
     using token_type = notifier_type::token_type;
     using function_proto = notifier_type::function_proto;
     using awaiter_type = notifier_type::awaiter_type;
@@ -64,7 +64,7 @@ public:
         _proxy& operator=(_proxy const&) = delete;
 
         _proxy(_proxy const& other) noexcept requires(not is_writing) :
-            _observer(other._observer), _old_base(nullptr), _new_base(other._new_base), _value(other._value)
+            _observer(other._observer), _base(other._base), _value(other._value)
         {
             _observer->read_lock();
         }
@@ -73,8 +73,7 @@ public:
         {
             _commit();
             _observer = other._observer;
-            _old_base = nullptr;
-            _new_base = other._new_base;
+            _base = other._base;
             _value = other._value;
             _observer->read_lock();
             return *this;
@@ -82,8 +81,7 @@ public:
 
         _proxy(_proxy&& other) noexcept :
             _observer(std::exchange(other._observer, nullptr)),
-            _old_base(std::exchange(other._old_base, nullptr)),
-            _new_base(std::exchange(other._new_base, nullptr)),
+            _base(std::exchange(other._base, nullptr)),
             _value(std::exchange(other._value, nullptr))
         {
         }
@@ -92,8 +90,7 @@ public:
         {
             _commit();
             _observer = std::exchange(other._observer, nullptr);
-            _old_base = std::exchange(other._old_base, nullptr);
-            _new_base = std::exchange(other._new_base, nullptr);
+            _base = std::exchange(other._base, nullptr);
             _value = std::exchange(other._value, nullptr);
             return *this;
         }
@@ -317,30 +314,22 @@ public:
 
     private:
         observer const *_observer = nullptr;
-        const_void_pointer _old_base = nullptr;
-        void_pointer _new_base = nullptr;
+        void_pointer _base = nullptr;
         pointer _value = nullptr;
 
         /** Create a proxy object.
          *
          * @param observer a pointer to the observer.
-         * @param old_base A pointer to the old_base which holds the previous value used to create the new_base.
-         *                 For a const_proxy this must be a nullptr.
-         * @param new_base a pointer to the dereference rcu-object from the shared_state.
+         * @param base a pointer to the dereference rcu-object from the shared_state.
          *             This is needed to commit or abort the shared_state as a whole.
          * @param value a pointer to the sub-object of the shared_state that the observer
          *              is pointing to.
          */
-        _proxy(observer const *observer, const_void_pointer old_base, void_pointer new_base, pointer value) noexcept :
-            _observer(observer), _old_base(old_base), _new_base(new_base), _value(value)
+        _proxy(observer const *observer, void_pointer base, pointer value) noexcept :
+            _observer(observer), _base(base), _value(value)
         {
             hi_axiom(_observer != nullptr);
-            if constexpr (is_writing) {
-                hi_axiom(_old_base != nullptr);
-            } else {
-                hi_axiom(_old_base == nullptr);
-            }
-            hi_axiom(_new_base != nullptr);
+            hi_axiom(_base != nullptr);
             hi_axiom(_value != nullptr);
         }
 
@@ -348,7 +337,7 @@ public:
         {
             if (_observer != nullptr) {
                 if constexpr (is_writing) {
-                    _observer->commit(_old_base, _new_base);
+                    _observer->commit(_base);
                 } else {
                     _observer->read_unlock();
                 }
@@ -359,7 +348,7 @@ public:
         {
             if (_observer != nullptr) {
                 if constexpr (is_writing) {
-                    _observer->abort(_new_base);
+                    _observer->abort(_base);
                 } else {
                     _observer->read_unlock();
                 }
@@ -422,27 +411,15 @@ public:
      */
     constexpr observer& operator=(observer const& other) noexcept
     {
-        // Get the old-value to notify with.
-        _observed->read_lock();
-        void const *old_base = _observed->read();
-        value_type const *old_value = convert(old_base);
-
-        // Replace the observer.
-        auto old_observed = std::exchange(_observed, other._observed);
+        _observed = other._observed;
         _path = other._path;
         _convert = other._convert;
 
-        // Get the new-value to notify with.
-        _observed->read_lock();
-        void const *new_base = _observed->read();
-        value_type const *new_value = convert(new_base);
-
         // Rewire the callback subscriptions and notify listeners to this observer.
         update_state_callback();
-        _notifier(*old_value, *new_value);
-
+        _observed->read_lock();
+        _notifier(*convert(_observed->read()));
         _observed->read_unlock();
-        old_observed->read_unlock();
         return *this;
     }
 
@@ -455,28 +432,16 @@ public:
      */
     constexpr observer& operator=(observer&& other) noexcept
     {
-        // Get the old-value to notify with.
-        _observed->read_lock();
-        void const *old_base = _observed->read();
-        value_type const *old_value = convert(old_base);
-
-        // Replace the observer.
-        auto old_observed = std::exchange(_observed, std::move(other._observed));
+        _observed = std::move(other._observed);
         _path = std::move(other._path);
         _convert = std::move(other._convert);
         other.reset();
 
-        // Get the new-value to notify with.
-        _observed->read_lock();
-        void const *new_base = _observed->read();
-        value_type const *new_value = convert(new_base);
-
         // Rewire the callback subscriptions and notify listeners to this observer.
         update_state_callback();
-        _notifier(*old_value, *new_value);
-
+        _observed->read_lock();
+        _notifier(*convert(_observed->read()));
         _observed->read_unlock();
-        old_observed->read_unlock();
         return *this;
     }
 
@@ -501,8 +466,8 @@ public:
     [[nodiscard]] const_proxy read() const& noexcept
     {
         _observed->read_lock();
-        auto new_base = _observed->read();
-        return const_proxy{this, nullptr, new_base, convert(new_base)};
+        void const *base = _observed->read();
+        return const_proxy{this, base, convert(base)};
     }
     const_proxy read() && = delete;
 
@@ -515,7 +480,7 @@ public:
         _observed->write_lock();
         void const *old_base = _observed->read();
         void *new_base = _observed->copy(old_base);
-        return proxy(this, old_base, new_base, convert(new_base));
+        return proxy(this, new_base, convert(new_base));
     }
 
     /** Subscribe a callback to this observer.
@@ -735,16 +700,20 @@ private:
         _observed->read_unlock();
     }
 
-    void commit(void const *old_base, void *new_base) const noexcept
+    void commit(void *base) const noexcept
     {
-        // Only commit and notify when the value has actually changed.
-        auto *old_value = convert(old_base);
-        auto *new_value = convert(new_base);
-        if (*old_value != *new_value) {
-            _observed->commit(new_base);
-            _observed->notify(old_base, new_base, _path);
+        if constexpr (requires (value_type const &a, value_type const &b) { a == b; }) {
+            // Only commit and notify when the value has actually changed.
+            // Since there is a write-lock being held, _observed->read() will be the previous value.
+            if (*convert(_observed->read()) != *convert(base)) {
+                _observed->commit(base);
+                _observed->notify(base, _path);
+            } else {
+                _observed->abort(base);
+            }
         } else {
-            _observed->abort(new_base);
+            _observed->commit(base);
+            _observed->notify(base, _path);
         }
         _observed->write_unlock();
     }
@@ -768,8 +737,8 @@ private:
     void update_state_callback() noexcept
     {
         _observed_cbt =
-            _observed->subscribe(_path, callback_flags::synchronous, [this](void const *old_base, void const *new_base) {
-                return _notifier(*convert(old_base), *convert(new_base));
+            _observed->subscribe(_path, callback_flags::synchronous, [this](void const *base) {
+                return _notifier(*convert(base));
             });
     }
 
