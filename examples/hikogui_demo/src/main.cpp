@@ -27,22 +27,22 @@
 
 class my_preferences : public hi::preferences {
 public:
-    hi::observable<std::string> audio_output_device_id;
-    hi::observable<bool> audio_output_exclusive;
-    hi::observable<double> audio_output_sample_rate;
-    hi::observable<hi::speaker_mapping> audio_output_speaker_mapping;
+    hi::observer<std::string> audio_output_device_id;
+    hi::observer<bool> audio_output_exclusive;
+    hi::observer<double> audio_output_sample_rate;
+    hi::observer<hi::speaker_mapping> audio_output_speaker_mapping;
 
-        hi::observable<std::string> audio_input_device_id;
-    hi::observable<bool> audio_input_exclusive;
-        hi::observable<double> audio_input_sample_rate;
-    hi::observable<hi::speaker_mapping> audio_input_speaker_mapping;
+    hi::observer<std::string> audio_input_device_id;
+    hi::observer<bool> audio_input_exclusive;
+    hi::observer<double> audio_input_sample_rate;
+    hi::observer<hi::speaker_mapping> audio_input_speaker_mapping;
 
-    hi::observable<int> tab_index = 1;
-    hi::observable<bool> toggle_value;
-    hi::observable<int> radio_value = 0;
-    hi::observable<std::vector<std::pair<std::string, hi::label>>> _audio_device_list;
+    hi::observer<int> tab_index = 1;
+    hi::observer<bool> toggle_value;
+    hi::observer<int> radio_value = 0;
+    hi::observer<std::vector<std::pair<std::string, hi::label>>> _audio_device_list;
 
-    hi::observable<std::string> selected_theme;
+    hi::observer<std::string> selected_theme;
 
     my_preferences(hi::URL url) : hi::preferences(std::move(url))
     {
@@ -59,12 +59,12 @@ public:
     }
 };
 
-hi::scoped_task<> init_audio_tab(hi::grid_widget& grid, my_preferences& preferences, hi::audio_system &audio_system) noexcept
+hi::scoped_task<> init_audio_tab(hi::grid_widget& grid, my_preferences& preferences, hi::audio_system& audio_system) noexcept
 {
     using namespace hi;
 
     grid.make_widget<label_widget>("A1", tr("Input audio device:"));
-    auto &input_config = grid.make_widget<audio_device_widget>("B1", audio_system);
+    auto& input_config = grid.make_widget<audio_device_widget>("B1", audio_system);
     input_config.direction = audio_direction::input;
     input_config.device_id = preferences.audio_input_device_id;
 
@@ -138,7 +138,7 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
     co_await std::suspend_always{};
 }
 
-hi::task<> preferences_window(hi::gui_system& gui, my_preferences& preferences, hi::audio_system &audio_system)
+hi::task<> preferences_window(hi::gui_system& gui, my_preferences& preferences, hi::audio_system& audio_system)
 {
     using namespace hi;
 
@@ -161,7 +161,7 @@ hi::task<> preferences_window(hi::gui_system& gui, my_preferences& preferences, 
     co_await window->closing;
 }
 
-hi::task<> main_window(hi::gui_system& gui, my_preferences& preferences, hi::audio_system &audio_system)
+hi::task<> main_window(hi::gui_system& gui, my_preferences& preferences, hi::audio_system& audio_system)
 {
     using namespace hi;
 

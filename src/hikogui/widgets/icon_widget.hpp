@@ -27,15 +27,15 @@ public:
 
     /** The icon to be displayed.
      */
-    observable<icon> icon;
+    observer<icon> icon;
 
     /** The color a non-color icon will be displayed with.
      */
-    observable<color> color = color::foreground();
+    observer<color> color = color::foreground();
 
     /** Alignment of the icon inside the widget.
      */
-    observable<alignment> alignment = hi::alignment{horizontal_alignment::center, vertical_alignment::middle};
+    observer<alignment> alignment = hi::alignment{horizontal_alignment::center, vertical_alignment::middle};
 
     template<typename Icon, typename Color = hi::color>
     icon_widget(gui_window& window, widget *parent, Icon&& icon, Color&& color = color::foreground()) noexcept :

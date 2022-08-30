@@ -23,7 +23,7 @@ class default_text_field_delegate<T> : public text_field_delegate {
 public:
     using value_type = T;
 
-    observable<value_type> value;
+    observer<value_type> value;
 
     default_text_field_delegate(auto&& value) noexcept : value(hi_forward(value))
     {
@@ -67,7 +67,7 @@ class default_text_field_delegate<T> : public text_field_delegate {
 public:
     using value_type = T;
 
-    observable<value_type> value;
+    observer<value_type> value;
 
     default_text_field_delegate(auto&& value) noexcept : value(hi_forward(value))
     {
@@ -107,11 +107,11 @@ private:
 };
 
 template<typename Value>
-default_text_field_delegate(Value&&) -> default_text_field_delegate<observable_argument_t<std::remove_cvref_t<Value>>>;
+default_text_field_delegate(Value&&) -> default_text_field_delegate<observer_argument_t<Value>>;
 
 std::unique_ptr<text_field_delegate> make_unique_default_text_field_delegate(auto&& value, auto&&...args) noexcept
 {
-    using value_type = observable_argument_t<std::remove_cvref_t<decltype(value)>>;
+    using value_type = observer_argument_t<decltype(value)>;
     return std::make_unique<default_text_field_delegate<value_type>>(hi_forward(value), hi_forward(args)...);
 }
 

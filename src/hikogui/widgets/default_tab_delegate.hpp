@@ -18,7 +18,7 @@ class default_tab_delegate : public tab_delegate {
 public:
     using value_type = T;
 
-    observable<value_type> value;
+    observer<value_type> value;
     std::unordered_map<std::size_t, std::size_t> tab_indices;
 
     default_tab_delegate(auto &&value) noexcept : value(hi_forward(value))
@@ -49,12 +49,12 @@ private:
 };
 
 template<typename Value>
-default_tab_delegate(Value &&) -> default_tab_delegate<observable_argument_t<std::remove_cvref_t<Value>>>;
+default_tab_delegate(Value&&) -> default_tab_delegate<observer_argument_t<Value>>;
 
 template<typename Value>
 std::unique_ptr<tab_delegate> make_unique_default_tab_delegate(Value &&value) noexcept
 {
-    using value_type = observable_argument_t<std::remove_cvref_t<Value>>;
+    using value_type = observer_argument_t<Value>;
     return std::make_unique<default_tab_delegate<value_type>>(std::forward<Value>(value));
 }
 

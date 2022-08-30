@@ -39,7 +39,7 @@ public:
     using super = widget;
     using delegate_type = selection_delegate;
 
-    observable<label> unknown_label;
+    observer<label> unknown_label;
 
     ~selection_widget();
 

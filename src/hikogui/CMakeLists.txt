@@ -117,6 +117,8 @@ target_sources(hikogui PRIVATE
     notifier.hpp
     cast.hpp
     observable.hpp
+    observable_value.hpp
+    observer.hpp
     operator.hpp
     os_settings.cpp
     os_settings.hpp
@@ -242,7 +244,6 @@ if(HI_BUILD_TESTS)
         math_tests.cpp
         notifier_tests.cpp
         graphic_path_tests.cpp
-        observable_tests.cpp
         pixel_map_tests.cpp
         polymorphic_optional_tests.cpp
         polynomial_tests.cpp

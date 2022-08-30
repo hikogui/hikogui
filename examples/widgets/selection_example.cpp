@@ -22,7 +22,7 @@ int hi_main(int argc, char *argv[])
         {3, tr("three")}
     };
 
-    observable<int> value = 0;
+    observer<int> value = 0;
     window->content().make_widget<selection_widget>("A2", option_list, value);
     /// [Create selection]
 

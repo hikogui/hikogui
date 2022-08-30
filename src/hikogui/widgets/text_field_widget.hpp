@@ -60,11 +60,11 @@ public:
     /** Continues update mode.
      * If true then the value will update on every edit of the text field.
      */
-    observable<bool> continues = false;
+    observer<bool> continues = false;
 
     /** The style of the text.
      */
-    observable<semantic_text_style> text_style = semantic_text_style::label;
+    observer<semantic_text_style> text_style = semantic_text_style::label;
 
     virtual ~text_field_widget();
 
@@ -105,7 +105,7 @@ private:
 
     /** The text edited by the _text_widget.
      */
-    observable<gstring> _text;
+    observer<gstring> _text;
 
     /** The rectangle where the box is displayed, inwhich the text is displayed.
     */
@@ -118,7 +118,7 @@ private:
 
     /** An error string to show to the user.
      */
-    observable<label> _error_label;
+    observer<label> _error_label;
     aarectangle _error_label_rectangle;
     widget_constraints _error_label_constraints;
     std::unique_ptr<label_widget> _error_label_widget;

@@ -26,11 +26,11 @@ public:
 
     /** The audio device this widget has selected and is configuring.
      */
-    observable<std::string> device_id;
+    observer<std::string> device_id;
 
     /** The audio direction (input or output) of devices is should show.
      */
-    observable<audio_direction> direction = audio_direction::bidirectional;
+    observer<audio_direction> direction = audio_direction::bidirectional;
     
     virtual ~audio_device_widget();
 
@@ -57,7 +57,7 @@ private:
      */
     selection_widget *_device_selection_widget = nullptr;
 
-    observable<std::vector<std::pair<std::string,label>>> _device_list;
+    observer<std::vector<std::pair<std::string, label>>> _device_list;
 
     hi::scoped_task<> _sync_device_list_task;
 

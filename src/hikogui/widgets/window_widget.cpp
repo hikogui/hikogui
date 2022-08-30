@@ -22,10 +22,10 @@ void window_widget::constructor_implementation() noexcept
     if (theme().operating_system == operating_system::windows) {
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
         _system_menu = &_toolbar->make_widget<system_menu_widget>();
-        _title_cbt = title.subscribe([this](auto...) {
+        _title_cbt = title.subscribe(callback_flags::local, [this](auto...) {
             this->_system_menu->icon = this->title->icon;
         });
-        (*_title_cbt)(*title);
+        (*_title_cbt)(*title, *title);
 #endif
         _toolbar->make_widget<window_traffic_lights_widget, horizontal_alignment::right>();
     } else if (theme().operating_system == operating_system::macos) {

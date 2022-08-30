@@ -35,7 +35,7 @@ public:
 
     /** The label to display.
      */
-    observable<label> label;
+    observer<label> label;
 
     /** How the label and icon are aligned. Different layouts:
      *  - `alignment::top_left`: icon and text are inline with each other, with
@@ -55,11 +55,11 @@ public:
      *  - `alignment::middle_center`: text drawn across a large icon. Should only be
      *    used with a `pixmap` icon.
      */
-    observable<alignment> alignment = hi::alignment::top_right();
+    observer<alignment> alignment = hi::alignment::top_right();
 
     /** The text style to display the label's text in and color of the label's (non-color) icon.
      */
-    observable<semantic_text_style> text_style = semantic_text_style::label;
+    observer<semantic_text_style> text_style = semantic_text_style::label;
 
     /** Construct a label widget.
      *

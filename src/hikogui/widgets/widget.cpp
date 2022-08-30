@@ -20,7 +20,7 @@ widget::widget(gui_window& _window, widget *parent) noexcept :
         semantic_layer = parent->semantic_layer + 1;
     }
 
-    _mode_cbt = mode.subscribe([&](auto...) {
+    _mode_cbt = mode.subscribe(callback_flags::local, [&](auto...) {
         request_reconstrain();
     });
 

@@ -19,7 +19,7 @@ public:
     using super = widget;
     using delegate_type = grid_delegate;
 
-    observable<label> title;
+    observer<label> title;
 
     template<typename Title>
     window_widget(gui_window& window, Title&& title, std::weak_ptr<delegate_type> delegate = {}) noexcept :

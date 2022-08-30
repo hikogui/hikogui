@@ -17,7 +17,7 @@ class system_menu_widget final : public widget {
 public:
     using super = widget;
 
-    observable<icon> icon;
+    observer<icon> icon;
 
     ~system_menu_widget() {}
 

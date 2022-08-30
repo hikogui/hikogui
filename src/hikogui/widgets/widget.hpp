@@ -13,7 +13,7 @@
 #include "../geometry/extent.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/transform.hpp"
-#include "../observable.hpp"
+#include "../observer.hpp"
 #include "../chrono.hpp"
 #include "../generator.hpp"
 #include "widget_constraints.hpp"
@@ -54,15 +54,15 @@ public:
     /** The widget mode.
      * The current visibility and interactivity of a widget.
      */
-    observable<widget_mode> mode = widget_mode::enabled;
+    observer<widget_mode> mode = widget_mode::enabled;
 
     /** Mouse cursor is hovering over the widget.
      */
-    observable<bool> hover = false;
+    observer<bool> hover = false;
 
     /** The widget has keyboard focus.
      */
-    observable<bool> focus = false;
+    observer<bool> focus = false;
 
     /** The draw layer of the widget.
      * The semantic layer is used mostly by the `draw()` function

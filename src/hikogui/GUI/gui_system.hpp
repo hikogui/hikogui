@@ -52,7 +52,7 @@ public:
 
     /** The name of the selected theme.
      */
-    observable<std::string> selected_theme = "default";
+    observer<std::string> selected_theme = "default";
 
     /** Make a gui_system instance.
      *

@@ -27,19 +27,19 @@ public:
 
     /** The label to show when the button is in the 'on' state.
      */
-    observable<label> on_label = tr("on");
+    observer<label> on_label = tr("on");
 
     /** The label to show when the button is in the 'off' state.
      */
-    observable<label> off_label = tr("off");
+    observer<label> off_label = tr("off");
 
     /** The label to show when the button is in the 'other' state.
      */
-    observable<label> other_label = tr("other");
+    observer<label> other_label = tr("other");
 
     /** The alignment of the button and on/off/other label.
      */
-    observable<alignment> alignment;
+    observer<alignment> alignment;
 
     notifier<void()> pressed;
 

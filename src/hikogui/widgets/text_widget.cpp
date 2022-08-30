@@ -15,16 +15,16 @@ text_widget::text_widget(gui_window& window, widget *parent) noexcept : super(wi
 {
     mode = widget_mode::select;
 
-    _text_cbt = text.subscribe([&](auto...) {
+    _text_cbt = text.subscribe(callback_flags::local, [&](auto...) {
         update_shaped_text();
         request_reconstrain();
     });
-    _text_style_cbt = text_style.subscribe([&](auto...) {
+    _text_style_cbt = text_style.subscribe(callback_flags::local, [&](auto...) {
         update_shaped_text();
         request_reconstrain();
     });
 
-    _cursor_state_cbt = _cursor_state.subscribe([&](auto...) {
+    _cursor_state_cbt = _cursor_state.subscribe(callback_flags::local, [&](auto...) {
         request_redraw();
     });
 
@@ -221,7 +221,7 @@ void text_widget::replace_selection(gstring const& replacement) noexcept
     undo_push();
 
     hilet[first, last] = _selection.selection_indices();
-    text.proxy()->replace(first, last - first, replacement);
+    text.copy()->replace(first, last - first, replacement);
 
     _selection = text_cursor{first + replacement.size() - 1, true};
     fix_cursor_position();
@@ -256,9 +256,9 @@ void text_widget::delete_dead_character() noexcept
         hi_axiom(_selection.cursor().before());
         hi_axiom(_selection.cursor().index() < text->size());
         if (_has_dead_character.valid()) {
-            (*text.proxy())[_selection.cursor().index()] = _has_dead_character;
+            text.copy()[_selection.cursor().index()] = _has_dead_character;
         } else {
-            text.proxy()->erase(_selection.cursor().index(), 1);
+            text.copy()->erase(_selection.cursor().index(), 1);
         }
     }
     _has_dead_character.clear();

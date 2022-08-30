@@ -22,7 +22,7 @@ audio_device_widget::audio_device_widget(gui_window& window, widget *parent, hi:
 {
     while (true) {
         {
-            auto proxy = _device_list.proxy();
+            auto proxy = _device_list.copy();
             proxy->clear();
             for (auto device : _audio_system->devices()) {
                 if (device->state() == hi::audio_device_state::active and any(device->direction() & *direction)) {

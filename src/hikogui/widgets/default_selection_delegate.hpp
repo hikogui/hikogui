@@ -18,17 +18,17 @@ class default_selection_delegate : public selection_delegate {
 public:
     using value_type = T;
 
-    observable<std::vector<std::pair<value_type, label>>> options;
-    observable<value_type> value;
-    observable<value_type> off_value;
+    observer<std::vector<std::pair<value_type, label>>> options;
+    observer<value_type> value;
+    observer<value_type> off_value;
 
     default_selection_delegate(auto &&options, auto &&value, auto &&off_value) noexcept :
         options(hi_forward(options)), value(hi_forward(value)), off_value(hi_forward(off_value))
     {
         // clang-format off
-        _options_cbt = this->options.subscribe([&](auto...){ this->_notifier(); });
-        _value_cbt = this->value.subscribe([&](auto...){ this->_notifier(); });
-        _off_value_cbt = this->off_value.subscribe([&](auto...){ this->_notifier(); });
+        _options_cbt = this->options.subscribe(callback_flags::local, [&](auto...){ this->_notifier(); });
+        _value_cbt = this->value.subscribe(callback_flags::local,[&](auto...){ this->_notifier(); });
+        _off_value_cbt = this->off_value.subscribe(callback_flags::local,[&](auto...){ this->_notifier(); });
         // clang-format on
     }
 
@@ -72,13 +72,13 @@ private:
 
 template<typename OptionList, typename Value, typename... Args>
 default_selection_delegate(OptionList &&, Value &&, Args &&...)
-    -> default_selection_delegate<observable_argument_t<std::remove_cvref_t<Value>>>;
+    -> default_selection_delegate<observer_argument_t<Value>>;
 
 template<typename OptionList, typename Value, typename... Args>
 std::unique_ptr<selection_delegate>
 make_unique_default_selection_delegate(OptionList &&option_list, Value &&value, Args &&...args) noexcept
 {
-    using value_type = observable_argument_t<std::remove_cvref_t<Value>>;
+    using value_type = observer_argument_t<Value>;
     return std::make_unique<default_selection_delegate<value_type>>(
         std::forward<OptionList>(option_list), std::forward<Value>(value), std::forward<Args>(args)...);
 }

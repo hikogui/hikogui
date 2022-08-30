@@ -23,9 +23,9 @@ public:
 
     static constexpr hi::axis axis = Axis;
 
-    observable<float> offset;
-    observable<float> aperture;
-    observable<float> content;
+    observer<float> offset;
+    observer<float> aperture;
+    observer<float> content;
 
     template<typename Content, typename Aperture, typename Offset>
     scroll_bar_widget(gui_window& window, widget *parent, Content&& content, Aperture&& aperture, Offset&& offset) noexcept :
@@ -35,9 +35,9 @@ public:
         offset(std::forward<Offset>(offset))
     {
         // clang-format off
-        _content_cbt = this->content.subscribe([&](auto...){ request_relayout(); });
-        _aperture_cbt = this->aperture.subscribe([&](auto...){ request_relayout(); });
-        _offset_cbt = this->offset.subscribe([&](auto...){ request_relayout(); });
+        _content_cbt = this->content.subscribe(callback_flags::local, [&](auto...){ request_relayout(); });
+        _aperture_cbt = this->aperture.subscribe(callback_flags::local, [&](auto...){ request_relayout(); });
+        _offset_cbt = this->offset.subscribe(callback_flags::local, [&](auto...){ request_relayout(); });
         // clang-format on
     }
 

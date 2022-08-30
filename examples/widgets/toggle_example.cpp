@@ -16,7 +16,7 @@ int hi_main(int argc, char *argv[])
     window->content().make_widget<label_widget>("A1", tr("toggle:"));
 
 /// [Create a toggle]
-    observable<int> value = 0;
+    observer<int> value = 0;
 
     auto &tb = window->content().make_widget<toggle_widget>("B1", value, 1, 2);
     tb.on_label = tr("on");

@@ -51,7 +51,7 @@ protected:
 template<typename T>
 class preference_item : public preference_item_base {
 public:
-    preference_item(preferences &parent, std::string_view path, observable<T> const &value, T init) noexcept :
+    preference_item(preferences& parent, std::string_view path, observer<T> const& value, T init) noexcept :
         preference_item_base(parent, path), _value(value), _init(std::move(init))
     {
         _value_cbt = _value.subscribe([this](auto...) {
@@ -85,7 +85,7 @@ protected:
 
 private:
     T _init;
-    observable<T> _value;
+    observer<T> _value;
     typename decltype(_value)::token_type _value_cbt;
 };
 
@@ -178,7 +178,7 @@ public:
      * @param init The value of the observable when it is not present in the preferences file.
      */
     template<typename T>
-    void add(std::string_view path, observable<T> const &item, T init = T{}) noexcept
+    void add(std::string_view path, observer<T> const& item, T init = T{}) noexcept
     {
         auto item_ = std::make_unique<detail::preference_item<T>>(*this, path, item, std::move(init));
         item_->load();

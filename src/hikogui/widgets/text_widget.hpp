@@ -55,15 +55,15 @@ public:
 
     /** The text to be displayed.
      */
-    observable<gstring> text;
+    observer<gstring> text;
 
     /** The horizontal alignment of the text inside the space of the widget.
      */
-    observable<alignment> alignment = hi::alignment::middle_center();
+    observer<alignment> alignment = hi::alignment::middle_center();
 
     /** The style of the text.
      */
-    observable<semantic_text_style> text_style = semantic_text_style::label;
+    observer<semantic_text_style> text_style = semantic_text_style::label;
 
     /** Construct a text widget.
      *
@@ -120,7 +120,7 @@ private:
 
     scoped_task<> _blink_cursor;
 
-    observable<cursor_state_type> _cursor_state = cursor_state_type::none;
+    observer<cursor_state_type> _cursor_state = cursor_state_type::none;
     decltype(_cursor_state)::token_type _cursor_state_cbt;
 
     /** After layout request scroll from the parent widgets.

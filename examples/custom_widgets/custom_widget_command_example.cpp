@@ -12,7 +12,7 @@
 class command_widget : public hi::widget {
 public:
     // Using an observable allows reading, writing and monitoring of the value outside of the widget.
-    hi::observable<bool> value;
+    hi::observer<bool> value;
 
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
