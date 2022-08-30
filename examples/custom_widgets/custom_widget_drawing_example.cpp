@@ -88,14 +88,14 @@ public:
         widget(window, parent), _image(hi::URL("resource:mars3.png"))
     {
         // clang-format off
-        _drawing_cbt = this->drawing.subscribe([&](auto...){ request_redraw(); });
-        _shape_cbt = this->shape.subscribe([&](auto...){ request_redraw(); });
-        _gradient_cbt = this->gradient.subscribe([&](auto...){ request_redraw(); });
-        _rotating_cbt = this->rotating.subscribe([&](auto...){ request_redraw(); });
-        _clip_cbt = this->clip.subscribe([&](auto...){ request_redraw(); });
-        _border_side_cbt = this->border_side.subscribe([&](auto...){ request_redraw(); });
-        _border_width_cbt = this->border_width.subscribe([&](auto...){ request_redraw(); });
-        _rounded_cbt = this->rounded.subscribe([&](auto...){ request_redraw(); });
+        _drawing_cbt = this->drawing.subscribe(hi::callback_flags::local, [&](auto...){ request_redraw(); });
+        _shape_cbt = this->shape.subscribe(hi::callback_flags::local, [&](auto...){ request_redraw(); });
+        _gradient_cbt = this->gradient.subscribe(hi::callback_flags::local, [&](auto...){ request_redraw(); });
+        _rotating_cbt = this->rotating.subscribe(hi::callback_flags::local, [&](auto...){ request_redraw(); });
+        _clip_cbt = this->clip.subscribe(hi::callback_flags::local, [&](auto...){ request_redraw(); });
+        _border_side_cbt = this->border_side.subscribe(hi::callback_flags::local, [&](auto...){ request_redraw(); });
+        _border_width_cbt = this->border_width.subscribe(hi::callback_flags::local, [&](auto...){ request_redraw(); });
+        _rounded_cbt = this->rounded.subscribe(hi::callback_flags::local, [&](auto...){ request_redraw(); });
         // clang-format on
 
         this->_glyph = font_book().find_glyph(hi::elusive_icon::Briefcase);

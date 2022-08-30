@@ -5,7 +5,7 @@
 #pragma once
 
 #include "text_field_delegate.hpp"
-#include "../observable.hpp"
+#include "../observer.hpp"
 #include "../label.hpp"
 #include "../charconv.hpp"
 #include "../type_traits.hpp"

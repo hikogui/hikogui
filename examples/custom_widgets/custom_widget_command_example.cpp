@@ -19,7 +19,7 @@ public:
     command_widget(hi::gui_window& window, hi::widget *parent) noexcept : hi::widget(window, parent)
     {
         // To visually show the change in value the widget needs to be redrawn.
-        _value_cbt = value.subscribe([&](auto...) {
+        _value_cbt = value.subscribe(hi::callback_flags::local, [&](auto...) {
             request_redraw();
         });
     }

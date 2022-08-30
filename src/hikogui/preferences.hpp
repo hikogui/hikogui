@@ -6,7 +6,7 @@
 #include "datum.hpp"
 #include "log.hpp"
 #include "jsonpath.hpp"
-#include "observable.hpp"
+#include "observer.hpp"
 #include "pickle.hpp"
 #include <typeinfo>
 
