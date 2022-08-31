@@ -16,7 +16,7 @@ template<typename T>
 class observable_value final : public observable {
 public:
     using value_type = T;
-    using path_type = observable::path_type;
+    using path_type = observable_msg::path_type;
 
     ~observable_value() = default;
 
@@ -37,18 +37,6 @@ public:
     constexpr observable_value(Args&&...args) noexcept : _rcu()
     {
         _rcu.emplace(std::forward<Args>(args)...);
-    }
-
-    /** Get a observer to the value.
-     *
-     * This function returns a observer to the value object.
-     * The observer is used to start read or write transactions or create other observers.
-     *
-     * @return The new observer pointing to the value object.
-     */
-    [[nodiscard]] observer<value_type> observer() const& noexcept
-    {
-        return {std::const_pointer_cast<observable>(this->shared_from_this())};
     }
 
     /// @beginprivatesection

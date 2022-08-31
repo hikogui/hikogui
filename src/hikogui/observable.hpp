@@ -12,28 +12,213 @@
 
 namespace hi::inline v1 {
 
-/** An abstract observable object.
+template<typename, typename>
+class merge_ptr;
+
+/**
  *
- * This type is referenced by `observer`s
+ * @tparam T The type of the derived class.
  */
-class observable : public std::enable_shared_from_this<observable> {
+template<typename T, typename D = void *>
+class enable_merge_ptr {
 public:
-    /** The type of the notifier used to notify changes to the value of the observable.
-     */
-    using notifier_type = notifier<void(void const *)>;
+    void notify_merge_ptr_owners(D const& data = D{}) const noexcept
+    {
+        for (auto owner : _emp_owners) {
+            hi_axiom(owner != nullptr);
+            owner->_notify(data);
+        }
+    }
 
-    /** The token returned by `subscribe()`.
-     */
-    using token_type = notifier_type::token_type;
+private:
+    std::vector<merge_ptr<T, D> *> _emp_owners;
 
-    /** The type of the callback that can be subscribed.
-     */
-    using function_proto = notifier_type::function_proto;
+    void _emp_add_owner(merge_ptr<T, D> *owner) noexcept
+    {
+        _emp_owners.push_back(owner);
+    }
 
+    void _emp_remove_owner(merge_ptr<T, D> *owner) noexcept
+    {
+        std::erase(_emp_owners, owner);
+    }
+
+    void _emp_reseat(std::shared_ptr<enable_merge_ptr> const& replacement) noexcept
+    {
+        hi_axiom(replacement.get() != this);
+
+        while (not _emp_owners.empty()) {
+            auto owner = _emp_owners.back();
+            _emp_owners.pop_back();
+
+            owner->_ptr = replacement;
+            if (owner->_ptr) {
+                owner->_ptr->_emp_add_owner(owner);
+            }
+        }
+    }
+
+    friend class merge_ptr<T, D>;
+};
+
+/**
+ *
+ * @tparam S the type containing the `merge_ptr`.
+ * @tparam T the type that the `merge_ptr` is pointing at.
+ */
+template<typename T, typename D = void *>
+class merge_ptr {
+public:
+    using element_type = T;
+
+    virtual ~merge_ptr()
+    {
+        if (_ptr) {
+            _ptr->_emp_remove_owner(this);
+        }
+    }
+
+    merge_ptr(merge_ptr const& other) noexcept : _ptr(other._ptr), _notify()
+    {
+        if (_ptr) {
+            _ptr->_emp_add_owner(this);
+        }
+    }
+
+    merge_ptr& operator=(merge_ptr const& other) noexcept
+    {
+        if (_ptr == other._ptr) {
+            return *this;
+
+        } else if (_ptr) {
+            _ptr->_emp_reseat(other._ptr);
+            return *this;
+
+        } else {
+            _ptr = other._ptr;
+            _ptr->_emp_add_owner(this);
+            return *this;
+        }
+    }
+
+    merge_ptr(merge_ptr&& other) noexcept : _ptr(std::move(other._ptr)), _notify()
+    {
+        if (_ptr) {
+            _ptr->_emp_remove_owner(&other);
+            _ptr->_emp_add_owner(this);
+        }
+    }
+
+    merge_ptr& operator=(merge_ptr&& other) noexcept
+    {
+        hi_return_on_self_assignment(other);
+
+        if (other._ptr) {
+            other._ptr->_emp_remove_owner(&other);
+        }
+
+        if (_ptr == other._ptr) {
+            other._ptr = nullptr;
+            return *this;
+
+        } else if (_ptr) {
+            _ptr->_emp_reseat(std::exchange(other._ptr, nullptr));
+            return *this;
+
+        } else {
+            _ptr = std::exchange(other._ptr, nullptr);
+            _ptr->_emp_add_owner(this);
+            return *this;
+        }
+    }
+
+    constexpr merge_ptr() noexcept : _ptr(), _notify() {}
+    constexpr merge_ptr(std::nullptr_t) noexcept : _ptr(), _notify() {}
+
+    void reset() noexcept
+    {
+        if (_ptr) {
+            _ptr->_emp_remove_owner(this);
+            _ptr = nullptr;
+        }
+    }
+
+    merge_ptr(std::shared_ptr<enable_merge_ptr<T, D>> const& ptr) noexcept : _ptr(ptr)
+    {
+        if (_ptr) {
+            _ptr->_emp_add_owner(this);
+        }
+    }
+
+    merge_ptr(std::shared_ptr<enable_merge_ptr<T, D>>&& ptr) noexcept : _ptr(std::move(ptr))
+    {
+        if (_ptr) {
+            _ptr->_emp_add_owner(this);
+        }
+    }
+
+    merge_ptr& operator=(std::shared_ptr<enable_merge_ptr<T, D>> const& ptr) noexcept
+    {
+        return *this = merge_ptr{ptr};
+    }
+
+    merge_ptr& operator=(std::shared_ptr<enable_merge_ptr<T, D>> && ptr) noexcept
+    {
+        return *this = merge_ptr{std::move(ptr)};
+    }
+
+    [[nodiscard]] T *get() const noexcept
+    {
+        return static_cast<T *>(_ptr.get());
+    }
+
+    [[nodiscard]] T *operator->() const noexcept
+    {
+        return get();
+    }
+
+    [[nodiscard]] T& operator*() const noexcept
+    {
+        return *get();
+    }
+
+    explicit operator bool() const noexcept
+    {
+        return _ptr;
+    }
+
+    void subscribe(forward_of<void(D)> auto&& func) noexcept
+    {
+        _notify = hi_forward(func);
+    }
+
+private:
+    std::shared_ptr<enable_merge_ptr<T, D>> _ptr;
+    std::function<void(D)> _notify;
+
+    friend class enable_merge_ptr<T, D>;
+};
+
+template<typename Context, typename... Expected>
+struct is_forward_of<Context, merge_ptr<Expected...>> :
+    std::conditional_t<std::is_convertible_v<Context, merge_ptr<Expected...>>, std::true_type, std::false_type> {
+};
+
+struct observable_msg {
     /** The type of the path used for notifying observers.
      */
     using path_type = std::vector<std::string>;
 
+    void const * const ptr;
+    path_type const& path;
+};
+
+/** An abstract observable object.
+ *
+ * This type is referenced by `observer`s
+ */
+class observable : public enable_merge_ptr<observable, observable_msg> {
+public:
     constexpr virtual ~observable() = default;
     observable(observable const&) = delete;
     observable(observable&&) = delete;
@@ -85,42 +270,6 @@ public:
     /** Unlock for writing.
      */
     virtual void write_unlock() const noexcept = 0;
-
-    /** Subscribe a callback with the observer.
-     *
-     * @param path The path within the observable-value that being watched.
-     * @param flags The way the callback should be called.
-     * @param function The function to be called when the watched observable-value changes.
-     *                 The function has two `void *` arguments to the old value and the new value.
-     *                 It is the task of the observer to cast the `void *` to the actual value-type.
-     * @return A token which will extend the lifetime of the function. When the token is destroyed
-     *         the function will be unsubscribed.
-     */
-    [[nodiscard]] token_type
-    subscribe(path_type const& path, callback_flags flags, forward_of<function_proto> auto&& function) noexcept
-    {
-        auto& notifier = _notifiers[path];
-        return notifier.subscribe(flags, hi_forward(function));
-    }
-
-    /** Called by a observer to notify all observers that the value has changed.
-     *
-     * The @a path argument is used to determine which of the subscribed callback will be called.
-     *  - All callbacks which are a prefix of @a path.
-     *  - All callbacks which have @a path as a prefix.
-     *
-     * @param ptr The pointer to the value.
-     * @param path The path of the observed-value that was modified.
-     */
-    void notify(void const *ptr, path_type const& path) const noexcept
-    {
-        _notifiers.walk_including_path(path, [ptr](notifier_type const& notifier) {
-            notifier(ptr);
-        });
-    }
-
-private:
-    tree<std::string, notifier_type> _notifiers;
 };
 
 } // namespace hi::inline v1

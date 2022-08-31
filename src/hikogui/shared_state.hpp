@@ -53,16 +53,9 @@ public:
     {
     }
 
-    /** Get a observer to the value.
-     *
-     * This function returns a observer to the value object.
-     * The observer is used to start read or write transactions or create other observers.
-     *
-     * @return The new observer pointing to the value object.
-     */
-    [[nodiscard]] observer<value_type> observer() const noexcept
+    observer<value_type> observer() const & noexcept
     {
-        return _pimpl->observer();
+        return ::hi::observer<value_type>(_pimpl);
     }
 
     // clang-format off
@@ -71,10 +64,10 @@ public:
      * @param index The index used with the index operator of the value.
      * @return The new observer pointing to a sub-object of the value.
      */
-    [[nodiscard]] auto operator[](auto const& index) const& noexcept
-        requires requires { observer()[index]; }
+    [[nodiscard]] auto get(auto const& index) const& noexcept
+        requires requires { observer().get(index); }
     {
-        return observer()[index];
+        return observer().get(index);
     }
     // clang-format on
 

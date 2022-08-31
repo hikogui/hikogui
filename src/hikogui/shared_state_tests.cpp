@@ -330,7 +330,7 @@ TEST(shared_state, chain1)
 
     a = b;
     ASSERT_TRUE(a_modified);
-    ASSERT_FALSE(b_modified);
+    ASSERT_TRUE(b_modified);
     ASSERT_EQ(*a, 2);
     ASSERT_EQ(*b, 2);
     a_modified = false;
@@ -397,7 +397,7 @@ TEST(shared_state, chain2)
 
     a = b;
     ASSERT_TRUE(a_modified);
-    ASSERT_FALSE(b_modified);
+    ASSERT_TRUE(b_modified);
     ASSERT_FALSE(c_modified);
     ASSERT_EQ(*a, 2);
     ASSERT_EQ(*b, 2);
@@ -407,10 +407,10 @@ TEST(shared_state, chain2)
     c_modified = false;
 
     b = c;
-    ASSERT_FALSE(a_modified);
+    ASSERT_TRUE(a_modified);
     ASSERT_TRUE(b_modified);
-    ASSERT_FALSE(c_modified);
-    ASSERT_EQ(*a, 2);
+    ASSERT_TRUE(c_modified);
+    ASSERT_EQ(*a, 3);
     ASSERT_EQ(*b, 3);
     ASSERT_EQ(*c, 3);
     a_modified = false;
@@ -418,10 +418,10 @@ TEST(shared_state, chain2)
     c_modified = false;
 
     c = 4;
-    ASSERT_FALSE(a_modified);
+    ASSERT_TRUE(a_modified);
     ASSERT_TRUE(b_modified);
     ASSERT_TRUE(c_modified);
-    ASSERT_EQ(*a, 2);
+    ASSERT_EQ(*a, 4);
     ASSERT_EQ(*b, 4);
     ASSERT_EQ(*c, 4);
     a_modified = false;
@@ -429,10 +429,10 @@ TEST(shared_state, chain2)
     c_modified = false;
 
     b = 5;
-    ASSERT_FALSE(a_modified);
+    ASSERT_TRUE(a_modified);
     ASSERT_TRUE(b_modified);
     ASSERT_TRUE(c_modified);
-    ASSERT_EQ(*a, 2);
+    ASSERT_EQ(*a, 5);
     ASSERT_EQ(*b, 5);
     ASSERT_EQ(*c, 5);
     a_modified = false;
@@ -441,11 +441,11 @@ TEST(shared_state, chain2)
 
     a = 6;
     ASSERT_TRUE(a_modified);
-    ASSERT_FALSE(b_modified);
-    ASSERT_FALSE(c_modified);
+    ASSERT_TRUE(b_modified);
+    ASSERT_TRUE(c_modified);
     ASSERT_EQ(*a, 6);
-    ASSERT_EQ(*b, 5);
-    ASSERT_EQ(*c, 5);
+    ASSERT_EQ(*b, 6);
+    ASSERT_EQ(*c, 6);
     a_modified = false;
     b_modified = false;
     c_modified = false;
@@ -497,7 +497,7 @@ TEST(shared_state, chain3)
     b = c;
     ASSERT_FALSE(a_modified);
     ASSERT_TRUE(b_modified);
-    ASSERT_FALSE(c_modified);
+    ASSERT_TRUE(c_modified);
     ASSERT_EQ(*a, 1);
     ASSERT_EQ(*b, 3);
     ASSERT_EQ(*c, 3);
@@ -507,8 +507,8 @@ TEST(shared_state, chain3)
 
     a = b;
     ASSERT_TRUE(a_modified);
-    ASSERT_FALSE(b_modified);
-    ASSERT_FALSE(c_modified);
+    ASSERT_TRUE(b_modified);
+    ASSERT_TRUE(c_modified);
     ASSERT_EQ(*a, 3);
     ASSERT_EQ(*b, 3);
     ASSERT_EQ(*c, 3);

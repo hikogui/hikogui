@@ -27,7 +27,7 @@ public:
     using token_type = notifier_type::token_type;
     using function_proto = notifier_type::function_proto;
     using awaiter_type = notifier_type::awaiter_type;
-    using path_type = observable::path_type;
+    using path_type = observable_msg::path_type;
 
     /** A proxy object of the observer.
      *
@@ -363,12 +363,14 @@ public:
 
     constexpr ~observer() = default;
 
+    // static_assert(is_forward_of_v<std::shared_ptr<observable>, merge_ptr<observable,observable_msg>>);
+
     /** Create an observer from an observable.
      *
      * @param observed The `observable` which will be observed by this observer.
      */
     observer(forward_of<std::shared_ptr<observable>> auto&& observed) noexcept :
-        observer(hi_forward(observed), path_type{}, [](void *base) {
+        observer(merge_ptr<observable, observable_msg>{hi_forward(observed)}, path_type{}, [](void *base) {
             return base;
         })
     {
@@ -418,7 +420,7 @@ public:
         // Rewire the callback subscriptions and notify listeners to this observer.
         update_state_callback();
         _observed->read_lock();
-        _notifier(*convert(_observed->read()));
+        _observed->notify_merge_ptr_owners(observable_msg{_observed->read(), _path});
         _observed->read_unlock();
         return *this;
     }
@@ -440,7 +442,7 @@ public:
         // Rewire the callback subscriptions and notify listeners to this observer.
         update_state_callback();
         _observed->read_lock();
-        _notifier(*convert(_observed->read()));
+        _observed->notify_merge_ptr_owners({_observed->read(), _path});
         _observed->read_unlock();
         return *this;
     }
@@ -531,7 +533,9 @@ public:
         new_path.push_back(std::string{Name});
         // clang-format off
         return observer<result_type>(
-            _observed, std::move(new_path), [convert_copy = this->_convert](void *base) -> void * {
+            _observed,
+            std::move(new_path),
+            [convert_copy = this->_convert](void *base) -> void * {
                 return std::addressof(selector<value_type>{}.get<Name>(
                     *std::launder(static_cast<value_type *>(convert_copy(base)))));
             });
@@ -678,16 +682,16 @@ public:
     // clang-format on
 
 private:
-    std::shared_ptr<observable> _observed = {};
+    using observed_type = merge_ptr<observable, observable_msg>;
+    observed_type _observed = {};
     path_type _path = {};
-    observable::token_type _observed_cbt = {};
     std::function<void *(void *)> _convert = {};
     notifier_type _notifier;
 
     /** Construct an observer from an observable.
      */
     observer(
-        forward_of<std::shared_ptr<observable>> auto&& observed,
+        forward_of<observed_type> auto&& observed,
         forward_of<path_type> auto&& path,
         forward_of<void *(void *)> auto&& converter) noexcept :
         _observed(hi_forward(observed)), _path(hi_forward(path)), _convert(hi_forward(converter)), _notifier()
@@ -702,18 +706,18 @@ private:
 
     void commit(void *base) const noexcept
     {
-        if constexpr (requires (value_type const &a, value_type const &b) { a == b; }) {
+        if constexpr (requires(value_type const& a, value_type const& b) { a == b; }) {
             // Only commit and notify when the value has actually changed.
             // Since there is a write-lock being held, _observed->read() will be the previous value.
             if (*convert(_observed->read()) != *convert(base)) {
                 _observed->commit(base);
-                _observed->notify(base, _path);
+                _observed->notify_merge_ptr_owners({base, _path});
             } else {
                 _observed->abort(base);
             }
         } else {
             _observed->commit(base);
-            _observed->notify(base, _path);
+            _observed->notify_merge_ptr_owners({base, _path});
         }
         _observed->write_unlock();
     }
@@ -736,10 +740,14 @@ private:
 
     void update_state_callback() noexcept
     {
-        _observed_cbt =
-            _observed->subscribe(_path, callback_flags::synchronous, [this](void const *base) {
-                return _notifier(*convert(base));
-            });
+        _observed.subscribe([this](observable_msg const& msg) {
+            auto [msg_it, this_it] = std::mismatch(msg.path.cbegin(), msg.path.cend(), _path.cbegin(), _path.cend());
+            // If the message's path is fully within the this' path, then this is a sub-path.
+            // If this' path is fully within the message's path, then this is along the path.
+            if (msg_it == msg.path.cend() or this_it == _path.cend()) {
+                _notifier(*convert(msg.ptr));
+            }
+        });
     }
 
     // It is possible to make sub-observables.
@@ -774,6 +782,5 @@ template<typename T> struct observer_argument<observer<T> &&> { using type = T; 
 
 template<typename T>
 using observer_argument_t = observer_argument<T>::type;
-
 
 } // namespace hi::inline v1
