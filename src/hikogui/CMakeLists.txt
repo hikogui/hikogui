@@ -110,7 +110,7 @@ target_sources(hikogui PRIVATE
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/loop_win32.cpp>
     math.hpp
     memory.hpp
-    merge_ptr.hpp
+    group_ptr.hpp
     meta.hpp
     ${CMAKE_CURRENT_BINARY_DIR}/metadata.cpp
     metadata.hpp
@@ -243,6 +243,7 @@ if(HI_BUILD_TESTS)
         int_overflow_tests.cpp
         jsonpath_tests.cpp
         math_tests.cpp
+        group_ptr_tests.cpp
         notifier_tests.cpp
         graphic_path_tests.cpp
         pixel_map_tests.cpp

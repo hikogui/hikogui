@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "merge_ptr.hpp"
+#include "group_ptr.hpp"
 #include "notifier.hpp"
 #include <memory>
 #include <vector>
@@ -25,7 +25,7 @@ struct observable_msg {
  *
  * This type is referenced by `observer`s
  */
-class observable : public enable_merge_ptr<observable, observable_msg> {
+class observable : public enable_group_ptr<observable, void(observable_msg)> {
 public:
     constexpr virtual ~observable() = default;
     observable(observable const&) = delete;

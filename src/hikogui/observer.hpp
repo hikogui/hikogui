@@ -363,14 +363,14 @@ public:
 
     constexpr ~observer() = default;
 
-    // static_assert(is_forward_of_v<std::shared_ptr<observable>, merge_ptr<observable,observable_msg>>);
+    // static_assert(is_forward_of_v<std::shared_ptr<observable>, group_ptr<observable,observable_msg>>);
 
     /** Create an observer from an observable.
      *
      * @param observed The `observable` which will be observed by this observer.
      */
     observer(forward_of<std::shared_ptr<observable>> auto&& observed) noexcept :
-        observer(merge_ptr<observable, observable_msg>{hi_forward(observed)}, path_type{}, [](void *base) {
+        observer(group_ptr<observable>{hi_forward(observed)}, path_type{}, [](void *base) {
             return base;
         })
     {
@@ -420,7 +420,7 @@ public:
         // Rewire the callback subscriptions and notify listeners to this observer.
         update_state_callback();
         _observed->read_lock();
-        _observed->notify_merge_ptr_owners(observable_msg{_observed->read(), _path});
+        _observed->notify_group_ptr(observable_msg{_observed->read(), _path});
         _observed->read_unlock();
         return *this;
     }
@@ -442,7 +442,7 @@ public:
         // Rewire the callback subscriptions and notify listeners to this observer.
         update_state_callback();
         _observed->read_lock();
-        _observed->notify_merge_ptr_owners({_observed->read(), _path});
+        _observed->notify_group_ptr({_observed->read(), _path});
         _observed->read_unlock();
         return *this;
     }
@@ -682,7 +682,7 @@ public:
     // clang-format on
 
 private:
-    using observed_type = merge_ptr<observable, observable_msg>;
+    using observed_type = group_ptr<observable>;
     observed_type _observed = {};
     path_type _path = {};
     std::function<void *(void *)> _convert = {};
@@ -711,13 +711,13 @@ private:
             // Since there is a write-lock being held, _observed->read() will be the previous value.
             if (*convert(_observed->read()) != *convert(base)) {
                 _observed->commit(base);
-                _observed->notify_merge_ptr_owners({base, _path});
+                _observed->notify_group_ptr({base, _path});
             } else {
                 _observed->abort(base);
             }
         } else {
             _observed->commit(base);
-            _observed->notify_merge_ptr_owners({base, _path});
+            _observed->notify_group_ptr({base, _path});
         }
         _observed->write_unlock();
     }

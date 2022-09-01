@@ -7,11 +7,13 @@
 #include <iostream>
 #include <string>
 
+namespace test_shared_space {
+
 struct B {
     std::string foo;
     int bar;
 
-    [[nodiscard]] friend bool operator==(B const &, B const &) noexcept = default;
+    [[nodiscard]] friend bool operator==(B const&, B const&) noexcept = default;
 };
 
 struct A {
@@ -21,26 +23,30 @@ struct A {
     [[nodiscard]] friend bool operator==(A const&, A const&) noexcept = default;
 };
 
+} // namespace test_shared_space
+
 // clang-format off
 template<>
-struct hi::selector<B> {
-    template<hi::basic_fixed_string> [[nodiscard]] auto &get(B &rhs) const noexcept;
+struct hi::selector<test_shared_space::B> {
+    template<hi::basic_fixed_string> [[nodiscard]] auto &get(test_shared_space::B &rhs) const noexcept;
 
-    template<> [[nodiscard]] auto &get<"foo">(B &rhs) const noexcept { return rhs.foo; }
-    template<> [[nodiscard]] auto &get<"bar">(B &rhs) const noexcept { return rhs.bar; }
+    template<> [[nodiscard]] auto &get<"foo">(test_shared_space::B &rhs) const noexcept { return rhs.foo; }
+    template<> [[nodiscard]] auto &get<"bar">(test_shared_space::B &rhs) const noexcept { return rhs.bar; }
 };
 
 template<>
-struct hi::selector<A> {
-    template<hi::basic_fixed_string> [[nodiscard]] auto &get(A &rhs) const noexcept;
+struct hi::selector<test_shared_space::A> {
+    template<hi::basic_fixed_string> [[nodiscard]] auto &get(test_shared_space::A &rhs) const noexcept;
 
-    template<> [[nodiscard]] auto &get<"b">(A &rhs) const noexcept { return rhs.b; }
-    template<> [[nodiscard]] auto &get<"baz">(A &rhs) const noexcept { return rhs.baz; }
+    template<> [[nodiscard]] auto &get<"b">(test_shared_space::A &rhs) const noexcept { return rhs.b; }
+    template<> [[nodiscard]] auto &get<"baz">(test_shared_space::A &rhs) const noexcept { return rhs.baz; }
 };
 // clang-format on
 
 TEST(shared_state, read)
 {
+    using namespace test_shared_space;
+
     auto state = hi::shared_state<A>{B{"hello world", 42}, std::vector<int>{5, 15}};
 
     auto a_cursor = state.observer();
@@ -70,6 +76,8 @@ TEST(shared_state, read)
 
 TEST(shared_state, notify)
 {
+    using namespace test_shared_space;
+
     auto state = hi::shared_state<A>{B{"hello world", 42}, std::vector<int>{5, 15}};
 
     auto a_cursor = state.observer();
@@ -210,6 +218,8 @@ TEST(shared_state, notify)
 
 TEST(shared_state, commit_abort)
 {
+    using namespace test_shared_space;
+
     auto state = hi::shared_state<A>{B{"hello world", 42}, std::vector<int>{5, 15}};
 
     auto a_cursor = state.observer();
@@ -282,6 +292,8 @@ TEST(shared_state, commit_abort)
 
 TEST(shared_state, value)
 {
+    using namespace test_shared_space;
+
     bool a_modified = false;
 
     hi::observer<int> a;
@@ -300,6 +312,8 @@ TEST(shared_state, value)
 
 TEST(shared_state, chain1)
 {
+    using namespace test_shared_space;
+
     bool a_modified = false;
     bool b_modified = false;
 
@@ -354,6 +368,8 @@ TEST(shared_state, chain1)
 
 TEST(shared_state, chain2)
 {
+    using namespace test_shared_space;
+
     bool a_modified = false;
     bool b_modified = false;
     bool c_modified = false;
@@ -453,6 +469,8 @@ TEST(shared_state, chain2)
 
 TEST(shared_state, chain3)
 {
+    using namespace test_shared_space;
+
     bool a_modified = false;
     bool b_modified = false;
     bool c_modified = false;
@@ -562,6 +580,8 @@ void callback2(int const& new_value)
 
 TEST(shared_state, callback)
 {
+    using namespace test_shared_space;
+
     auto a = hi::observer<int>{1};
 
     // This tests if we can both subscribe a callback that accepts the
