@@ -150,7 +150,7 @@ private:
      * On overwrite the original grapheme is stored in the _had_dead_character, so
      * that it can be restored.
      */
-    grapheme _has_dead_character = {};
+    grapheme _has_dead_character = nullptr;
 
     undo_stack<undo_type> _undo_stack = {1000};
 

@@ -58,6 +58,8 @@ struct grapheme {
     constexpr grapheme& operator=(grapheme const&) noexcept = default;
     constexpr grapheme& operator=(grapheme&&) noexcept = default;
 
+    constexpr grapheme(nullptr_t) noexcept : _value(0x1f'ffff) {}
+
     /** Encode a single code-point.
      */
     constexpr explicit grapheme(char32_t code_point) noexcept : _value(truncate<value_type>(code_point))
@@ -138,7 +140,7 @@ struct grapheme {
      */
     [[nodiscard]] bool valid() const noexcept;
 
-    [[nodiscard]] std::u32string const &long_grapheme() const noexcept
+    [[nodiscard]] std::u32string const& long_grapheme() const noexcept
     {
         hi_axiom(_value >= 0x10'0000 and _value < 0x1f'ffff);
         return detail::long_graphemes[_value - 0x11'0000];
@@ -261,4 +263,3 @@ struct std::hash<hi::grapheme> {
         return std::hash<hi::grapheme::value_type>{}(rhs._value);
     }
 };
-

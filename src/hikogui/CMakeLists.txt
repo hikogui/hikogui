@@ -110,6 +110,7 @@ target_sources(hikogui PRIVATE
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/loop_win32.cpp>
     math.hpp
     memory.hpp
+    merge_ptr.hpp
     meta.hpp
     ${CMAKE_CURRENT_BINARY_DIR}/metadata.cpp
     metadata.hpp
