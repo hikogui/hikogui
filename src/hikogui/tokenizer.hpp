@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "unicode/UTF.hpp"
 #include "strings.hpp"
 #include "small_vector.hpp"
 #include "required.hpp"

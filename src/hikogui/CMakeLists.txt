@@ -3,6 +3,7 @@
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 add_subdirectory(audio)
+add_subdirectory(char_maps)
 add_subdirectory(codec)
 add_subdirectory(color)
 add_subdirectory(formula)
@@ -135,6 +136,7 @@ target_sources(hikogui PRIVATE
     polynomial.hpp
     range_map.hpp
     ranges.hpp
+    rcu.hpp
     recursive_iterator.hpp
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32.cpp>
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32.hpp>
@@ -188,6 +190,7 @@ target_sources(hikogui PRIVATE
     weak_or_unique_ptr.hpp
     when_any.hpp
     wfree_fifo.hpp
+    wfree_idle_count.hpp
     wfree_unordered_map.hpp
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/win32_headers.hpp>
 )
@@ -242,6 +245,7 @@ if(HI_BUILD_TESTS)
         polymorphic_optional_tests.cpp
         polynomial_tests.cpp
         ranges_tests.cpp
+        rcu_tests.cpp
         safe_int_tests.cpp
         sip_hash_tests.cpp
         small_map_tests.cpp
