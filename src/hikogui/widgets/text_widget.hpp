@@ -55,7 +55,7 @@ public:
 
     /** The text to be displayed.
      */
-    observer<gstring> text;
+    observer<text> text;
 
     /** The horizontal alignment of the text inside the space of the widget.
      */

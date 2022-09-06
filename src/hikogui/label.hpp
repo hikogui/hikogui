@@ -7,6 +7,9 @@
 #include "required.hpp"
 #include "strings.hpp"
 #include "icon.hpp"
+#include "text.hpp"
+#include "type_traits.hpp"
+#include "fixed_string.hpp"
 #include "i18n/translate.hpp"
 #include <string>
 #include <type_traits>
@@ -33,32 +36,35 @@ public:
     /** Localizable text.
      * The text in this field is not yet translated nor formatted.
      */
-    tr text;
+    hi::text text;
 
     /** Construct a new label from an icon and text.
      * @param icon The icon.
      * @param text The text.
      */
-    label(hi::icon icon, tr text) noexcept : icon(std::move(icon)), text(std::move(text)) {}
+    constexpr label(std::convertible_to<hi::icon> auto&& icon, std::convertible_to<hi::text> auto&& text) noexcept :
+        icon(hi_forward(icon)), text(hi_forward(text))
+    {
+    }
 
     /** Construct a new label from text.
      * @param text The text.
      */
-    label(tr text) noexcept : icon(), text(std::move(text)) {}
+    constexpr label(std::convertible_to<hi::text> auto&& text) noexcept : icon(), text(hi_forward(text)) {}
 
     /** Construct a new label from an icon.
      * @param icon The icon.
      */
-    constexpr label(hi::icon icon) noexcept : icon(std::move(icon)), text() {}
+    constexpr label(std::convertible_to<hi::icon> auto&& icon) noexcept : icon(hi_forward(icon)), text() {}
 
     /** Construct a empty label.
      */
     constexpr label() noexcept : icon(), text() {}
 
-    label(label const &other) noexcept = default;
-    label &operator=(label const &other) noexcept = default;
-    label(label &&other) noexcept = default;
-    label &operator=(label &&other) noexcept = default;
+    constexpr label(label const& other) noexcept = default;
+    constexpr label& operator=(label const& other) noexcept = default;
+    constexpr label(label&& other) noexcept = default;
+    constexpr label& operator=(label&& other) noexcept = default;
 
     [[nodiscard]] constexpr bool empty() const noexcept
     {
@@ -75,30 +81,33 @@ public:
      * @param rhs A label.
      * @return True is the text and icon of both labels are equal.
      */
-    [[nodiscard]] friend bool operator==(label const &lhs, label const &rhs) noexcept
+    [[nodiscard]] constexpr friend bool operator==(label const& lhs, label const& rhs) noexcept = default;
+};
+
+template<>
+struct selector<label> {
+    template<basic_fixed_string>
+    [[nodiscard]] auto& get(label&) const noexcept;
+
+    template<>
+    [[nodiscard]] auto& get<"text">(label& rhs) const noexcept
     {
-        return lhs.icon == rhs.icon and lhs.text == rhs.text;
+        return rhs.text;
     }
 
-    [[nodiscard]] friend std::string to_string(label const &rhs) noexcept
+    template<>
+    [[nodiscard]] auto& get<"icon">(label& rhs) const noexcept
     {
-        return rhs.text();
+        return rhs.icon;
     }
-
-    friend std::ostream &operator<<(std::ostream &lhs, label const &rhs)
-    {
-        return lhs << to_string(rhs);
-    }
-
-private:
 };
 
 } // namespace hi::inline v1
 
 template<typename CharT>
-struct std::formatter<hi::label, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(hi::label const &t, auto &fc)
+struct std::formatter<hi::label, CharT> : std::formatter<hi::text, CharT> {
+    auto format(hi::label const& t, auto& fc)
     {
-        return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
+        return std::formatter<hi::text, CharT>::format(t.text, fc);
     }
 };

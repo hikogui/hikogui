@@ -481,7 +481,6 @@ using variant_decay_t = variant_decay<T>::type;
  *
  * The prototype of the `get()` function are as follows:
  *  - `template<basic_fixed_string> auto &get(T &) const noexcept`
- *  - `template<basic_fixed_string> auto const &get(T const &) const noexcept`
  *
  * Here is an example how to specialize `hi::selector` for the `my::simple` type:
  *
@@ -496,17 +495,26 @@ using variant_decay_t = variant_decay<T>::type;
  * template<>
  * struct hi::selector<my::simple> {
  *     template<hi::basic_fixed_string> auto &get(my::simple &) const noexcept;
- *     template<hi::basic_fixed_string> auto const &get(my::simple const &) const noexcept;
  *
  *     template<> auto &get<"foo">(my::simple &rhs) const noexcept { return rhs.foo; }
- *     template<> auto const &get<"foo">(my::simple const &rhs) const noexcept { return rhs.foo; }
  *     template<> auto &get<"bar">(my::simple &rhs) const noexcept { return rhs.bar; }
- *     template<> auto const &get<"bar">(my::simple const &rhs) const noexcept { return rhs.bar; }
  * };
  * ```
  */
 template<typename T>
 struct selector {
+};
+
+/** Helper type to turn a set of lambdas into a single overloaded type to pass to `std::visit()`.
+* 
+* @tparam Ts A set of lambdas with a single argument.
+*/
+template<class... Ts>
+struct overloaded : Ts... {
+    // Makes the call operator of each lambda available directly to the `overloaded` type. 
+    using Ts::operator()...;
+
+    // The implicit constructor is all that is needed to initialize each lambda. 
 };
 
 } // namespace hi::inline v1

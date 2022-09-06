@@ -164,6 +164,7 @@ target_sources(hikogui PRIVATE
     tagged_id.hpp
     tagged_map.hpp
     task.hpp
+    text.hpp
     $<${HI_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/thread_macos.cpp>
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/thread_win32.cpp>
     thread.cpp

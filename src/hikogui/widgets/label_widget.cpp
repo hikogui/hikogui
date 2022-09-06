@@ -12,9 +12,9 @@ label_widget::label_widget(gui_window& window, widget *parent) noexcept : super(
 {
     mode = widget_mode::select;
 
-    _icon_widget = std::make_unique<icon_widget>(window, this, label->icon);
+    _icon_widget = std::make_unique<icon_widget>(window, this, label.get<"icon">());
     _icon_widget->alignment = alignment;
-    _text_widget = std::make_unique<text_widget>(window, this, to_gstring(label->text()));
+    _text_widget = std::make_unique<text_widget>(window, this, label.get<"text">());
     _text_widget->alignment = alignment;
     _text_widget->text_style = text_style;
     _text_widget->mode = mode;
@@ -46,11 +46,6 @@ label_widget::label_widget(gui_window& window, widget *parent) noexcept : super(
             _icon_widget->color = color::foreground();
         }
     });
-
-    _label_cbt = label.subscribe(callback_flags::local, [this](auto...) {
-        _icon_widget->icon = label->icon;
-        _text_widget->text = to_gstring(label->text());
-    });
 }
 
 widget_constraints const& label_widget::set_constraints() noexcept
@@ -58,7 +53,6 @@ widget_constraints const& label_widget::set_constraints() noexcept
     _layout = {};
 
     // Translate the text of the label during reconstrain as this is triggered when the system language changes.
-    _text_widget->text = to_gstring(label->text());
     _text_constraints = _text_widget->set_constraints();
     _icon_constraints = _icon_widget->set_constraints();
 

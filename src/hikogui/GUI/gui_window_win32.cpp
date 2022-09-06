@@ -103,7 +103,7 @@ void gui_window_win32::create_window(extent2 new_size)
 
     createWindowClass();
 
-    auto u16title = to_wstring(title.text());
+    auto u16title = to_wstring(title.text);
 
     hi_log_info("Create window of size {} with title '{}'", new_size, title);
 
