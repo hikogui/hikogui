@@ -506,7 +506,33 @@ using variant_decay_t = variant_decay<T>::type;
  * ```
  */
 template<typename T>
-struct selector {
-};
+struct selector;
+
+
+/** Documentation of a type.
+ *
+ *
+ *
+ *
+ *
+ *
+ * ```cpp
+ * namespace my {
+ * struct simple {
+ *     int foo;
+ *     std::string bar;
+ * };
+ * }
+ *
+ * template<>
+ * struct hi::type_documentation<my::simple> {
+ *     std::vector<std::string_view> names();
+ * };
+ * ```
+ */
+template<typename T>
+struct type_documentation;
+
+
 
 } // namespace hi::inline v1
