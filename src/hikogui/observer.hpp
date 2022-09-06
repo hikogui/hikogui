@@ -783,4 +783,10 @@ template<typename T> struct observer_argument<observer<T> &&> { using type = T; 
 template<typename T>
 using observer_argument_t = observer_argument<T>::type;
 
+template<typename Context, typename Expected>
+struct is_forward_of<Context, observer<Expected>> :
+    std::conditional_t<std::is_convertible_v<Context, observer<Expected>>, std::true_type, std::false_type> {
+};
+
+
 } // namespace hi::inline v1

@@ -16,16 +16,39 @@ namespace hi::inline v1 {
  */
 class text {
 public:
-    constexpr text(forward_of<std::string> auto&& text) : _text(hi_forward(text)) {}
-    constexpr text(forward_of<gstring> auto&& text) : _text(hi_forward(text)) {}
-    constexpr text(forward_of<translate> auto&& text) : _text(hi_forward(text)) {}
-
-    constexpr text() noexcept : _text(std::monostate{}) {}
-
+    constexpr ~text() = default;
     constexpr text(text const&) noexcept = default;
     constexpr text(text&&) noexcept = default;
     constexpr text& operator=(text const&) noexcept = default;
     constexpr text& operator=(text&&) noexcept = default;
+
+    constexpr text() noexcept : _text(std::monostate{}) {}
+    constexpr text(forward_of<std::string> auto&& text) : _text(hi_forward(text)) {}
+    constexpr text(forward_of<gstring> auto&& text) : _text(hi_forward(text)) {}
+    constexpr text(forward_of<translate> auto&& text) : _text(hi_forward(text)) {}
+
+    constexpr text& operator=(forward_of<std::string> auto&& text) noexcept
+    {
+        _text = hi_forward(text);
+        return *this;
+    }
+
+    constexpr text& operator=(forward_of<gstring> auto&& text) noexcept
+    {
+        _text = hi_forward(text);
+        return *this;
+    }
+
+    constexpr text& operator=(forward_of<translate> auto&& text) noexcept
+    {
+        _text = hi_forward(text);
+        return *this;
+    }
+
+    constexpr void clear() noexcept
+    {
+        _text = std::monostate{};
+    }
 
     [[nodiscard]] constexpr bool empty() const noexcept
     {
@@ -64,7 +87,7 @@ public:
     }
 
     template<typename T>
-    [[nodiscard]] constexpr friend std::add_pointer_t<T> get_if(hi::text const *rhs) noexcept
+    [[nodiscard]] constexpr friend std::add_pointer_t<T> get_if(hi::text *rhs) noexcept
     {
         return std::get_if<T>(&rhs->_text);
     }
@@ -78,6 +101,20 @@ public:
                 [](std::string const &x) { return x; },
                 [](gstring const &x) { return hi::to_string(x); },
                 [](translate const &x) { return x(); }
+            },
+            rhs._text);
+        // clang-format on
+    }
+
+    [[nodiscard]] constexpr friend gstring to_gstring(hi::text const& rhs) noexcept
+    {
+        // clang-format off
+        return std::visit(
+            overloaded{
+                [](std::monostate const &) { return gstring{}; },
+                [](std::string const &x) { return to_gstring(x); },
+                [](gstring const &x) { return x; },
+                [](translate const &x) { return to_gstring(x()); }
             },
             rhs._text);
         // clang-format on

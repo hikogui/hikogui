@@ -15,6 +15,7 @@ target_sources(hikogui PRIVATE
     default_button_delegate.hpp
     default_selection_delegate.hpp
     default_tab_delegate.hpp
+    default_text_delegate.hpp
     default_text_field_delegate.hpp
     grid_delegate.hpp
     grid_layout.hpp
@@ -47,6 +48,7 @@ target_sources(hikogui PRIVATE
     tab_delegate.hpp
     tab_widget.cpp
     tab_widget.hpp
+    text_delegate.hpp
     text_field_delegate.hpp
     text_field_widget.cpp
     text_field_widget.hpp
