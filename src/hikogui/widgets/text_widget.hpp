@@ -74,7 +74,6 @@ public:
      */
     text_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
-
     /** Construct a text widget.
      *
      * @param window The window the widget is displayed on.
@@ -83,44 +82,22 @@ public:
      * @param alignment The alignment of the text inside the space of the widget.
      * @param text_style The style of the text to be displayed.
      */
+    template<
+        typename Text,
+        forward_of<observer<hi::alignment>> Alignment = hi::alignment,
+        forward_of<observer<semantic_text_style>> TextStyle = semantic_text_style>
     text_widget(
         gui_window& window,
         widget *parent,
-        auto && text,
-        forward_of<observer<hi::alignment>> auto && alignment,
-        forward_of<observer<semantic_text_style>> auto && text_style) noexcept :
-        text_widget(window, parent, make_default_text_delegate(hi_forward(text)))
+        Text&& text,
+        Alignment&& alignment = hi::alignment::middle_center(),
+        TextStyle&& text_style = semantic_text_style::label) noexcept requires requires
     {
-        this->alignment = hi_forward(alignment);
-        this->text_style = hi_forward(text_style);
-    }
-
-    /** Construct a text widget.
-     *
-     * @param window The window the widget is displayed on.
-     * @param parent The owner of this widget.
-     * @param text The text to be displayed.
-     * @param alignment The alignment of the text inside the space of the widget.
-     */
-    text_widget(
-        gui_window& window,
-        widget *parent,
-        auto&& text,
-        forward_of<observer<hi::alignment>> auto&& alignment) noexcept :
-        text_widget(window, parent, make_default_text_delegate(hi_forward(text)))
+        make_default_text_delegate(std::forward<Text>(text));
+    } : text_widget(window, parent, make_default_text_delegate(std::forward<Text>(text)))
     {
-        this->alignment = hi_forward(alignment);
-    }
-
-    /** Construct a text widget.
-     *
-     * @param window The window the widget is displayed on.
-     * @param parent The owner of this widget.
-     * @param text The text to be displayed.
-     */
-    text_widget(gui_window& window, widget *parent, auto&& text) noexcept :
-        text_widget(window, parent, make_default_text_delegate(hi_forward(text)))
-    {
+        this->alignment = std::forward<Alignment>(alignment);
+        this->text_style = std::forward<TextStyle>(text_style);
     }
 
     /// @privatesection

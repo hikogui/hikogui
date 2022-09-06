@@ -161,10 +161,10 @@ private:
     typename decltype(value)::token_type _value_cbt;
 };
 
-std::shared_ptr<text_delegate> make_default_text_delegate(auto&& value) noexcept //requires requires
-//{
-//    default_text_delegate<observer_argument_t<decltype(value)>>(hi_forward(value));
-//}
+std::shared_ptr<text_delegate> make_default_text_delegate(auto&& value) noexcept requires requires
+{
+    default_text_delegate<observer_argument_t<decltype(value)>>(hi_forward(value));
+}
 {
     using value_type = observer_argument_t<decltype(value)>;
     return std::make_shared<default_text_delegate<value_type>>(hi_forward(value));
