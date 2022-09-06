@@ -8,6 +8,7 @@
 #include "type_traits.hpp"
 #include "concepts.hpp"
 #include "cast.hpp"
+#include "unfair_mutex.hpp"
 #include <memory>
 #include <vector>
 #include <functional>
@@ -51,7 +52,12 @@ public:
      */
     void notify_group_ptr(Args const&...args) const noexcept
     {
-        for (auto owner : _enable_group_ptr_owners) {
+        hilet owners_copy = [&] {
+            hilet lock = std::scoped_lock(_enable_group_ptr_mutex);
+            return _enable_group_ptr_owners;
+        }();
+
+        for (auto owner : owners_copy) {
             hi_axiom(owner != nullptr);
             if (owner->_notify) {
                 owner->_notify(args...);
@@ -63,9 +69,12 @@ private:
     using _enable_group_ptr_notify_proto = void(Args...);
 
     std::vector<group_ptr<T> *> _enable_group_ptr_owners;
+    mutable unfair_mutex _enable_group_ptr_mutex;
 
     [[nodiscard]] bool _enable_group_ptr_holds_invariant() const noexcept
     {
+        hi_axiom(_enable_group_ptr_mutex.is_locked());
+
         for (auto owner : _enable_group_ptr_owners) {
             if (owner == nullptr or owner->_ptr == nullptr or owner->_ptr.get() != this or
                 owner->_ptr.use_count() < _enable_group_ptr_owners.size()) {
@@ -77,30 +86,39 @@ private:
 
     void _enable_group_ptr_add_owner(group_ptr<T> *owner) noexcept
     {
+        hilet lock = std::scoped_lock(_enable_group_ptr_mutex);
+
         _enable_group_ptr_owners.push_back(owner);
         hi_axiom(_enable_group_ptr_holds_invariant());
     }
 
     void _enable_group_ptr_remove_owner(group_ptr<T> *owner) noexcept
     {
+        hilet lock = std::scoped_lock(_enable_group_ptr_mutex);
+
         hilet num_removed = std::erase(_enable_group_ptr_owners, owner);
         hi_axiom(num_removed == 1);
         hi_axiom(_enable_group_ptr_holds_invariant());
     }
 
+    /** Reseat all the owners with the replacement.
+     *
+     * @note It is undefined behavior to pass a nullptr to @a owner, or to pass nullptr to @a replacement or @replacement points
+     *       to `this`.
+     * @param replacement The replacement object.
+     */
     void _enable_group_ptr_reseat(std::shared_ptr<enable_group_ptr> const& replacement) noexcept
     {
-        hi_axiom(replacement);
+        hilet lock = std::scoped_lock(_enable_group_ptr_mutex);
+
+        hi_axiom(replacement != nullptr);
         hi_axiom(replacement.get() != this);
 
         while (not _enable_group_ptr_owners.empty()) {
-            auto owner = _enable_group_ptr_owners.back();
+            auto *owner = _enable_group_ptr_owners.back();
             _enable_group_ptr_owners.pop_back();
-
             owner->_ptr = replacement;
-            if (owner->_ptr) {
-                owner->_ptr->_enable_group_ptr_add_owner(owner);
-            }
+            owner->_ptr->_enable_group_ptr_add_owner(owner);
         }
         hi_axiom(_enable_group_ptr_holds_invariant());
     }
@@ -176,7 +194,9 @@ public:
             return *this;
 
         } else if (_ptr and other._ptr) {
-            _ptr->_enable_group_ptr_reseat(other._ptr);
+            // Make copy because reseat() will overwrite _ptr.
+            auto tmp = _ptr;
+            tmp->_enable_group_ptr_reseat(other._ptr);
             return *this;
 
         } else if (_ptr) {
@@ -236,7 +256,9 @@ public:
 
         } else if (_ptr and other._ptr) {
             other._ptr->_enable_group_ptr_remove_owner(&other);
-            _ptr->_enable_group_ptr_reseat(std::exchange(other._ptr, nullptr));
+            // Make copy because reseat() will overwrite _ptr.
+            auto tmp = _ptr;
+            tmp->_enable_group_ptr_reseat(std::exchange(other._ptr, nullptr));
             return *this;
 
         } else if (_ptr) {
