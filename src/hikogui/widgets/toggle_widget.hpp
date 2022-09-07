@@ -67,7 +67,11 @@ public:
      * @param args An optional on-value, followed by an optional off-value. These two values
      *             are used to determine which value yields an on/off state.
      */
-    toggle_widget(gui_window& window, widget *parent, auto&& value, auto&&...args) noexcept requires requires
+    toggle_widget(
+        gui_window& window,
+        widget *parent,
+        different_from<std::shared_ptr<delegate_type>> auto&& value,
+        different_from<std::shared_ptr<delegate_type>> auto&&...args) noexcept requires requires
     {
         make_default_button_delegate<button_type::toggle>(hi_forward(value), hi_forward(args)...);
     } : toggle_widget(window, parent, make_default_button_delegate<button_type::toggle>(hi_forward(value), hi_forward(args)...))

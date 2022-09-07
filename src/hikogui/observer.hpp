@@ -687,6 +687,9 @@ private:
     path_type _path = {};
     std::function<void *(void *)> _convert = {};
     notifier_type _notifier;
+#ifndef NDEBUG
+    value_type _value;
+#endif
 
     /** Construct an observer from an observable.
      */
@@ -745,7 +748,11 @@ private:
             // If the message's path is fully within the this' path, then this is a sub-path.
             // If this' path is fully within the message's path, then this is along the path.
             if (msg_it == msg.path.cend() or this_it == _path.cend()) {
+#ifndef NDEBUG
+                _notifier(_value = *convert(msg.ptr));
+#else
                 _notifier(*convert(msg.ptr));
+#endif
             }
         });
     }

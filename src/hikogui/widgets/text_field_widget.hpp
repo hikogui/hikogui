@@ -10,7 +10,6 @@
 #include "label_widget.hpp"
 #include "scroll_widget.hpp"
 #include "../label.hpp"
-#include "../weak_or_unique_ptr.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -72,7 +71,8 @@ public:
 
     text_field_widget(gui_window &window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
-    text_field_widget(gui_window &window, widget *parent, auto &&value) noexcept requires requires
+    text_field_widget(gui_window& window, widget *parent, different_from<std::shared_ptr<delegate_type>> auto&& value) noexcept
+        requires requires
     {
         make_default_text_field_delegate(hi_forward(value));
     } :

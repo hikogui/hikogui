@@ -13,7 +13,6 @@
 #include "selection_delegate.hpp"
 #include "default_selection_delegate.hpp"
 #include "../observable.hpp"
-#include "../weak_or_unique_ptr.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -64,7 +63,12 @@ public:
      *                    The labels are of type `label`.
      * @param value The value or observable value to monitor.
      */
-    selection_widget(gui_window& window, widget *parent, auto&& option_list, auto&& value, auto&&...args) noexcept
+    selection_widget(
+        gui_window& window,
+        widget *parent,
+        different_from<std::shared_ptr<delegate_type>> auto&& option_list,
+        different_from<std::shared_ptr<delegate_type>> auto&& value,
+        different_from<std::shared_ptr<delegate_type>> auto&&...args) noexcept
         requires requires {
             make_default_selection_delegate(hi_forward(option_list), hi_forward(value), hi_forward(args)...);
         } :
@@ -93,6 +97,7 @@ public:
     /// @endprivatesection
 private:
     notifier<>::token_type _delegate_cbt;
+    std::atomic<bool> _notification_from_delegate = true;
 
     std::unique_ptr<label_widget> _current_label_widget;
     std::unique_ptr<label_widget> _unknown_label_widget;

@@ -180,11 +180,9 @@ void gui_window_win32::create_window(extent2 new_size)
     surface = gui.gfx->make_surface(gui_system::instance, win32Window);
 }
 
-gui_window_win32::gui_window_win32(gui_system& gui, label const& title, std::weak_ptr<gui_window_delegate> delegate) noexcept :
-    gui_window(gui, title, std::move(delegate)), track_mouse_leave_event_parameters()
+gui_window_win32::gui_window_win32(gui_system& gui, label const& title) noexcept :
+    gui_window(gui, title), track_mouse_leave_event_parameters()
 {
-    using namespace std::chrono_literals;
-
     SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 }
 

@@ -62,7 +62,7 @@ public:
     default_button_delegate(
         forward_of<observer<value_type>> auto&& value,
         forward_of<observer<value_type>> auto&& on_value) noexcept
-        requires can_make_defaults or button_type == button_type::radio :
+        requires can_make_defaults or (ButtonType == button_type::radio) :
         default_button_delegate(hi_forward(value), hi_forward(on_value), value_type{})
     {
     }

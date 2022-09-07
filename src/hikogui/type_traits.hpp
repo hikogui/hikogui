@@ -312,8 +312,8 @@ constexpr bool is_decayed_derived_from_v = is_decayed_derived_from<DerivedType,B
 /** If the types are different.
 * The two types are checked after removing const, volatile and reference qualifiers.
  */
-template<typename T1, typename T2>
-constexpr bool is_different_v = not std::is_same_v<std::remove_cvref_t<T1>,std::remove_cvref_t<T2>>;
+template<typename Context, typename Expected>
+constexpr bool is_different_v = not std::is_same_v<std::decay_t<Context>,std::decay_t<Expected>>;
 
 template<typename T>
 struct is_atomic : public std::false_type {};
@@ -416,11 +416,11 @@ template<typename Context, typename Expected, typename... OtherExpected>
 struct is_forward_of;
 
 template<typename Context, typename Expected, typename FirstOtherExpected, typename... OtherExpected>
-struct is_forward_of<Context, Expected, FirstOtherExpected, OtherExpected...> :
-    std::conditional_t<
-        is_forward_of<Context, Expected>::value or is_forward_of<Context, FirstOtherExpected>::value or is_forward_of<Context, OtherExpected>::value...
-    , std::true_type, std::false_type>
-{};
+struct is_forward_of<Context, Expected, FirstOtherExpected, OtherExpected...> : std::conditional_t<
+        is_forward_of<Context, Expected>::value or
+        (is_forward_of<Context, FirstOtherExpected>::value or ... or is_forward_of<Context, OtherExpected>::value),
+        std::true_type,
+        std::false_type> {};
 
 template<typename Context, typename Expected>
 struct is_forward_of<Context, Expected> :

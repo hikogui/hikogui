@@ -40,9 +40,7 @@ public:
     using super = widget;
     static constexpr hi::axis axis = Axis;
 
-    ~row_column_widget()
-    {
-    }
+    ~row_column_widget() {}
 
     /** Constructs an empty row/column widget.
      *
@@ -51,8 +49,7 @@ public:
      * @param delegate An optional delegate can be used to populate the row/column widget
      *                 during initialization.
      */
-    row_column_widget(gui_window& window, widget *parent) noexcept :
-        super(window, parent), _delegate(std::move(delegate))
+    row_column_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
     {
         hi_axiom(is_gui_thread());
 
@@ -191,7 +188,6 @@ public:
     /// @endprivatesection
 private:
     std::vector<std::unique_ptr<widget>> _children;
-    std::weak_ptr<delegate_type> _delegate;
     grid_layout _grid_layout;
 
     void update_constraints_for_child(

@@ -5,10 +5,8 @@
 #pragma once
 
 #include "widget.hpp"
-#include "grid_delegate.hpp"
 #include "grid_layout.hpp"
 #include "../geometry/spreadsheet_address.hpp"
-#include "../weak_or_unique_ptr.hpp"
 #include <memory>
 
 namespace hi::inline v1 {

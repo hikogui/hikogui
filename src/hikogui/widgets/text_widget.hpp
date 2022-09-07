@@ -66,6 +66,8 @@ public:
      */
     observer<semantic_text_style> text_style = semantic_text_style::label;
 
+    ~text_widget();
+
     /** Construct a text widget.
      *
      * @param window The window the widget is displayed on.
@@ -83,7 +85,7 @@ public:
      * @param text_style The style of the text to be displayed.
      */
     template<
-        typename Text,
+        different_from<std::shared_ptr<delegate_type>> Text,
         forward_of<observer<hi::alignment>> Alignment = hi::alignment,
         forward_of<observer<semantic_text_style>> TextStyle = semantic_text_style>
     text_widget(
@@ -123,6 +125,7 @@ private:
     float _base_line;
 
     delegate_type::token_type _delegate_cbt;
+
     decltype(text_style)::token_type _text_style_cbt;
 
     text_selection _selection;

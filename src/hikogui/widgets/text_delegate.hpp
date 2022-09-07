@@ -18,6 +18,9 @@ public:
 
     virtual ~text_delegate() = default;
 
+    virtual void init(text_widget& sender) noexcept {}
+    virtual void deinit(text_widget& sender) noexcept {}
+
     /** Subscribe a callback for notifying the widget of a data change.
      */
     [[nodiscard]] token_type subscribe(text_widget& sender, callback_flags flags, std::invocable<> auto&& callback) noexcept

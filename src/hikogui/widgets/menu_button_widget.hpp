@@ -63,8 +63,8 @@ public:
         gui_window& window,
         widget *parent,
         forward_of<observer<hi::label>> auto&& label,
-        auto&& value,
-        auto&&...args) noexcept requires requires
+        different_from<std::shared_ptr<delegate_type>> auto&& value,
+        different_from<std::shared_ptr<delegate_type>> auto&&...args) noexcept requires requires
     {
         make_default_button_delegate<button_type::radio>(hi_forward(value), hi_forward(args)...);
     } :

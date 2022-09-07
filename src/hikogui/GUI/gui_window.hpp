@@ -5,7 +5,6 @@
 #pragma once
 
 #include "gui_window_size.hpp"
-#include "gui_window_delegate.hpp"
 #include "mouse_cursor.hpp"
 #include "hitbox.hpp"
 #include "gui_event.hpp"
@@ -38,8 +37,6 @@ class keyboard_bindings;
  */
 class gui_window {
 public:
-    using delegate_type = gui_window_delegate;
-
     gui_system& gui;
 
     std::unique_ptr<gfx_surface> surface;
@@ -101,7 +98,7 @@ public:
      */
     notifier<void()> closing;
 
-    gui_window(gui_system& gui, label const& title, std::weak_ptr<delegate_type> delegate = {}) noexcept;
+    gui_window(gui_system& gui, label const& title) noexcept;
 
     virtual ~gui_window();
 
@@ -289,8 +286,6 @@ public:
 
 protected:
     static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
-
-    std::weak_ptr<delegate_type> _delegate;
 
     std::atomic<aarectangle> _redraw_rectangle = aarectangle{};
     std::atomic<void const *> _relayout = nullptr;

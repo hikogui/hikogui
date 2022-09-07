@@ -49,9 +49,6 @@ public:
 
     ~scroll_widget()
     {
-        if (auto delegate = _delegate.lock()) {
-            delegate->deinit(*this);
-        }
     }
 
     /** Constructs an empty scroll widget.

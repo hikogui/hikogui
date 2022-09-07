@@ -16,6 +16,9 @@
 
 namespace hi::inline v1 {
 
+template<typename Context>
+concept icon_widget_attribute = forward_of<Context, observer<hi::icon>, observer<hi::alignment>, observer<hi::color>>;
+
 /** An simple GUI widget that displays an icon.
  *
  * The icon is scaled to the size of the widget,
@@ -27,7 +30,7 @@ public:
 
     /** The icon to be displayed.
      */
-    observer<icon> icon;
+    observer<icon> icon = {};
 
     /** The color a non-color icon will be displayed with.
      */
@@ -37,27 +40,25 @@ public:
      */
     observer<alignment> alignment = hi::alignment::middle_center();
 
-    template<
-        forward_of<observer<hi::icon>> Icon,
-        forward_of<observer<hi::alignment>, observer<hi::color>>... Attributes>
-    icon_widget(
-        gui_window& window,
-        widget *parent,
-        Icon&& icon,
-        Attributes &&... attributes) noexcept :
+    icon_widget(gui_window& window, widget *parent, icon_widget_attribute auto&&...attributes) noexcept :
         icon_widget(window, parent)
     {
-        this->icon = std::forward<Icon>(icon);
+        set_attributes(hi_forward(attributes)...);
+    }
 
-        std::visit(overloaded{
-                [&](forward_of<observer<hi::alignment>> auto&& alignment) {
-                    this->alignment = hi_forward(alignment);
-                },
-                [&](forward_of<observer<hi::color>> auto&& color) {
-                    this->color = hi_forward(color);
-                },
-            },
-            std::forward<Attributes>(attributes)...);
+    void set_attributes() noexcept {}
+    void set_attributes(icon_widget_attribute auto&& first, icon_widget_attribute auto&&...rest) noexcept
+    {
+        if constexpr (forward_of<decltype(first), observer<hi::icon>>) {
+            icon = hi_forward(first);
+        } else if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
+            alignment = hi_forward(first);
+        } else if constexpr (forward_of<decltype(first), observer<hi::color>>) {
+            color = hi_forward(first);
+        } else {
+            hi_static_no_default();
+        }
+        set_attributes(hi_forward(rest)...);
     }
 
     /// @privatesection

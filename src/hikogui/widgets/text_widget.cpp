@@ -17,19 +17,27 @@ text_widget::text_widget(gui_window& window, widget *parent, std::shared_ptr<del
     mode = widget_mode::select;
 
     hi_axiom(this->delegate != nullptr);
-    _delegate_cbt = this->delegate->subscribe(*this, callback_flags::local, [&] {
+    _delegate_cbt = this->delegate->subscribe(*this, callback_flags::synchronous, [&] {
         request_reconstrain();
     });
 
-    _text_style_cbt = text_style.subscribe(callback_flags::local, [&](auto...) {
+    _text_style_cbt = text_style.subscribe(callback_flags::synchronous, [&](auto...) {
         request_reconstrain();
     });
 
-    _cursor_state_cbt = _cursor_state.subscribe(callback_flags::local, [&](auto...) {
+    _cursor_state_cbt = _cursor_state.subscribe(callback_flags::synchronous, [&](auto...) {
         request_redraw();
     });
 
     _blink_cursor = blink_cursor();
+
+    this->delegate->init(*this);
+}
+
+text_widget::~text_widget()
+{
+    hi_axiom(delegate != nullptr);
+    delegate->deinit(*this);
 }
 
 void text_widget::update_shaped_text() noexcept
@@ -42,7 +50,8 @@ widget_constraints const& text_widget::set_constraints() noexcept
 {
     _layout = {};
 
-    _cached_text = this->delegate->read(*this);
+    hi_axiom(delegate != nullptr);
+    _cached_text = delegate->read(*this);
     update_shaped_text();
     hilet shaped_text_rectangle = _shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity(), alignment->vertical());
     hilet shaped_text_size = shaped_text_rectangle.size();

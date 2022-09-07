@@ -53,10 +53,11 @@ public:
      * @param value The value or observable value to monitor for which child widget
      *              to display.
      */
-    tab_widget(gui_window& window, widget *parent, auto&& value) noexcept requires requires
+    tab_widget(gui_window& window, widget *parent, different_from<std::shared_ptr<delegate_type>> auto&& value) noexcept requires
+        requires
     {
-        make_unique_default_tab_delegate(hi_forward(value));
-    } : tab_widget(window, parent, make_unique_default_tab_delegate(hi_forward(value))) {}
+        make_default_tab_delegate(hi_forward(value));
+    } : tab_widget(window, parent, make_default_tab_delegate(hi_forward(value))) {}
 
     /** Make and add a child widget.
      *

@@ -73,9 +73,12 @@ public:
      * @param args An optional on-value. This value is used to determine which
      *             value yields an 'on' state.
      */
-    template<typename Label, typename Value, typename... Args>
-    toolbar_tab_button_widget(gui_window& window, widget *parent, Label&& label, Value&& value, Args&&...args) noexcept requires
-        requires
+    toolbar_tab_button_widget(
+        gui_window& window,
+        widget *parent,
+        forward_of<observer<hi::label>> auto&& label,
+        different_from<std::shared_ptr<delegate_type>> auto&& value,
+        different_from<std::shared_ptr<delegate_type>> auto&&...args) noexcept requires requires
     {
         make_default_button_delegate<button_type::radio>(hi_forward(value), hi_forward(args)...);
     } :
@@ -83,7 +86,7 @@ public:
             window,
             parent,
             make_default_button_delegate<button_type::radio>(hi_forward(value), hi_forward(args)...),
-            std::forward<Label>(label))
+            hi_forward(label))
     {
     }
 

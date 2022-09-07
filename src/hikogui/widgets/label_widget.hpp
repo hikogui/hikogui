@@ -17,6 +17,10 @@
 
 namespace hi::inline v1 {
 
+template<typename Context>
+concept label_widget_attribute =
+    forward_of<Context, observer<hi::label>, observer<hi::alignment>, observer<hi::semantic_text_style>>;
+
 /** The GUI widget displays and lays out text together with an icon.
  *
  * This widget is often used by other widgets. For example
@@ -74,22 +78,30 @@ public:
      * @param text_style The text style of the label, and color of non-color
      *                   icons.
      */
-    template<
-        forward_of<observer<hi::label>> Label,
-        forward_of<observer<hi::alignment>, observer<hi::semantic_text_style>>... Attributes>
-    label_widget(gui_window& window, widget *parent, Label&& label, Attributes&&...attributes) noexcept :
+    label_widget(
+        gui_window& window,
+        widget *parent,
+        label_widget_attribute auto&&...attributes) noexcept :
         label_widget(window, parent)
     {
-        this->label = std::forward<Label>(label);
-        std::visit(
-            overloaded{
-                [&](observer<hi::alignment> auto&& alignment) {
-                    this->alignment = hi_forward(alignment);
-                },
-                [&](observer<hi::semantic_text_style> auto&& text_style) {
-                    this->text_style = hi_forward(text_style);
-                }},
-            hi_forward(attributes)...);
+        set_attributes(hi_forward(attributes)...);
+    }
+
+    void set_attributes() noexcept {}
+    void set_attributes(
+        label_widget_attribute auto&& first, label_widget_attribute auto&&...rest) noexcept
+    {
+        if constexpr (forward_of<decltype(first), observer<hi::label>>) {
+            label = hi_forward(first);
+        } else if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
+            alignment = hi_forward(first);
+        } else if constexpr (forward_of<decltype(first), observer<hi::text_style>>) {
+            text_style = hi_forward(first);
+        } else {
+            hi_static_no_default();
+        }
+
+        set_attributes(hi_forward(rest)...);
     }
 
     /// @privatesection

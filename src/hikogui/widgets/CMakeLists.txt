@@ -78,7 +78,6 @@ if(HI_BUILD_PCH AND NOT HI_ENABLE_ANALYSIS)
         label_widget.hpp
         menu_button_widget.hpp
         momentary_button_widget.hpp
-        overlay_delegate.hpp
         overlay_widget.hpp
         radio_button_widget.hpp
         row_column_widget.hpp
