@@ -57,6 +57,8 @@ public:
     using delegate_type = text_field_delegate;
     using super = widget;
 
+    std::shared_ptr<delegate_type> delegate;
+
     /** Continues update mode.
      * If true then the value will update on every edit of the text field.
      */
@@ -68,12 +70,13 @@ public:
 
     virtual ~text_field_widget();
 
-    text_field_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept;
+    text_field_widget(gui_window &window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
-    template<typename Value>
-    text_field_widget(gui_window &window, widget *parent, Value &&value) noexcept
-        requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>) :
-        text_field_widget(window, parent, make_unique_default_text_field_delegate(std::forward<Value>(value)))
+    text_field_widget(gui_window &window, widget *parent, auto &&value) noexcept requires requires
+    {
+        make_default_text_field_delegate(hi_forward(value));
+    } :
+        text_field_widget(window, parent, make_default_text_field_delegate(hi_forward(value)))
     {
     }
 
@@ -91,7 +94,6 @@ public:
     [[nodiscard]] color focus_color() const noexcept override;
     /// @endprivatesection
 private:
-    weak_or_unique_ptr<delegate_type> _delegate;
     notifier<>::token_type _delegate_cbt;
 
     /** The scroll widget embeds the text widget.
@@ -107,7 +109,7 @@ private:
      */
     observer<gstring> _text;
 
-    /** The rectangle where the box is displayed, inwhich the text is displayed.
+    /** The rectangle where the box is displayed, in which the text is displayed.
     */
     aarectangle _box_rectangle;
 
@@ -128,7 +130,6 @@ private:
     typename decltype(_text)::token_type _text_cbt;
     typename decltype(_error_label)::token_type _error_label_cbt;
 
-    text_field_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
     void revert(bool force) noexcept;
     void commit(bool force) noexcept;
     void draw_background_box(draw_context const &context) const noexcept;

@@ -9,15 +9,14 @@
 
 namespace hi::inline v1 {
 
-text_field_widget::text_field_widget(gui_window& window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
-    super(window, parent), _delegate(std::move(delegate)), _text()
+text_field_widget::text_field_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
+    super(window, parent), delegate(std::move(delegate)), _text()
 {
-    if (auto d = _delegate.lock()) {
-        _delegate_cbt = d->subscribe(*this, [&] {
-            request_relayout();
-        });
-        d->init(*this);
-    }
+    hi_axiom(this->delegate != nullptr);
+    _delegate_cbt = this->delegate->subscribe(*this, [&] {
+        request_relayout();
+    });
+    this->delegate->init(*this);
 
     _scroll_widget = std::make_unique<scroll_widget<axis::none, false>>(window, this);
     _text_widget = &_scroll_widget->make_widget<text_widget>(_text, hi::alignment::middle_flush());
@@ -34,27 +33,19 @@ text_field_widget::text_field_widget(gui_window& window, widget *parent, weak_or
     // clang-format on
 }
 
-text_field_widget::text_field_widget(gui_window& window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
-    text_field_widget(window, parent, weak_or_unique_ptr<delegate_type>{std::move(delegate)})
-{
-}
-
 text_field_widget::~text_field_widget()
 {
-    if (auto delegate = _delegate.lock()) {
-        delegate->deinit(*this);
-    }
+    hi_axiom(delegate != nullptr);
+    delegate->deinit(*this);
 }
 
 widget_constraints const& text_field_widget::set_constraints() noexcept
 {
+    hi_axiom(delegate != nullptr);
+
     if (*_text_widget->focus) {
         // Update the optional error value from the string conversion when the text-widget has keyboard focus.
-        if (auto delegate = _delegate.lock()) {
-            _error_label = delegate->validate(*this, to_string(*_text));
-        } else {
-            _error_label = {};
-        }
+        _error_label = delegate->validate(*this, to_string(*_text));
 
     } else {
         // When field is not focused, simply follow the observed_value.
@@ -191,31 +182,26 @@ hitbox text_field_widget::hitbox_test(point3 position) const noexcept
 
 void text_field_widget::revert(bool force) noexcept
 {
-    if (auto delegate = _delegate.lock()) {
-        _text = to_gstring(delegate->text(*this), U' ');
-    } else {
-        _text = {};
-    }
+    hi_axiom(delegate != nullptr);
+    _text = to_gstring(delegate->text(*this), U' ');
     _error_label = {};
 }
 
 void text_field_widget::commit(bool force) noexcept
 {
     hi_axiom(is_gui_thread());
+    hi_axiom(delegate != nullptr);
+
     if (*continues or force) {
         auto text = to_string(*_text);
 
-        if (auto delegate = _delegate.lock()) {
-            if (delegate->validate(*this, text).empty()) {
-                // text is valid.
-                delegate->set_text(*this, text);
-            }
-
-            // After commit get the canonical text to display from the delegate.
-            _text = to_gstring(delegate->text(*this), U' ');
-        } else {
-            _text = {};
+        if (delegate->validate(*this, text).empty()) {
+            // text is valid.
+            delegate->set_text(*this, text);
         }
+
+        // After commit get the canonical text to display from the delegate.
+        _text = to_gstring(delegate->text(*this), U' ');
         _error_label = {};
     }
 }

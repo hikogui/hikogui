@@ -7,7 +7,6 @@
 #pragma once
 
 #include "widget.hpp"
-#include "row_column_delegate.hpp"
 #include "grid_layout.hpp"
 #include "../GUI/theme.hpp"
 #include "../geometry/axis.hpp"
@@ -39,14 +38,10 @@ public:
     static_assert(Axis == axis::horizontal or Axis == axis::vertical);
 
     using super = widget;
-    using delegate_type = row_column_delegate<Axis>;
     static constexpr hi::axis axis = Axis;
 
     ~row_column_widget()
     {
-        if (auto delegate = _delegate.lock()) {
-            delegate->deinit(*this);
-        }
     }
 
     /** Constructs an empty row/column widget.
@@ -56,16 +51,13 @@ public:
      * @param delegate An optional delegate can be used to populate the row/column widget
      *                 during initialization.
      */
-    row_column_widget(gui_window& window, widget *parent, std::weak_ptr<delegate_type> delegate = {}) noexcept :
+    row_column_widget(gui_window& window, widget *parent) noexcept :
         super(window, parent), _delegate(std::move(delegate))
     {
         hi_axiom(is_gui_thread());
 
         if (parent) {
             semantic_layer = parent->semantic_layer;
-        }
-        if (auto d = _delegate.lock()) {
-            d->init(*this);
         }
     }
 

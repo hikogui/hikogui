@@ -378,9 +378,11 @@ constexpr bool type_in_range_v = std::numeric_limits<Out>::digits >= std::numeri
 /** Is context a form of the expected type.
  *
  * The context matched the expected type when:
- *  - expected is a non-reference type and the decayed context is the same type, or derrived from expected.
- *  - expected is a pointer, shared_ptr, weak_ptr or unique_ptr and the context can be convertible to expected.
- *  - expected is in the form of `Result(Arguments...)` and the context can be convertible to expected.
+ *  - expected is a non-reference type and the decayed context is the same type, or derived from expected.
+ *  - expected is a pointer, shared_ptr, weak_ptr or unique_ptr and the context is convertible to expected.
+ *  - expected is in the form of `Result(Arguments...)` and the context is convertible to expected.
+ *  - expected is a observer and the context is convertible to expected.
+ *  - multiple expected are `or`-ed together
  *
  * Examples of `forward_of` concept which is created from `is_forward_of`:
  *
@@ -408,9 +410,20 @@ constexpr bool type_in_range_v = std::numeric_limits<Out>::digits >= std::numeri
  *
  * @tparam Context The template argument of a forwarding function argument.
  * @tparam Expected The type expected that matched a decayed-context.
+ * @tparam OtherExpected optional other expected types which may match the decayed-context.
  */
+template<typename Context, typename Expected, typename... OtherExpected>
+struct is_forward_of;
+
+template<typename Context, typename Expected, typename FirstOtherExpected, typename... OtherExpected>
+struct is_forward_of<Context, Expected, FirstOtherExpected, OtherExpected...> :
+    std::conditional_t<
+        is_forward_of<Context, Expected>::value or is_forward_of<Context, FirstOtherExpected>::value or is_forward_of<Context, OtherExpected>::value...
+    , std::true_type, std::false_type>
+{};
+
 template<typename Context, typename Expected>
-struct is_forward_of :
+struct is_forward_of<Context, Expected> :
     std::conditional_t<
         std::is_same_v<std::decay_t<Context>, Expected> or std::is_base_of_v<Expected, std::decay_t<Context>>,
         std::true_type,
@@ -451,8 +464,8 @@ struct is_forward_of<Context, Result(Args...)> :
     std::conditional_t<std::is_invocable_r_v<Result, Context, Args...>, std::true_type, std::false_type> {
 };
 
-template<typename Context, typename Expected>
-constexpr bool is_forward_of_v = is_forward_of<Context, Expected>::value;
+template<typename Context, typename Expected, typename... OtherExpected>
+constexpr bool is_forward_of_v = is_forward_of<Context, Expected, OtherExpected...>::value;
 
 /** Decays types for use as elements in std::variant.
  *

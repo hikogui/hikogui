@@ -9,24 +9,18 @@
 
 namespace hi::inline v1 {
 
-grid_widget::grid_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
-    widget(window, parent), _delegate(std::move(delegate))
+grid_widget::grid_widget(gui_window &window, widget *parent) noexcept :
+    widget(window, parent)
 {
     hi_axiom(is_gui_thread());
 
     if (parent) {
         semantic_layer = parent->semantic_layer;
     }
-    if (auto d = _delegate.lock()) {
-        d->init(*this);
-    }
 }
 
 grid_widget::~grid_widget()
 {
-    if (auto delegate = _delegate.lock()) {
-        delegate->deinit(*this);
-    }
 }
 
 bool grid_widget::address_in_use(std::size_t column_first, std::size_t row_first, std::size_t column_last, std::size_t row_last) const noexcept

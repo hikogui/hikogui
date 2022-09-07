@@ -193,7 +193,6 @@ target_sources(hikogui PRIVATE
     utils.hpp
     vector_span.hpp
     void_span.hpp
-    weak_or_unique_ptr.hpp
     when_any.hpp
     wfree_fifo.hpp
     wfree_idle_count.hpp

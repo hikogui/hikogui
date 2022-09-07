@@ -74,18 +74,22 @@ public:
      * @param text_style The text style of the label, and color of non-color
      *                   icons.
      */
-    template<typename Label, typename Alignment = hi::alignment, typename TextStyle = hi::semantic_text_style>
-    label_widget(
-        gui_window &window,
-        widget *parent,
-        Label &&label,
-        Alignment &&alignment = hi::alignment::top_right(),
-        TextStyle &&text_style = semantic_text_style::label) noexcept :
+    template<
+        forward_of<observer<hi::label>> Label,
+        forward_of<observer<hi::alignment>, observer<hi::semantic_text_style>>... Attributes>
+    label_widget(gui_window& window, widget *parent, Label&& label, Attributes&&...attributes) noexcept :
         label_widget(window, parent)
     {
         this->label = std::forward<Label>(label);
-        this->alignment = std::forward<Alignment>(alignment);
-        this->text_style = std::forward<TextStyle>(text_style);
+        std::visit(
+            overloaded{
+                [&](observer<hi::alignment> auto&& alignment) {
+                    this->alignment = hi_forward(alignment);
+                },
+                [&](observer<hi::semantic_text_style> auto&& text_style) {
+                    this->text_style = hi_forward(text_style);
+                }},
+            hi_forward(attributes)...);
     }
 
     /// @privatesection
@@ -95,9 +99,9 @@ public:
         co_yield _text_widget.get();
     }
 
-    widget_constraints const &set_constraints() noexcept override;
-    void set_layout(widget_layout const &layout) noexcept override;
-    void draw(draw_context const &context) noexcept;
+    widget_constraints const& set_constraints() noexcept override;
+    void set_layout(widget_layout const& layout) noexcept override;
+    void draw(draw_context const& context) noexcept;
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept;
     /// @endprivatesection
 private:
@@ -114,7 +118,7 @@ private:
     widget_constraints _text_constraints;
     std::unique_ptr<text_widget> _text_widget;
 
-    label_widget(gui_window &window, widget *parent) noexcept;
+    label_widget(gui_window& window, widget *parent) noexcept;
 };
 
 } // namespace hi::inline v1

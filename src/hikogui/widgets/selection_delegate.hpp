@@ -27,13 +27,6 @@ public:
         return _notifier.subscribe(flags, hi_forward(callback));
     }
 
-    /** Subscribe a callback for notifying the widget of a data change.
-     */
-    auto subscribe(selection_widget& sender, std::invocable<> auto&& callback) noexcept
-    {
-        return subscribe(sender, callback_flags::synchronous, hi_forward(callback));
-    }
-
     /** Called when an option is selected by the user.
      * @param index The index of the option selected, -1 if no option is selected.
      */

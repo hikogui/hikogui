@@ -34,7 +34,7 @@ void window_widget::constructor_implementation() noexcept
         hi_no_default();
     }
 
-    _content = std::make_unique<grid_widget>(window, this, _content_delegate);
+    _content = std::make_unique<grid_widget>(window, this);
 }
 
 [[nodiscard]] generator<widget *> window_widget::children() const noexcept

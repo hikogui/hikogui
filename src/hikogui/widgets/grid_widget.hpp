@@ -37,7 +37,6 @@ namespace hi::inline v1 {
 class grid_widget : public widget {
 public:
     using super = widget;
-    using delegate_type = grid_delegate;
 
     ~grid_widget();
 
@@ -48,7 +47,7 @@ public:
      * @param delegate An optional delegate can be used to populate the grid widget
      *                 during initialization.
      */
-    grid_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate = {}) noexcept;
+    grid_widget(gui_window &window, widget *parent) noexcept;
 
     /** Add a widget directly to this grid-widget.
      *
@@ -149,8 +148,6 @@ private:
 
     grid_layout _rows;
     grid_layout _columns;
-
-    std::weak_ptr<delegate_type> _delegate;
 
     [[nodiscard]] bool address_in_use(std::size_t column_first, std::size_t row_first, std::size_t column_last, std::size_t row_last) const noexcept;
 

@@ -35,20 +35,35 @@ public:
 
     /** Alignment of the icon inside the widget.
      */
-    observer<alignment> alignment = hi::alignment{horizontal_alignment::center, vertical_alignment::middle};
+    observer<alignment> alignment = hi::alignment::middle_center();
 
-    template<typename Icon, typename Color = hi::color>
-    icon_widget(gui_window& window, widget *parent, Icon&& icon, Color&& color = color::foreground()) noexcept :
+    template<
+        forward_of<observer<hi::icon>> Icon,
+        forward_of<observer<hi::alignment>, observer<hi::color>>... Attributes>
+    icon_widget(
+        gui_window& window,
+        widget *parent,
+        Icon&& icon,
+        Attributes &&... attributes) noexcept :
         icon_widget(window, parent)
     {
         this->icon = std::forward<Icon>(icon);
-        this->color = std::forward<Color>(color);
+
+        std::visit(overloaded{
+                [&](forward_of<observer<hi::alignment>> auto&& alignment) {
+                    this->alignment = hi_forward(alignment);
+                },
+                [&](forward_of<observer<hi::color>> auto&& color) {
+                    this->color = hi_forward(color);
+                },
+            },
+            std::forward<Attributes>(attributes)...);
     }
 
     /// @privatesection
-    widget_constraints const &set_constraints() noexcept override;
-    void set_layout(widget_layout const &layout) noexcept override;
-    void draw(draw_context const &context) noexcept override;
+    widget_constraints const& set_constraints() noexcept override;
+    void set_layout(widget_layout const& layout) noexcept override;
+    void draw(draw_context const& context) noexcept override;
     /// @endprivatesection
 private:
     enum class icon_type { no, glyph, pixmap };
@@ -62,7 +77,7 @@ private:
     extent2 _icon_size;
     aarectangle _icon_rectangle;
 
-    icon_widget(gui_window &window, widget *parent) noexcept;
+    icon_widget(gui_window& window, widget *parent) noexcept;
 };
 
 } // namespace hi::inline v1

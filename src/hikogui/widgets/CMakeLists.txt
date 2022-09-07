@@ -17,7 +17,6 @@ target_sources(hikogui PRIVATE
     default_tab_delegate.hpp
     default_text_delegate.hpp
     default_text_field_delegate.hpp
-    grid_delegate.hpp
     grid_layout.hpp
     grid_layout.cpp
     grid_widget.cpp
@@ -30,15 +29,12 @@ target_sources(hikogui PRIVATE
     menu_button_widget.hpp
     momentary_button_widget.cpp
     momentary_button_widget.hpp
-    overlay_delegate.hpp
     overlay_widget.cpp
     overlay_widget.hpp
     radio_button_widget.cpp
     radio_button_widget.hpp
-    row_column_delegate.hpp
     row_column_widget.hpp
     scroll_bar_widget.hpp
-    scroll_delegate.hpp
     scroll_widget.hpp
     selection_delegate.hpp
     selection_widget.cpp

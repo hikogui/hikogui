@@ -6,24 +6,20 @@
 
 #include "widget.hpp"
 #include "../label.hpp"
-#include "../weak_or_unique_ptr.hpp"
 
 namespace hi::inline v1 {
 class toolbar_widget;
 class system_menu_widget;
 class grid_widget;
-class grid_delegate;
 
 class window_widget final : public widget {
 public:
     using super = widget;
-    using delegate_type = grid_delegate;
 
     observer<label> title;
 
-    template<typename Title>
-    window_widget(gui_window& window, Title&& title, std::weak_ptr<delegate_type> delegate = {}) noexcept :
-        super(window, nullptr), title(std::forward<Title>(title)), _content_delegate(std::move(delegate))
+    window_widget(gui_window& window, forward_of<observer<label>> auto && title) noexcept :
+        super(window, nullptr), title(hi_forward(title))
     {
         constructor_implementation();
     }
@@ -60,8 +56,6 @@ public:
     /// @endprivatesection
 private:
     decltype(title)::token_type _title_cbt;
-
-    std::weak_ptr<delegate_type> _content_delegate;
 
     aarectangle _content_rectangle;
     widget_constraints _content_constraints;

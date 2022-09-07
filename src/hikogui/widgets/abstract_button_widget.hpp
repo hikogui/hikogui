@@ -11,7 +11,6 @@
 #include "../animator.hpp"
 #include "../i18n/translate.hpp"
 #include "../notifier.hpp"
-#include "../weak_or_unique_ptr.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -24,6 +23,10 @@ class abstract_button_widget : public widget {
 public:
     using super = widget;
     using delegate_type = button_delegate;
+
+    /** The delegate that controls the button widget.
+     */
+    std::shared_ptr<delegate_type> delegate;
 
     /** The label to show when the button is in the 'on' state.
      */
@@ -43,6 +46,10 @@ public:
 
     notifier<void()> pressed;
 
+    ~abstract_button_widget();
+    
+    abstract_button_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
+
     /** Set on/off/other labels of the button to the same value.
      */
     template<typename Label>
@@ -60,11 +67,8 @@ public:
     [[nodiscard]] button_state state() const noexcept
     {
         hi_axiom(is_gui_thread());
-        if (auto delegate = _delegate.lock()) {
-            return delegate->state(*this);
-        } else {
-            return button_state::off;
-        }
+        hi_axiom(delegate != nullptr);
+        return delegate->state(*this);
     }
 
     /// @privatesection
@@ -88,11 +92,7 @@ protected:
     std::unique_ptr<label_widget> _other_label_widget;
 
     bool _pressed = false;
-    weak_or_unique_ptr<delegate_type> _delegate;
     notifier<>::token_type _delegate_cbt;
-
-    ~abstract_button_widget();
-    abstract_button_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
 
     widget_constraints set_constraints_button() const noexcept;
     void set_layout_button(widget_layout const &context) noexcept;

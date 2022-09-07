@@ -21,20 +21,21 @@ public:
     observer<value_type> value;
     std::unordered_map<std::size_t, std::size_t> tab_indices;
 
-    default_tab_delegate(auto &&value) noexcept : value(hi_forward(value))
+    default_tab_delegate(forward_of<observer<value_type>> auto&& value) noexcept : value(hi_forward(value))
     {
-        _value_cbt = this->value.subscribe(callback_flags::local, [&](auto...) {
+        _value_cbt = this->value.subscribe(callback_flags::synchronous, [&](auto...) {
             this->_notifier();
         });
     }
 
-    void add_tab(tab_widget &sender, std::size_t key, std::size_t index) noexcept override
+    // XXX key should really be of value_type, not sure how to handle that with the tab_widget not knowing the type of key.
+    void add_tab(tab_widget& sender, std::size_t key, std::size_t index) noexcept override
     {
         hi_axiom(not tab_indices.contains(key));
         tab_indices[key] = index;
     }
 
-    [[nodiscard]] ssize_t index(tab_widget &sender) noexcept override
+    [[nodiscard]] ssize_t index(tab_widget& sender) noexcept override
     {
         auto it = tab_indices.find(*value);
         if (it == tab_indices.end()) {
@@ -48,14 +49,13 @@ private:
     typename decltype(value)::token_type _value_cbt;
 };
 
-template<typename Value>
-default_tab_delegate(Value&&) -> default_tab_delegate<observer_argument_t<Value>>;
-
-template<typename Value>
-std::unique_ptr<tab_delegate> make_unique_default_tab_delegate(Value &&value) noexcept
+std::shared_ptr<tab_delegate> make_default_tab_delegate(auto&& value) noexcept requires requires
 {
-    using value_type = observer_argument_t<Value>;
-    return std::make_unique<default_tab_delegate<value_type>>(std::forward<Value>(value));
+    default_tab_delegate<observer_argument_t<decltype(value)>>{hi_forward(value)};
+}
+{
+    using value_type = observer_argument_t<decltype(value)>;
+    return std::make_shared<default_tab_delegate<value_type>>(hi_forward(value));
 }
 
 } // namespace hi::inline v1

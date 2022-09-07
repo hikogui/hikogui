@@ -8,15 +8,10 @@
 
 namespace hi::inline v1 {
 
-checkbox_widget::checkbox_widget(gui_window& window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
+checkbox_widget::checkbox_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
     super(window, parent, std::move(delegate))
 {
     alignment = alignment::top_left();
-}
-
-checkbox_widget::checkbox_widget(gui_window& window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
-    checkbox_widget(window, parent, weak_or_unique_ptr<delegate_type>{delegate})
-{
 }
 
 widget_constraints const& checkbox_widget::set_constraints() noexcept

@@ -25,9 +25,9 @@ public:
 
     observer<value_type> value;
 
-    default_text_field_delegate(auto&& value) noexcept : value(hi_forward(value))
+    default_text_field_delegate(forward_of<observer<value_type>> auto&& value) noexcept : value(hi_forward(value))
     {
-        _value_cbt = this->value.subscribe([&](auto...) {
+        _value_cbt = this->value.subscribe(callback_flags::synchronous, [&](auto...) {
             this->_notifier();
         });
     }
@@ -69,9 +69,9 @@ public:
 
     observer<value_type> value;
 
-    default_text_field_delegate(auto&& value) noexcept : value(hi_forward(value))
+    default_text_field_delegate(forward_of<observer<value_type>> auto&& value) noexcept : value(hi_forward(value))
     {
-        _value_cbt = this->value.subscribe(callback_flags::local, [&](auto...) {
+        _value_cbt = this->value.subscribe(callback_flags::synchronous, [&](auto...) {
             this->_notifier();
         });
     }
@@ -106,13 +106,14 @@ private:
     typename decltype(value)::token_type _value_cbt;
 };
 
-template<typename Value>
-default_text_field_delegate(Value&&) -> default_text_field_delegate<observer_argument_t<Value>>;
-
-std::unique_ptr<text_field_delegate> make_unique_default_text_field_delegate(auto&& value, auto&&...args) noexcept
+[[nodiscard]] std::shared_ptr<text_field_delegate>
+make_unique_default_text_field_delegate(auto&& value, auto&&...args) noexcept requires requires
+{
+    default_text_field_delegate<observer_argument_t<decltype(value)>>{hi_forward(value), hi_forward(args)...};
+}
 {
     using value_type = observer_argument_t<decltype(value)>;
-    return std::make_unique<default_text_field_delegate<value_type>>(hi_forward(value), hi_forward(args)...);
+    return std::make_shared<default_text_field_delegate<value_type>>(hi_forward(value), hi_forward(args)...);
 }
 
 } // namespace hi::inline v1

@@ -51,10 +51,15 @@ public:
      * @param label The label to show in the tab button.
      * @param delegate The delegate to use to manage the state of the tab button widget.
      */
-    template<typename Label>
-    toolbar_tab_button_widget(gui_window &window, widget *parent, Label &&label, std::weak_ptr<delegate_type> delegate) noexcept :
-        toolbar_tab_button_widget(window, parent, std::forward<Label>(label), weak_or_unique_ptr{std::move(delegate)})
+    toolbar_tab_button_widget(
+        gui_window& window,
+        widget *parent,
+        std::shared_ptr<delegate_type> delegate,
+        forward_of<observer<hi::label>> auto&& label) noexcept :
+        super(window, parent, std::move(delegate))
     {
+        alignment = alignment::top_center();
+        set_label(hi_forward(label));
     }
 
     /** Construct a toolbar tab button widget with a default button delegate.
@@ -69,37 +74,28 @@ public:
      *             value yields an 'on' state.
      */
     template<typename Label, typename Value, typename... Args>
-    toolbar_tab_button_widget(gui_window &window, widget *parent, Label &&label, Value &&value, Args &&...args) noexcept
-        requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>) :
+    toolbar_tab_button_widget(gui_window& window, widget *parent, Label&& label, Value&& value, Args&&...args) noexcept requires
+        requires
+    {
+        make_default_button_delegate<button_type::radio>(hi_forward(value), hi_forward(args)...);
+    } :
         toolbar_tab_button_widget(
             window,
             parent,
-            std::forward<Label>(label),
-            make_unique_default_button_delegate<button_type::radio>(std::forward<Value>(value), std::forward<Args>(args)...))
+            make_default_button_delegate<button_type::radio>(hi_forward(value), hi_forward(args)...),
+            std::forward<Label>(label))
     {
     }
 
     /// @privatesection
-    widget_constraints const &set_constraints() noexcept override;
-    void set_layout(widget_layout const &layout) noexcept override;
-    void draw(draw_context const &context) noexcept override;
+    widget_constraints const& set_constraints() noexcept override;
+    void set_layout(widget_layout const& layout) noexcept override;
+    void draw(draw_context const& context) noexcept override;
     void request_redraw() const noexcept override;
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
     // @endprivatesection
 private:
-    template<typename Label>
-    toolbar_tab_button_widget(
-        gui_window &window,
-        widget *parent,
-        Label &&label,
-        weak_or_unique_ptr<delegate_type> delegate) noexcept :
-        super(window, parent, std::move(delegate))
-    {
-        alignment = alignment::top_center();
-        set_label(std::forward<Label>(label));
-    }
-
-    void draw_toolbar_tab_button(draw_context const &context) noexcept;
+    void draw_toolbar_tab_button(draw_context const& context) noexcept;
 };
 
 } // namespace hi::inline v1

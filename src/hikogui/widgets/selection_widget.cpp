@@ -12,13 +12,12 @@ namespace hi::inline v1 {
 
 selection_widget::~selection_widget()
 {
-    if (auto delegate = _delegate.lock()) {
-        delegate->deinit(*this);
-    }
+    hi_axiom(delegate != nullptr);
+    delegate->deinit(*this);
 }
 
-selection_widget::selection_widget(gui_window& window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
-    super(window, parent), _delegate(std::move(delegate))
+selection_widget::selection_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
+    super(window, parent), delegate(std::move(delegate))
 {
     _current_label_widget = std::make_unique<label_widget>(window, this, tr("<current>"));
     _current_label_widget->mode = widget_mode::invisible;
@@ -36,20 +35,14 @@ selection_widget::selection_widget(gui_window& window, widget *parent, weak_or_u
     _unknown_label_cbt = this->unknown_label.subscribe(callback_flags::local, [&](auto...){ request_reconstrain(); });
     // clang-format on
 
-    if (auto d = _delegate.lock()) {
-        _delegate_cbt = d->subscribe(*this, callback_flags::main, [this] {
-            repopulate_options();
-            this->request_reconstrain();
-        });
-
-        d->init(*this);
+    hi_axiom(this->delegate != nullptr);
+    _delegate_cbt = this->delegate->subscribe(*this, callback_flags::main, [this] {
         repopulate_options();
-    }
-}
+        this->request_reconstrain();
+    });
 
-selection_widget::selection_widget(gui_window& window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
-    selection_widget(window, parent, weak_or_unique_ptr<delegate_type>{std::move(delegate)})
-{
+    this->delegate->init(*this);
+    repopulate_options();
 }
 
 widget_constraints const& selection_widget::set_constraints() noexcept

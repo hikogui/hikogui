@@ -27,12 +27,13 @@ public:
     observer<float> aperture;
     observer<float> content;
 
-    template<typename Content, typename Aperture, typename Offset>
-    scroll_bar_widget(gui_window& window, widget *parent, Content&& content, Aperture&& aperture, Offset&& offset) noexcept :
-        widget(window, parent),
-        content(std::forward<Content>(content)),
-        aperture(std::forward<Aperture>(aperture)),
-        offset(std::forward<Offset>(offset))
+    scroll_bar_widget(
+        gui_window& window,
+        widget *parent,
+        forward_of<observer<float>> auto&& content,
+        forward_of<observer<float>> auto&& aperture,
+        forward_of<observer<float>> auto&& offset) noexcept :
+        widget(window, parent), content(hi_forward(content)), aperture(hi_forward(aperture)), offset(hi_forward(offset))
     {
         // clang-format off
         _content_cbt = this->content.subscribe(callback_flags::local, [&](auto...){ request_relayout(); });
