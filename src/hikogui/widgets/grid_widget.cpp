@@ -48,7 +48,7 @@ widget &grid_widget::add_widget(
 
     auto &ref = *widget;
     _cells.emplace_back(column_first, row_first, column_last, row_last, std::move(widget));
-    request_reconstrain();
+    hi_request_reconstrain("grid_widget::add_widget({}, {}, {}, {})", column_first, row_first, column_last, row_last);
     return ref;
 }
 

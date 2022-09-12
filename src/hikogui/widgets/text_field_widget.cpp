@@ -25,12 +25,18 @@ text_field_widget::text_field_widget(gui_window& window, widget *parent, std::sh
     _error_label_widget =
         std::make_unique<label_widget>(window, this, _error_label, alignment::top_left(), semantic_text_style::error);
 
-    // clang-format off
-    _continues_cbt = continues.subscribe(callback_flags::local, [&](auto...){ request_reconstrain(); });
-    _text_style_cbt = text_style.subscribe(callback_flags::local, [&](auto...){ request_reconstrain(); });
-    _text_cbt = _text.subscribe(callback_flags::local, [&](auto...){ request_reconstrain(); });
-    _error_label_cbt = _error_label.subscribe(callback_flags::local, [&](auto...){ request_reconstrain(); });
-    // clang-format on
+    _continues_cbt = continues.subscribe(callback_flags::local, [&](auto...) {
+        hi_request_reconstrain("text_field_widget::_continues_cbt()");
+    });
+    _text_style_cbt = text_style.subscribe(callback_flags::local, [&](auto...) {
+        hi_request_reconstrain("text_field_widget::_text_style_cbt()");
+    });
+    _text_cbt = _text.subscribe(callback_flags::local, [&](auto...) {
+        hi_request_reconstrain("text_field_widget::_text_cbt()");
+    });
+    _error_label_cbt = _error_label.subscribe(callback_flags::local, [&](auto const &new_value) {
+        hi_request_reconstrain("text_field_widget::_error_label_cbt(\"{}\")", new_value);
+    });
 }
 
 text_field_widget::~text_field_widget()
@@ -184,7 +190,7 @@ void text_field_widget::revert(bool force) noexcept
 {
     hi_axiom(delegate != nullptr);
     _text = to_gstring(delegate->text(*this), U' ');
-    _error_label = {};
+    _error_label = label{};
 }
 
 void text_field_widget::commit(bool force) noexcept
@@ -202,7 +208,7 @@ void text_field_widget::commit(bool force) noexcept
 
         // After commit get the canonical text to display from the delegate.
         _text = to_gstring(delegate->text(*this), U' ');
-        _error_label = {};
+        _error_label = label{};
     }
 }
 

@@ -24,7 +24,7 @@ tab_widget::tab_widget(gui_window& window, widget *parent, std::shared_ptr<deleg
 
     hi_axiom(this->delegate != nullptr);
     _delegate_cbt = this->delegate->subscribe(*this, callback_flags::synchronous, [&] {
-        request_reconstrain();
+        hi_request_reconstrain("tab_widget::_delegate_cbt()");
     });
 
     // Compare and assign would trigger the signaling NaN that widget sets.
@@ -44,7 +44,7 @@ widget_constraints const& tab_widget::set_constraints() noexcept
 
     if (_previous_selected_child != &selected_child_) {
         _previous_selected_child = &selected_child_;
-        request_resize();
+        hi_request_resize("tab_widget::set_constraints() selected tab changed");
     }
 
     for (hilet& child : _children) {

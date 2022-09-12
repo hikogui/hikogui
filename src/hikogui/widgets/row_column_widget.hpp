@@ -76,7 +76,7 @@ public:
         auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
         auto& ref = *tmp;
         _children.push_back(std::move(tmp));
-        request_reconstrain();
+        hi_request_reconstrain("row_column_widget::make_widget()");
         return ref;
     }
 
@@ -86,7 +86,7 @@ public:
     {
         hi_axiom(is_gui_thread());
         _children.clear();
-        request_reconstrain();
+        hi_request_reconstrain("row_column_widget::clear()");
     }
 
     /// @privatesection

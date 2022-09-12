@@ -34,12 +34,12 @@ selection_widget::selection_widget(gui_window& window, widget *parent, std::shar
     _column_widget = &_scroll_widget->make_widget<column_widget>();
 
     _unknown_label_cbt = this->unknown_label.subscribe(callback_flags::synchronous, [&](auto...) {
-        request_reconstrain();
+        hi_request_reconstrain("selection_widget::_unknown_label_cbt()");
     });
 
     _delegate_cbt = this->delegate->subscribe(*this, callback_flags::synchronous, [&] {
         _notification_from_delegate = true;
-        request_reconstrain();
+        hi_request_reconstrain("selection_widget::_delegate_cbt()");
     });
 
     this->delegate->init(*this);

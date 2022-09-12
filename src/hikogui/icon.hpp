@@ -41,10 +41,7 @@ public:
         return not empty();
     }
 
-    [[nodiscard]] friend bool operator==(icon const &lhs, icon const &rhs) noexcept
-    {
-        return lhs._image == rhs._image;
-    }
+    [[nodiscard]] friend bool operator==(icon const &lhs, icon const &rhs) noexcept = default;
 
     template<typename T>
     [[nodiscard]] friend bool holds_alternative(hi::icon const &icon) noexcept

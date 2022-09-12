@@ -18,11 +18,11 @@ text_widget::text_widget(gui_window& window, widget *parent, std::shared_ptr<del
 
     hi_axiom(this->delegate != nullptr);
     _delegate_cbt = this->delegate->subscribe(*this, callback_flags::synchronous, [&] {
-        request_reconstrain();
+        hi_request_reconstrain("text_widget::_delegate_cbt()");
     });
 
     _text_style_cbt = text_style.subscribe(callback_flags::synchronous, [&](auto...) {
-        request_reconstrain();
+        hi_request_reconstrain("text_widget::_text_style_cbt()");
     });
 
     _cursor_state_cbt = _cursor_state.subscribe(callback_flags::synchronous, [&](auto...) {

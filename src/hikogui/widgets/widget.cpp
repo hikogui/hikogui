@@ -21,7 +21,7 @@ widget::widget(gui_window& _window, widget *parent) noexcept :
     }
 
     _mode_cbt = mode.subscribe(callback_flags::local, [&](auto...) {
-        request_reconstrain();
+        hi_request_reconstrain("widget::_mode_cbt()");
     });
 
     _constraints.minimum = extent2::nan();
@@ -120,12 +120,12 @@ void widget::request_relayout() const noexcept
     window.request_relayout(this);
 }
 
-void widget::request_reconstrain() const noexcept
+void widget::_request_reconstrain() const noexcept
 {
     window.request_reconstrain(this);
 }
 
-void widget::request_resize() const noexcept
+void widget::_request_resize() const noexcept
 {
     window.request_resize(this);
 }

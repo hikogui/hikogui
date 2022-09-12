@@ -50,18 +50,18 @@ struct basic_fixed_string {
         }
     }
 
-    template<std::size_t O>
-    constexpr basic_fixed_string& operator=(value_type const (&str)[O]) noexcept requires((O - 1) == N)
-    {
-        auto i = 0_uz;
-        for (; i != (O - 1); ++i) {
-            _str[i] = str[i];
-        }
-        for (; i != N; ++i) {
-            _str[i] = value_type{};
-        }
-        return *this;
-    }
+    //template<std::size_t O>
+    //constexpr basic_fixed_string& operator=(value_type const (&str)[O]) noexcept requires((O - 1) == N)
+    //{
+    //    auto i = 0_uz;
+    //    for (; i != (O - 1); ++i) {
+    //        _str[i] = str[i];
+    //    }
+    //    for (; i != N; ++i) {
+    //        _str[i] = value_type{};
+    //    }
+    //    return *this;
+    //}
 
     constexpr operator std::basic_string_view<value_type>() const noexcept
     {
@@ -71,6 +71,18 @@ struct basic_fixed_string {
     [[nodiscard]] constexpr std::size_t size() const noexcept
     {
         return N;
+    }
+
+    [[nodiscard]] constexpr value_type& operator[](size_t index) noexcept
+    {
+        hi_axiom(index < N);
+        return _str[index];
+    }
+
+    [[nodiscard]] constexpr value_type const& operator[](size_t index) const noexcept
+    {
+        hi_axiom(index < N);
+        return _str[index];
     }
 
     [[nodiscard]] constexpr auto begin() noexcept
@@ -106,6 +118,21 @@ struct basic_fixed_string {
     [[nodiscard]] constexpr auto operator<=>(std::basic_string_view<CharT> rhs) const noexcept
     {
         return static_cast<std::basic_string_view<CharT>>(*this) <=> rhs;
+    }
+
+    template<size_t O>
+    [[nodiscard]] constexpr auto operator+(basic_fixed_string<CharT, O> const &rhs) const noexcept
+    {
+        auto r = basic_fixed_string<CharT, N + O>{};
+        auto dst_i = 0_uz;
+        for (auto src_i = 0_uz; src_i != N; ++src_i, ++dst_i) {
+            r[dst_i] = (*this)[src_i];
+        }
+        for (auto src_i = 0_uz; src_i != O; ++src_i, ++dst_i) {
+            r[dst_i] = rhs[src_i];
+        }
+
+        return r;
     }
 };
 

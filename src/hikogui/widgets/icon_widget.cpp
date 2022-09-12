@@ -14,7 +14,7 @@ icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(wi
 {
     _icon_cbt = icon.subscribe(callback_flags::local, [this](auto...) {
         _icon_has_modified = true;
-        this->request_reconstrain();
+        hi_request_reconstrain("icon_widget::_icon_cbt()");
     });
 }
 
@@ -35,7 +35,7 @@ widget_constraints const &icon_widget::set_constraints() noexcept
             if (not(_pixmap_backing = paged_image{window.surface.get(), *pixmap})) {
                 // Could not get an image, retry.
                 _icon_has_modified = true;
-                request_reconstrain();
+                hi_request_reconstrain("icon_widget::set_constraints() no backing image.");
             }
 
         } else if (hilet g1 = get_if<glyph_ids>(&icon.read())) {

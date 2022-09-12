@@ -78,7 +78,7 @@ public:
         hi_axiom(delegate != nullptr);
         delegate->add_tab(*this, static_cast<std::size_t>(key), size(_children));
         _children.push_back(std::move(tmp));
-        request_reconstrain();
+        hi_request_reconstrain("tab_widget::make_widget({})", key);
         return ref;
     }
 

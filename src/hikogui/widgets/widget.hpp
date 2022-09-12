@@ -222,11 +222,33 @@ public:
 
     /** Request the window to be reconstrain on the next frame.
      */
-    void request_reconstrain() const noexcept;
+    template<basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Args>
+    void request_reconstrain(Args&&...args) const noexcept
+    {
+        constexpr auto FmtPlus = basic_fixed_string{"request_reconstrain:"} + Fmt;
+
+        log_global.add<global_state_type::log_info, SourceFile, SourceLine, FmtPlus>(std::forward<Args>(args)...);
+        _request_reconstrain();
+    }
+
+#define hi_request_reconstrain(fmt, ...) \
+    hi_format_check(fmt __VA_OPT__(, ) __VA_ARGS__); \
+    this->request_reconstrain<__FILE__, __LINE__, fmt>(__VA_ARGS__)
 
     /** Request the window to be resize based on the preferred size of the widgets.
      */
-    void request_resize() const noexcept;
+    template<basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Args>
+    void request_resize(Args&&...args) const noexcept
+    {
+        constexpr auto FmtPlus = basic_fixed_string{"request_resize:"} + Fmt;
+
+        log_global.add<global_state_type::log_info, SourceFile, SourceLine, FmtPlus>(std::forward<Args>(args)...);
+        _request_resize();
+    }
+
+#define hi_request_resize(fmt, ...) \
+    hi_format_check(fmt __VA_OPT__(, ) __VA_ARGS__); \
+    this->request_resize<__FILE__, __LINE__, fmt>(__VA_ARGS__)
 
     /** Handle command.
      * If a widget does not fully handle a command it should pass the
@@ -325,6 +347,10 @@ protected:
      * @return A rectangle that fits the window's constraints in the local coordinate system.
      */
     [[nodiscard]] aarectangle make_overlay_rectangle(aarectangle requested_rectangle) const noexcept;
+
+private:
+    void _request_reconstrain() const noexcept;
+    void _request_resize() const noexcept;
 };
 
 } // namespace hi::inline v1
