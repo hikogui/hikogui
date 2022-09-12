@@ -13,12 +13,12 @@ windows this file is located in:
 auto preferences = hi::preferences(hi::URL::urlFromApplicationPreferencesFile());
 ```
 
-Observable values are linked to values in the preferences located using a json-path.
+Observer values are linked to values in the preferences located using a json-path.
 In the example below the json-path is "bar.foo" which results in the preferences file as
 `{"bar": {"foo": 1}}`:
 
 ```cpp
-hi::observable<int> foo;
+hi::observer<int> foo;
 preferences.add("bar.foo", foo);
 
 // Everytime the program loads the value in the preference file is incremented.
@@ -56,7 +56,7 @@ struct hi::pickle<foo_type> {
     };
 };
 
-hi::observable<foo_type> foo;
+hi::observer<foo_type> foo;
 preferences.add("foo", foo);
 
 hi_log_info("old: {}", foo->one);

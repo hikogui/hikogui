@@ -12,7 +12,7 @@
 #include "menu_button_widget.hpp"
 #include "selection_delegate.hpp"
 #include "default_selection_delegate.hpp"
-#include "../observable.hpp"
+#include "../observer.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -58,10 +58,10 @@ public:
      * @tparam Value The type of @a value. Must be convertible to `std::size_t`.
      * @param window The window the selection widget will be displayed on.
      * @param parent The owner of the selection widget.
-     * @param option_list An vector or an observable vector of pairs of keys and
+     * @param option_list An vector or an observer vector of pairs of keys and
      *                    labels. The keys are of the same type as the @a value.
      *                    The labels are of type `label`.
-     * @param value The value or observable value to monitor.
+     * @param value The value or observer value to monitor.
      */
     selection_widget(
         gui_window& window,

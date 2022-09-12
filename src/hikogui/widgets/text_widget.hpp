@@ -11,7 +11,7 @@
 #include "../text/semantic_text_style.hpp"
 #include "../text/text_selection.hpp"
 #include "../text/text_shaper.hpp"
-#include "../observable.hpp"
+#include "../observer.hpp"
 #include "../alignment.hpp"
 #include "../i18n/translate.hpp"
 #include "../undo_stack.hpp"

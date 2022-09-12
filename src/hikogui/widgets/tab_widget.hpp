@@ -27,7 +27,7 @@ namespace hi::inline v1 {
  *
  * @note A `tab_button` is not directly controlled by a
  *       `toolbar_tab_button_widget`. This is accomplished by sharing a delegate
- *       or a observable between the toolbar tab button and the tab widget.
+ *       or a observer between the toolbar tab button and the tab widget.
  */
 class tab_widget final : public widget {
 public:
@@ -46,11 +46,11 @@ public:
      */
     tab_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
-    /** Construct a tab widget with an observable value.
+    /** Construct a tab widget with an observer value.
      *
      * @param window The window that this widget is shown on.
      * @param parent The owner of this widget.
-     * @param value The value or observable value to monitor for which child widget
+     * @param value The value or observer value to monitor for which child widget
      *              to display.
      */
     tab_widget(gui_window& window, widget *parent, different_from<std::shared_ptr<delegate_type>> auto&& value) noexcept requires

@@ -7,7 +7,7 @@
 #include "widget.hpp"
 #include "../GUI/gui_event.hpp"
 #include "../geometry/axis.hpp"
-#include "../observable.hpp"
+#include "../observer.hpp"
 #include <memory>
 #include <string>
 #include <array>

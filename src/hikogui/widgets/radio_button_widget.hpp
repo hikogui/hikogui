@@ -32,7 +32,7 @@ namespace hi::inline v1 {
  * @snippet widgets/radio_button_example.cpp Create three radio buttons
  *
  * @note Unlike some other GUI toolkits a radio button is a singular widget.
- *       Multiple radio buttons may share a delegate or an observable which
+ *       Multiple radio buttons may share a delegate or an observer which
  *       allows radio buttons to act as a set.
  */
 class radio_button_widget final : public abstract_button_widget {
@@ -64,7 +64,7 @@ public:
      * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this radio button widget.
      * @param label The label to show next to the radio button.
-     * @param value The value or `observable` value which represents the state
+     * @param value The value or `observer` value which represents the state
      *              of the radio button.
      * @param args An optional on-value. This value is used to determine which
      *             value yields an 'on' state.

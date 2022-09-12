@@ -58,7 +58,7 @@ Features
 Example
 -------
 Here is some example code for an application with three radio buttons,
-who form a set by sharing a single `value` observable.
+who form a set by sharing a single `value` observer.
 
 ```
 int hi_main(int argc, char *argv[])

@@ -37,7 +37,7 @@ namespace hi::inline v1 {
  *
  * @note A toolbar tab button does not directly control a `tab_widget`. Like
  *       `radio_button_widget` this is accomplished by sharing a delegate or a
- *       observable between the toolbar tab button and the tab widget.
+ *       observer between the toolbar tab button and the tab widget.
  */
 class toolbar_tab_button_widget final : public abstract_button_widget {
 public:
@@ -68,7 +68,7 @@ public:
      * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this radio button widget.
      * @param label The label to show in the tab button.
-     * @param value The value or `observable` value which represents the state
+     * @param value The value or `observer` value which represents the state
      *              of the tab button.
      * @param args An optional on-value. This value is used to determine which
      *             value yields an 'on' state.

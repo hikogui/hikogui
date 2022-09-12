@@ -63,7 +63,7 @@ public:
      * @see default_button_delegate
      * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this toggle widget.
-     * @param value The value or `observable` value which represents the state of the toggle.
+     * @param value The value or `observer` value which represents the state of the toggle.
      * @param args An optional on-value, followed by an optional off-value. These two values
      *             are used to determine which value yields an on/off state.
      */

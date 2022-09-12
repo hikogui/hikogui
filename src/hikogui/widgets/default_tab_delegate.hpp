@@ -5,7 +5,7 @@
 #pragma once
 
 #include "tab_delegate.hpp"
-#include "../observable.hpp"
+#include "../observer.hpp"
 #include "../cast.hpp"
 #include <type_traits>
 #include <memory>
