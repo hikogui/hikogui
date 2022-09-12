@@ -1,6 +1,28 @@
 Change log
 ==========
 
+0.7 Strange Squirrel
+--------------------
+To make it possible to select and configure audio devices this release
+is a start to make composible shared-state, composible preferences and
+composible widgets.
+
+There are also a few other systems that have been updated:
+
+ * Co-routine; awaiting on a timeout.
+ * Simplified widget event handling.
+ * Colors can be semantic.
+ * Handle HDR on platforms with uniform HDR/SDR (windows 10 doesn't).
+ * 2 step index-array unicode character lookup.
+ * New grapheme type uses 21-bits and can be used as char of std::basic\_string.
+ * New user-extensible char-encoding conversion system.
+ * std::format early static-type-check on hi\_log macros.
+ * Add `mode` enumeration to widgets to handle visibility, disabled, enabled.
+ * Add baseline system to align text between widgets on the same row.
+ * Improve `observer<>` to make sub-obsevers from member variables of the
+   observed type.
+ * Audio device capability interrogation system.
+
 0.6 Dizzy Donkey
 ----------------
 The changes in this version are pretty random, but there is a theme
@@ -13,7 +35,7 @@ of improving how to create custom widgets.
    with bidirectional-double cursors, multiple paragraphs, and sharper
    rendering by scaling and positioning to sub-pixel boundaries.
  * Improved grid widget which now supports row- and column-spans.
- * New grapheme-cluster type that can be used inside std::basic_string.
+ * New grapheme-cluster type that can be used inside std::basic\_string.
  * An central API to retrieve user-settings from the operating system,
    including a notifier for the application to directly react on changes.
  * DPI scaling is implemented by scaling the measurements of a theme.
@@ -23,7 +45,7 @@ of improving how to create custom widgets.
    ownership.
  * New blocking main event-loop with more accurate vertical-sync support;
    improving animations even in debug builds.
- * Improved localization support with language_tags that have access to
+ * Improved localization support with language\_tags that have access to
    ISO-codes for language, script and region.
  
 
