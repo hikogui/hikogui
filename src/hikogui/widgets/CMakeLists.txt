@@ -1,4 +1,4 @@
-# Copyright Take Vos 2020-2021.
+# Copyright Take Vos 2021-2022.
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -15,8 +15,8 @@ target_sources(hikogui PRIVATE
     default_button_delegate.hpp
     default_selection_delegate.hpp
     default_tab_delegate.hpp
+    default_text_delegate.hpp
     default_text_field_delegate.hpp
-    grid_delegate.hpp
     grid_layout.hpp
     grid_layout.cpp
     grid_widget.cpp
@@ -29,15 +29,12 @@ target_sources(hikogui PRIVATE
     menu_button_widget.hpp
     momentary_button_widget.cpp
     momentary_button_widget.hpp
-    overlay_delegate.hpp
     overlay_widget.cpp
     overlay_widget.hpp
     radio_button_widget.cpp
     radio_button_widget.hpp
-    row_column_delegate.hpp
     row_column_widget.hpp
     scroll_bar_widget.hpp
-    scroll_delegate.hpp
     scroll_widget.hpp
     selection_delegate.hpp
     selection_widget.cpp
@@ -47,6 +44,7 @@ target_sources(hikogui PRIVATE
     tab_delegate.hpp
     tab_widget.cpp
     tab_widget.hpp
+    text_delegate.hpp
     text_field_delegate.hpp
     text_field_widget.cpp
     text_field_widget.hpp
@@ -80,7 +78,6 @@ if(HI_BUILD_PCH AND NOT HI_ENABLE_ANALYSIS)
         label_widget.hpp
         menu_button_widget.hpp
         momentary_button_widget.hpp
-        overlay_delegate.hpp
         overlay_widget.hpp
         radio_button_widget.hpp
         row_column_widget.hpp

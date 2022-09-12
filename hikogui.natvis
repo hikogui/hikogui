@@ -201,14 +201,12 @@
             <Item Name="[height]">v.v[3] - v.v[1],g</Item>
         </Expand>
     </Type>
-    <Type Name="hi::v1::detail::observable_value&lt;*&gt;">
-        <DisplayString>.{_value}</DisplayString>
-    </Type>
-    <Type Name="hi::v1::detail::observable_chain&lt;*&gt;">
-        <DisplayString>->{*(_operand.value())}</DisplayString>
-    </Type>
-    <Type Name="hi::v1::observable&lt;*&gt;">
-        <DisplayString>{*(pimpl)}</DisplayString>
+    <Type Name="hi::v1::observer&lt;*&gt;">
+        <DisplayString>{_value} #{_observed._ptr->_enable_group_ptr_owners.size()}</DisplayString>
+        <Expand>
+            <Item Name="[value]">_value</Item>
+            <Item Name="[observer count]">_observed._ptr->_enable_group_ptr_owners.size()</Item>
+        </Expand>
     </Type>
     <Type Name="hi::v1::tr">
         <DisplayString>tr({_msg_id})</DisplayString>

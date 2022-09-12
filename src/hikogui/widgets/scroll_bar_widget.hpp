@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020-2021.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -23,21 +23,22 @@ public:
 
     static constexpr hi::axis axis = Axis;
 
-    observable<float> offset;
-    observable<float> aperture;
-    observable<float> content;
+    observer<float> offset;
+    observer<float> aperture;
+    observer<float> content;
 
-    template<typename Content, typename Aperture, typename Offset>
-    scroll_bar_widget(gui_window& window, widget *parent, Content&& content, Aperture&& aperture, Offset&& offset) noexcept :
-        widget(window, parent),
-        content(std::forward<Content>(content)),
-        aperture(std::forward<Aperture>(aperture)),
-        offset(std::forward<Offset>(offset))
+    scroll_bar_widget(
+        gui_window& window,
+        widget *parent,
+        forward_of<observer<float>> auto&& content,
+        forward_of<observer<float>> auto&& aperture,
+        forward_of<observer<float>> auto&& offset) noexcept :
+        widget(window, parent), content(hi_forward(content)), aperture(hi_forward(aperture)), offset(hi_forward(offset))
     {
         // clang-format off
-        _content_cbt = this->content.subscribe([&](auto...){ request_relayout(); });
-        _aperture_cbt = this->aperture.subscribe([&](auto...){ request_relayout(); });
-        _offset_cbt = this->offset.subscribe([&](auto...){ request_relayout(); });
+        _content_cbt = this->content.subscribe(callback_flags::local, [&](auto...){ request_relayout(); });
+        _aperture_cbt = this->aperture.subscribe(callback_flags::local, [&](auto...){ request_relayout(); });
+        _offset_cbt = this->offset.subscribe(callback_flags::local, [&](auto...){ request_relayout(); });
         // clang-format on
     }
 

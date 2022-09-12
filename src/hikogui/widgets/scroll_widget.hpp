@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -7,7 +7,6 @@
 #include "widget.hpp"
 #include "scroll_bar_widget.hpp"
 #include "scroll_aperture_widget.hpp"
-#include "scroll_delegate.hpp"
 #include "../GUI/gui_window.hpp"
 #include "../geometry/axis.hpp"
 
@@ -44,16 +43,12 @@ template<axis Axis = axis::both, bool ControlsWindow = false>
 class scroll_widget final : public widget {
 public:
     using super = widget;
-    using delegate_type = scroll_delegate<Axis, ControlsWindow>;
 
     static constexpr hi::axis axis = Axis;
     static constexpr bool controls_window = ControlsWindow;
 
     ~scroll_widget()
     {
-        if (auto delegate = _delegate.lock()) {
-            delegate->deinit(*this);
-        }
     }
 
     /** Constructs an empty scroll widget.
@@ -63,8 +58,8 @@ public:
      * @param delegate An optional delegate can be used to populate the scroll widget
      *                 during initialization.
      */
-    scroll_widget(gui_window& window, widget *parent, std::weak_ptr<delegate_type> delegate = {}) noexcept :
-        super(window, parent), _delegate(std::move(delegate))
+    scroll_widget(gui_window& window, widget *parent) noexcept :
+        super(window, parent)
     {
         hi_axiom(is_gui_thread());
         hi_axiom(parent);
@@ -77,10 +72,6 @@ public:
             window, this, _aperture->content_width, _aperture->aperture_width, _aperture->offset_x);
         _vertical_scroll_bar = std::make_unique<vertical_scroll_bar_widget>(
             window, this, _aperture->content_height, _aperture->aperture_height, _aperture->offset_y);
-
-        if (auto d = _delegate.lock()) {
-            d->init(*this);
-        }
     }
 
     /** Add a content widget directly to this scroll widget.
@@ -219,8 +210,6 @@ public:
     }
     // @endprivatesection
 private:
-    std::weak_ptr<delegate_type> _delegate;
-
     aarectangle _aperture_rectangle;
     std::unique_ptr<scroll_aperture_widget> _aperture;
 

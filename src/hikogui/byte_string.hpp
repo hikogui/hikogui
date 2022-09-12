@@ -1,10 +1,12 @@
-// Copyright Take Vos 2019.
+// Copyright Take Vos 2019, 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
 #include "required.hpp"
+#include "hash.hpp"
+#include "cast.hpp"
 #include <cstddef>
 #include <string>
 #include <string_view>
@@ -116,5 +118,29 @@ using bstring_view = std::basic_string_view<std::byte, byte_char_traits>;
 }
 
 } // namespace hi::inline v1
+
+template<>
+struct std::hash<hi::bstring> {
+    [[nodiscard]] size_t operator()(hi::bstring const &rhs) const noexcept
+    {
+        auto r = size_t{0};
+        for (auto c: rhs) {
+            r = hi::hash_mix_two(r, std::hash<uint8_t>{}(hi::char_cast<uint8_t>(c)));
+        }
+        return r;
+    }
+};
+
+template<>
+struct std::hash<hi::bstring_view> {
+    [[nodiscard]] size_t operator()(hi::bstring_view const& rhs) const noexcept
+    {
+        auto r = size_t{0};
+        for (auto c : rhs) {
+            r = hi::hash_mix_two(r, std::hash<uint8_t>{}(hi::char_cast<uint8_t>(c)));
+        }
+        return r;
+    }
+};
 
 hi_warning_pop();

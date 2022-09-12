@@ -26,13 +26,6 @@ public:
         return _notifier.subscribe(flags, hi_forward(callback));
     }
 
-        /** Subscribe a callback for notifying the widget of a data change.
-     */
-    [[nodiscard]] auto subscribe(abstract_button_widget& sender, std::invocable<> auto&& callback) noexcept
-    {
-        return subscribe(sender, callback_flags::synchronous, hi_forward(callback));
-    }
-
     /** Called when the button is pressed by the user.
      */
     virtual void activate(abstract_button_widget &sender) noexcept {};

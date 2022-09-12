@@ -1,3 +1,6 @@
+// Copyright Take Vos 2022.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "hikogui/GFX/RenderDoc.hpp"
 #include "hikogui/GFX/gfx_system.hpp"
@@ -27,22 +30,22 @@
 
 class my_preferences : public hi::preferences {
 public:
-    hi::observable<std::string> audio_output_device_id;
-    hi::observable<bool> audio_output_exclusive;
-    hi::observable<double> audio_output_sample_rate;
-    hi::observable<hi::speaker_mapping> audio_output_speaker_mapping;
+    hi::observer<std::string> audio_output_device_id;
+    hi::observer<bool> audio_output_exclusive;
+    hi::observer<double> audio_output_sample_rate;
+    hi::observer<hi::speaker_mapping> audio_output_speaker_mapping;
 
-        hi::observable<std::string> audio_input_device_id;
-    hi::observable<bool> audio_input_exclusive;
-        hi::observable<double> audio_input_sample_rate;
-    hi::observable<hi::speaker_mapping> audio_input_speaker_mapping;
+    hi::observer<std::string> audio_input_device_id;
+    hi::observer<bool> audio_input_exclusive;
+    hi::observer<double> audio_input_sample_rate;
+    hi::observer<hi::speaker_mapping> audio_input_speaker_mapping;
 
-    hi::observable<int> tab_index = 1;
-    hi::observable<bool> toggle_value;
-    hi::observable<int> radio_value = 0;
-    hi::observable<std::vector<std::pair<std::string, hi::label>>> _audio_device_list;
+    hi::observer<int> tab_index = 1;
+    hi::observer<bool> toggle_value;
+    hi::observer<int> radio_value = 0;
+    hi::observer<std::vector<std::pair<std::string, hi::label>>> _audio_device_list;
 
-    hi::observable<std::string> selected_theme;
+    hi::observer<std::string> selected_theme;
 
     my_preferences(hi::URL url) : hi::preferences(std::move(url))
     {
@@ -59,12 +62,12 @@ public:
     }
 };
 
-hi::scoped_task<> init_audio_tab(hi::grid_widget& grid, my_preferences& preferences, hi::audio_system &audio_system) noexcept
+hi::scoped_task<> init_audio_tab(hi::grid_widget& grid, my_preferences& preferences, hi::audio_system& audio_system) noexcept
 {
     using namespace hi;
 
     grid.make_widget<label_widget>("A1", tr("Input audio device:"));
-    auto &input_config = grid.make_widget<audio_device_widget>("B1", audio_system);
+    auto& input_config = grid.make_widget<audio_device_widget>("B1", audio_system);
     input_config.direction = audio_direction::input;
     input_config.device_id = preferences.audio_input_device_id;
 
@@ -80,11 +83,11 @@ hi::scoped_task<> init_theme_tab(hi::grid_widget& grid, my_preferences& preferen
 {
     using namespace hi;
 
-    hi::observable<std::vector<std::pair<std::string, hi::label>>> theme_list;
+    hi::observer<std::vector<std::pair<std::string, hi::label>>> theme_list;
 
     {
         auto& theme_book = *grid.window.gui.theme_book;
-        auto proxy = theme_list.proxy();
+        auto proxy = theme_list.copy();
         for (hilet& name : theme_book.theme_names()) {
             proxy->emplace_back(name, tr{name});
         }
@@ -130,7 +133,7 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
     grid.make_widget<label_widget>("A7", tr("Sample Rate:"));
     grid.make_widget<text_field_widget>("B7", preferences.audio_output_sample_rate);
 
-    auto toggle_value_cbt = preferences.toggle_value.subscribe([&](bool value) {
+    auto toggle_value_cbt = preferences.toggle_value.subscribe(callback_flags::local, [&](bool value) {
         checkbox2.mode = value ? widget_mode::enabled : widget_mode::disabled;
         selection3.mode = value ? widget_mode::enabled : widget_mode::disabled;
     });
@@ -138,7 +141,7 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
     co_await std::suspend_always{};
 }
 
-hi::task<> preferences_window(hi::gui_system& gui, my_preferences& preferences, hi::audio_system &audio_system)
+hi::task<> preferences_window(hi::gui_system& gui, my_preferences& preferences, hi::audio_system& audio_system)
 {
     using namespace hi;
 
@@ -161,7 +164,7 @@ hi::task<> preferences_window(hi::gui_system& gui, my_preferences& preferences, 
     co_await window->closing;
 }
 
-hi::task<> main_window(hi::gui_system& gui, my_preferences& preferences, hi::audio_system &audio_system)
+hi::task<> main_window(hi::gui_system& gui, my_preferences& preferences, hi::audio_system& audio_system)
 {
     using namespace hi;
 

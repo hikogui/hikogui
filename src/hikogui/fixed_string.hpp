@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -50,19 +50,6 @@ struct basic_fixed_string {
         }
     }
 
-    template<std::size_t O>
-    constexpr basic_fixed_string& operator=(value_type const (&str)[O]) noexcept requires((O - 1) == N)
-    {
-        auto i = 0_uz;
-        for (; i != (O - 1); ++i) {
-            _str[i] = str[i];
-        }
-        for (; i != N; ++i) {
-            _str[i] = value_type{};
-        }
-        return *this;
-    }
-
     constexpr operator std::basic_string_view<value_type>() const noexcept
     {
         return std::basic_string_view<value_type>{_str.data(), size()};
@@ -71,6 +58,26 @@ struct basic_fixed_string {
     [[nodiscard]] constexpr std::size_t size() const noexcept
     {
         return N;
+    }
+
+    [[nodiscard]] constexpr value_type& operator[](size_t index) noexcept
+    {
+#ifndef NDEBUG
+        if (not(index < N)) {
+            std::terminate();
+        }
+#endif
+        return _str[index];
+    }
+
+    [[nodiscard]] constexpr value_type const& operator[](size_t index) const noexcept
+    {
+#ifndef NDEBUG
+        if (not(index < N)) {
+            std::terminate();
+        }
+#endif
+        return _str[index];
     }
 
     [[nodiscard]] constexpr auto begin() noexcept
@@ -82,8 +89,6 @@ struct basic_fixed_string {
     {
         return _str.begin() + size();
     }
-
-    
 
     [[nodiscard]] constexpr bool operator==(basic_fixed_string const& rhs) const noexcept = default;
     [[nodiscard]] constexpr auto operator<=>(basic_fixed_string const& rhs) const noexcept = default;
@@ -109,6 +114,21 @@ struct basic_fixed_string {
     {
         return static_cast<std::basic_string_view<CharT>>(*this) <=> rhs;
     }
+
+    template<size_t O>
+    [[nodiscard]] constexpr auto operator+(basic_fixed_string<CharT, O> const& rhs) const noexcept
+    {
+        auto r = basic_fixed_string<CharT, N + O>{};
+        auto dst_i = 0_uz;
+        for (auto src_i = 0_uz; src_i != N; ++src_i, ++dst_i) {
+            r[dst_i] = (*this)[src_i];
+        }
+        for (auto src_i = 0_uz; src_i != O; ++src_i, ++dst_i) {
+            r[dst_i] = rhs[src_i];
+        }
+
+        return r;
+    }
 };
 
 template<std::size_t N>
@@ -128,9 +148,9 @@ basic_fixed_string(CharT const (&str)[N]) -> basic_fixed_string<CharT, N - 1>;
 } // namespace hi::inline v1
 
 template<typename T, std::size_t N, typename CharT>
-struct std::formatter<hi::basic_fixed_string<T, N>, CharT> : std::formatter<T const *, CharT> {
+struct std::formatter<hi::basic_fixed_string<T, N>, CharT> : std::formatter<std::basic_string_view<T>, CharT> {
     auto format(hi::basic_fixed_string<T, N> const& t, auto& fc)
     {
-        return std::formatter<T const *, CharT>::format(t.data(), fc);
+        return std::formatter<std::basic_string_view<T>, CharT>::format(static_cast<std::basic_string_view<T>>(t), fc);
     }
 };

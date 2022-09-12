@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -32,7 +32,8 @@ public:
     static_assert(std::is_same_v<Result, void>, "Result of a notifier must be void.");
 
     using result_type = Result;
-    using function_type = std::function<Result(Args const&...)>;
+    using function_proto = Result(Args...);
+    using function_type = std::function<function_proto>;
 
     using token_type = std::shared_ptr<function_type>;
     using weak_token_type = std::weak_ptr<function_type>;
@@ -86,7 +87,8 @@ public:
             return _args;
         }
 
-    private : notifier *_notifier = nullptr;
+    private:
+        notifier *_notifier = nullptr;
         token_type _cbt;
         std::tuple<Args...> _args;
     };
@@ -94,10 +96,10 @@ public:
     /** Create a notifier.
      */
     constexpr notifier() noexcept = default;
-    notifier(notifier&&) = delete;
-    notifier(notifier const&) = delete;
-    notifier& operator=(notifier&&) = delete;
-    notifier& operator=(notifier const&) = delete;
+    constexpr notifier(notifier&&) noexcept = default;
+    constexpr notifier(notifier const&) noexcept = default;
+    constexpr notifier& operator=(notifier&&) noexcept = default;
+    constexpr notifier& operator=(notifier const&) noexcept = default;
 
     /** Create an awaiter that can await on this notifier.
      */
@@ -208,7 +210,7 @@ private:
         });
     }
 
-#if HI_BUILD_TYPE == HI_BT_DEBUG
+#ifndef NDEBUG
     /** The notifier is currently calling all the callbacks.
      */
     mutable bool _notifying = false;

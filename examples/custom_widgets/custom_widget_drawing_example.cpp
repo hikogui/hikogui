@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -73,14 +73,14 @@ public:
     constexpr static auto blueish = hi::color(0.00f, 0.70f, 0.30f);
     constexpr static auto redish2 = hi::color(0.70f, 0.00f, 0.30f);
 
-    hi::observable<drawing_type> drawing = drawing_type::box;
-    hi::observable<shape_type> shape = shape_type::square;
-    hi::observable<gradient_type> gradient = gradient_type::solid;
-    hi::observable<bool> rotating = false;
-    hi::observable<bool> clip = false;
-    hi::observable<hi::border_side> border_side = hi::border_side::on;
-    hi::observable<float> border_width = 0.0f;
-    hi::observable<bool> rounded = false;
+    hi::observer<drawing_type> drawing = drawing_type::box;
+    hi::observer<shape_type> shape = shape_type::square;
+    hi::observer<gradient_type> gradient = gradient_type::solid;
+    hi::observer<bool> rotating = false;
+    hi::observer<bool> clip = false;
+    hi::observer<hi::border_side> border_side = hi::border_side::on;
+    hi::observer<float> border_width = 0.0f;
+    hi::observer<bool> rounded = false;
 
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
@@ -88,14 +88,14 @@ public:
         widget(window, parent), _image(hi::URL("resource:mars3.png"))
     {
         // clang-format off
-        _drawing_cbt = this->drawing.subscribe([&](auto...){ request_redraw(); });
-        _shape_cbt = this->shape.subscribe([&](auto...){ request_redraw(); });
-        _gradient_cbt = this->gradient.subscribe([&](auto...){ request_redraw(); });
-        _rotating_cbt = this->rotating.subscribe([&](auto...){ request_redraw(); });
-        _clip_cbt = this->clip.subscribe([&](auto...){ request_redraw(); });
-        _border_side_cbt = this->border_side.subscribe([&](auto...){ request_redraw(); });
-        _border_width_cbt = this->border_width.subscribe([&](auto...){ request_redraw(); });
-        _rounded_cbt = this->rounded.subscribe([&](auto...){ request_redraw(); });
+        _drawing_cbt = this->drawing.subscribe(hi::callback_flags::local, [&](auto...){ request_redraw(); });
+        _shape_cbt = this->shape.subscribe(hi::callback_flags::local, [&](auto...){ request_redraw(); });
+        _gradient_cbt = this->gradient.subscribe(hi::callback_flags::local, [&](auto...){ request_redraw(); });
+        _rotating_cbt = this->rotating.subscribe(hi::callback_flags::local, [&](auto...){ request_redraw(); });
+        _clip_cbt = this->clip.subscribe(hi::callback_flags::local, [&](auto...){ request_redraw(); });
+        _border_side_cbt = this->border_side.subscribe(hi::callback_flags::local, [&](auto...){ request_redraw(); });
+        _border_width_cbt = this->border_width.subscribe(hi::callback_flags::local, [&](auto...){ request_redraw(); });
+        _rounded_cbt = this->rounded.subscribe(hi::callback_flags::local, [&](auto...){ request_redraw(); });
         // clang-format on
 
         this->_glyph = font_book().find_glyph(hi::elusive_icon::Briefcase);
@@ -113,7 +113,7 @@ public:
             if (not(_image_backing = hi::paged_image{window.surface.get(), _image})) {
                 // Could not get an image, retry.
                 _image_was_modified = true;
-                request_reconstrain();
+                hi_request_reconstrain("drawing_widget::set_constraints() could not get backing image.");
             }
         }
 
@@ -315,14 +315,14 @@ private:
 
 int hi_main(int argc, char *argv[])
 {
-    hi::observable<drawing_type> drawing = drawing_type::box;
-    hi::observable<shape_type> shape = shape_type::square;
-    hi::observable<bool> rotating = false;
-    hi::observable<bool> clip = false;
-    hi::observable<gradient_type> gradient = gradient_type::solid;
-    hi::observable<hi::border_side> border_side = hi::border_side::on;
-    hi::observable<float> border_width = 0.0f;
-    hi::observable<bool> rounded = false;
+    hi::observer<drawing_type> drawing = drawing_type::box;
+    hi::observer<shape_type> shape = shape_type::square;
+    hi::observer<bool> rotating = false;
+    hi::observer<bool> clip = false;
+    hi::observer<gradient_type> gradient = gradient_type::solid;
+    hi::observer<hi::border_side> border_side = hi::border_side::on;
+    hi::observer<float> border_width = 0.0f;
+    hi::observer<bool> rounded = false;
 
     // Startup renderdoc for debugging
     auto render_doc = hi::RenderDoc();

@@ -1,4 +1,4 @@
-// Copyright Take Vos 2019-2021.
+// Copyright Take Vos 2019-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -946,24 +946,24 @@ vk::ShaderModule gfx_device_vulkan::loadShader(URL const& shaderObjectLocation) 
 
 void gfx_device_vulkan::setDebugUtilsObjectNameEXT(vk::DebugUtilsObjectNameInfoEXT const& name_info) const
 {
-    if constexpr (build_type::current == build_type::debug) {
-        hi_axiom(gfx_system_mutex.recurse_lock_count());
-        return intrinsic.setDebugUtilsObjectNameEXT(name_info, down_cast<gfx_system_vulkan&>(system).loader());
-    }
+#ifndef NDEBUG
+    hi_axiom(gfx_system_mutex.recurse_lock_count());
+    return intrinsic.setDebugUtilsObjectNameEXT(name_info, down_cast<gfx_system_vulkan&>(system).loader());
+#endif
 }
 
 void gfx_device_vulkan::cmdBeginDebugUtilsLabelEXT(vk::CommandBuffer buffer, vk::DebugUtilsLabelEXT const& create_info) const
 {
-    if constexpr (build_type::current == build_type::debug) {
-        buffer.beginDebugUtilsLabelEXT(create_info, down_cast<gfx_system_vulkan&>(system).loader());
-    }
+#ifndef NDEBUG
+    buffer.beginDebugUtilsLabelEXT(create_info, down_cast<gfx_system_vulkan&>(system).loader());
+#endif
 }
 
 void gfx_device_vulkan::cmdEndDebugUtilsLabelEXT(vk::CommandBuffer buffer) const
 {
-    if constexpr (build_type::current == build_type::debug) {
-        buffer.endDebugUtilsLabelEXT(down_cast<gfx_system_vulkan&>(system).loader());
-    }
+#ifndef NDEBUG
+    buffer.endDebugUtilsLabelEXT(down_cast<gfx_system_vulkan&>(system).loader());
+#endif
 }
 
 void gfx_device_vulkan::log_memory_usage() const noexcept

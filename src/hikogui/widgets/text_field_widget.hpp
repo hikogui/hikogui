@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -10,7 +10,6 @@
 #include "label_widget.hpp"
 #include "scroll_widget.hpp"
 #include "../label.hpp"
-#include "../weak_or_unique_ptr.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -57,23 +56,27 @@ public:
     using delegate_type = text_field_delegate;
     using super = widget;
 
+    std::shared_ptr<delegate_type> delegate;
+
     /** Continues update mode.
      * If true then the value will update on every edit of the text field.
      */
-    observable<bool> continues = false;
+    observer<bool> continues = false;
 
     /** The style of the text.
      */
-    observable<semantic_text_style> text_style = semantic_text_style::label;
+    observer<semantic_text_style> text_style = semantic_text_style::label;
 
     virtual ~text_field_widget();
 
-    text_field_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept;
+    text_field_widget(gui_window &window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
-    template<typename Value>
-    text_field_widget(gui_window &window, widget *parent, Value &&value) noexcept
-        requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>) :
-        text_field_widget(window, parent, make_unique_default_text_field_delegate(std::forward<Value>(value)))
+    text_field_widget(gui_window& window, widget *parent, different_from<std::shared_ptr<delegate_type>> auto&& value) noexcept
+        requires requires
+    {
+        make_default_text_field_delegate(hi_forward(value));
+    } :
+        text_field_widget(window, parent, make_default_text_field_delegate(hi_forward(value)))
     {
     }
 
@@ -91,7 +94,6 @@ public:
     [[nodiscard]] color focus_color() const noexcept override;
     /// @endprivatesection
 private:
-    weak_or_unique_ptr<delegate_type> _delegate;
     notifier<>::token_type _delegate_cbt;
 
     /** The scroll widget embeds the text widget.
@@ -105,9 +107,9 @@ private:
 
     /** The text edited by the _text_widget.
      */
-    observable<gstring> _text;
+    observer<gstring> _text;
 
-    /** The rectangle where the box is displayed, inwhich the text is displayed.
+    /** The rectangle where the box is displayed, in which the text is displayed.
     */
     aarectangle _box_rectangle;
 
@@ -118,7 +120,7 @@ private:
 
     /** An error string to show to the user.
      */
-    observable<label> _error_label;
+    observer<label> _error_label;
     aarectangle _error_label_rectangle;
     widget_constraints _error_label_constraints;
     std::unique_ptr<label_widget> _error_label_widget;
@@ -128,7 +130,6 @@ private:
     typename decltype(_text)::token_type _text_cbt;
     typename decltype(_error_label)::token_type _error_label_cbt;
 
-    text_field_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
     void revert(bool force) noexcept;
     void commit(bool force) noexcept;
     void draw_background_box(draw_context const &context) const noexcept;

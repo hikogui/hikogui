@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020-2021.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -35,7 +35,7 @@ namespace hi::inline v1 {
         [[unlikely]] return y; \
     }
 
-#if HI_BUILD_TYPE == HI_BT_DEBUG
+#ifndef NDEBUG
 /** Specify an axiom; an expression that is true.
  * An axiom is checked in debug mode, and is used as an optimization
  * in release mode.

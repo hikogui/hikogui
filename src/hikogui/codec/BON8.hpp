@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020-2021.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -310,23 +310,23 @@ public:
             for (hilet _c : value) {
                 hilet c = truncate<uint8_t>(_c);
 
-                if constexpr (build_type::current == build_type::debug) {
-                    if (multi_byte == 0) {
-                        if (c >= 0xc2 and c <= 0xdf) {
-                            multi_byte = 1;
-                        } else if (c >= 0xe0 and c <= 0xef) {
-                            multi_byte = 2;
-                        } else if (c >= 0xf0 and c <= 0xf7) {
-                            multi_byte = 3;
-                        } else {
-                            hi_assert(c <= 0x7f);
-                        }
-
+#ifndef NDEBUG
+                if (multi_byte == 0) {
+                    if (c >= 0xc2 and c <= 0xdf) {
+                        multi_byte = 1;
+                    } else if (c >= 0xe0 and c <= 0xef) {
+                        multi_byte = 2;
+                    } else if (c >= 0xf0 and c <= 0xf7) {
+                        multi_byte = 3;
                     } else {
-                        hi_assert(c >= 0x80 and c <= 0xbf);
-                        --multi_byte;
+                        hi_assert(c <= 0x7f);
                     }
+
+                } else {
+                    hi_assert(c >= 0x80 and c <= 0xbf);
+                    --multi_byte;
                 }
+#endif
 
                 output += static_cast<std::byte>(c);
             }

@@ -1,4 +1,4 @@
-// Copyright Take Vos 2019-2020.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -11,7 +11,6 @@
 #include "../animator.hpp"
 #include "../i18n/translate.hpp"
 #include "../notifier.hpp"
-#include "../weak_or_unique_ptr.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -25,23 +24,31 @@ public:
     using super = widget;
     using delegate_type = button_delegate;
 
+    /** The delegate that controls the button widget.
+     */
+    std::shared_ptr<delegate_type> delegate;
+
     /** The label to show when the button is in the 'on' state.
      */
-    observable<label> on_label = tr("on");
+    observer<label> on_label = tr("on");
 
     /** The label to show when the button is in the 'off' state.
      */
-    observable<label> off_label = tr("off");
+    observer<label> off_label = tr("off");
 
     /** The label to show when the button is in the 'other' state.
      */
-    observable<label> other_label = tr("other");
+    observer<label> other_label = tr("other");
 
     /** The alignment of the button and on/off/other label.
      */
-    observable<alignment> alignment;
+    observer<alignment> alignment;
 
     notifier<void()> pressed;
+
+    ~abstract_button_widget();
+    
+    abstract_button_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
     /** Set on/off/other labels of the button to the same value.
      */
@@ -60,11 +67,8 @@ public:
     [[nodiscard]] button_state state() const noexcept
     {
         hi_axiom(is_gui_thread());
-        if (auto delegate = _delegate.lock()) {
-            return delegate->state(*this);
-        } else {
-            return button_state::off;
-        }
+        hi_axiom(delegate != nullptr);
+        return delegate->state(*this);
     }
 
     /// @privatesection
@@ -88,11 +92,7 @@ protected:
     std::unique_ptr<label_widget> _other_label_widget;
 
     bool _pressed = false;
-    weak_or_unique_ptr<delegate_type> _delegate;
     notifier<>::token_type _delegate_cbt;
-
-    ~abstract_button_widget();
-    abstract_button_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
 
     widget_constraints set_constraints_button() const noexcept;
     void set_layout_button(widget_layout const &context) noexcept;

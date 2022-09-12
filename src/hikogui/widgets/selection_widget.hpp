@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020-2021.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -13,7 +13,6 @@
 #include "selection_delegate.hpp"
 #include "default_selection_delegate.hpp"
 #include "../observable.hpp"
-#include "../weak_or_unique_ptr.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -39,7 +38,9 @@ public:
     using super = widget;
     using delegate_type = selection_delegate;
 
-    observable<label> unknown_label;
+    std::shared_ptr<delegate_type> delegate;
+
+    observer<label> unknown_label;
 
     ~selection_widget();
 
@@ -49,7 +50,7 @@ public:
      * @param parent The owner of the selection widget.
      * @param delegate The delegate which will control the selection widget.
      */
-    selection_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept;
+    selection_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
     /** Construct a selection widget which will monitor an option list and a
      * value.
@@ -62,16 +63,19 @@ public:
      *                    The labels are of type `label`.
      * @param value The value or observable value to monitor.
      */
-    template<typename OptionList, typename Value, typename... Args>
-    selection_widget(gui_window &window, widget *parent, OptionList &&option_list, Value &&value, Args &&...args) noexcept
-        requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>) :
+    selection_widget(
+        gui_window& window,
+        widget *parent,
+        different_from<std::shared_ptr<delegate_type>> auto&& option_list,
+        different_from<std::shared_ptr<delegate_type>> auto&& value,
+        different_from<std::shared_ptr<delegate_type>> auto&&...args) noexcept
+        requires requires {
+            make_default_selection_delegate(hi_forward(option_list), hi_forward(value), hi_forward(args)...);
+        } :
         selection_widget(
             window,
             parent,
-            make_unique_default_selection_delegate(
-                std::forward<OptionList>(option_list),
-                std::forward<Value>(value),
-                std::forward<Args>(args)...))
+            make_default_selection_delegate(hi_forward(option_list), hi_forward(value), hi_forward(args)...))
     {
     }
 
@@ -92,8 +96,8 @@ public:
     [[nodiscard]] color focus_color() const noexcept override;
     /// @endprivatesection
 private:
-    weak_or_unique_ptr<delegate_type> _delegate;
     notifier<>::token_type _delegate_cbt;
+    std::atomic<bool> _notification_from_delegate = true;
 
     std::unique_ptr<label_widget> _current_label_widget;
     std::unique_ptr<label_widget> _unknown_label_widget;
@@ -116,7 +120,6 @@ private:
     std::vector<menu_button_widget *> _menu_button_widgets;
     std::vector<notifier<>::token_type> _menu_button_tokens;
 
-    selection_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
     [[nodiscard]] menu_button_widget const *get_first_menu_button() const noexcept;
     [[nodiscard]] menu_button_widget const *get_selected_menu_button() const noexcept;
     void start_selecting() noexcept;

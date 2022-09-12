@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -12,12 +12,12 @@ class scroll_aperture_widget : public widget {
 public:
     using super = widget;
 
-    observable<float> content_width;
-    observable<float> content_height;
-    observable<float> aperture_width;
-    observable<float> aperture_height;
-    observable<float> offset_x;
-    observable<float> offset_y;
+    observer<float> content_width;
+    observer<float> content_height;
+    observer<float> aperture_width;
+    observer<float> aperture_height;
+    observer<float> offset_x;
+    observer<float> offset_y;
 
     scroll_aperture_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
     {
@@ -28,12 +28,12 @@ public:
         semantic_layer = parent->semantic_layer;
 
         // clang-format off
-        _content_width_cbt = content_width.subscribe([&](auto...){ request_relayout(); });
-        _content_height_cbt = content_height.subscribe([&](auto...){ request_relayout(); });
-        _aperture_width_cbt = aperture_width.subscribe([&](auto...){ request_relayout(); });
-        _aperture_height_cbt = aperture_height.subscribe([&](auto...){ request_relayout(); });
-        _offset_x_cbt = offset_x.subscribe([&](auto...){ request_relayout(); });
-        _offset_y_cbt = offset_y.subscribe([&](auto...){ request_relayout(); });
+        _content_width_cbt = content_width.subscribe(callback_flags::local, [&](auto...){ request_relayout(); });
+        _content_height_cbt = content_height.subscribe(callback_flags::local, [&](auto...){ request_relayout(); });
+        _aperture_width_cbt = aperture_width.subscribe(callback_flags::local, [&](auto...){ request_relayout(); });
+        _aperture_height_cbt = aperture_height.subscribe(callback_flags::local, [&](auto...){ request_relayout(); });
+        _offset_x_cbt = offset_x.subscribe(callback_flags::local, [&](auto...){ request_relayout(); });
+        _offset_y_cbt = offset_y.subscribe(callback_flags::local, [&](auto...){ request_relayout(); });
         // clang-format off
     }
 

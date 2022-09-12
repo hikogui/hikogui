@@ -1,11 +1,10 @@
-// Copyright Take Vos 2020-2021.
+// Copyright Take Vos 2021.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
 #include "widget.hpp"
-#include "overlay_delegate.hpp"
 
 namespace hi::inline v1 {
 
@@ -34,7 +33,6 @@ namespace hi::inline v1 {
 class overlay_widget final : public widget {
 public:
     using super = widget;
-    using delegate_type = overlay_delegate;
 
     ~overlay_widget();
 
@@ -45,7 +43,7 @@ public:
      * @param delegate An optional delegate can be used to populate the overlay widget
      *                 during initialization.
      */
-    overlay_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate = {}) noexcept;
+    overlay_widget(gui_window &window, widget *parent) noexcept;
 
     void set_widget(std::unique_ptr<widget> new_widget) noexcept;
 
@@ -85,7 +83,6 @@ public:
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
     /// @endprivatesection
 private:
-    std::weak_ptr<delegate_type> _delegate;
     std::unique_ptr<widget> _content;
 
     void draw_background(draw_context const &context) noexcept;

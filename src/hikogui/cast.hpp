@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -203,6 +203,12 @@ template<std::integral Out, std::integral In>
     auto in_unsigned = static_cast<in_unsigned_type>(rhs);
     auto out_unsigned = narrow_cast<out_unsigned_type>(in_unsigned);
     return static_cast<Out>(out_unsigned);
+}
+
+template<std::integral Out>
+[[nodiscard]] constexpr Out char_cast(std::byte rhs) noexcept
+{
+    return char_cast<Out>(static_cast<uint8_t>(rhs));
 }
 
 /** Return the low half of the input value.

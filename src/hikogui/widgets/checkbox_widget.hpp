@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -47,7 +47,7 @@ public:
      * @param parent The parent widget that owns this checkbox widget.
      * @param delegate The delegate to use to manage the state of the checkbox button.
      */
-    checkbox_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept;
+    checkbox_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
     /** Construct a checkbox widget with a default button delegate.
      *
@@ -58,20 +58,21 @@ public:
      * @param args An optional on-value, followed by an optional off-value. These two values
      *             are used to determine which value yields an on/off state.
      */
-    template<typename Value, typename... Args>
-    checkbox_widget(gui_window &window, widget *parent, Value &&value, Args &&...args) noexcept
-        requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>) :
-        checkbox_widget(
-            window,
-            parent,
-            make_unique_default_button_delegate<button_type::toggle>(std::forward<Value>(value), std::forward<Args>(args)...))
+    checkbox_widget(
+        gui_window& window,
+        widget *parent,
+        different_from<std::shared_ptr<delegate_type>> auto&& value,
+        different_from<std::shared_ptr<delegate_type>> auto&&...args) noexcept requires requires
+    {
+        make_default_button_delegate<button_type::toggle>(hi_forward(value), hi_forward(args)...);
+    } : checkbox_widget(window, parent, make_default_button_delegate<button_type::toggle>(hi_forward(value), hi_forward(args)...))
     {
     }
 
     /// @privatesection
-    widget_constraints const &set_constraints() noexcept override;
-    void set_layout(widget_layout const &layout) noexcept override;
-    void draw(draw_context const &context) noexcept override;
+    widget_constraints const& set_constraints() noexcept override;
+    void set_layout(widget_layout const& layout) noexcept override;
+    void draw(draw_context const& context) noexcept override;
     /// @endprivatesection
 private:
     extent2 _button_size;
@@ -81,10 +82,8 @@ private:
     glyph_ids _minus_glyph;
     aarectangle _minus_glyph_rectangle;
 
-    checkbox_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
-
-    void draw_check_box(draw_context const &context) noexcept;
-    void draw_check_mark(draw_context const &context) noexcept;
+    void draw_check_box(draw_context const& context) noexcept;
+    void draw_check_mark(draw_context const& context) noexcept;
 };
 
 } // namespace hi::inline v1

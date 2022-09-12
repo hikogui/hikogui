@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -12,14 +12,14 @@
 class command_widget : public hi::widget {
 public:
     // Using an observable allows reading, writing and monitoring of the value outside of the widget.
-    hi::observable<bool> value;
+    hi::observer<bool> value;
 
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
     command_widget(hi::gui_window& window, hi::widget *parent) noexcept : hi::widget(window, parent)
     {
         // To visually show the change in value the widget needs to be redrawn.
-        _value_cbt = value.subscribe([&](auto...) {
+        _value_cbt = value.subscribe(hi::callback_flags::local, [&](auto...) {
             request_redraw();
         });
     }

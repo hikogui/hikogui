@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -7,7 +7,6 @@
 #pragma once
 
 #include "widget.hpp"
-#include "row_column_delegate.hpp"
 #include "grid_layout.hpp"
 #include "../GUI/theme.hpp"
 #include "../geometry/axis.hpp"
@@ -39,15 +38,9 @@ public:
     static_assert(Axis == axis::horizontal or Axis == axis::vertical);
 
     using super = widget;
-    using delegate_type = row_column_delegate<Axis>;
     static constexpr hi::axis axis = Axis;
 
-    ~row_column_widget()
-    {
-        if (auto delegate = _delegate.lock()) {
-            delegate->deinit(*this);
-        }
-    }
+    ~row_column_widget() {}
 
     /** Constructs an empty row/column widget.
      *
@@ -56,16 +49,12 @@ public:
      * @param delegate An optional delegate can be used to populate the row/column widget
      *                 during initialization.
      */
-    row_column_widget(gui_window& window, widget *parent, std::weak_ptr<delegate_type> delegate = {}) noexcept :
-        super(window, parent), _delegate(std::move(delegate))
+    row_column_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
     {
         hi_axiom(is_gui_thread());
 
         if (parent) {
             semantic_layer = parent->semantic_layer;
-        }
-        if (auto d = _delegate.lock()) {
-            d->init(*this);
         }
     }
 
@@ -87,7 +76,7 @@ public:
         auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
         auto& ref = *tmp;
         _children.push_back(std::move(tmp));
-        request_reconstrain();
+        hi_request_reconstrain("row_column_widget::make_widget()");
         return ref;
     }
 
@@ -97,7 +86,7 @@ public:
     {
         hi_axiom(is_gui_thread());
         _children.clear();
-        request_reconstrain();
+        hi_request_reconstrain("row_column_widget::clear()");
     }
 
     /// @privatesection
@@ -199,7 +188,6 @@ public:
     /// @endprivatesection
 private:
     std::vector<std::unique_ptr<widget>> _children;
-    std::weak_ptr<delegate_type> _delegate;
     grid_layout _grid_layout;
 
     void update_constraints_for_child(

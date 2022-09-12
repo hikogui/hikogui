@@ -1,4 +1,4 @@
-// Copyright Take Vos 2019-2021.
+// Copyright Take Vos 2019-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -312,8 +312,8 @@ constexpr bool is_decayed_derived_from_v = is_decayed_derived_from<DerivedType,B
 /** If the types are different.
 * The two types are checked after removing const, volatile and reference qualifiers.
  */
-template<typename T1, typename T2>
-constexpr bool is_different_v = not std::is_same_v<std::remove_cvref_t<T1>,std::remove_cvref_t<T2>>;
+template<typename Context, typename Expected>
+constexpr bool is_different_v = not std::is_same_v<std::decay_t<Context>,std::decay_t<Expected>>;
 
 template<typename T>
 struct is_atomic : public std::false_type {};
@@ -332,36 +332,42 @@ struct use_first {
 template<typename First, typename Second>
 using use_first_t = use_first<First,Second>;
 
+/** Smart pointer traits.
+ *
+ * @note Applications may make specializations for their own types.
+ * @param T the type.
+ */
 template<typename T>
-struct acts_as_pointer : public std::false_type {};
+struct smart_pointer_traits {
+    /** If true this is a pointer or shared_ptr.
+     */
+    constexpr static bool value = false;
 
-template<typename T> struct acts_as_pointer<std::shared_ptr<T>> : public std::true_type {};
-template<typename T> struct acts_as_pointer<std::shared_ptr<T> &&> : public std::true_type {};
-template<typename T> struct acts_as_pointer<std::shared_ptr<T> &> : public std::true_type {};
-template<typename T> struct acts_as_pointer<std::shared_ptr<T> const &> : public std::true_type {};
-template<typename T> struct acts_as_pointer<std::weak_ptr<T>> : public std::true_type {};
-template<typename T> struct acts_as_pointer<std::weak_ptr<T> &&> : public std::true_type {};
-template<typename T> struct acts_as_pointer<std::weak_ptr<T> &> : public std::true_type {};
-template<typename T> struct acts_as_pointer<std::weak_ptr<T> const &> : public std::true_type {};
-template<typename T> struct acts_as_pointer<std::unique_ptr<T>> : public std::true_type {};
-template<typename T> struct acts_as_pointer<std::unique_ptr<T> &&> : public std::true_type {};
-template<typename T> struct acts_as_pointer<std::unique_ptr<T> &> : public std::true_type {};
-template<typename T> struct acts_as_pointer<std::unique_ptr<T> const &> : public std::true_type {};
-template<typename T> struct acts_as_pointer<T *> : public std::true_type {};
+    /** The type the pointer points to.
+     */
+    using type = void;
+};
 
-template<typename T>
-constexpr bool acts_as_pointer_v = acts_as_pointer<T>::value;
+template<typename T> struct smart_pointer_traits<std::shared_ptr<T>> {constexpr static bool value = true; using type = T;};
+template<typename T> struct smart_pointer_traits<std::weak_ptr<T>> {constexpr static bool value = true; using type = T;};
+template<typename T> struct smart_pointer_traits<std::unique_ptr<T>> {constexpr static bool value = true; using type = T;};
+template<typename T> struct smart_pointer_traits<T *> {constexpr static bool value = true; using type = T;};
 
+/** Call a method on a reference or a pointer object.
+ *
+ * @param object A reference or pointer to an object with a method.
+ * @param method The name of the method to call.
+ * @param ... Argument passed to the method.
+ * @return The return value of the method.
+ */
 #define hi_call_method(object, method, ...) \
     [&]() { \
-        if constexpr (acts_as_pointer_v<decltype(object)>) { \
+        if constexpr (smart_pointer_traits<std::decay_t<decltype(object)>>::value) { \
             return object->method(__VA_ARGS__); \
         } else { \
             return object.method(__VA_ARGS__); \
         } \
     }()
-
-// clang-format on
 
 /** All values of numeric type `In` can be represented without loss of precision by numeric type `Out`.
  */
@@ -369,33 +375,97 @@ template<typename Out, typename In>
 constexpr bool type_in_range_v = std::numeric_limits<Out>::digits >= std::numeric_limits<In>::digits and
     (std::numeric_limits<Out>::is_signed == std::numeric_limits<In>::is_signed or std::numeric_limits<Out>::is_signed);
 
-/** True if T is a forwarded type of OfType.
+/** Is context a form of the expected type.
+ *
+ * The context matched the expected type when:
+ *  - expected is a non-reference type and the decayed context is the same type, or derived from expected.
+ *  - expected is a pointer, shared_ptr, weak_ptr or unique_ptr and the context is convertible to expected.
+ *  - expected is in the form of `Result(Arguments...)` and the context is convertible to expected.
+ *  - expected is a observer and the context is convertible to expected.
+ *  - multiple expected are `or`-ed together
+ *
+ * Examples of `forward_of` concept which is created from `is_forward_of`:
  *
  * ```
- * template<forward_of<std::string> Text>
- * std::string foo(Text &&text) {
- *   return std::forward<Text>(text);
+ * void foo(forward_of<std::string> auto &&text) {
+ *     bar(std::forward<decltype(text)>(text));
+ * }
+
+ * void foo(forward_of<std::shared_ptr<std::string>> auto &&ptr) {
+ *     bar(std::forward<decltype(text)>(ptr));
+ * }
+ *
+ * void foo(forward_of<std::unique_ptr<std::string>> auto &&ptr) {
+ *     bar(std::forward<decltype(text)>(ptr));
+ * }
+ *
+ * void foo(forward_of<std::string *> auto &&ptr) {
+ *     bar(std::forward<decltype(text)>(ptr));
+ * }
+ *
+ * void foo(forward_of<void(std::string)> auto &&func) {
+ *     bar(std::forward<decltype(func)>(func));
  * }
  * ```
+ *
+ * @tparam Context The template argument of a forwarding function argument.
+ * @tparam Expected The type expected that matched a decayed-context.
+ * @tparam OtherExpected optional other expected types which may match the decayed-context.
  */
-template<typename T, typename Forward>
-struct is_forward_of : public std::false_type {
+template<typename Context, typename Expected, typename... OtherExpected>
+struct is_forward_of;
+
+template<typename Context, typename Expected, typename FirstOtherExpected, typename... OtherExpected>
+struct is_forward_of<Context, Expected, FirstOtherExpected, OtherExpected...> : std::conditional_t<
+        is_forward_of<Context, Expected>::value or
+        (is_forward_of<Context, FirstOtherExpected>::value or ... or is_forward_of<Context, OtherExpected>::value),
+        std::true_type,
+        std::false_type> {};
+
+template<typename Context, typename Expected>
+struct is_forward_of<Context, Expected> :
+    std::conditional_t<
+        std::is_same_v<std::decay_t<Context>, Expected> or std::is_base_of_v<Expected, std::decay_t<Context>>,
+        std::true_type,
+        std::false_type> {
+    static_assert(not std::is_reference_v<Expected>, "Template argument Expected must be a non-reference type.");
 };
 
-template<typename T>
-struct is_forward_of<T, T> : public std::true_type {
+template<typename Context, typename Expected>
+struct is_forward_of<Context, std::shared_ptr<Expected>> :
+    std::conditional_t<
+        std::is_convertible_v<Context, std::shared_ptr<Expected>>,
+        std::true_type,
+        std::false_type> {};
+
+template<typename Context, typename Expected>
+struct is_forward_of<Context, std::weak_ptr<Expected>> :
+    std::conditional_t<
+        std::is_convertible_v<Context, std::weak_ptr<Expected>>,
+        std::true_type,
+        std::false_type> {};
+
+template<typename Context, typename Expected>
+struct is_forward_of<Context, std::unique_ptr<Expected>> :
+    std::conditional_t<
+        std::is_convertible_v<Context, std::unique_ptr<Expected>>,
+        std::true_type,
+        std::false_type> {};
+
+template<typename Context, typename Expected>
+struct is_forward_of<Context, Expected *> :
+    std::conditional_t<
+        std::is_convertible_v<Context, Expected *>,
+        std::true_type,
+        std::false_type> {};
+
+template<typename Context, typename Result, typename... Args>
+struct is_forward_of<Context, Result(Args...)> :
+    std::conditional_t<std::is_invocable_r_v<Result, Context, Args...>, std::true_type, std::false_type> {
 };
 
-template<typename T>
-struct is_forward_of<T, T const&> : public std::true_type {
-};
-
-template<typename T>
-struct is_forward_of<T, T&> : public std::true_type {
-};
-
-template<typename T, typename Forward>
-constexpr bool is_forward_of_v = is_forward_of<T, Forward>::value;
+template<typename Context, typename Expected, typename... OtherExpected>
+constexpr bool is_forward_of_v = is_forward_of<Context, Expected, OtherExpected...>::value;
 
 /** Decays types for use as elements in std::variant.
  *
@@ -415,5 +485,75 @@ struct variant_decay<void> {
  */
 template<typename T>
 using variant_decay_t = variant_decay<T>::type;
+
+/** This selector allows access to member variable by name.
+ *
+ * An application may add a specialization for `selector` for its own type.
+ * The specialization should add a templated function `get()` to give access to members
+ * based on the template parameter.
+ *
+ * The prototype of the `get()` function are as follows:
+ *  - `template<basic_fixed_string> auto &get(T &) const noexcept`
+ *
+ * Here is an example how to specialize `hi::selector` for the `my::simple` type:
+ *
+ * ```cpp
+ * namespace my {
+ * struct simple {
+ *     int foo;
+ *     std::string bar;
+ * };
+ * }
+ *
+ * template<>
+ * struct hi::selector<my::simple> {
+ *     template<hi::basic_fixed_string> auto &get(my::simple &) const noexcept;
+ *
+ *     template<> auto &get<"foo">(my::simple &rhs) const noexcept { return rhs.foo; }
+ *     template<> auto &get<"bar">(my::simple &rhs) const noexcept { return rhs.bar; }
+ * };
+ * ```
+ */
+template<typename T>
+struct selector;
+
+
+/** Documentation of a type.
+ *
+ *
+ *
+ *
+ *
+ *
+ * ```cpp
+ * namespace my {
+ * struct simple {
+ *     int foo;
+ *     std::string bar;
+ * };
+ * }
+ *
+ * template<>
+ * struct hi::type_documentation<my::simple> {
+ *     std::vector<std::string_view> names();
+ * };
+ * ```
+ */
+template<typename T>
+struct type_documentation;
+
+
+
+/** Helper type to turn a set of lambdas into a single overloaded type to pass to `std::visit()`.
+* 
+* @tparam Ts A set of lambdas with a single argument.
+*/
+template<class... Ts>
+struct overloaded : Ts... {
+    // Makes the call operator of each lambda available directly to the `overloaded` type. 
+    using Ts::operator()...;
+
+    // The implicit constructor is all that is needed to initialize each lambda. 
+};
 
 } // namespace hi::inline v1

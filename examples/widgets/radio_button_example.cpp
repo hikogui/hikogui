@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -16,7 +16,7 @@ int hi_main(int argc, char *argv[])
     window->content().make_widget<label_widget>("A1", tr("radio buttons:"));
 
     /// [Create three radio buttons]
-    observable<int> value = 0;
+    observer<int> value = 0;
 
     window->content().make_widget<radio_button_widget>("B1", tr("one"), value, 1);
     window->content().make_widget<radio_button_widget>("B2", tr("two"), value, 2);

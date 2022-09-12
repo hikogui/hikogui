@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -15,7 +15,7 @@ int hi_main(int argc, char* argv[])
     auto gui = gui_system::make_unique();
     auto window = gui->make_window(tr("tab example"));
 
-    observable<int> value = 0;
+    observer<int> value = 0;
 
     /// [Create three tabs]
     auto &tab_view = window->content().make_widget<tab_widget>("A1", value);

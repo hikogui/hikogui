@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -7,8 +7,8 @@
 
 namespace hi::inline v1 {
 
-overlay_widget::overlay_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
-    super(window, parent), _delegate(std::move(delegate))
+overlay_widget::overlay_widget(gui_window &window, widget *parent) noexcept :
+    super(window, parent)
 {
     if (parent) {
         // The overlay-widget will reset the semantic_layer as it is the bottom
@@ -16,23 +16,16 @@ overlay_widget::overlay_widget(gui_window &window, widget *parent, std::weak_ptr
         // any other widget drawn.
         semantic_layer = 0;
     }
-
-    if (auto d = _delegate.lock()) {
-        d->init(*this);
-    }
 }
 
 overlay_widget::~overlay_widget()
 {
-    if (auto delegate = _delegate.lock()) {
-        delegate->deinit(*this);
-    }
 }
 
 void overlay_widget::set_widget(std::unique_ptr<widget> new_widget) noexcept
 {
     _content = std::move(new_widget);
-    request_reconstrain();
+    hi_request_reconstrain("overlay_widget::set_widget()");
 }
 
 widget_constraints const &overlay_widget::set_constraints() noexcept

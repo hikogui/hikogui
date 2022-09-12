@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -12,14 +12,15 @@ namespace hi::inline v1 {
 
 selection_widget::~selection_widget()
 {
-    if (auto delegate = _delegate.lock()) {
-        delegate->deinit(*this);
-    }
+    hi_axiom(delegate != nullptr);
+    delegate->deinit(*this);
 }
 
-selection_widget::selection_widget(gui_window& window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
-    super(window, parent), _delegate(std::move(delegate))
+selection_widget::selection_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
+    super(window, parent), delegate(std::move(delegate))
 {
+    hi_axiom(this->delegate != nullptr);
+
     _current_label_widget = std::make_unique<label_widget>(window, this, tr("<current>"));
     _current_label_widget->mode = widget_mode::invisible;
     _current_label_widget->alignment = alignment::middle_left();
@@ -32,29 +33,25 @@ selection_widget::selection_widget(gui_window& window, widget *parent, weak_or_u
     _scroll_widget = &_overlay_widget->make_widget<vertical_scroll_widget<>>();
     _column_widget = &_scroll_widget->make_widget<column_widget>();
 
-    // clang-format off
-    _unknown_label_cbt = this->unknown_label.subscribe([&](auto...){ request_reconstrain(); });
-    // clang-format on
+    _unknown_label_cbt = this->unknown_label.subscribe(callback_flags::synchronous, [&](auto...) {
+        hi_request_reconstrain("selection_widget::_unknown_label_cbt()");
+    });
 
-    if (auto d = _delegate.lock()) {
-        _delegate_cbt = d->subscribe(*this, callback_flags::main, [this] {
-            repopulate_options();
-            this->request_reconstrain();
-        });
+    _delegate_cbt = this->delegate->subscribe(*this, callback_flags::synchronous, [&] {
+        _notification_from_delegate = true;
+        hi_request_reconstrain("selection_widget::_delegate_cbt()");
+    });
 
-        d->init(*this);
-        repopulate_options();
-    }
-}
-
-selection_widget::selection_widget(gui_window& window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
-    selection_widget(window, parent, weak_or_unique_ptr<delegate_type>{std::move(delegate)})
-{
+    this->delegate->init(*this);
 }
 
 widget_constraints const& selection_widget::set_constraints() noexcept
 {
     _layout = {};
+
+    if (_notification_from_delegate.exchange(false)) {
+        repopulate_options();
+    }
 
     hilet extra_size = extent2{theme().size + theme().margin * 2.0f, theme().margin * 2.0f};
 
@@ -251,15 +248,13 @@ void selection_widget::stop_selecting() noexcept
 void selection_widget::repopulate_options() noexcept
 {
     hi_axiom(is_gui_thread());
+    hi_axiom(delegate != nullptr);
+
     _column_widget->clear();
     _menu_button_widgets.clear();
     _menu_button_tokens.clear();
 
-    auto options = std::vector<label>{};
-    auto selected = -1_z;
-    if (auto delegate = _delegate.lock()) {
-        std::tie(options, selected) = delegate->options_and_selected(*this);
-    }
+    auto [options, selected] = delegate->options_and_selected(*this);
 
     _has_options = size(options) > 0;
 
@@ -274,9 +269,8 @@ void selection_widget::repopulate_options() noexcept
         auto menu_button = &_column_widget->make_widget<menu_button_widget>(std::move(label), selected, index);
 
         _menu_button_tokens.push_back(menu_button->pressed.subscribe(callback_flags::main, [this, index] {
-            if (auto delegate = _delegate.lock()) {
-                delegate->set_selected(*this, index);
-            }
+            hi_axiom(delegate != nullptr);
+            delegate->set_selected(*this, index);
             stop_selecting();
         }));
 

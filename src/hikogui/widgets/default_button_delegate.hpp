@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -31,9 +31,9 @@ public:
     static constexpr bool can_make_defaults =
         std::is_same_v<value_type, bool> or std::is_integral_v<value_type> or std::is_enum_v<value_type>;
 
-    observable<value_type> value;
-    observable<value_type> on_value;
-    observable<value_type> off_value;
+    observer<value_type> value;
+    observer<value_type> on_value;
+    observer<value_type> off_value;
 
     /** Construct a delegate.
      *
@@ -41,13 +41,16 @@ public:
      * @param on_value The value or observable-value that mean 'on'.
      * @param off_value The value or observable-value that mean 'off'.
      */
-    default_button_delegate(auto &&value, auto &&on_value, auto &&off_value) noexcept :
+    default_button_delegate(
+        forward_of<observer<value_type>> auto&& value,
+        forward_of<observer<value_type>> auto&& on_value,
+        forward_of<observer<value_type>> auto&& off_value) noexcept :
         value(hi_forward(value)), on_value(hi_forward(on_value)), off_value(hi_forward(off_value))
     {
         // clang-format off
-        _value_cbt = this->value.subscribe([&](auto...){ this->_notifier(); });
-        _on_value_cbt = this->on_value.subscribe([&](auto...){ this->_notifier(); });
-        _off_value_cbt = this->off_value.subscribe([&](auto...){ this->_notifier(); });
+        _value_cbt = this->value.subscribe(callback_flags::synchronous, [&](auto...){ this->_notifier(); });
+        _on_value_cbt = this->on_value.subscribe(callback_flags::synchronous, [&](auto...){ this->_notifier(); });
+        _off_value_cbt = this->off_value.subscribe(callback_flags::synchronous, [&](auto...){ this->_notifier(); });
         // clang-format on
     }
 
@@ -56,8 +59,10 @@ public:
      * @param value A value or observable-value used as a representation of the state.
      * @param on_value The value or observable-value that mean 'on'.
      */
-    default_button_delegate(auto &&value, auto &&on_value) noexcept
-        requires(can_make_defaults or button_type == button_type::radio) :
+    default_button_delegate(
+        forward_of<observer<value_type>> auto&& value,
+        forward_of<observer<value_type>> auto&& on_value) noexcept
+        requires can_make_defaults or (ButtonType == button_type::radio) :
         default_button_delegate(hi_forward(value), hi_forward(on_value), value_type{})
     {
     }
@@ -66,13 +71,13 @@ public:
      *
      * @param value A value or observable-value used as a representation of the state.
      */
-    default_button_delegate(auto &&value) noexcept requires(can_make_defaults) :
+    default_button_delegate(forward_of<observer<value_type>> auto&& value) noexcept requires can_make_defaults :
         default_button_delegate(hi_forward(value), value_type{1}, value_type{})
     {
     }
 
     /// @privatesection
-    [[nodiscard]] button_state state(abstract_button_widget const &sender) const noexcept override
+    [[nodiscard]] button_state state(abstract_button_widget const& sender) const noexcept override
     {
         if (*value == *on_value) {
             return button_state::on;
@@ -83,7 +88,7 @@ public:
         }
     }
 
-    void activate(abstract_button_widget &sender) noexcept override
+    void activate(abstract_button_widget& sender) noexcept override
     {
         if constexpr (button_type == button_type::toggle) {
             if (*value == *off_value) {
@@ -103,14 +108,13 @@ private:
 };
 
 template<button_type ButtonType, typename Value, typename... Args>
-default_button_delegate(Value &&, Args &&...)
-    -> default_button_delegate<ButtonType, observable_argument_t<std::remove_cvref_t<Value>>>;
-
-template<button_type ButtonType, typename Value, typename... Args>
-std::unique_ptr<button_delegate> make_unique_default_button_delegate(Value &&value, Args &&...args) noexcept
+[[nodiscard]] std::shared_ptr<button_delegate> make_default_button_delegate(Value&& value, Args&&...args) noexcept requires requires
 {
-    using value_type = observable_argument_t<std::remove_cvref_t<Value>>;
-    return std::make_unique<default_button_delegate<ButtonType, value_type>>(
+    default_button_delegate<ButtonType, observer_argument_t<Value>>{std::forward<Value>(value), std::forward<Args>(args)...};
+}
+{
+    using value_type = observer_argument_t<Value>;
+    return std::make_shared<default_button_delegate<ButtonType, value_type>>(
         std::forward<Value>(value), std::forward<Args>(args)...);
 }
 

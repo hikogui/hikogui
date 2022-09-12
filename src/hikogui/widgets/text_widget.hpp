@@ -1,10 +1,12 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
 #include "widget.hpp"
+#include "text_delegate.hpp"
+#include "default_text_delegate.hpp"
 #include "../GUI/gui_event.hpp"
 #include "../text/semantic_text_style.hpp"
 #include "../text/text_selection.hpp"
@@ -52,42 +54,50 @@ namespace hi::inline v1 {
 class text_widget final : public widget {
 public:
     using super = widget;
+    using delegate_type = text_delegate;
 
-    /** The text to be displayed.
-     */
-    observable<gstring> text;
+    std::shared_ptr<delegate_type> delegate;
 
     /** The horizontal alignment of the text inside the space of the widget.
      */
-    observable<alignment> alignment = hi::alignment::middle_center();
+    observer<alignment> alignment = hi::alignment::middle_center();
 
     /** The style of the text.
      */
-    observable<semantic_text_style> text_style = semantic_text_style::label;
+    observer<semantic_text_style> text_style = semantic_text_style::label;
+
+    ~text_widget();
+
+    /** Construct a text widget.
+     *
+     * @param window The window the widget is displayed on.
+     * @param parent The owner of this widget.
+     * @param delegate The delegate to use to control the widget's data.
+     */
+    text_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
     /** Construct a text widget.
      *
      * @param window The window the widget is displayed on.
      * @param parent The owner of this widget.
      * @param text The text to be displayed.
-     * @param horizontal_alignment The horizontal alignment of the text inside the space of the widget.
-     * @param vertical_alignment The vertical alignment of the text inside the space of the widget.
+     * @param alignment The alignment of the text inside the space of the widget.
      * @param text_style The style of the text to be displayed.
      */
     template<
-        typename Text,
-        typename Alignment = hi::alignment,
-        typename VerticalAlignment = hi::vertical_alignment,
-        typename TextStyle = hi::semantic_text_style>
+        different_from<std::shared_ptr<delegate_type>> Text,
+        forward_of<observer<hi::alignment>> Alignment = hi::alignment,
+        forward_of<observer<semantic_text_style>> TextStyle = semantic_text_style>
     text_widget(
         gui_window& window,
         widget *parent,
         Text&& text,
         Alignment&& alignment = hi::alignment::middle_center(),
-        TextStyle&& text_style = semantic_text_style::label) noexcept :
-        text_widget(window, parent)
+        TextStyle&& text_style = semantic_text_style::label) noexcept requires requires
     {
-        this->text = std::forward<Text>(text);
+        make_default_text_delegate(std::forward<Text>(text));
+    } : text_widget(window, parent, make_default_text_delegate(std::forward<Text>(text)))
+    {
         this->alignment = std::forward<Alignment>(alignment);
         this->text_style = std::forward<TextStyle>(text_style);
     }
@@ -110,17 +120,19 @@ private:
 
     enum class cursor_state_type { off, on, busy, none };
 
+    gstring _cached_text;
     text_shaper _shaped_text;
     float _base_line;
 
-    decltype(text)::token_type _text_cbt;
+    delegate_type::token_type _delegate_cbt;
+
     decltype(text_style)::token_type _text_style_cbt;
 
     text_selection _selection;
 
     scoped_task<> _blink_cursor;
 
-    observable<cursor_state_type> _cursor_state = cursor_state_type::none;
+    observer<cursor_state_type> _cursor_state = cursor_state_type::none;
     decltype(_cursor_state)::token_type _cursor_state_cbt;
 
     /** After layout request scroll from the parent widgets.
@@ -150,16 +162,14 @@ private:
      * On overwrite the original grapheme is stored in the _had_dead_character, so
      * that it can be restored.
      */
-    grapheme _has_dead_character = {};
+    grapheme _has_dead_character = nullptr;
 
     undo_stack<undo_type> _undo_stack = {1000};
 
-    text_widget(gui_window& window, widget *parent) noexcept;
-
     /** Update the shaped text.
-    * 
-    * This function must be called synchronously whenever the text, style or theme changes.
-    */
+     *
+     * This function must be called synchronously whenever the text, style or theme changes.
+     */
     void update_shaped_text() noexcept;
 
     /** Make parent scroll views, scroll to show the current selection and cursor.
@@ -190,7 +200,7 @@ private:
      */
     void fix_cursor_position() noexcept;
 
-    void replace_selection(gstring const &replacement) noexcept;
+    void replace_selection(gstring const& replacement) noexcept;
 
     /** Add a character to the text.
      *

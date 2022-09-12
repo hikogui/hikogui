@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -14,7 +14,7 @@ namespace hi::inline v1 {
 
 RenderDoc::RenderDoc() noexcept
 {
-#if HI_BUILD_TYPE == HI_BT_DEBUG
+#ifndef NDEBUG
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
     hilet dll_urls = std::vector{
         URL{"file:renderdoc.dll"},
