@@ -33,7 +33,7 @@ public:
 
     /** Construct a delegate.
      *
-     * @param value A value or observable-value used as a representation of the state.
+     * @param value A value or observer-value used as a representation of the state.
      */
     explicit default_text_delegate(forward_of<observer<value_type>> auto&& value) noexcept : value(hi_forward(value))
     {
@@ -65,7 +65,7 @@ public:
 
     /** Construct a delegate.
      *
-     * @param value A value or observable-value used as a representation of the state.
+     * @param value A value or observer-value used as a representation of the state.
      */
     explicit default_text_delegate(forward_of<observer<value_type>> auto&& value) noexcept : value(hi_forward(value))
     {
@@ -97,7 +97,7 @@ public:
 
     /** Construct a delegate.
      *
-     * @param value A value or observable-value used as a representation of the state.
+     * @param value A value or observer-value used as a representation of the state.
      */
     explicit default_text_delegate(forward_of<observer<value_type>> auto&& value) noexcept : value(hi_forward(value))
     {
@@ -129,7 +129,7 @@ public:
 
     /** Construct a delegate.
      *
-     * @param value A value or observable-value used as a representation of the state.
+     * @param value A value or observer-value used as a representation of the state.
      */
     explicit default_text_delegate(forward_of<observer<value_type>> auto&& value) noexcept : value(hi_forward(value))
     {

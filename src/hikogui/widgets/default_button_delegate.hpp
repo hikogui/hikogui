@@ -6,7 +6,7 @@
 
 #include "button_delegate.hpp"
 #include "button_type.hpp"
-#include "../observable.hpp"
+#include "../observer.hpp"
 #include <type_traits>
 #include <memory>
 
@@ -15,11 +15,11 @@ namespace hi::inline v1 {
 /** A default button delegate.
  *
  * The default button delegate manages the state of a button widget using
- * observable values.
+ * observer values.
  *
  * @tparam ButtonType The type of button this delegate manages, either a
  *         `button_type::radio` or `button_type::toggle`.
- * @tparam T The type of the observable value.
+ * @tparam T The type of the observer value.
  */
 template<button_type ButtonType, typename T>
 class default_button_delegate : public button_delegate {
@@ -37,9 +37,9 @@ public:
 
     /** Construct a delegate.
      *
-     * @param value A value or observable-value used as a representation of the state.
-     * @param on_value The value or observable-value that mean 'on'.
-     * @param off_value The value or observable-value that mean 'off'.
+     * @param value A value or observer-value used as a representation of the state.
+     * @param on_value The value or observer-value that mean 'on'.
+     * @param off_value The value or observer-value that mean 'off'.
      */
     default_button_delegate(
         forward_of<observer<value_type>> auto&& value,
@@ -56,8 +56,8 @@ public:
 
     /** Construct a delegate.
      *
-     * @param value A value or observable-value used as a representation of the state.
-     * @param on_value The value or observable-value that mean 'on'.
+     * @param value A value or observer-value used as a representation of the state.
+     * @param on_value The value or observer-value that mean 'on'.
      */
     default_button_delegate(
         forward_of<observer<value_type>> auto&& value,
@@ -69,7 +69,7 @@ public:
 
     /** Construct a delegate.
      *
-     * @param value A value or observable-value used as a representation of the state.
+     * @param value A value or observer-value used as a representation of the state.
      */
     default_button_delegate(forward_of<observer<value_type>> auto&& value) noexcept requires can_make_defaults :
         default_button_delegate(hi_forward(value), value_type{1}, value_type{})

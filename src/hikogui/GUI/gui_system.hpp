@@ -11,7 +11,7 @@
 #include "../GFX/gfx_device.hpp"
 #include "../thread.hpp"
 #include "../unfair_recursive_mutex.hpp"
-#include "../observable.hpp"
+#include "../observer.hpp"
 #include <span>
 #include <memory>
 #include <mutex>

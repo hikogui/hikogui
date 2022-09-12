@@ -5,7 +5,7 @@
 #pragma once
 
 #include "selection_delegate.hpp"
-#include "../observable.hpp"
+#include "../observer.hpp"
 #include "../label.hpp"
 #include <type_traits>
 #include <memory>

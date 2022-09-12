@@ -11,7 +11,7 @@
 // Every widget must inherit from hi::widget.
 class command_widget : public hi::widget {
 public:
-    // Using an observable allows reading, writing and monitoring of the value outside of the widget.
+    // Using an observer allows reading, writing and monitoring of the value outside of the widget.
     hi::observer<bool> value;
 
     // Every constructor of a widget starts with a `window` and `parent` argument.

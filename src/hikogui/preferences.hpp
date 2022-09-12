@@ -93,11 +93,11 @@ private:
 
 /** user preferences.
  *
- * A preferences objects maintains a link between observables in the application and
+ * A preferences objects maintains a link between observer in the application and
  * a preferences file.
  *
- * When loading preferences the observables are set to the value
- * in the preferences file. When an observable changes a value the preferences file is
+ * When loading preferences the observer are set to the value
+ * in the preferences file. When an observer changes a value the preferences file is
  * updated to reflect this change. For performance reasons multiple modifications are
  * combined into a single save.
  *
@@ -171,11 +171,11 @@ public:
      */
     void reset() noexcept;
 
-    /** Register an observable to a preferences file.
+    /** Register an observer to a preferences file.
      *
      * @param path The json-path inside the preference file.
-     * @param item The observable to monitor.
-     * @param init The value of the observable when it is not present in the preferences file.
+     * @param item The observer to monitor.
+     * @param init The value of the observer when it is not present in the preferences file.
      */
     template<typename T>
     void add(std::string_view path, observer<T> const& item, T init = T{}) noexcept
