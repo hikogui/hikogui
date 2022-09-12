@@ -51,15 +51,15 @@ Attributed Grapheme Cluster
   Bold           | b   | Show text in bold, without the text being "strong"
   Code           | c   | A (sub-)expression  of computer-language-code, Often shown in a non-proportional font.
   Emphesis       | e   | Text with stressed emphesis. Spoken with clear articulation. Often shown in italic.
-  Mark           | h   | Used to highlight text, like using a physical yellow marker.
+  Help           | h   | Used to highlight text, like using a physical yellow marker.
   Italic         | i   | Show text in italic, without the text beging "emphesis"
-  Keyboard       | k   | Used in help messages to show which key to press. 
+  Key            | k   | Used in help messages to show which key to press. 
   Link           | l   | A link
   Math           | m   | A mathematical (sub-)expression. Often shown in a special italic math font.
-  Citation       | q   | A citation of a title, or a quote.
+  Quote          | q   | A citation of a title, or a quote.
   Regular        | r   | The default, neutral phrasing
   Strong         | s   | Text with more importance, warning, urgend. Spoken louder. Often shown in bold.
-  Unarticulated  | u   | Unarticulated text. Often shown as regular underlined.
+  Underline      | u   | Unarticulated text. Often shown as regular underlined.
 
 
 Aux Text format
@@ -84,19 +84,16 @@ The state-machine has the following variables:
 
 document := part*
 
-part := text | commands | escape-open | escape-close
+part := text | command
 
 text := /[^[]+/
 
 // Emits a single '['
-escape-open := '[' '['
+escape := '[' '['
 
-// Emits a single ']'
-escape-close := ']' ']'
+command := '[' ( command ( ':' sub-selector )* )? ( '@' style )? ']'
 
-// A set of commands. The ';' is only needed when a command ends in a name.
-commands := '[' command (';'? command)* ']'
-command := phrasing | load-style | store-style | sub-style | color | font
+sub-selector := language | phrasing
 
 // Switch the phrasing of the text.
 // This will set the text-style matching the filter from the loaded style.
@@ -123,46 +120,7 @@ phrasing-unarticulated := 'u'
 // This will set the text-style matching the filter from the loaded style.
 language := 'L' <ietf-language-tag>
 
-// Load a text style with the following name.
-// This will set the text-style based on the current phrasing and language.
-// This will clear all the to-be-stored filters.
-// ';' is needed if this command is followed by another command
-read-style := 'R' style-name
-style-name := name
-
-// Store a text-style with all the to-be-stored filters.
-// This will clear all the to-be-stored filters.
-write-style := 'W' style-name
-
-// Add a mask for the current: font, color, size.
-add-filter := 'M' ( phrasing+ | * ) ',' ( iso-language | * ) ',' ( iso-script | *)
-iso-language := name
-iso-script := name
-
-// Change the current color of the text.
-color := 'C' ( color-name | float ',' float ',' float (',' float) | hex{6} )
-color-name := name
-
-// Change the current font of the text.
-font := 'F' font-variant font-name
-font-name := name
-font-variant := 'i'? font-weight
-font-weight := weight-thin | weight-extra-light | weight-light | weight-regular |
-               weight-medium | weight-semi-bold | weight-bold | weight-extra-bold |
-               weight-black | weight-extra-black
-weight-thin := '1'
-weight-extra-light := '2'
-weight-light := '3'
-weight-regular := '4'
-weight-medium := '5'
-weight-semi-bold := '6'
-weight-bold := '7'
-weight-extra-bold := '8'
-weight-black := '9'
-weight-extra-black := '0'
-
-// Change font-size.
-size := 'S' integer
+style := 'S' <style-name>
 
 name := [^]]+
 integer := [0-9]+
