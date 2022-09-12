@@ -377,8 +377,10 @@ public:
     }
 
     /** Create a observer linked to an anonymous default initialized observed-value.
+    * 
+    * @note marked 'explicit' so that accidental assignment with {} is not allowed.
      */
-    constexpr observer() noexcept : observer(std::make_shared<observable_value<value_type>>()) {}
+    constexpr explicit observer() noexcept : observer(std::make_shared<observable_value<value_type>>()) {}
 
     /** Create a observer linked to an anonymous observed-value.
      */

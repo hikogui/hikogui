@@ -50,19 +50,6 @@ struct basic_fixed_string {
         }
     }
 
-    //template<std::size_t O>
-    //constexpr basic_fixed_string& operator=(value_type const (&str)[O]) noexcept requires((O - 1) == N)
-    //{
-    //    auto i = 0_uz;
-    //    for (; i != (O - 1); ++i) {
-    //        _str[i] = str[i];
-    //    }
-    //    for (; i != N; ++i) {
-    //        _str[i] = value_type{};
-    //    }
-    //    return *this;
-    //}
-
     constexpr operator std::basic_string_view<value_type>() const noexcept
     {
         return std::basic_string_view<value_type>{_str.data(), size()};

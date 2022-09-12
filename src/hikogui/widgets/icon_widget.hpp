@@ -30,7 +30,7 @@ public:
 
     /** The icon to be displayed.
      */
-    observer<icon> icon = {};
+    observer<icon> icon = hi::icon{};
 
     /** The color a non-color icon will be displayed with.
      */
