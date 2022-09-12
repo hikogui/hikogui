@@ -62,13 +62,21 @@ struct basic_fixed_string {
 
     [[nodiscard]] constexpr value_type& operator[](size_t index) noexcept
     {
-        hi_axiom(index < N);
+#ifndef NDEBUG
+        if (not(index < N)) {
+            std::terminate();
+        }
+#endif
         return _str[index];
     }
 
     [[nodiscard]] constexpr value_type const& operator[](size_t index) const noexcept
     {
-        hi_axiom(index < N);
+#ifndef NDEBUG
+        if (not(index < N)) {
+            std::terminate();
+        }
+#endif
         return _str[index];
     }
 
@@ -108,7 +116,7 @@ struct basic_fixed_string {
     }
 
     template<size_t O>
-    [[nodiscard]] constexpr auto operator+(basic_fixed_string<CharT, O> const &rhs) const noexcept
+    [[nodiscard]] constexpr auto operator+(basic_fixed_string<CharT, O> const& rhs) const noexcept
     {
         auto r = basic_fixed_string<CharT, N + O>{};
         auto dst_i = 0_uz;

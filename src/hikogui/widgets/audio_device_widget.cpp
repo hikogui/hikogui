@@ -61,7 +61,7 @@ void audio_device_widget::set_layout(widget_layout const& layout) noexcept
 
 void audio_device_widget::draw(draw_context const& context) noexcept
 {
-    if (*mode > widget_mode::invisible and overlaps(context, layout())) {
+    if (*mode > widget_mode::invisible) {
         _grid_widget->draw(context);
     }
 }

@@ -113,7 +113,7 @@ public:
             if (not(_image_backing = hi::paged_image{window.surface.get(), _image})) {
                 // Could not get an image, retry.
                 _image_was_modified = true;
-                request_reconstrain();
+                hi_request_reconstrain("drawing_widget::set_constraints() could not get backing image.");
             }
         }
 
