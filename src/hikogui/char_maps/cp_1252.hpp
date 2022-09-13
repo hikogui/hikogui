@@ -79,6 +79,8 @@ constexpr auto cp_1252_make_table_2000_2122() noexcept
 } // namespace detail
 
 /** CP-1252 / Windows-1252 character map.
+ *
+ * @ingroup char_maps
  */
 template<>
 struct char_map<"cp-1252"> {

@@ -5,11 +5,11 @@ HikoGUI is a cross platform C++ GUI library.
 
 Manuals
 -------
- - [How to use widgets](how_to/how_to_use_widgets.md)
+ - [How to use widgets](how_to/how_to_use_widgets.md) ![new](media/images/new.png)
  - [How to log](how_to/how_to_log.md)
  - [How to use preferences](how_to/how_to_use_preferences.md)
- - [How to make custom widgets](how_to/how_to_make_custom_widgets.md) ![new](media/images/new.png)
- - [How to draw](how_to/how_to_draw.md) ![new](media/images/new.png)
+ - [How to make custom widgets](how_to/how_to_make_custom_widgets.md)
+ - [How to draw](how_to/how_to_draw.md)
 
 Subsystems
 ----------

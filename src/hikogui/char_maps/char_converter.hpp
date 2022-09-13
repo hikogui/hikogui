@@ -17,6 +17,7 @@ namespace hi::inline v1 {
 
 /** Character encoder/decoder template.
  *
+ * @ingroup char_maps
  * @tparam Encoding a string-tag representing the encoding.
  *
  * Implementations have to define the following members:
@@ -81,6 +82,7 @@ struct char_map;
 
 /** A converter between character encodings.
  *
+ * @ingroup char_maps
  * @tparam From a string-tag matching an existing `char_map<From>`
  * @tparam To a string-tag matching an existing `char_map<To>`
  */

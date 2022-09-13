@@ -262,7 +262,7 @@ hi_force_inline void unaligned_load_le(T& r, void const *src) noexcept
  * @param src The memory location to read the data from.
  * @param size The number of bytes to load.
  * @param offset Byte offset in @a r where the bits are overwritten
- * @note It is undefined behavior to load bytes beyond the boundary of @r.
+ * @note It is undefined behavior to load bytes beyond the boundary of @a r.
  */
 template<std::unsigned_integral T>
 hi_force_inline void unaligned_load_le(T& r, void const *src, size_t size, size_t offset = 0) noexcept

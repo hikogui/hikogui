@@ -15,6 +15,8 @@
 namespace hi::inline v1 {
 
 /** ASCII (7-bit) character map.
+ *
+ * @ingroup char_maps
  */
 template<>
 struct char_map<"ascii"> {

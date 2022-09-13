@@ -14,6 +14,8 @@
 namespace hi::inline v1 {
 
 /** ISO-8859-1 / Latin-1 character map.
+ *
+ * @ingroup char_maps
  */
 template<>
 struct char_map<"iso-8859-1"> {
@@ -25,7 +27,7 @@ struct char_map<"iso-8859-1"> {
     }
 
     template<typename It, typename EndIt>
-    [[nodiscard]] constexpr std::pair<char32_t, bool> read(It &it, EndIt last) const noexcept
+    [[nodiscard]] constexpr std::pair<char32_t, bool> read(It& it, EndIt last) const noexcept
     {
         hi_axiom(it != last);
         return {char_cast<char32_t>(*it++), true};

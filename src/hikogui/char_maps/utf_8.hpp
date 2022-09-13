@@ -11,6 +11,8 @@
 namespace hi::inline v1 {
 
 /** Unicode UTF-8 encoding.
+ *
+ * @ingroup char_maps
  */
 template<>
 struct char_map<"utf-8"> {
@@ -105,7 +107,7 @@ struct char_map<"utf-8"> {
     }
 
     template<typename It>
-    constexpr void write(char32_t code_point, It &dst) const noexcept
+    constexpr void write(char32_t code_point, It& dst) const noexcept
     {
         hi_axiom(code_point < 0x11'0000);
         hi_axiom(not(code_point >= 0xd800 and code_point < 0xe000));
