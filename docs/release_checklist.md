@@ -39,5 +39,5 @@ Release Checklist
    - Create install executable.
  * Publish release
    - Make custom message for reddit/r/cpp, post as link + follow-up post
-   - Make custom message for twitter include #cplusplus
+   - Make custom message for twitter include \#cplusplus
 

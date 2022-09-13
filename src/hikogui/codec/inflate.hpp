@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../byte_string.hpp"
 #include "../endian.hpp"
 #include <span>

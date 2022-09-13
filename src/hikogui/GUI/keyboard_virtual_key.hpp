@@ -5,7 +5,7 @@
 #pragma once
 
 #include "keyboard_modifiers.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../exception.hpp"
 #include "../strings.hpp"
 #include "../enum_metadata.hpp"

@@ -11,14 +11,16 @@ class gui_system;
 
 class gui_system_delegate {
 public:
-    [[nodiscard]] virtual void init(gui_system &self) noexcept {};
+    [[nodiscard]] virtual void init(gui_system& self) noexcept {};
 
-    [[nodiscard]] virtual void deinit(gui_system &self) noexcept {};
+    [[nodiscard]] virtual void deinit(gui_system& self) noexcept {};
 
     /** This function is called when the last window is closed.
-     * @param An exit code if the gui-system's event-loop should exit; otherwise empty.
+     *
+     * @param sender The gui system object that called this function.
+     * @return An exit code if the gui-system's event-loop should exit; otherwise empty.
      */
-    [[nodiscard]] virtual std::optional<int> last_window_closed(gui_system &self)
+    [[nodiscard]] virtual std::optional<int> last_window_closed(gui_system& sender)
     {
         return 0;
     };

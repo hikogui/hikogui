@@ -55,13 +55,13 @@ public:
     /** Construct a selection widget which will monitor an option list and a
      * value.
      *
-     * @tparam Value The type of @a value. Must be convertible to `std::size_t`.
      * @param window The window the selection widget will be displayed on.
      * @param parent The owner of the selection widget.
      * @param option_list An vector or an observer vector of pairs of keys and
      *                    labels. The keys are of the same type as the @a value.
      *                    The labels are of type `label`.
      * @param value The value or observer value to monitor.
+     * @param args The other arguments to be forwarded to the delegate of the selection widget.
      */
     selection_widget(
         gui_window& window,

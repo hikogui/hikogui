@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../enum_metadata.hpp"
 #include <string>
 #include <string_view>

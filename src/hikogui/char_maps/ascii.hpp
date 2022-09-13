@@ -6,7 +6,7 @@
 
 #include "char_converter.hpp"
 #include "../cast.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../architecture.hpp"
 #include <cstdint>
 #include <utility>
@@ -14,6 +14,10 @@
 
 namespace hi::inline v1 {
 
+/** ASCII (7-bit) character map.
+ *
+ * @ingroup char_maps
+ */
 template<>
 struct char_map<"ascii"> {
     using char_type = char;

@@ -6,7 +6,7 @@
 #include "unicode_description.hpp"
 #include "unicode_decomposition_type.hpp"
 #include "../assert.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include <string>
 #include <algorithm>
 

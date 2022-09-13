@@ -25,7 +25,7 @@ def make_decomposition_table(descriptions):
        6 code-points| <0><cpt2><cpt1><cpt0>
                     | <1><cpt5><cpt4><cpt3>
 
-    @param [in,out]descriptions A table of unicode descriptions
+    @param[in,out] descriptions A table of unicode descriptions
     @return The table of decompositions, a list of 64 bit integers.
     """
 

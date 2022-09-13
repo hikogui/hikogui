@@ -120,8 +120,7 @@ public:
      * @tparam SourceFile The source file where this function was called.
      * @tparam SourceLine The source line where this function was called.
      * @tparam Fmt The format string.
-     * @param timestamp The timestamp when the message is logged.
-     * @param args Arguments to std::format.
+     * @param args Arguments to `std::format()`.
      */
     template<global_state_type Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Args>
     hi_force_inline void add(Args&&...args) noexcept

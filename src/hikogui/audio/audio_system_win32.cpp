@@ -7,7 +7,7 @@
 #include "audio_system_win32.hpp"
 #include "audio_device_win32.hpp"
 #include "audio_system_aggregate.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../log.hpp"
 #include "../exception.hpp"
 #include "../locked_memory_allocator.hpp"

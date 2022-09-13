@@ -260,7 +260,7 @@ public:
      *
      * @note Only one callback can be associated with a socket.
      * @param fd File descriptor of the socket.
-     * @param mode The mode of how select should work with the socket.
+     * @param event_mask The socket events to wait for.
      * @param f The callback to call when the file descriptor unblocks.
      */
     void add_socket(int fd, network_event event_mask, std::function<void(int, network_events const&)> f)

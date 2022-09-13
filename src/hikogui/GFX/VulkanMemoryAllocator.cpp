@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "../architecture.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 
 hi_warning_push();
 hi_warning_ignore_clang("-Wunused-variable");

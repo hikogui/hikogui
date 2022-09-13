@@ -10,7 +10,7 @@
 #include "log.hpp"
 #include "memory.hpp"
 #include "URL.hpp"
-#include "required.hpp"
+#include "utility.hpp"
 #include <mutex>
 
 namespace hi::inline v1 {

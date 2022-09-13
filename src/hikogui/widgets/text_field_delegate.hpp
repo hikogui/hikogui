@@ -17,8 +17,8 @@ public:
     using callback_ptr_type = std::shared_ptr<std::function<void()>>;
 
     virtual ~text_field_delegate() = default;
-    virtual void init(text_field_widget const &sender) noexcept {}
-    virtual void deinit(text_field_widget const &sender) noexcept {}
+    virtual void init(text_field_widget const& sender) noexcept {}
+    virtual void deinit(text_field_widget const& sender) noexcept {}
 
     auto subscribe(text_field_widget& sender, callback_flags flags, std::invocable<> auto&& callback) noexcept
     {
@@ -31,10 +31,12 @@ public:
     }
 
     /** Validate the text field.
+     *
+     * @param sender The widget that called this function.
      * @param text The text entered by the user into the text field.
      * @return no-value when valid, or a label to display to the user when invalid.
      */
-    virtual label validate(text_field_widget &sender, std::string_view text) noexcept
+    virtual label validate(text_field_widget& sender, std::string_view text) noexcept
     {
         return {};
     }
@@ -43,9 +45,10 @@ public:
      * When the user is not editing the text the text-field will request what to show
      * using this function.
      *
+     * @param sender The widget that called this function.
      * @return The text to show in the text field.
      */
-    virtual std::string text(text_field_widget &sender) noexcept
+    virtual std::string text(text_field_widget& sender) noexcept
     {
         return {};
     }
@@ -57,9 +60,10 @@ public:
      * text with the delegate.
      *
      * @pre text Must have been validated as correct.
+     * @param sender The widget that called this function.
      * @param text The text entered by the user.
      */
-    virtual void set_text(text_field_widget &sender, std::string_view text) noexcept {}
+    virtual void set_text(text_field_widget& sender, std::string_view text) noexcept {}
 
 protected:
     notifier<> _notifier;

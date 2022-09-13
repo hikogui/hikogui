@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "required.hpp"
+#include "utility.hpp"
 #include "generator.hpp"
 #include "loop.hpp"
 #include "callback_flags.hpp"
@@ -113,7 +113,8 @@ public:
      * caller will receive a token, a move-only RAII object that will unsubscribe the callback
      * when the token is destroyed.
      *
-     * @param callback_ptr A shared_ptr to a callback function.
+     * @param flags The callback-flags used to determine how the @a callback is called.
+     * @param callback A function object to call when being notified.
      * @return A RAII object which when destroyed will unsubscribe the callback.
      */
     [[nodiscard]] token_type subscribe(callback_flags flags, std::invocable<Args...> auto&& callback) noexcept
@@ -123,6 +124,14 @@ public:
         return token;
     }
 
+    /** Add a callback to the notifier.
+     * Ownership of the callback belongs with the caller of `subscribe()`. The
+     * caller will receive a token, a move-only RAII object that will unsubscribe the callback
+     * when the token is destroyed.
+     *
+     * @param callback A function object to synchronously-call when being notified.
+     * @return A RAII object which when destroyed will unsubscribe the callback.
+     */
     [[nodiscard]] token_type subscribe(std::invocable<Args...> auto&& callback) noexcept
     {
         return subscribe(callback_flags::synchronous, hi_forward(callback));

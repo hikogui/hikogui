@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "required.hpp"
+#include "utility.hpp"
 #include <string>
 #include <string_view>
 #include <format>
@@ -12,7 +12,7 @@
 
 namespace hi::inline v1 {
 
-/**
+/** A string which may be used as a none-type template parameter.
  *
  * example:
  *     ```

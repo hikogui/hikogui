@@ -46,7 +46,6 @@ target_sources(hikogui PRIVATE
     concepts.hpp
     console.hpp
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/console_win32.cpp>
-    CommandLineParser.hpp
     counters.cpp
     counters.hpp
     CP1252.hpp
@@ -93,8 +92,6 @@ target_sources(hikogui PRIVATE
     hash.hpp
     hash_map.hpp
     huffman.hpp
-    icon.cpp
-    icon.hpp
     int_carry.hpp
     int_overflow.hpp
     interval.hpp
@@ -144,7 +141,7 @@ target_sources(hikogui PRIVATE
     recursive_iterator.hpp
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32.cpp>
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32.hpp>
-    required.hpp
+    utility.hpp
     range_map.hpp
     resource_view.hpp
     safe_int.hpp
@@ -165,7 +162,6 @@ target_sources(hikogui PRIVATE
     tagged_id.hpp
     tagged_map.hpp
     task.hpp
-    text.hpp
     $<${HI_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/thread_macos.cpp>
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/thread_win32.cpp>
     thread.cpp
@@ -210,7 +206,7 @@ if(HI_BUILD_PCH AND NOT HI_ENABLE_ANALYSIS)
         exception.hpp
         log.hpp
         architecture.hpp
-        required.hpp
+        utility.hpp
         strings.hpp
         trace.hpp
         URL.hpp
@@ -275,7 +271,7 @@ if(HI_BUILD_TESTS AND HI_BUILD_PCH AND NOT HI_ENABLE_ANALYSIS)
         exception.hpp
         log.hpp
         architecture.hpp
-        required.hpp
+        utility.hpp
         strings.hpp
         trace.hpp
         URL.hpp

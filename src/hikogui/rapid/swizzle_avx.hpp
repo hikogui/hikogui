@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../architecture.hpp"
 #if defined(HI_HAS_AVX)
 

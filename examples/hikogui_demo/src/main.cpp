@@ -18,6 +18,7 @@
 #include "hikogui/widgets/tab_widget.hpp"
 #include "hikogui/widgets/toolbar_tab_button_widget.hpp"
 #include "hikogui/widgets/audio_device_widget.hpp"
+#include "hikogui/codec/png.hpp"
 #include "hikogui/log.hpp"
 #include "hikogui/crt.hpp"
 #include "hikogui/time_stamp_count.hpp"
@@ -145,7 +146,7 @@ hi::task<> preferences_window(hi::gui_system& gui, my_preferences& preferences, 
 {
     using namespace hi;
 
-    auto window_label = label{URL{"resource:hikogui_demo.png"}, tr("Preferences")};
+    auto window_label = label{png::load(URL{"resource:hikogui_demo.png"}), tr("Preferences")};
     auto window = gui.make_window(window_label);
 
     window->toolbar().make_widget<toolbar_tab_button_widget>(label{elusive_icon::Speaker, tr("Audio")}, preferences.tab_index, 0);
@@ -168,7 +169,7 @@ hi::task<> main_window(hi::gui_system& gui, my_preferences& preferences, hi::aud
 {
     using namespace hi;
 
-    auto window_label = label{URL{"resource:hikogui_demo.png"}, tr("HikoGUI demo")};
+    auto window_label = label{png::load(URL{"resource:hikogui_demo.png"}), tr("HikoGUI demo")};
     auto window = gui.make_window(window_label);
 
     auto preferences_label = label{elusive_icon::Wrench, tr("Preferences")};

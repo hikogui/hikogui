@@ -8,6 +8,10 @@
 
 namespace hi::inline v1 {
 
+/** Unicode UTF-32 encoding.
+ *
+ * @ingroup char_maps
+ */
 template<>
 struct char_map<"utf-32"> {
     using char_type = char32_t;
@@ -28,7 +32,7 @@ struct char_map<"utf-32"> {
             }
 
             // Check for sequences of zeros.
-            auto count = std::array<size_t,4>{};
+            auto count = std::array<size_t, 4>{};
             for (auto i = 0; i != size; ++i) {
                 count[i % 4] = ptr_[i] == 0 ? count[i % 4] + 1 : 0;
 

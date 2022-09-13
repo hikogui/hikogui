@@ -1,0 +1,26 @@
+/**
+\defgroup char_maps Character Maps
+
+These templates are uses to convert between different character encodings.
+
+Here is an example to convert a string from ISO-8859-1 to UTF-8:
+
+```cpp
+std::string convert(std::string_view str)
+{
+    return hi::char_converter<"iso-8859-1", "utf-8">{}(str);
+}
+```
+
+Currently supported are:
+
+ - ASCII
+ - CP-1252 / Windows-1252
+ - ISO-8859-1 / Latin-1
+ - Unicode UTF-8
+ - Unicode UTF-16
+ - Unicode UTF-32
+
+It is possible to add character encodings by specializing `char_map<>` in your application.
+
+*/

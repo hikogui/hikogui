@@ -191,6 +191,7 @@ public:
      *
      * @param child_rectangle The location and size of the child widget, relative to the current widget.
      * @param elevation The relative elevation of the child widget compared to the current widget.
+     * @param new_baseline The relative baseline of the child widgets on the same row.
      * @return A new widget_layout for use by the child widget.
      */
     [[nodiscard]] constexpr widget_layout transform(aarectangle const &child_rectangle, float elevation = 1.0f, widget_baseline new_baseline = widget_baseline{}) const noexcept
@@ -201,6 +202,7 @@ public:
     /** Create a new widget_layout for the child widget.
      *
      * @param child_rectangle The location and size of the child widget, relative to the current widget.
+     * @param new_baseline The relative baseline of the child widgets on the same row.
      * @return A new widget_layout for use by the child widget.
      */
     [[nodiscard]] constexpr widget_layout transform(aarectangle const &child_rectangle, widget_baseline new_baseline) const noexcept

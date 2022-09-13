@@ -7,7 +7,7 @@ For installing the hikogui library as part of an application see the
 example application.
 
 Table of contents:
- - [Windows 10](#windows-10)
+ - [Windows 10](\#windows-10)
 
 Windows 10
 ----------

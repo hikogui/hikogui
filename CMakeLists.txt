@@ -559,7 +559,7 @@ endif()
 find_package(Doxygen)
 
 if(DOXYGEN_FOUND)
-    set(DOXYGEN_EXCLUDE_PATTERNS *_tests.cpp)
+    set(DOXYGEN_EXCLUDE_PATTERNS *_tests.cpp *.cpp)
     set(DOXYGEN_GENERATE_HTML YES)
     set(DOXYGEN_GENERATE_LATEX NO)
     set(DOXYGEN_QUIET YES)
@@ -568,6 +568,9 @@ if(DOXYGEN_FOUND)
     set(DOXYGEN_STRIP_FROM_PATH src)
     set(DOXYGEN_STRIP_FROM_INC_PATH src)
 
+    # Use short names to prevent Doxygen from generating filenames with double-quotes.
+    set(DOXYGEN_SHORT_NAMES YES)
+
     set(DOXYGEN_JAVADOC_AUTOBRIEF YES)
     set(DOXYGEN_ALWAYS_DETAILED_SEC YES)
     set(DOXYGEN_DISTRIBUTE_GROUP_DOC YES)
@@ -575,7 +578,7 @@ if(DOXYGEN_FOUND)
     set(DOXYGEN_OPTIMIZE_OUTPUT_FOR_C YES)
     set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
     #set(DOXYGEN_CLANG_ASSISTED_PARSING YES)
-    #set(DOXYGEN_CLANG_OPTIONS "-std:c++20")
+    #set(DOXYGEN_CLANG_OPTIONS "-std=c++20")
 
     set(DOXYGEN_TAGFILES "${CMAKE_SOURCE_DIR}/docs/media/style/cppreference-doxygen-web.tag.xml=http://en.cppreference.com/w/")
     set(DOXYGEN_IMAGE_PATH "${CMAKE_SOURCE_DIR}/src/" "${CMAKE_SOURCE_DIR}/docs/")

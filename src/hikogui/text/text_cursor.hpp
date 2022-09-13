@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../assert.hpp"
 #include "../math.hpp"
 #include "../cast.hpp"
@@ -43,7 +43,7 @@ public:
      * - After the last character in the text if the text is non-empty.
      * - Before the first character in the text if the text is empty.
      *
-     * @param The size of the text string that this cursor points into.
+     * @param size The size of the text string that this cursor points into.
      */
     constexpr text_cursor& resize(size_t size) & noexcept
     {

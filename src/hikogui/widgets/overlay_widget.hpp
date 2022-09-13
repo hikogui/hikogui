@@ -40,8 +40,6 @@ public:
      *
      * @param window The window.
      * @param parent The parent widget.
-     * @param delegate An optional delegate can be used to populate the overlay widget
-     *                 during initialization.
      */
     overlay_widget(gui_window &window, widget *parent) noexcept;
 

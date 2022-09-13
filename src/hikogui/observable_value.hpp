@@ -21,8 +21,6 @@ public:
     ~observable_value() = default;
 
     /** Construct the shared state and default initialize the value.
-     *
-     * @param args The arguments passed to the constructor of the value.
      */
     constexpr observable_value() noexcept : _rcu()
     {
@@ -39,7 +37,7 @@ public:
         _rcu.emplace(std::forward<Args>(args)...);
     }
 
-    /// @beginprivatesection
+    /// @privatesection
     [[nodiscard]] void const *read() const noexcept override
     {
         return _rcu.get();

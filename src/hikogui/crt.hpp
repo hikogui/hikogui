@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include "required.hpp"
+#include "utility.hpp"
 #include "crt_utils.hpp"
 
 #if not defined(HI_CRT_NO_MAIN)

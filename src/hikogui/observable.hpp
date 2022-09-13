@@ -44,7 +44,7 @@ public:
     /** Allocate and make a copy of the value.
      *
      * @note `copy()` does not `write_lock()` the observable and should be done before `read()`.
-     * @param A pointer to the value that was `read()`.
+     * @param ptr A pointer to the value that was `read()`.
      * @return A pointer to a newly allocated copy of the value.
      */
     [[nodiscard]] virtual void *copy(void const *ptr) const noexcept = 0;

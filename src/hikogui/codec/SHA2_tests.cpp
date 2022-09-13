@@ -4,7 +4,7 @@
 
 #include "hikogui/codec/SHA2.hpp"
 #include "hikogui/codec/base_n.hpp"
-#include "hikogui/required.hpp"
+#include "hikogui/utility.hpp"
 #include "hikogui/strings.hpp"
 #include <gtest/gtest.h>
 #include <iostream>

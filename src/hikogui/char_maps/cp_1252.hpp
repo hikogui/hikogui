@@ -6,7 +6,7 @@
 
 #include "char_converter.hpp"
 #include "../cast.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../architecture.hpp"
 #include <cstdint>
 #include <utility>
@@ -78,6 +78,10 @@ constexpr auto cp_1252_make_table_2000_2122() noexcept
 
 } // namespace detail
 
+/** CP-1252 / Windows-1252 character map.
+ *
+ * @ingroup char_maps
+ */
 template<>
 struct char_map<"cp-1252"> {
     using char_type = char;

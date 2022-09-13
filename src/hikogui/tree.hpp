@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "required.hpp"
+#include "utility.hpp"
 #include "assert.hpp"
 #include <map>
 
@@ -60,7 +60,7 @@ public:
 
     /** Find or create the node and return the value of the node.
      *
-     * @param path The path of the node to get the value of.
+     * @param key The path of the node to get the value of.
      * @return A reference to the value.
      */
     value_type& operator[](auto const& key) noexcept

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../byte_string.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../assert.hpp"
 #include "../cast.hpp"
 #include "../check.hpp"

@@ -6,7 +6,7 @@
 
 #include "audio_stream_format_win32.hpp"
 #include "speaker_mapping_win32.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../exception.hpp"
 #include "../cast.hpp"
 #include "../check.hpp"

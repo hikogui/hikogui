@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "required.hpp"
+#include "utility.hpp"
 #include "hash.hpp"
 #include "cast.hpp"
 #include <cstddef>
@@ -14,10 +14,10 @@
 #include <concepts>
 #include <type_traits>
 
-hi_warning_push()
+hi_warning_push();
 // C26490: Don't use reinterpret_cast (type.1).
 // Need to call strlen() and friends with a `char *`.
-hi_warning_ignore_msvc(26490)
+hi_warning_ignore_msvc(26490);
 
 namespace hi::inline v1 {
 
@@ -32,7 +32,7 @@ public:
     using pos_type = std::fpos<std::mbstate_t>;
     using state_type = std::mbstate_t;
 
-    static constexpr void assign(std::byte &r, std::byte const &a) noexcept
+    static constexpr void assign(std::byte& r, std::byte const& a) noexcept
     {
         r = a;
     }
@@ -72,10 +72,9 @@ public:
         return std::strlen(reinterpret_cast<char const *>(s));
     }
 
-    static std::byte const *find(std::byte const *s, std::size_t count, std::byte const &ch) noexcept
+    static std::byte const *find(std::byte const *s, std::size_t count, std::byte const& ch) noexcept
     {
-        return static_cast<std::byte const *>(
-            std::memchr(reinterpret_cast<char const *>(s), static_cast<uint8_t>(ch), count));
+        return static_cast<std::byte const *>(std::memchr(reinterpret_cast<char const *>(s), static_cast<uint8_t>(ch), count));
     }
 
     static constexpr std::byte to_char_type(unsigned int c) noexcept
@@ -121,10 +120,10 @@ using bstring_view = std::basic_string_view<std::byte, byte_char_traits>;
 
 template<>
 struct std::hash<hi::bstring> {
-    [[nodiscard]] size_t operator()(hi::bstring const &rhs) const noexcept
+    [[nodiscard]] size_t operator()(hi::bstring const& rhs) const noexcept
     {
         auto r = size_t{0};
-        for (auto c: rhs) {
+        for (auto c : rhs) {
             r = hi::hash_mix_two(r, std::hash<uint8_t>{}(hi::char_cast<uint8_t>(c)));
         }
         return r;

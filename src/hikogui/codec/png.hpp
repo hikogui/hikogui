@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../pixel_map.hpp"
 #include "../rapid/sfloat_rgba16.hpp"
 #include "../geometry/identity.hpp"

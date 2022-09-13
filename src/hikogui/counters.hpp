@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-/** @file counter.hpp
+/** @file counters.hpp
  */
 
 #pragma once
@@ -32,10 +32,10 @@ public:
      * @param name The name of the counter.
      * @return A pointer to the counter, or nullptr if the counter is not found.
      */
-    [[nodiscard]] static counter *get_if(std::string const &name) noexcept
+    [[nodiscard]] static counter *get_if(std::string const& name) noexcept
     {
         hilet lock = std::scoped_lock(_mutex);
-        hilet &map_ = _map.get_or_make();
+        hilet& map_ = _map.get_or_make();
         hilet it = map_.find(name);
         if (it == map_.cend()) {
             return nullptr;
@@ -45,10 +45,10 @@ public:
         }
     }
 
-    counter(counter const &) = delete;
-    counter(counter &&) = delete;
-    counter &operator=(counter const &) = delete;
-    counter &operator=(counter &&) = delete;
+    counter(counter const&) = delete;
+    counter(counter&&) = delete;
+    counter& operator=(counter const&) = delete;
+    counter& operator=(counter&&) = delete;
 
     constexpr counter() noexcept {}
 
@@ -71,7 +71,7 @@ public:
 
     /** Log the counter.
      */
-    void log(std::string const &tag) noexcept;
+    void log(std::string const& tag) noexcept;
 
     uint64_t operator++() noexcept
     {
@@ -145,7 +145,7 @@ public:
 template<basic_fixed_string Tag>
 inline detail::tagged_counter<Tag> global_counter;
 
-[[nodiscard]] inline detail::counter *get_global_counter_if(std::string const &name)
+[[nodiscard]] inline detail::counter *get_global_counter_if(std::string const& name)
 {
     return detail::counter::get_if(name);
 }

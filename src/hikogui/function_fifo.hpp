@@ -64,7 +64,6 @@ public:
      *
      * @note wait-free if the function object and arguments fit in the message slot of the fifo.
      * @param func A function object.
-     * @param args The arguments to pass to the function when called.
      */
     template<typename Func>
     void add_function(Func&& func) noexcept

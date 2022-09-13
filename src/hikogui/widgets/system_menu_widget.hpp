@@ -6,7 +6,7 @@
 
 #include "widget.hpp"
 #include "icon_widget.hpp"
-#include "../icon.hpp"
+#include "../label.hpp"
 #include <memory>
 #include <string>
 #include <array>

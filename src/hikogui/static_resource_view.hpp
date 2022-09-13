@@ -5,7 +5,7 @@
 #pragma once
 
 #include "resource_view.hpp"
-#include "required.hpp"
+#include "utility.hpp"
 #include <span>
 #include <cstddef>
 #include <unordered_map>

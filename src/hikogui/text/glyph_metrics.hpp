@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/scale.hpp"
 

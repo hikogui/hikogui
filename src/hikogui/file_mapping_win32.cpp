@@ -8,13 +8,13 @@
 #include "exception.hpp"
 #include "log.hpp"
 #include "memory.hpp"
-#include "required.hpp"
+#include "utility.hpp"
 #include <mutex>
 
 namespace hi::inline v1 {
 
 file_mapping::file_mapping(std::shared_ptr<hi::file> const &file, std::size_t size) :
-    file(file), size(size > 0 ? size : file::file_size(file->_location))
+    file(file), size(size > 0 ? size : file->size())
 {
     DWORD protect;
     if (any(accessMode() & access_mode::read) and any(accessMode() & access_mode::write)) {
