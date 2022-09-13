@@ -4,7 +4,7 @@
 
 #include "log.hpp"
 #include "trace.hpp"
-#include "required.hpp"
+#include "utility.hpp"
 #include "URL.hpp"
 #include "strings.hpp"
 #include "thread.hpp"

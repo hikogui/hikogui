@@ -8,7 +8,7 @@
 #include "pipeline_SDF_specialization_constants.hpp"
 #include "../text/glyph_ids.hpp"
 #include "../text/glyph_atlas_info.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../log.hpp"
 #include "../vector_span.hpp"
 #include "../geometry/rectangle.hpp"

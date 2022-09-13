@@ -5,7 +5,7 @@
 #pragma once
 
 #include "xorshift128p.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 
 namespace hi::inline v1 {
 

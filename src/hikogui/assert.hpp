@@ -7,7 +7,7 @@
 #include "architecture.hpp"
 #include "debugger.hpp"
 #include "utils.hpp"
-#include "required.hpp"
+#include "utility.hpp"
 #include <exception>
 
 namespace hi::inline v1 {

@@ -144,7 +144,7 @@ target_sources(hikogui PRIVATE
     recursive_iterator.hpp
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32.cpp>
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32.hpp>
-    required.hpp
+    utility.hpp
     range_map.hpp
     resource_view.hpp
     safe_int.hpp
@@ -210,7 +210,7 @@ if(HI_BUILD_PCH AND NOT HI_ENABLE_ANALYSIS)
         exception.hpp
         log.hpp
         architecture.hpp
-        required.hpp
+        utility.hpp
         strings.hpp
         trace.hpp
         URL.hpp
@@ -275,7 +275,7 @@ if(HI_BUILD_TESTS AND HI_BUILD_PCH AND NOT HI_ENABLE_ANALYSIS)
         exception.hpp
         log.hpp
         architecture.hpp
-        required.hpp
+        utility.hpp
         strings.hpp
         trace.hpp
         URL.hpp

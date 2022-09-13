@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "gap_buffer.hpp"
-#include "required.hpp"
+#include "utility.hpp"
 #include "hash.hpp"
 #include <gtest/gtest.h>
 #include <iostream>

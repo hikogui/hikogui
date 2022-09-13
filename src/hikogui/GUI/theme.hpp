@@ -7,7 +7,7 @@
 #include "theme_mode.hpp"
 #include "../text/semantic_text_style.hpp"
 #include "../text/text_style.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../URL.hpp"
 #include "../datum.hpp"
 #include "../color/color.hpp"

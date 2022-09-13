@@ -8,7 +8,7 @@
 #include "exception.hpp"
 #include "log.hpp"
 #include "memory.hpp"
-#include "required.hpp"
+#include "utility.hpp"
 #include <mutex>
 
 namespace hi::inline v1 {

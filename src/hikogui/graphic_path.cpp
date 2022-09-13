@@ -6,7 +6,7 @@
 #include "pixel_map.inl"
 #include "bezier_curve.hpp"
 #include "pixel_map.hpp"
-#include "required.hpp"
+#include "utility.hpp"
 
 namespace hi::inline v1 {
 

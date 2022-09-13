@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "required.hpp"
+#include "utility.hpp"
 #include "architecture.hpp"
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
 #include <intrin.h>

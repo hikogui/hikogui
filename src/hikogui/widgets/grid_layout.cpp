@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "grid_layout.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../math.hpp"
 
 namespace hi::inline v1 {

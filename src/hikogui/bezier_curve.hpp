@@ -9,7 +9,7 @@
 #include "alignment.hpp"
 #include "math.hpp"
 #include "bezier.hpp"
-#include "required.hpp"
+#include "utility.hpp"
 #include "geometry/vector.hpp"
 #include "geometry/point.hpp"
 #include "geometry/transform.hpp"

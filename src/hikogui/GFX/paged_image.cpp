@@ -8,7 +8,7 @@
 #include "gfx_device_vulkan.hpp"
 #include "gfx_surface_vulkan.hpp"
 #include "../log.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../cast.hpp"
 #include "../geometry/translate.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"

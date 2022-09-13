@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../tokenizer.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../URL.hpp"
 #include "../datum.hpp"
 #include "../resource_view.hpp"

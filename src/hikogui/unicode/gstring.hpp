@@ -5,7 +5,7 @@
 #pragma once
 
 #include "grapheme.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../strings.hpp"
 #include "../hash.hpp"
 #include <vector>

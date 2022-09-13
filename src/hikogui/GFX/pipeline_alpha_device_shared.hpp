@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../geometry/rectangle.hpp"
 #include "../vector_span.hpp"
 #include "../color/color.hpp"

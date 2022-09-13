@@ -6,7 +6,7 @@
 
 #include "char_converter.hpp"
 #include "../cast.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../architecture.hpp"
 #include <cstdint>
 #include <utility>

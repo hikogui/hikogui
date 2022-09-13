@@ -6,7 +6,7 @@
 
 #include "seed.hpp"
 #include "../rapid/numeric_array.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include <random>
 
 namespace hi::inline v1 {

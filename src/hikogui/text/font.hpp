@@ -17,7 +17,7 @@
 #include "../graphic_path.hpp"
 #include "../resource_view.hpp"
 #include "../exception.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../URL.hpp"
 #include "../hash_map.hpp"
 #include <span>

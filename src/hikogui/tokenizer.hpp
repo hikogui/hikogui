@@ -6,7 +6,7 @@
 
 #include "strings.hpp"
 #include "small_vector.hpp"
-#include "required.hpp"
+#include "utility.hpp"
 #include "decimal.hpp"
 #include "exception.hpp"
 #include "parse_location.hpp"
