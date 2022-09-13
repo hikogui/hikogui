@@ -74,7 +74,6 @@ public:
     /** Add a function to be called repeatedly.
      *
      * @param period The period between repeated calls
-     * @param time_point The time when to call the function the first time.
      * @param func The function to be called.
      * @return token, next to call.
      */

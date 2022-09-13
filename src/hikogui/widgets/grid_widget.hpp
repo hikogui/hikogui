@@ -42,39 +42,40 @@ public:
      *
      * @param window The window.
      * @param parent The parent widget.
-     * @param delegate An optional delegate can be used to populate the grid widget
-     *                 during initialization.
      */
-    grid_widget(gui_window &window, widget *parent) noexcept;
+    grid_widget(gui_window& window, widget *parent) noexcept;
 
     /** Add a widget directly to this grid-widget.
      *
      * @tparam Widget The type of the widget to be constructed.
-     * @param column_nr The zero-based index from left-to-right.
-     * @param row_nr The zero-based index from top-to-bottom.
+     * @param column_first The first (left-most) column to place the widget in.
+     * @param row_first The first (top-most) row to place the widget in.
+     * @param column_last One beyond the last column to place the widget in.
+     * @param row_last One beyond the last row to place the widget in.
      * @param args The arguments passed to the constructor of the widget.
      * @return A reference to the widget that was created.
      */
     template<typename Widget, typename... Args>
-    Widget &make_widget(std::size_t column_first, std::size_t row_first, std::size_t column_last, std::size_t row_last, Args &&...args)
+    Widget&
+    make_widget(std::size_t column_first, std::size_t row_first, std::size_t column_last, std::size_t row_last, Args&&...args)
     {
         auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
-        return static_cast<Widget &>(add_widget(column_first, row_first, column_last, row_last, std::move(tmp)));
+        return static_cast<Widget&>(add_widget(column_first, row_first, column_last, row_last, std::move(tmp)));
     }
 
     /** Add a widget directly to this grid-widget.
      *
      * @tparam Widget The type of the widget to be constructed.
-     * @param column_nr The zero-based index from left-to-right.
-     * @param row_nr The zero-based index from top-to-bottom.
+     * @param column The zero-based index from left-to-right.
+     * @param row The zero-based index from top-to-bottom.
      * @param args The arguments passed to the constructor of the widget.
      * @return A reference to the widget that was created.
      */
     template<typename Widget, typename... Args>
-    Widget &make_widget(std::size_t column, std::size_t row, Args &&...args)
+    Widget& make_widget(std::size_t column, std::size_t row, Args&&...args)
     {
         auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
-        return static_cast<Widget &>(add_widget(column, row, column + 1, row + 1, std::move(tmp)));
+        return static_cast<Widget&>(add_widget(column, row, column + 1, row + 1, std::move(tmp)));
     }
 
     /** Add a widget directly to this grid-widget.
@@ -86,7 +87,7 @@ public:
      * @return A reference to the widget that was created.
      */
     template<typename Widget, typename... Args>
-    Widget &make_widget(std::string_view address, Args &&...args)
+    Widget& make_widget(std::string_view address, Args&&...args)
     {
         hilet[column_first, row_first, column_last, row_last] = parse_spreadsheet_range(address);
         return make_widget<Widget>(column_first, row_first, column_last, row_last, std::forward<Args>(args)...);
@@ -95,14 +96,14 @@ public:
     /// @privatesection
     [[nodiscard]] generator<widget *> children() const noexcept override
     {
-        for (hilet &cell : _cells) {
+        for (hilet& cell : _cells) {
             co_yield cell.widget.get();
         }
     }
 
-    widget_constraints const &set_constraints() noexcept override;
-    void set_layout(widget_layout const &layout) noexcept override;
-    void draw(draw_context const &context) noexcept override;
+    widget_constraints const& set_constraints() noexcept override;
+    void set_layout(widget_layout const& layout) noexcept override;
+    void draw(draw_context const& context) noexcept override;
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
     /// @endprivatesection
 private:
@@ -128,7 +129,7 @@ private:
         }
 
         [[nodiscard]] aarectangle
-        rectangle(grid_layout const &columns, grid_layout const &rows, float container_height) const noexcept
+        rectangle(grid_layout const& columns, grid_layout const& rows, float container_height) const noexcept
         {
             hilet[x0, x3] = columns.get_positions(column_first, column_last);
             hilet[y0, y3] = rows.get_positions(row_first, row_last);
@@ -136,7 +137,7 @@ private:
             return {point2{x0, container_height - y3}, point2{x3, container_height - y0}};
         }
 
-        [[nodiscard]] widget_baseline baseline(grid_layout const &rows) const noexcept
+        [[nodiscard]] widget_baseline baseline(grid_layout const& rows) const noexcept
         {
             return rows.get_baseline(row_first, row_last);
         }
@@ -147,11 +148,12 @@ private:
     grid_layout _rows;
     grid_layout _columns;
 
-    [[nodiscard]] bool address_in_use(std::size_t column_first, std::size_t row_first, std::size_t column_last, std::size_t row_last) const noexcept;
+    [[nodiscard]] bool
+    address_in_use(std::size_t column_first, std::size_t row_first, std::size_t column_last, std::size_t row_last) const noexcept;
 
     /* Add a widget to the grid.
      */
-    widget &add_widget(
+    widget& add_widget(
         std::size_t column_first,
         std::size_t row_first,
         std::size_t column_last,

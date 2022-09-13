@@ -6,7 +6,7 @@
 
 #include "text_delegate.hpp"
 #include "../observer.hpp"
-#include "../text.hpp"
+#include "../label.hpp"
 #include "../type_traits.hpp"
 #include "../concepts.hpp"
 #include "../unicode/gstring.hpp"

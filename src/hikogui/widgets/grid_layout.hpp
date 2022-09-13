@@ -47,6 +47,7 @@ public:
      * @param maximum The maximum size that a widget should be laid out as.
      * @param margin_before The space between this widget and other widgets.
      * @param margin_after The space between this widget and other widgets.
+     * @param baseline The relative baseline for all the widget on a row.
      */
     void add_constraint(
         std::size_t first,
@@ -70,6 +71,7 @@ public:
      * @param maximum The maximum size that a widget should be laid out as.
      * @param margin_before The space between this widget and other widgets.
      * @param margin_after The space between this widget and other widgets.
+     * @param baseline The relative baseline for all the widget on a row.
      */
     void add_constraint(
         std::size_t index,

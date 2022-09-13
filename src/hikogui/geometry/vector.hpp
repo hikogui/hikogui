@@ -7,6 +7,9 @@
 #include "../rapid/numeric_array.hpp"
 
 namespace hi::inline v1 {
+
+/** @namespace v1::geo HikoGUI geometry types.
+ */
 namespace geo {
 
 /** A high-level geometric vector

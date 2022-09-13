@@ -229,7 +229,7 @@ hi_force_inline constexpr std::pair<T, T> mul_carry(T lhs, T rhs, T carry = T{0}
  * @param lhs_lo The low side of a wide left-hand-side
  * @param lhs_hi The high side of a wide left-hand-side
  * @param rhs The right hand side
- * @retrun The result.
+ * @return The result.
  */
 template<std::unsigned_integral T>
 hi_force_inline constexpr T wide_div(T lhs_lo, T lhs_hi, T rhs) noexcept
@@ -617,7 +617,7 @@ hi_force_inline constexpr void mul_carry_chain(T *hi_restrict r, T const *lhs, T
  * @param remainder The remainder of the division.
  * @param lhs The left hand side operand.
  * @param rhs The right hand side operand.
- * @param n The number of digits of @a quotient, @remainder, @a lhs and @a rhs.
+ * @param n The number of digits of @a quotient, @a remainder, @a lhs and @a rhs.
  */
 template<std::unsigned_integral T>
 constexpr void div_carry_chain(T *hi_restrict quotient, T *hi_restrict remainder, T const *lhs, T const *rhs, std::size_t n) noexcept
@@ -643,10 +643,10 @@ constexpr void div_carry_chain(T *hi_restrict quotient, T *hi_restrict remainder
  *
  * @note @a quotient and @a remainder may not alias with @a lhs or @a rhs or with each other.
  * @param quotient The result of the division.
- * @param remainder The remainder of the division. The remainder has same sign as @lhs.
+ * @param remainder The remainder of the division. The remainder has same sign as @a lhs.
  * @param lhs The left hand side operand.
  * @param rhs The right hand side operand.
- * @param n The number of digits of @a quotient, @remainder, @a lhs and @a rhs.
+ * @param n The number of digits of @a quotient, @a remainder, @a lhs and @a rhs.
  */
 template<std::unsigned_integral T>
 constexpr void

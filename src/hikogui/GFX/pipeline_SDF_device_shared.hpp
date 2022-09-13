@@ -122,7 +122,7 @@ struct device_shared final {
      * @param box The rectangle of the glyph in window coordinates. The box's size must be the size
      *            of the glyph's bounding box times @a glyph_size.
      * @param glyphs The font-id, composed-glyphs to render
-     * @param color The color of the glyph.
+     * @param colors The color of each corner of the glyph.
      * @return True is atlas was updated.
      */
     bool place_vertices(

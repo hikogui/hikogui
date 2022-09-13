@@ -46,8 +46,6 @@ public:
      *
      * @param window The window.
      * @param parent The parent widget.
-     * @param delegate An optional delegate can be used to populate the row/column widget
-     *                 during initialization.
      */
     row_column_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
     {

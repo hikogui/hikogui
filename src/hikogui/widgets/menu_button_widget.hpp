@@ -16,17 +16,12 @@ namespace hi::inline v1 {
  *  - **on**: The menu button shows a check mark next to the label.
  *  - **other**: The menu button shows just the label.
  *
- * @image html menu_button_widget.gif
- *
  * Each time a user activates the menu-button it switches its state to 'on'.
  * Most menus will close the menu after the menu button was activated.
  *
  * A menu button cannot itself switch state to 'other', this state may be
  * caused by external factors. The canonical example is another menu button in
  * a set, which is configured with a different `on_value`.
- *
- *
- * @snippet widgets/menu_button_example.cpp Create three menu buttons
  */
 class menu_button_widget final : public abstract_button_widget {
 public:

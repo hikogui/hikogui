@@ -13,6 +13,8 @@
 
 namespace hi::inline v1 {
 
+/** ISO-8859-1 / Latin-1 character map.
+ */
 template<>
 struct char_map<"iso-8859-1"> {
     using char_type = char;

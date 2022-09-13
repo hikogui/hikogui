@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-/** @file unicode_line_break
+/** @file unicode/unicode_line_break.hpp
  */
 
 #pragma once
@@ -616,6 +616,8 @@ template<typename It, typename ItEnd, typename DescriptionFunc>
 
 /** Unicode break lines.
  *
+ * @param opportunities The list of break opportunities.
+ * @param widths The list of character widths
  * @param maximum_line_width The maximum line width.
  * @return A list of line lengths.
  */

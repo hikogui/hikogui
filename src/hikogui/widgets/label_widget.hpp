@@ -70,13 +70,8 @@ public:
      * @see `label_widget::alignment`
      * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this radio button widget.
-     * @param label The label to show next to the radio button.
-     * @param alignment The alignment of the label.
-     *                  The default alignment is middle_right, because the most common
-     *                  usage for a label by an application programmer is to add the label
-     *                  to the left of another widget.
-     * @param text_style The text style of the label, and color of non-color
-     *                   icons.
+     * @param attributes Different attributes used to configure the label widget:
+     *                   a `label`, `alignment` or `text_style`
      */
     label_widget(
         gui_window& window,

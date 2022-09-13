@@ -2,18 +2,113 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file label.hpp Functionality for labels, text and icons.
+ */
+
 #pragma once
 
 #include "utility.hpp"
 #include "strings.hpp"
-#include "icon.hpp"
-#include "text.hpp"
 #include "type_traits.hpp"
 #include "fixed_string.hpp"
 #include "i18n/translate.hpp"
+#include "unicode/gstring.hpp"
+#include "URL.hpp"
+#include "pixel_map.hpp"
+#include "rapid/sfloat_rgba16.hpp"
+#include "text/glyph_ids.hpp"
+#include "text/elusive_icon.hpp"
+#include "text/hikogui_icon.hpp"
 #include <string>
 #include <type_traits>
 #include <memory>
+#include <variant>
+
+namespace hi::inline v1 {
+
+/** A variant of text.
+ *
+ * May be:
+ *  - `std::monostate`
+ *  - `std::string`
+ *  - `hi::gstring`
+ *  - `hi::translate` or `hi::tr`
+ */
+class text : public std::variant<std::monostate, std::string, gstring, translate> {
+    using std::variant<std::monostate, std::string, gstring, translate>::variant;
+
+    /** Check if text contains a string.
+     *
+     * @note `to_bool()` returns true on an zero length string.
+     */
+    [[nodiscard]] constexpr friend bool to_bool(text const& rhs) noexcept
+    {
+        return not std::holds_alternative<std::monostate>(rhs);
+    }
+
+    /** Convert the text into a std::string.
+     */
+    [[nodiscard]] constexpr friend std::string to_string(hi::text const& rhs) noexcept
+    {
+        // clang-format off
+        return std::visit(
+            overloaded{
+                [](std::monostate const &) { return std::string{}; },
+                [](std::string const &x) { return x; },
+                [](gstring const &x) { return hi::to_string(x); },
+                [](translate const &x) { return x(); }
+            },
+            rhs);
+        // clang-format on
+    }
+
+    /** Convert the text into a gstring.
+     */
+    [[nodiscard]] constexpr friend gstring to_gstring(hi::text const& rhs) noexcept
+    {
+        // clang-format off
+        return std::visit(
+            overloaded{
+                [](std::monostate const &) { return gstring{}; },
+                [](std::string const &x) { return to_gstring(std::string_view{x}); },
+                [](gstring const &x) { return x; },
+                [](translate const &x) { return to_gstring(std::string_view{x()}); }
+            },
+            rhs);
+        // clang-format on
+    }
+};
+
+/** A variant of icon.
+ *
+ * May be:
+ *  - `std::monostate`
+ *  - `hi::elusive_icon`
+ *  - `hi::hikogui_icon`
+ *  - `hi::glyph_ids`
+ *  - `hi::pixel_map<hi::sfloat_rgba16>`
+ */
+class icon : public std::variant<std::monostate, elusive_icon, hikogui_icon, glyph_ids, pixel_map<sfloat_rgba16>>
+{
+    using std::variant<std::monostate, elusive_icon, hikogui_icon, glyph_ids, pixel_map<sfloat_rgba16>>::variant;
+
+    /** Check if icon contains an image.
+     */
+    [[nodiscard]] constexpr friend bool to_bool(icon const& rhs) noexcept
+    {
+        return not std::holds_alternative<std::monostate>(rhs);
+    }
+};
+
+} // namespace hi::inline v1
+
+template<typename CharT>
+struct std::formatter<hi::text, CharT> : std::formatter<std::string_view, CharT> {
+    auto format(hi::text const& t, auto& fc)
+    {
+        return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
+    }
+};
 
 namespace hi::inline v1 {
 
@@ -68,7 +163,7 @@ public:
 
     [[nodiscard]] constexpr bool empty() const noexcept
     {
-        return icon.empty() and text.empty();
+        return not(to_bool(icon) or to_bool(text));
     }
 
     constexpr explicit operator bool() const noexcept

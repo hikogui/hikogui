@@ -150,8 +150,10 @@ public:
 
     /** Subscribe a callback for when the co-routine is completed.
      *
+     * @param flags The callback flags used to be passed to the notifier.
      * @param callback The callback to call when the co-routine executed co_return. If co_return
      *                 has a non-void expression then the callback must accept the expression as an argument.
+     * @return The callback token used to manage the lifetime of the callback
      */
     notifier_type::token_type subscribe(callback_flags flags, std::invocable<value_type> auto&& callback) noexcept
     {
@@ -256,7 +258,6 @@ public:
     /** Get the return value returned from co_return.
      *
      * @note It is undefined behavior to call this function if the co-routine is incomplete.
-     * @return void
      * @throws The exception thrown from the co-routine.
      */
     void value() const

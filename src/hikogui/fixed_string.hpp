@@ -12,7 +12,7 @@
 
 namespace hi::inline v1 {
 
-/**
+/** A string which may be used as a none-type template parameter.
  *
  * example:
  *     ```

@@ -184,8 +184,7 @@ public:
      *
      * @post This function will change what is returned by `widget::size()` and the transformation
      *       matrices.
-     * @param context The layout context for this child.
-     * @return The new size of the widget, should be a copy of the new_size parameter.
+     * @param layout The layout for this child.
      */
     virtual void set_layout(widget_layout const& layout) noexcept = 0;
 

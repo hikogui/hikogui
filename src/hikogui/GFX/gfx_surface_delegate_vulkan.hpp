@@ -40,7 +40,6 @@ public:
     /** Draw using vulkan API.
      *
      * @param swapchain_index The index of the image-view of the swap-chain to draw into.
-     * @param clipping_rectangle The rectangle on the window that is visible through this widget.
      * @param render_area The area of the window that is being drawn.
      * @param start The semaphore used to signal when the @a image_view is ready to be drawn.
      * @param finish The semaphore used to signal when the HikoGUI overlay is drawn onto the @a image_view.

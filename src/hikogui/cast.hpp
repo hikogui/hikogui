@@ -75,8 +75,6 @@ template<typename Out, base_of<std::remove_pointer_t<Out>> In>
 /** Cast a pointer to a class to its derived class or itself.
  *
  * @note It is undefined behavior if the argument is not of type Out.
- * @param rhs A pointer to an object that is of type `Out`. Or a nullptr which will be
- *        passed through.
  * @return A pointer to the same object with a new type.
  */
 template<typename Out>

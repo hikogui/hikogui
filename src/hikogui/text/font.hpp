@@ -145,7 +145,7 @@ public:
      *
      * @param language The language that the word is written in.
      * @param script The script that the word is written in.
-     * @param [in,out]word A run of glyphs, from the same font, font-size and script of a word.
+     * @param[in,out] word A run of glyphs, from the same font, font-size and script of a word.
      */
     virtual void substitution_and_kerning(iso_639 language, iso_15924 script, std::vector<substitution_and_kerning_type> &word)
         const noexcept = 0;

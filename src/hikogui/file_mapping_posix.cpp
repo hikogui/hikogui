@@ -11,13 +11,13 @@
 
 namespace hi::inline v1 {
 
-file_mapping::file_mapping(std::shared_ptr<File> const &file, std::size_t size) :
-    file(file), size(size > 0 ? size : File::fileSize(file->location))
+file_mapping::file_mapping(std::shared_ptr<file> const &file, std::size_t size) :
+    file(file), size(size > 0 ? size : file::fileSize(file->location))
 {
 }
 
-file_mapping::file_mapping(URL const &location, AccessMode accessMode, std::size_t size) :
-    file_mapping(findOrOpenFile(location, accessMode), size)
+file_mapping::file_mapping(URL const &location, access_mode access_mode, std::size_t size) :
+    file_mapping(findOrOpenFile(location, access_mode), size)
 {
 }
 

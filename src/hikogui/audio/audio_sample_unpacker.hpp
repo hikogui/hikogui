@@ -21,6 +21,7 @@ public:
      * interleaved channels.
      *
      * @param format The sample format.
+     * @param stride The distance to the next sample.
      */
     audio_sample_unpacker(audio_sample_format format, std::size_t stride) noexcept;
 

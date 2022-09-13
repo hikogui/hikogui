@@ -16,22 +16,22 @@ namespace hi::inline v1 {
 enum class unicode_decomposition_type : uint8_t {
     none, // No decomposition.
     canonical, ///< Canonical decomposition.
-    font, ///< <font> Font variant (for example, a blackletter form).
-    noBreak, ///< <noBreak> No - break version of a space or hyphen.
-    initial, ///< <initial> Arabic presentation forms.
-    medial, ///< <medial> Arabic presentation forms.
-    _final, ///< <final> Arabic presentation forms.
-    isolated, ///< <isolated> Arabic presentation forms.
-    circle, ///< <circle> Encircled form.
-    super, ///< <super> Super-, sub-script and Vulgar-fraction forms
-    sub, ///< <sub> Super-, sub-script and Vulgar-fraction forms
-    fraction, ///< <fraction> Super-, sub-script and Vulgar-fraction forms
-    vertical, ///< <vertical> asian compatibility forms.
-    wide, ///< <wide> asian compatibility forms.
-    narrow, ///< <narrow> asian compatibility forms.
-    small, ///< <small>asian compatibility forms.
-    square, ///< <square> asian compatibility forms.
-    compat ///< <compat> Otherwise unspecified compatibility character
+    font, ///< \<font\> Font variant (for example, a blackletter form).
+    noBreak, ///< \<noBreak\> No - break version of a space or hyphen.
+    initial, ///< \<initial\> Arabic presentation forms.
+    medial, ///< \<medial\> Arabic presentation forms.
+    _final, ///< \<final\> Arabic presentation forms.
+    isolated, ///< \<isolated\> Arabic presentation forms.
+    circle, ///< \<circle\> Encircled form.
+    super, ///< \<super\> Super-, sub-script and Vulgar-fraction forms
+    sub, ///< \<sub\> Super-, sub-script and Vulgar-fraction forms
+    fraction, ///< \<fraction\> Super-, sub-script and Vulgar-fraction forms
+    vertical, ///< \<vertical\> asian compatibility forms.
+    wide, ///< \<wide\> asian compatibility forms.
+    narrow, ///< \<narrow\> asian compatibility forms.
+    small, ///< \<small\>asian compatibility forms.
+    square, ///< \<square\> asian compatibility forms.
+    compat ///< \<compat\> Otherwise unspecified compatibility character
 };
 
 }

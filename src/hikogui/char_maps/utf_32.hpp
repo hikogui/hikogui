@@ -8,6 +8,8 @@
 
 namespace hi::inline v1 {
 
+/** Unicode UTF-32 encoding.
+ */
 template<>
 struct char_map<"utf-32"> {
     using char_type = char32_t;

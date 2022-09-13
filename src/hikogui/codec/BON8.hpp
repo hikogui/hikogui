@@ -465,7 +465,7 @@ void BON8_encoder::add(datum const &value)
 
 /** Decode a 4, or 8 byte signed integer.
  *
- * @param [in,out] ptr The pointer to the first byte of the integer.
+ * @param[in,out] ptr The pointer to the first byte of the integer.
  *                     On return this points beyond the integer.
  * @param last The pointer beyond the buffer.
  * @param count The number of bytes used to encode the integer.

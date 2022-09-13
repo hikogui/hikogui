@@ -17,60 +17,73 @@ namespace hi::inline v1 {
 
 /** Character encoder/decoder template.
  *
- * Implementations have to define these optional methods:
- *  - `read()`
- *  - `size()`
- *  - `write()`
- *  - `read_ascii_chunk16()`
- *  - `write_ascii_chunk16()`
+ * @tparam Encoding a string-tag representing the encoding.
  *
- * Implementations are required to add the following types:
- *  - char_type
+ * Implementations have to define the following members:
  *
+ * ### Character type.
+ * ```cpp
+ * char_type
+ * ```
+ *
+ *
+ * ### Read a single code-point
+ * ```cpp
+ * constexpr std::pair<char32_t, bool> read(char_type const *& ptr, char_type const *last) const noexcept
+ * ```
+ *  - _[in,out]ptr_ Pointer to the first code-unit of the code-point to read.
+ *    on return the pointer will point beyond the last code-unit of the code-point that was read.
+ *  - _last_ A pointer pointing one beyond the string.
+ *  - _return (code-point, valid)_ The function will always return a code-point,
+ *    even if there was a parse error, in this case `valid` is false.
+ *
+ *
+ * ### Determine number of code-units for a code-point.
+ * ```cpp
+ * constexpr std::pair<uint8_t, bool> size(char32_t code_point) const noexcept
+ * ```
+ *  - _code_point_ The code-point to encode.
+ *  - _return (count, valid)_ If the code-point can not be encoded `valid` will be false,
+ *    end count will contain the number of code-unit needed to
+ *    encode a replacement character.
+ *
+ *
+ * ### Encode a single code-point.
+ * ```cpp
+ * constexpr void write(char32_t code_point, char_type *&ptr) const noexcept
+ * ```
+ *  - _code_point_ The code-point to encode.
+ *  - _[in,out]ptr_ The pointer where the code-units will be written. On return
+ *    will contain the pointer beyond where the code-units where written.
+ *    It is undefined behavior if the ptr does not point to a valid buffer
+ *    where all the code-units can be written to.
+ *
+ *
+ * ### Read a chunk of ASCII characters.
+ * ```cpp
+ * __m128i read_ascii_chunk16(char_type const *ptr) const noexcept
+ * ```
  * `read_ascii_chunk16()` returns a 16 byte register. The implementation of this function must set the high-bit of
  * each non-ASCII character.
+ *  - `ptr` A pointer to the first character of a chunk of 16 characters.
+ *  - _return_ 16 bytes in a register, bit 7 must be '1' if the character is not ASCII.
+ *
+ *
+ * ### Write a chunk of ASCII characters.
+ * ```cpp
+ * void write_ascii_chunk16(__m128i chunk, char_type *ptr) const noexcept
+ * ```
+ *  - _chunk_ A chunk of 16 ascii characters. bit 7 is always '0'.
+ *  - _ptr_ The pointer to the first code-unit where the ASCII characters must be written to.
  */
 template<basic_fixed_string Encoding>
-struct char_map {
-    /** @fn constexpr std::pair<char32_t, bool> read(char_type const *& ptr, char_type const *last) const noexcept
-     * @brief Read a single code-point.
-     * @param [in,out]ptr Pointer to the first code-unit of the code-point to read.
-     *        on return the pointer will point beyond the last code-unit of the code-point that was read.
-     * @param last A pointer pointing one beyond the string.
-     * @return (code-point, valid) The function will always return a code-point,
-     *         even if there was a parse error, in this case `valid` is false.
-     */
+struct char_map;
 
-    /** @fn constexpr std::pair<uint8_t, bool> size(char32_t code_point) const noexcept
-     * @brief Get how many code-unit are required to encode the code-point
-     * @param code_point The code-point to encode.
-     * @return (count, valid) If the code-point can not be encoded `valid` will be false,
-     *                        end count will contain the number of code-unit needed to
-     *                        encode a replacement character.
-     */
-
-    /** @fn constexpr void write(char32_t code_point, char_type *&ptr) const noexcept
-     * @brief Encode a single code-unit.
-     * @param code_point The code-point to encode.
-     * @param [in,out]ptr The pointer where the code-units will be written. On return
-     *                    will contain the pointer beyond where the code-units where written.
-     *                    It is undefined behavior if the ptr does not point to a valid buffer
-     *                    where all the code-units can be written to.
-     */
-
-    /** @fn __m128i read_ascii_chunk16(char_type const *ptr) const noexcept
-     * @brief Read a chunk of ascii characters.
-     * @param ptr A pointer to the first character of a chunk of 16 characters.
-     * @return 16 bytes in a register, bit 7 must be '1' if the character is not ASCII.
-     */
-
-    /** @fn void write_ascii_chunk16(__m128i chunk, char_type *ptr) const noexcept
-     * @brief Write a chunk of ascii characters.
-     * @param chunk A chunk of 16 ascii characters. bit 7 is always '0'.
-     * @param ptr The pointer to the first code-unit where the ASCII characters must be written to.
-     */
-};
-
+/** A converter between character encodings.
+ *
+ * @tparam From a string-tag matching an existing `char_map<From>`
+ * @tparam To a string-tag matching an existing `char_map<To>`
+ */
 template<basic_fixed_string From, basic_fixed_string To>
 struct char_converter {
 public:
@@ -81,6 +94,12 @@ public:
     using from_string_type = std::basic_string<from_char_type>;
     using to_string_type = std::basic_string<to_char_type>;
 
+    /** Convert text between the given encodings.
+     *
+     * @tparam OutRange The output type
+     * @param src The text to be converted.
+     * @return The converted text.
+     */
     template<typename OutRange, typename InRange>
     [[nodiscard]] constexpr OutRange convert(InRange&& src) const noexcept
     {
@@ -116,6 +135,13 @@ public:
         return r;
     }
 
+    /** Convert text between the given encodings.
+     *
+     * @tparam OutRange The output type
+     * @param first An iterator pointing to the first character to be converted.
+     * @param last An iterator pointing one beyond the last character to be converted, or a sentinel.
+     * @return The converted text.
+     */
     template<typename OutRange, typename It, typename EndIt>
     [[nodiscard]] constexpr OutRange convert(It first, EndIt last) const noexcept
     {
@@ -124,7 +150,7 @@ public:
         hilet[size, valid] = _size(first, last);
         auto r = OutRange{};
         if (size == 0) {
-           return r;
+            return r;
         }
 
         r.resize(size);
@@ -138,6 +164,14 @@ public:
         return r;
     }
 
+    /** Read text from a byte array.
+     *
+     * @tparam OutRange The output type
+     * @param ptr A pointer to a byte array containing the text in the `From` encoding.
+     * @param size The number of bytes in the array.
+     * @param endian The endianness of characters in the array, used as a hint.
+     * @return The converted text.
+     */
     template<typename OutRange = std::basic_string<to_char_type>>
     [[nodiscard]] OutRange read(void const *ptr, size_t size, std::endian endian = std::endian::native) noexcept
     {
@@ -160,13 +194,18 @@ public:
             auto tmp = std::basic_string<from_char_type>{};
             tmp.resize(num_chars);
             std::memcpy(std::addressof(*tmp.begin()), ptr, num_chars * sizeof(from_char_type));
-            for (auto &c: tmp) {
+            for (auto& c : tmp) {
                 c = byte_swap(c);
             }
             return convert<OutRange>(std::move(tmp));
         }
     }
 
+    /** Convert text between the given encodings.
+     *
+     * @param src The text to be converted.
+     * @return The converted text as a std::basic_string<to_char_type>.
+     */
     template<typename InRange>
     [[nodiscard]] constexpr to_string_type operator()(InRange&& src) const noexcept
     {

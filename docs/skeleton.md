@@ -1,4 +1,4 @@
-# HikoGUI Stencil Template Language
+# HikoGUI Skeleton Template Language
 
 This template language was designed for code generation for different programming languages
 including HTML. The language was inspired by [makotemplates.org](https://www.makotemplates.org/), but with
@@ -270,11 +270,11 @@ Syntax: `"([^"]|\\")*"`
 
 The literal string may include escape sequences:
 
- - `\"` A literal double quote
- - `\n` A literal line feed
- - `\r` A literal carriage return
- - `\t` A literal tab
- - `\f` A literal form feed
+ - '\\\"' A literal double quote.
+ - '\\n' A literal line feed.
+ - '\\r' A literal carriage return.
+ - '\\t' A literal tab.
+ - '\\f' A literal form feed.
 
 Explicit conversion can be done using the `string()` function.
 
@@ -404,7 +404,9 @@ This linefeed is suppressed.
 The placeholder is an expression that is evaluated and explicitly converted to a string.
 This string will then be inserted into the text.
 
-Syntax: '${' expression '}'
+Syntax:
+
+ - '${' expression '}'
 
 Example:
 
@@ -429,7 +431,9 @@ At the top-level, assignments are done in global scope. Inside functions and blo
 are done in the local scope, even if the name already exists in the global scope.
 Loops do not introduce scopes.
 
-Syntax: '#' expression
+Syntax:
+
+ - '#' expression
 
 If the expression starts with a keyword such as `if`, `while`, `return`, etc. A white space should be inserted
 between the '#' and the expression.
@@ -465,7 +469,9 @@ and top-level template files have the `.ttt` (HikoGUI Template) extension.
 
 Warning: There is no protection against including a file multiple times or recursively.
 
-Syntax: `'#include' url-expression`
+Syntax:
+
+ - '#include' url-expression
 
 Example:
 
@@ -487,10 +493,10 @@ expressions were `false`.
 
 Syntax:
 
- - `'#if' boolean-expression '\n'`
- - `'#elif' boolean-expression '\n'`
- - `'#else' '\n'`
- - `'#end' '\n'`
+ - '#if' boolean-expression '\\n'
+ - '#elif' boolean-expression '\\n'
+ - '#else' '\\n'
+ - '#end' '\\n'
 
 Example:
 
@@ -540,9 +546,9 @@ Inside the loop, extra variables are available for convenience:
 
 Syntax:
 
- - `'#for' name ( ',' name )* 'in' expression '\n'`
- - `'#else' '\n'`
- - `'#end' '\n'`
+ - '#for' name ( ',' name )* 'in' expression '\\n'
+ - '#else' '\\n'
+ - '#end' '\\n'
 
 Example:
 
@@ -574,8 +580,8 @@ Inside the loop extra variables are available for convenience:
 
 Syntax:
 
- - `'#while' boolean-expression '\n'`
- - `'#end' '\n'`
+ - '#while' boolean-expression '\\n'
+ - '#end' '\\n'
 
 Example:
 
@@ -607,8 +613,8 @@ Inside the loop, extra variables are available for convenience:
 
 Syntax:
 
- - `'#do' '\n'`
- - `'#while' boolean-expression '\n'`
+ - '#do' '\\n'
+ - '#while' boolean-expression '\\n'
 
 ```text
 # i = 0
@@ -628,17 +634,17 @@ Iteration 0.
 
 Stop executing of a block inside a loop, then:
 
- - *continue* with the next iteration of the loop or
- - *break* out of the loop
+ - `continue` with the next iteration of the loop or
+ - `break` out of the loop
 
 Syntax:
 
- - `'#continue' '\n'`
- - `'#break' '\n'`
+ - '#continue' '\\n'
+ - '#break' '\\n'
 
 Example:
 
-```text
+```
 #for x in ["foo", "bar", "baz"]
     #if x == "bar"
         #continue
@@ -675,8 +681,8 @@ as a simple form of object-oriented-polymorphism.
 
 Syntax:
 
- - `'#function' name '(' ( name ( ',' name )* ','? )? ')' '\n'`
- - `'#end' '\n'`
+ - '#function' name '(' ( name ( ',' name )* ','? )? ')' '\\n'
+ - '#end' '\\n'
 
 Example:
 
@@ -703,7 +709,9 @@ bar is foo is 42.
 
 Return data from a function
 
-Syntax: `'#return' expression '\n'`
+Syntax: 
+
+ - '#return' expression '\\n'
 
 Example:
 
@@ -733,8 +741,8 @@ object-oriented-polymorphism.
 
 Syntax:
 
- - `'#block' name '\n'`
- - `'#end'`
+ - '#block' name '\\n'
+ - '#end'
 
 Example:
 

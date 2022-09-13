@@ -27,7 +27,7 @@ def make_composition_table(descriptions):
                 | <0><res2><sec2><res1>
                 | <1><ffff><res3><sec3>
 
-    @param [in,out]descriptions A table of unicode descriptions
+    @param[in,out] descriptions A table of unicode descriptions
     @return The table of compositions, a list of 64 bit integers.
     """
 
