@@ -73,30 +73,10 @@ public:
      * @param attributes Different attributes used to configure the label widget:
      *                   a `label`, `alignment` or `text_style`
      */
-    label_widget(
-        gui_window& window,
-        widget *parent,
-        label_widget_attribute auto&&...attributes) noexcept :
+    label_widget(gui_window& window, widget *parent, label_widget_attribute auto&&...attributes) noexcept :
         label_widget(window, parent)
     {
         set_attributes(hi_forward(attributes)...);
-    }
-
-    void set_attributes() noexcept {}
-    void set_attributes(
-        label_widget_attribute auto&& first, label_widget_attribute auto&&...rest) noexcept
-    {
-        if constexpr (forward_of<decltype(first), observer<hi::label>>) {
-            label = hi_forward(first);
-        } else if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
-            alignment = hi_forward(first);
-        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_style>>) {
-            text_style = hi_forward(first);
-        } else {
-            hi_static_no_default();
-        }
-
-        set_attributes(hi_forward(rest)...);
     }
 
     /// @privatesection
@@ -124,6 +104,22 @@ private:
     aarectangle _text_rectangle;
     widget_constraints _text_constraints;
     std::unique_ptr<text_widget> _text_widget;
+
+    void set_attributes() noexcept {}
+    void set_attributes(label_widget_attribute auto&& first, label_widget_attribute auto&&...rest) noexcept
+    {
+        if constexpr (forward_of<decltype(first), observer<hi::label>>) {
+            label = hi_forward(first);
+        } else if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
+            alignment = hi_forward(first);
+        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_style>>) {
+            text_style = hi_forward(first);
+        } else {
+            hi_static_no_default();
+        }
+
+        set_attributes(hi_forward(rest)...);
+    }
 
     label_widget(gui_window& window, widget *parent) noexcept;
 };

@@ -10,7 +10,6 @@ target_sources(hikogui PRIVATE
     button_delegate.hpp
     checkbox_widget.cpp
     checkbox_widget.hpp
-    default_selection_delegate.hpp
     default_tab_delegate.hpp
     default_text_delegate.hpp
     default_text_field_delegate.hpp

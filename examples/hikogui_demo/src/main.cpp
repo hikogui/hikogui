@@ -95,7 +95,7 @@ hi::scoped_task<> init_theme_tab(hi::grid_widget& grid, my_preferences& preferen
     }
 
     grid.make_widget<label_widget>("A1", tr("Theme:"));
-    grid.make_widget<selection_widget>("B1", theme_list, preferences.selected_theme);
+    grid.make_widget<selection_widget>("B1", preferences.selected_theme, theme_list);
 
     co_await std::suspend_always{};
 }
@@ -106,7 +106,7 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
 
     grid.make_widget<label_widget>(
         "A1", tr("This is a \xd7\x9c\xd6\xb0\xd7\x9e\xd6\xb7\xd7\xaa\xd6\xb5\xd7\x92.\nAnd another sentence. One more:"));
-    auto& toggle = grid.make_widget<toggle_widget>("B1", preferences.toggle_value, tr("true"), tr("false"), tr("other"));
+    grid.make_widget<toggle_widget>("B1", preferences.toggle_value, tr("true"), tr("false"), tr("other"));
 
     grid.make_widget<label_widget>("A2", tr("These is a disabled checkbox:"));
     auto& checkbox2 = grid.make_widget<checkbox_widget>(
@@ -126,7 +126,7 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
         std::pair{5, label{tr("six")}},
         std::pair{6, label{tr("seven")}}};
     grid.make_widget<label_widget>("A6", tr("This is a selection box at the bottom:"));
-    auto& selection3 = grid.make_widget<selection_widget>("B6", option_list, preferences.radio_value);
+    auto& selection3 = grid.make_widget<selection_widget>("B6", preferences.radio_value, option_list);
 
     grid.make_widget<label_widget>("A7", tr("Sample Rate:"));
     grid.make_widget<text_field_widget>("B7", preferences.audio_output_sample_rate);

@@ -357,13 +357,13 @@ int hi_main(int argc, char *argv[])
     custom_widget.rounded = rounded;
 
     window->content().make_widget<hi::label_widget>("A2", hi::tr("Drawing type:"));
-    window->content().make_widget<hi::selection_widget>("B2:D2", drawing_list, drawing);
+    window->content().make_widget<hi::selection_widget>("B2:D2", drawing, drawing_list);
 
     window->content().make_widget<hi::label_widget>("A3", hi::tr("Shape:"));
-    window->content().make_widget<hi::selection_widget>("B3:D3", shape_list, shape);
+    window->content().make_widget<hi::selection_widget>("B3:D3", shape, shape_list);
 
     window->content().make_widget<hi::label_widget>("A4", hi::tr("Gradient:"));
-    window->content().make_widget<hi::selection_widget>("B4:D4", gradient_list, gradient);
+    window->content().make_widget<hi::selection_widget>("B4:D4", gradient, gradient_list);
 
     window->content().make_widget<hi::label_widget>("A5", hi::tr("Border side:"));
     window->content().make_widget<hi::radio_button_widget>("B5", border_side, hi::border_side::on, hi::tr("on"));
@@ -371,7 +371,7 @@ int hi_main(int argc, char *argv[])
     window->content().make_widget<hi::radio_button_widget>("D5", border_side, hi::border_side::outside, hi::tr("outside"));
 
     window->content().make_widget<hi::label_widget>("A6", hi::tr("Border width:"));
-    window->content().make_widget<hi::selection_widget>("B6:D6", border_width_list, border_width);
+    window->content().make_widget<hi::selection_widget>("B6:D6", border_width, border_width_list);
 
     window->content().make_widget<hi::label_widget>("A7", hi::tr("Rotate:"));
     window->content().make_widget<hi::toggle_widget>("B7:D7", rotating);
