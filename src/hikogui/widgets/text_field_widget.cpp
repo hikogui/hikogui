@@ -13,28 +13,28 @@ text_field_widget::text_field_widget(gui_window& window, widget *parent, std::sh
     super(window, parent), delegate(std::move(delegate)), _text()
 {
     hi_axiom(this->delegate != nullptr);
-    _delegate_cbt = this->delegate->subscribe(*this, [&] {
+    _delegate_cbt = this->delegate->subscribe([&] {
         request_relayout();
     });
     this->delegate->init(*this);
 
     _scroll_widget = std::make_unique<scroll_widget<axis::none, false>>(window, this);
-    _text_widget = &_scroll_widget->make_widget<text_widget>(_text, hi::alignment::middle_flush());
+    _text_widget = &_scroll_widget->make_widget<text_widget>(_text, alignment, text_style);
     _text_widget->mode = widget_mode::partial;
 
     _error_label_widget =
         std::make_unique<label_widget>(window, this, _error_label, alignment::top_left(), semantic_text_style::error);
 
-    _continues_cbt = continues.subscribe(callback_flags::local, [&](auto...) {
+    _continues_cbt = continues.subscribe([&](auto...) {
         hi_request_reconstrain("text_field_widget::_continues_cbt()");
     });
-    _text_style_cbt = text_style.subscribe(callback_flags::local, [&](auto...) {
+    _text_style_cbt = text_style.subscribe([&](auto...) {
         hi_request_reconstrain("text_field_widget::_text_style_cbt()");
     });
-    _text_cbt = _text.subscribe(callback_flags::local, [&](auto...) {
+    _text_cbt = _text.subscribe([&](auto...) {
         hi_request_reconstrain("text_field_widget::_text_cbt()");
     });
-    _error_label_cbt = _error_label.subscribe(callback_flags::local, [&](auto const &new_value) {
+    _error_label_cbt = _error_label.subscribe([&](auto const& new_value) {
         hi_request_reconstrain("text_field_widget::_error_label_cbt(\"{}\")", new_value);
     });
 }

@@ -7,7 +7,6 @@
 #include "widget.hpp"
 #include "button_delegate.hpp"
 #include "label_widget.hpp"
-#include "button_type.hpp"
 #include "../animator.hpp"
 #include "../i18n/translate.hpp"
 #include "../notifier.hpp"
@@ -19,6 +18,16 @@
 
 namespace hi::inline v1 {
 
+template<typename Context>
+concept button_widget_attribute = label_widget_attribute<Context>;
+
+/** @addtogroup widgets
+ * @{
+ * @file widgets/abstract_button_widget.hpp Defines abstract_button_widget.
+ */
+
+/** Base class for implementing button widgets.
+ */
 class abstract_button_widget : public widget {
 public:
     using super = widget;
@@ -44,22 +53,15 @@ public:
      */
     observer<alignment> alignment;
 
+    /** The text style to button's label.
+     */
+    observer<semantic_text_style> text_style = semantic_text_style::label;
+
     notifier<void()> pressed;
 
     ~abstract_button_widget();
-    
-    abstract_button_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
-    /** Set on/off/other labels of the button to the same value.
-     */
-    template<typename Label>
-    void set_label(Label const &rhs) noexcept
-    {
-        hi_axiom(is_gui_thread());
-        on_label = rhs;
-        off_label = rhs;
-        other_label = rhs;
-    }
+    abstract_button_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
     /** Get the current state of the button.
      * @return The state of the button: on / off / other.
@@ -92,11 +94,50 @@ protected:
     std::unique_ptr<label_widget> _other_label_widget;
 
     bool _pressed = false;
-    notifier<>::token_type _delegate_cbt;
+    notifier<>::callback_token _delegate_cbt;
+
+    template<size_t I>
+    void set_attributes() noexcept
+    {
+    }
+
+    template<size_t I>
+    void set_attributes(button_widget_attribute auto&& first, button_widget_attribute auto&&...rest) noexcept
+    {
+        if constexpr (forward_of<decltype(first), observer<hi::label>>) {
+            if constexpr (I == 0) {
+                on_label = first;
+                off_label = first;
+                other_label = hi_forward(first);
+            } else if constexpr (I == 1) {
+                other_label.reset();
+                off_label.reset();
+                off_label = hi_forward(first);
+            } else if constexpr (I == 2) {
+                other_label = hi_forward(first);
+            } else {
+                hi_static_no_default();
+            }
+            set_attributes<I + 1>(hi_forward(rest)...);
+
+        } else if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
+            alignment = hi_forward(first);
+            set_attributes<I>(hi_forward(rest)...);
+
+        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_style>>) {
+            text_style = hi_forward(first);
+            set_attributes<I>(hi_forward(rest)...);
+
+        } else {
+            hi_static_no_default();
+        }
+    }
 
     widget_constraints set_constraints_button() const noexcept;
-    void set_layout_button(widget_layout const &context) noexcept;
-    void draw_button(draw_context const &context) noexcept;
+    void set_layout_button(widget_layout const& context) noexcept;
+    void draw_button(draw_context const& context) noexcept;
 };
+
+/// @}
 
 } // namespace hi::inline v1

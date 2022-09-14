@@ -14,21 +14,13 @@ class text_field_widget;
 
 class text_field_delegate {
 public:
-    using callback_ptr_type = std::shared_ptr<std::function<void()>>;
+    using notifier_type = notifier<>;
+    using callback_token = notifier_type::callback_token;
+    using callback_proto = notifier_type::callback_proto;
 
     virtual ~text_field_delegate() = default;
     virtual void init(text_field_widget const& sender) noexcept {}
     virtual void deinit(text_field_widget const& sender) noexcept {}
-
-    auto subscribe(text_field_widget& sender, callback_flags flags, std::invocable<> auto&& callback) noexcept
-    {
-        return _notifier.subscribe(flags, hi_forward(callback));
-    }
-
-    auto subscribe(text_field_widget& sender, std::invocable<> auto&& callback) noexcept
-    {
-        return subscribe(sender, callback_flags::synchronous, hi_forward(callback));
-    }
 
     /** Validate the text field.
      *
@@ -65,8 +57,13 @@ public:
      */
     virtual void set_text(text_field_widget& sender, std::string_view text) noexcept {}
 
+    callback_token subscribe(forward_of<callback_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
+    {
+        return _notifier.subscribe(hi_forward(callback), flags);
+    }
+
 protected:
-    notifier<> _notifier;
+    notifier_type _notifier;
 };
 
 } // namespace hi::inline v1

@@ -72,7 +72,7 @@ private:
     icon_type _icon_type;
     glyph_ids _glyph;
     paged_image _pixmap_backing;
-    decltype(icon)::token_type _icon_cbt;
+    decltype(icon)::callback_token _icon_cbt;
     std::atomic<bool> _icon_has_modified = true;
 
     extent2 _icon_size;

@@ -17,15 +17,15 @@ text_widget::text_widget(gui_window& window, widget *parent, std::shared_ptr<del
     mode = widget_mode::select;
 
     hi_axiom(this->delegate != nullptr);
-    _delegate_cbt = this->delegate->subscribe(*this, callback_flags::synchronous, [&] {
+    _delegate_cbt = this->delegate->subscribe([&] {
         hi_request_reconstrain("text_widget::_delegate_cbt()");
     });
 
-    _text_style_cbt = text_style.subscribe(callback_flags::synchronous, [&](auto...) {
+    _text_style_cbt = text_style.subscribe([&](auto...) {
         hi_request_reconstrain("text_widget::_text_style_cbt()");
     });
 
-    _cursor_state_cbt = _cursor_state.subscribe(callback_flags::synchronous, [&](auto...) {
+    _cursor_state_cbt = _cursor_state.subscribe([&](auto...) {
         request_redraw();
     });
 

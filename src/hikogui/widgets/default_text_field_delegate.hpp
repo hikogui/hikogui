@@ -27,7 +27,7 @@ public:
 
     default_text_field_delegate(forward_of<observer<value_type>> auto&& value) noexcept : value(hi_forward(value))
     {
-        _value_cbt = this->value.subscribe(callback_flags::synchronous, [&](auto...) {
+        _value_cbt = this->value.subscribe([&](auto...) {
             this->_notifier();
         });
     }
@@ -59,7 +59,7 @@ public:
     }
 
 private:
-    typename decltype(value)::token_type _value_cbt;
+    typename decltype(value)::callback_token _value_cbt;
 };
 
 template<std::floating_point T>
@@ -71,7 +71,7 @@ public:
 
     default_text_field_delegate(forward_of<observer<value_type>> auto&& value) noexcept : value(hi_forward(value))
     {
-        _value_cbt = this->value.subscribe(callback_flags::synchronous, [&](auto...) {
+        _value_cbt = this->value.subscribe([&](auto...) {
             this->_notifier();
         });
     }
@@ -103,16 +103,16 @@ public:
     }
 
 private:
-    typename decltype(value)::token_type _value_cbt;
+    typename decltype(value)::callback_token _value_cbt;
 };
 
 [[nodiscard]] std::shared_ptr<text_field_delegate>
 make_default_text_field_delegate(auto&& value, auto&&...args) noexcept requires requires
 {
-    default_text_field_delegate<observer_argument_t<decltype(value)>>{hi_forward(value), hi_forward(args)...};
+    default_text_field_delegate<observer_decay_t<decltype(value)>>{hi_forward(value), hi_forward(args)...};
 }
 {
-    using value_type = observer_argument_t<decltype(value)>;
+    using value_type = observer_decay_t<decltype(value)>;
     return std::make_shared<default_text_field_delegate<value_type>>(hi_forward(value), hi_forward(args)...);
 }
 

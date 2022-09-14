@@ -37,7 +37,7 @@ public:
      */
     explicit default_text_delegate(forward_of<observer<value_type>> auto&& value) noexcept : value(hi_forward(value))
     {
-        _value_cbt = this->value.subscribe(callback_flags::synchronous, [&](auto...) {
+        _value_cbt = this->value.subscribe([&](auto...) {
             this->_notifier();
         });
     }
@@ -53,7 +53,7 @@ public:
     }
 
 private:
-    typename decltype(value)::token_type _value_cbt;
+    typename decltype(value)::callback_token _value_cbt;
 };
 
 template<>
@@ -69,7 +69,7 @@ public:
      */
     explicit default_text_delegate(forward_of<observer<value_type>> auto&& value) noexcept : value(hi_forward(value))
     {
-        _value_cbt = this->value.subscribe(callback_flags::synchronous, [&](auto...) {
+        _value_cbt = this->value.subscribe([&](auto...) {
             this->_notifier();
         });
     }
@@ -85,7 +85,7 @@ public:
     }
 
 private:
-    typename decltype(value)::token_type _value_cbt;
+    typename decltype(value)::callback_token _value_cbt;
 };
 
 template<>
@@ -101,7 +101,7 @@ public:
      */
     explicit default_text_delegate(forward_of<observer<value_type>> auto&& value) noexcept : value(hi_forward(value))
     {
-        _value_cbt = this->value.subscribe(callback_flags::synchronous, [&](auto...) {
+        _value_cbt = this->value.subscribe([&](auto...) {
             this->_notifier();
         });
     }
@@ -117,7 +117,7 @@ public:
     }
 
 private:
-    typename decltype(value)::token_type _value_cbt;
+    typename decltype(value)::callback_token _value_cbt;
 };
 
 template<>
@@ -133,7 +133,7 @@ public:
      */
     explicit default_text_delegate(forward_of<observer<value_type>> auto&& value) noexcept : value(hi_forward(value))
     {
-        _value_cbt = this->value.subscribe(callback_flags::synchronous, [&](auto...) {
+        _value_cbt = this->value.subscribe([&](auto...) {
             this->_notifier();
         });
     }
@@ -158,15 +158,15 @@ public:
     }
 
 private:
-    typename decltype(value)::token_type _value_cbt;
+    typename decltype(value)::callback_token _value_cbt;
 };
 
 std::shared_ptr<text_delegate> make_default_text_delegate(auto&& value) noexcept requires requires
 {
-    default_text_delegate<observer_argument_t<decltype(value)>>{hi_forward(value)};
+    default_text_delegate<observer_decay_t<decltype(value)>>{hi_forward(value)};
 }
 {
-    using value_type = observer_argument_t<decltype(value)>;
+    using value_type = observer_decay_t<decltype(value)>;
     return std::make_shared<default_text_delegate<value_type>>(hi_forward(value));
 }
 

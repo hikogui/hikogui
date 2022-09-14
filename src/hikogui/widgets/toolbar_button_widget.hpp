@@ -5,7 +5,6 @@
 #pragma once
 
 #include "abstract_button_widget.hpp"
-#include "default_button_delegate.hpp"
 
 namespace hi::inline v1 {
 
@@ -17,17 +16,16 @@ public:
     toolbar_button_widget(
         gui_window& window,
         widget *parent,
-        std::shared_ptr<delegate_type> delegate,
-        forward_of<observer<hi::label>> auto&& label) noexcept :
+        std::shared_ptr<delegate_type> delegate) noexcept :
         super(window, parent, std::move(delegate))
     {
         alignment = alignment::middle_left();
-        set_label(hi_forward(label));
     }
 
-    toolbar_button_widget(gui_window& window, widget *parent, forward_of<observer<hi::label>> auto && label) noexcept :
-        toolbar_button_widget(window, parent, std::make_shared<button_delegate>(), hi_forward(label))
+    toolbar_button_widget(gui_window& window, widget *parent, button_widget_attribute auto&&...attributes) noexcept :
+        toolbar_button_widget(window, parent, std::make_shared<button_delegate>())
     {
+        set_attributes<0>(hi_forward(attributes)...);
     }
 
     /// @privatesection

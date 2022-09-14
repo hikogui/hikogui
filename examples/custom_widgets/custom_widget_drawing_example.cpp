@@ -84,18 +84,18 @@ public:
 
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
-    drawing_widget(hi::gui_window &window, hi::widget *parent) noexcept :
+    drawing_widget(hi::gui_window& window, hi::widget *parent) noexcept :
         widget(window, parent), _image(hi::URL("resource:mars3.png"))
     {
         // clang-format off
-        _drawing_cbt = this->drawing.subscribe(hi::callback_flags::local, [&](auto...){ request_redraw(); });
-        _shape_cbt = this->shape.subscribe(hi::callback_flags::local, [&](auto...){ request_redraw(); });
-        _gradient_cbt = this->gradient.subscribe(hi::callback_flags::local, [&](auto...){ request_redraw(); });
-        _rotating_cbt = this->rotating.subscribe(hi::callback_flags::local, [&](auto...){ request_redraw(); });
-        _clip_cbt = this->clip.subscribe(hi::callback_flags::local, [&](auto...){ request_redraw(); });
-        _border_side_cbt = this->border_side.subscribe(hi::callback_flags::local, [&](auto...){ request_redraw(); });
-        _border_width_cbt = this->border_width.subscribe(hi::callback_flags::local, [&](auto...){ request_redraw(); });
-        _rounded_cbt = this->rounded.subscribe(hi::callback_flags::local, [&](auto...){ request_redraw(); });
+        _drawing_cbt = this->drawing.subscribe([&](auto...){ request_redraw(); });
+        _shape_cbt = this->shape.subscribe([&](auto...){ request_redraw(); });
+        _gradient_cbt = this->gradient.subscribe([&](auto...){ request_redraw(); });
+        _rotating_cbt = this->rotating.subscribe([&](auto...){ request_redraw(); });
+        _clip_cbt = this->clip.subscribe([&](auto...){ request_redraw(); });
+        _border_side_cbt = this->border_side.subscribe([&](auto...){ request_redraw(); });
+        _border_width_cbt = this->border_width.subscribe([&](auto...){ request_redraw(); });
+        _rounded_cbt = this->rounded.subscribe([&](auto...){ request_redraw(); });
         // clang-format on
 
         this->_glyph = font_book().find_glyph(hi::elusive_icon::Briefcase);
@@ -103,7 +103,7 @@ public:
 
     // The set_constraints() function is called when the window is first initialized,
     // or when a widget wants to change its constraints.
-    hi::widget_constraints const &set_constraints() noexcept override
+    hi::widget_constraints const& set_constraints() noexcept override
     {
         // Almost all widgets will reset the `_layout` variable here so that it will
         // trigger the calculations in `set_layout()` as well.
@@ -131,7 +131,7 @@ public:
     // a widget wants to change the internal layout.
     //
     // NOTE: The size of the layout may be larger than the maximum constraints of this widget.
-    void set_layout(hi::widget_layout const &layout) noexcept override
+    void set_layout(hi::widget_layout const& layout) noexcept override
     {
         // Update the `_layout` with the new context, in this case we want to do some
         // calculations when the size of the widget was changed.
@@ -157,11 +157,16 @@ public:
     [[nodiscard]] hi::quad_color fill_color() const noexcept
     {
         switch (*gradient) {
-        case gradient_type::solid: return hi::quad_color(blue);
-        case gradient_type::horizontal: return hi::quad_color{blue, red, blue, red};
-        case gradient_type::vertical: return hi::quad_color{blue, blue, red, red};
-        case gradient_type::corners: return hi::quad_color{red, blue, cyan, white};
-        default: hi_no_default();
+        case gradient_type::solid:
+            return hi::quad_color(blue);
+        case gradient_type::horizontal:
+            return hi::quad_color{blue, red, blue, red};
+        case gradient_type::vertical:
+            return hi::quad_color{blue, blue, red, red};
+        case gradient_type::corners:
+            return hi::quad_color{red, blue, cyan, white};
+        default:
+            hi_no_default();
         }
     }
 
@@ -174,11 +179,16 @@ public:
             return fill_color();
         } else {
             switch (*gradient) {
-            case gradient_type::solid: return hi::quad_color(redish);
-            case gradient_type::horizontal: return hi::quad_color{redish, greenish, redish, greenish};
-            case gradient_type::vertical: return hi::quad_color{redish, redish, greenish, greenish};
-            case gradient_type::corners: return hi::quad_color{redish, greenish, blueish, redish2};
-            default: hi_no_default();
+            case gradient_type::solid:
+                return hi::quad_color(redish);
+            case gradient_type::horizontal:
+                return hi::quad_color{redish, greenish, redish, greenish};
+            case gradient_type::vertical:
+                return hi::quad_color{redish, redish, greenish, greenish};
+            case gradient_type::corners:
+                return hi::quad_color{redish, greenish, blueish, redish2};
+            default:
+                hi_no_default();
             }
         }
     }
@@ -198,13 +208,16 @@ public:
         case shape_type::concave:
             return hi::quad{
                 hi::point3{20.0f, 20.0f}, hi::point3{50.0f, -40.0f}, hi::point3{-50.0f, 40.0f}, hi::point3{50.0f, 50.0f}};
-        case shape_type::glyph_aspect_ratio: return _glyph_rectangle;
-        case shape_type::image_aspect_ratio: return _image_rectangle;
-        default: hi_no_default();
+        case shape_type::glyph_aspect_ratio:
+            return _glyph_rectangle;
+        case shape_type::image_aspect_ratio:
+            return _image_rectangle;
+        default:
+            hi_no_default();
         }
     }
 
-    [[nodiscard]] hi::rotate3 rotation(hi::draw_context const &context) const noexcept
+    [[nodiscard]] hi::rotate3 rotation(hi::draw_context const& context) const noexcept
     {
         float angle = 0.0f;
         if (*rotating) {
@@ -233,7 +246,7 @@ public:
     // The `draw()` function is called when all or part of the window requires redrawing.
     // This may happen when showing the window for the first time, when the operating-system
     // requests a (partial) redraw, or when a widget requests a redraw of itself.
-    void draw(hi::draw_context const &context) noexcept override
+    void draw(hi::draw_context const& context) noexcept override
     {
         using namespace std::chrono_literals;
 
@@ -261,17 +274,19 @@ public:
                     corners());
                 break;
 
-            case drawing_type::lines: {
-                // There is a concave corner at left-bottom, so I want this to be the second point the lines pass through.
-                auto const quad = shape_quad();
-                auto const line1 = hi::line_segment{get<0>(quad), get<1>(quad)};
-                auto const line2 = hi::line_segment{get<0>(quad), get<2>(quad)};
-                auto const line3 = hi::line_segment{get<3>(quad), get<2>(quad)};
-                auto const width = std::max(0.5f, *border_width);
-                context.draw_line(_layout, clipping_rectangle, transform * line1, width, fill_color(), end_cap(), end_cap());
-                context.draw_line(_layout, clipping_rectangle, transform * line2, width, fill_color(), end_cap(), end_cap());
-                context.draw_line(_layout, clipping_rectangle, transform * line3, width, fill_color(), end_cap(), end_cap());
-            } break;
+            case drawing_type::lines:
+                {
+                    // There is a concave corner at left-bottom, so I want this to be the second point the lines pass through.
+                    auto const quad = shape_quad();
+                    auto const line1 = hi::line_segment{get<0>(quad), get<1>(quad)};
+                    auto const line2 = hi::line_segment{get<0>(quad), get<2>(quad)};
+                    auto const line3 = hi::line_segment{get<3>(quad), get<2>(quad)};
+                    auto const width = std::max(0.5f, *border_width);
+                    context.draw_line(_layout, clipping_rectangle, transform * line1, width, fill_color(), end_cap(), end_cap());
+                    context.draw_line(_layout, clipping_rectangle, transform * line2, width, fill_color(), end_cap(), end_cap());
+                    context.draw_line(_layout, clipping_rectangle, transform * line3, width, fill_color(), end_cap(), end_cap());
+                }
+                break;
 
             case drawing_type::circle:
                 context.draw_circle(
@@ -290,7 +305,8 @@ public:
                 }
                 break;
 
-            default: hi_no_default();
+            default:
+                hi_no_default();
             }
         }
     }
@@ -303,14 +319,14 @@ private:
     hi::aarectangle _image_rectangle;
     hi::paged_image _image_backing;
 
-    decltype(drawing)::token_type _drawing_cbt;
-    decltype(shape)::token_type _shape_cbt;
-    decltype(gradient)::token_type _gradient_cbt;
-    decltype(rotating)::token_type _rotating_cbt;
-    decltype(clip)::token_type _clip_cbt;
-    decltype(border_side)::token_type _border_side_cbt;
-    decltype(border_width)::token_type _border_width_cbt;
-    decltype(rounded)::token_type _rounded_cbt;
+    decltype(drawing)::callback_token _drawing_cbt;
+    decltype(shape)::callback_token _shape_cbt;
+    decltype(gradient)::callback_token _gradient_cbt;
+    decltype(rotating)::callback_token _rotating_cbt;
+    decltype(clip)::callback_token _clip_cbt;
+    decltype(border_side)::callback_token _border_side_cbt;
+    decltype(border_width)::callback_token _border_width_cbt;
+    decltype(rounded)::callback_token _rounded_cbt;
 };
 
 int hi_main(int argc, char *argv[])
@@ -330,7 +346,7 @@ int hi_main(int argc, char *argv[])
     auto gui = hi::gui_system::make_unique();
     auto window = gui->make_window(hi::tr("Drawing Custom Widget"));
 
-    auto &custom_widget = window->content().make_widget<drawing_widget>("A1:D1");
+    auto& custom_widget = window->content().make_widget<drawing_widget>("A1:D1");
     custom_widget.drawing = drawing;
     custom_widget.shape = shape;
     custom_widget.rotating = rotating;
@@ -341,21 +357,21 @@ int hi_main(int argc, char *argv[])
     custom_widget.rounded = rounded;
 
     window->content().make_widget<hi::label_widget>("A2", hi::tr("Drawing type:"));
-    window->content().make_widget<hi::selection_widget>("B2:D2", drawing_list, drawing);
+    window->content().make_widget<hi::selection_widget>("B2:D2", drawing, drawing_list);
 
     window->content().make_widget<hi::label_widget>("A3", hi::tr("Shape:"));
-    window->content().make_widget<hi::selection_widget>("B3:D3", shape_list, shape);
+    window->content().make_widget<hi::selection_widget>("B3:D3", shape, shape_list);
 
     window->content().make_widget<hi::label_widget>("A4", hi::tr("Gradient:"));
-    window->content().make_widget<hi::selection_widget>("B4:D4", gradient_list, gradient);
+    window->content().make_widget<hi::selection_widget>("B4:D4", gradient, gradient_list);
 
     window->content().make_widget<hi::label_widget>("A5", hi::tr("Border side:"));
-    window->content().make_widget<hi::radio_button_widget>("B5", hi::tr("on"), border_side, hi::border_side::on);
-    window->content().make_widget<hi::radio_button_widget>("C5", hi::tr("inside"), border_side, hi::border_side::inside);
-    window->content().make_widget<hi::radio_button_widget>("D5", hi::tr("outside"), border_side, hi::border_side::outside);
+    window->content().make_widget<hi::radio_button_widget>("B5", border_side, hi::border_side::on, hi::tr("on"));
+    window->content().make_widget<hi::radio_button_widget>("C5", border_side, hi::border_side::inside, hi::tr("inside"));
+    window->content().make_widget<hi::radio_button_widget>("D5", border_side, hi::border_side::outside, hi::tr("outside"));
 
     window->content().make_widget<hi::label_widget>("A6", hi::tr("Border width:"));
-    window->content().make_widget<hi::selection_widget>("B6:D6", border_width_list, border_width);
+    window->content().make_widget<hi::selection_widget>("B6:D6", border_width, border_width_list);
 
     window->content().make_widget<hi::label_widget>("A7", hi::tr("Rotate:"));
     window->content().make_widget<hi::toggle_widget>("B7:D7", rotating);
@@ -366,8 +382,10 @@ int hi_main(int argc, char *argv[])
     window->content().make_widget<hi::label_widget>("A9", hi::tr("Rounded:"));
     window->content().make_widget<hi::toggle_widget>("B9:D9", rounded);
 
-    auto close_cbt = window->closing.subscribe(hi::callback_flags::main, [&] {
-        window = {};
-    });
+    auto close_cbt = window->closing.subscribe(
+        [&] {
+            window = {};
+        },
+        hi::callback_flags::main);
     return hi::loop::main().resume();
 }

@@ -5,7 +5,6 @@
 #pragma once
 
 #include "abstract_button_widget.hpp"
-#include "default_button_delegate.hpp"
 
 namespace hi::inline v1 {
 
@@ -44,46 +43,38 @@ public:
      *
      * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this radio button widget.
-     * @param label The label to show next to the radio button.
      * @param delegate The delegate to use to manage the state of the radio button.
      */
-    radio_button_widget(
-        gui_window& window,
-        widget *parent,
-        std::shared_ptr<delegate_type> delegate,
-        forward_of<observer<hi::label>> auto&& label) noexcept :
+    radio_button_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
         super(window, parent, std::move(delegate))
     {
         alignment = alignment::top_left();
-        set_label(hi_forward(label));
     }
 
     /** Construct a radio button widget with a default button delegate.
      *
-     * @see default_button_delegate
      * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this radio button widget.
-     * @param label The label to show next to the radio button.
      * @param value The value or `observer` value which represents the state
      *              of the radio button.
-     * @param args An optional on-value. This value is used to determine which
+     * @param on_value An optional on-value. This value is used to determine which
      *             value yields an 'on' state.
+     * @param attributes Different attributes used to configure the label's on the radio button:
+     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
+     *                   passed it will be shown in all states. If two labels are passed
+     *                   the first label is shown in on-state and the second for off-state.
      */
-    radio_button_widget(
-        gui_window& window,
-        widget *parent,
-        forward_of<observer<hi::label>> auto&& label,
-        different_from<std::shared_ptr<delegate_type>> auto&& value,
-        different_from<std::shared_ptr<delegate_type>> auto&&...args) noexcept requires requires
+    template<
+        different_from<std::shared_ptr<delegate_type>> Value,
+        forward_of<observer<observer_decay_t<Value>>> OnValue,
+        button_widget_attribute... Attributes>
+    radio_button_widget(gui_window& window, widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
+        requires requires
     {
-        make_default_button_delegate<button_type::radio>(hi_forward(value), hi_forward(args)...);
-    } :
-        radio_button_widget(
-            window,
-            parent,
-            make_default_button_delegate<button_type::radio>(hi_forward(value), hi_forward(args)...),
-            hi_forward(label))
+        make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value));
+    } : radio_button_widget(window, parent, make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value)))
     {
+        set_attributes<0>(hi_forward(attributes)...);
     }
 
     /// @privatesection

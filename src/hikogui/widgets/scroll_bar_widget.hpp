@@ -36,9 +36,9 @@ public:
         widget(window, parent), content(hi_forward(content)), aperture(hi_forward(aperture)), offset(hi_forward(offset))
     {
         // clang-format off
-        _content_cbt = this->content.subscribe(callback_flags::local, [&](auto...){ request_relayout(); });
-        _aperture_cbt = this->aperture.subscribe(callback_flags::local, [&](auto...){ request_relayout(); });
-        _offset_cbt = this->offset.subscribe(callback_flags::local, [&](auto...){ request_relayout(); });
+        _content_cbt = this->content.subscribe([&](auto...){ request_relayout(); });
+        _aperture_cbt = this->aperture.subscribe([&](auto...){ request_relayout(); });
+        _offset_cbt = this->offset.subscribe([&](auto...){ request_relayout(); });
         // clang-format on
     }
 
@@ -147,9 +147,9 @@ private:
 
     float _offset_before_drag;
 
-    typename decltype(content)::token_type _content_cbt;
-    typename decltype(aperture)::token_type _aperture_cbt;
-    typename decltype(offset)::token_type _offset_cbt;
+    typename decltype(content)::callback_token _content_cbt;
+    typename decltype(aperture)::callback_token _aperture_cbt;
+    typename decltype(offset)::callback_token _offset_cbt;
 
     /** Create a new offset value.
      *

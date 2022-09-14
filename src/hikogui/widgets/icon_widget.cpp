@@ -12,7 +12,7 @@ namespace hi::inline v1 {
 
 icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
 {
-    _icon_cbt = icon.subscribe(callback_flags::local, [this](auto...) {
+    _icon_cbt = icon.subscribe([this](auto...) {
         _icon_has_modified = true;
         hi_request_reconstrain("icon_widget::_icon_cbt()");
     });

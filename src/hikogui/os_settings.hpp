@@ -22,7 +22,8 @@ namespace hi::inline v1 {
 class os_settings {
 public:
     using notifier_type = notifier<>;
-    using token_type = notifier_type::token_type;
+    using callback_token = notifier_type::callback_token;
+    using callback_proto = notifier_type::callback_proto;
 
     /** Get the language tags for the configured languages.
      *
@@ -188,16 +189,11 @@ public:
      */
     static void gather() noexcept;
 
-    [[nodiscard]] static token_type subscribe(callback_flags flags, std::invocable<> auto&& callback) noexcept
+    [[nodiscard]] static callback_token subscribe(forward_of<callback_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
     {
         start_subsystem();
         hilet lock = std::scoped_lock(_mutex);
-        return _notifier.subscribe(flags, hi_forward(callback));
-    }
-
-    [[nodiscard]] static token_type subscribe(std::invocable<> auto&& callback) noexcept
-    {
-        return subscribe(callback_flags::synchronous, hi_forward(callback));
+        return _notifier.subscribe(hi_forward(callback), flags);
     }
 
 private:
@@ -206,7 +202,7 @@ private:
 
     static inline std::atomic<bool> _started = false;
     static inline unfair_mutex _mutex;
-    static inline loop::timer_token_type _gather_cbt;
+    static inline loop::timer_callback_token _gather_cbt;
     static inline utc_nanoseconds _gather_last_time;
 
     static inline notifier_type _notifier;

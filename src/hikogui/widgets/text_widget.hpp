@@ -26,6 +26,9 @@
 
 namespace hi::inline v1 {
 
+template<typename Context>
+concept text_widget_attribute = forward_of<Context, observer<hi::alignment>, observer<hi::semantic_text_style>>;
+
 /** A text widget.
  *
  * The text widget is a widget for displaying, selecting and editing text.
@@ -81,25 +84,18 @@ public:
      * @param window The window the widget is displayed on.
      * @param parent The owner of this widget.
      * @param text The text to be displayed.
-     * @param alignment The alignment of the text inside the space of the widget.
-     * @param text_style The style of the text to be displayed.
+     * @param attributes A set of attributes used to configure the text widget: a `alignment` or `semantic_text_style`.
      */
-    template<
-        different_from<std::shared_ptr<delegate_type>> Text,
-        forward_of<observer<hi::alignment>> Alignment = hi::alignment,
-        forward_of<observer<semantic_text_style>> TextStyle = semantic_text_style>
     text_widget(
         gui_window& window,
         widget *parent,
-        Text&& text,
-        Alignment&& alignment = hi::alignment::middle_center(),
-        TextStyle&& text_style = semantic_text_style::label) noexcept requires requires
+        different_from<std::shared_ptr<delegate_type>> auto&& text,
+        text_widget_attribute auto&&...attributes) noexcept requires requires
     {
-        make_default_text_delegate(std::forward<Text>(text));
-    } : text_widget(window, parent, make_default_text_delegate(std::forward<Text>(text)))
+        make_default_text_delegate(hi_forward(text));
+    } : text_widget(window, parent, make_default_text_delegate(hi_forward(text)))
     {
-        this->alignment = std::forward<Alignment>(alignment);
-        this->text_style = std::forward<TextStyle>(text_style);
+        set_attributes(hi_forward(attributes)...);
     }
 
     /// @privatesection
@@ -124,16 +120,16 @@ private:
     text_shaper _shaped_text;
     float _base_line;
 
-    delegate_type::token_type _delegate_cbt;
+    delegate_type::callback_token _delegate_cbt;
 
-    decltype(text_style)::token_type _text_style_cbt;
+    decltype(text_style)::callback_token _text_style_cbt;
 
     text_selection _selection;
 
     scoped_task<> _blink_cursor;
 
     observer<cursor_state_type> _cursor_state = cursor_state_type::none;
-    decltype(_cursor_state)::token_type _cursor_state_cbt;
+    decltype(_cursor_state)::callback_token _cursor_state_cbt;
 
     /** After layout request scroll from the parent widgets.
      */
@@ -165,6 +161,20 @@ private:
     grapheme _has_dead_character = nullptr;
 
     undo_stack<undo_type> _undo_stack = {1000};
+
+    void set_attributes() noexcept {}
+    void set_attributes(text_widget_attribute auto&& first, text_widget_attribute auto&&...rest) noexcept
+    {
+        if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
+            alignment = hi_forward(first);
+        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_style>>) {
+            text_style = hi_forward(first);
+        } else {
+            hi_static_no_default();
+        }
+
+        set_attributes(hi_forward(rest)...);
+    }
 
     /** Update the shaped text.
      *

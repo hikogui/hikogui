@@ -55,8 +55,6 @@ public:
     bool handle_event(gui_event const& event) noexcept override;
     /// @endprivatesection
 private:
-    decltype(title)::token_type _title_cbt;
-
     aarectangle _content_rectangle;
     widget_constraints _content_constraints;
     std::unique_ptr<grid_widget> _content;

@@ -21,23 +21,22 @@ selection_widget::selection_widget(gui_window& window, widget *parent, std::shar
 {
     hi_axiom(this->delegate != nullptr);
 
-    _current_label_widget = std::make_unique<label_widget>(window, this, tr("<current>"));
+    alignment = alignment::middle_left();
+
+    _current_label_widget = std::make_unique<label_widget>(window, this, alignment, text_style);
     _current_label_widget->mode = widget_mode::invisible;
-    _current_label_widget->alignment = alignment::middle_left();
-    _unknown_label_widget = std::make_unique<label_widget>(window, this, unknown_label);
-    _unknown_label_widget->alignment = alignment::middle_left();
-    _unknown_label_widget->text_style = semantic_text_style::placeholder;
+    _off_label_widget = std::make_unique<label_widget>(window, this, off_label, alignment, semantic_text_style::placeholder);
 
     _overlay_widget = std::make_unique<overlay_widget>(window, this);
     _overlay_widget->mode = widget_mode::invisible;
     _scroll_widget = &_overlay_widget->make_widget<vertical_scroll_widget<>>();
     _column_widget = &_scroll_widget->make_widget<column_widget>();
 
-    _unknown_label_cbt = this->unknown_label.subscribe(callback_flags::synchronous, [&](auto...) {
-        hi_request_reconstrain("selection_widget::_unknown_label_cbt()");
+    _off_label_cbt = this->off_label.subscribe([&](auto...) {
+        hi_request_reconstrain("selection_widget::_off_label_cbt()");
     });
 
-    _delegate_cbt = this->delegate->subscribe(*this, callback_flags::synchronous, [&] {
+    _delegate_cbt = this->delegate->subscribe([&] {
         _notification_from_delegate = true;
         hi_request_reconstrain("selection_widget::_delegate_cbt()");
     });
@@ -56,7 +55,7 @@ widget_constraints const& selection_widget::set_constraints() noexcept
     hilet extra_size = extent2{theme().size + theme().margin * 2.0f, theme().margin * 2.0f};
 
     _constraints =
-        max(_unknown_label_widget->set_constraints() + extra_size, _current_label_widget->set_constraints() + extra_size);
+        max(_off_label_widget->set_constraints() + extra_size, _current_label_widget->set_constraints() + extra_size);
 
     hilet overlay_constraints = _overlay_widget->set_constraints();
     for (hilet& child : _menu_button_widgets) {
@@ -107,7 +106,7 @@ void selection_widget::set_layout(widget_layout const& layout) noexcept
     _overlay_rectangle = make_overlay_rectangle(overlay_rectangle_request);
     _overlay_widget->set_layout(layout.transform(_overlay_rectangle, 20.0f));
 
-    _unknown_label_widget->set_layout(layout.transform(_option_rectangle));
+    _off_label_widget->set_layout(layout.transform(_option_rectangle));
     _current_label_widget->set_layout(layout.transform(_option_rectangle));
 }
 
@@ -119,7 +118,7 @@ void selection_widget::draw(draw_context const& context) noexcept
             draw_left_box(context);
             draw_chevrons(context);
 
-            _unknown_label_widget->draw(context);
+            _off_label_widget->draw(context);
             _current_label_widget->draw(context);
         }
 
@@ -265,14 +264,16 @@ void selection_widget::repopulate_options() noexcept
     }
 
     decltype(selected) index = 0;
-    for (auto&& label : options) {
-        auto menu_button = &_column_widget->make_widget<menu_button_widget>(std::move(label), selected, index);
+    for (hilet & label : options) {
+        auto menu_button = &_column_widget->make_widget<menu_button_widget>(selected, index, label, alignment, text_style);
 
-        _menu_button_tokens.push_back(menu_button->pressed.subscribe(callback_flags::main, [this, index] {
-            hi_axiom(delegate != nullptr);
-            delegate->set_selected(*this, index);
-            stop_selecting();
-        }));
+        _menu_button_tokens.push_back(menu_button->pressed.subscribe(
+            [this, index] {
+                hi_axiom(delegate != nullptr);
+                delegate->set_selected(*this, index);
+                stop_selecting();
+            },
+            callback_flags::main));
 
         _menu_button_widgets.push_back(menu_button);
 
@@ -280,11 +281,11 @@ void selection_widget::repopulate_options() noexcept
     }
 
     if (selected == -1) {
-        _unknown_label_widget->mode = widget_mode::display;
+        _off_label_widget->mode = widget_mode::display;
         _current_label_widget->mode = widget_mode::invisible;
 
     } else {
-        _unknown_label_widget->mode = widget_mode::invisible;
+        _off_label_widget->mode = widget_mode::invisible;
         _current_label_widget->label = options[selected];
         _current_label_widget->mode = widget_mode::display;
     }

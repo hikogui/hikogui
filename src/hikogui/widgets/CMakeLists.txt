@@ -8,12 +8,8 @@ target_sources(hikogui PRIVATE
     audio_device_widget.cpp
     audio_device_widget.hpp
     button_delegate.hpp
-    button_state.hpp
-    button_type.hpp
     checkbox_widget.cpp
     checkbox_widget.hpp
-    default_button_delegate.hpp
-    default_selection_delegate.hpp
     default_tab_delegate.hpp
     default_text_delegate.hpp
     default_text_field_delegate.hpp
