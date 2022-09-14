@@ -59,7 +59,7 @@ public:
     }
 
 private:
-    typename decltype(value)::token_type _value_cbt;
+    typename decltype(value)::callback_token _value_cbt;
 };
 
 template<std::floating_point T>
@@ -103,7 +103,7 @@ public:
     }
 
 private:
-    typename decltype(value)::token_type _value_cbt;
+    typename decltype(value)::callback_token _value_cbt;
 };
 
 [[nodiscard]] std::shared_ptr<text_field_delegate>

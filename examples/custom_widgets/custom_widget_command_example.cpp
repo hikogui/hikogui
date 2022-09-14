@@ -127,7 +127,7 @@ public:
     }
 
 private:
-    decltype(value)::token_type _value_cbt;
+    decltype(value)::callback_token _value_cbt;
 };
 
 int hi_main(int argc, char *argv[])

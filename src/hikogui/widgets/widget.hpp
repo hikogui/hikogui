@@ -329,7 +329,7 @@ protected:
     widget_constraints _constraints;
     widget_layout _layout;
 
-    decltype(mode)::token_type _mode_cbt;
+    decltype(mode)::callback_token _mode_cbt;
 
     [[nodiscard]] virtual generator<widget *> children() const noexcept
     {

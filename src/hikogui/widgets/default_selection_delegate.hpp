@@ -72,9 +72,9 @@ public:
     }
 
 private:
-    typename decltype(options)::token_type _options_cbt;
-    typename decltype(value)::token_type _value_cbt;
-    typename decltype(off_value)::token_type _off_value_cbt;
+    typename decltype(options)::callback_token _options_cbt;
+    typename decltype(value)::callback_token _value_cbt;
+    typename decltype(off_value)::callback_token _off_value_cbt;
 };
 
 template<typename OptionList, typename Value, typename... Args>

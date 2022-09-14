@@ -36,7 +36,7 @@ public:
 private:
     struct child_type {
         std::unique_ptr<audio_system> system;
-        audio_system::token_type cbt;
+        audio_system::callback_token cbt;
     };
 
     std::vector<child_type> _children;

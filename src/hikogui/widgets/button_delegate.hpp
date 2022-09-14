@@ -44,8 +44,8 @@ enum class button_state {
 class button_delegate {
 public:
     using notifier_type = notifier<>;
-    using token_type = notifier_type::token_type;
-    using function_proto = notifier_type::function_proto;
+    using callback_token = notifier_type::callback_token;
+    using callback_proto = notifier_type::callback_proto;
 
     virtual ~button_delegate() = default;
 
@@ -66,8 +66,8 @@ public:
 
     /** Subscribe a callback for notifying the widget of a data change.
      */
-    [[nodiscard]] token_type
-    subscribe(forward_of<function_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
+    [[nodiscard]] callback_token
+    subscribe(forward_of<callback_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
     {
         return _notifier.subscribe(hi_forward(callback), flags);
     }
@@ -124,8 +124,8 @@ public:
     }
     /// @endprivatesection
 private:
-    typename decltype(value)::token_type _value_cbt;
-    typename decltype(on_value)::token_type _on_value_cbt;
+    typename decltype(value)::callback_token _value_cbt;
+    typename decltype(on_value)::callback_token _on_value_cbt;
 };
 
 /** A default toggle button delegate.
@@ -208,9 +208,9 @@ public:
     }
     /// @endprivatesection
 private:
-    typename decltype(value)::token_type _value_cbt;
-    typename decltype(on_value)::token_type _on_value_cbt;
-    typename decltype(off_value)::token_type _off_value_cbt;
+    typename decltype(value)::callback_token _value_cbt;
+    typename decltype(on_value)::callback_token _on_value_cbt;
+    typename decltype(off_value)::callback_token _off_value_cbt;
 };
 
 template<typename Value, typename OnValue>

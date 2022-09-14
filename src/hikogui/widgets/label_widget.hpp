@@ -115,8 +115,8 @@ private:
     float _icon_size;
     float _inner_margin;
 
-    decltype(label)::token_type _label_cbt;
-    decltype(text_style)::token_type _text_style_cbt;
+    decltype(label)::callback_token _label_cbt;
+    decltype(text_style)::callback_token _text_style_cbt;
 
     aarectangle _icon_rectangle;
     widget_constraints _icon_constraints;

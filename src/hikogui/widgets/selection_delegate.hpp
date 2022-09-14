@@ -15,8 +15,8 @@ class selection_widget;
 class selection_delegate {
 public:
     using notifier_type = notifier<>;
-    using token_type = notifier_type::token_type;
-    using function_proto = notifier_type::function_proto;
+    using callback_token = notifier_type::callback_token;
+    using callback_proto = notifier_type::callback_proto;
 
     virtual ~selection_delegate() = default;
 
@@ -42,7 +42,7 @@ public:
 
     /** Subscribe a callback for notifying the widget of a data change.
      */
-    token_type subscribe(forward_of<function_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
+    callback_token subscribe(forward_of<callback_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
     {
         return _notifier.subscribe(hi_forward(callback), flags);
     }

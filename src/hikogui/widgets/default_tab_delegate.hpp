@@ -46,7 +46,7 @@ public:
     }
 
 private:
-    typename decltype(value)::token_type _value_cbt;
+    typename decltype(value)::callback_token _value_cbt;
 };
 
 std::shared_ptr<tab_delegate> make_default_tab_delegate(auto&& value) noexcept requires requires

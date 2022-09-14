@@ -124,16 +124,16 @@ private:
     text_shaper _shaped_text;
     float _base_line;
 
-    delegate_type::token_type _delegate_cbt;
+    delegate_type::callback_token _delegate_cbt;
 
-    decltype(text_style)::token_type _text_style_cbt;
+    decltype(text_style)::callback_token _text_style_cbt;
 
     text_selection _selection;
 
     scoped_task<> _blink_cursor;
 
     observer<cursor_state_type> _cursor_state = cursor_state_type::none;
-    decltype(_cursor_state)::token_type _cursor_state_cbt;
+    decltype(_cursor_state)::callback_token _cursor_state_cbt;
 
     /** After layout request scroll from the parent widgets.
      */

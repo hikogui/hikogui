@@ -79,7 +79,7 @@ public:
 private:
     std::tuple<Ts...> _awaiters;
     std::tuple<scoped_task<await_resume_result_t<Ts>>...> _tasks;
-    std::tuple<typename notifier<void(await_resume_result_t<Ts>)>::token_type...> _task_cbts;
+    std::tuple<typename notifier<void(await_resume_result_t<Ts>)>::callback_token...> _task_cbts;
     std::optional<value_type> _value;
 
     template<awaitable_direct Awaiter>

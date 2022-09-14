@@ -319,14 +319,14 @@ private:
     hi::aarectangle _image_rectangle;
     hi::paged_image _image_backing;
 
-    decltype(drawing)::token_type _drawing_cbt;
-    decltype(shape)::token_type _shape_cbt;
-    decltype(gradient)::token_type _gradient_cbt;
-    decltype(rotating)::token_type _rotating_cbt;
-    decltype(clip)::token_type _clip_cbt;
-    decltype(border_side)::token_type _border_side_cbt;
-    decltype(border_width)::token_type _border_width_cbt;
-    decltype(rounded)::token_type _rounded_cbt;
+    decltype(drawing)::callback_token _drawing_cbt;
+    decltype(shape)::callback_token _shape_cbt;
+    decltype(gradient)::callback_token _gradient_cbt;
+    decltype(rotating)::callback_token _rotating_cbt;
+    decltype(clip)::callback_token _clip_cbt;
+    decltype(border_side)::callback_token _border_side_cbt;
+    decltype(border_width)::callback_token _border_width_cbt;
+    decltype(rounded)::callback_token _rounded_cbt;
 };
 
 int hi_main(int argc, char *argv[])

@@ -18,8 +18,8 @@ namespace hi::inline v1 {
 class audio_system {
 public:
     using notifier_type = notifier<>;
-    using token_type = notifier_type::token_type;
-    using function_proto = notifier_type::function_proto;
+    using callback_token = notifier_type::callback_token;
+    using callback_proto = notifier_type::callback_proto;
 
     /** Create an audio system object specific for the current operating system.
      */
@@ -45,7 +45,7 @@ public:
      *
      * @return A callback token, a RAII object which when destroyed removes the subscription.
      */
-    token_type subscribe(forward_of<function_proto> auto&& func, callback_flags flags = callback_flags::synchronous) noexcept
+    callback_token subscribe(forward_of<callback_proto> auto&& func, callback_flags flags = callback_flags::synchronous) noexcept
     {
         return _notifier.subscribe(hi_forward(func), flags);
     }

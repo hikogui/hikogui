@@ -96,7 +96,7 @@ public:
     [[nodiscard]] color focus_color() const noexcept override;
     /// @endprivatesection
 private:
-    notifier<>::token_type _delegate_cbt;
+    notifier<>::callback_token _delegate_cbt;
     std::atomic<bool> _notification_from_delegate = true;
 
     std::unique_ptr<label_widget> _current_label_widget;
@@ -116,9 +116,9 @@ private:
     vertical_scroll_widget<> *_scroll_widget = nullptr;
     column_widget *_column_widget = nullptr;
 
-    decltype(unknown_label)::token_type _unknown_label_cbt;
+    decltype(unknown_label)::callback_token _unknown_label_cbt;
     std::vector<menu_button_widget *> _menu_button_widgets;
-    std::vector<notifier<>::token_type> _menu_button_tokens;
+    std::vector<notifier<>::callback_token> _menu_button_tokens;
 
     [[nodiscard]] menu_button_widget const *get_first_menu_button() const noexcept;
     [[nodiscard]] menu_button_widget const *get_selected_menu_button() const noexcept;

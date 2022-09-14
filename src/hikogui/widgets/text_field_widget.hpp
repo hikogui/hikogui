@@ -94,7 +94,7 @@ public:
     [[nodiscard]] color focus_color() const noexcept override;
     /// @endprivatesection
 private:
-    notifier<>::token_type _delegate_cbt;
+    notifier<>::callback_token _delegate_cbt;
 
     /** The scroll widget embeds the text widget.
      */
@@ -125,10 +125,10 @@ private:
     widget_constraints _error_label_constraints;
     std::unique_ptr<label_widget> _error_label_widget;
 
-    typename decltype(continues)::token_type _continues_cbt;
-    typename decltype(text_style)::token_type _text_style_cbt;
-    typename decltype(_text)::token_type _text_cbt;
-    typename decltype(_error_label)::token_type _error_label_cbt;
+    typename decltype(continues)::callback_token _continues_cbt;
+    typename decltype(text_style)::callback_token _text_style_cbt;
+    typename decltype(_text)::callback_token _text_cbt;
+    typename decltype(_error_label)::callback_token _error_label_cbt;
 
     void revert(bool force) noexcept;
     void commit(bool force) noexcept;

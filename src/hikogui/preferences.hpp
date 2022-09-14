@@ -88,7 +88,7 @@ protected:
 private:
     T _init;
     observer<T> _value;
-    typename decltype(_value)::token_type _value_cbt;
+    typename decltype(_value)::callback_token _value_cbt;
 };
 
 } // namespace detail
@@ -201,7 +201,7 @@ private:
      */
     mutable bool _modified = false;
 
-    loop::timer_token_type _check_modified_cbt;
+    loop::timer_callback_token _check_modified_cbt;
 
     /** List of registered items.
      */

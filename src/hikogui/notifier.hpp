@@ -32,11 +32,11 @@ public:
     static_assert(std::is_same_v<Result, void>, "Result of a notifier must be void.");
 
     using result_type = Result;
-    using function_proto = Result(Args...);
-    using function_type = std::function<function_proto>;
+    using callback_proto = Result(Args...);
+    using function_type = std::function<callback_proto>;
 
-    using token_type = std::shared_ptr<function_type>;
-    using weak_token_type = std::weak_ptr<function_type>;
+    using callback_token = std::shared_ptr<function_type>;
+    using weak_callback_token = std::weak_ptr<function_type>;
 
     /** An awaiter object which can wait on a notifier.
      *
@@ -91,7 +91,7 @@ public:
 
     private:
         notifier *_notifier = nullptr;
-        token_type _cbt;
+        callback_token _cbt;
         std::tuple<Args...> _args;
     };
 
@@ -119,8 +119,8 @@ public:
      * @param callback A function object to call when being notified.
      * @return A RAII object which when destroyed will unsubscribe the callback.
      */
-    [[nodiscard]] token_type
-    subscribe(forward_of<function_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
+    [[nodiscard]] callback_token
+    subscribe(forward_of<callback_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
     {
         auto token = std::make_shared<function_type>(hi_forward(callback));
         _callbacks.emplace_back(token, flags);
@@ -178,7 +178,7 @@ public:
 
 private:
     struct callback_type {
-        weak_token_type token;
+        weak_callback_token token;
         callback_flags flags;
 
         [[nodiscard]] bool expired() const noexcept
@@ -191,7 +191,7 @@ private:
             token.reset();
         }
 
-        [[nodiscard]] token_type lock() const noexcept
+        [[nodiscard]] callback_token lock() const noexcept
         {
             return token.lock();
         }

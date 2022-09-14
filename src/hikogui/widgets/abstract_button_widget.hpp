@@ -98,7 +98,7 @@ protected:
     std::unique_ptr<label_widget> _other_label_widget;
 
     bool _pressed = false;
-    notifier<>::token_type _delegate_cbt;
+    notifier<>::callback_token _delegate_cbt;
 
     widget_constraints set_constraints_button() const noexcept;
     void set_layout_button(widget_layout const& context) noexcept;

@@ -53,7 +53,7 @@ public:
     }
 
 private:
-    typename decltype(value)::token_type _value_cbt;
+    typename decltype(value)::callback_token _value_cbt;
 };
 
 template<>
@@ -85,7 +85,7 @@ public:
     }
 
 private:
-    typename decltype(value)::token_type _value_cbt;
+    typename decltype(value)::callback_token _value_cbt;
 };
 
 template<>
@@ -117,7 +117,7 @@ public:
     }
 
 private:
-    typename decltype(value)::token_type _value_cbt;
+    typename decltype(value)::callback_token _value_cbt;
 };
 
 template<>
@@ -158,7 +158,7 @@ public:
     }
 
 private:
-    typename decltype(value)::token_type _value_cbt;
+    typename decltype(value)::callback_token _value_cbt;
 };
 
 std::shared_ptr<text_delegate> make_default_text_delegate(auto&& value) noexcept requires requires

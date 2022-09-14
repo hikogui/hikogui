@@ -319,8 +319,8 @@ protected:
     virtual void create_window(extent2 new_size) = 0;
 
 private:
-    notifier<>::token_type _setting_change_token;
-    observer<std::string>::token_type _selected_theme_token;
+    notifier<>::callback_token _setting_change_token;
+    observer<std::string>::callback_token _selected_theme_token;
 
     /** Target of the mouse
      * Since any mouse event will change the target this is used
