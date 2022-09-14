@@ -18,6 +18,9 @@
 
 namespace hi::inline v1 {
 
+template<typename Context>
+concept button_widget_attribute = label_widget_attribute<Context>;
+
 /** @addtogroup widgets
  * @{
  * @file widgets/abstract_button_widget.hpp Defines abstract_button_widget.
@@ -110,7 +113,7 @@ protected:
     }
 
     template<size_t I>
-    void set_attributes(label_widget_attribute auto&& first, label_widget_attribute auto&&...rest) noexcept
+    void set_attributes(button_widget_attribute auto&& first, button_widget_attribute auto&&...rest) noexcept
     {
         if constexpr (forward_of<decltype(first), observer<hi::label>>) {
             if constexpr (I == 0) {

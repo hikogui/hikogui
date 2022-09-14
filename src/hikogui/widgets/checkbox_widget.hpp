@@ -57,7 +57,7 @@ public:
      * @param args An optional on-value, followed by an optional off-value. These two values
      *             are used to determine which value yields an on/off state.
      */
-    template<different_from<std::shared_ptr<delegate_type>> Value, label_widget_attribute... Attributes>
+    template<different_from<std::shared_ptr<delegate_type>> Value, button_widget_attribute... Attributes>
     checkbox_widget(gui_window& window, widget *parent, Value&& value, Attributes&&...attributes) noexcept requires requires
     {
         make_default_toggle_button_delegate(hi_forward(value));
@@ -81,7 +81,7 @@ public:
     template<
         different_from<std::shared_ptr<delegate_type>> Value,
         forward_of<observer<observer_decay_t<Value>>> OnValue,
-        label_widget_attribute... Attributes>
+        button_widget_attribute... Attributes>
     checkbox_widget(gui_window& window, widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
         requires requires
     {
@@ -108,7 +108,7 @@ public:
         different_from<std::shared_ptr<delegate_type>> Value,
         forward_of<observer<observer_decay_t<Value>>> OnValue,
         forward_of<observer<observer_decay_t<Value>>> OffValue,
-        label_widget_attribute... Attributes>
+        button_widget_attribute... Attributes>
     checkbox_widget(
         gui_window& window,
         widget *parent,

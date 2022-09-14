@@ -22,7 +22,7 @@ public:
         alignment = alignment::middle_left();
     }
 
-    toolbar_button_widget(gui_window& window, widget *parent, label_widget_attribute auto &&... attributes) noexcept :
+    toolbar_button_widget(gui_window& window, widget *parent, button_widget_attribute auto&&...attributes) noexcept :
         toolbar_button_widget(window, parent, std::make_shared<button_delegate>())
     {
         set_attributes<0>(hi_forward(attributes)...);

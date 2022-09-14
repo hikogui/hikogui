@@ -68,7 +68,7 @@ public:
     template<
         different_from<std::shared_ptr<delegate_type>> Value,
         forward_of<observer<observer_decay_t<Value>>> OnValue,
-        label_widget_attribute... Attributes>
+        button_widget_attribute... Attributes>
     radio_button_widget(gui_window& window, widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
         requires requires
     {
