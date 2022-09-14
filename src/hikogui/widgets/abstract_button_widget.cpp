@@ -17,9 +17,9 @@ abstract_button_widget::abstract_button_widget(
 {
     hi_axiom(this->delegate != nullptr);
 
-    _on_label_widget = std::make_unique<label_widget>(window, this, on_label, alignment);
-    _off_label_widget = std::make_unique<label_widget>(window, this, off_label, alignment);
-    _other_label_widget = std::make_unique<label_widget>(window, this, other_label, alignment);
+    _on_label_widget = std::make_unique<label_widget>(window, this, on_label, alignment, text_style);
+    _off_label_widget = std::make_unique<label_widget>(window, this, off_label, alignment, text_style);
+    _other_label_widget = std::make_unique<label_widget>(window, this, other_label, alignment, text_style);
     _delegate_cbt = this->delegate->subscribe([&] {
         request_relayout();
     });

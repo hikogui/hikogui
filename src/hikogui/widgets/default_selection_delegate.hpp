@@ -81,11 +81,11 @@ template<typename OptionList, typename Value, typename... Args>
 [[nodiscard]] std::shared_ptr<selection_delegate>
 make_default_selection_delegate(OptionList&& option_list, Value&& value, Args&&...args) noexcept requires requires
 {
-    default_selection_delegate<observer_argument_t<Value>>{
+    default_selection_delegate<observer_decay_t<Value>>{
         std::forward<OptionList>(option_list), std::forward<Value>(value), std::forward<Args>(args)...};
 }
 {
-    using value_type = observer_argument_t<Value>;
+    using value_type = observer_decay_t<Value>;
     return std::make_shared<default_selection_delegate<value_type>>(
         std::forward<OptionList>(option_list), std::forward<Value>(value), std::forward<Args>(args)...);
 }

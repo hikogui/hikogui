@@ -57,15 +57,74 @@ public:
      * @param args An optional on-value, followed by an optional off-value. These two values
      *             are used to determine which value yields an on/off state.
      */
+    template<different_from<std::shared_ptr<delegate_type>> Value, label_widget_attribute... Attributes>
+    checkbox_widget(gui_window& window, widget *parent, Value&& value, Attributes&&...attributes) noexcept requires requires
+    {
+        make_default_toggle_button_delegate(hi_forward(value));
+    } : checkbox_widget(window, parent, make_default_toggle_button_delegate(hi_forward(value)))
+    {
+        set_attributes<0>(hi_forward(attributes)...);
+    }
+
+    /** Construct a checkbox widget with a default button delegate.
+     *
+     * @see default_button_delegate
+     * @param window The window that this widget belongs to.
+     * @param parent The parent widget that owns this checkbox widget.
+     * @param value The value or `observer` value which represents the state of the checkbox.
+     * @param on_value The on-value. This value is used to determine which value yields an 'on' state.
+     * @param attributes Different attributes used to configure the label's on the checkbox button:
+     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
+     *                   passed it will be shown in all states. If two or three labels are passed
+     *                   the labels are shown in on-state, off-state and other-state in that order.
+     */
+    template<
+        different_from<std::shared_ptr<delegate_type>> Value,
+        forward_of<observer<observer_decay_t<Value>>> OnValue,
+        label_widget_attribute... Attributes>
+    checkbox_widget(gui_window& window, widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
+        requires requires
+    {
+        make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value));
+    } : checkbox_widget(window, parent, make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value)))
+    {
+        set_attributes<0>(hi_forward(attributes)...);
+    }
+
+    /** Construct a checkbox widget with a default button delegate.
+     *
+     * @see default_button_delegate
+     * @param window The window that this widget belongs to.
+     * @param parent The parent widget that owns this checkbox widget.
+     * @param value The value or `observer` value which represents the state of the checkbox.
+     * @param on_value The on-value. This value is used to determine which value yields an 'on' state.
+     * @param off_value The off-value. This value is used to determine which value yields an 'off' state.
+     * @param attributes Different attributes used to configure the label's on the checkbox button:
+     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
+     *                   passed it will be shown in all states. If two or three labels are passed
+     *                   the labels are shown in on-state, off-state and other-state in that order.
+     */
+    template<
+        different_from<std::shared_ptr<delegate_type>> Value,
+        forward_of<observer<observer_decay_t<Value>>> OnValue,
+        forward_of<observer<observer_decay_t<Value>>> OffValue,
+        label_widget_attribute... Attributes>
     checkbox_widget(
         gui_window& window,
         widget *parent,
-        different_from<std::shared_ptr<delegate_type>> auto&& value,
-        different_from<std::shared_ptr<delegate_type>> auto&&...args) noexcept requires requires
+        Value&& value,
+        OnValue&& on_value,
+        OffValue&& off_value,
+        Attributes&&...attributes) noexcept requires requires
     {
-        make_default_toggle_button_delegate(hi_forward(value), hi_forward(args)...);
-    } : checkbox_widget(window, parent, make_default_toggle_button_delegate(hi_forward(value), hi_forward(args)...))
+        make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value), hi_forward(off_value));
+    } :
+        checkbox_widget(
+            window,
+            parent,
+            make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value), hi_forward(off_value)))
     {
+        set_attributes<0>(hi_forward(attributes)...);
     }
 
     /// @privatesection

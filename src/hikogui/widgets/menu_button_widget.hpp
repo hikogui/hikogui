@@ -13,12 +13,12 @@ namespace hi::inline v1 {
  * A menu-button has two different states with different visual
  * representation:
  *  - **on**: The menu button shows a check mark next to the label.
- *  - **other**: The menu button shows just the label.
+ *  - **off**: The menu button shows just the label.
  *
  * Each time a user activates the menu-button it switches its state to 'on'.
  * Most menus will close the menu after the menu button was activated.
  *
- * A menu button cannot itself switch state to 'other', this state may be
+ * A menu button cannot itself switch state to 'off', this state may be
  * caused by external factors. The canonical example is another menu button in
  * a set, which is configured with a different `on_value`.
  */
@@ -31,43 +31,39 @@ public:
      *
      * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this menu button widget.
-     * @param label The label to show in the menu button.
      * @param delegate The delegate to use to manage the state of the menu button.
      */
-    template<forward_of<observer<hi::label>> Label>
-    menu_button_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate, Label&& label) noexcept :
+    menu_button_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
         super(window, parent, std::move(delegate))
     {
         alignment = alignment::middle_left();
-        set_label(std::forward<Label>(label));
     }
 
     /** Construct a menu button widget with a default button delegate.
      *
-     * @see default_button_delegate
      * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this menu button widget.
-     * @param label The label to show in the menu button.
+     * @param label The label to show next to the menu button.
      * @param value The value or `observer` value which represents the state
      *              of the menu button.
-     * @param args An optional on-value. This value is used to determine which
+     * @param on_value An optional on-value. This value is used to determine which
      *             value yields an 'on' state.
+     * @param attributes Different attributes used to configure the label's on the menu button:
+     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
+     *                   passed it will be shown in all states. If two labels are passed
+     *                   the first label is shown in on-state and the second for off-state.
      */
-    menu_button_widget(
-        gui_window& window,
-        widget *parent,
-        forward_of<observer<hi::label>> auto&& label,
-        different_from<std::shared_ptr<delegate_type>> auto&& value,
-        different_from<std::shared_ptr<delegate_type>> auto&& on_value) noexcept requires requires
+    template<
+        different_from<std::shared_ptr<delegate_type>> Value,
+        forward_of<observer<observer_decay_t<Value>>> OnValue,
+        label_widget_attribute... Attributes>
+    menu_button_widget(gui_window& window, widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
+        requires requires
     {
         make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value));
-    } :
-        menu_button_widget(
-            window,
-            parent,
-            make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value)),
-            hi_forward(label))
+    } : menu_button_widget(window, parent, make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value)))
     {
+        set_attributes<0>(hi_forward(attributes)...);
     }
 
     /// @privatesection

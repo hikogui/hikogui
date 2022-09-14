@@ -50,6 +50,10 @@ public:
      */
     observer<alignment> alignment;
 
+    /** The text style to button's label.
+     */
+    observer<semantic_text_style> text_style = semantic_text_style::label;
+
     notifier<void()> pressed;
 
     ~abstract_button_widget();
@@ -99,6 +103,43 @@ protected:
 
     bool _pressed = false;
     notifier<>::callback_token _delegate_cbt;
+
+    template<size_t I>
+    void set_attributes() noexcept
+    {
+    }
+
+    template<size_t I>
+    void set_attributes(label_widget_attribute auto&& first, label_widget_attribute auto&&...rest) noexcept
+    {
+        if constexpr (forward_of<decltype(first), observer<hi::label>>) {
+            if constexpr (I == 0) {
+                on_label = first;
+                off_label = first;
+                other_label = hi_forward(first);
+            } else if constexpr (I == 1) {
+                other_label.reset();
+                off_label.reset();
+                off_label = hi_forward(first);
+            } else if constexpr (I == 2) {
+                other_label = hi_forward(first);
+            } else {
+                hi_static_no_default();
+            }
+            set_attributes<I + 1>(hi_forward(rest)...);
+
+        } else if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
+            alignment = hi_forward(first);
+            set_attributes<I>(hi_forward(rest)...);
+
+        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_style>>) {
+            text_style = hi_forward(first);
+            set_attributes<I>(hi_forward(rest)...);
+
+        } else {
+            hi_static_no_default();
+        }
+    }
 
     widget_constraints set_constraints_button() const noexcept;
     void set_layout_button(widget_layout const& context) noexcept;

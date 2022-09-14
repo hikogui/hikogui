@@ -106,19 +106,16 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
 
     grid.make_widget<label_widget>(
         "A1", tr("This is a \xd7\x9c\xd6\xb0\xd7\x9e\xd6\xb7\xd7\xaa\xd6\xb5\xd7\x92.\nAnd another sentence. One more:"));
-    auto& toggle = grid.make_widget<toggle_widget>("B1", preferences.toggle_value);
-    toggle.on_label = tr("true");
-    toggle.off_label = tr("false");
-    toggle.other_label = tr("other");
+    auto& toggle = grid.make_widget<toggle_widget>("B1", preferences.toggle_value, tr("true"), tr("false"), tr("other"));
 
     grid.make_widget<label_widget>("A2", tr("These is a disabled checkbox:"));
-    auto& checkbox2 = grid.make_widget<checkbox_widget>("B2", preferences.radio_value, 2, 0);
-    checkbox2.on_label = tr("Checkbox, with a pretty large label.");
+    auto& checkbox2 = grid.make_widget<checkbox_widget>(
+        "B2", preferences.radio_value, 2, tr("Checkbox, with a pretty large label."), tr("off"), tr("other"));
 
     grid.make_widget<label_widget>("A3", tr("These are radio buttons:"));
-    grid.make_widget<radio_button_widget>("B3", tr("Radio 1"), preferences.radio_value, 0);
-    grid.make_widget<radio_button_widget>("B4", tr("Radio 2"), preferences.radio_value, 1);
-    grid.make_widget<radio_button_widget>("B5", tr("Radio 3"), preferences.radio_value, 2);
+    grid.make_widget<radio_button_widget>("B3", preferences.radio_value, 0, tr("Radio 1"));
+    grid.make_widget<radio_button_widget>("B4", preferences.radio_value, 1, tr("Radio 2 (on)"), tr("Radio 2 (off)"));
+    grid.make_widget<radio_button_widget>("B5", preferences.radio_value, 2, tr("Radio 3"));
 
     auto option_list = std::vector{
         std::pair{0, label{tr("first")}},
@@ -151,9 +148,9 @@ hi::task<> preferences_window(hi::gui_system& gui, my_preferences& preferences, 
     auto window_label = label{png::load(URL{"resource:hikogui_demo.png"}), tr("Preferences")};
     auto window = gui.make_window(window_label);
 
-    window->toolbar().make_widget<toolbar_tab_button_widget>(label{elusive_icon::Speaker, tr("Audio")}, preferences.tab_index, 0);
-    window->toolbar().make_widget<toolbar_tab_button_widget>(label{elusive_icon::Key, tr("License")}, preferences.tab_index, 1);
-    window->toolbar().make_widget<toolbar_tab_button_widget>(label{elusive_icon::Brush, tr("Theme")}, preferences.tab_index, 2);
+    window->toolbar().make_widget<toolbar_tab_button_widget>(preferences.tab_index, 0, label{elusive_icon::Speaker, tr("Audio")});
+    window->toolbar().make_widget<toolbar_tab_button_widget>(preferences.tab_index, 1, label{elusive_icon::Key, tr("License")});
+    window->toolbar().make_widget<toolbar_tab_button_widget>(preferences.tab_index, 2, label{elusive_icon::Brush, tr("Theme")});
 
     auto& tabs = window->content().make_widget<tab_widget>("A1", preferences.tab_index);
     auto& audio_tab_grid = tabs.make_widget<grid_widget>(0);

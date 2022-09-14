@@ -18,9 +18,9 @@ int hi_main(int argc, char *argv[])
     /// [Create three radio buttons]
     observer<int> value = 0;
 
-    window->content().make_widget<radio_button_widget>("B1", tr("one"), value, 1);
-    window->content().make_widget<radio_button_widget>("B2", tr("two"), value, 2);
-    window->content().make_widget<radio_button_widget>("B3", tr("three"), value, 3);
+    window->content().make_widget<radio_button_widget>("B1", value, 1, tr("one"));
+    window->content().make_widget<radio_button_widget>("B2", value, 2, tr("two"));
+    window->content().make_widget<radio_button_widget>("B3", value, 3, tr("three"));
     /// [Create three radio buttons]
 
     auto close_cb = window->closing.subscribe(

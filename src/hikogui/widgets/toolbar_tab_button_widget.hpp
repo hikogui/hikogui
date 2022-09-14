@@ -47,46 +47,43 @@ public:
      *
      * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this radio button widget.
-     * @param label The label to show in the tab button.
      * @param delegate The delegate to use to manage the state of the tab button widget.
      */
-    toolbar_tab_button_widget(
-        gui_window& window,
-        widget *parent,
-        std::shared_ptr<delegate_type> delegate,
-        forward_of<observer<hi::label>> auto&& label) noexcept :
+    toolbar_tab_button_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
         super(window, parent, std::move(delegate))
     {
         alignment = alignment::top_center();
-        set_label(hi_forward(label));
     }
 
     /** Construct a toolbar tab button widget with a default button delegate.
      *
-     * @see default_button_delegate
      * @param window The window that this widget belongs to.
-     * @param parent The parent widget that owns this radio button widget.
-     * @param label The label to show in the tab button.
+     * @param parent The parent widget that owns this toolbar tab button widget.
+     * @param label The label to show next to the toolbar tab button.
      * @param value The value or `observer` value which represents the state
-     *              of the tab button.
+     *              of the toolbar tab button.
      * @param on_value An optional on-value. This value is used to determine which
      *             value yields an 'on' state.
+     * @param attributes Different attributes used to configure the label's on the toolbar tab button:
+     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
+     *                   passed it will be shown in all states. If two labels are passed
+     *                   the first label is shown in on-state and the second for off-state.
      */
+    template<
+        different_from<std::shared_ptr<delegate_type>> Value,
+        forward_of<observer<observer_decay_t<Value>>> OnValue,
+        label_widget_attribute... Attributes>
     toolbar_tab_button_widget(
         gui_window& window,
         widget *parent,
-        forward_of<observer<hi::label>> auto&& label,
-        different_from<std::shared_ptr<delegate_type>> auto&& value,
-        different_from<std::shared_ptr<delegate_type>> auto&& on_value) noexcept requires requires
+        Value&& value,
+        OnValue&& on_value,
+        Attributes&&...attributes) noexcept requires requires
     {
         make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value));
-    } :
-        toolbar_tab_button_widget(
-            window,
-            parent,
-            make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value)),
-            hi_forward(label))
+    } : toolbar_tab_button_widget(window, parent, make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value)))
     {
+        set_attributes<0>(hi_forward(attributes)...);
     }
 
     /// @privatesection

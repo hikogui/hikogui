@@ -778,20 +778,20 @@ private:
  *  - observer<type> &&
  */
 template<typename T>
-struct observer_argument {
+struct observer_decay {
     using type = std::decay_t<T>;
 };
 
 // clang-format off
-template<typename T> struct observer_argument<observer<T>> { using type = T; };
-template<typename T> struct observer_argument<observer<T> &> { using type = T; };
-template<typename T> struct observer_argument<observer<T> const &> { using type = T; };
-template<typename T> struct observer_argument<observer<T> &&> { using type = T; };
+template<typename T> struct observer_decay<observer<T>> { using type = T; };
+template<typename T> struct observer_decay<observer<T> &> { using type = T; };
+template<typename T> struct observer_decay<observer<T> const &> { using type = T; };
+template<typename T> struct observer_decay<observer<T> &&> { using type = T; };
 
 // clang-format on
 
 template<typename T>
-using observer_argument_t = observer_argument<T>::type;
+using observer_decay_t = observer_decay<T>::type;
 
 template<typename Context, typename Expected>
 struct is_forward_of<Context, observer<Expected>> :

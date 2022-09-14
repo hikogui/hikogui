@@ -16,17 +16,16 @@ public:
     momentary_button_widget(
         gui_window& window,
         widget *parent,
-        std::shared_ptr<delegate_type> delegate,
-        forward_of<observer<hi::label>> auto&& label) noexcept :
+        std::shared_ptr<delegate_type> delegate) noexcept :
         super(window, parent, std::move(delegate))
     {
         alignment = alignment::middle_center();
-        set_label(hi_forward(label));
     }
 
-    momentary_button_widget(gui_window& window, widget *parent, forward_of<observer<hi::label>> auto&& label) noexcept :
-        momentary_button_widget(window, parent, std::make_shared<delegate_type>(), hi_forward(label))
+    momentary_button_widget(gui_window& window, widget *parent, label_widget_attribute auto&&... attributes) noexcept :
+        momentary_button_widget(window, parent, std::make_shared<delegate_type>())
     {
+        set_attributes<0>(hi_forward(attributes)...);
     }
 
     /// @privatesection

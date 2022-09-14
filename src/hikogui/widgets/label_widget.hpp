@@ -90,7 +90,7 @@ public:
             label = hi_forward(first);
         } else if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
             alignment = hi_forward(first);
-        } else if constexpr (forward_of<decltype(first), observer<hi::text_style>>) {
+        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_style>>) {
             text_style = hi_forward(first);
         } else {
             hi_static_no_default();

@@ -265,8 +265,8 @@ void selection_widget::repopulate_options() noexcept
     }
 
     decltype(selected) index = 0;
-    for (auto&& label : options) {
-        auto menu_button = &_column_widget->make_widget<menu_button_widget>(std::move(label), selected, index);
+    for (hilet & label : options) {
+        auto menu_button = &_column_widget->make_widget<menu_button_widget>(selected, index, label);
 
         _menu_button_tokens.push_back(menu_button->pressed.subscribe(
             [this, index] {

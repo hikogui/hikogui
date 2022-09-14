@@ -51,10 +51,10 @@ private:
 
 std::shared_ptr<tab_delegate> make_default_tab_delegate(auto&& value) noexcept requires requires
 {
-    default_tab_delegate<observer_argument_t<decltype(value)>>{hi_forward(value)};
+    default_tab_delegate<observer_decay_t<decltype(value)>>{hi_forward(value)};
 }
 {
-    using value_type = observer_argument_t<decltype(value)>;
+    using value_type = observer_decay_t<decltype(value)>;
     return std::make_shared<default_tab_delegate<value_type>>(hi_forward(value));
 }
 

@@ -114,7 +114,7 @@ public:
         if (*value == *on_value) {
             return button_state::on;
         } else {
-            return button_state::other;
+            return button_state::off;
         }
     }
 
@@ -217,10 +217,10 @@ template<typename Value, typename OnValue>
 [[nodiscard]] std::shared_ptr<button_delegate>
 make_default_radio_button_delegate(Value&& value, OnValue&& on_value) noexcept requires requires
 {
-    default_radio_button_delegate<observer_argument_t<Value>>{std::forward<Value>(value), std::forward<OnValue>(on_value)};
+    default_radio_button_delegate<observer_decay_t<Value>>{std::forward<Value>(value), std::forward<OnValue>(on_value)};
 }
 {
-    return std::make_shared<default_radio_button_delegate<observer_argument_t<Value>>>(
+    return std::make_shared<default_radio_button_delegate<observer_decay_t<Value>>>(
         std::forward<Value>(value), std::forward<OnValue>(on_value));
 }
 
@@ -228,10 +228,10 @@ template<typename Value, typename... Args>
 [[nodiscard]] std::shared_ptr<button_delegate>
 make_default_toggle_button_delegate(Value&& value, Args&&...args) noexcept requires requires
 {
-    default_toggle_button_delegate<observer_argument_t<Value>>{std::forward<Value>(value), std::forward<Args>(args)...};
+    default_toggle_button_delegate<observer_decay_t<Value>>{std::forward<Value>(value), std::forward<Args>(args)...};
 }
 {
-    return std::make_shared<default_toggle_button_delegate<observer_argument_t<Value>>>(
+    return std::make_shared<default_toggle_button_delegate<observer_decay_t<Value>>>(
         std::forward<Value>(value), std::forward<Args>(args)...);
 }
 

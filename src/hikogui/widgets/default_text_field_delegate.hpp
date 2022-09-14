@@ -109,10 +109,10 @@ private:
 [[nodiscard]] std::shared_ptr<text_field_delegate>
 make_default_text_field_delegate(auto&& value, auto&&...args) noexcept requires requires
 {
-    default_text_field_delegate<observer_argument_t<decltype(value)>>{hi_forward(value), hi_forward(args)...};
+    default_text_field_delegate<observer_decay_t<decltype(value)>>{hi_forward(value), hi_forward(args)...};
 }
 {
-    using value_type = observer_argument_t<decltype(value)>;
+    using value_type = observer_decay_t<decltype(value)>;
     return std::make_shared<default_text_field_delegate<value_type>>(hi_forward(value), hi_forward(args)...);
 }
 
