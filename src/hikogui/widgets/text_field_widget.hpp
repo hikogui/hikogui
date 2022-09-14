@@ -18,6 +18,9 @@
 
 namespace hi::inline v1 {
 
+template<typename Context>
+concept text_field_widget_attribute = text_widget_attribute<Context>;
+
 /** A single line text field.
  *
  * A text field has the following visual elements:
@@ -67,17 +70,31 @@ public:
      */
     observer<semantic_text_style> text_style = semantic_text_style::label;
 
+    /** The alignment of the text.
+     */
+    observer<alignment> alignment = alignment::middle_flush();
+
     virtual ~text_field_widget();
 
-    text_field_widget(gui_window &window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
+    text_field_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
-    text_field_widget(gui_window& window, widget *parent, different_from<std::shared_ptr<delegate_type>> auto&& value) noexcept
-        requires requires
+    /** Construct a text field widget.
+     *
+     * @param window The window the widget is displayed on.
+     * @param parent The owner of this widget.
+     * @param value The value or `observer` value which represents the state of the text-field.
+     * @param attributes A set of attributes used to configure the text widget: a `alignment` or `semantic_text_style`.
+     */
+    text_field_widget(
+        gui_window& window,
+        widget *parent,
+        different_from<std::shared_ptr<delegate_type>> auto&& value,
+        text_field_widget_attribute auto&&...attributes) noexcept requires requires
     {
         make_default_text_field_delegate(hi_forward(value));
-    } :
-        text_field_widget(window, parent, make_default_text_field_delegate(hi_forward(value)))
+    } : text_field_widget(window, parent, make_default_text_field_delegate(hi_forward(value)))
     {
+        set_attributes(hi_forward(attributes)...);
     }
 
     /// @privatesection
@@ -85,9 +102,9 @@ public:
     {
         co_yield _scroll_widget.get();
     }
-    widget_constraints const &set_constraints() noexcept override;
-    void set_layout(widget_layout const &layout) noexcept override;
-    void draw(draw_context const &context) noexcept override;
+    widget_constraints const& set_constraints() noexcept override;
+    void set_layout(widget_layout const& layout) noexcept override;
+    void draw(draw_context const& context) noexcept override;
     bool handle_event(gui_event const& event) noexcept override;
     hitbox hitbox_test(point3 position) const noexcept override;
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
@@ -104,13 +121,12 @@ private:
      */
     text_widget *_text_widget = nullptr;
 
-
     /** The text edited by the _text_widget.
      */
     observer<gstring> _text;
 
     /** The rectangle where the box is displayed, in which the text is displayed.
-    */
+     */
     aarectangle _box_rectangle;
 
     /** The rectangle where the text is displayed.
@@ -130,9 +146,23 @@ private:
     typename decltype(_text)::callback_token _text_cbt;
     typename decltype(_error_label)::callback_token _error_label_cbt;
 
+    void set_attributes() noexcept {}
+    void set_attributes(text_field_widget_attribute auto&& first, text_field_widget_attribute auto&&...rest) noexcept
+    {
+        if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
+            alignment = hi_forward(first);
+        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_style>>) {
+            text_style = hi_forward(first);
+        } else {
+            hi_static_no_default();
+        }
+
+        set_attributes(hi_forward(rest)...);
+    }
+
     void revert(bool force) noexcept;
     void commit(bool force) noexcept;
-    void draw_background_box(draw_context const &context) const noexcept;
+    void draw_background_box(draw_context const& context) const noexcept;
 };
 
 } // namespace hi::inline v1

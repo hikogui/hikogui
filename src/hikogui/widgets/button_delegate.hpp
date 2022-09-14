@@ -95,7 +95,6 @@ public:
      *
      * @param value A value or observer-value used as a representation of the state.
      * @param on_value The value or observer-value that mean 'on'.
-     * @param off_value The value or observer-value that mean 'off'.
      */
     default_radio_button_delegate(
         forward_of<observer<value_type>> auto&& value,

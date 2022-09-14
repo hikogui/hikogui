@@ -79,7 +79,7 @@ public:
     /** Add a function to be called repeatedly.
      *
      * @param period The period between repeated calls
-     * @param func The function to be called.
+     * @param callback The function to be called.
      * @return token, next to call.
      */
     std::pair<callback_token, bool>

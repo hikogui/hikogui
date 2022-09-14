@@ -19,7 +19,7 @@ text_field_widget::text_field_widget(gui_window& window, widget *parent, std::sh
     this->delegate->init(*this);
 
     _scroll_widget = std::make_unique<scroll_widget<axis::none, false>>(window, this);
-    _text_widget = &_scroll_widget->make_widget<text_widget>(_text, hi::alignment::middle_flush());
+    _text_widget = &_scroll_widget->make_widget<text_widget>(_text, alignment, text_style);
     _text_widget->mode = widget_mode::partial;
 
     _error_label_widget =
@@ -34,7 +34,7 @@ text_field_widget::text_field_widget(gui_window& window, widget *parent, std::sh
     _text_cbt = _text.subscribe([&](auto...) {
         hi_request_reconstrain("text_field_widget::_text_cbt()");
     });
-    _error_label_cbt = _error_label.subscribe([&](auto const &new_value) {
+    _error_label_cbt = _error_label.subscribe([&](auto const& new_value) {
         hi_request_reconstrain("text_field_widget::_error_label_cbt(\"{}\")", new_value);
     });
 }

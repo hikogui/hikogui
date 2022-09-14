@@ -63,17 +63,6 @@ public:
 
     abstract_button_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
-    /** Set on/off/other labels of the button to the same value.
-     */
-    template<typename Label>
-    void set_label(Label const& rhs) noexcept
-    {
-        hi_axiom(is_gui_thread());
-        on_label = rhs;
-        off_label = rhs;
-        other_label = rhs;
-    }
-
     /** Get the current state of the button.
      * @return The state of the button: on / off / other.
      */

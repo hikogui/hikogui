@@ -63,8 +63,10 @@ public:
      * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this toggle widget.
      * @param value The value or `observer` value which represents the state of the toggle.
-     * @param args An optional on-value, followed by an optional off-value. These two values
-     *             are used to determine which value yields an on/off state.
+     * @param attributes Different attributes used to configure the label's on the toggle button:
+     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
+     *                   passed it will be shown in all states. If two or three labels are passed
+     *                   the labels are shown in on-state, off-state and other-state in that order.
      */
     template<different_from<std::shared_ptr<delegate_type>> Value, button_widget_attribute... Attributes>
     toggle_widget(gui_window& window, widget *parent, Value&& value, Attributes&&...attributes) noexcept requires requires

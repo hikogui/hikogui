@@ -43,7 +43,6 @@ public:
      *
      * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this menu button widget.
-     * @param label The label to show next to the menu button.
      * @param value The value or `observer` value which represents the state
      *              of the menu button.
      * @param on_value An optional on-value. This value is used to determine which
