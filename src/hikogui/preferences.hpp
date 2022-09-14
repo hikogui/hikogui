@@ -19,12 +19,12 @@ namespace detail {
 
 class preference_item_base {
 public:
-    preference_item_base(preferences &parent, std::string_view path) noexcept;
+    preference_item_base(preferences& parent, std::string_view path) noexcept;
 
-    preference_item_base(preference_item_base const &) = delete;
-    preference_item_base(preference_item_base &&) = delete;
-    preference_item_base &operator=(preference_item_base const &) = delete;
-    preference_item_base &operator=(preference_item_base &&) = delete;
+    preference_item_base(preference_item_base const&) = delete;
+    preference_item_base(preference_item_base&&) = delete;
+    preference_item_base& operator=(preference_item_base const&) = delete;
+    preference_item_base& operator=(preference_item_base&&) = delete;
     virtual ~preference_item_base() = default;
 
     /** Reset the value.
@@ -36,7 +36,7 @@ public:
     void load() noexcept;
 
 protected:
-    preferences &_parent;
+    preferences& _parent;
     jsonpath _path;
 
     /** Encode the value into a datum.
@@ -45,7 +45,7 @@ protected:
      */
     [[nodiscard]] virtual datum encode() const noexcept = 0;
 
-    virtual void decode(datum const &data) = 0;
+    virtual void decode(datum const& data) = 0;
 };
 
 template<typename T>
@@ -54,13 +54,15 @@ public:
     preference_item(preferences& parent, std::string_view path, observer<T> const& value, T init) noexcept :
         preference_item_base(parent, path), _value(value), _init(std::move(init))
     {
-        _value_cbt = _value.subscribe(callback_flags::local, [this](auto...) {
-            if (auto tmp = this->encode(); not holds_alternative<std::monostate>(tmp)) {
-                this->_parent.write(_path, this->encode());
-            } else {
-                this->_parent.remove(_path);
-            }
-        });
+        _value_cbt = _value.subscribe(
+            [this](auto...) {
+                if (auto tmp = this->encode(); not holds_alternative<std::monostate>(tmp)) {
+                    this->_parent.write(_path, this->encode());
+                } else {
+                    this->_parent.remove(_path);
+                }
+            },
+            callback_flags::local);
     }
 
     void reset() noexcept override
@@ -78,7 +80,7 @@ protected:
         }
     }
 
-    void decode(datum const &data) override
+    void decode(datum const& data) override
     {
         _value = hi::pickle<T>{}.decode(data);
     }
@@ -134,10 +136,10 @@ public:
     preferences(URL location) noexcept;
 
     ~preferences();
-    preferences(preferences const &) = delete;
-    preferences(preferences &&) = delete;
-    preferences &operator=(preferences const &) = delete;
-    preferences &operator=(preferences &&) = delete;
+    preferences(preferences const&) = delete;
+    preferences(preferences&&) = delete;
+    preferences& operator=(preferences const&) = delete;
+    preferences& operator=(preferences&&) = delete;
 
     /** Save the preferences.
      *
@@ -214,15 +216,15 @@ private:
 
     /** Write a value to the data.
      */
-    void write(jsonpath const &path, datum const value) noexcept;
+    void write(jsonpath const& path, datum const value) noexcept;
 
     /** Read a value from the data.
      */
-    datum read(jsonpath const &path) noexcept;
+    datum read(jsonpath const& path) noexcept;
 
     /** Remove a value from the data.
      */
-    void remove(jsonpath const &path) noexcept;
+    void remove(jsonpath const& path) noexcept;
 
     friend class detail::preference_item_base;
     template<typename T>

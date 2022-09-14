@@ -14,18 +14,15 @@ class selection_widget;
 
 class selection_delegate {
 public:
+    using notifier_type = notifier<>;
+    using token_type = notifier_type::token_type;
+    using function_proto = notifier_type::function_proto;
+
     virtual ~selection_delegate() = default;
 
     virtual void init(selection_widget& sender) noexcept {}
 
     virtual void deinit(selection_widget& sender) noexcept {}
-
-    /** Subscribe a callback for notifying the widget of a data change.
-     */
-    auto subscribe(selection_widget& sender, callback_flags flags, std::invocable<> auto&& callback) noexcept
-    {
-        return _notifier.subscribe(flags, hi_forward(callback));
-    }
 
     /** Called when an option is selected by the user.
      *
@@ -43,8 +40,15 @@ public:
         return {{}, -1};
     }
 
+    /** Subscribe a callback for notifying the widget of a data change.
+     */
+    token_type subscribe(forward_of<function_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
+    {
+        return _notifier.subscribe(hi_forward(callback), flags);
+    }
+
 protected:
-    notifier<> _notifier;
+    notifier_type _notifier;
 };
 
 } // namespace hi::inline v1

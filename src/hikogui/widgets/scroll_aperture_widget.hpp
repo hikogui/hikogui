@@ -28,12 +28,12 @@ public:
         semantic_layer = parent->semantic_layer;
 
         // clang-format off
-        _content_width_cbt = content_width.subscribe(callback_flags::local, [&](auto...){ request_relayout(); });
-        _content_height_cbt = content_height.subscribe(callback_flags::local, [&](auto...){ request_relayout(); });
-        _aperture_width_cbt = aperture_width.subscribe(callback_flags::local, [&](auto...){ request_relayout(); });
-        _aperture_height_cbt = aperture_height.subscribe(callback_flags::local, [&](auto...){ request_relayout(); });
-        _offset_x_cbt = offset_x.subscribe(callback_flags::local, [&](auto...){ request_relayout(); });
-        _offset_y_cbt = offset_y.subscribe(callback_flags::local, [&](auto...){ request_relayout(); });
+        _content_width_cbt = content_width.subscribe([&](auto...){ request_relayout(); });
+        _content_height_cbt = content_height.subscribe([&](auto...){ request_relayout(); });
+        _aperture_width_cbt = aperture_width.subscribe([&](auto...){ request_relayout(); });
+        _aperture_height_cbt = aperture_height.subscribe([&](auto...){ request_relayout(); });
+        _offset_x_cbt = offset_x.subscribe([&](auto...){ request_relayout(); });
+        _offset_y_cbt = offset_y.subscribe([&](auto...){ request_relayout(); });
         // clang-format off
     }
 

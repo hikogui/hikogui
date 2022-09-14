@@ -20,7 +20,7 @@ abstract_button_widget::abstract_button_widget(
     _on_label_widget = std::make_unique<label_widget>(window, this, on_label, alignment);
     _off_label_widget = std::make_unique<label_widget>(window, this, off_label, alignment);
     _other_label_widget = std::make_unique<label_widget>(window, this, other_label, alignment);
-    _delegate_cbt = this->delegate->subscribe(*this, callback_flags::synchronous, [&] {
+    _delegate_cbt = this->delegate->subscribe([&] {
         request_relayout();
     });
     this->delegate->init(*this);

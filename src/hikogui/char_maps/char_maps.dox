@@ -5,8 +5,8 @@ These templates are uses to convert between different character encodings.
 
 Here is an example to convert a string from ISO-8859-1 to UTF-8:
 
-```cpp
-std::string convert(std::string_view str)
+```
+std::string latin1_to_utf8(std::string_view str)
 {
     return hi::char_converter<"iso-8859-1", "utf-8">{}(str);
 }

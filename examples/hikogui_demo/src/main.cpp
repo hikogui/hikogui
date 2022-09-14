@@ -134,10 +134,12 @@ hi::scoped_task<> init_license_tab(hi::grid_widget& grid, my_preferences& prefer
     grid.make_widget<label_widget>("A7", tr("Sample Rate:"));
     grid.make_widget<text_field_widget>("B7", preferences.audio_output_sample_rate);
 
-    auto toggle_value_cbt = preferences.toggle_value.subscribe(callback_flags::local, [&](bool value) {
-        checkbox2.mode = value ? widget_mode::enabled : widget_mode::disabled;
-        selection3.mode = value ? widget_mode::enabled : widget_mode::disabled;
-    });
+    auto toggle_value_cbt = preferences.toggle_value.subscribe(
+        [&](bool value) {
+            checkbox2.mode = value ? widget_mode::enabled : widget_mode::disabled;
+            selection3.mode = value ? widget_mode::enabled : widget_mode::disabled;
+        },
+        callback_flags::main);
 
     co_await std::suspend_always{};
 }

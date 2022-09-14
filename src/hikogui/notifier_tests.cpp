@@ -18,13 +18,17 @@ TEST(notifier, local)
 
     auto n = notifier{};
 
-    auto a_cbt = n.subscribe(callback_flags::local, [&] {
-        ++a;
-    });
+    auto a_cbt = n.subscribe(
+        [&] {
+            ++a;
+        },
+        callback_flags::local);
 
-    auto b_cbt = n.subscribe(callback_flags::local, [&] {
-        ++b;
-    });
+    auto b_cbt = n.subscribe(
+        [&] {
+            ++b;
+        },
+        callback_flags::local);
 
     // Post the functions to the local event-loop.
     // The two functions are not called immediately, not until the event-loop is resumed.
@@ -44,13 +48,17 @@ TEST(notifier, local_unsubscribe)
 
     auto n = notifier{};
 
-    auto a_cbt = n.subscribe(callback_flags::local, [&] {
-        ++a;
-    });
+    auto a_cbt = n.subscribe(
+        [&] {
+            ++a;
+        },
+        callback_flags::local);
 
-    auto b_cbt = n.subscribe(callback_flags::local, [&] {
-        ++b;
-    });
+    auto b_cbt = n.subscribe(
+        [&] {
+            ++b;
+        },
+        callback_flags::local);
 
     // Unsubscribe from a.
     a_cbt = {};

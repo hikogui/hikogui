@@ -5,7 +5,6 @@
 #pragma once
 
 #include "abstract_button_widget.hpp"
-#include "default_button_delegate.hpp"
 
 namespace hi::inline v1 {
 
@@ -59,14 +58,14 @@ public:
         widget *parent,
         forward_of<observer<hi::label>> auto&& label,
         different_from<std::shared_ptr<delegate_type>> auto&& value,
-        different_from<std::shared_ptr<delegate_type>> auto&&...args) noexcept requires requires
+        different_from<std::shared_ptr<delegate_type>> auto&& on_value) noexcept requires requires
     {
-        make_default_button_delegate<button_type::radio>(hi_forward(value), hi_forward(args)...);
+        make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value));
     } :
         menu_button_widget(
             window,
             parent,
-            make_default_button_delegate<button_type::radio>(hi_forward(value), hi_forward(args)...),
+            make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value)),
             hi_forward(label))
     {
     }

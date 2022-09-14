@@ -23,7 +23,7 @@ public:
 
     default_tab_delegate(forward_of<observer<value_type>> auto&& value) noexcept : value(hi_forward(value))
     {
-        _value_cbt = this->value.subscribe(callback_flags::synchronous, [&](auto...) {
+        _value_cbt = this->value.subscribe([&](auto...) {
             this->_notifier();
         });
     }

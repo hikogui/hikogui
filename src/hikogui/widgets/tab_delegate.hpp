@@ -12,26 +12,30 @@ class tab_widget;
 
 class tab_delegate {
 public:
-    virtual ~tab_delegate() = default;
-    virtual void init(tab_widget &sender) noexcept {}
-    virtual void deinit(tab_widget &sender) noexcept {}
+    using notifier_type = notifier<>;
+    using token_type = notifier_type::token_type;
+    using function_proto = notifier_type::function_proto;
 
-    /** Subscribe a callback for notifying the widget of a data change.
-     */
-    auto subscribe(tab_widget& sender, callback_flags flags, std::invocable<> auto&& callback) noexcept
-    {
-        return _notifier.subscribe(flags, hi_forward(callback));
-    }
+    virtual ~tab_delegate() = default;
+    virtual void init(tab_widget& sender) noexcept {}
+    virtual void deinit(tab_widget& sender) noexcept {}
 
     virtual void add_tab(tab_widget& sender, std::size_t key, std::size_t index) noexcept {}
 
-    virtual ssize_t index(tab_widget &sender) noexcept
+    virtual ssize_t index(tab_widget& sender) noexcept
     {
         return -1;
     }
 
+    /** Subscribe a callback for notifying the widget of a data change.
+     */
+    token_type subscribe(forward_of<function_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
+    {
+        return _notifier.subscribe(hi_forward(callback), flags);
+    }
+
 protected:
-    notifier<> _notifier;
+    notifier_type _notifier;
 };
 
 } // namespace hi::inline v1

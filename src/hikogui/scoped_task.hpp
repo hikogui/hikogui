@@ -29,6 +29,8 @@ class scoped_task {
 public:
     using value_type = T;
     using notifier_type = notifier<void(value_type)>;
+    using token_type = notifier_type::token_type;
+    using function_proto = notifier_type::function_proto;
 
     struct promise_type {
         notifier_type notifier;
@@ -155,19 +157,9 @@ public:
      *                 has a non-void expression then the callback must accept the expression as an argument.
      * @return The callback token used to manage the lifetime of the callback
      */
-    notifier_type::token_type subscribe(callback_flags flags, std::invocable<value_type> auto&& callback) noexcept
+    token_type subscribe(forward_of<function_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
     {
-        return _coroutine.promise().notifier.subscribe(flags, hi_forward(callback));
-    }
-
-    /** Subscribe a callback for when the co-routine is completed.
-     *
-     * @param callback The callback to call when the co-routine executed co_return. If co_return
-     *                 has a non-void expression then the callback must accept the expression as an argument.
-     */
-    notifier_type::token_type subscribe(std::invocable<value_type> auto&& callback) noexcept
-    {
-        return subscribe(callback_flags::synchronous, hi_forward(callback));
+        return _coroutine.promise().notifier.subscribe(hi_forward(callback), flags);
     }
 
 private:
@@ -183,6 +175,8 @@ class scoped_task<void> {
 public:
     using value_type = void;
     using notifier_type = notifier<>;
+    using token_type = notifier_type::token_type;
+    using function_proto = notifier_type::function_proto;
 
     struct promise_type {
         notifier_type notifier;
@@ -273,17 +267,9 @@ public:
     /**
      * @sa notifier<>::subscribe()
      */
-    notifier_type::token_type subscribe(callback_flags flags, std::invocable<> auto&& callback) noexcept
+    token_type subscribe(forward_of<function_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
     {
-        return _coroutine.promise().notifier.subscribe(flags, hi_forward(callback));
-    }
-
-    /**
-     * @sa notifier<>::subscribe()
-     */
-    notifier_type::token_type subscribe(std::invocable<> auto&& callback) noexcept
-    {
-        return subscribe(callback_flags::synchronous, hi_forward(callback));
+        return _coroutine.promise().notifier.subscribe(hi_forward(callback), flags);
     }
 
 private:

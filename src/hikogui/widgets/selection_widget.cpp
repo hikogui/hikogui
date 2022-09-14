@@ -33,11 +33,11 @@ selection_widget::selection_widget(gui_window& window, widget *parent, std::shar
     _scroll_widget = &_overlay_widget->make_widget<vertical_scroll_widget<>>();
     _column_widget = &_scroll_widget->make_widget<column_widget>();
 
-    _unknown_label_cbt = this->unknown_label.subscribe(callback_flags::synchronous, [&](auto...) {
+    _unknown_label_cbt = this->unknown_label.subscribe([&](auto...) {
         hi_request_reconstrain("selection_widget::_unknown_label_cbt()");
     });
 
-    _delegate_cbt = this->delegate->subscribe(*this, callback_flags::synchronous, [&] {
+    _delegate_cbt = this->delegate->subscribe([&] {
         _notification_from_delegate = true;
         hi_request_reconstrain("selection_widget::_delegate_cbt()");
     });
@@ -268,11 +268,13 @@ void selection_widget::repopulate_options() noexcept
     for (auto&& label : options) {
         auto menu_button = &_column_widget->make_widget<menu_button_widget>(std::move(label), selected, index);
 
-        _menu_button_tokens.push_back(menu_button->pressed.subscribe(callback_flags::main, [this, index] {
-            hi_axiom(delegate != nullptr);
-            delegate->set_selected(*this, index);
-            stop_selecting();
-        }));
+        _menu_button_tokens.push_back(menu_button->pressed.subscribe(
+            [this, index] {
+                hi_axiom(delegate != nullptr);
+                delegate->set_selected(*this, index);
+                stop_selecting();
+            },
+            callback_flags::main));
 
         _menu_button_widgets.push_back(menu_button);
 

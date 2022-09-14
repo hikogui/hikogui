@@ -2,10 +2,6 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-/** @file char_maps/to_string.hpp String conversion functions
- * @ingroup char_maps
- */
-
 #pragma once
 
 #include "utf_8.hpp"
@@ -17,8 +13,10 @@
 
 namespace hi::inline v1 {
 
-/// @addtogroup char_maps
-/// @{
+/** @addtogroup char_maps
+ * @{
+ * @file char_maps/to_string.hpp String conversion functions.
+ */
 
 /** Identity conversion from UTF-32 to UTF-32.
  */

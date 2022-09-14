@@ -5,7 +5,6 @@
 #pragma once
 
 #include "abstract_button_widget.hpp"
-#include "default_button_delegate.hpp"
 
 namespace hi::inline v1 {
 
@@ -66,7 +65,7 @@ public:
      * @param label The label to show next to the radio button.
      * @param value The value or `observer` value which represents the state
      *              of the radio button.
-     * @param args An optional on-value. This value is used to determine which
+     * @param on_value An optional on-value. This value is used to determine which
      *             value yields an 'on' state.
      */
     radio_button_widget(
@@ -74,14 +73,14 @@ public:
         widget *parent,
         forward_of<observer<hi::label>> auto&& label,
         different_from<std::shared_ptr<delegate_type>> auto&& value,
-        different_from<std::shared_ptr<delegate_type>> auto&&...args) noexcept requires requires
+        different_from<std::shared_ptr<delegate_type>> auto&& on_value) noexcept requires requires
     {
-        make_default_button_delegate<button_type::radio>(hi_forward(value), hi_forward(args)...);
+        make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value));
     } :
         radio_button_widget(
             window,
             parent,
-            make_default_button_delegate<button_type::radio>(hi_forward(value), hi_forward(args)...),
+            make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value)),
             hi_forward(label))
     {
     }

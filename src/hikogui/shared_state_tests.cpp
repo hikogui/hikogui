@@ -99,14 +99,14 @@ TEST(shared_state, notify)
     auto baz1_count = 0;
 
     // clang-format off
-    auto a_cbt = a_cursor.subscribe(hi::callback_flags::synchronous, [&](auto...) { ++a_count; });
-    auto b_cbt = b_cursor.subscribe(hi::callback_flags::synchronous, [&](auto...) { ++b_count; });
-    auto foo_cbt = foo_cursor.subscribe(hi::callback_flags::synchronous, [&](auto...) { ++foo_count; });
-    auto bar_cbt = bar_cursor.subscribe(hi::callback_flags::synchronous, [&](auto...) { ++bar_count; });
-    auto barD_cbt = barD_cursor.subscribe(hi::callback_flags::synchronous, [&](auto...) { ++barD_count; });
-    auto baz_cbt = baz_cursor.subscribe(hi::callback_flags::synchronous, [&](auto...) { ++baz_count; });
-    auto baz0_cbt = baz0_cursor.subscribe(hi::callback_flags::synchronous, [&](auto...) { ++baz0_count; });
-    auto baz1_cbt = baz1_cursor.subscribe(hi::callback_flags::synchronous, [&](auto...) { ++baz1_count; });
+    auto a_cbt = a_cursor.subscribe([&](auto...) { ++a_count; });
+    auto b_cbt = b_cursor.subscribe([&](auto...) { ++b_count; });
+    auto foo_cbt = foo_cursor.subscribe([&](auto...) { ++foo_count; });
+    auto bar_cbt = bar_cursor.subscribe([&](auto...) { ++bar_count; });
+    auto barD_cbt = barD_cursor.subscribe([&](auto...) { ++barD_count; });
+    auto baz_cbt = baz_cursor.subscribe([&](auto...) { ++baz_count; });
+    auto baz0_cbt = baz0_cursor.subscribe([&](auto...) { ++baz0_count; });
+    auto baz1_cbt = baz1_cursor.subscribe([&](auto...) { ++baz1_count; });
     // clang-format on
 
     {
@@ -233,10 +233,10 @@ TEST(shared_state, commit_abort)
     auto baz_count = 0;
 
     // clang-format off
-    auto a_cbt = a_cursor.subscribe(hi::callback_flags::synchronous, [&](auto...) { ++a_count; });
-    auto b_cbt = b_cursor.subscribe(hi::callback_flags::synchronous, [&](auto...) { ++b_count; });
-    auto foo_cbt = foo_cursor.subscribe(hi::callback_flags::synchronous, [&](auto...) { ++foo_count; });
-    auto baz_cbt = baz_cursor.subscribe(hi::callback_flags::synchronous, [&](auto...) { ++baz_count; });
+    auto a_cbt = a_cursor.subscribe([&](auto...) { ++a_count; });
+    auto b_cbt = b_cursor.subscribe([&](auto...) { ++b_count; });
+    auto foo_cbt = foo_cursor.subscribe([&](auto...) { ++foo_count; });
+    auto baz_cbt = baz_cursor.subscribe([&](auto...) { ++baz_count; });
     // clang-format on
 
     // Commit on end-of-scope.
@@ -297,7 +297,7 @@ TEST(shared_state, value)
     bool a_modified = false;
 
     hi::observer<int> a;
-    auto a_cbt = a.subscribe(hi::callback_flags::synchronous, [&a_modified](auto...) {
+    auto a_cbt = a.subscribe([&a_modified](auto...) {
         a_modified = true;
     });
     ASSERT_FALSE(a_modified);
@@ -319,10 +319,10 @@ TEST(shared_state, chain1)
 
     hi::observer<int> a;
     hi::observer<int> b;
-    auto a_cbt = a.subscribe(hi::callback_flags::synchronous, [&a_modified](auto...) {
+    auto a_cbt = a.subscribe([&a_modified](auto...) {
         a_modified = true;
     });
-    auto b_cbt = b.subscribe(hi::callback_flags::synchronous, [&b_modified](auto...) {
+    auto b_cbt = b.subscribe([&b_modified](auto...) {
         b_modified = true;
     });
 
@@ -378,13 +378,13 @@ TEST(shared_state, chain2)
     hi::observer<int> b;
     hi::observer<int> c;
 
-    auto a_cbt = a.subscribe(hi::callback_flags::synchronous, [&a_modified](auto...) {
+    auto a_cbt = a.subscribe([&a_modified](auto...) {
         a_modified = true;
     });
-    auto b_cbt = b.subscribe(hi::callback_flags::synchronous, [&b_modified](auto...) {
+    auto b_cbt = b.subscribe([&b_modified](auto...) {
         b_modified = true;
     });
-    auto c_cbt = c.subscribe(hi::callback_flags::synchronous, [&c_modified](auto...) {
+    auto c_cbt = c.subscribe([&c_modified](auto...) {
         c_modified = true;
     });
 
@@ -479,13 +479,13 @@ TEST(shared_state, chain3)
     hi::observer<int> b;
     hi::observer<int> c;
 
-    auto a_cbt = a.subscribe(hi::callback_flags::synchronous, [&a_modified](auto...) {
+    auto a_cbt = a.subscribe([&a_modified](auto...) {
         a_modified = true;
     });
-    auto b_cbt = b.subscribe(hi::callback_flags::synchronous, [&b_modified](auto...) {
+    auto b_cbt = b.subscribe([&b_modified](auto...) {
         b_modified = true;
     });
-    auto c_cbt = c.subscribe(hi::callback_flags::synchronous, [&c_modified](auto...) {
+    auto c_cbt = c.subscribe([&c_modified](auto...) {
         c_modified = true;
     });
 
@@ -586,8 +586,8 @@ TEST(shared_state, callback)
 
     // This tests if we can both subscribe a callback that accepts the
     // argument by value or by const reference.
-    auto cbt1 = a.subscribe(hi::callback_flags::synchronous, callback1);
-    auto cbt2 = a.subscribe(hi::callback_flags::synchronous, callback2);
+    auto cbt1 = a.subscribe(callback1);
+    auto cbt2 = a.subscribe(callback2);
 
     a = 42;
 }

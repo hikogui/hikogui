@@ -23,6 +23,7 @@ class os_settings {
 public:
     using notifier_type = notifier<>;
     using token_type = notifier_type::token_type;
+    using function_proto = notifier_type::function_proto;
 
     /** Get the language tags for the configured languages.
      *
@@ -188,16 +189,11 @@ public:
      */
     static void gather() noexcept;
 
-    [[nodiscard]] static token_type subscribe(callback_flags flags, std::invocable<> auto&& callback) noexcept
+    [[nodiscard]] static token_type subscribe(forward_of<function_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
     {
         start_subsystem();
         hilet lock = std::scoped_lock(_mutex);
-        return _notifier.subscribe(flags, hi_forward(callback));
-    }
-
-    [[nodiscard]] static token_type subscribe(std::invocable<> auto&& callback) noexcept
-    {
-        return subscribe(callback_flags::synchronous, hi_forward(callback));
+        return _notifier.subscribe(hi_forward(callback), flags);
     }
 
 private:

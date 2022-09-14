@@ -65,14 +65,16 @@ public:
 
             // We can use the this pointer in the callback, as `await_suspend()` is called by
             // the co-routine on the same object as `await_resume()`.
-            _cbt = _notifier->subscribe(callback_flags::main | callback_flags::once, [this, handle](Args const&...args) {
-                // Copy the arguments received from the notifier into the awaitable object
-                // So that it can be read using `await_resume()`.
-                _args = {args...};
+            _cbt = _notifier->subscribe(
+                [this, handle](Args const&...args) {
+                    // Copy the arguments received from the notifier into the awaitable object
+                    // So that it can be read using `await_resume()`.
+                    _args = {args...};
 
-                // Resume the co-routine.
-                handle.resume();
-            });
+                    // Resume the co-routine.
+                    handle.resume();
+                },
+                callback_flags::main | callback_flags::once);
         }
 
         constexpr void await_resume() const noexcept requires(sizeof...(Args) == 0) {}
@@ -117,24 +119,12 @@ public:
      * @param callback A function object to call when being notified.
      * @return A RAII object which when destroyed will unsubscribe the callback.
      */
-    [[nodiscard]] token_type subscribe(callback_flags flags, std::invocable<Args...> auto&& callback) noexcept
+    [[nodiscard]] token_type
+    subscribe(forward_of<function_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
     {
         auto token = std::make_shared<function_type>(hi_forward(callback));
         _callbacks.emplace_back(token, flags);
         return token;
-    }
-
-    /** Add a callback to the notifier.
-     * Ownership of the callback belongs with the caller of `subscribe()`. The
-     * caller will receive a token, a move-only RAII object that will unsubscribe the callback
-     * when the token is destroyed.
-     *
-     * @param callback A function object to synchronously-call when being notified.
-     * @return A RAII object which when destroyed will unsubscribe the callback.
-     */
-    [[nodiscard]] token_type subscribe(std::invocable<Args...> auto&& callback) noexcept
-    {
-        return subscribe(callback_flags::synchronous, hi_forward(callback));
     }
 
     /** Call the subscribed callbacks with the given arguments.

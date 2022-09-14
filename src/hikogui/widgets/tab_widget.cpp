@@ -23,7 +23,7 @@ tab_widget::tab_widget(gui_window& window, widget *parent, std::shared_ptr<deleg
     semantic_layer = parent->semantic_layer;
 
     hi_axiom(this->delegate != nullptr);
-    _delegate_cbt = this->delegate->subscribe(*this, callback_flags::synchronous, [&] {
+    _delegate_cbt = this->delegate->subscribe([&] {
         hi_request_reconstrain("tab_widget::_delegate_cbt()");
     });
 

@@ -19,33 +19,35 @@ label_widget::label_widget(gui_window& window, widget *parent) noexcept : super(
     _text_widget->text_style = text_style;
     _text_widget->mode = mode;
 
-    _text_style_cbt = text_style.subscribe(callback_flags::local, [this](auto...) {
-        switch (*text_style) {
-        case semantic_text_style::label:
-            _icon_widget->color = color::foreground();
-            break;
-        case semantic_text_style::small_label:
-            _icon_widget->color = color::foreground();
-            break;
-        case semantic_text_style::warning:
-            _icon_widget->color = color::orange();
-            break;
-        case semantic_text_style::error:
-            _icon_widget->color = color::red();
-            break;
-        case semantic_text_style::help:
-            _icon_widget->color = color::indigo();
-            break;
-        case semantic_text_style::placeholder:
-            _icon_widget->color = color::gray();
-            break;
-        case semantic_text_style::link:
-            _icon_widget->color = color::blue();
-            break;
-        default:
-            _icon_widget->color = color::foreground();
-        }
-    });
+    _text_style_cbt = text_style.subscribe(
+        [this](auto...) {
+            switch (*text_style) {
+            case semantic_text_style::label:
+                _icon_widget->color = color::foreground();
+                break;
+            case semantic_text_style::small_label:
+                _icon_widget->color = color::foreground();
+                break;
+            case semantic_text_style::warning:
+                _icon_widget->color = color::orange();
+                break;
+            case semantic_text_style::error:
+                _icon_widget->color = color::red();
+                break;
+            case semantic_text_style::help:
+                _icon_widget->color = color::indigo();
+                break;
+            case semantic_text_style::placeholder:
+                _icon_widget->color = color::gray();
+                break;
+            case semantic_text_style::link:
+                _icon_widget->color = color::blue();
+                break;
+            default:
+                _icon_widget->color = color::foreground();
+            }
+        },
+        callback_flags::main);
 }
 
 widget_constraints const& label_widget::set_constraints() noexcept

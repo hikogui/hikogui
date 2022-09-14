@@ -7,7 +7,6 @@
 #include "widget.hpp"
 #include "button_delegate.hpp"
 #include "label_widget.hpp"
-#include "button_type.hpp"
 #include "../animator.hpp"
 #include "../i18n/translate.hpp"
 #include "../notifier.hpp"
@@ -19,6 +18,13 @@
 
 namespace hi::inline v1 {
 
+/** @addtogroup widgets
+ * @{
+ * @file widgets/abstract_button_widget.hpp Defines abstract_button_widget.
+ */
+
+/** Base class for implementing button widgets.
+ */
 class abstract_button_widget : public widget {
 public:
     using super = widget;
@@ -47,13 +53,13 @@ public:
     notifier<void()> pressed;
 
     ~abstract_button_widget();
-    
+
     abstract_button_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
     /** Set on/off/other labels of the button to the same value.
      */
     template<typename Label>
-    void set_label(Label const &rhs) noexcept
+    void set_label(Label const& rhs) noexcept
     {
         hi_axiom(is_gui_thread());
         on_label = rhs;
@@ -95,8 +101,10 @@ protected:
     notifier<>::token_type _delegate_cbt;
 
     widget_constraints set_constraints_button() const noexcept;
-    void set_layout_button(widget_layout const &context) noexcept;
-    void draw_button(draw_context const &context) noexcept;
+    void set_layout_button(widget_layout const& context) noexcept;
+    void draw_button(draw_context const& context) noexcept;
 };
+
+/// @}
 
 } // namespace hi::inline v1

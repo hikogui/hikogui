@@ -23,8 +23,10 @@ int hi_main(int argc, char *argv[])
     window->content().make_widget<radio_button_widget>("B3", tr("three"), value, 3);
     /// [Create three radio buttons]
 
-    auto close_cb = window->closing.subscribe(hi::callback_flags::main, [&] {
-        window.reset();
-    });
+    auto close_cb = window->closing.subscribe(
+        [&] {
+            window.reset();
+        },
+        hi::callback_flags::main);
     return loop::main().resume();
 }

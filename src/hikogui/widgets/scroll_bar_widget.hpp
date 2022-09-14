@@ -36,9 +36,9 @@ public:
         widget(window, parent), content(hi_forward(content)), aperture(hi_forward(aperture)), offset(hi_forward(offset))
     {
         // clang-format off
-        _content_cbt = this->content.subscribe(callback_flags::local, [&](auto...){ request_relayout(); });
-        _aperture_cbt = this->aperture.subscribe(callback_flags::local, [&](auto...){ request_relayout(); });
-        _offset_cbt = this->offset.subscribe(callback_flags::local, [&](auto...){ request_relayout(); });
+        _content_cbt = this->content.subscribe([&](auto...){ request_relayout(); });
+        _aperture_cbt = this->aperture.subscribe([&](auto...){ request_relayout(); });
+        _offset_cbt = this->offset.subscribe([&](auto...){ request_relayout(); });
         // clang-format on
     }
 

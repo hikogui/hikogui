@@ -16,18 +16,16 @@ int hi_main(int argc, char *argv[])
     window->content().make_widget<label_widget>("A1", tr("Selection Box"), alignment::middle_center());
 
     /// [Create selection]
-    auto option_list = std::vector<std::pair<int,label>>{
-        {1, tr("one")},
-        {2, tr("two")},
-        {3, tr("three")}
-    };
+    auto option_list = std::vector<std::pair<int, label>>{{1, tr("one")}, {2, tr("two")}, {3, tr("three")}};
 
     observer<int> value = 0;
     window->content().make_widget<selection_widget>("A2", option_list, value);
     /// [Create selection]
 
-    auto close_cb = window->closing.subscribe(hi::callback_flags::main, [&] {
-        window.reset();
-    });
+    auto close_cb = window->closing.subscribe(
+        [&] {
+            window.reset();
+        },
+        hi::callback_flags::main);
     return loop::main().resume();
 }

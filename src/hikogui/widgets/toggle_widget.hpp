@@ -5,7 +5,6 @@
 #pragma once
 
 #include "abstract_button_widget.hpp"
-#include "default_button_delegate.hpp"
 
 namespace hi::inline v1 {
 
@@ -73,8 +72,8 @@ public:
         different_from<std::shared_ptr<delegate_type>> auto&& value,
         different_from<std::shared_ptr<delegate_type>> auto&&...args) noexcept requires requires
     {
-        make_default_button_delegate<button_type::toggle>(hi_forward(value), hi_forward(args)...);
-    } : toggle_widget(window, parent, make_default_button_delegate<button_type::toggle>(hi_forward(value), hi_forward(args)...))
+        make_default_toggle_button_delegate(hi_forward(value), hi_forward(args)...);
+    } : toggle_widget(window, parent, make_default_toggle_button_delegate(hi_forward(value), hi_forward(args)...))
     {
     }
 

@@ -377,8 +377,8 @@ public:
     }
 
     /** Create a observer linked to an anonymous default initialized observed-value.
-    * 
-    * @note marked 'explicit' so that accidental assignment with {} is not allowed.
+     *
+     * @note marked 'explicit' so that accidental assignment with {} is not allowed.
      */
     constexpr explicit observer() noexcept : observer(std::make_shared<observable_value<value_type>>()) {}
 
@@ -493,9 +493,10 @@ public:
      * @param function The function used as callback in the form `void(value_type const &old_value, value_type const &new_value)`
      * @return A callback-token used to extend the lifetime of the callback function.
      */
-    [[nodiscard]] token_type subscribe(callback_flags flags, forward_of<function_proto> auto&& function) noexcept
+    [[nodiscard]] token_type
+    subscribe(forward_of<function_proto> auto&& function, callback_flags flags = callback_flags::synchronous) noexcept
     {
-        return _notifier.subscribe(flags, hi_forward(function));
+        return _notifier.subscribe(hi_forward(function), flags);
     }
 
     awaiter_type operator co_await() const noexcept
@@ -796,6 +797,5 @@ template<typename Context, typename Expected>
 struct is_forward_of<Context, observer<Expected>> :
     std::conditional_t<std::is_convertible_v<Context, observer<Expected>>, std::true_type, std::false_type> {
 };
-
 
 } // namespace hi::inline v1

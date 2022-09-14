@@ -19,7 +19,7 @@ public:
     command_widget(hi::gui_window& window, hi::widget *parent) noexcept : hi::widget(window, parent)
     {
         // To visually show the change in value the widget needs to be redrawn.
-        _value_cbt = value.subscribe(hi::callback_flags::local, [&](auto...) {
+        _value_cbt = value.subscribe([&](auto...) {
             request_redraw();
         });
     }
@@ -137,8 +137,10 @@ int hi_main(int argc, char *argv[])
     window->content().make_widget<command_widget>("A1");
     window->content().make_widget<command_widget>("A2");
 
-    auto close_cbt = window->closing.subscribe(hi::callback_flags::main, [&]{
-        window = {};
-    });
+    auto close_cbt = window->closing.subscribe(
+        [&] {
+            window = {};
+        },
+        hi::callback_flags::main);
     return hi::loop::main().resume();
 }
