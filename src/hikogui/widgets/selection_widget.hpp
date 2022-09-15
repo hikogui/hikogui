@@ -86,6 +86,27 @@ public:
      */
     selection_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
+    /** Construct a selection widget with a delegate.
+     *
+     * @param window The window the selection widget will be displayed on.
+     * @param parent The owner of the selection widget.
+     * @param delegate The delegate which will control the selection widget.
+     * @param first_attribute First of @a attributes.
+     * @param attributes Different attributes used to configure the label's on the selection box:
+     *                   a `label`, `alignment` or `semantic_text_style`. If an label is passed
+     *                   it is used as the label to show in the off-state.
+     */
+    selection_widget(
+        gui_window& window,
+        widget *parent,
+        std::shared_ptr<delegate_type> delegate,
+        selection_widget_attribute auto&& first_attribute,
+        selection_widget_attribute auto&&...attributes) noexcept :
+        selection_widget(window, parent, std::move(delegate))
+    {
+        set_attributes(hi_forward(first_attribute), hi_forward(attributes)...);
+    }
+
     /** Construct a selection widget which will monitor an option list and a
      * value.
      *
@@ -111,9 +132,13 @@ public:
         Attributes&&...attributes) noexcept requires requires
     {
         make_default_selection_delegate(hi_forward(value), hi_forward(option_list));
-    } : selection_widget(window, parent, make_default_selection_delegate(hi_forward(value), hi_forward(option_list)))
+    } :
+        selection_widget(
+            window,
+            parent,
+            make_default_selection_delegate(hi_forward(value), hi_forward(option_list)),
+            hi_forward(attributes)...)
     {
-        set_attributes(hi_forward(attributes)...);
     }
 
     /** Construct a selection widget which will monitor an option list and a
@@ -149,19 +174,13 @@ public:
         selection_widget(
             window,
             parent,
-            make_default_selection_delegate(hi_forward(value), hi_forward(option_list), hi_forward(off_value)))
+            make_default_selection_delegate(hi_forward(value), hi_forward(option_list), hi_forward(off_value)),
+            hi_forward(attributes)...)
     {
-        set_attributes(hi_forward(attributes)...);
     }
 
     /// @privatesection
-    [[nodiscard]] generator<widget *> children() const noexcept override
-    {
-        co_yield _overlay_widget.get();
-        co_yield _current_label_widget.get();
-        co_yield _off_label_widget.get();
-    }
-
+    [[nodiscard]] generator<widget *> children() const noexcept override;
     widget_constraints const& set_constraints() noexcept override;
     void set_layout(widget_layout const& layout) noexcept override;
     void draw(draw_context const& context) noexcept override;

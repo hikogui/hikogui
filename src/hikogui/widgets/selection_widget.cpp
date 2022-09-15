@@ -44,6 +44,13 @@ selection_widget::selection_widget(gui_window& window, widget *parent, std::shar
     this->delegate->init(*this);
 }
 
+[[nodiscard]] generator<widget *> selection_widget::children() const noexcept
+{
+    co_yield _overlay_widget.get();
+    co_yield _current_label_widget.get();
+    co_yield _off_label_widget.get();
+}
+
 widget_constraints const& selection_widget::set_constraints() noexcept
 {
     _layout = {};
@@ -54,8 +61,7 @@ widget_constraints const& selection_widget::set_constraints() noexcept
 
     hilet extra_size = extent2{theme().size + theme().margin * 2.0f, theme().margin * 2.0f};
 
-    _constraints =
-        max(_off_label_widget->set_constraints() + extra_size, _current_label_widget->set_constraints() + extra_size);
+    _constraints = max(_off_label_widget->set_constraints() + extra_size, _current_label_widget->set_constraints() + extra_size);
 
     hilet overlay_constraints = _overlay_widget->set_constraints();
     for (hilet& child : _menu_button_widgets) {
@@ -264,7 +270,7 @@ void selection_widget::repopulate_options() noexcept
     }
 
     decltype(selected) index = 0;
-    for (hilet & label : options) {
+    for (hilet& label : options) {
         auto menu_button = &_column_widget->make_widget<menu_button_widget>(selected, index, label, alignment, text_style);
 
         _menu_button_tokens.push_back(menu_button->pressed.subscribe(

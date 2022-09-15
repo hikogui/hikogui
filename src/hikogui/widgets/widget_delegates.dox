@@ -1,5 +1,5 @@
 /**
-\addtogroup widget_delegates Delegates
+\defgroup widget_delegates Delegates
 \ingroup widgets
 \brief Widget delegates used to control the state of widgets.
 

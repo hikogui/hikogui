@@ -83,6 +83,16 @@ public:
 
     text_field_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
+    text_field_widget(
+        gui_window& window,
+        widget *parent,
+        std::shared_ptr<delegate_type> delegate,
+        text_field_widget_attribute auto&&...attributes) noexcept :
+        text_field_widget(window, parent, std::move(delegate))
+    {
+        set_attributes(hi_forward(attributes)...);
+    }
+
     /** Construct a text field widget.
      *
      * @param window The window the widget is displayed on.
@@ -97,16 +107,10 @@ public:
         text_field_widget_attribute auto&&...attributes) noexcept requires requires
     {
         make_default_text_field_delegate(hi_forward(value));
-    } : text_field_widget(window, parent, make_default_text_field_delegate(hi_forward(value)))
-    {
-        set_attributes(hi_forward(attributes)...);
-    }
+    } : text_field_widget(window, parent, make_default_text_field_delegate(hi_forward(value)), hi_forward(attributes)...) {}
 
     /// @privatesection
-    [[nodiscard]] generator<widget *> children() const noexcept override
-    {
-        co_yield _scroll_widget.get();
-    }
+    [[nodiscard]] generator<widget *> children() const noexcept override;
     widget_constraints const& set_constraints() noexcept override;
     void set_layout(widget_layout const& layout) noexcept override;
     void draw(draw_context const& context) noexcept override;

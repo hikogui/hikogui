@@ -37,11 +37,20 @@ public:
      * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this menu button widget.
      * @param delegate The delegate to use to manage the state of the menu button.
+     * @param attributes Different attributes used to configure the label's on the menu button:
+     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
+     *                   passed it will be shown in all states. If two labels are passed
+     *                   the first label is shown in on-state and the second for off-state.
      */
-    menu_button_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
+    menu_button_widget(
+        gui_window& window,
+        widget *parent,
+        std::shared_ptr<delegate_type> delegate,
+        button_widget_attribute auto&&...attributes) noexcept :
         super(window, parent, std::move(delegate))
     {
         alignment = alignment::middle_left();
+        set_attributes<0>(hi_forward(attributes)...);
     }
 
     /** Construct a menu button widget with a default button delegate.
@@ -60,14 +69,18 @@ public:
     template<
         different_from<std::shared_ptr<delegate_type>> Value,
         forward_of<observer<observer_decay_t<Value>>> OnValue,
-        label_widget_attribute... Attributes>
+        button_widget_attribute... Attributes>
     menu_button_widget(gui_window& window, widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
         requires requires
     {
         make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value));
-    } : menu_button_widget(window, parent, make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value)))
+    } :
+        menu_button_widget(
+            window,
+            parent,
+            make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value)),
+            hi_forward(attributes)...)
     {
-        set_attributes<0>(hi_forward(attributes)...);
     }
 
     /// @privatesection

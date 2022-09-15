@@ -8,10 +8,12 @@
 
 #pragma once
 
+#include "../label.hpp"
+#include "../observer.hpp"
 #include <string>
 #include <string_view>
 #include <optional>
-#include "../label.hpp"
+#include <concepts>
 
 namespace hi { inline namespace v1 {
 class text_field_widget;

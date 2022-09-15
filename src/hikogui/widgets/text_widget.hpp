@@ -83,6 +83,16 @@ public:
      */
     text_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
+    text_widget(
+        gui_window& window,
+        widget *parent,
+        std::shared_ptr<delegate_type> delegate,
+        text_widget_attribute auto&&...attributes) noexcept :
+        text_widget(window, parent, std::move(delegate))
+    {
+        set_attributes(hi_forward(attributes)...);
+    }
+
     /** Construct a text widget.
      *
      * @param window The window the widget is displayed on.
@@ -97,10 +107,7 @@ public:
         text_widget_attribute auto&&...attributes) noexcept requires requires
     {
         make_default_text_delegate(hi_forward(text));
-    } : text_widget(window, parent, make_default_text_delegate(hi_forward(text)))
-    {
-        set_attributes(hi_forward(attributes)...);
-    }
+    } : text_widget(window, parent, make_default_text_delegate(hi_forward(text)), hi_forward(attributes)...) {}
 
     /// @privatesection
     widget_constraints const& set_constraints() noexcept override;

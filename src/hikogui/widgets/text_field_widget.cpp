@@ -45,6 +45,11 @@ text_field_widget::~text_field_widget()
     delegate->deinit(*this);
 }
 
+[[nodiscard]] generator<widget *> text_field_widget::children() const noexcept
+{
+    co_yield _scroll_widget.get();
+}
+
 widget_constraints const& text_field_widget::set_constraints() noexcept
 {
     hi_axiom(delegate != nullptr);

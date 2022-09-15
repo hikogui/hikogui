@@ -6,11 +6,6 @@
 
 namespace hi::inline v1 {
 
-toggle_widget::toggle_widget(gui_window &window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
-    super(window, parent, std::move(delegate))
-{
-    alignment = alignment::top_left();
-}
 
 widget_constraints const &toggle_widget::set_constraints() noexcept
 {
