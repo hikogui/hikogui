@@ -2,10 +2,13 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file widgets/text_field_widget.hpp Defines text_field_widget.
+ * @ingroup widgets
+ */
+
 #pragma once
 
 #include "text_field_delegate.hpp"
-#include "default_text_field_delegate.hpp"
 #include "widget.hpp"
 #include "label_widget.hpp"
 #include "scroll_widget.hpp"
@@ -16,7 +19,7 @@
 #include <optional>
 #include <future>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept text_field_widget_attribute = text_widget_attribute<Context>;
@@ -53,6 +56,8 @@ concept text_field_widget_attribute = text_widget_attribute<Context>;
  * should be shown in the field. This allows the filter to reject certain characters or limit the size.
  *
  * The maximum width of the text field is defined in the number of EM of the current selected font.
+ *
+ * @ingroup widgets
  */
 class text_field_widget final : public widget {
 public:
@@ -165,4 +170,4 @@ private:
     void draw_background_box(draw_context const& context) const noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

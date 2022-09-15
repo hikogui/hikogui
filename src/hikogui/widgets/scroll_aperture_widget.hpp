@@ -2,12 +2,23 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file widgets/scroll_aperture_widget.hpp Defines scroll_aperture_widget.
+ * @ingroup widgets
+ */
+
 #pragma once
 
 #include "widget.hpp"
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
+/** A scroll aperture widget.
+ *
+ * A widget that is used as a child of the `scroll_widget` which
+ * displays a partial rectangle (the aperture) of the content.
+ *
+ * @ingroup widgets
+ */
 class scroll_aperture_widget : public widget {
 public:
     using super = widget;
@@ -207,4 +218,4 @@ private:
     decltype(offset_y)::callback_token _offset_y_cbt;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

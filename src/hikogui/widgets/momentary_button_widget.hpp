@@ -2,21 +2,25 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file widgets/momentary_button_widget.hpp Defines momentary_button_widget.
+ * @ingroup widgets
+ */
+
 #pragma once
 
 #include "abstract_button_widget.hpp"
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
+/** A momentary button widget.
+ * @ingroup widgets
+ */
 class momentary_button_widget final : public abstract_button_widget {
 public:
     using super = abstract_button_widget;
     using delegate_type = typename super::delegate_type;
 
-    momentary_button_widget(
-        gui_window& window,
-        widget *parent,
-        std::shared_ptr<delegate_type> delegate) noexcept :
+    momentary_button_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
         super(window, parent, std::move(delegate))
     {
         alignment = alignment::middle_center();
@@ -37,4 +41,4 @@ private:
     void draw_label_button(draw_context const& context) noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

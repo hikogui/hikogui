@@ -2,11 +2,14 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file widgets/text_widget.hpp Defines text_widget.
+ * @ingroup widgets
+ */
+
 #pragma once
 
 #include "widget.hpp"
 #include "text_delegate.hpp"
-#include "default_text_delegate.hpp"
 #include "../GUI/gui_event.hpp"
 #include "../text/semantic_text_style.hpp"
 #include "../text/text_selection.hpp"
@@ -24,7 +27,7 @@
 #include <limits>
 #include <chrono>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept text_widget_attribute = forward_of<Context, observer<hi::alignment>, observer<hi::semantic_text_style>>;
@@ -53,6 +56,7 @@ concept text_widget_attribute = forward_of<Context, observer<hi::alignment>, obs
  *  - Cut, Copy & Paste.
  *  - Undo & Redo.
  *
+ * @ingroup widgets
  */
 class text_widget final : public widget {
 public:
@@ -225,4 +229,4 @@ private:
     void delete_word_prev() noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

@@ -2,13 +2,19 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file widgets/widget_baseline.hpp Defines widget_baseline.
+ * @ingroup widget_utilities
+ */
+
 #pragma once
 
 #include "../alignment.hpp"
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** The base-line of a widget on which to set the text and graphics.
+ *
+ * @ingroup widget_utilities
  */
 class widget_baseline {
 public:
@@ -87,4 +93,4 @@ private:
     float _bias = 0.0f;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

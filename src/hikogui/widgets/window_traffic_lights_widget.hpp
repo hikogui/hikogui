@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file widgets/window_traffic_lights_widget.hpp Defines window_traffic_lights_widget.
+ * @ingroup widgets
+ */
+
 #pragma once
 
 #include "widget.hpp"
@@ -10,18 +14,25 @@
 #include <string>
 #include <array>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
+/** Window control button widget.
+ * This widget will display a set of buttons to control the
+ * window. Most common these buttons are the minimize, maximize/restore and close buttons.
+ * On MacOS these are red, green and yellow which gives them the traffic lights name.
+ *
+ * @ingroup widgets
+ */
 class window_traffic_lights_widget final : public widget {
 public:
     using super = widget;
 
-    window_traffic_lights_widget(gui_window &window, widget *parent) noexcept;
+    window_traffic_lights_widget(gui_window& window, widget *parent) noexcept;
 
     /// @privatesection
-    widget_constraints const &set_constraints() noexcept override;
-    void set_layout(widget_layout const &layout) noexcept override;
-    void draw(draw_context const &context) noexcept override;
+    widget_constraints const& set_constraints() noexcept override;
+    void set_layout(widget_layout const& layout) noexcept override;
+    void draw(draw_context const& context) noexcept override;
     bool handle_event(gui_event const& event) noexcept override;
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
     /// @endprivatesection
@@ -54,8 +65,8 @@ private:
     bool pressedMinimize = false;
     bool pressedMaximize = false;
 
-    void drawMacOS(draw_context const &context) noexcept;
-    void drawWindows(draw_context const &context) noexcept;
+    void drawMacOS(draw_context const& context) noexcept;
+    void drawWindows(draw_context const& context) noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

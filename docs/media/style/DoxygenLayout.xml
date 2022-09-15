@@ -97,7 +97,8 @@
 
     <!-- Layout definition for a namespace page -->
     <namespace>
-        <briefdescription visible="yes"/>
+        <briefdescription visible="no"/>
+        <detaileddescription title=""/>
         <memberdecl>
             <nestednamespaces visible="yes" title=""/>
             <constantgroups visible="yes" title=""/>
@@ -113,7 +114,6 @@
             <variables title=""/>
             <membergroups visible="yes"/>
         </memberdecl>
-        <detaileddescription title=""/>
         <memberdef>
             <inlineclasses title=""/>
             <typedefs title=""/>
@@ -165,13 +165,12 @@
 
     <!-- Layout definition for a group page -->
     <group>
-        <briefdescription visible="yes"/>
+        <briefdescription visible="no"/>
+        <detaileddescription title=""/>
         <groupgraph visible="$GROUP_GRAPHS"/>
         <memberdecl>
             <nestedgroups visible="yes" title=""/>
-            <dirs visible="yes" title=""/>
-            <files visible="yes" title=""/>
-            <namespaces visible="yes" title=""/>
+            <namespaces visible="no" title=""/>
             <classes visible="yes" title=""/>
             <defines title=""/>
             <typedefs title=""/>
@@ -189,8 +188,9 @@
             <properties title=""/>
             <friends title=""/>
             <membergroups visible="yes"/>
+            <dirs visible="yes" title=""/>
+            <files visible="yes" title=""/>
         </memberdecl>
-        <detaileddescription title=""/>
         <memberdef>
             <pagedocs/>
             <inlineclasses title=""/>

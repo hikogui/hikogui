@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file widgets/system_menu_widget.hpp Defines system_menu_widget.
+ * @ingroup widgets
+ */
+
 #pragma once
 
 #include "widget.hpp"
@@ -11,8 +15,14 @@
 #include <string>
 #include <array>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
+/** The system menu widget.
+ * This widget displays an icon in the menu bar of the window and is used to call-up
+ * the operating-system supplied menu to control the window.
+ *
+ * @ingroup widgets
+ */
 class system_menu_widget final : public widget {
 public:
     using super = widget;
@@ -47,4 +57,4 @@ private:
     aarectangle _system_menu_rectangle;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

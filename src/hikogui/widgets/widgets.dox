@@ -1,5 +1,135 @@
+namespace hi { inline namespace v1 {
 /**
 \defgroup widgets Widgets
+\brief Graphical elements of interaction.
+
+Widget are graphical elements which are shown inside a window and often can be
+interacted with using the mouse and keyboard, such as various kinds of buttons,
+text fields and selection boxes.
+
+Many widgets such as the `grid_widget`, `tab_widget`, `row_column_widget` or
+the `scroll_widget` are containers for other widgets.
+The top level `window_widget` of a window for example contains two containers
+a `grid_widget` for the content area and a `toolbar_widget` for the toolbar
+at the top of the window.
+
+In the example below we are adding 4 widgets to the content area of the window.
+
+The `gui_window::content()` function returns a reference to the `grid_widget`,
+and we use its `make_widget<>()` function to add new widgets. The template
+argument is the type of widget to instantiate and the first argument is the
+spreadsheet-like coordinate within the `grid_widget`. The rest of the arguments
+are passed to the constructor of the new widget.
+
+```
+int hi_main(int argc, char *argv[])
+{
+    observer<int> value = 0;
+
+    auto gui = gui_system::make_unique();
+    auto &window = gui->make_window(tr("Radio button example"));
+
+    window.content().make_widget<label_widget>("A1", tr("radio buttons:"));
+    window.content().make_widget<radio_button_widget>("B1", value, 1, tr("one"));
+    window.content().make_widget<radio_button_widget>("B2", value, 2, tr("two"));
+    window.content().make_widget<radio_button_widget>("B3", value, 3, tr("three"));
+
+    return gui->loop();
+}
+```
+
+There are often two different ways to construct a widget: with a delegate or
+with an observer. In the example above we use an `hi::observer<int>` for the
+radio buttons to monitor and update. Sharing the same observer allows the
+radio buttons to act as a set.
+
+### Layout using the grid widget
+
+The `hi::grid_widget` is a powerful layout widget which allows adding of new widgets
+using the `hi::grid_widget::make_widget<>()` member function.
+
+The template parameter for `make_widget()` specifies the widget class to allocate and construct.
+The first argument to `make_widget()` is a string specifying the location where the
+new widget should be positioned. The rest of the arguments are passed to the constructor of
+the new widget.
+
+The location is specified using a spreadsheet-like address.
+
+There are two forms:
+
+ - single cell, examples: "A1", "C4", "AB45"
+ - cell range, examples: "A1:E1", "C4:C7", "Z3:AA4"
+
+A widget may span multiple rows and columns. Widget that spans multiple column or rows
+are often widgets that are resizable; therefor the `grid_widget` will override the
+preferred- and maximum constraint of other widgets in those rows or columns.
+
+
+### Observer
+
+An observer is a type that observers a value, it will use callbacks to notify listeners when the
+observed value changes. Unlike other parts of the GUI system, observers are thread-save and
+may be read and written from any thread.
+
+In the example below a checkbox monitors the observer `my_value`:
+
+- when the value is `bar` the box is checked,
+- when the value is `foo` the box is unchecked,
+- when the value is anything else the box shows a dash.
+
+```
+enum class my_type {foo, bar, baz};
+
+observer<my_type> my_value;
+window.content().make_widget<checkbox_widget>("A1", my_value, my_type::bar, my_type::foo);
+```
+
+As you can see, the `checkbox_widget` will work with custom types. For the checkbox
+the type needs to be equality comparable and assignable.
+
+It is also possible to chain observers to each other. Chaining is done by
+assigning an observer to another observer. You can also get a chained sub-observer,
+selecting a member variable or the result of the index-operator from the observed value.
+
+In the example below, we make another checkbox, but now it will listen to
+the `my_chain` observer. When `my_value` gets assigned to `my_chain`,
+`my_chain` will start observing `my_value`. Any modification of `my_value`
+will be observed by the checkbox through the chain of observers.
+
+```
+enum class my_type {foo, bar, baz};
+
+observer<my_type> my_value;
+observer<my_type> my_chain;
+window.content().make_widget<checkbox_widget>("A1", my_chain, my_type::bar, my_type::foo);
+
+my_chain = my_value;
+my_value = my_type::bar;
+```
+
+Observers are used for many member variables of a widget, including the
+`hi::widget::enabled`, `hi::widget::visible` members and various labels.
+
+### Delegates
+
+A widget may also be controlled through a delegate object. The widget queries a
+delegate for the data to display and sends messages to the delegate when a user
+interacts with the widget.
+
+Delegates are actually the primary way for controlling a widget, the
+`hi::observer` examples above are implemented by templated default-delegates.
+
+In the example below, a user defined instance of `my_delegate` is passed to the
+constructor of the `hi::checkbox_button`. `my_delegate` must inherit from
+`hi::button_delegate`.
+
+```
+auto delegate = std::make_shared<my_delegate>();
+auto button = window.make_widget<checkbox_button>("A1", delegate));
+```
+
+
 
 
 */
+}}

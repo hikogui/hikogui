@@ -2,11 +2,15 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file widgets/toggle_widget.hpp Defines toggle_widget.
+ * @ingroup widgets
+ */
+
 #pragma once
 
 #include "abstract_button_widget.hpp"
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** A GUI widget that permits the user to make a binary choice.
  *
@@ -43,6 +47,7 @@ namespace hi::inline v1 {
  *
  * @snippet widgets/toggle_example.cpp Create a toggle
  *
+ * @ingroup widgets
  */
 class toggle_widget final : public abstract_button_widget {
 public:
@@ -156,4 +161,4 @@ private:
     void draw_toggle_pip(draw_context const& context) noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

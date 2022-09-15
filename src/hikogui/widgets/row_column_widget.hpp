@@ -2,7 +2,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-/// @file
+/** @file widgets/row_column_widget.hpp Defines row_column_widget.
+ * @ingroup widgets
+ */
 
 #pragma once
 
@@ -12,7 +14,7 @@
 #include "../geometry/axis.hpp"
 #include <memory>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** A row/column widget lays out child widgets along a row or column.
  *
@@ -29,6 +31,7 @@ namespace hi::inline v1 {
  *
  * @image html row_column_widget.png
  *
+ * @ingroup widgets
  * @tparam Axis the axis to lay out child widgets. Either `axis::horizontal` or
  * `axis::vertical`.
  */
@@ -255,11 +258,13 @@ private:
 };
 
 /** Lays out children in a row.
+ * @ingroup widgets
  */
 using row_widget = row_column_widget<axis::row>;
 
 /** Lays out children in a column.
+ * @ingroup widgets
  */
 using column_widget = row_column_widget<axis::column>;
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

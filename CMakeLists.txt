@@ -568,7 +568,8 @@ if(DOXYGEN_FOUND)
     set(DOXYGEN_STRIP_FROM_PATH src)
     set(DOXYGEN_STRIP_FROM_INC_PATH src)
 
-    # Use short names to prevent Doxygen from generating filenames with double-quotes.
+    # Use SHORT_NAMES to prevent Doxygen from generating filenames with double-quotes.
+    # ALLOW_UNICODE_NAMES does not escape double-quotes.
     set(DOXYGEN_SHORT_NAMES YES)
 
     set(DOXYGEN_JAVADOC_AUTOBRIEF YES)

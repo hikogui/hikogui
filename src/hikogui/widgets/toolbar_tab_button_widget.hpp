@@ -2,11 +2,15 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file widgets/toolbar_tab_button_widget.hpp Defines toolbar_tab_button_widget.
+ * @ingroup widgets
+ */
+
 #pragma once
 
 #include "abstract_button_widget.hpp"
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** A graphical control element that allows the user to choose only one of a
  * predefined set of mutually exclusive views of a `tab_widget`.
@@ -34,6 +38,7 @@ namespace hi::inline v1 {
  *
  * @snippet widgets/tab_example.cpp Create three toolbar tab buttons
  *
+ * @ingroup widgets
  * @note A toolbar tab button does not directly control a `tab_widget`. Like
  *       `radio_button_widget` this is accomplished by sharing a delegate or a
  *       observer between the toolbar tab button and the tab widget.
@@ -96,4 +101,4 @@ private:
     void draw_toolbar_tab_button(draw_context const& context) noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

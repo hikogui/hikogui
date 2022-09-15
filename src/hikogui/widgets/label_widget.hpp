@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file widgets/label_widget.hpp Defines label_widget.
+ * @ingroup widgets
+ */
+
 #pragma once
 
 #include "widget.hpp"
@@ -15,13 +19,14 @@
 #include <optional>
 #include <future>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept label_widget_attribute =
     forward_of<Context, observer<hi::label>, observer<hi::alignment>, observer<hi::semantic_text_style>>;
 
 /** The GUI widget displays and lays out text together with an icon.
+ * @ingroup widgets
  *
  * This widget is often used by other widgets. For example
  * checkboxes display a label representing their state next
@@ -124,4 +129,4 @@ private:
     label_widget(gui_window& window, widget *parent) noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

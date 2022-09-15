@@ -2,21 +2,26 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file widgets/toolbar_button_widget.hpp Defines toolbar_button_widget.
+ * @ingroup widgets
+ */
+
 #pragma once
 
 #include "abstract_button_widget.hpp"
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
+/** A momentary button used as a child in the toolbar.
+ *
+ * @ingroup widgets
+ */
 class toolbar_button_widget final : public abstract_button_widget {
 public:
     using super = abstract_button_widget;
     using delegate_type = typename super::delegate_type;
 
-    toolbar_button_widget(
-        gui_window& window,
-        widget *parent,
-        std::shared_ptr<delegate_type> delegate) noexcept :
+    toolbar_button_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
         super(window, parent, std::move(delegate))
     {
         alignment = alignment::middle_left();
@@ -38,4 +43,4 @@ private:
     void draw_toolbar_button(draw_context const& context) noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

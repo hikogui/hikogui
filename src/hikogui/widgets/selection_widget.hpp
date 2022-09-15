@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file widgets/selection_widget.hpp Defines selection_widget.
+ * @ingroup widgets
+ */
+
 #pragma once
 
 #include "widget.hpp"
@@ -18,7 +22,7 @@
 #include <optional>
 #include <future>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept selection_widget_attribute = label_widget_attribute<Context>;
@@ -34,6 +38,8 @@ concept selection_widget_attribute = label_widget_attribute<Context>;
  * of the options is selected:
  *
  * @snippet widgets/selection_example.cpp Create selection
+ *
+ * @ingroup widgets
  */
 class selection_widget final : public widget {
 public:
@@ -215,4 +221,4 @@ private:
     void draw_chevrons(draw_context const& context) noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

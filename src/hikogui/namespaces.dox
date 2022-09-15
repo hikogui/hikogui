@@ -1,0 +1,21 @@
+
+/** @namespace hi The HikoGUI namespace.
+ */
+namespace hi {
+
+/** @namespace hi::v1 The HikoGUI API version 1.
+ */
+inline namespace v1 {
+
+/** @namespace hi::v1::geo HikoGUI geometry types.
+ */
+namespace geo{}
+
+} // namespace v1
+} // namespace hi
+
+/** @namespace v1 DOXYGEN BUG
+ * @brief Doxygen can't handle `namespace hi::inline v1 {}` syntax.
+ * All files should be changed to use old-style inline namespace syntax.
+ */
+namespace v1{}

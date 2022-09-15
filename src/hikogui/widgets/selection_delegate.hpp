@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file widgets/selection_delegate.hpp Defines delegate_delegate and some default selection delegates.
+ * @ingroup widget_delegates
+ */
+
 #pragma once
 
 #include "../label.hpp"
@@ -9,9 +13,13 @@
 #include <functional>
 #include <vector>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 class selection_widget;
 
+/** A delegate that controls the state of a selection_widget.
+ *
+ * @ingroup widget_delegates
+ */
 class selection_delegate {
 public:
     using notifier_type = notifier<>;
@@ -52,6 +60,11 @@ protected:
     notifier_type _notifier;
 };
 
+/** A delegate that control the state of a selection_widget.
+ *
+ * @ingroup widget_delegates
+ * @tparam T the type used as the key for which option is selected.
+ */
 template<typename T>
 class default_selection_delegate : public selection_delegate {
 public:
@@ -63,6 +76,12 @@ public:
     observer<options_type> options;
     observer<value_type> off_value;
 
+    /** Construct a default selection delegate.
+     *
+     * @param value The observer value which represents the selected option.
+     * @param options An observer std::vector<std::pair<value_type,label>> of all possible options.
+     * @param off_value The value used when none of the available options are selected.
+     */
     default_selection_delegate(
         forward_of<observer<value_type>> auto&& value,
         forward_of<observer<options_type>> auto&& options,
@@ -76,10 +95,15 @@ public:
         // clang-format on
     }
 
+    /** Construct a default selection delegate.
+     *
+     * @param value The observer value which represents the selected option.
+     * @param options An observer std::vector<std::pair<value_type,label>> of all possible options.
+     */
     default_selection_delegate(
         forward_of<observer<value_type>> auto&& value,
-        forward_of<observer<options_type>> auto&& option_list) noexcept :
-        default_selection_delegate(hi_forward(value), hi_forward(option_list), value_type{})
+        forward_of<observer<options_type>> auto&& options) noexcept :
+        default_selection_delegate(hi_forward(value), hi_forward(options), value_type{})
     {
     }
 
@@ -116,16 +140,26 @@ private:
     typename decltype(off_value)::callback_token _off_value_cbt;
 };
 
-template<typename Value, typename OptionList, typename... Args>
+/** Create a shared pointer to a default selection delegate.
+ *
+ * @ingroup widget_delegates
+ * @see default_selection_delegate
+ * @param value The observer value which represents the selected option.
+ * @param options An observer std::vector<std::pair<value_type,label>> of all possible options.
+ * @param off_value The optional off-value used when none of the available options are selected.
+ * @return shared pointer to a selection delegate
+ */
 [[nodiscard]] std::shared_ptr<selection_delegate>
-make_default_selection_delegate(Value&& value, OptionList&& option_list, Args&&...args) noexcept requires requires
+    make_default_selection_delegate(auto&& value, auto&& options, auto&&...off_value) noexcept
+    requires(sizeof...(off_value) <= 1) and
+    requires
 {
-    default_selection_delegate<observer_decay_t<Value>>{
-        std::forward<Value>(value), std::forward<OptionList>(option_list), std::forward<Args>(args)...};
+    default_selection_delegate<observer_decay_t<decltype(value)>>{
+        hi_forward(value), hi_forward(options), hi_forward(off_value)...};
 }
 {
-    return std::make_shared<default_selection_delegate<observer_decay_t<Value>>>(
-        std::forward<Value>(value), std::forward<OptionList>(option_list), std::forward<Args>(args)...);
+    return std::make_shared<default_selection_delegate<observer_decay_t<decltype(value)>>>(
+        hi_forward(value), hi_forward(options), hi_forward(off_value)...);
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

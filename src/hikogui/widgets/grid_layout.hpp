@@ -13,7 +13,7 @@
 #include <cstddef>
 #include <functional>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** Grid layout is used to layout widgets along an axis.
  *
@@ -289,12 +289,7 @@ private:
         widget_baseline baseline;
 
         cell_type() noexcept :
-            size(0.0f),
-            margin(0.0f),
-            minimum(0.0f),
-            preferred(0.0f),
-            maximum(std::numeric_limits<float>::infinity()),
-            baseline()
+            size(0.0f), margin(0.0f), minimum(0.0f), preferred(0.0f), maximum(std::numeric_limits<float>::infinity()), baseline()
         {
         }
 
@@ -374,4 +369,4 @@ private:
     [[nodiscard]] bool holds_invariant() const noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

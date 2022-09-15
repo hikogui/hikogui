@@ -71,9 +71,9 @@ int hi_main(int argc, char *argv[])
     auto &window = gui->make_window(hi::tr("Radio button example"));
 
     window.content().make_widget<label_widget>("A1", tr("radio buttons:"));
-    window.content().make_widget<radio_button_widget>("B1", tr("one"), value, 1);
-    window.content().make_widget<radio_button_widget>("B2", tr("two"), value, 2);
-    window.content().make_widget<radio_button_widget>("B3", tr("three"), value, 3);
+    window.content().make_widget<radio_button_widget>("B1", value, 1, tr("one"));
+    window.content().make_widget<radio_button_widget>("B2", value, 2, tr("two"));
+    window.content().make_widget<radio_button_widget>("B3", value, 3, tr("three"));
 
     return gui->loop();
 }

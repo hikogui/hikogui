@@ -2,14 +2,19 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file widgets/checkbox_widget.hpp Defines checkbox_widget.
+ * @ingroup widgets
+ */
+
 #pragma once
 
 #include "abstract_button_widget.hpp"
 #include "../log.hpp"
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** A GUI widget that permits the user to make a binary choice.
+ * @ingroup widgets
  *
  * A checkbox is a button with three different states with different visual
  * representation:
@@ -33,7 +38,6 @@ namespace hi::inline v1 {
  * when the value is 2 the checkbox is 'off'.
  *
  * @snippet widgets/checkbox_example.cpp Create a checkbox
- *
  */
 class checkbox_widget final : public abstract_button_widget {
 public:
@@ -146,4 +150,4 @@ private:
     void draw_check_mark(draw_context const& context) noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

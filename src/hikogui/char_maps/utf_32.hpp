@@ -2,11 +2,15 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file char_maps/utf_32.hpp Definition of the Unicode UTF-32 encoding.
+ * @ingroup char_maps
+ */
+
 #pragma once
 
 #include "char_converter.hpp"
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** Unicode UTF-32 encoding.
  *
@@ -144,4 +148,4 @@ struct char_map<"utf-32"> {
 #endif
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1
