@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file char_maps/ascii.hpp Definition of the ASCII character map.
+ * @ingroup char_maps
+ */
+
 #pragma once
 
 #include "char_converter.hpp"
@@ -12,10 +16,9 @@
 #include <utility>
 #include <tuple>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** ASCII (7-bit) character map.
- *
  * @ingroup char_maps
  */
 template<>
@@ -82,4 +85,4 @@ struct char_map<"ascii"> {
 #endif
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

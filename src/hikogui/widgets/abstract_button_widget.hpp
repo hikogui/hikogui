@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file widgets/abstract_button_widget.hpp Defines abstract_button_widget.
+ * @ingroup widgets
+ */
+
 #pragma once
 
 #include "widget.hpp"
@@ -16,17 +20,14 @@
 #include <optional>
 #include <future>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept button_widget_attribute = label_widget_attribute<Context>;
 
-/** @addtogroup widgets
- * @{
- * @file widgets/abstract_button_widget.hpp Defines abstract_button_widget.
- */
-
 /** Base class for implementing button widgets.
+ *
+ * @ingroup widgets
  */
 class abstract_button_widget : public widget {
 public:
@@ -138,6 +139,4 @@ protected:
     void draw_button(draw_context const& context) noexcept;
 };
 
-/// @}
-
-} // namespace hi::inline v1
+}} // namespace hi::v1

@@ -155,13 +155,7 @@ hi_warning_push();
 // We do not have access to narrow_cast in this file.
 hi_warning_ignore_msvc(26472);
 
-/** @namespace hi The HikoGUI namespace.
- */
-namespace hi {
-
-/** @namespace v1 The HikoGUI API version 1.
- */
-inline namespace v1 {
+namespace hi { inline namespace v1 {
 
 /** Signed size/index into an array.
  */
@@ -184,7 +178,6 @@ constexpr std::ptrdiff_t operator"" _z(unsigned long long lhs) noexcept
     return static_cast<std::ptrdiff_t>(lhs);
 }
 
-} // namespace v1
-} // namespace hi
+}} // namespace hi::v1
 
 hi_warning_pop();

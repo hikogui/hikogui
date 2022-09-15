@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file widgets/widget.hpp Defines widget.
+ * @ingroup widgets
+ */
+
 #pragma once
 
 #include "../GFX/draw_context.hpp"
@@ -24,7 +28,7 @@
 #include <string>
 #include <ranges>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 class gui_window;
 class font_book;
 
@@ -35,6 +39,7 @@ class font_book;
  *  2. Updating Layout: `widget::set_layout()`
  *  3. Drawing: `widget::draw()`
  *
+ * @ingroup widgets
  */
 class widget {
 public:
@@ -352,4 +357,4 @@ private:
     void _request_resize() const noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

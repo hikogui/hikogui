@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file widgets/icon_widget.hpp Defines icon_widget.
+ * @ingroup widgets
+ */
+
 #pragma once
 
 #include "widget.hpp"
@@ -14,12 +18,13 @@
 #include <optional>
 #include <future>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 template<typename Context>
 concept icon_widget_attribute = forward_of<Context, observer<hi::icon>, observer<hi::alignment>, observer<hi::color>>;
 
 /** An simple GUI widget that displays an icon.
+ * @ingroup widgets
  *
  * The icon is scaled to the size of the widget,
  * parent widgets will use this scaling to set the correct size.
@@ -81,4 +86,4 @@ private:
     icon_widget(gui_window& window, widget *parent) noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

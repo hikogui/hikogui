@@ -2,14 +2,19 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file widgets/checkbox_widget.hpp Defines checkbox_widget.
+ * @ingroup widgets
+ */
+
 #pragma once
 
 #include "abstract_button_widget.hpp"
 #include "../log.hpp"
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** A GUI widget that permits the user to make a binary choice.
+ * @ingroup widgets
  *
  * A checkbox is a button with three different states with different visual
  * representation:
@@ -33,7 +38,6 @@ namespace hi::inline v1 {
  * when the value is 2 the checkbox is 'off'.
  *
  * @snippet widgets/checkbox_example.cpp Create a checkbox
- *
  */
 class checkbox_widget final : public abstract_button_widget {
 public:
@@ -45,8 +49,21 @@ public:
      * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this checkbox widget.
      * @param delegate The delegate to use to manage the state of the checkbox button.
+     * @param attributes Different attributes used to configure the label's on the checkbox button:
+     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
+     *                   passed it will be shown in all states. If two or three labels are passed
+     *                   the labels are shown in on-state, off-state and other-state in that order.
      */
-    checkbox_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
+    checkbox_widget(
+        gui_window& window,
+        widget *parent,
+        std::shared_ptr<delegate_type> delegate,
+        button_widget_attribute auto&&...attributes) noexcept :
+        super(window, parent, std::move(delegate))
+    {
+        alignment = alignment::top_left();
+        set_attributes<0>(hi_forward(attributes)...);
+    }
 
     /** Construct a checkbox widget with a default button delegate.
      *
@@ -59,14 +76,14 @@ public:
      *                   passed it will be shown in all states. If two or three labels are passed
      *                   the labels are shown in on-state, off-state and other-state in that order.
      */
-    template<different_from<std::shared_ptr<delegate_type>> Value, button_widget_attribute... Attributes>
-    checkbox_widget(gui_window& window, widget *parent, Value&& value, Attributes&&...attributes) noexcept requires requires
+    checkbox_widget(
+        gui_window& window,
+        widget *parent,
+        different_from<std::shared_ptr<delegate_type>> auto&& value,
+        button_widget_attribute auto&&...attributes) noexcept requires requires
     {
         make_default_toggle_button_delegate(hi_forward(value));
-    } : checkbox_widget(window, parent, make_default_toggle_button_delegate(hi_forward(value)))
-    {
-        set_attributes<0>(hi_forward(attributes)...);
-    }
+    } : checkbox_widget(window, parent, make_default_toggle_button_delegate(hi_forward(value)), hi_forward(attributes)...) {}
 
     /** Construct a checkbox widget with a default button delegate.
      *
@@ -88,9 +105,13 @@ public:
         requires requires
     {
         make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value));
-    } : checkbox_widget(window, parent, make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value)))
+    } :
+        checkbox_widget(
+            window,
+            parent,
+            make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value)),
+            hi_forward(attributes)...)
     {
-        set_attributes<0>(hi_forward(attributes)...);
     }
 
     /** Construct a checkbox widget with a default button delegate.
@@ -124,9 +145,9 @@ public:
         checkbox_widget(
             window,
             parent,
-            make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value), hi_forward(off_value)))
+            make_default_toggle_button_delegate(hi_forward(value), hi_forward(on_value), hi_forward(off_value)),
+            hi_forward(attributes)...)
     {
-        set_attributes<0>(hi_forward(attributes)...);
     }
 
     /// @privatesection
@@ -146,4 +167,4 @@ private:
     void draw_check_mark(draw_context const& context) noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

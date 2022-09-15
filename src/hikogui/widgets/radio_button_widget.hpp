@@ -2,14 +2,19 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file widgets/radio_button_widget.hpp Defines radio_button_widget.
+ * @ingroup widgets
+ */
+
 #pragma once
 
 #include "abstract_button_widget.hpp"
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** A graphical control element that allows the user to choose only one of a
  * predefined set of mutually exclusive options.
+ * @ingroup widgets
  *
  * A radio-button has two different states with different visual representation:
  *  - **on**: The radio button shows a solid circle inside it
@@ -44,11 +49,20 @@ public:
      * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this radio button widget.
      * @param delegate The delegate to use to manage the state of the radio button.
+     * @param attributes Different attributes used to configure the label's on the radio button:
+     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
+     *                   passed it will be shown in all states. If two labels are passed
+     *                   the first label is shown in on-state and the second for off-state.
      */
-    radio_button_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
+    radio_button_widget(
+        gui_window& window,
+        widget *parent,
+        std::shared_ptr<delegate_type> delegate,
+        button_widget_attribute auto&&...attributes) noexcept :
         super(window, parent, std::move(delegate))
     {
         alignment = alignment::top_left();
+        set_attributes<0>(hi_forward(attributes)...);
     }
 
     /** Construct a radio button widget with a default button delegate.
@@ -72,9 +86,13 @@ public:
         requires requires
     {
         make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value));
-    } : radio_button_widget(window, parent, make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value)))
+    } :
+        radio_button_widget(
+            window,
+            parent,
+            make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value)),
+            hi_forward(attributes)...)
     {
-        set_attributes<0>(hi_forward(attributes)...);
     }
 
     /// @privatesection
@@ -94,4 +112,4 @@ private:
     void draw_radio_pip(draw_context const& context) noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

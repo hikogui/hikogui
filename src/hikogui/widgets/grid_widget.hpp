@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file widgets/grid_widget.hpp Defines grid_widget.
+ * @ingroup widgets
+ */
+
 #pragma once
 
 #include "widget.hpp"
@@ -9,9 +13,10 @@
 #include "../geometry/spreadsheet_address.hpp"
 #include <memory>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** A GUI widget that lays out child-widgets in a grid with variable sized cells.
+ * @ingroup widgets
  *
  * The grid widget lays out child widgets in a grid pattern. Each child widget
  * occupies a single cell, which belongs into a single column and a single row.
@@ -161,4 +166,4 @@ private:
         std::unique_ptr<widget> child_widget) noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

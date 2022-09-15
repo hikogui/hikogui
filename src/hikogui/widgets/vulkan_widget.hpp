@@ -2,14 +2,19 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file widgets/vulkan_widget.hpp Defines vulkan_widget.
+ * @ingroup widgets
+ */
+
 #include "../GUI/gui_system.hpp"
 #include "../GFX/gfx_surface_delegate_vulkan.hpp"
 #include "widget.hpp"
 #include <vulkan/vulkan.hpp>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** A widget that draws directly into the swap-chain.
+ * @ingroup widgets
  */
 class vulkan_widget : public widget, public gfx_surface_delegate_vulkan {
 public:
@@ -36,8 +41,6 @@ public:
         if (compare_store(_layout, layout)) {}
     }
 
-    
-
     void draw(hi::draw_context const& context) noexcept override
     {
         if (*mode > widget_mode::invisible and overlaps(context, layout())) {
@@ -48,4 +51,4 @@ public:
     }
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

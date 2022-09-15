@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file widgets/button_delegate.hpp Defines button_delegate and some default button delegates.
+ * @ingroup widget_delegates
+ */
+
 #pragma once
 
 #include "../notifier.hpp"
@@ -9,16 +13,12 @@
 #include <type_traits>
 #include <memory>
 
-namespace hi::inline v1 {
-
-/** @addtogroup widgets
- * @{
- * @file widgets/button_delegate.hpp Defines button_delegate and some default button delegates.
- */
+namespace hi { inline namespace v1 {
 
 class abstract_button_widget;
 
 /** The state of a button.
+ * @ingroup widget_delegates
  */
 enum class button_state {
     /** The 'off' state of a button.
@@ -40,6 +40,7 @@ enum class button_state {
 };
 
 /** A button delegate controls the state of a button widget.
+ * @ingroup widget_delegates
  */
 class button_delegate {
 public:
@@ -81,6 +82,7 @@ protected:
  * The default radio button delegate manages the state of a button widget using
  * observer values.
  *
+ * @ingroup widget_delegates
  * @tparam T The type of the observer value.
  */
 template<typename T>
@@ -132,6 +134,7 @@ private:
  * The default toggle button delegate manages the state of a button widget using
  * observer values.
  *
+ * @ingroup widget_delegates
  * @tparam T The type of the observer value.
  */
 template<typename T>
@@ -212,27 +215,40 @@ private:
     typename decltype(off_value)::callback_token _off_value_cbt;
 };
 
-template<typename Value, typename OnValue>
+/** Make a shared pointer to a radio-button delegate.
+ *
+ * @ingroup widget_delegates
+ * @see default_radio_button_delegate
+ * @param value A value or observer-value used as a representation of the state.
+ * @param on_value The value or observer-value that mean 'on'.
+ * @return A shared_ptr to a button delegate.
+ */
 [[nodiscard]] std::shared_ptr<button_delegate>
-make_default_radio_button_delegate(Value&& value, OnValue&& on_value) noexcept requires requires
+make_default_radio_button_delegate(auto&& value, auto&& on_value) noexcept requires requires
 {
-    default_radio_button_delegate<observer_decay_t<Value>>{std::forward<Value>(value), std::forward<OnValue>(on_value)};
+    default_radio_button_delegate<observer_decay_t<decltype(value)>>{hi_forward(value), hi_forward(on_value)};
 }
 {
-    return std::make_shared<default_radio_button_delegate<observer_decay_t<Value>>>(
-        std::forward<Value>(value), std::forward<OnValue>(on_value));
+    return std::make_shared<default_radio_button_delegate<observer_decay_t<decltype(value)>>>(
+        hi_forward(value), hi_forward(on_value));
 }
 
-template<typename Value, typename... Args>
+/** Make a shared pointer to a toggle-button delegate.
+ *
+ * @ingroup widget_delegates
+ * @see default_toggle_button_delegate
+ * @param value A value or observer-value used as a representation of the state.
+ * @param args an optional on-value followed by an optional off-value.
+ * @return A shared_ptr to a button delegate.
+ */
 [[nodiscard]] std::shared_ptr<button_delegate>
-make_default_toggle_button_delegate(Value&& value, Args&&...args) noexcept requires requires
+make_default_toggle_button_delegate(auto&& value, auto&&...args) noexcept requires requires
 {
-    default_toggle_button_delegate<observer_decay_t<Value>>{std::forward<Value>(value), std::forward<Args>(args)...};
+    default_toggle_button_delegate<observer_decay_t<decltype(value)>>{hi_forward(value), hi_forward(args)...};
 }
 {
-    return std::make_shared<default_toggle_button_delegate<observer_decay_t<Value>>>(
-        std::forward<Value>(value), std::forward<Args>(args)...);
+    return std::make_shared<default_toggle_button_delegate<observer_decay_t<decltype(value)>>>(
+        hi_forward(value), hi_forward(args)...);
 }
 
-/// @}
-} // namespace hi::inline v1
+}} // namespace hi::v1

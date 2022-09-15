@@ -8,12 +8,6 @@
 
 namespace hi::inline v1 {
 
-checkbox_widget::checkbox_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
-    super(window, parent, std::move(delegate))
-{
-    alignment = alignment::top_left();
-}
-
 widget_constraints const& checkbox_widget::set_constraints() noexcept
 {
     _layout = {};

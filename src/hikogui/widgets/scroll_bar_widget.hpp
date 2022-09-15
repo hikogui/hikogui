@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file widgets/scroll_bar_widget.hpp Defines scroll_bar_widget.
+ * @ingroup widgets
+ */
+
 #pragma once
 
 #include "widget.hpp"
@@ -14,8 +18,17 @@
 #include <optional>
 #include <future>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
+/** Scroll bar widget
+ * This widget is used in a pair of a vertical and horizontal scrollbar as
+ * a child of the `scroll_widget`. The vertical and horizontal scrollbar are
+ * displayed next to the `scroll_aperture_widget` and controls what part of
+ * the content is displayed in the aperture.
+ *
+ * @ingroup widgets
+ * @tparam Axis which axis (horizontal or vertical) this scroll bar is used for.
+ */
 template<axis Axis>
 class scroll_bar_widget final : public widget {
 public:
@@ -235,4 +248,4 @@ private:
 using horizontal_scroll_bar_widget = scroll_bar_widget<axis::horizontal>;
 using vertical_scroll_bar_widget = scroll_bar_widget<axis::vertical>;
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

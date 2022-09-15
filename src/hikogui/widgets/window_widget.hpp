@@ -2,23 +2,33 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file widgets/window_widget.hpp Defines window_widget.
+ * @ingroup widgets
+ */
+
 #pragma once
 
 #include "widget.hpp"
 #include "../label.hpp"
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 class toolbar_widget;
 class system_menu_widget;
 class grid_widget;
 
+/** The top-level window widget.
+ * This widget is the top-level widget that is owned by the `gui_window`.
+ * It contains as childs the toolbar and content `grid_widget`.
+ *
+ * @ingroup widgets
+ */
 class window_widget final : public widget {
 public:
     using super = widget;
 
     observer<label> title;
 
-    window_widget(gui_window& window, forward_of<observer<label>> auto && title) noexcept :
+    window_widget(gui_window& window, forward_of<observer<label>> auto&& title) noexcept :
         super(window, nullptr), title(hi_forward(title))
     {
         constructor_implementation();
@@ -74,4 +84,4 @@ private:
     void constructor_implementation() noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

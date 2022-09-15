@@ -2,14 +2,17 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file widgets/tab_widget.hpp Defines tab_widget.
+ * @ingroup widgets
+ */
+
 #pragma once
 
 #include "widget.hpp"
 #include "grid_widget.hpp"
 #include "tab_delegate.hpp"
-#include "default_tab_delegate.hpp"
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** A graphical element that shows only one of a predefined set of mutually
  * exclusive child widgets.
@@ -25,6 +28,7 @@ namespace hi::inline v1 {
  *
  * @snippet widgets/tab_example.cpp Create three tabs
  *
+ * @ingroup widgets
  * @note A `tab_button` is not directly controlled by a
  *       `toolbar_tab_button_widget`. This is accomplished by sharing a delegate
  *       or a observer between the toolbar tab button and the tab widget.
@@ -110,4 +114,4 @@ private:
     [[nodiscard]] widget& selected_child() const noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

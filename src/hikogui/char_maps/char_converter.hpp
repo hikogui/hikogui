@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file char_maps/char_converter.hpp Definition of the char_converter<From,To> functor.
+ * @ingroup char_maps
+ */
+
 #pragma once
 
 #include "../fixed_string.hpp"
@@ -13,11 +17,11 @@
 #include <emmintrin.h>
 #endif
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** Character encoder/decoder template.
- *
  * @ingroup char_maps
+ *
  * @tparam Encoding a string-tag representing the encoding.
  *
  * Implementations have to define the following members:
@@ -314,4 +318,4 @@ private:
     }
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1
