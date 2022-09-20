@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file GUI/gui_event_type.hpp Definition of GUI event type.
+ * @ingroup GUI
+ */
+
 #pragma once
 
 #include "../utility.hpp"
@@ -10,8 +14,11 @@
 #include <string_view>
 #include <ostream>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
+/** GUI event type.
+ * @ingroup GUI
+ */
 enum class gui_event_type {
     none,
 
@@ -157,19 +164,19 @@ constexpr auto gui_event_type_metadata = enum_metadata{
 };
 // clang-format on
 
+/** Convert a GUI event type to a string.
+ */
 inline std::string_view to_string(gui_event_type rhs) noexcept
 {
     return gui_event_type_metadata[rhs];
 }
 
-inline std::ostream &operator<<(std::ostream &lhs, gui_event_type const &rhs)
-{
-    return lhs << gui_event_type_metadata[rhs];
-}
-
+/** Convert a name to a GUI event type.
+ */
 constexpr gui_event_type to_gui_event_type(std::string_view name) noexcept
 {
     return gui_event_type_metadata.at(name, gui_event_type::none);
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
+
