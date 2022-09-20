@@ -180,6 +180,7 @@ target_sources(hikogui PRIVATE
     undo_stack.hpp
     unfair_mutex.hpp
     unfair_recursive_mutex.hpp
+    URI.hpp
     URL.cpp
     URL.hpp
     $<${HI_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/URL_macos.mm>
@@ -256,6 +257,7 @@ if(HI_BUILD_TESTS)
         tokenizer_tests.cpp
         tree_tests.cpp
         type_traits_tests.cpp
+        URI_tests.cpp
         url_parser_tests.cpp
         URL_tests.cpp
     )

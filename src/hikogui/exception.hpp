@@ -77,6 +77,11 @@ public:
     using std::runtime_error::runtime_error;
 };
 
+class uri_error : public parse_error {
+public:
+    using parse_error::parse_error;
+};
+
 /** Cancel error is caused by user pressing cancel.
  * Cancels can be cause by a local user pressing cancel in a dialog box,
  * or by a remote user through a network connection.
