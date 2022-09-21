@@ -183,7 +183,7 @@ namespace hi::inline v1 {
  * only ASCII letters [a-zA-Z] will be modified.
  */
 template<size_t N>
-[[nodiscard]] constexpr basic_fixed_string<char, N> to_title(basic_fixed_string<char, N> const &rhs) noexcept
+[[nodiscard]] constexpr fixed_string<N> to_title(fixed_string<N> const &rhs) noexcept
 {
     auto r = rhs;
 

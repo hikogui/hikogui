@@ -45,14 +45,14 @@ public:
     static inline std::chrono::time_zone const *zone = nullptr;
 };
 
-template<global_state_type Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Values>
+template<global_state_type Level, fixed_string SourceFile, int SourceLine, fixed_string Fmt, typename... Values>
 class log_message : public log_message_base {
 public:
     static_assert(std::popcount(to_underlying(Level)) == 1);
     static_assert(
         std::is_same_v<typename decltype(SourceFile)::value_type, char>,
-        "SourceFile must be a basic_fixed_string<char>");
-    static_assert(std::is_same_v<typename decltype(Fmt)::value_type, char>, "Fmt must be a basic_fixed_string<char>");
+        "SourceFile must be a fixed_string<char>");
+    static_assert(std::is_same_v<typename decltype(Fmt)::value_type, char>, "Fmt must be a fixed_string<char>");
 
     // clang-format off
     static constexpr char const *log_level_name =
@@ -122,7 +122,7 @@ public:
      * @tparam Fmt The format string.
      * @param args Arguments to `std::format()`.
      */
-    template<global_state_type Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Args>
+    template<global_state_type Level, fixed_string SourceFile, int SourceLine, fixed_string Fmt, typename... Args>
     hi_force_inline void add(Args&&...args) noexcept
     {
         static_assert(std::popcount(to_underlying(Level)) == 1);

@@ -15,10 +15,10 @@ namespace hi::inline v1 {
  * This class will capture all the arguments so that it may be passed
  * to another thread. Then call the function operator to do the actual formatting.
  */
-template<basic_fixed_string Fmt, typename... Values>
+template<fixed_string Fmt, typename... Values>
 class delayed_format {
 public:
-    static_assert(std::is_same_v<typename decltype(Fmt)::value_type, char>, "Fmt must be a basic_fixed_string<char>");
+    static_assert(std::is_same_v<typename decltype(Fmt)::value_type, char>, "Fmt must be a fixed_string<char>");
 
     delayed_format(delayed_format &&) noexcept = default;
     delayed_format(delayed_format const &) noexcept = default;

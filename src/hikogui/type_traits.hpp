@@ -493,7 +493,7 @@ using variant_decay_t = variant_decay<T>::type;
  * based on the template parameter.
  *
  * The prototype of the `get()` function are as follows:
- *  - `template<basic_fixed_string> auto &get(T &) const noexcept`
+ *  - `template<fixed_string> auto &get(T &) const noexcept`
  *
  * Here is an example how to specialize `hi::selector` for the `my::simple` type:
  *
@@ -507,7 +507,7 @@ using variant_decay_t = variant_decay<T>::type;
  *
  * template<>
  * struct hi::selector<my::simple> {
- *     template<hi::basic_fixed_string> auto &get(my::simple &) const noexcept;
+ *     template<hi::fixed_string> auto &get(my::simple &) const noexcept;
  *
  *     template<> auto &get<"foo">(my::simple &rhs) const noexcept { return rhs.foo; }
  *     template<> auto &get<"bar">(my::simple &rhs) const noexcept { return rhs.bar; }

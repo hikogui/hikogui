@@ -17,7 +17,7 @@
 
 namespace hi::inline v1 {
 
-template<std::unsigned_integral T, basic_fixed_string Tag, ssize_t Max = std::numeric_limits<T>::max() - 1>
+template<std::unsigned_integral T, fixed_string Tag, ssize_t Max = std::numeric_limits<T>::max() - 1>
 class tagged_id {
 public:
     static_assert(Max < std::numeric_limits<T>::max(), "Max must be at least one less than the maximum value of T");
@@ -131,7 +131,7 @@ private:
 
 } // namespace hi::inline v1
 
-template<typename T, hi::basic_fixed_string Tag, hi::ssize_t Max>
+template<typename T, hi::fixed_string Tag, hi::ssize_t Max>
 struct std::hash<hi::tagged_id<T, Tag, Max>> {
     [[nodiscard]] constexpr std::size_t operator()(hi::tagged_id<T, Tag, Max> const &rhs) const noexcept
     {

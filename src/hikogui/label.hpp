@@ -181,7 +181,7 @@ public:
 
 template<>
 struct selector<label> {
-    template<basic_fixed_string>
+    template<fixed_string>
     [[nodiscard]] auto& get(label&) const noexcept;
 
     template<>

@@ -77,7 +77,7 @@ public:
      * @tparam Name the name of the member variable of the value.
      * @return The new observer pointing to the member variable of the value
      */
-    template<basic_fixed_string Name>
+    template<fixed_string Name>
     [[nodiscard]] auto get() const& noexcept
     {
         return observer().get<Name>();

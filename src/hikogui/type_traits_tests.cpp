@@ -71,8 +71,8 @@ struct simple {
 // clang-format off
 template<>
 struct hi::selector<my::simple> {
-    template<hi::basic_fixed_string> auto& get(my::simple&) const noexcept;
-    template<hi::basic_fixed_string> auto const& get(my::simple const&) const noexcept;
+    template<hi::fixed_string> auto& get(my::simple&) const noexcept;
+    template<hi::fixed_string> auto const& get(my::simple const&) const noexcept;
 
     template<> auto& get<"foo">(my::simple& rhs) const noexcept { return rhs.foo; }
     template<> auto const& get<"foo">(my::simple const& rhs) const noexcept { return rhs.foo; }

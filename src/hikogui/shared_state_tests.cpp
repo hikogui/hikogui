@@ -28,7 +28,7 @@ struct A {
 // clang-format off
 template<>
 struct hi::selector<test_shared_space::B> {
-    template<hi::basic_fixed_string> [[nodiscard]] auto &get(test_shared_space::B &rhs) const noexcept;
+    template<hi::fixed_string> [[nodiscard]] auto &get(test_shared_space::B &rhs) const noexcept;
 
     template<> [[nodiscard]] auto &get<"foo">(test_shared_space::B &rhs) const noexcept { return rhs.foo; }
     template<> [[nodiscard]] auto &get<"bar">(test_shared_space::B &rhs) const noexcept { return rhs.bar; }
@@ -36,7 +36,7 @@ struct hi::selector<test_shared_space::B> {
 
 template<>
 struct hi::selector<test_shared_space::A> {
-    template<hi::basic_fixed_string> [[nodiscard]] auto &get(test_shared_space::A &rhs) const noexcept;
+    template<hi::fixed_string> [[nodiscard]] auto &get(test_shared_space::A &rhs) const noexcept;
 
     template<> [[nodiscard]] auto &get<"b">(test_shared_space::A &rhs) const noexcept { return rhs.b; }
     template<> [[nodiscard]] auto &get<"baz">(test_shared_space::A &rhs) const noexcept { return rhs.baz; }
