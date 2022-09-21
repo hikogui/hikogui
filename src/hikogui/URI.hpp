@@ -20,6 +20,28 @@ namespace hi { inline namespace v1 {
  */
 class URI {
 public:
+    struct authority_type {
+        std::optional<std::string> userinfo;
+        std::string host;
+        std::optional<std::string> port;
+    };
+
+    struct path_type {
+        std::vector<std::string> segments;
+        bool absolute;
+
+        [[nodiscard]] constexpr bool empty() noexcept
+        {
+            return segments.empty() and not absolute;
+        }
+    };
+
+    constexpr URI() noexcept = default;
+    constexpr URI(URI const &) noexcept = default;
+    constexpr URI(URI &&) noexcept = default;
+    constexpr URI &operator=(URI const &) noexcept = default;
+    constexpr URI &operator=(URI &&) noexcept = default;
+
     /** Construct a URL from a string.
      *
      * @note This constructor will normalize the URI
@@ -30,6 +52,14 @@ public:
         parse();
     }
 
+    constexpr URI(
+        std::optional<std::string> const &scheme,
+        std::optional<authority_type> const &authority,
+        path_type const &path
+        std::optional<std::string> const &query,
+        std::optional<std::string> const &fragment) noexcept :
+        URI(raw{}, make_URI_string(scheme, authority, path, query, fragment) {}
+
     /** Get the scheme-component of the URI.
      *
      * @return The optional and lower-cased scheme-component.
@@ -37,6 +67,15 @@ public:
     [[nodiscard]] constexpr std::optional<std::string> scheme() const noexcept
     {
         return get_scheme();
+    }
+
+    /** Get the authority-component of the URI.
+     *
+     * @return The optional and decoded userinfo, host and port..
+     */
+    [[nodiscard]] constexpr std::optional<authority_type> authority() const noexcept
+    {
+        return get_authority();
     }
 
     /** Get the userinfo-component of the URI.
@@ -122,6 +161,13 @@ public:
         }
 
         return r;
+    }
+
+    /** Get the path.
+     */
+    [[nodiscard]] constexpr path_type path() const noexcept
+    {
+        return {segments(), path_is_absolute()};
     }
 
     /** Get a segments of the path.
@@ -283,6 +329,74 @@ public:
         return rhs.normalized_string();
     }
 
+    [[nodiscard]] constexpr friend bool operator==(URI const &lhs, URI const &rhs) noexcept
+    {
+        return lhs._str == rhs._str;
+    }
+
+    [[nodiscard]] constexpr friend auto operator<=>(URI const &lhs, URI const &rhs) noexcept
+    {
+        return lhs._str <=> rhs._str;
+    }
+
+    [[nodiscard]] constexpr friend URI operator/(URI const &base, URI const &ref) noexcept
+    {
+        auto T_scheme = std::optional<std::string>{};
+        auto T_authority = std::optional<authority_type>{};
+        auto T_path = path_type{};
+        auto T_segments = std::vector<std::string>{};
+        auto T_query = std::optional<std::string>{};
+        auto T_fragment = std::optional<std::string>{};
+
+        auto B_scheme = base.scheme();
+        auto R_scheme = ref.scheme();
+
+        // non-strict parses ignore scheme
+        if (R_scheme == B_scheme) {
+            R_scheme = {};
+        }
+
+        if (R_scheme) {
+            T_scheme = R_scheme;
+            T_authority = ref.authority();
+            T_path = remove_dot_segments(ref.path());
+            T_query = ref.query();
+        } else {
+            if (auto R_host = ref.host()) {
+                T_userinfo = ref.userinfo();
+                T_authority = ref.authority();
+                T_path = remove_dot_segments(ref.path());
+                T_query = ref.query();
+
+            } else {
+                if (auto R_path = ref.path(); R_path.empty()) {
+                    T_path = base.path();
+                    if (auto R_query = ref.query()) {
+                        T_query = R_query;
+                    } else {
+                        T_query = base.query();
+                    }
+                } else {
+                    if (R_path.absolute) {
+                        T_path = remove_dot_segments(R_path);
+                    } else {
+                        T_path = remove_dot_segments(merge(base.path(), R_path));
+                    }
+                    T_query = ref.query();
+                }
+                T_authority = ref.authority();
+            }
+            T_scheme = B_scheme();
+        }
+
+        T_fragment = ref.fragment();
+
+        return URI(T_scheme, T_authority, T_path, T_query, T_fragment);
+    }
+
+    friend std::hash<URI>;
+    template<typename CharT> friend std::formatter<URI, CharT>;
+
 private:
     using const_iterator = std::string::const_iterator;
     struct raw {};
@@ -425,6 +539,15 @@ private:
         }
     }
 
+    [[nodiscard]] constexpr std::optional<authority_type> get_authority() const
+    {
+        if (_has_host) {
+            return {get_userinfo(), decode(raw_host()), get_port()};
+        } else {
+            return {};
+        }
+    }
+
     [[nodiscard]] constexpr std::optional<std::string> get_query() const
     {
         if (_has_query) {
@@ -470,57 +593,93 @@ private:
 
     [[nodiscard]] constexpr std::string normalized_string() const
     {
+    }
+
+
+    /** Make a URI string from components.
+     */
+    [[nodiscard]] constexpr static std::string make_URI_string(
+        std::optional<std::string> const &scheme.
+        std::optional<authority_type> const &authority,
+        path_type const &path,
+        std::optional<std::string> const &query,
+        std::optional<std::string> const &fragment,
+        uint16_t size_hint = 0)
+    {
 #define HI_SUB_DELIM '!', '$', '&', '\'', '(', ')', '*', '+', ',', ';', '='
 #define HI_PCHAR HI_SUB_DELIM, ':', '@'
         auto r = std::string{};
-        r.reserve(_str.size());
 
-        if (auto scheme = get_scheme()) {
+        if (size_hint == 0) {
+            if (scheme) {
+                size_hint += scheme->size() + 1;
+            }
+            if (authority) {
+                size_hint += 2;
+                if (authority->userinfo) {
+                    size_hint += authority->userinfo->size() + 1;
+                }
+                size_hint += authority->host->size();
+                if (port) {
+                    size_hint += authority->host->size() + 1;
+                }
+            }
+            for (hilet &segment: path.segments) {
+                size_hint += segment->size() + 1;
+            }
+            if (query) {
+                size_hint += query->size() + 1;
+            }
+            if (fragment) {
+                size_hint += fragment->size() + 1;
+            }
+        }
+        r.reserve(size_hint);
+
+        if (scheme) {
             // get_scheme() already returns a scheme in lower-case.
             if (not(check_scheme_start(scheme->front()) and check_scheme(*scheme))) {
                 throw uri_error("Unexpected characters in scheme-component.");
             }
 
-            r += encode<>(*scheme);
+            r += *scheme;
             r += ':';
         }
 
-        hilet segments_ = segments();
-
-        if (auto host = get_host()) {
-            if (not(segments_.empty() or _path_is_absolute)) {
+        if (authority) {
+            if (not(path.empty() or path.absolute)) {
                 throw uri_error("A path-component in a URI with an authority-component must be empty or absolute.");
             }
 
             r += '/';
             r += '/';
-            if (auto userinfo = get_userinfo()) {
-                r += encode<HI_SUB_DELIM, ':'>(*userinfo);
+            if (authority->userinfo) {
+                r += encode<HI_SUB_DELIM, ':'>(*authority->userinfo);
                 r += '@';
             }
 
-            if (host->empty() or host->front() != '[') {
-                r += encode<HI_SUB_DELIM>(*host);
+            if (authority->host.empty() or authority->host.front() != '[') {
+                r += encode<HI_SUB_DELIM>(authority->host);
             } else {
-                r += encode<HI_SUB_DELIM, '[', ']', ':'>(*host);
+                r += encode<HI_SUB_DELIM, '[', ']', ':'>(authority->host);
             }
 
-            if (auto port = get_userinfo()) {
-                if (not check_port(*port)) {
+            if (authority->port) {
+                if (not check_port(*authority->port)) {
                     throw uri_error("Unexpected characters in port-component.");
                 }
                 r += ':';
-                r += *port;
+                r += *authority->port;
             }
 
-        } else if (not segments_.empty() and segments_.front().empty()) {
+        } else if (path.segments.size() >= 2 and path.absolute and path.segments.front().empty()) {
             throw uri_error("A path-component in a URI without an authority-component may not start with a double slash '//'.");
         }
 
         auto first_segment = true;
-        for (hilet& segment : segments()) {
+        for (hilet& segment : path.segments) {
             if (std::exchange(first_segment, false)) {
-                if (_path_is_absolute) {
+                if (path.absolute) {
                     r += '/';
                     r += encode<HI_PCHAR>(segment);
                 } else if (_has_scheme) {
@@ -535,12 +694,12 @@ private:
             }
         }
 
-        if (auto query = get_query()) {
+        if (query) {
             r += '?';
             r += encode<HI_PCHAR, '/', '?'>(*query);
         }
 
-        if (auto fragment = get_fragment()) {
+        if (fragment) {
             r += '#';
             r += encode<HI_PCHAR, '/', '?'>(*fragment);
         }
@@ -763,4 +922,22 @@ private:
         }
     }
 };
+
 }} // namespace hi::v1
+
+template<>
+struct hash<hi::URI> {
+    [[nodiscard]] size_t operator()(hi::URI const &rhs) const noexcept
+    {
+        return std::hash<std::string>{}(rhs._str);
+    }
+}
+
+template<typename CharT>
+struct std::formatter<hi::URI, CharT> : std::formatter<std::string, CharT> {
+    auto format(hi::URI const &t, auto &fc)
+    {
+        return std::formatter<std::string, CharT>::format(t._str, fc);
+    }
+};
+
