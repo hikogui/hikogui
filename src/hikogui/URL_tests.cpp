@@ -17,9 +17,10 @@ TEST(URLTests, parsing)
     hilet a = URL("scheme://user:password@hostname:1234/path1/path2?query#fragment");
 
     ASSERT_EQ(a.scheme(), "scheme");
-    ASSERT_EQ(a.isAbsolute(), true);
-    ASSERT_EQ(a.pathSegments().at(0), "path1");
-    ASSERT_EQ(a.pathSegments().at(1), "path2");
+    ASSERT_EQ(a.path().absolute(), true);
+    ASSERT_EQ(a.path().at(0), "");
+    ASSERT_EQ(a.path().at(1), "path1");
+    ASSERT_EQ(a.path().at(2), "path2");
     ASSERT_EQ(a.query(), "query");
     ASSERT_EQ(a.fragment(), "fragment");
 }

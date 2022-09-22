@@ -6,6 +6,7 @@
 
 #include "utility.hpp"
 #include "assert.hpp"
+#include "URI.hpp"
 #include <string>
 #include <string_view>
 #include <optional>
@@ -14,12 +15,12 @@
 #include <memory>
 #include <ostream>
 #include <mutex>
+#include <filesystem>
 
-namespace hi::inline v1 {
-struct url_parts;
+namespace hi { inline namespace v1 {
 class resource_view;
 
-/*! Universal Resource Locator.
+/** Universal Resource Locator.
  *
  * An instance internally holds a string to an url.
  * This will have the following effects:
@@ -44,78 +45,133 @@ class resource_view;
  * meaningless-urls could still cause meaningless results when converted to a path.
  * But this is no different from having a meaningless path in the first place.
  */
-class URL {
+class URL : public URI {
 public:
-    constexpr ~URL() = default;
-    constexpr URL() noexcept = default;
-    constexpr URL(URL const &) noexcept = default;
-    constexpr URL(URL &&) noexcept = default;
-    constexpr URL &operator=(URL const &) noexcept = default;
-    constexpr URL &operator=(URL &&) noexcept = default;
+    using URI::URI;
 
-    explicit URL(std::string_view url);
-    explicit URL(char const *url);
-    explicit URL(std::string const& url);
-    explicit URL(url_parts const& parts);
-
-    explicit operator bool() const noexcept
+    constexpr void static validate_file_segment(std::string_view segment)
     {
-        return not empty();
+        for (auto c : segment) {
+            if (c == '/' or c == '\\') {
+                throw url_error("Filename server name may not contain slash or back-slash.");
+            }
+        }
     }
 
-    [[nodiscard]] bool empty() const noexcept
+    constexpr void static validate_file_server(std::string_view server)
     {
-        return value.empty();
+        for (auto c : server) {
+            if (c == '/' or c == '\\') {
+                throw url_error("Filename segments may not contain slash or back-slash.");
+            }
+        }
     }
 
-    [[nodiscard]] std::size_t hash() const noexcept;
-
-    [[nodiscard]] std::string_view scheme() const noexcept;
-
-    [[nodiscard]] std::string query() const noexcept;
-
-    [[nodiscard]] std::string fragment() const noexcept;
-
-    [[nodiscard]] std::string filename() const noexcept;
-
-    [[nodiscard]] std::string directory() const noexcept;
-
-    [[nodiscard]] std::string nativeDirectory() const noexcept;
-
-    [[nodiscard]] std::string extension() const noexcept;
-
-    [[nodiscard]] std::vector<std::string> pathSegments() const noexcept;
-
-    [[nodiscard]] std::string path() const noexcept;
-
-    [[nodiscard]] std::string nativePath() const noexcept;
-
-    [[nodiscard]] std::wstring nativeWPath() const noexcept;
-
-    [[nodiscard]] bool isFileScheme() const noexcept
+    [[nodiscard]] std::filesystem::path filesystem_path() const
     {
-        return scheme() == "file";
+        if (not (not scheme() or scheme() == "file")) {
+            throw url_error("URL::filesystem_path() is only valid on a file: scheme URL");
+        }
+
+        auto r = std::string{};
+        hilet& p = path();
+        hilet first = p.begin();
+        hilet last = p.end();
+        auto it = first;
+
+        auto has_root_name = false;
+        if (authority()) {
+            // file://server/filename is valid.
+            auto server = to_string(*authority());
+            if (not server.empty() and server != "localhost") {
+                validate_file_server(server);
+                has_root_name = true;
+                r += '/';
+                r += '/';
+                r += server;
+                r += '/';
+            }
+        }
+
+        // If a server was found than the path must be absolute.
+        hi_axiom(has_root_name == false or p.absolute());
+
+        if (p.double_absolute()) {
+            // file:////server/filename is valid.
+            if (has_root_name) {
+                // file://server//server/filename is invalid.
+                throw url_error("file URL has two server names.");
+            }
+
+            has_root_name = true;
+            r += '/';
+            r += '/';
+            it += 2;
+            validate_file_server(*it);
+            r += *it++;
+            r += '/';
+        }
+
+        // Find the drive letter.
+        auto empty_segment = false;
+        do {
+            if (it != last) {
+                validate_file_segment(*it);
+                empty_segment = it->empty();
+
+                if (it == first and it->empty() and has_root_name) {
+                    // If a root-name is already defined, skip the root-directory slash.
+                    ++it;
+                    continue;
+
+                } else if (auto i = it->find(':'); i != std::string::npos) {
+                    // Found a drive letter.
+                    if (i != 1) {
+                        throw url_error("file URL contains a device name which is a security issue.");
+                    }
+
+                    if (has_root_name or p.absolute()) {
+                        r += it->front();
+                        // Use $ when the drive letter is on a server.
+                        r += has_root_name ? '$' : ':';
+
+                        // If there is a root name, the directory after the drive letter must be absolute too.
+                        if (it->size() > 2) {
+                            r += '/';
+                            r += it->substr(2);
+                        }
+
+                    } else {
+                        // Take the drive letter and optional relative directory directly on relative paths.
+                        // C:dirname valid
+                        // C:/dirname valid
+                        // file:C:dirname valid
+                        // file:C:/dirname valid
+                        r += *it;
+                    }
+
+                    has_root_name = true;
+                    r += '/';
+                    ++it;
+                }
+            }
+        } while (false);
+
+        // The rest are directories followed by a single (optionally empty) filename
+        for (; it != last; ++it) {
+            validate_file_segment(*it);
+            empty_segment = it->empty();
+            r += *it;
+            r += '/';
+        }
+
+        if (not empty_segment) {
+            // Remove trailing backslash if the last segment was a filename.
+            r.pop_back();
+        }
+
+        return std::filesystem::path{std::move(r)};
     }
-
-    [[nodiscard]] bool isAbsolute() const noexcept;
-    [[nodiscard]] bool isRelative() const noexcept;
-    [[nodiscard]] bool isRootDirectory() const noexcept;
-
-    [[nodiscard]] URL urlByAppendingPath(URL const &other) const noexcept;
-
-    [[nodiscard]] URL urlByAppendingPath(std::string_view const other) const noexcept;
-    [[nodiscard]] URL urlByAppendingPath(std::string const &other) const noexcept;
-    [[nodiscard]] URL urlByAppendingPath(char const *other) const noexcept;
-
-    [[nodiscard]] URL urlByAppendingPath(std::wstring_view const other) const noexcept;
-    [[nodiscard]] URL urlByAppendingPath(std::wstring const &other) const noexcept;
-    [[nodiscard]] URL urlByAppendingPath(wchar_t const *other) const noexcept;
-
-    [[nodiscard]] URL urlByAppendingExtension(std::string_view other) const noexcept;
-    [[nodiscard]] URL urlByAppendingExtension(std::string const &other) const noexcept;
-    [[nodiscard]] URL urlByAppendingExtension(char const *other) const noexcept;
-
-    [[nodiscard]] URL urlByRemovingFilename() const noexcept;
 
     /** Load a resource.
      * @return A pointer to a resource view.
@@ -134,9 +190,6 @@ public:
      */
     [[nodiscard]] std::vector<URL> urlsByScanningWithGlobPattern() const noexcept;
 
-    [[nodiscard]] static URL urlFromPath(std::string_view const path) noexcept;
-    [[nodiscard]] static URL urlFromWPath(std::wstring_view const path) noexcept;
-
     static void setUrlForCurrentWorkingDirectory(URL url) noexcept;
     [[nodiscard]] static URL urlFromCurrentWorkingDirectory() noexcept;
     [[nodiscard]] static URL urlFromResourceDirectory() noexcept;
@@ -153,60 +206,24 @@ public:
      */
     [[nodiscard]] static std::vector<std::string> filenamesByScanningDirectory(std::string_view path) noexcept;
 
-    [[nodiscard]] static std::string nativePathFromPath(std::string_view path) noexcept;
-    [[nodiscard]] static std::wstring nativeWPathFromPath(std::string_view path) noexcept;
-
-    [[nodiscard]] friend bool operator==(URL const &lhs, URL const &rhs) noexcept
-    {
-        return lhs.value == rhs.value;
-    }
-
-    [[nodiscard]] friend auto operator<=>(URL const &lhs, URL const &rhs) noexcept
-    {
-        return lhs.value <=> rhs.value;
-    }
-
-    [[nodiscard]] friend URL operator/(URL const &lhs, URL const &rhs) noexcept
-    {
-        return lhs.urlByAppendingPath(rhs);
-    }
-
-    [[nodiscard]] friend URL operator/(URL const &lhs, std::string_view const &rhs) noexcept
-    {
-        return lhs.urlByAppendingPath(URL{rhs});
-    }
-
-    [[nodiscard]] friend std::string const &to_string(URL const &url) noexcept
-    {
-        return url.value;
-    }
-
-    friend std::ostream &operator<<(std::ostream &lhs, const URL &rhs)
-    {
-        return lhs << to_string(rhs);
-    }
-
 private:
-    std::string value;
-
     static URL _urlOfCurrentWorkingDirectory;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1
 
 template<>
-class std::hash<hi::URL> {
-public:
-    std::size_t operator()(hi::URL const &url) const noexcept
+struct std::hash<hi::URL> {
+    [[nodiscard]] size_t operator()(hi::URL const& rhs) const noexcept
     {
-        return url.hash();
+        return std::hash<hi::URI>{}(rhs);
     }
 };
 
 template<typename CharT>
-struct std::formatter<hi::URL, CharT> : std::formatter<std::string_view, CharT> {
-    auto format(hi::URL const &t, auto &fc)
+struct std::formatter<hi::URL, CharT> : std::formatter<hi::URI, CharT> {
+    auto format(hi::URL const& t, auto& fc)
     {
-        return std::formatter<std::string_view, CharT>::format(to_string(t), fc);
+        return std::formatter<hi::URI, CharT>::format(t, fc);
     }
 };

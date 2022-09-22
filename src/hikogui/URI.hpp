@@ -8,6 +8,7 @@
 #include "exception.hpp"
 #include "ranges.hpp"
 #include "hash.hpp"
+#include "strings.hpp"
 #include <string>
 #include <optional>
 #include <ranges>
@@ -252,9 +253,9 @@ public:
 
         [[nodiscard]] constexpr static std::vector<std::string> parse(std::string_view str)
         {
-            return make_vector<std::string>(str | std::views::split(std::string_view{"/"}) | std::views::transform([](auto&& x) {
-                                                return URI::decode(x);
-                                            }));
+            return make_vector<std::string>(std::views::transform(std::views::split(str, std::string_view{"/"}), [](auto&& x) {
+                return URI::decode(x);
+            }));
         }
 
         constexpr path_type(std::string_view str) noexcept : std::vector<std::string>(parse(str))
@@ -277,6 +278,11 @@ public:
         [[nodiscard]] constexpr bool double_absolute() const noexcept
         {
             return size() >= 3 and (*this)[0].empty() and (*this)[1].empty();
+        }
+
+        [[nodiscard]] constexpr bool is_root() const noexcept
+        {
+            return size() == 2 and (*this)[0].empty() and (*this)[1].empty();
         }
 
         [[nodiscard]] constexpr friend path_type merge(path_type base, path_type const& ref, bool base_has_authority) noexcept
@@ -410,14 +416,24 @@ public:
      * @note This constructor will normalize the URI
      * @throws uri_error When the URI can not be normalized due to a parse error.
      */
-    constexpr URI(std::string_view str)
+    constexpr explicit URI(std::string_view str)
     {
         parse(str);
     }
 
-    constexpr URI(std::string const& str) : URI(std::string_view{str}) {}
+    constexpr explicit URI(std::string const& str) : URI(std::string_view{str}) {}
 
-    constexpr URI(const char *str) : URI(std::string_view{str}) {}
+    constexpr explicit URI(const char *str) : URI(std::string_view{str}) {}
+
+    [[nodiscard]] constexpr bool empty() const noexcept
+    {
+        return not _scheme and not _authority and _path.empty() and not _query and not _fragment;
+    }
+
+    constexpr operator bool() const noexcept
+    {
+        return not empty();
+    }
 
     /** Get the scheme-component of the URI.
      *
@@ -577,6 +593,21 @@ public:
         target._fragment = ref._fragment;
 
         return target;
+    }
+
+    [[nodiscard]] constexpr friend bool operator==(URI const& lhs, std::string_view rhs) noexcept
+    {
+        return lhs == URI(rhs);
+    }
+
+    [[nodiscard]] constexpr friend auto operator<=>(URI const& lhs, std::string_view rhs) noexcept
+    {
+        return lhs == URI(rhs);
+    }
+
+    [[nodiscard]] constexpr friend URI operator/(URI const& base, std::string_view ref) noexcept
+    {
+        return base / URI(ref);
     }
 
     /** URI percent-encoding decode function.
