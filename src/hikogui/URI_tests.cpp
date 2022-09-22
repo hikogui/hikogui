@@ -20,7 +20,8 @@ TEST(URI, file_absolute_dir)
 {
     hilet u = URI("file:///C:/Program%20Files/RenderDoc/");
     ASSERT_EQ(u.scheme(), "file");
-    ASSERT_EQ(u.host(), "");
+    ASSERT_TRUE(u.authority());
+    ASSERT_EQ(u.authority()->host(), "");
     auto path = u.path();
     ASSERT_TRUE(path.absolute());
     ASSERT_EQ(path.size(), 5);
@@ -35,7 +36,8 @@ TEST(URI, file_absolute_dir_file)
 {
     hilet u = URI("file:///C:/Program%20Files/RenderDoc/renderdoc.dll");
     ASSERT_EQ(u.scheme(), "file");
-    ASSERT_EQ(u.host(), "");
+    ASSERT_TRUE(u.authority());
+    ASSERT_EQ(u.authority()->host(), "");
     auto path = u.path();
     ASSERT_TRUE(path.absolute());
     ASSERT_EQ(path.size(), 5);
@@ -50,7 +52,7 @@ TEST(URI, file_relative_dir)
 {
     hilet u = URI("file:C:/Program%20Files/RenderDoc/");
     ASSERT_EQ(u.scheme(), "file");
-    ASSERT_FALSE(u.host());
+    ASSERT_FALSE(u.authority());
     auto path = u.path();
     ASSERT_FALSE(path.absolute());
     ASSERT_EQ(path.size(), 4);
@@ -64,7 +66,7 @@ TEST(URI, file_relative_dir_file)
 {
     hilet u = URI("file:C:/Program%20Files/RenderDoc/renderdoc.dll");
     ASSERT_EQ(u.scheme(), "file");
-    ASSERT_FALSE(u.host());
+    ASSERT_FALSE(u.authority());
     auto path = u.path();
     ASSERT_FALSE(path.absolute());
     ASSERT_EQ(path.size(), 4);

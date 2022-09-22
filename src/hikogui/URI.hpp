@@ -7,8 +7,7 @@
 #include "cast.hpp"
 #include "exception.hpp"
 #include "ranges.hpp"
-#include "generator.hpp"
-#include "fixed_string.hpp"
+#include "hash.hpp"
 #include <string>
 #include <optional>
 #include <ranges>
@@ -20,21 +19,212 @@ namespace hi { inline namespace v1 {
 
 /**
  *
- * @note Maximum size of a URI is 65535 octets
  */
 class URI {
 public:
-    struct authority_type {
-        std::optional<std::string> userinfo;
-        std::string host;
-        std::optional<std::string> port;
+    class authority_type {
+    public:
+        constexpr authority_type() noexcept = default;
+        constexpr authority_type(authority_type const&) noexcept = default;
+        constexpr authority_type(authority_type&&) noexcept = default;
+        constexpr authority_type& operator=(authority_type const&) noexcept = default;
+        constexpr authority_type& operator=(authority_type&&) noexcept = default;
+
+        constexpr authority_type(std::string_view const& rhs) noexcept
+        {
+            parse(rhs);
+        }
+
+        // constexpr void normalize(std::optional<std::string> const& scheme) noexcept
+        //{
+        //     hi_not_implemented();
+        // }
+
+        [[nodiscard]] constexpr std::optional<std::string> const& userinfo() const noexcept
+        {
+            return _userinfo;
+        }
+
+        constexpr authority_type& set_userinfo(std::optional<std::string> const& rhs) noexcept
+        {
+            _userinfo = rhs;
+            return *this;
+        }
+
+        [[nodiscard]] constexpr std::string const& host() const noexcept
+        {
+            return _host;
+        }
+
+        constexpr authority_type& set_host(std::string const& rhs)
+        {
+            validate_host(rhs);
+            _host = to_lower(rhs);
+            return *this;
+        }
+
+        [[nodiscard]] constexpr std::optional<std::string> const& port() const noexcept
+        {
+            return _port;
+        }
+
+        constexpr authority_type& set_port(std::optional<std::string> const& rhs)
+        {
+            if (rhs) {
+                validate_port(*rhs);
+                _port = *rhs;
+            } else {
+                _port = {};
+            }
+            return *this;
+        }
+
+        [[nodiscard]] constexpr friend bool operator==(authority_type const&, authority_type const&) noexcept = default;
+        [[nodiscard]] constexpr friend auto operator<=>(authority_type const&, authority_type const&) noexcept = default;
+
+        [[nodiscard]] constexpr friend size_t to_string_size(authority_type const& rhs) noexcept
+        {
+            auto size = 0_uz;
+            if (rhs._userinfo) {
+                size += rhs._userinfo->size() + 1;
+            }
+            size += rhs._host.size();
+            if (rhs._port) {
+                size += rhs._port->size() + 1;
+            }
+            return size;
+        }
+
+        [[nodiscard]] constexpr friend std::string to_string(authority_type const& rhs) noexcept
+        {
+            auto r = std::string{};
+
+            if (rhs._userinfo) {
+                r += URI::encode<HI_SUB_DELIM, ':'>(*rhs._userinfo);
+                r += '@';
+            }
+
+            if (rhs._host.empty() or rhs._host.front() != '[') {
+                r += URI::encode<HI_SUB_DELIM>(rhs._host);
+            } else {
+                r += URI::encode<HI_SUB_DELIM, '[', ']', ':'>(rhs._host);
+            }
+
+            if (rhs._port) {
+                r += ':';
+                r += *rhs._port;
+            }
+
+            return r;
+        }
+
+    private:
+        using const_iterator = std::string_view::const_iterator;
+
+        std::optional<std::string> _userinfo = {};
+        std::string _host = {};
+        std::optional<std::string> _port = {};
+
+        [[nodiscard]] constexpr static void validate_host(std::string_view str)
+        {
+            if (str.starts_with('[') and not str.ends_with(']')) {
+                throw uri_error("The host-component starts with '[' has missing ']' at end");
+            } else if (str.ends_with(']') and str.starts_with('[')) {
+                throw uri_error("The host-component ends with ']' has missing '[' at start");
+            }
+        }
+
+        [[nodiscard]] constexpr static void validate_port(std::string_view str)
+        {
+            for (auto c : str) {
+                if (not(c >= '0' and c <= '9')) {
+                    throw uri_error("The port-component contains a non-digit.");
+                }
+            }
+        }
+
+        /** Parse a URI userinfo part.
+         *
+         * @param str Substring of the URI starting at the potential userinfo.
+         * @return The number of characters in the userinfo.
+         * @retval 0 The userinfo is an empty string.
+         * @retval -1 There is no userinfo
+         */
+        [[nodiscard]] constexpr const_iterator parse_userinfo(const_iterator first, const_iterator last) noexcept
+        {
+            for (auto it = first; it != last; ++it) {
+                if (hilet c = *it; c == '@') {
+                    set_userinfo(URI::decode(first, it));
+                    return it + 1; // Skip over '@'.
+                }
+            }
+
+            // Reached at end of URI, this is not a userinfo.
+            return first;
+        }
+
+        /** Parse a URI host part.
+         *
+         * @param str Substring of the URI starting at the potential host.
+         * @return The number of characters in the host.
+         * @retval 0 The host is an empty string.
+         */
+        [[nodiscard]] constexpr const_iterator parse_host(const_iterator first, const_iterator last) noexcept
+        {
+            if (first == last) {
+                return first;
+            }
+
+            auto it = first;
+            if (*it == '[') {
+                while (it != last) {
+                    if (*it == ']') {
+                        set_host(URI::decode(first, it + 1));
+                        return it + 1; // Skip over ']'.
+                    }
+                }
+                // End of URI mean this is not a host, interpret as path instead.
+                return first;
+
+            } else {
+                for (; it != last; ++it) {
+                    if (hilet c = *it; c == ':') {
+                        // End of host.
+                        set_host(URI::decode(first, it));
+                        return it;
+                    }
+                }
+
+                // End of URI means that the host is the last part of the URI
+                set_host(URI::decode(first, last));
+                return last;
+            }
+        }
+
+        [[nodiscard]] constexpr const_iterator parse_port(const_iterator first, const_iterator last) noexcept
+        {
+            set_port(std::string{first, last});
+            return last;
+        }
+
+        constexpr void parse(std::string_view rhs) noexcept
+        {
+            auto first = rhs.cbegin();
+            auto last = rhs.cend();
+            auto it = parse_userinfo(first, last);
+            it = parse_host(it, last);
+
+            if (it != last and *it == ':') {
+                it = parse_port(++it, last);
+            }
+        }
     };
 
     /** A path type.
      *
      *  Path string             | Segment list
      *  ----------------------- | -----------------
-     *  ""                      | [""]
+     *  ""                      | []
      *  "/"                     | ["", ""]
      *  "filename"              | ["filename"]
      *  "/filename"             | ["", "filename"]
@@ -46,83 +236,68 @@ public:
      *  "./"                    | [".", ""]
      *  "/./"                   | ["", ".", ""]
      *  "/./."                  | ["", ".", ".", ""]
+     *  ".."                    | ["..", ""]
+     *  "/.."                   | ["", "..", ""]
+     *  "../"                   | ["..", ""]
+     *  "/../"                  | ["", "..", ""]
+     *  "/../.."                | ["", "..", ".", ""]
      */
     class path_type : public std::vector<std::string> {
     public:
-        constexpr path_type() noexcept
-        {
-            emplace_back();
-        }
-
+        constexpr path_type() noexcept = default;
         constexpr path_type(path_type const&) noexcept = default;
         constexpr path_type(path_type&&) noexcept = default;
         constexpr path_type& operator=(path_type const&) noexcept = default;
         constexpr path_type& operator=(path_type&&) noexcept = default;
 
-        constexpr path_type(std::string_view str) noexcept
+        [[nodiscard]] constexpr static std::vector<std::string> parse(std::string_view str)
         {
-            reserve(std::ranges::count(str, '/') + 1);
-            auto offset = 0_uz;
-
-            // Check for leading slash.
-            if (str.starts_with('/')) {
-                ++offset;
-                emplace_back();
-            }
-
-            // Find all directories.
-            while (offset < str.size()) {
-                hilet slash_index = str.find('/', offset);
-                if (slash_index == std::string_view::npos) {
-                    break;
-                }
-                push_back(URI::decode(str.substr(offset, slash_index - offset)));
-                offset = slash_index + 1;
-            }
-
-            // Append filename.
-            auto filename = URI::decode(str.substr(offset));
-            hilet filename_is_directory = filename == "." or filename == "..";
-            push_back(std::move(filename));
-
-            // "." or ".." are directories, add an explicit trailing slash.
-            if (filename_is_directory) {
-                emplace_back();
-            }
+            return make_vector<std::string>(str | std::views::split(std::string_view{"/"}) | std::views::transform([](auto&& x) {
+                                                return URI::decode(x);
+                                            }));
         }
 
-        [[nodiscard]] constexpr bool empty() const noexcept
+        constexpr path_type(std::string_view str) noexcept : std::vector<std::string>(parse(str))
         {
-            hi_axiom(size() != 0);
-            return size() == 1 and front().empty();
+            if (size() == 1 and front().empty()) {
+                // An empty string will evaluate to a single segment.
+                clear();
+            }
+            if (not empty() and (back() == "." or back() == "..")) {
+                // "." and ".." are directories always terminate with a slash.
+                emplace_back();
+            }
         }
 
         [[nodiscard]] constexpr bool absolute() const noexcept
         {
-            hi_axiom(size() != 0);
             return size() >= 2 and front().empty();
         }
 
         [[nodiscard]] constexpr bool double_absolute() const noexcept
         {
-            hi_axiom(size() != 0);
             return size() >= 3 and (*this)[0].empty() and (*this)[1].empty();
         }
 
         [[nodiscard]] constexpr friend path_type merge(path_type base, path_type const& ref, bool base_has_authority) noexcept
         {
-            hi_axiom(base.size() != 0 and ref.size() != 0);
-
             if (base_has_authority and base.empty()) {
+                // A URL with an authority and empty path is implicitly the root path.
                 base.emplace_back();
-                base.insert(base.cend(), ref.cbegin(), ref.cend());
-
-            } else {
-                if (not base.empty()) {
-                    base.pop_back();
-                }
-                base.insert(base.cend(), ref.cbegin(), ref.cend());
+                base.emplace_back();
             }
+
+            if (not base.empty()) {
+                // Remove the (possibly empty) filename from the base.
+                base.pop_back();
+            }
+            base.insert(base.cend(), ref.cbegin(), ref.cend());
+
+            if (base.size() == 1 and base.front().empty()) {
+                // Empty ref-path added to root base-path, fix by appending an empty filename.
+                base.emplace_back();
+            }
+
             return base;
         }
 
@@ -177,154 +352,49 @@ public:
                 }
             }
 
+            if (path.size() == 1 and path.front().empty()) {
+                // After removing the ".." at the start of the path we are left with an empty segment.
+                path.clear();
+            }
+
             return path;
         }
 
-        [[nodiscard]] constexpr size_t encode_size() const noexcept
+        [[nodiscard]] constexpr friend size_t to_string_size(path_type const& rhs) noexcept
         {
             size_t r = 0_uz;
-            for (hilet& segment : *this) {
+            for (hilet& segment : rhs) {
                 r += segment.size();
             }
-            r += size() + 1;
+            r += rhs.size() + 1;
             return r;
         }
 
-        [[nodiscard]] constexpr std::string encode(bool has_scheme) const noexcept
+        /**
+         *
+         * @param has_scheme If true than the first segment may contain a ':' without percent encoding.
+         */
+        [[nodiscard]] constexpr friend std::string to_string(path_type const& rhs, bool has_scheme = false) noexcept
         {
-            hi_axiom(size() != 0);
-
             auto r = std::string{};
-            r.reserve(encode_size());
+            r.reserve(to_string_size(rhs));
 
-            auto it = cbegin();
-            if (absolute()) {
-                r += '/';
-                ++it;
-            }
+            auto segment_is_empty = false;
+            for (auto it = rhs.cbegin(); it != rhs.cend(); ++it) {
+                segment_is_empty = it->empty();
 
-            auto first_segment = true;
-            for (; it != cend(); ++it) {
-                if (first_segment) {
-                    first_segment = false;
-                    if (absolute() or has_scheme) {
-                        r += URI::encode<HI_PCHAR>(*it);
-                    } else {
-                        r += URI::encode<HI_SUB_DELIM, '@'>(*it);
-                    }
-
+                if (it == rhs.cbegin() and not has_scheme) {
+                    r += URI::encode<HI_SUB_DELIM, '@'>(*it);
                 } else {
-                    r += '/';
                     r += URI::encode<HI_PCHAR>(*it);
                 }
-            }
-
-            return r;
-        }
-    };
-
-    struct components_type {
-        std::optional<std::string> scheme;
-        std::optional<authority_type> authority;
-        path_type path;
-        std::optional<std::string> query;
-        std::optional<std::string> fragment;
-
-        [[nodiscard]] constexpr size_t encode_size(size_t size_hint) const noexcept
-        {
-            if (size_hint == 0) {
-                if (scheme) {
-                    size_hint += scheme->size();
-                    size_hint += 1;
-                }
-                if (authority) {
-                    size_hint += 2;
-                    if (authority->userinfo) {
-                        size_hint += authority->userinfo->size();
-                        size_hint += 1;
-                    }
-                    size_hint += authority->host.size();
-                    if (authority->port) {
-                        size_hint += authority->port->size();
-                        size_hint += 1;
-                    }
-                }
-                size_hint += path.encode_size();
-                size_hint += 1;
-
-                if (query) {
-                    size_hint += query->size();
-                    size_hint += 1;
-                }
-                if (fragment) {
-                    size_hint += fragment->size();
-                    size_hint += 1;
-                }
-            }
-
-            return size_hint;
-        }
-
-        /** Make a URI string from components.
-         */
-        [[nodiscard]] constexpr std::string encode(size_t size_hint = 0) const
-        {
-            auto r = std::string{};
-            r.reserve(encode_size(size_hint));
-
-            if (scheme) {
-                // get_scheme() already returns a scheme in lower-case.
-                if (not(URI::check_scheme_start(scheme->front()) and URI::check_scheme(*scheme))) {
-                    throw uri_error("Unexpected characters in scheme-component.");
-                }
-
-                r += *scheme;
-                r += ':';
-            }
-
-            if (authority) {
-                if (not(path.empty() or path.absolute())) {
-                    throw uri_error("A path-component in a URI with an authority-component must be empty or absolute.");
-                }
-
                 r += '/';
-                r += '/';
-                if (authority->userinfo) {
-                    r += URI::encode<HI_SUB_DELIM, ':'>(*authority->userinfo);
-                    r += '@';
-                }
-
-                if (authority->host.empty() or authority->host.front() != '[') {
-                    r += URI::encode<HI_SUB_DELIM>(authority->host);
-                } else {
-                    r += URI::encode<HI_SUB_DELIM, '[', ']', ':'>(authority->host);
-                }
-
-                if (authority->port) {
-                    if (not URI::check_port(*authority->port)) {
-                        throw uri_error("Unexpected characters in port-component.");
-                    }
-                    r += ':';
-                    r += *authority->port;
-                }
-
-            } else if (path.double_absolute()) {
-                throw uri_error(
-                    "A path-component in a URI without an authority-component may not start with a double slash '//'.");
             }
 
-            r += path.encode(to_bool(scheme));
-
-            if (query) {
-                r += '?';
-                r += URI::encode<HI_PCHAR, '/', '?'>(*query);
+            if (not r.empty() and not segment_is_empty) {
+                // The last path-component was a filename, remove the trailing slash '/'.
+                r.pop_back();
             }
-
-            if (fragment) {
-                r += '#';
-                r += URI::encode<HI_PCHAR, '/', '?'>(*fragment);
-            }
-
             return r;
         }
     };
@@ -335,109 +405,178 @@ public:
     constexpr URI& operator=(URI const&) noexcept = default;
     constexpr URI& operator=(URI&&) noexcept = default;
 
-    constexpr URI(std::in_place_t, std::string str) : _str(std::move(str))
+    /** Construct a URL from a string.
+     *
+     * @note This constructor will normalize the URI
+     * @throws uri_error When the URI can not be normalized due to a parse error.
+     */
+    constexpr URI(std::string_view str)
     {
-        parse();
+        parse(str);
     }
 
-    constexpr URI(components_type const& components) noexcept : URI(std::in_place_t{}, components.encode()) {}
+    constexpr URI(std::string const& str) : URI(std::string_view{str}) {}
 
-    /** Construct a URL from a string.
-     *
-     * @note This constructor will normalize the URI
-     * @throws uri_error When the URI can not be normalized due to a parse error.
-     */
-    constexpr URI(std::string str) : URI(URI{std::in_place_t{}, std::move(str)}.get_components()) {}
-
-    /** Construct a URL from a string.
-     *
-     * @note This constructor will normalize the URI
-     * @throws uri_error When the URI can not be normalized due to a parse error.
-     */
-    constexpr URI(char const *str) : URI(std::string{str}) {}
-
-    /** Construct a URL from a string.
-     *
-     * @note This constructor will normalize the URI
-     * @throws uri_error When the URI can not be normalized due to a parse error.
-     */
-    constexpr URI(std::string_view str) : URI(std::string{str}) {}
+    constexpr URI(const char *str) : URI(std::string_view{str}) {}
 
     /** Get the scheme-component of the URI.
      *
      * @return The optional and lower-cased scheme-component.
      */
-    [[nodiscard]] constexpr std::optional<std::string> scheme() const noexcept
+    [[nodiscard]] constexpr std::optional<std::string> const& scheme() const noexcept
     {
-        return get_scheme();
+        return _scheme;
+    }
+
+    /** Get the scheme-component of the URI.
+     *
+     */
+    constexpr URI& set_scheme(std::optional<std::string> const& rhs)
+    {
+        if (rhs) {
+            validate_scheme(*rhs);
+            _scheme = *rhs;
+        } else {
+            _scheme = {};
+        }
+        return *this;
     }
 
     /** Get the authority-component of the URI.
      *
      * @return The optional and decoded userinfo, host and port..
      */
-    [[nodiscard]] constexpr std::optional<authority_type> authority() const noexcept
+    [[nodiscard]] constexpr std::optional<authority_type> const& authority() const noexcept
     {
-        return get_authority();
+        return _authority;
     }
 
-    /** Get the userinfo-component of the URI.
-     *
-     * @return The optional and decoded userinfo-component.
-     */
-    [[nodiscard]] constexpr std::optional<std::string> userinfo() const noexcept
+    constexpr URI& set_authority(std::optional<authority_type> const& rhs) noexcept
     {
-        return get_userinfo();
+        _authority = rhs;
+        return *this;
     }
 
-    /** Get the host-component of the URI.
-     *
-     * @return The optional and decoded host-component.
-     */
-    [[nodiscard]] constexpr std::optional<std::string> host() const noexcept
+    [[nodiscard]] constexpr path_type const& path() const noexcept
     {
-        return get_host();
+        return _path;
     }
 
-    /** Get the port-component of the URI.
-     *
-     * @return The optional port-component.
-     */
-    [[nodiscard]] constexpr std::optional<std::string> port() const noexcept
+    constexpr URI& set_path(path_type const& rhs)
     {
-        return get_port();
-    }
-
-    [[nodiscard]] constexpr path_type path() const noexcept
-    {
-        return get_path();
+        validate_path(rhs, to_bool(_authority));
+        _path = rhs;
+        return *this;
     }
 
     /** Get the query-component of the URI.
      *
      * @return The optional and decoded query-component.
      */
-    [[nodiscard]] constexpr std::optional<std::string> query() const noexcept
+    [[nodiscard]] constexpr std::optional<std::string> const& query() const noexcept
     {
-        return get_query();
+        return _query;
+    }
+
+    constexpr URI& set_query(std::optional<std::string> const& rhs) noexcept
+    {
+        _query = rhs;
+        return *this;
     }
 
     /** Get the fragment-component of the URI.
      *
      * @return The optional and decoded fragment-component.
      */
-    [[nodiscard]] constexpr std::optional<std::string> fragment() const noexcept
+    [[nodiscard]] constexpr std::optional<std::string> const& fragment() const noexcept
     {
-        return get_fragment();
+        return _fragment;
     }
 
-    /** Get the components of the URI.
-     *
-     * @return The full set of components.
-     */
-    [[nodiscard]] constexpr components_type components() const noexcept
+    constexpr URI& set_fragment(std::optional<std::string> const& rhs) noexcept
     {
-        return get_components();
+        _fragment = rhs;
+        return *this;
+    }
+
+    [[nodiscard]] constexpr friend std::string to_string(URI const& rhs) noexcept
+    {
+        auto r = std::string{};
+        r.reserve(to_string_size(rhs));
+
+        if (rhs._scheme) {
+            r += *rhs._scheme;
+            r += ':';
+        }
+
+        if (rhs._authority) {
+            r += '/';
+            r += '/';
+            r += to_string(*rhs._authority);
+        }
+
+        r += to_string(rhs._path, to_bool(rhs._scheme));
+
+        if (rhs._query) {
+            r += '?';
+            r += URI::encode<HI_PCHAR, '/', '?'>(*rhs._query);
+        }
+
+        if (rhs._fragment) {
+            r += '#';
+            r += URI::encode<HI_PCHAR, '/', '?'>(*rhs._fragment);
+        }
+
+        return r;
+    }
+
+    friend std::ostream& operator<<(std::ostream& lhs, URI const& rhs) noexcept
+    {
+        return lhs << to_string(rhs);
+    }
+
+    [[nodiscard]] constexpr friend bool operator==(URI const& lhs, URI const& rhs) noexcept = default;
+    [[nodiscard]] constexpr friend auto operator<=>(URI const& lhs, URI const& rhs) noexcept = default;
+
+    [[nodiscard]] constexpr friend URI operator/(URI const& base, URI const& ref) noexcept
+    {
+        auto target = URI{};
+
+        if (ref._scheme) {
+            target._scheme = ref._scheme;
+            target._authority = ref._authority;
+            target._path = remove_dot_segments(ref._path);
+            target._query = ref._query;
+        } else {
+            if (ref._authority) {
+                target._authority = ref._authority;
+                target._path = remove_dot_segments(ref._path);
+                target._query = ref._query;
+
+            } else {
+                if (ref._path.empty()) {
+                    target._path = base._path;
+                    if (ref._query) {
+                        target._query = ref._query;
+                    } else {
+                        target._query = base._query;
+                    }
+                } else {
+                    if (ref._path.absolute()) {
+                        target._path = remove_dot_segments(ref._path);
+                    } else {
+                        target._path = remove_dot_segments(merge(base._path, ref._path, to_bool(base._authority)));
+                    }
+                    target._query = ref._query;
+                }
+                target._authority = base._authority;
+            }
+            target._scheme = base._scheme;
+        }
+
+        target._fragment = ref._fragment;
+
+        return target;
     }
 
     /** URI percent-encoding decode function.
@@ -445,14 +584,19 @@ public:
      * @param str A percent-encoded string.
      * @return A UTF-8 encoded string.
      */
-    [[nodiscard]] constexpr static std::string decode(std::string_view str)
+    [[nodiscard]] constexpr static std::string
+        decode(auto first, auto last) requires std::is_same_v < std::decay_t<decltype(*first)>,
+    char >
     {
         auto r = std::string{};
-        r.reserve(str.size());
+        if constexpr (requires { std::distance(first, last); }) {
+            r.reserve(std::distance(first, last));
+        }
 
         auto state = 2;
         uint8_t code_unit = 0;
-        for (auto c : str) {
+        for (auto it = first; it != last; ++it) {
+            hilet c = *it;
             switch (state) {
             case 0:
                 [[fallthrough]];
@@ -488,19 +632,32 @@ public:
         return r;
     }
 
+    /** URI percent-encoding decode function.
+     *
+     * @param str A percent-encoded string.
+     * @return A UTF-8 encoded string.
+     */
+    [[nodiscard]] constexpr static std::string decode(auto&& range)
+    {
+        return decode(std::ranges::begin(range), std::ranges::end(range));
+    }
+
     /** URI encode a component.
      *
      * @tparam extras The extra characters beyond the unreserved characters to pct-encode.
      * @param rhs An UTF-8 encoded string, a component or sub-component of a URI.
      * @return A percent-encoded string.
      */
-    template<char... Extras>
-    [[nodiscard]] constexpr static std::string encode(std::string_view rhs) noexcept
+    template<char... Extras, typename It, typename ItEnd>
+    [[nodiscard]] constexpr static std::string encode(It first, ItEnd last) noexcept
     {
         auto r = std::string{};
-        r.reserve(rhs.size());
+        if constexpr (requires { std::distance(first, last); }) {
+            r.reserve(std::distance(first, last));
+        }
 
-        for (auto c : rhs) {
+        for (auto it = first; it != last; ++it) {
+            hilet c = *it;
             // clang-format off
             if (((
                     (c >= 'a' and c <= 'z') or
@@ -530,267 +687,82 @@ public:
         return r;
     }
 
-    [[nodiscard]] constexpr friend std::string to_string(URI const& rhs) noexcept
+    /** URI encode a component.
+     *
+     * @tparam extras The extra characters beyond the unreserved characters to pct-encode.
+     * @param rhs An UTF-8 encoded string, a component or sub-component of a URI.
+     * @return A percent-encoded string.
+     */
+    template<char... Extras, typename Range>
+    [[nodiscard]] constexpr static std::string encode(Range&& range) noexcept
     {
-        return rhs._str;
-    }
-
-    friend std::ostream& operator<<(std::ostream& lhs, URI const& rhs) noexcept
-    {
-        return lhs << rhs._str;
-    }
-
-    [[nodiscard]] constexpr friend bool operator==(URI const& lhs, URI const& rhs) noexcept
-    {
-        return lhs._str == rhs._str;
-    }
-
-    [[nodiscard]] constexpr friend auto operator<=>(URI const& lhs, URI const& rhs) noexcept
-    {
-        return lhs._str <=> rhs._str;
-    }
-
-    [[nodiscard]] constexpr friend URI operator/(URI const& base, URI const& ref) noexcept
-    {
-        auto T = components_type{};
-        auto B = base.components();
-        auto R = ref.components();
-
-        // non-strict parses ignore scheme
-        // if (R_scheme == B_scheme) {
-        //    R_scheme = {};
-        //}
-
-        if (R.scheme) {
-            T.scheme = R.scheme;
-            T.authority = R.authority;
-            T.path = remove_dot_segments(R.path);
-            T.query = R.query;
-        } else {
-            if (R.authority) {
-                T.authority = R.authority;
-                T.path = remove_dot_segments(R.path);
-                T.query = R.query;
-
-            } else {
-                if (R.path.empty()) {
-                    T.path = B.path;
-                    if (R.query) {
-                        T.query = R.query;
-                    } else {
-                        T.query = B.query;
-                    }
-                } else {
-                    if (R.path.absolute()) {
-                        T.path = remove_dot_segments(R.path);
-                    } else {
-                        T.path = remove_dot_segments(merge(B.path, R.path, to_bool(B.authority)));
-                    }
-                    T.query = R.query;
-                }
-                T.authority = B.authority;
-            }
-            T.scheme = B.scheme;
-        }
-
-        T.fragment = R.fragment;
-
-        return {T};
+        return encode<Extras...>(std::ranges::begin(range), std::ranges::end(range));
     }
 
 private:
-    using const_iterator = std::string::const_iterator;
+    using const_iterator = std::string_view::const_iterator;
 
-    std::string _str = {};
+    std::optional<std::string> _scheme;
+    std::optional<authority_type> _authority;
+    path_type _path;
+    std::optional<std::string> _query;
+    std::optional<std::string> _fragment;
 
-    uint16_t _scheme_size = 0;
-    uint16_t _userinfo_size = 0;
-    uint16_t _host_size = 0;
-    uint16_t _port_size = 0;
-    uint16_t _path_size = 0;
-    uint16_t _query_size = 0;
-    uint16_t _fragment_size = 0;
-
-    uint8_t _has_scheme : 1 = 0;
-    uint8_t _has_host : 1 = 0;
-    uint8_t _has_userinfo : 1 = 0;
-    uint8_t _has_port : 1 = 0;
-    uint8_t _has_query : 1 = 0;
-    uint8_t _has_fragment : 1 = 0;
-
-    [[nodiscard]] constexpr uint16_t userinfo_offset() const noexcept
+    [[nodiscard]] constexpr friend size_t to_string_size(URI const& rhs) noexcept
     {
-        // [ scheme ":" ] [ "//" ]
-        return _has_scheme + _scheme_size + (_has_host << 1);
-    }
-
-    [[nodiscard]] constexpr uint16_t host_offset() const noexcept
-    {
-        // userinfo_offset() [ userinfo "@" ]
-        return userinfo_offset() + _userinfo_size + _has_userinfo;
-    }
-
-    [[nodiscard]] constexpr uint16_t port_offset() const noexcept
-    {
-        // host_offset() [ host ] [ ":" ]
-        return host_offset() + _host_size + _has_port;
-    }
-
-    [[nodiscard]] constexpr uint16_t path_offset() const noexcept
-    {
-        // port_offset() [ port ]
-        return port_offset() + _port_size;
-    }
-
-    [[nodiscard]] constexpr uint16_t query_offset() const noexcept
-    {
-        // path_offset() [ path ] [ "?" ]
-        return path_offset() + _path_size + _has_query;
-    }
-
-    [[nodiscard]] constexpr uint16_t fragment_offset() const noexcept
-    {
-        // query_offset() [ query ] [ "#" ]
-        return query_offset() + _query_size + _has_fragment;
-    }
-
-    [[nodiscard]] constexpr std::string_view subview(uint16_t pos, uint16_t count) const noexcept
-    {
-        return std::string_view{_str}.substr(pos, count);
-    }
-
-    [[nodiscard]] constexpr std::string_view raw_scheme() const noexcept
-    {
-        return subview(0, _scheme_size);
-    }
-
-    [[nodiscard]] constexpr std::string_view raw_userinfo() const noexcept
-    {
-        return subview(userinfo_offset(), _userinfo_size);
-    }
-
-    [[nodiscard]] constexpr std::string_view raw_host() const noexcept
-    {
-        return subview(host_offset(), _host_size);
-    }
-
-    [[nodiscard]] constexpr std::string_view raw_port() const noexcept
-    {
-        return subview(port_offset(), _port_size);
-    }
-
-    [[nodiscard]] constexpr std::string_view raw_path() const noexcept
-    {
-        return subview(path_offset(), _path_size);
-    }
-
-    [[nodiscard]] constexpr std::string_view raw_query() const noexcept
-    {
-        return subview(query_offset(), _query_size);
-    }
-
-    [[nodiscard]] constexpr std::string_view raw_fragment() const noexcept
-    {
-        return subview(fragment_offset(), _fragment_size);
-    }
-
-    [[nodiscard]] constexpr std::optional<std::string> get_scheme() const
-    {
-        if (_has_scheme) {
-            return to_lower(raw_scheme());
-        } else {
-            return {};
+        auto size = 0_uz;
+        if (rhs._scheme) {
+            size += rhs._scheme->size() + 1;
         }
-    }
-
-    [[nodiscard]] constexpr std::optional<std::string> get_userinfo() const
-    {
-        hi_axiom(_has_host);
-        if (_has_userinfo) {
-            return decode(raw_userinfo());
-        } else {
-            return {};
+        if (rhs._authority) {
+            size += to_string_size(*rhs._authority) + 2;
         }
-    }
+        size += to_string_size(rhs._path);
 
-    [[nodiscard]] constexpr std::optional<std::string> get_host() const
-    {
-        if (_has_host) {
-            return decode(raw_host());
-        } else {
-            return {};
+        if (rhs._query) {
+            size += rhs._query->size() + 1;
         }
-    }
-
-    [[nodiscard]] constexpr std::optional<std::string> get_port() const
-    {
-        if (_has_port) {
-            return std::string{raw_port()};
-        } else {
-            return {};
+        if (rhs._fragment) {
+            size += rhs._fragment->size() + 1;
         }
+
+        return size;
     }
 
-    [[nodiscard]] constexpr std::optional<authority_type> get_authority() const
+    [[nodiscard]] constexpr static bool is_scheme_start(char c) noexcept
     {
-        if (_has_host) {
-            return authority_type{get_userinfo(), decode(raw_host()), get_port()};
-        } else {
-            return {};
+        return (c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z');
+    }
+
+    [[nodiscard]] constexpr static bool is_scheme(char c) noexcept
+    {
+        return is_scheme_start(c) or (c >= '0' and c <= '9') or c == '+' or c == '-' or c == '.';
+    }
+
+    [[nodiscard]] constexpr static void validate_scheme(std::string_view str)
+    {
+        if (str.empty()) {
+            throw uri_error("The scheme-component is not allowed to be empty (it is allowed to not exist).");
         }
-    }
-
-    [[nodiscard]] constexpr path_type get_path() const noexcept
-    {
-        return path_type{raw_path()};
-    }
-
-    [[nodiscard]] constexpr std::optional<std::string> get_query() const
-    {
-        if (_has_query) {
-            return decode(raw_query());
-        } else {
-            return {};
+        if (not is_scheme_start(str.front())) {
+            throw uri_error("The scheme-component does not start with [a-zA-Z].");
         }
-    }
-
-    [[nodiscard]] constexpr std::optional<std::string> get_fragment() const
-    {
-        if (_has_fragment) {
-            return decode(raw_fragment());
-        } else {
-            return {};
-        }
-    }
-
-    [[nodiscard]] constexpr components_type get_components() const
-    {
-        return {get_scheme(), get_authority(), get_path(), get_query(), get_fragment()};
-    }
-
-    [[nodiscard]] constexpr static bool check_scheme_start(char c) noexcept
-    {
-        return (c >= 'a' and c <= 'z');
-    }
-
-    [[nodiscard]] constexpr static bool check_scheme(std::string_view str) noexcept
-    {
-        for (hilet c : str) {
-            if (not((c >= 'a' and c <= 'z') or (c >= '0' and c <= '9') or c == '+' or c == '-' or c == '.')) {
-                return false;
+        for (auto c : str) {
+            if (not is_scheme(c)) {
+                throw uri_error("The scheme-component contains a character outside [a-zA-Z0-9.+-].");
             }
         }
-        return true;
     }
 
-    [[nodiscard]] constexpr static bool check_port(std::string_view str) noexcept
+    [[nodiscard]] constexpr static void validate_path(path_type const& path, bool has_authority)
     {
-        for (hilet c : str) {
-            if (not(c >= '0' and c <= '9')) {
-                return false;
+        if (has_authority) {
+            if (not(path.empty() or path.absolute())) {
+                throw uri_error("A path-component in a URI with an authority-component must be empty or absolute.");
             }
+        } else if (path.double_absolute()) {
+            throw uri_error("A path-component in a URI without an authority-component may not start with a double slash '//'.");
         }
-        return true;
     }
 
     /** Parse a URI scheme part.
@@ -799,12 +771,11 @@ private:
      * @return The number of characters in the scheme.
      * @retval -1 There is no scheme.
      */
-    [[nodiscard]] constexpr const_iterator parse_scheme(const_iterator first, const_iterator last) noexcept
+    [[nodiscard]] constexpr const_iterator parse_scheme(const_iterator first, const_iterator last)
     {
         for (auto it = first; it != last; ++it) {
             if (hilet c = *it; c == ':') {
-                _scheme_size = narrow_cast<uint16_t>(std::distance(first, it));
-                _has_scheme = 1;
+                set_scheme(std::string{first, it});
                 return it + 1; // Skip over ':'.
 
             } else if (c == '/' or c == '?' or c == '#') {
@@ -817,162 +788,60 @@ private:
         return first;
     }
 
-    /** Parse a URI userinfo part.
-     *
-     * @param str Substring of the URI starting at the potential userinfo.
-     * @return The number of characters in the userinfo.
-     * @retval 0 The userinfo is an empty string.
-     * @retval -1 There is no userinfo
-     */
-    [[nodiscard]] constexpr const_iterator parse_userinfo(const_iterator first, const_iterator last) noexcept
-    {
-        hi_axiom(_has_host);
-
-        for (auto it = first; it != last; ++it) {
-            if (hilet c = *it; c == '@') {
-                _userinfo_size = narrow_cast<uint16_t>(std::distance(first, it));
-                _has_userinfo = 1;
-                return it + 1; // Skip over '@'.
-
-            } else if (c == '/' or c == '?' or c == '#') {
-                // Invalid character, this is not a userinfo.
-                return first;
-            }
-        }
-
-        // Reached at end of URI, this is not a userinfo.
-        return first;
-    }
-
-    /** Parse a URI host part.
-     *
-     * @param str Substring of the URI starting at the potential host.
-     * @return The number of characters in the host.
-     * @retval 0 The host is an empty string.
-     */
-    [[nodiscard]] constexpr const_iterator parse_host(const_iterator first, const_iterator last) noexcept
-    {
-        hi_axiom(_has_host);
-
-        if (first == last) {
-            return first;
-        }
-
-        auto it = first;
-        if (*it == '[') {
-            while (it != last) {
-                if (*it == ']') {
-                    _host_size = narrow_cast<uint16_t>(std::distance(first, it + 1));
-                    return it + 1; // Skip over ']'.
-                }
-            }
-            // End of URI mean this is not a host, interpret as path instead.
-            return first;
-
-        } else {
-            for (; it != last; ++it) {
-                if (hilet c = *it; c == ':' or c == '/' or c == '?' or c == '#') {
-                    // End of host.
-                    _host_size = narrow_cast<uint16_t>(std::distance(first, it));
-                    return it;
-                }
-            }
-
-            // End of URI means that the host is the last part of the URI
-            _host_size = narrow_cast<uint16_t>(std::distance(first, last));
-            return last;
-        }
-    }
-
-    [[nodiscard]] constexpr const_iterator parse_port(const_iterator first, const_iterator last) noexcept
+    [[nodiscard]] constexpr const_iterator parse_authority(const_iterator first, const_iterator last)
     {
         for (auto it = first; it != last; it++) {
             if (hilet c = *it; c == '/' or c == '?' or c == '#') {
-                _port_size = narrow_cast<uint16_t>(std::distance(first, it));
-                _has_port = 1;
+                set_authority(authority_type{std::string_view{first, it}});
                 return it;
             }
         }
 
-        _port_size = narrow_cast<uint16_t>(std::distance(first, last));
-        _has_port = 1;
+        set_authority(authority_type{std::string_view{first, last}});
         return last;
     }
 
-    [[nodiscard]] constexpr const_iterator parse_path(const_iterator first, const_iterator last) noexcept
+    [[nodiscard]] constexpr const_iterator parse_path(const_iterator first, const_iterator last)
     {
-        if (first == last) {
-            return last;
-        }
-
         for (auto it = first; it != last; it++) {
             if (hilet c = *it; c == '?' or c == '#') {
-                _path_size = narrow_cast<uint16_t>(std::distance(first, it));
+                set_path(path_type{std::string_view{first, it}});
                 return it;
             }
         }
 
-        _path_size = narrow_cast<uint16_t>(std::distance(first, last));
+        set_path(path_type{std::string_view{first, last}});
         return last;
     }
 
-    [[nodiscard]] constexpr const_iterator parse_query(const_iterator first, const_iterator last) noexcept
+    [[nodiscard]] constexpr const_iterator parse_query(const_iterator first, const_iterator last)
     {
         for (auto it = first; it != last; it++) {
             if (hilet c = *it; c == '#') {
-                _query_size = narrow_cast<uint16_t>(std::distance(first, it));
-                _has_query = 1;
+                set_query(URI::decode(first, it));
                 return it;
             }
         }
 
-        _query_size = narrow_cast<uint16_t>(std::distance(first, last));
-        _has_query = 1;
+        set_query(URI::decode(first, last));
         return last;
     }
 
-    [[nodiscard]] constexpr const_iterator parse_fragment(const_iterator first, const_iterator last) noexcept
+    [[nodiscard]] constexpr const_iterator parse_fragment(const_iterator first, const_iterator last)
     {
-        _fragment_size = narrow_cast<uint16_t>(std::distance(first, last));
-        _has_fragment = 1;
+        set_fragment(URI::decode(first, last));
         return last;
     }
 
-    constexpr void parse()
+    constexpr void parse(std::string_view str)
     {
-        _has_scheme = 0;
-        _has_userinfo = 0;
-        _has_host = 0;
-        _has_port = 0;
-        _has_query = 0;
-        _has_fragment = 0;
-
-        _scheme_size = 0;
-        _userinfo_size = 0;
-        _host_size = 0;
-        _port_size = 0;
-        _path_size = 0;
-        _query_size = 0;
-        _fragment_size = 0;
-
-        if (_str.size() >= std::numeric_limits<uint16_t>::max()) {
-            throw uri_error("URI is larger than 65535 bytes.");
-        }
-
-        auto first = _str.cbegin();
-        auto last = _str.cend();
+        auto first = str.cbegin();
+        auto last = str.cend();
         auto it = parse_scheme(first, last);
 
         if (std::distance(it, last) >= 2 and it[0] == '/' and it[1] == '/') {
             it += 2;
-
-            _has_host = 1;
-            it = parse_userinfo(it, last);
-            it = parse_host(it, last);
-
-            if (it != last and *it == ':') {
-                it = parse_port(++it, last);
-            }
+            it = parse_authority(it, last);
         }
 
         it = parse_path(it, last);
@@ -998,7 +867,7 @@ template<>
 struct std::hash<hi::URI> {
     [[nodiscard]] size_t operator()(hi::URI const& rhs) const noexcept
     {
-        return std::hash<std::string>{}(rhs._str);
+        return std::hash<std::string>{}(to_string(rhs));
     }
 };
 
