@@ -238,6 +238,71 @@ template<std::size_t N> using make_intxx_t = typename make_intxx<N>::type;
 template<std::size_t N> using make_uintxx_t = typename make_uintxx<N>::type;
 template<std::size_t N> using make_floatxx_t = typename make_floatxx<N>::type;
 
+/** Get an integer type that will fit all values from all template parameters.
+ *
+ * If there is a mix of signed and unsigned integer types, then:
+ * 1. all unsigned integers are upgraded to a larger signed integer, then
+ * 2. the largest signed integer is returned in `type`.
+ *
+ * If all integers are unsigned or all integers are signed, then:
+ * 1. the largest integer is returned in `type`.
+ *
+ * @tparam L An integer type.
+ * @tparam R Other integer types.
+ */
+template<typename L, typename... R>
+struct common_integer;
+
+template<std::integral T>
+struct common_integer<T,T> {
+    using type = T;
+};
+
+template<std::unsigned_integral L, std::unsigned_integral R>
+struct common_integer<L,R> {
+    using type = std::conditional_t<(sizeof(L) > sizeof(R)), L, R>;
+};
+
+template<std::signed_integral L, std::signed_integral R>
+struct common_integer<L,R> {
+    using type = std::conditional_t<(sizeof(L) > sizeof(R)), L, R>;
+};
+
+template<std::unsigned_integral L, std::signed_integral R>
+struct common_integer<L,R> {
+    using _left_type =
+        std::conditional_t<(sizeof(L) < sizeof(short)), short,
+        std::conditional_t<(sizeof(L) < sizeof(int)), int,
+        std::conditional_t<(sizeof(L) < sizeof(long)), long, long long>>>;
+        
+    using type = common_integer<_left_type, R>::type;
+};
+
+template<std::signed_integral L, std::unsigned_integral R>
+struct common_integer<L,R> {
+    using type = common_integer<R, L>::type;
+};
+
+template<std::integral L, std::integral M, std::integral... R>
+struct common_integer<L, M, R...> {
+    using type = common_integer<L, typename common_integer<M, R...>::type>::type;
+};
+
+/** Get an integer type that will fit all values from all template parameters.
+ *
+ * If there is a mix of signed and unsigned integer types, then:
+ * 1. all unsigned integers are upgraded to a larger signed integer, then
+ * 2. the largest signed integer is returned.
+ *
+ * If all integers are unsigned or all integers are signed, then:
+ * 1. the largest integer is returned.
+ *
+ * @tparam L An integer type.
+ * @tparam R Other integer types.
+ */
+template<std::integral L, std::integral... R>
+using common_integer_t = common_integer<L, R...>::type;
+
 
 /** Type-trait to copy const volitile qualifiers from one type to another.
  */
