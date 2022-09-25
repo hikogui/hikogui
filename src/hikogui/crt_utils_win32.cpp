@@ -11,6 +11,7 @@
 #include "console.hpp"
 #include "log.hpp"
 #include "thread.hpp"
+#include "exception.hpp"
 
 namespace hi::inline v1 {
 
@@ -31,6 +32,9 @@ static void configure_current_working_directory() noexcept
 std::pair<int, char **> crt_start(int, char **, void *instance, int show_cmd)
 {
     set_thread_name("main");
+
+    // Switch out the terminate handler with one that can print an error message.
+    old_terminate_handler = std::set_terminate(hi::terminate_handler);
 
     // lpCmdLine does not handle UTF-8 command line properly.
     // So use GetCommandLineW() to get wide string arguments.

@@ -2,12 +2,45 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+#include "utility.hpp"
 #include <exception>
 #include <stdexcept>
+#include <atomic>
 
 #pragma once
 
-namespace hi::inline v1 {
+namespace hi {
+inline namespace v1 {
+
+/** Message to show when the application is terminated.
+ */
+inline std::atomic<char const *> terminate_message = nullptr;
+
+
+/** Set the message to display when the application terminates.
+ *
+ * The std::terminate() handler will display the __FILE__, __LINE__
+ * number and the message to the console or a popup dialogue.
+ *
+ * @param msg The message to display.
+ */
+#define hi_set_terminate_message(msg) \
+    ::terminate_message.store(__FILE__ ":" hi_stringify(__LINE__) ":" msg, std::memory_order::relaxed)
+
+/** The old terminate handler.
+ *
+ * This is the handlr returned by `std::set_terminate()`.
+ */
+inline std::terminate_handler old_terminate_handler;
+
+/** The HikoGUI terminate handler.
+ *
+ * This handler will print an error message on the console or popup a dialogue box..
+ *
+ * @note Use `hi_set_terminate_message()` to set a message.
+ */
+[[noreturn]] void terminate_handler() noexcept;
+
 
 /** Exception thrown during parsing on an error.
  * This exception is often thrown due to an error in the syntax
@@ -91,4 +124,4 @@ public:
     using std::runtime_error::runtime_error;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

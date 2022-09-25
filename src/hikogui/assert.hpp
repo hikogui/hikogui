@@ -9,6 +9,7 @@
 #include "utils.hpp"
 #include "utility.hpp"
 #include "type_traits.hpp"
+#include "exception.hpp"
 #include <exception>
 
 namespace hi::inline v1 {
