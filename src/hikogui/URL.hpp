@@ -65,7 +65,7 @@ public:
             // No root-name.
             if (not path.root_directory().empty()) {
                 // An absolute path should start with the file: scheme.
-                r += "file:/";
+                r += "file:" + path.root_directory().generic_string();
             } else {
                 // A relative path should not be prefixed with a scheme.
                 ;
@@ -74,13 +74,13 @@ public:
         } else if (hilet i = root_name.find(':'); i != std::string::npos) {
             if (i == 1) {
                 // Root name is a drive-letter, followed by potentially a relative path.
-                r += "file:///" + root_name;
+                r += "file:///" + root_name + path.root_directory().generic_string();
             } else {
                 throw url_error("Paths containing a device are not allowed to be converted to a URL.");
             }
         } else {
             // Root name is a server.
-            r += "file://" + root_name + "/";
+            r += "file://" + root_name + path.root_directory().generic_string();
             if (not path.root_directory().empty()) {
                 throw url_error("Invalid path contains server name without a root directory.");
             }
@@ -161,44 +161,46 @@ public:
 
         // Find the drive letter.
         auto empty_segment = false;
-        do {
-            if (it != last) {
-                validate_file_segment(*it);
-                empty_segment = it->empty();
+        while (it != last) {
+            validate_file_segment(*it);
+            empty_segment = it->empty();
 
-                if (it == first and it->empty() and has_root_name) {
-                    // If a root-name is already defined, skip the root-directory slash.
-                    ++it;
-                    continue;
+            if (it == first and empty_segment) {
+                // Skip leading '/' in front of drive letter.
+                ++it;
 
-                } else if (auto i = it->find(':'); i != std::string::npos) {
-                    // Found a drive letter.
-                    if (i != 1) {
-                        throw url_error("file URL contains a device name which is a security issue.");
-                    }
-
-                    if (has_root_name or p.absolute()) {
-                        r += it->front();
-                        // Use $ when the drive letter is on a server.
-                        r += has_root_name ? '$' : ':';
-                        // Add potentially a relative segment after the driver letter.
-                        r += it->substr(2);
-
-                    } else {
-                        // Take the drive letter and optional relative directory directly on relative paths.
-                        // C:dirname valid
-                        // C:/dirname valid
-                        // file:C:dirname valid
-                        // file:C:/dirname valid
-                        r += *it;
-                    }
-
-                    has_root_name = true;
-                    r += '/';
-                    ++it;
+            } else if (auto i = it->find(':'); i != std::string::npos) {
+                // Found a drive letter.
+                if (i != 1) {
+                    throw url_error("file URL contains a device name which is a security issue.");
                 }
+
+                if (has_root_name or p.absolute()) {
+                    r += it->front();
+                    // Use $ when the drive letter is on a server.
+                    r += has_root_name ? '$' : ':';
+                    // Add potentially a relative segment after the driver letter.
+                    r += it->substr(2);
+
+                } else {
+                    // Take the drive letter and optional relative directory directly on relative paths.
+                    // C:dirname valid
+                    // C:/dirname valid
+                    // file:C:dirname valid
+                    // file:C:/dirname valid
+                    r += *it;
+                }
+
+                has_root_name = true;
+                r += '/';
+                ++it;
+                break;
+
+            } else {
+                // Found a normal directory or filename.
+                break;
             }
-        } while (false);
+        }
 
         // The rest are directories followed by a single (optionally empty) filename
         for (; it != last; ++it) {

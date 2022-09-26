@@ -51,7 +51,7 @@ TEST(URL, glob2)
 {
     hilet executableDirectory = URL::url_from_executable_directory();
 
-    hilet txt_file_glob = executableDirectory / "**" / "*.txt";
+    hilet txt_file_glob = executableDirectory / "**/*.txt";
     auto txt_files = txt_file_glob.glob();
 
     ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) {
