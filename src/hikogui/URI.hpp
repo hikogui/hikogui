@@ -9,6 +9,7 @@
 #include "ranges.hpp"
 #include "hash.hpp"
 #include "strings.hpp"
+#include "concepts.hpp"
 #include <string>
 #include <optional>
 #include <ranges>
@@ -285,6 +286,34 @@ public:
             return size() == 2 and (*this)[0].empty() and (*this)[1].empty();
         }
 
+        [[nodiscard]] constexpr std::optional<std::string> filename() const noexcept
+        {
+            if (empty() or back().empty()) {
+                return {};
+            } else {
+                return back();
+            }
+        }
+
+        /** Remove the filename part of the path.
+         *
+         * @note No change when the path does not contain a filename.
+         * @return A reference to this.
+         */
+        constexpr path_type& remove_filename() noexcept
+        {
+            switch (size()) {
+            case 0: // Don't remove a filename from an empty path.
+                break;
+            case 1: // relative filename, make the path empty.
+                clear();
+                break;
+            default: // relative or absolute directory with optional filename. Just empty the last path segment.
+                back().clear();
+            }
+            return *this;
+        }
+
         [[nodiscard]] constexpr friend path_type merge(path_type base, path_type const& ref, bool base_has_authority) noexcept
         {
             if (base_has_authority and base.empty()) {
@@ -482,6 +511,22 @@ public:
     {
         validate_path(rhs, to_bool(_authority));
         _path = rhs;
+        return *this;
+    }
+
+    [[nodiscard]] constexpr std::optional<std::string> filename() const noexcept
+    {
+        return _path.filename();
+    }
+
+    /** Remove the filename part of the path.
+     *
+     * @note No change when the path does not contain a filename.
+     * @return A reference to this.
+     */
+    constexpr URI& remove_filename() noexcept
+    {
+        _path.remove_filename();
         return *this;
     }
 

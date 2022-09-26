@@ -46,7 +46,7 @@ public:
      * \param accessMode mode of how to access the file.
      * \param size Number of bytes from the start to map.
      */
-    file_mapping(URL const &path, access_mode accessMode, std::size_t size);
+    file_mapping(std::filesystem::path const &path, access_mode accessMode, std::size_t size);
     ~file_mapping();
 
     file_mapping(file_mapping const &other) = delete;
@@ -63,9 +63,9 @@ public:
 
     /*! Get URL of the file object.
      */
-    [[nodiscard]] URL const &location() const noexcept
+    [[nodiscard]] std::filesystem::path const &path() const noexcept
     {
-        return file->_location;
+        return file->_path;
     }
 
 private:
@@ -76,7 +76,7 @@ private:
      * \param accesssMode mode of how to access the file.
      * \return A shared pointer to a file object.
      */
-    [[nodiscard]] static std::shared_ptr<hi::file> findOrOpenFile(URL const &path, access_mode accessMode);
+    [[nodiscard]] static std::shared_ptr<hi::file> findOrOpenFile(std::filesystem::path const &path, access_mode accessMode);
 };
 
 } // namespace hi::inline v1

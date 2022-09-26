@@ -18,7 +18,7 @@ font_book::font_book(std::vector<URL> const &font_directories)
 
     for (hilet &font_directory : font_directories) {
         hilet font_directory_glob = font_directory / "**" / "*.ttf";
-        for (hilet &font_url : font_directory_glob.urlsByScanningWithGlobPattern()) {
+        for (hilet &font_url : font_directory_glob.glob()) {
             auto t = trace<"font_scan">{};
 
             try {

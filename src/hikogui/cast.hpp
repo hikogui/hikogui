@@ -53,7 +53,7 @@ template<typename Out>
  */
 template<typename Out, std::derived_from<std::remove_reference_t<Out>> In>
 [[nodiscard]] constexpr Out up_cast(In& rhs) noexcept
-    requires std:is_reference_v<Out> and (std::is_const_v<std::remove_reference_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_reference_t<Out>>)
+    requires std::is_reference_v<Out> and (std::is_const_v<std::remove_reference_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_reference_t<Out>>)
 {
     return static_cast<Out>(rhs);
 }
@@ -91,7 +91,7 @@ template<typename Out>
  * @return A reference to the same object with a new type.
  */
 template<typename Out, base_of<std::remove_reference_t<Out>> In>
-[[nodiscard]] constexpr Out down_cast(In& rhs) noexcept requires
+[[nodiscard]] constexpr Out down_cast(In& rhs) noexcept
     requires std::is_reference_v<Out> and (
     std::is_const_v<std::remove_reference_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_reference_t<Out>>)
 {

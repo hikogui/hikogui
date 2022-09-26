@@ -2,13 +2,13 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "URL.hpp"
 #include "datum.hpp"
 #include "log.hpp"
 #include "jsonpath.hpp"
 #include "observer.hpp"
 #include "pickle.hpp"
 #include <typeinfo>
+#include <filesystem>
 
 #pragma once
 
@@ -133,7 +133,11 @@ public:
      *
      * @param location The location of the preferences file to load from.
      */
-    preferences(URL location) noexcept;
+    preferences(std::filesystem::path location) noexcept;
+
+    preferences(std::string_view location) : preferences(std::filesystem::path{location}) {}
+    preferences(std::string const &location) : preferences(std::filesystem::path{location}) {}
+    preferences(char const *location) : preferences(std::filesystem::path{location}) {}
 
     ~preferences();
     preferences(preferences const&) = delete;
@@ -153,7 +157,7 @@ public:
      *
      * @param location The file to save the preferences to.
      */
-    void save(URL location) noexcept;
+    void save(std::filesystem::path location) noexcept;
 
     /** Load the preferences.
      *
@@ -167,7 +171,7 @@ public:
      *
      * @param location The file to save the preferences to.
      */
-    void load(URL location) noexcept;
+    void load(std::filesystem::path location) noexcept;
 
     /** Reset data members to their default value.
      */
@@ -190,7 +194,7 @@ public:
 private:
     /** The location of the preferences file.
      */
-    URL _location;
+    std::filesystem::path _location;
 
     /** The data from the preferences file.
      */

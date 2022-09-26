@@ -16,7 +16,7 @@ theme_book::theme_book(hi::font_book const &font_book, std::vector<URL> const &t
 {
     for (hilet &theme_directory : theme_directories) {
         hilet theme_directory_glob = theme_directory / "**" / "*.theme.json";
-        for (hilet &theme_url : theme_directory_glob.urlsByScanningWithGlobPattern()) {
+        for (hilet &theme_url : theme_directory_glob.glob()) {
             auto t = trace<"theme_scan">{};
 
             try {

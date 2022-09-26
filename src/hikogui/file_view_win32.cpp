@@ -29,7 +29,7 @@ file_view::file_view(std::shared_ptr<file_mapping> const &_file_mapping_object, 
     } else if (any(accessMode() & access_mode::read)) {
         desiredAccess = FILE_MAP_READ;
     } else {
-        throw io_error(std::format("{}: Illegal access mode WRONLY/0 when viewing file.", location()));
+        throw io_error(std::format("{}: Illegal access mode WRONLY/0 when viewing file.", path().string()));
     }
 
     DWORD fileOffsetHigh = _offset >> 32;
@@ -40,7 +40,7 @@ file_view::file_view(std::shared_ptr<file_mapping> const &_file_mapping_object, 
         data = nullptr;
     } else {
         if ((data = MapViewOfFile(_file_mapping_object->mapHandle, desiredAccess, fileOffsetHigh, fileOffsetLow, size)) == NULL) {
-            throw io_error(std::format("{}: Could not map view of file. '{}'", location(), get_last_error_message()));
+            throw io_error(std::format("{}: Could not map view of file. '{}'", path().string(), get_last_error_message()));
         }
     }
 
@@ -48,8 +48,8 @@ file_view::file_view(std::shared_ptr<file_mapping> const &_file_mapping_object, 
     _bytes = std::shared_ptr<void_span>(bytes_ptr, file_view::unmap);
 }
 
-file_view::file_view(URL const &location, access_mode accessMode, std::size_t offset, std::size_t size) :
-    file_view(findOrCreateFileMappingObject(location, accessMode, offset + size), offset, size)
+file_view::file_view(std::filesystem::path const &path, access_mode accessMode, std::size_t offset, std::size_t size) :
+    file_view(findOrCreateFileMappingObject(path, accessMode, offset + size), offset, size)
 {
 }
 
@@ -99,7 +99,7 @@ void file_view::unmap(void_span *bytes) noexcept
 void file_view::flush(void *base, std::size_t size)
 {
     if (!FlushViewOfFile(base, size)) {
-        throw io_error(std::format("{}: Could not flush file. '{}'", location(), get_last_error_message()));
+        throw io_error(std::format("{}: Could not flush file. '{}'", path().string(), get_last_error_message()));
     }
 }
 

@@ -12,7 +12,7 @@ using namespace std;
 using namespace std::literals;
 using namespace hi;
 
-TEST(URLTests, parsing)
+TEST(URL, parsing)
 {
     hilet a = URL("scheme://user:password@hostname:1234/path1/path2?query#fragment");
 
@@ -25,36 +25,36 @@ TEST(URLTests, parsing)
     ASSERT_EQ(a.fragment(), "fragment");
 }
 
-TEST(URLTests, relativePath)
+TEST(URL, relativePath)
 {
     hilet a = URL("file:foo/bar.txt");
 
-    ASSERT_EQ(a.path(), "foo/bar.txt");
+    ASSERT_EQ(a.generic_path(), "foo/bar.txt");
 }
 
-TEST(URLTests, glob1)
+TEST(URL, glob1)
 {
-    hilet executableDirectory = URL::urlFromExecutableDirectory();
+    hilet executableDirectory = URL::url_from_executable_directory();
 
-    hilet txt_file_glob = executableDirectory.urlByAppendingPath("*.txt");
-    auto txt_files = txt_file_glob.urlsByScanningWithGlobPattern();
+    hilet txt_file_glob = executableDirectory / "*.txt";
+    auto txt_files = txt_file_glob.glob();
 
     ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) {
-        return x.path().ends_with("file_view.txt"s);
+        return x.path().filename() == "file_view.txt";
     }));
     ASSERT_FALSE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) {
-        return x.path().ends_with("HikoGUI_Foundation.lib"s);
+        return x.path().filename() == "HikoGUI_Foundation.lib";
     }));
 }
 
-TEST(URLTests, glob2)
+TEST(URL, glob2)
 {
-    hilet executableDirectory = URL::urlFromExecutableDirectory();
+    hilet executableDirectory = URL::url_from_executable_directory();
 
-    hilet txt_file_glob = executableDirectory.urlByAppendingPath("**/*.txt");
-    auto txt_files = txt_file_glob.urlsByScanningWithGlobPattern();
+    hilet txt_file_glob = executableDirectory / "**" / "*.txt";
+    auto txt_files = txt_file_glob.glob();
 
     ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) {
-        return x.path().ends_with("glob2.txt"s);
+        return x.path().filename() == "glob2.txt";
     }));
 }

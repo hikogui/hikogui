@@ -2,7 +2,7 @@
 #include "utility.hpp"
 #include "exception.hpp"
 #include "console.hpp"
-#include "dialogue.hpp"
+#include "dialog.hpp"
 
 namespace hi {
 inline namespace v1 {
@@ -39,7 +39,7 @@ inline namespace v1 {
         message = "Unknown error.";
     }
 
-    dialogue_ok(title, message);
+    dialog_ok(title, message);
 
     old_terminate_handler();
 }

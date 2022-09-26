@@ -7,6 +7,7 @@
 #include "file_mapping.hpp"
 #include "resource_view.hpp"
 #include "void_span.hpp"
+#include "URI.hpp"
 #include <span>
 
 hi_warning_push();
@@ -20,19 +21,56 @@ namespace hi::inline v1 {
  */
 class file_view : public writable_resource_view {
 public:
-    file_view(std::shared_ptr<file_mapping> const& mappingObject, std::size_t offset, std::size_t size);
-    file_view(
-        URL const& location,
-        access_mode accessMode = access_mode::open_for_read,
-        std::size_t offset = 0,
-        std::size_t size = 0);
     ~file_view() = default;
-
     file_view() = delete;
     file_view(file_view const& other) noexcept;
     file_view(file_view&& other) noexcept;
     file_view& operator=(file_view const& other) noexcept;
     file_view& operator=(file_view&& other) noexcept;
+
+    file_view(std::shared_ptr<file_mapping> const& mappingObject, std::size_t offset, std::size_t size);
+
+    file_view(
+        std::filesystem::path const& path,
+        access_mode access_mode = access_mode::open_for_read,
+        std::size_t offset = 0,
+        std::size_t size = 0);
+
+    file_view(
+        URL path,
+        access_mode access_mode = access_mode::open_for_read,
+        std::size_t offset = 0,
+        std::size_t size = 0) :
+        file_view(path.filesystem_path(), access_mode, offset, size)
+    {
+    }
+
+    file_view(
+        std::string_view path,
+        access_mode access_mode = access_mode::open_for_read,
+        std::size_t offset = 0,
+        std::size_t size = 0) :
+        file_view(std::filesystem::path{path}, access_mode, offset, size)
+    {
+    }
+
+    file_view(
+        std::string const& path,
+        access_mode access_mode = access_mode::open_for_read,
+        std::size_t offset = 0,
+        std::size_t size = 0) :
+        file_view(std::filesystem::path{path}, access_mode, offset, size)
+    {
+    }
+
+    file_view(
+        char const *path,
+        access_mode access_mode = access_mode::open_for_read,
+        std::size_t offset = 0,
+        std::size_t size = 0) :
+        file_view(std::filesystem::path{path}, access_mode, offset, size)
+    {
+    }
 
     /*! Access mode of the opened file.
      */
@@ -43,9 +81,9 @@ public:
 
     /*! URL location to the file.
      */
-    [[nodiscard]] URL const& location() const noexcept
+    [[nodiscard]] std::filesystem::path const& path() const noexcept
     {
-        return _file_mapping_object->location();
+        return _file_mapping_object->path();
     }
 
     /*! Offset of the mapping into the file.
@@ -78,9 +116,9 @@ public:
     /*! Load a view of a resource.
      * This is used when the resource that needs to be opened is a file.
      */
-    [[nodiscard]] static std::unique_ptr<resource_view> loadView(URL const& location)
+    [[nodiscard]] static std::unique_ptr<resource_view> load_view(std::filesystem::path const& path)
     {
-        return std::make_unique<file_view>(location);
+        return std::make_unique<file_view>(path);
     }
 
 private:
@@ -96,13 +134,13 @@ private:
      * File mapping objects are cached and will be shared by file_views.
      * Caching is done using std::weak_ptr to file_mapping objects
      *
-     * \param path URL to the file.
-     * \param accessMode mode how to open the file.
+     * \param path The path to the file.
+     * \param access_mode mode how to open the file.
      * \param size Number of bytes from the start of the file to map.
      * \return A shared-pointer to file mapping object.
      */
     [[nodiscard]] static std::shared_ptr<file_mapping>
-    findOrCreateFileMappingObject(URL const& path, access_mode accessMode, std::size_t size);
+    findOrCreateFileMappingObject(std::filesystem::path const& path, access_mode access_mode, std::size_t size);
 
 private:
     /*! pointer to a file mapping object.

@@ -28,12 +28,12 @@ static URL get_folder_by_id(const KNOWNFOLDERID &folder_id) noexcept
     if (SHGetKnownFolderPath(folder_id, 0, nullptr, &path) != S_OK) {
         hi_log_fatal("Could not get known folder path.");
     }
-    URL folder = URL::urlFromWPath(path);
+    URL folder = URL{std::filesystem::path{path}};
     CoTaskMemFree(path);
     return folder;
 }
 
-URL URL::urlFromExecutableFile() noexcept
+URL URL::url_from_executable_file() noexcept
 {
     std::wstring module_path;
     auto buffer_size = MAX_PATH; // initial default value = 256
@@ -43,7 +43,7 @@ URL URL::urlFromExecutableFile() noexcept
         auto chars = GetModuleFileNameW(nullptr, &module_path[0], buffer_size);
         if (chars < module_path.length()) {
             module_path.resize(chars);
-            return URL::urlFromWPath(module_path);
+            return URL{std::filesystem::path{module_path}};
         } else {
             buffer_size *= 2;
         }
@@ -51,14 +51,13 @@ URL URL::urlFromExecutableFile() noexcept
     hi_log_fatal("Could not get executable path. It exceeds the buffer length of 32768 chars.");
 }
 
-URL URL::urlFromResourceDirectory() noexcept
+URL URL::url_from_resource_directory() noexcept
 {
     // Resource path, is the same directory as where the executable lives.
-    static auto r = urlFromExecutableDirectory() / "resources";
-    return r;
+    return url_from_executable_directory() / "resources";
 }
 
-URL URL::urlFromApplicationDataDirectory() noexcept
+URL URL::url_from_application_data_directory() noexcept
 {
     // FOLDERID_LocalAppData has the default path: %LOCALAPPDATA% (%USERPROFILE%\AppData\Local)
     if (metadata::application().vendor.empty()) {
@@ -69,27 +68,26 @@ URL URL::urlFromApplicationDataDirectory() noexcept
     }
 }
 
-URL URL::urlFromSystemfontDirectory() noexcept
+URL URL::url_from_system_font_directory() noexcept
 {
     // FOLDERID_Fonts has the default path: %windir%\Fonts
     return get_folder_by_id(FOLDERID_Fonts);
 }
 
-URL URL::urlFromApplicationPreferencesFile() noexcept
+URL URL::url_from_application_preferences_file() noexcept
 {
-    return URL::urlFromApplicationDataDirectory() / "preferences.json";
+    return URL::url_from_application_data_directory() / "preferences.json";
 }
 
-std::vector<std::string> URL::filenamesByScanningDirectory(std::string_view path) noexcept
+std::vector<std::string> URL::filenames_by_scanning_directory(std::string_view path) noexcept
 {
-    auto searchPath = static_cast<std::string>(path);
-    searchPath += '/';
-    searchPath += '*';
+    auto search_path = std::filesystem::path{path} / "*";
+    auto search_path_str = static_cast<std::wstring>(search_path);
 
     std::vector<std::string> filenames;
     WIN32_FIND_DATAW fileData;
 
-    hilet findHandle = FindFirstFileW(URL::nativeWPathFromPath(searchPath).data(), &fileData);
+    hilet findHandle = FindFirstFileW(search_path_str.c_str(), &fileData);
     if (findHandle == INVALID_HANDLE_VALUE) {
         return filenames;
     }

@@ -15,20 +15,6 @@
 
 namespace hi::inline v1 {
 
-static void configure_current_working_directory() noexcept
-{
-    DWORD required_buffer_size = GetCurrentDirectoryW(0, nullptr);
-    if (!required_buffer_size) {
-        hi_log_fatal("Could not get required buffer size.");
-    }
-    auto current_directory = std::make_unique<wchar_t[]>(required_buffer_size);
-    if (GetCurrentDirectoryW(required_buffer_size, current_directory.get()) == 0) {
-        hi_log_fatal("Could not get current directory: {}", get_last_error_message());
-    }
-
-    URL::setUrlForCurrentWorkingDirectory(URL::urlFromWPath(current_directory.get()));
-}
-
 std::pair<int, char **> crt_start(int, char **, void *instance, int show_cmd)
 {
     set_thread_name("main");
@@ -62,8 +48,6 @@ std::pair<int, char **> crt_start(int, char **, void *instance, int show_cmd)
 
     // Add a nullptr to the end of the argument list.
     argv[argc] = nullptr;
-
-    configure_current_working_directory();
 
     // Initialize tzdata base.
     try {

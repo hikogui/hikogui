@@ -22,7 +22,7 @@ file_mapping::file_mapping(std::shared_ptr<hi::file> const &file, std::size_t si
     } else if (any(accessMode() & access_mode::read)) {
         protect = PAGE_READONLY;
     } else {
-        throw io_error(std::format("{}: Illegal access mode WRONLY/0 when mapping file.", location()));
+        throw io_error(std::format("{}: Illegal access mode WRONLY/0 when mapping file.", path().string()));
     }
 
     DWORD maximumSizeHigh = this->size >> 32;
@@ -33,13 +33,13 @@ file_mapping::file_mapping(std::shared_ptr<hi::file> const &file, std::size_t si
     } else {
         if ((mapHandle = CreateFileMappingW(file->_file_handle, NULL, protect, maximumSizeHigh, maximumSizeLow, nullptr)) ==
             nullptr) {
-            throw io_error(std::format("{}: Could not create file mapping. '{}'", location(), get_last_error_message()));
+            throw io_error(std::format("{}: Could not create file mapping. '{}'", path().string(), get_last_error_message()));
         }
     }
 }
 
-file_mapping::file_mapping(URL const &location, access_mode accessMode, std::size_t size) :
-    file_mapping(findOrOpenFile(location, accessMode), size)
+file_mapping::file_mapping(std::filesystem::path const &path, access_mode accessMode, std::size_t size) :
+    file_mapping(findOrOpenFile(path, accessMode), size)
 {
 }
 

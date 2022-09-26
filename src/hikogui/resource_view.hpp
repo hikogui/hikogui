@@ -13,7 +13,6 @@
 #include <type_traits>
 
 namespace hi::inline v1 {
-class URL;
 
 /** A read-only memory mapping of a resource.
  */

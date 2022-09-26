@@ -77,7 +77,7 @@ inline std::ostream &operator<<(std::ostream &lhs, glob_token_t const &rhs)
     return lhs;
 }
 
-/*! Parse a glob pattern.
+/** Parse a glob pattern.
  * A glob pattern is designed to match with paths and uses '/' as path separators.
  * The following place holders will be handled:
  *  - '*' matches zero or more characters within a filename or directory name.

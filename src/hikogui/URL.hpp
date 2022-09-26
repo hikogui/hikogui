@@ -47,7 +47,49 @@ class resource_view;
  */
 class URL : public URI {
 public:
-    using URI::URI;
+    constexpr URL() noexcept = default;
+    constexpr URL(URL const&) noexcept = default;
+    constexpr URL(URL&&) noexcept = default;
+    constexpr URL& operator=(URL const&) noexcept = default;
+    constexpr URL& operator=(URL&&) noexcept = default;
+
+    constexpr explicit URL(URI const& other) noexcept : URI(other) {}
+    constexpr explicit URL(URI&& other) noexcept : URI(std::move(other)){};
+
+    static std::string make_file_url_string(std::filesystem::path const& path)
+    {
+        auto r = std::string{};
+
+        hilet root_name = path.root_name().generic_string();
+        if (root_name.empty()) {
+            // No root-name.
+            if (not path.root_directory().empty()) {
+                // An absolute path should start with the file: scheme.
+                r += "file:/";
+            } else {
+                // A relative path should not be prefixed with a scheme.
+                ;
+            }
+
+        } else if (hilet i = root_name.find(':'); i != std::string::npos) {
+            if (i == 1) {
+                // Root name is a drive-letter, followed by potentially a relative path.
+                r += "file:///" + root_name;
+            } else {
+                throw url_error("Paths containing a device are not allowed to be converted to a URL.");
+            }
+        } else {
+            // Root name is a server.
+            r += "file://" + root_name + "/";
+            if (not path.root_directory().empty()) {
+                throw url_error("Invalid path contains server name without a root directory.");
+            }
+        }
+
+        return r + path.relative_path().generic_string();
+    }
+
+    URL(std::filesystem::path const& path) : URI(make_file_url_string(path)) {}
 
     constexpr void static validate_file_segment(std::string_view segment)
     {
@@ -67,10 +109,15 @@ public:
         }
     }
 
-    [[nodiscard]] std::filesystem::path filesystem_path() const
+    /** Return a generic path.
+     *
+     * @return The generic path of a file URL.
+     * @throw url_error When a valid file path can not be constructed from the URL.
+     */
+    [[nodiscard]] std::string generic_path() const
     {
-        if (not (not scheme() or scheme() == "file")) {
-            throw url_error("URL::filesystem_path() is only valid on a file: scheme URL");
+        if (not(not scheme() or scheme() == "file")) {
+            throw url_error("URL::generic_path() is only valid on a file: scheme URL");
         }
 
         auto r = std::string{};
@@ -134,12 +181,8 @@ public:
                         r += it->front();
                         // Use $ when the drive letter is on a server.
                         r += has_root_name ? '$' : ':';
-
-                        // If there is a root name, the directory after the drive letter must be absolute too.
-                        if (it->size() > 2) {
-                            r += '/';
-                            r += it->substr(2);
-                        }
+                        // Add potentially a relative segment after the driver letter.
+                        r += it->substr(2);
 
                     } else {
                         // Take the drive letter and optional relative directory directly on relative paths.
@@ -170,7 +213,17 @@ public:
             r.pop_back();
         }
 
-        return std::filesystem::path{std::move(r)};
+        return r;
+    }
+
+    /** Create a filesystem path from a file URL.
+     *
+     * @return The filesystem path of a file URL.
+     * @throw url_error When a valid file path can not be constructed from the URL.
+     */
+    [[nodiscard]] std::filesystem::path filesystem_path() const
+    {
+        return {generic_path()};
     }
 
     /** Load a resource.
@@ -178,7 +231,17 @@ public:
      */
     [[nodiscard]] std::unique_ptr<resource_view> loadView() const;
 
-    /*! Return new URLs by finding matching files.
+    [[nodiscard]] constexpr friend URL operator/(URL const& base, URI const& ref) noexcept
+    {
+        return URL{up_cast<URI const&>(base) / ref};
+    }
+
+    [[nodiscard]] constexpr friend URL operator/(URL const& base, std::string_view ref) noexcept
+    {
+        return URL{up_cast<URI const&>(base) / ref};
+    }
+
+    /** Return new URLs by finding matching files.
      * Currently only works for file: scheme urls.
      *
      * The following wildcards are supported:
@@ -187,27 +250,26 @@ public:
      *  - '**' Replaced by 0 or more nested directories.
      *  - '[abcd]' Replaced by a single character from the set "abcd".
      *  - '{foo,bar}' Replaced by a string "foo" or "bar".
+     *
+     * @return A list of file URLs that match the glob pattern.
+     * @throw url_error When the URL is not a file URL.
      */
-    [[nodiscard]] std::vector<URL> urlsByScanningWithGlobPattern() const noexcept;
+    [[nodiscard]] std::vector<URL> glob() const;
 
-    static void setUrlForCurrentWorkingDirectory(URL url) noexcept;
-    [[nodiscard]] static URL urlFromCurrentWorkingDirectory() noexcept;
-    [[nodiscard]] static URL urlFromResourceDirectory() noexcept;
-    [[nodiscard]] static URL urlFromExecutableDirectory() noexcept;
-    [[nodiscard]] static URL urlFromExecutableFile() noexcept;
-    [[nodiscard]] static URL urlFromApplicationDataDirectory() noexcept;
-    [[nodiscard]] static URL urlFromApplicationLogDirectory() noexcept;
-    [[nodiscard]] static URL urlFromSystemfontDirectory() noexcept;
-    [[nodiscard]] static URL urlFromApplicationPreferencesFile() noexcept;
+    [[nodiscard]] static URL url_from_current_working_directory() noexcept;
+    [[nodiscard]] static URL url_from_resource_directory() noexcept;
+    [[nodiscard]] static URL url_from_executable_directory() noexcept;
+    [[nodiscard]] static URL url_from_executable_file() noexcept;
+    [[nodiscard]] static URL url_from_application_data_directory() noexcept;
+    [[nodiscard]] static URL url_from_application_log_directory() noexcept;
+    [[nodiscard]] static URL url_from_system_font_directory() noexcept;
+    [[nodiscard]] static URL url_from_application_preferences_file() noexcept;
 
     /*! Return file names in the directory pointed by the url.
      * \param path path to the directory to scan.
      * \return A list of filenames or subdirectories (ending in '/') in the directory.
      */
-    [[nodiscard]] static std::vector<std::string> filenamesByScanningDirectory(std::string_view path) noexcept;
-
-private:
-    static URL _urlOfCurrentWorkingDirectory;
+    [[nodiscard]] static std::vector<std::string> filenames_by_scanning_directory(std::string_view path) noexcept;
 };
 
 }} // namespace hi::v1

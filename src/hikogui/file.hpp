@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "URL.hpp"
 #include "byte_string.hpp"
 #include "architecture.hpp"
 #include "cast.hpp"
@@ -12,6 +11,7 @@
 #include <cstdint>
 #include <map>
 #include <span>
+#include <filesystem>
 
 namespace hi::inline v1 {
 
@@ -69,7 +69,7 @@ public:
      * \param location The file: URL locating the file.
      * \param accessMode access-mode to open the file.
      */
-    file(URL const& location, access_mode accessMode);
+    file(std::filesystem::path const& path, access_mode access_mode = access_mode::open_for_read);
 
     ~file() noexcept;
 
@@ -95,7 +95,7 @@ public:
      * @param overwrite_existing Overwrite an existing file.
      * @throw io_error When failing to rename.
      */
-    void rename(URL const& destination, bool overwrite_existing = true);
+    void rename(std::filesystem::path const& destination, bool overwrite_existing = true);
 
     /** Return the size of the file.
      */
@@ -222,20 +222,20 @@ public:
     /** Get the size of a file on the file system.
      * \return The size of the file in bytes.
      */
-    [[nodiscard]] static std::size_t file_size(URL const& url);
+    [[nodiscard]] static std::size_t file_size(std::filesystem::path const& path);
 
-    static void create_directory(URL const& url, bool hierarchy = false);
+    static void create_directory(std::filesystem::path const& path, bool hierarchy = false);
 
-    static void create_directory_hierarchy(URL const& url);
+    static void create_directory_hierarchy(std::filesystem::path const& path);
 
 private:
     /** The access mode used to open the file.
      */
     access_mode _access_mode;
 
-    /** The URL that was used to open the file.
+    /** The path that was used to open the file.
      */
-    URL _location;
+    std::filesystem::path _path;
 
     /** A operating system handle to the file.
      */

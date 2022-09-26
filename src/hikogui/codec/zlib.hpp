@@ -13,9 +13,9 @@ namespace hi::inline v1 {
 
 bstring zlib_decompress(std::span<std::byte const> bytes, std::size_t max_size = 0x01000000);
 
-inline bstring zlib_decompress(URL const &url, std::size_t max_size = 0x01000000)
+inline bstring zlib_decompress(std::filesystem::path const &path, std::size_t max_size = 0x01000000)
 {
-    return zlib_decompress(as_span<std::byte const>(file_view(url)), max_size);
+    return zlib_decompress(as_span<std::byte const>(file_view(path)), max_size);
 }
 
 } // namespace hi::inline v1
