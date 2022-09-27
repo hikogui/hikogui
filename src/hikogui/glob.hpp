@@ -1,454 +1,358 @@
-// Copyright Take Vos 2019-2022.
+// Copyright Take Vos 2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
 #include "utility.hpp"
-#include "algorithm.hpp"
 #include <vector>
 #include <string>
 #include <string_view>
-#include <ostream>
+#include <filesystem>
+#include <variant>
+#include <type_traits>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
-enum class glob_callback_token_t {
-    String,
-    StringList,
-    CharacterList,
-    InverseCharacterList,
-    Separator,
-    AnyString,
-    AnyCharacter,
-    AnyDirectory
-};
+class glob_pattern {
+public:
+    constexpr glob_pattern() noexcept = default;
+    constexpr glob_pattern(glob_pattern const&) noexcept = default;
+    constexpr glob_pattern(glob_pattern&&) noexcept = default;
+    constexpr glob_pattern& operator=(glob_pattern const&) noexcept = default;
+    constexpr glob_pattern& operator=(glob_pattern&&) noexcept = default;
 
-inline std::ostream &operator<<(std::ostream &lhs, glob_callback_token_t const &rhs)
-{
-    switch (rhs) {
-    case glob_callback_token_t::String: lhs << "String"; break;
-    case glob_callback_token_t::StringList: lhs << "StringList"; break;
-    case glob_callback_token_t::CharacterList: lhs << "CharacterList"; break;
-    case glob_callback_token_t::InverseCharacterList: lhs << "InverseCharacterList"; break;
-    case glob_callback_token_t::Separator: lhs << "Separator"; break;
-    case glob_callback_token_t::AnyString: lhs << "AnyString"; break;
-    case glob_callback_token_t::AnyCharacter: lhs << "AnyCharacter"; break;
-    case glob_callback_token_t::AnyDirectory: lhs << "AnyDirectory"; break;
-    default: hi_no_default();
-    }
-    return lhs;
-}
+    constexpr glob_pattern(std::string_view str) : _tokens(parse(str)) {}
+    constexpr glob_pattern(std::string const& str) : glob_pattern(std::string_view{str}) {}
+    constexpr glob_pattern(char const *str) : glob_pattern(std::string_view{str}) {}
+    constexpr glob_pattern(std::filesystem::path const& path) : glob_pattern(path.generic_string()) {}
 
-struct glob_token_t {
-    glob_callback_token_t type;
-    std::string value;
-    std::vector<std::string> values;
+    [[nodiscard]] constexpr friend std::string to_string(glob_pattern const& rhs) noexcept
+    {
+        auto r = std::string{};
 
-    glob_token_t(glob_callback_token_t type) : type(type), value(), values() {}
-    glob_token_t(glob_callback_token_t type, std::string value) : type(type), value(value), values() {}
-    glob_token_t(glob_callback_token_t type, std::vector<std::string> values) : type(type), value(), values(values) {}
-};
-
-using glob_token_list_t = std::vector<glob_token_t>;
-using glob_token_iterator = glob_token_list_t::iterator;
-using glob_token_const_iterator = glob_token_list_t::const_iterator;
-
-inline bool operator==(glob_token_t const &lhs, glob_token_t const &rhs) noexcept
-{
-    return lhs.type == rhs.type && lhs.value == rhs.value && lhs.values == rhs.values;
-}
-
-inline std::ostream &operator<<(std::ostream &lhs, glob_token_t const &rhs)
-{
-    lhs << rhs.type;
-    if (rhs.value.size() > 0) {
-        lhs << ":" << rhs.value;
-    } else if (rhs.values.size() > 0) {
-        lhs << ":{";
-        for (std::size_t i = 0; i < rhs.values.size(); i++) {
-            if (i != 0) {
-                lhs << ",";
+        for (hilet& token : rhs._tokens) {
+            if (auto string_ = std::get_if<string_type>(&token)) {
+                r += *string_;
+            } else if (std::holds_alternative<separator_type>(token)) {
+                r += '/';
+            } else if (auto strings_ = std::get_if<strings_type>(&token)) {
+                r += '{';
+                for (hilet& s : *strings_) {
+                    r += s;
+                    r += ',';
+                }
+                r += '}';
+            } else if (std::holds_alternative<any_char_type>(token)) {
+                r += '?';
+            } else if (std::holds_alternative<any_string_type>(token)) {
+                r += '*';
+            } else if (std::holds_alternative<any_directory_type>(token)) {
+                r += "/**";
+            } else {
+                hi_no_default();
             }
-            lhs << rhs.values[i];
         }
-        lhs << "}";
+        return r;
     }
-    return lhs;
-}
 
-/** Parse a glob pattern.
- * A glob pattern is designed to match with paths and uses '/' as path separators.
- * The following place holders will be handled:
- *  - '*' matches zero or more characters within a filename or directory name.
- *  - '**' matches zero or more characters in a path, including path separators.
- *  - '?' matches one character.
- *  - '[\<range\>]' matches one character inside the range.
- *  - '[^\<range\>]' matches one character that is not within the range, the path separator '/'
- *    is implicitly included in \<range\>.
- *  - '{\<list\>}' matches one string in the list. The list is a comma ',' separated list
- *    of strings.
- *
- * The following patterns can be part of a \<range\>:
- *  - '-' A dash as the first or last character in \<range\> matches the '-' character.
- *  - ']' A close bracket as the first character in \<range\> matches the ']' character.
- *  - '\<code-unit\>-\<code-unit\>' A dash between two UTF-8 code-units matches all UTF-8 code units
- *    between and including the two given code-units.
- *  - '\<code-unit\>' Matches the UTF-8 code unit itself.
- */
-inline glob_token_list_t parseGlob(std::string_view glob)
-{
-    enum class state_t {
-        Idle,
-        FoundText,
-        FoundSlash,
-        FoundEscape,
-        FoundSlashStar,
-        FoundSlashDoubleStar,
-        FoundBracket,
-        FoundBrace,
-    };
-    state_t state = state_t::Idle;
+    [[nodiscard]] constexpr friend std::string to_debug_string(glob_pattern const& rhs) noexcept
+    {
+        auto r = std::string{};
 
-    glob_token_list_t r;
-    std::string tmpString;
-    std::vector<std::string> tmpStringList;
-    bool isInverse = false;
-    bool isFirstCharacter = false;
-    bool isRange = false;
-
-    auto i = glob.begin();
-    while (true) {
-        auto c = (i != glob.end()) ? *i : '\0';
-
-        switch (state) {
-        case state_t::Idle:
-            switch (c) {
-            case '/': state = state_t::FoundSlash; break;
-            case '?': r.emplace_back(glob_callback_token_t::AnyCharacter); break;
-            case '*': r.emplace_back(glob_callback_token_t::AnyString); break;
-            case '[':
-                isInverse = false;
-                isFirstCharacter = true;
-                isRange = false;
-                state = state_t::FoundBracket;
-                break;
-            case '{': state = state_t::FoundBrace; break;
-            case '\\': state = state_t::FoundEscape; break;
-            case '\0': return r;
-            default: state = state_t::FoundText; continue;
-            }
-            break;
-
-        case state_t::FoundText:
-            if (c == '/' || c == '?' || c == '*' || c == '[' || c == '{' || c == '\0') {
-                r.emplace_back(glob_callback_token_t::String, tmpString);
-                tmpString.clear();
-                state = state_t::Idle;
-                continue; // Don't increment the iterator.
-            } else if (c == '\\') {
-                state = state_t::FoundEscape;
+        for (hilet& token : rhs._tokens) {
+            if (auto string_ = std::get_if<string_type>(&token)) {
+                r += "'" + *string_ + "' ";
+            } else if (std::holds_alternative<separator_type>(token)) {
+                r += "/ ";
+            } else if (auto strings_ = std::get_if<strings_type>(&token)) {
+                r += "{";
+                for (hilet& s : *strings_) {
+                    r += s;
+                    r += ",";
+                }
+                r += "} ";
+            } else if (std::holds_alternative<any_char_type>(token)) {
+                r += "? ";
+            } else if (std::holds_alternative<any_string_type>(token)) {
+                r += "* ";
+            } else if (std::holds_alternative<any_directory_type>(token)) {
+                r += "/** ";
             } else {
-                tmpString += c;
+                hi_no_default();
             }
-            break;
+        }
+        r.pop_back();
+        return r;
+    }
 
-        case state_t::FoundEscape:
-            if (c == '\0') {
-                r.emplace_back(glob_callback_token_t::String, tmpString);
-                state = state_t::Idle;
-                continue; // Don't increment the iterator.
+    [[nodiscard]] constexpr std::string base_generic_string() const noexcept
+    {
+        auto r = std::string{};
+
+        for (hilet& token : _tokens) {
+            if (auto string_ = std::get_if<string_type>(&token)) {
+                r += *string_;
+            } else if (std::holds_alternative<separator_type>(token)) {
+                r += '/';
+            } else if (std::holds_alternative<any_directory_type>(token)) {
+                r += "/";
+                return r;
             } else {
-                tmpString += c;
-                state = state_t::FoundText;
+                return r;
             }
-            break;
+        }
+        return r;        
+    }
 
-        case state_t::FoundSlash:
-            if (c == '*') {
-                state = state_t::FoundSlashStar;
-            } else {
-                r.emplace_back(glob_callback_token_t::Separator);
-                state = state_t::Idle;
-                continue;
-            }
-            break;
+    [[nodiscard]] std::filesystem::path base_path() const noexcept
+    {
+        return std::filesystem::path{base_generic_string()};
+    }
 
-        case state_t::FoundSlashStar:
-            if (c == '*') {
-                state = state_t::FoundSlashDoubleStar;
-            } else {
-                r.emplace_back(glob_callback_token_t::Separator);
-                r.emplace_back(glob_callback_token_t::AnyString);
-                state = state_t::Idle;
-                continue;
-            }
-            break;
+    [[nodiscard]] constexpr bool matches(std::string_view path) const noexcept
+    {
+        return true;
+    }
 
-        case state_t::FoundSlashDoubleStar:
-            if (c == '/') {
-                r.emplace_back(glob_callback_token_t::AnyDirectory);
-                r.emplace_back(glob_callback_token_t::Separator);
-                state = state_t::Idle;
+    [[nodiscard]] constexpr bool matches(std::string const& path) const noexcept
+    {
+        return matches(std::string_view{path});
+    }
 
-            } else {
-                // Fallback to AnyString, as if there was only a single '*'.
-                r.emplace_back(glob_callback_token_t::Separator);
-                r.emplace_back(glob_callback_token_t::AnyString);
-                state = state_t::Idle;
-                continue; // Don't increment the iterator.
-            }
-            break;
+    [[nodiscard]] constexpr bool matches(char const *path) const noexcept
+    {
+        return matches(std::string_view{path});
+    }
 
-        case state_t::FoundBracket:
-            switch (c) {
-            case '^':
-                if (isFirstCharacter) {
-                    isInverse = true;
-                    tmpString += '/';
-                } else {
-                    tmpString += c;
+    [[nodiscard]] constexpr bool matches(std::filesystem::path const& path) const noexcept
+    {
+        return matches(path.string());
+    }
+
+private:
+    using string_type = std::string;
+    struct separator_type {};
+    using strings_type = std::vector<std::string>;
+    struct any_string_type {};
+    struct any_char_type {};
+    struct any_directory_type {};
+
+    using token_type =
+        std::variant<string_type, separator_type, strings_type, any_string_type, any_char_type, any_directory_type>;
+
+    using tokens_type = std::vector<token_type>;
+
+    tokens_type _tokens;
+
+    [[nodiscard]] constexpr static tokens_type parse(auto first, auto last)
+    {
+#define HI_GLOB_APPEND_STRING() \
+    do { \
+        if (not str.empty()) { \
+            r.emplace_back(std::move(str)); \
+            str.clear(); \
+        } \
+    } while (false)
+
+        enum class state_type { idle, star, slash, slash_star, slash_star_star, bracket, brace };
+        using enum state_type;
+
+        static_assert(std::is_same_v<std::decay_t<decltype(*first)>, char>);
+
+        auto r = tokens_type{};
+
+        auto state = idle;
+        auto str = string_type{};
+        auto strs = strings_type{};
+
+        auto it = first;
+        while (it != last) {
+            auto c = *it;
+            switch (state) {
+            case idle:
+                switch (c) {
+                case '/':
+                    HI_GLOB_APPEND_STRING();
+                    state = slash;
+                    break;
+                case '?':
+                    HI_GLOB_APPEND_STRING();
+                    r.emplace_back(any_char_type{});
+                    break;
+                case '*':
+                    HI_GLOB_APPEND_STRING();
+                    state = star;
+                    break;
+                case '[':
+                    HI_GLOB_APPEND_STRING();
+                    state = bracket;
+                    break;
+                case '{':
+                    HI_GLOB_APPEND_STRING();
+                    state = brace;
+                    break;
+                default:
+                    str += c;
                 }
                 break;
 
-            case ']':
-                if (isFirstCharacter) {
-                    tmpString += c;
+            case star:
+                if (c == '*') {
+                    throw parse_error("Double /**/ is only allowed between slashes.");
                 } else {
-                    if (isRange) {
-                        tmpString += '-';
+                    r.emplace_back(any_string_type{});
+                    state = idle;
+                    continue;
+                }
+                break;
+
+            case slash:
+                if (c == '*') {
+                    state = slash_star;
+                } else {
+                    r.emplace_back(separator_type{});
+                    state = idle;
+                    continue;
+                }
+                break;
+
+            case slash_star:
+                if (c == '*') {
+                    state = slash_star_star;
+                } else {
+                    r.emplace_back(separator_type{});
+                    r.emplace_back(any_string_type{});
+                    state = idle;
+                    continue;
+                }
+                break;
+
+            case slash_star_star:
+                if (c == '/') {
+                    r.emplace_back(any_directory_type{});
+                    r.emplace_back(separator_type{});
+                    state = idle;
+                } else {
+                    throw parse_error(
+                        std::format("'/**' must end in a slash in glob pattern '{}'", std::string_view{first, last}));
+                }
+                break;
+
+            case bracket:
+                if (c == ']') {
+                    r.emplace_back(std::move(strs));
+                    strs.clear();
+                    state = idle;
+
+                } else {
+                    strs.emplace_back(1, c);
+                }
+                break;
+
+            case brace:
+                if (c == '}') {
+                    if (not str.empty()) {
+                        strs.push_back(std::move(str));
+                        str.clear();
                     }
+                    r.emplace_back(std::move(strs));
+                    strs.clear();
+                    state = idle;
 
-                    if (isInverse) {
-                        r.emplace_back(glob_callback_token_t::InverseCharacterList, tmpString);
-                    } else {
-                        r.emplace_back(glob_callback_token_t::CharacterList, tmpString);
-                    }
+                } else if (c == ',') {
+                    strs.push_back(std::move(str));
+                    str.clear();
 
-                    tmpString.clear();
-                    state = state_t::Idle;
-                }
-                isFirstCharacter = false;
-                break;
-
-            case '-':
-                if (isFirstCharacter) {
-                    tmpString += '-';
                 } else {
-                    isRange = true;
+                    str += c;
                 }
-                isFirstCharacter = false;
                 break;
-
-            case '\0':
-                if (isRange) {
-                    tmpString += '-';
-                }
-
-                if (isInverse) {
-                    r.emplace_back(glob_callback_token_t::InverseCharacterList, tmpString);
-                } else {
-                    r.emplace_back(glob_callback_token_t::CharacterList, tmpString);
-                }
-                state = state_t::Idle;
-                continue; // Don't increment the iterator.
 
             default:
-                if (isRange) {
-                    hilet firstCharacter = static_cast<uint8_t>(tmpString.back());
-                    hilet lastCharacter = static_cast<uint8_t>(c);
-                    for (uint8_t tmp_c = firstCharacter + 1; tmp_c <= lastCharacter; tmp_c++) {
-                        tmpString += static_cast<char>(tmp_c);
-                    }
-                } else {
-                    tmpString += c;
-                }
-                isRange = false;
-                isFirstCharacter = false;
-                break;
+                hi_no_default();
             }
+
+            ++it;
+        }
+
+        switch (state) {
+        case idle:
+            HI_GLOB_APPEND_STRING();
             break;
 
-        case state_t::FoundBrace:
-            switch (c) {
-            case '}':
-                tmpStringList.push_back(tmpString);
-                tmpString.clear();
-                r.emplace_back(glob_callback_token_t::StringList, tmpStringList);
-                tmpStringList.clear();
-                state = state_t::Idle;
-                break;
-            case ',':
-                tmpStringList.push_back(tmpString);
-                tmpString.clear();
-                break;
-            case '\0':
-                tmpStringList.push_back(tmpString);
-                r.emplace_back(glob_callback_token_t::StringList, tmpStringList);
-                state = state_t::Idle;
-                continue; // Don't increment the iterator.
-            default: tmpString += c; break;
-            }
+        case star:
+            r.emplace_back(any_string_type{});
             break;
 
-        default: hi_no_default();
+        case slash:
+            r.emplace_back(separator_type{});
+            break;
+
+        case slash_star:
+            r.emplace_back(separator_type{});
+            r.emplace_back(any_string_type{});
+            break;
+
+        case slash_star_star:
+            r.emplace_back(any_directory_type{});
+            r.emplace_back(separator_type{});
+            break;
+
+        case bracket:
+            throw parse_error("Unclosed bracket '[' found in glob pattern.");
+
+        case brace:
+            throw parse_error("Unclosed brace '{' found in glob pattern.");
         }
 
-        i++;
+        return r;
+
+#undef HI_GLOB_APPEND_STRING
     }
-}
 
-enum class glob_match_result_t { No, Partial, Match };
+    [[nodiscard]] constexpr static tokens_type parse(auto&& range)
+    {
+        return parse(std::ranges::begin(range), std::ranges::end(range));
+    }
+};
 
-inline glob_match_result_t matchGlob(glob_token_const_iterator index, glob_token_const_iterator end, std::string_view str)
+[[nodiscard]] inline generator<std::filesystem::path> glob(glob_pattern const& pattern)
 {
-    if (index == end) {
-        return (str.size() == 0) ? glob_match_result_t::Match : glob_match_result_t::No;
+    auto path = pattern.base_path();
 
-    } else if (str.size() == 0) {
-        switch (index->type) {
-        case glob_callback_token_t::Separator: return glob_match_result_t::Partial;
-        case glob_callback_token_t::AnyDirectory: return glob_match_result_t::Partial;
-        case glob_callback_token_t::AnyString: return matchGlob(index + 1, end, str);
-        default: return glob_match_result_t::No;
+    hilet first = std::filesystem::recursive_directory_iterator(path);
+    hilet last = std::filesystem::recursive_directory_iterator();
+    for (auto it = first; it != last; ++it) {
+        if (pattern.matches(it->path())) {
+            co_yield it->path();
         }
     }
-
-#define MATCH_GLOB_RECURSE(out, next, end, str) \
-    switch (hilet tmp = matchGlob(next, end, str)) { \
-    case glob_match_result_t::No: break; \
-    case glob_match_result_t::Match: return tmp; \
-    case glob_match_result_t::Partial: out = tmp; break; \
-    default: hi_no_default(); \
-    }
-
-    // result may be assigned Partial by MATCH_GLOB_RECURSE.
-    auto result = glob_match_result_t::No;
-    bool found_slash = false;
-    hilet next_index = index + 1;
-
-    switch (index->type) {
-    case glob_callback_token_t::String:
-        if (str.starts_with(index->value)) {
-            MATCH_GLOB_RECURSE(result, next_index, end, str.substr(index->value.size()));
-        }
-        return result;
-
-    case glob_callback_token_t::StringList:
-        for (hilet &value : index->values) {
-            if (str.starts_with(value)) {
-                MATCH_GLOB_RECURSE(result, next_index, end, str.substr(value.size()));
-            }
-        }
-        return result;
-
-    case glob_callback_token_t::CharacterList:
-        if (index->value.find(str.front()) != std::string::npos) {
-            MATCH_GLOB_RECURSE(result, next_index, end, str.substr(1));
-        }
-        return result;
-
-    case glob_callback_token_t::InverseCharacterList:
-        if (index->value.find(str.front()) == std::string::npos) {
-            MATCH_GLOB_RECURSE(result, next_index, end, str.substr(1));
-        }
-        return result;
-
-    case glob_callback_token_t::Separator:
-        if (str.front() == '/') {
-            return matchGlob(next_index, end, str.substr(1));
-        } else {
-            return glob_match_result_t::No;
-        }
-
-    case glob_callback_token_t::AnyCharacter:
-        if (str.front() != '/') {
-            return matchGlob(next_index, end, str.substr(1));
-        } else {
-            return glob_match_result_t::No;
-        }
-
-    case glob_callback_token_t::AnyString:
-        // Loop through each character in the string, including the end.
-        for (std::size_t i = 0; i <= str.size(); i++) {
-            MATCH_GLOB_RECURSE(result, next_index, end, str.substr(i));
-
-            // Don't continue beyond a slash.
-            if (i < str.size() && str[i] == '/') {
-                break;
-            }
-        }
-        return result;
-
-    case glob_callback_token_t::AnyDirectory:
-        // Recurse after each slash.
-        found_slash = false;
-        for (std::size_t i = 0; i <= str.size(); i++) {
-            if (i == str.size() || str[i] == '/') {
-                MATCH_GLOB_RECURSE(result, next_index, end, str.substr(i));
-            }
-        }
-        return result;
-
-    default: hi_no_default();
-    }
-#undef MATCH_GLOB_RECURSE
 }
 
-inline glob_match_result_t matchGlob(glob_token_list_t const &glob, std::string_view str)
+[[nodiscard]] inline generator<std::filesystem::path> glob(std::string_view pattern)
 {
-    return matchGlob(glob.begin(), glob.end(), str);
+    return glob(glob_pattern{pattern});
 }
 
-inline glob_match_result_t matchGlob(std::string_view glob, std::string_view str)
+[[nodiscard]] inline generator<std::filesystem::path> glob(std::string const& pattern)
 {
-    return matchGlob(parseGlob(glob), str);
+    return glob(glob_pattern{pattern});
 }
 
-inline std::string basePathOfGlob(glob_token_const_iterator first, glob_token_const_iterator last)
+[[nodiscard]] inline generator<std::filesystem::path> glob(char const *pattern)
 {
-    if (first == last) {
-        return "";
-    }
-
-    // Find the first place holder and don't include it as a token.
-    auto endOfBase = std::find_if_not(first, last, [](hilet &x) {
-        return x.type == glob_callback_token_t::String || x.type == glob_callback_token_t::Separator;
-    });
-
-    if (endOfBase != last) {
-        // Backtrack until the last separator, and remove it.
-        // Except when we included everything in the first loop because in that case there
-        // are no placeholders at all and we want to include the filename.
-        endOfBase = rfind_if(first, endOfBase, [](hilet &x) {
-            return x.type == glob_callback_token_t::Separator;
-        });
-    }
-
-    // Add back the leading slash.
-    if (endOfBase == first && first->type == glob_callback_token_t::Separator) {
-        endOfBase++;
-    }
-
-    std::string r;
-    for (auto index = first; index != endOfBase; index++) {
-        switch (index->type) {
-        case glob_callback_token_t::String: r += index->value; break;
-        case glob_callback_token_t::Separator: r += '/'; break;
-        default: hi_no_default();
-        }
-    }
-    return r;
+    return glob(glob_pattern{pattern});
 }
 
-inline std::string basePathOfGlob(glob_token_list_t const &glob)
+[[nodiscard]] inline generator<std::filesystem::path> glob(std::filesystem::path const& pattern)
 {
-    return basePathOfGlob(glob.begin(), glob.end());
+    return glob(glob_pattern{pattern});
 }
 
-inline std::string basePathOfGlob(std::string_view glob)
+[[nodiscard]] inline generator<std::filesystem::path> glob(URL const& pattern)
 {
-    return basePathOfGlob(parseGlob(glob));
+    return glob(glob_pattern{pattern.filesystem_path()});
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

@@ -2,8 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "hikogui/URL.hpp"
-#include "hikogui/algorithm.hpp"
+#include "URL.hpp"
+#include "algorithm.hpp"
+#include "ranges.hpp"
+#include "glob.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
@@ -36,14 +38,13 @@ TEST(URL, glob1)
 {
     hilet executableDirectory = URL::url_from_executable_directory();
 
-    hilet txt_file_glob = executableDirectory / "*.txt";
-    auto txt_files = txt_file_glob.glob();
+    auto txt_files = make_vector(glob(executableDirectory / "*.txt"));
 
     ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) {
-        return x.path().filename() == "file_view.txt";
+        return x.filename() == "file_view.txt";
     }));
     ASSERT_FALSE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) {
-        return x.path().filename() == "HikoGUI_Foundation.lib";
+        return x.filename() == "HikoGUI_Foundation.lib";
     }));
 }
 
@@ -51,10 +52,9 @@ TEST(URL, glob2)
 {
     hilet executableDirectory = URL::url_from_executable_directory();
 
-    hilet txt_file_glob = executableDirectory / "**/*.txt";
-    auto txt_files = txt_file_glob.glob();
+    auto txt_files = make_vector(glob(executableDirectory / "**/*.txt"));
 
     ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) {
-        return x.path().filename() == "glob2.txt";
+        return x.filename() == "glob2.txt";
     }));
 }

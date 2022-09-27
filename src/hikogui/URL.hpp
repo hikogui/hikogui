@@ -89,7 +89,7 @@ public:
         return r + path.relative_path().generic_string();
     }
 
-    URL(std::filesystem::path const& path) : URI(make_file_url_string(path)) {}
+    explicit URL(std::filesystem::path const& path) : URI(make_file_url_string(path)) {}
 
     constexpr void static validate_file_segment(std::string_view segment)
     {
@@ -225,7 +225,22 @@ public:
      */
     [[nodiscard]] std::filesystem::path filesystem_path() const
     {
-        return {generic_path()};
+        if (auto scheme_ = scheme()) {
+            if (scheme_ == "resource") {
+                return URL::url_from_resource_directory() / *this;
+            } else if (scheme_ == "file") {
+                return {generic_path()};
+            } else {
+                throw url_error("URL can not be converted to a filesystem path.");
+            }
+        } else {
+            return {generic_path()};
+        }
+    }
+
+    operator std::filesystem::path() const
+    {
+        return filesystem_path();
     }
 
     /** Load a resource.
@@ -243,21 +258,6 @@ public:
         return URL{up_cast<URI const&>(base) / ref};
     }
 
-    /** Return new URLs by finding matching files.
-     * Currently only works for file: scheme urls.
-     *
-     * The following wildcards are supported:
-     *  - '*' Replaced by 0 or more characters.
-     *  - '?' Replaced by 1 character.
-     *  - '**' Replaced by 0 or more nested directories.
-     *  - '[abcd]' Replaced by a single character from the set "abcd".
-     *  - '{foo,bar}' Replaced by a string "foo" or "bar".
-     *
-     * @return A list of file URLs that match the glob pattern.
-     * @throw url_error When the URL is not a file URL.
-     */
-    [[nodiscard]] std::vector<URL> glob() const;
-
     [[nodiscard]] static URL url_from_current_working_directory() noexcept;
     [[nodiscard]] static URL url_from_resource_directory() noexcept;
     [[nodiscard]] static URL url_from_executable_directory() noexcept;
@@ -266,14 +266,7 @@ public:
     [[nodiscard]] static URL url_from_application_log_directory() noexcept;
     [[nodiscard]] static URL url_from_system_font_directory() noexcept;
     [[nodiscard]] static URL url_from_application_preferences_file() noexcept;
-
-    /*! Return file names in the directory pointed by the url.
-     * \param path path to the directory to scan.
-     * \return A list of filenames or subdirectories (ending in '/') in the directory.
-     */
-    [[nodiscard]] static std::vector<std::string> filenames_by_scanning_directory(std::string_view path) noexcept;
 };
-
 }} // namespace hi::v1
 
 template<>

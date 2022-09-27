@@ -224,6 +224,14 @@ public:
 
     /** A path type.
      *
+     * A path is a vector of path-segments:
+     * - An empty path has no segments.
+     * - The last segment is the filename, if it is an empty string then there is no filename.
+     * - The segments names ".", ".." and "**" are always directories. If the string to be parsed
+     *   ends in ".", ".." or "**" then it is treated as if the string is terminated with a "/".
+     * - A segment may contain any characters including '/' and ':'.
+     * - non-filename segments may be empty strings, which can be used to represent the root-directory.
+     *
      *  Path string             | Segment list
      *  ----------------------- | -----------------
      *  ""                      | []
@@ -254,21 +262,25 @@ public:
 
         [[nodiscard]] constexpr static std::vector<std::string> parse(std::string_view str)
         {
-            return make_vector<std::string>(std::views::transform(std::views::split(str, std::string_view{"/"}), [](auto&& x) {
+            auto r = make_vector<std::string>(std::views::transform(std::views::split(str, std::string_view{"/"}), [](auto&& x) {
                 return URI::decode(x);
             }));
+
+            if (r.size() == 1 and r.front().empty()) {
+                // An empty string will evaluate to a single segment.
+                r.clear();
+            }
+            if (not r.empty() and (r.back() == "." or r.back() == ".." or r.back() == "**")) {
+                // ".", ".." and "**" are directories always terminate with a slash.
+                r.emplace_back();
+            }
+
+            return r;
         }
 
         constexpr path_type(std::string_view str) noexcept : std::vector<std::string>(parse(str))
         {
-            if (size() == 1 and front().empty()) {
-                // An empty string will evaluate to a single segment.
-                clear();
-            }
-            if (not empty() and (back() == "." or back() == "..")) {
-                // "." and ".." are directories always terminate with a slash.
-                emplace_back();
-            }
+            hi_axiom(holds_invariant());
         }
 
         [[nodiscard]] constexpr bool absolute() const noexcept
@@ -311,6 +323,7 @@ public:
             default: // relative or absolute directory with optional filename. Just empty the last path segment.
                 back().clear();
             }
+            hi_axiom(holds_invariant());
             return *this;
         }
 
@@ -333,6 +346,7 @@ public:
                 base.emplace_back();
             }
 
+            hi_axiom(base.holds_invariant());
             return base;
         }
 
@@ -392,7 +406,21 @@ public:
                 path.clear();
             }
 
+            hi_axiom(path.holds_invariant());
             return path;
+        }
+
+        [[nodiscard]] constexpr bool holds_invariant() const noexcept
+        {
+            if (empty()) {
+                return true;
+            }
+
+            if (back() == "." or back() == ".." or back() == "**") {
+                // ".", ".." and "**" are always directories and may not be the last segment.
+                return false;
+            }
+            return true;
         }
 
         [[nodiscard]] constexpr friend size_t to_string_size(path_type const& rhs) noexcept

@@ -12,6 +12,7 @@
 #include "../strings.hpp"
 #include "../exception.hpp"
 #include "../indent.hpp"
+#include "../file_view.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
@@ -25,16 +26,29 @@ namespace hi::inline v1 {
  */
 [[nodiscard]] datum parse_JSON(std::string_view text);
 
+[[nodiscard]] inline datum parse_JSON(std::string const& text)
+{
+    return parse_JSON(std::string_view{text});
+}
+
+[[nodiscard]] inline datum parse_JSON(char const *text)
+{
+    return parse_JSON(std::string_view{text});
+}
+
 /** Parse a JSON string.
- * @param file URL pointing to the file to parse.
+ * @param path URL pointing to the file to parse.
  * @return A datum representing the parsed object.
  */
-[[nodiscard]] datum parse_JSON(hi::URL const &file);
+[[nodiscard]] inline datum parse_JSON(std::filesystem::path const& path)
+{
+    return parse_JSON(as_string_view(file_view(path)));
+}
 
 /** Dump an datum object into a JSON string.
  * @param root datum-object to serialize
  * @return The JSON serialized object as a string
  */
-[[nodiscard]] std::string format_JSON(datum const &root);
+[[nodiscard]] std::string format_JSON(datum const& root);
 
 } // namespace hi::inline v1

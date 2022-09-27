@@ -3,6 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "JSON.hpp"
+#include "../file_view.hpp"
 
 namespace hi::inline v1 {
 
@@ -174,10 +175,6 @@ struct parse_context_t {
     return root;
 }
 
-[[nodiscard]] datum parse_JSON(URL const &url)
-{
-    return parse_JSON(as_string_view(*url.loadView()));
-}
 
 static void format_JSON_impl(datum const &value, std::string &result, hi::indent indent = {})
 {

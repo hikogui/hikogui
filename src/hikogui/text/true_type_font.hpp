@@ -7,10 +7,11 @@
 #include "font.hpp"
 #include "../graphic_path.hpp"
 #include "../resource_view.hpp"
-#include "../URL.hpp"
 #include "../counters.hpp"
 #include "../cast.hpp"
+#include "../file_view.hpp"
 #include <memory>
+#include <filesystem>
 
 namespace hi::inline v1 {
 
@@ -18,7 +19,7 @@ class true_type_font final : public font {
 private:
     /** The url to retrieve the view.
      */
-    std::optional<URL> url;
+    std::optional<std::filesystem::path> _path;
 
     /** The resource view of the font-file.
      *
@@ -37,12 +38,12 @@ private:
     int num_glyphs;
 
 public:
-    true_type_font(std::unique_ptr<resource_view> view) : url(), view(std::move(view))
+    true_type_font(std::unique_ptr<resource_view> view) : _path(), view(std::move(view))
     {
         parse_font_directory();
     }
 
-    true_type_font(URL const &url) : url(url), view(url.loadView())
+    true_type_font(std::filesystem::path const& path) : _path(path), view(std::make_unique<file_view>(path))
     {
         ++global_counter<"ttf:map">;
         try {
@@ -53,7 +54,7 @@ public:
             ++global_counter<"ttf:unmap">;
 
         } catch (std::exception const &e) {
-            throw parse_error(std::format("{}: Could not parse font directory.\n{}", to_string(url), e.what()));
+            throw parse_error(std::format("{}: Could not parse font directory.\n{}", path.string(), e.what()));
         }
     }
 
@@ -130,8 +131,8 @@ private:
             [[likely]] return;
         }
 
-        hi_axiom(url);
-        view = url->loadView();
+        hi_axiom(_path);
+        view = std::make_unique<file_view>(*_path);
         ++global_counter<"ttf:map">;
         cache_tables();
     }

@@ -28,7 +28,7 @@ static URL get_folder_by_id(const KNOWNFOLDERID &folder_id) noexcept
     if (SHGetKnownFolderPath(folder_id, 0, nullptr, &path) != S_OK) {
         hi_log_fatal("Could not get known folder path.");
     }
-    URL folder = URL{std::filesystem::path{path}};
+    URL folder = URL{std::filesystem::path{path} / ""};
     CoTaskMemFree(path);
     return folder;
 }
@@ -77,38 +77,6 @@ URL URL::url_from_system_font_directory() noexcept
 URL URL::url_from_application_preferences_file() noexcept
 {
     return URL::url_from_application_data_directory() / "preferences.json";
-}
-
-std::vector<std::string> URL::filenames_by_scanning_directory(std::string_view path) noexcept
-{
-    auto search_path = std::filesystem::path{path} / "*";
-    auto search_path_str = static_cast<std::wstring>(search_path);
-
-    std::vector<std::string> filenames;
-    WIN32_FIND_DATAW fileData;
-
-    hilet findHandle = FindFirstFileW(search_path_str.c_str(), &fileData);
-    if (findHandle == INVALID_HANDLE_VALUE) {
-        return filenames;
-    }
-
-    do {
-        auto filename = to_string(std::wstring(fileData.cFileName));
-
-        if (filename == "." || filename == "..") {
-            continue;
-        } else if ((fileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) > 0) {
-            filename += '/';
-        } else if ((fileData.dwFileAttributes & FILE_ATTRIBUTE_DEVICE) > 0) {
-            continue;
-        }
-
-        filenames.push_back(filename);
-
-    } while (FindNextFileW(findHandle, &fileData));
-
-    FindClose(findHandle);
-    return filenames;
 }
 
 } // namespace hi::inline v1

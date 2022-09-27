@@ -6,7 +6,6 @@
 #include "strings.hpp"
 #include "utility.hpp"
 #include "url_parser.hpp"
-#include "glob.hpp"
 #include "file_view.hpp"
 #include "exception.hpp"
 #include "static_resource_view.hpp"
@@ -15,36 +14,6 @@
 
 namespace hi::inline v1 {
 
-static void urls_by_recursive_scanning(std::string const& base, glob_token_list_t const& glob, std::vector<URL>& result) noexcept
-{
-    for (hilet& filename : URL::filenames_by_scanning_directory(base)) {
-        if (filename.back() == '/') {
-            hilet directory = std::string_view(filename.data(), filename.size() - 1);
-            auto recursePath = base + "/";
-            recursePath += directory;
-
-            if (matchGlob(glob, recursePath) != glob_match_result_t::No) {
-                urls_by_recursive_scanning(recursePath, glob, result);
-            }
-
-        } else {
-            hilet finalPath = base + '/' + filename;
-            if (matchGlob(glob, finalPath) == glob_match_result_t::Match) {
-                result.push_back(URL{std::filesystem::path{finalPath}});
-            }
-        }
-    }
-}
-
-std::vector<URL> URL::glob() const
-{
-    hilet glob = parseGlob(generic_path());
-    hilet basePath = basePathOfGlob(glob);
-
-    std::vector<URL> urls;
-    urls_by_recursive_scanning(basePath, glob, urls);
-    return urls;
-}
 
 URL URL::url_from_current_working_directory() noexcept
 {

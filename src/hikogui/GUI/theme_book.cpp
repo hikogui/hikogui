@@ -7,22 +7,23 @@
 #include "../subsystem.hpp"
 #include "../trace.hpp"
 #include "../log.hpp"
+#include "../glob.hpp"
 
 namespace hi::inline v1 {
 
 theme_book::~theme_book() {}
 
-theme_book::theme_book(hi::font_book const &font_book, std::vector<URL> const &theme_directories) noexcept : themes()
+theme_book::theme_book(hi::font_book const &font_book, std::vector<std::filesystem::path> const &theme_directories) noexcept : themes()
 {
     for (hilet &theme_directory : theme_directories) {
         hilet theme_directory_glob = theme_directory / "**" / "*.theme.json";
-        for (hilet &theme_url : theme_directory_glob.glob()) {
+        for (hilet &theme_path : glob(theme_directory_glob)) {
             auto t = trace<"theme_scan">{};
 
             try {
-                themes.push_back(std::make_unique<theme>(font_book, theme_url));
+                themes.push_back(std::make_unique<theme>(font_book, theme_path));
             } catch (std::exception const &e) {
-                hi_log_error("Failed parsing theme at {}. \"{}\"", theme_url, e.what());
+                hi_log_error("Failed parsing theme at {}. \"{}\"", theme_path.string(), e.what());
             }
         }
     }

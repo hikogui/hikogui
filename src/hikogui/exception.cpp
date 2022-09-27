@@ -29,7 +29,9 @@ inline namespace v1 {
         title = "Abnormal termination";
     }
 
-    message += terminate_message.exchange(nullptr);
+    if (auto terminate_message_ = terminate_message.exchange(nullptr)) {
+        message += *terminate_message_;
+    }
 
     console_output(title + "\n", std::cerr);
 

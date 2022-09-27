@@ -16,7 +16,7 @@ namespace hi::inline v1 {
 std::shared_ptr<file_mapping> file_view::findOrCreateFileMappingObject(std::filesystem::path const &path, access_mode accessMode, std::size_t size)
 {
     static unfair_mutex mutex;
-    static std::unordered_map<URL, std::vector<std::weak_ptr<file_mapping>>> mappedFileObjects;
+    static std::unordered_map<std::filesystem::path, std::vector<std::weak_ptr<file_mapping>>> mappedFileObjects;
 
     hilet lock = std::scoped_lock(mutex);
 

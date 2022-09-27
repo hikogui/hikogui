@@ -8,12 +8,14 @@
 #include "../text/semantic_text_style.hpp"
 #include "../text/text_style.hpp"
 #include "../utility.hpp"
-#include "../URL.hpp"
 #include "../datum.hpp"
 #include "../color/color.hpp"
 #include "../geometry/extent.hpp"
 #include "../subsystem.hpp"
 #include <array>
+#include <filesystem>
+#include <string>
+#include <vector>
 
 namespace hi::inline v1 {
 class font_book;
@@ -77,7 +79,7 @@ public:
 
     /** Open and parse a theme file.
      */
-    theme(hi::font_book const& font_book, URL const& url);
+    theme(hi::font_book const& font_book, std::filesystem::path const& url);
 
     /** Create a transformed copy of the theme.
      *
