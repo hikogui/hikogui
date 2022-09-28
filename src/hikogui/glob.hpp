@@ -5,13 +5,13 @@
 #pragma once
 
 #include "utility.hpp"
+#include "type_traits.hpp"
 #include <vector>
 #include <string>
 #include <string_view>
 #include <filesystem>
 #include <variant>
 #include <type_traits>
-#include <regex>
 
 namespace hi { inline namespace v1 {
 
@@ -23,86 +23,80 @@ public:
     constexpr glob_pattern& operator=(glob_pattern const&) noexcept = default;
     constexpr glob_pattern& operator=(glob_pattern&&) noexcept = default;
 
-    glob_pattern(std::string_view str) : _tokens(parse(str)), _regex()
-    {
-        _regex = make_regex(_tokens);
-    }
+    glob_pattern(std::string_view str) : _tokens(parse(str)) {}
 
     glob_pattern(std::string const& str) : glob_pattern(std::string_view{str}) {}
     glob_pattern(char const *str) : glob_pattern(std::string_view{str}) {}
     glob_pattern(std::filesystem::path const& path) : glob_pattern(path.generic_string()) {}
 
-    [[nodiscard]] constexpr friend std::string to_string(glob_pattern const& rhs) noexcept
+    [[nodiscard]] constexpr std::string string() noexcept
     {
         auto r = std::string{};
-
-        for (hilet& token : rhs._tokens) {
-            if (auto string_ = std::get_if<string_type>(&token)) {
-                r += *string_;
-            } else if (std::holds_alternative<separator_type>(token)) {
-                r += '/';
-            } else if (auto strings_ = std::get_if<strings_type>(&token)) {
-                r += '{';
-                for (hilet& s : *strings_) {
-                    r += s;
-                    r += ',';
-                }
-                r += '}';
-            } else if (std::holds_alternative<any_char_type>(token)) {
-                r += '?';
-            } else if (std::holds_alternative<any_string_type>(token)) {
-                r += '*';
-            } else if (std::holds_alternative<any_directory_type>(token)) {
-                r += "/**";
-            } else {
-                hi_no_default();
-            }
-        }
-        return r;
-    }
-
-    [[nodiscard]] constexpr friend std::string to_regex_string(glob_pattern const& rhs) noexcept
-    {
-        return make_regex_string(rhs._tokens);
-    }
-
-    [[nodiscard]] constexpr std::string base_generic_string() const noexcept
-    {
-        auto r = std::string{};
-
         for (hilet& token : _tokens) {
-            if (auto string_ = std::get_if<string_type>(&token)) {
-                r += *string_;
-            } else if (std::holds_alternative<separator_type>(token)) {
-                r += '/';
-            } else if (std::holds_alternative<any_directory_type>(token)) {
-                r += "/";
-                return r;
-            } else {
-                return r;
-            }
+            r += token.string();
         }
         return r;
+    }
+
+    [[nodiscard]] constexpr std::string debug_string() noexcept
+    {
+        auto r = std::string{};
+        for (hilet& token : _tokens) {
+            r += token.debug_string();
+        }
+        return r;
+    }
+
+    [[nodiscard]] constexpr std::string base_string() const noexcept
+    {
+        if (_tokens.empty() or not _tokens.front().is_text()) {
+            return {};
+        } else {
+            return _tokens.front().string();
+        }
     }
 
     [[nodiscard]] std::filesystem::path base_path() const noexcept
     {
-        return std::filesystem::path{base_generic_string()};
+        auto text = base_string();
+        if (auto i = text.rfind('/'); i == std::string::npos) {
+            // If there is no slash then there is no base directory.
+            text.clear();
+        } else {
+            // Include the trailing slash of the base directory.
+            text.resize(i + 1);
+        }
+        return {std::move(text)};
     }
 
-    [[nodiscard]] bool matches(std::string_view path) const noexcept
+    [[nodiscard]] constexpr bool matches(std::string_view str) const noexcept
     {
-        return std::regex_match(path.begin(), path.end(), _regex);
+        auto first = _tokens.cbegin();
+        auto last = _tokens.cend();
+
+        // Strip away the prefix and suffix quickly.
+        if (not matches_strip(first, last, str)) {
+            // The prefix and suffix of the do not match.
+            return false;
+
+        } else if (first == last) {
+            // All tokens matched the prefix and suffix.
+            // If the resulting string is empty than it is a match.
+            return str.empty();
+        }
+
+        // Do more complex matching with the stripped string.
+        return matches(first, last, str);
     }
 
-    [[nodiscard]] bool matches(std::string const& path) const noexcept
+    [[nodiscard]] constexpr bool matches(std::string const& str) const noexcept
     {
-        return matches(std::string_view{path});
+        return matches(std::string_view{str});
     }
 
-    [[nodiscard]] bool matches(char const *path) const noexcept
+    [[nodiscard]] constexpr bool matches(char const *str) const noexcept
     {
-        return matches(std::string_view{path});
+        return matches(std::string_view{str});
     }
 
     [[nodiscard]] bool matches(std::filesystem::path const& path) const noexcept
@@ -111,32 +105,313 @@ public:
     }
 
 private:
-    using string_type = std::string;
-    struct separator_type {};
-    using strings_type = std::vector<std::string>;
-    struct any_string_type {};
-    struct any_char_type {};
-    struct any_directory_type {};
+    enum class match_result_type { fail, success, unchecked };
 
-    using token_type =
-        std::variant<string_type, separator_type, strings_type, any_string_type, any_char_type, any_directory_type>;
+    class token_type {
+    public:
+        using text_type = std::string;
+        using character_class_type = std::vector<std::pair<char, char>>;
+        using alternation_type = std::vector<std::string>;
+        class any_character_type {};
+        class any_text_type {};
+        class any_directory_type {};
+
+        constexpr token_type(token_type const&) noexcept = default;
+        constexpr token_type(token_type&&) noexcept = default;
+        constexpr token_type& operator=(token_type const&) noexcept = default;
+        constexpr token_type& operator=(token_type&&) noexcept = default;
+
+        constexpr token_type(text_type&& rhs) noexcept : _value(std::move(rhs)) {}
+        constexpr token_type(character_class_type&& rhs) noexcept : _value(std::move(rhs)) {}
+        constexpr token_type(alternation_type&& rhs) noexcept : _value(std::move(rhs)) {}
+        constexpr token_type(any_character_type&& rhs) noexcept : _value(std::move(rhs)) {}
+        constexpr token_type(any_text_type&& rhs) noexcept : _value(std::move(rhs)) {}
+        constexpr token_type(any_directory_type&& rhs) noexcept : _value(std::move(rhs)) {}
+
+        [[nodiscard]] constexpr bool is_text() const noexcept
+        {
+            return std::holds_alternative<text_type>(_value);
+        }
+
+        template<bool Left>
+        [[nodiscard]] constexpr match_result_type strip(std::string_view& str) const noexcept
+        {
+            constexpr bool Right = not Left;
+
+            if (hilet text_ptr = std::get_if<text_type>(&_value)) {
+                if (Left and str.starts_with(*text_ptr)) {
+                    str.remove_prefix(text_ptr->size());
+                    return match_result_type::success;
+
+                } else if (Right and str.ends_with(*text_ptr)) {
+                    str.remove_suffix(text_ptr->size());
+                    return match_result_type::success;
+
+                } else {
+                    return match_result_type::fail;
+                }
+
+            } else if (hilet character_class_ptr = std::get_if<character_class_type>(&_value)) {
+                if (str.empty()) {
+                    return match_result_type::fail;
+                }
+                hilet c = Left ? str.front() : str.back();
+                for (hilet[first_char, last_char] : *character_class_ptr) {
+                    if (c >= first_char and c <= last_char) {
+                        if constexpr (Left) {
+                            str.remove_prefix(1);
+                        } else {
+                            str.remove_suffix(1);
+                        }
+                        return match_result_type::success;
+                    }
+                }
+                return match_result_type::fail;
+
+            } else if (std::holds_alternative<any_character_type>(_value)) {
+                if (str.empty()) {
+                    return match_result_type::fail;
+                }
+                if constexpr (Left) {
+                    str.remove_prefix(1);
+                } else {
+                    str.remove_suffix(1);
+                }
+                return match_result_type::success;
+
+            } else {
+                return match_result_type::unchecked;
+            }
+        }
+
+        [[nodiscard]] constexpr match_result_type matches(std::string_view& str, size_t iteration) const noexcept
+        {
+            if (hilet text_ptr = std::get_if<text_type>(&_value)) {
+                if (iteration != 0) {
+                    return match_result_type::fail;
+
+                } else if (str.starts_with(*text_ptr)) {
+                    str.remove_prefix(text_ptr->size());
+                    return match_result_type::success;
+
+                } else {
+                    return match_result_type::fail;
+                }
+
+            } else if (hilet character_class_ptr = std::get_if<character_class_type>(&_value)) {
+                if (iteration != 0 or str.empty()) {
+                    return match_result_type::fail;
+                } else {
+                    hilet c = str.front();
+                    for (hilet[first_char, last_char] : *character_class_ptr) {
+                        if (c >= first_char and c <= last_char) {
+                            str.remove_prefix(1);
+                            return match_result_type::success;
+                        }
+                    }
+                    return match_result_type::fail;
+                }
+
+            } else if (hilet alternation_ptr = std::get_if<alternation_type>(&_value)) {
+                if (iteration >= alternation_ptr->size()) {
+                    return match_result_type::fail;
+                } else if (str.starts_with((*alternation_ptr)[iteration])) {
+                    str.remove_prefix((*alternation_ptr)[iteration].size());
+                    return match_result_type::success;
+                } else {
+                    return match_result_type::unchecked;
+                }
+
+            } else if (std::holds_alternative<any_character_type>(_value)) {
+                if (iteration != 0 or str.empty()) {
+                    return match_result_type::fail;
+                } else {
+                    str.remove_prefix(1);
+                    return match_result_type::success;
+                }
+
+            } else if (std::holds_alternative<any_text_type>(_value)) {
+                if (iteration > str.size() or iteration > str.find('/')) {
+                    return match_result_type::fail;
+                } else {
+                    str.remove_prefix(iteration);
+                    return match_result_type::success;
+                }
+
+            } else if (std::holds_alternative<any_directory_type>(_value)) {
+                if (str.empty() or str.front() != '/') {
+                    return match_result_type::fail;
+                } else {
+                    for (auto i = 0_uz; i != std::string_view::npos; i = str.find('/', i + 1)) {
+                        if (iteration-- == 0) {
+                            str.remove_prefix(i + 1);
+                            return match_result_type::success;
+                        }
+                    }
+                    return match_result_type::fail;
+                }
+
+            } else {
+                hi_no_default();
+            }
+        }
+
+        [[nodiscard]] constexpr std::string string() const noexcept
+        {
+            auto r = std::string{};
+
+            if (auto text_ptr = std::get_if<text_type>(&_value)) {
+                r = *text_ptr;
+
+            } else if (auto character_class_ptr = std::get_if<character_class_type>(&_value)) {
+                r += '[';
+                for (hilet[first_char, last_char] : *character_class_ptr) {
+                    if (first_char == last_char) {
+                        r += first_char;
+                    } else {
+                        r += first_char;
+                        r += '-';
+                        r += last_char;
+                    }
+                }
+                r += ']';
+
+            } else if (auto alternation_ptr = std::get_if<alternation_type>(&_value)) {
+                r += '{';
+                for (hilet& text : *alternation_ptr) {
+                    if (r.size() > 1) {
+                        r += ',';
+                    }
+                    r += text;
+                }
+                r += '}';
+
+            } else if (std::holds_alternative<any_character_type>(_value)) {
+                r += '?';
+
+            } else if (std::holds_alternative<any_text_type>(_value)) {
+                r += '*';
+
+            } else if (std::holds_alternative<any_directory_type>(_value)) {
+                r += "/**/";
+
+            } else {
+                hi_no_default();
+            }
+
+            return r;
+        }
+
+        [[nodiscard]] constexpr std::string debug_string() const noexcept
+        {
+            auto r = std::string{};
+
+            if (auto text_ptr = std::get_if<text_type>(&_value)) {
+                r += '\'';
+                r += *text_ptr;
+                r += '\'';
+
+            } else if (auto character_class_ptr = std::get_if<character_class_type>(&_value)) {
+                r += '[';
+                for (hilet[first_char, last_char] : *character_class_ptr) {
+                    if (first_char == last_char) {
+                        r += first_char;
+                    } else {
+                        r += first_char;
+                        r += '-';
+                        r += last_char;
+                    }
+                }
+                r += ']';
+
+            } else if (auto alternation_ptr = std::get_if<alternation_type>(&_value)) {
+                r += '{';
+                for (hilet& text : *alternation_ptr) {
+                    if (r.size() > 1) {
+                        r += ',';
+                    }
+                    r += text;
+                }
+                r += '}';
+
+            } else if (std::holds_alternative<any_character_type>(_value)) {
+                r += '?';
+
+            } else if (std::holds_alternative<any_text_type>(_value)) {
+                r += '*';
+
+            } else if (std::holds_alternative<any_directory_type>(_value)) {
+                r += "/**/";
+
+            } else {
+                hi_no_default();
+            }
+
+            return r;
+        }
+
+    private:
+        using variant_type = std::
+            variant<text_type, character_class_type, alternation_type, any_character_type, any_text_type, any_directory_type>;
+
+        /** The type of the token.
+         *
+         *  - 'a': Text.
+         *  - '?': Any single character, excluding '/'.
+         *  - '[': Character class. Characters may not include '/'.
+         *  - '{': Text selection. Each text may not include '/'.
+         *  - '*': Zero or more of any characters, excluding '/'.
+         *  - '/': Zero or more of any characters. The first and last character must be a '/'.
+         */
+        variant_type _value;
+    };
 
     using tokens_type = std::vector<token_type>;
+    using const_iterator = tokens_type::const_iterator;
 
     tokens_type _tokens;
-    std::regex _regex;
+
+    [[nodiscard]] constexpr static token_type make_text(token_type::text_type&& rhs) noexcept
+    {
+        return token_type{std::move(rhs)};
+    }
+
+    [[nodiscard]] constexpr static token_type make_alternation(token_type::alternation_type&& rhs) noexcept
+    {
+        return token_type{std::move(rhs)};
+    }
+
+    [[nodiscard]] constexpr static token_type make_character_class(token_type::character_class_type&& rhs) noexcept
+    {
+        return token_type{std::move(rhs)};
+    }
+
+    [[nodiscard]] constexpr static token_type make_any_character() noexcept
+    {
+        return token_type{token_type::any_character_type{}};
+    }
+
+    [[nodiscard]] constexpr static token_type make_any_text() noexcept
+    {
+        return token_type{token_type::any_text_type{}};
+    }
+
+    [[nodiscard]] constexpr static token_type make_any_directory() noexcept
+    {
+        return token_type{token_type::any_directory_type{}};
+    }
 
     [[nodiscard]] constexpr static tokens_type parse(auto first, auto last)
     {
-#define HI_GLOB_APPEND_STRING() \
+#define HI_GLOB_APPEND_TEXT() \
     do { \
-        if (not str.empty()) { \
-            r.emplace_back(std::move(str)); \
-            str.clear(); \
+        if (not text.empty()) { \
+            r.emplace_back(make_text(std::move(text))); \
+            text.clear(); \
         } \
     } while (false)
 
-        enum class state_type { idle, star, slash, slash_star, slash_star_star, bracket, brace };
+        enum class state_type { idle, star, slash, slash_star, slash_star_star, bracket, bracket_range, brace };
         using enum state_type;
 
         static_assert(std::is_same_v<std::decay_t<decltype(*first)>, char>);
@@ -144,8 +419,9 @@ private:
         auto r = tokens_type{};
 
         auto state = idle;
-        auto str = string_type{};
-        auto strs = strings_type{};
+        auto text = token_type::text_type{};
+        auto alternation = token_type::alternation_type{};
+        auto character_class = token_type::character_class_type{};
 
         auto it = first;
         while (it != last) {
@@ -154,37 +430,36 @@ private:
             case idle:
                 switch (c) {
                 case '/':
-                    HI_GLOB_APPEND_STRING();
                     state = slash;
                     break;
                 case '?':
-                    HI_GLOB_APPEND_STRING();
-                    r.emplace_back(any_char_type{});
+                    HI_GLOB_APPEND_TEXT();
+                    r.push_back(make_any_character());
                     break;
                 case '*':
-                    HI_GLOB_APPEND_STRING();
                     state = star;
                     break;
                 case '[':
-                    HI_GLOB_APPEND_STRING();
+                    HI_GLOB_APPEND_TEXT();
                     state = bracket;
                     break;
                 case '{':
-                    HI_GLOB_APPEND_STRING();
+                    HI_GLOB_APPEND_TEXT();
                     state = brace;
                     break;
                 default:
-                    str += c;
+                    text += c;
                 }
                 break;
 
             case star:
                 if (c == '*') {
-                    throw parse_error("Double /**/ is only allowed between slashes.");
+                    throw parse_error("Double ** is only allowed between slashes, like /**/.");
                 } else {
-                    r.emplace_back(any_string_type{});
+                    HI_GLOB_APPEND_TEXT();
+                    r.push_back(make_any_text());
+                    text += c;
                     state = idle;
-                    continue;
                 }
                 break;
 
@@ -192,9 +467,9 @@ private:
                 if (c == '*') {
                     state = slash_star;
                 } else {
-                    r.emplace_back(separator_type{});
+                    text += '/';
+                    text += c;
                     state = idle;
-                    continue;
                 }
                 break;
 
@@ -202,50 +477,86 @@ private:
                 if (c == '*') {
                     state = slash_star_star;
                 } else {
-                    r.emplace_back(separator_type{});
-                    r.emplace_back(any_string_type{});
+                    text += '/';
+                    HI_GLOB_APPEND_TEXT();
+                    r.push_back(make_any_text());
+                    text += c;
                     state = idle;
-                    continue;
                 }
                 break;
 
             case slash_star_star:
                 if (c == '/') {
-                    r.emplace_back(any_directory_type{});
+                    HI_GLOB_APPEND_TEXT();
+                    r.push_back(make_any_directory());
                     state = idle;
                 } else {
-                    throw parse_error(
-                        std::format("'/**' must end in a slash in glob pattern '{}'", std::string_view{first, last}));
+                    throw parse_error("Double ** is only allowed between slashes, like /**/.");
                 }
                 break;
 
             case bracket:
-                if (c == ']') {
-                    r.emplace_back(std::move(strs));
-                    strs.clear();
+                switch (c) {
+                case '/':
+                    throw parse_error("Slash '/' is not allowed inside a character class, i.e. between '[' and ']'.");
+                case '-':
+                    if (character_class.empty()) {
+                        character_class.emplace_back(c, c);
+                    } else {
+                        state = bracket_range;
+                    }
+                    break;
+                case ']':
+                    r.push_back(make_character_class(std::move(character_class)));
+                    character_class.clear();
                     state = idle;
+                    break;
+                default:
+                    character_class.emplace_back(c, c);
+                }
+                break;
 
-                } else {
-                    strs.emplace_back(1, c);
+            case bracket_range:
+                switch (c) {
+                case '/':
+                    throw parse_error("Slash '/' is not allowed inside a character class, i.e. between '[' and ']'.");
+                case '-':
+                    throw parse_error("Double '--' is not allowed inside a character class, i.e. between '[' and ']'.");
+                case ']':
+                    character_class.emplace_back('-', '-');
+                    r.push_back(make_character_class(std::move(character_class)));
+                    character_class.clear();
+                    state = idle;
+                    break;
+                default:
+                    character_class.back().second = c;
+                    state = bracket;
+                    break;
                 }
                 break;
 
             case brace:
-                if (c == '}') {
-                    if (not str.empty()) {
-                        strs.push_back(std::move(str));
-                        str.clear();
+                switch (c) {
+                case '/':
+                    throw parse_error("Slash '/' is not allowed inside an alternation, i.e. between '{' and '}'.");
+
+                case '}':
+                    if (not text.empty()) {
+                        alternation.push_back(std::move(text));
+                        text.clear();
                     }
-                    r.emplace_back(std::move(strs));
-                    strs.clear();
+                    r.push_back(make_alternation(std::move(alternation)));
+                    alternation.clear();
                     state = idle;
+                    break;
 
-                } else if (c == ',') {
-                    strs.push_back(std::move(str));
-                    str.clear();
+                case ',':
+                    alternation.push_back(std::move(text));
+                    text.clear();
+                    break;
 
-                } else {
-                    str += c;
+                default:
+                    text += c;
                 }
                 break;
 
@@ -258,27 +569,34 @@ private:
 
         switch (state) {
         case idle:
-            HI_GLOB_APPEND_STRING();
+            HI_GLOB_APPEND_TEXT();
             break;
 
         case star:
-            r.emplace_back(any_string_type{});
+            HI_GLOB_APPEND_TEXT();
+            r.push_back(make_any_text());
             break;
 
         case slash:
-            r.emplace_back(separator_type{});
+            text += '/';
+            HI_GLOB_APPEND_TEXT();
             break;
 
         case slash_star:
-            r.emplace_back(separator_type{});
-            r.emplace_back(any_string_type{});
+            text += '/';
+            HI_GLOB_APPEND_TEXT();
+            r.push_back(make_any_text());
             break;
 
         case slash_star_star:
-            r.emplace_back(any_directory_type{});
+            HI_GLOB_APPEND_TEXT();
+            r.push_back(make_any_directory());
             break;
 
         case bracket:
+            throw parse_error("Unclosed bracket '[' found in glob pattern.");
+
+        case bracket_range:
             throw parse_error("Unclosed bracket '[' found in glob pattern.");
 
         case brace:
@@ -287,7 +605,7 @@ private:
 
         return r;
 
-#undef HI_GLOB_APPEND_STRING
+#undef HI_GLOB_APPEND_TEXT
     }
 
     [[nodiscard]] constexpr static tokens_type parse(auto&& range)
@@ -295,52 +613,107 @@ private:
         return parse(std::ranges::begin(range), std::ranges::end(range));
     }
 
-    [[nodiscard]] constexpr static std::string make_regex_string(tokens_type const& tokens) noexcept
+    template<bool Left>
+    [[nodiscard]] constexpr static bool matches_strip(const_iterator& first, const_iterator& last, std::string_view& str) noexcept
     {
-        auto r = std::string{};
-
-        for (hilet& token : tokens) {
-            if (auto string_ = std::get_if<string_type>(&token)) {
-                r += *string_;
-            } else if (std::holds_alternative<separator_type>(token)) {
-                r += '/';
-            } else if (auto strings_ = std::get_if<strings_type>(&token)) {
-                r += '(';
-                auto first = true;
-                for (hilet& s : *strings_) {
-                    if (not std::exchange(first, false)) {
-                        r += '|';
-                    }
-                    r += s;
+        while (first != last) {
+            hilet it = Left ? first : last - 1;
+            switch (it->strip<Left>(str)) {
+            case match_result_type::fail:
+                return false;
+            case match_result_type::unchecked:
+                return true;
+            case match_result_type::success:
+                if constexpr (Left) {
+                    ++first;
+                } else {
+                    --last;
                 }
-                r += ')';
-            } else if (std::holds_alternative<any_char_type>(token)) {
-                r += "[^/]";
-            } else if (std::holds_alternative<any_string_type>(token)) {
-                r += "[^/]*";
-            } else if (std::holds_alternative<any_directory_type>(token)) {
-                r += "(/.*)?/";
-            } else {
+                break;
+            default:
                 hi_no_default();
             }
         }
-        return r;
+        return str.empty();
     }
 
-    [[nodiscard]] static std::regex make_regex(tokens_type const& tokens) noexcept
+    [[nodiscard]] constexpr static bool matches_strip(const_iterator& first, const_iterator& last, std::string_view& str) noexcept
     {
-        return std::regex{make_regex_string(tokens), std::regex_constants::ECMAScript | std::regex_constants::optimize};
+        return matches_strip<true>(first, last, str) and matches_strip<false>(first, last, str);
+    }
+
+    [[nodiscard]] constexpr bool matches(const_iterator it, const_iterator last, std::string_view original) const noexcept
+    {
+        hi_axiom(it != last);
+
+        struct stack_element {
+            std::string_view str;
+            size_t iteration;
+        };
+
+        auto stack = std::vector<stack_element>{};
+        stack.reserve(std::distance(it, last));
+
+        stack.emplace_back(original, 0);
+        while (true) {
+            auto [str, iteration] = stack.back();
+
+            switch (it->matches(str, iteration)) {
+            case match_result_type::success:
+                if (it + 1 == last) {
+                    if (str.empty()) {
+                        // This token fully matches the whole string.
+                        return true;
+
+                    } else {
+                        // This token matches, but this is the last token.
+                        // Try the next iteration on this same token.
+                        ++stack.back().iteration;
+                    }
+
+                } else {
+                    // This token matches, test the next token.
+                    stack.emplace_back(str, 0);
+                    ++it;
+                }
+                break;
+
+            case match_result_type::unchecked:
+                // This iteration of the token did not match, try the next.
+                ++stack.back().iteration;
+                break;
+
+            case match_result_type::fail:
+                // None of the token iterations succeeded.
+                if (stack.size() == 1) {
+                    // Can't track further back; the complete match failed.
+                    return false;
+
+                } else {
+                    // Track back and try the next iteration of the previous token.
+                    stack.pop_back();
+                    ++stack.back().iteration;
+                    --it;
+                }
+                break;
+
+            default:
+                hi_no_default();
+            }
+        }
     }
 };
 
-[[nodiscard]] inline generator<std::filesystem::path> glob(glob_pattern const& pattern)
+[[nodiscard]] inline generator<std::filesystem::path> glob(forward_of<glob_pattern> auto&& pattern)
 {
-    auto path = pattern.base_path();
+    // Make sure we move the pattern when passed an rvalue-reference/temporary.
+    forward_copy_or_ref_t<decltype(pattern)> pattern_ = hi_forward(pattern);
+    auto path = pattern_.base_path();
 
     hilet first = std::filesystem::recursive_directory_iterator(path);
     hilet last = std::filesystem::recursive_directory_iterator();
     for (auto it = first; it != last; ++it) {
-        if (pattern.matches(it->path())) {
+        if (pattern_.matches(it->path())) {
             co_yield it->path();
         }
     }
@@ -370,5 +743,4 @@ private:
 {
     return glob(glob_pattern{pattern.filesystem_path()});
 }
-
 }} // namespace hi::v1

@@ -147,7 +147,7 @@ public:
 
         [[nodiscard]] bool at_end() const noexcept
         {
-            return (not _coroutine) or _coroutine.done();
+            return not _coroutine or _coroutine.done();
         }
 
         /** Check if the generator-function has finished.

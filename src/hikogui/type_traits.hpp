@@ -532,6 +532,15 @@ struct is_forward_of<Context, Result(Args...)> :
 template<typename Context, typename Expected, typename... OtherExpected>
 constexpr bool is_forward_of_v = is_forward_of<Context, Expected, OtherExpected...>::value;
 
+template<typename Context>
+struct forward_copy_or_ref {
+    using type = std::conditional_t<std::is_rvalue_reference_v<Context>, std::decay_t<Context>, std::decay_t<Context> const &>;
+};
+
+template<typename Context>
+using forward_copy_or_ref_t = forward_copy_or_ref<Context>::type;
+
+
 /** Decays types for use as elements in std::variant.
  *
  * @tparam T type to be decayed, or when `void` converted to `std::monostate`.
