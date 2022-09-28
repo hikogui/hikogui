@@ -13,30 +13,30 @@ using namespace hi;
 
 TEST(glob, parsing)
 {
-    ASSERT_EQ(to_debug_string(glob_pattern{"world"}), "'world'");
-    ASSERT_EQ(to_debug_string(glob_pattern{"w*rld"}), "'w' * 'rld'");
-    ASSERT_EQ(to_debug_string(glob_pattern{"worl*"}), "'worl' *");
-    ASSERT_EQ(to_debug_string(glob_pattern{"*orld"}), "* 'orld'");
-    ASSERT_EQ(to_debug_string(glob_pattern{"w?rld"}), "'w' ? 'rld'");
-    ASSERT_EQ(to_debug_string(glob_pattern{"worl?"}), "'worl' ?");
-    ASSERT_EQ(to_debug_string(glob_pattern{"?orld"}), "? 'orld'");
-    ASSERT_EQ(to_debug_string(glob_pattern{"w[abc]rld"}), "'w' {a,b,c,} 'rld'");
-    ASSERT_EQ(to_debug_string(glob_pattern{"worl[abc]"}), "'worl' {a,b,c,}");
-    ASSERT_EQ(to_debug_string(glob_pattern{"[abc]orld"}), "{a,b,c,} 'orld'");
+    ASSERT_EQ(to_regex_string(glob_pattern{"world"}), "world");
+    ASSERT_EQ(to_regex_string(glob_pattern{"w*rld"}), "w[^/]*rld");
+    ASSERT_EQ(to_regex_string(glob_pattern{"worl*"}), "worl[^/]*");
+    ASSERT_EQ(to_regex_string(glob_pattern{"*orld"}), "[^/]*orld");
+    ASSERT_EQ(to_regex_string(glob_pattern{"w?rld"}), "w[^/]rld");
+    ASSERT_EQ(to_regex_string(glob_pattern{"worl?"}), "worl[^/]");
+    ASSERT_EQ(to_regex_string(glob_pattern{"?orld"}), "[^/]orld");
+    ASSERT_EQ(to_regex_string(glob_pattern{"w[abc]rld"}), "w(a|b|c)rld");
+    ASSERT_EQ(to_regex_string(glob_pattern{"worl[abc]"}), "worl(a|b|c)");
+    ASSERT_EQ(to_regex_string(glob_pattern{"[abc]orld"}), "(a|b|c)orld");
     ASSERT_THROW(glob_pattern{"worl[abc"}, parse_error);
-    ASSERT_EQ(to_debug_string(glob_pattern{"w{ab,c}rld"}), "'w' {ab,c,} 'rld'");
-    ASSERT_EQ(to_debug_string(glob_pattern{"worl{ab,c}"}), "'worl' {ab,c,}");
-    ASSERT_EQ(to_debug_string(glob_pattern{"{ab,c}orld"}), "{ab,c,} 'orld'");
+    ASSERT_EQ(to_regex_string(glob_pattern{"w{ab,c}rld"}), "w(ab|c)rld");
+    ASSERT_EQ(to_regex_string(glob_pattern{"worl{ab,c}"}), "worl(ab|c)");
+    ASSERT_EQ(to_regex_string(glob_pattern{"{ab,c}orld"}), "(ab|c)orld");
     ASSERT_THROW(glob_pattern{"worl{ab,c"}, parse_error);
 
-    ASSERT_EQ(to_debug_string(glob_pattern{"w/orld"}), "'w' / 'orld'");
-    ASSERT_EQ(to_debug_string(glob_pattern{"w/"}), "'w' /");
-    ASSERT_EQ(to_debug_string(glob_pattern{"/world"}), "/ 'world'");
+    ASSERT_EQ(to_regex_string(glob_pattern{"w/orld"}), "w/orld");
+    ASSERT_EQ(to_regex_string(glob_pattern{"w/"}), "w/");
+    ASSERT_EQ(to_regex_string(glob_pattern{"/world"}), "/world");
     ASSERT_THROW(glob_pattern{"w**rld"}, parse_error);
-    ASSERT_EQ(to_debug_string(glob_pattern{"world/**"}), "'world' /** /");
-    ASSERT_EQ(to_debug_string(glob_pattern{"world/**/"}), "'world' /** /");
-    ASSERT_EQ(to_debug_string(glob_pattern{"hello/**/world"}), "'hello' /** / 'world'");
-    ASSERT_EQ(to_debug_string(glob_pattern{"/**/world"}), "/** / 'world'");
+    ASSERT_EQ(to_regex_string(glob_pattern{"world/**"}), "world(/.*)?/");
+    ASSERT_EQ(to_regex_string(glob_pattern{"world/**/"}), "world(/.*)?/");
+    ASSERT_EQ(to_regex_string(glob_pattern{"hello/**/world"}), "hello(/.*)?/world");
+    ASSERT_EQ(to_regex_string(glob_pattern{"/**/world"}), "(/.*)?/world");
 }
 
 //TEST(Glob, MatchStar)
