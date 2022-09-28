@@ -354,15 +354,6 @@ private:
         using variant_type = std::
             variant<text_type, character_class_type, alternation_type, any_character_type, any_text_type, any_directory_type>;
 
-        /** The type of the token.
-         *
-         *  - 'a': Text.
-         *  - '?': Any single character, excluding '/'.
-         *  - '[': Character class. Characters may not include '/'.
-         *  - '{': Text selection. Each text may not include '/'.
-         *  - '*': Zero or more of any characters, excluding '/'.
-         *  - '/': Zero or more of any characters. The first and last character must be a '/'.
-         */
         variant_type _value;
     };
 
@@ -667,7 +658,7 @@ private:
 
                     } else {
                         // This token matches, but this is the last token.
-                        // Try the next iteration on this same token.
+                        // Try the next iteration on this token.
                         ++stack.back().iteration;
                     }
 
@@ -679,7 +670,7 @@ private:
                 break;
 
             case match_result_type::unchecked:
-                // This iteration of the token did not match, try the next.
+                // This iteration of the token did not match, try the next iteration.
                 ++stack.back().iteration;
                 break;
 
