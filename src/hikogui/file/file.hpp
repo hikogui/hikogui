@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "byte_string.hpp"
-#include "architecture.hpp"
-#include "cast.hpp"
+#include "../byte_string.hpp"
+#include "../architecture.hpp"
+#include "../cast.hpp"
 #include <mutex>
 #include <cstdint>
 #include <map>

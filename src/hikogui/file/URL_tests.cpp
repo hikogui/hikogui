@@ -3,9 +3,9 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "URL.hpp"
-#include "algorithm.hpp"
-#include "ranges.hpp"
 #include "glob.hpp"
+#include "../algorithm.hpp"
+#include "../ranges.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

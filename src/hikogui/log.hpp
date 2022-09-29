@@ -9,7 +9,6 @@
 #include "wfree_fifo.hpp"
 #include "atomic.hpp"
 #include "meta.hpp"
-#include "source_location.hpp"
 #include "architecture.hpp"
 #include "delayed_format.hpp"
 #include "fixed_string.hpp"

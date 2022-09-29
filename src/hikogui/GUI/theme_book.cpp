@@ -4,10 +4,10 @@
 
 #include "theme_book.hpp"
 #include "../text/font_book.hpp"
+#include "../file/glob.hpp"
 #include "../subsystem.hpp"
 #include "../trace.hpp"
 #include "../log.hpp"
-#include "../glob.hpp"
 
 namespace hi::inline v1 {
 

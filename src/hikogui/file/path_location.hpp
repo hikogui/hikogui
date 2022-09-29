@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "generator.hpp"
-#include "exception.hpp"
+#include "../generator.hpp"
+#include "../exception.hpp"
 #include <filesystem>
 #include <ranges>
 

@@ -55,8 +55,7 @@
             "name": "x64-MSVC-ReleaseWithDebugInfo",
             "inherits": "x64-Windows",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-                "HI_BUILD_PCH": "OFF"
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
             }
         },
         {

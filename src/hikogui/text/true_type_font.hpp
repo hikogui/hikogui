@@ -5,11 +5,10 @@
 #pragma once
 
 #include "font.hpp"
+#include "../file/file_view.hpp"
 #include "../graphic_path.hpp"
-#include "../resource_view.hpp"
 #include "../counters.hpp"
 #include "../cast.hpp"
-#include "../file_view.hpp"
 #include <memory>
 #include <filesystem>
 

@@ -15,7 +15,6 @@
 #include "../i18n/iso_15924.hpp"
 #include "../i18n/iso_639.hpp"
 #include "../graphic_path.hpp"
-#include "../resource_view.hpp"
 #include "../exception.hpp"
 #include "../utility.hpp"
 #include "../hash_map.hpp"

@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "formula_post_process_context.hpp"
-#include "../URI.hpp"
+#include "../file/URI.hpp"
 
 namespace hi::inline v1 {
 

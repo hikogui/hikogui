@@ -35,9 +35,3 @@ target_sources(hikogui PRIVATE
     theme_mode.hpp
 )
 
-if(HI_BUILD_PCH AND NOT HI_ENABLE_ANALYSIS)
-    target_precompile_headers(hikogui PRIVATE
-        gui_system.hpp
-        gui_system_win32.hpp
-    )
-endif()

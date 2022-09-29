@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "utility.hpp"
-#include "assert.hpp"
 #include "URI.hpp"
 #include "glob.hpp"
+#include "../utility.hpp"
+#include "../assert.hpp"
 #include <string>
 #include <string_view>
 #include <optional>

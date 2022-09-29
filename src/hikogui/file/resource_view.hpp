@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "void_span.hpp"
+#include "../void_span.hpp"
 #include <span>
 #include <variant>
 #include <functional>

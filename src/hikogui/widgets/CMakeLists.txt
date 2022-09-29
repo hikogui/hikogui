@@ -64,28 +64,3 @@ target_sources(hikogui PRIVATE
     window_widget.hpp
 )
 
-if(HI_BUILD_PCH AND NOT HI_ENABLE_ANALYSIS)
-    target_precompile_headers(hikogui PRIVATE
-        checkbox_widget.hpp
-        grid_widget.hpp
-        label_widget.hpp
-        menu_button_widget.hpp
-        momentary_button_widget.hpp
-        overlay_widget.hpp
-        radio_button_widget.hpp
-        row_column_widget.hpp
-        scroll_widget.hpp
-        selection_widget.hpp
-        tab_delegate.hpp
-        tab_widget.hpp
-        text_field_widget.hpp
-        text_widget.hpp
-        toggle_widget.hpp
-        toolbar_button_widget.hpp
-        toolbar_tab_button_widget.hpp
-        toolbar_widget.hpp
-        widget.hpp
-        window_traffic_lights_widget.hpp
-        window_widget.hpp
-    )
-endif()

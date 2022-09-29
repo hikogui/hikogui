@@ -6,8 +6,7 @@
 
 #include "skeleton_node.hpp"
 #include "skeleton_parse_context.hpp"
-#include "../resource_view.hpp"
-#include "../file_view.hpp"
+#include "../file/file_view.hpp"
 
 namespace hi::inline v1 {
 

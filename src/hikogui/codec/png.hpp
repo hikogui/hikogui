@@ -4,14 +4,13 @@
 
 #pragma once
 
+#include "../file/file_view.hpp"
 #include "../utility.hpp"
 #include "../pixel_map.hpp"
 #include "../rapid/sfloat_rgba16.hpp"
 #include "../geometry/identity.hpp"
-#include "../resource_view.hpp"
 #include "../byte_string.hpp"
 #include "../strings.hpp"
-#include "../file_view.hpp"
 #include <span>
 #include <vector>
 #include <cstddef>

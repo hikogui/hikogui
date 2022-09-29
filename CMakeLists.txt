@@ -24,7 +24,6 @@ include(CMakeDependentOption)
 cmake_dependent_option(HI_BUILD_EXAMPLES "Build example applications"   OFF "NOT HI_ENABLE_ANALYSIS" ON)
 cmake_dependent_option(HI_BUILD_TESTS    "Build tests"                  ON  "NOT HI_ENABLE_ANALYSIS" OFF)
 cmake_dependent_option(HI_INSTALL        "Generate installation target" ON  "NOT HI_ENABLE_ANALYSIS" OFF)
-cmake_dependent_option(HI_BUILD_PCH      "Build precompiled headers"    ON  "NOT HI_ENABLE_ANALYSIS" OFF)
 
 #-------------------------------------------------------------------
 # Project
@@ -481,12 +480,6 @@ if(HI_BUILD_TESTS)
     target_link_libraries(hikogui_tests PRIVATE gtest_main hikogui)
 
     target_include_directories(hikogui_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-
-    if(HI_BUILD_PCH)
-        if(NOT HI_ENABLE_ANALYSIS)
-            target_precompile_headers(hikogui_tests PRIVATE <gtest/gtest.h>)
-        endif()
-    endif()
 
     include(GoogleTest)
 

@@ -7,11 +7,11 @@
 #include "theme_book.hpp"
 #include "../GFX/gfx_system_vulkan.hpp"
 #include "../text/font_book.hpp"
+#include "../file/path_location.hpp"
+#include "../file/URL.hpp"
 #include "../locked_memory_allocator.hpp"
 #include "../trace.hpp"
 #include "../log.hpp"
-#include "../path_location.hpp"
-#include "../URL.hpp"
 #include <memory>
 
 namespace hi::inline v1 {

@@ -5,8 +5,8 @@
 #include "po_parser.hpp"
 #include "language.hpp"
 #include "translation.hpp"
+#include "../file/file_view.hpp"
 #include "../tokenizer.hpp"
-#include "../file_view.hpp"
 
 namespace hi::inline v1 {
 

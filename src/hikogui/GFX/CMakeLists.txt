@@ -67,9 +67,3 @@ target_sources(hikogui PRIVATE
     VulkanMemoryAllocator.cpp
 )
 
-if(HI_BUILD_PCH AND NOT HI_ENABLE_ANALYSIS)
-    target_precompile_headers(hikogui PRIVATE
-        gfx_system.hpp
-        gfx_system_vulkan.hpp
-    )
-endif()

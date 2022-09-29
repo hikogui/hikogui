@@ -6,8 +6,8 @@
 
 #include "file_mapping.hpp"
 #include "resource_view.hpp"
-#include "void_span.hpp"
 #include "URI.hpp"
+#include "../void_span.hpp"
 #include <span>
 
 hi_warning_push();

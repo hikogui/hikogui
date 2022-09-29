@@ -4,7 +4,7 @@
 
 #include "preferences.hpp"
 #include "codec/JSON.hpp"
-#include "file.hpp"
+#include "file/file.hpp"
 #include "log.hpp"
 
 namespace hi::inline v1 {
