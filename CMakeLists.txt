@@ -89,7 +89,7 @@ endif()
 # Setup CMake Includes
 #-------------------------------------------------------------------
 
-include(AddStaticResource)
+#include(AddStaticResource)
 include(AddShader)
 include(ShowBuildTargetProperties)
 include(FetchContent)
@@ -377,45 +377,32 @@ endif()
 #-------------------------------------------------------------------
 
 add_shader(hikogui_shader_objects
-    src/hikogui/GFX/utils.glsl
-    src/hikogui/GFX/pipeline_image.vert
-    src/hikogui/GFX/pipeline_image.frag
-    src/hikogui/GFX/pipeline_box.vert
-    src/hikogui/GFX/pipeline_box.frag
-    src/hikogui/GFX/pipeline_SDF.vert
-    src/hikogui/GFX/pipeline_SDF.frag
-    src/hikogui/GFX/pipeline_alpha.vert
-    src/hikogui/GFX/pipeline_alpha.frag
-    src/hikogui/GFX/pipeline_tone_mapper.vert
-    src/hikogui/GFX/pipeline_tone_mapper.frag
+    shaders/utils.glsl
+    shaders/pipeline_image.vert
+    shaders/pipeline_image.frag
+    shaders/pipeline_box.vert
+    shaders/pipeline_box.frag
+    shaders/pipeline_SDF.vert
+    shaders/pipeline_SDF.frag
+    shaders/pipeline_alpha.vert
+    shaders/pipeline_alpha.frag
+    shaders/pipeline_tone_mapper.vert
+    shaders/pipeline_tone_mapper.frag
 )
-
-target_static_resource(hikogui
-    ${hikogui_shader_objects}
-    data/elusiveicons-webfont.ttf
-    data/hikogui_icons.ttf
-)
+add_custom_target(hikogui_shaders DEPENDS ${hikogui_shader_objects})
+add_dependencies(hikogui hikogui_shaders)
 
 add_custom_target(hikogui_resources
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
     DEPENDS
     resources/themes/hikogui_dark.theme.json
     resources/themes/hikogui_light.theme.json
+    resources/fonts/elusiveicons-webfont.ttf
+    resources/fonts/hikogui_icons.ttf
     resources/win32.keybinds.json
 )
 
 add_dependencies(hikogui hikogui_resources)
-
-
-set(RESOURCE_FILES
-      data/elusiveicons-webfont.ttf
-    data/hikogui_icons.ttf
-)
-
-set_target_properties(hikogui PROPERTIES
-  MACOSX_BUNDLE TRUE
-  RESOURCE "${RESOURCE_FILES}")
-
 
 #-------------------------------------------------------------------
 # Installation Rules: hikogui                               (library)
@@ -434,7 +421,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
         FILES_MATCHING PATTERN "*.h")
 
 # Copy all resource files needing to be added to the resource directory of an application
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/resources/
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/resources/
         DESTINATION share/hikogui/resources)
 
 # On Windows, the dynamic libs go in the same dir as the executable and static libs go into "lib".
