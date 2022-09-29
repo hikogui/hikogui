@@ -22,99 +22,52 @@ class resource_view;
 
 /** Universal Resource Locator.
  *
- * An instance internally holds a string to an url.
- * This will have the following effects:
- *  - Performance of accessors may be slow due to having to parse the url multiple times.
- *  - The size of the URL instance is small and copies/moves are fast.
+ * An instance internally holds the URI split into its non-encoded components.
  *
- * Constructors and path manipulations will cause the url to be normalized:
- *  - Remove accidental concatenation of two slashes 'foo//bar' -> 'foo/bar'
- *  - Remove single dot directories 'foo/./bar' -> 'foo/bar'
- *  - Remove leading double-dot directories on absolute paths '/../foo' -> '/foo'
- *  - Remove name+double-dot combinations 'foo/bar/../baz' -> 'foo/baz'
+ * syd::filesystem::path constructors will do context aware normalizations.
  *
  * 'file:' scheme urls can handle the following:
- *  - May contain a server name (placed in the authority of the url)
+ *  - May contain a server name (placed in either the authority, or path of the url).
  *  - May contain a drive-letter.
  *  - May be absolute or relative, including proper handling of relative path with a named drive.
  *
- * The url instance may be relative itself; meaning it does not hold a scheme.
- * This is important, because it means that any string passed to the constructor is a valid url.
- * This also means that non of the constructors and non of the methods will ever cause an error.
+ * The URL instance may be relative itself; meaning it does not hold a scheme.
  *
- * meaningless-urls could still cause meaningless results when converted to a path.
- * But this is no different from having a meaningless path in the first place.
+ * URLs can be implicitly converted to std::filesystem::path.
  */
 class URL : public URI {
 public:
+    /** Create an empty URL.
+     */
     constexpr URL() noexcept = default;
     constexpr URL(URL const&) noexcept = default;
     constexpr URL(URL&&) noexcept = default;
     constexpr URL& operator=(URL const&) noexcept = default;
     constexpr URL& operator=(URL&&) noexcept = default;
 
+    /** Convert a URI to an URL.
+     */
     constexpr explicit URL(URI const& other) noexcept : URI(other) {}
+
+    /** Convert a URI to an URL.
+     */
     constexpr explicit URL(URI&& other) noexcept : URI(std::move(other)){};
 
-    static std::string make_file_url_string(std::filesystem::path const& path)
-    {
-        auto r = std::string{};
-
-        hilet root_name = path.root_name().generic_string();
-        if (root_name.empty()) {
-            // No root-name.
-            if (not path.root_directory().empty()) {
-                // An absolute path should start with the file: scheme.
-                r += "file:" + path.root_directory().generic_string();
-            } else {
-                // A relative path should not be prefixed with a scheme.
-                ;
-            }
-
-        } else if (hilet i = root_name.find(':'); i != std::string::npos) {
-            if (i == 1) {
-                // Root name is a drive-letter, followed by potentially a relative path.
-                r += "file:///" + root_name + path.root_directory().generic_string();
-            } else {
-                throw url_error("Paths containing a device are not allowed to be converted to a URL.");
-            }
-        } else {
-            // Root name is a server.
-            r += "file://" + root_name + path.root_directory().generic_string();
-            if (not path.root_directory().empty()) {
-                throw url_error("Invalid path contains server name without a root directory.");
-            }
-        }
-
-        return r + path.relative_path().generic_string();
-    }
-
+    /** Convert a filesystem-path to a file-scheme URL.
+     *
+     * A relative path is converted to a relative URL.
+     * An absolute path is converted to an absolute file-scheme URL.
+     *
+     * @param path The path to convert to an URL.
+     */
     explicit URL(std::filesystem::path const& path) : URI(make_file_url_string(path)) {}
-
-    constexpr void static validate_file_segment(std::string_view segment)
-    {
-        for (auto c : segment) {
-            if (c == '/' or c == '\\') {
-                throw url_error("Filename server name may not contain slash or back-slash.");
-            }
-        }
-    }
-
-    constexpr void static validate_file_server(std::string_view server)
-    {
-        for (auto c : server) {
-            if (c == '/' or c == '\\') {
-                throw url_error("Filename segments may not contain slash or back-slash.");
-            }
-        }
-    }
 
     /** Return a generic path.
      *
      * @return The generic path of a file URL.
      * @throw url_error When a valid file path can not be constructed from the URL.
      */
-    [[nodiscard]] std::string generic_path() const
+    [[nodiscard]] constexpr std::string generic_path() const
     {
         if (not(not scheme() or scheme() == "file")) {
             throw url_error("URL::generic_path() is only valid on a file: scheme URL");
@@ -238,6 +191,8 @@ public:
         }
     }
 
+    /** @see filesystem_path()
+     */
     operator std::filesystem::path() const
     {
         return filesystem_path();
@@ -258,15 +213,60 @@ public:
         return URL{up_cast<URI const&>(base) / ref};
     }
 
-    [[nodiscard]] static URL url_from_current_working_directory() noexcept;
-    [[nodiscard]] static URL url_from_resource_directory() noexcept;
-    [[nodiscard]] static URL url_from_executable_directory() noexcept;
-    [[nodiscard]] static URL url_from_executable_file() noexcept;
-    [[nodiscard]] static URL url_from_application_data_directory() noexcept;
-    [[nodiscard]] static URL url_from_application_log_directory() noexcept;
-    [[nodiscard]] static URL url_from_system_font_directory() noexcept;
-    [[nodiscard]] static URL url_from_application_preferences_file() noexcept;
+private:
+    constexpr void static validate_file_segment(std::string_view segment)
+    {
+        for (auto c : segment) {
+            if (c == '/' or c == '\\') {
+                throw url_error("Filename server name may not contain slash or back-slash.");
+            }
+        }
+    }
+
+    constexpr void static validate_file_server(std::string_view server)
+    {
+        for (auto c : server) {
+            if (c == '/' or c == '\\') {
+                throw url_error("Filename segments may not contain slash or back-slash.");
+            }
+        }
+    }
+
+    static std::string make_file_url_string(std::filesystem::path const& path)
+    {
+        auto r = std::string{};
+
+        hilet root_name = path.root_name().generic_string();
+        if (root_name.empty()) {
+            // No root-name.
+            if (not path.root_directory().empty()) {
+                // An absolute path should start with the file: scheme.
+                r += "file:" + path.root_directory().generic_string();
+            } else {
+                // A relative path should not be prefixed with a scheme.
+                ;
+            }
+
+        } else if (hilet i = root_name.find(':'); i != std::string::npos) {
+            if (i == 1) {
+                // Root name is a drive-letter, followed by potentially a relative path.
+                r += "file:///" + root_name + path.root_directory().generic_string();
+            } else {
+                throw url_error("Paths containing a device are not allowed to be converted to a URL.");
+            }
+        } else {
+            // Root name is a server.
+            r += "file://" + root_name + path.root_directory().generic_string();
+            if (not path.root_directory().empty()) {
+                throw url_error("Invalid path contains server name without a root directory.");
+            }
+        }
+
+        return r + path.relative_path().generic_string();
+    }
+
 };
+
 }} // namespace hi::v1
 
 template<>

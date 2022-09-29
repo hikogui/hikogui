@@ -15,23 +15,6 @@
 namespace hi::inline v1 {
 
 
-URL URL::url_from_current_working_directory() noexcept
-{
-    return URL(std::filesystem::current_path());
-}
-
-URL URL::url_from_executable_directory() noexcept
-{
-    auto r = url_from_executable_file();
-    r.remove_filename();
-    return r;
-}
-
-URL URL::url_from_application_log_directory() noexcept
-{
-    return url_from_application_data_directory() / "Log";
-}
-
 std::unique_ptr<resource_view> URL::loadView() const
 {
     if (scheme() == "resource") {
