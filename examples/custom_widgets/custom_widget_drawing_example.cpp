@@ -15,6 +15,7 @@
 #include "hikogui/GFX/RenderDoc.hpp"
 #include "hikogui/crt.hpp"
 #include "hikogui/loop.hpp"
+#include "hikogui/URL.hpp"
 #include <numbers>
 
 enum class drawing_type {

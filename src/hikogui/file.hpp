@@ -66,8 +66,8 @@ bool operator>=(access_mode const& lhs, access_mode const& rhs) = delete;
 class file {
 public:
     /** Open a file at location.
-     * \param location The file: URL locating the file.
-     * \param accessMode access-mode to open the file.
+     * @param path The path to the file to open.
+     * @param access+mode access-mode to open the file.
      */
     file(std::filesystem::path const& path, access_mode access_mode = access_mode::open_for_read);
 

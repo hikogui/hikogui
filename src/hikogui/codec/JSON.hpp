@@ -37,7 +37,7 @@ namespace hi::inline v1 {
 }
 
 /** Parse a JSON string.
- * @param path URL pointing to the file to parse.
+ * @param path A path pointing to the file to parse.
  * @return A datum representing the parsed object.
  */
 [[nodiscard]] inline datum parse_JSON(std::filesystem::path const& path)

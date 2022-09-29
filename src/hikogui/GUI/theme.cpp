@@ -8,7 +8,6 @@
 #include "../codec/JSON.hpp"
 #include "../color/sRGB.hpp"
 #include "../log.hpp"
-#include "../URL.hpp"
 #include <algorithm>
 
 namespace hi::inline v1 {

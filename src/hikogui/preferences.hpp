@@ -123,7 +123,7 @@ public:
      *
      * No current preferences file will be selected.
      *
-     * It is recommended to call `preferences::load(URL)` after the constructor.
+     * It is recommended to call `preferences::load(std::filesystem::path)` after the constructor.
      */
     preferences() noexcept;
 

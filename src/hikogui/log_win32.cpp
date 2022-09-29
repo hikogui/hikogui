@@ -7,7 +7,6 @@
 #include "log.hpp"
 #include "trace.hpp"
 #include "utility.hpp"
-#include "URL.hpp"
 #include "strings.hpp"
 #include "thread.hpp"
 #include <format>

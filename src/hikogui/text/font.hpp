@@ -18,7 +18,6 @@
 #include "../resource_view.hpp"
 #include "../exception.hpp"
 #include "../utility.hpp"
-#include "../URL.hpp"
 #include "../hash_map.hpp"
 #include <span>
 #include <vector>

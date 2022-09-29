@@ -6,7 +6,6 @@
 
 #include "crt_utils.hpp"
 #include "GUI/gui_system.hpp"
-#include "URL.hpp"
 #include "subsystem.hpp"
 #include "console.hpp"
 #include "log.hpp"

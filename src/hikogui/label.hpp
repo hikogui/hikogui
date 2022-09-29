@@ -13,7 +13,6 @@
 #include "fixed_string.hpp"
 #include "i18n/translate.hpp"
 #include "unicode/gstring.hpp"
-#include "URL.hpp"
 #include "pixel_map.hpp"
 #include "rapid/sfloat_rgba16.hpp"
 #include "text/glyph_ids.hpp"

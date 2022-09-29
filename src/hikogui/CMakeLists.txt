@@ -271,6 +271,5 @@ if(HI_BUILD_TESTS AND HI_BUILD_PCH AND NOT HI_ENABLE_ANALYSIS)
         utility.hpp
         strings.hpp
         trace.hpp
-        URL.hpp
     )
 endif()

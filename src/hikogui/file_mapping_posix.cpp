@@ -16,7 +16,7 @@ file_mapping::file_mapping(std::shared_ptr<file> const &file, std::size_t size) 
 {
 }
 
-file_mapping::file_mapping(URL const &location, access_mode access_mode, std::size_t size) :
+file_mapping::file_mapping(std::filesystem::path const &path, access_mode access_mode, std::size_t size) :
     file_mapping(findOrOpenFile(location, access_mode), size)
 {
 }

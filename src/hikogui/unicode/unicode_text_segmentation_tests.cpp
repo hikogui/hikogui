@@ -58,7 +58,7 @@ std::optional<graphemeBreakTest> parsegraphemeBreakTests_line(std::string_view l
 
 std::vector<graphemeBreakTest> parsegraphemeBreakTests()
 {
-    hilet view = file_view(URL("file:graphemeBreakTest.txt"));
+    hilet view = file_view("file:graphemeBreakTest.txt");
     hilet test_data = as_string_view(view);
 
     std::vector<graphemeBreakTest> r;

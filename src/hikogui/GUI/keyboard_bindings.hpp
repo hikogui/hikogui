@@ -6,11 +6,11 @@
 
 #include "keyboard_key.hpp"
 #include "gui_event.hpp"
-#include "../URL.hpp"
 #include "../architecture.hpp"
 #include "../subsystem.hpp"
 #include <unordered_map>
 #include <tuple>
+#include <filesystem>
 
 namespace hi::inline v1 {
 
@@ -137,12 +137,12 @@ public:
 
     /** Load bindings from a JSON file.
      */
-    void load_bindings(URL url, bool system_binding = false);
+    void load_bindings(std::filesystem::path const &path, bool system_binding = false);
 
     /** Save user bindings
      * This will save all bindings that are different from the system bindings.
      */
-    // void save_user_bindings(URL url);
+    // void save_user_bindings(std::filesystem::path const &path);
 };
 
 } // namespace hi::inline v1

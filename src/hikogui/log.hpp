@@ -15,7 +15,6 @@
 #include "fixed_string.hpp"
 #include "subsystem.hpp"
 #include "global_state.hpp"
-#include "URL.hpp"
 #include "unfair_mutex.hpp"
 #include "debugger.hpp"
 #include "format_check.hpp"

@@ -6,7 +6,6 @@
 #include "exception.hpp"
 #include "log.hpp"
 #include "memory.hpp"
-#include "URL.hpp"
 #include "utility.hpp"
 #include <mutex>
 #include <sys/mman.h>
@@ -41,8 +40,8 @@ file_view::file_view(std::shared_ptr<file_mapping> const &_file_mapping_object, 
     _bytes = std::shared_ptr<void_span>(bytes_ptr, file_view::unmap);
 }
 
-file_view::file_view(URL const &location, AccessMode accessMode, std::size_t offset, std::size_t size) :
-    file_view(findOrCreateFileMappingObject(location, accessMode, offset + size), offset, size)
+file_view::file_view(std::filesystem::path const &path, AccessMode accessMode, std::size_t offset, std::size_t size) :
+    file_view(findOrCreateFileMappingObject(path, accessMode, offset + size), offset, size)
 {
 }
 

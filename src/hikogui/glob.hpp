@@ -713,9 +713,9 @@ private:
     hilet first = std::filesystem::recursive_directory_iterator(path);
     hilet last = std::filesystem::recursive_directory_iterator();
     for (auto it = first; it != last; ++it) {
-        hilet &path = it->path();
-        if (pattern.matches(path)) {
-            co_yield path;
+        hilet &iterated_path = it->path();
+        if (pattern.matches(iterated_path)) {
+            co_yield iterated_path;
         }
     }
 }

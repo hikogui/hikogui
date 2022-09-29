@@ -42,11 +42,11 @@ public:
      * This function will automatically open a file and potentially
      * share it with other file_mapping objects.
      *
-     * \param path a URL to a file.
-     * \param accessMode mode of how to access the file.
+     * \param path The path to the file to map.
+     * \param access_mode mode of how to access the file.
      * \param size Number of bytes from the start to map.
      */
-    file_mapping(std::filesystem::path const &path, access_mode accessMode, std::size_t size);
+    file_mapping(std::filesystem::path const &path, access_mode access_mode, std::size_t size);
     ~file_mapping();
 
     file_mapping(file_mapping const &other) = delete;
@@ -61,7 +61,7 @@ public:
         return file->_access_mode;
     }
 
-    /*! Get URL of the file object.
+    /** Get the path to the file object.
      */
     [[nodiscard]] std::filesystem::path const &path() const noexcept
     {
@@ -72,7 +72,7 @@ private:
     /*! Find or open a file object.
      * File objects are automatically cached with std:::weak_ptr by this function.
      *
-     * \param URL a URL to a file.
+     * \param path The path to the file to open.
      * \param accesssMode mode of how to access the file.
      * \return A shared pointer to a file object.
      */

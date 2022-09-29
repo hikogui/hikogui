@@ -9,7 +9,6 @@
 #include "exception.hpp"
 #include "log.hpp"
 #include "memory.hpp"
-#include "URL.hpp"
 #include "utility.hpp"
 #include <mutex>
 

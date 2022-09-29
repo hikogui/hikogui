@@ -215,35 +215,6 @@ static void format_JSON_impl(datum const &value, std::string &result, hi::indent
         }
         result += '"';
 
-    } else if (hilet *u = get_if<URL>(value)) {
-        result += '"';
-        for (hilet c : to_string(*u)) {
-            switch (c) {
-            case '\n':
-                result += '\\';
-                result += 'n';
-                break;
-            case '\r':
-                result += '\\';
-                result += 'r';
-                break;
-            case '\t':
-                result += '\\';
-                result += 't';
-                break;
-            case '\f':
-                result += '\\';
-                result += 'f';
-                break;
-            case '"':
-                result += '\\';
-                result += '"';
-                break;
-            default: result += c;
-            }
-        }
-        result += '"';
-
     } else if (hilet *v = get_if<datum::vector_type>(value)) {
         result += indent;
         result += '[';

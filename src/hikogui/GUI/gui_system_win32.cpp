@@ -10,6 +10,8 @@
 #include "../locked_memory_allocator.hpp"
 #include "../trace.hpp"
 #include "../log.hpp"
+#include "../path_location.hpp"
+#include "../URL.hpp"
 #include <memory>
 
 namespace hi::inline v1 {

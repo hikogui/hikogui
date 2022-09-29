@@ -16,7 +16,7 @@ namespace hi::inline v1 {
 /*! Location inside a configuration file.
  */
 class parse_location {
-    /** The URL to the file that was parsed.
+    /** The path to the file that was parsed.
      * This is a shared_ptr, since a lot of Location objects will point to the same file.
      */
     std::shared_ptr<std::filesystem::path> _file;
@@ -37,12 +37,12 @@ public:
     parse_location() noexcept : _file({}), _line(0), _column(0) {}
 
     /** Construct a location.
-     * @param file An URL to the file where the token was found.
+     * @param file A path to the file where the token was found.
      */
     parse_location(std::shared_ptr<std::filesystem::path> const& file) noexcept : _file(file), _line(0), _column(0) {}
 
     /** Construct a location.
-     * @param file An URL to the file where the token was found.
+     * @param file A path to the file where the token was found.
      */
     parse_location(forward_of<std::filesystem::path> auto&& file) noexcept :
         _file(std::make_shared<std::filesystem::path>(hi_forward(file))), _line(0), _column(0)
@@ -50,7 +50,7 @@ public:
     }
 
     /** Construct a location.
-     * @param file An URL to the file where the token was found.
+     * @param file A path to the file where the token was found.
      * @param line Line number where the token was found.
      * @param column Column where the token was found.
      */

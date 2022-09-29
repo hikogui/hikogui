@@ -13,7 +13,7 @@
 
 namespace hi::inline v1 {
 
-File::File(URL const &location, AccessMode accessMode) : accessMode(accessMode), location(location)
+File::File(std::filesystem::path const &path, AccessMode accessMode) : accessMode(accessMode), location(location)
 {
     int openFlags = 0;
 
@@ -89,7 +89,7 @@ void File::close()
     }
 }
 
-std::size_t File::fileSize(URL const &url)
+std::size_t File::fileSize(std::filesystem::path const &path)
 {
     hilet name = url.nativePath();
 

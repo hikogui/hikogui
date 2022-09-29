@@ -4,13 +4,13 @@
 
 #pragma once
 
+#include "assert.hpp"
 #include <ranges>
 #include <algorithm>
 #include <concepts>
-#include <string>
-#include <string_view>
 #include <type_traits>
 #include <vector>
+#include <exception>
 
 namespace hi::inline v1 {
 

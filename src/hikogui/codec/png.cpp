@@ -460,9 +460,9 @@ void png::decode_image(pixel_map<sfloat_rgba16> &image) const
     data_to_image(image_data, image);
 }
 
-pixel_map<sfloat_rgba16> png::load(URL const &url)
+pixel_map<sfloat_rgba16> png::load(std::filesystem::path const &path)
 {
-    hilet png_data = png(url);
+    hilet png_data = png(path);
     auto image = pixel_map<sfloat_rgba16>{png_data.width(), png_data.height()};
     png_data.decode_image(image);
     return image;

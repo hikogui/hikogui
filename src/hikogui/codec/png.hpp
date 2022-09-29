@@ -42,7 +42,7 @@ public:
 
     void decode_image(pixel_map<sfloat_rgba16> &image) const;
 
-    [[nodiscard]] static pixel_map<sfloat_rgba16> load(URL const &url);
+    [[nodiscard]] static pixel_map<sfloat_rgba16> load(std::filesystem::path const &path);
 
 private:
     /** Matrix to convert png color values to sRGB.

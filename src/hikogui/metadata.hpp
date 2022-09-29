@@ -60,10 +60,6 @@ public:
      * the application name and display_name are set based on the name of the
      * executable.
      *
-     * The application metadata is used by URL to construct the locations of
-     * several directories, such as the application-data directory, or
-     * application-preferences directories.
-     *
      * The application metadata is also used when opening the Vulkan API which
      * request the name of the application and version number.
      */

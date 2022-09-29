@@ -37,15 +37,6 @@ public:
         std::size_t size = 0);
 
     file_view(
-        URL path,
-        access_mode access_mode = access_mode::open_for_read,
-        std::size_t offset = 0,
-        std::size_t size = 0) :
-        file_view(path.filesystem_path(), access_mode, offset, size)
-    {
-    }
-
-    file_view(
         std::string_view path,
         access_mode access_mode = access_mode::open_for_read,
         std::size_t offset = 0,
