@@ -18,8 +18,8 @@ namespace hi::inline v1 {
 {
     auto font_directories = make_vector(get_paths(path_location::font_dirs));
     auto font_book = std::make_unique<hi::font_book>(std::move(font_directories));
-    font_book->register_elusive_icon_font(URL{"resource:elusiveicons-webfont.ttf"});
-    font_book->register_hikogui_icon_font(URL{"resource:hikogui_icons.ttf"});
+    font_book->register_elusive_icon_font(URL{"resource:fonts/elusiveicons-webfont.ttf"});
+    font_book->register_hikogui_icon_font(URL{"resource:fonts/hikogui_icons.ttf"});
     font_book->post_process();
 
     auto theme_directories = make_vector(get_paths(path_location::theme_dirs));

@@ -95,8 +95,8 @@ namespace hi::inline v1 {
 
     case resource_dirs:
         {
-            hilet executable_path = get_executable_path();
-            hilet library_path = get_library_path();
+            hilet executable_path = get_path(path_location::executable_dir);
+            hilet library_path = get_path(path_location::library_dir);
             co_yield executable_path / "resources/";
             if (library_path != executable_path) {
                 // XXX use the system-library resource path instead.

@@ -1,7 +1,7 @@
 
 include(GetRelativePath)
 
-function(add_shader RET)
+function(add_shader_target RET)
     # add_shader depends on Vulkan::glslc. if not found, guide the user to find vulkan and the executable.
     if(NOT Vulkan_FOUND)
         message(FATAL_ERROR
@@ -48,5 +48,11 @@ function(add_shader RET)
         endif()
     endforeach()
 
-    set(${RET} "${OUTPUT_PATHS}" PARENT_SCOPE)
+    # Create a temporary target name for the custom target.
+    list(GET ${OUTPUT_PATHS} 0 FIRST_OUTPUT_PATH)
+    set(FIRST_OUTPUT_PATH_TARGET "${FIRST_OUTPUT_PATH}_target")
+
+    add_custom_target(${FIRST_OUTPUT_PATH_TARGET} DEPENDS ${OUTPUT_PATHS})
+    add_dependencies(${RET} ${FIRST_OUTPUT_PATH_TARGET})
 endfunction()
+

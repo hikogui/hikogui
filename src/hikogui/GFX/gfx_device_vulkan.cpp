@@ -9,7 +9,7 @@
 #include "pipeline_image.hpp"
 #include "pipeline_image_device_shared.hpp"
 #include "../GUI/gui_window.hpp"
-#include "../resource_view.hpp"
+#include "../file_view.hpp"
 #include <span>
 
 namespace hi::inline v1 {
@@ -937,11 +937,11 @@ vk::ShaderModule gfx_device_vulkan::loadShader(std::span<std::byte const> shader
     return loadShader(shaderObjectBytes32, shaderObjectBytes.size());
 }
 
-vk::ShaderModule gfx_device_vulkan::loadShader(URL const& shaderObjectLocation) const
+vk::ShaderModule gfx_device_vulkan::loadShader(std::filesystem::path const& path) const
 {
     // no lock, only local variable.
 
-    return loadShader(as_span<std::byte const>(*shaderObjectLocation.loadView()));
+    return loadShader(as_span<std::byte const>(file_view{path}));
 }
 
 void gfx_device_vulkan::setDebugUtilsObjectNameEXT(vk::DebugUtilsObjectNameInfoEXT const& name_info) const

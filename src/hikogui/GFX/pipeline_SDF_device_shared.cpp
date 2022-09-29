@@ -198,8 +198,8 @@ void device_shared::buildShaders()
     fragmentShaderSpecializationMapEntries = specialization_constants::specializationConstantMapEntries();
     fragmentShaderSpecializationInfo = specializationConstants.specializationInfo(fragmentShaderSpecializationMapEntries);
 
-    vertexShaderModule = device.loadShader(URL("resource:GUI/pipeline_SDF.vert.spv"));
-    fragmentShaderModule = device.loadShader(URL("resource:GUI/pipeline_SDF.frag.spv"));
+    vertexShaderModule = device.loadShader(URL("resource:shaders/pipeline_SDF.vert.spv"));
+    fragmentShaderModule = device.loadShader(URL("resource:shaders/pipeline_SDF.frag.spv"));
 
     shaderStages = {
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, vertexShaderModule, "main"},

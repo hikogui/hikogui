@@ -53,7 +53,12 @@ public:
         if (_tokens.empty() or not _tokens.front().is_text()) {
             return {};
         } else {
-            return _tokens.front().string();
+            auto r = _tokens.front().string();
+            if (_tokens.size() >= 2 and _tokens[1].is_any_directory()) {
+                // An any_directory_type always includes at least 1 slash.
+                r += '/';
+            }
+            return r;
         }
     }
 
@@ -132,6 +137,11 @@ private:
         [[nodiscard]] constexpr bool is_text() const noexcept
         {
             return std::holds_alternative<text_type>(_value);
+        }
+
+        [[nodiscard]] constexpr bool is_any_directory() const noexcept
+        {
+            return std::holds_alternative<any_directory_type>(_value);
         }
 
         template<bool Left>
@@ -703,8 +713,9 @@ private:
     hilet first = std::filesystem::recursive_directory_iterator(path);
     hilet last = std::filesystem::recursive_directory_iterator();
     for (auto it = first; it != last; ++it) {
-        if (pattern.matches(it->path())) {
-            co_yield it->path();
+        hilet &path = it->path();
+        if (pattern.matches(path)) {
+            co_yield path;
         }
     }
 }
@@ -731,8 +742,8 @@ private:
 
 [[nodiscard]] inline generator<std::filesystem::path> glob(path_location location, std::filesystem::path ref)
 {
-    for (hilet &directory: get_paths(location)) {
-        for (hilet &path: glob(directory / ref)) {
+    for (hilet& directory : get_paths(location)) {
+        for (hilet& path : glob(directory / ref)) {
             co_yield path;
         }
     }

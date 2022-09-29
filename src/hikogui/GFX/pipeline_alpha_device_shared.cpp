@@ -42,10 +42,10 @@ void device_shared::place_vertices(vector_span<vertex>& vertices, aarectangle cl
 
 void device_shared::buildShaders()
 {
-    vertexShaderModule = device.loadShader(URL("resource:GUI/pipeline_alpha.vert.spv"));
+    vertexShaderModule = device.loadShader(URL("resource:shaders/pipeline_alpha.vert.spv"));
     device.setDebugUtilsObjectNameEXT(vertexShaderModule, "alpha-pipeline vertex shader");
 
-    fragmentShaderModule = device.loadShader(URL("resource:GUI/pipeline_alpha.frag.spv"));
+    fragmentShaderModule = device.loadShader(URL("resource:shaders/pipeline_alpha.frag.spv"));
     device.setDebugUtilsObjectNameEXT(vertexShaderModule, "alpha-pipeline fragment shader");
 
     shaderStages = {

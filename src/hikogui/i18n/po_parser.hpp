@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include <string>
-#include <vector>
 #include "../i18n/language_tag.hpp"
 #include "../resource_view.hpp"
-#include "../URL.hpp"
+#include <string>
+#include <vector>
+#include <filesystem>
 
 namespace hi::inline v1 {
 
@@ -26,6 +26,6 @@ struct po_translations {
     std::vector<po_translation> translations;
 };
 
-[[nodiscard]] po_translations parse_po(URL const &url);
+[[nodiscard]] po_translations parse_po(std::filesystem::path const &path);
 
 } // namespace hi::inline v1

@@ -8,15 +8,17 @@
 #include "../pixel_map.hpp"
 #include "../rapid/sfloat_rgba16.hpp"
 #include "../geometry/identity.hpp"
-#include "../URL.hpp"
 #include "../resource_view.hpp"
 #include "../byte_string.hpp"
 #include "../strings.hpp"
+#include "../file_view.hpp"
 #include <span>
 #include <vector>
 #include <cstddef>
 #include <cstdint>
 #include <numeric>
+#include <filesystem>
+#include <memory>
 
 namespace hi::inline v1 {
 
@@ -26,7 +28,7 @@ public:
 
     [[nodiscard]] png(std::unique_ptr<resource_view> view);
 
-    [[nodiscard]] png(URL const &url) : png(url.loadView()) {}
+    [[nodiscard]] png(std::filesystem::path const &path) : png(std::make_unique<file_view>(path)) {}
 
     [[nodiscard]] std::size_t width() const noexcept
     {

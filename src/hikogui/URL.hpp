@@ -181,11 +181,17 @@ public:
     {
         if (auto scheme_ = scheme()) {
             if (scheme_ == "resource") {
-                try {
-                    return get_first(glob(path_location::resource_dirs, std::filesystem::path{generic_path(false)}));
-                } catch (std::out_of_range &) {
-                    throw url_error(std::format("Could not find resource {}", *this));
+                hilet relative_path = std::filesystem::path{generic_path(false)};
+                if (relative_path.is_absolute()) {
+                    throw url_error(std::format("Resource {} paths must always be relative.", *this));
                 }
+                for (hilet& directory : get_paths(path_location::resource_dirs)) {
+                    auto path = directory / relative_path;
+                    if (std::filesystem::is_regular_file(path) or std::filesystem::is_directory(path)) {
+                        return path;
+                    }
+                }
+                throw url_error(std::format("Resource {} not found.", *this));
 
             } else if (scheme_ == "file") {
                 return {generic_path()};
@@ -204,11 +210,6 @@ public:
     {
         return filesystem_path();
     }
-
-    /** Load a resource.
-     * @return A pointer to a resource view.
-     */
-    [[nodiscard]] std::unique_ptr<resource_view> loadView() const;
 
     [[nodiscard]] constexpr friend URL operator/(URL const& base, URI const& ref) noexcept
     {

@@ -32,8 +32,8 @@ void device_shared::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
 
 void device_shared::buildShaders()
 {
-    vertexShaderModule = device.loadShader(URL("resource:GUI/pipeline_tone_mapper.vert.spv"));
-    fragmentShaderModule = device.loadShader(URL("resource:GUI/pipeline_tone_mapper.frag.spv"));
+    vertexShaderModule = device.loadShader(URL("resource:shaders/pipeline_tone_mapper.vert.spv"));
+    fragmentShaderModule = device.loadShader(URL("resource:shaders/pipeline_tone_mapper.frag.spv"));
 
     shaderStages = {
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, vertexShaderModule, "main"},

@@ -68,10 +68,10 @@ void device_shared::place_vertices(
 
 void device_shared::buildShaders()
 {
-    vertexShaderModule = device.loadShader(URL("resource:GUI/pipeline_box.vert.spv"));
+    vertexShaderModule = device.loadShader(URL("resource:shaders/pipeline_box.vert.spv"));
     device.setDebugUtilsObjectNameEXT(vertexShaderModule, "box-pipeline vertex shader");
 
-    fragmentShaderModule = device.loadShader(URL("resource:GUI/pipeline_box.frag.spv"));
+    fragmentShaderModule = device.loadShader(URL("resource:shaders/pipeline_box.frag.spv"));
     device.setDebugUtilsObjectNameEXT(vertexShaderModule, "box-pipeline fragment shader");
 
     shaderStages = {

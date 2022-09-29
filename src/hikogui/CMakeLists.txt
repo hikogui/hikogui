@@ -158,8 +158,6 @@ target_sources(hikogui PRIVATE
     small_map.hpp
     small_vector.hpp
     stack.hpp
-    static_resource_view.cpp
-    static_resource_view.hpp
     strings.hpp
     subsystem.hpp
     tag.hpp
@@ -185,7 +183,6 @@ target_sources(hikogui PRIVATE
     unfair_mutex.hpp
     unfair_recursive_mutex.hpp
     URI.hpp
-    URL.cpp
     URL.hpp
     utils.hpp
     vector_span.hpp

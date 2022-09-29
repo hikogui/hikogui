@@ -89,7 +89,6 @@ endif()
 # Setup CMake Includes
 #-------------------------------------------------------------------
 
-#include(AddStaticResource)
 include(AddShader)
 include(ShowBuildTargetProperties)
 include(FetchContent)
@@ -146,7 +145,6 @@ endif()
 # later using target_sources() in CMakeLists of subdirectories.
 
 add_subdirectory(src/hikogui)
-add_subdirectory(tools)
 
 #-------------------------------------------------------------------
 # Build Target: hikogui                                     (library)
@@ -376,7 +374,8 @@ endif()
 # Copy resources needed by executables
 #-------------------------------------------------------------------
 
-add_shader(hikogui_shader_objects
+add_custom_target(hikogui_shaders)
+add_shader_target(hikogui_shaders
     shaders/utils.glsl
     shaders/pipeline_image.vert
     shaders/pipeline_image.frag
@@ -389,18 +388,19 @@ add_shader(hikogui_shader_objects
     shaders/pipeline_tone_mapper.vert
     shaders/pipeline_tone_mapper.frag
 )
-add_custom_target(hikogui_shaders DEPENDS ${hikogui_shader_objects})
-add_dependencies(hikogui hikogui_shaders)
 
-add_custom_target(hikogui_resources
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
-    DEPENDS
+set(hikogui_resource_files
     resources/themes/hikogui_dark.theme.json
     resources/themes/hikogui_light.theme.json
     resources/fonts/elusiveicons-webfont.ttf
     resources/fonts/hikogui_icons.ttf
     resources/win32.keybinds.json
 )
+
+add_custom_target(hikogui_resources
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/shaders ${CMAKE_CURRENT_BINARY_DIR}/resources/shaders
+    DEPENDS ${hikogui_resource_files} hikogui_shaders)
 
 add_dependencies(hikogui hikogui_resources)
 
