@@ -3,7 +3,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "formula_post_process_context.hpp"
-#include "../url_parser.hpp"
 
 namespace hi::inline v1 {
 
@@ -243,6 +242,11 @@ formula_post_process_context::method_table formula_post_process_context::global_
     {"month", method_month},
     {"day", method_day},
 };
+
+static std::string url_encode(std::string_view str) noexcept
+{
+    return URI::encode(str);
+}
 
 formula_post_process_context::filter_table formula_post_process_context::global_filters = {
     {"id", make_identifier},

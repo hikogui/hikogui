@@ -4,7 +4,7 @@
 
 #include "hikogui/metadata.hpp"
 #include "hikogui/unfair_mutex.hpp"
-#include "hikogui/URL.hpp"
+#include "hikogui/path_location.hpp"
 #include "hikogui/strings.hpp"
 #include <atomic>
 
@@ -50,7 +50,7 @@ static unfair_mutex application_metadata_mutex;
     }
 
     // Determine the application name from the executable.
-    auto executable_filename = URL::url_from_executable_file().filesystem_path().stem().string();
+    auto executable_filename = get_path(path_location::executable_file).stem().string();
 
     // Set the name and display_name based on the executable.
     application_metadata.name = make_slug(executable_filename);

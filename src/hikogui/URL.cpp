@@ -5,7 +5,6 @@
 #include "URL.hpp"
 #include "strings.hpp"
 #include "utility.hpp"
-#include "url_parser.hpp"
 #include "file_view.hpp"
 #include "exception.hpp"
 #include "static_resource_view.hpp"
@@ -13,7 +12,6 @@
 #include <regex>
 
 namespace hi::inline v1 {
-
 
 std::unique_ptr<resource_view> URL::loadView() const
 {
@@ -28,10 +26,14 @@ std::unique_ptr<resource_view> URL::loadView() const
             }
 
         } catch (key_error const&) {
-            hilet absolute_location = URL::url_from_resource_directory() / *this;
-            auto view = std::make_unique<file_view>(absolute_location);
-            hi_log_info("Loaded resource {} from filesystem at {}.", *this, absolute_location);
-            return view;
+            try {
+                auto path = get_first(glob(path_location::resource_dirs, std::filesystem::path{generic_path(false)}));
+                auto view = std::make_unique<file_view>(path);
+                hi_log_info("Loaded resource {} from filesystem at {}.", *this, path.string());
+                return view;
+            } catch (std::out_of_range&) {
+                throw url_error(std::format("Could not find resource {}", *this));
+            }
         }
 
     } else if (not scheme() or scheme() == "file") {

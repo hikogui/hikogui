@@ -14,6 +14,28 @@
 
 namespace hi::inline v1 {
 
+template<typename Value, typename Range>
+[[nodiscard]] constexpr Value get_first(Range &&range)
+{
+    auto it = std::ranges::begin(range);
+    auto last = std::ranges::end(range);
+
+    if (it == last) {
+        throw std::out_of_range{"Range is empty"};
+    }
+
+    auto value = *it++;
+    return Value{value};
+}
+
+/** @see make_vector
+ */
+template<typename Range>
+[[nodiscard]] constexpr Range::value_type get_first(Range&& range)
+{
+    return get_first<typename Range::value_type>(std::forward<Range>(range));
+}
+
 /** Make a vector from a view.
  * This function will make a vector with a copy of the elements of a view.
  */

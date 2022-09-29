@@ -225,7 +225,7 @@ int hi_main(int argc, char *argv[])
     time_stamp_count::start_subsystem();
     auto render_doc = RenderDoc();
 
-    auto preferences = my_preferences(URL::url_from_application_preferences_file().filesystem_path());
+    auto preferences = my_preferences(get_path(path_location::preferences_file));
 
     auto gui = gui_system::make_unique();
     gui->selected_theme = preferences.selected_theme;

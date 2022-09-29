@@ -36,9 +36,7 @@ TEST(URL, relativePath)
 
 TEST(URL, glob1)
 {
-    hilet executableDirectory = URL::url_from_executable_directory();
-
-    auto txt_files = make_vector(glob(executableDirectory / "*.txt"));
+    auto txt_files = make_vector(glob(path_location::executable_dir, "*.txt"));
 
     ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) {
         return x.filename() == "file_view.txt";
@@ -50,9 +48,7 @@ TEST(URL, glob1)
 
 TEST(URL, glob2)
 {
-    hilet executableDirectory = URL::url_from_executable_directory();
-
-    auto txt_files = make_vector(glob(executableDirectory / "**/*.txt"));
+    auto txt_files = make_vector(glob(path_location::executable_dir, "**/*.txt"));
 
     ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) {
         return x.filename() == "glob2.txt";

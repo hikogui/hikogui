@@ -125,6 +125,9 @@ target_sources(hikogui PRIVATE
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/os_settings_win32.cpp>
     architecture.hpp
     parse_location.hpp
+    path_location.hpp
+    $<${HI_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/path_location_macos.cpp>
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/path_location_win32.cpp>
     preferences.cpp
     preferences.hpp
     graphic_path.cpp
@@ -184,11 +187,6 @@ target_sources(hikogui PRIVATE
     URI.hpp
     URL.cpp
     URL.hpp
-    $<${HI_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/URL_macos.mm>
-    $<${HI_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/URL_posix.cpp>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/URL_win32.cpp>
-    url_parser.cpp
-    url_parser.hpp
     utils.hpp
     vector_span.hpp
     void_span.hpp
@@ -259,7 +257,6 @@ if(HI_BUILD_TESTS)
         tree_tests.cpp
         type_traits_tests.cpp
         URI_tests.cpp
-        url_parser_tests.cpp
         URL_tests.cpp
     )
 endif()

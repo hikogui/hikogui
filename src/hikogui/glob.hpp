@@ -6,6 +6,7 @@
 
 #include "utility.hpp"
 #include "type_traits.hpp"
+#include "path_location.hpp"
 #include <vector>
 #include <string>
 #include <string_view>
@@ -695,16 +696,14 @@ private:
     }
 };
 
-[[nodiscard]] inline generator<std::filesystem::path> glob(forward_of<glob_pattern> auto&& pattern)
+[[nodiscard]] inline generator<std::filesystem::path> glob(glob_pattern pattern)
 {
-    // Make sure we move the pattern when passed an rvalue-reference/temporary.
-    forward_copy_or_ref_t<decltype(pattern)> pattern_ = hi_forward(pattern);
-    auto path = pattern_.base_path();
+    auto path = pattern.base_path();
 
     hilet first = std::filesystem::recursive_directory_iterator(path);
     hilet last = std::filesystem::recursive_directory_iterator();
     for (auto it = first; it != last; ++it) {
-        if (pattern_.matches(it->path())) {
+        if (pattern.matches(it->path())) {
             co_yield it->path();
         }
     }
@@ -712,12 +711,12 @@ private:
 
 [[nodiscard]] inline generator<std::filesystem::path> glob(std::string_view pattern)
 {
-    return glob(glob_pattern{pattern});
+    return glob(glob_pattern{std::move(pattern)});
 }
 
-[[nodiscard]] inline generator<std::filesystem::path> glob(std::string const& pattern)
+[[nodiscard]] inline generator<std::filesystem::path> glob(std::string pattern)
 {
-    return glob(glob_pattern{pattern});
+    return glob(glob_pattern{std::move(pattern)});
 }
 
 [[nodiscard]] inline generator<std::filesystem::path> glob(char const *pattern)
@@ -725,13 +724,33 @@ private:
     return glob(glob_pattern{pattern});
 }
 
-[[nodiscard]] inline generator<std::filesystem::path> glob(std::filesystem::path const& pattern)
+[[nodiscard]] inline generator<std::filesystem::path> glob(std::filesystem::path pattern)
 {
-    return glob(glob_pattern{pattern});
+    return glob(glob_pattern{std::move(pattern)});
 }
 
-[[nodiscard]] inline generator<std::filesystem::path> glob(URL const& pattern)
+[[nodiscard]] inline generator<std::filesystem::path> glob(path_location location, std::filesystem::path ref)
 {
-    return glob(glob_pattern{pattern.filesystem_path()});
+    for (hilet &directory: get_paths(location)) {
+        for (hilet &path: glob(directory / ref)) {
+            co_yield path;
+        }
+    }
 }
+
+[[nodiscard]] inline generator<std::filesystem::path> glob(path_location location, std::string_view ref)
+{
+    return glob(location, std::filesystem::path{std::move(ref)});
+}
+
+[[nodiscard]] inline generator<std::filesystem::path> glob(path_location location, std::string ref)
+{
+    return glob(location, std::filesystem::path{std::move(ref)});
+}
+
+[[nodiscard]] inline generator<std::filesystem::path> glob(path_location location, char const *ref)
+{
+    return glob(location, std::filesystem::path{ref});
+}
+
 }} // namespace hi::v1

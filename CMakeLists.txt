@@ -406,6 +406,17 @@ add_custom_target(hikogui_resources
 
 add_dependencies(hikogui hikogui_resources)
 
+
+set(RESOURCE_FILES
+      data/elusiveicons-webfont.ttf
+    data/hikogui_icons.ttf
+)
+
+set_target_properties(hikogui PROPERTIES
+  MACOSX_BUNDLE TRUE
+  RESOURCE "${RESOURCE_FILES}")
+
+
 #-------------------------------------------------------------------
 # Installation Rules: hikogui                               (library)
 #-------------------------------------------------------------------

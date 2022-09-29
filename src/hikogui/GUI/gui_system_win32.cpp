@@ -16,16 +16,14 @@ namespace hi::inline v1 {
 
 [[nodiscard]] std::unique_ptr<gui_system> gui_system::make_unique(std::weak_ptr<gui_system_delegate> delegate) noexcept
 {
-    auto font_directories = std::vector<std::filesystem::path>{};
-    font_directories.push_back(URL::url_from_system_font_directory());
-    auto font_book = std::make_unique<hi::font_book>(font_directories);
+    auto font_directories = make_vector(get_paths(path_location::font_dirs));
+    auto font_book = std::make_unique<hi::font_book>(std::move(font_directories));
     font_book->register_elusive_icon_font(URL{"resource:elusiveicons-webfont.ttf"});
     font_book->register_hikogui_icon_font(URL{"resource:hikogui_icons.ttf"});
     font_book->post_process();
 
-    auto theme_directories = std::vector<std::filesystem::path>{};
-    theme_directories.push_back(URL::url_from_resource_directory() / "themes");
-    auto theme_book = std::make_unique<hi::theme_book>(*font_book, theme_directories);
+    auto theme_directories = make_vector(get_paths(path_location::theme_dirs));
+    auto theme_book = std::make_unique<hi::theme_book>(*font_book, std::move(theme_directories));
 
     auto gfx_system = std::make_unique<hi::gfx_system_vulkan>();
 

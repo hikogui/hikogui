@@ -7,6 +7,7 @@
 #include "utility.hpp"
 #include "assert.hpp"
 #include "URI.hpp"
+#include "glob.hpp"
 #include <string>
 #include <string_view>
 #include <optional>
@@ -67,9 +68,9 @@ public:
      * @return The generic path of a file URL.
      * @throw url_error When a valid file path can not be constructed from the URL.
      */
-    [[nodiscard]] constexpr std::string generic_path() const
+    [[nodiscard]] constexpr std::string generic_path(bool validate_scheme = true) const
     {
-        if (not(not scheme() or scheme() == "file")) {
+        if (validate_scheme and not(not scheme() or scheme() == "file")) {
             throw url_error("URL::generic_path() is only valid on a file: scheme URL");
         }
 
@@ -180,13 +181,19 @@ public:
     {
         if (auto scheme_ = scheme()) {
             if (scheme_ == "resource") {
-                return URL::url_from_resource_directory() / *this;
+                try {
+                    return get_first(glob(path_location::resource_dirs, std::filesystem::path{generic_path(false)}));
+                } catch (std::out_of_range &) {
+                    throw url_error(std::format("Could not find resource {}", *this));
+                }
+
             } else if (scheme_ == "file") {
                 return {generic_path()};
             } else {
                 throw url_error("URL can not be converted to a filesystem path.");
             }
         } else {
+            // relative path.
             return {generic_path()};
         }
     }
@@ -264,9 +271,7 @@ private:
 
         return r + path.relative_path().generic_string();
     }
-
 };
-
 }} // namespace hi::v1
 
 template<>
