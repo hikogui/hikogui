@@ -63,6 +63,25 @@ enum class path_location {
 
 [[nodiscard]] generator<std::filesystem::path> get_paths(path_location location);
 
+[[nodiscard]] inline std::optional<std::filesystem::path> find_path(path_location location, std::filesystem::path const &ref) noexcept
+{
+    if (ref.is_absolute()) {
+        if (std::filesystem::exists(ref)) {
+            return ref;
+        } else {
+            return {};
+        }
+    } else {
+        for (hilet &base: get_paths(location)) {
+            auto path = base / ref;
+            if (std::filesystem::exists(path)) {
+                return path;
+            }
+        }
+        return {};
+    }
+}
+
 [[nodiscard]] inline std::filesystem::path get_path(path_location location)
 {
     auto range = get_paths(location);
@@ -82,13 +101,5 @@ enum class path_location {
     return path;
 }
 
-[[nodiscard]] std::filesystem::path resource_directory() noexcept;
-[[nodiscard]] std::filesystem::path executable_directory() noexcept;
-[[nodiscard]] std::filesystem::path executable_path() noexcept;
-[[nodiscard]] std::filesystem::path application_data_directory() noexcept;
-[[nodiscard]] std::filesystem::path application_log_directory() noexcept;
-[[nodiscard]] std::filesystem::path system_font_directory() noexcept;
-[[nodiscard]] std::filesystem::path application_preferences_path() noexcept;
-[[nodiscard]] std::vector<std::filesystem::path> font_directories() noexcept;
 
 }} // namespace hi::v1

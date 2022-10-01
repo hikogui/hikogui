@@ -185,17 +185,12 @@ public:
     {
         if (auto scheme_ = scheme()) {
             if (scheme_ == "resource") {
-                hilet relative_path = std::filesystem::path{generic_path(false)};
-                if (relative_path.is_absolute()) {
-                    throw url_error(std::format("Resource {} paths must always be relative.", *this));
+                hilet ref = std::filesystem::path{generic_path(false)};
+                if (auto path = find_path(path_location::resource_dirs, ref)) {
+                    return *path;
+                } else {
+                    throw url_error(std::format("Resource {} not found.", *this));
                 }
-                for (hilet& directory : get_paths(path_location::resource_dirs)) {
-                    auto path = directory / relative_path;
-                    if (std::filesystem::is_regular_file(path) or std::filesystem::is_directory(path)) {
-                        return path;
-                    }
-                }
-                throw url_error(std::format("Resource {} not found.", *this));
 
             } else if (scheme_ == "file") {
                 return {generic_path()};
