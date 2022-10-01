@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file file/URI.hpp Defines the URI class.
+ * @ingroup file
+ */
+
 #pragma once
 
 #include "../cast.hpp"
@@ -19,7 +23,18 @@ namespace hi { inline namespace v1 {
 #define HI_SUB_DELIM '!', '$', '&', '\'', '(', ')', '*', '+', ',', ';', '='
 #define HI_PCHAR HI_SUB_DELIM, ':', '@'
 
-/**
+/** A Uniform Resource Identifier.
+ * @ingroup file
+ * 
+ * This class holds the URI separated and unencoded into it components:
+ *  - scheme (optional)
+ *  - authority (optional)
+ *    + userinfo (optional)
+ *    + host
+ *    + port (optional)
+ *  - path
+ *  - query (optional)
+ *  - fragment (optional)
  *
  */
 class URI {

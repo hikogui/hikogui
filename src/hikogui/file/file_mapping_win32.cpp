@@ -11,32 +11,35 @@
 #include "../utility.hpp"
 #include <mutex>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
-file_mapping::file_mapping(std::shared_ptr<hi::file> const &file, std::size_t size) :
-    file(file), size(size > 0 ? size : file->size())
-{
-    DWORD protect;
-    if (any(accessMode() & access_mode::read) and any(accessMode() & access_mode::write)) {
-        protect = PAGE_READWRITE;
-    } else if (any(accessMode() & access_mode::read)) {
-        protect = PAGE_READONLY;
-    } else {
-        throw io_error(std::format("{}: Illegal access mode WRONLY/0 when mapping file.", path().string()));
-    }
+namespace detail {
 
-    DWORD maximumSizeHigh = this->size >> 32;
-    DWORD maximumSizeLow = this->size & 0xffffffff;
+class file_mapping_win32 final : public file_mapping_impl {
+public:
+    file_mapping_win32(std::shared_ptr<file_impl> const &file, std::size_t size) : file_mapping_impl(file)
+    {
+        DWORD protect;
+        if (any(access_mode() & access_mode::read) and any(access_mode() & access_mode::write)) {
+            protect = PAGE_READWRITE;
+        } else if (any(access_mode() & access_mode::read)) {
+            protect = PAGE_READONLY;
+        } else {
+            throw io_error(std::format("{}: Illegal access mode WRONLY/0 when mapping file.", path().string()));
+        }
 
-    if (this->size == 0) {
-        mapHandle = nullptr;
-    } else {
-        if ((mapHandle = CreateFileMappingW(file->_file_handle, NULL, protect, maximumSizeHigh, maximumSizeLow, nullptr)) ==
-            nullptr) {
-            throw io_error(std::format("{}: Could not create file mapping. '{}'", path().string(), get_last_error_message()));
+        DWORD maximum_size_high = this->size >> 32;
+        DWORD maximum_size_low = this->size & 0xffffffff;
+
+        if (this->size == 0) {
+            mapHandle = nullptr;
+        } else {
+            if ((mapHandle = CreateFileMappingW(file->_file_handle, NULL, protect, maximumm_size_high, maximum_size_low, nullptr)) ==
+                nullptr) {
+                throw io_error(std::format("{}: Could not create file mapping. '{}'", path().string(), get_last_error_message()));
+            }
         }
     }
-}
 
 file_mapping::file_mapping(std::filesystem::path const &path, access_mode accessMode, std::size_t size) :
     file_mapping(findOrOpenFile(path, accessMode), size)
@@ -52,4 +55,5 @@ file_mapping::~file_mapping()
     }
 }
 
-} // namespace hi::inline v1
+}
+}} // namespace hi::inline v1

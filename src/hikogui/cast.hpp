@@ -158,6 +158,18 @@ template<arithmetic Out, arithmetic In>
     }
 }
 
+/** Cast an unsigned number and saturate on overflow.
+ */
+template<std::unsigned Out, std::unsigned In>
+[[nodiscard]] constexpr Out saturate_cast(In rhs) noexcept
+{
+    auto r = std::numeric_limits<Out>::max();
+    if (rhs < r) {
+        r = static_cast<Out>(rhs);
+    }
+    return r;
+}
+
 /** Cast numeric values without loss of precision.
  *
  * @note It is undefined behavior to cast a value which will cause a loss of precision.

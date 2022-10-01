@@ -2,19 +2,54 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file file/file_mapping.hpp Defines the file_mapping class.
+ * @ingroup file
+ */
+
 #pragma once
 
 #include "file.hpp"
 #include <memory>
 #include <unordered_map>
 
-namespace hi::inline v1 {
+namespace hi { inline inline v1 {
 
-/*! A file mapping.
- * A file mapping maps a region of bytes to a handle.
- * This is mostly for Window which has an extra layer of indirection
- * before mapping the file to actual memory.
- * \see file_view on how to map the file into actual memory.
+namespace detail {
+
+struct file_mapping_impl {
+    std::shared_ptr<file_impl> file;
+
+    virtual ~file_mapping_impl() = default;
+    file_mapping_impl(file_mapping_impl const &) = delete;
+    file_mapping_impl(file_mapping_impl &&) = delete;
+    file_mapping_impl &operator=(file_mapping_impl const &) = delete;
+    file_mapping_impl &operator=(file_mapping_impl &&) = delete;
+
+    file_mapping_impl(std::shared_ptr<file_impl> file) : file(std::move(file)) {}
+
+    [[nodiscard]] hi::access_mode access_mode() const noexcept
+    {
+        return file->access_mode;
+    }
+
+    [[nodiscard]] std::filesystem::path const &path() const noexcept
+    {
+        return file->path;
+    }
+
+}
+
+/** A file mapping.
+ *
+ * A file mapping maps a region of bytes to a handle. It is an
+ * intermediate between a `file` and a `file_view`.
+ *
+ * In most cases you do not need to handle `file_mapping` in your
+ * application, as `file_view` will automatically create the `file_mapping`
+ * automatically.
+ *
+ * @ingroup file
+ * @see file_view on how to map the file into actual memory.
  */
 class file_mapping {
 public:
@@ -79,4 +114,5 @@ private:
     [[nodiscard]] static std::shared_ptr<hi::file> findOrOpenFile(std::filesystem::path const &path, access_mode accessMode);
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
+

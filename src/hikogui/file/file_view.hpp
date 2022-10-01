@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file file/file_view.hpp Defines the file_view class.
+ * @ingroup file
+ */
+
 #pragma once
 
 #include "file_mapping.hpp"
@@ -15,9 +19,39 @@ hi_warning_push();
 // We need to convert bytes to chars to get a string_view from the byte buffer.
 hi_warning_ignore_msvc(26490);
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
-/*! Map a file into virtual memory.
+namespace detail {
+
+class file_view_impl {
+public:
+    file_view_impl(file_view_impl const &) = delete;
+    file_view_impl(file_view_impl &&) = delete;
+    file_view_impl&operator=(file_view_impl const &) = delete;
+    file_view_impl&operator=(file_view_impl &&) = delete;
+
+    virtual ~file_view_impl() = default;
+    file_view_impl(std::shared_ptr<file_impl> file) _file(std::move(file)) {}
+
+    [[nodiscard]] virtual void_span span() noexcept;
+    [[nodiscard]] virtual const_void_span const_span() noexcept;
+
+private:
+    std::shared_ptr<file_impl> _file;
+};
+
+}
+
+/** Map a file into virtual memory.
+ *
+ * To map a file into memory there are three objects needed:
+ * - The `file` object which holds a handle or file descriptor to an open file on disk.
+ * - The `file_mapping` object maps a section of the file in the operating system.
+ * - The `file_view` object maps a section of the file-mapping into virtual memory.
+ *
+ * The `file_mapping` intermediate object is required on Windows systems which
+ * holds a handle to a file mapping object. 
+ *
  */
 class file_view : public writable_resource_view {
 public:
@@ -28,7 +62,15 @@ public:
     file_view& operator=(file_view const& other) noexcept;
     file_view& operator=(file_view&& other) noexcept;
 
-    file_view(std::shared_ptr<file_mapping> const& mappingObject, std::size_t offset, std::size_t size);
+    /** Create a file-view from a file-mapping.
+     *
+     * @note The mapping object will be retained by this file-view.
+     * @param mapping A shared pointer to a file-mapping.
+     * @param offset The offset from the beginning of the file-mapping (a file mapping may have an offset on its own).
+     *               The offset must also be a multiple of the granularity.
+     * @param size The size of the mapping, if zero the full file-mapping object is mapped.
+     */
+    file_view(std::shared_ptr<file_mapping> const& mapping, std::size_t offset = 0, std::size_t size = 0);
 
     file_view(
         std::filesystem::path const& path,
@@ -149,6 +191,6 @@ private:
     std::size_t _offset;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
 
 hi_warning_pop();

@@ -2,10 +2,13 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file file/URL.hpp Defines the URL class.
+ * @ingroup file
+ */
+
 #pragma once
 
 #include "URI.hpp"
-#include "glob.hpp"
 #include "../utility.hpp"
 #include "../assert.hpp"
 #include <string>
@@ -19,9 +22,9 @@
 #include <filesystem>
 
 namespace hi { inline namespace v1 {
-class resource_view;
 
 /** Universal Resource Locator.
+ * @ingroup file
  *
  * An instance internally holds the URI split into its non-encoded components.
  *

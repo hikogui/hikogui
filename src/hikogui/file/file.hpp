@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file file/file.hpp Defines the file class.
+ * @ingroup file
+ */
+
 #pragma once
 
 #include "../byte_string.hpp"
@@ -13,10 +17,22 @@
 #include <span>
 #include <filesystem>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
-enum class seek_whence { begin, current, end };
+/** The position in the file to seek from.
+ * @ingroup file
+ */
+enum class seek_whence {
+    begin, ///< Start from the beginning of the file.
+    current, ///< Continue from the current position.
+    end ///< Start from the end of the file.
+};
 
+/** The mode in which way to open a file.
+ * @ingroup file
+ *
+ * These flags can be combined by using OR.
+ */
 enum class access_mode {
     read = 0x1, ///< Allow read access to a file.
     write = 0x2, ///< Allow write access to a file.
@@ -47,18 +63,35 @@ enum class access_mode {
     return static_cast<access_mode>(to_underlying(lhs) & to_underlying(rhs));
 }
 
-bool operator>=(access_mode const& lhs, access_mode const& rhs) = delete;
-
-[[nodiscard]] constexpr bool any(access_mode const& rhs) noexcept
+[[nodiscard]] constexpr bool to_bool(access_mode const& rhs) noexcept
 {
     return to_bool(to_underlying(rhs));
 }
 
-/** True if all bits on rhs are set in lhs.
- */
-[[nodiscard]] inline bool operator>=(access_mode lhs, access_mode rhs) noexcept
-{
-    return (lhs & rhs) == rhs;
+namespace detail {
+
+struct file_impl {
+    std::filesystem::path path;
+    hi::access_mode access_mode;
+
+    virtual ~file_impl() = default;
+    file_impl(file_impl const& other) = delete;
+    file_impl(file_impl&& other) = delete;
+    file& operator=(file_impl const& other) = delete;
+    file& operator=(file_impl&& other) = delete;
+
+    file_impl(std::filesystem::path path, access_mode access_mode) : path(std::move(path)), access_mode(access_mode) {}
+
+    virtual void close() = 0;
+    virtual void flush() = 0;
+    virtual void rename(std::filesystem::path const& destination, bool overwrite_existing) = 0;
+    [[nodiscard]] virtual std::size_t size() const = 0;
+    [[nodiscard]] virtual std::size_t seek(std::ptrdiff_t offset, seek_whence whence) = 0;
+    [[nodiscard]] virtual std::size_t write(void const *data, std::size_t size) = 0;
+    [[nodiscard]] virtual std::size_t read(void *data, std::size_t size) = 0;
+
+};
+
 }
 
 /** A File object.
@@ -71,22 +104,37 @@ public:
      */
     file(std::filesystem::path const& path, access_mode access_mode = access_mode::open_for_read);
 
-    ~file() noexcept;
+    ~file() = default;
+    file(file const& other) noexcept = default;
+    file(file&& other) noexcept = default;
+    file& operator=(file const& other)  noexcept= default;
+    file& operator=(file&& other) noexcept = default;
 
-    file(file const& other) = delete;
-    file(file&& other) = delete;
-    file& operator=(file const& other) = delete;
-    file& operator=(file&& other) = delete;
+    [[nodiscard]] hi::access_mode access_mode() const noexcept
+    {
+        return _pimpl->access_mode;
+    }
+
+    [[nodiscard]] std::filesystem::path path() const noexcept
+    {
+        return _pimpl->path;
+    }
 
     /** Close the file.
      */
-    void close();
+    void close()
+    {
+        return _pimpl->close();
+    }
 
     /** Flush and block until all data is physically written to disk.
      * Flushing is required before renaming a file, to prevent
      * data corruption when the computer crashes during the rename.
      */
-    void flush();
+    void flush()
+    {
+        return _pimpl->flush();
+    }
 
     /** Rename an open file.
      * This function will rename an open file atomically.
@@ -95,18 +143,27 @@ public:
      * @param overwrite_existing Overwrite an existing file.
      * @throw io_error When failing to rename.
      */
-    void rename(std::filesystem::path const& destination, bool overwrite_existing = true);
+    void rename(std::filesystem::path const& destination, bool overwrite_existing = true)
+    {
+        return _pimpl->rename(destination, overwrite_existing);
+    }
 
     /** Return the size of the file.
      */
-    std::size_t size() const;
+    [[nodiscard]] std::size_t size() const
+    {
+        return _pimpl->size();
+    }
 
     /** Set the seek location.
      * @param offset To move the file pointer.
      * @param whence Where to seek from: begin, current or end
      * @return The new seek position relative to the beginning of the file.
      */
-    std::size_t seek(ssize_t offset, seek_whence whence = seek_whence::begin);
+    std::size_t seek(std::ptrdiff_t offset, seek_whence whence = seek_whence::begin)
+    {
+        return _pimpl->seek(offset, whence);
+    }
 
     /** Get the current seek location.
      */
@@ -119,46 +176,57 @@ public:
      *
      * @param data Pointer to data to be written.
      * @param size The number of bytes to write.
-     * @param offset The offset in the file to write, or -1 when writing in the current seek location.
      * @return The number of bytes written.
      * @throw io_error
      */
-    std::size_t write(void const *data, std::size_t size, ssize_t offset = -1);
+    [[nodiscard]] std::size_t write(void const *data, std::size_t size)
+    {
+        return _pimpl->write(data, size);
+    }
+
+    /** Read data from a file.
+     *
+     * @param data Pointer to a buffer to read into.
+     * @param size The number of bytes to read.
+     * @return The number of bytes read.
+     * @throw io_error
+     */
+    [[nodiscard]] std::size_t read(void *data, std::size_t size)
+    {
+        return _pimpl->read(data, size);
+    }
 
     /** Write data to a file.
      *
      * @param bytes The byte string to write
-     * @param offset The offset in the file to write, or -1 when writing in the current seek location.
      * @return The number of bytes written.
      * @throw io_error
      */
-    ssize_t write(std::span<std::byte const> bytes, std::size_t offset = -1)
+    [[nodiscard]] std::size_t write(std::span<std::byte const> bytes)
     {
-        return write(bytes.data(), ssize(bytes), offset);
+        return write(bytes.data(), ssize(bytes));
     }
 
     /** Write data to a file.
      *
      * @param text The byte string to write
-     * @param offset The offset in the file to write, or -1 when writing in the current seek location.
      * @return The number of bytes written.
      * @throw io_error
      */
-    ssize_t write(bstring_view text, ssize_t offset = -1)
+    [[nodiscard]] std::size_t write(bstring_view text)
     {
-        return write(text.data(), ssize(text), offset);
+        return write(text.data(), ssize(text));
     }
 
     /** Write data to a file.
      *
      * @param text The byte string to write
-     * @param offset The offset in the file to write, or -1 when writing in the current seek location.
      * @return The number of bytes written.
      * @throw io_error
      */
-    ssize_t write(bstring const& text, ssize_t offset = -1)
+    [[nodiscard]] std::size_t write(bstring const& text)
     {
-        return write(text.data(), ssize(text), offset);
+        return write(text.data(), ssize(text));
     }
 
     /** Write data to a file.
@@ -167,82 +235,60 @@ public:
      * @return The number of bytes written.
      * @throw io_error
      */
-    ssize_t write(std::string_view text)
+    [[nodiscard]] std::size_t write(std::string_view text)
     {
         return write(text.data(), ssize(text));
     }
 
-    /** Read data from a file.
-     *
-     * @param data Pointer to a buffer to read into.
-     * @param size The number of bytes to read.
-     * @param offset The offset in the file to read, or -1 when reading from the current seek location.
-     * @return The number of bytes read.
-     * @throw io_error
-     */
-    ssize_t read(void *data, std::size_t size, ssize_t offset = -1);
-
     /** Read bytes from the file.
      *
-     * @param size The maximum number of bytes to read.
-     * @param offset The offset into the file to read, or -1 when reading from the current seek location.
+     * @param max_size The maximum number of bytes to read.
      * @return Data as a byte string, may return less then the requested size.
      * @throws io_error On IO error.
      */
-    bstring read_bstring(std::size_t size = 10'000'000, ssize_t offset = -1);
+    [[nodiscard]] bstring read_bstring(std::size_t max_size = 10'000'000)
+    {
+        hilet offset = get_seek();
+        hilet size_ = std::min(max_size, this->size() - offset);
 
-    /** Read the whole file as a UTF-8 string.
-     * This will ignore the value from `seek()`, and read the whole
-     * file due to UTF-8 character sequences to be complete.
+        auto r = bstring{};
+        // XXX c++23 resize_and_overwrite()
+        r.resize(size_);
+        hilet bytes_read = read(r.data(), size_);
+        r.resize(bytes_read);
+        return r;
+    }
+
+    /** Read a UTF-8 string from the file.
      *
-     * If there is more data in the file than the maximum amount to read
-     * this function throws an io_error.
+     * Because of complications with reading UTF-8 string with sequences
+     * it is only allowed to read from the start of the file.
      *
-     * @param max_size The maximum size to read.
-     * @return Data as a UTF-8 string.
+     * @note It is undefined bahavior when the seek pointer is not zero.
+     * @param max_size The maximum number of bytes to read.
+     * @return Data as a UTF-8 string, may return less then the requested size.
      * @throws io_error On IO error.
-     * @throws parse_error On invalid UTF-8 string.
      */
-    std::string read_string(std::size_t max_size = 10'000'000);
+    [[nodiscard]] std::string read_string(std::size_t max_size = 10'000'000)
+    {
+        hi_axiom(get_seek() == 0);
 
-    /** Read the whole file as a UTF-8 string.
-     * This will ignore the value from `seek()`, and read the whole
-     * file due to UTF-8 character sequences to be complete.
-     *
-     * If there is more data in the file than the maximum amount to read
-     * this function throws an io_error.
-     *
-     * @param max_size The maximum size to read.
-     * @return Data as a UTF-8 string.
-     * @throws io_error On IO error
-     * @throws parse_error On invalid UTF-8 string.
-     */
-    std::u8string read_u8string(std::size_t max_size = 10'000'000);
+        hilet size_ = size();
+        if (size_ > max_size) {
+            throw io_error("read_string() requires the file size to be smaler than max_size.");
+        }
 
-    /** Get the size of a file on the file system.
-     * \return The size of the file in bytes.
-     */
-    [[nodiscard]] static std::size_t file_size(std::filesystem::path const& path);
-
-    static void create_directory(std::filesystem::path const& path, bool hierarchy = false);
-
-    static void create_directory_hierarchy(std::filesystem::path const& path);
+        auto r = std::string{};
+        // XXX c++23 resize_and_overwrite()
+        r.resize(size_);
+        hilet bytes_read = read(r.data(), size_);
+        r.resize(bytes_read);
+        return r;
+    }
 
 private:
-    /** The access mode used to open the file.
-     */
-    access_mode _access_mode;
-
-    /** The path that was used to open the file.
-     */
-    std::filesystem::path _path;
-
-    /** A operating system handle to the file.
-     */
-    file_handle _file_handle;
-
-    friend class file_mapping;
-    friend class file_view;
+    std::shared_ptr<detail::file_impl> _pimpl;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
+
