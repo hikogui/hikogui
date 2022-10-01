@@ -6,100 +6,159 @@
 #include "../win32_headers.hpp"
 
 #include "file_view.hpp"
+#include "file_win32.hpp"
 #include "../exception.hpp"
 #include "../log.hpp"
 #include "../memory.hpp"
 #include "../utility.hpp"
-#include <mutex>
+#include "../cast.hpp"
+#include <format>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
+namespace detail {
 
-file_view::file_view(std::shared_ptr<file_mapping> const &_file_mapping_object, std::size_t offset, std::size_t size) :
-    _file_mapping_object(_file_mapping_object), _offset(offset)
-{
-    if (size == 0) {
-        size = _file_mapping_object->size - _offset;
-    }
-    hi_assert(_offset + size <= _file_mapping_object->size);
-
-    DWORD desiredAccess;
-    if (any(accessMode() & access_mode::read) and any(accessMode() & access_mode::write)) {
-        desiredAccess = FILE_MAP_WRITE;
-    } else if (any(accessMode() & access_mode::read)) {
-        desiredAccess = FILE_MAP_READ;
-    } else {
-        throw io_error(std::format("{}: Illegal access mode WRONLY/0 when viewing file.", path().string()));
-    }
-
-    DWORD fileOffsetHigh = _offset >> 32;
-    DWORD fileOffsetLow = _offset & 0xffffffff;
-
-    void *data;
-    if (size == 0) {
-        data = nullptr;
-    } else {
-        if ((data = MapViewOfFile(_file_mapping_object->mapHandle, desiredAccess, fileOffsetHigh, fileOffsetLow, size)) == NULL) {
-            throw io_error(std::format("{}: Could not map view of file. '{}'", path().string(), get_last_error_message()));
+class file_view_win32 final : public file_view_impl {
+public:
+    ~file_view_win32()
+    {
+        if (_data != nullptr) {
+            destroy_view(_data);
+        }
+        if (_mapping_handle) {
+            destroy_mapping(_mapping_handle);
         }
     }
 
-    auto *bytes_ptr = new void_span(data, size);
-    _bytes = std::shared_ptr<void_span>(bytes_ptr, file_view::unmap);
-}
+    file_view_win32(std::shared_ptr<file_impl> file, std::size_t offset, std::size_t size) :
+        file_view_impl(std::move(file), offset, size)
+    {
+        if (_offset + _size > _file->size()) {
+            throw io_error("Requested mapping is beyond file size.");
+        }
 
-file_view::file_view(std::filesystem::path const &path, access_mode accessMode, std::size_t offset, std::size_t size) :
-    file_view(findOrCreateFileMappingObject(path, accessMode, offset + size), offset, size)
-{
-}
+        if (_file->size() == 0) {
+            // Don't map a zero byte file.
+            _data = nullptr;
 
-file_view::file_view(file_view const &other) noexcept :
-    _file_mapping_object(other._file_mapping_object), _bytes(other._bytes), _offset(other._offset)
-{
-    hi_axiom(&other != this);
-}
-
-file_view &file_view::operator=(file_view const &other) noexcept
-{
-    hi_return_on_self_assignment(other);
-    _file_mapping_object = other._file_mapping_object;
-    _offset = other._offset;
-    _bytes = other._bytes;
-    return *this;
-}
-
-file_view::file_view(file_view &&other) noexcept :
-    _file_mapping_object(std::move(other._file_mapping_object)), _bytes(std::move(other._bytes)), _offset(other._offset)
-{
-    hi_axiom(&other != this);
-}
-
-file_view &file_view::operator=(file_view &&other) noexcept
-{
-    hi_return_on_self_assignment(other);
-    _file_mapping_object = std::move(other._file_mapping_object);
-    _offset = other._offset;
-    _bytes = std::move(other._bytes);
-    return *this;
-}
-
-void file_view::unmap(void_span *bytes) noexcept
-{
-    if (bytes != nullptr) {
-        if (bytes->size() > 0) {
-            void *data = bytes->data();
-            if (!UnmapViewOfFile(data)) {
-                hi_log_error("Could not unmap view on file '{}'", get_last_error_message());
+        } else {
+            _mapping_handle = make_mapping(file_handle(), access_mode(), _offset + _size);
+            try {
+                _data = make_view(_mapping_handle, access_mode(), _offset, _size);
+            } catch (...) {
+                destroy_mapping(_mapping_handle);
+                throw;
             }
         }
-        delete bytes;
     }
-}
 
-void file_view::flush(void *base, std::size_t size)
+    [[nodiscard]] bool unmapped() const noexcept override
+    {
+        if (_file != nullptr) {
+            if (_file->closed()) {
+                _file = nullptr;
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return true;
+        }
+    }
+
+    void unmap() override
+    {
+        if (_data) {
+            destroy_view(_data);
+            _data = nullptr;
+            _size = 0;
+            destroy_mapping(_mapping_handle);
+            _mapping_handle = nullptr;
+        }
+        _file = nullptr;
+    }
+
+    void flush(hi::void_span span) const noexcept override
+    {
+        if (not FlushViewOfFile(span.data(), span.size())) {
+            hi_log_error_once("file::error::flush-view", "Could not flush file. '{}'", get_last_error_message());
+        }
+    }
+
+private:
+    mutable HANDLE _mapping_handle = nullptr;
+
+    [[nodiscard]] HANDLE file_handle() noexcept
+    {
+        hi_axiom(_file);
+        return down_cast<file_win32&>(*_file).file_handle();
+    }
+
+    static void destroy_mapping(HANDLE mapping)
+    {
+        if (not CloseHandle(mapping)) {
+            throw io_error(std::format("Could not close file mapping object on file '{}'", get_last_error_message()));
+        }
+    }
+
+    [[nodiscard]] static HANDLE make_mapping(HANDLE file, hi::access_mode access_mode, std::size_t size)
+    {
+        hi_axiom(size != 0);
+
+        DWORD protect;
+        if (to_bool(access_mode & hi::access_mode::read) and to_bool(access_mode & hi::access_mode::write)) {
+            protect = PAGE_READWRITE;
+        } else if (to_bool(access_mode & hi::access_mode::read)) {
+            protect = PAGE_READONLY;
+        } else {
+            throw io_error("Illegal access mode when mapping file.");
+        }
+
+        DWORD size_high = size >> 32;
+        DWORD size_low = size & 0xffffffff;
+
+        if (auto r = CreateFileMappingW(file, NULL, protect, size_high, size_low, nullptr)) {
+            return r;
+        } else {
+            throw io_error(std::format("Could not create file mapping. '{}'", get_last_error_message()));
+        }
+    }
+
+    static void destroy_view(void *data)
+    {
+        if (not UnmapViewOfFile(data)) {
+            throw io_error(std::format("Could not unmap view on file '{}'", get_last_error_message()));
+        }
+    }
+
+    [[nodiscard]] static void *make_view(HANDLE mapping, hi::access_mode access_mode, std::size_t offset, std::size_t size)
+    {
+        hi_axiom(size != 0);
+
+        DWORD desired_access;
+        if (to_bool(access_mode & access_mode::read) and to_bool(access_mode & access_mode::write)) {
+            desired_access = FILE_MAP_WRITE;
+        } else if (to_bool(access_mode & access_mode::read)) {
+            desired_access = FILE_MAP_READ;
+        } else {
+            throw io_error(std::format("Illegal access mode when viewing file."));
+        }
+
+        DWORD offset_high = offset >> 32;
+        DWORD offset_low = offset & 0xffffffff;
+
+        if (auto r = MapViewOfFile(mapping, desired_access, offset_high, offset_low, size)) {
+            return r;
+        } else {
+            throw io_error(std::format("Could not map view of file. '{}'", get_last_error_message()));
+        }
+    }
+};
+
+} // namespace detail
+
+file_view::file_view(file const& file, std::size_t offset, std::size_t size) :
+    _pimpl(std::make_shared<detail::file_view_win32>(file._pimpl, offset, size))
 {
-    if (!FlushViewOfFile(base, size)) {
-        throw io_error(std::format("{}: Could not flush file. '{}'", path().string(), get_last_error_message()));
-    }
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

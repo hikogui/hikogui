@@ -9,6 +9,7 @@
 #pragma once
 
 #include "URI.hpp"
+#include "path_location.hpp"
 #include "../utility.hpp"
 #include "../assert.hpp"
 #include <string>

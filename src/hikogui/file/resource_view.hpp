@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "file_view.hpp"
 #include "../void_span.hpp"
 #include <span>
 #include <variant>
@@ -12,59 +13,92 @@
 #include <string_view>
 #include <type_traits>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
+
+namespace detail {
+
+class resource_view_base {
+public:
+    virtual ~resource_view_base() = default;
+
+    [[nodiscard]] virtual hi::const_void_span const_void_span() const noexcept = 0;
+};
+
+template<typename T>
+class resource_view_impl final : public resource_view_base {
+public:
+    using value_type = T;
+
+    resource_view_impl(T&& other) noexcept : _value(std::move(other)) {}
+    resource_view_impl(T const& other) noexcept : _value(other) {}
+
+    [[nodiscard]] hi::const_void_span const_void_span() const noexcept override
+    {
+        return _value.const_void_span();
+    }
+
+private:
+    value_type _value;
+};
+
+} // namespace detail
 
 /** A read-only memory mapping of a resource.
  */
-class resource_view {
+class const_resource_view {
 public:
-    resource_view() = default;
-    virtual ~resource_view() = default;
-    resource_view(resource_view const& other) = default;
-    resource_view(resource_view&& other) = default;
-    resource_view& operator=(resource_view const& other) = default;
-    resource_view& operator=(resource_view&& other) = default;
+    const_resource_view() = default;
+    virtual ~const_resource_view() = default;
+    const_resource_view(const_resource_view const& other) = default;
+    const_resource_view(const_resource_view&& other) = default;
+    const_resource_view& operator=(const_resource_view const& other) = default;
+    const_resource_view& operator=(const_resource_view&& other) = default;
 
-    /** Offset into the resource file.
-     * @return offset into the resource file.
-     */
-    [[nodiscard]] virtual std::size_t offset() const noexcept = 0;
+    template<typename T>
+    const_resource_view(T&& view) noexcept requires requires
+    {
+        std::declval<std::decay_t<T>>().const_void_span();
+    } : _pimpl(std::make_shared<detail::resource_view_impl<std::decay_t<T>>>(std::forward<T>(view))) {}
 
+    const_resource_view(std::filesystem::path const& path) : const_resource_view(file_view{path}) {}
+
+    [[nodiscard]] bool empty() const noexcept
+    {
+        return _pimpl == nullptr;
+    }
+
+    explicit operator bool() const noexcept
+    {
+        return not empty();
+    }
 
     /** Get a span to the memory mapping.
      */
-    [[nodiscard]] virtual const_void_span span() const noexcept = 0;
+    [[nodiscard]] hi::const_void_span const_void_span() const noexcept
+    {
+        hi_axiom(_pimpl != nullptr);
+        return _pimpl->const_void_span();
+    }
+
+    template<typename T>
+    [[nodiscard]] friend std::span<T> as_span(const_resource_view const& view) noexcept
+    {
+        static_assert(std::is_const_v<T>);
+        return as_span<T>(view.const_void_span());
+    }
+
+    [[nodiscard]] friend std::string_view as_string_view(const_resource_view const& view) noexcept
+    {
+        return as_string_view(view.const_void_span());
+    }
+
+    [[nodiscard]] friend bstring_view as_bstring_view(const_resource_view const& view) noexcept
+    {
+        return as_bstring_view(view.const_void_span());
+    }
+
+private:
+    std::shared_ptr<detail::resource_view_base> _pimpl;
 };
 
-class writable_resource_view : public resource_view {
-public:
-    /** Get a span to the memory mapping.
-     */
-    [[nodiscard]] virtual void_span writable_span() noexcept = 0;
-};
-
-/** Get a span to the memory mapping.
- */
-[[nodiscard]] inline std::string_view as_string_view(resource_view const &rhs) noexcept
-{
-    return as_string_view(rhs.span());
-}
-
-[[nodiscard]] inline bstring_view as_bstring_view(resource_view const &rhs) noexcept
-{
-    return as_bstring_view(rhs.span());
-}
-
-template<typename T, size_t E = std::dynamic_extent>
-[[nodiscard]] inline std::span<T, E> as_span(resource_view const& rhs) noexcept requires(std::is_const_v<T>)
-{
-    return as_span<T, E>(rhs.span());
-}
-
-template<typename T, size_t E = std::dynamic_extent>
-[[nodiscard]] inline std::span<T, E> as_writable_span(writable_resource_view& rhs) noexcept
-{
-    return as_span<T, E>(rhs.writable_span());
-}
-
-} // namespace hi::inline v1
+}} // namespace hi::v1

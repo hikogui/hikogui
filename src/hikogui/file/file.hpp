@@ -70,29 +70,35 @@ enum class access_mode {
 
 namespace detail {
 
-struct file_impl {
-    std::filesystem::path path;
-    hi::access_mode access_mode;
-
+class file_impl {
+public:
     virtual ~file_impl() = default;
     file_impl(file_impl const& other) = delete;
     file_impl(file_impl&& other) = delete;
-    file& operator=(file_impl const& other) = delete;
-    file& operator=(file_impl&& other) = delete;
+    file_impl& operator=(file_impl const& other) = delete;
+    file_impl& operator=(file_impl&& other) = delete;
 
-    file_impl(std::filesystem::path path, access_mode access_mode) : path(std::move(path)), access_mode(access_mode) {}
+    file_impl(access_mode access_mode) : _access_mode(access_mode) {}
 
+    [[nodiscard]] hi::access_mode access_mode() const noexcept
+    {
+        return _access_mode;
+    }
+
+    [[nodiscard]] virtual bool closed() = 0;
     virtual void close() = 0;
     virtual void flush() = 0;
     virtual void rename(std::filesystem::path const& destination, bool overwrite_existing) = 0;
     [[nodiscard]] virtual std::size_t size() const = 0;
     [[nodiscard]] virtual std::size_t seek(std::ptrdiff_t offset, seek_whence whence) = 0;
-    [[nodiscard]] virtual std::size_t write(void const *data, std::size_t size) = 0;
+    virtual void write(void const *data, std::size_t size) = 0;
     [[nodiscard]] virtual std::size_t read(void *data, std::size_t size) = 0;
 
+protected:
+    hi::access_mode _access_mode;
 };
 
-}
+} // namespace detail
 
 /** A File object.
  */
@@ -107,17 +113,12 @@ public:
     ~file() = default;
     file(file const& other) noexcept = default;
     file(file&& other) noexcept = default;
-    file& operator=(file const& other)  noexcept= default;
+    file& operator=(file const& other) noexcept = default;
     file& operator=(file&& other) noexcept = default;
 
     [[nodiscard]] hi::access_mode access_mode() const noexcept
     {
-        return _pimpl->access_mode;
-    }
-
-    [[nodiscard]] std::filesystem::path path() const noexcept
-    {
-        return _pimpl->path;
+        return _pimpl->access_mode();
     }
 
     /** Close the file.
@@ -176,10 +177,9 @@ public:
      *
      * @param data Pointer to data to be written.
      * @param size The number of bytes to write.
-     * @return The number of bytes written.
      * @throw io_error
      */
-    [[nodiscard]] std::size_t write(void const *data, std::size_t size)
+    void write(void const *data, std::size_t size)
     {
         return _pimpl->write(data, size);
     }
@@ -199,10 +199,9 @@ public:
     /** Write data to a file.
      *
      * @param bytes The byte string to write
-     * @return The number of bytes written.
      * @throw io_error
      */
-    [[nodiscard]] std::size_t write(std::span<std::byte const> bytes)
+    void write(std::span<std::byte const> bytes)
     {
         return write(bytes.data(), ssize(bytes));
     }
@@ -210,10 +209,9 @@ public:
     /** Write data to a file.
      *
      * @param text The byte string to write
-     * @return The number of bytes written.
      * @throw io_error
      */
-    [[nodiscard]] std::size_t write(bstring_view text)
+    void write(bstring_view text)
     {
         return write(text.data(), ssize(text));
     }
@@ -221,10 +219,9 @@ public:
     /** Write data to a file.
      *
      * @param text The byte string to write
-     * @return The number of bytes written.
      * @throw io_error
      */
-    [[nodiscard]] std::size_t write(bstring const& text)
+    void write(bstring const& text)
     {
         return write(text.data(), ssize(text));
     }
@@ -232,10 +229,9 @@ public:
     /** Write data to a file.
      *
      * @param text The UTF-8 string to write
-     * @return The number of bytes written.
      * @throw io_error
      */
-    [[nodiscard]] std::size_t write(std::string_view text)
+    void write(std::string_view text)
     {
         return write(text.data(), ssize(text));
     }
@@ -288,7 +284,8 @@ public:
 
 private:
     std::shared_ptr<detail::file_impl> _pimpl;
+
+    friend class file_view;
 };
 
-}} // namespace hi::inline v1
-
+}} // namespace hi::v1

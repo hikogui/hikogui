@@ -13,8 +13,7 @@ using namespace hi;
 
 TEST(file_view, read)
 {
-    hilet view = file_view("file:file_view.txt");
+    hilet view = file_view{"file_view.txt"};
 
-    hilet *test = reinterpret_cast<char const *>(view.span().data());
-    ASSERT_TRUE(strncmp(test, "The quick brown", 15) == 0);
+    ASSERT_EQ(as_string_view(view), "The quick brown fox jumps over the lazy dog.");
 }

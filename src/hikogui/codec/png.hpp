@@ -23,11 +23,7 @@ namespace hi::inline v1 {
 
 class png {
 public:
-    [[nodiscard]] png(std::span<std::byte const> bytes);
-
-    [[nodiscard]] png(std::unique_ptr<resource_view> view);
-
-    [[nodiscard]] png(std::filesystem::path const &path) : png(std::make_unique<file_view>(path)) {}
+    [[nodiscard]] png(file_view view);
 
     [[nodiscard]] std::size_t width() const noexcept
     {
@@ -41,7 +37,7 @@ public:
 
     void decode_image(pixel_map<sfloat_rgba16> &image) const;
 
-    [[nodiscard]] static pixel_map<sfloat_rgba16> load(std::filesystem::path const &path);
+    [[nodiscard]] static pixel_map<sfloat_rgba16> load(file_view const &view);
 
 private:
     /** Matrix to convert png color values to sRGB.
@@ -76,7 +72,7 @@ private:
 
     /** Take ownership of the view.
      */
-    std::unique_ptr<resource_view> _view;
+    file_view _view;
 
     void read_header(std::span<std::byte const> bytes, std::size_t &offset);
     void read_chunks(std::span<std::byte const> bytes, std::size_t &offset);

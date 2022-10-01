@@ -7,11 +7,7 @@ target_sources(hikogui PRIVATE
     file.hpp
     $<${HI_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/file_posix.cpp>
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/file_win32.cpp>
-    file_mapping.cpp
-    file_mapping.hpp
-    $<${HI_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/file_mapping_posix.cpp>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/file_mapping_win32.cpp>
-    file_view.cpp
+    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/file_win32.hpp>
     file_view.hpp
     $<${HI_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/file_view_posix.cpp>
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/file_view_win32.cpp>

@@ -160,7 +160,7 @@ template<arithmetic Out, arithmetic In>
 
 /** Cast an unsigned number and saturate on overflow.
  */
-template<std::unsigned Out, std::unsigned In>
+template<std::unsigned_integral Out, std::unsigned_integral In>
 [[nodiscard]] constexpr Out saturate_cast(In rhs) noexcept
 {
     auto r = std::numeric_limits<Out>::max();

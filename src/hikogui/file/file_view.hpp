@@ -8,11 +8,12 @@
 
 #pragma once
 
-#include "file_mapping.hpp"
-#include "resource_view.hpp"
-#include "URI.hpp"
+#include "file.hpp"
+#include "URL.hpp"
 #include "../void_span.hpp"
 #include <span>
+#include <filesystem>
+#include <memory>
 
 hi_warning_push();
 // C26490: Don't use reinterpret_cast (type.1).
@@ -25,22 +26,61 @@ namespace detail {
 
 class file_view_impl {
 public:
-    file_view_impl(file_view_impl const &) = delete;
-    file_view_impl(file_view_impl &&) = delete;
-    file_view_impl&operator=(file_view_impl const &) = delete;
-    file_view_impl&operator=(file_view_impl &&) = delete;
+    file_view_impl() = delete;
+    file_view_impl(file_view_impl const&) = delete;
+    file_view_impl(file_view_impl&&) = delete;
+    file_view_impl& operator=(file_view_impl const&) = delete;
+    file_view_impl& operator=(file_view_impl&&) = delete;
 
     virtual ~file_view_impl() = default;
-    file_view_impl(std::shared_ptr<file_impl> file) _file(std::move(file)) {}
+    file_view_impl(std::shared_ptr<file_impl> file, std::size_t offset, std::size_t size) :
+        _file(std::move(file)), _offset(offset), _size(size)
+    {
+        if (_size == 0) {
+            _size = _file->size() - _offset;
+        }
+    }
 
-    [[nodiscard]] virtual void_span span() noexcept;
-    [[nodiscard]] virtual const_void_span const_span() noexcept;
+    [[nodiscard]] std::size_t offset() const noexcept
+    {
+        return _offset;
+    }
 
-private:
-    std::shared_ptr<file_impl> _file;
+    [[nodiscard]] std::size_t size() const noexcept
+    {
+        return _size;
+    }
+
+    [[nodiscard]] hi::access_mode access_mode() const noexcept
+    {
+        hi_axiom(_file);
+        return _file->access_mode();
+    }
+
+    [[nodiscard]] void_span void_span() const noexcept
+    {
+        hi_axiom(_file);
+        hi_assert(to_bool(_file->access_mode() & access_mode::write));
+        return {_data, _size};
+    }
+
+    [[nodiscard]] const_void_span const_void_span() const noexcept
+    {
+        return {_data, _size};
+    }
+
+    [[nodiscard]] virtual bool unmapped() const noexcept = 0;
+    virtual void flush(hi::void_span span) const noexcept = 0;
+    virtual void unmap() = 0;
+
+protected:
+    mutable std::shared_ptr<file_impl> _file;
+    std::size_t _offset;
+    std::size_t _size;
+    void *_data = nullptr;
 };
 
-}
+} // namespace detail
 
 /** Map a file into virtual memory.
  *
@@ -50,17 +90,17 @@ private:
  * - The `file_view` object maps a section of the file-mapping into virtual memory.
  *
  * The `file_mapping` intermediate object is required on Windows systems which
- * holds a handle to a file mapping object. 
+ * holds a handle to a file mapping object.
  *
  */
-class file_view : public writable_resource_view {
+class file_view {
 public:
     ~file_view() = default;
-    file_view() = delete;
-    file_view(file_view const& other) noexcept;
-    file_view(file_view&& other) noexcept;
-    file_view& operator=(file_view const& other) noexcept;
-    file_view& operator=(file_view&& other) noexcept;
+    constexpr file_view() noexcept = default;
+    constexpr file_view(file_view const& other) noexcept = default;
+    constexpr file_view(file_view&& other) noexcept = default;
+    constexpr file_view& operator=(file_view const& other) noexcept = default;
+    constexpr file_view& operator=(file_view&& other) noexcept = default;
 
     /** Create a file-view from a file-mapping.
      *
@@ -70,13 +110,16 @@ public:
      *               The offset must also be a multiple of the granularity.
      * @param size The size of the mapping, if zero the full file-mapping object is mapped.
      */
-    file_view(std::shared_ptr<file_mapping> const& mapping, std::size_t offset = 0, std::size_t size = 0);
+    file_view(file const& file, std::size_t offset = 0, std::size_t size = 0);
 
     file_view(
         std::filesystem::path const& path,
         access_mode access_mode = access_mode::open_for_read,
         std::size_t offset = 0,
-        std::size_t size = 0);
+        std::size_t size = 0) :
+        file_view(file{path, access_mode}, offset, size)
+    {
+    }
 
     file_view(
         std::string_view path,
@@ -105,92 +148,115 @@ public:
     {
     }
 
-    /*! Access mode of the opened file.
-     */
-    [[nodiscard]] access_mode accessMode() const noexcept
+    file_view(
+        URL const &url,
+        access_mode access_mode = access_mode::open_for_read,
+        std::size_t offset = 0,
+        std::size_t size = 0) :
+        file_view(std::filesystem::path{url}, access_mode, offset, size)
     {
-        return _file_mapping_object->accessMode();
     }
 
-    /*! URL location to the file.
-     */
-    [[nodiscard]] std::filesystem::path const& path() const noexcept
+    [[nodiscard]] std::size_t offset() const noexcept
     {
-        return _file_mapping_object->path();
+        hi_axiom(_pimpl != nullptr);
+        return _pimpl->offset();
     }
 
-    /*! Offset of the mapping into the file.
-     */
-    [[nodiscard]] std::size_t offset() const noexcept override
+    [[nodiscard]] std::size_t size() const noexcept
     {
-        return _offset;
+        hi_axiom(_pimpl != nullptr);
+        return _pimpl->size();
+    }
+
+    /** Check if this file view is closed.
+     *
+     * @post Resources may be released if the file view is closed.
+     * @return true of the file view is closed.
+     */
+    [[nodiscard]] bool unmapped() const noexcept
+    {
+        if (_pimpl) {
+            if (_pimpl->unmapped()) {
+                _pimpl = nullptr;
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return true;
+        }
+    }
+
+    /** Check if this file view is open.
+     *
+     * @post Resources may be released if the file view is closed.
+     * @return true of the file view is open.
+     */
+    explicit operator bool() const noexcept
+    {
+        return not unmapped();
+    }
+
+    void unmap() noexcept
+    {
+        if (auto pimpl = std::exchange(_pimpl, nullptr)) {
+            pimpl->unmap();
+        }
+    }
+
+    /** Span to the mapping into memory.
+     */
+    [[nodiscard]] void_span void_span() const noexcept
+    {
+        hi_axiom(_pimpl != nullptr);
+        return _pimpl->void_span();
     }
 
     /*! Span to the mapping into memory.
      */
-    [[nodiscard]] void_span writable_span() noexcept override
+    [[nodiscard]] const_void_span const_void_span() const noexcept
     {
-        return *_bytes;
+        hi_axiom(_pimpl != nullptr);
+        return _pimpl->const_void_span();
     }
 
-    /*! Span to the mapping into memory.
+    /** Flush changes in memory to the open file view.
+     *
+     * @param span The part of the buffer to flush.
      */
-    [[nodiscard]] const_void_span span() const noexcept override
+    void flush(hi::void_span span) const noexcept
     {
-        return *_bytes;
+        hi_axiom(_pimpl != nullptr);
+        return _pimpl->flush(span);
     }
 
-    /** Flush changes in memory to the open file.
-     * \param base Start location of the memory to flush.
-     * \param size Number of bytes from the base of the memory region to flush.
-     */
-    void flush(void *base, std::size_t size);
-
-    /*! Load a view of a resource.
-     * This is used when the resource that needs to be opened is a file.
-     */
-    [[nodiscard]] static std::unique_ptr<resource_view> load_view(std::filesystem::path const& path)
+    template<typename T>
+    [[nodiscard]] friend std::span<T> as_span(file_view const& view) noexcept
     {
-        return std::make_unique<file_view>(path);
+        if constexpr (std::is_const_v<T>) {
+            return as_span<T>(view.const_void_span());
+        } else {
+            return as_span<T>(view.void_span());
+        }
+    }
+
+    [[nodiscard]] friend std::string_view as_string_view(file_view const& view) noexcept
+    {
+        hi_axiom(view.offset() == 0);
+        return as_string_view(view.const_void_span());
+    }
+
+    [[nodiscard]] friend bstring_view as_bstring_view(file_view const& view) noexcept
+    {
+        hi_axiom(view.offset() == 0);
+        return as_bstring_view(view.const_void_span());
     }
 
 private:
-    /*! Unmap the bytes from memory.
-     * This is used by the shared_ptr to span to automatically unmap the memory, even
-     * if the file_mapping has been copied.
-     *
-     * \param bytes The bytes to unmap.
-     */
-    static void unmap(void_span *bytes) noexcept;
-
-    /*! Open a file mapping object.
-     * File mapping objects are cached and will be shared by file_views.
-     * Caching is done using std::weak_ptr to file_mapping objects
-     *
-     * \param path The path to the file.
-     * \param access_mode mode how to open the file.
-     * \param size Number of bytes from the start of the file to map.
-     * \return A shared-pointer to file mapping object.
-     */
-    [[nodiscard]] static std::shared_ptr<file_mapping>
-    findOrCreateFileMappingObject(std::filesystem::path const& path, access_mode access_mode, std::size_t size);
-
-private:
-    /*! pointer to a file mapping object.
-     */
-    std::shared_ptr<file_mapping> _file_mapping_object;
-
-    /*! A pointer to virtual memory that maps the file into memory.
-     * The shared_ptr to _bytes allows the file_view to be copied while pointing
-     * to the same memory map. This shared_ptr will use the private unmap().
-     */
-    std::shared_ptr<void_span> _bytes;
-
-    /*! The offset into the file which is mapped to memory.
-     */
-    std::size_t _offset;
+    mutable std::shared_ptr<detail::file_view_impl> _pimpl;
 };
 
-}} // namespace hi::inline v1
+}} // namespace hi::v1
 
 hi_warning_pop();
