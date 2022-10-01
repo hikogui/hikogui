@@ -35,7 +35,7 @@ template<typename T>
  */
 template<typename Out, std::derived_from<std::remove_pointer_t<Out>> In>
 [[nodiscard]] constexpr Out up_cast(In *rhs) noexcept
-    requires(std::is_const_v<std::remove_pointer_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_pointer_t<Out>>)
+    requires std::is_pointer_v<Out> and (std::is_const_v<std::remove_pointer_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_pointer_t<Out>>)
 {
     return static_cast<Out>(rhs);
 }
@@ -44,6 +44,7 @@ template<typename Out, std::derived_from<std::remove_pointer_t<Out>> In>
  */
 template<typename Out>
 [[nodiscard]] constexpr Out up_cast(nullptr_t) noexcept
+    requires std::is_pointer_v<Out>
 {
     return nullptr;
 }
@@ -51,8 +52,8 @@ template<typename Out>
 /** Cast a reference to a class to its base class or itself.
  */
 template<typename Out, std::derived_from<std::remove_reference_t<Out>> In>
-[[nodiscard]] constexpr Out up_cast(In& rhs) noexcept requires(
-    std::is_const_v<std::remove_reference_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_reference_t<Out>>)
+[[nodiscard]] constexpr Out up_cast(In& rhs) noexcept
+    requires std::is_reference_v<Out> and (std::is_const_v<std::remove_reference_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_reference_t<Out>>)
 {
     return static_cast<Out>(rhs);
 }
@@ -66,7 +67,7 @@ template<typename Out, std::derived_from<std::remove_reference_t<Out>> In>
  */
 template<typename Out, base_of<std::remove_pointer_t<Out>> In>
 [[nodiscard]] constexpr Out down_cast(In *rhs) noexcept
-    requires(std::is_const_v<std::remove_pointer_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_pointer_t<Out>>)
+    requires std::is_pointer_v<Out> and (std::is_const_v<std::remove_pointer_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_pointer_t<Out>>)
 {
     hi_axiom(rhs == nullptr or dynamic_cast<Out>(rhs) != nullptr);
     return static_cast<Out>(rhs);
@@ -74,11 +75,11 @@ template<typename Out, base_of<std::remove_pointer_t<Out>> In>
 
 /** Cast a pointer to a class to its derived class or itself.
  *
- * @note It is undefined behavior if the argument is not of type Out.
  * @return A pointer to the same object with a new type.
  */
 template<typename Out>
 [[nodiscard]] constexpr Out down_cast(nullptr_t) noexcept
+    requires std::is_pointer_v<Out>
 {
     return nullptr;
 }
@@ -90,9 +91,11 @@ template<typename Out>
  * @return A reference to the same object with a new type.
  */
 template<typename Out, base_of<std::remove_reference_t<Out>> In>
-[[nodiscard]] constexpr Out down_cast(In& rhs) noexcept requires(
+[[nodiscard]] constexpr Out down_cast(In& rhs) noexcept
+    requires std::is_reference_v<Out> and (
     std::is_const_v<std::remove_reference_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_reference_t<Out>>)
 {
+    hi_axiom(dynamic_cast<std::add_pointer_t<std::remove_reference_t<Out>>>(std::addressof(rhs)) != nullptr);
     return static_cast<Out>(rhs);
 }
 
@@ -153,6 +156,18 @@ template<arithmetic Out, arithmetic In>
 
         return r;
     }
+}
+
+/** Cast an unsigned number and saturate on overflow.
+ */
+template<std::unsigned_integral Out, std::unsigned_integral In>
+[[nodiscard]] constexpr Out saturate_cast(In rhs) noexcept
+{
+    auto r = std::numeric_limits<Out>::max();
+    if (rhs < r) {
+        r = static_cast<Out>(rhs);
+    }
+    return r;
 }
 
 /** Cast numeric values without loss of precision.

@@ -4,7 +4,7 @@
 
 #include "preferences.hpp"
 #include "codec/JSON.hpp"
-#include "file.hpp"
+#include "file/file.hpp"
 #include "log.hpp"
 
 namespace hi::inline v1 {
@@ -40,7 +40,7 @@ preferences::preferences() noexcept : _location(), _data(datum::make_map()), _mo
     });
 }
 
-preferences::preferences(URL location) noexcept : preferences()
+preferences::preferences(std::filesystem::path location) noexcept : preferences()
 {
     load(location);
 }
@@ -55,7 +55,9 @@ void preferences::_save() const noexcept
     try {
         auto text = format_JSON(_data);
 
-        hilet tmp_location = _location.urlByAppendingExtension(".tmp");
+        auto tmp_location = _location;
+        tmp_location += ".tmp";
+
         auto file = hi::file(tmp_location, access_mode::truncate_or_create_for_write | access_mode::rename);
         file.write(text);
         file.flush();
@@ -97,7 +99,7 @@ void preferences::reset() noexcept
     }
 }
 
-void preferences::save(URL location) noexcept
+void preferences::save(std::filesystem::path location) noexcept
 {
     hilet lock = std::scoped_lock(mutex);
     _location = std::move(location);
@@ -110,7 +112,7 @@ void preferences::save() const noexcept
     _save();
 }
 
-void preferences::load(URL location) noexcept
+void preferences::load(std::filesystem::path location) noexcept
 {
     hilet lock = std::scoped_lock(mutex);
     _location = std::move(location);
@@ -130,7 +132,7 @@ void preferences::write(jsonpath const &path, datum const value) noexcept
     hilet lock = std::scoped_lock(mutex);
     auto *v = _data.find_one_or_create(path);
     if (v == nullptr) {
-        hi_log_fatal("Could not write '{}' to preference file '{}'", path, _location);
+        hi_log_fatal("Could not write '{}' to preference file '{}'", path, _location.string());
     }
 
     if (*v != value) {

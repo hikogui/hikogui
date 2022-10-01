@@ -14,9 +14,9 @@
 #include "pipeline_tone_mapper_device_shared.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
+#include <filesystem>
 
 namespace hi::inline v1 {
-class URL;
 
 class gfx_device_vulkan final : public gfx_device {
 public:
@@ -188,7 +188,7 @@ public:
 
     vk::ShaderModule loadShader(std::span<std::byte const> shaderObjectBytes) const;
 
-    vk::ShaderModule loadShader(URL const &shaderObjectLocation) const;
+    vk::ShaderModule loadShader(std::filesystem::path const &path) const;
 
     void waitIdle() const
     {

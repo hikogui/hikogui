@@ -2,14 +2,14 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "hikogui/unicode/unicode_word_break.hpp"
-#include "hikogui/unicode/unicode_sentence_break.hpp"
-#include "hikogui/unicode/unicode_line_break.hpp"
-#include "hikogui/unicode/unicode_description.hpp"
-#include "hikogui/file_view.hpp"
-#include "hikogui/strings.hpp"
-#include "hikogui/generator.hpp"
-#include "hikogui/ranges.hpp"
+#include "unicode_word_break.hpp"
+#include "unicode_sentence_break.hpp"
+#include "unicode_line_break.hpp"
+#include "unicode_description.hpp"
+#include "../file/file_view.hpp"
+#include "../strings.hpp"
+#include "../generator.hpp"
+#include "../ranges.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
@@ -60,7 +60,7 @@ static std::optional<test_type> parse_test_line(std::string_view line, int line_
 
 static hi::generator<test_type> parse_tests(std::string_view filename)
 {
-    hilet view = hi::file_view(hi::URL(filename));
+    hilet view = hi::file_view(filename);
     hilet test_data = as_string_view(view);
 
     int line_nr = 1;

@@ -130,7 +130,7 @@ protected:
     std::atomic<uint64_t> _duration_avg = 0;
 };
 
-template<basic_fixed_string Tag>
+template<fixed_string Tag>
 class tagged_counter : public counter {
 public:
     tagged_counter() noexcept : counter()
@@ -142,7 +142,7 @@ public:
 
 } // namespace detail
 
-template<basic_fixed_string Tag>
+template<fixed_string Tag>
 inline detail::tagged_counter<Tag> global_counter;
 
 [[nodiscard]] inline detail::counter *get_global_counter_if(std::string const& name)

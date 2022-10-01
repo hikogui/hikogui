@@ -6,13 +6,13 @@
 #include "pipeline_SDF_device_shared.hpp"
 #include "gfx_device_vulkan.hpp"
 #include "gfx_system.hpp"
-#include "../pixel_map.hpp"
-#include "../URL.hpp"
-#include "../memory.hpp"
-#include "../cast.hpp"
+#include "../file/URL.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/scale.hpp"
 #include "../geometry/translate.hpp"
+#include "../pixel_map.hpp"
+#include "../memory.hpp"
+#include "../cast.hpp"
 #include <array>
 
 namespace hi::inline v1::pipeline_SDF {
@@ -198,8 +198,8 @@ void device_shared::buildShaders()
     fragmentShaderSpecializationMapEntries = specialization_constants::specializationConstantMapEntries();
     fragmentShaderSpecializationInfo = specializationConstants.specializationInfo(fragmentShaderSpecializationMapEntries);
 
-    vertexShaderModule = device.loadShader(URL("resource:GUI/pipeline_SDF.vert.spv"));
-    fragmentShaderModule = device.loadShader(URL("resource:GUI/pipeline_SDF.frag.spv"));
+    vertexShaderModule = device.loadShader(URL("resource:shaders/pipeline_SDF.vert.spv"));
+    fragmentShaderModule = device.loadShader(URL("resource:shaders/pipeline_SDF.frag.spv"));
 
     shaderStages = {
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, vertexShaderModule, "main"},

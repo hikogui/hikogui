@@ -4,61 +4,78 @@
 
 #pragma once
 
+#include "assert.hpp"
 #include <ranges>
 #include <algorithm>
 #include <concepts>
-#include <string>
-#include <string_view>
 #include <type_traits>
 #include <vector>
+#include <exception>
 
 namespace hi::inline v1 {
+
+template<typename Value, typename Range>
+[[nodiscard]] constexpr Value get_first(Range &&range)
+{
+    auto it = std::ranges::begin(range);
+    auto last = std::ranges::end(range);
+
+    if (it == last) {
+        throw std::out_of_range{"Range is empty"};
+    }
+
+    auto value = *it++;
+    return Value{value};
+}
+
+/** @see make_vector
+ */
+template<typename Range>
+[[nodiscard]] constexpr Range::value_type get_first(Range&& range)
+{
+    return get_first<typename Range::value_type>(std::forward<Range>(range));
+}
 
 /** Make a vector from a view.
  * This function will make a vector with a copy of the elements of a view.
  */
-template<typename View>
-[[nodiscard]] std::vector<typename View::value_type> make_vector(View const &view)
+template<typename Value, typename Range>
+[[nodiscard]] constexpr std::vector<Value> make_vector(Range&& range)
 {
-    auto r = std::vector<View::value_type>{};
-    auto first = begin(view);
-    auto last = end(view);
-    r.reserve(std::distance(first, last));
-    std::copy(first, last, std::back_inserter(r));
-    return r;
-}
+    auto first = std::ranges::begin(range);
+    auto last = std::ranges::end(range);
 
-/** Make a vector from a view.
- * This function will make a vector with a by moving the elements of a view.
- */
-template<std::ranges::sized_range View>
-[[nodiscard]] std::vector<typename View::value_type> make_vector(View &&view) noexcept
-{
-    auto r = std::vector<View::value_type>{};
-    auto first = begin(view);
-    auto last = end(view);
-    r.reserve(std::distance(first, last));
-    std::ranges::copy(first, last, std::back_inserter(r));
-    return r;
-}
+    if constexpr (requires(std::vector<Value> & x) { std::ranges::copy(first, last, std::back_inserter(x)); }) {
+        // This should handle almost everything.
+        auto r = std::vector<Value>{};
+        if constexpr (requires { std::distance(first, last); }) {
+            r.reserve(std::distance(first, last));
+        }
+        std::ranges::copy(first, last, std::back_inserter(r));
+        return r;
 
-/** Make a vector from a view.
- * This function will make a vector by copying the elements of a view.
- */
-template<typename View>
-[[nodiscard]] auto make_vector(View &&view)
-{
-    using std::begin;
-    using std::end;
+    } else if constexpr (requires { Value{std::string_view{(*first).begin(), (*first).end()}}; }) {
+        // std::views::split returns a range of ranges, handle the string_view cases.
+        auto r = std::vector<Value>{};
+        if constexpr (requires { std::distance(first, last); }) {
+            r.reserve(std::distance(first, last));
+        }
+        for (auto it = first; it != last; ++it) {
+            r.emplace_back(std::string_view{(*it).begin(), (*it).end()});
+        }
+        return r;
 
-    auto r = std::vector<typename View::value_type>{};
-    for (auto it = begin(view); it != end(view); ++it) {
-        r.push_back(*it);
+    } else {
+        hi_static_not_implemented();
     }
-    //auto first = begin(view);
-    //auto last = end(view);
-    //std::ranges::copy(first, last, std::back_inserter(r));
-    return r;
+}
+
+/** @see make_vector
+ */
+template<typename Range>
+[[nodiscard]] constexpr std::vector<typename Range::value_type> make_vector(Range&& range)
+{
+    return make_vector<typename Range::value_type>(std::forward<Range>(range));
 }
 
 } // namespace hi::inline v1

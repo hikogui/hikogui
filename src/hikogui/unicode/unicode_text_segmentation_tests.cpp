@@ -2,11 +2,11 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "hikogui/unicode/unicode_text_segmentation.hpp"
-#include "hikogui/file_view.hpp"
-#include "hikogui/charconv.hpp"
-#include "hikogui/ranges.hpp"
-#include "hikogui/strings.hpp"
+#include "unicode_text_segmentation.hpp"
+#include "../file/file_view.hpp"
+#include "../charconv.hpp"
+#include "../ranges.hpp"
+#include "../strings.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
@@ -58,7 +58,7 @@ std::optional<graphemeBreakTest> parsegraphemeBreakTests_line(std::string_view l
 
 std::vector<graphemeBreakTest> parsegraphemeBreakTests()
 {
-    hilet view = file_view(URL("file:graphemeBreakTest.txt"));
+    hilet view = file_view{"graphemeBreakTest.txt"};
     hilet test_data = as_string_view(view);
 
     std::vector<graphemeBreakTest> r;

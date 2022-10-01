@@ -36,7 +36,7 @@ protected:
     trace_base *_next = nullptr;
 };
 
-template<basic_fixed_string Tag, int NumItems = 0>
+template<fixed_string Tag, int NumItems = 0>
 class trace : public trace_base {
 public:
     trace() noexcept : trace_base(), items(), size(0) {}
@@ -73,7 +73,7 @@ private:
     std::size_t size = 0;
 };
 
-template<basic_fixed_string Tag>
+template<fixed_string Tag>
 class trace<Tag, 0> : public trace_base {
 public:
     trace() noexcept : trace_base() {}

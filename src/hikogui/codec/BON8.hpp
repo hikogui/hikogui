@@ -422,8 +422,6 @@ void BON8_encoder::add(datum const &value)
 {
     if (auto s = get_if<std::string>(value)) {
         add(*s);
-    } else if (auto u = get_if<URL>(value)) {
-        add(to_string(*u));
     } else if (auto b = get_if<bool>(value)) {
         add(*b);
     } else if (holds_alternative<nullptr_t>(value)) {

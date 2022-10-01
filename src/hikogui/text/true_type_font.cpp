@@ -1358,7 +1358,7 @@ bool true_type_font::load_glyph_metrics(hi::glyph_id glyph_id, hi::glyph_metrics
 
 [[nodiscard]] std::span<std::byte const> true_type_font::get_table_bytes(char const *table_name) const
 {
-    hilet bytes = as_span<std::byte const>(*view);
+    hilet bytes = as_span<std::byte const>(_view);
 
     std::size_t offset = 0;
     hilet header = make_placement_ptr<SFNTHeader>(bytes, offset);

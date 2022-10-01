@@ -48,7 +48,7 @@ public:
 
     hi::observer<std::string> selected_theme;
 
-    my_preferences(hi::URL url) : hi::preferences(std::move(url))
+    my_preferences(std::filesystem::path path) : hi::preferences(std::move(path))
     {
         add("audio_output_device_id", audio_output_device_id);
         add("audio_output_exclusive", audio_output_exclusive);
@@ -225,7 +225,7 @@ int hi_main(int argc, char *argv[])
     time_stamp_count::start_subsystem();
     auto render_doc = RenderDoc();
 
-    auto preferences = my_preferences(URL::urlFromApplicationPreferencesFile());
+    auto preferences = my_preferences(get_path(path_location::preferences_file));
 
     auto gui = gui_system::make_unique();
     gui->selected_theme = preferences.selected_theme;

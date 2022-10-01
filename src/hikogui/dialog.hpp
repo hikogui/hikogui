@@ -21,17 +21,17 @@ enum class dialog_type { ok, yes_no, yes_no_cancel };
  */
 bool dialog(dialog_type type, std::string_view title, std::string_view text);
 
-void dialog_ok(std::string_view title, std::string_view message) noexcept
+inline void dialog_ok(std::string_view title, std::string_view message) noexcept
 {
     dialog(dialog_type::ok, title, message);
 }
 
-[[nodiscard]] bool dialog_yes_no(std::string_view title, std::string_view message) noexcept
+[[nodiscard]] inline bool dialog_yes_no(std::string_view title, std::string_view message) noexcept
 {
     return dialog(dialog_type::yes_no, title, message);
 }
 
-[[nodiscard]] bool dialog_yes_no_cancel(std::string_view title, std::string_view message)
+[[nodiscard]] inline bool dialog_yes_no_cancel(std::string_view title, std::string_view message)
 {
     return dialog(dialog_type::yes_no_cancel, title, message);
 }

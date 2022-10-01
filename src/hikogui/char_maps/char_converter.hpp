@@ -81,7 +81,7 @@ namespace hi { inline namespace v1 {
  *  - _chunk_ A chunk of 16 ascii characters. bit 7 is always '0'.
  *  - _ptr_ The pointer to the first code-unit where the ASCII characters must be written to.
  */
-template<basic_fixed_string Encoding>
+template<fixed_string Encoding>
 struct char_map;
 
 /** A converter between character encodings.
@@ -90,7 +90,7 @@ struct char_map;
  * @tparam From a string-tag matching an existing `char_map<From>`
  * @tparam To a string-tag matching an existing `char_map<To>`
  */
-template<basic_fixed_string From, basic_fixed_string To>
+template<fixed_string From, fixed_string To>
 struct char_converter {
 public:
     using from_encoder_type = char_map<From>;

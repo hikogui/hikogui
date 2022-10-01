@@ -6,9 +6,9 @@
 #include "pipeline_image_device_shared.hpp"
 #include "paged_image.hpp"
 #include "gfx_device_vulkan.hpp"
+#include "../file/URL.hpp"
 #include "../pixel_map.hpp"
 #include "../pixel_map.inl"
-#include "../URL.hpp"
 #include "../memory.hpp"
 #include "../cast.hpp"
 #include <array>
@@ -230,8 +230,8 @@ void device_shared::draw_in_command_buffer(vk::CommandBuffer &commandBuffer)
 
 void device_shared::build_shaders()
 {
-    vertex_shader_module = device.loadShader(URL("resource:GUI/pipeline_image.vert.spv"));
-    fragment_shader_module = device.loadShader(URL("resource:GUI/pipeline_image.frag.spv"));
+    vertex_shader_module = device.loadShader(URL("resource:shaders/pipeline_image.vert.spv"));
+    fragment_shader_module = device.loadShader(URL("resource:shaders/pipeline_image.frag.spv"));
 
     shader_stages = {
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, vertex_shader_module, "main"},

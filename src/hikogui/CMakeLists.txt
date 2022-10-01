@@ -7,16 +7,17 @@ add_subdirectory(audio)
 add_subdirectory(char_maps)
 add_subdirectory(codec)
 add_subdirectory(color)
+add_subdirectory(file)
 add_subdirectory(formula)
 add_subdirectory(geometry)
 add_subdirectory(GFX)
 add_subdirectory(GUI)
+add_subdirectory(i18n)
 add_subdirectory(random)
 add_subdirectory(rapid)
 add_subdirectory(skeleton)
-add_subdirectory(i18n)
-add_subdirectory(unicode)
 add_subdirectory(text)
+add_subdirectory(unicode)
 add_subdirectory(widgets)
 
 configure_file(metadata.cpp.in metadata.cpp @ONLY)
@@ -66,18 +67,8 @@ target_sources(hikogui PRIVATE
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/dialog_win32.cpp>
     endian.hpp
     enum_metadata.hpp
+    exception.cpp
     exception.hpp
-    file.hpp
-    $<${HI_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/file_posix.cpp>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/file_win32.cpp>
-    file_mapping.cpp
-    file_mapping.hpp
-    $<${HI_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/file_mapping_posix.cpp>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/file_mapping_win32.cpp>
-    file_view.cpp
-    file_view.hpp
-    $<${HI_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/file_view_posix.cpp>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/file_view_win32.cpp>
     fixed.hpp
     float16.hpp
     format_check.hpp
@@ -88,7 +79,6 @@ target_sources(hikogui PRIVATE
     gap_buffer.hpp
     generator.hpp
     global_state.hpp
-    glob.hpp
     hash.hpp
     hash_map.hpp
     huffman.hpp
@@ -143,19 +133,15 @@ target_sources(hikogui PRIVATE
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32.hpp>
     utility.hpp
     range_map.hpp
-    resource_view.hpp
     safe_int.hpp
     semantic_version.hpp
     scoped_buffer.hpp
     scoped_task.hpp
     shared_state.hpp
     sip_hash.hpp
-    source_location.hpp
     small_map.hpp
     small_vector.hpp
     stack.hpp
-    static_resource_view.cpp
-    static_resource_view.hpp
     strings.hpp
     subsystem.hpp
     tag.hpp
@@ -180,13 +166,6 @@ target_sources(hikogui PRIVATE
     undo_stack.hpp
     unfair_mutex.hpp
     unfair_recursive_mutex.hpp
-    URL.cpp
-    URL.hpp
-    $<${HI_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/URL_macos.mm>
-    $<${HI_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/URL_posix.cpp>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/URL_win32.cpp>
-    url_parser.cpp
-    url_parser.hpp
     utils.hpp
     vector_span.hpp
     void_span.hpp
@@ -196,22 +175,6 @@ target_sources(hikogui PRIVATE
     wfree_unordered_map.hpp
     $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/win32_headers.hpp>
 )
-
-if(HI_BUILD_PCH AND NOT HI_ENABLE_ANALYSIS)
-    target_precompile_headers(hikogui PRIVATE
-        assert.hpp
-        counters.hpp
-        datum.hpp
-        debugger.hpp
-        exception.hpp
-        log.hpp
-        architecture.hpp
-        utility.hpp
-        strings.hpp
-        trace.hpp
-        URL.hpp
-    )
-endif()
 
 if(HI_BUILD_TESTS)
     target_sources(hikogui_tests PRIVATE
@@ -227,14 +190,12 @@ if(HI_BUILD_TESTS)
         defer_tests.cpp
         enum_metadata_tests.cpp
         exceptions_tests.cpp
-        file_view_tests.cpp
         fixed_string_tests.cpp
         float16_tests.cpp
         format_check_tests.cpp
         forward_value_tests.cpp
         gap_buffer_tests.cpp
         generator_tests.cpp
-        glob_tests.cpp
         interval_tests.cpp
         int_carry_tests.cpp
         int_overflow_tests.cpp
@@ -256,24 +217,6 @@ if(HI_BUILD_TESTS)
         tokenizer_tests.cpp
         tree_tests.cpp
         type_traits_tests.cpp
-        url_parser_tests.cpp
-        URL_tests.cpp
     )
 endif()
 
-
-if(HI_BUILD_TESTS AND HI_BUILD_PCH AND NOT HI_ENABLE_ANALYSIS)
-    target_precompile_headers(hikogui_tests PRIVATE
-        assert.hpp
-        counters.hpp
-        datum.hpp
-        debugger.hpp
-        exception.hpp
-        log.hpp
-        architecture.hpp
-        utility.hpp
-        strings.hpp
-        trace.hpp
-        URL.hpp
-    )
-endif()

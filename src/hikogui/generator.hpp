@@ -102,19 +102,19 @@ public:
 
     /** A forward iterator which iterates through values co_yieled by the generator-function.
      */
-    class iterator {
+    class const_iterator {
     public:
         using difference_type = ptrdiff_t;
-        using value_type = std::remove_cv_t<value_type>;
-        using pointer = value_type *;
-        using reference = value_type &;
+        using value_type = std::decay_t<value_type>;
+        using pointer = value_type const *;
+        using reference = value_type const &;
         using iterator_category = std::input_iterator_tag;
 
-        explicit iterator(handle_type coroutine) : _coroutine{coroutine} {}
+        explicit const_iterator(handle_type coroutine) : _coroutine{coroutine} {}
 
         /** Resume the generator-function.
          */
-        iterator &operator++()
+        const_iterator& operator++()
         {
             hi_axiom(not at_end());
             _coroutine.resume();
@@ -133,13 +133,13 @@ public:
 
         /** Retrieve the value co_yielded by the generator-function.
          */
-        value_type const &operator*() const
+        reference &operator*() const
         {
             hi_axiom(not at_end());
             return _coroutine.promise().value();
         }
 
-        value_type const *operator->() const noexcept
+        pointer *operator->() const noexcept
         {
             hi_axiom(not at_end());
             return std::addressof(_coroutine.promise().value());
@@ -147,7 +147,7 @@ public:
 
         [[nodiscard]] bool at_end() const noexcept
         {
-            return (not _coroutine) or _coroutine.done();
+            return not _coroutine or _coroutine.done();
         }
 
         /** Check if the generator-function has finished.
@@ -190,14 +190,28 @@ public:
 
     /** Start the generator-function and return an iterator.
      */
-    iterator begin()
+    const_iterator begin() const
     {
-        return iterator{_coroutine};
+        return const_iterator{_coroutine};
     }
 
-    /** Return a sentinal for the iterator.
+    /** Start the generator-function and return an iterator.
      */
-    std::default_sentinel_t end()
+    const_iterator cbegin() const
+    {
+        return const_iterator{_coroutine};
+    }
+
+    /** Return a sentinel for the iterator.
+     */
+    std::default_sentinel_t end() const
+    {
+        return {};
+    }
+
+    /** Return a sentinel for the iterator.
+     */
+    std::default_sentinel_t cend() const
     {
         return {};
     }

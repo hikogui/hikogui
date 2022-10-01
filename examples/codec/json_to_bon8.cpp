@@ -3,13 +3,13 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "hikogui/crt.hpp"
-#include "hikogui/URL.hpp"
-#include "hikogui/file.hpp"
+#include "hikogui/file/file_view.hpp"
 #include "hikogui/codec/JSON.hpp"
 #include "hikogui/codec/BON8.hpp"
 #include <string>
 #include <format>
 #include <ostream>
+#include <filesystem>
 
 int usage()
 {
@@ -23,11 +23,11 @@ int hi_main(int argc, char* argv[])
     if (argc != 3) {
         return usage();
     }
-    auto json_filename = hi::URL(argv[1]);
-    auto bon8_filename = hi::URL(argv[2]);
+    auto json_filename = std::filesystem::path(argv[1]);
+    auto bon8_filename = std::filesystem::path(argv[2]);
 
-    auto json_view = json_filename.loadView();
-    auto json_data = as_string_view(*json_view);
+    auto json_view = hi::file_view(json_filename);
+    auto json_data = as_string_view(json_view);
     auto data = hi::parse_JSON(json_data);
 
     auto bon8_file = hi::file(bon8_filename, hi::access_mode::truncate_or_create_for_write);

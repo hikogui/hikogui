@@ -24,7 +24,6 @@ include(CMakeDependentOption)
 cmake_dependent_option(HI_BUILD_EXAMPLES "Build example applications"   OFF "NOT HI_ENABLE_ANALYSIS" ON)
 cmake_dependent_option(HI_BUILD_TESTS    "Build tests"                  ON  "NOT HI_ENABLE_ANALYSIS" OFF)
 cmake_dependent_option(HI_INSTALL        "Generate installation target" ON  "NOT HI_ENABLE_ANALYSIS" OFF)
-cmake_dependent_option(HI_BUILD_PCH      "Build precompiled headers"    ON  "NOT HI_ENABLE_ANALYSIS" OFF)
 
 #-------------------------------------------------------------------
 # Project
@@ -89,7 +88,6 @@ endif()
 # Setup CMake Includes
 #-------------------------------------------------------------------
 
-include(AddStaticResource)
 include(AddShader)
 include(ShowBuildTargetProperties)
 include(FetchContent)
@@ -146,7 +144,6 @@ endif()
 # later using target_sources() in CMakeLists of subdirectories.
 
 add_subdirectory(src/hikogui)
-add_subdirectory(tools)
 
 #-------------------------------------------------------------------
 # Build Target: hikogui                                     (library)
@@ -376,33 +373,33 @@ endif()
 # Copy resources needed by executables
 #-------------------------------------------------------------------
 
-add_shader(hikogui_shader_objects
-    src/hikogui/GFX/utils.glsl
-    src/hikogui/GFX/pipeline_image.vert
-    src/hikogui/GFX/pipeline_image.frag
-    src/hikogui/GFX/pipeline_box.vert
-    src/hikogui/GFX/pipeline_box.frag
-    src/hikogui/GFX/pipeline_SDF.vert
-    src/hikogui/GFX/pipeline_SDF.frag
-    src/hikogui/GFX/pipeline_alpha.vert
-    src/hikogui/GFX/pipeline_alpha.frag
-    src/hikogui/GFX/pipeline_tone_mapper.vert
-    src/hikogui/GFX/pipeline_tone_mapper.frag
+add_custom_target(hikogui_shaders)
+add_shader_target(hikogui_shaders
+    shaders/utils.glsl
+    shaders/pipeline_image.vert
+    shaders/pipeline_image.frag
+    shaders/pipeline_box.vert
+    shaders/pipeline_box.frag
+    shaders/pipeline_SDF.vert
+    shaders/pipeline_SDF.frag
+    shaders/pipeline_alpha.vert
+    shaders/pipeline_alpha.frag
+    shaders/pipeline_tone_mapper.vert
+    shaders/pipeline_tone_mapper.frag
 )
 
-target_static_resource(hikogui
-    ${hikogui_shader_objects}
-    data/elusiveicons-webfont.ttf
-    data/hikogui_icons.ttf
+set(hikogui_resource_files
+    resources/themes/hikogui_dark.theme.json
+    resources/themes/hikogui_light.theme.json
+    resources/fonts/elusiveicons-webfont.ttf
+    resources/fonts/hikogui_icons.ttf
+    resources/win32.keybinds.json
 )
 
 add_custom_target(hikogui_resources
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
-    DEPENDS
-    resources/themes/hikogui_dark.theme.json
-    resources/themes/hikogui_light.theme.json
-    resources/win32.keybinds.json
-)
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/shaders ${CMAKE_CURRENT_BINARY_DIR}/resources/shaders
+    DEPENDS ${hikogui_resource_files} hikogui_shaders)
 
 add_dependencies(hikogui hikogui_resources)
 
@@ -423,7 +420,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
         FILES_MATCHING PATTERN "*.h")
 
 # Copy all resource files needing to be added to the resource directory of an application
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/resources/
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/resources/
         DESTINATION share/hikogui/resources)
 
 # On Windows, the dynamic libs go in the same dir as the executable and static libs go into "lib".
@@ -483,12 +480,6 @@ if(HI_BUILD_TESTS)
     target_link_libraries(hikogui_tests PRIVATE gtest_main hikogui)
 
     target_include_directories(hikogui_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-
-    if(HI_BUILD_PCH)
-        if(NOT HI_ENABLE_ANALYSIS)
-            target_precompile_headers(hikogui_tests PRIVATE <gtest/gtest.h>)
-        endif()
-    endif()
 
     include(GoogleTest)
 

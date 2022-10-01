@@ -3,7 +3,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "formula_post_process_context.hpp"
-#include "../url_parser.hpp"
+#include "../file/URI.hpp"
 
 namespace hi::inline v1 {
 
@@ -50,15 +50,6 @@ static datum function_boolean(formula_evaluation_context &context, datum::vector
     }
 
     return datum{to_bool(args[0])};
-}
-
-static datum function_url(formula_evaluation_context &context, datum::vector_type const &args)
-{
-    if (args.size() != 1) {
-        throw operation_error(std::format("Expecting 1 argument for url() function, got {}", args.size()));
-    }
-
-    return datum{static_cast<URL>(args[0])};
 }
 
 static datum function_size(formula_evaluation_context &context, datum::vector_type const &args)
@@ -227,7 +218,6 @@ formula_post_process_context::function_table formula_post_process_context::globa
     {"decimal", function_decimal},
     {"string", function_string},
     {"boolean", function_boolean},
-    {"url", function_url},
     {"size", function_size},
     {"keys", function_keys},
     {"values", function_values},
@@ -243,6 +233,11 @@ formula_post_process_context::method_table formula_post_process_context::global_
     {"month", method_month},
     {"day", method_day},
 };
+
+static std::string url_encode(std::string_view str) noexcept
+{
+    return URI::encode(str);
+}
 
 formula_post_process_context::filter_table formula_post_process_context::global_filters = {
     {"id", make_identifier},

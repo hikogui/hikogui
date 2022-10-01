@@ -25,7 +25,6 @@ TEST(datum, IntOperations)
     ASSERT_EQ(holds_alternative<long long>(v), true);
     ASSERT_EQ(holds_alternative<double>(v), false);
     ASSERT_EQ(holds_alternative<decimal>(v), false);
-    ASSERT_EQ(holds_alternative<URL>(v), false);
     ASSERT_EQ(holds_alternative<std::string>(v), false);
 
     ASSERT_EQ(v == 42, true);

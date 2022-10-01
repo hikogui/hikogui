@@ -4,7 +4,6 @@
 
 #include "font.hpp"
 #include "true_type_font.hpp"
-#include "../resource_view.hpp"
 
 namespace hi::inline v1 {
 

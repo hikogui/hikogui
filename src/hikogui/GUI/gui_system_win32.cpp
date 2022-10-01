@@ -7,6 +7,8 @@
 #include "theme_book.hpp"
 #include "../GFX/gfx_system_vulkan.hpp"
 #include "../text/font_book.hpp"
+#include "../file/path_location.hpp"
+#include "../file/URL.hpp"
 #include "../locked_memory_allocator.hpp"
 #include "../trace.hpp"
 #include "../log.hpp"
@@ -16,12 +18,14 @@ namespace hi::inline v1 {
 
 [[nodiscard]] std::unique_ptr<gui_system> gui_system::make_unique(std::weak_ptr<gui_system_delegate> delegate) noexcept
 {
-    auto font_book = std::make_unique<hi::font_book>(std::vector<URL>{URL::urlFromSystemfontDirectory()});
-    font_book->register_elusive_icon_font(URL("resource:elusiveicons-webfont.ttf"));
-    font_book->register_hikogui_icon_font(URL("resource:hikogui_icons.ttf"));
+    auto font_directories = make_vector(get_paths(path_location::font_dirs));
+    auto font_book = std::make_unique<hi::font_book>(std::move(font_directories));
+    font_book->register_elusive_icon_font(URL{"resource:fonts/elusiveicons-webfont.ttf"});
+    font_book->register_hikogui_icon_font(URL{"resource:fonts/hikogui_icons.ttf"});
     font_book->post_process();
 
-    auto theme_book = std::make_unique<hi::theme_book>(*font_book, std::vector<URL>{URL::urlFromResourceDirectory() / "themes"});
+    auto theme_directories = make_vector(get_paths(path_location::theme_dirs));
+    auto theme_book = std::make_unique<hi::theme_book>(*font_book, std::move(theme_directories));
 
     auto gfx_system = std::make_unique<hi::gfx_system_vulkan>();
 

@@ -4,6 +4,7 @@
 
 #include "font_book.hpp"
 #include "true_type_font.hpp"
+#include "../file/glob.hpp"
 #include "../trace.hpp"
 #include "../ranges.hpp"
 #include "../log.hpp"
@@ -12,20 +13,20 @@
 
 namespace hi::inline v1 {
 
-font_book::font_book(std::vector<URL> const &font_directories)
+font_book::font_book(std::vector<std::filesystem::path> const& font_directories)
 {
     create_family_name_fallback_chain();
 
-    for (hilet &font_directory : font_directories) {
+    for (hilet& font_directory : font_directories) {
         hilet font_directory_glob = font_directory / "**" / "*.ttf";
-        for (hilet &font_url : font_directory_glob.urlsByScanningWithGlobPattern()) {
+        for (hilet& font_path : glob(font_directory_glob)) {
             auto t = trace<"font_scan">{};
 
             try {
-                register_font(font_url, false);
+                register_font(font_path, false);
 
-            } catch (std::exception const &e) {
-                hi_log_error("Failed parsing font at {}: \"{}\"", font_url, e.what());
+            } catch (std::exception const& e) {
+                hi_log_error("Failed parsing font at {}: \"{}\"", font_path.string(), e.what());
             }
         }
     }
@@ -33,66 +34,66 @@ font_book::font_book(std::vector<URL> const &font_directories)
 
 void font_book::create_family_name_fallback_chain() noexcept
 {
-    family_name_fallback_chain["fallback"] = "sans-serif";
+    _family_name_fallback_chain["fallback"] = "sans-serif";
 
     // Serif web-fonts
-    family_name_fallback_chain["serif"] = "times new roman";
-    family_name_fallback_chain["times new roman"] = "times";
-    family_name_fallback_chain["times"] = "noto serif";
-    family_name_fallback_chain["noto serif"] = "noto";
+    _family_name_fallback_chain["serif"] = "times new roman";
+    _family_name_fallback_chain["times new roman"] = "times";
+    _family_name_fallback_chain["times"] = "noto serif";
+    _family_name_fallback_chain["noto serif"] = "noto";
 
-    family_name_fallback_chain["georgia"] = "serif";
+    _family_name_fallback_chain["georgia"] = "serif";
 
-    family_name_fallback_chain["palatino"] = "palatino linotype";
-    family_name_fallback_chain["palatino linotype"] = "book antiqua";
-    family_name_fallback_chain["book antiqua"] = "serif";
+    _family_name_fallback_chain["palatino"] = "palatino linotype";
+    _family_name_fallback_chain["palatino linotype"] = "book antiqua";
+    _family_name_fallback_chain["book antiqua"] = "serif";
 
     // Sans-serif web-fonts
-    family_name_fallback_chain["sans-serif"] = "arial";
-    family_name_fallback_chain["arial"] = "helvetica";
-    family_name_fallback_chain["helvetica"] = "noto sans";
+    _family_name_fallback_chain["sans-serif"] = "arial";
+    _family_name_fallback_chain["arial"] = "helvetica";
+    _family_name_fallback_chain["helvetica"] = "noto sans";
 
-    family_name_fallback_chain["gadget"] = "sans-sarif";
+    _family_name_fallback_chain["gadget"] = "sans-sarif";
 
-    family_name_fallback_chain["comic sans"] = "comic sans ms";
-    family_name_fallback_chain["comic sans ms"] = "cursive";
-    family_name_fallback_chain["cursive"] = "sans-serif";
+    _family_name_fallback_chain["comic sans"] = "comic sans ms";
+    _family_name_fallback_chain["comic sans ms"] = "cursive";
+    _family_name_fallback_chain["cursive"] = "sans-serif";
 
-    family_name_fallback_chain["impact"] = "charcoal";
-    family_name_fallback_chain["charcoal"] = "sans-serif";
+    _family_name_fallback_chain["impact"] = "charcoal";
+    _family_name_fallback_chain["charcoal"] = "sans-serif";
 
-    family_name_fallback_chain["lucida"] = "lucida sans";
-    family_name_fallback_chain["lucida sans"] = "lucida sans unicode";
-    family_name_fallback_chain["lucida sans unicode"] = "lucida grande";
-    family_name_fallback_chain["lucida grande"] = "sans-serif";
+    _family_name_fallback_chain["lucida"] = "lucida sans";
+    _family_name_fallback_chain["lucida sans"] = "lucida sans unicode";
+    _family_name_fallback_chain["lucida sans unicode"] = "lucida grande";
+    _family_name_fallback_chain["lucida grande"] = "sans-serif";
 
-    family_name_fallback_chain["verdana"] = "geneva";
-    family_name_fallback_chain["tahoma"] = "geneva";
-    family_name_fallback_chain["geneva"] = "sans-serif";
+    _family_name_fallback_chain["verdana"] = "geneva";
+    _family_name_fallback_chain["tahoma"] = "geneva";
+    _family_name_fallback_chain["geneva"] = "sans-serif";
 
-    family_name_fallback_chain["trebuchet"] = "trebuchet ms";
-    family_name_fallback_chain["trebuchet ms"] = "helvetica";
-    family_name_fallback_chain["helvetic"] = "sans-serif";
+    _family_name_fallback_chain["trebuchet"] = "trebuchet ms";
+    _family_name_fallback_chain["trebuchet ms"] = "helvetica";
+    _family_name_fallback_chain["helvetic"] = "sans-serif";
 
     // Monospace web-fonts.
-    family_name_fallback_chain["monospace"] = "courier";
-    family_name_fallback_chain["courier"] = "courier new";
+    _family_name_fallback_chain["monospace"] = "courier";
+    _family_name_fallback_chain["courier"] = "courier new";
 
-    family_name_fallback_chain["consolas"] = "lucida console";
-    family_name_fallback_chain["lucida console"] = "monaco";
-    family_name_fallback_chain["monaco"] = "andale mono";
-    family_name_fallback_chain["andale mono"] = "monospace";
+    _family_name_fallback_chain["consolas"] = "lucida console";
+    _family_name_fallback_chain["lucida console"] = "monaco";
+    _family_name_fallback_chain["monaco"] = "andale mono";
+    _family_name_fallback_chain["andale mono"] = "monospace";
 }
 
-font &font_book::register_font(URL url, bool post_process)
+font& font_book::register_font(std::filesystem::path const &path, bool post_process)
 {
-    auto font = std::make_unique<true_type_font>(url);
+    auto font = std::make_unique<true_type_font>(path);
     auto font_ptr = font.get();
 
-    hi_log_info("Parsed font {}: {}", url, to_string(*font));
+    hi_log_info("Parsed font {}: {}", path.string(), to_string(*font));
 
     hilet font_family_id = register_family(font->family_name);
-    font_variants[*font_family_id][font->font_variant()] = font_ptr;
+    _font_variants[*font_family_id][font->font_variant()] = font_ptr;
 
     _fonts.emplace_back(std::move(font));
     _font_ptrs.push_back(font_ptr);
@@ -108,12 +109,12 @@ font &font_book::register_font(URL url, bool post_process)
 {
     auto r = _font_ptrs;
 
-    std::stable_partition(begin(r), end(r), [weight, italic](hilet &item) {
+    std::stable_partition(begin(r), end(r), [weight, italic](hilet& item) {
         return (item->italic == italic) and almost_equal(item->weight, weight);
     });
 
     auto unicode_mask = hi::unicode_mask{};
-    for (auto &font : r) {
+    for (auto& font : r) {
         if (not unicode_mask.contains(font->unicode_mask)) {
             // This font adds unicode code points.
             unicode_mask |= font->unicode_mask;
@@ -130,11 +131,11 @@ font &font_book::register_font(URL url, bool post_process)
 void font_book::post_process() noexcept
 {
     // Reset caches and fallback chains.
-    glyph_cache.clear();
-    family_name_cache = family_names;
+    _glyph_cache.clear();
+    _family_name_cache = _family_names;
 
     // Sort the list of fonts based on the amount of unicode code points it supports.
-    std::sort(begin(_font_ptrs), end(_font_ptrs), [](hilet &lhs, hilet &rhs) {
+    std::sort(begin(_font_ptrs), end(_font_ptrs), [](hilet& lhs, hilet& rhs) {
         return lhs->unicode_mask.size() > rhs->unicode_mask.size();
     });
 
@@ -150,11 +151,11 @@ void font_book::post_process() noexcept
         size(italic_fallback_chain));
 
     // For each font, find fallback list.
-    for (hilet &font : _font_ptrs) {
+    for (hilet& font : _font_ptrs) {
         auto fallback_chain = std::vector<hi::font *>{};
 
         // Put the fonts from the same family, italic and weight first.
-        for (hilet &fallback : _font_ptrs) {
+        for (hilet& fallback : _font_ptrs) {
             // clang-format off
             if (
                 (fallback != font) and
@@ -183,59 +184,60 @@ void font_book::post_process() noexcept
 {
     auto name = to_lower(family_name);
 
-    auto i = family_names.find(name);
-    if (i == family_names.end()) {
-        hilet family_id = font_family_id(font_variants.size());
-        font_variants.emplace_back();
-        family_names[name] = family_id;
+    auto i = _family_names.find(name);
+    if (i == _family_names.end()) {
+        hilet family_id = font_family_id(_font_variants.size());
+        _font_variants.emplace_back();
+        _family_names[name] = family_id;
 
         // If a new family is added, then the cache which includes fallbacks is no longer valid.
-        family_name_cache.clear();
+        _family_name_cache.clear();
         return family_id;
     } else {
         return i->second;
     }
 }
 
-[[nodiscard]] std::string const &font_book::find_fallback_family_name(std::string const &name) const noexcept
+[[nodiscard]] generator<std::string> font_book::generate_family_names(std::string_view name) const noexcept
 {
-    auto i = family_name_fallback_chain.find(name);
-    if (i != family_name_fallback_chain.end()) {
-        return i->second;
+    auto name_ = to_lower(name);
 
-    } else {
-        auto j = family_name_fallback_chain.find("fallback");
-        hi_assert(j != family_name_fallback_chain.end());
-        return j->second;
+    // Lets try the first name first.
+    co_yield name_;
+
+    // Find the start of the chain.
+    auto it = _family_name_fallback_chain.find(name_);
+    if (it == _family_name_fallback_chain.end()) {
+        it = _family_name_fallback_chain.find("fallback");
+    }
+
+    // Walk trough the chain.
+    for (; it != _family_name_fallback_chain.end(); it = _family_name_fallback_chain.find(it->second)) {
+        co_yield it->second;
     }
 }
 
 [[nodiscard]] font_family_id font_book::find_family(std::string_view family_name) const noexcept
 {
-    hilet original_name = to_lower(family_name);
+    for (auto name : generate_family_names(family_name)) {
+        if (hilet it = _family_name_cache.find(name); it != _family_name_cache.end()) {
+            return it->second;
+        }
 
-    hilet i = family_name_cache.find(original_name);
-    if (i != family_name_cache.end()) {
-        return i->second;
-    }
-
-    std::string const *name = &original_name;
-    while (true) {
-        name = &(find_fallback_family_name(*name));
-
-        hilet j = family_names.find(*name);
-        if (j != family_names.end()) {
-            family_name_cache[original_name] = j->second;
-            return j->second;
+        if (hilet it = _family_names.find(name); it != _family_names.end()) {
+            _family_name_cache[name] = it->second;
+            return it->second;
         }
     }
+
+    hi_log_fatal("font_book::find_family() was unable to find a fallback font for '{}'.", family_name);
 }
 
-[[nodiscard]] font const &font_book::find_font(font_family_id family_id, font_variant variant) const noexcept
+[[nodiscard]] font const& font_book::find_font(font_family_id family_id, font_variant variant) const noexcept
 {
     hi_assert(family_id);
-    hi_axiom(family_id >= 0 && family_id < ssize(font_variants));
-    hilet &variants = font_variants[*family_id];
+    hi_axiom(family_id >= 0 and family_id < ssize(_font_variants));
+    hilet& variants = _font_variants[*family_id];
     for (auto i = 0; i < 16; i++) {
         if (auto font = variants[variant.alternative(i)]) {
             return *font;
@@ -245,36 +247,36 @@ void font_book::post_process() noexcept
     hi_no_default();
 }
 
-[[nodiscard]] font const &font_book::find_font(font_family_id family_id, font_weight weight, bool italic) const noexcept
+[[nodiscard]] font const& font_book::find_font(font_family_id family_id, font_weight weight, bool italic) const noexcept
 {
     return find_font(family_id, font_variant(weight, italic));
 }
 
-[[nodiscard]] font const &font_book::find_font(std::string_view family_name, font_weight weight, bool italic) const noexcept
+[[nodiscard]] font const& font_book::find_font(std::string_view family_name, font_weight weight, bool italic) const noexcept
 {
     return find_font(find_family(family_name), weight, italic);
 }
 
-[[nodiscard]] glyph_ids font_book::find_glyph(hi::font const &font, grapheme g) const noexcept
+[[nodiscard]] glyph_ids font_book::find_glyph(hi::font const& font, grapheme g) const noexcept
 {
     auto key = font_grapheme_id{font, g};
 
-    auto i = glyph_cache.find(key);
-    if (i != glyph_cache.end()) {
+    auto i = _glyph_cache.find(key);
+    if (i != _glyph_cache.end()) {
         return i->second;
     }
 
     // First try the selected font.
     auto glyph_ids = font.find_glyph(g);
     if (glyph_ids) {
-        glyph_cache[key] = glyph_ids;
+        _glyph_cache[key] = glyph_ids;
         return glyph_ids;
     }
 
     // Scan fonts which are fallback to this.
     for (hilet fallback : font.fallback_chain) {
         if (glyph_ids = fallback->find_glyph(g)) {
-            glyph_cache[key] = glyph_ids;
+            _glyph_cache[key] = glyph_ids;
             return glyph_ids;
         }
     }
@@ -282,7 +284,7 @@ void font_book::post_process() noexcept
     // If all everything has failed, use the tofu block of the original font.
     glyph_ids += glyph_id{0};
     glyph_ids.set_font(font);
-    glyph_cache[key] = glyph_ids;
+    _glyph_cache[key] = glyph_ids;
     return glyph_ids;
 }
 

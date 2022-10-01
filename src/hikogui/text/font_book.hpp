@@ -11,13 +11,14 @@
 #include "elusive_icon.hpp"
 #include "hikogui_icon.hpp"
 #include "../unicode/grapheme.hpp"
-#include "../URL.hpp"
 #include "../alignment.hpp"
 #include "../subsystem.hpp"
+#include "../generator.hpp"
 #include <limits>
 #include <array>
 #include <new>
 #include <atomic>
+#include <filesystem>
 
 namespace hi::inline v1 {
 
@@ -29,7 +30,7 @@ namespace hi::inline v1 {
  */
 class font_book {
 public:
-    font_book(std::vector<URL> const &font_directories);
+    font_book(std::vector<std::filesystem::path> const &font_directories);
 
     /** Register a font.
      * Duplicate registrations will be ignored.
@@ -39,19 +40,19 @@ public:
      *  - The weight, width, slant & design-size from the 'fdsc' table.
      *  - The character map 'cmap' table.
      *
-     * @param url Location of font.
+     * @param path Location of font.
      * @param post_process Calculate font fallback
      */
-    font &register_font(URL url, bool post_process = true);
+    font &register_font(std::filesystem::path const &path, bool post_process = true);
 
-    void register_elusive_icon_font(URL url)
+    void register_elusive_icon_font(std::filesystem::path const& path)
     {
-        _elusive_icon_font = &register_font(url, false);
+        _elusive_icon_font = &register_font(path, false);
     }
 
-    void register_hikogui_icon_font(URL url)
+    void register_hikogui_icon_font(std::filesystem::path const& path)
     {
-        _hikogui_icon_font = &register_font(url, false);
+        _hikogui_icon_font = &register_font(path, false);
     }
 
     /** Post process font_book
@@ -127,15 +128,15 @@ private:
 
     /** Table of font_family_ids index using the family-name.
      */
-    std::unordered_map<std::string, font_family_id> family_names;
+    std::unordered_map<std::string, font_family_id> _family_names;
 
     /** A list of family name -> fallback family name
      */
-    std::unordered_map<std::string, std::string> family_name_fallback_chain;
+    std::unordered_map<std::string, std::string> _family_name_fallback_chain;
 
     /** Different fonts; variants of a family.
      */
-    std::vector<std::array<font const *, font_variant::max()>> font_variants;
+    std::vector<std::array<font const *, font_variant::max()>> _font_variants;
 
     std::vector<std::unique_ptr<font>> _fonts;
     std::vector<hi::font *> _font_ptrs;
@@ -143,12 +144,12 @@ private:
     /** Same as family_name, but will also have resolved font families from the fallback_chain.
      * Must be cleared when a new font family is registered.
      */
-    mutable std::unordered_map<std::string, font_family_id> family_name_cache;
+    mutable std::unordered_map<std::string, font_family_id> _family_name_cache;
 
     /**
      * Must be cleared when a new font is registered.
      */
-    mutable std::unordered_map<font_grapheme_id, glyph_ids> glyph_cache;
+    mutable std::unordered_map<font_grapheme_id, glyph_ids> _glyph_cache;
 
     [[nodiscard]] std::vector<hi::font *> make_fallback_chain(font_weight weight, bool italic) noexcept;
 
@@ -166,10 +167,9 @@ private:
 
     // void kern_glyphs(glyph_array &glyphs) const noexcept;
 
-    /** Find a fallback font family name
-     * Repeated calls will follow the chain.
+    /** Generate fallback font family names.
      */
-    [[nodiscard]] std::string const &find_fallback_family_name(std::string const &name) const noexcept;
+    [[nodiscard]] generator<std::string> generate_family_names(std::string_view name) const noexcept;
 
     void create_family_name_fallback_chain() noexcept;
 };

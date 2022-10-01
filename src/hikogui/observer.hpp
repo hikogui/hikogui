@@ -527,7 +527,7 @@ public:
      * @tparam Name The name of the member-variable of value.
      * @return A new sub-observer which monitors the member of value.
      */
-    template<basic_fixed_string Name>
+    template<fixed_string Name>
     [[nodiscard]] auto get() const noexcept
     {
         using result_type = std::decay_t<decltype(selector<value_type>{}.get<Name>(std::declval<value_type&>()))>;

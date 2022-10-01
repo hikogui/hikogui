@@ -28,25 +28,19 @@ target_sources(hikogui PRIVATE
     pipeline_vulkan.cpp
     pipeline_vulkan.hpp
     pipeline_alpha.cpp
-    pipeline_alpha.frag
     pipeline_alpha.hpp
-    pipeline_alpha.vert
     pipeline_alpha_device_shared.cpp
     pipeline_alpha_device_shared.hpp
     pipeline_alpha_push_constants.hpp
     pipeline_alpha_vertex.hpp
     pipeline_box.cpp
-    pipeline_box.frag
     pipeline_box.hpp
-    pipeline_box.vert
     pipeline_box_device_shared.cpp
     pipeline_box_device_shared.hpp
     pipeline_box_push_constants.hpp
     pipeline_box_vertex.hpp
     pipeline_image.cpp
-    pipeline_image.frag
     pipeline_image.hpp
-    pipeline_image.vert
     pipeline_image_device_shared.cpp
     pipeline_image_device_shared.hpp
     pipeline_image_push_constants.hpp
@@ -54,9 +48,7 @@ target_sources(hikogui PRIVATE
     pipeline_image_texture_map.hpp
     pipeline_image_vertex.hpp
     pipeline_SDF.cpp
-    pipeline_SDF.frag
     pipeline_SDF.hpp
-    pipeline_SDF.vert
     pipeline_SDF_device_shared.cpp
     pipeline_SDF_device_shared.hpp
     pipeline_SDF_push_constants.hpp
@@ -65,9 +57,7 @@ target_sources(hikogui PRIVATE
     pipeline_SDF_texture_map.hpp
     pipeline_SDF_vertex.hpp
     pipeline_tone_mapper.cpp
-    pipeline_tone_mapper.frag
     pipeline_tone_mapper.hpp
-    pipeline_tone_mapper.vert
     pipeline_tone_mapper_device_shared.cpp
     pipeline_tone_mapper_device_shared.hpp
     pipeline_tone_mapper_push_constants.hpp
@@ -77,9 +67,3 @@ target_sources(hikogui PRIVATE
     VulkanMemoryAllocator.cpp
 )
 
-if(HI_BUILD_PCH AND NOT HI_ENABLE_ANALYSIS)
-    target_precompile_headers(hikogui PRIVATE
-        gfx_system.hpp
-        gfx_system_vulkan.hpp
-    )
-endif()

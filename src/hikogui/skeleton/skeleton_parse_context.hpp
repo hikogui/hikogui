@@ -10,6 +10,7 @@
 #include <memory>
 #include <string_view>
 #include <optional>
+#include <filesystem>
 
 namespace hi::inline v1 {
 
@@ -39,7 +40,7 @@ struct skeleton_parse_context {
     skeleton_parse_context &operator=(skeleton_parse_context &&other) = delete;
     ~skeleton_parse_context() = default;
 
-    skeleton_parse_context(URL const &url, const_iterator first, const_iterator last);
+    skeleton_parse_context(std::filesystem::path const &path, const_iterator first, const_iterator last);
 
     [[nodiscard]] char const &operator*() const noexcept
     {

@@ -9,9 +9,9 @@
 
 namespace hi::inline v1 {
 
-void keyboard_bindings::load_bindings(URL url, bool system_binding)
+void keyboard_bindings::load_bindings(std::filesystem::path const &path, bool system_binding)
 {
-    hilet data = parse_JSON(url);
+    hilet data = parse_JSON(path);
 
     try {
         hi_parse_check(data.contains("bindings"), "Missing key 'bindings' at top level.");
@@ -55,7 +55,7 @@ void keyboard_bindings::load_bindings(URL url, bool system_binding)
         }
 
     } catch (std::exception const &e) {
-        throw io_error(std::format("{}: Could not load keyboard bindings.\n{}", url, e.what()));
+        throw io_error(std::format("{}: Could not load keyboard bindings.\n{}", path.string(), e.what()));
     }
 }
 

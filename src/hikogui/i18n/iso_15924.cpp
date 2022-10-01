@@ -24,7 +24,7 @@ struct iso_15924_info {
         char const (&code4_open_type)[5],
         hi::unicode_script unicode_script,
         uint16_t number) noexcept :
-        code4{to_title(basic_fixed_string(code4))}, code4_open_type{code4_open_type}, unicode_script(unicode_script), number(number)
+        code4{to_title(fixed_string(code4))}, code4_open_type{code4_open_type}, unicode_script(unicode_script), number(number)
     {
     }
 

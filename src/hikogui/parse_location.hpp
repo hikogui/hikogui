@@ -4,21 +4,22 @@
 
 #pragma once
 
-#include "URL.hpp"
+#include "concepts.hpp"
 #include <format>
 #include <memory>
 #include <iostream>
 #include <string_view>
+#include <filesystem>
 
 namespace hi::inline v1 {
 
 /*! Location inside a configuration file.
  */
 class parse_location {
-    /** The URL to the file that was parsed.
+    /** The path to the file that was parsed.
      * This is a shared_ptr, since a lot of Location objects will point to the same file.
      */
-    std::shared_ptr<URL> _file;
+    std::shared_ptr<std::filesystem::path> _file;
 
     /** Line where the token was found.
      * Starts at 0.
@@ -36,22 +37,25 @@ public:
     parse_location() noexcept : _file({}), _line(0), _column(0) {}
 
     /** Construct a location.
-     * @param file An URL to the file where the token was found.
+     * @param file A path to the file where the token was found.
      */
-    parse_location(std::shared_ptr<URL> const &file) noexcept : _file(file), _line(0), _column(0) {}
+    parse_location(std::shared_ptr<std::filesystem::path> const& file) noexcept : _file(file), _line(0), _column(0) {}
 
     /** Construct a location.
-     * @param file An URL to the file where the token was found.
+     * @param file A path to the file where the token was found.
      */
-    parse_location(URL const &file) noexcept : _file(std::make_shared<URL>(file)), _line(0), _column(0) {}
+    parse_location(forward_of<std::filesystem::path> auto&& file) noexcept :
+        _file(std::make_shared<std::filesystem::path>(hi_forward(file))), _line(0), _column(0)
+    {
+    }
 
     /** Construct a location.
-     * @param file An URL to the file where the token was found.
+     * @param file A path to the file where the token was found.
      * @param line Line number where the token was found.
      * @param column Column where the token was found.
      */
-    parse_location(std::shared_ptr<URL> const &file, int line, int column) noexcept :
-        _file(file), _line(line - 1), _column(column - 1)
+    parse_location(forward_of<std::shared_ptr<std::filesystem::path>> auto&& file, int line, int column) noexcept :
+        _file(hi_forward(file)), _line(line - 1), _column(column - 1)
     {
     }
 
@@ -66,7 +70,7 @@ public:
         return to_bool(_file);
     }
 
-    [[nodiscard]] URL file() const noexcept
+    [[nodiscard]] std::filesystem::path file() const noexcept
     {
         if (_file) {
             return *_file;
@@ -90,14 +94,14 @@ public:
         return {_line + 1, _column + 1};
     }
 
-    void set_file(std::shared_ptr<URL> file) noexcept
+    void set_file(forward_of<std::shared_ptr<std::filesystem::path>> auto && file) noexcept
     {
-        _file = std::move(file);
+        _file = hi_forward(file);
     }
 
-    void set_file(URL file) noexcept
+    void set_file(forward_of<std::filesystem::path> auto &&file) noexcept
     {
-        _file = std::make_shared<URL>(std::move(file));
+        _file = std::make_shared<std::filesystem::path>(hi_forward(file));
     }
 
     void set_line(int line) noexcept
@@ -134,19 +138,27 @@ public:
         ++_line;
     }
 
-    parse_location &operator+=(char c) noexcept
+    parse_location& operator+=(char c) noexcept
     {
         switch (c) {
-        case '\t': _column = ((_column / 8) + 1) * 8; break;
-        case '\f': [[fallthrough]];
-        case '\n': ++_line; [[fallthrough]];
-        case '\r': _column = 0; break;
-        default: ++_column;
+        case '\t':
+            _column = ((_column / 8) + 1) * 8;
+            break;
+        case '\f':
+            [[fallthrough]];
+        case '\n':
+            ++_line;
+            [[fallthrough]];
+        case '\r':
+            _column = 0;
+            break;
+        default:
+            ++_column;
         }
         return *this;
     }
 
-    parse_location &operator+=(std::string const &s) noexcept
+    parse_location& operator+=(std::string const& s) noexcept
     {
         for (hilet c : s) {
             *this += c;
@@ -154,7 +166,7 @@ public:
         return *this;
     }
 
-    parse_location &operator+=(char const *s) noexcept
+    parse_location& operator+=(char const *s) noexcept
     {
         hi_axiom(s != nullptr);
         while (hilet c = *s++) {
@@ -163,7 +175,7 @@ public:
         return *this;
     }
 
-    parse_location &operator+=(parse_location const &location) noexcept
+    parse_location& operator+=(parse_location const& location) noexcept
     {
         if (location._line == 0) {
             _column += location._column;
@@ -174,12 +186,12 @@ public:
         return *this;
     }
 
-    friend std::string to_string(parse_location const &l) noexcept
+    friend std::string to_string(parse_location const& l) noexcept
     {
-        return std::format("{}:{}:{}", l.file(), l.line(), l.column());
+        return std::format("{}:{}:{}", l.file().generic_string(), l.line(), l.column());
     }
 
-    friend std::ostream &operator<<(std::ostream &os, parse_location const &l)
+    friend std::ostream& operator<<(std::ostream& os, parse_location const& l)
     {
         os << to_string(l);
         return os;
@@ -190,7 +202,7 @@ public:
 
 template<typename CharT>
 struct std::formatter<hi::parse_location, CharT> : std::formatter<string_view, CharT> {
-    auto format(hi::parse_location t, auto &fc)
+    auto format(hi::parse_location t, auto& fc)
     {
         return std::formatter<string_view, CharT>::format(to_string(t), fc);
     }

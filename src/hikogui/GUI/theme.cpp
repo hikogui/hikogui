@@ -8,19 +8,18 @@
 #include "../codec/JSON.hpp"
 #include "../color/sRGB.hpp"
 #include "../log.hpp"
-#include "../URL.hpp"
 #include <algorithm>
 
 namespace hi::inline v1 {
 
-theme::theme(hi::font_book const& font_book, URL const& url)
+theme::theme(hi::font_book const& font_book, std::filesystem::path const& path)
 {
     try {
-        hi_log_info("Parsing theme at {}", url);
-        hilet data = parse_JSON(url);
+        hi_log_info("Parsing theme at {}", path.string());
+        hilet data = parse_JSON(path);
         parse(font_book, data);
     } catch (std::exception const& e) {
-        throw io_error(std::format("{}: Could not load theme.\n{}", url, e.what()));
+        throw io_error(std::format("{}: Could not load theme.\n{}", path.string(), e.what()));
     }
 }
 

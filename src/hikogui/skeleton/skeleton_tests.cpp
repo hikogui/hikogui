@@ -15,12 +15,12 @@ TEST(skeleton, Text)
     std::unique_ptr<skeleton_node> t;
     std::string result;
 
-    ASSERT_NO_THROW(t = parse_skeleton(URL("none:"), ""));
+    ASSERT_NO_THROW(t = parse_skeleton(std::filesystem::path{}, ""));
     ASSERT_EQ(to_string(*t), "<top >");
     ASSERT_NO_THROW(result = t->evaluate_output());
     ASSERT_EQ(result, "");
 
-    ASSERT_NO_THROW(t = parse_skeleton(URL("none:"), "foo"));
+    ASSERT_NO_THROW(t = parse_skeleton(std::filesystem::path{}, "foo"));
     ASSERT_EQ(to_string(*t), "<top <text foo>>");
     ASSERT_NO_THROW(result = t->evaluate_output());
     ASSERT_EQ(result, "foo");
@@ -31,7 +31,7 @@ TEST(skeleton, Placeholder)
     std::unique_ptr<skeleton_node> t;
     std::string result;
 
-    ASSERT_NO_THROW(t = parse_skeleton(URL("none:"), "foo${42}bar"));
+    ASSERT_NO_THROW(t = parse_skeleton(std::filesystem::path{}, "foo${42}bar"));
     ASSERT_EQ(to_string(*t), "<top <text foo><placeholder 42><text bar>>");
     ASSERT_NO_THROW(result = t->evaluate_output());
     ASSERT_EQ(result, "foo42bar");
@@ -44,7 +44,7 @@ TEST(skeleton, If)
 
     ASSERT_NO_THROW(
         t = parse_skeleton(
-            URL("none:"),
+            std::filesystem::path{},
             "foo\n"
             "#a = 42\n"
             "#if a == 42\n"
@@ -70,7 +70,7 @@ TEST(skeleton, If)
 
     ASSERT_NO_THROW(
         t = parse_skeleton(
-            URL("none:"),
+            std::filesystem::path{},
             "foo\n"
             "# a = 43\n"
             "#if a == 42\n"
@@ -100,7 +100,7 @@ TEST(skeleton, If)
 
     ASSERT_NO_THROW(
         t = parse_skeleton(
-            URL("none:"),
+            std::filesystem::path{},
             "foo\n"
             "# a = 2\n"
             "#if a == 42\n"
@@ -140,7 +140,7 @@ TEST(skeleton, For)
 
     ASSERT_NO_THROW(
         t = parse_skeleton(
-            URL("none:"),
+            std::filesystem::path{},
             "foo\n"
             "#for a: [42, 43]\n"
             "value is ${a}\n"
@@ -165,7 +165,7 @@ TEST(skeleton, For)
 
     ASSERT_NO_THROW(
         t = parse_skeleton(
-            URL("none:"),
+            std::filesystem::path{},
             "foo\n"
             "#for a: [42, 43]\n"
             "value is ${a}\n"
@@ -200,7 +200,7 @@ TEST(skeleton, While)
 
     ASSERT_NO_THROW(
         t = parse_skeleton(
-            URL("none:"),
+            std::filesystem::path{},
             "foo\n"
             "# a = 40\n"
             "#while a < 42\n"
@@ -229,7 +229,7 @@ TEST(skeleton, While)
 
     ASSERT_NO_THROW(
         t = parse_skeleton(
-            URL("none:"),
+            std::filesystem::path{},
             "foo\n"
             "# a = 38\n"
             "#while a < 42\n"
@@ -264,7 +264,7 @@ TEST(skeleton, While)
 
     ASSERT_NO_THROW(
         t = parse_skeleton(
-            URL("none:"),
+            std::filesystem::path{},
             "foo\n"
             "# a = 38\n"
             "#while a < 42\n"
@@ -305,7 +305,7 @@ TEST(skeleton, DoWhile)
 
     ASSERT_NO_THROW(
         t = parse_skeleton(
-            URL("none:"),
+            std::filesystem::path{},
             "foo\n"
             "#do\n"
             "value is ${a}\n"
@@ -329,7 +329,7 @@ TEST(skeleton, Function)
 
     ASSERT_NO_THROW(
         t = parse_skeleton(
-            URL("none:"),
+            std::filesystem::path{},
             "foo\n"
             "#function foo(bar, baz)\n"
             "value is ${bar + baz}\n"
@@ -359,7 +359,7 @@ TEST(skeleton, FunctionReplaceAndSuper)
 
     ASSERT_NO_THROW(
         t = parse_skeleton(
-            URL("none:"),
+            std::filesystem::path{},
             "foo\n"
             "#function foo(bar, baz)\n"
             "value is ${bar + baz}\n"
@@ -404,7 +404,7 @@ TEST(skeleton, FunctionReturn)
 
     ASSERT_NO_THROW(
         t = parse_skeleton(
-            URL("none:"),
+            std::filesystem::path{},
             "foo\n"
             "#function foo(bar, baz)\n"
             "    This text is ignored\n"
@@ -438,7 +438,7 @@ TEST(skeleton, Block)
 
     ASSERT_NO_THROW(
         t = parse_skeleton(
-            URL("none:"),
+            std::filesystem::path{},
             "foo\n"
             "#block foo\n"
             "value is ${1 + 2}\n"
@@ -459,7 +459,7 @@ TEST(skeleton, Include)
 {
     std::unique_ptr<skeleton_node> t;
 
-    ASSERT_NO_THROW(t = parse_skeleton(URL("file:includer.ttt")));
+    ASSERT_NO_THROW(t = parse_skeleton(std::filesystem::path{"includer.ttt"}));
     ASSERT_EQ(
         normalize_lf(to_string(*t)),
         "<top "

@@ -1,17 +1,14 @@
-// Copyright Jhalak Patel 2021.
-// Copyright Take Vos 2019, 2021-2022.
+// Copyright Take Vos 2019-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
-
-#include "win32_headers.hpp"
 
 #include "file_view.hpp"
 #include "exception.hpp"
 #include "log.hpp"
 #include "memory.hpp"
-#include "URL.hpp"
 #include "utility.hpp"
 #include <mutex>
+#include <sys/mman.h>
 
 namespace hi::inline v1 {
 
@@ -23,33 +20,28 @@ file_view::file_view(std::shared_ptr<file_mapping> const &_file_mapping_object, 
     }
     hi_assert(_offset + size <= _file_mapping_object->size);
 
-    DWORD desiredAccess;
-    if (any(accessMode() & access_mode::read) and any(accessMode() & access_mode::write)) {
-        desiredAccess = FILE_MAP_WRITE;
-    } else if (any(accessMode() & access_mode::read)) {
-        desiredAccess = FILE_MAP_READ;
+    int prot;
+    if (accessMode() >= (AccessMode::Read | AccessMode::Write)) {
+        prot = PROT_WRITE | PROT_READ;
+    } else if (accessMode() >= AccessMode::Read) {
+        prot = PROT_READ;
     } else {
-        throw io_error(std::format("{}: Illegal access mode WRONLY/0 when viewing file.", location()));
+        throw io_error("{}: Illegal access mode write-only when viewing file.", location());
     }
 
-    DWORD fileOffsetHigh = _offset >> 32;
-    DWORD fileOffsetLow = _offset & 0xffffffff;
+    int flags = MAP_SHARED;
 
     void *data;
-    if (size == 0) {
-        data = nullptr;
-    } else {
-        if ((data = MapViewOfFile(_file_mapping_object->mapHandle, desiredAccess, fileOffsetHigh, fileOffsetLow, size)) == NULL) {
-            throw io_error(std::format("{}: Could not map view of file. '{}'", location(), get_last_error_message()));
-        }
+    if ((data = ::mmap(0, size, prot, flags, _file_mapping_object->file->fileHandle, _offset)) == MAP_FAILED) {
+        throw io_error("{}: Could not map view of file. '{}'", location(), get_last_error_message());
     }
 
     auto *bytes_ptr = new void_span(data, size);
     _bytes = std::shared_ptr<void_span>(bytes_ptr, file_view::unmap);
 }
 
-file_view::file_view(URL const &location, access_mode accessMode, std::size_t offset, std::size_t size) :
-    file_view(findOrCreateFileMappingObject(location, accessMode, offset + size), offset, size)
+file_view::file_view(std::filesystem::path const &path, AccessMode accessMode, std::size_t offset, std::size_t size) :
+    file_view(findOrCreateFileMappingObject(path, accessMode, offset + size), offset, size)
 {
 }
 
@@ -86,10 +78,9 @@ file_view &file_view::operator=(file_view &&other) noexcept
 void file_view::unmap(void_span *bytes) noexcept
 {
     if (bytes != nullptr) {
-        if (bytes->size() > 0) {
-            void *data = bytes->data();
-            if (!UnmapViewOfFile(data)) {
-                hi_log_error("Could not unmap view on file '{}'", get_last_error_message());
+        if (!bytes->empty()) {
+            if (!munmap(bytes->data(), bytes->size())) {
+                hi_log_error("Could not munmap view on file '{}'", get_last_error_message());
             }
         }
         delete bytes;
@@ -98,8 +89,9 @@ void file_view::unmap(void_span *bytes) noexcept
 
 void file_view::flush(void *base, std::size_t size)
 {
-    if (!FlushViewOfFile(base, size)) {
-        throw io_error(std::format("{}: Could not flush file. '{}'", location(), get_last_error_message()));
+    int flags = MS_SYNC;
+    if (!msync(base, size, flags)) {
+        throw io_error("{}: Could not flush file '{}'", location(), get_last_error_message());
     }
 }
 

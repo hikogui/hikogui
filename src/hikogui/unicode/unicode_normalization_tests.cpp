@@ -2,11 +2,11 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "hikogui/unicode/unicode_normalization.hpp"
-#include "hikogui/file_view.hpp"
-#include "hikogui/strings.hpp"
-#include "hikogui/generator.hpp"
-#include "hikogui/charconv.hpp"
+#include "unicode_normalization.hpp"
+#include "../file/file_view.hpp"
+#include "../strings.hpp"
+#include "../generator.hpp"
+#include "../charconv.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
@@ -89,7 +89,7 @@ std::optional<NormalizationTest> parseNormalizationTest_line(std::string_view li
 
 generator<NormalizationTest> parseNormalizationTests()
 {
-    hilet view = file_view(URL("file:NormalizationTest.txt"));
+    hilet view = file_view(std::filesystem::path{"NormalizationTest.txt"});
     hilet test_data = as_string_view(view);
 
     size_t line_nr = 0;

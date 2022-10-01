@@ -258,19 +258,11 @@ void png::read_chunks(std::span<std::byte const> bytes, std::size_t &offset)
     }
 }
 
-png::png(std::span<std::byte const> bytes) : _view()
+png::png(file_view view) : _view(std::move(view))
 {
     std::size_t offset = 0;
 
-    read_header(bytes, offset);
-    read_chunks(bytes, offset);
-}
-
-png::png(std::unique_ptr<resource_view> view) : _view(std::move(view))
-{
-    std::size_t offset = 0;
-
-    hilet bytes = as_bstring_view(*_view);
+    hilet bytes = as_bstring_view(_view);
     read_header(bytes, offset);
     read_chunks(bytes, offset);
 }
@@ -460,9 +452,9 @@ void png::decode_image(pixel_map<sfloat_rgba16> &image) const
     data_to_image(image_data, image);
 }
 
-pixel_map<sfloat_rgba16> png::load(URL const &url)
+pixel_map<sfloat_rgba16> png::load(file_view const &view)
 {
-    hilet png_data = png(url);
+    hilet png_data = png(view);
     auto image = pixel_map<sfloat_rgba16>{png_data.width(), png_data.height()};
     png_data.decode_image(image);
     return image;

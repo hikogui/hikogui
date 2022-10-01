@@ -16,8 +16,8 @@ namespace hi::inline v1 {
     return statement_stack.back()->append(std::move(x));
 }
 
-skeleton_parse_context::skeleton_parse_context(URL const &url, const_iterator first, const_iterator last) :
-    location(url), index(first), last(last)
+skeleton_parse_context::skeleton_parse_context(std::filesystem::path const &path, const_iterator first, const_iterator last) :
+    location(path), index(first), last(last)
 {
     push<skeleton_top_node>(location);
 }
@@ -127,10 +127,13 @@ void skeleton_parse_context::include(parse_location _location, std::unique_ptr<f
     auto evaluation_context = formula_evaluation_context();
     hilet argument = expression->evaluate(evaluation_context);
 
-    hilet current_skeleton_directory =
-        _location.has_file() ? _location.file().urlByRemovingFilename() : URL::urlFromCurrentWorkingDirectory();
-
-    hilet new_skeleton_path = current_skeleton_directory.urlByAppendingPath(static_cast<std::string>(argument));
+    auto new_skeleton_path = std::filesystem::current_path();
+    if (_location.has_file()) {
+        // Include relative to the file that is currently parsed.
+        new_skeleton_path = _location.file();
+        new_skeleton_path.remove_filename();
+    }
+    new_skeleton_path /= static_cast<std::string>(argument);
 
     if (ssize(statement_stack) > 0) {
         if (!statement_stack.back()->append(parse_skeleton(new_skeleton_path))) {

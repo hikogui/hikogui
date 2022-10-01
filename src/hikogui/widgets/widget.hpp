@@ -226,10 +226,10 @@ public:
 
     /** Request the window to be reconstrain on the next frame.
      */
-    template<basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Args>
+    template<fixed_string SourceFile, int SourceLine, fixed_string Fmt, typename... Args>
     void request_reconstrain(Args&&...args) const noexcept
     {
-        constexpr auto FmtPlus = basic_fixed_string{"request_reconstrain:"} + Fmt;
+        constexpr auto FmtPlus = fixed_string{"request_reconstrain:"} + Fmt;
 
         log_global.add<global_state_type::log_info, SourceFile, SourceLine, FmtPlus>(std::forward<Args>(args)...);
         _request_reconstrain();
@@ -241,10 +241,10 @@ public:
 
     /** Request the window to be resize based on the preferred size of the widgets.
      */
-    template<basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Args>
+    template<fixed_string SourceFile, int SourceLine, fixed_string Fmt, typename... Args>
     void request_resize(Args&&...args) const noexcept
     {
-        constexpr auto FmtPlus = basic_fixed_string{"request_resize:"} + Fmt;
+        constexpr auto FmtPlus = fixed_string{"request_resize:"} + Fmt;
 
         log_global.add<global_state_type::log_info, SourceFile, SourceLine, FmtPlus>(std::forward<Args>(args)...);
         _request_resize();
