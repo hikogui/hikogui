@@ -4,6 +4,10 @@
 
 #pragma once
 
+/** @file file/glob.hpp Defines utilities for handling glob patterns.
+ * @ingroup file
+ */
+
 #include "path_location.hpp"
 #include "../utility.hpp"
 #include "../type_traits.hpp"
@@ -16,6 +20,24 @@
 
 namespace hi { inline namespace v1 {
 
+/** A glob pattern.
+ * @ingroup file
+ *
+ * A glob algorithm is used for matching with filenames and directories.
+ * Glob may also be used on strings that do not involve the filesystem at all,
+ * however certain tokens implicitly include or exclude the slash '/' character.
+ *
+ *  Token          | Description
+ * --------------- | --------------------------------
+ *  foo            | Matches the text "foo".
+ *  ?              | Matches any single code-unit except '/'.
+ *  [abcd]         | Matches a single code-unit that is 'a', 'b', 'c' or 'd'.
+ *  [a-d]          | Matches a single code-unit that is 'a', 'b', 'c' or 'd'.
+ *  [-a-d]         | Matches a single code-unit that is '-', 'a', 'b', 'c' or 'd'.
+ *  {foo,bar,baz}  | Matches the text "foo", "bar" or "baz".
+ *  *              | Matches zero or more code-units except '/'.
+ *  / ** /         | Matches A single slash '/' or zero or more code-units between two slashes '/'.
+ */
 class glob_pattern {
 public:
     constexpr glob_pattern() noexcept = default;
@@ -24,12 +46,35 @@ public:
     constexpr glob_pattern& operator=(glob_pattern const&) noexcept = default;
     constexpr glob_pattern& operator=(glob_pattern&&) noexcept = default;
 
+    /** Parse a string to a glob-pattern.
+     *
+     * @param str The string to be parsed.
+     */
     glob_pattern(std::string_view str) : _tokens(parse(str)) {}
 
+    /** Parse a string to a glob-pattern.
+     *
+     * @param str The string to be parsed.
+     */
     glob_pattern(std::string const& str) : glob_pattern(std::string_view{str}) {}
+
+    /** Parse a string to a glob-pattern.
+     *
+     * @param str The string to be parsed.
+     */
+
     glob_pattern(char const *str) : glob_pattern(std::string_view{str}) {}
+
+    /** Parse a path to a glob-pattern.
+     *
+     * @param path The path to be parsed.
+     */
     glob_pattern(std::filesystem::path const& path) : glob_pattern(path.generic_string()) {}
 
+    /** Convert a glob-pattern to a string.
+     *
+     * @return The string representing the pattern
+     */
     [[nodiscard]] constexpr std::string string() noexcept
     {
         auto r = std::string{};
@@ -39,6 +84,12 @@ public:
         return r;
     }
 
+    /** Convert a glob-pattern to a debug-string.
+     *
+     * This function is used for debugging the glob parser, and for using in unit-tests.
+     *
+     * @return The string representing the pattern
+     */
     [[nodiscard]] constexpr std::string debug_string() noexcept
     {
         auto r = std::string{};
@@ -48,6 +99,17 @@ public:
         return r;
     }
 
+    /** Get the initial fixed part of the pattern.
+     *
+     * This gets the initial part of the pattern that is fixed,
+     * this is used for as a starting point for a search.
+     *
+     * For example by getting the base_string you can use a binary-search
+     * into a sorted list of strings, then once you find a string you can
+     * iterate over the list and glob-match each string.
+     *
+     * @return The initial fixed part of the pattern.
+     */
     [[nodiscard]] constexpr std::string base_string() const noexcept
     {
         if (_tokens.empty() or not _tokens.front().is_text()) {
@@ -62,6 +124,16 @@ public:
         }
     }
 
+    /** Get the initial path of the pattern.
+     *
+     * This gets the initial path of the pattern that is fixed,
+     * this is used for as a starting point for a search.
+     *
+     * For example this will be the directory where to start
+     * recursively iterating on.
+     *
+     * @return The initial fixed path of the pattern.
+     */
     [[nodiscard]] std::filesystem::path base_path() const noexcept
     {
         auto text = base_string();
@@ -75,6 +147,11 @@ public:
         return {std::move(text)};
     }
 
+    /** Match the pattern with the given string.
+     *
+     * @param str The string to match with this pattern.
+     * @return True if the string matches the pattern.
+     */
     [[nodiscard]] constexpr bool matches(std::string_view str) const noexcept
     {
         auto first = _tokens.cbegin();
@@ -95,16 +172,31 @@ public:
         return matches(first, last, str);
     }
 
+    /** Match the pattern with the given string.
+     *
+     * @param str The string to match with this pattern.
+     * @return True if the string matches the pattern.
+     */
     [[nodiscard]] constexpr bool matches(std::string const& str) const noexcept
     {
         return matches(std::string_view{str});
     }
 
+    /** Match the pattern with the given string.
+     *
+     * @param str The string to match with this pattern.
+     * @return True if the string matches the pattern.
+     */
     [[nodiscard]] constexpr bool matches(char const *str) const noexcept
     {
         return matches(std::string_view{str});
     }
 
+    /** Match the pattern with the given path.
+     *
+     * @param str The path to match with this pattern.
+     * @return True if the path matches the pattern.
+     */
     [[nodiscard]] bool matches(std::filesystem::path const& path) const noexcept
     {
         return matches(path.generic_string());
@@ -498,51 +590,37 @@ private:
                 break;
 
             case bracket:
-                switch (c) {
-                case '/':
-                    throw parse_error("Slash '/' is not allowed inside a character class, i.e. between '[' and ']'.");
-                case '-':
+                if (c == '-') {
                     if (character_class.empty()) {
                         character_class.emplace_back(c, c);
                     } else {
                         state = bracket_range;
                     }
-                    break;
-                case ']':
+                } else if (c == ']') {
                     r.push_back(make_character_class(std::move(character_class)));
                     character_class.clear();
                     state = idle;
-                    break;
-                default:
+                } else {
                     character_class.emplace_back(c, c);
                 }
                 break;
 
             case bracket_range:
-                switch (c) {
-                case '/':
-                    throw parse_error("Slash '/' is not allowed inside a character class, i.e. between '[' and ']'.");
-                case '-':
+                if (c == '-') {
                     throw parse_error("Double '--' is not allowed inside a character class, i.e. between '[' and ']'.");
-                case ']':
+                } else if (c == ']') {
                     character_class.emplace_back('-', '-');
                     r.push_back(make_character_class(std::move(character_class)));
                     character_class.clear();
                     state = idle;
-                    break;
-                default:
+                } else {
                     character_class.back().second = c;
                     state = bracket;
-                    break;
                 }
                 break;
 
             case brace:
-                switch (c) {
-                case '/':
-                    throw parse_error("Slash '/' is not allowed inside an alternation, i.e. between '{' and '}'.");
-
-                case '}':
+                if (c == '}') {
                     if (not text.empty()) {
                         alternation.push_back(std::move(text));
                         text.clear();
@@ -550,14 +628,10 @@ private:
                     r.push_back(make_alternation(std::move(alternation)));
                     alternation.clear();
                     state = idle;
-                    break;
-
-                case ',':
+                } else if (c == ',') {
                     alternation.push_back(std::move(text));
                     text.clear();
-                    break;
-
-                default:
+                } else {
                     text += c;
                 }
                 break;
@@ -706,6 +780,12 @@ private:
     }
 };
 
+/** Find paths on the filesystem that match the glob pattern.
+ * @ingroup file
+ *
+ * @param pattern The pattern to search the filesystem for.
+ * @return a generator yielding paths to objects on the filesystem that match the pattern.
+ */
 [[nodiscard]] inline generator<std::filesystem::path> glob(glob_pattern pattern)
 {
     auto path = pattern.base_path();
@@ -720,26 +800,57 @@ private:
     }
 }
 
+/** Find paths on the filesystem that match the glob pattern.
+ * @ingroup file
+ *
+ * @param pattern The pattern to search the filesystem for.
+ * @return a generator yielding paths to objects on the filesystem that match the pattern.
+ */
 [[nodiscard]] inline generator<std::filesystem::path> glob(std::string_view pattern)
 {
     return glob(glob_pattern{std::move(pattern)});
 }
 
+/** Find paths on the filesystem that match the glob pattern.
+ * @ingroup file
+ *
+ * @param pattern The pattern to search the filesystem for.
+ * @return a generator yielding paths to objects on the filesystem that match the pattern.
+ */
 [[nodiscard]] inline generator<std::filesystem::path> glob(std::string pattern)
 {
     return glob(glob_pattern{std::move(pattern)});
 }
 
+/** Find paths on the filesystem that match the glob pattern.
+ * @ingroup file
+ *
+ * @param pattern The pattern to search the filesystem for.
+ * @return a generator yielding paths to objects on the filesystem that match the pattern.
+ */
 [[nodiscard]] inline generator<std::filesystem::path> glob(char const *pattern)
 {
     return glob(glob_pattern{pattern});
 }
 
+/** Find paths on the filesystem that match the glob pattern.
+ * @ingroup file
+ *
+ * @param pattern The pattern to search the filesystem for.
+ * @return a generator yielding paths to objects on the filesystem that match the pattern.
+ */
 [[nodiscard]] inline generator<std::filesystem::path> glob(std::filesystem::path pattern)
 {
     return glob(glob_pattern{std::move(pattern)});
 }
 
+/** Find paths on the filesystem that match the glob pattern.
+ * @ingroup file
+ *
+ * @param location The path-location to search files in
+ * @param ref A relative path pattern to search the path-location
+ * @return a generator yielding paths to objects in the path-location that match the pattern.
+ */
 [[nodiscard]] inline generator<std::filesystem::path> glob(path_location location, std::filesystem::path ref)
 {
     for (hilet& directory : get_paths(location)) {
@@ -749,16 +860,37 @@ private:
     }
 }
 
+/** Find paths on the filesystem that match the glob pattern.
+ * @ingroup file
+ *
+ * @param location The path-location to search files in
+ * @param ref A relative path pattern to search the path-location
+ * @return a generator yielding paths to objects in the path-location that match the pattern.
+ */
 [[nodiscard]] inline generator<std::filesystem::path> glob(path_location location, std::string_view ref)
 {
     return glob(location, std::filesystem::path{std::move(ref)});
 }
 
+/** Find paths on the filesystem that match the glob pattern.
+ * @ingroup file
+ *
+ * @param location The path-location to search files in
+ * @param ref A relative path pattern to search the path-location
+ * @return a generator yielding paths to objects in the path-location that match the pattern.
+ */
 [[nodiscard]] inline generator<std::filesystem::path> glob(path_location location, std::string ref)
 {
     return glob(location, std::filesystem::path{std::move(ref)});
 }
 
+/** Find paths on the filesystem that match the glob pattern.
+ * @ingroup file
+ *
+ * @param location The path-location to search files in
+ * @param ref A relative path pattern to search the path-location
+ * @return a generator yielding paths to objects in the path-location that match the pattern.
+ */
 [[nodiscard]] inline generator<std::filesystem::path> glob(path_location location, char const *ref)
 {
     return glob(location, std::filesystem::path{ref});
