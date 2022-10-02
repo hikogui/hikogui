@@ -71,23 +71,28 @@ Platform support
 
 The following platforms are supported:
 
- - MSVC - Windows 10 - x64
+ - MSVC - Windows 10 (or newer) - x64
 
 For hardware support see: [hardware\_support](docs/hardware_support.md)
 
-Installation
-------------
+Installation, Building and Contributing
+---------------------------------------
 
-If you like to help with the development or want to modify hikogui you can
-find instruction how to install the dependencies and how to build hikogui in the
-[CONTRIBUTING](docs/CONTRIBUTING.md) document.
+You can find the install and build instruction for your favorite IDE
+in the [INSTALL.md](INSTALL.md) document.
 
-If you want to use hikogui as a library for your own application you can
+You can find instruction on how to contribute to the HikoGUI library in the
+[CONTRIBUTING.md](CONTRIBUTING.md) document.
+
+If you want to use HikoGUI as a library for your own application you can
 find instructions in the [hikogui_hello_world](https://github.com/hikogui/hikogui_hello_world)
 example application's [README](https://github.com/hikogui/hikogui_hello_world/blob/main/README.md).
 
 Sponsors
 --------
+
+If you like to become a sponsor, please contribute to
+[Take Vos](https://github.com/sponsors/takev) the main developer of the HikoGUI.
 
 The following people and companies are platinum sponsors:
 

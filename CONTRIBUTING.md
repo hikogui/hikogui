@@ -4,14 +4,14 @@ Contributing to the HikoGUI project
 Issues
 ------
 
-When you want to suggest a new feature, an improvement or file a bug
-report you can do so through an [issue](https://github.com/hikogui/hikogui/issues).
+Bugs and other issues can be reported on the [Issue](https://github.com/hikogui/hikogui/issues)
+page on github.
 
-The easiest way to contribute is by reporting issues with hikogui.
-When reporting an issue with hikogui, make sure to clearly state:
+The easiest way to contribute is by reporting issues with HikoGUI.
+When reporting an issue with HikoGUI, make sure to clearly state:
 
  - The machine setup: "Windows 10 with RenderDoc installed."
- - The steps to reproduce: "I build hikogui in x64-MSVC-Debug, then run hikogui\_demo from Visual Studio"
+ - The steps to reproduce: "I build HikoGUI in x64-MSVC-Debug, then run hikogui\_demo from Visual Studio"
  - The outcome you expected: "I expected to see log messages in the Output window"
  - The actual outcome: "I get no output at all" or "I get a exception at line 123 of log.hpp"
 
@@ -29,16 +29,17 @@ you may want to assign yourself to that issue before working on it,
 to reduce the chance of two people working on the same pull request.
 
 It could be helpful having a more real time discussion through discord at:
-<https://discord.gg/CSddDuM> channel #HikoGUI/general.
+[Society of TJ](https://discord.gg/CSddDuM) channel #HikoGUI/general.
 
-We have written down a [code style](code_style.md) which may help you
+We have written down a [code style](docs/code_style.md) which may help you
 understand certain constructs in our code. Currently we are transitioning
 to this new code style, so you may find some code that does not conform
 to this, don't worry about this :smile:
 
 Installation and Build Instructions
 -----------------------------------
-You can find the installation and build instructions for your favorite IDE in the [INSTALL.md](INSTALL.md) file.
+You can find the installation and build instructions for your favorite IDE
+in [INSTALL.md](INSTALL.md).
 
 Debugging with RenderDoc
 ------------------------
@@ -58,11 +59,11 @@ Testing the demo application
 There is a demo application included with the releases of HikoGUI.
 
 It would be nice if people could test if this application will work on their computers.
-And when there is a crash to create a mini-dump and send the mini-dump to the discord channel
-"#demo-mini-dumps" <https://discord.gg/7e8pFTsujw> together with the version number
+And when there is a crash to create a mini-dump and send the mini-dump to the discord
+[Society of TJ](https://discord.gg/CSddDuM) channel #HikoGUI/crash together with the version number
 of the HikoGUI release.
 
-To make crash mini-dump when the HikoGUI demo application crashes create the following registry key
+To make crash mini-dump when the HikoGUI demo application crashes; create the following registry key:
 
 `Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps`
 
