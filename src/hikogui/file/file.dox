@@ -11,10 +11,15 @@ file mapping
 
 Path locations
 --------------
-The `file/path_location.hpp` header file contains functions to find
-objects in the filesystem.
+The path-locations functions are used to find files and directories based
+on the context of the operating system, the user account and application.
 
-For example to iterate over all the font directories:
+For example fonts are located in multiple places:
+ - the font-directory where a user can install their own fonts,
+ - the font-directory that is part of the application's resources, and
+ - the font-directory which is shared between all users of the operating system.
+
+To iterate over all the font directories:
 
 ```
 for (auto const &path : get_paths(path_location::font_dirs)) {
@@ -22,7 +27,7 @@ for (auto const &path : get_paths(path_location::font_dirs)) {
 }
 ```
 
-To find a specific file in one of the font directories you can do the following:
+To find the first matching file in one of the font directories:
 
 ```
 if (auto const &path : find_path(path_location::font_dirs, "arial.ttf")) {
@@ -33,6 +38,7 @@ if (auto const &path : find_path(path_location::font_dirs, "arial.ttf")) {
 
 glob
 ----
+The 
 
 To find all the files in the font directories:
 

@@ -1,16 +1,6 @@
 HikoGUI GUI library [![Build on Windows](https://github.com/hikogui/hikogui/actions/workflows/build-on-windows.yml/badge.svg?branch=main)](https://github.com/hikogui/hikogui/actions/workflows/build-on-windows.yml) [![Version](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/hikogui/hikogui/main/vcpkg.json&label=Latest%20Version&query=$[%27version%27]&color=blue)](https://github.com/hikogui/hikogui/releases/latest) [![License](https://img.shields.io/github/license/hikogui/hikogui.svg)](https://github.com/hikogui/hikogui/blob/main/LICENSE_1_0.txt)
 ==================
 
-Broken toolchains
------------------
-### Currently C++20 vcpkg builds are broken
-
-Due to future changes to the C++20 standard involving ABI changes in
-std::format and std::ranges there are some issues with compatibility
-between compiler and cmake versions. Please use the non-vcpkg builds
-which ensures that cmake and compiler versions are exactly the same.
-
-
 A portable, low latency, retained-mode GUI framework written in C++
 -------------------------------------------------------------------
 

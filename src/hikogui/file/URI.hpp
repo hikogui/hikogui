@@ -14,6 +14,7 @@
 #include "../hash.hpp"
 #include "../strings.hpp"
 #include "../concepts.hpp"
+#include "../charconv.hpp"
 #include <string>
 #include <optional>
 #include <ranges>
@@ -25,7 +26,7 @@ namespace hi { inline namespace v1 {
 
 /** A Uniform Resource Identifier.
  * @ingroup file
- * 
+ *
  * This class holds the URI separated and unencoded into it components:
  *  - scheme (optional)
  *  - authority (optional)
@@ -38,6 +39,9 @@ namespace hi { inline namespace v1 {
  *
  */
 class URI {
+private:
+    using const_iterator = std::string_view::const_iterator;
+
 public:
     class authority_type {
     public:
@@ -136,8 +140,6 @@ public:
         }
 
     private:
-        using const_iterator = std::string_view::const_iterator;
-
         std::optional<std::string> _userinfo = {};
         std::string _host = {};
         std::optional<std::string> _port = {};
@@ -278,7 +280,7 @@ public:
         [[nodiscard]] constexpr static std::vector<std::string> parse(std::string_view str)
         {
             auto r = make_vector<std::string>(std::views::transform(std::views::split(str, std::string_view{"/"}), [](auto&& x) {
-                return URI::decode(x);
+                return URI::decode(std::string_view{std::ranges::begin(x), std::ranges::end(x)});
             }));
 
             if (r.size() == 1 and r.front().empty()) {
@@ -448,9 +450,11 @@ public:
             return r;
         }
 
-        /**
+        /** Convert the URI path component to a string.
          *
+         * @param rhs The URI path component.
          * @param has_scheme If true than the first segment may contain a ':' without percent encoding.
+         * @return The path component converted to a string.
          */
         [[nodiscard]] constexpr friend std::string to_string(path_type const& rhs, bool has_scheme = false) noexcept
         {
@@ -700,52 +704,22 @@ public:
 
     /** URI percent-encoding decode function.
      *
-     * @param str A percent-encoded string.
+     * @param rhs A percent-encoded string.
      * @return A UTF-8 encoded string.
      */
-    [[nodiscard]] constexpr static std::string
-        decode(auto first, auto last) requires std::is_same_v < std::decay_t<decltype(*first)>,
-    char >
+    [[nodiscard]] constexpr static std::string decode(std::string_view rhs)
     {
-        auto r = std::string{};
-        if constexpr (requires { std::distance(first, last); }) {
-            r.reserve(std::distance(first, last));
-        }
+        auto r = std::string{rhs};
 
-        auto state = 2;
-        uint8_t code_unit = 0;
-        for (auto it = first; it != last; ++it) {
-            hilet c = *it;
-            switch (state) {
-            case 0:
-                [[fallthrough]];
-            case 1:
-                code_unit <<= 4;
-                if (c >= '0' and c <= '9') {
-                    code_unit |= c & 0xf;
-                } else if ((c >= 'a' and c <= 'f') or (c >= 'A' and c <= 'F')) {
-                    code_unit |= (c & 0xf) + 9;
-                } else {
-                    throw uri_error("Unexpected character in percent-encoding.");
-                }
-                if (++state == 2) {
-                    r += char_cast<char>(code_unit);
-                }
-                break;
-            case 2:
-                if (c == '%') {
-                    state = 0;
-                } else {
-                    r += c;
-                }
-                break;
-            default:
-                hi_no_default();
-            }
-        }
+        for (auto i = r.find('%'); i != std::string::npos; i = r.find('%', i)) {
+            // This may throw a parse_error, if not hexadecimal
+            auto c = from_string<uint8_t>(r.substr(i + 1, 2));
 
-        if (state != 2) {
-            throw uri_error("Unexpected end of URI component inside percent-encoding.");
+            // Replace the % encoded character.
+            r.replace(i, 3, 1, char_cast<char>(c));
+
+            // Skip over encoded-character.
+            ++i;
         }
 
         return r;
@@ -753,18 +727,20 @@ public:
 
     /** URI percent-encoding decode function.
      *
-     * @param str A percent-encoded string.
+     * @param first An iterator to the first character of a percent encoded string.
+     * @param last An iterator to one beyond the last character of a percent encoded string.
      * @return A UTF-8 encoded string.
      */
-    [[nodiscard]] constexpr static std::string decode(auto&& range)
+    [[nodiscard]] constexpr static std::string decode(const_iterator first, const_iterator last)
     {
-        return decode(std::ranges::begin(range), std::ranges::end(range));
+        return decode(std::string_view{first, last});
     }
 
     /** URI encode a component.
      *
-     * @tparam extras The extra characters beyond the unreserved characters to pct-encode.
-     * @param rhs An UTF-8 encoded string, a component or sub-component of a URI.
+     * @tparam Extras The extra characters beyond the unreserved characters to pct-encode.
+     * @param first Iterator to a UTF-8 encoded string; a component or sub-component of a URI.
+     * @param last Iterator pointing one beyond the UTF-8 encoded string.
      * @return A percent-encoded string.
      */
     template<char... Extras, typename It, typename ItEnd>
@@ -808,8 +784,8 @@ public:
 
     /** URI encode a component.
      *
-     * @tparam extras The extra characters beyond the unreserved characters to pct-encode.
-     * @param rhs An UTF-8 encoded string, a component or sub-component of a URI.
+     * @tparam Extras The extra characters beyond the unreserved characters to pct-encode.
+     * @param range A range representing UTF-8 encoded string; a component or sub-component of a URI.
      * @return A percent-encoded string.
      */
     template<char... Extras, typename Range>
@@ -819,8 +795,6 @@ public:
     }
 
 private:
-    using const_iterator = std::string_view::const_iterator;
-
     std::optional<std::string> _scheme;
     std::optional<authority_type> _authority;
     path_type _path;

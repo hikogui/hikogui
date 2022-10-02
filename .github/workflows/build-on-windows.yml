@@ -31,13 +31,13 @@ jobs:
               NAME: "vc17-x64",
               OS: windows-2022,
               VCPKG_TARGET_TRIPLET: "",
-              CMAKE_PRESET: ZI-x64-MSVC-Release
+              CMAKE_PRESET: Z-CI-x64-MSVC-Release
             }
           - {
               NAME: "vc17-x64-debug",
               OS: windows-2022,
               VCPKG_TARGET_TRIPLET: "",
-              CMAKE_PRESET: ZI-x64-MSVC-Debug
+              CMAKE_PRESET: Z-CI-x64-MSVC-Debug
             }
 
     env:
