@@ -159,3 +159,19 @@ A subsystem will have a name in the `system_status_type` enum, and will have a g
 suffixed with \_start. This subsystem\_start function is used to initialize and register the deinitialize function
 with the system\_status. The subsystem\_start function must be low latency so that it can be called very often to make
 sure the subsystem is started when functionality of the subsystem is used for the first time.
+
+Paths
+-----
+Remember if you are converting between `std::string` and `std::filesystem::path` you are doing something wrong.
+With std::filesystem::path a `char` is the native-narrow-encoding, this is different from the rest of the
+C++ standard where `char` is in the execution-encoding.
+
+The execution-encoding on HikoGUI is set using compiler options to UTF-8. The native-narrow-encoding is
+Window's currently configured code-page for this process and is compatible with the `*A()` win32 functions.
+
+It is highly recommended NOT to use the `*A()` win32 functions and instead use the `*W()` win32 functions.
+The `*A()` win32 function do extra encoding and decoding from the current configured code-page to UTF-16-like
+encoding and then call the matching `*W()` function internally.
+
+So use the `std::filesystem::path` explicit `std::u8string`, `std::u16string` and `std::u32string` conversions
+and then convert to and from `std::string` using the `hi::to_*string()` functions.

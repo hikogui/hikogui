@@ -133,11 +133,12 @@ namespace hi::inline v1 {
         break;
 
     case font_dirs:
-        for (hilet& path : get_paths(system_font_dirs)) {
-            co_yield path;
-        }
+        // Sorted from global to local.
         for (hilet& path : get_paths(resource_dirs)) {
             co_yield path / "fonts" / "";
+        }
+        for (hilet& path : get_paths(system_font_dirs)) {
+            co_yield path;
         }
         break;
 

@@ -713,7 +713,7 @@ public:
 
         for (auto i = r.find('%'); i != std::string::npos; i = r.find('%', i)) {
             // This may throw a parse_error, if not hexadecimal
-            auto c = from_string<uint8_t>(r.substr(i + 1, 2));
+            auto c = from_string<uint8_t>(r.substr(i + 1, 2), 16);
 
             // Replace the % encoded character.
             r.replace(i, 3, 1, char_cast<char>(c));

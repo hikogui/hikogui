@@ -10,6 +10,11 @@
 using namespace std;
 using namespace hi;
 
+TEST(URI, percent_decode)
+{
+    ASSERT_EQ(URI::decode("Program%20Files"), "Program Files");
+}
+
 TEST(URI, scheme_only)
 {
     hilet u = URI("file:");

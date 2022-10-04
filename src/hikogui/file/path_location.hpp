@@ -16,6 +16,7 @@
 namespace hi { inline namespace v1 {
 
 /** File and Directory locations.
+ * @ingroup file
  */
 enum class path_location {
     /** The location of application resources.
@@ -65,6 +66,7 @@ enum class path_location {
 };
 
 /** Get a set of paths.
+ * @ingroup file
  *
  * @param location The location.
  * @return A list of paths belonging to the location.
@@ -72,6 +74,7 @@ enum class path_location {
 [[nodiscard]] generator<std::filesystem::path> get_paths(path_location location);
 
 /** Find a path.
+ * @ingroup file
  *
  * @param location The location to search for filesystem-object.
  * @param ref A relative path to the filesystem-object.
@@ -97,6 +100,7 @@ enum class path_location {
 }
 
 /** Get the single and only path.
+ * @ingroup file
  *
  * @param location The location.
  * @return The path.

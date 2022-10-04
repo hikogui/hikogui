@@ -101,12 +101,13 @@ protected:
 } // namespace detail
 
 /** A File object.
+ * @ingroup file
  */
 class file {
 public:
     /** Open a file at location.
      * @param path The path to the file to open.
-     * @param access+mode access-mode to open the file.
+     * @param access_mode access-mode to open the file.
      */
     file(std::filesystem::path const& path, access_mode access_mode = access_mode::open_for_read);
 

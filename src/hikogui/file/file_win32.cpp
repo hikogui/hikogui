@@ -31,7 +31,7 @@ file_win32::file_win32(std::filesystem::path const& path, hi::access_mode access
     } else if (to_bool(access_mode & access_mode::write)) {
         desired_access = GENERIC_WRITE;
     } else {
-        throw io_error(std::format("{}: Invalid AccessMode; expecting Readable and/or Writeable.", path.string()));
+        throw io_error(std::format("{}: Invalid AccessMode; expecting Readable and/or Writeable.", to_string(path.u8string())));
     }
 
     DWORD share_mode;
@@ -63,7 +63,7 @@ file_win32::file_win32(std::filesystem::path const& path, hi::access_mode access
         }
 
     } else {
-        throw io_error(std::format("{}: Invalid AccessMode; expecting CreateFile and/or OpenFile.", path.string()));
+        throw io_error(std::format("{}: Invalid AccessMode; expecting CreateFile and/or OpenFile.", to_string(path.u8string())));
     }
 
     DWORD flags_and_attributes = 0;

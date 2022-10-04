@@ -9,6 +9,7 @@
  */
 
 #include "path_location.hpp"
+#include "../char_maps/to_string.hpp"
 #include "../utility.hpp"
 #include "../type_traits.hpp"
 #include <vector>
@@ -50,7 +51,25 @@ public:
      *
      * @param str The string to be parsed.
      */
-    glob_pattern(std::string_view str) : _tokens(parse(str)) {}
+    glob_pattern(std::u32string_view str) : _tokens(parse(str)) {}
+
+    /** Parse a string to a glob-pattern.
+     *
+     * @param str The string to be parsed.
+     */
+    glob_pattern(std::u32string const& str) : glob_pattern(std::u32string_view{str}) {}
+
+    /** Parse a string to a glob-pattern.
+     *
+     * @param str The string to be parsed.
+     */
+    glob_pattern(char32_t const *str) : glob_pattern(std::u32string_view{str}) {}
+
+    /** Parse a string to a glob-pattern.
+     *
+     * @param str The string to be parsed.
+     */
+    glob_pattern(std::string_view str) : glob_pattern(hi::to_u32string(str)) {}
 
     /** Parse a string to a glob-pattern.
      *
@@ -69,7 +88,20 @@ public:
      *
      * @param path The path to be parsed.
      */
-    glob_pattern(std::filesystem::path const& path) : glob_pattern(path.generic_string()) {}
+    glob_pattern(std::filesystem::path const& path) : glob_pattern(path.generic_u32string()) {}
+
+    /** Convert a glob-pattern to a string.
+     *
+     * @return The string representing the pattern
+     */
+    [[nodiscard]] constexpr std::u32string u32string() noexcept
+    {
+        auto r = std::u32string{};
+        for (hilet& token : _tokens) {
+            r += token.u32string();
+        }
+        return r;
+    }
 
     /** Convert a glob-pattern to a string.
      *
@@ -77,9 +109,20 @@ public:
      */
     [[nodiscard]] constexpr std::string string() noexcept
     {
-        auto r = std::string{};
+        return hi::to_string(u32string());
+    }
+
+    /** Convert a glob-pattern to a debug-string.
+     *
+     * This function is used for debugging the glob parser, and for using in unit-tests.
+     *
+     * @return The string representing the pattern
+     */
+    [[nodiscard]] constexpr std::u32string debug_u32string() noexcept
+    {
+        auto r = std::u32string{};
         for (hilet& token : _tokens) {
-            r += token.string();
+            r += token.debug_u32string();
         }
         return r;
     }
@@ -92,11 +135,32 @@ public:
      */
     [[nodiscard]] constexpr std::string debug_string() noexcept
     {
-        auto r = std::string{};
-        for (hilet& token : _tokens) {
-            r += token.debug_string();
+        return hi::to_string(debug_u32string());
+    }
+
+    /** Get the initial fixed part of the pattern.
+     *
+     * This gets the initial part of the pattern that is fixed,
+     * this is used for as a starting point for a search.
+     *
+     * For example by getting the base_string you can use a binary-search
+     * into a sorted list of strings, then once you find a string you can
+     * iterate over the list and glob-match each string.
+     *
+     * @return The initial fixed part of the pattern.
+     */
+    [[nodiscard]] constexpr std::u32string base_u32string() const noexcept
+    {
+        if (_tokens.empty() or not _tokens.front().is_text()) {
+            return {};
+        } else {
+            auto r = _tokens.front().u32string();
+            if (_tokens.size() >= 2 and _tokens[1].is_any_directory()) {
+                // An any_directory_type always includes at least 1 slash.
+                r += U'/';
+            }
+            return r;
         }
-        return r;
     }
 
     /** Get the initial fixed part of the pattern.
@@ -112,16 +176,7 @@ public:
      */
     [[nodiscard]] constexpr std::string base_string() const noexcept
     {
-        if (_tokens.empty() or not _tokens.front().is_text()) {
-            return {};
-        } else {
-            auto r = _tokens.front().string();
-            if (_tokens.size() >= 2 and _tokens[1].is_any_directory()) {
-                // An any_directory_type always includes at least 1 slash.
-                r += '/';
-            }
-            return r;
-        }
+        return to_string(base_u32string());
     }
 
     /** Get the initial path of the pattern.
@@ -136,8 +191,8 @@ public:
      */
     [[nodiscard]] std::filesystem::path base_path() const noexcept
     {
-        auto text = base_string();
-        if (auto i = text.rfind('/'); i == std::string::npos) {
+        auto text = base_u32string();
+        if (auto i = text.rfind('/'); i == std::u32string::npos) {
             // If there is no slash then there is no base directory.
             text.clear();
         } else {
@@ -152,7 +207,7 @@ public:
      * @param str The string to match with this pattern.
      * @return True if the string matches the pattern.
      */
-    [[nodiscard]] constexpr bool matches(std::string_view str) const noexcept
+    [[nodiscard]] constexpr bool matches(std::u32string_view str) const noexcept
     {
         auto first = _tokens.cbegin();
         auto last = _tokens.cend();
@@ -177,6 +232,36 @@ public:
      * @param str The string to match with this pattern.
      * @return True if the string matches the pattern.
      */
+    [[nodiscard]] constexpr bool matches(std::u32string const& str) const noexcept
+    {
+        return matches(std::u32string_view{str});
+    }
+
+    /** Match the pattern with the given string.
+     *
+     * @param str The string to match with this pattern.
+     * @return True if the string matches the pattern.
+     */
+    [[nodiscard]] constexpr bool matches(char32_t const *str) const noexcept
+    {
+        return matches(std::u32string_view{str});
+    }
+
+    /** Match the pattern with the given string.
+     *
+     * @param str The string to match with this pattern.
+     * @return True if the string matches the pattern.
+     */
+    [[nodiscard]] constexpr bool matches(std::string_view str) const noexcept
+    {
+        return matches(to_u32string(str));
+    }
+
+    /** Match the pattern with the given string.
+     *
+     * @param str The string to match with this pattern.
+     * @return True if the string matches the pattern.
+     */
     [[nodiscard]] constexpr bool matches(std::string const& str) const noexcept
     {
         return matches(std::string_view{str});
@@ -194,12 +279,12 @@ public:
 
     /** Match the pattern with the given path.
      *
-     * @param str The path to match with this pattern.
+     * @param path The path to match with this pattern.
      * @return True if the path matches the pattern.
      */
     [[nodiscard]] bool matches(std::filesystem::path const& path) const noexcept
     {
-        return matches(path.generic_string());
+        return matches(path.generic_u32string());
     }
 
 private:
@@ -207,9 +292,9 @@ private:
 
     class token_type {
     public:
-        using text_type = std::string;
-        using character_class_type = std::vector<std::pair<char, char>>;
-        using alternation_type = std::vector<std::string>;
+        using text_type = std::u32string;
+        using character_class_type = std::vector<std::pair<char32_t, char32_t>>;
+        using alternation_type = std::vector<std::u32string>;
         class any_character_type {};
         class any_text_type {};
         class any_directory_type {};
@@ -237,7 +322,7 @@ private:
         }
 
         template<bool Left>
-        [[nodiscard]] constexpr match_result_type strip(std::string_view& str) const noexcept
+        [[nodiscard]] constexpr match_result_type strip(std::u32string_view& str) const noexcept
         {
             constexpr bool Right = not Left;
 
@@ -287,7 +372,7 @@ private:
             }
         }
 
-        [[nodiscard]] constexpr match_result_type matches(std::string_view& str, size_t iteration) const noexcept
+        [[nodiscard]] constexpr match_result_type matches(std::u32string_view& str, size_t iteration) const noexcept
         {
             if (hilet text_ptr = std::get_if<text_type>(&_value)) {
                 if (iteration != 0) {
@@ -345,7 +430,7 @@ private:
                 if (str.empty() or str.front() != '/') {
                     return match_result_type::fail;
                 } else {
-                    for (auto i = 0_uz; i != std::string_view::npos; i = str.find('/', i + 1)) {
+                    for (auto i = 0_uz; i != std::u32string_view::npos; i = str.find('/', i + 1)) {
                         if (iteration-- == 0) {
                             str.remove_prefix(i + 1);
                             return match_result_type::success;
@@ -359,44 +444,44 @@ private:
             }
         }
 
-        [[nodiscard]] constexpr std::string string() const noexcept
+        [[nodiscard]] constexpr std::u32string u32string() const noexcept
         {
-            auto r = std::string{};
+            auto r = std::u32string{};
 
             if (auto text_ptr = std::get_if<text_type>(&_value)) {
                 r = *text_ptr;
 
             } else if (auto character_class_ptr = std::get_if<character_class_type>(&_value)) {
-                r += '[';
+                r += U'[';
                 for (hilet[first_char, last_char] : *character_class_ptr) {
                     if (first_char == last_char) {
                         r += first_char;
                     } else {
                         r += first_char;
-                        r += '-';
+                        r += U'-';
                         r += last_char;
                     }
                 }
-                r += ']';
+                r += U']';
 
             } else if (auto alternation_ptr = std::get_if<alternation_type>(&_value)) {
-                r += '{';
+                r += U'{';
                 for (hilet& text : *alternation_ptr) {
                     if (r.size() > 1) {
-                        r += ',';
+                        r += U',';
                     }
                     r += text;
                 }
-                r += '}';
+                r += U'}';
 
             } else if (std::holds_alternative<any_character_type>(_value)) {
-                r += '?';
+                r += U'?';
 
             } else if (std::holds_alternative<any_text_type>(_value)) {
-                r += '*';
+                r += U'*';
 
             } else if (std::holds_alternative<any_directory_type>(_value)) {
-                r += "/**/";
+                r += U"/**/";
 
             } else {
                 hi_no_default();
@@ -405,46 +490,46 @@ private:
             return r;
         }
 
-        [[nodiscard]] constexpr std::string debug_string() const noexcept
+        [[nodiscard]] constexpr std::u32string debug_u32string() const noexcept
         {
-            auto r = std::string{};
+            auto r = std::u32string{};
 
             if (auto text_ptr = std::get_if<text_type>(&_value)) {
-                r += '\'';
+                r += U'\'';
                 r += *text_ptr;
-                r += '\'';
+                r += U'\'';
 
             } else if (auto character_class_ptr = std::get_if<character_class_type>(&_value)) {
-                r += '[';
+                r += U'[';
                 for (hilet[first_char, last_char] : *character_class_ptr) {
                     if (first_char == last_char) {
                         r += first_char;
                     } else {
                         r += first_char;
-                        r += '-';
+                        r += U'-';
                         r += last_char;
                     }
                 }
-                r += ']';
+                r += U']';
 
             } else if (auto alternation_ptr = std::get_if<alternation_type>(&_value)) {
-                r += '{';
+                r += U'{';
                 for (hilet& text : *alternation_ptr) {
                     if (r.size() > 1) {
-                        r += ',';
+                        r += U',';
                     }
                     r += text;
                 }
-                r += '}';
+                r += U'}';
 
             } else if (std::holds_alternative<any_character_type>(_value)) {
-                r += '?';
+                r += U'?';
 
             } else if (std::holds_alternative<any_text_type>(_value)) {
-                r += '*';
+                r += U'*';
 
             } else if (std::holds_alternative<any_directory_type>(_value)) {
-                r += "/**/";
+                r += U"/**/";
 
             } else {
                 hi_no_default();
@@ -508,7 +593,7 @@ private:
         enum class state_type { idle, star, slash, slash_star, slash_star_star, bracket, bracket_range, brace };
         using enum state_type;
 
-        static_assert(std::is_same_v<std::decay_t<decltype(*first)>, char>);
+        static_assert(std::is_same_v<std::decay_t<decltype(*first)>, char32_t>);
 
         auto r = tokens_type{};
 
@@ -523,21 +608,21 @@ private:
             switch (state) {
             case idle:
                 switch (c) {
-                case '/':
+                case U'/':
                     state = slash;
                     break;
-                case '?':
+                case U'?':
                     HI_GLOB_APPEND_TEXT();
                     r.push_back(make_any_character());
                     break;
-                case '*':
+                case U'*':
                     state = star;
                     break;
-                case '[':
+                case U'[':
                     HI_GLOB_APPEND_TEXT();
                     state = bracket;
                     break;
-                case '{':
+                case U'{':
                     HI_GLOB_APPEND_TEXT();
                     state = brace;
                     break;
@@ -547,7 +632,7 @@ private:
                 break;
 
             case star:
-                if (c == '*') {
+                if (c == U'*') {
                     throw parse_error("Double ** is only allowed between slashes, like /**/.");
                 } else {
                     HI_GLOB_APPEND_TEXT();
@@ -558,20 +643,20 @@ private:
                 break;
 
             case slash:
-                if (c == '*') {
+                if (c == U'*') {
                     state = slash_star;
                 } else {
-                    text += '/';
+                    text += U'/';
                     text += c;
                     state = idle;
                 }
                 break;
 
             case slash_star:
-                if (c == '*') {
+                if (c == U'*') {
                     state = slash_star_star;
                 } else {
-                    text += '/';
+                    text += U'/';
                     HI_GLOB_APPEND_TEXT();
                     r.push_back(make_any_text());
                     text += c;
@@ -580,7 +665,7 @@ private:
                 break;
 
             case slash_star_star:
-                if (c == '/') {
+                if (c == U'/') {
                     HI_GLOB_APPEND_TEXT();
                     r.push_back(make_any_directory());
                     state = idle;
@@ -590,13 +675,13 @@ private:
                 break;
 
             case bracket:
-                if (c == '-') {
+                if (c == U'-') {
                     if (character_class.empty()) {
                         character_class.emplace_back(c, c);
                     } else {
                         state = bracket_range;
                     }
-                } else if (c == ']') {
+                } else if (c == U']') {
                     r.push_back(make_character_class(std::move(character_class)));
                     character_class.clear();
                     state = idle;
@@ -606,10 +691,10 @@ private:
                 break;
 
             case bracket_range:
-                if (c == '-') {
+                if (c == U'-') {
                     throw parse_error("Double '--' is not allowed inside a character class, i.e. between '[' and ']'.");
-                } else if (c == ']') {
-                    character_class.emplace_back('-', '-');
+                } else if (c == U']') {
+                    character_class.emplace_back(U'-', U'-');
                     r.push_back(make_character_class(std::move(character_class)));
                     character_class.clear();
                     state = idle;
@@ -620,7 +705,7 @@ private:
                 break;
 
             case brace:
-                if (c == '}') {
+                if (c == U'}') {
                     if (not text.empty()) {
                         alternation.push_back(std::move(text));
                         text.clear();
@@ -628,7 +713,7 @@ private:
                     r.push_back(make_alternation(std::move(alternation)));
                     alternation.clear();
                     state = idle;
-                } else if (c == ',') {
+                } else if (c == U',') {
                     alternation.push_back(std::move(text));
                     text.clear();
                 } else {
@@ -654,12 +739,12 @@ private:
             break;
 
         case slash:
-            text += '/';
+            text += U'/';
             HI_GLOB_APPEND_TEXT();
             break;
 
         case slash_star:
-            text += '/';
+            text += U'/';
             HI_GLOB_APPEND_TEXT();
             r.push_back(make_any_text());
             break;
@@ -690,7 +775,8 @@ private:
     }
 
     template<bool Left>
-    [[nodiscard]] constexpr static bool matches_strip(const_iterator& first, const_iterator& last, std::string_view& str) noexcept
+    [[nodiscard]] constexpr static bool
+    matches_strip(const_iterator& first, const_iterator& last, std::u32string_view& str) noexcept
     {
         while (first != last) {
             hilet it = Left ? first : last - 1;
@@ -713,17 +799,18 @@ private:
         return str.empty();
     }
 
-    [[nodiscard]] constexpr static bool matches_strip(const_iterator& first, const_iterator& last, std::string_view& str) noexcept
+    [[nodiscard]] constexpr static bool
+    matches_strip(const_iterator& first, const_iterator& last, std::u32string_view& str) noexcept
     {
         return matches_strip<true>(first, last, str) and matches_strip<false>(first, last, str);
     }
 
-    [[nodiscard]] constexpr bool matches(const_iterator it, const_iterator last, std::string_view original) const noexcept
+    [[nodiscard]] constexpr bool matches(const_iterator it, const_iterator last, std::u32string_view original) const noexcept
     {
         hi_axiom(it != last);
 
         struct stack_element {
-            std::string_view str;
+            std::u32string_view str;
             size_t iteration;
         };
 
@@ -793,7 +880,7 @@ private:
     hilet first = std::filesystem::recursive_directory_iterator(path);
     hilet last = std::filesystem::recursive_directory_iterator();
     for (auto it = first; it != last; ++it) {
-        hilet &iterated_path = it->path();
+        hilet& iterated_path = it->path();
         if (pattern.matches(iterated_path)) {
             co_yield iterated_path;
         }

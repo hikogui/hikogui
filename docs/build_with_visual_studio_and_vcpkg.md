@@ -1,5 +1,5 @@
-Installing for Visual Studio with vcpkg 
-=======================================
+Building with Visual Studio and vcpkg 
+=====================================
 
 Install requirements
 --------------------
@@ -81,6 +81,18 @@ Other configurations that are possible to build:
  - `x64-vcpkg-MSVC-ReleaseWithDebugInfo` Make an fully optimized build
  - `x64-vcpkg-MSVC-Release` Make a fully optimized build and build all examples and demos.
  - `x64-vcpkg-MSVC-Analysis` Build with static-analysis.
+
+Common build problems:
+ - When Visual Studio gets confused try deleting the CMake cache using the
+  `Project / Delete Cache and Reconfigure` menu option.
+ - If you get "permission denied", this may be due to a still running
+   process like a hung hikogui_test.exe. Terminate that process using the
+   Task Manager.
+ - You may also get "permission denied" when during building a compiler-crash
+   causes a file to be written without any permissions associated at all.
+   This can be solved by rebooting the computer and followed by deleting the CMake cache.
+ - The Test Explorer may get confused as well, try deleting the cache in:
+   `hikogui\.vs\v17\TestStore\0\*.testlog`.
 
 [directory-based project]: https://docs.microsoft.com/en-us/visualstudio/ide/develop-code-in-visual-studio-without-projects-or-solutions?view=vs-2019
 

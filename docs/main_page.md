@@ -5,7 +5,7 @@ HikoGUI is a cross platform C++ GUI library.
 
 Manuals
 -------
- - [How to use widgets](how_to/how_to_use_widgets.md) ![new](media/images/new.png)
+ - [How to use widgets](how_to/how_to_use_widgets.md)
  - [How to log](how_to/how_to_log.md)
  - [How to use preferences](how_to/how_to_use_preferences.md)
  - [How to make custom widgets](how_to/how_to_make_custom_widgets.md)
@@ -13,13 +13,9 @@ Manuals
 
 Subsystems
 ----------
- - [Application Lifetime](application_lifetime.md)
- - [Information Reporting](information_reporting.md): exceptions, assertions,
-   logging, counting and tracing.
- - [Geometry](geometry.md):
-   vector, point, extent, rectangle, axis\_aligned\_rectangle, translate, scale,
-   rotate, matrix.
- - [Skeleton](skeleton.md): Template Language.
+Documentation for the HikoGUI sub-systems can be found in the:
+ - [Module](modules.html) ![new](media/images/new.png) and
+ - [Related Pages](pages.html) tabs.
 
 Features
 --------
@@ -53,11 +49,6 @@ when needed. By adding the glyphs as signed distance fields to
 the texture atlas a glyph needs to be added only once to be usable
 for displaying at any size.
 
-Due to the shader having to perform subpixel-compositing,
-it is not able to correctly draw overlapping glyphs. Since
-the shader will always revert to the background drawn by the
-previous sub-pass.
-
 Performance
 -----------
 
@@ -73,7 +64,7 @@ For this reason, we have the following design considerations:
    determine what should be shown to the user at the display time.
    When for example showing the current time on the display.
 
-The following
+The following is used to implement the requirements:
 
  - Use game-like redraw loop running at the current system's
    frame rate. Immediately reflecting updated data. And caching
@@ -84,5 +75,5 @@ The following
    allows the GPU to discard drawing outside it to improve
    drawing speed.
  - All drawing is done by passing vertices to different
-   shaders for GPU accelerated drawing of: flat-polygons,
+   shaders for GPU accelerated drawing of:
    rounded-rectangles, pixmap-images and text-glyphs.

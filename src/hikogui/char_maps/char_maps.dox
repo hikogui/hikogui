@@ -1,3 +1,5 @@
+namespace hi {
+inline namespace v1 {
 /**
 \defgroup char_maps Character Maps
 
@@ -31,3 +33,4 @@ Currently supported are:
 It is possible to add character encodings by specializing `char_map<>` in your application.
 
 */
+}}
