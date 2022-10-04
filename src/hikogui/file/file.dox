@@ -1,13 +1,14 @@
 /**
 \defgroup file File handling utilities.
 
-This module contains file handling utilities.
+This module contains file handling utilities:
+ - file and file_view class to read, write and rename files.
+ - path_location to find files and directories on the system
+ - glob 
 
-file
-----
+file and file_view
+------------------
 
-file mapping
-------------
 
 Path locations
 --------------
