@@ -25,6 +25,8 @@ class png {
 public:
     [[nodiscard]] png(file_view view);
 
+    [[nodiscard]] png(std::filesystem::path const& path) : png(file_view{path}) {}
+
     [[nodiscard]] std::size_t width() const noexcept
     {
         return _width;
@@ -35,9 +37,9 @@ public:
         return _height;
     }
 
-    void decode_image(pixel_map<sfloat_rgba16> &image) const;
+    void decode_image(pixel_map<sfloat_rgba16>& image) const;
 
-    [[nodiscard]] static pixel_map<sfloat_rgba16> load(file_view const &view);
+    [[nodiscard]] static pixel_map<sfloat_rgba16> load(std::filesystem::path const& path);
 
 private:
     /** Matrix to convert png color values to sRGB.
@@ -74,8 +76,8 @@ private:
      */
     file_view _view;
 
-    void read_header(std::span<std::byte const> bytes, std::size_t &offset);
-    void read_chunks(std::span<std::byte const> bytes, std::size_t &offset);
+    void read_header(std::span<std::byte const> bytes, std::size_t& offset);
+    void read_chunks(std::span<std::byte const> bytes, std::size_t& offset);
     void read_IHDR(std::span<std::byte const> bytes);
     void read_cHRM(std::span<std::byte const> bytes);
     void read_gAMA(std::span<std::byte const> bytes);
@@ -86,14 +88,14 @@ private:
     void generate_Rec2100_transfer_function() noexcept;
     void generate_gamma_transfer_function(float gamma) noexcept;
     [[nodiscard]] bstring decompress_IDATs(std::size_t image_data_size) const;
-    void unfilter_lines(bstring &image_data) const;
+    void unfilter_lines(bstring& image_data) const;
     void unfilter_line(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const;
     void unfilter_line_sub(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept;
     void unfilter_line_up(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept;
     void unfilter_line_average(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept;
     void unfilter_line_paeth(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept;
-    void data_to_image(bstring bytes, pixel_map<sfloat_rgba16> &image) const noexcept;
-    void data_to_image_line(std::span<std::byte const> bytes, pixel_row<sfloat_rgba16> &row) const noexcept;
+    void data_to_image(bstring bytes, pixel_map<sfloat_rgba16>& image) const noexcept;
+    void data_to_image_line(std::span<std::byte const> bytes, pixel_row<sfloat_rgba16>& row) const noexcept;
     u16x4 extract_pixel_from_line(std::span<std::byte const> bytes, int x) const noexcept;
 };
 

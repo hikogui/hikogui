@@ -2,7 +2,8 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-/** @file path_location.hpp function to locate files and directories.
+/** @file file/path_location.hpp functions to locate files and directories.
+ * @ingroup file
  */
 
 #pragma once
@@ -14,6 +15,9 @@
 
 namespace hi { inline namespace v1 {
 
+/** File and Directory locations.
+ * @ingroup file
+ */
 enum class path_location {
     /** The location of application resources.
      */
@@ -61,8 +65,21 @@ enum class path_location {
     theme_dirs,
 };
 
+/** Get a set of paths.
+ * @ingroup file
+ *
+ * @param location The location.
+ * @return A list of paths belonging to the location.
+ */
 [[nodiscard]] generator<std::filesystem::path> get_paths(path_location location);
 
+/** Find a path.
+ * @ingroup file
+ *
+ * @param location The location to search for filesystem-object.
+ * @param ref A relative path to the filesystem-object.
+ * @return The the first full path to the filesystem-object found in the location. Or empty if the path is not found.
+ */
 [[nodiscard]] inline std::optional<std::filesystem::path> find_path(path_location location, std::filesystem::path const &ref) noexcept
 {
     if (ref.is_absolute()) {
@@ -82,6 +99,13 @@ enum class path_location {
     }
 }
 
+/** Get the single and only path.
+ * @ingroup file
+ *
+ * @param location The location.
+ * @return The path.
+ * @throw When there is not exactly one path.
+ */
 [[nodiscard]] inline std::filesystem::path get_path(path_location location)
 {
     auto range = get_paths(location);

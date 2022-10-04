@@ -83,6 +83,7 @@ protected:
 } // namespace detail
 
 /** Map a file into virtual memory.
+ * @ingroup file
  *
  * To map a file into memory there are three objects needed:
  * - The `file` object which holds a handle or file descriptor to an open file on disk.
@@ -105,7 +106,7 @@ public:
     /** Create a file-view from a file-mapping.
      *
      * @note The mapping object will be retained by this file-view.
-     * @param mapping A shared pointer to a file-mapping.
+     * @param file An open file object.
      * @param offset The offset from the beginning of the file-mapping (a file mapping may have an offset on its own).
      *               The offset must also be a multiple of the granularity.
      * @param size The size of the mapping, if zero the full file-mapping object is mapped.
@@ -118,42 +119,6 @@ public:
         std::size_t offset = 0,
         std::size_t size = 0) :
         file_view(file{path, access_mode}, offset, size)
-    {
-    }
-
-    file_view(
-        std::string_view path,
-        access_mode access_mode = access_mode::open_for_read,
-        std::size_t offset = 0,
-        std::size_t size = 0) :
-        file_view(std::filesystem::path{path}, access_mode, offset, size)
-    {
-    }
-
-    file_view(
-        std::string const& path,
-        access_mode access_mode = access_mode::open_for_read,
-        std::size_t offset = 0,
-        std::size_t size = 0) :
-        file_view(std::filesystem::path{path}, access_mode, offset, size)
-    {
-    }
-
-    file_view(
-        char const *path,
-        access_mode access_mode = access_mode::open_for_read,
-        std::size_t offset = 0,
-        std::size_t size = 0) :
-        file_view(std::filesystem::path{path}, access_mode, offset, size)
-    {
-    }
-
-    file_view(
-        URL const &url,
-        access_mode access_mode = access_mode::open_for_read,
-        std::size_t offset = 0,
-        std::size_t size = 0) :
-        file_view(std::filesystem::path{url}, access_mode, offset, size)
     {
     }
 

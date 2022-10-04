@@ -8,7 +8,7 @@
 #include <concepts>
 #include <charconv>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** Convert integer to string.
  * This function bypasses std::locale.
@@ -101,4 +101,4 @@ template<std::floating_point T>
     return value;
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

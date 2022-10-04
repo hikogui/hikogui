@@ -550,7 +550,7 @@ endif()
 find_package(Doxygen)
 
 if(DOXYGEN_FOUND)
-    set(DOXYGEN_EXCLUDE_PATTERNS *_tests.cpp *.cpp)
+    set(DOXYGEN_EXCLUDE_PATTERNS *_tests.cpp *.cpp *.mm)
     set(DOXYGEN_GENERATE_HTML YES)
     set(DOXYGEN_GENERATE_LATEX NO)
     set(DOXYGEN_QUIET YES)

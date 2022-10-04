@@ -10,6 +10,7 @@
 
 #include "URI.hpp"
 #include "path_location.hpp"
+#include "../char_maps/to_string.hpp"
 #include "../utility.hpp"
 #include "../assert.hpp"
 #include <string>
@@ -72,7 +73,7 @@ public:
      * @return The generic path of a file URL.
      * @throw url_error When a valid file path can not be constructed from the URL.
      */
-    [[nodiscard]] constexpr std::string generic_path(bool validate_scheme = true) const
+    [[nodiscard]] constexpr std::u8string filesystem_path_generic_u8string(bool validate_scheme = true) const
     {
         if (validate_scheme and not(not scheme() or scheme() == "file")) {
             throw url_error("URL::generic_path() is only valid on a file: scheme URL");
@@ -173,7 +174,7 @@ public:
             r.pop_back();
         }
 
-        return r;
+        return to_u8string(r);
     }
 
     /** Create a filesystem path from a file URL.
@@ -185,7 +186,8 @@ public:
     {
         if (auto scheme_ = scheme()) {
             if (scheme_ == "resource") {
-                hilet ref = std::filesystem::path{generic_path(false)};
+                // Always used std::u8string with std::filesystem::path.
+                hilet ref = std::filesystem::path{filesystem_path_generic_u8string(false)};
                 if (auto path = find_path(path_location::resource_dirs, ref)) {
                     return *path;
                 } else {
@@ -193,13 +195,13 @@ public:
                 }
 
             } else if (scheme_ == "file") {
-                return {generic_path()};
+                return {filesystem_path_generic_u8string()};
             } else {
                 throw url_error("URL can not be converted to a filesystem path.");
             }
         } else {
             // relative path.
-            return {generic_path()};
+            return {filesystem_path_generic_u8string()};
         }
     }
 
@@ -241,14 +243,14 @@ private:
 
     static std::string make_file_url_string(std::filesystem::path const& path)
     {
-        auto r = std::string{};
+        auto r = std::u8string{};
 
-        hilet root_name = path.root_name().generic_string();
+        hilet root_name = path.root_name().generic_u8string();
         if (root_name.empty()) {
             // No root-name.
             if (not path.root_directory().empty()) {
                 // An absolute path should start with the file: scheme.
-                r += "file:" + path.root_directory().generic_string();
+                r += u8"file:" + path.root_directory().generic_u8string();
             } else {
                 // A relative path should not be prefixed with a scheme.
                 ;
@@ -257,21 +259,22 @@ private:
         } else if (hilet i = root_name.find(':'); i != std::string::npos) {
             if (i == 1) {
                 // Root name is a drive-letter, followed by potentially a relative path.
-                r += "file:///" + root_name + path.root_directory().generic_string();
+                r += u8"file:///" + root_name + path.root_directory().generic_u8string();
             } else {
                 throw url_error("Paths containing a device are not allowed to be converted to a URL.");
             }
         } else {
             // Root name is a server.
-            r += "file://" + root_name + path.root_directory().generic_string();
+            r += u8"file://" + root_name + path.root_directory().generic_u8string();
             if (not path.root_directory().empty()) {
                 throw url_error("Invalid path contains server name without a root directory.");
             }
         }
 
-        return r + path.relative_path().generic_string();
+        return to_string(r + path.relative_path().generic_u8string());
     }
 };
+
 }} // namespace hi::v1
 
 template<>

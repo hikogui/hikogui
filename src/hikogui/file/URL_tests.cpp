@@ -31,7 +31,7 @@ TEST(URL, relativePath)
 {
     hilet a = URL("file:foo/bar.txt");
 
-    ASSERT_EQ(a.generic_path(), "foo/bar.txt");
+    ASSERT_EQ(a.filesystem_path(), "foo/bar.txt");
 }
 
 TEST(URL, glob1)

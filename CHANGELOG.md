@@ -4,24 +4,27 @@ Change log
 0.7 Strange Squirrel
 --------------------
 To make it possible to select and configure audio devices this release
-is a start to make composible shared-state, composible preferences and
-composible widgets.
+is a start to make composable shared-state, composable preferences and
+composable widgets.
 
 There are also a few other systems that have been updated:
 
  * Co-routine; awaiting on a timeout.
  * Simplified widget event handling.
- * Colors can be semantic.
+ * The `color` type can hold a RGBA color value or be a semantic enum value.
  * Handle HDR on platforms with uniform HDR/SDR (windows 10 doesn't).
- * 2 step index-array unicode character lookup.
+ * Very fast 2 step index-array unicode character lookup.
  * New grapheme type uses 21-bits and can be used as char of std::basic\_string.
  * New user-extensible char-encoding conversion system.
- * std::format early static-type-check on hi\_log macros.
+ * std::format early static-type-check on `hi_log*()` macros.
  * Add `mode` enumeration to widgets to handle visibility, disabled, enabled.
- * Add baseline system to align text between widgets on the same row.
- * Improve `observer<>` to make sub-obsevers from member variables of the
+ * Add a baseline system to align text between widgets on the same row.
+ * Improve `observer<>` to make sub-observers from member variables of the
    observed type.
  * Audio device capability interrogation system.
+ * Reduce use of `URL` and use `std::filesystem::path` where appropriate.
+ * Rewritten `file` and `file_view` to function as copyable and movable value types.
+ * Split INSTALL documentation between different IDEs.
 
 0.6 Dizzy Donkey
 ----------------
@@ -55,7 +58,7 @@ of improving how to create custom widgets.
  * Make it easier to build out-of-tree application without vcpkg.
  * vcpkg builds are not recommended at the moment due to future
    changes of std::format and std::ranges to the c++20 standard.
-   Please build using non-vcpkg to ensure equal versions of cmake
+   Please build using non-vcpkg to ensure equal versions of CMake
    and the compiler.
 
 0.5.0 Eager Elephant

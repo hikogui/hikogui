@@ -1,4 +1,4 @@
-# HikoGUI Skeleton Template Language
+# Skeleton Template Language
 
 This template language was designed for code generation for different programming languages
 including HTML. The language was inspired by [makotemplates.org](https://www.makotemplates.org/), but with
@@ -471,7 +471,7 @@ Warning: There is no protection against including a file multiple times or recur
 
 Syntax:
 
- - '#include' url-expression
+ - '#&zwj;include' url-expression
 
 Example:
 
@@ -493,10 +493,10 @@ expressions were `false`.
 
 Syntax:
 
- - '#if' boolean-expression '\\n'
- - '#elif' boolean-expression '\\n'
- - '#else' '\\n'
- - '#end' '\\n'
+ - '#&zwj;if' boolean-expression '\\n'
+ - '#&zwj;elif' boolean-expression '\\n'
+ - '#&zwj;else' '\\n'
+ - '#&zwj;end' '\\n'
 
 Example:
 
@@ -546,9 +546,9 @@ Inside the loop, extra variables are available for convenience:
 
 Syntax:
 
- - '#for' name ( ',' name )* 'in' expression '\\n'
- - '#else' '\\n'
- - '#end' '\\n'
+ - '#&zwj;for' name ( ',' name )* 'in' expression '\\n'
+ - '#&zwj;else' '\\n'
+ - '#&zwj;end' '\\n'
 
 Example:
 
@@ -580,8 +580,8 @@ Inside the loop extra variables are available for convenience:
 
 Syntax:
 
- - '#while' boolean-expression '\\n'
- - '#end' '\\n'
+ - '#&zwj;while' boolean-expression '\\n'
+ - '#&zwj;end' '\\n'
 
 Example:
 
@@ -613,8 +613,8 @@ Inside the loop, extra variables are available for convenience:
 
 Syntax:
 
- - '#do' '\\n'
- - '#while' boolean-expression '\\n'
+ - '#&zwj;do' '\\n'
+ - '#&zwj;while' boolean-expression '\\n'
 
 ```text
 # i = 0
@@ -639,8 +639,8 @@ Stop executing of a block inside a loop, then:
 
 Syntax:
 
- - '#continue' '\\n'
- - '#break' '\\n'
+ - '#&zwj;continue' '\\n'
+ - '#&zwj;break' '\\n'
 
 Example:
 
@@ -681,8 +681,8 @@ as a simple form of object-oriented-polymorphism.
 
 Syntax:
 
- - '#function' name '(' ( name ( ',' name )* ','? )? ')' '\\n'
- - '#end' '\\n'
+ - '#&zwj;function' name '(' ( name ( ',' name )* ','? )? ')' '\\n'
+ - '#&zwj;end' '\\n'
 
 Example:
 
@@ -711,7 +711,7 @@ Return data from a function
 
 Syntax: 
 
- - '#return' expression '\\n'
+ - '#&zwj;return' expression '\\n'
 
 Example:
 
@@ -741,8 +741,8 @@ object-oriented-polymorphism.
 
 Syntax:
 
- - '#block' name '\\n'
- - '#end'
+ - '#&zwj;block' name '\\n'
+ - '#&zwj;end'
 
 Example:
 

@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file file/resource_view.hpp Defines resource_view.
+ * @ingroup file
+ */
+
 #pragma once
 
 #include "file_view.hpp"
@@ -43,7 +47,13 @@ private:
 
 } // namespace detail
 
-/** A read-only memory mapping of a resource.
+/** A read-only view of a resource.
+ *
+ * This is a type erased object which holds a view to a resource
+ * and exposes a common interface to access the bytes using
+ * `as_span()`, `as_string_view()` or `as_bstring_view()`.
+ *
+ * @ingroup file
  */
 class const_resource_view {
 public:

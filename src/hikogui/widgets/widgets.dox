@@ -1,4 +1,5 @@
-namespace hi { inline namespace v1 {
+namespace hi {
+inline namespace v1 {
 /**
 \defgroup widgets Widgets
 \ingroup GUI
