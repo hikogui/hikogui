@@ -116,19 +116,19 @@ jobs:
 
       - name: 🙏 CMake ➔ Build (Debug)
         run: |
-          cmake --build build-dbg
+          cmake --build builddbg
 
       - name: 🙏 CMake ➔ Build (Release)
         run: |
-          cmake --build build-rel
+          cmake --build buildrel
 
       - name: 📦 CMake ➔ Install (Debug)
         run: |
-          cmake --install build-dbg
+          cmake --install builddbg
 
       - name: 📦 CMake ➔ Install (Release)
         run: |
-          cmake --install build-rel
+          cmake --install buildrel
 
       - name: ❔ CHECK important folders, to see if everything is present (after building)
         run: |
