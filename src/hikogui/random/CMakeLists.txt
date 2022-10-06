@@ -5,7 +5,7 @@
 target_sources(hikogui PRIVATE
     dither.hpp
     seed.hpp
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/seed_win32.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/seed_win32.cpp>
     xorshift128p.hpp
 )
 

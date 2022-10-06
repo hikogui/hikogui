@@ -25,24 +25,16 @@ jobs:
         #         If the name ends with "-debug" code-coverage is being uploaded.
         # - OS: The operating system to run the job on.
         # - VCPKG_TARGET_TRIPLET: The vcpkg target triplet, or empty if cmake should use fetch.
-        # - CMAKE_PRESET: The cmake preset to load.
         config:
           - {
-              NAME: "vc17-x64",
+              NAME: "vc17-x64-windows-static",
               OS: windows-2022,
               VCPKG_TARGET_TRIPLET: "",
-              CMAKE_PRESET: Z-CI-x64-MSVC-Release
-            }
-          - {
-              NAME: "vc17-x64-debug",
-              OS: windows-2022,
-              VCPKG_TARGET_TRIPLET: "",
-              CMAKE_PRESET: Z-CI-x64-MSVC-Debug
             }
 
     env:
       PLATFORM: x64
-      VCPKG_ROOT: C:\vcpkg
+      VCPKG_ROOT: C:\tools\vcpkg
 
     defaults:
       run:
@@ -106,46 +98,56 @@ jobs:
 
       - name: 🔽 Update VCPKG
         if: matrix.config.VCPKG_TARGET_TRIPLET != ''
+        shell: pwsh
         run: |
-          cd C:\vcpkg
-          git pull --quiet
-          bootstrap-vcpkg.bat -disableMetrics
-          vcpkg integrate install --triplet=${{matrix.config.VCPKG_TARGET_TRIPLET}} --feature-flags=manifests
-          vcpkg version
+          git clone -b master --single-branch --depth 1 --quiet https://github.com/microsoft/vcpkg.git "${{env.VCPKG_ROOT}}"
+          cd "${{env.VCPKG_ROOT}}"
+          .\bootstrap-vcpkg.bat -disableMetrics
+          .\vcpkg integrate install --feature-flags=manifests
+          .\vcpkg version
 
-      - name: ✏ CMake ➔ Configure
+      - name: ✏ CMake ➔ Configure (Debug)
         run: |
-          cmake --preset=${{matrix.config.CMAKE_PRESET}}
+          cmake --preset=vc17-windows-static-dbg-local
 
-      - name: 🙏 CMake ➔ Build
-        run: |
-          cmake --build build
+      - name: ✏ CMake ➔ Configure (Release)
+          cmake --preset=vc17-windows-static-rel-local
 
-      - name: 📦 CMake ➔ Install
+      - name: 🙏 CMake ➔ Build (Debug)
         run: |
-          cmake --install build --prefix build/hikogui-${{env.VERSION}} --verbose
+          cmake --build build-dbg
+
+      - name: 🙏 CMake ➔ Build (Release)
+        run: |
+          cmake --build build-rel
+
+      - name: 📦 CMake ➔ Install (Debug)
+        run: |
+          cmake --install build-dbg
+
+      - name: 📦 CMake ➔ Install (Release)
+        run: |
+          cmake --install build-rel
 
       - name: ❔ CHECK important folders, to see if everything is present (after building)
         run: |
-          dir build
-          dir /S /B build\hikogui-${{env.VERSION}}
+          dir /S /B install
 
       # The Vulkan Runtime is normally to be found in "C:\windows\systems32", but it's not a system library on CI.
       - name: Copy Vulkan Runtime (vulkan-1.dll)
         run: |
-          copy ${{env.VULKAN_SDK}}\runtime\${{env.PLATFORM}}\vulkan-1.* build\hikogui-${{env.VERSION}}\tests
-          copy ${{env.VULKAN_SDK}}\runtime\${{env.PLATFORM}}\vulkan-1.* build\hikogui-${{env.VERSION}}\examples\hikogui_demo
+          copy ${{env.VULKAN_SDK}}\runtime\${{env.PLATFORM}}\vulkan-1.* install\tests
+          copy ${{env.VULKAN_SDK}}\runtime\${{env.PLATFORM}}\vulkan-1.* install\examples\hikogui_demo
 
       - name: ✔ ❌✔️ Test
         run: |
-          cd build\hikogui-${{ env.VERSION }}\tests
-          cd
+          cd install\tests
           hikogui_tests.exe --gtest_output=xml:test_results_gtest.xml
 
       - name: ♻ Transform Test Results (gtest ➔ junit)
         shell: pwsh
         run: |
-          cd build\hikogui-${{env.VERSION}}\tests
+          cd install\tests
           $xsl = New-Object System.Xml.Xsl.XslCompiledTransform
           $xsl.Load("${{github.workspace}}\.github\gtest_to_junit.xsl")
           $xsl.Transform((Resolve-Path .\test_results_gtest.xml), "${{github.workspace}}\test_results.xml")
@@ -178,8 +180,8 @@ jobs:
           --excluded_sources=src\*\*_tests.cpp ^
           --excluded_sources=build\_deps ^
           --export_type=cobertura:hikogui_coverage.xml ^
-          --working_dir=.\\build\hikogui-${{env.VERSION}}\tests ^
-          -- ".\\build\hikogui-${{env.VERSION}}\tests\\hikogui_tests.exe"
+          --working_dir=.\\install\tests ^
+          -- ".\\install\tests\\hikogui_tests.exe"
 
       - name: 📦 🚀 Upload CodeCoverage Report to codecov.io
         if: endsWith(matrix.config.NAME, '-debug') && github.event_name == 'push' && github.ref == 'refs/heads/main'

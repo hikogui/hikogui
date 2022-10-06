@@ -63,7 +63,7 @@ Common build problems:
 
 [directory-based project]: https://docs.microsoft.com/en-us/visualstudio/ide/develop-code-in-visual-studio-without-projects-or-solutions?view=vs-2019
 
-Building and running using the "Developer Command Prompt"
+Building and running using the "x64 Developer Command Prompt"
 ---------------------------------------------------------
 ```bash
 cd hikogui
@@ -82,6 +82,10 @@ install\tests\hikogui_tests.exe
 
 install\examples\hikogui_demo\hikogui_demo.exe
 ```
+
+_note: The "Developer PowerShell for VS 2022" always runs the x86 compiler which you
+can not use. Instead first start the "x64 native Tools Command Prompt for VS 2022"
+then execute "start powershell" from there to get the correct compiler for x64."
 
 Just-in-time debugging with Visual Studio
 -----------------------------------------

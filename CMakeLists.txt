@@ -51,40 +51,6 @@ string(JSON HI_LIB_VENDOR GET ${PACKAGE_JSON_STRING} "vendor")
 project(${HI_LIB_NAME} VERSION ${HI_LIB_VERSION} LANGUAGES ${LANGUAGES})
 
 #-------------------------------------------------------------------
-# Define Constants
-#-------------------------------------------------------------------
-
-set(HI_WIN32 0)
-set(HI_MACOS 0)
-set(HI_POSIX 0)
-set(HI_X64 0)
-
-if (APPLE)
-    set(HI_MACOS 1)
-    set(HI_POSIX 1)
-elseif (WIN32)
-    set(HI_WIN32 1)
-endif()
-
-set(x64_list x86 X86 amd64 AMD64)
-if (${CMAKE_SYSTEM_PROCESSOR} IN_LIST x64_list)
-    set(HI_X64 1)
-endif()
-
-#-------------------------------------------------------------------
-# Precompiled Headers (PCH) Configuration
-#-------------------------------------------------------------------
-
-if(WIN32)
-    if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
-        set(CMAKE_DISABLE_PRECOMPILE_HEADERS ON)
-    endif()
-else(APPLE)
-    # Unable to use precompiled headers with objc right now
-    set(CMAKE_DISABLE_PRECOMPILE_HEADERS ON)
-endif()
-
-#-------------------------------------------------------------------
 # Setup CMake Includes
 #-------------------------------------------------------------------
 
@@ -129,7 +95,6 @@ endif()
 #-------------------------------------------------------------------
 
 add_library(hikogui)
-add_library(hikogui::hikogui ALIAS hikogui)
 
 if(HI_BUILD_TESTS)
     add_executable(hikogui_tests)
@@ -441,11 +406,6 @@ else()
     )
 endif()
 
-#export(TARGETS
-#        hikogui
-#    NAMESPACE hikogui::
-#    FILE "${CMAKE_CURRENT_BINARY_DIR}/hikogui-config.cmake"
-#)
 install(
     EXPORT hikogui
     DESTINATION share/hikogui

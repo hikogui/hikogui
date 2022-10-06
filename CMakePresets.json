@@ -1,142 +1,148 @@
 {
-    "version": 2,
+    "version": 3,
     "configurePresets": [
         {
-            "name": "x64-Windows",
+            "name": "x64-windows",
             "hidden": true,
             "generator": "Ninja",
-            "binaryDir": "$env{USERPROFILE}\\CMakeBuilds\\${sourceDirName}\\build\\${presetName}",
+            "binaryDir": "$env{USERPROFILE}/CMakeBuilds/${sourceDirName}/build/${presetName}",
             "cacheVariables": {
-                "CMAKE_INSTALL_PREFIX": "$env{USERPROFILE}\\CMakeBuilds\\${sourceDirName}\\install\\${presetName}",
-                "CMAKE_VERBOSE_MAKEFILE": "ON",
-                "VCPKG_TARGET_TRIPLET": "x64-windows-static",
-                "BUILD_SHARED_LIBS": "OFF",
-                "CMAKE_CXX_COMPILER": "cl"
+                "CMAKE_INSTALL_PREFIX": "$env{USERPROFILE}/CMakeBuilds/${sourceDirName}/install/${presetName}",
+                "CMAKE_VERBOSE_MAKEFILE": "ON"
             },
             "architecture": {
                 "value": "x64",
                 "strategy": "external"
             },
-            "toolset": {
-                "value": "v143,host=x64",
-                "strategy": "external"
+            "vendor": {
+                "microsoft.com/VisualStudioSettings/CMake/1.0": {
+                    "hostOS": [ "Windows" ]
+                }
+            }
+        },
+        {
+            "name": "vc17-x64-windows",
+            "hidden": true,
+            "inherits": "x64-windows",
+            "cacheVariables": {
+                "CMAKE_CXX_COMPILER": "cl"
             },
             "vendor": {
                 "microsoft.com/VisualStudioSettings/CMake/1.0": {
-                    "hostOS": [ "Windows" ],
                     "intelliSenseMode": "windows-msvc-x64"
                 }
             }
         },
         {
-            "name": "x64-MSVC-Analysis",
-            "inherits": "x64-MSVC-Debug",
+            "name": "clang-x64-windows",
+            "hidden": true,
+            "inherits": "x64-windows",
             "cacheVariables": {
-                "HI_ENABLE_ANALYSIS": "ON"
+                "CMAKE_CXX_COMPILER": "clang-cl"
+            },
+            "vendor": {
+                "microsoft.com/VisualStudioSettings/CMake/1.0": {
+                    "intelliSenseMode": "windows-clang-x64"
+                }
             }
         },
         {
-            "name": "x64-MSVC-Debug",
-            "inherits": "x64-Windows",
+            "name": "vc17-x64-windows-static",
+            "hidden": true,
+            "inherits": "vc17-x64-windows",
+            "cacheVariables": {
+                "VCPKG_TARGET_TRIPLET": "x64-windows-static",
+                "BUILD_SHARED_LIBS": "OFF"
+            }
+        },
+        {
+            "name": "clang-x64-windows-static",
+            "hidden": true,
+            "inherits": "clang-x64-windows",
+            "cacheVariables": {
+                "VCPKG_TARGET_TRIPLET": "x64-windows-static",
+                "BUILD_SHARED_LIBS": "OFF"
+            }
+        },
+        {
+            "name": "vc17-x64-windows-static-ana",
+            "displayName": "MSVC-Analysis",
+            "inherits": "vc17-x64-windows-static",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_VERBOSE_MAKEFILE": "ON"
+                "HI_ENABLE_ANALYSIS": "ON",
+                "HI_BUILD_EXAMPLES": "ON"
             }
         },
         {
-            "name": "x64-MSVC-Debug-ASAN",
+            "name": "vc17-x64-windows-static-dbg",
+            "displayName": "MSVC-x64-Debug",
+            "inherits": "vc17-x64-windows-static",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "vc17-x64-windows-static-dbg-asan",
             "hidden": true,
-            "inherits": "x64-MSVC-Debug",
+            "displayName": "MSVC-x64-Debug (ASAN)",
+            "inherits": "vc17-x64-windows-static-dbg",
             "cacheVariables": {
                 "HI_ENABLE_ASAN": "ON"
             }
         },
         {
-            "name": "x64-MSVC-ReleaseWithDebugInfo",
-            "inherits": "x64-Windows",
+            "name": "vc17-x64-windows-static-rel",
+            "displayName": "MSVC-x64-Release",
+            "inherits": "vc17-x64-windows-static",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "HI_BUILD_EXAMPLES": "ON"
+            }
+        },
+        {
+            "name": "vc17-x64-windows-static-rdi",
+            "displayName": "MSVC-x64-RelWithDebInfo",
+            "inherits": "vc17-x64-windows-static",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo"
             }
         },
         {
-            "name": "x64-MSVC-Release",
-            "inherits": "x64-MSVC-ReleaseWithDebugInfo",
+            "name": "vc17-x64-windows-static-dbg-vcpkg",
+            "displayName": "MSVC-x64-Debug (vcpkg)",
+            "inherits": "vc17-x64-windows-static-dbg",
+            "toolchainFile": "C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        },
+        {
+            "name": "vc17-x64-windows-static-rel-vcpkg",
+            "displayName": "MSVC-x64-Release (vcpkg)",
+            "inherits": "vc17-x64-windows-static-rel",
+            "toolchainFile": "C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        },
+        {
+            "name": "clang-x64-windows-static-dbg",
+            "displayName": "clang-x64-Debug",
+            "inherits": "clang-x64-windows-static",
             "cacheVariables": {
-                "HI_BUILD_EXAMPLES": "ON"
+                "CMAKE_BUILD_TYPE": "Debug"
             }
         },
         {
-            "name": "x64-Clang-Debug",
-            "hidden": true,
-            "inherits": "x64-MSVC-Debug",
-            "cacheVariables": {
-                "CMAKE_CXX_COMPILER": "clang-cl"
-            },
-            "vendor": {
-                "microsoft.com/VisualStudioSettings/CMake/1.0": {
-                    "intelliSenseMode": "windows-clang-x64"
-                }
-            }
-        },
-        {
-            "name": "x64-Clang-ReleaseWithDebugInfo",
-            "hidden": true,
-            "inherits": "x64-MSVC-ReleaseWithDebugInfo",
-            "cacheVariables": {
-                "CMAKE_CXX_COMPILER": "clang-cl"
-            },
-            "vendor": {
-                "microsoft.com/VisualStudioSettings/CMake/1.0": {
-                    "intelliSenseMode": "windows-clang-x64"
-                }
-            }
-        },
-        {
-            "name": "x64-vcpkg-MSVC-Analysis",
-            "inherits": "x64-MSVC-Debug",
-            "cacheVariables": {
-                "HI_ENABLE_ANALYSIS": "ON",
-                "CMAKE_TOOLCHAIN_FILE": "C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake"
-            }
-        },
-        {
-            "name": "x64-vcpkg-MSVC-Debug",
-            "inherits": "x64-Windows",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_VERBOSE_MAKEFILE": "ON",
-                "CMAKE_TOOLCHAIN_FILE": "C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake"
-            }
-        },
-        {
-            "name": "x64-vcpkg-MSVC-ReleaseWithDebugInfo",
-            "inherits": "x64-Windows",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-                "CMAKE_TOOLCHAIN_FILE": "C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake"
-            }
-        },
-        {
-            "name": "x64-vcpkg-MSVC-Release",
-            "inherits": "x64-MSVC-ReleaseWithDebugInfo",
-            "cacheVariables": {
-                "HI_BUILD_EXAMPLES": "ON",
-                "CMAKE_TOOLCHAIN_FILE": "C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake"
-            }
-        },
-        {
-            "name": "Z-CI-x64-MSVC-Release",
-            "inherits": "x64-MSVC-Release",
-            "binaryDir": "build",
+            "name": "vc17-x64-windows-static-rel-local",
+            "displayName": "ZZ MSVC-x64-Release (for CI)",
+            "inherits": "vc17-x64-windows-static-rel",
+            "binaryDir": "build-rel",
             "cacheVariables": {
                 "CMAKE_INSTALL_PREFIX": "install",
                 "HI_BUILD_EXAMPLES": "ON"
             }
         },
         {
-            "name": "Z-CI-x64-MSVC-Debug",
-            "inherits": "x64-MSVC-Debug",
-            "binaryDir": "build",
+            "name": "vc17-x64-windows-static-dbg-local",
+            "displayName": "ZZ MSVC-x64-Debug (for CI)",
+            "inherits": "vc17-x64-windows-static-dbg",
+            "binaryDir": "build-dbg",
             "cacheVariables": {
                 "CMAKE_INSTALL_PREFIX": "install",
                 "HI_BUILD_EXAMPLES": "ON"
