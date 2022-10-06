@@ -111,6 +111,7 @@ jobs:
           cmake --preset=vc17-windows-static-dbg-local
 
       - name: ✏ CMake ➔ Configure (Release)
+        run: |
           cmake --preset=vc17-windows-static-rel-local
 
       - name: 🙏 CMake ➔ Build (Debug)
