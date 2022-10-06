@@ -27,18 +27,9 @@ vcpkg to install the dependencies if available.
 Run the following commands from the "Developer Command Prompt" to install vcpkg:
 
 ```bash
-cd C:\
-mkdir tools
-cd tools
-git clone git@github.com:microsoft/vcpkg.git
-```
-
-```bash
-cd vcpkg
+git clone git@github.com:microsoft/vcpkg.git C:\tools\vcpkg
+cd C:\tools\vcpkg
 .\bootstrap-vcpkg.bat
-```
-
-```bash
 .\vcpkg.exe integrate install --feature-flags=manifests
 ```
 

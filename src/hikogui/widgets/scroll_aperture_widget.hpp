@@ -178,7 +178,7 @@ public:
         float delta_x = 0.0f;
         float delta_y = 0.0f;
 
-        if (safe_rectangle.width() > theme().margin and safe_rectangle.height() > theme().margin) {
+        if (safe_rectangle.width() > theme().margin * 2.0f and safe_rectangle.height() > theme().margin * 2.0f) {
             // This will look visually better, if the selected widget is moved with some margin from
             // the edge of the scroll widget. The margins of the content do not have anything to do
             // with the margins that are needed here.
