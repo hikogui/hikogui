@@ -9,7 +9,6 @@ Release Checklist
    - Merge into main (needed for hikogui/hikogui\_hello\_world test builds)
  * In hikogui/hikogui\_hello\_world:
    - Create release branch
-   - Download new version of <https://docs.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist?view=msvc-160>
    - Update version in vcpkg.json
    - Fix hello world application with "hikogui-dev x64-MSVC-Debug" mode.
    - Run and check both debug and release build
@@ -36,7 +35,8 @@ Release Checklist
  * In hikogui/hikogui\_hello\_world
    - Merge pull request
    - Make release
-   - Create install executable.
+   - Download the ecpack artifact.
+   - Create an install executable with ecpack-and-sign, and add the executable to the release.
  * Publish release
    - Make custom message for reddit/r/cpp, post as link + follow-up post
    - Make custom message for twitter include \#cplusplus

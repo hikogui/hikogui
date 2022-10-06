@@ -7,20 +7,20 @@ target_sources(hikogui PRIVATE
     audio_channel.hpp
     audio_device.cpp
     audio_device.hpp
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_device_asio.hpp>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_device_win32.cpp>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_device_win32.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/audio_device_asio.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/audio_device_win32.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/audio_device_win32.hpp>
     audio_device_delegate.hpp
     audio_stream_config.hpp
     audio_stream_format.hpp
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_stream_format_win32.cpp>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_stream_format_win32.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/audio_stream_format_win32.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/audio_stream_format_win32.hpp>
     audio_system.cpp
     audio_system.hpp
     audio_system_aggregate.hpp
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_system_asio.hpp>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_system_win32.cpp>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_system_win32.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/audio_system_asio.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/audio_system_win32.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/audio_system_win32.hpp>
     audio_sample_format.cpp
     audio_sample_format.hpp
     audio_sample_unpacker.cpp
@@ -31,12 +31,12 @@ target_sources(hikogui PRIVATE
     speaker_mapping.cpp
     speaker_mapping.hpp
     surround_mode.hpp
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/speaker_mapping_win32.cpp>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/speaker_mapping_win32.hpp>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/win32_device_interface.cpp>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/win32_device_interface.hpp>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/win32_wave_device.cpp>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/win32_wave_device.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/speaker_mapping_win32.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/speaker_mapping_win32.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/win32_device_interface.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/win32_device_interface.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/win32_wave_device.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/win32_wave_device.hpp>
 )
 
 if(HI_BUILD_TESTS)

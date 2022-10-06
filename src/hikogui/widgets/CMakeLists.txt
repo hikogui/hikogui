@@ -32,8 +32,8 @@ target_sources(hikogui PRIVATE
     selection_delegate.hpp
     selection_widget.cpp
     selection_widget.hpp
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/system_menu_widget.cpp>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/system_menu_widget.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/system_menu_widget.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/system_menu_widget.hpp>
     tab_delegate.hpp
     tab_widget.cpp
     tab_widget.hpp

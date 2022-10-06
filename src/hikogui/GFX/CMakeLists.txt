@@ -19,9 +19,9 @@ target_sources(hikogui PRIVATE
     gfx_system_globals.hpp
     gfx_system_vulkan.cpp
     gfx_system_vulkan.hpp
-    #$<${HI_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/gfx_system_vulkan_macos.hpp>
-    #$<${HI_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/fgx_system_vulkan_macos.mm>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/gfx_system_vulkan_win32.cpp>
+    #$<$<PLATFORM_ID:Darwin>:${CMAKE_CURRENT_SOURCE_DIR}/gfx_system_vulkan_macos.hpp>
+    #$<$<PLATFORM_ID:Darwin>:${CMAKE_CURRENT_SOURCE_DIR}/fgx_system_vulkan_macos.mm>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/gfx_system_vulkan_win32.cpp>
     paged_image.cpp
     paged_image.hpp
     pipeline.hpp

@@ -5,16 +5,16 @@
 
 target_sources(hikogui PRIVATE
     file.hpp
-    $<${HI_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/file_posix.cpp>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/file_win32.cpp>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/file_win32.hpp>
+    $<$<PLATFORM_ID:Linux,Darwin>:${CMAKE_CURRENT_SOURCE_DIR}/file_posix.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/file_win32.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/file_win32.hpp>
     file_view.hpp
-    $<${HI_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/file_view_posix.cpp>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/file_view_win32.cpp>
+    $<$<PLATFORM_ID:Linux,Darwin>:${CMAKE_CURRENT_SOURCE_DIR}/file_view_posix.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/file_view_win32.cpp>
     glob.hpp
     path_location.hpp
-    $<${HI_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/path_location_macos.mm>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/path_location_win32.cpp>
+    $<$<PLATFORM_ID:Darwin>:${CMAKE_CURRENT_SOURCE_DIR}/path_location_macos.mm>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/path_location_win32.cpp>
     resource_view.hpp
     URI.hpp
     URL.hpp
