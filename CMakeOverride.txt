@@ -60,6 +60,8 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   # Ob0:    Disable inline expansions
   # Od:     Disable code movements for easier debugging (DEBUG)
   #
+  # -debug:fastlink causes "Access Violation" on github-actions.
+  #
   set(CMAKE_CXX_FLAGS_DEBUG_INIT           "-Zi -Ob0 -Od")
   set(CMAKE_C_FLAGS_DEBUG_INIT             "-Zi -Ob0 -Od")
   set(CMAKE_EXE_LINKER_FLAGS_DEBUG_INIT    "-debug")
@@ -77,6 +79,8 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   # Ob3:    Aggressive Inline Function Expansion
   # NDEBUG: Assertion checks turned off at compile time
   #
+  # -debug:fastlink causes "Access Violation" on github-actions.
+  #
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT           "-Zi -O2 -Ob3 -DNDEBUG")
   set(CMAKE_C_FLAGS_RELWITHDEBINFO_INIT             "-Zi -O2 -Ob3 -DNDEBUG")
   set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO_INIT    "-debug")
@@ -89,6 +93,8 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   # O2:     Maximize Speed
   # Ob3:    Aggressive Inline Function Expansion
   # NDEBUG: Assertion checks turned off at compile time
+  #
+  # -debug:fastlink causes "Access Violation" on github-actions.
   #
   set(CMAKE_CXX_FLAGS_RELEASE_INIT           "-O2 -Ob3 -DNDEBUG")
   set(CMAKE_C_FLAGS_RELEASE_INIT             "-O2 -Ob3 -DNDEBUG")

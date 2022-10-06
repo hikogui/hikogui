@@ -95,6 +95,7 @@ endif()
 #-------------------------------------------------------------------
 
 add_library(hikogui)
+set_target_properties(hikogui PROPERTIES DEBUG_POSTFIX "d")
 
 if(HI_BUILD_TESTS)
     add_executable(hikogui_tests)
