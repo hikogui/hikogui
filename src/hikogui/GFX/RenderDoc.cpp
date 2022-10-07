@@ -5,8 +5,8 @@
 #include "../win32_headers.hpp"
 
 #include "RenderDoc.hpp"
+#include "renderdoc_app.h"
 #include "../log.hpp"
-#include <renderdoc/renderdoc_app.h>
 #include <type_traits>
 #include <filesystem>
 
