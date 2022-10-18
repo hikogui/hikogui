@@ -74,8 +74,7 @@
             "inherits": "vc17-x64-windows-static",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "HI_ENABLE_ANALYSIS": "ON",
-                "HI_BUILD_EXAMPLES": "ON"
+                "HI_ENABLE_ANALYSIS": "ON"
             }
         },
         {
@@ -85,6 +84,11 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug"
             }
+        },
+        {
+            "name": "vc17-x64-windows-static-dbg-examples",
+            "displayName": "MSVC-x64-Debug (+examples)",
+            "inherits": "vc17-x64-windows-static-dbg"
         },
         {
             "name": "vc17-x64-windows-static-dbg-asan",
@@ -100,8 +104,7 @@
             "displayName": "MSVC-x64-Release",
             "inherits": "vc17-x64-windows-static",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release",
-                "HI_BUILD_EXAMPLES": "ON"
+                "CMAKE_BUILD_TYPE": "Release"
             }
         },
         {
@@ -138,8 +141,7 @@
             "inherits": "vc17-x64-windows-static-rel",
             "binaryDir": "build-rel",
             "cacheVariables": {
-                "CMAKE_INSTALL_PREFIX": "install",
-                "HI_BUILD_EXAMPLES": "ON"
+                "CMAKE_INSTALL_PREFIX": "install"
             }
         },
         {
@@ -148,9 +150,22 @@
             "inherits": "vc17-x64-windows-static-dbg",
             "binaryDir": "build-dbg",
             "cacheVariables": {
-                "CMAKE_INSTALL_PREFIX": "install",
-                "HI_BUILD_EXAMPLES": "ON"
+                "CMAKE_INSTALL_PREFIX": "install"
             }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "vc17-x64-windows-static-dbg-all",
+            "displayName": "Library",
+            "configurePreset": "vc17-x64-windows-static-dbg",
+            "targets": [ "hikogui" ]
+        },
+        {
+            "name": "vc17-x64-windows-static-dbg-examples",
+            "displayName": "Library + Examples",
+            "configurePreset": "vc17-x64-windows-static-dbg",
+            "targets": [ "hikogui", "hikogui_examples" ]
         }
     ]
 }

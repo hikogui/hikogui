@@ -21,7 +21,6 @@ option(HI_ENABLE_ANALYSIS   "Compile using -analyze"            OFF)
 option(HI_ENABLE_ASAN       "Compile using address sanitizer"   OFF)
 
 include(CMakeDependentOption)
-cmake_dependent_option(HI_BUILD_EXAMPLES "Build example applications"   OFF "NOT HI_ENABLE_ANALYSIS" ON)
 cmake_dependent_option(HI_BUILD_TESTS    "Build tests"                  ON  "NOT HI_ENABLE_ANALYSIS" OFF)
 cmake_dependent_option(HI_INSTALL        "Generate installation target" ON  "NOT HI_ENABLE_ANALYSIS" OFF)
 
@@ -473,31 +472,18 @@ endif()
 #-------------------------------------------------------------------
 # Build examples
 #-------------------------------------------------------------------
-if(HI_BUILD_EXAMPLES)
-    add_subdirectory(examples/hikogui_demo)
-    add_subdirectory(examples/widgets)
-    add_subdirectory(examples/custom_widgets)
-    add_subdirectory(examples/vulkan/triangle)
-    add_subdirectory(examples/codec)
-else()
-    # By default examples marked with EXCLUDE_FROM_ALL will not be build by
-    # `make all`, which is also what Visual Studio uses to improve compilation speed.
-    add_subdirectory(examples/hikogui_demo EXCLUDE_FROM_ALL)
-    add_subdirectory(examples/widgets EXCLUDE_FROM_ALL)
-    add_subdirectory(examples/custom_widgets EXCLUDE_FROM_ALL)
-    add_subdirectory(examples/vulkan/triangle EXCLUDE_FROM_ALL)
-    add_subdirectory(examples/codec EXCLUDE_FROM_ALL)
-endif()
+add_custom_target(hikogui_examples)
+add_subdirectory(examples/codec EXCLUDE_FROM_ALL)
+add_subdirectory(examples/custom_widgets EXCLUDE_FROM_ALL)
+add_subdirectory(examples/hikogui_demo EXCLUDE_FROM_ALL)
+add_subdirectory(examples/vulkan/triangle EXCLUDE_FROM_ALL)
+add_subdirectory(examples/widgets EXCLUDE_FROM_ALL)
 
 #-------------------------------------------------------------------
 # Display Compiler and Linker properties of Build Targets
 #-------------------------------------------------------------------
 
 show_build_target_properties(hikogui)
-
-if(HI_BUILD_EXAMPLES)
-    show_build_target_properties(hikogui_demo)
-endif()
 
 if(HI_BUILD_TESTS)
     show_build_target_properties(hikogui_tests)

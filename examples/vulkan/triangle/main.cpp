@@ -47,17 +47,12 @@ public:
         // Update the `_layout` with the new context, in this case we want to do some
         // calculations when the size of the widget was changed.
         if (compare_store(_layout, layout)) {
-            auto rect = bounding_rectangle(_layout.to_window * _layout.rectangle());
+            auto view_port = _layout.rectangle();
+            auto window_height = window.widget->layout().height();
 
-            auto rect_ = VkRect2D{
-                VkOffset2D{
-                    hi::narrow_cast<int32_t>(rect.left()), hi::narrow_cast<int32_t>(_layout.window_size.height() - rect.top())},
-                VkExtent2D{hi::narrow_cast<uint32_t>(rect.width()), hi::narrow_cast<uint32_t>(rect.height())}};
-
-            // Here we can do some semi-expensive calculations which must be done when resizing the widget.
-            // In this case we make two rectangles which are used in the `draw()` function.
-            assert(_triangle_example != nullptr);
-            _triangle_example->setFrustrum(rect_);
+            _view_port = VkRect2D{
+                VkOffset2D{hi::narrow_cast<int32_t>(view_port.left()), hi::narrow_cast<int32_t>(window_height - view_port.top())},
+                VkExtent2D{hi::narrow_cast<uint32_t>(view_port.width()), hi::narrow_cast<uint32_t>(view_port.height())}};
         }
     }
 
@@ -78,18 +73,15 @@ public:
         auto views_ = hi::make_vector<VkImageView>(std::views::transform(views, [](auto const& view) {
             return static_cast<VkImageView>(view);
         }));
+
         assert(_triangle_example != nullptr);
-        _triangle_example->buildForNewSwapchain(
-            views_, static_cast<VkExtent2D>(size));
+        _triangle_example->buildForNewSwapchain(views_, static_cast<VkExtent2D>(size));
     }
 
     void draw(uint32_t swapchain_index, vk::Rect2D render_area, vk::Semaphore start, vk::Semaphore finish) noexcept override
     {
         assert(_triangle_example != nullptr);
-        _triangle_example->draw(
-            swapchain_index,
-            static_cast<VkSemaphore>(start),
-            static_cast<VkSemaphore>(finish));
+        _triangle_example->render(swapchain_index, static_cast<VkRect2D>(render_area), static_cast<VkSemaphore>(start), static_cast<VkSemaphore>(finish), _view_port);
     }
 
     void teardown_for_device_lost() noexcept override
@@ -110,6 +102,7 @@ public:
 
 private:
     std::shared_ptr<TriangleExample> _triangle_example;
+    VkRect2D _view_port;
 };
 
 hi::task<> main_window(hi::gui_system& gui)

@@ -12,6 +12,8 @@
  */
 
 #include "hikogui/rapid/sfloat_rgba32x4.hpp"
+#include <vulkan/vulkan.h>
+#include <vma/vk_mem_alloc.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,35 +21,29 @@
 #include <fstream>
 #include <vector>
 #include <exception>
-#include <vulkan/vulkan.h>
+#include <filesystem>
 
 class TriangleExample {
 public:
+    TriangleExample(VmaAllocator allocator, VkDevice device, VkQueue queue, uint32_t queueFamilyIndex);
+    ~TriangleExample();
+
+    void buildForNewSwapchain(std::vector<VkImageView> const& imageViews, VkExtent2D imageSize, VkFormat imageFormat);
+    void teardownForLostSwapchain();
+
+    virtual void render(
+        uint32_t currentBuffer,
+        VkRect2D renderArea,
+        VkSemaphore presentCompleteSemaphore,
+        VkSemaphore renderCompleteSemaphore,
+        VkRect2D viewPort);
+
+private:
     // Vertex layout used in this example
     struct Vertex {
         float position[3];
         float color[3];
     };
-
-    // Vertex buffer and attributes
-    struct {
-        VkDeviceMemory memory; // Handle to the device memory for this buffer
-        VkBuffer buffer; // Handle to the Vulkan buffer object that the memory is bound to
-    } vertices;
-
-    // Index buffer
-    struct {
-        VkDeviceMemory memory;
-        VkBuffer buffer;
-        uint32_t count;
-    } indices;
-
-    // Uniform buffer block object
-    struct {
-        VkDeviceMemory memory;
-        VkBuffer buffer;
-        VkDescriptorBufferInfo descriptor;
-    } uniformBufferVS;
 
     // For simplicity we use the same uniform block layout as in the shader:
     //
@@ -60,25 +56,37 @@ public:
     //
     // This way we can just memcopy the ubo data to the ubo
     // Note: You should use data types that align with the GPU in order to avoid manual padding (vec4, mat4)
-    struct {
+    struct Uniform {
         hi::sfloat_rgba32x4 projectionMatrix;
         hi::sfloat_rgba32x4 modelMatrix;
         hi::sfloat_rgba32x4 viewMatrix;
-    } uboVS;
+    };
+
+    bool hasSwapchain = false;
+    VkRect2D previousViewPort;
+    VkRect2D previousRenderArea;
+
+    VmaAllocator allocator;
 
     // The vulkan device to use for drawing.
     VkDevice device;
 
     // The graphic draw queue.
     VkQueue queue;
-    
     uint32_t queueFamilyIndex;
 
     VkCommandPool cmdPool;
+    std::vector<VkCommandBuffer> drawCmdBuffers;
+
+    VkFormat depthImageFormat;
+    VmaAllocation depthImageAllocation;
+    VkImage depthImage;
+    VkImageView depthImageView;
+
+    VkFormat colorImageFormat;
+    std::vector<VkFramebuffer> frameBuffers;
 
     VkRenderPass renderPass;
-
-    std::vector<VkFramebuffer> frameBuffers;
 
     // The pipeline layout is used by a pipeline to access the descriptor sets
     // It defines interface (without binding any actual data) between the shader stages used by the pipeline and the shader
@@ -103,28 +111,50 @@ public:
     // It connects the binding points of the different shaders with the buffers and images used for those bindings
     VkDescriptorSet descriptorSet;
 
-    // Synchronization primitives
-    // Synchronization is an important concept of Vulkan that OpenGL mostly hid away. Getting this right is crucial to using
-    // Vulkan.
-
     // Fences
     // Used to check the completion of queue operations (e.g. command buffer execution)
     std::vector<VkFence> queueCompleteFences;
 
-    TriangleExample(VkDevice device, VkQueue queue, uint32_t queueFamilyIndex);
+    VmaAllocation vertexBufferAllocation;
+    VkBuffer vertexBuffer;
 
-    ~TriangleExample();
+    VmaAllocation vertexIndexBufferAllocation;
+    VkBuffer vertexIndexBuffer;
+    uint32_t vertexIndexCount;
 
+    VmaAllocation uniformBufferAllocation;
+    VkBuffer uniformBuffer;
+    VkDescriptorBufferInfo uniformBufferInfo;
+
+    // The following functions are used in-order when TriangleExample is constructed.
     void createCommandPool();
+    void destroyCommandPool();
+    void createVertexBuffer();
+    void destroyVertexBuffer();
+    void createUniformBuffer();
+    void destroyUniformBuffer();
+    void createDescriptorPool();
+    void destroyDescriptorPool();
+    void createDescriptorSetLayout();
+    void destroyDescriptorSetLayout();
+    void createDescriptorSet();
+    void destroyDescriptorSet();
 
-    // This function is used to request a device memory type that supports all the property flags we request (e.g. device local,
-    // host visible) Upon success it will return the index of the memory type that fits our requested memory properties This is
-    // necessary as implementations can offer an arbitrary number of memory types with different memory properties. You can check
-    // http://vulkan.gpuinfo.org/ for details on different memory configurations
-    uint32_t getMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties);
+    // The following functions are used in-order when a new swap-chain is created.
+    void createDepthStencilImage(VkExtent2D imageSize);
+    void destroyDepthStencilImage();
+    void createFrameBuffers(std::vector<VkImageView> const& imageViews, VkExtent2D imageSize);
+    void destroyFrameBuffers();
+    void createCommandBuffers();
+    void destroyCommandBuffers();
+    void createFences();
+    void destroyFences();
+    void createRenderPass();
+    void destroyRenderPass();
+    void createPipeline();
+    void destroyPipeline();
 
-    // Create the Vulkan synchronization primitives used in this example
-    void prepareSynchronizationPrimitives();
+    // The following functions are used during render().
 
     // Get a new command buffer from the command pool
     // If begin is true, the command buffer is also started so we can start adding commands
@@ -137,52 +167,14 @@ public:
     // Build separate command buffers for every framebuffer image
     // Unlike in OpenGL all rendering commands are recorded once into command buffers that are then resubmitted to the queue
     // This allows to generate work upfront and from multiple threads, one of the biggest advantages of Vulkan
-    void buildCommandBuffers(VkRect2D drawArea);
-
-    void draw(uint32_t currentBuffer, VkSemaphore presentCompleteSemaphore, VkSemaphore renderCompleteSemaphore);
-
-    // Prepare vertex and index buffers for an indexed triangle
-    // Also uploads them to device local memory using staging and initializes vertex input and attribute binding to match the
-    // vertex shader
-    void prepareVertices(bool useStagingBuffers);
-
-    void setupDescriptorPool();
-
-    void setupDescriptorSetLayout();
-
-    void setupDescriptorSet();
-
-    // Create the depth (and stencil) buffer attachments used by our framebuffers
-    // Note: Override of virtual function in the base class and called from within TriangleExampleBase::prepare
-    void setupDepthStencil();
-
-    // Create a frame buffer for each swap chain image
-    // Note: Override of virtual function in the base class and called from within TriangleExampleBase::prepare
-    void setupFrameBuffer();
-
-    // Render pass setup
-    // Render passes are a new concept in Vulkan. They describe the attachments used during rendering and may contain multiple
-    // subpasses with attachment dependencies This allows the driver to know up-front what the rendering will look like and is a
-    // good opportunity to optimize especially on tile-based renderers (with multiple subpasses) Using sub pass dependencies also
-    // adds implicit layout transitions for the attachment used, so we don't need to add explicit image memory barriers to
-    // transform them Note: Override of virtual function in the base class and called from within TriangleExampleBase::prepare
-    void setupRenderPass();
+    void buildCommandBuffers(VkRect2D renderArea, VkRect2D viewPort);
 
     // Vulkan loads its shaders from an immediate binary representation called SPIR-V
     // Shaders are compiled offline from e.g. GLSL using the reference glslang compiler
     // This function loads such a shader from a binary file and returns a shader module structure
-    VkShaderModule loadSPIRVShader(std::string filename);
+    VkShaderModule loadSPIRVShader(std::filesystem::path filename);
 
-    void preparePipelines();
+    void updateUniformBuffers(Uniform const& uniform);
 
-    void prepareUniformBuffers();
-
-    void updateUniformBuffers();
-
-    void prepare();
-
-    virtual void render();
-
-    virtual void viewChanged();
+    void draw(uint32_t currentBuffer, VkSemaphore presentCompleteSemaphore, VkSemaphore renderCompleteSemaphore);
 };
-

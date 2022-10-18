@@ -28,6 +28,8 @@ add_custom_target(hikogui_vulkan_triangle_resources
 
 add_dependencies(hikogui_vulkan_triangle hikogui_vulkan_triangle_resources)
 
+add_dependencies(hikogui_examples hikogui_vulkan_triangle)
+
 #-------------------------------------------------------------------
 # Installation Rules: hikogui_demo
 #-------------------------------------------------------------------

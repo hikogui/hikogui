@@ -13,6 +13,8 @@
 
 #include "triangle.hpp"
 #include "VulkanTools.hpp"
+#include "hikogui/file/URL.hpp"
+#include "hikogui/file/file_view.hpp"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,62 +30,33 @@
 // See "prepareVertices" for details on what's staging and on why to use it
 #define USE_STAGING true
 
-TriangleExample::TriangleExample(VkDevice device, VkQueue queue, uint32_t queueFamilyIndex) :
-    device(device), queue(queue), queueFamilyIndex(queueFamilyIndex)
+[[nodiscard]] constexpr static bool operator==(VkRect2D const& lhs, VkRect2D const& rhs) noexcept
+{
+    return lhs.offset.x == rhs.offset.x and lhs.offset.y == rhs.offset.y and lhs.extent.width == rhs.extent.width and
+        lhs.extent.height == rhs.extent.height;
+}
+
+TriangleExample::TriangleExample(VmaAllocator allocator, VkDevice device, VkQueue queue, uint32_t queueFamilyIndex) :
+    allocator(allocator), device(device), queue(queue), queueFamilyIndex(queueFamilyIndex)
 {
     createCommandPool();
+    createVertexBuffer();
+    createUniformBuffer();
+    createDescriptorPool();
+    createDescriptorSetLayout();
+    createDescriptorSet();
 }
 
 TriangleExample::~TriangleExample()
 {
-    for (auto const &frameBuffer : frameBuffers) {
-        vkDestroyFramebuffer(device, frameBuffer, nullptr);
-    }
+    teardownForLostSwapchain();
 
-    vkDestroyRenderPass(device, renderPass, nullptr);
-
-    // Clean up used Vulkan resources
-    // Note: Inherited destructor cleans up resources stored in base class
-    vkDestroyPipeline(device, pipeline, nullptr);
-
-    vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
-    vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
-
-    vkDestroyDescriptorPool(device, descriptorPool, nullptr);
-    
-    vkDestroyCommandPool(device, cmdPool, nullptr);
-
-    vkDestroyBuffer(device, vertices.buffer, nullptr);
-    vkFreeMemory(device, vertices.memory, nullptr);
-
-    vkDestroyBuffer(device, indices.buffer, nullptr);
-    vkFreeMemory(device, indices.memory, nullptr);
-
-    vkDestroyBuffer(device, uniformBufferVS.buffer, nullptr);
-    vkFreeMemory(device, uniformBufferVS.memory, nullptr);
-
-    for (auto& fence : queueCompleteFences) {
-        vkDestroyFence(device, fence, nullptr);
-    }
-}
-
-// This function is used to request a device memory type that supports all the property flags we request (e.g. device local,
-// host visible) Upon success it will return the index of the memory type that fits our requested memory properties This is
-// necessary as implementations can offer an arbitrary number of memory types with different memory properties. You can check
-// http://vulkan.gpuinfo.org/ for details on different memory configurations
-uint32_t TriangleExample::getMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties)
-{
-    // Iterate over all memory types available for the device used in this example
-    for (uint32_t i = 0; i < deviceMemoryProperties.memoryTypeCount; i++) {
-        if ((typeBits & 1) == 1) {
-            if ((deviceMemoryProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-                return i;
-            }
-        }
-        typeBits >>= 1;
-    }
-
-    throw "Could not find a suitable memory type!";
+    destroyDescriptorSet();
+    destroyDescriptorSetLayout();
+    destroyDescriptorPool();
+    destroyUniformBuffer();
+    destroyVertexBuffer();
+    destroyCommandPool();
 }
 
 void TriangleExample::createCommandPool()
@@ -95,176 +68,12 @@ void TriangleExample::createCommandPool()
     VK_CHECK_RESULT(vkCreateCommandPool(device, &cmdPoolInfo, nullptr, &cmdPool));
 }
 
-// Create the Vulkan synchronization primitives used in this example
-void TriangleExample::prepareSynchronizationPrimitives()
+void TriangleExample::destroyCommandPool()
 {
-    // Fences (Used to check draw command buffer completion)
-    VkFenceCreateInfo fenceCreateInfo = {};
-    fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    // Create in signaled state so we don't wait on first render of each command buffer
-    fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-    queueCompleteFences.resize(drawCmdBuffers.size());
-    for (auto& fence : queueCompleteFences) {
-        VK_CHECK_RESULT(vkCreateFence(device, &fenceCreateInfo, nullptr, &fence));
-    }
+    vkDestroyCommandPool(device, cmdPool, nullptr);
 }
 
-// Get a new command buffer from the command pool
-// If begin is true, the command buffer is also started so we can start adding commands
-VkCommandBuffer TriangleExample::getCommandBuffer(bool begin)
-{
-    VkCommandBuffer cmdBuffer;
-
-    VkCommandBufferAllocateInfo cmdBufAllocateInfo = {};
-    cmdBufAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    cmdBufAllocateInfo.commandPool = cmdPool;
-    cmdBufAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    cmdBufAllocateInfo.commandBufferCount = 1;
-
-    VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, &cmdBuffer));
-
-    // If requested, also start the new command buffer
-    if (begin) {
-        VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
-        VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
-    }
-
-    return cmdBuffer;
-}
-
-// End the command buffer and submit it to the queue
-// Uses a fence to ensure command buffer has finished executing before deleting it
-void TriangleExample::flushCommandBuffer(VkCommandBuffer commandBuffer)
-{
-    assert(commandBuffer != VK_NULL_HANDLE);
-
-    VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
-
-    VkSubmitInfo submitInfo = {};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffer;
-
-    // Create fence to ensure that the command buffer has finished executing
-    VkFenceCreateInfo fenceCreateInfo = {};
-    fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    fenceCreateInfo.flags = 0;
-    VkFence fence;
-    VK_CHECK_RESULT(vkCreateFence(device, &fenceCreateInfo, nullptr, &fence));
-
-    // Submit to the queue
-    VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, fence));
-    // Wait for the fence to signal that command buffer has finished executing
-    VK_CHECK_RESULT(vkWaitForFences(device, 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT));
-
-    vkDestroyFence(device, fence, nullptr);
-    vkFreeCommandBuffers(device, cmdPool, 1, &commandBuffer);
-}
-
-void TriangleExample::buildCommandBuffers(VkRect2D drawArea)
-{
-    VkCommandBufferBeginInfo cmdBufInfo = {};
-    cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    cmdBufInfo.pNext = nullptr;
-
-    // Set clear values for all framebuffer attachments with loadOp set to clear
-    // We use two attachments (color and depth) that are cleared at the start of the subpass and as such we need to set clear
-    // values for both
-    VkClearValue clearValues[2];
-    clearValues[0].color = {{0.0f, 0.0f, 0.2f, 1.0f}};
-    clearValues[1].depthStencil = {1.0f, 0};
-
-    VkRenderPassBeginInfo renderPassBeginInfo = {};
-    renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassBeginInfo.pNext = nullptr;
-    renderPassBeginInfo.renderPass = renderPass;
-    renderPassBeginInfo.renderArea = drawArea;
-    renderPassBeginInfo.clearValueCount = 2;
-    renderPassBeginInfo.pClearValues = clearValues;
-
-    for (int32_t i = 0; i < drawCmdBuffers.size(); ++i) {
-        // Set target frame buffer
-        renderPassBeginInfo.framebuffer = frameBuffers[i];
-
-        VK_CHECK_RESULT(vkBeginCommandBuffer(drawCmdBuffers[i], &cmdBufInfo));
-
-        // Start the first sub pass specified in our default render pass setup by the base class
-        // This will clear the color and depth attachment
-        vkCmdBeginRenderPass(drawCmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-        // Update dynamic viewport state
-        VkViewport viewport = {};
-        viewport.x = hi::narrow_cast<float>(drawArea.offset.x);
-        viewport.y = hi::narrow_cast<float>(drawArea.offset.y);
-        viewport.height = hi::narrow_cast<float>(drawArea.extent.height);
-        viewport.width = hi::narrow_cast<float>(drawArea.extent.height);
-        viewport.minDepth = 0.0f;
-        viewport.maxDepth = 1.0f;
-        vkCmdSetViewport(drawCmdBuffers[i], 0, 1, &viewport);
-
-        // Update dynamic scissor state
-        VkRect2D scissor = drawArea;
-        vkCmdSetScissor(drawCmdBuffers[i], 0, 1, &scissor);
-
-        // Bind descriptor sets describing shader binding points
-        vkCmdBindDescriptorSets(
-            drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
-
-        // Bind the rendering pipeline
-        // The pipeline (state object) contains all states of the rendering pipeline, binding it will set all the states
-        // specified at pipeline creation time
-        vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-
-        // Bind triangle vertex buffer (contains position and colors)
-        VkDeviceSize offsets[1] = {0};
-        vkCmdBindVertexBuffers(drawCmdBuffers[i], 0, 1, &vertices.buffer, offsets);
-
-        // Bind triangle index buffer
-        vkCmdBindIndexBuffer(drawCmdBuffers[i], indices.buffer, 0, VK_INDEX_TYPE_UINT32);
-
-        // Draw indexed triangle
-        vkCmdDrawIndexed(drawCmdBuffers[i], indices.count, 1, 0, 0, 1);
-
-        vkCmdEndRenderPass(drawCmdBuffers[i]);
-
-        // Ending the render pass will add an implicit barrier transitioning the frame buffer color attachment to
-        // VK_IMAGE_LAYOUT_PRESENT_SRC_KHR for presenting it to the windowing system
-
-        VK_CHECK_RESULT(vkEndCommandBuffer(drawCmdBuffers[i]));
-    }
-}
-
-void TriangleExample::draw(uint32_t currentBuffer, VkSemaphore presentCompleteSemaphore, VkSemaphore renderCompleteSemaphore)
-{
-    // Use a fence to wait until the command buffer has finished execution before using it again
-    VK_CHECK_RESULT(vkWaitForFences(device, 1, &queueCompleteFences[currentBuffer], VK_TRUE, UINT64_MAX));
-    VK_CHECK_RESULT(vkResetFences(device, 1, &queueCompleteFences[currentBuffer]));
-
-    // Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
-    VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    // The submit info structure specifies a command buffer queue submission batch
-    VkSubmitInfo submitInfo = {};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.pWaitDstStageMask =
-        &waitStageMask; // Pointer to the list of pipeline stages that the semaphore waits will occur at
-    submitInfo.waitSemaphoreCount = 1; // One wait semaphore
-    submitInfo.signalSemaphoreCount = 1; // One signal semaphore
-    submitInfo.pCommandBuffers = &drawCmdBuffers[currentBuffer]; // Command buffers(s) to execute in this batch (submission)
-    submitInfo.commandBufferCount = 1; // One command buffer
-
-    // SRS - on other platforms use original bare code with local semaphores/fences for illustrative purposes
-    submitInfo.pWaitSemaphores =
-        &presentCompleteSemaphore; // Semaphore(s) to wait upon before the submitted command buffer starts executing
-    submitInfo.pSignalSemaphores = &renderCompleteSemaphore; // Semaphore(s) to be signaled when command buffers have completed
-
-    // Submit to the graphics queue passing a wait fence
-    VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, queueCompleteFences[currentBuffer]));
-}
-
-// Prepare vertex and index buffers for an indexed triangle
-// Also uploads them to device local memory using staging and initializes vertex input and attribute binding to match the
-// vertex shader
-void TriangleExample::prepareVertices(bool useStagingBuffers)
+void TriangleExample::createVertexBuffer()
 {
     // A note on memory management in Vulkan in general:
     //	This is a very complex topic and while it's fine for an example application to small individual memory allocations
@@ -272,173 +81,92 @@ void TriangleExample::prepareVertices(bool useStagingBuffers)
     // instead.
 
     // Setup vertices
-    std::vector<Vertex> vertexBuffer = {
+    std::vector<Vertex> vertexData = {
         {{1.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
         {{-1.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},
         {{0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}}};
-    uint32_t vertexBufferSize = static_cast<uint32_t>(vertexBuffer.size()) * sizeof(Vertex);
+    uint32_t vertexDataSize = hi::narrow_cast<uint32_t>(vertexData.size()) * sizeof(Vertex);
 
     // Setup indices
-    std::vector<uint32_t> indexBuffer = {0, 1, 2};
-    indices.count = static_cast<uint32_t>(indexBuffer.size());
-    uint32_t indexBufferSize = indices.count * sizeof(uint32_t);
-
-    VkMemoryAllocateInfo memAlloc = {};
-    memAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    VkMemoryRequirements memReqs;
+    std::vector<uint32_t> indexData = {0, 1, 2};
+    vertexIndexCount = hi::narrow_cast<uint32_t>(indexData.size());
+    uint32_t vertexIndexDataSize = vertexIndexCount * sizeof(uint32_t);
 
     void *data;
 
-    if (useStagingBuffers) {
-        // Static data like vertex and index buffer should be stored on the device memory
-        // for optimal (and fastest) access by the GPU
-        //
-        // To achieve this we use so-called "staging buffers" :
-        // - Create a buffer that's visible to the host (and can be mapped)
-        // - Copy the data to this buffer
-        // - Create another buffer that's local on the device (VRAM) with the same size
-        // - Copy the data from the host to the device using a command buffer
-        // - Delete the host visible (staging) buffer
-        // - Use the device local buffers for rendering
+    // Vertex buffer
+    VkBufferCreateInfo vertexBufferCreateInfo = {};
+    vertexBufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    vertexBufferCreateInfo.size = vertexDataSize;
+    vertexBufferCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 
-        struct StagingBuffer {
-            VkDeviceMemory memory;
-            VkBuffer buffer;
-        };
+    VmaAllocationCreateInfo vertexBufferAllocationInfo = {};
+    vertexBufferAllocationInfo.usage = VMA_MEMORY_USAGE_AUTO;
 
-        struct {
-            StagingBuffer vertices;
-            StagingBuffer indices;
-        } stagingBuffers;
+    VK_CHECK_RESULT(vmaCreateBuffer(
+        allocator, &vertexBufferCreateInfo, &vertexBufferAllocationInfo, &vertexBuffer, &vertexBufferAllocation, nullptr));
 
-        // Vertex buffer
-        VkBufferCreateInfo vertexBufferInfo = {};
-        vertexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        vertexBufferInfo.size = vertexBufferSize;
-        // Buffer is used as the copy source
-        vertexBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-        // Create a host-visible buffer to copy the vertex data to (staging buffer)
-        VK_CHECK_RESULT(vkCreateBuffer(device, &vertexBufferInfo, nullptr, &stagingBuffers.vertices.buffer));
-        vkGetBufferMemoryRequirements(device, stagingBuffers.vertices.buffer, &memReqs);
-        memAlloc.allocationSize = memReqs.size;
-        // Request a host visible memory type that can be used to copy our data do
-        // Also request it to be coherent, so that writes are visible to the GPU right after unmapping the buffer
-        memAlloc.memoryTypeIndex = getMemoryTypeIndex(
-            memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-        VK_CHECK_RESULT(vkAllocateMemory(device, &memAlloc, nullptr, &stagingBuffers.vertices.memory));
-        // Map and copy
-        VK_CHECK_RESULT(vkMapMemory(device, stagingBuffers.vertices.memory, 0, memAlloc.allocationSize, 0, &data));
-        memcpy(data, vertexBuffer.data(), vertexBufferSize);
-        vkUnmapMemory(device, stagingBuffers.vertices.memory);
-        VK_CHECK_RESULT(vkBindBufferMemory(device, stagingBuffers.vertices.buffer, stagingBuffers.vertices.memory, 0));
+    // Copy vertex data to a buffer visible to the host
+    VK_CHECK_RESULT(vmaMapMemory(allocator, vertexBufferAllocation, &data));
+    memcpy(data, vertexData.data(), vertexDataSize);
+    vmaUnmapMemory(allocator, vertexBufferAllocation);
 
-        // Create a device local buffer to which the (host local) vertex data will be copied and which will be used for
-        // rendering
-        vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-        VK_CHECK_RESULT(vkCreateBuffer(device, &vertexBufferInfo, nullptr, &vertices.buffer));
-        vkGetBufferMemoryRequirements(device, vertices.buffer, &memReqs);
-        memAlloc.allocationSize = memReqs.size;
-        memAlloc.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-        VK_CHECK_RESULT(vkAllocateMemory(device, &memAlloc, nullptr, &vertices.memory));
-        VK_CHECK_RESULT(vkBindBufferMemory(device, vertices.buffer, vertices.memory, 0));
+    // Index buffer
+    VkBufferCreateInfo vertexIndexBufferCreateInfo = {};
+    vertexIndexBufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    vertexIndexBufferCreateInfo.size = vertexIndexDataSize;
+    vertexIndexBufferCreateInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 
-        // Index buffer
-        VkBufferCreateInfo indexbufferInfo = {};
-        indexbufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        indexbufferInfo.size = indexBufferSize;
-        indexbufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-        // Copy index data to a buffer visible to the host (staging buffer)
-        VK_CHECK_RESULT(vkCreateBuffer(device, &indexbufferInfo, nullptr, &stagingBuffers.indices.buffer));
-        vkGetBufferMemoryRequirements(device, stagingBuffers.indices.buffer, &memReqs);
-        memAlloc.allocationSize = memReqs.size;
-        memAlloc.memoryTypeIndex = getMemoryTypeIndex(
-            memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-        VK_CHECK_RESULT(vkAllocateMemory(device, &memAlloc, nullptr, &stagingBuffers.indices.memory));
-        VK_CHECK_RESULT(vkMapMemory(device, stagingBuffers.indices.memory, 0, indexBufferSize, 0, &data));
-        memcpy(data, indexBuffer.data(), indexBufferSize);
-        vkUnmapMemory(device, stagingBuffers.indices.memory);
-        VK_CHECK_RESULT(vkBindBufferMemory(device, stagingBuffers.indices.buffer, stagingBuffers.indices.memory, 0));
+    VmaAllocationCreateInfo vertexIndexBufferAllocationInfo = {};
+    vertexIndexBufferAllocationInfo.usage = VMA_MEMORY_USAGE_AUTO;
 
-        // Create destination buffer with device only visibility
-        indexbufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-        VK_CHECK_RESULT(vkCreateBuffer(device, &indexbufferInfo, nullptr, &indices.buffer));
-        vkGetBufferMemoryRequirements(device, indices.buffer, &memReqs);
-        memAlloc.allocationSize = memReqs.size;
-        memAlloc.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-        VK_CHECK_RESULT(vkAllocateMemory(device, &memAlloc, nullptr, &indices.memory));
-        VK_CHECK_RESULT(vkBindBufferMemory(device, indices.buffer, indices.memory, 0));
+    VK_CHECK_RESULT(vmaCreateBuffer(
+        allocator,
+        &vertexIndexBufferCreateInfo,
+        &vertexIndexBufferAllocationInfo,
+        &vertexIndexBuffer,
+        &vertexIndexBufferAllocation,
+        nullptr));
 
-        // Buffer copies have to be submitted to a queue, so we need a command buffer for them
-        // Note: Some devices offer a dedicated transfer queue (with only the transfer bit set) that may be faster when doing
-        // lots of copies
-        VkCommandBuffer copyCmd = getCommandBuffer(true);
-
-        // Put buffer region copies into command buffer
-        VkBufferCopy copyRegion = {};
-
-        // Vertex buffer
-        copyRegion.size = vertexBufferSize;
-        vkCmdCopyBuffer(copyCmd, stagingBuffers.vertices.buffer, vertices.buffer, 1, &copyRegion);
-        // Index buffer
-        copyRegion.size = indexBufferSize;
-        vkCmdCopyBuffer(copyCmd, stagingBuffers.indices.buffer, indices.buffer, 1, &copyRegion);
-
-        // Flushing the command buffer will also submit it to the queue and uses a fence to ensure that all commands have been
-        // executed before returning
-        flushCommandBuffer(copyCmd);
-
-        // Destroy staging buffers
-        // Note: Staging buffer must not be deleted before the copies have been submitted and executed
-        vkDestroyBuffer(device, stagingBuffers.vertices.buffer, nullptr);
-        vkFreeMemory(device, stagingBuffers.vertices.memory, nullptr);
-        vkDestroyBuffer(device, stagingBuffers.indices.buffer, nullptr);
-        vkFreeMemory(device, stagingBuffers.indices.memory, nullptr);
-    } else {
-        // Don't use staging
-        // Create host-visible buffers only and use these for rendering. This is not advised and will usually result in lower
-        // rendering performance
-
-        // Vertex buffer
-        VkBufferCreateInfo vertexBufferInfo = {};
-        vertexBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        vertexBufferInfo.size = vertexBufferSize;
-        vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-
-        // Copy vertex data to a buffer visible to the host
-        VK_CHECK_RESULT(vkCreateBuffer(device, &vertexBufferInfo, nullptr, &vertices.buffer));
-        vkGetBufferMemoryRequirements(device, vertices.buffer, &memReqs);
-        memAlloc.allocationSize = memReqs.size;
-        // VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT is host visible memory, and VK_MEMORY_PROPERTY_HOST_COHERENT_BIT makes sure
-        // writes are directly visible
-        memAlloc.memoryTypeIndex = getMemoryTypeIndex(
-            memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-        VK_CHECK_RESULT(vkAllocateMemory(device, &memAlloc, nullptr, &vertices.memory));
-        VK_CHECK_RESULT(vkMapMemory(device, vertices.memory, 0, memAlloc.allocationSize, 0, &data));
-        memcpy(data, vertexBuffer.data(), vertexBufferSize);
-        vkUnmapMemory(device, vertices.memory);
-        VK_CHECK_RESULT(vkBindBufferMemory(device, vertices.buffer, vertices.memory, 0));
-
-        // Index buffer
-        VkBufferCreateInfo indexbufferInfo = {};
-        indexbufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        indexbufferInfo.size = indexBufferSize;
-        indexbufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-
-        // Copy index data to a buffer visible to the host
-        VK_CHECK_RESULT(vkCreateBuffer(device, &indexbufferInfo, nullptr, &indices.buffer));
-        vkGetBufferMemoryRequirements(device, indices.buffer, &memReqs);
-        memAlloc.allocationSize = memReqs.size;
-        memAlloc.memoryTypeIndex = getMemoryTypeIndex(
-            memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-        VK_CHECK_RESULT(vkAllocateMemory(device, &memAlloc, nullptr, &indices.memory));
-        VK_CHECK_RESULT(vkMapMemory(device, indices.memory, 0, indexBufferSize, 0, &data));
-        memcpy(data, indexBuffer.data(), indexBufferSize);
-        vkUnmapMemory(device, indices.memory);
-        VK_CHECK_RESULT(vkBindBufferMemory(device, indices.buffer, indices.memory, 0));
-    }
+    // Copy index data to a buffer visible to the host
+    VK_CHECK_RESULT(vmaMapMemory(allocator, vertexIndexBufferAllocation, &data));
+    memcpy(data, vertexData.data(), vertexIndexDataSize);
+    vmaUnmapMemory(allocator, vertexIndexBufferAllocation);
 }
 
-void TriangleExample::setupDescriptorPool()
+void TriangleExample::createUniformBuffer()
+{
+    // Vertex shader uniform buffer block
+    VkBufferCreateInfo uniformBufferCreateInfo = {};
+    uniformBufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    uniformBufferCreateInfo.size = sizeof(Uniform);
+    // This buffer will be used as a uniform buffer
+    uniformBufferCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+
+    VmaAllocationCreateInfo uniformBufferAllocationInfo = {};
+    uniformBufferAllocationInfo.usage = VMA_MEMORY_USAGE_AUTO;
+
+    VK_CHECK_RESULT(vmaCreateBuffer(
+        allocator, &uniformBufferCreateInfo, &uniformBufferAllocationInfo, &uniformBuffer, &uniformBufferAllocation, nullptr));
+
+    // Store information in the uniform's descriptor that is used by the descriptor set.
+    uniformBufferInfo.buffer = uniformBuffer;
+    uniformBufferInfo.offset = 0;
+    uniformBufferInfo.range = sizeof(Uniform);
+}
+
+void TriangleExample::destroyUniformBuffer()
+{
+    vmaDestroyBuffer(allocator, uniformBuffer, uniformBufferAllocation);
+}
+
+void TriangleExample::destroyVertexBuffer()
+{
+    vmaDestroyBuffer(allocator, vertexIndexBuffer, vertexIndexBufferAllocation);
+    vmaDestroyBuffer(allocator, vertexBuffer, vertexBufferAllocation);
+}
+
+void TriangleExample::createDescriptorPool()
 {
     // We need to tell the API the number of max. requested descriptors per type
     VkDescriptorPoolSize typeCounts[1];
@@ -464,7 +192,12 @@ void TriangleExample::setupDescriptorPool()
     VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &descriptorPool));
 }
 
-void TriangleExample::setupDescriptorSetLayout()
+void TriangleExample::destroyDescriptorPool()
+{
+    vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+}
+
+void TriangleExample::createDescriptorSetLayout()
 {
     // Setup layout of descriptors used in this example
     // Basically connects the different shader stages to descriptors for binding uniform buffers, image samplers, etc.
@@ -497,7 +230,13 @@ void TriangleExample::setupDescriptorSetLayout()
     VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pPipelineLayoutCreateInfo, nullptr, &pipelineLayout));
 }
 
-void TriangleExample::setupDescriptorSet()
+void TriangleExample::destroyDescriptorSetLayout()
+{
+    vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+    vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
+}
+
+void TriangleExample::createDescriptorSet()
 {
     // Allocate a new descriptor set from the global descriptor pool
     VkDescriptorSetAllocateInfo allocInfo = {};
@@ -519,67 +258,90 @@ void TriangleExample::setupDescriptorSet()
     writeDescriptorSet.dstSet = descriptorSet;
     writeDescriptorSet.descriptorCount = 1;
     writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    writeDescriptorSet.pBufferInfo = &uniformBufferVS.descriptor;
+    writeDescriptorSet.pBufferInfo = &uniformBufferInfo;
     // Binds this uniform buffer to binding point 0
     writeDescriptorSet.dstBinding = 0;
 
     vkUpdateDescriptorSets(device, 1, &writeDescriptorSet, 0, nullptr);
 }
 
-// Create the depth (and stencil) buffer attachments used by our framebuffers
-// Note: Override of virtual function in the base class and called from within TriangleExampleBase::prepare
-void TriangleExample::setupDepthStencil()
+void TriangleExample::destroyDescriptorSet()
 {
-    // Create an optimal image used as the depth stencil attachment
-    VkImageCreateInfo image = {};
-    image.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    image.imageType = VK_IMAGE_TYPE_2D;
-    image.format = depthFormat;
-    // Use example's height and width
-    image.extent = {width, height, 1};
-    image.mipLevels = 1;
-    image.arrayLayers = 1;
-    image.samples = VK_SAMPLE_COUNT_1_BIT;
-    image.tiling = VK_IMAGE_TILING_OPTIMAL;
-    image.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-    image.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    VK_CHECK_RESULT(vkCreateImage(device, &image, nullptr, &depthStencil.image));
+    vkFreeDescriptorSets(device, descriptorPool, 1, &descriptorSet);
+}
 
-    // Allocate memory for the image (device local) and bind it to our image
-    VkMemoryAllocateInfo memAlloc = {};
-    memAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    VkMemoryRequirements memReqs;
-    vkGetImageMemoryRequirements(device, depthStencil.image, &memReqs);
-    memAlloc.allocationSize = memReqs.size;
-    memAlloc.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    VK_CHECK_RESULT(vkAllocateMemory(device, &memAlloc, nullptr, &depthStencil.mem));
-    VK_CHECK_RESULT(vkBindImageMemory(device, depthStencil.image, depthStencil.mem, 0));
+void TriangleExample::buildForNewSwapchain(std::vector<VkImageView> const& imageViews, VkExtent2D imageSize, VkFormat imageFormat)
+{
+    colorImageFormat = imageFormat;
 
-    // Create a view for the depth stencil image
-    // Images aren't directly accessed in Vulkan, but rather through views described by a subresource range
-    // This allows for multiple views of one image with differing ranges (e.g. for different layers)
-    VkImageViewCreateInfo depthStencilView = {};
-    depthStencilView.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    depthStencilView.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    depthStencilView.format = depthFormat;
-    depthStencilView.subresourceRange = {};
-    depthStencilView.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-    // Stencil aspect should only be set on depth + stencil formats
-    // (VK_FORMAT_D16_UNORM_S8_UINT..VK_FORMAT_D32_SFLOAT_S8_UINT)
-    if (depthFormat >= VK_FORMAT_D16_UNORM_S8_UINT)
-        depthStencilView.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+    createDepthStencilImage(imageSize);
+    createFrameBuffers(imageViews, imageSize);
+    createCommandBuffers();
+    createFences();
+    createRenderPass();
+    createPipeline();
 
-    depthStencilView.subresourceRange.baseMipLevel = 0;
-    depthStencilView.subresourceRange.levelCount = 1;
-    depthStencilView.subresourceRange.baseArrayLayer = 0;
-    depthStencilView.subresourceRange.layerCount = 1;
-    depthStencilView.image = depthStencil.image;
-    VK_CHECK_RESULT(vkCreateImageView(device, &depthStencilView, nullptr, &depthStencil.view));
+    hasSwapchain = true;
+}
+
+void TriangleExample::teardownForLostSwapchain()
+{
+    hasSwapchain = false;
+
+    destroyPipeline();
+    destroyRenderPass();
+    destroyFences();
+    destroyCommandBuffers();
+    destroyFrameBuffers();
+    destroyDepthStencilImage();
+}
+
+void TriangleExample::createDepthStencilImage(VkExtent2D imageSize)
+{
+    depthImageFormat = VK_FORMAT_D16_UNORM_S8_UINT;
+
+    VkImageCreateInfo depthImageCreateInfo = {};
+    depthImageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    depthImageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+    depthImageCreateInfo.format = depthImageFormat;
+    depthImageCreateInfo.extent.width = imageSize.width;
+    depthImageCreateInfo.extent.height = imageSize.height;
+    depthImageCreateInfo.extent.depth = 1;
+    depthImageCreateInfo.mipLevels = 1;
+    depthImageCreateInfo.arrayLayers = 1;
+    depthImageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    depthImageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+    depthImageCreateInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    depthImageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    depthImageCreateInfo.queueFamilyIndexCount = 0;
+    depthImageCreateInfo.pQueueFamilyIndices = nullptr;
+    depthImageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+    VmaAllocationCreateInfo depthAllocationCreateInfo = {};
+    depthAllocationCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
+    VK_CHECK_RESULT(vmaCreateImage(
+        allocator, &depthImageCreateInfo, &depthAllocationCreateInfo, &depthImage, &depthImageAllocation, nullptr));
+
+    VkImageViewCreateInfo depthImageViewCreateInfo = {};
+    depthImageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    depthImageViewCreateInfo.image = depthImage;
+    depthImageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    depthImageViewCreateInfo.format = VK_FORMAT_D16_UNORM_S8_UINT;
+    depthImageViewCreateInfo.components = VkComponentMapping{};
+    depthImageViewCreateInfo.subresourceRange = VkImageSubresourceRange{VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1};
+
+    VK_CHECK_RESULT(vkCreateImageView(device, &depthImageViewCreateInfo, nullptr, &depthImageView));
+}
+
+void TriangleExample::destroyDepthStencilImage()
+{
+    vkDestroyImageView(device, depthImageView, nullptr);
+    vmaDestroyImage(allocator, depthImage, depthImageAllocation);
 }
 
 // Create a frame buffer for each swap chain image
 // Note: Override of virtual function in the base class and called from within TriangleExampleBase::prepare
-void TriangleExample::setupFrameBuffer(std::vector<VkImageView> const& swapChainImageViews, VkExtent2D imageSize)
+void TriangleExample::createFrameBuffers(std::vector<VkImageView> const& swapChainImageViews, VkExtent2D imageSize)
 {
     // Create a frame buffer for every image in the swapchain
     assert(frameBuffers.size() <= swapChainImageViews.size());
@@ -587,7 +349,7 @@ void TriangleExample::setupFrameBuffer(std::vector<VkImageView> const& swapChain
     for (size_t i = 0; i < frameBuffers.size(); i++) {
         std::array<VkImageView, 2> attachments;
         attachments[0] = swapChainImageViews[i]; // Color attachment is the view of the swapchain image
-        attachments[1] = depthStencil.view; // Depth/Stencil attachment is the same for all frame buffers
+        attachments[1] = depthImageView; // Depth/Stencil attachment is the same for all frame buffers
 
         VkFramebufferCreateInfo frameBufferCreateInfo = {};
         frameBufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -595,21 +357,58 @@ void TriangleExample::setupFrameBuffer(std::vector<VkImageView> const& swapChain
         frameBufferCreateInfo.renderPass = renderPass;
         frameBufferCreateInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
         frameBufferCreateInfo.pAttachments = attachments.data();
-        frameBufferCreateInfo.width = width;
-        frameBufferCreateInfo.height = height;
+        frameBufferCreateInfo.width = imageSize.width;
+        frameBufferCreateInfo.height = imageSize.height;
         frameBufferCreateInfo.layers = 1;
         // Create the framebuffer
         VK_CHECK_RESULT(vkCreateFramebuffer(device, &frameBufferCreateInfo, nullptr, &frameBuffers[i]));
     }
 }
 
-// Render pass setup
-// Render passes are a new concept in Vulkan. They describe the attachments used during rendering and may contain multiple
-// subpasses with attachment dependencies This allows the driver to know up-front what the rendering will look like and is a
-// good opportunity to optimize especially on tile-based renderers (with multiple subpasses) Using sub pass dependencies also
-// adds implicit layout transitions for the attachment used, so we don't need to add explicit image memory barriers to
-// transform them Note: Override of virtual function in the base class and called from within TriangleExampleBase::prepare
-void TriangleExample::setupRenderPass()
+void TriangleExample::destroyFrameBuffers()
+{
+    for (auto const& frameBuffer : frameBuffers) {
+        vkDestroyFramebuffer(device, frameBuffer, nullptr);
+    }
+}
+
+void TriangleExample::createCommandBuffers()
+{
+    // Create one command buffer for each swap chain image and reuse for rendering
+    drawCmdBuffers.resize(frameBuffers.size());
+
+    VkCommandBufferAllocateInfo cmdBufAllocateInfo = vks::initializers::commandBufferAllocateInfo(
+        cmdPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY, hi::narrow_cast<uint32_t>(drawCmdBuffers.size()));
+
+    VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, drawCmdBuffers.data()));
+}
+
+void TriangleExample::destroyCommandBuffers()
+{
+    vkFreeCommandBuffers(device, cmdPool, hi::narrow_cast<uint32_t>(drawCmdBuffers.size()), drawCmdBuffers.data());
+}
+
+void TriangleExample::createFences()
+{
+    // Fences (Used to check draw command buffer completion)
+    VkFenceCreateInfo fenceCreateInfo = {};
+    fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    // Create in signaled state so we don't wait on first render of each command buffer
+    fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+    queueCompleteFences.resize(drawCmdBuffers.size());
+    for (auto& fence : queueCompleteFences) {
+        VK_CHECK_RESULT(vkCreateFence(device, &fenceCreateInfo, nullptr, &fence));
+    }
+}
+
+void TriangleExample::destroyFences()
+{
+    for (auto fence : queueCompleteFences) {
+        vkDestroyFence(device, fence, nullptr);
+    }
+}
+
+void TriangleExample::createRenderPass()
 {
     // This example will use a single render pass with one subpass
 
@@ -617,7 +416,7 @@ void TriangleExample::setupRenderPass()
     std::array<VkAttachmentDescription, 2> attachments = {};
 
     // Color attachment
-    attachments[0].format = swapChain.colorFormat; // Use the color format selected by the swapchain
+    attachments[0].format = colorImageFormat; // Use the color format selected by the swapchain
     attachments[0].samples = VK_SAMPLE_COUNT_1_BIT; // We don't use multi sampling in this example
     attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // Clear this attachment at the start of the render pass
     attachments[0].storeOp =
@@ -630,7 +429,7 @@ void TriangleExample::setupRenderPass()
                                                                   // render pass is finished As we want to present the color
                                                                   // buffer to the swapchain, we transition to PRESENT_KHR
     // Depth attachment
-    attachments[1].format = depthFormat; // A proper depth format is selected in the example base
+    attachments[1].format = depthImageFormat; // A proper depth format is selected in the example base
     attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
     attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // Clear depth at start of first subpass
     attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE; // We don't need depth after render pass has finished
@@ -709,57 +508,12 @@ void TriangleExample::setupRenderPass()
     VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass));
 }
 
-// Vulkan loads its shaders from an immediate binary representation called SPIR-V
-// Shaders are compiled offline from e.g. GLSL using the reference glslang compiler
-// This function loads such a shader from a binary file and returns a shader module structure
-VkShaderModule TriangleExample::loadSPIRVShader(std::string filename)
+void TriangleExample::destroyRenderPass()
 {
-    size_t shaderSize;
-    char *shaderCode = NULL;
-
-#if defined(__ANDROID__)
-    // Load shader from compressed asset
-    AAsset *asset = AAssetManager_open(androidApp->activity->assetManager, filename.c_str(), AASSET_MODE_STREAMING);
-    assert(asset);
-    shaderSize = AAsset_getLength(asset);
-    assert(shaderSize > 0);
-
-    shaderCode = new char[shaderSize];
-    AAsset_read(asset, shaderCode, shaderSize);
-    AAsset_close(asset);
-#else
-    std::ifstream is(filename, std::ios::binary | std::ios::in | std::ios::ate);
-
-    if (is.is_open()) {
-        shaderSize = is.tellg();
-        is.seekg(0, std::ios::beg);
-        // Copy file contents into a buffer
-        shaderCode = new char[shaderSize];
-        is.read(shaderCode, shaderSize);
-        is.close();
-        assert(shaderSize > 0);
-    }
-#endif
-    if (shaderCode) {
-        // Create a new shader module that will be used for pipeline creation
-        VkShaderModuleCreateInfo moduleCreateInfo{};
-        moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        moduleCreateInfo.codeSize = shaderSize;
-        moduleCreateInfo.pCode = (uint32_t *)shaderCode;
-
-        VkShaderModule shaderModule;
-        VK_CHECK_RESULT(vkCreateShaderModule(device, &moduleCreateInfo, NULL, &shaderModule));
-
-        delete[] shaderCode;
-
-        return shaderModule;
-    } else {
-        std::cerr << "Error: Could not open shader file \"" << filename << "\"" << std::endl;
-        return VK_NULL_HANDLE;
-    }
+    vkDestroyRenderPass(device, renderPass, nullptr);
 }
 
-void TriangleExample::preparePipelines()
+void TriangleExample::createPipeline()
 {
     // Create the graphics pipeline used in this example
     // Vulkan uses the concept of rendering pipelines to encapsulate fixed states, replacing OpenGL's complex state machine
@@ -889,7 +643,7 @@ void TriangleExample::preparePipelines()
     // Set pipeline stage for this shader
     shaderStages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
     // Load binary SPIR-V shader
-    shaderStages[0].module = loadSPIRVShader(getShadersPath() + "triangle/triangle.vert.spv");
+    shaderStages[0].module = loadSPIRVShader(hi::URL{"resource:shaders/triangle.vert.spv"});
     // Main entry point for the shader
     shaderStages[0].pName = "main";
     assert(shaderStages[0].module != VK_NULL_HANDLE);
@@ -899,7 +653,7 @@ void TriangleExample::preparePipelines()
     // Set pipeline stage for this shader
     shaderStages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
     // Load binary SPIR-V shader
-    shaderStages[1].module = loadSPIRVShader(getShadersPath() + "triangle/triangle.frag.spv");
+    shaderStages[1].module = loadSPIRVShader(hi::URL{"resource:shaders/triangle.frag.spv"});
     // Main entry point for the shader
     shaderStages[1].pName = "main";
     assert(shaderStages[1].module != VK_NULL_HANDLE);
@@ -919,132 +673,227 @@ void TriangleExample::preparePipelines()
     pipelineCreateInfo.pDynamicState = &dynamicState;
 
     // Create rendering pipeline using the specified states
-    VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCreateInfo, nullptr, &pipeline));
+    VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &pipeline));
 
     // Shader modules are no longer needed once the graphics pipeline has been created
     vkDestroyShaderModule(device, shaderStages[0].module, nullptr);
     vkDestroyShaderModule(device, shaderStages[1].module, nullptr);
 }
 
-void TriangleExample::prepareUniformBuffers()
+void TriangleExample::destroyPipeline()
 {
-    // Prepare and initialize a uniform buffer block containing shader uniforms
-    // Single uniforms like in OpenGL are no longer present in Vulkan. All Shader uniforms are passed via uniform buffer
-    // blocks
-    VkMemoryRequirements memReqs;
-
-    // Vertex shader uniform buffer block
-    VkBufferCreateInfo bufferInfo = {};
-    VkMemoryAllocateInfo allocInfo = {};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.pNext = nullptr;
-    allocInfo.allocationSize = 0;
-    allocInfo.memoryTypeIndex = 0;
-
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = sizeof(uboVS);
-    // This buffer will be used as a uniform buffer
-    bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-
-    // Create a new buffer
-    VK_CHECK_RESULT(vkCreateBuffer(device, &bufferInfo, nullptr, &uniformBufferVS.buffer));
-    // Get memory requirements including size, alignment and memory type
-    vkGetBufferMemoryRequirements(device, uniformBufferVS.buffer, &memReqs);
-    allocInfo.allocationSize = memReqs.size;
-    // Get the memory type index that supports host visible memory access
-    // Most implementations offer multiple memory types and selecting the correct one to allocate memory from is crucial
-    // We also want the buffer to be host coherent so we don't have to flush (or sync after every update.
-    // Note: This may affect performance so you might not want to do this in a real world application that updates buffers on
-    // a regular base
-    allocInfo.memoryTypeIndex =
-        getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    // Allocate memory for the uniform buffer
-    VK_CHECK_RESULT(vkAllocateMemory(device, &allocInfo, nullptr, &(uniformBufferVS.memory)));
-    // Bind memory to buffer
-    VK_CHECK_RESULT(vkBindBufferMemory(device, uniformBufferVS.buffer, uniformBufferVS.memory, 0));
-
-    // Store information in the uniform's descriptor that is used by the descriptor set
-    uniformBufferVS.descriptor.buffer = uniformBufferVS.buffer;
-    uniformBufferVS.descriptor.offset = 0;
-    uniformBufferVS.descriptor.range = sizeof(uboVS);
-
-    updateUniformBuffers();
+    vkDestroyPipeline(device, pipeline, nullptr);
 }
 
-void TriangleExample::updateUniformBuffers()
+// Get a new command buffer from the command pool
+// If begin is true, the command buffer is also started so we can start adding commands
+VkCommandBuffer TriangleExample::getCommandBuffer(bool begin)
 {
-    // Pass matrices to the shaders
-    uboVS.projectionMatrix = camera.matrices.perspective;
-    uboVS.viewMatrix = camera.matrices.view;
-    uboVS.modelMatrix = glm::mat4(1.0f);
+    VkCommandBuffer cmdBuffer;
 
+    VkCommandBufferAllocateInfo cmdBufAllocateInfo = {};
+    cmdBufAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    cmdBufAllocateInfo.commandPool = cmdPool;
+    cmdBufAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    cmdBufAllocateInfo.commandBufferCount = 1;
+
+    VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, &cmdBuffer));
+
+    // If requested, also start the new command buffer
+    if (begin) {
+        VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
+        VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
+    }
+
+    return cmdBuffer;
+}
+
+// End the command buffer and submit it to the queue
+// Uses a fence to ensure command buffer has finished executing before deleting it
+void TriangleExample::flushCommandBuffer(VkCommandBuffer commandBuffer)
+{
+    assert(commandBuffer != VK_NULL_HANDLE);
+
+    VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
+
+    VkSubmitInfo submitInfo = {};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffer;
+
+    // Create fence to ensure that the command buffer has finished executing
+    VkFenceCreateInfo fenceCreateInfo = {};
+    fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fenceCreateInfo.flags = 0;
+    VkFence fence;
+    VK_CHECK_RESULT(vkCreateFence(device, &fenceCreateInfo, nullptr, &fence));
+
+    // Submit to the queue
+    VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, fence));
+    // Wait for the fence to signal that command buffer has finished executing
+    VK_CHECK_RESULT(vkWaitForFences(device, 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT));
+
+    vkDestroyFence(device, fence, nullptr);
+    vkFreeCommandBuffers(device, cmdPool, 1, &commandBuffer);
+}
+
+void TriangleExample::buildCommandBuffers(VkRect2D renderArea, VkRect2D viewPort)
+{
+    VkCommandBufferBeginInfo cmdBufInfo = {};
+    cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    cmdBufInfo.pNext = nullptr;
+
+    // Set clear values for all framebuffer attachments with loadOp set to clear
+    // We use two attachments (color and depth) that are cleared at the start of the subpass and as such we need to set clear
+    // values for both
+    VkClearValue clearValues[2];
+    clearValues[0].color = {{0.0f, 0.0f, 0.2f, 1.0f}};
+    clearValues[1].depthStencil = {1.0f, 0};
+
+    VkRenderPassBeginInfo renderPassBeginInfo = {};
+    renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassBeginInfo.pNext = nullptr;
+    renderPassBeginInfo.renderPass = renderPass;
+    renderPassBeginInfo.renderArea = renderArea;
+    renderPassBeginInfo.clearValueCount = 2;
+    renderPassBeginInfo.pClearValues = clearValues;
+
+    for (int32_t i = 0; i < drawCmdBuffers.size(); ++i) {
+        // Set target frame buffer
+        renderPassBeginInfo.framebuffer = frameBuffers[i];
+
+        VK_CHECK_RESULT(vkBeginCommandBuffer(drawCmdBuffers[i], &cmdBufInfo));
+
+        // Start the first sub pass specified in our default render pass setup by the base class
+        // This will clear the color and depth attachment
+        vkCmdBeginRenderPass(drawCmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+        // Update dynamic viewport state
+        VkViewport viewport = {};
+        viewport.x = hi::narrow_cast<float>(viewPort.offset.x);
+        viewport.y = hi::narrow_cast<float>(viewPort.offset.y);
+        viewport.height = hi::narrow_cast<float>(viewPort.extent.height);
+        viewport.width = hi::narrow_cast<float>(viewPort.extent.height);
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        vkCmdSetViewport(drawCmdBuffers[i], 0, 1, &viewport);
+
+        // Update dynamic scissor state
+        VkRect2D scissor = renderArea;
+        vkCmdSetScissor(drawCmdBuffers[i], 0, 1, &scissor);
+
+        // Bind descriptor sets describing shader binding points
+        vkCmdBindDescriptorSets(
+            drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
+
+        // Bind the rendering pipeline
+        // The pipeline (state object) contains all states of the rendering pipeline, binding it will set all the states
+        // specified at pipeline creation time
+        vkCmdBindPipeline(drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
+        // Bind triangle vertex buffer (contains position and colors)
+        VkDeviceSize offsets[1] = {0};
+        vkCmdBindVertexBuffers(drawCmdBuffers[i], 0, 1, &vertexBuffer, offsets);
+
+        // Bind triangle index buffer
+        vkCmdBindIndexBuffer(drawCmdBuffers[i], vertexIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+        // Draw indexed triangle
+        vkCmdDrawIndexed(drawCmdBuffers[i], vertexIndexCount, 1, 0, 0, 1);
+
+        vkCmdEndRenderPass(drawCmdBuffers[i]);
+
+        // Ending the render pass will add an implicit barrier transitioning the frame buffer color attachment to
+        // VK_IMAGE_LAYOUT_PRESENT_SRC_KHR for presenting it to the windowing system
+
+        VK_CHECK_RESULT(vkEndCommandBuffer(drawCmdBuffers[i]));
+    }
+}
+
+void TriangleExample::draw(uint32_t currentBuffer, VkSemaphore presentCompleteSemaphore, VkSemaphore renderCompleteSemaphore)
+{
+    // Use a fence to wait until the command buffer has finished execution before using it again
+    VK_CHECK_RESULT(vkWaitForFences(device, 1, &queueCompleteFences[currentBuffer], VK_TRUE, UINT64_MAX));
+    VK_CHECK_RESULT(vkResetFences(device, 1, &queueCompleteFences[currentBuffer]));
+
+    // Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
+    VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    // The submit info structure specifies a command buffer queue submission batch
+    VkSubmitInfo submitInfo = {};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.pWaitDstStageMask =
+        &waitStageMask; // Pointer to the list of pipeline stages that the semaphore waits will occur at
+    submitInfo.waitSemaphoreCount = 1; // One wait semaphore
+    submitInfo.signalSemaphoreCount = 1; // One signal semaphore
+    submitInfo.pCommandBuffers = &drawCmdBuffers[currentBuffer]; // Command buffers(s) to execute in this batch (submission)
+    submitInfo.commandBufferCount = 1; // One command buffer
+
+    // SRS - on other platforms use original bare code with local semaphores/fences for illustrative purposes
+    submitInfo.pWaitSemaphores =
+        &presentCompleteSemaphore; // Semaphore(s) to wait upon before the submitted command buffer starts executing
+    submitInfo.pSignalSemaphores = &renderCompleteSemaphore; // Semaphore(s) to be signaled when command buffers have completed
+
+    // Submit to the graphics queue passing a wait fence
+    VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, queueCompleteFences[currentBuffer]));
+}
+
+// Vulkan loads its shaders from an immediate binary representation called SPIR-V
+// Shaders are compiled offline from e.g. GLSL using the reference glslang compiler
+// This function loads such a shader from a binary file and returns a shader module structure
+VkShaderModule TriangleExample::loadSPIRVShader(std::filesystem::path filename)
+{
+    auto view = hi::file_view(filename);
+    auto span = as_span<uint32_t>(view);
+
+    // Create a new shader module that will be used for pipeline creation
+    VkShaderModuleCreateInfo moduleCreateInfo{};
+    moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    moduleCreateInfo.codeSize = hi::narrow_cast<uint32_t>(span.size() * sizeof(uint32_t));
+    moduleCreateInfo.pCode = span.data();
+
+    VkShaderModule shaderModule;
+    VK_CHECK_RESULT(vkCreateShaderModule(device, &moduleCreateInfo, NULL, &shaderModule));
+
+    return shaderModule;
+}
+
+void TriangleExample::updateUniformBuffers(Uniform const& uniform)
+{
     // Map uniform buffer and update it
-    uint8_t *pData;
-    VK_CHECK_RESULT(vkMapMemory(device, uniformBufferVS.memory, 0, sizeof(uboVS), 0, (void **)&pData));
-    memcpy(pData, &uboVS, sizeof(uboVS));
-    // Unmap after data has been copied
-    // Note: Since we requested a host coherent memory type for the uniform buffer, the write is instantly visible to the GPU
-    vkUnmapMemory(device, uniformBufferVS.memory);
+    void *data;
+
+    VK_CHECK_RESULT(vmaMapMemory(allocator, uniformBufferAllocation, &data));
+    memcpy(data, &uniform, sizeof(Uniform));
+    vmaUnmapMemory(allocator, uniformBufferAllocation);
 }
 
-void TriangleExample::prepare()
+void TriangleExample::render(
+    uint32_t currentBuffer,
+    VkRect2D renderArea,
+    VkSemaphore presentCompleteSemaphore,
+    VkSemaphore renderCompleteSemaphore,
+    VkRect2D viewPort)
 {
-    TriangleExampleBase::prepare();
-    prepareSynchronizationPrimitives();
-    prepareVertices(USE_STAGING);
-    prepareUniformBuffers();
-    setupDescriptorSetLayout();
-    preparePipelines();
-    setupDescriptorPool();
-    setupDescriptorSet();
-    buildCommandBuffers();
-    prepared = true;
+    if (previousViewPort != viewPort) {
+        // Setup a default look-at camera
+        auto aspectRatio = hi::narrow_cast<float>(viewPort.extent.width) / hi::narrow_cast<float>(viewPort.extent.height);
+
+        camera.type = Camera::CameraType::lookat;
+        camera.setPosition(glm::vec3(0.0f, 0.0f, -2.5f));
+        camera.setRotation(glm::vec3(0.0f));
+        camera.setPerspective(60.0f, aspectRatio, 1.0f, 256.0f);
+        // Values not set here are initialized in the base class constructor
+        // Pass matrices to the shaders
+        auto uniform = Uniform{camera.matrices.perspective, camera.matrices.view, glm::mat4(1.0f)};
+        updateUniformBuffers(uniform);
+    }
+
+    if (previousRenderArea != renderArea or previousViewPort != viewPort) {
+        buildCommandBuffers(renderArea, viewPort);
+    }
+
+    draw(currentBuffer, presentCompleteSemaphore, renderCompleteSemaphore);
+
+    previousRenderArea = renderArea;
+    previousViewPort = viewPort;
 }
-
-void TriangleExample::render()
-{
-    if (!prepared)
-        return;
-
-    // Setup a default look-at camera
-    camera.type = Camera::CameraType::lookat;
-    camera.setPosition(glm::vec3(0.0f, 0.0f, -2.5f));
-    camera.setRotation(glm::vec3(0.0f));
-    camera.setPerspective(60.0f, (float)width / (float)height, 1.0f, 256.0f);
-    // Values not set here are initialized in the base class constructor
-
-    draw();
-}
-
-void TriangleExample::viewChanged()
-{
-    // This function is called by the base example class each time the view is changed by user input
-    updateUniformBuffers();
-}
-
-// OS specific macros for the example main entry points
-// Most of the code base is shared for the different supported operating systems, but stuff like message handling differs
-
-//#if defined(_WIN32)
-//// Windows entry point
-// TriangleExample *vulkanExample;
-// LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-//{
-//     if (vulkanExample != NULL) {
-//         vulkanExample->handleMessages(hWnd, uMsg, wParam, lParam);
-//     }
-//     return (DefWindowProc(hWnd, uMsg, wParam, lParam));
-// }
-// int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow)
-//{
-//     for (size_t i = 0; i < __argc; i++) {
-//         TriangleExample::args.push_back(__argv[i]);
-//     };
-//     vulkanExample = new TriangleExample();
-//     vulkanExample->initVulkan();
-//     vulkanExample->setupWindow(hInstance, WndProc);
-//     vulkanExample->prepare();
-//     vulkanExample->renderLoop();
-//     delete (vulkanExample);
-//     return 0;
-// }

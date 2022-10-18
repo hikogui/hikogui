@@ -25,6 +25,8 @@ add_custom_target(hikogui_demo_resources
 
 add_dependencies(hikogui_demo hikogui_demo_resources)
 
+add_dependencies(hikogui_examples hikogui_demo)
+
 #-------------------------------------------------------------------
 # Installation Rules: hikogui_demo
 #-------------------------------------------------------------------

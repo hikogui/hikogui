@@ -18,6 +18,8 @@ target_link_libraries(json_to_bon8 PRIVATE hikogui)
 target_include_directories(json_to_bon8 PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
 add_dependencies(json_to_bon8 codec_example_resources)
 
+add_dependencies(hikogui_examples json_to_bon8)
+
 #-------------------------------------------------------------------
 # Installation Rules: hikogui_demo
 #-------------------------------------------------------------------

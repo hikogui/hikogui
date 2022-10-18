@@ -39,6 +39,12 @@ target_link_libraries(custom_widget_drawing_example PRIVATE hikogui)
 target_include_directories(custom_widget_drawing_example PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
 add_dependencies(custom_widget_drawing_example custom_widget_example_resources)
 
+add_dependencies(hikogui_examples
+    minimum_custom_widget_example
+    custom_widget_with_child_example
+    custom_widget_command_example
+    custom_widget_drawing_example)
+
 #-------------------------------------------------------------------
 # Installation Rules: hikogui_demo
 #-------------------------------------------------------------------

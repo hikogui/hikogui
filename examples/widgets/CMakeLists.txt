@@ -48,6 +48,14 @@ target_link_libraries(selection_example PRIVATE hikogui)
 target_include_directories(selection_example PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
 add_dependencies(selection_example widget_example_resources)
 
+add_dependencies(hikogui_examples
+    checkbox_example
+    text_example
+    toggle_example
+    radio_button_example
+    tab_example
+    selection_example)
+
 #-------------------------------------------------------------------
 # Installation Rules: hikogui_demo
 #-------------------------------------------------------------------
