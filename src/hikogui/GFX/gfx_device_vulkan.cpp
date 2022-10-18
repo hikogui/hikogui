@@ -521,8 +521,8 @@ void gfx_device_vulkan::initialize_queues(std::vector<vk::DeviceQueueCreateInfo>
         hilet queue_flags = queue_family_property.queueFlags;
 
         for (uint32_t queue_index = 0; queue_index != device_queue_create_info.queueCount; ++queue_index) {
-            hilet queue = intrinsic.getQueue(queue_family_index, queue_index);
-            hilet command_pool = intrinsic.createCommandPool(
+            auto queue = intrinsic.getQueue(queue_family_index, queue_index);
+            auto command_pool = intrinsic.createCommandPool(
                 {vk::CommandPoolCreateFlagBits::eTransient | vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
                  queue_family_index});
 

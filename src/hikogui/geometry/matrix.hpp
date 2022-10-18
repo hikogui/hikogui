@@ -14,6 +14,7 @@
 #include "corner_radii.hpp"
 #include "axis_aligned_rectangle.hpp"
 #include "../color/color.hpp"
+#include <array>
 
 namespace hi::inline v1 {
 namespace geo {
@@ -99,6 +100,14 @@ public:
         _col2 = get<2>(rhs);
         _col3 = get<3>(rhs);
         return *this;
+    }
+
+    /** Convert a point to its f32x4-nummeric_array.
+     */
+    [[nodiscard]] constexpr explicit operator std::array<f32x4,4> () const noexcept
+    {
+        hi_axiom(holds_invariant());
+        return {_col0, _col1, _col2, _col3};
     }
 
     /** Create a transformation matrix to translate and uniformly-scale a src_rectangle to a dst_rectangle.

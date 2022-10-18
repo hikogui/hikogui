@@ -61,7 +61,11 @@ void gfx_surface_vulkan::add_delegate(gfx_surface_delegate *delegate) noexcept
         auto& graphics_queue = vulkan_device_.get_graphics_queue(*this);
 
         delegate_info.delegate->build_for_new_device(
-            vulkan_device_.allocator, vulkan_system.intrinsic, vulkan_device_.intrinsic, graphics_queue.queue);
+            vulkan_device_.allocator,
+            vulkan_system.intrinsic,
+            vulkan_device_.intrinsic,
+            graphics_queue.queue,
+            graphics_queue.family_queue_index);
     }
     if (state >= gfx_surface_state::has_swapchain) {
         auto image_views = std::vector<vk::ImageView>{};
@@ -227,7 +231,11 @@ gfx_surface_loss gfx_surface_vulkan::build_for_new_device() noexcept
         hi_axiom(delegate);
 
         delegate->build_for_new_device(
-            vulkan_device_.allocator, vulkan_system.intrinsic, vulkan_device_.intrinsic, graphics_queue.queue);
+            vulkan_device_.allocator,
+            vulkan_system.intrinsic,
+            vulkan_device_.intrinsic,
+            graphics_queue.queue,
+            graphics_queue.family_queue_index);
     }
 
     return gfx_surface_loss::none;
