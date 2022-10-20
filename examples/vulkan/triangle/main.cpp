@@ -4,6 +4,7 @@
 
 #include "hikogui/codec/png.hpp"
 #include "hikogui/GUI/gui_system.hpp"
+#include "hikogui/GFX/RenderDoc.hpp"
 #include "hikogui/widgets/vulkan_widget.hpp"
 #include "hikogui/crt.hpp"
 #include "hikogui/loop.hpp"
@@ -18,7 +19,7 @@ class triangle_widget : public hi::vulkan_widget {
 public:
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
-    triangle_widget(hi::gui_window& window, hi::widget *parent) noexcept : widget(window, parent) {}
+    triangle_widget(hi::gui_window& window, hi::widget *parent) noexcept : vulkan_widget(window, parent) {}
 
     // The set_constraints() function is called when the window is first initialized,
     // or when a widget wants to change its constraints.
@@ -35,7 +36,7 @@ public:
         // When the window is initially created it will try to size itself so that
         // the contained widgets are at their preferred size. Having a different minimum
         // and/or maximum size will allow the window to be resizable.
-        return _constraints = {{100, 50}, {200, 100}, {300, 100}, theme().margin};
+        return _constraints = {{400, 300}, {640, 480}, {1024, 860}, theme().margin};
     }
 
     // The `set_layout()` function is called when the window has resized, or when
@@ -64,7 +65,7 @@ public:
         uint32_t graphics_queue_family_index) noexcept override
     {
         _triangle_example = std::make_shared<TriangleExample>(
-            static_cast<VkDevice>(device), static_cast<VkQueue>(graphics_queue), graphics_queue_family_index);
+            allocator, static_cast<VkDevice>(device), static_cast<VkQueue>(graphics_queue), graphics_queue_family_index);
     }
 
     void build_for_new_swapchain(std::vector<vk::ImageView> const& views, vk::Extent2D size, vk::SurfaceFormatKHR format) noexcept
@@ -75,13 +76,18 @@ public:
         }));
 
         assert(_triangle_example != nullptr);
-        _triangle_example->buildForNewSwapchain(views_, static_cast<VkExtent2D>(size));
+        _triangle_example->buildForNewSwapchain(views_, static_cast<VkExtent2D>(size), static_cast<VkFormat>(format.format));
     }
 
-    void draw(uint32_t swapchain_index, vk::Rect2D render_area, vk::Semaphore start, vk::Semaphore finish) noexcept override
+    void draw(uint32_t swapchain_index, vk::Semaphore start, vk::Semaphore finish, vk::Rect2D render_area) noexcept override
     {
         assert(_triangle_example != nullptr);
-        _triangle_example->render(swapchain_index, static_cast<VkRect2D>(render_area), static_cast<VkSemaphore>(start), static_cast<VkSemaphore>(finish), _view_port);
+        _triangle_example->render(
+            swapchain_index,
+            static_cast<VkSemaphore>(start),
+            static_cast<VkSemaphore>(finish),
+            static_cast<VkRect2D>(render_area),
+            _view_port);
     }
 
     void teardown_for_device_lost() noexcept override
@@ -116,6 +122,8 @@ hi::task<> main_window(hi::gui_system& gui)
 
 int hi_main(int argc, char *argv[])
 {
+    auto doc = hi::RenderDoc{};
+
     auto gui = hi::gui_system::make_unique();
     main_window(*gui);
     return hi::loop::main().resume();

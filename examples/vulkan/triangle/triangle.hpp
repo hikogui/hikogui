@@ -33,9 +33,9 @@ public:
 
     virtual void render(
         uint32_t currentBuffer,
-        VkRect2D renderArea,
         VkSemaphore presentCompleteSemaphore,
         VkSemaphore renderCompleteSemaphore,
+        VkRect2D renderArea,
         VkRect2D viewPort);
 
 private:
@@ -63,8 +63,8 @@ private:
     };
 
     bool hasSwapchain = false;
-    VkRect2D previousViewPort;
-    VkRect2D previousRenderArea;
+    VkRect2D previousViewPort = {};
+    VkRect2D previousRenderArea = {};
 
     VmaAllocator allocator;
 
@@ -78,12 +78,10 @@ private:
     VkCommandPool cmdPool;
     std::vector<VkCommandBuffer> drawCmdBuffers;
 
-    VkFormat depthImageFormat;
     VmaAllocation depthImageAllocation;
     VkImage depthImage;
     VkImageView depthImageView;
 
-    VkFormat colorImageFormat;
     std::vector<VkFramebuffer> frameBuffers;
 
     VkRenderPass renderPass;
@@ -141,7 +139,9 @@ private:
     void destroyDescriptorSet();
 
     // The following functions are used in-order when a new swap-chain is created.
-    void createDepthStencilImage(VkExtent2D imageSize);
+    void createRenderPass(VkFormat colorFormat, VkFormat depthFormat);
+    void destroyRenderPass();
+    void createDepthStencilImage(VkExtent2D imageSize, VkFormat format);
     void destroyDepthStencilImage();
     void createFrameBuffers(std::vector<VkImageView> const& imageViews, VkExtent2D imageSize);
     void destroyFrameBuffers();
@@ -149,8 +149,6 @@ private:
     void destroyCommandBuffers();
     void createFences();
     void destroyFences();
-    void createRenderPass();
-    void destroyRenderPass();
     void createPipeline();
     void destroyPipeline();
 

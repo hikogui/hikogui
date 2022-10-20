@@ -15,6 +15,9 @@
 #include "VulkanTools.hpp"
 #include "hikogui/file/URL.hpp"
 #include "hikogui/file/file_view.hpp"
+#include "hikogui/geometry/perspective.hpp"
+#include "hikogui/geometry/identity.hpp"
+#include "hikogui/geometry/lookat.hpp"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -49,7 +52,9 @@ TriangleExample::TriangleExample(VmaAllocator allocator, VkDevice device, VkQueu
 
 TriangleExample::~TriangleExample()
 {
-    teardownForLostSwapchain();
+    if (hasSwapchain) {
+        teardownForLostSwapchain();
+    }
 
     destroyDescriptorSet();
     destroyDescriptorSetLayout();
@@ -88,8 +93,8 @@ void TriangleExample::createVertexBuffer()
     uint32_t vertexDataSize = hi::narrow_cast<uint32_t>(vertexData.size()) * sizeof(Vertex);
 
     // Setup indices
-    std::vector<uint32_t> indexData = {0, 1, 2};
-    vertexIndexCount = hi::narrow_cast<uint32_t>(indexData.size());
+    std::vector<uint32_t> vertexIndexData = {0, 1, 2};
+    vertexIndexCount = hi::narrow_cast<uint32_t>(vertexIndexData.size());
     uint32_t vertexIndexDataSize = vertexIndexCount * sizeof(uint32_t);
 
     void *data;
@@ -101,6 +106,7 @@ void TriangleExample::createVertexBuffer()
     vertexBufferCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 
     VmaAllocationCreateInfo vertexBufferAllocationInfo = {};
+    vertexBufferAllocationInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
     vertexBufferAllocationInfo.usage = VMA_MEMORY_USAGE_AUTO;
 
     VK_CHECK_RESULT(vmaCreateBuffer(
@@ -118,6 +124,7 @@ void TriangleExample::createVertexBuffer()
     vertexIndexBufferCreateInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 
     VmaAllocationCreateInfo vertexIndexBufferAllocationInfo = {};
+    vertexIndexBufferAllocationInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
     vertexIndexBufferAllocationInfo.usage = VMA_MEMORY_USAGE_AUTO;
 
     VK_CHECK_RESULT(vmaCreateBuffer(
@@ -130,7 +137,7 @@ void TriangleExample::createVertexBuffer()
 
     // Copy index data to a buffer visible to the host
     VK_CHECK_RESULT(vmaMapMemory(allocator, vertexIndexBufferAllocation, &data));
-    memcpy(data, vertexData.data(), vertexIndexDataSize);
+    memcpy(data, vertexIndexData.data(), vertexIndexDataSize);
     vmaUnmapMemory(allocator, vertexIndexBufferAllocation);
 }
 
@@ -144,6 +151,7 @@ void TriangleExample::createUniformBuffer()
     uniformBufferCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
     VmaAllocationCreateInfo uniformBufferAllocationInfo = {};
+    uniformBufferAllocationInfo.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
     uniformBufferAllocationInfo.usage = VMA_MEMORY_USAGE_AUTO;
 
     VK_CHECK_RESULT(vmaCreateBuffer(
@@ -182,6 +190,7 @@ void TriangleExample::createDescriptorPool()
     // All descriptors used in this example are allocated from this pool
     VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
     descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    descriptorPoolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
     descriptorPoolInfo.pNext = nullptr;
     descriptorPoolInfo.poolSizeCount = 1;
     descriptorPoolInfo.pPoolSizes = typeCounts;
@@ -272,143 +281,42 @@ void TriangleExample::destroyDescriptorSet()
 
 void TriangleExample::buildForNewSwapchain(std::vector<VkImageView> const& imageViews, VkExtent2D imageSize, VkFormat imageFormat)
 {
-    colorImageFormat = imageFormat;
+    assert(not hasSwapchain);
 
-    createDepthStencilImage(imageSize);
+    auto colorImageFormat = imageFormat;
+    auto depthImageFormat = VK_FORMAT_D24_UNORM_S8_UINT;
+
+    createRenderPass(colorImageFormat, depthImageFormat);
+    createDepthStencilImage(imageSize, depthImageFormat);
     createFrameBuffers(imageViews, imageSize);
     createCommandBuffers();
     createFences();
-    createRenderPass();
     createPipeline();
 
     hasSwapchain = true;
+    previousRenderArea = {};
+    previousViewPort = {};
 }
 
 void TriangleExample::teardownForLostSwapchain()
 {
+    assert(hasSwapchain);
+
+    for (auto& fence : queueCompleteFences) {
+        VK_CHECK_RESULT(vkWaitForFences(device, 1, &fence, VK_TRUE, UINT64_MAX));
+    }
+
     hasSwapchain = false;
 
     destroyPipeline();
-    destroyRenderPass();
     destroyFences();
     destroyCommandBuffers();
     destroyFrameBuffers();
     destroyDepthStencilImage();
+    destroyRenderPass();
 }
 
-void TriangleExample::createDepthStencilImage(VkExtent2D imageSize)
-{
-    depthImageFormat = VK_FORMAT_D16_UNORM_S8_UINT;
-
-    VkImageCreateInfo depthImageCreateInfo = {};
-    depthImageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    depthImageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-    depthImageCreateInfo.format = depthImageFormat;
-    depthImageCreateInfo.extent.width = imageSize.width;
-    depthImageCreateInfo.extent.height = imageSize.height;
-    depthImageCreateInfo.extent.depth = 1;
-    depthImageCreateInfo.mipLevels = 1;
-    depthImageCreateInfo.arrayLayers = 1;
-    depthImageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-    depthImageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-    depthImageCreateInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-    depthImageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    depthImageCreateInfo.queueFamilyIndexCount = 0;
-    depthImageCreateInfo.pQueueFamilyIndices = nullptr;
-    depthImageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
-    VmaAllocationCreateInfo depthAllocationCreateInfo = {};
-    depthAllocationCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
-    VK_CHECK_RESULT(vmaCreateImage(
-        allocator, &depthImageCreateInfo, &depthAllocationCreateInfo, &depthImage, &depthImageAllocation, nullptr));
-
-    VkImageViewCreateInfo depthImageViewCreateInfo = {};
-    depthImageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    depthImageViewCreateInfo.image = depthImage;
-    depthImageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    depthImageViewCreateInfo.format = VK_FORMAT_D16_UNORM_S8_UINT;
-    depthImageViewCreateInfo.components = VkComponentMapping{};
-    depthImageViewCreateInfo.subresourceRange = VkImageSubresourceRange{VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1};
-
-    VK_CHECK_RESULT(vkCreateImageView(device, &depthImageViewCreateInfo, nullptr, &depthImageView));
-}
-
-void TriangleExample::destroyDepthStencilImage()
-{
-    vkDestroyImageView(device, depthImageView, nullptr);
-    vmaDestroyImage(allocator, depthImage, depthImageAllocation);
-}
-
-// Create a frame buffer for each swap chain image
-// Note: Override of virtual function in the base class and called from within TriangleExampleBase::prepare
-void TriangleExample::createFrameBuffers(std::vector<VkImageView> const& swapChainImageViews, VkExtent2D imageSize)
-{
-    // Create a frame buffer for every image in the swapchain
-    assert(frameBuffers.size() <= swapChainImageViews.size());
-    frameBuffers.resize(swapChainImageViews.size());
-    for (size_t i = 0; i < frameBuffers.size(); i++) {
-        std::array<VkImageView, 2> attachments;
-        attachments[0] = swapChainImageViews[i]; // Color attachment is the view of the swapchain image
-        attachments[1] = depthImageView; // Depth/Stencil attachment is the same for all frame buffers
-
-        VkFramebufferCreateInfo frameBufferCreateInfo = {};
-        frameBufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        // All frame buffers use the same renderpass setup
-        frameBufferCreateInfo.renderPass = renderPass;
-        frameBufferCreateInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-        frameBufferCreateInfo.pAttachments = attachments.data();
-        frameBufferCreateInfo.width = imageSize.width;
-        frameBufferCreateInfo.height = imageSize.height;
-        frameBufferCreateInfo.layers = 1;
-        // Create the framebuffer
-        VK_CHECK_RESULT(vkCreateFramebuffer(device, &frameBufferCreateInfo, nullptr, &frameBuffers[i]));
-    }
-}
-
-void TriangleExample::destroyFrameBuffers()
-{
-    for (auto const& frameBuffer : frameBuffers) {
-        vkDestroyFramebuffer(device, frameBuffer, nullptr);
-    }
-}
-
-void TriangleExample::createCommandBuffers()
-{
-    // Create one command buffer for each swap chain image and reuse for rendering
-    drawCmdBuffers.resize(frameBuffers.size());
-
-    VkCommandBufferAllocateInfo cmdBufAllocateInfo = vks::initializers::commandBufferAllocateInfo(
-        cmdPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY, hi::narrow_cast<uint32_t>(drawCmdBuffers.size()));
-
-    VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, drawCmdBuffers.data()));
-}
-
-void TriangleExample::destroyCommandBuffers()
-{
-    vkFreeCommandBuffers(device, cmdPool, hi::narrow_cast<uint32_t>(drawCmdBuffers.size()), drawCmdBuffers.data());
-}
-
-void TriangleExample::createFences()
-{
-    // Fences (Used to check draw command buffer completion)
-    VkFenceCreateInfo fenceCreateInfo = {};
-    fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    // Create in signaled state so we don't wait on first render of each command buffer
-    fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-    queueCompleteFences.resize(drawCmdBuffers.size());
-    for (auto& fence : queueCompleteFences) {
-        VK_CHECK_RESULT(vkCreateFence(device, &fenceCreateInfo, nullptr, &fence));
-    }
-}
-
-void TriangleExample::destroyFences()
-{
-    for (auto fence : queueCompleteFences) {
-        vkDestroyFence(device, fence, nullptr);
-    }
-}
-
-void TriangleExample::createRenderPass()
+void TriangleExample::createRenderPass(VkFormat colorFormat, VkFormat depthFormat)
 {
     // This example will use a single render pass with one subpass
 
@@ -416,7 +324,7 @@ void TriangleExample::createRenderPass()
     std::array<VkAttachmentDescription, 2> attachments = {};
 
     // Color attachment
-    attachments[0].format = colorImageFormat; // Use the color format selected by the swapchain
+    attachments[0].format = colorFormat; // Use the color format selected by the swapchain
     attachments[0].samples = VK_SAMPLE_COUNT_1_BIT; // We don't use multi sampling in this example
     attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // Clear this attachment at the start of the render pass
     attachments[0].storeOp =
@@ -429,7 +337,7 @@ void TriangleExample::createRenderPass()
                                                                   // render pass is finished As we want to present the color
                                                                   // buffer to the swapchain, we transition to PRESENT_KHR
     // Depth attachment
-    attachments[1].format = depthImageFormat; // A proper depth format is selected in the example base
+    attachments[1].format = depthFormat; // A proper depth format is selected in the example base
     attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
     attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // Clear depth at start of first subpass
     attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE; // We don't need depth after render pass has finished
@@ -498,11 +406,12 @@ void TriangleExample::createRenderPass()
     // Create the actual renderpass
     VkRenderPassCreateInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size()); // Number of attachments used by this render pass
+    renderPassInfo.attachmentCount =
+        hi::narrow_cast<uint32_t>(attachments.size()); // Number of attachments used by this render pass
     renderPassInfo.pAttachments = attachments.data(); // Descriptions of the attachments used by the render pass
     renderPassInfo.subpassCount = 1; // We only use one subpass in this example
     renderPassInfo.pSubpasses = &subpassDescription; // Description of that subpass
-    renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size()); // Number of subpass dependencies
+    renderPassInfo.dependencyCount = hi::narrow_cast<uint32_t>(dependencies.size()); // Number of subpass dependencies
     renderPassInfo.pDependencies = dependencies.data(); // Subpass dependencies used by the render pass
 
     VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass));
@@ -511,6 +420,116 @@ void TriangleExample::createRenderPass()
 void TriangleExample::destroyRenderPass()
 {
     vkDestroyRenderPass(device, renderPass, nullptr);
+}
+
+void TriangleExample::createDepthStencilImage(VkExtent2D imageSize, VkFormat format)
+{
+    VkImageCreateInfo depthImageCreateInfo = {};
+    depthImageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    depthImageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+    depthImageCreateInfo.format = format;
+    depthImageCreateInfo.extent.width = imageSize.width;
+    depthImageCreateInfo.extent.height = imageSize.height;
+    depthImageCreateInfo.extent.depth = 1;
+    depthImageCreateInfo.mipLevels = 1;
+    depthImageCreateInfo.arrayLayers = 1;
+    depthImageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    depthImageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+    depthImageCreateInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    depthImageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    depthImageCreateInfo.queueFamilyIndexCount = 0;
+    depthImageCreateInfo.pQueueFamilyIndices = nullptr;
+    depthImageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+    VmaAllocationCreateInfo depthAllocationCreateInfo = {};
+    depthAllocationCreateInfo.usage = VMA_MEMORY_USAGE_AUTO;
+    VK_CHECK_RESULT(vmaCreateImage(
+        allocator, &depthImageCreateInfo, &depthAllocationCreateInfo, &depthImage, &depthImageAllocation, nullptr));
+
+    VkImageViewCreateInfo depthImageViewCreateInfo = {};
+    depthImageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    depthImageViewCreateInfo.image = depthImage;
+    depthImageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    depthImageViewCreateInfo.format = format;
+    depthImageViewCreateInfo.components = VkComponentMapping{};
+    depthImageViewCreateInfo.subresourceRange = VkImageSubresourceRange{VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1};
+
+    VK_CHECK_RESULT(vkCreateImageView(device, &depthImageViewCreateInfo, nullptr, &depthImageView));
+}
+
+void TriangleExample::destroyDepthStencilImage()
+{
+    vkDestroyImageView(device, depthImageView, nullptr);
+    vmaDestroyImage(allocator, depthImage, depthImageAllocation);
+}
+
+// Create a frame buffer for each swap chain image
+// Note: Override of virtual function in the base class and called from within TriangleExampleBase::prepare
+void TriangleExample::createFrameBuffers(std::vector<VkImageView> const& swapChainImageViews, VkExtent2D imageSize)
+{
+    // Create a frame buffer for every image in the swapchain
+    assert(frameBuffers.size() <= swapChainImageViews.size());
+    frameBuffers.resize(swapChainImageViews.size());
+    for (size_t i = 0; i < frameBuffers.size(); i++) {
+        std::array<VkImageView, 2> attachments;
+        attachments[0] = swapChainImageViews[i]; // Color attachment is the view of the swapchain image
+        attachments[1] = depthImageView; // Depth/Stencil attachment is the same for all frame buffers
+
+        VkFramebufferCreateInfo frameBufferCreateInfo = {};
+        frameBufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        // All frame buffers use the same renderpass setup
+        frameBufferCreateInfo.renderPass = renderPass;
+        frameBufferCreateInfo.attachmentCount = hi::narrow_cast<uint32_t>(attachments.size());
+        frameBufferCreateInfo.pAttachments = attachments.data();
+        frameBufferCreateInfo.width = imageSize.width;
+        frameBufferCreateInfo.height = imageSize.height;
+        frameBufferCreateInfo.layers = 1;
+        // Create the framebuffer
+        VK_CHECK_RESULT(vkCreateFramebuffer(device, &frameBufferCreateInfo, nullptr, &frameBuffers[i]));
+    }
+}
+
+void TriangleExample::destroyFrameBuffers()
+{
+    for (auto const& frameBuffer : frameBuffers) {
+        vkDestroyFramebuffer(device, frameBuffer, nullptr);
+    }
+}
+
+void TriangleExample::createCommandBuffers()
+{
+    // Create one command buffer for each swap chain image and reuse for rendering
+    drawCmdBuffers.resize(frameBuffers.size());
+
+    VkCommandBufferAllocateInfo cmdBufAllocateInfo = vks::initializers::commandBufferAllocateInfo(
+        cmdPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY, hi::narrow_cast<uint32_t>(drawCmdBuffers.size()));
+
+    VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, drawCmdBuffers.data()));
+}
+
+void TriangleExample::destroyCommandBuffers()
+{
+    vkFreeCommandBuffers(device, cmdPool, hi::narrow_cast<uint32_t>(drawCmdBuffers.size()), drawCmdBuffers.data());
+}
+
+void TriangleExample::createFences()
+{
+    // Fences (Used to check draw command buffer completion)
+    VkFenceCreateInfo fenceCreateInfo = {};
+    fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    // Create in signaled state so we don't wait on first render of each command buffer
+    fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+    queueCompleteFences.resize(drawCmdBuffers.size());
+    for (auto& fence : queueCompleteFences) {
+        VK_CHECK_RESULT(vkCreateFence(device, &fenceCreateInfo, nullptr, &fence));
+    }
+}
+
+void TriangleExample::destroyFences()
+{
+    for (auto fence : queueCompleteFences) {
+        vkDestroyFence(device, fence, nullptr);
+    }
 }
 
 void TriangleExample::createPipeline()
@@ -575,7 +594,7 @@ void TriangleExample::createPipeline()
     VkPipelineDynamicStateCreateInfo dynamicState = {};
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
     dynamicState.pDynamicStates = dynamicStateEnables.data();
-    dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStateEnables.size());
+    dynamicState.dynamicStateCount = hi::narrow_cast<uint32_t>(dynamicStateEnables.size());
 
     // Depth and stencil state containing depth and stencil compare and test operations
     // We only use depth tests and want depth tests and writes to be enabled and compare with less or equal
@@ -659,7 +678,7 @@ void TriangleExample::createPipeline()
     assert(shaderStages[1].module != VK_NULL_HANDLE);
 
     // Set pipeline shader stage info
-    pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
+    pipelineCreateInfo.stageCount = hi::narrow_cast<uint32_t>(shaderStages.size());
     pipelineCreateInfo.pStages = shaderStages.data();
 
     // Assign the pipeline states to the pipeline creation info structure
@@ -843,7 +862,7 @@ void TriangleExample::draw(uint32_t currentBuffer, VkSemaphore presentCompleteSe
 VkShaderModule TriangleExample::loadSPIRVShader(std::filesystem::path filename)
 {
     auto view = hi::file_view(filename);
-    auto span = as_span<uint32_t>(view);
+    auto span = as_span<uint32_t const>(view);
 
     // Create a new shader module that will be used for pipeline creation
     VkShaderModuleCreateInfo moduleCreateInfo{};
@@ -869,22 +888,31 @@ void TriangleExample::updateUniformBuffers(Uniform const& uniform)
 
 void TriangleExample::render(
     uint32_t currentBuffer,
-    VkRect2D renderArea,
     VkSemaphore presentCompleteSemaphore,
     VkSemaphore renderCompleteSemaphore,
+    VkRect2D renderArea,
     VkRect2D viewPort)
 {
+    assert(hasSwapchain);
+
     if (previousViewPort != viewPort) {
         // Setup a default look-at camera
-        auto aspectRatio = hi::narrow_cast<float>(viewPort.extent.width) / hi::narrow_cast<float>(viewPort.extent.height);
+        auto viewPort_ = hi::aarectangle{
+            hi::narrow_cast<float>(viewPort.offset.x),
+            hi::narrow_cast<float>(viewPort.offset.y),
+            hi::narrow_cast<float>(viewPort.extent.width),
+            hi::narrow_cast<float>(viewPort.extent.height)};
 
-        camera.type = Camera::CameraType::lookat;
-        camera.setPosition(glm::vec3(0.0f, 0.0f, -2.5f));
-        camera.setRotation(glm::vec3(0.0f));
-        camera.setPerspective(60.0f, aspectRatio, 1.0f, 256.0f);
+        auto perspective = hi::perspective3{60.0f, viewPort_, -1.0f, -256.0f};
+        auto view = hi::lookat3{hi::point3{0.0f, 0.0f, 3.5f}, hi::point3{}};
+        auto model = hi::identity3{};
+
         // Values not set here are initialized in the base class constructor
         // Pass matrices to the shaders
-        auto uniform = Uniform{camera.matrices.perspective, camera.matrices.view, glm::mat4(1.0f)};
+        auto uniform = Uniform{
+            reflect<'x', 'Y', 'Z'>(static_cast<hi::matrix3>(perspective)),
+            reflect<'x', 'Y', 'Z'>(static_cast<hi::matrix3>(model)),
+            reflect<'x', 'Y', 'Z'>(static_cast<hi::matrix3>(view))};
         updateUniformBuffers(uniform);
     }
 

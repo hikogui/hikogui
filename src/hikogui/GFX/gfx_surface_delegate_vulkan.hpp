@@ -45,11 +45,11 @@ public:
     /** Draw using vulkan API.
      *
      * @param swapchain_index The index of the image-view of the swap-chain to draw into.
-     * @param render_area The area of the window that is being drawn.
      * @param start The semaphore used to signal when the swapchain-image is ready to be drawn.
      * @param finish The semaphore used to signal when the finishing drawing into the swapchain-image.
+     * @param render_area The area of the window that is being drawn.
      */
-    virtual void draw(uint32_t swapchain_index, vk::Rect2D render_area, vk::Semaphore start, vk::Semaphore finish) noexcept = 0;
+    virtual void draw(uint32_t swapchain_index, vk::Semaphore start, vk::Semaphore finish, vk::Rect2D render_area) noexcept = 0;
 };
 
 } // namespace hi::inline v1

@@ -20,7 +20,7 @@ add_shader_target(hikogui_vulkan_triangle_shaders
 add_custom_target(hikogui_vulkan_triangle_resources
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/../../../resources ${CMAKE_CURRENT_BINARY_DIR}/resources
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/shaders ${CMAKE_CURRENT_BINARY_DIR}/resources
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/shaders ${CMAKE_CURRENT_BINARY_DIR}/resources/shaders
     DEPENDS
     hikogui hikogui_vulkan_triangle_shaders
     resources/vulkan_triangle.png

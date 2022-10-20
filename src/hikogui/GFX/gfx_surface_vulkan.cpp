@@ -51,6 +51,8 @@ gfx_device_vulkan& gfx_surface_vulkan::vulkan_device() const noexcept
 
 void gfx_surface_vulkan::add_delegate(gfx_surface_delegate *delegate) noexcept
 {
+    hilet lock = std::scoped_lock(gfx_system_mutex);
+
     hi_axiom(delegate);
     auto& delegate_info =
         _delegates.emplace_back(down_cast<gfx_surface_delegate_vulkan *>(delegate), vulkan_device().createSemaphore());
@@ -80,6 +82,8 @@ void gfx_surface_vulkan::add_delegate(gfx_surface_delegate *delegate) noexcept
 
 void gfx_surface_vulkan::remove_delegate(gfx_surface_delegate *delegate) noexcept
 {
+    hilet lock = std::scoped_lock(gfx_system_mutex);
+
     hi_axiom(delegate);
     auto it = std::find_if(_delegates.begin(), _delegates.end(), [delegate](hilet& item) {
         return item.delegate == delegate;
@@ -94,6 +98,8 @@ void gfx_surface_vulkan::remove_delegate(gfx_surface_delegate *delegate) noexcep
     if (state >= gfx_surface_state::has_window) {
         it->delegate->teardown_for_window_lost();
     }
+
+    vulkan_device().destroy(it->semaphore);
 
     _delegates.erase(it);
 }
@@ -470,7 +476,7 @@ void gfx_surface_vulkan::render_finish(draw_context const& context)
     for (auto [delegate, end_semaphore] : _delegates) {
         hi_axiom(delegate);
 
-        delegate->draw(narrow<uint32_t>(context.frame_buffer_index), render_area, start_semaphore, end_semaphore);
+        delegate->draw(narrow<uint32_t>(context.frame_buffer_index), start_semaphore, end_semaphore, render_area);
         start_semaphore = end_semaphore;
     }
 
@@ -840,7 +846,7 @@ void gfx_surface_vulkan::build_render_passes()
             vk::AttachmentDescriptionFlags(),
             swapchainImageFormat.format,
             vk::SampleCountFlagBits::e1,
-            vk::AttachmentLoadOp::eDontCare,
+            vk::AttachmentLoadOp::eLoad,
             vk::AttachmentStoreOp::eStore,
             vk::AttachmentLoadOp::eDontCare, // stencilLoadOp
             vk::AttachmentStoreOp::eDontCare, // stencilStoreOp
