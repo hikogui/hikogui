@@ -12,26 +12,31 @@
  */
 
 #include "triangle.hpp"
-#include "VulkanTools.hpp"
 #include "hikogui/file/URL.hpp"
 #include "hikogui/file/file_view.hpp"
 #include "hikogui/geometry/perspective.hpp"
 #include "hikogui/geometry/identity.hpp"
 #include "hikogui/geometry/lookat.hpp"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-#include <fstream>
+#include <format>
 #include <vector>
 #include <exception>
 #include <cassert>
+#include <iostream>
 
 // Set to "true" to enable Vulkan's validation layers (see vulkandebug.cpp for details)
 #define ENABLE_VALIDATION false
 // Set to "true" to use staging buffers for uploading vertex and index data to device local memory
 // See "prepareVertices" for details on what's staging and on why to use it
 #define USE_STAGING true
+
+#define VK_CHECK_RESULT(f) \
+    do { \
+        VkResult res = (f); \
+        if (res != VK_SUCCESS) { \
+            std::cerr << std::format("Vulkan error {}", hi::to_underlying(res)) << std::endl; \
+            std::terminate(); \
+        } \
+    } while (false)
 
 [[nodiscard]] constexpr static bool operator==(VkRect2D const& lhs, VkRect2D const& rhs) noexcept
 {
@@ -326,13 +331,13 @@ void TriangleExample::createRenderPass(VkFormat colorFormat, VkFormat depthForma
     // Color attachment
     attachments[0].format = colorFormat; // Use the color format selected by the swapchain
     attachments[0].samples = VK_SAMPLE_COUNT_1_BIT; // We don't use multi sampling in this example
-    attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // Clear this attachment at the start of the render pass
+    attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_LOAD; // Clear this attachment at the start of the render pass
     attachments[0].storeOp =
         VK_ATTACHMENT_STORE_OP_STORE; // Keep its contents after the render pass is finished (for displaying it)
     attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; // We don't use stencil, so don't care for load
     attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE; // Same for store
     attachments[0].initialLayout =
-        VK_IMAGE_LAYOUT_UNDEFINED; // Layout at render pass start. Initial doesn't matter, so we use undefined
+        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // In HikoGUI we do partial draws into the swap-chain image, so we need to load the data.
     attachments[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // Layout to which the attachment is transitioned when the
                                                                   // render pass is finished As we want to present the color
                                                                   // buffer to the swapchain, we transition to PRESENT_KHR
@@ -501,8 +506,11 @@ void TriangleExample::createCommandBuffers()
     // Create one command buffer for each swap chain image and reuse for rendering
     drawCmdBuffers.resize(frameBuffers.size());
 
-    VkCommandBufferAllocateInfo cmdBufAllocateInfo = vks::initializers::commandBufferAllocateInfo(
-        cmdPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY, hi::narrow_cast<uint32_t>(drawCmdBuffers.size()));
+    auto cmdBufAllocateInfo = VkCommandBufferAllocateInfo{};
+    cmdBufAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    cmdBufAllocateInfo.commandPool = cmdPool;
+    cmdBufAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    cmdBufAllocateInfo.commandBufferCount = hi::narrow_cast<uint32_t>(drawCmdBuffers.size());
 
     VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, drawCmdBuffers.data()));
 }
@@ -720,7 +728,9 @@ VkCommandBuffer TriangleExample::getCommandBuffer(bool begin)
 
     // If requested, also start the new command buffer
     if (begin) {
-        VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
+        auto cmdBufInfo = VkCommandBufferBeginInfo{};
+        cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
         VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
     }
 
@@ -750,7 +760,7 @@ void TriangleExample::flushCommandBuffer(VkCommandBuffer commandBuffer)
     // Submit to the queue
     VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, fence));
     // Wait for the fence to signal that command buffer has finished executing
-    VK_CHECK_RESULT(vkWaitForFences(device, 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT));
+    VK_CHECK_RESULT(vkWaitForFences(device, 1, &fence, VK_TRUE, 100'000'000'000));
 
     vkDestroyFence(device, fence, nullptr);
     vkFreeCommandBuffers(device, cmdPool, 1, &commandBuffer);
@@ -792,7 +802,7 @@ void TriangleExample::buildCommandBuffers(VkRect2D renderArea, VkRect2D viewPort
         viewport.x = hi::narrow_cast<float>(viewPort.offset.x);
         viewport.y = hi::narrow_cast<float>(viewPort.offset.y);
         viewport.height = hi::narrow_cast<float>(viewPort.extent.height);
-        viewport.width = hi::narrow_cast<float>(viewPort.extent.height);
+        viewport.width = hi::narrow_cast<float>(viewPort.extent.width);
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
         vkCmdSetViewport(drawCmdBuffers[i], 0, 1, &viewport);
@@ -897,22 +907,25 @@ void TriangleExample::render(
 
     if (previousViewPort != viewPort) {
         // Setup a default look-at camera
-        auto viewPort_ = hi::aarectangle{
-            hi::narrow_cast<float>(viewPort.offset.x),
-            hi::narrow_cast<float>(viewPort.offset.y),
-            hi::narrow_cast<float>(viewPort.extent.width),
-            hi::narrow_cast<float>(viewPort.extent.height)};
+        auto viewPortSize =
+            hi::extent2{hi::narrow_cast<float>(viewPort.extent.width), hi::narrow_cast<float>(viewPort.extent.height)};
 
-        auto perspective = hi::perspective3{60.0f, viewPort_, -1.0f, -256.0f};
-        auto view = hi::lookat3{hi::point3{0.0f, 0.0f, 3.5f}, hi::point3{}};
+        auto projection = hi::perspective3{hi::to_radian(60.0f), viewPortSize, 1.0f, 256.0f};
+        auto view = hi::lookat3{hi::point3{0.0f, 0.0f, -3.5f}, hi::point3{}};
         auto model = hi::identity3{};
+
+        auto projection_m = static_cast<hi::matrix3>(projection);
+        auto view_m = static_cast<hi::matrix3>(view);
+        auto model_m = static_cast<hi::matrix3>(model);
 
         // Values not set here are initialized in the base class constructor
         // Pass matrices to the shaders
+        // clang-format off
         auto uniform = Uniform{
-            reflect<'x', 'Y', 'Z'>(static_cast<hi::matrix3>(perspective)),
-            reflect<'x', 'Y', 'Z'>(static_cast<hi::matrix3>(model)),
-            reflect<'x', 'Y', 'Z'>(static_cast<hi::matrix3>(view))};
+            reflect<'x', 'y', 'z'>(projection_m),
+            reflect<'x', 'y', 'z'>(model_m),
+            reflect<'x', 'y', 'Z'>(view_m)};
+        // clang-format on
         updateUniformBuffers(uniform);
     }
 

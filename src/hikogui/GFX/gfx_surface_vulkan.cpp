@@ -467,9 +467,32 @@ void gfx_surface_vulkan::render_finish(draw_context const& context)
 
     auto& current_image = swapchain_image_infos.at(context.frame_buffer_index);
 
-    auto render_area = vk::Rect2D{
-        vk::Offset2D{narrow<int32_t>(context.scissor_rectangle.left()), narrow<int32_t>(context.scissor_rectangle.bottom())},
-        vk::Extent2D{narrow<uint32_t>(context.scissor_rectangle.width()), narrow<uint32_t>(context.scissor_rectangle.height())}};
+    // Because we use a scissor/render_area, the image from the swapchain around the scissor-area is reused.
+    // Because of reuse the swapchain image must already be in the "ePresentSrcKHR" layout.
+    // The swapchain creates images in undefined layout, so we need to change the layout once.
+    if (not current_image.layout_is_present) {
+        vulkan_device().transition_layout(
+            current_image.image,
+            swapchainImageFormat.format,
+            vk::ImageLayout::eUndefined,
+            vk::ImageLayout::ePresentSrcKHR);
+
+        current_image.layout_is_present = true;
+    }
+
+    // Clamp the scissor rectangle to the size of the window.
+    hilet clamped_scissor_rectangle = ceil(intersect(
+        context.scissor_rectangle,
+        aarectangle{
+            0.0f, 0.0f, narrow_cast<float>(swapchainImageExtent.width), narrow_cast<float>(swapchainImageExtent.height)}));
+
+    hilet render_area = vk::Rect2D{
+        vk::Offset2D(
+            narrow_cast<uint32_t>(clamped_scissor_rectangle.left()),
+            narrow_cast<uint32_t>(
+                swapchainImageExtent.height - clamped_scissor_rectangle.bottom() - clamped_scissor_rectangle.height())),
+        vk::Extent2D(
+            narrow_cast<uint32_t>(clamped_scissor_rectangle.width()), narrow_cast<uint32_t>(clamped_scissor_rectangle.height()))};
 
     // Start the first delegate when the swapchain-image becomes available.
     auto start_semaphore = imageAvailableSemaphore;
@@ -481,7 +504,7 @@ void gfx_surface_vulkan::render_finish(draw_context const& context)
     }
 
     // Wait for the semaphore of the last delegate before it will write into the swapchain-image.
-    fill_command_buffer(current_image, context);
+    fill_command_buffer(current_image, context, render_area);
     submit_command_buffer(start_semaphore);
 
     // Signal the fence when all rendering has finished on the graphics queue.
@@ -494,7 +517,7 @@ void gfx_surface_vulkan::render_finish(draw_context const& context)
     teardown();
 }
 
-void gfx_surface_vulkan::fill_command_buffer(swapchain_image_info& current_image, draw_context const& context)
+void gfx_surface_vulkan::fill_command_buffer(swapchain_image_info& current_image, draw_context const& context, vk::Rect2D render_area)
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -504,6 +527,7 @@ void gfx_surface_vulkan::fill_command_buffer(swapchain_image_info& current_image
     commandBuffer.begin({vk::CommandBufferUsageFlagBits::eSimultaneousUse});
 
     hilet background_color_f32x4 = static_cast<f32x4>(context.background_color);
+    //hilet background_color_f32x4 = f32x4{1.0f, 0.0f, 0.0f, 1.0f};
     hilet background_color_array = static_cast<std::array<float, 4>>(background_color_f32x4);
 
     hilet colorClearValue = vk::ClearColorValue{background_color_array};
@@ -515,36 +539,9 @@ void gfx_surface_vulkan::fill_command_buffer(swapchain_image_info& current_image
         vk::ClearValue{sdfClearValue},
         vk::ClearValue{colorClearValue}};
 
-    // Clamp the scissor rectangle to the size of the window.
-    hilet scissor_rectangle = ceil(intersect(
-        context.scissor_rectangle,
-        aarectangle{
-            0.0f, 0.0f, narrow_cast<float>(swapchainImageExtent.width), narrow_cast<float>(swapchainImageExtent.height)}));
-
-    hilet scissors = std::array{vk::Rect2D{
-        vk::Offset2D(
-            narrow_cast<uint32_t>(scissor_rectangle.left()),
-            narrow_cast<uint32_t>(swapchainImageExtent.height - scissor_rectangle.bottom() - scissor_rectangle.height())),
-        vk::Extent2D(narrow_cast<uint32_t>(scissor_rectangle.width()), narrow_cast<uint32_t>(scissor_rectangle.height()))}};
-
     // The scissor and render area makes sure that the frame buffer is not modified where we are not drawing the widgets.
+    hilet scissors = std::array{render_area};
     commandBuffer.setScissor(0, scissors);
-
-    hilet render_area = scissors.at(0);
-
-    // Because we use a scissor the image from the swapchain around the scissor-area is reused.
-    // Because of reuse the swapchain image must already be in the "ePresentSrcKHR" layout.
-    // The swapchain creates images in undefined layout, so we need to change the layout once.
-    if (not current_image.layout_is_present) {
-        gfx_device_vulkan::transition_layout(
-            commandBuffer,
-            current_image.image,
-            swapchainImageFormat.format,
-            vk::ImageLayout::eUndefined,
-            vk::ImageLayout::ePresentSrcKHR);
-
-        current_image.layout_is_present = true;
-    }
 
     commandBuffer.beginRenderPass(
         {renderPass, current_image.frame_buffer, render_area, narrow_cast<uint32_t>(clearValues.size()), clearValues.data()},

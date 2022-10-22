@@ -5,6 +5,7 @@
 #pragma once
 
 #include "matrix.hpp"
+#include "../math.hpp"
 
 namespace hi { inline namespace v1 {
 namespace geo {
@@ -20,37 +21,54 @@ public:
     constexpr perspective& operator=(perspective const&) noexcept = default;
     constexpr perspective& operator=(perspective&&) noexcept = default;
 
-    constexpr perspective(float focal_length, float rcpt_aspect, float znear, float zfar) :
-        _focal_length(focal_length), _rcpt_aspect(rcpt_aspect), _znear(znear), _zfar(zfar)
+    /** Create a right-handed perspective transform.
+     *
+     * @note: This makes a right handed perspective matrix, where the near and far plane are clamped between 1.0 and 0.0
+     * @param fov_y The field of view from the eye to the height of the view in radians.
+     * @param aspect_ratio The view-port.
+     * @param znear The distance from the camera to the near plane.
+     * @param zfar The distance from the camera to the far plane.
+     */
+    perspective(float fov_y, float aspect_ratio, float znear, float zfar) noexcept :
+        _tan_half_fov_y(std::tan(fov_y * 0.5f)), _aspect_ratio(aspect_ratio), _znear(znear), _zfar(zfar)
     {
+        hi_axiom(fov_y > std::numeric_limits<float>::epsilon());
+        hi_axiom(aspect_ratio > std::numeric_limits<float>::epsilon());
     }
 
     /** Create a right-handed perspective transform.
      *
-     * @param fov The field of view in radians.
-     * @param view_port The view-port.
-     * @param znear The location of the near plane.
-     * @param zfar The location of the far plane.
+     * @note: This makes a right handed perspective matrix, where the near and far plane are clamped between 1.0 and 0.0
+     * @param fov_y The field of view from the eye to the height of the view in radians.
+     * @param view_port The size of the view port.
+     * @param znear The distance from the camera to the near plane.
+     * @param zfar The distance from the camera to the far plane.
      */
-    perspective(float fov, aarectangle view_port, float znear, float zfar) noexcept :
-        perspective(1.0f / std::tan(0.5f * fov), view_port.height() / view_port.width(), znear, zfar)
+    perspective(float fov_y, extent2 view_port, float znear, float zfar) noexcept :
+        perspective(fov_y, view_port.width() / view_port.height(), znear, zfar)
     {
     }
 
     [[nodiscard]] constexpr operator matrix<3>() noexcept
     {
-        auto r = matrix<3>{};
-        get<0>(r).x() = _focal_length * _rcpt_aspect;
-        get<1>(r).y() = _focal_length;
-        get<2>(r).z() = _zfar / (_znear - _zfar);
-        get<2>(r).w() = -1.0f;
-        get<3>(r).z() = -(_zfar * _znear) / (_zfar - _znear);
-        return r;
+        hilet a = _aspect_ratio;
+        hilet t = _tan_half_fov_y;
+        hilet f = _zfar;
+        hilet n = _znear;
+
+        // clang-format off
+        return {
+            1.0f / (a * t), 0.0f    ,  0.0f       ,  0.0f,
+            0.0f          , 1.0f / t,  0.0f       ,  0.0f,
+            0.0f          , 0.0f    ,  f / (n - f), -(f * n) / (f - n),
+            0.0f          , 0.0f    , -1.0f       ,  0.0f
+        };
+        // clang-format on
     }
 
 private:
-    float _focal_length;
-    float _rcpt_aspect;
+    float _tan_half_fov_y;
+    float _aspect_ratio;
     float _znear;
     float _zfar;
 };

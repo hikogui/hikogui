@@ -48,7 +48,7 @@ public:
         // Update the `_layout` with the new context, in this case we want to do some
         // calculations when the size of the widget was changed.
         if (compare_store(_layout, layout)) {
-            auto view_port = _layout.rectangle();
+            auto view_port = _layout.window_rectangle();
             auto window_height = window.widget->layout().height();
 
             _view_port = VkRect2D{
@@ -81,6 +81,8 @@ public:
 
     void draw(uint32_t swapchain_index, vk::Semaphore start, vk::Semaphore finish, vk::Rect2D render_area) noexcept override
     {
+        auto x_offset = render_area.offset.x;
+
         assert(_triangle_example != nullptr);
         _triangle_example->render(
             swapchain_index,

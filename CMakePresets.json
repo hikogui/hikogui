@@ -166,6 +166,18 @@
             "displayName": "Library + Examples",
             "configurePreset": "vc17-x64-windows-static-dbg",
             "targets": [ "hikogui", "hikogui_examples" ]
+        },
+        {
+            "name": "vc17-x64-windows-static-rel-all",
+            "displayName": "Library",
+            "configurePreset": "vc17-x64-windows-static-rel",
+            "targets": [ "hikogui" ]
+        },
+        {
+            "name": "vc17-x64-windows-static-rel-examples",
+            "displayName": "Library + Examples",
+            "configurePreset": "vc17-x64-windows-static-rel",
+            "targets": [ "hikogui", "hikogui_examples" ]
         }
     ]
 }
