@@ -44,6 +44,18 @@
         lhs.extent.height == rhs.extent.height;
 }
 
+[[nodiscard]] constexpr VkRect2D operator&(VkRect2D const& lhs, VkRect2D const& rhs) noexcept
+{
+    auto left = std::max(lhs.offset.x, rhs.offset.x);
+    auto right = std::min(lhs.offset.x + lhs.extent.width, rhs.offset.x + rhs.extent.width);
+    auto top = std::max(lhs.offset.y, rhs.offset.y);
+    auto bottom = std::min(lhs.offset.y + lhs.extent.height, rhs.offset.y + rhs.extent.height);
+
+    auto width = right > left ? right - left : uint32_t{0};
+    auto height = bottom > top ? bottom - top : uint32_t{0};
+    return {VkOffset2D{left, top}, VkExtent2D{width, height}};
+}
+
 TriangleExample::TriangleExample(VmaAllocator allocator, VkDevice device, VkQueue queue, uint32_t queueFamilyIndex) :
     allocator(allocator), device(device), queue(queue), queueFamilyIndex(queueFamilyIndex)
 {
@@ -807,8 +819,8 @@ void TriangleExample::buildCommandBuffers(VkRect2D renderArea, VkRect2D viewPort
         viewport.maxDepth = 1.0f;
         vkCmdSetViewport(drawCmdBuffers[i], 0, 1, &viewport);
 
-        // Update dynamic scissor state
-        VkRect2D scissor = renderArea;
+        // We are not allowed to draw outside of the renderArea, nor outside of the viewPort
+        VkRect2D scissor = renderArea & viewPort;
         vkCmdSetScissor(drawCmdBuffers[i], 0, 1, &scissor);
 
         // Bind descriptor sets describing shader binding points

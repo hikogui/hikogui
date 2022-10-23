@@ -140,14 +140,14 @@ jobs:
       # The Vulkan Runtime is normally to be found in "C:\windows\systems32", but it's not a system library on CI.
       - name: ✔ ❌✔️ Test
         run: |
-          cd install\tests
+          cd build_rel
           copy ${{env.VULKAN_SDK}}\runtime\${{env.PLATFORM}}\vulkan-1.* .
           hikogui_tests.exe --gtest_output=xml:test_results_gtest.xml
 
       - name: ♻ Transform Test Results (gtest ➔ junit)
         shell: pwsh
         run: |
-          cd install\tests
+          cd build_rel
           $xsl = New-Object System.Xml.Xsl.XslCompiledTransform
           $xsl.Load("${{github.workspace}}\.github\gtest_to_junit.xsl")
           $xsl.Transform((Resolve-Path .\test_results_gtest.xml), "${{github.workspace}}\test_results.xml")
@@ -178,10 +178,11 @@ jobs:
           .\bin\coverage\OpenCppCoverage.exe --sources=src ^
           --excluded_sources=src\*_tests.cpp ^
           --excluded_sources=src\*\*_tests.cpp ^
-          --excluded_sources=build\_deps ^
+          --excluded_sources=build_rel\_deps ^
+          --excluded_sources=build_dbg\_deps ^
           --export_type=cobertura:hikogui_coverage.xml ^
-          --working_dir=.\\install\tests ^
-          -- ".\\install\tests\\hikogui_tests.exe"
+          --working_dir=.\\build_rel ^
+          -- ".\\build_rel\\hikogui_tests.exe"
 
       - name: 📦 🚀 Upload CodeCoverage Report to codecov.io
         if: endsWith(matrix.config.NAME, '-debug') && github.event_name == 'push' && github.ref == 'refs/heads/main'
