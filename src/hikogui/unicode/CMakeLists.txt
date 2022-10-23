@@ -34,7 +34,7 @@ target_sources(hikogui PRIVATE
     unicode_word_break.hpp
 )
 
-if(HI_BUILD_TESTS)
+if(BUILD_TESTING)
     target_sources(hikogui_tests PRIVATE
         unicode_bidi_tests.cpp
         unicode_break_tests.cpp

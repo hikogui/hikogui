@@ -6,43 +6,32 @@
 # Build Target: hikogui_demo                             (executable)
 #-------------------------------------------------------------------
 
-add_executable(hikogui_vulkan_triangle WIN32 MACOSX_BUNDLE)
+add_executable(vulkan_triangle WIN32 MACOSX_BUNDLE)
+add_dependencies(examples vulkan_triangle)
 
-target_link_libraries(hikogui_vulkan_triangle PRIVATE hikogui)
-target_sources(hikogui_vulkan_triangle PRIVATE main.cpp triangle.cpp triangle.hpp)
+target_link_libraries(vulkan_triangle PRIVATE hikogui)
+target_sources(vulkan_triangle PRIVATE main.cpp triangle.cpp triangle.hpp)
 
-add_custom_target(hikogui_vulkan_triangle_shaders)
-add_shader_target(hikogui_vulkan_triangle_shaders
+add_custom_target(vulkan_triangle_shaders)
+add_shader_target(vulkan_triangle_shaders
     shaders/triangle.vert
     shaders/triangle.frag
 )
 
-add_custom_target(hikogui_vulkan_triangle_resources
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/../../../resources ${CMAKE_CURRENT_BINARY_DIR}/resources
+add_custom_target(vulkan_triangle_resources
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_BINARY_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/shaders ${CMAKE_CURRENT_BINARY_DIR}/resources/shaders
     DEPENDS
-    hikogui hikogui_vulkan_triangle_shaders
+    hikogui vulkan_triangle_shaders
     resources/vulkan_triangle.png
 )
 
-add_dependencies(hikogui_vulkan_triangle hikogui_vulkan_triangle_resources)
+add_dependencies(vulkan_triangle vulkan_triangle_resources)
 
-add_dependencies(hikogui_examples hikogui_vulkan_triangle)
 
 #-------------------------------------------------------------------
 # Installation Rules: hikogui_demo
 #-------------------------------------------------------------------
-
-install(TARGETS hikogui_vulkan_triangle DESTINATION examples/vulkan/triangle)
-
-install(DIRECTORY resources/ DESTINATION examples/vulkan/triangle/resources)
-
-# copy additional "hikogui library" resources from top-level
-install(DIRECTORY ../../resources/  DESTINATION examples/vulkan/triangle/resources)
-
-# copy vcpkg dependencies (experimental)
-if (VCPKG_TOOLCHAIN)
-    x_vcpkg_install_local_dependencies(TARGETS vulkan_triangle DESTINATION examples/vulkan/triangle)
-endif()
-
+install(TARGETS vulkan_triangle DESTINATION examples/vulkan/triangle COMPONENT examples EXCLUDE_FROM_ALL)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/resources DESTINATION examples/vulkan/triangle COMPONENT examples EXCLUDE_FROM_ALL)

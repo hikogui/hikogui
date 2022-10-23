@@ -14,7 +14,7 @@ target_sources(hikogui PRIVATE
     utf_32.hpp
 )
 
-if(HI_BUILD_TESTS)
+if(BUILD_TESTING)
     target_sources(hikogui_tests PRIVATE
         ascii_tests.cpp
         cp_1252_tests.cpp

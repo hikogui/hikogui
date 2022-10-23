@@ -39,7 +39,7 @@ target_sources(hikogui PRIVATE
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/win32_wave_device.hpp>
 )
 
-if(HI_BUILD_TESTS)
+if(BUILD_TESTING)
     target_sources(hikogui_tests PRIVATE
         audio_sample_unpacker_tests.cpp
         audio_sample_packer_tests.cpp
