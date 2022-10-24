@@ -21,8 +21,12 @@ public:
      *
      * The device may be rebuild when the vulkan device disconnects.
      */
-    virtual void
-    build_for_new_device(VmaAllocator allocator, vk::Instance instance, vk::Device device, vk::Queue graphics_queue) noexcept = 0;
+    virtual void build_for_new_device(
+        VmaAllocator allocator,
+        vk::Instance instance,
+        vk::Device device,
+        vk::Queue graphics_queue,
+        uint32_t graphics_queue_family_index) noexcept = 0;
 
     /** The swap-chain has been build.
      *
@@ -35,20 +39,17 @@ public:
      * @param size The size of the images in the swap-chain.
      * @param format The pixel format and color space of the images in the swap-chain.
      */
-    virtual void build_for_new_swapchain(std::vector<vk::ImageView> const &views, vk::Extent2D size, vk::SurfaceFormatKHR format) noexcept = 0;
+    virtual void
+    build_for_new_swapchain(std::vector<vk::ImageView> const& views, vk::Extent2D size, vk::SurfaceFormatKHR format) noexcept = 0;
 
     /** Draw using vulkan API.
      *
      * @param swapchain_index The index of the image-view of the swap-chain to draw into.
+     * @param start The semaphore used to signal when the swapchain-image is ready to be drawn.
+     * @param finish The semaphore used to signal when the finishing drawing into the swapchain-image.
      * @param render_area The area of the window that is being drawn.
-     * @param start The semaphore used to signal when the @a image_view is ready to be drawn.
-     * @param finish The semaphore used to signal when the HikoGUI overlay is drawn onto the @a image_view.
      */
-    virtual void draw(
-        uint32_t swapchain_index,
-        vk::Rect2D render_area,
-        vk::Semaphore start,
-        vk::Semaphore finish) noexcept = 0;
+    virtual void draw(uint32_t swapchain_index, vk::Semaphore start, vk::Semaphore finish, vk::Rect2D render_area) noexcept = 0;
 };
 
 } // namespace hi::inline v1

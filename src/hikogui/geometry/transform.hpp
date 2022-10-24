@@ -9,6 +9,7 @@
 #include "translate.hpp"
 #include "rotate.hpp"
 #include "scale.hpp"
+#include "perspective.hpp"
 #include <type_traits>
 
 namespace hi::inline v1 { namespace geo {
@@ -73,6 +74,7 @@ template<> struct transform<rotate<2>> : public std::true_type {};
 template<> struct transform<rotate<3>> : public std::true_type {};
 template<> struct transform<scale<2>> : public std::true_type {};
 template<> struct transform<scale<3>> : public std::true_type {};
+template<> struct transform<perspective> : public std::true_type {};
 // clang-format on
 
 template<typename T>

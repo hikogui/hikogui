@@ -14,6 +14,7 @@
 #include "corner_radii.hpp"
 #include "axis_aligned_rectangle.hpp"
 #include "../color/color.hpp"
+#include <array>
 
 namespace hi::inline v1 {
 namespace geo {
@@ -23,10 +24,10 @@ class matrix {
 public:
     static_assert(D == 2 || D == 3, "Only 2D or 3D rotation-matrices are supported");
 
-    constexpr matrix(matrix const &) noexcept = default;
-    constexpr matrix(matrix &&) noexcept = default;
-    constexpr matrix &operator=(matrix const &) noexcept = default;
-    constexpr matrix &operator=(matrix &&) noexcept = default;
+    constexpr matrix(matrix const&) noexcept = default;
+    constexpr matrix(matrix&&) noexcept = default;
+    constexpr matrix& operator=(matrix const&) noexcept = default;
+    constexpr matrix& operator=(matrix&&) noexcept = default;
 
     constexpr matrix() noexcept
     {
@@ -42,7 +43,9 @@ public:
     {
     }
 
-    constexpr matrix(vector3 col0, vector3 col1, vector3 col2) noexcept requires(D == 3) :
+    constexpr matrix(vector3 col0, vector3 col1, vector3 col2) noexcept
+        requires(D == 3)
+        :
         _col0(static_cast<f32x4>(col0)),
         _col1(static_cast<f32x4>(col1)),
         _col2(static_cast<f32x4>(col2)),
@@ -59,7 +62,9 @@ public:
         float c2r1,
         float c0r2,
         float c1r2,
-        float c2r2) noexcept requires(D == 3) :
+        float c2r2) noexcept
+        requires(D == 3)
+        :
         _col0(c0r0, c0r1, c0r2, 0.0f), _col1(c1r0, c1r1, c1r2, 0.0f), _col2(c2r0, c2r1, c2r2, 0.0f), _col3(0.0f, 0.0f, 0.0f, 1.0f)
     {
     }
@@ -80,25 +85,37 @@ public:
         float c0r3,
         float c1r3,
         float c2r3,
-        float c3r3) noexcept requires(D == 3) :
+        float c3r3) noexcept
+        requires(D == 3)
+        :
         _col0(c0r0, c0r1, c0r2, c0r3), _col1(c1r0, c1r1, c1r2, c1r3), _col2(c2r0, c2r1, c2r2, c2r3), _col3(c3r0, c3r1, c3r2, c3r3)
     {
     }
 
     template<int E>
-    requires(E < D) [[nodiscard]] constexpr matrix(matrix<E> const &other) noexcept :
+        requires(E < D)
+    [[nodiscard]] constexpr matrix(matrix<E> const& other) noexcept :
         _col0(get<0>(other)), _col1(get<1>(other)), _col2(get<2>(other)), _col3(get<3>(other))
     {
     }
 
     template<int E>
-    requires(E < D) constexpr matrix &operator=(matrix<E> const &rhs) noexcept
+        requires(E < D)
+    constexpr matrix& operator=(matrix<E> const& rhs) noexcept
     {
         _col0 = get<0>(rhs);
         _col1 = get<1>(rhs);
         _col2 = get<2>(rhs);
         _col3 = get<3>(rhs);
         return *this;
+    }
+
+    /** Convert a point to its f32x4-nummeric_array.
+     */
+    [[nodiscard]] constexpr explicit operator std::array<f32x4, 4>() const noexcept
+    {
+        hi_axiom(holds_invariant());
+        return {_col0, _col1, _col2, _col3};
     }
 
     /** Create a transformation matrix to translate and uniformly-scale a src_rectangle to a dst_rectangle.
@@ -114,7 +131,23 @@ public:
     uniform(aarectangle src_rectangle, aarectangle dst_rectangle, alignment alignment) noexcept;
 
     template<int I>
-    [[nodiscard]] friend constexpr f32x4 get(matrix const &rhs) noexcept
+    [[nodiscard]] friend constexpr f32x4 const& get(matrix const& rhs) noexcept
+    {
+        if constexpr (I == 0) {
+            return rhs._col0;
+        } else if constexpr (I == 1) {
+            return rhs._col1;
+        } else if constexpr (I == 2) {
+            return rhs._col2;
+        } else if constexpr (I == 3) {
+            return rhs._col3;
+        } else {
+            hi_static_no_default();
+        }
+    }
+
+    template<int I>
+    [[nodiscard]] friend constexpr f32x4& get(matrix& rhs) noexcept
     {
         if constexpr (I == 0) {
             return rhs._col0;
@@ -134,7 +167,7 @@ public:
         return true;
     }
 
-    [[nodiscard]] constexpr auto operator*(f32x4 const &rhs) const noexcept
+    [[nodiscard]] constexpr auto operator*(f32x4 const& rhs) const noexcept
     {
         return f32x4{_col0 * rhs.xxxx() + _col1 * rhs.yyyy() + _col2 * rhs.zzzz() + _col3 * rhs.wwww()};
     }
@@ -144,7 +177,7 @@ public:
      * The floating point number is transformed into a vector laying on the x-axis,
      * then transformed, then extracting the hypot from it.
      */
-    [[nodiscard]] constexpr float operator*(float const &rhs) const noexcept
+    [[nodiscard]] constexpr float operator*(float const& rhs) const noexcept
     {
         // As if _col0 * rhs.xxxx() in operator*(f32x4 rhs)
         auto abs_scale = hypot<D>(_col0 * f32x4::broadcast(rhs));
@@ -158,13 +191,13 @@ public:
      * The floating point number is transformed into a vector laying on the x-axis,
      * then transformed, then extracting the hypot from it.
      */
-    [[nodiscard]] constexpr corner_radii operator*(corner_radii const &rhs) const noexcept
+    [[nodiscard]] constexpr corner_radii operator*(corner_radii const& rhs) const noexcept
     {
         return {*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
     }
 
     template<int E>
-    [[nodiscard]] constexpr auto operator*(vector<E> const &rhs) const noexcept
+    [[nodiscard]] constexpr auto operator*(vector<E> const& rhs) const noexcept
     {
         hi_axiom(rhs.holds_invariant());
         return vector<std::max(D, E)>{
@@ -173,7 +206,7 @@ public:
     }
 
     template<int E>
-    [[nodiscard]] constexpr auto operator*(extent<E> const &rhs) const noexcept
+    [[nodiscard]] constexpr auto operator*(extent<E> const& rhs) const noexcept
     {
         hi_axiom(rhs.holds_invariant());
         return extent<std::max(D, E)>{
@@ -182,7 +215,7 @@ public:
     }
 
     template<int E>
-    [[nodiscard]] constexpr auto operator*(point<E> const &rhs) const noexcept
+    [[nodiscard]] constexpr auto operator*(point<E> const& rhs) const noexcept
     {
         hi_axiom(rhs.holds_invariant());
         return point<std::max(D, E)>{
@@ -190,28 +223,28 @@ public:
             _col2 * static_cast<f32x4>(rhs).zzzz() + _col3 * static_cast<f32x4>(rhs).wwww()};
     }
 
-    [[nodiscard]] constexpr rectangle operator*(aarectangle const &rhs) const noexcept
+    [[nodiscard]] constexpr rectangle operator*(aarectangle const& rhs) const noexcept
     {
         return *this * rectangle{rhs};
     }
 
     // XXX rectangle -> quad, perspective operation.
-    [[nodiscard]] constexpr rectangle operator*(rectangle const &rhs) const noexcept
+    [[nodiscard]] constexpr rectangle operator*(rectangle const& rhs) const noexcept
     {
         return rectangle{*this * rhs.origin, *this * rhs.right, *this * rhs.up};
     }
 
-    [[nodiscard]] constexpr quad operator*(quad const &rhs) const noexcept
+    [[nodiscard]] constexpr quad operator*(quad const& rhs) const noexcept
     {
         return quad{*this * rhs.p0, *this * rhs.p1, *this * rhs.p2, *this * rhs.p3};
     }
 
-    [[nodiscard]] constexpr circle operator*(circle const &rhs) const noexcept
+    [[nodiscard]] constexpr circle operator*(circle const& rhs) const noexcept
     {
         return circle{*this * midpoint(rhs), *this * rhs.radius()};
     }
 
-    [[nodiscard]] constexpr line_segment operator*(line_segment const &rhs) const noexcept
+    [[nodiscard]] constexpr line_segment operator*(line_segment const& rhs) const noexcept
     {
         return line_segment{*this * rhs.origin(), *this * rhs.direction()};
     }
@@ -220,7 +253,7 @@ public:
      * The alpha value is not included in the transformation and copied from the input.
      * The color will be correctly transformed if the color matrix includes translation.
      */
-    [[nodiscard]] constexpr auto operator*(color const &rhs) const noexcept
+    [[nodiscard]] constexpr auto operator*(color const& rhs) const noexcept
     {
         hi_axiom(rhs.holds_invariant());
         auto r = color{
@@ -233,21 +266,83 @@ public:
 
     /** Matrix/Matrix multiplication.
      */
-    [[nodiscard]] constexpr auto operator*(matrix const &rhs) const noexcept
+    [[nodiscard]] constexpr auto operator*(matrix const& rhs) const noexcept
     {
         return matrix{*this * get<0>(rhs), *this * get<1>(rhs), *this * get<2>(rhs), *this * get<3>(rhs)};
     }
 
     /** Matrix transpose.
      */
-    [[nodiscard]] friend constexpr matrix transpose(matrix rhs) noexcept
+    [[nodiscard]] friend constexpr matrix transpose(matrix const& rhs) noexcept
     {
         auto tmp = transpose(rhs._col0, rhs._col1, rhs._col2, rhs._col3);
         return {std::get<0>(tmp), std::get<1>(tmp), std::get<2>(tmp), std::get<3>(tmp)};
     }
 
+    template<char Axis>
+    [[nodiscard]] static constexpr f32x4 reflect_column() noexcept
+    {
+        if constexpr (Axis == 'x') {
+            return f32x4{1.0f, 0.0f, 0.0f, 0.0f};
+        } else if constexpr (Axis == 'X') {
+            return f32x4{-1.0f, 0.0f, 0.0f, 0.0f};
+        } else if constexpr (Axis == 'y') {
+            return f32x4{0.0f, 1.0f, 0.0f, 0.0f};
+        } else if constexpr (Axis == 'Y') {
+            return f32x4{0.0f, -1.0f, 0.0f, 0.0f};
+        } else if constexpr (Axis == 'z') {
+            return f32x4{0.0f, 0.0f, 1.0f, 0.0f};
+        } else if constexpr (Axis == 'Z') {
+            return f32x4{0.0f, 0.0f, -1.0f, 0.0f};
+        } else if constexpr (Axis == 'w') {
+            return f32x4{0.0f, 0.0f, 0.0f, 1.0f};
+        } else if constexpr (Axis == 'W') {
+            return f32x4{0.0f, 0.0f, 0.0f, -1.0f};
+        } else {
+            hi_static_no_default();
+        }
+    }
+
+    /** Reflect axis of a matrix.
+     *
+     * The default axis of HikoGUI's geometry system are:
+     * ```
+     *        +y
+     *        |   -z (away from camera)
+     *        |  /
+     *        | /
+     *        |/
+     * -x ----+---- +x
+     *       /|
+     *      / |
+     *     /  |
+     *   +z   |
+     *        -y
+     * ```
+     *
+     * In Vulkan the Y axis is downward; so to translate a matrix from HikoGUI to Vulkan you can use:
+     *
+     * ```
+     * auto vulkan_M = reflect<'x', 'Y', 'z'>(hikogui_M);
+     * ```
+     *
+     * The original axis are defined as the lower-case characters 'x', 'y', 'z' and 'w';
+     * or for the negated axis as the upper-case characters 'X', 'Y', 'Z' and 'W'.
+     *
+     * @tparam DstX Which of the original axis to use for the new matrix's x-axis.
+     * @tparam DstY Which of the original axis to use for the new matrix's y-axis.
+     * @tparam DstZ Which of the original axis to use for the new matrix's z-axis.
+     * @tparam DstW Which of the original axis to use for the new matrix's w-axis.
+     */
+    template<char DstX, char DstY, char DstZ, char DstW = 'w'>
+    [[nodiscard]] friend constexpr matrix reflect(matrix const& rhs) noexcept
+        requires(D == 3)
+    {
+        return matrix{reflect_column<DstX>(), reflect_column<DstY>(), reflect_column<DstZ>(), reflect_column<DstW>()} * rhs;
+    }
+
     template<int E>
-    [[nodiscard]] constexpr bool operator==(matrix<E> const &rhs) const noexcept
+    [[nodiscard]] constexpr bool operator==(matrix<E> const& rhs) const noexcept
     {
         return _col0 == rhs._col0 && _col1 == rhs._col1 && _col2 == rhs._col2 && _col3 == rhs._col3;
     }

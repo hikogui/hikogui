@@ -48,11 +48,7 @@ function(add_shader_target RET)
         endif()
     endforeach()
 
-    # Create a temporary target name for the custom target.
-    list(GET ${OUTPUT_PATHS} 0 FIRST_OUTPUT_PATH)
-    set(FIRST_OUTPUT_PATH_TARGET "${FIRST_OUTPUT_PATH}_target")
-
-    add_custom_target(${FIRST_OUTPUT_PATH_TARGET} DEPENDS ${OUTPUT_PATHS})
-    add_dependencies(${RET} ${FIRST_OUTPUT_PATH_TARGET})
+    add_custom_target("${RET}_itermediate" DEPENDS ${OUTPUT_PATHS})
+    add_dependencies(${RET} "${RET}_itermediate")
 endfunction()
 

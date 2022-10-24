@@ -12,8 +12,10 @@ target_sources(hikogui PRIVATE
     line_segment.hpp
     line_end_cap.hpp
     line_join_style.hpp
+    lookat.hpp
     margins.hpp
     matrix.hpp
+    perspective.hpp
     point.hpp
     rectangle.hpp
     rotate.hpp
@@ -24,7 +26,7 @@ target_sources(hikogui PRIVATE
     vector.hpp
 )
 
-if(HI_BUILD_TESTS)
+if(BUILD_TESTING)
     target_sources(hikogui_tests PRIVATE
         identity_tests.cpp
         matrix_tests.cpp

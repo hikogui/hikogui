@@ -51,6 +51,8 @@ gfx_device_vulkan& gfx_surface_vulkan::vulkan_device() const noexcept
 
 void gfx_surface_vulkan::add_delegate(gfx_surface_delegate *delegate) noexcept
 {
+    hilet lock = std::scoped_lock(gfx_system_mutex);
+
     hi_axiom(delegate);
     auto& delegate_info =
         _delegates.emplace_back(down_cast<gfx_surface_delegate_vulkan *>(delegate), vulkan_device().createSemaphore());
@@ -61,7 +63,11 @@ void gfx_surface_vulkan::add_delegate(gfx_surface_delegate *delegate) noexcept
         auto& graphics_queue = vulkan_device_.get_graphics_queue(*this);
 
         delegate_info.delegate->build_for_new_device(
-            vulkan_device_.allocator, vulkan_system.intrinsic, vulkan_device_.intrinsic, graphics_queue.queue);
+            vulkan_device_.allocator,
+            vulkan_system.intrinsic,
+            vulkan_device_.intrinsic,
+            graphics_queue.queue,
+            graphics_queue.family_queue_index);
     }
     if (state >= gfx_surface_state::has_swapchain) {
         auto image_views = std::vector<vk::ImageView>{};
@@ -76,6 +82,8 @@ void gfx_surface_vulkan::add_delegate(gfx_surface_delegate *delegate) noexcept
 
 void gfx_surface_vulkan::remove_delegate(gfx_surface_delegate *delegate) noexcept
 {
+    hilet lock = std::scoped_lock(gfx_system_mutex);
+
     hi_axiom(delegate);
     auto it = std::find_if(_delegates.begin(), _delegates.end(), [delegate](hilet& item) {
         return item.delegate == delegate;
@@ -90,6 +98,8 @@ void gfx_surface_vulkan::remove_delegate(gfx_surface_delegate *delegate) noexcep
     if (state >= gfx_surface_state::has_window) {
         it->delegate->teardown_for_window_lost();
     }
+
+    vulkan_device().destroy(it->semaphore);
 
     _delegates.erase(it);
 }
@@ -227,7 +237,11 @@ gfx_surface_loss gfx_surface_vulkan::build_for_new_device() noexcept
         hi_axiom(delegate);
 
         delegate->build_for_new_device(
-            vulkan_device_.allocator, vulkan_system.intrinsic, vulkan_device_.intrinsic, graphics_queue.queue);
+            vulkan_device_.allocator,
+            vulkan_system.intrinsic,
+            vulkan_device_.intrinsic,
+            graphics_queue.queue,
+            graphics_queue.family_queue_index);
     }
 
     return gfx_surface_loss::none;
@@ -453,21 +467,44 @@ void gfx_surface_vulkan::render_finish(draw_context const& context)
 
     auto& current_image = swapchain_image_infos.at(context.frame_buffer_index);
 
-    auto render_area = vk::Rect2D{
-        vk::Offset2D{narrow<int32_t>(context.scissor_rectangle.left()), narrow<int32_t>(context.scissor_rectangle.bottom())},
-        vk::Extent2D{narrow<uint32_t>(context.scissor_rectangle.width()), narrow<uint32_t>(context.scissor_rectangle.height())}};
+    // Because we use a scissor/render_area, the image from the swapchain around the scissor-area is reused.
+    // Because of reuse the swapchain image must already be in the "ePresentSrcKHR" layout.
+    // The swapchain creates images in undefined layout, so we need to change the layout once.
+    if (not current_image.layout_is_present) {
+        vulkan_device().transition_layout(
+            current_image.image,
+            swapchainImageFormat.format,
+            vk::ImageLayout::eUndefined,
+            vk::ImageLayout::ePresentSrcKHR);
+
+        current_image.layout_is_present = true;
+    }
+
+    // Clamp the scissor rectangle to the size of the window.
+    hilet clamped_scissor_rectangle = ceil(intersect(
+        context.scissor_rectangle,
+        aarectangle{
+            0.0f, 0.0f, narrow_cast<float>(swapchainImageExtent.width), narrow_cast<float>(swapchainImageExtent.height)}));
+
+    hilet render_area = vk::Rect2D{
+        vk::Offset2D(
+            narrow_cast<uint32_t>(clamped_scissor_rectangle.left()),
+            narrow_cast<uint32_t>(
+                swapchainImageExtent.height - clamped_scissor_rectangle.bottom() - clamped_scissor_rectangle.height())),
+        vk::Extent2D(
+            narrow_cast<uint32_t>(clamped_scissor_rectangle.width()), narrow_cast<uint32_t>(clamped_scissor_rectangle.height()))};
 
     // Start the first delegate when the swapchain-image becomes available.
     auto start_semaphore = imageAvailableSemaphore;
     for (auto [delegate, end_semaphore] : _delegates) {
         hi_axiom(delegate);
 
-        delegate->draw(narrow<uint32_t>(context.frame_buffer_index), render_area, start_semaphore, end_semaphore);
+        delegate->draw(narrow<uint32_t>(context.frame_buffer_index), start_semaphore, end_semaphore, render_area);
         start_semaphore = end_semaphore;
     }
 
     // Wait for the semaphore of the last delegate before it will write into the swapchain-image.
-    fill_command_buffer(current_image, context);
+    fill_command_buffer(current_image, context, render_area);
     submit_command_buffer(start_semaphore);
 
     // Signal the fence when all rendering has finished on the graphics queue.
@@ -480,7 +517,7 @@ void gfx_surface_vulkan::render_finish(draw_context const& context)
     teardown();
 }
 
-void gfx_surface_vulkan::fill_command_buffer(swapchain_image_info& current_image, draw_context const& context)
+void gfx_surface_vulkan::fill_command_buffer(swapchain_image_info& current_image, draw_context const& context, vk::Rect2D render_area)
 {
     hi_axiom(gfx_system_mutex.recurse_lock_count());
 
@@ -490,6 +527,7 @@ void gfx_surface_vulkan::fill_command_buffer(swapchain_image_info& current_image
     commandBuffer.begin({vk::CommandBufferUsageFlagBits::eSimultaneousUse});
 
     hilet background_color_f32x4 = static_cast<f32x4>(context.background_color);
+    //hilet background_color_f32x4 = f32x4{1.0f, 0.0f, 0.0f, 1.0f};
     hilet background_color_array = static_cast<std::array<float, 4>>(background_color_f32x4);
 
     hilet colorClearValue = vk::ClearColorValue{background_color_array};
@@ -501,36 +539,9 @@ void gfx_surface_vulkan::fill_command_buffer(swapchain_image_info& current_image
         vk::ClearValue{sdfClearValue},
         vk::ClearValue{colorClearValue}};
 
-    // Clamp the scissor rectangle to the size of the window.
-    hilet scissor_rectangle = ceil(intersect(
-        context.scissor_rectangle,
-        aarectangle{
-            0.0f, 0.0f, narrow_cast<float>(swapchainImageExtent.width), narrow_cast<float>(swapchainImageExtent.height)}));
-
-    hilet scissors = std::array{vk::Rect2D{
-        vk::Offset2D(
-            narrow_cast<uint32_t>(scissor_rectangle.left()),
-            narrow_cast<uint32_t>(swapchainImageExtent.height - scissor_rectangle.bottom() - scissor_rectangle.height())),
-        vk::Extent2D(narrow_cast<uint32_t>(scissor_rectangle.width()), narrow_cast<uint32_t>(scissor_rectangle.height()))}};
-
     // The scissor and render area makes sure that the frame buffer is not modified where we are not drawing the widgets.
+    hilet scissors = std::array{render_area};
     commandBuffer.setScissor(0, scissors);
-
-    hilet render_area = scissors.at(0);
-
-    // Because we use a scissor the image from the swapchain around the scissor-area is reused.
-    // Because of reuse the swapchain image must already be in the "ePresentSrcKHR" layout.
-    // The swapchain creates images in undefined layout, so we need to change the layout once.
-    if (not current_image.layout_is_present) {
-        gfx_device_vulkan::transition_layout(
-            commandBuffer,
-            current_image.image,
-            swapchainImageFormat.format,
-            vk::ImageLayout::eUndefined,
-            vk::ImageLayout::ePresentSrcKHR);
-
-        current_image.layout_is_present = true;
-    }
 
     commandBuffer.beginRenderPass(
         {renderPass, current_image.frame_buffer, render_area, narrow_cast<uint32_t>(clearValues.size()), clearValues.data()},
@@ -832,7 +843,7 @@ void gfx_surface_vulkan::build_render_passes()
             vk::AttachmentDescriptionFlags(),
             swapchainImageFormat.format,
             vk::SampleCountFlagBits::e1,
-            vk::AttachmentLoadOp::eDontCare,
+            vk::AttachmentLoadOp::eLoad,
             vk::AttachmentStoreOp::eStore,
             vk::AttachmentLoadOp::eDontCare, // stencilLoadOp
             vk::AttachmentStoreOp::eDontCare, // stencilStoreOp

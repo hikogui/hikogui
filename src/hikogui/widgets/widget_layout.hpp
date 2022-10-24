@@ -134,6 +134,13 @@ public:
         return bounding_rectangle(to_window * clipping_rectangle);
     }
 
+    /** Get the rectangle in window coordinate system.
+     */
+    [[nodiscard]] constexpr aarectangle window_rectangle() const noexcept
+    {
+        return bounding_rectangle(to_window * rectangle());
+    }
+
     /** Get the clipping rectangle in window coordinate system.
      *
      * @param narrow_clipping_rectangle A clipping rectangle in local coordinate

@@ -2,6 +2,9 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file math.hpp Miscellaneous math functions.
+ */
+
 #pragma once
 
 #include "utility.hpp"
@@ -18,6 +21,7 @@
 #include <bit>
 #include <concepts>
 #include <algorithm>
+#include <numbers>
 
 #if HI_COMPILER == HI_CC_MSVC
 #include <intrin.h>
@@ -111,6 +115,17 @@ template<std::floating_point T>
 {
     auto e = (a + b) * std::numeric_limits<T>::epsilon();
     return std::abs(a - b) <= e;
+}
+
+/** Convert degree to radian.
+ *
+ * @param degree The number of degrees.
+ * @return The number of radians.
+ */
+template<std::floating_point T>
+[[nodiscard]] constexpr T to_radian(T degree) noexcept
+{
+    return degree * (std::numbers::pi_v<T> / T{180.0});
 }
 
 } // namespace hi::inline v1

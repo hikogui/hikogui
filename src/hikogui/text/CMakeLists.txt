@@ -40,7 +40,7 @@ target_sources(hikogui PRIVATE
     hikogui_icon.hpp
 )
 
-#if(HI_BUILD_TESTS)
+#if(BUILD_TESTING)
 #    target_sources(hikogui_tests PRIVATE
 #    )
 #endif()

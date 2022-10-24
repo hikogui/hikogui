@@ -20,11 +20,6 @@ option(BUILD_SHARED_LIBS    "Build shared libraries"            OFF)
 option(HI_ENABLE_ANALYSIS   "Compile using -analyze"            OFF)
 option(HI_ENABLE_ASAN       "Compile using address sanitizer"   OFF)
 
-include(CMakeDependentOption)
-cmake_dependent_option(HI_BUILD_EXAMPLES "Build example applications"   OFF "NOT HI_ENABLE_ANALYSIS" ON)
-cmake_dependent_option(HI_BUILD_TESTS    "Build tests"                  ON  "NOT HI_ENABLE_ANALYSIS" OFF)
-cmake_dependent_option(HI_INSTALL        "Generate installation target" ON  "NOT HI_ENABLE_ANALYSIS" OFF)
-
 #-------------------------------------------------------------------
 # Project
 #-------------------------------------------------------------------
@@ -57,6 +52,7 @@ project(${HI_LIB_NAME} VERSION ${HI_LIB_VERSION} LANGUAGES ${LANGUAGES})
 include(AddShader)
 include(ShowBuildTargetProperties)
 include(FetchContent)
+include(CTest)
 
 #-------------------------------------------------------------------
 # Find Dependencies
@@ -65,11 +61,20 @@ include(FetchContent)
 #
 # GoogleTest - non-vcpkg, directly build from externals
 #
-if(HI_BUILD_TESTS)
+if(BUILD_TESTING)
     set(INSTALL_GTEST OFF CACHE INTERNAL "Don't install gtest")
     set(BUILD_GMOCK OFF CACHE INTERNAL "Don't build gmock")
     FetchContent_Declare(googletest GIT_REPOSITORY https://github.com/google/googletest.git GIT_TAG release-1.11.0)
     FetchContent_MakeAvailable(googletest)
+
+    include(GoogleTest)
+    add_executable(hikogui_tests)
+    # PRE_TEST delays test discovery until just prior to test execution
+    gtest_discover_tests(hikogui_tests DISCOVERY_MODE PRE_TEST)
+   
+    set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+    set_target_properties(gtest      PROPERTIES FOLDER extern)
+    set_target_properties(gtest_main PROPERTIES FOLDER extern)
 endif()
 
 #
@@ -96,10 +101,6 @@ endif()
 
 add_library(hikogui)
 set_target_properties(hikogui PROPERTIES DEBUG_POSTFIX "d")
-
-if(HI_BUILD_TESTS)
-    add_executable(hikogui_tests)
-endif()
 
 #-------------------------------------------------------------------
 # Setup Sources
@@ -434,72 +435,39 @@ install(FILES
 # Build Target: hikogui_tests                            (executable)
 #-------------------------------------------------------------------
 
-if(HI_BUILD_TESTS)
-
-    enable_testing()
-
+if (BUILD_TESTING)
     target_link_libraries(hikogui_tests PRIVATE gtest_main hikogui)
-
     target_include_directories(hikogui_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-
-    include(GoogleTest)
-
-    # PRE_TEST delays test discovery until just prior to test execution
-    gtest_discover_tests(hikogui_tests DISCOVERY_MODE PRE_TEST)
-
-    add_custom_command(
-        TARGET hikogui_tests PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${CMAKE_CURRENT_SOURCE_DIR}/tests/data
-            ${CMAKE_CURRENT_BINARY_DIR}
+    
+    
+    add_custom_target(hikogui_tests_resources
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/tests/data ${CMAKE_CURRENT_BINARY_DIR}
     )
-
-    set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-    set_target_properties(gtest      PROPERTIES FOLDER extern)
-    set_target_properties(gtest_main PROPERTIES FOLDER extern)
-endif()
-
-#-------------------------------------------------------------------
-# Installation Rules: hikogui_tests                      (executable)
-#-------------------------------------------------------------------
-if(HI_BUILD_TESTS)
-    install(TARGETS hikogui_tests DESTINATION tests)
-    install(DIRECTORY tests/data/ DESTINATION tests)
-    if (BUILD_SHARED_LIBS)
-        x_vcpkg_install_local_dependencies(TARGETS hikogui_tests DESTINATION tests)
-    endif()
+    add_dependencies(hikogui_tests hikogui_tests_resources)
+    
+    #-------------------------------------------------------------------
+    # Installation Rules: hikogui_tests                      (executable)
+    #-------------------------------------------------------------------
+    install(TARGETS hikogui_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
+    install(DIRECTORY tests/data/ DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
 endif()
 
 #-------------------------------------------------------------------
 # Build examples
 #-------------------------------------------------------------------
-if(HI_BUILD_EXAMPLES)
-    add_subdirectory(examples/hikogui_demo)
-    add_subdirectory(examples/widgets)
-    add_subdirectory(examples/custom_widgets)
-    add_subdirectory(examples/codec)
-else()
-    # By default examples marked with EXCLUDE_FROM_ALL will not be build by
-    # `make all`, which is also what Visual Studio uses to improve compilation speed.
-    add_subdirectory(examples/hikogui_demo EXCLUDE_FROM_ALL)
-    add_subdirectory(examples/widgets EXCLUDE_FROM_ALL)
-    add_subdirectory(examples/custom_widgets EXCLUDE_FROM_ALL)
-    add_subdirectory(examples/codec EXCLUDE_FROM_ALL)
-endif()
+add_custom_target(examples)
+add_subdirectory(examples/codec)
+add_subdirectory(examples/custom_widgets)
+add_subdirectory(examples/hikogui_demo)
+add_subdirectory(examples/vulkan/triangle)
+add_subdirectory(examples/widgets)
 
 #-------------------------------------------------------------------
 # Display Compiler and Linker properties of Build Targets
 #-------------------------------------------------------------------
 
 show_build_target_properties(hikogui)
-
-if(HI_BUILD_EXAMPLES)
-    show_build_target_properties(hikogui_demo)
-endif()
-
-if(HI_BUILD_TESTS)
-    show_build_target_properties(hikogui_tests)
-endif()
+show_build_target_properties(hikogui_tests)
 
 #-------------------------------------------------------------------
 # Build Documentation
@@ -550,7 +518,8 @@ if(DOXYGEN_FOUND)
     set(DOXYGEN_EXPAND_ONLY_PREDEF YES)
     set(DOXYGEN_PREDEFINED "protected=private")
 
-    doxygen_add_docs(doc src/hikogui docs)
+    doxygen_add_docs(docs src/hikogui docs)
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share COMPONENT docs EXCLUDE_FROM_ALL)
 else()
     message("Please install Doxygen to generate the documentation.")
 endif()

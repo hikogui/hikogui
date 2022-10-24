@@ -176,7 +176,7 @@ target_sources(hikogui PRIVATE
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/win32_headers.hpp>
 )
 
-if(HI_BUILD_TESTS)
+if(BUILD_TESTING)
     target_sources(hikogui_tests PRIVATE
         algorithm_tests.cpp
         bezier_curve_tests.cpp

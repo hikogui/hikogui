@@ -107,53 +107,52 @@ jobs:
           .\vcpkg version
 
       - name: ✏ CMake ➔ Configure (Debug)
-        run: |
-          cmake --preset=vc17-x64-windows-static-dbg-local
+        run: cmake --preset=vc17-x64-windows-static-dbg-local
 
       - name: ✏ CMake ➔ Configure (Release)
-        run: |
-          cmake --preset=vc17-x64-windows-static-rel-local
+        run: cmake --preset=vc17-x64-windows-static-rel-local
 
       - name: 🙏 CMake ➔ Build (Debug)
-        run: |
-          cmake --build build-dbg
+        run: cmake --build build-dbg --parallel 1
 
-      - name: 🙏 CMake ➔ Build (Release)
-        run: |
-          cmake --build build-rel
+      - name: 🙏 CMake ➔ Build unit-tests (Debug)
+        run: cmake --build build-dbg  --parallel 1 --target=hikogui_tests
 
       - name: 📦 CMake ➔ Install (Debug)
-        run: |
-          cmake --install build-dbg
+        run: cmake --install build-dbg
+
+      - name: 🙏 CMake ➔ Build (Release)
+        run: cmake --build build-rel --parallel 1
+
+      - name: 🙏 CMake ➔ Build examples (Release)
+        run: cmake --build build-rel  --parallel 1 --target=examples
 
       - name: 📦 CMake ➔ Install (Release)
-        run: |
-          cmake --install build-rel
+        run: cmake --install build-rel
+
+      - name: 📦 CMake ➔ Install examples (Release)
+        run: cmake --install build-rel --component=examples
 
       - name: ❔ CHECK important folders, to see if everything is present (after building)
         run: |
+          dir /S /B build-dbg
+          dir /S /B build-rel
           dir /S /B install
 
       # The Vulkan Runtime is normally to be found in "C:\windows\systems32", but it's not a system library on CI.
-      - name: Copy Vulkan Runtime (vulkan-1.dll)
-        run: |
-          copy ${{env.VULKAN_SDK}}\runtime\${{env.PLATFORM}}\vulkan-1.* install\tests
-          copy ${{env.VULKAN_SDK}}\runtime\${{env.PLATFORM}}\vulkan-1.* install\examples\hikogui_demo
-
       - name: ✔ ❌✔️ Test
+        working-directory: build-dbg
         run: |
-          cd install\tests
+          copy ${{env.VULKAN_SDK}}\runtime\${{env.PLATFORM}}\vulkan-1.* .
           hikogui_tests.exe --gtest_output=xml:test_results_gtest.xml
 
       - name: ♻ Transform Test Results (gtest ➔ junit)
+        working-directory: build-dbg
         shell: pwsh
         run: |
-          cd install\tests
           $xsl = New-Object System.Xml.Xsl.XslCompiledTransform
           $xsl.Load("${{github.workspace}}\.github\gtest_to_junit.xsl")
-          $xsl.Transform((Resolve-Path .\test_results_gtest.xml), "${{github.workspace}}\test_results.xml")
-          cd ${{ github.workspace }}
-          ren test_results.xml test_results_${{matrix.config.NAME}}.xml
+          $xsl.Transform((Resolve-Path .\test_results_gtest.xml), "${{github.workspace}}\test_results_${{matrix.config.NAME}}.xml")
 
       # We upload multiple files into the same artifact file (zip).
       # Each file is differently named by adding the job name of the matrix as a suffix.
@@ -179,10 +178,11 @@ jobs:
           .\bin\coverage\OpenCppCoverage.exe --sources=src ^
           --excluded_sources=src\*_tests.cpp ^
           --excluded_sources=src\*\*_tests.cpp ^
-          --excluded_sources=build\_deps ^
+          --excluded_sources=build-rel\_deps ^
+          --excluded_sources=build-dbg\_deps ^
           --export_type=cobertura:hikogui_coverage.xml ^
-          --working_dir=.\\install\tests ^
-          -- ".\\install\tests\\hikogui_tests.exe"
+          --working_dir=.\\build-dbg ^
+          -- ".\\build-dbg\\hikogui_tests.exe"
 
       - name: 📦 🚀 Upload CodeCoverage Report to codecov.io
         if: endsWith(matrix.config.NAME, '-debug') && github.event_name == 'push' && github.ref == 'refs/heads/main'

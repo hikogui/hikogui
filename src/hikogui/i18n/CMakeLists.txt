@@ -19,7 +19,7 @@ target_sources(hikogui PRIVATE
     translation.hpp
 )
 
-if(HI_BUILD_TESTS)
+if(BUILD_TESTING)
     target_sources(hikogui_tests PRIVATE
         iso_639_tests.cpp
         iso_3166_tests.cpp

@@ -7,7 +7,7 @@
 #-------------------------------------------------------------------
 
 add_custom_target(widget_example_resources
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/../../resources ${CMAKE_CURRENT_BINARY_DIR}/resources
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_BINARY_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
     DEPENDS
     hikogui
 )
@@ -48,21 +48,21 @@ target_link_libraries(selection_example PRIVATE hikogui)
 target_include_directories(selection_example PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
 add_dependencies(selection_example widget_example_resources)
 
+add_dependencies(examples
+    checkbox_example
+    text_example
+    toggle_example
+    radio_button_example
+    tab_example
+    selection_example)
+
 #-------------------------------------------------------------------
 # Installation Rules: hikogui_demo
 #-------------------------------------------------------------------
-install(TARGETS checkbox_example DESTINATION examples/widgets)
-install(TARGETS text_example DESTINATION examples/widgets)
-install(TARGETS toggle_example DESTINATION examples/widgets)
-install(TARGETS radio_button_example DESTINATION examples/widgets)
-install(TARGETS tab_example DESTINATION examples/widgets)
-install(TARGETS selection_example DESTINATION examples/widgets)
-
-# copy additional "hikogui library" resources from top-level
-install(DIRECTORY ../../resources/  DESTINATION examples/widgets/resources)
-
-# copy vcpkg dependencies (experimental)
-if (VCPKG_TOOLCHAIN)
-    x_vcpkg_install_local_dependencies(TARGETS hikogui_demo DESTINATION examples/widgets)
-endif()
-
+install(TARGETS checkbox_example DESTINATION examples/widgets COMPONENT examples EXCLUDE_FROM_ALL)
+install(TARGETS text_example DESTINATION examples/widgets COMPONENT examples EXCLUDE_FROM_ALL)
+install(TARGETS toggle_example DESTINATION examples/widgets COMPONENT examples EXCLUDE_FROM_ALL)
+install(TARGETS radio_button_example DESTINATION examples/widgets COMPONENT examples EXCLUDE_FROM_ALL)
+install(TARGETS tab_example DESTINATION examples/widgets COMPONENT examples EXCLUDE_FROM_ALL)
+install(TARGETS selection_example DESTINATION examples/widgets COMPONENT examples EXCLUDE_FROM_ALL)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/resources  DESTINATION examples/widgets COMPONENT examples EXCLUDE_FROM_ALL)

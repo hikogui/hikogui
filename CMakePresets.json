@@ -5,9 +5,9 @@
             "name": "x64-windows",
             "hidden": true,
             "generator": "Ninja",
-            "binaryDir": "$env{USERPROFILE}/CMakeBuilds/${sourceDirName}/build/${presetName}",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
             "cacheVariables": {
-                "CMAKE_INSTALL_PREFIX": "$env{USERPROFILE}/CMakeBuilds/${sourceDirName}/install/${presetName}",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
                 "CMAKE_VERBOSE_MAKEFILE": "ON"
             },
             "architecture": {
@@ -74,8 +74,7 @@
             "inherits": "vc17-x64-windows-static",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "HI_ENABLE_ANALYSIS": "ON",
-                "HI_BUILD_EXAMPLES": "ON"
+                "HI_ENABLE_ANALYSIS": "ON"
             }
         },
         {
@@ -100,8 +99,7 @@
             "displayName": "MSVC-x64-Release",
             "inherits": "vc17-x64-windows-static",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release",
-                "HI_BUILD_EXAMPLES": "ON"
+                "CMAKE_BUILD_TYPE": "Release"
             }
         },
         {
@@ -138,8 +136,7 @@
             "inherits": "vc17-x64-windows-static-rel",
             "binaryDir": "build-rel",
             "cacheVariables": {
-                "CMAKE_INSTALL_PREFIX": "install",
-                "HI_BUILD_EXAMPLES": "ON"
+                "CMAKE_INSTALL_PREFIX": "install"
             }
         },
         {
@@ -148,9 +145,34 @@
             "inherits": "vc17-x64-windows-static-dbg",
             "binaryDir": "build-dbg",
             "cacheVariables": {
-                "CMAKE_INSTALL_PREFIX": "install",
-                "HI_BUILD_EXAMPLES": "ON"
+                "CMAKE_INSTALL_PREFIX": "install"
             }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "vc17-x64-windows-static-dbg-all",
+            "displayName": "Library",
+            "configurePreset": "vc17-x64-windows-static-dbg",
+            "targets": [ "hikogui", "hikogui_tests" ]
+        },
+        {
+            "name": "vc17-x64-windows-static-dbg-examples",
+            "displayName": "Library + Examples",
+            "inherits": "vc17-x64-windows-static-dbg-all",
+            "targets": [ "examples" ]
+        },
+        {
+            "name": "vc17-x64-windows-static-rel-all",
+            "displayName": "Library",
+            "configurePreset": "vc17-x64-windows-static-rel",
+            "targets": [ "hikogui", "hikogui_tests" ]
+        },
+        {
+            "name": "vc17-x64-windows-static-rel-examples",
+            "displayName": "Library + Examples",
+            "inherits": "vc17-x64-windows-static-rel-all",
+            "targets": [ "examples" ]
         }
     ]
 }

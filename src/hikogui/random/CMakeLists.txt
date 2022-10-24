@@ -9,7 +9,7 @@ target_sources(hikogui PRIVATE
     xorshift128p.hpp
 )
 
-if(HI_BUILD_TESTS)
+if(BUILD_TESTING)
     target_sources(hikogui_tests PRIVATE
         dither_tests.cpp
         seed_tests.cpp

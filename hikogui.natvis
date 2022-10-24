@@ -88,7 +88,8 @@
             <Item Name="[x]">v[0],g</Item>
             <Item Name="[y]">v[1],g</Item>
         </Expand>
-    </Type>    <Type Name="hi::v1::numeric_array&lt;*,4&gt;">
+    </Type>
+    <Type Name="hi::v1::numeric_array&lt;*,4&gt;">
         <DisplayString>{v[0],g}, {v[1],g}, {v[2],g}, {v[3],g}</DisplayString>
         <Expand>
             <Item Name="[x]">v[0],g</Item>
@@ -155,6 +156,9 @@
             <Item Name="[depth]">_v.v[2],g</Item>
         </Expand>
     </Type>
+    <Type Name="hi::v1::geo::matrix&lt;3&gt;">
+        <DisplayString>({_col0.v[0],g}, {_col0.v[1],g}, {_col0.v[2],g}, {_col0.v[3],g}), ({_col1.v[0],g}, {_col1.v[1],g}, {_col1.v[2],g}, {_col1.v[3],g}), ({_col2.v[0],g}, {_col2.v[1],g}, {_col2.v[2],g}, {_col2.v[3],g}), ({_col3.v[0],g}, {_col3.v[1],g}, {_col3.v[2],g}, {_col3.v[3],g})</DisplayString>
+    </Type>
     <Type Name="hi::v1::color">
         <DisplayString>{{ r={_v.v[0],g}, g={_v.v[1],g}, b={_v.v[1],g}, a={_v.v[1],g} }}</DisplayString>
         <Expand>
@@ -200,6 +204,9 @@
             <Item Name="[width]">v.v[2] - v.v[0],g</Item>
             <Item Name="[height]">v.v[3] - v.v[1],g</Item>
         </Expand>
+    </Type>
+    <Type Name="hi::v1::sfloat_rgba32x4">
+        <DisplayString>({_v[0],g}, {_v[1],g}, {_v[2],g}, {_v[3],g}), ({_v[4],g}, {_v[5],g}, {_v[6],g}, {_v[7],g}), ({_v[8],g}, {_v[9],g}, {_v[10],g}, {_v[11],g}), ({_v[12],g}, {_v[13],g}, {_v[14],g}, {_v[15],g})</DisplayString>
     </Type>
     <Type Name="hi::v1::observer&lt;*&gt;">
         <DisplayString>{_value} #{_observed._ptr->_enable_group_ptr_owners.size()}</DisplayString>

@@ -7,6 +7,7 @@
 #-------------------------------------------------------------------
 
 add_executable(hikogui_demo WIN32 MACOSX_BUNDLE)
+add_dependencies(examples hikogui_demo)
 
 target_link_libraries(hikogui_demo PRIVATE hikogui)
 target_include_directories(hikogui_demo PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
@@ -14,7 +15,7 @@ target_include_directories(hikogui_demo PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
 add_subdirectory(src)
 
 add_custom_target(hikogui_demo_resources
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/../../resources ${CMAKE_CURRENT_BINARY_DIR}/resources
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_BINARY_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
     DEPENDS
     hikogui
@@ -25,19 +26,11 @@ add_custom_target(hikogui_demo_resources
 
 add_dependencies(hikogui_demo hikogui_demo_resources)
 
+
 #-------------------------------------------------------------------
 # Installation Rules: hikogui_demo
 #-------------------------------------------------------------------
 
-install(TARGETS hikogui_demo DESTINATION examples/hikogui_demo)
-
-install(DIRECTORY resources/ DESTINATION examples/hikogui_demo/resources)
-
-# copy additional "hikogui library" resources from top-level
-install(DIRECTORY ../../resources/  DESTINATION examples/hikogui_demo/resources)
-
-# copy vcpkg dependencies (experimental)
-if (VCPKG_TOOLCHAIN)
-    x_vcpkg_install_local_dependencies(TARGETS hikogui_demo DESTINATION examples/hikogui_demo)
-endif()
+install(TARGETS hikogui_demo DESTINATION examples/hikogui_demo COMPONENT examples EXCLUDE_FROM_ALL)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/resources  DESTINATION examples/hikogui_demo COMPONENT examples EXCLUDE_FROM_ALL)
 

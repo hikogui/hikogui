@@ -6,14 +6,15 @@
 
 #include "matrix.hpp"
 
-namespace hi::inline v1::geo {
+namespace hi { inline namespace v1 {
+namespace geo {
 
 class identity {
 public:
-    constexpr identity(identity const &) noexcept = default;
-    constexpr identity(identity &&) noexcept = default;
-    constexpr identity &operator=(identity const &) noexcept = default;
-    constexpr identity &operator=(identity &&) noexcept = default;
+    constexpr identity(identity const&) noexcept = default;
+    constexpr identity(identity&&) noexcept = default;
+    constexpr identity& operator=(identity const&) noexcept = default;
+    constexpr identity& operator=(identity&&) noexcept = default;
 
     constexpr identity() noexcept = default;
 
@@ -29,34 +30,34 @@ public:
     }
 
     template<int E>
-    [[nodiscard]] constexpr vector<E> operator*(vector<E> const &rhs) const noexcept
+    [[nodiscard]] constexpr vector<E> operator*(vector<E> const& rhs) const noexcept
     {
         return rhs;
     }
 
     template<int E>
-    [[nodiscard]] constexpr point<E> operator*(point<E> const &rhs) const noexcept
+    [[nodiscard]] constexpr point<E> operator*(point<E> const& rhs) const noexcept
     {
         return rhs;
     }
 
-    [[nodiscard]] constexpr color operator*(color const &rhs) const noexcept
+    [[nodiscard]] constexpr color operator*(color const& rhs) const noexcept
     {
         return rhs;
     }
 
-    [[nodiscard]] constexpr axis_aligned_rectangle operator*(axis_aligned_rectangle const &rhs) const noexcept
+    [[nodiscard]] constexpr axis_aligned_rectangle operator*(axis_aligned_rectangle const& rhs) const noexcept
     {
         return rhs;
     }
 
-    [[nodiscard]] constexpr rectangle operator*(rectangle const &rhs) const noexcept
+    [[nodiscard]] constexpr rectangle operator*(rectangle const& rhs) const noexcept
     {
         return rhs;
     }
 
     template<int E>
-    [[nodiscard]] constexpr identity operator*(identity const &) const noexcept
+    [[nodiscard]] constexpr identity operator*(identity const&) const noexcept
     {
         return {};
     }
@@ -67,4 +68,9 @@ public:
     }
 };
 
-} // namespace hi::inline v1::geo
+} // namespace geo
+
+using identity2 = geo::identity;
+using identity3 = geo::identity;
+
+}} // namespace hi::v1

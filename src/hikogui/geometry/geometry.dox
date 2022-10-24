@@ -1,5 +1,7 @@
-HikoGUI Geometry System
-======================
+namespace hi {
+inline namespace v1 {
+/**
+\defgroup geometry Geometry
 
 Low level geometry types
 ------------------------
@@ -106,7 +108,23 @@ Coordinates
 -----------
 
 All origins (0, 0, 0) are at the bottom-left-far corner. With the x-axis pointing
-right, y-axis pointing up, z-axis pointing near.
+right, y-axis pointing up, z-axis pointing toward the camera. This is the same coordinate
+system as OpenGL; a right-handed coordinate system.
+
+```
+           +y   
+           |   -z (away from camera)
+           |  /
+           | /
+           |/
+    -x ----+---- +x
+          /|
+         / |
+        /  |
+      +z   |
+           -y
+```
+
 
 This is true for:
 
@@ -161,14 +179,14 @@ Corners
 
 Corners are enumerated as follows:
 
- - `0`: near bottom left
- - `1`: near bottom right
- - `2`: near top left
- - `3`: near top right
- - `4`: far bottom left
- - `5`: far bottom right
- - `6`: far top left
- - `7`: far top right
+ - `0`: far bottom left
+ - `1`: far bottom right
+ - `2`: far top left
+ - `3`: far top right
+ - `4`: near bottom left
+ - `5`: near bottom right
+ - `6`: near top left
+ - `7`: near top right
 
 When corners are packed in a 4D vector:
 
@@ -209,3 +227,6 @@ As illustrated below:
 v    \ |
 0 ---> 1
 ```
+
+*/
+}}

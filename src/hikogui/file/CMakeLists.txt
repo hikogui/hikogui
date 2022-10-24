@@ -20,7 +20,7 @@ target_sources(hikogui PRIVATE
     URL.hpp
 )
 
-if(HI_BUILD_TESTS)
+if(BUILD_TESTING)
     target_sources(hikogui_tests PRIVATE
         file_view_tests.cpp
         glob_tests.cpp
