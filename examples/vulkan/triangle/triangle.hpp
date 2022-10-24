@@ -9,7 +9,11 @@
  * Copyright (C) 2016-2017 by Sascha Willems - www.saschawillems.de
  *
  * This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
+ * 
+ * Some of the code was modified so that it can be used to draw inside HikoGUI.
+ * Copyright (C) 2022 by Take Vos
  */
+
 
 #include "hikogui/rapid/sfloat_rgba32x4.hpp"
 #include <vulkan/vulkan.h>
@@ -23,6 +27,13 @@
 #include <exception>
 #include <filesystem>
 
+// This example is a copy of https://github.com/SaschaWillems/Vulkan/blob/master/examples/triangle/triangle.cpp
+// It is modified so:
+//  - It does not use any other utility files.
+//  - It is reordered so that the swap-chain can be replaced on window resize.
+//  - Uses the vulkan-memory-allocator.
+//  - Uses an externally provided vulkan-instance, vulkan-device, vulkan-queue and swap-chains.
+//  - Uses an externally provided view-port and render-area.
 class TriangleExample {
 public:
     TriangleExample(VmaAllocator allocator, VkDevice device, VkQueue queue, uint32_t queueFamilyIndex);

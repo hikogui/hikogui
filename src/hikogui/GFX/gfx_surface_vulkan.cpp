@@ -95,9 +95,6 @@ void gfx_surface_vulkan::remove_delegate(gfx_surface_delegate *delegate) noexcep
     if (state >= gfx_surface_state::has_device) {
         it->delegate->teardown_for_device_lost();
     }
-    if (state >= gfx_surface_state::has_window) {
-        it->delegate->teardown_for_window_lost();
-    }
 
     vulkan_device().destroy(it->semaphore);
 
@@ -369,10 +366,6 @@ void gfx_surface_vulkan::teardown_for_device_lost() noexcept
 
 void gfx_surface_vulkan::teardown_for_window_lost() noexcept
 {
-    for (auto [delegate, semaphore] : _delegates) {
-        hi_axiom(delegate);
-        delegate->teardown_for_window_lost();
-    }
     down_cast<gfx_system_vulkan&>(system).destroySurfaceKHR(intrinsic);
 }
 
