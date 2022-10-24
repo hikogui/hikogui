@@ -9,6 +9,9 @@
  * Copyright (C) 2016-2017 by Sascha Willems - www.saschawillems.de
  *
  * This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
+ *
+ * Some of the code was modified so that it can be used to draw inside HikoGUI.
+ * Copyright (C) 2022 by Take Vos
  */
 
 #include "triangle.hpp"
@@ -22,12 +25,6 @@
 #include <exception>
 #include <cassert>
 #include <iostream>
-
-// Set to "true" to enable Vulkan's validation layers (see vulkandebug.cpp for details)
-#define ENABLE_VALIDATION false
-// Set to "true" to use staging buffers for uploading vertex and index data to device local memory
-// See "prepareVertices" for details on what's staging and on why to use it
-#define USE_STAGING true
 
 #define VK_CHECK_RESULT(f) \
     do { \
@@ -51,8 +48,8 @@
     auto top = std::max(lhs.offset.y, rhs.offset.y);
     auto bottom = std::min(lhs.offset.y + lhs.extent.height, rhs.offset.y + rhs.extent.height);
 
-    auto width = right > left ? right - left : uint32_t{0};
-    auto height = bottom > top ? bottom - top : uint32_t{0};
+    auto width = hi::narrow_cast<int32_t>(right) > left ? right - left : uint32_t{0};
+    auto height = hi::narrow_cast<int32_t>(bottom) > top ? bottom - top : uint32_t{0};
     return {VkOffset2D{left, top}, VkExtent2D{width, height}};
 }
 
@@ -97,11 +94,6 @@ void TriangleExample::destroyCommandPool()
 
 void TriangleExample::createVertexBuffer()
 {
-    // A note on memory management in Vulkan in general:
-    //	This is a very complex topic and while it's fine for an example application to small individual memory allocations
-    // that is not 	what should be done a real-world application, where you should allocate large chunks of memory at once
-    // instead.
-
     // Setup vertices
     std::vector<Vertex> vertexData = {
         {{1.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
@@ -114,9 +106,7 @@ void TriangleExample::createVertexBuffer()
     vertexIndexCount = hi::narrow_cast<uint32_t>(vertexIndexData.size());
     uint32_t vertexIndexDataSize = vertexIndexCount * sizeof(uint32_t);
 
-    void *data;
-
-    // Vertex buffer
+    // Create the Vertex buffer inside the GPU
     VkBufferCreateInfo vertexBufferCreateInfo = {};
     vertexBufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     vertexBufferCreateInfo.size = vertexDataSize;
@@ -130,11 +120,14 @@ void TriangleExample::createVertexBuffer()
         allocator, &vertexBufferCreateInfo, &vertexBufferAllocationInfo, &vertexBuffer, &vertexBufferAllocation, nullptr));
 
     // Copy vertex data to a buffer visible to the host
-    VK_CHECK_RESULT(vmaMapMemory(allocator, vertexBufferAllocation, &data));
-    memcpy(data, vertexData.data(), vertexDataSize);
-    vmaUnmapMemory(allocator, vertexBufferAllocation);
+    {
+        void *data = nullptr;
+        VK_CHECK_RESULT(vmaMapMemory(allocator, vertexBufferAllocation, &data));
+        memcpy(data, vertexData.data(), vertexDataSize);
+        vmaUnmapMemory(allocator, vertexBufferAllocation);
+    }
 
-    // Index buffer
+    // Create the Vertex-index buffer inside the GPU
     VkBufferCreateInfo vertexIndexBufferCreateInfo = {};
     vertexIndexBufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     vertexIndexBufferCreateInfo.size = vertexIndexDataSize;
@@ -153,9 +146,12 @@ void TriangleExample::createVertexBuffer()
         nullptr));
 
     // Copy index data to a buffer visible to the host
-    VK_CHECK_RESULT(vmaMapMemory(allocator, vertexIndexBufferAllocation, &data));
-    memcpy(data, vertexIndexData.data(), vertexIndexDataSize);
-    vmaUnmapMemory(allocator, vertexIndexBufferAllocation);
+    {
+        void *data = nullptr;
+        VK_CHECK_RESULT(vmaMapMemory(allocator, vertexIndexBufferAllocation, &data));
+        memcpy(data, vertexIndexData.data(), vertexIndexDataSize);
+        vmaUnmapMemory(allocator, vertexIndexBufferAllocation);
+    }
 }
 
 void TriangleExample::createUniformBuffer()
@@ -164,7 +160,6 @@ void TriangleExample::createUniformBuffer()
     VkBufferCreateInfo uniformBufferCreateInfo = {};
     uniformBufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     uniformBufferCreateInfo.size = sizeof(Uniform);
-    // This buffer will be used as a uniform buffer
     uniformBufferCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
     VmaAllocationCreateInfo uniformBufferAllocationInfo = {};
@@ -341,15 +336,21 @@ void TriangleExample::createRenderPass(VkFormat colorFormat, VkFormat depthForma
     std::array<VkAttachmentDescription, 2> attachments = {};
 
     // Color attachment
+    // In HikoGUI we reuse the previous drawn swap-chain image, therefor:
+    // - initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+    //
+    // Although the loadOp is VK_ATTACHMENT_LOAD_OP_CLEAR, it only clears the renderArea/scissor rectangle.
+    // The initialLayout makes sure that the previous image is reused.
     attachments[0].format = colorFormat; // Use the color format selected by the swapchain
     attachments[0].samples = VK_SAMPLE_COUNT_1_BIT; // We don't use multi sampling in this example
-    attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_LOAD; // Clear this attachment at the start of the render pass
+    attachments[0].loadOp =
+        VK_ATTACHMENT_LOAD_OP_CLEAR; // Clear this attachment at the start of the render pass.
     attachments[0].storeOp =
         VK_ATTACHMENT_STORE_OP_STORE; // Keep its contents after the render pass is finished (for displaying it)
     attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; // We don't use stencil, so don't care for load
     attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE; // Same for store
     attachments[0].initialLayout =
-        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // In HikoGUI we do partial draws into the swap-chain image, so we need to load the data.
+        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // Reuse the previous draw image, so the layout is already in present mode.
     attachments[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // Layout to which the attachment is transitioned when the
                                                                   // render pass is finished As we want to present the color
                                                                   // buffer to the swapchain, we transition to PRESENT_KHR

@@ -27,8 +27,6 @@ public:
     /** The vulkan device is going to be teared-down.
      */
     virtual void teardown_for_device_lost() noexcept {}
-
-    virtual void teardown_for_window_lost() noexcept {}
 };
 
 } // namespace hi::inline v1

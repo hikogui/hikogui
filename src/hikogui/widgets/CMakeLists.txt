@@ -51,7 +51,6 @@ target_sources(hikogui PRIVATE
     toolbar_tab_button_widget.hpp
     toolbar_widget.cpp
     toolbar_widget.hpp
-    vulkan_widget.hpp
     widget.cpp
     widget.hpp
     widget_baseline.hpp
