@@ -1,4 +1,4 @@
-// Copyright Take Vos 2019-2021.
+// Copyright Take Vos 2019, 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -16,11 +16,10 @@ namespace hi::inline v1 {
 class gui_window_win32 final : public gui_window {
 public:
     using super = gui_window;
-    using delegate_type = typename super::delegate_type;
 
     HWND win32Window = nullptr;
 
-    gui_window_win32(gui_system &gui, label const &title, std::weak_ptr<delegate_type> delegate = {}) noexcept;
+    gui_window_win32(gui_system &gui, label const &title) noexcept;
 
     ~gui_window_win32();
 

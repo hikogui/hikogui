@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -6,16 +6,6 @@
 
 namespace hi::inline v1 {
 
-toggle_widget::toggle_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
-    super(window, parent, std::move(delegate))
-{
-    alignment = alignment::top_left();
-}
-
-toggle_widget::toggle_widget(gui_window &window, widget *parent, std::unique_ptr<delegate_type> delegate) noexcept :
-    toggle_widget(window, parent, weak_or_unique_ptr<delegate_type>{std::move(delegate)})
-{
-}
 
 widget_constraints const &toggle_widget::set_constraints() noexcept
 {

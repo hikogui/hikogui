@@ -1,11 +1,11 @@
-// Copyright Take Vos 2020-2021.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
 #include "../byte_string.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../datum.hpp"
 #include "../exception.hpp"
 #include "../cast.hpp"
@@ -310,23 +310,23 @@ public:
             for (hilet _c : value) {
                 hilet c = truncate<uint8_t>(_c);
 
-                if constexpr (build_type::current == build_type::debug) {
-                    if (multi_byte == 0) {
-                        if (c >= 0xc2 and c <= 0xdf) {
-                            multi_byte = 1;
-                        } else if (c >= 0xe0 and c <= 0xef) {
-                            multi_byte = 2;
-                        } else if (c >= 0xf0 and c <= 0xf7) {
-                            multi_byte = 3;
-                        } else {
-                            hi_assert(c <= 0x7f);
-                        }
-
+#ifndef NDEBUG
+                if (multi_byte == 0) {
+                    if (c >= 0xc2 and c <= 0xdf) {
+                        multi_byte = 1;
+                    } else if (c >= 0xe0 and c <= 0xef) {
+                        multi_byte = 2;
+                    } else if (c >= 0xf0 and c <= 0xf7) {
+                        multi_byte = 3;
                     } else {
-                        hi_assert(c >= 0x80 and c <= 0xbf);
-                        --multi_byte;
+                        hi_assert(c <= 0x7f);
                     }
+
+                } else {
+                    hi_assert(c >= 0x80 and c <= 0xbf);
+                    --multi_byte;
                 }
+#endif
 
                 output += static_cast<std::byte>(c);
             }
@@ -422,8 +422,6 @@ void BON8_encoder::add(datum const &value)
 {
     if (auto s = get_if<std::string>(value)) {
         add(*s);
-    } else if (auto u = get_if<URL>(value)) {
-        add(to_string(*u));
     } else if (auto b = get_if<bool>(value)) {
         add(*b);
     } else if (holds_alternative<nullptr_t>(value)) {
@@ -465,7 +463,7 @@ void BON8_encoder::add(datum const &value)
 
 /** Decode a 4, or 8 byte signed integer.
  *
- * @param [in,out] ptr The pointer to the first byte of the integer.
+ * @param[in,out] ptr The pointer to the first byte of the integer.
  *                     On return this points beyond the integer.
  * @param last The pointer beyond the buffer.
  * @param count The number of bytes used to encode the integer.

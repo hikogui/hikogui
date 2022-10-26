@@ -2,14 +2,21 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file char_maps/utf_8.hpp Definition of the Unicode UTF-8 encoding.
+ * @ingroup char_maps
+ */
+
 #pragma once
 
 #include "char_converter.hpp"
 #include "cp_1252.hpp"
 #include <bit>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
+/** Unicode UTF-8 encoding.
+ * @ingroup char_maps
+ */
 template<>
 struct char_map<"utf-8"> {
     using char_type = char;
@@ -103,7 +110,7 @@ struct char_map<"utf-8"> {
     }
 
     template<typename It>
-    constexpr void write(char32_t code_point, It &dst) const noexcept
+    constexpr void write(char32_t code_point, It& dst) const noexcept
     {
         hi_axiom(code_point < 0x11'0000);
         hi_axiom(not(code_point >= 0xd800 and code_point < 0xe000));
@@ -136,4 +143,4 @@ struct char_map<"utf-8"> {
 #endif
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

@@ -1,9 +1,10 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
-#include "required.hpp"
+
+#include "utility.hpp"
 #include "geometry/axis_aligned_rectangle.hpp"
 #include "geometry/extent.hpp"
 #include <algorithm>
@@ -54,7 +55,7 @@ public:
      * @param columnNr The column number in the row.
      * @return a reference to a pixel.
      */
-    [[nodiscard]] T const &operator[](std::size_t columnNr) const noexcept
+    [[nodiscard]] T const& operator[](std::size_t columnNr) const noexcept
     {
         return _pixels[columnNr];
     }
@@ -63,7 +64,7 @@ public:
      * @param columnNr The column number in the row.
      * @return a reference to a pixel.
      */
-    [[nodiscard]] T &operator[](std::size_t columnNr) noexcept
+    [[nodiscard]] T& operator[](std::size_t columnNr) noexcept
     {
         return _pixels[columnNr];
     }
@@ -74,7 +75,7 @@ public:
      * @param columnNr The column number in the row.
      * @return a reference to a pixel.
      */
-    [[nodiscard]] T const &at(std::size_t columnNr) const noexcept
+    [[nodiscard]] T const& at(std::size_t columnNr) const noexcept
     {
         hi_assert(columnNr >= 0 && columnNr < _width);
         return _pixels[columnNr];
@@ -86,7 +87,7 @@ public:
      * @param columnNr The column number in the row.
      * @return a reference to a pixel.
      */
-    [[nodiscard]] T &at(std::size_t columnNr) noexcept
+    [[nodiscard]] T& at(std::size_t columnNr) noexcept
     {
         hi_assert(columnNr >= 0 && columnNr < _width);
         return _pixels[columnNr];
@@ -135,22 +136,23 @@ public:
     }
 
     /** Construct an pixel-map from memory received from an API.
+     *
      * @param pixels A pointer to pixels received from the API.
      * @param width The width of the image.
      * @param height The height of the image.
-     * @param stride Number of pixel elements until the next row.
      */
     pixel_map(T *pixels, std::size_t width, std::size_t height) noexcept : pixel_map(pixels, width, height, width) {}
 
-    /** Construct an pixel-map from memory received from an API.
-     * @param pixels A pointer to pixels received from the API.
+    /** Construct an pixel-map without a memory association.
+     *
      * @param width The width of the image.
      * @param height The height of the image.
+     * @param stride The number of pixels in a line until the next line.
      */
     pixel_map(std::size_t width, std::size_t height, std::size_t stride) noexcept : pixel_map(nullptr, width, height, stride) {}
 
-    /** Construct an pixel-map from memory received from an API.
-     * @param pixels A pointer to pixels received from the API.
+    /** Construct an pixel-map without a memory association.
+     *
      * @param width The width of the image.
      * @param height The height of the image.
      */
@@ -168,7 +170,7 @@ public:
      * If the data in other is self allocated a new copy is created.
      * If other is a view, then a new view is creted.
      */
-    pixel_map(pixel_map const &other) noexcept :
+    pixel_map(pixel_map const& other) noexcept :
         _pixels(other._pixels),
         _width(other._width),
         _height(other._height),
@@ -188,7 +190,7 @@ public:
         }
     }
 
-    pixel_map(pixel_map &&other) noexcept :
+    pixel_map(pixel_map&& other) noexcept :
         _pixels(other._pixels),
         _width(other._width),
         _height(other._height),
@@ -221,7 +223,7 @@ public:
 
     /** Disallowing copying so that life-time of selfAllocated pixels is easy to understand.
      */
-    pixel_map &operator=(pixel_map const &other)
+    pixel_map& operator=(pixel_map const& other)
     {
         hi_return_on_self_assignment(other);
 
@@ -245,7 +247,7 @@ public:
         return *this;
     }
 
-    pixel_map &operator=(pixel_map &&other) noexcept
+    pixel_map& operator=(pixel_map&& other) noexcept
     {
         // Self assignment is allowed.
         if (_self_allocated) {
@@ -338,7 +340,7 @@ private:
 };
 
 template<typename T>
-void copy(pixel_map<T> const &src, pixel_map<T> &dst) noexcept
+void copy(pixel_map<T> const& src, pixel_map<T>& dst) noexcept
 {
     std::size_t width = std::min(src.width(), dst.width());
     std::size_t height = std::min(src.height(), dst.height());
@@ -356,31 +358,31 @@ template<int KERNEL_SIZE, typename KERNEL>
 void horizontalFilterRow(pixel_row<uint8_t> row, KERNEL kernel) noexcept;
 
 template<int KERNEL_SIZE, typename T, typename KERNEL>
-void horizontalFilter(pixel_map<T> &pixels, KERNEL kernel) noexcept;
+void horizontalFilter(pixel_map<T>& pixels, KERNEL kernel) noexcept;
 
 /*! Clear the pixels of this (sub)image.
  */
 template<typename T>
-void fill(pixel_map<T> &dst) noexcept;
+void fill(pixel_map<T>& dst) noexcept;
 
 /*! Fill with color.
  */
 template<typename T>
-void fill(pixel_map<T> &dst, T color) noexcept;
+void fill(pixel_map<T>& dst, T color) noexcept;
 
 /*! Rotate an image 90 degrees counter-clockwise.
  */
 template<typename T>
-void rotate90(pixel_map<T> &dst, pixel_map<T> const &src) noexcept;
+void rotate90(pixel_map<T>& dst, pixel_map<T> const& src) noexcept;
 
 /*! Rotate an image 270 degrees counter-clockwise.
  */
 template<typename T>
-void rotate270(pixel_map<T> &dst, pixel_map<T> const &src) noexcept;
+void rotate270(pixel_map<T>& dst, pixel_map<T> const& src) noexcept;
 
 /*! Merge two image by applying std::max on each pixel.
  */
-void mergeMaximum(pixel_map<uint8_t> &dst, pixel_map<uint8_t> const &src) noexcept;
+void mergeMaximum(pixel_map<uint8_t>& dst, pixel_map<uint8_t> const& src) noexcept;
 
 /** Make a 1 pixel border on the edge of the pixel_map transparent
  * By copying the pixel value from just beyond the edge and setting
@@ -388,7 +390,7 @@ void mergeMaximum(pixel_map<uint8_t> &dst, pixel_map<uint8_t> const &src) noexce
  * interpolate color correctly while anti-aliasing the edge.
  */
 template<typename T>
-inline void makeTransparentBorder(pixel_map<T> &pixel_map) noexcept;
+inline void makeTransparentBorder(pixel_map<T>& pixel_map) noexcept;
 
 } // namespace hi::inline v1
 

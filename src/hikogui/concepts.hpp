@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020-2021.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -47,8 +47,8 @@ concept rvalue_reference = std::is_rvalue_reference_v<T>;
 template<typename T>
 concept trivially_copyable = std::is_trivially_copyable_v<T>;
 
-template<typename T, typename Other>
-concept different_from = is_different_v<T, Other>;
+template<typename Context, typename Expected>
+concept different_from = is_different_v<Context, Expected>;
 
 template<typename BaseType, typename DerivedType>
 concept base_of = std::is_base_of_v<BaseType, DerivedType>;
@@ -56,8 +56,8 @@ concept base_of = std::is_base_of_v<BaseType, DerivedType>;
 template<typename BaseType, typename DerivedType>
 concept decayed_base_of = is_decayed_base_of_v<BaseType, DerivedType>;
 
-template<typename DerivedType, typename BaseType>
-concept derived_from = hi::is_derived_from_v<DerivedType, BaseType>;
+template<typename Context, typename Expected>
+concept derived_from = hi::is_derived_from_v<Context, Expected>;
 
 template<typename DerivedType, typename BaseType>
 concept decayed_derived_from = hi::is_decayed_derived_from_v<DerivedType, BaseType>;
@@ -122,7 +122,11 @@ concept scalar = std::is_scalar_v<T>;
 template<typename T>
 concept scoped_enum = std::is_enum_v<T>;
 
-template<typename Forward, typename T>
-concept forward_of = is_forward_of_v<T, Forward>;
+/** True if T is a forwarded type of Forward.
+ *
+ * @see is_forward_of
+ */
+template<typename Context, typename Expected, typename... OtherExpected>
+concept forward_of = is_forward_of_v<Context, Expected, OtherExpected...>;
 
 } // namespace hi::inline v1

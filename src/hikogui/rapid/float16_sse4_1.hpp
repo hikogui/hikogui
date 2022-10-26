@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020-2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -20,7 +20,7 @@
 #if defined(HI_HAS_SSE)
 #include <xmmintrin.h> // SSE
 #endif
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../float16.hpp"
 
 namespace hi::inline v1 {

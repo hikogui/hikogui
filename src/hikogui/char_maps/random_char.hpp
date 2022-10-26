@@ -6,7 +6,8 @@
 
 #include <random>
 
-namespace hi::inline v1 {
+namespace hi {
+inline namespace v1 {
 
 inline char32_t random_char() noexcept
 {
@@ -36,4 +37,4 @@ inline char32_t random_char() noexcept
     }
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

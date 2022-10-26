@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -11,17 +11,18 @@
 
 namespace hi::inline v1 {
 
-text_widget::text_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
+text_widget::text_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
+    super(window, parent), delegate(std::move(delegate))
 {
     mode = widget_mode::select;
 
-    _text_cbt = text.subscribe([&](auto...) {
-        update_shaped_text();
-        request_reconstrain();
+    hi_axiom(this->delegate != nullptr);
+    _delegate_cbt = this->delegate->subscribe([&] {
+        hi_request_reconstrain("text_widget::_delegate_cbt()");
     });
+
     _text_style_cbt = text_style.subscribe([&](auto...) {
-        update_shaped_text();
-        request_reconstrain();
+        hi_request_reconstrain("text_widget::_text_style_cbt()");
     });
 
     _cursor_state_cbt = _cursor_state.subscribe([&](auto...) {
@@ -29,18 +30,28 @@ text_widget::text_widget(gui_window& window, widget *parent) noexcept : super(wi
     });
 
     _blink_cursor = blink_cursor();
+
+    this->delegate->init(*this);
+}
+
+text_widget::~text_widget()
+{
+    hi_axiom(delegate != nullptr);
+    delegate->deinit(*this);
 }
 
 void text_widget::update_shaped_text() noexcept
 {
-    _selection.resize(text->size());
-    _shaped_text = text_shaper{font_book(), *text, theme().text_style(*text_style), theme().scale};
+    _selection.resize(_cached_text.size());
+    _shaped_text = text_shaper{font_book(), _cached_text, theme().text_style(*text_style), theme().scale};
 }
 
 widget_constraints const& text_widget::set_constraints() noexcept
 {
     _layout = {};
 
+    hi_axiom(delegate != nullptr);
+    _cached_text = delegate->read(*this);
     update_shaped_text();
     hilet shaped_text_rectangle = _shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity(), alignment->vertical());
     hilet shaped_text_size = shaped_text_rectangle.size();
@@ -179,24 +190,26 @@ void text_widget::draw(draw_context const& context) noexcept
 
 void text_widget::undo_push() noexcept
 {
-    _undo_stack.emplace(*text, _selection);
+    _undo_stack.emplace(_cached_text, _selection);
 }
 
 void text_widget::undo() noexcept
 {
     if (_undo_stack.can_undo()) {
-        hilet& tmp = _undo_stack.undo(*text, _selection);
-        text = tmp.text;
-        _selection = tmp.selection;
+        hilet & [ text, selection ] = _undo_stack.undo(_cached_text, _selection);
+
+        delegate->write(*this, text);
+        _selection = selection;
     }
 }
 
 void text_widget::redo() noexcept
 {
     if (_undo_stack.can_redo()) {
-        hilet& tmp = _undo_stack.redo();
-        text = tmp.text;
-        _selection = tmp.selection;
+        hilet & [ text, selection ] = _undo_stack.redo();
+
+        delegate->write(*this, text);
+        _selection = selection;
     }
 }
 
@@ -204,12 +217,12 @@ void text_widget::redo() noexcept
 {
     hilet[first, last] = _selection.selection_indices();
 
-    return gstring_view{*text}.substr(first, last - first);
+    return gstring_view{_cached_text}.substr(first, last - first);
 }
 
 void text_widget::fix_cursor_position() noexcept
 {
-    hilet size = text->size();
+    hilet size = _cached_text.size();
     if (_overwrite_mode and _selection.empty() and _selection.cursor().after()) {
         _selection = _selection.cursor().before_neighbor(size);
     }
@@ -221,7 +234,10 @@ void text_widget::replace_selection(gstring const& replacement) noexcept
     undo_push();
 
     hilet[first, last] = _selection.selection_indices();
-    text.proxy()->replace(first, last - first, replacement);
+
+    auto text = _cached_text;
+    text.replace(first, last - first, replacement);
+    delegate->write(*this, text);
 
     _selection = text_cursor{first + replacement.size() - 1, true};
     fix_cursor_position();
@@ -233,7 +249,7 @@ void text_widget::add_character(grapheme c, add_type keyboard_mode) noexcept
     auto original_grapheme = grapheme{char32_t{0xffff}};
 
     if (_selection.empty() and _overwrite_mode and original_cursor.before()) {
-        original_grapheme = (*text)[original_cursor.index()];
+        original_grapheme = _cached_text[original_cursor.index()];
 
         hilet[first, last] = _shaped_text.select_char(original_cursor);
         _selection.drag_selection(last);
@@ -245,7 +261,7 @@ void text_widget::add_character(grapheme c, add_type keyboard_mode) noexcept
         _selection = original_cursor;
 
     } else if (keyboard_mode == add_type::dead) {
-        _selection = original_cursor.before_neighbor(text->size());
+        _selection = original_cursor.before_neighbor(_cached_text.size());
         _has_dead_character = original_grapheme;
     }
 }
@@ -254,11 +270,15 @@ void text_widget::delete_dead_character() noexcept
 {
     if (_has_dead_character) {
         hi_axiom(_selection.cursor().before());
-        hi_axiom(_selection.cursor().index() < text->size());
+        hi_axiom(_selection.cursor().index() < _cached_text.size());
         if (_has_dead_character.valid()) {
-            (*text.proxy())[_selection.cursor().index()] = _has_dead_character;
+            auto text = _cached_text;
+            text[_selection.cursor().index()] = _has_dead_character;
+            delegate->write(*this, text);
         } else {
-            text.proxy()->erase(_selection.cursor().index(), 1);
+            auto text = _cached_text;
+            text.erase(_selection.cursor().index(), 1);
+            delegate->write(*this, text);
         }
     }
     _has_dead_character.clear();

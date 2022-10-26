@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -209,6 +209,7 @@ inline void set_log_level(global_state_type log_level) noexcept
 /** Disable a subsystem.
  *
  * @param subsystem The subsystem to disable.
+ * @param order Memory order to use on the global_state variable.
  * @return True if the subsystem was enabled.
  */
 inline bool global_state_disable(global_state_type subsystem, std::memory_order order = std::memory_order::seq_cst) noexcept
@@ -220,6 +221,7 @@ inline bool global_state_disable(global_state_type subsystem, std::memory_order 
 /** Enable a subsystem.
  *
  * @param subsystem The subsystem to disable.
+ * @param order Memory order to use on the global_state variable.
  * @return True if the subsystem was enabled.
  */
 inline bool global_state_enable(global_state_type subsystem, std::memory_order order = std::memory_order::seq_cst) noexcept

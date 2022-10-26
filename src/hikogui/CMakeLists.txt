@@ -1,4 +1,5 @@
-# Copyright Take Vos 2020-2021.
+# Copyright Jens A. Koch 2021.
+# Copyright Take Vos 2020-2022.
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -6,16 +7,17 @@ add_subdirectory(audio)
 add_subdirectory(char_maps)
 add_subdirectory(codec)
 add_subdirectory(color)
+add_subdirectory(file)
 add_subdirectory(formula)
 add_subdirectory(geometry)
 add_subdirectory(GFX)
 add_subdirectory(GUI)
+add_subdirectory(i18n)
 add_subdirectory(random)
 add_subdirectory(rapid)
 add_subdirectory(skeleton)
-add_subdirectory(i18n)
-add_subdirectory(unicode)
 add_subdirectory(text)
+add_subdirectory(unicode)
 add_subdirectory(widgets)
 
 configure_file(metadata.cpp.in metadata.cpp @ONLY)
@@ -44,40 +46,29 @@ target_sources(hikogui PRIVATE
     chrono.hpp
     concepts.hpp
     console.hpp
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/console_win32.cpp>
-    CommandLineParser.hpp
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/console_win32.cpp>
     counters.cpp
     counters.hpp
     CP1252.hpp
     #cpu_id.hpp
-    #$<${HI_X64}:${CMAKE_CURRENT_SOURCE_DIR}/cpu_id_x64.cpp>
+    #$<$<STREQUAL:${CMAKE_SYSTEM_PROCESSOR}:AMD64>:${CMAKE_CURRENT_SOURCE_DIR}/cpu_id_x64.cpp>
     crt.hpp
     crt_utils.hpp
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/crt_utils_win32.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/crt_utils_win32.cpp>
     datum.hpp
     dead_lock_detector.cpp
     dead_lock_detector.hpp
     debugger.hpp
-    $<${HI_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/debugger_macos.mm>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/debugger_win32.cpp>
+    $<$<PLATFORM_ID:Darwin>:${CMAKE_CURRENT_SOURCE_DIR}/debugger_macos.mm>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/debugger_win32.cpp>
     decimal.hpp
     defer.hpp
     dialog.hpp
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/dialog_win32.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/dialog_win32.cpp>
     endian.hpp
     enum_metadata.hpp
+    exception.cpp
     exception.hpp
-    file.hpp
-    $<${HI_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/file_posix.cpp>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/file_win32.cpp>
-    file_mapping.cpp
-    file_mapping.hpp
-    $<${HI_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/file_mapping_posix.cpp>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/file_mapping_win32.cpp>
-    file_view.cpp
-    file_view.hpp
-    $<${HI_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/file_view_posix.cpp>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/file_view_win32.cpp>
     fixed.hpp
     float16.hpp
     format_check.hpp
@@ -88,28 +79,26 @@ target_sources(hikogui PRIVATE
     gap_buffer.hpp
     generator.hpp
     global_state.hpp
-    glob.hpp
     hash.hpp
     hash_map.hpp
     huffman.hpp
-    icon.cpp
-    icon.hpp
     int_carry.hpp
     int_overflow.hpp
     interval.hpp
     jsonpath.hpp
     label.hpp
     locked_memory_allocator.hpp
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/locked_memory_allocator_win32.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/locked_memory_allocator_win32.cpp>
     log.cpp
     log.hpp
-    $<${HI_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/log_macos.mm>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/log_win32.cpp>
+    $<$<PLATFORM_ID:Darwin>:${CMAKE_CURRENT_SOURCE_DIR}/log_macos.mm>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/log_win32.cpp>
     long_tagged_id.hpp
 	loop.hpp
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/loop_win32.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/loop_win32.cpp>
     math.hpp
     memory.hpp
+    group_ptr.hpp
     meta.hpp
     ${CMAKE_CURRENT_BINARY_DIR}/metadata.cpp
     metadata.hpp
@@ -117,10 +106,12 @@ target_sources(hikogui PRIVATE
     notifier.hpp
     cast.hpp
     observable.hpp
+    observable_value.hpp
+    observer.hpp
     operator.hpp
     os_settings.cpp
     os_settings.hpp
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/os_settings_win32.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/os_settings_win32.cpp>
     architecture.hpp
     parse_location.hpp
     preferences.cpp
@@ -138,80 +129,54 @@ target_sources(hikogui PRIVATE
     ranges.hpp
     rcu.hpp
     recursive_iterator.hpp
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32.cpp>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32.hpp>
-    required.hpp
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/registry_win32.hpp>
+    utility.hpp
     range_map.hpp
-    resource_view.hpp
     safe_int.hpp
     semantic_version.hpp
     scoped_buffer.hpp
     scoped_task.hpp
+    shared_state.hpp
     sip_hash.hpp
-    source_location.hpp
     small_map.hpp
     small_vector.hpp
     stack.hpp
-    static_resource_view.cpp
-    static_resource_view.hpp
     strings.hpp
     subsystem.hpp
     tag.hpp
     tagged_id.hpp
     tagged_map.hpp
     task.hpp
-    $<${HI_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/thread_macos.cpp>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/thread_win32.cpp>
+    $<$<PLATFORM_ID:Darwin>:${CMAKE_CURRENT_SOURCE_DIR}/thread_macos.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/thread_win32.cpp>
     thread.cpp
     thread.hpp
     time_stamp_count.cpp
     time_stamp_count.hpp
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/time_stamp_count_win32.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/time_stamp_count_win32.cpp>
     time_stamp_utc.cpp
     time_stamp_utc.hpp
     tokenizer.cpp
     tokenizer.hpp
     trace.cpp
     trace.hpp
+    tree.hpp
     type_traits.hpp
     undo_stack.hpp
     unfair_mutex.hpp
     unfair_recursive_mutex.hpp
-    URL.cpp
-    URL.hpp
-    $<${HI_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/URL_macos.mm>
-    $<${HI_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/URL_posix.cpp>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/URL_win32.cpp>
-    url_parser.cpp
-    url_parser.hpp
     utils.hpp
     vector_span.hpp
     void_span.hpp
-    weak_or_unique_ptr.hpp
     when_any.hpp
     wfree_fifo.hpp
     wfree_idle_count.hpp
     wfree_unordered_map.hpp
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/win32_headers.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/win32_headers.hpp>
 )
 
-if(HI_BUILD_PCH AND NOT HI_ENABLE_ANALYSIS)
-    target_precompile_headers(hikogui PRIVATE
-        assert.hpp
-        counters.hpp
-        datum.hpp
-        debugger.hpp
-        exception.hpp
-        log.hpp
-        architecture.hpp
-        required.hpp
-        strings.hpp
-        trace.hpp
-        URL.hpp
-    )
-endif()
-
-if(HI_BUILD_TESTS)
+if(BUILD_TESTING)
     target_sources(hikogui_tests PRIVATE
         algorithm_tests.cpp
         bezier_curve_tests.cpp
@@ -225,51 +190,33 @@ if(HI_BUILD_TESTS)
         defer_tests.cpp
         enum_metadata_tests.cpp
         exceptions_tests.cpp
-        file_view_tests.cpp
         fixed_string_tests.cpp
         float16_tests.cpp
         format_check_tests.cpp
         forward_value_tests.cpp
         gap_buffer_tests.cpp
         generator_tests.cpp
-        glob_tests.cpp
         interval_tests.cpp
         int_carry_tests.cpp
         int_overflow_tests.cpp
         jsonpath_tests.cpp
         math_tests.cpp
+        group_ptr_tests.cpp
         notifier_tests.cpp
         graphic_path_tests.cpp
-        observable_tests.cpp
         pixel_map_tests.cpp
         polymorphic_optional_tests.cpp
         polynomial_tests.cpp
         ranges_tests.cpp
         rcu_tests.cpp
         safe_int_tests.cpp
+        shared_state_tests.cpp
         sip_hash_tests.cpp
         small_map_tests.cpp
         strings_tests.cpp
         tokenizer_tests.cpp
+        tree_tests.cpp
         type_traits_tests.cpp
-        url_parser_tests.cpp
-        URL_tests.cpp
     )
 endif()
 
-
-if(HI_BUILD_TESTS AND HI_BUILD_PCH AND NOT HI_ENABLE_ANALYSIS)
-    target_precompile_headers(hikogui_tests PRIVATE
-        assert.hpp
-        counters.hpp
-        datum.hpp
-        debugger.hpp
-        exception.hpp
-        log.hpp
-        architecture.hpp
-        required.hpp
-        strings.hpp
-        trace.hpp
-        URL.hpp
-    )
-endif()

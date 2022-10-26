@@ -1,6 +1,10 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+
+/** @file widgets/widget_layout.hpp Defines widget_layout.
+ * @ingroup widget_utilities
+ */
 
 #pragma once
 
@@ -13,8 +17,23 @@
 #include "../chrono.hpp"
 #include "widget_baseline.hpp"
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
+/** The layout of a widget.
+ *
+ * This object is created by a container to position a child-widget
+ * within it.
+ *
+ * The layout includes:
+ *  - the size of the widget.
+ *  - translation matrices between the parent and child widget.
+ *  - translation matrices between the child widget and the window.
+ *  - the clipping rectangle when the parent only wants to display a part the child.
+ *  - if the widget should display itself in left-to-right or right-to-left language mode.
+ *  - the baseline where text should be drawn.
+ *
+ * @ingroup widget_utilities
+ */
 class widget_layout {
 public:
     /** The amount of pixels that the redraw request will overhang the widget.
@@ -115,6 +134,13 @@ public:
         return bounding_rectangle(to_window * clipping_rectangle);
     }
 
+    /** Get the rectangle in window coordinate system.
+     */
+    [[nodiscard]] constexpr aarectangle window_rectangle() const noexcept
+    {
+        return bounding_rectangle(to_window * rectangle());
+    }
+
     /** Get the clipping rectangle in window coordinate system.
      *
      * @param narrow_clipping_rectangle A clipping rectangle in local coordinate
@@ -191,6 +217,7 @@ public:
      *
      * @param child_rectangle The location and size of the child widget, relative to the current widget.
      * @param elevation The relative elevation of the child widget compared to the current widget.
+     * @param new_baseline The relative baseline of the child widgets on the same row.
      * @return A new widget_layout for use by the child widget.
      */
     [[nodiscard]] constexpr widget_layout transform(aarectangle const &child_rectangle, float elevation = 1.0f, widget_baseline new_baseline = widget_baseline{}) const noexcept
@@ -201,6 +228,7 @@ public:
     /** Create a new widget_layout for the child widget.
      *
      * @param child_rectangle The location and size of the child widget, relative to the current widget.
+     * @param new_baseline The relative baseline of the child widgets on the same row.
      * @return A new widget_layout for use by the child widget.
      */
     [[nodiscard]] constexpr widget_layout transform(aarectangle const &child_rectangle, widget_baseline new_baseline) const noexcept
@@ -221,4 +249,4 @@ public:
     }
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

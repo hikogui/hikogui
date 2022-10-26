@@ -1,15 +1,15 @@
-// Copyright Take Vos 2019-2021.
+// Copyright Take Vos 2019-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "../architecture.hpp"
 #include "gfx_device_vulkan.hpp"
 #include "gfx_system_vulkan.hpp"
 #include "gfx_surface_vulkan.hpp"
 #include "pipeline_image.hpp"
 #include "pipeline_image_device_shared.hpp"
 #include "../GUI/gui_window.hpp"
-#include "../resource_view.hpp"
+#include "../file/file_view.hpp"
+#include "../architecture.hpp"
 #include <span>
 
 namespace hi::inline v1 {
@@ -521,8 +521,8 @@ void gfx_device_vulkan::initialize_queues(std::vector<vk::DeviceQueueCreateInfo>
         hilet queue_flags = queue_family_property.queueFlags;
 
         for (uint32_t queue_index = 0; queue_index != device_queue_create_info.queueCount; ++queue_index) {
-            hilet queue = intrinsic.getQueue(queue_family_index, queue_index);
-            hilet command_pool = intrinsic.createCommandPool(
+            auto queue = intrinsic.getQueue(queue_family_index, queue_index);
+            auto command_pool = intrinsic.createCommandPool(
                 {vk::CommandPoolCreateFlagBits::eTransient | vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
                  queue_family_index});
 
@@ -937,33 +937,33 @@ vk::ShaderModule gfx_device_vulkan::loadShader(std::span<std::byte const> shader
     return loadShader(shaderObjectBytes32, shaderObjectBytes.size());
 }
 
-vk::ShaderModule gfx_device_vulkan::loadShader(URL const& shaderObjectLocation) const
+vk::ShaderModule gfx_device_vulkan::loadShader(std::filesystem::path const& path) const
 {
     // no lock, only local variable.
 
-    return loadShader(as_span<std::byte const>(*shaderObjectLocation.loadView()));
+    return loadShader(as_span<std::byte const>(file_view{path}));
 }
 
 void gfx_device_vulkan::setDebugUtilsObjectNameEXT(vk::DebugUtilsObjectNameInfoEXT const& name_info) const
 {
-    if constexpr (build_type::current == build_type::debug) {
-        hi_axiom(gfx_system_mutex.recurse_lock_count());
-        return intrinsic.setDebugUtilsObjectNameEXT(name_info, down_cast<gfx_system_vulkan&>(system).loader());
-    }
+#ifndef NDEBUG
+    hi_axiom(gfx_system_mutex.recurse_lock_count());
+    return intrinsic.setDebugUtilsObjectNameEXT(name_info, down_cast<gfx_system_vulkan&>(system).loader());
+#endif
 }
 
 void gfx_device_vulkan::cmdBeginDebugUtilsLabelEXT(vk::CommandBuffer buffer, vk::DebugUtilsLabelEXT const& create_info) const
 {
-    if constexpr (build_type::current == build_type::debug) {
-        buffer.beginDebugUtilsLabelEXT(create_info, down_cast<gfx_system_vulkan&>(system).loader());
-    }
+#ifndef NDEBUG
+    buffer.beginDebugUtilsLabelEXT(create_info, down_cast<gfx_system_vulkan&>(system).loader());
+#endif
 }
 
 void gfx_device_vulkan::cmdEndDebugUtilsLabelEXT(vk::CommandBuffer buffer) const
 {
-    if constexpr (build_type::current == build_type::debug) {
-        buffer.endDebugUtilsLabelEXT(down_cast<gfx_system_vulkan&>(system).loader());
-    }
+#ifndef NDEBUG
+    buffer.endDebugUtilsLabelEXT(down_cast<gfx_system_vulkan&>(system).loader());
+#endif
 }
 
 void gfx_device_vulkan::log_memory_usage() const noexcept

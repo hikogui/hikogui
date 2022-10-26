@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020-2021.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -128,15 +128,12 @@ static void unicode_bidi_L4(
  * The bidirectional algorithm will work correctly with either a list of code points
  * or a list of first-code-point-of-graphemes.
  *
- * @tparam It A Bidirectional read-write iterator.
- * @tparam GetChar function of the form: `(auto &) -> char32_t`.
- * @tparam SetChar function of the form: `(auto &, char32_t) -> void`.
- * @tparam SetTextDirection function of the form: `(auto &, unicode_bidi_class) -> void`
  * @param first The first iterator
  * @param last The last iterator
  * @param get_description A function to get the unicode description of an item.
- * @param set_char A function to set the character in an item.
+ * @param set_code_point A function to set the character in an item.
  * @param set_text_direction A function to set the text direction in an item.
+ * @param context The context/configuration to use for the bidi-algorithm.
  * @return Iterator pointing one beyond the last element, the writing direction for each paragraph.
  */
 template<typename It, typename GetDescription, typename SetCodePoint, typename SetTextDirection>

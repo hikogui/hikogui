@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020-2021.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -21,7 +21,7 @@ widget::widget(gui_window& _window, widget *parent) noexcept :
     }
 
     _mode_cbt = mode.subscribe([&](auto...) {
-        request_reconstrain();
+        hi_request_reconstrain("widget::_mode_cbt()");
     });
 
     _constraints.minimum = extent2::nan();
@@ -120,12 +120,12 @@ void widget::request_relayout() const noexcept
     window.request_relayout(this);
 }
 
-void widget::request_reconstrain() const noexcept
+void widget::_request_reconstrain() const noexcept
 {
     window.request_reconstrain(this);
 }
 
-void widget::request_resize() const noexcept
+void widget::_request_resize() const noexcept
 {
     window.request_resize(this);
 }

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "xorshift128p.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 
 namespace hi::inline v1 {
 
@@ -77,7 +77,7 @@ public:
 
     /** Add dither to the given samples.
      *
-     * @param samples The samples to add dithering to.
+     * @param sample The sample to add dithering to.
      * @return The sample with included dither.
      */
     [[nodiscard]] float next(float sample) noexcept

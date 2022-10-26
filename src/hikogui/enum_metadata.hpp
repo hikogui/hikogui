@@ -1,10 +1,10 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
-#include "required.hpp"
+#include "utility.hpp"
 #include "cast.hpp"
 #include "assert.hpp"
 #include <cstddef>
@@ -76,7 +76,7 @@ public:
      * The template parameters of the class will be deduced from the
      * constructor. `N = sizeof...(Args) / 2`, `T = decltype(args[0])`.
      *
-     * @param Args A list of a enum-value and names.
+     * @param args A list of a enum-value and names.
      */
     template<typename... Args>
     [[nodiscard]] constexpr enum_metadata(Args const&...args) noexcept
@@ -107,8 +107,8 @@ public:
 
     /** Check if the enum has a value.
      *
-     * @param name The name to lookup in the enum.
-     * @return True if the name is found.
+     * @param value The value to lookup for the enum.
+     * @return True if the value is found.
      */
     [[nodiscard]] constexpr bool contains(value_type value) const noexcept
     {
@@ -163,8 +163,8 @@ public:
     /** Get a name from an enum-value.
      *
      * @param value The enum value to lookup.
+     * @param default_name The default name to return when value is not found.
      * @return The name belonging with the enum value.
-     * @throws std::out_of_range When the value does not exist.
      */
     [[nodiscard]] constexpr name_type at(value_type value, std::convertible_to<name_type> auto&& default_name) const noexcept
     {

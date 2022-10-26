@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -33,7 +33,7 @@ public:
      */
     [[nodiscard]] static std::string get_device_id(IMMDevice *device);
 
-    /// @beginprivatemethods
+    /// @privatesection
     void update_state() noexcept override;
     [[nodiscard]] hi::label label() const noexcept override;
     [[nodiscard]] audio_device_state state() const noexcept override;
@@ -49,7 +49,7 @@ public:
     void set_output_speaker_mapping(hi::speaker_mapping speaker_mapping) noexcept override;
     [[nodiscard]] std::vector<hi::speaker_mapping> available_output_speaker_mappings() const noexcept override;
     [[nodiscard]] bool supports_format(audio_stream_format const& format) const noexcept;
-    /// @endprivatemethods
+    /// @endprivatesection
 private:
     std::string _end_point_id;
     audio_device_state _previous_state;

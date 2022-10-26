@@ -5,7 +5,7 @@
 #include "../win32_headers.hpp"
 
 #include "win32_wave_device.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../exception.hpp"
 
 namespace hi::inline v1 {

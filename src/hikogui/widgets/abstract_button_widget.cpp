@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -12,32 +12,30 @@ namespace hi::inline v1 {
 abstract_button_widget::abstract_button_widget(
     gui_window& window,
     widget *parent,
-    weak_or_unique_ptr<delegate_type> delegate) noexcept :
-    super(window, parent), _delegate(std::move(delegate))
+    std::shared_ptr<delegate_type> delegate) noexcept :
+    super(window, parent), delegate(std::move(delegate))
 {
-    _on_label_widget = std::make_unique<label_widget>(window, this, on_label, alignment);
-    _off_label_widget = std::make_unique<label_widget>(window, this, off_label, alignment);
-    _other_label_widget = std::make_unique<label_widget>(window, this, other_label, alignment);
-    if (auto d = _delegate.lock()) {
-        _delegate_cbt = d->subscribe(*this, [&] {
-            request_relayout();
-        });
-        d->init(*this);
-    }
+    hi_axiom(this->delegate != nullptr);
+
+    _on_label_widget = std::make_unique<label_widget>(window, this, on_label, alignment, text_style);
+    _off_label_widget = std::make_unique<label_widget>(window, this, off_label, alignment, text_style);
+    _other_label_widget = std::make_unique<label_widget>(window, this, other_label, alignment, text_style);
+    _delegate_cbt = this->delegate->subscribe([&] {
+        request_relayout();
+    });
+    this->delegate->init(*this);
 }
 
 abstract_button_widget::~abstract_button_widget()
 {
-    if (auto delegate = _delegate.lock()) {
-        delegate->deinit(*this);
-    }
+    hi_axiom(delegate != nullptr);
+    delegate->deinit(*this);
 }
 
 void abstract_button_widget::activate() noexcept
 {
-    if (auto delegate = _delegate.lock()) {
-        delegate->activate(*this);
-    }
+    hi_axiom(delegate != nullptr);
+    delegate->activate(*this);
 
     this->pressed();
 }

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "required.hpp"
+#include "utility.hpp"
 #include "notifier.hpp"
 #include "counters.hpp"
 #include "awaitable_timer.hpp"
@@ -29,6 +29,8 @@ class scoped_task {
 public:
     using value_type = T;
     using notifier_type = notifier<void(value_type)>;
+    using callback_token = notifier_type::callback_token;
+    using callback_proto = notifier_type::callback_proto;
 
     struct promise_type {
         notifier_type notifier;
@@ -150,22 +152,14 @@ public:
 
     /** Subscribe a callback for when the co-routine is completed.
      *
+     * @param flags The callback flags used to be passed to the notifier.
      * @param callback The callback to call when the co-routine executed co_return. If co_return
      *                 has a non-void expression then the callback must accept the expression as an argument.
+     * @return The callback token used to manage the lifetime of the callback
      */
-    notifier_type::token_type subscribe(callback_flags flags, std::invocable<value_type> auto&& callback) noexcept
+    callback_token subscribe(forward_of<callback_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
     {
-        return _coroutine.promise().notifier.subscribe(flags, hi_forward(callback));
-    }
-
-    /** Subscribe a callback for when the co-routine is completed.
-     *
-     * @param callback The callback to call when the co-routine executed co_return. If co_return
-     *                 has a non-void expression then the callback must accept the expression as an argument.
-     */
-    notifier_type::token_type subscribe(std::invocable<value_type> auto&& callback) noexcept
-    {
-        return subscribe(callback_flags::synchronous, hi_forward(callback));
+        return _coroutine.promise().notifier.subscribe(hi_forward(callback), flags);
     }
 
 private:
@@ -181,6 +175,8 @@ class scoped_task<void> {
 public:
     using value_type = void;
     using notifier_type = notifier<>;
+    using callback_token = notifier_type::callback_token;
+    using callback_proto = notifier_type::callback_proto;
 
     struct promise_type {
         notifier_type notifier;
@@ -256,7 +252,6 @@ public:
     /** Get the return value returned from co_return.
      *
      * @note It is undefined behavior to call this function if the co-routine is incomplete.
-     * @return void
      * @throws The exception thrown from the co-routine.
      */
     void value() const
@@ -272,17 +267,9 @@ public:
     /**
      * @sa notifier<>::subscribe()
      */
-    notifier_type::token_type subscribe(callback_flags flags, std::invocable<> auto&& callback) noexcept
+    callback_token subscribe(forward_of<callback_proto> auto&& callback, callback_flags flags = callback_flags::synchronous) noexcept
     {
-        return _coroutine.promise().notifier.subscribe(flags, hi_forward(callback));
-    }
-
-    /**
-     * @sa notifier<>::subscribe()
-     */
-    notifier_type::token_type subscribe(std::invocable<> auto&& callback) noexcept
-    {
-        return subscribe(callback_flags::synchronous, hi_forward(callback));
+        return _coroutine.promise().notifier.subscribe(hi_forward(callback), flags);
     }
 
 private:

@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -17,7 +17,9 @@ namespace hi::inline v1 {
  */
 class audio_system {
 public:
-    using token_type = notifier<>::token_type;
+    using notifier_type = notifier<>;
+    using callback_token = notifier_type::callback_token;
+    using callback_proto = notifier_type::callback_proto;
 
     /** Create an audio system object specific for the current operating system.
      */
@@ -43,18 +45,9 @@ public:
      *
      * @return A callback token, a RAII object which when destroyed removes the subscription.
      */
-    token_type subscribe(callback_flags flags, std::invocable<> auto&& func) noexcept
+    callback_token subscribe(forward_of<callback_proto> auto&& func, callback_flags flags = callback_flags::synchronous) noexcept
     {
-        return _notifier.subscribe(flags, hi_forward(func));
-    }
-
-    /** Subscribe a function to be called when the device list changes.
-     *
-     * @return A callback token, a RAII object which when destroyed removes the subscription.
-     */
-    token_type subscribe(std::invocable<> auto&& func) noexcept
-    {
-        return subscribe(callback_flags::synchronous, hi_forward(func));
+        return _notifier.subscribe(hi_forward(func), flags);
     }
 
     auto operator co_await() noexcept
@@ -63,7 +56,7 @@ public:
     }
 
 protected:
-    notifier<> _notifier;
+    notifier_type _notifier;
 };
 
 } // namespace hi::inline v1

@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -12,45 +12,42 @@ label_widget::label_widget(gui_window& window, widget *parent) noexcept : super(
 {
     mode = widget_mode::select;
 
-    _icon_widget = std::make_unique<icon_widget>(window, this, label->icon);
+    _icon_widget = std::make_unique<icon_widget>(window, this, label.get<"icon">());
     _icon_widget->alignment = alignment;
-    _text_widget = std::make_unique<text_widget>(window, this, to_gstring(label->text()));
+    _text_widget = std::make_unique<text_widget>(window, this, label.get<"text">());
     _text_widget->alignment = alignment;
     _text_widget->text_style = text_style;
     _text_widget->mode = mode;
 
-    _text_style_cbt = text_style.subscribe([this](auto...) {
-        switch (*text_style) {
-        case semantic_text_style::label:
-            _icon_widget->color = color::foreground();
-            break;
-        case semantic_text_style::small_label:
-            _icon_widget->color = color::foreground();
-            break;
-        case semantic_text_style::warning:
-            _icon_widget->color = color::orange();
-            break;
-        case semantic_text_style::error:
-            _icon_widget->color = color::red();
-            break;
-        case semantic_text_style::help:
-            _icon_widget->color = color::indigo();
-            break;
-        case semantic_text_style::placeholder:
-            _icon_widget->color = color::gray();
-            break;
-        case semantic_text_style::link:
-            _icon_widget->color = color::blue();
-            break;
-        default:
-            _icon_widget->color = color::foreground();
-        }
-    });
-
-    _label_cbt = label.subscribe([this](auto...) {
-        _icon_widget->icon = label->icon;
-        _text_widget->text = to_gstring(label->text());
-    });
+    _text_style_cbt = text_style.subscribe(
+        [this](auto...) {
+            switch (*text_style) {
+            case semantic_text_style::label:
+                _icon_widget->color = color::foreground();
+                break;
+            case semantic_text_style::small_label:
+                _icon_widget->color = color::foreground();
+                break;
+            case semantic_text_style::warning:
+                _icon_widget->color = color::orange();
+                break;
+            case semantic_text_style::error:
+                _icon_widget->color = color::red();
+                break;
+            case semantic_text_style::help:
+                _icon_widget->color = color::indigo();
+                break;
+            case semantic_text_style::placeholder:
+                _icon_widget->color = color::gray();
+                break;
+            case semantic_text_style::link:
+                _icon_widget->color = color::blue();
+                break;
+            default:
+                _icon_widget->color = color::foreground();
+            }
+        },
+        callback_flags::main);
 }
 
 widget_constraints const& label_widget::set_constraints() noexcept
@@ -58,7 +55,6 @@ widget_constraints const& label_widget::set_constraints() noexcept
     _layout = {};
 
     // Translate the text of the label during reconstrain as this is triggered when the system language changes.
-    _text_widget->text = to_gstring(label->text());
     _text_constraints = _text_widget->set_constraints();
     _icon_constraints = _icon_widget->set_constraints();
 

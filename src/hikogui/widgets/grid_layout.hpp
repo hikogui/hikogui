@@ -1,10 +1,10 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../assert.hpp"
 #include "../math.hpp"
 #include "widget_baseline.hpp"
@@ -13,7 +13,7 @@
 #include <cstddef>
 #include <functional>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** Grid layout is used to layout widgets along an axis.
  *
@@ -47,6 +47,7 @@ public:
      * @param maximum The maximum size that a widget should be laid out as.
      * @param margin_before The space between this widget and other widgets.
      * @param margin_after The space between this widget and other widgets.
+     * @param baseline The relative baseline for all the widget on a row.
      */
     void add_constraint(
         std::size_t first,
@@ -70,6 +71,7 @@ public:
      * @param maximum The maximum size that a widget should be laid out as.
      * @param margin_before The space between this widget and other widgets.
      * @param margin_after The space between this widget and other widgets.
+     * @param baseline The relative baseline for all the widget on a row.
      */
     void add_constraint(
         std::size_t index,
@@ -287,12 +289,7 @@ private:
         widget_baseline baseline;
 
         cell_type() noexcept :
-            size(0.0f),
-            margin(0.0f),
-            minimum(0.0f),
-            preferred(0.0f),
-            maximum(std::numeric_limits<float>::infinity()),
-            baseline()
+            size(0.0f), margin(0.0f), minimum(0.0f), preferred(0.0f), maximum(std::numeric_limits<float>::infinity()), baseline()
         {
         }
 
@@ -372,4 +369,4 @@ private:
     [[nodiscard]] bool holds_invariant() const noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

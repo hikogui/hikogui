@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -6,11 +6,11 @@
 
 #include "keyboard_key.hpp"
 #include "gui_event.hpp"
-#include "../URL.hpp"
 #include "../architecture.hpp"
 #include "../subsystem.hpp"
 #include <unordered_map>
 #include <tuple>
+#include <filesystem>
 
 namespace hi::inline v1 {
 
@@ -112,7 +112,7 @@ public:
     /** translate a key press in the empty-context to a command.
      *
      * @param event The event to look up in the bindings.
-     * @param [in,out]events The event list to append the bindings to when found.
+     * @param[in,out] events The event list to append the bindings to when found.
      */
     [[nodiscard]] void translate(gui_event event, std::vector<gui_event>& events) const noexcept
     {
@@ -137,12 +137,12 @@ public:
 
     /** Load bindings from a JSON file.
      */
-    void load_bindings(URL url, bool system_binding = false);
+    void load_bindings(std::filesystem::path const &path, bool system_binding = false);
 
     /** Save user bindings
      * This will save all bindings that are different from the system bindings.
      */
-    // void save_user_bindings(URL url);
+    // void save_user_bindings(std::filesystem::path const &path);
 };
 
 } // namespace hi::inline v1

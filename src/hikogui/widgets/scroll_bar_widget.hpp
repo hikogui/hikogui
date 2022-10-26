@@ -1,21 +1,34 @@
-// Copyright Take Vos 2020-2021.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+
+/** @file widgets/scroll_bar_widget.hpp Defines scroll_bar_widget.
+ * @ingroup widgets
+ */
 
 #pragma once
 
 #include "widget.hpp"
 #include "../GUI/gui_event.hpp"
 #include "../geometry/axis.hpp"
-#include "../observable.hpp"
+#include "../observer.hpp"
 #include <memory>
 #include <string>
 #include <array>
 #include <optional>
 #include <future>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
+/** Scroll bar widget
+ * This widget is used in a pair of a vertical and horizontal scrollbar as
+ * a child of the `scroll_widget`. The vertical and horizontal scrollbar are
+ * displayed next to the `scroll_aperture_widget` and controls what part of
+ * the content is displayed in the aperture.
+ *
+ * @ingroup widgets
+ * @tparam Axis which axis (horizontal or vertical) this scroll bar is used for.
+ */
 template<axis Axis>
 class scroll_bar_widget final : public widget {
 public:
@@ -23,16 +36,17 @@ public:
 
     static constexpr hi::axis axis = Axis;
 
-    observable<float> offset;
-    observable<float> aperture;
-    observable<float> content;
+    observer<float> offset;
+    observer<float> aperture;
+    observer<float> content;
 
-    template<typename Content, typename Aperture, typename Offset>
-    scroll_bar_widget(gui_window& window, widget *parent, Content&& content, Aperture&& aperture, Offset&& offset) noexcept :
-        widget(window, parent),
-        content(std::forward<Content>(content)),
-        aperture(std::forward<Aperture>(aperture)),
-        offset(std::forward<Offset>(offset))
+    scroll_bar_widget(
+        gui_window& window,
+        widget *parent,
+        forward_of<observer<float>> auto&& content,
+        forward_of<observer<float>> auto&& aperture,
+        forward_of<observer<float>> auto&& offset) noexcept :
+        widget(window, parent), content(hi_forward(content)), aperture(hi_forward(aperture)), offset(hi_forward(offset))
     {
         // clang-format off
         _content_cbt = this->content.subscribe([&](auto...){ request_relayout(); });
@@ -146,9 +160,9 @@ private:
 
     float _offset_before_drag;
 
-    typename decltype(content)::token_type _content_cbt;
-    typename decltype(aperture)::token_type _aperture_cbt;
-    typename decltype(offset)::token_type _offset_cbt;
+    typename decltype(content)::callback_token _content_cbt;
+    typename decltype(aperture)::callback_token _aperture_cbt;
+    typename decltype(offset)::callback_token _offset_cbt;
 
     /** Create a new offset value.
      *
@@ -234,4 +248,4 @@ private:
 using horizontal_scroll_bar_widget = scroll_bar_widget<axis::horizontal>;
 using vertical_scroll_bar_widget = scroll_bar_widget<axis::vertical>;
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -31,7 +31,7 @@ public:
     [[nodiscard]] virtual std::string format(std::string_view fmt) const noexcept = 0;
 
     /** Format text from the arguments and the given format string.
-     * @patam loc The locale to use when formatting.
+     * @param loc The locale to use when formatting.
      * @param fmt The format string.
      */
     [[nodiscard]] virtual std::string format(std::locale const& loc, std::string_view fmt) const noexcept = 0;
@@ -228,9 +228,8 @@ public:
      *               database or, when not found, as-is. The msg_id may contain
      *               placeholders using the `std::format` format. Plurality is
      *               based on the first `std::integral` arguments.
-     * @param args Arguments passed to `std::format`. The arguments are copied
-     *             into the `translate` object and used when formatting the
-     *             translated string.
+     * @param first_arg The first argument passed to `std::format()`.
+     * @param args Arguments passed to `std::format()`.
      */
     template<typename FirstArg, typename... Args>
     translate(std::string_view msg_id, FirstArg const& first_arg, Args const&...args) noexcept :
@@ -259,7 +258,7 @@ public:
     /** Translate and format the message.
      * Find the translation of the message, then format it.
      *
-     * @param locale The locale to use when formatting the message.
+     * @param loc The locale to use when formatting the message.
      * @param languages A list of languages to search for translations.
      * @return The translated and formatted message.
      */

@@ -2,12 +2,19 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file char_maps/utf_16.hpp Definition of the Unicode UTF-16 encoding.
+ */
+
 #pragma once
 
 #include "char_converter.hpp"
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
+/** Unicode UTF-16 encoding.
+ *
+ * @ingroup char_maps
+ */
 template<>
 struct char_map<"utf-16"> {
     using char_type = char16_t;
@@ -17,7 +24,7 @@ struct char_map<"utf-16"> {
         hi_axiom(ptr != nullptr);
         auto *ptr_ = reinterpret_cast<uint8_t const *>(ptr);
 
-        if (size < 2) { 
+        if (size < 2) {
             return std::endian::native;
         } else {
             // Check for BOM.
@@ -41,7 +48,7 @@ struct char_map<"utf-16"> {
     }
 
     template<typename It, typename EndIt>
-    [[nodiscard]] constexpr std::pair<char32_t, bool> read(It &it, EndIt last) const noexcept
+    [[nodiscard]] constexpr std::pair<char32_t, bool> read(It& it, EndIt last) const noexcept
     {
         hi_axiom(it != last);
 
@@ -144,4 +151,4 @@ struct char_map<"utf-16"> {
 #endif
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

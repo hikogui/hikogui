@@ -1,16 +1,20 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+
+/** @file widgets/radio_button_widget.hpp Defines radio_button_widget.
+ * @ingroup widgets
+ */
 
 #pragma once
 
 #include "abstract_button_widget.hpp"
-#include "default_button_delegate.hpp"
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** A graphical control element that allows the user to choose only one of a
  * predefined set of mutually exclusive options.
+ * @ingroup widgets
  *
  * A radio-button has two different states with different visual representation:
  *  - **on**: The radio button shows a solid circle inside it
@@ -32,7 +36,7 @@ namespace hi::inline v1 {
  * @snippet widgets/radio_button_example.cpp Create three radio buttons
  *
  * @note Unlike some other GUI toolkits a radio button is a singular widget.
- *       Multiple radio buttons may share a delegate or an observable which
+ *       Multiple radio buttons may share a delegate or an observer which
  *       allows radio buttons to act as a set.
  */
 class radio_button_widget final : public abstract_button_widget {
@@ -44,41 +48,57 @@ public:
      *
      * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this radio button widget.
-     * @param label The label to show next to the radio button.
      * @param delegate The delegate to use to manage the state of the radio button.
+     * @param attributes Different attributes used to configure the label's on the radio button:
+     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
+     *                   passed it will be shown in all states. If two labels are passed
+     *                   the first label is shown in on-state and the second for off-state.
      */
-    template<typename Label>
-    radio_button_widget(gui_window &window, widget *parent, Label &&label, std::weak_ptr<delegate_type> delegate) noexcept :
-        radio_button_widget(window, parent, std::forward<Label>(label), weak_or_unique_ptr{std::move(delegate)})
+    radio_button_widget(
+        gui_window& window,
+        widget *parent,
+        std::shared_ptr<delegate_type> delegate,
+        button_widget_attribute auto&&...attributes) noexcept :
+        super(window, parent, std::move(delegate))
     {
+        alignment = alignment::top_left();
+        set_attributes<0>(hi_forward(attributes)...);
     }
 
     /** Construct a radio button widget with a default button delegate.
      *
-     * @see default_button_delegate
      * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this radio button widget.
-     * @param label The label to show next to the radio button.
-     * @param value The value or `observable` value which represents the state
+     * @param value The value or `observer` value which represents the state
      *              of the radio button.
-     * @param args An optional on-value. This value is used to determine which
+     * @param on_value An optional on-value. This value is used to determine which
      *             value yields an 'on' state.
+     * @param attributes Different attributes used to configure the label's on the radio button:
+     *                   a `label`, `alignment` or `semantic_text_style`. If one label is
+     *                   passed it will be shown in all states. If two labels are passed
+     *                   the first label is shown in on-state and the second for off-state.
      */
-    template<typename Label, typename Value, typename... Args>
-    radio_button_widget(gui_window &window, widget *parent, Label &&label, Value &&value, Args &&...args) noexcept
-        requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>) :
+    template<
+        different_from<std::shared_ptr<delegate_type>> Value,
+        forward_of<observer<observer_decay_t<Value>>> OnValue,
+        button_widget_attribute... Attributes>
+    radio_button_widget(gui_window& window, widget *parent, Value&& value, OnValue&& on_value, Attributes&&...attributes) noexcept
+        requires requires
+    {
+        make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value));
+    } :
         radio_button_widget(
             window,
             parent,
-            std::forward<Label>(label),
-            make_unique_default_button_delegate<button_type::radio>(std::forward<Value>(value), std::forward<Args>(args)...))
+            make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value)),
+            hi_forward(attributes)...)
     {
     }
 
     /// @privatesection
-    widget_constraints const &set_constraints() noexcept override;
-    void set_layout(widget_layout const &layout) noexcept override;
-    void draw(draw_context const &context) noexcept override;
+    widget_constraints const& set_constraints() noexcept override;
+    void set_layout(widget_layout const& layout) noexcept override;
+    void draw(draw_context const& context) noexcept override;
     /// @endprivatesection
 private:
     static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
@@ -88,16 +108,8 @@ private:
     animator<float> _animated_value = _animation_duration;
     aarectangle _pip_rectangle;
 
-    template<typename Label>
-    radio_button_widget(gui_window &window, widget *parent, Label &&label, weak_or_unique_ptr<delegate_type> delegate) noexcept :
-        super(window, parent, std::move(delegate))
-    {
-        alignment = alignment::top_left();
-        set_label(std::forward<Label>(label));
-    }
-
-    void draw_radio_button(draw_context const &context) noexcept;
-    void draw_radio_pip(draw_context const &context) noexcept;
+    void draw_radio_button(draw_context const& context) noexcept;
+    void draw_radio_pip(draw_context const& context) noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

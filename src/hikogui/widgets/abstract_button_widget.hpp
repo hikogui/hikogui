@@ -1,58 +1,68 @@
-// Copyright Take Vos 2019-2020.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+
+/** @file widgets/abstract_button_widget.hpp Defines abstract_button_widget.
+ * @ingroup widgets
+ */
 
 #pragma once
 
 #include "widget.hpp"
 #include "button_delegate.hpp"
 #include "label_widget.hpp"
-#include "button_type.hpp"
 #include "../animator.hpp"
 #include "../i18n/translate.hpp"
 #include "../notifier.hpp"
-#include "../weak_or_unique_ptr.hpp"
 #include <memory>
 #include <string>
 #include <array>
 #include <optional>
 #include <future>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
+template<typename Context>
+concept button_widget_attribute = label_widget_attribute<Context>;
+
+/** Base class for implementing button widgets.
+ *
+ * @ingroup widgets
+ */
 class abstract_button_widget : public widget {
 public:
     using super = widget;
     using delegate_type = button_delegate;
 
+    /** The delegate that controls the button widget.
+     */
+    std::shared_ptr<delegate_type> delegate;
+
     /** The label to show when the button is in the 'on' state.
      */
-    observable<label> on_label = tr("on");
+    observer<label> on_label = tr("on");
 
     /** The label to show when the button is in the 'off' state.
      */
-    observable<label> off_label = tr("off");
+    observer<label> off_label = tr("off");
 
     /** The label to show when the button is in the 'other' state.
      */
-    observable<label> other_label = tr("other");
+    observer<label> other_label = tr("other");
 
     /** The alignment of the button and on/off/other label.
      */
-    observable<alignment> alignment;
+    observer<alignment> alignment;
+
+    /** The text style to button's label.
+     */
+    observer<semantic_text_style> text_style = semantic_text_style::label;
 
     notifier<void()> pressed;
 
-    /** Set on/off/other labels of the button to the same value.
-     */
-    template<typename Label>
-    void set_label(Label const &rhs) noexcept
-    {
-        hi_axiom(is_gui_thread());
-        on_label = rhs;
-        off_label = rhs;
-        other_label = rhs;
-    }
+    ~abstract_button_widget();
+
+    abstract_button_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
     /** Get the current state of the button.
      * @return The state of the button: on / off / other.
@@ -60,11 +70,8 @@ public:
     [[nodiscard]] button_state state() const noexcept
     {
         hi_axiom(is_gui_thread());
-        if (auto delegate = _delegate.lock()) {
-            return delegate->state(*this);
-        } else {
-            return button_state::off;
-        }
+        hi_axiom(delegate != nullptr);
+        return delegate->state(*this);
     }
 
     /// @privatesection
@@ -88,15 +95,48 @@ protected:
     std::unique_ptr<label_widget> _other_label_widget;
 
     bool _pressed = false;
-    weak_or_unique_ptr<delegate_type> _delegate;
-    notifier<>::token_type _delegate_cbt;
+    notifier<>::callback_token _delegate_cbt;
 
-    ~abstract_button_widget();
-    abstract_button_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
+    template<size_t I>
+    void set_attributes() noexcept
+    {
+    }
+
+    template<size_t I>
+    void set_attributes(button_widget_attribute auto&& first, button_widget_attribute auto&&...rest) noexcept
+    {
+        if constexpr (forward_of<decltype(first), observer<hi::label>>) {
+            if constexpr (I == 0) {
+                on_label = first;
+                off_label = first;
+                other_label = hi_forward(first);
+            } else if constexpr (I == 1) {
+                other_label.reset();
+                off_label.reset();
+                off_label = hi_forward(first);
+            } else if constexpr (I == 2) {
+                other_label = hi_forward(first);
+            } else {
+                hi_static_no_default();
+            }
+            set_attributes<I + 1>(hi_forward(rest)...);
+
+        } else if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
+            alignment = hi_forward(first);
+            set_attributes<I>(hi_forward(rest)...);
+
+        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_style>>) {
+            text_style = hi_forward(first);
+            set_attributes<I>(hi_forward(rest)...);
+
+        } else {
+            hi_static_no_default();
+        }
+    }
 
     widget_constraints set_constraints_button() const noexcept;
-    void set_layout_button(widget_layout const &context) noexcept;
-    void draw_button(draw_context const &context) noexcept;
+    void set_layout_button(widget_layout const& context) noexcept;
+    void draw_button(draw_context const& context) noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

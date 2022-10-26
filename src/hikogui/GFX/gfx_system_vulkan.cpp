@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020-2021.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -78,9 +78,9 @@ gfx_system_vulkan::gfx_system_vulkan() : gfx_system()
     // VK_KHR_SURFACE extension is needed to draw in a window.
     requiredExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
 
-    if constexpr (build_type::current == build_type::debug) {
-        requiredExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-    }
+#ifndef NDEBUG
+    requiredExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+#endif
 
     if (!hasFoundationExtensions(requiredExtensions)) {
         throw gui_error("Vulkan instance does not have the required extensions");
@@ -90,18 +90,18 @@ gfx_system_vulkan::gfx_system_vulkan() : gfx_system()
     instanceCreateInfo.setEnabledExtensionCount(narrow_cast<uint32_t>(requiredExtensions.size()));
     instanceCreateInfo.setPpEnabledExtensionNames(requiredExtensions.data());
 
-    if constexpr (build_type::current == build_type::debug) {
-        requiredFeatures.robustBufferAccess = VK_TRUE;
-    }
+#ifndef NDEBUG
+    requiredFeatures.robustBufferAccess = VK_TRUE;
+#endif
 
-    if constexpr (build_type::current == build_type::debug) {
-        hilet requested_layers = std::vector<char const *>{
-            "VK_LAYER_KHRONOS_validation",
-            //"VK_LAYER_LUNARG_api_dump"
-        };
+#ifndef NDEBUG
+    hilet requested_layers = std::vector<char const *>{
+        "VK_LAYER_KHRONOS_validation",
+        //"VK_LAYER_LUNARG_api_dump"
+    };
 
-        requiredLayers = filter_available_layers(requested_layers);
-    }
+    requiredLayers = filter_available_layers(requested_layers);
+#endif
 
     instanceCreateInfo.setEnabledLayerCount(narrow_cast<uint32_t>(requiredLayers.size()));
     instanceCreateInfo.setPpEnabledLayerNames(requiredLayers.data());
@@ -119,28 +119,28 @@ gfx_system_vulkan::gfx_system_vulkan() : gfx_system()
 gfx_system_vulkan::~gfx_system_vulkan()
 {
     hilet lock = std::scoped_lock(gfx_system_mutex);
-    if constexpr (build_type::current == build_type::debug) {
-        intrinsic.destroy(debugUtilsMessager, nullptr, loader());
-    }
+#ifndef NDEBUG
+    intrinsic.destroy(debugUtilsMessager, nullptr, loader());
+#endif
 }
 
 void gfx_system_vulkan::init() noexcept(false)
 {
     hilet lock = std::scoped_lock(gfx_system_mutex);
 
-    if constexpr (build_type::current == build_type::debug) {
-        debugUtilsMessager = intrinsic.createDebugUtilsMessengerEXT(
-            {vk::DebugUtilsMessengerCreateFlagsEXT(),
-             vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
-                 // vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo |
-                 vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
-             vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
-                 vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance,
-             debugUtilsMessageCallback,
-             this},
-            nullptr,
-            loader());
-    }
+#ifndef NDEBUG
+    debugUtilsMessager = intrinsic.createDebugUtilsMessengerEXT(
+        {vk::DebugUtilsMessengerCreateFlagsEXT(),
+         vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
+             // vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo |
+             vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
+         vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
+             vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance,
+         debugUtilsMessageCallback,
+         this},
+        nullptr,
+        loader());
+#endif
 
     for (auto _physicalDevice : intrinsic.enumeratePhysicalDevices()) {
         devices.push_back(std::make_shared<gfx_device_vulkan>(*this, _physicalDevice));

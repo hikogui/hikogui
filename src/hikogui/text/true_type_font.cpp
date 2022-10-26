@@ -1,4 +1,4 @@
-// Copyright Take Vos 2019-2021.
+// Copyright Take Vos 2019-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -1358,7 +1358,7 @@ bool true_type_font::load_glyph_metrics(hi::glyph_id glyph_id, hi::glyph_metrics
 
 [[nodiscard]] std::span<std::byte const> true_type_font::get_table_bytes(char const *table_name) const
 {
-    hilet bytes = as_span<std::byte const>(*view);
+    hilet bytes = as_span<std::byte const>(_view);
 
     std::size_t offset = 0;
     hilet header = make_placement_ptr<SFNTHeader>(bytes, offset);

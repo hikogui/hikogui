@@ -1,3 +1,7 @@
+# Copyright Jens A. Koch 2021-2022.
+# Copyright Take Vos 2019-2022.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 cmake_minimum_required(VERSION 3.19)
 
@@ -15,12 +19,6 @@ include(SetupCompiler)
 option(BUILD_SHARED_LIBS    "Build shared libraries"            OFF)
 option(HI_ENABLE_ANALYSIS   "Compile using -analyze"            OFF)
 option(HI_ENABLE_ASAN       "Compile using address sanitizer"   OFF)
-
-include(CMakeDependentOption)
-cmake_dependent_option(HI_BUILD_EXAMPLES "Build example applications"   OFF "NOT HI_ENABLE_ANALYSIS" ON)
-cmake_dependent_option(HI_BUILD_TESTS    "Build tests"                  ON  "NOT HI_ENABLE_ANALYSIS" OFF)
-cmake_dependent_option(HI_INSTALL        "Generate installation target" ON  "NOT HI_ENABLE_ANALYSIS" OFF)
-cmake_dependent_option(HI_BUILD_PCH      "Build precompiled headers"    ON  "NOT HI_ENABLE_ANALYSIS" OFF)
 
 #-------------------------------------------------------------------
 # Project
@@ -48,47 +46,13 @@ string(JSON HI_LIB_VENDOR GET ${PACKAGE_JSON_STRING} "vendor")
 project(${HI_LIB_NAME} VERSION ${HI_LIB_VERSION} LANGUAGES ${LANGUAGES})
 
 #-------------------------------------------------------------------
-# Define Constants
-#-------------------------------------------------------------------
-
-set(HI_WIN32 0)
-set(HI_MACOS 0)
-set(HI_POSIX 0)
-set(HI_X64 0)
-
-if (APPLE)
-    set(HI_MACOS 1)
-    set(HI_POSIX 1)
-elseif (WIN32)
-    set(HI_WIN32 1)
-endif()
-
-set(x64_list x86 X86 amd64 AMD64)
-if (${CMAKE_SYSTEM_PROCESSOR} IN_LIST x64_list)
-    set(HI_X64 1)
-endif()
-
-#-------------------------------------------------------------------
-# Precompiled Headers (PCH) Configuration
-#-------------------------------------------------------------------
-
-if(WIN32)
-    if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
-        set(CMAKE_DISABLE_PRECOMPILE_HEADERS ON)
-    endif()
-else(APPLE)
-    # Unable to use precompiled headers with objc right now
-    set(CMAKE_DISABLE_PRECOMPILE_HEADERS ON)
-endif()
-
-#-------------------------------------------------------------------
 # Setup CMake Includes
 #-------------------------------------------------------------------
 
-include(AddStaticResource)
 include(AddShader)
 include(ShowBuildTargetProperties)
 include(FetchContent)
+include(CTest)
 
 #-------------------------------------------------------------------
 # Find Dependencies
@@ -97,11 +61,20 @@ include(FetchContent)
 #
 # GoogleTest - non-vcpkg, directly build from externals
 #
-if(HI_BUILD_TESTS)
+if(BUILD_TESTING)
     set(INSTALL_GTEST OFF CACHE INTERNAL "Don't install gtest")
     set(BUILD_GMOCK OFF CACHE INTERNAL "Don't build gmock")
     FetchContent_Declare(googletest GIT_REPOSITORY https://github.com/google/googletest.git GIT_TAG release-1.11.0)
     FetchContent_MakeAvailable(googletest)
+
+    include(GoogleTest)
+    add_executable(hikogui_tests)
+    # PRE_TEST delays test discovery until just prior to test execution
+    gtest_discover_tests(hikogui_tests DISCOVERY_MODE PRE_TEST)
+   
+    set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+    set_target_properties(gtest      PROPERTIES FOLDER extern)
+    set_target_properties(gtest_main PROPERTIES FOLDER extern)
 endif()
 
 #
@@ -127,11 +100,7 @@ endif()
 #-------------------------------------------------------------------
 
 add_library(hikogui)
-add_library(hikogui::hikogui ALIAS hikogui)
-
-if(HI_BUILD_TESTS)
-    add_executable(hikogui_tests)
-endif()
+set_target_properties(hikogui PROPERTIES DEBUG_POSTFIX "d")
 
 #-------------------------------------------------------------------
 # Setup Sources
@@ -142,7 +111,6 @@ endif()
 # later using target_sources() in CMakeLists of subdirectories.
 
 add_subdirectory(src/hikogui)
-add_subdirectory(tools)
 
 #-------------------------------------------------------------------
 # Build Target: hikogui                                     (library)
@@ -372,33 +340,33 @@ endif()
 # Copy resources needed by executables
 #-------------------------------------------------------------------
 
-add_shader(hikogui_shader_objects
-    src/hikogui/GFX/utils.glsl
-    src/hikogui/GFX/pipeline_image.vert
-    src/hikogui/GFX/pipeline_image.frag
-    src/hikogui/GFX/pipeline_box.vert
-    src/hikogui/GFX/pipeline_box.frag
-    src/hikogui/GFX/pipeline_SDF.vert
-    src/hikogui/GFX/pipeline_SDF.frag
-    src/hikogui/GFX/pipeline_alpha.vert
-    src/hikogui/GFX/pipeline_alpha.frag
-    src/hikogui/GFX/pipeline_tone_mapper.vert
-    src/hikogui/GFX/pipeline_tone_mapper.frag
+add_custom_target(hikogui_shaders)
+add_shader_target(hikogui_shaders
+    shaders/utils.glsl
+    shaders/pipeline_image.vert
+    shaders/pipeline_image.frag
+    shaders/pipeline_box.vert
+    shaders/pipeline_box.frag
+    shaders/pipeline_SDF.vert
+    shaders/pipeline_SDF.frag
+    shaders/pipeline_alpha.vert
+    shaders/pipeline_alpha.frag
+    shaders/pipeline_tone_mapper.vert
+    shaders/pipeline_tone_mapper.frag
 )
 
-target_static_resource(hikogui
-    ${hikogui_shader_objects}
-    data/elusiveicons-webfont.ttf
-    data/hikogui_icons.ttf
+set(hikogui_resource_files
+    resources/themes/hikogui_dark.theme.json
+    resources/themes/hikogui_light.theme.json
+    resources/fonts/elusiveicons-webfont.ttf
+    resources/fonts/hikogui_icons.ttf
+    resources/win32.keybinds.json
 )
 
 add_custom_target(hikogui_resources
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/resources ${CMAKE_CURRENT_BINARY_DIR}/resources
-    DEPENDS
-    resources/themes/hikogui_dark.theme.json
-    resources/themes/hikogui_light.theme.json
-    resources/win32.keybinds.json
-)
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/shaders ${CMAKE_CURRENT_BINARY_DIR}/resources/shaders
+    DEPENDS ${hikogui_resource_files} hikogui_shaders)
 
 add_dependencies(hikogui hikogui_resources)
 
@@ -419,7 +387,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/
         FILES_MATCHING PATTERN "*.h")
 
 # Copy all resource files needing to be added to the resource directory of an application
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/resources/
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/resources/
         DESTINATION share/hikogui/resources)
 
 # On Windows, the dynamic libs go in the same dir as the executable and static libs go into "lib".
@@ -440,11 +408,6 @@ else()
     )
 endif()
 
-#export(TARGETS
-#        hikogui
-#    NAMESPACE hikogui::
-#    FILE "${CMAKE_CURRENT_BINARY_DIR}/hikogui-config.cmake"
-#)
 install(
     EXPORT hikogui
     DESTINATION share/hikogui
@@ -472,78 +435,39 @@ install(FILES
 # Build Target: hikogui_tests                            (executable)
 #-------------------------------------------------------------------
 
-if(HI_BUILD_TESTS)
-
-    enable_testing()
-
+if (BUILD_TESTING)
     target_link_libraries(hikogui_tests PRIVATE gtest_main hikogui)
-
     target_include_directories(hikogui_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-
-    if(HI_BUILD_PCH)
-        if(NOT HI_ENABLE_ANALYSIS)
-            target_precompile_headers(hikogui_tests PRIVATE <gtest/gtest.h>)
-        endif()
-    endif()
-
-    include(GoogleTest)
-
-    # PRE_TEST delays test discovery until just prior to test execution
-    gtest_discover_tests(hikogui_tests DISCOVERY_MODE PRE_TEST)
-
-    add_custom_command(
-        TARGET hikogui_tests PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${CMAKE_CURRENT_SOURCE_DIR}/tests/data
-            ${CMAKE_CURRENT_BINARY_DIR}
+    
+    
+    add_custom_target(hikogui_tests_resources
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/tests/data ${CMAKE_CURRENT_BINARY_DIR}
     )
-
-    set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-    set_target_properties(gtest      PROPERTIES FOLDER extern)
-    set_target_properties(gtest_main PROPERTIES FOLDER extern)
-endif()
-
-#-------------------------------------------------------------------
-# Installation Rules: hikogui_tests                      (executable)
-#-------------------------------------------------------------------
-if(HI_BUILD_TESTS)
-    install(TARGETS hikogui_tests DESTINATION tests)
-    install(DIRECTORY tests/data/ DESTINATION tests)
-    if (BUILD_SHARED_LIBS)
-        x_vcpkg_install_local_dependencies(TARGETS hikogui_tests DESTINATION tests)
-    endif()
+    add_dependencies(hikogui_tests hikogui_tests_resources)
+    
+    #-------------------------------------------------------------------
+    # Installation Rules: hikogui_tests                      (executable)
+    #-------------------------------------------------------------------
+    install(TARGETS hikogui_tests DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
+    install(DIRECTORY tests/data/ DESTINATION tests COMPONENT tests EXCLUDE_FROM_ALL)
 endif()
 
 #-------------------------------------------------------------------
 # Build examples
 #-------------------------------------------------------------------
-if(HI_BUILD_EXAMPLES)
-    add_subdirectory(examples/hikogui_demo)
-    add_subdirectory(examples/widgets)
-    add_subdirectory(examples/custom_widgets)
-    add_subdirectory(examples/codec)
-else()
-    # By default examples marked with EXCLUDE_FROM_ALL will not be build by
-    # `make all`, which is also what Visual Studio uses to improve compilation speed.
-    add_subdirectory(examples/hikogui_demo EXCLUDE_FROM_ALL)
-    add_subdirectory(examples/widgets EXCLUDE_FROM_ALL)
-    add_subdirectory(examples/custom_widgets EXCLUDE_FROM_ALL)
-    add_subdirectory(examples/codec EXCLUDE_FROM_ALL)
-endif()
+add_custom_target(examples)
+add_subdirectory(examples/codec)
+add_subdirectory(examples/custom_widgets)
+add_subdirectory(examples/hikogui_demo)
+add_subdirectory(examples/vulkan/triangle)
+add_subdirectory(examples/widgets)
 
 #-------------------------------------------------------------------
 # Display Compiler and Linker properties of Build Targets
 #-------------------------------------------------------------------
 
 show_build_target_properties(hikogui)
-
-if(HI_BUILD_EXAMPLES)
-    show_build_target_properties(hikogui_demo)
-endif()
-
-if(HI_BUILD_TESTS)
-    show_build_target_properties(hikogui_tests)
-endif()
+show_build_target_properties(hikogui_tests)
 
 #-------------------------------------------------------------------
 # Build Documentation
@@ -555,7 +479,7 @@ endif()
 find_package(Doxygen)
 
 if(DOXYGEN_FOUND)
-    set(DOXYGEN_EXCLUDE_PATTERNS *_tests.cpp)
+    set(DOXYGEN_EXCLUDE_PATTERNS *_tests.cpp *.cpp *.mm)
     set(DOXYGEN_GENERATE_HTML YES)
     set(DOXYGEN_GENERATE_LATEX NO)
     set(DOXYGEN_QUIET YES)
@@ -564,6 +488,10 @@ if(DOXYGEN_FOUND)
     set(DOXYGEN_STRIP_FROM_PATH src)
     set(DOXYGEN_STRIP_FROM_INC_PATH src)
 
+    # Use SHORT_NAMES to prevent Doxygen from generating filenames with double-quotes.
+    # ALLOW_UNICODE_NAMES does not escape double-quotes.
+    set(DOXYGEN_SHORT_NAMES YES)
+
     set(DOXYGEN_JAVADOC_AUTOBRIEF YES)
     set(DOXYGEN_ALWAYS_DETAILED_SEC YES)
     set(DOXYGEN_DISTRIBUTE_GROUP_DOC YES)
@@ -571,7 +499,7 @@ if(DOXYGEN_FOUND)
     set(DOXYGEN_OPTIMIZE_OUTPUT_FOR_C YES)
     set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
     #set(DOXYGEN_CLANG_ASSISTED_PARSING YES)
-    #set(DOXYGEN_CLANG_OPTIONS "-std:c++20")
+    #set(DOXYGEN_CLANG_OPTIONS "-std=c++20")
 
     set(DOXYGEN_TAGFILES "${CMAKE_SOURCE_DIR}/docs/media/style/cppreference-doxygen-web.tag.xml=http://en.cppreference.com/w/")
     set(DOXYGEN_IMAGE_PATH "${CMAKE_SOURCE_DIR}/src/" "${CMAKE_SOURCE_DIR}/docs/")
@@ -590,7 +518,8 @@ if(DOXYGEN_FOUND)
     set(DOXYGEN_EXPAND_ONLY_PREDEF YES)
     set(DOXYGEN_PREDEFINED "protected=private")
 
-    doxygen_add_docs(doc src/hikogui docs)
+    doxygen_add_docs(docs src/hikogui docs)
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share COMPONENT docs EXCLUDE_FROM_ALL)
 else()
     message("Please install Doxygen to generate the documentation.")
 endif()

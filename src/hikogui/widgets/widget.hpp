@@ -1,6 +1,10 @@
-// Copyright Take Vos 2019-2021.
+// Copyright Take Vos 2019-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+
+/** @file widgets/widget.hpp Defines widget.
+ * @ingroup widgets
+ */
 
 #pragma once
 
@@ -13,7 +17,7 @@
 #include "../geometry/extent.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../geometry/transform.hpp"
-#include "../observable.hpp"
+#include "../observer.hpp"
 #include "../chrono.hpp"
 #include "../generator.hpp"
 #include "widget_constraints.hpp"
@@ -24,7 +28,7 @@
 #include <string>
 #include <ranges>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 class gui_window;
 class font_book;
 
@@ -35,6 +39,7 @@ class font_book;
  *  2. Updating Layout: `widget::set_layout()`
  *  3. Drawing: `widget::draw()`
  *
+ * @ingroup widgets
  */
 class widget {
 public:
@@ -54,15 +59,15 @@ public:
     /** The widget mode.
      * The current visibility and interactivity of a widget.
      */
-    observable<widget_mode> mode = widget_mode::enabled;
+    observer<widget_mode> mode = widget_mode::enabled;
 
     /** Mouse cursor is hovering over the widget.
      */
-    observable<bool> hover = false;
+    observer<bool> hover = false;
 
     /** The widget has keyboard focus.
      */
-    observable<bool> focus = false;
+    observer<bool> focus = false;
 
     /** The draw layer of the widget.
      * The semantic layer is used mostly by the `draw()` function
@@ -184,8 +189,7 @@ public:
      *
      * @post This function will change what is returned by `widget::size()` and the transformation
      *       matrices.
-     * @param context The layout context for this child.
-     * @return The new size of the widget, should be a copy of the new_size parameter.
+     * @param layout The layout for this child.
      */
     virtual void set_layout(widget_layout const& layout) noexcept = 0;
 
@@ -222,11 +226,33 @@ public:
 
     /** Request the window to be reconstrain on the next frame.
      */
-    void request_reconstrain() const noexcept;
+    template<fixed_string SourceFile, int SourceLine, fixed_string Fmt, typename... Args>
+    void request_reconstrain(Args&&...args) const noexcept
+    {
+        constexpr auto FmtPlus = fixed_string{"request_reconstrain:"} + Fmt;
+
+        log_global.add<global_state_type::log_info, SourceFile, SourceLine, FmtPlus>(std::forward<Args>(args)...);
+        _request_reconstrain();
+    }
+
+#define hi_request_reconstrain(fmt, ...) \
+    hi_format_check(fmt __VA_OPT__(, ) __VA_ARGS__); \
+    this->request_reconstrain<__FILE__, __LINE__, fmt>(__VA_ARGS__)
 
     /** Request the window to be resize based on the preferred size of the widgets.
      */
-    void request_resize() const noexcept;
+    template<fixed_string SourceFile, int SourceLine, fixed_string Fmt, typename... Args>
+    void request_resize(Args&&...args) const noexcept
+    {
+        constexpr auto FmtPlus = fixed_string{"request_resize:"} + Fmt;
+
+        log_global.add<global_state_type::log_info, SourceFile, SourceLine, FmtPlus>(std::forward<Args>(args)...);
+        _request_resize();
+    }
+
+#define hi_request_resize(fmt, ...) \
+    hi_format_check(fmt __VA_OPT__(, ) __VA_ARGS__); \
+    this->request_resize<__FILE__, __LINE__, fmt>(__VA_ARGS__)
 
     /** Handle command.
      * If a widget does not fully handle a command it should pass the
@@ -308,7 +334,7 @@ protected:
     widget_constraints _constraints;
     widget_layout _layout;
 
-    decltype(mode)::token_type _mode_cbt;
+    decltype(mode)::callback_token _mode_cbt;
 
     [[nodiscard]] virtual generator<widget *> children() const noexcept
     {
@@ -325,6 +351,10 @@ protected:
      * @return A rectangle that fits the window's constraints in the local coordinate system.
      */
     [[nodiscard]] aarectangle make_overlay_rectangle(aarectangle requested_rectangle) const noexcept;
+
+private:
+    void _request_reconstrain() const noexcept;
+    void _request_resize() const noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

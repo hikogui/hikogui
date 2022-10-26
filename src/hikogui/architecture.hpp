@@ -1,4 +1,4 @@
-// Copyright Take Vos 2019-2020.
+// Copyright Take Vos 2019-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -17,22 +17,6 @@
 #endif
 
 namespace hi::inline v1 {
-
-#define HI_BT_DEBUG 'D'
-#define HI_BT_RELEASE 'R'
-
-#if defined(NDEBUG)
-#define HI_BUILD_TYPE HI_BT_RELEASE
-#else
-#define HI_BUILD_TYPE HI_BT_DEBUG
-#endif
-
-enum class build_type {
-    debug = HI_BT_DEBUG,
-    release = HI_BT_RELEASE,
-
-    current = HI_BUILD_TYPE
-};
 
 #define HI_OS_WINDOWS 'W'
 #define HI_OS_MACOS 'A'

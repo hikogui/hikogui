@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020-2021.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -22,10 +22,7 @@ void window_widget::constructor_implementation() noexcept
     if (theme().operating_system == operating_system::windows) {
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
         _system_menu = &_toolbar->make_widget<system_menu_widget>();
-        _title_cbt = title.subscribe([this](auto...) {
-            this->_system_menu->icon = this->title->icon;
-        });
-        (*_title_cbt)(*title);
+        this->_system_menu->icon = this->title.get<"icon">();
 #endif
         _toolbar->make_widget<window_traffic_lights_widget, horizontal_alignment::right>();
     } else if (theme().operating_system == operating_system::macos) {
@@ -34,7 +31,7 @@ void window_widget::constructor_implementation() noexcept
         hi_no_default();
     }
 
-    _content = std::make_unique<grid_widget>(window, this, _content_delegate);
+    _content = std::make_unique<grid_widget>(window, this);
 }
 
 [[nodiscard]] generator<widget *> window_widget::children() const noexcept

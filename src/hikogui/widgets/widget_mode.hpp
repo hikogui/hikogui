@@ -2,14 +2,20 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file widgets/widget_mode.hpp Defines widget_mode.
+ * @ingroup widget_utilities
+ */
+
 #pragma once
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** The mode that the widget is operating at.
  *
  * The enumeration here increases visibility and interactivity at each step
  * and you may use `operator<=>()` to compare modes.
+ *
+ * @ingroup widget_utilities
  */
 enum class widget_mode {
     /** The widget is collapsed.
@@ -69,4 +75,4 @@ enum class widget_mode {
     enabled
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

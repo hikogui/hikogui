@@ -18,7 +18,7 @@ namespace hi::inline v1 {
 
 /** Load a random seed.
  *
- * @param [out] ptr The pointer to the buffer bytes where to generate the seed.
+ * @param[out] ptr The pointer to the buffer bytes where to generate the seed.
  * @param size The number of bytes to generate.
  * @throws os_error on failure.
  */

@@ -1,4 +1,4 @@
-// Copyright Take Vos 2022.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -24,7 +24,7 @@ struct iso_15924_info {
         char const (&code4_open_type)[5],
         hi::unicode_script unicode_script,
         uint16_t number) noexcept :
-        code4{to_title(basic_fixed_string(code4))}, code4_open_type{code4_open_type}, unicode_script(unicode_script), number(number)
+        code4{to_title(fixed_string(code4))}, code4_open_type{code4_open_type}, unicode_script(unicode_script), number(number)
     {
     }
 

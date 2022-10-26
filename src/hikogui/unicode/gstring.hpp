@@ -1,11 +1,11 @@
-// Copyright Take Vos 2019-2021.
+// Copyright Take Vos 2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
 #include "grapheme.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../strings.hpp"
 #include "../hash.hpp"
 #include <vector>
@@ -150,6 +150,17 @@ using gstring = std::pmr::basic_string<grapheme>;
 [[nodiscard]] inline gstring to_gstring(std::string_view rhs, char32_t new_line_char = U'\u2029') noexcept
 {
     return to_gstring(to_u32string(rhs), new_line_char);
+}
+
+/** Convert a UTF-8 string to a grapheme-string.
+ *
+ * @param rhs The UTF-8 string to convert.
+ * @param new_line_char The new_line_character to use.
+ * @return A grapheme-string.
+ */
+[[nodiscard]] inline gstring to_gstring(std::string const &rhs, char32_t new_line_char = U'\u2029') noexcept
+{
+    return to_gstring(std::string_view{rhs}, new_line_char);
 }
 
 [[nodiscard]] inline std::string to_string(gstring_view rhs) noexcept

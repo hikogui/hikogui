@@ -1,4 +1,4 @@
-// Copyright Take Vos 2019-2020.
+// Copyright Take Vos 2019-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -7,7 +7,7 @@
 #include "char_maps/to_string.hpp"
 #include "algorithm.hpp"
 #include "cast.hpp"
-#include "required.hpp"
+#include "utility.hpp"
 #include "assert.hpp"
 #include "architecture.hpp"
 #include "concepts.hpp"
@@ -183,7 +183,7 @@ namespace hi::inline v1 {
  * only ASCII letters [a-zA-Z] will be modified.
  */
 template<size_t N>
-[[nodiscard]] constexpr basic_fixed_string<char, N> to_title(basic_fixed_string<char, N> const &rhs) noexcept
+[[nodiscard]] constexpr fixed_string<N> to_title(fixed_string<N> const &rhs) noexcept
 {
     auto r = rhs;
 

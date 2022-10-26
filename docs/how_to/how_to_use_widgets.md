@@ -65,23 +65,23 @@ The `hi::window::content()` function returns a reference to the `hi::grid_widget
 ```cpp
 int hi_main(int argc, char *argv[])
 {
-    observable<int> value = 0;
+    observer<int> value = 0;
 
     auto gui = hi::gui_system::make_unique();
     auto &window = gui->make_window(hi::tr("Radio button example"));
 
     window.content().make_widget<label_widget>("A1", tr("radio buttons:"));
-    window.content().make_widget<radio_button_widget>("B1", tr("one"), value, 1);
-    window.content().make_widget<radio_button_widget>("B2", tr("two"), value, 2);
-    window.content().make_widget<radio_button_widget>("B3", tr("three"), value, 3);
+    window.content().make_widget<radio_button_widget>("B1", value, 1, tr("one"));
+    window.content().make_widget<radio_button_widget>("B2", value, 2, tr("two"));
+    window.content().make_widget<radio_button_widget>("B3", value, 3, tr("three"));
 
     return gui->loop();
 }
 ```
 
 There are often two different ways to construct a widget: with a delegate or
-with an observable. In the example above we use an `hi::observable<int>` for the
-radio buttons to monitor and update. Sharing the same observable allows the
+with an observer. In the example above we use an `hi::observer<int>` for the
+radio buttons to monitor and update. Sharing the same observer allows the
 radio buttons to act as a set.
 
 ### Layout using the grid widget
@@ -106,13 +106,13 @@ are often widgets that are resizable; therefor the `grid_widget` will override t
 preferred- and maximum constraint of other widgets in those rows or columns.
 
 
-### Observable
+### Observer
 
-An observable is a value that will use callbacks to notify listeners when its
-value changes. Unlike other parts of the GUI system, observables may be read and
-written from any thread.
+An observer is a type that observers a value, it will use callbacks to notify listeners when the
+observed value changes. Unlike other parts of the GUI system, observers are thread-save and
+may be read and written from any thread.
 
-In the example below a checkbox monitors the observable `my_value`:
+In the example below a checkbox monitors the observer `my_value`:
 
 - when the value is `bar` the box is checked,
 - when the value is `foo` the box is unchecked,
@@ -121,33 +121,34 @@ In the example below a checkbox monitors the observable `my_value`:
 ```cpp
 enum class my_type {foo, bar, baz};
 
-observable<my_type> my_value;
+observer<my_type> my_value;
 window.content().make_widget<checkbox_widget>("A1", my_value, my_type::bar, my_type::foo);
 ```
 
 As you can see, the `checkbox_widget` will work with custom types. For the checkbox
 the type needs to be equality comparable and assignable.
 
-It is also possible to chain observables to each other. Chaining is done by
-assigning an observable to another observable.
+It is also possible to chain observers to each other. Chaining is done by
+assigning an observer to another observer. You can also get a chained sub-observer,
+selecting a member variable or the result of the index-operator from the observed value.
 
 In the example below, we make another checkbox, but now it will listen to
-the `my_chain` observable. When `my_value` gets assigned to `my_chain`,
+the `my_chain` observer. When `my_value` gets assigned to `my_chain`,
 `my_chain` will start observing `my_value`. Any modification of `my_value`
 will be observed by the checkbox through the chain of observers.
 
 ```cpp
 enum class my_type {foo, bar, baz};
 
-observable<my_type> my_value;
-observable<my_type> my_chain;
+observer<my_type> my_value;
+observer<my_type> my_chain;
 window.content().make_widget<checkbox_widget>("A1", my_chain, my_type::bar, my_type::foo);
 
 my_chain = my_value;
 my_value = my_type::bar;
 ```
 
-Observables are used for many member variables of a widget, including the
+Observers are used for many member variables of a widget, including the
 `hi::widget::enabled`, `hi::widget::visible` members and various labels.
 
 ### Delegates
@@ -157,7 +158,7 @@ delegate for the data to display and sends messages to the delegate when a user
 interacts with the widget.
 
 Delegates are actually the primary way for controlling a widget, the
-`hi::observable` examples above are implemented by templated default-delegates.
+`hi::observer` examples above are implemented by templated default-delegates.
 
 In the example below, a user defined instance of `my_delegate` is passed to the
 constructor of the `hi::checkbox_button`. `my_delegate` must inherit from
@@ -167,9 +168,6 @@ constructor of the `hi::checkbox_button`. `my_delegate` must inherit from
 auto delegate = std::make_shared<my_delegate>();
 auto button = window.make_widget<checkbox_button>("A1", delegate));
 ```
-
-The `hi::gui_system`, `hi::gui_window` and the widgets will retain only
-a `std::weak_ptr` to the given delegate.
 
 A list of widgets
 -----------------

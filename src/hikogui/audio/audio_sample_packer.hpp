@@ -5,7 +5,7 @@
 #pragma once
 
 #include "audio_sample_format.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../architecture.hpp"
 #include "../rapid/numeric_array.hpp"
 #include "../random/dither.hpp"
