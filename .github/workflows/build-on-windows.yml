@@ -67,7 +67,7 @@ jobs:
 
       - name: 📝 Get Vulkan SDK version number
         id: vulkan-version
-        uses: hikogui/install-vulkan-sdk-action/sdk-version@v3
+        uses: hikogui/install-vulkan-sdk-action/sdk-version@fix-set-output-deprecation
 
       - name: 🎯 Cache VULKAN SDK & Runtime
         id: cache-vulkan
@@ -78,7 +78,7 @@ jobs:
 
       - name: 🔽 Install Vulkan SDK
         if: steps.cache-vulkan.outputs.cache-hit != 'true'
-        uses: hikogui/install-vulkan-sdk-action/install-sdk@v3
+        uses: hikogui/install-vulkan-sdk-action/install-sdk@fix-set-output-deprecation
         with:
           VULKAN_VERSION: ${{steps.vulkan-version.outputs.VULKAN_VERSION}}
           VULKAN_SDK: ${{steps.vulkan-version.outputs.VULKAN_SDK}}

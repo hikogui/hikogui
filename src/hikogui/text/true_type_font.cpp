@@ -331,7 +331,6 @@ struct GLYFEntry {
     FWord_buf_t yMax;
 };
 
-
 [[nodiscard]] std::span<std::byte const> true_type_font::parse_cmap_table_directory() const
 {
     std::size_t offset = 0;
@@ -346,40 +345,45 @@ struct GLYFEntry {
     // This allows us to search reasonable quickly for the best entries.
     // The following order is searched: 0.4,0.3,0.2,0.1,3.10,3.1,3.0.
     CMAPEntry const *bestEntry = nullptr;
-    for (hilet &entry : entries) {
+    for (hilet& entry : entries) {
         switch (entry.platformID.value()) {
-        case 0: {
-            // Unicode.
-            switch (entry.platformSpecificID.value()) {
-            case 0: // Default
-            case 1: // Version 1.1
-            case 2: // ISO 10646 1993
-            case 3: // Unicode 2.0 BMP-only
-            case 4: // Unicode 2.0 non-BMP
-                // The best entry is the last one.
-                bestEntry = &entry;
-                break;
-            default:
-                // Not interesting
-                break;
+        case 0:
+            {
+                // Unicode.
+                switch (entry.platformSpecificID.value()) {
+                case 0: // Default
+                case 1: // Version 1.1
+                case 2: // ISO 10646 1993
+                case 3: // Unicode 2.0 BMP-only
+                case 4: // Unicode 2.0 non-BMP
+                    // The best entry is the last one.
+                    bestEntry = &entry;
+                    break;
+                default:
+                    // Not interesting
+                    break;
+                }
             }
-        } break;
+            break;
 
-        case 3: {
-            // Microsoft Windows
-            switch (entry.platformSpecificID.value()) {
-            case 0: // Symbol
-            case 1: // Unicode 16-bit
-            case 10: // Unicode 32-bit
-                // The best entry is the last one.
-                bestEntry = &entry;
-                break;
-            default:
-                // Not unicode
-                break;
+        case 3:
+            {
+                // Microsoft Windows
+                switch (entry.platformSpecificID.value()) {
+                case 0: // Symbol
+                case 1: // Unicode 16-bit
+                case 10: // Unicode 32-bit
+                    // The best entry is the last one.
+                    bestEntry = &entry;
+                    break;
+                default:
+                    // Not unicode
+                    break;
+                }
             }
-        } break;
-        default: break;
+            break;
+        default:
+            break;
         }
     }
 
@@ -554,12 +558,12 @@ static glyph_id searchCharacterMapFormat12(std::span<std::byte const> bytes, cha
     assert_or_return(check_placement_array<CMAPFormat12Group>(bytes, offset, numGroups), {});
     hilet entries = unsafe_make_placement_array<CMAPFormat12Group>(bytes, offset, numGroups);
 
-    hilet i = std::lower_bound(entries.begin(), entries.end(), c, [](hilet &element, char32_t value) {
+    hilet i = std::lower_bound(entries.begin(), entries.end(), c, [](hilet& element, char32_t value) {
         return element.endCharCode.value() < value;
     });
 
     if (i != entries.end()) {
-        hilet &entry = *i;
+        hilet& entry = *i;
         hilet startCharCode = entry.startCharCode.value();
         if (c >= startCharCode) {
             c -= startCharCode;
@@ -584,7 +588,7 @@ static glyph_id searchCharacterMapFormat12(std::span<std::byte const> bytes, cha
     hilet numGroups = header->numGroups.value();
 
     hilet entries = make_placement_array<CMAPFormat12Group>(bytes, offset, numGroups);
-    for (hilet &entry : entries) {
+    for (hilet& entry : entries) {
         r.add(static_cast<char32_t>(entry.startCharCode.value()), static_cast<char32_t>(entry.endCharCode.value()) + 1);
     }
 
@@ -598,10 +602,14 @@ static glyph_id searchCharacterMapFormat12(std::span<std::byte const> bytes, cha
     hilet format = make_placement_ptr<big_uint16_buf_t>(_cmap_bytes);
 
     switch (format->value()) {
-    case 4: return parseCharacterMapFormat4(_cmap_bytes);
-    case 6: return parseCharacterMapFormat6(_cmap_bytes);
-    case 12: return parseCharacterMapFormat12(_cmap_bytes);
-    default: throw parse_error(std::format("Unknown character map format {}", format->value()));
+    case 4:
+        return parseCharacterMapFormat4(_cmap_bytes);
+    case 6:
+        return parseCharacterMapFormat6(_cmap_bytes);
+    case 12:
+        return parseCharacterMapFormat12(_cmap_bytes);
+    default:
+        throw parse_error(std::format("Unknown character map format {}", format->value()));
     }
 }
 
@@ -613,10 +621,14 @@ static glyph_id searchCharacterMapFormat12(std::span<std::byte const> bytes, cha
     hilet format = unsafe_make_placement_ptr<big_uint16_buf_t>(_cmap_bytes);
 
     switch (format->value()) {
-    case 4: return searchCharacterMapFormat4(_cmap_bytes, c);
-    case 6: return searchCharacterMapFormat6(_cmap_bytes, c);
-    case 12: return searchCharacterMapFormat12(_cmap_bytes, c);
-    default: return {};
+    case 4:
+        return searchCharacterMapFormat4(_cmap_bytes, c);
+    case 6:
+        return searchCharacterMapFormat6(_cmap_bytes, c);
+    case 12:
+        return searchCharacterMapFormat12(_cmap_bytes, c);
+    default:
+        return {};
     }
 }
 
@@ -693,7 +705,8 @@ static std::optional<std::string> getStringFromNameTable(
         }
         break;
 
-    default: break;
+    default:
+        break;
     }
     return {};
 }
@@ -712,7 +725,7 @@ void true_type_font::parse_name_table(std::span<std::byte const> table_bytes)
     bool familyIsTypographic = false;
     bool subFamilyIsTypographic = false;
 
-    for (hilet &record : records) {
+    for (hilet& record : records) {
         hilet languageID = record.languageID.value();
         hilet platformID = record.platformID.value();
         hilet platformSpecificID = record.platformSpecificID.value();
@@ -720,45 +733,54 @@ void true_type_font::parse_name_table(std::span<std::byte const> table_bytes)
         hilet nameLengthInBytes = record.length.value();
 
         switch (record.nameID.value()) {
-        case 1: { // font family.(Only valid when used with only 4 sub-families Regular, Bold, Italic, Bold-Italic).
-            if (!familyIsTypographic) {
+        case 1:
+            { // font family.(Only valid when used with only 4 sub-families Regular, Bold, Italic, Bold-Italic).
+                if (!familyIsTypographic) {
+                    auto s = getStringFromNameTable(
+                        table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
+                    if (s) {
+                        family_name = std::move(*s);
+                    }
+                }
+            }
+            break;
+
+        case 2:
+            { // font sub-family. (Only valid when used with only 4 sub-families Regular, Bold, Italic, Bold-Italic).
+                if (!subFamilyIsTypographic) {
+                    auto s = getStringFromNameTable(
+                        table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
+                    if (s) {
+                        sub_family_name = std::move(*s);
+                    }
+                }
+            }
+            break;
+
+        case 16:
+            { // Typographic family.
                 auto s = getStringFromNameTable(
                     table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
                 if (s) {
                     family_name = std::move(*s);
+                    familyIsTypographic = true;
                 }
             }
-        } break;
+            break;
 
-        case 2: { // font sub-family. (Only valid when used with only 4 sub-families Regular, Bold, Italic, Bold-Italic).
-            if (!subFamilyIsTypographic) {
+        case 17:
+            { // Typographic sub-family.
                 auto s = getStringFromNameTable(
                     table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
                 if (s) {
                     sub_family_name = std::move(*s);
+                    subFamilyIsTypographic = true;
                 }
             }
-        } break;
+            break;
 
-        case 16: { // Typographic family.
-            auto s =
-                getStringFromNameTable(table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
-            if (s) {
-                family_name = std::move(*s);
-                familyIsTypographic = true;
-            }
-        } break;
-
-        case 17: { // Typographic sub-family.
-            auto s =
-                getStringFromNameTable(table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
-            if (s) {
-                sub_family_name = std::move(*s);
-                subFamilyIsTypographic = true;
-            }
-        } break;
-
-        default: continue;
+        default:
+            continue;
         }
     }
 }
@@ -792,29 +814,55 @@ void true_type_font::parse_OS2_table(std::span<std::byte const> table_bytes)
     // increasing with boldness, Thin is bolder then Light.
     // The table below uses the integer value as an indication of boldness.
     switch (table->panose.bWeight) {
-    case 2: weight = font_weight::Thin; break;
-    case 3: weight = font_weight::ExtraLight; break;
-    case 4: weight = font_weight::Light; break;
-    case 5: weight = font_weight::Regular; break;
-    case 6: weight = font_weight::Medium; break;
-    case 7: weight = font_weight::SemiBold; break;
-    case 8: weight = font_weight::Bold; break;
-    case 9: weight = font_weight::ExtraBold; break;
-    case 10: weight = font_weight::Black; break;
-    case 11: weight = font_weight::ExtraBlack; break;
-    default: break;
+    case 2:
+        weight = font_weight::Thin;
+        break;
+    case 3:
+        weight = font_weight::ExtraLight;
+        break;
+    case 4:
+        weight = font_weight::Light;
+        break;
+    case 5:
+        weight = font_weight::Regular;
+        break;
+    case 6:
+        weight = font_weight::Medium;
+        break;
+    case 7:
+        weight = font_weight::SemiBold;
+        break;
+    case 8:
+        weight = font_weight::Bold;
+        break;
+    case 9:
+        weight = font_weight::ExtraBold;
+        break;
+    case 10:
+        weight = font_weight::Black;
+        break;
+    case 11:
+        weight = font_weight::ExtraBlack;
+        break;
+    default:
+        break;
     }
 
     switch (table->panose.bProportion) {
-    case 2: [[fallthrough]];
-    case 3: [[fallthrough]];
-    case 4: [[fallthrough]];
-    case 5: [[fallthrough]];
+    case 2:
+        [[fallthrough]];
+    case 3:
+        [[fallthrough]];
+    case 4:
+        [[fallthrough]];
+    case 5:
+        [[fallthrough]];
     case 7:
         monospace = false;
         condensed = false;
         break;
-    case 6: [[fallthrough]];
+    case 6:
+        [[fallthrough]];
     case 8:
         monospace = false;
         condensed = true;
@@ -851,7 +899,7 @@ void true_type_font::parse_maxp_table(std::span<std::byte const> table_bytes)
     num_glyphs = table->num_glyphs.value();
 }
 
-bool true_type_font::get_glyf_bytes(glyph_id glyph_id, std::span<std::byte const> &glyph_bytes) const noexcept
+bool true_type_font::get_glyf_bytes(glyph_id glyph_id, std::span<std::byte const>& glyph_bytes) const noexcept
 {
     assert_or_return(glyph_id >= 0 && glyph_id < num_glyphs, false);
 
@@ -881,12 +929,12 @@ bool true_type_font::get_glyf_bytes(glyph_id glyph_id, std::span<std::byte const
 }
 
 static void get_kern0_kerning(
-    std::span<std::byte const> const &bytes,
+    std::span<std::byte const> const& bytes,
     uint16_t coverage,
     float unitsPerEm,
     glyph_id glyph1_id,
     glyph_id glyph2_id,
-    vector2 &r) noexcept
+    vector2& r) noexcept
 {
     std::size_t offset = 0;
 
@@ -897,7 +945,7 @@ static void get_kern0_kerning(
     assert_or_return(check_placement_array<KERNFormat0_entry>(bytes, offset, nPairs), );
     hilet entries = unsafe_make_placement_array<KERNFormat0_entry>(bytes, offset, nPairs);
 
-    hilet i = std::lower_bound(entries.begin(), entries.end(), std::pair{glyph1_id, glyph2_id}, [](hilet &a, hilet &b) {
+    hilet i = std::lower_bound(entries.begin(), entries.end(), std::pair{glyph1_id, glyph2_id}, [](hilet& a, hilet& b) {
         if (a.left.value() == b.first) {
             return a.right.value() < b.second;
         } else {
@@ -909,32 +957,48 @@ static void get_kern0_kerning(
     if (glyph1_id == i->left.value() && glyph2_id == i->right.value()) {
         // Writing direction is assumed horizontal.
         switch (coverage & 0xf) {
-        case 0x1: r.x() = r.x() + i->value.value(unitsPerEm); break;
-        case 0x3: r.x() = std::min(r.x(), i->value.value(unitsPerEm)); break;
-        case 0x5: r.y() = r.y() + i->value.value(unitsPerEm); break;
-        case 0x7: r.y() = std::min(r.y(), i->value.value(unitsPerEm)); break;
+        case 0x1:
+            r.x() = r.x() + i->value.value(unitsPerEm);
+            break;
+        case 0x3:
+            r.x() = std::min(r.x(), i->value.value(unitsPerEm));
+            break;
+        case 0x5:
+            r.y() = r.y() + i->value.value(unitsPerEm);
+            break;
+        case 0x7:
+            r.y() = std::min(r.y(), i->value.value(unitsPerEm));
+            break;
         // Override
-        case 0x9: r.x() = i->value.value(unitsPerEm); break;
-        case 0xb: r.x() = i->value.value(unitsPerEm); break;
-        case 0xd: r.y() = i->value.value(unitsPerEm); break;
-        case 0xf: r.y() = i->value.value(unitsPerEm); break;
+        case 0x9:
+            r.x() = i->value.value(unitsPerEm);
+            break;
+        case 0xb:
+            r.x() = i->value.value(unitsPerEm);
+            break;
+        case 0xd:
+            r.y() = i->value.value(unitsPerEm);
+            break;
+        case 0xf:
+            r.y() = i->value.value(unitsPerEm);
+            break;
         default:;
         }
     }
 }
 
 static void get_kern3_kerning(
-    std::span<std::byte const> const &bytes,
+    std::span<std::byte const> const& bytes,
     uint16_t coverage,
     float unitsPerEm,
     glyph_id glyph1_id,
     glyph_id glyph2_id,
-    vector2 &r) noexcept
+    vector2& r) noexcept
 {
 }
 
 [[nodiscard]] static vector2
-get_kern_kerning(std::span<std::byte const> const &bytes, float unitsPerEm, glyph_id glyph1_id, glyph_id glyph2_id) noexcept
+get_kern_kerning(std::span<std::byte const> const& bytes, float unitsPerEm, glyph_id glyph1_id, glyph_id glyph2_id) noexcept
 {
     auto r = vector2{0.0f, 0.0f};
     std::size_t offset = 0;
@@ -1000,7 +1064,7 @@ get_kern_kerning(std::span<std::byte const> const &bytes, float unitsPerEm, glyp
 
 bool true_type_font::update_glyph_metrics(
     hi::glyph_id glyph_id,
-    hi::glyph_metrics &glyph_metrics,
+    hi::glyph_metrics& glyph_metrics,
     hi::glyph_id kern_glyph1_id,
     hi::glyph_id kern_glyph2_id) const noexcept
 {
@@ -1042,7 +1106,7 @@ constexpr uint8_t FLAG_Y_SHORT = 0x04;
 constexpr uint8_t FLAG_REPEAT = 0x08;
 constexpr uint8_t FLAG_X_SAME = 0x10;
 constexpr uint8_t FLAG_Y_SAME = 0x20;
-bool true_type_font::load_simple_glyph(std::span<std::byte const> glyph_bytes, graphic_path &glyph) const noexcept
+bool true_type_font::load_simple_glyph(std::span<std::byte const> glyph_bytes, graphic_path& glyph) const noexcept
 {
     std::size_t offset = 0;
 
@@ -1164,7 +1228,7 @@ constexpr uint16_t FLAG_USE_MY_METRICS = 0x0200;
 [[maybe_unused]] constexpr uint16_t FLAG_OVERLAP_COMPOUND = 0x0400;
 constexpr uint16_t FLAG_SCALED_COMPONENT_OFFSET = 0x0800;
 [[maybe_unused]] constexpr uint16_t FLAG_UNSCALED_COMPONENT_OFFSET = 0x1000;
-bool true_type_font::load_compound_glyph(std::span<std::byte const> glyph_bytes, graphic_path &glyph, glyph_id &metrics_glyph_id)
+bool true_type_font::load_compound_glyph(std::span<std::byte const> glyph_bytes, graphic_path& glyph, glyph_id& metrics_glyph_id)
     const noexcept
 {
     std::size_t offset = ssizeof(GLYFEntry);
@@ -1249,7 +1313,7 @@ bool true_type_font::load_compound_glyph(std::span<std::byte const> glyph_bytes,
     return true;
 }
 
-std::optional<glyph_id> true_type_font::load_glyph(glyph_id glyph_id, graphic_path &glyph) const noexcept
+std::optional<glyph_id> true_type_font::load_glyph(glyph_id glyph_id, graphic_path& glyph) const noexcept
 {
     assert_or_return(glyph_id >= 0 && glyph_id < num_glyphs, {});
 
@@ -1278,7 +1342,7 @@ std::optional<glyph_id> true_type_font::load_glyph(glyph_id glyph_id, graphic_pa
     return metrics_glyph_id;
 }
 
-bool true_type_font::load_compound_glyph_metrics(std::span<std::byte const> bytes, glyph_id &metrics_glyph_id) const noexcept
+bool true_type_font::load_compound_glyph_metrics(std::span<std::byte const> bytes, glyph_id& metrics_glyph_id) const noexcept
 {
     std::size_t offset = ssizeof(GLYFEntry);
 
@@ -1322,7 +1386,7 @@ bool true_type_font::load_compound_glyph_metrics(std::span<std::byte const> byte
     return true;
 }
 
-bool true_type_font::load_glyph_metrics(hi::glyph_id glyph_id, hi::glyph_metrics &glyph_metrics, hi::glyph_id lookahead_glyph_id)
+bool true_type_font::load_glyph_metrics(hi::glyph_id glyph_id, hi::glyph_metrics& glyph_metrics, hi::glyph_id lookahead_glyph_id)
     const noexcept
 {
     assert_or_return(glyph_id >= 0 && glyph_id < num_glyphs, false);
@@ -1370,7 +1434,7 @@ bool true_type_font::load_glyph_metrics(hi::glyph_id glyph_id, hi::glyph_metrics
     hilet entries = make_placement_array<SFNTEntry>(bytes, offset, header->numTables.value());
 
     hilet tag = fourcc_from_cstr(table_name);
-    auto it = std::lower_bound(cbegin(entries), cend(entries), tag, [](auto const &entry, auto const &tag) {
+    auto it = std::lower_bound(cbegin(entries), cend(entries), tag, [](auto const& entry, auto const& tag) {
         return entry.tag < tag;
     });
 
@@ -1387,6 +1451,10 @@ void true_type_font::parse_font_directory()
         parse_head_table(headTableBytes);
     }
 
+    if (auto nameTableBytes = get_table_bytes("name"); not nameTableBytes.empty()) {
+        parse_name_table(nameTableBytes);
+    }
+
     if (auto maxpTableBytes = get_table_bytes("maxp"); not maxpTableBytes.empty()) {
         parse_maxp_table(maxpTableBytes);
     }
@@ -1399,12 +1467,63 @@ void true_type_font::parse_font_directory()
         parse_OS2_table(os2TableBytes);
     }
 
-    if (auto nameTableBytes = get_table_bytes("name"); not nameTableBytes.empty()) {
-        parse_name_table(nameTableBytes);
-    }
-
     cache_tables();
     unicode_mask = parse_cmap_table_mask();
+
+    // Parsing the weight, italic and other features from the sub-family-name
+    // is much more reliable than the explicit data in the OS/2 table.
+    // Only use the OS/2 data as a last resort.
+    // clang-format off
+    auto name_lower = to_lower(family_name + " " + sub_family_name);
+    if (name_lower.find("italic") != std::string::npos or
+        name_lower.find("oblique") != std::string::npos) {
+        italic = true;
+    }
+
+    if (name_lower.find("condensed") != std::string::npos) {
+        condensed = true;
+    }
+
+    if (name_lower.find("mono") != std::string::npos or
+        name_lower.find("console") != std::string::npos or
+        name_lower.find("code") != std::string::npos ) {
+        monospace = true;
+    }
+
+    if (name_lower.find("sans") != std::string::npos) {
+        serif = false;
+    } else if (name_lower.find("serif") != std::string::npos) {
+        serif = true;
+    }
+
+    if (name_lower.find("regular") != std::string::npos or
+        name_lower.find("medium") != std::string::npos) {
+        weight = font_weight::Regular;
+    } else if (
+        name_lower.find("extra light") != std::string::npos or
+        name_lower.find("extra-light") != std::string::npos or
+        name_lower.find("extralight") != std::string::npos) {
+        weight = font_weight::ExtraLight;
+    } else if (
+        name_lower.find("extra black") != std::string::npos or
+        name_lower.find("extra-black") != std::string::npos or
+        name_lower.find("extrablack") != std::string::npos) {
+        weight = font_weight::ExtraBlack;
+    } else if (
+        name_lower.find("extra bold") != std::string::npos or
+        name_lower.find("extra-bold") != std::string::npos or
+        name_lower.find("extrabold") != std::string::npos) {
+        weight = font_weight::ExtraBold;
+    } else if (name_lower.find("thin") != std::string::npos) {
+        weight = font_weight::Thin;
+    } else if (name_lower.find("light") != std::string::npos) {
+        weight = font_weight::Light;
+    } else if (name_lower.find("bold") != std::string::npos) {
+        weight = font_weight::Bold;
+    } else if (name_lower.find("black") != std::string::npos) {
+        weight = font_weight::Black;
+    }
+    // clang-format on
 
     // Figure out the features.
     features.clear();

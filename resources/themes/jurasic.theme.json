@@ -1,5 +1,5 @@
 {
-    "name": "Camo",
+    "name": "Jurasic",
     "mode": "dark",
 
     // Distance between widgets and between widgets and the border of the container.
@@ -9,7 +9,7 @@
     "border-width": 1.0,
 
     // The rounding radius of boxes with rounded corners.
-    "rounding-radius": 6.0,
+    "rounding-radius": 4.0,
 
     // The size of small square widgets.
     "size": 11.0,
@@ -32,89 +32,88 @@
     // - string name of an color in the theme.
 
     // Bright colors, fitting theme.
-    "blue"       : [  0, 122, 255],
-    "green"      : [ 52, 199,  89],
-    "indigo"     : [ 88,  86, 214],
-    "orange"     : [255, 149,   0],
-    "pink"       : [255,  45,  85],
-    "purple"     : [175,  82, 222],
-    "red"        : [255,  59,  48],
-    "teal"       : [ 90, 200, 250],
-    "yellow"     : [255, 204,   0],
+    "blue"       : [ 10, 132, 255],
+    "green"      : [ 48, 209,  88],
+    "indigo"     : [ 94,  92, 230],
+    "orange"     : [255, 159,  10],
+    "pink"       : [255,  55,  95],
+    "purple"     : [191,  90, 242],
+    "red"        : [255,  69,  58],
+    "teal"       : [100, 210, 255],
+    "yellow"     : [255, 214,  10],
 
     "gray"       : [142, 142, 147],
-    "gray2"      : [174, 174, 178],
-    "gray3"      : [199, 199, 204],
-    "gray4"      : [209, 209, 214],
-    "gray5"      : [229, 229, 234],
-    "gray6"      : [242, 242, 247],
+    "gray2"      : [ 99,  99, 102],
+    "gray3"      : [ 72,  72,  74],
+    "gray4"      : [ 58,  58,  60],
+    "gray5"      : [ 44,  44,  46],
+    "gray6"      : [ 28,  28,  30],
 
     // Colors used by widgets, to show nesting inside containers,
-    // and for internal elements and disabled icons.
     "fill-color": [
-        [12, 35, 7],
-        [23, 47, 21],
-        [30, 53, 28],
-        [36, 60, 34]
+        [ 31,  22,  20],
+        [ 41,  32,  30],
+        [ 52,  42,  40],
+        [ 61,  51,  49]
     ],
-
+    
     // Colors used by widgets for internal elements and disabled icons.
     "border-color": [
-        [89, 76, 47],
-        [96, 84, 54],
-        [104,  91, 60],
-        [114,  101, 70]
+        [ 71,  34,  22],
+        [ 81,  43,  30],
+        [ 94,  54,  40],
+        [114,  72,  58]
     ],
 
     // Color for textual or primary elements like icons.
-    "foreground-color":       [248, 232, 196],
+    "foreground-color":       [234, 207, 103],
 
     // Accent color used by widgets, to show icons, hover and keyboard focus
-    "accent-color":           [31,  105,  30],
-    "text-select-color":      [68, 139, 60],
-    "primary-cursor-color":   [ 248,   232,  196],
-    "secondary-cursor-color": [31, 105,   30],
+    "accent-color":           [185, 49,  62],
+    "text-select-color":      [ 31, 105, 29],
+    "primary-cursor-color":   [211, 181,  51],
+    "secondary-cursor-color": [162, 124,  44],
 
     "small-label-style": {
-        "family": "Times New Roman",
+        "family": "Candara",
         "weight": "Normal",
         "size": 10.0,
         "color": "foreground"
     },
 
     "label-style": {
-        "family": "Times New Roman",
-        "weight": "Regular",
+        "family": "Candara",
+        "weight": "Normal",
         "size": 12.0,
         "color": "foreground"
     },
     "warning-label-style": {
-        "family": "Times New Roman",
-        "weight": "Regular",
+        "family": "Candara",
+        "weight": "Normal",
         "size": 12.0,
         "color": "foreground"
     },
     "error-label-style": {
-        "family": "Times New Roman",
-        "weight": "Regular",
+        "family": "Candara",
+        "weight": "Normal",
         "size": 12.0,
-        "color": "red"
+        "color": "orange"
     },
     "help-label-style": {
-        "family": "Times New Roman",
-        "weight": "Regular",
+        "family": "Candara",
+        "weight": "Normal",
         "size": 12.0,
         "color": [88, 86, 214]
     },
     "placeholder-label-style": {
-        "family": "Times New Roman",
-        "weight": "Regular",
+        "family": "Candara",
+        "weight": "Normal",
         "size": 12.0,
         "color": [142, 142, 147]
     },
     "link-label-style": {
-        "family": "Times New Roman",
-        "weight": "Regular",
+        "family": "Candara",
+        "weight": "Normal",
         "size": 12.0,
         "color": [0, 122, 255]
     }
