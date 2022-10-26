@@ -198,13 +198,9 @@ using native_int16_buf_at = endian_buf_t<int16_t, std::endian::native>;
 /** Load an integer from unaligned memory in native byte-order.
  */
 template<numeric T>
-hi_force_inline T load(void const *src) noexcept
+[[nodiscard]] hi_force_inline T load(void const *src) noexcept
 {
-#if HI_COMPILER == HI_CC_MSVC
-    return *reinterpret_cast<__unaligned T const *>(src);
-#else
-#error "missing implementation for load()"
-#endif
+    return load<T>(reinterpret_cast<uint8_t const *>(src));
 }
 
 /** Load an integer from unaligned memory in little-endian byte-order.
