@@ -103,7 +103,7 @@ public:
      * If an equivalent object is already in the set then the index is returned where it was located, and
      * the temporary created object is destroyed.
      *
-     * @param arg The arguments to pass to the constructor of the value_type.
+     * @param args The arguments to pass to the constructor of the value_type.
      * @return The index where the object was added, or where the object already was in the set.
      */
     template<typename... Args>

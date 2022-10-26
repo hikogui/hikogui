@@ -19,7 +19,7 @@ class gui_window;
 
 class loop {
 public:
-    using timer_token_type = function_timer<>::token_type;
+    using timer_callback_token = function_timer<>::callback_token;
 
     class impl_type {
     public:
@@ -52,7 +52,7 @@ public:
             return future;
         }
 
-        timer_token_type delay_function(utc_nanoseconds time_point, auto&& func) noexcept
+        timer_callback_token delay_function(utc_nanoseconds time_point, auto&& func) noexcept
         {
             auto [token, first_to_call] = _function_timer.delay_function(time_point, hi_forward(func));
             if (first_to_call) {
@@ -62,7 +62,7 @@ public:
             return token;
         }
 
-        timer_token_type repeat_function(std::chrono::nanoseconds period, utc_nanoseconds time_point, auto&& func) noexcept
+        timer_callback_token repeat_function(std::chrono::nanoseconds period, utc_nanoseconds time_point, auto&& func) noexcept
         {
             auto [token, first_to_call] = _function_timer.repeat_function(period, time_point, hi_forward(func));
             if (first_to_call) {
@@ -72,7 +72,7 @@ public:
             return token;
         }
 
-        timer_token_type repeat_function(std::chrono::nanoseconds period, auto&& func) noexcept
+        timer_callback_token repeat_function(std::chrono::nanoseconds period, auto&& func) noexcept
         {
             auto [token, first_to_call] = _function_timer.repeat_function(period, hi_forward(func));
             if (first_to_call) {
@@ -211,7 +211,7 @@ public:
      * @param time_point The time at which to call the function.
      * @param func The function to be called.
      */
-    [[nodiscard]] timer_token_type delay_function(utc_nanoseconds time_point, auto&& func) noexcept
+    [[nodiscard]] timer_callback_token delay_function(utc_nanoseconds time_point, auto&& func) noexcept
     {
         hi_axiom(_pimpl);
         return _pimpl->delay_function(time_point, hi_forward(func));
@@ -223,7 +223,7 @@ public:
      * @param time_point The time at which to call the function.
      * @param func The function to be called.
      */
-    [[nodiscard]] timer_token_type
+    [[nodiscard]] timer_callback_token
     repeat_function(std::chrono::nanoseconds period, utc_nanoseconds time_point, auto&& func) noexcept
     {
         hi_axiom(_pimpl);
@@ -235,7 +235,7 @@ public:
      * @param period The period between calls to the function.
      * @param func The function to be called.
      */
-    [[nodiscard]] timer_token_type repeat_function(std::chrono::nanoseconds period, auto&& func) noexcept
+    [[nodiscard]] timer_callback_token repeat_function(std::chrono::nanoseconds period, auto&& func) noexcept
     {
         hi_axiom(_pimpl);
         return _pimpl->repeat_function(period, hi_forward(func));
@@ -260,7 +260,7 @@ public:
      *
      * @note Only one callback can be associated with a socket.
      * @param fd File descriptor of the socket.
-     * @param mode The mode of how select should work with the socket.
+     * @param event_mask The socket events to wait for.
      * @param f The callback to call when the file descriptor unblocks.
      */
     void add_socket(int fd, network_event event_mask, std::function<void(int, network_events const&)> f)

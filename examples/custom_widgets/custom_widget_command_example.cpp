@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -11,8 +11,8 @@
 // Every widget must inherit from hi::widget.
 class command_widget : public hi::widget {
 public:
-    // Using an observable allows reading, writing and monitoring of the value outside of the widget.
-    hi::observable<bool> value;
+    // Using an observer allows reading, writing and monitoring of the value outside of the widget.
+    hi::observer<bool> value;
 
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
@@ -127,7 +127,7 @@ public:
     }
 
 private:
-    decltype(value)::token_type _value_cbt;
+    decltype(value)::callback_token _value_cbt;
 };
 
 int hi_main(int argc, char *argv[])
@@ -137,8 +137,10 @@ int hi_main(int argc, char *argv[])
     window->content().make_widget<command_widget>("A1");
     window->content().make_widget<command_widget>("A2");
 
-    auto close_cbt = window->closing.subscribe(hi::callback_flags::main, [&]{
-        window = {};
-    });
+    auto close_cbt = window->closing.subscribe(
+        [&] {
+            window = {};
+        },
+        hi::callback_flags::main);
     return hi::loop::main().resume();
 }

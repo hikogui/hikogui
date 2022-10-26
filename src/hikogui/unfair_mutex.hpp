@@ -1,10 +1,10 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
-#include "required.hpp"
+#include "utility.hpp"
 #include "thread.hpp"
 #include "assert.hpp"
 #include "dead_lock_detector.hpp"
@@ -163,7 +163,7 @@ private:
     }
 };
 
-#if HI_BUILD_TYPE == HI_BT_DEBUG
+#ifndef NDEBUG
 using unfair_mutex = unfair_mutex_impl<true>;
 #else
 using unfair_mutex = unfair_mutex_impl<false>;

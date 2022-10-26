@@ -1,4 +1,5 @@
-// Copyright Take Vos 2020.
+// Copyright Jens A. Koch 2021.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -257,19 +258,11 @@ void png::read_chunks(std::span<std::byte const> bytes, std::size_t &offset)
     }
 }
 
-png::png(std::span<std::byte const> bytes) : _view()
+png::png(file_view view) : _view(std::move(view))
 {
     std::size_t offset = 0;
 
-    read_header(bytes, offset);
-    read_chunks(bytes, offset);
-}
-
-png::png(std::unique_ptr<resource_view> view) : _view(std::move(view))
-{
-    std::size_t offset = 0;
-
-    hilet bytes = as_bstring_view(*_view);
+    hilet bytes = as_bstring_view(_view);
     read_header(bytes, offset);
     read_chunks(bytes, offset);
 }
@@ -459,9 +452,9 @@ void png::decode_image(pixel_map<sfloat_rgba16> &image) const
     data_to_image(image_data, image);
 }
 
-pixel_map<sfloat_rgba16> png::load(URL const &url)
+pixel_map<sfloat_rgba16> png::load(std::filesystem::path const &path)
 {
-    hilet png_data = png(url);
+    hilet png_data = png(file_view{path});
     auto image = pixel_map<sfloat_rgba16>{png_data.width(), png_data.height()};
     png_data.decode_image(image);
     return image;

@@ -1,4 +1,4 @@
-# Copyright Take Vos 2020.
+# Copyright Take Vos 2020-2021.
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -19,7 +19,7 @@ target_sources(hikogui PRIVATE
     BON8.cpp
 )
 
-if(HI_BUILD_TESTS)
+if(BUILD_TESTING)
     target_sources(hikogui_tests PRIVATE
         BON8_tests.cpp
         JSON_tests.cpp

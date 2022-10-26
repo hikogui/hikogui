@@ -1,10 +1,10 @@
-// Copyright Take Vos 2019-2020.
+// Copyright Take Vos 2019-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
-#include "required.hpp"
+#include "utility.hpp"
 #include "architecture.hpp"
 #include "memory.hpp"
 #include "assert.hpp"
@@ -30,7 +30,7 @@ hi_warning_push();
 // C26472: Don't use a static_cast for arithmetic conversions. Use brace initialization, gsl::narrow_cast or gsl::narrow
 // (type.1).
 // static_cast are used to cheaply cast integers to unsigned and back, for byteswapping.
-hi_warning_ignore_msvc(26472)
+hi_warning_ignore_msvc(26472);
 
 namespace hi::inline v1 {
 
@@ -136,7 +136,7 @@ struct endian_buf_t {
         return E == std::endian::native ? x : byte_swap(x);
     }
 
-    endian_buf_t &set_value(T x) noexcept
+    endian_buf_t& set_value(T x) noexcept
     {
         if constexpr (E != std::endian::native) {
             x = byte_swap(x);
@@ -146,7 +146,7 @@ struct endian_buf_t {
         return *this;
     }
 
-    endian_buf_t &operator=(T x) noexcept
+    endian_buf_t& operator=(T x) noexcept
     {
         return set_value(x);
     }
@@ -225,7 +225,7 @@ hi_force_inline T load_be(void const *src) noexcept
 
 /** Load data from memory.
  *
- * @param [out] r The return value, overwrites all bits in the value at @a offset.
+ * @param[out] r The return value, overwrites all bits in the value at @a offset.
  * @param src The memory location to read the data from.
  */
 template<std::unsigned_integral T>
@@ -239,7 +239,7 @@ hi_force_inline void unaligned_load_le(T& r, void const *src) noexcept
     } else if constexpr (sizeof(T) == 2) {
         r = _mm_extract_epi16(_mm_loadu_si16(src), 0);
     } else if constexpr (sizeof(T) == 1) {
-        r = *reinterpret_cast<uint8_t const*>(src);
+        r = *reinterpret_cast<uint8_t const *>(src);
     } else {
         hi_static_no_default();
     }
@@ -258,11 +258,11 @@ hi_force_inline void unaligned_load_le(T& r, void const *src) noexcept
 
 /** Load data from memory.
  *
- * @param [in,out] r The return value, overwrites the bits in the value at @a offset.
+ * @param[in,out] r The return value, overwrites the bits in the value at @a offset.
  * @param src The memory location to read the data from.
  * @param size The number of bytes to load.
  * @param offset Byte offset in @a r where the bits are overwritten
- * @note It is undefined behavior to load bytes beyond the boundary of @r.
+ * @note It is undefined behavior to load bytes beyond the boundary of @a r.
  */
 template<std::unsigned_integral T>
 hi_force_inline void unaligned_load_le(T& r, void const *src, size_t size, size_t offset = 0) noexcept

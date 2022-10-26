@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -6,7 +6,7 @@
 
 #include "audio_stream_format_win32.hpp"
 #include "speaker_mapping_win32.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../exception.hpp"
 #include "../cast.hpp"
 #include "../check.hpp"

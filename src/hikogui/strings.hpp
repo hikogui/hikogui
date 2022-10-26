@@ -1,17 +1,17 @@
-// Copyright Take Vos 2019-2020.
+// Copyright Take Vos 2019-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
+#include "char_maps/to_string.hpp"
 #include "algorithm.hpp"
 #include "cast.hpp"
-#include "required.hpp"
+#include "utility.hpp"
 #include "assert.hpp"
 #include "architecture.hpp"
 #include "concepts.hpp"
 #include "exception.hpp"
-#include "unicode/UTF.hpp"
 #include <string>
 #include <string_view>
 #include <iterator>
@@ -148,6 +148,55 @@ namespace hi::inline v1 {
 
     for (hilet c : str) {
         r += to_upper(c);
+    }
+
+    return r;
+}
+
+/** Convert the current string to using title case.
+ *
+ * This function does not do full unicode case conversion;
+ * only ASCII letters [a-zA-Z] will be modified.
+ */
+[[nodiscard]] constexpr std::string to_title(std::string_view rhs) noexcept
+{
+    auto r = std::string{rhs};
+
+    bool first = true;
+    for (auto& c : r) {
+        if (first) {
+            c = to_upper(c);
+            first = false;
+        } else if (c == ' ') {
+            first = true;
+        } else {
+            c = to_lower(c);
+        }
+    }
+
+    return r;
+}
+
+/** Convert the current string to using title case.
+ *
+ * This function does not do full unicode case conversion;
+ * only ASCII letters [a-zA-Z] will be modified.
+ */
+template<size_t N>
+[[nodiscard]] constexpr fixed_string<N> to_title(fixed_string<N> const &rhs) noexcept
+{
+    auto r = rhs;
+
+    bool first = true;
+    for (auto &c: r) {
+        if (first) {
+            c = to_upper(c);
+            first = false;
+        } else if (c == ' ') {
+            first = true;
+        } else {
+            c = to_lower(c);
+        }
     }
 
     return r;

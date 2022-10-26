@@ -1,11 +1,10 @@
-// Copyright Take Vos 2019-2021.
+// Copyright Take Vos 2019-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
 #include "gui_window_size.hpp"
-#include "gui_window_delegate.hpp"
 #include "mouse_cursor.hpp"
 #include "hitbox.hpp"
 #include "gui_event.hpp"
@@ -38,8 +37,6 @@ class keyboard_bindings;
  */
 class gui_window {
 public:
-    using delegate_type = gui_window_delegate;
-
     gui_system& gui;
 
     std::unique_ptr<gfx_surface> surface;
@@ -101,7 +98,7 @@ public:
      */
     notifier<void()> closing;
 
-    gui_window(gui_system& gui, label const& title, std::weak_ptr<delegate_type> delegate = {}) noexcept;
+    gui_window(gui_system& gui, label const& title) noexcept;
 
     virtual ~gui_window();
 
@@ -290,8 +287,6 @@ public:
 protected:
     static constexpr std::chrono::nanoseconds _animation_duration = std::chrono::milliseconds(150);
 
-    std::weak_ptr<delegate_type> _delegate;
-
     std::atomic<aarectangle> _redraw_rectangle = aarectangle{};
     std::atomic<void const *> _relayout = nullptr;
     std::atomic<void const *> _reconstrain = nullptr;
@@ -324,8 +319,8 @@ protected:
     virtual void create_window(extent2 new_size) = 0;
 
 private:
-    notifier<>::token_type _setting_change_token;
-    observable<std::string>::token_type _selected_theme_token;
+    notifier<>::callback_token _setting_change_token;
+    observer<std::string>::callback_token _selected_theme_token;
 
     /** Target of the mouse
      * Since any mouse event will change the target this is used

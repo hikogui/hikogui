@@ -1,6 +1,10 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+
+/** @file widgets/toolbar_widget.hpp Defines toolbar_widget.
+ * @ingroup widgets
+ */
 
 #pragma once
 
@@ -10,7 +14,7 @@
 #include <memory>
 #include <ranges>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** A toolbar widget is located at the top of a window and lays out its children
  * horizontally.
@@ -24,6 +28,8 @@ namespace hi::inline v1 {
  * Child widgets are drawn to full height of the toolbar determined by the
  * preferred size of all contained widgets. The width of each widget is
  * determined by their preferred size
+ *
+ * @ingroup widgets
  */
 class toolbar_widget final : public widget {
 public:
@@ -33,8 +39,6 @@ public:
      *
      * @param window The window.
      * @param parent The parent widget.
-     * @param delegate An optional delegate can be used to populate the row/column widget
-     *                 during initialization.
      */
     toolbar_widget(gui_window& window, widget *parent) noexcept;
 
@@ -104,4 +108,4 @@ private:
     bool tab_button_has_focus() const noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

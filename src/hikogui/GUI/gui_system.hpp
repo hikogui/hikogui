@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020, 2021.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -11,7 +11,7 @@
 #include "../GFX/gfx_device.hpp"
 #include "../thread.hpp"
 #include "../unfair_recursive_mutex.hpp"
-#include "../observable.hpp"
+#include "../observer.hpp"
 #include <span>
 #include <memory>
 #include <mutex>
@@ -52,7 +52,7 @@ public:
 
     /** The name of the selected theme.
      */
-    observable<std::string> selected_theme = "default";
+    observer<std::string> selected_theme = "default";
 
     /** Make a gui_system instance.
      *

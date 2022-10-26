@@ -1,17 +1,20 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+
+/** @file widgets/scroll_widget.hpp Defines scroll_widget.
+ * @ingroup widgets
+ */
 
 #pragma once
 
 #include "widget.hpp"
 #include "scroll_bar_widget.hpp"
 #include "scroll_aperture_widget.hpp"
-#include "scroll_delegate.hpp"
 #include "../GUI/gui_window.hpp"
 #include "../geometry/axis.hpp"
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** The scroll widget allows a content widget to be shown in less space than is
  * required.
@@ -35,6 +38,7 @@ namespace hi::inline v1 {
  *
  * @image html scroll_widget.png
  *
+ * @ingroup widgets
  * @tparam Axis the axis that the content may be scrolled. Allowed values are
  *              `axis::horizontal`, `axis::vertical` or `axis::both`.
  * @tparam ControlsWindow If set to true, when the content changes size the
@@ -44,27 +48,18 @@ template<axis Axis = axis::both, bool ControlsWindow = false>
 class scroll_widget final : public widget {
 public:
     using super = widget;
-    using delegate_type = scroll_delegate<Axis, ControlsWindow>;
 
     static constexpr hi::axis axis = Axis;
     static constexpr bool controls_window = ControlsWindow;
 
-    ~scroll_widget()
-    {
-        if (auto delegate = _delegate.lock()) {
-            delegate->deinit(*this);
-        }
-    }
+    ~scroll_widget() {}
 
     /** Constructs an empty scroll widget.
      *
      * @param window The window.
      * @param parent The parent widget.
-     * @param delegate An optional delegate can be used to populate the scroll widget
-     *                 during initialization.
      */
-    scroll_widget(gui_window& window, widget *parent, std::weak_ptr<delegate_type> delegate = {}) noexcept :
-        super(window, parent), _delegate(std::move(delegate))
+    scroll_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
     {
         hi_axiom(is_gui_thread());
         hi_axiom(parent);
@@ -77,10 +72,6 @@ public:
             window, this, _aperture->content_width, _aperture->aperture_width, _aperture->offset_x);
         _vertical_scroll_bar = std::make_unique<vertical_scroll_bar_widget>(
             window, this, _aperture->content_height, _aperture->aperture_height, _aperture->offset_y);
-
-        if (auto d = _delegate.lock()) {
-            d->init(*this);
-        }
     }
 
     /** Add a content widget directly to this scroll widget.
@@ -176,8 +167,7 @@ public:
             _horizontal_scroll_bar_rectangle = aarectangle{point2{0.0f, 0.0f}, horizontal_scroll_bar_size};
 
             if constexpr (controls_window) {
-                window.set_resize_border_priority(
-                    true, not vertical_visible, not horizontal_visible, true);
+                window.set_resize_border_priority(true, not vertical_visible, not horizontal_visible, true);
             }
         }
 
@@ -219,8 +209,6 @@ public:
     }
     // @endprivatesection
 private:
-    std::weak_ptr<delegate_type> _delegate;
-
     aarectangle _aperture_rectangle;
     std::unique_ptr<scroll_aperture_widget> _aperture;
 
@@ -231,10 +219,26 @@ private:
     std::unique_ptr<vertical_scroll_bar_widget> _vertical_scroll_bar;
 };
 
+/** Vertical scroll widget.
+ * A scroll widget that only scrolls vertically.
+ *
+ * @ingroup widgets
+ * @see scroll_widget
+ * @tparam ControlsWindow If set to true, when the content changes size the
+ * window gets a signal to resize to its preferred size.
+ */
 template<bool ControlsWindow = false>
 using vertical_scroll_widget = scroll_widget<axis::vertical, ControlsWindow>;
 
+/** Horizontal scroll widget.
+ * A scroll widget that only scrolls horizontally.
+ *
+ * @ingroup widgets
+ * @see scroll_widget
+ * @tparam ControlsWindow If set to true, when the content changes size the
+ * window gets a signal to resize to its preferred size.
+ */
 template<bool ControlsWindow = false>
 using horizontal_scroll_widget = scroll_widget<axis::horizontal, ControlsWindow>;
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

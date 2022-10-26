@@ -1,4 +1,4 @@
-// Copyright Take Vos 2022.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -7,6 +7,7 @@
 #include "../cast.hpp"
 #include "../fixed_string.hpp"
 #include "../exception.hpp"
+#include "../strings.hpp"
 #include <array>
 
 namespace hi::inline v1 {
@@ -23,7 +24,7 @@ struct iso_15924_info {
         char const (&code4_open_type)[5],
         hi::unicode_script unicode_script,
         uint16_t number) noexcept :
-        code4{to_title(basic_fixed_string(code4))}, code4_open_type{code4_open_type}, unicode_script(unicode_script), number(number)
+        code4{to_title(fixed_string(code4))}, code4_open_type{code4_open_type}, unicode_script(unicode_script), number(number)
     {
     }
 
@@ -317,7 +318,7 @@ iso_15924::iso_15924(std::string_view code4)
         throw parse_error(std::format("Invalid script '{}'", code4));
     }
 
-    hilet code4_ = to_title(fixed_string<4>{code4});
+    hilet code4_ = to_title(code4);
 
     hilet it = std::lower_bound(
         iso_15924_number_by_code4.begin(), iso_15924_number_by_code4.end(), code4_, [](hilet &item, hilet &value) {

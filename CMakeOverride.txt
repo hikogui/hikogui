@@ -1,6 +1,7 @@
 
 # By default cmake does not make optimized binaries when building "RelWithDebInfo" using the MSVC compiler.
 # It will only make optimized binaries when making a "Release" build, however those don't have debugging symbols.
+# Referencing: https://gitlab.kitware.com/cmake/cmake/-/issues/20812
 #
 # This CMakeOverride.txt will change the default compiler options for the "RelWithDebInfo" to make a fully
 # optimized executable like when building with "Release" but with included debugging symbols.
@@ -41,6 +42,10 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   #
   # Settings for ALL build types
   #
+  # -GR:   Add type information in executable needed for dynamic_cast<>() to work.
+  # -EHsc: Uses the standard C++ exception handling, i.e. catch(...) does not catch
+  #        Window's structured exceptions such as segmentation-faults.
+  #
   set(CMAKE_C_FLAGS_INIT             "-DWIN32 -D_WINDOWS -nologo")
   set(CMAKE_CXX_FLAGS_INIT           "-DWIN32 -D_WINDOWS -GR -EHsc -nologo")
   set(CMAKE_EXE_LINKER_FLAGS_INIT    "-machine:x64 -nologo")
@@ -55,26 +60,15 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   # Ob0:    Disable inline expansions
   # Od:     Disable code movements for easier debugging (DEBUG)
   #
+  # -debug:fastlink causes "Access Violation" on github-actions.
+  #
   set(CMAKE_CXX_FLAGS_DEBUG_INIT           "-Zi -Ob0 -Od")
   set(CMAKE_C_FLAGS_DEBUG_INIT             "-Zi -Ob0 -Od")
-  set(CMAKE_EXE_LINKER_FLAGS_DEBUG_INIT    "-INCREMENTAL:NO -debug")
-  set(CMAKE_MODULE_LINKER_FLAGS_DEBUG_INIT "-INCREMENTAL:NO -debug")
-  set(CMAKE_SHARED_LINKER_FLAGS_DEBUG_INIT "-INCREMENTAL:NO -debug")
+  set(CMAKE_EXE_LINKER_FLAGS_DEBUG_INIT    "-debug")
+  set(CMAKE_MODULE_LINKER_FLAGS_DEBUG_INIT "-debug")
+  set(CMAKE_SHARED_LINKER_FLAGS_DEBUG_INIT "-debug")
 
   #
-  # Release
-  #
-  # O2:     Maximize Speed
-  # Ob3:    Aggressive Inline Function Expansion
-  # GL:     Whole Program Optimization
-  # NDEBUG: Assertion checks turned off at compile time
-  #
-  set(CMAKE_CXX_FLAGS_RELEASE_INIT           "-O2 -Ob3 -GL -DNDEBUG")
-  set(CMAKE_C_FLAGS_RELEASE_INIT             "-O2 -Ob3 -GL -DNDEBUG")
-  set(CMAKE_EXE_LINKER_FLAGS_RELEASE_INIT    "-INCREMENTAL:NO -LTCG")
-  set(CMAKE_MODULE_LINKER_FLAGS_RELEASE_INIT "-INCREMENTAL:NO -LTCG")
-  set(CMAKE_SHARED_LINKER_FLAGS_RELEASE_INIT "-INCREMENTAL:NO -LTCG")
-
   # RelWithDebugInfo
   #
   # This build_type is important, because we need to step through the
@@ -83,12 +77,30 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   # Zi:     Produce a separate PDB file (debug symbols)
   # O2:     Maximize Speed
   # Ob3:    Aggressive Inline Function Expansion
-  # GL:     Whole Program Optimization
   # NDEBUG: Assertion checks turned off at compile time
   #
-  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT           "-Zi -O2 -Ob3 -GL -DNDEBUG")
-  set(CMAKE_C_FLAGS_RELWITHDEBINFO_INIT             "-Zi -O2 -Ob3 -GL -DNDEBUG")
-  set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO_INIT    "-INCREMENTAL:NO -LTCG -debug")
-  set(CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO_INIT "-INCREMENTAL:NO -LTCG -debug")
-  set(CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO_INIT "-INCREMENTAL:NO -LTCG -debug")
+  # -debug:fastlink causes "Access Violation" on github-actions.
+  #
+  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT           "-Zi -O2 -Ob3 -DNDEBUG")
+  set(CMAKE_C_FLAGS_RELWITHDEBINFO_INIT             "-Zi -O2 -Ob3 -DNDEBUG")
+  set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO_INIT    "-debug")
+  set(CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO_INIT "-debug")
+  set(CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO_INIT "-debug")
+  
+  #
+  # Release
+  #
+  # O2:     Maximize Speed
+  # Ob3:    Aggressive Inline Function Expansion
+  # NDEBUG: Assertion checks turned off at compile time
+  #
+  # -debug:fastlink causes "Access Violation" on github-actions.
+  #
+  set(CMAKE_CXX_FLAGS_RELEASE_INIT           "-O2 -Ob3 -DNDEBUG")
+  set(CMAKE_C_FLAGS_RELEASE_INIT             "-O2 -Ob3 -DNDEBUG")
+  #set(CMAKE_EXE_LINKER_FLAGS_RELEASE_INIT    "-INCREMENTAL:NO")
+  #set(CMAKE_MODULE_LINKER_FLAGS_RELEASE_INIT "-INCREMENTAL:NO")
+  #set(CMAKE_SHARED_LINKER_FLAGS_RELEASE_INIT "-INCREMENTAL:NO")
+
+  
 endif()

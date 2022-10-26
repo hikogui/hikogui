@@ -1,23 +1,28 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+
+/** @file widgets/text_field_widget.hpp Defines text_field_widget.
+ * @ingroup widgets
+ */
 
 #pragma once
 
 #include "text_field_delegate.hpp"
-#include "default_text_field_delegate.hpp"
 #include "widget.hpp"
 #include "label_widget.hpp"
 #include "scroll_widget.hpp"
 #include "../label.hpp"
-#include "../weak_or_unique_ptr.hpp"
 #include <memory>
 #include <string>
 #include <array>
 #include <optional>
 #include <future>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
+
+template<typename Context>
+concept text_field_widget_attribute = text_widget_attribute<Context>;
 
 /** A single line text field.
  *
@@ -51,48 +56,71 @@ namespace hi::inline v1 {
  * should be shown in the field. This allows the filter to reject certain characters or limit the size.
  *
  * The maximum width of the text field is defined in the number of EM of the current selected font.
+ *
+ * @ingroup widgets
  */
 class text_field_widget final : public widget {
 public:
     using delegate_type = text_field_delegate;
     using super = widget;
 
+    std::shared_ptr<delegate_type> delegate;
+
     /** Continues update mode.
      * If true then the value will update on every edit of the text field.
      */
-    observable<bool> continues = false;
+    observer<bool> continues = false;
 
     /** The style of the text.
      */
-    observable<semantic_text_style> text_style = semantic_text_style::label;
+    observer<semantic_text_style> text_style = semantic_text_style::label;
+
+    /** The alignment of the text.
+     */
+    observer<alignment> alignment = alignment::middle_flush();
 
     virtual ~text_field_widget();
 
-    text_field_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept;
+    text_field_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
-    template<typename Value>
-    text_field_widget(gui_window &window, widget *parent, Value &&value) noexcept
-        requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>) :
-        text_field_widget(window, parent, make_unique_default_text_field_delegate(std::forward<Value>(value)))
+    text_field_widget(
+        gui_window& window,
+        widget *parent,
+        std::shared_ptr<delegate_type> delegate,
+        text_field_widget_attribute auto&&...attributes) noexcept :
+        text_field_widget(window, parent, std::move(delegate))
     {
+        set_attributes(hi_forward(attributes)...);
     }
+
+    /** Construct a text field widget.
+     *
+     * @param window The window the widget is displayed on.
+     * @param parent The owner of this widget.
+     * @param value The value or `observer` value which represents the state of the text-field.
+     * @param attributes A set of attributes used to configure the text widget: a `alignment` or `semantic_text_style`.
+     */
+    text_field_widget(
+        gui_window& window,
+        widget *parent,
+        different_from<std::shared_ptr<delegate_type>> auto&& value,
+        text_field_widget_attribute auto&&...attributes) noexcept requires requires
+    {
+        make_default_text_field_delegate(hi_forward(value));
+    } : text_field_widget(window, parent, make_default_text_field_delegate(hi_forward(value)), hi_forward(attributes)...) {}
 
     /// @privatesection
-    [[nodiscard]] generator<widget *> children() const noexcept override
-    {
-        co_yield _scroll_widget.get();
-    }
-    widget_constraints const &set_constraints() noexcept override;
-    void set_layout(widget_layout const &layout) noexcept override;
-    void draw(draw_context const &context) noexcept override;
+    [[nodiscard]] generator<widget *> children() const noexcept override;
+    widget_constraints const& set_constraints() noexcept override;
+    void set_layout(widget_layout const& layout) noexcept override;
+    void draw(draw_context const& context) noexcept override;
     bool handle_event(gui_event const& event) noexcept override;
     hitbox hitbox_test(point3 position) const noexcept override;
     [[nodiscard]] bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept override;
     [[nodiscard]] color focus_color() const noexcept override;
     /// @endprivatesection
 private:
-    weak_or_unique_ptr<delegate_type> _delegate;
-    notifier<>::token_type _delegate_cbt;
+    notifier<>::callback_token _delegate_cbt;
 
     /** The scroll widget embeds the text widget.
      */
@@ -102,13 +130,12 @@ private:
      */
     text_widget *_text_widget = nullptr;
 
-
     /** The text edited by the _text_widget.
      */
-    observable<gstring> _text;
+    observer<gstring> _text;
 
-    /** The rectangle where the box is displayed, inwhich the text is displayed.
-    */
+    /** The rectangle where the box is displayed, in which the text is displayed.
+     */
     aarectangle _box_rectangle;
 
     /** The rectangle where the text is displayed.
@@ -118,20 +145,33 @@ private:
 
     /** An error string to show to the user.
      */
-    observable<label> _error_label;
+    observer<label> _error_label;
     aarectangle _error_label_rectangle;
     widget_constraints _error_label_constraints;
     std::unique_ptr<label_widget> _error_label_widget;
 
-    typename decltype(continues)::token_type _continues_cbt;
-    typename decltype(text_style)::token_type _text_style_cbt;
-    typename decltype(_text)::token_type _text_cbt;
-    typename decltype(_error_label)::token_type _error_label_cbt;
+    typename decltype(continues)::callback_token _continues_cbt;
+    typename decltype(text_style)::callback_token _text_style_cbt;
+    typename decltype(_text)::callback_token _text_cbt;
+    typename decltype(_error_label)::callback_token _error_label_cbt;
 
-    text_field_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
+    void set_attributes() noexcept {}
+    void set_attributes(text_field_widget_attribute auto&& first, text_field_widget_attribute auto&&...rest) noexcept
+    {
+        if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
+            alignment = hi_forward(first);
+        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_style>>) {
+            text_style = hi_forward(first);
+        } else {
+            hi_static_no_default();
+        }
+
+        set_attributes(hi_forward(rest)...);
+    }
+
     void revert(bool force) noexcept;
     void commit(bool force) noexcept;
-    void draw_background_box(draw_context const &context) const noexcept;
+    void draw_background_box(draw_context const& context) const noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

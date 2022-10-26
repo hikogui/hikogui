@@ -1,15 +1,19 @@
-// Copyright Take Vos 2020-2021.
+// Copyright Take Vos 2021.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+
+/** @file widgets/overlay_widget.hpp Defines overlay_widget.
+ * @ingroup widgets
+ */
 
 #pragma once
 
 #include "widget.hpp"
-#include "overlay_delegate.hpp"
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** A GUI widget which may exist anywhere on a window overlaid above any other widget.
+ * @ingroup widgets
  *
  * The overlay widget allows a content widget to be shown on top of other
  * widgets in the window. It may be used for pop-up widgets, dialog boxes and
@@ -34,7 +38,6 @@ namespace hi::inline v1 {
 class overlay_widget final : public widget {
 public:
     using super = widget;
-    using delegate_type = overlay_delegate;
 
     ~overlay_widget();
 
@@ -42,10 +45,8 @@ public:
      *
      * @param window The window.
      * @param parent The parent widget.
-     * @param delegate An optional delegate can be used to populate the overlay widget
-     *                 during initialization.
      */
-    overlay_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate = {}) noexcept;
+    overlay_widget(gui_window& window, widget *parent) noexcept;
 
     void set_widget(std::unique_ptr<widget> new_widget) noexcept;
 
@@ -59,13 +60,13 @@ public:
      * @return A reference to the widget that was created.
      */
     template<typename Widget, typename... Args>
-    Widget &make_widget(Args &&...args) noexcept
+    Widget& make_widget(Args&&...args) noexcept
     {
         hi_axiom(is_gui_thread());
         hi_axiom(not _content);
 
         auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
-        auto &ref = *tmp;
+        auto& ref = *tmp;
         set_widget(std::move(tmp));
         return ref;
     }
@@ -76,19 +77,18 @@ public:
         co_yield _content.get();
     }
 
-    widget_constraints const &set_constraints() noexcept override;
-    void set_layout(widget_layout const &layout) noexcept override;
-    void draw(draw_context const &context) noexcept override;
+    widget_constraints const& set_constraints() noexcept override;
+    void set_layout(widget_layout const& layout) noexcept override;
+    void draw(draw_context const& context) noexcept override;
     [[nodiscard]] color background_color() const noexcept override;
     [[nodiscard]] color foreground_color() const noexcept override;
     void scroll_to_show(hi::aarectangle rectangle) noexcept override;
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
     /// @endprivatesection
 private:
-    std::weak_ptr<delegate_type> _delegate;
     std::unique_ptr<widget> _content;
 
-    void draw_background(draw_context const &context) noexcept;
+    void draw_background(draw_context const& context) noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

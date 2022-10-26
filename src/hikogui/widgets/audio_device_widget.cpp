@@ -13,7 +13,7 @@ audio_device_widget::audio_device_widget(gui_window& window, widget *parent, hi:
     super(window, parent), _audio_system(&audio_system)
 {
     _grid_widget = std::make_unique<grid_widget>(window, this);
-    _device_selection_widget = &_grid_widget->make_widget<selection_widget>("A1", _device_list, device_id);
+    _device_selection_widget = &_grid_widget->make_widget<selection_widget>("A1", device_id, _device_list);
 
     _sync_device_list_task = sync_device_list();
 }
@@ -22,7 +22,7 @@ audio_device_widget::audio_device_widget(gui_window& window, widget *parent, hi:
 {
     while (true) {
         {
-            auto proxy = _device_list.proxy();
+            auto proxy = _device_list.copy();
             proxy->clear();
             for (auto device : _audio_system->devices()) {
                 if (device->state() == hi::audio_device_state::active and any(device->direction() & *direction)) {
@@ -61,7 +61,7 @@ void audio_device_widget::set_layout(widget_layout const& layout) noexcept
 
 void audio_device_widget::draw(draw_context const& context) noexcept
 {
-    if (*mode > widget_mode::invisible and overlaps(context, layout())) {
+    if (*mode > widget_mode::invisible) {
         _grid_widget->draw(context);
     }
 }

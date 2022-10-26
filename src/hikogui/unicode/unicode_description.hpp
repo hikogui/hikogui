@@ -14,7 +14,7 @@
 #include "unicode_east_asian_width.hpp"
 #include "unicode_decomposition_type.hpp"
 #include "unicode_script.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../assert.hpp"
 #include "../cast.hpp"
 

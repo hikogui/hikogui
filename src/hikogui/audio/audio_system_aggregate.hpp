@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020, 2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -36,7 +36,7 @@ public:
 private:
     struct child_type {
         std::unique_ptr<audio_system> system;
-        audio_system::token_type cbt;
+        audio_system::callback_token cbt;
     };
 
     std::vector<child_type> _children;

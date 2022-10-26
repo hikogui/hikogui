@@ -1,10 +1,10 @@
-// Copyright Take Vos 2019-2021.
+// Copyright Take Vos 2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../strings.hpp"
 #include "../unfair_mutex.hpp"
 #include "../cast.hpp"
@@ -57,6 +57,8 @@ struct grapheme {
     constexpr grapheme(grapheme&&) noexcept = default;
     constexpr grapheme& operator=(grapheme const&) noexcept = default;
     constexpr grapheme& operator=(grapheme&&) noexcept = default;
+
+    constexpr grapheme(nullptr_t) noexcept : _value(0x1f'ffff) {}
 
     /** Encode a single code-point.
      */
@@ -138,7 +140,7 @@ struct grapheme {
      */
     [[nodiscard]] bool valid() const noexcept;
 
-    [[nodiscard]] std::u32string const &long_grapheme() const noexcept
+    [[nodiscard]] std::u32string const& long_grapheme() const noexcept
     {
         hi_axiom(_value >= 0x10'0000 and _value < 0x1f'ffff);
         return detail::long_graphemes[_value - 0x11'0000];
@@ -261,4 +263,3 @@ struct std::hash<hi::grapheme> {
         return std::hash<hi::grapheme::value_type>{}(rhs._value);
     }
 };
-

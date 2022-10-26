@@ -1,10 +1,10 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
-#include "required.hpp"
+#include "utility.hpp"
 #include "concepts.hpp"
 #include "assert.hpp"
 #include <type_traits>
@@ -35,7 +35,7 @@ template<typename T>
  */
 template<typename Out, std::derived_from<std::remove_pointer_t<Out>> In>
 [[nodiscard]] constexpr Out up_cast(In *rhs) noexcept
-    requires(std::is_const_v<std::remove_pointer_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_pointer_t<Out>>)
+    requires std::is_pointer_v<Out> and (std::is_const_v<std::remove_pointer_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_pointer_t<Out>>)
 {
     return static_cast<Out>(rhs);
 }
@@ -44,6 +44,7 @@ template<typename Out, std::derived_from<std::remove_pointer_t<Out>> In>
  */
 template<typename Out>
 [[nodiscard]] constexpr Out up_cast(nullptr_t) noexcept
+    requires std::is_pointer_v<Out>
 {
     return nullptr;
 }
@@ -51,8 +52,8 @@ template<typename Out>
 /** Cast a reference to a class to its base class or itself.
  */
 template<typename Out, std::derived_from<std::remove_reference_t<Out>> In>
-[[nodiscard]] constexpr Out up_cast(In& rhs) noexcept requires(
-    std::is_const_v<std::remove_reference_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_reference_t<Out>>)
+[[nodiscard]] constexpr Out up_cast(In& rhs) noexcept
+    requires std::is_reference_v<Out> and (std::is_const_v<std::remove_reference_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_reference_t<Out>>)
 {
     return static_cast<Out>(rhs);
 }
@@ -66,7 +67,7 @@ template<typename Out, std::derived_from<std::remove_reference_t<Out>> In>
  */
 template<typename Out, base_of<std::remove_pointer_t<Out>> In>
 [[nodiscard]] constexpr Out down_cast(In *rhs) noexcept
-    requires(std::is_const_v<std::remove_pointer_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_pointer_t<Out>>)
+    requires std::is_pointer_v<Out> and (std::is_const_v<std::remove_pointer_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_pointer_t<Out>>)
 {
     hi_axiom(rhs == nullptr or dynamic_cast<Out>(rhs) != nullptr);
     return static_cast<Out>(rhs);
@@ -74,13 +75,11 @@ template<typename Out, base_of<std::remove_pointer_t<Out>> In>
 
 /** Cast a pointer to a class to its derived class or itself.
  *
- * @note It is undefined behavior if the argument is not of type Out.
- * @param rhs A pointer to an object that is of type `Out`. Or a nullptr which will be
- *        passed through.
  * @return A pointer to the same object with a new type.
  */
 template<typename Out>
 [[nodiscard]] constexpr Out down_cast(nullptr_t) noexcept
+    requires std::is_pointer_v<Out>
 {
     return nullptr;
 }
@@ -92,9 +91,11 @@ template<typename Out>
  * @return A reference to the same object with a new type.
  */
 template<typename Out, base_of<std::remove_reference_t<Out>> In>
-[[nodiscard]] constexpr Out down_cast(In& rhs) noexcept requires(
+[[nodiscard]] constexpr Out down_cast(In& rhs) noexcept
+    requires std::is_reference_v<Out> and (
     std::is_const_v<std::remove_reference_t<Out>> == std::is_const_v<In> or std::is_const_v<std::remove_reference_t<Out>>)
 {
+    hi_axiom(dynamic_cast<std::add_pointer_t<std::remove_reference_t<Out>>>(std::addressof(rhs)) != nullptr);
     return static_cast<Out>(rhs);
 }
 
@@ -106,23 +107,30 @@ template<arithmetic Out, arithmetic In>
     return static_cast<Out>(rhs);
 }
 
-namespace detail
+/** Cast a number to a type that will be able to represent all values without loss of precision.
+ */
+template<arithmetic Out>
+[[nodiscard]] constexpr Out wide_cast(bool rhs) noexcept
 {
+    return static_cast<Out>(rhs);
+}
 
-    template<arithmetic Out, arithmetic In>
-    [[nodiscard]] constexpr bool narrow_validate(Out out, In in) noexcept
-    {
-        // in- and out-value compares the same, after converting out-value back to in-type.
-        auto r = (in == static_cast<In>(out));
+namespace detail {
 
-        // If the types have different signs we need to do an extra test to make sure the actual sign
-        // of the values are the same as well.
-        if constexpr (std::numeric_limits<Out>::is_signed != std::numeric_limits<In>::is_signed) {
-            r &= (in < In{}) == (out < Out{});
-        }
+template<arithmetic Out, arithmetic In>
+[[nodiscard]] constexpr bool narrow_validate(Out out, In in) noexcept
+{
+    // in- and out-value compares the same, after converting out-value back to in-type.
+    auto r = (in == static_cast<In>(out));
 
-        return r;
+    // If the types have different signs we need to do an extra test to make sure the actual sign
+    // of the values are the same as well.
+    if constexpr (std::numeric_limits<Out>::is_signed != std::numeric_limits<In>::is_signed) {
+        r &= (in < In{}) == (out < Out{});
     }
+
+    return r;
+}
 
 } // namespace detail
 
@@ -150,6 +158,18 @@ template<arithmetic Out, arithmetic In>
     }
 }
 
+/** Cast an unsigned number and saturate on overflow.
+ */
+template<std::unsigned_integral Out, std::unsigned_integral In>
+[[nodiscard]] constexpr Out saturate_cast(In rhs) noexcept
+{
+    auto r = std::numeric_limits<Out>::max();
+    if (rhs < r) {
+        r = static_cast<Out>(rhs);
+    }
+    return r;
+}
+
 /** Cast numeric values without loss of precision.
  *
  * @note It is undefined behavior to cast a value which will cause a loss of precision.
@@ -174,6 +194,34 @@ template<std::integral Out, arithmetic In>
 [[nodiscard]] constexpr Out truncate(In rhs) noexcept
 {
     return static_cast<Out>(rhs);
+}
+
+/** Cast a character.
+ *
+ * Both the input and output types are interpreted as unsigned values, even if
+ * they are signed values. For example `char` may be either signed or unsigned,
+ * but you have to treat those as unsigned values.
+ * 
+ * @note @a rhs value after casting, must fit in the output type.
+ * @param rhs The value of the character.
+ * @return The casted value.
+ */
+template<std::integral Out, std::integral In>
+[[nodiscard]] constexpr Out char_cast(In rhs) noexcept
+{
+    using in_unsigned_type = std::make_unsigned_t<In>;
+    using out_unsigned_type = std::make_unsigned_t<Out>;
+
+    // We cast to unsigned of the same type, so that we don't accidentally sign extent 'char'.
+    auto in_unsigned = static_cast<in_unsigned_type>(rhs);
+    auto out_unsigned = narrow_cast<out_unsigned_type>(in_unsigned);
+    return static_cast<Out>(out_unsigned);
+}
+
+template<std::integral Out>
+[[nodiscard]] constexpr Out char_cast(std::byte rhs) noexcept
+{
+    return char_cast<Out>(static_cast<uint8_t>(rhs));
 }
 
 /** Return the low half of the input value.
@@ -270,7 +318,7 @@ template<std::signed_integral OutType, std::unsigned_integral InType>
 }
 
 template<typename T>
-[[nodiscard]] constexpr bool to_bool(T &&rhs) noexcept requires(requires(T &&x) { static_cast<bool>(std::forward<T>(x)); })
+[[nodiscard]] constexpr bool to_bool(T&& rhs) noexcept requires(requires(T&& x) { static_cast<bool>(std::forward<T>(x)); })
 {
     return static_cast<bool>(std::forward<T>(rhs));
 }

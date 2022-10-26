@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -71,19 +71,19 @@ public:
         hi_axiom(holds_invariant());
     }
 
-    /** Construct a 2D extent from x and y elements.
-     * @param x The x element.
-     * @param y The y element.
+    /** Construct a 2D extent from the width and height.
+     * @param width The width element.
+     * @param height The height element.
      */
     [[nodiscard]] constexpr extent(float width, float height) noexcept requires(D == 2) : _v(width, height, 0.0f, 0.0f)
     {
         hi_axiom(holds_invariant());
     }
 
-    /** Construct a 3D extent from x, y and z elements.
-     * @param x The x element.
-     * @param y The y element.
-     * @param z The z element.
+    /** Construct a 3D extent from width, height and depth.
+     * @param width The width element.
+     * @param height The height element.
+     * @param depth The depth element.
      */
     [[nodiscard]] constexpr extent(float width, float height, float depth = 0.0f) noexcept requires(D == 3) :
         _v(width, height, depth, 0.0f)

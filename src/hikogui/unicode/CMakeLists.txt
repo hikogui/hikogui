@@ -1,4 +1,4 @@
-# Copyright Take Vos 2020-2021.
+# Copyright Take Vos 2022.
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -32,16 +32,13 @@ target_sources(hikogui PRIVATE
     unicode_text_segmentation.cpp
     unicode_text_segmentation.hpp
     unicode_word_break.hpp
-    UTF.cpp
-    UTF.hpp
 )
 
-if(HI_BUILD_TESTS)
+if(BUILD_TESTING)
     target_sources(hikogui_tests PRIVATE
         unicode_bidi_tests.cpp
         unicode_break_tests.cpp
         unicode_text_segmentation_tests.cpp
         unicode_normalization_tests.cpp
-        UTF_tests.cpp
     )
 endif()

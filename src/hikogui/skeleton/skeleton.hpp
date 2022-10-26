@@ -6,31 +6,31 @@
 
 #include "skeleton_node.hpp"
 #include "skeleton_parse_context.hpp"
-#include "../resource_view.hpp"
+#include "../file/file_view.hpp"
 
 namespace hi::inline v1 {
 
 [[nodiscard]] std::unique_ptr<skeleton_node> parse_skeleton(skeleton_parse_context &context);
 
 [[nodiscard]] inline std::unique_ptr<skeleton_node>
-parse_skeleton(URL url, std::string_view::const_iterator first, std::string_view::const_iterator last)
+parse_skeleton(std::filesystem::path path, std::string_view::const_iterator first, std::string_view::const_iterator last)
 {
-    auto context = skeleton_parse_context(std::move(url), first, last);
+    auto context = skeleton_parse_context(std::move(path), first, last);
     auto e = parse_skeleton(context);
     return e;
 }
 
-[[nodiscard]] inline std::unique_ptr<skeleton_node> parse_skeleton(URL url, std::string_view text)
+[[nodiscard]] inline std::unique_ptr<skeleton_node> parse_skeleton(std::filesystem::path path, std::string_view text)
 {
-    return parse_skeleton(std::move(url), text.cbegin(), text.cend());
+    return parse_skeleton(std::move(path), text.cbegin(), text.cend());
 }
 
-[[nodiscard]] inline std::unique_ptr<skeleton_node> parse_skeleton(URL url)
+[[nodiscard]] inline std::unique_ptr<skeleton_node> parse_skeleton(std::filesystem::path path)
 {
-    hilet fv = url.loadView();
-    hilet sv = as_string_view(*fv);
+    hilet fv = file_view(path);
+    hilet sv = as_string_view(fv);
 
-    return parse_skeleton(std::move(url), sv.cbegin(), sv.cend());
+    return parse_skeleton(std::move(path), sv.cbegin(), sv.cend());
 }
 
 } // namespace hi::inline v1

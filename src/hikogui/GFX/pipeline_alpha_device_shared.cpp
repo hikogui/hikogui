@@ -1,13 +1,13 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "pipeline_alpha.hpp"
 #include "pipeline_alpha_device_shared.hpp"
 #include "gfx_device_vulkan.hpp"
-#include "../pixel_map.hpp"
-#include "../URL.hpp"
+#include "../file/URL.hpp"
 #include "../geometry/corner_radii.hpp"
+#include "../pixel_map.hpp"
 #include <array>
 
 namespace hi::inline v1::pipeline_alpha {
@@ -42,10 +42,10 @@ void device_shared::place_vertices(vector_span<vertex>& vertices, aarectangle cl
 
 void device_shared::buildShaders()
 {
-    vertexShaderModule = device.loadShader(URL("resource:GUI/pipeline_alpha.vert.spv"));
+    vertexShaderModule = device.loadShader(URL("resource:shaders/pipeline_alpha.vert.spv"));
     device.setDebugUtilsObjectNameEXT(vertexShaderModule, "alpha-pipeline vertex shader");
 
-    fragmentShaderModule = device.loadShader(URL("resource:GUI/pipeline_alpha.frag.spv"));
+    fragmentShaderModule = device.loadShader(URL("resource:shaders/pipeline_alpha.frag.spv"));
     device.setDebugUtilsObjectNameEXT(vertexShaderModule, "alpha-pipeline fragment shader");
 
     shaderStages = {

@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -140,6 +140,7 @@ public:
     /** Draw a box with rounded corners.
      *
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param clipping_rectangle The rectangle into which to draw the box.
      * @param box The four points of the box to draw.
      * @param fill_color The fill color of the inside of the box.
      * @param border_color The line color of the border of the box.

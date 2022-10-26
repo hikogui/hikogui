@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file widgets/audio_device_widget.hpp Defines audio_device_widget.
+ * @ingroup widgets
+ */
+
 #pragma once
 
 #include "selection_widget.hpp"
@@ -16,9 +20,10 @@
 #include <optional>
 #include <future>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** Audio device configuration widget.
+ * @ingroup widgets
  */
 class audio_device_widget final : public widget {
 public:
@@ -26,15 +31,15 @@ public:
 
     /** The audio device this widget has selected and is configuring.
      */
-    observable<std::string> device_id;
+    observer<std::string> device_id;
 
     /** The audio direction (input or output) of devices is should show.
      */
-    observable<audio_direction> direction = audio_direction::bidirectional;
-    
+    observer<audio_direction> direction = audio_direction::bidirectional;
+
     virtual ~audio_device_widget();
 
-    audio_device_widget(gui_window& window, widget *parent, hi::audio_system &audio_system) noexcept;
+    audio_device_widget(gui_window& window, widget *parent, hi::audio_system& audio_system) noexcept;
 
     /// @privatesection
     [[nodiscard]] generator<widget *> children() const noexcept override;
@@ -57,11 +62,11 @@ private:
      */
     selection_widget *_device_selection_widget = nullptr;
 
-    observable<std::vector<std::pair<std::string,label>>> _device_list;
+    observer<std::vector<std::pair<std::string, label>>> _device_list;
 
     hi::scoped_task<> _sync_device_list_task;
 
     [[nodiscard]] hi::scoped_task<> sync_device_list() noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

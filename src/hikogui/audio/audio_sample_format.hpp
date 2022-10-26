@@ -1,10 +1,10 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2021.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../assert.hpp"
 #include "../cast.hpp"
 #include "../rapid/numeric_array.hpp"
@@ -75,7 +75,6 @@ struct audio_sample_format {
      * @param num_bits The number of bits used to represent a normalized sample between 0.0 and 1.0 (without the sign bit).
      * @param is_float True if the sample is float, otherwise integer or fixed point.
      * @param endian The ordering of bytes in each sample
-     * @param stride The number of bytes to step to the next sample.
      */
     [[nodiscard]] constexpr audio_sample_format(
         uint8_t num_bytes,

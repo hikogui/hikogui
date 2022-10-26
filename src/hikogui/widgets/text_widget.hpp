@@ -1,15 +1,20 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+
+/** @file widgets/text_widget.hpp Defines text_widget.
+ * @ingroup widgets
+ */
 
 #pragma once
 
 #include "widget.hpp"
+#include "text_delegate.hpp"
 #include "../GUI/gui_event.hpp"
 #include "../text/semantic_text_style.hpp"
 #include "../text/text_selection.hpp"
 #include "../text/text_shaper.hpp"
-#include "../observable.hpp"
+#include "../observer.hpp"
 #include "../alignment.hpp"
 #include "../i18n/translate.hpp"
 #include "../undo_stack.hpp"
@@ -22,7 +27,10 @@
 #include <limits>
 #include <chrono>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
+
+template<typename Context>
+concept text_widget_attribute = forward_of<Context, observer<hi::alignment>, observer<hi::semantic_text_style>>;
 
 /** A text widget.
  *
@@ -48,49 +56,58 @@ namespace hi::inline v1 {
  *  - Cut, Copy & Paste.
  *  - Undo & Redo.
  *
+ * @ingroup widgets
  */
 class text_widget final : public widget {
 public:
     using super = widget;
+    using delegate_type = text_delegate;
 
-    /** The text to be displayed.
-     */
-    observable<gstring> text;
+    std::shared_ptr<delegate_type> delegate;
 
     /** The horizontal alignment of the text inside the space of the widget.
      */
-    observable<alignment> alignment = hi::alignment::middle_center();
+    observer<alignment> alignment = hi::alignment::middle_center();
 
     /** The style of the text.
      */
-    observable<semantic_text_style> text_style = semantic_text_style::label;
+    observer<semantic_text_style> text_style = semantic_text_style::label;
+
+    ~text_widget();
+
+    /** Construct a text widget.
+     *
+     * @param window The window the widget is displayed on.
+     * @param parent The owner of this widget.
+     * @param delegate The delegate to use to control the widget's data.
+     */
+    text_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
+
+    text_widget(
+        gui_window& window,
+        widget *parent,
+        std::shared_ptr<delegate_type> delegate,
+        text_widget_attribute auto&&...attributes) noexcept :
+        text_widget(window, parent, std::move(delegate))
+    {
+        set_attributes(hi_forward(attributes)...);
+    }
 
     /** Construct a text widget.
      *
      * @param window The window the widget is displayed on.
      * @param parent The owner of this widget.
      * @param text The text to be displayed.
-     * @param horizontal_alignment The horizontal alignment of the text inside the space of the widget.
-     * @param vertical_alignment The vertical alignment of the text inside the space of the widget.
-     * @param text_style The style of the text to be displayed.
+     * @param attributes A set of attributes used to configure the text widget: a `alignment` or `semantic_text_style`.
      */
-    template<
-        typename Text,
-        typename Alignment = hi::alignment,
-        typename VerticalAlignment = hi::vertical_alignment,
-        typename TextStyle = hi::semantic_text_style>
     text_widget(
         gui_window& window,
         widget *parent,
-        Text&& text,
-        Alignment&& alignment = hi::alignment::middle_center(),
-        TextStyle&& text_style = semantic_text_style::label) noexcept :
-        text_widget(window, parent)
+        different_from<std::shared_ptr<delegate_type>> auto&& text,
+        text_widget_attribute auto&&...attributes) noexcept requires requires
     {
-        this->text = std::forward<Text>(text);
-        this->alignment = std::forward<Alignment>(alignment);
-        this->text_style = std::forward<TextStyle>(text_style);
-    }
+        make_default_text_delegate(hi_forward(text));
+    } : text_widget(window, parent, make_default_text_delegate(hi_forward(text)), hi_forward(attributes)...) {}
 
     /// @privatesection
     widget_constraints const& set_constraints() noexcept override;
@@ -110,18 +127,20 @@ private:
 
     enum class cursor_state_type { off, on, busy, none };
 
+    gstring _cached_text;
     text_shaper _shaped_text;
     float _base_line;
 
-    decltype(text)::token_type _text_cbt;
-    decltype(text_style)::token_type _text_style_cbt;
+    delegate_type::callback_token _delegate_cbt;
+
+    decltype(text_style)::callback_token _text_style_cbt;
 
     text_selection _selection;
 
     scoped_task<> _blink_cursor;
 
-    observable<cursor_state_type> _cursor_state = cursor_state_type::none;
-    decltype(_cursor_state)::token_type _cursor_state_cbt;
+    observer<cursor_state_type> _cursor_state = cursor_state_type::none;
+    decltype(_cursor_state)::callback_token _cursor_state_cbt;
 
     /** After layout request scroll from the parent widgets.
      */
@@ -150,16 +169,28 @@ private:
      * On overwrite the original grapheme is stored in the _had_dead_character, so
      * that it can be restored.
      */
-    grapheme _has_dead_character = {};
+    grapheme _has_dead_character = nullptr;
 
     undo_stack<undo_type> _undo_stack = {1000};
 
-    text_widget(gui_window& window, widget *parent) noexcept;
+    void set_attributes() noexcept {}
+    void set_attributes(text_widget_attribute auto&& first, text_widget_attribute auto&&...rest) noexcept
+    {
+        if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
+            alignment = hi_forward(first);
+        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_style>>) {
+            text_style = hi_forward(first);
+        } else {
+            hi_static_no_default();
+        }
+
+        set_attributes(hi_forward(rest)...);
+    }
 
     /** Update the shaped text.
-    * 
-    * This function must be called synchronously whenever the text, style or theme changes.
-    */
+     *
+     * This function must be called synchronously whenever the text, style or theme changes.
+     */
     void update_shaped_text() noexcept;
 
     /** Make parent scroll views, scroll to show the current selection and cursor.
@@ -190,7 +221,7 @@ private:
      */
     void fix_cursor_position() noexcept;
 
-    void replace_selection(gstring const &replacement) noexcept;
+    void replace_selection(gstring const& replacement) noexcept;
 
     /** Add a character to the text.
      *
@@ -205,4 +236,4 @@ private:
     void delete_word_prev() noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

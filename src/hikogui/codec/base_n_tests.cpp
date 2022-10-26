@@ -4,7 +4,7 @@
 
 #include "hikogui/codec/base_n.hpp"
 #include "hikogui/byte_string.hpp"
-#include "hikogui/required.hpp"
+#include "hikogui/utility.hpp"
 #include "hikogui/exception.hpp"
 #include <gtest/gtest.h>
 #include <iostream>

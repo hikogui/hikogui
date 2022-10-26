@@ -2,6 +2,10 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file GUI/gui_event.hpp Definition of GUI event types.
+ * @ingroup GUI
+ */
+
 #pragma once
 
 #include "gui_event_type.hpp"
@@ -17,8 +21,11 @@
 #include "../chrono.hpp"
 #include <chrono>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
+/** Information for a mouse event.
+ * @ingroup GUI
+ */
 struct mouse_event_data {
     /** The current position of the mouse pointer.
      *
@@ -54,6 +61,7 @@ struct mouse_event_data {
 };
 
 /** A user interface event.
+ * @ingroup GUI
  */
 class gui_event {
 public:
@@ -71,6 +79,13 @@ public:
      */
     keyboard_state keyboard_state;
 
+    /** Create a GUI event.
+     *
+     * @param type The type of the event.
+     * @param time_point The time when the was received.
+     * @param keyboard_modifiers A list of modifiers key that where hold down: alt, ctrl, shift.
+     * @param keyboard_state The state of the keyboard: scroll-lock, num-lock, caps-lock.
+     */
     constexpr gui_event(
         gui_event_type type,
         utc_nanoseconds time_point,
@@ -81,16 +96,27 @@ public:
         set_type(type);
     }
 
+    /** Create an empty GUI event.
+     */
     constexpr gui_event() noexcept :
         gui_event(gui_event_type::none, utc_nanoseconds{}, keyboard_modifiers::none, keyboard_state::idle)
     {
     }
 
+    /** Create am empty GUI event.
+     *
+     * @param type The type of the event.
+     */
     gui_event(gui_event_type type) noexcept :
         gui_event(type, std::chrono::utc_clock::now(), keyboard_modifiers::none, keyboard_state::idle)
     {
     }
 
+    /** Create an grapheme GUI event.
+     *
+     * @param type The type of the grapheme event.
+     * @param grapheme The grapheme for this event.
+     */
     gui_event(gui_event_type type, hi::grapheme grapheme) noexcept :
         gui_event(type, std::chrono::utc_clock::now(), keyboard_modifiers::none, keyboard_state::idle)
     {
@@ -98,6 +124,13 @@ public:
         this->grapheme() = grapheme;
     }
 
+    /** Create a GUI event.
+     *
+     * @param type The type of the key event.
+     * @param key The virtual key that was pressed/released
+     * @param keyboard_modifiers A list of modifiers key that where hold down: alt, ctrl, shift.
+     * @param keyboard_state The state of the keyboard: scroll-lock, num-lock, caps-lock.
+     */
     gui_event(
         gui_event_type type,
         keyboard_virtual_key key,
@@ -114,6 +147,10 @@ public:
     constexpr gui_event& operator=(gui_event const&) noexcept = default;
     constexpr gui_event& operator=(gui_event&&) noexcept = default;
 
+    /** Create a mouse enter event.
+     *
+     * @param position The position where the mouse entered.
+     */
     [[nodiscard]] static gui_event make_mouse_enter(point2 position) noexcept
     {
         auto r = gui_event{gui_event_type::mouse_enter};
@@ -121,6 +158,8 @@ public:
         return r;
     }
 
+    /** Get the event type.
+     */
     [[nodiscard]] constexpr gui_event_type type() const noexcept
     {
         return _type;
@@ -152,36 +191,60 @@ public:
         }
     }
 
+    /** Get the mouse event information.
+     *
+     * @return a referene to the mouse data.
+     */
     [[nodiscard]] mouse_event_data& mouse() noexcept
     {
         hi_axiom(variant() == gui_event_variant::mouse);
         return _mouse;
     }
 
+    /** Get the mouse event information.
+     *
+     * @return a referene to the mouse data.
+     */
     [[nodiscard]] mouse_event_data const& mouse() const noexcept
     {
         hi_axiom(variant() == gui_event_variant::mouse);
         return _mouse;
     }
 
+    /** Get the key from the keyboard event
+     *
+     * @return a referene to the key.
+     */
     [[nodiscard]] keyboard_virtual_key& key() noexcept
     {
         hi_axiom(variant() == gui_event_variant::keyboard);
         return _key;
     }
 
+    /** Get the key from the keyboard event
+     *
+     * @return a referene to the key.
+     */
     [[nodiscard]] keyboard_virtual_key const& key() const noexcept
     {
         hi_axiom(variant() == gui_event_variant::keyboard);
         return _key;
     }
 
+    /** Get the grapheme entered on the keyboard.
+     *
+     * @return a referene to the grapheme.
+     */
     [[nodiscard]] hi::grapheme& grapheme() noexcept
     {
         hi_axiom(variant() == gui_event_variant::grapheme);
         return _grapheme;
     }
 
+    /** Get the grapheme entered on the keyboard.
+     *
+     * @return a referene to the grapheme.
+     */
     [[nodiscard]] hi::grapheme const& grapheme() const noexcept
     {
         hi_axiom(variant() == gui_event_variant::grapheme);
@@ -229,6 +292,14 @@ public:
         return type() == mouse_drag ? mouse().position - mouse().down_position : vector2{};
     }
 
+    /** Transform a gui-event to another coordinate system.
+     *
+     * This operations is used mostly to transform mouse evens to a widget's local coordinate system.
+     *
+     * @param transform The transform object
+     * @param rhs The event to transform.
+     * @return The transformed event.
+     */
     [[nodiscard]] constexpr friend gui_event operator*(geo::transformer auto const& transform, gui_event const& rhs) noexcept
     {
         auto r = rhs;
@@ -250,7 +321,7 @@ private:
     };
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1
 
 template<typename CharT>
 struct std::formatter<hi::gui_event, CharT> : std::formatter<std::string_view, CharT> {

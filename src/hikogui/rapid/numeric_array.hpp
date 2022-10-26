@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020-2021.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -684,7 +684,7 @@ struct numeric_array {
     }
 
     /** Store a numeric array into memory.
-     * @param [out]ptr A pointer to where the numeric array should be stored into memory.
+     * @param[out] ptr A pointer to where the numeric array should be stored into memory.
      */
     constexpr void store(std::byte *ptr) const noexcept
     {
@@ -1519,7 +1519,6 @@ struct numeric_array {
     /** Take the length of the vector
      *
      * @tparam Mask A mask for which elements participate in the hypot calculation.
-     * @param lhs The left hand side.
      * @param rhs The right hand side.
      * @return Result of the hypot calculation.
      */
@@ -1532,7 +1531,6 @@ struct numeric_array {
     /** Take the squared length of the vector.
      *
      * @tparam Mask A mask for which elements participate in the hypot calculation.
-     * @param lhs The left hand side.
      * @param rhs The right hand side.
      * @return Result of the hypot-squared calculation.
      */
@@ -1544,7 +1542,6 @@ struct numeric_array {
 
     /** Take a reciprocal of the length.
      * @tparam Mask A mask for which elements participate in the hypot calculation.
-     * @param lhs The left hand side.
      * @param rhs The right hand side.
      * @return Result of the hypot-squared calculation.
      */
@@ -1566,7 +1563,6 @@ struct numeric_array {
      * All elements that do not participate in the normalization will be set to zero.
      *
      * @tparam Mask A mask for which elements participate in the normalization calculation.
-     * @param lhs The left hand side.
      * @param rhs The right hand side.
      * @return The normalized vector.
      */

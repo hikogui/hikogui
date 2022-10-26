@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -117,9 +117,11 @@ int hi_main(int argc, char *argv[])
     auto window = gui->make_window(hi::tr("Widget with child"));
     window->content().make_widget<widget_with_child>("A1", hi::tr("Widget with child"));
 
-    auto close_cbt = window->closing.subscribe(hi::callback_flags::main, [&] {
-        window = {};
-    });
+    auto close_cbt = window->closing.subscribe(
+        [&] {
+            window = {};
+        },
+        hi::callback_flags::main);
 
     return hi::loop::main().resume();
 }

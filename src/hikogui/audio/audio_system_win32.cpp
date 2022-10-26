@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -7,7 +7,7 @@
 #include "audio_system_win32.hpp"
 #include "audio_device_win32.hpp"
 #include "audio_system_aggregate.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../log.hpp"
 #include "../exception.hpp"
 #include "../locked_memory_allocator.hpp"

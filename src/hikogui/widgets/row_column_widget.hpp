@@ -1,19 +1,20 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-/// @file
+/** @file widgets/row_column_widget.hpp Defines row_column_widget.
+ * @ingroup widgets
+ */
 
 #pragma once
 
 #include "widget.hpp"
-#include "row_column_delegate.hpp"
 #include "grid_layout.hpp"
 #include "../GUI/theme.hpp"
 #include "../geometry/axis.hpp"
 #include <memory>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** A row/column widget lays out child widgets along a row or column.
  *
@@ -30,6 +31,7 @@ namespace hi::inline v1 {
  *
  * @image html row_column_widget.png
  *
+ * @ingroup widgets
  * @tparam Axis the axis to lay out child widgets. Either `axis::horizontal` or
  * `axis::vertical`.
  */
@@ -39,33 +41,21 @@ public:
     static_assert(Axis == axis::horizontal or Axis == axis::vertical);
 
     using super = widget;
-    using delegate_type = row_column_delegate<Axis>;
     static constexpr hi::axis axis = Axis;
 
-    ~row_column_widget()
-    {
-        if (auto delegate = _delegate.lock()) {
-            delegate->deinit(*this);
-        }
-    }
+    ~row_column_widget() {}
 
     /** Constructs an empty row/column widget.
      *
      * @param window The window.
      * @param parent The parent widget.
-     * @param delegate An optional delegate can be used to populate the row/column widget
-     *                 during initialization.
      */
-    row_column_widget(gui_window& window, widget *parent, std::weak_ptr<delegate_type> delegate = {}) noexcept :
-        super(window, parent), _delegate(std::move(delegate))
+    row_column_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
     {
         hi_axiom(is_gui_thread());
 
         if (parent) {
             semantic_layer = parent->semantic_layer;
-        }
-        if (auto d = _delegate.lock()) {
-            d->init(*this);
         }
     }
 
@@ -87,7 +77,7 @@ public:
         auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
         auto& ref = *tmp;
         _children.push_back(std::move(tmp));
-        request_reconstrain();
+        hi_request_reconstrain("row_column_widget::make_widget()");
         return ref;
     }
 
@@ -97,7 +87,7 @@ public:
     {
         hi_axiom(is_gui_thread());
         _children.clear();
-        request_reconstrain();
+        hi_request_reconstrain("row_column_widget::clear()");
     }
 
     /// @privatesection
@@ -199,7 +189,6 @@ public:
     /// @endprivatesection
 private:
     std::vector<std::unique_ptr<widget>> _children;
-    std::weak_ptr<delegate_type> _delegate;
     grid_layout _grid_layout;
 
     void update_constraints_for_child(
@@ -269,11 +258,13 @@ private:
 };
 
 /** Lays out children in a row.
+ * @ingroup widgets
  */
 using row_widget = row_column_widget<axis::row>;
 
 /** Lays out children in a column.
+ * @ingroup widgets
  */
 using column_widget = row_column_widget<axis::column>;
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -30,8 +30,7 @@ int hi_main(int argc, char *argv[])
         "quis nostrud exercitation ullamco (laboris) nisi ut aliquip ex ea commodo consequat. "
         "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. "
         "Excepteur sint occaecat cupidatat non proident, "
-        "sunt in culpa qui officia deserunt mollit anim id est laborum."
-    );
+        "sunt in culpa qui officia deserunt mollit anim id est laborum.");
 
     auto hebrew_text = std::string(
         "\xd7\xa6\xd7\x99\xd7\x9c\xd7\x95\xd7\x9d \xd7\xaa\xd7\x97\xd7\x91\xd7\x95\xd7\xa8\xd7\x94 \xd7\xa2\xd7\x9c \xd7"
@@ -79,11 +78,13 @@ int hi_main(int argc, char *argv[])
 
     auto text = to_gstring(latin_text + "\n" + mixed_rtl_text + "\n" + mixed_ltr_text + "\n" + hebrew_text);
 
-    auto &tw = window->content().make_widget<text_widget>("A1", text, hi::alignment::top_justified());
+    auto& tw = window->content().make_widget<text_widget>("A1", text, hi::alignment::top_justified());
     tw.mode = hi::widget_mode::enabled;
 
-    auto close_cb = window->closing.subscribe(hi::callback_flags::main, [&] {
-        window.reset();
-    });
+    auto close_cb = window->closing.subscribe(
+        [&] {
+            window.reset();
+        },
+        hi::callback_flags::main);
     return loop::main().resume();
 }

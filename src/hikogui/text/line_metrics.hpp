@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -7,7 +7,7 @@
 #include "font_metrics.hpp"
 #include "../unicode/unicode_general_category.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../alignment.hpp"
 #include <vector>
 #include <cstddef>

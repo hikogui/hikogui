@@ -47,7 +47,7 @@ def deduplicate_chunks(descriptions):
 
     chunks = []
     indices = []
-    chunk_index = 0
+
     for chunk_id in range(num_chunks):
         new_chunk = make_chunk(descriptions, chunk_id)
 

@@ -1,6 +1,10 @@
-// Copyright Take Vos 2020-2021.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+
+/** @file widgets/label_widget.hpp Defines label_widget.
+ * @ingroup widgets
+ */
 
 #pragma once
 
@@ -15,9 +19,14 @@
 #include <optional>
 #include <future>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
+
+template<typename Context>
+concept label_widget_attribute =
+    forward_of<Context, observer<hi::label>, observer<hi::alignment>, observer<hi::semantic_text_style>>;
 
 /** The GUI widget displays and lays out text together with an icon.
+ * @ingroup widgets
  *
  * This widget is often used by other widgets. For example
  * checkboxes display a label representing their state next
@@ -35,7 +44,7 @@ public:
 
     /** The label to display.
      */
-    observable<label> label;
+    observer<label> label;
 
     /** How the label and icon are aligned. Different layouts:
      *  - `alignment::top_left`: icon and text are inline with each other, with
@@ -55,37 +64,24 @@ public:
      *  - `alignment::middle_center`: text drawn across a large icon. Should only be
      *    used with a `pixmap` icon.
      */
-    observable<alignment> alignment = hi::alignment::top_right();
+    observer<alignment> alignment = hi::alignment::top_right();
 
     /** The text style to display the label's text in and color of the label's (non-color) icon.
      */
-    observable<semantic_text_style> text_style = semantic_text_style::label;
+    observer<semantic_text_style> text_style = semantic_text_style::label;
 
     /** Construct a label widget.
      *
      * @see `label_widget::alignment`
      * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this radio button widget.
-     * @param label The label to show next to the radio button.
-     * @param alignment The alignment of the label.
-     *                  The default alignment is middle_right, because the most common
-     *                  usage for a label by an application programmer is to add the label
-     *                  to the left of another widget.
-     * @param text_style The text style of the label, and color of non-color
-     *                   icons.
+     * @param attributes Different attributes used to configure the label widget:
+     *                   a `label`, `alignment` or `text_style`
      */
-    template<typename Label, typename Alignment = hi::alignment, typename TextStyle = hi::semantic_text_style>
-    label_widget(
-        gui_window &window,
-        widget *parent,
-        Label &&label,
-        Alignment &&alignment = hi::alignment::top_right(),
-        TextStyle &&text_style = semantic_text_style::label) noexcept :
+    label_widget(gui_window& window, widget *parent, label_widget_attribute auto&&...attributes) noexcept :
         label_widget(window, parent)
     {
-        this->label = std::forward<Label>(label);
-        this->alignment = std::forward<Alignment>(alignment);
-        this->text_style = std::forward<TextStyle>(text_style);
+        set_attributes(hi_forward(attributes)...);
     }
 
     /// @privatesection
@@ -95,17 +91,17 @@ public:
         co_yield _text_widget.get();
     }
 
-    widget_constraints const &set_constraints() noexcept override;
-    void set_layout(widget_layout const &layout) noexcept override;
-    void draw(draw_context const &context) noexcept;
+    widget_constraints const& set_constraints() noexcept override;
+    void set_layout(widget_layout const& layout) noexcept override;
+    void draw(draw_context const& context) noexcept;
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept;
     /// @endprivatesection
 private:
     float _icon_size;
     float _inner_margin;
 
-    decltype(label)::token_type _label_cbt;
-    decltype(text_style)::token_type _text_style_cbt;
+    decltype(label)::callback_token _label_cbt;
+    decltype(text_style)::callback_token _text_style_cbt;
 
     aarectangle _icon_rectangle;
     widget_constraints _icon_constraints;
@@ -114,7 +110,23 @@ private:
     widget_constraints _text_constraints;
     std::unique_ptr<text_widget> _text_widget;
 
-    label_widget(gui_window &window, widget *parent) noexcept;
+    void set_attributes() noexcept {}
+    void set_attributes(label_widget_attribute auto&& first, label_widget_attribute auto&&...rest) noexcept
+    {
+        if constexpr (forward_of<decltype(first), observer<hi::label>>) {
+            label = hi_forward(first);
+        } else if constexpr (forward_of<decltype(first), observer<hi::alignment>>) {
+            alignment = hi_forward(first);
+        } else if constexpr (forward_of<decltype(first), observer<hi::semantic_text_style>>) {
+            text_style = hi_forward(first);
+        } else {
+            hi_static_no_default();
+        }
+
+        set_attributes(hi_forward(rest)...);
+    }
+
+    label_widget(gui_window& window, widget *parent) noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

@@ -1,3 +1,6 @@
+# Copyright Take Vos 2021.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 target_sources(hikogui PRIVATE
     axis.hpp
@@ -9,8 +12,10 @@ target_sources(hikogui PRIVATE
     line_segment.hpp
     line_end_cap.hpp
     line_join_style.hpp
+    lookat.hpp
     margins.hpp
     matrix.hpp
+    perspective.hpp
     point.hpp
     rectangle.hpp
     rotate.hpp
@@ -21,7 +26,7 @@ target_sources(hikogui PRIVATE
     vector.hpp
 )
 
-if(HI_BUILD_TESTS)
+if(BUILD_TESTING)
     target_sources(hikogui_tests PRIVATE
         identity_tests.cpp
         matrix_tests.cpp

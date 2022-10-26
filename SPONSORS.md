@@ -1,10 +1,10 @@
 SPONSORS
 ========
 
-Thank you very much to the sponsors of the hikogui.
+Thank you very much to the sponsors of the HikoGUI.
 
 If you like to become a sponsor, please contribute to
-[Take Vos](https://github.com/takev/) the main developer of the hikogui.
+[Take Vos](https://github.com/sponsors/takev) the main developer of the HikoGUI.
 
 Platinum sponsors
 -----------------

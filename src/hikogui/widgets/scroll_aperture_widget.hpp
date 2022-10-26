@@ -1,23 +1,34 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+
+/** @file widgets/scroll_aperture_widget.hpp Defines scroll_aperture_widget.
+ * @ingroup widgets
+ */
 
 #pragma once
 
 #include "widget.hpp"
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
+/** A scroll aperture widget.
+ *
+ * A widget that is used as a child of the `scroll_widget` which
+ * displays a partial rectangle (the aperture) of the content.
+ *
+ * @ingroup widgets
+ */
 class scroll_aperture_widget : public widget {
 public:
     using super = widget;
 
-    observable<float> content_width;
-    observable<float> content_height;
-    observable<float> aperture_width;
-    observable<float> aperture_height;
-    observable<float> offset_x;
-    observable<float> offset_y;
+    observer<float> content_width;
+    observer<float> content_height;
+    observer<float> aperture_width;
+    observer<float> aperture_height;
+    observer<float> offset_x;
+    observer<float> offset_y;
 
     scroll_aperture_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
     {
@@ -167,7 +178,7 @@ public:
         float delta_x = 0.0f;
         float delta_y = 0.0f;
 
-        if (safe_rectangle.width() > theme().margin and safe_rectangle.height() > theme().margin) {
+        if (safe_rectangle.width() > theme().margin * 2.0f and safe_rectangle.height() > theme().margin * 2.0f) {
             // This will look visually better, if the selected widget is moved with some margin from
             // the edge of the scroll widget. The margins of the content do not have anything to do
             // with the margins that are needed here.
@@ -199,12 +210,12 @@ public:
 private:
     aarectangle _content_rectangle;
     std::unique_ptr<widget> _content;
-    decltype(content_width)::token_type _content_width_cbt;
-    decltype(content_height)::token_type _content_height_cbt;
-    decltype(aperture_width)::token_type _aperture_width_cbt;
-    decltype(aperture_height)::token_type _aperture_height_cbt;
-    decltype(offset_x)::token_type _offset_x_cbt;
-    decltype(offset_y)::token_type _offset_y_cbt;
+    decltype(content_width)::callback_token _content_width_cbt;
+    decltype(content_height)::callback_token _content_height_cbt;
+    decltype(aperture_width)::callback_token _aperture_width_cbt;
+    decltype(aperture_height)::callback_token _aperture_height_cbt;
+    decltype(offset_x)::callback_token _offset_x_cbt;
+    decltype(offset_y)::callback_token _offset_y_cbt;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

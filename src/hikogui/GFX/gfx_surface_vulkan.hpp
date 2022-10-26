@@ -1,4 +1,4 @@
-// Copyright Take Vos 2019-2020.
+// Copyright Take Vos 2019-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -131,7 +131,7 @@ private:
      * @param current_image Information about the swapchain-image to be rendered.
      * @param context The drawing context.
      */
-    void fill_command_buffer(swapchain_image_info& current_image, draw_context const& context);
+    void fill_command_buffer(swapchain_image_info& current_image, draw_context const& context, vk::Rect2D render_area);
 
     /** Submit the command buffer updated with fill command buffer.
      *

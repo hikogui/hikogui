@@ -8,7 +8,7 @@
 
 TEST(fixed_string, from_string_literal)
 {
-    constexpr auto s = hi::basic_fixed_string{"Hello World"};
+    constexpr auto s = hi::fixed_string{"Hello World"};
     ASSERT_EQ(s, std::string("Hello World"));
     ASSERT_EQ(s.size(), 11);
 }

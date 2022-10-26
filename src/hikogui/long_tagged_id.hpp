@@ -11,7 +11,7 @@
 
 namespace hi::inline v1 {
 
-template<basic_fixed_string Tag>
+template<fixed_string Tag>
 class long_tagged_id {
 public:
     constexpr static auto tag = Tag;
