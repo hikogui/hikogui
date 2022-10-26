@@ -87,9 +87,9 @@ jobs:
         shell: pwsh
         run: |
           echo "VULKAN_SDK=${{steps.vulkan-version.outputs.VULKAN_SDK}}" >> $env:GITHUB_ENV
-          dir ${{env.VULKAN_SDK}}\Include
-          dir ${{env.VULKAN_SDK}}\Bin
-          dir ${{env.VULKAN_SDK}}\runtime\${{env.PLATFORM}}
+          dir ${{steps.vulkan-version.outputs.VULKAN_SDK}}\Include
+          dir ${{steps.vulkan-version.outputs.VULKAN_SDK}}\Bin
+          dir ${{steps.vulkan-version.outputs.VULKAN_SDK}}\runtime\${{env.PLATFORM}}
 
       - name: Set up Visual Studio shell
         uses: egor-tensin/vs-shell@v2
