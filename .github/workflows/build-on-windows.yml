@@ -67,18 +67,18 @@ jobs:
 
       - name: 📝 Get Vulkan SDK version number
         id: vulkan-version
-        uses: hikogui/install-vulkan-sdk-action/sdk-version@v3
+        uses: hikogui/install-vulkan-sdk-action/sdk-version@v4
 
       - name: 🎯 Cache VULKAN SDK & Runtime
         id: cache-vulkan
-        uses: actions/cache@v1
+        uses: actions/cache@v3.0.11
         with:
           path: ${{steps.vulkan-version.outputs.VULKAN_SDK}}
-          key: cache-windows-vulkan-${{steps.vulkan-version.outputs.VULKAN_VERSION}}-2
+          key: cache-windows-vulkan-${{steps.vulkan-version.outputs.VULKAN_VERSION}}-0
 
       - name: 🔽 Install Vulkan SDK
         if: steps.cache-vulkan.outputs.cache-hit != 'true'
-        uses: hikogui/install-vulkan-sdk-action/install-sdk@v3
+        uses: hikogui/install-vulkan-sdk-action/install-sdk@v4
         with:
           VULKAN_VERSION: ${{steps.vulkan-version.outputs.VULKAN_VERSION}}
           VULKAN_SDK: ${{steps.vulkan-version.outputs.VULKAN_SDK}}
@@ -87,9 +87,9 @@ jobs:
         shell: pwsh
         run: |
           echo "VULKAN_SDK=${{steps.vulkan-version.outputs.VULKAN_SDK}}" >> $env:GITHUB_ENV
-          dir ${{env.VULKAN_SDK}}\Include
-          dir ${{env.VULKAN_SDK}}\Bin
-          dir ${{env.VULKAN_SDK}}\runtime\${{env.PLATFORM}}
+          dir ${{steps.vulkan-version.outputs.VULKAN_SDK}}\Include
+          dir ${{steps.vulkan-version.outputs.VULKAN_SDK}}\Bin
+          dir ${{steps.vulkan-version.outputs.VULKAN_SDK}}\runtime\${{env.PLATFORM}}
 
       - name: Set up Visual Studio shell
         uses: egor-tensin/vs-shell@v2
