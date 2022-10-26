@@ -1,5 +1,16 @@
+// Copyright Take Vos 2022.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
+
+#include "utility.hpp"
+#include "memory.hpp"
+#include "math.hpp"
+#include <cstddef>
+#include <climits>
+#include <concepts>
+#include <array>
 
 namespace hi::inline v1 {
 
@@ -21,7 +32,7 @@ public:
      *
      * This needs extra 7 bits for alignment/adjustment.
      */
-    constexpr static size_t store_size = ceil(bits_per_integer + CHAR_BIT - 1, CHAR_BIT) / CHAR_BIT;
+    constexpr static size_t store_size = ceil(bits_per_integer + CHAR_BIT - 1, size_t{CHAR_BIT}) / size_t{CHAR_BIT};
     static_assert(sizeof(unsigned long long) >= store_size);
     
     // clang-format off
@@ -43,8 +54,8 @@ public:
      *
      * @param args A list of integers.
      */
-    template<std::unsigned_integral... Args>
-    constexpr packed_int_array(Args... args) noexcept : _v(make_v(args....)) {}
+    template<std::integral... Args>
+    constexpr packed_int_array(Args... args) noexcept : _v(make_v(args...)) {}
 
     /** The number of integers stored in the array.
      */
@@ -70,8 +81,7 @@ public:
         hilet byte_offset = offset / CHAR_BIT;
         hilet bit_offset = offset % CHAR_BIT;
 
-        constexpr static size_t mask = (1_uz << bits_per_integer) - 1;
-        return (load<store_size>(_v.data() + byte_offset) >> bit_offset) & mask;
+        return (load<value_type>(_v.data() + byte_offset) >> bit_offset) & mask;
     }
 
     /** Get the integer at an index.
@@ -92,12 +102,11 @@ public:
         constexpr size_t byte_offset = offset / CHAR_BIT;
         constexpr size_t bit_offset = offset % CHAR_BIT;
 
-        constexpr static size_t mask = (1_uz << bits_per_integer) - 1;
-        return (load<store_size>(_v.data() + byte_offset) >> bit_offset) & mask;
+        return (load<value_type>(rhs._v.data() + byte_offset) >> bit_offset) & mask;
     }
 
 private:
-    constexpr static size_t total_num_bits = bits_per_integer * size();
+    constexpr static size_t total_num_bits = bits_per_integer * N;
     constexpr static size_t total_num_bytes = (total_num_bits + CHAR_BIT - 1) / CHAR_BIT;
     constexpr static size_t mask = (1_uz << bits_per_integer) - 1;
 
@@ -110,22 +119,22 @@ private:
      * @param args The list of integers.
      * @return A byte array containing the integers, tighly packed.
      */
-    template<std::unsigned_integral... Args>
+    template<std::integral... Args>
     [[nodiscard]] constexpr static array_type make_v(Args... args) noexcept
     {
         static_assert(sizeof...(Args) == N);
 
         auto r = array_type{};
 
-        hilet args_ = std::array<value_type, N>{args...};
+        hilet args_ = std::array<value_type, N>{narrow_cast<value_type>(args)...};
         for (auto i = 0_uz; i != N; ++i) {
             hilet offset = i * bits_per_integer;
             hilet byte_offset = offset / CHAR_BIT;
             hilet bit_offset = offset % CHAR_BIT;
 
-            hilet arg = args[i];
+            hilet arg = args_[i];
             hi_axiom(arg <= mask);
-            store_or(r.data() + byte_offset, wide_cast<value_type>(arg) << bit_offset);
+            store_or(static_cast<value_type>(arg << bit_offset), r.data() + byte_offset);
         }
 
         return r;

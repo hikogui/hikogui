@@ -113,6 +113,7 @@ target_sources(hikogui PRIVATE
     os_settings.hpp
     $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/os_settings_win32.cpp>
     architecture.hpp
+    packed_int_array.hpp
     parse_location.hpp
     preferences.cpp
     preferences.hpp
@@ -204,6 +205,7 @@ if(BUILD_TESTING)
         group_ptr_tests.cpp
         notifier_tests.cpp
         graphic_path_tests.cpp
+        packed_int_array_tests.cpp
         pixel_map_tests.cpp
         polymorphic_optional_tests.cpp
         polynomial_tests.cpp

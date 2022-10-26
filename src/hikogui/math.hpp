@@ -128,4 +128,26 @@ template<std::floating_point T>
     return degree * (std::numbers::pi_v<T> / T{180.0});
 }
 
+/** The greatest multiple of alignment less than or equal to value.
+ * @param value The unsigned value to round.
+ * @param alignment The alignment.
+ * @return The greatest multiple of alignment less than or equal to value.
+ */
+template<std::unsigned_integral T>
+constexpr T floor(T value, T alignment) noexcept
+{
+    return (value / alignment) * alignment;
+}
+
+/** The smallest multiple of alignment greater than or equal to value.
+ * @param value The unsigned value to round.
+ * @param alignment The alignment.
+ * @return The smallest multiple of alignment greater than or equal to value.
+ */
+template<std::unsigned_integral T>
+constexpr T ceil(T value, T alignment) noexcept
+{
+    return floor(value + (alignment - 1), alignment);
+}
+
 } // namespace hi::inline v1
