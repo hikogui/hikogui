@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -18,7 +18,8 @@ public:
     {
         // Our child widget is a `label_widget` which requires a label to be passed as an third argument.
         // We use a templated argument to forward the label into the `label_widget`.
-        _label_widget = std::make_unique<hi::label_widget>(window, this, std::forward<Label>(label));
+        _label_widget =
+            std::make_unique<hi::label_widget>(window, this, std::forward<Label>(label), hi::alignment::middle_center());
     }
 
     // The set_constraints() function is called when the window is first initialized,
@@ -37,6 +38,7 @@ public:
         _constraints.preferred = label_constraints.preferred + theme().margin;
         _constraints.maximum = label_constraints.maximum + hi::extent2{100.0f, 50.0f};
         _constraints.margins = theme().margin;
+        _constraints.baseline = label_constraints.baseline;
         return _constraints;
     }
 
@@ -115,9 +117,11 @@ int hi_main(int argc, char *argv[])
     auto window = gui->make_window(hi::tr("Widget with child"));
     window->content().make_widget<widget_with_child>("A1", hi::tr("Widget with child"));
 
-    auto close_cbt = window->closing.subscribe(hi::callback_flags::main, [&] {
-        window = {};
-    });
+    auto close_cbt = window->closing.subscribe(
+        [&] {
+            window = {};
+        },
+        hi::callback_flags::main);
 
     return hi::loop::main().resume();
 }

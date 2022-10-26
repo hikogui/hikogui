@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020, 2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -15,14 +15,14 @@ namespace hi::inline v1 {
     
     hilet normalizedString = unicode_NFKC(rhs, NFKD | compose_CRLF | decompose_newline_to(new_line_char) | decompose_control);
 
-    auto r = hi::gstring{};
-    auto breakState = hi::grapheme_break_state{};
+    auto r = gstring{};
+    auto breakState = grapheme_break_state{};
     auto cluster = std::u32string{};
 
     for (hilet codePoint : normalizedString) {
         if (breaks_grapheme(codePoint, breakState)) {
             if (cluster.size() > 0) {
-                r += hi::grapheme::from_composed(cluster);
+                r += grapheme(composed_t{}, cluster);
                 hi_axiom(r.back().valid());
             }
             cluster.clear();
@@ -31,7 +31,7 @@ namespace hi::inline v1 {
         cluster += codePoint;
     }
     if (ssize(cluster) != 0) {
-        r += hi::grapheme::from_composed(cluster);
+        r += grapheme(composed_t{}, cluster);
         hi_axiom(r.back().valid());
     }
     return r;

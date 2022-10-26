@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "required.hpp"
+#include "utility.hpp"
 #include "chrono.hpp"
 #include <vector>
 #include <algorithm>
@@ -21,10 +21,11 @@ namespace hi::inline v1 {
 template<typename Proto = void()>
 class function_timer {
 public:
-    using function_type = std::function<Proto>;
-    using token_type = std::shared_ptr<function_type>;
-    using weak_token_type = std::weak_ptr<function_type>;
-    
+    using callback_proto = Proto;
+    using function_type = std::function<callback_proto>;
+    using callback_token = std::shared_ptr<function_type>;
+    using weak_callback_token = std::weak_ptr<function_type>;
+
     using result_type = hi_typename function_type::result_type;
 
     constexpr function_timer() noexcept = default;
@@ -37,10 +38,11 @@ public:
     /** Add a function to be called at a certain time.
      *
      * @param time_point The time when to call the function.
-     * @param func The function to be called.
+     * @param callback The function to be called.
      * @return token, next to call.
      */
-    std::pair<token_type, bool> delay_function(utc_nanoseconds time_point, auto&& func) noexcept
+    std::pair<callback_token, bool>
+    delay_function(utc_nanoseconds time_point, forward_of<callback_proto> auto&& callback) noexcept
     {
         hilet it = std::lower_bound(_functions.begin(), _functions.end(), time_point, [](hilet& x, hilet& time_point) {
             return x.time_point > time_point;
@@ -48,7 +50,7 @@ public:
 
         hilet next_to_call = it == _functions.end();
 
-        auto token = std::make_shared<function_type>(hi_forward(func));
+        auto token = std::make_shared<function_type>(hi_forward(callback));
         _functions.emplace(it, time_point, std::chrono::nanoseconds::max(), token);
         return {std::move(token), next_to_call};
     }
@@ -57,16 +59,19 @@ public:
      *
      * @param period The period between repeated calls
      * @param time_point The time when to call the function the first time.
-     * @param func The function to be called.
+     * @param callback The function to be called.
      * @return token, next to call.
      */
-    std::pair<token_type, bool> repeat_function(std::chrono::nanoseconds period, utc_nanoseconds time_point, auto&& func) noexcept
+    std::pair<callback_token, bool> repeat_function(
+        std::chrono::nanoseconds period,
+        utc_nanoseconds time_point,
+        forward_of<callback_proto> auto&& callback) noexcept
     {
         auto it = std::lower_bound(_functions.begin(), _functions.end(), time_point, [](hilet& x, hilet& time_point) {
             return x.time_point > time_point;
         });
 
-        auto token = std::make_shared<function_type>(hi_forward(func));
+        auto token = std::make_shared<function_type>(hi_forward(callback));
         it = _functions.emplace(it, time_point, period, token);
         return {std::move(token), it + 1 == _functions.end()};
     }
@@ -74,13 +79,13 @@ public:
     /** Add a function to be called repeatedly.
      *
      * @param period The period between repeated calls
-     * @param time_point The time when to call the function the first time.
-     * @param func The function to be called.
+     * @param callback The function to be called.
      * @return token, next to call.
      */
-    std::pair<token_type, bool> repeat_function(std::chrono::nanoseconds period, auto&& func) noexcept
+    std::pair<callback_token, bool>
+    repeat_function(std::chrono::nanoseconds period, forward_of<callback_proto> auto&& callback) noexcept
     {
-        return repeat_function(period, std::chrono::utc_clock::now(), hi_forward(func));
+        return repeat_function(period, std::chrono::utc_clock::now(), hi_forward(callback));
     }
 
     /** Get the deadline of the next function to call.
@@ -101,7 +106,7 @@ public:
      * @param current_time The current time.
      * @param args The arguments to pass to the function.
      */
-    void run_all(utc_nanoseconds current_time, auto&&...args) noexcept
+    void run_all(utc_nanoseconds current_time, auto const&...args) noexcept
     {
         while (current_deadline() <= current_time) {
             run_one(current_time, args...);
@@ -112,7 +117,7 @@ private:
     struct timer_type {
         utc_nanoseconds time_point;
         std::chrono::nanoseconds period;
-        weak_token_type token;
+        weak_callback_token token;
 
         timer_type() noexcept = default;
         timer_type(timer_type const&) noexcept = default;
@@ -120,17 +125,17 @@ private:
         timer_type& operator=(timer_type const&) noexcept = default;
         timer_type& operator=(timer_type&&) noexcept = default;
 
-        timer_type(utc_nanoseconds time_point, std::chrono::nanoseconds period, weak_token_type token) noexcept :
+        timer_type(utc_nanoseconds time_point, std::chrono::nanoseconds period, weak_callback_token token) noexcept :
             time_point(time_point), period(period), token(std::move(token))
         {
         }
 
-        timer_type(utc_nanoseconds time_point, weak_token_type token) noexcept :
+        timer_type(utc_nanoseconds time_point, weak_callback_token token) noexcept :
             timer_type(time_point, std::chrono::nanoseconds::max(), std::move(token))
         {
         }
 
-        timer_type(std::chrono::nanoseconds period, weak_token_type token) noexcept :
+        timer_type(std::chrono::nanoseconds period, weak_callback_token token) noexcept :
             timer_type(std::chrono::utc_clock::now(), period, std::move(token))
         {
         }

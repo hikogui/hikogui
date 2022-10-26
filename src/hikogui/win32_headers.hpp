@@ -2,7 +2,7 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-/** @file win32_headers
+/** @file win32_headers.hpp
  *
  * Rules for working with win32 headers.
  *  - Include "win32_headers.hpp" as FIRST file by .cpp files that need it.
@@ -43,8 +43,6 @@
 #define IN
 #define OUT
 #include <WinSock2.h>
-#undef IN
-#undef OUT
 
 // DirectX.
 #include <windowsx.h>
@@ -70,3 +68,7 @@
 #include <endpointvolume.h>
 #include <audioclient.h>
 
+// The windows headers create all sort of insane macros.
+#undef IN
+#undef OUT
+#undef small

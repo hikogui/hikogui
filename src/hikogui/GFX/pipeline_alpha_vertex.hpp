@@ -1,10 +1,10 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
-#include "../vspan.hpp"
+#include "../vector_span.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
 #include "../rapid/sfloat_rgba16.hpp"
 #include "../rapid/sfloat_rgba32.hpp"

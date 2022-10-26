@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -6,16 +6,6 @@
 
 namespace hi::inline v1 {
 
-toggle_widget::toggle_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept :
-    super(window, parent, std::move(delegate))
-{
-    label_alignment = alignment::middle_left();
-}
-
-toggle_widget::toggle_widget(gui_window &window, widget *parent, std::unique_ptr<delegate_type> delegate) noexcept :
-    toggle_widget(window, parent, weak_or_unique_ptr<delegate_type>{std::move(delegate)})
-{
-}
 
 widget_constraints const &toggle_widget::set_constraints() noexcept
 {
@@ -26,17 +16,30 @@ widget_constraints const &toggle_widget::set_constraints() noexcept
     hilet extra_size = extent2{theme().margin + _button_size.width(), 0.0f};
     _constraints = max(set_constraints_button() + extra_size, _button_size);
     _constraints.margins = theme().margin;
+    _constraints.baseline = widget_baseline{0.5f, alignment->vertical(), theme().cap_height, theme().size};
     return _constraints;
 }
 
 void toggle_widget::set_layout(widget_layout const &layout) noexcept
 {
     if (compare_store(_layout, layout)) {
-        _button_rectangle = align(layout.rectangle(), _button_size, alignment::middle_left());
+        if (*alignment == horizontal_alignment::left or *alignment == horizontal_alignment::right) {
+            _button_rectangle = round(align(layout.rectangle(), _button_size, *alignment));
+        } else {
+            hi_not_implemented();
+        }
 
-        hilet label_x = _button_rectangle.right() + theme().margin;
-        hilet label_width = layout.width() - label_x;
-        _label_rectangle = aarectangle{label_x, 0.0f, label_width, layout.height()};
+        hilet label_width = layout.width() - (_button_rectangle.width() + theme().margin);
+        if (*alignment == horizontal_alignment::left) {
+            hilet label_left = _button_rectangle.right() + theme().margin;
+            _label_rectangle = aarectangle{label_left, 0.0f, label_width, layout.height()};
+
+        } else if (*alignment == horizontal_alignment::right) {
+            _label_rectangle = aarectangle{0.0f, 0.0f, label_width, layout.height()};
+        
+        } else {
+            hi_not_implemented();
+        }
 
         hilet button_square =
             aarectangle{get<0>(_button_rectangle), extent2{_button_rectangle.height(), _button_rectangle.height()}};

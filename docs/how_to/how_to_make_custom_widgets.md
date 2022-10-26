@@ -26,6 +26,7 @@ Currently, the constrain attributes are:
  | `preferred` | The preferred size the widget CAN be laid out as.             |
  | `maximum`   | The maximum size the widget SHOULD be laid out as.            |
  | `margin`    | The minimum margin to other sibling widgets or parent's edge. |
+ | `baseline`  | How to calculate the base-line of the text in this widget.    |
 
 To calculate the constraints of a widget, potentially expensive calculations may need to be performed,
 such as loading glyph metrics and doing initial text shaping to determine the size of a label.
@@ -50,6 +51,7 @@ hi::widget_constraints const &set_constraints() noexcept override
     _constraints.preferred = label_constraints.preferred + theme().margin;
     _constraints.maximum = label_constraints.maximum + hi::extent2{100.0f, 50.0f};
     _constraints.margin = theme().margin;
+    _constraints.baseline = label_constraints.baseline;
     return _constraints;
 }
 ```
@@ -70,6 +72,7 @@ A `widget_layout` currently consists of the following attributes:
  | `from_window`        | Transformation matrix to convert coordinates from window to local. |
  | `clipping_rectangle` | The axis aligned rectangle to clip any drawing.                    |
  | `display_time_point` | The time when the drawing will appear on the screen.               |
+ | `baseline`           | The y-axis position of the baseline for text in this widget.       |
 
 A layout can be transformed to child size & coordinates, by combining the layout with a
 rectangle in local coordinate space and an elevation. In most cases, the elevation increment
@@ -371,3 +374,16 @@ stored in a vector.
     }
 }
 ```
+
+### Baseline
+Widgets that appear next to each other should share a baseline so that their text will be properly aligned.
+
+Widgets communicate the desire of where it wants the baseline to be through the `set_contraints()` method.
+This includes a priority so that different types of widget are able to size and position correctly.
+
+During `set_layout()` the actual baseline that is shared between widgets is communicated to each widget.
+In many cases the baseline is just forwarded to the child widget, otherwise the baseline is modified through
+the `widget_layout::transform()`.
+
+If you want a child widget to have their own natural baseline, you can simply call the `widget_layout::transform()` with
+the child's `constraints().baseline`.

@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020-2021.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -10,6 +10,7 @@
 #include <memory>
 #include <memory_resource>
 #include "arguments.hpp"
+#include "assert.hpp"
 
 namespace hi::inline v1 {
 
@@ -23,73 +24,13 @@ namespace hi::inline v1 {
  * The incrementing the iterator will resume the generator-function until
  * the generator-function co_yields another value.
  */
-template<typename T, typename Allocator = std::allocator<std::byte>>
+template<typename T>
 class generator {
 public:
-    static_assert(
-        std::is_same_v<typename std::allocator_traits<Allocator>::value_type, std::byte>,
-        "Allocator's value_type must be std::byte");
-    using allocator_type = Allocator;
     using value_type = T;
 
     class promise_type {
     public:
-        struct allocator_info {
-            allocator_type *allocator;
-            std::size_t size;
-        };
-
-        void operator delete(void *ptr)
-        {
-            if (ptr) {
-                auto *ptr_ = reinterpret_cast<std::byte *>(ptr) - sizeof(allocator_info);
-                auto *info_ptr = std::launder(reinterpret_cast<allocator_info *>(ptr_));
-                auto info = *info_ptr;
-                std::destroy_at(info_ptr);
-
-                if constexpr (std::allocator_traits<allocator_type>::is_always_equal::value) {
-                    auto allocator = allocator_type{};
-                    std::allocator_traits<allocator_type>::deallocate(allocator, ptr_, info.size);
-                } else {
-                    std::allocator_traits<allocator_type>::deallocate(*(info.allocator), ptr_, info.size);
-                }
-            }
-        }
-
-        [[nodiscard]] static void *simple_new(std::size_t size)
-        {
-            auto size_plus_info = size + sizeof(allocator_info);
-
-            // Prefix the allocated memory with the allocated size.
-            auto allocator = allocator_type{};
-            auto *ptr = std::allocator_traits<allocator_type>::allocate(allocator, size_plus_info);
-            [[maybe_unused]] auto *info = new (ptr) allocator_info(nullptr, size_plus_info);
-            return ptr + sizeof(allocator_info);
-        }
-
-        [[nodiscard]] static void *allocator_new(std::size_t size, allocator_type &allocator)
-        {
-            auto size_plus_info = size + sizeof(allocator_info);
-
-            // Allocator is in the trailing argument, because coroutines can be methods
-            // and the first argument would be `this`.
-            // Prefix the allocated memory with a pointer to the allocator and the allocated size.
-            auto *ptr = std::allocator_traits<allocator_type>::allocate(allocator, size_plus_info);
-            [[maybe_unused]] auto *info = new (ptr) allocator_info(&allocator, size_plus_info);
-            return ptr + sizeof(allocator_info);
-        }
-
-        template<typename... Args>
-        void *operator new(std::size_t size, Args &&...args)
-        {
-            if constexpr (std::allocator_traits<allocator_type>::is_always_equal::value) {
-                // This is just a coroutine with arguments.
-                return promise_type::simple_new(size);
-            } else {
-                return promise_type::allocator_new(size, get_last_argument(args...));
-            }
-        }
-
         generator get_return_object()
         {
             return generator{handle_type::from_promise(*this)};
@@ -100,7 +41,7 @@ public:
             return *_value;
         }
 
-        static std::suspend_always initial_suspend() noexcept
+        static std::suspend_never initial_suspend() noexcept
         {
             return {};
         }
@@ -161,20 +102,21 @@ public:
 
     /** A forward iterator which iterates through values co_yieled by the generator-function.
      */
-    class iterator {
+    class const_iterator {
     public:
         using difference_type = ptrdiff_t;
-        using value_type = std::remove_cv_t<value_type>;
-        using pointer = value_type *;
-        using reference = value_type &;
+        using value_type = std::decay_t<value_type>;
+        using pointer = value_type const *;
+        using reference = value_type const &;
         using iterator_category = std::input_iterator_tag;
 
-        explicit iterator(handle_type coroutine) : _coroutine{coroutine} {}
+        explicit const_iterator(handle_type coroutine) : _coroutine{coroutine} {}
 
         /** Resume the generator-function.
          */
-        iterator &operator++()
+        const_iterator& operator++()
         {
+            hi_axiom(not at_end());
             _coroutine.resume();
             _coroutine.promise().rethrow();
             return *this;
@@ -183,6 +125,7 @@ public:
         value_proxy operator++(int)
         {
             auto tmp = value_proxy(**this);
+            hi_axiom(not at_end());
             _coroutine.resume();
             _coroutine.promise().rethrow();
             return tmp;
@@ -190,21 +133,28 @@ public:
 
         /** Retrieve the value co_yielded by the generator-function.
          */
-        value_type const &operator*() const
+        reference &operator*() const
         {
+            hi_axiom(not at_end());
             return _coroutine.promise().value();
         }
 
-        value_type const *operator->() const
+        pointer *operator->() const noexcept
         {
+            hi_axiom(not at_end());
             return std::addressof(_coroutine.promise().value());
+        }
+
+        [[nodiscard]] bool at_end() const noexcept
+        {
+            return not _coroutine or _coroutine.done();
         }
 
         /** Check if the generator-function has finished.
          */
-        [[nodiscard]] bool operator==(std::default_sentinel_t) const
+        [[nodiscard]] bool operator==(std::default_sentinel_t) const noexcept
         {
-            return (not _coroutine) or _coroutine.done();
+            return at_end();
         }
 
     private:
@@ -224,10 +174,8 @@ public:
     generator(const generator &) = delete;
     generator &operator=(const generator &) = delete;
 
-    generator(generator &&other) noexcept : _coroutine{other._coroutine}
+    generator(generator &&other) noexcept : _coroutine{std::exchange(other._coroutine, {})}
     {
-        hi_axiom(&other != this);
-        other._coroutine = {};
     }
 
     generator &operator=(generator &&other) noexcept
@@ -236,25 +184,34 @@ public:
         if (_coroutine) {
             _coroutine.destroy();
         }
-        _coroutine = other._coroutine;
-        other._coroutine = {};
+        _coroutine = std::exchange(other._coroutine, {});
         return *this;
     }
 
     /** Start the generator-function and return an iterator.
      */
-    iterator begin()
+    const_iterator begin() const
     {
-        if (_coroutine) {
-            _coroutine.resume();
-            _coroutine.promise().rethrow();
-        }
-        return iterator{_coroutine};
+        return const_iterator{_coroutine};
     }
 
-    /** Return a sentinal for the iterator.
+    /** Start the generator-function and return an iterator.
      */
-    std::default_sentinel_t end()
+    const_iterator cbegin() const
+    {
+        return const_iterator{_coroutine};
+    }
+
+    /** Return a sentinel for the iterator.
+     */
+    std::default_sentinel_t end() const
+    {
+        return {};
+    }
+
+    /** Return a sentinel for the iterator.
+     */
+    std::default_sentinel_t cend() const
     {
         return {};
     }
@@ -262,12 +219,5 @@ public:
 private:
     handle_type _coroutine;
 };
-
-namespace pmr {
-
-template<typename T>
-using generator = hi::generator<T, std::pmr::polymorphic_allocator<>>;
-
-}
 
 } // namespace hi::inline v1

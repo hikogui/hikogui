@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -16,10 +16,10 @@ namespace hi::inline v1 {
 
 draw_context::draw_context(
     gfx_device_vulkan& device,
-    vspan<pipeline_box::vertex>& box_vertices,
-    vspan<pipeline_image::vertex>& image_vertices,
-    vspan<pipeline_SDF::vertex>& sdf_vertices,
-    vspan<pipeline_alpha::vertex>& alpha_vertices) noexcept :
+    vector_span<pipeline_box::vertex>& box_vertices,
+    vector_span<pipeline_image::vertex>& image_vertices,
+    vector_span<pipeline_SDF::vertex>& sdf_vertices,
+    vector_span<pipeline_alpha::vertex>& alpha_vertices) noexcept :
     device(device),
     frame_buffer_index(std::numeric_limits<size_t>::max()),
     scissor_rectangle(),
@@ -111,7 +111,7 @@ void draw_context::_draw_text(
     auto atlas_was_updated = false;
     for (hilet& c : text) {
         hilet box = translate2{c.position} * c.metrics.bounding_rectangle;
-        hilet color = text_color ? *text_color : quad_color{c.style.color};
+        hilet color = text_color ? *text_color : quad_color{c.style->color};
 
         hi_axiom(c.description != nullptr);
         if (not is_visible(c.description->general_category())) {

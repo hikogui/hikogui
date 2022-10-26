@@ -1,11 +1,11 @@
-// Copyright Take Vos 2020-2021.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
 #include "../byte_string.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../datum.hpp"
 #include "../exception.hpp"
 #include "../cast.hpp"
@@ -308,25 +308,25 @@ public:
             int multi_byte = 0;
 
             for (hilet _c : value) {
-                hilet c = static_cast<uint8_t>(_c);
+                hilet c = truncate<uint8_t>(_c);
 
-                if constexpr (build_type::current == build_type::debug) {
-                    if (multi_byte == 0) {
-                        if (c >= 0xc2 and c <= 0xdf) {
-                            multi_byte = 1;
-                        } else if (c >= 0xe0 and c <= 0xef) {
-                            multi_byte = 2;
-                        } else if (c >= 0xf0 and c <= 0xf7) {
-                            multi_byte = 3;
-                        } else {
-                            hi_assert(c <= 0x7f);
-                        }
-
+#ifndef NDEBUG
+                if (multi_byte == 0) {
+                    if (c >= 0xc2 and c <= 0xdf) {
+                        multi_byte = 1;
+                    } else if (c >= 0xe0 and c <= 0xef) {
+                        multi_byte = 2;
+                    } else if (c >= 0xf0 and c <= 0xf7) {
+                        multi_byte = 3;
                     } else {
-                        hi_assert(c >= 0x80 and c <= 0xbf);
-                        --multi_byte;
+                        hi_assert(c <= 0x7f);
                     }
+
+                } else {
+                    hi_assert(c >= 0x80 and c <= 0xbf);
+                    --multi_byte;
                 }
+#endif
 
                 output += static_cast<std::byte>(c);
             }
@@ -422,8 +422,6 @@ void BON8_encoder::add(datum const &value)
 {
     if (auto s = get_if<std::string>(value)) {
         add(*s);
-    } else if (auto u = get_if<URL>(value)) {
-        add(to_string(*u));
     } else if (auto b = get_if<bool>(value)) {
         add(*b);
     } else if (holds_alternative<nullptr_t>(value)) {
@@ -451,8 +449,11 @@ void BON8_encoder::add(datum const &value)
  */
 [[nodiscard]] int BON8_multibyte_count(cbyteptr ptr, cbyteptr last)
 {
+    hi_axiom(ptr != nullptr);
+    hi_axiom(last != nullptr);
+
     hilet c0 = static_cast<uint8_t>(*ptr);
-    int count = c0 <= 0xdf ? 2 : c0 <= 0xef ? 3 : 4;
+    hilet count = c0 <= 0xdf ? 2 : c0 <= 0xef ? 3 : 4;
 
     hi_parse_check(ptr + count <= last, "Incomplete Multi-byte character at end of buffer");
 
@@ -462,7 +463,7 @@ void BON8_encoder::add(datum const &value)
 
 /** Decode a 4, or 8 byte signed integer.
  *
- * @param [in,out] ptr The pointer to the first byte of the integer.
+ * @param[in,out] ptr The pointer to the first byte of the integer.
  *                     On return this points beyond the integer.
  * @param last The pointer beyond the buffer.
  * @param count The number of bytes used to encode the integer.
@@ -470,6 +471,8 @@ void BON8_encoder::add(datum const &value)
  */
 [[nodiscard]] datum decode_BON8_int(cbyteptr &ptr, cbyteptr last, int count)
 {
+    hi_axiom(ptr != nullptr);
+    hi_axiom(last != nullptr);
     hi_axiom(count == 4 || count == 8);
 
     auto u64 = uint64_t{0};
@@ -480,17 +483,19 @@ void BON8_encoder::add(datum const &value)
     }
 
     if (count == 4) {
-        hilet u32 = static_cast<uint32_t>(u64);
-        hilet i32 = static_cast<int32_t>(u32);
+        hilet u32 = truncate<uint32_t>(u64);
+        hilet i32 = truncate<int32_t>(u32);
         return datum{i32};
     } else {
-        hilet i64 = static_cast<int64_t>(u64);
+        hilet i64 = truncate<int64_t>(u64);
         return datum{i64};
     }
 }
 
 [[nodiscard]] datum decode_BON8_float(cbyteptr &ptr, cbyteptr last, int count)
 {
+    hi_axiom(ptr != nullptr);
+    hi_axiom(last != nullptr);
     hi_axiom(count == 4 || count == 8);
 
     auto u64 = uint64_t{0};
@@ -501,7 +506,7 @@ void BON8_encoder::add(datum const &value)
     }
 
     if (count == 4) {
-        hilet u32 = static_cast<uint32_t>(u64);
+        hilet u32 = truncate<uint32_t>(u64);
         float f32;
         std::memcpy(&f32, &u32, sizeof(f32));
         return datum{f32};
@@ -515,6 +520,9 @@ void BON8_encoder::add(datum const &value)
 
 [[nodiscard]] datum decode_BON8_array(cbyteptr &ptr, cbyteptr last)
 {
+    hi_axiom(ptr != nullptr);
+    hi_axiom(last != nullptr);
+
     auto r = datum::make_vector();
     auto &vector = get<datum::vector_type>(r);
 
@@ -543,6 +551,9 @@ void BON8_encoder::add(datum const &value)
 
 [[nodiscard]] datum decode_BON8_object(cbyteptr &ptr, cbyteptr last)
 {
+    hi_axiom(ptr != nullptr);
+    hi_axiom(last != nullptr);
+
     auto r = datum::make_map();
     auto &map = get<datum::map_type>(r);
 
@@ -579,6 +590,8 @@ void BON8_encoder::add(datum const &value)
 
 [[nodiscard]] long long decode_BON8_UTF8_like_int(cbyteptr &ptr, cbyteptr last, int count) noexcept
 {
+    hi_axiom(ptr != nullptr);
+    hi_axiom(last != nullptr);
     hi_axiom(count >= 2 && count <= 4);
     hi_axiom(ptr != last);
     hilet c0 = static_cast<uint8_t>(*(ptr++));
@@ -636,6 +649,9 @@ void BON8_encoder::add(datum const &value)
 
 [[nodiscard]] datum decode_BON8(cbyteptr &ptr, cbyteptr last)
 {
+    hi_axiom(ptr != nullptr);
+    hi_axiom(last != nullptr);
+
     std::string str;
 
     while (ptr != last) {
@@ -707,7 +723,7 @@ void BON8_encoder::add(datum const &value)
                     return datum{c - BON8_code_positive_s};
 
                 } else if (c >= BON8_code_negative_s and c <= BON8_code_negative_e) {
-                    return datum{~static_cast<int>(c - BON8_code_negative_s)};
+                    return datum{~truncate<int>(c - BON8_code_negative_s)};
 
                 } else {
                     hi_no_default();

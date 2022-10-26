@@ -1,4 +1,4 @@
-// Copyright Take Vos 2019-2020.
+// Copyright Take Vos 2021.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -159,7 +159,7 @@ public:
 
     static void set_frequency(uint64_t frequency) noexcept
     {
-        auto period = (uint64_t{1'000'000'000} << 32) / frequency;
+        hilet period = (uint64_t{1'000'000'000} << 32) / frequency;
         _period.store(period, std::memory_order_relaxed);
     }
 

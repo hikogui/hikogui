@@ -1,12 +1,12 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2021.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "pipeline_tone_mapper.hpp"
 #include "pipeline_tone_mapper_device_shared.hpp"
 #include "gfx_device_vulkan.hpp"
+#include "../file/URL.hpp"
 #include "../pixel_map.hpp"
-#include "../URL.hpp"
 #include <array>
 
 namespace hi::inline v1::pipeline_tone_mapper {
@@ -32,8 +32,8 @@ void device_shared::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
 
 void device_shared::buildShaders()
 {
-    vertexShaderModule = device.loadShader(URL("resource:GUI/pipeline_tone_mapper.vert.spv"));
-    fragmentShaderModule = device.loadShader(URL("resource:GUI/pipeline_tone_mapper.frag.spv"));
+    vertexShaderModule = device.loadShader(URL("resource:shaders/pipeline_tone_mapper.vert.spv"));
+    fragmentShaderModule = device.loadShader(URL("resource:shaders/pipeline_tone_mapper.frag.spv"));
 
     shaderStages = {
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, vertexShaderModule, "main"},

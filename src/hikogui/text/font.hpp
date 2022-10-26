@@ -1,4 +1,4 @@
-// Copyright Take Vos 2019-2021.
+// Copyright Take Vos 2019-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -15,10 +15,8 @@
 #include "../i18n/iso_15924.hpp"
 #include "../i18n/iso_639.hpp"
 #include "../graphic_path.hpp"
-#include "../resource_view.hpp"
 #include "../exception.hpp"
-#include "../required.hpp"
-#include "../URL.hpp"
+#include "../utility.hpp"
 #include "../hash_map.hpp"
 #include <span>
 #include <vector>
@@ -145,7 +143,7 @@ public:
      *
      * @param language The language that the word is written in.
      * @param script The script that the word is written in.
-     * @param [in,out]word A run of glyphs, from the same font, font-size and script of a word.
+     * @param[in,out] word A run of glyphs, from the same font, font-size and script of a word.
      */
     virtual void substitution_and_kerning(iso_639 language, iso_15924 script, std::vector<substitution_and_kerning_type> &word)
         const noexcept = 0;

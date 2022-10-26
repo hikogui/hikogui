@@ -1,10 +1,10 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
-#include "required.hpp"
+#include "utility.hpp"
 #include "tokenizer.hpp"
 #include "generator.hpp"
 #include "check.hpp"
@@ -158,12 +158,12 @@ struct jsonpath_indices {
 
     [[nodiscard]] generator<std::size_t> filter(std::size_t size) const noexcept
     {
-        hilet size_ = static_cast<ssize_t>(size);
+        hilet size_ = narrow_cast<ssize_t>(size);
 
         for (hilet index : indices) {
             hilet index_ = index >= 0 ? index : size_ + index;
             if (index_ >= 0 and index_ < size_) {
-                co_yield static_cast<std::size_t>(index_);
+                co_yield narrow_cast<std::size_t>(index_);
             }
         }
     }
@@ -208,9 +208,9 @@ struct jsonpath_slice {
      */
     [[nodiscard]] std::size_t begin(std::size_t size) const noexcept
     {
-        hilet size_ = static_cast<ssize_t>(size);
+        hilet size_ = narrow_cast<ssize_t>(size);
         hilet begin = first >= 0 ? first : size_ + first;
-        return static_cast<std::size_t>(std::clamp(begin, 0_z, size_));
+        return narrow_cast<std::size_t>(std::clamp(begin, 0_z, size_));
     }
 
     /** Get the one-step beyond last offset.
@@ -223,7 +223,7 @@ struct jsonpath_slice {
      */
     [[nodiscard]] std::size_t end(std::size_t size) const noexcept
     {
-        hilet size_ = static_cast<ssize_t>(size);
+        hilet size_ = narrow_cast<ssize_t>(size);
         hilet last_ = std::clamp(
             last == std::numeric_limits<ssize_t>::min() ? size_ :
                 last >= 0                               ? last :
@@ -234,7 +234,7 @@ struct jsonpath_slice {
         hilet first_ = begin(size);
         hilet distance = last_ - first_;
         hilet steps = distance / step;
-        return static_cast<std::size_t>(first_ + steps * step);
+        return narrow_cast<std::size_t>(first_ + steps * step);
     }
 
     [[nodiscard]] bool last_is_empty() const noexcept
@@ -328,7 +328,7 @@ using jsonpath_node = std::variant<
         return parse_jsonpath_slicing_operator(it, it_end, 0);
 
     } else if (*it == tokenizer_name_t::IntegerLiteral) {
-        auto first = static_cast<ssize_t>(*it);
+        hilet first = static_cast<ssize_t>(*it);
 
         ++it;
         if (*it == tokenizer_name_t::Operator and *it == ":") {

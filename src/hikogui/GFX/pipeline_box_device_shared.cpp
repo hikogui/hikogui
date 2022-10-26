@@ -1,13 +1,13 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "pipeline_box.hpp"
 #include "pipeline_box_device_shared.hpp"
 #include "gfx_device_vulkan.hpp"
-#include "../pixel_map.hpp"
-#include "../URL.hpp"
+#include "../file/URL.hpp"
 #include "../geometry/corner_radii.hpp"
+#include "../pixel_map.hpp"
 #include <array>
 
 namespace hi::inline v1::pipeline_box {
@@ -31,7 +31,7 @@ void device_shared::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
 }
 
 void device_shared::place_vertices(
-    vspan<vertex> &vertices,
+    vector_span<vertex> &vertices,
     aarectangle clipping_rectangle,
     quad box,
     quad_color fill_colors,
@@ -68,10 +68,10 @@ void device_shared::place_vertices(
 
 void device_shared::buildShaders()
 {
-    vertexShaderModule = device.loadShader(URL("resource:GUI/pipeline_box.vert.spv"));
+    vertexShaderModule = device.loadShader(URL("resource:shaders/pipeline_box.vert.spv"));
     device.setDebugUtilsObjectNameEXT(vertexShaderModule, "box-pipeline vertex shader");
 
-    fragmentShaderModule = device.loadShader(URL("resource:GUI/pipeline_box.frag.spv"));
+    fragmentShaderModule = device.loadShader(URL("resource:shaders/pipeline_box.frag.spv"));
     device.setDebugUtilsObjectNameEXT(vertexShaderModule, "box-pipeline fragment shader");
 
     shaderStages = {

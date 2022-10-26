@@ -1,9 +1,9 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "grid_layout.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../math.hpp"
 
 namespace hi::inline v1 {
@@ -89,6 +89,10 @@ void grid_layout::constrain_cells_by_singles() noexcept
     for (hilet &constraint : _constraints) {
         inplace_max(_cells[constraint.first].margin, constraint.margin_before);
         inplace_max(_cells[constraint.last].margin, constraint.margin_after);
+
+        for (auto i = constraint.first; i != constraint.last; ++i) {
+            inplace_max(_cells[i].baseline, constraint.baseline);
+        }
 
         if (constraint.is_single_cell()) {
             _cells[constraint.first].set_constraint(constraint);

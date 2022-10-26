@@ -1,8 +1,9 @@
-// Copyright Take Vos 2019-2020.
+// Copyright Take Vos 2019-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "JSON.hpp"
+#include "../file/file_view.hpp"
 
 namespace hi::inline v1 {
 
@@ -174,10 +175,6 @@ struct parse_context_t {
     return root;
 }
 
-[[nodiscard]] datum parse_JSON(URL const &url)
-{
-    return parse_JSON(url.loadView()->string_view());
-}
 
 static void format_JSON_impl(datum const &value, std::string &result, hi::indent indent = {})
 {
@@ -192,35 +189,6 @@ static void format_JSON_impl(datum const &value, std::string &result, hi::indent
     } else if (hilet *s = get_if<std::string>(value)) {
         result += '"';
         for (hilet c : *s) {
-            switch (c) {
-            case '\n':
-                result += '\\';
-                result += 'n';
-                break;
-            case '\r':
-                result += '\\';
-                result += 'r';
-                break;
-            case '\t':
-                result += '\\';
-                result += 't';
-                break;
-            case '\f':
-                result += '\\';
-                result += 'f';
-                break;
-            case '"':
-                result += '\\';
-                result += '"';
-                break;
-            default: result += c;
-            }
-        }
-        result += '"';
-
-    } else if (hilet *u = get_if<URL>(value)) {
-        result += '"';
-        for (hilet c : to_string(*u)) {
             switch (c) {
             case '\n':
                 result += '\\';

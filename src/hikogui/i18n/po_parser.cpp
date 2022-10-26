@@ -1,10 +1,11 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "po_parser.hpp"
 #include "language.hpp"
 #include "translation.hpp"
+#include "../file/file_view.hpp"
 #include "../tokenizer.hpp"
 
 namespace hi::inline v1 {
@@ -22,7 +23,7 @@ namespace hi::inline v1 {
 //    if (plural_expression) {
 //        hilet result = plural_expression->evaluate(context);
 //        if (result.is_bool()) {
-//            return static_cast<bool>(result) ? 1 : 0;
+//            return to_bool(result) ? 1 : 0;
 //        } else if (result.is_integer()) {
 //            return static_cast<ssize_t>(result);
 //        } else {
@@ -186,10 +187,9 @@ static void parse_po_header(po_translations &r, std::string const &header)
     return r;
 }
 
-[[nodiscard]] po_translations parse_po(URL const &url)
+[[nodiscard]] po_translations parse_po(std::filesystem::path const &path)
 {
-    hilet text = url.loadView();
-    return parse_po(text->string_view());
+    return parse_po(as_string_view(file_view{path}));
 }
 
 } // namespace hi::inline v1

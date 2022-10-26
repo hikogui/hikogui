@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020-2021.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -33,6 +33,11 @@ public:
     constexpr font_variant() noexcept : font_variant(font_weight::Regular, false) {}
     constexpr font_variant(font_weight weight) noexcept : font_variant(weight, false) {}
     constexpr font_variant(bool italic) noexcept : font_variant(font_weight::Regular, italic) {}
+
+    [[nodiscard]] size_t hash() const noexcept
+    {
+        return std::hash<uint8_t>{}(value);
+    }
 
     constexpr font_weight weight() const noexcept
     {
@@ -89,3 +94,11 @@ public:
 };
 
 } // namespace hi::inline v1
+
+template<>
+struct std::hash<hi::font_variant> {
+    [[nodiscard]] size_t operator()(hi::font_variant const &rhs) const noexcept
+    {
+        return rhs.hash();
+    }
+};

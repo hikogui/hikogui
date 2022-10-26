@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -8,7 +8,7 @@
 #include "glyph_atlas_info.hpp"
 #include "../graphic_path.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../cast.hpp"
 #include <bit>
 #include <memory>
@@ -17,6 +17,14 @@
 #include <cstdint>
 #include <functional>
 
+hi_warning_push();
+// C26401: Do not delete a raw pointer that is not an owner<T> (i.11).
+// False positive, ~glyph_ids::glyph_ids() is owner of glyphs_ids::_ptr.
+hi_warning_ignore_msvc(26401);
+// C26409: Avoid calling new and delete explicitly, use std::make_unique<T> instead (r.11).
+// glyph_ids implements a container.
+hi_warning_ignore_msvc(26409);
+
 namespace hi::inline v1 {
 class font;
 
@@ -24,10 +32,10 @@ namespace detail {
 
 class glyph_ids_long {
 public:
-    constexpr glyph_ids_long(glyph_ids_long const &) noexcept = default;
-    constexpr glyph_ids_long(glyph_ids_long &&) noexcept = default;
-    constexpr glyph_ids_long &operator=(glyph_ids_long const &) noexcept = default;
-    constexpr glyph_ids_long &operator=(glyph_ids_long &&) noexcept = default;
+    constexpr glyph_ids_long(glyph_ids_long const&) noexcept = default;
+    constexpr glyph_ids_long(glyph_ids_long&&) noexcept = default;
+    constexpr glyph_ids_long& operator=(glyph_ids_long const&) noexcept = default;
+    constexpr glyph_ids_long& operator=(glyph_ids_long&&) noexcept = default;
 
     /** Construct a list of glyphs starting with a packed set of glyphs.
      *
@@ -64,7 +72,7 @@ public:
     constexpr void set_num_graphemes(std::size_t num_graphemes) noexcept
     {
         hi_axiom(num_graphemes <= 0xf);
-        _num_graphemes = static_cast<uint8_t>(num_graphemes);
+        _num_graphemes = narrow_cast<uint8_t>(num_graphemes);
     }
 
     [[nodiscard]] constexpr std::size_t hash() const noexcept
@@ -79,7 +87,7 @@ public:
         return r;
     }
 
-    constexpr glyph_ids_long &operator+=(glyph_id id) noexcept
+    constexpr glyph_ids_long& operator+=(glyph_id id) noexcept
     {
         // On overflow silently drop glyphs.
         if (_num_glyphs < _glyphs.size()) {
@@ -88,20 +96,20 @@ public:
         return *this;
     }
 
-    [[nodiscard]] constexpr glyph_id const &operator[](std::size_t i) const noexcept
+    [[nodiscard]] constexpr glyph_id const& operator[](std::size_t i) const noexcept
     {
         hi_axiom(i < _num_glyphs);
         return _glyphs[i];
     }
 
     template<std::size_t I>
-    [[nodiscard]] constexpr friend glyph_id get(glyph_ids_long const &rhs) noexcept
+    [[nodiscard]] constexpr friend glyph_id get(glyph_ids_long const& rhs) noexcept
     {
         hi_axiom(I < rhs._num_glyphs);
         return std::get<I>(rhs._glyphs);
     }
 
-    [[nodiscard]] constexpr friend bool operator==(glyph_ids_long const &, glyph_ids_long const &) noexcept = default;
+    [[nodiscard]] constexpr friend bool operator==(glyph_ids_long const&, glyph_ids_long const&) noexcept = default;
 
 private:
     uint8_t _num_glyphs;
@@ -133,14 +141,14 @@ public:
         }
     }
 
-    constexpr glyph_ids(glyph_ids const &other) noexcept : _font(other._font), _ptr(other._ptr)
+    constexpr glyph_ids(glyph_ids const& other) noexcept : _font(other._font), _ptr(other._ptr)
     {
         if (is_long()) {
             _ptr = new detail::glyph_ids_long(*_ptr);
         }
     }
 
-    constexpr glyph_ids &operator=(glyph_ids const &other) noexcept
+    constexpr glyph_ids& operator=(glyph_ids const& other) noexcept
     {
         hi_return_on_self_assignment(other);
 
@@ -155,9 +163,9 @@ public:
         return *this;
     }
 
-    constexpr glyph_ids(glyph_ids &&other) noexcept : _font(other._font), _ptr(std::exchange(other._ptr, make_ptr(1))) {}
+    constexpr glyph_ids(glyph_ids&& other) noexcept : _font(other._font), _ptr(std::exchange(other._ptr, make_ptr(1))) {}
 
-    constexpr glyph_ids &operator=(glyph_ids &&other) noexcept
+    constexpr glyph_ids& operator=(glyph_ids&& other) noexcept
     {
         _font = other._font;
         std::swap(_ptr, other._ptr);
@@ -177,11 +185,11 @@ public:
      *
      * @param font The font to be used for this glyph_ids.
      */
-    constexpr glyph_ids(hi::font const &font) noexcept : _font(&font), _ptr(make_ptr(1)) {}
+    constexpr glyph_ids(hi::font const& font) noexcept : _font(&font), _ptr(make_ptr(1)) {}
 
     /** Get the font for this glyph_ids object.
      */
-    [[nodiscard]] constexpr font const &font() const noexcept
+    [[nodiscard]] constexpr font const& font() const noexcept
     {
         hi_axiom(_font);
         return *_font;
@@ -189,7 +197,7 @@ public:
 
     /** Set the font for this glyph_ids object.
      */
-    void set_font(hi::font const &font) noexcept
+    void set_font(hi::font const& font) noexcept
     {
         _font = &font;
     }
@@ -279,12 +287,12 @@ public:
      *
      * @param id The glyph to add.
      */
-    constexpr glyph_ids &operator+=(glyph_id id) noexcept
+    constexpr glyph_ids& operator+=(glyph_id id) noexcept
     {
         if (is_long()) {
             *_ptr += id;
 
-        } else if (auto index = short_num_glyphs(); index < num_glyphs_mask) {
+        } else if (hilet index = short_num_glyphs(); index < num_glyphs_mask) {
             increment_num_glyphs();
             set_glyph(index, id);
 
@@ -310,7 +318,7 @@ public:
     }
 
     template<std::size_t I>
-    [[nodiscard]] constexpr friend glyph_id get(glyph_ids const &rhs) noexcept
+    [[nodiscard]] constexpr friend glyph_id get(glyph_ids const& rhs) noexcept
     {
         if (rhs.is_long()) {
             return get<I>(*rhs._ptr);
@@ -320,7 +328,7 @@ public:
         }
     }
 
-    [[nodiscard]] constexpr friend bool operator==(glyph_ids const &lhs, glyph_ids const &rhs) noexcept
+    [[nodiscard]] constexpr friend bool operator==(glyph_ids const& lhs, glyph_ids const& rhs) noexcept
     {
         hilet lhs_value = make_value(lhs._ptr);
         hilet rhs_value = make_value(rhs._ptr);
@@ -336,7 +344,7 @@ public:
 
     /** Get information where the glyph is drawn in the atlas.
      */
-    [[nodiscard]] glyph_atlas_info &atlas_info() const noexcept;
+    [[nodiscard]] glyph_atlas_info& atlas_info() const noexcept;
 
     /** Get the bounding box and the graphical path of the combined glyphs.
      *
@@ -385,7 +393,7 @@ private:
     {
         hi_axiom(is_short());
 
-        auto shift = (index + 1) * 16;
+        hilet shift = (index + 1) * 16;
         return glyph_id{(make_value(_ptr) >> shift) & 0xffff};
     }
 
@@ -393,8 +401,8 @@ private:
     {
         hi_axiom(is_short());
 
-        auto shift = (i + 1) * 16;
-        auto mask = std::size_t{0xffff} << shift;
+        hilet shift = (i + 1) * 16;
+        hilet mask = std::size_t{0xffff} << shift;
         _ptr = make_ptr((make_value(_ptr) & ~mask) | (static_cast<std::size_t>(id) << shift));
     }
 
@@ -406,7 +414,7 @@ private:
 
     [[nodiscard]] constexpr bool is_short() const noexcept
     {
-        return static_cast<bool>(make_value(_ptr) & 1);
+        return to_bool(make_value(_ptr) & 1);
     }
 
     [[nodiscard]] constexpr bool is_long() const noexcept
@@ -429,7 +437,7 @@ private:
 
 template<>
 struct std::hash<hi::glyph_ids> {
-    [[nodiscard]] constexpr std::size_t operator()(hi::glyph_ids const &rhs) const noexcept
+    [[nodiscard]] constexpr std::size_t operator()(hi::glyph_ids const& rhs) const noexcept
     {
         return rhs.hash();
     }

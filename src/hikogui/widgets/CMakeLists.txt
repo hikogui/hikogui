@@ -1,4 +1,4 @@
-# Copyright Take Vos 2020-2021.
+# Copyright Take Vos 2021-2022.
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -8,15 +8,8 @@ target_sources(hikogui PRIVATE
     audio_device_widget.cpp
     audio_device_widget.hpp
     button_delegate.hpp
-    button_state.hpp
-    button_type.hpp
     checkbox_widget.cpp
     checkbox_widget.hpp
-    default_button_delegate.hpp
-    default_selection_delegate.hpp
-    default_tab_delegate.hpp
-    default_text_field_delegate.hpp
-    grid_delegate.hpp
     grid_layout.hpp
     grid_layout.cpp
     grid_widget.cpp
@@ -29,24 +22,22 @@ target_sources(hikogui PRIVATE
     menu_button_widget.hpp
     momentary_button_widget.cpp
     momentary_button_widget.hpp
-    overlay_delegate.hpp
     overlay_widget.cpp
     overlay_widget.hpp
     radio_button_widget.cpp
     radio_button_widget.hpp
-    row_column_delegate.hpp
     row_column_widget.hpp
     scroll_bar_widget.hpp
-    scroll_delegate.hpp
     scroll_widget.hpp
     selection_delegate.hpp
     selection_widget.cpp
     selection_widget.hpp
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/system_menu_widget.cpp>
-    $<${HI_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/system_menu_widget.hpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/system_menu_widget.cpp>
+    $<$<PLATFORM_ID:Windows>:${CMAKE_CURRENT_SOURCE_DIR}/system_menu_widget.hpp>
     tab_delegate.hpp
     tab_widget.cpp
     tab_widget.hpp
+    text_delegate.hpp
     text_field_delegate.hpp
     text_field_widget.cpp
     text_field_widget.hpp
@@ -60,9 +51,9 @@ target_sources(hikogui PRIVATE
     toolbar_tab_button_widget.hpp
     toolbar_widget.cpp
     toolbar_widget.hpp
-    vulkan_widget.hpp
     widget.cpp
     widget.hpp
+    widget_baseline.hpp
     widget_constraints.hpp
     widget_layout.hpp
     widget_mode.hpp
@@ -72,29 +63,3 @@ target_sources(hikogui PRIVATE
     window_widget.hpp
 )
 
-if(HI_BUILD_PCH AND NOT HI_ENABLE_ANALYSIS)
-    target_precompile_headers(hikogui PRIVATE
-        checkbox_widget.hpp
-        grid_widget.hpp
-        label_widget.hpp
-        menu_button_widget.hpp
-        momentary_button_widget.hpp
-        overlay_delegate.hpp
-        overlay_widget.hpp
-        radio_button_widget.hpp
-        row_column_widget.hpp
-        scroll_widget.hpp
-        selection_widget.hpp
-        tab_delegate.hpp
-        tab_widget.hpp
-        text_field_widget.hpp
-        text_widget.hpp
-        toggle_widget.hpp
-        toolbar_button_widget.hpp
-        toolbar_tab_button_widget.hpp
-        toolbar_widget.hpp
-        widget.hpp
-        window_traffic_lights_widget.hpp
-        window_widget.hpp
-    )
-endif()

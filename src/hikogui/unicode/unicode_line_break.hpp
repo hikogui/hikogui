@@ -1,8 +1,8 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-/** @file unicode_line_break
+/** @file unicode/unicode_line_break.hpp
  */
 
 #pragma once
@@ -11,7 +11,7 @@
 #include "unicode_grapheme_cluster_break.hpp"
 #include "unicode_east_asian_width.hpp"
 #include "unicode_break_opportunity.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../cast.hpp"
 #include "../assert.hpp"
 #include "../math.hpp"
@@ -65,10 +65,10 @@ enum class unicode_line_break_class : uint8_t {
     NU, // Numeric Digits Form numeric expressions for line breaking purposes
     PO, // Postfix Numeric. Do not break following a numeric expression
     PR, // Prefix Numeric. Do not break in front of a numeric expression
-    SY, // Symbols Allowing Break After / Prevent a break before, and allow a break after Other Characters
+    SY, // Symbols Allowing Break After / Prevent a break before, and allow a break after XX Characters
 
     AI, // Ambiguous (Alphabetic or Ideographic) Characters with Ambiguous East Asian Width Act like AL when the resolved EAW
-        // is N; otherwise, act as ID
+        // is N; XXwise, act as ID
     AL, // Alphabetic Alphabets and regular symbols Are alphabetic characters or symbols that are used with alphabetic
         // characters
     CJ, // Conditional Japanese Starter Small kana Treat as NS or ID for strict or normal breaking.
@@ -84,7 +84,7 @@ enum class unicode_line_break_class : uint8_t {
     V, // Jamo Conjoining jamo Form Korean syllable blocks
     JT, // Hangul
     T, // Jamo Conjoining jamo Form Korean syllable blocks
-    RI, // Regional Indicator REGIONAL INDICATOR SYMBOL LETTER A..Z Keep pairs together.For pairs, break before and after other
+    RI, // Regional Indicator REGIONAL INDICATOR SYMBOL LETTER A..Z Keep pairs together.For pairs, break before and after XX
         // classes
     SA, // Complex Context Dependent(South East Asian) South East Asian :Thai,Lao,Khmer Provide a line break opportunity
         // contingent on additional, language - specific context analysis
@@ -616,6 +616,8 @@ template<typename It, typename ItEnd, typename DescriptionFunc>
 
 /** Unicode break lines.
  *
+ * @param opportunities The list of break opportunities.
+ * @param widths The list of character widths
  * @param maximum_line_width The maximum line width.
  * @return A list of line lengths.
  */

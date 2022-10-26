@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2021.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -6,8 +6,8 @@
 
 #include "pipeline_vulkan.hpp"
 #include "pipeline_tone_mapper_push_constants.hpp"
-#include "../vspan.hpp"
-#include <vk_mem_alloc.h>
+#include "../vector_span.hpp"
+#include <vma/vk_mem_alloc.h>
 #include <span>
 
 namespace hi::inline v1::pipeline_tone_mapper {

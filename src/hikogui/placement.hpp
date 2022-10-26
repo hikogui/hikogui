@@ -1,22 +1,28 @@
-// Copyright Take Vos 2019-2020.
+// Copyright Take Vos 2019, 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
-#include "required.hpp"
+#include "utility.hpp"
 #include "type_traits.hpp"
 #include "cast.hpp"
 #include "exception.hpp"
 #include "check.hpp"
 #include <span>
 
+hi_warning_push();
+// C26492: Don't use const_cast to cast away const or volatile (type.3).
+// placement new requires non-const pointer, even if the non-constructor initializer doesn't
+// modify the memory.
+hi_warning_ignore_msvc(26492)
+
 namespace hi::inline v1 {
 
 template<typename T>
-inline bool check_alignment(void const *ptr)
+inline bool check_alignment(void const *ptr) noexcept
 {
-    return reinterpret_cast<ptrdiff_t>(ptr) % alignof(T) == 0;
+    return std::bit_cast<uintptr_t>(ptr) % alignof(T) == 0;
 }
 
 template<typename T, typename Byte>
@@ -32,11 +38,11 @@ class placement_ptr {
     value_type *ptr;
 
 public:
-    placement_ptr(std::span<Byte> bytes, std::size_t &offset)
+    placement_ptr(std::span<Byte> bytes, std::size_t& offset)
     {
         Byte *_ptr = bytes.data() + offset;
         offset += sizeof(T);
-        ptr = new (const_cast<std::remove_cv_t<Byte> *>(_ptr)) T;
+        ptr = new (const_cast<std::remove_const_t<Byte> *>(_ptr)) T;
     }
 
     ~placement_ptr()
@@ -44,25 +50,31 @@ public:
         std::destroy_at(ptr);
     }
 
+    placement_ptr() = delete;
+    placement_ptr(placement_ptr const&) = delete;
+    placement_ptr(placement_ptr&&) = delete;
+    placement_ptr& operator=(placement_ptr const&) = delete;
+    placement_ptr& operator=(placement_ptr&&) = delete;
+
     value_type *operator->() const noexcept
     {
         return ptr;
     }
 
-    value_type &operator*() const noexcept
+    value_type& operator*() const noexcept
     {
         return *ptr;
     }
 };
 
 template<typename T, typename Byte>
-placement_ptr<T, Byte> unsafe_make_placement_ptr(std::span<Byte> bytes, std::size_t &offset)
+placement_ptr<T, Byte> unsafe_make_placement_ptr(std::span<Byte> bytes, std::size_t& offset)
 {
     return placement_ptr<T, Byte>(bytes, offset);
 }
 
 template<typename T, typename Byte>
-placement_ptr<T, Byte> unsafe_make_placement_ptr(std::span<Byte> bytes, std::size_t &&offset = 0)
+placement_ptr<T, Byte> unsafe_make_placement_ptr(std::span<Byte> bytes, std::size_t&& offset = 0)
 {
     std::size_t _offset = offset;
     return unsafe_make_placement_ptr<T>(bytes, _offset);
@@ -75,14 +87,14 @@ bool check_placement_ptr(std::span<Byte> bytes, std::size_t offset = 0)
 }
 
 template<typename T, typename Byte>
-placement_ptr<T, Byte> make_placement_ptr(std::span<Byte> bytes, std::size_t &offset)
+placement_ptr<T, Byte> make_placement_ptr(std::span<Byte> bytes, std::size_t& offset)
 {
     hi_parse_check(check_placement_ptr<T>(bytes, offset), "Parsing beyond end of buffer");
     return placement_ptr<T, Byte>(bytes, offset);
 }
 
 template<typename T, typename Byte>
-placement_ptr<T, Byte> make_placement_ptr(std::span<Byte> bytes, std::size_t &&offset = 0)
+placement_ptr<T, Byte> make_placement_ptr(std::span<Byte> bytes, std::size_t&& offset = 0)
 {
     std::size_t _offset = offset;
     return make_placement_ptr<T>(bytes, _offset);
@@ -103,7 +115,7 @@ class placement_array {
     Byte *_end;
 
 public:
-    placement_array(std::span<Byte> bytes, std::size_t &offset, std::size_t n)
+    placement_array(std::span<Byte> bytes, std::size_t& offset, std::size_t n)
     {
         hilet bytes_ = bytes.data();
 
@@ -116,10 +128,10 @@ public:
         }
     }
 
-    placement_array(placement_array const &) = delete;
-    placement_array(placement_array &&) = delete;
-    placement_array &operator=(placement_array const &) = delete;
-    placement_array &operator=(placement_array &&) = delete;
+    placement_array(placement_array const&) = delete;
+    placement_array(placement_array&&) = delete;
+    placement_array& operator=(placement_array const&) = delete;
+    placement_array& operator=(placement_array&&) = delete;
 
     ~placement_array()
     {
@@ -146,34 +158,34 @@ public:
         return std::launder(reinterpret_cast<value_type *>(_end));
     }
 
-    value_type &operator[](ssize_t offset) const noexcept
+    value_type& operator[](ssize_t offset) const noexcept
     {
         return *(begin() + offset);
     }
 };
 
 template<typename T, typename Byte>
-placement_array<T, Byte> unsafe_make_placement_array(std::span<Byte> bytes, std::size_t &offset, std::size_t n)
+placement_array<T, Byte> unsafe_make_placement_array(std::span<Byte> bytes, std::size_t& offset, std::size_t n)
 {
     return placement_array<T, Byte>(bytes, offset, n);
 }
 
 template<typename T, typename Byte>
-placement_array<T, Byte> unsafe_make_placement_array(std::span<Byte> bytes, std::size_t &&offset, std::size_t n)
+placement_array<T, Byte> unsafe_make_placement_array(std::span<Byte> bytes, std::size_t&& offset, std::size_t n)
 {
     std::size_t _offset = offset;
     return unsafe_make_placement_array<T>(bytes, _offset, n);
 }
 
 template<typename T, typename Byte>
-placement_array<T, Byte> unsafe_make_placement_array(std::span<Byte> bytes, std::size_t &offset)
+placement_array<T, Byte> unsafe_make_placement_array(std::span<Byte> bytes, std::size_t& offset)
 {
     hilet n = bytes.size() / sizeof(T);
     return unsafe_make_placement_array<T>(bytes, offset, n);
 }
 
 template<typename T, typename Byte>
-placement_array<T, Byte> unsafe_make_placement_array(std::span<Byte> bytes, std::size_t &&offset = 0)
+placement_array<T, Byte> unsafe_make_placement_array(std::span<Byte> bytes, std::size_t&& offset = 0)
 {
     std::size_t _offset = offset;
     return unsafe_make_placement_array<T>(bytes, _offset);
@@ -192,28 +204,28 @@ bool check_placement_array(std::span<Byte> bytes, std::size_t offset)
 }
 
 template<typename T, typename Byte>
-placement_array<T, Byte> make_placement_array(std::span<Byte> bytes, std::size_t &offset, std::size_t n)
+placement_array<T, Byte> make_placement_array(std::span<Byte> bytes, std::size_t& offset, std::size_t n)
 {
     hi_parse_check(check_placement_array<T>(bytes, offset, n), "Parsing beyond end of buffer");
     return placement_array<T, Byte>(bytes, offset, n);
 }
 
 template<typename T, typename Byte>
-placement_array<T, Byte> make_placement_array(std::span<Byte> bytes, std::size_t &&offset, std::size_t n)
+placement_array<T, Byte> make_placement_array(std::span<Byte> bytes, std::size_t&& offset, std::size_t n)
 {
     std::size_t _offset = offset;
     return make_placement_array<T>(bytes, _offset, n);
 }
 
 template<typename T, typename Byte>
-placement_array<T, Byte> make_placement_array(std::span<Byte> bytes, std::size_t &offset)
+placement_array<T, Byte> make_placement_array(std::span<Byte> bytes, std::size_t& offset)
 {
     hilet n = bytes.size() / ssizeof(T);
     return make_placement_array<T>(bytes, offset, n);
 }
 
 template<typename T, typename Byte>
-placement_array<T, Byte> make_placement_array(std::span<Byte> bytes, std::size_t &&offset = 0)
+placement_array<T, Byte> make_placement_array(std::span<Byte> bytes, std::size_t&& offset = 0)
 {
     std::size_t _offset = offset;
     return make_placement_array<T>(bytes, _offset);

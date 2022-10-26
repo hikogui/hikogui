@@ -1,10 +1,10 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../exception.hpp"
 #include "../strings.hpp"
 #include "../cast.hpp"
@@ -42,7 +42,7 @@ constexpr keyboard_modifiers& operator|=(keyboard_modifiers& lhs, keyboard_modif
 
 [[nodiscard]] constexpr bool any(keyboard_modifiers const& rhs) noexcept
 {
-    return static_cast<bool>(to_underlying(rhs));
+    return to_bool(to_underlying(rhs));
 }
 
 bool operator>=(keyboard_modifiers const& lhs, keyboard_modifiers const& rhs) = delete;

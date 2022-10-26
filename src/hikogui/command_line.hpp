@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -34,11 +34,12 @@ using cmdline_option = std::variant<cmline_executable, cmdline_short_option, cmd
  * or pre-processed by the windows command line pre-processor.
  *
  * Posix commad line argument syntax:
- *  - Single character short-options begin with a '-'.
+ *  - Single character short-options begin with a '-' or '+'.
+ *    '-' options often enable, '+' options disable.
  *  - Multiple short-options may follow a hyphen inside the same token.
  *  - Certain short-options require an argument.
  *  - An short-option and its argument may or may not appear as separate tokens.
- *    For example the '-o' short-option and it argument: #-ofoo# or #-o foo#.
+ *    For example the '-o' short-option and it argument: `-ofoo` or `-o foo`.
  *    Any character may be used in the argument, including a single hyphen, which
  *    by convention is either the stdin or stdout stream.
  *  - A long-options starts with a '--' and are followed by
@@ -91,7 +92,7 @@ generator<cmdln_option> command_line_parser(It first, It last, std::string_view 
                 co_yield cmdln_long_option(it->substr(2, name_length), it->substr(eq_index + 1));
             }
 
-        } else if (it.front() == '-' || it.front() == '+') {
+        } else if (it.front() == '-' or it.front() == '+') {
             // List of short-options.
             // Short options are processed as UTF-32 units.
             hilet token = to_u32string(*it);

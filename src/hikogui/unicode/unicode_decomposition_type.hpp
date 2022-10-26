@@ -8,15 +8,30 @@
 
 namespace hi::inline v1 {
 
+// Windows.h defines small as a macro.
+#ifdef small
+#undef small
+#endif
+
 enum class unicode_decomposition_type : uint8_t {
-    canonical = 0, ///< Canonical decomposition.
-    font = 1, ///< <font> Font variant (for example, a blackletter form).
-    no_break = 2, ///< <no_break> No - break version of a space or hyphen.
-    arabic = 3, ///< <initial> <medial> <final> <isolated> Arabic presentation forms.
-    circle = 4, ///< <circle> Encircled form.
-    math = 5, ///< <super> <sub> <fraction> Super-, sub-script and Vulgar-fraction forms
-    asian = 6, ///< <vertical> <wide> <narrow> <small> <square> asian compatibility forms.
-    compat = 7 ///< <compat> Otherwise unspecified compatibility character
+    none, // No decomposition.
+    canonical, ///< Canonical decomposition.
+    font, ///< \<font\> Font variant (for example, a blackletter form).
+    noBreak, ///< \<noBreak\> No - break version of a space or hyphen.
+    initial, ///< \<initial\> Arabic presentation forms.
+    medial, ///< \<medial\> Arabic presentation forms.
+    _final, ///< \<final\> Arabic presentation forms.
+    isolated, ///< \<isolated\> Arabic presentation forms.
+    circle, ///< \<circle\> Encircled form.
+    super, ///< \<super\> Super-, sub-script and Vulgar-fraction forms
+    sub, ///< \<sub\> Super-, sub-script and Vulgar-fraction forms
+    fraction, ///< \<fraction\> Super-, sub-script and Vulgar-fraction forms
+    vertical, ///< \<vertical\> asian compatibility forms.
+    wide, ///< \<wide\> asian compatibility forms.
+    narrow, ///< \<narrow\> asian compatibility forms.
+    small, ///< \<small\>asian compatibility forms.
+    square, ///< \<square\> asian compatibility forms.
+    compat ///< \<compat\> Otherwise unspecified compatibility character
 };
 
 }

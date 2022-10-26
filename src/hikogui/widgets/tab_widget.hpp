@@ -1,15 +1,18 @@
-// Copyright Take Vos 2020-2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+
+/** @file widgets/tab_widget.hpp Defines tab_widget.
+ * @ingroup widgets
+ */
 
 #pragma once
 
 #include "widget.hpp"
 #include "grid_widget.hpp"
 #include "tab_delegate.hpp"
-#include "default_tab_delegate.hpp"
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** A graphical element that shows only one of a predefined set of mutually
  * exclusive child widgets.
@@ -25,14 +28,17 @@ namespace hi::inline v1 {
  *
  * @snippet widgets/tab_example.cpp Create three tabs
  *
+ * @ingroup widgets
  * @note A `tab_button` is not directly controlled by a
  *       `toolbar_tab_button_widget`. This is accomplished by sharing a delegate
- *       or a observable between the toolbar tab button and the tab widget.
+ *       or a observer between the toolbar tab button and the tab widget.
  */
 class tab_widget final : public widget {
 public:
     using super = widget;
     using delegate_type = tab_delegate;
+
+    std::shared_ptr<delegate_type> delegate;
 
     ~tab_widget();
 
@@ -42,21 +48,20 @@ public:
      * @param parent The owner of this widget.
      * @param delegate The delegate that will control this widget.
      */
-    tab_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept;
+    tab_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
-    /** Construct a tab widget with an observable value.
+    /** Construct a tab widget with an observer value.
      *
      * @param window The window that this widget is shown on.
      * @param parent The owner of this widget.
-     * @param value The value or observable value to monitor for which child widget
+     * @param value The value or observer value to monitor for which child widget
      *              to display.
      */
-    template<typename Value>
-    tab_widget(gui_window &window, widget *parent, Value &&value) noexcept
-        requires(not std::is_convertible_v<Value, weak_or_unique_ptr<delegate_type>>) :
-        tab_widget(window, parent, make_unique_default_tab_delegate(std::forward<Value>(value)))
+    tab_widget(gui_window& window, widget *parent, different_from<std::shared_ptr<delegate_type>> auto&& value) noexcept requires
+        requires
     {
-    }
+        make_default_tab_delegate(hi_forward(value));
+    } : tab_widget(window, parent, make_default_tab_delegate(hi_forward(value))) {}
 
     /** Make and add a child widget.
      *
@@ -67,31 +72,31 @@ public:
      * @param args The arguments to pass to the constructor of widget to add.
      */
     template<typename WidgetType, typename Key, typename... Args>
-    WidgetType &make_widget(Key const &key, Args &&...args)
+    WidgetType& make_widget(Key const& key, Args&&...args)
     {
         hi_axiom(is_gui_thread());
 
         auto tmp = std::make_unique<WidgetType>(window, this, std::forward<Args>(args)...);
-        auto &ref = *tmp;
-        if (auto delegate = _delegate.lock()) {
-            delegate->add_tab(*this, static_cast<std::size_t>(key), size(_children));
-        }
+        auto& ref = *tmp;
+
+        hi_axiom(delegate != nullptr);
+        delegate->add_tab(*this, static_cast<std::size_t>(key), size(_children));
         _children.push_back(std::move(tmp));
-        request_reconstrain();
+        hi_request_reconstrain("tab_widget::make_widget({})", key);
         return ref;
     }
 
     /// @privatesection
     [[nodiscard]] generator<widget *> children() const noexcept override
     {
-        for (hilet &child : _children) {
+        for (hilet& child : _children) {
             co_yield child.get();
         }
     }
 
-    widget_constraints const &set_constraints() noexcept override;
-    void set_layout(widget_layout const &layout) noexcept override;
-    void draw(draw_context const &context) noexcept override;
+    widget_constraints const& set_constraints() noexcept override;
+    void set_layout(widget_layout const& layout) noexcept override;
+    void draw(draw_context const& context) noexcept override;
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
     [[nodiscard]] widget const *find_next_widget(
         widget const *current_widget,
@@ -101,14 +106,12 @@ public:
 private:
     widget const *_previous_selected_child = nullptr;
     std::vector<std::unique_ptr<widget>> _children;
-    weak_or_unique_ptr<delegate_type> _delegate;
-    notifier<>::token_type _delegate_cbt;
+    notifier<>::callback_token _delegate_cbt;
 
     using const_iterator = decltype(_children)::const_iterator;
 
-    tab_widget(gui_window &window, widget *parent, weak_or_unique_ptr<delegate_type> delegate) noexcept;
     [[nodiscard]] const_iterator find_selected_child() const noexcept;
-    [[nodiscard]] widget &selected_child() const noexcept;
+    [[nodiscard]] widget& selected_child() const noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

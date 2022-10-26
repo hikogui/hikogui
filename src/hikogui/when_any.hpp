@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "required.hpp"
+#include "utility.hpp"
 #include "scoped_task.hpp"
 #include "notifier.hpp"
 #include "awaitable.hpp"
@@ -79,7 +79,7 @@ public:
 private:
     std::tuple<Ts...> _awaiters;
     std::tuple<scoped_task<await_resume_result_t<Ts>>...> _tasks;
-    std::tuple<typename notifier<void(await_resume_result_t<Ts>)>::token_type...> _task_cbts;
+    std::tuple<typename notifier<void(await_resume_result_t<Ts>)>::callback_token...> _task_cbts;
     std::optional<value_type> _value;
 
     template<awaitable_direct Awaiter>
@@ -128,20 +128,22 @@ private:
         using arg_type = await_resume_result_t<decltype(std::get<I>(_awaiters))>;
 
         if constexpr (std::is_same_v<arg_type, void>) {
-            std::get<I>(_task_cbts) =
-                std::get<I>(_tasks).subscribe(callback_flags::main | callback_flags::once, [this, handle]() {
+            std::get<I>(_task_cbts) = std::get<I>(_tasks).subscribe(
+                [this, handle]() {
                     this->_value = value_type{std::in_place_index<I>, std::monostate{}};
                     this->_destroy_tasks<0>();
                     handle.resume();
-                });
+                },
+                callback_flags::main | callback_flags::once);
 
         } else {
-            std::get<I>(_task_cbts) =
-                std::get<I>(_tasks).subscribe(callback_flags::main | callback_flags::once, [this, handle](arg_type const& arg) {
+            std::get<I>(_task_cbts) = std::get<I>(_tasks).subscribe(
+                [this, handle](arg_type const& arg) {
                     this->_value = value_type{std::in_place_index<I>, arg};
                     this->_destroy_tasks<0>();
                     handle.resume();
-                });
+                },
+                callback_flags::main | callback_flags::once);
         }
 
         if constexpr (I + 1 < sizeof...(Ts)) {

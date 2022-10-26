@@ -5,7 +5,7 @@
 #pragma once
 
 #include "xorshift128p.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 
 namespace hi::inline v1 {
 
@@ -51,11 +51,11 @@ public:
      */
     f32x4 next() noexcept
     {
-        if (static_cast<bool>(++_counter & 1)) {
+        if (to_bool(++_counter & 1)) {
             auto rand = _state.next<u64x2>();
-            auto spdf1 = i16x8{bit_cast<i8x16>(rand)};
+            hilet spdf1 = i16x8{bit_cast<i8x16>(rand)};
             rand = rand.yx();
-            auto spdf2 = i16x8{bit_cast<i8x16>(rand)};
+            hilet spdf2 = i16x8{bit_cast<i8x16>(rand)};
 
             _tpdf = spdf1 + spdf2;
             return f32x4{i32x4{_tpdf}} * _multiplier;
@@ -77,7 +77,7 @@ public:
 
     /** Add dither to the given samples.
      *
-     * @param samples The samples to add dithering to.
+     * @param sample The sample to add dithering to.
      * @return The sample with included dither.
      */
     [[nodiscard]] float next(float sample) noexcept

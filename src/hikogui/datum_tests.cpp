@@ -1,4 +1,4 @@
-// Copyright Take Vos 2019-2020.
+// Copyright Take Vos 2019-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -20,12 +20,11 @@ TEST(datum, IntOperations)
     ASSERT_EQ(static_cast<int>(v), 42);
     ASSERT_EQ(static_cast<float>(v), 42.0);
     ASSERT_EQ(static_cast<std::string>(v), "42"s);
-    ASSERT_EQ(static_cast<bool>(v), true);
+    ASSERT_EQ(to_bool(v), true);
 
     ASSERT_EQ(holds_alternative<long long>(v), true);
     ASSERT_EQ(holds_alternative<double>(v), false);
     ASSERT_EQ(holds_alternative<decimal>(v), false);
-    ASSERT_EQ(holds_alternative<URL>(v), false);
     ASSERT_EQ(holds_alternative<std::string>(v), false);
 
     ASSERT_EQ(v == 42, true);
@@ -88,7 +87,7 @@ TEST(datum, FloatOperations)
     ASSERT_EQ(to_string(v), "42"s);
     ASSERT_EQ(std::format("{}", v), "42"s);
     ASSERT_EQ(repr(v), "42.0"s);
-    ASSERT_EQ(static_cast<bool>(v), true);
+    ASSERT_EQ(to_bool(v), true);
 
     ASSERT_EQ(v == 42.0, true);
     ASSERT_EQ(v < 42.0, false);

@@ -1,5 +1,4 @@
-// Copyright Take Vos 2020.
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2021.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -7,7 +6,7 @@
 
 #include "../pixel_map.hpp"
 #include "../rapid/sdf_r8.hpp"
-#include <vk_mem_alloc.h>
+#include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 
 namespace hi::inline v1 {

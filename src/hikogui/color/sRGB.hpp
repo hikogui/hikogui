@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -10,6 +10,11 @@
 #include "color.hpp"
 #include <cmath>
 #include <array>
+
+hi_warning_push();
+// C26426: Global initializer calls a non-constexpr function '...' (i.22).
+// std::pow() is not constexpr and needed to fill in the gamma conversion tables.
+hi_warning_ignore_msvc(26426);
 
 namespace hi::inline v1 {
 
@@ -50,7 +55,7 @@ constexpr matrix3 XYZ_to_sRGB = matrix3{
     std::array<uint8_t, 65536> r{};
 
     for (int i = 0; i != 65536; ++i) {
-        r[i] = static_cast<uint8_t>(
+        r[i] = truncate<uint8_t>(
             std::clamp(sRGB_linear_to_gamma(float16::from_uint16_t(narrow_cast<uint16_t>(i))), 0.0f, 1.0f) * 255.0f);
     }
 
@@ -110,11 +115,13 @@ inline auto sRGB_gamma8_to_linear16_table = sRGB_gamma8_to_linear16_table_genera
         tmp += "ff";
     }
 
-    uint8_t r = (base16::int_from_char<uint8_t>(tmp[0]) << 4) | base16::int_from_char<uint8_t>(tmp[1]);
-    uint8_t g = (base16::int_from_char<uint8_t>(tmp[2]) << 4) | base16::int_from_char<uint8_t>(tmp[3]);
-    uint8_t b = (base16::int_from_char<uint8_t>(tmp[4]) << 4) | base16::int_from_char<uint8_t>(tmp[5]);
-    uint8_t a = (base16::int_from_char<uint8_t>(tmp[6]) << 4) | base16::int_from_char<uint8_t>(tmp[7]);
+    uint8_t const r = (base16::int_from_char<uint8_t>(tmp[0]) << 4) | base16::int_from_char<uint8_t>(tmp[1]);
+    uint8_t const g = (base16::int_from_char<uint8_t>(tmp[2]) << 4) | base16::int_from_char<uint8_t>(tmp[3]);
+    uint8_t const b = (base16::int_from_char<uint8_t>(tmp[4]) << 4) | base16::int_from_char<uint8_t>(tmp[5]);
+    uint8_t const a = (base16::int_from_char<uint8_t>(tmp[6]) << 4) | base16::int_from_char<uint8_t>(tmp[7]);
     return color_from_sRGB(r, g, b, a);
 }
 
 } // namespace hi::inline v1
+
+hi_warning_pop();

@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -190,8 +190,8 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
     unicode_script script) noexcept :
     _font_book(&font_book), _dpi_scale(dpi_scale), _script(script)
 {
-    hilet &font = font_book.find_font(style.family_id, style.variant);
-    _initial_line_metrics = (style.size * dpi_scale) * font.metrics;
+    hilet& font = font_book.find_font(style->family_id, style->variant);
+    _initial_line_metrics = (style->size * dpi_scale) * font.metrics;
 
     _text.reserve(text.size());
     for (hilet &c : text) {
@@ -297,7 +297,7 @@ void text_shaper::resolve_script() noexcept
     auto first_script = _script;
     for (auto &c : _text) {
         hilet script = c.description->script();
-        if (script != unicode_script::Common or script == unicode_script::Unknown or script == unicode_script::Inherited) {
+        if (script != unicode_script::Common or script == unicode_script::Zzzz or script == unicode_script::Inherited) {
             first_script = script;
             break;
         }
@@ -316,7 +316,7 @@ void text_shaper::resolve_script() noexcept
         }
 
         c.script = c.description->script();
-        if (c.script == unicode_script::Common or c.script == unicode_script::Unknown) {
+        if (c.script == unicode_script::Common or c.script == unicode_script::Zzzz) {
             hilet bracket_type = c.description->bidi_bracket_type();
             // clang-format off
             c.script =
@@ -344,7 +344,7 @@ void text_shaper::resolve_script() noexcept
     }
 }
 
-[[nodiscard]] std::pair<aarectangle, float> text_shaper::bounding_rectangle(
+[[nodiscard]] aarectangle text_shaper::bounding_rectangle(
     float maximum_line_width,
     hi::vertical_alignment vertical_alignment,
     float line_spacing,
@@ -364,16 +364,9 @@ void text_shaper::resolve_script() noexcept
         inplace_max(max_width, line.width);
     }
 
-    // clang-format off
-    hilet cap_height =
-        vertical_alignment == vertical_alignment::bottom ? lines.back().metrics.cap_height :
-        vertical_alignment == vertical_alignment::top ? lines.front().metrics.cap_height :
-        lines[lines.size() / 2].metrics.cap_height;
-    // clang-format on
-
     hilet max_y = lines.front().y + std::ceil(lines.front().metrics.ascender);
     hilet min_y = lines.back().y - std::ceil(lines.back().metrics.descender);
-    return {aarectangle{point2{0.0f, min_y}, point2{std::ceil(max_width), max_y}}, cap_height};
+    return aarectangle{point2{0.0f, min_y}, point2{std::ceil(max_width), max_y}};
 }
 
 [[nodiscard]] void text_shaper::layout(

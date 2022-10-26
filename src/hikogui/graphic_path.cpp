@@ -1,4 +1,4 @@
-// Copyright Take Vos 2019-2021.
+// Copyright Take Vos 2019-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -6,7 +6,7 @@
 #include "pixel_map.inl"
 #include "bezier_curve.hpp"
 #include "pixel_map.hpp"
-#include "required.hpp"
+#include "utility.hpp"
 
 namespace hi::inline v1 {
 

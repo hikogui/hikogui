@@ -1,15 +1,16 @@
-// Copyright Take Vos 2019-2021.
+// Copyright Take Vos 2019-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
 #include "font.hpp"
+#include "../file/file_view.hpp"
 #include "../graphic_path.hpp"
-#include "../resource_view.hpp"
-#include "../URL.hpp"
 #include "../counters.hpp"
+#include "../cast.hpp"
 #include <memory>
+#include <filesystem>
 
 namespace hi::inline v1 {
 
@@ -17,13 +18,13 @@ class true_type_font final : public font {
 private:
     /** The url to retrieve the view.
      */
-    std::optional<URL> url;
+    std::filesystem::path _path;
 
     /** The resource view of the font-file.
      *
-     * This view may be reset if there is a url available.
+     * This view may be reset if there is a path available.
      */
-    mutable std::unique_ptr<resource_view> view;
+    mutable file_view _view;
 
     uint16_t OS2_x_height = 0;
     uint16_t OS2_cap_height = 0;
@@ -36,23 +37,18 @@ private:
     int num_glyphs;
 
 public:
-    true_type_font(std::unique_ptr<resource_view> view) : url(), view(std::move(view))
-    {
-        parse_font_directory();
-    }
-
-    true_type_font(URL const &url) : url(url), view(url.loadView())
+    true_type_font(std::filesystem::path const& path) : _path(path), _view(file_view{path})
     {
         ++global_counter<"ttf:map">;
         try {
             parse_font_directory();
 
             // Clear the view to reclaim resources.
-            view = {};
+            _view = {};
             ++global_counter<"ttf:unmap">;
 
         } catch (std::exception const &e) {
-            throw parse_error(std::format("{}: Could not parse font directory.\n{}", to_string(url), e.what()));
+            throw parse_error(std::format("{}: Could not parse font directory.\n{}", path.string(), e.what()));
         }
     }
 
@@ -65,7 +61,7 @@ public:
 
     [[nodiscard]] bool loaded() const noexcept override
     {
-        return static_cast<bool>(view);
+        return to_bool(_view);
     }
 
     /** Get the glyph for a code-point.
@@ -125,12 +121,11 @@ private:
 
     void load_view() const noexcept
     {
-        if (view) {
+        if (_view) {
             [[likely]] return;
         }
 
-        hi_axiom(url);
-        view = url->loadView();
+        _view = file_view{_path};
         ++global_counter<"ttf:map">;
         cache_tables();
     }

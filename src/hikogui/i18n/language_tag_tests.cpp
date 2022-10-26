@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020-2021.
+// Copyright Take Vos 2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -12,7 +12,7 @@
 using tag = hi::language_tag;
 using namespace std::literals;
 
-hi_warning_push() hi_msvc_suppress(4834)
+hi_warning_push() hi_warning_ignore_msvc(4834)
 
     TEST(language_tag, parse)
 {

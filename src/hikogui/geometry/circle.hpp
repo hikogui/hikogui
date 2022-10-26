@@ -1,3 +1,6 @@
+// Copyright Take Vos 2021.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
@@ -38,7 +41,7 @@ public:
 
     [[nodiscard]] constexpr circle(aarectangle square) noexcept
     {
-        auto square_ = f32x4{square};
+        hilet square_ = f32x4{square};
 
         // center=(p3 + p0)/2, radius=(p3 - p0)/2
         _v = (addsub<0b0011>(square_.zwzw(), square_.xyxy()) * 0.5f).xy0w();
@@ -87,8 +90,8 @@ public:
 
     [[nodiscard]] constexpr friend aarectangle bounding_rectangle(circle const &rhs) noexcept
     {
-        auto p = rhs._v.xyxy();
-        auto r = neg<0b0011>(rhs._v.wwww());
+        hilet p = rhs._v.xyxy();
+        hilet r = neg<0b0011>(rhs._v.wwww());
         return aarectangle{p + r};
     }
 

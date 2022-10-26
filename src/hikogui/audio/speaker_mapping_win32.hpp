@@ -8,8 +8,8 @@
 
 namespace hi::inline v1 {
 
-[[nodiscard]] speaker_mapping speaker_mapping_from_win32(uint32_t from);
+[[nodiscard]] speaker_mapping speaker_mapping_from_win32(DWORD from);
 
-[[nodiscard]] uint32_t speaker_mapping_to_win32(speaker_mapping from) noexcept;
+[[nodiscard]] DWORD speaker_mapping_to_win32(speaker_mapping from) noexcept;
 
 } // namespace hi::inline v1

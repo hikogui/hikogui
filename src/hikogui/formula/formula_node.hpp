@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -6,7 +6,7 @@
 
 #include "formula_post_process_context.hpp"
 #include "formula_evaluation_context.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../parse_location.hpp"
 #include "../datum.hpp"
 #include "../exception.hpp"
@@ -31,9 +31,14 @@ struct formula_node {
 
     parse_location location;
 
-    formula_node(parse_location location) : location(location) {}
-
     virtual ~formula_node() {}
+    formula_node() = delete;
+    formula_node(formula_node const&) = delete;
+    formula_node(formula_node&&) = delete;
+    formula_node& operator=(formula_node const&) = delete;
+    formula_node& operator=(formula_node&&) = delete;
+
+    formula_node(parse_location location) : location(location) {}
 
     /** Resolve function and method pointers.
      * At all call-formulas resolve the function pointers from the parse_context.

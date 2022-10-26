@@ -1,11 +1,10 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
-#include "required.hpp"
-#include "strings.hpp"
+#include "utility.hpp"
 #include <string>
 #include <string_view>
 #include <format>
@@ -13,11 +12,11 @@
 
 namespace hi::inline v1 {
 
-/**
+/** A string which may be used as a none-type template parameter.
  *
  * example:
  *     ```
- *     template<hi::basic_fixed_string Foo>
+ *     template<hi::fixed_string Foo>
  *     class A {
  *         auto bar() {
  *             return std::string{Foo};
@@ -30,110 +29,59 @@ namespace hi::inline v1 {
  *     }
  *     ```
  */
-template<typename CharT, int N>
-struct basic_fixed_string {
-    using value_type = CharT;
+template<int N>
+struct fixed_string {
+    using value_type = char;
 
-    std::array<value_type, N> _str;
+    std::array<char, N> _str = {};
 
-    constexpr basic_fixed_string() noexcept : _str{}
-    {
-    }
-
-    constexpr basic_fixed_string(basic_fixed_string const &) noexcept = default;
-    constexpr basic_fixed_string(basic_fixed_string &&) noexcept = default;
-    constexpr basic_fixed_string &operator=(basic_fixed_string const &) noexcept = default;
-    constexpr basic_fixed_string &operator=(basic_fixed_string &&) noexcept = default;
+    constexpr fixed_string() noexcept = default;
+    constexpr fixed_string(fixed_string const&) noexcept = default;
+    constexpr fixed_string(fixed_string&&) noexcept = default;
+    constexpr fixed_string& operator=(fixed_string const&) noexcept = default;
+    constexpr fixed_string& operator=(fixed_string&&) noexcept = default;
 
     template<std::size_t O>
-    constexpr basic_fixed_string(basic_fixed_string<value_type, O> const &other) noexcept requires(O < N) : _str{}
+    constexpr fixed_string(char const (&str)[O]) noexcept requires((O - 1) == N)
     {
-        for (auto i = 0_uz; i != O; ++i) {
-            _str[i] = other._str[i];
-        }
-    }
-
-    template<std::size_t O>
-    constexpr basic_fixed_string &operator=(basic_fixed_string<value_type, O> const &other) noexcept requires(O < N)
-    {
-        auto i = 0_uz;
-        for (; i != O; ++i) {
-            _str[i] = other._str[i];
-        }
-        for (; i != N; ++i) {
-            _str[i] = value_type{};
-        }
-        return *this;
-    }
-
-    template<std::size_t O>
-    constexpr basic_fixed_string(value_type const (&str)[O]) noexcept : _str{}
-    {
-        static_assert((O - 1) <= N);
-
         for (auto i = 0_uz; i != (O - 1); ++i) {
             _str[i] = str[i];
         }
     }
 
-    template<std::size_t O>
-    constexpr basic_fixed_string &operator=(value_type const (&str)[O]) noexcept
+    constexpr operator std::string_view() const noexcept
     {
-        static_assert((O - 1) <= N);
-
-        auto i = 0_uz;
-        for (; i != (O - 1); ++i) {
-            _str[i] = str[i];
-        }
-        for (; i != N; ++i) {
-            _str[i] = value_type{};
-        }
-        return *this;
+        return std::string_view{_str.data(), size()};
     }
 
-    constexpr explicit basic_fixed_string(std::basic_string_view<value_type> str) noexcept : _str{}
+    constexpr operator std::string() const noexcept
     {
-        hi_axiom(str.size() <= N);
-
-        for (auto i = 0_uz; i != str.size(); ++i) {
-            _str[i] = str[i];
-        }
-    }
-
-    constexpr explicit basic_fixed_string(std::basic_string<value_type> const &str) noexcept : _str{}
-    {
-        hi_axiom(str.size() <= N);
-
-        for (auto i = 0_uz; i != str.size(); ++i) {
-            _str[i] = str[i];
-        }
-    }
-
-    /** Initialize the string from a nul-terminated c-string.
-     */
-    constexpr explicit basic_fixed_string(value_type const *str) noexcept : _str{}
-    {
-        auto i = 0_uz;
-        for (; i != N and str[i] != value_type{}; ++i) {
-            _str[i] = str[i];
-        }
-        
-        hi_axiom(str[i] == value_type{});
-    }
-
-    constexpr operator std::basic_string_view<value_type>() const noexcept
-    {
-        return std::basic_string_view<value_type>{_str.data(), size()};
+        return std::string{_str.data(), size()};
     }
 
     [[nodiscard]] constexpr std::size_t size() const noexcept
     {
-        for (auto i = 0_uz; i != N; ++i) {
-            if (_str[i] == value_type{}) {
-                return i;
-            }
-        }
         return N;
+    }
+
+    [[nodiscard]] constexpr char& operator[](size_t index) noexcept
+    {
+#ifndef NDEBUG
+        if (not(index < N)) {
+            std::terminate();
+        }
+#endif
+        return _str[index];
+    }
+
+    [[nodiscard]] constexpr char const& operator[](size_t index) const noexcept
+    {
+#ifndef NDEBUG
+        if (not(index < N)) {
+            std::terminate();
+        }
+#endif
+        return _str[index];
     }
 
     [[nodiscard]] constexpr auto begin() noexcept
@@ -146,69 +94,96 @@ struct basic_fixed_string {
         return _str.begin() + size();
     }
 
-    /** Convert the current string to using title case.
-    * 
-    * This function does not do full unicode case conversion;
-    * only ASCII letters [a-zA-Z] will be modified.
-    */
-    [[nodiscard]] friend constexpr basic_fixed_string to_title(basic_fixed_string const &rhs) noexcept
-    {
-        auto r = rhs;
+    [[nodiscard]] constexpr bool operator==(fixed_string const& rhs) const noexcept = default;
+    [[nodiscard]] constexpr auto operator<=>(fixed_string const& rhs) const noexcept = default;
 
-        bool first = true;
-        for (auto &c: r) {
-            if (first) {
-                c = to_upper(c);
-                first = false;
-            } else if (c == ' ') {
-                first = true;
-            } else {
-                c = to_lower(c);
-            }
+    template<size_t O>
+    [[nodiscard]] constexpr bool operator==(fixed_string<O> const& rhs) const noexcept requires(O != N)
+    {
+        return false;
+    }
+
+    template<size_t O>
+    [[nodiscard]] constexpr auto operator<=>(fixed_string<O> const& rhs) const noexcept requires(O != N)
+    {
+        return static_cast<std::string_view>(*this) <=> static_cast<std::string_view>(rhs);
+    }
+
+    [[nodiscard]] constexpr bool operator==(std::string_view rhs) const noexcept
+    {
+        return static_cast<std::string_view>(*this) == rhs;
+    }
+    
+    [[nodiscard]] constexpr auto operator<=>(std::string_view rhs) const noexcept
+    {
+        return static_cast<std::string_view>(*this) <=> rhs;
+    }
+
+    [[nodiscard]] constexpr bool operator==(std::string const &rhs) const noexcept
+    {
+        return static_cast<std::string_view>(*this) == rhs;
+    }
+
+    [[nodiscard]] constexpr auto operator<=>(std::string const &rhs) const noexcept
+    {
+        return static_cast<std::string_view>(*this) <=> rhs;
+    }
+
+    [[nodiscard]] constexpr bool operator==(char const *rhs) const noexcept
+    {
+        return static_cast<std::string_view>(*this) == rhs;
+    }
+
+    [[nodiscard]] constexpr auto operator<=>(char const *rhs) const noexcept
+    {
+        return static_cast<std::string_view>(*this) <=> rhs;
+    }
+
+    template<size_t O>
+    [[nodiscard]] constexpr bool operator==(char const (&rhs)[O]) const noexcept
+    {
+        return *this == fixed_string<O - 1>(rhs);
+    }
+
+    template<size_t O>
+    [[nodiscard]] constexpr auto operator<=>(char const (&rhs)[O]) const noexcept
+    {
+        return *this <=> fixed_string<O - 1>(rhs);
+    }
+
+    template<size_t O>
+    [[nodiscard]] constexpr auto operator+(fixed_string<O> const& rhs) const noexcept
+    {
+        auto r = fixed_string<N + O>{};
+        auto dst_i = 0_uz;
+        for (auto src_i = 0_uz; src_i != N; ++src_i, ++dst_i) {
+            r[dst_i] = (*this)[src_i];
+        }
+        for (auto src_i = 0_uz; src_i != O; ++src_i, ++dst_i) {
+            r[dst_i] = rhs[src_i];
         }
 
         return r;
     }
-
-    [[nodiscard]] friend constexpr bool
-    operator==(basic_fixed_string const &lhs, basic_fixed_string const &rhs) noexcept = default;
-    [[nodiscard]] friend constexpr auto
-    operator<=>(basic_fixed_string const &lhs, basic_fixed_string const &rhs) noexcept = default;
-
-    [[nodiscard]] friend constexpr bool
-    operator==(std::basic_string_view<value_type> const &lhs, basic_fixed_string const &rhs) noexcept
-    {
-        return lhs == static_cast<decltype(lhs)>(rhs);
-    }
-
-    [[nodiscard]] friend constexpr bool
-    operator==(basic_fixed_string const &lhs, std::basic_string_view<value_type> const &rhs) noexcept
-    {
-        return static_cast<decltype(rhs)>(lhs) == rhs;
-    }
 };
 
-template<std::size_t N>
-using fixed_string = basic_fixed_string<char, N>;
-
-//template<typename CharT>
-//[[nodiscard]] constexpr std::size_t basic_fixed_string_length_(CharT const *str) noexcept
+// template<typename CharT>
+//[[nodiscard]] constexpr std::size_t fixed_string_length_(CharT const *str) noexcept
 //{
-//    std::size_t i = 0;
-//    while (str[i++] != CharT{}) {}
-//    return i;
-//}
+//     std::size_t i = 0;
+//     while (str[i++] != CharT{}) {}
+//     return i;
+// }
 
-
-template<typename CharT, std::size_t N>
-basic_fixed_string(CharT const (&str)[N]) -> basic_fixed_string<CharT, N - 1>;
+template<std::size_t N>
+fixed_string(char const (&str)[N]) -> fixed_string<N - 1>;
 
 } // namespace hi::inline v1
 
-template<typename T, std::size_t N, typename CharT>
-struct std::formatter<hi::basic_fixed_string<T, N>, CharT> : std::formatter<T const *, CharT> {
-    auto format(hi::basic_fixed_string<T, N> const &t, auto &fc)
+template<std::size_t N, typename CharT>
+struct std::formatter<hi::fixed_string<N>, CharT> : std::formatter<std::string_view, CharT> {
+    constexpr auto format(hi::fixed_string<N> const& t, auto& fc)
     {
-        return std::formatter<T const *, CharT>::format(t.data(), fc);
+        return std::formatter<std::string_view, CharT>::format(static_cast<std::string_view>(t), fc);
     }
 };

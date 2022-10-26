@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -19,7 +19,7 @@ task<void> checkbox_example(gui_system &gui)
     /// [Create a label]
 
     /// [Create a checkbox]
-    observable<int> value = 0;
+    observer<int> value = 0;
 
     auto &cb = window->content().make_widget<checkbox_widget>("B1", value, 1, 2);
     cb.on_label = tr("on");

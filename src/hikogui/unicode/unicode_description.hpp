@@ -14,61 +14,15 @@
 #include "unicode_east_asian_width.hpp"
 #include "unicode_decomposition_type.hpp"
 #include "unicode_script.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../assert.hpp"
 #include "../cast.hpp"
 
 namespace hi::inline v1 {
-namespace detail {
-
-constexpr char32_t unicode_hangul_S_base = U'\uac00';
-constexpr char32_t unicode_hangul_L_base = U'\u1100';
-constexpr char32_t unicode_hangul_V_base = U'\u1161';
-constexpr char32_t unicode_hangul_T_base = U'\u11a7';
-constexpr char32_t unicode_hangul_L_count = 19;
-constexpr char32_t unicode_hangul_V_count = 21;
-constexpr char32_t unicode_hangul_T_count = 28;
-constexpr char32_t unicode_hangul_N_count = unicode_hangul_V_count * unicode_hangul_T_count;
-constexpr char32_t unicode_hangul_S_count = unicode_hangul_L_count * unicode_hangul_N_count;
-} // namespace detail
 
 constexpr char32_t unicode_replacement_character = U'\ufffd';
 constexpr char32_t unicode_LS = U'\u2028';
 constexpr char32_t unicode_PS = U'\u2029';
-
-[[nodiscard]] constexpr bool is_hangul_L_part(char32_t code_point) noexcept
-{
-    return code_point >= detail::unicode_hangul_L_base &&
-        code_point < (detail::unicode_hangul_L_base + detail::unicode_hangul_L_count);
-}
-
-[[nodiscard]] constexpr bool is_hangul_V_part(char32_t code_point) noexcept
-{
-    return code_point >= detail::unicode_hangul_V_base &&
-        code_point < (detail::unicode_hangul_V_base + detail::unicode_hangul_V_count);
-}
-
-[[nodiscard]] constexpr bool is_hangul_T_part(char32_t code_point) noexcept
-{
-    return code_point >= detail::unicode_hangul_T_base &&
-        code_point < (detail::unicode_hangul_T_base + detail::unicode_hangul_T_count);
-}
-
-[[nodiscard]] constexpr bool is_hangul_syllable(char32_t code_point) noexcept
-{
-    return code_point >= detail::unicode_hangul_S_base &&
-        code_point < (detail::unicode_hangul_S_base + detail::unicode_hangul_S_count);
-}
-
-[[nodiscard]] constexpr bool is_hangul_LV_part(char32_t code_point) noexcept
-{
-    return is_hangul_syllable(code_point) && ((code_point - detail::unicode_hangul_S_base) % detail::unicode_hangul_T_count) == 0;
-}
-
-[[nodiscard]] constexpr bool is_hangul_LVT_part(char32_t code_point) noexcept
-{
-    return is_hangul_syllable(code_point) && ((code_point - detail::unicode_hangul_S_base) % detail::unicode_hangul_T_count) != 0;
-}
 
 /** Description of a unicode code point.
  * This class holds information of a unicode code point.
@@ -94,37 +48,26 @@ public:
         unicode_script script,
         unicode_bidi_class bidi_class,
         unicode_bidi_bracket_type bidi_bracket_type,
-        char32_t bidi_mirrored_glyph,
-        unicode_decomposition_type decomposition_type,
-        bool is_canonical_composition,
+        char32_t bidi_mirroring_glyph,
         uint8_t canonical_combining_class,
-        uint8_t decomposition_length,
-        uint32_t decomposition_index) noexcept :
+        unicode_decomposition_type decomposition_type,
+        uint32_t decomposition_index,
+        uint16_t composition_index) noexcept :
         _general_category(to_underlying(general_category)),
         _grapheme_cluster_break(to_underlying(grapheme_cluster_break)),
-        _is_canonical_composition(static_cast<uint32_t>(is_canonical_composition)),
-        _is_combining_mark(static_cast<uint32_t>(canonical_combining_class != 0)),
-        _bidi_class(to_underlying(bidi_class)),
-        _east_asian_width(static_cast<uint32_t>(east_asian_width)),
         _line_break_class(to_underlying(line_break_class)),
         _word_break_property(to_underlying(word_break_property)),
         _sentence_break_property(to_underlying(sentence_break_property)),
-        _decomposition_index(static_cast<uint32_t>(decomposition_index)),
-        _decomposition_type(static_cast<uint32_t>(decomposition_type)),
-        _decomposition_length(static_cast<uint32_t>(decomposition_length))
+        _east_asian_width(to_underlying(east_asian_width)),
+        _script(to_underlying(script)),
+        _bidi_class(to_underlying(bidi_class)),
+        _bidi_bracket_type(to_underlying(bidi_bracket_type)),
+        _bidi_mirroring_glyph(truncate<uint32_t>(bidi_mirroring_glyph)),
+        _canonical_combining_class(truncate<uint32_t>(canonical_combining_class)),
+        _decomposition_type(to_underlying(decomposition_type)),
+        _decomposition_index(truncate<uint32_t>(decomposition_index)),
+        _composition_index(truncate<uint16_t>(composition_index))
     {
-        // Check if the delta fits.
-        if (canonical_combining_class == 0) {
-            _non_mark.bidi_bracket_type = static_cast<uint32_t>(bidi_bracket_type);
-            _non_mark.script = static_cast<uint32_t>(script);
-            _non_mark.bidi_mirrored_glyph = static_cast<uint32_t>(bidi_mirrored_glyph);
-            _non_mark._reserved = 0;
-
-        } else {
-            _mark.canonical_combining_class = canonical_combining_class;
-            _mark._reserved = 0;
-        }
-
         hi_axiom(to_underlying(general_category) <= 0x1f);
         hi_axiom(to_underlying(grapheme_cluster_break) <= 0x0f);
         hi_axiom(to_underlying(line_break_class) <= 0x3f);
@@ -134,35 +77,11 @@ public:
         hi_axiom(to_underlying(script) <= 0xff);
         hi_axiom(to_underlying(bidi_class) <= 0x1f);
         hi_axiom(to_underlying(bidi_bracket_type) <= 0x03);
-        hi_axiom(static_cast<uint32_t>(bidi_mirrored_glyph) <= 0x10ffff);
+        hi_axiom(static_cast<uint32_t>(bidi_mirroring_glyph) <= 0xffff);
         hi_axiom(static_cast<uint32_t>(canonical_combining_class) <= 0xff);
-        hi_axiom(to_underlying(decomposition_type) <= 0x7);
-        hi_axiom(static_cast<uint32_t>(decomposition_length) <= 0x1f);
+        hi_axiom(to_underlying(decomposition_type) <= 0x1f);
         hi_axiom(static_cast<uint32_t>(decomposition_index) <= 0x1f'ffff);
-    }
-
-    [[nodiscard]] static constexpr unicode_description make_unassigned(unicode_description const& other)
-    {
-        auto r = unicode_description{};
-        r._general_category = to_underlying(unicode_general_category::Cn);
-        r._grapheme_cluster_break = other._grapheme_cluster_break;
-        r._is_canonical_composition = other._is_canonical_composition;
-        r._is_combining_mark = other._is_combining_mark;
-
-        r._bidi_class = other._bidi_class;
-        if (other.is_combining_mark()) {
-            r._mark = other._mark;
-        } else {
-            r._non_mark = other._non_mark;
-        }
-        r._east_asian_width = other._east_asian_width;
-        r._line_break_class = other._line_break_class;
-        r._word_break_property = other._word_break_property;
-        r._sentence_break_property = other._sentence_break_property;
-        r._decomposition_index = other._decomposition_index;
-        r._decomposition_type = other._decomposition_type;
-        r._decomposition_length = other._decomposition_length;
-        return r;
+        hi_axiom(static_cast<uint32_t>(composition_index) <= 0x3fff);
     }
 
     /** The general category of this code-point.
@@ -185,16 +104,6 @@ public:
     [[nodiscard]] constexpr unicode_grapheme_cluster_break grapheme_cluster_break() const noexcept
     {
         return static_cast<unicode_grapheme_cluster_break>(_grapheme_cluster_break);
-    }
-
-    [[nodiscard]] constexpr bool is_canonical_composition() const noexcept
-    {
-        return static_cast<bool>(_is_canonical_composition);
-    }
-
-    [[nodiscard]] constexpr bool is_combining_mark() const noexcept
-    {
-        return static_cast<bool>(_is_combining_mark);
     }
 
     [[nodiscard]] constexpr unicode_line_break_class line_break_class() const noexcept
@@ -232,11 +141,7 @@ public:
      */
     [[nodiscard]] constexpr unicode_script script() const noexcept
     {
-        if (is_combining_mark()) {
-            return unicode_script::Common;
-        } else {
-            return static_cast<unicode_script>(_non_mark.script);
-        }
+        return static_cast<unicode_script>(_script);
     }
 
     /** Get the bidi bracket type.
@@ -247,22 +152,15 @@ public:
      */
     [[nodiscard]] constexpr unicode_bidi_bracket_type bidi_bracket_type() const noexcept
     {
-        if (is_combining_mark()) {
-            return unicode_bidi_bracket_type::n;
-        } else {
-            return static_cast<unicode_bidi_bracket_type>(_non_mark.bidi_bracket_type);
-        }
+        return static_cast<unicode_bidi_bracket_type>(_bidi_bracket_type);
     }
 
     /** Get the mirrored glyph.
      * @return The mirrored glyph or U+ffff when there is no mirrored glyph.
      */
-    [[nodiscard]] constexpr char32_t bidi_mirrored_glyph() const noexcept
+    [[nodiscard]] constexpr char32_t bidi_mirroring_glyph() const noexcept
     {
-        if (bidi_bracket_type() == unicode_bidi_bracket_type::n) {
-            return char32_t{0xffff};
-        }
-        return static_cast<char32_t>(_non_mark.bidi_mirrored_glyph);
+        return truncate<char32_t>(_bidi_mirroring_glyph);
     }
 
     /** This character has a canonical decomposition.
@@ -284,44 +182,21 @@ public:
      */
     [[nodiscard]] constexpr uint8_t canonical_combining_class() const noexcept
     {
-        if (is_combining_mark()) {
-            return static_cast<uint8_t>(_mark.canonical_combining_class);
-        } else {
-            return 0;
-        }
+        return truncate<uint8_t>(_canonical_combining_class);
     }
 
-    /** The number of code-points the decomposed grapheme has.
+    /** Decompose this code-point.
      *
-     * @retval 0 There is no decomposition
-     * @retval 1 Decomposition is a single code-point, the `decomposition_index()` is
-     *           the numeric value of the code point.
-     * @retval 2 Decomposition is has two code-point. When composition_canonical is set the
-     *           `decomposition_index()` points in the composition table. Otherwise the
-     *           index points into the decomposition table.
-     * @return Values 3 and above are the number of code points in the decomposition table
-     *          pointed to from the `decomposition_index()`.
+     * @return The decomposition of this code-point.
      */
-    [[nodiscard]] constexpr std::size_t decomposition_length() const noexcept
-    {
-        return static_cast<std::size_t>(_decomposition_length);
-    }
+    [[nodiscard]] std::u32string decompose() const noexcept;
 
-    /** A multi-use value representing the decomposition of this code-point.
-     * To compress the data for decomposition:
-     *  - For single code-point decomposition the index itself is the code-point value.
-     *  - For double code-point decomposition, if it is equal to the composition it points
-     *    into the composition table, otherwise it points into the decomposition table
-     *  - Anything else points into the decomposition table.
+    /** Compose this code-point with another.
      *
-     * @see decomposition_length
-     * @return A code-point value, or a index into the composition table, or an index into the
-     *         decomposition table.
+     * @param other The other code-point.
+     * @return The composed code-point, or 0xffff if the composition was not found.
      */
-    [[nodiscard]] constexpr std::size_t decomposition_index() const noexcept
-    {
-        return static_cast<std::size_t>(_decomposition_index);
-    }
+    [[nodiscard]] char32_t compose(char32_t other) const noexcept;
 
     /** Get the canonical equivalent of this code-point.
      * The canonical equivalent is the code-point after NFC-normalization.
@@ -331,8 +206,8 @@ public:
      */
     [[nodiscard]] constexpr char32_t canonical_equivalent() const noexcept
     {
-        if (decomposition_type() == unicode_decomposition_type::canonical and _decomposition_length == 1) {
-            return static_cast<char32_t>(_decomposition_index);
+        if (decomposition_type() == unicode_decomposition_type::canonical and _decomposition_index <= 0x1f'ffff) {
+            return truncate<char32_t>(_decomposition_index);
         } else {
             return U'\uffff';
         }
@@ -400,44 +275,25 @@ public:
     }
 
 private:
-    // 1st dword
-    uint32_t _general_category : 5;
-    uint32_t _grapheme_cluster_break : 4;
-    uint32_t _is_canonical_composition : 1;
-    uint32_t _is_combining_mark : 1;
-    uint32_t _bidi_class : 5;
-    uint32_t _word_break_property : 5;
-    uint32_t _line_break_class : 6;
-    uint32_t _sentence_break_property : 4;
-    uint32_t _word1_reserved : 1 = 0;
+    // 1st qword
+    uint64_t _general_category : 5;
+    uint64_t _grapheme_cluster_break : 4;
+    uint64_t _line_break_class : 6;
+    uint64_t _word_break_property : 5;
+    uint64_t _sentence_break_property : 4;
+    uint64_t _east_asian_width : 3;
+    uint64_t _bidi_class : 5;
+    uint64_t _bidi_bracket_type : 2;
+    uint64_t _bidi_mirroring_glyph : 16;
+    uint64_t _canonical_combining_class : 8;
+    uint64_t _word0_reserved : 6 = 0;
 
-    // 2nd dword
-    uint32_t _decomposition_index : 21;
-    uint32_t _decomposition_type : 3;
-    uint32_t _decomposition_length : 5;
-    uint32_t _east_asian_width : 3;
-
-    struct mark_type {
-        uint32_t canonical_combining_class : 8;
-        uint32_t _reserved : 14;
-    };
-
-    struct non_mark_type {
-        uint32_t bidi_mirrored_glyph : 21;
-        uint32_t bidi_bracket_type : 2;
-        uint32_t script : 8;
-        uint32_t _reserved : 1;
-    };
-
-    // 3rd dword
-    union {
-        mark_type _mark;
-        non_mark_type _non_mark;
-        uint32_t _word3 = 0;
-    };
-
-    // 4th dword
-    uint32_t _word4_reserved : 32 = 0;
+    // 2nd qword
+    uint64_t _script : 8;
+    uint64_t _decomposition_type : 5;
+    uint64_t _decomposition_index : 21;
+    uint64_t _composition_index : 14;
+    uint64_t _word1_reserved : 16 = 0;
 };
 
 static_assert(sizeof(unicode_description) == 16);

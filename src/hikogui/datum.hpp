@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2019-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -7,9 +7,8 @@
 #include "exception.hpp"
 #include "assert.hpp"
 #include "concepts.hpp"
-#include "required.hpp"
+#include "utility.hpp"
 #include "decimal.hpp"
-#include "URL.hpp"
 #include "byte_string.hpp"
 #include "hash.hpp"
 #include "charconv.hpp"
@@ -23,6 +22,17 @@
 #include <limits>
 #include <vector>
 #include <map>
+
+hi_warning_push();
+// C26476: Expression/symbol '...' uses a naked union '...' with multiple type pointers: Use variant instead (type.7.).
+// This implements `datum` which is simular to a std::variant.
+hi_warning_ignore_msvc(26476);
+// C26409: Avoid calling new and delete explicitly, use std::make_unique<T> instead (r.11).
+// This implements `datum` which implements RAII for large objects.
+hi_warning_ignore_msvc(26409);
+// C26492: Don't use const_cast to cast away const or volatile (type.3).
+// Needed until c++23 deducing this.
+hi_warning_ignore_msvc(26492);
 
 namespace hi::inline v1 {
 class datum;
@@ -268,12 +278,12 @@ public:
     constexpr explicit datum(break_type) noexcept : _tag(tag_type::flow_break), _value(0) {}
     constexpr explicit datum(bool value) noexcept : _tag(tag_type::boolean), _value(value) {}
     constexpr explicit datum(std::floating_point auto value) noexcept :
-        _tag(tag_type::floating_point), _value(static_cast<double>(value))
+        _tag(tag_type::floating_point), _value(narrow_cast<double>(value))
     {
     }
 
     constexpr explicit datum(numeric_integral auto value) noexcept :
-        _tag(tag_type::integral), _value(static_cast<long long>(value))
+        _tag(tag_type::integral), _value(narrow_cast<long long>(value))
     {
     }
 
@@ -284,7 +294,6 @@ public:
     explicit datum(char const *value) noexcept : _tag(tag_type::string), _value(new std::string{value}) {}
     explicit datum(vector_type value) noexcept : _tag(tag_type::vector), _value(new vector_type{std::move(value)}) {}
     explicit datum(map_type value) noexcept : _tag(tag_type::map), _value(new map_type{std::move(value)}) {}
-    explicit datum(URL value) noexcept : _tag(tag_type::url), _value(new URL{std::move(value)}) {}
     explicit datum(bstring value) noexcept : _tag(tag_type::bstring), _value(new bstring{std::move(value)}) {}
 
     template<typename... Args>
@@ -439,14 +448,6 @@ public:
         return *this;
     }
 
-    datum& operator=(URL value) noexcept
-    {
-        delete_pointer();
-        _tag = tag_type::url;
-        _value = new URL{std::move(value)};
-        return *this;
-    }
-
     datum& operator=(bstring value) noexcept
     {
         delete_pointer();
@@ -459,13 +460,13 @@ public:
     {
         switch (_tag) {
         case tag_type::floating_point:
-            return static_cast<bool>(get<double>(*this));
+            return to_bool(get<double>(*this));
         case tag_type::decimal:
-            return static_cast<bool>(get<decimal>(*this));
+            return to_bool(get<decimal>(*this));
         case tag_type::boolean:
             return get<bool>(*this);
         case tag_type::integral:
-            return static_cast<bool>(get<long long>(*this));
+            return to_bool(get<long long>(*this));
         case tag_type::year_month_day:
             return true;
         case tag_type::string:
@@ -474,8 +475,6 @@ public:
             return not get<vector_type>(*this).empty();
         case tag_type::map:
             return not get<map_type>(*this).empty();
-        case tag_type::url:
-            return not get<URL>(*this).empty();
         case tag_type::bstring:
             return not get<bstring>(*this).empty();
         default:
@@ -492,8 +491,6 @@ public:
             return get<vector_type>(*this).empty();
         case tag_type::map:
             return get<map_type>(*this).empty();
-        case tag_type::url:
-            return get<URL>(*this).empty();
         case tag_type::bstring:
             return get<bstring>(*this).empty();
         default:
@@ -539,28 +536,28 @@ public:
     {
         if (auto f = get_if<double>(*this)) {
             errno = 0;
-            auto r = std::round(*f);
+            hilet r = std::round(*f);
             if (errno == EDOM or errno == ERANGE or r < narrow<double>(std::numeric_limits<T>::min()) or
                 r > narrow<double>(std::numeric_limits<T>::max())) {
                 throw std::overflow_error("double to integral");
             }
-            return static_cast<T>(r);
+            return narrow_cast<T>(r);
 
         } else if (auto i = get_if<long long>(*this)) {
             if (*i < std::numeric_limits<T>::min() or *i > std::numeric_limits<T>::max()) {
                 throw std::overflow_error("long long to integral");
             }
-            return static_cast<T>(*i);
+            return narrow_cast<T>(*i);
 
         } else if (auto d = get_if<decimal>(*this)) {
-            auto r = static_cast<long long>(*d);
+            hilet r = static_cast<long long>(*d);
             if (r < std::numeric_limits<T>::min() or r > std::numeric_limits<T>::max()) {
                 throw std::overflow_error("decimal to integral");
             }
-            return static_cast<T>(r);
+            return narrow_cast<T>(r);
 
         } else if (auto b = get_if<bool>(*this)) {
-            return static_cast<T>(*b);
+            return narrow_cast<T>(*b);
 
         } else {
             throw std::domain_error(std::format("Can't convert {} to an integral", repr(*this)));
@@ -599,8 +596,6 @@ public:
             return "continue";
         case tag_type::string:
             return *_value._string;
-        case tag_type::url:
-            return to_string(*_value._url);
         case tag_type::vector:
             {
                 auto r = std::string{"["};
@@ -634,8 +629,6 @@ public:
     {
         if (auto s = get_if<std::string>(*this)) {
             return std::string_view{*s};
-        } else if (auto u = get_if<URL>(*this)) {
-            return std::string_view{to_string(*u)};
         } else {
             throw std::domain_error(std::format("Can't convert {} to an std::string_view", repr(*this)));
         }
@@ -656,17 +649,6 @@ public:
             return *m;
         } else {
             throw std::domain_error(std::format("Can't convert {} to an map", repr(*this)));
-        }
-    }
-
-    explicit operator URL() const
-    {
-        if (auto u = get_if<URL>(*this)) {
-            return *u;
-        } else if (auto s = get_if<std::string>(*this)) {
-            return URL{*s};
-        } else {
-            throw std::domain_error(std::format("Can't convert {} to an URL", repr(*this)));
         }
     }
 
@@ -694,8 +676,6 @@ public:
             return "date";
         case tag_type::string:
             return "string";
-        case tag_type::url:
-            return "url";
         case tag_type::vector:
             return "vector";
         case tag_type::map:
@@ -744,9 +724,9 @@ public:
         case tag_type::year_month_day:
             {
                 uint32_t r = 0;
-                r |= static_cast<uint32_t>(static_cast<int>(_value._year_month_day.year())) << 16;
-                r |= static_cast<uint32_t>(static_cast<unsigned>(_value._year_month_day.month())) << 8;
-                r |= static_cast<uint32_t>(static_cast<unsigned>(_value._year_month_day.day()));
+                r |= narrow_cast<uint32_t>(static_cast<int>(_value._year_month_day.year())) << 16;
+                r |= narrow_cast<uint32_t>(static_cast<unsigned>(_value._year_month_day.month())) << 8;
+                r |= narrow_cast<uint32_t>(static_cast<unsigned>(_value._year_month_day.day()));
                 return std::hash<uint32_t>{}(r);
             }
         case tag_type::string:
@@ -767,8 +747,6 @@ public:
                 }
                 return r;
             }
-        case tag_type::url:
-            return std::hash<URL>{}(*_value._url);
         case tag_type::bstring:
             return std::hash<bstring>{}(*_value._bstring);
         default:
@@ -1024,7 +1002,7 @@ public:
      */
     [[nodiscard]] bool remove(jsonpath const& path) noexcept
     {
-        return static_cast<bool>(remove(path.cbegin(), path.cend()));
+        return to_bool(remove(path.cbegin(), path.cend()));
     }
 
     /** Find a object by path.
@@ -1208,9 +1186,6 @@ public:
         } else if (hilet ymds = promote_if<std::chrono::year_month_day>(lhs, rhs)) {
             return ymds.lhs() == ymds.rhs();
 
-        } else if (hilet urls = promote_if<URL>(lhs, rhs)) {
-            return urls.lhs() == urls.rhs();
-
         } else if (hilet strings = promote_if<std::string>(lhs, rhs)) {
             return strings.lhs() == strings.rhs();
 
@@ -1233,14 +1208,12 @@ public:
      * - promote both arguments to `long long`.
      * - promote both arguments to `bool`.
      * - promote both arguments to `std::chrono::year_month_day`.
-     * - promote both arguments to `URL`.
      * - promote both arguments to `std::string`.
      * - promote both arguments to `datum::vector_type`.
      * - promote both arguments to `datum::map_type` sorted by key.
      * - promote both arguments to `bstring`.
      * - Then compare the types them selfs, ordered in the following order:
      *    + bstring = -5,
-     *    + url = -4,
      *    + map = -3,
      *    + vector = -2,
      *    + string = -1,
@@ -1271,9 +1244,6 @@ public:
 
         } else if (hilet year_month_days = promote_if<std::chrono::year_month_day>(lhs, rhs)) {
             return year_month_days.lhs() <=> year_month_days.rhs();
-
-        } else if (hilet urls = promote_if<URL>(lhs, rhs)) {
-            return urls.lhs() <=> urls.rhs();
 
         } else if (hilet strings = promote_if<std::string>(lhs, rhs)) {
             return strings.lhs() <=> strings.rhs();
@@ -1434,8 +1404,6 @@ public:
      * Both operands are first promoted to `double`, `decimal` or `long long` before the
      * operation is executed.
      *
-     * If both arguments can be promoted to `URL` then the two are concatenated.
-     *
      * @throws std::domain_error When either argument can not be promoted to `long long`. Or when
      *         the right hand operand is zero.
      * @param lhs The left-hand-side operand of the operation.
@@ -1461,9 +1429,6 @@ public:
                 throw std::domain_error(std::format("Divide by zero {} '/' {}", repr(lhs), repr(rhs)));
             }
             return datum{long_longs.lhs() / long_longs.rhs()};
-
-        } else if (hilet urls = promote_if<URL>(lhs, rhs)) {
-            return datum{urls.lhs() / urls.rhs()};
 
         } else {
             throw std::domain_error(std::format("Can not evaluate {} '/' {}", repr(lhs), repr(rhs)));
@@ -1687,8 +1652,6 @@ public:
             return "continue";
         case tag_type::string:
             return std::format("\"{}\"", *rhs._value._string);
-        case tag_type::url:
-            return to_string(*rhs._value._url);
         case tag_type::vector:
             {
                 auto r = std::string{"["};
@@ -1758,8 +1721,6 @@ public:
             return rhs._tag == tag_type::vector;
         } else if constexpr (std::is_same_v<T, map_type>) {
             return rhs._tag == tag_type::map;
-        } else if constexpr (std::is_same_v<T, URL>) {
-            return rhs._tag == tag_type::url;
         } else if constexpr (std::is_same_v<T, bstring>) {
             return rhs._tag == tag_type::bstring;
         } else {
@@ -1774,8 +1735,6 @@ public:
      *  - `decimal` -> `double'
      *  - `long long` -> `decimal'
      *  - `bool` -> `long long'
-     *  - `std::string` -> `URL'
-     *  - `URL` -> `std::string'
      *
      * @tparam To Type to promote the value to.
      * @param rhs The value to promote.
@@ -1790,10 +1749,6 @@ public:
             return holds_alternative<decimal>(rhs) or holds_alternative<long long>(rhs) or holds_alternative<bool>(rhs);
         } else if constexpr (std::is_same_v<To, long long>) {
             return holds_alternative<long long>(rhs) or holds_alternative<bool>(rhs);
-        } else if constexpr (std::is_same_v<To, std::string>) {
-            return holds_alternative<URL>(rhs) or holds_alternative<std::string>(rhs);
-        } else if constexpr (std::is_same_v<To, URL>) {
-            return holds_alternative<URL>(rhs) or holds_alternative<std::string>(rhs);
         } else {
             return holds_alternative<To>(rhs);
         }
@@ -1827,8 +1782,6 @@ public:
             return *rhs._value._vector;
         } else if constexpr (std::is_same_v<T, map_type>) {
             return *rhs._value._map;
-        } else if constexpr (std::is_same_v<T, URL>) {
-            return *rhs._value._url;
         } else if constexpr (std::is_same_v<T, bstring>) {
             return *rhs._value._bstring;
         } else {
@@ -1864,8 +1817,6 @@ public:
             return *rhs._value._vector;
         } else if constexpr (std::is_same_v<T, map_type>) {
             return *rhs._value._map;
-        } else if constexpr (std::is_same_v<T, URL>) {
-            return *rhs._value._url;
         } else if constexpr (std::is_same_v<T, bstring>) {
             return *rhs._value._bstring;
         } else {
@@ -1972,8 +1923,7 @@ private:
         string = -1,
         vector = -2,
         map = -3,
-        url = -4,
-        bstring = -5,
+        bstring = -5
     };
 
     tag_type _tag = tag_type::monostate;
@@ -1986,18 +1936,16 @@ private:
         std::string *_string;
         vector_type *_vector;
         map_type *_map;
-        URL *_url;
         bstring *_bstring;
 
-        constexpr value_type(numeric_integral auto value) noexcept : _long_long(static_cast<long long>(value)) {}
-        constexpr value_type(std::floating_point auto value) noexcept : _double(static_cast<double>(value)) {}
+        constexpr value_type(numeric_integral auto value) noexcept : _long_long(narrow_cast<long long>(value)) {}
+        constexpr value_type(std::floating_point auto value) noexcept : _double(narrow_cast<double>(value)) {}
         constexpr value_type(decimal value) noexcept : _decimal(value) {}
         constexpr value_type(bool value) noexcept : _bool(value) {}
         constexpr value_type(std::chrono::year_month_day value) noexcept : _year_month_day(value) {}
         constexpr value_type(std::string *value) noexcept : _string(value) {}
         constexpr value_type(vector_type *value) noexcept : _vector(value) {}
         constexpr value_type(map_type *value) noexcept : _map(value) {}
-        constexpr value_type(URL *value) noexcept : _url(value) {}
         constexpr value_type(bstring *value) noexcept : _bstring(value) {}
     };
 
@@ -2026,9 +1974,6 @@ private:
         case tag_type::map:
             _value._map = new map_type{*other._value._map};
             return;
-        case tag_type::url:
-            _value._url = new URL{*other._value._url};
-            return;
         case tag_type::bstring:
             _value._bstring = new bstring{*other._value._bstring};
             return;
@@ -2049,9 +1994,6 @@ private:
             return;
         case tag_type::map:
             delete _value._map;
-            return;
-        case tag_type::url:
-            delete _value._url;
             return;
         case tag_type::bstring:
             delete _value._bstring;
@@ -2455,3 +2397,5 @@ auto std::formatter<hi::datum, CharT>::format(hi::datum const& t, auto& fc) cons
 {
     return std::formatter<std::string, CharT>{}.format(to_string(t), fc);
 }
+
+hi_warning_pop();

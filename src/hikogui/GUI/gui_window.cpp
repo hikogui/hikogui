@@ -1,4 +1,4 @@
-// Copyright Take Vos 2019-2021.
+// Copyright Take Vos 2019-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -16,17 +16,13 @@
 
 namespace hi::inline v1 {
 
-gui_window::gui_window(gui_system& gui, label const& title, std::weak_ptr<gui_window_delegate> delegate) noexcept :
-    gui(gui), title(title), _delegate(std::move(delegate))
+gui_window::gui_window(gui_system& gui, label const& title) noexcept :
+    gui(gui), title(title)
 {
 }
 
 gui_window::~gui_window()
 {
-    if (auto delegate = _delegate.lock()) {
-        delegate->deinit(*this);
-    }
-
     // Destroy the top-level widget, before Window-members that the widgets require from the window during their destruction.
     widget = {};
 
@@ -45,10 +41,7 @@ void gui_window::init()
     // and therefor should not have a lock.
     hi_axiom(is_gui_thread());
 
-    widget = std::make_unique<window_widget>(*this, title, _delegate);
-    if (auto delegate = _delegate.lock()) {
-        delegate->init(*this);
-    }
+    widget = std::make_unique<window_widget>(*this, title);
 
     // Execute a constraint check to determine initial window size.
     theme = gui.theme_book->find(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);

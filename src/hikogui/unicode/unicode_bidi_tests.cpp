@@ -1,13 +1,13 @@
-// Copyright Take Vos 2020-2021.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "hikogui/unicode/unicode_bidi.hpp"
-#include "hikogui/file_view.hpp"
-#include "hikogui/charconv.hpp"
-#include "hikogui/ranges.hpp"
-#include "hikogui/strings.hpp"
-#include "hikogui/generator.hpp"
+#include "unicode_bidi.hpp"
+#include "../file/file_view.hpp"
+#include "../charconv.hpp"
+#include "../ranges.hpp"
+#include "../strings.hpp"
+#include "../generator.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
@@ -111,23 +111,23 @@ struct unicode_bidi_test {
 
 generator<unicode_bidi_test> parse_bidi_test(int test_line_nr = -1)
 {
-    hilet view = file_view(URL("file:BidiTest.txt"));
-    hilet test_data = view.string_view();
+    hilet view = file_view("BidiTest.txt");
+    hilet test_data = as_string_view(view);
 
     auto levels = std::vector<int>{};
     auto reorder = std::vector<int>{};
 
     int line_nr = 1;
-    for (hilet line : std::views::split(test_data, std::string_view{"\n"})) {
-        hilet line_ = strip(line);
-        if (line_.empty() || line_.starts_with("#")) {
+    for (hilet line_view : std::views::split(test_data, std::string_view{"\n"})) {
+        hilet line = strip(std::string_view{line_view.begin(), line_view.end()});
+        if (line.empty() || line.starts_with("#")) {
             // Comment and empty lines.
-        } else if (line_.starts_with("@Levels:")) {
-            levels = parse_bidi_test_levels(line_.substr(8));
-        } else if (line_.starts_with("@Reorder:")) {
-            reorder = parse_bidi_test_reorder(line_.substr(9));
+        } else if (line.starts_with("@Levels:")) {
+            levels = parse_bidi_test_levels(line.substr(8));
+        } else if (line.starts_with("@Reorder:")) {
+            reorder = parse_bidi_test_reorder(line.substr(9));
         } else {
-            auto data = parse_bidi_test_data_line(line_, levels, reorder, line_nr);
+            auto data = parse_bidi_test_data_line(line, levels, reorder, line_nr);
             if (test_line_nr == -1 || line_nr == test_line_nr) {
                 co_yield data;
             }
@@ -181,11 +181,11 @@ TEST(unicode_bidi, bidi_test)
             }
         }
 
-        if constexpr (build_type::current == build_type::debug) {
-            if (test.line_nr > 10'000) {
-                break;
-            }
+#ifndef NDEBUG
+        if (test.line_nr > 10'000) {
+            break;
         }
+#endif
     }
 }
 
@@ -255,16 +255,16 @@ struct unicode_bidi_character_test {
 
 generator<unicode_bidi_character_test> parse_bidi_character_test(int test_line_nr = -1)
 {
-    hilet view = file_view(URL("file:BidiCharacterTest.txt"));
-    hilet test_data = view.string_view();
+    hilet view = file_view("BidiCharacterTest.txt");
+    hilet test_data = as_string_view(view);
 
     int line_nr = 1;
-    for (hilet line : std::views::split(test_data, std::string_view{"\n"})) {
-        hilet line_ = strip(line);
-        if (line_.empty() || line_.starts_with("#")) {
+    for (hilet line_view : std::views::split(test_data, std::string_view{"\n"})) {
+        hilet line = strip(std::string_view{line_view.begin(), line_view.end()});
+        if (line.empty() || line.starts_with("#")) {
             // Comment and empty lines.
         } else {
-            auto data = parse_bidi_character_test_line(line_, line_nr);
+            auto data = parse_bidi_character_test_line(line, line_nr);
             if (test_line_nr == -1 || line_nr == test_line_nr) {
                 co_yield data;
             }
@@ -326,10 +326,10 @@ TEST(unicode_bidi, bidi_character_test)
             ASSERT_TRUE(expected_input_index == -1 || expected_input_index == it->index);
         }
 
-        if constexpr (build_type::current == build_type::debug) {
-            if (test.line_nr > 10'000) {
-                break;
-            }
+#ifndef NDEBUG
+        if (test.line_nr > 10'000) {
+            break;
         }
+#endif
     }
 }

@@ -1,9 +1,9 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "audio_sample_packer.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../cast.hpp"
 #include "../memory.hpp"
 #include "../endian.hpp"
@@ -12,11 +12,19 @@
 #include <cstdint>
 #include <tuple>
 
+hi_warning_push();
+// C26481: Don't use pointer arithmetic. Use span instead.
+// These are low-level functions working directly on pointers, sorry.
+hi_warning_ignore_msvc(26481);
+// C26429: Symbol '...' is never tested for nullness, it can be marked as not_null (f.23).
+// False positive on several lines.
+hi_warning_ignore_msvc(26429);
+
 namespace hi::inline v1 {
 
 static void store_sample(
     int32_t int_sample,
-    std::byte *&dst,
+    std::byte *& dst,
     std::size_t stride,
     int num_bytes,
     int direction,
@@ -25,6 +33,7 @@ static void store_sample(
 {
     int_sample >>= align_shift;
 
+    hi_axiom(dst != nullptr);
     auto p = dst + start_byte;
     do {
         *p = static_cast<std::byte>(int_sample);
@@ -35,7 +44,8 @@ static void store_sample(
     dst += stride;
 }
 
-[[nodiscard]] static void store_samples(i8x16 int_samples, std::byte *&dst, i8x16 store_shuffle_indices, std::size_t stride) noexcept
+[[nodiscard]] static void
+store_samples(i8x16 int_samples, std::byte *& dst, i8x16 store_shuffle_indices, std::size_t stride) noexcept
 {
     hi_axiom(dst != nullptr);
     hi_axiom(stride > 0);
@@ -43,7 +53,7 @@ static void store_sample(
     // Read out the samples from the other channels, that where packed before.
     auto tmp = i8x16::load(dst);
 
-    auto packed_samples = shuffle(int_samples, store_shuffle_indices);
+    hilet packed_samples = shuffle(int_samples, store_shuffle_indices);
 
     // When the shuffle-index is -1 use the samples from the other channels.
     tmp = blend(packed_samples, tmp, store_shuffle_indices);
@@ -56,7 +66,7 @@ static void store_sample(
 
 [[nodiscard]] static void store_samples(
     i8x16 int_samples,
-    std::byte *&dst,
+    std::byte *& dst,
     i8x16 store_shuffle_indices,
     i8x16 concat_shuffle_indices,
     std::size_t num_chunks,
@@ -73,12 +83,13 @@ static void store_sample(
     } while (--num_chunks);
 }
 
-[[nodiscard]] static float load_sample(float const *&src) noexcept
+[[nodiscard]] static float load_sample(float const *& src) noexcept
 {
+    hi_axiom(src != nullptr);
     return *(src++);
 }
 
-[[nodiscard]] static f32x4 load_samples(float const *&src) noexcept
+[[nodiscard]] static f32x4 load_samples(float const *& src) noexcept
 {
     hilet r = f32x4::load(src);
     src += 4;
@@ -101,7 +112,8 @@ audio_sample_packer::audio_sample_packer(audio_sample_format format, std::size_t
     _align_shift = 32 - format.num_bytes * 8;
 }
 
-void audio_sample_packer::operator()(float const *hi_restrict src, std::byte *hi_restrict dst, std::size_t num_samples) const noexcept
+void audio_sample_packer::operator()(float const *hi_restrict src, std::byte *hi_restrict dst, std::size_t num_samples)
+    const noexcept
 {
     hi_axiom(src != nullptr);
     hi_axiom(dst != nullptr);
@@ -136,7 +148,7 @@ void audio_sample_packer::operator()(float const *hi_restrict src, std::byte *hi
         auto dither = _dither;
 
         while (src != src_fast_end) {
-            auto dither_value = dither.next();
+            hilet dither_value = dither.next();
 
             auto float_samples = load_samples(src);
             float_samples += dither_value;
@@ -147,7 +159,7 @@ void audio_sample_packer::operator()(float const *hi_restrict src, std::byte *hi
             store_samples(int_samples, dst, store_shuffle_indices, concat_shuffle_indices, num_chunks_per_quad, chunk_stride);
         }
         while (src != src_end) {
-            auto dither_value = dither.next();
+            hilet dither_value = dither.next();
 
             auto float_sample = f32x4::broadcast(load_sample(src));
             float_sample += dither_value;
@@ -163,3 +175,5 @@ void audio_sample_packer::operator()(float const *hi_restrict src, std::byte *hi
 }
 
 } // namespace hi::inline v1
+
+hi_warning_pop();

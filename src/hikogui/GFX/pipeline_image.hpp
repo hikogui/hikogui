@@ -1,4 +1,4 @@
-// Copyright Take Vos 2019-2020.
+// Copyright Take Vos 2019, 2021.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -7,8 +7,8 @@
 #include "pipeline_vulkan.hpp"
 #include "pipeline_image_push_constants.hpp"
 #include "pipeline_image_vertex.hpp"
-#include "../vspan.hpp"
-#include <vk_mem_alloc.h>
+#include "../vector_span.hpp"
+#include <vma/vk_mem_alloc.h>
 
 namespace hi::inline v1::pipeline_image {
 
@@ -17,7 +17,7 @@ namespace hi::inline v1::pipeline_image {
  */
 class pipeline_image : public pipeline_vulkan {
 public:
-    vspan<vertex> vertexBufferData;
+    vector_span<vertex> vertexBufferData;
 
     pipeline_image(gfx_surface const &surface);
     ~pipeline_image(){};

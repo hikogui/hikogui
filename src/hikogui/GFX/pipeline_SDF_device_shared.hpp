@@ -8,14 +8,14 @@
 #include "pipeline_SDF_specialization_constants.hpp"
 #include "../text/glyph_ids.hpp"
 #include "../text/glyph_atlas_info.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../log.hpp"
-#include "../vspan.hpp"
+#include "../vector_span.hpp"
 #include "../geometry/rectangle.hpp"
 #include "../geometry/scale.hpp"
 #include "../geometry/transform.hpp"
 #include "../color/quad_color.hpp"
-#include <vk_mem_alloc.h>
+#include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>
 #include <unordered_map>
@@ -122,11 +122,11 @@ struct device_shared final {
      * @param box The rectangle of the glyph in window coordinates. The box's size must be the size
      *            of the glyph's bounding box times @a glyph_size.
      * @param glyphs The font-id, composed-glyphs to render
-     * @param color The color of the glyph.
+     * @param colors The color of each corner of the glyph.
      * @return True is atlas was updated.
      */
     bool place_vertices(
-        vspan<vertex> &vertices,
+        vector_span<vertex> &vertices,
         aarectangle const &clipping_rectangle,
         quad const &box,
         glyph_ids const &glyphs,

@@ -1,11 +1,11 @@
-// Copyright Take Vos 2019-2021.
+// Copyright Take Vos 2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
 #include "grapheme.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../strings.hpp"
 #include "../hash.hpp"
 #include <vector>
@@ -78,7 +78,7 @@ struct std::char_traits<hi::grapheme> {
     static constexpr std::size_t length(char_type const *s) noexcept
     {
         std::size_t i = 0;
-        while (s[i].value != 0) {
+        while (not s[i].empty()) {
             ++i;
         }
         return i;
@@ -97,13 +97,13 @@ struct std::char_traits<hi::grapheme> {
     static constexpr char_type to_char_type(int_type c) noexcept
     {
         char_type r;
-        r.value = c;
+        r._value = c;
         return r;
     }
 
     static constexpr int_type to_int_type(char_type c) noexcept
     {
-        return c.value;
+        return c._value;
     }
 
     static constexpr bool eq_int_type(int_type c1, int_type c2) noexcept
@@ -113,12 +113,14 @@ struct std::char_traits<hi::grapheme> {
 
     static constexpr int_type eof() noexcept
     {
-        return 0;
+        // An empty grapheme has all 21 bits to '1'.
+        return 0x1f'ffff;
     }
 
     static constexpr int_type not_eof(int_type e) noexcept
     {
-        return e != 0 ? e : 1;
+        // When e is eof return the replacement character.
+        return e == eof() ? 0xfffd : e;
     }
 };
 
@@ -148,6 +150,17 @@ using gstring = std::pmr::basic_string<grapheme>;
 [[nodiscard]] inline gstring to_gstring(std::string_view rhs, char32_t new_line_char = U'\u2029') noexcept
 {
     return to_gstring(to_u32string(rhs), new_line_char);
+}
+
+/** Convert a UTF-8 string to a grapheme-string.
+ *
+ * @param rhs The UTF-8 string to convert.
+ * @param new_line_char The new_line_character to use.
+ * @return A grapheme-string.
+ */
+[[nodiscard]] inline gstring to_gstring(std::string const &rhs, char32_t new_line_char = U'\u2029') noexcept
+{
+    return to_gstring(std::string_view{rhs}, new_line_char);
 }
 
 [[nodiscard]] inline std::string to_string(gstring_view rhs) noexcept
@@ -190,3 +203,4 @@ struct std::hash<hi::pmr::gstring> {
         return r;
     }
 };
+

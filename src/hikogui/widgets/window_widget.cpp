@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020-2021.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -22,10 +22,7 @@ void window_widget::constructor_implementation() noexcept
     if (theme().operating_system == operating_system::windows) {
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
         _system_menu = &_toolbar->make_widget<system_menu_widget>();
-        _title_cbt = title.subscribe([this](auto...) {
-            this->_system_menu->icon = this->title->icon;
-        });
-        (*_title_cbt)(*title);
+        this->_system_menu->icon = this->title.get<"icon">();
 #endif
         _toolbar->make_widget<window_traffic_lights_widget, horizontal_alignment::right>();
     } else if (theme().operating_system == operating_system::macos) {
@@ -34,7 +31,7 @@ void window_widget::constructor_implementation() noexcept
         hi_no_default();
     }
 
-    _content = std::make_unique<grid_widget>(window, this, _content_delegate);
+    _content = std::make_unique<grid_widget>(window, this);
 }
 
 [[nodiscard]] generator<widget *> window_widget::children() const noexcept
@@ -46,38 +43,38 @@ void window_widget::constructor_implementation() noexcept
 widget_constraints const &window_widget::set_constraints() noexcept
 {
     _layout = {};
-    hilet toolbar_constraints = _toolbar->set_constraints();
-    hilet content_constraints = _content->set_constraints();
+    _toolbar_constraints = _toolbar->set_constraints();
+    _content_constraints = _content->set_constraints();
 
     auto minimum_width = std::max(
-        toolbar_constraints.margins.left() + toolbar_constraints.minimum.width() + toolbar_constraints.margins.right(),
-        content_constraints.margins.left() + content_constraints.minimum.width() + content_constraints.margins.right());
+        _toolbar_constraints.margins.left() + _toolbar_constraints.minimum.width() + _toolbar_constraints.margins.right(),
+        _content_constraints.margins.left() + _content_constraints.minimum.width() + _content_constraints.margins.right());
     auto preferred_width = std::max(
-        toolbar_constraints.margins.left() + toolbar_constraints.preferred.width() + toolbar_constraints.margins.right(),
-        content_constraints.margins.left() + content_constraints.preferred.width() + content_constraints.margins.right());
+        _toolbar_constraints.margins.left() + _toolbar_constraints.preferred.width() + _toolbar_constraints.margins.right(),
+        _content_constraints.margins.left() + _content_constraints.preferred.width() + _content_constraints.margins.right());
     auto maximum_width = std::max(
-        toolbar_constraints.margins.left() + toolbar_constraints.maximum.width() + toolbar_constraints.margins.right(),
-        content_constraints.margins.left() + content_constraints.maximum.width() + content_constraints.margins.right());
+        _toolbar_constraints.margins.left() + _toolbar_constraints.maximum.width() + _toolbar_constraints.margins.right(),
+        _content_constraints.margins.left() + _content_constraints.maximum.width() + _content_constraints.margins.right());
 
     // clang-format off
     auto minimum_height =
-        toolbar_constraints.margins.top() +
-        toolbar_constraints.preferred.height() +
-        std::max(toolbar_constraints.margins.bottom(), content_constraints.margins.top()) +
-        content_constraints.minimum.height() +
-        content_constraints.margins.bottom();
+        _toolbar_constraints.margins.top() +
+        _toolbar_constraints.preferred.height() +
+        std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top()) +
+        _content_constraints.minimum.height() +
+        _content_constraints.margins.bottom();
     auto preferred_height =
-        toolbar_constraints.margins.top() +
-        toolbar_constraints.preferred.height() +
-        std::max(toolbar_constraints.margins.bottom(), content_constraints.margins.top()) +
-        content_constraints.preferred.height() +
-        content_constraints.margins.bottom();
+        _toolbar_constraints.margins.top() +
+        _toolbar_constraints.preferred.height() +
+        std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top()) +
+        _content_constraints.preferred.height() +
+        _content_constraints.margins.bottom();
     auto maximum_height =
-        toolbar_constraints.margins.top() +
-        toolbar_constraints.preferred.height() +
-        std::max(toolbar_constraints.margins.bottom(), content_constraints.margins.top()) +
-        content_constraints.maximum.height() +
-        content_constraints.margins.bottom();
+        _toolbar_constraints.margins.top() +
+        _toolbar_constraints.preferred.height() +
+        std::max(_toolbar_constraints.margins.bottom(), _content_constraints.margins.top()) +
+        _content_constraints.maximum.height() +
+        _content_constraints.margins.bottom();
     // clang-format on
 
     // The operating system also has a minimum and maximum size, these sizes
@@ -114,8 +111,8 @@ void window_widget::set_layout(widget_layout const &layout) noexcept
             point2{_content->constraints().margins.left(), _content->constraints().margins.bottom()},
             point2{layout.width() - _content->constraints().margins.right(), _toolbar_rectangle.bottom() - between_margin}};
     }
-    _toolbar->set_layout(layout.transform(_toolbar_rectangle));
-    _content->set_layout(layout.transform(_content_rectangle));
+    _toolbar->set_layout(layout.transform(_toolbar_rectangle, _toolbar_constraints.baseline));
+    _content->set_layout(layout.transform(_content_rectangle, _content_constraints.baseline));
 }
 
 void window_widget::draw(draw_context const &context) noexcept

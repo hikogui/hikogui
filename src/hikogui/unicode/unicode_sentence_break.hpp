@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -51,7 +51,7 @@ public:
 
     [[nodiscard]] constexpr bool is_skip() const noexcept
     {
-        return static_cast<bool>(_value & 0x40);
+        return to_bool(_value & 0x40);
     }
 
     [[nodiscard]] constexpr friend bool operator==(unicode_sentence_break_info const &lhs, unicode_sentence_break_property const &rhs) noexcept

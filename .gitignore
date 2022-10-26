@@ -395,4 +395,6 @@ DependInfo.cmake
 CTestTestfile.cmake
 dateTargets.cmake
 CMakeDirectoryInformation.cmake
+CMakeUserPresets.json
+out
 

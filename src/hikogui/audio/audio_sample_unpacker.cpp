@@ -1,9 +1,9 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "audio_sample_unpacker.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../cast.hpp"
 #include "../memory.hpp"
 #include "../endian.hpp"
@@ -11,6 +11,17 @@
 #include <bit>
 #include <cstdint>
 #include <tuple>
+
+hi_warning_push();
+// C26481: Don't use pointer arithmetic. Use span instead (bounds.1).
+// These are low level functions working directly through pointers.
+hi_warning_ignore_msvc(26481)
+// C26429: Symbol '...' is never tested for nullness, it can be marked as not_null (f.23).
+// False positive on several lines.
+hi_warning_ignore_msvc(26429)
+// C26490: Don't use reinterpret_cast (type.1).
+// Need to convert pointers for storing/loading data to and from memory.
+hi_warning_ignore_msvc(26490)
 
 namespace hi::inline v1 {
 
@@ -25,6 +36,7 @@ load_sample(std::byte const *&src, std::size_t stride, int num_bytes, int direct
     hi_axiom(stride >= num_bytes);
 
     auto p = src + start_byte;
+    hi_axiom(p != nullptr);
 
     uint32_t r = 0;
     do {
@@ -37,7 +49,7 @@ load_sample(std::byte const *&src, std::size_t stride, int num_bytes, int direct
     r <<= align_shift;
 
     src += stride;
-    return static_cast<int32_t>(r);
+    return truncate<int32_t>(r);
 }
 
 [[nodiscard]] static i8x16 load_samples(std::byte const *&src, i8x16 load_shuffle_indices, std::size_t stride) noexcept
@@ -108,8 +120,8 @@ void audio_sample_unpacker::operator()(std::byte const *hi_restrict src, float *
 
     // Calculate a conservative number of samples that can be copied quickly
     // without overflowing the src buffer.
-    hilet dst_end = dst + num_samples;
-    hilet dst_fast_end = dst + _format.num_fast_quads(_stride, num_samples) * 4;
+    auto const *const dst_end = dst + num_samples;
+    auto const *const dst_fast_end = dst + _format.num_fast_quads(_stride, num_samples) * 4;
 
     if (_format.is_float) {
         while (dst != dst_fast_end) {
@@ -141,3 +153,5 @@ void audio_sample_unpacker::operator()(std::byte const *hi_restrict src, float *
 }
 
 } // namespace hi::inline v1
+
+hi_warning_pop();

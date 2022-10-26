@@ -1,3 +1,6 @@
+// Copyright Take Vos 2021-2022.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "time_stamp_count.hpp"
 #include "time_stamp_utc.hpp"
@@ -21,7 +24,7 @@ namespace hi::inline v1 {
         hilet row_result = _mm_cmpeq_epi32(row, aux_value_);
         hilet row_result_ = _mm_castsi128_ps(row_result);
         hilet row_result_mask = _mm_movemask_ps(row_result_);
-        if (static_cast<bool>(row_result_mask)) {
+        if (to_bool(row_result_mask)) {
             hilet j = i + std::countr_zero(static_cast<unsigned int>(row_result_mask));
             if (j < num_aux_values) {
                 return _cpu_ids[j];

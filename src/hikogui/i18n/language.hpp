@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -28,7 +28,7 @@ public:
 
     [[nodiscard]] ssize_t plurality(long long n, ssize_t max) const noexcept
     {
-        int r;
+        auto r = 0;
         if (plurality_func) {
             r = plurality_func(narrow_cast<int>(n % 1'000'000));
         } else {

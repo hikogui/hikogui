@@ -1,4 +1,4 @@
-// Copyright Take Vos 2019-2020.
+// Copyright Take Vos 2019-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -13,10 +13,10 @@
 #include "pipeline_alpha_device_shared.hpp"
 #include "pipeline_tone_mapper_device_shared.hpp"
 #include <vulkan/vulkan.hpp>
-#include <vk_mem_alloc.h>
+#include <vma/vk_mem_alloc.h>
+#include <filesystem>
 
 namespace hi::inline v1 {
-class URL;
 
 class gfx_device_vulkan final : public gfx_device {
 public:
@@ -56,7 +56,7 @@ public:
      * Prioritizes HDR, followed by sRGB.
      *
      * @param surface The surface to determine the surface format for.
-     * @param [out]score Optional return parameter for the quality of the surface format.
+     * @param[out] score Optional return parameter for the quality of the surface format.
      */
     [[nodiscard]] vk::SurfaceFormatKHR get_surface_format(gfx_surface const &surface, int *score = nullptr) const noexcept;
 
@@ -66,7 +66,7 @@ public:
      * Prioritized a double buffering mode.
      *
      * @param surface The surface to determine the present mode for.
-     * @param [out]score Optional return parameter for the quality of the present mode.
+     * @param[out] score Optional return parameter for the quality of the present mode.
      */
     [[nodiscard]] vk::PresentModeKHR get_present_mode(gfx_surface const &surface, int *score = nullptr) const noexcept;
 
@@ -156,16 +156,17 @@ public:
         hi_axiom(gfx_system_mutex.recurse_lock_count());
 
         void *mapping;
-        hilet result = static_cast<vk::Result>(vmaMapMemory(allocator, allocation, &mapping));
+        hilet result = vk::Result{vmaMapMemory(allocator, allocation, &mapping)};
+        if (result != vk::Result::eSuccess) {
+            throw gui_error(std::format("vmaMapMemory failed {}", to_string(result)));
+        }
 
         VmaAllocationInfo allocationInfo;
         vmaGetAllocationInfo(allocator, allocation, &allocationInfo);
 
         // Should we launder the pointer? The GPU has created the objects, not the C++ application.
         T *mappingT = reinterpret_cast<T *>(mapping);
-        hilet mappingSpan = std::span<T>(mappingT, allocationInfo.size / sizeof(T));
-
-        return vk::createResultValue(result, mappingSpan, "hi::gfx_device_vulkan::mapMemory");
+        return std::span<T>{mappingT, allocationInfo.size / sizeof(T)};
     }
 
     void unmapMemory(const VmaAllocation &allocation) const;
@@ -187,7 +188,7 @@ public:
 
     vk::ShaderModule loadShader(std::span<std::byte const> shaderObjectBytes) const;
 
-    vk::ShaderModule loadShader(URL const &shaderObjectLocation) const;
+    vk::ShaderModule loadShader(std::filesystem::path const &path) const;
 
     void waitIdle() const
     {

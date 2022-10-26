@@ -1,10 +1,10 @@
-// Copyright Take Vos 2019-2021.
+// Copyright Take Vos 2019-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
-#include "required.hpp"
+#include "utility.hpp"
 #include "assert.hpp"
 #include "cast.hpp"
 #include <algorithm>
@@ -45,20 +45,25 @@ constexpr std::array<T, N> generate_array(F operation)
     return a;
 }
 
-/** Remove an element from an container.
- * @param v Container with elements that need to be removed.
- * @param predicate A function that is passed to std::find_if() to find elements that need to be erased.
- */
-template<typename T, typename F>
-inline void erase_if(T &v, F predicate)
+/** Remove element from a container.
+* 
+* @note The elements before @a element remain in order.
+* @note The elements after @a element are not in the original order.
+* @param first The iterator pointing to the first element of the container
+* @param last The iterator pointing one beyond the last element of the container.
+* @param element The iterator that points to the element to be removed.
+* @return The iterator one past the last element.
+*/
+template<typename It>
+constexpr It unordered_remove(It first, It last, It element)
 {
-    while (true) {
-        hilet i = std::find_if(v.begin(), v.end(), predicate);
-        if (i == v.end()) {
-            return;
-        }
-        v.erase(i);
-    }
+    hi_axiom(first != last);
+
+    using std::swap;
+
+    auto new_last = last - 1;
+    swap(*element, *new_last);
+    return new_last;
 }
 
 template<typename It, typename UnaryPredicate>
@@ -180,7 +185,7 @@ inline void for_each_cluster(It first, It last, S IsClusterSeperator, F Function
         return;
     }
 
-    // If the first item is a cluster seperator skip over it.
+    // If the first item is a cluster separator skip over it.
     if (IsClusterSeperator(*first)) {
         first++;
     }

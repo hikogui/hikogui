@@ -2,12 +2,19 @@
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
+/** @file GUI/gui_event_variant.hpp Definition of a GUI event variant.
+ * @ingroup GUI
+ */
+
 #pragma once
 
 #include "gui_event_type.hpp"
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
+/** A granular gui event type.
+ * @ingroup GUI
+ */
 enum class gui_event_variant {
     /** The gui_event does not have associated data.
      */
@@ -26,6 +33,9 @@ enum class gui_event_variant {
     grapheme
 };
 
+/** Convert a gui event type, to an gui event variant.
+ * @ingroup GUI
+ */
 [[nodiscard]] constexpr gui_event_variant to_gui_event_variant(gui_event_type type) noexcept
 {
     switch (type) {
@@ -54,4 +64,4 @@ enum class gui_event_variant {
     }
 }
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

@@ -1,4 +1,4 @@
-// Copyright Take Vos 2019-2020.
+// Copyright Take Vos 2019, 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -17,15 +17,15 @@ namespace hi::inline v1 {
 enum class vertical_alignment : uint8_t {
     /** Align to the top.
      */
-    top,
+    top = 0,
 
     /** Align to the vertical-middle.
      */
-    middle,
+    middle = 1,
 
     /** Align to the bottom.
      */
-    bottom
+    bottom = 2
 };
 
 enum class horizontal_alignment : uint8_t {
@@ -34,31 +34,31 @@ enum class horizontal_alignment : uint8_t {
      * This will act as flush_left if the paragraph is in left-to-right direction,
      * and as flush_right if the paragraph is in right-to-left direction.
      */
-    flush,
+    flush = 0,
 
     /** Align the text to the left side
      *
      * The text will be flush-left independent of the writing direction.
      */
-    left,
+    left = 1,
 
     /** Align the text in the center.
      *
      * Since the text is centered, the writing direction is unimportant.
      */
-    center,
+    center = 2,
 
     /** Stretch the text to be flush to both sides.
      *
      * Since the text is flush on both sides, the writing direction is unimportant.
      */
-    justified,
+    justified = 3,
 
     /** Align the text to the right side
      *
      * The text will be flush-left independent of the writing direction.
      */
-    right,
+    right = 4,
 };
 
 class alignment {

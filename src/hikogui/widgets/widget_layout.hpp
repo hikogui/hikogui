@@ -1,6 +1,10 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
+
+/** @file widgets/widget_layout.hpp Defines widget_layout.
+ * @ingroup widget_utilities
+ */
 
 #pragma once
 
@@ -11,9 +15,25 @@
 #include "../unicode/unicode_bidi_class.hpp"
 #include "../GFX/subpixel_orientation.hpp"
 #include "../chrono.hpp"
+#include "widget_baseline.hpp"
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
+/** The layout of a widget.
+ *
+ * This object is created by a container to position a child-widget
+ * within it.
+ *
+ * The layout includes:
+ *  - the size of the widget.
+ *  - translation matrices between the parent and child widget.
+ *  - translation matrices between the child widget and the window.
+ *  - the clipping rectangle when the parent only wants to display a part the child.
+ *  - if the widget should display itself in left-to-right or right-to-left language mode.
+ *  - the baseline where text should be drawn.
+ *
+ * @ingroup widget_utilities
+ */
 class widget_layout {
 public:
     /** The amount of pixels that the redraw request will overhang the widget.
@@ -70,25 +90,25 @@ public:
      */
     utc_nanoseconds display_time_point;
 
-    constexpr widget_layout(widget_layout const &) noexcept = default;
-    constexpr widget_layout(widget_layout &&) noexcept = default;
-    constexpr widget_layout &operator=(widget_layout const &) noexcept = default;
-    constexpr widget_layout &operator=(widget_layout &&) noexcept = default;
+    /** The base-line in widget local y-coordinate.
+     */
+    float baseline;
+
+    constexpr widget_layout(widget_layout const&) noexcept = default;
+    constexpr widget_layout(widget_layout&&) noexcept = default;
+    constexpr widget_layout& operator=(widget_layout const&) noexcept = default;
+    constexpr widget_layout& operator=(widget_layout&&) noexcept = default;
     constexpr widget_layout() noexcept = default;
 
-    [[nodiscard]] constexpr friend bool operator==(widget_layout const &lhs, widget_layout const &rhs) noexcept
+    [[nodiscard]] constexpr friend bool operator==(widget_layout const& lhs, widget_layout const& rhs) noexcept
     {
         hi_axiom((lhs.to_parent == rhs.to_parent) == (lhs.from_parent == rhs.from_parent));
         hi_axiom((lhs.to_window == rhs.to_window) == (lhs.from_window == rhs.from_window));
 
         // clang-format on
-        return
-            lhs.size == rhs.size and
-            lhs.to_parent == rhs.to_parent and
-            lhs.to_window == rhs.to_window and
-            lhs.clipping_rectangle == rhs.clipping_rectangle and
-            lhs.sub_pixel_size == rhs.sub_pixel_size and
-            lhs.writing_direction == rhs.writing_direction;
+        return lhs.size == rhs.size and lhs.to_parent == rhs.to_parent and lhs.to_window == rhs.to_window and
+            lhs.clipping_rectangle == rhs.clipping_rectangle and lhs.sub_pixel_size == rhs.sub_pixel_size and
+            lhs.writing_direction == rhs.writing_direction and lhs.baseline == rhs.baseline;
         // clang-format off
     }
 
@@ -112,6 +132,13 @@ public:
     [[nodiscard]] constexpr aarectangle window_clipping_rectangle() const noexcept
     {
         return bounding_rectangle(to_window * clipping_rectangle);
+    }
+
+    /** Get the rectangle in window coordinate system.
+     */
+    [[nodiscard]] constexpr aarectangle window_rectangle() const noexcept
+    {
+        return bounding_rectangle(to_window * rectangle());
     }
 
     /** Get the clipping rectangle in window coordinate system.
@@ -149,7 +176,8 @@ public:
         clipping_rectangle(window_size),
         sub_pixel_size(hi::sub_pixel_size(subpixel_orientation)),
         writing_direction(writing_direction),
-        display_time_point(display_time_point)
+        display_time_point(display_time_point),
+        baseline()
     {
     }
 
@@ -158,10 +186,11 @@ public:
      * @param child_rectangle The location and size of the child widget, relative to the current widget.
      * @param elevation The elevation of the child widget, relative to the current widget.
      * @param new_clipping_rectangle The new clipping rectangle of the child widget, relative to the current widget.
+     * @param new_baseline The baseline to use by the child widget.
      * @return A new widget_layout for use by the child widget.
      */
     [[nodiscard]] constexpr widget_layout
-    transform(aarectangle const &child_rectangle, float elevation, aarectangle new_clipping_rectangle) const noexcept
+    transform(aarectangle const &child_rectangle, float elevation, aarectangle new_clipping_rectangle, widget_baseline new_baseline = widget_baseline{}) const noexcept
     {
         auto to_parent3 = translate3{child_rectangle, elevation};
         auto from_parent3 = ~to_parent3;
@@ -176,6 +205,11 @@ public:
         r.sub_pixel_size = this->sub_pixel_size;
         r.writing_direction = this->writing_direction;
         r.display_time_point = this->display_time_point;
+        if (new_baseline.empty()) {
+            r.baseline = this->baseline - child_rectangle.bottom();
+        } else {
+            r.baseline = new_baseline.absolute(child_rectangle.height());
+        }
         return r;
     }
 
@@ -183,11 +217,23 @@ public:
      *
      * @param child_rectangle The location and size of the child widget, relative to the current widget.
      * @param elevation The relative elevation of the child widget compared to the current widget.
+     * @param new_baseline The relative baseline of the child widgets on the same row.
      * @return A new widget_layout for use by the child widget.
      */
-    [[nodiscard]] constexpr widget_layout transform(aarectangle const &child_rectangle, float elevation = 1.0f) const noexcept
+    [[nodiscard]] constexpr widget_layout transform(aarectangle const &child_rectangle, float elevation = 1.0f, widget_baseline new_baseline = widget_baseline{}) const noexcept
     {
-        return transform(child_rectangle, elevation, child_rectangle + redraw_overhang);
+        return transform(child_rectangle, elevation, child_rectangle + redraw_overhang, new_baseline);
+    }
+
+    /** Create a new widget_layout for the child widget.
+     *
+     * @param child_rectangle The location and size of the child widget, relative to the current widget.
+     * @param new_baseline The relative baseline of the child widgets on the same row.
+     * @return A new widget_layout for use by the child widget.
+     */
+    [[nodiscard]] constexpr widget_layout transform(aarectangle const &child_rectangle, widget_baseline new_baseline) const noexcept
+    {
+        return transform(child_rectangle, 1.0f, child_rectangle + redraw_overhang, new_baseline);
     }
 
     /** Override e context with the new clipping rectangle.
@@ -203,4 +249,4 @@ public:
     }
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::inline v1

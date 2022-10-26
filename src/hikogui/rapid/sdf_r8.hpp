@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -6,6 +6,11 @@
 
 #include "snorm_r8.hpp"
 #include "../math.hpp"
+
+hi_warning_push();
+// C26434: Function '...' hides a non-virtual function '...'.
+// We need to hide those functions.
+hi_warning_ignore_msvc(26434);
 
 namespace hi::inline v1 {
 
@@ -22,15 +27,15 @@ struct sdf_r8 : public snorm_r8 {
     constexpr static float one_over_max_distance = 1.0f / max_distance;
 
     sdf_r8() noexcept = default;
-    sdf_r8(sdf_r8 const &other) noexcept = default;
-    sdf_r8(sdf_r8 &&other) noexcept = default;
-    sdf_r8 &operator=(sdf_r8 const &other) noexcept = default;
-    sdf_r8 &operator=(sdf_r8 &&other) noexcept = default;
+    sdf_r8(sdf_r8 const& other) noexcept = default;
+    sdf_r8(sdf_r8&& other) noexcept = default;
+    sdf_r8& operator=(sdf_r8 const& other) noexcept = default;
+    sdf_r8& operator=(sdf_r8&& other) noexcept = default;
     ~sdf_r8() = default;
 
     sdf_r8(float rhs) noexcept : snorm_r8(rhs * one_over_max_distance) {}
 
-    sdf_r8 &operator=(float rhs) noexcept
+    sdf_r8& operator=(float rhs) noexcept
     {
         snorm_r8::operator=(rhs *one_over_max_distance);
         return *this;
@@ -48,3 +53,5 @@ struct sdf_r8 : public snorm_r8 {
 };
 
 } // namespace hi::inline v1
+
+hi_warning_pop();

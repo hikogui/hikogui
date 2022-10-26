@@ -1,4 +1,4 @@
-// Copyright Take Vos 2019-2020.
+// Copyright Take Vos 2019-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -17,22 +17,6 @@
 #endif
 
 namespace hi::inline v1 {
-
-#define HI_BT_DEBUG 'D'
-#define HI_BT_RELEASE 'R'
-
-#if defined(NDEBUG)
-#define HI_BUILD_TYPE HI_BT_RELEASE
-#else
-#define HI_BUILD_TYPE HI_BT_DEBUG
-#endif
-
-enum class build_type {
-    debug = HI_BT_DEBUG,
-    release = HI_BT_RELEASE,
-
-    current = HI_BUILD_TYPE
-};
 
 #define HI_OS_WINDOWS 'W'
 #define HI_OS_MACOS 'A'
@@ -232,94 +216,6 @@ constexpr std::size_t hardware_constructive_interference_size = 64;
 //#else
 //constexpr bool x86_64_v4 = false;
 //#endif
-
-#define hi_stringify_(x) #x
-#define hi_stringify(x) hi_stringify_(x)
-
-#define hi_cat_(a, b) a ## b
-#define hi_cat(a, b) hi_cat_(a, b)
-
-#if HI_COMPILER == HI_CC_MSVC
-
-/** Marker to tell the compiler that this line will never be executed.
- * 
- * This marker allows the compiler to do certain optimization.
- */
-#define hi_unreachable() __assume(0)
-
-/** Mark an expression as true.
- *
- * The expression inside hi_assume() can be used by the compiler
- * to optimize the code (before and after) based on the fact that
- * the expression is true.
- */
-#define hi_assume(condition) __assume(condition)
-
-/** 
- */
-#define hi_force_inline __forceinline
-#define hi_no_inline __declspec(noinline)
-#define hi_restrict __restrict
-#define hi_warning_push() _Pragma("warning( push )")
-#define hi_warning_pop() _Pragma("warning( pop )")
-#define hi_msvc_pragma(a) _Pragma(a)
-#define hi_msvc_suppress(code) _Pragma(hi_stringify(warning(disable:code)))
-#define hi_clang_suppress(a)
-
-/** Attribute to export a function, class, variable in the shared library or dll.
- */
-#define hi_export __declspec(dllexport)
-#define hi_typename
-#define hi_constexpr constexpr
-
-#elif HI_COMPILER == HI_CC_CLANG
-#define hi_unreachable() __builtin_unreachable()
-#define hi_assume(condition) __builtin_assume(static_cast<bool>(condition))
-#define hi_force_inline inline __attribute__((always_inline))
-#define hi_no_inline __attribute__((noinline))
-#define hi_restrict __restrict__
-#define hi_warning_push() _Pragma("warning(push)")
-#define hi_warning_pop() _Pragma("warning(push)")
-#define hi_msvc_suppress(code)
-#define hi_clang_suppress(a) _Pragma(hi_stringify(clang diagnostic ignored a))
-#define hi_export
-
-// Clang does not implement down with typename
-#define hi_typename typename
-// Clang misses constexpr on std:: types.
-#define hi_constexpr
-
-#elif HI_COMPILER == HI_CC_GCC
-#define hi_unreachable() __builtin_unreachable()
-#define hi_assume(condition) \
-    do { \
-        if (!(condition)) \
-            hi_unreachable(); \
-    } while (false)
-#define hi_force_inline inline __attribute__((always_inline))
-#define hi_no_inline __attribute__((noinline))
-#define hi_restrict __restrict__
-#define hi_warning_push() _Pragma("warning(push)")
-#define hi_warning_pop() _Pragma("warning(pop)")
-#define hi_msvc_pragma(a)
-#define hi_clang_suppress(a)
-#define msvc_pragma(a)
-#define hi_typename
-
-#else
-#define hi_unreachable() std::terminate()
-#define hi_assume(condition) static_assert(sizeof(condition) == 1)
-#define hi_force_inline inline
-#define hi_no_inline
-#define hi_restrict
-#define hi_warning_push()
-#define hi_warning_pop()
-#define hi_msvc_pragma(a)
-#define hi_clang_suppress(a)
-#define msvc_pragma(a)
-#define hi_typename
-
-#endif
 
 #if HI_PROCESSOR == HI_CPU_X64
 /** Minimum offset between two objects to avoid false sharing. Guaranteed to be at least alignof(std::max_align_t)

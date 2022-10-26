@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -22,7 +22,7 @@
 #include "../color/color.hpp"
 #include "../color/quad_color.hpp"
 #include "../widgets/widget_layout.hpp"
-#include "../vspan.hpp"
+#include "../vector_span.hpp"
 
 namespace hi::inline v1 {
 class gfx_device;
@@ -85,10 +85,10 @@ public:
 
     draw_context(
         gfx_device_vulkan& device,
-        vspan<pipeline_box::vertex>& box_vertices,
-        vspan<pipeline_image::vertex>& image_vertices,
-        vspan<pipeline_SDF::vertex>& sdf_vertices,
-        vspan<pipeline_alpha::vertex>& alpha_vertices) noexcept;
+        vector_span<pipeline_box::vertex>& box_vertices,
+        vector_span<pipeline_image::vertex>& image_vertices,
+        vector_span<pipeline_SDF::vertex>& sdf_vertices,
+        vector_span<pipeline_alpha::vertex>& alpha_vertices) noexcept;
 
     /** Check if the draw_context should be used for rendering.
      */
@@ -140,6 +140,7 @@ public:
     /** Draw a box with rounded corners.
      *
      * @param layout The layout to use, specifically the to_window transformation matrix and the clipping rectangle.
+     * @param clipping_rectangle The rectangle into which to draw the box.
      * @param box The four points of the box to draw.
      * @param fill_color The fill color of the inside of the box.
      * @param border_color The line color of the border of the box.
@@ -615,10 +616,10 @@ public:
     }
 
 private:
-    vspan<pipeline_box::vertex> *_box_vertices;
-    vspan<pipeline_image::vertex> *_image_vertices;
-    vspan<pipeline_SDF::vertex> *_sdf_vertices;
-    vspan<pipeline_alpha::vertex> *_alpha_vertices;
+    vector_span<pipeline_box::vertex> *_box_vertices;
+    vector_span<pipeline_image::vertex> *_image_vertices;
+    vector_span<pipeline_SDF::vertex> *_sdf_vertices;
+    vector_span<pipeline_alpha::vertex> *_alpha_vertices;
 
     void _override_alpha(aarectangle const& clipping_rectangle, quad box, float alpha) const noexcept;
 

@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -9,24 +9,18 @@
 
 namespace hi::inline v1 {
 
-grid_widget::grid_widget(gui_window &window, widget *parent, std::weak_ptr<delegate_type> delegate) noexcept :
-    widget(window, parent), _delegate(std::move(delegate))
+grid_widget::grid_widget(gui_window &window, widget *parent) noexcept :
+    widget(window, parent)
 {
     hi_axiom(is_gui_thread());
 
     if (parent) {
         semantic_layer = parent->semantic_layer;
     }
-    if (auto d = _delegate.lock()) {
-        d->init(*this);
-    }
 }
 
 grid_widget::~grid_widget()
 {
-    if (auto delegate = _delegate.lock()) {
-        delegate->deinit(*this);
-    }
 }
 
 bool grid_widget::address_in_use(std::size_t column_first, std::size_t row_first, std::size_t column_last, std::size_t row_last) const noexcept
@@ -54,7 +48,7 @@ widget &grid_widget::add_widget(
 
     auto &ref = *widget;
     _cells.emplace_back(column_first, row_first, column_last, row_last, std::move(widget));
-    request_reconstrain();
+    hi_request_reconstrain("grid_widget::add_widget({}, {}, {}, {})", column_first, row_first, column_last, row_last);
     return ref;
 }
 
@@ -73,7 +67,8 @@ widget_constraints const &grid_widget::set_constraints() noexcept
             cell_constraints.preferred.height(),
             cell_constraints.maximum.height(),
             cell_constraints.margins.top(),
-            cell_constraints.margins.bottom());
+            cell_constraints.margins.bottom(), 
+            cell_constraints.baseline);
 
         _columns.add_constraint(
             cell.column_first,
@@ -103,7 +98,8 @@ void grid_widget::set_layout(widget_layout const &layout) noexcept
 
     for (hilet &cell : _cells) {
         hilet child_rectangle = cell.rectangle(_columns, _rows, layout.height());
-        cell.widget->set_layout(layout.transform(child_rectangle, 0.0f));
+        hilet child_baseline = cell.baseline(_rows);
+        cell.widget->set_layout(layout.transform(child_rectangle, 0.0f, child_baseline));
     }
 }
 

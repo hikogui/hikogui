@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -19,12 +19,12 @@ namespace hi::inline v1 {
  */
 [[nodiscard]] inline bool get_bit(std::span<std::byte const> buffer, std::size_t &index) noexcept
 {
-    auto byte_index = index >> 3;
-    auto bit_index = index & 7;
+    hilet byte_index = index >> 3;
+    hilet bit_index = index & 7;
     ++index;
 
     hi_axiom(byte_index < buffer.size());
-    return static_cast<bool>(static_cast<uint8_t>(buffer[byte_index] >> bit_index) & 1);
+    return to_bool(std::bit_cast<uint8_t>(buffer[byte_index] >> bit_index) & 1);
 }
 
 /** Read a bits from of span of bytes
@@ -54,16 +54,16 @@ namespace hi::inline v1 {
     auto todo = length;
     auto done = 0_uz;
     while (todo) {
-        auto byte_index = index >> 3;
-        auto bit_index = index & 7;
+        hilet byte_index = index >> 3;
+        hilet bit_index = index & 7;
         hi_axiom(byte_index < buffer.size());
 
-        auto available_bits = 8 - bit_index;
-        auto nr_bits = std::min(available_bits, todo);
+        hilet available_bits = 8 - bit_index;
+        hilet nr_bits = std::min(available_bits, todo);
 
-        auto mask = (1 << nr_bits) - 1;
+        hilet mask = (1 << nr_bits) - 1;
 
-        auto tmp = static_cast<int>(buffer[byte_index] >> bit_index) & mask;
+        hilet tmp = static_cast<int>(buffer[byte_index] >> bit_index) & mask;
         value |= tmp << done;
 
         todo -= nr_bits;

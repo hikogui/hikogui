@@ -1,4 +1,4 @@
-// Copyright Take Vos 2019-2020.
+// Copyright Take Vos 2019-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -341,10 +341,10 @@ struct bigint {
         return from_little_endian(static_cast<uint8_t const *>(data));
     }
 
-    /*! Calculate the remainder of a CRC check.
-     * \param r Return value, the remainder.
-     * \param lhs The number to check.
-     * \param rhs Polynomial.
+    /** Calculate the remainder of a CRC check.
+     * @param lhs The number to check.
+     * @param rhs Polynomial.
+     * @return the remainder.
      */
     [[nodiscard]] constexpr friend bigint crc(bigint const &lhs, bigint const &rhs) noexcept requires(not is_signed)
     {
@@ -365,12 +365,12 @@ struct bigint {
         return static_cast<bigint>(tmp);
     }
 
-    /*! Calculate the reciprocal at a certain precision.
+    /** Calculate the reciprocal at a certain precision.
      *
      * N should be two times the size of the eventual numerator.
      *
-     * \param divider The divider of 1.
-     * \return (1 << (K*sizeof(T)*8)) / divider
+     * @param rhs The divider of 1.
+     * @return (1 << (K*sizeof(T)*8)) / rhs
      */
     [[nodiscard]] constexpr friend bigint reciprocal(bigint const &rhs)
     {

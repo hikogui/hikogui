@@ -60,7 +60,7 @@ target_sources(hikogui PRIVATE
     formula_vector_literal_node.hpp
 )
 
-if(HI_BUILD_TESTS)
+if(BUILD_TESTING)
     target_sources(hikogui_tests PRIVATE
         formula_tests.cpp
     )

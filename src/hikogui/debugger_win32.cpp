@@ -1,4 +1,4 @@
-// Copyright Take Vos 2019.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -7,6 +7,12 @@
 #include "debugger.hpp"
 #include "strings.hpp"
 #include "log.hpp"
+#include "architecture.hpp"
+
+hi_warning_push();
+// C6320: Exception-filter expression is the constant EXCEPTION_EXECUTE_HANDLER.
+// This might mask exceptions that were not intended to be handled.
+hi_warning_ignore_msvc(6320);
 
 namespace hi::inline v1 {
 
@@ -36,9 +42,12 @@ void prepare_debug_break() noexcept
 
         } __except (EXCEPTION_EXECUTE_HANDLER) {
             // User pressed "OK", debugger has been attached, __debugbreak() after return.
+            return;
         }
     }
 }
 
 
 } // namespace hi::inline v1
+
+hi_warning_pop();

@@ -1,18 +1,19 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #pragma once
 
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../assert.hpp"
 #include "../math.hpp"
+#include "widget_baseline.hpp"
 #include <tuple>
 #include <vector>
 #include <cstddef>
 #include <functional>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 
 /** Grid layout is used to layout widgets along an axis.
  *
@@ -21,10 +22,10 @@ namespace hi::inline v1 {
  */
 class grid_layout {
 public:
-    grid_layout(grid_layout const &) = delete;
-    grid_layout(grid_layout &&) = delete;
-    grid_layout &operator=(grid_layout const &) = delete;
-    grid_layout &operator=(grid_layout &&) = delete;
+    grid_layout(grid_layout const&) = delete;
+    grid_layout(grid_layout&&) = delete;
+    grid_layout& operator=(grid_layout const&) = delete;
+    grid_layout& operator=(grid_layout&&) = delete;
 
     grid_layout() noexcept {}
 
@@ -46,11 +47,20 @@ public:
      * @param maximum The maximum size that a widget should be laid out as.
      * @param margin_before The space between this widget and other widgets.
      * @param margin_after The space between this widget and other widgets.
+     * @param baseline The relative baseline for all the widget on a row.
      */
-    void add_constraint(std::size_t first, std::size_t last, float minimum, float preferred, float maximum, float margin_before, float margin_after) noexcept
+    void add_constraint(
+        std::size_t first,
+        std::size_t last,
+        float minimum,
+        float preferred,
+        float maximum,
+        float margin_before,
+        float margin_after,
+        widget_baseline baseline = widget_baseline{}) noexcept
     {
         _num_cells = std::max(_num_cells, last);
-        _constraints.emplace_back(first, last, minimum, preferred, maximum, margin_before, margin_after);
+        _constraints.emplace_back(first, last, minimum, preferred, maximum, margin_before, margin_after, baseline);
     }
 
     /** Add a constraint for a widget.
@@ -61,10 +71,18 @@ public:
      * @param maximum The maximum size that a widget should be laid out as.
      * @param margin_before The space between this widget and other widgets.
      * @param margin_after The space between this widget and other widgets.
+     * @param baseline The relative baseline for all the widget on a row.
      */
-    void add_constraint(std::size_t index, float minimum, float preferred, float maximum, float margin_before, float margin_after) noexcept
+    void add_constraint(
+        std::size_t index,
+        float minimum,
+        float preferred,
+        float maximum,
+        float margin_before,
+        float margin_after,
+        widget_baseline baseline = widget_baseline{}) noexcept
     {
-        return add_constraint(index, index + 1, minimum, preferred, maximum, margin_before, margin_after);
+        return add_constraint(index, index + 1, minimum, preferred, maximum, margin_before, margin_after, baseline);
     }
 
     /** Commit all the constraints.
@@ -208,6 +226,21 @@ public:
         return get_positions(index, index + 1);
     }
 
+    [[nodiscard]] widget_baseline get_baseline(std::size_t first, std::size_t last) const noexcept
+    {
+        for (auto i = first; i != last; ++i) {
+            if (_cells[i].baseline) {
+                return _cells[i].baseline;
+            }
+        }
+        return {};
+    }
+
+    [[nodiscard]] widget_baseline get_baseline(std::size_t index) const noexcept
+    {
+        return get_baseline(index, index + 1);
+    }
+
 private:
     struct constraint_type {
         std::size_t first;
@@ -217,6 +250,7 @@ private:
         float maximum;
         float margin_before;
         float margin_after;
+        widget_baseline baseline;
 
         [[nodiscard]] bool is_single_cell() const noexcept
         {
@@ -250,8 +284,12 @@ private:
          */
         float maximum;
 
+        /** The baseline of this cell.
+         */
+        widget_baseline baseline;
+
         cell_type() noexcept :
-            size(0.0f), margin(0.0f), minimum(0.0f), preferred(0.0f), maximum(std::numeric_limits<float>::infinity())
+            size(0.0f), margin(0.0f), minimum(0.0f), preferred(0.0f), maximum(std::numeric_limits<float>::infinity()), baseline()
         {
         }
 
@@ -261,7 +299,7 @@ private:
             inplace_clamp(preferred, minimum, maximum);
         }
 
-        void set_constraint(constraint_type const &constraint) noexcept
+        void set_constraint(constraint_type const& constraint) noexcept
         {
             inplace_max(minimum, constraint.minimum);
             inplace_max(preferred, constraint.preferred);
@@ -327,8 +365,8 @@ private:
     }
 
     void constrain_cells_by_singles() noexcept;
-    void constrain_cells_by_spans(std::function<float(constraint_type const &)> const &predicate) noexcept;
+    void constrain_cells_by_spans(std::function<float(constraint_type const&)> const& predicate) noexcept;
     [[nodiscard]] bool holds_invariant() const noexcept;
 };
 
-} // namespace hi::inline v1
+}} // namespace hi::v1

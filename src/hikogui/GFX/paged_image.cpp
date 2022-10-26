@@ -1,4 +1,4 @@
-// Copyright Take Vos 2019-2020.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -8,7 +8,7 @@
 #include "gfx_device_vulkan.hpp"
 #include "gfx_surface_vulkan.hpp"
 #include "../log.hpp"
-#include "../required.hpp"
+#include "../utility.hpp"
 #include "../cast.hpp"
 #include "../geometry/translate.hpp"
 #include "../geometry/axis_aligned_rectangle.hpp"

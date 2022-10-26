@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -8,47 +8,58 @@
 
 namespace hi::inline v1 {
 
-label_widget::label_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
+label_widget::label_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
 {
     mode = widget_mode::select;
 
-    _icon_widget = std::make_unique<icon_widget>(window, this, label->icon);
+    _icon_widget = std::make_unique<icon_widget>(window, this, label.get<"icon">());
     _icon_widget->alignment = alignment;
-    _text_widget = std::make_unique<text_widget>(window, this, to_gstring(label->text()));
+    _text_widget = std::make_unique<text_widget>(window, this, label.get<"text">());
     _text_widget->alignment = alignment;
     _text_widget->text_style = text_style;
     _text_widget->mode = mode;
 
-    _text_style_cbt = text_style.subscribe([this](auto...) {
-        switch (*text_style) {
-        case theme_text_style::label: _icon_widget->color = color::foreground(); break;
-        case theme_text_style::small_label: _icon_widget->color = color::foreground(); break;
-        case theme_text_style::warning: _icon_widget->color = color::orange(); break;
-        case theme_text_style::error: _icon_widget->color = color::red(); break;
-        case theme_text_style::help: _icon_widget->color = color::indigo(); break;
-        case theme_text_style::placeholder: _icon_widget->color = color::gray(); break;
-        case theme_text_style::link: _icon_widget->color = color::blue(); break;
-        default: _icon_widget->color = color::foreground();
-        }
-    });
-
-    _label_cbt = label.subscribe([this](auto...) {
-        _icon_widget->icon = label->icon;
-        _text_widget->text = to_gstring(label->text());
-    });
+    _text_style_cbt = text_style.subscribe(
+        [this](auto...) {
+            switch (*text_style) {
+            case semantic_text_style::label:
+                _icon_widget->color = color::foreground();
+                break;
+            case semantic_text_style::small_label:
+                _icon_widget->color = color::foreground();
+                break;
+            case semantic_text_style::warning:
+                _icon_widget->color = color::orange();
+                break;
+            case semantic_text_style::error:
+                _icon_widget->color = color::red();
+                break;
+            case semantic_text_style::help:
+                _icon_widget->color = color::indigo();
+                break;
+            case semantic_text_style::placeholder:
+                _icon_widget->color = color::gray();
+                break;
+            case semantic_text_style::link:
+                _icon_widget->color = color::blue();
+                break;
+            default:
+                _icon_widget->color = color::foreground();
+            }
+        },
+        callback_flags::main);
 }
 
-widget_constraints const &label_widget::set_constraints() noexcept
+widget_constraints const& label_widget::set_constraints() noexcept
 {
     _layout = {};
 
     // Translate the text of the label during reconstrain as this is triggered when the system language changes.
-    _text_widget->text = to_gstring(label->text());
-    hilet &text_constraints = _text_widget->set_constraints();
-    hilet &icon_constraints = _icon_widget->set_constraints();
+    _text_constraints = _text_widget->set_constraints();
+    _icon_constraints = _icon_widget->set_constraints();
 
-    hilet label_size = text_constraints.preferred;
-    hilet icon_size = icon_constraints.preferred;
+    hilet label_size = _text_constraints.preferred;
+    hilet icon_size = _icon_constraints.preferred;
 
     hilet has_text = label_size.width() > 0.0f;
     hilet has_icon = icon_size.width() > 0.0f;
@@ -61,7 +72,7 @@ widget_constraints const &label_widget::set_constraints() noexcept
             if (*alignment == horizontal_alignment::center or *alignment == horizontal_alignment::justified) {
                 return theme().large_icon_size;
             } else {
-                return std::ceil(theme().text_style(*text_style).size * theme().scale);
+                return std::ceil(theme().text_style(*text_style)->size * theme().scale);
             }
         } else {
             return 0.0f;
@@ -90,10 +101,16 @@ widget_constraints const &label_widget::set_constraints() noexcept
         }
     }();
 
-    return _constraints = {size, size, size, theme().margin};
+    if ((*alignment == horizontal_alignment::center or *alignment == horizontal_alignment::justified) and
+        *alignment != vertical_alignment::middle) {
+        // When the icon and text are above one another, the label needs to define its own base-line.
+        return _constraints = {size, size, size, theme().margin};
+    } else {
+        return _constraints = {size, size, size, theme().margin, _text_constraints.baseline};
+    }
 }
 
-void label_widget::set_layout(widget_layout const &layout) noexcept
+void label_widget::set_layout(widget_layout const& layout) noexcept
 {
     if (compare_store(_layout, layout)) {
         _text_rectangle = aarectangle{};
@@ -144,11 +161,18 @@ void label_widget::set_layout(widget_layout const &layout) noexcept
     }
 
     // Elevate the child widget by 0.0f since the label widget does not draw itself.
-    _icon_widget->set_layout(layout.transform(_icon_rectangle, 0.0f));
-    _text_widget->set_layout(layout.transform(_text_rectangle, 0.0f));
+    if ((*alignment == horizontal_alignment::center or *alignment == horizontal_alignment::justified) and
+        *alignment != vertical_alignment::middle) {
+        // When the icon and text are above one another, the label needs to define its own base-line.
+        _icon_widget->set_layout(layout.transform(_icon_rectangle, 0.0f, _icon_constraints.baseline));
+        _text_widget->set_layout(layout.transform(_text_rectangle, 0.0f, _text_constraints.baseline));
+    } else {
+        _icon_widget->set_layout(layout.transform(_icon_rectangle, 0.0f));
+        _text_widget->set_layout(layout.transform(_text_rectangle, 0.0f));
+    }
 }
 
-void label_widget::draw(draw_context const &context) noexcept
+void label_widget::draw(draw_context const& context) noexcept
 {
     if (*mode > widget_mode::invisible and overlaps(context, layout())) {
         _icon_widget->draw(context);

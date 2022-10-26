@@ -1,4 +1,4 @@
-// Copyright Take Vos 2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -71,13 +71,10 @@ public:
      *  - middle, odd: y = 0 is the base-line of the middle line.
      *  - middle, even: y = 0 is half way between the base-lines of the middle two lines.
      *
+     * @param font_book The font_book instance to retrieve fonts from.
      * @param text The text as a vector of attributed graphemes.
      *             Use U+2029 as paragraph separator, and if needed U+2028 as line separator.
-     * @param vertical_alignment How the text will be aligned vertically.
-     * @param line_spacing A multiplier to scale the distance between lines compared to the
-     *                     natural line spacing of the font: ascender + descender + line-gap.
-     * @param paragraph_spacing A multiplier to scale the distance between lines compared to the
-     *                          line spacing after @a line_spacing argument has been applied.
+     * @param style The initial text-style to use to display the text.
      * @param dpi_scale The scaling factor to use to scale a font's size to match the physical display.
      * @param script The script of the text.
      */
@@ -157,10 +154,9 @@ public:
      * @param line_spacing The scaling of the spacing between lines.
      * @param paragraph_spacing The scaling of the spacing between paragraphs.
      * @return The rectangle surrounding the text, cap-height. The rectangle excludes ascenders & descenders, as if
-     *         each line is x-height. y = 0 of the rectangle is at the base-line of the text. The returned cap-height is for the
-     *         line which is at y = 0.
+     *         each line is x-height. y = 0 of the rectangle is at the base-line of the text.
      */
-    [[nodiscard]] std::pair<aarectangle, float> bounding_rectangle(
+    [[nodiscard]] aarectangle bounding_rectangle(
         float maximum_line_width,
         vertical_alignment alignment,
         float line_spacing = 1.0f,
@@ -293,14 +289,14 @@ public:
 
     /** Get the cursor before the character in logical order.
      *
-     * @param it The iterator to the character or `end()`.
+     * @param index The index to the character or one beyond.
      * @return A cursor before the character in logical order.
      */
     [[nodiscard]] text_cursor get_before_cursor(size_t index) const noexcept;
 
     /** Get the cursor after the character in logical order.
      *
-     * @param it The iterator to the character or `end()`.
+     * @param index The index to the character or one beyond.
      * @return A cursor after the character in logical order.
      */
     [[nodiscard]] text_cursor get_after_cursor(size_t index) const noexcept;

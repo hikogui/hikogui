@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -83,6 +83,10 @@ public:
         // The following load() is:
         // - valid-and-equal to thread_id when the OWNER has the lock.
         // - zero or valid-and-not-equal to thread_id when this is an OTHER thread.
+        //
+        // note: theoretically a relaxed load could be enough, but in C++20 any undefined behaviour causing an out-of-bound
+        //       array access inside the critical section protected by the unfair_recursive_mutex will overwrite owner
+        //       from the point of view of the optimizer.
         if (owner.load(std::memory_order::acquire) == thread_id) {
             // FIRST | OWNER
             hi_axiom(count != 0);
@@ -96,6 +100,10 @@ public:
             hi_axiom(count == 0);
             count = 1;
             hi_axiom(owner == 0);
+
+            // note: theoretically a relaxed store could be enough, but in C++20 any undefined behaviour causing an out-of-bound
+            //       array access inside the critical section protected by the unfair_recursive_mutex will overwrite owner
+            //       from the point of view of the optimizer.
             owner.store(thread_id, std::memory_order::release);
 
             return true;
@@ -130,6 +138,10 @@ public:
         // The following load() is:
         // - valid-and-equal to thread_id when the OWNER has the lock.
         // - zero or valid-and-not-equal to thread_id when this is an OTHER thread.
+        //
+        // note: theoretically a relaxed load could be enough, but in C++20 any undefined behaviour causing an out-of-bound
+        //       array access inside the critical section protected by the unfair_recursive_mutex will overwrite owner
+        //       from the point of view of the optimizer.
         if (owner.load(std::memory_order::acquire) == thread_id) {
             // FIRST | OWNER
             hi_axiom(count != 0);
@@ -145,6 +157,10 @@ public:
             hi_axiom(count == 0);
             count = 1;
             hi_axiom(owner == 0);
+
+            // note: theoretically a relaxed store could be enough, but in C++20 any undefined behaviour causing an out-of-bound
+            //       array access inside the critical section protected by the unfair_recursive_mutex will overwrite owner
+            //       from the point of view of the optimizer.
             owner.store(thread_id, std::memory_order::release);
         }
     }

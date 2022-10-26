@@ -1,4 +1,4 @@
-// Copyright Take Vos 2019-2021.
+// Copyright Take Vos 2021-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -9,16 +9,15 @@
 #include "wfree_fifo.hpp"
 #include "atomic.hpp"
 #include "meta.hpp"
-#include "source_location.hpp"
 #include "architecture.hpp"
 #include "delayed_format.hpp"
 #include "fixed_string.hpp"
 #include "subsystem.hpp"
 #include "global_state.hpp"
-#include "URL.hpp"
 #include "unfair_mutex.hpp"
 #include "debugger.hpp"
 #include "format_check.hpp"
+#include "thread.hpp"
 #include <chrono>
 #include <format>
 #include <string>
@@ -28,8 +27,9 @@
 #include <atomic>
 #include <memory>
 #include <thread>
+#include <filesystem>
 
-namespace hi::inline v1 {
+namespace hi { inline namespace v1 {
 namespace detail {
 
 class log_message_base {
@@ -44,14 +44,10 @@ public:
     static inline std::chrono::time_zone const *zone = nullptr;
 };
 
-template<global_state_type Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Values>
+template<global_state_type Level, fixed_string SourcePath, int SourceLine, fixed_string Fmt, typename... Values>
 class log_message : public log_message_base {
 public:
     static_assert(std::popcount(to_underlying(Level)) == 1);
-    static_assert(
-        std::is_same_v<typename decltype(SourceFile)::value_type, char>,
-        "SourceFile must be a basic_fixed_string<char>");
-    static_assert(std::is_same_v<typename decltype(Fmt)::value_type, char>, "Fmt must be a basic_fixed_string<char>");
 
     // clang-format off
     static constexpr char const *log_level_name =
@@ -83,18 +79,20 @@ public:
 
         hilet cpu_id = _time_stamp.cpu_id();
         hilet thread_id = _time_stamp.thread_id();
+        hilet thread_name = get_thread_name(thread_id);
 
         if constexpr (to_bool(Level & global_state_type::log_statistics)) {
-            return std::format("{} {:2}:{:<10} {:5} {}\n", local_time_point, cpu_id, thread_id, log_level_name, _what());
+            return std::format("{} {}({}) {:5} {}\n", local_time_point, thread_name, cpu_id, log_level_name, _what());
         } else {
+            auto source_filename = std::filesystem::path{static_cast<std::string_view>(SourcePath)}.filename().generic_string();
             return std::format(
-                "{} {:2}:{:<10} {:5} {} ({}:{})\n",
+                "{} {}({}) {:5} {} ({}:{})\n",
                 local_time_point,
+                thread_name,
                 cpu_id,
-                thread_id,
                 log_level_name,
                 _what(),
-                URL::urlFromPath(SourceFile).filename(),
+                source_filename,
                 SourceLine);
         }
     }
@@ -115,13 +113,12 @@ class log {
 public:
     /** Log a message.
      * @tparam Level log level of message, must be greater or equal to the log level of the `system_status`.
-     * @tparam SourceFile The source file where this function was called.
+     * @tparam SourcePath The source file where this function was called.
      * @tparam SourceLine The source line where this function was called.
      * @tparam Fmt The format string.
-     * @param timestamp The timestamp when the message is logged.
-     * @param args Arguments to std::format.
+     * @param args Arguments to `std::format()`.
      */
-    template<global_state_type Level, basic_fixed_string SourceFile, int SourceLine, basic_fixed_string Fmt, typename... Args>
+    template<global_state_type Level, fixed_string SourcePath, int SourceLine, fixed_string Fmt, typename... Args>
     hi_force_inline void add(Args&&...args) noexcept
     {
         static_assert(std::popcount(to_underlying(Level)) == 1);
@@ -138,7 +135,7 @@ public:
         // * Blocking is bad in a real time thread, so maybe count the number of times it is blocked.
 
         // Emplace a message directly on the queue.
-        _fifo.emplace<detail::log_message<Level, SourceFile, SourceLine, Fmt, forward_value_t<Args>...>>(
+        _fifo.emplace<detail::log_message<Level, SourcePath, SourceLine, Fmt, forward_value_t<Args>...>>(
             std::forward<Args>(args)...);
 
         if (to_bool(Level & global_state_type::log_fatal) or not to_bool(state & global_state_type::log_is_running)) {
@@ -213,7 +210,7 @@ inline log log_global;
  */
 [[nodiscard]] std::string get_last_error_message() noexcept;
 
-} // namespace hi::inline v1
+}} // namespace hi::v1
 
 #define hi_log(level, fmt, ...) \
     hi_format_check(fmt __VA_OPT__(, ) __VA_ARGS__); \

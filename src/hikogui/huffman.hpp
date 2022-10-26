@@ -1,8 +1,8 @@
-// Copyright Take Vos 2020.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
-#include "required.hpp"
+#include "utility.hpp"
 #include "bits.hpp"
 #include "cast.hpp"
 #include <span>
@@ -28,7 +28,7 @@ class huffman_tree {
     std::vector<T> tree;
 
 public:
-    huffman_tree()
+    huffman_tree() noexcept
     {
         tree.push_back(0);
         tree.push_back(0);
@@ -43,7 +43,7 @@ public:
 
         int offset = 0;
         while (--code_length > 0) {
-            int select = (code >> code_length) & 1;
+            hilet select = (code >> code_length) & 1;
             offset += select;
 
             int value = tree[offset];
@@ -53,7 +53,7 @@ public:
 
             if (value == 0) {
                 // Unused node entry. Point to the first of two new entries.
-                value = -(static_cast<int>(ssize(tree)) - offset);
+                value = -(narrow_cast<int>(ssize(tree)) - offset);
 
                 tree[offset] = narrow_cast<T>(value);
                 tree.push_back(0);
@@ -65,7 +65,7 @@ public:
         }
 
         // place the symbol as a leaf.
-        int select = code & 1;
+        hilet select = code & 1;
         offset += select;
 
         hi_axiom(tree[offset] == 0);
@@ -117,6 +117,7 @@ public:
      */
     [[nodiscard]] static huffman_tree from_lengths(uint8_t const *lengths, std::size_t nr_symbols)
     {
+        hi_axiom(lengths != nullptr);
         hi_axiom(nr_symbols < std::numeric_limits<T>::min());
 
         struct symbol_length_t {
@@ -129,7 +130,7 @@ public:
         std::vector<symbol_length_t> symbol_lengths;
         symbol_lengths.reserve(nr_symbols);
 
-        for (T symbol = T{0}; symbol != static_cast<T>(nr_symbols); ++symbol) {
+        for (T symbol = T{0}; symbol != narrow_cast<T>(nr_symbols); ++symbol) {
             symbol_lengths.emplace_back(symbol, lengths[symbol]);
         }
 

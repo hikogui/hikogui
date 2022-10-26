@@ -1,7 +1,6 @@
 // Copyright Take Vos 2022.
 // Distributed under the Boost Software License, Version 1.0.
-// (See accompanying file LICENSE_1_0.txt or copy at
-// https://www.boost.org/LICENSE_1_0.txt)
+// (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "language_tag.hpp"
 #include "../check.hpp"
@@ -1951,7 +1950,8 @@ static std::optional<std::string_view> expand_language_tag(std::string_view from
     }
     str = std::string_view{str_};
 
-    for (hilet element : std::views::split(str, std::string_view{"-"})) {
+    for (hilet element_view : std::views::split(str, std::string_view{"-"})) {
+        hilet element = std::string_view{element_view.begin(), element_view.end()};
         if (extension_first_char) {
             // Once inside the extensions portion of a language tag you can no
             // longer determine validity based on just the element size.

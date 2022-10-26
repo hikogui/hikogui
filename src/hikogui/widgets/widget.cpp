@@ -1,4 +1,4 @@
-// Copyright Take Vos 2020-2021.
+// Copyright Take Vos 2020-2022.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
@@ -21,7 +21,7 @@ widget::widget(gui_window& _window, widget *parent) noexcept :
     }
 
     _mode_cbt = mode.subscribe([&](auto...) {
-        request_reconstrain();
+        hi_request_reconstrain("widget::_mode_cbt()");
     });
 
     _constraints.minimum = extent2::nan();
@@ -104,7 +104,7 @@ hi::font_book& widget::font_book() const noexcept
 [[nodiscard]] color widget::label_color() const noexcept
 {
     if (*mode >= widget_mode::partial) {
-        return theme().text_style(theme_text_style::label).color;
+        return theme().text_style(semantic_text_style::label)->color;
     } else {
         return theme().color(semantic_color::border, semantic_layer - 1);
     }
@@ -120,12 +120,12 @@ void widget::request_relayout() const noexcept
     window.request_relayout(this);
 }
 
-void widget::request_reconstrain() const noexcept
+void widget::_request_reconstrain() const noexcept
 {
     window.request_reconstrain(this);
 }
 
-void widget::request_resize() const noexcept
+void widget::_request_resize() const noexcept
 {
     window.request_resize(this);
 }
@@ -326,7 +326,7 @@ void widget::scroll_to_show(hi::aarectangle rectangle) noexcept
 
     if (auto w = this) {
         chain.push_back(w);
-        while (static_cast<bool>(w = w->parent)) {
+        while (to_bool(w = w->parent)) {
             chain.push_back(w);
         }
     }
