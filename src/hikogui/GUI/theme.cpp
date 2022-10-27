@@ -27,9 +27,9 @@ theme::theme(hi::font_book const& font_book, std::filesystem::path const& path)
 {
     auto r = *this;
 
-    hi_axiom(new_dpi != 0.0f);
-    hi_axiom(dpi != 0.0f);
-    hi_axiom(scale != 0.0f);
+    hi_assert(new_dpi != 0.0f);
+    hi_assert(dpi != 0.0f);
+    hi_assert(scale != 0.0f);
 
     auto delta_scale = new_dpi / dpi;
     r.dpi = new_dpi;
@@ -53,7 +53,7 @@ theme::theme(hi::font_book const& font_book, std::filesystem::path const& path)
 [[nodiscard]] hi::color theme::color(hi::semantic_color original_color, ssize_t nesting_level) const noexcept
 {
     hilet& shades = _colors[to_underlying(original_color)];
-    hi_axiom(not shades.empty());
+    hi_assert(not shades.empty());
 
     nesting_level = std::max(ssize_t{0}, nesting_level);
     return shades[nesting_level % ssize(shades)];

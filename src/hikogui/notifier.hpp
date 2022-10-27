@@ -61,7 +61,7 @@ public:
 
         void await_suspend(std::coroutine_handle<> handle) noexcept
         {
-            hi_axiom(_notifier != nullptr);
+            hi_assert_not_null(_notifier);
 
             // We can use the this pointer in the callback, as `await_suspend()` is called by
             // the co-routine on the same object as `await_resume()`.

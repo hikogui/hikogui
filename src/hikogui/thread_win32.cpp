@@ -87,7 +87,7 @@ std::vector<bool> set_thread_affinity_mask(std::vector<bool> const &mask)
 [[nodiscard]] std::size_t current_cpu_id() noexcept
 {
     hilet index = GetCurrentProcessorNumber();
-    hi_axiom(index < 64);
+    hi_assert(index < 64);
     return index;
 }
 

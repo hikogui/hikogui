@@ -18,7 +18,7 @@ void pipeline_box::draw_in_command_buffer(vk::CommandBuffer commandBuffer, draw_
 
     std::vector<vk::Buffer> tmpvertexBuffers = {vertexBuffer};
     std::vector<vk::DeviceSize> tmpOffsets = {0};
-    hi_axiom(tmpvertexBuffers.size() == tmpOffsets.size());
+    hi_assert(tmpvertexBuffers.size() == tmpOffsets.size());
 
     vulkan_device().box_pipeline->drawInCommandBuffer(commandBuffer);
 

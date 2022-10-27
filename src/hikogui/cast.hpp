@@ -134,30 +134,6 @@ template<arithmetic Out, arithmetic In>
 
 } // namespace detail
 
-/** Cast numeric values without loss of precision.
- *
- * @tparam Out The numeric type to cast to
- * @tparam In The numeric type to cast from
- * @param rhs The value to cast.
- * @return The value casted to a different type without loss of precision.
- * @throws std::bad_cast when the value could not be casted without loss of precision.
- */
-template<arithmetic Out, arithmetic In>
-[[nodiscard]] constexpr Out narrow(In rhs) noexcept(type_in_range_v<Out, In>)
-{
-    if constexpr (type_in_range_v<Out, In>) {
-        return static_cast<Out>(rhs);
-    } else {
-        hilet r = static_cast<Out>(rhs);
-
-        if (not detail::narrow_validate(r, rhs)) {
-            throw std::bad_cast();
-        }
-
-        return r;
-    }
-}
-
 /** Cast an unsigned number and saturate on overflow.
  */
 template<std::unsigned_integral Out, std::unsigned_integral In>

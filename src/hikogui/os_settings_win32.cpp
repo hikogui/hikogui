@@ -196,7 +196,7 @@ namespace hi::inline v1 {
         throw os_error("Could not retrieve SM_CYMINTRACK");
     }
 
-    return extent2{narrow<float>(width), narrow<float>(height)};
+    return extent2{narrow_cast<float>(width), narrow_cast<float>(height)};
 }
 
 [[nodiscard]] extent2 os_settings::gather_maximum_window_size()
@@ -211,7 +211,7 @@ namespace hi::inline v1 {
         throw os_error("Could not retrieve SM_CYMAXTRACK");
     }
 
-    return extent2{narrow<float>(width), narrow<float>(height)};
+    return extent2{narrow_cast<float>(width), narrow_cast<float>(height)};
 }
 
 [[nodiscard]] uintptr_t os_settings::gather_primary_monitor_id()
@@ -234,7 +234,7 @@ namespace hi::inline v1 {
     }
 
     // The origin of the primary monitor is also the origin of the desktop.
-    return aarectangle{extent2{narrow<float>(width), narrow<float>(height)}};
+    return aarectangle{extent2{narrow_cast<float>(width), narrow_cast<float>(height)}};
 }
 
 [[nodiscard]] aarectangle os_settings::gather_desktop_rectangle()
@@ -261,7 +261,8 @@ namespace hi::inline v1 {
 
     // Calculate the bottom as compared to a y-axis up coordinate system.
     hilet inv_bottom = primary_monitor_height - bottom; // 0, 600
-    return aarectangle{narrow<float>(left), narrow<float>(inv_bottom), narrow<float>(width), narrow<float>(height)};
+    return aarectangle{
+        narrow_cast<float>(left), narrow_cast<float>(inv_bottom), narrow_cast<float>(width), narrow_cast<float>(height)};
 }
 
 } // namespace hi::inline v1

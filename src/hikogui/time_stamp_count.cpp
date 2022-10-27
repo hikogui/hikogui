@@ -16,8 +16,8 @@ namespace hi::inline v1 {
     auto aux_value_ = _mm_set1_epi32(_aux);
 
     hilet num_aux_values = _num_aux_values.load(std::memory_order_acquire);
-    hi_axiom(_aux_values.size() == _cpu_ids.size());
-    hi_axiom(num_aux_values < _aux_values.size());
+    hi_assert(_aux_values.size() == _cpu_ids.size());
+    hi_assert_bounds(num_aux_values, _aux_values);
 
     for (std::size_t i = 0; i < num_aux_values; i += 4) {
         hilet row = _mm_loadu_si128(reinterpret_cast<__m128i const *>(_aux_values.data() + i));

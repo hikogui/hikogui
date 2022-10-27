@@ -70,7 +70,7 @@ public:
     [[nodiscard]] button_state state() const noexcept
     {
         hi_axiom(is_gui_thread());
-        hi_axiom(delegate != nullptr);
+        hi_assert_not_null(delegate);
         return delegate->state(*this);
     }
 

@@ -63,7 +63,7 @@ public:
     [[nodiscard]] uint64_t finish() noexcept
     {
 #ifndef NDEBUG
-        hi_axiom(_debug_state < debug_state_type::finalized);
+        hi_assert(_debug_state < debug_state_type::finalized);
         _debug_state = debug_state_type::finalized;
 #endif
 
@@ -85,7 +85,7 @@ public:
     void add(void const *data, size_t size) noexcept
     {
 #ifndef NDEBUG
-        hi_axiom(_debug_state <= debug_state_type::partial);
+        hi_assert(_debug_state <= debug_state_type::partial);
         _debug_state = debug_state_type::partial;
 #endif
         auto todo = size;
@@ -145,7 +145,7 @@ public:
         auto *src = reinterpret_cast<char const *>(data);
 
 #ifndef NDEBUG
-        hi_axiom(_debug_state == debug_state_type::idle);
+        hi_assert(_debug_state == debug_state_type::idle);
 #endif
 
         auto v0 = _v0;

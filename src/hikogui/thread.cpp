@@ -43,7 +43,7 @@ std::vector<bool> set_thread_affinity(std::size_t cpu_id)
 std::size_t advance_thread_affinity(std::size_t &cpu) noexcept
 {
     auto available_cpus = process_affinity_mask();
-    hi_axiom(cpu < available_cpus.size());
+    hi_assert_bounds(cpu, available_cpus);
 
     ssize_t selected_cpu = -1;
     do {

@@ -72,7 +72,7 @@ public:
     [[nodiscard]] const_reference operator[](size_t index) const noexcept
     {
         hilet lock = std::scoped_lock(_mutex);
-        hi_axiom(index < _vector.size());
+        hi_assert_bounds(index, _vector);
         return *_vector[index];
     }
 

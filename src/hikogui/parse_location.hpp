@@ -168,7 +168,7 @@ public:
 
     parse_location& operator+=(char const *s) noexcept
     {
-        hi_axiom(s != nullptr);
+        hi_assert_not_null(s);
         while (hilet c = *s++) {
             *this += c;
         }

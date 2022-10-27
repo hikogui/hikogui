@@ -18,7 +18,7 @@ namespace hi::inline v1 {
 
 static void layout_lines_vertical_spacing(text_shaper::line_vector &lines, float line_spacing, float paragraph_spacing) noexcept
 {
-    hi_axiom(not lines.empty());
+    hi_assert(not lines.empty());
 
     auto prev = lines.begin();
     prev->y = 0.0f;
@@ -39,7 +39,7 @@ static void layout_lines_vertical_alignment(
     float max_y,
     float sub_pixel_height) noexcept
 {
-    hi_axiom(not lines.empty());
+    hi_assert(not lines.empty());
 
     // Calculate the y-adjustment needed to position the base-line of the text to y=0
     auto adjustment = [&]() {
@@ -88,7 +88,7 @@ static void layout_lines_vertical_alignment(
 static void
 bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, unicode_bidi_class writing_direction) noexcept
 {
-    hi_axiom(not lines.empty());
+    hi_assert(not lines.empty());
 
     // Create a list of all character indices.
     auto char_its = std::vector<text_shaper::char_iterator>{};
@@ -149,7 +149,7 @@ bidi_algorithm(text_shaper::line_vector &lines, text_shaper::char_vector &text, 
             par_it++;
         }
     }
-    hi_axiom(par_it <= paragraph_directions.cend());
+    hi_assert(par_it <= paragraph_directions.cend());
 
     // Add the character indices for each line in display order.
     auto line_it = lines.begin();
@@ -281,7 +281,7 @@ void text_shaper::position_glyphs(
     hi::horizontal_alignment horizontal_alignment,
     unicode_bidi_class writing_direction) noexcept
 {
-    hi_axiom(not _lines.empty());
+    hi_assert(not _lines.empty());
 
     // The bidi algorithm will reorder the characters on each line, and mirror the brackets in the text when needed.
     bidi_algorithm(_lines, _text, writing_direction);
@@ -357,7 +357,7 @@ void text_shaper::resolve_script() noexcept
 
     hilet lines = make_lines(
         rectangle, base_line, sub_pixel_size, vertical_alignment, unicode_bidi_class::L, line_spacing, paragraph_spacing);
-    hi_axiom(not lines.empty());
+    hi_assert(not lines.empty());
 
     auto max_width = 0.0f;
     for (auto &line : lines) {
@@ -381,7 +381,7 @@ void text_shaper::resolve_script() noexcept
     _rectangle = rectangle;
     _lines = make_lines(
         rectangle, base_line, sub_pixel_size, alignment.vertical(), writing_direction, line_spacing, paragraph_spacing);
-    hi_axiom(not _lines.empty());
+    hi_assert(not _lines.empty());
     position_glyphs(rectangle, sub_pixel_size, alignment.text(), writing_direction);
 }
 
@@ -398,7 +398,7 @@ void text_shaper::resolve_script() noexcept
 
 [[nodiscard]] text_shaper::char_const_iterator text_shaper::get_it(size_t column_nr, size_t line_nr) const noexcept
 {
-    hi_axiom(not _lines.empty());
+    hi_assert(not _lines.empty());
 
     if (static_cast<ptrdiff_t>(line_nr) < 0) {
         return begin();
@@ -442,14 +442,14 @@ void text_shaper::resolve_script() noexcept
     if (it != end()) {
         return {it->column_nr, it->line_nr};
     } else {
-        hi_axiom(not _lines.empty());
+        hi_assert(not _lines.empty());
         return {_lines.size() - 1, _lines.back().size()};
     }
 }
 
 [[nodiscard]] size_t text_shaper::get_index(text_shaper::char_const_iterator it) const noexcept
 {
-    return narrow<size_t>(std::distance(begin(), it));
+    return narrow_cast<size_t>(std::distance(begin(), it));
 }
 
 [[nodiscard]] text_cursor text_shaper::get_begin_cursor() const noexcept
@@ -504,7 +504,7 @@ void text_shaper::resolve_script() noexcept
     if (it != end()) {
         return (it->direction == unicode_bidi_class::L) == cursor.before();
     } else {
-        hi_axiom(begin() == end());
+        hi_assert(begin() == end());
         return true;
     }
 }
@@ -515,7 +515,7 @@ void text_shaper::resolve_script() noexcept
     if (it != end()) {
         return (it->direction == unicode_bidi_class::L) == cursor.after();
     } else {
-        hi_axiom(begin() == end());
+        hi_assert(begin() == end());
         return true;
     }
 }
@@ -532,7 +532,7 @@ void text_shaper::resolve_script() noexcept
 
     if (line_it != _lines.end()) {
         hilet[char_it, after] = line_it->get_nearest(position);
-        return {narrow<size_t>(std::distance(_text.begin(), char_it)), after};
+        return {narrow_cast<size_t>(std::distance(_text.begin(), char_it)), after};
     } else {
         return {};
     }
@@ -597,7 +597,7 @@ void text_shaper::resolve_script() noexcept
 
     if (std::isnan(x)) {
         hilet char_it = get_it(cursor);
-        hi_axiom(char_it != _text.end());
+        hi_assert(char_it != _text.end());
         x = is_on_left(cursor) ? char_it->rectangle.left() : char_it->rectangle.right();
     }
 
@@ -618,7 +618,7 @@ void text_shaper::resolve_script() noexcept
 
     if (std::isnan(x)) {
         auto char_it = get_it(cursor);
-        hi_axiom(char_it < _text.end());
+        hi_assert(char_it < _text.end());
         x = is_on_left(cursor) ? char_it->rectangle.left() : char_it->rectangle.right();
     }
 

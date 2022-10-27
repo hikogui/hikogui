@@ -39,7 +39,7 @@ public:
     value_type& operator()(auto path_first, auto path_last) noexcept
     {
         auto *ptr = find_or_create(path_first, path_last);
-        hi_axiom(ptr != nullptr);
+        hi_assert_not_null(ptr);
         return ptr->value;
     }
 
@@ -54,7 +54,7 @@ public:
     value_type const& operator()(auto path_first, auto path_last) const noexcept
     {
         auto *ptr = find(path_first, path_last, [](value_type const&) -> void {});
-        hi_axiom(ptr != nullptr);
+        hi_assert_not_null(ptr);
         return ptr->value;
     }
 

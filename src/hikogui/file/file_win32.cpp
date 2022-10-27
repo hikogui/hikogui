@@ -107,7 +107,7 @@ file_win32::file_win32(std::filesystem::path const& path, hi::access_mode access
 
 void file_win32::flush()
 {
-    hi_axiom(_file_handle);
+    hi_assert_not_null(_file_handle);
 
     if (not FlushFileBuffers(_file_handle)) {
         throw io_error(std::format("{}: Could not flush file.", get_last_error_message()));
@@ -137,7 +137,7 @@ std::size_t file_win32::size() const
 
 std::size_t file_win32::seek(ssize_t offset, seek_whence whence)
 {
-    hi_axiom(_file_handle);
+    hi_assert_not_null(_file_handle);
 
     DWORD whence_;
     switch (whence) {
@@ -192,7 +192,7 @@ void file_win32::rename(std::filesystem::path const& destination, bool overwrite
 
 void file_win32::write(void const *data, std::size_t size)
 {
-    hi_axiom(_file_handle != INVALID_HANDLE_VALUE);
+    hi_assert(_file_handle != INVALID_HANDLE_VALUE);
 
     while (size != 0) {
         // Copy in blocks of 32 kByte
@@ -212,7 +212,7 @@ void file_win32::write(void const *data, std::size_t size)
 
 std::size_t file_win32::read(void *data, std::size_t size)
 {
-    hi_axiom(_file_handle != INVALID_HANDLE_VALUE);
+    hi_assert(_file_handle != INVALID_HANDLE_VALUE);
 
     ssize_t total_read = 0;
     while (size) {

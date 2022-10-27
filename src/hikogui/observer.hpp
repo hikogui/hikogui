@@ -107,7 +107,7 @@ public:
          */
         reference operator*() noexcept
         {
-            hi_axiom(_value != nullptr);
+            hi_assert_not_null(_value);
             return *_value;
         }
 
@@ -119,7 +119,7 @@ public:
          */
         const_reference operator*() const noexcept
         {
-            hi_axiom(_value != nullptr);
+            hi_assert_not_null(_value);
             return *_value;
         }
 
@@ -132,7 +132,7 @@ public:
          */
         pointer operator->() noexcept
         {
-            hi_axiom(_value != nullptr);
+            hi_assert_not_null(_value);
             return _value;
         }
 
@@ -145,7 +145,7 @@ public:
          */
         pointer operator&() noexcept
         {
-            hi_axiom(_value != nullptr);
+            hi_assert_not_null(_value);
             return _value;
         }
 
@@ -158,7 +158,7 @@ public:
          */
         const_pointer operator->() const noexcept
         {
-            hi_axiom(_value != nullptr);
+            hi_assert_not_null(_value);
             return _value;
         }
 
@@ -328,9 +328,9 @@ public:
         _proxy(observer const *observer, void_pointer base, pointer value) noexcept :
             _observer(observer), _base(base), _value(value)
         {
-            hi_axiom(_observer != nullptr);
-            hi_axiom(_base != nullptr);
-            hi_axiom(_value != nullptr);
+            hi_assert_not_null(_observer);
+            hi_assert_not_null(_base);
+            hi_assert_not_null(_value);
         }
 
         void _commit() noexcept

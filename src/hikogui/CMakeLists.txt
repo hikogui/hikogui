@@ -167,7 +167,6 @@ target_sources(hikogui PRIVATE
     undo_stack.hpp
     unfair_mutex.hpp
     unfair_recursive_mutex.hpp
-    utils.hpp
     vector_span.hpp
     void_span.hpp
     when_any.hpp

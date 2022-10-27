@@ -330,7 +330,7 @@ public:
 
                 output += static_cast<std::byte>(c);
             }
-            hi_axiom(multi_byte == 0);
+            hi_assert(multi_byte == 0);
 
             open_string = true;
         }
@@ -449,8 +449,8 @@ void BON8_encoder::add(datum const &value)
  */
 [[nodiscard]] int BON8_multibyte_count(cbyteptr ptr, cbyteptr last)
 {
-    hi_axiom(ptr != nullptr);
-    hi_axiom(last != nullptr);
+    hi_assert_not_null(ptr);
+    hi_assert_not_null(last);
 
     hilet c0 = static_cast<uint8_t>(*ptr);
     hilet count = c0 <= 0xdf ? 2 : c0 <= 0xef ? 3 : 4;
@@ -471,9 +471,9 @@ void BON8_encoder::add(datum const &value)
  */
 [[nodiscard]] datum decode_BON8_int(cbyteptr &ptr, cbyteptr last, int count)
 {
-    hi_axiom(ptr != nullptr);
-    hi_axiom(last != nullptr);
-    hi_axiom(count == 4 || count == 8);
+    hi_assert_not_null(ptr);
+    hi_assert_not_null(last);
+    hi_assert(count == 4 || count == 8);
 
     auto u64 = uint64_t{0};
     for (int i = 0; i != count; ++i) {
@@ -494,9 +494,9 @@ void BON8_encoder::add(datum const &value)
 
 [[nodiscard]] datum decode_BON8_float(cbyteptr &ptr, cbyteptr last, int count)
 {
-    hi_axiom(ptr != nullptr);
-    hi_axiom(last != nullptr);
-    hi_axiom(count == 4 || count == 8);
+    hi_assert_not_null(ptr);
+    hi_assert_not_null(last);
+    hi_assert(count == 4 || count == 8);
 
     auto u64 = uint64_t{0};
     for (int i = 0; i != count; ++i) {
@@ -520,8 +520,8 @@ void BON8_encoder::add(datum const &value)
 
 [[nodiscard]] datum decode_BON8_array(cbyteptr &ptr, cbyteptr last)
 {
-    hi_axiom(ptr != nullptr);
-    hi_axiom(last != nullptr);
+    hi_assert_not_null(ptr);
+    hi_assert_not_null(last);
 
     auto r = datum::make_vector();
     auto &vector = get<datum::vector_type>(r);
@@ -551,8 +551,8 @@ void BON8_encoder::add(datum const &value)
 
 [[nodiscard]] datum decode_BON8_object(cbyteptr &ptr, cbyteptr last)
 {
-    hi_axiom(ptr != nullptr);
-    hi_axiom(last != nullptr);
+    hi_assert_not_null(ptr);
+    hi_assert_not_null(last);
 
     auto r = datum::make_map();
     auto &map = get<datum::map_type>(r);
@@ -590,10 +590,10 @@ void BON8_encoder::add(datum const &value)
 
 [[nodiscard]] long long decode_BON8_UTF8_like_int(cbyteptr &ptr, cbyteptr last, int count) noexcept
 {
-    hi_axiom(ptr != nullptr);
-    hi_axiom(last != nullptr);
-    hi_axiom(count >= 2 && count <= 4);
-    hi_axiom(ptr != last);
+    hi_assert_not_null(ptr);
+    hi_assert_not_null(last);
+    hi_assert(count >= 2 && count <= 4);
+    hi_assert(ptr != last);
     hilet c0 = static_cast<uint8_t>(*(ptr++));
 
     hilet mask = uint8_t{0b0111'1111} >> count;
@@ -604,7 +604,7 @@ void BON8_encoder::add(datum const &value)
     }
 
     // The second byte determines the sign, and adds 6 or 7 bits to the number.
-    hi_axiom(ptr != last);
+    hi_assert(ptr != last);
     hilet c1 = static_cast<uint8_t>(*(ptr++));
     hilet is_positive = c1 <= 0x7f;
     if (is_positive) {
@@ -617,12 +617,12 @@ void BON8_encoder::add(datum const &value)
 
     switch (count) {
     case 4:
-        hi_axiom(ptr != last);
+        hi_assert(ptr != last);
         value <<= 8;
         value |= static_cast<int>(*(ptr++));
         [[fallthrough]];
     case 3:
-        hi_axiom(ptr != last);
+        hi_assert(ptr != last);
         value <<= 8;
         value |= static_cast<int>(*(ptr++));
         [[fallthrough]];
@@ -649,8 +649,8 @@ void BON8_encoder::add(datum const &value)
 
 [[nodiscard]] datum decode_BON8(cbyteptr &ptr, cbyteptr last)
 {
-    hi_axiom(ptr != nullptr);
-    hi_axiom(last != nullptr);
+    hi_assert_not_null(ptr);
+    hi_assert_not_null(last);
 
     std::string str;
 

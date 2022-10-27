@@ -180,7 +180,7 @@ template<typename It, typename ItEnd>
     // Move the lines to the new alignment.
     for (auto it = first; it != last; ++it) {
         it->y -= offset;
-        hi_axiom(std::round(it->y) == it->y);
+        hi_assert(std::round(it->y) == it->y);
     }
 }
 

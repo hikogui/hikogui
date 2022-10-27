@@ -191,7 +191,7 @@ public:
      */
     [[nodiscard]] constexpr font const& font() const noexcept
     {
-        hi_axiom(_font);
+        hi_assert_not_null(_font);
         return *_font;
     }
 

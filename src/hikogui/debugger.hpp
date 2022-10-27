@@ -5,7 +5,6 @@
 #pragma once
 
 #include "architecture.hpp"
-#include "utils.hpp"
 #include <format>
 
 namespace hi::inline v1 {

@@ -16,7 +16,7 @@ namespace hi::inline v1 {
         auto max_value = (1_uz << num_bits) - 1;
 
         // Align left inside an int32_t.
-        hi_axiom(num_bits + num_guard_bits <= 31);
+        hi_assert(num_bits + num_guard_bits <= 31);
         max_value <<= narrow_cast<size_t>(31 - num_bits - num_guard_bits);
 
         return narrow_cast<float>(max_value);
@@ -31,7 +31,7 @@ namespace hi::inline v1 {
 [[nodiscard]] std::size_t audio_sample_format::num_samples_per_chunk(std::size_t stride) const noexcept
 {
     auto r = narrow_cast<int>(std::bit_floor((((16u - num_bytes) / stride) & 3) + 1));
-    hi_axiom(r == 1 || r == 2 || r == 4);
+    hi_assert(r == 1 or r == 2 or r == 4);
     return r;
 }
 

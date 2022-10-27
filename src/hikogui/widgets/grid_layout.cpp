@@ -19,7 +19,7 @@ namespace hi::inline v1 {
  */
 [[nodiscard]] static float grow(auto first, auto last, float growth, auto const &predicate) noexcept
 {
-    hi_axiom(growth >= 0.0f);
+    hi_assert(growth >= 0.0f);
 
     auto num_cells_to_grow = std::count_if(first, last, [&predicate](hilet &cell) {
         return predicate(cell) > 0.0f;
@@ -81,7 +81,7 @@ static void grow(auto first, auto last, float growth) noexcept
     });
 
     // Either there are no widgets, or the widgets together have grown so the result is zero.
-    hi_axiom(first == last or growth == 0.0f);
+    hi_assert(first == last or growth == 0.0f);
 }
 
 void grid_layout::constrain_cells_by_singles() noexcept
@@ -124,7 +124,7 @@ grid_layout::constrain_cells_by_spans(std::function<float(grid_layout::constrain
 void grid_layout::commit_constraints() noexcept
 {
     // Add one more cell to handle the end margin.
-    hi_axiom(_cells.empty());
+    hi_assert(_cells.empty());
     _cells.resize(num_cells() + 1);
 
     constrain_cells_by_singles();
@@ -186,7 +186,7 @@ void grid_layout::commit_constraints() noexcept
 
 void grid_layout::layout(float size) noexcept
 {
-    hi_axiom(size >= minimum());
+    hi_assert(size >= minimum());
 
     // Reset layout to the minimum size.
     for (auto &cell: _cells) {

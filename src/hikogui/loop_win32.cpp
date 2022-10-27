@@ -197,14 +197,14 @@ public:
         auto timeout = std::chrono::duration_cast<std::chrono::milliseconds>(_function_timer.current_deadline() - current_time);
 
         timeout = std::clamp(timeout, 0ms, 100ms);
-        hilet timeout_ms = narrow<DWORD>(timeout / 1ms);
+        hilet timeout_ms = narrow_cast<DWORD>(timeout / 1ms);
 
         // Only handle win32 messages when blocking.
         // Since non-blocking is called from the win32 message-pump, we do not want to re-enter the loop.
         hilet message_mask = is_main and block ? QS_ALLINPUT : 0;
 
         hilet wait_r =
-            MsgWaitForMultipleObjects(narrow<DWORD>(_handles.size()), _handles.data(), FALSE, timeout_ms, message_mask);
+            MsgWaitForMultipleObjects(narrow_cast<DWORD>(_handles.size()), _handles.data(), FALSE, timeout_ms, message_mask);
 
         if (wait_r == WAIT_FAILED) {
             hi_log_fatal("Failed on MsgWaitForMultipleObjects(), {}", get_last_error_message());

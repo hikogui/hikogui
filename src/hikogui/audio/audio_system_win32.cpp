@@ -57,7 +57,7 @@ public:
         // 2. We need to copy device_id which has an unbounded size.
         // 3. Allocating a string blocks.
 
-        hi_axiom(device_id);
+        hi_assert_not_null(device_id);
         loop::main().wfree_post_function([this]() {
             _system->update_device_list();
             _system->_notifier();

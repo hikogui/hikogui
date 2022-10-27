@@ -184,7 +184,7 @@ public:
     [[nodiscard]] constexpr value_type operator[](std::convertible_to<name_type> auto&& name) const noexcept
     {
         auto *value = find(name_type{hi_forward(name)});
-        hi_axiom(value != nullptr);
+        hi_assert_not_null(value);
         return *value;
     }
 
@@ -197,7 +197,7 @@ public:
     [[nodiscard]] constexpr name_type const& operator[](value_type value) const noexcept
     {
         auto *name = find(value);
-        hi_axiom(name != nullptr);
+        hi_assert_not_null(name);
         return *name;
     }
 

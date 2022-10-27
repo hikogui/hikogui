@@ -15,7 +15,7 @@ class win32_wave_device {
 public:
     win32_wave_device(UINT id, audio_direction direction) : _id(id), _direction(direction)
     {
-        hi_axiom(_direction == audio_direction::input or _direction == audio_direction::output);
+        hi_assert(_direction == audio_direction::input or _direction == audio_direction::output);
     }
 
     /** The end-point-id matching end-point ids of the modern Core Audio MMDevice API.

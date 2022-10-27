@@ -165,7 +165,7 @@ static void parse_po_header(po_translations &r, std::string const &header)
     po_translations r;
 
     auto tokens = parseTokens(text);
-    hi_axiom(tokens.back() == tokenizer_name_t::End);
+    hi_assert(tokens.back() == tokenizer_name_t::End);
 
     auto token = tokens.begin();
     while (*token != tokenizer_name_t::End) {

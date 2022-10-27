@@ -407,15 +407,15 @@ static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char
 
     std::size_t offset = 0;
 
-    hi_axiom(check_placement_ptr<CMAPFormat4>(bytes, offset));
+    hi_assert(check_placement_ptr<CMAPFormat4>(bytes, offset));
     hilet header = unsafe_make_placement_ptr<CMAPFormat4>(bytes, offset);
 
     hilet length = header->length.value();
-    hi_axiom(length <= bytes.size());
+    hi_assert(length <= bytes.size());
 
     hilet num_segments = header->segCountX2.value() / 2;
 
-    hi_axiom(check_placement_array<big_uint16_buf_t>(bytes, offset, num_segments));
+    hi_assert(check_placement_array<big_uint16_buf_t>(bytes, offset, num_segments));
     hilet end_codes = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, num_segments);
 
     auto c16 = static_cast<uint16_t>(c);
@@ -428,7 +428,7 @@ static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char
 
     offset += ssizeof(uint16_t); // reservedPad
 
-    hi_axiom(check_placement_array<big_uint16_buf_t>(bytes, offset, num_segments));
+    hi_assert(check_placement_array<big_uint16_buf_t>(bytes, offset, num_segments));
     hilet start_codes = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, num_segments);
 
     hilet start_code = start_codes[segment_i];
@@ -437,12 +437,12 @@ static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char
         return {};
     }
 
-    hi_axiom(check_placement_array<big_uint16_buf_t>(bytes, offset, num_segments));
+    hi_assert(check_placement_array<big_uint16_buf_t>(bytes, offset, num_segments));
     hilet id_deltas = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, num_segments);
 
     // The glyphIdArray is included inside idRangeOffset.
     hilet id_range_offset_count = (length - offset) / ssizeof(uint16_t);
-    hi_axiom(check_placement_array<big_uint16_buf_t>(bytes, offset, id_range_offset_count));
+    hi_assert(check_placement_array<big_uint16_buf_t>(bytes, offset, id_range_offset_count));
     hilet id_range_offsets = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, id_range_offset_count);
 
     // Found the glyph.
@@ -457,7 +457,7 @@ static glyph_id searchCharacterMapFormat4(std::span<std::byte const> bytes, char
         c16 += segment_i;
         c16 += id_range_offset / 2;
 
-        hi_axiom(c16 < id_range_offsets.size());
+        hi_assert_bounds(c16, id_range_offsets);
         uint16_t glyph_index = id_range_offsets[c16].value();
         if (glyph_index == 0) {
             return {};
@@ -1119,7 +1119,12 @@ bool true_type_font::load_simple_glyph(std::span<std::byte const> glyph_bytes, g
     assert_or_return(check_placement_array<big_uint16_buf_t>(glyph_bytes, offset, numberOfContours), false);
     hilet endPoints = unsafe_make_placement_array<big_uint16_buf_t>(glyph_bytes, offset, numberOfContours);
 
+    int max_end_point = -1;
     for (hilet endPoint : endPoints) {
+        // End points must be incrementing and contours must have at least one point.
+        assert_or_return(wide_cast<int>(endPoint.value()) >= max_end_point, false);
+        max_end_point = wide_cast<int>(endPoint.value());
+
         glyph.contourEndPoints.push_back(endPoint.value());
     }
 
@@ -1326,6 +1331,9 @@ std::optional<glyph_id> true_type_font::load_glyph(glyph_id glyph_id, graphic_pa
         assert_or_return(check_placement_ptr<GLYFEntry>(glyph_bytes), {});
         hilet entry = unsafe_make_placement_ptr<GLYFEntry>(glyph_bytes);
         hilet numberOfContours = entry->numberOfContours.value();
+
+        assert_or_return(entry->xMin.value(1.0f) <= entry->xMax.value(1.0f), {});
+        assert_or_return(entry->yMin.value(1.0f) <= entry->yMax.value(1.0f), {});
 
         if (numberOfContours > 0) {
             assert_or_return(load_simple_glyph(glyph_bytes, glyph), {});

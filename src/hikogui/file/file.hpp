@@ -268,7 +268,7 @@ public:
      */
     [[nodiscard]] std::string read_string(std::size_t max_size = 10'000'000)
     {
-        hi_axiom(get_seek() == 0);
+        hi_assert(get_seek() == 0);
 
         hilet size_ = size();
         if (size_ > max_size) {

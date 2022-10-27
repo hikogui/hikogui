@@ -39,7 +39,7 @@ widget_constraints const& toolbar_widget::set_constraints() noexcept
         update_constraints_for_child(*child, index++, shared_height, shared_top_margin, shared_bottom_margin, shared_baseline);
     }
 
-    hi_axiom(index == ssize(_left_children) + 1 + ssize(_right_children));
+    hi_assert(index == ssize(_left_children) + 1 + ssize(_right_children));
 
     _grid_layout.commit_constraints();
     _inner_margins = {0.0f, shared_bottom_margin, 0.0f, shared_top_margin};
@@ -74,7 +74,7 @@ void toolbar_widget::set_layout(widget_layout const& layout) noexcept
         update_layout_for_child(*child, index++, layout);
     }
 
-    hi_axiom(index == ssize(_left_children) + 1 + ssize(_right_children));
+    hi_assert(index == ssize(_left_children) + 1 + ssize(_right_children));
 }
 
 bool toolbar_widget::tab_button_has_focus() const noexcept
@@ -129,12 +129,12 @@ hitbox toolbar_widget::hitbox_test(point3 position) const noexcept
         auto r = layout().contains(position) ? hitbox{this, position, hitbox::Type::MoveArea} : hitbox{};
 
         for (hilet& child : _left_children) {
-            hi_axiom(child);
+            hi_assert_not_null(child);
             r = child->hitbox_test_from_parent(position, r);
         }
 
         for (hilet& child : _right_children) {
-            hi_axiom(child);
+            hi_assert_not_null(child);
             r = child->hitbox_test_from_parent(position, r);
         }
 

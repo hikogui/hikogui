@@ -236,7 +236,7 @@ void font_book::post_process() noexcept
 [[nodiscard]] font const& font_book::find_font(font_family_id family_id, font_variant variant) const noexcept
 {
     hi_assert(family_id);
-    hi_axiom(family_id >= 0 and family_id < ssize(_font_variants));
+    hi_assert_bounds(*family_id, _font_variants);
     hilet& variants = _font_variants[*family_id];
     for (auto i = 0; i < 16; i++) {
         if (auto font = variants[variant.alternative(i)]) {

@@ -62,7 +62,7 @@ public:
     scroll_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
     {
         hi_axiom(is_gui_thread());
-        hi_axiom(parent);
+        hi_assert_not_null(parent);
 
         // The scroll-widget will not draw itself, only its selected content.
         semantic_layer = parent->semantic_layer;

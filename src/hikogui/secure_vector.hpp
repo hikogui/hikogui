@@ -73,7 +73,9 @@ public:
     {
         resize(0);
         shrink_to_fit();
-        hi_axiom(_begin = nullptr);
+        hi_assert(_begin == nullptr);
+        hi_assert(_end == nullptr);
+        hi_assert(_capacity == nullptr);
     }
 
     [[nodiscard]] constexpr bool empty() const noexcept
@@ -119,38 +121,38 @@ public:
     [[nodiscard]] constexpr reference operator[](size_type pos) noexcept
     {
         auto *ptr = _begin + pos;
-        hi_axiom(ptr < _end);
+        hi_assert(ptr < _end);
         return *ptr;
     }
 
     [[nodiscard]] constexpr const_reference operator[](size_type pos) const noexcept
     {
         auto *ptr = _begin + pos;
-        hi_axiom(ptr < _end);
+        hi_assert(ptr < _end);
         return *ptr;
     }
 
     [[nodiscard]] constexpr reference front() noexcept
     {
-        hi_axiom(not empty());
+        hi_assert(not empty());
         return *_begin;
     }
 
     [[nodiscard]] constexpr const_reference front() const noexcept
     {
-        hi_axiom(not empty());
+        hi_assert(not empty());
         return *_begin;
     }
 
     [[nodiscard]] constexpr reference back() noexcept
     {
-        hi_axiom(not empty());
+        hi_assert(not empty());
         return *(_end - 1);
     }
 
     [[nodiscard]] constexpr const_reference back() const noexcept
     {
-        hi_axiom(not empty());
+        hi_assert(not empty());
         return *(_end - 1);
     }
 

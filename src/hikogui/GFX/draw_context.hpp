@@ -289,7 +289,7 @@ public:
         line_end_cap c1 = line_end_cap::flat,
         line_end_cap c2 = line_end_cap::flat) const noexcept
     {
-        hi_axiom(width != 0.0f);
+        hi_assert(width != 0.0f);
         hilet line_ = layout.to_window * line;
         hilet width_ = layout.to_window * width;
 

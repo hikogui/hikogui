@@ -108,7 +108,7 @@ public:
 
     iterator operator[](size_t index) const noexcept
     {
-        hi_axiom(index < columns.size());
+        hi_assert_bounds(index, columns);
         return columns[index];
     }
 

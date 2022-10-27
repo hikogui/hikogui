@@ -69,9 +69,9 @@ load_sample(std::byte const *&src, std::size_t stride, int num_bytes, int direct
     std::size_t num_chunks,
     std::size_t stride) noexcept
 {
-    hi_axiom(src != nullptr);
-    hi_axiom(num_chunks > 0 and num_chunks <= 4);
-    hi_axiom(stride > 0);
+    hi_assert(src != nullptr);
+    hi_assert(num_chunks > 0 and num_chunks <= 4);
+    hi_assert(stride > 0);
 
     auto int_samples = i8x16{};
     do {
@@ -115,8 +115,8 @@ audio_sample_unpacker::audio_sample_unpacker(audio_sample_format format, std::si
 void audio_sample_unpacker::operator()(std::byte const *hi_restrict src, float *hi_restrict dst, std::size_t num_samples)
     const noexcept
 {
-    hi_axiom(src != nullptr);
-    hi_axiom(dst != nullptr);
+    hi_assert(src != nullptr);
+    hi_assert(dst != nullptr);
 
     // Calculate a conservative number of samples that can be copied quickly
     // without overflowing the src buffer.

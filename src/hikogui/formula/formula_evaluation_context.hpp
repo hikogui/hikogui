@@ -114,19 +114,19 @@ struct formula_evaluation_context {
 
     scope const &locals() const
     {
-        hi_axiom(has_locals());
+        hi_assert(has_locals());
         return local_stack.back();
     }
 
     scope &locals()
     {
-        hi_axiom(has_locals());
+        hi_assert(has_locals());
         return local_stack.back();
     }
 
     [[nodiscard]] datum const &loop_get(std::string_view name) const
     {
-        hi_axiom(name.size() > 0);
+        hi_assert(name.size() > 0);
         if (name.back() == '$') {
             throw operation_error(std::format("Invalid loop variable '{}'", name));
         }

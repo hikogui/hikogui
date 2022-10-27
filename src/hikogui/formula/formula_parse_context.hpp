@@ -34,8 +34,8 @@ struct formula_parse_context {
 
     formula_parse_context &operator++() noexcept
     {
-        hi_axiom(token_it != tokens.end());
-        hi_axiom(*token_it != tokenizer_name_t::End);
+        hi_assert(token_it != tokens.end());
+        hi_assert(*token_it != tokenizer_name_t::End);
         ++token_it;
         return *this;
     }

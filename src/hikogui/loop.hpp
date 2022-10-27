@@ -163,7 +163,7 @@ public:
      */
     void set_maximum_frame_rate(double frame_rate) noexcept
     {
-        hi_axiom(_pimpl);
+        hi_assert_not_null(_pimpl);
         return _pimpl->set_maximum_frame_rate(frame_rate);
     }
 
@@ -178,7 +178,7 @@ public:
      */
     void wfree_post_function(auto&& func) noexcept
     {
-        hi_axiom(_pimpl);
+        hi_assert_not_null(_pimpl);
         return _pimpl->wfree_post_function(hi_forward(func));
     }
 
@@ -189,7 +189,7 @@ public:
      */
     void post_function(auto&& func) noexcept
     {
-        hi_axiom(_pimpl);
+        hi_assert_not_null(_pimpl);
         return _pimpl->post_function(hi_forward(func));
     }
 
@@ -202,7 +202,7 @@ public:
      */
     [[nodiscard]] auto async_function(auto&& func) noexcept
     {
-        hi_axiom(_pimpl);
+        hi_assert_not_null(_pimpl);
         return _pimpl->async_function(hi_forward(func));
     }
 
@@ -213,7 +213,7 @@ public:
      */
     [[nodiscard]] timer_callback_token delay_function(utc_nanoseconds time_point, auto&& func) noexcept
     {
-        hi_axiom(_pimpl);
+        hi_assert_not_null(_pimpl);
         return _pimpl->delay_function(time_point, hi_forward(func));
     }
 
@@ -226,7 +226,7 @@ public:
     [[nodiscard]] timer_callback_token
     repeat_function(std::chrono::nanoseconds period, utc_nanoseconds time_point, auto&& func) noexcept
     {
-        hi_axiom(_pimpl);
+        hi_assert_not_null(_pimpl);
         return _pimpl->repeat_function(period, time_point, hi_forward(func));
     }
 
@@ -237,7 +237,7 @@ public:
      */
     [[nodiscard]] timer_callback_token repeat_function(std::chrono::nanoseconds period, auto&& func) noexcept
     {
-        hi_axiom(_pimpl);
+        hi_assert_not_null(_pimpl);
         return _pimpl->repeat_function(period, hi_forward(func));
     }
 
@@ -247,7 +247,7 @@ public:
      */
     void add_window(std::weak_ptr<gui_window> window) noexcept
     {
-        hi_axiom(_pimpl);
+        hi_assert_not_null(_pimpl);
         return _pimpl->add_window(std::move(window));
     }
 
@@ -265,7 +265,7 @@ public:
      */
     void add_socket(int fd, network_event event_mask, std::function<void(int, network_events const&)> f)
     {
-        hi_axiom(_pimpl);
+        hi_assert_not_null(_pimpl);
         return _pimpl->add_socket(fd, event_mask, std::move(f));
     }
 
@@ -275,7 +275,7 @@ public:
      */
     void remove_socket(int fd)
     {
-        hi_axiom(_pimpl);
+        hi_assert_not_null(_pimpl);
         return _pimpl->remove_socket(fd);
     }
 
@@ -288,7 +288,7 @@ public:
      */
     int resume(std::stop_token stop_token = {}) noexcept
     {
-        hi_axiom(_pimpl);
+        hi_assert_not_null(_pimpl);
         return _pimpl->resume(stop_token);
     }
 
@@ -307,7 +307,7 @@ public:
      */
     void resume_once(bool block = false) noexcept
     {
-        hi_axiom(_pimpl);
+        hi_assert_not_null(_pimpl);
         return _pimpl->resume_once(block);
     }
 
@@ -317,14 +317,14 @@ public:
      */
     [[nodiscard]] bool on_thread() const noexcept
     {
-        hi_axiom(_pimpl);
+        hi_assert_not_null(_pimpl);
         return _pimpl->on_thread();
     }
 
 private:
     static loop *timer_init() noexcept
     {
-        hi_axiom(not _timer_thread.joinable());
+        hi_assert(not _timer_thread.joinable());
 
         _timer_thread = std::jthread{[](std::stop_token stop_token) {
             _timer.store(std::addressof(loop::local()), std::memory_order::release);
@@ -344,7 +344,7 @@ private:
     static void timer_deinit() noexcept
     {
         if (auto const * const ptr = _timer.exchange(nullptr, std::memory_order::acquire)) {
-            hi_axiom(_timer_thread.joinable());
+            hi_assert(_timer_thread.joinable());
             _timer_thread.request_stop();
             _timer_thread.join();
         }

@@ -137,7 +137,7 @@ public:
      */
     [[nodiscard]] reference_type operator[](std::size_t index) noexcept
     {
-        hi_axiom(index < size());
+        hi_assert_bounds(index, *this);
         return *std::launder(reinterpret_cast<pointer_type>(&_buffer[index]));
     }
 
@@ -147,7 +147,7 @@ public:
      */
     [[nodiscard]] const_reference_type operator[](std::size_t index) const noexcept
     {
-        hi_axiom(index < size());
+        hi_assert_bounds(index, *this);
         return *std::launder(reinterpret_cast<pointer_type>(&_buffer[index]));
     }
 

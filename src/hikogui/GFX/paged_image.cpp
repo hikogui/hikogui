@@ -91,7 +91,7 @@ paged_image::~paged_image()
 
 void paged_image::upload(png const &image) noexcept
 {
-    hi_axiom(image.width() == width and image.height() == height);
+    hi_assert(image.width() == width and image.height() == height);
 
     if (hilet vulkan_device = down_cast<gfx_device_vulkan *>(device)) {
         hilet lock = std::scoped_lock(gfx_system_mutex);
@@ -108,7 +108,7 @@ void paged_image::upload(png const &image) noexcept
 
 void paged_image::upload(pixel_map<sfloat_rgba16> const &image) noexcept
 {
-    hi_axiom(image.width() == width and image.height() == height);
+    hi_assert(image.width() == width and image.height() == height);
 
     if (hilet vulkan_device = down_cast<gfx_device_vulkan *>(device)) {
         hilet lock = std::scoped_lock(gfx_system_mutex);

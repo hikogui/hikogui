@@ -19,7 +19,7 @@ void pipeline_image::draw_in_command_buffer(vk::CommandBuffer commandBuffer, dra
 
     std::vector<vk::Buffer> tmpvertexBuffers = {vertexBuffer};
     std::vector<vk::DeviceSize> tmpOffsets = {0};
-    hi_axiom(tmpvertexBuffers.size() == tmpOffsets.size());
+    hi_assert(tmpvertexBuffers.size() == tmpOffsets.size());
 
     vulkan_device().image_pipeline->draw_in_command_buffer(commandBuffer);
 

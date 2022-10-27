@@ -154,7 +154,7 @@ struct parse_context_t {
 
     datum root;
 
-    hi_axiom(tokens.back() == tokenizer_name_t::End);
+    hi_assert(tokens.back() == tokenizer_name_t::End);
     parse_context_t context;
     context.text_begin = text.begin();
 

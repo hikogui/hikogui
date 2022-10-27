@@ -18,7 +18,7 @@ pipeline_vulkan::~pipeline_vulkan() {}
 gfx_device_vulkan &pipeline_vulkan::vulkan_device() const noexcept
 {
     auto device = surface.device();
-    hi_axiom(device != nullptr);
+    hi_assert_not_null(device);
     return down_cast<gfx_device_vulkan &>(*device);
 }
 

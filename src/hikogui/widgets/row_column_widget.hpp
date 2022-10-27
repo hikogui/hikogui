@@ -125,7 +125,7 @@ public:
         }
         _grid_layout.commit_constraints();
 
-        hi_axiom(index == ssize(_children));
+        hi_assert(index == ssize(_children));
 
         if constexpr (axis == axis::row) {
             return _constraints = {
@@ -160,7 +160,7 @@ public:
             update_layout_for_child(*child, index++, layout);
         }
 
-        hi_axiom(index == ssize(_children));
+        hi_assert(index == ssize(_children));
     }
 
     void draw(draw_context const& context) noexcept override

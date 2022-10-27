@@ -384,8 +384,8 @@ static uint16_t get_sample(std::span<std::byte const> bytes, ssize_t &offset, bo
 
 u16x4 png::extract_pixel_from_line(std::span<std::byte const> bytes, int x) const noexcept
 {
-    hi_axiom(_bit_depth == 8 || _bit_depth == 16);
-    hi_axiom(!_is_palletted);
+    hi_axiom(_bit_depth == 8 or _bit_depth == 16);
+    hi_axiom(not _is_palletted);
 
     uint16_t r = 0;
     uint16_t g = 0;

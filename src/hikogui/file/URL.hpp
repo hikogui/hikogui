@@ -100,7 +100,7 @@ public:
         }
 
         // If a server was found than the path must be absolute.
-        hi_axiom(has_root_name == false or p.absolute());
+        hi_assert(has_root_name == false or p.absolute());
 
         if (p.double_absolute()) {
             // file:////server/filename is valid.

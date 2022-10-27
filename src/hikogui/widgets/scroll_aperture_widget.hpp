@@ -33,7 +33,7 @@ public:
     scroll_aperture_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
     {
         hi_axiom(is_gui_thread());
-        hi_axiom(parent);
+        hi_assert_not_null(parent);
 
         // The aperture-widget will not draw itself, only its selected content.
         semantic_layer = parent->semantic_layer;
@@ -52,7 +52,7 @@ public:
     Widget &make_widget(Args &&...args) noexcept
     {
         hi_axiom(is_gui_thread());
-        hi_axiom(not _content);
+        hi_axiom(_content == nullptr);
 
         auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
         auto &ref = *tmp;
@@ -80,7 +80,7 @@ public:
     {
         _layout = {};
 
-        hi_axiom(_content);
+        hi_assert_not_null(_content);
         hilet content_constraints = _content->set_constraints();
 
         hilet minimum_size = extent2{

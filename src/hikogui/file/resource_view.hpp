@@ -86,7 +86,7 @@ public:
      */
     [[nodiscard]] hi::const_void_span const_void_span() const noexcept
     {
-        hi_axiom(_pimpl != nullptr);
+        hi_assert_not_null(_pimpl);
         return _pimpl->const_void_span();
     }
 

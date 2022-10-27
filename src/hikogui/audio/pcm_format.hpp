@@ -73,9 +73,9 @@ public:
         _num_major_bits(num_major_bits),
         _num_minor_bits(num_minor_bits)
     {
-        hi_axiom(num_bytes >= 1 and num_bytes <= 8);
-        hi_axiom(num_major_bits >= 0 and num_major_bits <= 15);
-        hi_axiom(num_minor_bits >= 1 and num_minor_bits <= 63);
+        hi_assert(num_bytes >= 1 and num_bytes <= 8);
+        hi_assert(num_major_bits >= 0 and num_major_bits <= 15);
+        hi_assert(num_minor_bits >= 1 and num_minor_bits <= 63);
     }
 
     [[nodiscard]] constexpr static pcm_format float32() noexcept

@@ -154,7 +154,7 @@ public:
      */
     [[nodiscard]] float get_position(std::size_t index) const noexcept
     {
-        hi_axiom(index < num_cells());
+        hi_assert(index < num_cells());
         return get_position(_cells.begin(), _cells.begin() + index);
     }
 
@@ -166,8 +166,8 @@ public:
      */
     [[nodiscard]] float get_size(std::size_t first, std::size_t last) const noexcept
     {
-        hi_axiom(first <= last);
-        hi_axiom(last <= _cells.size());
+        hi_assert(first <= last);
+        hi_assert(last <= _cells.size());
         return get_size(_cells.begin() + first, _cells.begin() + last);
     }
 

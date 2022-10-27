@@ -263,9 +263,9 @@ private:
 * @return A list of unicode_break_opportunity before each character.
  */
 template<typename It, typename ItEnd, typename DescriptionFunc>
-[[nodiscard]] inline unicode_break_vector unicode_sentence_break(It first, ItEnd last, DescriptionFunc const &description_func)
+[[nodiscard]] inline unicode_break_vector unicode_sentence_break(It first, ItEnd last, DescriptionFunc const &description_func) noexcept
 {
-    auto size = narrow<size_t>(std::distance(first, last));
+    auto size = narrow_cast<size_t>(std::distance(first, last));
     auto r = unicode_break_vector{size + 1, unicode_break_opportunity::unassigned};
 
     auto infos = std::vector<detail::unicode_sentence_break_info>{};

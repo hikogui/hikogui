@@ -79,7 +79,7 @@ public:
         auto tmp = std::make_unique<WidgetType>(window, this, std::forward<Args>(args)...);
         auto& ref = *tmp;
 
-        hi_axiom(delegate != nullptr);
+        hi_assert_not_null(delegate);
         delegate->add_tab(*this, static_cast<std::size_t>(key), size(_children));
         _children.push_back(std::move(tmp));
         hi_request_reconstrain("tab_widget::make_widget({})", key);

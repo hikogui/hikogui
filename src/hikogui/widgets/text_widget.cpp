@@ -16,7 +16,7 @@ text_widget::text_widget(gui_window& window, widget *parent, std::shared_ptr<del
 {
     mode = widget_mode::select;
 
-    hi_axiom(this->delegate != nullptr);
+    hi_assert_not_null(this->delegate);
     _delegate_cbt = this->delegate->subscribe([&] {
         hi_request_reconstrain("text_widget::_delegate_cbt()");
     });
@@ -36,7 +36,7 @@ text_widget::text_widget(gui_window& window, widget *parent, std::shared_ptr<del
 
 text_widget::~text_widget()
 {
-    hi_axiom(delegate != nullptr);
+    hi_assert_not_null(delegate);
     delegate->deinit(*this);
 }
 
@@ -50,7 +50,7 @@ widget_constraints const& text_widget::set_constraints() noexcept
 {
     _layout = {};
 
-    hi_axiom(delegate != nullptr);
+    hi_assert_not_null(delegate);
     _cached_text = delegate->read(*this);
     update_shaped_text();
     hilet shaped_text_rectangle = _shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity(), alignment->vertical());
@@ -269,8 +269,8 @@ void text_widget::add_character(grapheme c, add_type keyboard_mode) noexcept
 void text_widget::delete_dead_character() noexcept
 {
     if (_has_dead_character) {
-        hi_axiom(_selection.cursor().before());
-        hi_axiom(_selection.cursor().index() < _cached_text.size());
+        hi_assert(_selection.cursor().before());
+        hi_assert_bounds(_selection.cursor().index(), _cached_text);
         if (_has_dead_character.valid()) {
             auto text = _cached_text;
             text[_selection.cursor().index()] = _has_dead_character;

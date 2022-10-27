@@ -87,7 +87,7 @@ generator<cmdln_option> command_line_parser(It first, It last, std::string_view 
 
             } else {
                 // Long-option with argument in same token.
-                hi_axiom(eq_index >= 2);
+                hi_assert(eq_index >= 2);
                 hilet name_length = eq_index - 2;
                 co_yield cmdln_long_option(it->substr(2, name_length), it->substr(eq_index + 1));
             }

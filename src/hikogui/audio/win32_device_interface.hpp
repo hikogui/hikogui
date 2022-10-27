@@ -170,7 +170,7 @@ private:
         }
 
         auto r = std::wstring(r_size / sizeof(wchar_t{}) - 1, wchar_t{});
-        hi_axiom(r_size == (r.size() + 1) * sizeof(wchar_t{}));
+        hi_assert(r_size == (r.size() + 1) * sizeof(wchar_t{}));
 
         if (not DeviceIoControl(_handle, IOCTL_KS_PROPERTY, &property_info, sizeof(KSP_PIN), r.data(), r_size, &r_size, NULL)) {
             throw io_error(get_last_error_message());

@@ -153,7 +153,7 @@ unicode_word_break_WB5_WB999(unicode_break_vector& r, std::vector<unicode_word_b
     hi_axiom(r.size() == infos.size() + 1);
 
     auto RI_count = 0_uz;
-    hilet size = narrow<std::ptrdiff_t>(infos.size());
+    hilet size = narrow_cast<std::ptrdiff_t>(infos.size());
     for (auto i = 0_z; i < size; ++i) {
         hilet& next = infos[i];
         if (next == Regional_Indicator) {
@@ -246,9 +246,9 @@ unicode_word_break_WB5_WB999(unicode_break_vector& r, std::vector<unicode_word_b
  * @return A list of unicode_break_opportunity.
  */
 template<typename It, typename ItEnd, typename DescriptionFunc>
-[[nodiscard]] inline unicode_break_vector unicode_word_break(It first, ItEnd last, DescriptionFunc const& description_func)
+[[nodiscard]] inline unicode_break_vector unicode_word_break(It first, ItEnd last, DescriptionFunc const& description_func) noexcept
 {
-    auto size = narrow<size_t>(std::distance(first, last));
+    auto size = narrow_cast<size_t>(std::distance(first, last));
     auto r = unicode_break_vector{size + 1, unicode_break_opportunity::unassigned};
 
     auto infos = std::vector<detail::unicode_word_break_info>{};

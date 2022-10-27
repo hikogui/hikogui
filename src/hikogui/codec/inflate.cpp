@@ -257,7 +257,7 @@ void inflate_dynamic_block(std::span<std::byte const> bytes, std::size_t &bit_of
     hi_parse_check(lengths[256] != 0, "The end-of-block symbol must be in the table");
 
     hilet lengths_ptr = lengths.data();
-    hi_axiom(lengths_ptr != nullptr);
+    hi_assert_not_null(lengths_ptr);
     hilet literal_tree = huffman_tree<int16_t>::from_lengths(lengths_ptr, HLIT + 257);
     hilet distance_tree = huffman_tree<int16_t>::from_lengths(&lengths_ptr[HLIT + 257], HDIST + 1);
 

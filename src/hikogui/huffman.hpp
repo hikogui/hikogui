@@ -117,7 +117,7 @@ public:
      */
     [[nodiscard]] static huffman_tree from_lengths(uint8_t const *lengths, std::size_t nr_symbols)
     {
-        hi_axiom(lengths != nullptr);
+        hi_assert_not_null(lengths);
         hi_axiom(nr_symbols < std::numeric_limits<T>::min());
 
         struct symbol_length_t {

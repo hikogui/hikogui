@@ -234,7 +234,7 @@ constexpr auto common_sample_rates = std::array{
             for (hilet mode : enumerate_surround_modes()) {
                 auto surround_format = format;
                 surround_format.speaker_mapping = to_speaker_mapping(mode);
-                surround_format.num_channels = narrow<uint16_t>(popcount(surround_format.speaker_mapping));
+                surround_format.num_channels = narrow_cast<uint16_t>(popcount(surround_format.speaker_mapping));
 
                 if (surround_format.num_channels <= it->num_channels and supports_format(surround_format)) {
                     it->surround_mode_mask |= mode;
@@ -555,7 +555,7 @@ GUID audio_device_win32::pin_category() const noexcept
 
     WAVEFORMATEX *ex;
     hi_hresult_check(_audio_client->GetMixFormat(&ex));
-    hi_axiom(ex);
+    hi_assert_not_null(ex);
     hilet r = audio_stream_format_from_win32(*ex);
     CoTaskMemFree(ex);
     return r;

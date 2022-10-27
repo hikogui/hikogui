@@ -90,6 +90,17 @@
     if (&(other) == this) [[unlikely]] \
         return *this;
 
+/** Get an overloaded macro for 1 or 2 arguments.
+ *
+ * This macro allows dispatching to other macros based on the number of arguments.
+ * ```
+ * #define foo1(a) bar(a)
+ * #define foo2(a, b) bar(a, b)
+ * #define foo(...) hi_get_overloaded_macro2(__VA_ARGS__, foo2, foo1)(__VA_ARGS__)
+ * ```
+ */
+#define hi_get_overloaded_macro2(_1, _2, name, ...) name
+
 #if defined(__clang__)
 #define hi_unreachable() __builtin_unreachable()
 #define hi_assume(condition) __builtin_assume(to_bool(condition))
@@ -176,6 +187,31 @@ constexpr std::size_t operator"" _zu(unsigned long long lhs) noexcept
 constexpr std::ptrdiff_t operator"" _z(unsigned long long lhs) noexcept
 {
     return static_cast<std::ptrdiff_t>(lhs);
+}
+
+/** Compare then store if there was a change.
+ * @return true if a store was executed.
+ */
+template<typename T, typename U>
+[[nodiscard]] bool compare_store(T& lhs, U&& rhs) noexcept
+{
+    if (lhs != rhs) {
+        lhs = std::forward<U>(rhs);
+        return true;
+    } else {
+        return false;
+    }
+}
+
+/** Compare then store if there was a change.
+ *
+ * @note This atomic version does an lhs.exchange(rhs, std::memory_order_relaxed)
+ * @return true if a store was executed.
+ */
+template<typename T, typename U>
+[[nodiscard]] bool compare_store(std::atomic<T>& lhs, U&& rhs) noexcept
+{
+    return lhs.exchange(rhs, std::memory_order::relaxed) != rhs;
 }
 
 }} // namespace hi::v1

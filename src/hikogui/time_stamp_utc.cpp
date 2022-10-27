@@ -119,8 +119,8 @@ void time_stamp_utc::subsystem_proc_frequency_calibration(std::stop_token stop_t
 
 static void advance_cpu_thread_mask(uint64_t const &process_cpu_mask, uint64_t &thread_cpu_mask)
 {
-    hi_axiom(std::popcount(process_cpu_mask) > 0);
-    hi_axiom(std::popcount(thread_cpu_mask) == 1);
+    hi_assert(std::popcount(process_cpu_mask) > 0);
+    hi_assert(std::popcount(thread_cpu_mask) == 1);
 
     do {
         if ((thread_cpu_mask <<= 1) == 0) {
@@ -140,7 +140,7 @@ void time_stamp_utc::subsystem_proc(std::stop_token stop_token) noexcept
     hilet process_cpu_mask = process_affinity_mask();
 
     std::size_t next_cpu = 0;
-    while (!stop_token.stop_requested()) {
+    while (not stop_token.stop_requested()) {
         hilet current_cpu = advance_thread_affinity(next_cpu);
 
         std::this_thread::sleep_for(100ms);
@@ -148,7 +148,7 @@ void time_stamp_utc::subsystem_proc(std::stop_token stop_token) noexcept
 
         time_stamp_count tsc;
         hilet tp = time_stamp_utc::now(tsc);
-        hi_axiom(tsc.cpu_id() == narrow_cast<ssize_t>(current_cpu));
+        hi_assert(tsc.cpu_id() == narrow_cast<ssize_t>(current_cpu));
 
         tsc_epochs[current_cpu].store(tp - tsc.time_since_epoch(), std::memory_order::relaxed);
     }
