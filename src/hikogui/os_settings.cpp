@@ -38,10 +38,18 @@ void os_settings::gather() noexcept
 
     try {
         auto language_tags = gather_languages();
+        if (language_tags.empty()) {
+            // If not language is configured on the system, use English as default.
+            language_tags.emplace_back("en");
+        }
+
+        auto writing_direction = language_tags.front().writing_direction();
+
         auto languages = language::make_languages(language_tags);
 
         auto language_changed = compare_store(_language_tags, language_tags);
         language_changed |= compare_store(_languages, languages);
+        language_changed |= compare_store(_writing_direction, writing_direction);
 
         if (language_changed) {
             setting_has_changed = true;

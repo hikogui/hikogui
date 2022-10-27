@@ -173,16 +173,19 @@ void toolbar_widget::update_layout_for_child(widget& child, ssize_t index, widge
 {
     hi_axiom(is_gui_thread());
 
-    hilet[child_x, child_width] = _grid_layout.get_position_and_size(index);
+    hilet[child_offset, child_width] = _grid_layout.get_position_and_size(index);
 
-    hilet child_rectangle = aarectangle{
-        child_x, _inner_margins.bottom(), child_width, layout().height() - _inner_margins.bottom() - _inner_margins.top()};
+    hilet x0 = context.left_to_right() ? child_offset : context.width() - child_offset - child_width;
+
+    hilet child_rectangle = aarectangle{x0, _inner_margins.bottom(), child_width, context.height() - _inner_margins.bottom() - _inner_margins.top()};
+
+    hilet margin_left = context.left_to_right() ? child.constraints().margins.left() : child.constraints().margins.right();
+    hilet margin_right = context.left_to_right() ? child.constraints().margins.right() : child.constraints().margins.left();
 
     hilet child_clipping_rectangle = aarectangle{
-        child_x - child.constraints().margins.left(),
+        x0 - margin_left,
         0.0f,
-        child_width + child.constraints().margins.left() + child.constraints().margins.right(),
-        layout().height()};
+        child_width + margin_left + margin_right, context.height()};
     child.set_layout(context.transform(child_rectangle, 1.0f, child_clipping_rectangle));
 }
 

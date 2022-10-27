@@ -85,7 +85,9 @@ widget_constraints const& text_widget::set_constraints() noexcept
 void text_widget::set_layout(widget_layout const& layout) noexcept
 {
     if (compare_store(_layout, layout)) {
-        _shaped_text.layout(layout.rectangle(), layout.baseline, layout.sub_pixel_size, layout.writing_direction, *alignment);
+        auto alignment_ = layout.left_to_right() ? *alignment : mirror(*alignment); 
+
+        _shaped_text.layout(layout.rectangle(), layout.baseline, layout.sub_pixel_size, layout.writing_direction, alignment_);
 
         // Update scroll position every time the text or layout has changed.
         _request_scroll = true;

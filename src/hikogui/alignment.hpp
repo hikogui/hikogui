@@ -61,6 +61,17 @@ enum class horizontal_alignment : uint8_t {
     right = 4,
 };
 
+[[nodiscard]] constexpr horizontal_alignment mirror(horizontal_alignment const &rhs) noexcept
+{
+    if (rhs == horizontal_alignment::left) {
+        return horizontal_alignment::right;
+    } else if (rhs == horizontal_alignment::right) {
+        return horizontal_alignment::left;
+    } else {
+        return rhs;
+    }
+}
+
 class alignment {
 public:
     constexpr alignment() noexcept : _value(0) {}
@@ -180,6 +191,11 @@ public:
     [[nodiscard]] constexpr friend bool operator==(vertical_alignment const &lhs, alignment const &rhs) noexcept
     {
         return lhs == rhs.vertical();
+    }
+
+    [[nodiscard]] constexpr friend alignment mirror(alignment const &rhs) noexcept
+    {
+        return alignment{mirror(rhs.text()), rhs.vertical()};
     }
 
 private:

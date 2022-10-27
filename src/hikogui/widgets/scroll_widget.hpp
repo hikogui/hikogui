@@ -150,7 +150,11 @@ public:
             hilet aperture_size = extent2{
                 vertical_visible ? layout.width() - vertical_scroll_bar_width : layout.width(),
                 horizontal_visible ? layout.height() - horizontal_scroll_bar_height : layout.height()};
-            hilet aperture_offset = point2{0.0f, horizontal_visible ? horizontal_scroll_bar_height : 0.0f};
+
+            hilet aperture_x = layout.left_to_right() ? 0.0f : vertical_visible ? vertical_scroll_bar_width : 0.0f;
+            hilet aperture_y = horizontal_visible ? horizontal_scroll_bar_height : 0.0f;
+
+            hilet aperture_offset = point2{aperture_x, aperture_y};
             _aperture_rectangle = aarectangle{aperture_offset, aperture_size};
 
             // The length of the scroll-bar is the full length of the widget, or just the length of the aperture depending
@@ -160,14 +164,22 @@ public:
             hilet vertical_scroll_bar_size =
                 extent2{vertical_scroll_bar_width, both_visible ? aperture_size.height() : layout.height()};
 
-            _vertical_scroll_bar_rectangle = aarectangle{
-                point2{layout.width() - vertical_scroll_bar_size.width(), layout.height() - vertical_scroll_bar_size.height()},
-                vertical_scroll_bar_size};
+            hilet vertical_scroll_bar_x = layout.left_to_right() ? layout.width() - vertical_scroll_bar_size.width() : 0.0f;
+            hilet vertical_scroll_bar_y = layout.height() - vertical_scroll_bar_size.height();
+            _vertical_scroll_bar_rectangle =
+                aarectangle{point2{vertical_scroll_bar_x, vertical_scroll_bar_y}, vertical_scroll_bar_size};
 
-            _horizontal_scroll_bar_rectangle = aarectangle{point2{0.0f, 0.0f}, horizontal_scroll_bar_size};
+            hilet horizontal_scroll_bar_x = layout.left_to_right() ? 0.0f : vertical_visible ? vertical_scroll_bar_width : 0.0f;
+            hilet horizontal_scroll_bar_y = 0.0f;
+            _horizontal_scroll_bar_rectangle =
+                aarectangle{point2{horizontal_scroll_bar_x, horizontal_scroll_bar_y}, horizontal_scroll_bar_size};
 
             if constexpr (controls_window) {
-                window.set_resize_border_priority(true, not vertical_visible, not horizontal_visible, true);
+                if (layout.left_to_right()) {
+                    window.set_resize_border_priority(true, not vertical_visible, not horizontal_visible, true);
+                } else {
+                    window.set_resize_border_priority(not vertical_visible, true, not horizontal_visible, true);
+                }
             }
         }
 

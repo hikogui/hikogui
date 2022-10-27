@@ -29,11 +29,20 @@ void menu_button_widget::set_layout(widget_layout const& layout) noexcept
     if (compare_store(_layout, layout)) {
         hilet inside_rectangle = layout.rectangle() - theme().margin;
 
-        _check_rectangle = align(inside_rectangle, _check_size, alignment::middle_left());
-        _short_cut_rectangle = align(inside_rectangle, _short_cut_size, alignment::middle_right());
+        if (layout.left_to_right()) {
+            _check_rectangle = align(inside_rectangle, _check_size, alignment::middle_left());
+            _short_cut_rectangle = align(inside_rectangle, _short_cut_size, alignment::middle_right());
+            _label_rectangle = aarectangle{
+                point2{_check_rectangle.right() + theme().margin, 0.0f},
+                point2{_short_cut_rectangle.left() - theme().margin, layout.height()}};
 
-        _label_rectangle = aarectangle{
-            _check_rectangle.right() + theme().margin, 0.0f, _short_cut_rectangle.left() - theme().margin, layout.height()};
+        } else {
+            _short_cut_rectangle = align(inside_rectangle, _short_cut_size, alignment::middle_left());
+            _check_rectangle = align(inside_rectangle, _check_size, alignment::middle_right());
+            _label_rectangle = aarectangle{
+                point2{_short_cut_rectangle.right() + theme().margin, 0.0f},
+                point2{_check_rectangle.left() - theme().margin, layout.height()}};
+        }
 
         _check_glyph = font_book().find_glyph(elusive_icon::Ok);
         hilet check_glyph_bb = _check_glyph.get_bounding_box();

@@ -344,4 +344,51 @@ iso_15924::iso_15924(std::string_view code4)
     return static_cast<std::string_view>(iso_15924_code4_open_type_by_number[_v]);
 }
 
+[[nodiscard]] unicode_bidi_class iso_15924::writing_direction() const noexcept
+{
+    switch (_v) {
+    case 50: // Hyro
+    case 105: // Sarb
+    case 106: // Narb
+    case 115: // Phnx
+    case 116: // Lydi
+    case 123: // Samr
+    case 124: // Armi
+    case 125: // Hebr
+    case 126: // Palm
+    case 127: // Hatr
+    case 130: // Prti
+    case 131: // Phli
+    case 132: // Phlp
+    case 133: // Phlv
+    case 134: // Evst
+    case 135: // Syrc
+    case 136: // Syrn
+    case 137: // Syrj
+    case 138: // Syre
+    case 140: // Mand
+    case 141: // Sogd
+    case 142: // Sogo
+    case 159: // Nbat
+    case 160: // Arab
+    case 161: // Aran
+    case 165: // Nkoo
+    case 166: // Adlm
+    case 167: // Rohg
+    case 170: // Thaa
+    case 175: // Orkh
+    case 176: // Hung
+    case 192: // Yezi
+    case 210: // Ital
+    case 305: // Khar
+    case 403: // Cprt
+    case 438: // Mend
+    case 495: // Ethi
+    case 610: // Inds
+        return unicode_bidi_class::R;
+    default:
+        return unicode_bidi_class::L;
+    }
+}
+
 } // namespace hi::inline v1

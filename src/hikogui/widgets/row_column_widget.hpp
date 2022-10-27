@@ -245,7 +245,9 @@ private:
         hilet[child_position, child_length] = _grid_layout.get_position_and_size(index);
 
         if (axis == axis::row) {
-            hilet child_rectangle = aarectangle{child_position, 0.0f, child_length, layout().height()};
+            auto x0 = context.left_to_right() ? child_position : layout().width() - child_position - child_length;
+
+            hilet child_rectangle = aarectangle{x0, 0.0f, child_length, layout().height()};
             // The baseline for a row widget is inherited from the context received from the parent.
             child.set_layout(context.transform(child_rectangle, 0.0f));
 

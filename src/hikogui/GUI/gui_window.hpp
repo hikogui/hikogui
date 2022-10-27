@@ -209,6 +209,12 @@ public:
 
     virtual hi::subpixel_orientation subpixel_orientation() const noexcept = 0;
 
+    /** The writing direction of this window.
+     *
+     * @return Either `unicode_bidi_class::L` for left-to-right; or `unicode_bidi_class::R` for right-to-left.
+     */
+    virtual unicode_bidi_class writing_direction() const noexcept = 0;
+
     /** Get the size-state of the window.
      */
     gui_window_size size_state() const noexcept
@@ -279,7 +285,7 @@ public:
      * This is called by the event handler to start processing events.
      * The events are translated and then uses `send_event_to_widget()` to send the
      * events to the widgets in some priority ordering.
-     * 
+     *
      * It may also be called from within the `event_handle()` of widgets.
      */
     bool process_event(gui_event const& event) noexcept;

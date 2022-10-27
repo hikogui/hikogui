@@ -6,6 +6,7 @@
 
 #include "../exception.hpp"
 #include "../unicode/unicode_script.hpp"
+#include "../unicode/unicode_bidi_class.hpp"
 #include <string_view>
 #include <cstdint>
 #include <format>
@@ -55,6 +56,8 @@ public:
     /** Get the 4-letter code used by open-type.
      */
     [[nodiscard]] std::string_view code4_open_type() const noexcept;
+
+    [[nodiscard]] unicode_bidi_class writing_direction() const noexcept;
 
     [[nodiscard]] constexpr friend bool operator==(iso_15924 const &lhs, iso_15924 const &rhs) noexcept = default;
 

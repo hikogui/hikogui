@@ -113,20 +113,22 @@ widget_constraints const& label_widget::set_constraints() noexcept
 void label_widget::set_layout(widget_layout const& layout) noexcept
 {
     if (compare_store(_layout, layout)) {
+        hilet alignment_ = layout.left_to_right() ? *alignment : mirror(*alignment);
+
         _text_rectangle = aarectangle{};
-        if (*alignment == horizontal_alignment::left) {
+        if (alignment_ == horizontal_alignment::left) {
             hilet text_width = layout.width() - _icon_size - _inner_margin;
             _text_rectangle = {_icon_size + _inner_margin, 0.0f, text_width, layout.height()};
 
-        } else if (*alignment == horizontal_alignment::right) {
+        } else if (alignment_ == horizontal_alignment::right) {
             hilet text_width = layout.width() - _icon_size - _inner_margin;
             _text_rectangle = {0.0f, 0.0f, text_width, layout.height()};
 
-        } else if (*alignment == vertical_alignment::top) {
+        } else if (alignment_ == vertical_alignment::top) {
             hilet text_height = layout.height() - _icon_size - _inner_margin;
             _text_rectangle = {0.0f, 0.0f, layout.width(), text_height};
 
-        } else if (*alignment == vertical_alignment::bottom) {
+        } else if (alignment_ == vertical_alignment::bottom) {
             hilet text_height = layout.height() - _icon_size - _inner_margin;
             _text_rectangle = {0.0f, _icon_size + _inner_margin, layout.width(), text_height};
 
@@ -135,24 +137,24 @@ void label_widget::set_layout(widget_layout const& layout) noexcept
         }
 
         hilet icon_pos = [&] {
-            if (*alignment == hi::alignment::top_left()) {
+            if (alignment_ == hi::alignment::top_left()) {
                 return point2{0.0f, layout.height() - _icon_size};
-            } else if (*alignment == hi::alignment::top_right()) {
+            } else if (alignment_ == hi::alignment::top_right()) {
                 return point2{layout.width() - _icon_size, layout.height() - _icon_size};
-            } else if (*alignment == vertical_alignment::top) {
+            } else if (alignment_ == vertical_alignment::top) {
                 return point2{(layout.width() - _icon_size) / 2.0f, layout.height() - _icon_size};
-            } else if (*alignment == hi::alignment::bottom_left()) {
+            } else if (alignment_ == hi::alignment::bottom_left()) {
                 return point2{0.0f, 0.0f};
-            } else if (*alignment == hi::alignment::bottom_right()) {
+            } else if (alignment_ == hi::alignment::bottom_right()) {
                 return point2{layout.width() - _icon_size, 0.0f};
-            } else if (*alignment == vertical_alignment::bottom) {
+            } else if (alignment_ == vertical_alignment::bottom) {
                 return point2{(layout.width() - _icon_size) / 2.0f, 0.0f};
-            } else if (*alignment == hi::alignment::middle_left()) {
+            } else if (alignment_ == hi::alignment::middle_left()) {
                 return point2{0.0f, (layout.height() - _icon_size) / 2.0f};
-            } else if (*alignment == hi::alignment::middle_right()) {
-                return point2{layout.width() - _icon_size, (layout.height() - _icon_size)};
-            } else if (*alignment == vertical_alignment::middle) {
-                return point2{(layout.width() - _icon_size) / 2.0f, (layout.height() - _icon_size)};
+            } else if (alignment_ == hi::alignment::middle_right()) {
+                return point2{layout.width() - _icon_size, (layout.height() - _icon_size) / 2.0f};
+            } else if (alignment_ == vertical_alignment::middle) {
+                return point2{(layout.width() - _icon_size) / 2.0f, (layout.height() - _icon_size) / 2.0f};
             } else {
                 hi_no_default();
             }

@@ -23,18 +23,20 @@ widget_constraints const &toggle_widget::set_constraints() noexcept
 void toggle_widget::set_layout(widget_layout const &layout) noexcept
 {
     if (compare_store(_layout, layout)) {
-        if (*alignment == horizontal_alignment::left or *alignment == horizontal_alignment::right) {
-            _button_rectangle = round(align(layout.rectangle(), _button_size, *alignment));
+        auto alignment_ = layout.left_to_right() ? *alignment : mirror(*alignment);
+
+        if (alignment_ == horizontal_alignment::left or alignment_ == horizontal_alignment::right) {
+            _button_rectangle = round(align(layout.rectangle(), _button_size, alignment_));
         } else {
             hi_not_implemented();
         }
 
         hilet label_width = layout.width() - (_button_rectangle.width() + theme().margin);
-        if (*alignment == horizontal_alignment::left) {
+        if (alignment_ == horizontal_alignment::left) {
             hilet label_left = _button_rectangle.right() + theme().margin;
             _label_rectangle = aarectangle{label_left, 0.0f, label_width, layout.height()};
 
-        } else if (*alignment == horizontal_alignment::right) {
+        } else if (alignment_ == horizontal_alignment::right) {
             _label_rectangle = aarectangle{0.0f, 0.0f, label_width, layout.height()};
         
         } else {
