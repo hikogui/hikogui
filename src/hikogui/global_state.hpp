@@ -199,7 +199,7 @@ inline std::atomic<global_state_type> global_state = global_state_type::log_leve
 inline void set_log_level(global_state_type log_level) noexcept
 {
     // Only the log_* bits should be set.
-    hi_axiom(not to_bool(log_level & ~global_state_type::log_mask));
+    hi_assert(not to_bool(log_level & ~global_state_type::log_mask));
 
     // First enable bits, then disable bits.
     global_state |= log_level;
@@ -214,7 +214,7 @@ inline void set_log_level(global_state_type log_level) noexcept
  */
 inline bool global_state_disable(global_state_type subsystem, std::memory_order order = std::memory_order::seq_cst) noexcept
 {
-    hi_axiom(std::popcount(to_underlying(subsystem)) == 1);
+    hi_assert(std::popcount(to_underlying(subsystem)) == 1);
     return to_bool(global_state.fetch_and(~subsystem, order) & subsystem);
 }
 
@@ -226,7 +226,7 @@ inline bool global_state_disable(global_state_type subsystem, std::memory_order 
  */
 inline bool global_state_enable(global_state_type subsystem, std::memory_order order = std::memory_order::seq_cst) noexcept
 {
-    hi_axiom(std::popcount(to_underlying(subsystem)) == 1);
+    hi_assert(std::popcount(to_underlying(subsystem)) == 1);
     return to_bool(global_state.fetch_or(subsystem, order) & subsystem);
 }
 

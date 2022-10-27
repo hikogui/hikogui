@@ -600,9 +600,9 @@ unicode_LB_finish_fit_line(unicode_break_const_iterator first, unicode_break_con
  * @return A list of unicode_break_opportunity.
  */
 template<typename It, typename ItEnd, typename DescriptionFunc>
-[[nodiscard]] inline unicode_break_vector unicode_line_break(It first, ItEnd last, DescriptionFunc const &description_func)
+[[nodiscard]] inline unicode_break_vector unicode_line_break(It first, ItEnd last, DescriptionFunc const &description_func) noexcept
 {
-    auto size = narrow<size_t>(std::distance(first, last));
+    auto size = narrow_cast<size_t>(std::distance(first, last));
     auto r = unicode_break_vector{size + 1, unicode_break_opportunity::unassigned};
 
     auto infos = detail::unicode_LB1(first, last, description_func);

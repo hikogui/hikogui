@@ -181,7 +181,7 @@ public:
     template<typename OutRange = std::basic_string<to_char_type>>
     [[nodiscard]] OutRange read(void const *ptr, size_t size, std::endian endian = std::endian::native) noexcept
     {
-        hi_axiom(ptr != nullptr);
+        hi_assert_not_null(ptr);
 
         hilet num_chars = size / sizeof(from_char_type);
 

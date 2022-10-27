@@ -537,8 +537,8 @@ public:
         if (auto f = get_if<double>(*this)) {
             errno = 0;
             hilet r = std::round(*f);
-            if (errno == EDOM or errno == ERANGE or r < narrow<double>(std::numeric_limits<T>::min()) or
-                r > narrow<double>(std::numeric_limits<T>::max())) {
+            if (errno == EDOM or errno == ERANGE or r < narrow_cast<double>(std::numeric_limits<T>::min()) or
+                r > narrow_cast<double>(std::numeric_limits<T>::max())) {
                 throw std::overflow_error("double to integral");
             }
             return narrow_cast<T>(r);

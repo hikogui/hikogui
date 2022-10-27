@@ -271,7 +271,7 @@ auto shuffle_by_index(auto first, auto last, auto indices_first, auto indices_la
     std::size_t dst = 0;
     for (auto it = indices_first; it != indices_last; ++it, ++dst) {
         hilet index = index_op(*it);
-        hi_axiom(index < size(src_indices));
+        hi_assert_bounds(index, src_indices);
 
         auto src = [&src_indices, index]() {
             auto src = index;

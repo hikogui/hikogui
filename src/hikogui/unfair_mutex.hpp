@@ -55,9 +55,9 @@ public:
         if constexpr (UseDeadLockDetector) {
             hilet other = dead_lock_detector::lock(this);
             // *this mutex is already locked.
-            hi_axiom(other != this);
+            hi_assert(other != this);
             // Potential dead-lock because of different ordering with other.
-            hi_axiom(other == nullptr);
+            hi_assert(other == nullptr);
         }
 
         hi_axiom(holds_invariant());
@@ -83,9 +83,9 @@ public:
         if constexpr (UseDeadLockDetector) {
             hilet other = dead_lock_detector::lock(this);
             // *this mutex is already locked.
-            hi_axiom(other != this);
+            hi_assert(other != this);
             // Potential dead-lock because of different ordering with other.
-            hi_axiom(other == nullptr);
+            hi_assert(other == nullptr);
         }
 
         hi_axiom(holds_invariant());
@@ -97,7 +97,7 @@ public:
 
             if constexpr (UseDeadLockDetector) {
                 // *this mutex is locked out-of-order from the order of being locked.
-                hi_axiom(dead_lock_detector::unlock(this));
+                hi_assert(dead_lock_detector::unlock(this));
             }
 
             [[unlikely]] return false;
@@ -111,7 +111,7 @@ public:
     {
         if constexpr (UseDeadLockDetector) {
             // *this mutex is locked out-of-order from the order of being locked.
-            hi_axiom(dead_lock_detector::unlock(this));
+            hi_assert(dead_lock_detector::unlock(this));
         }
 
         hi_axiom(holds_invariant());

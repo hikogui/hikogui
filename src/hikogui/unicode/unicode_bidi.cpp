@@ -133,7 +133,7 @@ struct unicode_bidi_isolated_run_sequence {
 
     [[nodiscard]] int8_t embedding_level() const noexcept
     {
-        hi_axiom(!runs.empty());
+        hi_axiom(not runs.empty());
         return runs.front().embedding_level();
     }
 
@@ -144,7 +144,7 @@ struct unicode_bidi_isolated_run_sequence {
 
     [[nodiscard]] bool ends_with_isolate_initiator() const noexcept
     {
-        hi_axiom(!runs.empty());
+        hi_axiom(not runs.empty());
         return runs.back().ends_with_isolate_initiator();
     }
 };

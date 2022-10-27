@@ -1935,7 +1935,7 @@ struct numeric_array {
     {
         hi_axiom(rhs > 0 and rhs < sizeof(value_type) * CHAR_BIT);
 
-        hilet remainder = narrow<unsigned int>(sizeof(value_type) * CHAR_BIT - rhs);
+        hilet remainder = narrow_cast<unsigned int>(sizeof(value_type) * CHAR_BIT - rhs);
 
         return (lhs << rhs) | (lhs >> remainder);
     }
@@ -1948,7 +1948,7 @@ struct numeric_array {
     {
         hi_axiom(rhs > 0 and rhs < sizeof(value_type) * CHAR_BIT);
 
-        hilet remainder = narrow<unsigned int>(sizeof(value_type) * CHAR_BIT - rhs);
+        hilet remainder = narrow_cast<unsigned int>(sizeof(value_type) * CHAR_BIT - rhs);
 
         return (lhs >> rhs) | (lhs << remainder);
     }

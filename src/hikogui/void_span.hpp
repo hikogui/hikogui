@@ -33,7 +33,7 @@ public:
     constexpr void_span& operator=(void_span&&) noexcept = default;
     constexpr void_span(void *pointer, size_t size) noexcept : _pointer(pointer), _size(size)
     {
-        hi_axiom(pointer != nullptr or size == 0);
+        hi_assert(pointer != nullptr or size == 0);
     }
 
     template<typename T, std::size_t N>
@@ -170,7 +170,7 @@ public:
     constexpr const_void_span& operator=(const_void_span&&) noexcept = default;
     constexpr const_void_span(void const *pointer, size_t size) noexcept : _pointer(pointer), _size(size)
     {
-        hi_axiom(pointer != nullptr or size == 0);
+        hi_assert(pointer != nullptr or size == 0);
     }
 
     constexpr const_void_span(void_span const& rhs) noexcept : const_void_span(rhs.data(), rhs.size()) {}

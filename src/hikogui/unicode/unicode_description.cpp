@@ -13,7 +13,7 @@ namespace hi::inline v1 {
 
 [[nodiscard]] unicode_description const& unicode_description::find(char32_t code_point) noexcept
 {
-    hi_axiom(code_point <= 0x10'ffff);
+    hi_assert(code_point <= 0x10'ffff);
 
     auto index = wide_cast<size_t>(ucd_index[code_point >> 5]);
     index <<= 5;
@@ -34,7 +34,7 @@ namespace hi::inline v1 {
 
         uint64_t tmp = 0;
         do {
-            hi_axiom(index < ucd_decompositions.size());
+            hi_assert_bounds(index, ucd_decompositions);
             tmp = ucd_decompositions[index++];
             
             // Entry 0[20:0]
@@ -82,7 +82,7 @@ done:
     uint64_t tmp = 0;
     do {
         // Entry 0[20:0] and 0[41:21], 0[63] == '-'.
-        hi_axiom(index < ucd_compositions.size());
+        hi_assert_bounds(index, ucd_compositions);
         tmp = ucd_compositions[index++];
         if (hilet c = truncate<char32_t>(tmp & mask); c <= other) {
             tmp >>= 21;
@@ -96,7 +96,7 @@ done:
 
         // Entry 0[62:42] and 1[20:0], 0[63] == '-'.
         if (hilet c = truncate<char32_t>(tmp & mask); c <= other) {
-            hi_axiom(index < ucd_compositions.size());
+            hi_assert_bounds(index, ucd_compositions);
             tmp = ucd_compositions[index++];
             if (c == other) {
                 return truncate<char32_t>(tmp & mask);

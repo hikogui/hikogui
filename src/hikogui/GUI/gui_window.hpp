@@ -167,7 +167,7 @@ public:
     [[nodiscard]] grid_widget& content() noexcept
     {
         hi_axiom(is_gui_thread());
-        hi_axiom(widget);
+        hi_assert_not_null(widget);
         return widget->content();
     }
 
@@ -178,7 +178,7 @@ public:
     [[nodiscard]] toolbar_widget& toolbar() noexcept
     {
         hi_axiom(is_gui_thread());
-        hi_axiom(widget);
+        hi_assert_not_null(widget);
         return widget->toolbar();
     }
 

@@ -15,7 +15,7 @@ abstract_button_widget::abstract_button_widget(
     std::shared_ptr<delegate_type> delegate) noexcept :
     super(window, parent), delegate(std::move(delegate))
 {
-    hi_axiom(this->delegate != nullptr);
+    hi_assert_not_null(this->delegate);
 
     _on_label_widget = std::make_unique<label_widget>(window, this, on_label, alignment, text_style);
     _off_label_widget = std::make_unique<label_widget>(window, this, off_label, alignment, text_style);
@@ -28,13 +28,13 @@ abstract_button_widget::abstract_button_widget(
 
 abstract_button_widget::~abstract_button_widget()
 {
-    hi_axiom(delegate != nullptr);
+    hi_assert_not_null(delegate);
     delegate->deinit(*this);
 }
 
 void abstract_button_widget::activate() noexcept
 {
-    hi_axiom(delegate != nullptr);
+    hi_assert_not_null(delegate);
     delegate->activate(*this);
 
     this->pressed();

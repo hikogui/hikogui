@@ -102,8 +102,8 @@ public:
 
     [[nodiscard]] constexpr friend bool operator==(widget_layout const& lhs, widget_layout const& rhs) noexcept
     {
-        hi_axiom((lhs.to_parent == rhs.to_parent) == (lhs.from_parent == rhs.from_parent));
-        hi_axiom((lhs.to_window == rhs.to_window) == (lhs.from_window == rhs.from_window));
+        hi_assert((lhs.to_parent == rhs.to_parent) == (lhs.from_parent == rhs.from_parent));
+        hi_assert((lhs.to_window == rhs.to_window) == (lhs.from_window == rhs.from_window));
 
         // clang-format on
         return lhs.size == rhs.size and lhs.to_parent == rhs.to_parent and lhs.to_window == rhs.to_window and

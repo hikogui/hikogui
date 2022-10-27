@@ -381,7 +381,7 @@ public:
     constexpr gap_buffer(gap_buffer const& other) noexcept :
         _begin(nullptr), _it_end(nullptr), _gap_begin(nullptr), _gap_size(0), _allocator(other._allocator)
     {
-        hi_axiom(&other != this);
+        hi_assert(&other != this);
 
         if (other._ptr != nullptr) {
             _begin = _allocator.allocate(other.capacity());
@@ -450,7 +450,7 @@ public:
         _gap_size(other._gap_size),
         _allocator(other._allocator)
     {
-        hi_axiom(&other != this);
+        hi_assert(&other != this);
 
         other._begin = nullptr;
         other._it_end = nullptr;
@@ -547,7 +547,7 @@ public:
      */
     [[nodiscard]] constexpr reference operator[](size_type index) noexcept
     {
-        hi_axiom(index < size());
+        hi_assert_bounds(index, *this);
         return *get_pointer_from_index(index);
     }
 
@@ -559,7 +559,7 @@ public:
      */
     [[nodiscard]] constexpr const_reference operator[](size_type index) const noexcept
     {
-        hi_axiom(index < size());
+        hi_assert_bounds(index, *this);
         return *get_pointer_from_index(index);
     }
 

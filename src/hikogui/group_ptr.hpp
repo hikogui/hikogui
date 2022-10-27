@@ -58,7 +58,7 @@ public:
         }();
 
         for (auto owner : owners_copy) {
-            hi_axiom(owner != nullptr);
+            hi_assert_not_null(owner);
             if (owner->_notify) {
                 owner->_notify(args...);
             }
@@ -97,7 +97,7 @@ private:
         hilet lock = std::scoped_lock(_enable_group_ptr_mutex);
 
         hilet num_removed = std::erase(_enable_group_ptr_owners, owner);
-        hi_axiom(num_removed == 1);
+        hi_assert(num_removed == 1);
         hi_axiom(_enable_group_ptr_holds_invariant());
     }
 
@@ -111,8 +111,8 @@ private:
     {
         hilet lock = std::scoped_lock(_enable_group_ptr_mutex);
 
-        hi_axiom(replacement != nullptr);
-        hi_axiom(replacement.get() != this);
+        hi_assert_not_null(replacement);
+        hi_assert_not_null(replacement.get());
 
         while (not _enable_group_ptr_owners.empty()) {
             auto *owner = _enable_group_ptr_owners.back();

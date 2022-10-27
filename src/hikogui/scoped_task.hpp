@@ -55,7 +55,7 @@ public:
 
             } else {
                 // Notify also in case of exception.
-                hi_axiom(exception);
+                hi_assert_not_null(exception);
                 if constexpr (std::is_default_constructible_v<value_type>) {
                     notifier(value_type{});
                 }

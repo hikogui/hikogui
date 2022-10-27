@@ -48,7 +48,7 @@ file_view::file_view(std::filesystem::path const &path, AccessMode accessMode, s
 file_view::file_view(file_view const &other) noexcept :
     _file_mapping_object(other._file_mapping_object), _bytes(other._bytes), _offset(other._offset)
 {
-    hi_axiom(&other != this);
+    hi_assert(&other != this);
 }
 
 file_view &file_view::operator=(file_view const &other) noexcept
@@ -63,7 +63,7 @@ file_view &file_view::operator=(file_view const &other) noexcept
 file_view::file_view(file_view &&other) noexcept :
     _file_mapping_object(std::move(other._file_mapping_object)), _bytes(std::move(other._bytes)), _offset(other._offset)
 {
-    hi_axiom(&other != this);
+    hi_assert(&other != this);
 }
 
 file_view &file_view::operator=(file_view &&other) noexcept

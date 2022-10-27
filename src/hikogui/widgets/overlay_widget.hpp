@@ -63,7 +63,7 @@ public:
     Widget& make_widget(Args&&...args) noexcept
     {
         hi_axiom(is_gui_thread());
-        hi_axiom(not _content);
+        hi_assert(_content == nullptr);
 
         auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
         auto& ref = *tmp;

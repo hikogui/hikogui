@@ -72,9 +72,9 @@ store_samples(i8x16 int_samples, std::byte *& dst, i8x16 store_shuffle_indices, 
     std::size_t num_chunks,
     std::size_t stride) noexcept
 {
-    hi_axiom(dst != nullptr);
-    hi_axiom(num_chunks > 0 and num_chunks <= 4);
-    hi_axiom(stride > 0);
+    hi_assert(dst != nullptr);
+    hi_assert(num_chunks > 0 and num_chunks <= 4);
+    hi_assert(stride > 0);
 
     do {
         store_samples(int_samples, dst, store_shuffle_indices, stride);
@@ -115,8 +115,8 @@ audio_sample_packer::audio_sample_packer(audio_sample_format format, std::size_t
 void audio_sample_packer::operator()(float const *hi_restrict src, std::byte *hi_restrict dst, std::size_t num_samples)
     const noexcept
 {
-    hi_axiom(src != nullptr);
-    hi_axiom(dst != nullptr);
+    hi_assert(src != nullptr);
+    hi_assert(dst != nullptr);
 
     // Calculate a conservative number of samples that can be copied quickly
     // without overflowing the dst buffer.

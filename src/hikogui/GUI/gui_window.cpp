@@ -73,7 +73,7 @@ void gui_window::init()
 
 void gui_window::set_device(gfx_device *device) noexcept
 {
-    hi_axiom(surface);
+    hi_assert_not_null(surface);
     surface->set_device(device);
 }
 
@@ -82,8 +82,8 @@ void gui_window::render(utc_nanoseconds display_time_point)
     hilet t1 = trace<"window::render">();
 
     hi_axiom(is_gui_thread());
-    hi_axiom(surface);
-    hi_axiom(widget);
+    hi_assert_not_null(surface);
+    hi_assert_not_null(widget);
 
     // When a widget requests it or a window-wide event like language change
     // has happened all the widgets will be set_constraints().
@@ -193,7 +193,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
 void gui_window::set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept
 {
     hi_axiom(is_gui_thread());
-    hi_axiom(widget);
+    hi_assert_not_null(widget);
     return widget->set_resize_border_priority(left, right, bottom, top);
 }
 
@@ -214,7 +214,7 @@ void gui_window::update_mouse_target(hi::widget const *new_target_widget, point2
 
 hi::keyboard_bindings const& gui_window::keyboard_bindings() const noexcept
 {
-    hi_axiom(gui.keyboard_bindings);
+    hi_assert_not_null(gui.keyboard_bindings);
     return *gui.keyboard_bindings;
 }
 

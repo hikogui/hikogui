@@ -33,7 +33,7 @@ enum class callback_flags {
 
 [[nodiscard]] constexpr callback_flags operator|(callback_flags const &lhs, callback_flags const &rhs) noexcept
 {
-    hi_axiom((to_underlying(lhs) & 0xff) == 0 or (to_underlying(rhs) & 0xff) == 0);
+    hi_assert((to_underlying(lhs) & 0xff) == 0 or (to_underlying(rhs) & 0xff) == 0);
     return static_cast<callback_flags>(to_underlying(lhs) | to_underlying(rhs));
 }
 

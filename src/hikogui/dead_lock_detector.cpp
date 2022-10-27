@@ -15,7 +15,7 @@ static unfair_mutex_impl<false> dead_lock_detector_mutex;
 
 [[nodiscard]] void *dead_lock_detector::check_graph(void *object) noexcept
 {
-    hi_axiom(object != nullptr);
+    hi_assert_not_null(object);
 
     hilet lock = std::scoped_lock(dead_lock_detector_mutex);
 
@@ -47,7 +47,7 @@ void *dead_lock_detector::lock(void *object) noexcept
         return nullptr;
     }
 
-    hi_axiom(object != nullptr);
+    hi_assert_not_null(object);
 
     for (hilet &x : stack) {
         if (object == x) {
@@ -74,7 +74,7 @@ bool dead_lock_detector::unlock(void *object) noexcept
         return true;
     }
 
-    hi_axiom(object != nullptr);
+    hi_assert_not_null(object);
 
     // Trying to unlock `object`, but nothing on this thread was locked.
     if (stack.empty()) {
@@ -113,7 +113,7 @@ void dead_lock_detector::clear_graph() noexcept
 
 void dead_lock_detector::remove_object(void *object) noexcept
 {
-    hi_axiom(object != nullptr);
+    hi_assert_not_null(object);
 
     if (is_system_shutting_down()) {
         // thread_local variables used by `lock_graph` do not work on MSVC when main() returns.

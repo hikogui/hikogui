@@ -330,7 +330,7 @@ template<typename T, size_t N>
 template<typename T>
 [[nodiscard]] constexpr uint32_t fourcc_from_cstr(T const *txt) noexcept requires(sizeof(T) == 1)
 {
-    hi_axiom(txt != nullptr);
+    hi_assert_not_null(txt);
     auto r = uint32_t{};
     r |= truncate<uint8_t>(txt[0]);
     r <<= 8;

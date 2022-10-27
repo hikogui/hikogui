@@ -146,6 +146,15 @@ std::vector<bezier_point> graphic_path::getbezier_pointsOfContour(ssize_t subpat
 
 std::vector<bezier_curve> graphic_path::getBeziersOfContour(ssize_t contourNr) const noexcept
 {
+    auto first = beginContour(contourNr);
+    auto last = endContour(contourNr);
+    auto num_points = std::distance(first, last);
+    if (num_points < 3) {
+        // Contours with less than three points do not have volume and are invisible.
+        // Contours with one point are used for anchors when compositing compound glyphs.
+        return {};
+    }
+
     return makeContourFromPoints(beginContour(contourNr), endContour(contourNr));
 }
 

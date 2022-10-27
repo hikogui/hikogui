@@ -114,10 +114,10 @@ struct text_style_impl {
 
     text_style_impl(std::vector<text_sub_style> sub_styles) noexcept : _sub_styles(std::move(sub_styles))
     {
-        hi_axiom(not empty());
-        hi_axiom(all(back().phrasing_mask));
-        hi_axiom(back().language_filter.empty());
-        hi_axiom(back().script_filter.empty());
+        hi_assert(not empty());
+        hi_assert(all(back().phrasing_mask));
+        hi_assert(back().language_filter.empty());
+        hi_assert(back().script_filter.empty());
     }
 
     [[nodiscard]] bool empty() const noexcept
@@ -204,7 +204,7 @@ public:
 
     [[nodiscard]] constexpr bool is_semantic() const noexcept
     {
-        hi_axiom(not empty());
+        hi_assert(not empty());
         return _value >= 0xff00;
     }
 

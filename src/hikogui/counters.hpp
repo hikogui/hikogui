@@ -40,7 +40,7 @@ public:
         if (it == map_.cend()) {
             return nullptr;
         } else {
-            hi_axiom(it->second);
+            hi_assert(it->second);
             return it->second;
         }
     }
@@ -62,7 +62,7 @@ public:
         hilet lock = std::scoped_lock(_mutex);
         log_header();
         for (hilet & [ string, counter ] : _map.get_or_make()) {
-            hi_axiom(counter);
+            hi_assert(counter);
             counter->log(string);
         }
     }

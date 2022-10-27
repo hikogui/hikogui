@@ -53,13 +53,13 @@ public:
 
     [[nodiscard]] hi::access_mode access_mode() const noexcept
     {
-        hi_axiom(_file);
+        hi_assert_not_null(_file);
         return _file->access_mode();
     }
 
     [[nodiscard]] void_span void_span() const noexcept
     {
-        hi_axiom(_file);
+        hi_assert_not_null(_file);
         hi_assert(to_bool(_file->access_mode() & access_mode::write));
         return {_data, _size};
     }
@@ -124,13 +124,13 @@ public:
 
     [[nodiscard]] std::size_t offset() const noexcept
     {
-        hi_axiom(_pimpl != nullptr);
+        hi_assert_not_null(_pimpl);
         return _pimpl->offset();
     }
 
     [[nodiscard]] std::size_t size() const noexcept
     {
-        hi_axiom(_pimpl != nullptr);
+        hi_assert_not_null(_pimpl);
         return _pimpl->size();
     }
 
@@ -174,7 +174,7 @@ public:
      */
     [[nodiscard]] void_span void_span() const noexcept
     {
-        hi_axiom(_pimpl != nullptr);
+        hi_assert_not_null(_pimpl);
         return _pimpl->void_span();
     }
 
@@ -182,7 +182,7 @@ public:
      */
     [[nodiscard]] const_void_span const_void_span() const noexcept
     {
-        hi_axiom(_pimpl != nullptr);
+        hi_assert_not_null(_pimpl);
         return _pimpl->const_void_span();
     }
 
@@ -192,7 +192,7 @@ public:
      */
     void flush(hi::void_span span) const noexcept
     {
-        hi_axiom(_pimpl != nullptr);
+        hi_assert_not_null(_pimpl);
         return _pimpl->flush(span);
     }
 
@@ -208,13 +208,13 @@ public:
 
     [[nodiscard]] friend std::string_view as_string_view(file_view const& view) noexcept
     {
-        hi_axiom(view.offset() == 0);
+        hi_assert(view.offset() == 0);
         return as_string_view(view.const_void_span());
     }
 
     [[nodiscard]] friend bstring_view as_bstring_view(file_view const& view) noexcept
     {
-        hi_axiom(view.offset() == 0);
+        hi_assert(view.offset() == 0);
         return as_bstring_view(view.const_void_span());
     }
 

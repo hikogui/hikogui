@@ -112,13 +112,13 @@ public:
 
     [[nodiscard]] glyph_ids find_glyph(elusive_icon rhs) const noexcept
     {
-        hi_axiom(_elusive_icon_font);
+        hi_assert_not_null(_elusive_icon_font);
         return _elusive_icon_font->find_glyph(grapheme{static_cast<char32_t>(rhs)});
     }
 
     [[nodiscard]] glyph_ids find_glyph(hikogui_icon rhs) const noexcept
     {
-        hi_axiom(_hikogui_icon_font);
+        hi_assert_not_null(_hikogui_icon_font);
         return _hikogui_icon_font->find_glyph(grapheme{static_cast<char32_t>(rhs)});
     }
 

@@ -807,7 +807,7 @@ private:
 
     [[nodiscard]] constexpr bool matches(const_iterator it, const_iterator last, std::u32string_view original) const noexcept
     {
-        hi_axiom(it != last);
+        hi_assert(it != last);
 
         struct stack_element {
             std::u32string_view str;

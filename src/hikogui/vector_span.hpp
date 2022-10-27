@@ -32,12 +32,12 @@ public:
 
     vector_span_iterator(value_type *ptr) noexcept : ptr(ptr)
     {
-        hi_axiom(ptr != nullptr);
+        hi_assert_not_null(ptr);
     }
 
     vector_span_iterator &operator=(value_type *ptr) noexcept
     {
-        hi_axiom(ptr != nullptr);
+        hi_assert_not_null(ptr);
         this->ptr = ptr;
         return *this;
     }
@@ -191,12 +191,12 @@ public:
 
     [[nodiscard]] value_type &operator[](std::size_t i) noexcept
     {
-        hi_axiom(i < size());
+        hi_assert_bounds(i, *this);
         return *std::launder(_begin + i);
     }
     [[nodiscard]] value_type const &operator[](std::size_t i) const noexcept
     {
-        hi_axiom(i < size());
+        hi_assert_bounds(i, *this);
         return *std::launder(_begin + i);
     }
 

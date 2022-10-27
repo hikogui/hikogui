@@ -25,7 +25,7 @@ template<std::integral T>
     hilet last = first + buffer.size();
 
     hilet[new_last, ec] = std::to_chars(first, last, value);
-    hi_axiom(ec == std::errc{});
+    hi_assert(ec == std::errc{});
 
     auto r = std::string{};
     std::copy(first, new_last, std::back_inserter(r));
@@ -47,7 +47,7 @@ template<std::floating_point T>
     hilet last = first + buffer.size();
 
     hilet[new_last, ec] = std::to_chars(first, last, value, std::chars_format::general);
-    hi_axiom(ec == std::errc{});
+    hi_assert(ec == std::errc{});
 
     auto r = std::string{};
     std::copy(first, new_last, std::back_inserter(r));

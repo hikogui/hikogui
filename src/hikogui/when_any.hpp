@@ -72,7 +72,7 @@ public:
 
     value_type await_resume() noexcept
     {
-        hi_axiom(_value);
+        hi_assert(_value.has_value());
         return *_value;
     }
 

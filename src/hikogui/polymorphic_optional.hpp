@@ -182,7 +182,7 @@ public:
             // Lets do this ahead of time to let another thread have some time
             // to release the ring-buffer-slot.
             hilet new_ptr = new Value(std::forward<Args>(args)...);
-            hi_axiom(new_ptr != nullptr);
+            hi_assert_not_null(new_ptr);
 
             _pointer.store(new_ptr, std::memory_order::release);
             return *new_ptr;
@@ -291,7 +291,7 @@ public:
             // Lets do this ahead of time to let another thread have some time
             // to release the ring-buffer-slot.
             hilet new_ptr = new Value(std::forward<Args>(args)...);
-            hi_axiom(new_ptr != nullptr);
+            hi_assert_not_null(new_ptr);
 
             // Wait until the slot.pointer is a nullptr.
             // We don't need to acquire since we wrote into a new heap location.

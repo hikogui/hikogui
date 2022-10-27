@@ -117,7 +117,7 @@ public:
      */
     [[nodiscard]] value_type *copy(value_type const *ptr) const noexcept
     {
-        hi_axiom(ptr != nullptr);
+        hi_assert_not_null(ptr);
         value_type *new_ptr = std::allocator_traits<allocator_type>::allocate(_allocator, 1);
         std::allocator_traits<allocator_type>::construct(_allocator, new_ptr, *ptr);
         return std::launder(new_ptr);
@@ -134,7 +134,7 @@ public:
         auto *new_ptr = std::allocator_traits<allocator_type>::allocate(_allocator, 1);
         lock();
         value_type const * const ptr = get();
-        hi_axiom(ptr != nullptr);
+        hi_assert_not_null(ptr);
         std::allocator_traits<allocator_type>::construct(_allocator, new_ptr, *ptr);
         unlock();
         return std::launder(new_ptr);

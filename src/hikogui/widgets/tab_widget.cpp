@@ -9,7 +9,7 @@ namespace hi::inline v1 {
 
 tab_widget::~tab_widget()
 {
-    hi_axiom(delegate != nullptr);
+    hi_assert_not_null(delegate);
     delegate->deinit(*this);
 }
 
@@ -17,12 +17,12 @@ tab_widget::tab_widget(gui_window& window, widget *parent, std::shared_ptr<deleg
     super(window, parent), delegate(std::move(delegate))
 {
     hi_axiom(is_gui_thread());
-    hi_axiom(parent);
+    hi_assert_not_null(parent);
 
     // The tab-widget will not draw itself, only its selected child.
     semantic_layer = parent->semantic_layer;
 
-    hi_axiom(this->delegate != nullptr);
+    hi_assert_not_null(this->delegate);
     _delegate_cbt = this->delegate->subscribe([&] {
         hi_request_reconstrain("tab_widget::_delegate_cbt()");
     });
@@ -31,7 +31,7 @@ tab_widget::tab_widget(gui_window& window, widget *parent, std::shared_ptr<deleg
     _constraints.minimum = {};
     _constraints.preferred = {};
     _constraints.maximum = {32767.0f, 32767.0f};
-    hi_axiom(_constraints.minimum <= _constraints.preferred && _constraints.preferred <= _constraints.maximum);
+    hi_assert(_constraints.minimum <= _constraints.preferred && _constraints.preferred <= _constraints.maximum);
 
     this->delegate->init(*this);
 }
@@ -101,7 +101,7 @@ void tab_widget::draw(draw_context const& context) noexcept
 [[nodiscard]] tab_widget::const_iterator tab_widget::find_selected_child() const noexcept
 {
     hi_axiom(is_gui_thread());
-    hi_axiom(delegate != nullptr);
+    hi_assert_not_null(delegate);
 
     auto index = delegate->index(const_cast<tab_widget&>(*this));
     if (index >= 0 and index < ssize(_children)) {
@@ -114,7 +114,7 @@ void tab_widget::draw(draw_context const& context) noexcept
 [[nodiscard]] widget& tab_widget::selected_child() const noexcept
 {
     hi_axiom(is_gui_thread());
-    hi_axiom(ssize(_children) != 0);
+    hi_assert(not _children.empty());
 
     auto i = find_selected_child();
     if (i != _children.cend()) {

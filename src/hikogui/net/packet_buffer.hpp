@@ -158,7 +158,7 @@ public:
                 packets.pop_front();
             } else {
                 packets.front().read(nrBytes);
-                hi_axiom(ssize(packets.front()) > 0);
+                hi_assert(ssize(packets.front()) > 0);
             }
             nrBytes -= ssize(packets_size);
         }

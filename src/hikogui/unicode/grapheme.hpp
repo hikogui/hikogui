@@ -142,7 +142,7 @@ struct grapheme {
 
     [[nodiscard]] std::u32string const& long_grapheme() const noexcept
     {
-        hi_axiom(_value >= 0x10'0000 and _value < 0x1f'ffff);
+        hi_assert(_value >= 0x10'0000 and _value < 0x1f'ffff);
         return detail::long_graphemes[_value - 0x11'0000];
     }
 
@@ -169,7 +169,7 @@ struct grapheme {
      */
     [[nodiscard]] constexpr char32_t operator[](size_t i) const noexcept
     {
-        hi_axiom(i < size());
+        hi_assert_bounds(i, *this);
 
         if (_value <= 0x10'ffff) {
             return truncate<char32_t>(_value);
@@ -188,7 +188,7 @@ struct grapheme {
     template<size_t I>
     [[nodiscard]] friend constexpr char32_t get(grapheme const& rhs) noexcept
     {
-        hi_axiom(I < rhs.size());
+        hi_assert_bounds(I, rhs);
 
         if (rhs._value <= 0x10'ffff) {
             return rhs._value;

@@ -91,7 +91,7 @@ void log::flush() noexcept
         }
 
         if (wrote_message) {
-            hi_axiom(copy_of_message);
+            hi_assert_not_null(copy_of_message);
             write(copy_of_message->format());
         }
     } while (wrote_message);

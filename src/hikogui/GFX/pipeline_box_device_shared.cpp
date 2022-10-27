@@ -21,7 +21,7 @@ device_shared::~device_shared() {}
 
 void device_shared::destroy(gfx_device_vulkan *vulkanDevice)
 {
-    hi_axiom(vulkanDevice);
+    hi_assert_not_null(vulkanDevice);
     teardownShaders(vulkanDevice);
 }
 
@@ -81,7 +81,7 @@ void device_shared::buildShaders()
 
 void device_shared::teardownShaders(gfx_device_vulkan *vulkanDevice)
 {
-    hi_axiom(vulkanDevice);
+    hi_assert_not_null(vulkanDevice);
     vulkanDevice->destroy(vertexShaderModule);
     vulkanDevice->destroy(fragmentShaderModule);
 }

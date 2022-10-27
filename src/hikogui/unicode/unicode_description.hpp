@@ -68,20 +68,20 @@ public:
         _decomposition_index(truncate<uint32_t>(decomposition_index)),
         _composition_index(truncate<uint16_t>(composition_index))
     {
-        hi_axiom(to_underlying(general_category) <= 0x1f);
-        hi_axiom(to_underlying(grapheme_cluster_break) <= 0x0f);
-        hi_axiom(to_underlying(line_break_class) <= 0x3f);
-        hi_axiom(to_underlying(word_break_property) <= 0x1f);
-        hi_axiom(to_underlying(sentence_break_property) <= 0xf);
-        hi_axiom(to_underlying(east_asian_width) <= 0x7);
-        hi_axiom(to_underlying(script) <= 0xff);
-        hi_axiom(to_underlying(bidi_class) <= 0x1f);
-        hi_axiom(to_underlying(bidi_bracket_type) <= 0x03);
-        hi_axiom(static_cast<uint32_t>(bidi_mirroring_glyph) <= 0xffff);
-        hi_axiom(static_cast<uint32_t>(canonical_combining_class) <= 0xff);
-        hi_axiom(to_underlying(decomposition_type) <= 0x1f);
-        hi_axiom(static_cast<uint32_t>(decomposition_index) <= 0x1f'ffff);
-        hi_axiom(static_cast<uint32_t>(composition_index) <= 0x3fff);
+        hi_assert(to_underlying(general_category) <= 0x1f);
+        hi_assert(to_underlying(grapheme_cluster_break) <= 0x0f);
+        hi_assert(to_underlying(line_break_class) <= 0x3f);
+        hi_assert(to_underlying(word_break_property) <= 0x1f);
+        hi_assert(to_underlying(sentence_break_property) <= 0xf);
+        hi_assert(to_underlying(east_asian_width) <= 0x7);
+        hi_assert(to_underlying(script) <= 0xff);
+        hi_assert(to_underlying(bidi_class) <= 0x1f);
+        hi_assert(to_underlying(bidi_bracket_type) <= 0x03);
+        hi_assert(static_cast<uint32_t>(bidi_mirroring_glyph) <= 0xffff);
+        hi_assert(static_cast<uint32_t>(canonical_combining_class) <= 0xff);
+        hi_assert(to_underlying(decomposition_type) <= 0x1f);
+        hi_assert(static_cast<uint32_t>(decomposition_index) <= 0x1f'ffff);
+        hi_assert(static_cast<uint32_t>(composition_index) <= 0x3fff);
     }
 
     /** The general category of this code-point.

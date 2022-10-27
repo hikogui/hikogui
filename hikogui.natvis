@@ -21,7 +21,7 @@
         </Expand>
     </Type>
     <Type Name="hi::v1::grapheme">
-        <DisplayString>{static_cast&lt;char32_t&gt;((value >> 43) &amp; 0x1fffff)}</DisplayString>
+        <DisplayString Condition="_value &lt;= 0x10ffff">{static_cast&lt;char32_t&gt;(_value)}</DisplayString>
     </Type>
     <Type Name="std::basic_string&lt;hi::v1::grapheme,std::char_traits&lt;hi::v1::grapheme&gt;,std::allocator&lt;hi::v1::grapheme&gt;&gt;&gt;">
         <DisplayString Condition="_Mypair._Myval2._Myres &lt; _Mypair._Myval2._BUF_SIZE">{_Mypair._Myval2._Bx._Buf,[_Mypair._Myval2._Mysize]}</DisplayString>
@@ -243,5 +243,11 @@
     </Type>
     <Type Name="hi::v1::URI">
         <DisplayString>{_scheme}://{_authority}/{_path}?{_query}#{_fragment}</DisplayString>
+    </Type>
+    <Type Name="hi::v1::endian_buf_t&lt;short,1,1&gt;">
+        <DisplayString>{static_cast&lt;int16_t&gt;(_value[0] * 256 + _value[1])}</DisplayString>
+    </Type>
+    <Type Name="hi::v1::FWord_buf_t">
+        <DisplayString>{static_cast&lt;int16_t&gt;(x._value[0] * 256 + x._value[1])}</DisplayString>
     </Type>
 </AutoVisualizer>

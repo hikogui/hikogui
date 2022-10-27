@@ -45,7 +45,7 @@ public:
             0;
         // clang-format on
 
-        hi_axiom(x <= 0x1f);
+        hi_assert(x <= 0x1f);
         constexpr auto shift = I * 5;
         rhs._v &= ~(0x1f << shift);
         rhs._v |= x << shift;

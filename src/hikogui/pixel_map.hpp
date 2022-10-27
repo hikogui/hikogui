@@ -197,7 +197,7 @@ public:
         _stride(other._stride),
         _self_allocated(other._self_allocated)
     {
-        hi_axiom(this != &other);
+        hi_assert(this != &other);
         other._self_allocated = false;
     }
 
@@ -276,7 +276,7 @@ public:
      */
     pixel_map submap(std::size_t x, std::size_t y, std::size_t width, std::size_t height) const noexcept
     {
-        hi_axiom((x >= 0) && (y >= 0));
+        hi_assert((x >= 0) && (y >= 0));
         hi_assert((x + width <= _width) && (y + height <= _height));
 
         hilet offset = y * _stride + x;
@@ -286,7 +286,7 @@ public:
 
     pixel_map submap(aarectangle rectangle) const noexcept
     {
-        hi_axiom(round(rectangle) == rectangle);
+        hi_assert(round(rectangle) == rectangle);
         return submap(
             narrow_cast<std::size_t>(rectangle.left()),
             narrow_cast<std::size_t>(rectangle.bottom()),

@@ -25,7 +25,7 @@ inline std::atomic<char const *> terminate_message = nullptr;
  * @param msg The message to display.
  */
 #define hi_set_terminate_message(msg) \
-    ::terminate_message.store(__FILE__ ":" hi_stringify(__LINE__) ":" msg, std::memory_order::relaxed)
+    ::hi::terminate_message.store(__FILE__ ":" hi_stringify(__LINE__) ":" msg, std::memory_order::relaxed)
 
 /** The old terminate handler.
  *

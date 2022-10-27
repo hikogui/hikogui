@@ -120,7 +120,7 @@ public:
     gui_event(gui_event_type type, hi::grapheme grapheme) noexcept :
         gui_event(type, std::chrono::utc_clock::now(), keyboard_modifiers::none, keyboard_state::idle)
     {
-        hi_axiom(variant() == gui_event_variant::grapheme);
+        hi_assert(variant() == gui_event_variant::grapheme);
         this->grapheme() = grapheme;
     }
 
@@ -138,7 +138,7 @@ public:
         hi::keyboard_state keyboard_state = keyboard_state::idle) noexcept :
         gui_event(type, std::chrono::utc_clock::now(), keyboard_modifiers, keyboard_state)
     {
-        hi_axiom(variant() == gui_event_variant::keyboard);
+        hi_assert(variant() == gui_event_variant::keyboard);
         this->key() = key;
     }
 
@@ -197,7 +197,7 @@ public:
      */
     [[nodiscard]] mouse_event_data& mouse() noexcept
     {
-        hi_axiom(variant() == gui_event_variant::mouse);
+        hi_assert(variant() == gui_event_variant::mouse);
         return _mouse;
     }
 
@@ -207,7 +207,7 @@ public:
      */
     [[nodiscard]] mouse_event_data const& mouse() const noexcept
     {
-        hi_axiom(variant() == gui_event_variant::mouse);
+        hi_assert(variant() == gui_event_variant::mouse);
         return _mouse;
     }
 
@@ -217,7 +217,7 @@ public:
      */
     [[nodiscard]] keyboard_virtual_key& key() noexcept
     {
-        hi_axiom(variant() == gui_event_variant::keyboard);
+        hi_assert(variant() == gui_event_variant::keyboard);
         return _key;
     }
 
@@ -227,7 +227,7 @@ public:
      */
     [[nodiscard]] keyboard_virtual_key const& key() const noexcept
     {
-        hi_axiom(variant() == gui_event_variant::keyboard);
+        hi_assert(variant() == gui_event_variant::keyboard);
         return _key;
     }
 
@@ -237,7 +237,7 @@ public:
      */
     [[nodiscard]] hi::grapheme& grapheme() noexcept
     {
-        hi_axiom(variant() == gui_event_variant::grapheme);
+        hi_assert(variant() == gui_event_variant::grapheme);
         return _grapheme;
     }
 
@@ -247,7 +247,7 @@ public:
      */
     [[nodiscard]] hi::grapheme const& grapheme() const noexcept
     {
-        hi_axiom(variant() == gui_event_variant::grapheme);
+        hi_assert(variant() == gui_event_variant::grapheme);
         return _grapheme;
     }
 

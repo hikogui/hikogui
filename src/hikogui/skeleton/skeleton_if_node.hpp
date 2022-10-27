@@ -70,7 +70,7 @@ struct skeleton_if_node final : skeleton_node {
 
     datum evaluate(formula_evaluation_context &context) override
     {
-        hi_axiom(ssize(expressions) == ssize(formula_locations));
+        hi_assert(ssize(expressions) == ssize(formula_locations));
         for (ssize_t i = 0; i != ssize(expressions); ++i) {
             if (evaluate_formula_without_output(context, *expressions[i], formula_locations[i])) {
                 return evaluate_children(context, children_groups[i]);

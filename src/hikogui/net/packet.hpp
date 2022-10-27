@@ -83,7 +83,7 @@ public:
     void write(ssize_t nrBytes) noexcept
     {
         last += nrBytes;
-        hi_axiom(last <= data_end);
+        hi_assert(last <= data_end);
     }
 
     /** Consume a read.
@@ -92,7 +92,7 @@ public:
     void read(ssize_t nrBytes) noexcept
     {
         first += nrBytes;
-        hi_axiom(first <= last);
+        hi_assert(first <= last);
     }
 };
 

@@ -388,13 +388,13 @@ iso_3166::iso_3166(std::string_view str)
 
 [[nodiscard]] std::string_view iso_3166::code2() const noexcept
 {
-    hi_axiom(_v < 1000);
+    hi_assert(_v < 1000);
     return iso_3166_code2_by_number[_v];
 }
 
 [[nodiscard]] std::string_view iso_3166::code3() const noexcept
 {
-    hi_axiom(_v < 1000);
+    hi_assert(_v < 1000);
     return iso_3166_code3_by_number[_v];
 }
 

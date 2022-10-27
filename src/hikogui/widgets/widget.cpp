@@ -199,7 +199,7 @@ bool widget::handle_event_recursive(gui_event const& event, std::vector<widget c
 
     for (auto *child : children()) {
         if (child) {
-            hi_axiom(child->parent == this);
+            hi_assert(child->parent == this);
             handled |= child->handle_event_recursive(event, reject_list);
         }
     }

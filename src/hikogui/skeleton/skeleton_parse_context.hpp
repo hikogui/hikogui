@@ -54,7 +54,7 @@ struct skeleton_parse_context {
 
     skeleton_parse_context &operator++() noexcept
     {
-        hi_axiom(!atEOF());
+        hi_assert(not atEOF());
         location += *index;
         ++index;
         return *this;

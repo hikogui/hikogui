@@ -89,7 +89,7 @@ private:
 
     [[nodiscard]] HANDLE file_handle() noexcept
     {
-        hi_axiom(_file);
+        hi_assert_not_null(_file);
         return down_cast<file_win32&>(*_file).file_handle();
     }
 
@@ -102,7 +102,7 @@ private:
 
     [[nodiscard]] static HANDLE make_mapping(HANDLE file, hi::access_mode access_mode, std::size_t size)
     {
-        hi_axiom(size != 0);
+        hi_assert(size != 0);
 
         DWORD protect;
         if (to_bool(access_mode & hi::access_mode::read) and to_bool(access_mode & hi::access_mode::write)) {
@@ -132,7 +132,7 @@ private:
 
     [[nodiscard]] static void *make_view(HANDLE mapping, hi::access_mode access_mode, std::size_t offset, std::size_t size)
     {
-        hi_axiom(size != 0);
+        hi_assert(size != 0);
 
         DWORD desired_access;
         if (to_bool(access_mode & access_mode::read) and to_bool(access_mode & access_mode::write)) {

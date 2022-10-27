@@ -12,7 +12,7 @@ namespace hi::inline v1 {
 text_field_widget::text_field_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
     super(window, parent), delegate(std::move(delegate)), _text()
 {
-    hi_axiom(this->delegate != nullptr);
+    hi_assert_not_null(this->delegate);
     _delegate_cbt = this->delegate->subscribe([&] {
         request_relayout();
     });
@@ -41,7 +41,7 @@ text_field_widget::text_field_widget(gui_window& window, widget *parent, std::sh
 
 text_field_widget::~text_field_widget()
 {
-    hi_axiom(delegate != nullptr);
+    hi_assert_not_null(delegate);
     delegate->deinit(*this);
 }
 
@@ -52,7 +52,7 @@ text_field_widget::~text_field_widget()
 
 widget_constraints const& text_field_widget::set_constraints() noexcept
 {
-    hi_axiom(delegate != nullptr);
+    hi_assert_not_null(delegate);
 
     if (*_text_widget->focus) {
         // Update the optional error value from the string conversion when the text-widget has keyboard focus.
@@ -193,7 +193,7 @@ hitbox text_field_widget::hitbox_test(point3 position) const noexcept
 
 void text_field_widget::revert(bool force) noexcept
 {
-    hi_axiom(delegate != nullptr);
+    hi_assert_not_null(delegate);
     _text = to_gstring(delegate->text(*this), U' ');
     _error_label = label{};
 }
@@ -201,7 +201,7 @@ void text_field_widget::revert(bool force) noexcept
 void text_field_widget::commit(bool force) noexcept
 {
     hi_axiom(is_gui_thread());
-    hi_axiom(delegate != nullptr);
+    hi_assert_not_null(delegate);
 
     if (*continues or force) {
         auto text = to_string(*_text);

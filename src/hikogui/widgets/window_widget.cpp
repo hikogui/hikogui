@@ -209,14 +209,14 @@ void window_widget::set_resize_border_priority(bool left, bool right, bool botto
 [[nodiscard]] grid_widget &window_widget::content() noexcept
 {
     hi_axiom(is_gui_thread());
-    hi_axiom(_content);
+    hi_assert_not_null(_content);
     return *_content;
 }
 
 [[nodiscard]] toolbar_widget &window_widget::toolbar() noexcept
 {
     hi_axiom(is_gui_thread());
-    hi_axiom(_toolbar);
+    hi_assert_not_null(_toolbar);
     return *_toolbar;
 }
 

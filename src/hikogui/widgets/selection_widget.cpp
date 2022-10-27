@@ -12,14 +12,14 @@ namespace hi::inline v1 {
 
 selection_widget::~selection_widget()
 {
-    hi_axiom(delegate != nullptr);
+    hi_assert_not_null(delegate);
     delegate->deinit(*this);
 }
 
 selection_widget::selection_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
     super(window, parent), delegate(std::move(delegate))
 {
-    hi_axiom(this->delegate != nullptr);
+    hi_assert_not_null(this->delegate);
 
     alignment = alignment::middle_left();
 
@@ -253,7 +253,7 @@ void selection_widget::stop_selecting() noexcept
 void selection_widget::repopulate_options() noexcept
 {
     hi_axiom(is_gui_thread());
-    hi_axiom(delegate != nullptr);
+    hi_assert_not_null(delegate);
 
     _column_widget->clear();
     _menu_button_widgets.clear();
@@ -275,7 +275,7 @@ void selection_widget::repopulate_options() noexcept
 
         _menu_button_tokens.push_back(menu_button->pressed.subscribe(
             [this, index] {
-                hi_axiom(delegate != nullptr);
+                hi_assert_not_null(delegate);
                 delegate->set_selected(*this, index);
                 stop_selecting();
             },

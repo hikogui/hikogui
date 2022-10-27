@@ -35,8 +35,8 @@ hi_no_inline typename T::value_type start_subsystem(
     typename T::value_type (*init_function)(),
     void (*deinit_function)()) requires(is_atomic_v<T>)
 {
-    hi_axiom(init_function != nullptr);
-    hi_axiom(deinit_function != nullptr);
+    hi_assert_not_null(init_function);
+    hi_assert_not_null(deinit_function);
     hilet lock = std::scoped_lock(subsystem_mutex);
 
     hilet old_value = check_variable.load(std::memory_order::acquire);
@@ -63,9 +63,9 @@ hi_no_inline typename T::value_type start_subsystem(
 
 hi_no_inline inline bool start_subsystem(global_state_type state_bit, bool (*init_function)(), void (*deinit_function)())
 {
-    hi_axiom(std::popcount(to_underlying(state_bit)) == 1);
-    hi_axiom(init_function != nullptr);
-    hi_axiom(deinit_function != nullptr);
+    hi_assert(std::popcount(to_underlying(state_bit)) == 1);
+    hi_assert_not_null(init_function);
+    hi_assert_not_null(deinit_function);
 
     hilet lock = std::scoped_lock(subsystem_mutex);
 
@@ -188,7 +188,7 @@ requires(is_atomic_v<T>) typename T::value_type start_subsystem_or_terminate(
  */
 inline void stop_subsystem(void (*deinit_function)())
 {
-    hi_axiom(deinit_function != nullptr);
+    hi_assert_not_null(deinit_function);
 
     hilet lock = std::scoped_lock(detail::subsystem_mutex);
 
@@ -217,7 +217,7 @@ inline void shutdown_system() noexcept
 
     while (!detail::subsystem_deinit_list.empty()) {
         auto deinit = std::move(detail::subsystem_deinit_list.back());
-        hi_axiom(deinit != nullptr);
+        hi_assert_not_null(deinit);
         detail::subsystem_deinit_list.pop_back();
 
         detail::subsystem_mutex.unlock();

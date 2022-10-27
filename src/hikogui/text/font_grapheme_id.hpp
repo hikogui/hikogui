@@ -19,13 +19,14 @@ struct font_grapheme_id {
 
     [[nodiscard]] std::size_t hash() const noexcept
     {
-        hi_axiom(font);
+        hi_assert_not_null(font);
         return hash_mix(reinterpret_cast<ptrdiff_t>(font), g);
     }
 
     [[nodiscard]] friend bool operator==(font_grapheme_id const &lhs, font_grapheme_id const &rhs) noexcept
     {
-        hi_axiom(lhs.font and rhs.font);
+        hi_assert_not_null(lhs.font);
+        hi_assert_not_null(rhs.font);
         return (lhs.font == rhs.font) and (lhs.g == rhs.g);
     }
 };

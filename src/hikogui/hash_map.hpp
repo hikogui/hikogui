@@ -163,7 +163,7 @@ public:
 
     constexpr ~hash_map()
     {
-        hi_axiom(_nodes != nullptr);
+        hi_assert_not_null(_nodes);
         hi_axiom(_capacity != 0);
 
         std::destroy_n(_nodes, _capacity);
@@ -192,7 +192,7 @@ public:
 
     [[nodiscard]] constexpr const_iterator find(key_type const &key) const noexcept
     {
-        hi_axiom(_nodes != nullptr);
+        hi_assert_not_null(_nodes);
         hi_axiom(_capacity != 0);
 
         auto hash = std::hash<key_type>{}(key);
@@ -213,7 +213,7 @@ public:
     template<typename K>
     [[nodiscard]] constexpr iterator find_or_create(K &&key) noexcept
     {
-        hi_axiom(_nodes != nullptr);
+        hi_assert_not_null(_nodes);
         hi_axiom(_capacity != 0);
 
         auto hash = std::hash<key_type>{}(key);
@@ -298,7 +298,7 @@ private:
 
     void grow_by(std::size_t nr_entries) noexcept
     {
-        hi_axiom(_nodes != nullptr);
+        hi_assert_not_null(_nodes);
         hi_axiom(_capacity != 0);
 
         _size += nr_entries;

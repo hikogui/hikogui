@@ -22,7 +22,7 @@ struct char_map<"utf-32"> {
 
     [[nodiscard]] std::endian guess_endian(void const *ptr, size_t size, std::endian endian) const noexcept
     {
-        hi_axiom(ptr != nullptr);
+        hi_assert_not_null(ptr);
         auto *ptr_ = reinterpret_cast<uint8_t const *>(ptr);
 
         if (size < 4) {

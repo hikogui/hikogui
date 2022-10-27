@@ -148,7 +148,7 @@ private:
 
     void remove_or_reinsert(utc_nanoseconds current_time) noexcept
     {
-        hi_axiom(not _functions.empty());
+        hi_assert(not _functions.empty());
 
         if (_functions.back().repeats() and not _functions.back().token.expired()) {
             // When the function is repeating, calculate the new.
@@ -183,7 +183,7 @@ private:
      */
     result_type run_one(utc_nanoseconds current_time, auto&&...args)
     {
-        hi_axiom(not _functions.empty());
+        hi_assert(not _functions.empty());
 
         if constexpr (std::is_same_v<result_type, void>) {
             if (auto token = _functions.back().token.lock()) {

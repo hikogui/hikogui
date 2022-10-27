@@ -25,7 +25,7 @@ device_shared::~device_shared() {}
 
 void device_shared::destroy(gfx_device_vulkan *vulkan_device)
 {
-    hi_axiom(vulkan_device);
+    hi_assert_not_null(vulkan_device);
     teardown_shaders(vulkan_device);
     teardown_atlas(vulkan_device);
 }
@@ -100,10 +100,10 @@ void device_shared::make_staging_border_transparent(aarectangle border_rectangle
     hilet left = static_cast<std::size_t>(border_rectangle.left());
     hilet right = static_cast<std::size_t>(border_rectangle.right());
 
-    hi_axiom(bottom == 0);
-    hi_axiom(left == 0);
-    hi_axiom(top >= 2);
-    hi_axiom(right >= 2);
+    hi_assert(bottom == 0);
+    hi_assert(left == 0);
+    hi_assert(top >= 2);
+    hi_assert(right >= 2);
 
     // Add a border below and above the image.
     auto border_bottom_row = staging_texture.pixel_map[bottom];
@@ -125,15 +125,15 @@ void device_shared::make_staging_border_transparent(aarectangle border_rectangle
 
 void device_shared::clear_staging_between_border_and_upload(aarectangle border_rectangle, aarectangle upload_rectangle) noexcept
 {
-    hi_axiom(border_rectangle.left() == 0.0f and border_rectangle.bottom() == 0.0f);
-    hi_axiom(upload_rectangle.left() == 0.0f and upload_rectangle.bottom() == 0.0f);
+    hi_assert(border_rectangle.left() == 0.0f and border_rectangle.bottom() == 0.0f);
+    hi_assert(upload_rectangle.left() == 0.0f and upload_rectangle.bottom() == 0.0f);
 
     hilet border_top = narrow_cast<std::size_t>(border_rectangle.top());
     hilet border_right = narrow_cast<std::size_t>(border_rectangle.right());
     hilet upload_top = narrow_cast<std::size_t>(upload_rectangle.top());
     hilet upload_right = narrow_cast<std::size_t>(upload_rectangle.right());
-    hi_axiom(border_right <= upload_right);
-    hi_axiom(border_top <= upload_top);
+    hi_assert(border_right <= upload_right);
+    hi_assert(border_top <= upload_top);
 
     // Clear the area to the right of the border.
     for (auto y = 0_uz; y != border_top; ++y) {
@@ -240,7 +240,7 @@ void device_shared::build_shaders()
 
 void device_shared::teardown_shaders(gfx_device_vulkan *vulkanDevice)
 {
-    hi_axiom(vulkanDevice);
+    hi_assert_not_null(vulkanDevice);
     vulkanDevice->destroy(vertex_shader_module);
     vulkanDevice->destroy(fragment_shader_module);
 }
@@ -366,7 +366,7 @@ void device_shared::build_atlas()
 
 void device_shared::teardown_atlas(gfx_device_vulkan *vulkan_device)
 {
-    hi_axiom(vulkan_device);
+    hi_assert_not_null(vulkan_device);
     vulkan_device->destroy(atlas_sampler);
 
     for (const auto &atlas_texture : atlas_textures) {
@@ -385,7 +385,7 @@ void device_shared::place_vertices(
     quad const &box,
     paged_image const &image) noexcept
 {
-    hi_axiom(image.state == paged_image::state_type::uploaded);
+    hi_assert(image.state == paged_image::state_type::uploaded);
 
     constexpr auto page_size2 =
         f32x4{i32x4{narrow_cast<int32_t>(paged_image::page_size), narrow_cast<int32_t>(paged_image::page_size)}};

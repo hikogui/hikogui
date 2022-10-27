@@ -32,7 +32,7 @@ namespace hi::inline v1 {
     }
     if (ssize(cluster) != 0) {
         r += grapheme(composed_t{}, cluster);
-        hi_axiom(r.back().valid());
+        hi_assert(r.back().valid());
     }
     return r;
 }

@@ -49,7 +49,7 @@ void memswap(T& dst, U& src)
 template<typename InputIt, typename T>
 T *placement_copy(InputIt src, T *dst)
 {
-    hi_axiom(dst != nullptr);
+    hi_axiom_not_null(dst);
     return new (dst) T(*src);
 }
 
@@ -86,8 +86,8 @@ void placement_copy(InputIt src_first, InputIt src_last, T *dst_first)
 template<typename T>
 T *placement_move(T *src, T *dst)
 {
-    hi_axiom(src != nullptr);
-    hi_axiom(dst != nullptr);
+    hi_axiom_not_null(src);
+    hi_axiom_not_null(dst);
 
     auto dst_ = new (dst) T(std::move(*src));
     std::destroy_at(src);
@@ -209,7 +209,7 @@ constexpr T *floor(T *ptr, std::size_t alignment) noexcept
  */
 inline void *advance_bytes(void *ptr, std::ptrdiff_t distance) noexcept
 {
-    hi_axiom(ptr != nullptr);
+    hi_axiom_not_null(ptr);
     return static_cast<char *>(ptr) + distance;
 }
 
@@ -221,7 +221,7 @@ inline void *advance_bytes(void *ptr, std::ptrdiff_t distance) noexcept
  */
 inline void const *advance_bytes(void const *ptr, std::ptrdiff_t distance) noexcept
 {
-    hi_axiom(ptr != nullptr);
+    hi_axiom_not_null(ptr);
     return static_cast<char const *>(ptr) + distance;
 }
 

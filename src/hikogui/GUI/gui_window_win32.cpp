@@ -191,7 +191,7 @@ gui_window_win32::~gui_window_win32()
     try {
         if (win32Window != nullptr) {
             DestroyWindow(win32Window);
-            hi_axiom(win32Window == nullptr);
+            hi_assert(win32Window == nullptr);
             // hi_log_fatal("win32Window was not destroyed before Window '{}' was destructed.", title);
         }
 
@@ -224,11 +224,11 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
     }
 
     if (state == gui_window_size::normal) {
-        hilet left = narrow<int>(_restore_rectangle.left());
-        hilet top = narrow<int>(_restore_rectangle.top());
-        hilet width = narrow<int>(_restore_rectangle.width());
-        hilet height = narrow<int>(_restore_rectangle.height());
-        hilet inv_top = narrow<int>(os_settings::primary_monitor_rectangle().height()) - top;
+        hilet left = narrow_cast<int>(_restore_rectangle.left());
+        hilet top = narrow_cast<int>(_restore_rectangle.top());
+        hilet width = narrow_cast<int>(_restore_rectangle.width());
+        hilet height = narrow_cast<int>(_restore_rectangle.height());
+        hilet inv_top = narrow_cast<int>(os_settings::primary_monitor_rectangle().height()) - top;
         SetWindowPos(reinterpret_cast<HWND>(win32Window), HWND_TOP, left, inv_top, width, height, 0);
         _size_state = gui_window_size::normal;
 
@@ -241,11 +241,11 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
         hilet max_size = widget->constraints().maximum;
 
         // Try to resize the window while keeping the toolbar in the same location.
-        hilet width = narrow<int>(std::min(max_size.width(), workspace.width()));
-        hilet height = narrow<int>(std::min(max_size.height(), workspace.height()));
-        hilet left = narrow<int>(std::clamp(rectangle.left(), workspace.left(), workspace.right() - width));
-        hilet top = narrow<int>(std::clamp(rectangle.top(), workspace.bottom() + height, workspace.top()));
-        hilet inv_top = narrow<int>(os_settings::primary_monitor_rectangle().height()) - top;
+        hilet width = narrow_cast<int>(std::min(max_size.width(), workspace.width()));
+        hilet height = narrow_cast<int>(std::min(max_size.height(), workspace.height()));
+        hilet left = narrow_cast<int>(std::clamp(rectangle.left(), workspace.left(), workspace.right() - width));
+        hilet top = narrow_cast<int>(std::clamp(rectangle.top(), workspace.bottom() + height, workspace.top()));
+        hilet inv_top = narrow_cast<int>(os_settings::primary_monitor_rectangle().height()) - top;
         SetWindowPos(reinterpret_cast<HWND>(win32Window), HWND_TOP, left, inv_top, width, height, 0);
         _size_state = gui_window_size::maximized;
 
@@ -257,11 +257,11 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
             return;
         }
 
-        hilet left = narrow<int>(fullscreen.left());
-        hilet top = narrow<int>(fullscreen.top());
-        hilet width = narrow<int>(fullscreen.width());
-        hilet height = narrow<int>(fullscreen.height());
-        hilet inv_top = narrow<int>(os_settings::primary_monitor_rectangle().height()) - top;
+        hilet left = narrow_cast<int>(fullscreen.left());
+        hilet top = narrow_cast<int>(fullscreen.top());
+        hilet width = narrow_cast<int>(fullscreen.width());
+        hilet height = narrow_cast<int>(fullscreen.height());
+        hilet inv_top = narrow_cast<int>(os_settings::primary_monitor_rectangle().height()) - top;
         SetWindowPos(reinterpret_cast<HWND>(win32Window), HWND_TOP, left, inv_top, width, height, 0);
         _size_state = gui_window_size::fullscreen;
     }
@@ -282,10 +282,10 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
         return {0.0f, 0.0f, 1920.0f, 1080.0f};
     }
 
-    hilet left = narrow<float>(info.rcWork.left);
-    hilet top = narrow<float>(info.rcWork.top);
-    hilet right = narrow<float>(info.rcWork.right);
-    hilet bottom = narrow<float>(info.rcWork.bottom);
+    hilet left = narrow_cast<float>(info.rcWork.left);
+    hilet top = narrow_cast<float>(info.rcWork.top);
+    hilet right = narrow_cast<float>(info.rcWork.right);
+    hilet bottom = narrow_cast<float>(info.rcWork.bottom);
     hilet width = right - left;
     hilet height = bottom - top;
     hilet inv_bottom = os_settings::primary_monitor_rectangle().height() - bottom;
@@ -307,10 +307,10 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
         return {0.0f, 0.0f, 1920.0f, 1080.0f};
     }
 
-    hilet left = narrow<float>(info.rcMonitor.left);
-    hilet top = narrow<float>(info.rcMonitor.top);
-    hilet right = narrow<float>(info.rcMonitor.right);
-    hilet bottom = narrow<float>(info.rcMonitor.bottom);
+    hilet left = narrow_cast<float>(info.rcMonitor.left);
+    hilet top = narrow_cast<float>(info.rcMonitor.top);
+    hilet right = narrow_cast<float>(info.rcMonitor.right);
+    hilet bottom = narrow_cast<float>(info.rcMonitor.bottom);
     hilet width = right - left;
     hilet height = bottom - top;
     hilet inv_bottom = os_settings::primary_monitor_rectangle().height() - bottom;
@@ -758,7 +758,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     case WM_GETMINMAXINFO:
         {
             hi_axiom(is_gui_thread());
-            hi_axiom(widget);
+            hi_assert_not_null(widget);
             hilet minimum_widget_size = widget->constraints().minimum;
             hilet maximum_widget_size = widget->constraints().maximum;
             hilet minmaxinfo = std::launder(std::bit_cast<MINMAXINFO *>(lParam));
@@ -1080,10 +1080,8 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
             r.mouse().click_count = multi_click_count;
 
             // Track draging past the window borders.
-            hi_axiom(win32Window != 0);
-            hilet window_handle = reinterpret_cast<HWND>(win32Window);
-
-            SetCapture(window_handle);
+            hi_assert_not_null(win32Window);
+            SetCapture(win32Window);
         }
         break;
 

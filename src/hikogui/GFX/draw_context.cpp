@@ -66,7 +66,7 @@ void draw_context::_draw_box(
 [[nodiscard]] bool
 draw_context::_draw_image(aarectangle const& clipping_rectangle, quad const& box, paged_image& image) const noexcept
 {
-    hi_axiom(_image_vertices != nullptr);
+    hi_assert_not_null(_image_vertices);
 
     if (image.state != paged_image::state_type::uploaded) {
         return false;
@@ -83,7 +83,7 @@ void draw_context::_draw_glyph(
     quad_color const& color,
     glyph_ids const& glyph) const noexcept
 {
-    hi_axiom(_sdf_vertices != nullptr);
+    hi_assert_not_null(_sdf_vertices);
     hilet pipeline = down_cast<gfx_device_vulkan&>(device).SDF_pipeline.get();
 
     if (_sdf_vertices->full()) {
@@ -105,7 +105,7 @@ void draw_context::_draw_text(
     text_shaper const& text,
     std::optional<quad_color> text_color) const noexcept
 {
-    hi_axiom(_sdf_vertices != nullptr);
+    hi_assert_not_null(_sdf_vertices);
     hilet pipeline = down_cast<gfx_device_vulkan&>(device).SDF_pipeline.get();
 
     auto atlas_was_updated = false;
@@ -113,7 +113,7 @@ void draw_context::_draw_text(
         hilet box = translate2{c.position} * c.metrics.bounding_rectangle;
         hilet color = text_color ? *text_color : quad_color{c.style->color};
 
-        hi_axiom(c.description != nullptr);
+        hi_assert_not_null(c.description);
         if (not is_visible(c.description->general_category())) {
             continue;
 
@@ -245,10 +245,10 @@ void draw_context::_draw_text_cursors(
 
     auto draw_flags = false;
 
-    hi_axiom(primary_cursor.index() < text.size());
+    hi_assert_bounds(primary_cursor.index(), text);
 
     if (dead_character_mode) {
-        hi_axiom(primary_cursor.before());
+        hi_assert(primary_cursor.before());
         return _draw_text_overwrite_cursor(clipping_rectangle, transform, text.begin() + primary_cursor.index(), secondary_color);
     }
 
