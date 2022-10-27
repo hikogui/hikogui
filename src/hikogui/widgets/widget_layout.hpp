@@ -161,6 +161,20 @@ public:
         return size.height();
     }
 
+    /** Check if the writing direction is left-to-right.
+     */
+    [[nodiscard]] constexpr bool left_to_right() const noexcept
+    {
+        return writing_direction == unicode_bidi_class::L;
+    }
+
+    /** Check if the writing direction is right_to_left.
+     */
+    [[nodiscard]] constexpr bool right_to_left() const noexcept
+    {
+        return not left_to_right();
+    }
+
     /** Construct a widget_layout from inside the window.
      */
     constexpr widget_layout(

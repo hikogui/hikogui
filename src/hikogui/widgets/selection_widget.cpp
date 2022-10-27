@@ -84,17 +84,30 @@ widget_constraints const& selection_widget::set_constraints() noexcept
 void selection_widget::set_layout(widget_layout const& layout) noexcept
 {
     if (compare_store(_layout, layout)) {
-        _left_box_rectangle = aarectangle{0.0f, 0.0f, theme().size, layout.height()};
+        if (layout.left_to_right()) {
+            _left_box_rectangle = aarectangle{0.0f, 0.0f, theme().size, layout.height()};
+
+            // The unknown_label is located to the right of the selection box icon.
+            _option_rectangle = aarectangle{
+                _left_box_rectangle.right() + theme().margin,
+                0.0f,
+                layout.width() - _left_box_rectangle.width() - theme().margin * 2.0f,
+                layout.height()};
+
+        } else {
+            _left_box_rectangle = aarectangle{layout.width() - theme().size, 0.0f, theme().size, layout.height()};
+
+            // The unknown_label is located to the left of the selection box icon.
+            _option_rectangle = aarectangle{
+                theme().margin,
+                0.0f,
+                layout.width() - _left_box_rectangle.width() - theme().margin * 2.0f,
+                layout.height()};
+        }
+
         _chevrons_glyph = font_book().find_glyph(elusive_icon::ChevronUp);
         hilet chevrons_glyph_bbox = _chevrons_glyph.get_bounding_box();
         _chevrons_rectangle = align(_left_box_rectangle, chevrons_glyph_bbox * theme().icon_size, alignment::middle_center());
-
-        // The unknown_label is located to the right of the selection box icon.
-        _option_rectangle = aarectangle{
-            _left_box_rectangle.right() + theme().margin,
-            0.0f,
-            layout.width() - _left_box_rectangle.width() - theme().margin * 2.0f,
-            layout.height()};
     }
 
     // The overlay itself will make sure the overlay fits the window, so we give the preferred size and position
@@ -106,7 +119,7 @@ void selection_widget::set_layout(widget_layout const& layout) noexcept
         _overlay_widget->constraints().minimum.width(),
         _overlay_widget->constraints().maximum.width());
     hilet overlay_height = _overlay_widget->constraints().preferred.height();
-    hilet overlay_x = theme().size;
+    hilet overlay_x = layout.left_to_right() ? theme().size : layout.width() - theme().size - overlay_width;
     hilet overlay_y = std::round(layout.height() * 0.5f - overlay_height * 0.5f);
     hilet overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};
     _overlay_rectangle = make_overlay_rectangle(overlay_rectangle_request);

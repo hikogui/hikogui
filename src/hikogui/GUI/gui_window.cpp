@@ -156,7 +156,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
         // We do this because it simplifies calculations if no minimum checks are necessary inside widget.
         hilet widget_layout_size = max(widget->constraints().minimum, widget_size);
         widget->set_layout(
-            widget_layout{widget_layout_size, this->subpixel_orientation(), gui.writing_direction, display_time_point});
+            widget_layout{widget_layout_size, this->subpixel_orientation(), this->writing_direction(), display_time_point});
 
         // After layout do a complete redraw.
         _redraw_rectangle = aarectangle{widget_size};

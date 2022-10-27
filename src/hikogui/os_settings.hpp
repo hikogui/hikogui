@@ -48,6 +48,18 @@ public:
         return _languages;
     }
 
+    /** Get the configured writing direction.
+    * 
+    * The writing-direction is extracted from the first language/script configured on the system.
+    * 
+    * @return Either `unicode_bidi_class::L` for left-to-right; or `unicode_bidi_class::R` for right-to-left.
+    */
+    [[nodiscard]] static unicode_bidi_class writing_direction() noexcept
+    {
+        start_subsystem();
+        return _writing_direction.load(std::memory_order_relaxed);
+    }
+
     /** Get the configured light/dark theme mode
      */
     [[nodiscard]] static hi::theme_mode theme_mode() noexcept
@@ -209,6 +221,7 @@ private:
 
     static inline std::vector<language_tag> _language_tags = {};
     static inline std::vector<language *> _languages = {};
+    static inline std::atomic<hi::unicode_bidi_class> _writing_direction = hi::unicode_bidi_class::L;
     static inline std::atomic<hi::theme_mode> _theme_mode = theme_mode::dark;
     static inline std::atomic<bool> _uniform_HDR = false;
     static inline std::atomic<hi::subpixel_orientation> _subpixel_orientation = hi::subpixel_orientation::unknown;

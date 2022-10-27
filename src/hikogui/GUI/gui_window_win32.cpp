@@ -340,6 +340,11 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
     }
 }
 
+[[nodiscard]] unicode_bidi_class gui_window_win32::writing_direction() const noexcept
+{
+    return os_settings::writing_direction();
+}
+
 void gui_window_win32::open_system_menu()
 {
     hi_axiom(is_gui_thread());
@@ -363,16 +368,27 @@ void gui_window_win32::open_system_menu()
 void gui_window_win32::set_window_size(extent2 new_extent)
 {
     hi_axiom(is_gui_thread());
-    hilet handle = reinterpret_cast<HWND>(win32Window);
+
+    RECT original_rect;
+    if (not GetWindowRect(win32Window, &original_rect)) {
+        hi_log_error("Could not get the window's rectangle on the screen.");
+    }
+
+    hilet left_to_right = writing_direction() == unicode_bidi_class::L;
+
+    hilet new_width = narrow_cast<int>(std::ceil(new_extent.width()));
+    hilet new_height = narrow_cast<int>(std::ceil(new_extent.height()));
+    hilet new_x = left_to_right ? original_rect.left : original_rect.right - new_width;
+    hilet new_y = original_rect.top;
 
     SetWindowPos(
-        reinterpret_cast<HWND>(handle),
+        win32Window,
         HWND_NOTOPMOST,
-        0,
-        0,
-        narrow_cast<int>(std::ceil(new_extent.width())),
-        narrow_cast<int>(std::ceil(new_extent.height())),
-        SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_DEFERERASE | SWP_NOCOPYBITS | SWP_FRAMECHANGED);
+        new_x,
+        new_y,
+        new_width,
+        new_height,
+        SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_DEFERERASE | SWP_NOCOPYBITS | SWP_FRAMECHANGED);
 }
 
 [[nodiscard]] std::string gui_window_win32::get_text_from_clipboard() const noexcept

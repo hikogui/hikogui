@@ -57,10 +57,10 @@ public:
     language_tag(std::string_view str);
 
     /** Parse the language, script and region raw from the string.
-    * 
-    * No automatic expansion of the script or region will be done.
+     *
+     * No automatic expansion of the script or region will be done.
      */
-    [[nodiscard]] static language_tag parse(std::string_view str); 
+    [[nodiscard]] static language_tag parse(std::string_view str);
 
     /** Check if the language tag is empty.
      */
@@ -145,6 +145,15 @@ public:
             last_variant = variant;
         }
         return last_variant;
+    }
+
+    /** The language direction for this language-tag.
+     *
+     * @return Either `unicode_bidi_class::L` for left-to-right; or `unicode_bidi_class::R` for right-to-left
+     */
+    [[nodiscard]] unicode_bidi_class writing_direction() const noexcept
+    {
+        return expand().script.writing_direction();
     }
 
     [[nodiscard]] std::string to_string() const noexcept

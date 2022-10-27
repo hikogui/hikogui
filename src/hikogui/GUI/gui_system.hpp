@@ -38,18 +38,6 @@ public:
 
     thread_id const thread_id;
 
-    /** The writing direction.
-     *
-     * The writing direction determines the initial writing direction of paragraphs.
-     *
-     * When the value is `R` the user-interface should flip the horizontal layout,
-     * for example a row-layout-widget in flipped-mode should layout children ordered from
-     * right to left.
-     *
-     * @note The only values allowed are `L` and `R`.
-     */
-    unicode_bidi_class writing_direction = unicode_bidi_class::L;
-
     /** The name of the selected theme.
      */
     observer<std::string> selected_theme = "default";
