@@ -234,7 +234,7 @@ public:
 
     /** Place a text string on the operating system's clip-board.
      */
-    virtual void set_text_on_clipboard(std::string str) noexcept = 0;
+    virtual void set_text_on_clipboard(std::string_view str) noexcept = 0;
 
     void update_mouse_target(hi::widget const *new_target_widget, point2 position = {}) noexcept;
 

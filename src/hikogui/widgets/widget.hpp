@@ -160,7 +160,7 @@ public:
      * @post This function will change what is returned by `widget::minimum_size()`, `widget::preferred_size()`
      *       and `widget::maximum_size()`.
      */
-    virtual widget_constraints const& set_constraints(set_constraints_context const &context) noexcept = 0;
+    virtual widget_constraints const& set_constraints(set_constraints_context const& context) noexcept = 0;
 
     widget_constraints const& constraints() const noexcept
     {
@@ -202,6 +202,46 @@ public:
      * @param context The context to where the widget will draw.
      */
     virtual void draw(draw_context const& context) noexcept = 0;
+
+    [[nodiscard]] virtual std::string get_text_from_clipboard() const noexcept
+    {
+        if (parent != nullptr) {
+            return parent->get_text_from_clipboard();
+        } else {
+            return {};
+        }
+    }
+
+    virtual void set_text_on_clipboard(std::string_view text) const noexcept
+    {
+        if (parent != nullptr) {
+            parent->set_text_on_clipboard(text);
+        }
+    }
+
+    virtual bool process_event(gui_event const& event) noexcept
+    {
+        if (parent != nullptr) {
+            return parent->process_event(event);
+        } else {
+            return true;
+        }
+    }
+
+    virtual void update_keyboard_target(widget const *widget, keyboard_focus_group group) noexcept
+    {
+        if (parent != nullptr) {
+            parent->update_keyboard_target(widget, group);
+        }
+    }
+
+    virtual void
+    update_keyboard_target(widget const *widget, keyboard_focus_group group, keyboard_focus_direction direction) noexcept
+    {
+        if (parent != nullptr) {
+            parent->update_keyboard_target(widget, group, direction);
+        }
+    }
 
     /** Request the widget to be redrawn on the next frame.
      */
@@ -380,8 +420,5 @@ protected:
      * @return A rectangle that fits the window's constraints in the local coordinate system.
      */
     [[nodiscard]] aarectangle make_overlay_rectangle(aarectangle requested_rectangle) const noexcept;
-
-    
 };
-
 }} // namespace hi::v1

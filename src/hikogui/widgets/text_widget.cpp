@@ -6,7 +6,6 @@
 #include "../os_settings.hpp"
 #include "../scoped_task.hpp"
 #include "../when_any.hpp"
-#include "../GUI/gui_window.hpp"
 #include "../unicode/unicode_bidi.hpp"
 
 namespace hi::inline v1 {
@@ -369,7 +368,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         // When the next widget is selected due to pressing the Tab key the text should be committed.
         // The `text_widget` does not handle gui_activate, so it will be forwarded to parent widgets,
         // such as `text_field_widget` which does.
-        window.process_event(gui_event_type::gui_activate);
+        process_event(gui_event_type::gui_activate);
         return super::handle_event(event);
 
     case keyboard_grapheme:
@@ -400,12 +399,12 @@ bool text_widget::handle_event(gui_event const& event) noexcept
     case text_edit_paste:
         if (*mode >= partial) {
             reset_state("BDX");
-            replace_selection(to_gstring(window.get_text_from_clipboard(), U' '));
+            replace_selection(to_gstring(get_text_from_clipboard(), U' '));
             return true;
 
         } else if (*mode >= enabled) {
             reset_state("BDX");
-            replace_selection(to_gstring(window.get_text_from_clipboard()));
+            replace_selection(to_gstring(get_text_from_clipboard()));
             return true;
         }
         break;
@@ -414,7 +413,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         if (*mode >= select) {
             reset_state("BDX");
             if (hilet selected_text_ = selected_text(); not selected_text_.empty()) {
-                window.set_text_on_clipboard(to_string(selected_text_));
+                set_text_on_clipboard(to_string(selected_text_));
             }
             return true;
         }
@@ -423,7 +422,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
     case text_edit_cut:
         if (*mode >= select) {
             reset_state("BDX");
-            window.set_text_on_clipboard(to_string(selected_text()));
+            set_text_on_clipboard(to_string(selected_text()));
             if (*mode >= partial) {
                 replace_selection(gstring{});
             }

@@ -4,8 +4,6 @@
 
 #include "text_field_widget.hpp"
 #include "../text/font_book.hpp"
-#include "../GUI/gui_window.hpp"
-#include "../GUI/gui_system.hpp"
 
 namespace hi::inline v1 {
 

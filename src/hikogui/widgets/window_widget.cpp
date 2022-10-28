@@ -40,7 +40,7 @@ void window_widget::constructor_implementation() noexcept
     co_yield _content.get();
 }
 
-widget_constraints const &window_widget::set_constraints(set_constraints_context const &context) noexcept
+widget_constraints const& window_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     _layout = {};
     _toolbar_constraints = _toolbar->set_constraints(context);
@@ -116,7 +116,7 @@ void window_widget::set_layout(widget_layout const& context) noexcept
     _content->set_layout(context.transform(_content_rectangle, _content_constraints.baseline));
 }
 
-void window_widget::draw(draw_context const &context) noexcept
+void window_widget::draw(draw_context const& context) noexcept
 {
     if (*mode > widget_mode::invisible) {
         _toolbar->draw(context);
@@ -207,14 +207,14 @@ void window_widget::set_resize_border_priority(bool left, bool right, bool botto
     _top_resize_border_has_priority = top;
 }
 
-[[nodiscard]] grid_widget &window_widget::content() noexcept
+[[nodiscard]] grid_widget& window_widget::content() noexcept
 {
     hi_axiom(loop::main().on_thread());
     hi_assert_not_null(_content);
     return *_content;
 }
 
-[[nodiscard]] toolbar_widget &window_widget::toolbar() noexcept
+[[nodiscard]] toolbar_widget& window_widget::toolbar() noexcept
 {
     hi_axiom(loop::main().on_thread());
     hi_assert_not_null(_toolbar);
@@ -225,7 +225,7 @@ bool window_widget::handle_event(gui_event const& event) noexcept
 {
     switch (event.type()) {
     case gui_event_type::gui_toolbar_open:
-        window.update_keyboard_target(this, keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
+        update_keyboard_target(this, keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
         return true;
 
     case gui_event_type::gui_sysmenu_open:
@@ -236,6 +236,34 @@ bool window_widget::handle_event(gui_event const& event) noexcept
         break;
     }
     return super::handle_event(event);
+}
+
+[[nodiscard]] std::string window_widget::get_text_from_clipboard() const noexcept
+{
+    return window.get_text_from_clipboard();
+}
+
+void window_widget::set_text_on_clipboard(std::string_view text) const noexcept
+{
+    window.set_text_on_clipboard(text);
+}
+
+bool window_widget::process_event(gui_event const& event) noexcept
+{
+    return window.process_event(event);
+}
+
+void window_widget::update_keyboard_target(widget const *widget, keyboard_focus_group group) noexcept
+{
+    window.update_keyboard_target(this, group);
+}
+
+void window_widget::update_keyboard_target(
+    widget const *widget,
+    keyboard_focus_group group,
+    keyboard_focus_direction direction) noexcept
+{
+    window.update_keyboard_target(this, group, direction);
 }
 
 void window_widget::_request_redraw(aarectangle dirty_rectangle) const noexcept

@@ -5,7 +5,6 @@
 #include "menu_button_widget.hpp"
 #include "../text/font_book.hpp"
 #include "../GFX/pipeline_SDF_device_shared.hpp"
-#include "../GUI/gui_window.hpp"
 
 namespace hi::inline v1 {
 
@@ -70,14 +69,14 @@ bool menu_button_widget::handle_event(gui_event const& event) noexcept
     switch (event.type()) {
     case gui_event_type::gui_menu_next:
         if (*mode >= widget_mode::partial and not is_last(keyboard_focus_group::menu)) {
-            window.update_keyboard_target(keyboard_focus_group::menu, keyboard_focus_direction::forward);
+            update_keyboard_target(this, keyboard_focus_group::menu, keyboard_focus_direction::forward);
             return true;
         }
         break;
 
     case gui_event_type::gui_menu_prev:
         if (*mode >= widget_mode::partial and not is_first(keyboard_focus_group::menu)) {
-            window.update_keyboard_target(keyboard_focus_group::menu, keyboard_focus_direction::backward);
+            update_keyboard_target(this, keyboard_focus_group::menu, keyboard_focus_direction::backward);
             return true;
         }
         break;
@@ -85,8 +84,8 @@ bool menu_button_widget::handle_event(gui_event const& event) noexcept
     case gui_event_type::gui_activate:
         if (*mode >= widget_mode::partial) {
             activate();
-            window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::forward);
-            window.update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::backward);
+            update_keyboard_target(this, keyboard_focus_group::normal, keyboard_focus_direction::forward);
+            update_keyboard_target(this, keyboard_focus_group::normal, keyboard_focus_direction::backward);
             return true;
         }
         break;

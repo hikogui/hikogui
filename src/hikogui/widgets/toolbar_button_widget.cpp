@@ -3,7 +3,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "toolbar_button_widget.hpp"
-#include "../GUI/gui_window.hpp"
 
 namespace hi::inline v1 {
 

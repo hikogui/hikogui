@@ -4,7 +4,6 @@
 
 #include "icon_widget.hpp"
 #include "../text/font_book.hpp"
-#include "../GUI/gui_window.hpp"
 #include "../GUI/theme.hpp"
 #include "../cast.hpp"
 

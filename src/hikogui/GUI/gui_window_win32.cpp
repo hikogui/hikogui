@@ -449,7 +449,7 @@ done:
     return r;
 }
 
-void gui_window_win32::set_text_on_clipboard(std::string str) noexcept
+void gui_window_win32::set_text_on_clipboard(std::string_view str) noexcept
 {
     if (!OpenClipboard(reinterpret_cast<HWND>(win32Window))) {
         hi_log_error("Could not open win32 clipboard '{}'", get_last_error_message());
