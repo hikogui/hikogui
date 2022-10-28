@@ -134,7 +134,7 @@ protected:
         }
     }
 
-    widget_constraints set_constraints_button() const noexcept;
+    widget_constraints set_constraints_button(set_constraints_context const &context) const noexcept;
     void set_layout_button(widget_layout const& context) noexcept;
     void draw_button(draw_context const& context) noexcept;
 };

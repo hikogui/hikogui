@@ -226,7 +226,7 @@ constexpr surround_mode& operator|=(surround_mode& lhs, surround_mode const& rhs
     return lhs = lhs | rhs;
 }
 
-[[nodiscard]] constexpr bool any(surround_mode const& rhs) noexcept
+[[nodiscard]] constexpr bool to_bool(surround_mode const& rhs) noexcept
 {
     return to_bool(to_underlying(rhs));
 }
@@ -267,7 +267,7 @@ constexpr surround_mode& operator|=(surround_mode& lhs, surround_mode const& rhs
             auto r = std::string{};
             for (uint64_t i = begin; i != end; i <<= 1) {
                 hilet mode = static_cast<surround_mode>(i);
-                if (any(mode & mask)) {
+                if (to_bool(mode & mask)) {
                     if (not r.empty()) {
                         r += ',';
                     }

@@ -20,6 +20,7 @@
 #include "../observer.hpp"
 #include "../chrono.hpp"
 #include "../generator.hpp"
+#include "set_constraints_context.hpp"
 #include "widget_constraints.hpp"
 #include "widget_layout.hpp"
 #include "widget_mode.hpp"
@@ -106,18 +107,6 @@ public:
 
     [[nodiscard]] bool is_gui_thread() const noexcept;
 
-    /** Get the theme.
-     *
-     * @return The current theme.
-     */
-    hi::theme const& theme() const noexcept;
-
-    /** Get the font book.
-     *
-     * @return The font book.
-     */
-    hi::font_book& font_book() const noexcept;
-
     /** Find the widget that is under the mouse cursor.
      * This function will recursively test with visual child widgets, when
      * widgets overlap on the screen the hitbox object with the highest elevation is returned.
@@ -173,7 +162,7 @@ public:
      * @post This function will change what is returned by `widget::minimum_size()`, `widget::preferred_size()`
      *       and `widget::maximum_size()`.
      */
-    virtual widget_constraints const& set_constraints() noexcept = 0;
+    virtual widget_constraints const& set_constraints(set_constraints_context const &context) noexcept = 0;
 
     widget_constraints const& constraints() const noexcept
     {
@@ -191,7 +180,7 @@ public:
      *       matrices.
      * @param layout The layout for this child.
      */
-    virtual void set_layout(widget_layout const& layout) noexcept = 0;
+    virtual void set_layout(widget_layout const& context) noexcept = 0;
 
     /** Get the current layout for this widget.
      */
@@ -218,11 +207,17 @@ public:
 
     /** Request the widget to be redrawn on the next frame.
      */
-    virtual void request_redraw() const noexcept;
+    void request_redraw() const noexcept
+    {
+        _request_redraw(layout().clipping_rectangle_on_window());
+    }
 
     /** Request the window to be relayout on the next frame.
      */
-    void request_relayout() const noexcept;
+    void request_relayout() const noexcept
+    {
+        _request_relayout();
+    }
 
     /** Request the window to be reconstrain on the next frame.
      */
@@ -253,6 +248,42 @@ public:
 #define hi_request_resize(fmt, ...) \
     hi_format_check(fmt __VA_OPT__(, ) __VA_ARGS__); \
     this->request_resize<__FILE__, __LINE__, fmt>(__VA_ARGS__)
+
+    /** Request-redraw implementation.
+     */
+    virtual void _request_redraw(aarectangle dirty_rectangle) const noexcept
+    {
+        if (parent != nullptr) {
+            parent->_request_redraw(dirty_rectangle);
+        }
+    }
+
+    /** Request-relayout implementation.
+     */
+    virtual void _request_relayout() const noexcept
+    {
+        if (parent != nullptr) {
+            parent->_request_relayout();
+        }
+    }
+
+    /** Request-reconstrain implementation.
+     */
+    virtual void _request_reconstrain() const noexcept
+    {
+        if (parent != nullptr) {
+            parent->_request_reconstrain();
+        }
+    }
+
+    /** Request-resize implementation.
+     */
+    virtual void _request_resize() const noexcept
+    {
+        if (parent != nullptr) {
+            parent->_request_resize();
+        }
+    }
 
     /** Handle command.
      * If a widget does not fully handle a command it should pass the
@@ -352,9 +383,7 @@ protected:
      */
     [[nodiscard]] aarectangle make_overlay_rectangle(aarectangle requested_rectangle) const noexcept;
 
-private:
-    void _request_reconstrain() const noexcept;
-    void _request_resize() const noexcept;
+    
 };
 
 }} // namespace hi::v1

@@ -31,7 +31,7 @@ public:
 
     // The set_constraints() function is called when the window is first initialized,
     // or when a widget wants to change its constraints.
-    hi::widget_constraints const& set_constraints() noexcept override
+    hi::widget_constraints const& set_constraints(hi::set_constraints_context const& context) noexcept override
     {
         // Almost all widgets will reset the `_layout` variable here so that it will
         // trigger the calculations in `set_layout()` as well.
@@ -44,20 +44,20 @@ public:
         // When the window is initially created it will try to size itself so that
         // the contained widgets are at their preferred size. Having a different minimum
         // and/or maximum size will allow the window to be resizable.
-        return _constraints = {{400, 300}, {640, 480}, {1024, 860}, theme().margin};
+        return _constraints = {{400, 300}, {640, 480}, {1024, 860}, context.theme->margin};
     }
 
     // The `set_layout()` function is called when the window has resized, or when
     // a widget wants to change the internal layout.
     //
     // NOTE: The size of the layout may be larger than the maximum constraints of this widget.
-    void set_layout(hi::widget_layout const& layout) noexcept override
+    void set_layout(hi::widget_layout const& context) noexcept override
     {
         // Update the `_layout` with the new context, in this case we want to do some
         // calculations when the size or location of the widget was changed.
-        if (compare_store(_layout, layout)) {
-            auto view_port = _layout.window_rectangle();
-            auto window_height = window.widget->layout().height();
+        if (compare_store(_layout, context)) {
+            auto view_port = context.rectangle_on_window();
+            auto window_height = context.window_size.height();
 
             // We calculate the view-port used for 3D rendering from the location and size
             // of the widget within the window. We use the window-height so that we can make

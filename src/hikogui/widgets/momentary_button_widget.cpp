@@ -6,23 +6,24 @@
 
 namespace hi::inline v1 {
 
-widget_constraints const &momentary_button_widget::set_constraints() noexcept
+widget_constraints const& momentary_button_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     _layout = {};
 
     // On left side a check mark, on right side short-cut. Around the label extra margin.
-    hilet extra_size = extent2{theme().margin * 2.0f, theme().margin * 2.0f};
-    _constraints = set_constraints_button() + extra_size;
-    _constraints.margins = theme().margin;
+    hilet extra_size = extent2{context.theme->margin * 2.0f, context.theme->margin * 2.0f};
+    _constraints = set_constraints_button(context) + extra_size;
+    _constraints.margins = context.theme->margin;
     return _constraints;
 }
 
-void momentary_button_widget::set_layout(widget_layout const &layout) noexcept
+void momentary_button_widget::set_layout(widget_layout const& context) noexcept
 {
-    if (compare_store(_layout, layout)) {
-        _label_rectangle = aarectangle{theme().margin, 0.0f, layout.width() - theme().margin * 2.0f, layout.height()};
+    if (compare_store(_layout, context)) {
+        _label_rectangle =
+            aarectangle{context.theme->margin, 0.0f, context.width() - context.theme->margin * 2.0f, context.height()};
     }
-    set_layout_button(layout);
+    set_layout_button(context);
 }
 
 void momentary_button_widget::draw(draw_context const &context) noexcept
@@ -41,9 +42,9 @@ void momentary_button_widget::draw_label_button(draw_context const &context) noe
         layout().rectangle(),
         background_color(),
         focus_color(),
-        theme().border_width,
+        layout().theme->border_width,
         border_side::inside,
-        corner_radii{theme().rounding_radius});
+        corner_radii{layout().theme->rounding_radius});
 }
 
 } // namespace hi::inline v1

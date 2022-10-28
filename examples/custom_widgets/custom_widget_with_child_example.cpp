@@ -24,20 +24,20 @@ public:
 
     // The set_constraints() function is called when the window is first initialized,
     // or when a widget wants to change its constraints.
-    hi::widget_constraints const& set_constraints() noexcept override
+    hi::widget_constraints const& set_constraints(hi::set_constraints_context const& context) noexcept override
     {
         // Almost all widgets will reset the `_layout` variable here so that it will
         // trigger the calculations in `set_layout()` as well.
         _layout = {};
 
         // We need to recursively set the constraints of any child widget here as well
-        auto const label_constraints = _label_widget->set_constraints();
+        auto const label_constraints = _label_widget->set_constraints(context);
 
         // We add the ability to resize the widget beyond the size of the label.
         _constraints.minimum = label_constraints.minimum;
-        _constraints.preferred = label_constraints.preferred + theme().margin;
+        _constraints.preferred = label_constraints.preferred + context.theme->margin;
         _constraints.maximum = label_constraints.maximum + hi::extent2{100.0f, 50.0f};
-        _constraints.margins = theme().margin;
+        _constraints.margins = context.theme->margin;
         _constraints.baseline = label_constraints.baseline;
         return _constraints;
     }
@@ -46,19 +46,19 @@ public:
     // a widget wants to change the internal layout.
     //
     // NOTE: The size of the layout may be larger than the maximum constraints of this widget.
-    void set_layout(hi::widget_layout const& layout) noexcept override
+    void set_layout(hi::widget_layout const& context) noexcept override
     {
         // Update the `_layout` with the new context, in this case we want to do some
         // calculations when the size of the widget was changed.
-        if (compare_store(_layout, layout)) {
+        if (compare_store(_layout, context)) {
             // The layout of the child widget are also calculated here, which only needs to be done
             // when the layout of the current widget changes.
-            _label_rectangle = align(layout.rectangle(), _label_widget->constraints().preferred, hi::alignment::middle_center());
+            _label_rectangle = align(context.rectangle(), _label_widget->constraints().preferred, hi::alignment::middle_center());
         }
 
         // The layout of any child widget must always be set, even if the layout didn't actually change.
         // This is because child widgets may need to re-layout for other reasons.
-        _label_widget->set_layout(layout.transform(_label_rectangle));
+        _label_widget->set_layout(context.transform(_label_rectangle));
     }
 
     // The `draw()` function is called when all or part of the window requires redrawing.
@@ -79,9 +79,9 @@ public:
                     _layout.rectangle(),
                     background_color(),
                     foreground_color(),
-                    theme().border_width,
+                    layout().theme->border_width,
                     hi::border_side::outside,
-                    theme().rounding_radius);
+                    layout().theme->rounding_radius);
             }
 
             // Child widget only need to be drawn when the parent is visible, but the child may have

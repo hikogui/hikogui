@@ -57,34 +57,34 @@ public:
 
     ~scroll_bar_widget() {}
 
-    widget_constraints const& set_constraints() noexcept override
+    widget_constraints const& set_constraints(set_constraints_context const& context) noexcept override
     {
         _layout = {};
 
-        // The minimum size is twice the length of the slider, which is twice the theme().size()
+        // The minimum size is twice the length of the slider, which is twice the context.theme->size()
         if constexpr (axis == axis::vertical) {
             return _constraints = {
-                       {theme().icon_size, theme().size * 4.0f},
-                       {theme().icon_size, theme().size * 4.0f},
-                       {theme().icon_size, 32767.0f}};
+                       {context.theme->icon_size, context.theme->size * 4.0f},
+                       {context.theme->icon_size, context.theme->size * 4.0f},
+                       {context.theme->icon_size, 32767.0f}};
         } else {
             return _constraints = {
-                       {theme().size * 4.0f, theme().icon_size},
-                       {theme().size * 4.0f, theme().icon_size},
-                       {32767.0f, theme().icon_size}};
+                       {context.theme->size * 4.0f, context.theme->icon_size},
+                       {context.theme->size * 4.0f, context.theme->icon_size},
+                       {32767.0f, context.theme->icon_size}};
         }
     }
 
-    void set_layout(widget_layout const& layout) noexcept override
+    void set_layout(widget_layout const& context) noexcept override
     {
-        _layout = layout;
+        _layout = context;
 
         // Calculate the position of the slider.
         hilet slider_offset = *offset * travel_vs_hidden_content_ratio();
         if constexpr (axis == axis::vertical) {
-            _slider_rectangle = aarectangle{0.0f, slider_offset, layout.width(), slider_length()};
+            _slider_rectangle = aarectangle{0.0f, slider_offset, context.width(), slider_length()};
         } else {
-            _slider_rectangle = aarectangle{slider_offset, 0.0f, slider_length(), layout.height()};
+            _slider_rectangle = aarectangle{slider_offset, 0.0f, slider_length(), context.height()};
         }
     }
 
@@ -143,15 +143,15 @@ public:
 
     [[nodiscard]] color background_color() const noexcept override
     {
-        return theme().color(semantic_color::fill, semantic_layer);
+        return _layout.theme->color(semantic_color::fill, semantic_layer);
     }
 
     [[nodiscard]] color foreground_color() const noexcept override
     {
         if (*hover) {
-            return theme().color(semantic_color::fill, semantic_layer + 2);
+            return _layout.theme->color(semantic_color::fill, semantic_layer + 2);
         } else {
-            return theme().color(semantic_color::fill, semantic_layer + 1);
+            return _layout.theme->color(semantic_color::fill, semantic_layer + 1);
         }
     }
 
@@ -186,7 +186,7 @@ private:
 
         hilet content_aperture_ratio = *content != 0.0f ? *aperture / *content : 1.0f;
         hilet rail_length_ = rail_length();
-        return std::clamp(rail_length_ * content_aperture_ratio, theme().size * 2.0f, rail_length_);
+        return std::clamp(rail_length_ * content_aperture_ratio, _layout.theme->size * 2.0f, rail_length_);
     }
 
     /** The amount of travel that the slider can make.

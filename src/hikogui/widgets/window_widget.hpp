@@ -58,11 +58,15 @@ public:
 
     /// @privatesection
     [[nodiscard]] generator<widget *> children() const noexcept override;
-    widget_constraints const& set_constraints() noexcept override;
-    void set_layout(widget_layout const& layout) noexcept;
+    widget_constraints const& set_constraints(set_constraints_context const &context) noexcept override;
+    void set_layout(widget_layout const& context) noexcept;
     void draw(draw_context const& context) noexcept override;
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
     bool handle_event(gui_event const& event) noexcept override;
+    void _request_redraw(aarectangle dirty_rectangle) const noexcept override;
+    void _request_relayout() const noexcept override;
+    void _request_reconstrain() const noexcept override;
+    void _request_resize() const noexcept override;
     /// @endprivatesection
 private:
     aarectangle _content_rectangle;

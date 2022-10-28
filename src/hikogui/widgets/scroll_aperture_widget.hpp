@@ -76,12 +76,12 @@ public:
         co_yield _content.get();
     }
 
-    widget_constraints const &set_constraints() noexcept override
+    widget_constraints const &set_constraints(set_constraints_context const &context) noexcept override
     {
         _layout = {};
 
         hi_assert_not_null(_content);
-        hilet content_constraints = _content->set_constraints();
+        hilet content_constraints = _content->set_constraints(context);
 
         hilet minimum_size = extent2{
             content_constraints.margins.left() + content_constraints.minimum.width() + content_constraints.margins.right(),
@@ -96,16 +96,16 @@ public:
         return _constraints = {minimum_size, preferred_size, maximum_size, margins{}};
     }
 
-    void set_layout(widget_layout const &layout) noexcept override
+    void set_layout(widget_layout const &context) noexcept override
     {
         hilet content_constraints = _content->constraints();
         hilet margins = content_constraints.margins;
 
-        if (compare_store(_layout, layout)) {
+        if (compare_store(_layout, context)) {
             hilet preferred_size = content_constraints.preferred;
 
-            aperture_width = layout.width() - margins.left() - margins.right();
-            aperture_height = layout.height() - margins.bottom() - margins.top();
+            aperture_width = context.width() - margins.left() - margins.right();
+            aperture_height = context.height() - margins.bottom() - margins.top();
 
             // Start scrolling with the preferred size as minimum, so
             // that widgets in the content don't get unnecessarily squeezed.
@@ -126,7 +126,7 @@ public:
 
         // The content needs to be at a higher elevation, so that hitbox check
         // will work correctly for handling scrolling with mouse wheel.
-        _content->set_layout(layout.transform(_content_rectangle, 1.0f, layout.rectangle()));
+        _content->set_layout(context.transform(_content_rectangle, 1.0f, context.rectangle()));
     }
 
     void draw(draw_context const &context) noexcept
@@ -158,8 +158,8 @@ public:
         hi_axiom(is_gui_thread());
 
         if (event == gui_event_type::mouse_wheel) {
-            hilet new_offset_x = *offset_x + event.mouse().wheel_delta.x() * theme().scale;
-            hilet new_offset_y = *offset_y + event.mouse().wheel_delta.y() * theme().scale;
+            hilet new_offset_x = *offset_x + event.mouse().wheel_delta.x() * _layout.theme->scale;
+            hilet new_offset_y = *offset_y + event.mouse().wheel_delta.y() * _layout.theme->scale;
             hilet max_offset_x = std::max(0.0f, *content_width - *aperture_width);
             hilet max_offset_y = std::max(0.0f, *content_height - *aperture_height);
 
@@ -178,11 +178,11 @@ public:
         float delta_x = 0.0f;
         float delta_y = 0.0f;
 
-        if (safe_rectangle.width() > theme().margin * 2.0f and safe_rectangle.height() > theme().margin * 2.0f) {
+        if (safe_rectangle.width() > _layout.theme->margin * 2.0f and safe_rectangle.height() > _layout.theme->margin * 2.0f) {
             // This will look visually better, if the selected widget is moved with some margin from
             // the edge of the scroll widget. The margins of the content do not have anything to do
             // with the margins that are needed here.
-            safe_rectangle = safe_rectangle - theme().margin;
+            safe_rectangle = safe_rectangle - _layout.theme->margin;
 
             if (to_show.right() > safe_rectangle.right()) {
                 delta_x = to_show.right() - safe_rectangle.right();

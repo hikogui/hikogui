@@ -81,7 +81,7 @@ enum class speaker_mapping : uint32_t {
     surround_atmos_7_1_4 = surround_7_1 | top_front_left | top_front_right | top_back_left | top_back_right,
 };
 
-[[nodiscard]] constexpr bool any(speaker_mapping const &rhs) noexcept
+[[nodiscard]] constexpr bool to_bool(speaker_mapping const& rhs) noexcept
 {
     return to_bool(to_underlying(rhs));
 }

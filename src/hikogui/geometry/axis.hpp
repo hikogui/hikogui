@@ -31,7 +31,7 @@ enum class axis : unsigned char {
     return static_cast<axis>(static_cast<unsigned char>(lhs) | static_cast<unsigned char>(rhs));
 }
 
-[[nodiscard]] constexpr bool any(axis const &rhs) noexcept
+[[nodiscard]] constexpr bool to_bool(axis const& rhs) noexcept
 {
     return to_bool(static_cast<unsigned char>(rhs));
 }

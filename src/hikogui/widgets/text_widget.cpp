@@ -40,32 +40,27 @@ text_widget::~text_widget()
     delegate->deinit(*this);
 }
 
-void text_widget::update_shaped_text() noexcept
-{
-    _selection.resize(_cached_text.size());
-    _shaped_text = text_shaper{font_book(), _cached_text, theme().text_style(*text_style), theme().scale};
-}
-
-widget_constraints const& text_widget::set_constraints() noexcept
+widget_constraints const& text_widget::set_constraints(set_constraints_context const &context) noexcept
 {
     _layout = {};
 
     hi_assert_not_null(delegate);
     _cached_text = delegate->read(*this);
-    update_shaped_text();
+    _selection.resize(_cached_text.size());
+    _shaped_text = text_shaper{*context.font_book, _cached_text, context.theme->text_style(*text_style), context.theme->scale};
     hilet shaped_text_rectangle = _shaped_text.bounding_rectangle(std::numeric_limits<float>::infinity(), alignment->vertical());
     hilet shaped_text_size = shaped_text_rectangle.size();
 
     // clang-format off
     hilet baseline =
-        *alignment == vertical_alignment::top ? widget_baseline{0.1f, 1.0f, theme().cap_height * -1.0f} :
-        *alignment == vertical_alignment::middle ? widget_baseline{0.1f, 0.5f, theme().cap_height * -0.5f} :
+        *alignment == vertical_alignment::top ? widget_baseline{0.1f, 1.0f, context.theme->cap_height * -1.0f} :
+        *alignment == vertical_alignment::middle ? widget_baseline{0.1f, 0.5f, context.theme->cap_height * -0.5f} :
         widget_baseline{0.1f, 0.0f, 0.0f};
     // clang-format on
 
     if (*mode == widget_mode::partial) {
         // In line-edit mode the text should not wrap.
-        return _constraints = {shaped_text_size, shaped_text_size, shaped_text_size, theme().margin, baseline};
+        return _constraints = {shaped_text_size, shaped_text_size, shaped_text_size, context.theme->margin, baseline};
 
     } else {
         // Allow the text to be 550.0f pixels wide.
@@ -77,17 +72,17 @@ widget_constraints const& text_widget::set_constraints() noexcept
                    extent2{preferred_shaped_text_size.width(), height},
                    extent2{preferred_shaped_text_size.width(), height},
                    extent2{shaped_text_size.width(), height},
-                   theme().margin,
+                   context.theme->margin,
                    baseline};
     }
 }
 
-void text_widget::set_layout(widget_layout const& layout) noexcept
+void text_widget::set_layout(widget_layout const& context) noexcept
 {
-    if (compare_store(_layout, layout)) {
-        auto alignment_ = layout.left_to_right() ? *alignment : mirror(*alignment); 
+    if (compare_store(_layout, context)) {
+        auto alignment_ = context.left_to_right() ? *alignment : mirror(*alignment); 
 
-        _shaped_text.layout(layout.rectangle(), layout.baseline, layout.sub_pixel_size, layout.writing_direction, alignment_);
+        _shaped_text.layout(context.rectangle(), context.baseline, context.sub_pixel_size, context.writing_direction, alignment_);
 
         // Update scroll position every time the text or layout has changed.
         _request_scroll = true;
@@ -175,15 +170,15 @@ void text_widget::draw(draw_context const& context) noexcept
     if (*mode > widget_mode::invisible and overlaps(context, layout())) {
         context.draw_text(layout(), _shaped_text);
 
-        context.draw_text_selection(layout(), _shaped_text, _selection, theme().color(semantic_color::text_select));
+        context.draw_text_selection(layout(), _shaped_text, _selection, layout().theme->color(semantic_color::text_select));
 
         if (*_cursor_state == cursor_state_type::on or *_cursor_state == cursor_state_type::busy) {
             context.draw_text_cursors(
                 layout(),
                 _shaped_text,
                 _selection.cursor(),
-                theme().color(semantic_color::primary_cursor),
-                theme().color(semantic_color::secondary_cursor),
+                layout().theme->color(semantic_color::primary_cursor),
+                layout().theme->color(semantic_color::secondary_cursor),
                 _overwrite_mode,
                 to_bool(_has_dead_character));
         }
@@ -849,9 +844,9 @@ hitbox text_widget::hitbox_test(point3 position) const noexcept
 [[nodiscard]] bool text_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
     if (*mode >= widget_mode::partial) {
-        return any(group & keyboard_focus_group::normal);
+        return to_bool(group & keyboard_focus_group::normal);
     } else if (*mode >= widget_mode::select) {
-        return any(group & keyboard_focus_group::mouse);
+        return to_bool(group & keyboard_focus_group::mouse);
     } else {
         return false;
     }

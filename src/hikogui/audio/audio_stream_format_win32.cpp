@@ -21,7 +21,7 @@ namespace hi::inline v1 {
 
 [[nodiscard]] bool win32_use_extensible(audio_stream_format x) noexcept
 {
-    if (any(x.speaker_mapping)) {
+    if (to_bool(x.speaker_mapping)) {
         // If we have an non-direct speaker mapping we MUST use extensible as it requires the
         // extra dwChannelMask field.
         return true;

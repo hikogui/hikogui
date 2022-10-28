@@ -16,10 +16,7 @@
 
 namespace hi::inline v1 {
 
-gui_window::gui_window(gui_system& gui, label const& title) noexcept :
-    gui(gui), title(title)
-{
-}
+gui_window::gui_window(gui_system& gui, label const& title) noexcept : gui(gui), title(title) {}
 
 gui_window::~gui_window()
 {
@@ -45,7 +42,7 @@ void gui_window::init()
 
     // Execute a constraint check to determine initial window size.
     theme = gui.theme_book->find(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
-    hilet new_size = widget->set_constraints().preferred;
+    hilet new_size = widget->set_constraints(set_constraints_context{*gui.font_book, theme}).preferred;
 
     // Reset the keyboard target to not focus anything.
     update_keyboard_target({});
@@ -99,7 +96,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
 
         theme = gui.theme_book->find(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
 
-        widget->set_constraints();
+        widget->set_constraints(set_constraints_context{*gui.font_book, theme});
     }
 
     // Check if the window size matches the preferred size of the window_widget.
@@ -155,8 +152,14 @@ void gui_window::render(utc_nanoseconds display_time_point)
         // Guarantee that the layout size is always at least the minimum size.
         // We do this because it simplifies calculations if no minimum checks are necessary inside widget.
         hilet widget_layout_size = max(widget->constraints().minimum, widget_size);
-        widget->set_layout(
-            widget_layout{widget_layout_size, this->subpixel_orientation(), this->writing_direction(), display_time_point});
+        widget->set_layout(widget_layout{
+            widget_layout_size,
+            _size_state,
+            *gui.font_book,
+            theme,
+            this->subpixel_orientation(),
+            this->writing_direction(),
+            display_time_point});
 
         // After layout do a complete redraw.
         _redraw_rectangle = aarectangle{widget_size};
@@ -173,6 +176,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
         draw_context.display_time_point = display_time_point;
         draw_context.subpixel_orientation = subpixel_orientation();
         draw_context.background_color = widget->background_color();
+        draw_context.active = active;
 
         if (_animated_active.update(active ? 1.0f : 0.0f, display_time_point)) {
             request_redraw();

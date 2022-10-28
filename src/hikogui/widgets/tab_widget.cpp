@@ -36,7 +36,7 @@ tab_widget::tab_widget(gui_window& window, widget *parent, std::shared_ptr<deleg
     this->delegate->init(*this);
 }
 
-widget_constraints const& tab_widget::set_constraints() noexcept
+widget_constraints const& tab_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     _layout = {};
 
@@ -51,16 +51,16 @@ widget_constraints const& tab_widget::set_constraints() noexcept
         child->mode = child.get() == &selected_child_ ? widget_mode::enabled : widget_mode::invisible;
     }
 
-    return _constraints = selected_child_.set_constraints();
+    return _constraints = selected_child_.set_constraints(context);
 }
 
-void tab_widget::set_layout(widget_layout const& layout) noexcept
+void tab_widget::set_layout(widget_layout const& context) noexcept
 {
-    _layout = layout;
+    _layout = context;
 
     for (hilet& child : _children) {
         if (*child->mode > widget_mode::invisible) {
-            child->set_layout(layout);
+            child->set_layout(context);
         }
     }
 }

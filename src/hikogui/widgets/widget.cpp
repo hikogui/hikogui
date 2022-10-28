@@ -41,26 +41,16 @@ widget::~widget()
     return window.is_gui_thread();
 }
 
-hi::theme const& widget::theme() const noexcept
-{
-    return window.theme;
-}
-
-hi::font_book& widget::font_book() const noexcept
-{
-    return *window.gui.font_book;
-}
-
 [[nodiscard]] color widget::background_color() const noexcept
 {
     if (*mode >= widget_mode::partial) {
         if (*hover) {
-            return theme().color(semantic_color::fill, semantic_layer + 1);
+            return layout().theme->color(semantic_color::fill, semantic_layer + 1);
         } else {
-            return theme().color(semantic_color::fill, semantic_layer);
+            return layout().theme->color(semantic_color::fill, semantic_layer);
         }
     } else {
-        return theme().color(semantic_color::fill, semantic_layer - 1);
+        return layout().theme->color(semantic_color::fill, semantic_layer - 1);
     }
 }
 
@@ -68,12 +58,12 @@ hi::font_book& widget::font_book() const noexcept
 {
     if (*mode >= widget_mode::partial) {
         if (*hover) {
-            return theme().color(semantic_color::border, semantic_layer + 1);
+            return layout().theme->color(semantic_color::border, semantic_layer + 1);
         } else {
-            return theme().color(semantic_color::border, semantic_layer);
+            return layout().theme->color(semantic_color::border, semantic_layer);
         }
     } else {
-        return theme().color(semantic_color::border, semantic_layer - 1);
+        return layout().theme->color(semantic_color::border, semantic_layer - 1);
     }
 }
 
@@ -81,53 +71,33 @@ hi::font_book& widget::font_book() const noexcept
 {
     if (*mode >= widget_mode::partial) {
         if (*focus) {
-            return theme().color(semantic_color::accent);
+            return layout().theme->color(semantic_color::accent);
         } else if (*hover) {
-            return theme().color(semantic_color::border, semantic_layer + 1);
+            return layout().theme->color(semantic_color::border, semantic_layer + 1);
         } else {
-            return theme().color(semantic_color::border, semantic_layer);
+            return layout().theme->color(semantic_color::border, semantic_layer);
         }
     } else {
-        return theme().color(semantic_color::border, semantic_layer - 1);
+        return layout().theme->color(semantic_color::border, semantic_layer - 1);
     }
 }
 
 [[nodiscard]] color widget::accent_color() const noexcept
 {
     if (*mode >= widget_mode::partial) {
-        return theme().color(semantic_color::accent);
+        return layout().theme->color(semantic_color::accent);
     } else {
-        return theme().color(semantic_color::border, semantic_layer - 1);
+        return layout().theme->color(semantic_color::border, semantic_layer - 1);
     }
 }
 
 [[nodiscard]] color widget::label_color() const noexcept
 {
     if (*mode >= widget_mode::partial) {
-        return theme().text_style(semantic_text_style::label)->color;
+        return layout().theme->text_style(semantic_text_style::label)->color;
     } else {
-        return theme().color(semantic_color::border, semantic_layer - 1);
+        return layout().theme->color(semantic_color::border, semantic_layer - 1);
     }
-}
-
-void widget::request_redraw() const noexcept
-{
-    window.request_redraw(layout().window_clipping_rectangle());
-}
-
-void widget::request_relayout() const noexcept
-{
-    window.request_relayout(this);
-}
-
-void widget::_request_reconstrain() const noexcept
-{
-    window.request_reconstrain(this);
-}
-
-void widget::_request_resize() const noexcept
-{
-    window.request_resize(this);
 }
 
 bool widget::handle_event(gui_event const& event) noexcept
@@ -339,8 +309,8 @@ void widget::scroll_to_show(hi::aarectangle rectangle) noexcept
     hi_axiom(is_gui_thread());
 
     // Move the request_rectangle to window coordinates.
-    hilet requested_window_rectangle = translate2{layout().window_clipping_rectangle()} * requested_rectangle;
-    hilet window_bounds = aarectangle{window.rectangle.size()} - theme().margin;
+    hilet requested_window_rectangle = translate2{layout().clipping_rectangle_on_window()} * requested_rectangle;
+    hilet window_bounds = aarectangle{layout().window_size} - layout().theme->margin;
     hilet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
     return bounding_rectangle(layout().from_window * response_window_rectangle);
 }

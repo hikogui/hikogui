@@ -50,14 +50,14 @@ widget& grid_widget::add_widget(
     return ref;
 }
 
-widget_constraints const& grid_widget::set_constraints() noexcept
+widget_constraints const& grid_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     _layout = {};
     _rows.clear();
     _columns.clear();
 
     for (hilet& cell : _cells) {
-        hilet cell_constraints = cell.widget->set_constraints();
+        hilet cell_constraints = cell.widget->set_constraints(context);
         _rows.add_constraint(
             cell.row_first,
             cell.row_last,
@@ -87,18 +87,17 @@ widget_constraints const& grid_widget::set_constraints() noexcept
                margins{_columns.margin_before(), _rows.margin_after(), _columns.margin_after(), _rows.margin_before()}};
 }
 
-void grid_widget::set_layout(widget_layout const& layout) noexcept
+void grid_widget::set_layout(widget_layout const& context) noexcept
 {
-    if (compare_store(_layout, layout)) {
-        _columns.layout(layout.width());
-        _rows.layout(layout.height());
+    if (compare_store(_layout, context)) {
+        _columns.layout(context.width());
+        _rows.layout(context.height());
     }
 
     for (hilet& cell : _cells) {
-        hilet child_rectangle =
-            cell.rectangle(_columns, _rows, layout.size, layout.left_to_right());
+        hilet child_rectangle = cell.rectangle(_columns, _rows, context.size, context.left_to_right());
         hilet child_baseline = cell.baseline(_rows);
-        cell.widget->set_layout(layout.transform(child_rectangle, 0.0f, child_baseline));
+        cell.widget->set_layout(context.transform(child_rectangle, 0.0f, child_baseline));
     }
 }
 

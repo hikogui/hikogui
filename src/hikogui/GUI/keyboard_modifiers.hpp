@@ -40,7 +40,7 @@ constexpr keyboard_modifiers& operator|=(keyboard_modifiers& lhs, keyboard_modif
     return lhs = lhs | rhs;
 }
 
-[[nodiscard]] constexpr bool any(keyboard_modifiers const& rhs) noexcept
+[[nodiscard]] constexpr bool to_bool(keyboard_modifiers const& rhs) noexcept
 {
     return to_bool(to_underlying(rhs));
 }
@@ -76,16 +76,16 @@ inline std::string to_string(keyboard_modifiers modifiers)
 {
     auto r = std::string{};
 
-    if (any(modifiers & keyboard_modifiers::shift)) {
+    if (to_bool(modifiers & keyboard_modifiers::shift)) {
         r += "shift+";
     }
-    if (any(modifiers & keyboard_modifiers::control)) {
+    if (to_bool(modifiers & keyboard_modifiers::control)) {
         r += "control+";
     }
-    if (any(modifiers & keyboard_modifiers::alt)) {
+    if (to_bool(modifiers & keyboard_modifiers::alt)) {
         r += "alt+";
     }
-    if (any(modifiers & keyboard_modifiers::super)) {
+    if (to_bool(modifiers & keyboard_modifiers::super)) {
         r += "super+";
     }
 

@@ -21,7 +21,7 @@ enum class audio_direction : unsigned char { none = 0b00, input = 0b01, output =
     return static_cast<audio_direction>(to_underlying(lhs) | to_underlying(rhs));
 }
 
-[[nodiscard]] constexpr bool any(audio_direction const &rhs) noexcept
+[[nodiscard]] constexpr bool to_bool(audio_direction const &rhs) noexcept
 {
     return to_bool(to_underlying(rhs));
 }

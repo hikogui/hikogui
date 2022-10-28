@@ -16,7 +16,8 @@ static void unicode_decompose(char32_t code_point, unicode_normalization_mask ma
 {
     hilet &description = unicode_description::find(code_point);
 
-    if (any(mask & unicode_normalization_mask::decompose_newline) and (
+    if (to_bool(mask & unicode_normalization_mask::decompose_newline) and
+        (
         code_point == U'\n' or // Line Feed, LF U+000A
         code_point == U'\v' or // Vertical Tab, VT U+000B
         code_point == U'\f' or // Form Feed, FF U+000C
@@ -38,11 +39,11 @@ static void unicode_decompose(char32_t code_point, unicode_normalization_mask ma
             r += U' ';
         }
 
-    } else if (any(mask & unicode_normalization_mask::decompose_control) and is_C(description)) {
+    } else if (to_bool(mask & unicode_normalization_mask::decompose_control) and is_C(description)) {
         // Control characters are dropped. (no operation)
         // This must come after checking for new-line which themselves are control characters.
 
-    } else if (any(mask & description.decomposition_type())) {
+    } else if (to_bool(mask & description.decomposition_type())) {
         for (hilet c : description.decompose()) {
             unicode_decompose(c, mask, r);
         }
@@ -66,7 +67,7 @@ static void unicode_decompose(std::u32string_view text, unicode_normalization_ma
 [[nodiscard]] static char32_t
 unicode_compose(char32_t first, char32_t second, unicode_normalization_mask composition_mask) noexcept
 {
-    if (any(composition_mask & unicode_normalization_mask::compose_CRLF) and first == U'\r' and second == U'\n') {
+    if (to_bool(composition_mask & unicode_normalization_mask::compose_CRLF) and first == U'\r' and second == U'\n') {
         return U'\n';
 
     } else {
