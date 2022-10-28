@@ -66,7 +66,7 @@ void abstract_button_widget::set_layout_button(widget_layout const& context) noe
 
 [[nodiscard]] color abstract_button_widget::background_color() const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     if (_pressed) {
         return _layout.theme->color(semantic_color::fill, semantic_layer + 2);
     } else {
@@ -76,7 +76,7 @@ void abstract_button_widget::set_layout_button(widget_layout const& context) noe
 
 [[nodiscard]] hitbox abstract_button_widget::hitbox_test(point3 position) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (*mode >= widget_mode::partial and layout().contains(position)) {
         return {this, position, hitbox::Type::Button};
@@ -87,7 +87,7 @@ void abstract_button_widget::set_layout_button(widget_layout const& context) noe
 
 [[nodiscard]] bool abstract_button_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     return *mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::normal);
 }
 
@@ -95,7 +95,7 @@ void activate() noexcept;
 
 bool abstract_button_widget::handle_event(gui_event const& event) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     switch (event.type()) {
     case gui_event_type::gui_activate:

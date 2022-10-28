@@ -84,7 +84,7 @@ void overlay_widget::draw_background(draw_context const &context) noexcept
 
 [[nodiscard]] hitbox overlay_widget::hitbox_test(point3 position) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (*mode >= widget_mode::partial) {
         return _content->hitbox_test_from_parent(position);

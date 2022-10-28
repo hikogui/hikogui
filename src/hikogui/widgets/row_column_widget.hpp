@@ -52,7 +52,7 @@ public:
      */
     row_column_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
     {
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
 
         if (parent) {
             semantic_layer = parent->semantic_layer;
@@ -85,7 +85,7 @@ public:
      */
     void clear() noexcept
     {
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
         _children.clear();
         hi_request_reconstrain("row_column_widget::clear()");
     }
@@ -175,7 +175,7 @@ public:
 
     hitbox hitbox_test(point3 position) const noexcept override
     {
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
 
         if (*mode >= widget_mode::partial) {
             auto r = hitbox{};
@@ -203,7 +203,7 @@ private:
         float& margin_after_thickness,
         widget_baseline& baseline) noexcept
     {
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
 
         hilet& child_constraints = child.set_constraints(context);
         if (axis == axis::row) {
@@ -242,7 +242,7 @@ private:
 
     void update_layout_for_child(widget& child, ssize_t index, widget_layout const& context) const noexcept
     {
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
 
         hilet[child_position, child_length] = _grid_layout.get_position_and_size(index);
 

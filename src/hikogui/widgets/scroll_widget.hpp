@@ -61,7 +61,7 @@ public:
      */
     scroll_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
     {
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
         hi_assert_not_null(parent);
 
         // The scroll-widget will not draw itself, only its selected content.
@@ -203,7 +203,7 @@ public:
 
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override
     {
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
 
         if (*mode >= widget_mode::partial) {
             auto r = _aperture->hitbox_test_from_parent(position);

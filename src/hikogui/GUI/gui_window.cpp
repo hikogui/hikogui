@@ -36,7 +36,7 @@ void gui_window::init()
 {
     // This function is called just after construction in single threaded mode,
     // and therefor should not have a lock.
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     widget = std::make_unique<window_widget>(*this, title);
 
@@ -63,11 +63,6 @@ void gui_window::init()
     create_window(new_size);
 }
 
-[[nodiscard]] bool gui_window::is_gui_thread() const noexcept
-{
-    return gui.is_gui_thread();
-}
-
 void gui_window::set_device(gfx_device *device) noexcept
 {
     hi_assert_not_null(surface);
@@ -78,7 +73,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
 {
     hilet t1 = trace<"window::render">();
 
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     hi_assert_not_null(surface);
     hi_assert_not_null(widget);
 
@@ -196,14 +191,14 @@ void gui_window::render(utc_nanoseconds display_time_point)
 
 void gui_window::set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     hi_assert_not_null(widget);
     return widget->set_resize_border_priority(left, right, bottom, top);
 }
 
 void gui_window::update_mouse_target(hi::widget const *new_target_widget, point2 position) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (new_target_widget != _mouse_target_widget) {
         if (_mouse_target_widget) {
@@ -224,7 +219,7 @@ hi::keyboard_bindings const& gui_window::keyboard_bindings() const noexcept
 
 void gui_window::update_keyboard_target(hi::widget const *new_target_widget, keyboard_focus_group group) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     // Before we are going to make new_target_widget empty, due to the rules below;
     // capture which parents there are.
@@ -263,7 +258,7 @@ void gui_window::update_keyboard_target(
     keyboard_focus_group group,
     keyboard_focus_direction direction) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     auto tmp = widget->find_next_widget(start_widget, group, direction);
     if (tmp == start_widget) {
@@ -280,7 +275,7 @@ void gui_window::update_keyboard_target(keyboard_focus_group group, keyboard_foc
 
 bool gui_window::process_event(gui_event const& event) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     auto events = std::vector<gui_event>{event};
 

@@ -13,7 +13,7 @@ namespace hi::inline v1 {
 widget::widget(gui_window& _window, widget *parent) noexcept :
     window(_window), parent(parent), logical_layer(0), semantic_layer(0)
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (parent) {
         logical_layer = parent->logical_layer + 1;
@@ -34,11 +34,6 @@ widget::~widget()
     // The window must remove references such as mouse and keyboard targets to
     // this widget when it is removed.
     window.widget_is_destructing(this);
-}
-
-[[nodiscard]] bool widget::is_gui_thread() const noexcept
-{
-    return window.is_gui_thread();
 }
 
 [[nodiscard]] color widget::background_color() const noexcept
@@ -102,7 +97,7 @@ widget::~widget()
 
 bool widget::handle_event(gui_event const& event) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     switch (event.type()) {
         using enum hi::gui_event_type;
@@ -163,7 +158,7 @@ bool widget::handle_event(gui_event const& event) noexcept
 
 bool widget::handle_event_recursive(gui_event const& event, std::vector<widget const *> const& reject_list) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     auto handled = false;
 
@@ -188,7 +183,7 @@ widget const *widget::find_next_widget(
     keyboard_focus_group group,
     keyboard_focus_direction direction) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     auto found = false;
 
@@ -241,7 +236,7 @@ widget const *widget::find_next_widget(
 
 [[nodiscard]] widget const *widget::find_first_widget(keyboard_focus_group group) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     for (auto *child : children()) {
         if (child and child->accepts_keyboard_focus(group)) {
@@ -253,7 +248,7 @@ widget const *widget::find_next_widget(
 
 [[nodiscard]] widget const *widget::find_last_widget(keyboard_focus_group group) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     widget *found = nullptr;
     for (auto *child : children()) {
@@ -266,19 +261,19 @@ widget const *widget::find_next_widget(
 
 [[nodiscard]] bool widget::is_first(keyboard_focus_group group) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     return parent->find_first_widget(group) == this;
 }
 
 [[nodiscard]] bool widget::is_last(keyboard_focus_group group) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     return parent->find_last_widget(group) == this;
 }
 
 void widget::scroll_to_show(hi::aarectangle rectangle) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (parent) {
         parent->scroll_to_show(bounding_rectangle(_layout.to_parent * rectangle));
@@ -290,7 +285,7 @@ void widget::scroll_to_show(hi::aarectangle rectangle) noexcept
  */
 [[nodiscard]] std::vector<widget const *> widget::parent_chain() const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     std::vector<widget const *> chain;
 
@@ -306,7 +301,7 @@ void widget::scroll_to_show(hi::aarectangle rectangle) noexcept
 
 [[nodiscard]] aarectangle widget::make_overlay_rectangle(aarectangle requested_rectangle) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     // Move the request_rectangle to window coordinates.
     hilet requested_window_rectangle = translate2{layout().clipping_rectangle_on_window()} * requested_rectangle;

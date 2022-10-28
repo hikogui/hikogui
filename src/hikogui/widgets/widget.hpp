@@ -105,8 +105,6 @@ public:
     widget(widget&&) = delete;
     widget& operator=(widget&&) = delete;
 
-    [[nodiscard]] bool is_gui_thread() const noexcept;
-
     /** Find the widget that is under the mouse cursor.
      * This function will recursively test with visual child widgets, when
      * widgets overlap on the screen the hitbox object with the highest elevation is returned.
@@ -147,7 +145,7 @@ public:
      */
     [[nodiscard]] virtual bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept
     {
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
         return false;
     }
 

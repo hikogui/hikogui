@@ -32,7 +32,7 @@ public:
 
     scroll_aperture_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
     {
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
         hi_assert_not_null(parent);
 
         // The aperture-widget will not draw itself, only its selected content.
@@ -51,7 +51,7 @@ public:
     template<typename Widget, typename... Args>
     Widget &make_widget(Args &&...args) noexcept
     {
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
         hi_axiom(_content == nullptr);
 
         auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
@@ -138,7 +138,7 @@ public:
 
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override
     {
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
 
         if (*mode >= widget_mode::partial) {
             auto r = _content->hitbox_test_from_parent(position);
@@ -155,7 +155,7 @@ public:
 
     bool handle_event(gui_event const &event) noexcept override
     {
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
 
         if (event == gui_event_type::mouse_wheel) {
             hilet new_offset_x = *offset_x + event.mouse().wheel_delta.x() * _layout.theme->scale;

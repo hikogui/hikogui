@@ -200,7 +200,7 @@ void text_field_widget::revert(bool force) noexcept
 
 void text_field_widget::commit(bool force) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     hi_assert_not_null(delegate);
 
     if (*continues or force) {

@@ -74,7 +74,7 @@ public:
     template<typename WidgetType, typename Key, typename... Args>
     WidgetType& make_widget(Key const& key, Args&&...args)
     {
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
 
         auto tmp = std::make_unique<WidgetType>(window, this, std::forward<Args>(args)...);
         auto& ref = *tmp;

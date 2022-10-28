@@ -126,7 +126,7 @@ void window_widget::draw(draw_context const &context) noexcept
 
 hitbox window_widget::hitbox_test(point3 position) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     constexpr float BORDER_WIDTH = 10.0f;
 
@@ -192,7 +192,7 @@ hitbox window_widget::hitbox_test(point3 position) const noexcept
 
 [[nodiscard]] color window_widget::background_color() noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     return layout().theme->color(semantic_color::fill, semantic_layer);
 }
 
@@ -200,7 +200,7 @@ hitbox window_widget::hitbox_test(point3 position) const noexcept
  */
 void window_widget::set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     _left_resize_border_has_priority = left;
     _right_resize_border_has_priority = right;
     _bottom_resize_border_has_priority = bottom;
@@ -209,14 +209,14 @@ void window_widget::set_resize_border_priority(bool left, bool right, bool botto
 
 [[nodiscard]] grid_widget &window_widget::content() noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     hi_assert_not_null(_content);
     return *_content;
 }
 
 [[nodiscard]] toolbar_widget &window_widget::toolbar() noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     hi_assert_not_null(_toolbar);
     return *_toolbar;
 }

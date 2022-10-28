@@ -62,7 +62,7 @@ public:
     template<typename Widget, typename... Args>
     Widget& make_widget(Args&&...args) noexcept
     {
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
         hi_assert(_content == nullptr);
 
         auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);

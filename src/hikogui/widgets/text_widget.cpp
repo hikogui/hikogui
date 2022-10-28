@@ -357,7 +357,7 @@ void text_widget::reset_state(char const *states) noexcept
 
 bool text_widget::handle_event(gui_event const& event) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     switch (event.type()) {
         using enum gui_event_type;
@@ -824,7 +824,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
 
 hitbox text_widget::hitbox_test(point3 position) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (layout().contains(position)) {
         if (*mode >= widget_mode::partial) {

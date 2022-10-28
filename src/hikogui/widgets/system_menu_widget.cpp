@@ -43,7 +43,7 @@ void system_menu_widget::draw(draw_context const &context) noexcept
 
 hitbox system_menu_widget::hitbox_test(point3 position) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (*mode >= widget_mode::partial and layout().contains(position)) {
         // Only the top-left square should return ApplicationIcon, leave

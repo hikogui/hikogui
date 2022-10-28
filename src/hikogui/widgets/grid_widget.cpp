@@ -11,7 +11,7 @@ namespace hi::inline v1 {
 
 grid_widget::grid_widget(gui_window& window, widget *parent) noexcept : widget(window, parent)
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (parent) {
         semantic_layer = parent->semantic_layer;
@@ -39,7 +39,7 @@ widget& grid_widget::add_widget(
     std::size_t row_last,
     std::unique_ptr<widget> widget) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     if (address_in_use(column_first, row_first, column_last, row_last)) {
         hi_log_fatal("cell ({},{}) of grid_widget is already in use", column_first, row_first);
     }
@@ -112,7 +112,7 @@ void grid_widget::draw(draw_context const& context) noexcept
 
 hitbox grid_widget::hitbox_test(point3 position) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (*mode >= widget_mode::partial) {
         auto r = hitbox{};

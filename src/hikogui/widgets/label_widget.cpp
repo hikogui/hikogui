@@ -184,7 +184,7 @@ void label_widget::draw(draw_context const& context) noexcept
 
 [[nodiscard]] hitbox label_widget::hitbox_test(point3 position) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (*mode > widget_mode::invisible) {
         return _text_widget->hitbox_test_from_parent(position);

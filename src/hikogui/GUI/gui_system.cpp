@@ -37,7 +37,7 @@ gui_system::~gui_system()
 
 std::shared_ptr<gui_window> gui_system::add_window(std::shared_ptr<gui_window> window)
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     auto device = gfx->find_best_device_for_surface(*(window->surface));
     if (!device) {

@@ -11,7 +11,7 @@ namespace hi::inline v1 {
 
 toolbar_widget::toolbar_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (parent) {
         // The toolbar is a top level widget, which draws its background as the next level.
@@ -122,7 +122,7 @@ void toolbar_widget::draw(draw_context const& context) noexcept
 
 hitbox toolbar_widget::hitbox_test(point3 position) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     // By default the toolbar is used for dragging the window.
     if (*mode >= widget_mode::partial) {
@@ -153,7 +153,7 @@ void toolbar_widget::update_constraints_for_child(
     float& shared_bottom_margin,
     widget_baseline &shared_baseline) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     hilet child_constraints = child.set_constraints(context);
     _grid_layout.add_constraint(
@@ -172,7 +172,7 @@ void toolbar_widget::update_constraints_for_child(
 
 void toolbar_widget::update_layout_for_child(widget& child, ssize_t index, widget_layout const& context) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     hilet[child_offset, child_width] = _grid_layout.get_position_and_size(index);
 

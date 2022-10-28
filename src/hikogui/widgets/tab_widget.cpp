@@ -16,7 +16,7 @@ tab_widget::~tab_widget()
 tab_widget::tab_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
     super(window, parent), delegate(std::move(delegate))
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     hi_assert_not_null(parent);
 
     // The tab-widget will not draw itself, only its selected child.
@@ -76,7 +76,7 @@ void tab_widget::draw(draw_context const& context) noexcept
 
 [[nodiscard]] hitbox tab_widget::hitbox_test(point3 position) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (*mode >= widget_mode::partial) {
         auto r = hitbox{};
@@ -94,13 +94,13 @@ void tab_widget::draw(draw_context const& context) noexcept
     keyboard_focus_group group,
     keyboard_focus_direction direction) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     return selected_child().find_next_widget(current_widget, group, direction);
 }
 
 [[nodiscard]] tab_widget::const_iterator tab_widget::find_selected_child() const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     hi_assert_not_null(delegate);
 
     auto index = delegate->index(const_cast<tab_widget&>(*this));
@@ -113,7 +113,7 @@ void tab_widget::draw(draw_context const& context) noexcept
 
 [[nodiscard]] widget& tab_widget::selected_child() const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     hi_assert(not _children.empty());
 
     auto i = find_selected_child();

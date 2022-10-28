@@ -183,7 +183,7 @@ bool selection_widget::handle_event(gui_event const& event) noexcept
 
 [[nodiscard]] hitbox selection_widget::hitbox_test(point3 position) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (*mode >= widget_mode::partial) {
         auto r = _overlay_widget->hitbox_test_from_parent(position);
@@ -200,13 +200,13 @@ bool selection_widget::handle_event(gui_event const& event) noexcept
 
 [[nodiscard]] bool selection_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     return *mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::normal) and _has_options;
 }
 
 [[nodiscard]] color selection_widget::focus_color() const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (*mode >= widget_mode::partial and _has_options and _selecting) {
         return _layout.theme->color(semantic_color::accent);
@@ -217,7 +217,7 @@ bool selection_widget::handle_event(gui_event const& event) noexcept
 
 [[nodiscard]] menu_button_widget const *selection_widget::get_first_menu_button() const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (ssize(_menu_button_widgets) != 0) {
         return _menu_button_widgets.front();
@@ -228,7 +228,7 @@ bool selection_widget::handle_event(gui_event const& event) noexcept
 
 [[nodiscard]] menu_button_widget const *selection_widget::get_selected_menu_button() const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     for (hilet& button : _menu_button_widgets) {
         if (button->state() == button_state::on) {
@@ -240,7 +240,7 @@ bool selection_widget::handle_event(gui_event const& event) noexcept
 
 void selection_widget::start_selecting() noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     _selecting = true;
     _overlay_widget->mode = widget_mode::enabled;
@@ -256,7 +256,7 @@ void selection_widget::start_selecting() noexcept
 
 void selection_widget::stop_selecting() noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     _selecting = false;
     _overlay_widget->mode = widget_mode::invisible;
     request_redraw();
@@ -266,7 +266,7 @@ void selection_widget::stop_selecting() noexcept
  */
 void selection_widget::repopulate_options() noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     hi_assert_not_null(delegate);
 
     _column_widget->clear();

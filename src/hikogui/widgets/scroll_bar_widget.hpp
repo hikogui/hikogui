@@ -98,7 +98,7 @@ public:
 
     hitbox hitbox_test(point3 position) const noexcept override
     {
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
 
         if (*mode >= widget_mode::partial and layout().contains(position) and _slider_rectangle.contains(position)) {
             return {this, position};
@@ -176,13 +176,13 @@ private:
 
     [[nodiscard]] float rail_length() const noexcept
     {
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
         return axis == axis::vertical ? layout().height() : layout().width();
     }
 
     [[nodiscard]] float slider_length() const noexcept
     {
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
 
         hilet content_aperture_ratio = *content != 0.0f ? *aperture / *content : 1.0f;
         hilet rail_length_ = rail_length();
@@ -193,7 +193,7 @@ private:
      */
     [[nodiscard]] float slider_travel_range() const noexcept
     {
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
         return rail_length() - slider_length();
     }
 
@@ -201,7 +201,7 @@ private:
      */
     [[nodiscard]] float hidden_content() const noexcept
     {
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
         return *content - *aperture;
     }
 
@@ -211,7 +211,7 @@ private:
      */
     [[nodiscard]] float hidden_content_vs_travel_ratio() const noexcept
     {
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
 
         hilet _slider_travel_range = slider_travel_range();
         return _slider_travel_range != 0.0f ? hidden_content() / _slider_travel_range : 0.0f;
@@ -223,7 +223,7 @@ private:
      */
     [[nodiscard]] float travel_vs_hidden_content_ratio() const noexcept
     {
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
 
         hilet _hidden_content = hidden_content();
         return _hidden_content != 0.0f ? slider_travel_range() / _hidden_content : 0.0f;
