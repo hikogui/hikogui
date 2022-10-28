@@ -45,17 +45,17 @@ public:
         _aperture_height_cbt = aperture_height.subscribe([&](auto...){ request_relayout(); });
         _offset_x_cbt = offset_x.subscribe([&](auto...){ request_relayout(); });
         _offset_y_cbt = offset_y.subscribe([&](auto...){ request_relayout(); });
-        // clang-format off
+        // clang-format on
     }
 
     template<typename Widget, typename... Args>
-    Widget &make_widget(Args &&...args) noexcept
+    Widget& make_widget(Args&&...args) noexcept
     {
         hi_axiom(loop::main().on_thread());
         hi_axiom(_content == nullptr);
 
         auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
-        auto &ref = *tmp;
+        auto& ref = *tmp;
         _content = std::move(tmp);
         return ref;
     }
@@ -76,7 +76,7 @@ public:
         co_yield _content.get();
     }
 
-    widget_constraints const &set_constraints(set_constraints_context const &context) noexcept override
+    widget_constraints const& set_constraints(set_constraints_context const& context) noexcept override
     {
         _layout = {};
 
@@ -96,7 +96,7 @@ public:
         return _constraints = {minimum_size, preferred_size, maximum_size, margins{}};
     }
 
-    void set_layout(widget_layout const &context) noexcept override
+    void set_layout(widget_layout const& context) noexcept override
     {
         hilet content_constraints = _content->constraints();
         hilet margins = content_constraints.margins;
@@ -121,15 +121,14 @@ public:
 
         // The position of the content rectangle relative to the scroll view.
         // The size is further adjusted if the either the horizontal or vertical scroll bar is invisible.
-        _content_rectangle = {
-            -*offset_x + margins.left(), -*offset_y + margins.bottom(), *content_width, *content_height};
+        _content_rectangle = {-*offset_x + margins.left(), -*offset_y + margins.bottom(), *content_width, *content_height};
 
         // The content needs to be at a higher elevation, so that hitbox check
         // will work correctly for handling scrolling with mouse wheel.
         _content->set_layout(context.transform(_content_rectangle, 1.0f, context.rectangle()));
     }
 
-    void draw(draw_context const &context) noexcept
+    void draw(draw_context const& context) noexcept
     {
         if (*mode > widget_mode::invisible) {
             _content->draw(context);
@@ -153,7 +152,7 @@ public:
         }
     }
 
-    bool handle_event(gui_event const &event) noexcept override
+    bool handle_event(gui_event const& event) noexcept override
     {
         hi_axiom(loop::main().on_thread());
 
@@ -174,36 +173,42 @@ public:
 
     void scroll_to_show(hi::aarectangle to_show) noexcept override
     {
-        auto safe_rectangle = intersect(_layout.rectangle(), _layout.clipping_rectangle);
-        float delta_x = 0.0f;
-        float delta_y = 0.0f;
+        if (_layout) {
+            auto safe_rectangle = intersect(_layout.rectangle(), _layout.clipping_rectangle);
+            float delta_x = 0.0f;
+            float delta_y = 0.0f;
 
-        if (safe_rectangle.width() > _layout.theme->margin * 2.0f and safe_rectangle.height() > _layout.theme->margin * 2.0f) {
-            // This will look visually better, if the selected widget is moved with some margin from
-            // the edge of the scroll widget. The margins of the content do not have anything to do
-            // with the margins that are needed here.
-            safe_rectangle = safe_rectangle - _layout.theme->margin;
+            if (safe_rectangle.width() > _layout.theme->margin * 2.0f and
+                safe_rectangle.height() > _layout.theme->margin * 2.0f) {
+                // This will look visually better, if the selected widget is moved with some margin from
+                // the edge of the scroll widget. The margins of the content do not have anything to do
+                // with the margins that are needed here.
+                safe_rectangle = safe_rectangle - _layout.theme->margin;
 
-            if (to_show.right() > safe_rectangle.right()) {
-                delta_x = to_show.right() - safe_rectangle.right();
-            } else if (to_show.left() < safe_rectangle.left()) {
-                delta_x = to_show.left() - safe_rectangle.left();
+                if (to_show.right() > safe_rectangle.right()) {
+                    delta_x = to_show.right() - safe_rectangle.right();
+                } else if (to_show.left() < safe_rectangle.left()) {
+                    delta_x = to_show.left() - safe_rectangle.left();
+                }
+
+                if (to_show.top() > safe_rectangle.top()) {
+                    delta_y = to_show.top() - safe_rectangle.top();
+                } else if (to_show.bottom() < safe_rectangle.bottom()) {
+                    delta_y = to_show.bottom() - safe_rectangle.bottom();
+                }
+
+                // Scroll the widget
+                offset_x += delta_x;
+                offset_y += delta_y;
             }
 
-            if (to_show.top() > safe_rectangle.top()) {
-                delta_y = to_show.top() - safe_rectangle.top();
-            } else if (to_show.bottom() < safe_rectangle.bottom()) {
-                delta_y = to_show.bottom() - safe_rectangle.bottom();
+            // There may be recursive scroll view, and they all need to move until the rectangle is visible.
+            if (parent) {
+                parent->scroll_to_show(bounding_rectangle(_layout.to_parent * translate2(delta_x, delta_y) * to_show));
             }
 
-            // Scroll the widget
-            offset_x += delta_x;
-            offset_y += delta_y;
-        }
-
-        // There may be recursive scroll view, and they all need to move until the rectangle is visible.
-        if (parent) {
-            parent->scroll_to_show(bounding_rectangle(_layout.to_parent * translate2(delta_x, delta_y) * to_show));
+        } else {
+            return super::scroll_to_show(to_show);
         }
     }
     /// @endprivatesection
@@ -218,4 +223,4 @@ private:
     decltype(offset_y)::callback_token _offset_y_cbt;
 };
 
-}} // namespace hi::inline v1
+}} // namespace hi::v1

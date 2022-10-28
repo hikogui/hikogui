@@ -255,7 +255,14 @@ bool window_widget::process_event(gui_event const& event) noexcept
 
 void window_widget::update_keyboard_target(widget const *widget, keyboard_focus_group group) noexcept
 {
-    window.update_keyboard_target(this, group);
+    window.update_keyboard_target(widget, group);
+}
+
+void window_widget::update_keyboard_target(
+    keyboard_focus_group group,
+    keyboard_focus_direction direction) noexcept
+{
+    window.update_keyboard_target(group, direction);
 }
 
 void window_widget::update_keyboard_target(
@@ -263,7 +270,7 @@ void window_widget::update_keyboard_target(
     keyboard_focus_group group,
     keyboard_focus_direction direction) noexcept
 {
-    window.update_keyboard_target(this, group, direction);
+    window.update_keyboard_target(widget, group, direction);
 }
 
 void window_widget::_request_redraw(aarectangle dirty_rectangle) const noexcept

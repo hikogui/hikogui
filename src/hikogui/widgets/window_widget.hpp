@@ -69,6 +69,7 @@ public:
     void update_keyboard_target(widget const *widget, keyboard_focus_group group) noexcept override;
     void update_keyboard_target(widget const *widget, keyboard_focus_group group, keyboard_focus_direction direction) noexcept
         override;
+    void update_keyboard_target(keyboard_focus_group group, keyboard_focus_direction direction) noexcept override;
     void _request_redraw(aarectangle dirty_rectangle) const noexcept override;
     void _request_relayout() const noexcept override;
     void _request_reconstrain() const noexcept override;

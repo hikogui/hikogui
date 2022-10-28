@@ -114,6 +114,17 @@ public:
     constexpr widget_layout() noexcept = default;
     [[nodiscard]] constexpr friend bool operator==(widget_layout const&, widget_layout const&) noexcept = default;
 
+    [[nodiscard]] constexpr bool empty() const noexcept
+    {
+        // Theme must always be set if layout is valid.
+        return theme == nullptr;
+    }
+
+    [[nodiscard]] constexpr explicit operator bool() const noexcept
+    {
+        return not empty();
+    }
+
     /** Check if the mouse position is inside the widget.
      *
      * @param mouse_position The mouse position in local coordinates.
