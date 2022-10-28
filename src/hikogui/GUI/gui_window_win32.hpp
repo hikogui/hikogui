@@ -36,7 +36,7 @@ public:
     void open_system_menu() override;
     void set_window_size(extent2 extent) override;
     [[nodiscard]] std::string get_text_from_clipboard() const noexcept override;
-    void set_text_on_clipboard(std::string str) noexcept override;
+    void set_text_on_clipboard(std::string_view str) noexcept override;
 
 private:
     static constexpr UINT_PTR move_and_resize_timer_id = 2;

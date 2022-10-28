@@ -42,7 +42,7 @@ constexpr network_event& operator|=(network_event& lhs, network_event const& rhs
     return lhs = lhs | rhs;
 }
 
-[[nodiscard]] constexpr bool any(network_event const& rhs) noexcept
+[[nodiscard]] constexpr bool to_bool(network_event const& rhs) noexcept
 {
     return to_bool(to_underlying(rhs));
 }

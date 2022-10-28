@@ -107,7 +107,7 @@ enum class unicode_normalization_mask {
     }
 }
 
-[[nodiscard]] constexpr bool any(unicode_normalization_mask const& rhs) noexcept
+[[nodiscard]] constexpr bool to_bool(unicode_normalization_mask const& rhs) noexcept
 {
     return to_bool(to_underlying(rhs));
 }

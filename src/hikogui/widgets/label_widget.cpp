@@ -3,8 +3,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "label_widget.hpp"
-#include "../GUI/gui_window.hpp"
-#include "../GUI/gui_system.hpp"
 
 namespace hi::inline v1 {
 
@@ -50,13 +48,13 @@ label_widget::label_widget(gui_window& window, widget *parent) noexcept : super(
         callback_flags::main);
 }
 
-widget_constraints const& label_widget::set_constraints() noexcept
+widget_constraints const& label_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     _layout = {};
 
     // Translate the text of the label during reconstrain as this is triggered when the system language changes.
-    _text_constraints = _text_widget->set_constraints();
-    _icon_constraints = _icon_widget->set_constraints();
+    _text_constraints = _text_widget->set_constraints(context);
+    _icon_constraints = _icon_widget->set_constraints(context);
 
     hilet label_size = _text_constraints.preferred;
     hilet icon_size = _icon_constraints.preferred;
@@ -64,15 +62,15 @@ widget_constraints const& label_widget::set_constraints() noexcept
     hilet has_text = label_size.width() > 0.0f;
     hilet has_icon = icon_size.width() > 0.0f;
 
-    _inner_margin = (has_text and has_icon) ? theme().margin : 0.0f;
+    _inner_margin = (has_text and has_icon) ? context.theme->margin : 0.0f;
 
     _icon_size = [&] {
         if (has_icon) {
             // Override the natural icon size.
             if (*alignment == horizontal_alignment::center or *alignment == horizontal_alignment::justified) {
-                return theme().large_icon_size;
+                return context.theme->large_icon_size;
             } else {
-                return std::ceil(theme().text_style(*text_style)->size * theme().scale);
+                return std::ceil(context.theme->text_style(*text_style)->size * context.theme->scale);
             }
         } else {
             return 0.0f;
@@ -104,57 +102,57 @@ widget_constraints const& label_widget::set_constraints() noexcept
     if ((*alignment == horizontal_alignment::center or *alignment == horizontal_alignment::justified) and
         *alignment != vertical_alignment::middle) {
         // When the icon and text are above one another, the label needs to define its own base-line.
-        return _constraints = {size, size, size, theme().margin};
+        return _constraints = {size, size, size, context.theme->margin};
     } else {
-        return _constraints = {size, size, size, theme().margin, _text_constraints.baseline};
+        return _constraints = {size, size, size, context.theme->margin, _text_constraints.baseline};
     }
 }
 
-void label_widget::set_layout(widget_layout const& layout) noexcept
+void label_widget::set_layout(widget_layout const& context) noexcept
 {
-    if (compare_store(_layout, layout)) {
-        hilet alignment_ = layout.left_to_right() ? *alignment : mirror(*alignment);
+    if (compare_store(_layout, context)) {
+        hilet alignment_ = context.left_to_right() ? *alignment : mirror(*alignment);
 
         _text_rectangle = aarectangle{};
         if (alignment_ == horizontal_alignment::left) {
-            hilet text_width = layout.width() - _icon_size - _inner_margin;
-            _text_rectangle = {_icon_size + _inner_margin, 0.0f, text_width, layout.height()};
+            hilet text_width = context.width() - _icon_size - _inner_margin;
+            _text_rectangle = {_icon_size + _inner_margin, 0.0f, text_width, context.height()};
 
         } else if (alignment_ == horizontal_alignment::right) {
-            hilet text_width = layout.width() - _icon_size - _inner_margin;
-            _text_rectangle = {0.0f, 0.0f, text_width, layout.height()};
+            hilet text_width = context.width() - _icon_size - _inner_margin;
+            _text_rectangle = {0.0f, 0.0f, text_width, context.height()};
 
         } else if (alignment_ == vertical_alignment::top) {
-            hilet text_height = layout.height() - _icon_size - _inner_margin;
-            _text_rectangle = {0.0f, 0.0f, layout.width(), text_height};
+            hilet text_height = context.height() - _icon_size - _inner_margin;
+            _text_rectangle = {0.0f, 0.0f, context.width(), text_height};
 
         } else if (alignment_ == vertical_alignment::bottom) {
-            hilet text_height = layout.height() - _icon_size - _inner_margin;
-            _text_rectangle = {0.0f, _icon_size + _inner_margin, layout.width(), text_height};
+            hilet text_height = context.height() - _icon_size - _inner_margin;
+            _text_rectangle = {0.0f, _icon_size + _inner_margin, context.width(), text_height};
 
         } else {
-            _text_rectangle = layout.rectangle();
+            _text_rectangle = context.rectangle();
         }
 
         hilet icon_pos = [&] {
             if (alignment_ == hi::alignment::top_left()) {
-                return point2{0.0f, layout.height() - _icon_size};
+                return point2{0.0f, context.height() - _icon_size};
             } else if (alignment_ == hi::alignment::top_right()) {
-                return point2{layout.width() - _icon_size, layout.height() - _icon_size};
+                return point2{context.width() - _icon_size, context.height() - _icon_size};
             } else if (alignment_ == vertical_alignment::top) {
-                return point2{(layout.width() - _icon_size) / 2.0f, layout.height() - _icon_size};
+                return point2{(context.width() - _icon_size) / 2.0f, context.height() - _icon_size};
             } else if (alignment_ == hi::alignment::bottom_left()) {
                 return point2{0.0f, 0.0f};
             } else if (alignment_ == hi::alignment::bottom_right()) {
-                return point2{layout.width() - _icon_size, 0.0f};
+                return point2{context.width() - _icon_size, 0.0f};
             } else if (alignment_ == vertical_alignment::bottom) {
-                return point2{(layout.width() - _icon_size) / 2.0f, 0.0f};
+                return point2{(context.width() - _icon_size) / 2.0f, 0.0f};
             } else if (alignment_ == hi::alignment::middle_left()) {
-                return point2{0.0f, (layout.height() - _icon_size) / 2.0f};
+                return point2{0.0f, (context.height() - _icon_size) / 2.0f};
             } else if (alignment_ == hi::alignment::middle_right()) {
-                return point2{layout.width() - _icon_size, (layout.height() - _icon_size) / 2.0f};
+                return point2{context.width() - _icon_size, (context.height() - _icon_size) / 2.0f};
             } else if (alignment_ == vertical_alignment::middle) {
-                return point2{(layout.width() - _icon_size) / 2.0f, (layout.height() - _icon_size) / 2.0f};
+                return point2{(context.width() - _icon_size) / 2.0f, (context.height() - _icon_size) / 2.0f};
             } else {
                 hi_no_default();
             }
@@ -166,11 +164,11 @@ void label_widget::set_layout(widget_layout const& layout) noexcept
     if ((*alignment == horizontal_alignment::center or *alignment == horizontal_alignment::justified) and
         *alignment != vertical_alignment::middle) {
         // When the icon and text are above one another, the label needs to define its own base-line.
-        _icon_widget->set_layout(layout.transform(_icon_rectangle, 0.0f, _icon_constraints.baseline));
-        _text_widget->set_layout(layout.transform(_text_rectangle, 0.0f, _text_constraints.baseline));
+        _icon_widget->set_layout(context.transform(_icon_rectangle, 0.0f, _icon_constraints.baseline));
+        _text_widget->set_layout(context.transform(_text_rectangle, 0.0f, _text_constraints.baseline));
     } else {
-        _icon_widget->set_layout(layout.transform(_icon_rectangle, 0.0f));
-        _text_widget->set_layout(layout.transform(_text_rectangle, 0.0f));
+        _icon_widget->set_layout(context.transform(_icon_rectangle, 0.0f));
+        _text_widget->set_layout(context.transform(_text_rectangle, 0.0f));
     }
 }
 
@@ -184,7 +182,7 @@ void label_widget::draw(draw_context const& context) noexcept
 
 [[nodiscard]] hitbox label_widget::hitbox_test(point3 position) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (*mode > widget_mode::invisible) {
         return _text_widget->hitbox_test_from_parent(position);

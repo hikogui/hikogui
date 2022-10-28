@@ -28,21 +28,21 @@ void overlay_widget::set_widget(std::unique_ptr<widget> new_widget) noexcept
     hi_request_reconstrain("overlay_widget::set_widget()");
 }
 
-widget_constraints const &overlay_widget::set_constraints() noexcept
+widget_constraints const& overlay_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     _layout = {};
-    return _constraints = _content->set_constraints();
+    return _constraints = _content->set_constraints(context);
 }
 
-void overlay_widget::set_layout(widget_layout const &layout) noexcept
+void overlay_widget::set_layout(widget_layout const& context) noexcept
 {
-    _layout = layout;
+    _layout = context;
 
     // The clipping rectangle of the overlay matches the rectangle exactly, with a border around it.
-    _layout.clipping_rectangle = _layout.rectangle() + theme().border_width;
+    _layout.clipping_rectangle = context.rectangle() + context.theme->border_width;
 
     // The content should not draw in the border of the overlay, so give a tight clipping rectangle.
-    _content->set_layout(_layout.transform(_layout.rectangle(), 1.0f, _layout.rectangle()));
+    _content->set_layout(_layout.transform(context.rectangle(), 1.0f, context.rectangle()));
 }
 
 void overlay_widget::draw(draw_context const &context) noexcept
@@ -57,12 +57,12 @@ void overlay_widget::draw(draw_context const &context) noexcept
 
 [[nodiscard]] color overlay_widget::background_color() const noexcept
 {
-    return theme().color(semantic_color::fill, semantic_layer + 1);
+    return _layout.theme->color(semantic_color::fill, semantic_layer + 1);
 }
 
 [[nodiscard]] color overlay_widget::foreground_color() const noexcept
 {
-    return theme().color(semantic_color::border, semantic_layer + 1);
+    return _layout.theme->color(semantic_color::border, semantic_layer + 1);
 }
 
 void overlay_widget::scroll_to_show(hi::aarectangle rectangle) noexcept
@@ -74,12 +74,17 @@ void overlay_widget::scroll_to_show(hi::aarectangle rectangle) noexcept
 void overlay_widget::draw_background(draw_context const &context) noexcept
 {
     context.draw_box(
-        layout(), layout().rectangle(), background_color(), foreground_color(), theme().border_width, border_side::outside);
+        layout(),
+        layout().rectangle(),
+        background_color(),
+        foreground_color(),
+        layout().theme->border_width,
+        border_side::outside);
 }
 
 [[nodiscard]] hitbox overlay_widget::hitbox_test(point3 position) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (*mode >= widget_mode::partial) {
         return _content->hitbox_test_from_parent(position);

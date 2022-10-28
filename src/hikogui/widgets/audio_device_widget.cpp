@@ -25,7 +25,7 @@ audio_device_widget::audio_device_widget(gui_window& window, widget *parent, hi:
             auto proxy = _device_list.copy();
             proxy->clear();
             for (auto device : _audio_system->devices()) {
-                if (device->state() == hi::audio_device_state::active and any(device->direction() & *direction)) {
+                if (device->state() == hi::audio_device_state::active and to_bool(device->direction() & *direction)) {
                     proxy->emplace_back(device->id(), device->label());
                 }
             }
@@ -39,10 +39,10 @@ audio_device_widget::audio_device_widget(gui_window& window, widget *parent, hi:
     co_yield _grid_widget.get();
 }
 
-widget_constraints const& audio_device_widget::set_constraints() noexcept
+widget_constraints const& audio_device_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     _layout = {};
-    _constraints = _grid_widget->set_constraints();
+    _constraints = _grid_widget->set_constraints(context);
     // The device_selection_widget will have a very strong baseline,
     // the parent widget will likely conform and the calculation during layout
     // will yield the same absolute baseline.
@@ -50,13 +50,13 @@ widget_constraints const& audio_device_widget::set_constraints() noexcept
     return _constraints;
 }
 
-void audio_device_widget::set_layout(widget_layout const& layout) noexcept
+void audio_device_widget::set_layout(widget_layout const& context) noexcept
 {
-    if (compare_store(_layout, layout)) {
-        _grid_rectangle = _layout.rectangle();
+    if (compare_store(_layout, context)) {
+        _grid_rectangle = context.rectangle();
     }
 
-    _grid_widget->set_layout(layout.transform(_grid_rectangle));
+    _grid_widget->set_layout(context.transform(_grid_rectangle));
 }
 
 void audio_device_widget::draw(draw_context const& context) noexcept

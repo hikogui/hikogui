@@ -16,10 +16,7 @@
 
 namespace hi::inline v1 {
 
-gui_window::gui_window(gui_system& gui, label const& title) noexcept :
-    gui(gui), title(title)
-{
-}
+gui_window::gui_window(gui_system& gui, label const& title) noexcept : gui(gui), title(title) {}
 
 gui_window::~gui_window()
 {
@@ -39,13 +36,13 @@ void gui_window::init()
 {
     // This function is called just after construction in single threaded mode,
     // and therefor should not have a lock.
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     widget = std::make_unique<window_widget>(*this, title);
 
     // Execute a constraint check to determine initial window size.
     theme = gui.theme_book->find(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
-    hilet new_size = widget->set_constraints().preferred;
+    hilet new_size = widget->set_constraints(set_constraints_context{*gui.font_book, theme, *surface}).preferred;
 
     // Reset the keyboard target to not focus anything.
     update_keyboard_target({});
@@ -66,11 +63,6 @@ void gui_window::init()
     create_window(new_size);
 }
 
-[[nodiscard]] bool gui_window::is_gui_thread() const noexcept
-{
-    return gui.is_gui_thread();
-}
-
 void gui_window::set_device(gfx_device *device) noexcept
 {
     hi_assert_not_null(surface);
@@ -81,7 +73,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
 {
     hilet t1 = trace<"window::render">();
 
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     hi_assert_not_null(surface);
     hi_assert_not_null(widget);
 
@@ -99,7 +91,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
 
         theme = gui.theme_book->find(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
 
-        widget->set_constraints();
+        widget->set_constraints(set_constraints_context{*gui.font_book, theme, *surface});
     }
 
     // Check if the window size matches the preferred size of the window_widget.
@@ -155,8 +147,14 @@ void gui_window::render(utc_nanoseconds display_time_point)
         // Guarantee that the layout size is always at least the minimum size.
         // We do this because it simplifies calculations if no minimum checks are necessary inside widget.
         hilet widget_layout_size = max(widget->constraints().minimum, widget_size);
-        widget->set_layout(
-            widget_layout{widget_layout_size, this->subpixel_orientation(), this->writing_direction(), display_time_point});
+        widget->set_layout(widget_layout{
+            widget_layout_size,
+            _size_state,
+            *gui.font_book,
+            theme,
+            this->subpixel_orientation(),
+            this->writing_direction(),
+            display_time_point});
 
         // After layout do a complete redraw.
         _redraw_rectangle = aarectangle{widget_size};
@@ -173,6 +171,7 @@ void gui_window::render(utc_nanoseconds display_time_point)
         draw_context.display_time_point = display_time_point;
         draw_context.subpixel_orientation = subpixel_orientation();
         draw_context.background_color = widget->background_color();
+        draw_context.active = active;
 
         if (_animated_active.update(active ? 1.0f : 0.0f, display_time_point)) {
             request_redraw();
@@ -192,14 +191,14 @@ void gui_window::render(utc_nanoseconds display_time_point)
 
 void gui_window::set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     hi_assert_not_null(widget);
     return widget->set_resize_border_priority(left, right, bottom, top);
 }
 
 void gui_window::update_mouse_target(hi::widget const *new_target_widget, point2 position) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (new_target_widget != _mouse_target_widget) {
         if (_mouse_target_widget) {
@@ -220,7 +219,7 @@ hi::keyboard_bindings const& gui_window::keyboard_bindings() const noexcept
 
 void gui_window::update_keyboard_target(hi::widget const *new_target_widget, keyboard_focus_group group) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     // Before we are going to make new_target_widget empty, due to the rules below;
     // capture which parents there are.
@@ -259,7 +258,7 @@ void gui_window::update_keyboard_target(
     keyboard_focus_group group,
     keyboard_focus_direction direction) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     auto tmp = widget->find_next_widget(start_widget, group, direction);
     if (tmp == start_widget) {
@@ -276,7 +275,7 @@ void gui_window::update_keyboard_target(keyboard_focus_group group, keyboard_foc
 
 bool gui_window::process_event(gui_event const& event) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     auto events = std::vector<gui_event>{event};
 

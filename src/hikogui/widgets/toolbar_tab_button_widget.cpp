@@ -3,26 +3,28 @@
 // (See accompanying file LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt)
 
 #include "toolbar_tab_button_widget.hpp"
-#include "../GUI/gui_window.hpp"
 
 namespace hi::inline v1 {
 
-widget_constraints const& toolbar_tab_button_widget::set_constraints() noexcept
+widget_constraints const& toolbar_tab_button_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     _layout = {};
 
     // On left side a check mark, on right side short-cut. Around the label extra margin.
-    hilet extra_size = extent2{theme().margin * 2.0f, theme().margin};
-    return _constraints = set_constraints_button() + extra_size;
+    hilet extra_size = extent2{context.theme->margin * 2.0f, context.theme->margin};
+    return _constraints = set_constraints_button(context) + extra_size;
 }
 
-void toolbar_tab_button_widget::set_layout(widget_layout const& layout) noexcept
+void toolbar_tab_button_widget::set_layout(widget_layout const& context) noexcept
 {
-    if (compare_store(_layout, layout)) {
-        _label_rectangle =
-            aarectangle{theme().margin, 0.0f, layout.width() - theme().margin * 2.0f, layout.height() - theme().margin};
+    if (compare_store(_layout, context)) {
+        _label_rectangle = aarectangle{
+            context.theme->margin,
+            0.0f,
+            context.width() - context.theme->margin * 2.0f,
+            context.height() - context.theme->margin};
     }
-    set_layout_button(layout);
+    set_layout_button(context);
 }
 
 void toolbar_tab_button_widget::draw(draw_context const& context) noexcept
@@ -33,24 +35,29 @@ void toolbar_tab_button_widget::draw(draw_context const& context) noexcept
     }
 }
 
-void toolbar_tab_button_widget::request_redraw() const noexcept
+void toolbar_tab_button_widget::_request_redraw(aarectangle) const noexcept
 {
     // A toolbar tab button draws a focus line across the whole toolbar
     // which is beyond it's own clipping rectangle. The parent is the toolbar
     // so it will include everything that needs to be redrawn.
-    parent->request_redraw();
+
+    // Therefor we ignore the given dirty rectangle and let the parent set
+    // the dirty rectangle for us.
+    if (parent != nullptr) {
+        parent->request_redraw();
+    }
 }
 
 [[nodiscard]] bool toolbar_tab_button_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
-    return *mode >= widget_mode::partial and any(group & hi::keyboard_focus_group::toolbar);
+    return *mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::toolbar);
 }
 
 void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const& context) noexcept
 {
     // Draw the outline of the button across the clipping rectangle to clip the
     // bottom of the outline.
-    hilet offset = theme().margin + theme().border_width;
+    hilet offset = layout().theme->margin + layout().theme->border_width;
     hilet outline_rectangle = aarectangle{0.0f, -offset, layout().width(), layout().height() + offset};
 
     // The focus line will be drawn by the parent widget (toolbar_widget) at 0.5.
@@ -58,17 +65,17 @@ void toolbar_tab_button_widget::draw_toolbar_tab_button(draw_context const& cont
 
     // clang-format off
     auto button_color = (*hover or state() == button_state::on) ?
-        theme().color(semantic_color::fill, semantic_layer - 1) :
-        theme().color(semantic_color::fill, semantic_layer);
+        layout().theme->color(semantic_color::fill, semantic_layer - 1) :
+        layout().theme->color(semantic_color::fill, semantic_layer);
     // clang-format on
 
-    hilet corner_radii = hi::corner_radii{0.0f, 0.0f, theme().rounding_radius, theme().rounding_radius};
+    hilet corner_radii = hi::corner_radii{0.0f, 0.0f, layout().theme->rounding_radius, layout().theme->rounding_radius};
     context.draw_box(
         layout(),
         button_z * outline_rectangle,
         button_color,
         *focus ? focus_color() : button_color,
-        theme().border_width,
+        layout().theme->border_width,
         border_side::inside,
         corner_radii);
 }

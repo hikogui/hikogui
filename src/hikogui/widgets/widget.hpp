@@ -20,6 +20,7 @@
 #include "../observer.hpp"
 #include "../chrono.hpp"
 #include "../generator.hpp"
+#include "set_constraints_context.hpp"
 #include "widget_constraints.hpp"
 #include "widget_layout.hpp"
 #include "widget_mode.hpp"
@@ -104,20 +105,6 @@ public:
     widget(widget&&) = delete;
     widget& operator=(widget&&) = delete;
 
-    [[nodiscard]] bool is_gui_thread() const noexcept;
-
-    /** Get the theme.
-     *
-     * @return The current theme.
-     */
-    hi::theme const& theme() const noexcept;
-
-    /** Get the font book.
-     *
-     * @return The font book.
-     */
-    hi::font_book& font_book() const noexcept;
-
     /** Find the widget that is under the mouse cursor.
      * This function will recursively test with visual child widgets, when
      * widgets overlap on the screen the hitbox object with the highest elevation is returned.
@@ -158,7 +145,7 @@ public:
      */
     [[nodiscard]] virtual bool accepts_keyboard_focus(keyboard_focus_group group) const noexcept
     {
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
         return false;
     }
 
@@ -173,7 +160,7 @@ public:
      * @post This function will change what is returned by `widget::minimum_size()`, `widget::preferred_size()`
      *       and `widget::maximum_size()`.
      */
-    virtual widget_constraints const& set_constraints() noexcept = 0;
+    virtual widget_constraints const& set_constraints(set_constraints_context const& context) noexcept = 0;
 
     widget_constraints const& constraints() const noexcept
     {
@@ -191,7 +178,7 @@ public:
      *       matrices.
      * @param layout The layout for this child.
      */
-    virtual void set_layout(widget_layout const& layout) noexcept = 0;
+    virtual void set_layout(widget_layout const& context) noexcept = 0;
 
     /** Get the current layout for this widget.
      */
@@ -216,13 +203,67 @@ public:
      */
     virtual void draw(draw_context const& context) noexcept = 0;
 
+    [[nodiscard]] virtual std::string get_text_from_clipboard() const noexcept
+    {
+        if (parent != nullptr) {
+            return parent->get_text_from_clipboard();
+        } else {
+            return {};
+        }
+    }
+
+    virtual void set_text_on_clipboard(std::string_view text) const noexcept
+    {
+        if (parent != nullptr) {
+            parent->set_text_on_clipboard(text);
+        }
+    }
+
+    virtual bool process_event(gui_event const& event) noexcept
+    {
+        if (parent != nullptr) {
+            return parent->process_event(event);
+        } else {
+            return true;
+        }
+    }
+
+    virtual void update_keyboard_target(widget const *widget, keyboard_focus_group group) noexcept
+    {
+        if (parent != nullptr) {
+            parent->update_keyboard_target(widget, group);
+        }
+    }
+
+    virtual void
+    update_keyboard_target(widget const *widget, keyboard_focus_group group, keyboard_focus_direction direction) noexcept
+    {
+        if (parent != nullptr) {
+            parent->update_keyboard_target(widget, group, direction);
+        }
+    }
+
+    virtual void
+    update_keyboard_target(keyboard_focus_group group, keyboard_focus_direction direction) noexcept
+    {
+        if (parent != nullptr) {
+            parent->update_keyboard_target(group, direction);
+        }
+    }
+
     /** Request the widget to be redrawn on the next frame.
      */
-    virtual void request_redraw() const noexcept;
+    void request_redraw() const noexcept
+    {
+        _request_redraw(layout().clipping_rectangle_on_window());
+    }
 
     /** Request the window to be relayout on the next frame.
      */
-    void request_relayout() const noexcept;
+    void request_relayout() const noexcept
+    {
+        _request_relayout();
+    }
 
     /** Request the window to be reconstrain on the next frame.
      */
@@ -253,6 +294,42 @@ public:
 #define hi_request_resize(fmt, ...) \
     hi_format_check(fmt __VA_OPT__(, ) __VA_ARGS__); \
     this->request_resize<__FILE__, __LINE__, fmt>(__VA_ARGS__)
+
+    /** Request-redraw implementation.
+     */
+    virtual void _request_redraw(aarectangle dirty_rectangle) const noexcept
+    {
+        if (parent != nullptr) {
+            parent->_request_redraw(dirty_rectangle);
+        }
+    }
+
+    /** Request-relayout implementation.
+     */
+    virtual void _request_relayout() const noexcept
+    {
+        if (parent != nullptr) {
+            parent->_request_relayout();
+        }
+    }
+
+    /** Request-reconstrain implementation.
+     */
+    virtual void _request_reconstrain() const noexcept
+    {
+        if (parent != nullptr) {
+            parent->_request_reconstrain();
+        }
+    }
+
+    /** Request-resize implementation.
+     */
+    virtual void _request_resize() const noexcept
+    {
+        if (parent != nullptr) {
+            parent->_request_resize();
+        }
+    }
 
     /** Handle command.
      * If a widget does not fully handle a command it should pass the
@@ -351,10 +428,5 @@ protected:
      * @return A rectangle that fits the window's constraints in the local coordinate system.
      */
     [[nodiscard]] aarectangle make_overlay_rectangle(aarectangle requested_rectangle) const noexcept;
-
-private:
-    void _request_reconstrain() const noexcept;
-    void _request_resize() const noexcept;
 };
-
 }} // namespace hi::v1

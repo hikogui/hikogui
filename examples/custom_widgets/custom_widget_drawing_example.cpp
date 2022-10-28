@@ -98,14 +98,14 @@ public:
         _border_width_cbt = this->border_width.subscribe([&](auto...){ request_redraw(); });
         _rounded_cbt = this->rounded.subscribe([&](auto...){ request_redraw(); });
         // clang-format on
-
-        this->_glyph = font_book().find_glyph(hi::elusive_icon::Briefcase);
     }
 
     // The set_constraints() function is called when the window is first initialized,
     // or when a widget wants to change its constraints.
-    hi::widget_constraints const& set_constraints() noexcept override
+    hi::widget_constraints const& set_constraints(hi::set_constraints_context const& context) noexcept override
     {
+        this->_glyph = context.font_book->find_glyph(hi::elusive_icon::Briefcase);
+
         // Almost all widgets will reset the `_layout` variable here so that it will
         // trigger the calculations in `set_layout()` as well.
         _layout = {};
@@ -125,18 +125,18 @@ public:
         // When the window is initially created it will try to size itself so that
         // the contained widgets are at their preferred size. Having a different minimum
         // and/or maximum size will allow the window to be resizable.
-        return _constraints = {{100, 100}, {150, 150}, {400, 400}, theme().margin};
+        return _constraints = {{100, 100}, {150, 150}, {400, 400}, context.theme->margin};
     }
 
     // The `set_layout()` function is called when the window has resized, or when
     // a widget wants to change the internal layout.
     //
     // NOTE: The size of the layout may be larger than the maximum constraints of this widget.
-    void set_layout(hi::widget_layout const& layout) noexcept override
+    void set_layout(hi::widget_layout const& context) noexcept override
     {
         // Update the `_layout` with the new context, in this case we want to do some
         // calculations when the size of the widget was changed.
-        if (compare_store(_layout, layout)) {
+        if (compare_store(_layout, context)) {
             // Make a size scaled to the layout.
             auto const max_size = _layout.size * 0.9f;
             auto const max_rectangle = hi::aarectangle{hi::point2{max_size.width() * -0.5f, max_size.height() * -0.5f}, max_size};

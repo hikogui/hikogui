@@ -51,7 +51,7 @@ selection_widget::selection_widget(gui_window& window, widget *parent, std::shar
     co_yield _off_label_widget.get();
 }
 
-widget_constraints const& selection_widget::set_constraints() noexcept
+widget_constraints const& selection_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     _layout = {};
 
@@ -59,11 +59,12 @@ widget_constraints const& selection_widget::set_constraints() noexcept
         repopulate_options();
     }
 
-    hilet extra_size = extent2{theme().size + theme().margin * 2.0f, theme().margin * 2.0f};
+    hilet extra_size = extent2{context.theme->size + context.theme->margin * 2.0f, context.theme->margin * 2.0f};
 
-    _constraints = max(_off_label_widget->set_constraints() + extra_size, _current_label_widget->set_constraints() + extra_size);
+    _constraints = max(
+        _off_label_widget->set_constraints(context) + extra_size, _current_label_widget->set_constraints(context) + extra_size);
 
-    hilet overlay_constraints = _overlay_widget->set_constraints();
+    hilet overlay_constraints = _overlay_widget->set_constraints(context);
     for (hilet& child : _menu_button_widgets) {
         // extra_size is already implied in the menu button widgets.
         _constraints = max(_constraints, child->constraints());
@@ -75,39 +76,39 @@ widget_constraints const& selection_widget::set_constraints() noexcept
         std::max(_constraints.preferred.width(), overlay_constraints.preferred.width() + extra_size.width());
     _constraints.maximum.width() =
         std::max(_constraints.maximum.width(), overlay_constraints.maximum.width() + extra_size.width());
-    _constraints.margins = theme().margin;
-    _constraints.baseline = widget_baseline{0.9f, vertical_alignment::middle, theme().cap_height};
+    _constraints.margins = context.theme->margin;
+    _constraints.baseline = widget_baseline{0.9f, vertical_alignment::middle, context.theme->cap_height};
     hi_axiom(_constraints.holds_invariant());
     return _constraints;
 }
 
-void selection_widget::set_layout(widget_layout const& layout) noexcept
+void selection_widget::set_layout(widget_layout const& context) noexcept
 {
-    if (compare_store(_layout, layout)) {
-        if (layout.left_to_right()) {
-            _left_box_rectangle = aarectangle{0.0f, 0.0f, theme().size, layout.height()};
+    if (compare_store(_layout, context)) {
+        if (context.left_to_right()) {
+            _left_box_rectangle = aarectangle{0.0f, 0.0f, context.theme->size, context.height()};
 
             // The unknown_label is located to the right of the selection box icon.
             _option_rectangle = aarectangle{
-                _left_box_rectangle.right() + theme().margin,
+                _left_box_rectangle.right() + context.theme->margin,
                 0.0f,
-                layout.width() - _left_box_rectangle.width() - theme().margin * 2.0f,
-                layout.height()};
+                context.width() - _left_box_rectangle.width() - context.theme->margin * 2.0f,
+                context.height()};
 
         } else {
-            _left_box_rectangle = aarectangle{layout.width() - theme().size, 0.0f, theme().size, layout.height()};
+            _left_box_rectangle = aarectangle{context.width() - context.theme->size, 0.0f, context.theme->size, context.height()};
 
             // The unknown_label is located to the left of the selection box icon.
             _option_rectangle = aarectangle{
-                theme().margin,
+                context.theme->margin,
                 0.0f,
-                layout.width() - _left_box_rectangle.width() - theme().margin * 2.0f,
-                layout.height()};
+                context.width() - _left_box_rectangle.width() - context.theme->margin * 2.0f,
+                context.height()};
         }
 
-        _chevrons_glyph = font_book().find_glyph(elusive_icon::ChevronUp);
+        _chevrons_glyph = context.font_book->find_glyph(elusive_icon::ChevronUp);
         hilet chevrons_glyph_bbox = _chevrons_glyph.get_bounding_box();
-        _chevrons_rectangle = align(_left_box_rectangle, chevrons_glyph_bbox * theme().icon_size, alignment::middle_center());
+        _chevrons_rectangle = align(_left_box_rectangle, chevrons_glyph_bbox * context.theme->icon_size, alignment::middle_center());
     }
 
     // The overlay itself will make sure the overlay fits the window, so we give the preferred size and position
@@ -115,18 +116,18 @@ void selection_widget::set_layout(widget_layout const& layout) noexcept
     // The overlay should start on the same left edge as the selection box and the same width.
     // The height of the overlay should be the maximum height, which will show all the options.
     hilet overlay_width = std::clamp(
-        layout.width() - theme().size,
+        context.width() - context.theme->size,
         _overlay_widget->constraints().minimum.width(),
         _overlay_widget->constraints().maximum.width());
     hilet overlay_height = _overlay_widget->constraints().preferred.height();
-    hilet overlay_x = layout.left_to_right() ? theme().size : layout.width() - theme().size - overlay_width;
-    hilet overlay_y = std::round(layout.height() * 0.5f - overlay_height * 0.5f);
+    hilet overlay_x = context.left_to_right() ? context.theme->size : context.width() - context.theme->size - overlay_width;
+    hilet overlay_y = std::round(context.height() * 0.5f - overlay_height * 0.5f);
     hilet overlay_rectangle_request = aarectangle{overlay_x, overlay_y, overlay_width, overlay_height};
     _overlay_rectangle = make_overlay_rectangle(overlay_rectangle_request);
-    _overlay_widget->set_layout(layout.transform(_overlay_rectangle, 20.0f));
+    _overlay_widget->set_layout(context.transform(_overlay_rectangle, 20.0f));
 
-    _off_label_widget->set_layout(layout.transform(_option_rectangle));
-    _current_label_widget->set_layout(layout.transform(_option_rectangle));
+    _off_label_widget->set_layout(context.transform(_option_rectangle));
+    _current_label_widget->set_layout(context.transform(_option_rectangle));
 }
 
 void selection_widget::draw(draw_context const& context) noexcept
@@ -182,7 +183,7 @@ bool selection_widget::handle_event(gui_event const& event) noexcept
 
 [[nodiscard]] hitbox selection_widget::hitbox_test(point3 position) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (*mode >= widget_mode::partial) {
         auto r = _overlay_widget->hitbox_test_from_parent(position);
@@ -199,16 +200,16 @@ bool selection_widget::handle_event(gui_event const& event) noexcept
 
 [[nodiscard]] bool selection_widget::accepts_keyboard_focus(keyboard_focus_group group) const noexcept
 {
-    hi_axiom(is_gui_thread());
-    return *mode >= widget_mode::partial and any(group & hi::keyboard_focus_group::normal) and _has_options;
+    hi_axiom(loop::main().on_thread());
+    return *mode >= widget_mode::partial and to_bool(group & hi::keyboard_focus_group::normal) and _has_options;
 }
 
 [[nodiscard]] color selection_widget::focus_color() const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (*mode >= widget_mode::partial and _has_options and _selecting) {
-        return theme().color(semantic_color::accent);
+        return _layout.theme->color(semantic_color::accent);
     } else {
         return super::focus_color();
     }
@@ -216,7 +217,7 @@ bool selection_widget::handle_event(gui_event const& event) noexcept
 
 [[nodiscard]] menu_button_widget const *selection_widget::get_first_menu_button() const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (ssize(_menu_button_widgets) != 0) {
         return _menu_button_widgets.front();
@@ -227,7 +228,7 @@ bool selection_widget::handle_event(gui_event const& event) noexcept
 
 [[nodiscard]] menu_button_widget const *selection_widget::get_selected_menu_button() const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     for (hilet& button : _menu_button_widgets) {
         if (button->state() == button_state::on) {
@@ -239,15 +240,15 @@ bool selection_widget::handle_event(gui_event const& event) noexcept
 
 void selection_widget::start_selecting() noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     _selecting = true;
     _overlay_widget->mode = widget_mode::enabled;
     if (auto selected_menu_button = get_selected_menu_button()) {
-        this->window.update_keyboard_target(selected_menu_button, keyboard_focus_group::menu);
+        this->update_keyboard_target(selected_menu_button, keyboard_focus_group::menu);
 
     } else if (auto first_menu_button = get_first_menu_button()) {
-        this->window.update_keyboard_target(first_menu_button, keyboard_focus_group::menu);
+        this->update_keyboard_target(first_menu_button, keyboard_focus_group::menu);
     }
 
     request_redraw();
@@ -255,7 +256,7 @@ void selection_widget::start_selecting() noexcept
 
 void selection_widget::stop_selecting() noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     _selecting = false;
     _overlay_widget->mode = widget_mode::invisible;
     request_redraw();
@@ -265,7 +266,7 @@ void selection_widget::stop_selecting() noexcept
  */
 void selection_widget::repopulate_options() noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     hi_assert_not_null(delegate);
 
     _column_widget->clear();
@@ -317,14 +318,14 @@ void selection_widget::draw_outline(draw_context const& context) noexcept
         layout().rectangle(),
         background_color(),
         focus_color(),
-        theme().border_width,
+        layout().theme->border_width,
         border_side::inside,
-        corner_radii{theme().rounding_radius});
+        corner_radii{layout().theme->rounding_radius});
 }
 
 void selection_widget::draw_left_box(draw_context const& context) noexcept
 {
-    hilet corner_radii = hi::corner_radii{theme().rounding_radius, 0.0f, theme().rounding_radius, 0.0f};
+    hilet corner_radii = hi::corner_radii{layout().theme->rounding_radius, 0.0f, layout().theme->rounding_radius, 0.0f};
     context.draw_box(layout(), translate_z(0.1f) * _left_box_rectangle, focus_color(), corner_radii);
 }
 

@@ -115,10 +115,6 @@ public:
      */
     virtual void init();
 
-    /** Check if the current thread is the same as the gui_system loop.
-     */
-    [[nodiscard]] bool is_gui_thread() const noexcept;
-
     void set_device(gfx_device *device) noexcept;
 
     /** Get the keyboard binding.
@@ -136,7 +132,7 @@ public:
      */
     void request_redraw() noexcept
     {
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
         request_redraw(aarectangle{rectangle.size()});
     }
 
@@ -166,7 +162,7 @@ public:
      */
     [[nodiscard]] grid_widget& content() noexcept
     {
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
         hi_assert_not_null(widget);
         return widget->content();
     }
@@ -177,7 +173,7 @@ public:
      */
     [[nodiscard]] toolbar_widget& toolbar() noexcept
     {
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
         hi_assert_not_null(widget);
         return widget->toolbar();
     }
@@ -238,7 +234,7 @@ public:
 
     /** Place a text string on the operating system's clip-board.
      */
-    virtual void set_text_on_clipboard(std::string str) noexcept = 0;
+    virtual void set_text_on_clipboard(std::string_view str) noexcept = 0;
 
     void update_mouse_target(hi::widget const *new_target_widget, point2 position = {}) noexcept;
 

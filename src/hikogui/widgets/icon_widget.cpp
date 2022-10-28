@@ -4,7 +4,6 @@
 
 #include "icon_widget.hpp"
 #include "../text/font_book.hpp"
-#include "../GUI/gui_window.hpp"
 #include "../GUI/theme.hpp"
 #include "../cast.hpp"
 
@@ -18,7 +17,7 @@ icon_widget::icon_widget(gui_window &window, widget *parent) noexcept : super(wi
     });
 }
 
-widget_constraints const &icon_widget::set_constraints() noexcept
+widget_constraints const& icon_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     _layout = {};
 
@@ -32,7 +31,7 @@ widget_constraints const &icon_widget::set_constraints() noexcept
             _icon_type = icon_type::pixmap;
             _icon_size = extent2{narrow_cast<float>(pixmap->width()), narrow_cast<float>(pixmap->height())};
 
-            if (not(_pixmap_backing = paged_image{window.surface.get(), *pixmap})) {
+            if (not(_pixmap_backing = paged_image{context.surface, *pixmap})) {
                 // Could not get an image, retry.
                 _icon_has_modified = true;
                 hi_request_reconstrain("icon_widget::set_constraints() no backing image.");
@@ -41,31 +40,34 @@ widget_constraints const &icon_widget::set_constraints() noexcept
         } else if (hilet g1 = get_if<glyph_ids>(&icon.read())) {
             _glyph = *g1;
             _icon_type = icon_type::glyph;
-            _icon_size = _glyph.get_bounding_box().size() * theme().text_style(semantic_text_style::label)->size * theme().scale;
+            _icon_size = _glyph.get_bounding_box().size() * context.theme->text_style(semantic_text_style::label)->size *
+                context.theme->scale;
 
         } else if (hilet g2 = get_if<elusive_icon>(&icon.read())) {
-            _glyph = font_book().find_glyph(*g2);
+            _glyph = context.font_book->find_glyph(*g2);
             _icon_type = icon_type::glyph;
-            _icon_size = _glyph.get_bounding_box().size() * theme().text_style(semantic_text_style::label)->size * theme().scale;
+            _icon_size = _glyph.get_bounding_box().size() * context.theme->text_style(semantic_text_style::label)->size *
+                context.theme->scale;
 
         } else if (hilet g3 = get_if<hikogui_icon>(&icon.read())) {
-            _glyph = font_book().find_glyph(*g3);
+            _glyph = context.font_book->find_glyph(*g3);
             _icon_type = icon_type::glyph;
-            _icon_size = _glyph.get_bounding_box().size() * theme().text_style(semantic_text_style::label)->size * theme().scale;
+            _icon_size = _glyph.get_bounding_box().size() * context.theme->text_style(semantic_text_style::label)->size *
+                context.theme->scale;
         }
     }
-    return _constraints = {extent2{0.0f, 0.0f}, _icon_size, _icon_size, theme().margin};
+    return _constraints = {extent2{0.0f, 0.0f}, _icon_size, _icon_size, context.theme->margin};
 }
 
-void icon_widget::set_layout(widget_layout const &layout) noexcept
+void icon_widget::set_layout(widget_layout const &context) noexcept
 {
-    if (compare_store(_layout, layout)) {
+    if (compare_store(_layout, context)) {
         if (_icon_type == icon_type::no or not _icon_size) {
             _icon_rectangle = {};
         } else {
-            hilet icon_scale = scale2::uniform(_icon_size, layout.size);
+            hilet icon_scale = scale2::uniform(_icon_size, context.size);
             hilet new_icon_size = icon_scale * _icon_size;
-            _icon_rectangle = align(layout.rectangle(), new_icon_size, *alignment);
+            _icon_rectangle = align(context.rectangle(), new_icon_size, *alignment);
         }
     }
 }
@@ -83,7 +85,7 @@ void icon_widget::draw(draw_context const &context) noexcept
             break;
 
         case icon_type::glyph: {
-            context.draw_glyph(layout(), _icon_rectangle, theme().color(*color), _glyph);
+                context.draw_glyph(layout(), _icon_rectangle, layout().theme->color(*color), _glyph);
         } break;
 
         default: hi_no_default();

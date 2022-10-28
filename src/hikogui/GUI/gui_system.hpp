@@ -91,20 +91,13 @@ public:
     template<typename... Args>
     std::shared_ptr<gui_window> make_window(Args &&...args)
     {
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
 
         // XXX abstract away the _win32 part.
         auto window = std::make_shared<gui_window_win32>(*this, std::forward<Args>(args)...);
         window->init();
 
         return add_window(std::move(window));
-    }
-
-    /** Check if this thread is the same as the gui thread.
-     */
-    [[nodiscard]] bool is_gui_thread() const noexcept
-    {
-        return thread_id == current_thread_id();
     }
 
     /** Request all windows to constrain.

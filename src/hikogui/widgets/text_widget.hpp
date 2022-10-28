@@ -110,8 +110,8 @@ public:
     } : text_widget(window, parent, make_default_text_delegate(hi_forward(text)), hi_forward(attributes)...) {}
 
     /// @privatesection
-    widget_constraints const& set_constraints() noexcept override;
-    void set_layout(widget_layout const& layout) noexcept override;
+    widget_constraints const& set_constraints(set_constraints_context const &context) noexcept override;
+    void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     bool handle_event(gui_event const& event) noexcept override;
     hitbox hitbox_test(point3 position) const noexcept override;
@@ -186,12 +186,6 @@ private:
 
         set_attributes(hi_forward(rest)...);
     }
-
-    /** Update the shaped text.
-     *
-     * This function must be called synchronously whenever the text, style or theme changes.
-     */
-    void update_shaped_text() noexcept;
 
     /** Make parent scroll views, scroll to show the current selection and cursor.
      */

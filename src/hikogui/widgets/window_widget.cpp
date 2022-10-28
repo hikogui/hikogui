@@ -19,13 +19,13 @@ void window_widget::constructor_implementation() noexcept
 {
     _toolbar = std::make_unique<toolbar_widget>(window, this);
 
-    if (theme().operating_system == operating_system::windows) {
+    if (operating_system::current == operating_system::windows) {
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
         _system_menu = &_toolbar->make_widget<system_menu_widget>();
         this->_system_menu->icon = this->title.get<"icon">();
 #endif
         _toolbar->make_widget<window_traffic_lights_widget, horizontal_alignment::right>();
-    } else if (theme().operating_system == operating_system::macos) {
+    } else if (operating_system::current == operating_system::macos) {
         _toolbar->make_widget<window_traffic_lights_widget>();
     } else {
         hi_no_default();
@@ -40,11 +40,11 @@ void window_widget::constructor_implementation() noexcept
     co_yield _content.get();
 }
 
-widget_constraints const &window_widget::set_constraints() noexcept
+widget_constraints const& window_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     _layout = {};
-    _toolbar_constraints = _toolbar->set_constraints();
-    _content_constraints = _content->set_constraints();
+    _toolbar_constraints = _toolbar->set_constraints(context);
+    _content_constraints = _content->set_constraints(context);
 
     auto minimum_width = std::max(
         _toolbar_constraints.margins.left() + _toolbar_constraints.minimum.width() + _toolbar_constraints.margins.right(),
@@ -94,28 +94,29 @@ widget_constraints const &window_widget::set_constraints() noexcept
     return _constraints = {{minimum_width, minimum_height}, {preferred_width, preferred_height}, {maximum_width, maximum_height}};
 }
 
-void window_widget::set_layout(widget_layout const &layout) noexcept
+void window_widget::set_layout(widget_layout const& context) noexcept
 {
-    if (compare_store(_layout, layout)) {
+    if (compare_store(_layout, context)) {
         hilet toolbar_height = _toolbar->constraints().preferred.height();
         hilet between_margin = std::max(_toolbar->constraints().margins.bottom(), _content->constraints().margins.top());
 
         _toolbar_rectangle = aarectangle{
             point2{
-                _toolbar->constraints().margins.left(), layout.height() - toolbar_height - _toolbar->constraints().margins.top()},
+                _toolbar->constraints().margins.left(),
+                context.height() - toolbar_height - _toolbar->constraints().margins.top()},
             point2{
-                layout.width() - _toolbar->constraints().margins.right(),
-                layout.height() - _toolbar->constraints().margins.top()}};
+                context.width() - _toolbar->constraints().margins.right(),
+                context.height() - _toolbar->constraints().margins.top()}};
 
         _content_rectangle = aarectangle{
             point2{_content->constraints().margins.left(), _content->constraints().margins.bottom()},
-            point2{layout.width() - _content->constraints().margins.right(), _toolbar_rectangle.bottom() - between_margin}};
+            point2{context.width() - _content->constraints().margins.right(), _toolbar_rectangle.bottom() - between_margin}};
     }
-    _toolbar->set_layout(layout.transform(_toolbar_rectangle, _toolbar_constraints.baseline));
-    _content->set_layout(layout.transform(_content_rectangle, _content_constraints.baseline));
+    _toolbar->set_layout(context.transform(_toolbar_rectangle, _toolbar_constraints.baseline));
+    _content->set_layout(context.transform(_content_rectangle, _content_constraints.baseline));
 }
 
-void window_widget::draw(draw_context const &context) noexcept
+void window_widget::draw(draw_context const& context) noexcept
 {
     if (*mode > widget_mode::invisible) {
         _toolbar->draw(context);
@@ -125,7 +126,7 @@ void window_widget::draw(draw_context const &context) noexcept
 
 hitbox window_widget::hitbox_test(point3 position) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     constexpr float BORDER_WIDTH = 10.0f;
 
@@ -191,31 +192,31 @@ hitbox window_widget::hitbox_test(point3 position) const noexcept
 
 [[nodiscard]] color window_widget::background_color() noexcept
 {
-    hi_axiom(is_gui_thread());
-    return theme().color(semantic_color::fill, semantic_layer);
+    hi_axiom(loop::main().on_thread());
+    return layout().theme->color(semantic_color::fill, semantic_layer);
 }
 
 /** Defining on which edges the resize handle has priority over widget at a higher layer.
  */
 void window_widget::set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     _left_resize_border_has_priority = left;
     _right_resize_border_has_priority = right;
     _bottom_resize_border_has_priority = bottom;
     _top_resize_border_has_priority = top;
 }
 
-[[nodiscard]] grid_widget &window_widget::content() noexcept
+[[nodiscard]] grid_widget& window_widget::content() noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     hi_assert_not_null(_content);
     return *_content;
 }
 
-[[nodiscard]] toolbar_widget &window_widget::toolbar() noexcept
+[[nodiscard]] toolbar_widget& window_widget::toolbar() noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     hi_assert_not_null(_toolbar);
     return *_toolbar;
 }
@@ -224,7 +225,7 @@ bool window_widget::handle_event(gui_event const& event) noexcept
 {
     switch (event.type()) {
     case gui_event_type::gui_toolbar_open:
-        window.update_keyboard_target(this, keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
+        update_keyboard_target(this, keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
         return true;
 
     case gui_event_type::gui_sysmenu_open:
@@ -235,6 +236,61 @@ bool window_widget::handle_event(gui_event const& event) noexcept
         break;
     }
     return super::handle_event(event);
+}
+
+[[nodiscard]] std::string window_widget::get_text_from_clipboard() const noexcept
+{
+    return window.get_text_from_clipboard();
+}
+
+void window_widget::set_text_on_clipboard(std::string_view text) const noexcept
+{
+    window.set_text_on_clipboard(text);
+}
+
+bool window_widget::process_event(gui_event const& event) noexcept
+{
+    return window.process_event(event);
+}
+
+void window_widget::update_keyboard_target(widget const *widget, keyboard_focus_group group) noexcept
+{
+    window.update_keyboard_target(widget, group);
+}
+
+void window_widget::update_keyboard_target(
+    keyboard_focus_group group,
+    keyboard_focus_direction direction) noexcept
+{
+    window.update_keyboard_target(group, direction);
+}
+
+void window_widget::update_keyboard_target(
+    widget const *widget,
+    keyboard_focus_group group,
+    keyboard_focus_direction direction) noexcept
+{
+    window.update_keyboard_target(widget, group, direction);
+}
+
+void window_widget::_request_redraw(aarectangle dirty_rectangle) const noexcept
+{
+    window.request_redraw(dirty_rectangle);
+}
+
+void window_widget::_request_relayout() const noexcept
+{
+    window.request_relayout(this);
+}
+
+void window_widget::_request_reconstrain() const noexcept
+{
+    window.request_reconstrain(this);
+}
+
+void window_widget::_request_resize() const noexcept
+{
+    window.request_resize(this);
 }
 
 } // namespace hi::inline v1

@@ -69,6 +69,10 @@ public:
      */
     hi::subpixel_orientation subpixel_orientation;
 
+    /** Window is active.
+     */
+    bool active;
+
     /** The tone-mapper's saturation.
      */
     float saturation;
@@ -129,7 +133,7 @@ public:
         // clang-format on
 
         return _draw_box(
-            layout.window_clipping_rectangle(),
+            layout.clipping_rectangle_on_window(),
             layout.to_window * box_,
             fill_color,
             border_color,
@@ -171,7 +175,7 @@ public:
         // clang-format on
 
         return _draw_box(
-            layout.window_clipping_rectangle(clipping_rectangle),
+            layout.clipping_rectangle_on_window(clipping_rectangle),
             layout.to_window * box_,
             fill_color,
             border_color,
@@ -192,7 +196,7 @@ public:
         hi::corner_radii const& corner_radius = {}) const noexcept
     {
         return _draw_box(
-            layout.window_clipping_rectangle(),
+            layout.clipping_rectangle_on_window(),
             layout.to_window * box,
             fill_color,
             fill_color,
@@ -216,7 +220,7 @@ public:
         hi::corner_radii const& corner_radius = {}) const noexcept
     {
         return _draw_box(
-            layout.window_clipping_rectangle(clipping_rectangle),
+            layout.clipping_rectangle_on_window(clipping_rectangle),
             layout.to_window * box,
             fill_color,
             fill_color,
@@ -277,7 +281,7 @@ public:
         hilet box = make_rectangle(line_, width_, c1, c2);
         hilet corners = make_corner_radii(width_, c1, c2);
 
-        return _draw_box(layout.window_clipping_rectangle(), box, fill_color, fill_color, 0.0f, corners);
+        return _draw_box(layout.clipping_rectangle_on_window(), box, fill_color, fill_color, 0.0f, corners);
     }
 
     void draw_line(
@@ -296,7 +300,7 @@ public:
         hilet box = make_rectangle(line_, width_, c1, c2);
         hilet corners = make_corner_radii(width_, c1, c2);
 
-        return _draw_box(layout.window_clipping_rectangle(clipping_rectangle), box, fill_color, fill_color, 0.0f, corners);
+        return _draw_box(layout.clipping_rectangle_on_window(clipping_rectangle), box, fill_color, fill_color, 0.0f, corners);
     }
 
     [[nodiscard]] constexpr static rectangle make_rectangle(hi::circle const& circle) noexcept
@@ -317,7 +321,7 @@ public:
     {
         hilet box = layout.to_window * make_rectangle(circle);
         hilet corners = layout.to_window * make_corner_radii(circle);
-        return _draw_box(layout.window_clipping_rectangle(), box, fill_color, fill_color, 0.0f, corners);
+        return _draw_box(layout.clipping_rectangle_on_window(), box, fill_color, fill_color, 0.0f, corners);
     }
 
     void draw_circle(
@@ -328,7 +332,7 @@ public:
     {
         hilet box = layout.to_window * make_rectangle(circle);
         hilet corners = layout.to_window * make_corner_radii(circle);
-        return _draw_box(layout.window_clipping_rectangle(clipping_rectangle), box, fill_color, fill_color, 0.0f, corners);
+        return _draw_box(layout.clipping_rectangle_on_window(clipping_rectangle), box, fill_color, fill_color, 0.0f, corners);
     }
 
     void draw_circle(
@@ -348,7 +352,7 @@ public:
 
         hilet box = layout.to_window * make_rectangle(circle_);
         hilet corners = layout.to_window * make_corner_radii(circle_);
-        return _draw_box(layout.window_clipping_rectangle(), box, fill_color, border_color, border_width, corners);
+        return _draw_box(layout.clipping_rectangle_on_window(), box, fill_color, border_color, border_width, corners);
     }
 
     void draw_circle(
@@ -370,7 +374,7 @@ public:
         hilet box = layout.to_window * make_rectangle(circle_);
         hilet corners = layout.to_window * make_corner_radii(circle_);
         return _draw_box(
-            layout.window_clipping_rectangle(clipping_rectangle), box, fill_color, border_color, border_width, corners);
+            layout.clipping_rectangle_on_window(clipping_rectangle), box, fill_color, border_color, border_width, corners);
     }
 
     /** Draw an image
@@ -383,7 +387,7 @@ public:
      */
     [[nodiscard]] bool draw_image(widget_layout const& layout, quad const& box, paged_image& image) const noexcept
     {
-        return _draw_image(layout.window_clipping_rectangle(), layout.to_window * box, image);
+        return _draw_image(layout.clipping_rectangle_on_window(), layout.to_window * box, image);
     }
 
     /** Draw an image
@@ -399,7 +403,7 @@ public:
     draw_image(widget_layout const& layout, aarectangle const& clipping_rectangle, quad const& box, paged_image& image)
         const noexcept
     {
-        return _draw_image(layout.window_clipping_rectangle(clipping_rectangle), layout.to_window * box, image);
+        return _draw_image(layout.clipping_rectangle_on_window(clipping_rectangle), layout.to_window * box, image);
     }
 
     /** Draw a glyph.
@@ -411,7 +415,7 @@ public:
      */
     void draw_glyph(widget_layout const& layout, quad const& box, quad_color const& color, glyph_ids const& glyph) const noexcept
     {
-        return _draw_glyph(layout.window_clipping_rectangle(), layout.to_window * box, color, glyph);
+        return _draw_glyph(layout.clipping_rectangle_on_window(), layout.to_window * box, color, glyph);
     }
 
     /** Draw a glyph.
@@ -429,7 +433,7 @@ public:
         quad_color const& color,
         glyph_ids const& glyph) const noexcept
     {
-        return _draw_glyph(layout.window_clipping_rectangle(clipping_rectangle), layout.to_window * box, color, glyph);
+        return _draw_glyph(layout.clipping_rectangle_on_window(clipping_rectangle), layout.to_window * box, color, glyph);
     }
 
     /** Draw shaped text.
@@ -442,7 +446,7 @@ public:
     void draw_text(widget_layout const& layout, matrix3 const& transform, quad_color const& color, shaped_text const& text)
         const noexcept
     {
-        return _draw_text(layout.window_clipping_rectangle(), layout.to_window * transform, text, color);
+        return _draw_text(layout.clipping_rectangle_on_window(), layout.to_window * transform, text, color);
     }
 
     /** Draw shaped text.
@@ -460,7 +464,7 @@ public:
         quad_color const& color,
         shaped_text const& text) const noexcept
     {
-        return _draw_text(layout.window_clipping_rectangle(clipping_rectangle), layout.to_window * transform, text, color);
+        return _draw_text(layout.clipping_rectangle_on_window(clipping_rectangle), layout.to_window * transform, text, color);
     }
 
     /** Draw shaped text.
@@ -471,7 +475,7 @@ public:
      */
     void draw_text(widget_layout const& layout, matrix3 const& transform, shaped_text const& text) const noexcept
     {
-        return _draw_text(layout.window_clipping_rectangle(), layout.to_window * transform, text);
+        return _draw_text(layout.clipping_rectangle_on_window(), layout.to_window * transform, text);
     }
 
     /** Draw shaped text.
@@ -484,7 +488,7 @@ public:
     void draw_text(widget_layout const& layout, matrix3 const& transform, quad_color const& color, text_shaper const& text)
         const noexcept
     {
-        return _draw_text(layout.window_clipping_rectangle(), layout.to_window * transform, text, color);
+        return _draw_text(layout.clipping_rectangle_on_window(), layout.to_window * transform, text, color);
     }
 
     /** Draw shaped text.
@@ -495,7 +499,7 @@ public:
      */
     void draw_text(widget_layout const& layout, quad_color const& color, text_shaper const& text) const noexcept
     {
-        return _draw_text(layout.window_clipping_rectangle(), layout.to_window, text, color);
+        return _draw_text(layout.clipping_rectangle_on_window(), layout.to_window, text, color);
     }
 
     /** Draw shaped text.
@@ -513,7 +517,7 @@ public:
         quad_color const& color,
         text_shaper const& text) const noexcept
     {
-        return _draw_text(layout.window_clipping_rectangle(clipping_rectangle), layout.to_window * transform, text, color);
+        return _draw_text(layout.clipping_rectangle_on_window(clipping_rectangle), layout.to_window * transform, text, color);
     }
 
     /** Draw shaped text.
@@ -529,7 +533,7 @@ public:
         quad_color const& color,
         text_shaper const& text) const noexcept
     {
-        return _draw_text(layout.window_clipping_rectangle(clipping_rectangle), layout.to_window, text, color);
+        return _draw_text(layout.clipping_rectangle_on_window(clipping_rectangle), layout.to_window, text, color);
     }
 
     /** Draw shaped text.
@@ -540,7 +544,7 @@ public:
      */
     void draw_text(widget_layout const& layout, matrix3 const& transform, text_shaper const& text) const noexcept
     {
-        return _draw_text(layout.window_clipping_rectangle(), layout.to_window * transform, text);
+        return _draw_text(layout.clipping_rectangle_on_window(), layout.to_window * transform, text);
     }
 
     /** Draw shaped text.
@@ -550,7 +554,7 @@ public:
      */
     void draw_text(widget_layout const& layout, text_shaper const& text) const noexcept
     {
-        return _draw_text(layout.window_clipping_rectangle(), layout.to_window, text);
+        return _draw_text(layout.clipping_rectangle_on_window(), layout.to_window, text);
     }
 
     /** Draw text-selection of shaped text.
@@ -564,7 +568,7 @@ public:
     draw_text_selection(widget_layout const& layout, text_shaper const& text, text_selection const& selection, hi::color color)
         const noexcept
     {
-        return _draw_text_selection(layout.window_clipping_rectangle(), layout.to_window, text, selection, color);
+        return _draw_text_selection(layout.clipping_rectangle_on_window(), layout.to_window, text, selection, color);
     }
 
     /** Draw text cursors of shaped text.
@@ -587,7 +591,7 @@ public:
         bool dead_character_mode) const noexcept
     {
         return _draw_text_cursors(
-            layout.window_clipping_rectangle(),
+            layout.clipping_rectangle_on_window(),
             layout.to_window,
             text,
             cursor,
@@ -607,12 +611,12 @@ public:
      */
     void make_hole(widget_layout const& layout, quad const& box) const noexcept
     {
-        return _override_alpha(layout.window_clipping_rectangle(), layout.to_window * box, 0.0f);
+        return _override_alpha(layout.clipping_rectangle_on_window(), layout.to_window * box, 0.0f);
     }
 
     [[nodiscard]] friend bool overlaps(draw_context const& context, widget_layout const& layout) noexcept
     {
-        return overlaps(context.scissor_rectangle, layout.window_clipping_rectangle());
+        return overlaps(context.scissor_rectangle, layout.clipping_rectangle_on_window());
     }
 
 private:

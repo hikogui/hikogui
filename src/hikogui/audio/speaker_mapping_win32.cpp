@@ -83,58 +83,58 @@ namespace hi::inline v1 {
 {
     auto r = DWORD{0};
 
-    if (any(from & speaker_mapping::front_left)) {
+    if (to_bool(from & speaker_mapping::front_left)) {
         r |= SPEAKER_FRONT_LEFT;
     }
-    if (any(from & speaker_mapping::front_right)) {
+    if (to_bool(from & speaker_mapping::front_right)) {
         r |= SPEAKER_FRONT_RIGHT;
     }
-    if (any(from & speaker_mapping::front_center)) {
+    if (to_bool(from & speaker_mapping::front_center)) {
         r |= SPEAKER_FRONT_CENTER;
     }
-    if (any(from & speaker_mapping::low_frequency)) {
+    if (to_bool(from & speaker_mapping::low_frequency)) {
         r |= SPEAKER_LOW_FREQUENCY;
     }
-    if (any(from & speaker_mapping::back_left)) {
+    if (to_bool(from & speaker_mapping::back_left)) {
         r |= SPEAKER_BACK_LEFT;
     }
-    if (any(from & speaker_mapping::back_right)) {
+    if (to_bool(from & speaker_mapping::back_right)) {
         r |= SPEAKER_BACK_RIGHT;
     }
-    if (any(from & speaker_mapping::front_left_of_center)) {
+    if (to_bool(from & speaker_mapping::front_left_of_center)) {
         r |= SPEAKER_FRONT_LEFT_OF_CENTER;
     }
-    if (any(from & speaker_mapping::front_right_of_center)) {
+    if (to_bool(from & speaker_mapping::front_right_of_center)) {
         r |= SPEAKER_FRONT_RIGHT_OF_CENTER;
     }
-    if (any(from & speaker_mapping::back_center)) {
+    if (to_bool(from & speaker_mapping::back_center)) {
         r |= SPEAKER_BACK_CENTER;
     }
-    if (any(from & speaker_mapping::side_left)) {
+    if (to_bool(from & speaker_mapping::side_left)) {
         r |= SPEAKER_SIDE_LEFT;
     }
-    if (any(from & speaker_mapping::side_right)) {
+    if (to_bool(from & speaker_mapping::side_right)) {
         r |= SPEAKER_SIDE_RIGHT;
     }
-    if (any(from & speaker_mapping::top_center)) {
+    if (to_bool(from & speaker_mapping::top_center)) {
         r |= SPEAKER_TOP_CENTER;
     }
-    if (any(from & speaker_mapping::top_front_left)) {
+    if (to_bool(from & speaker_mapping::top_front_left)) {
         r |= SPEAKER_TOP_FRONT_LEFT;
     }
-    if (any(from & speaker_mapping::top_front_center)) {
+    if (to_bool(from & speaker_mapping::top_front_center)) {
         r |= SPEAKER_TOP_FRONT_CENTER;
     }
-    if (any(from & speaker_mapping::top_front_right)) {
+    if (to_bool(from & speaker_mapping::top_front_right)) {
         r |= SPEAKER_TOP_FRONT_RIGHT;
     }
-    if (any(from & speaker_mapping::top_back_left)) {
+    if (to_bool(from & speaker_mapping::top_back_left)) {
         r |= SPEAKER_TOP_BACK_LEFT;
     }
-    if (any(from & speaker_mapping::top_back_center)) {
+    if (to_bool(from & speaker_mapping::top_back_center)) {
         r |= SPEAKER_TOP_BACK_CENTER;
     }
-    if (any(from & speaker_mapping::top_back_right)) {
+    if (to_bool(from & speaker_mapping::top_back_right)) {
         r |= SPEAKER_TOP_BACK_RIGHT;
     }
 

@@ -39,18 +39,18 @@ to change, such as when the text in the label changes.
 
 The following is an example of `set_constraints()` function for a widget with a label-child.
 You can see that the constraints are based on the constraints of the label combined with sizes
-taken from the theme. The label widget itself is based on `theme().size` and the width of the text.
+taken from the theme. The label widget itself is based on `context.theme->size` and the width of the text.
 
 ```cpp
-hi::widget_constraints const &set_constraints() noexcept override
+hi::widget_constraints const &set_constraints(set_constraints_context const &context) noexcept override
 {
     _layout = {};
 
-    auto const label_constraints = _label_widget->set_constraints();
+    auto const label_constraints = _label_widget->set_constraints(context);
     _constraints.minimum = label_constraints.minimum;
-    _constraints.preferred = label_constraints.preferred + theme().margin;
+    _constraints.preferred = label_constraints.preferred + context.theme->margin;
     _constraints.maximum = label_constraints.maximum + hi::extent2{100.0f, 50.0f};
-    _constraints.margin = theme().margin;
+    _constraints.margin = context.theme->margin;
     _constraints.baseline = label_constraints.baseline;
     return _constraints;
 }
@@ -94,7 +94,7 @@ passed to the child is calculated by transforming the context by the `_label_rec
 ```cpp
 void set_layout(hi::widget_layout const &layout) noexcept override
 {
-    if (compare_store(_layout, layout)) {
+    if (compare_store(_layout, context)) {
         _label_rectangle = align(layout.rectangle(), _label_widget->constraints().preferred, hi::alignment::middle_center);
     }
 
@@ -145,9 +145,9 @@ void draw(hi::draw_context const &context) noexcept override
                 _layout.rectangle(),
                 background_color(),
                 foreground_color(),
-                theme().border_width,
+                context.theme->border_width,
                 hi::border_side::outside,
-                theme().rounding_radius);
+                context.theme->rounding_radius);
         }
 
         _label_widget->draw(context);

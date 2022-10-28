@@ -13,15 +13,15 @@ namespace hi::inline v1 {
 
 window_traffic_lights_widget::window_traffic_lights_widget(gui_window& window, widget *parent) noexcept : super(window, parent) {}
 
-widget_constraints const& window_traffic_lights_widget::set_constraints() noexcept
+widget_constraints const& window_traffic_lights_widget::set_constraints(set_constraints_context const &context) noexcept
 {
     _layout = {};
 
-    if (theme().operating_system == operating_system::windows) {
-        hilet size = extent2{theme().large_size * 3.0f, theme().large_size};
+    if (context.theme->operating_system == operating_system::windows) {
+        hilet size = extent2{context.theme->large_size * 3.0f, context.theme->large_size};
         return _constraints = {size, size, size};
 
-    } else if (theme().operating_system == operating_system::macos) {
+    } else if (context.theme->operating_system == operating_system::macos) {
         hilet size = extent2{DIAMETER * 3.0f + 2.0f * MARGIN + 2.0f * SPACING, DIAMETER + 2.0f * MARGIN};
         return _constraints = {size, size, size};
 
@@ -30,16 +30,16 @@ widget_constraints const& window_traffic_lights_widget::set_constraints() noexce
     }
 }
 
-void window_traffic_lights_widget::set_layout(widget_layout const& layout) noexcept
+void window_traffic_lights_widget::set_layout(widget_layout const& context) noexcept
 {
-    if (compare_store(_layout, layout)) {
-        auto extent = layout.size;
-        if (extent.height() > theme().large_size * 1.2f) {
-            extent = extent2{extent.width(), theme().large_size};
+    if (compare_store(_layout, context)) {
+        auto extent = context.size;
+        if (extent.height() > context.theme->large_size * 1.2f) {
+            extent = extent2{extent.width(), context.theme->large_size};
         }
-        auto y = layout.height() - extent.height();
+        auto y = context.height() - extent.height();
 
-        if (theme().operating_system == operating_system::windows) {
+        if (context.theme->operating_system == operating_system::windows) {
             closeRectangle =
                 aarectangle{point2(extent.width() * 2.0f / 3.0f, y), extent2{extent.width() * 1.0f / 3.0f, extent.height()}};
 
@@ -48,7 +48,7 @@ void window_traffic_lights_widget::set_layout(widget_layout const& layout) noexc
 
             minimizeRectangle = aarectangle{point2(0.0f, y), extent2{extent.width() * 1.0f / 3.0f, extent.height()}};
 
-        } else if (theme().operating_system == operating_system::macos) {
+        } else if (context.theme->operating_system == operating_system::macos) {
             closeRectangle = aarectangle{point2(MARGIN, extent.height() / 2.0f - RADIUS), extent2{DIAMETER, DIAMETER}};
 
             minimizeRectangle =
@@ -61,16 +61,16 @@ void window_traffic_lights_widget::set_layout(widget_layout const& layout) noexc
             hi_no_default();
         }
 
-        closeWindowGlyph = font_book().find_glyph(hikogui_icon::CloseWindow);
-        minimizeWindowGlyph = font_book().find_glyph(hikogui_icon::MinimizeWindow);
+        closeWindowGlyph = context.font_book->find_glyph(hikogui_icon::CloseWindow);
+        minimizeWindowGlyph = context.font_book->find_glyph(hikogui_icon::MinimizeWindow);
 
-        if (theme().operating_system == operating_system::windows) {
-            maximizeWindowGlyph = font_book().find_glyph(hikogui_icon::MaximizeWindowMS);
-            restoreWindowGlyph = font_book().find_glyph(hikogui_icon::RestoreWindowMS);
+        if (context.theme->operating_system == operating_system::windows) {
+            maximizeWindowGlyph = context.font_book->find_glyph(hikogui_icon::MaximizeWindowMS);
+            restoreWindowGlyph = context.font_book->find_glyph(hikogui_icon::RestoreWindowMS);
 
-        } else if (theme().operating_system == operating_system::macos) {
-            maximizeWindowGlyph = font_book().find_glyph(hikogui_icon::MaximizeWindowMacOS);
-            restoreWindowGlyph = font_book().find_glyph(hikogui_icon::RestoreWindowMacOS);
+        } else if (context.theme->operating_system == operating_system::macos) {
+            maximizeWindowGlyph = context.font_book->find_glyph(hikogui_icon::MaximizeWindowMacOS);
+            restoreWindowGlyph = context.font_book->find_glyph(hikogui_icon::RestoreWindowMacOS);
         } else {
             hi_no_default();
         }
@@ -80,7 +80,7 @@ void window_traffic_lights_widget::set_layout(widget_layout const& layout) noexc
         hilet maximizeWindowGlyphBB = maximizeWindowGlyph.get_bounding_box();
         hilet restoreWindowGlyphBB = restoreWindowGlyph.get_bounding_box();
 
-        hilet glyph_size = theme().operating_system == operating_system::macos ? 5.0f : theme().icon_size;
+        hilet glyph_size = context.theme->operating_system == operating_system::macos ? 5.0f : context.theme->icon_size;
 
         closeWindowGlyphRectangle = align(closeRectangle, closeWindowGlyphBB * glyph_size, alignment::middle_center());
         minimizeWindowGlyphRectangle = align(minimizeRectangle, minimizeWindowGlyphBB * glyph_size, alignment::middle_center());
@@ -93,17 +93,17 @@ void window_traffic_lights_widget::drawMacOS(draw_context const& drawContext) no
 {
     auto context = drawContext;
 
-    hilet close_circle_color = (not window.active and not *hover) ? color(0.246f, 0.246f, 0.246f) :
+    hilet close_circle_color = (not context.active and not *hover) ? color(0.246f, 0.246f, 0.246f) :
         pressedClose                                              ? color(1.0f, 0.242f, 0.212f) :
                                                                     color(1.0f, 0.1f, 0.082f);
     context.draw_box(layout(), closeRectangle, close_circle_color, corner_radii{RADIUS});
 
-    hilet minimize_circle_color = (not window.active and not *hover) ? color(0.246f, 0.246f, 0.246f) :
+    hilet minimize_circle_color = (not context.active and not *hover) ? color(0.246f, 0.246f, 0.246f) :
         pressedMinimize                                              ? color(1.0f, 0.847f, 0.093f) :
                                                                        color(0.784f, 0.521f, 0.021f);
     context.draw_box(layout(), minimizeRectangle, minimize_circle_color, corner_radii{RADIUS});
 
-    hilet maximize_circle_color = (not window.active and not *hover) ? color(0.246f, 0.246f, 0.246f) :
+    hilet maximize_circle_color = (not context.active and not *hover) ? color(0.246f, 0.246f, 0.246f) :
         pressedMaximize                                              ? color(0.223f, 0.863f, 0.1f) :
                                                                        color(0.082f, 0.533f, 0.024f);
 
@@ -114,7 +114,7 @@ void window_traffic_lights_widget::drawMacOS(draw_context const& drawContext) no
         context.draw_glyph(
             layout(), translate_z(0.1f) * minimizeWindowGlyphRectangle, color{0.212f, 0.1f, 0.0f}, minimizeWindowGlyph);
 
-        if (window.size_state() == gui_window_size::maximized) {
+        if (layout().window_size_state == gui_window_size::maximized) {
             context.draw_glyph(
                 layout(), translate_z(0.1f) * restoreWindowGlyphRectangle, color{0.0f, 0.133f, 0.0f}, restoreWindowGlyph);
         } else {
@@ -133,30 +133,30 @@ void window_traffic_lights_widget::drawWindows(draw_context const& drawContext) 
     } else if (hoverClose) {
         context.draw_box(layout(), closeRectangle, color{0.5f, 0.0f, 0.0f});
     } else {
-        context.draw_box(layout(), closeRectangle, theme().color(semantic_color::fill, semantic_layer));
+        context.draw_box(layout(), closeRectangle, layout().theme->color(semantic_color::fill, semantic_layer));
     }
 
     if (pressedMinimize) {
-        context.draw_box(layout(), minimizeRectangle, theme().color(semantic_color::fill, semantic_layer + 2));
+        context.draw_box(layout(), minimizeRectangle, layout().theme->color(semantic_color::fill, semantic_layer + 2));
     } else if (hoverMinimize) {
-        context.draw_box(layout(), minimizeRectangle, theme().color(semantic_color::fill, semantic_layer + 1));
+        context.draw_box(layout(), minimizeRectangle, layout().theme->color(semantic_color::fill, semantic_layer + 1));
     } else {
-        context.draw_box(layout(), minimizeRectangle, theme().color(semantic_color::fill, semantic_layer));
+        context.draw_box(layout(), minimizeRectangle, layout().theme->color(semantic_color::fill, semantic_layer));
     }
 
     if (pressedMaximize) {
-        context.draw_box(layout(), maximizeRectangle, theme().color(semantic_color::fill, semantic_layer + 2));
+        context.draw_box(layout(), maximizeRectangle, layout().theme->color(semantic_color::fill, semantic_layer + 2));
     } else if (hoverMaximize) {
-        context.draw_box(layout(), maximizeRectangle, theme().color(semantic_color::fill, semantic_layer + 1));
+        context.draw_box(layout(), maximizeRectangle, layout().theme->color(semantic_color::fill, semantic_layer + 1));
     } else {
-        context.draw_box(layout(), maximizeRectangle, theme().color(semantic_color::fill, semantic_layer));
+        context.draw_box(layout(), maximizeRectangle, layout().theme->color(semantic_color::fill, semantic_layer));
     }
 
-    hilet glyph_color = window.active ? label_color() : foreground_color();
+    hilet glyph_color = context.active ? label_color() : foreground_color();
 
     context.draw_glyph(layout(), translate_z(0.1f) * closeWindowGlyphRectangle, glyph_color, closeWindowGlyph);
     context.draw_glyph(layout(), translate_z(0.1f) * minimizeWindowGlyphRectangle, glyph_color, minimizeWindowGlyph);
-    if (window.size_state() == gui_window_size::maximized) {
+    if (layout().window_size_state == gui_window_size::maximized) {
         context.draw_glyph(layout(), translate_z(0.1f) * restoreWindowGlyphRectangle, glyph_color, restoreWindowGlyph);
     } else {
         context.draw_glyph(layout(), translate_z(0.1f) * maximizeWindowGlyphRectangle, glyph_color, maximizeWindowGlyph);
@@ -166,10 +166,10 @@ void window_traffic_lights_widget::drawWindows(draw_context const& drawContext) 
 void window_traffic_lights_widget::draw(draw_context const& context) noexcept
 {
     if (*mode > widget_mode::invisible and overlaps(context, layout())) {
-        if (theme().operating_system == operating_system::macos) {
+        if (layout().theme->operating_system == operating_system::macos) {
             drawMacOS(context);
 
-        } else if (theme().operating_system == operating_system::windows) {
+        } else if (layout().theme->operating_system == operating_system::windows) {
             drawWindows(context);
 
         } else {
@@ -232,7 +232,7 @@ bool window_traffic_lights_widget::handle_event(gui_event const& event) noexcept
                 window.set_size_state(gui_window_size::minimized);
 
             } else if (maximizeRectangle.contains(event.mouse().position)) {
-                switch (window.size_state()) {
+                switch (layout().window_size_state) {
                 case gui_window_size::normal:
                     window.set_size_state(gui_window_size::maximized);
                     break;
@@ -254,7 +254,7 @@ bool window_traffic_lights_widget::handle_event(gui_event const& event) noexcept
 
 hitbox window_traffic_lights_widget::hitbox_test(point3 position) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (*mode >= widget_mode::partial and layout().contains(position) and
         (closeRectangle.contains(position) or minimizeRectangle.contains(position) or maximizeRectangle.contains(position))) {

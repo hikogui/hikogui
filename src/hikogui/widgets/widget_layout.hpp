@@ -13,6 +13,9 @@
 #include "../geometry/transform.hpp"
 #include "../geometry/translate.hpp"
 #include "../unicode/unicode_bidi_class.hpp"
+#include "../text/font_book.hpp"
+#include "../GUI/gui_window_size.hpp"
+#include "../GUI/theme.hpp"
 #include "../GFX/subpixel_orientation.hpp"
 #include "../chrono.hpp"
 #include "widget_baseline.hpp"
@@ -44,23 +47,33 @@ public:
 
     /** This matrix transforms local coordinates to the coordinates of the parent widget.
      */
-    matrix3 to_parent;
+    matrix3 to_parent = {};
 
     /** This matrix transforms parent widget's coordinates to local coordinates.
      */
-    matrix3 from_parent;
+    matrix3 from_parent = {};
 
     /** This matrix transforms local coordinates to window coordinates.
      */
-    matrix3 to_window;
+    matrix3 to_window = {};
 
     /** This matrix transforms window coordinates to local coordinates.
      */
-    matrix3 from_window;
+    matrix3 from_window = {};
 
     /** Size of the widget.
      */
-    extent2 size;
+    extent2 size = {};
+
+    /** Size of the window.
+     */
+    extent2 window_size = {};
+
+    gui_window_size window_size_state = gui_window_size::normal;
+
+    hi::font_book *font_book = nullptr;
+
+    hi::theme const *theme = nullptr;
 
     /** The clipping rectangle.
      *
@@ -72,44 +85,44 @@ public:
      *
      * @note widget's coordinate system.
      */
-    aarectangle clipping_rectangle;
+    aarectangle clipping_rectangle = {};
 
     /** The size of a sub-pixel.
      *
      * @note the sub-pixel-size is represented in the widget's coordinate system.
      */
-    extent2 sub_pixel_size;
+    extent2 sub_pixel_size = {};
 
     /** The default writing direction.
      *
      * @note Must be either `L` or `R`.
      */
-    unicode_bidi_class writing_direction;
+    unicode_bidi_class writing_direction = {};
 
     /** The layout created for displaying at this time point.
      */
-    utc_nanoseconds display_time_point;
+    utc_nanoseconds display_time_point = {};
 
     /** The base-line in widget local y-coordinate.
      */
-    float baseline;
+    float baseline = 0.0f;
 
     constexpr widget_layout(widget_layout const&) noexcept = default;
     constexpr widget_layout(widget_layout&&) noexcept = default;
     constexpr widget_layout& operator=(widget_layout const&) noexcept = default;
     constexpr widget_layout& operator=(widget_layout&&) noexcept = default;
     constexpr widget_layout() noexcept = default;
+    [[nodiscard]] constexpr friend bool operator==(widget_layout const&, widget_layout const&) noexcept = default;
 
-    [[nodiscard]] constexpr friend bool operator==(widget_layout const& lhs, widget_layout const& rhs) noexcept
+    [[nodiscard]] constexpr bool empty() const noexcept
     {
-        hi_assert((lhs.to_parent == rhs.to_parent) == (lhs.from_parent == rhs.from_parent));
-        hi_assert((lhs.to_window == rhs.to_window) == (lhs.from_window == rhs.from_window));
+        // Theme must always be set if layout is valid.
+        return theme == nullptr;
+    }
 
-        // clang-format on
-        return lhs.size == rhs.size and lhs.to_parent == rhs.to_parent and lhs.to_window == rhs.to_window and
-            lhs.clipping_rectangle == rhs.clipping_rectangle and lhs.sub_pixel_size == rhs.sub_pixel_size and
-            lhs.writing_direction == rhs.writing_direction and lhs.baseline == rhs.baseline;
-        // clang-format off
+    [[nodiscard]] constexpr explicit operator bool() const noexcept
+    {
+        return not empty();
     }
 
     /** Check if the mouse position is inside the widget.
@@ -127,18 +140,18 @@ public:
         return aarectangle{size};
     }
 
-    /** Get the clipping rectangle in window coordinate system.
-     */
-    [[nodiscard]] constexpr aarectangle window_clipping_rectangle() const noexcept
-    {
-        return bounding_rectangle(to_window * clipping_rectangle);
-    }
-
     /** Get the rectangle in window coordinate system.
      */
-    [[nodiscard]] constexpr aarectangle window_rectangle() const noexcept
+    [[nodiscard]] constexpr aarectangle rectangle_on_window() const noexcept
     {
         return bounding_rectangle(to_window * rectangle());
+    }
+
+    /** Get the clipping rectangle in window coordinate system.
+     */
+    [[nodiscard]] constexpr aarectangle clipping_rectangle_on_window() const noexcept
+    {
+        return bounding_rectangle(to_window * clipping_rectangle);
     }
 
     /** Get the clipping rectangle in window coordinate system.
@@ -146,7 +159,7 @@ public:
      * @param narrow_clipping_rectangle A clipping rectangle in local coordinate
      *        system that will be intersected with the layout's clipping rectangle.
      */
-    [[nodiscard]] constexpr aarectangle window_clipping_rectangle(aarectangle narrow_clipping_rectangle) const noexcept
+    [[nodiscard]] constexpr aarectangle clipping_rectangle_on_window(aarectangle narrow_clipping_rectangle) const noexcept
     {
         return bounding_rectangle(to_window * intersect(clipping_rectangle, narrow_clipping_rectangle));
     }
@@ -179,6 +192,9 @@ public:
      */
     constexpr widget_layout(
         extent2 window_size,
+        gui_window_size window_size_state,
+        hi::font_book& font_book,
+        hi::theme const& theme,
         hi::subpixel_orientation subpixel_orientation,
         unicode_bidi_class writing_direction,
         utc_nanoseconds display_time_point) noexcept :
@@ -187,6 +203,10 @@ public:
         to_window(),
         from_window(),
         size(window_size),
+        window_size(window_size),
+        window_size_state(window_size_state),
+        font_book(&font_book),
+        theme(&theme),
         clipping_rectangle(window_size),
         sub_pixel_size(hi::sub_pixel_size(subpixel_orientation)),
         writing_direction(writing_direction),
@@ -209,16 +229,13 @@ public:
         auto to_parent3 = translate3{child_rectangle, elevation};
         auto from_parent3 = ~to_parent3;
 
-        widget_layout r;
+        widget_layout r = *this;
         r.to_parent = to_parent3;
         r.from_parent = from_parent3;
         r.to_window = to_parent3 * this->to_window;
         r.from_window = from_parent3 * this->from_window;
         r.size = child_rectangle.size();
         r.clipping_rectangle = bounding_rectangle(from_parent3 * intersect(this->clipping_rectangle, new_clipping_rectangle));
-        r.sub_pixel_size = this->sub_pixel_size;
-        r.writing_direction = this->writing_direction;
-        r.display_time_point = this->display_time_point;
         if (new_baseline.empty()) {
             r.baseline = this->baseline - child_rectangle.bottom();
         } else {

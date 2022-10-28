@@ -46,7 +46,7 @@ enum class keyboard_focus_group {
     return static_cast<keyboard_focus_group>(to_underlying(lhs) | to_underlying(rhs));
 }
 
-[[nodiscard]] constexpr bool any(keyboard_focus_group group) noexcept
+[[nodiscard]] constexpr bool to_bool(keyboard_focus_group group) noexcept
 {
     return to_bool(to_underlying(group));
 }

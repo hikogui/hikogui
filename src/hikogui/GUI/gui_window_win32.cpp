@@ -49,7 +49,7 @@ LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
 
     auto window = std::launder(std::bit_cast<gui_window_win32 *>(window_userdata));
-    hi_axiom(window->is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     // WM_CLOSE and WM_DESTROY will re-enter and run the destructor for `window`.
     // We can no longer call virtual functions on the `window` object.
@@ -99,7 +99,7 @@ static void createWindowClass()
 void gui_window_win32::create_window(extent2 new_size)
 {
     // This function should be called during init(), and therefor should not have a lock on the window.
-    hi_assert(is_gui_thread());
+    hi_assert(loop::main().on_thread());
 
     createWindowClass();
 
@@ -202,7 +202,7 @@ gui_window_win32::~gui_window_win32()
 
 void gui_window_win32::close_window()
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     if (not PostMessageW(reinterpret_cast<HWND>(win32Window), WM_CLOSE, 0, 0)) {
         hi_log_error("Could not send WM_CLOSE to window {}: {}", title, get_last_error_message());
     }
@@ -210,7 +210,7 @@ void gui_window_win32::close_window()
 
 void gui_window_win32::set_size_state(gui_window_size state) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (_size_state == state) {
         return;
@@ -347,7 +347,7 @@ void gui_window_win32::set_size_state(gui_window_size state) noexcept
 
 void gui_window_win32::open_system_menu()
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     // Position the system menu on the left side, below the system menu button.
     hilet left = rectangle.left();
@@ -367,7 +367,7 @@ void gui_window_win32::open_system_menu()
 
 void gui_window_win32::set_window_size(extent2 new_extent)
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     RECT original_rect;
     if (not GetWindowRect(win32Window, &original_rect)) {
@@ -393,7 +393,7 @@ void gui_window_win32::set_window_size(extent2 new_extent)
 
 [[nodiscard]] std::string gui_window_win32::get_text_from_clipboard() const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     auto r = std::string{};
 
@@ -449,7 +449,7 @@ done:
     return r;
 }
 
-void gui_window_win32::set_text_on_clipboard(std::string str) noexcept
+void gui_window_win32::set_text_on_clipboard(std::string_view str) noexcept
 {
     if (!OpenClipboard(reinterpret_cast<HWND>(win32Window))) {
         hi_log_error("Could not open win32 clipboard '{}'", get_last_error_message());
@@ -501,7 +501,7 @@ done:
 
 void gui_window_win32::setOSWindowRectangleFromRECT(RECT new_rectangle) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     // Convert bottom to y-axis up coordinate system.
     hilet inv_bottom = os_settings::primary_monitor_rectangle().height() - new_rectangle.bottom;
@@ -521,7 +521,7 @@ void gui_window_win32::setOSWindowRectangleFromRECT(RECT new_rectangle) noexcept
 
 void gui_window_win32::set_cursor(mouse_cursor cursor) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (current_mouse_cursor == cursor) {
         return;
@@ -633,7 +633,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
     case WM_PAINT:
         {
             hilet height = [this]() {
-                hi_axiom(is_gui_thread());
+                hi_axiom(loop::main().on_thread());
                 return rectangle.height();
             }();
 
@@ -647,7 +647,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
                 narrow_cast<float>(ps.rcPaint.bottom - ps.rcPaint.top)};
 
             {
-                hi_axiom(is_gui_thread());
+                hi_axiom(loop::main().on_thread());
                 request_redraw(update_rectangle);
             }
 
@@ -656,14 +656,14 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         break;
 
     case WM_NCPAINT:
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
         request_redraw();
         break;
 
     case WM_SIZE:
         // This is called when the operating system is changing the size of the window.
         // However we do not support maximizing by the OS.
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
         switch (wParam) {
         case SIZE_MAXIMIZED:
             ShowWindow(win32Window, SW_RESTORE);
@@ -736,7 +736,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         break;
 
     case WM_ENTERSIZEMOVE:
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
         if (SetTimer(win32Window, move_and_resize_timer_id, 16, NULL) != move_and_resize_timer_id) {
             hi_log_error("Could not set timer before move/resize. {}", get_last_error_message());
         }
@@ -744,7 +744,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         break;
 
     case WM_EXITSIZEMOVE:
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
         if (not KillTimer(win32Window, move_and_resize_timer_id)) {
             hi_log_error("Could not kill timer after move/resize. {}", get_last_error_message());
         }
@@ -756,7 +756,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         break;
 
     case WM_ACTIVATE:
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
         switch (wParam) {
         case 1: // WA_ACTIVE
         case 2: // WA_CLICKACTIVE
@@ -773,7 +773,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
     case WM_GETMINMAXINFO:
         {
-            hi_axiom(is_gui_thread());
+            hi_axiom(loop::main().on_thread());
             hi_assert_not_null(widget);
             hilet minimum_widget_size = widget->constraints().minimum;
             hilet maximum_widget_size = widget->constraints().maximum;
@@ -879,7 +879,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
     case WM_NCHITTEST:
         {
-            hi_axiom(is_gui_thread());
+            hi_axiom(loop::main().on_thread());
 
             hilet x = narrow_cast<float>(GET_X_LPARAM(lParam));
             hilet y = narrow_cast<float>(GET_Y_LPARAM(lParam));
@@ -939,13 +939,13 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
         break;
 
     case WM_SETTINGCHANGE:
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
         os_settings::gather();
         break;
 
     case WM_DPICHANGED:
         {
-            hi_axiom(is_gui_thread());
+            hi_axiom(loop::main().on_thread());
             // x-axis dpi value.
             dpi = narrow_cast<float>(LOWORD(wParam));
 
@@ -975,7 +975,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
 [[nodiscard]] char32_t gui_window_win32::handle_suragates(char32_t c) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (c >= 0xd800 && c <= 0xdbff) {
         high_surrogate = ((c - 0xd800) << 10) + 0x10000;
@@ -990,7 +990,7 @@ int gui_window_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lPa
 
 [[nodiscard]] gui_event gui_window_win32::create_mouse_event(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     auto r = gui_event{gui_event_type::mouse_move};
     r.keyboard_modifiers = get_keyboard_modifiers();

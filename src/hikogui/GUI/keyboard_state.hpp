@@ -30,7 +30,7 @@ constexpr keyboard_state& operator|=(keyboard_state& lhs, keyboard_state const& 
 
 bool operator>=(keyboard_state const& lhs, keyboard_state const& rhs) = delete;
 
-[[nodiscard]] constexpr bool any(keyboard_state const& rhs) noexcept
+[[nodiscard]] constexpr bool to_bool(keyboard_state const& rhs) noexcept
 {
     return to_bool(to_underlying(rhs));
 }

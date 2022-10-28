@@ -16,7 +16,7 @@ public:
 
     // The set_constraints() function is called when the window is first initialized,
     // or when a widget wants to change its constraints.
-    hi::widget_constraints const& set_constraints() noexcept override
+    hi::widget_constraints const& set_constraints(hi::set_constraints_context const& context) noexcept override
     {
         // Almost all widgets will reset the `_layout` variable here so that it will
         // trigger the calculations in `set_layout()` as well.
@@ -29,22 +29,22 @@ public:
         // When the window is initially created it will try to size itself so that
         // the contained widgets are at their preferred size. Having a different minimum
         // and/or maximum size will allow the window to be resizable.
-        return _constraints = {{100, 50}, {200, 100}, {300, 100}, theme().margin};
+        return _constraints = {{100, 50}, {200, 100}, {300, 100}, context.theme->margin};
     }
 
     // The `set_layout()` function is called when the window has resized, or when
     // a widget wants to change the internal layout.
     //
     // NOTE: The size of the layout may be larger than the maximum constraints of this widget.
-    void set_layout(hi::widget_layout const& layout) noexcept override
+    void set_layout(hi::widget_layout const& context) noexcept override
     {
         // Update the `_layout` with the new context, in this case we want to do some
         // calculations when the size of the widget was changed.
-        if (compare_store(_layout, layout)) {
+        if (compare_store(_layout, context)) {
             // Here we can do some semi-expensive calculations which must be done when resizing the widget.
             // In this case we make two rectangles which are used in the `draw()` function.
-            _left_rectangle = hi::aarectangle{hi::extent2{layout.width() / 2, layout.height()}};
-            _right_rectangle = hi::aarectangle{hi::point2{layout.width() / 2, 0.0}, _left_rectangle.size()};
+            _left_rectangle = hi::aarectangle{hi::extent2{context.width() / 2, context.height()}};
+            _right_rectangle = hi::aarectangle{hi::point2{context.width() / 2, 0.0}, _left_rectangle.size()};
         }
     }
 
@@ -58,8 +58,8 @@ public:
         if (*mode > hi::widget_mode::invisible and overlaps(context, layout())) {
             // Draw two boxes matching the rectangles calculated during set_layout().
             // The actual RGB colors are taken from the current theme.
-            context.draw_box(_layout, _left_rectangle, theme().color(hi::semantic_color::indigo));
-            context.draw_box(_layout, _right_rectangle, theme().color(hi::semantic_color::blue));
+            context.draw_box(_layout, _left_rectangle, layout().theme->color(hi::semantic_color::indigo));
+            context.draw_box(_layout, _right_rectangle, layout().theme->color(hi::semantic_color::blue));
         }
     }
 

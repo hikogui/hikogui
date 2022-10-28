@@ -69,7 +69,7 @@ public:
      */
     [[nodiscard]] button_state state() const noexcept
     {
-        hi_axiom(is_gui_thread());
+        hi_axiom(loop::main().on_thread());
         hi_assert_not_null(delegate);
         return delegate->state(*this);
     }
@@ -134,7 +134,7 @@ protected:
         }
     }
 
-    widget_constraints set_constraints_button() const noexcept;
+    widget_constraints set_constraints_button(set_constraints_context const &context) const noexcept;
     void set_layout_button(widget_layout const& context) noexcept;
     void draw_button(draw_context const& context) noexcept;
 };

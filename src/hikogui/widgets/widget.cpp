@@ -13,7 +13,7 @@ namespace hi::inline v1 {
 widget::widget(gui_window& _window, widget *parent) noexcept :
     window(_window), parent(parent), logical_layer(0), semantic_layer(0)
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (parent) {
         logical_layer = parent->logical_layer + 1;
@@ -36,31 +36,16 @@ widget::~widget()
     window.widget_is_destructing(this);
 }
 
-[[nodiscard]] bool widget::is_gui_thread() const noexcept
-{
-    return window.is_gui_thread();
-}
-
-hi::theme const& widget::theme() const noexcept
-{
-    return window.theme;
-}
-
-hi::font_book& widget::font_book() const noexcept
-{
-    return *window.gui.font_book;
-}
-
 [[nodiscard]] color widget::background_color() const noexcept
 {
     if (*mode >= widget_mode::partial) {
         if (*hover) {
-            return theme().color(semantic_color::fill, semantic_layer + 1);
+            return layout().theme->color(semantic_color::fill, semantic_layer + 1);
         } else {
-            return theme().color(semantic_color::fill, semantic_layer);
+            return layout().theme->color(semantic_color::fill, semantic_layer);
         }
     } else {
-        return theme().color(semantic_color::fill, semantic_layer - 1);
+        return layout().theme->color(semantic_color::fill, semantic_layer - 1);
     }
 }
 
@@ -68,12 +53,12 @@ hi::font_book& widget::font_book() const noexcept
 {
     if (*mode >= widget_mode::partial) {
         if (*hover) {
-            return theme().color(semantic_color::border, semantic_layer + 1);
+            return layout().theme->color(semantic_color::border, semantic_layer + 1);
         } else {
-            return theme().color(semantic_color::border, semantic_layer);
+            return layout().theme->color(semantic_color::border, semantic_layer);
         }
     } else {
-        return theme().color(semantic_color::border, semantic_layer - 1);
+        return layout().theme->color(semantic_color::border, semantic_layer - 1);
     }
 }
 
@@ -81,58 +66,38 @@ hi::font_book& widget::font_book() const noexcept
 {
     if (*mode >= widget_mode::partial) {
         if (*focus) {
-            return theme().color(semantic_color::accent);
+            return layout().theme->color(semantic_color::accent);
         } else if (*hover) {
-            return theme().color(semantic_color::border, semantic_layer + 1);
+            return layout().theme->color(semantic_color::border, semantic_layer + 1);
         } else {
-            return theme().color(semantic_color::border, semantic_layer);
+            return layout().theme->color(semantic_color::border, semantic_layer);
         }
     } else {
-        return theme().color(semantic_color::border, semantic_layer - 1);
+        return layout().theme->color(semantic_color::border, semantic_layer - 1);
     }
 }
 
 [[nodiscard]] color widget::accent_color() const noexcept
 {
     if (*mode >= widget_mode::partial) {
-        return theme().color(semantic_color::accent);
+        return layout().theme->color(semantic_color::accent);
     } else {
-        return theme().color(semantic_color::border, semantic_layer - 1);
+        return layout().theme->color(semantic_color::border, semantic_layer - 1);
     }
 }
 
 [[nodiscard]] color widget::label_color() const noexcept
 {
     if (*mode >= widget_mode::partial) {
-        return theme().text_style(semantic_text_style::label)->color;
+        return layout().theme->text_style(semantic_text_style::label)->color;
     } else {
-        return theme().color(semantic_color::border, semantic_layer - 1);
+        return layout().theme->color(semantic_color::border, semantic_layer - 1);
     }
-}
-
-void widget::request_redraw() const noexcept
-{
-    window.request_redraw(layout().window_clipping_rectangle());
-}
-
-void widget::request_relayout() const noexcept
-{
-    window.request_relayout(this);
-}
-
-void widget::_request_reconstrain() const noexcept
-{
-    window.request_reconstrain(this);
-}
-
-void widget::_request_resize() const noexcept
-{
-    window.request_resize(this);
 }
 
 bool widget::handle_event(gui_event const& event) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     switch (event.type()) {
         using enum hi::gui_event_type;
@@ -158,21 +123,21 @@ bool widget::handle_event(gui_event const& event) noexcept
         return true;
 
     case gui_widget_next:
-        window.update_keyboard_target(this, keyboard_focus_group::normal, keyboard_focus_direction::forward);
+        update_keyboard_target(this, keyboard_focus_group::normal, keyboard_focus_direction::forward);
         return true;
 
     case gui_widget_prev:
-        window.update_keyboard_target(this, keyboard_focus_group::normal, keyboard_focus_direction::backward);
+        update_keyboard_target(this, keyboard_focus_group::normal, keyboard_focus_direction::backward);
         return true;
 
     case gui_activate_next:
-        window.process_event(gui_activate);
-        return window.process_event(gui_widget_next);
+        process_event(gui_activate);
+        return process_event(gui_widget_next);
 
     case gui_event_type::gui_toolbar_next:
         if (*mode >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::toolbar) and
             not is_last(keyboard_focus_group::toolbar)) {
-            window.update_keyboard_target(this, keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
+            update_keyboard_target(this, keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
             return true;
         }
         break;
@@ -180,7 +145,7 @@ bool widget::handle_event(gui_event const& event) noexcept
     case gui_event_type::gui_toolbar_prev:
         if (*mode >= widget_mode::partial and accepts_keyboard_focus(keyboard_focus_group::toolbar) and
             not is_first(keyboard_focus_group::toolbar)) {
-            window.update_keyboard_target(this, keyboard_focus_group::toolbar, keyboard_focus_direction::backward);
+            update_keyboard_target(this, keyboard_focus_group::toolbar, keyboard_focus_direction::backward);
             return true;
         }
         break;
@@ -193,7 +158,7 @@ bool widget::handle_event(gui_event const& event) noexcept
 
 bool widget::handle_event_recursive(gui_event const& event, std::vector<widget const *> const& reject_list) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     auto handled = false;
 
@@ -218,7 +183,7 @@ widget const *widget::find_next_widget(
     keyboard_focus_group group,
     keyboard_focus_direction direction) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     auto found = false;
 
@@ -271,7 +236,7 @@ widget const *widget::find_next_widget(
 
 [[nodiscard]] widget const *widget::find_first_widget(keyboard_focus_group group) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     for (auto *child : children()) {
         if (child and child->accepts_keyboard_focus(group)) {
@@ -283,7 +248,7 @@ widget const *widget::find_next_widget(
 
 [[nodiscard]] widget const *widget::find_last_widget(keyboard_focus_group group) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     widget *found = nullptr;
     for (auto *child : children()) {
@@ -296,19 +261,19 @@ widget const *widget::find_next_widget(
 
 [[nodiscard]] bool widget::is_first(keyboard_focus_group group) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     return parent->find_first_widget(group) == this;
 }
 
 [[nodiscard]] bool widget::is_last(keyboard_focus_group group) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     return parent->find_last_widget(group) == this;
 }
 
 void widget::scroll_to_show(hi::aarectangle rectangle) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (parent) {
         parent->scroll_to_show(bounding_rectangle(_layout.to_parent * rectangle));
@@ -320,7 +285,7 @@ void widget::scroll_to_show(hi::aarectangle rectangle) noexcept
  */
 [[nodiscard]] std::vector<widget const *> widget::parent_chain() const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     std::vector<widget const *> chain;
 
@@ -336,11 +301,11 @@ void widget::scroll_to_show(hi::aarectangle rectangle) noexcept
 
 [[nodiscard]] aarectangle widget::make_overlay_rectangle(aarectangle requested_rectangle) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     // Move the request_rectangle to window coordinates.
-    hilet requested_window_rectangle = translate2{layout().window_clipping_rectangle()} * requested_rectangle;
-    hilet window_bounds = aarectangle{window.rectangle.size()} - theme().margin;
+    hilet requested_window_rectangle = translate2{layout().clipping_rectangle_on_window()} * requested_rectangle;
+    hilet window_bounds = aarectangle{layout().window_size} - layout().theme->margin;
     hilet response_window_rectangle = fit(window_bounds, requested_window_rectangle);
     return bounding_rectangle(layout().from_window * response_window_rectangle);
 }

@@ -30,8 +30,8 @@ public:
     window_traffic_lights_widget(gui_window& window, widget *parent) noexcept;
 
     /// @privatesection
-    widget_constraints const& set_constraints() noexcept override;
-    void set_layout(widget_layout const& layout) noexcept override;
+    widget_constraints const& set_constraints(set_constraints_context const &context) noexcept override;
+    void set_layout(widget_layout const& context) noexcept override;
     void draw(draw_context const& context) noexcept override;
     bool handle_event(gui_event const& event) noexcept override;
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;

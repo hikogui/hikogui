@@ -11,7 +11,7 @@ namespace hi::inline v1 {
 
 toolbar_widget::toolbar_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     if (parent) {
         // The toolbar is a top level widget, which draws its background as the next level.
@@ -19,7 +19,7 @@ toolbar_widget::toolbar_widget(gui_window& window, widget *parent) noexcept : su
     }
 }
 
-widget_constraints const& toolbar_widget::set_constraints() noexcept
+widget_constraints const& toolbar_widget::set_constraints(set_constraints_context const &context) noexcept
 {
     _layout = {};
     _grid_layout.clear();
@@ -29,14 +29,14 @@ widget_constraints const& toolbar_widget::set_constraints() noexcept
     auto shared_bottom_margin = 0.0f;
     auto shared_baseline = widget_baseline{};
     for (hilet& child : _left_children) {
-        update_constraints_for_child(*child, index++, shared_height, shared_top_margin, shared_bottom_margin, shared_baseline);
+        update_constraints_for_child(context, *child, index++, shared_height, shared_top_margin, shared_bottom_margin, shared_baseline);
     }
 
     // Add a space between the left and right widgets.
-    _grid_layout.add_constraint(index++, theme().large_size, theme().large_size, 32767.0f, 0.0f, 0.0f);
+    _grid_layout.add_constraint(index++, context.theme->large_size, context.theme->large_size, 32767.0f, 0.0f, 0.0f);
 
     for (hilet& child : std::views::reverse(_right_children)) {
-        update_constraints_for_child(*child, index++, shared_height, shared_top_margin, shared_bottom_margin, shared_baseline);
+        update_constraints_for_child(context, *child, index++, shared_height, shared_top_margin, shared_bottom_margin, shared_baseline);
     }
 
     hi_assert(index == ssize(_left_children) + 1 + ssize(_right_children));
@@ -55,23 +55,23 @@ widget_constraints const& toolbar_widget::set_constraints() noexcept
                {minimum_width, height}, {preferred_width, height}, {maximum_width, height}, margins{}, shared_baseline};
 }
 
-void toolbar_widget::set_layout(widget_layout const& layout) noexcept
+void toolbar_widget::set_layout(widget_layout const& context) noexcept
 {
     // Clip directly around the toolbar, so that tab buttons looks proper.
-    if (compare_store(_layout, layout)) {
-        _grid_layout.layout(layout.width());
+    if (compare_store(_layout, context)) {
+        _grid_layout.layout(context.width());
     }
 
     ssize_t index = 0;
     for (hilet& child : _left_children) {
-        update_layout_for_child(*child, index++, layout);
+        update_layout_for_child(*child, index++, context);
     }
 
     // Skip over the cell between left and right children.
     index++;
 
     for (hilet& child : std::views::reverse(_right_children)) {
-        update_layout_for_child(*child, index++, layout);
+        update_layout_for_child(*child, index++, context);
     }
 
     hi_assert(index == ssize(_left_children) + 1 + ssize(_right_children));
@@ -101,12 +101,12 @@ void toolbar_widget::draw(draw_context const& context) noexcept
 {
     if (*mode > widget_mode::invisible) {
         if (overlaps(context, layout())) {
-            context.draw_box(layout(), layout().rectangle(), theme().color(semantic_color::fill, semantic_layer + 1));
+            context.draw_box(layout(), layout().rectangle(), layout().theme->color(semantic_color::fill, semantic_layer + 1));
 
             if (tab_button_has_focus()) {
                 // Draw the line at a higher elevation, so that the tab buttons can draw above or below the focus
                 // line depending if that specific button is in focus or not.
-                hilet focus_rectangle = aarectangle{0.0, 0.0, layout().rectangle().width(), theme().border_width};
+                hilet focus_rectangle = aarectangle{0.0, 0.0, layout().rectangle().width(), layout().theme->border_width};
                 context.draw_box(layout(), translate3{0.0f, 0.0f, 1.5f} * focus_rectangle, focus_color());
             }
         }
@@ -122,7 +122,7 @@ void toolbar_widget::draw(draw_context const& context) noexcept
 
 hitbox toolbar_widget::hitbox_test(point3 position) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     // By default the toolbar is used for dragging the window.
     if (*mode >= widget_mode::partial) {
@@ -145,6 +145,7 @@ hitbox toolbar_widget::hitbox_test(point3 position) const noexcept
 }
 
 void toolbar_widget::update_constraints_for_child(
+    set_constraints_context const &context,
     widget& child,
     ssize_t index,
     float& shared_height,
@@ -152,9 +153,9 @@ void toolbar_widget::update_constraints_for_child(
     float& shared_bottom_margin,
     widget_baseline &shared_baseline) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
-    hilet child_constraints = child.set_constraints();
+    hilet child_constraints = child.set_constraints(context);
     _grid_layout.add_constraint(
         index,
         child_constraints.minimum.width(),
@@ -171,7 +172,7 @@ void toolbar_widget::update_constraints_for_child(
 
 void toolbar_widget::update_layout_for_child(widget& child, ssize_t index, widget_layout const& context) const noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
 
     hilet[child_offset, child_width] = _grid_layout.get_position_and_size(index);
 
@@ -210,9 +211,9 @@ widget& toolbar_widget::add_widget(horizontal_alignment alignment, std::unique_p
 [[nodiscard]] color toolbar_widget::focus_color() const noexcept
 {
     if (*mode >= widget_mode::partial) {
-        return theme().color(semantic_color::accent);
+        return layout().theme->color(semantic_color::accent);
     } else {
-        return theme().color(semantic_color::border, semantic_layer - 1);
+        return layout().theme->color(semantic_color::border, semantic_layer - 1);
     }
 }
 

@@ -4,8 +4,6 @@
 
 #include "text_field_widget.hpp"
 #include "../text/font_book.hpp"
-#include "../GUI/gui_window.hpp"
-#include "../GUI/gui_system.hpp"
 
 namespace hi::inline v1 {
 
@@ -50,7 +48,7 @@ text_field_widget::~text_field_widget()
     co_yield _scroll_widget.get();
 }
 
-widget_constraints const& text_field_widget::set_constraints() noexcept
+widget_constraints const& text_field_widget::set_constraints(set_constraints_context const& context) noexcept
 {
     hi_assert_not_null(delegate);
 
@@ -65,10 +63,10 @@ widget_constraints const& text_field_widget::set_constraints() noexcept
 
     _layout = {};
 
-    auto margins = hi::margins{theme().margin};
+    auto margins = hi::margins{context.theme->margin};
 
     hilet scroll_width = 100.0f;
-    _text_constraints = _scroll_widget->set_constraints();
+    _text_constraints = _scroll_widget->set_constraints(context);
 
     hilet box_size = extent2{
         _text_constraints.margins.left() + scroll_width + _text_constraints.margins.right(),
@@ -81,7 +79,7 @@ widget_constraints const& text_field_widget::set_constraints() noexcept
 
     } else {
         _error_label_widget->mode = widget_mode::display;
-        _error_label_constraints = _error_label_widget->set_constraints();
+        _error_label_constraints = _error_label_widget->set_constraints(context);
         inplace_max(size.width(), _error_label_constraints.preferred.width());
         size.height() += _error_label_constraints.margins.top() + _error_label_constraints.preferred.height();
         inplace_max(margins.left(), _error_label_constraints.margins.left());
@@ -93,30 +91,30 @@ widget_constraints const& text_field_widget::set_constraints() noexcept
                size,
                size,
                size,
-               theme().margin,
-               widget_baseline{0.5f, vertical_alignment::top, theme().cap_height, box_size.height()}};
+               context.theme->margin,
+               widget_baseline{0.5f, vertical_alignment::top, context.theme->cap_height, box_size.height()}};
 }
 
-void text_field_widget::set_layout(widget_layout const& layout) noexcept
+void text_field_widget::set_layout(widget_layout const& context) noexcept
 {
-    if (compare_store(_layout, layout)) {
+    if (compare_store(_layout, context)) {
         hilet box_size = extent2{
-            layout.width(),
+            context.width(),
             _text_constraints.margins.top() + _text_constraints.preferred.height() + _text_constraints.margins.bottom()};
 
-        _box_rectangle = aarectangle{point2{0.0f, layout.height() - box_size.height()}, box_size};
-        _text_rectangle = _box_rectangle - theme().border_width;
+        _box_rectangle = aarectangle{point2{0.0f, context.height() - box_size.height()}, box_size};
+        _text_rectangle = _box_rectangle - context.theme->border_width;
 
         if (*_error_label_widget->mode > widget_mode::invisible) {
             _error_label_rectangle =
-                aarectangle{0.0f, 0.0f, layout.rectangle().width(), _error_label_constraints.preferred.height()};
+                aarectangle{0.0f, 0.0f, context.rectangle().width(), _error_label_constraints.preferred.height()};
         }
     }
 
     if (*_error_label_widget->mode > widget_mode::invisible) {
-        _error_label_widget->set_layout(layout.transform(_error_label_rectangle, _error_label_constraints.baseline));
+        _error_label_widget->set_layout(context.transform(_error_label_rectangle, _error_label_constraints.baseline));
     }
-    _scroll_widget->set_layout(layout.transform(_text_rectangle));
+    _scroll_widget->set_layout(context.transform(_text_rectangle));
 }
 
 void text_field_widget::draw(draw_context const& context) noexcept
@@ -177,17 +175,17 @@ hitbox text_field_widget::hitbox_test(point3 position) const noexcept
 {
     if (*mode >= widget_mode::partial) {
         if (not _error_label->empty()) {
-            return theme().text_style(semantic_text_style::error)->color;
+            return _layout.theme->text_style(semantic_text_style::error)->color;
         } else if (*_text_widget->focus) {
-            return theme().color(semantic_color::accent);
+            return _layout.theme->color(semantic_color::accent);
         } else if (*hover) {
-            return theme().color(semantic_color::border, semantic_layer + 1);
+            return _layout.theme->color(semantic_color::border, semantic_layer + 1);
         } else {
-            return theme().color(semantic_color::border, semantic_layer);
+            return _layout.theme->color(semantic_color::border, semantic_layer);
         }
 
     } else {
-        return theme().color(semantic_color::border, semantic_layer - 1);
+        return _layout.theme->color(semantic_color::border, semantic_layer - 1);
     }
 }
 
@@ -200,7 +198,7 @@ void text_field_widget::revert(bool force) noexcept
 
 void text_field_widget::commit(bool force) noexcept
 {
-    hi_axiom(is_gui_thread());
+    hi_axiom(loop::main().on_thread());
     hi_assert_not_null(delegate);
 
     if (*continues or force) {
@@ -219,11 +217,11 @@ void text_field_widget::commit(bool force) noexcept
 
 void text_field_widget::draw_background_box(draw_context const& context) const noexcept
 {
-    hilet corner_radii = hi::corner_radii{0.0f, 0.0f, theme().rounding_radius, theme().rounding_radius};
-    context.draw_box(_layout, _box_rectangle, background_color(), corner_radii);
+    hilet corner_radii = hi::corner_radii{0.0f, 0.0f, layout().theme->rounding_radius, layout().theme->rounding_radius};
+    context.draw_box(layout(), _box_rectangle, background_color(), corner_radii);
 
     hilet line = line_segment(get<0>(_box_rectangle), get<1>(_box_rectangle));
-    context.draw_line(_layout, translate3{0.0f, 0.5f, 0.1f} * line, theme().border_width, focus_color());
+    context.draw_line(layout(), translate3{0.0f, 0.5f, 0.1f} * line, layout().theme->border_width, focus_color());
 }
 
 } // namespace hi::inline v1
