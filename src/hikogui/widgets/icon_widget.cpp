@@ -32,7 +32,7 @@ widget_constraints const& icon_widget::set_constraints(set_constraints_context c
             _icon_type = icon_type::pixmap;
             _icon_size = extent2{narrow_cast<float>(pixmap->width()), narrow_cast<float>(pixmap->height())};
 
-            if (not(_pixmap_backing = paged_image{window.surface.get(), *pixmap})) {
+            if (not(_pixmap_backing = paged_image{context.surface, *pixmap})) {
                 // Could not get an image, retry.
                 _icon_has_modified = true;
                 hi_request_reconstrain("icon_widget::set_constraints() no backing image.");

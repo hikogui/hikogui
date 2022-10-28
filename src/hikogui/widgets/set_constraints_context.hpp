@@ -6,6 +6,7 @@
  * @ingroup widget_utilities
  */
 
+#include "../GFX/gfx_surface.hpp"
 #include "../GUI/theme.hpp"
 #include "../text/font_book.hpp"
 
@@ -15,6 +16,7 @@ class set_constraints_context {
 public:
     hi::font_book *font_book = nullptr;
     hi::theme const *theme = nullptr;
+    gfx_surface *surface = nullptr;
 
     set_constraints_context() = delete;
     constexpr set_constraints_context(set_constraints_context const&) noexcept = default;
@@ -22,8 +24,8 @@ public:
     constexpr set_constraints_context& operator=(set_constraints_context const&) noexcept = default;
     constexpr set_constraints_context& operator=(set_constraints_context&&) noexcept = default;
 
-    constexpr set_constraints_context(hi::font_book& font_book, hi::theme const& theme) noexcept :
-        font_book(&font_book), theme(&theme)
+    constexpr set_constraints_context(hi::font_book& font_book, hi::theme const& theme, gfx_surface &surface) noexcept :
+        font_book(&font_book), theme(&theme), surface(&surface)
     {
     }
 };
