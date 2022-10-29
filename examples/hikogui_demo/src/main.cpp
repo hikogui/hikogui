@@ -87,7 +87,7 @@ hi::scoped_task<> init_theme_tab(hi::grid_widget& grid, my_preferences& preferen
     hi::observer<std::vector<std::pair<std::string, hi::label>>> theme_list;
 
     {
-        auto& theme_book = *grid.window.gui.theme_book;
+        auto& theme_book = *grid.window().gui.theme_book;
         auto proxy = theme_list.copy();
         for (hilet& name : theme_book.theme_names()) {
             proxy->emplace_back(name, tr{name});

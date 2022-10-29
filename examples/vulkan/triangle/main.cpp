@@ -20,13 +20,13 @@ class triangle_widget : public hi::widget, public hi::gfx_surface_delegate_vulka
 public:
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
-    triangle_widget(hi::gui_window& window, hi::widget *parent) noexcept : widget(window, parent) {
-        window.surface->add_delegate(this);
+    triangle_widget(hi::widget *parent) noexcept : widget(parent) {
+        window().surface->add_delegate(this);
     }
 
     ~triangle_widget()
     {
-        window.surface->remove_delegate(this);
+        window().surface->remove_delegate(this);
     }
 
     // The set_constraints() function is called when the window is first initialized,
@@ -71,7 +71,7 @@ public:
     // The `draw()` function is called when all or part of the window requires redrawing.
     // This may happen when showing the window for the first time, when the operating-system
     // requests a (partial) redraw, or when a widget requests a redraw of itself.
-    // 
+    //
     // This draw() function only draws the GUI part of the widget, there is another draw() function
     // that will draw the 3D part.
     void draw(hi::draw_context const& context) noexcept override
@@ -104,7 +104,7 @@ public:
         //  - the semaphores when to start drawing, and when the drawing is finished.
         //  - The render-area, which is like the dirty-rectangle that needs to be redrawn.
         //  - View-port the part of the frame buffer that matches this widget's rectangle.
-        // 
+        //
         // The "vulkan graphics engine" is responsible to not drawn outside the neither
         // the render-area nor outside the view-port.
         _triangle_example->render(

@@ -103,9 +103,9 @@ public:
     virtual ~gui_window();
 
     gui_window(gui_window const&) = delete;
-    gui_window& operator=(gui_window const&) = delete;
+    //gui_window& operator=(gui_window const&) = delete;
     gui_window(gui_window&&) = delete;
-    gui_window& operator=(gui_window&&) = delete;
+    //gui_window& operator=(gui_window&&) = delete;
 
     /** 2 phase constructor.
      * Must be called directly after the constructor on the same thread,

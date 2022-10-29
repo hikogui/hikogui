@@ -9,7 +9,7 @@
 
 namespace hi::inline v1 {
 
-window_traffic_lights_widget::window_traffic_lights_widget(gui_window& window, widget *parent) noexcept : super(window, parent) {}
+window_traffic_lights_widget::window_traffic_lights_widget(widget *parent) noexcept : super(parent) {}
 
 widget_constraints const& window_traffic_lights_widget::set_constraints(set_constraints_context const &context) noexcept
 {

@@ -9,10 +9,10 @@ namespace hi::inline v1 {
 
 audio_device_widget::~audio_device_widget() {}
 
-audio_device_widget::audio_device_widget(gui_window& window, widget *parent, hi::audio_system& audio_system) noexcept :
-    super(window, parent), _audio_system(&audio_system)
+audio_device_widget::audio_device_widget(widget *parent, hi::audio_system& audio_system) noexcept :
+    super(parent), _audio_system(&audio_system)
 {
-    _grid_widget = std::make_unique<grid_widget>(window, this);
+    _grid_widget = std::make_unique<grid_widget>(this);
     _device_selection_widget = &_grid_widget->make_widget<selection_widget>("A1", device_id, _device_list);
 
     _sync_device_list_task = sync_device_list();

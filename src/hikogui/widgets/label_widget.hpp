@@ -73,13 +73,12 @@ public:
     /** Construct a label widget.
      *
      * @see `label_widget::alignment`
-     * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this radio button widget.
      * @param attributes Different attributes used to configure the label widget:
      *                   a `label`, `alignment` or `text_style`
      */
-    label_widget(gui_window& window, widget *parent, label_widget_attribute auto&&...attributes) noexcept :
-        label_widget(window, parent)
+    label_widget(widget *parent, label_widget_attribute auto&&...attributes) noexcept :
+        label_widget(parent)
     {
         set_attributes(hi_forward(attributes)...);
     }
@@ -126,7 +125,7 @@ private:
         set_attributes(hi_forward(rest)...);
     }
 
-    label_widget(gui_window& window, widget *parent) noexcept;
+    label_widget(widget *parent) noexcept;
 };
 
 }} // namespace hi::v1

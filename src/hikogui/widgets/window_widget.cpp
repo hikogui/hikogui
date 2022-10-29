@@ -16,7 +16,7 @@ namespace hi::inline v1 {
 
 void window_widget::constructor_implementation() noexcept
 {
-    _toolbar = std::make_unique<toolbar_widget>(window, this);
+    _toolbar = std::make_unique<toolbar_widget>(this);
 
     if (operating_system::current == operating_system::windows) {
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
@@ -30,7 +30,7 @@ void window_widget::constructor_implementation() noexcept
         hi_no_default();
     }
 
-    _content = std::make_unique<grid_widget>(window, this);
+    _content = std::make_unique<grid_widget>(this);
 }
 
 [[nodiscard]] generator<widget *> window_widget::children() const noexcept
@@ -220,6 +220,11 @@ void window_widget::set_resize_border_priority(bool left, bool right, bool botto
     return *_toolbar;
 }
 
+[[nodiscard]] gui_window& window_widget::window() noexcept
+{
+    return *_window;
+}
+
 bool window_widget::handle_event(gui_event const& event) noexcept
 {
     using enum gui_event_type;
@@ -235,7 +240,7 @@ bool window_widget::handle_event(gui_event const& event) noexcept
 
 bool window_widget::process_event(gui_event const& event) const noexcept
 {
-    return window.process_event(event);
+    return window().process_event(event);
 }
 
 } // namespace hi::inline v1

@@ -9,7 +9,7 @@
 
 namespace hi::inline v1 {
 
-toolbar_widget::toolbar_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
+toolbar_widget::toolbar_widget(widget *parent) noexcept : super(parent)
 {
     hi_axiom(loop::main().on_thread());
 

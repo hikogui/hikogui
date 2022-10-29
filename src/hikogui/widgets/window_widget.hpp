@@ -28,9 +28,10 @@ public:
 
     observer<label> title;
 
-    window_widget(gui_window& window, forward_of<observer<label>> auto&& title) noexcept :
-        super(window, nullptr), title(hi_forward(title))
+    window_widget(gui_window *window, forward_of<observer<label>> auto&& title) noexcept :
+        super(nullptr), title(hi_forward(title))
     {
+        this->_window = window;
         constructor_implementation();
     }
 
@@ -54,6 +55,7 @@ public:
 
     /// @privatesection
     [[nodiscard]] generator<widget *> children() const noexcept override;
+    [[nodiscard]] gui_window& window() noexcept override;
     widget_constraints const& set_constraints(set_constraints_context const& context) noexcept override;
     void set_layout(widget_layout const& context) noexcept;
     void draw(draw_context const& context) noexcept override;

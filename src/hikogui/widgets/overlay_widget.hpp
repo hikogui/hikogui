@@ -43,10 +43,9 @@ public:
 
     /** Constructs an empty overlay widget.
      *
-     * @param window The window.
      * @param parent The parent widget.
      */
-    overlay_widget(gui_window& window, widget *parent) noexcept;
+    overlay_widget(widget *parent) noexcept;
 
     void set_widget(std::unique_ptr<widget> new_widget) noexcept;
 
@@ -65,7 +64,7 @@ public:
         hi_axiom(loop::main().on_thread());
         hi_assert(_content == nullptr);
 
-        auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
+        auto tmp = std::make_unique<Widget>(this, std::forward<Args>(args)...);
         auto& ref = *tmp;
         set_widget(std::move(tmp));
         return ref;
