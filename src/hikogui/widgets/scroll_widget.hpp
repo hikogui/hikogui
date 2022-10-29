@@ -56,10 +56,9 @@ public:
 
     /** Constructs an empty scroll widget.
      *
-     * @param window The window.
      * @param parent The parent widget.
      */
-    scroll_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
+    scroll_widget(widget *parent) noexcept : super(parent)
     {
         hi_axiom(loop::main().on_thread());
         hi_assert_not_null(parent);
@@ -67,11 +66,11 @@ public:
         // The scroll-widget will not draw itself, only its selected content.
         semantic_layer = parent->semantic_layer;
 
-        _aperture = std::make_unique<scroll_aperture_widget>(window, this);
+        _aperture = std::make_unique<scroll_aperture_widget>(this);
         _horizontal_scroll_bar = std::make_unique<horizontal_scroll_bar_widget>(
-            window, this, _aperture->content_width, _aperture->aperture_width, _aperture->offset_x);
+            this, _aperture->content_width, _aperture->aperture_width, _aperture->offset_x);
         _vertical_scroll_bar = std::make_unique<vertical_scroll_bar_widget>(
-            window, this, _aperture->content_height, _aperture->aperture_height, _aperture->offset_y);
+            this, _aperture->content_height, _aperture->aperture_height, _aperture->offset_y);
     }
 
     /** Add a content widget directly to this scroll widget.
@@ -176,9 +175,9 @@ public:
 
             if constexpr (controls_window) {
                 if (context.left_to_right()) {
-                    window.set_resize_border_priority(true, not vertical_visible, not horizontal_visible, true);
+                    window().set_resize_border_priority(true, not vertical_visible, not horizontal_visible, true);
                 } else {
-                    window.set_resize_border_priority(not vertical_visible, true, not horizontal_visible, true);
+                    window().set_resize_border_priority(not vertical_visible, true, not horizontal_visible, true);
                 }
             }
         }

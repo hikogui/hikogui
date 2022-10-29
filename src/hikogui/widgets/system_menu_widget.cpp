@@ -6,9 +6,9 @@
 
 namespace hi::inline v1 {
 
-system_menu_widget::system_menu_widget(gui_window &window, widget *parent) noexcept : super(window, parent)
+system_menu_widget::system_menu_widget(widget *parent) noexcept : super(parent)
 {
-    _icon_widget = std::make_unique<icon_widget>(window, this, icon);
+    _icon_widget = std::make_unique<icon_widget>(this, icon);
 }
 
 widget_constraints const& system_menu_widget::set_constraints(set_constraints_context const& context) noexcept

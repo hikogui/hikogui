@@ -14,12 +14,12 @@ public:
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
     template<typename Label>
-    widget_with_child(hi::gui_window& window, hi::widget *parent, Label&& label) noexcept : widget(window, parent)
+    widget_with_child(hi::widget *parent, Label&& label) noexcept : widget(parent)
     {
         // Our child widget is a `label_widget` which requires a label to be passed as an third argument.
         // We use a templated argument to forward the label into the `label_widget`.
         _label_widget =
-            std::make_unique<hi::label_widget>(window, this, std::forward<Label>(label), hi::alignment::middle_center());
+            std::make_unique<hi::label_widget>(this, std::forward<Label>(label), hi::alignment::middle_center());
     }
 
     // The set_constraints() function is called when the window is first initialized,

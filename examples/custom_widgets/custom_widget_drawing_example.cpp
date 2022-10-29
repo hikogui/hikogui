@@ -85,8 +85,8 @@ public:
 
     // Every constructor of a widget starts with a `window` and `parent` argument.
     // In most cases these are automatically filled in when calling a container widget's `make_widget()` function.
-    drawing_widget(hi::gui_window& window, hi::widget *parent) noexcept :
-        widget(window, parent), _image(hi::URL("resource:mars3.png"))
+    drawing_widget(hi::widget *parent) noexcept :
+        widget(parent), _image(hi::URL("resource:mars3.png"))
     {
         // clang-format off
         _drawing_cbt = this->drawing.subscribe([&](auto...){ request_redraw(); });
@@ -111,7 +111,7 @@ public:
         _layout = {};
 
         if (_image_was_modified.exchange(false)) {
-            if (not(_image_backing = hi::paged_image{window.surface.get(), _image})) {
+            if (not(_image_backing = hi::paged_image{window().surface.get(), _image})) {
                 // Could not get an image, retry.
                 _image_was_modified = true;
                 hi_request_reconstrain("drawing_widget::set_constraints() could not get backing image.");

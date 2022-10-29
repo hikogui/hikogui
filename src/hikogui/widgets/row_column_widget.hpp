@@ -47,10 +47,9 @@ public:
 
     /** Constructs an empty row/column widget.
      *
-     * @param window The window.
      * @param parent The parent widget.
      */
-    row_column_widget(gui_window& window, widget *parent) noexcept : super(window, parent)
+    row_column_widget(widget *parent) noexcept : super(parent)
     {
         hi_axiom(loop::main().on_thread());
 
@@ -74,7 +73,7 @@ public:
     template<typename Widget, typename... Args>
     Widget& make_widget(Args&&...args)
     {
-        auto tmp = std::make_unique<Widget>(window, this, std::forward<Args>(args)...);
+        auto tmp = std::make_unique<Widget>(this, std::forward<Args>(args)...);
         auto& ref = *tmp;
         _children.push_back(std::move(tmp));
         hi_request_reconstrain("row_column_widget::make_widget()");

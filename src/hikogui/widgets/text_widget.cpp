@@ -10,8 +10,8 @@
 
 namespace hi::inline v1 {
 
-text_widget::text_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
-    super(window, parent), delegate(std::move(delegate))
+text_widget::text_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept :
+    super(parent), delegate(std::move(delegate))
 {
     mode = widget_mode::select;
 
@@ -79,7 +79,7 @@ widget_constraints const& text_widget::set_constraints(set_constraints_context c
 void text_widget::set_layout(widget_layout const& context) noexcept
 {
     if (compare_store(_layout, context)) {
-        auto alignment_ = context.left_to_right() ? *alignment : mirror(*alignment); 
+        auto alignment_ = context.left_to_right() ? *alignment : mirror(*alignment);
 
         _shaped_text.layout(context.rectangle(), context.baseline, context.sub_pixel_size, context.writing_direction, alignment_);
 

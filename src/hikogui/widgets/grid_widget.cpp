@@ -9,7 +9,7 @@
 
 namespace hi::inline v1 {
 
-grid_widget::grid_widget(gui_window& window, widget *parent) noexcept : widget(window, parent)
+grid_widget::grid_widget(widget *parent) noexcept : widget(parent)
 {
     hi_axiom(loop::main().on_thread());
 

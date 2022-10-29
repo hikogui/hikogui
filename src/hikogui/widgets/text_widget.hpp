@@ -77,37 +77,33 @@ public:
 
     /** Construct a text widget.
      *
-     * @param window The window the widget is displayed on.
      * @param parent The owner of this widget.
      * @param delegate The delegate to use to control the widget's data.
      */
-    text_widget(gui_window& window, widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
+    text_widget(widget *parent, std::shared_ptr<delegate_type> delegate) noexcept;
 
     text_widget(
-        gui_window& window,
         widget *parent,
         std::shared_ptr<delegate_type> delegate,
         text_widget_attribute auto&&...attributes) noexcept :
-        text_widget(window, parent, std::move(delegate))
+        text_widget(parent, std::move(delegate))
     {
         set_attributes(hi_forward(attributes)...);
     }
 
     /** Construct a text widget.
      *
-     * @param window The window the widget is displayed on.
      * @param parent The owner of this widget.
      * @param text The text to be displayed.
      * @param attributes A set of attributes used to configure the text widget: a `alignment` or `semantic_text_style`.
      */
     text_widget(
-        gui_window& window,
         widget *parent,
         different_from<std::shared_ptr<delegate_type>> auto&& text,
         text_widget_attribute auto&&...attributes) noexcept requires requires
     {
         make_default_text_delegate(hi_forward(text));
-    } : text_widget(window, parent, make_default_text_delegate(hi_forward(text)), hi_forward(attributes)...) {}
+    } : text_widget(parent, make_default_text_delegate(hi_forward(text)), hi_forward(attributes)...) {}
 
     /// @privatesection
     widget_constraints const& set_constraints(set_constraints_context const &context) noexcept override;

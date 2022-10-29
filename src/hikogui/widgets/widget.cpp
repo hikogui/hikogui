@@ -10,8 +10,8 @@
 
 namespace hi::inline v1 {
 
-widget::widget(gui_window& _window, widget *parent) noexcept :
-    window(_window), parent(parent), logical_layer(0), semantic_layer(0)
+widget::widget(widget *parent) noexcept :
+    parent(parent), logical_layer(0), semantic_layer(0)
 {
     hi_axiom(loop::main().on_thread());
 
@@ -33,7 +33,17 @@ widget::~widget()
 {
     // The window must remove references such as mouse and keyboard targets to
     // this widget when it is removed.
-    window.widget_is_destructing(this);
+    _window->widget_is_destructing(this);
+}
+
+void widget::set_window(gui_window *window)
+{
+    _window = window;
+}
+
+[[nodiscard]] gui_window& widget::window() noexcept
+{
+    return *_window;
 }
 
 [[nodiscard]] color widget::background_color() const noexcept

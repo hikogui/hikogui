@@ -10,16 +10,15 @@
 namespace hi::inline v1 {
 
 abstract_button_widget::abstract_button_widget(
-    gui_window& window,
     widget *parent,
     std::shared_ptr<delegate_type> delegate) noexcept :
-    super(window, parent), delegate(std::move(delegate))
+    super(parent), delegate(std::move(delegate))
 {
     hi_assert_not_null(this->delegate);
 
-    _on_label_widget = std::make_unique<label_widget>(window, this, on_label, alignment, text_style);
-    _off_label_widget = std::make_unique<label_widget>(window, this, off_label, alignment, text_style);
-    _other_label_widget = std::make_unique<label_widget>(window, this, other_label, alignment, text_style);
+    _on_label_widget = std::make_unique<label_widget>(this, on_label, alignment, text_style);
+    _off_label_widget = std::make_unique<label_widget>(this, off_label, alignment, text_style);
+    _other_label_widget = std::make_unique<label_widget>(this, other_label, alignment, text_style);
     _delegate_cbt = this->delegate->subscribe([&] {
         request_relayout();
     });

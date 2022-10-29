@@ -17,7 +17,7 @@ namespace hi::inline v1 {
 
 void window_widget::constructor_implementation() noexcept
 {
-    _toolbar = std::make_unique<toolbar_widget>(window, this);
+    _toolbar = std::make_unique<toolbar_widget>(this);
 
     if (operating_system::current == operating_system::windows) {
 #if HI_OPERATING_SYSTEM == HI_OS_WINDOWS
@@ -31,7 +31,7 @@ void window_widget::constructor_implementation() noexcept
         hi_no_default();
     }
 
-    _content = std::make_unique<grid_widget>(window, this);
+    _content = std::make_unique<grid_widget>(this);
 }
 
 [[nodiscard]] generator<widget *> window_widget::children() const noexcept
@@ -221,6 +221,11 @@ void window_widget::set_resize_border_priority(bool left, bool right, bool botto
     return *_toolbar;
 }
 
+[[nodiscard]] gui_window& window_widget::window() noexcept
+{
+    return *_window;
+}
+
 bool window_widget::handle_event(gui_event const& event) noexcept
 {
     switch (event.type()) {
@@ -230,7 +235,7 @@ bool window_widget::handle_event(gui_event const& event) noexcept
 
     case gui_event_type::gui_sysmenu_open:
         if (*mode >= widget_mode::partial) {
-            window.open_system_menu();
+            _window->open_system_menu();
             return true;
         }
         break;
@@ -240,29 +245,29 @@ bool window_widget::handle_event(gui_event const& event) noexcept
 
 [[nodiscard]] std::string window_widget::get_text_from_clipboard() const noexcept
 {
-    return window.get_text_from_clipboard();
+    return _window->get_text_from_clipboard();
 }
 
 void window_widget::set_text_on_clipboard(std::string_view text) const noexcept
 {
-    window.set_text_on_clipboard(text);
+     _window->set_text_on_clipboard(text);
 }
 
 bool window_widget::process_event(gui_event const& event) noexcept
 {
-    return window.process_event(event);
+    return window().process_event(event);
 }
 
 void window_widget::update_keyboard_target(widget const *widget, keyboard_focus_group group) noexcept
 {
-    window.update_keyboard_target(widget, group);
+    window().update_keyboard_target(widget, group);
 }
 
 void window_widget::update_keyboard_target(
     keyboard_focus_group group,
     keyboard_focus_direction direction) noexcept
 {
-    window.update_keyboard_target(group, direction);
+    window().update_keyboard_target(group, direction);
 }
 
 void window_widget::update_keyboard_target(
@@ -270,27 +275,27 @@ void window_widget::update_keyboard_target(
     keyboard_focus_group group,
     keyboard_focus_direction direction) noexcept
 {
-    window.update_keyboard_target(widget, group, direction);
+    window().update_keyboard_target(widget, group, direction);
 }
 
 void window_widget::_request_redraw(aarectangle dirty_rectangle) const noexcept
 {
-    window.request_redraw(dirty_rectangle);
+    _window->request_redraw(dirty_rectangle);
 }
 
 void window_widget::_request_relayout() const noexcept
 {
-    window.request_relayout(this);
+    _window->request_relayout(this);
 }
 
 void window_widget::_request_reconstrain() const noexcept
 {
-    window.request_reconstrain(this);
+    _window->request_reconstrain(this);
 }
 
 void window_widget::_request_resize() const noexcept
 {
-    window.request_resize(this);
+    _window->request_resize(this);
 }
 
 } // namespace hi::inline v1

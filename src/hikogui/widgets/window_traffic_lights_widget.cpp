@@ -11,7 +11,7 @@
 
 namespace hi::inline v1 {
 
-window_traffic_lights_widget::window_traffic_lights_widget(gui_window& window, widget *parent) noexcept : super(window, parent) {}
+window_traffic_lights_widget::window_traffic_lights_widget(widget *parent) noexcept : super(parent) {}
 
 widget_constraints const& window_traffic_lights_widget::set_constraints(set_constraints_context const &context) noexcept
 {
@@ -226,18 +226,18 @@ bool window_traffic_lights_widget::handle_event(gui_event const& event) noexcept
             request_redraw();
 
             if (closeRectangle.contains(event.mouse().position)) {
-                window.close_window();
+                window().close_window();
 
             } else if (minimizeRectangle.contains(event.mouse().position)) {
-                window.set_size_state(gui_window_size::minimized);
+                window().set_size_state(gui_window_size::minimized);
 
             } else if (maximizeRectangle.contains(event.mouse().position)) {
                 switch (layout().window_size_state) {
                 case gui_window_size::normal:
-                    window.set_size_state(gui_window_size::maximized);
+                    window().set_size_state(gui_window_size::maximized);
                     break;
                 case gui_window_size::maximized:
-                    window.set_size_state(gui_window_size::normal);
+                    window().set_size_state(gui_window_size::normal);
                     break;
                 default:
                     hi_no_default();

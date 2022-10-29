@@ -50,7 +50,6 @@ public:
 
     /** Construct a toolbar tab button widget.
      *
-     * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this radio button widget.
      * @param delegate The delegate to use to manage the state of the tab button widget.
      * @param attributes Different attributes used to configure the label's on the toolbar tab button:
@@ -59,11 +58,10 @@ public:
      *                   the first label is shown in on-state and the second for off-state.
      */
     toolbar_tab_button_widget(
-        gui_window& window,
         widget *parent,
         std::shared_ptr<delegate_type> delegate,
         button_widget_attribute auto&&...attributes) noexcept :
-        super(window, parent, std::move(delegate))
+        super(parent, std::move(delegate))
     {
         alignment = alignment::top_center();
         set_attributes<0>(hi_forward(attributes)...);
@@ -71,7 +69,6 @@ public:
 
     /** Construct a toolbar tab button widget with a default button delegate.
      *
-     * @param window The window that this widget belongs to.
      * @param parent The parent widget that owns this toolbar tab button widget.
      * @param value The value or `observer` value which represents the state
      *              of the toolbar tab button.
@@ -87,7 +84,6 @@ public:
         forward_of<observer<observer_decay_t<Value>>> OnValue,
         button_widget_attribute... Attributes>
     toolbar_tab_button_widget(
-        gui_window& window,
         widget *parent,
         Value&& value,
         OnValue&& on_value,
@@ -96,7 +92,6 @@ public:
         make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value));
     } :
         toolbar_tab_button_widget(
-            window,
             parent,
             make_default_radio_button_delegate(hi_forward(value), hi_forward(on_value)),
             hi_forward(attributes)...)

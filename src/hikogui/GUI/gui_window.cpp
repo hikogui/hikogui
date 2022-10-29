@@ -38,7 +38,7 @@ void gui_window::init()
     // and therefor should not have a lock.
     hi_axiom(loop::main().on_thread());
 
-    widget = std::make_unique<window_widget>(*this, title);
+    widget = std::make_unique<window_widget>(this, title);
 
     // Execute a constraint check to determine initial window size.
     theme = gui.theme_book->find(*gui.selected_theme, os_settings::theme_mode()).transform(dpi);
