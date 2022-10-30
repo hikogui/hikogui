@@ -11,7 +11,6 @@
 #include "widget.hpp"
 #include "scroll_bar_widget.hpp"
 #include "scroll_aperture_widget.hpp"
-#include "../GUI/gui_window.hpp"
 #include "../geometry/axis.hpp"
 
 namespace hi { inline namespace v1 {
@@ -176,9 +175,9 @@ public:
 
             if constexpr (controls_window) {
                 if (context.left_to_right()) {
-                    window.set_resize_border_priority(true, not vertical_visible, not horizontal_visible, true);
+                    set_resize_border_priority(true, not vertical_visible, not horizontal_visible, true);
                 } else {
-                    window.set_resize_border_priority(not vertical_visible, true, not horizontal_visible, true);
+                    set_resize_border_priority(not vertical_visible, true, not horizontal_visible, true);
                 }
             }
         }

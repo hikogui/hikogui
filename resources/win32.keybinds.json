@@ -67,10 +67,10 @@
     {"key": "escape",           "command": "gui_cancel"},
     {"key": "tab",              "command": "gui_widget_next"},
     {"key": "shift+tab",        "command": "gui_widget_prev"},
-    {"key": "sysmenu",          "command": "gui_sysmenu_open"},
     {"key": "menu",             "command": "gui_toolbar_open"},
     {"key": "left",             "command": "gui_toolbar_prev"},
     {"key": "right",            "command": "gui_toolbar_next"},
     {"key": "up",               "command": "gui_menu_prev"},
     {"key": "down",             "command": "gui_menu_next"},
+    {"key": "sysmenu",          "command": "window_open_sysmenu"}
 ]}

@@ -12,7 +12,7 @@ text_field_widget::text_field_widget(gui_window& window, widget *parent, std::sh
 {
     hi_assert_not_null(this->delegate);
     _delegate_cbt = this->delegate->subscribe([&] {
-        request_relayout();
+        process_event({gui_event_type::window_relayout});
     });
     this->delegate->init(*this);
 
@@ -24,16 +24,20 @@ text_field_widget::text_field_widget(gui_window& window, widget *parent, std::sh
         std::make_unique<label_widget>(window, this, _error_label, alignment::top_left(), semantic_text_style::error);
 
     _continues_cbt = continues.subscribe([&](auto...) {
-        hi_request_reconstrain("text_field_widget::_continues_cbt()");
+        hi_log_info("text_field_widget::_continues_cbt()");
+        process_event({gui_event_type::window_reconstrain});
     });
     _text_style_cbt = text_style.subscribe([&](auto...) {
-        hi_request_reconstrain("text_field_widget::_text_style_cbt()");
+        hi_log_info("text_field_widget::_text_style_cbt()");
+        process_event({gui_event_type::window_reconstrain});
     });
     _text_cbt = _text.subscribe([&](auto...) {
-        hi_request_reconstrain("text_field_widget::_text_cbt()");
+        hi_log_info("text_field_widget::_text_cbt()");
+        process_event({gui_event_type::window_reconstrain});
     });
     _error_label_cbt = _error_label.subscribe([&](auto const& new_value) {
-        hi_request_reconstrain("text_field_widget::_error_label_cbt(\"{}\")", new_value);
+        hi_log_info("text_field_widget::_error_label_cbt(\"{}\")", new_value);
+        process_event({gui_event_type::window_reconstrain});
     });
 }
 

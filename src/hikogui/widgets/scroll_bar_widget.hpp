@@ -49,9 +49,9 @@ public:
         widget(window, parent), content(hi_forward(content)), aperture(hi_forward(aperture)), offset(hi_forward(offset))
     {
         // clang-format off
-        _content_cbt = this->content.subscribe([&](auto...){ request_relayout(); });
-        _aperture_cbt = this->aperture.subscribe([&](auto...){ request_relayout(); });
-        _offset_cbt = this->offset.subscribe([&](auto...){ request_relayout(); });
+        _content_cbt = this->content.subscribe([&](auto...){ process_event({gui_event_type::window_relayout}); });
+        _aperture_cbt = this->aperture.subscribe([&](auto...){ process_event({gui_event_type::window_relayout}); });
+        _offset_cbt = this->offset.subscribe([&](auto...){ process_event({gui_event_type::window_relayout}); });
         // clang-format on
     }
 
