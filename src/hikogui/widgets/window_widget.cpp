@@ -10,7 +10,6 @@
 #include "system_menu_widget.hpp"
 #endif
 #include "../GUI/gui_window.hpp"
-#include "../GUI/gui_system.hpp"
 #include "../scoped_buffer.hpp"
 
 namespace hi::inline v1 {
