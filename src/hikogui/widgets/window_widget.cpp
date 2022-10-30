@@ -240,16 +240,6 @@ bool window_widget::handle_event(gui_event const& event) noexcept
     return super::handle_event(event);
 }
 
-[[nodiscard]] std::string window_widget::get_text_from_clipboard() const noexcept
-{
-    return window.get_text_from_clipboard();
-}
-
-void window_widget::set_text_on_clipboard(std::string_view text) const noexcept
-{
-    window.set_text_on_clipboard(text);
-}
-
 bool window_widget::process_event(gui_event const& event) const noexcept
 {
     return window.process_event(event);

@@ -188,6 +188,7 @@ public:
         this->key() = key;
     }
 
+    constexpr ~gui_event() = default;
     constexpr gui_event(gui_event const&) noexcept = default;
     constexpr gui_event(gui_event&&) noexcept = default;
     constexpr gui_event& operator=(gui_event const&) noexcept = default;
@@ -201,6 +202,18 @@ public:
     {
         auto r = gui_event{gui_event_type::mouse_enter};
         r.mouse().position = position;
+        return r;
+    }
+
+    /** Create clipboard event.
+     *
+     * @param type Either `gui_event_type::text_edit_paste` or `gui_event_type::window_set_clipboard`.
+     * @param text The clipboard data in text form.
+     */
+    [[nodiscard]] static gui_event make_clipboard_event(gui_event_type type, std::string_view text) noexcept
+    {
+        auto r = gui_event{type};
+        r.clipboard_data() = text;
         return r;
     }
 
@@ -224,20 +237,22 @@ public:
         if (previous_variant != variant()) {
             switch (variant()) {
             case gui_event_variant::mouse:
-                _mouse = {};
+                _data = mouse_event_data{};
                 break;
             case gui_event_variant::grapheme:
-                _grapheme = hi::grapheme{};
+                _data = hi::grapheme{};
                 break;
             case gui_event_variant::keyboard:
-                _key = {};
+                _data = keyboard_virtual_key{};
                 break;
             case gui_event_variant::keyboard_target:
-                _keyboard_target = {};
+                _data = keyboard_target_data{};
                 break;
             case gui_event_variant::rectangle:
-                _rectangle = {};
+                _data = aarectangle{};
                 break;
+            case gui_event_variant::clipboard_data:
+                _data = std::string{};
             default:;
             }
         }
@@ -250,7 +265,7 @@ public:
     [[nodiscard]] mouse_event_data& mouse() noexcept
     {
         hi_assert(variant() == gui_event_variant::mouse);
-        return _mouse;
+        return std::get<mouse_event_data>(_data);
     }
 
     /** Get the mouse event information.
@@ -260,7 +275,7 @@ public:
     [[nodiscard]] mouse_event_data const& mouse() const noexcept
     {
         hi_assert(variant() == gui_event_variant::mouse);
-        return _mouse;
+        return std::get<mouse_event_data>(_data);
     }
 
     /** Get the key from the keyboard event
@@ -270,7 +285,7 @@ public:
     [[nodiscard]] keyboard_virtual_key& key() noexcept
     {
         hi_assert(variant() == gui_event_variant::keyboard);
-        return _key;
+        return std::get<keyboard_virtual_key>(_data);
     }
 
     /** Get the key from the keyboard event
@@ -280,7 +295,7 @@ public:
     [[nodiscard]] keyboard_virtual_key const& key() const noexcept
     {
         hi_assert(variant() == gui_event_variant::keyboard);
-        return _key;
+        return std::get<keyboard_virtual_key>(_data);
     }
 
     /** Get the grapheme entered on the keyboard.
@@ -290,7 +305,7 @@ public:
     [[nodiscard]] hi::grapheme& grapheme() noexcept
     {
         hi_assert(variant() == gui_event_variant::grapheme);
-        return _grapheme;
+        return std::get<hi::grapheme>(_data);
     }
 
     /** Get the grapheme entered on the keyboard.
@@ -300,31 +315,43 @@ public:
     [[nodiscard]] hi::grapheme const& grapheme() const noexcept
     {
         hi_assert(variant() == gui_event_variant::grapheme);
-        return _grapheme;
+        return std::get<hi::grapheme>(_data);
     }
 
     [[nodiscard]] aarectangle& rectangle() noexcept
     {
         hi_assert(variant() == gui_event_variant::rectangle);
-        return _rectangle;
+        return std::get<aarectangle>(_data);
     }
 
     [[nodiscard]] aarectangle const& rectangle() const noexcept
     {
         hi_assert(variant() == gui_event_variant::rectangle);
-        return _rectangle;
+        return std::get<aarectangle>(_data);
     }
 
     [[nodiscard]] keyboard_target_data& keyboard_target() noexcept
     {
         hi_assert(variant() == gui_event_variant::keyboard_target);
-        return _keyboard_target;
+        return std::get<keyboard_target_data>(_data);
     }
 
     [[nodiscard]] keyboard_target_data const& keyboard_target() const noexcept
     {
         hi_assert(variant() == gui_event_variant::keyboard_target);
-        return _keyboard_target;
+        return std::get<keyboard_target_data>(_data);
+    }
+
+    [[nodiscard]] std::string& clipboard_data() noexcept
+    {
+        hi_assert(variant() == gui_event_variant::clipboard_data);
+        return std::get<std::string>(_data);
+    }
+
+    [[nodiscard]] std::string const& clipboard_data() const noexcept
+    {
+        hi_assert(variant() == gui_event_variant::clipboard_data);
+        return std::get<std::string>(_data);
     }
 
     [[nodiscard]] constexpr bool operator==(gui_event_type event_type) const noexcept
@@ -388,15 +415,11 @@ public:
     }
 
 private:
-    gui_event_type _type;
+    using data_type =
+        std::variant<mouse_event_data, keyboard_virtual_key, keyboard_target_data, hi::grapheme, aarectangle, std::string>;
 
-    union {
-        mouse_event_data _mouse;
-        keyboard_virtual_key _key;
-        keyboard_target_data _keyboard_target;
-        hi::grapheme _grapheme;
-        aarectangle _rectangle;
-    };
+    gui_event_type _type;
+    data_type _data;
 };
 
 }} // namespace hi::v1

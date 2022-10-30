@@ -15,6 +15,7 @@
 #include "../thread.hpp"
 #include "../os_settings.hpp"
 #include "../loop.hpp"
+#include "../defer.hpp"
 #include "../unicode/unicode_normalization.hpp"
 #include <new>
 
@@ -391,21 +392,19 @@ void gui_window_win32::set_window_size(extent2 new_extent)
         SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_DEFERERASE | SWP_NOCOPYBITS | SWP_FRAMECHANGED);
 }
 
-[[nodiscard]] std::string gui_window_win32::get_text_from_clipboard() const noexcept
+[[nodiscard]] std::optional<std::string> gui_window_win32::get_text_from_clipboard() const noexcept
 {
-    hi_axiom(loop::main().on_thread());
-
-    auto r = std::string{};
-
-    hilet handle = reinterpret_cast<HWND>(win32Window);
-
-    if (!OpenClipboard(handle)) {
-        hi_log_error("Could not open win32 clipboard '{}'", get_last_error_message());
-        return r;
+    if (not OpenClipboard(win32Window)) {
+        // Another application could have the clipboard locked.
+        hi_log_info("Could not open win32 clipboard '{}'", get_last_error_message());
+        return {};
     }
 
-    UINT format = 0;
+    hilet defer_CloseClipboard = defer([] {
+        CloseClipboard();
+    });
 
+    UINT format = 0;
     while ((format = EnumClipboardFormats(format)) != 0) {
         switch (format) {
         case CF_TEXT:
@@ -415,25 +414,26 @@ void gui_window_win32::set_window_size(extent2 new_extent)
                 hilet cb_data = GetClipboardData(CF_UNICODETEXT);
                 if (cb_data == nullptr) {
                     hi_log_error("Could not get clipboard data: '{}'", get_last_error_message());
-                    goto done;
+                    return {};
                 }
 
                 hilet wstr_c = reinterpret_cast<wchar_t *>(GlobalLock(cb_data));
                 if (wstr_c == nullptr) {
                     hi_log_error("Could not lock clipboard data: '{}'", get_last_error_message());
-                    goto done;
+                    return {};
                 }
 
-                hilet wstr = std::wstring_view(wstr_c);
-                r = hi::to_string(wstr);
-                hi_log_debug("getTextFromClipboad '{}'", r);
+                hilet defer_GlobalUnlock = defer([cb_data] {
+                    if (not GlobalUnlock(cb_data) and GetLastError() != ERROR_SUCCESS) {
+                        hi_log_error("Could not unlock clipboard data: '{}'", get_last_error_message());
+                    }
+                });
 
-                if (!GlobalUnlock(cb_data) && GetLastError() != ERROR_SUCCESS) {
-                    hi_log_error("Could not unlock clipboard data: '{}'", get_last_error_message());
-                    goto done;
-                }
+                auto r = hi::to_string(std::wstring_view(wstr_c));
+                hi_log_debug("get_text_from_clipboard '{}'", r);
+                return {std::move(r)};
             }
-            goto done;
+            return {};
 
         default:;
         }
@@ -443,60 +443,64 @@ void gui_window_win32::set_window_size(extent2 new_extent)
         hi_log_error("Could not enumerator clipboard formats: '{}'", get_last_error_message());
     }
 
-done:
-    CloseClipboard();
-
-    return r;
+    return {};
 }
 
-void gui_window_win32::set_text_on_clipboard(std::string_view str) noexcept
+void gui_window_win32::put_text_on_clipboard(std::string_view text) const noexcept
 {
-    if (!OpenClipboard(reinterpret_cast<HWND>(win32Window))) {
-        hi_log_error("Could not open win32 clipboard '{}'", get_last_error_message());
+    if (not OpenClipboard(reinterpret_cast<HWND>(win32Window))) {
+        // Another application could have the clipboard locked.
+        hi_log_info("Could not open win32 clipboard '{}'", get_last_error_message());
         return;
     }
 
-    if (!EmptyClipboard()) {
+    hilet defer_CloseClipboard = defer([] {
+        CloseClipboard();
+    });
+
+    if (not EmptyClipboard()) {
         hi_log_error("Could not empty win32 clipboard '{}'", get_last_error_message());
-        goto done;
+        return;
     }
+
+    auto wtext = hi::to_wstring(
+        unicode_NFC(to_u32string(text), unicode_normalization_mask::NFD | unicode_normalization_mask::decompose_newline_to_CRLF));
+
+    auto wtext_handle = GlobalAlloc(GMEM_MOVEABLE, (wtext.size() + 1) * sizeof(wchar_t));
+    if (wtext_handle == nullptr) {
+        hi_log_error("Could not allocate clipboard data '{}'", get_last_error_message());
+        return;
+    }
+
+    hilet defer_GlobalFree([&wtext_handle] {
+        if (wtext_handle != nullptr) {
+            GlobalFree(wtext_handle);
+        }
+    });
 
     {
-        auto str32 = to_u32string(str);
-        auto wstr = hi::to_wstring(
-            unicode_NFC(str32, unicode_normalization_mask::NFD | unicode_normalization_mask::decompose_newline_to_CRLF));
-
-        auto wstr_handle = GlobalAlloc(GMEM_MOVEABLE, (ssize(wstr) + 1) * sizeof(wchar_t));
-        if (wstr_handle == nullptr) {
-            hi_log_error("Could not allocate clipboard data '{}'", get_last_error_message());
-            goto done;
+        auto wtext_c = reinterpret_cast<wchar_t *>(GlobalLock(wtext_handle));
+        if (wtext_c == nullptr) {
+            hi_log_error("Could not lock string data '{}'", get_last_error_message());
+            return;
         }
 
-        auto wstr_c = reinterpret_cast<wchar_t *>(GlobalLock(wstr_handle));
-        if (wstr_c == nullptr) {
-            hi_log_error("Could not lock clipboard data '{}'", get_last_error_message());
-            GlobalFree(wstr_handle);
-            goto done;
-        }
+        hilet defer_GlobalUnlock = defer([wtext_handle] {
+            if (not GlobalUnlock(wtext_handle) and GetLastError() != ERROR_SUCCESS) {
+                hi_log_error("Could not unlock string data '{}'", get_last_error_message());
+            }
+        });
 
-        std::memcpy(wstr_c, wstr.c_str(), (ssize(wstr) + 1) * sizeof(wchar_t));
-
-        if (!GlobalUnlock(wstr_handle) && GetLastError() != ERROR_SUCCESS) {
-            hi_log_error("Could not unlock clipboard data '{}'", get_last_error_message());
-            GlobalFree(wstr_handle);
-            goto done;
-        }
-
-        auto handle = SetClipboardData(CF_UNICODETEXT, wstr_handle);
-        if (handle == nullptr) {
-            hi_log_error("Could not set clipboard data '{}'", get_last_error_message());
-            GlobalFree(wstr_handle);
-            goto done;
-        }
+        std::memcpy(wtext_c, wtext.c_str(), (wtext.size() + 1) * sizeof(wchar_t));
     }
 
-done:
-    CloseClipboard();
+    if (SetClipboardData(CF_UNICODETEXT, wtext_handle) == nullptr) {
+        hi_log_error("Could not set clipboard data '{}'", get_last_error_message());
+        return;
+    } else {
+        // Data was transferred to clipboard.
+        wtext_handle = nullptr;
+    }
 }
 
 void gui_window_win32::setOSWindowRectangleFromRECT(RECT new_rectangle) noexcept

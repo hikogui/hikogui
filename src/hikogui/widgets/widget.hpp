@@ -203,22 +203,6 @@ public:
      */
     virtual void draw(draw_context const& context) noexcept = 0;
 
-    [[nodiscard]] virtual std::string get_text_from_clipboard() const noexcept
-    {
-        if (parent != nullptr) {
-            return parent->get_text_from_clipboard();
-        } else {
-            return {};
-        }
-    }
-
-    virtual void set_text_on_clipboard(std::string_view text) const noexcept
-    {
-        if (parent != nullptr) {
-            parent->set_text_on_clipboard(text);
-        }
-    }
-
     virtual bool process_event(gui_event const& event) const noexcept
     {
         if (parent != nullptr) {

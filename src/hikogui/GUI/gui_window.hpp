@@ -198,14 +198,6 @@ public:
      */
     virtual void set_window_size(extent2 extent) = 0;
 
-    /** Retrieve a text string from the operating system's clip-board.
-     */
-    [[nodiscard]] virtual std::string get_text_from_clipboard() const noexcept = 0;
-
-    /** Place a text string on the operating system's clip-board.
-     */
-    virtual void set_text_on_clipboard(std::string_view str) noexcept = 0;
-
     void update_mouse_target(hi::widget const *new_target_widget, point2 position = {}) noexcept;
 
     /** Change the keyboard focus to the given widget.
@@ -235,6 +227,22 @@ public:
      * @param direction The direction to search in, or current to select the current widget.
      */
     void update_keyboard_target(keyboard_focus_group group, keyboard_focus_direction direction) noexcept;
+
+    /** Get text from the clipboard.
+     *
+     * @note This is part of the window as some operating systems need to know from which window the text was posted.
+     * @return The text from the clipboard.
+     * @retval empty When the clipboard is locked by another application, on error, if the data on the clipboard can not
+     *               be converted to text or if the clipboard is empty.
+     */
+    [[nodiscard]] virtual std::optional<std::string> get_text_from_clipboard() const noexcept = 0;
+
+    /** Put text on the clipboard.
+     *
+     * @note This is part of the window as some operating systems need to know from which window the text was posted.
+     * @param text The text to place on the clipboard.
+     */
+    virtual void put_text_on_clipboard(std::string_view text) const noexcept = 0;
 
     [[nodiscard]] translate2 window_to_screen() const noexcept
     {

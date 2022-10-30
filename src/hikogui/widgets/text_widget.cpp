@@ -401,12 +401,12 @@ bool text_widget::handle_event(gui_event const& event) noexcept
     case text_edit_paste:
         if (*mode >= partial) {
             reset_state("BDX");
-            replace_selection(to_gstring(get_text_from_clipboard(), U' '));
+            replace_selection(to_gstring(event.clipboard_data(), U' '));
             return true;
 
         } else if (*mode >= enabled) {
             reset_state("BDX");
-            replace_selection(to_gstring(get_text_from_clipboard()));
+            replace_selection(to_gstring(event.clipboard_data()));
             return true;
         }
         break;
@@ -415,7 +415,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
         if (*mode >= select) {
             reset_state("BDX");
             if (hilet selected_text_ = selected_text(); not selected_text_.empty()) {
-                set_text_on_clipboard(to_string(selected_text_));
+                process_event(gui_event::make_clipboard_event(gui_event_type::window_set_clipboard, to_string(selected_text_)));
             }
             return true;
         }
@@ -424,7 +424,7 @@ bool text_widget::handle_event(gui_event const& event) noexcept
     case text_edit_cut:
         if (*mode >= select) {
             reset_state("BDX");
-            set_text_on_clipboard(to_string(selected_text()));
+            process_event(gui_event::make_clipboard_event(gui_event_type::window_set_clipboard, to_string(selected_text())));
             if (*mode >= partial) {
                 replace_selection(gstring{});
             }

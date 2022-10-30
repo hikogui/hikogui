@@ -63,8 +63,6 @@ public:
     void draw(draw_context const& context) noexcept override;
     [[nodiscard]] hitbox hitbox_test(point3 position) const noexcept override;
     bool handle_event(gui_event const& event) noexcept override;
-    [[nodiscard]] std::string get_text_from_clipboard() const noexcept override;
-    void set_text_on_clipboard(std::string_view text) const noexcept override;
     bool process_event(gui_event const& event) const noexcept override;
     /// @endprivatesection
 private:
