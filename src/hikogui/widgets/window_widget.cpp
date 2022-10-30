@@ -220,11 +220,6 @@ void window_widget::set_resize_border_priority(bool left, bool right, bool botto
     return *_toolbar;
 }
 
-[[nodiscard]] gui_window& window_widget::window() noexcept
-{
-    return *_window;
-}
-
 bool window_widget::handle_event(gui_event const& event) noexcept
 {
     using enum gui_event_type;
@@ -240,7 +235,8 @@ bool window_widget::handle_event(gui_event const& event) noexcept
 
 bool window_widget::process_event(gui_event const& event) const noexcept
 {
-    return window().process_event(event);
+    hi_assert_not_null(_window);
+    return _window->process_event(event);
 }
 
 } // namespace hi::inline v1

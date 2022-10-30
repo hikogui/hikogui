@@ -29,10 +29,16 @@ public:
     observer<label> title;
 
     window_widget(gui_window *window, forward_of<observer<label>> auto&& title) noexcept :
-        super(nullptr), title(hi_forward(title))
+        super(nullptr), _window(window), title(hi_forward(title))
     {
-        this->_window = window;
+        hi_assert_not_null(_window);
         constructor_implementation();
+    }
+
+    [[nodiscard]] gui_window& window() const noexcept override
+    {
+        hi_assert_not_null(_window);
+        return _window;
     }
 
     /** The background color of the window.
@@ -65,6 +71,8 @@ public:
     void set_resize_border_priority(bool left, bool right, bool bottom, bool top) noexcept override;
     /// @endprivatesection
 private:
+    gui_window *_window;
+    
     aarectangle _content_rectangle;
     widget_constraints _content_constraints;
     std::unique_ptr<grid_widget> _content;
