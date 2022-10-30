@@ -66,10 +66,6 @@ public:
     [[nodiscard]] std::string get_text_from_clipboard() const noexcept override;
     void set_text_on_clipboard(std::string_view text) const noexcept override;
     bool process_event(gui_event const& event) const noexcept override;
-    void update_keyboard_target(widget const *widget, keyboard_focus_group group) noexcept override;
-    void update_keyboard_target(widget const *widget, keyboard_focus_group group, keyboard_focus_direction direction) noexcept
-        override;
-    void update_keyboard_target(keyboard_focus_group group, keyboard_focus_direction direction) noexcept override;
     /// @endprivatesection
 private:
     aarectangle _content_rectangle;

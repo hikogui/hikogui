@@ -49,6 +49,7 @@ enum class gui_event_type {
     window_maximize, ///< Request the window to maximize.
     window_normalize, ///< Request the window to be restored to the original size after a minimize and maximize commands.
     window_close, ///< Request the window to be closed.
+    window_keyboard_target, ///< Change the keyboard target widget for this window.
 
     // commands
     text_cursor_left_char,
@@ -130,6 +131,7 @@ constexpr auto gui_event_type_metadata = enum_metadata{
     gui_event_type::window_maximize, "window_maximize",
     gui_event_type::window_normalize, "window_normalize",
     gui_event_type::window_close, "window_close",
+    gui_event_type::window_keyboard_target, "window_keyboard_target",
     gui_event_type::text_cursor_left_char, "text_cursor_left_char",
     gui_event_type::text_cursor_right_char, "text_cursor_right_char",
     gui_event_type::text_cursor_down_char, "text_cursor_down_char",

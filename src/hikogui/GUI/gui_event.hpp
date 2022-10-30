@@ -13,6 +13,8 @@
 #include "keyboard_virtual_key.hpp"
 #include "keyboard_state.hpp"
 #include "keyboard_modifiers.hpp"
+#include "keyboard_focus_group.hpp"
+#include "keyboard_focus_direction.hpp"
 #include "mouse_buttons.hpp"
 #include "../unicode/grapheme.hpp"
 #include "../geometry/vector.hpp"
@@ -60,6 +62,14 @@ struct mouse_event_data {
     uint8_t click_count = 0;
 };
 
+class widget;
+
+struct keyboard_target_data {
+    hi::widget const *widget = nullptr;
+    keyboard_focus_group group = keyboard_focus_group::normal;
+    keyboard_focus_direction direction = keyboard_focus_direction::here;
+};
+
 /** A user interface event.
  * @ingroup GUI
  */
@@ -91,7 +101,10 @@ public:
         utc_nanoseconds time_point,
         hi::keyboard_modifiers keyboard_modifiers,
         hi::keyboard_state keyboard_state) noexcept :
-        _type(gui_event_type::none), time_point(time_point), keyboard_modifiers(keyboard_modifiers), keyboard_state(keyboard_state)
+        _type(gui_event_type::none),
+        time_point(time_point),
+        keyboard_modifiers(keyboard_modifiers),
+        keyboard_state(keyboard_state)
     {
         set_type(type);
     }
@@ -125,15 +138,36 @@ public:
     }
 
     /** Create a rectangle event.
-    * 
-    * @param type The type of the rectangle event.
-    * @param rectangle The rectangle for this event.
+     *
+     * @param type The type of the rectangle event.
+     * @param rectangle The rectangle for this event.
      */
     gui_event(gui_event_type type, aarectangle rectangle) noexcept :
         gui_event(type, std::chrono::utc_clock::now(), keyboard_modifiers::none, keyboard_state::idle)
     {
         hi_assert(variant() == gui_event_variant::rectangle);
         this->rectangle() = rectangle;
+    }
+
+    /** Create a keyboard target event.
+     *
+     * @param type The type of the keyboard target event.
+     * @param widget Pointer to the widget used as base for the target search.
+     * @param group The keyboard focus group to search in.
+     * @param direction The direction to walk through the focus-chain.
+     */
+    gui_event(
+        gui_event_type type,
+        hi::widget const *widget,
+        keyboard_focus_group group = keyboard_focus_group::normal,
+        keyboard_focus_direction direction = keyboard_focus_direction::here) noexcept :
+        gui_event(type, std::chrono::utc_clock::now(), keyboard_modifiers::none, keyboard_state::idle)
+    {
+        hi_assert(variant() == gui_event_variant::keyboard_target);
+        auto& target = this->keyboard_target();
+        target.widget = widget;
+        target.group = group;
+        target.direction = direction;
     }
 
     /** Create a GUI event.
@@ -197,6 +231,9 @@ public:
                 break;
             case gui_event_variant::keyboard:
                 _key = {};
+                break;
+            case gui_event_variant::keyboard_target:
+                _keyboard_target = {};
                 break;
             case gui_event_variant::rectangle:
                 _rectangle = {};
@@ -278,6 +315,18 @@ public:
         return _rectangle;
     }
 
+    [[nodiscard]] keyboard_target_data& keyboard_target() noexcept
+    {
+        hi_assert(variant() == gui_event_variant::keyboard_target);
+        return _keyboard_target;
+    }
+
+    [[nodiscard]] keyboard_target_data const& keyboard_target() const noexcept
+    {
+        hi_assert(variant() == gui_event_variant::keyboard_target);
+        return _keyboard_target;
+    }
+
     [[nodiscard]] constexpr bool operator==(gui_event_type event_type) const noexcept
     {
         return type() == event_type;
@@ -344,12 +393,13 @@ private:
     union {
         mouse_event_data _mouse;
         keyboard_virtual_key _key;
+        keyboard_target_data _keyboard_target;
         hi::grapheme _grapheme;
         aarectangle _rectangle;
     };
 };
 
-}} // namespace hi::inline v1
+}} // namespace hi::v1
 
 template<typename CharT>
 struct std::formatter<hi::gui_event, CharT> : std::formatter<std::string_view, CharT> {

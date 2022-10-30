@@ -28,6 +28,10 @@ enum class gui_event_variant {
      */
     keyboard,
 
+    /** The gui_event has keyboard target data.
+     */
+    keyboard_target,
+
     /** The gui_event has grapheme data.
      */
     grapheme,
@@ -59,6 +63,9 @@ enum class gui_event_variant {
     case gui_event_type::keyboard_exit:
         return gui_event_variant::keyboard;
 
+    case gui_event_type::window_keyboard_target:
+        return gui_event_variant::keyboard_target;
+
     case gui_event_type::keyboard_grapheme:
     case gui_event_type::keyboard_partial_grapheme:
         return gui_event_variant::grapheme;
@@ -71,4 +78,4 @@ enum class gui_event_variant {
     }
 }
 
-}} // namespace hi::inline v1
+}} // namespace hi::v1

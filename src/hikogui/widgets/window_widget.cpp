@@ -223,12 +223,14 @@ void window_widget::set_resize_border_priority(bool left, bool right, bool botto
 
 bool window_widget::handle_event(gui_event const& event) noexcept
 {
+    using enum gui_event_type;
+
     switch (event.type()) {
-    case gui_event_type::gui_toolbar_open:
-        update_keyboard_target(this, keyboard_focus_group::toolbar, keyboard_focus_direction::forward);
+    case gui_toolbar_open:
+        process_event({window_keyboard_target, this, keyboard_focus_group::toolbar, keyboard_focus_direction::forward});
         return true;
 
-    case gui_event_type::gui_sysmenu_open:
+    case gui_sysmenu_open:
         if (*mode >= widget_mode::partial) {
             window.open_system_menu();
             return true;
@@ -251,26 +253,6 @@ void window_widget::set_text_on_clipboard(std::string_view text) const noexcept
 bool window_widget::process_event(gui_event const& event) const noexcept
 {
     return window.process_event(event);
-}
-
-void window_widget::update_keyboard_target(widget const *widget, keyboard_focus_group group) noexcept
-{
-    window.update_keyboard_target(widget, group);
-}
-
-void window_widget::update_keyboard_target(
-    keyboard_focus_group group,
-    keyboard_focus_direction direction) noexcept
-{
-    window.update_keyboard_target(group, direction);
-}
-
-void window_widget::update_keyboard_target(
-    widget const *widget,
-    keyboard_focus_group group,
-    keyboard_focus_direction direction) noexcept
-{
-    window.update_keyboard_target(widget, group, direction);
 }
 
 } // namespace hi::inline v1

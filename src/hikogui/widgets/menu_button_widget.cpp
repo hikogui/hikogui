@@ -66,26 +66,28 @@ void menu_button_widget::draw(draw_context const& context) noexcept
 
 bool menu_button_widget::handle_event(gui_event const& event) noexcept
 {
+    using enum gui_event_type;
+
     switch (event.type()) {
-    case gui_event_type::gui_menu_next:
+    case gui_menu_next:
         if (*mode >= widget_mode::partial and not is_last(keyboard_focus_group::menu)) {
-            update_keyboard_target(keyboard_focus_group::menu, keyboard_focus_direction::forward);
+            process_event({window_keyboard_target, nullptr, keyboard_focus_group::menu, keyboard_focus_direction::forward});
             return true;
         }
         break;
 
-    case gui_event_type::gui_menu_prev:
+    case gui_menu_prev:
         if (*mode >= widget_mode::partial and not is_first(keyboard_focus_group::menu)) {
-            update_keyboard_target(keyboard_focus_group::menu, keyboard_focus_direction::backward);
+            process_event({window_keyboard_target, nullptr, keyboard_focus_group::menu, keyboard_focus_direction::backward});
             return true;
         }
         break;
 
-    case gui_event_type::gui_activate:
+    case gui_activate:
         if (*mode >= widget_mode::partial) {
             activate();
-            update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::forward);
-            update_keyboard_target(keyboard_focus_group::normal, keyboard_focus_direction::backward);
+            process_event({window_keyboard_target, nullptr, keyboard_focus_group::normal, keyboard_focus_direction::forward});
+            process_event({window_keyboard_target, nullptr, keyboard_focus_group::normal, keyboard_focus_direction::backward});
             return true;
         }
         break;

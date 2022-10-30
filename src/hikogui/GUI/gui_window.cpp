@@ -223,13 +223,14 @@ void gui_window::update_keyboard_target(hi::widget const *new_target_widget, key
 
     // Before we are going to make new_target_widget empty, due to the rules below;
     // capture which parents there are.
-    auto new_target_parent_chain = new_target_widget ? new_target_widget->parent_chain() : std::vector<hi::widget const *>{};
+    auto new_target_parent_chain =
+        new_target_widget != nullptr ? new_target_widget->parent_chain() : std::vector<hi::widget const *>{};
 
     // If the new target widget does not accept focus, for example when clicking
     // on a disabled widget, or empty part of a window.
     // In that case no widget will get focus.
-    if (not new_target_widget or not new_target_widget->accepts_keyboard_focus(group)) {
-        new_target_widget = {};
+    if (new_target_widget == nullptr or not new_target_widget->accepts_keyboard_focus(group)) {
+        new_target_widget = nullptr;
     }
 
     // Check if the keyboard focus changed.
@@ -238,7 +239,7 @@ void gui_window::update_keyboard_target(hi::widget const *new_target_widget, key
     }
 
     // When there is a new target, tell the current widget that the keyboard focus was exited.
-    if (new_target_widget and _keyboard_target_widget) {
+    if (new_target_widget != nullptr and _keyboard_target_widget != nullptr) {
         send_events_to_widget(_keyboard_target_widget, std::vector{gui_event{gui_event_type::keyboard_exit}});
         _keyboard_target_widget = nullptr;
     }
@@ -275,53 +276,67 @@ void gui_window::update_keyboard_target(keyboard_focus_group group, keyboard_foc
 
 bool gui_window::process_event(gui_event const& event) noexcept
 {
+    using enum gui_event_type;
+
     hi_axiom(loop::main().on_thread());
 
     auto events = std::vector<gui_event>{event};
 
     switch (event.type()) {
-    case gui_event_type::window_redraw:
+    case window_redraw:
         _redraw_rectangle.fetch_or(event.rectangle());
         return true;
-    case gui_event_type::window_relayout:
+    case window_relayout:
         _relayout.store(true, std::memory_order_relaxed);
         return true;
-    case gui_event_type::window_reconstrain:
+    case window_reconstrain:
         _reconstrain.store(true, std::memory_order_relaxed);
         return true;
-    case gui_event_type::window_resize:
+    case window_resize:
         _resize.store(true, std::memory_order_relaxed);
         return true;
-    case gui_event_type::window_minimize:
+    case window_minimize:
         set_size_state(gui_window_size::minimized);
         return true;
-    case gui_event_type::window_maximize:
+    case window_maximize:
         set_size_state(gui_window_size::maximized);
         return true;
-    case gui_event_type::window_normalize:
+    case window_normalize:
         set_size_state(gui_window_size::normal);
         return true;
-    case gui_event_type::window_close:
+    case window_close:
         close_window();
         return true;
+    case window_keyboard_target:
+        {
+            hilet& target = event.keyboard_target();
+            if (target.widget == nullptr) {
+                update_keyboard_target(target.group, target.direction);
+            } else if (target.direction == keyboard_focus_direction::here) {
+                update_keyboard_target(target.widget, target.group);
+            } else {
+                update_keyboard_target(target.widget, target.group, target.direction);
+            }
+        }
+        return true;
 
-    case gui_event_type::mouse_exit_window: // Mouse left window.
+    case mouse_exit_window: // Mouse left window.
         update_mouse_target({});
         break;
 
-    case gui_event_type::mouse_down:
-    case gui_event_type::mouse_move:
+    case mouse_down:
+    case mouse_move:
         {
             hilet hitbox = widget->hitbox_test(event.mouse().position);
             update_mouse_target(hitbox.widget, event.mouse().position);
 
-            if (event == gui_event_type::mouse_down) {
+            if (event == mouse_down) {
                 update_keyboard_target(hitbox.widget, keyboard_focus_group::all);
             }
         }
         break;
 
-    case gui_event_type::keyboard_down:
+    case keyboard_down:
         keyboard_bindings().translate(event, events);
         break;
 
@@ -336,7 +351,7 @@ bool gui_window::process_event(gui_event const& event) noexcept
     // The update_keyboard_target() function will send gui_keyboard_exit and a
     // potential duplicate gui_cancel messages to all widgets that need it.
     for (hilet event_ : events) {
-        if (event_ == gui_event_type::gui_cancel) {
+        if (event_ == gui_cancel) {
             update_keyboard_target({}, keyboard_focus_group::all);
         }
     }

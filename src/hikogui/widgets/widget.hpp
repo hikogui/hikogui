@@ -228,28 +228,6 @@ public:
         }
     }
 
-    virtual void update_keyboard_target(widget const *widget, keyboard_focus_group group) noexcept
-    {
-        if (parent != nullptr) {
-            parent->update_keyboard_target(widget, group);
-        }
-    }
-
-    virtual void
-    update_keyboard_target(widget const *widget, keyboard_focus_group group, keyboard_focus_direction direction) noexcept
-    {
-        if (parent != nullptr) {
-            parent->update_keyboard_target(widget, group, direction);
-        }
-    }
-
-    virtual void update_keyboard_target(keyboard_focus_group group, keyboard_focus_direction direction) noexcept
-    {
-        if (parent != nullptr) {
-            parent->update_keyboard_target(group, direction);
-        }
-    }
-
     /** Request the widget to be redrawn on the next frame.
      */
     void request_redraw() const noexcept
