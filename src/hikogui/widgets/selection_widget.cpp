@@ -4,7 +4,6 @@
 
 #include "selection_widget.hpp"
 #include "../text/font_book.hpp"
-#include "../GUI/gui_system.hpp"
 #include "../GFX/pipeline_SDF_device_shared.hpp"
 #include "../loop.hpp"
 
