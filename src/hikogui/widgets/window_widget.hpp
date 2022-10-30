@@ -61,7 +61,6 @@ public:
 
     /// @privatesection
     [[nodiscard]] generator<widget *> children() const noexcept override;
-    [[nodiscard]] gui_window& window() noexcept override;
     widget_constraints const& set_constraints(set_constraints_context const& context) noexcept override;
     void set_layout(widget_layout const& context) noexcept;
     void draw(draw_context const& context) noexcept override;
